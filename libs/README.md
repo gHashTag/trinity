@@ -11,7 +11,7 @@ Multi-language libraries for Vector Symbolic Architecture (VSA) and ternary comp
 | GPU (CUDA) | ✅ CubeCL | ✅ + OpenCL |
 | **FPGA acceleration** | ❌ | ✅ BitNet core |
 | **Knowledge Graph** | ❌ | ✅ Built-in |
-| **Multi-language** | Rust only | Rust, Python, C, Zig |
+| **Multi-language** | Rust only | Rust, Python, C, Zig, Go, TS, Java, Swift, Julia |
 | **BitNet integration** | ❌ | ✅ 1.58-bit LLM |
 | Packed storage | ✅ | ✅ 256x compression |
 | Sparse vectors | ✅ | ✅ Hybrid storage |
@@ -26,7 +26,12 @@ Minimal, fast primitives for ternary arithmetic and VSA:
 libs/
 ├── rust/trinity-vsa/      # Rust crate (crates.io)
 ├── python/trinity_vsa/    # Python package (PyPI)
-├── c/libtrinityvsa/       # C library (header-only + static)
+├── c/libtrinityvsa/       # C library (static/shared)
+├── go/trinityvsa/         # Go module
+├── typescript/trinity-vsa/ # npm package
+├── java/trinity-vsa/      # Maven artifact
+├── swift/TrinityVSA/      # Swift Package
+├── julia/TrinityVSA/      # Julia package
 └── zig/trinity-vsa/       # Zig module
 ```
 
@@ -78,6 +83,36 @@ pip install trinity-vsa
 ### Zig
 ```zig
 const trinity = @import("trinity-vsa");
+```
+
+### Go
+```go
+import vsa "github.com/gHashTag/trinity/libs/go/trinityvsa"
+```
+
+### TypeScript/JavaScript
+```bash
+npm install trinity-vsa
+```
+
+### Java
+```xml
+<dependency>
+    <groupId>com.trinity</groupId>
+    <artifactId>trinity-vsa</artifactId>
+    <version>0.1.0</version>
+</dependency>
+```
+
+### Swift
+```swift
+.package(url: "https://github.com/gHashTag/trinity.git", from: "0.1.0")
+```
+
+### Julia
+```julia
+using Pkg
+Pkg.add(url="https://github.com/gHashTag/trinity", subdir="libs/julia/TrinityVSA")
 ```
 
 ## Benchmarks
