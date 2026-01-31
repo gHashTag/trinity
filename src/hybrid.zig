@@ -6,7 +6,7 @@ const std = @import("std");
 const tvc_bigint = @import("bigint.zig");
 const tvc_packed = @import("packed_trit.zig");
 
-pub const MAX_TRITS = 256;
+pub const MAX_TRITS = 59049; // 3^10 - maximum for balanced ternary
 pub const TRITS_PER_BYTE = 5;
 pub const MAX_PACKED_BYTES = (MAX_TRITS + TRITS_PER_BYTE - 1) / TRITS_PER_BYTE;
 pub const Trit = i8;
@@ -15,7 +15,7 @@ pub const Trit = i8;
 pub const Vec32i8 = @Vector(32, i8);
 pub const Vec32i16 = @Vector(32, i16);
 pub const SIMD_WIDTH = 32;
-pub const SIMD_CHUNKS = MAX_TRITS / SIMD_WIDTH; // 256 / 32 = 8
+pub const SIMD_CHUNKS = MAX_TRITS / SIMD_WIDTH; // 59049 / 32 = 1845
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SIMD OPERATIONS

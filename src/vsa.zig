@@ -31,39 +31,28 @@ pub fn bind(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt {
     result.dirty = true;
 
     const len = @max(a.trit_len, b.trit_len);
+    result.trit_len = len;
 
-    // SIMD bind (32 trits at a time)
-    const num_chunks = len / SIMD_WIDTH;
+    // Fast path: both vectors same length, use direct SIMD
+    const min_len = @min(a.trit_len, b.trit_len);
+    const num_full_chunks = min_len / SIMD_WIDTH;
 
-    for (0..num_chunks) |chunk| {
-        const base = chunk * SIMD_WIDTH;
-
-        var a_vec: Vec32i8 = undefined;
-        var b_vec: Vec32i8 = undefined;
-
-        inline for (0..SIMD_WIDTH) |i| {
-            const idx = base + i;
-            a_vec[i] = if (idx < a.trit_len) a.unpacked_cache[idx] else 0;
-            b_vec[i] = if (idx < b.trit_len) b.unpacked_cache[idx] else 0;
-        }
-
-        // Element-wise multiplication (bind)
-        const prod = simdMultiply(a_vec, b_vec);
-
-        inline for (0..SIMD_WIDTH) |i| {
-            result.unpacked_cache[base + i] = prod[i];
-        }
+    // Process full SIMD chunks (no bounds checking needed)
+    var i: usize = 0;
+    while (i < num_full_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
+        const a_vec: Vec32i8 = a.unpacked_cache[i..][0..SIMD_WIDTH].*;
+        const b_vec: Vec32i8 = b.unpacked_cache[i..][0..SIMD_WIDTH].*;
+        const prod = a_vec * b_vec; // Direct SIMD multiply
+        result.unpacked_cache[i..][0..SIMD_WIDTH].* = prod;
     }
 
-    // Remainder (scalar)
-    const remainder_start = num_chunks * SIMD_WIDTH;
-    for (remainder_start..len) |i| {
+    // Process remainder with scalar ops
+    while (i < len) : (i += 1) {
         const a_trit: Trit = if (i < a.trit_len) a.unpacked_cache[i] else 0;
         const b_trit: Trit = if (i < b.trit_len) b.unpacked_cache[i] else 0;
         result.unpacked_cache[i] = a_trit * b_trit;
     }
 
-    result.trit_len = len;
     return result;
 }
 
@@ -85,25 +74,55 @@ pub fn bundle2(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt {
     result.dirty = true;
 
     const len = @max(a.trit_len, b.trit_len);
+    result.trit_len = len;
 
-    for (0..len) |i| {
+    const min_len = @min(a.trit_len, b.trit_len);
+    const num_full_chunks = min_len / SIMD_WIDTH;
+
+    // SIMD bundle: sum then threshold
+    var i: usize = 0;
+    while (i < num_full_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
+        const a_vec: Vec32i8 = a.unpacked_cache[i..][0..SIMD_WIDTH].*;
+        const b_vec: Vec32i8 = b.unpacked_cache[i..][0..SIMD_WIDTH].*;
+
+        // Widen to i16 for safe addition
+        const a_wide: @Vector(32, i16) = a_vec;
+        const b_wide: @Vector(32, i16) = b_vec;
+        const sum = a_wide + b_wide;
+
+        // Threshold: >0 -> 1, <0 -> -1, =0 -> 0
+        const zeros: @Vector(32, i16) = @splat(0);
+        const ones: @Vector(32, i16) = @splat(1);
+        const neg_ones: @Vector(32, i16) = @splat(-1);
+
+        const pos_mask = sum > zeros;
+        const neg_mask = sum < zeros;
+
+        var out = zeros;
+        out = @select(i16, pos_mask, ones, out);
+        out = @select(i16, neg_mask, neg_ones, out);
+
+        // Narrow back to i8
+        inline for (0..SIMD_WIDTH) |j| {
+            result.unpacked_cache[i + j] = @intCast(out[j]);
+        }
+    }
+
+    // Scalar remainder
+    while (i < len) : (i += 1) {
         const a_trit: i16 = if (i < a.trit_len) a.unpacked_cache[i] else 0;
         const b_trit: i16 = if (i < b.trit_len) b.unpacked_cache[i] else 0;
-
         const sum = a_trit + b_trit;
 
-        // Majority voting with threshold
         if (sum > 0) {
             result.unpacked_cache[i] = 1;
         } else if (sum < 0) {
             result.unpacked_cache[i] = -1;
         } else {
-            // Tie: use random or alternate (here: 0)
             result.unpacked_cache[i] = 0;
         }
     }
 
-    result.trit_len = len;
     return result;
 }
 
@@ -157,14 +176,31 @@ pub fn cosineSimilarity(a: *HybridBigInt, b: *HybridBigInt) f64 {
 }
 
 /// Hamming distance (number of differing trits)
+/// SIMD optimized: compares 32 trits at a time
 pub fn hammingDistance(a: *HybridBigInt, b: *HybridBigInt) usize {
     a.ensureUnpacked();
     b.ensureUnpacked();
 
     var distance: usize = 0;
     const len = @max(a.trit_len, b.trit_len);
+    const min_len = @min(a.trit_len, b.trit_len);
+    const num_full_chunks = min_len / SIMD_WIDTH;
 
-    for (0..len) |i| {
+    // SIMD comparison
+    var i: usize = 0;
+    while (i < num_full_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
+        const a_vec: Vec32i8 = a.unpacked_cache[i..][0..SIMD_WIDTH].*;
+        const b_vec: Vec32i8 = b.unpacked_cache[i..][0..SIMD_WIDTH].*;
+
+        // XOR-like comparison: different if a != b
+        const diff = a_vec != b_vec;
+
+        // Count true values (popcount)
+        distance += @popCount(@as(u32, @bitCast(diff)));
+    }
+
+    // Scalar remainder
+    while (i < len) : (i += 1) {
         const a_trit: Trit = if (i < a.trit_len) a.unpacked_cache[i] else 0;
         const b_trit: Trit = if (i < b.trit_len) b.unpacked_cache[i] else 0;
 
