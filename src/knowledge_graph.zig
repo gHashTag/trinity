@@ -18,6 +18,19 @@ const HybridBigInt = hybrid.HybridBigInt;
 const PackedBigInt = packed_trit.PackedBigInt;
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// FILE FORMAT CONSTANTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Magic bytes для идентификации файла
+pub const FILE_MAGIC = [4]u8{ 'T', 'R', 'K', 'G' };
+
+/// Версия формата файла
+pub const FILE_VERSION: u32 = 1;
+
+/// Размер packed вектора в байтах
+pub const PACKED_VECTOR_BYTES = (VECTOR_DIM + 4) / 5; // 5 тритов на байт
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // КОНФИГУРАЦИЯ
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -339,6 +352,181 @@ pub const KnowledgeGraph = struct {
             .triples = self.triple_count,
         };
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PERSISTENCE - Save/Load
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Сохранить граф в файл
+    pub fn save(self: *const Self, path: []const u8) !void {
+        const file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        var writer = file.writer();
+
+        // Header
+        try writer.writeAll(&FILE_MAGIC);
+        try writer.writeInt(u32, FILE_VERSION, .little);
+        try writer.writeInt(u32, self.entity_count, .little);
+        try writer.writeInt(u32, self.relation_count, .little);
+
+        // Entities
+        for (0..self.entity_count) |i| {
+            if (self.entities[i]) |e| {
+                // Name length and name
+                const name_len: u16 = @intCast(e.name.len);
+                try writer.writeInt(u16, name_len, .little);
+                try writer.writeAll(e.name);
+                // ID
+                try writer.writeInt(u32, e.id, .little);
+                // Vector data
+                const trit_len: u32 = @intCast(e.vector.trit_len);
+                try writer.writeInt(u32, trit_len, .little);
+                const packed_len = (e.vector.trit_len + 4) / 5;
+                try writer.writeAll(e.vector.data[0..packed_len]);
+            }
+        }
+
+        // Relations
+        for (0..self.relation_count) |i| {
+            if (self.relations[i]) |r| {
+                const name_len: u16 = @intCast(r.name.len);
+                try writer.writeInt(u16, name_len, .little);
+                try writer.writeAll(r.name);
+                try writer.writeInt(u32, r.id, .little);
+                const trit_len: u32 = @intCast(r.vector.trit_len);
+                try writer.writeInt(u32, trit_len, .little);
+                const packed_len = (r.vector.trit_len + 4) / 5;
+                try writer.writeAll(r.vector.data[0..packed_len]);
+            }
+        }
+
+        // Triples
+        try writer.writeInt(u32, self.triple_count, .little);
+        for (0..self.triple_count) |i| {
+            if (self.triples[i]) |t| {
+                try writer.writeInt(u32, t.subject_id, .little);
+                try writer.writeInt(u32, t.predicate_id, .little);
+                try writer.writeInt(u32, t.object_id, .little);
+                const trit_len: u32 = @intCast(t.vector.trit_len);
+                try writer.writeInt(u32, trit_len, .little);
+                const packed_len = (t.vector.trit_len + 4) / 5;
+                try writer.writeAll(t.vector.data[0..packed_len]);
+            }
+        }
+
+        // Graph vector
+        const graph_trit_len: u32 = @intCast(self.graph_vector.trit_len);
+        try writer.writeInt(u32, graph_trit_len, .little);
+        const graph_packed_len = (self.graph_vector.trit_len + 4) / 5;
+        try writer.writeAll(self.graph_vector.data[0..graph_packed_len]);
+    }
+
+    /// Загрузить граф из файла
+    pub fn load(path: []const u8, name_buffer: []u8) !Self {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        var reader = file.reader();
+        var result = Self.init();
+
+        // Header
+        var magic: [4]u8 = undefined;
+        _ = try reader.readAll(&magic);
+        if (!std.mem.eql(u8, &magic, &FILE_MAGIC)) {
+            return error.InvalidFileFormat;
+        }
+
+        const version = try reader.readInt(u32, .little);
+        if (version != FILE_VERSION) {
+            return error.UnsupportedVersion;
+        }
+
+        const entity_count = try reader.readInt(u32, .little);
+        const relation_count = try reader.readInt(u32, .little);
+
+        // Используем буфер для имён
+        var name_offset: usize = 0;
+
+        // Entities
+        for (0..entity_count) |i| {
+            const name_len = try reader.readInt(u16, .little);
+
+            // Читаем имя в буфер
+            const name_start = name_offset;
+            _ = try reader.readAll(name_buffer[name_offset .. name_offset + name_len]);
+            name_offset += name_len;
+
+            const id = try reader.readInt(u32, .little);
+            const trit_len = try reader.readInt(u32, .little);
+            const packed_len = (trit_len + 4) / 5;
+
+            var vec = PackedBigInt.zero();
+            vec.trit_len = trit_len;
+            _ = try reader.readAll(vec.data[0..packed_len]);
+
+            result.entities[i] = Entity{
+                .name = name_buffer[name_start .. name_start + name_len],
+                .vector = vec,
+                .id = id,
+            };
+            result.entity_count += 1;
+        }
+
+        // Relations
+        for (0..relation_count) |i| {
+            const name_len = try reader.readInt(u16, .little);
+
+            const name_start = name_offset;
+            _ = try reader.readAll(name_buffer[name_offset .. name_offset + name_len]);
+            name_offset += name_len;
+
+            const id = try reader.readInt(u32, .little);
+            const trit_len = try reader.readInt(u32, .little);
+            const packed_len = (trit_len + 4) / 5;
+
+            var vec = PackedBigInt.zero();
+            vec.trit_len = trit_len;
+            _ = try reader.readAll(vec.data[0..packed_len]);
+
+            result.relations[i] = Relation{
+                .name = name_buffer[name_start .. name_start + name_len],
+                .vector = vec,
+                .id = id,
+            };
+            result.relation_count += 1;
+        }
+
+        // Triples
+        const triple_count = try reader.readInt(u32, .little);
+        for (0..triple_count) |i| {
+            const subject_id = try reader.readInt(u32, .little);
+            const predicate_id = try reader.readInt(u32, .little);
+            const object_id = try reader.readInt(u32, .little);
+            const trit_len = try reader.readInt(u32, .little);
+            const packed_len = (trit_len + 4) / 5;
+
+            var vec = PackedBigInt.zero();
+            vec.trit_len = trit_len;
+            _ = try reader.readAll(vec.data[0..packed_len]);
+
+            result.triples[i] = Triple{
+                .subject_id = subject_id,
+                .predicate_id = predicate_id,
+                .object_id = object_id,
+                .vector = vec,
+            };
+            result.triple_count += 1;
+        }
+
+        // Graph vector
+        const graph_trit_len = try reader.readInt(u32, .little);
+        const graph_packed_len = (graph_trit_len + 4) / 5;
+        result.graph_vector.trit_len = graph_trit_len;
+        _ = try reader.readAll(result.graph_vector.data[0..graph_packed_len]);
+
+        return result;
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -409,6 +597,66 @@ test "KnowledgeGraph query subject with unbind" {
         std.debug.print("Result: null\n", .{});
         try std.testing.expect(false);
     }
+}
+
+test "save and load roundtrip" {
+    // Создаём граф
+    var kg = KnowledgeGraph.init();
+    kg.addTriple("Paris", "capital_of", "France");
+    kg.addTriple("Berlin", "capital_of", "Germany");
+    kg.addTriple("Rome", "capital_of", "Italy");
+
+    const original_stats = kg.stats();
+
+    // Сохраняем
+    try kg.save("/tmp/test_kg.trkg");
+
+    // Загружаем
+    var name_buffer: [4096]u8 = undefined;
+    var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg.trkg", &name_buffer);
+
+    // Проверяем статистику
+    const loaded_stats = loaded_kg.stats();
+    try std.testing.expectEqual(original_stats.entities, loaded_stats.entities);
+    try std.testing.expectEqual(original_stats.relations, loaded_stats.relations);
+    try std.testing.expectEqual(original_stats.triples, loaded_stats.triples);
+
+    std.debug.print("\n\nSave/Load roundtrip:\n", .{});
+    std.debug.print("Original: {d} entities, {d} relations, {d} triples\n", .{ original_stats.entities, original_stats.relations, original_stats.triples });
+    std.debug.print("Loaded: {d} entities, {d} relations, {d} triples\n", .{ loaded_stats.entities, loaded_stats.relations, loaded_stats.triples });
+
+    // Удаляем тестовый файл
+    std.fs.cwd().deleteFile("/tmp/test_kg.trkg") catch {};
+}
+
+test "queries work after load" {
+    // Создаём и сохраняем граф
+    var kg = KnowledgeGraph.init();
+    kg.addTriple("Paris", "capital_of", "France");
+    kg.addTriple("Berlin", "capital_of", "Germany");
+
+    try kg.save("/tmp/test_kg_query.trkg");
+
+    // Загружаем
+    var name_buffer: [4096]u8 = undefined;
+    var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg_query.trkg", &name_buffer);
+
+    // Проверяем запросы
+    const result = loaded_kg.queryObject("Paris", "capital_of");
+
+    std.debug.print("\n\nQuery after load:\n", .{});
+    std.debug.print("Query: Paris capital_of ?\n", .{});
+
+    if (result) |entity| {
+        std.debug.print("Result: {s}\n", .{entity.name});
+        try std.testing.expectEqualStrings("France", entity.name);
+    } else {
+        std.debug.print("Result: null (FAILED)\n", .{});
+        try std.testing.expect(false);
+    }
+
+    // Удаляем тестовый файл
+    std.fs.cwd().deleteFile("/tmp/test_kg_query.trkg") catch {};
 }
 
 test "benchmark KnowledgeGraph" {
