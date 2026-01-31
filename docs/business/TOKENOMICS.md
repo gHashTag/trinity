@@ -1,8 +1,10 @@
-# $FPGA Token - Tokenomics Specification
+# $TRI Token - Tokenomics Specification
 
 ## Overview
 
-$FPGA is the native utility token of the Trinity Network, used to pay for inference, reward compute providers, and govern the protocol.
+**$TRI** is the native utility token of **Trinity Network**, used to pay for inference, reward compute providers, and govern the protocol.
+
+> *TRI = Trinity = 3 = Ternary {-1, 0, +1}*
 
 ---
 
@@ -13,8 +15,8 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │                    TOKEN SPECIFICATIONS                         │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  Name:           FPGA Token                                     │
-│  Symbol:         $FPGA                                          │
+│  Name:           Trinity Token                                  │
+│  Symbol:         $TRI                                           │
 │  Total Supply:   1,000,000,000 (1 billion)                      │
 │  Decimals:       18                                             │
 │  Type:           ERC-20 (Ethereum) + Native (Trinity L2)        │
@@ -46,31 +48,31 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │  DETAILED BREAKDOWN:                                            │
 │  ─────────────────────────────────────────────────────────────  │
 │                                                                 │
-│  1. NODE REWARDS (40% = 400M $FPGA)                             │
+│  1. NODE REWARDS (40% = 400M $TRI)                             │
 │     • Purpose: Incentivize compute providers                    │
 │     • Vesting: Linear over 10 years                             │
 │     • Year 1: 80M (20%)                                         │
 │     • Year 2: 60M (15%)                                         │
 │     • Year 3-10: 32.5M/year (halving schedule)                  │
 │                                                                 │
-│  2. TEAM & ADVISORS (20% = 200M $FPGA)                          │
+│  2. TEAM & ADVISORS (20% = 200M $TRI)                          │
 │     • Team: 150M (15%)                                          │
 │     • Advisors: 50M (5%)                                        │
 │     • Vesting: 4 years, 1-year cliff                            │
 │     • Monthly unlock after cliff                                │
 │                                                                 │
-│  3. TREASURY (15% = 150M $FPGA)                                 │
+│  3. TREASURY (15% = 150M $TRI)                                 │
 │     • Controlled by DAO governance                              │
 │     • Uses: Grants, partnerships, emergencies                   │
 │     • Unlock: 10% at launch, rest via governance                │
 │                                                                 │
-│  4. PUBLIC SALE (15% = 150M $FPGA)                              │
+│  4. PUBLIC SALE (15% = 150M $TRI)                              │
 │     • Seed: 50M (5%) @ $0.005                                   │
 │     • Private: 50M (5%) @ $0.008                                │
 │     • Public: 50M (5%) @ $0.01                                  │
 │     • Vesting: 10% TGE, 6-month linear                          │
 │                                                                 │
-│  5. ECOSYSTEM (10% = 100M $FPGA)                                │
+│  5. ECOSYSTEM (10% = 100M $TRI)                                │
 │     • Developer grants: 40M                                     │
 │     • Liquidity mining: 30M                                     │
 │     • Marketing: 20M                                            │
@@ -91,15 +93,15 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │                                                                 │
 │  1. PAYMENT FOR INFERENCE                                       │
 │     ─────────────────────────                                   │
-│     • API users pay $FPGA per token processed                   │
-│     • Pricing: ~0.000001 $FPGA per token (~$0.00001)            │
-│     • 1M tokens ≈ 1 $FPGA ≈ $0.01                               │
+│     • API users pay $TRI per token processed                   │
+│     • Pricing: ~0.000001 $TRI per token (~$0.00001)            │
+│     • 1M tokens ≈ 1 $TRI ≈ $0.01                               │
 │     • Bulk discounts for high-volume users                      │
 │                                                                 │
 │  2. NODE OPERATOR REWARDS                                       │
 │     ─────────────────────────                                   │
-│     • Earn $FPGA for processing inference                       │
-│     • Base rate: 0.9 $FPGA per 1M tokens (90% to node)          │
+│     • Earn $TRI for processing inference                       │
+│     • Base rate: 0.9 $TRI per 1M tokens (90% to node)          │
 │     • Bonus multipliers:                                        │
 │       - Uptime >99%: +10%                                       │
 │       - Low latency: +5%                                        │
@@ -107,8 +109,8 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │                                                                 │
 │  3. STAKING                                                     │
 │     ─────────────────────────                                   │
-│     • Stake $FPGA for priority job allocation                   │
-│     • Minimum stake: 1,000 $FPGA                                │
+│     • Stake $TRI for priority job allocation                   │
+│     • Minimum stake: 1,000 $TRI                                │
 │     • Tiers:                                                    │
 │       - Bronze (1K): Standard priority                          │
 │       - Silver (10K): +20% job allocation                       │
@@ -118,8 +120,8 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │                                                                 │
 │  4. GOVERNANCE                                                  │
 │     ─────────────────────────                                   │
-│     • 1 $FPGA = 1 vote                                          │
-│     • Proposals require 100K $FPGA to submit                    │
+│     • 1 $TRI = 1 vote                                          │
+│     • Proposals require 100K $TRI to submit                    │
 │     • Quorum: 10% of circulating supply                         │
 │     • Voting period: 7 days                                     │
 │     • Governance scope:                                         │
@@ -130,13 +132,13 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │                                                                 │
 │  5. MODEL MARKETPLACE                                           │
 │     ─────────────────────────                                   │
-│     • Pay $FPGA to download premium models                      │
+│     • Pay $TRI to download premium models                      │
 │     • Model creators earn 80% of sales                          │
 │     • Platform fee: 20%                                         │
 │                                                                 │
 │  6. PREMIUM FEATURES                                            │
 │     ─────────────────────────                                   │
-│     • Pro subscription: 100 $FPGA/month                         │
+│     • Pro subscription: 100 $TRI/month                         │
 │       - Advanced analytics                                      │
 │       - Priority support                                        │
 │       - Custom model hosting                                    │
@@ -156,7 +158,7 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │  INFERENCE FEE FLOW:                                            │
 │  ─────────────────────                                          │
 │                                                                 │
-│  User pays 1 $FPGA for inference                                │
+│  User pays 1 $TRI for inference                                │
 │           │                                                     │
 │           ▼                                                     │
 │  ┌────────────────────────────────────────────────────────┐    │
@@ -191,9 +193,9 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │                                                                 │
 │  PROJECTED BURN (at scale):                                     │
 │  ─────────────────────────────                                  │
-│  Year 1: 10B tokens processed → 200K $FPGA burned               │
-│  Year 2: 100B tokens → 2M $FPGA burned                          │
-│  Year 3: 1T tokens → 20M $FPGA burned                           │
+│  Year 1: 10B tokens processed → 200K $TRI burned               │
+│  Year 2: 100B tokens → 2M $TRI burned                          │
+│  Year 3: 1T tokens → 20M $TRI burned                           │
 │                                                                 │
 │  BURN ADDRESS:                                                  │
 │  0x000000000000000000000000000000000000dEaD                      │
@@ -303,7 +305,7 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │  VOTING PROCESS:                                                │
 │  ─────────────────                                              │
 │  1. Discussion (Forum): 3 days minimum                          │
-│  2. Proposal submission: 100K $FPGA deposit                     │
+│  2. Proposal submission: 100K $TRI deposit                     │
 │  3. Voting period: 7 days                                       │
 │  4. Execution: 2-day timelock                                   │
 │                                                                 │
@@ -315,7 +317,7 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 │                                                                 │
 │  VOTING POWER:                                                  │
 │  ─────────────────                                              │
-│  • 1 $FPGA = 1 vote                                             │
+│  • 1 $TRI = 1 vote                                             │
 │  • Staked tokens: 1.5x voting power                             │
 │  • Delegation allowed                                           │
 │                                                                 │
@@ -355,7 +357,7 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 
 | Metric | Value |
 |--------|-------|
-| Total Supply | 1,000,000,000 $FPGA |
+| Total Supply | 1,000,000,000 $TRI |
 | Initial Circulating | ~150,000,000 (15%) |
 | Launch Price | $0.01 |
 | Initial Market Cap | $1,500,000 |
@@ -366,4 +368,4 @@ $FPGA is the native utility token of the Trinity Network, used to pay for infere
 
 ---
 
-*$FPGA - Powering Decentralized AI*
+*$TRI - Powering Trinity Network*

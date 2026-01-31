@@ -2,7 +2,9 @@
 
 ## Executive Summary
 
-Trinity is a decentralized AI inference network that enables anyone to run Large Language Models (LLMs) on their CPU and earn rewards. Our breakthrough: **ternary weights {-1, 0, +1}** eliminate expensive GPU requirements.
+**Trinity Network** is a decentralized AI inference network that enables anyone to run Large Language Models (LLMs) on their CPU and earn **$TRI** tokens. Our breakthrough: **ternary weights {-1, 0, +1}** eliminate expensive GPU requirements.
+
+> *Trinity = 3 = Ternary = The power of three states*
 
 ---
 
@@ -53,7 +55,7 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 │     • Privacy: local inference option                           │
 │                                                                 │
 │  ✅ Token Economics                                             │
-│     • $FPGA token rewards compute providers                     │
+│     • $TRI token rewards compute providers                     │
 │     • Pay-per-inference for API users                           │
 │     • Staking for priority access                               │
 │                                                                 │
@@ -73,7 +75,7 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 │                                                                 │
 │  1. INFERENCE API (B2B)                                         │
 │     ────────────────────                                        │
-│     • Developers pay $FPGA for API calls                        │
+│     • Developers pay $TRI for API calls                        │
 │     • Pricing: ~$0.001 per 1K tokens (10x cheaper than OpenAI)  │
 │     • Enterprise SLAs with guaranteed latency                   │
 │     • Revenue: 10% platform fee on all transactions             │
@@ -118,7 +120,7 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 │  • Throughput: ~50 tokens/sec                                   │
 │  • Uptime: 8 hours/day                                          │
 │  • Daily tokens: 1.44M tokens                                   │
-│  • Daily earnings: ~$1.30 in $FPGA                              │
+│  • Daily earnings: ~$1.30 in $TRI                              │
 │  • Monthly: ~$40 passive income                                 │
 │                                                                 │
 │  High-end workstation (32 cores, AVX-512):                      │
@@ -131,14 +133,14 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 
 ---
 
-## Token Economics ($FPGA)
+## Token Economics ($TRI)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    $FPGA TOKENOMICS                             │
+│                    $TRI TOKENOMICS                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  TOTAL SUPPLY: 1,000,000,000 $FPGA                              │
+│  TOTAL SUPPLY: 1,000,000,000 $TRI                              │
 │                                                                 │
 │  DISTRIBUTION:                                                  │
 │  ─────────────                                                  │
@@ -175,7 +177,7 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 
 ## User Flows
 
-### Flow 1: Node Operator (Earn $FPGA)
+### Flow 1: Node Operator (Earn $TRI)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -198,7 +200,7 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 │     └─→ Processes tokens, returns results                       │
 │                                                                 │
 │  4. EARN                                                        │
-│     └─→ $FPGA credited per processed token                      │
+│     └─→ $TRI credited per processed token                      │
 │     └─→ Bonus for uptime, speed, reliability                    │
 │     └─→ Withdraw to exchange or use in ecosystem                │
 │                                                                 │
@@ -217,7 +219,7 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 │     └─→ Get API key                                             │
 │                                                                 │
 │  2. FUND                                                        │
-│     └─→ Buy $FPGA on exchange                                   │
+│     └─→ Buy $TRI on exchange                                   │
 │     └─→ Or pay with credit card (auto-converted)                │
 │     └─→ Deposit to API balance                                  │
 │                                                                 │
@@ -248,7 +250,7 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 │  ─────────────────────────────                                  │
 │  1. Visit chat.trinity.network                                  │
 │  2. 100 free messages/day                                       │
-│  3. Upgrade for unlimited ($4.99/mo in $FPGA)                   │
+│  3. Upgrade for unlimited ($4.99/mo in $TRI)                   │
 │                                                                 │
 │  OPTION B: Local Mode (Privacy)                                 │
 │  ─────────────────────────────                                  │
@@ -312,7 +314,7 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 │                                                                 │
 │  Q2 2026: NETWORK                                               │
 │  ─────────────────────                                          │
-│  □  $FPGA token launch                                          │
+│  □  $TRI token launch                                          │
 │  □  Mainnet beta                                                │
 │  □  First BitNet model (7B parameters)                          │
 │  □  API public beta                                             │
@@ -453,3 +455,5 @@ Trinity is a decentralized AI inference network that enables anyone to run Large
 ---
 
 *Trinity Network - Democratizing AI, One CPU at a Time*
+
+**Token:** $TRI | **Website:** https://github.com/gHashTag/trinity

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Trinity Node is a cross-platform desktop application that allows users to contribute CPU compute to the Trinity Network and earn $FPGA tokens.
+Trinity Node is a cross-platform desktop application that allows users to contribute CPU compute to the Trinity Network and earn $TRI tokens.
 
 ---
 
@@ -168,7 +168,7 @@ impl WalletManager {
     /// Import from seed phrase
     pub fn from_mnemonic(mnemonic: &str) -> Result<Self>;
     
-    /// Get $FPGA balance
+    /// Get $TRI balance
     pub async fn get_balance(&self) -> Result<Balance>;
     
     /// Withdraw to external address
@@ -267,7 +267,7 @@ impl WalletManager {
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │                                                         │   │
-│  │           💰 BALANCE: 1,234.56 $FPGA                    │   │
+│  │           💰 BALANCE: 1,234.56 $TRI                    │   │
 │  │                                                         │   │
 │  │           ≈ $123.45 USD                                 │   │
 │  │                                                         │   │
@@ -284,10 +284,10 @@ impl WalletManager {
 │                                                                 │
 │  TRANSACTION HISTORY                                            │
 │  ─────────────────────────────────────────────────────────────  │
-│  ↓ +12.34 $FPGA   Inference reward    2 hours ago              │
-│  ↓ +8.21 $FPGA    Inference reward    5 hours ago              │
-│  ↑ -100 $FPGA     Withdrawal          Yesterday                │
-│  ↓ +45.67 $FPGA   Inference reward    Yesterday                │
+│  ↓ +12.34 $TRI   Inference reward    2 hours ago              │
+│  ↓ +8.21 $TRI    Inference reward    5 hours ago              │
+│  ↑ -100 $TRI     Withdrawal          Yesterday                │
+│  ↓ +45.67 $TRI   Inference reward    Yesterday                │
 │                                                                 │
 │                                              [View All →]       │
 │                                                                 │
@@ -321,7 +321,7 @@ impl WalletManager {
 │  4. TRINITY SCHEDULER                                           │
 │     │                                                           │
 │     │ a) Verify result (optional: multi-node consensus)         │
-│     │ b) Credit $FPGA to node                                   │
+│     │ b) Credit $TRI to node                                   │
 │     │ c) Return response to API user                            │
 │     ▼                                                           │
 │  5. API USER                                                    │

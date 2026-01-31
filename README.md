@@ -1,6 +1,8 @@
-# Trinity - Decentralized AI Inference Network
+# Trinity Network
 
-**Run LLMs on your CPU. Earn $FPGA tokens. No GPU required.**
+**Run LLMs on your CPU. Earn $TRI tokens. No GPU required.**
+
+> *Trinity = 3 = Ternary = {-1, 0, +1}*
 
 🌐 **Website:** [github.com/gHashTag/trinity](https://github.com/gHashTag/trinity)
 
@@ -59,9 +61,9 @@ similarity       2.18 µs    0.25 µs    9x
 
 ---
 
-## 💰 FPGA Network: Decentralized Inference
+## 💰 Trinity Network: Decentralized AI Inference
 
-**Install our app → Share your CPU → Earn $FPGA tokens**
+**Install our app → Share your CPU → Earn $TRI tokens**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -91,7 +93,7 @@ similarity       2.18 µs    0.25 µs    9x
 │  1. Download Trinity Node app                                   │
 │  2. App downloads model shards (your portion)                   │
 │  3. Process inference requests from network                     │
-│  4. Earn $FPGA tokens for compute contribution                  │
+│  4. Earn $TRI tokens for compute contribution                  │
 │  5. Use tokens for API access or trade                          │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
