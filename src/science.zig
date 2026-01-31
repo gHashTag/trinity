@@ -150,7 +150,7 @@ pub fn manhattanDistance(a: *Hypervector, b: *Hypervector) f64 {
     a.data.ensureUnpacked();
     b.data.ensureUnpacked();
 
-    var sum: i64 = 0;
+    var sum: u64 = 0;
     const len = @max(a.data.trit_len, b.data.trit_len);
 
     for (0..len) |i| {
@@ -600,7 +600,7 @@ test "batch bundle" {
         vectors[i] = Hypervector.random(256, @as(u64, i * 1000));
     }
 
-    const bundled = batchBundle(&vectors);
+    var bundled = batchBundle(&vectors);
 
     // Bundled should be similar to all inputs
     for (&vectors) |*v| {
