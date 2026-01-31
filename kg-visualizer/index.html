@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trinity Knowledge Graph</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <div id="controls">
+    <h2>Trinity KG</h2>
+    
+    <div class="section">
+      <h3>Add Triple</h3>
+      <input id="subject" placeholder="Subject">
+      <input id="predicate" placeholder="Predicate">
+      <input id="object" placeholder="Object">
+      <button id="addBtn">Add</button>
+    </div>
+    
+    <div class="section">
+      <h3>Actions</h3>
+      <button id="clearBtn">Clear All</button>
+      <button id="refreshBtn">Refresh</button>
+    </div>
+    
+    <div class="section">
+      <h3>Find Path (Reasoning)</h3>
+      <input id="fromEntity" placeholder="From">
+      <input id="toEntity" placeholder="To">
+      <button id="findPathBtn">Find Path</button>
+    </div>
+    
+    <div class="section">
+      <h3>Try Examples</h3>
+      <button class="example-btn" data-from="Socrates" data-to="true">Is Socrates mortal?</button>
+      <button class="example-btn" data-from="Socrates" data-to="Aristotle">Socrates → Aristotle</button>
+      <button class="example-btn" data-from="Athens" data-to="place">Athens → place</button>
+    </div>
+    
+    <div class="section">
+      <h3>Stats</h3>
+      <div id="stats">Loading...</div>
+    </div>
+  </div>
+  
+  <div id="tooltip"></div>
+  
+  <svg id="graph"></svg>
+  
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

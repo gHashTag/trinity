@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trinity Knowledge Graph</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f1a; color: #e0e0e0; overflow: hidden; }
+    
+    #controls {
+      position: fixed; top: 20px; left: 20px; width: 240px;
+      background: rgba(20, 20, 40, 0.95); border-radius: 12px; padding: 20px;
+      z-index: 100; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      max-height: calc(100vh - 40px); overflow-y: auto;
+    }
+    #controls h2 { color: #ff6b6b; margin-bottom: 15px; font-size: 1.4em; }
+    .section { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    .section:last-child { border-bottom: none; margin-bottom: 0; }
+    .section h3 { color: #888; font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    
+    input {
+      width: 100%; padding: 10px 12px; margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px; color: #fff; font-size: 14px;
+    }
+    input:focus { outline: none; border-color: #ff6b6b; background: rgba(255, 255, 255, 0.08); }
+    input::placeholder { color: #666; }
+    
+    button {
+      width: 100%; padding: 10px 15px; margin-bottom: 8px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a5a); border: none;
+      border-radius: 6px; color: white; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    button:hover { background: linear-gradient(135deg, #ff8080, #ff6b6b); transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    .example-btn { background: linear-gradient(135deg, #4a4a6a, #3a3a5a); font-size: 12px; padding: 8px 12px; }
+    .example-btn:hover { background: linear-gradient(135deg, #5a5a7a, #4a4a6a); }
+    
+    #stats { font-size: 13px; line-height: 1.6; }
+    #stats b { color: #ff6b6b; }
+    
+    #tooltip {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: rgba(20, 20, 40, 0.95); padding: 15px 25px; border-radius: 10px;
+      border: 2px solid #4ade80; box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+      display: none; max-width: 600px; text-align: center; z-index: 200;
+    }
+    #tooltip.show { display: block; animation: fadeIn 0.3s ease; }
+    #tooltip .title { font-weight: bold; color: #4ade80; margin-bottom: 8px; }
+    #tooltip .path { font-family: monospace; color: #fff; font-size: 14px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    
+    svg { width: 100vw; height: 100vh; display: block; }
+    
+    .node circle { stroke: #fff; stroke-width: 2px; cursor: pointer; transition: all 0.3s ease; }
+    .node text { font-size: 12px; fill: #e0e0e0; pointer-events: none; }
+    .node.entity circle { fill: #ff6b6b; }
+    .node.value circle { fill: #4a90d9; }
+    .node.highlighted circle { stroke: #4ade80; stroke-width: 4px; filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.8)); }
+    .node.dimmed { opacity: 0.2; }
+    
+    .link { stroke: #3a3a5a; stroke-width: 2px; transition: all 0.3s ease; }
+    .link.highlighted { stroke: #4ade80; stroke-width: 4px; filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.6)); }
+    .link.dimmed { opacity: 0.1; }
+    
+    .link-label { font-size: 11px; fill: #666; pointer-events: none; transition: all 0.3s ease; }
+    .link-label.highlighted { fill: #4ade80; font-weight: bold; }
+    .link-label.dimmed { opacity: 0.1; }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <h2>🔺 Trinity KG</h2>
+    
+    <div class="section">
+      <h3>Add Triple</h3>
+      <input id="subject" placeholder="Subject">
+      <input id="predicate" placeholder="Predicate">
+      <input id="object" placeholder="Object">
+      <button onclick="addTriple()">Add</button>
+    </div>
+    
+    <div class="section">
+      <h3>Actions</h3>
+      <button onclick="clearGraph()">Clear All</button>
+      <button onclick="loadGraph()">Refresh</button>
+    </div>
+    
+    <div class="section">
+      <h3>Find Path (Reasoning)</h3>
+      <input id="fromEntity" placeholder="From">
+      <input id="toEntity" placeholder="To">
+      <button onclick="findPath()">Find Path</button>
+    </div>
+    
+    <div class="section">
+      <h3>⚡ Try Examples</h3>
+      <button class="example-btn" onclick="runExample('Socrates','true')">Is Socrates mortal?</button>
+      <button class="example-btn" onclick="runExample('Socrates','Aristotle')">Socrates → Aristotle</button>
+      <button class="example-btn" onclick="runExample('Athens','place')">Athens → place</button>
+    </div>
+    
+    <div class="section">
+      <h3>Stats</h3>
+      <div id="stats">Loading...</div>
+    </div>
+  </div>
+  
+  <div id="tooltip"><div class="title"></div><div class="path"></div></div>
+  
+  <svg id="graph"></svg>
+  
+  <script>
+    const API_BASE = window.location.origin;
+    let graphData = { nodes: [], links: [] };
+    let simulation = null;
+    let svg, linkGroup, linkLabelGroup, nodeGroup;
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initSVG();
+      loadGraph();
+    });
+    
+    function initSVG() {
+      svg = d3.select('#graph');
+      linkGroup = svg.append('g').attr('class', 'links');
+      linkLabelGroup = svg.append('g').attr('class', 'link-labels');
+      nodeGroup = svg.append('g').attr('class', 'nodes');
+      
+      svg.on('click', (event) => {
+        if (event.target.tagName === 'svg') { clearHighlight(); hideTooltip(); }
+      });
+      
+      window.addEventListener('resize', () => {
+        if (simulation) {
+          simulation.force('center', d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2));
+          simulation.alpha(0.3).restart();
+        }
+      });
+    }
+    
+    async function loadGraph() {
+      try {
+        const [graphRes, statsRes] = await Promise.all([
+          fetch(`${API_BASE}/api/graph`),
+          fetch(`${API_BASE}/api/stats`)
+        ]);
+        
+        const graph = await graphRes.json();
+        const stats = await statsRes.json();
+        
+        document.getElementById('stats').innerHTML = `
+          <b>Entities:</b> ${stats.entities}<br>
+          <b>Relations:</b> ${stats.relations}<br>
+          <b>Triples:</b> ${stats.triples}
+        `;
+        
+        graphData = graph;
+        renderGraph();
+        hideTooltip();
+      } catch (err) {
+        document.getElementById('stats').innerHTML = `<span style="color:#ff6b6b">Error: ${err.message}</span>`;
+        console.error('Failed to load graph:', err);
+      }
+    }
+    
+    function renderGraph() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      linkGroup.selectAll('*').remove();
+      linkLabelGroup.selectAll('*').remove();
+      nodeGroup.selectAll('*').remove();
+      
+      if (graphData.nodes.length === 0) return;
+      
+      simulation = d3.forceSimulation(graphData.nodes)
+        .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(150))
+        .force('charge', d3.forceManyBody().strength(-500))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius(50));
+      
+      const links = linkGroup.selectAll('line')
+        .data(graphData.links).enter().append('line').attr('class', 'link');
+      
+      const linkLabels = linkLabelGroup.selectAll('text')
+        .data(graphData.links).enter().append('text')
+        .attr('class', 'link-label').text(d => d.label);
+      
+      const nodes = nodeGroup.selectAll('g')
+        .data(graphData.nodes).enter().append('g')
+        .attr('class', d => `node ${d.group === 2 ? 'value' : 'entity'}`)
+        .call(d3.drag().on('start', dragStarted).on('drag', dragged).on('end', dragEnded))
+        .on('click', (event, d) => { event.stopPropagation(); highlightConnections(d.id); });
+      
+      nodes.append('circle').attr('r', 22);
+      nodes.append('text').attr('dy', 40).attr('text-anchor', 'middle').text(d => d.id);
+      
+      simulation.on('tick', () => {
+        links.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+             .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        linkLabels.attr('x', d => (d.source.x + d.target.x) / 2)
+                  .attr('y', d => (d.source.y + d.target.y) / 2);
+        nodes.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+    }
+    
+    function dragStarted(event) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      event.subject.fx = event.subject.x; event.subject.fy = event.subject.y;
+    }
+    function dragged(event) { event.subject.fx = event.x; event.subject.fy = event.y; }
+    function dragEnded(event) {
+      if (!event.active) simulation.alphaTarget(0);
+      event.subject.fx = null; event.subject.fy = null;
+    }
+    
+    function highlightConnections(nodeId) {
+      clearHighlight();
+      const connected = new Set([nodeId]);
+      const connectedLinkIndices = [];
+      
+      graphData.links.forEach((link, i) => {
+        const src = typeof link.source === 'object' ? link.source.id : link.source;
+        const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+        if (src === nodeId || tgt === nodeId) {
+          connected.add(src); connected.add(tgt);
+          connectedLinkIndices.push(i);
+        }
+      });
+      
+      nodeGroup.selectAll('.node')
+        .classed('highlighted', d => d.id === nodeId)
+        .classed('dimmed', d => !connected.has(d.id));
+      linkGroup.selectAll('line')
+        .classed('highlighted', (d, i) => connectedLinkIndices.includes(i))
+        .classed('dimmed', (d, i) => !connectedLinkIndices.includes(i));
+      linkLabelGroup.selectAll('text')
+        .classed('highlighted', (d, i) => connectedLinkIndices.includes(i))
+        .classed('dimmed', (d, i) => !connectedLinkIndices.includes(i));
+      
+      const outgoing = [], incoming = [];
+      graphData.links.forEach(link => {
+        const src = typeof link.source === 'object' ? link.source.id : link.source;
+        const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+        if (src === nodeId) outgoing.push(`${link.label} → ${tgt}`);
+        if (tgt === nodeId) incoming.push(`${src} → ${link.label}`);
+      });
+      
+      let info = '';
+      if (outgoing.length) info += `Out: ${outgoing.join(', ')}`;
+      if (incoming.length) info += (info ? '<br>' : '') + `In: ${incoming.join(', ')}`;
+      showTooltip(nodeId, info || 'No connections');
+    }
+    
+    function clearHighlight() {
+      nodeGroup.selectAll('.node').classed('highlighted', false).classed('dimmed', false);
+      linkGroup.selectAll('line').classed('highlighted', false).classed('dimmed', false);
+      linkLabelGroup.selectAll('text').classed('highlighted', false).classed('dimmed', false);
+    }
+    
+    async function findPath() {
+      const from = document.getElementById('fromEntity').value.trim();
+      const to = document.getElementById('toEntity').value.trim();
+      if (!from || !to) { alert('Please enter both From and To entities'); return; }
+      
+      try {
+        const res = await fetch(`${API_BASE}/api/reason?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+        const data = await res.json();
+        
+        if (!data.found) {
+          showTooltip('No path found', `Cannot reach "${to}" from "${from}"`);
+          clearHighlight();
+          return;
+        }
+        
+        const pathNodes = new Set([from]);
+        const pathLinkIndices = [];
+        
+        data.path.forEach(step => { pathNodes.add(step.entity); pathNodes.add(step.next); });
+        
+        graphData.links.forEach((link, i) => {
+          const src = typeof link.source === 'object' ? link.source.id : link.source;
+          const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+          data.path.forEach(step => { if (src === step.entity && tgt === step.next) pathLinkIndices.push(i); });
+        });
+        
+        clearHighlight();
+        nodeGroup.selectAll('.node')
+          .classed('highlighted', d => pathNodes.has(d.id))
+          .classed('dimmed', d => !pathNodes.has(d.id));
+        linkGroup.selectAll('line')
+          .classed('highlighted', (d, i) => pathLinkIndices.includes(i))
+          .classed('dimmed', (d, i) => !pathLinkIndices.includes(i));
+        linkLabelGroup.selectAll('text')
+          .classed('highlighted', (d, i) => pathLinkIndices.includes(i))
+          .classed('dimmed', (d, i) => !pathLinkIndices.includes(i));
+        
+        showTooltip(`✅ Path found (${data.hops} hops)`, data.conclusion);
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+    
+    function runExample(from, to) {
+      document.getElementById('fromEntity').value = from;
+      document.getElementById('toEntity').value = to;
+      findPath();
+    }
+    
+    async function addTriple() {
+      const subject = document.getElementById('subject').value.trim();
+      const predicate = document.getElementById('predicate').value.trim();
+      const object = document.getElementById('object').value.trim();
+      if (!subject || !predicate || !object) { alert('Please fill all fields'); return; }
+      
+      try {
+        await fetch(`${API_BASE}/api/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject, predicate, object })
+        });
+        document.getElementById('subject').value = '';
+        document.getElementById('predicate').value = '';
+        document.getElementById('object').value = '';
+        loadGraph();
+      } catch (err) { alert('Error: ' + err.message); }
+    }
+    
+    function clearGraph() {
+      if (confirm('Clear all data?')) {
+        fetch(`${API_BASE}/api/clear`, { method: 'POST' }).then(loadGraph);
+      }
+    }
+    
+    function showTooltip(title, content) {
+      const tooltip = document.getElementById('tooltip');
+      tooltip.querySelector('.title').textContent = title;
+      tooltip.querySelector('.path').innerHTML = content;
+      tooltip.classList.add('show');
+    }
+    
+    function hideTooltip() { document.getElementById('tooltip').classList.remove('show'); }
+  </script>
+</body>
+</html>
