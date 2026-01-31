@@ -1,0 +1,32 @@
+[package]
+name = "trinity-vsa"
+version = "0.1.0"
+edition = "2021"
+authors = ["Dmitrii Vasilev <gHashTag@gmail.com>"]
+description = "High-performance Vector Symbolic Architecture with balanced ternary arithmetic, SIMD acceleration, and FPGA support"
+license = "MIT"
+repository = "https://github.com/gHashTag/trinity"
+documentation = "https://docs.rs/trinity-vsa"
+readme = "README.md"
+keywords = ["vsa", "hyperdimensional", "ternary", "simd", "fpga"]
+categories = ["science", "mathematics", "algorithms"]
+
+[features]
+default = ["simd"]
+simd = []
+avx512 = ["simd"]
+neon = ["simd"]
+cuda = ["dep:cudarc"]
+fpga = []
+
+[dependencies]
+rand = "0.8"
+thiserror = "1.0"
+cudarc = { version = "0.10", optional = true }
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "vsa_bench"
+harness = false
