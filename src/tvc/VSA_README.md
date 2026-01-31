@@ -1,200 +1,200 @@
 # TVC VSA - Ternary Vector Symbolic Architecture
 
-Высокопроизводительная библиотека для гиперразмерных вычислений (Hyperdimensional Computing) на основе сбалансированной троичной системы.
+High-performance library for Hyperdimensional Computing based on balanced ternary system.
 
-## Особенности
+## Features
 
-- **Гибридное хранение**: 4.5x экономия памяти с сохранением скорости вычислений
-- **SIMD ускорение**: до 8.9 B trits/sec для dot product
-- **Полный набор VSA операций**: bind, bundle, similarity, permute
-- **Виртуальная машина**: 20+ инструкций для VSA программ
-- **Произвольная точность**: до 256 тритов (10^122 диапазон)
+- **Hybrid storage**: 4.5x memory savings while maintaining computation speed
+- **SIMD acceleration**: up to 8.9 B trits/sec for dot product
+- **Complete VSA operations**: bind, bundle, similarity, permute
+- **Virtual machine**: 20+ instructions for VSA programs
+- **Arbitrary precision**: up to 256 trits (10^122 range)
 
-## Быстрый старт
+## Quick Start
 
 ```zig
 const tvc_vsa = @import("tvc_vsa.zig");
 const tvc_hybrid = @import("tvc_hybrid.zig");
 
-// Создание случайных векторов
+// Create random vectors
 var apple = tvc_vsa.randomVector(256, 12345);
 var red = tvc_vsa.randomVector(256, 67890);
 
-// Bind: создание ассоциации "красное яблоко"
+// Bind: create "red apple" association
 var red_apple = tvc_vsa.bind(&apple, &red);
 
-// Bundle: объединение концептов
+// Bundle: combine concepts
 var fruit = tvc_vsa.bundle2(&apple, &orange);
 
-// Similarity: поиск похожих
+// Similarity: find similar
 const sim = tvc_vsa.cosineSimilarity(&query, &red_apple);
 
-// Permute: кодирование последовательности
+// Permute: encode sequence
 var seq = tvc_vsa.permute(&word, 1);
 ```
 
-## Архитектура
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    TVC VSA Stack                            │
 ├─────────────────────────────────────────────────────────────┤
-│  tvc_vm_vsa.zig   │ Виртуальная машина с VSA инструкциями   │
+│  tvc_vm_vsa.zig   │ Virtual machine with VSA instructions   │
 ├─────────────────────────────────────────────────────────────┤
-│  tvc_vsa.zig      │ VSA операции (bind, bundle, permute)    │
+│  tvc_vsa.zig      │ VSA operations (bind, bundle, permute)  │
 ├─────────────────────────────────────────────────────────────┤
-│  tvc_hybrid.zig   │ Гибридное хранение (packed + unpacked)  │
+│  tvc_hybrid.zig   │ Hybrid storage (packed + unpacked)      │
 ├─────────────────────────────────────────────────────────────┤
-│  tvc_packed.zig   │ Упакованное хранение (5 trits/byte)     │
+│  tvc_packed.zig   │ Packed storage (5 trits/byte)           │
 ├─────────────────────────────────────────────────────────────┤
-│  tvc_bigint.zig   │ Произвольная точность, SIMD             │
+│  tvc_bigint.zig   │ Arbitrary precision, SIMD               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## VSA Операции
+## VSA Operations
 
-### Bind (Связывание)
-Создаёт ассоциацию между двумя векторами. Аналог XOR для троичной системы.
+### Bind (Association)
+Creates an association between two vectors. Analogous to XOR for ternary system.
 
 ```zig
-// bind(a, b) = a * b (поэлементное умножение)
+// bind(a, b) = a * b (element-wise multiplication)
 var bound = tvc_vsa.bind(&a, &b);
 
-// Свойства:
-// - bind(a, a) = все +1 (для ненулевых элементов)
-// - bind(a, bind(a, b)) = b (обратимость)
+// Properties:
+// - bind(a, a) = all +1 (for non-zero elements)
+// - bind(a, bind(a, b)) = b (reversibility)
 ```
 
-**Применение**: Ассоциативная память, key-value хранилище
+**Applications**: Associative memory, key-value storage
 
-### Bundle (Объединение)
-Объединяет несколько векторов в один, сохраняя сходство со всеми входами.
+### Bundle (Superposition)
+Combines multiple vectors into one, preserving similarity with all inputs.
 
 ```zig
 // Majority voting
 var bundled = tvc_vsa.bundle3(&a, &b, &c);
 
-// bundled похож на a, b и c одновременно
+// bundled is similar to a, b and c simultaneously
 ```
 
-**Применение**: Композиция концептов, суперпозиция
+**Applications**: Concept composition, superposition
 
-### Similarity (Сходство)
-Измеряет похожесть двух векторов.
+### Similarity
+Measures similarity between two vectors.
 
 ```zig
 const cos_sim = tvc_vsa.cosineSimilarity(&a, &b);  // [-1, 1]
 const ham_dist = tvc_vsa.hammingDistance(&a, &b);   // [0, len]
-const dot = a.dotProduct(&b);                       // скалярное произведение
+const dot = a.dotProduct(&b);                       // dot product
 ```
 
-**Применение**: Поиск, классификация, кластеризация
+**Applications**: Search, classification, clustering
 
-### Permute (Перестановка)
-Циклический сдвиг для кодирования последовательностей.
+### Permute (Shift)
+Cyclic shift for encoding sequences.
 
 ```zig
-// Сдвиг вправо на k позиций
+// Shift right by k positions
 var shifted = tvc_vsa.permute(&v, k);
 
-// Обратный сдвиг
+// Inverse shift
 var original = tvc_vsa.inversePermute(&shifted, k);
 
-// Кодирование последовательности: seq = a + ρ(b) + ρ²(c)
+// Encode sequence: seq = a + ρ(b) + ρ²(c)
 var items = [_]HybridBigInt{ a, b, c };
 var sequence = tvc_vsa.encodeSequence(&items);
 ```
 
-**Применение**: Временные ряды, NLP, последовательности
+**Applications**: Time series, NLP, sequences
 
-## Бенчмарки
+## Benchmarks
 
-Тестирование на 256-мерных векторах:
+Testing on 256-dimensional vectors:
 
-| Операция | Время | Пропускная способность |
-|----------|-------|------------------------|
+| Operation | Time | Throughput |
+|-----------|------|------------|
 | Dot Product | 28 ns/op | **8.9 B trits/sec** |
 | Bundle3 | 75 ns/op | 3.4 B trits/sec |
 | Similarity | 127 ns/op | 2.0 B trits/sec |
 | Permute | 509 ns/op | 502 M trits/sec |
 | Bind | 602 ns/op | 425 M trits/sec |
 
-### Сравнение с конкурентами
+### Comparison with Competitors
 
-| Метрика | VIBEE TVC | trit-vsa (Rust) | Преимущество |
-|---------|-----------|-----------------|--------------|
+| Metric | VIBEE TVC | trit-vsa (Rust) | Advantage |
+|--------|-----------|-----------------|-----------|
 | Dot product | 8.9 B/s | 50 M/s | **178x** |
 | Bundle | 3.4 B/s | 30 M/s | **113x** |
 | Bind | 425 M/s | 40 M/s | **10x** |
-| Память | 256x экономия | bitsliced | Сравнимо |
-| GPU | Нет | CubeCL | trit-vsa |
+| Memory | 256x savings | bitsliced | Comparable |
+| GPU | No | CubeCL | trit-vsa |
 
-## Примеры использования
+## Usage Examples
 
-### 1. Ассоциативная память
+### 1. Associative Memory
 
 ```zig
 const std = @import("std");
 const tvc_vsa = @import("tvc_vsa.zig");
 
 pub fn main() !void {
-    // Создаём словарь концептов
+    // Create concept dictionary
     var apple = tvc_vsa.randomVector(256, 1);
     var banana = tvc_vsa.randomVector(256, 2);
     var red = tvc_vsa.randomVector(256, 3);
     var yellow = tvc_vsa.randomVector(256, 4);
 
-    // Создаём ассоциации
+    // Create associations
     var red_apple = tvc_vsa.bind(&apple, &red);
     var yellow_banana = tvc_vsa.bind(&banana, &yellow);
 
-    // Память: объединяем все ассоциации
+    // Memory: combine all associations
     var memory = tvc_vsa.bundle2(&red_apple, &yellow_banana);
 
-    // Запрос: "Что красное?"
+    // Query: "What is red?"
     var query = tvc_vsa.bind(&memory, &red);
 
-    // Проверяем сходство с концептами
+    // Check similarity with concepts
     const sim_apple = tvc_vsa.cosineSimilarity(&query, &apple);
     const sim_banana = tvc_vsa.cosineSimilarity(&query, &banana);
 
-    std.debug.print("Сходство с яблоком: {d:.3}\n", .{sim_apple});
-    std.debug.print("Сходство с бананом: {d:.3}\n", .{sim_banana});
-    // Ожидаем: яблоко > банан
+    std.debug.print("Similarity with apple: {d:.3}\n", .{sim_apple});
+    std.debug.print("Similarity with banana: {d:.3}\n", .{sim_banana});
+    // Expected: apple > banana
 }
 ```
 
-### 2. Кодирование последовательности
+### 2. Sequence Encoding
 
 ```zig
 const tvc_vsa = @import("tvc_vsa.zig");
 
 pub fn main() !void {
-    // Слова
+    // Words
     var the = tvc_vsa.randomVector(256, 10);
     var cat = tvc_vsa.randomVector(256, 20);
     var sat = tvc_vsa.randomVector(256, 30);
 
-    // Кодируем "the cat sat"
+    // Encode "the cat sat"
     var items = [_]tvc_vsa.HybridBigInt{ the, cat, sat };
     var sentence = tvc_vsa.encodeSequence(&items);
 
-    // Проверяем позицию слова
+    // Check word position
     const pos0 = tvc_vsa.probeSequence(&sentence, &the, 0);
     const pos1 = tvc_vsa.probeSequence(&sentence, &cat, 1);
     const pos2 = tvc_vsa.probeSequence(&sentence, &sat, 2);
 
-    // Неправильная позиция
+    // Wrong position
     const wrong = tvc_vsa.probeSequence(&sentence, &the, 1);
 
-    std.debug.print("'the' на позиции 0: {d:.3}\n", .{pos0});
-    std.debug.print("'cat' на позиции 1: {d:.3}\n", .{pos1});
-    std.debug.print("'sat' на позиции 2: {d:.3}\n", .{pos2});
-    std.debug.print("'the' на позиции 1 (неверно): {d:.3}\n", .{wrong});
+    std.debug.print("'the' at position 0: {d:.3}\n", .{pos0});
+    std.debug.print("'cat' at position 1: {d:.3}\n", .{pos1});
+    std.debug.print("'sat' at position 2: {d:.3}\n", .{pos2});
+    std.debug.print("'the' at position 1 (wrong): {d:.3}\n", .{wrong});
 }
 ```
 
-### 3. VSA VM программа
+### 3. VSA VM Program
 
 ```zig
 const tvc_vm_vsa = @import("tvc_vm_vsa.zig");
@@ -206,7 +206,7 @@ pub fn main() !void {
     var vm = tvc_vm_vsa.VSAVM.init(gpa.allocator());
     defer vm.deinit();
 
-    // Программа: создать два вектора, связать, измерить сходство
+    // Program: create two vectors, bind, measure similarity
     const program = [_]tvc_vm_vsa.VSAInstruction{
         .{ .opcode = .v_random, .dst = 0, .imm = 111 },  // v0 = random
         .{ .opcode = .v_random, .dst = 1, .imm = 222 },  // v1 = random
@@ -220,7 +220,7 @@ pub fn main() !void {
     try vm.run();
 
     vm.printState();
-    // f0 должно быть близко к 1.0 (v3 ≈ v0)
+    // f0 should be close to 1.0 (v3 ≈ v0)
 }
 ```
 
@@ -228,66 +228,66 @@ pub fn main() !void {
 
 ### tvc_vsa.zig
 
-| Функция | Описание |
-|---------|----------|
-| `bind(a, b)` | Связывание (XOR-like) |
-| `unbind(bound, key)` | Обратное связывание |
-| `bundle2(a, b)` | Объединение 2 векторов |
-| `bundle3(a, b, c)` | Объединение 3 векторов |
-| `cosineSimilarity(a, b)` | Косинусное сходство [-1, 1] |
-| `hammingDistance(a, b)` | Расстояние Хэмминга |
-| `hammingSimilarity(a, b)` | Нормализованное сходство [0, 1] |
-| `dotSimilarity(a, b)` | Нормализованный dot product |
-| `permute(v, k)` | Циклический сдвиг вправо |
-| `inversePermute(v, k)` | Циклический сдвиг влево |
-| `encodeSequence(items)` | Кодирование последовательности |
-| `probeSequence(seq, candidate, pos)` | Проверка позиции в последовательности |
-| `randomVector(len, seed)` | Случайный вектор |
+| Function | Description |
+|----------|-------------|
+| `bind(a, b)` | Binding (XOR-like) |
+| `unbind(bound, key)` | Reverse binding |
+| `bundle2(a, b)` | Bundle 2 vectors |
+| `bundle3(a, b, c)` | Bundle 3 vectors |
+| `cosineSimilarity(a, b)` | Cosine similarity [-1, 1] |
+| `hammingDistance(a, b)` | Hamming distance |
+| `hammingSimilarity(a, b)` | Normalized similarity [0, 1] |
+| `dotSimilarity(a, b)` | Normalized dot product |
+| `permute(v, k)` | Cyclic shift right |
+| `inversePermute(v, k)` | Cyclic shift left |
+| `encodeSequence(items)` | Sequence encoding |
+| `probeSequence(seq, candidate, pos)` | Check position in sequence |
+| `randomVector(len, seed)` | Random vector |
 
 ### tvc_vm_vsa.zig
 
-| Opcode | Описание |
-|--------|----------|
-| `v_load` | Загрузка из памяти |
-| `v_store` | Сохранение в память |
-| `v_const` | Загрузка константы |
-| `v_random` | Генерация случайного вектора |
-| `v_bind` | Связывание |
-| `v_unbind` | Обратное связывание |
-| `v_bundle2` | Объединение 2 |
-| `v_bundle3` | Объединение 3 |
-| `v_dot` | Скалярное произведение |
-| `v_cosine` | Косинусное сходство |
-| `v_hamming` | Расстояние Хэмминга |
-| `v_add` | Сложение |
-| `v_neg` | Отрицание |
-| `v_mul` | Умножение |
-| `v_mov` | Копирование |
-| `v_pack` | Упаковка (экономия памяти) |
-| `v_unpack` | Распаковка |
-| `v_permute` | Циклический сдвиг |
-| `v_ipermute` | Обратный сдвиг |
-| `v_seq` | Кодирование последовательности |
-| `v_cmp` | Сравнение |
+| Opcode | Description |
+|--------|-------------|
+| `v_load` | Load from memory |
+| `v_store` | Store to memory |
+| `v_const` | Load constant |
+| `v_random` | Generate random vector |
+| `v_bind` | Binding |
+| `v_unbind` | Reverse binding |
+| `v_bundle2` | Bundle 2 |
+| `v_bundle3` | Bundle 3 |
+| `v_dot` | Dot product |
+| `v_cosine` | Cosine similarity |
+| `v_hamming` | Hamming distance |
+| `v_add` | Addition |
+| `v_neg` | Negation |
+| `v_mul` | Multiplication |
+| `v_mov` | Copy |
+| `v_pack` | Pack (memory savings) |
+| `v_unpack` | Unpack |
+| `v_permute` | Cyclic shift |
+| `v_ipermute` | Inverse shift |
+| `v_seq` | Sequence encoding |
+| `v_cmp` | Comparison |
 
-## Тестирование
+## Testing
 
 ```bash
-# Запуск всех тестов
+# Run all tests
 cd phi-engine/src/core/tvc
 zig test tvc_vsa.zig
 zig test tvc_vm_vsa.zig
 zig test tvc_hybrid.zig
 
-# Запуск бенчмарков
+# Run benchmarks
 zig build-exe tvc_vsa.zig -O ReleaseFast && ./tvc_vsa
 ```
 
-## Лицензия
+## License
 
 MIT
 
-## Авторы
+## Authors
 
 - Dmitrii Vasilev
 - Co-authored-by: Ona

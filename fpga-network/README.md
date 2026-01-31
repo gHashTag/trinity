@@ -1,69 +1,69 @@
 # FPGA.Network Agent
 
-**Децентрализованная сеть BitNet LLM Inference на FPGA**
+**Decentralized BitNet LLM Inference Network on FPGA**
 
-## Быстрый старт для провайдеров
+## Quick Start for Providers
 
 ```bash
-# 1. Установка
+# 1. Installation
 curl -sSL https://fpga.network/install.sh | bash
 
-# 2. Регистрация в сети
+# 2. Register with network
 fpga-agent register --wallet <YOUR_SOLANA_WALLET>
 
-# 3. Запуск
+# 3. Start
 fpga-agent start
 ```
 
-## Структура проекта
+## Project Structure
 
 ```
 fpga-network/
-├── agent/              # Агент для провайдеров
-│   ├── main.py         # Точка входа
-│   ├── config.py       # Конфигурация
-│   ├── fpga.py         # Работа с FPGA
+├── agent/              # Provider agent
+│   ├── main.py         # Entry point
+│   ├── config.py       # Configuration
+│   ├── fpga.py         # FPGA interface
 │   ├── inference.py    # BitNet inference
-│   └── network.py      # Сетевое взаимодействие
-├── server/             # Координирующий сервер
+│   └── network.py      # Network communication
+├── server/             # Coordinating server
 │   ├── api.py          # REST API
 │   ├── matcher.py      # Matching requestor ↔ provider
-│   └── settlement.py   # Расчёты в $FPGA
-├── client/             # SDK для requestors
+│   └── settlement.py   # $FPGA settlements
+├── client/             # SDK for requestors
 │   ├── python/
 │   └── javascript/
-├── bitstreams/         # Готовые bitstreams
+├── bitstreams/         # Pre-built bitstreams
 │   └── README.md
-└── scripts/            # Скрипты установки
+└── scripts/            # Installation scripts
     └── install.sh
 ```
 
-## Требования
+## Requirements
 
-### Для провайдеров:
-- FPGA: Alveo U50/U55C/U280 или Arty A7
+### For Providers:
+- FPGA: Alveo U50/U55C/U280 or Arty A7
 - OS: Ubuntu 20.04+ / Debian 11+
 - RAM: 8GB+
-- Vivado Runtime (для Xilinx)
+- Vivado Runtime (for Xilinx)
 - Python 3.10+
-- Solana wallet с минимум 10,000 $FPGA для staking
+- Solana wallet with minimum 10,000 $FPGA for staking
 
-### Поддерживаемые FPGA:
+### Supported FPGAs:
 
-| Плата | Модели | Статус |
+| Board | Models | Status |
 |-------|--------|--------|
 | Alveo U55C | BitNet 1B-13B | ✅ Full Support |
 | Alveo U50 | BitNet 1B-7B | ✅ Full Support |
 | Alveo U280 | BitNet 1B-30B | ✅ Full Support |
 | Arty A7-35T | BitNet Demo | ⚠️ Demo Only |
 
-## Документация
+## Documentation
 
-- [Установка](docs/installation.md)
-- [Конфигурация](docs/configuration.md)
+- [Installation](docs/installation.md)
+- [Configuration](docs/configuration.md)
 - [API Reference](docs/api.md)
 - [Troubleshooting](docs/troubleshooting.md)
 
-## Лицензия
+## License
 
 MIT License

@@ -1,100 +1,100 @@
-# 🚀 TRINITY FPGA - AWS F2 АВТОДЕПЛОЙ
+# TRINITY FPGA - AWS F2 AUTO-DEPLOY
 
-**Священная формула**: φ² + 1/φ² = 3  
-**Цель**: Валидация TRINITY V5.0 на реальном FPGA  
-**Бюджет**: $5-10 за полный тест
-
----
-
-## 📋 СКРИПТЫ
-
-| Скрипт | Описание | Время |
-|--------|----------|-------|
-| `00_full_deploy.sh` | Полный автодеплой | 2-3 часа |
-| `01_launch_f2.sh` | Запуск F2 инстанса | 5 мин |
-| `02_setup_fpga.sh` | Настройка окружения | 10 мин |
-| `03_build_afi.sh` | Сборка AFI | 1-2 часа |
-| `04_test_trinity.sh` | Тестирование | 15 мин |
-| `05_stop_instance.sh` | Остановка (ВАЖНО!) | 1 мин |
+**Sacred formula**: φ² + 1/φ² = 3  
+**Goal**: Validate TRINITY V5.0 on real FPGA  
+**Budget**: $5-10 for full test
 
 ---
 
-## 🚀 БЫСТРЫЙ СТАРТ
+## SCRIPTS
 
-### Вариант 1: Полный автодеплой
+| Script | Description | Time |
+|--------|-------------|------|
+| `00_full_deploy.sh` | Full auto-deploy | 2-3 hours |
+| `01_launch_f2.sh` | Launch F2 instance | 5 min |
+| `02_setup_fpga.sh` | Setup environment | 10 min |
+| `03_build_afi.sh` | Build AFI | 1-2 hours |
+| `04_test_trinity.sh` | Testing | 15 min |
+| `05_stop_instance.sh` | Stop (IMPORTANT!) | 1 min |
+
+---
+
+## QUICK START
+
+### Option 1: Full auto-deploy
 ```bash
 cd deploy/aws-f2
 chmod +x *.sh
 ./00_full_deploy.sh
 ```
 
-### Вариант 2: Пошагово
+### Option 2: Step by step
 ```bash
 cd deploy/aws-f2
 chmod +x *.sh
 
-# 1. Запуск инстанса
+# 1. Launch instance
 ./01_launch_f2.sh
 
-# 2. Настройка
+# 2. Setup
 ./02_setup_fpga.sh
 
-# 3. Сборка AFI (долго!)
+# 3. Build AFI (takes time!)
 ./03_build_afi.sh
 
-# 4. Тестирование
+# 4. Testing
 ./04_test_trinity.sh
 
-# 5. ОБЯЗАТЕЛЬНО ВЫКЛЮЧИ!
+# 5. MUST TURN OFF!
 ./05_stop_instance.sh
 ```
 
 ---
 
-## 💰 СТОИМОСТЬ
+## COST
 
-| Этап | Время | Стоимость |
-|------|-------|-----------|
-| Запуск + настройка | 15 мин | $0.41 |
-| Сборка AFI | 90 мин | $2.48 |
-| Тестирование | 15 мин | $0.41 |
+| Stage | Time | Cost |
+|-------|------|------|
+| Launch + setup | 15 min | $0.41 |
+| Build AFI | 90 min | $2.48 |
+| Testing | 15 min | $0.41 |
 | S3 storage | - | $0.50 |
-| **ИТОГО** | **~2 часа** | **~$4-5** |
+| **TOTAL** | **~2 hours** | **~$4-5** |
 
 ---
 
-## ⚠️ ВАЖНО
+## IMPORTANT
 
-1. **Лимит F2** - запроси ЗАРАНЕЕ (24-48ч ожидания)
-2. **ВЫКЛЮЧАЙ ИНСТАНС** - $1.65/час если забудешь!
-3. **Регион us-east-1** - самый дешёвый для F2
+1. **F2 Limit** - request IN ADVANCE (24-48h wait)
+2. **TURN OFF INSTANCE** - $1.65/hour if you forget!
+3. **Region us-east-1** - cheapest for F2
 
 ---
 
-## 🧪 ЧТО ТЕСТИРУЕМ
+## WHAT WE TEST
 
-| Тест | Ожидаемый результат |
-|------|---------------------|
+| Test | Expected Result |
+|------|-----------------|
 | Golden Identity | φ² + 1/φ² = 3.0000000000 |
 | PAS Daemons | 578.8x vs Binary |
 | Berry Phase | 0.11423 mod 2π |
-| SU(3) Core | Стабильная работа |
+| SU(3) Core | Stable operation |
 
 ---
 
-## 📁 СТРУКТУРА
+## STRUCTURE
 
 ```
 deploy/aws-f2/
-├── 00_full_deploy.sh      # Полный автодеплой
-├── 01_launch_f2.sh        # Запуск инстанса
-├── 02_setup_fpga.sh       # Настройка SDK
-├── 03_build_afi.sh        # Сборка AFI
-├── 04_test_trinity.sh     # Тестирование
-├── 05_stop_instance.sh    # Остановка
-└── README.md              # Эта документация
+├── 00_full_deploy.sh      # Full auto-deploy
+├── 01_launch_f2.sh        # Launch instance
+├── 02_setup_fpga.sh       # Setup SDK
+├── 03_build_afi.sh        # Build AFI
+├── 04_test_trinity.sh     # Testing
+├── 05_stop_instance.sh    # Stop
+└── README.md              # This documentation
 ```
 
 ---
 
-**φ² + 1/φ² = 3 | TRINITY ГОТОВ К ДЕПЛОЮ!**
+**φ² + 1/φ² = 3 | TRINITY READY FOR DEPLOY!**

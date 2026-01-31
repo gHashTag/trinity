@@ -327,37 +327,37 @@ EXIT_SIGNAL = (
 
 ## 🤖 TELEGRAM BOT RULES
 
-### КНОПКИ ТОЛЬКО ВНИЗУ!
+### BUTTONS AT BOTTOM ONLY!
 
 ```
-⛔ ЗАПРЕЩЕНО: InlineKeyboardMarkup (кнопки в сообщении)
-✅ ТОЛЬКО: ReplyKeyboardMarkup (кнопки внизу экрана)
+⛔ FORBIDDEN: InlineKeyboardMarkup (buttons in message)
+✅ ONLY: ReplyKeyboardMarkup (buttons at bottom of screen)
 ```
 
-### Спецификации бота:
+### Bot Specifications:
 
 ```
 specs/tri/telegram_bot/
-├── navigation/unified_navigation.vibee  # Единый источник правды
-├── menu/reply_keyboard.vibee            # ReplyKeyboard генератор
-├── services/replicate_api.vibee         # AI генерация
-└── handlers/message_handler.vibee       # Роутинг сообщений
+├── navigation/unified_navigation.vibee  # Single source of truth
+├── menu/reply_keyboard.vibee            # ReplyKeyboard generator
+├── services/replicate_api.vibee         # AI generation
+└── handlers/message_handler.vibee       # Message routing
 ```
 
-### Структура многоуровневого меню:
+### Multi-level Menu Structure:
 
 ```
 🏠 MAIN
-├── 📸 Нейрофото → ✨ Нейрофото, 🔍 Промпт из фото, 🎭 Замена лица, ⬆️ Апскейл
-├── 🎥 Видео → 🎥 Фото в видео, 🎬 Текст в видео, 👄 Lip Sync
-├── 🎤 Аудио → 🎤 Голос аватара, 🎙️ Текст в голос
-├── 🤖 Аватар → 🤖 Цифровое тело, 🧠 Мозг аватара, 💬 Чат
-├── 🛠 Инструменты
-├── 💰 Баланс | 💎 Пополнить
-└── 💬 Поддержка | 🌐 EN/RU
+├── 📸 Neurophoto → ✨ Neurophoto, 🔍 Prompt from photo, 🎭 Face swap, ⬆️ Upscale
+├── 🎥 Video → 🎥 Photo to video, 🎬 Text to video, 👄 Lip Sync
+├── 🎤 Audio → 🎤 Avatar voice, 🎙️ Text to speech
+├── 🤖 Avatar → 🤖 Digital body, 🧠 Avatar brain, 💬 Chat
+├── 🛠 Tools
+├── 💰 Balance | 💎 Top up
+└── 💬 Support | 🌐 EN/RU
 ```
 
-### Генерация кода:
+### Code Generation:
 
 ```bash
 ./bin/vibee gen specs/tri/telegram_bot/navigation/unified_navigation.vibee
