@@ -148,6 +148,16 @@ pub fn packedDot(a: *const PackedBigInt, b: *const PackedBigInt) i64 {
     return total;
 }
 
+/// Packed unbind - для тритов unbind = bind (самообратная операция)
+/// unbind(bind(a, b), b) = a
+pub fn packedUnbind(a: *const PackedBigInt, b: *const PackedBigInt) PackedBigInt {
+    // Для тритов: unbind = bind, потому что:
+    // bind(a, b) = a * b
+    // unbind(a*b, b) = (a*b) * b = a * (b*b) = a * 1 = a
+    // (для b ∈ {-1, 1}, b*b = 1)
+    return packedBind(a, b);
+}
+
 /// Packed cosine similarity
 pub fn packedCosineSimilarity(a: *const PackedBigInt, b: *const PackedBigInt) f64 {
     const dot_ab = packedDot(a, b);
@@ -290,6 +300,57 @@ test "packed cosine similarity" {
     const sim = packedCosineSimilarity(&p_a, &p_b);
     try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.001);
 }
+
+test "packed unbind correctness" {
+    // Создаём два случайных вектора
+    const p_a = randomPackedVector(100, 12345);
+    const p_b = randomPackedVector(100, 67890);
+
+    // bind(a, b)
+    const bound = packedBind(&p_a, &p_b);
+
+    // unbind(bind(a, b), b) должен дать вектор похожий на a
+    const unbound = packedUnbind(&bound, &p_b);
+
+    // Проверяем сходство с оригиналом
+    const sim = packedCosineSimilarity(&unbound, &p_a);
+
+    // Для тритов без нулей сходство должно быть высоким
+    // Но из-за нулей в векторах может быть потеря информации
+    std.debug.print("\nUnbind similarity: {d:.3}\n", .{sim});
+    try std.testing.expect(sim > 0.5); // Должно быть значительное сходство
+}
+
+test "packed unbind retrieval" {
+    // Симуляция запроса к графу знаний
+    // Факт: bind(Paris, bind(capital_of, France))
+    // Запрос: unbind(fact, bind(Paris, capital_of)) → France
+
+    const paris = randomPackedVector(100, Entity.hashString("Paris"));
+    const capital_of = randomPackedVector(100, Entity.hashString("capital_of") ^ 0xDEADBEEF);
+    const france = randomPackedVector(100, Entity.hashString("France"));
+
+    // Кодируем факт: Paris is capital_of France
+    const pred_obj = packedBind(&capital_of, &france);
+    const fact = packedBind(&paris, &pred_obj);
+
+    // Запрос: что является столицей Франции?
+    // unbind(fact, bind(capital_of, France)) → Paris
+    const query_pattern = packedBind(&capital_of, &france);
+    const result = packedUnbind(&fact, &query_pattern);
+
+    // Результат должен быть похож на Paris
+    const sim_paris = packedCosineSimilarity(&result, &paris);
+    const sim_france = packedCosineSimilarity(&result, &france);
+
+    std.debug.print("\nQuery result similarity to Paris: {d:.3}\n", .{sim_paris});
+    std.debug.print("Query result similarity to France: {d:.3}\n", .{sim_france});
+
+    // Paris должен быть более похож
+    try std.testing.expect(sim_paris > sim_france);
+}
+
+const Entity = @import("knowledge_graph.zig").Entity;
 
 test "large vector bind correctness (1000 trits)" {
     var h_a = vsa.randomVector(1000, 12345);

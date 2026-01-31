@@ -206,26 +206,35 @@ pub const KnowledgeGraph = struct {
 
     /// Запрос: найти object по subject и predicate
     /// query(subject, predicate, ?) → object
+    /// Использует unbind: result = unbind(graph, bind(subject, predicate))
     pub fn queryObject(self: *Self, subject: []const u8, predicate: []const u8) ?*Entity {
         const subj = self.findEntity(subject) orelse return null;
         const pred = self.findRelation(predicate) orelse return null;
 
-        // Для packed нет unbind, используем similarity search
-        // Ищем сущность с максимальным сходством с bind(subj, pred)
+        // Создаём паттерн запроса: bind(subject, predicate)
         const query_pattern = packed_vsa.packedBind(&subj.vector, &pred.vector);
 
-        return self.findClosestEntityPacked(&query_pattern);
+        // Unbind от графа: unbind(graph, query_pattern) ≈ object
+        const result_vec = packed_vsa.packedUnbind(&self.graph_vector, &query_pattern);
+
+        // Найти ближайшую сущность к результату
+        return self.findClosestEntityPacked(&result_vec);
     }
 
     /// Запрос: найти subject по predicate и object
     /// query(?, predicate, object) → subject
+    /// Использует unbind: result = unbind(graph, bind(predicate, object))
     pub fn querySubject(self: *Self, predicate: []const u8, object: []const u8) ?*Entity {
         const pred = self.findRelation(predicate) orelse return null;
         const obj = self.findEntity(object) orelse return null;
 
+        // Создаём паттерн запроса: bind(predicate, object)
         const query_pattern = packed_vsa.packedBind(&pred.vector, &obj.vector);
 
-        return self.findClosestEntityPacked(&query_pattern);
+        // Unbind от графа: unbind(graph, query_pattern) ≈ subject
+        const result_vec = packed_vsa.packedUnbind(&self.graph_vector, &query_pattern);
+
+        return self.findClosestEntityPacked(&result_vec);
     }
 
     /// Найти N наиболее похожих сущностей
@@ -359,19 +368,46 @@ test "KnowledgeGraph basic operations" {
     try std.testing.expectEqual(@as(u32, 3), s.triples);
 }
 
-test "KnowledgeGraph query object" {
+test "KnowledgeGraph query object with unbind" {
+    var kg = KnowledgeGraph.init();
+
+    kg.addTriple("Paris", "capital_of", "France");
+    kg.addTriple("Berlin", "capital_of", "Germany");
+    kg.addTriple("Rome", "capital_of", "Italy");
+
+    // Запрос: Париж - столица чего?
+    // unbind(graph, bind(Paris, capital_of)) → France
+    const result = kg.queryObject("Paris", "capital_of");
+
+    std.debug.print("\n\nQuery: Paris capital_of ?\n", .{});
+    if (result) |entity| {
+        std.debug.print("Result: {s}\n", .{entity.name});
+        // Проверяем что результат - France
+        try std.testing.expectEqualStrings("France", entity.name);
+    } else {
+        std.debug.print("Result: null\n", .{});
+        // Если null, тест провален
+        try std.testing.expect(false);
+    }
+}
+
+test "KnowledgeGraph query subject with unbind" {
     var kg = KnowledgeGraph.init();
 
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
 
-    // Запрос: столица чего Париж?
-    // Это сложный запрос для VSA, может не работать идеально
-    // Но базовая структура должна работать
-    const result = kg.queryObject("Paris", "capital_of");
-    // VSA запросы приблизительны, проверяем что что-то вернулось
+    // Запрос: что является столицей Франции?
+    // unbind(graph, bind(capital_of, France)) → Paris
+    const result = kg.querySubject("capital_of", "France");
+
+    std.debug.print("\n\nQuery: ? capital_of France\n", .{});
     if (result) |entity| {
-        std.debug.print("\nQuery result: {s}\n", .{entity.name});
+        std.debug.print("Result: {s}\n", .{entity.name});
+        try std.testing.expectEqualStrings("Paris", entity.name);
+    } else {
+        std.debug.print("Result: null\n", .{});
+        try std.testing.expect(false);
     }
 }
 
