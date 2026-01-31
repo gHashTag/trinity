@@ -16,6 +16,7 @@ pub const vm = @import("vm.zig");
 // SDK modules (high-level API)
 pub const sdk = @import("sdk.zig");
 pub const science = @import("science.zig");
+pub const sparse = @import("sparse.zig");
 
 // Re-export main types
 pub const BigInt = bigint.TVCBigInt;
@@ -55,13 +56,15 @@ pub const Classifier = sdk.Classifier;
 pub const VectorStats = science.VectorStats;
 pub const DistanceMetric = science.DistanceMetric;
 pub const ResonatorNetwork = science.ResonatorNetwork;
-pub const SparseHypervector = science.SparseHypervector;
 pub const computeStats = science.computeStats;
 pub const distance = science.distance;
 pub const mutualInformation = science.mutualInformation;
 pub const batchSimilarity = science.batchSimilarity;
 pub const batchBundle = science.batchBundle;
 pub const weightedBundle = science.weightedBundle;
+
+// Re-export Sparse types
+pub const SparseVector = sparse.SparseVector;
 
 // Constants
 pub const MAX_TRITS = hybrid.MAX_TRITS;
