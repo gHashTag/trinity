@@ -1,564 +1,238 @@
-# Trinity Network
+<p align="center">
+  <img src="https://img.shields.io/badge/Trinity-Network-6366F1?style=for-the-badge" alt="Trinity Network">
+</p>
 
-**Run LLMs on your CPU. Earn $TRI tokens. No GPU required.**
+<h1 align="center">Trinity Network</h1>
 
-> *Trinity = 3 = Ternary = {-1, 0, +1}*
+<p align="center">
+  <strong>Decentralized AI Inference</strong><br>
+  Run LLMs on your CPU. Earn $TRI tokens. No GPU required.
+</p>
 
-🌐 **Website:** [github.com/gHashTag/trinity](https://github.com/gHashTag/trinity)
+<p align="center">
+  <a href="#-why-trinity">Why Trinity</a> •
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-libraries">Libraries</a> •
+  <a href="#-tokenomics">Tokenomics</a> •
+  <a href="#-roadmap">Roadmap</a> •
+  <a href="docs/business/BUSINESS_MODEL.md">Business Model</a>
+</p>
 
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Languages](https://img.shields.io/badge/VSA_libs-29_languages-blue)](#trinity-vsa-libraries)
-[![CPU Inference](https://img.shields.io/badge/CPU_inference-BitNet_1.58bit-orange)](#-cpu-inference-our-competitive-advantage)
-
----
-
-## 🚀 Our Competitive Advantage: CPU Inference
-
-**Trinity enables LLM inference on ANY CPU - no GPU required!**
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│              WHY TERNARY WEIGHTS CHANGE EVERYTHING              │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  Traditional LLM (float32):        BitNet/Trinity (ternary):    │
-│  ─────────────────────────         ─────────────────────────    │
-│  • 32 bits per weight              • 1.58 bits per weight       │
-│  • 70B model = 280 GB RAM          • 70B model = 14 GB RAM      │
-│  • Requires expensive GPU          • Runs on ANY CPU            │
-│  • Float multiply + add            • Just add/subtract          │
-│                                                                 │
-│  Weights W ∈ {-1, 0, +1}:                                       │
-│  • Multiply by -1 → negate (free)                               │
-│  • Multiply by  0 → skip (free)                                 │
-│  • Multiply by +1 → nothing (free)                              │
-│                                                                 │
-│  Result: NO MULTIPLICATIONS, ONLY ADD/SUB!                      │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Benchmark Results (C library with AVX2)
-
-```
-Dimension: 10,000
-─────────────────────────────────────
-Operation        Dense      Packed    Speedup
-bind             8.89 µs    0.12 µs   74x
-dot             11.73 µs    0.25 µs   47x
-similarity       2.18 µs    0.25 µs    9x
-```
-
-### Where It Runs
-
-| Platform | Support | Notes |
-|----------|---------|-------|
-| **Desktop** | ✅ | Intel/AMD with AVX2/AVX-512 |
-| **Laptop** | ✅ | Run 70B models in 16GB RAM |
-| **Mobile** | ✅ | ARM NEON (Apple M1/M2, Snapdragon) |
-| **Raspberry Pi** | ✅ | Edge AI without cloud |
-| **ESP32** | ✅ | IoT inference (no FPU needed!) |
+<p align="center">
+  <img src="https://img.shields.io/badge/Languages-29-blue" alt="29 Languages">
+  <img src="https://img.shields.io/badge/Token-$TRI-green" alt="$TRI Token">
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License">
+  <img src="https://img.shields.io/badge/CPU-Inference-orange" alt="CPU Inference">
+</p>
 
 ---
 
-## 💰 Trinity Network: Decentralized AI Inference
+## 🚀 Why Trinity?
 
-**Install our app → Share your CPU → Earn $TRI tokens**
+**The Problem:** AI inference requires expensive GPUs. NVIDIA controls 90%+ of the market. Cloud GPU costs $2-4/hour.
+
+**Our Solution:** Ternary weights {-1, 0, +1} eliminate multiplications, enabling **CPU-only inference**.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    FPGA NETWORK ARCHITECTURE                    │
+│                    TRINITY ADVANTAGE                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐      │
-│  │  User   │    │  User   │    │  User   │    │  User   │      │
-│  │   PC    │    │ Laptop  │    │  Mac    │    │   Pi    │      │
-│  └────┬────┘    └────┬────┘    └────┬────┘    └────┬────┘      │
-│       │              │              │              │            │
-│       └──────────────┴──────────────┴──────────────┘            │
-│                          │                                      │
-│                    ┌─────┴─────┐                                │
-│                    │  Trinity  │                                │
-│                    │ Scheduler │                                │
-│                    └─────┬─────┘                                │
-│                          │                                      │
-│            ┌─────────────┼─────────────┐                        │
-│            │             │             │                        │
-│       ┌────┴────┐  ┌─────┴────┐  ┌─────┴────┐                  │
-│       │ BitNet  │  │  Model   │  │  Token   │                  │
-│       │ Models  │  │  Shards  │  │ Rewards  │                  │
-│       └─────────┘  └──────────┘  └──────────┘                  │
+│   Traditional LLM          Trinity Network                      │
+│   ───────────────          ───────────────                      │
+│   32 bits/weight    →      1.58 bits/weight                     │
+│   70B = 280 GB RAM  →      70B = 14 GB RAM                      │
+│   Requires GPU      →      ANY CPU works                        │
+│   Float multiply    →      Just add/subtract                    │
 │                                                                 │
-│  HOW IT WORKS:                                                  │
-│  1. Download Trinity Node app                                   │
-│  2. App downloads model shards (your portion)                   │
-│  3. Process inference requests from network                     │
-│  4. Earn $TRI tokens for compute contribution                  │
-│  5. Use tokens for API access or trade                          │
+│   Weights W ∈ {-1, 0, +1}:                                      │
+│   • Multiply by -1 → negate (free)                              │
+│   • Multiply by  0 → skip (free)                                │
+│   • Multiply by +1 → nothing (free)                             │
+│                                                                 │
+│   Result: 20x memory savings, 10x faster on CPU                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📦 Trinity VSA Libraries
+## ⚡ Quick Start
 
-**29 programming languages** - unified API for Vector Symbolic Architecture:
+### For Node Operators (Earn $TRI)
 
-```
-libs/
-├── rust/       ├── kotlin/     ├── haskell/    ├── perl/
-├── python/     ├── scala/      ├── ocaml/      ├── php/
-├── c/          ├── swift/      ├── elixir/     ├── dart/
-├── go/         ├── julia/      ├── erlang/     ├── fsharp/
-├── typescript/ ├── r/          ├── nim/        ├── clojure/
-├── java/       ├── matlab/     ├── d/          ├── wolfram/
-├── zig/        ├── fortran/    ├── ada/        └── lua/
-└── ruby/
+```bash
+# Coming soon: Trinity Node desktop app
+# 1. Download Trinity Node
+# 2. Run on your PC/Mac/Linux
+# 3. Earn $TRI for compute contribution
 ```
 
-**Core API (same in all languages):**
+### For Developers (Use API)
+
+```bash
+# OpenAI-compatible API
+curl https://api.trinity.network/v1/chat/completions \
+  -H "Authorization: Bearer $TRI_API_KEY" \
+  -d '{"model": "bitnet-70b", "messages": [{"role": "user", "content": "Hello"}]}'
 ```
-bind(a, b)      - Create association
-unbind(a, b)    - Retrieve association  
-bundle([...])   - Combine concepts
-permute(v, k)   - Encode position
-similarity()    - Measure relatedness
+
+### For Library Users
+
+```bash
+# Python
+pip install trinity-vsa
+
+# Rust
+cargo add trinity-vsa
+
+# npm
+npm install trinity-vsa
 ```
 
 ---
 
-## 🔧 VIBEE Compiler
+## 📦 Libraries
 
-**Sacred Formula:** `V = n × 3^k × π^m × φ^p × e^q`
-**Golden Identity:** `φ² + 1/φ² = 3`
+**29 programming languages** with unified API:
 
-[![CI](https://github.com/gHashTag/vibee-lang/actions/workflows/ci.yml/badge.svg)](https://github.com/gHashTag/vibee-lang/actions/workflows/ci.yml)
-[![Benchmark Tests](https://github.com/gHashTag/vibee-lang/actions/workflows/benchmark-tests.yml/badge.svg)](https://github.com/gHashTag/vibee-lang/actions/workflows/benchmark-tests.yml)
-[![Tests](https://img.shields.io/badge/tests-2000%2B-brightgreen)](trinity/output/)
-[![Languages](https://img.shields.io/badge/languages-42-blue)](#-gen-multi-42-languages)
-[![FFI](https://img.shields.io/badge/FFI-40%20modules-orange)](#-ffi-modules)
-[![Docs](https://img.shields.io/badge/docs-online-blue)](docs/INDEX.md)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+| Category | Languages |
+|----------|-----------|
+| **Systems** | C, Rust, Zig, Nim, D, Ada, Fortran |
+| **JVM** | Java, Kotlin, Scala, Clojure |
+| **Functional** | Haskell, OCaml, F#, Elixir, Erlang |
+| **Scientific** | Python, Julia, R, MATLAB, Mathematica |
+| **Web/Mobile** | TypeScript, Go, Swift, Dart, PHP, Ruby |
+| **Scripting** | Lua, Perl |
 
-## Overview
+### Core API
 
-**TRINITY OS is the native ternary operating system built on VIBEE.**
+```python
+from trinity_vsa import TritVector, bind, similarity
 
-VIBEE is a specification-first programming language that generates code from behavioral specifications. Built on the **Creation Pattern** and **Predictive Algorithmic Systematics (PAS)** methodology.
+# Create concept vectors
+apple = TritVector.random(10000)
+red = TritVector.random(10000)
 
-```
-.vibee (specification) → vibee gen → .zig (auto-generated)
-                       → vibee gen-multi → 42 languages!
-                       → vibee gen-hdl → Synthesizable Verilog
-```
+# Bind: create association
+red_apple = bind(apple, red)
 
-## ⚡ FPGA / HDL / HLS (High-Level Synthesis)
-
-VIBEE is a powerful **HLS compiler** that turns high-level specifications into ready-to-synthesize **Verilog HDL**.
-
-- **Multi-Language Hardware:** Write logic in Python, Rust, or Go and get Verilog.
-- **Vendor Portability:** Built-in abstraction for **Xilinx (AMD)**, **Intel (Altera)**, and **Lattice**.
-- **Performance Reporting:** Cycle-accurate latency estimation and automated pipelining (`pipeline: auto`).
-- **BitNet Acceleration:** Optimized for ternary neural network inference on FPGA.
-
-[Hardware Guide (EN)](docs/habr/HABR_ARTICLE_FPGA_COMPILER_EN.md) | [Hardware Guide (RU)](docs/habr/HABR_ARTICLE_FPGA_COMPILER.md) | [Technical Reference](docs/HARDWARE_HLS.md)
-
-### 🔬 Verified in Silicon
-![BitNet Simulation Waveform](docs/images/bitnet_waveform.png)
-*Makerchip Simulation: Valid synchronous clocking and functional logic verification for 300MHz BitNet Core.*
-
-## 📦 Installation
-
-**Note:** Pre-built binaries in `bin/` are for Linux x86_64 with modern CPU extensions (AVX/SSE). If you get `Illegal instruction`, rebuild for your architecture:
-
-### Option 1: Automatic installer (recommended)
-```bash
-# Run bootstrap installer
-curl -sSL https://raw.githubusercontent.com/gHashTag/vibee-lang/main/install.sh | bash
+# Query: measure similarity
+print(similarity(red_apple, apple))  # ~0.0 (orthogonal after bind)
 ```
 
-### Option 2: Package Managers (Global)
-**macOS (Homebrew):**
-```bash
-brew tap ghashtag/tap
-brew install vibee
+[📚 Full Library Documentation →](libs/README.md)
+
+---
+
+## 💰 Tokenomics
+
+### $TRI Token
+
+| Metric | Value |
+|--------|-------|
+| **Total Supply** | 1,000,000,000 |
+| **Token** | $TRI |
+| **Network** | Ethereum + Trinity L2 |
+
+### Distribution
+
+```
+Node Rewards     ████████████████████  40%
+Team & Advisors  ████████              20%
+Treasury (DAO)   ██████                15%
+Public Sale      ██████                15%
+Ecosystem        ████                  10%
 ```
 
-**Windows (Chocolatey):**
-*Pending feed approval.*
+### Utility
 
-### Option 3: Docker (no Zig installation needed)
-```bash
-# Generate Verilog directly (multi-arch image)
-docker run --rm -v $(pwd):/app ghcr.io/ghashtag/vibee gen specs/tri/bitnet_top.vibee
+- 💳 **Pay** for inference API calls
+- 💰 **Earn** for compute contribution
+- 🗳️ **Vote** on governance proposals
+- 📈 **Stake** for priority access
 
-# Build image locally (supports amd64/arm64)
-docker buildx build --platform linux/amd64,linux/arm64 -t vibee .
-docker run --rm -v $(pwd):/app vibee gen specs/tri/bitnet_top.vibee
+[📄 Full Tokenomics →](docs/business/TOKENOMICS.md)
 
-# For single architecture (faster):
-# docker build -t vibee .
+---
+
+## 🗺️ Roadmap
+
+```
+Q1 2025  ✅ Trinity VSA libraries (29 languages)
+         ✅ C library with AVX2 SIMD
+         □  Trinity Node alpha
+
+Q2 2025  □  $TRI token launch
+         □  Mainnet beta
+         □  BitNet 7B model
+
+Q3 2025  □  BitNet 70B model
+         □  Mobile apps
+         □  10,000 nodes
+
+Q4 2025  □  DAO governance
+         □  Enterprise partnerships
+         □  100,000 nodes
 ```
 
-### Option 4: Manual build
-```bash
-# 1. Install Zig (v0.13.0 - v0.15.2 supported)
-# Ubuntu/Debian:
-sudo apt update && sudo apt install zig
-
-# macOS:
-brew install zig@0.13
-
-# Or download from ziglang.org
-
-# 2. Build compiler
-cd src/vibeec
-zig build -Doptimize=ReleaseSafe  # Safe for all CPUs
-cp zig-out/bin/vibeec ../../bin/vibee
-
-# 3. Verify
-cd ../..
-./bin/vibee --help
-```
-
-### Platform-specific binaries
-| Platform | Command | Notes |
-|----------|---------|-------|
-| **Linux x86_64** | `./bin/vibee` | Works on modern CPUs |
-| **macOS ARM64** | Rebuild with Zig | `zig build -Dtarget=aarch64-macos` |
-| **Windows WSL2** | Same as Linux | Use Ubuntu WSL2 |
-| **Docker** | `ghcr.io/ghashtag/vibee` | Multi-arch support |
-
-**Need help?** Open an issue or check [docs/INSTALLATION.md](docs/INSTALLATION.md).
-
-## 🌍 GEN-MULTI: 42 Languages
-
-**One specification → 42 programming languages!**
-
-```bash
-# Generate Python code
-vibee gen-multi specs/tri/feature.vibee python
-
-# Generate ALL 42 languages
-vibee gen-multi specs/tri/feature.vibee all
-```
-
-**Supported Languages:**
-
-| Tier | Languages |
-|------|-----------|
-| **Primary** | Zig, Python, Rust, Go, TypeScript, WASM |
-| **Enterprise** | Java, Kotlin, Swift, C, C# |
-| **Scripting** | Ruby, PHP, Lua, Perl, R |
-| **Functional** | Haskell, OCaml, Elixir, Erlang, F#, Scala, Clojure |
-| **Systems** | D, Nim, Crystal, Julia, Odin, Jai, V |
-| **Classic** | Ada, Fortran, COBOL, Pascal, Objective-C |
-| **JVM** | Groovy, Dart |
-| **Lisp** | Racket, Scheme, Common Lisp |
-| **Logic** | Prolog, Gleam |
-
-## 🚀 Quick Start
-
-```bash
-# Validate specification before generation
-vibeec validate specs/tri/feature.vibee
-
-# Generate Zig code from specification
-vibee gen specs/tri/feature.vibee
-
-# Generate for multiple languages
-vibee gen-multi specs/tri/feature.vibee all
-
-# Test generated code
-zig test trinity/output/feature.zig
-
-# Run all tests (parallel)
-cd trinity/output && ls *.zig | xargs -P 8 -I {} zig test {}
-```
-
-## ✅ Specification Validator
-
-Validate `.vibee` specifications before generating code:
-
-```bash
-# Validate a single specification
-vibeec validate specs/tri/core/absolute_security_v126.vibee
-
-# Use standalone validator
-./src/vibeec/bin/vibeec-validator specs/tri/core/absolute_security_v126.vibee
-```
-
-**Validation Rules:**
-- ✅ Mandatory `output:` field required
-- ✅ Must be in subfolder (`specs/tri/core/`, not root)
-- ✅ `.tri` extension forbidden (use `.vibee` only)
-
-**Example Output:**
-```
-╔══════════════════════════════════════════════════════════════════╗
-║              VIBEE SPECIFICATION VALIDATION ERRORS               ║
-╚══════════════════════════════════════════════════════════════════╝
-
-❌ Missing mandatory 'output:' key
-
-❌ Validation FAILED
-```
-
-**Build Validator:**
-```bash
-cd src/vibeec
-zig build-exe validator_main.zig -femit-bin=bin/vibeec-validator
-```
-
-## 🛠️ Tools
-
-### py2vibee - Python to VIBEE Converter
-
-Convert Python code to `.vibee` specifications for FPGA/software targets:
-
-```bash
-# Convert Python to VIBEE spec
-py2vibee adder.py --target varlog --output adder.vibee
-
-# Generate Verilog from spec
-vibee gen specs/tri/adder.vibee
-```
-
-**Features:**
-- AST parsing & type inference
-- Multi-target: varlog, verilog, zig, python, rust, go
-- Hardware signal generation
-- BDD-style behavior specifications
-
-**Source:** `specs/tri/py2vibee.vibee` (auto-generated tool)
-
-## 🔥 Key Features (January 2026 - RELEASE)
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| **Multi-Zig Support** | Compatible with Zig 0.13.0 up to 0.15.2 | ✅ READY |
-| **Global Distribution**| Brew & Chocolatey support | ✅ READY |
-| **iGLA v6 IMMORTAL** | 15000× inference speedup | ✅ READY |
-| **KOSCHEI MODE** | Autonomous self-evolution | ✅ READY |
-| **RAG Pipeline** | Retrieval-Augmented Generation | 16 | 99 |
-| **Agent Browser** | Chromium + Monaco + AI Agent | 32 | 200+ |
-| **GEN-MULTI** | Code generation for 42 languages | 42 | 350+ |
-| **FPGA / HLS** | Synthesizable Verilog & vendor abstraction | ✅ | READY |
-| **Cycle-Accurate**| Automated latency & pipeline analysis | ✅ | READY |
-| **FFI System** | Integration with 40 languages | 40 | 350+ |
-| **E2E Pipeline v21** | Chrome CDP + Ollama LLM Agent | 4 | 35+ |
-| **BitNet Benchmark** | FPGA performance benchmarking | 12 | 50+ |
-
-## 🤖 Real Browser Agent (v22.7)
-
-**Pure Zig implementation** - no shell scripts, no external dependencies:
-
-```bash
-# Build and run the demo
-cd src/vibeec && zig build-exe demo_agent.zig && ./demo_agent
-```
-
-**Output:**
-```
-╔══════════════════════════════════════════════════════════════════╗
-║           VIBEE AGENT v22.7 - REAL INTEGRATION DEMO              ║
-╚══════════════════════════════════════════════════════════════════╝
-
-[1/5] Discovering Chrome targets...
-  Found target: ws://localhost:9222/devtools/page/...
-
-[2/5] Connecting to Chrome CDP...
-  Connected!
-
-[3/5] Navigating to example.com...
-  Navigation started!
-
-[4/5] Getting page title...
-  Title: Example Domain
-
-[5/5] Asking LLM about the page...
-  LLM Response: Example domain refers to specific subdomains...
-
-╔══════════════════════════════════════════════════════════════════╗
-║  ✓ Chrome CDP connection: WORKING                                ║
-║  ✓ Page navigation: WORKING                                      ║
-║  ✓ DOM evaluation: WORKING                                       ║
-║  ✓ Ollama LLM integration: WORKING                               ║
-╚══════════════════════════════════════════════════════════════════╝
-```
-
-**Components (Pure Zig):**
-- `websocket.zig` - RFC 6455 WebSocket client
-- `http_client.zig` - HTTP/1.1 client using std.http
-- `cdp_client.zig` - Chrome DevTools Protocol
-- `real_agent.zig` - Browser + LLM integration
-
-**Requirements:**
-- Chrome with `--remote-debugging-port=9222`
-- Ollama running on port 11434
-
-**Documentation:** [docs/E2E_DEMO.md](docs/E2E_DEMO.md) | [docs/E2E_PIPELINE_GUIDE.md](docs/E2E_PIPELINE_GUIDE.md)
-
-## 📊 BitNet Benchmark Suite
-
-Performance benchmarking for BitNet FPGA inference:
-
-```bash
-# Run benchmarks
-python -m bitnet.benchmark --model model.bin
-
-# With visualization
-python -m bitnet.benchmark --model model.bin --plot --plot-dir plots/
-
-# Specific benchmark type
-python -m bitnet.benchmark --model model.bin --type latency --format json
-```
-
-**Metrics:**
-| Metric | Description |
-|--------|-------------|
-| Latency | Mean, P50, P95, P99 inference time (ms) |
-| Throughput | Tokens per second |
-| Memory | Bandwidth (GB/s), peak usage |
-
-**Output formats:** JSON, CSV, Markdown, PNG/SVG plots
-
-**Documentation:** [BENCHMARK.md](trinity/output/fpga/driver/python/BENCHMARK.md)
+---
 
 ## 📁 Project Structure
 
 ```
-vibee-lang/
-├── trinity-os/             # **Native Ternary OS (Web App)**
-├── specs/tri/              # .vibee specifications (667+)
-├── trinity/output/         # Generated Zig code (2000+)
-│   └── fpga/               # **Generated Verilog HDL + Testbenches**
-├── src/vibeec/             # Compiler source
-│   ├── verilog_codegen.zig # **HLS / Verilog engine**
-│   └── vibee_parser.zig    # Specification parser
-├── bin/vibee               # CLI binary
-├── docs/                   # Documentation
-│   ├── TRINITY_PITCH_DECK.md # **Investor Deck**
-│   ├── habr/               # Habr articles
-│   ├── verdicts/           # TOXIC VERDICT reports
-│   └── academic/           # Research papers
-├── generated/multi/        # Multi-language output
-└── archive/                # Historical files
+trinity/
+├── libs/           # 29-language VSA libraries
+├── src/            # Core source code
+│   ├── vibeec/     # VIBEE compiler
+│   └── phi-engine/ # Quantum-inspired engine
+├── specs/          # .vibee specifications
+├── docs/           # Documentation
+│   └── business/   # Business model, tokenomics
+├── fpga-network/   # FPGA acceleration
+└── examples/       # Usage examples
 ```
-
-## 📝 Specification Example
-
-```yaml
-# specs/tri/my_feature.vibee
-name: my_feature
-version: "1.0.0"
-language: zig
-module: my_feature
-
-types:
-  User:
-    fields:
-      id: Int
-      name: String
-      active: Bool
-
-behaviors:
-  - name: create_user
-    given: Valid user data
-    when: Create called
-    then: User created successfully
-```
-
-## 🔧 Commands
-
-```bash
-# Code Generation
-vibee gen <spec.vibee>              # Generate Zig
-vibee gen-multi <spec.vibee> all    # Generate 42 languages
-vibee gen-all                       # Generate all specs (parallel)
-
-# Testing
-vibee test-all                      # Test all modules (parallel)
-vibee chain                         # gen-all + test-all
-
-# Utilities
-vibee help                          # Show all commands
-vibee eval "△ ∧ ○"                  # Ternary logic
-vibee phi                           # Sacred constants
-vibee serve                         # LLM inference server
-```
-
-## 🔌 FFI Modules
-
-40 FFI modules for cross-language integration:
-
-| Category | Modules |
-|----------|---------|
-| **Core** | ffi_core, ffi_c_bindings |
-| **Primary** | ffi_python, ffi_rust, ffi_go, ffi_wasm |
-| **Enterprise** | ffi_java_jni, ffi_kotlin, ffi_swift |
-| **Scripting** | ffi_ruby, ffi_php, ffi_lua, ffi_perl, ffi_r |
-| **Functional** | ffi_haskell, ffi_ocaml, ffi_elixir, ffi_erlang |
-| **Systems** | ffi_d, ffi_nim, ffi_crystal, ffi_julia |
-
-## 📊 Type Mapping
-
-| VIBEE Type | Zig | Python | Rust | Go |
-|------------|-----|--------|------|-----|
-| `String` | `[]const u8` | `str` | `String` | `string` |
-| `Int` | `i64` | `int` | `i64` | `int64` |
-| `Float` | `f64` | `float` | `f64` | `float64` |
-| `Bool` | `bool` | `bool` | `bool` | `bool` |
-| `List<T>` | `[]const u8` | `List[Any]` | `Vec<T>` | `[]interface{}` |
-| `Option<T>` | `?T` | `Optional[T]` | `Option<T>` | `*T` |
-
-## 📚 Documentation
-
-### 📖 Learn VIBEE
-- **[VIBEE Language Guide](docs/guides/VIBEE_LANGUAGE_GUIDE.md)** - Complete language reference
-- [Documentation Index](docs/INDEX.md) - All documentation
-- [Quickstart](docs/quickstart/QUICKSTART.md) - Get started in 5 minutes
-
-### 📰 Articles & Research
-- [Habr Article: Golden Key](docs/habr/HABR_ARTICLE_GOLDEN_KEY_V4.md) - Main article (RU)
-- [iGLA Documentation](docs/igla/) - Inference acceleration
-- [KOSCHEI System](docs/koschei/) - Autonomous evolution
-- [Scientific Papers](docs/scientific/) - Research references
-
-### 🛠️ Development
-- [AGENTS.md](AGENTS.md) - AI Agent Guidelines
-- [CLAUDE.md](CLAUDE.md) - Development Guidelines
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution Guide
-
-## 📈 Project Statistics
-
-| Metric | Value |
-|--------|-------|
-| Specifications (.vibee) | **667+** |
-| Generated modules (.zig) | **2000+** |
-| Supported languages | **42** |
-| FFI modules | **40** |
-| Tests passing | **2000+** |
-| Lines of compiler code | **20,000+** |
-
-## 🤝 Contributing
-
-1. Create `.vibee` specification in `specs/tri/`
-2. Generate: `vibee gen specs/tri/feature.vibee`
-3. Test: `zig test trinity/output/feature.zig`
-4. Submit PR
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-## 📄 License
-
-MIT License - See [LICENSE](LICENSE)
-
-## 👤 Author
-
-**Dmitrii Vasilev**
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 **
+## 🔗 Links
+
+| Resource | Link |
+|----------|------|
+| **GitHub** | [github.com/gHashTag/trinity](https://github.com/gHashTag/trinity) |
+| **Documentation** | [docs/](docs/) |
+| **Business Model** | [docs/business/BUSINESS_MODEL.md](docs/business/BUSINESS_MODEL.md) |
+| **Tokenomics** | [docs/business/TOKENOMICS.md](docs/business/TOKENOMICS.md) |
+| **Brand Guidelines** | [docs/business/BRANDING.md](docs/business/BRANDING.md) |
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+```bash
+# Clone
+git clone https://github.com/gHashTag/trinity.git
+
+# Build
+cd trinity && zig build
+
+# Test
+zig test src/vsa.zig
+```
+
+---
+
+## 📜 License
+
+MIT License - see [LICENSE](LICENSE)
+
+---
+
+<p align="center">
+  <strong>Trinity Network</strong><br>
+  <em>Decentralized AI Inference</em><br><br>
+  <code>Trinity = 3 = Ternary = {-1, 0, +1}</code><br>
+  <code>φ² + 1/φ² = 3</code>
+</p>
