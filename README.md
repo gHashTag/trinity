@@ -369,7 +369,7 @@ print(similarity(red_apple, apple))  # ~0.0 (orthogonal after bind)
 
 ```
 Node Rewards     ████████████████████  40%  4.0B $TRI
-Team & Advisors  ████████              20%  2.0B $TRI
+Founder          ████████              20%  2.0B $TRI
 Treasury (DAO)   ██████                15%  1.5B $TRI
 Public Sale      ██████                15%  1.5B $TRI
 Ecosystem        ████                  10%  1.0B $TRI
