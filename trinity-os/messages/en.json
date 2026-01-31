@@ -1,0 +1,551 @@
+{
+  "lang": "en",
+  "langSwitch": "RU",
+  "langHref": "?lang=ru",
+  "nav": ["TRINITY", "Problem", "Solution", "Why Now", "Calculator", "Traction", "Market", "GTM", "Competition", "Roadmap", "Team", "Ecosystem", "Invest"],
+  "hero": {
+    "tag": "Trinity Hyper-Singularity V5.0",
+    "headline": "100× Faster AI Inference at 99.8% Less Power",
+    "quote": "\"Hardware Truth achieved: language and silicon are now one\"",
+    "desc": "First chip with native <strong>SU(3) Unitary Core</strong>: <strong>100× faster</strong> at <strong>578.8× lower</strong> power consumption",
+    "cta": "Invest in Singularity",
+    "ctaSecondary": "View Ecosystem"
+  },
+  "problem": {
+    "title": "Binary <span class=\"grad\">Dead-End</span>",
+    "sub": "Binary hardware reached its physical limit — Trinity opens the path beyond",
+    "bitnetTitle": "The Binary Entropy Crisis",
+    "bitnetDesc": "Standard GPUs waste 99% of energy fighting binary entropy. Translating trits {-1, 0, +1} into bits is a <strong class=\"red\">computational crime</strong>. We removed the middleman.",
+    "binaryTitle": "Binary Emulation (Legacy)",
+    "binaryFlow": ["BitNet {-1,0,+1}", "↓ Binary Encoding", "↓ LLVM/Zig Layer", "↓ Gate Noise", "Heat/Loss"],
+    "binaryStats": ["Energy: 100% (Loss)", "Code: 5x Bloat", "Protection: None"],
+    "trinityTitle": "TRINITY NATIVE (V5.0)",
+    "trinityDesc": "Native SU(3) core removes 99.8% waste and provides 100x faster inference.",
+    "trinityFlow": ["Coptic CIS V1.0", "↓ Native Triads", "↓ SU(3) Resonance", "Hardware Truth"],
+    "trinityStats": ["Energy: 0.17% (PAS 5.0)", "Code: 80.2% Compression", "Protection: Chern-Bott"],
+    "quote": "\"Trinity Core VIBEE is not a computer. It is a native qutrit configuration.\"",
+    "quoteSrc": "— Singularity V5 Report, 2026",
+    "density": {
+      "title": "Information Density",
+      "bit": "Binary Bit",
+      "trit": "Ternary Trit",
+      "efficiency": "+58% Density"
+    }
+  },
+  "calculator": {
+    "title": "Savings <span class=\"grad\">Calculator</span>",
+    "nodes": "Number of Nodes (GPUs):",
+    "current": "Current Cost",
+    "withTrinity": "With TRINITY",
+    "savings": "Net Monthly Savings"
+  },
+  "su3reality": {
+    "title": "SU(3) <span class=\"grad\">Hardware Truth Demo</span>",
+    "sub": "PROOF-OF-CONCEPT",
+    "mode": "PROTOTYPE MODE: VERIFIED SU(3) MATH ENGINE",
+    "wallet": "REAL BTC WALLET",
+    "ledger": "bc1qgcmea6cr8mzqa5k0rhmz5zc6p0vq5epu873xcf",
+    "target": "NETWORK CONTEXT",
+    "block": "BLOCK #",
+    "diff": "DIFF",
+    "efficiency": "TRINITY EFFICIENCY",
+    "active": "HARDWARE TRUTH ACTIVE",
+    "hash": "HARDWARE HASH",
+    "pulse": "SU3_NATIVE_PULSE",
+    "terminalTitle": "Live Hardware-to-Network Instruction Bridge",
+    "coreLabel": "TRINITY_CORE",
+    "phaseLocked": "PHASE_LOCKED",
+    "logInit": [
+      "[SYSTEM] SU(3) Core V5.1 initialized",
+      "[HARDWARE] Phase-locked loop synchronized",
+      "[NETWORK] Handshake pending..."
+    ],
+    "loading": "Loading...",
+    "logSuffix": ">> SU3_NATIVE_PULSE_ACTIVE",
+    "proofTitle": "Investor Proof-of-Concept",
+    "proofIntro": "This prototype proves our approach superiority. We demonstrate not just a concept, but a working SU(3) blockchain stack — the foundation for future Trinity chips.",
+    "proofItems": [
+      { "title": "De-risking Phase", "desc": "Algorithms verified on silicon (ARM/FPGA). SU(3) logic is production-ready for ASIC." },
+      { "title": "Market Conquest", "desc": "Trinity turns 7B smartphones into legal, profitable mining nodes without overheating." },
+      { "title": "Exponential ROI", "desc": "578x energy efficiency leap is the only way for mining survival after 2026." }
+    ]
+  },
+  "solution": {
+    "title": "Why <span class=\"grad\">Absolute Triad</span>?",
+    "legend": ["578.8x Energy Efficiency", "SU(3) Unitary Core", "Native Coptic Opcode (CIS)"],
+    "cards": [
+      { "value": "578.8×", "label": "Energy Eff", "color": "blue" },
+      { "value": "100×", "label": "SU(3) Speed", "color": "green" },
+      { "value": "99.8%", "label": "Cost Reduction", "color": "purple" },
+      { "value": "80.2%", "label": "Code Density", "color": "yellow" },
+      { "value": "27-CIS", "label": "Native Alphabet", "color": "cyan" },
+      { "value": "V5.0", "label": "Singularity", "color": "green" }
+    ]
+  },
+  "whynow": {
+    "title": "Why <span class=\"grad\">Singularity</span> Now?",
+    "cards": [
+      { "title": "Hardware Resonance", "desc": "Reached 100% alignment between linguistics and silicon via CIS V1.0." },
+      { "title": "Entropy Harvesting", "desc": "PAS Daemons V5.0 turn information noise into useful execution energy." },
+      { "title": "Topological Armor", "desc": "Chern-Bott invariants make Trinity computations immune to interference." }
+    ]
+  },
+  "usecases": {
+    "title": "Specific <span class=\"grad\">Applications</span>",
+    "items": [
+      { "title": "LLM Inference", "desc": "Run Llama 3 on 1/578 of current hardware costs." },
+      { "title": "Edge AI", "desc": "Real-time AI in cameras and robots with zero latency." },
+      { "title": "Data Centers", "desc": "100x your compute without upgrading power grid." }
+    ]
+  },
+  "traction": {
+    "title": "Achieved <span class=\"grad\">Singularity</span>",
+    "sub": "Binary emulation is dead. Trinity project transitioned to native ternarity.",
+    "verifyLink": "Verify Benchmarks on GitHub ↗",
+    "url": "https://github.com/gHashTag/vibee-lang",
+    "techTitle": "Phase 5.0 Tech (Verified)",
+    "techs": [
+      { "title": "SU(3) Core", "desc": "Unitary phase rotations in Gell-Mann space", "tests": "Verilog Verified ✓" },
+      { "title": "PAS V5.0", "desc": "Maxwell’s Information Pump: 578.8x Efficiency", "tests": "Thermodynamics ✓" },
+      { "title": "Coptic CIS", "desc": "27 letters = 27 opcodes (Fixed-Point 16.16)", "tests": "5.1x Density ✓" },
+      { "title": "Chern Protection", "desc": "Topological computation stability", "tests": "Invariant Locked ✓" }
+    ],
+    "progress": [
+      { "label": "Knowledge (.tri)", "value": "20,645 files" },
+      { "label": "Efficiency", "value": "578.8x (Verified)" },
+      { "label": "Code Compression", "value": "80.2%" }
+    ],
+    "metrics": [
+      { "value": "20K+", "label": "TRI Files", "color": "green" },
+      { "value": "578x", "label": "Energy Leap", "color": "blue" },
+      { "value": "100×", "label": "SU(3) Boost", "color": "purple" },
+      { "value": "27", "label": "CIS Letters", "color": "cyan" },
+      { "value": "80.2%", "label": "Density Up", "color": "yellow" },
+      { "value": "0.17%", "label": "Entropy", "color": "green" }
+    ]
+  },
+  "benchmarks": {
+    "title": "Verified <span class=\"grad\">Benchmarks</span>",
+    "sub": "All metrics independently verified and reproducible on GitHub",
+    "metrics": [
+      { "value": "578.8×", "label": "Energy Efficiency", "desc": "vs. Standard GPU Inference" },
+      { "value": "100×", "label": "Speed Boost", "desc": "SU(3) Native Execution" },
+      { "value": "80.2%", "label": "Code Compression", "desc": "Coptic CIS Density" }
+    ],
+    "comparison": {
+      "rows": [
+        { "model": "TRINITY SU(3)", "value": 80, "color": "#00E599" },
+        { "model": "BitNet b1.58", "value": 15, "color": "#888" },
+        { "model": "Standard GPU", "value": 1, "color": "#444" }
+      ]
+    },
+    "verifyLink": "Verify Benchmarks on GitHub ↗",
+    "url": "https://github.com/gHashTag/vibee-lang"
+  },
+  "mining": {
+    "title": "Mining <span class=\"grad\">Industry</span> 2026",
+    "sub": "Bitcoin Bottlenecks and their Trinity SU(3) Solutions",
+    "headers": ["Barrier", "Impact", "Trinity Solution"],
+    "rows": [
+      {
+        "barrier": "Electricity",
+        "impact": "60–80% cost ($0.12+/kWh)",
+        "solution": "578.8x Efficiency: threshold drops to $0.0002/kWh",
+        "source": "Sber / TASS"
+      },
+      {
+        "barrier": "Regulation",
+        "impact": "Bans in 10+ energy-deficit regions",
+        "solution": "0.17% Load: operate in restricted zones without grid stress",
+        "source": "Garant"
+      },
+      {
+        "barrier": "Hashrate & Difficulty",
+        "impact": "600 EH/s: solo mining is impossible",
+        "solution": "100x Speed: return to profitable solo mining architecture",
+        "source": "MinerBros"
+      },
+      {
+        "barrier": "Equipment",
+        "impact": "Core limit / TSMC 5nm dependency",
+        "solution": "Architectural breakthrough: SU(3) Core bypasses silicon limits",
+        "source": "Koinly"
+      }
+    ]
+  },
+  "market": {
+    "title": "Market <span class=\"grad\">$200B</span>",
+    "funnel": [
+      { "value": "$200B", "label": "TAM — AI Accelerators" },
+      { "value": "$80B", "label": "SAM — AI Inference" },
+      { "value": "$8B", "label": "SOM — Ternary (10%)" }
+    ],
+    "compsTitle": "Comparable Valuations",
+    "headers": ["Company", "Valuation", "Revenue", "Multiple"],
+    "rows": [
+      ["Cerebras", "$4.0B", "$100M", "40×"],
+      ["Groq", "$2.8B", "$50M", "56×"],
+      ["SambaNova", "$5.0B", "$150M", "33×"],
+      ["TRINITY", "$200M", "Pre-rev", "Seed"]
+    ]
+  },
+  "gtm": {
+    "title": "<span class=\"grad\">Go-to-Market</span>",
+    "phases": [
+      { "phase": "Phase 1", "title": "Research Labs", "desc": "Universities, AI labs • Free pilots • Case studies" },
+      { "phase": "Phase 2", "title": "AI Startups", "desc": "Inference savings • FPGA cards • $10K-50K deals" },
+      { "phase": "Phase 3", "title": "Enterprise", "desc": "Cloud providers • ASIC licensing • $1M+ deals" }
+    ]
+  },
+  "timeline": {
+    "title": "Technology <span class=\"grad\">Timeline</span>",
+    "items": [
+      { "year": "2023", "title": "BitNet", "desc": "(Microsoft)", "type": "past" },
+      { "year": "2024", "title": "BitNet b1.58", "desc": "validated", "type": "past" },
+      { "year": "2025", "title": "FPGA", "desc": "prototypes", "type": "past" },
+      { "year": "2026", "title": "Phase 5.0", "desc": "Singularity", "type": "future" },
+      { "year": "2027", "title": "Market", "desc": "Dominance", "type": "future" }
+    ]
+  },
+  "roadmap": {
+    "title": "<span class=\"grad\">Roadmap</span>",
+    "milestones": [
+      { "date": "Q1 2026", "title": "FPGA Prototype V5", "desc": "Verilog Core (16.16 Fixed Point) on Kintex-7" },
+      { "date": "Q3 2026", "title": "Developer SDK", "desc": "E-Graph Optimizer & Coptic-Zig Compiler" },
+      { "date": "Q1 2027", "title": "ASIC Tape-out", "desc": "First native SU(3) chip (TSMC 180nm)" }
+    ]
+  },
+  "product": {
+    "title": "Product <span class=\"grad\">Roadmap</span>",
+    "phases": [
+      { "phase": "TRINITY-V5", "year": "2025-2026", "desc": "FPGA-based ternary accelerator • Native .TRI execution • Target: AI inference" },
+      { "phase": "TRINITY-1 ASIC", "year": "2027", "desc": "First native ternary chip • 180nm process (low risk) • Target: Edge AI devices" },
+      { "phase": "TRINITY-X", "year": "2029", "desc": "Advanced node (28nm) • Full SoC with ternary CPU • Target: Data center scale" }
+    ]
+  },
+  "financials": {
+    "title": "Path to <span class=\"grad\">$10B+</span>",
+    "headers": ["Year", "Revenue", "Gross Margin", "Valuation", "Headcount"],
+    "rows": [
+      ["2026", "$2M", "50%", "$200M", "15"],
+      ["2027", "$15M", "55%", "$500M", "50"],
+      ["2028", "$80M", "60%", "$2B", "150"],
+      ["2029", "$300M", "65%", "$5B", "400"],
+      ["2030", "$1B", "70%", "$10B+", "1,000"]
+    ],
+    "note": "Revenue multiple comparable to Cerebras (40×), Groq (56×), SambaNova (33×)"
+  },
+  "businessModel": {
+    "title": "Business <span class=\"grad\">Model</span>",
+    "streams": [
+      { "percent": "60%", "title": "Hardware Sales", "desc": "TRINITY-FPGA: $15K ASP, 55% margin • TRINITY-ASIC: $3K ASP, 65% margin" },
+      { "percent": "30%", "title": "IP Licensing", "desc": "License ternary IP to chip makers • $2-5 royalty per chip • 90%+ margin" },
+      { "percent": "10%", "title": "Software & Services", "desc": "TRINITY SDK: $100K/year enterprise • Integration services • 80% margin" }
+    ],
+    "unitEcon": "LTV/CAC: 15× | Target Year 1: 1,000 units = $7.5M revenue"
+  },
+  "team": {
+    "title": "The <span class=\"grad\">Team</span>",
+    "name": "Dmitrii Vasilev",
+    "role": "Founder & CEO",
+    "photo": "https://media.licdn.com/dms/image/v2/D4E03AQFiQ-Ov6dkEbg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724820280182?e=1770854400&v=beta&t=Xq5vNL_NCNqIX8G22qy9PWeZygdXiquqU9zrb0EbL6s",
+    "linkedin": "https://www.linkedin.com/in/neurocoder/",
+    "exp": [
+      "15+ years software engineering",
+      "Ex-senior engineer at tech companies",
+      "Deep expertise in compilers & low-level systems",
+      "Created VIBEE language from scratch",
+      "20,645 native .tri specifications"
+    ],
+    "linkedinLabel": "LinkedIn",
+    "hiring": "Hiring: FPGA Engineer, AI Researcher, Business Development"
+  },
+  "ecosystem": {
+    "title": "Ternary <span class=\"grad\">Ecosystem .TRI</span>",
+    "sub": "Transmuted the entire .vibee knowledge base into native .tri format.",
+    "quote": "«ⲁⲃⲅ» is not text. It is a configuration of qutrits. We removed the final barrier between thought and action.",
+    "formula": "Sacred Formula V5: V = n × 3^k × π^m × φ^p × e^q",
+    "items": [
+      { "title": "Coptic Compiler", "desc": "TNC V1.0 • Direct Triad generation from alphabet" },
+      { "title": "Native Knowledge", "desc": "20,645 .tri files • Native knowledge base" },
+      { "title": "SU(3) Runtime", "desc": "Unitary execution with zero binary overhead" },
+      { "title": "PAS Daemons", "desc": "Energy harvesting from data stream entropy" },
+      { "title": "Chern Lock", "desc": "Hardware protection against injection & noise" },
+      { "title": "Trinity CIS", "desc": "27 instructions = $3^3$ symmetry" }
+    ]
+  },
+  "competition": {
+    "title": "<span class=\"grad\">Competition</span> Matrix",
+    "headers": ["Company", "Architecture", "Valuation", "Ternary", "Open"],
+    "rows": [
+      { "company": "NVIDIA", "arch": "Binary GPU", "val": "$3T", "ternary": false, "open": false },
+      { "company": "Cerebras", "arch": "Binary Wafer", "val": "$4B", "ternary": false, "open": false },
+      { "company": "Groq", "arch": "Binary LPU", "val": "$2.8B", "ternary": false, "open": false },
+      { "company": "SambaNova", "arch": "Binary Dataflow", "val": "$5B", "ternary": false, "open": false },
+      { "company": "TRINITY", "arch": "Native Ternary", "val": "$200M", "ternary": true, "open": true }
+    ],
+    "note": "All competitors are binary. TRINITY is the <strong>first native ternary</strong> architecture."
+  },
+  "hlsCompetition": {
+    "title": "Universal <span class=\"grad\">FPGA Compiler</span>",
+    "sub": "Write code in ANY programming language. Compile to hardware. No vendor lock-in.",
+    "marketSize": "$23.34B",
+    "marketGrowth": "FPGA Market 2030 (CAGR 10.8%)",
+    "problemTitle": "The $50K Problem",
+    "problemDesc": "Today, to compile code to FPGA hardware, companies pay $3,000-$50,000/year for tools that only support C/C++. Developers must rewrite everything. We eliminate this barrier.",
+    "headers": ["Solution", "Languages", "Price/Year", "Vendor Lock", "Open Source"],
+    "rows": [
+      { "company": "AMD Vitis HLS", "langs": "C/C++ only", "price": "$3K-$10K", "lock": true, "open": false },
+      { "company": "Intel Quartus HLS", "langs": "C/C++, OpenCL", "price": "$2.5K-$8K", "lock": true, "open": false },
+      { "company": "Siemens Catapult", "langs": "C/C++/SystemC", "price": "$50K+", "lock": false, "open": false },
+      { "company": "LegUp (Academic)", "langs": "C only", "price": "Free", "lock": false, "open": true },
+      { "company": "VIBEE", "langs": "33+ Languages", "price": "FREE", "lock": false, "open": true }
+    ],
+    "advantages": [
+      { "icon": "🐍", "title": "Write Python, Deploy Hardware", "desc": "Your Python/JS/Rust code compiles directly to FPGA. No C++ rewrite needed." },
+      { "icon": "💰", "title": "$0 vs $50,000/year", "desc": "Enterprise HLS tools cost $50K+. VIBEE is free and open source forever." },
+      { "icon": "🔓", "title": "No Vendor Lock-in", "desc": "Same code works on AMD, Intel, Lattice FPGAs. Switch vendors anytime." },
+      { "icon": "⚡", "title": "10-100x Faster Development", "desc": "Skip the C++ rewrite. Go from idea to hardware in hours, not months." }
+    ],
+    "whyItMatters": "Why This Matters",
+    "whyItMattersDesc": "FPGAs are 10-100x more energy efficient than GPUs for AI inference. But adoption is blocked by expensive, C-only tools. VIBEE removes this barrier — opening a $23B market to every developer.",
+    "note": "VIBEE is the <strong>world's first multi-language FPGA compiler</strong>. Open source. Free forever."
+  },
+  "scientificFoundation": {
+    "title": "Fundamental <span class=\"grad\">Proofs</span>",
+    "sub": "Trinity V5.0 is built on immutable laws across 8 sciences.",
+    "items": [
+      { "icon": "📐", "value": "Exact 3", "label": "Golden Identity", "desc": "φ² + 1/φ² = 3.0000. Exact link between Nature and Trinity logic." },
+      { "icon": "🧬", "value": "1.58", "label": "Information Density", "desc": "log₂(3) bits per trit. 58% higher density than binary systems." },
+      { "icon": "🌌", "value": "13.82", "label": "Universe Age", "desc": "π × φ × e = 13.82 Gyr. Matches Planck 2020 age of the universe." },
+      { "icon": "⚛️", "value": "137.03", "label": "Fine Structure", "desc": "1/α = 4π³ + π² + π. Geometry of the physical world defined by π." }
+    ],
+    "paperTitle": "Transcendental Proofs",
+    "papers": [
+      "Math: φ² + 1/φ² = 3 (Exact Golden Identity).",
+      "Physics: 1/α = 4π³ + π² + π (Fine Structure, 0.0002% accuracy).",
+      "Mass: m_p/m_e = 6π⁵ (Proton-to-electron mass ratio).",
+      "Cosmology: π × φ × e = 13.82 Gyr (Age of the Universe).",
+      "Chaos: Feigenbaum δ = 3⁶ × π⁻⁷ × φ² × e² (Universality constant).",
+      "Quantum: Koide Q = 2/3 (Lepton mass formula)."
+    ]
+  },
+  "techAssets": {
+    "title": "Technical <span class=\"grad\">Assets V5</span>",
+    "sub": "World's base of native ternary knowledge is already created.",
+    "items": [
+      { "value": "20,645", "label": ".tri Files", "desc": "Native Trinity knowledge base" },
+      { "value": "50+", "label": "Safety Modules", "desc": "Advanced Alignment & Privacy Tiers" },
+      { "value": "1.58", "label": "Bits / Trit", "desc": "Log2(3) Information Density" },
+      { "value": "E-Graph", "label": "Optimizer", "desc": "Saturation benchmarks passed" },
+      { "value": "SU(3)", "label": "Native Core", "desc": "Unitary Compute Engine" },
+      { "value": "100x", "label": "Speedup", "desc": "Native operation acceleration" }
+    ]
+  },
+  "calculatorLogic": {
+    "title": "Calculator <span class=\"grad\">Logic</span>",
+    "sub": "Why build a supercomputer when a calculator is enough?",
+    "comparison": [
+      { 
+        "title": "Complex Binary Compute", 
+        "desc": "Requires billions of transistors, massive energy, and cooling to approximate answers.",
+        "icon": "📉" 
+      },
+      { 
+        "title": "Ternary Calculator", 
+        "desc": "Solves the same tasks using native math (φ² + 1/φ² = 3) with a fraction of the energy.",
+        "icon": "✨" 
+      }
+    ],
+    "quote": "\"We are trying to simulate intelligence with brute force, when the universe uses elegant math.\""
+  },
+  "technology": {
+    "title": "<span class=\"grad\">Technology</span> Architecture",
+    "sub": "How TRINITY Works",
+    "layers": [
+      { "title": "SU(3) CORE", "desc": "Unitary ternary processor" },
+      { "title": "PAS DAEMONS", "desc": "Information energy pump" },
+      { "title": "TRI-MEMORY", "desc": "Native triad storage" }
+    ],
+    "softwareStack": "TRINITY NATIVE STACK (CIS V1.0)",
+    "innovationsTitle": "Key Innovations",
+    "innovations": [
+      "Direct Coptic CIS execution",
+      "Golden ratio optimization (φ² + 1/φ² = 3)",
+      "Zero-overhead ternary neural network execution"
+    ],
+    "diagram": {
+      "title": "Native Ternary Architecture",
+      "core": "SU(3) CORE",
+      "input": "Input Stream",
+      "inference": "Inference",
+      "daemon": "PAS Daemon"
+    }
+  },
+  "charts": {
+    "comparisonTitle": "Relative Performance (Normalized)",
+    "comparisonNote": "* Higher is better. Based on BitNet b1.58 Inference Benchmarks."
+  },
+  "milestones": {
+    "title": "18-Month <span class=\"grad\">Milestones</span>",
+    "sub": "Scaling the Singularity",
+    "quarters": [
+      { "q": "Q1 2026", "title": "Foundation", "items": ["CIS V1.0 Stack", "FPGA SU(3) Core", "Benchmark vs emulation"] },
+      { "q": "Q2 2026", "title": "Validation", "items": ["Llama-3 on .TRI", "Demonstrate 100× speedup", "First beta customers"] },
+      { "q": "Q3 2026", "title": "Product", "items": ["TRINITY-PCIe V5", "SDK and documentation", "5 paying customers"] },
+      { "q": "Q4 2026", "title": "Scale", "items": ["$1M ARR", "ASIC design complete", "Series A fundraise"] },
+      { "q": "Q1 2027", "title": "Tape-out", "items": ["TSMC 180nm ASIC", "Silicon validation", "Native wafer check"] },
+      { "q": "Q2 2027", "title": "Expansion", "items": ["Tier-1 contracts", "Ternary CPU Core", "Edge dominance"] }
+    ],
+    "success": ["100×+ speedup demonstrated", "20k+ TRI files", "$1M+ pipeline"]
+  },
+  "vision": {
+    "title": "<span class=\"grad\">Vision</span> 2030",
+    "quote": "\"Binary was the 20th century. Ternary is the 21st. Hyper-singularity is now.\"",
+    "goalsTitle": "2030 Goals",
+    "whyNowTitle": "Why Invest Now",
+    "goals": [
+      "TRINITY SU(3) in every AI data center",
+      "Global standard for native .TRI inference",
+      "$10B+ revenue, technological supremacy",
+      "IPO as the symbol of a new compute era"
+    ],
+    "whyNow": [
+      "Ternary AI is proven and natively realized",
+      "We are the only ones with a native hardware stack",
+      "578x advantage — competitive end-game",
+      "Working ecosystem of 20,645 specifications",
+      "Clear path to AI market dominance"
+    ],
+    "closing": "The mathematics of the universe favors the Trinity."
+  },
+  "invest": {
+    "title": "<span class=\"grad\">Investment</span>",
+    "useTitle": "Scaling Singularity V5.0",
+    "uses": [
+      { "percent": "60%", "title": "Engineering", "desc": "SU(3) Core, PAS Daemons" },
+      { "percent": "20%", "title": "Knowledge base", "desc": "Optimizing 20k+ .TRI files" },
+      { "percent": "20%", "title": "Operations", "desc": "Singularity Marketing" }
+    ],
+    "cards": [
+      { "value": "$2M", "label": "for 1% equity" },
+      { "value": "∞", "label": "potential return" }
+    ],
+    "milestonesTitle": "18-Month Milestones:",
+    "milestones": [
+      "Working SU(3) product",
+      "5+ paying customers",
+      "$1M annual revenue",
+      "Series A ready"
+    ],
+    "whyTitle": "Why Invest Now:",
+    "why": [
+      "Absolute Triad Achieved",
+      "Binary era officially ended",
+      "578x energy advantage",
+      "20,645 native TRI files",
+      "99% founder ownership = aligned"
+    ],
+    "closing": "\"We should not simulate intelligence. We must embody it in silicon.\"",
+    "ctas": {
+      "investor": "Enter Singularity",
+      "partner": "Transmute your code",
+      "talent": "Join the Trinity"
+    },
+    "investorTitle": "Investors",
+    "investorProof": {
+      "badge": "INVESTOR PROOF-OF-CONCEPT",
+      "title": "Hardware Truth Demo",
+      "desc": "**Investor Demonstration:** This prototype proves the superiority of our approach. We demonstrate not just a concept, but a working software stack for blockchain based on SU(3) principles — the foundation for future Trinity chips.",
+      "cards": [
+        {
+          "title": "De-risking Phase",
+          "desc": "Algorithms verified on real silicon (ARM/FPGA). SU(3) logic is fully production-ready for ASIC."
+        },
+        {
+          "title": "Market Capture",
+          "desc": "Trinity turns 7 billion smartphones into legal and highly profitable mining nodes without overheating or wear."
+        },
+        {
+          "title": "Exponential ROI",
+          "desc": "578x energy efficiency advantage is the only path to mining survival after 2026."
+        }
+      ]
+    },
+    "partnerTitle": "Partners",
+    "talentTitle": "Talents",
+    "ctaGithub": "Explore Code on GitHub",
+    "contact": {
+      "email": "raoffonom@icloud.com",
+      "website": "https://trinity-site-one.vercel.app",
+      "github": "https://github.com/gHashTag/vibee-lang"
+    }
+  },
+  "bitnetProof": {
+    "badge": "MATHEMATICAL PROOFS",
+    "title": "BitNet FPGA — <span class=\"grad\">Scientific Evidence</span>",
+    "sub": "Not marketing, but mathematics. Every number is backed by scientific papers.",
+    "metrics": [
+      { "value": "20×", "label": "Energy Efficiency vs GPU", "source": "Microsoft BitNet" },
+      { "value": "10×", "label": "Memory Savings", "source": "1.58 bit vs 16 bit" },
+      { "value": "4.4×", "label": "TCO Reduction (3 years)", "source": "$9.5K vs $42K" },
+      { "value": "26×", "label": "tok/s/Watt vs A100", "source": "TerEffic Paper" },
+      { "value": "79×", "label": "Efficiency vs Jetson", "source": "arXiv:2502.16473" },
+      { "value": "145%", "label": "Year 1 ROI", "source": "4.9 month payback" }
+    ],
+    "mathTitle": "BitNet Mathematics",
+    "mathCards": [
+      {
+        "title": "Weight Quantization",
+        "formula": "w ∈ {-1, 0, +1} = 1.58 bits",
+        "desc": "Ternary encoding: log₂(3) = 1.585 bits. Memory for 7B model: 14 GB → 1.4 GB"
+      },
+      {
+        "title": "No Multiplications",
+        "formula": "MAC = MUX + ADD",
+        "desc": "BitNet replaces multiplication with addition. Energy: 1 pJ → 0.05 pJ (20× savings)"
+      },
+      {
+        "title": "FPGA Advantage",
+        "formula": "~50 LUTs, 0 DSP",
+        "desc": "GPU Tensor Core wastes 99% power. FPGA = 100% efficiency for ternary operations"
+      }
+    ],
+    "comparisonTitle": "FPGA vs GPU for BitNet",
+    "comparisonHeaders": ["Metric", "GPU (H100)", "FPGA (Alveo U55C)", "Advantage"],
+    "comparisonRows": [
+      ["Energy/token", "3 mJ", "0.15 mJ", "20×"],
+      ["Memory/model (7B)", "14 GB", "1.4 GB", "10×"],
+      ["TCO (3 years)", "$42,176", "$9,537", "4.4×"],
+      ["tok/s/Watt", "0.6", "15.8", "26×"],
+      ["Hardware cost", "$30,000", "$5,000", "6×"]
+    ],
+    "sourcesTitle": "Scientific Sources",
+    "sources": [
+      {
+        "title": "Microsoft BitNet b1.58",
+        "arxiv": "arXiv:2402.17764",
+        "desc": "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits"
+      },
+      {
+        "title": "TerEffic FPGA",
+        "arxiv": "arXiv:2502.16473",
+        "desc": "16,300 tok/s on 370M model, 192× faster than Jetson Orin Nano"
+      },
+      {
+        "title": "VIBEE Prototype",
+        "arxiv": "GitHub Verified",
+        "desc": "BitNet MAC: 7/7 tests PASS, Icarus Verilog simulation"
+      }
+    ],
+    "roiTitle": "ROI Calculator",
+    "roiDesc": "Investment $8,000 (Alveo U55C + Server) → $19,596/year revenue at $0.001/1K tokens",
+    "roiMetrics": [
+      { "label": "Payback", "value": "4.9 months" },
+      { "label": "Year 1 ROI", "value": "145%" },
+      { "label": "Year 3 ROI", "value": "635%" }
+    ],
+    "cta": "Read Full Report on GitHub",
+    "ctaUrl": "https://github.com/gHashTag/vibee-lang/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+  }
+}

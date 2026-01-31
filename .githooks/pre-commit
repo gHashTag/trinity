@@ -1,0 +1,45 @@
+#!/bin/bash
+# ═══════════════════════════════════════════════════════════════════════════
+# VIBEE PRE-COMMIT HOOK - ЗАПРЕТ LEGACY ФАЙЛОВ
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m × φ^p × e^q
+# ЗОЛОТАЯ ИДЕНТИЧНОСТЬ: φ² + 1/φ² = 3
+#
+# ПРАВИЛО: .vibee → .999 → runtime.html
+# ═══════════════════════════════════════════════════════════════════════════
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+echo "VIBEE PRE-COMMIT: Checking for forbidden files..."
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+ERRORS=0
+
+for FILE in $STAGED_FILES; do
+    EXT="${FILE##*.}"
+    
+    case "$EXT" in
+        html)
+            if [[ "$FILE" != "runtime/runtime.html" ]]; then
+                echo -e "${RED}FORBIDDEN: $FILE - HTML files not allowed${NC}"
+                ERRORS=$((ERRORS + 1))
+            fi
+            ;;
+        css|js|ts|jsx|tsx)
+            echo -e "${RED}FORBIDDEN: $FILE - Legacy file type${NC}"
+            ERRORS=$((ERRORS + 1))
+            ;;
+    esac
+done
+
+if [ $ERRORS -gt 0 ]; then
+    echo "COMMIT BLOCKED: $ERRORS forbidden files found"
+    echo "Use: .vibee -> .999 -> runtime.html"
+    exit 1
+fi
+
+echo -e "${GREEN}OK: All files comply with VIBEE rules${NC}"
+exit 0
