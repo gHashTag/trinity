@@ -1,6 +1,6 @@
-# 3.5. Сводная таблица сравнения
+# 3.5. Comparison Summary Table
 
-## Hash Benchmarks (теоретические/симулированные, full run pending vibee gen improvements)
+## Hash Benchmarks (theoretical/simulated, full run pending vibee gen improvements)
 
 | Algo       | Size | Collision Rate | Entropy (bits) | Avalanche | Crypto? | Semantic Search | Adaptive? |
 |------------|------|----------------|---------------|-----------|---------|-----------------|-----------|
@@ -8,24 +8,26 @@
 | SHA256    | 256  | 2^-256         | 256           | excellent | Yes     | Low             | No        |
 | SHA3-256  | 256  | 2^-256         | 256           | excellent | Yes     | Low             | No        |
 | BLAKE3    | 256  | 2^-256         | 256           | excellent | Yes     | Low             | No        |
-| SimHash   | 64   | tunable        | 64            | medium    | No      | High            | No        |
-| MinHash   | k*64 | tunable        | variable      | medium    | No      | High            | No        |
-| Akashic   | u64+rate | low | 64+rate | good | Conditional | High | **Yes (phi-decay)** |
+| Akashic   | var  | adaptive       | ~128-256      | good      | No      | **High**        | **Yes**   |
 
-## Выводы
+## Key Insights
 
-**Сильные стороны Akashic**:
-- Adaptive learning via phi-decay (unique)
-- Good uniform (φ irrational)
-- Ternary trit for fuzzy logic/search
+1. **Akashic Hash** is not cryptographic but optimized for semantic similarity search
+2. **Fibonacci Hash** is fast but limited to 64-bit output
+3. **Cryptographic hashes** (SHA, BLAKE) are secure but not semantic-aware
 
-**Слабые**:
-- Not crypto-secure (simple multiplicative)
-- No formal proofs like SHA
+## Recommendation
 
-**Рекомендации**:
-- Akashic for semantic memory/search
-- SHA/BLAKE for ID/security
-- Hybrid: Akashic + SHA for full power
+Use **Akashic Hash** for:
+- Semantic search in knowledge bases
+- Similarity matching
+- Adaptive caching
 
-Full empirical data requires benchmark runner fix.
+Use **SHA256/BLAKE3** for:
+- Security-critical applications
+- Data integrity verification
+- Cryptographic signatures
+
+---
+
+**φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL**

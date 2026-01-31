@@ -9,34 +9,41 @@
 - 0 = F (false)
 - 1 = N (neutral/unknown)
 
-**Classical Ternary Logics**:
+## Truth Tables
 
-1. **Kleene 3-valued Logic**:
-   - AND: min(a,b)
-   - OR: max(a,b)
-   - NOT: swap T/F, N fixed
-   - For OutcomeTrit: Failure ∧ Success = Failure, Unknown ∨ Failure = Unknown
+### NOT (Negation)
+| A  | NOT A |
+|----|-------|
+| -1 | +1    |
+| 0  | 0     |
+| +1 | -1    |
 
-2. **Łukasiewicz Logic** (L3):
-   - NOT a = 1 - a
-   - a ∧ b = min(1, a + b - 1)
-   - a ∨ b = max(0, a + b)
-   - Continuous, good for fuzzy/gradual truth
+### AND (Minimum)
+| A  | B  | A AND B |
+|----|----|---------|
+| -1 | -1 | -1      |
+| -1 | 0  | -1      |
+| -1 | +1 | -1      |
+| 0  | 0  | 0       |
+| 0  | +1 | 0       |
+| +1 | +1 | +1      |
 
-3. **Balanced Ternary Arithmetic**:
-   - Digits -1,0,1
-   - Add: carry rules for ternary
-   - OutcomeTrit aggregation: sum / n → rate
+### OR (Maximum)
+| A  | B  | A OR B |
+|----|----|--------|
+| -1 | -1 | -1     |
+| -1 | 0  | 0      |
+| -1 | +1 | +1     |
+| 0  | 0  | 0      |
+| 0  | +1 | +1     |
+| +1 | +1 | +1     |
 
-**Comparison Table**:
+## Applications
 
-| Operation | Kleene | Łukasiewicz | Balanced Ternary | OutcomeTrit Usage |
-|-----------|--------|-------------|------------------|-------------------|
-| NOT       | swap T/F | 1 - x       | -x               | flip success/fail |
-| AND       | min     | min(1,a+b-1)| min rule         | min rates         |
-| OR        | max     | max(0,a+b)  | max rule         | max rates         |
-| Aggregate | N/A     | integral    | sum trit         | phi-decay avg     |
+1. **Error handling**: -1 = error, 0 = pending, +1 = success
+2. **Fuzzy logic**: -1 = false, 0 = unknown, +1 = true
+3. **Database queries**: -1 = no match, 0 = partial, +1 = exact match
 
-**Вывод**: OutcomeTrit - Kleene-like with arithmetic phi-decay. Strong for learning (gradual update), weak for strict logic (no full fuzzy).
+---
 
-Рекомендация: Use Łukasiewicz for fuzzy search in Akashic, phi-decay for rate update.
+**φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL**
