@@ -73,8 +73,8 @@
 │                                                                 │
 │  4. PUBLIC SALE (15% = 1,500,000,000 $TRI)                     │
 │     • Seed: 500M (5%) @ $0.015                                  │
-│     • Private: 500M (5%) @ $0.024                               │
-│     • Public: 500M (5%) @ $0.03                                 │
+│     • Private: 500M (5%) - pricing TBD                          │
+│     • Public: 500M (5%) - pricing TBD                           │
 │     • Vesting: 10% TGE, 6-month linear                          │
 │                                                                 │
 │  5. ECOSYSTEM (10% = 1,000,000,000 $TRI)                       │
