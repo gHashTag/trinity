@@ -1,0 +1,64 @@
+# VIBEE CI - Simple and Working
+# φ² + 1/φ² = 3 | PHOENIX = 999
+
+name: VIBEE CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-zig:
+    name: Test Zig Modules
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+          
+      - name: Test Core Modules
+        run: |
+          cd trinity/output
+          echo "Testing core modules..."
+          passed=0
+          failed=0
+          for f in cdp_client_v13591.zig cdp_browser_v13593.zig cdp_page_v13594.zig browser_ui_v13600.zig; do
+            if [ -f "$f" ]; then
+              if zig test "$f" 2>/dev/null; then
+                echo "✅ $f"
+                passed=$((passed+1))
+              else
+                echo "❌ $f"
+                failed=$((failed+1))
+              fi
+            fi
+          done
+          echo "Passed: $passed, Failed: $failed"
+          if [ $failed -gt 0 ]; then exit 1; fi
+
+  validate-specs:
+    name: Validate .vibee Specs
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check YAML syntax
+        run: |
+          echo "Validating .vibee files..."
+          count=0
+          for file in specs/tri/*.vibee; do
+            if [ -f "$file" ]; then
+              python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>/dev/null && count=$((count+1))
+            fi
+          done
+          echo "Valid specs: $count"

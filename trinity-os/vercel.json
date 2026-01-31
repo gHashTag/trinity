@@ -1,0 +1,10 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/((?!assets|icons|favicon\\.ico|sw\\.js|manifest\\.json|vite\\.svg|index\\.html).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

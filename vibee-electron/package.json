@@ -1,0 +1,52 @@
+{
+  "name": "vibee-browser",
+  "version": "1.0.0",
+  "description": "VIBEE AI Browser - Chromium + Monaco + AI Chat | φ² + 1/φ² = 3",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac --universal",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.vibee.browser",
+    "productName": "VIBEE Browser",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": ["dmg", "zip"],
+      "icon": "assets/icon.icns",
+      "hardenedRuntime": true
+    },
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "assets/icon.png",
+      "category": "Development"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "author": "VIBEE Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0"
+  },
+  "dependencies": {
+    "monaco-editor": "^0.55.1",
+    "ws": "^8.18.1",
+    "openai": "^6.16.0",
+    "@anthropic-ai/sdk": "^0.40.0"
+  }
+}
