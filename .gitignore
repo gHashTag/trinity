@@ -1,0 +1,26 @@
+# Zig
+zig-cache/
+zig-out/
+*.o
+*.a
+
+# Build artifacts
+/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docusaurus
+docs/node_modules/
+docs/.docusaurus/
+docs/build/
+
+# Test artifacts
+*.log
