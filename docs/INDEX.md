@@ -1,113 +1,88 @@
-# VIBEE Documentation Index
+# Trinity Documentation Index
 
-**Sacred Formula:** `V = n × 3^k × π^m × φ^p × e^q`
-**Golden Identity:** `φ² + 1/φ² = 3`
+## Quick Links
 
-## 📁 Directory Structure
-
-### 🚀 Getting Started
-| Directory | Description |
-|-----------|-------------|
-| [quickstart/](quickstart/) | Getting started guides |
-| [guides/](guides/) | User guides, tutorials |
-| [guides/VIBEE_LANGUAGE_GUIDE.md](guides/VIBEE_LANGUAGE_GUIDE.md) | **📖 VIBEE Language Reference** |
-| [core/](core/) | Core concepts, API |
-
-| [scientific/](scientific/) | Scientific papers & references |
-| [habr/](habr/) | Habr articles (English: [FPGA Compiler](habr/HABR_ARTICLE_FPGA_COMPILER_EN.md)) |
-
-### ⚡ Hardware & HLS
-| Directory | Description |
-|-----------|-------------|
-| [HARDWARE_HLS.md](HARDWARE_HLS.md) | **Technical Reference for FPGA/HLS** |
-| [habr/HABR_ARTICLE_FPGA_COMPILER_EN.md](habr/HABR_ARTICLE_FPGA_COMPILER_EN.md) | Universal FPGA Compiler Guide |
-| [trinity/fpga/](../trinity/output/fpga/) | Generated Verilog HDL core |
-
-### 📊 Reports & Analysis
-| Directory | Description |
-|-----------|-------------|
-| [benchmarks/](benchmarks/) | Performance benchmarks |
-| [verdicts/](verdicts/) | TOXIC VERDICT reports |
-| [reports/](reports/) | Analysis reports |
-
-### 📚 Publications
-| Directory | Description |
-|-----------|-------------|
-| [habr/](habr/) | Habr articles (Golden Key) |
-| [academic/](academic/) | Academic papers |
-| [papers/](papers/) | Published papers |
-
-### 🗄️ Archive
-| Directory | Description |
-|-----------|-------------|
-| [archive/](archive/) | **Historical Root** |
-| [archive/pitch_decks/](archive/pitch_decks/) | Old Investor Decks |
-| [archive/reports/](archive/reports/) | Legacy Toxicity Reports |
-| [archive/scientific/](archive/scientific/) | Specific Paper Versions |
-| [archive/roadmap/](archive/roadmap/) | MVP Roadmaps |
-
-### 🔮 Sacred
-| Directory | Description |
-|-----------|-------------|
-| [biblia/](biblia/) | Sacred texts |
-| [999/](999/) | 999 OS documentation |
-| [trinity/](trinity/) | Trinity VM |
+- [API Reference](api/) - Trinity and VIBEE API documentation
+- [Guides](guides/) - Step-by-step tutorials
+- [FPGA](fpga/) - FPGA acceleration and BitNet documentation
+- [Academic](academic/) - Mathematical proofs and theoretical foundations
 
 ---
 
-## 🔗 Quick Links
+## Documentation Structure
 
-### 📖 Learn VIBEE
-- **[VIBEE Language Guide](guides/VIBEE_LANGUAGE_GUIDE.md)** - Complete language reference
-- [Quickstart Guide](quickstart/QUICKSTART.md) - Get started in 5 minutes
-- [Tutorial](quickstart/TUTORIAL.md) - Step-by-step tutorial
+### Core Documentation
 
-### Key Features (January 2026)
-- [TRINITY OS (Singularity)](../trinity-os/) - **Native Ternary Operating System**
-- [Pitch Deck (V5.0)](TRINITY_PITCH_DECK.md) - **Investor Presentation**
-- [iGLA v6 IMMORTAL](igla/) - 15000× inference speedup
-- [KOSCHEI MODE](koschei/) - Autonomous self-evolution
-- [Agent Browser](browser/) - Chromium + Monaco + AI
-- [Habr Article: Golden Key](habr/HABR_ARTICLE_GOLDEN_KEY_V4.md)
-- [Habr Article: FPGA Compiler (EN)](habr/HABR_ARTICLE_FPGA_COMPILER_EN.md)
-- [Hardware & HLS Guide](HARDWARE_HLS.md)
+| Directory | Description |
+|-----------|-------------|
+| [api/](api/) | API reference for Trinity and VIBEE |
+| [guides/](guides/) | Installation, setup, and usage guides |
+| [core/](core/) | Trinity core architecture and design |
 
-### Technical
-- [API Reference](core/API.md)
-- [PAS Predictions](pas/PAS_PREDICTIONS.md)
-- [Benchmarks](benchmarks/)
-- [Scientific Papers](scientific/)
+### FPGA & Hardware
+
+| Directory | Description |
+|-----------|-------------|
+| [fpga/](fpga/) | FPGA deployment, BitNet, hardware specs |
+| [academic/](academic/) | Mathematical proofs, BitNet theory |
+
+### Specialized Topics
+
+| Directory | Description |
+|-----------|-------------|
+| [agents/](agents/) | AI agent architectures |
+| [browser/](browser/) | Browser automation |
+| [igla/](igla/) | IGLA inference optimization |
+| [koschei/](koschei/) | Koschei development methodology |
+| [pas/](pas/) | PAS daemon analysis |
+| [webarena/](webarena/) | WebArena benchmarks |
+
+### Research & Analysis
+
+| Directory | Description |
+|-----------|-------------|
+| [scientific/](scientific/) | Scientific papers and references |
+| [papers/](papers/) | Mathematical papers and proofs |
+| [research/](research/) | Research notes and analysis |
+| [competitors/](competitors/) | Competitive analysis |
+| [roadmap/](roadmap/) | Technology tree and roadmap |
+
+### Reports & History
+
+| Directory | Description |
+|-----------|-------------|
+| [reports/](reports/) | Technical reports |
+| [verdicts/](verdicts/) | Development verdicts |
+| [benchmarks/](benchmarks/) | Benchmark results |
+
+### Localization
+
+| Directory | Description |
+|-----------|-------------|
+| [ru/](ru/) | Russian documentation |
+| [en/](en/) | English documentation |
 
 ---
 
-## 📈 Project Statistics
+## Key Documents
 
-| Metric | Value |
-|--------|-------|
-| Specifications (.vibee) | **667+** |
-| Generated modules (.zig) | **2000+** |
-| Supported languages | **42** |
-| FFI modules | **40** |
-| Tests | **2000+** |
+### Getting Started
+1. [Installation Guide](guides/INSTALLATION.md)
+2. [Quick Start](quickstart/)
+3. [API Reference](api/TRINITY_API.md)
 
----
+### FPGA Development
+1. [FPGA Quick Start](fpga/FPGA_QUICKSTART.md)
+2. [FPGA Network Whitepaper](fpga/FPGA_NETWORK_WHITEPAPER.md)
+3. [BitNet Mathematical Proof](academic/BITNET_MATHEMATICAL_PROOF.md)
 
-## 🛠️ Commands
-
-```bash
-# Generate Zig from .vibee
-vibee gen specs/tri/feature.vibee
-
-# Generate for 42 languages
-vibee gen-multi specs/tri/feature.vibee all
-
-# Test generated code
-zig test trinity/output/feature.zig
-
-# Show help
-vibee help
-```
+### Development
+1. [Technology Tree](roadmap/TECHNOLOGY_TREE.md)
+2. [Koschei Methodology](koschei/)
+3. [TODO Issues](TODO_ISSUES.md)
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | КОЩЕЙ БЕССМЕРТЕН**
+## Contributing
+
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines.
