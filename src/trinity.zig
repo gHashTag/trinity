@@ -13,6 +13,10 @@ pub const hybrid = @import("hybrid.zig");
 pub const vsa = @import("vsa.zig");
 pub const vm = @import("vm.zig");
 
+// SDK modules (high-level API)
+pub const sdk = @import("sdk.zig");
+pub const science = @import("science.zig");
+
 // Re-export main types
 pub const BigInt = bigint.TVCBigInt;
 pub const PackedBigInt = packed_trit.PackedBigInt;
@@ -39,12 +43,35 @@ pub const VSAVM = vm.VSAVM;
 pub const VSAInstruction = vm.VSAInstruction;
 pub const VSAOpcode = vm.VSAOpcode;
 
+// Re-export SDK types (for developers)
+pub const Hypervector = sdk.Hypervector;
+pub const Codebook = sdk.Codebook;
+pub const AssociativeMemory = sdk.AssociativeMemory;
+pub const SequenceEncoder = sdk.SequenceEncoder;
+pub const GraphEncoder = sdk.GraphEncoder;
+pub const Classifier = sdk.Classifier;
+
+// Re-export Science types (for researchers)
+pub const VectorStats = science.VectorStats;
+pub const DistanceMetric = science.DistanceMetric;
+pub const ResonatorNetwork = science.ResonatorNetwork;
+pub const SparseHypervector = science.SparseHypervector;
+pub const computeStats = science.computeStats;
+pub const distance = science.distance;
+pub const mutualInformation = science.mutualInformation;
+pub const batchSimilarity = science.batchSimilarity;
+pub const batchBundle = science.batchBundle;
+pub const weightedBundle = science.weightedBundle;
+
 // Constants
 pub const MAX_TRITS = hybrid.MAX_TRITS;
 pub const TRITS_PER_BYTE = hybrid.TRITS_PER_BYTE;
+pub const PHI = science.PHI;
+pub const PHI_SQUARED = science.PHI_SQUARED;
+pub const GOLDEN_IDENTITY = science.GOLDEN_IDENTITY;
 
 // Version
-pub const version = "0.1.0";
+pub const version = "0.2.0";
 
 test {
     // Run all tests from submodules
