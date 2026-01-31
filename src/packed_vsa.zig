@@ -291,10 +291,78 @@ test "packed cosine similarity" {
     try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.001);
 }
 
+test "large vector bind correctness (1000 trits)" {
+    var h_a = vsa.randomVector(1000, 12345);
+    var h_b = vsa.randomVector(1000, 67890);
+
+    const ref_result = vsa.bind(&h_a, &h_b);
+
+    const p_a = fromHybrid(&h_a);
+    const p_b = fromHybrid(&h_b);
+    const packed_result = packedBind(&p_a, &p_b);
+
+    // Проверяем каждый 100-й трит для скорости
+    var i: usize = 0;
+    while (i < 1000) : (i += 100) {
+        try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
+    }
+}
+
+test "large vector bind correctness (5000 trits)" {
+    var h_a = vsa.randomVector(5000, 11111);
+    var h_b = vsa.randomVector(5000, 22222);
+
+    const ref_result = vsa.bind(&h_a, &h_b);
+
+    const p_a = fromHybrid(&h_a);
+    const p_b = fromHybrid(&h_b);
+    const packed_result = packedBind(&p_a, &p_b);
+
+    // Проверяем каждый 500-й трит
+    var i: usize = 0;
+    while (i < 5000) : (i += 500) {
+        try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
+    }
+}
+
+test "large vector bind correctness (10000 trits)" {
+    var h_a = vsa.randomVector(10000, 33333);
+    var h_b = vsa.randomVector(10000, 44444);
+
+    const ref_result = vsa.bind(&h_a, &h_b);
+
+    const p_a = fromHybrid(&h_a);
+    const p_b = fromHybrid(&h_b);
+    const packed_result = packedBind(&p_a, &p_b);
+
+    // Проверяем каждый 1000-й трит
+    var i: usize = 0;
+    while (i < 10000) : (i += 1000) {
+        try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
+    }
+}
+
+test "large vector dot correctness (10000 trits)" {
+    var h_a = vsa.randomVector(10000, 55555);
+    var h_b = vsa.randomVector(10000, 66666);
+
+    // Референсный dot product
+    var ref_dot: i64 = 0;
+    for (0..10000) |i| {
+        ref_dot += @as(i64, h_a.unpacked_cache[i]) * @as(i64, h_b.unpacked_cache[i]);
+    }
+
+    const p_a = fromHybrid(&h_a);
+    const p_b = fromHybrid(&h_b);
+    const packed_dot_val = packedDot(&p_a, &p_b);
+
+    try std.testing.expectEqual(ref_dot, packed_dot_val);
+}
+
 test "benchmark Packed vs Unpacked" {
-    // PackedBigInt ограничен 260 тритами (52 байта * 5 тритов)
-    const sizes = [_]usize{ 50, 100, 150, 200, 250 };
-    const iterations = 10000;
+    // PackedBigInt теперь поддерживает до 12000 тритов
+    const sizes = [_]usize{ 100, 500, 1000, 2000, 5000, 10000 };
+    const iterations = 1000;
 
     std.debug.print("\n\n", .{});
     std.debug.print("╔═══════════════════════════════════════════════════════════════════════════════════╗\n", .{});
