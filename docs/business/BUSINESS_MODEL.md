@@ -152,7 +152,7 @@
 │  DISTRIBUTION:                                                  │
 │  ─────────────                                                  │
 │  40% - Node Rewards (4B, vested over 10 years)                  │
-│  20% - Team & Advisors (2B, 4-year vest, 1-year cliff)          │
+│  20% - Founder (2B, 4-year vest, 1-year cliff)                  │
 │  15% - Treasury (1.5B, DAO-controlled)                          │
 │  15% - Public Sale / Liquidity (1.5B)                           │
 │  10% - Ecosystem Grants (1B)                                    │

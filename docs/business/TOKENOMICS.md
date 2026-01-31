@@ -49,7 +49,7 @@
 │  ┌────────────────────────────────────────────────────────┐    │
 │  │                                                        │    │
 │  │   Node Rewards     ████████████████████  40%  4.0B    │    │
-│  │   Team & Advisors  ████████            20%  2.0B    │    │
+│  │   Founder          ████████            20%  2.0B    │    │
 │  │   Treasury (DAO)   ██████              15%  1.5B    │    │
 │  │   Public Sale      ██████              15%  1.5B    │    │
 │  │   Ecosystem        ████                10%  1.0B    │    │
@@ -66,11 +66,11 @@
 │     • Year 2: 600M (15%)                                        │
 │     • Year 3-10: 325M/year (halving schedule)                   │
 │                                                                 │
-│  2. TEAM & ADVISORS (20% = 2,000,000,000 $TRI)                 │
-│     • Team: 1.5B (15%)                                          │
-│     • Advisors: 500M (5%)                                       │
+│  2. FOUNDER (20% = 2,000,000,000 $TRI)                         │
+│     • Dmitrii Vasilev - Sole Founder & CEO                      │
+│     • 100% ownership of this allocation                         │
 │     • Vesting: 4 years, 1-year cliff                            │
-│     • Monthly unlock after cliff                                │
+│     • Future team/advisors from this pool                       │
 │                                                                 │
 │  3. TREASURY (15% = 1,500,000,000 $TRI)                        │
 │     • Controlled by DAO governance                              │
