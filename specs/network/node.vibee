@@ -1,0 +1,57 @@
+name: trinity_node
+version: "1.0.0"
+language: zig
+module: trinity_node
+
+description: |
+  Trinity Network node specification.
+  Nodes contribute CPU compute and earn $TRI tokens.
+
+types:
+  NodeId:
+    fields:
+      id: String
+      public_key: String
+
+  NodeCapabilities:
+    fields:
+      cpu_cores: Int
+      ram_mb: Int
+      has_avx2: Bool
+      has_avx512: Bool
+      max_throughput: Float
+
+  NodeStats:
+    fields:
+      tokens_processed: Int
+      uptime_seconds: Int
+      jobs_completed: Int
+      earnings_tri: Float
+
+  NodeStatus:
+    values:
+      - Offline
+      - Online
+      - Busy
+      - Paused
+
+behaviors:
+  - name: register
+    given: Node capabilities
+    when: Registering with network
+    then: Returns NodeId
+
+  - name: heartbeat
+    given: NodeId and NodeStats
+    when: Sending status update
+    then: Confirms node is alive
+
+  - name: receive_job
+    given: NodeId
+    when: Waiting for inference job
+    then: Returns InferenceJob or timeout
+
+  - name: submit_result
+    given: JobId and InferenceResult
+    when: Completing job
+    then: Credits $TRI to node
