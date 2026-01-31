@@ -186,7 +186,7 @@
       ["Cerebras", "$4.0B", "$100M", "40×"],
       ["Groq", "$2.8B", "$50M", "56×"],
       ["SambaNova", "$5.0B", "$150M", "33×"],
-      ["TRINITY", "$200M", "Pre-rev", "Semilla"]
+      ["TRINITY", "$300M", "Pre-rev", "Semilla"]
     ]
   },
   "gtm": {
@@ -227,7 +227,7 @@
     "title": "Camino a <span class=\"grad\">$10B+</span>",
     "headers": ["Año", "Ingresos", "Margen Bruto", "Valoración", "Empleados"],
     "rows": [
-      ["2026", "$2M", "50%", "$200M", "15"],
+      ["2026", "$2M", "50%", "$300M", "15"],
       ["2027", "$15M", "55%", "$500M", "50"],
       ["2028", "$80M", "60%", "$2B", "150"],
       ["2029", "$300M", "65%", "$5B", "400"],
@@ -278,7 +278,7 @@
       { "name": "NVIDIA", "arch": "GPU (Binario)", "val": "$3T", "ternary": "✗", "open": "✗" },
       { "name": "Cerebras", "arch": "Escala Wafer", "val": "$4B", "ternary": "✗", "open": "✗" },
       { "name": "Groq", "arch": "LPU", "val": "$2.8B", "ternary": "✗", "open": "✗" },
-      { "name": "TRINITY", "arch": "SU(3) Nativo", "val": "$200M", "ternary": "✓", "open": "✓" }
+      { "name": "TRINITY", "arch": "SU(3) Nativo", "val": "$300M", "ternary": "✓", "open": "✓" }
     ],
     "advantage": "Único chip ternario nativo con ecosistema open-source"
   },
@@ -302,11 +302,11 @@
   },
   "invest": {
     "title": "Invertir en <span class=\"grad\">Singularidad</span>",
-    "sub": "Ronda Semilla: $5M a valoración de $200M",
+    "sub": "Ronda Semilla: $3M a valoración de $300M",
     "terms": [
       { "label": "Ronda", "value": "Semilla" },
       { "label": "Objetivo", "value": "$5M" },
-      { "label": "Valoración", "value": "$200M" },
+      { "label": "Valoración", "value": "$300M" },
       { "label": "Uso", "value": "Tape-out ASIC + Equipo" }
     ],
     "cta": {

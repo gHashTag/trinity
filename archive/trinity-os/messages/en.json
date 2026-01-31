@@ -186,7 +186,7 @@
       ["Cerebras", "$4.0B", "$100M", "40×"],
       ["Groq", "$2.8B", "$50M", "56×"],
       ["SambaNova", "$5.0B", "$150M", "33×"],
-      ["TRINITY", "$200M", "Pre-rev", "Seed"]
+      ["TRINITY", "$300M", "Pre-rev", "Seed"]
     ]
   },
   "gtm": {
@@ -227,7 +227,7 @@
     "title": "Path to <span class=\"grad\">$10B+</span>",
     "headers": ["Year", "Revenue", "Gross Margin", "Valuation", "Headcount"],
     "rows": [
-      ["2026", "$2M", "50%", "$200M", "15"],
+      ["2026", "$2M", "50%", "$300M", "15"],
       ["2027", "$15M", "55%", "$500M", "50"],
       ["2028", "$80M", "60%", "$2B", "150"],
       ["2029", "$300M", "65%", "$5B", "400"],
@@ -282,7 +282,7 @@
       { "company": "Cerebras", "arch": "Binary Wafer", "val": "$4B", "ternary": false, "open": false },
       { "company": "Groq", "arch": "Binary LPU", "val": "$2.8B", "ternary": false, "open": false },
       { "company": "SambaNova", "arch": "Binary Dataflow", "val": "$5B", "ternary": false, "open": false },
-      { "company": "TRINITY", "arch": "Native Ternary", "val": "$200M", "ternary": true, "open": true }
+      { "company": "TRINITY", "arch": "Native Ternary", "val": "$300M", "ternary": true, "open": true }
     ],
     "note": "All competitors are binary. TRINITY is the <strong>first native ternary</strong> architecture."
   },
@@ -428,8 +428,10 @@
       { "percent": "20%", "title": "Operations", "desc": "Singularity Marketing" }
     ],
     "cards": [
-      { "value": "$2M", "label": "for 1% equity" },
-      { "value": "∞", "label": "potential return" }
+      { "value": "$3M", "label": "for 1% equity" },
+      { "value": "$300M", "label": "valuation" },
+      { "value": "10B", "label": "$TRI supply" },
+      { "value": "99%", "label": "founder ownership" }
     ],
     "milestonesTitle": "18-Month Milestones:",
     "milestones": [

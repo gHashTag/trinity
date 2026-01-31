@@ -137,7 +137,7 @@
       ["Cerebras", "$4.0B", "$100M", "40×"],
       ["Groq", "$2.8B", "$50M", "56×"],
       ["SambaNova", "$5.0B", "$150M", "33×"],
-      ["TRINITY", "$200M", "До выручки", "Посев"]
+      ["TRINITY", "$300M", "До выручки", "Посев"]
     ]
   },
   "roadmap": {
@@ -160,7 +160,7 @@
     "title": "Путь к <span class=\"grad\">$10B+</span>",
     "headers": ["Год", "Выручка", "Маржа", "Оценка", "Штат"],
     "rows": [
-      ["2026", "$2M", "50%", "$200M", "15"],
+      ["2026", "$2M", "50%", "$300M", "15"],
       ["2027", "$15M", "55%", "$500M", "50"],
       ["2028", "$80M", "60%", "$2B", "150"],
       ["2029", "$300M", "65%", "$5B", "400"],
@@ -233,7 +233,7 @@
       { "company": "Cerebras", "arch": "Бинарный Wafer", "val": "$4B", "ternary": false, "open": false },
       { "company": "Groq", "arch": "Бинарный LPU", "val": "$2.8B", "ternary": false, "open": false },
       { "company": "SambaNova", "arch": "Бинарный Dataflow", "val": "$5B", "ternary": false, "open": false },
-      { "company": "TRINITY", "arch": "Нативный троичный", "val": "$200M", "ternary": true, "open": true }
+      { "company": "TRINITY", "arch": "Нативный троичный", "val": "$300M", "ternary": true, "open": true }
     ],
     "note": "Все конкуренты бинарные. TRINITY — <strong>первая нативная троичная</strong> архитектура."
   },
@@ -410,7 +410,10 @@
       "20% — Маркетинг Сингулярности"
     ],
     "cards": [
-      { "value": "$2M", "label": "за 1% equity" },
+      { "value": "$3M", "label": "за 1% equity" },
+      { "value": "$300M", "label": "оценка" },
+      { "value": "10B", "label": "эмиссия $TRI" },
+      { "value": "99%", "label": "доля основателя" },
       { "value": "∞", "label": "потенциал возврат" }
     ],
     "milestonesTitle": "Майлстоуны 18 месяцев:",
