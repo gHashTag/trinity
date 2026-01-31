@@ -1,7 +1,8 @@
 import * as d3 from 'd3';
 
 // API base URL - direct connection to API server
-const API_BASE = 'https://8080--019c11f7-ac99-7331-aaf5-d160ef109e39.eu-central-1-01.gitpod.dev';
+// API requests go through Vite proxy to localhost:8080
+const API_BASE = '';
 
 // State
 let graphData = { nodes: [], links: [] };
