@@ -140,35 +140,42 @@
 │                    $TRI TOKENOMICS                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  TOTAL SUPPLY: 1,000,000,000 $TRI                              │
+│  TOTAL SUPPLY: 10,000,000,000 $TRI (10 billion)                │
+│  FDV:          $300,000,000                                     │
+│  LAUNCH PRICE: $0.03                                            │
+│                                                                 │
+│  SEED ROUND:   $3,000,000 for 1% equity                         │
+│  VALUATION:    $300,000,000                                     │
+│  FOUNDER:      99% ownership post-seed                          │
+│  FUTURE:       Pricing TBD based on network metrics             │
 │                                                                 │
 │  DISTRIBUTION:                                                  │
 │  ─────────────                                                  │
-│  40% - Node Rewards (vested over 10 years)                      │
-│  20% - Team & Advisors (4-year vest, 1-year cliff)              │
-│  15% - Treasury (DAO-controlled)                                │
-│  15% - Public Sale / Liquidity                                  │
-│  10% - Ecosystem Grants                                         │
+│  40% - Node Rewards (4B, vested over 10 years)                  │
+│  20% - Team & Advisors (2B, 4-year vest, 1-year cliff)          │
+│  15% - Treasury (1.5B, DAO-controlled)                          │
+│  15% - Public Sale / Liquidity (1.5B)                           │
+│  10% - Ecosystem Grants (1B)                                    │
 │                                                                 │
 │  UTILITY:                                                       │
 │  ────────                                                       │
 │  • Pay for inference API calls                                  │
-│  • Stake for priority job allocation                            │
+│  • Stake for priority job allocation (8-20% APY)                │
 │  • Governance voting                                            │
 │  • Model marketplace purchases                                  │
 │  • Premium features unlock                                      │
 │                                                                 │
 │  BURN MECHANISM:                                                │
 │  ───────────────                                                │
-│  • 1% of all API fees burned                                    │
+│  • 2% of all API fees burned                                    │
 │  • Deflationary pressure as usage grows                         │
 │                                                                 │
 │  EMISSION SCHEDULE:                                             │
 │  ──────────────────                                             │
-│  Year 1: 100M tokens (10%)                                      │
-│  Year 2: 80M tokens (8%)                                        │
-│  Year 3: 60M tokens (6%)                                        │
-│  ... halving every 2 years                                      │
+│  Year 1: 800M tokens (8%)                                       │
+│  Year 2: 600M tokens (6%)                                       │
+│  Year 3: 400M tokens (4%)                                       │
+│  ... halving schedule over 10 years                             │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
