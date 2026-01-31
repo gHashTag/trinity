@@ -23,6 +23,12 @@
 │  Initial Price:  $0.03 (target)                                 │
 │  FDV at Launch:  $300,000,000                                   │
 │                                                                 │
+│  FOUNDER:                                                       │
+│  ─────────────────────────────────────────────────────────────  │
+│  Name:           Dmitrii Vasilev                                │
+│  Ownership:      100% pre-seed → 99% post-seed                  │
+│  Role:           Sole Founder & CEO                             │
+│                                                                 │
 │  FUNDRAISING:                                                   │
 │  ─────────────────────────────────────────────────────────────  │
 │  Seed Round:     $3,000,000 for 1% equity                       │
