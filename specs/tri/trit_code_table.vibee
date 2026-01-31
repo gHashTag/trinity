@@ -1,0 +1,133 @@
+name: trit_code_table
+version: "1.0.0"
+language: zig
+module: trit_code_table
+
+description: |
+  TritCodeTable - таблица кодирования тритов для каноничности
+  Кодирует триты (-1, 0, +1) в компактное представление
+  для эффективного хранения и передачи
+
+types:
+  Trit:
+    fields:
+      value: Int
+      description: "Трит (-1, 0, +1) с его значением"
+
+  TritCode:
+    fields:
+      code: String
+      trit: Trit
+      description: "Закодированный трит"
+
+  TritEncoding:
+    fields:
+      name: String
+      description: "Название схемы кодирования"
+      bits_per_trit: Int
+      description: "Количество бит на трит"
+
+  TritPair:
+    fields:
+      first: Trit
+      second: Trit
+      code: TritCode
+      description: "Пара тритов с их кодом"
+
+behaviors:
+  # Trit value operations
+  - name: trit_from_int
+    given: Int value
+    when: Value is -1, 0, or +1
+    then: Trit enum value
+    description: "Конвертирует Int в Trit"
+
+  - name: int_from_trit
+    given: Trit trit
+    when: Trit enum value
+    then: Int value (-1, 0, or +1)
+    description: "Конвертирует Trit в Int"
+
+  # TritCode operations
+  - name: encode_trit
+    given: Trit trit, encoding: TritEncoding
+    when: Trit needs to be encoded
+    then: TritCode with encoded representation
+    description: "Кодирует трит в компактное представление"
+
+  - name: decode_trit
+    given: TritCode code, encoding: TritEncoding
+    when: TritCode needs to be decoded
+    then: Trit value
+    description: "Декодирует трит из компактного представления"
+
+  # TritPair operations
+  - name: encode_pair
+    given: first: Trit, second: Trit, encoding: TritEncoding
+    when: Pair of trits needs encoding
+    then: TritPair with encoded pair
+    description: "Кодирует пару тритов"
+
+  - name: decode_pair
+    given: TritPair pair, encoding: TritEncoding
+    when: Pair needs decoding
+    then: Pair of trits
+    description: "Декодирует пару тритов"
+
+  # Encoding schemes
+  - name: balanced_ternary
+    given: Trit trit
+    when: Using balanced ternary encoding
+    then: TritCode with balanced ternary representation
+    description: "Сбалансированное троичное кодирование"
+
+  - name: tritwise
+    given: Trit trit
+    when: Using tritwise encoding
+    then: TritCode with tritwise representation
+    description: "Трит-последовательное кодирование"
+
+  - name: compressed
+    given: Trit trit
+    when: Using compression
+    then: TritCode with compressed representation
+    description: "Сжатое кодирование тритов"
+
+  # Table operations
+  - name: lookup_trit_code
+    given: Trit trit, encoding: TritEncoding
+    when: Looking up trit code in table
+    then: TritCode from table
+    description: "Поиск кода трита в таблице"
+
+  - name: add_trit_encoding
+    given: encoding: TritEncoding
+    when: Adding new encoding scheme to table
+    then: Updated table
+    description: "Добавление новой схемы кодирования"
+
+  # Validation
+  - name: validate_trit_code
+    given: TritCode code
+    when: Validating trit code
+    then: Bool validity
+    description: "Проверка валидности кода трита"
+
+  - name: count_trits
+    given: List<TritCode> codes
+    when: Counting trits by value
+    then: Int count per value
+    description: "Подсчёт тритов по значениям"
+
+  # Compression
+  - name: compress_trits
+    given: List<Trit> trits
+    when: Compressing sequence of trits
+    then: Compressed representation
+    description: "Сжатие последовательности тритов"
+
+  - name: decompress_trits
+    given: Compressed data
+    when: Decompressing trit sequence
+    then: List<Trit> trits
+    description: "Разжатие последовательности тритов"

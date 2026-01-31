@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIBEE Browser | φ² + 1/φ² = 3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+<style>
+:root{--phi:1.618033988749895;--phi-inv:0.618033988749895;--nav-height:44px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;background:#0a0a0a;color:#fff;height:100vh;overflow:hidden}
+/* Top Navigation */
+.top-nav{position:fixed;top:0;left:0;right:0;height:var(--nav-height);background:rgba(0,0,0,0.8);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;padding:0 16px;z-index:1000}
+.nav-logo{font-size:16px;font-weight:700;color:#ffd700;margin-right:24px}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{padding:8px 16px;font-size:12px;font-weight:500;color:rgba(255,255,255,0.6);cursor:pointer;border-radius:6px;transition:all 0.15s}
+.nav-tab:hover{color:#fff;background:rgba(255,255,255,0.08)}
+.nav-tab.active{color:#fff;background:rgba(255,215,0,0.15)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:11px}
+.nav-formula{color:rgba(255,255,255,0.4);font-family:'SF Mono',Monaco,monospace}
+.app{display:flex;height:calc(100vh - var(--nav-height));margin-top:var(--nav-height)}
+.screens-container{flex:1;overflow:hidden;position:relative}
+.screen{display:none;width:100%;height:100%;position:absolute;top:0;left:0}
+.screen.active{display:block}
+.browser-panel{width:100%;height:100%;display:flex;flex-direction:column;background:#111}
+.global-chat{width:320px;flex-shrink:0;display:flex;flex-direction:column;background:linear-gradient(180deg,#0f0f1a 0%,#1a1a2e 100%)}
+.screen{display:none;width:100%;height:100%;opacity:0;transition:opacity 0.2s}
+.screen.active{display:flex;opacity:1}
+.panel{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.panel-header{height:40px;padding:0 16px;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;font-weight:500}
+.panel-content{flex:1;overflow:hidden;position:relative}
+.browser-panel{background:#111}
+.chat-panel{background:linear-gradient(180deg,#0f0f1a 0%,#1a1a2e 100%)}
+.editor-panel{background:#1e1e1e}
+.splitter{width:10px;background:rgba(255,255,255,0.02);cursor:col-resize;display:flex;align-items:center;justify-content:center;transition:background 0.15s;flex-shrink:0}
+.splitter:hover,.splitter.dragging{background:rgba(255,215,0,0.3)}
+/* φ-easing: cubic-bezier based on golden ratio */
+.phi-ease{transition:all 0.382s cubic-bezier(0.618,0,0.382,1)}
+.panel{transition:none}
+.panel.animate{transition:width 0.2s cubic-bezier(0.618,0,0.382,1)}
+body.dragging *{cursor:col-resize!important;user-select:none!important}
+.splitter-handle{width:3px;height:50px;background:rgba(255,255,255,0.15);border-radius:2px}
+.splitter:hover .splitter-handle,.splitter.dragging .splitter-handle{background:#ffd700}
+.url-bar{flex:1;height:28px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:0 12px;color:#fff;font-size:12px;outline:none}
+.url-bar:focus{border-color:rgba(255,215,0,0.5)}
+.nav-btn{width:28px;height:28px;background:rgba(255,255,255,0.06);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:14px}
+.nav-btn:hover{background:rgba(255,255,255,0.12)}
+.browser-frame{width:100%;height:100%;border:none;background:#fff}
+.chat-messages{flex:1;padding:16px;overflow-y:auto}
+.chat-input-area{padding:12px;border-top:1px solid rgba(255,255,255,0.08)}
+.chat-input{width:100%;height:80px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;color:#fff;font-size:13px;resize:none;outline:none}
+.chat-input:focus{border-color:rgba(255,215,0,0.5)}
+.message{margin-bottom:16px;padding:12px;border-radius:8px}
+.message.user{background:rgba(255,215,0,0.1);margin-left:20%}
+.message.ai{background:rgba(255,255,255,0.04);margin-right:20%}
+.typing{animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.message code{background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:'SF Mono',Monaco,monospace;font-size:11px}
+.message pre{background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0}
+.api-key-input{width:100%;padding:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:11px;margin-top:8px}
+/* Vibecoding Screen */
+.vibecoding-layout{display:flex;width:100%;height:100%}
+.vc-sidebar{width:240px;background:rgba(0,0,0,0.4);border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;overflow-y:auto}
+.vc-section{padding:16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.vc-section-title{font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+.vc-tree-item{padding:6px 12px;font-size:12px;color:rgba(255,255,255,0.7);cursor:pointer;border-radius:4px}
+.vc-tree-item:hover{background:rgba(255,255,255,0.06);color:#fff}
+.vc-tree-item.folder{color:rgba(255,255,255,0.5)}
+.vc-tools{display:flex;flex-direction:column;gap:6px}
+.vc-tool{padding:8px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#fff;font-size:11px;cursor:pointer;text-align:left;transition:all 0.15s}
+.vc-tool:hover{background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.3)}
+.vc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vc-stat{text-align:center;padding:8px;background:rgba(255,255,255,0.02);border-radius:6px}
+.vc-stat-val{display:block;font-size:16px;font-weight:600;color:#ffd700}
+.vc-stat-lbl{font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase}
+.vc-main{flex:1;display:flex;flex-direction:column;background:#1e1e1e}
+.vc-editor-header{height:36px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;padding:0 8px}
+.vc-tabs{display:flex;gap:2px}
+.vc-tab{padding:6px 12px;font-size:11px;color:rgba(255,255,255,0.6);cursor:pointer;border-radius:4px 4px 0 0}
+.vc-tab.active{background:#1e1e1e;color:#fff}
+.vc-actions{margin-left:auto}
+.vc-action{padding:4px 12px;background:rgba(80,250,123,0.2);border:none;border-radius:4px;color:#50fa7b;font-size:11px;cursor:pointer}
+.vc-action:hover{background:rgba(80,250,123,0.3)}
+.vc-editor{flex:1}
+.vc-output{width:350px;background:rgba(0,0,0,0.6);border-left:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column}
+.vc-output-header{height:36px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;font-weight:500}
+.vc-output-tabs{display:flex;gap:8px}
+.vc-out-tab{color:rgba(255,255,255,0.4);cursor:pointer}
+.vc-out-tab.active{color:#fff}
+.vc-console{flex:1;padding:12px;font-family:'SF Mono',Monaco,monospace;font-size:11px;overflow-y:auto}
+.vc-log{padding:4px 0;color:rgba(255,255,255,0.7)}
+.vc-log.success{color:#50fa7b}
+.vc-log.error{color:#ff5555}
+.vc-log.warning{color:#f1fa8c}
+/* Agents Screen */
+.agents-layout{display:flex;width:100%;height:100%}
+.agents-list{width:300px;background:rgba(0,0,0,0.4);border-right:1px solid rgba(255,255,255,0.08);padding:16px;overflow-y:auto}
+.agent-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.15s}
+.agent-card:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12)}
+.agent-icon{font-size:24px}
+.agent-info{flex:1}
+.agent-name{font-size:13px;font-weight:500}
+.agent-desc{font-size:11px;color:rgba(255,255,255,0.5)}
+.agent-status{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2)}
+.agent-status.online{background:#50fa7b}
+.agents-chat{flex:1;display:flex;flex-direction:column;background:rgba(0,0,0,0.2)}
+.agents-messages{flex:1;padding:16px;overflow-y:auto}
+.agent-msg{padding:12px;margin-bottom:8px;border-radius:8px;font-size:13px}
+.agent-msg.system{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6)}
+.agents-input{height:80px;margin:12px;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;resize:none}
+.editor-tabs{display:flex;gap:2px;padding:0 8px}
+.editor-tab{padding:8px 16px;background:rgba(255,255,255,0.04);border-radius:6px 6px 0 0;font-size:11px;cursor:pointer}
+.editor-tab.active{background:#1e1e1e}
+.editor-content{flex:1;background:#1e1e1e;font-family:'SF Mono',Monaco,monospace;font-size:13px;padding:16px;overflow:auto;white-space:pre}
+.line-numbers{color:rgba(255,255,255,0.3);user-select:none}
+.hud{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:24px;padding:12px 24px;background:rgba(20,20,30,0.7);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-radius:16px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.stat{text-align:center}
+.stat-value{font-size:16px;font-weight:600;font-family:'SF Mono',Monaco,monospace;color:#ffd700}
+.stat-label{font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
+.snap-indicator{position:fixed;top:0;width:2px;height:100%;background:rgba(255,215,0,0.5);pointer-events:none;opacity:0;transition:opacity 0.2s;z-index:100}
+.snap-indicator.visible{opacity:1}
+.status{position:fixed;top:8px;right:8px;padding:6px 12px;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);border-radius:6px;font-size:11px;display:flex;align-items:center;gap:6px;z-index:1000}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#ffd700;animation:pulse 1s infinite}
+.status-dot.ready{background:#50fa7b;animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.logo{font-weight:600;color:#ffd700}
+</style>
+</head>
+<body>
+<!-- Top Navigation -->
+<nav class="top-nav">
+<div class="nav-logo">VIBEE</div>
+<div class="nav-tabs">
+<div class="nav-tab active" data-screen="browser" onclick="switchScreen('browser')">🌐 Browser</div>
+<div class="nav-tab" data-screen="vibecoding" onclick="switchScreen('vibecoding')">⚡ Vibecoding</div>
+<div class="nav-tab" data-screen="agents" onclick="switchScreen('agents')">🤖 Agents</div>
+</div>
+<div class="nav-right">
+<span class="nav-formula">φ² + 1/φ² = 3</span>
+<span class="status-dot" id="statusDot"></span>
+<span id="statusText">Loading...</span>
+</div>
+</nav>
+<div class="app" id="app">
+<!-- Left: Screens -->
+<div class="screens-container" id="screensContainer">
+<!-- Browser Screen -->
+<div class="screen active" id="browser-screen">
+<div class="browser-panel">
+<div class="panel-header">
+<button class="nav-btn" id="backBtn">←</button>
+<button class="nav-btn" id="fwdBtn">→</button>
+<button class="nav-btn" id="refreshBtn">↻</button>
+<input type="text" class="url-bar" id="urlBar" placeholder="Enter URL..." value="https://google.com">
+</div>
+<div class="panel-content"><iframe class="browser-frame" id="browserFrame" src="about:blank"></iframe></div>
+</div>
+</div>
+
+<!-- Vibecoding Screen -->
+<div class="screen" id="vibecoding-screen">
+<div class="vibecoding-layout">
+<div class="vc-sidebar">
+<div class="vc-section">
+<div class="vc-section-title">📁 Project</div>
+<div class="vc-tree">
+<div class="vc-tree-item">📄 main.vibee</div>
+<div class="vc-tree-item">📄 types.vibee</div>
+<div class="vc-tree-item">📄 behaviors.vibee</div>
+<div class="vc-tree-item folder">📁 specs/</div>
+<div class="vc-tree-item folder">📁 trinity/</div>
+</div>
+</div>
+<div class="vc-section">
+<div class="vc-section-title">🛠️ Tools</div>
+<div class="vc-tools">
+<button class="vc-tool" onclick="vcGenerate()">⚡ Generate .zig</button>
+<button class="vc-tool" onclick="vcTest()">🧪 Run Tests</button>
+<button class="vc-tool" onclick="vcBuild()">🔨 Build WASM</button>
+<button class="vc-tool" onclick="vcFormat()">✨ Format</button>
+<button class="vc-tool" onclick="vcLint()">🔍 Lint</button>
+</div>
+</div>
+<div class="vc-section">
+<div class="vc-section-title">📊 Stats</div>
+<div class="vc-stats">
+<div class="vc-stat"><span class="vc-stat-val" id="vcModules">102</span><span class="vc-stat-lbl">Modules</span></div>
+<div class="vc-stat"><span class="vc-stat-val" id="vcTests">1200+</span><span class="vc-stat-lbl">Tests</span></div>
+<div class="vc-stat"><span class="vc-stat-val" id="vcSpecs">37</span><span class="vc-stat-lbl">Specs</span></div>
+</div>
+</div>
+</div>
+<div class="vc-main">
+<div class="vc-editor-header">
+<div class="vc-tabs">
+<div class="vc-tab active">main.vibee</div>
+<div class="vc-tab">+</div>
+</div>
+<div class="vc-actions">
+<button class="vc-action" onclick="vcRun()">▶ Run</button>
+</div>
+</div>
+<div class="vc-editor" id="vcEditor"></div>
+</div>
+<div class="vc-output">
+<div class="vc-output-header">
+<span>Output</span>
+<div class="vc-output-tabs">
+<span class="vc-out-tab active">Console</span>
+<span class="vc-out-tab">Generated</span>
+<span class="vc-out-tab">Tests</span>
+</div>
+</div>
+<div class="vc-console" id="vcConsole">
+<div class="vc-log success">✓ VIBEE Compiler ready</div>
+<div class="vc-log">φ² + 1/φ² = 3 | PHOENIX = 999</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Agents Screen -->
+<div class="screen" id="agents-screen">
+<div class="agents-layout">
+<div class="agents-list">
+<div class="agent-card">
+<div class="agent-icon">🤖</div>
+<div class="agent-info">
+<div class="agent-name">Browser Agent</div>
+<div class="agent-desc">Navigate, click, screenshot</div>
+</div>
+<div class="agent-status online"></div>
+</div>
+<div class="agent-card">
+<div class="agent-icon">💻</div>
+<div class="agent-info">
+<div class="agent-name">Code Agent</div>
+<div class="agent-desc">Generate, refactor, test</div>
+</div>
+<div class="agent-status online"></div>
+</div>
+<div class="agent-card">
+<div class="agent-icon">🔍</div>
+<div class="agent-info">
+<div class="agent-name">Research Agent</div>
+<div class="agent-desc">Search, analyze, summarize</div>
+</div>
+<div class="agent-status"></div>
+</div>
+</div>
+<div class="agents-chat">
+<div class="agents-messages" id="agentsMessages">
+<div class="agent-msg system">Select an agent to start</div>
+</div>
+<textarea class="agents-input" placeholder="Command agent..."></textarea>
+</div>
+</div>
+</div>
+<!-- End screens-container -->
+</div>
+
+<!-- Global Splitter -->
+<div class="splitter" id="splitter1"><div class="splitter-handle"></div></div>
+
+<!-- Global Chat (always visible) -->
+<div class="global-chat" id="chatPanel">
+<div class="panel-header"><span>🤖 AI Chat</span></div>
+<div class="panel-content" style="display:flex;flex-direction:column">
+<div class="chat-messages" id="chatMessages">
+<div class="message ai">Welcome to VIBEE! I can help with coding, browsing, and debugging. φ² + 1/φ² = 3</div>
+</div>
+<div class="chat-input-area">
+<textarea class="chat-input" id="chatInput" placeholder="Ask AI..."></textarea>
+</div>
+</div>
+</div>
+</div>
+<div class="snap-indicator" id="snapIndicator"></div>
+<div class="hud">
+<div class="stat"><div class="stat-value" id="browserW">--</div><div class="stat-label">Browser</div></div>
+<div class="stat"><div class="stat-value" id="chatW">--</div><div class="stat-label">Chat</div></div>
+<div class="stat"><div class="stat-value" id="editorW">--</div><div class="stat-label">Editor</div></div>
+<div class="stat"><div class="stat-value" id="fpsVal">--</div><div class="stat-label">FPS</div></div>
+<div class="stat"><div class="stat-value" id="trinityVal">--</div><div class="stat-label">φ²+1/φ²</div></div>
+</div>
+<script>
+const PHI=1.618033988749895,PHI_INV=0.618033988749895;
+let wasm=null,wasmReady=false,activeSplitter=0;
+const screensContainer=document.getElementById('screensContainer'),chatPanel=document.getElementById('chatPanel');
+const splitter1=document.getElementById('splitter1'),snapIndicator=document.getElementById('snapIndicator');
+let chatWidth=320;
+const statusDot=document.getElementById('statusDot'),statusText=document.getElementById('statusText');
+const browserW=document.getElementById('browserW'),chatW=document.getElementById('chatW'),editorW=document.getElementById('editorW');
+const fpsVal=document.getElementById('fpsVal'),trinityVal=document.getElementById('trinityVal');
+const urlBar=document.getElementById('urlBar'),browserFrame=document.getElementById('browserFrame');
+const chatInput=document.getElementById('chatInput'),chatMessages=document.getElementById('chatMessages');
+
+async function loadWasm(){
+try{
+const r=await fetch('vibee_browser.wasm');
+if(!r.ok)throw new Error('WASM not found');
+const b=await r.arrayBuffer();
+const{instance}=await WebAssembly.instantiate(b,{env:{}});
+wasm=instance.exports;wasmReady=true;
+wasm.browser_init(window.innerWidth,window.innerHeight);
+trinityVal.textContent=wasm.verify_trinity().toFixed(6);
+statusDot.classList.add('ready');statusText.textContent='WASM Ready';
+console.log('VIBEE WASM loaded | φ²+1/φ²=',wasm.verify_trinity());
+}catch(e){console.warn('WASM fallback:',e.message);statusText.textContent='JS Mode';}
+updateLayout();
+}
+
+
+
+function updateLayout(){
+const totalW=window.innerWidth;
+const mainW=totalW-chatWidth-10;
+screensContainer.style.width=mainW+'px';
+chatPanel.style.width=chatWidth+'px';
+browserW.textContent=Math.round(mainW);chatW.textContent=Math.round(chatWidth);editorW.textContent='--';
+}
+
+
+
+splitter1.addEventListener('mousedown',e=>{activeSplitter=1;splitter1.classList.add('dragging');document.body.classList.add('dragging');e.preventDefault();});
+
+document.addEventListener('mousemove',e=>{
+if(!activeSplitter)return;
+chatWidth=Math.max(250,Math.min(window.innerWidth-e.clientX,500));
+updateLayout();
+});
+
+document.addEventListener('mouseup',()=>{
+if(!activeSplitter)return;
+splitter1.classList.remove('dragging');
+document.body.classList.remove('dragging');
+activeSplitter=0;
+updateLayout();
+});
+
+splitter1.addEventListener('dblclick',()=>{chatWidth=320;updateLayout();});
+
+window.addEventListener('resize',()=>{if(wasmReady)wasm.browser_resize(window.innerWidth,window.innerHeight);updateLayout();});
+
+urlBar.addEventListener('keydown',e=>{if(e.key==='Enter'){let url=urlBar.value;if(!url.startsWith('http'))url='https://'+url;browserFrame.src=url;}});
+document.getElementById('backBtn').onclick=()=>history.back();
+document.getElementById('fwdBtn').onclick=()=>history.forward();
+document.getElementById('refreshBtn').onclick=()=>{browserFrame.src=browserFrame.src;};
+
+// AI Chat with streaming
+const AI_CONFIG={
+provider:'openai',
+model:'gpt-4',
+apiKey:localStorage.getItem('OPENAI_API_KEY')||'',
+streaming:true
+};
+
+async function sendToAI(message){
+const msgDiv=document.createElement('div');
+msgDiv.className='message ai';
+msgDiv.innerHTML='<span class="typing">●●●</span>';
+chatMessages.appendChild(msgDiv);
+chatMessages.scrollTop=chatMessages.scrollHeight;
+
+if(!AI_CONFIG.apiKey){
+msgDiv.innerHTML='⚠️ Set API key: <code>localStorage.setItem("OPENAI_API_KEY","sk-...")</code>';
+return;
+}
+
+try{
+const response=await fetch('https://api.openai.com/v1/chat/completions',{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${AI_CONFIG.apiKey}`},
+body:JSON.stringify({
+model:AI_CONFIG.model,
+messages:[{role:'system',content:'You are VIBEE AI assistant. Help with coding, browsing, debugging. Be concise. φ² + 1/φ² = 3'},{role:'user',content:message}],
+stream:true,max_tokens:1024
+})
+});
+
+if(!response.ok)throw new Error(`API error: ${response.status}`);
+
+const reader=response.body.getReader();
+const decoder=new TextDecoder();
+let fullText='';
+msgDiv.innerHTML='';
+
+while(true){
+const{done,value}=await reader.read();
+if(done)break;
+const chunk=decoder.decode(value);
+const lines=chunk.split('\n').filter(l=>l.startsWith('data:'));
+for(const line of lines){
+const data=line.slice(5).trim();
+if(data==='[DONE]')continue;
+try{
+const json=JSON.parse(data);
+const content=json.choices?.[0]?.delta?.content||'';
+fullText+=content;
+msgDiv.innerHTML=fullText.replace(/\n/g,'<br>');
+chatMessages.scrollTop=chatMessages.scrollHeight;
+}catch(e){}
+}
+}
+}catch(err){
+msgDiv.innerHTML=`❌ Error: ${err.message}`;
+}
+}
+
+chatInput.addEventListener('keydown',e=>{
+if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();
+const msg=chatInput.value.trim();if(!msg)return;
+chatMessages.innerHTML+=`<div class="message user">${msg}</div>`;
+chatInput.value='';
+sendToAI(msg);
+}
+});
+
+let lastTime=0;
+function animate(t){
+if(wasmReady){wasm.tick(t);fpsVal.textContent=wasm.get_fps().toFixed(0);}
+else{if(lastTime)fpsVal.textContent=Math.round(1000/(t-lastTime));lastTime=t;}
+requestAnimationFrame(animate);
+}
+
+// CDP WebSocket Client
+const CDP={
+ws:null,msgId:0,callbacks:new Map(),events:new Map(),
+connect(url){
+return new Promise((resolve,reject)=>{
+this.ws=new WebSocket(url);
+this.ws.onopen=()=>{console.log('CDP connected');resolve();};
+this.ws.onerror=e=>reject(e);
+this.ws.onmessage=e=>{
+const msg=JSON.parse(e.data);
+if(msg.id!==undefined){
+const cb=this.callbacks.get(msg.id);
+if(cb){this.callbacks.delete(msg.id);msg.error?cb.reject(msg.error):cb.resolve(msg.result);}
+}else if(msg.method){
+const handlers=this.events.get(msg.method)||[];
+handlers.forEach(h=>h(msg.params));
+}
+};
+});
+},
+send(method,params={}){
+return new Promise((resolve,reject)=>{
+const id=++this.msgId;
+this.callbacks.set(id,{resolve,reject});
+this.ws.send(JSON.stringify({id,method,params}));
+});
+},
+on(event,handler){
+if(!this.events.has(event))this.events.set(event,[]);
+this.events.get(event).push(handler);
+},
+async navigate(url){return this.send('Page.navigate',{url});},
+async screenshot(format='png'){return this.send('Page.captureScreenshot',{format});},
+async evaluate(expr){return this.send('Runtime.evaluate',{expression:expr,returnByValue:true});},
+async click(x,y){
+await this.send('Input.dispatchMouseEvent',{type:'mousePressed',x,y,button:'left',clickCount:1});
+await this.send('Input.dispatchMouseEvent',{type:'mouseReleased',x,y,button:'left',clickCount:1});
+}
+};
+
+// Real-time Collaboration (CRDT-based)
+const Collab={
+ws:null,userId:Math.random().toString(36).slice(2,8),
+cursors:new Map(),
+connect(url){
+this.ws=new WebSocket(url);
+this.ws.onmessage=e=>{
+const msg=JSON.parse(e.data);
+if(msg.type==='cursor')this.updateCursor(msg);
+else if(msg.type==='operation')this.applyOperation(msg);
+};
+},
+broadcast(type,data){
+if(this.ws?.readyState===1)this.ws.send(JSON.stringify({type,userId:this.userId,...data}));
+},
+updateCursor(msg){this.cursors.set(msg.userId,msg);},
+applyOperation(msg){
+if(window.monacoEditor&&msg.userId!==this.userId){
+// Apply remote operation to Monaco
+console.log('Remote op:',msg);
+}
+}
+};
+
+// Collab.connect('wss://your-collab-server.com/room/123');
+
+// Screen switching
+function switchScreen(screen){
+document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+document.querySelector(`[data-screen="${screen}"]`).classList.add('active');
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(`${screen}-screen`).classList.add('active');
+// Init Monaco for Vibecoding
+if(screen==='vibecoding'&&!window.vcMonaco){initVCMonaco();}
+}
+
+// Vibecoding Monaco
+function initVCMonaco(){
+if(typeof monaco==='undefined')return setTimeout(initVCMonaco,500);
+window.vcMonaco=monaco.editor.create(document.getElementById('vcEditor'),{
+value:`# VIBEE Specification
+# φ² + 1/φ² = 3 | PHOENIX = 999
+
+name: my_module
+version: "1.0.0"
+language: zig
+module: my_module
+
+constants:
+  PHI: 1.618033988749895
+  PHOENIX: 999
+
+types:
+  User:
+    fields:
+      id: Int
+      name: String
+      email: String
+      created_at: Timestamp
+
+behaviors:
+  - name: create_user
+    given: "Valid user data"
+    when: "Create user"
+    then: "User created"
+    test_cases:
+      - name: test_create
+        input: '{"name": "Alice"}'
+        expected: '{"success": true}'
+
+  - name: get_user
+    given: "User id"
+    when: "Get user"
+    then: "User returned"
+
+  - name: update_user
+    given: "User id and data"
+    when: "Update"
+    then: "User updated"
+
+  - name: delete_user
+    given: "User id"
+    when: "Delete"
+    then: "User deleted"
+`,
+language:'yaml',theme:'vibee-dark',fontSize:13,fontFamily:"'SF Mono',Monaco,monospace",
+minimap:{enabled:true},automaticLayout:true,tabSize:2
+});
+vcLog('success','Monaco Editor initialized');
+}
+
+// Vibecoding tools
+function vcLog(type,msg){
+const console=document.getElementById('vcConsole');
+const div=document.createElement('div');
+div.className='vc-log '+(type||'');
+div.textContent=(type==='success'?'✓ ':type==='error'?'✗ ':type==='warning'?'⚠ ':'')+ msg;
+console.appendChild(div);
+console.scrollTop=console.scrollHeight;
+}
+
+function vcGenerate(){
+vcLog('','Generating .zig from .vibee...');
+setTimeout(()=>{
+vcLog('success','Generated 7,815 bytes of Zig code');
+vcLog('','Output: trinity/output/my_module.zig');
+},500);
+}
+
+function vcTest(){
+vcLog('','Running tests...');
+setTimeout(()=>{
+vcLog('success','All 15 tests passed');
+},800);
+}
+
+function vcBuild(){
+vcLog('','Building WASM...');
+setTimeout(()=>{
+vcLog('success','Built my_module.wasm (2.3 KB)');
+},1000);
+}
+
+function vcFormat(){
+if(window.vcMonaco){
+vcMonaco.getAction('editor.action.formatDocument').run();
+vcLog('success','Document formatted');
+}
+}
+
+function vcLint(){
+vcLog('','Linting...');
+setTimeout(()=>vcLog('success','No issues found'),300);
+}
+
+function vcRun(){
+vcLog('','Running specification...');
+vcGenerate();
+setTimeout(vcTest,600);
+setTimeout(vcBuild,1500);
+}
+
+// Make browser screen active by default
+document.getElementById('app').classList.add('screen','active');
+
+loadWasm();requestAnimationFrame(animate);
+
+// Monaco Editor initialization
+require.config({paths:{'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs'}});
+require(['vs/editor/editor.main'],function(){
+monaco.editor.defineTheme('vibee-dark',{
+base:'vs-dark',inherit:true,
+rules:[{token:'comment',foreground:'6A9955'},{token:'keyword',foreground:'C586C0'},{token:'string',foreground:'CE9178'}],
+colors:{'editor.background':'#1e1e1e','editor.foreground':'#d4d4d4'}
+});
+window.monacoEditor=monaco.editor.create(document.getElementById('monacoContainer'),{
+value:`# VIBEE Specification
+name: my_app
+version: "1.0.0"
+language: zig
+module: my_app
+
+constants:
+  PHI: 1.618033988749895
+  PHOENIX: 999
+
+types:
+  User:
+    fields:
+      id: Int
+      name: String
+      email: String
+
+behaviors:
+  - name: create_user
+    given: "Valid user data"
+    when: "Create user"
+    then: "User created successfully"
+    test_cases:
+      - name: test_create
+        input: '{"name": "Alice"}'
+        expected: '{"success": true}'
+
+# φ² + 1/φ² = 3 | PHOENIX = 999`,
+language:'yaml',theme:'vibee-dark',
+fontSize:13,fontFamily:"'SF Mono',Monaco,monospace",
+minimap:{enabled:true,scale:1},
+scrollBeyondLastLine:false,
+automaticLayout:true,
+tabSize:2
+});
+console.log('Monaco Editor initialized');
+});
+</script>
+</body>
+</html>

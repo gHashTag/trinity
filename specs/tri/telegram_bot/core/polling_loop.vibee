@@ -1,0 +1,436 @@
+name: polling_loop
+version: "2.0.0"
+language: zig
+module: polling_loop
+
+description: |
+  Long polling loop for VIBEE Telegram Bot.
+  Continuously fetches updates from Telegram API.
+  Handles errors, retries, and graceful shutdown.
+
+imports:
+  - ./telegram_client
+  - ./update_processor
+  - ../middleware/middleware_chain
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  PollingConfig:
+    description: "Polling configuration"
+    fields:
+      timeout_seconds: Int
+      limit: Int
+      allowed_updates: List<String>
+      retry_delay_ms: Int
+      max_retries: Int
+      backoff_multiplier: Float
+      max_backoff_ms: Int
+
+  PollingState:
+    description: "Current polling state"
+    fields:
+      offset: Int
+      is_running: Bool
+      is_paused: Bool
+      consecutive_errors: Int
+      total_updates: Int
+      total_errors: Int
+      last_poll_at: Option<Timestamp>
+      last_error_at: Option<Timestamp>
+      last_error: Option<String>
+
+  PollingLoop:
+    description: "Polling loop instance"
+    fields:
+      client: Object
+      processor: Object
+      config: PollingConfig
+      state: PollingState
+      metrics: PollingMetrics
+
+  PollingMetrics:
+    description: "Polling metrics"
+    fields:
+      polls_total: Int
+      polls_empty: Int
+      polls_with_updates: Int
+      updates_received: Int
+      updates_processed: Int
+      updates_failed: Int
+      avg_poll_duration_ms: Float
+      avg_updates_per_poll: Float
+
+  PollResult:
+    description: "Result of single poll"
+    fields:
+      success: Bool
+      updates_count: Int
+      new_offset: Int
+      duration_ms: Int
+      error: Option<PollError>
+
+  PollError:
+    description: "Poll error details"
+    fields:
+      code: PollErrorCode
+      message: String
+      retry_after: Option<Int>
+      is_recoverable: Bool
+
+  PollErrorCode:
+    description: "Poll error codes"
+    values:
+      - network_error
+      - timeout_error
+      - rate_limited
+      - invalid_token
+      - server_error
+      - parse_error
+      - unknown_error
+
+  Update:
+    description: "Telegram update"
+    fields:
+      update_id: Int
+      message: Option<Message>
+      edited_message: Option<Message>
+      callback_query: Option<CallbackQuery>
+      inline_query: Option<InlineQuery>
+      pre_checkout_query: Option<PreCheckoutQuery>
+      successful_payment: Option<SuccessfulPayment>
+
+  Message:
+    description: "Telegram message"
+    fields:
+      message_id: Int
+      from: Option<User>
+      chat: Chat
+      date: Int
+      text: Option<String>
+      photo: Option<List<PhotoSize>>
+      video: Option<Video>
+      audio: Option<Audio>
+      voice: Option<Voice>
+      document: Option<Document>
+
+  CallbackQuery:
+    description: "Callback query"
+    fields:
+      id: String
+      from: User
+      message: Option<Message>
+      data: Option<String>
+
+  User:
+    description: "Telegram user"
+    fields:
+      id: Int
+      is_bot: Bool
+      first_name: String
+      last_name: Option<String>
+      username: Option<String>
+      language_code: Option<String>
+
+  Chat:
+    description: "Telegram chat"
+    fields:
+      id: Int
+      type: String
+      title: Option<String>
+      username: Option<String>
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LIFECYCLE
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: create_polling_loop
+    given: TelegramClient and UpdateProcessor
+    when: Creating polling loop
+    then: |
+      1. Create default PollingConfig
+      2. Initialize PollingState (offset=0)
+      3. Initialize PollingMetrics
+      4. Return PollingLoop
+
+  - name: create_with_config
+    given: TelegramClient, UpdateProcessor, PollingConfig
+    when: Creating with custom config
+    then: |
+      1. Validate config
+      2. Initialize state
+      3. Return PollingLoop
+
+  - name: start
+    given: PollingLoop
+    when: Starting polling
+    then: |
+      1. Set is_running = true
+      2. Log "Polling started"
+      3. Delete any existing webhook
+      4. Enter main loop
+      5. Return when stopped
+
+  - name: stop
+    given: PollingLoop
+    when: Stopping polling
+    then: |
+      1. Set is_running = false
+      2. Wait for current poll to complete
+      3. Log final metrics
+      4. Return PollingMetrics
+
+  - name: pause
+    given: PollingLoop
+    when: Pausing polling
+    then: |
+      1. Set is_paused = true
+      2. Log "Polling paused"
+
+  - name: resume
+    given: PollingLoop
+    when: Resuming polling
+    then: |
+      1. Set is_paused = false
+      2. Log "Polling resumed"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # MAIN LOOP
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: run_loop
+    given: PollingLoop
+    when: Main loop running
+    then: |
+      while is_running:
+        1. If paused, sleep and continue
+        2. poll_once()
+        3. If fatal error, stop
+        4. Update metrics
+        5. Continue
+
+  - name: poll_once
+    given: PollingLoop
+    when: Single poll iteration
+    then: |
+      1. Record start time
+      2. Call getUpdates API
+      3. If error -> handle_poll_error
+      4. If success -> process_updates
+      5. Update offset
+      6. Record duration
+      7. Return PollResult
+
+  - name: get_updates
+    given: PollingLoop
+    when: Calling Telegram API
+    then: |
+      1. Build request params
+      2. Call client.getUpdates
+      3. Parse response
+      4. Return updates or error
+
+  - name: process_updates
+    given: PollingLoop and List<Update>
+    when: Processing update batch
+    then: |
+      for each update:
+        1. Call processor.process_update
+        2. If error, log but continue
+        3. Increment counters
+      Update offset to max(update_id) + 1
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # ERROR HANDLING
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: handle_poll_error
+    given: PollingLoop and PollError
+    when: Poll failed
+    then: |
+      1. Increment consecutive_errors
+      2. Log error
+      3. If rate_limited -> wait retry_after
+      4. If invalid_token -> stop (fatal)
+      5. If recoverable -> calculate backoff
+      6. Wait backoff duration
+      7. Return should_continue
+
+  - name: calculate_backoff
+    given: Consecutive errors count
+    when: Calculating retry delay
+    then: |
+      delay = retry_delay_ms * (backoff_multiplier ^ errors)
+      delay = min(delay, max_backoff_ms)
+      Add random jitter (0-10%)
+      Return delay
+
+  - name: is_fatal_error
+    given: PollError
+    when: Checking if fatal
+    then: |
+      Return true if:
+        - invalid_token
+        - consecutive_errors > max_retries
+
+  - name: reset_error_state
+    given: PollingLoop
+    when: Successful poll after errors
+    then: |
+      1. Set consecutive_errors = 0
+      2. Clear last_error
+
+  - name: handle_update_error
+    given: Update and error
+    when: Update processing failed
+    then: |
+      1. Log error with update_id
+      2. Increment updates_failed
+      3. Continue (don't stop loop)
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # OFFSET MANAGEMENT
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: get_offset
+    given: PollingLoop
+    when: Getting current offset
+    then: Return state.offset
+
+  - name: set_offset
+    given: PollingLoop and new offset
+    when: Setting offset
+    then: |
+      1. Update state.offset
+      2. Persist if configured
+
+  - name: calculate_new_offset
+    given: List<Update>
+    when: Calculating next offset
+    then: |
+      If updates empty, return current offset
+      Else return max(update_id) + 1
+
+  - name: persist_offset
+    given: PollingLoop
+    when: Saving offset to storage
+    then: |
+      1. Save to file/DB
+      2. Log if error
+
+  - name: load_offset
+    given: PollingLoop
+    when: Loading saved offset
+    then: |
+      1. Read from file/DB
+      2. Return offset or 0
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # METRICS
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: update_metrics
+    given: PollingLoop and PollResult
+    when: Recording poll result
+    then: |
+      1. Increment polls_total
+      2. If empty -> increment polls_empty
+      3. Else -> increment polls_with_updates
+      4. Add to updates_received
+      5. Update avg_poll_duration
+      6. Update avg_updates_per_poll
+
+  - name: get_metrics
+    given: PollingLoop
+    when: Getting metrics
+    then: Return PollingMetrics
+
+  - name: reset_metrics
+    given: PollingLoop
+    when: Resetting metrics
+    then: |
+      1. Reset all counters to 0
+      2. Reset averages
+
+  - name: log_metrics
+    given: PollingLoop
+    when: Logging current metrics
+    then: |
+      Log:
+        - Total polls
+        - Updates processed
+        - Error rate
+        - Avg poll duration
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # UTILITY
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: delete_webhook
+    given: PollingLoop
+    when: Ensuring no webhook
+    then: |
+      1. Call deleteWebhook API
+      2. Log result
+
+  - name: get_state
+    given: PollingLoop
+    when: Getting current state
+    then: Return PollingState
+
+  - name: is_healthy
+    given: PollingLoop
+    when: Health check
+    then: |
+      Return true if:
+        - is_running
+        - consecutive_errors < max_retries
+        - last_poll within timeout
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DEFAULT_TIMEOUT_SECONDS: 60
+  DEFAULT_LIMIT: 100
+  DEFAULT_RETRY_DELAY_MS: 1000
+  DEFAULT_MAX_RETRIES: 10
+  DEFAULT_BACKOFF_MULTIPLIER: 2.0
+  DEFAULT_MAX_BACKOFF_MS: 60000
+  JITTER_PERCENT: 10
+
+  ALLOWED_UPDATES:
+    - message
+    - edited_message
+    - callback_query
+    - inline_query
+    - pre_checkout_query
+    - successful_payment
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MESSAGES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+messages:
+  started: "Polling started (timeout={timeout}s, limit={limit})"
+  stopped: "Polling stopped. Total updates: {total}"
+  paused: "Polling paused"
+  resumed: "Polling resumed"
+  
+  poll_success: "Poll: {count} updates received"
+  poll_empty: "Poll: no updates"
+  poll_error: "Poll error: {error}"
+  
+  rate_limited: "Rate limited. Waiting {seconds}s"
+  backoff: "Backing off for {ms}ms (attempt {attempt})"
+  fatal_error: "Fatal error: {error}. Stopping."
+  
+  update_error: "Failed to process update {id}: {error}"
