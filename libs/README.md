@@ -11,7 +11,7 @@ Multi-language libraries for Vector Symbolic Architecture (VSA) and ternary comp
 | GPU (CUDA) | ✅ CubeCL | ✅ + OpenCL |
 | **FPGA acceleration** | ❌ | ✅ BitNet core |
 | **Knowledge Graph** | ❌ | ✅ Built-in |
-| **Multi-language** | Rust only | Rust, Python, C, Zig, Go, TS, Java, Swift, Julia |
+| **Multi-language** | Rust only | **29 languages** (see below) |
 | **BitNet integration** | ❌ | ✅ 1.58-bit LLM |
 | Packed storage | ✅ | ✅ 256x compression |
 | Sparse vectors | ✅ | ✅ Hybrid storage |
@@ -24,15 +24,35 @@ Minimal, fast primitives for ternary arithmetic and VSA:
 
 ```
 libs/
-├── rust/trinity-vsa/      # Rust crate (crates.io)
-├── python/trinity_vsa/    # Python package (PyPI)
-├── c/libtrinityvsa/       # C library (static/shared)
-├── go/trinityvsa/         # Go module
+├── rust/trinity-vsa/       # Rust crate
+├── python/trinity_vsa/     # Python package
+├── c/libtrinityvsa/        # C library
+├── go/trinityvsa/          # Go module
 ├── typescript/trinity-vsa/ # npm package
-├── java/trinity-vsa/      # Maven artifact
-├── swift/TrinityVSA/      # Swift Package
-├── julia/TrinityVSA/      # Julia package
-└── zig/trinity-vsa/       # Zig module
+├── java/trinity-vsa/       # Maven artifact
+├── kotlin/trinity-vsa/     # Kotlin/Gradle
+├── scala/trinity-vsa/      # Scala/sbt
+├── swift/TrinityVSA/       # Swift Package
+├── julia/TrinityVSA/       # Julia package
+├── r/TrinityVSA/           # R package
+├── matlab/+TrinityVSA/     # MATLAB/Octave
+├── fortran/trinity_vsa/    # Fortran module
+├── lua/trinity-vsa/        # Lua module
+├── ruby/trinity_vsa/       # Ruby gem
+├── haskell/trinity-vsa/    # Haskell/Cabal
+├── ocaml/trinity-vsa/      # OCaml/Dune
+├── elixir/trinity_vsa/     # Elixir/Mix
+├── nim/trinityvsa/         # Nim/Nimble
+├── d/trinity-vsa/          # D/Dub
+├── ada/trinity_vsa/        # Ada
+├── perl/Trinity-VSA/       # Perl module
+├── php/trinity-vsa/        # PHP/Composer
+├── dart/trinity_vsa/       # Dart/Flutter
+├── fsharp/TrinityVSA/      # F#/.NET
+├── clojure/trinity-vsa/    # Clojure/Leiningen
+├── erlang/trinity_vsa/     # Erlang/OTP
+├── wolfram/TrinityVSA/     # Mathematica
+└── zig/trinity-vsa/        # Zig module
 ```
 
 ### API Overview
