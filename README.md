@@ -1,4 +1,132 @@
-# VIBEE Language
+# Trinity - Decentralized AI Inference Network
+
+**Run LLMs on your CPU. Earn $FPGA tokens. No GPU required.**
+
+🌐 **Website:** [github.com/gHashTag/trinity](https://github.com/gHashTag/trinity)
+
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Languages](https://img.shields.io/badge/VSA_libs-29_languages-blue)](#trinity-vsa-libraries)
+[![CPU Inference](https://img.shields.io/badge/CPU_inference-BitNet_1.58bit-orange)](#-cpu-inference-our-competitive-advantage)
+
+---
+
+## 🚀 Our Competitive Advantage: CPU Inference
+
+**Trinity enables LLM inference on ANY CPU - no GPU required!**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              WHY TERNARY WEIGHTS CHANGE EVERYTHING              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Traditional LLM (float32):        BitNet/Trinity (ternary):    │
+│  ─────────────────────────         ─────────────────────────    │
+│  • 32 bits per weight              • 1.58 bits per weight       │
+│  • 70B model = 280 GB RAM          • 70B model = 14 GB RAM      │
+│  • Requires expensive GPU          • Runs on ANY CPU            │
+│  • Float multiply + add            • Just add/subtract          │
+│                                                                 │
+│  Weights W ∈ {-1, 0, +1}:                                       │
+│  • Multiply by -1 → negate (free)                               │
+│  • Multiply by  0 → skip (free)                                 │
+│  • Multiply by +1 → nothing (free)                              │
+│                                                                 │
+│  Result: NO MULTIPLICATIONS, ONLY ADD/SUB!                      │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Benchmark Results (C library with AVX2)
+
+```
+Dimension: 10,000
+─────────────────────────────────────
+Operation        Dense      Packed    Speedup
+bind             8.89 µs    0.12 µs   74x
+dot             11.73 µs    0.25 µs   47x
+similarity       2.18 µs    0.25 µs    9x
+```
+
+### Where It Runs
+
+| Platform | Support | Notes |
+|----------|---------|-------|
+| **Desktop** | ✅ | Intel/AMD with AVX2/AVX-512 |
+| **Laptop** | ✅ | Run 70B models in 16GB RAM |
+| **Mobile** | ✅ | ARM NEON (Apple M1/M2, Snapdragon) |
+| **Raspberry Pi** | ✅ | Edge AI without cloud |
+| **ESP32** | ✅ | IoT inference (no FPU needed!) |
+
+---
+
+## 💰 FPGA Network: Decentralized Inference
+
+**Install our app → Share your CPU → Earn $FPGA tokens**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    FPGA NETWORK ARCHITECTURE                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐      │
+│  │  User   │    │  User   │    │  User   │    │  User   │      │
+│  │   PC    │    │ Laptop  │    │  Mac    │    │   Pi    │      │
+│  └────┬────┘    └────┬────┘    └────┬────┘    └────┬────┘      │
+│       │              │              │              │            │
+│       └──────────────┴──────────────┴──────────────┘            │
+│                          │                                      │
+│                    ┌─────┴─────┐                                │
+│                    │  Trinity  │                                │
+│                    │ Scheduler │                                │
+│                    └─────┬─────┘                                │
+│                          │                                      │
+│            ┌─────────────┼─────────────┐                        │
+│            │             │             │                        │
+│       ┌────┴────┐  ┌─────┴────┐  ┌─────┴────┐                  │
+│       │ BitNet  │  │  Model   │  │  Token   │                  │
+│       │ Models  │  │  Shards  │  │ Rewards  │                  │
+│       └─────────┘  └──────────┘  └──────────┘                  │
+│                                                                 │
+│  HOW IT WORKS:                                                  │
+│  1. Download Trinity Node app                                   │
+│  2. App downloads model shards (your portion)                   │
+│  3. Process inference requests from network                     │
+│  4. Earn $FPGA tokens for compute contribution                  │
+│  5. Use tokens for API access or trade                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📦 Trinity VSA Libraries
+
+**29 programming languages** - unified API for Vector Symbolic Architecture:
+
+```
+libs/
+├── rust/       ├── kotlin/     ├── haskell/    ├── perl/
+├── python/     ├── scala/      ├── ocaml/      ├── php/
+├── c/          ├── swift/      ├── elixir/     ├── dart/
+├── go/         ├── julia/      ├── erlang/     ├── fsharp/
+├── typescript/ ├── r/          ├── nim/        ├── clojure/
+├── java/       ├── matlab/     ├── d/          ├── wolfram/
+├── zig/        ├── fortran/    ├── ada/        └── lua/
+└── ruby/
+```
+
+**Core API (same in all languages):**
+```
+bind(a, b)      - Create association
+unbind(a, b)    - Retrieve association  
+bundle([...])   - Combine concepts
+permute(v, k)   - Encode position
+similarity()    - Measure relatedness
+```
+
+---
+
+## 🔧 VIBEE Compiler
 
 **Sacred Formula:** `V = n × 3^k × π^m × φ^p × e^q`
 **Golden Identity:** `φ² + 1/φ² = 3`
