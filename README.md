@@ -348,11 +348,13 @@ print(similarity(red_apple, apple))  # ~0.0 (orthogonal after bind)
 
 | Metric | Value |
 |--------|-------|
-| **Total Supply** | 10,000,000,000 (10B) |
+| **Total Supply** | 10,460,353,203 (3²¹ Phoenix Number) |
 | **Token** | $TRI |
 | **Network** | Ethereum + Trinity L2 |
-| **Launch Price** | $0.03 |
+| **Launch Price** | $0.0287 |
 | **FDV** | $300,000,000 |
+
+> **Sacred Mathematics:** 3²¹ = φ² + 1/φ² = 3 = TRINITY
 
 ### Seed Round
 
@@ -368,11 +370,13 @@ print(similarity(red_apple, apple))  # ~0.0 (orthogonal after bind)
 ### Distribution
 
 ```
-Node Rewards     ████████████████████  40%  4.0B $TRI
-Founder          ████████              20%  2.0B $TRI
-Treasury (DAO)   ██████                15%  1.5B $TRI
-Public Sale      ██████                15%  1.5B $TRI
-Ecosystem        ████                  10%  1.0B $TRI
+Node Rewards     ████████████████████  40%  4.18B $TRI
+Founder          ████████              20%  2.09B $TRI
+Treasury (DAO)   ██████                15%  1.57B $TRI
+Public Sale      ██████                15%  1.57B $TRI
+Ecosystem        ████                  10%  1.05B $TRI
+─────────────────────────────────────────────────────
+TOTAL: 3²¹ = 10,460,353,203 $TRI (Phoenix Number)
 ```
 
 ### Utility

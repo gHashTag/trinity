@@ -140,7 +140,7 @@
 │                    $TRI TOKENOMICS                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  TOTAL SUPPLY: 10,000,000,000 $TRI (10 billion)                │
+│  TOTAL SUPPLY: 10,460,353,203 $TRI (3²¹ Phoenix Number)        │
 │  FDV:          $300,000,000                                     │
 │  LAUNCH PRICE: $0.03                                            │
 │                                                                 │
@@ -151,11 +151,11 @@
 │                                                                 │
 │  DISTRIBUTION:                                                  │
 │  ─────────────                                                  │
-│  40% - Node Rewards (4B, vested over 10 years)                  │
-│  20% - Founder (2B, 4-year vest, 1-year cliff)                  │
-│  15% - Treasury (1.5B, DAO-controlled)                          │
-│  15% - Public Sale / Liquidity (1.5B)                           │
-│  10% - Ecosystem Grants (1B)                                    │
+│  40% - Node Rewards (4.18B, vested over 10 years)               │
+│  20% - Founder (2.09B, 4-year vest, 1-year cliff)               │
+│  15% - Treasury (1.57B, DAO-controlled)                         │
+│  15% - Public Sale / Liquidity (1.57B)                          │
+│  10% - Ecosystem Grants (1.05B)                                 │
 │                                                                 │
 │  UTILITY:                                                       │
 │  ────────                                                       │
