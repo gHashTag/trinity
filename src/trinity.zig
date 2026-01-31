@@ -17,6 +17,7 @@ pub const vm = @import("vm.zig");
 pub const sdk = @import("sdk.zig");
 pub const science = @import("science.zig");
 pub const sparse = @import("sparse.zig");
+pub const jit = @import("jit.zig");
 
 // Re-export main types
 pub const BigInt = bigint.TVCBigInt;
@@ -65,6 +66,10 @@ pub const weightedBundle = science.weightedBundle;
 
 // Re-export Sparse types
 pub const SparseVector = sparse.SparseVector;
+
+// Re-export JIT types
+pub const JitCompiler = jit.JitCompiler;
+pub const JitCache = jit.JitCache;
 
 // Constants
 pub const MAX_TRITS = hybrid.MAX_TRITS;
