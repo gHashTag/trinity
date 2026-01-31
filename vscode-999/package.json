@@ -1,0 +1,64 @@
+{
+  "name": "vibee-999",
+  "displayName": "VIBEE/999 Language",
+  "description": "Syntax highlighting and LSP support for VIBEE/999 - PHOENIX = 999 = 3³ × 37",
+  "version": "3.0.0",
+  "publisher": "vibee",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "999",
+        "aliases": ["Language 999", "999", "IGLA"],
+        "extensions": [".999"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "vibee",
+        "aliases": ["VIBEE", "vibee"],
+        "extensions": [".vibee"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "999",
+        "scopeName": "source.999",
+        "path": "./syntaxes/999.tmLanguage.json"
+      },
+      {
+        "language": "vibee",
+        "scopeName": "source.vibee",
+        "path": "./syntaxes/vibee.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "999",
+        "path": "./snippets/999.json"
+      },
+      {
+        "language": "vibee",
+        "path": "./snippets/vibee.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gHashTag/vibee-lang"
+  },
+  "keywords": [
+    "999",
+    "vibee",
+    "igla",
+    "phoenix",
+    "golden-ratio",
+    "coptic"
+  ]
+}
