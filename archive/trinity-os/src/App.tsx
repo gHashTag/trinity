@@ -34,6 +34,7 @@ const RoadmapSection = lazy(() => import('./components/sections/RoadmapSection')
 const TeamSection = lazy(() => import('./components/sections/TeamSection'))
 const EcosystemSection = lazy(() => import('./components/sections/EcosystemSection'))
 const InvestSection = lazy(() => import('./components/sections/InvestSection'))
+const PhoenixNumberSection = lazy(() => import('./components/sections/PhoenixNumberSection'))
 
 // Минимальный fallback для секций
 const SectionFallback = () => (
@@ -79,6 +80,7 @@ export default function App() {
         <RoadmapSection />
         <TeamSection />
         <EcosystemSection />
+        <PhoenixNumberSection />
         <InvestSection />
       </Suspense>
       
