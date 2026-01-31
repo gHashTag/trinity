@@ -1,6 +1,6 @@
 # Trinity
 
-**Ternary Vector Symbolic Architecture for Hyperdimensional Computing**
+**Unified Architecture for Hyperdimensional Computing and Ternary Neural Network Acceleration**
 
 [![Zig](https://img.shields.io/badge/Zig-0.11+-orange)](https://ziglang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -9,13 +9,20 @@
 
 ## Abstract
 
-Trinity is a high-performance library implementing Vector Symbolic Architecture (VSA) using balanced ternary representation {-1, 0, +1}. The system achieves 8.9 billion trits/second throughput with 256x memory savings compared to floating-point implementations.
+Trinity is a unified computing architecture bridging hyperdimensional computing (HDC) with hardware-accelerated ternary neural networks. The project integrates:
+
+1. **Trinity Core**: High-performance VSA using balanced ternary {-1, 0, +1}
+2. **VIBEE Compiler**: Specification-to-hardware compiler (.vibee → Zig/Verilog)
+3. **Phi-Engine**: Self-evolving quantum-inspired computation engine
+4. **FPGA Network**: Decentralized BitNet LLM inference network
 
 **Key Results:**
-- Dot product: 8.9 B trits/sec (178x faster than baseline)
-- Bundle operation: 3.4 B trits/sec (113x faster)
-- Memory efficiency: 256x savings via hybrid storage
-- Zero external dependencies
+| Metric | Value | Comparison |
+|--------|-------|------------|
+| VSA Throughput | 8.9 B trits/sec | 178x vs baseline |
+| Memory Efficiency | 256x savings | vs FP32 |
+| BitNet Energy | 0.05 mJ/token | 20x vs GPU |
+| FPGA Inference | 727 tok/sec | 3x vs A100 |
 
 ---
 
@@ -293,18 +300,50 @@ trinity/
 │   ├── knowledge_graph.zig  # Knowledge graph
 │   ├── packed_trit.zig      # Packed storage
 │   ├── simd_avx512.zig      # SIMD optimizations
-│   └── vibeec/              # VIBEE compiler
+│   ├── vibeec/              # VIBEE compiler (164 files)
+│   │   ├── vibee_parser.zig
+│   │   ├── zig_codegen.zig
+│   │   └── verilog_codegen.zig
+│   └── phi-engine/          # Self-evolution engine
+│       ├── quantum/
+│       ├── ouroboros.zig
+│       └── akashic_records.zig
 ├── specs/
-│   └── fpga/                # FPGA specifications
+│   └── fpga/                # FPGA specifications (.vibee)
+│       ├── bitnet_core.vibee
+│       └── vsa_accelerator.vibee
 ├── fpga-network/            # Decentralized inference
+│   └── agent/               # Python agent
 ├── docs/
-│   ├── academic/            # Mathematical proofs
-│   ├── fpga/                # FPGA documentation
-│   └── api/                 # API documentation
+│   ├── academic/            # Mathematical proofs (BitNet, VSA)
+│   ├── fpga/                # FPGA documentation (whitepaper)
+│   ├── api/                 # API reference
+│   └── guides/              # Step-by-step guides
 ├── examples/                # Usage examples
 ├── benchmarks/              # Performance tests
 └── build.zig                # Build configuration
 ```
+
+---
+
+## Documentation
+
+### API Reference
+- [Trinity API](docs/api/TRINITY_API.md) - Core VSA operations
+- [VIBEE Spec Format](docs/api/VIBEE_SPEC_FORMAT.md) - Specification language
+
+### Guides
+- [VIBEE to FPGA](docs/guides/VIBEE_TO_FPGA.md) - Hardware generation workflow
+- [ML Pipeline Integration](docs/guides/ML_PIPELINE_INTEGRATION.md) - Using Trinity in ML
+- [FPGA Network Setup](docs/guides/FPGA_NETWORK_SETUP.md) - Decentralized inference
+
+### Academic
+- [BitNet Mathematical Proofs](docs/academic/BITNET_MATHEMATICAL_PROOF.md)
+- [BitNet Business Case](docs/academic/BITNET_BUSINESS_CASE.md)
+
+### FPGA
+- [FPGA Network Whitepaper](docs/fpga/FPGA_NETWORK_WHITEPAPER.md)
+- [FPGA Tech Tree](docs/fpga/FPGA_TECH_TREE.md)
 
 ---
 
