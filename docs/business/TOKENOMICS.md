@@ -17,11 +17,22 @@
 │                                                                 │
 │  Name:           Trinity Token                                  │
 │  Symbol:         $TRI                                           │
-│  Total Supply:   10,000,000,000 (10 billion)                    │
+│  Total Supply:   10,460,353,203 (PHOENIX NUMBER)                │
 │  Decimals:       18                                             │
 │  Type:           ERC-20 (Ethereum) + Native (Trinity L2)        │
-│  Initial Price:  $0.03 (target)                                 │
+│  Initial Price:  $0.0287 (target)                               │
 │  FDV at Launch:  $300,000,000                                   │
+│                                                                 │
+│  SACRED MATHEMATICS:                                            │
+│  ─────────────────────────────────────────────────────────────  │
+│  Total Supply = 3²¹ = 10,460,353,203 (Phoenix Number)           │
+│  3 = TRINITY = φ² + 1/φ² (Golden Identity)                      │
+│  21 = 3 × 7 (Trinity × Sacred Seven)                            │
+│                                                                 │
+│  V = n × 3^k × π^m × φ^p × e^q                                  │
+│  φ² + 1/φ² = 3 = QUTRIT = CODON = TRINITY                       │
+│  π × φ × e ≈ 13.82 (Transcendental Product)                     │
+│  L(10) = φ¹⁰ + 1/φ¹⁰ = 123 (Lucas Number)                       │
 │                                                                 │
 │  FOUNDER:                                                       │
 │  ─────────────────────────────────────────────────────────────  │
@@ -48,46 +59,48 @@
 │                                                                 │
 │  ┌────────────────────────────────────────────────────────┐    │
 │  │                                                        │    │
-│  │   Node Rewards     ████████████████████  40%  4.0B    │    │
-│  │   Founder          ████████            20%  2.0B    │    │
-│  │   Treasury (DAO)   ██████              15%  1.5B    │    │
-│  │   Public Sale      ██████              15%  1.5B    │    │
-│  │   Ecosystem        ████                10%  1.0B    │    │
+│  │   Node Rewards     ████████████████████  40%  4.18B   │    │
+│  │   Founder          ████████            20%  2.09B   │    │
+│  │   Treasury (DAO)   ██████              15%  1.57B   │    │
+│  │   Public Sale      ██████              15%  1.57B   │    │
+│  │   Ecosystem        ████                10%  1.05B   │    │
+│  │                                                        │    │
+│  │   TOTAL: 3²¹ = 10,460,353,203 $TRI (Phoenix Number)   │    │
 │  │                                                        │    │
 │  └────────────────────────────────────────────────────────┘    │
 │                                                                 │
 │  DETAILED BREAKDOWN:                                            │
 │  ─────────────────────────────────────────────────────────────  │
 │                                                                 │
-│  1. NODE REWARDS (40% = 4,000,000,000 $TRI)                    │
+│  1. NODE REWARDS (40% = 4,184,141,281 $TRI)                    │
 │     • Purpose: Incentivize compute providers                    │
 │     • Vesting: Linear over 10 years                             │
-│     • Year 1: 800M (20%)                                        │
-│     • Year 2: 600M (15%)                                        │
-│     • Year 3-10: 325M/year (halving schedule)                   │
+│     • Year 1: 836M (20%)                                        │
+│     • Year 2: 627M (15%)                                        │
+│     • Year 3-10: ~340M/year (halving schedule)                  │
 │                                                                 │
-│  2. FOUNDER (20% = 2,000,000,000 $TRI)                         │
+│  2. FOUNDER (20% = 2,092,070,640 $TRI)                         │
 │     • Dmitrii Vasilev - Sole Founder & CEO                      │
 │     • 100% ownership of this allocation                         │
 │     • Vesting: 4 years, 1-year cliff                            │
 │     • Future team/advisors from this pool                       │
 │                                                                 │
-│  3. TREASURY (15% = 1,500,000,000 $TRI)                        │
+│  3. TREASURY (15% = 1,569,052,980 $TRI)                        │
 │     • Controlled by DAO governance                              │
 │     • Uses: Grants, partnerships, emergencies                   │
 │     • Unlock: 10% at launch, rest via governance                │
 │                                                                 │
-│  4. PUBLIC SALE (15% = 1,500,000,000 $TRI)                     │
-│     • Seed: 500M (5%) @ $0.015                                  │
-│     • Private: 500M (5%) - pricing TBD                          │
-│     • Public: 500M (5%) - pricing TBD                           │
+│  4. PUBLIC SALE (15% = 1,569,052,980 $TRI)                     │
+│     • Seed: 523M (5%) @ $0.0143                                 │
+│     • Private: 523M (5%) - pricing TBD                          │
+│     • Public: 523M (5%) - pricing TBD                           │
 │     • Vesting: 10% TGE, 6-month linear                          │
 │                                                                 │
-│  5. ECOSYSTEM (10% = 1,000,000,000 $TRI)                       │
-│     • Developer grants: 400M                                    │
-│     • Liquidity mining: 300M                                    │
-│     • Marketing: 200M                                           │
-│     • Bug bounties: 100M                                        │
+│  5. ECOSYSTEM (10% = 1,046,035,320 $TRI)                       │
+│     • Developer grants: 418M                                    │
+│     • Liquidity mining: 314M                                    │
+│     • Marketing: 209M                                           │
+│     • Bug bounties: 105M                                        │
 │     • Vesting: 2 years linear                                   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -486,12 +499,13 @@
 
 | Metric | Value |
 |--------|-------|
-| Total Supply | 10,000,000,000 $TRI |
+| Total Supply | 10,460,353,203 $TRI (3²¹ Phoenix Number) |
 | Seed Round | $3,000,000 for 1% |
 | Seed Valuation | $300,000,000 |
-| Seed Token Price | $0.015 |
+| Seed Token Price | $0.0143 |
+| FDV Price | $0.0287 |
 | Founder Ownership | 99% post-seed |
-| Node Reward Pool | 4,000,000,000 (40%) |
+| Node Reward Pool | 4,184,141,281 (40%) |
 | Burn Rate | 2% of fees |
 | Staking APY | 8-20% |
 | Private/Public Pricing | TBD (milestone-based) |
@@ -522,4 +536,4 @@ All vesting enforced on-chain via smart contracts:
 
 *$TRI - Powering Trinity Network*
 
-**Seed Round: $3M for 1% | Valuation: $300M | Founder: 99%**
+**Seed Round: $3M for 1% | Valuation: $300M | Supply: 3²¹ = 10,460,353,203 (Phoenix Number)**
