@@ -1,384 +1,434 @@
-# Trinity
+# VIBEE Language
 
-**Unified Architecture for Hyperdimensional Computing and Ternary Neural Network Acceleration**
+**Sacred Formula:** `V = n × 3^k × π^m × φ^p × e^q`
+**Golden Identity:** `φ² + 1/φ² = 3`
 
-[![Zig](https://img.shields.io/badge/Zig-0.11+-orange)](https://ziglang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/gHashTag/vibee-lang/actions/workflows/ci.yml/badge.svg)](https://github.com/gHashTag/vibee-lang/actions/workflows/ci.yml)
+[![Benchmark Tests](https://github.com/gHashTag/vibee-lang/actions/workflows/benchmark-tests.yml/badge.svg)](https://github.com/gHashTag/vibee-lang/actions/workflows/benchmark-tests.yml)
+[![Tests](https://img.shields.io/badge/tests-2000%2B-brightgreen)](trinity/output/)
+[![Languages](https://img.shields.io/badge/languages-42-blue)](#-gen-multi-42-languages)
+[![FFI](https://img.shields.io/badge/FFI-40%20modules-orange)](#-ffi-modules)
+[![Docs](https://img.shields.io/badge/docs-online-blue)](docs/INDEX.md)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
----
+## Overview
 
-## Abstract
+**TRINITY OS is the native ternary operating system built on VIBEE.**
 
-Trinity is a unified computing architecture bridging hyperdimensional computing (HDC) with hardware-accelerated ternary neural networks. The project integrates:
-
-1. **Trinity Core**: High-performance VSA using balanced ternary {-1, 0, +1}
-2. **VIBEE Compiler**: Specification-to-hardware compiler (.vibee → Zig/Verilog)
-3. **Phi-Engine**: Self-evolving quantum-inspired computation engine
-4. **FPGA Network**: Decentralized BitNet LLM inference network
-
-**Key Results:**
-| Metric | Value | Comparison |
-|--------|-------|------------|
-| VSA Throughput | 8.9 B trits/sec | 178x vs baseline |
-| Memory Efficiency | 256x savings | vs FP32 |
-| BitNet Energy | 0.05 mJ/token | 20x vs GPU |
-| FPGA Inference | 727 tok/sec | 3x vs A100 |
-
----
-
-## Table of Contents
-
-1. [Theoretical Foundation](#theoretical-foundation)
-2. [Architecture](#architecture)
-3. [Installation](#installation)
-4. [API Reference](#api-reference)
-5. [Benchmarks](#benchmarks)
-6. [FPGA Acceleration](#fpga-acceleration)
-7. [Applications](#applications)
-8. [References](#references)
-
----
-
-## Theoretical Foundation
-
-### Vector Symbolic Architecture (VSA)
-
-VSA represents concepts as high-dimensional vectors where:
-- **Binding** (⊗): Creates associations between concepts
-- **Bundling** (+): Combines multiple concepts into a set
-- **Permutation** (ρ): Encodes sequential relationships
-
-### Ternary Representation
-
-Trinity uses balanced ternary {-1, 0, +1} which provides:
-
-1. **Computational Efficiency**: Multiplication reduces to sign selection
-2. **Memory Efficiency**: 1.58 bits per trit (log₂3)
-3. **Noise Robustness**: Sparse representations resist corruption
-
-**Mathematical Identity:**
-```
-φ² + 1/φ² = 3
-```
-where φ = (1 + √5)/2 is the golden ratio.
-
-### Information Density
-
-For a vector of dimension D with ternary elements:
-```
-Information capacity = D × log₂(3) ≈ 1.585D bits
-Storage requirement = D × 2 bits (practical encoding)
-Efficiency = 79.2%
-```
-
----
-
-## Architecture
+VIBEE is a specification-first programming language that generates code from behavioral specifications. Built on the **Creation Pattern** and **Predictive Algorithmic Systematics (PAS)** methodology.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        TRINITY STACK                            │
-├─────────────────────────────────────────────────────────────────┤
-│  Applications    │ Knowledge Graph │ NLP │ Classification      │
-├──────────────────┼─────────────────┼─────┼─────────────────────┤
-│  SDK             │ High-level API for VSA operations           │
-├──────────────────┼─────────────────────────────────────────────┤
-│  VM              │ 20+ VSA instructions │ Stack-based execution│
-├──────────────────┼─────────────────────────────────────────────┤
-│  Core            │ SIMD-optimized │ Packed storage │ Parallel  │
-├──────────────────┼─────────────────────────────────────────────┤
-│  Hardware        │ CPU (AVX-512) │ FPGA (BitNet) │ Future: ASIC│
-└─────────────────────────────────────────────────────────────────┘
+.vibee (specification) → vibee gen → .zig (auto-generated)
+                       → vibee gen-multi → 42 languages!
+                       → vibee gen-hdl → Synthesizable Verilog
 ```
 
-### Core Components
+## ⚡ FPGA / HDL / HLS (High-Level Synthesis)
 
-| Component | File | Description |
-|-----------|------|-------------|
-| VSA Core | `src/vsa.zig` | Fundamental VSA operations |
-| Trinity | `src/trinity.zig` | High-level interface |
-| VM | `src/vm.zig` | Virtual machine for VSA programs |
-| Knowledge Graph | `src/knowledge_graph.zig` | Graph-based reasoning |
-| SIMD | `src/simd_avx512.zig` | AVX-512 optimizations |
-| Packed Storage | `src/packed_trit.zig` | Memory-efficient encoding |
+VIBEE is a powerful **HLS compiler** that turns high-level specifications into ready-to-synthesize **Verilog HDL**.
 
----
+- **Multi-Language Hardware:** Write logic in Python, Rust, or Go and get Verilog.
+- **Vendor Portability:** Built-in abstraction for **Xilinx (AMD)**, **Intel (Altera)**, and **Lattice**.
+- **Performance Reporting:** Cycle-accurate latency estimation and automated pipelining (`pipeline: auto`).
+- **BitNet Acceleration:** Optimized for ternary neural network inference on FPGA.
 
-## Installation
+[Hardware Guide (EN)](docs/habr/HABR_ARTICLE_FPGA_COMPILER_EN.md) | [Hardware Guide (RU)](docs/habr/HABR_ARTICLE_FPGA_COMPILER.md) | [Technical Reference](docs/HARDWARE_HLS.md)
 
-### Requirements
+### 🔬 Verified in Silicon
+![BitNet Simulation Waveform](docs/images/bitnet_waveform.png)
+*Makerchip Simulation: Valid synchronous clocking and functional logic verification for 300MHz BitNet Core.*
 
-- Zig 0.11.0 or later
-- x86_64 CPU with AVX2 (AVX-512 optional)
+## 📦 Installation
 
-### Build
+**Note:** Pre-built binaries in `bin/` are for Linux x86_64 with modern CPU extensions (AVX/SSE). If you get `Illegal instruction`, rebuild for your architecture:
+
+### Option 1: Automatic installer (recommended)
+```bash
+# Run bootstrap installer
+curl -sSL https://raw.githubusercontent.com/gHashTag/vibee-lang/main/install.sh | bash
+```
+
+### Option 2: Package Managers (Global)
+**macOS (Homebrew):**
+```bash
+brew tap ghashtag/tap
+brew install vibee
+```
+
+**Windows (Chocolatey):**
+*Pending feed approval.*
+
+### Option 3: Docker (no Zig installation needed)
+```bash
+# Generate Verilog directly (multi-arch image)
+docker run --rm -v $(pwd):/app ghcr.io/ghashtag/vibee gen specs/tri/bitnet_top.vibee
+
+# Build image locally (supports amd64/arm64)
+docker buildx build --platform linux/amd64,linux/arm64 -t vibee .
+docker run --rm -v $(pwd):/app vibee gen specs/tri/bitnet_top.vibee
+
+# For single architecture (faster):
+# docker build -t vibee .
+```
+
+### Option 4: Manual build
+```bash
+# 1. Install Zig (v0.13.0 - v0.15.2 supported)
+# Ubuntu/Debian:
+sudo apt update && sudo apt install zig
+
+# macOS:
+brew install zig@0.13
+
+# Or download from ziglang.org
+
+# 2. Build compiler
+cd src/vibeec
+zig build -Doptimize=ReleaseSafe  # Safe for all CPUs
+cp zig-out/bin/vibeec ../../bin/vibee
+
+# 3. Verify
+cd ../..
+./bin/vibee --help
+```
+
+### Platform-specific binaries
+| Platform | Command | Notes |
+|----------|---------|-------|
+| **Linux x86_64** | `./bin/vibee` | Works on modern CPUs |
+| **macOS ARM64** | Rebuild with Zig | `zig build -Dtarget=aarch64-macos` |
+| **Windows WSL2** | Same as Linux | Use Ubuntu WSL2 |
+| **Docker** | `ghcr.io/ghashtag/vibee` | Multi-arch support |
+
+**Need help?** Open an issue or check [docs/INSTALLATION.md](docs/INSTALLATION.md).
+
+## 🌍 GEN-MULTI: 42 Languages
+
+**One specification → 42 programming languages!**
 
 ```bash
-git clone https://github.com/gHashTag/trinity.git
-cd trinity
-zig build
+# Generate Python code
+vibee gen-multi specs/tri/feature.vibee python
+
+# Generate ALL 42 languages
+vibee gen-multi specs/tri/feature.vibee all
 ```
 
-### Run Tests
+**Supported Languages:**
+
+| Tier | Languages |
+|------|-----------|
+| **Primary** | Zig, Python, Rust, Go, TypeScript, WASM |
+| **Enterprise** | Java, Kotlin, Swift, C, C# |
+| **Scripting** | Ruby, PHP, Lua, Perl, R |
+| **Functional** | Haskell, OCaml, Elixir, Erlang, F#, Scala, Clojure |
+| **Systems** | D, Nim, Crystal, Julia, Odin, Jai, V |
+| **Classic** | Ada, Fortran, COBOL, Pascal, Objective-C |
+| **JVM** | Groovy, Dart |
+| **Lisp** | Racket, Scheme, Common Lisp |
+| **Logic** | Prolog, Gleam |
+
+## 🚀 Quick Start
 
 ```bash
-zig build test
+# Validate specification before generation
+vibeec validate specs/tri/feature.vibee
+
+# Generate Zig code from specification
+vibee gen specs/tri/feature.vibee
+
+# Generate for multiple languages
+vibee gen-multi specs/tri/feature.vibee all
+
+# Test generated code
+zig test trinity/output/feature.zig
+
+# Run all tests (parallel)
+cd trinity/output && ls *.zig | xargs -P 8 -I {} zig test {}
 ```
 
-### Run Benchmarks
+## ✅ Specification Validator
+
+Validate `.vibee` specifications before generating code:
 
 ```bash
-zig build bench
+# Validate a single specification
+vibeec validate specs/tri/core/absolute_security_v126.vibee
+
+# Use standalone validator
+./src/vibeec/bin/vibeec-validator specs/tri/core/absolute_security_v126.vibee
 ```
 
----
+**Validation Rules:**
+- ✅ Mandatory `output:` field required
+- ✅ Must be in subfolder (`specs/tri/core/`, not root)
+- ✅ `.tri` extension forbidden (use `.vibee` only)
 
-## API Reference
+**Example Output:**
+```
+╔══════════════════════════════════════════════════════════════════╗
+║              VIBEE SPECIFICATION VALIDATION ERRORS               ║
+╚══════════════════════════════════════════════════════════════════╝
 
-### Basic Operations
+❌ Missing mandatory 'output:' key
 
-```zig
-const trinity = @import("trinity");
-
-// Create random vectors
-var apple = trinity.randomVector(256, seed1);
-var red = trinity.randomVector(256, seed2);
-
-// Bind: create association
-var red_apple = trinity.bind(&apple, &red);
-
-// Bundle: combine concepts
-var fruits = trinity.bundle(&[_]*Vector{&apple, &orange, &banana});
-
-// Similarity: compare vectors
-const sim = trinity.cosineSimilarity(&red_apple, &apple);
+❌ Validation FAILED
 ```
 
-### VM Instructions
-
-| Instruction | Opcode | Description |
-|-------------|--------|-------------|
-| `BIND` | 0x01 | Bind two vectors |
-| `BUNDLE` | 0x02 | Bundle multiple vectors |
-| `PERMUTE` | 0x03 | Permute vector |
-| `SIMILARITY` | 0x04 | Compute similarity |
-| `THRESHOLD` | 0x05 | Apply threshold |
-| `LOAD` | 0x10 | Load vector from memory |
-| `STORE` | 0x11 | Store vector to memory |
-
-### Knowledge Graph
-
-```zig
-const kg = @import("knowledge_graph");
-
-var graph = kg.KnowledgeGraph.init(allocator);
-defer graph.deinit();
-
-// Add entities and relations
-try graph.addTriple("Einstein", "bornIn", "Germany");
-try graph.addTriple("Einstein", "discovered", "Relativity");
-
-// Query
-const results = try graph.query("Einstein", "discovered", null);
+**Build Validator:**
+```bash
+cd src/vibeec
+zig build-exe validator_main.zig -femit-bin=bin/vibeec-validator
 ```
 
----
+## 🛠️ Tools
 
-## Benchmarks
+### py2vibee - Python to VIBEE Converter
 
-### Throughput (single-threaded, 10K dimensions)
-
-| Operation | Trinity | Baseline | Speedup |
-|-----------|---------|----------|---------|
-| Dot Product | 8.9 B/s | 50 M/s | **178x** |
-| Bundle | 3.4 B/s | 30 M/s | **113x** |
-| Bind | 425 M/s | 20 M/s | **21x** |
-| Permute | 502 M/s | 25 M/s | **20x** |
-| Similarity | 2.0 B/s | 40 M/s | **50x** |
-
-### Memory Usage
-
-| Representation | Bits/Element | 10K Vector | Savings |
-|----------------|--------------|------------|---------|
-| Float64 | 64 | 80 KB | 1x |
-| Float32 | 32 | 40 KB | 2x |
-| Int8 | 8 | 10 KB | 8x |
-| Packed Trit | 2 | 2.5 KB | **32x** |
-| Hybrid | 0.25 | 312 B | **256x** |
-
----
-
-## FPGA Acceleration
-
-Trinity includes specifications for FPGA-based BitNet inference acceleration.
-
-### BitNet Core
-
-The `specs/fpga/bitnet_core.vibee` specification defines:
-- Ternary MAC units (no multipliers required)
-- 16 parallel MAC array
-- 1.6-bit weight compression
-- Pre-computed negation optimization
-
-**Target Performance:**
-- 1.6 GOPS on Artix-7 XC7A35T
-- <1W power consumption
-- 0 DSP blocks required
-
-### FPGA Network
-
-Decentralized inference network for BitNet models:
+Convert Python code to `.vibee` specifications for FPGA/software targets:
 
 ```bash
-cd fpga-network
-pip install -r requirements.txt
-python -m agent.cli start
+# Convert Python to VIBEE spec
+py2vibee adder.py --target varlog --output adder.vibee
+
+# Generate Verilog from spec
+vibee gen specs/tri/adder.vibee
 ```
 
-See `docs/fpga/FPGA_NETWORK_WHITEPAPER.md` for architecture details.
+**Features:**
+- AST parsing & type inference
+- Multi-target: varlog, verilog, zig, python, rust, go
+- Hardware signal generation
+- BDD-style behavior specifications
+
+**Source:** `specs/tri/py2vibee.vibee` (auto-generated tool)
+
+## 🔥 Key Features (January 2026 - RELEASE)
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Multi-Zig Support** | Compatible with Zig 0.13.0 up to 0.15.2 | ✅ READY |
+| **Global Distribution**| Brew & Chocolatey support | ✅ READY |
+| **iGLA v6 IMMORTAL** | 15000× inference speedup | ✅ READY |
+| **KOSCHEI MODE** | Autonomous self-evolution | ✅ READY |
+| **RAG Pipeline** | Retrieval-Augmented Generation | 16 | 99 |
+| **Agent Browser** | Chromium + Monaco + AI Agent | 32 | 200+ |
+| **GEN-MULTI** | Code generation for 42 languages | 42 | 350+ |
+| **FPGA / HLS** | Synthesizable Verilog & vendor abstraction | ✅ | READY |
+| **Cycle-Accurate**| Automated latency & pipeline analysis | ✅ | READY |
+| **FFI System** | Integration with 40 languages | 40 | 350+ |
+| **E2E Pipeline v21** | Chrome CDP + Ollama LLM Agent | 4 | 35+ |
+| **BitNet Benchmark** | FPGA performance benchmarking | 12 | 50+ |
+
+## 🤖 Real Browser Agent (v22.7)
+
+**Pure Zig implementation** - no shell scripts, no external dependencies:
+
+```bash
+# Build and run the demo
+cd src/vibeec && zig build-exe demo_agent.zig && ./demo_agent
+```
+
+**Output:**
+```
+╔══════════════════════════════════════════════════════════════════╗
+║           VIBEE AGENT v22.7 - REAL INTEGRATION DEMO              ║
+╚══════════════════════════════════════════════════════════════════╝
+
+[1/5] Discovering Chrome targets...
+  Found target: ws://localhost:9222/devtools/page/...
+
+[2/5] Connecting to Chrome CDP...
+  Connected!
+
+[3/5] Navigating to example.com...
+  Navigation started!
+
+[4/5] Getting page title...
+  Title: Example Domain
+
+[5/5] Asking LLM about the page...
+  LLM Response: Example domain refers to specific subdomains...
+
+╔══════════════════════════════════════════════════════════════════╗
+║  ✓ Chrome CDP connection: WORKING                                ║
+║  ✓ Page navigation: WORKING                                      ║
+║  ✓ DOM evaluation: WORKING                                       ║
+║  ✓ Ollama LLM integration: WORKING                               ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+**Components (Pure Zig):**
+- `websocket.zig` - RFC 6455 WebSocket client
+- `http_client.zig` - HTTP/1.1 client using std.http
+- `cdp_client.zig` - Chrome DevTools Protocol
+- `real_agent.zig` - Browser + LLM integration
+
+**Requirements:**
+- Chrome with `--remote-debugging-port=9222`
+- Ollama running on port 11434
+
+**Documentation:** [docs/E2E_DEMO.md](docs/E2E_DEMO.md) | [docs/E2E_PIPELINE_GUIDE.md](docs/E2E_PIPELINE_GUIDE.md)
+
+## 📊 BitNet Benchmark Suite
+
+Performance benchmarking for BitNet FPGA inference:
+
+```bash
+# Run benchmarks
+python -m bitnet.benchmark --model model.bin
+
+# With visualization
+python -m bitnet.benchmark --model model.bin --plot --plot-dir plots/
+
+# Specific benchmark type
+python -m bitnet.benchmark --model model.bin --type latency --format json
+```
+
+**Metrics:**
+| Metric | Description |
+|--------|-------------|
+| Latency | Mean, P50, P95, P99 inference time (ms) |
+| Throughput | Tokens per second |
+| Memory | Bandwidth (GB/s), peak usage |
+
+**Output formats:** JSON, CSV, Markdown, PNG/SVG plots
+
+**Documentation:** [BENCHMARK.md](trinity/output/fpga/driver/python/BENCHMARK.md)
+
+## 📁 Project Structure
+
+```
+vibee-lang/
+├── trinity-os/             # **Native Ternary OS (Web App)**
+├── specs/tri/              # .vibee specifications (667+)
+├── trinity/output/         # Generated Zig code (2000+)
+│   └── fpga/               # **Generated Verilog HDL + Testbenches**
+├── src/vibeec/             # Compiler source
+│   ├── verilog_codegen.zig # **HLS / Verilog engine**
+│   └── vibee_parser.zig    # Specification parser
+├── bin/vibee               # CLI binary
+├── docs/                   # Documentation
+│   ├── TRINITY_PITCH_DECK.md # **Investor Deck**
+│   ├── habr/               # Habr articles
+│   ├── verdicts/           # TOXIC VERDICT reports
+│   └── academic/           # Research papers
+├── generated/multi/        # Multi-language output
+└── archive/                # Historical files
+```
+
+## 📝 Specification Example
+
+```yaml
+# specs/tri/my_feature.vibee
+name: my_feature
+version: "1.0.0"
+language: zig
+module: my_feature
+
+types:
+  User:
+    fields:
+      id: Int
+      name: String
+      active: Bool
+
+behaviors:
+  - name: create_user
+    given: Valid user data
+    when: Create called
+    then: User created successfully
+```
+
+## 🔧 Commands
+
+```bash
+# Code Generation
+vibee gen <spec.vibee>              # Generate Zig
+vibee gen-multi <spec.vibee> all    # Generate 42 languages
+vibee gen-all                       # Generate all specs (parallel)
+
+# Testing
+vibee test-all                      # Test all modules (parallel)
+vibee chain                         # gen-all + test-all
+
+# Utilities
+vibee help                          # Show all commands
+vibee eval "△ ∧ ○"                  # Ternary logic
+vibee phi                           # Sacred constants
+vibee serve                         # LLM inference server
+```
+
+## 🔌 FFI Modules
+
+40 FFI modules for cross-language integration:
+
+| Category | Modules |
+|----------|---------|
+| **Core** | ffi_core, ffi_c_bindings |
+| **Primary** | ffi_python, ffi_rust, ffi_go, ffi_wasm |
+| **Enterprise** | ffi_java_jni, ffi_kotlin, ffi_swift |
+| **Scripting** | ffi_ruby, ffi_php, ffi_lua, ffi_perl, ffi_r |
+| **Functional** | ffi_haskell, ffi_ocaml, ffi_elixir, ffi_erlang |
+| **Systems** | ffi_d, ffi_nim, ffi_crystal, ffi_julia |
+
+## 📊 Type Mapping
+
+| VIBEE Type | Zig | Python | Rust | Go |
+|------------|-----|--------|------|-----|
+| `String` | `[]const u8` | `str` | `String` | `string` |
+| `Int` | `i64` | `int` | `i64` | `int64` |
+| `Float` | `f64` | `float` | `f64` | `float64` |
+| `Bool` | `bool` | `bool` | `bool` | `bool` |
+| `List<T>` | `[]const u8` | `List[Any]` | `Vec<T>` | `[]interface{}` |
+| `Option<T>` | `?T` | `Optional[T]` | `Option<T>` | `*T` |
+
+## 📚 Documentation
+
+### 📖 Learn VIBEE
+- **[VIBEE Language Guide](docs/guides/VIBEE_LANGUAGE_GUIDE.md)** - Complete language reference
+- [Documentation Index](docs/INDEX.md) - All documentation
+- [Quickstart](docs/quickstart/QUICKSTART.md) - Get started in 5 minutes
+
+### 📰 Articles & Research
+- [Habr Article: Golden Key](docs/habr/HABR_ARTICLE_GOLDEN_KEY_V4.md) - Main article (RU)
+- [iGLA Documentation](docs/igla/) - Inference acceleration
+- [KOSCHEI System](docs/koschei/) - Autonomous evolution
+- [Scientific Papers](docs/scientific/) - Research references
+
+### 🛠️ Development
+- [AGENTS.md](AGENTS.md) - AI Agent Guidelines
+- [CLAUDE.md](CLAUDE.md) - Development Guidelines
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution Guide
+
+## 📈 Project Statistics
+
+| Metric | Value |
+|--------|-------|
+| Specifications (.vibee) | **667+** |
+| Generated modules (.zig) | **2000+** |
+| Supported languages | **42** |
+| FFI modules | **40** |
+| Tests passing | **2000+** |
+| Lines of compiler code | **20,000+** |
+
+## 🤝 Contributing
+
+1. Create `.vibee` specification in `specs/tri/`
+2. Generate: `vibee gen specs/tri/feature.vibee`
+3. Test: `zig test trinity/output/feature.zig`
+4. Submit PR
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE)
+
+## 👤 Author
+
+**Dmitrii Vasilev**
 
 ---
 
-## Applications
-
-### 1. Associative Memory
-
-```zig
-// Store key-value pairs
-memory.store("capital_france", paris_vector);
-memory.store("capital_germany", berlin_vector);
-
-// Retrieve by similarity
-const result = memory.query(france_vector);
-// Returns: paris_vector (highest similarity)
-```
-
-### 2. Natural Language Processing
-
-```zig
-// Encode sentence as sequence
-var sentence = encoder.encodeSequence(&[_][]const u8{
-    "the", "cat", "sat", "on", "the", "mat"
-});
-
-// Compare semantic similarity
-const sim = trinity.cosineSimilarity(&sentence1, &sentence2);
-```
-
-### 3. Classification
-
-```zig
-// Create class prototypes
-var cat_prototype = trinity.bundle(&cat_examples);
-var dog_prototype = trinity.bundle(&dog_examples);
-
-// Classify new instance
-const cat_sim = trinity.similarity(&new_instance, &cat_prototype);
-const dog_sim = trinity.similarity(&new_instance, &dog_prototype);
-```
-
-### 4. Robotics / Sensor Fusion
-
-```zig
-// Bind sensor readings with timestamps
-var reading = trinity.bind(&sensor_data, &timestamp_vector);
-
-// Bundle multiple sensors
-var fused = trinity.bundle(&[_]*Vector{&lidar, &camera, &imu});
-```
-
----
-
-## Project Structure
-
-```
-trinity/
-├── src/
-│   ├── trinity.zig          # Main library interface
-│   ├── vsa.zig              # VSA core operations
-│   ├── vm.zig               # Virtual machine
-│   ├── knowledge_graph.zig  # Knowledge graph
-│   ├── packed_trit.zig      # Packed storage
-│   ├── simd_avx512.zig      # SIMD optimizations
-│   ├── vibeec/              # VIBEE compiler (164 files)
-│   │   ├── vibee_parser.zig
-│   │   ├── zig_codegen.zig
-│   │   └── verilog_codegen.zig
-│   └── phi-engine/          # Self-evolution engine
-│       ├── quantum/
-│       ├── ouroboros.zig
-│       └── akashic_records.zig
-├── specs/
-│   └── fpga/                # FPGA specifications (.vibee)
-│       ├── bitnet_core.vibee
-│       └── vsa_accelerator.vibee
-├── fpga-network/            # Decentralized inference
-│   └── agent/               # Python agent
-├── docs/
-│   ├── academic/            # Mathematical proofs (BitNet, VSA)
-│   ├── fpga/                # FPGA documentation (whitepaper)
-│   ├── api/                 # API reference
-│   └── guides/              # Step-by-step guides
-├── examples/                # Usage examples
-├── benchmarks/              # Performance tests
-└── build.zig                # Build configuration
-```
-
----
-
-## Documentation
-
-### API Reference
-- [Trinity API](docs/api/TRINITY_API.md) - Core VSA operations
-- [VIBEE Spec Format](docs/api/VIBEE_SPEC_FORMAT.md) - Specification language
-
-### Guides
-- [VIBEE to FPGA](docs/guides/VIBEE_TO_FPGA.md) - Hardware generation workflow
-- [ML Pipeline Integration](docs/guides/ML_PIPELINE_INTEGRATION.md) - Using Trinity in ML
-- [FPGA Network Setup](docs/guides/FPGA_NETWORK_SETUP.md) - Decentralized inference
-
-### Academic
-- [BitNet Mathematical Proofs](docs/academic/BITNET_MATHEMATICAL_PROOF.md)
-- [BitNet Business Case](docs/academic/BITNET_BUSINESS_CASE.md)
-
-### FPGA
-- [FPGA Network Whitepaper](docs/fpga/FPGA_NETWORK_WHITEPAPER.md)
-- [FPGA Tech Tree](docs/fpga/FPGA_TECH_TREE.md)
-
----
-
-## References
-
-### Academic Papers
-
-1. Kanerva, P. (2009). "Hyperdimensional Computing: An Introduction to Computing in Distributed Representation with High-Dimensional Random Vectors." *Cognitive Computation*, 1(2), 139-159.
-
-2. Rachkovskij, D. A., & Kussul, E. M. (2001). "Binding and Normalization of Binary Sparse Distributed Representations by Context-Dependent Thinning." *Neural Computation*, 13(2), 411-452.
-
-3. Ma, H., et al. (2024). "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits." *arXiv:2402.17764*.
-
-4. Yin, J., et al. (2025). "TerEffic: Highly Efficient Ternary LLM Inference on FPGA." *arXiv:2502.16473*.
-
-### Related Projects
-
-- [trit-vsa](https://github.com/example/trit-vsa) - Reference implementation
-- [Ternary-NanoCore](https://github.com/zahidaof/Ternary-NanoCore) - FPGA ternary neural network
-
----
-
-## License
-
-MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-## Authors
-
-- Dmitrii Vasilev
-- Co-authored-by: Ona
-
----
-
-**Sacred Formula:** V = n × 3^k × π^m × φ^p × e^q
-
-**Golden Identity:** φ² + 1/φ² = 3
+**φ² + 1/φ² = 3 | PHOENIX = 999 **
