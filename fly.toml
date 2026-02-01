@@ -23,16 +23,9 @@ primary_region = "iad"
 #   source = "trinity_models"
 #   destination = "/app/models"
 
-[http_service]
-  internal_port = 8080
-  force_https = true
-  auto_stop_machines = true
-  auto_start_machines = true
-  min_machines_running = 0
+# No HTTP service - this is a CLI application
+# Access via: fly ssh console -a trinity-llm
+# Then run: /app/vibee chat --model /app/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf
 
-[[http_service.checks]]
-  grace_period = "120s"
-  interval = "30s"
-  method = "GET"
-  path = "/health"
-  timeout = "10s"
+[processes]
+  app = "/bin/sleep infinity"
