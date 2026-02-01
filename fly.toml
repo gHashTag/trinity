@@ -8,21 +8,32 @@ primary_region = "iad"
   dockerfile = "Dockerfile"
 
 [env]
-  MODEL_PATH = "/app/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf"
+  MODEL_PATH = "/app/models/smollm-135m-instruct-q8_0.gguf"
   TEMPERATURE = "0.7"
   TOP_P = "0.9"
 
-# Use performance-2x for TinyLlama (2 CPU, 4GB RAM)
+# Use shared-cpu-1x for SmolLM-135M (small model)
 [[vm]]
-  size = "performance-2x"
-  memory = "4gb"
-  cpus = 2
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpus = 1
 
 # Persistent volume for models (optional - model is baked into image)
 # [[mounts]]
 #   source = "trinity_models"
 #   destination = "/app/models"
 
-# CLI application - no HTTP service
-# Access via: fly ssh console -a trinity-llm
-# Then run: /app/vibee chat --model /app/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf
+# HTTP API service
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[http_service.checks]]
+  grace_period = "60s"
+  interval = "30s"
+  method = "GET"
+  path = "/health"
+  timeout = "10s"
