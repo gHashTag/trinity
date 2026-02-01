@@ -121,6 +121,33 @@ pub const TritOpcode = enum(u8) {
     T_TNN_SIGN = 102, // Sign activation (ternary quantization)
     T_TNN_LINEAR = 103, // Ternary linear layer (matmul + bias)
 
+    // WASM-compatible Memory Operations
+    T_I32_LOAD = 110, // WASM i32.load
+    T_I32_STORE = 111, // WASM i32.store
+    T_I32_LOAD8_S = 112, // WASM i32.load8_s
+    T_I32_LOAD8_U = 113, // WASM i32.load8_u
+    T_I32_LOAD16_S = 114, // WASM i32.load16_s
+    T_I32_LOAD16_U = 115, // WASM i32.load16_u
+    T_I32_STORE8 = 116, // WASM i32.store8
+    T_I32_STORE16 = 117, // WASM i32.store16
+    T_MEMORY_SIZE = 118, // WASM memory.size
+    T_MEMORY_GROW = 119, // WASM memory.grow
+
+    // WASM Function Calls
+    T_CALL_INDIRECT = 120, // WASM call_indirect (table call)
+    T_TABLE_GET = 121, // WASM table.get
+    T_TABLE_SET = 122, // WASM table.set
+    T_TABLE_SIZE = 123, // WASM table.size
+    T_TABLE_GROW = 124, // WASM table.grow
+
+    // Jump opcodes for JIT
+    T_JMP = 130, // Unconditional jump (relative offset)
+    T_JZ = 131, // Jump if zero
+    T_JNZ = 132, // Jump if not zero
+    T_CMP_EQ = 133, // Compare equal (for JIT)
+    T_CMP_LT = 134, // Compare less than (for JIT)
+    T_CMP_GT = 135, // Compare greater than (for JIT)
+
     // Special
     T_NOP = 70,
     T_HALT = 71,

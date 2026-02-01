@@ -311,6 +311,291 @@ pub const Tekum27 = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // NATIVE ARITHMETIC (NO BINARY CONVERSION)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Native add without binary conversion
+    /// Adds mantissas directly in balanced ternary
+    pub fn addNative(a: Tekum27, b: Tekum27) Tekum27 {
+        // Handle special cases
+        if (a.isNaN() or b.isNaN()) return NAN;
+        if (a.isPosInf() and b.isNegInf()) return NAN;
+        if (a.isNegInf() and b.isPosInf()) return NAN;
+        if (a.isPosInf() or b.isPosInf()) return POS_INF;
+        if (a.isNegInf() or b.isNegInf()) return NEG_INF;
+        if (a.isZero()) return b;
+        if (b.isZero()) return a;
+
+        // Extract signs
+        const a_neg = a.trits[0] == .N;
+        const b_neg = b.trits[0] == .N;
+
+        // Get mantissa as Trit27 (trits 1-26, padded to 27)
+        var a_mant = Trit27{ .trits = [_]Trit{.Z} ** 27 };
+        var b_mant = Trit27{ .trits = [_]Trit{.Z} ** 27 };
+
+        for (1..27) |i| {
+            a_mant.trits[i] = a.trits[i];
+            b_mant.trits[i] = b.trits[i];
+        }
+
+        // If signs differ, negate one operand
+        if (a_neg != b_neg) {
+            if (b_neg) {
+                b_mant = b_mant.neg();
+            } else {
+                a_mant = a_mant.neg();
+            }
+        }
+
+        // Add mantissas using native ternary addition
+        const sum = Trit27.addNative(a_mant, b_mant);
+
+        // Determine result sign
+        var result = Tekum27{ .trits = [_]Trit{.Z} ** 27 };
+
+        // Check if result is negative (MSB is N)
+        const result_neg = sum.trits[1] == .N;
+        result.trits[0] = if (result_neg) .N else .P;
+
+        // Copy mantissa (negate if needed to make positive)
+        const final_mant = if (result_neg) sum.neg() else sum;
+        for (1..27) |i| {
+            result.trits[i] = final_mant.trits[i];
+        }
+
+        // Check for zero
+        var is_zero = true;
+        for (1..27) |i| {
+            if (result.trits[i] != .Z) {
+                is_zero = false;
+                break;
+            }
+        }
+        if (is_zero) return ZERO;
+
+        return result;
+    }
+
+    /// Native subtract without binary conversion
+    pub fn subNative(a: Tekum27, b: Tekum27) Tekum27 {
+        // a - b = a + (-b)
+        return addNative(a, b.neg());
+    }
+
+    /// Native multiply without binary conversion
+    /// Uses Karatsuba multiplication on mantissas
+    pub fn mulNative(a: Tekum27, b: Tekum27) Tekum27 {
+        // Handle special cases
+        if (a.isNaN() or b.isNaN()) return NAN;
+        if ((a.isInf() and b.isZero()) or (a.isZero() and b.isInf())) return NAN;
+
+        if (a.isInf() or b.isInf()) {
+            const a_sign = a.trits[0] == .N;
+            const b_sign = b.trits[0] == .N;
+            return if (a_sign != b_sign) NEG_INF else POS_INF;
+        }
+
+        if (a.isZero() or b.isZero()) return ZERO;
+
+        // Determine result sign
+        const a_neg = a.trits[0] == .N;
+        const b_neg = b.trits[0] == .N;
+        const result_neg = a_neg != b_neg;
+
+        // Get mantissas
+        var a_mant = Trit27{ .trits = [_]Trit{.Z} ** 27 };
+        var b_mant = Trit27{ .trits = [_]Trit{.Z} ** 27 };
+
+        for (1..27) |i| {
+            a_mant.trits[i] = a.trits[i];
+            b_mant.trits[i] = b.trits[i];
+        }
+
+        // Multiply using Karatsuba
+        const product = Trit27.mul(a_mant, b_mant);
+
+        // Build result
+        var result = Tekum27{ .trits = [_]Trit{.Z} ** 27 };
+        result.trits[0] = if (result_neg) .N else .P;
+
+        // Copy product mantissa (may need normalization)
+        for (1..27) |i| {
+            result.trits[i] = product.trits[i];
+        }
+
+        // Check for zero
+        var is_zero = true;
+        for (1..27) |i| {
+            if (result.trits[i] != .Z) {
+                is_zero = false;
+                break;
+            }
+        }
+        if (is_zero) return ZERO;
+
+        return result;
+    }
+
+    /// Native divide without binary conversion
+    /// Uses iterative division on mantissas
+    pub fn divNative(a: Tekum27, b: Tekum27) Tekum27 {
+        // Handle special cases
+        if (a.isNaN() or b.isNaN()) return NAN;
+        if (a.isInf() and b.isInf()) return NAN;
+        if (b.isZero()) {
+            if (a.isZero()) return NAN;
+            return if (a.trits[0] == .N) NEG_INF else POS_INF;
+        }
+
+        if (a.isInf()) {
+            const a_neg = a.trits[0] == .N;
+            const b_neg = b.trits[0] == .N;
+            return if (a_neg != b_neg) NEG_INF else POS_INF;
+        }
+
+        if (a.isZero()) return ZERO;
+
+        // Determine result sign
+        const a_neg = a.trits[0] == .N;
+        const b_neg = b.trits[0] == .N;
+        const result_neg = a_neg != b_neg;
+
+        // Get mantissas as Trit27
+        var a_mant = Trit27{ .trits = [_]Trit{.Z} ** 27 };
+        var b_mant = Trit27{ .trits = [_]Trit{.Z} ** 27 };
+
+        for (1..27) |i| {
+            a_mant.trits[i] = a.trits[i];
+            b_mant.trits[i] = b.trits[i];
+        }
+
+        // Use Trit27 division
+        const quotient = Trit27.div(a_mant, b_mant);
+
+        // Build result
+        var result = Tekum27{ .trits = [_]Trit{.Z} ** 27 };
+        result.trits[0] = if (result_neg) .N else .P;
+
+        for (1..27) |i| {
+            result.trits[i] = quotient.trits[i];
+        }
+
+        // Check for zero
+        var is_zero = true;
+        for (1..27) |i| {
+            if (result.trits[i] != .Z) {
+                is_zero = false;
+                break;
+            }
+        }
+        if (is_zero) return ZERO;
+
+        return result;
+    }
+
+    /// Normalize a Tekum27 value
+    /// Shifts mantissa left until MSB is non-zero (or all zeros)
+    pub fn normalize(self: Tekum27) Tekum27 {
+        if (self.isNaN() or self.isInf() or self.isZero()) return self;
+
+        var result = self;
+
+        // Find first non-zero trit in mantissa
+        var first_nonzero: usize = 27;
+        for (1..27) |i| {
+            if (result.trits[i] != .Z) {
+                first_nonzero = i;
+                break;
+            }
+        }
+
+        if (first_nonzero == 27) return ZERO; // All zeros
+
+        // Shift left to normalize
+        if (first_nonzero > 1) {
+            const shift = first_nonzero - 1;
+            for (1..27 - shift) |i| {
+                result.trits[i] = result.trits[i + shift];
+            }
+            for (27 - shift..27) |i| {
+                result.trits[i] = .Z;
+            }
+        }
+
+        return result;
+    }
+
+    /// Round to nearest representable value
+    pub fn round(self: Tekum27, precision: usize) Tekum27 {
+        if (self.isNaN() or self.isInf() or self.isZero()) return self;
+        if (precision >= 26) return self;
+
+        var result = self;
+
+        // Check the trit after precision for rounding
+        const round_pos = 1 + precision;
+        if (round_pos < 27) {
+            const round_trit = result.trits[round_pos];
+
+            // Balanced ternary rounding: round to nearest
+            if (round_trit == .P) {
+                // Round up: add 1 at precision position
+                var carry: Trit = .P;
+                var i: usize = round_pos - 1;
+                while (i >= 1 and carry != .Z) : (i -= 1) {
+                    const sum = tritAdd(result.trits[i], carry);
+                    result.trits[i] = sum.result;
+                    carry = sum.carry;
+                    if (i == 1) break;
+                }
+            } else if (round_trit == .N) {
+                // Round down: subtract 1 at precision position
+                var borrow: Trit = .N;
+                var i: usize = round_pos - 1;
+                while (i >= 1 and borrow != .Z) : (i -= 1) {
+                    const sum = tritAdd(result.trits[i], borrow);
+                    result.trits[i] = sum.result;
+                    borrow = sum.carry;
+                    if (i == 1) break;
+                }
+            }
+
+            // Zero out trits after precision
+            for (round_pos..27) |j| {
+                result.trits[j] = .Z;
+            }
+        }
+
+        return result;
+    }
+
+    const TritAddResult = struct { result: Trit, carry: Trit };
+
+    fn tritAdd(a: Trit, b: Trit) TritAddResult {
+        const av: i8 = switch (a) {
+            .N => -1,
+            .Z => 0,
+            .P => 1,
+        };
+        const bv: i8 = switch (b) {
+            .N => -1,
+            .Z => 0,
+            .P => 1,
+        };
+        const sum = av + bv;
+
+        return switch (sum) {
+            -2 => .{ .result = .P, .carry = .N },
+            -1 => .{ .result = .N, .carry = .Z },
+            0 => .{ .result = .Z, .carry = .Z },
+            1 => .{ .result = .P, .carry = .Z },
+            2 => .{ .result = .N, .carry = .P },
+            else => .{ .result = .Z, .carry = .Z },
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // COMPARISON
     // ═══════════════════════════════════════════════════════════════════════════
 
