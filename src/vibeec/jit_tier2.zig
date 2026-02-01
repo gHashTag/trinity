@@ -6,6 +6,7 @@
 
 const std = @import("std");
 const simd = @import("simd_vectorizer.zig");
+const simd_ternary = @import("simd_ternary_optimized.zig");
 
 // Sacred constants
 const PHI: f64 = 1.6180339887498948482;
@@ -428,6 +429,25 @@ pub const JITTier2 = struct {
     // SIMD vectorized operations (exposed for direct use)
     pub const SimdOps = simd.SimdOps;
     pub const VectorizedArrayOps = simd.VectorizedArrayOps;
+    
+    // Ternary SIMD operations (32 trytes in parallel)
+    pub const TernarySIMD = struct {
+        pub const Vec32i8 = simd_ternary.Vec32i8;
+        pub const TryteAccumulator = simd_ternary.TryteAccumulator;
+        
+        // Fast tryte addition with wrap-around
+        pub const tryteAdd32 = simd_ternary.simdTryteAdd32Fast;
+        
+        // Trit logic operations
+        pub const tritNot = simd_ternary.simdTritNot32;
+        pub const tritAnd = simd_ternary.simdTritAnd32;
+        pub const tritOr = simd_ternary.simdTritOr32;
+        pub const tritCmp = simd_ternary.simdTritCmp32;
+        
+        // Wrap utilities
+        pub const wrapTryte = simd_ternary.wrapTryteFast;
+        pub const simdWrap = simd_ternary.simdWrapTryte32Fast;
+    };
 };
 
 // Native code emitter (x86-64)
