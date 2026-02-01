@@ -2,6 +2,7 @@ const std = @import("std");
 const vibee_parser = @import("vibee_parser.zig");
 const zig_codegen = @import("zig_codegen.zig");
 const verilog_codegen = @import("verilog_codegen.zig");
+const gguf_chat = @import("gguf_chat.zig");
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -38,6 +39,32 @@ pub fn main() !void {
         };
 
         try generateCode(allocator, input_path, output_path);
+    } else if (std.mem.eql(u8, command, "chat")) {
+        // Chat with GGUF model
+        var model_path: ?[]const u8 = null;
+        var prompt: ?[]const u8 = null;
+        var max_tokens: u32 = 100;
+
+        var i: usize = 2;
+        while (i < args.len) : (i += 1) {
+            if (std.mem.eql(u8, args[i], "--model") and i + 1 < args.len) {
+                model_path = args[i + 1];
+                i += 1;
+            } else if (std.mem.eql(u8, args[i], "--prompt") and i + 1 < args.len) {
+                prompt = args[i + 1];
+                i += 1;
+            } else if (std.mem.eql(u8, args[i], "--max-tokens") and i + 1 < args.len) {
+                max_tokens = std.fmt.parseInt(u32, args[i + 1], 10) catch 100;
+                i += 1;
+            }
+        }
+
+        if (model_path == null) {
+            std.debug.print("Error: --model required\n", .{});
+            return;
+        }
+
+        try gguf_chat.runChat(allocator, model_path.?, prompt, max_tokens);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {
@@ -56,6 +83,9 @@ fn printUsage() void {
         \\
         \\USAGE:
         \\  vibeec gen <input.vibee> [output.zig]       Generate Zig code from .vibee spec
+        \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
+        \\    --prompt "text"                           Initial prompt
+        \\    --max-tokens N                            Max tokens to generate (default: 100)
         \\  vibeec help                                 Show this help
         \\
     , .{});

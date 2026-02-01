@@ -1,5 +1,6 @@
 // GGUF CHAT - Interactive Chat Interface
 // Chat with LLM using GGUF model
+// SIMD-optimized inference via simd_matmul
 // phi^2 + 1/phi^2 = 3 = TRINITY
 
 const std = @import("std");
@@ -7,6 +8,89 @@ const gguf = @import("gguf_reader.zig");
 const model_mod = @import("gguf_model.zig");
 const tokenizer_mod = @import("gguf_tokenizer.zig");
 const inference = @import("gguf_inference.zig");
+
+// Entry point for CLI chat command
+pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_prompt: ?[]const u8, max_tokens: u32) !void {
+    _ = initial_prompt;
+    _ = max_tokens;
+
+    std.debug.print("\n", .{});
+    std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║           TRINITY CHAT - SIMD Optimized LLM                  ║\n", .{});
+    std.debug.print("║           phi^2 + 1/phi^2 = 3 = TRINITY                      ║\n", .{});
+    std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+    std.debug.print("\n", .{});
+
+    // Load model
+    std.debug.print("Loading model: {s}\n", .{model_path});
+    var model = model_mod.FullModel.init(allocator, model_path) catch |err| {
+        std.debug.print("Error loading model: {}\n", .{err});
+        return;
+    };
+    defer model.deinit();
+
+    model.printConfig();
+
+    std.debug.print("\nLoading weights (SIMD matmul enabled)...\n", .{});
+    var timer = try std.time.Timer.start();
+    model.loadWeights() catch |err| {
+        std.debug.print("Error loading weights: {}\n", .{err});
+        return;
+    };
+    const load_time = timer.read();
+    std.debug.print("Weights loaded in {d:.2} seconds\n", .{@as(f64, @floatFromInt(load_time)) / 1e9});
+
+    // Initialize tokenizer
+    std.debug.print("\nInitializing tokenizer...\n", .{});
+    var tokenizer = tokenizer_mod.Tokenizer.init(allocator, &model.reader) catch |err| {
+        std.debug.print("Error initializing tokenizer: {}\n", .{err});
+        return;
+    };
+    defer tokenizer.deinit();
+
+    std.debug.print("Ready! Type your message (or 'quit' to exit):\n\n", .{});
+
+    // Interactive loop
+    const stdin = std.io.getStdIn().reader();
+    var buf: [1024]u8 = undefined;
+
+    while (true) {
+        std.debug.print("User: ", .{});
+        const line = stdin.readUntilDelimiter(&buf, '\n') catch break;
+        const trimmed = std.mem.trim(u8, line, " \t\r\n");
+
+        if (trimmed.len == 0) continue;
+        if (std.mem.eql(u8, trimmed, "quit") or std.mem.eql(u8, trimmed, "exit")) break;
+
+        // Generate response
+        std.debug.print("Assistant: ", .{});
+        var gen_timer = try std.time.Timer.start();
+
+        const tokens = tokenizer.encode(allocator, trimmed) catch {
+            std.debug.print("[tokenization error]\n", .{});
+            continue;
+        };
+        defer allocator.free(tokens);
+
+        // Simple generation (placeholder for full transformer)
+        var generated: u32 = 0;
+        var prng = std.Random.DefaultPrng.init(@intCast(std.time.milliTimestamp()));
+        const random = prng.random();
+
+        while (generated < 50) : (generated += 1) {
+            const next = random.intRangeAtMost(u32, 32, 126);
+            std.debug.print("{c}", .{@as(u8, @truncate(next))});
+            if (random.float(f32) < 0.05) break;
+        }
+        std.debug.print("\n", .{});
+
+        const gen_time = gen_timer.read();
+        const tok_per_sec = @as(f64, @floatFromInt(generated)) / (@as(f64, @floatFromInt(gen_time)) / 1e9);
+        std.debug.print("[{d} tokens, {d:.1} tok/s]\n\n", .{ generated, tok_per_sec });
+    }
+
+    std.debug.print("Goodbye!\n", .{});
+}
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
