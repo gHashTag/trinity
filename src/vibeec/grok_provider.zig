@@ -12,9 +12,12 @@ pub const GrokProvider = struct {
     model: []const u8,
 
     pub fn init(allocator: std.mem.Allocator) GrokProvider {
+        // Read API key from environment variable for security
+        const api_key = std.process.getEnvVarOwned(allocator, "XAI_API_KEY") catch |_|
+            allocator.dupe(u8, "YOUR_XAI_API_KEY_HERE") catch "";
         return GrokProvider{
             .allocator = allocator,
-            .api_key = "YOUR_XAI_API_KEY",
+            .api_key = api_key,
             .model = "grok-3",
         };
     }
