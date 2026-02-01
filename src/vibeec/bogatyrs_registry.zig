@@ -38,6 +38,8 @@ pub const BogatyrRegistry = struct {
     fn registerBasicChecks(self: *Self) !void {
         try self.register(@import("bogatyrs_yaml_syntax.zig").bogatyr);
         try self.register(@import("bogatyrs_spec_structure.zig").bogatyr);
+        // Жар-птица — 34-й Богатырь-Творец с принципом synthesis
+        try self.register(@import("bogatyr_34_creator.zig").bogatyr);
     }
 
     /// Регистрация одного богатыря

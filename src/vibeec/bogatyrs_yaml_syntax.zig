@@ -45,6 +45,7 @@ fn validateYAMLSyntax(ctx: *const common.ValidationContext) !common.BogatyrResul
     }
 
     const end_time = std.time.nanoTimestamp();
+    const duration: i64 = @intCast(end_time - start_time);
 
     const verdict: common.BogatyrVerdict = if (error_count > 0) .Fail else .Pass;
 
@@ -52,7 +53,7 @@ fn validateYAMLSyntax(ctx: *const common.ValidationContext) !common.BogatyrResul
         .verdict = verdict,
         .errors = try allocator.dupe(common.ValidationError, &[_]common.ValidationError{}),
         .metrics = common.BogatyrMetrics{
-            .duration_ns = end_time - start_time,
+            .duration_ns = duration,
             .checks_performed = error_count,
         },
     };
