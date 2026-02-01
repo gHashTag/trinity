@@ -9,6 +9,7 @@ const trinity_format = @import("trinity_format.zig");
 const engine = @import("trinity_inference_engine.zig");
 const kv_cache = @import("kv_cache.zig");
 const bpe = @import("bpe_tokenizer.zig");
+const quantizer = @import("trinity_quantizer.zig");
 
 pub const PHI: f64 = 1.618033988749895;
 
