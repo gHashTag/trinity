@@ -1,0 +1,419 @@
+name: b2t_llm_assist
+version: "1.0.0"
+language: zig
+module: b2t_llm_assist
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# B2T LLM-ASSISTED DECOMPILATION
+# Интеграция LLM для улучшения качества декомпиляции
+# 
+# Научная основа:
+# - ICL4Decomp (arXiv:2511.01763): +40% re-executability через in-context learning
+# - FidelityGPT (arXiv:2510.19615): 89% точность детекции искажений
+# - ReCopilot (arXiv:2505.16366): +13% через data flow + call graph контекст
+#
+# V = n × 3^k × π^m × φ^p × e^q
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+imports:
+  - b2t_disasm
+  - b2t_lifter
+  - maxwell.llm_client
+  - maxwell.memory_store
+
+types:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DISTORTION TYPES (по FidelityGPT)
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  DistortionType:
+    enum:
+      - variable_naming       # Потеря имён переменных
+      - type_inference        # Неверный вывод типов
+      - control_flow          # Искажение потока управления
+      - loop_structure        # Потеря структуры циклов
+      - function_boundary     # Неверные границы функций
+      - calling_convention    # Ошибки соглашения о вызовах
+      - memory_access         # Неверный доступ к памяти
+      - constant_propagation  # Потеря констант
+      - dead_code             # Ложный мёртвый код
+      - inlining_artifact     # Артефакты инлайнинга
+
+  Distortion:
+    fields:
+      type: DistortionType
+      location: Int                    # Адрес в бинарнике
+      line_number: Int                 # Строка в декомпилированном коде
+      severity: Float                  # 0.0-1.0, где 1.0 = критично
+      description: String
+      suggested_fix: Option<String>
+      confidence: Float                # Уверенность детекции
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SEMANTIC CONTEXT (по ReCopilot)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  DataFlowNode:
+    fields:
+      variable_id: Int
+      definition_site: Int             # Где определена
+      use_sites: List<Int>             # Где используется
+      type_hint: Option<String>
+      is_parameter: Bool
+      is_return_value: Bool
+
+  CallGraphNode:
+    fields:
+      function_address: Int
+      function_name: Option<String>
+      callers: List<Int>               # Кто вызывает
+      callees: List<Int>               # Кого вызывает
+      is_library: Bool
+      signature_hint: Option<String>
+
+  SemanticContext:
+    fields:
+      data_flow: List<DataFlowNode>
+      call_graph: List<CallGraphNode>
+      string_references: List<String>  # Строковые литералы
+      import_hints: List<String>       # Импортируемые символы
+      struct_hints: List<String>       # Обнаруженные структуры
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # RAG COMPONENTS (Retrieval-Augmented Generation)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  CodeEmbedding:
+    fields:
+      code_hash: String                # SHA256 хеш кода
+      embedding: List<Float>           # Вектор эмбеддинга (768-dim)
+      source_type: String              # "decompiled", "original", "pattern"
+      metadata: Map<String, String>
+
+  SimilarCode:
+    fields:
+      code: String
+      similarity: Float                # Косинусное сходство
+      source: String                   # Откуда взят
+      context: String                  # Дополнительный контекст
+
+  RAGDatabase:
+    fields:
+      embeddings: List<CodeEmbedding>
+      index_type: String               # "faiss", "annoy", "hnsw"
+      dimension: Int                   # Размерность эмбеддингов
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PROMPT TEMPLATES (по ICL4Decomp)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  PromptTemplate:
+    fields:
+      name: String
+      template: String
+      variables: List<String>          # Переменные для подстановки
+      distortion_aware: Bool           # Учитывает искажения?
+      examples_count: Int              # Сколько примеров для ICL
+
+  DecompilationPrompt:
+    fields:
+      template: PromptTemplate
+      decompiled_code: String
+      detected_distortions: List<Distortion>
+      semantic_context: SemanticContext
+      similar_examples: List<SimilarCode>
+      target_quality: String           # "readable", "executable", "semantic"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LLM RESPONSE
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  CorrectedCode:
+    fields:
+      original: String
+      corrected: String
+      changes: List<CodeChange>
+      confidence: Float
+      reasoning: String                # Chain-of-thought объяснение
+
+  CodeChange:
+    fields:
+      line_start: Int
+      line_end: Int
+      old_code: String
+      new_code: String
+      change_type: String              # "rename", "retype", "restructure"
+      rationale: String
+
+  DecompilationResult:
+    fields:
+      function_name: String
+      original_address: Int
+      decompiled_code: String
+      corrected_code: String
+      distortions_found: List<Distortion>
+      distortions_fixed: List<Distortion>
+      fix_rate: Float                  # % исправленных искажений
+      re_executable: Bool              # Можно ли перекомпилировать?
+      tokens_used: Int
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DISTORTION DETECTION (Link 1)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: detect_distortions
+    given: Декомпилированный код и TVC IR
+    when: Анализ семантических искажений
+    then: Возвращает список Distortion с локациями и severity
+
+  - name: compute_semantic_intensity
+    given: Строка декомпилированного кода
+    when: Вычисление "семантической интенсивности" (по FidelityGPT)
+    then: Возвращает Float score для приоритизации исправлений
+
+  - name: analyze_variable_dependencies
+    given: Список переменных с искажениями
+    when: Построение графа зависимостей
+    then: Возвращает упорядоченный список для исправления
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CONTEXT EXTRACTION (Link 2)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: extract_data_flow
+    given: TVC IR функции
+    when: Анализ def-use chains
+    then: Возвращает List<DataFlowNode>
+
+  - name: extract_call_graph
+    given: TVC IR модуля
+    when: Построение графа вызовов
+    then: Возвращает List<CallGraphNode>
+
+  - name: build_semantic_context
+    given: TVC IR и результаты дизассемблирования
+    when: Агрегация всего контекста
+    then: Возвращает SemanticContext
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # RAG RETRIEVAL (Link 3)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: embed_code
+    given: Фрагмент кода
+    when: Генерация эмбеддинга через LLM
+    then: Возвращает CodeEmbedding
+
+  - name: search_similar
+    given: CodeEmbedding и RAGDatabase
+    when: Поиск k ближайших соседей
+    then: Возвращает List<SimilarCode> отсортированный по similarity
+
+  - name: retrieve_examples
+    given: Декомпилированный код и тип искажения
+    when: Поиск релевантных примеров для ICL
+    then: Возвращает List<SimilarCode> для промпта
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PROMPT CONSTRUCTION (Link 4)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: select_template
+    given: Тип искажения и целевое качество
+    when: Выбор оптимального шаблона промпта
+    then: Возвращает PromptTemplate
+
+  - name: build_prompt
+    given: Все компоненты контекста
+    when: Сборка финального промпта
+    then: Возвращает DecompilationPrompt
+
+  - name: format_icl_examples
+    given: List<SimilarCode>
+    when: Форматирование примеров для in-context learning
+    then: Возвращает String с примерами в формате few-shot
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LLM CORRECTION (Link 5)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: correct_code
+    given: DecompilationPrompt
+    when: Отправка в LLM и получение исправлений
+    then: Возвращает CorrectedCode
+
+  - name: validate_correction
+    given: CorrectedCode
+    when: Проверка синтаксиса и семантики
+    then: Возвращает Bool (валидно или нет)
+
+  - name: apply_corrections
+    given: Оригинальный код и List<CodeChange>
+    when: Применение исправлений
+    then: Возвращает исправленный код
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # FULL PIPELINE (Link 6)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: decompile_with_llm
+    given: Бинарный файл и адрес функции
+    when: Полный пайплайн декомпиляции с LLM
+    then: Возвращает DecompilationResult
+
+  - name: batch_decompile
+    given: Бинарный файл и список адресов
+    when: Пакетная декомпиляция всех функций
+    then: Возвращает List<DecompilationResult>
+
+  - name: learn_from_result
+    given: DecompilationResult с feedback
+    when: Обновление RAG базы успешными примерами
+    then: Добавляет новые эмбеддинги в базу
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PROMPT TEMPLATES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+templates:
+  - name: variable_naming_fix
+    template: |
+      You are an expert reverse engineer. Fix variable names in this decompiled code.
+      
+      DECOMPILED CODE:
+      ```
+      {decompiled_code}
+      ```
+      
+      CONTEXT:
+      - Data flow: {data_flow}
+      - String references: {string_refs}
+      
+      SIMILAR EXAMPLES:
+      {icl_examples}
+      
+      Fix variable names to be meaningful. Output ONLY the corrected code.
+    distortion_aware: true
+    examples_count: 3
+
+  - name: type_inference_fix
+    template: |
+      You are an expert reverse engineer. Fix type annotations in this decompiled code.
+      
+      DECOMPILED CODE:
+      ```
+      {decompiled_code}
+      ```
+      
+      DETECTED ISSUES:
+      {distortions}
+      
+      CALL GRAPH CONTEXT:
+      {call_graph}
+      
+      SIMILAR EXAMPLES:
+      {icl_examples}
+      
+      Infer correct types. Output ONLY the corrected code.
+    distortion_aware: true
+    examples_count: 5
+
+  - name: control_flow_fix
+    template: |
+      You are an expert reverse engineer. Fix control flow structure in this decompiled code.
+      
+      DECOMPILED CODE:
+      ```
+      {decompiled_code}
+      ```
+      
+      TVC IR (ground truth):
+      ```
+      {tvc_ir}
+      ```
+      
+      SIMILAR EXAMPLES:
+      {icl_examples}
+      
+      Reconstruct proper loops and conditionals. Output ONLY the corrected code.
+    distortion_aware: true
+    examples_count: 3
+
+  - name: full_semantic_recovery
+    template: |
+      You are Maxwell, an expert reverse engineer using ternary computing principles.
+      
+      TASK: Recover semantic meaning from decompiled code.
+      
+      DECOMPILED CODE:
+      ```
+      {decompiled_code}
+      ```
+      
+      SEMANTIC CONTEXT:
+      - Function: {function_name} at 0x{address}
+      - Callers: {callers}
+      - Callees: {callees}
+      - Strings: {string_refs}
+      - Imports: {imports}
+      
+      DETECTED DISTORTIONS:
+      {distortions}
+      
+      SIMILAR HIGH-QUALITY CODE:
+      {icl_examples}
+      
+      φ² + 1/φ² = 3 = TRINITY
+      
+      Apply ternary logic: consider negative, zero, and positive outcomes.
+      Output corrected code with meaningful names and proper structure.
+    distortion_aware: true
+    examples_count: 5
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METRICS (по научным работам)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metrics:
+  - name: fix_rate
+    description: Процент исправленных искажений
+    target: 0.94  # FidelityGPT достигает 94%
+    
+  - name: corrected_fix_rate
+    description: Процент корректно исправленных (без новых ошибок)
+    target: 0.64  # FidelityGPT достигает 64%
+    
+  - name: re_executability
+    description: Процент перекомпилируемого кода
+    target: 0.40  # ICL4Decomp улучшает на 40%
+    
+  - name: detection_accuracy
+    description: Точность детекции искажений
+    target: 0.89  # FidelityGPT достигает 89%
+
+tests:
+  - name: test_detect_variable_distortion
+    input:
+      code: "int v1 = v2 + v3;"
+      context: "Function processes user input"
+    expected:
+      distortion_type: variable_naming
+      severity: 0.7
+
+  - name: test_icl_prompt_generation
+    input:
+      decompiled: "void sub_1234() { ... }"
+      examples_count: 3
+    expected:
+      prompt_contains: "SIMILAR EXAMPLES"
+      examples_formatted: true
+
+  - name: test_full_pipeline
+    input:
+      binary: "test.wasm"
+      address: 0x1000
+    expected:
+      result_has_corrections: true
+      fix_rate_above: 0.5

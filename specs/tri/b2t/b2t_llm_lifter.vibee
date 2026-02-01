@@ -1,0 +1,362 @@
+name: b2t_llm_lifter
+version: "1.0.0"
+language: zig
+module: b2t_llm_lifter
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# B2T LLM-ENHANCED LIFTER
+# Улучшение качества TVC IR через LLM-ассистирование
+#
+# Интеграция:
+# - b2t_lifter: базовый lifter (assembly → TVC IR)
+# - b2t_llm_assist: LLM для семантического восстановления
+# - b2t_rag: база знаний для примеров
+# - b2t_prompts: шаблоны промптов
+#
+# Ключевая идея: LLM помогает на этапах, где традиционный анализ слаб:
+# 1. Восстановление имён (variable naming)
+# 2. Вывод типов (type inference)
+# 3. Распознавание паттернов (pattern recognition)
+# 4. Восстановление структур (struct recovery)
+#
+# V = n × 3^k × π^m × φ^p × e^q
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+imports:
+  - b2t_lifter
+  - b2t_llm_assist
+  - b2t_rag
+  - b2t_prompts
+  - maxwell.llm_client
+
+types:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ENHANCED IR
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  EnhancedTVCFunction:
+    fields:
+      base: b2t_lifter.LiftedFunction    # Базовый IR
+      semantic_name: String               # Восстановленное имя
+      semantic_signature: String          # Восстановленная сигнатура
+      variable_names: Map<Int, String>    # ID → осмысленное имя
+      type_annotations: Map<Int, String>  # ID → тип
+      struct_definitions: List<StructDef> # Восстановленные структуры
+      comments: List<CodeComment>         # Сгенерированные комментарии
+      confidence: Float                   # Уверенность в восстановлении
+
+  StructDef:
+    fields:
+      name: String
+      fields: List<StructField>
+      size: Int
+      alignment: Int
+      source_evidence: List<String>       # Откуда выведена структура
+
+  StructField:
+    fields:
+      name: String
+      field_type: String
+      offset: Int
+      size: Int
+
+  CodeComment:
+    fields:
+      line: Int
+      comment: String
+      comment_type: CommentType
+
+  CommentType:
+    enum:
+      - function_purpose                  # Назначение функции
+      - parameter_description             # Описание параметра
+      - return_value                      # Описание возврата
+      - algorithm_step                    # Шаг алгоритма
+      - warning                           # Предупреждение
+      - todo                              # TODO
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LIFTING PIPELINE
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  LiftingStage:
+    enum:
+      - disassembly                       # Дизассемблирование
+      - basic_lifting                     # Базовый lifting
+      - ssa_conversion                    # SSA преобразование
+      - type_inference                    # Вывод типов
+      - name_recovery                     # Восстановление имён
+      - struct_recovery                   # Восстановление структур
+      - pattern_recognition               # Распознавание паттернов
+      - comment_generation                # Генерация комментариев
+      - final_validation                  # Финальная валидация
+
+  LiftingProgress:
+    fields:
+      current_stage: LiftingStage
+      stages_completed: List<LiftingStage>
+      errors: List<LiftingError>
+      llm_calls: Int
+      tokens_used: Int
+      time_elapsed_ms: Int
+
+  LiftingError:
+    fields:
+      stage: LiftingStage
+      message: String
+      recoverable: Bool
+      fallback_used: Bool
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CONFIGURATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  LLMLiftingConfig:
+    fields:
+      enable_name_recovery: Bool
+      enable_type_inference: Bool
+      enable_struct_recovery: Bool
+      enable_pattern_recognition: Bool
+      enable_comments: Bool
+      max_llm_calls_per_function: Int
+      confidence_threshold: Float         # Минимальная уверенность
+      use_rag: Bool
+      rag_examples_count: Int
+      fallback_on_error: Bool             # Использовать базовый IR при ошибке
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # MAIN PIPELINE
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: lift_with_llm
+    given: b2t_disasm.DisassemblyResult и LLMLiftingConfig
+    when: Полный пайплайн lifting с LLM
+    then: Возвращает List<EnhancedTVCFunction>
+
+  - name: lift_function_with_llm
+    given: b2t_disasm.BasicBlock[] и LLMLiftingConfig
+    when: Lifting одной функции с LLM-улучшениями
+    then: Возвращает EnhancedTVCFunction
+
+  - name: get_lifting_progress
+    given: Текущий контекст lifting
+    when: Запрос прогресса
+    then: Возвращает LiftingProgress
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # NAME RECOVERY
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: recover_function_name
+    given: LiftedFunction и SemanticContext
+    when: Восстановление имени функции через LLM
+    then: Возвращает String имя и Float confidence
+
+  - name: recover_variable_names
+    given: LiftedFunction и SemanticContext
+    when: Восстановление имён переменных через LLM
+    then: Возвращает Map<Int, String>
+
+  - name: recover_parameter_names
+    given: LiftedFunction и call graph context
+    when: Восстановление имён параметров
+    then: Возвращает List<String>
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # TYPE INFERENCE
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: infer_types_with_llm
+    given: LiftedFunction и data flow
+    when: Улучшенный вывод типов через LLM
+    then: Возвращает Map<Int, String> типов
+
+  - name: infer_return_type
+    given: LiftedFunction и call sites
+    when: Вывод типа возврата
+    then: Возвращает String тип
+
+  - name: infer_parameter_types
+    given: LiftedFunction и calling convention
+    when: Вывод типов параметров
+    then: Возвращает List<String> типов
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STRUCT RECOVERY
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: detect_struct_access
+    given: TVC IR с memory operations
+    when: Поиск паттернов доступа к структурам
+    then: Возвращает List<StructAccessPattern>
+
+  - name: recover_struct_definition
+    given: List<StructAccessPattern>
+    when: Восстановление определения структуры через LLM
+    then: Возвращает StructDef
+
+  - name: apply_struct_types
+    given: LiftedFunction и List<StructDef>
+    when: Применение структурных типов к IR
+    then: Обновляет type annotations
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PATTERN RECOGNITION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: recognize_idioms
+    given: TVC IR блок
+    when: Распознавание идиом (malloc/free, strlen, memcpy)
+    then: Возвращает List<RecognizedIdiom>
+
+  - name: recognize_algorithms
+    given: LiftedFunction
+    when: Распознавание алгоритмов (sort, search, hash)
+    then: Возвращает Option<AlgorithmMatch>
+
+  - name: apply_pattern_knowledge
+    given: LiftedFunction и recognized patterns
+    when: Применение знаний о паттернах
+    then: Улучшает имена и комментарии
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # COMMENT GENERATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: generate_function_comment
+    given: EnhancedTVCFunction
+    when: Генерация документирующего комментария
+    then: Возвращает CodeComment
+
+  - name: generate_inline_comments
+    given: EnhancedTVCFunction
+    when: Генерация inline комментариев для сложных участков
+    then: Возвращает List<CodeComment>
+
+  - name: generate_warning_comments
+    given: EnhancedTVCFunction и detected issues
+    when: Генерация предупреждений
+    then: Возвращает List<CodeComment>
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VALIDATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: validate_enhanced_ir
+    given: EnhancedTVCFunction
+    when: Проверка корректности улучшений
+    then: Возвращает Bool и List<ValidationIssue>
+
+  - name: compare_with_baseline
+    given: EnhancedTVCFunction и базовый LiftedFunction
+    when: Сравнение с baseline
+    then: Возвращает ImprovementMetrics
+
+  - name: rollback_to_baseline
+    given: EnhancedTVCFunction с ошибками
+    when: Откат к базовому IR
+    then: Возвращает LiftedFunction
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LIFTING PIPELINE STAGES
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# 1. DISASSEMBLY (b2t_disasm)
+#    Binary → Instructions
+#    
+# 2. BASIC LIFTING (b2t_lifter)
+#    Instructions → TVC IR (без имён, с v1, v2, ...)
+#    
+# 3. SSA CONVERSION (b2t_lifter)
+#    TVC IR → SSA form (phi nodes)
+#    
+# 4. TYPE INFERENCE [LLM-ASSISTED]
+#    SSA → SSA with types
+#    LLM помогает с неоднозначными случаями
+#    
+# 5. NAME RECOVERY [LLM-ASSISTED]
+#    v1, v2 → buffer, size, ...
+#    LLM использует контекст (strings, calls)
+#    
+# 6. STRUCT RECOVERY [LLM-ASSISTED]
+#    Memory patterns → struct definitions
+#    LLM распознаёт типичные структуры
+#    
+# 7. PATTERN RECOGNITION [LLM-ASSISTED]
+#    Code patterns → idioms, algorithms
+#    LLM сопоставляет с базой знаний
+#    
+# 8. COMMENT GENERATION [LLM-ASSISTED]
+#    Enhanced IR → documented code
+#    LLM генерирует осмысленные комментарии
+#    
+# 9. FINAL VALIDATION
+#    Проверка корректности всех улучшений
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+default_config:
+  enable_name_recovery: true
+  enable_type_inference: true
+  enable_struct_recovery: true
+  enable_pattern_recognition: true
+  enable_comments: true
+  max_llm_calls_per_function: 10
+  confidence_threshold: 0.7
+  use_rag: true
+  rag_examples_count: 5
+  fallback_on_error: true
+
+metrics:
+  - name: name_recovery_accuracy
+    description: Точность восстановления имён
+    target: 0.75
+    
+  - name: type_inference_accuracy
+    description: Точность вывода типов
+    target: 0.85
+    
+  - name: struct_recovery_rate
+    description: Доля восстановленных структур
+    target: 0.60
+    
+  - name: llm_calls_per_function
+    description: Среднее число LLM вызовов на функцию
+    target: 5
+    
+  - name: lifting_time_overhead
+    description: Overhead времени от LLM (%)
+    target: 200  # 2x от базового lifting
+
+tests:
+  - name: test_name_recovery
+    input:
+      function_ir: "fn sub_1234(v1: i64, v2: i64) -> i64"
+      context:
+        strings: ["buffer overflow", "size"]
+        calls: ["malloc", "memcpy"]
+    expected:
+      recovered_name: "copy_buffer"
+      param_names: ["dest", "size"]
+      confidence_above: 0.7
+
+  - name: test_struct_recovery
+    input:
+      memory_accesses:
+        - offset: 0, size: 8, type: "pointer"
+        - offset: 8, size: 4, type: "int"
+        - offset: 12, size: 4, type: "int"
+    expected:
+      struct_name: "node"
+      fields_count: 3
+
+  - name: test_fallback_on_error
+    input:
+      llm_error: true
+      config:
+        fallback_on_error: true
+    expected:
+      returns_baseline: true
+      no_crash: true
