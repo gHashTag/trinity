@@ -463,7 +463,6 @@ pub fn main() !void {
     var scribe = try Scribe.init(allocator, config);
     defer scribe.deinit();
 
-    var architect = Architect.init(allocator);
     var builder = Builder.init(allocator, &scribe);
 
     std.debug.print("\n🤖 Vibeec Codex (Phase 4: Soul)\n", .{});
@@ -474,8 +473,8 @@ pub fn main() !void {
     }
 
     // Check for Prophet Mode or Judgment Day
-    const is_prophet_mode = std.mem.indexOf(u8, prompt, "TrinityOS_v2.vibee") != null;
-    const is_judgment_day = std.mem.indexOf(u8, prompt, "JUDGMENT_DAY") != null;
+    const is_prophet_mode = std.mem.startsWith(u8, prompt, "PROPHET:");
+    const is_judgment_day = std.mem.startsWith(u8, prompt, "JUDGMENT_DAY:");
 
     if (is_prophet_mode or is_judgment_day) {
         if (is_judgment_day) {
@@ -539,26 +538,65 @@ pub fn main() !void {
         return;
     }
 
-    const context = try architect.scanProject(".");
+    // Filtered context scan (The Great Migration)
+    // Avoid full scan to prevent token overflow (specifically trinity_corpus.txt)
+    var context_list = std.ArrayListUnmanaged(u8){};
+    defer context_list.deinit(allocator);
+
+    const crucial_dirs = [_][]const u8{ "src/vibeec", "specs" };
+
+    for (crucial_dirs) |dir| {
+        var dir_iterable = std.fs.cwd().openDir(dir, .{ .iterate = true }) catch continue;
+        defer dir_iterable.close();
+        var walker = try dir_iterable.walk(allocator);
+        defer walker.deinit();
+
+        while (try walker.next()) |entry| {
+            if (entry.kind == .file) {
+                const is_zig = std.mem.endsWith(u8, entry.path, ".zig");
+                const is_vibee = std.mem.endsWith(u8, entry.path, ".vibee");
+
+                // Exclude the corpus and other heavy files
+                if (std.mem.indexOf(u8, entry.path, "trinity_corpus") != null) continue;
+
+                if (is_zig or is_vibee) {
+                    const path = try std.fs.path.join(allocator, &[_][]const u8{ dir, entry.path });
+                    defer allocator.free(path);
+
+                    if (std.fs.cwd().readFileAlloc(allocator, path, 50 * 1024)) |content| {
+                        defer allocator.free(content);
+                        try context_list.appendSlice(allocator, "File: ");
+                        try context_list.appendSlice(allocator, path);
+                        try context_list.appendSlice(allocator, "\n```\n");
+                        try context_list.appendSlice(allocator, content);
+                        try context_list.appendSlice(allocator, "\n```\n\n");
+                    } else |_| {}
+                }
+            }
+        }
+    }
+    const context = try context_list.toOwnedSlice(allocator);
     defer allocator.free(context);
 
     // Initial code generation
     const initial_code = try scribe.generateCode(prompt, context);
     defer allocator.free(initial_code);
 
-    // Sacred Validation (The Judge)
-    var validator = Validator.init(allocator);
-    var validation_result = try validator.validate(initial_code);
-    defer validation_result.deinit();
+    // Evolutionary Guidance (The Mentor)
+    const mentor_mod = @import("trinity_mentor.zig");
+    var mentor = mentor_mod.Mentor.init(allocator);
+    defer mentor.deinit();
 
-    if (!validation_result.passed) {
-        std.debug.print("❌ [Validator] The Law has been breached:\n", .{});
-        for (validation_result.violations.items) |v| {
-            std.debug.print("  - {s}\n", .{v});
-        }
-        std.debug.print("⚠️ Proceeding anyway (Mercy Mode)... for now.\n", .{});
+    const passed = try mentor.guide(initial_code);
+    const guidance_report = try mentor.formatGuidance(allocator);
+    defer allocator.free(guidance_report);
+
+    std.debug.print("\n{s}\n", .{guidance_report});
+
+    if (!passed) {
+        std.debug.print("⚠️ [Mentor] Code has critical issues, but we proceed for learning.\n", .{});
     } else {
-        std.debug.print("✅ [Validator] The Law is satisfied.\n", .{});
+        std.debug.print("✨ [Mentor] Code aligns with the Evolutionary Path.\n", .{});
     }
 
     // Compile and fix loop
