@@ -8,6 +8,7 @@ const simd = @import("simd_trit_ops.zig");
 const trinity_format = @import("trinity_format.zig");
 const engine = @import("trinity_inference_engine.zig");
 const kv_cache = @import("kv_cache.zig");
+const bpe = @import("bpe_tokenizer.zig");
 
 pub const PHI: f64 = 1.618033988749895;
 
@@ -373,6 +374,9 @@ pub const MistralTrinity = struct {
     // KV-cache for fast autoregressive generation
     cache: ?kv_cache.KVCache,
 
+    // Tokenizer for text encode/decode
+    tokenizer: ?bpe.BPETokenizer,
+
     pub fn init(allocator: std.mem.Allocator, config: MistralConfig) !MistralTrinity {
         var model = MistralTrinity{
             .allocator = allocator,
@@ -381,6 +385,7 @@ pub const MistralTrinity = struct {
             .blocks = std.ArrayList(MistralBlock).init(allocator),
             .lm_head = try engine.SimdTrinityLayer.init(allocator, config.hidden_size, config.vocab_size, .none),
             .cache = null,
+            .tokenizer = null,
         };
 
         for (0..config.num_hidden_layers) |_| {
@@ -401,6 +406,18 @@ pub const MistralTrinity = struct {
         if (self.cache) |*c| {
             c.deinit();
         }
+        if (self.tokenizer) |*t| {
+            t.deinit();
+        }
+    }
+
+    /// Load tokenizer from file
+    pub fn loadTokenizer(self: *MistralTrinity, path: []const u8) !void {
+        if (self.tokenizer != null) {
+            self.tokenizer.?.deinit();
+        }
+        self.tokenizer = bpe.BPETokenizer.init(self.allocator);
+        try self.tokenizer.?.loadFromFile(path);
     }
 
     /// Initialize KV-cache for fast generation
@@ -572,9 +589,33 @@ pub const MistralTrinity = struct {
             const new_token = try self.forwardWithCache(last_token, pos, true);
             output[pos] = new_token;
             last_token = new_token;
+
+            // Stop on EOS
+            if (new_token == bpe.SpecialTokens.EOS) {
+                return output[0 .. pos + 1];
+            }
         }
 
         return output;
+    }
+
+    /// Generate text from text prompt
+    pub fn generateText(self: *MistralTrinity, prompt: []const u8, max_new_tokens: usize) ![]u8 {
+        if (self.tokenizer == null) {
+            return error.TokenizerNotLoaded;
+        }
+
+        // Encode prompt
+        const prompt_tokens = try self.tokenizer.?.encode(prompt);
+        defer self.allocator.free(prompt_tokens);
+
+        // Generate tokens
+        const output_tokens = try self.generate(prompt_tokens, max_new_tokens);
+        defer self.allocator.free(output_tokens);
+
+        // Decode to text
+        const output_text = try self.tokenizer.?.decode(output_tokens);
+        return output_text;
     }
 
     pub fn printStats(self: *const MistralTrinity) void {
