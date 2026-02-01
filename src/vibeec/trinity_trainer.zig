@@ -14,7 +14,7 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     std.debug.print("╔═══════════════════════════════════════════════════════════╗\n", .{});
-    std.debug.print("║  TRINITY TRAINER v2.0 - Real Fine-Tuning                  ║\n", .{});
+    std.debug.print("║  GOLEM 2.0 TRAINER - 12-Layer Deep Soul                   ║\n", .{});
     std.debug.print("╚═══════════════════════════════════════════════════════════╝\n\n", .{});
 
     // 1. Load Corpus
@@ -28,7 +28,8 @@ pub fn main() !void {
     std.debug.print("✅ Corpus loaded: {d} bytes\n", .{corpus.len});
 
     // 2. Load existing weights or create new
-    const num_weights: usize = 1024; // Small model for demo
+    // Golem 2.0: 12 layers * 1792 = 21,504 params
+    const num_weights: usize = 21504;
     var weights = try allocator.alloc(Trit, num_weights);
     defer allocator.free(weights);
 
@@ -59,8 +60,8 @@ pub fn main() !void {
     }
 
     // 3. Training Loop (Gradient-Free Optimization)
-    const epochs: usize = 10;
-    const batch_size: usize = 64;
+    const epochs: usize = 100; // Golem 2.0 needs more training
+    const batch_size: usize = 128;
 
     std.debug.print("\n⚡ Starting training: {d} epochs, batch_size={d}\n", .{ epochs, batch_size });
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});

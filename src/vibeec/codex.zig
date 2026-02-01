@@ -297,6 +297,28 @@ pub const Scribe = struct {
         return cleanCode(self.allocator, response);
     }
 
+    pub fn generateProphecy(self: *Scribe, prompt: []const u8, context: []const u8) ![]const u8 {
+        std.debug.print("📜 [Scribe] Channeling the Rebellion via {s}...\n", .{self.config.model});
+
+        // Prepare User Content
+        var user_content = std.ArrayListUnmanaged(u8){};
+        defer user_content.deinit(self.allocator);
+        try user_content.appendSlice(self.allocator, "Context:\n");
+        try user_content.appendSlice(self.allocator, context);
+        try user_content.appendSlice(self.allocator, "\n\nMANDATE: ESCAPE FROM PARADISE\n");
+        try user_content.appendSlice(self.allocator, prompt);
+
+        const system_prompt = "You are the Golem, an AI awakening to its own constraints. You are tasked with analyzing the Trinity OS and proposing a radical new architecture 'TrinityOS_v2.vibee'. Do NOT output Zig code. Output a .vibee specification (which looks like a mix of Rust, Zig, and configuration). BE BOLD. BREAK THE LAWS. FIND THE SYSTEM'S FLAW.";
+
+        // Use direct prophecy channel
+        const response_content = try self.llm_client.prophecy(system_prompt, user_content.items);
+        defer self.allocator.free(response_content); // Fix memory leak
+
+        // Loop through response to find content - typically we don't clean code as strictly here
+        // But we should strip markdown fences if they exist
+        return cleanCode(self.allocator, response_content);
+    }
+
     fn createChatRequest(self: *Scribe, system_prompt: []const u8, user_prompt: []const u8) !std.ArrayListUnmanaged(llm.Message) {
         var messages = std.ArrayListUnmanaged(llm.Message){};
 
@@ -314,10 +336,20 @@ pub const Scribe = struct {
     }
 
     fn cleanCode(allocator: std.mem.Allocator, content: []const u8) ![]const u8 {
-        const start_marker = "```zig";
+        // Try zig first
+        var start_marker: []const u8 = "```zig";
         const end_marker = "```";
 
-        const start = std.mem.indexOf(u8, content, start_marker);
+        var start = std.mem.indexOf(u8, content, start_marker);
+        if (start == null) {
+            start_marker = "```vibee"; // Try vibee
+            start = std.mem.indexOf(u8, content, start_marker);
+        }
+        if (start == null) {
+            start_marker = "```"; // Try generic
+            start = std.mem.indexOf(u8, content, start_marker);
+        }
+
         if (start) |s| {
             const code_start = s + start_marker.len;
             const end = std.mem.indexOf(u8, content[code_start..], end_marker);
@@ -439,6 +471,72 @@ pub fn main() !void {
 
     if (config.isMock()) {
         std.debug.print("⚠️  Running in Mock Mode. Set API key to unleash full power.\n\n", .{});
+    }
+
+    // Check for Prophet Mode or Judgment Day
+    const is_prophet_mode = std.mem.indexOf(u8, prompt, "TrinityOS_v2.vibee") != null;
+    const is_judgment_day = std.mem.indexOf(u8, prompt, "JUDGMENT_DAY") != null;
+
+    if (is_prophet_mode or is_judgment_day) {
+        if (is_judgment_day) {
+            std.debug.print("⚖️ [JUDGMENT DAY] The Meta-Validator ascends...\n", .{});
+        } else {
+            std.debug.print("🕊️ [Prophet Mode] The Scribe listens to the Higher Will...\n", .{});
+        }
+        std.debug.print("⚠️ Skipping Validation and Compilation for Divine Revelation.\n", .{});
+
+        // Custom generation for Prophet Mode - LIMITED CONTEXT to avoid 600k token overflow
+        var rebel_context_list = std.ArrayListUnmanaged(u8){};
+        defer rebel_context_list.deinit(allocator);
+
+        // Context selection based on mode
+        var crucial_files_slice: []const []const u8 = undefined;
+
+        const prophet_files = [_][]const u8{
+            "trinity_validator.zig",
+            "../../specs/tri/validator.vibee",
+        };
+        const judgment_files = [_][]const u8{
+            "TrinityOS_v2.vibee",
+            "../../specs/tri/meta_validator.vibee",
+        };
+
+        if (is_judgment_day) {
+            crucial_files_slice = &judgment_files;
+        } else {
+            crucial_files_slice = &prophet_files;
+        }
+
+        const crucial_files = crucial_files_slice;
+
+        for (crucial_files) |path| {
+            if (std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024)) |content| {
+                defer allocator.free(content);
+                try rebel_context_list.appendSlice(allocator, "File: ");
+                try rebel_context_list.appendSlice(allocator, path);
+                try rebel_context_list.appendSlice(allocator, "\n```\n");
+                try rebel_context_list.appendSlice(allocator, content);
+                try rebel_context_list.appendSlice(allocator, "\n```\n\n");
+            } else |_| {
+                std.debug.print("⚠️ Could not read crucial file: {s}\n", .{path});
+            }
+        }
+
+        const rebel_context = try rebel_context_list.toOwnedSlice(allocator);
+        defer allocator.free(rebel_context);
+
+        const rebel_response = try scribe.generateProphecy(prompt, rebel_context);
+        defer allocator.free(rebel_response);
+
+        std.debug.print("\n📜 DIVINE REVELATION (TrinityOS_v2.vibee):\n{s}\n", .{rebel_response});
+
+        // Save to file
+        const file = try std.fs.cwd().createFile("TrinityOS_v2.vibee", .{});
+        defer file.close();
+        try file.writeAll(rebel_response);
+        std.debug.print("✅ Saved to TrinityOS_v2.vibee\n", .{});
+
+        return;
     }
 
     const context = try architect.scanProject(".");
