@@ -62,6 +62,10 @@ pub const TritOpcode = enum(u8) {
     T_EQ = 21,
     T_LT = 22,
     T_GT = 23,
+    T_LE = 24,
+    T_GE = 25,
+    T_NE = 26,
+    T_EQZ = 27,
 
     // Memory
     T_LOAD = 30,
@@ -72,8 +76,10 @@ pub const TritOpcode = enum(u8) {
     T_CALL = 40,
     T_RET = 41,
     T_BR = 42,
-    T_BR_TRIT = 43, // 3-way branch!
-    T_SWITCH = 44,
+    T_BR_IF = 43, // Conditional branch
+    T_BR_TRIT = 44, // 3-way branch!
+    T_SWITCH = 45,
+    T_LABEL = 46, // Label marker (branch target)
 
     // Stack
     T_PUSH = 50,
@@ -81,8 +87,39 @@ pub const TritOpcode = enum(u8) {
     T_DUP = 52,
     T_DROP = 53,
 
-    // Constants
-    T_CONST = 60,
+    // Local/Argument access
+    T_GET_LOCAL = 60,
+    T_SET_LOCAL = 61,
+    T_CONST = 62,
+
+    // Conditional
+    T_SELECT = 65, // cond ? val1 : val2
+
+    // Native Ternary Operations (balanced ternary integer - Trit27)
+    T_TADD = 80, // Balanced ternary add
+    T_TSUB = 81, // Balanced ternary subtract
+    T_TMUL = 82, // Balanced ternary multiply
+    T_TDIV = 83, // Balanced ternary divide
+    T_TCMP = 84, // Balanced ternary compare (returns trit)
+    T_TNEG = 85, // Balanced ternary negate
+
+    // Tekum Floating-Point Operations (balanced ternary float - Tekum27)
+    T_FADD = 90, // Tekum floating-point add
+    T_FSUB = 91, // Tekum floating-point subtract
+    T_FMUL = 92, // Tekum floating-point multiply
+    T_FDIV = 93, // Tekum floating-point divide
+    T_FCMP = 94, // Tekum floating-point compare
+    T_FNEG = 95, // Tekum floating-point negate
+    T_FABS = 96, // Tekum floating-point absolute value
+    T_FCONST = 97, // Push Tekum constant (followed by 8-byte f64)
+    T_FTOI = 98, // Tekum to integer conversion
+    T_ITOF = 99, // Integer to Tekum conversion
+
+    // TNN (Ternary Neural Network) Operations - BitNet b1.58 compatible
+    T_TNN_MATMUL = 100, // Ternary matrix multiplication (no multiply, only add/sub)
+    T_TNN_RELU = 101, // ReLU activation
+    T_TNN_SIGN = 102, // Sign activation (ternary quantization)
+    T_TNN_LINEAR = 103, // Ternary linear layer (matmul + bias)
 
     // Special
     T_NOP = 70,
@@ -97,18 +134,29 @@ pub const Codegen = struct {
     allocator: std.mem.Allocator,
     output: std.ArrayList(u8),
     function_offsets: std.ArrayList(u32),
+    label_addresses: std.AutoHashMap(u32, u32), // label ID -> address
+    branch_fixups: std.ArrayList(BranchFixup), // branches to fix up
+
+    const BranchFixup = struct {
+        address: u32, // Address of the branch target field
+        label_id: u32, // Label to resolve
+    };
 
     pub fn init(allocator: std.mem.Allocator) Codegen {
         return Codegen{
             .allocator = allocator,
             .output = std.ArrayList(u8).init(allocator),
             .function_offsets = std.ArrayList(u32).init(allocator),
+            .label_addresses = std.AutoHashMap(u32, u32).init(allocator),
+            .branch_fixups = std.ArrayList(BranchFixup).init(allocator),
         };
     }
 
     pub fn deinit(self: *Codegen) void {
         self.output.deinit();
         self.function_offsets.deinit();
+        self.label_addresses.deinit();
+        self.branch_fixups.deinit();
     }
 
     pub fn generate(self: *Codegen, module: *const b2t_lifter.TVCModule) ![]const u8 {
@@ -164,16 +212,32 @@ pub const Codegen = struct {
 
     fn generateFunction(self: *Codegen, func: *const b2t_lifter.TVCFunction) !u32 {
         const start_offset = self.output.items.len;
+        var last_result: u32 = 0;
+
+        // Clear label tracking for this function
+        self.label_addresses.clearRetainingCapacity();
+        self.branch_fixups.clearRetainingCapacity();
 
         for (func.blocks.items) |block| {
             for (block.instructions.items) |inst| {
                 try self.generateInstruction(&inst);
+                // Track last result register for return
+                if (inst.dest) |d| {
+                    last_result = d;
+                }
             }
         }
 
-        // Add function end marker
+        // Fix up branch targets
+        for (self.branch_fixups.items) |fixup| {
+            if (self.label_addresses.get(fixup.label_id)) |target_addr| {
+                std.mem.writeInt(u32, self.output.items[fixup.address..][0..4], target_addr, .little);
+            }
+        }
+
+        // Add function end marker - return last computed value
         try self.writeTritOpcode(.T_RET);
-        try self.writeU32(0); // return value 0
+        try self.writeU32(last_result);
 
         return @intCast(self.output.items.len - start_offset);
     }
@@ -249,16 +313,79 @@ pub const Codegen = struct {
                 try self.writeU32(inst.operands[1]);
             },
 
-            .t_load => {
-                try self.writeTritOpcode(.T_LOAD);
+            .t_ne => {
+                try self.writeTritOpcode(.T_NE);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_lt => {
+                try self.writeTritOpcode(.T_LT);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_gt => {
+                try self.writeTritOpcode(.T_GT);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_le => {
+                try self.writeTritOpcode(.T_LE);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_ge => {
+                try self.writeTritOpcode(.T_GE);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_eqz => {
+                try self.writeTritOpcode(.T_EQZ);
                 try self.writeU32(inst.dest orelse 0);
                 try self.writeU32(inst.operands[0]);
             },
 
+            .t_load => {
+                try self.writeTritOpcode(.T_LOAD);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]); // addr register
+                try self.writeU32(inst.operands[1]); // offset
+            },
+
+            .t_get_local => {
+                try self.writeTritOpcode(.T_GET_LOCAL);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]); // local index
+            },
+
+            .t_set_local => {
+                try self.writeTritOpcode(.T_SET_LOCAL);
+                try self.writeU32(inst.operands[0]); // local index
+                try self.writeU32(inst.operands[1]); // value register
+            },
+
+            .t_select => {
+                try self.writeTritOpcode(.T_SELECT);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]); // val1
+                try self.writeU32(inst.operands[1]); // val2
+                try self.writeU32(inst.operands[2]); // cond
+            },
+
             .t_store => {
                 try self.writeTritOpcode(.T_STORE);
-                try self.writeU32(inst.operands[0]); // address
-                try self.writeU32(inst.operands[1]); // value
+                try self.writeU32(inst.operands[0]); // addr register
+                try self.writeU32(inst.operands[1]); // value register
+                try self.writeU32(inst.operands[2]); // offset
             },
 
             .t_call => {
@@ -274,17 +401,88 @@ pub const Codegen = struct {
 
             .t_br => {
                 try self.writeTritOpcode(.T_BR);
-                try self.writeU32(inst.operands[0]); // target
+                // Record fixup for label resolution
+                const fixup_addr: u32 = @intCast(self.output.items.len);
+                try self.branch_fixups.append(.{
+                    .address = fixup_addr,
+                    .label_id = inst.operands[0],
+                });
+                try self.writeU32(0); // placeholder, will be fixed up
+            },
+
+            .t_br_if => {
+                try self.writeTritOpcode(.T_BR_IF);
+                try self.writeU32(inst.operands[0]); // condition register
+                // Record fixup for label resolution
+                const fixup_addr: u32 = @intCast(self.output.items.len);
+                try self.branch_fixups.append(.{
+                    .address = fixup_addr,
+                    .label_id = inst.operands[1],
+                });
+                try self.writeU32(0); // placeholder, will be fixed up
             },
 
             .t_br_trit => {
                 try self.writeTritOpcode(.T_BR_TRIT);
                 try self.writeU32(inst.operands[0]); // condition
-                try self.writeU32(inst.operands[1]); // target
+                // Record fixup for label resolution
+                const fixup_addr: u32 = @intCast(self.output.items.len);
+                try self.branch_fixups.append(.{
+                    .address = fixup_addr,
+                    .label_id = inst.operands[1],
+                });
+                try self.writeU32(0); // placeholder
+            },
+
+            .t_label => {
+                // Record label address (no opcode emitted, just marker)
+                const current_addr: u32 = @intCast(self.output.items.len);
+                try self.label_addresses.put(inst.operands[0], current_addr);
             },
 
             .t_drop => {
                 try self.writeTritOpcode(.T_DROP);
+            },
+
+            .t_tadd => {
+                try self.writeTritOpcode(.T_TADD);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_tsub => {
+                try self.writeTritOpcode(.T_TSUB);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_tmul => {
+                try self.writeTritOpcode(.T_TMUL);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_tdiv => {
+                try self.writeTritOpcode(.T_TDIV);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_tcmp => {
+                try self.writeTritOpcode(.T_TCMP);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
+                try self.writeU32(inst.operands[1]);
+            },
+
+            .t_tneg => {
+                try self.writeTritOpcode(.T_TNEG);
+                try self.writeU32(inst.dest orelse 0);
+                try self.writeU32(inst.operands[0]);
             },
 
             .t_nop => {
