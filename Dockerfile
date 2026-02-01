@@ -39,14 +39,14 @@ COPY --from=builder /build/vibee /app/vibee
 # Create models directory
 RUN mkdir -p /app/models
 
-# Download Mistral-7B-Instruct Q4_K_M (best open source model for quality)
-# Size: ~4.4GB, excellent instruction following
-RUN echo "Downloading Mistral-7B-Instruct-v0.2 Q4_K_M..." && \
-    curl -L -o /app/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf \
-    "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+# Download TinyLlama-1.1B Q8_0 (supported quantization format)
+# Size: ~1.1GB, fast inference, good for testing
+RUN echo "Downloading TinyLlama-1.1B-Chat Q8_0..." && \
+    curl -L -o /app/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf \
+    "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q8_0.gguf"
 
 # Set environment
-ENV MODEL_PATH=/app/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf
+ENV MODEL_PATH=/app/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf
 ENV TEMPERATURE=0.7
 ENV TOP_P=0.9
 
@@ -54,4 +54,4 @@ ENV TOP_P=0.9
 EXPOSE 8080
 
 # Run chat
-CMD ["/app/vibee", "chat", "--model", "/app/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf", "--temperature", "0.7", "--top-p", "0.9"]
+CMD ["/app/vibee", "chat", "--model", "/app/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf", "--temperature", "0.7", "--top-p", "0.9"]
