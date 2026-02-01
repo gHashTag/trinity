@@ -115,9 +115,10 @@ pub fn rmsNorm(output: []f32, input: []const f32, weight: []const f32, eps: f32)
     simd.simdRmsNorm(output, input, weight, eps);
 }
 
-// Matrix-vector multiplication - SIMD optimized (8x speedup)
+// Matrix-vector multiplication - SIMD optimized with optional parallelism
 pub fn matVec(output: []f32, mat: []const f32, vec: []const f32, rows: usize, cols: usize) void {
-    simd.simdMatVec(output, mat, vec, rows, cols);
+    // Use parallel version for large matrices (FFN, output projection)
+    simd.parallelMatVec(output, mat, vec, rows, cols);
 }
 
 // SiLU activation

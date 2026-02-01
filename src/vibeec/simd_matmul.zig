@@ -272,6 +272,135 @@ pub fn simdSoftmax(output: []f32, input: []const f32) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// PARALLEL MATRIX-VECTOR MULTIPLICATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Thread-local context for parallel matVec
+const ParallelMatVecContext = struct {
+    output: []f32,
+    mat: []const f32,
+    vec: []const f32,
+    cols: usize,
+    start_row: usize,
+    end_row: usize,
+};
+
+/// Worker function for parallel matVec
+fn parallelMatVecWorker(ctx: *ParallelMatVecContext, wg: *std.Thread.WaitGroup) void {
+    defer wg.finish();
+    
+    const aligned_cols = ctx.cols & ~@as(usize, SIMD_WIDTH * 4 - 1);
+    const aligned_cols_single = ctx.cols & ~@as(usize, SIMD_WIDTH - 1);
+
+    for (ctx.start_row..ctx.end_row) |i| {
+        var sum_vec0: Vec8f = @splat(0.0);
+        var sum_vec1: Vec8f = @splat(0.0);
+        var sum_vec2: Vec8f = @splat(0.0);
+        var sum_vec3: Vec8f = @splat(0.0);
+        var sum_scalar: f32 = 0.0;
+        const row_offset = i * ctx.cols;
+
+        var j: usize = 0;
+        while (j < aligned_cols) : (j += SIMD_WIDTH * 4) {
+            const mat_vec0: Vec8f = ctx.mat[row_offset + j ..][0..SIMD_WIDTH].*;
+            const mat_vec1: Vec8f = ctx.mat[row_offset + j + SIMD_WIDTH ..][0..SIMD_WIDTH].*;
+            const mat_vec2: Vec8f = ctx.mat[row_offset + j + SIMD_WIDTH * 2 ..][0..SIMD_WIDTH].*;
+            const mat_vec3: Vec8f = ctx.mat[row_offset + j + SIMD_WIDTH * 3 ..][0..SIMD_WIDTH].*;
+            const vec_vec0: Vec8f = ctx.vec[j..][0..SIMD_WIDTH].*;
+            const vec_vec1: Vec8f = ctx.vec[j + SIMD_WIDTH ..][0..SIMD_WIDTH].*;
+            const vec_vec2: Vec8f = ctx.vec[j + SIMD_WIDTH * 2 ..][0..SIMD_WIDTH].*;
+            const vec_vec3: Vec8f = ctx.vec[j + SIMD_WIDTH * 3 ..][0..SIMD_WIDTH].*;
+            sum_vec0 += mat_vec0 * vec_vec0;
+            sum_vec1 += mat_vec1 * vec_vec1;
+            sum_vec2 += mat_vec2 * vec_vec2;
+            sum_vec3 += mat_vec3 * vec_vec3;
+        }
+
+        sum_vec0 += sum_vec1;
+        sum_vec2 += sum_vec3;
+        sum_vec0 += sum_vec2;
+
+        while (j < aligned_cols_single) : (j += SIMD_WIDTH) {
+            const mat_vec: Vec8f = ctx.mat[row_offset + j ..][0..SIMD_WIDTH].*;
+            const vec_vec: Vec8f = ctx.vec[j..][0..SIMD_WIDTH].*;
+            sum_vec0 += mat_vec * vec_vec;
+        }
+
+        const sum_arr: [SIMD_WIDTH]f32 = sum_vec0;
+        inline for (sum_arr) |v| {
+            sum_scalar += v;
+        }
+
+        while (j < ctx.cols) : (j += 1) {
+            sum_scalar += ctx.mat[row_offset + j] * ctx.vec[j];
+        }
+
+        ctx.output[i] = sum_scalar;
+    }
+}
+
+/// Global thread pool for parallel operations
+var global_pool: std.Thread.Pool = undefined;
+var pool_initialized: bool = false;
+
+/// Initialize global thread pool
+pub fn initThreadPool(allocator: std.mem.Allocator) !void {
+    if (!pool_initialized) {
+        try global_pool.init(.{ .allocator = allocator });
+        pool_initialized = true;
+    }
+}
+
+/// Deinitialize global thread pool
+pub fn deinitThreadPool() void {
+    if (pool_initialized) {
+        global_pool.deinit();
+        pool_initialized = false;
+    }
+}
+
+/// Parallel SIMD matrix-vector multiplication
+/// Uses thread pool for very large matrices only (rows > 10000)
+/// On 2-core systems, threading overhead often exceeds benefit
+pub fn parallelMatVec(output: []f32, mat: []const f32, vec: []const f32, rows: usize, cols: usize) void {
+    // For most matrices, single-threaded SIMD is faster on 2 cores
+    // Only use threading for vocab projection (32000 rows)
+    if (rows < 10000 or !pool_initialized) {
+        simdMatVec(output, mat, vec, rows, cols);
+        return;
+    }
+
+    const num_threads: usize = 2; // Match CPU cores
+    const rows_per_thread = rows / num_threads;
+    
+    var contexts: [2]ParallelMatVecContext = undefined;
+    var wg = std.Thread.WaitGroup{};
+
+    for (0..num_threads) |t| {
+        const start = t * rows_per_thread;
+        const end = if (t == num_threads - 1) rows else (t + 1) * rows_per_thread;
+        
+        contexts[t] = ParallelMatVecContext{
+            .output = output,
+            .mat = mat,
+            .vec = vec,
+            .cols = cols,
+            .start_row = start,
+            .end_row = end,
+        };
+        
+        wg.start();
+        global_pool.spawn(parallelMatVecWorker, .{&contexts[t], &wg}) catch {
+            // Fallback to single-threaded
+            wg.finish();
+            simdMatVec(output[start..end], mat[start * cols ..], vec, end - start, cols);
+        };
+    }
+
+    wg.wait();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 

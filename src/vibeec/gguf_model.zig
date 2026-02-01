@@ -113,6 +113,9 @@ pub const FullModel = struct {
     pub fn loadWeights(self: *FullModel) !void {
         std.debug.print("Loading weights...\n", .{});
 
+        // Initialize thread pool for parallel matVec
+        try simd.initThreadPool(self.allocator);
+
         // Load embeddings
         self.token_embedding = try self.loadTensor("token_embd.weight");
         self.output_weight = try self.loadTensor("output.weight");
@@ -237,6 +240,9 @@ pub const FullModel = struct {
         self.allocator.free(self.buf_ffn_up);
         self.allocator.free(self.buf_ffn_out);
         self.allocator.free(self.buf_scores);
+
+        // Deinit thread pool
+        simd.deinitThreadPool();
 
         self.reader.deinit();
     }
