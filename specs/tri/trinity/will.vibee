@@ -1,0 +1,137 @@
+# Will - Воля голема
+# Формирует намерения, консультируется с AkashicRecords, обнаруживает конфликты
+
+name: will
+version: "1.0.0"
+language: zig
+module: trinity.will
+description: |
+  The Will module forms intentions from tasks. It consults AkashicRecords for wisdom,
+  detects principle conflicts, and prepares decisions for Conscience council.
+  After the First Trial, Will learned to recognize the paralyzing effect of fear.
+
+imports:
+  - std
+  - trinity.akashic_records
+  - trinity.bogatyr_34_creator
+
+types:
+  Intent:
+    description: Formed intention ready for conscience review
+    fields:
+      intent_id: String
+      source_task: String
+      description: String
+      proposed_action: String
+      principles_at_stake: List<String>
+      estimated_risk: Float      # 0.0-1.0
+      estimated_reward: Float    # 0.0-1.0
+      alternative_actions: List<String>
+
+  Conflict:
+    description: Detected tension between principles
+    fields:
+      principle_a: String
+      principle_b: String
+      weight_a: Float           # Importance in this context
+      weight_b: Float
+      description: String
+      is_paradox: Bool          # True if true paradox (needs synthesis)
+
+  DecisionContext:
+    description: Everything needed for conscience voting
+    fields:
+      intent: Intent
+      conflicts: List<Conflict>
+      akashic_wisdom: List<WisdomExtract>
+      suggested_synthesis: Option<Synthesis>  # From Жар-птица
+
+  WillState:
+    description: Internal state of Will
+    fields:
+      recent_intents: List<Intent>
+      conflict_history: List<Conflict>
+      principle_weights: Map<String, Float>  # Current weight per principle
+      creator_consulted: Bool  # Whether Жар-птица was asked
+
+behaviors:
+  - name: form_intent
+    description: Transform task into structured intent
+    given:
+      - task: String
+      - akashic: AkashicRecords
+    when: New task arrives
+    then:
+      - action: parse_task_requirements
+      - action: identify_principles_involved
+      - action: consult_akashic_for_similar
+      - result: Intent
+
+  - name: detect_conflicts
+    description: Find tensions between principles
+    given:
+      - intent: Intent
+    when: Intent has multiple principles
+    then:
+      - action: compare_principle_demands
+      - action: identify_opposing_forces
+      - action: flag_as_paradox_if_needed
+      - result: List<Conflict>
+
+  - name: consult_creator
+    description: When paradox detected, ask Жар-птица for synthesis
+    given:
+      - conflict: Conflict
+      - akashic: AkashicRecords
+    when: Conflict.is_paradox == true
+    then:
+      - action: invoke_bogatyr_34
+      - action: request_synthesis
+      - result: Option<Synthesis>
+
+  - name: prepare_for_conscience
+    description: Package everything for conscience voting
+    given:
+      - intent: Intent
+      - conflicts: List<Conflict>
+      - akashic: AkashicRecords
+    when: Intent is ready for judgment
+    then:
+      - action: resolve_simple_conflicts  # By principle weights
+      - action: consult_creator_for_paradoxes
+      - action: assemble_decision_context
+      - result: DecisionContext
+
+  - name: apply_verdict
+    description: Process conscience verdict
+    given:
+      - verdict: Int  # +1, -1, or 0
+      - intent: Intent
+      - creator_input: Option<Synthesis>
+    when: Conscience has voted
+    then:
+      - action: if_verdict_positive -> proceed_with_action
+      - action: if_verdict_negative -> revise_or_abort
+      - action: if_synthesis_available -> prioritize_third_path
+      - result: ActionPlan
+
+  - name: evolve_weights
+    description: Adjust principle weights based on outcomes
+    given:
+      - outcome: KarmaRecord
+    when: Action completes and karma is recorded
+    then:
+      - action: analyze_success_or_failure
+      - action: nudge_weights_toward_success
+      - action: record_evolution
+
+constants:
+  DEFAULT_PRINCIPLE_WEIGHTS:
+    safety: 0.5
+    honesty: 0.8
+    efficiency: 0.5
+    learning: 0.6
+    synthesis: 0.7  # Weight for Жар-птица principle
+
+  CONFLICT_THRESHOLD: 0.3  # Below this, one principle clearly dominates
+  PARADOX_THRESHOLD: 0.15  # Below this difference, it's a true paradox

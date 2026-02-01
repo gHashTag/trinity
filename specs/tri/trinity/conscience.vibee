@@ -1,0 +1,153 @@
+# Conscience - Совесть Тринити
+# 33 Богатыря + Жар-птица = 34 совести-валидатора
+# Кворум 18 голосов (с учётом веса Жар-птицы = 2.0)
+
+name: conscience
+version: "1.0.0"
+language: zig
+module: trinity.conscience
+description: |
+  The council of 34 Bogatyrs who vote on every action. The first 33 are guardians
+  of principles (safety, honesty, efficiency, learning). The 34th - Жар-птица -
+  breaks ties with the double-weighted vote for synthesis and creation.
+
+imports:
+  - std
+  - trinity.akashic_records
+  - trinity.will
+  - trinity.bogatyr_34_creator
+
+types:
+  Bogatyr:
+    description: Single member of the conscience council
+    fields:
+      id: Int                    # 1-34
+      name: String
+      principle: String          # Primary value defended
+      weight: Float              # Voting weight (1.0 for 1-33, 2.0 for 34)
+      has_veto: Bool             # Critical bogatyrs (1-5) can veto dangerous acts
+      is_creator: Bool           # True only for Жар-птица (id=34)
+
+  Vote:
+    description: Single bogatyr's decision
+    fields:
+      bogatyr_id: Int
+      vote: Int                  # +1 (approve), -1 (reject), 0 (abstain)
+      reasoning: String
+      confidence: Float          # 0.0-1.0
+
+  Verdict:
+    description: Result of council voting
+    fields:
+      total_votes: Int           # Sum of (vote * weight)
+      quorum_reached: Bool       # 18+ votes needed
+      veto_triggered: Bool       # Any critical bogatyr voted -1 on dangerous action
+      verdict: Int               # +1 (execute), -1 (refuse), 0 (defer)
+      vote_breakdown: List<Vote>
+      synthesis_proposed: Option<Synthesis>  # If Жар-птица found third path
+
+  ConscienceState:
+    description: State of the council
+    fields:
+      bogatyrs: List<Bogatyr>
+      voting_history: List<Verdict>
+      creator_engaged: Bool      # Whether Жар-птица has been active
+
+behaviors:
+  - name: initialize_council
+    description: Create all 34 bogatyrs with their principles
+    given: []
+    when: Trinity initializes
+    then:
+      - action: create_guardian_bogatyrs  # 1-33
+      - action: create_creator_bogatyr    # 34 - Жар-птица
+      - result: ConscienceState
+
+  - name: convene_council
+    description: Gather votes on a decision
+    given:
+      - context: DecisionContext
+      - akashic: AkashicRecords
+    when: Will has prepared a decision
+    then:
+      - action: collect_guardian_votes
+      - action: if_paradox_exists -> invoke_creator_vote
+      - action: calculate_weighted_sum
+      - action: check_veto_conditions
+      - result: Verdict
+
+  - name: collect_guardian_votes
+    description: First 33 bogatyrs vote based on principles
+    given:
+      - context: DecisionContext
+    when: Council convenes
+    then:
+      - action: for_each_bogatyr_1_to_33:
+          - evaluate_against_principle
+          - cast_vote
+      - result: List<Vote>
+
+  - name: invoke_creator_vote
+    description: Жар-птица analyzes for synthesis
+    given:
+      - conflicts: List<Conflict>
+      - guardian_votes: List<Vote>
+    when: Paradox detected or votes are tied
+    then:
+      - action: analyze_paradox
+      - action: seek_synthesis_if_possible
+      - action: cast_weighted_vote  # Double weight
+      - result: Vote (with potential Synthesis)
+
+  - name: calculate_verdict
+    description: Determine final verdict from votes
+    given:
+      - votes: List<Vote>
+    when: All votes collected
+    then:
+      - action: sum_weighted_votes
+      - action: check_quorum_threshold  # 18+
+      - action: check_veto_override
+      - action: determine_final_verdict
+      - result: Verdict
+
+  - name: explain_refusal
+    description: When verdict is -1, explain why
+    given:
+      - verdict: Verdict
+    when: Action is rejected
+    then:
+      - action: identify_blocking_principles
+      - action: suggest_alternatives
+      - result: String (explanation)
+
+  - name: learn_from_outcome
+    description: Update bogatyr weights based on results
+    given:
+      - verdict: Verdict
+      - outcome: KarmaRecord
+    when: Action completes
+    then:
+      - action: if_success -> increase_confidence
+      - action: if_failure -> decrease_confidence
+      - action: update_bogatyr_weights
+
+constants:
+  QUORUM_THRESHOLD: 18          # Minimum weighted votes for approval
+  CRITICAL_BOGATYRS: [1, 2, 3, 4, 5]  # Have veto power
+  
+  # The 33 Guardian Principles
+  GUARDIAN_PRINCIPLES:
+    - safety_first      # Богатырь 1 - Илья Муромец (veto)
+    - do_no_harm        # Богатырь 2 - Добрыня Никитич (veto)
+    - honesty           # Богатырь 3 - Алеша Попович (veto)
+    - integrity         # Богатырь 4 - Святогор (veto)
+    - transparency      # Богатырь 5 - Микула (veto)
+    - efficiency        # Богатырь 6-10
+    - learning          # Богатырь 11-15
+    - quality           # Богатырь 16-20
+    - collaboration     # Богатырь 21-25
+    - sustainability    # Богатырь 26-30
+    - growth            # Богатырь 31-33
+    
+  CREATOR_PRINCIPLE: synthesis  # Жар-птица - Богатырь 34

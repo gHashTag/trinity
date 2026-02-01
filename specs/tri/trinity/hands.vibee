@@ -1,0 +1,148 @@
+# Hands - Руки Тринити
+# Исполняют только при +1 вердикте, создают бэкапы, записывают в AkashicRecords
+
+name: hands
+version: "1.0.0"
+language: zig
+module: trinity.hands
+description: |
+  The Hands execute actions. They NEVER act without a +1 verdict from Conscience.
+  Before destructive actions, they create backups. After execution, they record
+  results to AkashicRecords. When synthesis is proposed by Жар-птица, they apply
+  the third path.
+
+imports:
+  - std
+  - std.fs
+  - trinity.akashic_records
+  - trinity.conscience
+  - trinity.will
+
+types:
+  Action:
+    description: Executable action with safety guards
+    fields:
+      action_id: String
+      intent: Intent
+      verdict: Verdict
+      execution_plan: String
+      requires_backup: Bool
+      is_destructive: Bool
+
+  ExecutionResult:
+    description: Outcome of action execution
+    fields:
+      action_id: String
+      success: Bool
+      output: String
+      error_message: Option<String>
+      timestamp: Int
+      karma_assessment: Int  # +1, -1, or 0
+
+  Backup:
+    description: Snapshot before destructive action
+    fields:
+      backup_id: String
+      original_state: String  # Serialized state
+      created_at: Int
+      action_reference: String
+
+  HandsState:
+    description: State of Hands module
+    fields:
+      actions_executed: Int
+      actions_refused: Int
+      backups_created: List<Backup>
+      last_execution: Option<ExecutionResult>
+
+behaviors:
+  - name: validate_verdict
+    description: Confirm +1 verdict before acting
+    given:
+      - verdict: Verdict
+    when: Action is requested
+    then:
+      - action: check_verdict_value
+      - action: if_negative -> refuse_and_explain
+      - action: if_neutral -> defer_to_will
+      - result: Bool (can proceed)
+
+  - name: apply_synthesis
+    description: When Жар-птица found third path, execute it
+    given:
+      - synthesis: Synthesis
+      - original_intent: Intent
+    when: Verdict includes synthesis_proposed
+    then:
+      - action: validate_synthesis_safety
+      - action: create_execution_plan_for_synthesis
+      - action: execute_synthesis_steps
+      - result: ExecutionResult
+
+  - name: create_backup
+    description: Save state before destructive action
+    given:
+      - action: Action
+    when: Action.is_destructive == true
+    then:
+      - action: serialize_current_state
+      - action: write_to_backup_location
+      - action: verify_backup_integrity
+      - result: Backup
+
+  - name: execute_action
+    description: Perform the approved action
+    given:
+      - action: Action
+    when: Verdict is +1
+    then:
+      - action: validate_verdict
+      - action: if_destructive -> create_backup
+      - action: execute_steps
+      - action: record_result
+      - result: ExecutionResult
+
+  - name: rollback
+    description: Restore from backup if needed
+    given:
+      - backup: Backup
+    when: Execution failed catastrophically
+    then:
+      - action: read_backup
+      - action: restore_state
+      - action: verify_restoration
+      - result: Bool (success)
+
+  - name: record_to_akashic
+    description: Persist execution result to eternal memory
+    given:
+      - result: ExecutionResult
+      - akashic: AkashicRecords
+    when: Action completes
+    then:
+      - action: calculate_karma_delta
+      - action: create_karma_record
+      - action: append_to_akashic
+      - action: update_personality_if_needed
+
+  - name: refuse_execution
+    description: When verdict is -1, explain why
+    given:
+      - intent: Intent
+      - verdict: Verdict
+    when: Conscience rejects action
+    then:
+      - action: format_refusal_explanation
+      - action: suggest_alternatives
+      - result: String
+
+constants:
+  BACKUP_PATH: ".akashic/backups/"
+  MAX_BACKUP_AGE_DAYS: 30
+  
+  KARMA_RULES:
+    success_with_learning: +1
+    success_without_growth: 0
+    failure_with_lesson: 0
+    failure_without_lesson: -1
+    synthesis_achieved: +2  # Bonus for Жар-птица solutions
