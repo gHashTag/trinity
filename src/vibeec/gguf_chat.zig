@@ -62,7 +62,7 @@ pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_pro
         if (trimmed.len == 0) continue;
         if (std.mem.eql(u8, trimmed, "quit") or std.mem.eql(u8, trimmed, "exit")) break;
 
-        // Generate response
+        // Generate response using full transformer forward pass
         std.debug.print("Assistant: ", .{});
         var gen_timer = try std.time.Timer.start();
 
@@ -72,15 +72,43 @@ pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_pro
         };
         defer allocator.free(tokens);
 
-        // Simple generation (placeholder for full transformer)
+        // Real generation with transformer
         var generated: u32 = 0;
-        var prng = std.Random.DefaultPrng.init(@intCast(std.time.milliTimestamp()));
-        const random = prng.random();
+        var current_tokens = std.ArrayList(u32).init(allocator);
+        defer current_tokens.deinit();
+        for (tokens) |t| try current_tokens.append(t);
 
-        while (generated < 50) : (generated += 1) {
-            const next = random.intRangeAtMost(u32, 32, 126);
-            std.debug.print("{c}", .{@as(u8, @truncate(next))});
-            if (random.float(f32) < 0.05) break;
+        const max_gen: u32 = 50;
+        while (generated < max_gen) : (generated += 1) {
+            // Forward pass for last token
+            const pos = current_tokens.items.len - 1;
+            const last_token = current_tokens.items[pos];
+
+            const logits = model.forward(last_token, pos) catch {
+                std.debug.print("[forward error]", .{});
+                break;
+            };
+            defer allocator.free(logits);
+
+            // Sample next token (greedy)
+            var max_idx: u32 = 0;
+            var max_val: f32 = logits[0];
+            for (logits[1..], 1..) |l, i| {
+                if (l > max_val) {
+                    max_val = l;
+                    max_idx = @intCast(i);
+                }
+            }
+
+            // Check for EOS
+            if (max_idx == tokenizer.eos_token) break;
+
+            // Decode and print
+            const decoded = tokenizer.decode(allocator, &[_]u32{max_idx}) catch " ";
+            defer if (decoded.len > 0) allocator.free(decoded);
+            std.debug.print("{s}", .{decoded});
+
+            try current_tokens.append(max_idx);
         }
         std.debug.print("\n", .{});
 
