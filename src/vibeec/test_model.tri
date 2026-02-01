@@ -1,0 +1,8 @@
+TRINITY_MODEL_V1
+name: mistral
+vocab_size: 256
+hidden_size: 64
+num_layers: 2
+total_params: 69632
+---
+END

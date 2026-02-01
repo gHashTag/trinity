@@ -1510,7 +1510,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("added_count += 1;");
             self.builder.decIndent();
             try self.builder.writeLine("}");
-            try self.builder.writeFmt("return VBTResult{{ .success = true, .message = \"Added {} files\" }};\n", .{"added_count"});
+            try self.builder.writeFmt("return VBTResult{{ .success = true, .message = \"Added {{}} files\" }};\n", .{});
             self.builder.decIndent();
             try self.builder.writeLine("}");
             return true;
