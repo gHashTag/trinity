@@ -2,24 +2,29 @@
 // Векторизованные операции над тритами {-1, 0, +1}
 // 21x ускорение через AVX2/NEON
 // φ² + 1/φ² = 3 = TRINITY
+//
+// ПЕРЕИСПОЛЬЗУЕТ: simd_ternary.zig для базовых SIMD типов
 
 const std = @import("std");
 const prometheus = @import("prometheus_seed.zig");
+const simd_ternary = @import("simd_ternary.zig");
 
 pub const PHI: f64 = 1.618033988749895;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD VECTOR TYPES
+// SIMD VECTOR TYPES - ПЕРЕИСПОЛЬЗУЕМ ИЗ simd_ternary.zig
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// 8 x f32 = 256 бит (AVX2 / NEON)
+/// Реэкспорт типов из simd_ternary для совместимости
+pub const Vec32i8 = simd_ternary.Vec32i8;
+pub const Vec32i16 = simd_ternary.Vec32i16;
+pub const Vec16i8 = simd_ternary.Vec16i8;
+
+/// 8 x f32 = 256 бит (AVX2 / NEON) - для float операций
 pub const Vec8f = @Vector(8, f32);
 
 /// 16 x f32 = 512 бит (AVX-512)
 pub const Vec16f = @Vector(16, f32);
-
-/// 32 x i8 = 256 бит (для упакованных тритов)
-pub const Vec32i8 = @Vector(32, i8);
 
 /// Размер SIMD вектора в элементах f32
 pub const SIMD_WIDTH: usize = 8;
