@@ -3,6 +3,7 @@ const vibee_parser = @import("vibee_parser.zig");
 const zig_codegen = @import("zig_codegen.zig");
 const verilog_codegen = @import("verilog_codegen.zig");
 const gguf_chat = @import("gguf_chat.zig");
+const http_server = @import("http_server.zig");
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -73,6 +74,28 @@ pub fn main() !void {
         }
 
         try gguf_chat.runChat(allocator, model_path.?, prompt, max_tokens, temperature, top_p);
+    } else if (std.mem.eql(u8, command, "serve")) {
+        // HTTP API server
+        var model_path: ?[]const u8 = null;
+        var port: u16 = 8080;
+
+        var i: usize = 2;
+        while (i < args.len) : (i += 1) {
+            if (std.mem.eql(u8, args[i], "--model") and i + 1 < args.len) {
+                model_path = args[i + 1];
+                i += 1;
+            } else if (std.mem.eql(u8, args[i], "--port") and i + 1 < args.len) {
+                port = std.fmt.parseInt(u16, args[i + 1], 10) catch 8080;
+                i += 1;
+            }
+        }
+
+        if (model_path == null) {
+            std.debug.print("Error: --model required\n", .{});
+            return;
+        }
+
+        try http_server.runServer(allocator, model_path.?, port);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {
@@ -96,6 +119,8 @@ fn printUsage() void {
         \\    --max-tokens N                            Max tokens to generate (default: 100)
         \\    --temperature F                           Sampling temperature (default: 0.7)
         \\    --top-p F                                 Top-p nucleus sampling (default: 0.9)
+        \\  vibeec serve --model <path.gguf> [options]  HTTP API server (OpenAI compatible)
+        \\    --port N                                  Port to listen on (default: 8080)
         \\  vibeec help                                 Show this help
         \\
     , .{});
