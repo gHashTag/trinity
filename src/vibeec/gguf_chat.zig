@@ -12,16 +12,27 @@ const inference = @import("gguf_inference.zig");
 // Chat template for formatting prompts
 const ChatTemplate = tokenizer_mod.ChatTemplate;
 
+// Sampling parameters struct
+const SamplingParams = inference.SamplingParams;
+
 // Entry point for CLI chat command
-pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_prompt: ?[]const u8, max_tokens: u32) !void {
+pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_prompt: ?[]const u8, max_tokens: u32, temperature: f32, top_p: f32) !void {
     const stdout = std.io.getStdOut().writer();
 
     try stdout.print("\n", .{});
     try stdout.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
     try stdout.print("║           TRINITY CHAT - SIMD Optimized LLM                  ║\n", .{});
-    try stdout.print("║           Chat Template + Streaming Output                   ║\n", .{});
+    try stdout.print("║           Temperature + Top-p Sampling                       ║\n", .{});
     try stdout.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
     try stdout.print("\n", .{});
+
+    // Create sampling params
+    const sampling_params = SamplingParams{
+        .temperature = temperature,
+        .top_p = top_p,
+        .top_k = 40,
+        .repeat_penalty = 1.1,
+    };
 
     // Load model
     std.debug.print("Loading model: {s}\n", .{model_path});
@@ -56,11 +67,12 @@ pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_pro
 
     std.debug.print("Chat template: TinyLlama (ChatML format)\n", .{});
     std.debug.print("System: {s}\n", .{system_prompt});
+    std.debug.print("Sampling: temperature={d:.2}, top_p={d:.2}\n", .{sampling_params.temperature, sampling_params.top_p});
     std.debug.print("\nReady! Type your message (or 'quit' to exit):\n\n", .{});
 
     // Handle initial prompt if provided
     if (initial_prompt) |prompt| {
-        try generateWithTemplate(allocator, stdout, &model, &tokenizer, &template, system_prompt, prompt, max_tokens);
+        try generateWithTemplate(allocator, stdout, &model, &tokenizer, &template, system_prompt, prompt, max_tokens, sampling_params);
     }
 
     // Interactive loop
@@ -75,7 +87,7 @@ pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_pro
         if (trimmed.len == 0) continue;
         if (std.mem.eql(u8, trimmed, "quit") or std.mem.eql(u8, trimmed, "exit")) break;
 
-        try generateWithTemplate(allocator, stdout, &model, &tokenizer, &template, system_prompt, trimmed, max_tokens);
+        try generateWithTemplate(allocator, stdout, &model, &tokenizer, &template, system_prompt, trimmed, max_tokens, sampling_params);
     }
 
     try stdout.print("Goodbye!\n", .{});
@@ -91,6 +103,7 @@ fn generateWithTemplate(
     system: []const u8,
     user_input: []const u8,
     max_tokens: u32,
+    params: SamplingParams,
 ) !void {
     // Format prompt with chat template
     const formatted = try template.formatPrompt(allocator, system, user_input);
@@ -128,24 +141,28 @@ fn generateWithTemplate(
     var last_token: u32 = 0;
 
     while (generated < max_tokens) : (generated += 1) {
-        // Sample next token (greedy)
-        var max_idx: u32 = 0;
-        var max_val: f32 = current_logits[0];
-        for (current_logits[1..], 1..) |l, i| {
-            if (l > max_val) {
-                max_val = l;
-                max_idx = @intCast(i);
+        // Sample next token with temperature + top-p
+        const sampled_token = inference.sampleWithParams(allocator, current_logits, params) catch blk: {
+            // Fallback to greedy on error
+            var max_idx: u32 = 0;
+            var max_val: f32 = current_logits[0];
+            for (current_logits[1..], 1..) |l, i| {
+                if (l > max_val) {
+                    max_val = l;
+                    max_idx = @intCast(i);
+                }
             }
-        }
+            break :blk max_idx;
+        };
 
         // Free current logits
         allocator.free(current_logits);
 
         // Check for EOS
-        if (max_idx == tokenizer.eos_token) break;
+        if (sampled_token == tokenizer.eos_token) break;
 
         // Decode and stream output immediately
-        const decoded = tokenizer.decode(allocator, &[_]u32{max_idx}) catch " ";
+        const decoded = tokenizer.decode(allocator, &[_]u32{sampled_token}) catch " ";
         defer if (decoded.len > 0) allocator.free(decoded);
         
         // Stream: print immediately without buffering
@@ -156,7 +173,7 @@ fn generateWithTemplate(
         if (std.mem.indexOf(u8, decoded, "<|") != null) break;
 
         // Get next logits
-        last_token = max_idx;
+        last_token = sampled_token;
         current_logits = model.forward(last_token, current_pos) catch break;
         current_pos += 1;
     }

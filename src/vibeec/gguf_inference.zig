@@ -144,7 +144,7 @@ pub fn softmax(output: []f32, input: []const f32) void {
     }
 }
 
-// Sample from probability distribution
+// Sample from probability distribution (basic)
 pub fn sample(probs: []const f32, temperature: f32) u32 {
     if (temperature == 0.0) {
         // Greedy sampling
@@ -172,6 +172,130 @@ pub fn sample(probs: []const f32, temperature: f32) u32 {
         }
     }
     return @intCast(probs.len - 1);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADVANCED SAMPLING - Temperature + Top-p (Nucleus) Sampling
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Sampling parameters
+pub const SamplingParams = struct {
+    temperature: f32 = 0.7,
+    top_p: f32 = 0.9,
+    top_k: u32 = 40,
+    repeat_penalty: f32 = 1.1,
+};
+
+/// Apply temperature scaling to logits
+pub fn applyTemperature(logits: []f32, temperature: f32) void {
+    if (temperature <= 0.0 or temperature == 1.0) return;
+    
+    const inv_temp = 1.0 / temperature;
+    for (logits) |*l| {
+        l.* *= inv_temp;
+    }
+}
+
+/// Sample with temperature and top-p (nucleus sampling)
+/// Returns token index
+pub fn sampleWithParams(allocator: std.mem.Allocator, logits: []f32, params: SamplingParams) !u32 {
+    const n = logits.len;
+    
+    // Apply temperature
+    if (params.temperature > 0.0 and params.temperature != 1.0) {
+        applyTemperature(logits, params.temperature);
+    }
+    
+    // Greedy if temperature is 0
+    if (params.temperature == 0.0) {
+        var max_idx: u32 = 0;
+        var max_val: f32 = logits[0];
+        for (logits[1..], 1..) |l, i| {
+            if (l > max_val) {
+                max_val = l;
+                max_idx = @intCast(i);
+            }
+        }
+        return max_idx;
+    }
+    
+    // Convert to probabilities with softmax
+    var max_logit: f32 = logits[0];
+    for (logits[1..]) |l| {
+        if (l > max_logit) max_logit = l;
+    }
+    
+    var sum: f32 = 0.0;
+    for (logits) |*l| {
+        l.* = @exp(l.* - max_logit);
+        sum += l.*;
+    }
+    
+    const inv_sum = 1.0 / sum;
+    for (logits) |*l| {
+        l.* *= inv_sum;
+    }
+    
+    // Top-p (nucleus) sampling
+    if (params.top_p < 1.0) {
+        // Create index array for sorting
+        const indices = try allocator.alloc(u32, n);
+        defer allocator.free(indices);
+        for (indices, 0..) |*idx, i| {
+            idx.* = @intCast(i);
+        }
+        
+        // Sort indices by probability (descending)
+        std.mem.sort(u32, indices, logits, struct {
+            fn lessThan(probs: []f32, a: u32, b: u32) bool {
+                return probs[a] > probs[b]; // Descending
+            }
+        }.lessThan);
+        
+        // Find cutoff for top-p
+        var cumsum: f32 = 0.0;
+        var cutoff_idx: usize = n;
+        for (indices, 0..) |idx, i| {
+            cumsum += logits[idx];
+            if (cumsum >= params.top_p) {
+                cutoff_idx = i + 1;
+                break;
+            }
+        }
+        
+        // Zero out tokens below cutoff
+        for (indices[cutoff_idx..]) |idx| {
+            logits[idx] = 0.0;
+        }
+        
+        // Renormalize
+        sum = 0.0;
+        for (logits) |l| {
+            sum += l;
+        }
+        if (sum > 0.0) {
+            const inv = 1.0 / sum;
+            for (logits) |*l| {
+                l.* *= inv;
+            }
+        }
+    }
+    
+    // Sample from distribution
+    var prng = std.Random.DefaultPrng.init(@intCast(std.time.milliTimestamp()));
+    const random = prng.random();
+    const r = random.float(f32);
+    
+    var cumsum: f32 = 0.0;
+    for (logits, 0..) |p, i| {
+        cumsum += p;
+        if (r < cumsum) {
+            return @intCast(i);
+        }
+    }
+    
+    // Fallback to last token
+    return @intCast(n - 1);
 }
 
 // GGUF Model for inference
