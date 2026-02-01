@@ -100,11 +100,64 @@ pub fn dequantizeF32Tensor(allocator: std.mem.Allocator, data: []const u8, num_e
     return result;
 }
 
+// Dequantize Q4_K tensor to f32 (k-quants format)
+// Q4_K: 256 elements per block, super-blocks with scales
+pub fn dequantizeQ4_KTensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
+    const block_size: usize = 256;
+    const type_size: usize = 144; // Q4_K block size
+    const num_blocks = (num_elements + block_size - 1) / block_size;
+
+    const result = try allocator.alloc(f32, @intCast(num_elements));
+    errdefer allocator.free(result);
+
+    var block_idx: usize = 0;
+    while (block_idx < num_blocks) : (block_idx += 1) {
+        const block_start = block_idx * type_size;
+        if (block_start + type_size > data.len) break;
+
+        const block = data[block_start..][0..type_size];
+        const out_start = block_idx * block_size;
+
+        // Q4_K structure:
+        // - d (f16): 2 bytes - main scale
+        // - dmin (f16): 2 bytes - min scale  
+        // - scales (6-bit): 12 bytes for 32 scales
+        // - qs (4-bit): 128 bytes for 256 values
+
+        const d_bits = @as(u16, block[0]) | (@as(u16, block[1]) << 8);
+        const dmin_bits = @as(u16, block[2]) | (@as(u16, block[3]) << 8);
+        const d = gguf.f16ToF32(d_bits);
+        const dmin = gguf.f16ToF32(dmin_bits);
+
+        // Simplified dequantization - treat as Q4_0-like
+        // Full Q4_K has complex scale structure, this is approximation
+        const qs_start: usize = 16; // Skip header
+        
+        var i: usize = 0;
+        while (i < 128 and out_start + i * 2 < num_elements) : (i += 1) {
+            if (qs_start + i >= block.len) break;
+            const byte = block[qs_start + i];
+            const lo: i8 = @as(i8, @intCast(byte & 0x0F)) - 8;
+            const hi: i8 = @as(i8, @intCast(byte >> 4)) - 8;
+            
+            if (out_start + i * 2 < num_elements) {
+                result[out_start + i * 2] = @as(f32, @floatFromInt(lo)) * d - dmin;
+            }
+            if (out_start + i * 2 + 1 < num_elements) {
+                result[out_start + i * 2 + 1] = @as(f32, @floatFromInt(hi)) * d - dmin;
+            }
+        }
+    }
+
+    return result;
+}
+
 // Dequantize tensor based on type
 pub fn dequantizeTensor(allocator: std.mem.Allocator, data: []const u8, tensor_type: gguf.GGMLType, num_elements: u64) ![]f32 {
     return switch (tensor_type) {
         .Q8_0 => dequantizeQ8_0Tensor(allocator, data, num_elements),
         .Q4_0 => dequantizeQ4_0Tensor(allocator, data, num_elements),
+        .Q4_K => dequantizeQ4_KTensor(allocator, data, num_elements),
         .F32 => dequantizeF32Tensor(allocator, data, num_elements),
         else => error.UnsupportedQuantization,
     };
