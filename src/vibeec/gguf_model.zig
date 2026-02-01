@@ -118,7 +118,17 @@ pub const FullModel = struct {
 
         // Load embeddings
         self.token_embedding = try self.loadTensor("token_embd.weight");
-        self.output_weight = try self.loadTensor("output.weight");
+        
+        // Try to load output.weight, fallback to tied embeddings (token_embd)
+        self.output_weight = self.loadTensor("output.weight") catch |err| blk: {
+            if (err == error.TensorNotFound) {
+                // Tied embeddings: output = token_embd (common in smaller models)
+                std.debug.print("  Using tied embeddings (output = token_embd)\n", .{});
+                break :blk self.token_embedding;
+            }
+            return err;
+        };
+        
         self.output_norm = try self.loadTensor("output_norm.weight");
 
         // Initialize RoPE
