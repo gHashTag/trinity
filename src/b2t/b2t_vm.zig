@@ -484,6 +484,150 @@ pub const VM = struct {
             const a = Tekum27.fromFloat(@as(f64, @floatFromInt(a_bits)));
             const result = a.abs();
             try self.push(@intFromFloat(result.toFloat()));
+        }
+        // ═══════════════════════════════════════════════════════════════════
+        // WASM-COMPATIBLE MEMORY OPERATIONS
+        // ═══════════════════════════════════════════════════════════════════
+        else if (opcode_byte == @intFromEnum(TritOpcode.T_I32_LOAD)) {
+            // WASM i32.load: pop address, push value
+            const offset = try self.readU32();
+            const base_addr = try self.pop();
+            const effective_addr: u32 = @intCast(@as(u32, @bitCast(base_addr)) +% offset);
+            const value = try self.loadMem(effective_addr);
+            try self.push(value);
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_I32_STORE)) {
+            // WASM i32.store: pop value, pop address
+            const offset = try self.readU32();
+            const value = try self.pop();
+            const base_addr = try self.pop();
+            const effective_addr: u32 = @intCast(@as(u32, @bitCast(base_addr)) +% offset);
+            try self.storeMem(effective_addr, value);
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_I32_LOAD8_S)) {
+            // WASM i32.load8_s: load signed byte
+            const offset = try self.readU32();
+            const base_addr = try self.pop();
+            const effective_addr: u32 = @intCast(@as(u32, @bitCast(base_addr)) +% offset);
+            if (effective_addr >= MEMORY_SIZE) return VMError.InvalidAddress;
+            const byte_val: i8 = @bitCast(self.memory[effective_addr]);
+            try self.push(@as(i32, byte_val));
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_I32_LOAD8_U)) {
+            // WASM i32.load8_u: load unsigned byte
+            const offset = try self.readU32();
+            const base_addr = try self.pop();
+            const effective_addr: u32 = @intCast(@as(u32, @bitCast(base_addr)) +% offset);
+            if (effective_addr >= MEMORY_SIZE) return VMError.InvalidAddress;
+            try self.push(@as(i32, self.memory[effective_addr]));
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_I32_LOAD16_S)) {
+            // WASM i32.load16_s: load signed 16-bit
+            const offset = try self.readU32();
+            const base_addr = try self.pop();
+            const effective_addr: u32 = @intCast(@as(u32, @bitCast(base_addr)) +% offset);
+            if (effective_addr + 2 > MEMORY_SIZE) return VMError.InvalidAddress;
+            const val: i16 = std.mem.readInt(i16, self.memory[effective_addr..][0..2], .little);
+            try self.push(@as(i32, val));
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_I32_LOAD16_U)) {
+            // WASM i32.load16_u: load unsigned 16-bit
+            const offset = try self.readU32();
+            const base_addr = try self.pop();
+            const effective_addr: u32 = @intCast(@as(u32, @bitCast(base_addr)) +% offset);
+            if (effective_addr + 2 > MEMORY_SIZE) return VMError.InvalidAddress;
+            const val: u16 = std.mem.readInt(u16, self.memory[effective_addr..][0..2], .little);
+            try self.push(@as(i32, val));
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_I32_STORE8)) {
+            // WASM i32.store8: store byte
+            const offset = try self.readU32();
+            const value = try self.pop();
+            const base_addr = try self.pop();
+            const effective_addr: u32 = @intCast(@as(u32, @bitCast(base_addr)) +% offset);
+            if (effective_addr >= MEMORY_SIZE) return VMError.InvalidAddress;
+            self.memory[effective_addr] = @truncate(@as(u32, @bitCast(value)));
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_I32_STORE16)) {
+            // WASM i32.store16: store 16-bit
+            const offset = try self.readU32();
+            const value = try self.pop();
+            const base_addr = try self.pop();
+            const effective_addr: u32 = @intCast(@as(u32, @bitCast(base_addr)) +% offset);
+            if (effective_addr + 2 > MEMORY_SIZE) return VMError.InvalidAddress;
+            std.mem.writeInt(u16, self.memory[effective_addr..][0..2], @truncate(@as(u32, @bitCast(value))), .little);
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_MEMORY_SIZE)) {
+            // WASM memory.size: push current memory size in pages (64KB each)
+            const pages: i32 = @intCast(MEMORY_SIZE / 65536);
+            try self.push(pages);
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_MEMORY_GROW)) {
+            // WASM memory.grow: try to grow memory (returns -1 if failed, old size if success)
+            const delta = try self.pop();
+            _ = delta;
+            // Fixed memory size - always fail
+            try self.push(-1);
+        }
+        // ═══════════════════════════════════════════════════════════════════
+        // WASM FUNCTION CALLS
+        // ═══════════════════════════════════════════════════════════════════
+        else if (opcode_byte == @intFromEnum(TritOpcode.T_CALL_INDIRECT)) {
+            // WASM call_indirect: pop table index, call function at that index
+            const type_idx = try self.readU32(); // Type index (for validation)
+            const table_idx = try self.readU32(); // Table index
+            const func_idx = try self.pop(); // Function index from stack
+
+            _ = type_idx;
+            _ = table_idx;
+
+            // Get function from table
+            if (func_idx < 0 or @as(u32, @intCast(func_idx)) >= self.num_functions) {
+                return VMError.InvalidFunction;
+            }
+
+            // Save current state
+            try self.call_stack.append(CallFrame{
+                .return_pc = self.pc,
+                .saved_fp = self.fp,
+                .saved_locals = self.locals,
+            });
+
+            // Jump to function
+            const func_offset = self.getFunctionOffset(@intCast(func_idx)) orelse return VMError.InvalidFunction;
+            self.pc = func_offset;
+            self.fp = self.sp;
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_TABLE_GET)) {
+            // WASM table.get: get function reference from table
+            const table_idx = try self.readU32();
+            const elem_idx = try self.pop();
+
+            _ = table_idx;
+
+            // Simple implementation: table is just function indices
+            // In a full implementation, this would access a table structure
+            if (elem_idx < 0 or @as(u32, @intCast(elem_idx)) >= self.num_functions) {
+                try self.push(0); // null reference
+            } else {
+                try self.push(elem_idx); // function index as reference
+            }
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_TABLE_SET)) {
+            // WASM table.set: set function reference in table
+            const table_idx = try self.readU32();
+            const value = try self.pop(); // function reference
+            const elem_idx = try self.pop(); // element index
+
+            _ = table_idx;
+            _ = value;
+            _ = elem_idx;
+            // No-op for now (would need mutable table)
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_TABLE_SIZE)) {
+            // WASM table.size: get table size
+            const table_idx = try self.readU32();
+            _ = table_idx;
+            try self.push(@intCast(self.num_functions));
+        } else if (opcode_byte == @intFromEnum(TritOpcode.T_TABLE_GROW)) {
+            // WASM table.grow: try to grow table (returns -1 if failed)
+            const table_idx = try self.readU32();
+            const init_val = try self.pop();
+            const delta = try self.pop();
+
+            _ = table_idx;
+            _ = init_val;
+            _ = delta;
+            // Fixed table size - always fail
+            try self.push(-1);
         } else {
             return VMError.InvalidOpcode;
         }
