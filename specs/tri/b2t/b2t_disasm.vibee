@@ -1,0 +1,200 @@
+name: b2t_disasm
+version: "1.0.0"
+language: zig
+module: b2t_disasm
+
+# Binary-to-Ternary Disassembler
+# Disassembles x86_64, ARM64, WASM instructions
+# V = n × 3^k × π^m × φ^p × e^q
+# φ² + 1/φ² = 3 = TRINITY
+
+types:
+  Architecture:
+    enum:
+      - x86_64
+      - arm64
+      - wasm
+
+  OperandType:
+    enum:
+      - register
+      - immediate
+      - memory
+      - label
+
+  Operand:
+    fields:
+      type: OperandType
+      value: Int
+      size: Int
+      register_name: Option<String>
+      memory_base: Option<Int>
+      memory_index: Option<Int>
+      memory_scale: Option<Int>
+      memory_displacement: Option<Int>
+
+  Instruction:
+    fields:
+      address: Int
+      opcode_bytes: List<Int>
+      mnemonic: String
+      operands: List<Operand>
+      size: Int
+      is_branch: Bool
+      is_call: Bool
+      is_return: Bool
+      branch_target: Option<Int>
+
+  BasicBlock:
+    fields:
+      start_address: Int
+      end_address: Int
+      instructions: List<Instruction>
+      successors: List<Int>
+      predecessors: List<Int>
+
+  DisassemblyResult:
+    fields:
+      architecture: Architecture
+      instructions: List<Instruction>
+      basic_blocks: List<BasicBlock>
+      entry_point: Int
+
+  DisasmError:
+    enum:
+      - invalid_instruction
+      - unsupported_opcode
+      - truncated_instruction
+      - invalid_operand
+
+behaviors:
+  - name: disassemble_x86_64
+    given: Raw bytes of x86_64 code
+    when: Decoding variable-length x86_64 instructions
+    then: Returns list of decoded Instructions
+
+  - name: disassemble_arm64
+    given: Raw bytes of ARM64 code
+    when: Decoding fixed 4-byte ARM64 instructions
+    then: Returns list of decoded Instructions
+
+  - name: disassemble_wasm
+    given: WASM function bytecode
+    when: Decoding WASM stack-based instructions
+    then: Returns list of decoded Instructions
+
+  - name: disassemble
+    given: LoadedBinary from b2t_loader
+    when: Auto-selecting disassembler based on architecture
+    then: Returns DisassemblyResult with all instructions
+
+  - name: build_cfg
+    given: List of Instructions
+    when: Analyzing control flow (branches, calls, returns)
+    then: Returns list of BasicBlocks with edges
+
+  - name: find_functions
+    given: DisassemblyResult
+    when: Identifying function boundaries
+    then: Returns list of function start addresses
+
+  - name: decode_x86_prefix
+    given: Byte stream at current position
+    when: Checking for REX, VEX, EVEX prefixes
+    then: Returns prefix information and advances position
+
+  - name: decode_modrm
+    given: ModR/M byte
+    when: Parsing mod, reg, rm fields
+    then: Returns operand encoding information
+
+x86_64_opcodes:
+  # Common x86_64 opcodes for MVP
+  - opcode: 0x50-0x57
+    mnemonic: push
+    operands: [register]
+  
+  - opcode: 0x58-0x5F
+    mnemonic: pop
+    operands: [register]
+  
+  - opcode: 0x89
+    mnemonic: mov
+    operands: [rm, reg]
+  
+  - opcode: 0x8B
+    mnemonic: mov
+    operands: [reg, rm]
+  
+  - opcode: 0x01
+    mnemonic: add
+    operands: [rm, reg]
+  
+  - opcode: 0x29
+    mnemonic: sub
+    operands: [rm, reg]
+  
+  - opcode: 0xE8
+    mnemonic: call
+    operands: [rel32]
+  
+  - opcode: 0xC3
+    mnemonic: ret
+    operands: []
+  
+  - opcode: 0xEB
+    mnemonic: jmp
+    operands: [rel8]
+  
+  - opcode: 0xE9
+    mnemonic: jmp
+    operands: [rel32]
+
+wasm_opcodes:
+  # WASM opcodes for MVP
+  - opcode: 0x00
+    mnemonic: unreachable
+  
+  - opcode: 0x01
+    mnemonic: nop
+  
+  - opcode: 0x0F
+    mnemonic: return
+  
+  - opcode: 0x10
+    mnemonic: call
+  
+  - opcode: 0x20
+    mnemonic: local.get
+  
+  - opcode: 0x21
+    mnemonic: local.set
+  
+  - opcode: 0x6A
+    mnemonic: i32.add
+  
+  - opcode: 0x6B
+    mnemonic: i32.sub
+  
+  - opcode: 0x6C
+    mnemonic: i32.mul
+
+tests:
+  - name: test_decode_push_rbp
+    input: [0x55]
+    expected:
+      mnemonic: "push"
+      operands: [{type: register, register_name: "rbp"}]
+
+  - name: test_decode_ret
+    input: [0xC3]
+    expected:
+      mnemonic: "ret"
+      operands: []
+
+  - name: test_decode_call
+    input: [0xE8, 0x10, 0x00, 0x00, 0x00]
+    expected:
+      mnemonic: "call"
+      is_call: true
+      branch_target: 0x15
