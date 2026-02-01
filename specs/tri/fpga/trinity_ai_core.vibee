@@ -1,0 +1,429 @@
+name: trinity_ai_core
+version: "1.0.0"
+language: varlog
+module: trinity_ai_core
+
+description: |
+  Trinity AI Core - Native Ternary BitNet Inference Engine for FPGA
+  
+  This module implements balanced ternary {-1, 0, +1} arithmetic directly
+  in hardware, bypassing the inefficiency of binary emulation.
+  
+  Target: Digilent Arty A7-35T (Xilinx Artix-7)
+  Expected speedup: 20-30x vs binary CPU emulation
+  
+  Sacred Formula: V = n × 3^k × π^m × φ^p × e^q
+  Golden Identity: φ² + 1/φ² = 3 = TRINITY
+
+constants:
+  # Clock and timing
+  CLOCK_FREQ: 100000000
+  RESET_CYCLES: 16
+  
+  # Ternary encoding: 2 bits per trit
+  # 00 = Zero (0), 01 = Pos (+1), 10 = Neg (-1), 11 = Invalid
+  TRIT_ZERO: 0
+  TRIT_POS: 1
+  TRIT_NEG: 2
+  TRIT_INVALID: 3
+  
+  # Vector dimensions for BitNet
+  TRIT_VECTOR_WIDTH: 256
+  TRITS_PER_WORD: 16
+  WORDS_PER_VECTOR: 16
+  
+  # MAC unit configuration
+  MAC_UNITS: 16
+  ACCUMULATOR_WIDTH: 32
+  
+  # Memory configuration
+  WEIGHT_MEMORY_DEPTH: 4096
+  ACTIVATION_BUFFER_DEPTH: 512
+  
+  # Sacred constants
+  PHI: 1.618033988749895
+  PHOENIX: 999
+
+types:
+  # Balanced ternary trit: {-1, 0, +1}
+  Trit:
+    description: "Single balanced ternary digit encoded in 2 bits"
+    fields:
+      value: Int
+    width: 2
+    encoding:
+      zero: "2'b00"
+      pos: "2'b01"
+      neg: "2'b10"
+      invalid: "2'b11"
+
+  # Packed trit vector (16 trits in 32 bits)
+  TritWord:
+    description: "16 trits packed into 32-bit word"
+    fields:
+      data: Int
+    width: 32
+
+  # Full trit vector (256 trits = 16 words)
+  TritVector:
+    description: "256-trit vector for BitNet operations"
+    fields:
+      words: List<TritWord>
+    width: 512
+
+  # MAC accumulator result
+  MACResult:
+    description: "Result of multiply-accumulate operation"
+    fields:
+      sum: Int
+      overflow: Bool
+    width: 33
+
+  # Inference state machine
+  InferenceState:
+    description: "State of inference pipeline"
+    variants:
+      - IDLE
+      - LOAD_WEIGHTS
+      - LOAD_ACTIVATIONS
+      - COMPUTE_MAC
+      - APPLY_ACTIVATION
+      - STORE_RESULT
+      - DONE
+      - ERROR
+
+  # Layer configuration
+  LayerConfig:
+    description: "Configuration for a neural network layer"
+    fields:
+      input_dim: Int
+      output_dim: Int
+      weight_addr: Int
+      bias_addr: Int
+      activation_type: Int
+
+  # Inference request
+  InferenceRequest:
+    description: "Request to process inference"
+    fields:
+      layer_count: Int
+      input_addr: Int
+      output_addr: Int
+      start: Bool
+
+  # Performance counters
+  PerfCounters:
+    description: "Hardware performance monitoring"
+    fields:
+      cycles: Int
+      mac_ops: Int
+      memory_stalls: Int
+      throughput: Int
+
+signals:
+  # Clock and reset
+  - name: clk
+    width: 1
+    direction: input
+    description: "100MHz system clock"
+  
+  - name: rst_n
+    width: 1
+    direction: input
+    description: "Active-low synchronous reset"
+
+  # Control interface
+  - name: start
+    width: 1
+    direction: input
+    description: "Start inference"
+  
+  - name: done
+    width: 1
+    direction: output
+    description: "Inference complete"
+  
+  - name: busy
+    width: 1
+    direction: output
+    description: "Core is processing"
+  
+  - name: error
+    width: 1
+    direction: output
+    description: "Error occurred"
+
+  # Weight memory interface
+  - name: weight_addr
+    width: 12
+    direction: output
+    description: "Weight memory address"
+  
+  - name: weight_data
+    width: 512
+    direction: input
+    description: "Weight vector (256 trits)"
+  
+  - name: weight_valid
+    width: 1
+    direction: input
+    description: "Weight data valid"
+
+  # Activation memory interface
+  - name: act_addr
+    width: 9
+    direction: output
+    description: "Activation buffer address"
+  
+  - name: act_data_in
+    width: 512
+    direction: input
+    description: "Input activation vector"
+  
+  - name: act_data_out
+    width: 512
+    direction: output
+    description: "Output activation vector"
+  
+  - name: act_we
+    width: 1
+    direction: output
+    description: "Activation write enable"
+
+  # Configuration
+  - name: layer_config
+    width: 64
+    direction: input
+    description: "Current layer configuration"
+
+  # Performance monitoring
+  - name: perf_cycles
+    width: 32
+    direction: output
+    description: "Cycle counter"
+  
+  - name: perf_mac_ops
+    width: 32
+    direction: output
+    description: "MAC operations counter"
+
+behaviors:
+  # Core trit operations
+  - name: trit_multiply
+    given: Two trits a and b
+    when: Computing ternary multiplication
+    then: Returns a * b using truth table (single LUT)
+    implementation: |
+      // Ternary multiplication truth table:
+      // a\b | -1 |  0 | +1
+      // -1  | +1 |  0 | -1
+      //  0  |  0 |  0 |  0
+      // +1  | -1 |  0 | +1
+      // Implemented as: result = a XOR b (for sign), AND for zero detection
+
+  - name: trit_add
+    given: Two trits a and b with carry_in
+    when: Computing ternary addition
+    then: Returns sum and carry using balanced ternary rules
+    implementation: |
+      // Balanced ternary addition with carry
+      // Sum ranges from -2 to +2, encoded as trit + carry
+
+  - name: trit_negate
+    given: A trit value
+    when: Negating
+    then: Returns -trit by swapping pos/neg bits
+    implementation: |
+      // Negation is just bit swap: {pos, neg} -> {neg, pos}
+
+  # Vector operations
+  - name: vector_dot_product
+    given: Two TritVectors a and b of 256 trits each
+    when: Computing dot product for MAC
+    then: Returns sum of element-wise products
+    implementation: |
+      // Parallel trit multiplication across all 256 elements
+      // Followed by popcount-based summation
+      // Uses 16 MAC units in parallel
+
+  - name: vector_bind
+    given: Two TritVectors a and b
+    when: VSA binding operation
+    then: Returns element-wise multiplication (XOR-like)
+    implementation: |
+      // Binding is element-wise trit multiplication
+      // Highly parallel - all 256 trits in single cycle
+
+  - name: vector_bundle
+    given: List of TritVectors
+    when: VSA bundling via majority vote
+    then: Returns consensus vector
+    implementation: |
+      // Majority voting across vectors
+      // Each trit position: count +1s, -1s, 0s
+      // Output = sign of sum
+
+  # MAC unit operations
+  - name: mac_compute
+    given: Weight vector W and activation vector A
+    when: Processing one MAC operation
+    then: Accumulates W · A into result register
+    implementation: |
+      // 256-way parallel trit multiply
+      // Tree reduction for sum
+      // Accumulate into 32-bit register
+
+  - name: mac_clear
+    given: MAC unit index
+    when: Starting new computation
+    then: Clears accumulator to zero
+
+  - name: mac_read
+    given: MAC unit index
+    when: Reading result
+    then: Returns accumulated value
+
+  # Activation functions
+  - name: apply_sign_activation
+    given: Accumulated MAC result
+    when: Applying BitNet sign activation
+    then: Returns +1 if positive, -1 if negative, 0 if zero
+    implementation: |
+      // Sign function: output = sign(input)
+      // Maps continuous value back to trit
+
+  - name: apply_relu_ternary
+    given: Accumulated MAC result
+    when: Applying ternary ReLU
+    then: Returns max(0, sign(input))
+    implementation: |
+      // Ternary ReLU: output = max(0, sign(input))
+      // Only +1 or 0 in output
+
+  # Memory operations
+  - name: load_weight_vector
+    given: Memory address
+    when: Fetching weights for layer
+    then: Returns 256-trit weight vector from memory
+
+  - name: store_activation
+    given: Activation vector and address
+    when: Storing layer output
+    then: Writes vector to activation buffer
+
+  # State machine
+  - name: fsm_idle
+    given: Core in IDLE state
+    when: Start signal asserted
+    then: Transition to LOAD_WEIGHTS
+
+  - name: fsm_compute
+    given: Weights and activations loaded
+    when: In COMPUTE_MAC state
+    then: Execute MAC operations, transition to APPLY_ACTIVATION
+
+  - name: fsm_done
+    given: All layers processed
+    when: Final activation stored
+    then: Assert done signal, return to IDLE
+
+  # Performance monitoring
+  - name: count_cycles
+    given: Core is busy
+    when: Each clock cycle
+    then: Increment cycle counter
+
+  - name: count_mac_ops
+    given: MAC operation completes
+    when: Valid result produced
+    then: Increment MAC counter
+
+fsm:
+  - name: InferenceFSM
+    initial: IDLE
+    encoding: onehot
+    states:
+      - IDLE
+      - LOAD_WEIGHTS
+      - LOAD_ACTIVATIONS
+      - COMPUTE_MAC
+      - APPLY_ACTIVATION
+      - STORE_RESULT
+      - DONE
+      - ERROR
+    transitions:
+      - from: IDLE
+        to: LOAD_WEIGHTS
+        condition: start == 1
+      - from: LOAD_WEIGHTS
+        to: LOAD_ACTIVATIONS
+        condition: weight_valid == 1
+      - from: LOAD_ACTIVATIONS
+        to: COMPUTE_MAC
+        condition: act_valid == 1
+      - from: COMPUTE_MAC
+        to: APPLY_ACTIVATION
+        condition: mac_done == 1
+      - from: APPLY_ACTIVATION
+        to: STORE_RESULT
+        condition: activation_done == 1
+      - from: STORE_RESULT
+        to: LOAD_WEIGHTS
+        condition: more_layers == 1
+      - from: STORE_RESULT
+        to: DONE
+        condition: all_layers_done == 1
+      - from: DONE
+        to: IDLE
+        condition: ack == 1
+      - from: [LOAD_WEIGHTS, LOAD_ACTIVATIONS, COMPUTE_MAC]
+        to: ERROR
+        condition: timeout == 1
+
+# Hardware resource estimates for Artix-7 35T
+resources:
+  luts: 8000
+  ffs: 4000
+  bram: 20
+  dsp: 16
+  estimated_fmax: 100
+
+# Test patterns
+tests:
+  - name: test_trit_multiply
+    description: "Verify ternary multiplication truth table"
+    vectors:
+      - input: {a: 1, b: 1}
+        expected: {result: 1}
+      - input: {a: 1, b: 2}
+        expected: {result: 2}
+      - input: {a: 2, b: 2}
+        expected: {result: 1}
+      - input: {a: 0, b: 1}
+        expected: {result: 0}
+
+  - name: test_vector_dot
+    description: "Verify 256-trit dot product"
+    vectors:
+      - input: {a: "all_ones", b: "all_ones"}
+        expected: {result: 256}
+      - input: {a: "all_ones", b: "all_neg_ones"}
+        expected: {result: -256}
+      - input: {a: "alternating", b: "alternating"}
+        expected: {result: 256}
+
+  - name: test_mac_accumulate
+    description: "Verify MAC accumulation"
+    vectors:
+      - input: {weights: "random_256", activations: "random_256", iterations: 4}
+        expected: {overflow: false}
+
+  - name: test_inference_fsm
+    description: "Verify state machine transitions"
+    sequence:
+      - state: IDLE
+        input: {start: 1}
+        next_state: LOAD_WEIGHTS
+      - state: LOAD_WEIGHTS
+        input: {weight_valid: 1}
+        next_state: LOAD_ACTIVATIONS

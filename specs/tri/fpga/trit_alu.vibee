@@ -1,0 +1,305 @@
+name: trit_alu
+version: "1.0.0"
+language: varlog
+module: trit_alu
+
+description: |
+  Balanced Ternary ALU - Core arithmetic unit for Trinity FPGA
+  
+  Implements native ternary operations in hardware:
+  - Trit multiplication (single LUT)
+  - Trit addition with carry
+  - Vector operations (parallel)
+  
+  This is the "heart" of Trinity - where ternary beats binary.
+  
+  Target: Artix-7 (Arty A7-35T)
+  Latency: 1 cycle for trit ops, 3 cycles for vector dot product
+  
+  φ² + 1/φ² = 3 = TRINITY
+
+constants:
+  # Trit encoding (2 bits)
+  TRIT_ZERO: 0
+  TRIT_POS: 1
+  TRIT_NEG: 2
+  
+  # Vector width
+  TRITS_PER_WORD: 16
+  VECTOR_WIDTH: 256
+  
+  # ALU operations
+  OP_MUL: 0
+  OP_ADD: 1
+  OP_NEG: 2
+  OP_MIN: 3
+  OP_MAX: 4
+  OP_DOT: 5
+
+types:
+  Trit:
+    description: "Balanced ternary digit {-1, 0, +1}"
+    fields:
+      value: Int
+    width: 2
+
+  TritPair:
+    description: "Two trits for ALU input"
+    fields:
+      a: Trit
+      b: Trit
+    width: 4
+
+  TritResult:
+    description: "ALU result with carry"
+    fields:
+      result: Trit
+      carry: Trit
+    width: 4
+
+  TritWord:
+    description: "16 packed trits"
+    fields:
+      data: Int
+    width: 32
+
+  ALUOp:
+    description: "ALU operation code"
+    variants:
+      - MUL
+      - ADD
+      - NEG
+      - MIN
+      - MAX
+      - DOT
+
+signals:
+  - name: clk
+    width: 1
+    direction: input
+  
+  - name: rst_n
+    width: 1
+    direction: input
+  
+  - name: op
+    width: 3
+    direction: input
+    description: "ALU operation select"
+  
+  - name: trit_a
+    width: 2
+    direction: input
+    description: "First trit operand"
+  
+  - name: trit_b
+    width: 2
+    direction: input
+    description: "Second trit operand"
+  
+  - name: carry_in
+    width: 2
+    direction: input
+    description: "Carry input for addition"
+  
+  - name: trit_result
+    width: 2
+    direction: output
+    description: "Result trit"
+  
+  - name: carry_out
+    width: 2
+    direction: output
+    description: "Carry output"
+  
+  - name: valid
+    width: 1
+    direction: output
+    description: "Result valid"
+
+  # Vector interface
+  - name: vec_a
+    width: 512
+    direction: input
+    description: "First vector (256 trits)"
+  
+  - name: vec_b
+    width: 512
+    direction: input
+    description: "Second vector (256 trits)"
+  
+  - name: vec_result
+    width: 512
+    direction: output
+    description: "Result vector"
+  
+  - name: dot_result
+    width: 32
+    direction: output
+    description: "Dot product result (signed)"
+
+behaviors:
+  # Single trit multiplication - THE CORE OPERATION
+  - name: trit_multiply
+    given: Two trits a and b
+    when: op == MUL
+    then: Returns a * b in single cycle
+    implementation: |
+      // Truth table implemented as 4-input LUT:
+      //
+      //   a\b | NEG(2) | ZERO(0) | POS(1)
+      //  -----+--------+---------+--------
+      //  NEG  |  POS   |  ZERO   |  NEG
+      //  ZERO |  ZERO  |  ZERO   |  ZERO
+      //  POS  |  NEG   |  ZERO   |  POS
+      //
+      // Logic: 
+      //   result_pos = (a_pos & b_pos) | (a_neg & b_neg)
+      //   result_neg = (a_pos & b_neg) | (a_neg & b_pos)
+      //   result_zero = a_zero | b_zero
+      //
+      // This is 1 LUT, 1 cycle latency!
+
+  # Single trit addition with carry
+  - name: trit_add
+    given: Two trits a, b and carry_in
+    when: op == ADD
+    then: Returns sum and carry_out
+    implementation: |
+      // Balanced ternary addition:
+      // sum = a + b + carry_in (range: -3 to +3)
+      // 
+      // Encoding:
+      //   -3 -> carry=-1, result=0
+      //   -2 -> carry=-1, result=+1
+      //   -1 -> carry=0,  result=-1
+      //    0 -> carry=0,  result=0
+      //   +1 -> carry=0,  result=+1
+      //   +2 -> carry=+1, result=-1
+      //   +3 -> carry=+1, result=0
+      //
+      // 2 LUTs, 1 cycle latency
+
+  # Trit negation - trivial!
+  - name: trit_negate
+    given: A trit value
+    when: op == NEG
+    then: Returns -trit by swapping bits
+    implementation: |
+      // Negation is just bit swap!
+      // {pos, neg} -> {neg, pos}
+      // 0 wires, 0 LUTs, 0 cycles!
+
+  # Ternary MIN (AND equivalent)
+  - name: trit_min
+    given: Two trits a and b
+    when: op == MIN
+    then: Returns min(a, b)
+    implementation: |
+      // Ternary MIN = AND in Kleene logic
+      // min(-1, x) = -1
+      // min(0, x) = min(x, 0)
+      // min(+1, x) = x
+
+  # Ternary MAX (OR equivalent)
+  - name: trit_max
+    given: Two trits a and b
+    when: op == MAX
+    then: Returns max(a, b)
+    implementation: |
+      // Ternary MAX = OR in Kleene logic
+      // max(+1, x) = +1
+      // max(0, x) = max(x, 0)
+      // max(-1, x) = x
+
+  # Vector element-wise multiply (BIND)
+  - name: vector_multiply
+    given: Two 256-trit vectors
+    when: op == MUL and vector mode
+    then: Returns element-wise product
+    implementation: |
+      // 256 parallel trit multiplications
+      // Each uses 1 LUT -> 256 LUTs total
+      // 1 cycle latency!
+
+  # Vector dot product - THE MONEY OPERATION
+  - name: vector_dot_product
+    given: Two 256-trit vectors a and b
+    when: op == DOT
+    then: Returns sum of element-wise products
+    implementation: |
+      // Stage 1: 256 parallel trit multiplies (1 cycle)
+      // Stage 2: Tree reduction using popcount (2 cycles)
+      //
+      // For each trit multiply result:
+      //   +1 contributes +1 to sum
+      //   -1 contributes -1 to sum
+      //    0 contributes 0
+      //
+      // Use popcount on pos bits, popcount on neg bits
+      // Result = popcount(pos) - popcount(neg)
+      //
+      // Total: 3 cycles, ~300 LUTs
+      // Compare to binary: 256 multiplies + 256 adds = 100+ cycles!
+
+  # Popcount for reduction
+  - name: popcount_256
+    given: 256-bit vector
+    when: Counting set bits
+    then: Returns count of 1s (0-256)
+    implementation: |
+      // Tree of 6-input LUTs
+      // Level 1: 43 LUTs (6->3 bit)
+      // Level 2: 22 LUTs
+      // Level 3: 11 LUTs
+      // Level 4: 6 LUTs
+      // Level 5: 3 LUTs
+      // Level 6: 2 LUTs
+      // Total: ~90 LUTs, 2 cycles
+
+tests:
+  - name: test_trit_mul_truth_table
+    description: "Complete multiplication truth table"
+    vectors:
+      - {a: 1, b: 1, expected: 1}
+      - {a: 1, b: 2, expected: 2}
+      - {a: 2, b: 1, expected: 2}
+      - {a: 2, b: 2, expected: 1}
+      - {a: 0, b: 1, expected: 0}
+      - {a: 0, b: 2, expected: 0}
+      - {a: 1, b: 0, expected: 0}
+      - {a: 2, b: 0, expected: 0}
+      - {a: 0, b: 0, expected: 0}
+
+  - name: test_trit_add_carry
+    description: "Addition with carry propagation"
+    vectors:
+      - {a: 1, b: 1, cin: 0, expected_sum: 2, expected_cout: 0}
+      - {a: 1, b: 1, cin: 1, expected_sum: 0, expected_cout: 1}
+      - {a: 2, b: 2, cin: 0, expected_sum: 2, expected_cout: 2}
+
+  - name: test_vector_dot_all_ones
+    description: "Dot product of all +1 vectors"
+    input:
+      vec_a: "256 x POS"
+      vec_b: "256 x POS"
+    expected:
+      dot_result: 256
+
+  - name: test_vector_dot_orthogonal
+    description: "Dot product of orthogonal vectors"
+    input:
+      vec_a: "alternating POS/NEG"
+      vec_b: "alternating NEG/POS"
+    expected:
+      dot_result: -256
+
+resources:
+  # Estimated for Artix-7
+  luts_trit_mul: 1
+  luts_trit_add: 2
+  luts_vector_mul: 256
+  luts_popcount: 90
+  luts_total: 400
+  ffs: 100
+  fmax_mhz: 200
