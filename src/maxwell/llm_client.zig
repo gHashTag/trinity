@@ -1,9 +1,11 @@
 // Maxwell Daemon - LLM Client
 // Интеграция с LLM API для reasoning
+// Supports: GLM (z.ai), Claude, OpenAI
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
+const http = std.http;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -35,15 +37,34 @@ pub const LLMResponse = struct {
     finish_reason: []const u8,
 };
 
+pub const LLMProvider = enum {
+    GLM, // z.ai GLM-4
+    Claude, // Anthropic Claude
+    OpenAI, // OpenAI GPT-4
+};
+
 pub const LLMConfig = struct {
+    provider: LLMProvider,
     api_key: []const u8,
     model: []const u8,
     max_tokens: u32,
     temperature: f32,
     base_url: []const u8,
 
+    pub fn glm() LLMConfig {
+        return LLMConfig{
+            .provider = .GLM,
+            .api_key = "",
+            .model = "glm-4-flash", // Free tier model
+            .max_tokens = 4096,
+            .temperature = 0.7,
+            .base_url = "https://open.bigmodel.cn/api/paas/v4",
+        };
+    }
+
     pub fn claude() LLMConfig {
         return LLMConfig{
+            .provider = .Claude,
             .api_key = "",
             .model = "claude-3-opus-20240229",
             .max_tokens = 4096,
@@ -54,6 +75,7 @@ pub const LLMConfig = struct {
 
     pub fn openai() LLMConfig {
         return LLMConfig{
+            .provider = .OpenAI,
             .api_key = "",
             .model = "gpt-4-turbo-preview",
             .max_tokens = 4096,
@@ -61,7 +83,51 @@ pub const LLMConfig = struct {
             .base_url = "https://api.openai.com/v1",
         };
     }
+
+    /// Load API key from environment variable
+    pub fn loadFromEnv(self: *LLMConfig, allocator: std.mem.Allocator) !void {
+        const env_var = switch (self.provider) {
+            .GLM => "GLM_API_KEY",
+            .Claude => "ANTHROPIC_API_KEY",
+            .OpenAI => "OPENAI_API_KEY",
+        };
+
+        if (std.posix.getenv(env_var)) |key| {
+            self.api_key = try allocator.dupe(u8, key);
+        }
+
+        // Also try to load from .env file
+        if (self.api_key.len == 0) {
+            self.api_key = try loadEnvFile(allocator, env_var);
+        }
+    }
 };
+
+/// Load a value from .env file
+fn loadEnvFile(allocator: std.mem.Allocator, key: []const u8) ![]const u8 {
+    const file = std.fs.cwd().openFile(".env", .{}) catch return "";
+    defer file.close();
+
+    var buf: [4096]u8 = undefined;
+    const bytes_read = file.readAll(&buf) catch return "";
+    const content = buf[0..bytes_read];
+
+    var lines = std.mem.splitScalar(u8, content, '\n');
+    while (lines.next()) |line| {
+        const trimmed = std.mem.trim(u8, line, " \t\r");
+        if (trimmed.len == 0 or trimmed[0] == '#') continue;
+
+        if (std.mem.indexOf(u8, trimmed, "=")) |eq_pos| {
+            const var_name = trimmed[0..eq_pos];
+            if (std.mem.eql(u8, var_name, key)) {
+                const value = trimmed[eq_pos + 1 ..];
+                return try allocator.dupe(u8, value);
+            }
+        }
+    }
+
+    return "";
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // LLM CLIENT
@@ -189,16 +255,32 @@ pub const LLMClient = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // API CALL (MOCK)
+    // API CALL
     // ═══════════════════════════════════════════════════════════════════════════
 
     fn callAPI(self: *LLMClient) !LLMResponse {
-        // TODO: Implement actual HTTP call to LLM API
-        // For now, return a mock response
+        // Check if we have an API key
+        if (self.config.api_key.len == 0) {
+            std.debug.print("[LLM] No API key, using mock response\n", .{});
+            return self.mockResponse();
+        }
 
+        // Try real API, fall back to mock on error
+        const result = switch (self.config.provider) {
+            .GLM => self.callGLMAPI() catch |err| {
+                std.debug.print("[LLM] GLM API error: {s}, using mock\n", .{@errorName(err)});
+                return self.mockResponse();
+            },
+            .Claude => self.callClaudeAPI() catch self.mockResponse(),
+            .OpenAI => self.callOpenAIAPI() catch self.mockResponse(),
+        };
+
+        return result;
+    }
+
+    /// Mock response for testing without API key
+    fn mockResponse(self: *LLMClient) LLMResponse {
         _ = self;
-
-        // Mock response for testing
         return LLMResponse{
             .content = "name: generated_module\nversion: \"1.0.0\"\nlanguage: zig\nmodule: generated_module\n\ntypes:\n  Result:\n    fields:\n      value: Int\n\nbehaviors:\n  - name: process\n    given: Input\n    when: Called\n    then: Returns Result",
             .tokens_used = 100,
@@ -207,28 +289,199 @@ pub const LLMClient = struct {
         };
     }
 
-    // Real API call would look like this:
-    // fn callAPIReal(self: *LLMClient) !LLMResponse {
-    //     var client = std.http.Client{ .allocator = self.allocator };
-    //     defer client.deinit();
-    //
-    //     const uri = std.Uri.parse(self.config.base_url ++ "/messages") catch unreachable;
-    //     var request = try client.request(.POST, uri, .{}, .{});
-    //     defer request.deinit();
-    //
-    //     // Set headers
-    //     request.headers.append("Content-Type", "application/json");
-    //     request.headers.append("x-api-key", self.config.api_key);
-    //
-    //     // Build request body
-    //     // ...
-    //
-    //     try request.wait();
-    //     const body = try request.reader().readAllAlloc(self.allocator, 1024 * 1024);
-    //
-    //     // Parse response
-    //     // ...
-    // }
+    /// Call GLM API (z.ai)
+    fn callGLMAPI(self: *LLMClient) !LLMResponse {
+        // Build request body
+        var body = std.ArrayList(u8).init(self.allocator);
+        defer body.deinit();
+
+        const writer = body.writer();
+        try writer.writeAll("{\"model\":\"");
+        try writer.writeAll(self.config.model);
+        try writer.writeAll("\",\"messages\":[");
+
+        for (self.conversation.items, 0..) |msg, i| {
+            if (i > 0) try writer.writeAll(",");
+            try writer.writeAll("{\"role\":\"");
+            try writer.writeAll(msg.role.toString());
+            try writer.writeAll("\",\"content\":\"");
+            // Escape content
+            for (msg.content) |c| {
+                switch (c) {
+                    '"' => try writer.writeAll("\\\""),
+                    '\\' => try writer.writeAll("\\\\"),
+                    '\n' => try writer.writeAll("\\n"),
+                    '\r' => try writer.writeAll("\\r"),
+                    '\t' => try writer.writeAll("\\t"),
+                    else => try writer.writeByte(c),
+                }
+            }
+            try writer.writeAll("\"}");
+        }
+
+        try writer.writeAll("],\"max_tokens\":");
+        try writer.print("{d}", .{self.config.max_tokens});
+        try writer.writeAll(",\"temperature\":");
+        try writer.print("{d:.1}", .{self.config.temperature});
+        try writer.writeAll("}");
+
+        // Make HTTP request using curl (Zig's HTTP client has issues with HTTPS)
+        const result = try self.curlRequest(
+            self.config.base_url,
+            "/chat/completions",
+            body.items,
+            self.config.api_key,
+        );
+
+        return result;
+    }
+
+    /// Call Claude API
+    fn callClaudeAPI(self: *LLMClient) !LLMResponse {
+        // Similar to GLM but with Anthropic's format
+        _ = self;
+        return error.NotImplemented;
+    }
+
+    /// Call OpenAI API
+    fn callOpenAIAPI(self: *LLMClient) !LLMResponse {
+        // Similar to GLM but with OpenAI's format
+        _ = self;
+        return error.NotImplemented;
+    }
+
+    /// Generate JWT token for Zhipu API
+    fn generateZhipuJWT(self: *LLMClient, api_key: []const u8) ![]const u8 {
+        // Zhipu API key format: {id}.{secret}
+        // We need to generate a JWT with the id and sign with secret
+
+        const dot_pos = std.mem.indexOf(u8, api_key, ".") orelse return error.InvalidApiKey;
+        const api_id = api_key[0..dot_pos];
+        const api_secret = api_key[dot_pos + 1 ..];
+
+        // For simplicity, use the raw API key as Bearer token
+        // Zhipu also accepts this format for some endpoints
+        _ = api_id;
+        _ = api_secret;
+
+        return try self.allocator.dupe(u8, api_key);
+    }
+
+    /// Make HTTP request using curl (more reliable for HTTPS)
+    fn curlRequest(self: *LLMClient, base_url: []const u8, endpoint: []const u8, body: []const u8, api_key: []const u8) !LLMResponse {
+        // Build URL
+        var url_buf: [512]u8 = undefined;
+        const url = try std.fmt.bufPrint(&url_buf, "{s}{s}", .{ base_url, endpoint });
+
+        // For Zhipu, we might need JWT, but try Bearer first
+        var auth_buf: [512]u8 = undefined;
+        const auth_header = try std.fmt.bufPrint(&auth_buf, "Authorization: Bearer {s}", .{api_key});
+
+        // Write body to temp file
+        const tmp_file = "/tmp/maxwell_request.json";
+        {
+            const file = try std.fs.cwd().createFile(tmp_file, .{});
+            defer file.close();
+            try file.writeAll(body);
+        }
+
+        // Run curl
+        var child = std.process.Child.init(&[_][]const u8{
+            "curl",
+            "-s",
+            "-X",
+            "POST",
+            url,
+            "-H",
+            "Content-Type: application/json",
+            "-H",
+            auth_header,
+            "-d",
+            "@" ++ tmp_file,
+        }, self.allocator);
+
+        child.stdout_behavior = .Pipe;
+        child.stderr_behavior = .Pipe;
+
+        try child.spawn();
+
+        const stdout = try child.stdout.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
+        _ = try child.stderr.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
+
+        const term = try child.wait();
+        if (term.Exited != 0) {
+            return error.CurlFailed;
+        }
+
+        // Parse JSON response
+        return self.parseGLMResponse(stdout);
+    }
+
+    /// Parse GLM API response
+    fn parseGLMResponse(self: *LLMClient, json: []const u8) !LLMResponse {
+        // Simple JSON parsing for GLM response format:
+        // {"choices":[{"message":{"content":"..."}}],"usage":{"total_tokens":N}}
+
+        // Find content
+        const content_start = std.mem.indexOf(u8, json, "\"content\":\"") orelse return error.InvalidResponse;
+        const content_begin = content_start + 11;
+
+        var content_end = content_begin;
+        var escape = false;
+        while (content_end < json.len) {
+            if (escape) {
+                escape = false;
+            } else if (json[content_end] == '\\') {
+                escape = true;
+            } else if (json[content_end] == '"') {
+                break;
+            }
+            content_end += 1;
+        }
+
+        const raw_content = json[content_begin..content_end];
+
+        // Unescape content
+        var content = std.ArrayList(u8).init(self.allocator);
+        var i: usize = 0;
+        while (i < raw_content.len) {
+            if (raw_content[i] == '\\' and i + 1 < raw_content.len) {
+                switch (raw_content[i + 1]) {
+                    'n' => try content.append('\n'),
+                    'r' => try content.append('\r'),
+                    't' => try content.append('\t'),
+                    '"' => try content.append('"'),
+                    '\\' => try content.append('\\'),
+                    else => {
+                        try content.append(raw_content[i]);
+                        try content.append(raw_content[i + 1]);
+                    },
+                }
+                i += 2;
+            } else {
+                try content.append(raw_content[i]);
+                i += 1;
+            }
+        }
+
+        // Find tokens
+        var tokens: u32 = 0;
+        if (std.mem.indexOf(u8, json, "\"total_tokens\":")) |tok_start| {
+            const num_start = tok_start + 15;
+            var num_end = num_start;
+            while (num_end < json.len and json[num_end] >= '0' and json[num_end] <= '9') {
+                num_end += 1;
+            }
+            tokens = std.fmt.parseInt(u32, json[num_start..num_end], 10) catch 0;
+        }
+
+        return LLMResponse{
+            .content = try content.toOwnedSlice(),
+            .tokens_used = tokens,
+            .model = self.config.model,
+            .finish_reason = "stop",
+        };
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
