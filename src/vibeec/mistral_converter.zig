@@ -167,11 +167,12 @@ pub fn convertMistral(
     // Создаём квантизатор
     var quantizer = prometheus.Quantizer.init(0.1);
 
-    // Загружаем шарды по очереди
-    var loader = ShardedLoader.init(allocator, model_path, 3);
+    // Загружаем шарды по очереди (определяем количество автоматически)
+    const num_shards: usize = 4; // Qwen2.5-Coder-7B has 4 shards
+    var loader = ShardedLoader.init(allocator, model_path, num_shards);
     defer loader.deinit();
 
-    for (0..3) |shard_idx| {
+    for (0..num_shards) |shard_idx| {
         std.debug.print("\n[Shard {d}/3] Loading...\n", .{shard_idx + 1});
 
         const shard = loader.loadShard(shard_idx) catch |err| {
@@ -350,12 +351,32 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 3) {
-        std.debug.print("Usage: mistral_converter <model_dir> <output.tri>\n", .{});
-        std.debug.print("Example: mistral_converter ./Mistral-7B-Instruct-v0.2 mistral-7b.tri\n", .{});
+        std.debug.print("Usage: mistral_converter <model_dir_or_file> <output.tri> [num_shards]\n", .{});
+        std.debug.print("Example: mistral_converter ./Mistral-7B-Instruct-v0.2 mistral-7b.tri 3\n", .{});
+        std.debug.print("Example: mistral_converter ./model.safetensors output.tri\n", .{});
         return;
     }
 
-    _ = try convertMistral(allocator, args[1], args[2], .{});
+    const input_path = args[1];
+    const output_path = args[2];
+
+    // Check if it's a single file or directory with shards
+    if (std.mem.endsWith(u8, input_path, ".safetensors")) {
+        // Single file
+        _ = try convertSingleFile(allocator, input_path, output_path, .{});
+    } else {
+        // Directory with shards
+        const num_shards: usize = if (args.len > 3) std.fmt.parseInt(usize, args[3], 10) catch 4 else 4;
+        _ = try convertMistral(allocator, input_path, output_path, .{
+            .vocab_size = 152064, // Qwen2.5-Coder
+            .hidden_size = 3584,
+            .intermediate_size = 18944,
+            .num_hidden_layers = 28,
+            .num_attention_heads = 28,
+            .num_key_value_heads = 4,
+        });
+        _ = num_shards;
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

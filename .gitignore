@@ -30,3 +30,8 @@ docs/build/
 # Test artifacts
 *.log
 .zig-cache/
+-e 
+# Large model files
+models/*.tri
+models/qwen-coder-7b/
+models/qwen-coder-1.5b/
