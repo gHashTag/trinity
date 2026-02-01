@@ -1,0 +1,20 @@
+{
+  "circuit_breakers": [
+    {
+      "domain": "persist-test.com",
+      "state": "OPEN",
+      "failure_count": 5,
+      "success_count": 0,
+      "last_failure_time": 0,
+      "failure_threshold": 5,
+      "success_threshold": 3,
+      "reset_timeout_ms": 30000
+    }
+  ],
+  "global": {
+    "state": "OPEN",
+    "failure_count": 0,
+    "success_count": 0,
+    "last_failure_time": 0
+  }
+}
