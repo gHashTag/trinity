@@ -39,9 +39,13 @@ pub const TVCOpcode = enum {
 
     // Ternary Comparison (returns trit: -1, 0, +1)
     t_cmp, // Compare: -1 if a<b, 0 if a==b, +1 if a>b
-    t_eq, // Equal: 0 if equal, else ±1
-    t_lt, // Less than
-    t_gt, // Greater than
+    t_eq, // Equal: 1 if equal, else 0
+    t_ne, // Not equal: 1 if not equal, else 0
+    t_lt, // Less than: 1 if a<b, else 0
+    t_gt, // Greater than: 1 if a>b, else 0
+    t_le, // Less or equal: 1 if a<=b, else 0
+    t_ge, // Greater or equal: 1 if a>=b, else 0
+    t_eqz, // Equal to zero: 1 if a==0, else 0
 
     // Memory
     t_load, // Load from ternary memory
@@ -51,9 +55,11 @@ pub const TVCOpcode = enum {
     // Control Flow
     t_call, // Call function
     t_ret, // Return
-    t_br, // Unconditional branch
+    t_br, // Unconditional branch to label
+    t_br_if, // Conditional branch (if != 0)
     t_br_trit, // Ternary branch (3-way)
     t_switch, // Switch on trit value
+    t_label, // Label marker (branch target)
 
     // Stack Operations (for WASM compatibility)
     t_push, // Push to stack
@@ -67,6 +73,21 @@ pub const TVCOpcode = enum {
     // Conversion
     t_binary_to_trit, // Convert binary to ternary
     t_trit_to_binary, // Convert ternary to binary
+
+    // Local/Argument access
+    t_get_local, // Get local variable/argument
+    t_set_local, // Set local variable
+
+    // Conditional
+    t_select, // Select: cond ? val1 : val2
+
+    // Native Ternary Operations
+    t_tadd, // Balanced ternary add
+    t_tsub, // Balanced ternary subtract
+    t_tmul, // Balanced ternary multiply
+    t_tdiv, // Balanced ternary divide
+    t_tcmp, // Balanced ternary compare
+    t_tneg, // Balanced ternary negate
 
     // Special
     t_nop, // No operation
@@ -198,22 +219,56 @@ pub const TVCModule = struct {
 // LIFTER
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Block info for control flow
+pub const BlockType = enum {
+    block, // br jumps to end
+    loop, // br jumps to start
+    if_block, // br jumps to end
+};
+
+pub const BlockInfo = struct {
+    block_type: BlockType,
+    start_label: u32, // Label at start (for loop)
+    end_label: u32, // Label at end (for block/if)
+};
+
 pub const Lifter = struct {
     allocator: std.mem.Allocator,
     module: TVCModule,
     stack: std.ArrayList(u32), // Value stack for WASM
+    block_stack: std.ArrayList(BlockInfo), // Block stack for control flow
+    next_label: u32, // Next label ID
 
     pub fn init(allocator: std.mem.Allocator) Lifter {
         return Lifter{
             .allocator = allocator,
             .module = TVCModule.init(allocator),
             .stack = std.ArrayList(u32).init(allocator),
+            .block_stack = std.ArrayList(BlockInfo).init(allocator),
+            .next_label = 0,
         };
     }
 
     pub fn deinit(self: *Lifter) void {
         self.module.deinit();
         self.stack.deinit();
+        self.block_stack.deinit();
+    }
+
+    fn newLabel(self: *Lifter) u32 {
+        const label = self.next_label;
+        self.next_label += 1;
+        return label;
+    }
+
+    fn getBranchTarget(self: *Lifter, depth: u32) ?u32 {
+        if (depth >= self.block_stack.items.len) return null;
+        const idx = self.block_stack.items.len - 1 - depth;
+        const block_info = self.block_stack.items[idx];
+        return switch (block_info.block_type) {
+            .loop => block_info.start_label, // Loop: jump to start
+            .block, .if_block => block_info.end_label, // Block/if: jump to end
+        };
     }
 
     pub fn lift(self: *Lifter, disasm: *const b2t_disasm.DisassemblyResult) !*TVCModule {
@@ -423,15 +478,32 @@ pub const Lifter = struct {
                 }
             },
 
-            0x48, 0x49 => { // i32.lt_s, i32.lt_u → t_cmp (returns -1, 0, +1)
+            0x45 => { // i32.eqz → compare with zero
+                if (self.stack.items.len >= 1) {
+                    const a = self.stack.pop();
+                    const result = try func.newValue(.trit32);
+                    try self.stack.append(result);
+
+                    // eqz: result = (a == 0) ? 1 : 0
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_eq,
+                        .dest = result,
+                        .operands = .{ a, 0, 0, 0 }, // compare with implicit 0
+                        .operand_count = 1,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            0x47 => { // i32.ne → not equal
                 if (self.stack.items.len >= 2) {
                     const b = self.stack.pop();
                     const a = self.stack.pop();
-                    const result = try func.newValue(.trit); // Ternary result!
+                    const result = try func.newValue(.trit32);
                     try self.stack.append(result);
 
                     try block.instructions.append(TVCInstruction{
-                        .opcode = .t_cmp,
+                        .opcode = .t_cmp, // cmp returns -1, 0, +1; ne is non-zero
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
                         .operand_count = 2,
@@ -440,14 +512,83 @@ pub const Lifter = struct {
                 }
             },
 
-            // Local access
+            0x48, 0x49 => { // i32.lt_s, i32.lt_u → t_cmp (returns -1, 0, +1)
+                if (self.stack.items.len >= 2) {
+                    const b = self.stack.pop();
+                    const a = self.stack.pop();
+                    const result = try func.newValue(.trit32);
+                    try self.stack.append(result);
+
+                    // lt: result = (a < b) ? 1 : 0
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_lt,
+                        .dest = result,
+                        .operands = .{ a, b, 0, 0 },
+                        .operand_count = 2,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            0x4A, 0x4B => { // i32.gt_s, i32.gt_u
+                if (self.stack.items.len >= 2) {
+                    const b = self.stack.pop();
+                    const a = self.stack.pop();
+                    const result = try func.newValue(.trit32);
+                    try self.stack.append(result);
+
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_gt,
+                        .dest = result,
+                        .operands = .{ a, b, 0, 0 },
+                        .operand_count = 2,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            0x4C, 0x4D => { // i32.le_s, i32.le_u
+                if (self.stack.items.len >= 2) {
+                    const b = self.stack.pop();
+                    const a = self.stack.pop();
+                    const result = try func.newValue(.trit32);
+                    try self.stack.append(result);
+
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_le,
+                        .dest = result,
+                        .operands = .{ a, b, 0, 0 },
+                        .operand_count = 2,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            0x4E, 0x4F => { // i32.ge_s, i32.ge_u
+                if (self.stack.items.len >= 2) {
+                    const b = self.stack.pop();
+                    const a = self.stack.pop();
+                    const result = try func.newValue(.trit32);
+                    try self.stack.append(result);
+
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_ge,
+                        .dest = result,
+                        .operands = .{ a, b, 0, 0 },
+                        .operand_count = 2,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            // Local access (includes function parameters)
             0x20 => { // local.get
                 const local_idx: u32 = @intCast(inst.operands[0].value);
                 const result = try func.newValue(.trit32);
                 try self.stack.append(result);
 
                 try block.instructions.append(TVCInstruction{
-                    .opcode = .t_load,
+                    .opcode = .t_get_local,
                     .dest = result,
                     .operands = .{ local_idx, 0, 0, 0 },
                     .operand_count = 1,
@@ -461,10 +602,77 @@ pub const Lifter = struct {
                     const value = self.stack.pop();
 
                     try block.instructions.append(TVCInstruction{
-                        .opcode = .t_store,
+                        .opcode = .t_set_local,
                         .dest = null,
                         .operands = .{ local_idx, value, 0, 0 },
                         .operand_count = 2,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            // Memory operations
+            0x28 => { // i32.load
+                const offset: u32 = @intCast(inst.operands[1].value);
+                if (self.stack.items.len >= 1) {
+                    const addr = self.stack.pop();
+                    const result = try func.newValue(.trit32);
+                    try self.stack.append(result);
+
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_load,
+                        .dest = result,
+                        .operands = .{ addr, offset, 0, 0 },
+                        .operand_count = 2,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            0x36 => { // i32.store
+                const offset: u32 = @intCast(inst.operands[1].value);
+                if (self.stack.items.len >= 2) {
+                    const value = self.stack.pop();
+                    const addr = self.stack.pop();
+
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_store,
+                        .dest = null,
+                        .operands = .{ addr, value, offset, 0 },
+                        .operand_count = 3,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            0x2C, 0x2D => { // i32.load8_s, i32.load8_u
+                const offset: u32 = @intCast(inst.operands[1].value);
+                if (self.stack.items.len >= 1) {
+                    const addr = self.stack.pop();
+                    const result = try func.newValue(.trit32);
+                    try self.stack.append(result);
+
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_load, // Will load byte and extend
+                        .dest = result,
+                        .operands = .{ addr, offset, 1, 0 }, // size=1 byte
+                        .operand_count = 3,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            0x3A => { // i32.store8
+                const offset: u32 = @intCast(inst.operands[1].value);
+                if (self.stack.items.len >= 2) {
+                    const value = self.stack.pop();
+                    const addr = self.stack.pop();
+
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_store,
+                        .dest = null,
+                        .operands = .{ addr, value, offset, 1 }, // size=1 byte
+                        .operand_count = 4,
                         .source_address = inst.address,
                     });
                 }
@@ -500,27 +708,29 @@ pub const Lifter = struct {
                 });
             },
 
-            0x0C => { // br
-                const label: u32 = @intCast(inst.operands[0].value);
+            0x0C => { // br (unconditional branch)
+                const depth: u32 = @intCast(inst.operands[0].value);
+                const target = self.getBranchTarget(depth) orelse 0;
 
                 try block.instructions.append(TVCInstruction{
                     .opcode = .t_br,
                     .dest = null,
-                    .operands = .{ label, 0, 0, 0 },
+                    .operands = .{ target, 0, 0, 0 },
                     .operand_count = 1,
                     .source_address = inst.address,
                 });
             },
 
-            0x0D => { // br_if → t_br_trit (ternary conditional!)
-                const label: u32 = @intCast(inst.operands[0].value);
+            0x0D => { // br_if (conditional branch)
+                const depth: u32 = @intCast(inst.operands[0].value);
+                const target = self.getBranchTarget(depth) orelse 0;
                 if (self.stack.items.len >= 1) {
                     const cond = self.stack.pop();
 
                     try block.instructions.append(TVCInstruction{
-                        .opcode = .t_br_trit,
+                        .opcode = .t_br_if,
                         .dest = null,
-                        .operands = .{ cond, label, 0, 0 },
+                        .operands = .{ cond, target, 0, 0 },
                         .operand_count = 2,
                         .source_address = inst.address,
                     });
@@ -562,8 +772,114 @@ pub const Lifter = struct {
                 });
             },
 
+            0x02 => { // block
+                // Block: br jumps to end
+                const start_label = self.newLabel();
+                const end_label = self.newLabel();
+                try self.block_stack.append(BlockInfo{
+                    .block_type = .block,
+                    .start_label = start_label,
+                    .end_label = end_label,
+                });
+            },
+
+            0x03 => { // loop
+                // Loop: br jumps to start (re-execute)
+                const start_label = self.newLabel();
+                const end_label = self.newLabel();
+                try self.block_stack.append(BlockInfo{
+                    .block_type = .loop,
+                    .start_label = start_label,
+                    .end_label = end_label,
+                });
+                // Emit start label for loop
+                try block.instructions.append(TVCInstruction{
+                    .opcode = .t_label,
+                    .dest = null,
+                    .operands = .{ start_label, 0, 0, 0 },
+                    .operand_count = 1,
+                    .source_address = inst.address,
+                });
+            },
+
+            0x04 => { // if
+                // If block: br jumps to end
+                const start_label = self.newLabel();
+                const end_label = self.newLabel();
+                try self.block_stack.append(BlockInfo{
+                    .block_type = .if_block,
+                    .start_label = start_label,
+                    .end_label = end_label,
+                });
+                // Conditional - pop condition and branch to end if zero
+                if (self.stack.items.len >= 1) {
+                    const cond = self.stack.pop();
+                    // Branch to end_label if cond == 0
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_br_if,
+                        .dest = null,
+                        .operands = .{ cond, end_label, 1, 0 }, // invert=1 (branch if zero)
+                        .operand_count = 3,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            0x05 => { // else
+                // Else: jump to end, then emit else label
+                if (self.block_stack.items.len > 0) {
+                    const block_info = self.block_stack.items[self.block_stack.items.len - 1];
+                    // Jump over else block
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_br,
+                        .dest = null,
+                        .operands = .{ block_info.end_label, 0, 0, 0 },
+                        .operand_count = 1,
+                        .source_address = inst.address,
+                    });
+                    // Emit else label (where if-false jumps to)
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_label,
+                        .dest = null,
+                        .operands = .{ block_info.start_label, 0, 0, 0 },
+                        .operand_count = 1,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
             0x0B => { // end
-                // Block end marker, no TVC instruction needed
+                // Pop block and emit end label
+                if (self.block_stack.items.len > 0) {
+                    const block_info = self.block_stack.pop();
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_label,
+                        .dest = null,
+                        .operands = .{ block_info.end_label, 0, 0, 0 },
+                        .operand_count = 1,
+                        .source_address = inst.address,
+                    });
+                }
+            },
+
+            0x1B => { // select
+                // select: [val1, val2, cond] -> val1 if cond != 0, else val2
+                if (self.stack.items.len >= 3) {
+                    const cond = self.stack.pop();
+                    const val2 = self.stack.pop();
+                    const val1 = self.stack.pop();
+                    const result = try func.newValue(.trit32);
+                    try self.stack.append(result);
+
+                    // Emit: result = cond ? val1 : val2
+                    try block.instructions.append(TVCInstruction{
+                        .opcode = .t_select,
+                        .dest = result,
+                        .operands = .{ val1, val2, cond, 0 },
+                        .operand_count = 3,
+                        .source_address = inst.address,
+                    });
+                }
             },
 
             else => {

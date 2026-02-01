@@ -459,15 +459,324 @@ fn getWasmMnemonic(opcode: u8) []const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// X86_64 DISASSEMBLER (Stub for Phase 2)
+// X86_64 DISASSEMBLER
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// x86_64 register names
+const X86_REG_NAMES = [_][]const u8{
+    "rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi",
+    "r8",  "r9",  "r10", "r11", "r12", "r13", "r14", "r15",
+};
+
+const X86_REG_NAMES_32 = [_][]const u8{
+    "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi",
+    "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d",
+};
+
 pub fn disassembleX86_64(allocator: std.mem.Allocator, binary: *const b2t_loader.LoadedBinary) !DisassemblyResult {
-    _ = binary;
     var result = DisassemblyResult.init(allocator);
     result.architecture = .x86_64;
-    // TODO: Implement x86_64 disassembly
+    result.entry_point = binary.entry_point;
+
+    // Find executable sections
+    for (binary.sections.items) |section| {
+        if (section.is_executable and section.raw_data.len > 0) {
+            // Create a pseudo-function for each code section
+            var func = WasmFunction.init(allocator, @intCast(result.functions.items.len), 0);
+            func.code = section.raw_data;
+
+            // Disassemble the section
+            var offset: usize = 0;
+            while (offset < section.raw_data.len) {
+                var local_offset: usize = 0;
+                const remaining = section.raw_data[offset..];
+                if (remaining.len == 0) break;
+
+                const inst = disassembleX86Instruction(remaining, &local_offset) catch break;
+                var instruction = inst;
+                instruction.address = section.virtual_address + offset;
+                try func.instructions.append(instruction);
+                offset += local_offset;
+                if (local_offset == 0) break; // Prevent infinite loop
+            }
+
+            try result.functions.append(func);
+        }
+    }
+
     return result;
+}
+
+fn disassembleX86Instruction(code: []const u8, offset: *usize) !Instruction {
+    if (code.len == 0) return error.TruncatedInstruction;
+
+    var inst = Instruction{
+        .address = 0,
+        .opcode = code[0],
+        .mnemonic = "unknown",
+        .operands = undefined,
+        .operand_count = 0,
+        .size = 1,
+        .is_branch = false,
+        .is_call = false,
+        .is_return = false,
+        .branch_target = null,
+    };
+
+    var pos: usize = 0;
+
+    // Check for REX prefix (0x40-0x4F) - skip it for now
+    if (code[pos] >= 0x40 and code[pos] <= 0x4F) {
+        pos += 1;
+        if (pos >= code.len) return error.TruncatedInstruction;
+    }
+
+    const opcode = code[pos];
+    inst.opcode = opcode;
+    pos += 1;
+
+    // Decode based on opcode
+    switch (opcode) {
+        // NOP
+        0x90 => {
+            inst.mnemonic = "nop";
+            inst.size = @intCast(pos);
+        },
+
+        // RET
+        0xC3 => {
+            inst.mnemonic = "ret";
+            inst.is_return = true;
+            inst.size = @intCast(pos);
+        },
+
+        // MOV r32, imm32 (0xB8 + rd)
+        0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF => {
+            const reg_idx = opcode - 0xB8;
+            if (pos + 4 > code.len) return error.TruncatedInstruction;
+            const imm = std.mem.readInt(u32, code[pos..][0..4], .little);
+            pos += 4;
+
+            inst.mnemonic = "mov";
+            inst.operands[0] = Operand{ .op_type = .register, .value = reg_idx, .size = 4 };
+            inst.operands[1] = Operand{ .op_type = .immediate, .value = imm, .size = 4 };
+            inst.operand_count = 2;
+            inst.size = @intCast(pos);
+        },
+
+        // PUSH r64 (0x50 + rd)
+        0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57 => {
+            const reg_idx = opcode - 0x50;
+            inst.mnemonic = "push";
+            inst.operands[0] = Operand{ .op_type = .register, .value = reg_idx, .size = 8 };
+            inst.operand_count = 1;
+            inst.size = @intCast(pos);
+        },
+
+        // POP r64 (0x58 + rd)
+        0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F => {
+            const reg_idx = opcode - 0x58;
+            inst.mnemonic = "pop";
+            inst.operands[0] = Operand{ .op_type = .register, .value = reg_idx, .size = 8 };
+            inst.operand_count = 1;
+            inst.size = @intCast(pos);
+        },
+
+        // ADD/OR/ADC/SBB/AND/SUB/XOR/CMP r/m, imm8 (0x83)
+        0x83 => {
+            if (pos >= code.len) return error.TruncatedInstruction;
+            const modrm = code[pos];
+            pos += 1;
+            const reg_field = (modrm >> 3) & 0x07;
+            const rm = modrm & 0x07;
+
+            if (pos >= code.len) return error.TruncatedInstruction;
+            const imm8: i8 = @bitCast(code[pos]);
+            pos += 1;
+
+            inst.mnemonic = switch (reg_field) {
+                0 => "add",
+                1 => "or",
+                4 => "and",
+                5 => "sub",
+                6 => "xor",
+                7 => "cmp",
+                else => "unknown",
+            };
+            inst.operands[0] = Operand{ .op_type = .register, .value = rm, .size = 4 };
+            inst.operands[1] = Operand{ .op_type = .immediate, .value = imm8, .size = 1 };
+            inst.operand_count = 2;
+            inst.size = @intCast(pos);
+        },
+
+        // ADD r/m, r (0x01)
+        0x01 => {
+            if (pos >= code.len) return error.TruncatedInstruction;
+            const modrm = code[pos];
+            pos += 1;
+            const reg = (modrm >> 3) & 0x07;
+            const rm = modrm & 0x07;
+
+            inst.mnemonic = "add";
+            inst.operands[0] = Operand{ .op_type = .register, .value = rm, .size = 4 };
+            inst.operands[1] = Operand{ .op_type = .register, .value = reg, .size = 4 };
+            inst.operand_count = 2;
+            inst.size = @intCast(pos);
+        },
+
+        // SUB r/m, r (0x29)
+        0x29 => {
+            if (pos >= code.len) return error.TruncatedInstruction;
+            const modrm = code[pos];
+            pos += 1;
+            const reg = (modrm >> 3) & 0x07;
+            const rm = modrm & 0x07;
+
+            inst.mnemonic = "sub";
+            inst.operands[0] = Operand{ .op_type = .register, .value = rm, .size = 4 };
+            inst.operands[1] = Operand{ .op_type = .register, .value = reg, .size = 4 };
+            inst.operand_count = 2;
+            inst.size = @intCast(pos);
+        },
+
+        // IMUL r, r/m (0x0F 0xAF)
+        0x0F => {
+            if (pos >= code.len) return error.TruncatedInstruction;
+            const opcode2 = code[pos];
+            pos += 1;
+
+            switch (opcode2) {
+                0xAF => {
+                    if (pos >= code.len) return error.TruncatedInstruction;
+                    const modrm = code[pos];
+                    pos += 1;
+                    const reg = (modrm >> 3) & 0x07;
+                    const rm = modrm & 0x07;
+
+                    inst.mnemonic = "imul";
+                    inst.operands[0] = Operand{ .op_type = .register, .value = reg, .size = 4 };
+                    inst.operands[1] = Operand{ .op_type = .register, .value = rm, .size = 4 };
+                    inst.operand_count = 2;
+                },
+                // JCC near (0x80-0x8F)
+                0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F => {
+                    if (pos + 4 > code.len) return error.TruncatedInstruction;
+                    const rel32: i32 = @bitCast(std.mem.readInt(u32, code[pos..][0..4], .little));
+                    pos += 4;
+
+                    inst.mnemonic = switch (opcode2) {
+                        0x84 => "je",
+                        0x85 => "jne",
+                        0x8C => "jl",
+                        0x8D => "jge",
+                        0x8E => "jle",
+                        0x8F => "jg",
+                        else => "jcc",
+                    };
+                    inst.operands[0] = Operand{ .op_type = .immediate, .value = rel32, .size = 4 };
+                    inst.operand_count = 1;
+                    inst.is_branch = true;
+                },
+                else => {
+                    inst.mnemonic = "unknown_0f";
+                },
+            }
+            inst.size = @intCast(pos);
+        },
+
+        // CALL rel32 (0xE8)
+        0xE8 => {
+            if (pos + 4 > code.len) return error.TruncatedInstruction;
+            const rel32: i32 = @bitCast(std.mem.readInt(u32, code[pos..][0..4], .little));
+            pos += 4;
+
+            inst.mnemonic = "call";
+            inst.operands[0] = Operand{ .op_type = .immediate, .value = rel32, .size = 4 };
+            inst.operand_count = 1;
+            inst.is_call = true;
+            inst.size = @intCast(pos);
+        },
+
+        // JMP rel32 (0xE9)
+        0xE9 => {
+            if (pos + 4 > code.len) return error.TruncatedInstruction;
+            const rel32: i32 = @bitCast(std.mem.readInt(u32, code[pos..][0..4], .little));
+            pos += 4;
+
+            inst.mnemonic = "jmp";
+            inst.operands[0] = Operand{ .op_type = .immediate, .value = rel32, .size = 4 };
+            inst.operand_count = 1;
+            inst.is_branch = true;
+            inst.size = @intCast(pos);
+        },
+
+        // JMP rel8 (0xEB)
+        0xEB => {
+            if (pos >= code.len) return error.TruncatedInstruction;
+            const rel8: i8 = @bitCast(code[pos]);
+            pos += 1;
+
+            inst.mnemonic = "jmp";
+            inst.operands[0] = Operand{ .op_type = .immediate, .value = rel8, .size = 1 };
+            inst.operand_count = 1;
+            inst.is_branch = true;
+            inst.size = @intCast(pos);
+        },
+
+        // Jcc rel8 (0x70-0x7F)
+        0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F => {
+            if (pos >= code.len) return error.TruncatedInstruction;
+            const rel8: i8 = @bitCast(code[pos]);
+            pos += 1;
+
+            inst.mnemonic = switch (opcode) {
+                0x74 => "je",
+                0x75 => "jne",
+                0x7C => "jl",
+                0x7D => "jge",
+                0x7E => "jle",
+                0x7F => "jg",
+                else => "jcc",
+            };
+            inst.operands[0] = Operand{ .op_type = .immediate, .value = rel8, .size = 1 };
+            inst.operand_count = 1;
+            inst.is_branch = true;
+            inst.size = @intCast(pos);
+        },
+
+        // XOR r, r/m (0x33)
+        0x33 => {
+            if (pos >= code.len) return error.TruncatedInstruction;
+            const modrm = code[pos];
+            pos += 1;
+            const reg = (modrm >> 3) & 0x07;
+            const rm = modrm & 0x07;
+
+            inst.mnemonic = "xor";
+            inst.operands[0] = Operand{ .op_type = .register, .value = reg, .size = 4 };
+            inst.operands[1] = Operand{ .op_type = .register, .value = rm, .size = 4 };
+            inst.operand_count = 2;
+            inst.size = @intCast(pos);
+        },
+
+        // INT3 (0xCC)
+        0xCC => {
+            inst.mnemonic = "int3";
+            inst.size = @intCast(pos);
+        },
+
+        // SYSCALL (0x0F 0x05) - handled in 0x0F case above
+        // For now, treat unknown as single byte
+        else => {
+            inst.mnemonic = "db";
+            inst.operands[0] = Operand{ .op_type = .immediate, .value = opcode, .size = 1 };
+            inst.operand_count = 1;
+            inst.size = @intCast(pos);
+        },
+    }
+
+    offset.* = pos;
+    return inst;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -562,4 +871,63 @@ test "disassemble call" {
     try std.testing.expectEqualStrings("call", inst.mnemonic);
     try std.testing.expect(inst.is_call);
     try std.testing.expectEqual(@as(i64, 5), inst.operands[0].value);
+}
+
+// x86_64 disassembler tests
+test "x86_64 disassemble nop" {
+    const code = [_]u8{0x90}; // nop
+    var offset: usize = 0;
+    const inst = try disassembleX86Instruction(&code, &offset);
+
+    try std.testing.expectEqualStrings("nop", inst.mnemonic);
+    try std.testing.expectEqual(@as(u8, 1), inst.size);
+}
+
+test "x86_64 disassemble ret" {
+    const code = [_]u8{0xC3}; // ret
+    var offset: usize = 0;
+    const inst = try disassembleX86Instruction(&code, &offset);
+
+    try std.testing.expectEqualStrings("ret", inst.mnemonic);
+    try std.testing.expect(inst.is_return);
+}
+
+test "x86_64 disassemble mov eax, imm32" {
+    const code = [_]u8{ 0xB8, 0x01, 0x00, 0x00, 0x00 }; // mov eax, 1
+    var offset: usize = 0;
+    const inst = try disassembleX86Instruction(&code, &offset);
+
+    try std.testing.expectEqualStrings("mov", inst.mnemonic);
+    try std.testing.expectEqual(@as(u8, 2), inst.operand_count);
+    try std.testing.expectEqual(@as(i64, 0), inst.operands[0].value); // eax = reg 0
+    try std.testing.expectEqual(@as(i64, 1), inst.operands[1].value); // imm = 1
+}
+
+test "x86_64 disassemble push rbp" {
+    const code = [_]u8{0x55}; // push rbp
+    var offset: usize = 0;
+    const inst = try disassembleX86Instruction(&code, &offset);
+
+    try std.testing.expectEqualStrings("push", inst.mnemonic);
+    try std.testing.expectEqual(@as(i64, 5), inst.operands[0].value); // rbp = reg 5
+}
+
+test "x86_64 disassemble jmp rel8" {
+    const code = [_]u8{ 0xEB, 0x10 }; // jmp +16
+    var offset: usize = 0;
+    const inst = try disassembleX86Instruction(&code, &offset);
+
+    try std.testing.expectEqualStrings("jmp", inst.mnemonic);
+    try std.testing.expect(inst.is_branch);
+    try std.testing.expectEqual(@as(i64, 16), inst.operands[0].value);
+}
+
+test "x86_64 disassemble call rel32" {
+    const code = [_]u8{ 0xE8, 0x00, 0x01, 0x00, 0x00 }; // call +256
+    var offset: usize = 0;
+    const inst = try disassembleX86Instruction(&code, &offset);
+
+    try std.testing.expectEqualStrings("call", inst.mnemonic);
+    try std.testing.expect(inst.is_call);
+    try std.testing.expectEqual(@as(i64, 256), inst.operands[0].value);
 }
