@@ -5,6 +5,7 @@ const std = @import("std");
 const gguf = @import("gguf_reader.zig");
 const inference = @import("gguf_inference.zig");
 const transformer = @import("gguf_transformer.zig");
+const simd = @import("simd_matmul.zig");
 
 pub const FullModel = struct {
     allocator: std.mem.Allocator,
@@ -22,6 +23,20 @@ pub const FullModel = struct {
     // RoPE and KV-cache
     rope: transformer.RoPE,
     kv_caches: []transformer.KVCache,
+
+    // Pre-allocated buffers for forward pass (avoid allocations in hot path)
+    buf_hidden: []f32,
+    buf_temp: []f32,
+    buf_normed: []f32,
+    buf_q: []f32,
+    buf_k: []f32,
+    buf_v: []f32,
+    buf_attn_out: []f32,
+    buf_attn_proj: []f32,
+    buf_ffn_gate: []f32,
+    buf_ffn_up: []f32,
+    buf_ffn_out: []f32,
+    buf_scores: []f32,
 
     pub const LayerWeights = struct {
         attn_norm: []f32,
@@ -75,6 +90,19 @@ pub const FullModel = struct {
             .layers = undefined,
             .rope = undefined,
             .kv_caches = undefined,
+            // Pre-allocated buffers (initialized in loadWeights)
+            .buf_hidden = undefined,
+            .buf_temp = undefined,
+            .buf_normed = undefined,
+            .buf_q = undefined,
+            .buf_k = undefined,
+            .buf_v = undefined,
+            .buf_attn_out = undefined,
+            .buf_attn_proj = undefined,
+            .buf_ffn_gate = undefined,
+            .buf_ffn_up = undefined,
+            .buf_ffn_out = undefined,
+            .buf_scores = undefined,
         };
 
         model.config.head_dim = model.config.hidden_size / model.config.num_heads;
@@ -131,6 +159,27 @@ pub const FullModel = struct {
         }
 
         std.debug.print("  Loaded {d} layers                    \n", .{self.config.num_layers});
+
+        // Pre-allocate buffers for forward pass (avoid allocations in hot path)
+        const hidden_size = self.config.hidden_size;
+        const num_heads = self.config.num_heads;
+        const num_kv_heads = self.config.num_kv_heads;
+        const head_dim = self.config.head_dim;
+        const intermediate_size = self.config.intermediate_size;
+        const context_length = self.config.context_length;
+
+        self.buf_hidden = try self.allocator.alloc(f32, hidden_size);
+        self.buf_temp = try self.allocator.alloc(f32, hidden_size);
+        self.buf_normed = try self.allocator.alloc(f32, hidden_size);
+        self.buf_q = try self.allocator.alloc(f32, num_heads * head_dim);
+        self.buf_k = try self.allocator.alloc(f32, num_kv_heads * head_dim);
+        self.buf_v = try self.allocator.alloc(f32, num_kv_heads * head_dim);
+        self.buf_attn_out = try self.allocator.alloc(f32, num_heads * head_dim);
+        self.buf_attn_proj = try self.allocator.alloc(f32, hidden_size);
+        self.buf_ffn_gate = try self.allocator.alloc(f32, intermediate_size);
+        self.buf_ffn_up = try self.allocator.alloc(f32, intermediate_size);
+        self.buf_ffn_out = try self.allocator.alloc(f32, hidden_size);
+        self.buf_scores = try self.allocator.alloc(f32, context_length);
     }
 
     fn loadTensor(self: *FullModel, name: []const u8) ![]f32 {
@@ -174,6 +223,21 @@ pub const FullModel = struct {
         self.allocator.free(self.token_embedding);
         self.allocator.free(self.output_weight);
         self.allocator.free(self.output_norm);
+
+        // Free pre-allocated buffers
+        self.allocator.free(self.buf_hidden);
+        self.allocator.free(self.buf_temp);
+        self.allocator.free(self.buf_normed);
+        self.allocator.free(self.buf_q);
+        self.allocator.free(self.buf_k);
+        self.allocator.free(self.buf_v);
+        self.allocator.free(self.buf_attn_out);
+        self.allocator.free(self.buf_attn_proj);
+        self.allocator.free(self.buf_ffn_gate);
+        self.allocator.free(self.buf_ffn_up);
+        self.allocator.free(self.buf_ffn_out);
+        self.allocator.free(self.buf_scores);
+
         self.reader.deinit();
     }
 
@@ -183,31 +247,26 @@ pub const FullModel = struct {
         }
     }
 
-    // Forward pass for single token
+    // Forward pass for single token - OPTIMIZED with pre-allocated buffers
     pub fn forward(self: *FullModel, token: u32, pos: usize) ![]f32 {
         const hidden_size = self.config.hidden_size;
 
-        // Get embedding
+        // Get embedding (use pre-allocated buffer)
         const emb_start = token * hidden_size;
-        const hidden = try self.allocator.alloc(f32, hidden_size);
-        defer self.allocator.free(hidden);
-        @memcpy(hidden, self.token_embedding[emb_start..][0..hidden_size]);
+        @memcpy(self.buf_hidden, self.token_embedding[emb_start..][0..hidden_size]);
 
-        // Process through all layers
-        const temp = try self.allocator.alloc(f32, hidden_size);
-        defer self.allocator.free(temp);
-
+        // Process through all layers (no allocations!)
         for (0..self.config.num_layers) |i| {
-            try self.forwardLayer(temp, hidden, i, pos);
-            @memcpy(hidden, temp);
+            self.forwardLayerOptimized(self.buf_temp, self.buf_hidden, i, pos);
+            @memcpy(self.buf_hidden, self.buf_temp);
         }
 
         // Final RMS norm
-        inference.rmsNorm(temp, hidden, self.output_norm, self.config.rms_norm_eps);
+        inference.rmsNorm(self.buf_temp, self.buf_hidden, self.output_norm, self.config.rms_norm_eps);
 
-        // Output projection
+        // Output projection (only allocation is for return value)
         const logits = try self.allocator.alloc(f32, self.config.vocab_size);
-        inference.matVec(logits, self.output_weight, temp, self.config.vocab_size, hidden_size);
+        inference.matVec(logits, self.output_weight, self.buf_temp, self.config.vocab_size, hidden_size);
 
         return logits;
     }
@@ -329,6 +388,99 @@ pub const FullModel = struct {
         // Residual
         for (0..hidden_size) |i| {
             output[i] += ffn_out[i];
+        }
+    }
+
+    // OPTIMIZED forward layer - uses pre-allocated buffers (NO ALLOCATIONS!)
+    fn forwardLayerOptimized(self: *FullModel, output: []f32, input: []const f32, layer_idx: usize, pos: usize) void {
+        const layer = self.layers[layer_idx];
+        const hidden_size = self.config.hidden_size;
+        const num_heads = self.config.num_heads;
+        const num_kv_heads = self.config.num_kv_heads;
+        const head_dim = self.config.head_dim;
+        const intermediate_size = self.config.intermediate_size;
+        const rms_eps = self.config.rms_norm_eps;
+
+        // Pre-attention norm (use buf_normed)
+        inference.rmsNorm(self.buf_normed, input, layer.attn_norm, rms_eps);
+
+        // Compute Q, K, V (use buf_q, buf_k, buf_v)
+        inference.matVec(self.buf_q, layer.wq, self.buf_normed, num_heads * head_dim, hidden_size);
+        inference.matVec(self.buf_k, layer.wk, self.buf_normed, num_kv_heads * head_dim, hidden_size);
+        inference.matVec(self.buf_v, layer.wv, self.buf_normed, num_kv_heads * head_dim, hidden_size);
+
+        // Apply RoPE
+        for (0..num_heads) |h| {
+            self.rope.apply(self.buf_q[h * head_dim ..][0..head_dim], pos);
+        }
+        for (0..num_kv_heads) |h| {
+            self.rope.apply(self.buf_k[h * head_dim ..][0..head_dim], pos);
+        }
+
+        // Update KV cache
+        self.kv_caches[layer_idx].append(self.buf_k, self.buf_v);
+
+        // Attention (use buf_attn_out, buf_scores)
+        const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(head_dim)));
+        const kv_group_size = num_heads / num_kv_heads;
+        const seq_len = self.kv_caches[layer_idx].seq_len;
+
+        for (0..num_heads) |h| {
+            const kv_h = h / kv_group_size;
+            const q_head = self.buf_q[h * head_dim ..][0..head_dim];
+
+            // Attention scores with SIMD dot product
+            for (0..seq_len) |t| {
+                const k_offset = t * num_kv_heads * head_dim + kv_h * head_dim;
+                const k_vec = self.kv_caches[layer_idx].k_cache[k_offset..][0..head_dim];
+                self.buf_scores[t] = simd.simdDot(q_head, k_vec) * scale;
+            }
+
+            // Softmax
+            inference.softmax(self.buf_scores[0..seq_len], self.buf_scores[0..seq_len]);
+
+            // Weighted sum with SIMD
+            const out_head = self.buf_attn_out[h * head_dim ..][0..head_dim];
+            @memset(out_head, 0.0);
+
+            for (0..seq_len) |t| {
+                const v_offset = t * num_kv_heads * head_dim + kv_h * head_dim;
+                const v_vec = self.kv_caches[layer_idx].v_cache[v_offset..][0..head_dim];
+                const score = self.buf_scores[t];
+
+                // SIMD scale and add
+                for (0..head_dim) |i| {
+                    out_head[i] += score * v_vec[i];
+                }
+            }
+        }
+
+        // Output projection (use buf_attn_proj)
+        inference.matVec(self.buf_attn_proj, layer.wo, self.buf_attn_out, hidden_size, num_heads * head_dim);
+
+        // Residual
+        for (0..hidden_size) |i| {
+            output[i] = input[i] + self.buf_attn_proj[i];
+        }
+
+        // Pre-FFN norm
+        inference.rmsNorm(self.buf_normed, output, layer.ffn_norm, rms_eps);
+
+        // FFN with SwiGLU (use buf_ffn_gate, buf_ffn_up)
+        inference.matVec(self.buf_ffn_gate, layer.w_gate, self.buf_normed, intermediate_size, hidden_size);
+        inference.matVec(self.buf_ffn_up, layer.w_up, self.buf_normed, intermediate_size, hidden_size);
+
+        // SwiGLU
+        for (0..intermediate_size) |i| {
+            self.buf_ffn_gate[i] = inference.silu(self.buf_ffn_gate[i]) * self.buf_ffn_up[i];
+        }
+
+        // Down projection (use buf_ffn_out)
+        inference.matVec(self.buf_ffn_out, layer.w_down, self.buf_ffn_gate, hidden_size, intermediate_size);
+
+        // Residual
+        for (0..hidden_size) |i| {
+            output[i] += self.buf_ffn_out[i];
         }
     }
 

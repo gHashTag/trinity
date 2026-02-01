@@ -13,27 +13,52 @@ pub const SIMD_WIDTH: usize = 8;
 // SIMD MATRIX-VECTOR MULTIPLICATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// SIMD-optimized matrix-vector multiplication
+/// SIMD-optimized matrix-vector multiplication with 4-way unrolling
 /// output[i] = sum(mat[i,j] * vec[j]) for all j
 /// mat is [rows, cols] in row-major order
 pub fn simdMatVec(output: []f32, mat: []const f32, vec: []const f32, rows: usize, cols: usize) void {
-    const aligned_cols = cols & ~@as(usize, SIMD_WIDTH - 1);
+    const aligned_cols = cols & ~@as(usize, SIMD_WIDTH * 4 - 1);
+    const aligned_cols_single = cols & ~@as(usize, SIMD_WIDTH - 1);
 
     for (0..rows) |i| {
-        var sum_vec: Vec8f = @splat(0.0);
+        var sum_vec0: Vec8f = @splat(0.0);
+        var sum_vec1: Vec8f = @splat(0.0);
+        var sum_vec2: Vec8f = @splat(0.0);
+        var sum_vec3: Vec8f = @splat(0.0);
         var sum_scalar: f32 = 0.0;
         const row_offset = i * cols;
 
-        // SIMD loop - process 8 elements at a time
+        // 4-way unrolled SIMD loop - process 32 elements at a time
         var j: usize = 0;
-        while (j < aligned_cols) : (j += SIMD_WIDTH) {
+        while (j < aligned_cols) : (j += SIMD_WIDTH * 4) {
+            const mat_vec0: Vec8f = mat[row_offset + j ..][0..SIMD_WIDTH].*;
+            const mat_vec1: Vec8f = mat[row_offset + j + SIMD_WIDTH ..][0..SIMD_WIDTH].*;
+            const mat_vec2: Vec8f = mat[row_offset + j + SIMD_WIDTH * 2 ..][0..SIMD_WIDTH].*;
+            const mat_vec3: Vec8f = mat[row_offset + j + SIMD_WIDTH * 3 ..][0..SIMD_WIDTH].*;
+            const vec_vec0: Vec8f = vec[j..][0..SIMD_WIDTH].*;
+            const vec_vec1: Vec8f = vec[j + SIMD_WIDTH ..][0..SIMD_WIDTH].*;
+            const vec_vec2: Vec8f = vec[j + SIMD_WIDTH * 2 ..][0..SIMD_WIDTH].*;
+            const vec_vec3: Vec8f = vec[j + SIMD_WIDTH * 3 ..][0..SIMD_WIDTH].*;
+            sum_vec0 += mat_vec0 * vec_vec0;
+            sum_vec1 += mat_vec1 * vec_vec1;
+            sum_vec2 += mat_vec2 * vec_vec2;
+            sum_vec3 += mat_vec3 * vec_vec3;
+        }
+
+        // Combine partial sums
+        sum_vec0 += sum_vec1;
+        sum_vec2 += sum_vec3;
+        sum_vec0 += sum_vec2;
+
+        // Single SIMD loop for remainder
+        while (j < aligned_cols_single) : (j += SIMD_WIDTH) {
             const mat_vec: Vec8f = mat[row_offset + j ..][0..SIMD_WIDTH].*;
             const vec_vec: Vec8f = vec[j..][0..SIMD_WIDTH].*;
-            sum_vec += mat_vec * vec_vec;
+            sum_vec0 += mat_vec * vec_vec;
         }
 
         // Horizontal sum of SIMD vector
-        const sum_arr: [SIMD_WIDTH]f32 = sum_vec;
+        const sum_arr: [SIMD_WIDTH]f32 = sum_vec0;
         inline for (sum_arr) |v| {
             sum_scalar += v;
         }
