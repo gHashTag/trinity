@@ -7,6 +7,7 @@
 
 const std = @import("std");
 const llm = @import("llm_provider.zig");
+const Validator = @import("validation_engine.zig").Validator;
 
 // ============================================================================
 // CONFIGURATION MANAGEMENT
@@ -232,11 +233,11 @@ pub const Scribe = struct {
     allocator: std.mem.Allocator,
     llm_client: llm.LLMClient,
 
-    pub fn init(allocator: std.mem.Allocator, config: Config) Scribe {
+    pub fn init(allocator: std.mem.Allocator, config: Config) !Scribe {
         return Scribe{
             .config = config,
             .allocator = allocator,
-            .llm_client = llm.LLMClient.init(allocator, config.api_key, config.base_url),
+            .llm_client = try llm.LLMClient.init(allocator, config.api_key, config.base_url),
         };
     }
 
@@ -427,7 +428,7 @@ pub fn main() !void {
     const config = try Config.load(allocator);
     defer config.deinit(allocator);
 
-    var scribe = Scribe.init(allocator, config);
+    var scribe = try Scribe.init(allocator, config);
     defer scribe.deinit();
 
     var architect = Architect.init(allocator);
@@ -445,6 +446,22 @@ pub fn main() !void {
 
     // Initial code generation
     const initial_code = try scribe.generateCode(prompt, context);
+    defer allocator.free(initial_code);
+
+    // Sacred Validation (The Judge)
+    var validator = Validator.init(allocator);
+    var validation_result = try validator.validate(initial_code);
+    defer validation_result.deinit();
+
+    if (!validation_result.passed) {
+        std.debug.print("❌ [Validator] The Law has been breached:\n", .{});
+        for (validation_result.violations.items) |v| {
+            std.debug.print("  - {s}\n", .{v});
+        }
+        std.debug.print("⚠️ Proceeding anyway (Mercy Mode)... for now.\n", .{});
+    } else {
+        std.debug.print("✅ [Validator] The Law is satisfied.\n", .{});
+    }
 
     // Compile and fix loop
     const final_code = try builder.compileAndFix(initial_code);

@@ -1,620 +1,124 @@
-// TRINITY INFERENCE ENGINE - Двигатель Инференса Троицы
-// НЕЙРОСЕТЕВЫЕ ВЫЧИСЛЕНИЯ БЕЗ УМНОЖЕНИЯ
-// Только сложение, вычитание и пропуски нулей
-// φ² + 1/φ² = 3 = TRINITY
-//
-// "Пока другие платят NVIDIA, мы создаём вычислительную мощь из ничего"
-
 const std = @import("std");
-const prometheus = @import("prometheus_seed.zig");
-const simd = @import("simd_trit_ops.zig");
 
-pub const PHI: f64 = 1.618033988749895;
-pub const TRINITY: f64 = 3.0;
+// ============================================================================
+// TRINITY TYPES
+// ============================================================================
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ACTIVATION FUNCTIONS (без умножения!)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-pub const Activation = enum {
-    none,
-    relu,
-    gelu_approx,
-    silu_approx,
-    tanh_approx,
-
-    /// ReLU: max(0, x) - БЕЗ УМНОЖЕНИЯ
-    pub fn relu(x: f32) f32 {
-        return @max(0.0, x);
-    }
-
-    /// Приближённый GELU через кусочно-линейную аппроксимацию
-    /// GELU(x) ≈ x * sigmoid(1.702 * x)
-    /// Аппроксимация: if x < -3 -> 0, if x > 3 -> x, else -> x/2 + x/4
-    pub fn geluApprox(x: f32) f32 {
-        if (x < -3.0) return 0.0;
-        if (x > 3.0) return x;
-        // x * 0.5 * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))
-        // Упрощаем: x/2 + x/4 для центральной области
-        return x * 0.5 + x * 0.25 * @as(f32, if (x > 0) 1.0 else -1.0);
-    }
-
-    /// Приближённый SiLU (Swish): x * sigmoid(x)
-    /// Аппроксимация через кусочно-линейную функцию
-    pub fn siluApprox(x: f32) f32 {
-        if (x < -4.0) return 0.0;
-        if (x > 4.0) return x;
-        // Линейная интерполяция в центре
-        return x * (0.5 + x * 0.125);
-    }
-
-    /// Приближённый tanh через кусочно-линейную функцию
-    pub fn tanhApprox(x: f32) f32 {
-        if (x < -3.0) return -1.0;
-        if (x > 3.0) return 1.0;
-        // Линейная аппроксимация: x/3 для |x| < 3
-        return x / 3.0;
-    }
-
-    pub fn apply(self: Activation, x: f32) f32 {
-        return switch (self) {
-            .none => x,
-            .relu => relu(x),
-            .gelu_approx => geluApprox(x),
-            .silu_approx => siluApprox(x),
-            .tanh_approx => tanhApprox(x),
-        };
-    }
+/// The Sacred Trit.
+/// Value Space: {-1, 0, +1}
+pub const Trit = enum(i8) {
+    Zero = 0,
+    Pos = 1,
+    Neg = -1,
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY MATMUL - Матричное умножение БЕЗ УМНОЖЕНИЯ
-// ═══════════════════════════════════════════════════════════════════════════════
+// ============================================================================
+// THE HEART (Inference Engine)
+// ============================================================================
 
-/// Троичное матричное "умножение" - только сложение/вычитание!
-/// weights: [out_features, in_features] в тритах {-1, 0, +1}
-/// input: [batch, in_features] в float32
-/// output: [batch, out_features] в float32
-pub fn trinityMatmul(
+pub const Engine = struct {
     allocator: std.mem.Allocator,
-    input: []const f32,
-    weights: []const prometheus.TritWeight,
-    in_features: usize,
-    out_features: usize,
-    batch_size: usize,
-) ![]f32 {
-    const output = try allocator.alloc(f32, batch_size * out_features);
-    @memset(output, 0.0);
 
-    // Для каждого элемента батча
-    for (0..batch_size) |b| {
-        const input_offset = b * in_features;
-        const output_offset = b * out_features;
+    pub fn init(allocator: std.mem.Allocator) Engine {
+        return Engine{ .allocator = allocator };
+    }
 
-        // Для каждого выходного нейрона
-        for (0..out_features) |o| {
-            var sum: f32 = 0.0;
-            const weight_offset = o * in_features;
+    /// The Holy Operation: Matrix Multiplication WITHOUT Multiplication.
+    ///
+    /// Standard MatMul:   y = W * x
+    /// Trinity MatMul:    y = Σ (x if w=+1), (-x if w=-1), (0 if w=0)
+    ///
+    /// Arguments:
+    /// - inputs: Input vector [in_features]
+    /// - weights: Flattened weight matrix [out_features * in_features]
+    /// - out_features: Number of output neurons
+    ///
+    /// Returns:
+    /// - Output vector [out_features]
+    pub fn forward_pass(self: *Engine, inputs: []const f32, weights: []const Trit, out_features: usize) ![]const f32 {
+        const in_features = inputs.len;
 
-            // Для каждого входного признака
-            for (0..in_features) |i| {
-                const w = weights[weight_offset + i];
-                const x = input[input_offset + i];
+        // Safety check
+        if (weights.len != out_features * in_features) {
+            return error.DimensionMismatch;
+        }
 
-                // МАГИЯ: НЕТ УМНОЖЕНИЯ!
-                // w = +1: sum += x
-                // w = -1: sum -= x
-                // w = 0:  пропуск (ничего не делаем)
+        const output = try self.allocator.alloc(f32, out_features);
+        // We do typically zero-initialize, or we just sum.
+        @memset(output, 0.0);
+
+        var weight_idx: usize = 0;
+
+        // Iterate over each output neuron
+        for (0..out_features) |out_idx| {
+            var accumulator: f32 = 0.0;
+
+            // Iterate over inputs (Dot Product)
+            for (inputs) |in_val| {
+                const w = weights[weight_idx];
+                weight_idx += 1; // Sequential access is cache-friendly
+
+                // THE CORE LOGIC: NO MULTIPLICATION
                 switch (w) {
-                    .pos => sum += x,
-                    .neg => sum -= x,
-                    .zero => {},  // Пропуск - экономия вычислений!
+                    .Pos => accumulator += in_val,
+                    .Neg => accumulator -= in_val,
+                    .Zero => {}, // No-op (Sparsity advantage)
                 }
             }
-
-            output[output_offset + o] = sum;
-        }
-    }
-
-    return output;
-}
-
-/// Оптимизированная версия с SIMD-подобной обработкой
-pub fn trinityMatmulFast(
-    allocator: std.mem.Allocator,
-    input: []const f32,
-    weights: []const prometheus.TritWeight,
-    in_features: usize,
-    out_features: usize,
-    batch_size: usize,
-) ![]f32 {
-    const output = try allocator.alloc(f32, batch_size * out_features);
-    @memset(output, 0.0);
-
-    // Предварительно разделяем веса на положительные и отрицательные индексы
-    // Это позволяет использовать векторные операции
-
-    for (0..batch_size) |b| {
-        const input_offset = b * in_features;
-        const output_offset = b * out_features;
-
-        for (0..out_features) |o| {
-            var pos_sum: f32 = 0.0;
-            var neg_sum: f32 = 0.0;
-            const weight_offset = o * in_features;
-
-            // Обрабатываем по 4 элемента за раз (псевдо-SIMD)
-            var i: usize = 0;
-            while (i + 4 <= in_features) : (i += 4) {
-                inline for (0..4) |j| {
-                    const w = weights[weight_offset + i + j];
-                    const x = input[input_offset + i + j];
-                    switch (w) {
-                        .pos => pos_sum += x,
-                        .neg => neg_sum += x,
-                        .zero => {},
-                    }
-                }
-            }
-
-            // Остаток
-            while (i < in_features) : (i += 1) {
-                const w = weights[weight_offset + i];
-                const x = input[input_offset + i];
-                switch (w) {
-                    .pos => pos_sum += x,
-                    .neg => neg_sum += x,
-                    .zero => {},
-                }
-            }
-
-            output[output_offset + o] = pos_sum - neg_sum;
-        }
-    }
-
-    return output;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY LAYER - Слой без умножения
-// ═══════════════════════════════════════════════════════════════════════════════
-
-pub const TrinityLayer = struct {
-    allocator: std.mem.Allocator,
-    weights: []prometheus.TritWeight,
-    bias: ?[]f32,
-    in_features: usize,
-    out_features: usize,
-    activation: Activation,
-    sparsity: f32,
-
-    pub fn init(
-        allocator: std.mem.Allocator,
-        in_features: usize,
-        out_features: usize,
-        activation: Activation,
-    ) !TrinityLayer {
-        const weights = try allocator.alloc(prometheus.TritWeight, in_features * out_features);
-        @memset(weights, .zero);
-
-        return TrinityLayer{
-            .allocator = allocator,
-            .weights = weights,
-            .bias = null,
-            .in_features = in_features,
-            .out_features = out_features,
-            .activation = activation,
-            .sparsity = 1.0,
-        };
-    }
-
-    pub fn deinit(self: *TrinityLayer) void {
-        self.allocator.free(self.weights);
-        if (self.bias) |b| self.allocator.free(b);
-    }
-
-    /// Forward pass БЕЗ УМНОЖЕНИЯ
-    pub fn forward(self: *const TrinityLayer, allocator: std.mem.Allocator, input: []const f32, batch_size: usize) ![]f32 {
-        // Матричное "умножение" через сложение/вычитание
-        var output = try trinityMatmulFast(
-            allocator,
-            input,
-            self.weights,
-            self.in_features,
-            self.out_features,
-            batch_size,
-        );
-
-        // Добавляем bias (если есть)
-        if (self.bias) |bias| {
-            for (0..batch_size) |b| {
-                const offset = b * self.out_features;
-                for (0..self.out_features) |o| {
-                    output[offset + o] += bias[o];
-                }
-            }
-        }
-
-        // Применяем активацию
-        for (output) |*x| {
-            x.* = self.activation.apply(x.*);
+            output[out_idx] = accumulator;
         }
 
         return output;
     }
-
-    /// Загрузка весов из TritTensor
-    pub fn loadWeights(self: *TrinityLayer, tensor: *const prometheus.TritTensor) void {
-        @memcpy(self.weights, tensor.data);
-        self.sparsity = tensor.sparsity;
-    }
-
-    /// Подсчёт операций (только сложения!)
-    pub fn countOps(self: *const TrinityLayer, batch_size: usize) struct { adds: usize, skips: usize } {
-        var non_zero: usize = 0;
-        for (self.weights) |w| {
-            if (w != .zero) non_zero += 1;
-        }
-        const zeros = self.weights.len - non_zero;
-
-        return .{
-            .adds = non_zero * batch_size,  // Только сложения/вычитания
-            .skips = zeros * batch_size,     // Пропущенные операции
-        };
-    }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SIMD TRINITY LAYER - 21x FASTER!
-// ═══════════════════════════════════════════════════════════════════════════════
+// ============================================================================
+// TEST HARNESS
+// ============================================================================
 
-/// SIMD-оптимизированный слой - использует AVX2/NEON для 21x ускорения
-pub const SimdTrinityLayer = struct {
-    allocator: std.mem.Allocator,
-    weights: []prometheus.TritWeight,
-    trit_buffer: []i8, // Предконвертированные триты для SIMD
-    bias: ?[]f32,
-    in_features: usize,
-    out_features: usize,
-    activation: Activation,
-    sparsity: f32,
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
 
-    pub fn init(
-        allocator: std.mem.Allocator,
-        in_features: usize,
-        out_features: usize,
-        activation: Activation,
-    ) !SimdTrinityLayer {
-        const weights = try allocator.alloc(prometheus.TritWeight, in_features * out_features);
-        @memset(weights, .zero);
+    std.debug.print("💓 ACTIVATING TRINITY ENGINE (Heart)...\n", .{});
 
-        const trit_buffer = try allocator.alloc(i8, in_features * out_features);
-        @memset(trit_buffer, 0);
+    var engine = Engine.init(allocator);
 
-        return SimdTrinityLayer{
-            .allocator = allocator,
-            .weights = weights,
-            .trit_buffer = trit_buffer,
-            .bias = null,
-            .in_features = in_features,
-            .out_features = out_features,
-            .activation = activation,
-            .sparsity = 1.0,
-        };
-    }
+    // Simulation: Linear Layer 3 -> 2
+    // Input vector (x)
+    const inputs = [_]f32{ 1.0, 2.0, 0.5 }; // [3]
 
-    pub fn deinit(self: *SimdTrinityLayer) void {
-        self.allocator.free(self.weights);
-        self.allocator.free(self.trit_buffer);
-        if (self.bias) |b| self.allocator.free(b);
-    }
-
-    /// Обновление trit_buffer после изменения весов
-    pub fn updateTritBuffer(self: *SimdTrinityLayer) void {
-        for (self.weights, 0..) |w, i| {
-            self.trit_buffer[i] = w.toInt();
-        }
-    }
-
-    /// Загрузка весов
-    pub fn loadWeights(self: *SimdTrinityLayer, tensor_weights: []const prometheus.TritWeight) void {
-        const copy_len = @min(self.weights.len, tensor_weights.len);
-        @memcpy(self.weights[0..copy_len], tensor_weights[0..copy_len]);
-        self.updateTritBuffer();
-    }
-
-    /// SIMD Forward pass - 21x FASTER!
-    pub fn forward(self: *const SimdTrinityLayer, allocator: std.mem.Allocator, input: []const f32, batch_size: usize) ![]f32 {
-        const output = try allocator.alloc(f32, batch_size * self.out_features);
-
-        // SIMD матричное умножение
-        simd.simdTritMatmulBatch(
-            output,
-            input,
-            self.trit_buffer,
-            self.in_features,
-            self.out_features,
-            batch_size,
-        );
-
-        // Добавляем bias (если есть)
-        if (self.bias) |bias| {
-            for (0..batch_size) |b| {
-                const offset = b * self.out_features;
-                simd.simdAddResidual(output[offset..][0..self.out_features], bias);
-            }
-        }
-
-        // Применяем активацию (SIMD-оптимизированную)
-        switch (self.activation) {
-            .relu => simd.simdRelu(output),
-            .silu_approx => simd.simdSiluApprox(output),
-            else => {
-                for (output) |*x| {
-                    x.* = self.activation.apply(x.*);
-                }
-            },
-        }
-
-        return output;
-    }
-
-    /// Подсчёт операций
-    pub fn countOps(self: *const SimdTrinityLayer, batch_size: usize) struct { adds: usize, skips: usize } {
-        var non_zero: usize = 0;
-        for (self.weights) |w| {
-            if (w != .zero) non_zero += 1;
-        }
-        const zeros = self.weights.len - non_zero;
-
-        return .{
-            .adds = non_zero * batch_size,
-            .skips = zeros * batch_size,
-        };
-    }
-};
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY MLP - Многослойный перцептрон без умножения
-// ═══════════════════════════════════════════════════════════════════════════════
-
-pub const TrinityMLP = struct {
-    allocator: std.mem.Allocator,
-    layers: std.ArrayList(TrinityLayer),
-
-    pub fn init(allocator: std.mem.Allocator) TrinityMLP {
-        return TrinityMLP{
-            .allocator = allocator,
-            .layers = std.ArrayList(TrinityLayer).init(allocator),
-        };
-    }
-
-    pub fn deinit(self: *TrinityMLP) void {
-        for (self.layers.items) |*layer| {
-            layer.deinit();
-        }
-        self.layers.deinit();
-    }
-
-    pub fn addLayer(self: *TrinityMLP, layer: TrinityLayer) !void {
-        try self.layers.append(layer);
-    }
-
-    /// Forward pass через все слои
-    pub fn forward(self: *const TrinityMLP, allocator: std.mem.Allocator, input: []const f32, batch_size: usize) ![]f32 {
-        var current = try allocator.dupe(f32, input);
-
-        for (self.layers.items) |*layer| {
-            const next = try layer.forward(allocator, current, batch_size);
-            allocator.free(current);
-            current = next;
-        }
-
-        return current;
-    }
-
-    /// Статистика модели
-    pub fn printStats(self: *const TrinityMLP) void {
-        std.debug.print("\n", .{});
-        std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║           TRINITY INFERENCE ENGINE STATS                     ║\n", .{});
-        std.debug.print("║           φ² + 1/φ² = 3 | NO MULTIPLICATION                  ║\n", .{});
-        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
-
-        var total_params: usize = 0;
-        var total_sparsity: f32 = 0.0;
-
-        for (self.layers.items, 0..) |layer, i| {
-            const params = layer.weights.len;
-            total_params += params;
-            total_sparsity += layer.sparsity;
-
-            std.debug.print("║ Layer {d}: {d} → {d} | params: {d} | sparsity: {d:.1}%    ║\n", .{
-                i,
-                layer.in_features,
-                layer.out_features,
-                params,
-                layer.sparsity * 100,
-            });
-        }
-
-        const avg_sparsity = total_sparsity / @as(f32, @floatFromInt(self.layers.items.len));
-        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
-        std.debug.print("║ Total parameters: {d:>12}                               ║\n", .{total_params});
-        std.debug.print("║ Average sparsity: {d:>12.1}%                              ║\n", .{avg_sparsity * 100});
-        std.debug.print("║ Operations: ONLY ADD/SUB (no multiply!)                      ║\n", .{});
-        std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
-    }
-};
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// TESTS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-test "activation functions" {
-    try std.testing.expectEqual(@as(f32, 0.0), Activation.relu(-5.0));
-    try std.testing.expectEqual(@as(f32, 5.0), Activation.relu(5.0));
-
-    // tanh approx
-    try std.testing.expect(Activation.tanhApprox(0.0) == 0.0);
-    try std.testing.expect(Activation.tanhApprox(9.0) == 1.0);
-    try std.testing.expect(Activation.tanhApprox(-9.0) == -1.0);
-}
-
-test "trinity matmul basic" {
-    const allocator = std.testing.allocator;
-
-    // 2x3 input, 3x2 weights -> 2x2 output
-    const input = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
-    const weights = [_]prometheus.TritWeight{
-        .pos, .neg, .zero,  // out[0]
-        .zero, .pos, .neg,  // out[1]
+    // Weight Matrix (W) [2 x 3]
+    // Neuron 0 weights: [+1, -1, 0]  -> should be (1.0 - 2.0 + 0) = -1.0
+    // Neuron 1 weights: [ 0, +1, +1] -> should be (0 + 2.0 + 0.5) = 2.5
+    const weights_raw = [_]Trit{
+        .Pos,  .Neg, .Zero, // Row 0
+        .Zero, .Pos, .Pos, // Row 1
     };
 
-    const output = try trinityMatmul(allocator, &input, &weights, 3, 2, 2);
+    std.debug.print("Input: {any}\n", .{inputs});
+    std.debug.print("Weights (Trits): {any}\n", .{weights_raw});
+
+    const output = try engine.forward_pass(&inputs, &weights_raw, 2);
     defer allocator.free(output);
 
-    // batch 0: out[0] = 1 - 2 + 0 = -1, out[1] = 0 + 2 - 3 = -1
-    try std.testing.expectEqual(@as(f32, -1.0), output[0]);
-    try std.testing.expectEqual(@as(f32, -1.0), output[1]);
+    std.debug.print("Output: {any}\n", .{output});
 
-    // batch 1: out[0] = 4 - 5 + 0 = -1, out[1] = 0 + 5 - 6 = -1
-    try std.testing.expectEqual(@as(f32, -1.0), output[2]);
-    try std.testing.expectEqual(@as(f32, -1.0), output[3]);
-}
-
-test "trinity layer forward" {
-    const allocator = std.testing.allocator;
-
-    var layer = try TrinityLayer.init(allocator, 4, 2, .relu);
-    defer layer.deinit();
-
-    // Устанавливаем веса
-    layer.weights[0] = .pos;
-    layer.weights[1] = .neg;
-    layer.weights[2] = .pos;
-    layer.weights[3] = .zero;
-    layer.weights[4] = .neg;
-    layer.weights[5] = .pos;
-    layer.weights[6] = .zero;
-    layer.weights[7] = .neg;
-
-    const input = [_]f32{ 1.0, 2.0, 3.0, 4.0 };
-    const output = try layer.forward(allocator, &input, 1);
-    defer allocator.free(output);
-
-    try std.testing.expectEqual(@as(usize, 2), output.len);
-}
-
-test "trinity mlp" {
-    const allocator = std.testing.allocator;
-
-    var mlp = TrinityMLP.init(allocator);
-    defer mlp.deinit();
-
-    const layer1 = try TrinityLayer.init(allocator, 4, 8, .relu);
-    const layer2 = try TrinityLayer.init(allocator, 8, 2, .none);
-
-    try mlp.addLayer(layer1);
-    try mlp.addLayer(layer2);
-
-    const input = [_]f32{ 1.0, 2.0, 3.0, 4.0 };
-    const output = try mlp.forward(allocator, &input, 1);
-    defer allocator.free(output);
-
-    try std.testing.expectEqual(@as(usize, 2), output.len);
-}
-
-test "layer ops count" {
-    const allocator = std.testing.allocator;
-
-    var layer = try TrinityLayer.init(allocator, 100, 50, .none);
-    defer layer.deinit();
-
-    // 50% sparsity
-    for (layer.weights, 0..) |_, i| {
-        layer.weights[i] = if (i % 2 == 0) .pos else .zero;
+    // Verification
+    const expected = [_]f32{ -1.0, 2.5 };
+    var accurate = true;
+    for (output, 0..) |val, i| {
+        if (std.math.approxEqAbs(f32, val, expected[i], 0.0001)) {
+            // Good
+        } else {
+            accurate = false;
+        }
     }
 
-    const ops = layer.countOps(1);
-    try std.testing.expectEqual(@as(usize, 2500), ops.adds);  // 50% of 5000
-    try std.testing.expectEqual(@as(usize, 2500), ops.skips); // 50% skipped
-}
-
-test "simd trinity layer forward" {
-    const allocator = std.testing.allocator;
-
-    var simd_layer = try SimdTrinityLayer.init(allocator, 16, 8, .relu);
-    defer simd_layer.deinit();
-
-    // Set weights
-    for (simd_layer.weights, 0..) |*w, i| {
-        w.* = switch (i % 3) {
-            0 => .pos,
-            1 => .neg,
-            else => .zero,
-        };
-    }
-    simd_layer.updateTritBuffer();
-
-    // Create input
-    var input: [16]f32 = undefined;
-    for (&input, 0..) |*x, i| {
-        x.* = @as(f32, @floatFromInt(i)) * 0.1;
-    }
-
-    // Forward pass
-    const output = try simd_layer.forward(allocator, &input, 1);
-    defer allocator.free(output);
-
-    try std.testing.expectEqual(@as(usize, 8), output.len);
-
-    // Verify output is non-negative (ReLU)
-    for (output) |x| {
-        try std.testing.expect(x >= 0.0);
-    }
-}
-
-test "simd vs scalar layer equivalence" {
-    const allocator = std.testing.allocator;
-
-    const in_features = 64;
-    const out_features = 32;
-
-    // Create both layers with same weights
-    var scalar_layer = try TrinityLayer.init(allocator, in_features, out_features, .none);
-    defer scalar_layer.deinit();
-
-    var simd_layer = try SimdTrinityLayer.init(allocator, in_features, out_features, .none);
-    defer simd_layer.deinit();
-
-    // Set same weights
-    for (scalar_layer.weights, 0..) |*w, i| {
-        const trit: prometheus.TritWeight = switch (i % 3) {
-            0 => .pos,
-            1 => .neg,
-            else => .zero,
-        };
-        w.* = trit;
-        simd_layer.weights[i] = trit;
-    }
-    simd_layer.updateTritBuffer();
-
-    // Create input
-    var input: [64]f32 = undefined;
-    for (&input, 0..) |*x, i| {
-        x.* = @as(f32, @floatFromInt(i)) * 0.1 - 3.0;
-    }
-
-    // Forward pass both
-    const scalar_output = try scalar_layer.forward(allocator, &input, 1);
-    defer allocator.free(scalar_output);
-
-    const simd_output = try simd_layer.forward(allocator, &input, 1);
-    defer allocator.free(simd_output);
-
-    // Compare outputs
-    for (scalar_output, simd_output) |s, m| {
-        try std.testing.expectApproxEqAbs(s, m, 0.001);
+    if (accurate) {
+        std.debug.print("✅ VERIFIED: Calculation correct. Zero Multiplications used.\n", .{});
+    } else {
+        std.debug.print("❌ FAILED: Calculation mismatch.\n", .{});
     }
 }
