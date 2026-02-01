@@ -37,8 +37,8 @@ pub const Symbol = struct {
 pub const SymbolType = enum {
     function,
     data,
-    import,
-    export,
+    imported,
+    exported,
     unknown,
 };
 
@@ -293,8 +293,8 @@ pub fn loadElf64(allocator: std.mem.Allocator, data: []const u8) LoadError!Loade
     if (e_shstrndx < e_shnum) {
         const strtab_offset = e_shoff + @as(u64, e_shstrndx) * sh_size;
         if (strtab_offset + sh_size <= data.len) {
-            const sh_offset = std.mem.readInt(u64, data[strtab_offset + 24 .. strtab_offset + 32], .little);
-            const sh_size_val = std.mem.readInt(u64, data[strtab_offset + 32 .. strtab_offset + 40], .little);
+            const sh_offset = std.mem.readInt(u64, data[strtab_offset + 24 ..][0..8], .little);
+            const sh_size_val = std.mem.readInt(u64, data[strtab_offset + 32 ..][0..8], .little);
             if (sh_offset + sh_size_val <= data.len) {
                 shstrtab = data[sh_offset .. sh_offset + sh_size_val];
             }
@@ -307,12 +307,12 @@ pub fn loadElf64(allocator: std.mem.Allocator, data: []const u8) LoadError!Loade
         const sh_off = e_shoff + @as(u64, i) * sh_size;
         if (sh_off + sh_size > data.len) break;
 
-        const sh_name_idx = std.mem.readInt(u32, data[sh_off .. sh_off + 4], .little);
-        const sh_type = std.mem.readInt(u32, data[sh_off + 4 .. sh_off + 8], .little);
-        const sh_flags = std.mem.readInt(u64, data[sh_off + 8 .. sh_off + 16], .little);
-        const sh_addr = std.mem.readInt(u64, data[sh_off + 16 .. sh_off + 24], .little);
-        const sh_offset = std.mem.readInt(u64, data[sh_off + 24 .. sh_off + 32], .little);
-        const sh_size_val = std.mem.readInt(u64, data[sh_off + 32 .. sh_off + 40], .little);
+        const sh_name_idx = std.mem.readInt(u32, data[sh_off..][0..4], .little);
+        const sh_type = std.mem.readInt(u32, data[sh_off + 4 ..][0..4], .little);
+        const sh_flags = std.mem.readInt(u64, data[sh_off + 8 ..][0..8], .little);
+        const sh_addr = std.mem.readInt(u64, data[sh_off + 16 ..][0..8], .little);
+        const sh_offset = std.mem.readInt(u64, data[sh_off + 24 ..][0..8], .little);
+        const sh_size_val = std.mem.readInt(u64, data[sh_off + 32 ..][0..8], .little);
 
         // Get section name
         var name: []const u8 = "unknown";
@@ -377,20 +377,20 @@ pub fn loadPe64(allocator: std.mem.Allocator, data: []const u8) LoadError!Loaded
 
     // Parse COFF header
     const coff_offset = pe_offset + 4;
-    const num_sections = std.mem.readInt(u16, data[coff_offset + 2 .. coff_offset + 4], .little);
-    const optional_header_size = std.mem.readInt(u16, data[coff_offset + 16 .. coff_offset + 18], .little);
+    const num_sections = std.mem.readInt(u16, data[coff_offset + 2 ..][0..2], .little);
+    const optional_header_size = std.mem.readInt(u16, data[coff_offset + 16 ..][0..2], .little);
 
     // Parse optional header
     const opt_offset = coff_offset + 20;
     if (opt_offset + optional_header_size > data.len) return LoadError.TruncatedFile;
 
     // Check PE32+ (64-bit)
-    const magic = std.mem.readInt(u16, data[opt_offset .. opt_offset + 2], .little);
+    const magic = std.mem.readInt(u16, data[opt_offset..][0..2], .little);
     if (magic != 0x20B) return LoadError.UnsupportedArchitecture; // PE32+ magic
 
     // Entry point
-    const entry_rva = std.mem.readInt(u32, data[opt_offset + 16 .. opt_offset + 20], .little);
-    const image_base = std.mem.readInt(u64, data[opt_offset + 24 .. opt_offset + 32], .little);
+    const entry_rva = std.mem.readInt(u32, data[opt_offset + 16 ..][0..4], .little);
+    const image_base = std.mem.readInt(u64, data[opt_offset + 24 ..][0..8], .little);
     binary.entry_point = image_base + entry_rva;
 
     // Parse section headers
@@ -407,11 +407,11 @@ pub fn loadPe64(allocator: std.mem.Allocator, data: []const u8) LoadError!Loaded
         const null_pos = std.mem.indexOf(u8, name_bytes, &[_]u8{0}) orelse 8;
         const name = name_bytes[0..null_pos];
 
-        const virtual_size = std.mem.readInt(u32, data[sh_off + 8 .. sh_off + 12], .little);
-        const virtual_addr = std.mem.readInt(u32, data[sh_off + 12 .. sh_off + 16], .little);
-        const raw_size = std.mem.readInt(u32, data[sh_off + 16 .. sh_off + 20], .little);
-        const raw_ptr = std.mem.readInt(u32, data[sh_off + 20 .. sh_off + 24], .little);
-        const characteristics = std.mem.readInt(u32, data[sh_off + 36 .. sh_off + 40], .little);
+        const virtual_size = std.mem.readInt(u32, data[sh_off + 8 ..][0..4], .little);
+        const virtual_addr = std.mem.readInt(u32, data[sh_off + 12 ..][0..4], .little);
+        const raw_size = std.mem.readInt(u32, data[sh_off + 16 ..][0..4], .little);
+        const raw_ptr = std.mem.readInt(u32, data[sh_off + 20 ..][0..4], .little);
+        const characteristics = std.mem.readInt(u32, data[sh_off + 36 ..][0..4], .little);
 
         var section_data: []const u8 = &[_]u8{};
         if (raw_ptr + raw_size <= data.len) {
