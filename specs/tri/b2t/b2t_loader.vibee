@@ -1,0 +1,121 @@
+name: b2t_loader
+version: "1.0.0"
+language: zig
+module: b2t_loader
+
+# Binary-to-Ternary Loader
+# Loads PE, ELF, Mach-O, WASM binaries
+# V = n × 3^k × π^m × φ^p × e^q
+# φ² + 1/φ² = 3 = TRINITY
+
+types:
+  BinaryFormat:
+    enum:
+      - pe64
+      - elf64
+      - macho64
+      - wasm
+
+  Section:
+    fields:
+      name: String
+      virtual_address: Int
+      virtual_size: Int
+      raw_data: List<Int>
+      characteristics: Int
+
+  Symbol:
+    fields:
+      name: String
+      address: Int
+      size: Int
+      type: String
+
+  Relocation:
+    fields:
+      offset: Int
+      type: Int
+      symbol_index: Int
+      addend: Int
+
+  LoadedBinary:
+    fields:
+      format: BinaryFormat
+      entry_point: Int
+      sections: List<Section>
+      symbols: List<Symbol>
+      relocations: List<Relocation>
+      architecture: String
+
+  LoadError:
+    enum:
+      - file_not_found
+      - invalid_format
+      - unsupported_architecture
+      - corrupted_binary
+      - out_of_memory
+
+behaviors:
+  - name: detect_format
+    given: Raw binary data bytes
+    when: Checking magic numbers at file start
+    then: Returns detected BinaryFormat or error
+
+  - name: load_pe64
+    given: Path to Windows PE64 executable
+    when: Parsing PE headers and sections
+    then: Returns LoadedBinary with all sections and symbols
+
+  - name: load_elf64
+    given: Path to Linux ELF64 executable
+    when: Parsing ELF headers, program headers, section headers
+    then: Returns LoadedBinary with code and data sections
+
+  - name: load_wasm
+    given: Path to WebAssembly binary
+    when: Parsing WASM module sections
+    then: Returns LoadedBinary with functions and memory
+
+  - name: load_macho64
+    given: Path to macOS Mach-O binary
+    when: Parsing Mach-O load commands
+    then: Returns LoadedBinary with segments
+
+  - name: load
+    given: Path to any supported binary format
+    when: Auto-detecting format and loading
+    then: Returns LoadedBinary or LoadError
+
+  - name: get_code_sections
+    given: LoadedBinary
+    when: Filtering executable sections
+    then: Returns list of code sections only
+
+  - name: get_entry_point_section
+    given: LoadedBinary
+    when: Finding section containing entry point
+    then: Returns Section containing entry point address
+
+  - name: resolve_imports
+    given: LoadedBinary with import table
+    when: Resolving external symbol references
+    then: Returns list of required external symbols
+
+constants:
+  PE_MAGIC: 0x5A4D
+  ELF_MAGIC: 0x7F454C46
+  MACHO_MAGIC: 0xFEEDFACF
+  WASM_MAGIC: 0x6D736100
+
+tests:
+  - name: test_detect_pe
+    input: [0x4D, 0x5A, 0x90, 0x00]
+    expected: BinaryFormat.pe64
+
+  - name: test_detect_elf
+    input: [0x7F, 0x45, 0x4C, 0x46]
+    expected: BinaryFormat.elf64
+
+  - name: test_detect_wasm
+    input: [0x00, 0x61, 0x73, 0x6D]
+    expected: BinaryFormat.wasm
