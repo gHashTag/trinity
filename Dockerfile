@@ -50,8 +50,5 @@ ENV MODEL_PATH=/app/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf
 ENV TEMPERATURE=0.7
 ENV TOP_P=0.9
 
-# Expose port (for future HTTP API)
-EXPOSE 8080
-
-# Run chat
-CMD ["/app/vibee", "chat", "--model", "/app/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf", "--temperature", "0.7", "--top-p", "0.9"]
+# Keep container running for SSH access
+CMD ["/bin/sleep", "infinity"]
