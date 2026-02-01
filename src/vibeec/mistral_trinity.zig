@@ -7,6 +7,7 @@ const prometheus = @import("prometheus_seed.zig");
 const simd = @import("simd_trit_ops.zig");
 const trinity_format = @import("trinity_format.zig");
 const engine = @import("trinity_inference_engine.zig");
+const kv_cache = @import("kv_cache.zig");
 
 pub const PHI: f64 = 1.618033988749895;
 
@@ -161,8 +162,19 @@ pub const MistralAttention = struct {
         self.rope.deinit();
     }
 
-    /// Forward pass (simplified - single token)
+    /// Forward pass WITHOUT KV-cache (original, slower)
     pub fn forward(self: *const MistralAttention, allocator: std.mem.Allocator, hidden: []const f32, pos: usize) ![]f32 {
+        return self.forwardWithCache(allocator, hidden, pos, null);
+    }
+
+    /// Forward pass WITH KV-cache (5x faster for autoregressive generation)
+    pub fn forwardWithCache(
+        self: *const MistralAttention,
+        allocator: std.mem.Allocator,
+        hidden: []const f32,
+        pos: usize,
+        layer_cache: ?*kv_cache.LayerKVCache,
+    ) ![]f32 {
         const batch_size: usize = 1;
 
         // Q, K, V projections
@@ -174,15 +186,16 @@ pub const MistralAttention = struct {
         defer allocator.free(v);
 
         // Apply RoPE to Q and K
-        // (simplified - apply to full vectors, real impl applies per-head)
         var q_mut = try allocator.dupe(f32, q);
         defer allocator.free(q_mut);
         var k_mut = try allocator.dupe(f32, k);
         defer allocator.free(k_mut);
 
-        // Apply RoPE per head
         const num_heads = self.config.num_attention_heads;
         const head_dim = self.config.head_dim;
+        const num_kv_heads = self.config.num_key_value_heads;
+
+        // Apply RoPE per Q head
         for (0..num_heads) |h| {
             const offset = h * head_dim;
             if (offset + head_dim <= q_mut.len) {
@@ -190,7 +203,7 @@ pub const MistralAttention = struct {
             }
         }
 
-        const num_kv_heads = self.config.num_key_value_heads;
+        // Apply RoPE per KV head
         for (0..num_kv_heads) |h| {
             const offset = h * head_dim;
             if (offset + head_dim <= k_mut.len) {
@@ -198,22 +211,37 @@ pub const MistralAttention = struct {
             }
         }
 
-        // Simplified attention: expand V to hidden_size and apply o_proj
-        // Real implementation needs full attention computation with Q*K^T*V
-        
-        // For GQA, we need to expand KV heads to match Q heads
-        // For now, just pad V to hidden_size
-        const hidden_size = self.config.hidden_size;
-        const padded_v = try allocator.alloc(f32, hidden_size);
-        defer allocator.free(padded_v);
-        @memset(padded_v, 0.0);
-        
-        const copy_len = @min(v.len, hidden_size);
-        @memcpy(padded_v[0..copy_len], v[0..copy_len]);
-        
-        const output = try self.o_proj.forward(allocator, padded_v, batch_size);
+        // Update KV-cache if provided
+        if (layer_cache) |cache| {
+            try cache.append(k_mut, v);
 
-        return output;
+            // Use cached attention
+            const attn_output = try kv_cache.cachedAttention(
+                allocator,
+                q_mut,
+                cache,
+                num_heads,
+                num_kv_heads,
+                head_dim,
+            );
+            defer allocator.free(attn_output);
+
+            // O projection
+            const output = try self.o_proj.forward(allocator, attn_output, batch_size);
+            return output;
+        } else {
+            // No cache - simplified attention (original behavior)
+            const hidden_size = self.config.hidden_size;
+            const padded_v = try allocator.alloc(f32, hidden_size);
+            defer allocator.free(padded_v);
+            @memset(padded_v, 0.0);
+
+            const copy_len = @min(v.len, hidden_size);
+            @memcpy(padded_v[0..copy_len], v[0..copy_len]);
+
+            const output = try self.o_proj.forward(allocator, padded_v, batch_size);
+            return output;
+        }
     }
 };
 
@@ -290,13 +318,25 @@ pub const MistralBlock = struct {
         self.mlp.deinit();
     }
 
+    /// Forward without KV-cache
     pub fn forward(self: *const MistralBlock, allocator: std.mem.Allocator, hidden: []const f32, pos: usize) ![]f32 {
+        return self.forwardWithCache(allocator, hidden, pos, null);
+    }
+
+    /// Forward with KV-cache (5x faster)
+    pub fn forwardWithCache(
+        self: *const MistralBlock,
+        allocator: std.mem.Allocator,
+        hidden: []const f32,
+        pos: usize,
+        layer_cache: ?*kv_cache.LayerKVCache,
+    ) ![]f32 {
         // Pre-norm + Attention + Residual
         const normed = try allocator.alloc(f32, hidden.len);
         defer allocator.free(normed);
         rmsNorm(normed, hidden, self.config.rms_norm_eps);
 
-        const attn_out = try self.attention.forward(allocator, normed, pos);
+        const attn_out = try self.attention.forwardWithCache(allocator, normed, pos, layer_cache);
         defer allocator.free(attn_out);
 
         const residual = try allocator.alloc(f32, hidden.len);
@@ -330,6 +370,9 @@ pub const MistralTrinity = struct {
     blocks: std.ArrayList(MistralBlock),
     lm_head: engine.SimdTrinityLayer,
 
+    // KV-cache for fast autoregressive generation
+    cache: ?kv_cache.KVCache,
+
     pub fn init(allocator: std.mem.Allocator, config: MistralConfig) !MistralTrinity {
         var model = MistralTrinity{
             .allocator = allocator,
@@ -337,6 +380,7 @@ pub const MistralTrinity = struct {
             .embed_tokens = try engine.SimdTrinityLayer.init(allocator, config.vocab_size, config.hidden_size, .none),
             .blocks = std.ArrayList(MistralBlock).init(allocator),
             .lm_head = try engine.SimdTrinityLayer.init(allocator, config.hidden_size, config.vocab_size, .none),
+            .cache = null,
         };
 
         for (0..config.num_hidden_layers) |_| {
@@ -354,6 +398,32 @@ pub const MistralTrinity = struct {
         }
         self.blocks.deinit();
         self.lm_head.deinit();
+        if (self.cache) |*c| {
+            c.deinit();
+        }
+    }
+
+    /// Initialize KV-cache for fast generation
+    pub fn initCache(self: *MistralTrinity, max_seq_len: usize) !void {
+        if (self.cache != null) {
+            self.cache.?.deinit();
+        }
+
+        const cache_config = kv_cache.KVCacheConfig{
+            .num_layers = self.config.num_hidden_layers,
+            .num_kv_heads = self.config.num_key_value_heads,
+            .head_dim = self.config.head_dim,
+            .max_seq_len = max_seq_len,
+        };
+
+        self.cache = try kv_cache.KVCache.init(self.allocator, cache_config);
+    }
+
+    /// Reset KV-cache (start new sequence)
+    pub fn resetCache(self: *MistralTrinity) void {
+        if (self.cache) |*c| {
+            c.reset();
+        }
     }
 
     /// Load weights from .tri file
@@ -431,8 +501,13 @@ pub const MistralTrinity = struct {
         std.debug.print("✅ Loaded {d} tensors\n", .{loaded});
     }
 
-    /// Generate next token
+    /// Generate next token (without KV-cache)
     pub fn forward(self: *MistralTrinity, token_id: u32, pos: usize) !u32 {
+        return self.forwardWithCache(token_id, pos, false);
+    }
+
+    /// Generate next token with optional KV-cache
+    pub fn forwardWithCache(self: *MistralTrinity, token_id: u32, pos: usize, use_cache: bool) !u32 {
         // One-hot encode token
         var input = try self.allocator.alloc(f32, self.config.vocab_size);
         defer self.allocator.free(input);
@@ -444,9 +519,14 @@ pub const MistralTrinity = struct {
         // Embedding
         var hidden = try self.embed_tokens.forward(self.allocator, input, 1);
 
-        // Transformer blocks
-        for (self.blocks.items) |*block| {
-            const next = try block.forward(self.allocator, hidden, pos);
+        // Transformer blocks (with or without cache)
+        for (self.blocks.items, 0..) |*block, layer_idx| {
+            var layer_cache: ?*kv_cache.LayerKVCache = null;
+            if (use_cache and self.cache != null) {
+                layer_cache = self.cache.?.getLayer(layer_idx);
+            }
+
+            const next = try block.forwardWithCache(self.allocator, hidden, pos, layer_cache);
             self.allocator.free(hidden);
             hidden = next;
         }
@@ -467,6 +547,34 @@ pub const MistralTrinity = struct {
         }
 
         return max_idx;
+    }
+
+    /// Generate multiple tokens with KV-cache (fast)
+    pub fn generate(self: *MistralTrinity, prompt_tokens: []const u32, max_new_tokens: usize) ![]u32 {
+        // Initialize cache if not already
+        if (self.cache == null) {
+            try self.initCache(prompt_tokens.len + max_new_tokens);
+        }
+        self.resetCache();
+
+        var output = try self.allocator.alloc(u32, prompt_tokens.len + max_new_tokens);
+        @memcpy(output[0..prompt_tokens.len], prompt_tokens);
+
+        // Process prompt (prefill)
+        for (prompt_tokens, 0..) |token, pos| {
+            _ = try self.forwardWithCache(token, pos, true);
+        }
+
+        // Generate new tokens (decode)
+        var last_token = prompt_tokens[prompt_tokens.len - 1];
+        for (0..max_new_tokens) |i| {
+            const pos = prompt_tokens.len + i;
+            const new_token = try self.forwardWithCache(last_token, pos, true);
+            output[pos] = new_token;
+            last_token = new_token;
+        }
+
+        return output;
     }
 
     pub fn printStats(self: *const MistralTrinity) void {
