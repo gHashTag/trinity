@@ -1,0 +1,39 @@
+# TRINITY LLM - Fly.io Configuration
+# phi^2 + 1/phi^2 = 3 = TRINITY
+
+app = "trinity-llm"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  MODEL_PATH = "/app/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+  TEMPERATURE = "0.7"
+  TOP_P = "0.9"
+
+# Use performance-8x for LLM inference (8 CPU, 16GB RAM)
+# This is needed for Mistral-7B model
+[[vm]]
+  size = "performance-8x"
+  memory = "16gb"
+  cpus = 8
+
+# Persistent volume for models (optional - model is baked into image)
+# [[mounts]]
+#   source = "trinity_models"
+#   destination = "/app/models"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[http_service.checks]]
+  grace_period = "120s"
+  interval = "30s"
+  method = "GET"
+  path = "/health"
+  timeout = "10s"
