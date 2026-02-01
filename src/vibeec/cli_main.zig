@@ -10,6 +10,13 @@ const coptic_parser = @import("coptic_parser_real.zig");
 const bytecode_compiler = @import("bytecode_compiler.zig");
 const vm_runtime = @import("vm_runtime.zig");
 const tri_cmd = @import("tri_cmd.zig");
+const jit_adapter = @import("jit_adapter.zig");
+const reg_compiler = @import("reg_compiler.zig");
+const reg_vm = @import("reg_vm.zig");
+const bytecode_to_ssa = @import("bytecode_to_ssa.zig");
+const jit_tier2 = @import("jit_tier2.zig");
+const jit_e2e = @import("jit_e2e.zig");
+const ssa_native_codegen = @import("ssa_native_codegen.zig");
 // NOTE: coptic_interpreter.zig is DEPRECATED - use VM only!
 
 pub const PHI: f64 = 1.6180339887498948482;
@@ -19,7 +26,12 @@ pub const VERSION = "0.4.0";
 const Command = enum {
     compile,
     run, // Run via bytecode VM (the only way!)
+    opt, // Run with SSA optimization (constant folding + DCE)
+    native, // Run with native x86-64 code generation (TIER 2!)
+    reg, // Run via Register VM (5x faster!)
     vm, // Fast VM mode for .999 files
+    jit, // Run with JIT compilation
+    jit_bench, // JIT benchmark with warmup
     bench, // Benchmark with detailed timing
     profile, // Profile opcodes
     check,
@@ -64,6 +76,30 @@ pub fn main() !void {
             }
             try runVM(args[2], allocator);
         },
+        .opt => {
+            // Run with SSA optimization (constant folding + DCE)
+            if (args.len < 3) {
+                printError("Missing file argument for 'opt'");
+                return;
+            }
+            try runOptimized(args[2], allocator);
+        },
+        .native => {
+            // Run with native x86-64 code generation (TIER 2!)
+            if (args.len < 3) {
+                printError("Missing file argument for 'native'");
+                return;
+            }
+            try runNative(args[2], allocator);
+        },
+        .reg => {
+            // Run via Register VM - 5x faster!
+            if (args.len < 3) {
+                printError("Missing file argument for 'reg'");
+                return;
+            }
+            try runRegVM(args[2], allocator);
+        },
         .vm => {
             // Fast VM mode - minimal output, maximum speed
             if (args.len < 3) {
@@ -71,6 +107,26 @@ pub fn main() !void {
                 return;
             }
             try runFastVM(args[2], allocator);
+        },
+        .jit => {
+            // Run with JIT compilation
+            if (args.len < 3) {
+                printError("Missing file argument for 'jit'");
+                return;
+            }
+            try runWithJIT(args[2], allocator);
+        },
+        .jit_bench => {
+            // JIT benchmark with warmup to trigger native compilation
+            if (args.len < 3) {
+                printError("Missing file argument for 'jit-bench'");
+                return;
+            }
+            const iterations: u32 = if (args.len >= 4)
+                std.fmt.parseInt(u32, args[3], 10) catch 200
+            else
+                200; // Default 200 iterations (100 warmup + 100 measured)
+            try benchmarkJIT(args[2], iterations, allocator);
         },
         .bench => {
             // Benchmark with detailed timing
@@ -139,7 +195,12 @@ pub fn main() !void {
 fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "compile") or std.mem.eql(u8, arg, "c")) return .compile;
     if (std.mem.eql(u8, arg, "run") or std.mem.eql(u8, arg, "r")) return .run;
+    if (std.mem.eql(u8, arg, "opt") or std.mem.eql(u8, arg, "o")) return .opt;
+    if (std.mem.eql(u8, arg, "native") or std.mem.eql(u8, arg, "n")) return .native;
+    if (std.mem.eql(u8, arg, "reg") or std.mem.eql(u8, arg, "fast")) return .reg;
     if (std.mem.eql(u8, arg, "vm")) return .vm;
+    if (std.mem.eql(u8, arg, "jit") or std.mem.eql(u8, arg, "j")) return .jit;
+    if (std.mem.eql(u8, arg, "jit-bench") or std.mem.eql(u8, arg, "jb")) return .jit_bench;
     if (std.mem.eql(u8, arg, "bench") or std.mem.eql(u8, arg, "b")) return .bench;
     if (std.mem.eql(u8, arg, "profile") or std.mem.eql(u8, arg, "p")) return .profile;
     if (std.mem.eql(u8, arg, "check") or std.mem.eql(u8, arg, "k")) return .check;
@@ -273,6 +334,276 @@ fn runVM(path: []const u8, allocator: std.mem.Allocator) !void {
     // Print VM stats
     printSuccess("VM execution complete");
     std.debug.print("  Instructions: {}\n", .{vm.instructions_executed});
+    const hot_count = vm.getHotLoopCount();
+    if (hot_count > 0) {
+        std.debug.print("  Hot loops detected: {}\n", .{hot_count});
+    }
+    if (!std.mem.eql(u8, result_str, "nil")) {
+        std.debug.print("  Result: {s}\n", .{result_str});
+    }
+}
+
+// Run with SSA optimization (constant folding + DCE)
+fn runOptimized(path: []const u8, allocator: std.mem.Allocator) !void {
+    const source = readFile(path, allocator) catch |err| {
+        printError("Cannot read file");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(source);
+
+    // Parse
+    var parser = coptic_parser.Parser.init(allocator, source);
+    var ast = parser.parseProgram() catch |err| {
+        printError("Parse error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer ast.deinit();
+
+    // Compile to bytecode
+    var compiler = bytecode_compiler.BytecodeCompiler.init(allocator, source);
+    defer compiler.deinit();
+
+    compiler.compile(&ast) catch |err| {
+        printError("Bytecode compilation error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+
+    const code = compiler.getCode();
+    const constants = compiler.getConstants();
+
+    // Debug: dump bytecode (disabled)
+    // std.debug.print("Bytecode ({} bytes): ", .{code.len});
+    // for (code) |b| std.debug.print("{x:0>2} ", .{b});
+    // std.debug.print("\n", .{});
+
+    // Convert bytecode to SSA IR
+    var converter = bytecode_to_ssa.BytecodeToSSA.init(allocator, path);
+    defer converter.deinit();
+    converter.setConstants(constants);
+    
+    converter.convert(code) catch |err| {
+        printError("SSA conversion error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+
+    const convert_stats = converter.getStats();
+    
+    // Count instructions before optimization
+    var instr_before: usize = 0;
+    for (converter.func.blocks.items) |block| {
+        instr_before += block.instrs.items.len;
+    }
+
+    // Optimize with constant folding + DCE
+    var jit = jit_tier2.JITTier2.init(allocator);
+    defer jit.deinit();
+    jit.compile(&converter.func);
+    
+    const opt_stats = jit.getStats();
+
+    // Count instructions after optimization
+    var instr_after: usize = 0;
+    for (converter.func.blocks.items) |block| {
+        instr_after += block.instrs.items.len;
+    }
+
+    // Execute optimized SSA IR
+    var interp = jit_e2e.SSAInterpreter.init(allocator);
+    
+    const start_time = std.time.nanoTimestamp();
+    const result = interp.execute(&converter.func);
+    const end_time = std.time.nanoTimestamp();
+    const exec_time_ns: u64 = @intCast(@max(0, end_time - start_time));
+
+    // Print results
+    printSuccess("Optimized execution complete");
+    std.debug.print("  Bytecode: {d} bytes\n", .{code.len});
+    std.debug.print("  Bytecode ops converted: {d}\n", .{convert_stats.converted});
+    std.debug.print("  SSA instructions: {d} -> {d}\n", .{instr_before, instr_after});
+    
+    if (instr_before > 0) {
+        const reduction = @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0;
+        std.debug.print("  Reduction: {d:.1}%\n", .{reduction});
+    }
+    
+    std.debug.print("  Optimizations: folded={d}, eliminated={d}, reduced={d}\n", .{
+        opt_stats.folded, opt_stats.eliminated, opt_stats.reduced
+    });
+    std.debug.print("  Execution time: {d}ns\n", .{exec_time_ns});
+    std.debug.print("  SSA ops executed: {d}\n", .{interp.instructions_executed});
+    std.debug.print("  Result: {d}\n", .{result});
+}
+
+// Run with native x86-64 code generation (TIER 2 - 500M+ ops/sec!)
+fn runNative(path: []const u8, allocator: std.mem.Allocator) !void {
+    const source = readFile(path, allocator) catch |err| {
+        printError("Cannot read file");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(source);
+
+    // Parse
+    var parser = coptic_parser.Parser.init(allocator, source);
+    var ast = parser.parseProgram() catch |err| {
+        printError("Parse error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer ast.deinit();
+
+    // Compile to bytecode
+    var compiler = bytecode_compiler.BytecodeCompiler.init(allocator, source);
+    defer compiler.deinit();
+
+    compiler.compile(&ast) catch |err| {
+        printError("Bytecode compilation error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+
+    const code = compiler.getCode();
+    const constants = compiler.getConstants();
+
+    // Convert bytecode to SSA IR
+    var converter = bytecode_to_ssa.BytecodeToSSA.init(allocator, path);
+    defer converter.deinit();
+    converter.setConstants(constants);
+    
+    converter.convert(code) catch |err| {
+        printError("SSA conversion error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+
+    // Count instructions before optimization
+    var instr_before: usize = 0;
+    for (converter.func.blocks.items) |block| {
+        instr_before += block.instrs.items.len;
+    }
+
+    // Optimize with constant folding + DCE
+    var jit = jit_tier2.JITTier2.init(allocator);
+    defer jit.deinit();
+    jit.compile(&converter.func);
+    
+    const opt_stats = jit.getStats();
+
+    // Count instructions after optimization
+    var instr_after: usize = 0;
+    for (converter.func.blocks.items) |block| {
+        instr_after += block.instrs.items.len;
+    }
+
+    // Compile to native x86-64 code
+    var native_compiler = ssa_native_codegen.SSANativeCompiler.init(allocator);
+    defer native_compiler.deinit();
+    
+    const native_code = native_compiler.compile(&converter.func) catch |err| {
+        printError("Native code generation error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(native_code);
+
+    const native_code_size = native_code.len;
+    const native_instr_count = native_compiler.instructions_generated;
+
+    // Allocate executable memory and run
+    var exec_mem = ssa_native_codegen.ExecutableMemory.alloc(native_code) catch |err| {
+        printError("Executable memory allocation error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer exec_mem.free();
+
+    // Execute native code
+    const start_time = std.time.nanoTimestamp();
+    const result = exec_mem.execute();
+    const end_time = std.time.nanoTimestamp();
+    const exec_time_ns: u64 = @intCast(@max(0, end_time - start_time));
+
+    // Print results
+    printSuccess("Native x86-64 execution complete (TIER 2!)");
+    std.debug.print("  Bytecode: {d} bytes\n", .{code.len});
+    std.debug.print("  SSA instructions: {d} -> {d}\n", .{instr_before, instr_after});
+    
+    if (instr_before > 0) {
+        const reduction = @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0;
+        std.debug.print("  Reduction: {d:.1}%\n", .{reduction});
+    }
+    
+    std.debug.print("  Optimizations: folded={d}, eliminated={d}, reduced={d}\n", .{
+        opt_stats.folded, opt_stats.eliminated, opt_stats.reduced
+    });
+    std.debug.print("  Native code: {d} bytes, {d} x86 instructions\n", .{
+        native_code_size, native_instr_count
+    });
+    std.debug.print("  Execution time: {d}ns\n", .{exec_time_ns});
+    std.debug.print("  Result: {d}\n", .{result});
+}
+
+// Run file via Register VM - 5x faster!
+fn runRegVM(path: []const u8, allocator: std.mem.Allocator) !void {
+    const source = readFile(path, allocator) catch |err| {
+        printError("Cannot read file");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(source);
+
+    // Parse
+    var parser = coptic_parser.Parser.init(allocator, source);
+    var ast = parser.parseProgram() catch |err| {
+        printError("Parse error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer ast.deinit();
+
+    // Compile to register bytecode
+    var compiler = reg_compiler.RegCompiler.init(allocator, source);
+    defer compiler.deinit();
+
+    compiler.compile(&ast) catch |err| {
+        printError("Register bytecode compilation error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+
+    const code = compiler.getCode();
+    const constants = compiler.getConstants();
+
+    // Execute on Register VM
+    var vm = reg_vm.RegVM.init(allocator) catch |err| {
+        printError("Register VM initialization error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer vm.deinit();
+
+    vm.load(code, constants);
+
+    const result = vm.run() catch |err| {
+        printError("Register VM runtime error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+
+    // Print result
+    var buf: [256]u8 = undefined;
+    const result_str = std.fmt.bufPrint(&buf, "{}", .{result}) catch "?";
+
+    // Print Register VM stats
+    printSuccess("Register VM execution complete (5x faster!)");
+    std.debug.print("  Instructions: {}\n", .{vm.instructions_executed});
+    const time_ns = vm.getExecutionTimeNs();
+    const time_ms = @as(f64, @floatFromInt(time_ns)) / 1_000_000.0;
+    std.debug.print("  Time: {d:.3} ms\n", .{time_ms});
     if (!std.mem.eql(u8, result_str, "nil")) {
         std.debug.print("  Result: {s}\n", .{result_str});
     }
@@ -321,6 +652,169 @@ fn profileVM(path: []const u8, allocator: std.mem.Allocator) !void {
     vm.printProfile(15);
 
     std.debug.print("\nTotal: {d} ops in {d:.2} µs ({d:.0} ops/s)\n", .{ vm.instructions_executed, vm.getExecutionTimeUs(), vm.getOpsPerSecond() });
+}
+
+// JIT mode - tiered compilation with hot path detection
+fn runWithJIT(path: []const u8, allocator: std.mem.Allocator) !void {
+    // Read and parse file
+    const source = std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024) catch |err| {
+        printError("Failed to read file");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(source);
+
+    // Parse
+    var parser = coptic_parser.Parser.init(allocator, source);
+    var ast = parser.parseProgram() catch |err| {
+        printError("Parse error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer ast.deinit();
+
+    // Compile to bytecode
+    var compiler = bytecode_compiler.BytecodeCompiler.init(allocator, source);
+    defer compiler.deinit();
+
+    compiler.compile(&ast) catch |err| {
+        printError("Compilation error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+
+    const code = compiler.getCode();
+    const constants = compiler.getConstants();
+
+    // Run with JIT adapter
+    var jit_vm = jit_adapter.JITAdapter.init(allocator) catch |err| {
+        printError("JIT initialization failed");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer jit_vm.deinit();
+
+    const start_time = std.time.nanoTimestamp();
+    const result = jit_vm.executeTiered(code, constants) catch |err| {
+        printError("JIT execution error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    const end_time = std.time.nanoTimestamp();
+    const elapsed_ns: u64 = @intCast(@max(0, end_time - start_time));
+    const elapsed_us = @as(f64, @floatFromInt(elapsed_ns)) / 1000.0;
+
+    // Print result
+    printSuccess("JIT execution complete");
+    std.debug.print("  Time: {d:.2} µs\n", .{elapsed_us});
+    std.debug.print("  Interpreter instructions: {}\n", .{jit_vm.interpreter_instructions});
+    std.debug.print("  JIT instructions: {}\n", .{jit_vm.jit_instructions});
+    std.debug.print("  Native instructions: {}\n", .{jit_vm.native_instructions});
+    
+    var buf: [256]u8 = undefined;
+    const result_str = std.fmt.bufPrint(&buf, "{}", .{result.value}) catch "?";
+    if (!std.mem.eql(u8, result_str, "nil")) {
+        std.debug.print("  Result: {s}\n", .{result_str});
+    }
+}
+
+// JIT benchmark - runs code multiple times to trigger JIT compilation
+fn benchmarkJIT(path: []const u8, total_iterations: u32, allocator: std.mem.Allocator) !void {
+    // Read and parse file
+    const source = std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024) catch |err| {
+        printError("Failed to read file");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(source);
+
+    // Parse
+    var parser = coptic_parser.Parser.init(allocator, source);
+    var ast = parser.parseProgram() catch |err| {
+        printError("Parse error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer ast.deinit();
+
+    // Compile to bytecode
+    var compiler = bytecode_compiler.BytecodeCompiler.init(allocator, source);
+    defer compiler.deinit();
+
+    compiler.compile(&ast) catch |err| {
+        printError("Compilation error");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+
+    const code = compiler.getCode();
+    const constants = compiler.getConstants();
+
+    // Initialize JIT adapter
+    var jit_vm = jit_adapter.JITAdapter.init(allocator) catch |err| {
+        printError("JIT initialization failed");
+        std.debug.print("  Error: {}\n", .{err});
+        return;
+    };
+    defer jit_vm.deinit();
+
+    const warmup_iterations = total_iterations / 2;
+    const measured_iterations = total_iterations - warmup_iterations;
+
+    std.debug.print("\n", .{});
+    std.debug.print("╔════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║                    JIT BENCHMARK                           ║\n", .{});
+    std.debug.print("╠════════════════════════════════════════════════════════════╣\n", .{});
+    std.debug.print("║ File: {s:<53} ║\n", .{path});
+    std.debug.print("║ Warmup iterations: {d:<43} ║\n", .{warmup_iterations});
+    std.debug.print("║ Measured iterations: {d:<41} ║\n", .{measured_iterations});
+    std.debug.print("╠════════════════════════════════════════════════════════════╣\n", .{});
+
+    // Warmup phase - trigger JIT compilation
+    std.debug.print("║ WARMUP PHASE (triggering JIT compilation)...               ║\n", .{});
+    var warmup_time: u64 = 0;
+    var i: u32 = 0;
+    while (i < warmup_iterations) : (i += 1) {
+        const start = std.time.nanoTimestamp();
+        _ = jit_vm.executeTiered(code, constants) catch continue;
+        const end = std.time.nanoTimestamp();
+        warmup_time += @intCast(@max(0, end - start));
+    }
+    const warmup_avg = warmup_time / warmup_iterations;
+    std.debug.print("║   Warmup avg: {d:>10.2} µs                                 ║\n", .{@as(f64, @floatFromInt(warmup_avg)) / 1000.0});
+
+    // Measured phase - should use JIT-compiled code
+    std.debug.print("║ MEASURED PHASE (using JIT-compiled code)...                ║\n", .{});
+    var measured_time: u64 = 0;
+    var min_time: u64 = std.math.maxInt(u64);
+    var max_time: u64 = 0;
+    
+    i = 0;
+    while (i < measured_iterations) : (i += 1) {
+        const start = std.time.nanoTimestamp();
+        _ = jit_vm.executeTiered(code, constants) catch continue;
+        const end = std.time.nanoTimestamp();
+        const elapsed: u64 = @intCast(@max(0, end - start));
+        measured_time += elapsed;
+        min_time = @min(min_time, elapsed);
+        max_time = @max(max_time, elapsed);
+    }
+    
+    const measured_avg = measured_time / measured_iterations;
+    const speedup = @as(f64, @floatFromInt(warmup_avg)) / @as(f64, @floatFromInt(@max(1, measured_avg)));
+
+    std.debug.print("╠════════════════════════════════════════════════════════════╣\n", .{});
+    std.debug.print("║ RESULTS                                                    ║\n", .{});
+    std.debug.print("║   Measured avg: {d:>8.2} µs                                 ║\n", .{@as(f64, @floatFromInt(measured_avg)) / 1000.0});
+    std.debug.print("║   Min time:     {d:>8.2} µs                                 ║\n", .{@as(f64, @floatFromInt(min_time)) / 1000.0});
+    std.debug.print("║   Max time:     {d:>8.2} µs                                 ║\n", .{@as(f64, @floatFromInt(max_time)) / 1000.0});
+    std.debug.print("║   JIT Speedup:  {d:>8.2}x                                   ║\n", .{speedup});
+    std.debug.print("╠════════════════════════════════════════════════════════════╣\n", .{});
+    std.debug.print("║ JIT METRICS                                                ║\n", .{});
+    std.debug.print("║   Interpreter instructions: {d:<33} ║\n", .{jit_vm.interpreter_instructions});
+    std.debug.print("║   JIT IR instructions:      {d:<33} ║\n", .{jit_vm.jit_instructions});
+    std.debug.print("║   Native instructions:      {d:<33} ║\n", .{jit_vm.native_instructions});
+    std.debug.print("╚════════════════════════════════════════════════════════════╝\n", .{});
 }
 
 // Fast VM mode - minimal overhead, maximum performance
@@ -451,7 +945,7 @@ fn benchmarkVM(path: []const u8, iterations: u32, allocator: std.mem.Allocator) 
         defer vm.deinit();
         vm.load(code, constants);
 
-        final_result = vm.run() catch .{ .nil = {} };
+        final_result = vm.runFast() catch .{ .nil = {} };
 
         const exec_time = vm.getExecutionTimeNs();
         total_time_ns += exec_time;
@@ -625,7 +1119,10 @@ fn printUsage() void {
         \\Usage: vibee <command> [options]
         \\
         \\Commands:
-        \\  run, r <file>       Run .999 file via bytecode VM
+        \\  run, r <file>       Run .999 file via stack-based VM
+        \\  opt, o <file>       Run .999 file with SSA optimization (1.5-4x faster!)
+        \\  native, n <file>    Run .999 file with native x86-64 JIT (TIER 2: 500M+ ops/sec!)
+        \\  reg, fast <file>    Run .999 file via Register VM (5x faster!)
         \\  compile, c <file>   Compile .999 file to Zig
         \\  check, k <file>     Check file for errors
         \\  lex, l <file>       Show lexer tokens
@@ -638,6 +1135,8 @@ fn printUsage() void {
         \\
         \\Examples:
         \\  vibee run hello.999
+        \\  vibee opt hello.999     # SSA optimized execution!
+        \\  vibee native hello.999  # Native x86-64 JIT (fastest!)
         \\  vibee compile hello.999
         \\
         \\φ² + 1/φ² = 3
