@@ -139,13 +139,25 @@ pub const Tokenizer = struct {
         for (tokens) |token| {
             if (token < self.vocab_size) {
                 const text = self.vocab[token];
-                // Replace special space character with regular space
+                // Replace special space characters with regular space
                 var i: usize = 0;
                 while (i < text.len) {
+                    // Llama-style space: ▁ (U+2581) = 0xE2 0x96 0x81
                     if (i + 2 < text.len and text[i] == 0xE2 and text[i + 1] == 0x96 and text[i + 2] == 0x81) {
                         try result.append(' ');
                         i += 3;
-                    } else {
+                    }
+                    // GPT-2 style space: Ġ (U+0120) = 0xC4 0xA0
+                    else if (i + 1 < text.len and text[i] == 0xC4 and text[i + 1] == 0xA0) {
+                        try result.append(' ');
+                        i += 2;
+                    }
+                    // Newline token: Ċ (U+010A) = 0xC4 0x8A
+                    else if (i + 1 < text.len and text[i] == 0xC4 and text[i + 1] == 0x8A) {
+                        try result.append('\n');
+                        i += 2;
+                    }
+                    else {
                         try result.append(text[i]);
                         i += 1;
                     }
