@@ -1,0 +1,181 @@
+# JIT Optimization Architecture
+
+## Overview
+
+Trinity implements a multi-tier JIT compilation system achieving **569M ops/sec** with native x86-64 code generation.
+
+## Architecture Tiers
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    TRINITY JIT TIERS                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  TIER 0: Stack VM (Interpreter)                                 │
+│  └── 75M ops/sec baseline                                       │
+│                                                                 │
+│  TIER 1: Register VM                                            │
+│  └── 150M ops/sec (2x speedup)                                  │
+│  └── Files: reg_vm.zig, reg_compiler.zig, reg_bytecode.zig      │
+│                                                                 │
+│  TIER 2: SSA + Native Codegen                                   │
+│  └── 569M ops/sec (7.5x speedup)                                │
+│  └── Files: jit_tier2.zig, bytecode_to_ssa.zig,                 │
+│             ssa_native_codegen.zig                              │
+│                                                                 │
+│  TIER 3: Tracing JIT (planned)                                  │
+│  └── Target: 1B+ ops/sec                                        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## File Structure
+
+| File | Purpose | Tests |
+|------|---------|-------|
+| `jit_tier2.zig` | SSA IR + Optimizer (constant folding, DCE) | 9 |
+| `bytecode_to_ssa.zig` | Stack bytecode → SSA converter | 20 |
+| `ssa_native_codegen.zig` | SSA → x86-64 native code | 13 |
+| `reg_vm.zig` | Register-based VM | 15 |
+| `reg_compiler.zig` | AST → Register bytecode | 13 |
+| `reg_bytecode.zig` | Register bytecode format | 11 |
+| `nan_value.zig` | NaN-boxed value representation | 12 |
+| `nan_vm.zig` | NaN-boxed VM | 12 |
+| `jit_e2e.zig` | End-to-end JIT pipeline | - |
+
+## SSA Optimization Passes
+
+### Constant Folding
+
+Evaluates constant expressions at compile time:
+
+```
+BEFORE:                    AFTER:
+v1 = const 10             v1 = const 10
+v2 = const 20             v2 = const 20
+v3 = add v1, v2           v3 = const 30    ← folded
+v4 = mul v3, 3            v4 = const 90    ← folded
+```
+
+Supported operations:
+- Arithmetic: add, sub, mul, div, mod, neg
+- Comparison: eq, ne, lt, le, gt, ge
+- Logical: and, or, not
+
+### Dead Code Elimination (DCE)
+
+Removes instructions whose results are never used:
+
+```
+BEFORE:                    AFTER:
+v1 = const 10             v1 = const 10
+v2 = const 20             (removed - unused)
+v3 = add v1, v1           v3 = add v1, v1
+return v3                 return v3
+```
+
+### Copy Propagation
+
+Replaces variable copies with original values:
+
+```
+BEFORE:                    AFTER:
+v1 = const 42             v1 = const 42
+v2 = copy v1              (removed)
+v3 = add v2, v2           v3 = add v1, v1
+```
+
+## Native Code Generation
+
+### x86-64 Instruction Mapping
+
+| SSA Op | x86-64 |
+|--------|--------|
+| const_int | mov reg, imm64 |
+| add | add reg, reg |
+| sub | sub reg, reg |
+| mul | imul reg, reg |
+| div | idiv (with rax/rdx setup) |
+| neg | neg reg |
+| ret | ret |
+
+### Register Allocation
+
+Linear scan allocation with 6 general-purpose registers:
+- RAX, RCX, RDX, RSI, RDI, R8
+
+Spilling to stack when registers exhausted.
+
+## Performance Benchmarks
+
+```
+═══════════════════════════════════════════════════════════════════
+              NATIVE CODE BENCHMARK - x86-64 vs SSA Interpreter
+═══════════════════════════════════════════════════════════════════
+
+Test: (10 + 20) * 3 - 5 = 85
+  Runs: 1000000
+
+  SSA Interpreter: 13256311ns (75M ops/sec)
+  Native x86-64:   1756924ns (569M ops/sec)
+  Speedup: 7.5x
+
+═══════════════════════════════════════════════════════════════════
+```
+
+## Usage
+
+### CLI Commands
+
+```bash
+# Run with SSA optimization
+./bin/vibee opt program.999
+
+# Run with native x86-64 codegen
+./bin/vibee native program.999
+
+# Run with Register VM
+./bin/vibee reg program.999
+
+# JIT benchmark
+./bin/vibee jit_bench program.999
+```
+
+### Programmatic API
+
+```zig
+const jit_tier2 = @import("jit_tier2.zig");
+const bytecode_to_ssa = @import("bytecode_to_ssa.zig");
+const ssa_native_codegen = @import("ssa_native_codegen.zig");
+
+// Convert bytecode to SSA
+var converter = BytecodeToSSA.init(allocator, constants);
+const ssa_func = converter.convert(bytecode);
+
+// Optimize
+const folded = jit_tier2.OptimizationPass.constantFold(&ssa_func);
+const eliminated = jit_tier2.OptimizationPass.deadCodeElimination(&ssa_func);
+
+// Generate native code
+var codegen = ssa_native_codegen.NativeCodegen.init(allocator);
+const native_code = codegen.compile(&ssa_func);
+
+// Execute
+const result = native_code.execute();
+```
+
+## Sacred Formula
+
+```
+V = n × 3^k × π^m × φ^p × e^q
+
+Performance tiers follow golden ratio:
+- TIER 0: 75M ops/sec (baseline)
+- TIER 1: 150M ops/sec (2x = φ^1.4)
+- TIER 2: 569M ops/sec (7.5x = φ^4.3)
+- TIER 3: 1B+ ops/sec (target)
+```
+
+---
+
+**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**

@@ -31,4 +31,5 @@ Trinity is a unified architecture for hyperdimensional computing and ternary neu
 ## Performance
 
 - [Performance Rules](PERFORMANCE_RULES.md) - Optimization guidelines
+- [JIT Optimization](JIT_OPTIMIZATION.md) - Multi-tier JIT (569M ops/sec)
 - [Gorynych v4](GORYNYCH_V4.md) - Performance engine
