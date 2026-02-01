@@ -44,6 +44,8 @@ pub fn main() !void {
         var model_path: ?[]const u8 = null;
         var prompt: ?[]const u8 = null;
         var max_tokens: u32 = 100;
+        var temperature: f32 = 0.7;
+        var top_p: f32 = 0.9;
 
         var i: usize = 2;
         while (i < args.len) : (i += 1) {
@@ -56,6 +58,12 @@ pub fn main() !void {
             } else if (std.mem.eql(u8, args[i], "--max-tokens") and i + 1 < args.len) {
                 max_tokens = std.fmt.parseInt(u32, args[i + 1], 10) catch 100;
                 i += 1;
+            } else if (std.mem.eql(u8, args[i], "--temperature") and i + 1 < args.len) {
+                temperature = std.fmt.parseFloat(f32, args[i + 1]) catch 0.7;
+                i += 1;
+            } else if (std.mem.eql(u8, args[i], "--top-p") and i + 1 < args.len) {
+                top_p = std.fmt.parseFloat(f32, args[i + 1]) catch 0.9;
+                i += 1;
             }
         }
 
@@ -64,7 +72,7 @@ pub fn main() !void {
             return;
         }
 
-        try gguf_chat.runChat(allocator, model_path.?, prompt, max_tokens);
+        try gguf_chat.runChat(allocator, model_path.?, prompt, max_tokens, temperature, top_p);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {
@@ -86,6 +94,8 @@ fn printUsage() void {
         \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
         \\    --prompt "text"                           Initial prompt
         \\    --max-tokens N                            Max tokens to generate (default: 100)
+        \\    --temperature F                           Sampling temperature (default: 0.7)
+        \\    --top-p F                                 Top-p nucleus sampling (default: 0.9)
         \\  vibeec help                                 Show this help
         \\
     , .{});
