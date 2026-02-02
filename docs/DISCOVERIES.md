@@ -206,13 +206,72 @@ Where:
 - [x] INF-003: KV Cache Optimization (+50% speed) ✅ Implemented
 - [ ] INF-004: Batch Processing (+300% throughput)
 - [ ] OPT-001: SIMD Vectorization (+400% matrix ops)
-- [ ] OPT-004: Flash Attention (+200% attention)
+- [x] OPT-004: Flash Attention (+10-20% attention, O(n) memory) ✅ Implemented
 
 ### Locked (Future)
 
 - [ ] CORE-004: JIT Compilation
 - [ ] HW-001: GPU Backend (CUDA)
 - [ ] HW-002: Metal Backend (Apple)
+
+---
+
+## Flash Attention (OPT-004)
+
+**Status**: ✅ Implemented
+
+### Implementation Details
+
+| Component | File | Description |
+|-----------|------|-------------|
+| OnlineSoftmaxState | `flash_attention.zig` | Incremental softmax without full matrix |
+| simdDot | `flash_attention.zig` | SIMD-accelerated dot product |
+| flashAttentionHead | `flash_attention.zig` | Single head with tiling |
+| flashAttentionGQA | `flash_attention.zig` | Multi-head with GQA support |
+| standardAttention | `flash_attention.zig` | Baseline for comparison |
+
+### Algorithm: Online Softmax
+
+```
+Key insight: softmax(x) = exp(x - max) / sum(exp(x - max))
+
+For each KV tile:
+  1. Find block_max
+  2. If block_max > global_max:
+     - Rescale: sum_exp *= exp(old_max - new_max)
+     - Rescale: output *= exp(old_max - new_max)
+  3. Accumulate: sum_exp += exp(score - new_max)
+  4. Accumulate: output += exp(score - new_max) * V
+  5. Update global_max
+
+Finalize: output /= sum_exp
+```
+
+### Memory Analysis
+
+| Method | Scores Memory | Total |
+|--------|---------------|-------|
+| Standard | O(seq_len) per head | O(num_heads * seq_len) |
+| Flash | O(TILE_SIZE_KV) constant | O(num_heads * head_dim) |
+| Savings | seq_len / 64 reduction | ~16x for 1024 tokens |
+
+### Benchmark Results (32 heads, 64 head_dim)
+
+| Seq Len | Standard (ms) | Flash (ms) | Speedup |
+|---------|---------------|------------|---------|
+| 32 | 0.040 | 0.035 | 1.13x |
+| 64 | 0.074 | 0.068 | 1.09x |
+| 128 | 0.152 | 0.138 | 1.10x |
+| 256 | 0.300 | 0.278 | 1.08x |
+| 512 | 0.605 | 0.544 | 1.11x |
+| 1024 | 1.384 | 1.184 | 1.17x |
+
+**Note**: Main benefit is memory reduction, not speed on CPU. GPU implementations see 2-4x speedup due to memory bandwidth.
+
+### Integration
+
+- `tri_inference.zig`: Uses `flash.simdDot` for attention scores
+- Full `flashAttentionGQA` available but not yet integrated (requires refactoring)
 
 ---
 
