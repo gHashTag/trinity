@@ -745,6 +745,100 @@ pub const GGUFModel = struct {
     }
 };
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// MMAP GGUF MODEL - Near-instant loading via memory mapping
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// GGUF Model using memory-mapped file (zero-copy tensor access)
+pub const MmapGGUFModel = struct {
+    allocator: std.mem.Allocator,
+    reader: gguf.MmapGGUFReader,
+    config: ModelConfig,
+
+    // Dequantized weights (loaded on demand)
+    token_embedding: ?[]f32,
+    output_weight: ?[]f32,
+    output_norm: ?[]f32,
+
+    pub fn init(allocator: std.mem.Allocator, path: []const u8) !MmapGGUFModel {
+        var reader = try gguf.MmapGGUFReader.init(allocator, path);
+        errdefer reader.deinit();
+
+        const arch = reader.getMetadataString("general.architecture") orelse "llama";
+
+        var key_buf: [64]u8 = undefined;
+
+        const vocab_size = blk: {
+            if (reader.getTensor("output.weight")) |t| {
+                break :blk @as(u32, @intCast(t.dims[1]));
+            }
+            break :blk @as(u32, 32000);
+        };
+
+        const config = ModelConfig{
+            .vocab_size = vocab_size,
+            .hidden_size = @intCast(reader.getMetadataU32(std.fmt.bufPrint(&key_buf, "{s}.embedding_length", .{arch}) catch "llama.embedding_length") orelse 2048),
+            .intermediate_size = @intCast(reader.getMetadataU32(std.fmt.bufPrint(&key_buf, "{s}.feed_forward_length", .{arch}) catch "llama.feed_forward_length") orelse 5632),
+            .num_layers = @intCast(reader.getMetadataU32(std.fmt.bufPrint(&key_buf, "{s}.block_count", .{arch}) catch "llama.block_count") orelse 22),
+            .num_heads = @intCast(reader.getMetadataU32(std.fmt.bufPrint(&key_buf, "{s}.attention.head_count", .{arch}) catch "llama.attention.head_count") orelse 32),
+            .num_kv_heads = @intCast(reader.getMetadataU32(std.fmt.bufPrint(&key_buf, "{s}.attention.head_count_kv", .{arch}) catch "llama.attention.head_count_kv") orelse 4),
+            .head_dim = 0,
+            .context_length = @intCast(reader.getMetadataU32(std.fmt.bufPrint(&key_buf, "{s}.context_length", .{arch}) catch "llama.context_length") orelse 2048),
+            .rope_theta = reader.getMetadataF32(std.fmt.bufPrint(&key_buf, "{s}.rope.freq_base", .{arch}) catch "llama.rope.freq_base") orelse 10000.0,
+            .rms_norm_eps = reader.getMetadataF32(std.fmt.bufPrint(&key_buf, "{s}.attention.layer_norm_rms_epsilon", .{arch}) catch "llama.attention.layer_norm_rms_epsilon") orelse 1e-5,
+        };
+
+        var model = MmapGGUFModel{
+            .allocator = allocator,
+            .reader = reader,
+            .config = config,
+            .token_embedding = null,
+            .output_weight = null,
+            .output_norm = null,
+        };
+
+        model.config.head_dim = model.config.hidden_size / model.config.num_heads;
+
+        return model;
+    }
+
+    pub fn deinit(self: *MmapGGUFModel) void {
+        if (self.token_embedding) |e| self.allocator.free(e);
+        if (self.output_weight) |w| self.allocator.free(w);
+        if (self.output_norm) |n| self.allocator.free(n);
+        self.reader.deinit();
+    }
+
+    /// Load embeddings using mmap (zero-copy read, then dequantize)
+    pub fn loadEmbeddings(self: *MmapGGUFModel) !void {
+        // Load token embeddings
+        if (self.reader.getTensor("token_embd.weight")) |info| {
+            const data = self.reader.getTensorData(info); // Zero-copy!
+            self.token_embedding = try dequantizeTensor(self.allocator, data, info.tensor_type, info.numElements());
+        }
+
+        // Load output weights
+        if (self.reader.getTensor("output.weight")) |info| {
+            const data = self.reader.getTensorData(info); // Zero-copy!
+            self.output_weight = try dequantizeTensor(self.allocator, data, info.tensor_type, info.numElements());
+        }
+
+        // Load output norm
+        if (self.reader.getTensor("output_norm.weight")) |info| {
+            const data = self.reader.getTensorData(info); // Zero-copy!
+            self.output_norm = try dequantizeTensor(self.allocator, data, info.tensor_type, info.numElements());
+        }
+    }
+
+    /// Get tensor data directly from mmap (zero-copy)
+    pub fn getTensorData(self: *const MmapGGUFModel, name: []const u8) ?[]const u8 {
+        if (self.reader.getTensor(name)) |info| {
+            return self.reader.getTensorData(info);
+        }
+        return null;
+    }
+};
+
 // Tests
 test "dequantize_q8_0" {
     const allocator = std.testing.allocator;

@@ -1,0 +1,89 @@
+# mmap_loader.vibee
+# Memory-mapped model loading for fast startup and reduced memory
+# Target: -90% load time, -50% memory usage
+
+name: mmap_loader
+version: "1.0.0"
+language: zig
+module: mmap_loader
+
+types:
+  MmapFile:
+    description: "Memory-mapped file handle"
+    fields:
+      data: List<u8>        # Mapped memory region
+      size: Int             # File size
+      fd: Int               # File descriptor (for cleanup)
+
+  MmapGGUFReader:
+    description: "GGUF reader using memory mapping"
+    fields:
+      mmap: MmapFile        # Mapped file
+      header: Object        # GGUF header
+      tensors: List<Object> # Tensor info list
+      data_offset: Int      # Offset to tensor data
+
+behaviors:
+  - name: mmap_open
+    given: file path
+    when: opening file for memory mapping
+    then: returns MmapFile with mapped memory region
+
+  - name: mmap_close
+    given: MmapFile handle
+    when: closing memory-mapped file
+    then: unmaps memory and closes file descriptor
+
+  - name: mmap_gguf_init
+    given: file path, allocator
+    when: initializing GGUF reader with mmap
+    then: maps file and parses header/metadata from mapped memory
+
+  - name: get_tensor_slice
+    given: tensor info
+    when: accessing tensor data
+    then: returns slice into mapped memory (zero-copy)
+
+  - name: dequantize_lazy
+    given: tensor slice, output buffer
+    when: dequantizing tensor on first access
+    then: converts quantized data to f32 in-place
+
+# Architecture:
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │                    MMAP LOADING                             │
+# ├─────────────────────────────────────────────────────────────┤
+# │                                                             │
+# │  Traditional Loading:                                       │
+# │  ┌──────┐    ┌──────────┐    ┌──────────┐                   │
+# │  │ File │───▶│ Allocate │───▶│   Copy   │ = Slow + 2x mem   │
+# │  └──────┘    └──────────┘    └──────────┘                   │
+# │                                                             │
+# │  MMAP Loading:                                              │
+# │  ┌──────┐    ┌──────────┐                                   │
+# │  │ File │───▶│   mmap   │ = Fast + shared memory            │
+# │  └──────┘    └──────────┘                                   │
+# │                 │                                           │
+# │                 ▼                                           │
+# │  ┌─────────────────────────────────────────┐                │
+# │  │     Virtual Memory (OS manages pages)   │                │
+# │  │  ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐        │                │
+# │  │  │Page1│ │Page2│ │Page3│ │ ... │        │                │
+# │  │  └─────┘ └─────┘ └─────┘ └─────┘        │                │
+# │  │     ↑ Loaded on demand (page fault)     │                │
+# │  └─────────────────────────────────────────┘                │
+# │                                                             │
+# └─────────────────────────────────────────────────────────────┘
+#
+# Benefits:
+# 1. Near-instant "load" (just map, no copy)
+# 2. OS handles page caching efficiently
+# 3. Multiple processes can share same mapping
+# 4. Only accessed pages loaded into RAM
+# 5. Automatic memory pressure handling (OS can evict pages)
+#
+# Expected Performance:
+# - Load time: 200s → 0.1s (2000x faster)
+# - Memory: 2x model size → 1x model size (50% reduction)
+# - First token latency: +10ms (page fault overhead)

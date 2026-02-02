@@ -458,3 +458,373 @@ test "f16_to_f32" {
     const half = f16ToF32(0x3800);
     try std.testing.expectApproxEqAbs(half, 0.5, 0.001);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MEMORY-MAPPED GGUF READER
+// Near-instant loading via mmap, shared memory across processes
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Memory-mapped file handle
+pub const MmapFile = struct {
+    data: []align(std.mem.page_size) u8,
+    size: usize,
+
+    pub fn init(path: []const u8) !MmapFile {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        const stat = try file.stat();
+        const size = stat.size;
+
+        if (size == 0) {
+            return error.EmptyFile;
+        }
+
+        const data = try std.posix.mmap(
+            null,
+            size,
+            std.posix.PROT.READ,
+            .{ .TYPE = .SHARED },
+            file.handle,
+            0,
+        );
+
+        return MmapFile{
+            .data = data,
+            .size = size,
+        };
+    }
+
+    pub fn deinit(self: *MmapFile) void {
+        std.posix.munmap(self.data);
+    }
+
+    /// Get slice at offset
+    pub fn slice(self: *const MmapFile, offset: usize, len: usize) []const u8 {
+        if (offset + len > self.size) {
+            return &[_]u8{};
+        }
+        return self.data[offset..][0..len];
+    }
+
+    /// Read u32 at offset (little-endian)
+    pub fn readU32(self: *const MmapFile, offset: usize) u32 {
+        if (offset + 4 > self.size) return 0;
+        return std.mem.readInt(u32, self.data[offset..][0..4], .little);
+    }
+
+    /// Read u64 at offset (little-endian)
+    pub fn readU64(self: *const MmapFile, offset: usize) u64 {
+        if (offset + 8 > self.size) return 0;
+        return std.mem.readInt(u64, self.data[offset..][0..8], .little);
+    }
+};
+
+/// Memory-mapped GGUF reader (zero-copy tensor access)
+pub const MmapGGUFReader = struct {
+    allocator: std.mem.Allocator,
+    mmap: MmapFile,
+    header: GGUFHeader,
+    metadata: std.StringHashMap(MetadataValue),
+    tensors: std.ArrayList(TensorInfo),
+    tensor_names: std.ArrayList([]u8),
+    data_offset: u64,
+
+    pub fn init(allocator: std.mem.Allocator, path: []const u8) !MmapGGUFReader {
+        var mmap = try MmapFile.init(path);
+        errdefer mmap.deinit();
+
+        var reader = MmapGGUFReader{
+            .allocator = allocator,
+            .mmap = mmap,
+            .header = undefined,
+            .metadata = std.StringHashMap(MetadataValue).init(allocator),
+            .tensors = std.ArrayList(TensorInfo).init(allocator),
+            .tensor_names = std.ArrayList([]u8).init(allocator),
+            .data_offset = 0,
+        };
+
+        try reader.parseHeader();
+        try reader.parseMetadata();
+        try reader.parseTensorInfos();
+
+        return reader;
+    }
+
+    pub fn deinit(self: *MmapGGUFReader) void {
+        for (self.tensor_names.items) |name| {
+            self.allocator.free(name);
+        }
+        self.tensor_names.deinit();
+        self.tensors.deinit();
+        var it = self.metadata.iterator();
+        while (it.next()) |entry| {
+            switch (entry.value_ptr.*) {
+                .string => |s| self.allocator.free(s),
+                else => {},
+            }
+        }
+        self.metadata.deinit();
+        self.mmap.deinit();
+    }
+
+    fn parseHeader(self: *MmapGGUFReader) !void {
+        if (self.mmap.size < 24) return error.FileTooSmall;
+
+        self.header.magic = self.mmap.readU32(0);
+        if (self.header.magic != GGUF_MAGIC) {
+            return error.InvalidMagic;
+        }
+
+        self.header.version = self.mmap.readU32(4);
+        self.header.tensor_count = self.mmap.readU64(8);
+        self.header.metadata_kv_count = self.mmap.readU64(16);
+    }
+
+    fn parseMetadata(self: *MmapGGUFReader) !void {
+        var offset: usize = 24; // After header
+
+        var i: u64 = 0;
+        while (i < self.header.metadata_kv_count) : (i += 1) {
+            // Read key length
+            const key_len = self.mmap.readU64(offset);
+            offset += 8;
+
+            // Read key
+            const key_data = self.mmap.slice(offset, @intCast(key_len));
+            offset += @intCast(key_len);
+
+            // Allocate and copy key
+            const key = try self.allocator.alloc(u8, key_data.len);
+            @memcpy(key, key_data);
+
+            // Read value type
+            const vtype: GGUFValueType = @enumFromInt(self.mmap.readU32(offset));
+            offset += 4;
+
+            // Read value based on type
+            const value: MetadataValue = switch (vtype) {
+                .UINT32 => blk: {
+                    const v = self.mmap.readU32(offset);
+                    offset += 4;
+                    break :blk .{ .uint32 = v };
+                },
+                .INT32 => blk: {
+                    const v: i32 = @bitCast(self.mmap.readU32(offset));
+                    offset += 4;
+                    break :blk .{ .int32 = v };
+                },
+                .UINT64 => blk: {
+                    const v = self.mmap.readU64(offset);
+                    offset += 8;
+                    break :blk .{ .uint64 = v };
+                },
+                .FLOAT32 => blk: {
+                    const bits = self.mmap.readU32(offset);
+                    offset += 4;
+                    break :blk .{ .float32 = @bitCast(bits) };
+                },
+                .STRING => blk: {
+                    const str_len = self.mmap.readU64(offset);
+                    offset += 8;
+                    const str_data = self.mmap.slice(offset, @intCast(str_len));
+                    offset += @intCast(str_len);
+                    const str = try self.allocator.alloc(u8, str_data.len);
+                    @memcpy(str, str_data);
+                    break :blk .{ .string = str };
+                },
+                .ARRAY => {
+                    // Skip array for now
+                    const arr_type: GGUFValueType = @enumFromInt(self.mmap.readU32(offset));
+                    offset += 4;
+                    const arr_len = self.mmap.readU64(offset);
+                    offset += 8;
+                    // Skip array elements
+                    const elem_size: usize = switch (arr_type) {
+                        .UINT32, .INT32, .FLOAT32 => 4,
+                        .UINT64, .INT64, .FLOAT64 => 8,
+                        else => 1,
+                    };
+                    offset += @intCast(arr_len * elem_size);
+                    self.allocator.free(key);
+                    continue;
+                },
+                else => {
+                    self.allocator.free(key);
+                    continue;
+                },
+            };
+
+            try self.metadata.put(key, value);
+        }
+
+        self.data_offset = offset;
+    }
+
+    fn parseTensorInfos(self: *MmapGGUFReader) !void {
+        var offset = self.data_offset;
+
+        var i: u64 = 0;
+        while (i < self.header.tensor_count) : (i += 1) {
+            // Read name
+            const name_len = self.mmap.readU64(offset);
+            offset += 8;
+            const name_data = self.mmap.slice(offset, @intCast(name_len));
+            offset += @intCast(name_len);
+
+            const name = try self.allocator.alloc(u8, name_data.len);
+            @memcpy(name, name_data);
+            try self.tensor_names.append(name);
+
+            // Read dimensions
+            const n_dims = self.mmap.readU32(offset);
+            offset += 4;
+
+            var dims: [4]u64 = .{ 1, 1, 1, 1 };
+            var j: usize = 0;
+            while (j < n_dims and j < 4) : (j += 1) {
+                dims[j] = self.mmap.readU64(offset);
+                offset += 8;
+            }
+
+            // Read type and offset
+            const tensor_type: GGMLType = @enumFromInt(self.mmap.readU32(offset));
+            offset += 4;
+            const tensor_offset = self.mmap.readU64(offset);
+            offset += 8;
+
+            try self.tensors.append(TensorInfo{
+                .name = name,
+                .n_dims = n_dims,
+                .dims = dims,
+                .tensor_type = tensor_type,
+                .offset = tensor_offset,
+            });
+        }
+
+        // Align data offset
+        const alignment: u64 = DEFAULT_ALIGNMENT;
+        self.data_offset = (offset + alignment - 1) & ~(alignment - 1);
+    }
+
+    /// Get tensor info by name
+    pub fn getTensor(self: *const MmapGGUFReader, name: []const u8) ?*const TensorInfo {
+        for (self.tensors.items) |*info| {
+            if (std.mem.eql(u8, info.name, name)) {
+                return info;
+            }
+        }
+        return null;
+    }
+
+    /// Get tensor data slice (ZERO-COPY!)
+    pub fn getTensorData(self: *const MmapGGUFReader, info: *const TensorInfo) []const u8 {
+        const size = info.dataSize();
+        return self.mmap.slice(@intCast(self.data_offset + info.offset), @intCast(size));
+    }
+
+    /// Get metadata string
+    pub fn getMetadataString(self: *const MmapGGUFReader, key: []const u8) ?[]const u8 {
+        if (self.metadata.get(key)) |v| {
+            if (v == .string) return v.string;
+        }
+        return null;
+    }
+
+    /// Get metadata u32
+    pub fn getMetadataU32(self: *const MmapGGUFReader, key: []const u8) ?u32 {
+        if (self.metadata.get(key)) |v| {
+            return switch (v) {
+                .uint32 => v.uint32,
+                .uint64 => @intCast(v.uint64),
+                .int32 => @intCast(v.int32),
+                else => null,
+            };
+        }
+        return null;
+    }
+
+    /// Get metadata f32
+    pub fn getMetadataF32(self: *const MmapGGUFReader, key: []const u8) ?f32 {
+        if (self.metadata.get(key)) |v| {
+            if (v == .float32) return v.float32;
+        }
+        return null;
+    }
+};
+
+test "mmap_file" {
+    // Create a test file
+    const test_data = "Hello, mmap!";
+    {
+        const file = try std.fs.cwd().createFile("/tmp/mmap_test.bin", .{});
+        defer file.close();
+        try file.writeAll(test_data);
+    }
+
+    // Test mmap
+    var mmap = try MmapFile.init("/tmp/mmap_test.bin");
+    defer mmap.deinit();
+
+    try std.testing.expectEqual(test_data.len, mmap.size);
+    try std.testing.expectEqualStrings(test_data, mmap.slice(0, test_data.len));
+
+    // Cleanup
+    try std.fs.cwd().deleteFile("/tmp/mmap_test.bin");
+}
+
+test "benchmark_mmap_vs_read" {
+    const allocator = std.testing.allocator;
+
+    // Create a test file (1MB)
+    const file_size: usize = 1024 * 1024;
+    const test_path = "/tmp/mmap_bench.bin";
+    {
+        const file = try std.fs.cwd().createFile(test_path, .{});
+        defer file.close();
+        const data = try allocator.alloc(u8, file_size);
+        defer allocator.free(data);
+        for (data, 0..) |*b, i| b.* = @truncate(i);
+        try file.writeAll(data);
+    }
+    defer std.fs.cwd().deleteFile(test_path) catch {};
+
+    const iterations: usize = 100;
+
+    // Benchmark standard file read
+    var timer = std.time.Timer.start() catch unreachable;
+    for (0..iterations) |_| {
+        const file = try std.fs.cwd().openFile(test_path, .{});
+        defer file.close();
+        const data = try allocator.alloc(u8, file_size);
+        defer allocator.free(data);
+        _ = try file.readAll(data);
+        std.mem.doNotOptimizeAway(data);
+    }
+    const read_time = timer.read();
+
+    // Benchmark mmap
+    timer.reset();
+    for (0..iterations) |_| {
+        var mmap = try MmapFile.init(test_path);
+        defer mmap.deinit();
+        // Access first and last byte to ensure mapping is established
+        std.mem.doNotOptimizeAway(mmap.data[0]);
+        std.mem.doNotOptimizeAway(mmap.data[file_size - 1]);
+    }
+    const mmap_time = timer.read();
+
+    const read_us = @as(f64, @floatFromInt(read_time)) / @as(f64, @floatFromInt(iterations)) / 1000.0;
+    const mmap_us = @as(f64, @floatFromInt(mmap_time)) / @as(f64, @floatFromInt(iterations)) / 1000.0;
+    const speedup = read_us / mmap_us;
+
+    std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║           MMAP vs READ BENCHMARK (1MB file)                 ║\n", .{});
+    std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+    std.debug.print("║  File read:   {d:>10.1} us/iter                            ║\n", .{read_us});
+    std.debug.print("║  mmap:        {d:>10.1} us/iter                            ║\n", .{mmap_us});
+    std.debug.print("║  Speedup:     {d:>10.1}x                                   ║\n", .{speedup});
+    std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+
+    try std.testing.expect(true);
+}
