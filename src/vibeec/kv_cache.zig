@@ -542,6 +542,117 @@ pub const CacheStats = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// STREAMING ATTENTION (Sliding Window + Attention Sink)
+// Enables infinite context with fixed memory
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Compute streaming attention with sliding window mask
+/// Only attends to sink tokens + local window, ignoring evicted tokens
+pub fn streamingAttention(
+    output: []f32,
+    query: []const f32,
+    cache: *const RingKVCache,
+    head_idx: usize,
+    scores_buf: []f32,
+    scale: f32,
+) void {
+    const seq_len = cache.seqLen();
+    const head_dim = cache.head_dim;
+
+    if (seq_len == 0) {
+        @memset(output, 0.0);
+        return;
+    }
+
+    // Compute attention scores with window masking
+    var max_score: f32 = -std.math.inf(f32);
+
+    for (0..seq_len) |t| {
+        // Get logical position for window check
+        const logical_pos = if (cache.total_tokens <= cache.max_seq_len)
+            t
+        else
+            cache.total_tokens - cache.max_seq_len + t;
+
+        // Check if position is in window (sink or local)
+        const in_window = cache.isInWindow(logical_pos);
+
+        if (in_window) {
+            // Compute dot product
+            const k_vec = cache.getK(t, head_idx);
+            var dot: f32 = 0.0;
+            for (0..head_dim) |j| {
+                dot += query[j] * k_vec[j];
+            }
+            scores_buf[t] = dot * scale;
+            if (scores_buf[t] > max_score) max_score = scores_buf[t];
+        } else {
+            // Mask out evicted tokens
+            scores_buf[t] = -std.math.inf(f32);
+        }
+    }
+
+    // Softmax (numerically stable)
+    var sum_exp: f32 = 0.0;
+    for (0..seq_len) |t| {
+        if (scores_buf[t] > -std.math.inf(f32)) {
+            scores_buf[t] = @exp(scores_buf[t] - max_score);
+            sum_exp += scores_buf[t];
+        } else {
+            scores_buf[t] = 0.0;
+        }
+    }
+
+    if (sum_exp > 0.0) {
+        for (0..seq_len) |t| {
+            scores_buf[t] /= sum_exp;
+        }
+    }
+
+    // Weighted sum of V
+    @memset(output, 0.0);
+    for (0..seq_len) |t| {
+        if (scores_buf[t] > 0.0) {
+            const v_vec = cache.getV(t, head_idx);
+            const score_val = scores_buf[t];
+            for (0..head_dim) |j| {
+                output[j] += score_val * v_vec[j];
+            }
+        }
+    }
+}
+
+/// Compression statistics for streaming mode
+pub const CompressionStats = struct {
+    total_tokens_seen: usize,
+    tokens_in_cache: usize,
+    evicted_tokens: usize,
+    compression_ratio: f32,
+    memory_saved_bytes: usize,
+    effective_context: usize, // sink + local window
+
+    pub fn fromCache(cache: *const RingKVCache) CompressionStats {
+        const cfg = cache.window_config;
+        const effective = @min(cache.total_tokens, cfg.sink_tokens + cfg.local_tokens);
+        const full_memory = cache.total_tokens * cache.num_kv_heads * cache.head_dim * 2 * @sizeOf(f32);
+        const actual_memory = cache.memoryUsage();
+        const saved = if (full_memory > actual_memory) full_memory - actual_memory else 0;
+
+        return CompressionStats{
+            .total_tokens_seen = cache.total_tokens,
+            .tokens_in_cache = cache.seqLen(),
+            .evicted_tokens = cache.evicted_tokens,
+            .compression_ratio = if (cache.total_tokens > 0)
+                @as(f32, @floatFromInt(cache.total_tokens)) / @as(f32, @floatFromInt(cache.seqLen()))
+            else
+                1.0,
+            .memory_saved_bytes = saved,
+            .effective_context = effective,
+        };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TERNARY KV-CACHE (OPT-T03)
 // 16x memory reduction via 2-bit quantization
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1327,4 +1438,89 @@ test "batch kv cache" {
     const seq2 = batch.addSequence();
     try std.testing.expect(seq2 != null);
     try std.testing.expectEqual(@as(usize, 2), batch.activeCount());
+}
+
+test "streaming_attention_window" {
+    const allocator = std.testing.allocator;
+
+    // Create cache with small window for testing
+    const window_config = SlidingWindowConfig{
+        .window_size = 16,
+        .sink_tokens = 2, // Keep first 2 tokens
+        .local_tokens = 6, // Keep last 6 tokens
+    };
+
+    var cache = try RingKVCache.init(allocator, 1, 4, 16, window_config);
+    defer cache.deinit();
+
+    // Add 20 tokens (exceeds window)
+    for (0..20) |i| {
+        var k = [_]f32{ @floatFromInt(i), 0, 0, 0 };
+        var v = [_]f32{ 1, 0, 0, 0 };
+        cache.append(&k, &v);
+    }
+
+    // Check window membership
+    // Sink tokens (0, 1) should be in window
+    try std.testing.expect(cache.isInWindow(0));
+    try std.testing.expect(cache.isInWindow(1));
+
+    // Middle tokens should be evicted
+    try std.testing.expect(!cache.isInWindow(5));
+    try std.testing.expect(!cache.isInWindow(10));
+
+    // Recent tokens (14-19) should be in window
+    try std.testing.expect(cache.isInWindow(14));
+    try std.testing.expect(cache.isInWindow(19));
+
+    // Test streaming attention
+    const query = [_]f32{ 1, 0, 0, 0 };
+    var output: [4]f32 = undefined;
+    var scores: [16]f32 = undefined;
+
+    streamingAttention(&output, &query, &cache, 0, &scores, 1.0);
+
+    // Output should be non-zero (attention computed)
+    try std.testing.expect(output[0] != 0.0);
+}
+
+test "compression_stats" {
+    const allocator = std.testing.allocator;
+
+    const window_config = SlidingWindowConfig{
+        .window_size = 100,
+        .sink_tokens = 4,
+        .local_tokens = 96,
+    };
+
+    var cache = try RingKVCache.init(allocator, 4, 64, 100, window_config);
+    defer cache.deinit();
+
+    // Simulate long sequence
+    var k_buf: [256]f32 = undefined;
+    var v_buf: [256]f32 = undefined;
+    @memset(&k_buf, 0.1);
+    @memset(&v_buf, 0.2);
+
+    for (0..500) |_| {
+        cache.append(&k_buf, &v_buf);
+    }
+
+    const stats = CompressionStats.fromCache(&cache);
+
+    try std.testing.expectEqual(@as(usize, 500), stats.total_tokens_seen);
+    try std.testing.expectEqual(@as(usize, 100), stats.tokens_in_cache);
+    try std.testing.expectEqual(@as(usize, 400), stats.evicted_tokens);
+    try std.testing.expect(stats.compression_ratio >= 4.9); // 500/100 = 5x
+
+    std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║           KV CACHE COMPRESSION STATS                        ║\n", .{});
+    std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+    std.debug.print("║  Total tokens seen:    {d:>10}                            ║\n", .{stats.total_tokens_seen});
+    std.debug.print("║  Tokens in cache:      {d:>10}                            ║\n", .{stats.tokens_in_cache});
+    std.debug.print("║  Evicted tokens:       {d:>10}                            ║\n", .{stats.evicted_tokens});
+    std.debug.print("║  Compression ratio:    {d:>10.1}x                          ║\n", .{stats.compression_ratio});
+    std.debug.print("║  Effective context:    {d:>10}                            ║\n", .{stats.effective_context});
+    std.debug.print("║  Memory saved:         {d:>10} bytes                      ║\n", .{stats.memory_saved_bytes});
+    std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 }
