@@ -56,7 +56,7 @@ pub const Tokenizer = struct {
         if (reader.getMetadataU32("tokenizer.ggml.padding_token_id")) |id| {
             tokenizer.pad_token = id;
         }
-
+        
         return tokenizer;
     }
 
@@ -66,6 +66,7 @@ pub const Tokenizer = struct {
     }
 
     // Simple greedy tokenization (longest match)
+    // Supports both GPT-2 style (Ġ = 0xC4 0xA0) and Llama style (▁ = 0xE2 0x96 0x81)
     pub fn encode(self: *const Tokenizer, allocator: std.mem.Allocator, text: []const u8) ![]u32 {
         var tokens = std.ArrayList(u32).init(allocator);
         errdefer tokens.deinit();
@@ -75,6 +76,36 @@ pub const Tokenizer = struct {
 
         var pos: usize = 0;
         while (pos < text.len) {
+            // First check for special tokens (they have priority)
+            var found_special = false;
+            const special_tokens = [_][]const u8{
+                "<|im_start|>", "<|im_end|>", "<|endoftext|>",
+                "<|object_ref_start|>", "<|object_ref_end|>",
+                "<|box_start|>", "<|box_end|>",
+                "<|quad_start|>", "<|quad_end|>",
+                "<|vision_start|>", "<|vision_end|>",
+                "<|vision_pad|>", "<|image_pad|>", "<|video_pad|>",
+                "<tool_call>", "</tool_call>",
+                "<|fim_prefix|>", "<|fim_middle|>", "<|fim_suffix|>",
+                "<|fim_pad|>", "<|repo_name|>", "<|file_sep|>",
+            };
+            
+            for (special_tokens) |special| {
+                if (pos + special.len <= text.len and 
+                    std.mem.eql(u8, text[pos..][0..special.len], special)) {
+                    if (self.token_to_id.get(special)) |id| {
+                        try tokens.append(id);
+                        pos += special.len;
+                        found_special = true;
+                        break;
+                    }
+                }
+            }
+            if (found_special) continue;
+            
+            // Skip spaces at start of words - they become part of the next token
+            const at_word_start = pos == 0 or (pos > 0 and text[pos - 1] == ' ');
+            
             // Try to find longest matching token
             var best_len: usize = 0;
             var best_token: u32 = 0;
@@ -83,16 +114,100 @@ pub const Tokenizer = struct {
             var len: usize = @min(text.len - pos, 20); // Max token length
             while (len > 0) : (len -= 1) {
                 const substr = text[pos..][0..len];
+                
+                // Handle newline - convert to Ċ (0xC4 0x8A) for GPT-2 style
+                if (substr[0] == '\n') {
+                    // Try to find "Ċ" + rest of substr
+                    var with_newline: [32]u8 = undefined;
+                    with_newline[0] = 0xC4;
+                    with_newline[1] = 0x8A;
+                    if (len == 1) {
+                        // Just newline
+                        if (self.token_to_id.get(with_newline[0..2])) |id| {
+                            best_len = 1;
+                            best_token = id;
+                            break;
+                        }
+                    } else if (len > 1) {
+                        const rest = substr[1..];
+                        if (rest.len + 2 <= 32) {
+                            @memcpy(with_newline[2..][0..rest.len], rest);
+                            if (self.token_to_id.get(with_newline[0 .. rest.len + 2])) |id| {
+                                best_len = len;
+                                best_token = id;
+                                break;
+                            }
+                        }
+                    }
+                    // Fallback: try raw newline
+                    if (self.token_to_id.get("\n")) |id| {
+                        best_len = 1;
+                        best_token = id;
+                        break;
+                    }
+                    // Skip newline if not found
+                    best_len = 1;
+                    best_token = 0;
+                    break;
+                }
+                
+                // Skip if substr starts with space - we handle spaces specially
+                if (substr[0] == ' ') {
+                    // Try to find "Ġ" + rest of substr (GPT-2 style)
+                    if (len > 1) {
+                        var with_gpt2_space: [32]u8 = undefined;
+                        with_gpt2_space[0] = 0xC4;
+                        with_gpt2_space[1] = 0xA0;
+                        const rest = substr[1..];
+                        if (rest.len + 2 <= 32) {
+                            @memcpy(with_gpt2_space[2..][0..rest.len], rest);
+                            if (self.token_to_id.get(with_gpt2_space[0 .. rest.len + 2])) |id| {
+                                best_len = len;
+                                best_token = id;
+                                break;
+                            }
+                        }
+                    }
+                    // Single space - try Ġ alone
+                    if (len == 1) {
+                        const gpt2_space = [_]u8{ 0xC4, 0xA0 };
+                        if (self.token_to_id.get(&gpt2_space)) |id| {
+                            best_len = 1;
+                            best_token = id;
+                            break;
+                        }
+                        best_len = 1;
+                        best_token = 0; // Will be skipped
+                        break;
+                    }
+                    continue;
+                }
 
-                // Check with space prefix (common in BPE)
-                if (pos > 0 or len > 1) {
-                    var with_space: [32]u8 = undefined;
-                    with_space[0] = 0xE2; // UTF-8 for special space
-                    with_space[1] = 0x96;
-                    with_space[2] = 0x81;
+                // Check with GPT-2 style space prefix (Ġ = 0xC4 0xA0) for word starts
+                if (at_word_start and pos > 0) {
+                    var with_gpt2_space: [32]u8 = undefined;
+                    with_gpt2_space[0] = 0xC4;
+                    with_gpt2_space[1] = 0xA0;
+                    if (len + 2 <= 32) {
+                        @memcpy(with_gpt2_space[2..][0..len], substr);
+                        if (self.token_to_id.get(with_gpt2_space[0 .. len + 2])) |id| {
+                            if (len + 2 > best_len) {
+                                best_len = len;
+                                best_token = id;
+                            }
+                        }
+                    }
+                }
+
+                // Check with Llama style space prefix (▁ = 0xE2 0x96 0x81)
+                if (at_word_start and pos > 0) {
+                    var with_llama_space: [32]u8 = undefined;
+                    with_llama_space[0] = 0xE2;
+                    with_llama_space[1] = 0x96;
+                    with_llama_space[2] = 0x81;
                     if (len + 3 <= 32) {
-                        @memcpy(with_space[3..][0..len], substr);
-                        if (self.token_to_id.get(with_space[0 .. len + 3])) |id| {
+                        @memcpy(with_llama_space[3..][0..len], substr);
+                        if (self.token_to_id.get(with_llama_space[0 .. len + 3])) |id| {
                             if (len + 3 > best_len) {
                                 best_len = len;
                                 best_token = id;
@@ -113,7 +228,9 @@ pub const Tokenizer = struct {
             }
 
             if (best_len > 0) {
-                try tokens.append(best_token);
+                if (best_token != 0) { // Skip UNK for spaces
+                    try tokens.append(best_token);
+                }
                 pos += best_len;
             } else {
                 // Unknown character - try single byte

@@ -183,7 +183,7 @@ pub const Compiler = struct {
         // Phase 1: Parse
         const parse_start = std.time.nanoTimestamp();
         var spec = self.parser.parse(source) catch |err| {
-            var writer = error_reporter.ColorWriter.init(std.io.getStdOut(), true);
+            var writer = error_reporter.ColorWriter.init(std.io.getStdOut().writer().any(), true);
             try writer.printColored(.red, "Parse error: {}\n", .{err});
             try writer.printColored(.yellow, "   Run './bin/vibeec validate <file>' for detailed validation\n", .{});
             return CompileResult{
@@ -236,7 +236,7 @@ pub const Compiler = struct {
         // Phase 3: Code Generation
         const cg_start = std.time.nanoTimestamp();
         var cg = CodegenV4.init(self.allocator, self.options.target) catch |err| {
-            var writer = error_reporter.ColorWriter.init(std.io.getStdOut(), true);
+            var writer = error_reporter.ColorWriter.init(std.io.getStdOut().writer().any(), true);
             try writer.printColored(.red, "Codegen init error: {}\n", .{err});
             return CompileResult{
                 .success = false,
@@ -251,7 +251,7 @@ pub const Compiler = struct {
         defer cg.deinit();
 
         const gen_result = cg.generate(&spec) catch |err| {
-            var writer = error_reporter.ColorWriter.init(std.io.getStdOut(), true);
+            var writer = error_reporter.ColorWriter.init(std.io.getStdOut().writer().any(), true);
             try writer.printColored(.red, "Codegen generate error: {}\n", .{err});
             try writer.printColored(.yellow, "   Suggestion: Check specification syntax and required fields\n", .{});
             return CompileResult{
@@ -390,7 +390,7 @@ pub fn main() !u8 {
         defer @constCast(&result).deinit();
 
         if (result.success) {
-            const stdout = std.io.stdout;
+            const stdout = std.io.getStdOut().writer();
             try stdout.print("✓ Compiled {s} successfully\n", .{input_path});
 
             // Write output files
@@ -425,7 +425,7 @@ pub fn main() !u8 {
             }
             return 0;
         } else {
-            const stdout = std.io.stdout;
+            const stdout = std.io.getStdOut().writer();
             var writer = error_reporter.ColorWriter.init(stdout.any(), true);
 
             try writer.printColored(.red, "✗ Failed to compile {s}\n", .{input_path});
@@ -471,7 +471,7 @@ pub fn main() !u8 {
 }
 
 fn printSimpleHelp() void {
-    const stdout = std.io.stdout;
+    const stdout = std.io.getStdOut().writer();
     stdout.print(
         \\
         \\  ╔═══════════════════════════════════════════════════════════╗
@@ -510,7 +510,7 @@ fn printSimpleHelp() void {
 }
 
 fn printVersion() void {
-    const stdout = std.io.stdout;
+    const stdout = std.io.getStdOut().writer();
     stdout.print(
         \\VIBEEC v22.0.0
         \\φ = 1.618033988749895
@@ -521,7 +521,7 @@ fn printVersion() void {
 }
 
 fn printPASInfo() void {
-    const stdout = std.io.stdout;
+    const stdout = std.io.getStdOut().writer();
     stdout.print(
         \\
         \\  PAS DAEMONS - Predictive Algorithmic Systematics
@@ -548,7 +548,7 @@ fn printPhiInfo() void {
     const inv_phi_sq = 1.0 / phi_sq;
     const golden = phi_sq + inv_phi_sq;
 
-    const stdout = std.io.stdout;
+    const stdout = std.io.getStdOut().writer();
     stdout.print(
         \\
         \\  SACRED CONSTANTS
@@ -563,7 +563,7 @@ fn printPhiInfo() void {
 }
 
 fn evalTernary(expr: []const u8) void {
-    const stdout = std.io.stdout;
+    const stdout = std.io.getStdOut().writer();
     stdout.print(
         \\
         \\  TERNARY EVAL: {s}
@@ -581,7 +581,7 @@ fn evalTernary(expr: []const u8) void {
 }
 
 fn printAgentStatus() void {
-    const stdout = std.io.stdout;
+    const stdout = std.io.getStdOut().writer();
 
     // Check API keys
     const anthropic_key = std.posix.getenv("ANTHROPIC_API_KEY");
@@ -627,7 +627,7 @@ fn printAgentStatus() void {
 }
 
 fn printConfig() void {
-    const stdout = std.io.stdout;
+    const stdout = std.io.getStdOut().writer();
 
     const anthropic_key = std.posix.getenv("ANTHROPIC_API_KEY");
     const openai_key = std.posix.getenv("OPENAI_API_KEY");
@@ -678,8 +678,8 @@ fn printConfig() void {
 
 fn runChat(allocator: std.mem.Allocator) !u8 {
     _ = allocator;
-    const stdout = std.io.stdout;
-    const stdin = std.io.stdin;
+    const stdout = std.io.getStdOut().writer();
+    const stdin = std.io.getStdIn().reader();
 
     // Check for API keys
     const anthropic_key = std.posix.getenv("ANTHROPIC_API_KEY");
@@ -805,7 +805,7 @@ fn runChat(allocator: std.mem.Allocator) !u8 {
 }
 
 fn printChatHelp() void {
-    const stdout = std.io.stdout;
+    const stdout = std.io.getStdOut().writer();
     stdout.print(
         \\
         \\  CHAT COMMANDS
@@ -844,7 +844,7 @@ fn launchAgent(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     child.stderr_behavior = .Inherit;
 
     _ = child.spawnAndWait() catch |err| {
-        const stdout = std.io.stdout;
+        const stdout = std.io.getStdOut().writer();
         stdout.print("Failed to launch agent: {}\n", .{err}) catch {};
         stdout.print("\nRun directly: ./bin/vibee-agent\n", .{}) catch {};
         return 1;
