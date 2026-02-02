@@ -200,11 +200,44 @@ Where:
 | 1M | 1.89 ms | 530 M/sec |
 | 100M | 164 ms | 607 M/sec |
 
-### Estimated Impact
+---
 
-- Pure dequantization for 1.7B: ~2.8 seconds
-- Note: 208s load time includes I/O, not just dequantization
-- Real bottleneck may be disk I/O or memory allocation
+## Load Profiling Results (CRITICAL FINDING)
+
+**Status**: ✅ Profiled
+
+### SmolLM2-1.7B Load Time Comparison
+
+| Environment | Total Time | Layer Weights | Inference |
+|-------------|------------|---------------|-----------|
+| **Local (Gitpod)** | **13.25s** | 12.7s (96%) | 1.43 tok/s |
+| **Fly.io** | **208s** | ~200s (96%) | ~0.7 tok/s |
+| **Difference** | **15.7x slower** | I/O bound | 2x slower |
+
+### Profiling Breakdown (Local)
+
+| Phase | Time | % |
+|-------|------|---|
+| Thread pool | 0.08 ms | 0.0% |
+| Embeddings | 512 ms | 3.9% |
+| RoPE init | 16 ms | 0.1% |
+| KV cache | 0.08 ms | 0.0% |
+| **Layer weights** | **12,717 ms** | **96.0%** |
+| Buffer alloc | 0.03 ms | 0.0% |
+
+### Root Cause
+
+**Fly.io I/O is 15x slower than local storage.**
+
+The model file is read from network-attached storage, not local SSD.
+Dequantization and SIMD are fast - the bottleneck is FILE READ.
+
+### Recommended Solutions
+
+1. **Fly.io Volumes** - Use local SSD storage (HIGH IMPACT)
+2. **Memory-map model** - mmap() for lazy loading (MEDIUM)
+3. **Smaller model** - Use 360M instead of 1.7B (WORKAROUND)
+4. **Pre-warm on deploy** - Keep model in memory (WORKAROUND)
 
 ---
 
@@ -212,6 +245,7 @@ Where:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.3.0 | 2026-02-02 | Load profiling - found I/O bottleneck |
 | v1.2.0 | 2026-02-02 | Parallel dequantization (OPT-003) |
 | v1.1.0 | 2026-02-02 | SIMD optimization (OPT-001) |
 | v1.0.0 | 2026-02-02 | Initial Fly.io deployment |

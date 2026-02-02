@@ -133,13 +133,27 @@ pub const FullModel = struct {
 
     pub fn loadWeights(self: *FullModel) !void {
         std.debug.print("Loading weights...\n", .{});
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // PROFILING: Track time for each phase
+        // ═══════════════════════════════════════════════════════════════════
+        var total_timer = std.time.Timer.start() catch unreachable;
+        var phase_timer = std.time.Timer.start() catch unreachable;
+        
+        var time_thread_pool: u64 = 0;
+        var time_embeddings: u64 = 0;
+        var time_rope: u64 = 0;
+        var time_kv_cache: u64 = 0;
+        var time_layers: u64 = 0;
+        var time_buffers: u64 = 0;
 
         // Initialize thread pool for parallel matVec
+        phase_timer.reset();
         try simd.initThreadPool(self.allocator);
-
-
+        time_thread_pool = phase_timer.read();
 
         // Load embeddings
+        phase_timer.reset();
         self.token_embedding = try self.loadTensor("token_embd.weight");
         
         // Try to load output.weight, fallback to tied embeddings (token_embd)
@@ -152,19 +166,21 @@ pub const FullModel = struct {
             return err;
         };
         
-
-        
         self.output_norm = try self.loadTensor("output_norm.weight");
+        time_embeddings = phase_timer.read();
 
         // Initialize RoPE
+        phase_timer.reset();
         self.rope = try transformer.RoPE.init(
             self.allocator,
             self.config.head_dim,
             self.config.context_length,
             self.config.rope_theta,
         );
+        time_rope = phase_timer.read();
 
         // Initialize KV caches for each layer
+        phase_timer.reset();
         self.kv_caches = try self.allocator.alloc(transformer.KVCache, self.config.num_layers);
         for (0..self.config.num_layers) |i| {
             self.kv_caches[i] = try transformer.KVCache.init(
@@ -174,8 +190,10 @@ pub const FullModel = struct {
                 self.config.context_length,
             );
         }
+        time_kv_cache = phase_timer.read();
 
         // Load layer weights
+        phase_timer.reset();
         self.layers = try self.allocator.alloc(LayerWeights, self.config.num_layers);
 
         for (0..self.config.num_layers) |i| {
@@ -200,9 +218,11 @@ pub const FullModel = struct {
             };
         }
 
+        time_layers = phase_timer.read();
         std.debug.print("  Loaded {d} layers                    \n", .{self.config.num_layers});
 
         // Pre-allocate buffers for forward pass (avoid allocations in hot path)
+        phase_timer.reset();
         const hidden_size = self.config.hidden_size;
         const num_heads = self.config.num_heads;
         const num_kv_heads = self.config.num_kv_heads;
@@ -222,6 +242,44 @@ pub const FullModel = struct {
         self.buf_ffn_up = try self.allocator.alloc(f32, intermediate_size);
         self.buf_ffn_out = try self.allocator.alloc(f32, hidden_size);
         self.buf_scores = try self.allocator.alloc(f32, context_length);
+        time_buffers = phase_timer.read();
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // PROFILING RESULTS
+        // ═══════════════════════════════════════════════════════════════════
+        const total_time = total_timer.read();
+        std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║              LOAD WEIGHTS PROFILING                          ║\n", .{});
+        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+        std.debug.print("║  Thread pool init:  {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
+            @as(f64, @floatFromInt(time_thread_pool)) / 1_000_000.0,
+            @as(f64, @floatFromInt(time_thread_pool)) / @as(f64, @floatFromInt(total_time)) * 100.0
+        });
+        std.debug.print("║  Embeddings:        {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
+            @as(f64, @floatFromInt(time_embeddings)) / 1_000_000.0,
+            @as(f64, @floatFromInt(time_embeddings)) / @as(f64, @floatFromInt(total_time)) * 100.0
+        });
+        std.debug.print("║  RoPE init:         {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
+            @as(f64, @floatFromInt(time_rope)) / 1_000_000.0,
+            @as(f64, @floatFromInt(time_rope)) / @as(f64, @floatFromInt(total_time)) * 100.0
+        });
+        std.debug.print("║  KV cache init:     {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
+            @as(f64, @floatFromInt(time_kv_cache)) / 1_000_000.0,
+            @as(f64, @floatFromInt(time_kv_cache)) / @as(f64, @floatFromInt(total_time)) * 100.0
+        });
+        std.debug.print("║  Layer weights:     {d:>10.2} ms ({d:>5.1}%)  ◄── BOTTLENECK  ║\n", .{
+            @as(f64, @floatFromInt(time_layers)) / 1_000_000.0,
+            @as(f64, @floatFromInt(time_layers)) / @as(f64, @floatFromInt(total_time)) * 100.0
+        });
+        std.debug.print("║  Buffer alloc:      {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
+            @as(f64, @floatFromInt(time_buffers)) / 1_000_000.0,
+            @as(f64, @floatFromInt(time_buffers)) / @as(f64, @floatFromInt(total_time)) * 100.0
+        });
+        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+        std.debug.print("║  TOTAL:             {d:>10.2} ms                             ║\n", .{
+            @as(f64, @floatFromInt(total_time)) / 1_000_000.0
+        });
+        std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
     }
 
     fn loadTensor(self: *FullModel, name: []const u8) ![]f32 {
