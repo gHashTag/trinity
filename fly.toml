@@ -12,12 +12,12 @@ primary_region = "iad"
   TEMPERATURE = "0.7"
   TOP_P = "0.9"
 
-# Use shared-cpu-1x for SmolLM-135M (small model)
-# 1GB RAM needed for model loading + inference buffers
+# Use shared-cpu-2x for SmolLM-135M
+# 2GB RAM needed: model (139MB) + dequantized weights (~600MB) + buffers
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "1gb"
-  cpus = 1
+  size = "shared-cpu-2x"
+  memory = "2gb"
+  cpus = 2
 
 # Persistent volume for models (optional - model is baked into image)
 # [[mounts]]
