@@ -268,13 +268,25 @@ Dequantization and SIMD are fast - the bottleneck is FILE READ.
 - Subsequent starts use cached model (instant)
 - Model persists across deploys
 
-### Expected Impact
+### ACTUAL RESULTS (VERIFIED!)
 
-| Metric | Before (Ephemeral) | After (Volume) |
-|--------|-------------------|----------------|
-| Load time | 208s | ~13s (estimated) |
-| First deploy | 208s | ~60s (download) |
-| Subsequent | 208s | ~13s |
+| Metric | Before (Ephemeral) | After (Volume) | Improvement |
+|--------|-------------------|----------------|-------------|
+| **Total load** | **208s** | **4.82s** | **43x faster!** |
+| Layer weights | ~200s | 4.47s | 45x faster |
+| Embeddings | N/A | 341ms | - |
+| First deploy | 208s | ~60s (download) | - |
+
+**Profiling breakdown (NVMe Volume):**
+```
+║  Thread pool init:        0.68 ms (  0.0%)
+║  Embeddings:            341.77 ms (  7.1%)
+║  RoPE init:              13.76 ms (  0.3%)
+║  KV cache init:           0.18 ms (  0.0%)
+║  Layer weights:        4467.82 ms ( 92.6%)
+║  Buffer alloc:            0.05 ms (  0.0%)
+║  TOTAL:                4824.28 ms
+```
 
 ---
 
@@ -282,7 +294,7 @@ Dequantization and SIMD are fast - the bottleneck is FILE READ.
 
 | Version | Date | Changes |
 |---------|------|---------|
-| v1.4.0 | 2026-02-02 | Fly.io Volumes for NVMe SSD storage |
+| v1.4.0 | 2026-02-02 | Fly.io Volumes - **43x faster load (208s→4.8s)** |
 | v1.3.0 | 2026-02-02 | Load profiling - found I/O bottleneck |
 | v1.2.0 | 2026-02-02 | Parallel dequantization (OPT-003) |
 | v1.1.0 | 2026-02-02 | SIMD optimization (OPT-001) |
