@@ -378,6 +378,32 @@ try model.enableTernaryNorm(); // 16x memory reduction for norm weights
 3. 8-wide SIMD vectors (AVX2 compatible)
 4. Parallel worker with batch processing
 
+### Thread Pool Investigation (NEGATIVE RESULT)
+
+**Status**: ❌ No Benefit
+
+Investigated thread pool to eliminate thread spawn overhead per matmul operation.
+
+**Hypothesis:** Thread spawn overhead (~100us × 16 threads = ~1.6ms) could be eliminated by reusing persistent worker threads.
+
+**Benchmark Results (2048x2048 matrix):**
+```
+╔══════════════════════════════════════════════════════════════╗
+║           THREAD POOL BENCHMARK (2048x2048)                 ║
+╠══════════════════════════════════════════════════════════════╣
+║  Thread spawn:      1921.3 us/iter                         ║
+║  Thread pool:       1956.8 us/iter                         ║
+║  Speedup:             0.98x (NO BENEFIT)                    ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+**Finding:** Thread pool provides NO benefit for compute-bound workloads where:
+- Work time (~2000us) >> Spawn overhead (~100us)
+- Thread pool synchronization adds overhead that negates spawn savings
+- OS thread caching already optimizes repeated spawn/join patterns
+
+**Conclusion:** Direct thread spawn is optimal for parallel matmul. Thread pools are beneficial only for I/O-bound or very short tasks.
+
 ### Batch Processing (INF-004)
 
 **Status**: ✅ Implemented
