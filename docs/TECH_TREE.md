@@ -107,12 +107,9 @@
 | ID | Name | Branch | Impact | Hours | Dependencies |
 |----|------|--------|--------|-------|--------------|
 | OPT-PC01 | Prefix Caching | Serving | **90% prefill reduction** | 20 | OPT-PA01 ✅ |
+| OPT-CP01 | Chunked Prefill | Serving | **33-50% TTFT reduction** | 30 | OPT-B01 ✅ |
 
 ### Available (🟢)
-
-| ID | Name | Branch | Impact | Hours | Dependencies |
-|----|------|--------|--------|-------|--------------|
-| OPT-CP01 | Chunked Prefill | Serving | -50% TTFT | 30 | OPT-B01 ✅ |
 | DEP-003 | Auto-Scaling | Deploy | Handle spikes | 25 | DEP-002 ✅ |
 | OPT-001 | SIMD Vectorization | Optimization | +400% matrix | 50 | None |
 
@@ -160,9 +157,9 @@
 
 ### Immediate (This Week)
 
-1. **OPT-CP01 Chunked Prefill** - 30 hours
-   - Dependencies: ✅ All met (OPT-B01)
-   - Impact: -50% time-to-first-token
+1. **DEP-003 Auto-Scaling** - 25 hours
+   - Dependencies: ✅ All met (DEP-002)
+   - Impact: Handle traffic spikes on Fly.io
    - Priority: HIGH
 
 ### Short-term (This Month)
