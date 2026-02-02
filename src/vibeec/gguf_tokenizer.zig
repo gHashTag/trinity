@@ -79,6 +79,7 @@ pub const Tokenizer = struct {
             // First check for special tokens (they have priority)
             var found_special = false;
             const special_tokens = [_][]const u8{
+                // Qwen/ChatML tokens
                 "<|im_start|>", "<|im_end|>", "<|endoftext|>",
                 "<|object_ref_start|>", "<|object_ref_end|>",
                 "<|box_start|>", "<|box_end|>",
@@ -88,6 +89,10 @@ pub const Tokenizer = struct {
                 "<tool_call>", "</tool_call>",
                 "<|fim_prefix|>", "<|fim_middle|>", "<|fim_suffix|>",
                 "<|fim_pad|>", "<|repo_name|>", "<|file_sep|>",
+                // DeepSeek tokens
+                "<|User|>", "<|Assistant|>", "<|EOT|>",
+                "<｜begin▁of▁sentence｜>", "<｜end▁of▁sentence｜>",
+                "<｜fim▁hole｜>", "<｜fim▁begin｜>", "<｜fim▁end｜>",
             };
             
             for (special_tokens) |special| {
@@ -347,6 +352,16 @@ pub const ChatTemplate = struct {
         .user_suffix = "<|im_end|>\n",
         .assistant_prefix = "<|im_start|>assistant\n",
         .assistant_suffix = "<|im_end|>\n",
+    };
+
+    // DeepSeek Coder chat template (no system prompt)
+    pub const DEEPSEEK = ChatTemplate{
+        .system_prefix = "",
+        .system_suffix = "",
+        .user_prefix = "<|User|>",
+        .user_suffix = "\n",
+        .assistant_prefix = "<|Assistant|>",
+        .assistant_suffix = "<|EOT|>\n",
     };
 
     pub fn formatPrompt(

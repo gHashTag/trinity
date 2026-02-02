@@ -184,6 +184,8 @@ pub fn dequantizeQ4_KTensor(allocator: std.mem.Allocator, data: []const u8, num_
         const d = gguf.f16ToF32(d_bits);
         const min = gguf.f16ToF32(dmin_bits);
 
+
+
         const scales = block[4..16]; // 12 bytes of scales
         const qs = block[16..144]; // 128 bytes of quantized values
 
