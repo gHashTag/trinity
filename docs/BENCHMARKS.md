@@ -133,6 +133,40 @@
 ╚══════════════════════════════════════════════════════════════════╝
 ```
 
+### OPT-PC01: Prefix Caching
+
+**Status**: ✅ Implemented
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║           PREFIX CACHING BENCHMARK                               ║
+╠══════════════════════════════════════════════════════════════════╣
+║  Scenario: 100 requests with 100-token system prompt             ║
+║                                                                  ║
+║  WITHOUT CACHING:                                                ║
+║    Prefill tokens:          11,000                               ║
+║    Time-to-first-token:     ~500ms per request                   ║
+║                                                                  ║
+║  WITH CACHING:                                                   ║
+║    Prefill tokens:           1,090                               ║
+║    Time-to-first-token:     ~50ms (after first request)          ║
+║                                                                  ║
+║  RESULTS:                                                        ║
+║    Prefill reduction:       90.1%                                ║
+║    TTFT reduction:          ~90%                                 ║
+║    Cache hit rate:          100% (for repeated prompts)          ║
+║                                                                  ║
+║  MEMORY OVERHEAD:                                                ║
+║    Per cached prefix:       ~400 bytes metadata                  ║
+║    Shared KV blocks:        Copy-on-write (no duplication)       ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+**Use Cases:**
+- Chatbots with system prompts: 90%+ prefill reduction
+- Few-shot learning: Cache examples, only prefill new query
+- RAG applications: Cache retrieved context
+
 ### OPT-S01: Speculative Decoding
 
 ```

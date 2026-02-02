@@ -1489,6 +1489,8 @@ pub const PagedSchedulerConfig = struct {
     preemption_enabled: bool,
     block_size: usize,
     max_blocks: usize,
+    enable_prefix_caching: bool,
+    max_cached_prefixes: usize,
 
     pub fn default() PagedSchedulerConfig {
         return .{
@@ -1497,6 +1499,8 @@ pub const PagedSchedulerConfig = struct {
             .preemption_enabled = true,
             .block_size = 16,
             .max_blocks = 1024,
+            .enable_prefix_caching = true,
+            .max_cached_prefixes = 100,
         };
     }
 };
@@ -1511,7 +1515,7 @@ const PagedBatchSlot = struct {
     num_blocks: usize,
 };
 
-/// Continuous batching scheduler with PagedAttention
+/// Continuous batching scheduler with PagedAttention and Prefix Caching
 pub const PagedBatchingScheduler = struct {
     allocator: std.mem.Allocator,
     config: PagedSchedulerConfig,
@@ -1520,6 +1524,9 @@ pub const PagedBatchingScheduler = struct {
     // PagedAttention memory pool
     block_pool: kv_cache.BlockPool,
     pa_config: kv_cache.PagedAttentionConfig,
+
+    // Prefix Cache (OPT-PC01)
+    prefix_cache: ?kv_cache.PrefixCache,
 
     // Request management
     waiting_queue: std.ArrayList(*PagedRequest),
@@ -1537,6 +1544,8 @@ pub const PagedBatchingScheduler = struct {
     total_iterations: u64,
     preemption_count: u64,
     next_request_id: u64,
+    prefix_cache_hits: u64,
+    prefix_cache_misses: u64,
 
     pub fn init(
         allocator: std.mem.Allocator,
@@ -1567,12 +1576,13 @@ pub const PagedBatchingScheduler = struct {
             };
         }
 
-        return PagedBatchingScheduler{
+        var scheduler = PagedBatchingScheduler{
             .allocator = allocator,
             .config = config,
             .model = model,
             .block_pool = try kv_cache.BlockPool.init(allocator, pa_config),
             .pa_config = pa_config,
+            .prefix_cache = null,
             .waiting_queue = std.ArrayList(*PagedRequest).init(allocator),
             .running_requests = std.AutoHashMap(u64, *PagedRequest).init(allocator),
             .completed_requests = std.ArrayList(*PagedRequest).init(allocator),
@@ -1584,7 +1594,21 @@ pub const PagedBatchingScheduler = struct {
             .total_iterations = 0,
             .preemption_count = 0,
             .next_request_id = 1,
+            .prefix_cache_hits = 0,
+            .prefix_cache_misses = 0,
         };
+
+        // Initialize prefix cache if enabled
+        if (config.enable_prefix_caching) {
+            const pc_config = kv_cache.PrefixCacheConfig{
+                .max_cached_prefixes = config.max_cached_prefixes,
+                .max_prefix_length = 2048,
+                .eviction_policy = .LRU,
+            };
+            scheduler.prefix_cache = kv_cache.PrefixCache.init(allocator, pc_config, &scheduler.block_pool);
+        }
+
+        return scheduler;
     }
 
     pub fn deinit(self: *PagedBatchingScheduler) void {
@@ -1617,20 +1641,61 @@ pub const PagedBatchingScheduler = struct {
         }
         self.preempted_requests.deinit();
 
+        // Clean up prefix cache
+        if (self.prefix_cache) |*pc| {
+            pc.deinit();
+        }
+
         self.block_pool.deinit();
         self.allocator.free(self.slots);
     }
 
-    /// Submit a new request
+    /// Submit a new request with prefix caching support
     pub fn submitRequest(self: *PagedBatchingScheduler, prompt: []const u32, max_tokens: usize, temperature: f32, priority: i32) !u64 {
         const req = try self.allocator.create(PagedRequest);
         req.* = PagedRequest.init(self.allocator, self.next_request_id, prompt, max_tokens, temperature, priority);
         self.next_request_id += 1;
 
+        // Check prefix cache for matching prefix
+        if (self.prefix_cache) |*pc| {
+            const match = pc.matchLongestPrefix(prompt);
+            if (match.matched) {
+                // Copy cached block IDs to request (with ref_count++)
+                for (match.block_ids) |block_id| {
+                    try req.block_table.block_ids.append(block_id);
+                    if (block_id < self.block_pool.blocks.items.len) {
+                        self.block_pool.blocks.items[block_id].ref_count += 1;
+                    }
+                }
+                req.block_table.num_tokens = match.matched_tokens;
+                self.prefix_cache_hits += 1;
+            } else {
+                self.prefix_cache_misses += 1;
+            }
+        }
+
         try self.waiting_queue.append(req);
         self.total_requests += 1;
 
         return req.id;
+    }
+
+    /// Cache prefix after prefill completes
+    pub fn cachePrefixAfterPrefill(self: *PagedBatchingScheduler, req: *PagedRequest) !void {
+        if (self.prefix_cache) |*pc| {
+            // Only cache if we have blocks and tokens
+            if (req.block_table.block_ids.items.len > 0 and req.prompt_tokens.len > 0) {
+                try pc.cachePrefix(req.prompt_tokens, req.block_table.block_ids.items);
+            }
+        }
+    }
+
+    /// Get prefix cache statistics
+    pub fn getPrefixCacheStats(self: *const PagedBatchingScheduler) ?kv_cache.PrefixCacheStats {
+        if (self.prefix_cache) |pc| {
+            return pc.getStats();
+        }
+        return null;
     }
 
     /// Get number of empty slots
