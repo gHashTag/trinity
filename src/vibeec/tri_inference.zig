@@ -1491,6 +1491,8 @@ pub const PagedSchedulerConfig = struct {
     max_blocks: usize,
     enable_prefix_caching: bool,
     max_cached_prefixes: usize,
+    enable_chunked_prefill: bool,
+    chunk_size: usize,
 
     pub fn default() PagedSchedulerConfig {
         return .{
@@ -1501,6 +1503,8 @@ pub const PagedSchedulerConfig = struct {
             .max_blocks = 1024,
             .enable_prefix_caching = true,
             .max_cached_prefixes = 100,
+            .enable_chunked_prefill = true,
+            .chunk_size = 512,
         };
     }
 };
@@ -1538,6 +1542,9 @@ pub const PagedBatchingScheduler = struct {
     slots: []PagedBatchSlot,
     active_slots: usize,
 
+    // Chunked Prefill scheduler (OPT-CP01)
+    chunked_scheduler: ?kv_cache.ChunkedPrefillScheduler,
+
     // Statistics
     total_requests: u64,
     total_tokens_generated: u64,
@@ -1546,6 +1553,7 @@ pub const PagedBatchingScheduler = struct {
     next_request_id: u64,
     prefix_cache_hits: u64,
     prefix_cache_misses: u64,
+    chunked_prefill_tokens: u64,
 
     pub fn init(
         allocator: std.mem.Allocator,
@@ -1596,6 +1604,8 @@ pub const PagedBatchingScheduler = struct {
             .next_request_id = 1,
             .prefix_cache_hits = 0,
             .prefix_cache_misses = 0,
+            .chunked_prefill_tokens = 0,
+            .chunked_scheduler = null,
         };
 
         // Initialize prefix cache if enabled
@@ -1606,6 +1616,16 @@ pub const PagedBatchingScheduler = struct {
                 .eviction_policy = .LRU,
             };
             scheduler.prefix_cache = kv_cache.PrefixCache.init(allocator, pc_config, &scheduler.block_pool);
+        }
+
+        // Initialize chunked prefill scheduler if enabled
+        if (config.enable_chunked_prefill) {
+            const cp_config = kv_cache.ChunkedPrefillConfig{
+                .chunk_size = config.chunk_size,
+                .max_chunks_per_iter = config.max_batch_size,
+                .interleave_generation = true,
+            };
+            scheduler.chunked_scheduler = kv_cache.ChunkedPrefillScheduler.init(allocator, cp_config);
         }
 
         return scheduler;
@@ -1644,6 +1664,11 @@ pub const PagedBatchingScheduler = struct {
         // Clean up prefix cache
         if (self.prefix_cache) |*pc| {
             pc.deinit();
+        }
+
+        // Clean up chunked scheduler
+        if (self.chunked_scheduler) |*cs| {
+            cs.deinit();
         }
 
         self.block_pool.deinit();
@@ -1696,6 +1721,47 @@ pub const PagedBatchingScheduler = struct {
             return pc.getStats();
         }
         return null;
+    }
+
+    /// Get chunked prefill statistics
+    pub fn getChunkedPrefillStats(self: *const PagedBatchingScheduler) ?kv_cache.ChunkedPrefillStats {
+        if (self.chunked_scheduler) |cs| {
+            return cs.getStats();
+        }
+        return null;
+    }
+
+    /// Add request to chunked prefill queue
+    pub fn addToChunkedPrefill(self: *PagedBatchingScheduler, request_id: u64, prompt_tokens: []const u32, cached_tokens: usize) !void {
+        if (self.chunked_scheduler) |*cs| {
+            _ = try cs.addRequest(request_id, prompt_tokens, cached_tokens);
+        }
+    }
+
+    /// Process one iteration of chunked prefill
+    pub fn processChunkedPrefillIteration(self: *PagedBatchingScheduler) void {
+        if (self.chunked_scheduler) |*cs| {
+            var batch = cs.scheduleNextBatch();
+            defer batch.deinit();
+
+            if (batch.items.len > 0) {
+                // Process the batch (in real impl, would compute KV cache)
+                cs.processBatch(&batch);
+
+                // Update statistics
+                for (batch.items) |chunk| {
+                    self.chunked_prefill_tokens += chunk.tokenCount();
+                }
+            }
+
+            // Move completed requests to ready state
+            var completed = cs.removeCompleted();
+            defer completed.deinit();
+            for (completed.items) |req| {
+                req.deinit();
+                self.allocator.destroy(req);
+            }
+        }
     }
 
     /// Get number of empty slots

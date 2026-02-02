@@ -1,0 +1,225 @@
+# chunked_prefill.vibee
+# Chunked Prefill for reduced Time-to-First-Token (TTFT)
+# Split long prompts into chunks, interleave with generation
+# φ² + 1/φ² = 3 = TRINITY
+
+name: chunked_prefill
+version: "1.0.0"
+language: zig
+module: chunked_prefill
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  ChunkedPrefillConfig:
+    description: "Configuration for chunked prefill"
+    fields:
+      chunk_size: Int               # Tokens per chunk (default: 512)
+      max_chunks_per_iter: Int      # Max chunks to process per iteration
+      interleave_generation: Bool   # Allow generation between chunks
+      priority_boost_partial: Bool  # Boost priority for partially prefilled
+
+  PrefillChunk:
+    description: "Single prefill chunk"
+    fields:
+      chunk_id: Int                 # Chunk index within request
+      start_pos: Int                # Start token position
+      end_pos: Int                  # End token position (exclusive)
+      tokens: List<Int>             # Token IDs in this chunk
+      status: ChunkStatus           # Processing status
+
+  ChunkStatus:
+    description: "Status of a prefill chunk"
+    values:
+      - PENDING                     # Not yet processed
+      - PROCESSING                  # Currently being processed
+      - COMPLETED                   # Finished processing
+
+  ChunkedRequest:
+    description: "Request with chunked prefill state"
+    fields:
+      request_id: Int
+      total_chunks: Int             # Total number of chunks
+      completed_chunks: Int         # Number of completed chunks
+      current_chunk: Int            # Currently processing chunk
+      chunks: List<PrefillChunk>    # All chunks
+      prefill_complete: Bool        # All chunks done
+
+  ChunkedPrefillStats:
+    description: "Statistics for chunked prefill"
+    fields:
+      total_requests: Int
+      total_chunks_processed: Int
+      avg_chunks_per_request: Float
+      avg_ttft_ms: Float
+      ttft_reduction_percent: Float
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: split_into_chunks
+    given: prompt tokens, chunk_size
+    when: request arrives
+    then: returns list of PrefillChunk
+
+  - name: process_chunk
+    given: PrefillChunk, model, kv_cache
+    when: processing one chunk
+    then: computes KV for chunk tokens, updates cache
+
+  - name: schedule_chunks
+    given: list of ChunkedRequest, max_chunks_per_iter
+    when: scheduling iteration
+    then: selects chunks to process, balancing fairness
+
+  - name: check_prefill_complete
+    given: ChunkedRequest
+    when: chunk completes
+    then: returns true if all chunks done
+
+  - name: interleave_generation
+    given: running requests, pending chunks
+    when: generation slot available
+    then: processes generation tokens between chunk batches
+
+  - name: get_stats
+    given: scheduler state
+    when: monitoring requested
+    then: returns ChunkedPrefillStats
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ALGORITHM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Chunked Prefill Algorithm:
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │                    CHUNKED PREFILL                                          │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  PROBLEM: Long prompts block other requests                                 │
+# │                                                                             │
+# │  WITHOUT CHUNKED PREFILL:                                                   │
+# │  ┌─────────────────────────────────────────────────────────────────────┐    │
+# │  │ Time: ████████████████████████████████████████████████████████████  │    │
+# │  │       [───────── R1 prefill (2048 tokens) ─────────][R1 gen]        │    │
+# │  │       [                                    ][R2 wait][R2 prefill]   │    │
+# │  │                                                                     │    │
+# │  │ R2 TTFT = R1 prefill time + R2 prefill time = LONG!                 │    │
+# │  └─────────────────────────────────────────────────────────────────────┘    │
+# │                                                                             │
+# │  WITH CHUNKED PREFILL (chunk_size=512):                                     │
+# │  ┌─────────────────────────────────────────────────────────────────────┐    │
+# │  │ Time: ████████████████████████████████████████████████████████████  │    │
+# │  │       [R1c1][R2c1][R1c2][R2c2][R1c3][R2c3][R1c4][R2c4][R1g][R2g]    │    │
+# │  │                                                                     │    │
+# │  │ R2 TTFT = 4 × chunk_time = MUCH SHORTER!                            │    │
+# │  │ Both requests make progress concurrently                            │    │
+# │  └─────────────────────────────────────────────────────────────────────┘    │
+# │                                                                             │
+# │  CHUNK SCHEDULING:                                                          │
+# │  1. Split each request's prompt into chunks                                 │
+# │  2. Round-robin or priority-based chunk selection                           │
+# │  3. Process selected chunks in batch                                        │
+# │  4. Optionally interleave generation tokens                                 │
+# │  5. Mark chunks complete, check if prefill done                             │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION WITH PREFIX CACHING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Prefix Cache + Chunked Prefill:
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │                    COMBINED OPTIMIZATION                                    │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  Request: [SYSTEM: 500 tokens][USER: 1500 tokens]                           │
+# │                                                                             │
+# │  STEP 1: Check Prefix Cache                                                 │
+# │    → SYSTEM prompt cached? YES → Skip 500 tokens                            │
+# │    → Only need to prefill USER (1500 tokens)                                │
+# │                                                                             │
+# │  STEP 2: Chunk remaining tokens                                             │
+# │    → 1500 / 512 = 3 chunks                                                  │
+# │    → Chunk 0: tokens 500-1011                                               │
+# │    → Chunk 1: tokens 1012-1523                                              │
+# │    → Chunk 2: tokens 1524-1999                                              │
+# │                                                                             │
+# │  STEP 3: Interleaved processing                                             │
+# │    → Process chunks round-robin with other requests                         │
+# │    → TTFT = 3 × chunk_time (vs 4 × chunk_time without cache)                │
+# │                                                                             │
+# │  COMBINED BENEFIT:                                                          │
+# │    Prefix Cache: -25% tokens (500/2000)                                     │
+# │    Chunked Prefill: -50% TTFT (interleaving)                                │
+# │    Total: ~60% TTFT reduction                                               │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PERFORMANCE ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Expected Improvements:
+#
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │                    TTFT COMPARISON                                         │
+# ├────────────────────────────────────────────────────────────────────────────┤
+# │                                                                            │
+# │  Scenario: 2 concurrent requests, 2048 tokens each                         │
+# │  Prefill speed: 1000 tokens/second                                         │
+# │                                                                            │
+# │  WITHOUT CHUNKING:                                                         │
+# │    R1 TTFT = 2.048s (full prefill)                                         │
+# │    R2 TTFT = 4.096s (wait for R1 + own prefill)                            │
+# │    Average TTFT = 3.072s                                                   │
+# │                                                                            │
+# │  WITH CHUNKING (512 tokens/chunk):                                         │
+# │    R1 TTFT = 4 × 0.512s = 2.048s (same, but interleaved)                   │
+# │    R2 TTFT = 4 × 0.512s = 2.048s (parallel progress!)                      │
+# │    Average TTFT = 2.048s                                                   │
+# │                                                                            │
+# │  IMPROVEMENT:                                                              │
+# │    R2 TTFT: 4.096s → 2.048s = 50% reduction                                │
+# │    Average TTFT: 3.072s → 2.048s = 33% reduction                           │
+# │                                                                            │
+# │  WITH PREFIX CACHE (500 tokens cached):                                    │
+# │    Tokens to prefill: 1548 each                                            │
+# │    R1 TTFT = 3 × 0.512s = 1.536s                                           │
+# │    R2 TTFT = 3 × 0.512s = 1.536s                                           │
+# │    Average TTFT = 1.536s                                                   │
+# │                                                                            │
+# │  COMBINED IMPROVEMENT:                                                     │
+# │    Average TTFT: 3.072s → 1.536s = 50% reduction                           │
+# │                                                                            │
+# └────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CHUNK SIZE SELECTION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Chunk Size Trade-offs:
+#
+# SMALLER CHUNKS (128-256 tokens):
+#   + Better fairness (more interleaving)
+#   + Lower worst-case TTFT
+#   - More scheduling overhead
+#   - Less efficient batching
+#
+# LARGER CHUNKS (1024-2048 tokens):
+#   + More efficient batching
+#   + Less scheduling overhead
+#   - Worse fairness
+#   - Higher worst-case TTFT
+#
+# RECOMMENDED: 512 tokens
+#   - Good balance of fairness and efficiency
+#   - Matches typical PagedAttention block alignment
+#   - ~0.5s per chunk at 1000 tok/s
