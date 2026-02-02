@@ -606,10 +606,9 @@ pub const FullModel = struct {
         // Output projection (use buf_attn_proj) - with ternary support
         self.matVecAuto(self.buf_attn_proj, layer.wo, layer.ternary_wo, self.buf_attn_out, hidden_size, num_heads * head_dim);
 
-        // Residual
-        for (0..hidden_size) |i| {
-            output[i] = input[i] + self.buf_attn_proj[i];
-        }
+        // Residual - SIMD optimized
+        @memcpy(output, input);
+        simd.simdResidualAdd(output, self.buf_attn_proj);
 
         // Pre-FFN norm
         inference.rmsNorm(self.buf_normed, output, layer.ffn_norm, rms_eps);
@@ -618,18 +617,14 @@ pub const FullModel = struct {
         self.matVecAuto(self.buf_ffn_gate, layer.w_gate, layer.ternary_w_gate, self.buf_normed, intermediate_size, hidden_size);
         self.matVecAuto(self.buf_ffn_up, layer.w_up, layer.ternary_w_up, self.buf_normed, intermediate_size, hidden_size);
 
-        // SwiGLU
-        for (0..intermediate_size) |i| {
-            self.buf_ffn_gate[i] = inference.silu(self.buf_ffn_gate[i]) * self.buf_ffn_up[i];
-        }
+        // SwiGLU - SIMD optimized
+        simd.simdSwiGLU(self.buf_ffn_gate, self.buf_ffn_gate, self.buf_ffn_up);
 
         // Down projection (use buf_ffn_out) - with ternary support
         self.matVecAuto(self.buf_ffn_out, layer.w_down, layer.ternary_w_down, self.buf_ffn_gate, hidden_size, intermediate_size);
 
-        // Residual
-        for (0..hidden_size) |i| {
-            output[i] += self.buf_ffn_out[i];
-        }
+        // Residual - SIMD optimized
+        simd.simdResidualAdd(output, self.buf_ffn_out);
     }
 
     // Generate next token

@@ -1,0 +1,173 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRINITY SIMD OPTIMIZATION
+# Advanced vectorization for LLM inference
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: simd_optimization
+version: "2.0.0"
+language: zig
+module: simd_optimization
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CURRENT STATE ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ALREADY IMPLEMENTED:
+# - simd_matmul.zig: Vec8f SIMD matVec with 4-way unrolling
+# - parallelMatVec: Thread pool for large matrices
+# - simdDot: SIMD dot product
+# - simdRmsNorm: SIMD RMS normalization
+# - simdAdd, simdMul, simdScale: Element-wise ops
+
+# BOTTLENECKS IDENTIFIED:
+# 1. Weight loading: 208s for 1.7B model (dequantization)
+# 2. Attention weighted sum: scalar loop in forwardLayerOptimized
+# 3. SwiGLU activation: scalar loop
+# 4. No streaming/lazy weight loading
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  OptimizationTarget:
+    fields:
+      name: String
+      current_time_ms: Float
+      target_time_ms: Float
+      improvement_percent: Float
+      priority: Int
+
+  SIMDConfig:
+    fields:
+      vector_width: Int       # 8 for AVX2, 16 for AVX-512
+      unroll_factor: Int      # 4 for current impl
+      use_fma: Bool           # Fused multiply-add
+      prefetch_distance: Int  # Cache prefetch
+
+  BenchmarkResult:
+    fields:
+      operation: String
+      size: Int
+      scalar_ns: Int
+      simd_ns: Int
+      speedup: Float
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# OPTIMIZATION TARGETS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+optimization_targets:
+  - name: "attention_weighted_sum"
+    current_time_ms: 15.0
+    target_time_ms: 3.0
+    improvement_percent: 400.0
+    priority: 1
+
+  - name: "swiglu_activation"
+    current_time_ms: 5.0
+    target_time_ms: 1.0
+    improvement_percent: 400.0
+    priority: 2
+
+  - name: "weight_dequantization"
+    current_time_ms: 208000.0
+    target_time_ms: 30000.0
+    improvement_percent: 593.0
+    priority: 1
+
+  - name: "rope_application"
+    current_time_ms: 2.0
+    target_time_ms: 0.5
+    improvement_percent: 300.0
+    priority: 3
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SIMD IMPROVEMENTS TO IMPLEMENT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+improvements:
+  # 1. SIMD Attention Weighted Sum
+  - id: "SIMD-001"
+    name: "simdAttentionWeightedSum"
+    description: "Vectorize attention output computation"
+    current_code: |
+      for (0..seq_len) |t| {
+        const score = self.buf_scores[t];
+        for (0..head_dim) |i| {
+          out_head[i] += score * v_vec[i];
+        }
+      }
+    optimized_approach: |
+      Use SIMD to process head_dim elements in parallel.
+      Broadcast score to Vec8f, multiply with v_vec, accumulate.
+    expected_speedup: 4.0
+
+  # 2. SIMD SwiGLU
+  - id: "SIMD-002"
+    name: "simdSwiGLU"
+    description: "Vectorize SwiGLU activation"
+    current_code: |
+      for (0..intermediate_size) |i| {
+        buf_ffn_gate[i] = silu(buf_ffn_gate[i]) * buf_ffn_up[i];
+      }
+    optimized_approach: |
+      Approximate SiLU with polynomial or use SIMD exp.
+      Process 8 elements at a time.
+    expected_speedup: 4.0
+
+  # 3. Parallel Dequantization
+  - id: "SIMD-003"
+    name: "parallelDequantize"
+    description: "Multi-threaded weight dequantization"
+    current_code: "Sequential Q8_0 dequantization"
+    optimized_approach: |
+      Split tensor into chunks, dequantize in parallel.
+      Use SIMD for scale multiplication.
+    expected_speedup: 6.0
+
+  # 4. SIMD RoPE
+  - id: "SIMD-004"
+    name: "simdRoPE"
+    description: "Vectorize rotary position embedding"
+    current_code: "Scalar sin/cos computation"
+    optimized_approach: |
+      Pre-compute sin/cos tables.
+      Use SIMD for rotation matrix application.
+    expected_speedup: 3.0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: simd_attention_weighted_sum
+    given: Attention scores and V cache
+    when: Computing attention output
+    then: Return weighted sum using SIMD operations
+
+  - name: simd_swiglu
+    given: Gate and up projections
+    when: Applying SwiGLU activation
+    then: Return activated values using SIMD
+
+  - name: parallel_dequantize_q8_0
+    given: Quantized tensor and thread count
+    when: Loading model weights
+    then: Return dequantized f32 tensor in parallel
+
+  - name: simd_rope_apply
+    given: Q/K vectors and position
+    when: Applying rotary embeddings
+    then: Return rotated vectors using SIMD
+
+  - name: benchmark_operation
+    given: Operation name and size
+    when: Performance measurement requested
+    then: Return BenchmarkResult with scalar vs SIMD times
+
+  - name: get_optimization_status
+    given: No input required
+    when: Status check requested
+    then: Return array of OptimizationTarget with current progress

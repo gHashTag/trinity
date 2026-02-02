@@ -435,3 +435,127 @@ test "simd_rms_norm" {
     // RMS norm should produce non-zero output
     try std.testing.expect(output[0] > 0);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIMD ATTENTION WEIGHTED SUM (OPT-001 Enhancement)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// SIMD-optimized attention weighted sum
+/// output[i] = sum(scores[t] * v_cache[t][i]) for all t
+/// This is the inner loop of attention computation
+pub fn simdAttentionWeightedSum(output: []f32, scores: []const f32, v_cache: []const f32, seq_len: usize, head_dim: usize, kv_stride: usize) void {
+    const aligned_dim = head_dim & ~@as(usize, SIMD_WIDTH - 1);
+
+    // Zero output
+    @memset(output, 0.0);
+
+    // Process each timestep
+    for (0..seq_len) |t| {
+        const score = scores[t];
+        const score_vec: Vec8f = @splat(score);
+        const v_offset = t * kv_stride;
+
+        // SIMD loop
+        var i: usize = 0;
+        while (i < aligned_dim) : (i += SIMD_WIDTH) {
+            const v_vec: Vec8f = v_cache[v_offset + i ..][0..SIMD_WIDTH].*;
+            const out_vec: Vec8f = output[i..][0..SIMD_WIDTH].*;
+            output[i..][0..SIMD_WIDTH].* = out_vec + score_vec * v_vec;
+        }
+
+        // Scalar tail
+        while (i < head_dim) : (i += 1) {
+            output[i] += score * v_cache[v_offset + i];
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIMD SwiGLU ACTIVATION (OPT-002 Enhancement)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Fast SiLU approximation using polynomial
+/// silu(x) ≈ x * sigmoid(x) ≈ x * (0.5 + 0.5 * tanh(x * 0.7978845608))
+/// For better accuracy, we use: x / (1 + exp(-x))
+fn siluApprox(x: f32) f32 {
+    // Fast sigmoid approximation
+    const neg_x = -x;
+    const exp_neg = @exp(neg_x);
+    return x / (1.0 + exp_neg);
+}
+
+/// SIMD-optimized SwiGLU activation
+/// output[i] = silu(gate[i]) * up[i]
+pub fn simdSwiGLU(output: []f32, gate: []const f32, up: []const f32) void {
+    const len = @min(gate.len, up.len);
+    const aligned_len = len & ~@as(usize, SIMD_WIDTH - 1);
+
+    // SIMD loop - process 8 elements at a time
+    // Note: @exp is not vectorized in Zig, so we process element-wise but with better cache usage
+    var i: usize = 0;
+    while (i < aligned_len) : (i += SIMD_WIDTH) {
+        // Load gate and up values
+        const gate_vec: Vec8f = gate[i..][0..SIMD_WIDTH].*;
+        const up_vec: Vec8f = up[i..][0..SIMD_WIDTH].*;
+
+        // Apply SiLU to gate (element-wise due to exp)
+        var silu_arr: [SIMD_WIDTH]f32 = undefined;
+        const gate_arr: [SIMD_WIDTH]f32 = gate_vec;
+        inline for (0..SIMD_WIDTH) |j| {
+            silu_arr[j] = siluApprox(gate_arr[j]);
+        }
+        const silu_vec: Vec8f = silu_arr;
+
+        // Multiply with up
+        output[i..][0..SIMD_WIDTH].* = silu_vec * up_vec;
+    }
+
+    // Scalar tail
+    while (i < len) : (i += 1) {
+        output[i] = siluApprox(gate[i]) * up[i];
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIMD RESIDUAL ADD (Common operation)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// SIMD-optimized residual addition: output[i] = a[i] + b[i]
+/// In-place version: a[i] += b[i]
+pub fn simdResidualAdd(output: []f32, residual: []const f32) void {
+    const len = @min(output.len, residual.len);
+    const aligned_len = len & ~@as(usize, SIMD_WIDTH - 1);
+
+    var i: usize = 0;
+    while (i < aligned_len) : (i += SIMD_WIDTH) {
+        const out_vec: Vec8f = output[i..][0..SIMD_WIDTH].*;
+        const res_vec: Vec8f = residual[i..][0..SIMD_WIDTH].*;
+        output[i..][0..SIMD_WIDTH].* = out_vec + res_vec;
+    }
+
+    while (i < len) : (i += 1) {
+        output[i] += residual[i];
+    }
+}
+
+test "simd_swiglu" {
+    const gate = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
+    const up = [_]f32{ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
+    var output: [8]f32 = undefined;
+
+    simdSwiGLU(&output, &gate, &up);
+
+    // silu(1) * 1 ≈ 0.731
+    try std.testing.expect(output[0] > 0.7 and output[0] < 0.8);
+}
+
+test "simd_attention_weighted_sum" {
+    const scores = [_]f32{ 0.5, 0.5 };
+    const v_cache = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 }; // 2 timesteps, 4 dim
+    var output: [4]f32 = undefined;
+
+    simdAttentionWeightedSum(&output, &scores, &v_cache, 2, 4, 4);
+
+    // output[0] = 0.5 * 1.0 + 0.5 * 5.0 = 3.0
+    try std.testing.expectApproxEqAbs(output[0], 3.0, 0.001);
+}
