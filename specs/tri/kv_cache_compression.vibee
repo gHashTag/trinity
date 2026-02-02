@@ -1,0 +1,71 @@
+# kv_cache_compression.vibee
+# KV Cache Compression with Sliding Window + Attention Sink
+# Enables infinite context with fixed memory
+
+name: kv_cache_compression
+version: "1.0.0"
+language: zig
+module: kv_cache_compression
+
+types:
+  StreamingConfig:
+    description: "Configuration for streaming/infinite context"
+    fields:
+      window_size: Int        # Total window size (sink + local)
+      sink_tokens: Int        # First N tokens always kept
+      local_tokens: Int       # Recent tokens in sliding window
+      use_sparse_attention: Bool  # Apply window mask to attention
+
+  CompressionStats:
+    description: "Statistics for cache compression"
+    fields:
+      total_tokens_seen: Int
+      tokens_in_cache: Int
+      evicted_tokens: Int
+      compression_ratio: Float
+      memory_saved_bytes: Int
+
+behaviors:
+  - name: apply_window_mask
+    given: attention scores, window mask
+    when: computing masked attention
+    then: sets out-of-window scores to -inf before softmax
+
+  - name: streaming_attention
+    given: query, RingKVCache, window config
+    when: computing attention with sliding window
+    then: only attends to sink tokens + local window
+
+  - name: get_compression_stats
+    given: RingKVCache
+    when: querying compression efficiency
+    then: returns stats including memory saved
+
+  - name: configure_streaming
+    given: model, StreamingConfig
+    when: enabling streaming mode
+    then: configures all layer caches for sliding window
+
+# Algorithm:
+#
+# Standard Attention (O(N²) memory):
+#   scores = Q @ K^T  (all N tokens)
+#   output = softmax(scores) @ V
+#
+# Streaming Attention (O(W) memory, W = window_size):
+#   For each query position:
+#     1. Compute scores for sink tokens (first S)
+#     2. Compute scores for local window (last L)
+#     3. Mask out evicted tokens (set to -inf)
+#     4. Softmax over valid positions only
+#     5. Weighted sum of V
+#
+# Memory Comparison (context_length=32K, window=2K):
+#   Standard: 32K × head_dim × 2 (K+V) × num_layers × num_heads
+#   Streaming: 2K × head_dim × 2 (K+V) × num_layers × num_heads
+#   Savings: 16x memory reduction!
+#
+# Attention Sink Insight:
+#   First few tokens accumulate attention mass during training.
+#   Keeping them prevents attention collapse on long sequences.
+#   Typically 4 sink tokens is sufficient.

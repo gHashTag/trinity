@@ -757,27 +757,18 @@ pub const BatchTriModel = struct {
         for (0..num_heads) |h| {
             const kv_h = h / kv_group_size;
             const q_head = model.buf_q[h * head_dim ..][0..head_dim];
-
-            // Compute attention scores using RingKVCache
-            for (0..seq_len) |t| {
-                const k_vec = cache.getK(t, kv_h);
-                model.buf_scores[t] = flash.simdDot(q_head, k_vec) * scale;
-            }
-
-            // Softmax
-            inference.softmax(model.buf_scores[0..seq_len], model.buf_scores[0..seq_len]);
-
-            // Weighted sum
             const out_head = model.buf_attn_out[h * head_dim ..][0..head_dim];
-            @memset(out_head, 0.0);
 
-            for (0..seq_len) |t| {
-                const v_vec = cache.getV(t, kv_h);
-                const score_val = model.buf_scores[t];
-                for (0..head_dim) |j| {
-                    out_head[j] += score_val * v_vec[j];
-                }
-            }
+            // Use streaming attention with sliding window mask
+            // This enables infinite context with fixed memory
+            kv_cache.streamingAttention(
+                out_head,
+                q_head,
+                cache,
+                kv_h,
+                model.buf_scores[0..seq_len],
+                scale,
+            );
         }
 
         // Output projection

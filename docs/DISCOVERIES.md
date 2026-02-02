@@ -80,6 +80,7 @@ Where:
 | OPT-T06 | Ternary Normalization | 16x | 0.2x | ✅ Implemented |
 | OPT-T07 | Batch Ternary MatMul | N/A | 2.28x | ✅ Implemented |
 | OPT-M01 | Memory-Mapped Loading | N/A | 30x load | ✅ Implemented |
+| OPT-C01 | KV Cache Compression | 5-16x | 1x | ✅ Implemented |
 
 ### Business Value
 
@@ -444,6 +445,66 @@ var reader = try gguf.GGUFReader.init(allocator, "model.gguf");
 
 // mmap loading (30x faster)
 var reader = try gguf.MmapGGUFReader.init(allocator, "model.gguf");
+```
+
+### KV Cache Compression (OPT-C01)
+
+**Status**: ✅ Implemented
+
+| Component | File | Description |
+|-----------|------|-------------|
+| SlidingWindowConfig | `kv_cache.zig` | Window size + sink tokens config |
+| RingKVCache | `kv_cache.zig` | Ring buffer with O(1) append |
+| streamingAttention | `kv_cache.zig` | Masked attention for sliding window |
+| CompressionStats | `kv_cache.zig` | Compression statistics |
+
+**Sliding Window + Attention Sink:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CONTEXT WINDOW                           │
+├─────────────────────────────────────────────────────────────┤
+│  [SINK]  [EVICTED...]  [LOCAL WINDOW]                       │
+│  ┌───┐   ┌───────────┐ ┌─────────────────────────────────┐  │
+│  │ 4 │   │  MASKED   │ │        RECENT TOKENS            │  │
+│  │tok│   │  (-inf)   │ │        (attend here)            │  │
+│  └───┘   └───────────┘ └─────────────────────────────────┘  │
+│    ↑                          ↑                             │
+│  Always                    Sliding                          │
+│  kept                      window                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Benchmark Results (500 tokens, window=100):**
+```
+╔══════════════════════════════════════════════════════════════╗
+║           KV CACHE COMPRESSION STATS                        ║
+╠══════════════════════════════════════════════════════════════╣
+║  Total tokens seen:           500                            ║
+║  Tokens in cache:             100                            ║
+║  Evicted tokens:              400                            ║
+║  Compression ratio:           5.0x                          ║
+║  Memory saved:             819200 bytes                      ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+**Memory Comparison (32K context, 2K window):**
+- Standard: 32K × head_dim × 2 × layers × heads
+- Streaming: 2K × head_dim × 2 × layers × heads
+- **Savings: 16x memory reduction**
+
+**Usage:**
+```zig
+// Configure sliding window
+const config = SlidingWindowConfig{
+    .window_size = 2048,
+    .sink_tokens = 4,      // Keep first 4 tokens
+    .local_tokens = 2044,  // Keep last 2044 tokens
+};
+
+var cache = try RingKVCache.init(allocator, num_heads, head_dim, 2048, config);
+
+// Streaming attention automatically masks evicted tokens
+kv_cache.streamingAttention(output, query, &cache, head_idx, scores, scale);
 ```
 
 ### Batch Processing (INF-004)
