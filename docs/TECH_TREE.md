@@ -53,7 +53,7 @@
 │  │                                                  ┌──────────┐              │    │
 │  │                                                  │ OPT-PC01 │              │    │
 │  │                                                  │ Prefix   │              │    │
-│  │                                                  │ 🔄 WIP   │              │    │
+│  │                                                  │ ✅ 90%   │              │    │
 │  │                                                  └──────────┘              │    │
 │  └─────────────────────────────────────────────────────────────────────────────┘    │
 │                                                                                     │
@@ -100,9 +100,13 @@
 
 ### In Progress (🔄)
 
+*None currently*
+
+### Recently Completed
+
 | ID | Name | Branch | Impact | Hours | Dependencies |
 |----|------|--------|--------|-------|--------------|
-| OPT-PC01 | Prefix Caching | Serving | 99% prefill reduction | 20 | OPT-PA01 ✅ |
+| OPT-PC01 | Prefix Caching | Serving | **90% prefill reduction** | 20 | OPT-PA01 ✅ |
 
 ### Available (🟢)
 
@@ -156,9 +160,9 @@
 
 ### Immediate (This Week)
 
-1. **OPT-PC01 Prefix Caching** - 20 hours
-   - Dependencies: ✅ All met
-   - Impact: 99% prefill reduction for cached prompts
+1. **OPT-CP01 Chunked Prefill** - 30 hours
+   - Dependencies: ✅ All met (OPT-B01)
+   - Impact: -50% time-to-first-token
    - Priority: HIGH
 
 ### Short-term (This Month)

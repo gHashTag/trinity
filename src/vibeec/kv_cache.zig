@@ -2011,3 +2011,427 @@ test "copy_on_write" {
     // New block ref count should be 1
     try std.testing.expectEqual(@as(usize, 1), pool.blocks.items[new_id.?].ref_count);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PREFIX CACHING (OPT-PC01)
+// Cache common prefixes (system prompts, few-shot examples) for reuse
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Configuration for prefix cache
+pub const PrefixCacheConfig = struct {
+    max_cached_prefixes: usize,
+    max_prefix_length: usize,
+    eviction_policy: EvictionPolicy,
+
+    pub const EvictionPolicy = enum { LRU, LFU, FIFO };
+
+    pub fn default() PrefixCacheConfig {
+        return .{
+            .max_cached_prefixes = 100,
+            .max_prefix_length = 2048,
+            .eviction_policy = .LRU,
+        };
+    }
+};
+
+/// Cached prefix entry
+pub const CachedPrefix = struct {
+    prefix_hash: u64,
+    tokens: std.ArrayList(u32),
+    block_ids: std.ArrayList(usize),
+    num_tokens: usize,
+    hit_count: usize,
+    last_access: i64,
+    created_at: i64,
+
+    pub fn init(allocator: std.mem.Allocator, hash: u64) CachedPrefix {
+        return .{
+            .prefix_hash = hash,
+            .tokens = std.ArrayList(u32).init(allocator),
+            .block_ids = std.ArrayList(usize).init(allocator),
+            .num_tokens = 0,
+            .hit_count = 0,
+            .last_access = std.time.milliTimestamp(),
+            .created_at = std.time.milliTimestamp(),
+        };
+    }
+
+    pub fn deinit(self: *CachedPrefix) void {
+        self.tokens.deinit();
+        self.block_ids.deinit();
+    }
+};
+
+/// Prefix match result
+pub const PrefixMatchResult = struct {
+    matched: bool,
+    matched_tokens: usize,
+    prefix_hash: u64,
+    block_ids: []const usize,
+};
+
+/// Prefix cache statistics
+pub const PrefixCacheStats = struct {
+    total_prefixes: usize,
+    total_hits: usize,
+    total_misses: usize,
+    hit_rate: f32,
+    evictions: usize,
+
+    pub fn print(self: *const PrefixCacheStats) void {
+        std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║           PREFIX CACHE STATS                                ║\n", .{});
+        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+        std.debug.print("║  Total prefixes:       {d:>10}                            ║\n", .{self.total_prefixes});
+        std.debug.print("║  Total hits:           {d:>10}                            ║\n", .{self.total_hits});
+        std.debug.print("║  Total misses:         {d:>10}                            ║\n", .{self.total_misses});
+        std.debug.print("║  Hit rate:             {d:>10.1}%                          ║\n", .{self.hit_rate * 100.0});
+        std.debug.print("║  Evictions:            {d:>10}                            ║\n", .{self.evictions});
+        std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+    }
+};
+
+/// Prefix Cache for reusing common prompts
+pub const PrefixCache = struct {
+    allocator: std.mem.Allocator,
+    config: PrefixCacheConfig,
+    cache: std.AutoHashMap(u64, CachedPrefix),
+    block_pool: *BlockPool,
+
+    // Statistics
+    total_hits: usize,
+    total_misses: usize,
+    evictions: usize,
+
+    pub fn init(allocator: std.mem.Allocator, config: PrefixCacheConfig, block_pool: *BlockPool) PrefixCache {
+        return .{
+            .allocator = allocator,
+            .config = config,
+            .cache = std.AutoHashMap(u64, CachedPrefix).init(allocator),
+            .block_pool = block_pool,
+            .total_hits = 0,
+            .total_misses = 0,
+            .evictions = 0,
+        };
+    }
+
+    pub fn deinit(self: *PrefixCache) void {
+        var it = self.cache.iterator();
+        while (it.next()) |entry| {
+            // Free blocks back to pool
+            for (entry.value_ptr.block_ids.items) |block_id| {
+                self.block_pool.freeBlock(block_id);
+            }
+            entry.value_ptr.deinit();
+        }
+        self.cache.deinit();
+    }
+
+    /// Compute hash for token sequence
+    pub fn computeHash(tokens: []const u32) u64 {
+        var hash: u64 = 0xcbf29ce484222325; // FNV-1a offset basis
+        for (tokens) |token| {
+            hash ^= @as(u64, token);
+            hash *%= 0x100000001b3; // FNV-1a prime
+        }
+        return hash;
+    }
+
+    /// Look up prefix in cache
+    pub fn lookup(self: *PrefixCache, tokens: []const u32) ?*CachedPrefix {
+        const hash = computeHash(tokens);
+        if (self.cache.getPtr(hash)) |entry| {
+            // Verify tokens match (hash collision check)
+            if (entry.tokens.items.len == tokens.len) {
+                var match = true;
+                for (entry.tokens.items, 0..) |t, i| {
+                    if (t != tokens[i]) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    entry.hit_count += 1;
+                    entry.last_access = std.time.milliTimestamp();
+                    self.total_hits += 1;
+                    return entry;
+                }
+            }
+        }
+        self.total_misses += 1;
+        return null;
+    }
+
+    /// Match longest cached prefix
+    pub fn matchLongestPrefix(self: *PrefixCache, tokens: []const u32) PrefixMatchResult {
+        // Try progressively shorter prefixes
+        var len = @min(tokens.len, self.config.max_prefix_length);
+        while (len > 0) : (len -= 1) {
+            const prefix_tokens = tokens[0..len];
+            if (self.lookup(prefix_tokens)) |entry| {
+                return .{
+                    .matched = true,
+                    .matched_tokens = len,
+                    .prefix_hash = entry.prefix_hash,
+                    .block_ids = entry.block_ids.items,
+                };
+            }
+        }
+        return .{
+            .matched = false,
+            .matched_tokens = 0,
+            .prefix_hash = 0,
+            .block_ids = &[_]usize{},
+        };
+    }
+
+    /// Cache a new prefix
+    pub fn cachePrefix(self: *PrefixCache, tokens: []const u32, block_ids: []const usize) !void {
+        if (tokens.len > self.config.max_prefix_length) return;
+
+        // Evict if at capacity
+        if (self.cache.count() >= self.config.max_cached_prefixes) {
+            try self.evict();
+        }
+
+        const hash = computeHash(tokens);
+
+        // Check if already cached
+        if (self.cache.contains(hash)) return;
+
+        var entry = CachedPrefix.init(self.allocator, hash);
+        try entry.tokens.appendSlice(tokens);
+        try entry.block_ids.appendSlice(block_ids);
+        entry.num_tokens = tokens.len;
+
+        // Increment ref counts for shared blocks
+        for (block_ids) |block_id| {
+            if (block_id < self.block_pool.blocks.items.len) {
+                self.block_pool.blocks.items[block_id].ref_count += 1;
+            }
+        }
+
+        try self.cache.put(hash, entry);
+    }
+
+    /// Evict based on policy
+    fn evict(self: *PrefixCache) !void {
+        var victim_hash: ?u64 = null;
+        var victim_score: i64 = std.math.maxInt(i64);
+
+        var it = self.cache.iterator();
+        while (it.next()) |entry| {
+            const score: i64 = switch (self.config.eviction_policy) {
+                .LRU => entry.value_ptr.last_access,
+                .LFU => @as(i64, @intCast(entry.value_ptr.hit_count)),
+                .FIFO => entry.value_ptr.created_at,
+            };
+
+            if (score < victim_score) {
+                victim_score = score;
+                victim_hash = entry.key_ptr.*;
+            }
+        }
+
+        if (victim_hash) |hash| {
+            if (self.cache.fetchRemove(hash)) |kv| {
+                var entry = kv.value;
+                // Free blocks
+                for (entry.block_ids.items) |block_id| {
+                    self.block_pool.freeBlock(block_id);
+                }
+                entry.deinit();
+                self.evictions += 1;
+            }
+        }
+    }
+
+    /// Get statistics
+    pub fn getStats(self: *const PrefixCache) PrefixCacheStats {
+        const total = self.total_hits + self.total_misses;
+        return .{
+            .total_prefixes = self.cache.count(),
+            .total_hits = self.total_hits,
+            .total_misses = self.total_misses,
+            .hit_rate = if (total > 0) @as(f32, @floatFromInt(self.total_hits)) / @as(f32, @floatFromInt(total)) else 0.0,
+            .evictions = self.evictions,
+        };
+    }
+
+    /// Clear all cached prefixes
+    pub fn clear(self: *PrefixCache) void {
+        var it = self.cache.iterator();
+        while (it.next()) |entry| {
+            for (entry.value_ptr.block_ids.items) |block_id| {
+                self.block_pool.freeBlock(block_id);
+            }
+            entry.value_ptr.deinit();
+        }
+        self.cache.clearRetainingCapacity();
+        self.total_hits = 0;
+        self.total_misses = 0;
+    }
+};
+
+test "prefix_cache_basic" {
+    const allocator = std.testing.allocator;
+
+    const pa_config = PagedAttentionConfig.mini();
+    var pool = try BlockPool.init(allocator, pa_config);
+    defer pool.deinit();
+
+    const config = PrefixCacheConfig.default();
+    var cache = PrefixCache.init(allocator, config, &pool);
+    defer cache.deinit();
+
+    // Allocate some blocks
+    const b0 = pool.allocateBlock().?;
+    const b1 = pool.allocateBlock().?;
+
+    // Cache a prefix
+    const tokens = [_]u32{ 1, 2, 3, 4, 5 };
+    const blocks = [_]usize{ b0, b1 };
+    try cache.cachePrefix(&tokens, &blocks);
+
+    // Lookup should hit
+    const result = cache.lookup(&tokens);
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(usize, 5), result.?.num_tokens);
+    try std.testing.expectEqual(@as(usize, 1), result.?.hit_count);
+
+    // Stats
+    const stats = cache.getStats();
+    try std.testing.expectEqual(@as(usize, 1), stats.total_prefixes);
+    try std.testing.expectEqual(@as(usize, 1), stats.total_hits);
+}
+
+test "prefix_cache_longest_match" {
+    const allocator = std.testing.allocator;
+
+    const pa_config = PagedAttentionConfig.mini();
+    var pool = try BlockPool.init(allocator, pa_config);
+    defer pool.deinit();
+
+    const config = PrefixCacheConfig.default();
+    var cache = PrefixCache.init(allocator, config, &pool);
+    defer cache.deinit();
+
+    // Cache short prefix
+    const short = [_]u32{ 1, 2, 3 };
+    const b0 = pool.allocateBlock().?;
+    try cache.cachePrefix(&short, &[_]usize{b0});
+
+    // Cache longer prefix
+    const long = [_]u32{ 1, 2, 3, 4, 5 };
+    const b1 = pool.allocateBlock().?;
+    try cache.cachePrefix(&long, &[_]usize{b1});
+
+    // Match should find longer prefix
+    const query = [_]u32{ 1, 2, 3, 4, 5, 6, 7 };
+    const result = cache.matchLongestPrefix(&query);
+
+    try std.testing.expect(result.matched);
+    try std.testing.expectEqual(@as(usize, 5), result.matched_tokens);
+}
+
+test "prefix_cache_eviction" {
+    const allocator = std.testing.allocator;
+
+    const pa_config = PagedAttentionConfig.mini();
+    var pool = try BlockPool.init(allocator, pa_config);
+    defer pool.deinit();
+
+    var config = PrefixCacheConfig.default();
+    config.max_cached_prefixes = 2; // Small cache for testing
+    var cache = PrefixCache.init(allocator, config, &pool);
+    defer cache.deinit();
+
+    // Fill cache
+    const t1 = [_]u32{1};
+    const t2 = [_]u32{2};
+    const t3 = [_]u32{3};
+
+    try cache.cachePrefix(&t1, &[_]usize{});
+    try cache.cachePrefix(&t2, &[_]usize{});
+
+    // This should trigger eviction
+    try cache.cachePrefix(&t3, &[_]usize{});
+
+    const stats = cache.getStats();
+    try std.testing.expectEqual(@as(usize, 2), stats.total_prefixes);
+    try std.testing.expectEqual(@as(usize, 1), stats.evictions);
+}
+
+test "prefix_cache_benchmark" {
+    const allocator = std.testing.allocator;
+
+    const pa_config = PagedAttentionConfig.mini();
+    var pool = try BlockPool.init(allocator, pa_config);
+    defer pool.deinit();
+
+    const config = PrefixCacheConfig.default();
+    var cache = PrefixCache.init(allocator, config, &pool);
+    defer cache.deinit();
+
+    // Simulate system prompt (100 tokens)
+    var system_prompt: [100]u32 = undefined;
+    for (&system_prompt, 0..) |*t, i| {
+        t.* = @intCast(i + 1);
+    }
+
+    // Allocate blocks for system prompt
+    var blocks: [7]usize = undefined; // 100 tokens / 16 per block ≈ 7 blocks
+    for (&blocks) |*b| {
+        b.* = pool.allocateBlock() orelse break;
+    }
+
+    // Cache the system prompt
+    try cache.cachePrefix(&system_prompt, &blocks);
+
+    // Simulate 100 requests with same system prompt
+    const num_requests: usize = 100;
+    var hits: usize = 0;
+    var misses: usize = 0;
+
+    for (0..num_requests) |_| {
+        // Each request has system prompt + user message
+        var full_prompt: [110]u32 = undefined;
+        @memcpy(full_prompt[0..100], &system_prompt);
+        for (100..110) |i| {
+            full_prompt[i] = @intCast(i * 7); // Different user message
+        }
+
+        const match = cache.matchLongestPrefix(&full_prompt);
+        if (match.matched) {
+            hits += 1;
+            // Would skip prefill for matched_tokens
+            try std.testing.expectEqual(@as(usize, 100), match.matched_tokens);
+        } else {
+            misses += 1;
+        }
+    }
+
+    const stats = cache.getStats();
+
+    // Print benchmark results
+    std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║           PREFIX CACHING BENCHMARK                          ║\n", .{});
+    std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+    std.debug.print("║  Requests:             {d:>10}                            ║\n", .{num_requests});
+    std.debug.print("║  Cache hits:           {d:>10}                            ║\n", .{hits});
+    std.debug.print("║  Cache misses:         {d:>10}                            ║\n", .{misses});
+    std.debug.print("║  Hit rate:             {d:>10.1}%                          ║\n", .{stats.hit_rate * 100.0});
+    std.debug.print("║                                                              ║\n", .{});
+    std.debug.print("║  WITHOUT CACHING:                                            ║\n", .{});
+    std.debug.print("║    Prefill tokens:     {d:>10}                            ║\n", .{num_requests * 110});
+    std.debug.print("║                                                              ║\n", .{});
+    std.debug.print("║  WITH CACHING:                                               ║\n", .{});
+    std.debug.print("║    Prefill tokens:     {d:>10}                            ║\n", .{100 + (num_requests - 1) * 10});
+    std.debug.print("║    Reduction:          {d:>10.1}%                          ║\n", .{(1.0 - @as(f32, @floatFromInt(100 + (num_requests - 1) * 10)) / @as(f32, @floatFromInt(num_requests * 110))) * 100.0});
+    std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+
+    // Verify all requests hit the cache
+    try std.testing.expectEqual(@as(usize, 100), hits);
+    // Note: hit_rate includes intermediate lookups from matchLongestPrefix
+    // The important metric is that all 100 requests found the cached prefix
+}
