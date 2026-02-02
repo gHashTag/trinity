@@ -1,0 +1,257 @@
+# Auto-Scaling & Monitoring - DEP-003
+# Trinity Production Deployment Infrastructure
+# Author: Dmitrii Vasilev
+# Version: 1.0.0
+
+name: autoscaling
+version: "1.0.0"
+language: zig
+module: autoscaling
+
+description: |
+  Production auto-scaling and monitoring for Trinity inference.
+  Integrates with Fly.io for horizontal scaling based on:
+  - Request queue depth
+  - CPU utilization
+  - Memory pressure
+  - TTFT latency
+  Exports Prometheus metrics for observability.
+
+types:
+  ScalingConfig:
+    fields:
+      min_instances: Int
+      max_instances: Int
+      target_cpu_percent: Float
+      target_queue_depth: Int
+      target_ttft_ms: Float
+      scale_up_threshold: Float
+      scale_down_threshold: Float
+      cooldown_seconds: Int
+
+  InstanceMetrics:
+    fields:
+      instance_id: String
+      cpu_percent: Float
+      memory_percent: Float
+      queue_depth: Int
+      active_requests: Int
+      ttft_p50_ms: Float
+      ttft_p99_ms: Float
+      throughput_tps: Float
+      uptime_seconds: Int
+
+  ClusterMetrics:
+    fields:
+      total_instances: Int
+      healthy_instances: Int
+      total_requests: Int
+      total_tokens: Int
+      avg_cpu_percent: Float
+      avg_memory_percent: Float
+      avg_queue_depth: Float
+      avg_ttft_ms: Float
+      total_throughput_tps: Float
+
+  ScalingDecision:
+    fields:
+      action: String
+      current_instances: Int
+      target_instances: Int
+      reason: String
+      timestamp: Timestamp
+
+  HealthStatus:
+    fields:
+      healthy: Bool
+      ready: Bool
+      live: Bool
+      last_check: Timestamp
+      error_message: Option<String>
+
+  PrometheusMetric:
+    fields:
+      name: String
+      type: String
+      help: String
+      value: Float
+      labels: Map<String, String>
+
+behaviors:
+  # Metrics collection
+  - name: collect_instance_metrics
+    given: Running inference instance
+    when: Metrics interval elapsed (every 10s)
+    then: Gather CPU, memory, queue, latency metrics
+
+  - name: aggregate_cluster_metrics
+    given: All instance metrics collected
+    when: Aggregation interval elapsed (every 30s)
+    then: Calculate cluster-wide averages and totals
+
+  # Scaling decisions
+  - name: evaluate_scale_up
+    given: Cluster metrics exceed thresholds
+    when: CPU > 80% OR queue > 100 OR TTFT > target
+    then: Recommend scale up by 1-N instances
+
+  - name: evaluate_scale_down
+    given: Cluster metrics below thresholds
+    when: CPU < 30% AND queue < 10 AND instances > min
+    then: Recommend scale down by 1 instance
+
+  - name: apply_scaling_decision
+    given: Scaling decision made
+    when: Cooldown period elapsed
+    then: Call Fly.io API to adjust instance count
+
+  # Health checks
+  - name: liveness_check
+    given: Health check request received
+    when: Endpoint /health/live called
+    then: Return 200 if process running, 503 otherwise
+
+  - name: readiness_check
+    given: Readiness check request received
+    when: Endpoint /health/ready called
+    then: Return 200 if model loaded and accepting requests
+
+  - name: startup_check
+    given: Startup check request received
+    when: Endpoint /health/startup called
+    then: Return 200 when initialization complete
+
+  # Prometheus export
+  - name: export_prometheus_metrics
+    given: Metrics request received
+    when: Endpoint /metrics called
+    then: Return Prometheus-formatted metrics
+
+  - name: register_metric
+    given: New metric type needed
+    when: Metric not yet registered
+    then: Add to metrics registry with type and help
+
+  # Fly.io integration
+  - name: get_fly_instance_count
+    given: Fly.io API credentials available
+    when: Instance count query needed
+    then: Call Fly.io machines API
+
+  - name: scale_fly_instances
+    given: Scaling decision approved
+    when: Target differs from current
+    then: Call Fly.io scale API
+
+constants:
+  # Default scaling config
+  DEFAULT_MIN_INSTANCES: 1
+  DEFAULT_MAX_INSTANCES: 10
+  DEFAULT_TARGET_CPU: 70.0
+  DEFAULT_TARGET_QUEUE: 50
+  DEFAULT_TARGET_TTFT_MS: 100.0
+  DEFAULT_SCALE_UP_THRESHOLD: 0.8
+  DEFAULT_SCALE_DOWN_THRESHOLD: 0.3
+  DEFAULT_COOLDOWN_SECONDS: 60
+
+  # Metrics collection intervals
+  INSTANCE_METRICS_INTERVAL_MS: 10000
+  CLUSTER_METRICS_INTERVAL_MS: 30000
+  HEALTH_CHECK_INTERVAL_MS: 5000
+
+  # Prometheus metric names
+  METRIC_CPU_USAGE: "trinity_cpu_usage_percent"
+  METRIC_MEMORY_USAGE: "trinity_memory_usage_percent"
+  METRIC_QUEUE_DEPTH: "trinity_queue_depth"
+  METRIC_ACTIVE_REQUESTS: "trinity_active_requests"
+  METRIC_TTFT_SECONDS: "trinity_ttft_seconds"
+  METRIC_THROUGHPUT: "trinity_throughput_tokens_per_second"
+  METRIC_TOTAL_REQUESTS: "trinity_total_requests"
+  METRIC_TOTAL_TOKENS: "trinity_total_tokens_generated"
+  METRIC_INSTANCE_COUNT: "trinity_instance_count"
+  METRIC_HEALTHY_INSTANCES: "trinity_healthy_instances"
+
+api:
+  endpoints:
+    # Health endpoints
+    - path: /health/live
+      method: GET
+      description: Liveness probe - is process running
+      response: 200 OK or 503 Service Unavailable
+
+    - path: /health/ready
+      method: GET
+      description: Readiness probe - is model loaded
+      response: 200 OK or 503 Service Unavailable
+
+    - path: /health/startup
+      method: GET
+      description: Startup probe - is initialization complete
+      response: 200 OK or 503 Service Unavailable
+
+    # Metrics endpoint
+    - path: /metrics
+      method: GET
+      description: Prometheus metrics export
+      response: text/plain with Prometheus format
+
+    # Status endpoint
+    - path: /status
+      method: GET
+      description: JSON status with all metrics
+      response: JSON with ClusterMetrics
+
+    # Admin endpoints (protected)
+    - path: /admin/scale
+      method: POST
+      description: Manual scaling trigger
+      body: { "target_instances": Int }
+      response: ScalingDecision
+
+fly_toml_template: |
+  # Trinity Inference - Production Deployment
+  # φ² + 1/φ² = 3 = TRINITY
+  
+  app = "trinity-inference"
+  primary_region = "iad"
+  
+  [build]
+    dockerfile = "Dockerfile.flyio"
+  
+  [env]
+    NUM_THREADS = "16"
+    METRICS_PORT = "9090"
+  
+  [http_service]
+    internal_port = 8080
+    force_https = true
+    auto_stop_machines = false
+    auto_start_machines = true
+    min_machines_running = 1
+    processes = ["app"]
+  
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 100
+    soft_limit = 80
+  
+  [[services]]
+    internal_port = 9090
+    protocol = "tcp"
+    [[services.ports]]
+      port = 9090
+  
+  [[vm]]
+    cpu_kind = "performance"
+    cpus = 4
+    memory_mb = 8192
+  
+  [checks]
+    [checks.health]
+      grace_period = "30s"
+      interval = "15s"
+      method = "GET"
+      path = "/health/ready"
+      port = 8080
+      timeout = "5s"
+      type = "http"
