@@ -6,16 +6,23 @@ const gguf = @import("gguf_reader.zig");
 const inference = @import("gguf_inference.zig");
 const transformer = @import("gguf_transformer.zig");
 const simd = @import("simd_matmul.zig");
+const ternary = @import("ternary_weights.zig");
 
 pub const FullModel = struct {
     allocator: std.mem.Allocator,
     reader: gguf.GGUFReader,
     config: inference.ModelConfig,
 
+    // Ternary mode flag
+    use_ternary: bool = false,
+
     // Core weights
     token_embedding: []f32,
     output_weight: []f32,
     output_norm: []f32,
+
+    // Ternary weights (optional - for BitNet models)
+    ternary_output_weight: ?[]u8 = null,
 
     // Per-layer weights
     layers: []LayerWeights,
@@ -48,6 +55,15 @@ pub const FullModel = struct {
         w_gate: []f32,
         w_up: []f32,
         w_down: []f32,
+
+        // Ternary versions (optional)
+        ternary_wq: ?[]u8 = null,
+        ternary_wk: ?[]u8 = null,
+        ternary_wv: ?[]u8 = null,
+        ternary_wo: ?[]u8 = null,
+        ternary_w_gate: ?[]u8 = null,
+        ternary_w_up: ?[]u8 = null,
+        ternary_w_down: ?[]u8 = null,
     };
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !FullModel {
@@ -263,6 +279,64 @@ pub const FullModel = struct {
         }
     }
 
+    /// Enable ternary mode - quantize all weights to {-1, 0, +1}
+    /// This provides 16x memory savings and faster inference on CPU
+    pub fn enableTernaryMode(self: *FullModel) !void {
+        if (self.use_ternary) return; // Already enabled
+
+        std.debug.print("\nConverting to ternary weights...\n", .{});
+        const stats = ternary.MemoryStats.calculate(self.countParameters());
+        stats.print();
+
+        // Convert output weights
+        const threshold = ternary.calculateThreshold(self.output_weight);
+        self.ternary_output_weight = try ternary.quantizeToTernary(self.allocator, self.output_weight, threshold);
+
+        // Convert layer weights
+        for (self.layers) |*layer| {
+            const t_wq = ternary.calculateThreshold(layer.wq);
+            const t_wk = ternary.calculateThreshold(layer.wk);
+            const t_wv = ternary.calculateThreshold(layer.wv);
+            const t_wo = ternary.calculateThreshold(layer.wo);
+            const t_gate = ternary.calculateThreshold(layer.w_gate);
+            const t_up = ternary.calculateThreshold(layer.w_up);
+            const t_down = ternary.calculateThreshold(layer.w_down);
+
+            layer.ternary_wq = try ternary.quantizeToTernary(self.allocator, layer.wq, t_wq);
+            layer.ternary_wk = try ternary.quantizeToTernary(self.allocator, layer.wk, t_wk);
+            layer.ternary_wv = try ternary.quantizeToTernary(self.allocator, layer.wv, t_wv);
+            layer.ternary_wo = try ternary.quantizeToTernary(self.allocator, layer.wo, t_wo);
+            layer.ternary_w_gate = try ternary.quantizeToTernary(self.allocator, layer.w_gate, t_gate);
+            layer.ternary_w_up = try ternary.quantizeToTernary(self.allocator, layer.w_up, t_up);
+            layer.ternary_w_down = try ternary.quantizeToTernary(self.allocator, layer.w_down, t_down);
+        }
+
+        self.use_ternary = true;
+        std.debug.print("Ternary mode enabled!\n", .{});
+    }
+
+    /// Count total parameters
+    fn countParameters(self: *const FullModel) usize {
+        var count: usize = self.token_embedding.len + self.output_weight.len + self.output_norm.len;
+        for (self.layers) |layer| {
+            count += layer.wq.len + layer.wk.len + layer.wv.len + layer.wo.len;
+            count += layer.w_gate.len + layer.w_up.len + layer.w_down.len;
+            count += layer.attn_norm.len + layer.ffn_norm.len;
+        }
+        return count;
+    }
+
+    /// Matrix-vector multiply with automatic ternary/float selection
+    fn matVecAuto(self: *const FullModel, output: []f32, weights_f32: []const f32, weights_ternary: ?[]const u8, input: []const f32, rows: usize, cols: usize) void {
+        if (self.use_ternary) {
+            if (weights_ternary) |tw| {
+                ternary.ternaryMatVec(output, tw, input, rows, cols);
+                return;
+            }
+        }
+        inference.matVec(output, weights_f32, input, rows, cols);
+    }
+
     // Forward pass for single token - OPTIMIZED with pre-allocated buffers
     pub fn forward(self: *FullModel, token: u32, pos: usize) ![]f32 {
         const hidden_size = self.config.hidden_size;
@@ -280,9 +354,9 @@ pub const FullModel = struct {
         // Final RMS norm
         inference.rmsNorm(self.buf_temp, self.buf_hidden, self.output_norm, self.config.rms_norm_eps);
 
-        // Output projection (only allocation is for return value)
+        // Output projection (only allocation is for return value) - with ternary support
         const logits = try self.allocator.alloc(f32, self.config.vocab_size);
-        inference.matVec(logits, self.output_weight, self.buf_temp, self.config.vocab_size, hidden_size);
+        self.matVecAuto(logits, self.output_weight, self.ternary_output_weight, self.buf_temp, self.config.vocab_size, hidden_size);
 
         return logits;
     }
@@ -420,10 +494,10 @@ pub const FullModel = struct {
         // Pre-attention norm (use buf_normed)
         inference.rmsNorm(self.buf_normed, input, layer.attn_norm, rms_eps);
 
-        // Compute Q, K, V (use buf_q, buf_k, buf_v)
-        inference.matVec(self.buf_q, layer.wq, self.buf_normed, num_heads * head_dim, hidden_size);
-        inference.matVec(self.buf_k, layer.wk, self.buf_normed, num_kv_heads * head_dim, hidden_size);
-        inference.matVec(self.buf_v, layer.wv, self.buf_normed, num_kv_heads * head_dim, hidden_size);
+        // Compute Q, K, V (use buf_q, buf_k, buf_v) - with ternary support
+        self.matVecAuto(self.buf_q, layer.wq, layer.ternary_wq, self.buf_normed, num_heads * head_dim, hidden_size);
+        self.matVecAuto(self.buf_k, layer.wk, layer.ternary_wk, self.buf_normed, num_kv_heads * head_dim, hidden_size);
+        self.matVecAuto(self.buf_v, layer.wv, layer.ternary_wv, self.buf_normed, num_kv_heads * head_dim, hidden_size);
 
         // Apply RoPE
         for (0..num_heads) |h| {
@@ -471,8 +545,8 @@ pub const FullModel = struct {
             }
         }
 
-        // Output projection (use buf_attn_proj)
-        inference.matVec(self.buf_attn_proj, layer.wo, self.buf_attn_out, hidden_size, num_heads * head_dim);
+        // Output projection (use buf_attn_proj) - with ternary support
+        self.matVecAuto(self.buf_attn_proj, layer.wo, layer.ternary_wo, self.buf_attn_out, hidden_size, num_heads * head_dim);
 
         // Residual
         for (0..hidden_size) |i| {
@@ -482,17 +556,17 @@ pub const FullModel = struct {
         // Pre-FFN norm
         inference.rmsNorm(self.buf_normed, output, layer.ffn_norm, rms_eps);
 
-        // FFN with SwiGLU (use buf_ffn_gate, buf_ffn_up)
-        inference.matVec(self.buf_ffn_gate, layer.w_gate, self.buf_normed, intermediate_size, hidden_size);
-        inference.matVec(self.buf_ffn_up, layer.w_up, self.buf_normed, intermediate_size, hidden_size);
+        // FFN with SwiGLU (use buf_ffn_gate, buf_ffn_up) - with ternary support
+        self.matVecAuto(self.buf_ffn_gate, layer.w_gate, layer.ternary_w_gate, self.buf_normed, intermediate_size, hidden_size);
+        self.matVecAuto(self.buf_ffn_up, layer.w_up, layer.ternary_w_up, self.buf_normed, intermediate_size, hidden_size);
 
         // SwiGLU
         for (0..intermediate_size) |i| {
             self.buf_ffn_gate[i] = inference.silu(self.buf_ffn_gate[i]) * self.buf_ffn_up[i];
         }
 
-        // Down projection (use buf_ffn_out)
-        inference.matVec(self.buf_ffn_out, layer.w_down, self.buf_ffn_gate, hidden_size, intermediate_size);
+        // Down projection (use buf_ffn_out) - with ternary support
+        self.matVecAuto(self.buf_ffn_out, layer.w_down, layer.ternary_w_down, self.buf_ffn_gate, hidden_size, intermediate_size);
 
         // Residual
         for (0..hidden_size) |i| {
