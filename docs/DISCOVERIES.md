@@ -304,6 +304,27 @@ Compression:       12.8x
 - Ternary KV cache: 12.8x compression
 - Combined similarity: 0.88 (vs 0.93 with only KV cache)
 
+### Batch Processing (INF-004)
+
+**Status**: ✅ Implemented
+
+| Component | File | Description |
+|-----------|------|-------------|
+| BatchKVCache | `kv_cache.zig` | Per-sequence KV caches |
+| BatchTriModel | `tri_inference.zig` | Batch inference wrapper |
+| addSequence | `tri_inference.zig` | Add sequence to batch |
+| forwardSequence | `tri_inference.zig` | Forward for single sequence |
+| batchForward | `tri_inference.zig` | Batch forward pass |
+
+**Benchmark Results (3 sequences, 30 tokens):**
+```
+Single sequence: 15,500 tok/s
+Batch (3 seq):   20,475 tok/s
+Speedup:         1.32x
+```
+
+**Note:** Speedup is modest on small models. Larger models with more compute per token will see higher speedup (2-4x) due to better weight reuse.
+
 ### Test Results
 
 ```
