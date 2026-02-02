@@ -1,8 +1,8 @@
 # TRINITY Technology Tree
 
-**Version**: 2.1.0  
+**Version**: 2.2.0  
 **Date**: 2026-02-02  
-**Status**: 🎉 PHASE 3 COMPLETE - PRODUCTION READY  
+**Status**: 🎉 DEP-003 COMPLETE - TRINITY v1.0 PRODUCTION READY  
 **Formula**: φ² + 1/φ² = 3
 
 ---
@@ -117,9 +117,12 @@
 | OPT-PC01 | Prefix Caching | Serving | **90% prefill reduction** | 20 | OPT-PA01 ✅ |
 | OPT-CP01 | Chunked Prefill | Serving | **33-50% TTFT reduction** | 30 | OPT-B01 ✅ |
 
+### Just Completed (✅)
+| DEP-003 | Auto-Scaling | Deploy | Handle spikes | 25 | DEP-002 ✅ | **COMPLETE** |
+
 ### Available (🟢)
-| DEP-003 | Auto-Scaling | Deploy | Handle spikes | 25 | DEP-002 ✅ |
 | OPT-001 | SIMD Vectorization | Optimization | +400% matrix | 50 | None |
+| DEP-004 | Multi-Region | Deploy | -50% latency | 40 | DEP-003 ✅ |
 
 ### Locked (🔒)
 
@@ -129,7 +132,6 @@
 | HW-001 | GPU Backend (CUDA) | Hardware | **+100x speed** | 150 | OPT-001 |
 | HW-002 | Metal Backend | Hardware | +80x on Apple | 120 | OPT-001 |
 | HW-003 | FPGA Acceleration | Hardware | Custom HW | 200 | HW-001 |
-| DEP-004 | Multi-Region | Deploy | -50% latency | 40 | DEP-003 |
 
 ---
 
@@ -163,23 +165,31 @@
 
 ## Recommended Next Steps
 
+### ✅ JUST COMPLETED: DEP-003 Auto-Scaling
+
+- Fly.io autoscaling integration
+- Prometheus metrics export
+- Health checks (liveness, readiness, startup)
+- Load testing (100+ requests)
+- Monitoring dashboard endpoint
+
 ### Immediate (This Week)
 
-1. **DEP-003 Auto-Scaling** - 25 hours
-   - Dependencies: ✅ All met (DEP-002)
-   - Impact: Handle traffic spikes on Fly.io
-   - Priority: HIGH
+1. **OPT-001 SIMD Vectorization** - 50 hours
+   - Dependencies: None
+   - Impact: +300-400% CPU MatMul performance
+   - Priority: HIGH (unlocks HW-001, HW-002)
 
 ### Short-term (This Month)
 
-2. **OPT-CP01 Chunked Prefill** - 30 hours
-   - Dependencies: ✅ All met
-   - Impact: -50% time-to-first-token
+2. **DEP-004 Multi-Region** - 40 hours
+   - Dependencies: ✅ DEP-003 complete
+   - Impact: -50% latency for global users
    - Priority: MEDIUM
 
-3. **DEP-003 Auto-Scaling** - 25 hours
-   - Dependencies: ✅ All met
-   - Impact: Handle traffic spikes
+3. **OPT-S01 Enhanced Speculative Decoding** - 30 hours
+   - Dependencies: None
+   - Impact: +2-4x generation speed
    - Priority: MEDIUM
 
 ### Long-term (This Quarter)

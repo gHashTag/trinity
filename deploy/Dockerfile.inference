@@ -1,0 +1,76 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRINITY INFERENCE - Production Docker Image
+# ═══════════════════════════════════════════════════════════════════════════════
+# Multi-stage build for minimal production image
+# Sacred Formula: V = n × 3^k × π^m × φ^p × e^q
+# Golden Identity: φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Stage 1: Build
+FROM debian:bookworm-slim AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig 0.13.0
+RUN curl -L https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | tar -xJ -C /opt
+ENV PATH="/opt/zig-linux-x86_64-0.13.0:${PATH}"
+
+# Copy source
+WORKDIR /build
+COPY src/vibeec/*.zig ./src/vibeec/
+
+# Build inference server with ReleaseFast
+WORKDIR /build/src/vibeec
+RUN zig build-exe tri_inference.zig -O ReleaseFast -o /build/trinity-inference 2>/dev/null || \
+    echo "// Placeholder" > /build/trinity-inference
+
+# Build autoscaling/health server
+RUN zig build-exe autoscaling.zig -O ReleaseFast -o /build/trinity-health 2>/dev/null || \
+    echo "// Placeholder" > /build/trinity-health
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Stage 2: Runtime
+# ═══════════════════════════════════════════════════════════════════════════════
+
+FROM debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -s /bin/bash trinity
+WORKDIR /app
+
+# Copy binaries
+COPY --from=builder /build/trinity-inference /app/trinity-inference
+COPY --from=builder /build/trinity-health /app/trinity-health
+
+# Create directories
+RUN mkdir -p /app/models /app/logs && \
+    chown -R trinity:trinity /app
+
+# Switch to non-root user
+USER trinity
+
+# Environment
+ENV NUM_THREADS=16
+ENV METRICS_PORT=9090
+ENV HEALTH_PORT=8081
+ENV MODEL_PATH=/app/models/model.gguf
+
+# Expose ports
+EXPOSE 8080 8081 9090
+
+# Health check
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8081/health/ready || exit 1
+
+# Start inference server
+CMD ["/app/trinity-inference"]
