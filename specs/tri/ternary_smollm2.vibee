@@ -1,0 +1,402 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TERNARY_SMOLLM2.VIBEE - BitNet {-1, 0, +1} Quantization for SmolLM2
+# 16x memory savings, 5-10x speedup via elimination of multiplications
+# φ² + 1/φ² = 3 = TRINITY = QUTRIT = CODON
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: ternary_smollm2
+version: "1.0.0"
+language: zig
+module: ternary_smollm2
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED CONSTANTS - GOLDEN RATIO OPTIMIZATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895           # Golden ratio
+  PHI_SQUARED: 2.618033988749895   # φ²
+  INV_PHI_SQUARED: 0.381966011250105  # 1/φ²
+  TRINITY: 3.0                     # φ² + 1/φ² = 3
+  
+  # Ternary encoding: 2 bits per weight
+  TRIT_ZERO: 0b00                  # 0
+  TRIT_PLUS: 0b01                  # +1
+  TRIT_MINUS: 0b10                 # -1
+  TRIT_RESERVED: 0b11              # Reserved
+  
+  # Packing: 4 trits per byte
+  TRITS_PER_BYTE: 4
+  BITS_PER_TRIT: 2
+  
+  # SmolLM2 1.7B architecture
+  SMOLLM2_VOCAB_SIZE: 49152
+  SMOLLM2_HIDDEN_SIZE: 2048
+  SMOLLM2_INTERMEDIATE_SIZE: 8192
+  SMOLLM2_NUM_LAYERS: 24
+  SMOLLM2_NUM_HEADS: 32
+  SMOLLM2_NUM_KV_HEADS: 32
+  SMOLLM2_HEAD_DIM: 64
+  SMOLLM2_CONTEXT_LENGTH: 8192
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES - TERNARY DATA STRUCTURES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # Single ternary weight: {-1, 0, +1}
+  TritWeight:
+    fields:
+      value: Int  # 2-bit value: 00=0, 01=+1, 10=-1
+    methods:
+      - to_float: "Returns f32: 0.0, 1.0, or -1.0"
+      - from_float: "Quantizes f32 to trit using threshold"
+
+  # Packed ternary weights: 4 trits per byte
+  TritPack4:
+    fields:
+      t0: Int  # 2 bits
+      t1: Int  # 2 bits
+      t2: Int  # 2 bits
+      t3: Int  # 2 bits
+    methods:
+      - get: "Extract trit at index 0-3"
+      - set: "Set trit at index 0-3"
+
+  # Ternary tensor with scale factor
+  TernaryTensor:
+    fields:
+      data: List<Int>       # Packed ternary weights (bytes)
+      scale: Float          # Global scale factor for dequantization
+      shape: List<Int>      # Original tensor shape
+      num_elements: Int     # Total number of weights
+
+  # Ternary layer weights for transformer
+  TernaryLayerWeights:
+    fields:
+      attn_norm: List<Float>      # Keep normalization in f32
+      ffn_norm: List<Float>       # Keep normalization in f32
+      wq: TernaryTensor           # Query projection
+      wk: TernaryTensor           # Key projection
+      wv: TernaryTensor           # Value projection
+      wo: TernaryTensor           # Output projection
+      w_gate: TernaryTensor       # FFN gate
+      w_up: TernaryTensor         # FFN up
+      w_down: TernaryTensor       # FFN down
+      scale_q: Float              # Scale for Q
+      scale_k: Float              # Scale for K
+      scale_v: Float              # Scale for V
+      scale_o: Float              # Scale for O
+      scale_gate: Float           # Scale for gate
+      scale_up: Float             # Scale for up
+      scale_down: Float           # Scale for down
+
+  # Full ternary model
+  TernarySmolLM2:
+    fields:
+      token_embedding: List<Float>  # Keep embeddings in f32
+      output_norm: List<Float>      # Keep norm in f32
+      output_weight: TernaryTensor  # Ternary output projection
+      layers: List<TernaryLayerWeights>
+      config: ModelConfig
+
+  # Model configuration
+  ModelConfig:
+    fields:
+      vocab_size: Int
+      hidden_size: Int
+      intermediate_size: Int
+      num_layers: Int
+      num_heads: Int
+      num_kv_heads: Int
+      head_dim: Int
+      context_length: Int
+      rope_theta: Float
+      rms_norm_eps: Float
+
+  # Memory statistics
+  MemoryStats:
+    fields:
+      f32_bytes: Int
+      q8_bytes: Int
+      q4_bytes: Int
+      ternary_bytes: Int
+      compression_ratio: Float
+
+  # .tri file header
+  TriHeader:
+    fields:
+      magic: Int            # 0x54524933 = "TRI3" (Trinity Ternary)
+      version: Int          # Format version
+      model_type: Int       # 0=SmolLM, 1=SmolLM2, 2=Llama, etc.
+      vocab_size: Int
+      hidden_size: Int
+      intermediate_size: Int
+      num_layers: Int
+      num_heads: Int
+      num_kv_heads: Int
+      context_length: Int
+      rope_theta: Float
+      rms_norm_eps: Float
+      total_params: Int
+      ternary_size: Int     # Size in bytes after quantization
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS - TERNARY QUANTIZATION LAWS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # LAW 1: Calculate optimal threshold using mean absolute value
+  - name: calculate_threshold
+    given: Float tensor of weights
+    when: Need to determine quantization threshold
+    then: threshold = mean(abs(weights)) * 0.5
+    formula: |
+      sum = 0.0
+      for w in weights:
+        sum += abs(w)
+      mean_abs = sum / len(weights)
+      threshold = mean_abs * 0.5  # φ-inspired scaling
+      return threshold
+
+  # LAW 2: Quantize f32 to ternary {-1, 0, +1}
+  - name: quantize_to_ternary
+    given: f32 weight and threshold
+    when: Need to compress to 2 bits
+    then: trit = +1 if w > threshold, -1 if w < -threshold, else 0
+    formula: |
+      if weight > threshold:
+        return TRIT_PLUS   # 0b01 = +1
+      elif weight < -threshold:
+        return TRIT_MINUS  # 0b10 = -1
+      else:
+        return TRIT_ZERO   # 0b00 = 0
+
+  # LAW 3: Pack 4 trits into 1 byte
+  - name: pack_trits
+    given: 4 ternary values
+    when: Need to store efficiently
+    then: byte = t0 | (t1 << 2) | (t2 << 4) | (t3 << 6)
+    formula: |
+      packed = t0 & 0x03
+      packed |= (t1 & 0x03) << 2
+      packed |= (t2 & 0x03) << 4
+      packed |= (t3 & 0x03) << 6
+      return packed
+
+  # LAW 4: Unpack byte to 4 trits
+  - name: unpack_trits
+    given: Packed byte
+    when: Need to read weights
+    then: Extract 4 2-bit values
+    formula: |
+      t0 = byte & 0x03
+      t1 = (byte >> 2) & 0x03
+      t2 = (byte >> 4) & 0x03
+      t3 = (byte >> 6) & 0x03
+      return [t0, t1, t2, t3]
+
+  # LAW 5: Ternary matrix-vector multiplication (NO MULTIPLICATIONS!)
+  - name: ternary_matvec
+    given: Ternary weight matrix, f32 input vector
+    when: Need to compute output = W @ x
+    then: Use only additions and subtractions
+    formula: |
+      for row in 0..rows:
+        sum = 0.0
+        for col in 0..cols:
+          trit = get_trit(weights, row, col)
+          if trit == TRIT_PLUS:
+            sum += input[col]      # +1: add
+          elif trit == TRIT_MINUS:
+            sum -= input[col]      # -1: subtract
+          # trit == 0: skip (no operation)
+        output[row] = sum * scale
+
+  # LAW 6: SIMD-optimized ternary matvec (8-wide)
+  - name: simd_ternary_matvec
+    given: Ternary weights, f32 input, SIMD width 8
+    when: Need maximum throughput
+    then: Process 8 elements at once using sign lookup
+    formula: |
+      sign_lut = [0.0, 1.0, -1.0, 0.0]  # Lookup table
+      for row in 0..rows:
+        sum_vec = simd_zero()
+        for col in 0..cols step 8:
+          in_vec = simd_load(input[col:col+8])
+          # Load 2 bytes = 8 trits
+          byte0 = weights[row * cols_packed + col/4]
+          byte1 = weights[row * cols_packed + col/4 + 1]
+          signs = simd_gather(sign_lut, decode_trits(byte0, byte1))
+          sum_vec = simd_fma(in_vec, signs, sum_vec)
+        output[row] = simd_reduce_add(sum_vec) * scale
+
+  # LAW 7: Convert GGUF model to .tri format
+  - name: convert_gguf_to_tri
+    given: GGUF model path
+    when: Need ternary version for fast inference
+    then: Quantize all weight matrices to ternary
+    formula: |
+      model = load_gguf(path)
+      tri_model = TernarySmolLM2()
+      
+      # Keep embeddings and norms in f32
+      tri_model.token_embedding = model.token_embedding
+      tri_model.output_norm = model.output_norm
+      
+      # Quantize output projection
+      threshold = calculate_threshold(model.output_weight)
+      tri_model.output_weight = quantize_tensor(model.output_weight, threshold)
+      
+      # Quantize each layer
+      for layer in model.layers:
+        tri_layer = TernaryLayerWeights()
+        tri_layer.attn_norm = layer.attn_norm  # Keep f32
+        tri_layer.ffn_norm = layer.ffn_norm    # Keep f32
+        
+        # Quantize attention weights
+        tri_layer.wq = quantize_tensor(layer.wq, calculate_threshold(layer.wq))
+        tri_layer.wk = quantize_tensor(layer.wk, calculate_threshold(layer.wk))
+        tri_layer.wv = quantize_tensor(layer.wv, calculate_threshold(layer.wv))
+        tri_layer.wo = quantize_tensor(layer.wo, calculate_threshold(layer.wo))
+        
+        # Quantize FFN weights
+        tri_layer.w_gate = quantize_tensor(layer.w_gate, calculate_threshold(layer.w_gate))
+        tri_layer.w_up = quantize_tensor(layer.w_up, calculate_threshold(layer.w_up))
+        tri_layer.w_down = quantize_tensor(layer.w_down, calculate_threshold(layer.w_down))
+        
+        tri_model.layers.append(tri_layer)
+      
+      return tri_model
+
+  # LAW 8: Save model to .tri file
+  - name: save_tri
+    given: TernarySmolLM2 model, output path
+    when: Need to persist ternary model
+    then: Write header + embeddings + layers in binary format
+    formula: |
+      file = open(path, "wb")
+      
+      # Write header
+      header = TriHeader()
+      header.magic = 0x54524933  # "TRI3"
+      header.version = 1
+      header.model_type = 1  # SmolLM2
+      # ... fill other fields from config
+      file.write(header)
+      
+      # Write token embeddings (f32)
+      file.write(model.token_embedding)
+      
+      # Write output norm (f32)
+      file.write(model.output_norm)
+      
+      # Write output weight (ternary)
+      file.write(model.output_weight.scale)
+      file.write(model.output_weight.data)
+      
+      # Write layers
+      for layer in model.layers:
+        file.write(layer.attn_norm)
+        file.write(layer.ffn_norm)
+        file.write(layer.wq.scale)
+        file.write(layer.wq.data)
+        # ... write all ternary tensors
+      
+      file.close()
+
+  # LAW 9: Load model from .tri file
+  - name: load_tri
+    given: Path to .tri file
+    when: Need to load ternary model for inference
+    then: Read header + embeddings + layers
+    formula: |
+      file = open(path, "rb")
+      
+      # Read and validate header
+      header = read_header(file)
+      if header.magic != 0x54524933:
+        error("Invalid .tri file")
+      
+      model = TernarySmolLM2()
+      model.config = config_from_header(header)
+      
+      # Read embeddings and weights
+      model.token_embedding = read_f32_tensor(file, header.vocab_size * header.hidden_size)
+      model.output_norm = read_f32_tensor(file, header.hidden_size)
+      model.output_weight = read_ternary_tensor(file, header.vocab_size * header.hidden_size)
+      
+      # Read layers
+      for i in 0..header.num_layers:
+        layer = read_ternary_layer(file, header)
+        model.layers.append(layer)
+      
+      file.close()
+      return model
+
+  # LAW 10: Forward pass with ternary weights
+  - name: forward
+    given: TernarySmolLM2 model, input token, position
+    when: Need to generate next token logits
+    then: Run transformer with ternary matmul
+    formula: |
+      # Get embedding
+      hidden = model.token_embedding[token * hidden_size : (token+1) * hidden_size]
+      
+      # Process through layers
+      for layer in model.layers:
+        # Pre-attention norm
+        normed = rms_norm(hidden, layer.attn_norm)
+        
+        # Attention with ternary weights
+        q = ternary_matvec(layer.wq, normed) * layer.scale_q
+        k = ternary_matvec(layer.wk, normed) * layer.scale_k
+        v = ternary_matvec(layer.wv, normed) * layer.scale_v
+        
+        # Apply RoPE, attention, etc.
+        attn_out = attention(q, k, v, kv_cache, pos)
+        attn_proj = ternary_matvec(layer.wo, attn_out) * layer.scale_o
+        
+        # Residual
+        hidden = hidden + attn_proj
+        
+        # FFN with ternary weights
+        normed = rms_norm(hidden, layer.ffn_norm)
+        gate = ternary_matvec(layer.w_gate, normed) * layer.scale_gate
+        up = ternary_matvec(layer.w_up, normed) * layer.scale_up
+        ffn_out = silu(gate) * up
+        down = ternary_matvec(layer.w_down, ffn_out) * layer.scale_down
+        
+        # Residual
+        hidden = hidden + down
+      
+      # Final norm and output projection
+      normed = rms_norm(hidden, model.output_norm)
+      logits = ternary_matvec(model.output_weight, normed) * model.output_scale
+      
+      return logits
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MEMORY ANALYSIS - φ² + 1/φ² = 3 OPTIMIZATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+analysis:
+  smollm2_1.7b:
+    total_params: 1_700_000_000
+    f32_size: "6.8 GB"
+    q8_size: "1.7 GB"
+    q4_size: "0.85 GB"
+    ternary_size: "0.425 GB"  # 2 bits per weight
+    compression_vs_f32: "16x"
+    compression_vs_q8: "4x"
+    compression_vs_q4: "2x"
+    
+  speedup_factors:
+    no_multiplications: "Ternary uses only add/sub"
+    memory_bandwidth: "16x less data to load"
+    simd_efficiency: "Sign lookup is faster than multiply"
+    expected_speedup: "5-10x vs Q8_0"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════

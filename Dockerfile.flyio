@@ -1,0 +1,57 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRINITY INFERENCE - Fly.io Deployment
+# Multi-threaded LLM inference with 16 CPU cores
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+FROM debian:bookworm-slim AS builder
+
+# Install Zig
+RUN apt-get update && apt-get install -y \
+    curl \
+    xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install Zig 0.13.0
+RUN curl -L https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | tar -xJ -C /opt
+ENV PATH="/opt/zig-linux-x86_64-0.13.0:${PATH}"
+
+# Copy source code
+WORKDIR /app
+COPY src/vibeec/*.zig ./src/vibeec/
+
+# Build with ReleaseFast optimization
+WORKDIR /app/src/vibeec
+RUN zig build-exe tri_inference.zig -O ReleaseFast -o /app/tri_inference
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Runtime image
+# ═══════════════════════════════════════════════════════════════════════════════
+
+FROM debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy binary
+COPY --from=builder /app/tri_inference /app/tri_inference
+
+# Copy models (will be downloaded at runtime if not present)
+# Models should be mounted as volumes or downloaded
+
+# Create models directory
+RUN mkdir -p /app/models
+
+# Download SmolLM2 360M model
+RUN curl -L -o /app/models/smollm2-360m.tri \
+    "https://huggingface.co/bartowski/SmolLM2-360M-Instruct-GGUF/resolve/main/SmolLM2-360M-Instruct-Q8_0.gguf" || true
+
+# Set environment
+ENV NUM_THREADS=16
+
+# Run benchmark
+CMD ["/app/tri_inference", "/app/models/smollm2-360m.tri"]
