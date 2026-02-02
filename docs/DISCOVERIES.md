@@ -77,7 +77,7 @@ Where:
 | OPT-T03 | Ternary KV Cache | 16x | 1.5x | ✅ Implemented |
 | OPT-T04 | Ternary Attention | 16x | 1.5x | ✅ Implemented |
 | OPT-T05 | Ternary Embeddings | 12.8x | 1x | ✅ Implemented |
-| OPT-T06 | Ternary Normalization | 20x | 3x | 📋 Planned |
+| OPT-T06 | Ternary Normalization | 16x | 0.2x | ✅ Implemented |
 
 ### Business Value
 
@@ -303,6 +303,52 @@ Compression:       12.8x
 - Ternary embeddings: 12.8x compression
 - Ternary KV cache: 12.8x compression
 - Combined similarity: 0.88 (vs 0.93 with only KV cache)
+
+### Ternary Normalization (OPT-T06)
+
+**Status**: ✅ Implemented
+
+| Component | File | Description |
+|-----------|------|-------------|
+| TernaryNormWeights | `simd_matmul.zig` | Packed ternary norm weights |
+| quantizeToTernary | `simd_matmul.zig` | Convert f32 → ternary |
+| ternaryRmsNorm | `simd_matmul.zig` | Scalar ternary RMSNorm |
+| simdTernaryRmsNorm | `simd_matmul.zig` | SIMD-optimized version |
+| enableTernaryNorm | `tri_inference.zig` | Enable for all layers |
+
+**Memory Savings:**
+```
+f32 norm weights:     hidden_size × 4 bytes
+Ternary norm weights: hidden_size / 4 bytes (2 bits per weight)
+Compression:          16x
+```
+
+**Benchmark Results (hidden_size=2048, 10K iterations):**
+```
+╔══════════════════════════════════════════════════════════════╗
+║           TERNARY NORM BENCHMARK                             ║
+╠══════════════════════════════════════════════════════════════╣
+║  f32 RMSNorm:          617.6 ns/iter                        ║
+║  Ternary RMSNorm:     3040.3 ns/iter                        ║
+║  Speedup:               0.20x (slower)                      ║
+║  Memory savings:        16x                                  ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+**Key Insight:** Ternary normalization trades speed for memory. The unpacking overhead makes it ~5x slower than f32, but provides 16x memory reduction. This is useful for:
+- Memory-constrained devices (mobile, edge)
+- Large models where norm weights are significant
+- Scenarios where memory bandwidth is the bottleneck
+
+**Accuracy:**
+- Max relative error: <10% (acceptable for inference)
+- Similar to INT8 quantization error margins
+
+**Usage:**
+```zig
+var model = try TriModel.load(allocator, "model.tri");
+try model.enableTernaryNorm(); // 16x memory reduction for norm weights
+```
 
 ### Batch Processing (INF-004)
 

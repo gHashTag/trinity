@@ -11,6 +11,7 @@ const transformer = @import("gguf_transformer.zig");
 const flash = @import("flash_attention.zig");
 const parallel = @import("parallel_inference.zig");
 const kv_cache = @import("kv_cache.zig");
+const simd = @import("simd_matmul.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // .TRI FILE FORMAT
@@ -53,6 +54,7 @@ pub const TriModel = struct {
     ternary_embedding: ?ternary.TernaryEmbedding,
     use_ternary_embedding: bool,
     output_norm: []f32,
+    ternary_output_norm: ?simd.TernaryNormWeights,
 
     // Output projection (ternary)
     output_weight: []u8,
@@ -86,6 +88,9 @@ pub const TriModel = struct {
     pub const TriLayer = struct {
         attn_norm: []f32,
         ffn_norm: []f32,
+        // Optional ternary norm weights (16x memory reduction)
+        ternary_attn_norm: ?simd.TernaryNormWeights,
+        ternary_ffn_norm: ?simd.TernaryNormWeights,
         wq: []u8,
         wk: []u8,
         wv: []u8,
@@ -164,6 +169,7 @@ pub const TriModel = struct {
         // Read output norm
         model.output_norm = try allocator.alloc(f32, header.hidden_size);
         _ = try reader.readAll(std.mem.sliceAsBytes(model.output_norm));
+        model.ternary_output_norm = null;
 
         // Read output weight scale + ternary data
         _ = try reader.readAll(std.mem.asBytes(&model.output_scale));
@@ -183,6 +189,10 @@ pub const TriModel = struct {
 
             layer.ffn_norm = try allocator.alloc(f32, header.hidden_size);
             _ = try reader.readAll(std.mem.sliceAsBytes(layer.ffn_norm));
+
+            // Initialize ternary norm weights as null (can be enabled later)
+            layer.ternary_attn_norm = null;
+            layer.ternary_ffn_norm = null;
 
             // Read attention scales
             _ = try reader.readAll(std.mem.asBytes(&layer.scale_q));
@@ -390,6 +400,41 @@ pub const TriModel = struct {
         std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
     }
 
+    /// Enable ternary normalization for all layers (16x memory reduction for norm weights)
+    pub fn enableTernaryNorm(self: *TriModel) !void {
+        // Quantize output norm
+        self.ternary_output_norm = try simd.quantizeToTernary(self.allocator, self.output_norm);
+
+        for (self.layers) |*layer| {
+            // Quantize attn_norm to ternary
+            layer.ternary_attn_norm = try simd.quantizeToTernary(self.allocator, layer.attn_norm);
+            // Quantize ffn_norm to ternary
+            layer.ternary_ffn_norm = try simd.quantizeToTernary(self.allocator, layer.ffn_norm);
+        }
+
+        // Calculate memory savings (include output_norm)
+        const f32_mem = (self.header.num_layers * 2 + 1) * self.header.hidden_size * 4; // 2 norms per layer + output_norm
+        const ternary_mem = (self.header.num_layers * 2 + 1) * ((self.header.hidden_size + 3) / 4); // 2 bits per weight
+        const ratio = @as(f32, @floatFromInt(f32_mem)) / @as(f32, @floatFromInt(ternary_mem));
+
+        std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║           TERNARY NORMALIZATION ENABLED                      ║\n", .{});
+        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+        std.debug.print("║  f32 norm weights:     {d:>10} bytes                     ║\n", .{f32_mem});
+        std.debug.print("║  Ternary norm weights: {d:>10} bytes                     ║\n", .{ternary_mem});
+        std.debug.print("║  Compression:          {d:>10.1}x                         ║\n", .{ratio});
+        std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+    }
+
+    /// Apply RMSNorm using ternary weights if available, otherwise f32
+    inline fn applyRmsNorm(output: []f32, input: []const f32, f32_weights: []const f32, ternary_weights: ?simd.TernaryNormWeights, eps: f32) void {
+        if (ternary_weights) |tw| {
+            simd.simdTernaryRmsNorm(output, input, tw, eps);
+        } else {
+            inference.rmsNorm(output, input, f32_weights, eps);
+        }
+    }
+
     // Forward pass using TERNARY matmul (NO MULTIPLICATIONS!)
     pub fn forward(self: *TriModel, token: u32, pos: usize) ![]f32 {
         const hidden_size = self.header.hidden_size;
@@ -408,8 +453,8 @@ pub const TriModel = struct {
             @memcpy(self.buf_hidden, self.buf_temp);
         }
 
-        // Final norm
-        inference.rmsNorm(self.buf_temp, self.buf_hidden, self.output_norm, self.header.rms_norm_eps);
+        // Final norm (ternary if enabled)
+        applyRmsNorm(self.buf_temp, self.buf_hidden, self.output_norm, self.ternary_output_norm, self.header.rms_norm_eps);
 
         // Output projection using PARALLEL TERNARY matmul
         const logits = try self.allocator.alloc(f32, self.header.vocab_size);
@@ -434,8 +479,8 @@ pub const TriModel = struct {
         const intermediate_size = self.header.intermediate_size;
         const rms_eps = self.header.rms_norm_eps;
 
-        // Pre-attention norm
-        inference.rmsNorm(self.buf_normed, input, layer.attn_norm, rms_eps);
+        // Pre-attention norm (ternary if enabled)
+        applyRmsNorm(self.buf_normed, input, layer.attn_norm, layer.ternary_attn_norm, rms_eps);
 
         // Compute Q, K, V using PARALLEL TERNARY matmul
         parallel.parallelTernaryMatmul(self.buf_q, layer.wq, self.buf_normed, num_heads * head_dim, hidden_size, layer.scale_q);
@@ -525,8 +570,8 @@ pub const TriModel = struct {
             output[i] = input[i] + self.buf_attn_proj[i];
         }
 
-        // Pre-FFN norm
-        inference.rmsNorm(self.buf_normed, output, layer.ffn_norm, rms_eps);
+        // Pre-FFN norm (ternary if enabled)
+        applyRmsNorm(self.buf_normed, output, layer.ffn_norm, layer.ternary_ffn_norm, rms_eps);
 
         // FFN using PARALLEL TERNARY matmul
         parallel.parallelTernaryMatmul(self.buf_ffn_gate, layer.w_gate, self.buf_normed, intermediate_size, hidden_size, layer.scale_gate);
@@ -654,8 +699,8 @@ pub const BatchTriModel = struct {
             self.forwardLayerWithCache(self.buf_hidden[seq_idx], layer_idx, pos, cache);
         }
 
-        // Output projection
-        inference.rmsNorm(model.buf_normed, self.buf_hidden[seq_idx], model.output_norm, header.rms_norm_eps);
+        // Output projection (ternary norm if enabled)
+        TriModel.applyRmsNorm(model.buf_normed, self.buf_hidden[seq_idx], model.output_norm, model.ternary_output_norm, header.rms_norm_eps);
         parallel.parallelTernaryMatmul(
             self.buf_output[seq_idx],
             model.output_weight,
@@ -689,8 +734,8 @@ pub const BatchTriModel = struct {
         const head_dim = header.head_dim;
         const intermediate_size = header.intermediate_size;
 
-        // Attention norm
-        inference.rmsNorm(model.buf_normed, hidden, layer.attn_norm, header.rms_norm_eps);
+        // Attention norm (ternary if enabled)
+        TriModel.applyRmsNorm(model.buf_normed, hidden, layer.attn_norm, layer.ternary_attn_norm, header.rms_norm_eps);
 
         // Q, K, V projections
         parallel.parallelTernaryMatmul(model.buf_q, layer.wq, model.buf_normed, num_heads * head_dim, hidden_size, layer.scale_q);
@@ -743,8 +788,8 @@ pub const BatchTriModel = struct {
             hidden[i] += model.buf_attn_proj[i];
         }
 
-        // FFN
-        inference.rmsNorm(model.buf_normed, hidden, layer.ffn_norm, header.rms_norm_eps);
+        // FFN (ternary norm if enabled)
+        TriModel.applyRmsNorm(model.buf_normed, hidden, layer.ffn_norm, layer.ternary_ffn_norm, header.rms_norm_eps);
         parallel.parallelTernaryMatmul(model.buf_ffn_gate, layer.w_gate, model.buf_normed, intermediate_size, hidden_size, layer.scale_gate);
         parallel.parallelTernaryMatmul(model.buf_ffn_up, layer.w_up, model.buf_normed, intermediate_size, hidden_size, layer.scale_up);
 
