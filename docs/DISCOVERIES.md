@@ -234,10 +234,47 @@ Dequantization and SIMD are fast - the bottleneck is FILE READ.
 
 ### Recommended Solutions
 
-1. **Fly.io Volumes** - Use local SSD storage (HIGH IMPACT)
+1. **Fly.io Volumes** - Use local SSD storage (HIGH IMPACT) ✅ IMPLEMENTED
 2. **Memory-map model** - mmap() for lazy loading (MEDIUM)
 3. **Smaller model** - Use 360M instead of 1.7B (WORKAROUND)
 4. **Pre-warm on deploy** - Keep model in memory (WORKAROUND)
+
+---
+
+## Fly.io Volumes Configuration
+
+**Status**: ✅ Implemented
+
+### Volume Performance (performance-16x)
+
+| Storage Type | IOPs | Bandwidth |
+|--------------|------|-----------|
+| Ephemeral disk | 2,000 | 8 MiB/s |
+| **NVMe Volume** | **32,000** | **128 MiB/s** |
+| **Improvement** | **16x** | **16x** |
+
+### Configuration Changes
+
+**fly.toml:**
+```toml
+[[mounts]]
+  source = "trinity_models"
+  destination = "/data/models"
+  initial_size = "3gb"
+```
+
+**entrypoint.sh:**
+- Downloads model to volume on first run
+- Subsequent starts use cached model (instant)
+- Model persists across deploys
+
+### Expected Impact
+
+| Metric | Before (Ephemeral) | After (Volume) |
+|--------|-------------------|----------------|
+| Load time | 208s | ~13s (estimated) |
+| First deploy | 208s | ~60s (download) |
+| Subsequent | 208s | ~13s |
 
 ---
 
@@ -245,6 +282,7 @@ Dequantization and SIMD are fast - the bottleneck is FILE READ.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.4.0 | 2026-02-02 | Fly.io Volumes for NVMe SSD storage |
 | v1.3.0 | 2026-02-02 | Load profiling - found I/O bottleneck |
 | v1.2.0 | 2026-02-02 | Parallel dequantization (OPT-003) |
 | v1.1.0 | 2026-02-02 | SIMD optimization (OPT-001) |

@@ -1,5 +1,7 @@
 # TRINITY LLM - Zig-based LLM Inference Engine
 # phi^2 + 1/phi^2 = 3 = TRINITY
+# 
+# Uses Fly.io Volumes for NVMe SSD storage (16x faster than ephemeral)
 
 FROM debian:bookworm-slim AS builder
 
@@ -36,23 +38,17 @@ WORKDIR /app
 # Copy binary from builder
 COPY --from=builder /build/vibee /app/vibee
 
-# Create models directory
-RUN mkdir -p /app/models
-
-# Download SmolLM2-1.7B Q8_0 (better quality, larger model)
-# Size: ~1.8GB, loads in ~10-15 seconds
-# For smaller/faster option, use SmolLM2-360M or SmolLM-135M
-RUN echo "Downloading SmolLM2-1.7B-Instruct Q8_0..." && \
-    curl -L -o /app/models/smollm2-1.7b-instruct-q8_0.gguf \
-    "https://huggingface.co/bartowski/SmolLM2-1.7B-Instruct-GGUF/resolve/main/SmolLM2-1.7B-Instruct-Q8_0.gguf" && \
-    ls -la /app/models/
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Set environment
-ENV MODEL_PATH=/app/models/smollm2-1.7b-instruct-q8_0.gguf
+# MODEL_PATH points to volume mount (NVMe SSD)
+ENV MODEL_PATH=/data/models/smollm2-1.7b-instruct-q8_0.gguf
 ENV TEMPERATURE=0.7
 ENV TOP_P=0.9
 ENV NUM_THREADS=16
 
 # Run HTTP API server
 EXPOSE 8080
-CMD ["/app/vibee", "serve", "--model", "/app/models/smollm2-1.7b-instruct-q8_0.gguf", "--port", "8080"]
+ENTRYPOINT ["/app/entrypoint.sh"]

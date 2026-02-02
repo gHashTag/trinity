@@ -11,27 +11,25 @@ primary_region = "iad"
   dockerfile = "Dockerfile"
 
 [env]
-  MODEL_PATH = "/app/models/smollm2-1.7b-instruct-q8_0.gguf"
+  # Model path on persistent volume (NVMe SSD - 16x faster than ephemeral)
+  MODEL_PATH = "/data/models/smollm2-1.7b-instruct-q8_0.gguf"
   TEMPERATURE = "0.7"
   TOP_P = "0.9"
   NUM_THREADS = "16"
 
 # SmolLM2-1.7B requires more RAM (~4GB for model + buffers)
-# performance-4x: 4 dedicated CPU cores, 8GB RAM
 [[vm]]
   size = "performance-16x"
   memory = "32gb"
   cpus = 16
 
-# Alternative sizes:
-# performance-8x: 8 CPU, 16GB RAM (faster, more expensive)
-# performance-16x: 16 CPU, 32GB RAM (maximum speed)
-# shared-cpu-4x: 4 shared CPU, 8GB RAM (cheaper)
-
-# Persistent volume for models
-# [[mounts]]
-#   source = "trinity_models"
-#   destination = "/app/models"
+# Persistent volume for models (NVMe SSD)
+# Volume limits for performance-16x: 32,000 IOPs, 128 MiB/s
+# vs ephemeral disk: 2,000 IOPs, 8 MiB/s (16x slower!)
+[[mounts]]
+  source = "trinity_models"
+  destination = "/data/models"
+  initial_size = "3gb"
 
 # HTTP API service
 [http_service]
