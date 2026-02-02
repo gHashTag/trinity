@@ -39,18 +39,20 @@ COPY --from=builder /build/vibee /app/vibee
 # Create models directory
 RUN mkdir -p /app/models
 
-# Download SmolLM-135M Q8_0 (official HuggingFace model)
-# Size: ~145MB, loads in <1 second, good for demos
-RUN echo "Downloading SmolLM-135M-Instruct Q8_0..." && \
-    curl -L -o /app/models/smollm-135m-instruct-q8_0.gguf \
-    "https://huggingface.co/HuggingFaceTB/smollm-135M-instruct-v0.2-Q8_0-GGUF/resolve/main/smollm-135m-instruct-add-basics-q8_0.gguf" && \
+# Download SmolLM2-1.7B Q8_0 (better quality, larger model)
+# Size: ~1.8GB, loads in ~10-15 seconds
+# For smaller/faster option, use SmolLM2-360M or SmolLM-135M
+RUN echo "Downloading SmolLM2-1.7B-Instruct Q8_0..." && \
+    curl -L -o /app/models/smollm2-1.7b-instruct-q8_0.gguf \
+    "https://huggingface.co/bartowski/SmolLM2-1.7B-Instruct-GGUF/resolve/main/SmolLM2-1.7B-Instruct-Q8_0.gguf" && \
     ls -la /app/models/
 
 # Set environment
-ENV MODEL_PATH=/app/models/smollm-135m-instruct-q8_0.gguf
+ENV MODEL_PATH=/app/models/smollm2-1.7b-instruct-q8_0.gguf
 ENV TEMPERATURE=0.7
 ENV TOP_P=0.9
+ENV NUM_THREADS=16
 
 # Run HTTP API server
 EXPOSE 8080
-CMD ["/app/vibee", "serve", "--model", "/app/models/smollm-135m-instruct-q8_0.gguf", "--port", "8080"]
+CMD ["/app/vibee", "serve", "--model", "/app/models/smollm2-1.7b-instruct-q8_0.gguf", "--port", "8080"]

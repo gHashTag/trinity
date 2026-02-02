@@ -210,6 +210,9 @@ pub const HttpServer = struct {
 
         std.debug.print("  Prompt: {s}\n", .{prompt});
 
+        // Start timing for tok/s measurement
+        var gen_timer = std.time.Timer.start() catch null;
+
         // Generate response with system prompt for better quality
         const sampling = SamplingParams{
             .temperature = 0.7,
@@ -234,11 +237,13 @@ pub const HttpServer = struct {
         const tokens = tokenizer.encode(self.allocator, full_prompt) catch null;
         defer if (tokens) |t| self.allocator.free(t);
 
+        var generated_token_count: usize = 0;
+
         if (tokens) |toks| {
             var output_tokens = std.ArrayList(u32).init(self.allocator);
             defer output_tokens.deinit();
 
-            // Process input tokens
+            // Process input tokens (prefill)
             var pos: usize = 0;
             for (toks) |tok| {
                 _ = model.forward(tok, pos) catch null;
@@ -258,6 +263,8 @@ pub const HttpServer = struct {
                 pos += 1;
             }
 
+            generated_token_count = output_tokens.items.len;
+
             // Decode tokens
             if (output_tokens.items.len > 0) {
                 generated = tokenizer.decode(self.allocator, output_tokens.items) catch null;
@@ -267,7 +274,15 @@ pub const HttpServer = struct {
             }
         }
 
+        // Calculate and log generation speed
+        const gen_time_ns = if (gen_timer) |*timer| timer.read() else 0;
+        const gen_time_s = @as(f64, @floatFromInt(gen_time_ns)) / 1e9;
+        const input_token_count = if (tokens) |toks| toks.len else 0;
+        const tok_per_sec = if (gen_time_s > 0) @as(f64, @floatFromInt(generated_token_count)) / gen_time_s else 0;
+
         std.debug.print("  Response: {s}\n", .{response_text});
+        std.debug.print("  Tokens: {d} input + {d} output = {d} total\n", .{ input_token_count, generated_token_count, input_token_count + generated_token_count });
+        std.debug.print("  Time: {d:.2}s | Speed: {d:.2} tok/s (generation only)\n", .{ gen_time_s, tok_per_sec });
 
         // Escape JSON string
         var escaped = std.ArrayList(u8).init(self.allocator);
