@@ -82,6 +82,7 @@ Where:
 | OPT-M01 | Memory-Mapped Loading | N/A | 30x load | ✅ Implemented |
 | OPT-C01 | KV Cache Compression | 5-16x | 1x | ✅ Implemented |
 | OPT-S01 | Speculative Decoding | N/A | 2-3x gen | ✅ Implemented |
+| OPT-B01 | Continuous Batching | N/A | 2-3x thru | ✅ Implemented |
 
 ### Business Value
 
@@ -567,6 +568,74 @@ defer decoder.deinit();
 const result = try decoder.generate(start_token, 0, 100);
 std.debug.print("Generated {d} tokens, acceptance rate: {d:.1}%\n", 
     .{result.tokens.len, result.acceptance_rate * 100});
+```
+
+### Continuous Batching (OPT-B01)
+
+**Status**: ✅ Implemented
+
+| Component | File | Description |
+|-----------|------|-------------|
+| Request | `tri_inference.zig` | Inference request with priority |
+| ContinuousBatchingScheduler | `tri_inference.zig` | Main scheduler |
+| SchedulerConfig | `tri_inference.zig` | Configuration |
+| SchedulerStats | `tri_inference.zig` | Statistics |
+
+**Architecture:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│              CONTINUOUS BATCHING SCHEDULER                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  REQUEST QUEUE (Priority Sorted)                            │
+│  ┌─────┬─────┬─────┬─────┐                                  │
+│  │ R5  │ R3  │ R7  │ R1  │  → sorted by priority            │
+│  └──┬──┴──┬──┴─────┴─────┘                                  │
+│     │     │                                                 │
+│     ▼     ▼                                                 │
+│  RUNNING BATCH (dynamic slots)                              │
+│  ┌─────┬─────┬─────┬─────┐                                  │
+│  │ S0  │ S1  │ --- │ --- │  → fill as slots free up         │
+│  └─────┴─────┴─────┴─────┘                                  │
+│                                                             │
+│  ITERATION LOOP:                                            │
+│  1. Check completions → free slots                          │
+│  2. Fill empty slots from queue                             │
+│  3. Process all active sequences                            │
+│  4. Repeat                                                  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key Features:**
+- **Iteration-level scheduling**: New requests added immediately
+- **Priority queue**: Higher priority requests scheduled first
+- **Dynamic batch**: Slots freed as sequences complete
+- **Statistics tracking**: Tokens/iteration, throughput metrics
+
+**Expected Throughput Improvement:**
+- Static batching: Wait for slowest sequence
+- Continuous batching: Fill slots immediately
+- **Improvement: 2-3x under high load**
+
+**Usage:**
+```zig
+const config = SchedulerConfig.default();
+var scheduler = try ContinuousBatchingScheduler.init(
+    allocator, model, batch_model, config
+);
+defer scheduler.deinit();
+
+// Submit requests
+const id1 = try scheduler.submitRequest(&prompt1, 100, 1.0, 0);
+const id2 = try scheduler.submitRequest(&prompt2, 50, 1.0, 1); // higher priority
+
+// Run until complete
+try scheduler.runUntilComplete();
+
+// Get results
+const stats = scheduler.getStats();
+std.debug.print("Avg tokens/iter: {d:.1}\n", .{stats.avg_tokens_per_iter});
 ```
 
 ### Batch Processing (INF-004)
