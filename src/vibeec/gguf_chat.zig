@@ -109,6 +109,39 @@ const ConversationHistory = struct {
     }
 };
 
+// Auto-detect chat template based on model name
+fn detectChatTemplate(model_path: []const u8) ChatTemplate {
+    // Check for Qwen models
+    if (std.mem.indexOf(u8, model_path, "qwen") != null or
+        std.mem.indexOf(u8, model_path, "Qwen") != null) {
+        return ChatTemplate.QWEN;
+    }
+    // Check for SmolLM models
+    if (std.mem.indexOf(u8, model_path, "smollm") != null or
+        std.mem.indexOf(u8, model_path, "SmolLM") != null) {
+        return ChatTemplate.SMOLLM;
+    }
+    // Check for Llama2 models
+    if (std.mem.indexOf(u8, model_path, "llama-2") != null or
+        std.mem.indexOf(u8, model_path, "Llama-2") != null) {
+        return ChatTemplate.LLAMA2;
+    }
+    // Default to TinyLlama/ChatML format
+    return ChatTemplate.TINYLLAMA;
+}
+
+// Auto-detect system prompt based on model type
+fn detectSystemPrompt(model_path: []const u8) []const u8 {
+    // Coder models
+    if (std.mem.indexOf(u8, model_path, "coder") != null or
+        std.mem.indexOf(u8, model_path, "Coder") != null or
+        std.mem.indexOf(u8, model_path, "code") != null) {
+        return "You are Qwen, a helpful coding assistant. Write clean, efficient code with clear explanations.";
+    }
+    // Default assistant
+    return "You are a helpful AI assistant. Be concise and direct.";
+}
+
 // Entry point for CLI chat command (with ternary support)
 pub fn runChatWithTernary(allocator: std.mem.Allocator, model_path: []const u8, initial_prompt: ?[]const u8, max_tokens: u32, temperature: f32, top_p: f32, use_ternary: bool) !void {
     return runChatInternal(allocator, model_path, initial_prompt, max_tokens, temperature, top_p, use_ternary);
@@ -172,9 +205,9 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
     };
     defer tokenizer.deinit();
 
-    // Use TinyLlama chat template
-    const template = ChatTemplate.TINYLLAMA;
-    const system_prompt = "You are a helpful AI assistant.";
+    // Auto-detect model and select appropriate chat template
+    const template = detectChatTemplate(model_path);
+    const system_prompt = detectSystemPrompt(model_path);
 
     // Initialize conversation history (keep last 10 messages + system)
     var history = ConversationHistory.init(allocator, 12);
