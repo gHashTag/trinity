@@ -56,6 +56,11 @@ pub const FullModel = struct {
         w_up: []f32,
         w_down: []f32,
 
+        // QKV bias (optional - used by Qwen2, not by Llama)
+        bq: ?[]f32 = null,
+        bk: ?[]f32 = null,
+        bv: ?[]f32 = null,
+
         // Ternary versions (optional)
         ternary_wq: ?[]u8 = null,
         ternary_wk: ?[]u8 = null,
@@ -132,6 +137,8 @@ pub const FullModel = struct {
         // Initialize thread pool for parallel matVec
         try simd.initThreadPool(self.allocator);
 
+
+
         // Load embeddings
         self.token_embedding = try self.loadTensor("token_embd.weight");
         
@@ -144,6 +151,8 @@ pub const FullModel = struct {
             }
             return err;
         };
+        
+
         
         self.output_norm = try self.loadTensor("output_norm.weight");
 
@@ -184,6 +193,10 @@ pub const FullModel = struct {
                 .w_gate = try self.loadTensorFmt(&name_buf, "blk.{d}.ffn_gate.weight", .{i}),
                 .w_up = try self.loadTensorFmt(&name_buf, "blk.{d}.ffn_up.weight", .{i}),
                 .w_down = try self.loadTensorFmt(&name_buf, "blk.{d}.ffn_down.weight", .{i}),
+                // Try to load QKV bias (optional - Qwen2 has them, Llama doesn't)
+                .bq = self.loadTensorFmt(&name_buf, "blk.{d}.attn_q.bias", .{i}) catch null,
+                .bk = self.loadTensorFmt(&name_buf, "blk.{d}.attn_k.bias", .{i}) catch null,
+                .bv = self.loadTensorFmt(&name_buf, "blk.{d}.attn_v.bias", .{i}) catch null,
             };
         }
 
@@ -215,7 +228,12 @@ pub const FullModel = struct {
         const info = self.reader.getTensor(name) orelse return error.TensorNotFound;
         const data = try self.reader.readTensorData(info);
         defer self.allocator.free(data);
-        return inference.dequantizeTensor(self.allocator, data, info.tensor_type, info.numElements());
+        return inference.dequantizeTensor(self.allocator, data, info.tensor_type, info.numElements()) catch |err| {
+            if (err == error.UnsupportedQuantization) {
+                std.debug.print("Unsupported quantization type {d} for tensor: {s}\n", .{ @intFromEnum(info.tensor_type), name });
+            }
+            return err;
+        };
     }
 
     fn loadTensorFmt(self: *FullModel, buf: []u8, comptime fmt: []const u8, args: anytype) ![]f32 {
@@ -236,6 +254,10 @@ pub const FullModel = struct {
                 self.allocator.free(layer.w_gate);
                 self.allocator.free(layer.w_up);
                 self.allocator.free(layer.w_down);
+                // Free optional bias
+                if (layer.bq) |bq| self.allocator.free(bq);
+                if (layer.bk) |bk| self.allocator.free(bk);
+                if (layer.bv) |bv| self.allocator.free(bv);
             }
             self.allocator.free(self.layers);
         }
@@ -389,6 +411,23 @@ pub const FullModel = struct {
         inference.matVec(k, layer.wk, normed, num_kv_heads * head_dim, hidden_size);
         inference.matVec(v, layer.wv, normed, num_kv_heads * head_dim, hidden_size);
 
+        // Add QKV bias if present (Qwen2 architecture)
+        if (layer.bq) |bq| {
+            for (q, 0..) |*qv, i| {
+                qv.* += bq[i];
+            }
+        }
+        if (layer.bk) |bk| {
+            for (k, 0..) |*kv, i| {
+                kv.* += bk[i];
+            }
+        }
+        if (layer.bv) |bv| {
+            for (v, 0..) |*vv, i| {
+                vv.* += bv[i];
+            }
+        }
+
         // Apply RoPE
         for (0..num_heads) |h| {
             self.rope.apply(q[h * head_dim ..][0..head_dim], pos);
@@ -500,6 +539,23 @@ pub const FullModel = struct {
         self.matVecAuto(self.buf_q, layer.wq, layer.ternary_wq, self.buf_normed, num_heads * head_dim, hidden_size);
         self.matVecAuto(self.buf_k, layer.wk, layer.ternary_wk, self.buf_normed, num_kv_heads * head_dim, hidden_size);
         self.matVecAuto(self.buf_v, layer.wv, layer.ternary_wv, self.buf_normed, num_kv_heads * head_dim, hidden_size);
+
+        // Add QKV bias if present (Qwen2 architecture)
+        if (layer.bq) |bq| {
+            for (self.buf_q, 0..) |*qv, i| {
+                qv.* += bq[i];
+            }
+        }
+        if (layer.bk) |bk| {
+            for (self.buf_k, 0..) |*kv, i| {
+                kv.* += bk[i];
+            }
+        }
+        if (layer.bv) |bv| {
+            for (self.buf_v, 0..) |*vv, i| {
+                vv.* += bv[i];
+            }
+        }
 
         // Apply RoPE
         for (0..num_heads) |h| {

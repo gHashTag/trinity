@@ -100,11 +100,12 @@ pub fn dequantizeF32Tensor(allocator: std.mem.Allocator, data: []const u8, num_e
     return result;
 }
 
-// Dequantize Q4_K tensor to f32 (k-quants format)
-// Q4_K: 256 elements per block, super-blocks with scales
-pub fn dequantizeQ4_KTensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
-    const block_size: usize = 256;
-    const type_size: usize = 144; // Q4_K block size
+// Dequantize Q5_0 tensor to f32
+// Q5_0: 32 elements per block, 5-bit quantization
+// Structure: d(f16) + qh[4] + qs[16]
+pub fn dequantizeQ5_0Tensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
+    const block_size: usize = 32;
+    const type_size: usize = 22; // 2 + 4 + 16
     const num_blocks = (num_elements + block_size - 1) / block_size;
 
     const result = try allocator.alloc(f32, @intCast(num_elements));
@@ -118,34 +119,210 @@ pub fn dequantizeQ4_KTensor(allocator: std.mem.Allocator, data: []const u8, num_
         const block = data[block_start..][0..type_size];
         const out_start = block_idx * block_size;
 
+        // Scale is f16 (2 bytes)
+        const scale_bits = @as(u16, block[0]) | (@as(u16, block[1]) << 8);
+        const d = gguf.f16ToF32(scale_bits);
+
+        // qh: 4 bytes containing high bits
+        const qh = @as(u32, block[2]) | (@as(u32, block[3]) << 8) | 
+                   (@as(u32, block[4]) << 16) | (@as(u32, block[5]) << 24);
+
+        // qs: 16 bytes containing low 4 bits
+        const qs = block[6..22];
+
+        // Dequantize 32 values
+        var j: usize = 0;
+        while (j < 16) : (j += 1) {
+            // Extract high bits
+            const xh_0 = ((qh >> @intCast(j + 0)) << 4) & 0x10;
+            const xh_1 = ((qh >> @intCast(j + 12))) & 0x10;
+
+            // Combine low and high bits
+            const x0: i32 = @as(i32, @intCast((qs[j] & 0x0F) | @as(u8, @intCast(xh_0)))) - 16;
+            const x1: i32 = @as(i32, @intCast((qs[j] >> 4) | @as(u8, @intCast(xh_1)))) - 16;
+
+            if (out_start + j < num_elements) {
+                result[out_start + j] = @as(f32, @floatFromInt(x0)) * d;
+            }
+            if (out_start + j + 16 < num_elements) {
+                result[out_start + j + 16] = @as(f32, @floatFromInt(x1)) * d;
+            }
+        }
+    }
+
+    return result;
+}
+
+// Dequantize Q4_K tensor to f32 (k-quants format)
+// Q4_K: 256 elements per block, super-blocks with scales
+// Structure: d(f16) + dmin(f16) + scales[12] + qs[128]
+// Based on llama.cpp dequantize_row_q4_K
+pub fn dequantizeQ4_KTensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
+    const QK_K: usize = 256; // Super-block size
+    const type_size: usize = 144; // 2 + 2 + 12 + 128
+    const num_blocks = (num_elements + QK_K - 1) / QK_K;
+
+    const result = try allocator.alloc(f32, @intCast(num_elements));
+    errdefer allocator.free(result);
+
+    var block_idx: usize = 0;
+    while (block_idx < num_blocks) : (block_idx += 1) {
+        const block_start = block_idx * type_size;
+        if (block_start + type_size > data.len) break;
+
+        const block = data[block_start..][0..type_size];
+        const out_start = block_idx * QK_K;
+
         // Q4_K structure:
-        // - d (f16): 2 bytes - main scale
-        // - dmin (f16): 2 bytes - min scale  
-        // - scales (6-bit): 12 bytes for 32 scales
-        // - qs (4-bit): 128 bytes for 256 values
+        // - d (f16): 2 bytes - super-block scale for quantized scales
+        // - dmin (f16): 2 bytes - super-block scale for quantized mins
+        // - scales[12]: 12 bytes - 8 sub-block scales/mins packed in 6 bits
+        // - qs[128]: 128 bytes - 256 4-bit quantized values
 
         const d_bits = @as(u16, block[0]) | (@as(u16, block[1]) << 8);
         const dmin_bits = @as(u16, block[2]) | (@as(u16, block[3]) << 8);
         const d = gguf.f16ToF32(d_bits);
-        const dmin = gguf.f16ToF32(dmin_bits);
+        const min = gguf.f16ToF32(dmin_bits);
 
-        // Simplified dequantization - treat as Q4_0-like
-        // Full Q4_K has complex scale structure, this is approximation
-        const qs_start: usize = 16; // Skip header
-        
-        var i: usize = 0;
-        while (i < 128 and out_start + i * 2 < num_elements) : (i += 1) {
-            if (qs_start + i >= block.len) break;
-            const byte = block[qs_start + i];
-            const lo: i8 = @as(i8, @intCast(byte & 0x0F)) - 8;
-            const hi: i8 = @as(i8, @intCast(byte >> 4)) - 8;
-            
-            if (out_start + i * 2 < num_elements) {
-                result[out_start + i * 2] = @as(f32, @floatFromInt(lo)) * d - dmin;
+        const scales = block[4..16]; // 12 bytes of scales
+        const qs = block[16..144]; // 128 bytes of quantized values
+
+        // Process 8 sub-blocks of 32 elements each (256 total)
+        var is: usize = 0;
+        var q_idx: usize = 0;
+        var out_idx: usize = out_start;
+
+        // Process in groups of 64 (2 sub-blocks at a time)
+        var j: usize = 0;
+        while (j < QK_K) : (j += 64) {
+            // Get scale and min for first sub-block
+            var sc1: u8 = undefined;
+            var m1: u8 = undefined;
+            getScaleMinK4(is + 0, scales, &sc1, &m1);
+            const d1 = d * @as(f32, @floatFromInt(sc1));
+            const min1 = min * @as(f32, @floatFromInt(m1));
+
+            // Get scale and min for second sub-block
+            var sc2: u8 = undefined;
+            var m2: u8 = undefined;
+            getScaleMinK4(is + 1, scales, &sc2, &m2);
+            const d2 = d * @as(f32, @floatFromInt(sc2));
+            const min2 = min * @as(f32, @floatFromInt(m2));
+
+            // Dequantize 32 elements (low nibbles)
+            var l: usize = 0;
+            while (l < 32) : (l += 1) {
+                if (out_idx >= num_elements) break;
+                const q_val = qs[q_idx + l] & 0x0F;
+                result[out_idx] = d1 * @as(f32, @floatFromInt(q_val)) - min1;
+                out_idx += 1;
             }
-            if (out_start + i * 2 + 1 < num_elements) {
-                result[out_start + i * 2 + 1] = @as(f32, @floatFromInt(hi)) * d - dmin;
+
+            // Dequantize 32 elements (high nibbles)
+            l = 0;
+            while (l < 32) : (l += 1) {
+                if (out_idx >= num_elements) break;
+                const q_val = qs[q_idx + l] >> 4;
+                result[out_idx] = d2 * @as(f32, @floatFromInt(q_val)) - min2;
+                out_idx += 1;
             }
+
+            q_idx += 32;
+            is += 2;
+        }
+    }
+
+    return result;
+}
+
+// Helper function to extract scale and min from packed 6-bit format
+// Based on llama.cpp get_scale_min_k4
+fn getScaleMinK4(j: usize, scales: []const u8, d: *u8, m: *u8) void {
+    if (j < 4) {
+        d.* = scales[j] & 63;
+        m.* = scales[j + 4] & 63;
+    } else {
+        d.* = (scales[j + 4] & 0x0F) | ((scales[j - 4] >> 6) << 4);
+        m.* = (scales[j + 4] >> 4) | ((scales[j] >> 6) << 4);
+    }
+}
+
+// Dequantize Q6_K tensor to f32
+// Q6_K: 256 elements per block, 6-bit quantization
+// Structure: ql[128] + qh[64] + scales[16] + d(f16)
+pub fn dequantizeQ6_KTensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
+    const QK_K: usize = 256;
+    const type_size: usize = 210; // 128 + 64 + 16 + 2
+    const num_blocks = (num_elements + QK_K - 1) / QK_K;
+
+    const result = try allocator.alloc(f32, @intCast(num_elements));
+    errdefer allocator.free(result);
+
+    var block_idx: usize = 0;
+    while (block_idx < num_blocks) : (block_idx += 1) {
+        const block_start = block_idx * type_size;
+        if (block_start + type_size > data.len) break;
+
+        const block = data[block_start..][0..type_size];
+        const out_start = block_idx * QK_K;
+
+        // Q6_K structure:
+        // - ql[128]: low 4 bits of 6-bit values
+        // - qh[64]: high 2 bits of 6-bit values
+        // - scales[16]: 8-bit scales for 16 sub-blocks
+        // - d (f16): super-block scale
+
+        const ql = block[0..128];
+        const qh = block[128..192];
+        const scales = block[192..208];
+        const d_bits = @as(u16, block[208]) | (@as(u16, block[209]) << 8);
+        const d = gguf.f16ToF32(d_bits);
+
+        var out_idx: usize = out_start;
+        var ql_idx: usize = 0;
+        var qh_idx: usize = 0;
+        var sc_idx: usize = 0;
+
+        // Process 16 sub-blocks of 16 elements each
+        var n: usize = 0;
+        while (n < QK_K) : (n += 128) {
+            var shift: u3 = 0;
+            while (shift < 4) : (shift += 1) {
+                var m: usize = 0;
+                while (m < 16) : (m += 1) {
+                    if (out_idx >= num_elements) break;
+                    
+                    const sc: i8 = @bitCast(scales[sc_idx]);
+                    const scale = d * @as(f32, @floatFromInt(sc));
+                    
+                    // Combine low 4 bits and high 2 bits
+                    const q_lo = ql[ql_idx + m] & 0x0F;
+                    const q_hi = (qh[qh_idx + m] >> @intCast(shift * 2)) & 0x03;
+                    const q: i8 = @as(i8, @intCast((q_lo | (q_hi << 4)))) - 32;
+                    
+                    result[out_idx] = scale * @as(f32, @floatFromInt(q));
+                    out_idx += 1;
+                }
+                
+                m = 0;
+                while (m < 16) : (m += 1) {
+                    if (out_idx >= num_elements) break;
+                    
+                    const sc: i8 = @bitCast(scales[sc_idx + 1]);
+                    const scale = d * @as(f32, @floatFromInt(sc));
+                    
+                    const q_lo = ql[ql_idx + m] >> 4;
+                    const q_hi = (qh[qh_idx + m] >> @intCast(shift * 2 + 1)) & 0x03;
+                    const q: i8 = @as(i8, @intCast((q_lo | (q_hi << 4)))) - 32;
+                    
+                    result[out_idx] = scale * @as(f32, @floatFromInt(q));
+                    out_idx += 1;
+                }
+                
+                ql_idx += 16;
+                sc_idx += 2;
+            }
+            qh_idx += 32;
         }
     }
 
@@ -157,7 +334,9 @@ pub fn dequantizeTensor(allocator: std.mem.Allocator, data: []const u8, tensor_t
     return switch (tensor_type) {
         .Q8_0 => dequantizeQ8_0Tensor(allocator, data, num_elements),
         .Q4_0 => dequantizeQ4_0Tensor(allocator, data, num_elements),
+        .Q5_0 => dequantizeQ5_0Tensor(allocator, data, num_elements),
         .Q4_K => dequantizeQ4_KTensor(allocator, data, num_elements),
+        .Q6_K => dequantizeQ6_KTensor(allocator, data, num_elements),
         .F32 => dequantizeF32Tensor(allocator, data, num_elements),
         else => error.UnsupportedQuantization,
     };
