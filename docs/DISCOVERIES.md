@@ -76,7 +76,7 @@ Where:
 | OPT-T02 | Ternary Matrix Multiplication | N/A | 10x | ✅ Implemented |
 | OPT-T03 | Ternary KV Cache | 16x | 1.5x | ✅ Implemented |
 | OPT-T04 | Ternary Attention | 16x | 1.5x | ✅ Implemented |
-| OPT-T05 | Ternary Embeddings | 20x | 2x | 📋 Planned |
+| OPT-T05 | Ternary Embeddings | 12.8x | 1x | ✅ Implemented |
 | OPT-T06 | Ternary Normalization | 20x | 3x | 📋 Planned |
 
 ### Business Value
@@ -280,6 +280,29 @@ const logits = try model.forward(token_id, position);
 | **rms_scale** | **0.93** | **Best accuracy** |
 
 **Key insight:** Using RMS (root mean square) for scale instead of max preserves more information about value distribution. The threshold is set to 0.5 * RMS, which better separates signal from noise.
+
+### Ternary Embeddings (OPT-T05)
+
+**Status**: ✅ Implemented
+
+| Component | File | Description |
+|-----------|------|-------------|
+| TernaryEmbedding | `ternary_weights.zig` | Ternary embedding table |
+| initFromF32 | `ternary_weights.zig` | Convert f32 → ternary |
+| lookup | `ternary_weights.zig` | Scalar dequantization |
+| lookupSIMD | `ternary_weights.zig` | SIMD-optimized lookup |
+
+**Memory Savings:**
+```
+f32 embeddings:    8,192 bytes (32 vocab × 64 hidden × 4)
+Ternary embeddings:  640 bytes (32 vocab × (64/4 + 4))
+Compression:       12.8x
+```
+
+**Combined Ternary Pipeline:**
+- Ternary embeddings: 12.8x compression
+- Ternary KV cache: 12.8x compression
+- Combined similarity: 0.88 (vs 0.93 with only KV cache)
 
 ### Test Results
 

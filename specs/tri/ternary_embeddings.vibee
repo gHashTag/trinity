@@ -1,0 +1,78 @@
+# Ternary Embeddings Specification
+# 16x memory reduction for token embeddings
+# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+
+name: ternary_embeddings
+version: "1.0.0"
+language: zig
+module: ternary_embeddings
+
+description: |
+  Ternary token embeddings using 2-bit quantization.
+  Each embedding vector quantized to {-1, 0, +1} with per-token scale.
+  16x memory reduction: vocab_size * hidden_size * 4 bytes → / 16.
+
+types:
+  TernaryEmbedding:
+    description: "Ternary-quantized embedding table"
+    fields:
+      data: List<Int>
+      scales: List<Float>
+      vocab_size: Int
+      hidden_size: Int
+
+  EmbeddingStats:
+    description: "Memory usage statistics"
+    fields:
+      f32_bytes: Int
+      ternary_bytes: Int
+      compression_ratio: Float
+
+behaviors:
+  - name: init_from_f32
+    given: f32 embedding table
+    when: Converting to ternary
+    then: Quantize each row with per-token scale
+
+  - name: lookup
+    given: Token ID
+    when: Getting embedding vector
+    then: Dequantize on-the-fly and return f32 vector
+
+  - name: lookup_batch
+    given: Array of token IDs
+    when: Getting multiple embeddings
+    then: Batch dequantization for efficiency
+
+  - name: compute_stats
+    given: Embedding dimensions
+    when: Analyzing memory usage
+    then: Return compression ratio
+
+quantization:
+  method: rms_scale
+  description: |
+    For each embedding row:
+    1. Compute RMS = sqrt(sum(x^2) / n)
+    2. Scale = RMS * 1.5
+    3. Threshold = RMS * 0.5
+    4. Quantize: +1 if x > threshold, -1 if x < -threshold, else 0
+    5. Pack 4 trits per byte
+
+memory_analysis:
+  f32_embedding:
+    formula: "vocab_size * hidden_size * 4 bytes"
+    example: "32000 * 4096 * 4 = 512 MB"
+    
+  ternary_embedding:
+    formula: "vocab_size * (hidden_size / 4 + 4) bytes"
+    example: "32000 * (4096 / 4 + 4) = 32.5 MB"
+    
+  compression: "~16x"
+
+integration:
+  - target: tri_inference.zig
+    description: "Optional ternary embedding mode"
+    
+  - target: TriModel
+    description: "Add enableTernaryEmbeddings() method"

@@ -585,3 +585,307 @@ pub fn benchmarkTernaryMatVec(rows: usize, cols: usize, iterations: usize) void 
         @as(f64, @floatFromInt(scalar_time)) / @as(f64, @floatFromInt(batch_time)),
     });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TERNARY EMBEDDINGS (OPT-T05)
+// 16x memory reduction for token embeddings
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Ternary embedding table with per-token scales
+pub const TernaryEmbedding = struct {
+    allocator: std.mem.Allocator,
+    vocab_size: usize,
+    hidden_size: usize,
+
+    // Packed ternary data (4 values per byte)
+    data: []u8,
+
+    // Per-token scales for dequantization
+    scales: []f32,
+
+    pub fn init(allocator: std.mem.Allocator, vocab_size: usize, hidden_size: usize) !TernaryEmbedding {
+        const bytes_per_token = (hidden_size + 3) / 4;
+        const total_bytes = vocab_size * bytes_per_token;
+
+        return TernaryEmbedding{
+            .allocator = allocator,
+            .vocab_size = vocab_size,
+            .hidden_size = hidden_size,
+            .data = try allocator.alloc(u8, total_bytes),
+            .scales = try allocator.alloc(f32, vocab_size),
+        };
+    }
+
+    pub fn deinit(self: *TernaryEmbedding) void {
+        self.allocator.free(self.data);
+        self.allocator.free(self.scales);
+    }
+
+    /// Initialize from f32 embedding table
+    pub fn initFromF32(allocator: std.mem.Allocator, f32_embeddings: []const f32, vocab_size: usize, hidden_size: usize) !TernaryEmbedding {
+        var emb = try TernaryEmbedding.init(allocator, vocab_size, hidden_size);
+
+        const bytes_per_token = (hidden_size + 3) / 4;
+
+        for (0..vocab_size) |token_id| {
+            const src_offset = token_id * hidden_size;
+            const dst_offset = token_id * bytes_per_token;
+            const src = f32_embeddings[src_offset..][0..hidden_size];
+            const dst = emb.data[dst_offset..][0..bytes_per_token];
+
+            emb.scales[token_id] = quantizeRow(dst, src);
+        }
+
+        return emb;
+    }
+
+    /// Quantize single row using RMS scale (best accuracy)
+    fn quantizeRow(dst: []u8, src: []const f32) f32 {
+        // Calculate RMS
+        var sum_sq: f32 = 0.0;
+        for (src) |v| {
+            sum_sq += v * v;
+        }
+        const rms = @sqrt(sum_sq / @as(f32, @floatFromInt(src.len)));
+
+        if (rms == 0.0) {
+            @memset(dst, 0);
+            return 1.0;
+        }
+
+        const scale = rms * 1.5;
+        const threshold = rms * 0.5;
+
+        // Pack 4 values per byte
+        var byte_idx: usize = 0;
+        var bit_pos: u3 = 0;
+        var current_byte: u8 = 0;
+
+        for (src) |v| {
+            const trit: u2 = if (v > threshold)
+                0b01 // +1
+            else if (v < -threshold)
+                0b10 // -1
+            else
+                0b00; // 0
+
+            current_byte |= @as(u8, trit) << bit_pos;
+            bit_pos +%= 2;
+
+            if (bit_pos == 0) {
+                dst[byte_idx] = current_byte;
+                byte_idx += 1;
+                current_byte = 0;
+            }
+        }
+
+        // Write last partial byte
+        if (bit_pos != 0 and byte_idx < dst.len) {
+            dst[byte_idx] = current_byte;
+        }
+
+        return scale;
+    }
+
+    /// Lookup embedding for token ID (dequantize on-the-fly)
+    pub fn lookup(self: *const TernaryEmbedding, output: []f32, token_id: usize) void {
+        if (token_id >= self.vocab_size) {
+            @memset(output, 0.0);
+            return;
+        }
+
+        const bytes_per_token = (self.hidden_size + 3) / 4;
+        const offset = token_id * bytes_per_token;
+        const scale = self.scales[token_id];
+
+        const sign_lut = [4]f32{ 0.0, scale, -scale, 0.0 };
+
+        var i: usize = 0;
+        var byte_idx: usize = 0;
+
+        while (i < self.hidden_size) {
+            const byte = self.data[offset + byte_idx];
+
+            // Unpack 4 trits from byte
+            if (i < self.hidden_size) {
+                output[i] = sign_lut[(byte >> 0) & 0x3];
+                i += 1;
+            }
+            if (i < self.hidden_size) {
+                output[i] = sign_lut[(byte >> 2) & 0x3];
+                i += 1;
+            }
+            if (i < self.hidden_size) {
+                output[i] = sign_lut[(byte >> 4) & 0x3];
+                i += 1;
+            }
+            if (i < self.hidden_size) {
+                output[i] = sign_lut[(byte >> 6) & 0x3];
+                i += 1;
+            }
+
+            byte_idx += 1;
+        }
+    }
+
+    /// SIMD-optimized lookup (8 values at a time)
+    pub fn lookupSIMD(self: *const TernaryEmbedding, output: []f32, token_id: usize) void {
+        if (token_id >= self.vocab_size) {
+            @memset(output, 0.0);
+            return;
+        }
+
+        const Vec8 = @Vector(8, f32);
+        const bytes_per_token = (self.hidden_size + 3) / 4;
+        const offset = token_id * bytes_per_token;
+        const scale = self.scales[token_id];
+
+        const sign_lut = [4]f32{ 0.0, scale, -scale, 0.0 };
+
+        var i: usize = 0;
+        var byte_idx: usize = 0;
+
+        // Process 8 values at a time (2 bytes)
+        while (i + 8 <= self.hidden_size) {
+            const b0 = self.data[offset + byte_idx];
+            const b1 = self.data[offset + byte_idx + 1];
+
+            const vec: Vec8 = .{
+                sign_lut[(b0 >> 0) & 0x3],
+                sign_lut[(b0 >> 2) & 0x3],
+                sign_lut[(b0 >> 4) & 0x3],
+                sign_lut[(b0 >> 6) & 0x3],
+                sign_lut[(b1 >> 0) & 0x3],
+                sign_lut[(b1 >> 2) & 0x3],
+                sign_lut[(b1 >> 4) & 0x3],
+                sign_lut[(b1 >> 6) & 0x3],
+            };
+
+            output[i..][0..8].* = vec;
+            i += 8;
+            byte_idx += 2;
+        }
+
+        // Scalar fallback for remainder
+        while (i < self.hidden_size) {
+            const byte = self.data[offset + byte_idx];
+            const bit_pos: u3 = @intCast((i % 4) * 2);
+            output[i] = sign_lut[(byte >> bit_pos) & 0x3];
+            i += 1;
+            if (i % 4 == 0) byte_idx += 1;
+        }
+    }
+
+    /// Memory usage in bytes
+    pub fn memoryUsage(self: *const TernaryEmbedding) usize {
+        return self.data.len + self.scales.len * @sizeOf(f32);
+    }
+
+    /// Compare with f32 embedding memory
+    pub fn memoryStats(self: *const TernaryEmbedding) EmbeddingStats {
+        const f32_bytes = self.vocab_size * self.hidden_size * @sizeOf(f32);
+        const ternary_bytes = self.memoryUsage();
+
+        return EmbeddingStats{
+            .f32_bytes = f32_bytes,
+            .ternary_bytes = ternary_bytes,
+            .compression_ratio = @as(f32, @floatFromInt(f32_bytes)) / @as(f32, @floatFromInt(ternary_bytes)),
+        };
+    }
+};
+
+/// Embedding memory statistics
+pub const EmbeddingStats = struct {
+    f32_bytes: usize,
+    ternary_bytes: usize,
+    compression_ratio: f32,
+};
+
+test "ternary embedding" {
+    const allocator = std.testing.allocator;
+
+    // Create f32 embeddings
+    const vocab_size: usize = 8;
+    const hidden_size: usize = 16;
+    var f32_emb: [vocab_size * hidden_size]f32 = undefined;
+
+    // Initialize with pattern
+    for (0..vocab_size) |t| {
+        for (0..hidden_size) |h| {
+            f32_emb[t * hidden_size + h] = @sin(@as(f32, @floatFromInt(t * hidden_size + h)) * 0.1);
+        }
+    }
+
+    // Convert to ternary
+    var ternary_emb = try TernaryEmbedding.initFromF32(allocator, &f32_emb, vocab_size, hidden_size);
+    defer ternary_emb.deinit();
+
+    // Test lookup
+    var output: [hidden_size]f32 = undefined;
+    ternary_emb.lookup(&output, 3);
+
+    // Verify output is valid
+    for (output) |v| {
+        try std.testing.expect(!std.math.isNan(v));
+    }
+
+    // Test SIMD lookup
+    var output_simd: [hidden_size]f32 = undefined;
+    ternary_emb.lookupSIMD(&output_simd, 3);
+
+    // SIMD and scalar should match
+    for (output, output_simd) |s, simd| {
+        try std.testing.expectApproxEqAbs(s, simd, 0.001);
+    }
+
+    // Test memory stats
+    const stats = ternary_emb.memoryStats();
+    // For small embeddings, compression is lower due to scale overhead
+    // For large embeddings (32K vocab, 4K hidden), compression is ~15x
+    try std.testing.expect(stats.compression_ratio > 2.0);
+    try std.testing.expect(stats.ternary_bytes < stats.f32_bytes);
+}
+
+test "ternary embedding accuracy" {
+    const allocator = std.testing.allocator;
+
+    const vocab_size: usize = 4;
+    const hidden_size: usize = 32;
+    var f32_emb: [vocab_size * hidden_size]f32 = undefined;
+
+    // Initialize with random-ish values
+    for (0..vocab_size * hidden_size) |i| {
+        f32_emb[i] = @cos(@as(f32, @floatFromInt(i)) * 0.1);
+    }
+
+    var ternary_emb = try TernaryEmbedding.initFromF32(allocator, &f32_emb, vocab_size, hidden_size);
+    defer ternary_emb.deinit();
+
+    // Compare f32 vs ternary for each token
+    var output: [hidden_size]f32 = undefined;
+
+    for (0..vocab_size) |token_id| {
+        ternary_emb.lookup(&output, token_id);
+
+        const f32_row = f32_emb[token_id * hidden_size ..][0..hidden_size];
+
+        // Compute cosine similarity
+        var dot: f32 = 0.0;
+        var norm_f32: f32 = 0.0;
+        var norm_ternary: f32 = 0.0;
+
+        for (f32_row, output) |f, t| {
+            dot += f * t;
+            norm_f32 += f * f;
+            norm_ternary += t * t;
+        }
+
+        const cosine_sim = if (norm_f32 > 0 and norm_ternary > 0)
+            dot / (@sqrt(norm_f32) * @sqrt(norm_ternary))
+        else
+            0.0;
+
+        // Should have reasonable similarity
+        try std.testing.expect(cosine_sim > 0.7);
+    }
+}

@@ -48,8 +48,10 @@ pub const TriModel = struct {
     allocator: std.mem.Allocator,
     header: TriHeader,
 
-    // Embeddings (f32)
+    // Embeddings (f32 or ternary)
     token_embedding: []f32,
+    ternary_embedding: ?ternary.TernaryEmbedding,
+    use_ternary_embedding: bool,
     output_norm: []f32,
 
     // Output projection (ternary)
@@ -130,6 +132,8 @@ pub const TriModel = struct {
             .allocator = allocator,
             .header = header,
             .token_embedding = undefined,
+            .ternary_embedding = null,
+            .use_ternary_embedding = false,
             .output_norm = undefined,
             .output_weight = undefined,
             .output_scale = undefined,
@@ -261,7 +265,12 @@ pub const TriModel = struct {
     }
 
     pub fn deinit(self: *TriModel) void {
-        self.allocator.free(self.token_embedding);
+        if (self.token_embedding.len > 0) {
+            self.allocator.free(self.token_embedding);
+        }
+        if (self.ternary_embedding) |*emb| {
+            emb.deinit();
+        }
         self.allocator.free(self.output_norm);
         self.allocator.free(self.output_weight);
 
@@ -318,6 +327,36 @@ pub const TriModel = struct {
         }
     }
 
+    /// Enable ternary embeddings for 16x memory reduction
+    /// Call after load() but before inference
+    pub fn enableTernaryEmbeddings(self: *TriModel) !void {
+        if (self.ternary_embedding != null) return; // Already enabled
+
+        const header = self.header;
+        self.ternary_embedding = try ternary.TernaryEmbedding.initFromF32(
+            self.allocator,
+            self.token_embedding,
+            header.vocab_size,
+            header.hidden_size,
+        );
+        self.use_ternary_embedding = true;
+
+        // Print memory savings
+        const stats = self.ternary_embedding.?.memoryStats();
+
+        std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║           TERNARY EMBEDDINGS ENABLED                         ║\n", .{});
+        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+        std.debug.print("║  f32 embeddings:    {d:>10} bytes                        ║\n", .{stats.f32_bytes});
+        std.debug.print("║  Ternary embeddings:{d:>10} bytes                        ║\n", .{stats.ternary_bytes});
+        std.debug.print("║  Compression:       {d:>10.1}x                            ║\n", .{stats.compression_ratio});
+        std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+
+        // Free f32 embeddings to save memory
+        self.allocator.free(self.token_embedding);
+        self.token_embedding = &[_]f32{};
+    }
+
     /// Enable ternary KV cache for 16x memory reduction
     /// Call after load() but before inference
     pub fn enableTernaryKVCache(self: *TriModel) !void {
@@ -355,9 +394,13 @@ pub const TriModel = struct {
     pub fn forward(self: *TriModel, token: u32, pos: usize) ![]f32 {
         const hidden_size = self.header.hidden_size;
 
-        // Get embedding
-        const emb_start = token * hidden_size;
-        @memcpy(self.buf_hidden, self.token_embedding[emb_start..][0..hidden_size]);
+        // Get embedding (f32 or ternary)
+        if (self.use_ternary_embedding and self.ternary_embedding != null) {
+            self.ternary_embedding.?.lookupSIMD(self.buf_hidden, token);
+        } else {
+            const emb_start = token * hidden_size;
+            @memcpy(self.buf_hidden, self.token_embedding[emb_start..][0..hidden_size]);
+        }
 
         // Process through layers
         for (0..self.header.num_layers) |i| {

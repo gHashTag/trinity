@@ -62,8 +62,17 @@ pub fn main() !void {
     }
     std.debug.print("\n", .{});
 
-    // Test 3: Enable ternary KV cache
-    std.debug.print("═══ TEST 3: Enable ternary KV cache ═══\n", .{});
+    // Test 3: Enable ternary embeddings
+    std.debug.print("═══ TEST 3: Enable ternary embeddings ═══\n", .{});
+    model.enableTernaryEmbeddings() catch |err| {
+        std.debug.print("❌ FAILED to enable ternary embeddings: {}\n", .{err});
+        return;
+    };
+    std.debug.print("✅ Ternary embeddings enabled\n", .{});
+    std.debug.print("\n", .{});
+
+    // Test 3b: Enable ternary KV cache
+    std.debug.print("═══ TEST 3b: Enable ternary KV cache ═══\n", .{});
     model.enableTernaryKVCache() catch |err| {
         std.debug.print("❌ FAILED to enable ternary KV cache: {}\n", .{err});
         return;
