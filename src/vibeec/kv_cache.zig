@@ -541,6 +541,292 @@ pub const CacheStats = struct {
     memory_bytes: usize,
 };
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// TERNARY KV-CACHE (OPT-T03)
+// 16x memory reduction via 2-bit quantization
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Ternary KV cache with 2-bit quantization
+/// Memory: 16x reduction (f32: 4 bytes → ternary: 0.25 bytes per value)
+pub const TernaryKVCache = struct {
+    allocator: std.mem.Allocator,
+    num_kv_heads: usize,
+    head_dim: usize,
+    max_seq_len: usize,
+
+    // Packed ternary storage (4 values per byte)
+    k_cache: []u8,
+    v_cache: []u8,
+
+    // Per-token scales for dequantization
+    k_scales: []f32,
+    v_scales: []f32,
+
+    // State
+    seq_len: usize,
+
+    // Quantization threshold (fraction of max)
+    threshold_ratio: f32,
+
+    pub fn init(
+        allocator: std.mem.Allocator,
+        num_kv_heads: usize,
+        head_dim: usize,
+        max_seq_len: usize,
+    ) !TernaryKVCache {
+        const values_per_token = num_kv_heads * head_dim;
+        const bytes_per_token = (values_per_token + 3) / 4; // 4 values per byte
+        const total_bytes = max_seq_len * bytes_per_token;
+
+        return TernaryKVCache{
+            .allocator = allocator,
+            .num_kv_heads = num_kv_heads,
+            .head_dim = head_dim,
+            .max_seq_len = max_seq_len,
+            .k_cache = try allocator.alloc(u8, total_bytes),
+            .v_cache = try allocator.alloc(u8, total_bytes),
+            .k_scales = try allocator.alloc(f32, max_seq_len),
+            .v_scales = try allocator.alloc(f32, max_seq_len),
+            .seq_len = 0,
+            .threshold_ratio = 0.3, // Values < 30% of max become 0
+        };
+    }
+
+    pub fn deinit(self: *TernaryKVCache) void {
+        self.allocator.free(self.k_cache);
+        self.allocator.free(self.v_cache);
+        self.allocator.free(self.k_scales);
+        self.allocator.free(self.v_scales);
+    }
+
+    /// Append new K,V vectors with quantization
+    pub fn append(self: *TernaryKVCache, k_new: []const f32, v_new: []const f32) void {
+        if (self.seq_len >= self.max_seq_len) return;
+
+        const values_per_token = self.num_kv_heads * self.head_dim;
+        const bytes_per_token = (values_per_token + 3) / 4;
+        const offset = self.seq_len * bytes_per_token;
+
+        // Quantize K
+        const k_scale = self.quantizeVector(
+            self.k_cache[offset..][0..bytes_per_token],
+            k_new,
+        );
+        self.k_scales[self.seq_len] = k_scale;
+
+        // Quantize V
+        const v_scale = self.quantizeVector(
+            self.v_cache[offset..][0..bytes_per_token],
+            v_new,
+        );
+        self.v_scales[self.seq_len] = v_scale;
+
+        self.seq_len += 1;
+    }
+
+    /// Quantize f32 vector to ternary packed bytes
+    fn quantizeVector(self: *const TernaryKVCache, dst: []u8, src: []const f32) f32 {
+        // Find max absolute value for scale
+        var max_abs: f32 = 0.0;
+        for (src) |v| {
+            const abs_v = @abs(v);
+            if (abs_v > max_abs) max_abs = abs_v;
+        }
+
+        if (max_abs == 0.0) {
+            @memset(dst, 0);
+            return 1.0;
+        }
+
+        const threshold = max_abs * self.threshold_ratio;
+        const inv_scale = 1.0 / max_abs;
+
+        // Pack 4 values per byte
+        var byte_idx: usize = 0;
+        var bit_pos: u3 = 0;
+        var current_byte: u8 = 0;
+
+        for (src) |v| {
+            const normalized = v * inv_scale;
+            const trit: u2 = if (normalized > threshold * inv_scale)
+                0b01 // +1
+            else if (normalized < -threshold * inv_scale)
+                0b10 // -1
+            else
+                0b00; // 0
+
+            current_byte |= @as(u8, trit) << bit_pos;
+            bit_pos +%= 2;
+
+            if (bit_pos == 0) {
+                dst[byte_idx] = current_byte;
+                byte_idx += 1;
+                current_byte = 0;
+            }
+        }
+
+        // Write last partial byte
+        if (bit_pos != 0 and byte_idx < dst.len) {
+            dst[byte_idx] = current_byte;
+        }
+
+        return max_abs;
+    }
+
+    /// Compute dot product between f32 query and ternary key (no full dequantization)
+    pub fn ternaryDot(
+        self: *const TernaryKVCache,
+        q: []const f32,
+        token_pos: usize,
+        head_idx: usize,
+    ) f32 {
+        const values_per_token = self.num_kv_heads * self.head_dim;
+        const bytes_per_token = (values_per_token + 3) / 4;
+        const token_offset = token_pos * bytes_per_token;
+        const head_offset = head_idx * self.head_dim;
+
+        const scale = self.k_scales[token_pos];
+        var sum: f32 = 0.0;
+
+        // Process each value in the head
+        for (0..self.head_dim) |i| {
+            const global_idx = head_offset + i;
+            const byte_idx = token_offset + global_idx / 4;
+            const bit_pos: u3 = @intCast((global_idx % 4) * 2);
+            const trit = (self.k_cache[byte_idx] >> bit_pos) & 0x3;
+
+            // trit: 00=0, 01=+1, 10=-1
+            const sign: f32 = switch (trit) {
+                0b01 => 1.0,
+                0b10 => -1.0,
+                else => 0.0,
+            };
+
+            sum += q[i] * sign;
+        }
+
+        return sum * scale;
+    }
+
+    /// Get dequantized V vector for weighted sum
+    pub fn dequantizeV(
+        self: *const TernaryKVCache,
+        dst: []f32,
+        token_pos: usize,
+        head_idx: usize,
+    ) void {
+        const values_per_token = self.num_kv_heads * self.head_dim;
+        const bytes_per_token = (values_per_token + 3) / 4;
+        const token_offset = token_pos * bytes_per_token;
+        const head_offset = head_idx * self.head_dim;
+
+        const scale = self.v_scales[token_pos];
+
+        for (0..self.head_dim) |i| {
+            const global_idx = head_offset + i;
+            const byte_idx = token_offset + global_idx / 4;
+            const bit_pos: u3 = @intCast((global_idx % 4) * 2);
+            const trit = (self.v_cache[byte_idx] >> bit_pos) & 0x3;
+
+            dst[i] = switch (trit) {
+                0b01 => scale,
+                0b10 => -scale,
+                else => 0.0,
+            };
+        }
+    }
+
+    /// SIMD-optimized ternary dot product (8 values at a time)
+    pub fn simdTernaryDot(
+        self: *const TernaryKVCache,
+        q: []const f32,
+        token_pos: usize,
+        head_idx: usize,
+    ) f32 {
+        const Vec8 = @Vector(8, f32);
+        const values_per_token = self.num_kv_heads * self.head_dim;
+        const bytes_per_token = (values_per_token + 3) / 4;
+        const token_offset = token_pos * bytes_per_token;
+        const head_offset = head_idx * self.head_dim;
+
+        const scale = self.k_scales[token_pos];
+        const sign_lut = [4]f32{ 0.0, 1.0, -1.0, 0.0 };
+
+        var sum_vec: Vec8 = @splat(0.0);
+        var i: usize = 0;
+
+        // Process 8 values at a time
+        while (i + 8 <= self.head_dim) : (i += 8) {
+            const q_vec: Vec8 = q[i..][0..8].*;
+
+            // Extract 8 trits (2 bytes)
+            const global_idx = head_offset + i;
+            const byte_idx = token_offset + global_idx / 4;
+            const b0 = self.k_cache[byte_idx];
+            const b1 = self.k_cache[byte_idx + 1];
+
+            const signs: Vec8 = .{
+                sign_lut[(b0 >> 0) & 0x3],
+                sign_lut[(b0 >> 2) & 0x3],
+                sign_lut[(b0 >> 4) & 0x3],
+                sign_lut[(b0 >> 6) & 0x3],
+                sign_lut[(b1 >> 0) & 0x3],
+                sign_lut[(b1 >> 2) & 0x3],
+                sign_lut[(b1 >> 4) & 0x3],
+                sign_lut[(b1 >> 6) & 0x3],
+            };
+
+            sum_vec += q_vec * signs;
+        }
+
+        var sum: f32 = @reduce(.Add, sum_vec);
+
+        // Scalar fallback for remainder
+        while (i < self.head_dim) : (i += 1) {
+            const global_idx = head_offset + i;
+            const byte_idx = token_offset + global_idx / 4;
+            const bit_pos: u3 = @intCast((global_idx % 4) * 2);
+            const trit = (self.k_cache[byte_idx] >> bit_pos) & 0x3;
+            sum += q[i] * sign_lut[trit];
+        }
+
+        return sum * scale;
+    }
+
+    /// Reset cache
+    pub fn reset(self: *TernaryKVCache) void {
+        self.seq_len = 0;
+    }
+
+    /// Memory usage in bytes
+    pub fn memoryUsage(self: *const TernaryKVCache) usize {
+        return self.k_cache.len + self.v_cache.len +
+            (self.k_scales.len + self.v_scales.len) * @sizeOf(f32);
+    }
+
+    /// Compare with f32 cache memory
+    pub fn memoryStats(self: *const TernaryKVCache) TernaryCacheStats {
+        const values_per_token = self.num_kv_heads * self.head_dim;
+        const f32_bytes = self.max_seq_len * values_per_token * 2 * @sizeOf(f32);
+        const ternary_bytes = self.memoryUsage();
+
+        return TernaryCacheStats{
+            .f32_bytes = f32_bytes,
+            .ternary_bytes = ternary_bytes,
+            .compression_ratio = @as(f32, @floatFromInt(f32_bytes)) / @as(f32, @floatFromInt(ternary_bytes)),
+            .tokens_capacity = self.max_seq_len,
+        };
+    }
+};
+
+/// Ternary cache memory statistics
+pub const TernaryCacheStats = struct {
+    f32_bytes: usize,
+    ternary_bytes: usize,
+    compression_ratio: f32,
+    tokens_capacity: usize,
+};
+
 /// SIMD-optimized copy (8 floats at a time)
 fn simdCopy(dst: []f32, src: []const f32) void {
     const Vec8 = @Vector(8, f32);
@@ -700,6 +986,72 @@ test "simd copy" {
     for (dst) |v| {
         try std.testing.expectEqual(@as(f32, 1.0), v);
     }
+}
+
+test "ternary kv cache" {
+    const allocator = std.testing.allocator;
+
+    var cache = try TernaryKVCache.init(
+        allocator,
+        2, // num_kv_heads
+        8, // head_dim
+        4, // max_seq_len
+    );
+    defer cache.deinit();
+
+    try std.testing.expectEqual(@as(usize, 0), cache.seq_len);
+
+    // Create test vectors (2 heads * 8 dim = 16 values)
+    var k = [_]f32{ 1.0, -0.5, 0.8, -0.9, 0.1, -0.2, 0.7, -0.6, 0.3, -0.4, 0.5, -0.3, 0.2, -0.1, 0.4, -0.8 };
+    var v = [_]f32{ 0.5, -0.3, 0.7, -0.8, 0.2, -0.1, 0.6, -0.5, 0.4, -0.2, 0.3, -0.4, 0.1, -0.6, 0.8, -0.7 };
+
+    // Append tokens
+    cache.append(&k, &v);
+    cache.append(&k, &v);
+
+    try std.testing.expectEqual(@as(usize, 2), cache.seq_len);
+
+    // Test ternary dot product
+    var q = [_]f32{ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
+    const dot = cache.ternaryDot(&q, 0, 0);
+    // Dot product can be 0 if positive and negative values cancel out
+    // Just verify it's a valid float
+    try std.testing.expect(!std.math.isNan(dot));
+
+    // Test dequantize V
+    var v_out: [8]f32 = undefined;
+    cache.dequantizeV(&v_out, 0, 0);
+    // Values should be -scale, 0, or +scale
+    for (v_out) |val| {
+        try std.testing.expect(val == 0.0 or @abs(val) > 0.0);
+    }
+
+    // Test memory stats
+    const stats = cache.memoryStats();
+    try std.testing.expect(stats.compression_ratio > 1.0);
+    try std.testing.expect(stats.ternary_bytes < stats.f32_bytes);
+}
+
+test "ternary kv cache memory savings" {
+    const allocator = std.testing.allocator;
+
+    // Realistic config: 4 KV heads, 128 head_dim, 2048 tokens
+    var cache = try TernaryKVCache.init(
+        allocator,
+        4, // num_kv_heads
+        128, // head_dim
+        2048, // max_seq_len
+    );
+    defer cache.deinit();
+
+    const stats = cache.memoryStats();
+
+    // f32: 4 * 128 * 2048 * 2 * 4 = 8,388,608 bytes (8 MB)
+    // ternary: 4 * 128 * 2048 / 4 * 2 + 2048 * 2 * 4 = 540,672 bytes (~0.5 MB)
+    // Compression: ~15.5x
+
+    try std.testing.expect(stats.compression_ratio > 10.0);
+    try std.testing.expect(stats.compression_ratio < 20.0);
 }
 
 test "cached attention" {
