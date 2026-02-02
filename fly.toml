@@ -14,14 +14,14 @@ primary_region = "iad"
   MODEL_PATH = "/app/models/smollm2-1.7b-instruct-q8_0.gguf"
   TEMPERATURE = "0.7"
   TOP_P = "0.9"
-  NUM_THREADS = "4"
+  NUM_THREADS = "16"
 
 # SmolLM2-1.7B requires more RAM (~4GB for model + buffers)
 # performance-4x: 4 dedicated CPU cores, 8GB RAM
 [[vm]]
-  size = "performance-4x"
-  memory = "8gb"
-  cpus = 4
+  size = "performance-16x"
+  memory = "32gb"
+  cpus = 16
 
 # Alternative sizes:
 # performance-8x: 8 CPU, 16GB RAM (faster, more expensive)
@@ -37,9 +37,9 @@ primary_region = "iad"
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = "off"
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
 
 [[http_service.checks]]
   grace_period = "180s"  # SmolLM2-1.7B needs ~30-60s to load
