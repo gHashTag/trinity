@@ -102,7 +102,8 @@ pub fn ternaryMatVec(
     }
 }
 
-/// SIMD-optimized ternary matmul (AVX2)
+/// SIMD-optimized ternary matmul (AVX2/AVX-512)
+/// Uses lookup tables and vectorized operations for maximum throughput
 pub fn simdTernaryMatVec(
     output: []f32,
     weights: []const u8,
@@ -113,6 +114,10 @@ pub fn simdTernaryMatVec(
     const Vec8f32 = @Vector(8, f32);
     const cols_packed = (cols + 3) / 4;
 
+    // Precompute sign lookup: trit -> {-1, 0, +1}
+    // 00 = 0, 01 = +1, 10 = -1
+    const sign_lut = [4]f32{ 0.0, 1.0, -1.0, 0.0 };
+
     for (0..rows) |row| {
         var sum_vec: Vec8f32 = @splat(0.0);
         var sum_scalar: f32 = 0.0;
@@ -121,7 +126,7 @@ pub fn simdTernaryMatVec(
         var col: usize = 0;
         
         // Process 8 floats at a time with SIMD
-        while (col + 8 <= cols) {
+        while (col + 8 <= cols and row_start + col / 4 + 1 < weights.len) {
             // Load 8 input values
             const in_vec: Vec8f32 = input[col..][0..8].*;
 
@@ -129,45 +134,222 @@ pub fn simdTernaryMatVec(
             const byte0 = weights[row_start + col / 4];
             const byte1 = weights[row_start + col / 4 + 1];
 
-            // Decode trits and create masks
-            var add_mask: Vec8f32 = @splat(0.0);
-            var sub_mask: Vec8f32 = @splat(0.0);
+            // Decode trits using lookup table - vectorized
+            const signs: Vec8f32 = .{
+                sign_lut[(byte0 >> 0) & 0x3],
+                sign_lut[(byte0 >> 2) & 0x3],
+                sign_lut[(byte0 >> 4) & 0x3],
+                sign_lut[(byte0 >> 6) & 0x3],
+                sign_lut[(byte1 >> 0) & 0x3],
+                sign_lut[(byte1 >> 2) & 0x3],
+                sign_lut[(byte1 >> 4) & 0x3],
+                sign_lut[(byte1 >> 6) & 0x3],
+            };
 
-            inline for (0..4) |i| {
-                const trit0 = (byte0 >> @intCast(i * 2)) & 0x3;
-                const trit1 = (byte1 >> @intCast(i * 2)) & 0x3;
-                
-                if (trit0 == 0b01) add_mask[i] = 1.0;
-                if (trit0 == 0b10) sub_mask[i] = 1.0;
-                if (trit1 == 0b01) add_mask[4 + i] = 1.0;
-                if (trit1 == 0b10) sub_mask[4 + i] = 1.0;
-            }
-
-            sum_vec += in_vec * add_mask;
-            sum_vec -= in_vec * sub_mask;
+            // Multiply and accumulate: sum += input * sign
+            // This is the key optimization: no branches, pure SIMD
+            sum_vec += in_vec * signs;
 
             col += 8;
         }
 
-        // Reduce SIMD vector
+        // Reduce SIMD vector to scalar
         sum_scalar = @reduce(.Add, sum_vec);
 
-        // Handle remaining elements
+        // Handle remaining elements (scalar fallback)
         while (col < cols) : (col += 1) {
             const byte_idx = row_start + col / 4;
             if (byte_idx >= weights.len) break;
             
             const shift: u3 = @intCast((col % 4) * 2);
             const trit = (weights[byte_idx] >> shift) & 0x3;
-            
-            switch (trit) {
-                0b01 => sum_scalar += input[col],
-                0b10 => sum_scalar -= input[col],
-                else => {},
-            }
+            sum_scalar += input[col] * sign_lut[trit];
         }
 
         output[row] = sum_scalar;
+    }
+}
+
+/// Ultra-optimized SIMD ternary matmul with 16-wide vectors
+/// For AVX-512 capable CPUs
+pub fn simd16TernaryMatVec(
+    output: []f32,
+    weights: []const u8,
+    input: []const f32,
+    rows: usize,
+    cols: usize,
+) void {
+    const Vec16f32 = @Vector(16, f32);
+    const cols_packed = (cols + 3) / 4;
+    const sign_lut = [4]f32{ 0.0, 1.0, -1.0, 0.0 };
+
+    for (0..rows) |row| {
+        var sum_vec: Vec16f32 = @splat(0.0);
+        var sum_scalar: f32 = 0.0;
+        const row_start = row * cols_packed;
+
+        var col: usize = 0;
+        
+        // Process 16 floats at a time (4 bytes = 16 trits)
+        while (col + 16 <= cols and row_start + col / 4 + 3 < weights.len) {
+            const in_vec: Vec16f32 = input[col..][0..16].*;
+
+            // Load 4 bytes = 16 trits
+            const b0 = weights[row_start + col / 4];
+            const b1 = weights[row_start + col / 4 + 1];
+            const b2 = weights[row_start + col / 4 + 2];
+            const b3 = weights[row_start + col / 4 + 3];
+
+            const signs: Vec16f32 = .{
+                sign_lut[(b0 >> 0) & 0x3], sign_lut[(b0 >> 2) & 0x3],
+                sign_lut[(b0 >> 4) & 0x3], sign_lut[(b0 >> 6) & 0x3],
+                sign_lut[(b1 >> 0) & 0x3], sign_lut[(b1 >> 2) & 0x3],
+                sign_lut[(b1 >> 4) & 0x3], sign_lut[(b1 >> 6) & 0x3],
+                sign_lut[(b2 >> 0) & 0x3], sign_lut[(b2 >> 2) & 0x3],
+                sign_lut[(b2 >> 4) & 0x3], sign_lut[(b2 >> 6) & 0x3],
+                sign_lut[(b3 >> 0) & 0x3], sign_lut[(b3 >> 2) & 0x3],
+                sign_lut[(b3 >> 4) & 0x3], sign_lut[(b3 >> 6) & 0x3],
+            };
+
+            sum_vec += in_vec * signs;
+            col += 16;
+        }
+
+        sum_scalar = @reduce(.Add, sum_vec);
+
+        // Scalar fallback for remaining
+        while (col < cols) : (col += 1) {
+            const byte_idx = row_start + col / 4;
+            if (byte_idx >= weights.len) break;
+            const shift: u3 = @intCast((col % 4) * 2);
+            const trit = (weights[byte_idx] >> shift) & 0x3;
+            sum_scalar += input[col] * sign_lut[trit];
+        }
+
+        output[row] = sum_scalar;
+    }
+}
+
+/// Batch ternary matmul - process multiple rows in parallel
+/// Best for large matrices
+pub fn batchTernaryMatVec(
+    output: []f32,
+    weights: []const u8,
+    input: []const f32,
+    rows: usize,
+    cols: usize,
+) void {
+    const Vec8f32 = @Vector(8, f32);
+    const cols_packed = (cols + 3) / 4;
+    const sign_lut = [4]f32{ 0.0, 1.0, -1.0, 0.0 };
+
+    var row: usize = 0;
+    
+    // Process 4 rows at a time
+    while (row + 4 <= rows) {
+        var sum0: Vec8f32 = @splat(0.0);
+        var sum1: Vec8f32 = @splat(0.0);
+        var sum2: Vec8f32 = @splat(0.0);
+        var sum3: Vec8f32 = @splat(0.0);
+
+        var col: usize = 0;
+        while (col + 8 <= cols) {
+            const in_vec: Vec8f32 = input[col..][0..8].*;
+            const col_byte = col / 4;
+
+            // Row 0
+            const r0_start = row * cols_packed;
+            if (r0_start + col_byte + 1 < weights.len) {
+                const b0 = weights[r0_start + col_byte];
+                const b1 = weights[r0_start + col_byte + 1];
+                const s0: Vec8f32 = .{
+                    sign_lut[(b0 >> 0) & 0x3], sign_lut[(b0 >> 2) & 0x3],
+                    sign_lut[(b0 >> 4) & 0x3], sign_lut[(b0 >> 6) & 0x3],
+                    sign_lut[(b1 >> 0) & 0x3], sign_lut[(b1 >> 2) & 0x3],
+                    sign_lut[(b1 >> 4) & 0x3], sign_lut[(b1 >> 6) & 0x3],
+                };
+                sum0 += in_vec * s0;
+            }
+
+            // Row 1
+            const r1_start = (row + 1) * cols_packed;
+            if (r1_start + col_byte + 1 < weights.len) {
+                const b0 = weights[r1_start + col_byte];
+                const b1 = weights[r1_start + col_byte + 1];
+                const s1: Vec8f32 = .{
+                    sign_lut[(b0 >> 0) & 0x3], sign_lut[(b0 >> 2) & 0x3],
+                    sign_lut[(b0 >> 4) & 0x3], sign_lut[(b0 >> 6) & 0x3],
+                    sign_lut[(b1 >> 0) & 0x3], sign_lut[(b1 >> 2) & 0x3],
+                    sign_lut[(b1 >> 4) & 0x3], sign_lut[(b1 >> 6) & 0x3],
+                };
+                sum1 += in_vec * s1;
+            }
+
+            // Row 2
+            const r2_start = (row + 2) * cols_packed;
+            if (r2_start + col_byte + 1 < weights.len) {
+                const b0 = weights[r2_start + col_byte];
+                const b1 = weights[r2_start + col_byte + 1];
+                const s2: Vec8f32 = .{
+                    sign_lut[(b0 >> 0) & 0x3], sign_lut[(b0 >> 2) & 0x3],
+                    sign_lut[(b0 >> 4) & 0x3], sign_lut[(b0 >> 6) & 0x3],
+                    sign_lut[(b1 >> 0) & 0x3], sign_lut[(b1 >> 2) & 0x3],
+                    sign_lut[(b1 >> 4) & 0x3], sign_lut[(b1 >> 6) & 0x3],
+                };
+                sum2 += in_vec * s2;
+            }
+
+            // Row 3
+            const r3_start = (row + 3) * cols_packed;
+            if (r3_start + col_byte + 1 < weights.len) {
+                const b0 = weights[r3_start + col_byte];
+                const b1 = weights[r3_start + col_byte + 1];
+                const s3: Vec8f32 = .{
+                    sign_lut[(b0 >> 0) & 0x3], sign_lut[(b0 >> 2) & 0x3],
+                    sign_lut[(b0 >> 4) & 0x3], sign_lut[(b0 >> 6) & 0x3],
+                    sign_lut[(b1 >> 0) & 0x3], sign_lut[(b1 >> 2) & 0x3],
+                    sign_lut[(b1 >> 4) & 0x3], sign_lut[(b1 >> 6) & 0x3],
+                };
+                sum3 += in_vec * s3;
+            }
+
+            col += 8;
+        }
+
+        // Reduce and store
+        output[row] = @reduce(.Add, sum0);
+        output[row + 1] = @reduce(.Add, sum1);
+        output[row + 2] = @reduce(.Add, sum2);
+        output[row + 3] = @reduce(.Add, sum3);
+
+        // Scalar remainder for columns
+        while (col < cols) : (col += 1) {
+            for (0..4) |b| {
+                const r_start = (row + b) * cols_packed;
+                const byte_idx = r_start + col / 4;
+                if (byte_idx >= weights.len) continue;
+                const shift: u3 = @intCast((col % 4) * 2);
+                const trit = (weights[byte_idx] >> shift) & 0x3;
+                output[row + b] += input[col] * sign_lut[trit];
+            }
+        }
+
+        row += 4;
+    }
+
+    // Handle remaining rows
+    while (row < rows) : (row += 1) {
+        var sum: f32 = 0.0;
+        const row_start = row * cols_packed;
+
+        for (0..cols) |col| {
+            const byte_idx = row_start + col / 4;
+            if (byte_idx >= weights.len) break;
+            const shift: u3 = @intCast((col % 4) * 2);
+            const trit = (weights[byte_idx] >> shift) & 0x3;
+            sum += input[col] * sign_lut[trit];
+        }
+        output[row] = sum;
     }
 }
 
@@ -306,4 +488,100 @@ test "memory stats" {
     
     // Ternary: ~1.75 GB (16x smaller)
     try std.testing.expect(stats.ternary_bytes < 2_000_000_000);
+}
+
+test "simd ternary matmul" {
+    const allocator = std.testing.allocator;
+    _ = allocator;
+
+    // 2x8 matrix for SIMD test
+    const weights = [_]u8{
+        0b01_00_10_01, 0b00_01_10_01, // Row 0: +1,-1,0,+1, +1,-1,+1,0
+        0b10_01_01_00, 0b01_00_00_10, // Row 1: 0,+1,+1,-1, -1,0,0,+1
+    };
+
+    const input = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
+    var output_scalar: [2]f32 = undefined;
+    var output_simd: [2]f32 = undefined;
+
+    ternaryMatVec(&output_scalar, &weights, &input, 2, 8);
+    simdTernaryMatVec(&output_simd, &weights, &input, 2, 8);
+
+    // Results should match
+    try std.testing.expectApproxEqAbs(output_scalar[0], output_simd[0], 0.001);
+    try std.testing.expectApproxEqAbs(output_scalar[1], output_simd[1], 0.001);
+}
+
+// Benchmark function for comparing implementations
+pub fn main() void {
+    // Run benchmarks when executed directly
+    benchmarkTernaryMatVec(768, 768, 1000);    // Small layer
+    benchmarkTernaryMatVec(2048, 2048, 100);   // Medium layer  
+    benchmarkTernaryMatVec(4096, 4096, 50);    // Large layer
+}
+
+pub fn benchmarkTernaryMatVec(rows: usize, cols: usize, iterations: usize) void {
+    const allocator = std.heap.page_allocator;
+    
+    // Allocate test data
+    const weights = allocator.alloc(u8, rows * ((cols + 3) / 4)) catch return;
+    defer allocator.free(weights);
+    const input = allocator.alloc(f32, cols) catch return;
+    defer allocator.free(input);
+    const output = allocator.alloc(f32, rows) catch return;
+    defer allocator.free(output);
+
+    // Initialize with random-ish data
+    for (weights, 0..) |*w, i| w.* = @truncate(i * 17 + 31);
+    for (input, 0..) |*v, i| v.* = @as(f32, @floatFromInt(i % 100)) / 100.0;
+
+    std.debug.print("\nTernary MatVec Benchmark ({d}x{d}, {d} iterations)\n", .{rows, cols, iterations});
+    std.debug.print("=" ** 50 ++ "\n", .{});
+
+    // Benchmark scalar
+    var timer = std.time.Timer.start() catch return;
+    for (0..iterations) |_| {
+        ternaryMatVec(output, weights, input, rows, cols);
+    }
+    const scalar_time = timer.read();
+    std.debug.print("Scalar:     {d:.2} ms ({d:.2} GFLOPS)\n", .{
+        @as(f64, @floatFromInt(scalar_time)) / 1e6,
+        @as(f64, @floatFromInt(rows * cols * iterations * 2)) / @as(f64, @floatFromInt(scalar_time)),
+    });
+
+    // Benchmark SIMD 8-wide
+    timer.reset();
+    for (0..iterations) |_| {
+        simdTernaryMatVec(output, weights, input, rows, cols);
+    }
+    const simd8_time = timer.read();
+    std.debug.print("SIMD-8:     {d:.2} ms ({d:.2} GFLOPS) - {d:.1}x speedup\n", .{
+        @as(f64, @floatFromInt(simd8_time)) / 1e6,
+        @as(f64, @floatFromInt(rows * cols * iterations * 2)) / @as(f64, @floatFromInt(simd8_time)),
+        @as(f64, @floatFromInt(scalar_time)) / @as(f64, @floatFromInt(simd8_time)),
+    });
+
+    // Benchmark SIMD 16-wide
+    timer.reset();
+    for (0..iterations) |_| {
+        simd16TernaryMatVec(output, weights, input, rows, cols);
+    }
+    const simd16_time = timer.read();
+    std.debug.print("SIMD-16:    {d:.2} ms ({d:.2} GFLOPS) - {d:.1}x speedup\n", .{
+        @as(f64, @floatFromInt(simd16_time)) / 1e6,
+        @as(f64, @floatFromInt(rows * cols * iterations * 2)) / @as(f64, @floatFromInt(simd16_time)),
+        @as(f64, @floatFromInt(scalar_time)) / @as(f64, @floatFromInt(simd16_time)),
+    });
+
+    // Benchmark batch
+    timer.reset();
+    for (0..iterations) |_| {
+        batchTernaryMatVec(output, weights, input, rows, cols);
+    }
+    const batch_time = timer.read();
+    std.debug.print("Batch-4:    {d:.2} ms ({d:.2} GFLOPS) - {d:.1}x speedup\n", .{
+        @as(f64, @floatFromInt(batch_time)) / 1e6,
+        @as(f64, @floatFromInt(rows * cols * iterations * 2)) / @as(f64, @floatFromInt(batch_time)),
+        @as(f64, @floatFromInt(scalar_time)) / @as(f64, @floatFromInt(batch_time)),
+    });
 }
