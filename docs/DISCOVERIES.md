@@ -182,10 +182,37 @@ Where:
 
 ---
 
+## Parallel Dequantization (OPT-003)
+
+**Status**: ✅ Implemented
+
+### Implementation
+
+- Multi-threaded Q8_0 dequantization (8 threads default)
+- Threshold: >100K elements triggers parallel mode
+- Each thread processes independent block ranges
+- No synchronization needed (blocks are independent)
+
+### Benchmark Results
+
+| Elements | Time | Throughput |
+|----------|------|------------|
+| 1M | 1.89 ms | 530 M/sec |
+| 100M | 164 ms | 607 M/sec |
+
+### Estimated Impact
+
+- Pure dequantization for 1.7B: ~2.8 seconds
+- Note: 208s load time includes I/O, not just dequantization
+- Real bottleneck may be disk I/O or memory allocation
+
+---
+
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.2.0 | 2026-02-02 | Parallel dequantization (OPT-003) |
 | v1.1.0 | 2026-02-02 | SIMD optimization (OPT-001) |
 | v1.0.0 | 2026-02-02 | Initial Fly.io deployment |
 | v0.9.0 | 2026-02-01 | GGUF parser complete |
