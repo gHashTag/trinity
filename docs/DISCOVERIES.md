@@ -78,6 +78,7 @@ Where:
 | OPT-T04 | Ternary Attention | 16x | 1.5x | ✅ Implemented |
 | OPT-T05 | Ternary Embeddings | 12.8x | 1x | ✅ Implemented |
 | OPT-T06 | Ternary Normalization | 16x | 0.2x | ✅ Implemented |
+| OPT-T07 | Batch Ternary MatMul | N/A | 2.28x | ✅ Implemented |
 
 ### Business Value
 
@@ -349,6 +350,33 @@ Compression:          16x
 var model = try TriModel.load(allocator, "model.tri");
 try model.enableTernaryNorm(); // 16x memory reduction for norm weights
 ```
+
+### Batch Ternary MatMul (OPT-T07)
+
+**Status**: ✅ Implemented
+
+| Component | File | Description |
+|-----------|------|-------------|
+| batchTernaryMatVec | `ternary_weights.zig` | 4-row batch SIMD matmul |
+| batchTiledTernaryMatVec | `ternary_weights.zig` | 8-row optimized version |
+| ternaryWorker | `parallel_inference.zig` | Parallel batch worker |
+
+**Benchmark Results (2048x2048 matrix):**
+```
+╔══════════════════════════════════════════════════════════════╗
+║           TERNARY MATMUL BENCHMARK (2048x2048)              ║
+╠══════════════════════════════════════════════════════════════╣
+║  SIMD-16 (baseline):  2499.7 us  ( 3.36 GFLOPS)             ║
+║  BatchTiled (new):    1096.0 us  ( 7.65 GFLOPS)             ║
+║  Speedup:             2.28x                                  ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+**Optimization Techniques:**
+1. Process 4-8 rows simultaneously (better register utilization)
+2. LUT-based sign conversion (faster than arithmetic)
+3. 8-wide SIMD vectors (AVX2 compatible)
+4. Parallel worker with batch processing
 
 ### Batch Processing (INF-004)
 

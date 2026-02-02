@@ -164,42 +164,114 @@ fn ternaryWorker(ctx: *const ParallelTernaryContext, chunk: WorkChunk) void {
     const cols_packed = (cols + 3) / 4;
     const sign_lut = [4]f32{ 0.0, 1.0, -1.0, 0.0 };
 
-    for (chunk.start_row..chunk.end_row) |row| {
+    const num_rows = chunk.end_row - chunk.start_row;
+    var row = chunk.start_row;
+
+    // Process 4 rows at a time (batch optimization)
+    while (row + 4 <= chunk.end_row) {
+        var sum0: Vec8f = @splat(0.0);
+        var sum1: Vec8f = @splat(0.0);
+        var sum2: Vec8f = @splat(0.0);
+        var sum3: Vec8f = @splat(0.0);
+
+        var col: usize = 0;
+        while (col + 8 <= cols) {
+            const in_vec: Vec8f = ctx.input[col..][0..8].*;
+            const col_byte = col / 4;
+
+            // Row 0
+            const r0_start = row * cols_packed;
+            if (r0_start + col_byte + 1 < ctx.weights.len) {
+                const b0 = ctx.weights[r0_start + col_byte];
+                const b1 = ctx.weights[r0_start + col_byte + 1];
+                const s0: Vec8f = .{
+                    sign_lut[(b0 >> 0) & 0x3], sign_lut[(b0 >> 2) & 0x3],
+                    sign_lut[(b0 >> 4) & 0x3], sign_lut[(b0 >> 6) & 0x3],
+                    sign_lut[(b1 >> 0) & 0x3], sign_lut[(b1 >> 2) & 0x3],
+                    sign_lut[(b1 >> 4) & 0x3], sign_lut[(b1 >> 6) & 0x3],
+                };
+                sum0 += in_vec * s0;
+            }
+
+            // Row 1
+            const r1_start = (row + 1) * cols_packed;
+            if (r1_start + col_byte + 1 < ctx.weights.len) {
+                const b0 = ctx.weights[r1_start + col_byte];
+                const b1 = ctx.weights[r1_start + col_byte + 1];
+                const s1: Vec8f = .{
+                    sign_lut[(b0 >> 0) & 0x3], sign_lut[(b0 >> 2) & 0x3],
+                    sign_lut[(b0 >> 4) & 0x3], sign_lut[(b0 >> 6) & 0x3],
+                    sign_lut[(b1 >> 0) & 0x3], sign_lut[(b1 >> 2) & 0x3],
+                    sign_lut[(b1 >> 4) & 0x3], sign_lut[(b1 >> 6) & 0x3],
+                };
+                sum1 += in_vec * s1;
+            }
+
+            // Row 2
+            const r2_start = (row + 2) * cols_packed;
+            if (r2_start + col_byte + 1 < ctx.weights.len) {
+                const b0 = ctx.weights[r2_start + col_byte];
+                const b1 = ctx.weights[r2_start + col_byte + 1];
+                const s2: Vec8f = .{
+                    sign_lut[(b0 >> 0) & 0x3], sign_lut[(b0 >> 2) & 0x3],
+                    sign_lut[(b0 >> 4) & 0x3], sign_lut[(b0 >> 6) & 0x3],
+                    sign_lut[(b1 >> 0) & 0x3], sign_lut[(b1 >> 2) & 0x3],
+                    sign_lut[(b1 >> 4) & 0x3], sign_lut[(b1 >> 6) & 0x3],
+                };
+                sum2 += in_vec * s2;
+            }
+
+            // Row 3
+            const r3_start = (row + 3) * cols_packed;
+            if (r3_start + col_byte + 1 < ctx.weights.len) {
+                const b0 = ctx.weights[r3_start + col_byte];
+                const b1 = ctx.weights[r3_start + col_byte + 1];
+                const s3: Vec8f = .{
+                    sign_lut[(b0 >> 0) & 0x3], sign_lut[(b0 >> 2) & 0x3],
+                    sign_lut[(b0 >> 4) & 0x3], sign_lut[(b0 >> 6) & 0x3],
+                    sign_lut[(b1 >> 0) & 0x3], sign_lut[(b1 >> 2) & 0x3],
+                    sign_lut[(b1 >> 4) & 0x3], sign_lut[(b1 >> 6) & 0x3],
+                };
+                sum3 += in_vec * s3;
+            }
+
+            col += 8;
+        }
+
+        ctx.output[row + 0] = @reduce(.Add, sum0) * ctx.scale;
+        ctx.output[row + 1] = @reduce(.Add, sum1) * ctx.scale;
+        ctx.output[row + 2] = @reduce(.Add, sum2) * ctx.scale;
+        ctx.output[row + 3] = @reduce(.Add, sum3) * ctx.scale;
+
+        row += 4;
+    }
+
+    // Handle remaining rows
+    while (row < chunk.end_row) : (row += 1) {
         var sum_vec: Vec8f = @splat(0.0);
         var sum_scalar: f32 = 0.0;
         const row_start = row * cols_packed;
 
         var col: usize = 0;
-
-        // SIMD loop: 8 floats at a time
         while (col + 8 <= cols and row_start + col / 4 + 1 < ctx.weights.len) {
             const in_vec: Vec8f = ctx.input[col..][0..8].*;
-
             const byte0 = ctx.weights[row_start + col / 4];
             const byte1 = ctx.weights[row_start + col / 4 + 1];
-
             const signs: Vec8f = .{
-                sign_lut[(byte0 >> 0) & 0x3],
-                sign_lut[(byte0 >> 2) & 0x3],
-                sign_lut[(byte0 >> 4) & 0x3],
-                sign_lut[(byte0 >> 6) & 0x3],
-                sign_lut[(byte1 >> 0) & 0x3],
-                sign_lut[(byte1 >> 2) & 0x3],
-                sign_lut[(byte1 >> 4) & 0x3],
-                sign_lut[(byte1 >> 6) & 0x3],
+                sign_lut[(byte0 >> 0) & 0x3], sign_lut[(byte0 >> 2) & 0x3],
+                sign_lut[(byte0 >> 4) & 0x3], sign_lut[(byte0 >> 6) & 0x3],
+                sign_lut[(byte1 >> 0) & 0x3], sign_lut[(byte1 >> 2) & 0x3],
+                sign_lut[(byte1 >> 4) & 0x3], sign_lut[(byte1 >> 6) & 0x3],
             };
-
             sum_vec += in_vec * signs;
             col += 8;
         }
 
         sum_scalar = @reduce(.Add, sum_vec);
 
-        // Scalar tail
         while (col < cols) : (col += 1) {
             const byte_idx = row_start + col / 4;
             if (byte_idx >= ctx.weights.len) break;
-
             const shift: u3 = @intCast((col % 4) * 2);
             const trit = (ctx.weights[byte_idx] >> shift) & 0x3;
             sum_scalar += ctx.input[col] * sign_lut[trit];
@@ -207,6 +279,8 @@ fn ternaryWorker(ctx: *const ParallelTernaryContext, chunk: WorkChunk) void {
 
         ctx.output[row] = sum_scalar * ctx.scale;
     }
+
+    _ = num_rows;
 }
 
 /// Minimum rows to justify parallelization overhead
@@ -221,9 +295,9 @@ pub fn parallelTernaryMatmul(
     cols: usize,
     scale: f32,
 ) void {
-    // For small matrices, use single-threaded SIMD (faster due to no thread overhead)
+    // For small matrices, use single-threaded batch SIMD (fastest)
     if (rows < MIN_PARALLEL_ROWS) {
-        ternary.simd16TernaryMatVec(output, weights, input, rows, cols);
+        ternary.batchTernaryMatVec(output, weights, input, rows, cols);
         for (output) |*o| o.* *= scale;
         return;
     }
