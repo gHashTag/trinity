@@ -75,7 +75,7 @@ Where:
 | OPT-T01 | Ternary Weight Quantization | 20x | 10x | ✅ Implemented |
 | OPT-T02 | Ternary Matrix Multiplication | N/A | 10x | ✅ Implemented |
 | OPT-T03 | Ternary KV Cache | 16x | 1.5x | ✅ Implemented |
-| OPT-T04 | Ternary Attention | 20x | 5-10x | 📋 Planned |
+| OPT-T04 | Ternary Attention | 16x | 1.5x | ✅ Implemented |
 | OPT-T05 | Ternary Embeddings | 20x | 2x | 📋 Planned |
 | OPT-T06 | Ternary Normalization | 20x | 3x | 📋 Planned |
 
@@ -213,6 +213,70 @@ Where:
 - [ ] CORE-004: JIT Compilation
 - [ ] HW-001: GPU Backend (CUDA)
 - [ ] HW-002: Metal Backend (Apple)
+
+---
+
+## Ternary Attention (OPT-T04)
+
+**Status**: ✅ Implemented
+
+### Implementation Details
+
+| Component | File | Description |
+|-----------|------|-------------|
+| ternaryAttentionHead | `flash_attention.zig` | Single head ternary attention |
+| ternaryAttentionGQA | `flash_attention.zig` | Multi-head with GQA support |
+| onlineTernaryAttention | `flash_attention.zig` | Tiled with online softmax |
+| softmaxInPlace | `flash_attention.zig` | In-place softmax |
+
+### Algorithm
+
+```
+For each query head h:
+  kv_h = h / kv_group_size  # GQA mapping
+  
+  # Compute scores using ternary dot product (NO K dequantization!)
+  for t in 0..seq_len:
+    scores[t] = cache.simdTernaryDot(q_head, t, kv_h) * scale
+  
+  # Softmax (scores are f32)
+  softmax(scores)
+  
+  # Weighted sum with on-the-fly V dequantization
+  output = zeros(head_dim)
+  for t in 0..seq_len:
+    if scores[t] < 1e-6: continue  # Skip near-zero
+    v = cache.dequantizeV(t, kv_h)
+    output += scores[t] * v
+```
+
+### Key Optimizations
+
+1. **No K dequantization**: `simdTernaryDot` computes Q @ K directly from packed trits
+2. **Lazy V dequantization**: Only dequantize V when weight > threshold
+3. **SIMD weighted sum**: 8 floats per iteration
+4. **Online softmax variant**: Tiled processing for long sequences
+
+### Accuracy Test Results
+
+```
+Test: ternary_vs_f32_attention_accuracy
+Config: 4 heads, 32 head_dim, 16 tokens
+Result: cosine_similarity > 0.7 ✅
+```
+
+### Test Results
+
+```
+All 15 tests passed:
+- online_softmax_basic
+- simd_dot
+- flash_vs_standard_attention
+- ternary_attention_basic ✅ NEW
+- ternary_vs_f32_attention_accuracy ✅ NEW
+- online_ternary_attention ✅ NEW
+- ... (9 KV cache tests)
+```
 
 ---
 
