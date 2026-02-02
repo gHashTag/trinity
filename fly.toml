@@ -11,22 +11,22 @@ primary_region = "iad"
   dockerfile = "Dockerfile"
 
 [env]
-  MODEL_PATH = "/app/models/smollm-135m-instruct-q8_0.gguf"
+  MODEL_PATH = "/app/models/smollm2-1.7b-instruct-q8_0.gguf"
   TEMPERATURE = "0.7"
   TOP_P = "0.9"
-  NUM_THREADS = "16"
+  NUM_THREADS = "4"
 
-# MAXIMUM CPU: performance-16x = 16 dedicated CPU cores, 32GB RAM
-# For benchmark testing multi-threaded inference
+# SmolLM2-1.7B requires more RAM (~4GB for model + buffers)
+# performance-4x: 4 dedicated CPU cores, 8GB RAM
 [[vm]]
-  size = "performance-16x"
-  memory = "32gb"
-  cpus = 16
+  size = "performance-4x"
+  memory = "8gb"
+  cpus = 4
 
 # Alternative sizes:
-# performance-8x: 8 CPU, 16GB RAM
-# performance-4x: 4 CPU, 8GB RAM
-# shared-cpu-8x: 8 shared CPU, 16GB RAM
+# performance-8x: 8 CPU, 16GB RAM (faster, more expensive)
+# performance-16x: 16 CPU, 32GB RAM (maximum speed)
+# shared-cpu-4x: 4 shared CPU, 8GB RAM (cheaper)
 
 # Persistent volume for models
 # [[mounts]]
@@ -42,8 +42,8 @@ primary_region = "iad"
   min_machines_running = 0
 
 [[http_service.checks]]
-  grace_period = "120s"
+  grace_period = "180s"  # SmolLM2-1.7B needs ~30-60s to load
   interval = "30s"
   method = "GET"
   path = "/health"
-  timeout = "15s"
+  timeout = "30s"
