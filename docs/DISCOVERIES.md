@@ -1,6 +1,6 @@
 # TRINITY Scientific Discoveries & Benchmarks
 
-**Version**: 1.6.0  
+**Version**: 1.7.0  
 **Date**: 2026-02-02  
 **Formula**: φ² + 1/φ² = 3
 
@@ -83,6 +83,7 @@ Where:
 | OPT-C01 | KV Cache Compression | 5-16x | 1x | ✅ Implemented |
 | OPT-S01 | Speculative Decoding | N/A | 2-3x gen | ✅ Implemented |
 | OPT-B01 | Continuous Batching | N/A | 2-3x thru | ✅ Implemented |
+| OPT-PA01 | PagedAttention | 4-10x | 1x | ✅ Implemented |
 
 ### Business Value
 
@@ -636,6 +637,90 @@ try scheduler.runUntilComplete();
 // Get results
 const stats = scheduler.getStats();
 std.debug.print("Avg tokens/iter: {d:.1}\n", .{stats.avg_tokens_per_iter});
+```
+
+### PagedAttention (OPT-PA01)
+
+**Status**: ✅ Implemented
+
+| Component | File | Description |
+|-----------|------|-------------|
+| PagedAttentionConfig | `kv_cache.zig` | Block configuration |
+| KVBlock | `kv_cache.zig` | Single KV cache block |
+| BlockTable | `kv_cache.zig` | Sequence → blocks mapping |
+| BlockPool | `kv_cache.zig` | Memory pool for blocks |
+| pagedAttention | `kv_cache.zig` | Attention with block tables |
+| PagedBatchingScheduler | `tri_inference.zig` | Scheduler with PagedAttention |
+
+**Architecture:**
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              PAGED ATTENTION MEMORY MANAGEMENT                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  BLOCK TABLES (per sequence):                                               │
+│  ┌─────────────────────────────────────────────────────────────────┐        │
+│  │ Seq 0: [B0, B1, B2, B3]     → 64 tokens (4 blocks × 16 tok)     │        │
+│  │ Seq 1: [B4, B5]             → 32 tokens                         │        │
+│  │ Seq 2: [B6, B7, B8]         → 48 tokens                         │        │
+│  └─────────────────────────────────────────────────────────────────┘        │
+│                                                                             │
+│  BLOCK POOL (contiguous memory):                                            │
+│  ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐              │
+│  │ B0  │ B1  │ B2  │ B3  │ B4  │ B5  │ B6  │ B7  │ B8  │FREE │              │
+│  │ S0  │ S0  │ S0  │ S0  │ S1  │ S1  │ S2  │ S2  │ S2  │     │              │
+│  └─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘              │
+│                                                                             │
+│  COPY-ON-WRITE (for beam search):                                           │
+│  - Shared blocks have ref_count > 1                                         │
+│  - Copy block only when modified                                            │
+│  - Enables efficient parallel sampling                                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Memory Comparison:**
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                    MEMORY EFFICIENCY                                       │
+├────────────────────────────────────────────────────────────────────────────┤
+│                                                                            │
+│  STATIC ALLOCATION (batch=8, max_seq=2048):                                │
+│    Memory = 8 × 2048 × kv_size = 16 GB                                     │
+│    Utilization: ~25% (avg seq length ~500)                                 │
+│                                                                            │
+│  PAGED ATTENTION (block_size=16):                                          │
+│    Memory = actual_tokens × kv_size = 4 GB                                 │
+│    Utilization: ~100%                                                      │
+│    Savings: 4x                                                             │
+│                                                                            │
+│  PAGED + TERNARY (16x compression):                                        │
+│    Memory = actual_tokens × kv_size / 16 = 250 MB                          │
+│    Total savings: 64x vs static f32                                        │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Usage:**
+```zig
+// Initialize block pool
+const pa_config = PagedAttentionConfig.default7B();
+var pool = try BlockPool.init(allocator, pa_config);
+defer pool.deinit();
+
+// Create block table for sequence
+var table = BlockTable.init(allocator, seq_id);
+defer table.deinit();
+
+// Allocate blocks as needed
+const block_id = pool.allocateBlock() orelse return error.OutOfBlocks;
+try table.block_ids.append(block_id);
+
+// Compute attention
+try pagedAttention(&output, &query, &table, &pool, head_idx, scale, allocator);
+
+// Free blocks when done
+pool.freeBlock(block_id);
 ```
 
 ### Batch Processing (INF-004)

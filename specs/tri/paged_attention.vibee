@@ -1,0 +1,248 @@
+# paged_attention.vibee
+# PagedAttention for efficient KV cache memory management
+# vLLM-style block-based memory allocation
+# φ² + 1/φ² = 3 = TRINITY
+
+name: paged_attention
+version: "1.0.0"
+language: zig
+module: paged_attention
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  BlockConfig:
+    description: "Configuration for paged attention blocks"
+    fields:
+      block_size: Int           # Tokens per block (default: 16)
+      num_heads: Int            # Number of attention heads
+      head_dim: Int             # Dimension per head
+      num_layers: Int           # Number of transformer layers
+      max_blocks: Int           # Maximum blocks in pool
+      use_ternary: Bool         # Use ternary quantization for blocks
+
+  KVBlock:
+    description: "Single KV cache block"
+    fields:
+      block_id: Int             # Unique block identifier
+      ref_count: Int            # Reference count for copy-on-write
+      k_cache: List<Float>      # Key cache [block_size × head_dim]
+      v_cache: List<Float>      # Value cache [block_size × head_dim]
+      num_tokens: Int           # Actual tokens stored (0 to block_size)
+
+  TernaryKVBlock:
+    description: "Ternary-quantized KV block (16x memory reduction)"
+    fields:
+      block_id: Int
+      ref_count: Int
+      k_packed: List<u8>        # Packed ternary keys
+      v_packed: List<u8>        # Packed ternary values
+      k_scale: Float            # Dequantization scale for K
+      v_scale: Float            # Dequantization scale for V
+      num_tokens: Int
+
+  BlockTable:
+    description: "Mapping from sequence positions to blocks"
+    fields:
+      seq_id: Int               # Sequence identifier
+      block_ids: List<Int>      # List of block IDs for this sequence
+      num_tokens: Int           # Total tokens in sequence
+
+  BlockPool:
+    description: "Memory pool for KV cache blocks"
+    fields:
+      config: BlockConfig
+      blocks: List<KVBlock>     # All allocated blocks
+      free_list: List<Int>      # Free block indices
+      num_allocated: Int        # Currently allocated blocks
+      num_free: Int             # Available blocks
+
+  PagedAttentionStats:
+    description: "Statistics for monitoring"
+    fields:
+      total_blocks: Int
+      allocated_blocks: Int
+      free_blocks: Int
+      memory_used_bytes: Int
+      memory_total_bytes: Int
+      utilization_percent: Float
+      cow_copies: Int           # Copy-on-write operations
+      evictions: Int            # Block evictions
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: init_pool
+    given: BlockConfig
+    when: initializing memory pool
+    then: allocates block pool with max_blocks capacity
+
+  - name: allocate_block
+    given: block pool
+    when: new block needed
+    then: returns free block or null if pool exhausted
+
+  - name: free_block
+    given: block pool, block_id
+    when: block no longer needed
+    then: decrements ref_count, adds to free list if zero
+
+  - name: create_block_table
+    given: sequence_id
+    when: new sequence starts
+    then: creates empty block table for sequence
+
+  - name: append_token
+    given: block_table, k_vector, v_vector
+    when: adding new token to sequence
+    then: appends to current block or allocates new block
+
+  - name: paged_attention
+    given: query, block_table, block_pool
+    when: computing attention
+    then: gathers K/V from blocks, computes attention output
+
+  - name: copy_on_write
+    given: block_table, position
+    when: modifying shared block
+    then: copies block if ref_count > 1, updates block_table
+
+  - name: get_stats
+    given: block pool
+    when: monitoring requested
+    then: returns PagedAttentionStats
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ALGORITHM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# PagedAttention Algorithm:
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │                    PAGED ATTENTION                                          │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  MEMORY LAYOUT:                                                             │
+# │                                                                             │
+# │  Block Pool (contiguous memory):                                            │
+# │  ┌─────────────────────────────────────────────────────────────────────┐    │
+# │  │ Block 0 │ Block 1 │ Block 2 │ Block 3 │ ... │ Block N │             │    │
+# │  │ [K][V]  │ [K][V]  │ [K][V]  │ [K][V]  │     │ [K][V]  │             │    │
+# │  └─────────────────────────────────────────────────────────────────────┘    │
+# │                                                                             │
+# │  Block Tables (per sequence):                                               │
+# │  ┌─────────────────────────────────────────────────────────────────────┐    │
+# │  │ Seq 0: [2, 5, 8]      → tokens 0-47 in blocks 2, 5, 8               │    │
+# │  │ Seq 1: [1, 3]         → tokens 0-31 in blocks 1, 3                  │    │
+# │  │ Seq 2: [0, 4, 6, 7]   → tokens 0-63 in blocks 0, 4, 6, 7            │    │
+# │  └─────────────────────────────────────────────────────────────────────┘    │
+# │                                                                             │
+# │  ATTENTION COMPUTATION:                                                     │
+# │                                                                             │
+# │  For each query position:                                                   │
+# │    1. Look up block_table for sequence                                      │
+# │    2. For each block in block_table:                                        │
+# │       a. Load K, V from block                                               │
+# │       b. Compute Q @ K^T for this block                                     │
+# │       c. Accumulate softmax numerator and denominator                       │
+# │    3. Normalize and compute output                                          │
+# │                                                                             │
+# │  COPY-ON-WRITE (for beam search / parallel sampling):                       │
+# │                                                                             │
+# │  Before:                                                                    │
+# │  ┌─────────────────────────────────────────────────────────────────────┐    │
+# │  │ Seq 0: [2, 5, 8]  ref_count: [1, 2, 1]                              │    │
+# │  │ Seq 1: [1, 5]     (shares block 5 with Seq 0)                       │    │
+# │  └─────────────────────────────────────────────────────────────────────┘    │
+# │                                                                             │
+# │  After write to Seq 1, block 5:                                             │
+# │  ┌─────────────────────────────────────────────────────────────────────┐    │
+# │  │ Seq 0: [2, 5, 8]  ref_count: [1, 1, 1]                              │    │
+# │  │ Seq 1: [1, 9]     (block 5 copied to new block 9)                   │    │
+# │  └─────────────────────────────────────────────────────────────────────┘    │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MEMORY ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Memory Comparison (7B model, 32 heads, 128 head_dim, 32 layers):
+#
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │                    MEMORY ANALYSIS                                         │
+# ├────────────────────────────────────────────────────────────────────────────┤
+# │                                                                            │
+# │  Per-token KV cache size:                                                  │
+# │    K: 32 heads × 128 dim × 4 bytes = 16 KB                                 │
+# │    V: 32 heads × 128 dim × 4 bytes = 16 KB                                 │
+# │    Total per token per layer: 32 KB                                        │
+# │    Total per token (32 layers): 1 MB                                       │
+# │                                                                            │
+# │  STATIC ALLOCATION (batch=8, max_seq=2048):                                │
+# │    Memory = 8 × 2048 × 1 MB = 16 GB                                        │
+# │    Utilization: ~25% (avg seq length ~500)                                 │
+# │    Wasted: ~12 GB                                                          │
+# │                                                                            │
+# │  PAGED ATTENTION (block_size=16):                                          │
+# │    Memory = actual_tokens × 1 MB                                           │
+# │    For 8 sequences × 500 avg tokens = 4 GB                                 │
+# │    Utilization: ~100%                                                      │
+# │    Savings: 4x (12 GB saved)                                               │
+# │                                                                            │
+# │  PAGED + TERNARY (16x compression):                                        │
+# │    Memory = actual_tokens × 62.5 KB                                        │
+# │    For 8 sequences × 500 avg tokens = 250 MB                               │
+# │    Total savings: 64x vs static allocation                                 │
+# │                                                                            │
+# └────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Integration with ContinuousBatching:
+#
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │                    SCHEDULER + PAGED ATTENTION                             │
+# ├────────────────────────────────────────────────────────────────────────────┤
+# │                                                                            │
+# │  1. Request arrives → create block_table                                   │
+# │  2. Prefill phase → allocate blocks for prompt                             │
+# │  3. Generation phase → allocate new block when current full                │
+# │  4. Completion → free all blocks in block_table                            │
+# │  5. Preemption → swap blocks to CPU, free GPU blocks                       │
+# │  6. Resume → swap blocks back to GPU                                       │
+# │                                                                            │
+# │  Memory pressure handling:                                                 │
+# │  - If pool exhausted, preempt lowest priority sequence                     │
+# │  - Swap KV cache to CPU memory                                             │
+# │  - Resume when blocks available                                            │
+# │                                                                            │
+# └────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMPETITOR COMPARISON
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# vs vLLM:
+#   - vLLM: Python + CUDA, GPU-only
+#   - Trinity: Pure Zig, CPU-first, GPU-optional
+#   - Both use PagedAttention algorithm
+#   - Trinity adds ternary quantization (16x extra compression)
+#
+# vs TensorRT-LLM:
+#   - TRT-LLM: NVIDIA-only, complex setup
+#   - Trinity: Cross-platform, single binary
+#   - TRT-LLM: Better GPU utilization
+#   - Trinity: Better memory efficiency with ternary
+#
+# vs llama.cpp:
+#   - llama.cpp: Static KV cache allocation
+#   - Trinity: Dynamic paged allocation
+#   - Trinity: 4x better memory utilization
+#   - llama.cpp: More mature, wider model support

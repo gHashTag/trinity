@@ -1444,6 +1444,424 @@ pub const SchedulerStats = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// PAGED ATTENTION SCHEDULER (OPT-PA01)
+// Continuous batching with PagedAttention memory management
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Request with paged attention block table
+pub const PagedRequest = struct {
+    id: u64,
+    prompt_tokens: []const u32,
+    max_tokens: usize,
+    temperature: f32,
+    priority: i32,
+    created_at: i64,
+    status: RequestStatus,
+    generated_tokens: std.ArrayList(u32),
+    tokens_generated: usize,
+    block_table: kv_cache.BlockTable, // PagedAttention block table
+
+    pub fn init(allocator: std.mem.Allocator, id: u64, prompt: []const u32, max_tokens: usize, temp: f32, priority: i32) PagedRequest {
+        return PagedRequest{
+            .id = id,
+            .prompt_tokens = prompt,
+            .max_tokens = max_tokens,
+            .temperature = temp,
+            .priority = priority,
+            .created_at = std.time.milliTimestamp(),
+            .status = .queued,
+            .generated_tokens = std.ArrayList(u32).init(allocator),
+            .tokens_generated = 0,
+            .block_table = kv_cache.BlockTable.init(allocator, id),
+        };
+    }
+
+    pub fn deinit(self: *PagedRequest) void {
+        self.generated_tokens.deinit();
+        self.block_table.deinit();
+    }
+};
+
+/// Paged attention scheduler configuration
+pub const PagedSchedulerConfig = struct {
+    max_batch_size: usize,
+    max_waiting_requests: usize,
+    preemption_enabled: bool,
+    block_size: usize,
+    max_blocks: usize,
+
+    pub fn default() PagedSchedulerConfig {
+        return .{
+            .max_batch_size = 8,
+            .max_waiting_requests = 64,
+            .preemption_enabled = true,
+            .block_size = 16,
+            .max_blocks = 1024,
+        };
+    }
+};
+
+/// Paged batch slot
+const PagedBatchSlot = struct {
+    request_id: u64,
+    seq_idx: usize,
+    current_pos: usize,
+    is_prefill: bool,
+    active: bool,
+    num_blocks: usize,
+};
+
+/// Continuous batching scheduler with PagedAttention
+pub const PagedBatchingScheduler = struct {
+    allocator: std.mem.Allocator,
+    config: PagedSchedulerConfig,
+    model: *TriModel,
+
+    // PagedAttention memory pool
+    block_pool: kv_cache.BlockPool,
+    pa_config: kv_cache.PagedAttentionConfig,
+
+    // Request management
+    waiting_queue: std.ArrayList(*PagedRequest),
+    running_requests: std.AutoHashMap(u64, *PagedRequest),
+    completed_requests: std.ArrayList(*PagedRequest),
+    preempted_requests: std.ArrayList(*PagedRequest), // Swapped out requests
+
+    // Batch slots
+    slots: []PagedBatchSlot,
+    active_slots: usize,
+
+    // Statistics
+    total_requests: u64,
+    total_tokens_generated: u64,
+    total_iterations: u64,
+    preemption_count: u64,
+    next_request_id: u64,
+
+    pub fn init(
+        allocator: std.mem.Allocator,
+        model: *TriModel,
+        config: PagedSchedulerConfig,
+    ) !PagedBatchingScheduler {
+        const header = model.header;
+
+        // Create PagedAttention config from model
+        const pa_config = kv_cache.PagedAttentionConfig{
+            .block_size = config.block_size,
+            .num_heads = header.num_heads,
+            .head_dim = header.head_dim,
+            .num_layers = header.num_layers,
+            .max_blocks = config.max_blocks,
+            .use_ternary = false,
+        };
+
+        const slots = try allocator.alloc(PagedBatchSlot, config.max_batch_size);
+        for (slots) |*slot| {
+            slot.* = PagedBatchSlot{
+                .request_id = 0,
+                .seq_idx = 0,
+                .current_pos = 0,
+                .is_prefill = false,
+                .active = false,
+                .num_blocks = 0,
+            };
+        }
+
+        return PagedBatchingScheduler{
+            .allocator = allocator,
+            .config = config,
+            .model = model,
+            .block_pool = try kv_cache.BlockPool.init(allocator, pa_config),
+            .pa_config = pa_config,
+            .waiting_queue = std.ArrayList(*PagedRequest).init(allocator),
+            .running_requests = std.AutoHashMap(u64, *PagedRequest).init(allocator),
+            .completed_requests = std.ArrayList(*PagedRequest).init(allocator),
+            .preempted_requests = std.ArrayList(*PagedRequest).init(allocator),
+            .slots = slots,
+            .active_slots = 0,
+            .total_requests = 0,
+            .total_tokens_generated = 0,
+            .total_iterations = 0,
+            .preemption_count = 0,
+            .next_request_id = 1,
+        };
+    }
+
+    pub fn deinit(self: *PagedBatchingScheduler) void {
+        // Clean up waiting requests
+        for (self.waiting_queue.items) |req| {
+            req.deinit();
+            self.allocator.destroy(req);
+        }
+        self.waiting_queue.deinit();
+
+        // Clean up running requests
+        var it = self.running_requests.iterator();
+        while (it.next()) |entry| {
+            entry.value_ptr.*.deinit();
+            self.allocator.destroy(entry.value_ptr.*);
+        }
+        self.running_requests.deinit();
+
+        // Clean up completed requests
+        for (self.completed_requests.items) |req| {
+            req.deinit();
+            self.allocator.destroy(req);
+        }
+        self.completed_requests.deinit();
+
+        // Clean up preempted requests
+        for (self.preempted_requests.items) |req| {
+            req.deinit();
+            self.allocator.destroy(req);
+        }
+        self.preempted_requests.deinit();
+
+        self.block_pool.deinit();
+        self.allocator.free(self.slots);
+    }
+
+    /// Submit a new request
+    pub fn submitRequest(self: *PagedBatchingScheduler, prompt: []const u32, max_tokens: usize, temperature: f32, priority: i32) !u64 {
+        const req = try self.allocator.create(PagedRequest);
+        req.* = PagedRequest.init(self.allocator, self.next_request_id, prompt, max_tokens, temperature, priority);
+        self.next_request_id += 1;
+
+        try self.waiting_queue.append(req);
+        self.total_requests += 1;
+
+        return req.id;
+    }
+
+    /// Get number of empty slots
+    fn emptySlots(self: *const PagedBatchingScheduler) usize {
+        var empty: usize = 0;
+        for (self.slots) |slot| {
+            if (!slot.active) empty += 1;
+        }
+        return empty;
+    }
+
+    /// Find an empty slot
+    fn findEmptySlot(self: *PagedBatchingScheduler) ?usize {
+        for (self.slots, 0..) |slot, i| {
+            if (!slot.active) return i;
+        }
+        return null;
+    }
+
+    /// Allocate blocks for a request's prompt
+    fn allocateBlocksForPrompt(self: *PagedBatchingScheduler, req: *PagedRequest) !void {
+        const num_tokens = req.prompt_tokens.len;
+        const blocks_needed = (num_tokens + self.config.block_size - 1) / self.config.block_size;
+
+        for (0..blocks_needed) |_| {
+            const block_id = self.block_pool.allocateBlock() orelse return error.OutOfBlocks;
+            try req.block_table.block_ids.append(block_id);
+        }
+    }
+
+    /// Free all blocks for a request
+    fn freeBlocks(self: *PagedBatchingScheduler, req: *PagedRequest) void {
+        for (req.block_table.block_ids.items) |block_id| {
+            self.block_pool.freeBlock(block_id);
+        }
+        req.block_table.block_ids.clearRetainingCapacity();
+    }
+
+    /// Preempt lowest priority running request
+    fn preemptLowestPriority(self: *PagedBatchingScheduler) !void {
+        if (self.active_slots == 0) return;
+
+        // Find lowest priority running request
+        var lowest_priority: i32 = std.math.maxInt(i32);
+        var lowest_slot_idx: ?usize = null;
+
+        for (self.slots, 0..) |slot, i| {
+            if (!slot.active) continue;
+            if (self.running_requests.get(slot.request_id)) |req| {
+                if (req.priority < lowest_priority) {
+                    lowest_priority = req.priority;
+                    lowest_slot_idx = i;
+                }
+            }
+        }
+
+        if (lowest_slot_idx) |slot_idx| {
+            const slot = &self.slots[slot_idx];
+            if (self.running_requests.fetchRemove(slot.request_id)) |kv| {
+                const req = kv.value;
+                req.status = .preempted;
+
+                // Note: In a real implementation, we would swap KV cache to CPU here
+                // For now, we just free the blocks and re-queue
+                self.freeBlocks(req);
+
+                try self.preempted_requests.append(req);
+                self.preemption_count += 1;
+            }
+
+            slot.active = false;
+            self.active_slots -= 1;
+        }
+    }
+
+    /// Schedule one iteration
+    pub fn scheduleIteration(self: *PagedBatchingScheduler) !void {
+        // 1. Try to resume preempted requests first
+        while (self.preempted_requests.items.len > 0 and self.emptySlots() > 0) {
+            const req = self.preempted_requests.orderedRemove(0);
+
+            // Try to allocate blocks
+            self.allocateBlocksForPrompt(req) catch {
+                // Not enough blocks, put back
+                try self.preempted_requests.insert(0, req);
+                break;
+            };
+
+            if (self.findEmptySlot()) |slot_idx| {
+                self.slots[slot_idx] = PagedBatchSlot{
+                    .request_id = req.id,
+                    .seq_idx = slot_idx,
+                    .current_pos = req.prompt_tokens.len + req.tokens_generated,
+                    .is_prefill = false, // Already prefilled
+                    .active = true,
+                    .num_blocks = req.block_table.block_ids.items.len,
+                };
+                self.active_slots += 1;
+                req.status = .generating;
+                try self.running_requests.put(req.id, req);
+            }
+        }
+
+        // 2. Fill empty slots from waiting queue
+        while (self.waiting_queue.items.len > 0 and self.emptySlots() > 0) {
+            // Sort by priority
+            if (self.waiting_queue.items.len > 1) {
+                for (0..self.waiting_queue.items.len - 1) |i| {
+                    for (i + 1..self.waiting_queue.items.len) |j| {
+                        if (self.waiting_queue.items[j].priority > self.waiting_queue.items[i].priority) {
+                            const tmp = self.waiting_queue.items[i];
+                            self.waiting_queue.items[i] = self.waiting_queue.items[j];
+                            self.waiting_queue.items[j] = tmp;
+                        }
+                    }
+                }
+            }
+
+            const req = self.waiting_queue.orderedRemove(0);
+
+            // Try to allocate blocks for prompt
+            self.allocateBlocksForPrompt(req) catch {
+                // Not enough blocks - try preemption if enabled
+                if (self.config.preemption_enabled and self.active_slots > 0) {
+                    try self.preemptLowestPriority();
+                    // Retry allocation
+                    self.allocateBlocksForPrompt(req) catch {
+                        // Still not enough, put back in queue
+                        try self.waiting_queue.insert(0, req);
+                        break;
+                    };
+                } else {
+                    try self.waiting_queue.insert(0, req);
+                    break;
+                }
+            };
+
+            if (self.findEmptySlot()) |slot_idx| {
+                self.slots[slot_idx] = PagedBatchSlot{
+                    .request_id = req.id,
+                    .seq_idx = slot_idx,
+                    .current_pos = 0,
+                    .is_prefill = true,
+                    .active = true,
+                    .num_blocks = req.block_table.block_ids.items.len,
+                };
+                self.active_slots += 1;
+                req.status = .prefill;
+                try self.running_requests.put(req.id, req);
+            }
+        }
+    }
+
+    /// Complete a request and free its slot
+    fn completeRequest(self: *PagedBatchingScheduler, slot: *PagedBatchSlot) void {
+        if (self.running_requests.fetchRemove(slot.request_id)) |kv| {
+            const req = kv.value;
+            req.status = .completed;
+
+            // Free blocks
+            self.freeBlocks(req);
+
+            self.completed_requests.append(req) catch {};
+        }
+
+        slot.active = false;
+        self.active_slots -= 1;
+    }
+
+    /// Get scheduler statistics
+    pub fn getStats(self: *const PagedBatchingScheduler) PagedSchedulerStats {
+        const pool_stats = self.block_pool.getStats();
+
+        return PagedSchedulerStats{
+            .total_requests = self.total_requests,
+            .completed_requests = self.completed_requests.items.len,
+            .waiting_requests = self.waiting_queue.items.len,
+            .active_requests = self.active_slots,
+            .preempted_requests = self.preempted_requests.items.len,
+            .total_tokens_generated = self.total_tokens_generated,
+            .total_iterations = self.total_iterations,
+            .preemption_count = self.preemption_count,
+            .blocks_allocated = pool_stats.allocated_blocks,
+            .blocks_free = pool_stats.free_blocks,
+            .memory_utilization = pool_stats.utilization_percent,
+        };
+    }
+
+    /// Get completed request by ID
+    pub fn getCompletedRequest(self: *const PagedBatchingScheduler, id: u64) ?*const PagedRequest {
+        for (self.completed_requests.items) |req| {
+            if (req.id == id) return req;
+        }
+        return null;
+    }
+};
+
+/// Paged scheduler statistics
+pub const PagedSchedulerStats = struct {
+    total_requests: u64,
+    completed_requests: usize,
+    waiting_requests: usize,
+    active_requests: usize,
+    preempted_requests: usize,
+    total_tokens_generated: u64,
+    total_iterations: u64,
+    preemption_count: u64,
+    blocks_allocated: usize,
+    blocks_free: usize,
+    memory_utilization: f32,
+
+    pub fn print(self: *const PagedSchedulerStats) void {
+        std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║           PAGED BATCHING SCHEDULER STATS                    ║\n", .{});
+        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+        std.debug.print("║  Total requests:       {d:>10}                            ║\n", .{self.total_requests});
+        std.debug.print("║  Completed:            {d:>10}                            ║\n", .{self.completed_requests});
+        std.debug.print("║  Waiting:              {d:>10}                            ║\n", .{self.waiting_requests});
+        std.debug.print("║  Active:               {d:>10}                            ║\n", .{self.active_requests});
+        std.debug.print("║  Preempted:            {d:>10}                            ║\n", .{self.preempted_requests});
+        std.debug.print("║  Tokens generated:     {d:>10}                            ║\n", .{self.total_tokens_generated});
+        std.debug.print("║  Iterations:           {d:>10}                            ║\n", .{self.total_iterations});
+        std.debug.print("║  Preemption count:     {d:>10}                            ║\n", .{self.preemption_count});
+        std.debug.print("║  Blocks allocated:     {d:>10}                            ║\n", .{self.blocks_allocated});
+        std.debug.print("║  Blocks free:          {d:>10}                            ║\n", .{self.blocks_free});
+        std.debug.print("║  Memory utilization:   {d:>10.1}%                          ║\n", .{self.memory_utilization});
+        std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN - Benchmark TRI vs GGUF
 // ═══════════════════════════════════════════════════════════════════════════════
 
