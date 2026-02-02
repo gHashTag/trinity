@@ -294,6 +294,7 @@ Dequantization and SIMD are fast - the bottleneck is FILE READ.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.5.0 | 2026-02-02 | Batch metrics & throughput tracking (INF-004) |
 | v1.4.0 | 2026-02-02 | Fly.io Volumes - **43x faster load (208s→4.8s)** |
 | v1.3.0 | 2026-02-02 | Load profiling - found I/O bottleneck |
 | v1.2.0 | 2026-02-02 | Parallel dequantization (OPT-003) |
@@ -301,6 +302,39 @@ Dequantization and SIMD are fast - the bottleneck is FILE READ.
 | v1.0.0 | 2026-02-02 | Initial Fly.io deployment |
 | v0.9.0 | 2026-02-01 | GGUF parser complete |
 | v0.8.0 | 2026-01-30 | HTTP server added |
+
+---
+
+## Batch Processing Metrics (INF-004)
+
+**Status**: ✅ Phase 1 Implemented (Metrics)
+
+### Implementation
+
+- Added `BatchMetrics` struct with atomic counters
+- Tracks: total_requests, active_requests, total_tokens, throughput
+- Metrics exposed via `/` endpoint (server info)
+- Per-request logging with throughput stats
+
+### Metrics Available
+
+```json
+{
+  "metrics": {
+    "total_requests": 100,
+    "active_requests": 1,
+    "total_tokens": 2000,
+    "throughput_tok_s": 1.43
+  }
+}
+```
+
+### Future Work (Phase 2)
+
+- True batch inference (multiple prompts in parallel)
+- Request queue with batching timeout
+- Shared KV cache for batch
+- Estimated improvement: +300% throughput
 
 ---
 

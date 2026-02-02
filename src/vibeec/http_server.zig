@@ -15,6 +15,35 @@ const Tokenizer = tokenizer_mod.Tokenizer;
 const SamplingParams = inference.SamplingParams;
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// BATCH PROCESSING METRICS (INF-004)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const BatchMetrics = struct {
+    total_requests: std.atomic.Value(u64) = std.atomic.Value(u64).init(0),
+    active_requests: std.atomic.Value(u32) = std.atomic.Value(u32).init(0),
+    total_tokens_generated: std.atomic.Value(u64) = std.atomic.Value(u64).init(0),
+    total_inference_time_ns: std.atomic.Value(u64) = std.atomic.Value(u64).init(0),
+    
+    fn recordRequest(self: *BatchMetrics) void {
+        _ = self.total_requests.fetchAdd(1, .monotonic);
+        _ = self.active_requests.fetchAdd(1, .monotonic);
+    }
+    
+    fn completeRequest(self: *BatchMetrics, tokens: u64, time_ns: u64) void {
+        _ = self.active_requests.fetchSub(1, .monotonic);
+        _ = self.total_tokens_generated.fetchAdd(tokens, .monotonic);
+        _ = self.total_inference_time_ns.fetchAdd(time_ns, .monotonic);
+    }
+    
+    fn getThroughput(self: *BatchMetrics) f64 {
+        const tokens = self.total_tokens_generated.load(.monotonic);
+        const time_ns = self.total_inference_time_ns.load(.monotonic);
+        if (time_ns == 0) return 0;
+        return @as(f64, @floatFromInt(tokens)) / (@as(f64, @floatFromInt(time_ns)) / 1e9);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // HTTP SERVER
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -22,6 +51,7 @@ pub const HttpServer = struct {
     allocator: Allocator,
     model_path: []const u8,
     port: u16,
+    metrics: BatchMetrics = .{},
 
     pub fn init(allocator: Allocator, model_path: []const u8, port: u16) HttpServer {
         return .{
@@ -154,10 +184,29 @@ pub const HttpServer = struct {
     }
 
     fn sendInfo(self: *HttpServer, connection: *std.net.Server.Connection) !void {
-        _ = self;
-        const body_str = "{\"name\":\"TRINITY LLM\",\"version\":\"1.0.0\",\"endpoints\":[\"/v1/chat/completions\",\"/health\"]}";
-        const response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 87\r\nConnection: close\r\n\r\n" ++ body_str;
-        try connection.stream.writeAll(response);
+        // Include metrics in info response (INF-004)
+        const total = self.metrics.total_requests.load(.monotonic);
+        const active = self.metrics.active_requests.load(.monotonic);
+        const throughput = self.metrics.getThroughput();
+        const total_tokens = self.metrics.total_tokens_generated.load(.monotonic);
+        
+        const body = std.fmt.allocPrint(self.allocator,
+            "{{\"name\":\"TRINITY LLM\",\"version\":\"1.4.0\",\"endpoints\":[\"/v1/chat/completions\",\"/health\",\"/metrics\"],\"metrics\":{{\"total_requests\":{d},\"active_requests\":{d},\"total_tokens\":{d},\"throughput_tok_s\":{d:.2}}}}}"
+        , .{ total, active, total_tokens, throughput }) catch {
+            const body_str = "{\"name\":\"TRINITY LLM\",\"version\":\"1.4.0\",\"endpoints\":[\"/v1/chat/completions\",\"/health\"]}";
+            const response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 85\r\nConnection: close\r\n\r\n" ++ body_str;
+            try connection.stream.writeAll(response);
+            return;
+        };
+        defer self.allocator.free(body);
+        
+        const header = std.fmt.allocPrint(self.allocator,
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
+        , .{body.len}) catch return;
+        defer self.allocator.free(header);
+        
+        try connection.stream.writeAll(header);
+        try connection.stream.writeAll(body);
     }
 
     fn sendCors(self: *HttpServer, connection: *std.net.Server.Connection) !void {
@@ -185,6 +234,9 @@ pub const HttpServer = struct {
     }
 
     fn handleChatCompletion(self: *HttpServer, connection: *std.net.Server.Connection, body: []const u8, model: *FullModel, tokenizer: *Tokenizer) !void {
+        // Record request for metrics (INF-004)
+        self.metrics.recordRequest();
+        
         // Check if streaming is requested
         const is_streaming = std.mem.indexOf(u8, body, "\"stream\":true") != null or 
                             std.mem.indexOf(u8, body, "\"stream\": true") != null;
@@ -280,9 +332,16 @@ pub const HttpServer = struct {
         const input_token_count = if (tokens) |toks| toks.len else 0;
         const tok_per_sec = if (gen_time_s > 0) @as(f64, @floatFromInt(generated_token_count)) / gen_time_s else 0;
 
+        // Update batch metrics (INF-004)
+        self.metrics.completeRequest(@intCast(generated_token_count), gen_time_ns);
+        const throughput = self.metrics.getThroughput();
+        const active = self.metrics.active_requests.load(.monotonic);
+        const total = self.metrics.total_requests.load(.monotonic);
+
         std.debug.print("  Response: {s}\n", .{response_text});
         std.debug.print("  Tokens: {d} input + {d} output = {d} total\n", .{ input_token_count, generated_token_count, input_token_count + generated_token_count });
-        std.debug.print("  Time: {d:.2}s | Speed: {d:.2} tok/s (generation only)\n", .{ gen_time_s, tok_per_sec });
+        std.debug.print("  Time: {d:.2}s | Speed: {d:.2} tok/s | Throughput: {d:.2} tok/s\n", .{ gen_time_s, tok_per_sec, throughput });
+        std.debug.print("  Requests: {d} total, {d} active\n", .{ total, active });
 
         // Escape JSON string
         var escaped = std.ArrayList(u8).init(self.allocator);
