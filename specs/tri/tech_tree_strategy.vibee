@@ -2,10 +2,11 @@
 # TRINITY TECHNOLOGY TREE & STRATEGY
 # Development roadmap with dependencies
 # φ² + 1/φ² = 3 = TRINITY
+# Updated: 2026-02-02 with all implemented optimizations
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: tech_tree_strategy
-version: "1.0.0"
+version: "2.0.0"
 language: zig
 module: tech_tree_strategy
 
@@ -299,6 +300,118 @@ tech_nodes:
     status: "locked"
     estimated_hours: 200
     priority: 4
+
+  # TERNARY BRANCH (NEW - 2026-02-02)
+  - id: "OPT-T01"
+    name: "Ternary Weight Quantization"
+    branch: "optimization"
+    complexity: 4
+    potential_gain: "20x weight compression"
+    dependencies: ["INF-001"]
+    status: "completed"
+    estimated_hours: 60
+    priority: 1
+
+  - id: "OPT-T02"
+    name: "Ternary Matrix Multiplication"
+    branch: "optimization"
+    complexity: 4
+    potential_gain: "10x matmul speedup (no multiply)"
+    dependencies: ["OPT-T01"]
+    status: "completed"
+    estimated_hours: 40
+    priority: 1
+
+  - id: "OPT-T03"
+    name: "Ternary KV Cache"
+    branch: "optimization"
+    complexity: 3
+    potential_gain: "16x KV cache compression"
+    dependencies: ["OPT-T01", "INF-003"]
+    status: "completed"
+    estimated_hours: 30
+    priority: 1
+
+  - id: "OPT-T07"
+    name: "Batch Ternary MatMul"
+    branch: "optimization"
+    complexity: 3
+    potential_gain: "2.28x matmul speedup"
+    dependencies: ["OPT-T02"]
+    status: "completed"
+    estimated_hours: 20
+    priority: 2
+
+  # SERVING BRANCH (NEW - 2026-02-02)
+  - id: "OPT-M01"
+    name: "Memory-Mapped Loading"
+    branch: "optimization"
+    complexity: 2
+    potential_gain: "30x faster model load"
+    dependencies: ["INF-001"]
+    status: "completed"
+    estimated_hours: 15
+    priority: 1
+
+  - id: "OPT-C01"
+    name: "KV Cache Compression"
+    branch: "optimization"
+    complexity: 3
+    potential_gain: "5-16x cache compression"
+    dependencies: ["INF-003"]
+    status: "completed"
+    estimated_hours: 25
+    priority: 2
+
+  - id: "OPT-S01"
+    name: "Speculative Decoding"
+    branch: "optimization"
+    complexity: 4
+    potential_gain: "2-3x generation speed"
+    dependencies: ["INF-002"]
+    status: "completed"
+    estimated_hours: 50
+    priority: 2
+
+  - id: "OPT-B01"
+    name: "Continuous Batching"
+    branch: "optimization"
+    complexity: 4
+    potential_gain: "2-3x throughput"
+    dependencies: ["INF-004"]
+    status: "completed"
+    estimated_hours: 60
+    priority: 1
+
+  - id: "OPT-PA01"
+    name: "PagedAttention"
+    branch: "optimization"
+    complexity: 4
+    potential_gain: "4-10x memory efficiency"
+    dependencies: ["OPT-B01"]
+    status: "completed"
+    estimated_hours: 50
+    priority: 1
+
+  - id: "OPT-PC01"
+    name: "Prefix Caching"
+    branch: "optimization"
+    complexity: 2
+    potential_gain: "99% prefill reduction for cached prompts"
+    dependencies: ["OPT-PA01"]
+    status: "in_progress"
+    estimated_hours: 20
+    priority: 1
+
+  - id: "OPT-CP01"
+    name: "Chunked Prefill"
+    branch: "optimization"
+    complexity: 3
+    potential_gain: "-50% TTFT latency"
+    dependencies: ["OPT-B01"]
+    status: "available"
+    estimated_hours: 30
+    priority: 2
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MILESTONES

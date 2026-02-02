@@ -1,0 +1,233 @@
+# prefix_caching.vibee
+# Prefix Caching for efficient reuse of common prompts
+# System prompts, few-shot examples cached and reused
+# φ² + 1/φ² = 3 = TRINITY
+
+name: prefix_caching
+version: "1.0.0"
+language: zig
+module: prefix_caching
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  PrefixCacheConfig:
+    description: "Configuration for prefix caching"
+    fields:
+      max_cached_prefixes: Int      # Maximum number of cached prefixes
+      max_prefix_length: Int        # Maximum tokens per prefix
+      eviction_policy: String       # LRU|LFU|FIFO
+      hash_algorithm: String        # xxhash|fnv1a|murmur3
+
+  CachedPrefix:
+    description: "Cached prefix with KV blocks"
+    fields:
+      prefix_hash: Int              # Hash of token sequence
+      tokens: List<Int>             # Token IDs
+      block_ids: List<Int>          # PagedAttention block IDs
+      num_tokens: Int               # Number of tokens
+      hit_count: Int                # Number of cache hits
+      last_access: Timestamp        # Last access time
+      created_at: Timestamp         # Creation time
+
+  PrefixCacheStats:
+    description: "Statistics for prefix cache"
+    fields:
+      total_prefixes: Int
+      total_hits: Int
+      total_misses: Int
+      hit_rate: Float
+      memory_used_bytes: Int
+      evictions: Int
+      avg_prefix_length: Float
+
+  PrefixMatchResult:
+    description: "Result of prefix matching"
+    fields:
+      matched: Bool
+      matched_tokens: Int           # Number of matched tokens
+      cached_prefix: Option<CachedPrefix>
+      remaining_tokens: List<Int>   # Tokens not in cache
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: init_cache
+    given: PrefixCacheConfig
+    when: initializing prefix cache
+    then: creates empty cache with configured capacity
+
+  - name: compute_prefix_hash
+    given: token sequence
+    when: hashing prefix for lookup
+    then: returns hash value for token sequence
+
+  - name: lookup_prefix
+    given: token sequence
+    when: checking for cached prefix
+    then: returns CachedPrefix if found, updates hit count
+
+  - name: match_longest_prefix
+    given: full token sequence
+    when: finding longest cached prefix
+    then: returns PrefixMatchResult with matched portion
+
+  - name: cache_prefix
+    given: token sequence, block_ids
+    when: caching new prefix
+    then: stores prefix, evicts if necessary
+
+  - name: evict_prefix
+    given: eviction policy
+    when: cache full
+    then: removes least valuable prefix based on policy
+
+  - name: get_stats
+    given: cache state
+    when: monitoring requested
+    then: returns PrefixCacheStats
+
+  - name: clear_cache
+    given: cache
+    when: reset requested
+    then: removes all cached prefixes, frees blocks
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ALGORITHM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Prefix Caching Algorithm:
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │                    PREFIX CACHING                                           │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  USE CASE: System prompts and few-shot examples                             │
+# │                                                                             │
+# │  Request 1: [SYSTEM: You are a helpful assistant...][USER: Hello]           │
+# │  Request 2: [SYSTEM: You are a helpful assistant...][USER: Hi there]        │
+# │  Request 3: [SYSTEM: You are a helpful assistant...][USER: Help me]         │
+# │                                                                             │
+# │  WITHOUT PREFIX CACHING:                                                    │
+# │  ┌─────────────────────────────────────────────────────────────────────┐    │
+# │  │ Request 1: Prefill [SYSTEM...] (100 tokens) + [USER...] (5 tokens)  │    │
+# │  │ Request 2: Prefill [SYSTEM...] (100 tokens) + [USER...] (5 tokens)  │    │
+# │  │ Request 3: Prefill [SYSTEM...] (100 tokens) + [USER...] (5 tokens)  │    │
+# │  │ Total prefill: 315 tokens                                           │    │
+# │  └─────────────────────────────────────────────────────────────────────┘    │
+# │                                                                             │
+# │  WITH PREFIX CACHING:                                                       │
+# │  ┌─────────────────────────────────────────────────────────────────────┐    │
+# │  │ Request 1: Prefill [SYSTEM...] (100 tokens) → CACHE                 │    │
+# │  │            Prefill [USER...] (5 tokens)                             │    │
+# │  │ Request 2: CACHE HIT [SYSTEM...] (0 tokens)                         │    │
+# │  │            Prefill [USER...] (5 tokens)                             │    │
+# │  │ Request 3: CACHE HIT [SYSTEM...] (0 tokens)                         │    │
+# │  │            Prefill [USER...] (5 tokens)                             │    │
+# │  │ Total prefill: 115 tokens (63% reduction!)                          │    │
+# │  └─────────────────────────────────────────────────────────────────────┘    │
+# │                                                                             │
+# │  LOOKUP ALGORITHM:                                                          │
+# │  1. Hash incoming token sequence                                            │
+# │  2. Check hash table for exact match                                        │
+# │  3. If miss, try progressively shorter prefixes                             │
+# │  4. Return longest matching prefix                                          │
+# │                                                                             │
+# │  CACHE STRUCTURE:                                                           │
+# │  ┌─────────────────────────────────────────────────────────────────────┐    │
+# │  │ Hash Table: prefix_hash → CachedPrefix                              │    │
+# │  │                                                                     │    │
+# │  │ CachedPrefix:                                                       │    │
+# │  │   tokens: [1, 2, 3, ..., 100]                                       │    │
+# │  │   block_ids: [B0, B1, B2, B3, B4, B5, B6]  (PagedAttention blocks)  │    │
+# │  │   hit_count: 42                                                     │    │
+# │  │   last_access: 1770015379                                           │    │
+# │  └─────────────────────────────────────────────────────────────────────┘    │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION WITH PAGEDBATCHINGSCHEDULER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Integration Flow:
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │                    SCHEDULER + PREFIX CACHE                                 │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  1. Request arrives with prompt tokens                                      │
+# │  2. match_longest_prefix(prompt_tokens)                                     │
+# │  3. If match found:                                                         │
+# │     a. Copy block_ids to request's block_table (ref_count++)                │
+# │     b. Set prefill start position = matched_tokens                          │
+# │     c. Only prefill remaining_tokens                                        │
+# │  4. If no match:                                                            │
+# │     a. Full prefill as normal                                               │
+# │     b. After prefill, cache_prefix(tokens, block_ids)                       │
+# │  5. Generation phase proceeds normally                                      │
+# │                                                                             │
+# │  BLOCK SHARING (Copy-on-Write):                                             │
+# │  - Cached prefix blocks have ref_count > 1                                  │
+# │  - Multiple requests share same physical blocks                             │
+# │  - If request modifies (rare), copy-on-write triggers                       │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PERFORMANCE ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Expected Improvements:
+#
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │                    PERFORMANCE IMPACT                                      │
+# ├────────────────────────────────────────────────────────────────────────────┤
+# │                                                                            │
+# │  Scenario: Chatbot with 500-token system prompt                            │
+# │                                                                            │
+# │  WITHOUT PREFIX CACHING:                                                   │
+# │    Time-to-first-token = prefill(500) + generate(1)                        │
+# │    For 100 requests: 100 × prefill(500) = 50,000 token prefills            │
+# │                                                                            │
+# │  WITH PREFIX CACHING (after first request):                                │
+# │    Time-to-first-token = lookup(O(1)) + generate(1)                        │
+# │    For 100 requests: 1 × prefill(500) + 99 × lookup = 500 token prefills   │
+# │                                                                            │
+# │  IMPROVEMENT:                                                              │
+# │    Prefill reduction: 99%                                                  │
+# │    TTFT reduction: ~90% (for cached prefixes)                              │
+# │    Throughput increase: 30-50% (under high load)                           │
+# │                                                                            │
+# │  MEMORY OVERHEAD:                                                          │
+# │    Per cached prefix: tokens × sizeof(u32) + block_ids × sizeof(usize)     │
+# │    For 100 prefixes × 500 tokens: ~200KB metadata + shared KV blocks       │
+# │                                                                            │
+# └────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVICTION POLICIES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Eviction Policy Comparison:
+#
+# LRU (Least Recently Used):
+#   - Evict prefix with oldest last_access
+#   - Good for temporal locality
+#   - Simple implementation
+#
+# LFU (Least Frequently Used):
+#   - Evict prefix with lowest hit_count
+#   - Good for stable workloads
+#   - May keep stale popular prefixes
+#
+# FIFO (First In First Out):
+#   - Evict oldest prefix by created_at
+#   - Simplest implementation
+#   - May evict frequently used prefixes
+#
+# Recommended: LRU with hit_count tiebreaker
