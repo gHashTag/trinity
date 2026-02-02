@@ -222,10 +222,10 @@ pub const HttpServer = struct {
         var generated: ?[]u8 = null;
         defer if (generated) |g| self.allocator.free(g);
 
-        // Build full prompt with system instruction
+        // Build full prompt with ChatML format (works with most models)
         const system_prompt = "You are TRINITY, a helpful AI assistant. Be concise and direct.";
         const full_prompt = std.fmt.allocPrint(self.allocator, 
-            "<|system|>\n{s}<|end|>\n<|user|>\n{s}<|end|>\n<|assistant|>\n", 
+            "<|im_start|>system\n{s}<|im_end|>\n<|im_start|>user\n{s}<|im_end|>\n<|im_start|>assistant\n", 
             .{system_prompt, prompt}
         ) catch prompt;
         defer if (full_prompt.ptr != prompt.ptr) self.allocator.free(full_prompt);
@@ -325,10 +325,10 @@ pub const HttpServer = struct {
             "Connection: keep-alive\r\n\r\n";
         try connection.stream.writeAll(sse_header);
 
-        // Build prompt with system instruction
+        // Build prompt with ChatML format
         const system_prompt = "You are TRINITY, a helpful AI assistant. Be concise and direct.";
         const full_prompt = std.fmt.allocPrint(self.allocator, 
-            "<|system|>\n{s}<|end|>\n<|user|>\n{s}<|end|>\n<|assistant|>\n", 
+            "<|im_start|>system\n{s}<|im_end|>\n<|im_start|>user\n{s}<|im_end|>\n<|im_start|>assistant\n", 
             .{system_prompt, prompt}
         ) catch prompt;
         defer if (full_prompt.ptr != prompt.ptr) self.allocator.free(full_prompt);

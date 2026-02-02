@@ -212,6 +212,26 @@ pub const ChatTemplate = struct {
         .assistant_suffix = " </s><s>[INST] ",
     };
 
+    // Qwen2.5 chat template
+    pub const QWEN = ChatTemplate{
+        .system_prefix = "<|im_start|>system\n",
+        .system_suffix = "<|im_end|>\n",
+        .user_prefix = "<|im_start|>user\n",
+        .user_suffix = "<|im_end|>\n",
+        .assistant_prefix = "<|im_start|>assistant\n",
+        .assistant_suffix = "<|im_end|>\n",
+    };
+
+    // SmolLM chat template
+    pub const SMOLLM = ChatTemplate{
+        .system_prefix = "<|im_start|>system\n",
+        .system_suffix = "<|im_end|>\n",
+        .user_prefix = "<|im_start|>user\n",
+        .user_suffix = "<|im_end|>\n",
+        .assistant_prefix = "<|im_start|>assistant\n",
+        .assistant_suffix = "<|im_end|>\n",
+    };
+
     pub fn formatPrompt(
         self: *const ChatTemplate,
         allocator: std.mem.Allocator,
