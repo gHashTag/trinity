@@ -607,6 +607,292 @@ pub const TriModel = struct {
 
         return inference.sample(probs, temperature);
     }
+
+    /// Forward pass with early exit (for draft speculation)
+    /// Uses only first `num_layers` layers for faster inference
+    pub fn forwardDraft(self: *TriModel, token: u32, pos: usize, num_layers: usize) ![]f32 {
+        const hidden_size = self.header.hidden_size;
+        const layers_to_use = @min(num_layers, self.header.num_layers);
+
+        // Get embedding
+        if (self.use_ternary_embedding) {
+            if (self.ternary_embedding) |te| {
+                te.lookup(token, self.buf_hidden);
+            }
+        } else {
+            const emb_offset = token * hidden_size;
+            @memcpy(self.buf_hidden, self.token_embedding[emb_offset..][0..hidden_size]);
+        }
+
+        // Process through limited layers (draft)
+        for (0..layers_to_use) |i| {
+            self.forwardLayer(self.buf_temp, self.buf_hidden, i, pos);
+            @memcpy(self.buf_hidden, self.buf_temp);
+        }
+
+        // Final norm
+        applyRmsNorm(self.buf_temp, self.buf_hidden, self.output_norm, self.ternary_output_norm, self.header.rms_norm_eps);
+
+        // Output projection
+        const logits = try self.allocator.alloc(f32, self.header.vocab_size);
+        parallel.parallelTernaryMatmul(
+            logits,
+            self.output_weight,
+            self.buf_temp,
+            self.header.vocab_size,
+            hidden_size,
+            self.output_scale,
+        );
+
+        return logits;
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPECULATIVE DECODING
+// Generate multiple tokens per target forward pass
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Configuration for speculative decoding
+pub const SpeculativeConfig = struct {
+    speculation_length: usize, // K: number of tokens to speculate
+    draft_layers: usize, // Number of layers for draft model (early exit)
+    temperature: f32,
+    acceptance_threshold: f32, // Minimum acceptance rate before disabling
+
+    pub fn default() SpeculativeConfig {
+        return .{
+            .speculation_length = 4,
+            .draft_layers = 4, // Use first 4 layers as draft
+            .temperature = 1.0,
+            .acceptance_threshold = 0.5,
+        };
+    }
+};
+
+/// Result from speculative generation
+pub const SpeculativeResult = struct {
+    tokens: []u32,
+    accepted_count: usize,
+    total_drafted: usize,
+    acceptance_rate: f32,
+};
+
+/// Speculative decoder using self-speculation (early exit as draft)
+pub const SpeculativeDecoder = struct {
+    allocator: std.mem.Allocator,
+    model: *TriModel,
+    config: SpeculativeConfig,
+
+    // Statistics
+    total_accepted: usize,
+    total_drafted: usize,
+
+    // Buffers
+    draft_tokens: []u32,
+    draft_probs: []f32,
+    target_probs: []f32,
+
+    pub fn init(allocator: std.mem.Allocator, model: *TriModel, config: SpeculativeConfig) !SpeculativeDecoder {
+        return SpeculativeDecoder{
+            .allocator = allocator,
+            .model = model,
+            .config = config,
+            .total_accepted = 0,
+            .total_drafted = 0,
+            .draft_tokens = try allocator.alloc(u32, config.speculation_length),
+            .draft_probs = try allocator.alloc(f32, config.speculation_length),
+            .target_probs = try allocator.alloc(f32, config.speculation_length + 1),
+        };
+    }
+
+    pub fn deinit(self: *SpeculativeDecoder) void {
+        self.allocator.free(self.draft_tokens);
+        self.allocator.free(self.draft_probs);
+        self.allocator.free(self.target_probs);
+    }
+
+    /// Generate K draft tokens using early exit
+    fn draftSpeculate(self: *SpeculativeDecoder, start_token: u32, start_pos: usize) !void {
+        var current_token = start_token;
+        var pos = start_pos;
+
+        for (0..self.config.speculation_length) |i| {
+            // Forward with early exit (draft)
+            const logits = try self.model.forwardDraft(current_token, pos, self.config.draft_layers);
+            defer self.model.allocator.free(logits);
+
+            // Apply temperature
+            if (self.config.temperature > 0) {
+                for (logits) |*l| l.* /= self.config.temperature;
+            }
+
+            // Softmax
+            const probs = try self.allocator.alloc(f32, logits.len);
+            defer self.allocator.free(probs);
+            inference.softmax(probs, logits);
+
+            // Sample
+            const next_token = inference.sample(probs, self.config.temperature);
+            self.draft_tokens[i] = next_token;
+            self.draft_probs[i] = probs[next_token];
+
+            current_token = next_token;
+            pos += 1;
+        }
+    }
+
+    /// Verify draft tokens with full model and accept/reject
+    fn verifyAndAccept(self: *SpeculativeDecoder, start_token: u32, start_pos: usize, output: []u32) !usize {
+        var accepted: usize = 0;
+        var current_token = start_token;
+        var pos = start_pos;
+
+        // Verify each draft token
+        for (0..self.config.speculation_length) |i| {
+            // Full forward pass
+            const logits = try self.model.forward(current_token, pos);
+            defer self.model.allocator.free(logits);
+
+            // Apply temperature
+            if (self.config.temperature > 0) {
+                for (logits) |*l| l.* /= self.config.temperature;
+            }
+
+            // Softmax
+            const probs = try self.allocator.alloc(f32, logits.len);
+            defer self.allocator.free(probs);
+            inference.softmax(probs, logits);
+
+            const draft_token = self.draft_tokens[i];
+            const target_prob = probs[draft_token];
+            const draft_prob = self.draft_probs[i];
+
+            // Acceptance criterion: accept with prob min(1, target/draft)
+            const accept_prob = @min(1.0, target_prob / (draft_prob + 1e-10));
+            const r = self.randomFloat();
+
+            if (r < accept_prob) {
+                // Accept
+                output[accepted] = draft_token;
+                accepted += 1;
+                current_token = draft_token;
+                pos += 1;
+            } else {
+                // Reject: sample from adjusted distribution
+                // p_adjusted = max(0, p_target - p_draft) / Z
+                var adjusted_probs = try self.allocator.alloc(f32, probs.len);
+                defer self.allocator.free(adjusted_probs);
+
+                var sum: f32 = 0.0;
+                for (probs, 0..) |p, j| {
+                    const draft_p = if (j == draft_token) draft_prob else 0.0;
+                    adjusted_probs[j] = @max(0.0, p - draft_p);
+                    sum += adjusted_probs[j];
+                }
+
+                if (sum > 0) {
+                    for (adjusted_probs) |*p| p.* /= sum;
+                    output[accepted] = inference.sample(adjusted_probs, self.config.temperature);
+                } else {
+                    output[accepted] = inference.sample(probs, self.config.temperature);
+                }
+                accepted += 1;
+                break;
+            }
+        }
+
+        // If all accepted, sample one more from target
+        if (accepted == self.config.speculation_length) {
+            const logits = try self.model.forward(self.draft_tokens[self.config.speculation_length - 1], pos);
+            defer self.model.allocator.free(logits);
+
+            if (self.config.temperature > 0) {
+                for (logits) |*l| l.* /= self.config.temperature;
+            }
+
+            const probs = try self.allocator.alloc(f32, logits.len);
+            defer self.allocator.free(probs);
+            inference.softmax(probs, logits);
+
+            output[accepted] = inference.sample(probs, self.config.temperature);
+            accepted += 1;
+        }
+
+        return accepted;
+    }
+
+    /// Simple random float [0, 1)
+    fn randomFloat(self: *SpeculativeDecoder) f32 {
+        _ = self;
+        // Use a simple LCG for reproducibility in tests
+        const state = struct {
+            var seed: u32 = 12345;
+        };
+        state.seed = state.seed *% 1103515245 +% 12345;
+        return @as(f32, @floatFromInt(state.seed >> 16)) / 65536.0;
+    }
+
+    /// Generate tokens with speculative decoding
+    pub fn generate(self: *SpeculativeDecoder, start_token: u32, start_pos: usize, max_tokens: usize) !SpeculativeResult {
+        var output = try self.allocator.alloc(u32, max_tokens);
+        var generated: usize = 0;
+        var current_token = start_token;
+        var pos = start_pos;
+
+        while (generated < max_tokens) {
+            // Draft K tokens
+            try self.draftSpeculate(current_token, pos);
+            self.total_drafted += self.config.speculation_length;
+
+            // Verify and accept
+            const remaining = max_tokens - generated;
+            const max_accept = @min(self.config.speculation_length + 1, remaining);
+            var accepted_buf: [8]u32 = undefined; // Max speculation_length + 1
+
+            const accepted = try self.verifyAndAccept(current_token, pos, accepted_buf[0..max_accept]);
+            self.total_accepted += accepted;
+
+            // Copy accepted tokens to output
+            for (0..accepted) |i| {
+                if (generated < max_tokens) {
+                    output[generated] = accepted_buf[i];
+                    generated += 1;
+                }
+            }
+
+            if (accepted > 0) {
+                current_token = accepted_buf[accepted - 1];
+                pos += accepted;
+            } else {
+                break;
+            }
+        }
+
+        const acceptance_rate = if (self.total_drafted > 0)
+            @as(f32, @floatFromInt(self.total_accepted)) / @as(f32, @floatFromInt(self.total_drafted))
+        else
+            0.0;
+
+        return SpeculativeResult{
+            .tokens = output[0..generated],
+            .accepted_count = self.total_accepted,
+            .total_drafted = self.total_drafted,
+            .acceptance_rate = acceptance_rate,
+        };
+    }
+
+    /// Get current acceptance rate
+    pub fn getAcceptanceRate(self: *const SpeculativeDecoder) f32 {
+        if (self.total_drafted == 0) return 0.0;
+        return @as(f32, @floatFromInt(self.total_accepted)) / @as(f32, @floatFromInt(self.total_drafted));
+    }
+
+    /// Reset statistics
+    pub fn resetStats(self: *SpeculativeDecoder) void {
+        self.total_accepted = 0;
+        self.total_drafted = 0;
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -885,4 +1171,18 @@ pub fn main() !void {
     std.debug.print("  Speed: {d:.2} tokens/sec\n", .{@as(f64, @floatFromInt(i)) / (@as(f64, @floatFromInt(gen_time)) / 1e9)});
 
     std.debug.print("\nKOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+}
+
+test "speculative_config" {
+    const config = SpeculativeConfig.default();
+    try std.testing.expectEqual(@as(usize, 4), config.speculation_length);
+    try std.testing.expectEqual(@as(usize, 4), config.draft_layers);
+}
+
+test "speculative_decoder_init" {
+    // This test just verifies the structure compiles correctly
+    // Full testing requires a loaded model
+    const config = SpeculativeConfig.default();
+    try std.testing.expect(config.speculation_length > 0);
+    try std.testing.expect(config.draft_layers > 0);
 }

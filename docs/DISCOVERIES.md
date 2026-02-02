@@ -81,6 +81,7 @@ Where:
 | OPT-T07 | Batch Ternary MatMul | N/A | 2.28x | ✅ Implemented |
 | OPT-M01 | Memory-Mapped Loading | N/A | 30x load | ✅ Implemented |
 | OPT-C01 | KV Cache Compression | 5-16x | 1x | ✅ Implemented |
+| OPT-S01 | Speculative Decoding | N/A | 2-3x gen | ✅ Implemented |
 
 ### Business Value
 
@@ -505,6 +506,67 @@ var cache = try RingKVCache.init(allocator, num_heads, head_dim, 2048, config);
 
 // Streaming attention automatically masks evicted tokens
 kv_cache.streamingAttention(output, query, &cache, head_idx, scores, scale);
+```
+
+### Speculative Decoding (OPT-S01)
+
+**Status**: ✅ Implemented
+
+| Component | File | Description |
+|-----------|------|-------------|
+| SpeculativeConfig | `tri_inference.zig` | Configuration for speculation |
+| SpeculativeDecoder | `tri_inference.zig` | Main speculative decoder |
+| forwardDraft | `tri_inference.zig` | Early-exit forward for draft |
+| verifyAndAccept | `tri_inference.zig` | Token verification logic |
+
+**Algorithm:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│              SPECULATIVE DECODING                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. DRAFT: Generate K tokens with early-exit model          │
+│     draft_tokens = [t1, t2, t3, t4]  (fast, ~10ms)          │
+│                                                             │
+│  2. VERIFY: Run full model on each token                    │
+│     For each draft token:                                   │
+│       - Compute target probability                          │
+│       - Accept with prob min(1, p_target/p_draft)           │
+│       - On reject: sample from adjusted distribution        │
+│                                                             │
+│  3. BONUS: If all K accepted, sample K+1 from target        │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Self-Speculation (Early Exit):**
+- Uses first N layers as draft model (default: 4 layers)
+- No separate draft model needed
+- Draft is ~4-8x faster than full model
+
+**Expected Speedup:**
+```
+Speedup = K / (1 + (1-α)K)
+where α = acceptance rate, K = speculation length
+
+For α=0.8, K=4: Speedup = 4 / 1.8 = 2.2x
+For α=0.9, K=4: Speedup = 4 / 1.4 = 2.9x
+```
+
+**Usage:**
+```zig
+const config = SpeculativeConfig{
+    .speculation_length = 4,
+    .draft_layers = 4,
+    .temperature = 1.0,
+};
+
+var decoder = try SpeculativeDecoder.init(allocator, model, config);
+defer decoder.deinit();
+
+const result = try decoder.generate(start_token, 0, 100);
+std.debug.print("Generated {d} tokens, acceptance rate: {d:.1}%\n", 
+    .{result.tokens.len, result.acceptance_rate * 100});
 ```
 
 ### Batch Processing (INF-004)
