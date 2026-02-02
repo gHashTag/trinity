@@ -326,13 +326,20 @@ Set `MODEL_SIZE` environment variable in `fly.toml`:
   MODEL_SIZE = "360m"  # Options: "360m" (fast) or "1.7b" (quality)
 ```
 
-### Performance Comparison
+### Performance Comparison (VERIFIED on Fly.io)
 
-| Metric | 360M | 1.7B | Improvement |
+| Metric | 1.7B | 360M | Improvement |
 |--------|------|------|-------------|
-| Model size | 0.39GB | 1.7GB | 4.4x smaller |
-| Load time | 2.17s | 4.82s | 2.2x faster |
-| Inference | ~7 tok/s | ~1.4 tok/s | ~5x faster |
+| Model size | 1.7GB | 0.39GB | 4.4x smaller |
+| **Load time** | 19.36s | **1.25s** | **15.5x faster** |
+| **Inference** | 0.16 tok/s | **0.74 tok/s** | **4.6x faster** |
+
+### Total Improvement (from initial 208s)
+
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| Load time | 208s | **1.25s** | **166x faster!** |
+| Inference | 0.16 tok/s | 0.74 tok/s | 4.6x faster |
 
 ---
 
