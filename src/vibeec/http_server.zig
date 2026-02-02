@@ -185,6 +185,15 @@ pub const HttpServer = struct {
     }
 
     fn handleChatCompletion(self: *HttpServer, connection: *std.net.Server.Connection, body: []const u8, model: *FullModel, tokenizer: *Tokenizer) !void {
+        // Check if streaming is requested
+        const is_streaming = std.mem.indexOf(u8, body, "\"stream\":true") != null or 
+                            std.mem.indexOf(u8, body, "\"stream\": true") != null;
+
+        if (is_streaming) {
+            try self.handleStreamingCompletion(connection, body, model, tokenizer);
+            return;
+        }
+
         // Extract prompt from JSON body
         var prompt: []const u8 = "Hello";
         
@@ -201,7 +210,7 @@ pub const HttpServer = struct {
 
         std.debug.print("  Prompt: {s}\n", .{prompt});
 
-        // Generate response
+        // Generate response with system prompt for better quality
         const sampling = SamplingParams{
             .temperature = 0.7,
             .top_p = 0.9,
@@ -213,8 +222,16 @@ pub const HttpServer = struct {
         var generated: ?[]u8 = null;
         defer if (generated) |g| self.allocator.free(g);
 
+        // Build full prompt with system instruction
+        const system_prompt = "You are TRINITY, a helpful AI assistant. Be concise and direct.";
+        const full_prompt = std.fmt.allocPrint(self.allocator, 
+            "<|system|>\n{s}<|end|>\n<|user|>\n{s}<|end|>\n<|assistant|>\n", 
+            .{system_prompt, prompt}
+        ) catch prompt;
+        defer if (full_prompt.ptr != prompt.ptr) self.allocator.free(full_prompt);
+
         // Tokenize and generate
-        const tokens = tokenizer.encode(self.allocator, prompt) catch null;
+        const tokens = tokenizer.encode(self.allocator, full_prompt) catch null;
         defer if (tokens) |t| self.allocator.free(t);
 
         if (tokens) |toks| {
@@ -281,6 +298,105 @@ pub const HttpServer = struct {
         try connection.stream.writeAll(header);
         try connection.stream.writeAll(json_body);
         std.debug.print("  Sent: {d} bytes\n", .{json_body.len});
+    }
+
+    /// Handle streaming chat completion (SSE)
+    fn handleStreamingCompletion(self: *HttpServer, connection: *std.net.Server.Connection, body: []const u8, model: *FullModel, tokenizer: *Tokenizer) !void {
+        // Extract prompt
+        var prompt: []const u8 = "Hello";
+        if (std.mem.lastIndexOf(u8, body, "\"content\"")) |idx| {
+            const after_key = body[idx + 10..];
+            if (std.mem.indexOf(u8, after_key, "\"")) |start| {
+                const content_start = after_key[start + 1..];
+                if (std.mem.indexOf(u8, content_start, "\"")) |end| {
+                    prompt = content_start[0..end];
+                }
+            }
+        }
+
+        std.debug.print("  Streaming prompt: {s}\n", .{prompt});
+
+        // Send SSE headers
+        const sse_header = 
+            "HTTP/1.1 200 OK\r\n" ++
+            "Content-Type: text/event-stream\r\n" ++
+            "Cache-Control: no-cache\r\n" ++
+            "Access-Control-Allow-Origin: *\r\n" ++
+            "Connection: keep-alive\r\n\r\n";
+        try connection.stream.writeAll(sse_header);
+
+        // Build prompt with system instruction
+        const system_prompt = "You are TRINITY, a helpful AI assistant. Be concise and direct.";
+        const full_prompt = std.fmt.allocPrint(self.allocator, 
+            "<|system|>\n{s}<|end|>\n<|user|>\n{s}<|end|>\n<|assistant|>\n", 
+            .{system_prompt, prompt}
+        ) catch prompt;
+        defer if (full_prompt.ptr != prompt.ptr) self.allocator.free(full_prompt);
+
+        // Tokenize
+        const tokens = tokenizer.encode(self.allocator, full_prompt) catch null;
+        defer if (tokens) |t| self.allocator.free(t);
+
+        const sampling = SamplingParams{
+            .temperature = 0.7,
+            .top_p = 0.9,
+            .top_k = 40,
+            .repeat_penalty = 1.1,
+        };
+
+        if (tokens) |toks| {
+            // Process input tokens
+            var pos: usize = 0;
+            for (toks) |tok| {
+                _ = model.forward(tok, pos) catch null;
+                pos += 1;
+            }
+
+            // Generate and stream tokens
+            var last_token: u32 = if (toks.len > 0) toks[toks.len - 1] else 0;
+            var i: usize = 0;
+            while (i < 100) : (i += 1) {
+                const logits = model.forward(last_token, pos) catch break;
+                const next_token = inference.sampleWithParams(self.allocator, @constCast(logits), sampling) catch break;
+                
+                if (next_token == tokenizer.eos_token) break;
+
+                // Decode single token
+                const token_arr = [_]u32{next_token};
+                const token_text = tokenizer.decode(self.allocator, &token_arr) catch null;
+                defer if (token_text) |t| self.allocator.free(t);
+
+                if (token_text) |text| {
+                    // Escape for JSON
+                    var escaped = std.ArrayList(u8).init(self.allocator);
+                    defer escaped.deinit();
+                    for (text) |c| {
+                        switch (c) {
+                            '"' => escaped.appendSlice("\\\"") catch break,
+                            '\\' => escaped.appendSlice("\\\\") catch break,
+                            '\n' => escaped.appendSlice("\\n") catch break,
+                            '\r' => escaped.appendSlice("\\r") catch break,
+                            else => escaped.append(c) catch break,
+                        }
+                    }
+
+                    // Send SSE event
+                    const event = std.fmt.allocPrint(self.allocator,
+                        "data: {{\"choices\":[{{\"delta\":{{\"content\":\"{s}\"}},\"index\":0}}]}}\n\n"
+                    , .{escaped.items}) catch continue;
+                    defer self.allocator.free(event);
+                    
+                    connection.stream.writeAll(event) catch break;
+                }
+
+                last_token = next_token;
+                pos += 1;
+            }
+        }
+
+        // Send done event
+        try connection.stream.writeAll("data: [DONE]\n\n");
+        std.debug.print("  Streaming complete\n", .{});
     }
 };
 
