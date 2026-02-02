@@ -1,0 +1,231 @@
+name: streaming_memory
+version: "1.0.0"
+language: zig
+module: streaming_memory
+
+description: |
+  Streaming Associative Memory using Ternary Hyperdimensional Computing.
+  Continuous learning memory with bind/unbind for key-value storage.
+  Supports forgetting factor for concept drift adaptation.
+  
+  Scientific Basis:
+  - Holographic Reduced Representations (Plate, 1995)
+  - Sparse Distributed Memory (Kanerva, 1988)
+  - Online Learning with Forgetting (Streaming ML)
+
+constants:
+  MEMORY_DIM: 10240
+  FORGETTING_FACTOR: 0.01
+  RETRIEVAL_THRESHOLD: 0.5
+  MAX_ITEMS: 10000
+  CLEANUP_INTERVAL: 1000
+
+types:
+  MemoryItem:
+    description: "Single key-value pair in memory"
+    fields:
+      key: HyperVector
+      value: HyperVector
+      timestamp: Timestamp
+      access_count: Int
+
+  MemoryStore:
+    description: "Bundled associative memory"
+    fields:
+      memory_vector: FloatVector
+      quantized_memory: HyperVector
+      item_count: Int
+      total_writes: Int
+
+  RetrievalResult:
+    description: "Memory retrieval output"
+    fields:
+      value: HyperVector
+      confidence: Float
+      exact_match: Bool
+
+  MemoryConfig:
+    description: "Memory system configuration"
+    fields:
+      dim: Int
+      forgetting_factor: Float
+      retrieval_threshold: Float
+      max_items: Int
+
+  StreamingMemory:
+    description: "Complete streaming memory system"
+    fields:
+      config: MemoryConfig
+      store: MemoryStore
+      key_index: Map<String, HyperVector>
+      recent_keys: List<HyperVector>
+
+  MemoryMetrics:
+    description: "Memory system statistics"
+    fields:
+      total_writes: Int
+      total_reads: Int
+      hit_rate: Float
+      avg_confidence: Float
+      memory_utilization: Float
+
+behaviors:
+  # Initialization
+  - name: create_memory
+    given: MemoryConfig
+    when: Initializing streaming memory
+    then: Returns empty StreamingMemory
+
+  - name: reset_memory
+    given: StreamingMemory
+    when: Clearing all stored items
+    then: Returns empty memory with same config
+
+  # Write Operations
+  - name: store
+    given: Key hypervector, value hypervector, and memory
+    when: Adding new key-value pair
+    then: Updates memory with bound pair
+
+  - name: store_with_forgetting
+    given: Key, value, memory, and forgetting factor
+    when: Adding with exponential forgetting
+    then: M ← (1-λ)M + λ×bind(k,v)
+
+  - name: batch_store
+    given: List of (key, value) pairs and memory
+    when: Storing multiple items
+    then: Bundles all bindings into memory
+
+  - name: update
+    given: Key, new_value, and memory
+    when: Updating existing key's value
+    then: Removes old binding, adds new
+
+  # Read Operations
+  - name: retrieve
+    given: Key hypervector and memory
+    when: Looking up value by key
+    then: Returns RetrievalResult with unbind(M, k)
+
+  - name: retrieve_similar
+    given: Query vector, memory, and k
+    when: Finding k most similar stored items
+    then: Returns list of RetrievalResult
+
+  - name: contains
+    given: Key and memory
+    when: Checking if key exists
+    then: Returns bool based on retrieval confidence
+
+  # Memory Management
+  - name: cleanup
+    given: Memory and threshold
+    when: Removing low-confidence items
+    then: Prunes memory, returns removed count
+
+  - name: compress
+    given: Memory
+    when: Re-quantizing accumulated memory
+    then: Returns compressed ternary memory
+
+  - name: merge_memories
+    given: Two StreamingMemory instances
+    when: Combining knowledge from multiple sources
+    then: Returns bundled memory
+
+  # Forgetting
+  - name: apply_forgetting
+    given: Memory and factor
+    when: Decaying old memories
+    then: M ← (1-λ)M
+
+  - name: selective_forget
+    given: Memory and key
+    when: Removing specific item
+    then: M ← M - bind(k, retrieve(k))
+
+  # Quantization
+  - name: quantize_memory
+    given: FloatVector memory
+    when: Converting to ternary
+    then: Returns HyperVector
+
+  - name: get_memory_vector
+    given: StreamingMemory
+    when: Accessing raw memory
+    then: Returns quantized HyperVector
+
+  # Metrics
+  - name: get_metrics
+    given: StreamingMemory
+    when: Querying statistics
+    then: Returns MemoryMetrics
+
+  - name: estimate_capacity
+    given: Memory
+    when: Estimating remaining capacity
+    then: Returns float (0.0 to 1.0)
+
+  # Serialization
+  - name: export_memory
+    given: StreamingMemory
+    when: Serializing for storage
+    then: Returns byte array
+
+  - name: import_memory
+    given: Byte array and config
+    when: Loading saved memory
+    then: Returns StreamingMemory
+
+tests:
+  - name: test_store_retrieve_exact
+    input:
+      key: random(10000, 1)
+      value: random(10000, 2)
+    expected:
+      retrieved_similarity: > 0.9
+
+  - name: test_multiple_items
+    input:
+      items: 100 random (key, value) pairs
+    expected:
+      all_retrievable: true
+      avg_similarity: > 0.7
+
+  - name: test_forgetting_reduces_old
+    input:
+      old_item: stored 1000 steps ago
+      forgetting_factor: 0.01
+    expected:
+      confidence_decreased: true
+
+  - name: test_update_replaces
+    input:
+      key: k1
+      old_value: v1
+      new_value: v2
+    expected:
+      retrieves_new: similarity(retrieve(k1), v2) > 0.8
+
+  - name: test_capacity_limit
+    input:
+      items: 10000
+      dim: 10000
+    expected:
+      retrieval_degrades_gracefully: true
+
+  - name: test_merge_preserves_both
+    input:
+      memory_a: contains items 1-50
+      memory_b: contains items 51-100
+    expected:
+      merged_contains_all: true
+
+  - name: test_cleanup_removes_weak
+    input:
+      memory: with 100 items, some weak
+      threshold: 0.3
+    expected:
+      weak_items_removed: true
+      strong_items_preserved: true

@@ -1,0 +1,255 @@
+name: hdc_core
+version: "1.0.0"
+language: zig
+module: hdc_core
+
+description: |
+  HDC Core - Базовые операции гиперразмерных вычислений
+  с онлайн-обучением для самообучающихся AI моделей.
+  
+  Научная база:
+  - Kanerva (2009): Hyperdimensional Computing
+  - BitNet b1.58 (2024): Троичные веса {-1, 0, +1}
+  - Setun (1958): Сбалансированная троичная система
+  
+  Математика:
+  - Binding: a ⊗ b = поэлементное умножение
+  - Bundling: мажоритарное голосование
+  - Similarity: косинусное сходство
+  - Online Update: P ← P + η(v - P), затем квантизация
+
+imports:
+  - hybrid  # HybridBigInt, Vec32i8, SIMD_WIDTH
+
+constants:
+  DEFAULT_DIM: 10240
+  LEARNING_RATE: 0.01
+  SIMILARITY_THRESHOLD: 0.7
+  QUANTIZE_POS: 0.5
+  QUANTIZE_NEG: -0.5
+  MAX_PROTOTYPES: 1000
+
+types:
+  Trit:
+    description: "Сбалансированный троичный разряд"
+    values:
+      - Neg: -1
+      - Zero: 0
+      - Pos: 1
+
+  HyperVector:
+    description: "Троичный гипервектор для HDC"
+    fields:
+      data: List<Int>
+      dim: Int
+
+  FloatAccumulator:
+    description: "Float аккумулятор для онлайн усреднения"
+    fields:
+      data: List<Float>
+      dim: Int
+
+  Prototype:
+    description: "Прототип класса с аккумулятором"
+    fields:
+      label: String
+      accumulator: FloatAccumulator
+      vector: HyperVector
+      count: Int
+
+  OnlineHDC:
+    description: "Онлайн HDC система"
+    fields:
+      prototypes: Map<String, Prototype>
+      dim: Int
+      learning_rate: Float
+      samples_seen: Int
+
+  SimilarityResult:
+    description: "Результат вычисления сходства"
+    fields:
+      similarity: Float
+      label: String
+
+behaviors:
+  # === БАЗОВЫЕ HDC ОПЕРАЦИИ ===
+  
+  - name: bind
+    given: Два гипервектора a и b одинаковой размерности
+    when: Создание ассоциации через поэлементное умножение
+    then: Возвращает HyperVector где c[i] = a[i] * b[i]
+
+  - name: unbind
+    given: Связанный вектор и ключ
+    when: Извлечение связанного значения
+    then: Возвращает bind(bound, key) т.к. троичный bind самообратим
+
+  - name: bundle
+    given: Список гипервекторов
+    when: Создание суперпозиции через мажоритарное голосование
+    then: Возвращает HyperVector с мажоритарным тритом на каждой позиции
+
+  - name: bundle_simd
+    given: Список гипервекторов
+    when: SIMD-оптимизированное bundling (32 трита параллельно)
+    then: Возвращает HyperVector с использованием Vec32i8
+
+  - name: permute
+    given: HyperVector и величина сдвига k
+    when: Циклическая перестановка для кодирования последовательностей
+    then: Возвращает HyperVector сдвинутый на k позиций
+
+  - name: similarity
+    given: Два гипервектора a и b
+    when: Вычисление косинусного сходства
+    then: Возвращает float в диапазоне [-1, 1]
+
+  - name: similarity_simd
+    given: Два гипервектора a и b
+    when: SIMD-оптимизированное вычисление сходства
+    then: Возвращает float используя simdDotProduct
+
+  - name: hamming_distance
+    given: Два гипервектора a и b
+    when: Подсчёт различающихся позиций
+    then: Возвращает целое число
+
+  # === СОЗДАНИЕ ВЕКТОРОВ ===
+
+  - name: random_vector
+    given: Размерность и seed
+    when: Генерация случайного троичного гипервектора
+    then: Возвращает HyperVector с равномерным распределением тритов
+
+  - name: zero_vector
+    given: Размерность
+    when: Создание нулевого вектора
+    then: Возвращает HyperVector заполненный нулями
+
+  - name: ones_vector
+    given: Размерность
+    when: Создание вектора из единиц
+    then: Возвращает HyperVector заполненный +1
+
+  # === ОНЛАЙН ОБУЧЕНИЕ ===
+
+  - name: create_online_hdc
+    given: Размерность и learning_rate
+    when: Инициализация онлайн HDC системы
+    then: Возвращает пустую OnlineHDC
+
+  - name: online_update
+    given: Входной вектор, метка и OnlineHDC
+    when: Обучение на новом размеченном примере
+    then: Обновляет прототип: P ← P + η(v - P)
+
+  - name: online_update_unlabeled
+    given: Входной вектор и OnlineHDC
+    when: Самообучение на неразмеченном примере
+    then: Обновляет ближайший прототип если similarity > threshold
+
+  - name: predict
+    given: Входной вектор и OnlineHDC
+    when: Поиск наиболее похожего прототипа
+    then: Возвращает SimilarityResult с меткой и уверенностью
+
+  - name: predict_top_k
+    given: Входной вектор, OnlineHDC и k
+    when: Поиск k наиболее похожих прототипов
+    then: Возвращает список SimilarityResult отсортированный по сходству
+
+  # === КВАНТИЗАЦИЯ ===
+
+  - name: quantize_to_ternary
+    given: FloatAccumulator
+    when: Преобразование float в троичное представление
+    then: Возвращает HyperVector с значениями {-1, 0, +1}
+
+  - name: dequantize_to_float
+    given: HyperVector
+    when: Преобразование троичного в float для накопления
+    then: Возвращает FloatAccumulator
+
+  # === КОДИРОВАНИЕ ===
+
+  - name: encode_bytes
+    given: Массив байтов и конфигурация
+    when: Преобразование байтов в гипервектор
+    then: Возвращает HyperVector представление
+
+  - name: encode_sequence
+    given: Список токенов
+    when: Кодирование последовательности с позиционным binding
+    then: Возвращает HyperVector: sum(permute(token[i], i))
+
+  # === УТИЛИТЫ ===
+
+  - name: count_nonzero
+    given: HyperVector
+    when: Подсчёт ненулевых элементов
+    then: Возвращает целое число
+
+  - name: sparsity
+    given: HyperVector
+    when: Вычисление разреженности
+    then: Возвращает долю нулей (0.0 до 1.0)
+
+  - name: normalize
+    given: HyperVector
+    when: Нормализация вектора
+    then: Возвращает вектор с единичной нормой
+
+tests:
+  - name: test_bind_self_inverse
+    input:
+      a: random(10000, 1)
+      b: random(10000, 2)
+    expected:
+      unbind_recovers: similarity(unbind(bind(a,b), b), a) > 0.99
+
+  - name: test_bundle_majority
+    input:
+      vectors: [all_ones, all_ones, all_neg_ones]
+    expected:
+      result: all_ones
+
+  - name: test_similarity_identical
+    input:
+      a: random(10000, 1)
+      b: same_as_a
+    expected:
+      similarity: 1.0
+
+  - name: test_similarity_orthogonal
+    input:
+      a: random(10000, 1)
+      b: random(10000, 2)
+    expected:
+      similarity_near_zero: abs(similarity) < 0.1
+
+  - name: test_permute_orthogonal
+    input:
+      v: random(10000, 1)
+      k: 10
+    expected:
+      similarity_low: similarity(v, permute(v, k)) < 0.3
+
+  - name: test_online_update_improves
+    input:
+      samples: 100 labeled
+      initial_accuracy: 0.5
+    expected:
+      final_accuracy: > 0.8
+
+  - name: test_quantization_roundtrip
+    input:
+      float_vector: [0.7, -0.3, 0.1]
+    expected:
+      ternary: [1, 0, 0]
+
+  - name: test_simd_consistency
+    input:
+      a: random(10000, 1)
+      b: random(10000, 2)
+    expected:
+      simd_equals_scalar: similarity(a,b) == similarity_simd(a,b)
