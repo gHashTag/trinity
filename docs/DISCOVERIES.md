@@ -294,6 +294,7 @@ Dequantization and SIMD are fast - the bottleneck is FILE READ.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.6.0 | 2026-02-02 | Multi-model support (360M fast, 1.7B quality) |
 | v1.5.0 | 2026-02-02 | Batch metrics & throughput tracking (INF-004) |
 | v1.4.0 | 2026-02-02 | Fly.io Volumes - **43x faster load (208s→4.8s)** |
 | v1.3.0 | 2026-02-02 | Load profiling - found I/O bottleneck |
@@ -302,6 +303,36 @@ Dequantization and SIMD are fast - the bottleneck is FILE READ.
 | v1.0.0 | 2026-02-02 | Initial Fly.io deployment |
 | v0.9.0 | 2026-02-01 | GGUF parser complete |
 | v0.8.0 | 2026-01-30 | HTTP server added |
+
+---
+
+## Multi-Model Support
+
+**Status**: ✅ Implemented
+
+### Available Models
+
+| Model | Size | Load Time | Inference | Use Case |
+|-------|------|-----------|-----------|----------|
+| SmolLM2-360M | 0.39GB | **2.17s** | ~7 tok/s | Fast responses |
+| SmolLM2-1.7B | 1.7GB | 4.82s | ~1.4 tok/s | Quality responses |
+
+### Configuration
+
+Set `MODEL_SIZE` environment variable in `fly.toml`:
+
+```toml
+[env]
+  MODEL_SIZE = "360m"  # Options: "360m" (fast) or "1.7b" (quality)
+```
+
+### Performance Comparison
+
+| Metric | 360M | 1.7B | Improvement |
+|--------|------|------|-------------|
+| Model size | 0.39GB | 1.7GB | 4.4x smaller |
+| Load time | 2.17s | 4.82s | 2.2x faster |
+| Inference | ~7 tok/s | ~1.4 tok/s | ~5x faster |
 
 ---
 

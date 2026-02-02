@@ -11,8 +11,13 @@ primary_region = "iad"
   dockerfile = "Dockerfile"
 
 [env]
-  # Model path on persistent volume (NVMe SSD - 16x faster than ephemeral)
-  MODEL_PATH = "/data/models/smollm2-1.7b-instruct-q8_0.gguf"
+  # Model selection: "360m" (fast) or "1.7b" (quality)
+  # 360M: 0.39GB, ~5x faster inference
+  # 1.7B: 1.7GB, better quality responses
+  MODEL_SIZE = "360m"
+  
+  # Model path on persistent volume (NVMe SSD - 43x faster than ephemeral)
+  MODEL_PATH = "/data/models/smollm2-360m-instruct-q8_0.gguf"
   TEMPERATURE = "0.7"
   TOP_P = "0.9"
   NUM_THREADS = "16"
