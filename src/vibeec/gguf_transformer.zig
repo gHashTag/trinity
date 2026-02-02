@@ -12,6 +12,10 @@ pub const RingKVCache = kv_cache_mod.RingKVCache;
 pub const SlidingWindowConfig = kv_cache_mod.SlidingWindowConfig;
 pub const CacheStats = kv_cache_mod.CacheStats;
 
+// Re-export ternary KV cache (OPT-T03)
+pub const TernaryKVCache = kv_cache_mod.TernaryKVCache;
+pub const TernaryCacheStats = kv_cache_mod.TernaryCacheStats;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // RoPE - Rotary Position Embedding
 // ═══════════════════════════════════════════════════════════════════════════════
