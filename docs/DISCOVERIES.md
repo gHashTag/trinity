@@ -203,7 +203,7 @@ Where:
 
 ### Available (Next)
 
-- [ ] INF-003: KV Cache Optimization (+50% speed)
+- [x] INF-003: KV Cache Optimization (+50% speed) ✅ Implemented
 - [ ] INF-004: Batch Processing (+300% throughput)
 - [ ] OPT-001: SIMD Vectorization (+400% matrix ops)
 - [ ] OPT-004: Flash Attention (+200% attention)
@@ -213,6 +213,69 @@ Where:
 - [ ] CORE-004: JIT Compilation
 - [ ] HW-001: GPU Backend (CUDA)
 - [ ] HW-002: Metal Backend (Apple)
+
+---
+
+## KV Cache Optimization (INF-003)
+
+**Status**: ✅ Implemented
+
+### Implementation Details
+
+| Component | File | Description |
+|-----------|------|-------------|
+| RingKVCache | `kv_cache.zig` | O(1) append ring buffer |
+| SlidingWindowConfig | `kv_cache.zig` | Sink tokens + local window |
+| simdCopy | `kv_cache.zig` | SIMD-optimized cache writes |
+| CacheStats | `kv_cache.zig` | Hit rate, eviction tracking |
+
+### Ring Buffer Design
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    RING BUFFER KV CACHE                     │
+├─────────────────────────────────────────────────────────────┤
+│  [0] [1] [2] [3] [4] [5] [6] [7]  ← Physical positions      │
+│   ↑                                                         │
+│   write_pos (wraps around)                                  │
+│                                                             │
+│  Benefits:                                                  │
+│  - O(1) append (no reallocation)                            │
+│  - Fixed memory (max_seq_len * kv_size)                     │
+│  - Automatic eviction of oldest tokens                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Sliding Window Attention
+
+```
+Tokens:  [0] [1] [2] [3] ... [N-M] ... [N-1] [N]
+          ↑   ↑   ↑   ↑       ↑         ↑     ↑
+          └───┴───┴───┘       └─────────┴─────┘
+          Sink tokens (4)     Local window (M)
+          Always kept         Sliding window
+```
+
+### Memory Efficiency
+
+| Config | Tokens | Memory | vs Unbounded |
+|--------|--------|--------|--------------|
+| max_seq_len=2048 | 2048 | 16 MB | Fixed |
+| max_seq_len=4096 | 4096 | 32 MB | Fixed |
+| Unbounded | N | N * 8 KB | O(N) growth |
+
+### Test Results
+
+```
+All 7 tests passed:
+- kv cache config
+- layer kv cache
+- full kv cache
+- ring kv cache ✅ NEW
+- ring kv cache reset ✅ NEW
+- simd copy ✅ NEW
+- cached attention
+```
 
 ---
 

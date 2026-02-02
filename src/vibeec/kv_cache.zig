@@ -317,6 +317,248 @@ pub fn cachedAttention(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// RING BUFFER KV-CACHE (INF-003 Optimization)
+// O(1) append, fixed memory, sliding window support
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Sliding window configuration for infinite context
+pub const SlidingWindowConfig = struct {
+    window_size: usize, // Total window size
+    sink_tokens: usize, // First N tokens always kept (attention sinks)
+    local_tokens: usize, // Last M tokens in sliding window
+
+    pub fn default() SlidingWindowConfig {
+        return .{
+            .window_size = 2048,
+            .sink_tokens = 4, // Keep first 4 tokens as attention sinks
+            .local_tokens = 2044, // Rest is sliding window
+        };
+    }
+
+    pub fn small() SlidingWindowConfig {
+        return .{
+            .window_size = 512,
+            .sink_tokens = 4,
+            .local_tokens = 508,
+        };
+    }
+};
+
+/// Ring buffer KV cache with O(1) append and fixed memory
+pub const RingKVCache = struct {
+    allocator: std.mem.Allocator,
+    num_kv_heads: usize,
+    head_dim: usize,
+    max_seq_len: usize,
+
+    // Ring buffer storage (aligned for SIMD)
+    k_cache: []align(16) f32,
+    v_cache: []align(16) f32,
+
+    // Ring buffer state
+    write_pos: usize, // Next write position (wraps around)
+    total_tokens: usize, // Total tokens seen (can exceed max_seq_len)
+
+    // Sliding window config
+    window_config: SlidingWindowConfig,
+
+    // Stats
+    evicted_tokens: usize,
+
+    pub fn init(
+        allocator: std.mem.Allocator,
+        num_kv_heads: usize,
+        head_dim: usize,
+        max_seq_len: usize,
+        window_config: SlidingWindowConfig,
+    ) !RingKVCache {
+        const cache_size = max_seq_len * num_kv_heads * head_dim;
+
+        const k_cache = try allocator.alignedAlloc(f32, 16, cache_size);
+        @memset(k_cache, 0.0);
+
+        const v_cache = try allocator.alignedAlloc(f32, 16, cache_size);
+        @memset(v_cache, 0.0);
+
+        return RingKVCache{
+            .allocator = allocator,
+            .num_kv_heads = num_kv_heads,
+            .head_dim = head_dim,
+            .max_seq_len = max_seq_len,
+            .k_cache = k_cache,
+            .v_cache = v_cache,
+            .write_pos = 0,
+            .total_tokens = 0,
+            .window_config = window_config,
+            .evicted_tokens = 0,
+        };
+    }
+
+    pub fn deinit(self: *RingKVCache) void {
+        self.allocator.free(self.k_cache);
+        self.allocator.free(self.v_cache);
+    }
+
+    /// O(1) append with ring buffer wrap-around
+    pub fn append(self: *RingKVCache, k_new: []const f32, v_new: []const f32) void {
+        const kv_size = self.num_kv_heads * self.head_dim;
+        if (k_new.len != kv_size or v_new.len != kv_size) return;
+
+        // Calculate write position in ring buffer
+        const pos = self.write_pos % self.max_seq_len;
+        const offset = pos * kv_size;
+
+        // SIMD-optimized copy (8 floats at a time)
+        simdCopy(self.k_cache[offset..][0..kv_size], k_new);
+        simdCopy(self.v_cache[offset..][0..kv_size], v_new);
+
+        // Update state
+        self.write_pos += 1;
+        self.total_tokens += 1;
+
+        // Track evictions
+        if (self.total_tokens > self.max_seq_len) {
+            self.evicted_tokens += 1;
+        }
+    }
+
+    /// Get effective sequence length (capped at max_seq_len)
+    pub fn seqLen(self: *const RingKVCache) usize {
+        return @min(self.total_tokens, self.max_seq_len);
+    }
+
+    /// Get K vector at logical position (handles ring buffer wrap)
+    pub fn getK(self: *const RingKVCache, logical_pos: usize, head_idx: usize) []const f32 {
+        const physical_pos = self.logicalToPhysical(logical_pos);
+        const kv_size = self.num_kv_heads * self.head_dim;
+        const offset = physical_pos * kv_size + head_idx * self.head_dim;
+        return self.k_cache[offset..][0..self.head_dim];
+    }
+
+    /// Get V vector at logical position (handles ring buffer wrap)
+    pub fn getV(self: *const RingKVCache, logical_pos: usize, head_idx: usize) []const f32 {
+        const physical_pos = self.logicalToPhysical(logical_pos);
+        const kv_size = self.num_kv_heads * self.head_dim;
+        const offset = physical_pos * kv_size + head_idx * self.head_dim;
+        return self.v_cache[offset..][0..self.head_dim];
+    }
+
+    /// Convert logical position to physical ring buffer position
+    fn logicalToPhysical(self: *const RingKVCache, logical_pos: usize) usize {
+        if (self.total_tokens <= self.max_seq_len) {
+            return logical_pos;
+        }
+        // Ring buffer: oldest token is at (write_pos % max_seq_len)
+        const oldest_logical = self.total_tokens - self.max_seq_len;
+        const offset_from_oldest = logical_pos - oldest_logical;
+        return (self.write_pos - self.max_seq_len + offset_from_oldest) % self.max_seq_len;
+    }
+
+    /// Check if position is in sliding window
+    pub fn isInWindow(self: *const RingKVCache, logical_pos: usize) bool {
+        const cfg = self.window_config;
+
+        // Sink tokens always in window
+        if (logical_pos < cfg.sink_tokens) return true;
+
+        // Local window: last N tokens
+        if (self.total_tokens <= cfg.window_size) return true;
+
+        const window_start = self.total_tokens - cfg.local_tokens;
+        return logical_pos >= window_start;
+    }
+
+    /// Get attention mask for sliding window
+    pub fn getWindowMask(self: *const RingKVCache, allocator: std.mem.Allocator) ![]bool {
+        const seq_len = self.seqLen();
+        const mask = try allocator.alloc(bool, seq_len);
+
+        for (0..seq_len) |i| {
+            const logical_pos = if (self.total_tokens <= self.max_seq_len)
+                i
+            else
+                self.total_tokens - self.max_seq_len + i;
+
+            mask[i] = self.isInWindow(logical_pos);
+        }
+
+        return mask;
+    }
+
+    /// Reset cache for new sequence
+    pub fn reset(self: *RingKVCache) void {
+        self.write_pos = 0;
+        self.total_tokens = 0;
+        self.evicted_tokens = 0;
+    }
+
+    /// Explicit prune: keep only sink tokens + recent window
+    /// Useful when switching to shorter context
+    pub fn prune(self: *RingKVCache, keep_tokens: usize) void {
+        if (keep_tokens >= self.total_tokens) return;
+
+        const cfg = self.window_config;
+        const to_keep = @max(keep_tokens, cfg.sink_tokens);
+
+        // If we need to prune, reset to keep only recent tokens
+        if (self.total_tokens > to_keep) {
+            self.evicted_tokens += self.total_tokens - to_keep;
+            self.total_tokens = to_keep;
+            self.write_pos = to_keep % self.max_seq_len;
+        }
+    }
+
+    /// Memory usage in bytes
+    pub fn memoryUsage(self: *const RingKVCache) usize {
+        return (self.k_cache.len + self.v_cache.len) * @sizeOf(f32);
+    }
+
+    /// Cache statistics
+    pub fn getStats(self: *const RingKVCache) CacheStats {
+        const mem = self.memoryUsage();
+        const cached = self.seqLen();
+        const hit_rate: f32 = if (self.total_tokens > 0)
+            @as(f32, @floatFromInt(cached)) / @as(f32, @floatFromInt(self.total_tokens))
+        else
+            1.0;
+
+        return CacheStats{
+            .total_tokens = self.total_tokens,
+            .cached_tokens = cached,
+            .evicted_tokens = self.evicted_tokens,
+            .hit_rate = hit_rate,
+            .memory_bytes = mem,
+        };
+    }
+};
+
+/// Cache statistics
+pub const CacheStats = struct {
+    total_tokens: usize,
+    cached_tokens: usize,
+    evicted_tokens: usize,
+    hit_rate: f32,
+    memory_bytes: usize,
+};
+
+/// SIMD-optimized copy (8 floats at a time)
+fn simdCopy(dst: []f32, src: []const f32) void {
+    const Vec8 = @Vector(8, f32);
+    var i: usize = 0;
+
+    // SIMD copy 8 floats at a time
+    while (i + 8 <= src.len) : (i += 8) {
+        const v: Vec8 = src[i..][0..8].*;
+        dst[i..][0..8].* = v;
+    }
+
+    // Scalar fallback for remainder
+    while (i < src.len) : (i += 1) {
+        dst[i] = src[i];
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -376,6 +618,88 @@ test "full kv cache" {
 
     cache.reset();
     try std.testing.expectEqual(@as(usize, 0), cache.seqLen());
+}
+
+test "ring kv cache" {
+    const allocator = std.testing.allocator;
+
+    var cache = try RingKVCache.init(
+        allocator,
+        2, // num_kv_heads
+        16, // head_dim
+        4, // max_seq_len (small for testing)
+        SlidingWindowConfig.default(),
+    );
+    defer cache.deinit();
+
+    try std.testing.expectEqual(@as(usize, 0), cache.seqLen());
+    try std.testing.expectEqual(@as(usize, 0), cache.total_tokens);
+
+    // Create test vectors
+    const kv_size = 2 * 16;
+    var k = [_]f32{1.0} ** kv_size;
+    var v = [_]f32{2.0} ** kv_size;
+
+    // Append 3 tokens
+    cache.append(&k, &v);
+    cache.append(&k, &v);
+    cache.append(&k, &v);
+
+    try std.testing.expectEqual(@as(usize, 3), cache.seqLen());
+    try std.testing.expectEqual(@as(usize, 3), cache.total_tokens);
+
+    // Append 3 more (should wrap around, max_seq_len=4)
+    cache.append(&k, &v);
+    cache.append(&k, &v);
+    cache.append(&k, &v);
+
+    try std.testing.expectEqual(@as(usize, 4), cache.seqLen()); // Capped at max
+    try std.testing.expectEqual(@as(usize, 6), cache.total_tokens);
+    try std.testing.expectEqual(@as(usize, 2), cache.evicted_tokens);
+
+    // Check stats
+    const stats = cache.getStats();
+    try std.testing.expectEqual(@as(usize, 6), stats.total_tokens);
+    try std.testing.expectEqual(@as(usize, 4), stats.cached_tokens);
+    try std.testing.expect(stats.hit_rate < 1.0);
+}
+
+test "ring kv cache reset" {
+    const allocator = std.testing.allocator;
+
+    var cache = try RingKVCache.init(
+        allocator,
+        2,
+        16,
+        8,
+        SlidingWindowConfig.default(),
+    );
+    defer cache.deinit();
+
+    const kv_size = 2 * 16;
+    var k = [_]f32{1.0} ** kv_size;
+    var v = [_]f32{2.0} ** kv_size;
+
+    cache.append(&k, &v);
+    cache.append(&k, &v);
+
+    try std.testing.expectEqual(@as(usize, 2), cache.seqLen());
+
+    cache.reset();
+
+    try std.testing.expectEqual(@as(usize, 0), cache.seqLen());
+    try std.testing.expectEqual(@as(usize, 0), cache.total_tokens);
+}
+
+test "simd copy" {
+    var dst = [_]f32{0.0} ** 32;
+    const src = [_]f32{1.0} ** 32;
+
+    simdCopy(&dst, &src);
+
+    for (dst) |v| {
+        try std.testing.expectEqual(@as(f32, 1.0), v);
+    }
 }
 
 test "cached attention" {
