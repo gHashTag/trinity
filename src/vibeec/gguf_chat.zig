@@ -109,8 +109,17 @@ const ConversationHistory = struct {
     }
 };
 
-// Entry point for CLI chat command
+// Entry point for CLI chat command (with ternary support)
+pub fn runChatWithTernary(allocator: std.mem.Allocator, model_path: []const u8, initial_prompt: ?[]const u8, max_tokens: u32, temperature: f32, top_p: f32, use_ternary: bool) !void {
+    return runChatInternal(allocator, model_path, initial_prompt, max_tokens, temperature, top_p, use_ternary);
+}
+
+// Entry point for CLI chat command (backward compatible)
 pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_prompt: ?[]const u8, max_tokens: u32, temperature: f32, top_p: f32) !void {
+    return runChatInternal(allocator, model_path, initial_prompt, max_tokens, temperature, top_p, false);
+}
+
+fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial_prompt: ?[]const u8, max_tokens: u32, temperature: f32, top_p: f32, use_ternary: bool) !void {
     const stdout = std.io.getStdOut().writer();
 
     try stdout.print("\n", .{});
@@ -146,6 +155,14 @@ pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_pro
     };
     const load_time = timer.read();
     std.debug.print("Weights loaded in {d:.2} seconds\n", .{@as(f64, @floatFromInt(load_time)) / 1e9});
+
+    // Enable ternary mode if requested (BitNet {-1, 0, +1})
+    if (use_ternary) {
+        std.debug.print("\nEnabling ternary mode (BitNet weights)...\n", .{});
+        model.enableTernaryMode() catch |err| {
+            std.debug.print("Warning: Could not enable ternary mode: {}\n", .{err});
+        };
+    }
 
     // Initialize tokenizer
     std.debug.print("\nInitializing tokenizer...\n", .{});

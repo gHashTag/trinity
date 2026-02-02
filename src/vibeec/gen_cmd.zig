@@ -47,6 +47,7 @@ pub fn main() !void {
         var max_tokens: u32 = 100;
         var temperature: f32 = 0.7;
         var top_p: f32 = 0.9;
+        var use_ternary: bool = false;
 
         var i: usize = 2;
         while (i < args.len) : (i += 1) {
@@ -65,6 +66,8 @@ pub fn main() !void {
             } else if (std.mem.eql(u8, args[i], "--top-p") and i + 1 < args.len) {
                 top_p = std.fmt.parseFloat(f32, args[i + 1]) catch 0.9;
                 i += 1;
+            } else if (std.mem.eql(u8, args[i], "--ternary")) {
+                use_ternary = true;
             }
         }
 
@@ -73,7 +76,7 @@ pub fn main() !void {
             return;
         }
 
-        try gguf_chat.runChat(allocator, model_path.?, prompt, max_tokens, temperature, top_p);
+        try gguf_chat.runChatWithTernary(allocator, model_path.?, prompt, max_tokens, temperature, top_p, use_ternary);
     } else if (std.mem.eql(u8, command, "serve")) {
         // HTTP API server
         var model_path: ?[]const u8 = null;
@@ -119,6 +122,7 @@ fn printUsage() void {
         \\    --max-tokens N                            Max tokens to generate (default: 100)
         \\    --temperature F                           Sampling temperature (default: 0.7)
         \\    --top-p F                                 Top-p nucleus sampling (default: 0.9)
+        \\    --ternary                                 Enable BitNet ternary mode (16x memory savings)
         \\  vibeec serve --model <path.gguf> [options]  HTTP API server (OpenAI compatible)
         \\    --port N                                  Port to listen on (default: 8080)
         \\  vibeec help                                 Show this help
