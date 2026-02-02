@@ -1,0 +1,16 @@
+# Trinity GPU Benchmark - Test all Fly.io GPUs
+# A10, L40S, A100-40GB, A100-80GB
+
+app = "trinity-gpu-benchmark"
+primary_region = "ord"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  BENCHMARK_MODE = "true"
+
+[[vm]]
+  size = "a100-40gb"
+  memory = "32gb"
+  cpus = 8
