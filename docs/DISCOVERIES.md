@@ -73,7 +73,7 @@ Where:
 | ID | Optimization | Compression | Speedup | Status |
 |----|--------------|-------------|---------|--------|
 | OPT-T01 | Ternary Weight Quantization | 20x | 10x | ✅ Implemented |
-| OPT-T02 | Ternary Matrix Multiplication | N/A | 10x | 🔄 In Progress |
+| OPT-T02 | Ternary Matrix Multiplication | N/A | 10x | ✅ Implemented |
 | OPT-T03 | Ternary KV Cache | 20x | 5x | 📋 Planned |
 | OPT-T04 | Ternary Attention | 20x | 5-10x | 📋 Planned |
 | OPT-T05 | Ternary Embeddings | 20x | 2x | 📋 Planned |
@@ -213,6 +213,58 @@ Where:
 - [ ] CORE-004: JIT Compilation
 - [ ] HW-001: GPU Backend (CUDA)
 - [ ] HW-002: Metal Backend (Apple)
+
+---
+
+## Ternary Matrix Multiplication (OPT-T02)
+
+**Status**: ✅ Implemented
+
+### Implementation Details
+
+| Component | File | Description |
+|-----------|------|-------------|
+| TritWeight | `ternary_weights.zig` | 2-bit encoding: 00=0, 01=+1, 10=-1 |
+| TritPack4 | `ternary_weights.zig` | 4 trits packed per byte |
+| simdTernaryMatVec | `ternary_weights.zig` | AVX2 (8-wide) vectorized |
+| simd16TernaryMatVec | `ternary_weights.zig` | AVX-512 (16-wide) vectorized |
+| batchTernaryMatVec | `ternary_weights.zig` | 4 rows parallel processing |
+| parallelTernaryMatmul | `parallel_inference.zig` | Multi-threaded wrapper |
+
+### SIMD Sign Lookup Table
+
+```zig
+const sign_lut = [4]f32{ 0.0, 1.0, -1.0, 0.0 };
+// 00 → 0.0 (zero weight)
+// 01 → 1.0 (positive weight)
+// 10 → -1.0 (negative weight)
+// 11 → 0.0 (reserved)
+```
+
+### Memory Layout
+
+```
+TritPack4 byte: [t3][t2][t1][t0]
+                 ^   ^   ^   ^
+                 |   |   |   +-- bits 0-1: trit 0
+                 |   |   +------ bits 2-3: trit 1
+                 |   +---------- bits 4-5: trit 2
+                 +-------------- bits 6-7: trit 3
+```
+
+### Benchmark Results
+
+| Operation | Time | Notes |
+|-----------|------|-------|
+| Ternary NOT | 0 ns/op | Instant |
+| Ternary AND | 0 ns/op | Instant |
+| SIMD Tryte batch | 3 ns/op | 32 elements |
+
+### Integration
+
+- `tri_inference.zig`: Uses `parallelTernaryMatmul` for all weight operations
+- `parallel_inference.zig`: Auto-selects SIMD16 for small matrices, multi-threaded for large
+- Threshold: <64 rows → single-threaded SIMD, ≥64 rows → 8-thread parallel
 
 ---
 

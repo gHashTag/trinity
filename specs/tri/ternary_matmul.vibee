@@ -1,0 +1,128 @@
+# Ternary Matrix Multiplication Specification
+# BitNet-style {-1, 0, +1} weights for 20x memory reduction
+# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+
+name: ternary_matmul
+version: "1.0.0"
+language: zig
+module: ternary_matmul
+
+description: |
+  Ternary matrix-vector multiplication for neural network inference.
+  Uses 2-bit encoding: 00=0, 01=+1, 10=-1, 11=reserved.
+  4 trits packed per byte (TritPack4).
+  SIMD-optimized using AVX2/AVX-512 vectors.
+
+types:
+  TritWeight:
+    description: "Single ternary weight {-1, 0, +1}"
+    fields:
+      value: Int
+    encoding:
+      ZERO: 0b00
+      PLUS_ONE: 0b01
+      MINUS_ONE: 0b10
+      RESERVED: 0b11
+
+  TritPack4:
+    description: "4 ternary weights packed in 1 byte"
+    fields:
+      packed: Int
+    width: 8
+
+  TernaryMatrix:
+    description: "Packed ternary weight matrix"
+    fields:
+      data: List<Int>
+      rows: Int
+      cols: Int
+      cols_packed: Int
+
+  MemoryStats:
+    description: "Memory usage statistics"
+    fields:
+      float32_bytes: Int
+      ternary_bytes: Int
+      compression_ratio: Float
+
+behaviors:
+  - name: trit_to_float
+    given: TritWeight with 2-bit encoding
+    when: Converting to float for computation
+    then: Returns -1.0, 0.0, or +1.0
+
+  - name: float_to_trit
+    given: Float value
+    when: Quantizing to ternary
+    then: Returns nearest trit (threshold at 0.5)
+
+  - name: pack_trits
+    given: 4 TritWeight values
+    when: Packing for storage
+    then: Returns single byte with 4 trits
+
+  - name: unpack_trits
+    given: Packed byte
+    when: Extracting for computation
+    then: Returns 4 TritWeight values
+
+  - name: ternary_matvec
+    given: Packed weight matrix and input vector
+    when: Computing matrix-vector product
+    then: Output vector with dot products (no multiplications, only add/sub)
+
+  - name: simd_ternary_matvec
+    given: Packed weights, input vector, SIMD width 8
+    when: Computing with AVX2 vectors
+    then: 8x speedup via vectorized sign lookup
+
+  - name: simd_ternary_matvec_16
+    given: Packed weights, input vector, SIMD width 16
+    when: Computing with AVX-512 vectors
+    then: 16x speedup via wider vectors
+
+  - name: batch_ternary_matvec
+    given: Packed weights, input vector, batch of 4 rows
+    when: Processing multiple output rows
+    then: 4 rows computed in parallel
+
+  - name: compute_memory_stats
+    given: Matrix dimensions (rows, cols)
+    when: Analyzing memory savings
+    then: Returns compression ratio (~20x vs float32)
+
+optimizations:
+  - name: sign_lookup_table
+    description: "LUT for trit→sign: [0.0, 1.0, -1.0, 0.0]"
+    
+  - name: no_multiplication
+    description: "y += sign * x becomes y += x or y -= x based on sign"
+    
+  - name: cache_friendly
+    description: "Row-major layout, sequential memory access"
+    
+  - name: simd_reduction
+    description: "@reduce(.Add, vec) for horizontal sum"
+
+benchmarks:
+  - name: throughput
+    metric: "GFLOPS equivalent"
+    target: ">100 GFLOPS on AVX2"
+    
+  - name: memory_bandwidth
+    metric: "GB/s"
+    target: "Near memory bandwidth limit"
+    
+  - name: latency
+    metric: "ns per row"
+    target: "<100ns for 4096-dim row"
+
+integration:
+  - target: bytecode_vm
+    description: "OP_TERNARY_MATVEC opcode"
+    
+  - target: model_loader
+    description: "Load .tri model files"
+    
+  - target: inference_pipeline
+    description: "Replace float matmul in forward pass"
