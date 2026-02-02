@@ -1,11 +1,16 @@
 # continuous_batching.vibee
 # Continuous Batching for high-throughput LLM serving
 # Orca/vLLM style iteration-level scheduling
+# Integrated with PagedAttention for optimal memory management
 
 name: continuous_batching
-version: "1.0.0"
+version: "2.0.0"
 language: zig
 module: continuous_batching
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
 
 types:
   Request:
@@ -18,6 +23,7 @@ types:
       priority: Int              # Request priority (higher = more urgent)
       created_at: Timestamp      # Request creation time
       status: RequestStatus      # Current status
+      block_table: List<Int>     # PagedAttention block indices
 
   RequestStatus:
     description: "Status of a request"
@@ -27,6 +33,7 @@ types:
       - GENERATING               # Generating tokens
       - COMPLETED                # Finished generation
       - CANCELLED                # Cancelled by client
+      - PREEMPTED                # Swapped out for higher priority
 
   SchedulerConfig:
     description: "Configuration for continuous batching scheduler"
@@ -35,6 +42,9 @@ types:
       max_tokens_per_iter: Int   # Token budget per iteration
       preemption_enabled: Bool   # Allow preemption
       priority_decay: Float      # Priority decay for waiting requests
+      use_paged_attention: Bool  # Enable PagedAttention memory management
+      block_size: Int            # Tokens per block (default: 16)
+      max_blocks: Int            # Maximum blocks in memory pool
 
   BatchSlot:
     description: "Slot in the running batch"
@@ -43,12 +53,30 @@ types:
       seq_idx: Int               # Sequence index in batch
       tokens_generated: Int      # Tokens generated so far
       is_prefill: Bool           # In prefill phase
+      num_blocks: Int            # Number of allocated blocks
+
+  SchedulerStats:
+    description: "Statistics for monitoring"
+    fields:
+      total_requests: Int
+      completed_requests: Int
+      total_tokens_generated: Int
+      total_iterations: Int
+      avg_batch_size: Float
+      avg_latency_ms: Float
+      throughput_tok_per_sec: Float
+      memory_utilization: Float
+      preemption_count: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
 
 behaviors:
   - name: submit_request
     given: request queue, new request
     when: client submits inference request
-    then: adds request to queue with priority
+    then: adds request to queue with priority, allocates initial blocks
 
   - name: schedule_iteration
     given: running batch, request queue, token budget
@@ -63,54 +91,140 @@ behaviors:
   - name: handle_completion
     given: completed sequence, request queue
     when: sequence finishes generation
-    then: removes from batch, adds new request if available
+    then: removes from batch, frees blocks, adds new request if available
 
   - name: preempt_sequence
     given: running sequence, higher priority request
     when: preemption needed
-    then: pauses sequence, saves state, schedules new request
+    then: swaps KV cache to CPU, frees GPU blocks, schedules new request
 
-# Architecture:
+  - name: resume_sequence
+    given: preempted sequence, available blocks
+    when: blocks become available
+    then: swaps KV cache back to GPU, resumes generation
+
+  - name: get_stats
+    given: scheduler state
+    when: monitoring requested
+    then: returns SchedulerStats with current metrics
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ARCHITECTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │              CONTINUOUS BATCHING + PAGED ATTENTION                          │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  REQUEST QUEUE (Priority Heap)                                              │
+# │  ┌─────┬─────┬─────┬─────┬─────┐                                            │
+# │  │ R5  │ R3  │ R7  │ R1  │ R9  │  (sorted by priority)                      │
+# │  └──┬──┴──┬──┴──┬──┴─────┴─────┘                                            │
+# │     │     │     │                                                           │
+# │     ▼     ▼     ▼                                                           │
+# │  RUNNING BATCH (max_batch_size slots)                                       │
+# │  ┌─────┬─────┬─────┬─────┐                                                  │
+# │  │ S0  │ S1  │ S2  │ S3  │  (active sequences)                              │
+# │  │ R5  │ R3  │ R7  │ --- │  (--- = empty slot)                              │
+# │  └──┬──┴──┬──┴──┬──┴─────┘                                                  │
+# │     │     │     │                                                           │
+# │     ▼     ▼     ▼                                                           │
+# │  BLOCK TABLES (PagedAttention)                                              │
+# │  ┌─────────────────────────────────────────────────────────────────┐        │
+# │  │ S0: [B0, B1, B2, B3]     → 64 tokens (4 blocks × 16 tok/block)  │        │
+# │  │ S1: [B4, B5]             → 32 tokens                            │        │
+# │  │ S2: [B6, B7, B8]         → 48 tokens                            │        │
+# │  └─────────────────────────────────────────────────────────────────┘        │
+# │                                                                             │
+# │  KV CACHE MEMORY POOL (Paged)                                               │
+# │  ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐              │
+# │  │ B0  │ B1  │ B2  │ B3  │ B4  │ B5  │ B6  │ B7  │ B8  │FREE │              │
+# │  │ S0  │ S0  │ S0  │ S0  │ S1  │ S1  │ S2  │ S2  │ S2  │     │              │
+# │  └─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘              │
+# │                                                                             │
+# │  ITERATION LOOP:                                                            │
+# │  1. Check for completed sequences → free blocks                             │
+# │  2. Fill empty slots from queue → allocate blocks                           │
+# │  3. Run forward pass with paged attention                                   │
+# │  4. Sample next tokens                                                      │
+# │  5. Allocate new blocks if needed                                           │
+# │  6. Check stopping conditions                                               │
+# │  7. Repeat                                                                  │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PERFORMANCE COMPARISON
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Memory Efficiency:
 #
-# ┌─────────────────────────────────────────────────────────────┐
-# │              CONTINUOUS BATCHING SCHEDULER                  │
-# ├─────────────────────────────────────────────────────────────┤
-# │                                                             │
-# │  REQUEST QUEUE (Priority Heap)                              │
-# │  ┌─────┬─────┬─────┬─────┬─────┐                            │
-# │  │ R5  │ R3  │ R7  │ R1  │ R9  │  (sorted by priority)      │
-# │  └──┬──┴──┬──┴──┬──┴─────┴─────┘                            │
-# │     │     │     │                                           │
-# │     ▼     ▼     ▼                                           │
-# │  RUNNING BATCH (max_batch_size slots)                       │
-# │  ┌─────┬─────┬─────┬─────┐                                  │
-# │  │ S0  │ S1  │ S2  │ S3  │  (active sequences)              │
-# │  │ R5  │ R3  │ R7  │ --- │  (--- = empty slot)              │
-# │  └──┬──┴──┬──┴──┬──┴─────┘                                  │
-# │     │     │     │                                           │
-# │     ▼     ▼     ▼                                           │
-# │  ┌─────────────────────────────────────────┐                │
-# │  │         MODEL FORWARD PASS              │                │
-# │  │  (process all active sequences)         │                │
-# │  └─────────────────────────────────────────┘                │
-# │                                                             │
-# │  ITERATION LOOP:                                            │
-# │  1. Check for completed sequences → free slots              │
-# │  2. Fill empty slots from queue                             │
-# │  3. Run forward pass for all active sequences               │
-# │  4. Sample next tokens                                      │
-# │  5. Check stopping conditions                               │
-# │  6. Repeat                                                  │
-# │                                                             │
-# └─────────────────────────────────────────────────────────────┘
-#
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │                    MEMORY COMPARISON                                       │
+# ├────────────────────────────────────────────────────────────────────────────┤
+# │                                                                            │
+# │  STATIC BATCHING (pre-allocated):                                          │
+# │  ┌────────────────────────────────────────────────────────────────────┐    │
+# │  │ Seq 0: [████████████████████████████████████████████████████████] │    │
+# │  │ Seq 1: [████████████████████████████████████████████████████████] │    │
+# │  │ Seq 2: [████████████████████████████████████████████████████████] │    │
+# │  │ Seq 3: [████████████████████████████████████████████████████████] │    │
+# │  └────────────────────────────────────────────────────────────────────┘    │
+# │  Memory: batch_size × max_seq_len × kv_size = 4 × 2048 × 128 = 1MB        │
+# │  Utilization: ~25% (most sequences shorter than max)                       │
+# │                                                                            │
+# │  PAGED ATTENTION (dynamic):                                                │
+# │  ┌────────────────────────────────────────────────────────────────────┐    │
+# │  │ Seq 0: [████████]                                                  │    │
+# │  │ Seq 1: [████████████████████████]                                  │    │
+# │  │ Seq 2: [████]                                                      │    │
+# │  │ Seq 3: [████████████████]                                          │    │
+# │  └────────────────────────────────────────────────────────────────────┘    │
+# │  Memory: actual_tokens × kv_size = 832 × 128 = 104KB                      │
+# │  Utilization: ~100% (only used tokens allocated)                           │
+# │                                                                            │
+# │  SAVINGS: 10x memory reduction typical                                     │
+# │                                                                            │
+# └────────────────────────────────────────────────────────────────────────────┘
+
 # Throughput Improvement:
-#   Static batching: Wait for slowest sequence
-#   Continuous batching: Fill slots immediately
 #
-#   Example (batch_size=4, requests with varying lengths):
-#   Static:     [====][====][==][======] → 6 iterations wasted
-#   Continuous: [====][====][==][======]
-#               [    ][    ][++][      ] → new requests fill gaps
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │                    THROUGHPUT COMPARISON                                   │
+# ├────────────────────────────────────────────────────────────────────────────┤
+# │                                                                            │
+# │  STATIC BATCHING:                                                          │
+# │  Time: ████████████████████████████████████████████████████████████████    │
+# │        [R1 wait][R2 wait][R3 wait][R4 wait][PROCESS BATCH][R5 wait]...     │
+# │  Throughput: ~100 tok/s (waiting for batch to fill)                        │
+# │                                                                            │
+# │  CONTINUOUS BATCHING:                                                      │
+# │  Time: ████████████████████████████████████████████████████████████████    │
+# │        [R1][R2][R3][R4][R5][R6][R7][R8][R9][R10][R11][R12]...              │
+# │  Throughput: ~300 tok/s (no waiting, immediate processing)                 │
+# │                                                                            │
+# │  IMPROVEMENT: 3x throughput under high load                                │
+# │                                                                            │
+# └────────────────────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION WITH OTHER OPTIMIZATIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Integration Points:
 #
-#   Throughput gain: 30-50% typical, up to 3x under high load
+# 1. OPT-M01 (mmap_loader):
+#    - Use mmap for fast model loading
+#    - Shared memory across multiple scheduler instances
+#
+# 2. OPT-C01 (kv_cache_compression):
+#    - Sliding window attention within paged blocks
+#    - Attention sink tokens preserved across blocks
+#
+# 3. OPT-S01 (speculative_decoding):
+#    - Speculative decoding per-sequence in batch
+#    - Draft tokens share same block allocation
+#
+# 4. OPT-T03 (ternary_kv_cache):
+#    - Ternary quantization of KV cache blocks
+#    - 16x memory reduction per block

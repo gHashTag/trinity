@@ -1524,3 +1524,490 @@ test "compression_stats" {
     std.debug.print("║  Memory saved:         {d:>10} bytes                      ║\n", .{stats.memory_saved_bytes});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PAGED ATTENTION (OPT-PA01)
+// vLLM-style block-based memory management for KV cache
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Configuration for paged attention
+pub const PagedAttentionConfig = struct {
+    block_size: usize, // Tokens per block (default: 16)
+    num_heads: usize, // Number of attention heads
+    head_dim: usize, // Dimension per head
+    num_layers: usize, // Number of transformer layers
+    max_blocks: usize, // Maximum blocks in pool
+    use_ternary: bool, // Use ternary quantization for blocks
+
+    pub fn default7B() PagedAttentionConfig {
+        return .{
+            .block_size = 16,
+            .num_heads = 32,
+            .head_dim = 128,
+            .num_layers = 32,
+            .max_blocks = 4096, // ~64K tokens capacity
+            .use_ternary = false,
+        };
+    }
+
+    pub fn mini() PagedAttentionConfig {
+        return .{
+            .block_size = 4,
+            .num_heads = 4,
+            .head_dim = 16,
+            .num_layers = 2,
+            .max_blocks = 64,
+            .use_ternary = false,
+        };
+    }
+
+    /// Memory per block in bytes
+    pub fn blockMemory(self: *const PagedAttentionConfig) usize {
+        // K + V per block
+        const kv_per_token = self.num_heads * self.head_dim * 2 * @sizeOf(f32);
+        return self.block_size * kv_per_token;
+    }
+
+    /// Total pool memory in bytes
+    pub fn totalMemory(self: *const PagedAttentionConfig) usize {
+        return self.max_blocks * self.blockMemory();
+    }
+};
+
+/// Single KV cache block
+pub const KVBlock = struct {
+    block_id: usize,
+    ref_count: usize, // For copy-on-write
+    k_cache: []f32, // [block_size × num_heads × head_dim]
+    v_cache: []f32, // [block_size × num_heads × head_dim]
+    num_tokens: usize, // Actual tokens stored (0 to block_size)
+    layer_idx: usize, // Which layer this block belongs to
+
+    pub fn init(allocator: std.mem.Allocator, config: *const PagedAttentionConfig, block_id: usize, layer_idx: usize) !KVBlock {
+        const size = config.block_size * config.num_heads * config.head_dim;
+        const k_cache = try allocator.alloc(f32, size);
+        @memset(k_cache, 0.0);
+        const v_cache = try allocator.alloc(f32, size);
+        @memset(v_cache, 0.0);
+
+        return KVBlock{
+            .block_id = block_id,
+            .ref_count = 1,
+            .k_cache = k_cache,
+            .v_cache = v_cache,
+            .num_tokens = 0,
+            .layer_idx = layer_idx,
+        };
+    }
+
+    pub fn deinit(self: *KVBlock, allocator: std.mem.Allocator) void {
+        allocator.free(self.k_cache);
+        allocator.free(self.v_cache);
+    }
+
+    /// Check if block is full
+    pub fn isFull(self: *const KVBlock, block_size: usize) bool {
+        return self.num_tokens >= block_size;
+    }
+
+    /// Append K,V for one token
+    pub fn appendToken(self: *KVBlock, k: []const f32, v: []const f32, num_heads: usize, head_dim: usize) !void {
+        const kv_size = num_heads * head_dim;
+        if (k.len != kv_size or v.len != kv_size) return error.InvalidSize;
+
+        const offset = self.num_tokens * kv_size;
+        @memcpy(self.k_cache[offset..][0..kv_size], k);
+        @memcpy(self.v_cache[offset..][0..kv_size], v);
+        self.num_tokens += 1;
+    }
+
+    /// Get K for specific token position within block
+    pub fn getK(self: *const KVBlock, token_idx: usize, head_idx: usize, num_heads: usize, head_dim: usize) []const f32 {
+        const offset = token_idx * num_heads * head_dim + head_idx * head_dim;
+        return self.k_cache[offset..][0..head_dim];
+    }
+
+    /// Get V for specific token position within block
+    pub fn getV(self: *const KVBlock, token_idx: usize, head_idx: usize, num_heads: usize, head_dim: usize) []const f32 {
+        const offset = token_idx * num_heads * head_dim + head_idx * head_dim;
+        return self.v_cache[offset..][0..head_dim];
+    }
+};
+
+/// Block table: maps sequence positions to blocks
+pub const BlockTable = struct {
+    allocator: std.mem.Allocator,
+    seq_id: usize,
+    block_ids: std.ArrayList(usize), // List of block IDs for this sequence
+    num_tokens: usize, // Total tokens in sequence
+
+    pub fn init(allocator: std.mem.Allocator, seq_id: usize) BlockTable {
+        return BlockTable{
+            .allocator = allocator,
+            .seq_id = seq_id,
+            .block_ids = std.ArrayList(usize).init(allocator),
+            .num_tokens = 0,
+        };
+    }
+
+    pub fn deinit(self: *BlockTable) void {
+        self.block_ids.deinit();
+    }
+
+    /// Get block index for a token position
+    pub fn getBlockIdx(self: *const BlockTable, token_pos: usize, block_size: usize) ?usize {
+        const block_num = token_pos / block_size;
+        if (block_num >= self.block_ids.items.len) return null;
+        return self.block_ids.items[block_num];
+    }
+
+    /// Get position within block
+    pub fn getPositionInBlock(token_pos: usize, block_size: usize) usize {
+        return token_pos % block_size;
+    }
+};
+
+/// Memory pool for KV cache blocks
+pub const BlockPool = struct {
+    allocator: std.mem.Allocator,
+    config: PagedAttentionConfig,
+    blocks: std.ArrayList(KVBlock), // All allocated blocks
+    free_list: std.ArrayList(usize), // Free block indices
+    num_allocated: usize,
+
+    pub fn init(allocator: std.mem.Allocator, config: PagedAttentionConfig) !BlockPool {
+        var pool = BlockPool{
+            .allocator = allocator,
+            .config = config,
+            .blocks = std.ArrayList(KVBlock).init(allocator),
+            .free_list = std.ArrayList(usize).init(allocator),
+            .num_allocated = 0,
+        };
+
+        // Pre-allocate all blocks
+        for (0..config.max_blocks) |i| {
+            const block = try KVBlock.init(allocator, &config, i, 0);
+            try pool.blocks.append(block);
+            try pool.free_list.append(i);
+        }
+
+        return pool;
+    }
+
+    pub fn deinit(self: *BlockPool) void {
+        for (self.blocks.items) |*block| {
+            block.deinit(self.allocator);
+        }
+        self.blocks.deinit();
+        self.free_list.deinit();
+    }
+
+    /// Allocate a block from the pool
+    pub fn allocateBlock(self: *BlockPool) ?usize {
+        if (self.free_list.items.len == 0) return null;
+        const block_id = self.free_list.pop();
+        self.num_allocated += 1;
+        self.blocks.items[block_id].ref_count = 1;
+        self.blocks.items[block_id].num_tokens = 0;
+        return block_id;
+    }
+
+    /// Free a block back to the pool
+    pub fn freeBlock(self: *BlockPool, block_id: usize) void {
+        if (block_id >= self.blocks.items.len) return;
+
+        self.blocks.items[block_id].ref_count -= 1;
+        if (self.blocks.items[block_id].ref_count == 0) {
+            self.free_list.append(block_id) catch {};
+            self.num_allocated -= 1;
+        }
+    }
+
+    /// Get block by ID
+    pub fn getBlock(self: *BlockPool, block_id: usize) ?*KVBlock {
+        if (block_id >= self.blocks.items.len) return null;
+        return &self.blocks.items[block_id];
+    }
+
+    /// Copy-on-write: copy block if shared
+    pub fn copyOnWrite(self: *BlockPool, block_id: usize) ?usize {
+        if (block_id >= self.blocks.items.len) return null;
+
+        const block = &self.blocks.items[block_id];
+        if (block.ref_count <= 1) return block_id; // No copy needed
+
+        // Allocate new block
+        const new_id = self.allocateBlock() orelse return null;
+        const new_block = &self.blocks.items[new_id];
+
+        // Copy data
+        @memcpy(new_block.k_cache, block.k_cache);
+        @memcpy(new_block.v_cache, block.v_cache);
+        new_block.num_tokens = block.num_tokens;
+        new_block.layer_idx = block.layer_idx;
+
+        // Decrement old block ref count
+        block.ref_count -= 1;
+
+        return new_id;
+    }
+
+    /// Get statistics
+    pub fn getStats(self: *const BlockPool) PagedAttentionStats {
+        const total = self.config.max_blocks;
+        const allocated = self.num_allocated;
+        const free = total - allocated;
+        const mem_per_block = self.config.blockMemory();
+
+        return PagedAttentionStats{
+            .total_blocks = total,
+            .allocated_blocks = allocated,
+            .free_blocks = free,
+            .memory_used_bytes = allocated * mem_per_block,
+            .memory_total_bytes = total * mem_per_block,
+            .utilization_percent = if (total > 0) @as(f32, @floatFromInt(allocated)) / @as(f32, @floatFromInt(total)) * 100.0 else 0.0,
+            .cow_copies = 0, // TODO: track
+            .evictions = 0, // TODO: track
+        };
+    }
+};
+
+/// Statistics for paged attention
+pub const PagedAttentionStats = struct {
+    total_blocks: usize,
+    allocated_blocks: usize,
+    free_blocks: usize,
+    memory_used_bytes: usize,
+    memory_total_bytes: usize,
+    utilization_percent: f32,
+    cow_copies: usize,
+    evictions: usize,
+
+    pub fn print(self: *const PagedAttentionStats) void {
+        const mem_used_mb = @as(f64, @floatFromInt(self.memory_used_bytes)) / (1024.0 * 1024.0);
+        const mem_total_mb = @as(f64, @floatFromInt(self.memory_total_bytes)) / (1024.0 * 1024.0);
+
+        std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║           PAGED ATTENTION STATS                             ║\n", .{});
+        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+        std.debug.print("║  Total blocks:         {d:>10}                            ║\n", .{self.total_blocks});
+        std.debug.print("║  Allocated blocks:     {d:>10}                            ║\n", .{self.allocated_blocks});
+        std.debug.print("║  Free blocks:          {d:>10}                            ║\n", .{self.free_blocks});
+        std.debug.print("║  Memory used:          {d:>10.2} MB                        ║\n", .{mem_used_mb});
+        std.debug.print("║  Memory total:         {d:>10.2} MB                        ║\n", .{mem_total_mb});
+        std.debug.print("║  Utilization:          {d:>10.1}%                          ║\n", .{self.utilization_percent});
+        std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+    }
+};
+
+/// Paged attention computation
+pub fn pagedAttention(
+    output: []f32,
+    query: []const f32,
+    block_table: *const BlockTable,
+    pool: *const BlockPool,
+    head_idx: usize,
+    scale: f32,
+    allocator: std.mem.Allocator,
+) !void {
+    const config = &pool.config;
+    const head_dim = config.head_dim;
+    const num_heads = config.num_heads;
+    const block_size = config.block_size;
+    const num_tokens = block_table.num_tokens;
+
+    if (num_tokens == 0) {
+        @memset(output, 0.0);
+        return;
+    }
+
+    // Allocate scores buffer
+    const scores = try allocator.alloc(f32, num_tokens);
+    defer allocator.free(scores);
+
+    // Compute attention scores: Q @ K^T
+    for (0..num_tokens) |pos| {
+        const block_num = pos / block_size;
+        const pos_in_block = pos % block_size;
+
+        if (block_num >= block_table.block_ids.items.len) {
+            scores[pos] = -std.math.inf(f32);
+            continue;
+        }
+
+        const block_id = block_table.block_ids.items[block_num];
+        const block = pool.blocks.items[block_id];
+
+        if (pos_in_block >= block.num_tokens) {
+            scores[pos] = -std.math.inf(f32);
+            continue;
+        }
+
+        const k = block.getK(pos_in_block, head_idx, num_heads, head_dim);
+
+        // Dot product
+        var dot: f32 = 0.0;
+        for (0..head_dim) |d| {
+            dot += query[d] * k[d];
+        }
+        scores[pos] = dot * scale;
+    }
+
+    // Softmax
+    var max_score: f32 = scores[0];
+    for (scores[1..]) |s| {
+        if (s > max_score) max_score = s;
+    }
+
+    var sum_exp: f32 = 0.0;
+    for (scores) |*s| {
+        if (s.* > -std.math.inf(f32)) {
+            s.* = @exp(s.* - max_score);
+            sum_exp += s.*;
+        } else {
+            s.* = 0.0;
+        }
+    }
+
+    if (sum_exp > 0) {
+        for (scores) |*s| {
+            s.* /= sum_exp;
+        }
+    }
+
+    // Weighted sum of V
+    @memset(output, 0.0);
+    for (0..num_tokens) |pos| {
+        const block_num = pos / block_size;
+        const pos_in_block = pos % block_size;
+
+        if (block_num >= block_table.block_ids.items.len) continue;
+
+        const block_id = block_table.block_ids.items[block_num];
+        const block = pool.blocks.items[block_id];
+
+        if (pos_in_block >= block.num_tokens) continue;
+
+        const v = block.getV(pos_in_block, head_idx, num_heads, head_dim);
+        const weight = scores[pos];
+
+        for (0..head_dim) |d| {
+            output[d] += weight * v[d];
+        }
+    }
+}
+
+test "paged_attention_basic" {
+    const allocator = std.testing.allocator;
+
+    const config = PagedAttentionConfig.mini();
+    var pool = try BlockPool.init(allocator, config);
+    defer pool.deinit();
+
+    // Allocate blocks for a sequence
+    var table = BlockTable.init(allocator, 0);
+    defer table.deinit();
+
+    // Allocate first block
+    const block_id = pool.allocateBlock();
+    try std.testing.expect(block_id != null);
+    try table.block_ids.append(block_id.?);
+
+    // Add tokens to block
+    var k = [_]f32{1.0} ** 64; // 4 heads × 16 dim
+    var v = [_]f32{2.0} ** 64;
+
+    const block = pool.getBlock(block_id.?);
+    try std.testing.expect(block != null);
+
+    try block.?.appendToken(&k, &v, config.num_heads, config.head_dim);
+    table.num_tokens = 1;
+
+    // Compute attention
+    var output: [16]f32 = undefined;
+    const query = [_]f32{1.0} ** 16;
+
+    try pagedAttention(&output, &query, &table, &pool, 0, 1.0, allocator);
+
+    // Output should be V (single token, weight = 1.0)
+    try std.testing.expectApproxEqAbs(output[0], 2.0, 0.01);
+
+    // Check stats
+    const stats = pool.getStats();
+    try std.testing.expectEqual(@as(usize, 1), stats.allocated_blocks);
+    try std.testing.expectEqual(@as(usize, 63), stats.free_blocks);
+}
+
+test "paged_attention_multi_block" {
+    const allocator = std.testing.allocator;
+
+    const config = PagedAttentionConfig.mini();
+    var pool = try BlockPool.init(allocator, config);
+    defer pool.deinit();
+
+    var table = BlockTable.init(allocator, 0);
+    defer table.deinit();
+
+    // Fill multiple blocks
+    _ = config.num_heads * config.head_dim; // kv_size used implicitly
+    var k_buf: [64]f32 = undefined;
+    var v_buf: [64]f32 = undefined;
+
+    for (0..10) |i| { // 10 tokens, block_size=4, so 3 blocks
+        // Allocate new block if needed
+        const block_num = i / config.block_size;
+        while (table.block_ids.items.len <= block_num) {
+            const new_block = pool.allocateBlock();
+            try std.testing.expect(new_block != null);
+            try table.block_ids.append(new_block.?);
+        }
+
+        // Set K,V values
+        @memset(&k_buf, @as(f32, @floatFromInt(i)));
+        @memset(&v_buf, @as(f32, @floatFromInt(i * 10)));
+
+        const block = pool.getBlock(table.block_ids.items[block_num]);
+        try block.?.appendToken(&k_buf, &v_buf, config.num_heads, config.head_dim);
+        table.num_tokens = i + 1;
+    }
+
+    // Should have 3 blocks allocated
+    const stats = pool.getStats();
+    try std.testing.expectEqual(@as(usize, 3), stats.allocated_blocks);
+
+    // Compute attention
+    var output: [16]f32 = undefined;
+    var query: [16]f32 = undefined;
+    @memset(&query, 1.0);
+
+    try pagedAttention(&output, &query, &table, &pool, 0, 0.1, allocator);
+
+    // Output should be weighted sum of V values
+    try std.testing.expect(output[0] > 0.0);
+}
+
+test "copy_on_write" {
+    const allocator = std.testing.allocator;
+
+    const config = PagedAttentionConfig.mini();
+    var pool = try BlockPool.init(allocator, config);
+    defer pool.deinit();
+
+    // Allocate a block
+    const block_id = pool.allocateBlock();
+    try std.testing.expect(block_id != null);
+
+    // Increment ref count (simulating shared block)
+    pool.blocks.items[block_id.?].ref_count = 2;
+
+    // Copy-on-write should create new block
+    const new_id = pool.copyOnWrite(block_id.?);
+    try std.testing.expect(new_id != null);
+    try std.testing.expect(new_id.? != block_id.?);
+
+    // Original block ref count should be decremented
+    try std.testing.expectEqual(@as(usize, 1), pool.blocks.items[block_id.?].ref_count);
+
+    // New block ref count should be 1
+    try std.testing.expectEqual(@as(usize, 1), pool.blocks.items[new_id.?].ref_count);
+}
