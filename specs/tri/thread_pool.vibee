@@ -1,0 +1,95 @@
+# thread_pool.vibee
+# Persistent thread pool for parallel inference
+# Eliminates thread spawn/join overhead per operation
+
+name: thread_pool
+version: "1.0.0"
+language: zig
+module: thread_pool
+
+types:
+  ThreadPool:
+    description: "Pool of persistent worker threads"
+    fields:
+      threads: List<Thread>       # Worker threads
+      num_threads: Int            # Number of workers
+      work_queue: WorkQueue       # Pending work items
+      shutdown: Bool              # Shutdown signal
+      active_jobs: Int            # Currently running jobs
+
+  WorkItem:
+    description: "Unit of work for thread pool"
+    fields:
+      func: Function              # Work function pointer
+      context: Object             # Context data
+      chunk: WorkChunk            # Row range to process
+      done: Bool                  # Completion flag
+
+  WorkQueue:
+    description: "Lock-free work queue"
+    fields:
+      items: List<WorkItem>       # Work items
+      head: Int                   # Queue head (atomic)
+      tail: Int                   # Queue tail (atomic)
+      pending: Int                # Pending count (atomic)
+
+behaviors:
+  - name: init_pool
+    given: number of threads, allocator
+    when: creating thread pool
+    then: spawns persistent worker threads waiting for work
+
+  - name: submit_work
+    given: work function, context, chunks array
+    when: submitting parallel work
+    then: enqueues work items and signals workers
+
+  - name: wait_completion
+    given: submitted work batch
+    when: waiting for all chunks to complete
+    then: blocks until all workers finish their chunks
+
+  - name: worker_loop
+    given: thread pool reference
+    when: worker thread running
+    then: continuously dequeues and executes work items
+
+  - name: shutdown_pool
+    given: thread pool
+    when: shutting down
+    then: signals workers to exit and joins all threads
+
+# Architecture:
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │                      THREAD POOL                            │
+# ├─────────────────────────────────────────────────────────────┤
+# │                                                             │
+# │  Main Thread                                                │
+# │  ┌─────────┐                                                │
+# │  │ submit  │──────┐                                         │
+# │  │  work   │      │                                         │
+# │  └─────────┘      ▼                                         │
+# │              ┌─────────┐                                    │
+# │              │  Work   │                                    │
+# │              │  Queue  │                                    │
+# │              └────┬────┘                                    │
+# │                   │                                         │
+# │     ┌─────────────┼─────────────┐                           │
+# │     ▼             ▼             ▼                           │
+# │  ┌──────┐     ┌──────┐     ┌──────┐                         │
+# │  │Worker│     │Worker│     │Worker│  ... (N threads)        │
+# │  │  0   │     │  1   │     │  2   │                         │
+# │  └──────┘     └──────┘     └──────┘                         │
+# │                                                             │
+# └─────────────────────────────────────────────────────────────┘
+#
+# Benefits:
+# - No thread spawn overhead per matmul (~500us saved)
+# - Workers stay warm (better cache locality)
+# - Amortized synchronization cost
+#
+# Expected improvement:
+# - Current: ~500us overhead per parallel matmul
+# - With pool: ~10us overhead per parallel matmul
+# - Speedup: 50x reduction in overhead
