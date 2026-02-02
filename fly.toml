@@ -13,9 +13,10 @@ primary_region = "iad"
   TOP_P = "0.9"
 
 # Use shared-cpu-1x for SmolLM-135M (small model)
+# 1GB RAM needed for model loading + inference buffers
 [[vm]]
   size = "shared-cpu-1x"
-  memory = "512mb"
+  memory = "1gb"
   cpus = 1
 
 # Persistent volume for models (optional - model is baked into image)
@@ -32,8 +33,8 @@ primary_region = "iad"
   min_machines_running = 0
 
 [[http_service.checks]]
-  grace_period = "60s"
+  grace_period = "120s"
   interval = "30s"
   method = "GET"
   path = "/health"
-  timeout = "10s"
+  timeout = "15s"
