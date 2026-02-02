@@ -1,0 +1,71 @@
+# optimized_ternary_matmul.vibee
+# Cache-optimized ternary matrix-vector multiplication
+# Target: 2x speedup over current batch implementation
+
+name: optimized_ternary_matmul
+version: "1.0.0"
+language: zig
+module: optimized_ternary_matmul
+
+types:
+  TileConfig:
+    description: "Tiling configuration for cache optimization"
+    fields:
+      tile_rows: Int      # Rows per tile (fit in L1 cache)
+      tile_cols: Int      # Cols per tile (fit in L2 cache)
+      prefetch_distance: Int  # Prefetch ahead distance
+
+  TernaryTile:
+    description: "Pre-unpacked ternary tile for SIMD processing"
+    fields:
+      signs: List<Float>  # Pre-converted signs (-1, 0, +1)
+      rows: Int
+      cols: Int
+
+behaviors:
+  - name: tiled_ternary_matmul
+    given: output buffer, packed ternary weights, input vector, dimensions
+    when: performing matrix-vector multiplication with tiling
+    then: computes output with improved cache locality
+
+  - name: preunpack_tile
+    given: packed ternary bytes, tile dimensions
+    when: preparing tile for SIMD processing
+    then: returns pre-unpacked signs as f32 array
+
+  - name: simd_tile_dot
+    given: pre-unpacked signs, input vector slice
+    when: computing dot product for tile
+    then: returns partial sum using pure SIMD (no LUT)
+
+  - name: parallel_tiled_matmul
+    given: output, weights, input, dimensions, num_threads
+    when: distributing tiles across threads
+    then: computes output with parallel tile processing
+
+# Optimization Strategy:
+#
+# 1. TILING: Process matrix in L1/L2 cache-sized tiles
+#    - L1 cache: 32KB → tile_rows = 64, tile_cols = 512
+#    - L2 cache: 256KB → larger tiles for weight reuse
+#
+# 2. PRE-UNPACKING: Convert ternary to f32 signs once per tile
+#    - Eliminates LUT lookups in inner loop
+#    - Enables pure SIMD multiply-add
+#
+# 3. PREFETCHING: Software prefetch for next tile
+#    - Hide memory latency
+#
+# 4. PARALLEL TILES: Distribute tiles across threads
+#    - Better load balancing than row-based parallelism
+
+# Memory Layout:
+# - Weights: row-major packed ternary (4 values per byte)
+# - Input: contiguous f32 vector
+# - Output: contiguous f32 vector
+# - Tile buffer: pre-unpacked f32 signs (reused per tile)
+
+# Expected Performance:
+# - Current: 6.11 GFLOPS (batch-4)
+# - Target: 12+ GFLOPS (2x speedup)
+# - Theoretical max: ~50 GFLOPS (memory bandwidth limited)
