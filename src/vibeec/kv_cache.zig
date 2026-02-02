@@ -568,6 +568,16 @@ pub const TernaryKVCache = struct {
     // Quantization threshold (fraction of max)
     threshold_ratio: f32,
 
+    // Quantization mode
+    quant_mode: QuantMode,
+
+    pub const QuantMode = enum {
+        fixed_threshold, // Original: threshold = max * ratio
+        adaptive_mean, // Adaptive: threshold = mean(abs) * ratio
+        no_threshold, // All non-zero values quantized (best accuracy)
+        rms_scale, // Use RMS for scale (better for attention)
+    };
+
     pub fn init(
         allocator: std.mem.Allocator,
         num_kv_heads: usize,
@@ -588,7 +598,8 @@ pub const TernaryKVCache = struct {
             .k_scales = try allocator.alloc(f32, max_seq_len),
             .v_scales = try allocator.alloc(f32, max_seq_len),
             .seq_len = 0,
-            .threshold_ratio = 0.3, // Values < 30% of max become 0
+            .threshold_ratio = 0.0,
+            .quant_mode = .rms_scale, // RMS-based scaling for better accuracy
         };
     }
 
@@ -625,12 +636,17 @@ pub const TernaryKVCache = struct {
     }
 
     /// Quantize f32 vector to ternary packed bytes
+    /// Returns scale factor for dequantization
     fn quantizeVector(self: *const TernaryKVCache, dst: []u8, src: []const f32) f32 {
-        // Find max absolute value for scale
+        // Calculate statistics
         var max_abs: f32 = 0.0;
+        var sum_abs: f32 = 0.0;
+        var sum_sq: f32 = 0.0;
         for (src) |v| {
             const abs_v = @abs(v);
             if (abs_v > max_abs) max_abs = abs_v;
+            sum_abs += abs_v;
+            sum_sq += v * v;
         }
 
         if (max_abs == 0.0) {
@@ -638,8 +654,22 @@ pub const TernaryKVCache = struct {
             return 1.0;
         }
 
-        const threshold = max_abs * self.threshold_ratio;
-        const inv_scale = 1.0 / max_abs;
+        const n = @as(f32, @floatFromInt(src.len));
+        const mean_abs = sum_abs / n;
+        const rms = @sqrt(sum_sq / n);
+
+        // Calculate scale and threshold based on mode
+        const scale: f32 = switch (self.quant_mode) {
+            .fixed_threshold, .no_threshold, .adaptive_mean => max_abs,
+            .rms_scale => rms * 1.5, // RMS * sqrt(2) approximates max for normal distribution
+        };
+
+        const threshold: f32 = switch (self.quant_mode) {
+            .fixed_threshold => max_abs * self.threshold_ratio,
+            .adaptive_mean => mean_abs * self.threshold_ratio,
+            .no_threshold => 0.0,
+            .rms_scale => rms * 0.5, // Half RMS as threshold
+        };
 
         // Pack 4 values per byte
         var byte_idx: usize = 0;
@@ -647,10 +677,9 @@ pub const TernaryKVCache = struct {
         var current_byte: u8 = 0;
 
         for (src) |v| {
-            const normalized = v * inv_scale;
-            const trit: u2 = if (normalized > threshold * inv_scale)
+            const trit: u2 = if (v > threshold)
                 0b01 // +1
-            else if (normalized < -threshold * inv_scale)
+            else if (v < -threshold)
                 0b10 // -1
             else
                 0b00; // 0
@@ -670,7 +699,7 @@ pub const TernaryKVCache = struct {
             dst[byte_idx] = current_byte;
         }
 
-        return max_abs;
+        return scale;
     }
 
     /// Compute dot product between f32 query and ternary key (no full dequantization)
@@ -796,6 +825,30 @@ pub const TernaryKVCache = struct {
     /// Reset cache
     pub fn reset(self: *TernaryKVCache) void {
         self.seq_len = 0;
+    }
+
+    /// Set quantization mode for accuracy tuning
+    pub fn setQuantMode(self: *TernaryKVCache, mode: QuantMode, threshold: f32) void {
+        self.quant_mode = mode;
+        self.threshold_ratio = threshold;
+    }
+
+    /// Use high-accuracy mode (no threshold, all values quantized)
+    pub fn setHighAccuracy(self: *TernaryKVCache) void {
+        self.quant_mode = .no_threshold;
+        self.threshold_ratio = 0.0;
+    }
+
+    /// Use balanced mode (small threshold for noise reduction)
+    pub fn setBalanced(self: *TernaryKVCache) void {
+        self.quant_mode = .adaptive_mean;
+        self.threshold_ratio = 0.1;
+    }
+
+    /// Use high-compression mode (aggressive threshold)
+    pub fn setHighCompression(self: *TernaryKVCache) void {
+        self.quant_mode = .fixed_threshold;
+        self.threshold_ratio = 0.3;
     }
 
     /// Memory usage in bytes

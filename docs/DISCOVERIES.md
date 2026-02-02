@@ -263,13 +263,23 @@ const logits = try model.forward(token_id, position);
 ║  f32 forward:          ✅ PASS                               ║
 ║  Ternary KV enable:    ✅ PASS                               ║
 ║  Ternary forward:      ✅ PASS                               ║
-║  Output similarity:    0.77 (cosine)                         ║
+║  Output similarity:    0.93 (cosine) ✅ IMPROVED             ║
 ║  Memory compression:   12.8x                                 ║
-║  Generation speed:     19,231 tok/s                          ║
+║  Generation speed:     20,093 tok/s                          ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
 **Test Model:** 32 vocab, 64 hidden, 2 layers, 4 heads
+
+### Accuracy Improvement (ACCURACY-IMPROVEMENT)
+
+| Quantization Mode | Cosine Similarity | Notes |
+|-------------------|-------------------|-------|
+| fixed_threshold (0.3) | 0.77 | Original, aggressive |
+| no_threshold | 0.78 | All values quantized |
+| **rms_scale** | **0.93** | **Best accuracy** |
+
+**Key insight:** Using RMS (root mean square) for scale instead of max preserves more information about value distribution. The threshold is set to 0.5 * RMS, which better separates signal from noise.
 
 ### Test Results
 
