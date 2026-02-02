@@ -1,0 +1,158 @@
+# SIMD Vectorization - OPT-001
+# Target: +300-400% CPU MatMul performance (0.91 → 3-4 GFLOPS)
+# Author: Dmitrii Vasilev
+# Version: 1.0.0
+
+name: simd_vectorization
+version: "1.0.0"
+language: zig
+module: simd_vectorization
+
+description: |
+  Advanced SIMD optimizations for ternary matrix operations.
+  Targets AVX2 (256-bit) and AVX-512 (512-bit) instruction sets.
+  Key optimizations:
+  - Packed ternary processing (16/32/64 trits per instruction)
+  - Lookup table elimination (direct arithmetic)
+  - Memory prefetching and cache optimization
+  - Loop unrolling and software pipelining
+
+types:
+  SimdConfig:
+    fields:
+      vector_width: Int
+      unroll_factor: Int
+      prefetch_distance: Int
+      use_fma: Bool
+      use_avx512: Bool
+
+  TernaryMatrixPacked:
+    fields:
+      data: List<Int>
+      rows: Int
+      cols: Int
+      cols_packed: Int
+
+  SimdBenchmarkResult:
+    fields:
+      method: String
+      time_us: Float
+      gflops: Float
+      speedup: Float
+
+behaviors:
+  # Core SIMD operations
+  - name: simd_ternary_dot_avx2
+    given: Two packed ternary vectors (256-bit aligned)
+    when: Computing dot product
+    then: Use AVX2 vpshufb for LUT-free ternary multiply-accumulate
+
+  - name: simd_ternary_dot_avx512
+    given: Two packed ternary vectors (512-bit aligned)
+    when: Computing dot product on AVX-512 capable CPU
+    then: Use AVX-512 vpdpbusd for 64-trit parallel processing
+
+  - name: simd_ternary_matmul_tiled
+    given: Ternary weight matrix and input vector
+    when: Computing matrix-vector product
+    then: Use cache-friendly tiling with SIMD inner loops
+
+  # Memory optimizations
+  - name: prefetch_next_tile
+    given: Current tile being processed
+    when: Starting tile computation
+    then: Issue prefetch for next tile to hide memory latency
+
+  - name: pack_weights_simd_friendly
+    given: Raw ternary weights
+    when: Preparing for inference
+    then: Reorder to maximize SIMD utilization (interleaved layout)
+
+  # Kernel implementations
+  - name: kernel_8x8_avx2
+    given: 8x8 tile of ternary weights
+    when: Processing tile
+    then: Fully unrolled 8x8 kernel with 8 accumulators
+
+  - name: kernel_16x16_avx512
+    given: 16x16 tile of ternary weights
+    when: Processing tile on AVX-512
+    then: Fully unrolled 16x16 kernel with 16 accumulators
+
+  # Benchmark behaviors
+  - name: benchmark_all_methods
+    given: Test matrix dimensions
+    when: Running benchmark suite
+    then: Compare scalar, AVX2, AVX-512, and tiled implementations
+
+  - name: validate_correctness
+    given: SIMD result and scalar reference
+    when: After SIMD computation
+    then: Verify results match within floating-point tolerance
+
+constants:
+  # Vector widths
+  AVX2_WIDTH: 32
+  AVX512_WIDTH: 64
+  
+  # Tile sizes for cache optimization
+  TILE_M: 64
+  TILE_N: 64
+  TILE_K: 256
+  
+  # Unroll factors
+  UNROLL_FACTOR_AVX2: 4
+  UNROLL_FACTOR_AVX512: 8
+  
+  # Prefetch distance (cache lines ahead)
+  PREFETCH_DISTANCE: 8
+  
+  # Target performance
+  TARGET_GFLOPS_AVX2: 2.0
+  TARGET_GFLOPS_AVX512: 4.0
+  
+  # Ternary encoding
+  TRIT_ZERO: 0
+  TRIT_PLUS: 1
+  TRIT_MINUS: 2
+
+optimizations:
+  # Key insight: Ternary matmul is memory-bound, not compute-bound
+  # Focus on memory access patterns and cache utilization
+  
+  memory_layout:
+    - Pack 4 trits per byte (2 bits each)
+    - Align rows to 64-byte boundaries (cache line)
+    - Interleave for SIMD-friendly access
+    
+  compute_optimizations:
+    - Replace LUT with arithmetic: sign = (trit & 1) - (trit >> 1)
+    - Use FMA for accumulation: acc = fmadd(input, sign, acc)
+    - Unroll inner loop 4-8x to hide latency
+    
+  cache_optimizations:
+    - Tile for L1 cache (32KB): 64x64 tiles
+    - Tile for L2 cache (256KB): 256x256 tiles
+    - Prefetch next tile while computing current
+
+benchmark_targets:
+  # Current baseline (from ternary_weights.zig benchmark)
+  baseline:
+    simd_16_lut: 0.48 GFLOPS
+    batch_4_lut: 0.87 GFLOPS
+    tiled_arith: 0.77 GFLOPS
+    batch_tiled: 0.94 GFLOPS
+  
+  # Target after optimization
+  target:
+    avx2_optimized: 2.0 GFLOPS  # +110% vs baseline
+    avx512_optimized: 4.0 GFLOPS  # +325% vs baseline
+    
+  # Theoretical peak (memory-bound estimate)
+  theoretical:
+    # Memory bandwidth: ~50 GB/s (DDR4)
+    # Ternary: 0.25 bytes per weight
+    # 2048x2048 matrix: 1MB weights
+    # Peak: ~50 GFLOPS (if compute-bound)
+    # Realistic: 4-8 GFLOPS (memory-bound)
+    peak_estimate: 8.0 GFLOPS
