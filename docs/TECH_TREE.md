@@ -1,8 +1,8 @@
 # TRINITY Technology Tree
 
-**Version**: 2.3.0  
+**Version**: 2.4.0  
 **Date**: 2026-02-02  
-**Status**: 🎉 OPT-001 COMPLETE - 8.1x SIMD SPEEDUP - GPU BACKENDS UNLOCKED  
+**Status**: 🚀 HW-001 IN PROGRESS - CUDA Backend Foundation  
 **Formula**: φ² + 1/φ² = 3
 
 ---
@@ -121,9 +121,11 @@
 | DEP-003 | Auto-Scaling | Deploy | Handle spikes | 25 | DEP-002 ✅ | **COMPLETE** |
 | OPT-001 | SIMD Vectorization | Optimization | **+710% matrix** | 50 | None | **COMPLETE** |
 
+### In Progress (🔄)
+| HW-001 | GPU Backend (CUDA) | Hardware | **+100x speed** | 150 | OPT-001 ✅ | **IN PROGRESS** |
+
 ### Available (🟢)
 | DEP-004 | Multi-Region | Deploy | -50% latency | 40 | DEP-003 ✅ |
-| HW-001 | GPU Backend (CUDA) | Hardware | **+100x speed** | 150 | OPT-001 ✅ |
 | HW-002 | Metal Backend | Hardware | +80x on Apple | 120 | OPT-001 ✅ |
 
 ### Locked (🔒)
@@ -177,9 +179,34 @@
 
 **GPU Backends Now Unlocked: HW-001 (CUDA), HW-002 (Metal)**
 
+### In Progress: HW-001 CUDA Backend
+
+**Status: Foundation Complete (~30% done)**
+
+Completed:
+- specs/tri/cuda_backend.vibee - Full specification
+- src/vibeec/cuda_ternary.zig - CUDA backend implementation
+  - CUDADevice specs (RTX 4090, A100, H100)
+  - Ternary MatMul kernel (CPU simulation)
+  - Ternary Attention kernel
+  - Unified Backend with CPU fallback
+  - Performance estimation
+
+Estimated GPU Performance:
+- RTX 4090: ~50 GFLOPS (6x vs CPU baseline)
+- A100: ~21 GFLOPS (3x vs CPU)
+- H100: ~51 GFLOPS (7x vs CPU)
+- Throughput: 4,600-15,300 tok/s (7B model, batch=8)
+
+Remaining:
+- Real CUDA kernel compilation (.cu files)
+- cuBLAS/cuDNN integration
+- Memory management optimization
+- Multi-GPU support
+
 ### Immediate (This Week)
 
-1. **HW-001 CUDA Backend** - 150 hours
+1. **HW-001 CUDA Backend (continued)** - ~120 hours remaining
    - Dependencies: ✅ OPT-001 complete
    - Impact: +100x inference speed on NVIDIA GPUs
    - Priority: HIGH (closes biggest gap vs competitors)

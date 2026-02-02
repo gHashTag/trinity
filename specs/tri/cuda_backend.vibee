@@ -1,0 +1,327 @@
+# CUDA Backend - HW-001
+# Ternary LLM Inference on NVIDIA GPUs
+# Target: +100x speedup vs CPU (7.61 GFLOPS → 760+ GFLOPS)
+# Author: Dmitrii Vasilev
+# Version: 1.0.0
+
+name: cuda_backend
+version: "1.0.0"
+language: zig
+module: cuda_backend
+
+description: |
+  CUDA backend for Trinity ternary inference engine.
+  Ports optimized SIMD kernels to GPU with massive parallelism.
+  Key features:
+  - Ternary MatMul with 2-bit packed weights
+  - Ternary KV cache with 16x compression
+  - PagedAttention with ternary blocks
+  - Batch inference with continuous batching
+  
+  Target GPUs: RTX 4090, A100, H100
+  Expected speedup: 100-500x vs CPU
+
+types:
+  CUDADevice:
+    fields:
+      device_id: Int
+      name: String
+      compute_capability: String
+      cuda_cores: Int
+      sm_count: Int
+      memory_gb: Int
+      memory_bandwidth_gbps: Int
+
+  TernaryTensor:
+    fields:
+      data: List<Int>
+      shape: List<Int>
+      dtype: String
+      device: String
+
+  KernelConfig:
+    fields:
+      block_dim_x: Int
+      block_dim_y: Int
+      block_dim_z: Int
+      grid_dim_x: Int
+      grid_dim_y: Int
+      grid_dim_z: Int
+      shared_memory_bytes: Int
+
+  CUDAStream:
+    fields:
+      stream_id: Int
+      device_id: Int
+      is_default: Bool
+
+  MemoryPool:
+    fields:
+      device_id: Int
+      total_bytes: Int
+      allocated_bytes: Int
+      free_bytes: Int
+
+behaviors:
+  # Device management
+  - name: init_cuda
+    given: CUDA driver available
+    when: Initializing backend
+    then: Enumerate devices and select best GPU
+
+  - name: select_device
+    given: Multiple GPUs available
+    when: Device selection requested
+    then: Select GPU with highest compute capability
+
+  - name: get_device_properties
+    given: Device selected
+    when: Querying capabilities
+    then: Return CUDADevice with all specs
+
+  # Memory management
+  - name: allocate_device_memory
+    given: Size in bytes
+    when: Tensor allocation requested
+    then: Allocate on GPU with cudaMalloc
+
+  - name: copy_to_device
+    given: Host tensor
+    when: Upload requested
+    then: Async copy with cudaMemcpyAsync
+
+  - name: copy_to_host
+    given: Device tensor
+    when: Download requested
+    then: Async copy with cudaMemcpyAsync
+
+  # Ternary MatMul kernel
+  - name: ternary_matmul_kernel
+    given: Packed ternary weights (2-bit) and input vector
+    when: Matrix-vector multiply requested
+    then: Launch CUDA kernel with warp-level parallelism
+
+  - name: ternary_matmul_batched
+    given: Multiple input vectors
+    when: Batch inference requested
+    then: Process all vectors in parallel across SMs
+
+  # KV Cache operations
+  - name: ternary_kv_cache_append
+    given: New K,V tensors
+    when: Token generated
+    then: Append to ternary-compressed KV cache
+
+  - name: ternary_attention_kernel
+    given: Query, ternary K cache, V cache
+    when: Attention computation requested
+    then: Compute attention scores and weighted sum
+
+  # Attention kernels
+  - name: flash_attention_ternary
+    given: Q, K, V tensors with ternary K
+    when: Attention layer forward
+    then: Fused attention with tiling for memory efficiency
+
+  - name: paged_attention_ternary
+    given: Q and paged KV cache
+    when: Decoding with long context
+    then: Attention over non-contiguous KV pages
+
+  # Softmax and normalization
+  - name: fused_softmax_kernel
+    given: Attention scores
+    when: Softmax requested
+    then: Warp-level reduction for fast softmax
+
+  - name: rms_norm_kernel
+    given: Hidden states
+    when: Layer normalization
+    then: Fused RMSNorm with residual add
+
+constants:
+  # CUDA configuration
+  WARP_SIZE: 32
+  MAX_THREADS_PER_BLOCK: 1024
+  MAX_SHARED_MEMORY: 49152
+  
+  # Ternary encoding
+  TRITS_PER_BYTE: 4
+  TRIT_ZERO: 0
+  TRIT_PLUS: 1
+  TRIT_MINUS: 2
+  
+  # Kernel tile sizes
+  TILE_M: 128
+  TILE_N: 128
+  TILE_K: 32
+  
+  # Memory alignment
+  ALIGNMENT_BYTES: 256
+  
+  # Performance targets
+  TARGET_TFLOPS_RTX4090: 82.6
+  TARGET_TFLOPS_A100: 19.5
+  TARGET_TFLOPS_H100: 51.2
+
+gpu_specs:
+  RTX_4090:
+    cuda_cores: 16384
+    sm_count: 128
+    memory_gb: 24
+    memory_bandwidth_gbps: 1008
+    compute_capability: "8.9"
+    fp32_tflops: 82.6
+    
+  A100:
+    cuda_cores: 6912
+    sm_count: 108
+    memory_gb: 80
+    memory_bandwidth_gbps: 2039
+    compute_capability: "8.0"
+    fp32_tflops: 19.5
+    
+  H100:
+    cuda_cores: 16896
+    sm_count: 132
+    memory_gb: 80
+    memory_bandwidth_gbps: 3350
+    compute_capability: "9.0"
+    fp32_tflops: 51.2
+
+kernel_templates:
+  ternary_matmul: |
+    // Ternary MatMul CUDA Kernel
+    // Packed 2-bit weights: 4 trits per byte
+    // LUT-free decode: sign = (trit & 1) - (trit >> 1)
+    
+    __constant__ float SIGN_LUT[4] = {0.0f, 1.0f, -1.0f, 0.0f};
+    
+    __global__ void ternary_matmul_kernel(
+        float* __restrict__ output,
+        const uint8_t* __restrict__ weights,
+        const float* __restrict__ input,
+        int rows,
+        int cols
+    ) {
+        __shared__ float shared_input[256];
+        
+        int row = blockIdx.x * blockDim.x + threadIdx.x;
+        if (row >= rows) return;
+        
+        int cols_packed = (cols + 3) / 4;
+        float sum = 0.0f;
+        
+        // Process in tiles
+        for (int tile = 0; tile < cols; tile += 256) {
+            // Cooperative load of input tile
+            if (threadIdx.x < 256 && tile + threadIdx.x < cols) {
+                shared_input[threadIdx.x] = input[tile + threadIdx.x];
+            }
+            __syncthreads();
+            
+            // Compute partial sum
+            int tile_end = min(256, cols - tile);
+            for (int i = 0; i < tile_end; i += 4) {
+                int byte_idx = row * cols_packed + (tile + i) / 4;
+                uint8_t packed = weights[byte_idx];
+                
+                sum += shared_input[i + 0] * SIGN_LUT[(packed >> 0) & 0x3];
+                sum += shared_input[i + 1] * SIGN_LUT[(packed >> 2) & 0x3];
+                sum += shared_input[i + 2] * SIGN_LUT[(packed >> 4) & 0x3];
+                sum += shared_input[i + 3] * SIGN_LUT[(packed >> 6) & 0x3];
+            }
+            __syncthreads();
+        }
+        
+        output[row] = sum;
+    }
+
+  ternary_attention: |
+    // Ternary Attention CUDA Kernel
+    // Q: float, K: ternary (2-bit), V: float
+    
+    __global__ void ternary_attention_kernel(
+        float* __restrict__ output,
+        const float* __restrict__ query,
+        const uint8_t* __restrict__ keys_packed,
+        const float* __restrict__ values,
+        int seq_len,
+        int head_dim,
+        float scale
+    ) {
+        extern __shared__ float shared_mem[];
+        float* scores = shared_mem;
+        
+        int tid = threadIdx.x;
+        
+        // Compute attention scores: Q @ K^T
+        for (int i = tid; i < seq_len; i += blockDim.x) {
+            float score = 0.0f;
+            int key_start = i * ((head_dim + 3) / 4);
+            
+            for (int j = 0; j < head_dim; j += 4) {
+                uint8_t packed = keys_packed[key_start + j / 4];
+                score += query[j + 0] * SIGN_LUT[(packed >> 0) & 0x3];
+                score += query[j + 1] * SIGN_LUT[(packed >> 2) & 0x3];
+                score += query[j + 2] * SIGN_LUT[(packed >> 4) & 0x3];
+                score += query[j + 3] * SIGN_LUT[(packed >> 6) & 0x3];
+            }
+            scores[i] = score * scale;
+        }
+        __syncthreads();
+        
+        // Softmax (simplified - use warp reduction in production)
+        float max_score = -INFINITY;
+        for (int i = tid; i < seq_len; i += blockDim.x) {
+            max_score = fmaxf(max_score, scores[i]);
+        }
+        // ... warp reduction for max ...
+        
+        float sum_exp = 0.0f;
+        for (int i = tid; i < seq_len; i += blockDim.x) {
+            scores[i] = expf(scores[i] - max_score);
+            sum_exp += scores[i];
+        }
+        // ... warp reduction for sum ...
+        
+        for (int i = tid; i < seq_len; i += blockDim.x) {
+            scores[i] /= sum_exp;
+        }
+        __syncthreads();
+        
+        // Weighted sum of values
+        for (int d = tid; d < head_dim; d += blockDim.x) {
+            float out = 0.0f;
+            for (int i = 0; i < seq_len; i++) {
+                out += scores[i] * values[i * head_dim + d];
+            }
+            output[d] = out;
+        }
+    }
+
+benchmark_targets:
+  # CPU baseline (from OPT-001)
+  cpu_baseline:
+    matmul_gflops: 7.61
+    attention_ms: 5.0
+    throughput_tps: 300
+    
+  # GPU targets
+  rtx_4090:
+    matmul_gflops: 500
+    attention_ms: 0.1
+    throughput_tps: 15000
+    speedup_vs_cpu: 50x
+    
+  a100:
+    matmul_gflops: 800
+    attention_ms: 0.05
+    throughput_tps: 25000
+    speedup_vs_cpu: 80x
+    
+  h100:
+    matmul_gflops: 1500
+    attention_ms: 0.02
+    throughput_tps: 50000
+    speedup_vs_cpu: 150x
