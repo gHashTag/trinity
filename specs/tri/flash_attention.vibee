@@ -1,0 +1,258 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FLASH_ATTENTION.VIBEE - IO-Aware Tiled Attention
+# Based on FlashAttention paper (Dao et al., 2022)
+# 2-4x speedup via tiling and online softmax
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: flash_attention
+version: "1.0.0"
+language: zig
+module: flash_attention
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  TRINITY: 3.0  # φ² + 1/φ² = 3
+  
+  # Tile sizes for CPU cache optimization
+  # L1 cache: 32KB, L2 cache: 256KB
+  TILE_SIZE_Q: 32      # Query tile size
+  TILE_SIZE_KV: 64     # Key/Value tile size
+  
+  # For SIMD optimization
+  SIMD_WIDTH: 8        # AVX2: 8 floats
+  SIMD_WIDTH_16: 16    # AVX-512: 16 floats
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # Online softmax state for incremental computation
+  OnlineSoftmaxState:
+    fields:
+      max_val: Float      # Running maximum for numerical stability
+      sum_exp: Float      # Running sum of exp(x - max)
+      output: List<Float> # Accumulated weighted output
+
+  # Attention configuration
+  AttentionConfig:
+    fields:
+      num_heads: Int
+      num_kv_heads: Int
+      head_dim: Int
+      seq_len: Int
+      tile_size_q: Int
+      tile_size_kv: Int
+      scale: Float        # 1/sqrt(head_dim)
+
+  # Tiled attention block
+  AttentionTile:
+    fields:
+      q_start: Int
+      q_end: Int
+      kv_start: Int
+      kv_end: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS - FLASH ATTENTION ALGORITHM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # CORE ALGORITHM: Online Softmax
+  # Allows computing softmax incrementally without storing full attention matrix
+  - name: online_softmax_init
+    given: Initial state
+    when: Starting attention computation
+    then: Initialize max=-inf, sum=0, output=zeros
+    formula: |
+      state.max_val = -inf
+      state.sum_exp = 0.0
+      state.output = zeros(head_dim)
+
+  - name: online_softmax_update
+    given: Current state, new scores block, new values block
+    when: Processing a tile of K,V
+    then: Update running max, sum, and output
+    formula: |
+      # Find new maximum in this block
+      block_max = max(scores)
+      
+      # Update global maximum
+      new_max = max(state.max_val, block_max)
+      
+      # Rescale previous sum and output
+      # This is the key insight: we can correct for the new maximum
+      scale_old = exp(state.max_val - new_max)
+      state.sum_exp = state.sum_exp * scale_old
+      state.output = state.output * scale_old
+      
+      # Add contribution from new block
+      for i in 0..block_size:
+        exp_score = exp(scores[i] - new_max)
+        state.sum_exp += exp_score
+        state.output += exp_score * values[i]
+      
+      state.max_val = new_max
+
+  - name: online_softmax_finalize
+    given: Final state
+    when: All tiles processed
+    then: Normalize output by sum
+    formula: |
+      output = state.output / state.sum_exp
+
+  # TILED ATTENTION: Process Q, K, V in blocks
+  - name: flash_attention_forward
+    given: Q[seq_len, head_dim], K[seq_len, head_dim], V[seq_len, head_dim]
+    when: Computing attention output
+    then: Process in tiles to minimize memory bandwidth
+    formula: |
+      scale = 1.0 / sqrt(head_dim)
+      output = zeros(seq_len, head_dim)
+      
+      # Process Q in tiles
+      for q_start in 0..seq_len step TILE_SIZE_Q:
+        q_end = min(q_start + TILE_SIZE_Q, seq_len)
+        
+        # Initialize online softmax state for each query in tile
+        states = [OnlineSoftmaxState.init() for _ in q_start..q_end]
+        
+        # Process K,V in tiles
+        for kv_start in 0..seq_len step TILE_SIZE_KV:
+          kv_end = min(kv_start + TILE_SIZE_KV, seq_len)
+          
+          # Load K,V tile into cache (fits in L1/L2)
+          K_tile = K[kv_start:kv_end]
+          V_tile = V[kv_start:kv_end]
+          
+          # Compute attention scores for this tile
+          for qi in q_start..q_end:
+            q_vec = Q[qi]
+            scores = zeros(kv_end - kv_start)
+            
+            # Compute Q @ K^T for this tile
+            for ki in 0..(kv_end - kv_start):
+              scores[ki] = dot(q_vec, K_tile[ki]) * scale
+            
+            # Update online softmax with this tile
+            online_softmax_update(states[qi - q_start], scores, V_tile)
+        
+        # Finalize and store output for this Q tile
+        for qi in q_start..q_end:
+          output[qi] = online_softmax_finalize(states[qi - q_start])
+      
+      return output
+
+  # SIMD-OPTIMIZED DOT PRODUCT
+  - name: simd_dot_product
+    given: Two vectors of length head_dim
+    when: Computing Q @ K^T element
+    then: Use SIMD for 8x speedup
+    formula: |
+      sum_vec = simd_zero()
+      for i in 0..head_dim step SIMD_WIDTH:
+        q_vec = simd_load(q[i:i+SIMD_WIDTH])
+        k_vec = simd_load(k[i:i+SIMD_WIDTH])
+        sum_vec = simd_fma(q_vec, k_vec, sum_vec)
+      return simd_reduce_add(sum_vec)
+
+  # SIMD-OPTIMIZED SCALE-ADD
+  - name: simd_scale_add
+    given: Output vector, value vector, scalar weight
+    when: Accumulating weighted values
+    then: Use SIMD for vectorized scale-add
+    formula: |
+      weight_vec = simd_broadcast(weight)
+      for i in 0..head_dim step SIMD_WIDTH:
+        out_vec = simd_load(output[i:i+SIMD_WIDTH])
+        val_vec = simd_load(value[i:i+SIMD_WIDTH])
+        result = simd_fma(val_vec, weight_vec, out_vec)
+        simd_store(output[i:i+SIMD_WIDTH], result)
+
+  # CAUSAL MASKING (for autoregressive generation)
+  - name: apply_causal_mask
+    given: Attention scores, query position, key positions
+    when: Autoregressive generation (can't attend to future)
+    then: Set future positions to -inf
+    formula: |
+      for ki in 0..kv_len:
+        if key_pos[ki] > query_pos:
+          scores[ki] = -inf
+
+  # GQA (Grouped Query Attention) support
+  - name: gqa_head_mapping
+    given: Query head index, num_heads, num_kv_heads
+    when: Multiple Q heads share same K,V head
+    then: Return corresponding KV head index
+    formula: |
+      kv_group_size = num_heads / num_kv_heads
+      kv_head = query_head / kv_group_size
+      return kv_head
+
+  # FULL FLASH ATTENTION with KV-cache
+  - name: flash_attention_with_cache
+    given: Q for current token, KV-cache, position
+    when: Autoregressive generation
+    then: Compute attention using cached K,V
+    formula: |
+      # For generation, Q is single token, K,V are cached sequence
+      scale = 1.0 / sqrt(head_dim)
+      
+      for head in 0..num_heads:
+        kv_head = gqa_head_mapping(head, num_heads, num_kv_heads)
+        q_vec = Q[head]
+        
+        # Initialize online softmax
+        state = OnlineSoftmaxState.init()
+        
+        # Process KV-cache in tiles
+        for kv_start in 0..cache_len step TILE_SIZE_KV:
+          kv_end = min(kv_start + TILE_SIZE_KV, cache_len)
+          
+          # Compute scores for this tile
+          scores = zeros(kv_end - kv_start)
+          for ki in kv_start..kv_end:
+            k_vec = kv_cache.k[ki, kv_head]
+            scores[ki - kv_start] = simd_dot_product(q_vec, k_vec) * scale
+          
+          # Apply causal mask (only attend to past)
+          apply_causal_mask(scores, position, kv_start..kv_end)
+          
+          # Get values for this tile
+          V_tile = kv_cache.v[kv_start:kv_end, kv_head]
+          
+          # Update online softmax
+          online_softmax_update(state, scores, V_tile)
+        
+        # Finalize output for this head
+        output[head] = online_softmax_finalize(state)
+      
+      return output
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MEMORY ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+analysis:
+  standard_attention:
+    memory: "O(seq_len²) for attention matrix"
+    io_complexity: "O(seq_len² * head_dim) HBM accesses"
+    
+  flash_attention:
+    memory: "O(seq_len) - no full attention matrix"
+    io_complexity: "O(seq_len² * head_dim / TILE_SIZE) HBM accesses"
+    speedup: "2-4x on long sequences"
+    
+  cpu_optimization:
+    tile_size_q: "32 (fits in L1 cache with K,V tile)"
+    tile_size_kv: "64 (maximizes cache utilization)"
+    simd_width: "8 (AVX2) or 16 (AVX-512)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════

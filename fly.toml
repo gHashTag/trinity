@@ -1,5 +1,8 @@
+# ═══════════════════════════════════════════════════════════════════════════════
 # TRINITY LLM - Fly.io Configuration
-# phi^2 + 1/phi^2 = 3 = TRINITY
+# Multi-threaded LLM inference with MAXIMUM CPU cores
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
 
 app = "trinity-llm"
 primary_region = "iad"
@@ -11,15 +14,21 @@ primary_region = "iad"
   MODEL_PATH = "/app/models/smollm-135m-instruct-q8_0.gguf"
   TEMPERATURE = "0.7"
   TOP_P = "0.9"
+  NUM_THREADS = "16"
 
-# Use shared-cpu-2x for SmolLM-135M
-# 2GB RAM needed: model (139MB) + dequantized weights (~600MB) + buffers
+# MAXIMUM CPU: performance-16x = 16 dedicated CPU cores, 32GB RAM
+# For benchmark testing multi-threaded inference
 [[vm]]
-  size = "shared-cpu-2x"
-  memory = "2gb"
-  cpus = 2
+  size = "performance-16x"
+  memory = "32gb"
+  cpus = 16
 
-# Persistent volume for models (optional - model is baked into image)
+# Alternative sizes:
+# performance-8x: 8 CPU, 16GB RAM
+# performance-4x: 4 CPU, 8GB RAM
+# shared-cpu-8x: 8 shared CPU, 16GB RAM
+
+# Persistent volume for models
 # [[mounts]]
 #   source = "trinity_models"
 #   destination = "/app/models"
