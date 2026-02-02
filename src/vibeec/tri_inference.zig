@@ -565,6 +565,228 @@ pub const TriModel = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// BATCH TRI MODEL (INF-004)
+// Multiple sequences processed in parallel
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Batch inference wrapper for TriModel
+/// Processes multiple sequences in parallel with shared weights
+pub const BatchTriModel = struct {
+    allocator: std.mem.Allocator,
+    model: *TriModel,
+    batch_cache: kv_cache.BatchKVCache,
+    max_batch_size: usize,
+
+    // Per-sequence buffers
+    buf_hidden: [][]f32,
+    buf_output: [][]f32,
+
+    pub fn init(allocator: std.mem.Allocator, model: *TriModel, max_batch_size: usize) !BatchTriModel {
+        const header = model.header;
+
+        var batch = BatchTriModel{
+            .allocator = allocator,
+            .model = model,
+            .batch_cache = try kv_cache.BatchKVCache.init(
+                allocator,
+                max_batch_size,
+                header.num_layers,
+                header.num_kv_heads,
+                header.head_dim,
+                header.context_length,
+            ),
+            .max_batch_size = max_batch_size,
+            .buf_hidden = try allocator.alloc([]f32, max_batch_size),
+            .buf_output = try allocator.alloc([]f32, max_batch_size),
+        };
+
+        // Allocate per-sequence buffers
+        for (0..max_batch_size) |i| {
+            batch.buf_hidden[i] = try allocator.alloc(f32, header.hidden_size);
+            batch.buf_output[i] = try allocator.alloc(f32, header.vocab_size);
+        }
+
+        return batch;
+    }
+
+    pub fn deinit(self: *BatchTriModel) void {
+        for (0..self.max_batch_size) |i| {
+            self.allocator.free(self.buf_hidden[i]);
+            self.allocator.free(self.buf_output[i]);
+        }
+        self.allocator.free(self.buf_hidden);
+        self.allocator.free(self.buf_output);
+        self.batch_cache.deinit();
+    }
+
+    /// Add new sequence to batch
+    pub fn addSequence(self: *BatchTriModel) ?usize {
+        return self.batch_cache.addSequence();
+    }
+
+    /// Remove sequence from batch
+    pub fn removeSequence(self: *BatchTriModel, seq_idx: usize) void {
+        self.batch_cache.removeSequence(seq_idx);
+    }
+
+    /// Forward pass for single sequence in batch
+    pub fn forwardSequence(self: *BatchTriModel, seq_idx: usize, token: u32) ![]f32 {
+        if (seq_idx >= self.max_batch_size or !self.batch_cache.active[seq_idx]) {
+            return error.InvalidSequence;
+        }
+
+        const model = self.model;
+        const header = model.header;
+        const hidden_size = header.hidden_size;
+        const pos = self.batch_cache.positions[seq_idx];
+
+        // Get embedding
+        if (model.use_ternary_embedding and model.ternary_embedding != null) {
+            model.ternary_embedding.?.lookupSIMD(self.buf_hidden[seq_idx], token);
+        } else {
+            const emb_start = token * hidden_size;
+            @memcpy(self.buf_hidden[seq_idx], model.token_embedding[emb_start..][0..hidden_size]);
+        }
+
+        // Process through layers using sequence-specific KV cache
+        for (0..header.num_layers) |layer_idx| {
+            const cache = self.batch_cache.getCache(seq_idx, layer_idx);
+            self.forwardLayerWithCache(self.buf_hidden[seq_idx], layer_idx, pos, cache);
+        }
+
+        // Output projection
+        inference.rmsNorm(model.buf_normed, self.buf_hidden[seq_idx], model.output_norm, header.rms_norm_eps);
+        parallel.parallelTernaryMatmul(
+            self.buf_output[seq_idx],
+            model.output_weight,
+            model.buf_normed,
+            header.vocab_size,
+            hidden_size,
+            model.output_scale,
+        );
+
+        // Update position
+        self.batch_cache.positions[seq_idx] = pos + 1;
+
+        return self.buf_output[seq_idx];
+    }
+
+    /// Forward layer with specific KV cache
+    fn forwardLayerWithCache(
+        self: *BatchTriModel,
+        hidden: []f32,
+        layer_idx: usize,
+        pos: usize,
+        cache: *kv_cache.RingKVCache,
+    ) void {
+        const model = self.model;
+        const header = model.header;
+        const layer = model.layers[layer_idx];
+
+        const hidden_size = header.hidden_size;
+        const num_heads = header.num_heads;
+        const num_kv_heads = header.num_kv_heads;
+        const head_dim = header.head_dim;
+        const intermediate_size = header.intermediate_size;
+
+        // Attention norm
+        inference.rmsNorm(model.buf_normed, hidden, layer.attn_norm, header.rms_norm_eps);
+
+        // Q, K, V projections
+        parallel.parallelTernaryMatmul(model.buf_q, layer.wq, model.buf_normed, num_heads * head_dim, hidden_size, layer.scale_q);
+        parallel.parallelTernaryMatmul(model.buf_k, layer.wk, model.buf_normed, num_kv_heads * head_dim, hidden_size, layer.scale_k);
+        parallel.parallelTernaryMatmul(model.buf_v, layer.wv, model.buf_normed, num_kv_heads * head_dim, hidden_size, layer.scale_v);
+
+        // Apply RoPE (applies to all heads)
+        model.rope.apply(model.buf_q, pos);
+        model.rope.apply(model.buf_k, pos);
+
+        // Update KV cache
+        cache.append(model.buf_k, model.buf_v);
+
+        // Attention
+        const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(head_dim)));
+        const kv_group_size = num_heads / num_kv_heads;
+        const seq_len = cache.seqLen();
+
+        for (0..num_heads) |h| {
+            const kv_h = h / kv_group_size;
+            const q_head = model.buf_q[h * head_dim ..][0..head_dim];
+
+            // Compute attention scores using RingKVCache
+            for (0..seq_len) |t| {
+                const k_vec = cache.getK(t, kv_h);
+                model.buf_scores[t] = flash.simdDot(q_head, k_vec) * scale;
+            }
+
+            // Softmax
+            inference.softmax(model.buf_scores[0..seq_len], model.buf_scores[0..seq_len]);
+
+            // Weighted sum
+            const out_head = model.buf_attn_out[h * head_dim ..][0..head_dim];
+            @memset(out_head, 0.0);
+
+            for (0..seq_len) |t| {
+                const v_vec = cache.getV(t, kv_h);
+                const score_val = model.buf_scores[t];
+                for (0..head_dim) |j| {
+                    out_head[j] += score_val * v_vec[j];
+                }
+            }
+        }
+
+        // Output projection
+        parallel.parallelTernaryMatmul(model.buf_attn_proj, layer.wo, model.buf_attn_out, hidden_size, num_heads * head_dim, layer.scale_o);
+
+        // Residual
+        for (0..hidden_size) |i| {
+            hidden[i] += model.buf_attn_proj[i];
+        }
+
+        // FFN
+        inference.rmsNorm(model.buf_normed, hidden, layer.ffn_norm, header.rms_norm_eps);
+        parallel.parallelTernaryMatmul(model.buf_ffn_gate, layer.w_gate, model.buf_normed, intermediate_size, hidden_size, layer.scale_gate);
+        parallel.parallelTernaryMatmul(model.buf_ffn_up, layer.w_up, model.buf_normed, intermediate_size, hidden_size, layer.scale_up);
+
+        // SwiGLU (gate * silu(gate) * up)
+        for (0..intermediate_size) |i| {
+            model.buf_ffn_gate[i] = inference.silu(model.buf_ffn_gate[i]) * model.buf_ffn_up[i];
+        }
+
+        parallel.parallelTernaryMatmul(model.buf_ffn_out, layer.w_down, model.buf_ffn_gate, hidden_size, intermediate_size, layer.scale_down);
+
+        // Residual
+        for (0..hidden_size) |i| {
+            hidden[i] += model.buf_ffn_out[i];
+        }
+    }
+
+    /// Batch forward for multiple sequences
+    /// Returns array of logits for each active sequence
+    pub fn batchForward(self: *BatchTriModel, tokens: []const BatchToken) !void {
+        for (tokens) |bt| {
+            _ = try self.forwardSequence(bt.seq_idx, bt.token);
+        }
+    }
+
+    /// Get number of active sequences
+    pub fn activeCount(self: *const BatchTriModel) usize {
+        return self.batch_cache.activeCount();
+    }
+
+    /// Memory usage
+    pub fn memoryUsage(self: *const BatchTriModel) usize {
+        return self.batch_cache.memoryUsage();
+    }
+};
+
+/// Token with sequence ID for batch processing
+pub const BatchToken = struct {
+    seq_idx: usize,
+    token: u32,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN - Benchmark TRI vs GGUF
 // ═══════════════════════════════════════════════════════════════════════════════
 

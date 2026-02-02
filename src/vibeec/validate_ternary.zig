@@ -187,6 +187,44 @@ pub fn main() !void {
     std.debug.print("   Speed: {d:.1} tokens/sec\n", .{tokens_per_sec});
     std.debug.print("\n", .{});
 
+    // Test 8: Batch processing
+    std.debug.print("═══ TEST 8: Batch processing ═══\n", .{});
+    var batch_model = tri.BatchTriModel.init(allocator, &model, 4) catch |err| {
+        std.debug.print("❌ FAILED to init batch model: {}\n", .{err});
+        return;
+    };
+    defer batch_model.deinit();
+
+    // Add sequences
+    const seq0 = batch_model.addSequence();
+    const seq1 = batch_model.addSequence();
+    const seq2 = batch_model.addSequence();
+
+    if (seq0 == null or seq1 == null or seq2 == null) {
+        std.debug.print("❌ FAILED to add sequences\n", .{});
+        return;
+    }
+
+    std.debug.print("✅ Added 3 sequences to batch\n", .{});
+    std.debug.print("   Active sequences: {d}\n", .{batch_model.activeCount()});
+
+    // Benchmark batch vs single
+    timer.reset();
+    const batch_tokens: usize = 30;
+    for (0..batch_tokens / 3) |i| {
+        _ = batch_model.forwardSequence(seq0.?, @intCast(i % model.header.vocab_size)) catch continue;
+        _ = batch_model.forwardSequence(seq1.?, @intCast((i + 1) % model.header.vocab_size)) catch continue;
+        _ = batch_model.forwardSequence(seq2.?, @intCast((i + 2) % model.header.vocab_size)) catch continue;
+    }
+    const batch_time = timer.read();
+    const batch_tok_per_sec = @as(f64, @floatFromInt(batch_tokens)) / (@as(f64, @floatFromInt(batch_time)) / 1e9);
+
+    std.debug.print("✅ Batch processing: {d} tokens\n", .{batch_tokens});
+    std.debug.print("   Time: {d:.3} ms\n", .{@as(f64, @floatFromInt(batch_time)) / 1e6});
+    std.debug.print("   Speed: {d:.1} tokens/sec\n", .{batch_tok_per_sec});
+    std.debug.print("   Speedup vs single: {d:.2}x\n", .{batch_tok_per_sec / tokens_per_sec});
+    std.debug.print("\n", .{});
+
     // Summary
     std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║                    VALIDATION SUMMARY                        ║\n", .{});

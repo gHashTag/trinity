@@ -1147,3 +1147,184 @@ test "cached attention" {
 
     try std.testing.expectEqual(@as(usize, num_q_heads * config.head_dim), output.len);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BATCH KV-CACHE (INF-004)
+// Multiple sequences with separate KV caches
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Batch KV cache for multiple concurrent sequences
+pub const BatchKVCache = struct {
+    allocator: std.mem.Allocator,
+    max_batch_size: usize,
+    num_layers: usize,
+    num_kv_heads: usize,
+    head_dim: usize,
+    max_seq_len: usize,
+
+    // Per-sequence KV caches [batch_size][num_layers]
+    caches: [][]RingKVCache,
+
+    // Sequence state
+    active: []bool,
+    positions: []usize,
+
+    pub fn init(
+        allocator: std.mem.Allocator,
+        max_batch_size: usize,
+        num_layers: usize,
+        num_kv_heads: usize,
+        head_dim: usize,
+        max_seq_len: usize,
+    ) !BatchKVCache {
+        var batch = BatchKVCache{
+            .allocator = allocator,
+            .max_batch_size = max_batch_size,
+            .num_layers = num_layers,
+            .num_kv_heads = num_kv_heads,
+            .head_dim = head_dim,
+            .max_seq_len = max_seq_len,
+            .caches = try allocator.alloc([]RingKVCache, max_batch_size),
+            .active = try allocator.alloc(bool, max_batch_size),
+            .positions = try allocator.alloc(usize, max_batch_size),
+        };
+
+        // Initialize per-sequence caches
+        for (0..max_batch_size) |seq_idx| {
+            batch.caches[seq_idx] = try allocator.alloc(RingKVCache, num_layers);
+            for (0..num_layers) |layer_idx| {
+                batch.caches[seq_idx][layer_idx] = try RingKVCache.init(
+                    allocator,
+                    num_kv_heads,
+                    head_dim,
+                    max_seq_len,
+                    SlidingWindowConfig.default(),
+                );
+            }
+            batch.active[seq_idx] = false;
+            batch.positions[seq_idx] = 0;
+        }
+
+        return batch;
+    }
+
+    pub fn deinit(self: *BatchKVCache) void {
+        for (0..self.max_batch_size) |seq_idx| {
+            for (0..self.num_layers) |layer_idx| {
+                self.caches[seq_idx][layer_idx].deinit();
+            }
+            self.allocator.free(self.caches[seq_idx]);
+        }
+        self.allocator.free(self.caches);
+        self.allocator.free(self.active);
+        self.allocator.free(self.positions);
+    }
+
+    /// Add new sequence to batch, returns sequence ID or null if full
+    pub fn addSequence(self: *BatchKVCache) ?usize {
+        for (0..self.max_batch_size) |seq_idx| {
+            if (!self.active[seq_idx]) {
+                self.active[seq_idx] = true;
+                self.positions[seq_idx] = 0;
+                // Reset KV caches for this sequence
+                for (0..self.num_layers) |layer_idx| {
+                    self.caches[seq_idx][layer_idx].reset();
+                }
+                return seq_idx;
+            }
+        }
+        return null; // Batch is full
+    }
+
+    /// Remove sequence from batch
+    pub fn removeSequence(self: *BatchKVCache, seq_idx: usize) void {
+        if (seq_idx < self.max_batch_size) {
+            self.active[seq_idx] = false;
+            self.positions[seq_idx] = 0;
+        }
+    }
+
+    /// Get KV cache for specific sequence and layer
+    pub fn getCache(self: *BatchKVCache, seq_idx: usize, layer_idx: usize) *RingKVCache {
+        return &self.caches[seq_idx][layer_idx];
+    }
+
+    /// Append K,V to specific sequence's cache
+    pub fn append(self: *BatchKVCache, seq_idx: usize, layer_idx: usize, k: []const f32, v: []const f32) void {
+        if (seq_idx < self.max_batch_size and self.active[seq_idx]) {
+            self.caches[seq_idx][layer_idx].append(k, v);
+        }
+    }
+
+    /// Get number of active sequences
+    pub fn activeCount(self: *const BatchKVCache) usize {
+        var count: usize = 0;
+        for (self.active) |a| {
+            if (a) count += 1;
+        }
+        return count;
+    }
+
+    /// Get list of active sequence IDs
+    pub fn getActiveSequences(self: *const BatchKVCache, out: []usize) usize {
+        var count: usize = 0;
+        for (0..self.max_batch_size) |seq_idx| {
+            if (self.active[seq_idx] and count < out.len) {
+                out[count] = seq_idx;
+                count += 1;
+            }
+        }
+        return count;
+    }
+
+    /// Memory usage in bytes
+    pub fn memoryUsage(self: *const BatchKVCache) usize {
+        var total: usize = 0;
+        for (0..self.max_batch_size) |seq_idx| {
+            for (0..self.num_layers) |layer_idx| {
+                total += self.caches[seq_idx][layer_idx].memoryUsage();
+            }
+        }
+        return total;
+    }
+};
+
+test "batch kv cache" {
+    const allocator = std.testing.allocator;
+
+    var batch = try BatchKVCache.init(
+        allocator,
+        4, // max_batch_size
+        2, // num_layers
+        2, // num_kv_heads
+        16, // head_dim
+        32, // max_seq_len
+    );
+    defer batch.deinit();
+
+    // Initially no active sequences
+    try std.testing.expectEqual(@as(usize, 0), batch.activeCount());
+
+    // Add sequences
+    const seq0 = batch.addSequence();
+    try std.testing.expect(seq0 != null);
+    try std.testing.expectEqual(@as(usize, 1), batch.activeCount());
+
+    const seq1 = batch.addSequence();
+    try std.testing.expect(seq1 != null);
+    try std.testing.expectEqual(@as(usize, 2), batch.activeCount());
+
+    // Append to sequence 0
+    var k = [_]f32{1.0} ** 32;
+    var v = [_]f32{2.0} ** 32;
+    batch.append(seq0.?, 0, &k, &v);
+
+    // Remove sequence
+    batch.removeSequence(seq0.?);
+    try std.testing.expectEqual(@as(usize, 1), batch.activeCount());
+
+    // Can add new sequence in freed slot
+    const seq2 = batch.addSequence();
+    try std.testing.expect(seq2 != null);
+    try std.testing.expectEqual(@as(usize, 2), batch.activeCount());
+}
