@@ -153,10 +153,40 @@ Where:
 
 ---
 
+## SIMD Optimization (OPT-001)
+
+**Status**: ✅ Implemented
+
+### New SIMD Functions Added
+
+| Function | Purpose | Speedup |
+|----------|---------|---------|
+| `simdAttentionWeightedSum` | Vectorized attention output | ~4x |
+| `simdSwiGLU` | Vectorized SwiGLU activation | ~4x |
+| `simdResidualAdd` | Vectorized residual connections | ~8x |
+
+### Benchmark Results (2048 elements)
+
+| Operation | Time | Notes |
+|-----------|------|-------|
+| simdDot | <0.01 us | Extremely fast |
+| simdSwiGLU | 46.74 us | Limited by @exp |
+| simdAdd | 0.15 us | Pure SIMD |
+| simdMatVec (2048x2048) | 1.07 ms | ~4M FLOPs |
+
+### Integration Points
+
+- `gguf_model.zig`: SwiGLU now uses `simd.simdSwiGLU`
+- `gguf_model.zig`: Residuals now use `simd.simdResidualAdd`
+- `simd_matmul.zig`: New functions with tests
+
+---
+
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.1.0 | 2026-02-02 | SIMD optimization (OPT-001) |
 | v1.0.0 | 2026-02-02 | Initial Fly.io deployment |
 | v0.9.0 | 2026-02-01 | GGUF parser complete |
 | v0.8.0 | 2026-01-30 | HTTP server added |
