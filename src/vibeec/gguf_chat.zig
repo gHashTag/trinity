@@ -74,9 +74,12 @@ const ConversationHistory = struct {
         for (self.messages.items) |msg| {
             switch (msg.role) {
                 .system => {
-                    try result.appendSlice(template.system_prefix);
-                    try result.appendSlice(msg.content);
-                    try result.appendSlice(template.system_suffix);
+                    // Skip system message if template doesn't support it (empty prefix)
+                    if (template.system_prefix.len > 0) {
+                        try result.appendSlice(template.system_prefix);
+                        try result.appendSlice(msg.content);
+                        try result.appendSlice(template.system_suffix);
+                    }
                 },
                 .user => {
                     try result.appendSlice(template.user_prefix);
@@ -111,6 +114,11 @@ const ConversationHistory = struct {
 
 // Auto-detect chat template based on model name
 fn detectChatTemplate(model_path: []const u8) ChatTemplate {
+    // Check for DeepSeek models
+    if (std.mem.indexOf(u8, model_path, "deepseek") != null or
+        std.mem.indexOf(u8, model_path, "DeepSeek") != null) {
+        return ChatTemplate.DEEPSEEK;
+    }
     // Check for Qwen models
     if (std.mem.indexOf(u8, model_path, "qwen") != null or
         std.mem.indexOf(u8, model_path, "Qwen") != null) {
@@ -216,7 +224,16 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
     // Add system message
     try history.addMessage(.system, system_prompt);
 
-    std.debug.print("Chat template: TinyLlama (ChatML format)\n", .{});
+    // Print detected template name
+    const template_name = if (std.mem.indexOf(u8, model_path, "deepseek") != null or std.mem.indexOf(u8, model_path, "DeepSeek") != null)
+        "DeepSeek"
+    else if (std.mem.indexOf(u8, model_path, "qwen") != null or std.mem.indexOf(u8, model_path, "Qwen") != null)
+        "Qwen (ChatML)"
+    else if (std.mem.indexOf(u8, model_path, "smollm") != null or std.mem.indexOf(u8, model_path, "SmolLM") != null)
+        "SmolLM (ChatML)"
+    else
+        "TinyLlama (ChatML)";
+    std.debug.print("Chat template: {s}\n", .{template_name});
     std.debug.print("System: {s}\n", .{system_prompt});
     std.debug.print("Sampling: temperature={d:.2}, top_p={d:.2}\n", .{sampling_params.temperature, sampling_params.top_p});
     std.debug.print("History: enabled (last 10 messages)\n", .{});
