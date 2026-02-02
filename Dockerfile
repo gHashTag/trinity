@@ -39,13 +39,12 @@ COPY --from=builder /build/vibee /app/vibee
 # Create models directory
 RUN mkdir -p /app/models
 
-# Download SmolLM-135M Q8_0 (smallest model, fast loading)
-# Size: ~135MB, loads in <1 second, good for demos
+# Download SmolLM-135M Q8_0 (official HuggingFace model)
+# Size: ~145MB, loads in <1 second, good for demos
 RUN echo "Downloading SmolLM-135M-Instruct Q8_0..." && \
     curl -L -o /app/models/smollm-135m-instruct-q8_0.gguf \
-    "https://huggingface.co/TheBloke/SmolLM-135M-Instruct-GGUF/resolve/main/smollm-135m-instruct.Q8_0.gguf" || \
-    curl -L -o /app/models/smollm-135m-instruct-q8_0.gguf \
-    "https://huggingface.co/Felladrin/gguf-smollm-135M-instruct-v0.2/resolve/main/smollm-135M-instruct-v0.2-Q8_0.gguf"
+    "https://huggingface.co/HuggingFaceTB/smollm-135M-instruct-v0.2-Q8_0-GGUF/resolve/main/smollm-135m-instruct-add-basics-q8_0.gguf" && \
+    ls -la /app/models/
 
 # Set environment
 ENV MODEL_PATH=/app/models/smollm-135m-instruct-q8_0.gguf
