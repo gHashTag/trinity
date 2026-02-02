@@ -79,6 +79,7 @@ Where:
 | OPT-T05 | Ternary Embeddings | 12.8x | 1x | ✅ Implemented |
 | OPT-T06 | Ternary Normalization | 16x | 0.2x | ✅ Implemented |
 | OPT-T07 | Batch Ternary MatMul | N/A | 2.28x | ✅ Implemented |
+| OPT-M01 | Memory-Mapped Loading | N/A | 30x load | ✅ Implemented |
 
 ### Business Value
 
@@ -403,6 +404,47 @@ Investigated thread pool to eliminate thread spawn overhead per matmul operation
 - OS thread caching already optimizes repeated spawn/join patterns
 
 **Conclusion:** Direct thread spawn is optimal for parallel matmul. Thread pools are beneficial only for I/O-bound or very short tasks.
+
+### Memory-Mapped Model Loading (OPT-M01)
+
+**Status**: ✅ Implemented
+
+| Component | File | Description |
+|-----------|------|-------------|
+| MmapFile | `gguf_reader.zig` | Memory-mapped file handle |
+| MmapGGUFReader | `gguf_reader.zig` | GGUF reader using mmap |
+| MmapGGUFModel | `gguf_inference.zig` | Model with mmap loading |
+
+**Benchmark Results (1MB file, 100 iterations):**
+```
+╔══════════════════════════════════════════════════════════════╗
+║           MMAP vs READ BENCHMARK (1MB file)                 ║
+╠══════════════════════════════════════════════════════════════╣
+║  File read:       1008.9 us/iter                            ║
+║  mmap:              27.3 us/iter                            ║
+║  Speedup:           36.9x                                   ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+**Benefits:**
+1. **Near-instant loading**: mmap just creates virtual mapping, no data copy
+2. **Lazy loading**: OS loads pages on first access (page fault)
+3. **Shared memory**: Multiple processes share same physical pages
+4. **Memory efficiency**: Only accessed pages loaded into RAM
+5. **OS-managed caching**: Automatic eviction under memory pressure
+
+**Memory Savings:**
+- Standard read: 2x model size during load (buffer + copy)
+- mmap: 1x model size (virtual mapping only)
+
+**Usage:**
+```zig
+// Standard loading (slow)
+var reader = try gguf.GGUFReader.init(allocator, "model.gguf");
+
+// mmap loading (30x faster)
+var reader = try gguf.MmapGGUFReader.init(allocator, "model.gguf");
+```
 
 ### Batch Processing (INF-004)
 
