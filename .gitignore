@@ -35,3 +35,13 @@ docs/build/
 models/*.tri
 models/qwen-coder-7b/
 models/qwen-coder-1.5b/
+-e 
+# Large model files
+models/*.gguf
+*.gguf
+
+# Generated files
+generated/
+
+# Temporary binaries
+vibee
