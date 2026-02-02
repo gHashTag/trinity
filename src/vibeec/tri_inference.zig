@@ -1109,6 +1109,341 @@ pub const BatchToken = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CONTINUOUS BATCHING SCHEDULER
+// Orca/vLLM style iteration-level scheduling for high throughput
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Request status
+pub const RequestStatus = enum {
+    queued,
+    prefill,
+    generating,
+    completed,
+    cancelled,
+};
+
+/// Inference request
+pub const Request = struct {
+    id: u64,
+    prompt_tokens: []const u32,
+    max_tokens: usize,
+    temperature: f32,
+    priority: i32,
+    created_at: i64,
+    status: RequestStatus,
+    generated_tokens: std.ArrayList(u32),
+    tokens_generated: usize,
+
+    pub fn init(allocator: std.mem.Allocator, id: u64, prompt: []const u32, max_tokens: usize, temp: f32, priority: i32) Request {
+        return Request{
+            .id = id,
+            .prompt_tokens = prompt,
+            .max_tokens = max_tokens,
+            .temperature = temp,
+            .priority = priority,
+            .created_at = std.time.milliTimestamp(),
+            .status = .queued,
+            .generated_tokens = std.ArrayList(u32).init(allocator),
+            .tokens_generated = 0,
+        };
+    }
+
+    pub fn deinit(self: *Request) void {
+        self.generated_tokens.deinit();
+    }
+};
+
+/// Batch slot for running sequence
+const BatchSlot = struct {
+    request_id: u64,
+    seq_idx: usize,
+    current_pos: usize,
+    is_prefill: bool,
+    active: bool,
+};
+
+/// Scheduler configuration
+pub const SchedulerConfig = struct {
+    max_batch_size: usize,
+    max_waiting_requests: usize,
+    preemption_enabled: bool,
+
+    pub fn default() SchedulerConfig {
+        return .{
+            .max_batch_size = 8,
+            .max_waiting_requests = 64,
+            .preemption_enabled = false,
+        };
+    }
+};
+
+/// Continuous batching scheduler
+pub const ContinuousBatchingScheduler = struct {
+    allocator: std.mem.Allocator,
+    config: SchedulerConfig,
+    model: *TriModel,
+    batch_model: *BatchTriModel,
+
+    // Request management
+    waiting_queue: std.ArrayList(*Request),
+    running_requests: std.AutoHashMap(u64, *Request),
+    completed_requests: std.ArrayList(*Request),
+
+    // Batch slots
+    slots: []BatchSlot,
+    active_slots: usize,
+
+    // Statistics
+    total_requests: u64,
+    total_tokens_generated: u64,
+    total_iterations: u64,
+
+    // Request ID counter
+    next_request_id: u64,
+
+    pub fn init(allocator: std.mem.Allocator, model: *TriModel, batch_model: *BatchTriModel, config: SchedulerConfig) !ContinuousBatchingScheduler {
+        const slots = try allocator.alloc(BatchSlot, config.max_batch_size);
+        for (slots) |*slot| {
+            slot.* = BatchSlot{
+                .request_id = 0,
+                .seq_idx = 0,
+                .current_pos = 0,
+                .is_prefill = false,
+                .active = false,
+            };
+        }
+
+        return ContinuousBatchingScheduler{
+            .allocator = allocator,
+            .config = config,
+            .model = model,
+            .batch_model = batch_model,
+            .waiting_queue = std.ArrayList(*Request).init(allocator),
+            .running_requests = std.AutoHashMap(u64, *Request).init(allocator),
+            .completed_requests = std.ArrayList(*Request).init(allocator),
+            .slots = slots,
+            .active_slots = 0,
+            .total_requests = 0,
+            .total_tokens_generated = 0,
+            .total_iterations = 0,
+            .next_request_id = 1,
+        };
+    }
+
+    pub fn deinit(self: *ContinuousBatchingScheduler) void {
+        // Clean up waiting requests
+        for (self.waiting_queue.items) |req| {
+            req.deinit();
+            self.allocator.destroy(req);
+        }
+        self.waiting_queue.deinit();
+
+        // Clean up running requests
+        var it = self.running_requests.iterator();
+        while (it.next()) |entry| {
+            entry.value_ptr.*.deinit();
+            self.allocator.destroy(entry.value_ptr.*);
+        }
+        self.running_requests.deinit();
+
+        // Clean up completed requests
+        for (self.completed_requests.items) |req| {
+            req.deinit();
+            self.allocator.destroy(req);
+        }
+        self.completed_requests.deinit();
+
+        self.allocator.free(self.slots);
+    }
+
+    /// Submit a new request
+    pub fn submitRequest(self: *ContinuousBatchingScheduler, prompt: []const u32, max_tokens: usize, temperature: f32, priority: i32) !u64 {
+        const req = try self.allocator.create(Request);
+        req.* = Request.init(self.allocator, self.next_request_id, prompt, max_tokens, temperature, priority);
+        self.next_request_id += 1;
+
+        try self.waiting_queue.append(req);
+        self.total_requests += 1;
+
+        return req.id;
+    }
+
+    /// Get number of empty slots
+    fn emptySlots(self: *const ContinuousBatchingScheduler) usize {
+        var empty: usize = 0;
+        for (self.slots) |slot| {
+            if (!slot.active) empty += 1;
+        }
+        return empty;
+    }
+
+    /// Find an empty slot
+    fn findEmptySlot(self: *ContinuousBatchingScheduler) ?usize {
+        for (self.slots, 0..) |slot, i| {
+            if (!slot.active) return i;
+        }
+        return null;
+    }
+
+    /// Schedule one iteration
+    pub fn scheduleIteration(self: *ContinuousBatchingScheduler) !void {
+        // 1. Fill empty slots from waiting queue
+        while (self.waiting_queue.items.len > 0 and self.emptySlots() > 0) {
+            // Sort by priority (simple bubble for small queue)
+            if (self.waiting_queue.items.len > 1) {
+                for (0..self.waiting_queue.items.len - 1) |i| {
+                    for (i + 1..self.waiting_queue.items.len) |j| {
+                        if (self.waiting_queue.items[j].priority > self.waiting_queue.items[i].priority) {
+                            const tmp = self.waiting_queue.items[i];
+                            self.waiting_queue.items[i] = self.waiting_queue.items[j];
+                            self.waiting_queue.items[j] = tmp;
+                        }
+                    }
+                }
+            }
+
+            // Get highest priority request
+            const req = self.waiting_queue.orderedRemove(0);
+
+            // Find empty slot
+            if (self.findEmptySlot()) |slot_idx| {
+                // Add to batch
+                if (self.batch_model.batch_cache.addSequence()) |seq_idx| {
+                    self.slots[slot_idx] = BatchSlot{
+                        .request_id = req.id,
+                        .seq_idx = seq_idx,
+                        .current_pos = 0,
+                        .is_prefill = true,
+                        .active = true,
+                    };
+                    self.active_slots += 1;
+
+                    req.status = .prefill;
+                    try self.running_requests.put(req.id, req);
+                } else {
+                    // No sequence slot available, put back in queue
+                    try self.waiting_queue.insert(0, req);
+                    break;
+                }
+            } else {
+                // No slot available, put back in queue
+                try self.waiting_queue.insert(0, req);
+                break;
+            }
+        }
+    }
+
+    /// Process one iteration for all active sequences
+    pub fn processIteration(self: *ContinuousBatchingScheduler) !void {
+        self.total_iterations += 1;
+
+        // Process each active slot
+        for (self.slots) |*slot| {
+            if (!slot.active) continue;
+
+            const req = self.running_requests.get(slot.request_id) orelse continue;
+
+            if (slot.is_prefill) {
+                // Prefill phase: process all prompt tokens
+                for (req.prompt_tokens) |token| {
+                    _ = try self.batch_model.forward(slot.seq_idx, token, slot.current_pos);
+                    slot.current_pos += 1;
+                }
+                slot.is_prefill = false;
+                req.status = .generating;
+            } else {
+                // Generation phase: generate one token
+                const last_token = if (req.generated_tokens.items.len > 0)
+                    req.generated_tokens.items[req.generated_tokens.items.len - 1]
+                else if (req.prompt_tokens.len > 0)
+                    req.prompt_tokens[req.prompt_tokens.len - 1]
+                else
+                    1; // BOS
+
+                const logits = try self.batch_model.forward(slot.seq_idx, last_token, slot.current_pos);
+
+                // Apply temperature and sample
+                if (req.temperature > 0) {
+                    for (logits) |*l| l.* /= req.temperature;
+                }
+
+                const probs = try self.allocator.alloc(f32, logits.len);
+                defer self.allocator.free(probs);
+                inference.softmax(probs, logits);
+
+                const next_token = inference.sample(probs, req.temperature);
+                try req.generated_tokens.append(next_token);
+                req.tokens_generated += 1;
+                slot.current_pos += 1;
+                self.total_tokens_generated += 1;
+
+                // Check completion
+                if (req.tokens_generated >= req.max_tokens or next_token == 2) { // EOS = 2
+                    self.completeRequest(slot);
+                }
+            }
+        }
+    }
+
+    /// Complete a request and free its slot
+    fn completeRequest(self: *ContinuousBatchingScheduler, slot: *BatchSlot) void {
+        if (self.running_requests.fetchRemove(slot.request_id)) |kv| {
+            const req = kv.value;
+            req.status = .completed;
+            self.completed_requests.append(req) catch {};
+        }
+
+        // Free batch slot
+        self.batch_model.batch_cache.removeSequence(slot.seq_idx);
+        slot.active = false;
+        self.active_slots -= 1;
+    }
+
+    /// Run scheduler until all requests complete
+    pub fn runUntilComplete(self: *ContinuousBatchingScheduler) !void {
+        while (self.waiting_queue.items.len > 0 or self.active_slots > 0) {
+            try self.scheduleIteration();
+            try self.processIteration();
+        }
+    }
+
+    /// Get scheduler statistics
+    pub fn getStats(self: *const ContinuousBatchingScheduler) SchedulerStats {
+        return SchedulerStats{
+            .total_requests = self.total_requests,
+            .completed_requests = self.completed_requests.items.len,
+            .waiting_requests = self.waiting_queue.items.len,
+            .active_requests = self.active_slots,
+            .total_tokens_generated = self.total_tokens_generated,
+            .total_iterations = self.total_iterations,
+            .avg_tokens_per_iter = if (self.total_iterations > 0)
+                @as(f32, @floatFromInt(self.total_tokens_generated)) / @as(f32, @floatFromInt(self.total_iterations))
+            else
+                0.0,
+        };
+    }
+
+    /// Get completed request by ID
+    pub fn getCompletedRequest(self: *const ContinuousBatchingScheduler, id: u64) ?*const Request {
+        for (self.completed_requests.items) |req| {
+            if (req.id == id) return req;
+        }
+        return null;
+    }
+};
+
+/// Scheduler statistics
+pub const SchedulerStats = struct {
+    total_requests: u64,
+    completed_requests: usize,
+    waiting_requests: usize,
+    active_requests: usize,
+    total_tokens_generated: u64,
+    total_iterations: u64,
+    avg_tokens_per_iter: f32,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN - Benchmark TRI vs GGUF
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1185,4 +1520,36 @@ test "speculative_decoder_init" {
     const config = SpeculativeConfig.default();
     try std.testing.expect(config.speculation_length > 0);
     try std.testing.expect(config.draft_layers > 0);
+}
+
+test "scheduler_config" {
+    const config = SchedulerConfig.default();
+    try std.testing.expectEqual(@as(usize, 8), config.max_batch_size);
+    try std.testing.expectEqual(@as(usize, 64), config.max_waiting_requests);
+}
+
+test "request_init" {
+    const allocator = std.testing.allocator;
+    const prompt = [_]u32{ 1, 2, 3 };
+    var req = Request.init(allocator, 1, &prompt, 10, 1.0, 0);
+    defer req.deinit();
+
+    try std.testing.expectEqual(@as(u64, 1), req.id);
+    try std.testing.expectEqual(@as(usize, 10), req.max_tokens);
+    try std.testing.expectEqual(RequestStatus.queued, req.status);
+}
+
+test "scheduler_stats" {
+    const stats = SchedulerStats{
+        .total_requests = 10,
+        .completed_requests = 5,
+        .waiting_requests = 3,
+        .active_requests = 2,
+        .total_tokens_generated = 100,
+        .total_iterations = 50,
+        .avg_tokens_per_iter = 2.0,
+    };
+
+    try std.testing.expectEqual(@as(u64, 10), stats.total_requests);
+    try std.testing.expectEqual(@as(usize, 5), stats.completed_requests);
 }

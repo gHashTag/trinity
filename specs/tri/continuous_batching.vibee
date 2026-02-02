@@ -1,0 +1,116 @@
+# continuous_batching.vibee
+# Continuous Batching for high-throughput LLM serving
+# Orca/vLLM style iteration-level scheduling
+
+name: continuous_batching
+version: "1.0.0"
+language: zig
+module: continuous_batching
+
+types:
+  Request:
+    description: "Inference request from client"
+    fields:
+      id: Int                    # Unique request ID
+      prompt_tokens: List<Int>   # Input token IDs
+      max_tokens: Int            # Maximum tokens to generate
+      temperature: Float         # Sampling temperature
+      priority: Int              # Request priority (higher = more urgent)
+      created_at: Timestamp      # Request creation time
+      status: RequestStatus      # Current status
+
+  RequestStatus:
+    description: "Status of a request"
+    values:
+      - QUEUED                   # Waiting in queue
+      - PREFILL                  # Processing prompt
+      - GENERATING               # Generating tokens
+      - COMPLETED                # Finished generation
+      - CANCELLED                # Cancelled by client
+
+  SchedulerConfig:
+    description: "Configuration for continuous batching scheduler"
+    fields:
+      max_batch_size: Int        # Maximum sequences in batch
+      max_tokens_per_iter: Int   # Token budget per iteration
+      preemption_enabled: Bool   # Allow preemption
+      priority_decay: Float      # Priority decay for waiting requests
+
+  BatchSlot:
+    description: "Slot in the running batch"
+    fields:
+      request_id: Int            # Associated request
+      seq_idx: Int               # Sequence index in batch
+      tokens_generated: Int      # Tokens generated so far
+      is_prefill: Bool           # In prefill phase
+
+behaviors:
+  - name: submit_request
+    given: request queue, new request
+    when: client submits inference request
+    then: adds request to queue with priority
+
+  - name: schedule_iteration
+    given: running batch, request queue, token budget
+    when: starting new iteration
+    then: returns batch configuration for this iteration
+
+  - name: process_iteration
+    given: model, batch configuration
+    when: running one iteration
+    then: processes all sequences, returns generated tokens
+
+  - name: handle_completion
+    given: completed sequence, request queue
+    when: sequence finishes generation
+    then: removes from batch, adds new request if available
+
+  - name: preempt_sequence
+    given: running sequence, higher priority request
+    when: preemption needed
+    then: pauses sequence, saves state, schedules new request
+
+# Architecture:
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │              CONTINUOUS BATCHING SCHEDULER                  │
+# ├─────────────────────────────────────────────────────────────┤
+# │                                                             │
+# │  REQUEST QUEUE (Priority Heap)                              │
+# │  ┌─────┬─────┬─────┬─────┬─────┐                            │
+# │  │ R5  │ R3  │ R7  │ R1  │ R9  │  (sorted by priority)      │
+# │  └──┬──┴──┬──┴──┬──┴─────┴─────┘                            │
+# │     │     │     │                                           │
+# │     ▼     ▼     ▼                                           │
+# │  RUNNING BATCH (max_batch_size slots)                       │
+# │  ┌─────┬─────┬─────┬─────┐                                  │
+# │  │ S0  │ S1  │ S2  │ S3  │  (active sequences)              │
+# │  │ R5  │ R3  │ R7  │ --- │  (--- = empty slot)              │
+# │  └──┬──┴──┬──┴──┬──┴─────┘                                  │
+# │     │     │     │                                           │
+# │     ▼     ▼     ▼                                           │
+# │  ┌─────────────────────────────────────────┐                │
+# │  │         MODEL FORWARD PASS              │                │
+# │  │  (process all active sequences)         │                │
+# │  └─────────────────────────────────────────┘                │
+# │                                                             │
+# │  ITERATION LOOP:                                            │
+# │  1. Check for completed sequences → free slots              │
+# │  2. Fill empty slots from queue                             │
+# │  3. Run forward pass for all active sequences               │
+# │  4. Sample next tokens                                      │
+# │  5. Check stopping conditions                               │
+# │  6. Repeat                                                  │
+# │                                                             │
+# └─────────────────────────────────────────────────────────────┘
+#
+# Throughput Improvement:
+#   Static batching: Wait for slowest sequence
+#   Continuous batching: Fill slots immediately
+#
+#   Example (batch_size=4, requests with varying lengths):
+#   Static:     [====][====][==][======] → 6 iterations wasted
+#   Continuous: [====][====][==][======]
+#               [    ][    ][++][      ] → new requests fill gaps
+#
+#   Throughput gain: 30-50% typical, up to 3x under high load
