@@ -10,6 +10,7 @@ const inference = @import("gguf_inference.zig");
 const transformer = @import("gguf_transformer.zig");
 const flash = @import("flash_attention.zig");
 const parallel = @import("parallel_inference.zig");
+const kv_cache = @import("kv_cache.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // .TRI FILE FORMAT
@@ -61,6 +62,10 @@ pub const TriModel = struct {
     // RoPE and KV-cache
     rope: transformer.RoPE,
     kv_caches: []transformer.KVCache,
+
+    // Ternary KV cache (OPT-T03/T04) - 16x memory reduction
+    ternary_kv_caches: ?[]kv_cache.TernaryKVCache,
+    use_ternary_kv: bool,
 
     // Pre-allocated buffers
     buf_hidden: []f32,
@@ -131,6 +136,8 @@ pub const TriModel = struct {
             .layers = undefined,
             .rope = undefined,
             .kv_caches = undefined,
+            .ternary_kv_caches = null,
+            .use_ternary_kv = false,
             .buf_hidden = undefined,
             .buf_temp = undefined,
             .buf_normed = undefined,
@@ -276,6 +283,14 @@ pub const TriModel = struct {
         }
         self.allocator.free(self.kv_caches);
 
+        // Free ternary KV caches if enabled
+        if (self.ternary_kv_caches) |caches| {
+            for (caches) |*cache| {
+                cache.deinit();
+            }
+            self.allocator.free(caches);
+        }
+
         self.rope.deinit();
 
         self.allocator.free(self.buf_hidden);
@@ -296,6 +311,44 @@ pub const TriModel = struct {
         for (self.kv_caches) |*cache| {
             cache.reset();
         }
+        if (self.ternary_kv_caches) |caches| {
+            for (caches) |*cache| {
+                cache.reset();
+            }
+        }
+    }
+
+    /// Enable ternary KV cache for 16x memory reduction
+    /// Call after load() but before inference
+    pub fn enableTernaryKVCache(self: *TriModel) !void {
+        if (self.ternary_kv_caches != null) return; // Already enabled
+
+        const header = self.header;
+        self.ternary_kv_caches = try self.allocator.alloc(kv_cache.TernaryKVCache, header.num_layers);
+
+        for (self.ternary_kv_caches.?) |*cache| {
+            cache.* = try kv_cache.TernaryKVCache.init(
+                self.allocator,
+                header.num_kv_heads,
+                header.head_dim,
+                header.context_length,
+            );
+        }
+
+        self.use_ternary_kv = true;
+
+        // Print memory savings
+        const f32_mem = header.num_layers * header.context_length * header.num_kv_heads * header.head_dim * 2 * 4;
+        const ternary_mem = self.ternary_kv_caches.?[0].memoryUsage() * header.num_layers;
+        const ratio = @as(f32, @floatFromInt(f32_mem)) / @as(f32, @floatFromInt(ternary_mem));
+
+        std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║           TERNARY KV CACHE ENABLED                           ║\n", .{});
+        std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
+        std.debug.print("║  f32 KV cache:      {d:>10} bytes                        ║\n", .{f32_mem});
+        std.debug.print("║  Ternary KV cache:  {d:>10} bytes                        ║\n", .{ternary_mem});
+        std.debug.print("║  Compression:       {d:>10.1}x                            ║\n", .{ratio});
+        std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
     }
 
     // Forward pass using TERNARY matmul (NO MULTIPLICATIONS!)
@@ -354,48 +407,69 @@ pub const TriModel = struct {
             self.rope.apply(self.buf_k[h * head_dim ..][0..head_dim], pos);
         }
 
-        // Update KV cache
-        self.kv_caches[layer_idx].append(self.buf_k, self.buf_v);
-
-        // SIMD-OPTIMIZED ATTENTION (no allocations in hot path)
+        // Update KV cache (f32 or ternary)
         const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(head_dim)));
-        const kv_group_size = num_heads / num_kv_heads;
-        const seq_len = self.kv_caches[layer_idx].seq_len;
 
-        for (0..num_heads) |h| {
-            const kv_h = h / kv_group_size;
-            const q_head = self.buf_q[h * head_dim ..][0..head_dim];
+        if (self.use_ternary_kv and self.ternary_kv_caches != null) {
+            // TERNARY KV CACHE PATH (16x memory reduction)
+            self.ternary_kv_caches.?[layer_idx].append(self.buf_k, self.buf_v);
 
-            // Compute attention scores with SIMD dot product
-            for (0..seq_len) |t| {
-                const k_offset = t * num_kv_heads * head_dim + kv_h * head_dim;
-                const k_vec = self.kv_caches[layer_idx].k_cache[k_offset..][0..head_dim];
-                self.buf_scores[t] = flash.simdDot(q_head, k_vec) * scale;
-            }
+            const seq_len = self.ternary_kv_caches.?[layer_idx].seq_len;
 
-            // Softmax
-            inference.softmax(self.buf_scores[0..seq_len], self.buf_scores[0..seq_len]);
+            // Use ternary attention (no K dequantization!)
+            flash.ternaryAttentionGQA(
+                self.buf_attn_out,
+                self.buf_q,
+                &self.ternary_kv_caches.?[layer_idx],
+                num_heads,
+                num_kv_heads,
+                head_dim,
+                scale,
+                self.buf_scores,
+            );
+            _ = seq_len;
+        } else {
+            // F32 KV CACHE PATH (original)
+            self.kv_caches[layer_idx].append(self.buf_k, self.buf_v);
 
-            // Weighted sum with SIMD
-            const out_head = self.buf_attn_out[h * head_dim ..][0..head_dim];
-            @memset(out_head, 0.0);
+            const kv_group_size = num_heads / num_kv_heads;
+            const seq_len = self.kv_caches[layer_idx].seq_len;
 
-            for (0..seq_len) |t| {
-                const v_offset = t * num_kv_heads * head_dim + kv_h * head_dim;
-                const v_vec = self.kv_caches[layer_idx].v_cache[v_offset..][0..head_dim];
-                const score = self.buf_scores[t];
+            for (0..num_heads) |h| {
+                const kv_h = h / kv_group_size;
+                const q_head = self.buf_q[h * head_dim ..][0..head_dim];
 
-                // SIMD scale-add
-                const Vec8 = @Vector(8, f32);
-                const weight_vec: Vec8 = @splat(score);
-                var j: usize = 0;
-                while (j + 8 <= head_dim) : (j += 8) {
-                    const out_vec: Vec8 = out_head[j..][0..8].*;
-                    const v_vec8: Vec8 = v_vec[j..][0..8].*;
-                    out_head[j..][0..8].* = out_vec + v_vec8 * weight_vec;
+                // Compute attention scores with SIMD dot product
+                for (0..seq_len) |t| {
+                    const k_offset = t * num_kv_heads * head_dim + kv_h * head_dim;
+                    const k_vec = self.kv_caches[layer_idx].k_cache[k_offset..][0..head_dim];
+                    self.buf_scores[t] = flash.simdDot(q_head, k_vec) * scale;
                 }
-                while (j < head_dim) : (j += 1) {
-                    out_head[j] += score * v_vec[j];
+
+                // Softmax
+                inference.softmax(self.buf_scores[0..seq_len], self.buf_scores[0..seq_len]);
+
+                // Weighted sum with SIMD
+                const out_head = self.buf_attn_out[h * head_dim ..][0..head_dim];
+                @memset(out_head, 0.0);
+
+                for (0..seq_len) |t| {
+                    const v_offset = t * num_kv_heads * head_dim + kv_h * head_dim;
+                    const v_vec = self.kv_caches[layer_idx].v_cache[v_offset..][0..head_dim];
+                    const score_val = self.buf_scores[t];
+
+                    // SIMD scale-add
+                    const Vec8 = @Vector(8, f32);
+                    const weight_vec: Vec8 = @splat(score_val);
+                    var j: usize = 0;
+                    while (j + 8 <= head_dim) : (j += 8) {
+                        const out_vec: Vec8 = out_head[j..][0..8].*;
+                        const v_vec8: Vec8 = v_vec[j..][0..8].*;
+                        out_head[j..][0..8].* = out_vec + v_vec8 * weight_vec;
+                    }
+                    while (j < head_dim) : (j += 1) {
+                        out_head[j] += score_val * v_vec[j];
+                    }
                 }
             }
         }
