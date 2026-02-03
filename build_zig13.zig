@@ -1,38 +1,30 @@
 const std = @import("std");
 
-// Build file for Zig 0.15.x
-// For Zig 0.13.x use build.zig
-
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Library module for imports
-    const trinity_mod = b.createModule(.{
+    // Library module
+    const trinity_mod = b.addModule("trinity", .{
         .root_source_file = b.path("src/trinity.zig"),
         .target = target,
         .optimize = optimize,
     });
 
     // Library artifact
-    const lib = b.addLibrary(.{
+    const lib = b.addStaticLibrary(.{
         .name = "trinity",
-        .linkage = .static,
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/trinity.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_source_file = b.path("src/trinity.zig"),
+        .target = target,
+        .optimize = optimize,
     });
     b.installArtifact(lib);
 
     // Tests
     const main_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/trinity.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_source_file = b.path("src/trinity.zig"),
+        .target = target,
+        .optimize = optimize,
     });
 
     const run_main_tests = b.addRunArtifact(main_tests);
@@ -41,22 +33,18 @@ pub fn build(b: *std.Build) void {
 
     // VSA tests
     const vsa_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_source_file = b.path("src/vsa.zig"),
+        .target = target,
+        .optimize = optimize,
     });
     const run_vsa_tests = b.addRunArtifact(vsa_tests);
     test_step.dependOn(&run_vsa_tests.step);
 
     // VM tests
     const vm_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vm.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_source_file = b.path("src/vm.zig"),
+        .target = target,
+        .optimize = optimize,
     });
     const run_vm_tests = b.addRunArtifact(vm_tests);
     test_step.dependOn(&run_vm_tests.step);
@@ -64,11 +52,9 @@ pub fn build(b: *std.Build) void {
     // Benchmark executable
     const bench = b.addExecutable(.{
         .name = "trinity-bench",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-        }),
+        .root_source_file = b.path("src/vsa.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
     });
     b.installArtifact(bench);
 
@@ -79,35 +65,29 @@ pub fn build(b: *std.Build) void {
     // Examples
     const example_memory = b.addExecutable(.{
         .name = "example-memory",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("examples/memory.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
-        }),
+        .root_source_file = b.path("examples/memory.zig"),
+        .target = target,
+        .optimize = optimize,
     });
+    example_memory.root_module.addImport("trinity", trinity_mod);
     b.installArtifact(example_memory);
 
     const example_sequence = b.addExecutable(.{
         .name = "example-sequence",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("examples/sequence.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
-        }),
+        .root_source_file = b.path("examples/sequence.zig"),
+        .target = target,
+        .optimize = optimize,
     });
+    example_sequence.root_module.addImport("trinity", trinity_mod);
     b.installArtifact(example_sequence);
 
     const example_vm = b.addExecutable(.{
         .name = "example-vm",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("examples/vm.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
-        }),
+        .root_source_file = b.path("examples/vm.zig"),
+        .target = target,
+        .optimize = optimize,
     });
+    example_vm.root_module.addImport("trinity", trinity_mod);
     b.installArtifact(example_vm);
 
     // Run examples step
@@ -123,11 +103,9 @@ pub fn build(b: *std.Build) void {
     // Firebird CLI
     const firebird = b.addExecutable(.{
         .name = "firebird",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/firebird/cli.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-        }),
+        .root_source_file = b.path("src/firebird/cli.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
     });
     b.installArtifact(firebird);
 
@@ -140,22 +118,18 @@ pub fn build(b: *std.Build) void {
 
     // Firebird tests
     const firebird_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/firebird/b2t_integration.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_source_file = b.path("src/firebird/b2t_integration.zig"),
+        .target = target,
+        .optimize = optimize,
     });
     const run_firebird_tests = b.addRunArtifact(firebird_tests);
     test_step.dependOn(&run_firebird_tests.step);
 
     // WASM parser tests
     const wasm_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/firebird/wasm_parser.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_source_file = b.path("src/firebird/wasm_parser.zig"),
+        .target = target,
+        .optimize = optimize,
     });
     const run_wasm_tests = b.addRunArtifact(wasm_tests);
     test_step.dependOn(&run_wasm_tests.step);
@@ -163,22 +137,20 @@ pub fn build(b: *std.Build) void {
     // Cross-platform release builds
     const release_step = b.step("release", "Build release binaries for all platforms");
 
-    const targets_list: []const std.Target.Query = &.{
+    const targets: []const std.Target.Query = &.{
         .{ .cpu_arch = .x86_64, .os_tag = .linux },
         .{ .cpu_arch = .x86_64, .os_tag = .macos },
         .{ .cpu_arch = .aarch64, .os_tag = .macos },
         .{ .cpu_arch = .x86_64, .os_tag = .windows },
     };
 
-    for (targets_list) |t| {
+    for (targets) |t| {
         const release_target = b.resolveTargetQuery(t);
         const release_exe = b.addExecutable(.{
             .name = "firebird",
-            .root_module = b.createModule(.{
-                .root_source_file = b.path("src/firebird/cli.zig"),
-                .target = release_target,
-                .optimize = .ReleaseFast,
-            }),
+            .root_source_file = b.path("src/firebird/cli.zig"),
+            .target = release_target,
+            .optimize = .ReleaseFast,
         });
 
         const target_output = b.addInstallArtifact(release_exe, .{
@@ -197,22 +169,18 @@ pub fn build(b: *std.Build) void {
 
     // Extension WASM tests
     const extension_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/firebird/extension_wasm.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_source_file = b.path("src/firebird/extension_wasm.zig"),
+        .target = target,
+        .optimize = optimize,
     });
     const run_extension_tests = b.addRunArtifact(extension_tests);
     test_step.dependOn(&run_extension_tests.step);
 
     // DePIN tests
     const depin_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/firebird/depin.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_source_file = b.path("src/firebird/depin.zig"),
+        .target = target,
+        .optimize = optimize,
     });
     const run_depin_tests = b.addRunArtifact(depin_tests);
     test_step.dependOn(&run_depin_tests.step);
