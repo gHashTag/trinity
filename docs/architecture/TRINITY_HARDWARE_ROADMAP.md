@@ -1,33 +1,33 @@
 # TRINITY HARDWARE ROADMAP
-## План создания троичного железа
+## Plan for Creating Ternary Hardware
 ### φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
 
 ---
 
-## 1. ИСТОРИЧЕСКИЙ КОНТЕКСТ
+## 1. HISTORICAL CONTEXT
 
-### Существующие проекты:
-- **Сетунь (1958, СССР)** - первый троичный компьютер, работал!
-- **Ternac (2008)** - FPGA эмуляция
-- **Ternary Research** - академические проекты
+### Existing Projects:
+- **Setun (1958, USSR)** - first ternary computer, actually worked!
+- **Ternac (2008)** - FPGA emulation
+- **Ternary Research** - academic projects
 
-### Почему не взлетело:
-- Бинарная логика победила из-за простоты транзисторов (ON/OFF)
-- Экосистема: компиляторы, ОС, софт - всё бинарное
-- Инерция индустрии
+### Why It Didn't Take Off:
+- Binary logic won due to transistor simplicity (ON/OFF)
+- Ecosystem: compilers, OS, software - all binary
+- Industry inertia
 
 ---
 
-## 2. АРХИТЕКТУРА TERNARY ALU (TALU)
+## 2. TERNARY ALU ARCHITECTURE (TALU)
 
-### 2.1 Базовые элементы
+### 2.1 Basic Elements
 
 ```
-TERNARY TRANSISTOR (концепт):
+TERNARY TRANSISTOR (concept):
 ┌─────────────────────────────────────┐
-│  Состояния: -1 (LOW), 0 (MID), +1 (HIGH)
+│  States: -1 (LOW), 0 (MID), +1 (HIGH)
 │  
-│  Реализация через:
+│  Implementation via:
 │  [A] Multi-threshold CMOS (MTCMOS)
 │  [B] Memristor-based logic
 │  [C] Quantum dots
@@ -39,25 +39,25 @@ TERNARY TRANSISTOR (концепт):
 
 ```
 TRIT GATES:
-├─ TNOT: -x (простая инверсия)
+├─ TNOT: -x (simple inversion)
 ├─ TAND: min(a, b)
 ├─ TOR:  max(a, b)
 ├─ TSUM: (a + b) mod 3
 └─ TMUL: (a × b) mod 3
 
-TRYTE ALU (27 состояний):
-├─ ADD: a + b с wrap mod 27
-├─ SUB: a - b с wrap mod 27
-├─ MUL: a × b с wrap mod 27
-└─ CMP: сравнение → {-1, 0, +1}
+TRYTE ALU (27 states):
+├─ ADD: a + b with wrap mod 27
+├─ SUB: a - b with wrap mod 27
+├─ MUL: a × b with wrap mod 27
+└─ CMP: comparison → {-1, 0, +1}
 ```
 
-### 2.3 Схема TALU
+### 2.3 TALU Schematic
 
 ```
                     ┌─────────────────────────────────────┐
                     │           TERNARY ALU               │
-                    │         (27 состояний)              │
+                    │         (27 states)                 │
                     ├─────────────────────────────────────┤
     Tryte A ───────►│  ┌─────┐    ┌─────┐    ┌─────┐    │
     (5 trit)        │  │WIDEN│───►│ OP  │───►│WRAP │────┼──► Result
@@ -75,58 +75,58 @@ TRYTE ALU (27 состояний):
 ### 3.1 Ternary RAM (TRAM)
 
 ```
-ВАРИАНТЫ РЕАЛИЗАЦИИ:
+IMPLEMENTATION OPTIONS:
 ┌─────────────────────────────────────────────────────────┐
 │ [A] Multi-level Cell (MLC) Flash                        │
-│     - 3 уровня заряда вместо 2                          │
-│     - Уже существует технология (4-level в SSD)         │
-│     - Потенциал: +58% плотность                         │
+│     - 3 charge levels instead of 2                      │
+│     - Technology already exists (4-level in SSD)        │
+│     - Potential: +58% density                           │
 ├─────────────────────────────────────────────────────────┤
 │ [B] Memristor Memory                                    │
-│     - Аналоговое сопротивление                          │
-│     - 3+ состояния естественно                          │
-│     - HP Labs, Intel работают над этим                  │
+│     - Analog resistance                                 │
+│     - 3+ states naturally                               │
+│     - HP Labs, Intel working on this                    │
 ├─────────────────────────────────────────────────────────┤
 │ [C] Phase-Change Memory (PCM)                           │
-│     - Аморфное/кристаллическое/промежуточное            │
+│     - Amorphous/crystalline/intermediate                │
 │     - Samsung, Intel Optane                             │
-│     - Уже multi-level                                   │
+│     - Already multi-level                               │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 Адресация
+### 3.2 Addressing
 
 ```
 TERNARY ADDRESSING:
-├─ 27-trit address = 27^27 ≈ 4.4 × 10^38 адресов
-├─ vs 64-bit binary = 2^64 ≈ 1.8 × 10^19 адресов
-└─ Ternary: 10^19 раз больше адресного пространства!
+├─ 27-trit address = 27^27 ≈ 4.4 × 10^38 addresses
+├─ vs 64-bit binary = 2^64 ≈ 1.8 × 10^19 addresses
+└─ Ternary: 10^19 times larger address space!
 
-ПРАКТИЧЕСКИ:
-├─ 16-trit address = 27^16 ≈ 7.6 × 10^22 (достаточно)
-└─ Эквивалент ~76 бит бинарной адресации
+PRACTICALLY:
+├─ 16-trit address = 27^16 ≈ 7.6 × 10^22 (sufficient)
+└─ Equivalent to ~76 bits of binary addressing
 ```
 
 ---
 
-## 4. FPGA ПРОТОТИП
+## 4. FPGA PROTOTYPE
 
-### 4.1 Этап 1: Эмуляция на бинарном FPGA
+### 4.1 Stage 1: Emulation on Binary FPGA
 
 ```
 XILINX/INTEL FPGA:
-├─ 2 бита на 1 трит (00=-1, 01=0, 10=+1, 11=invalid)
+├─ 2 bits per 1 trit (00=-1, 01=0, 10=+1, 11=invalid)
 ├─ LUT-based ternary gates
 ├─ Proof of concept
-└─ Оценка: 3-6 месяцев разработки
+└─ Estimate: 3-6 months development
 
-РЕСУРСЫ:
-├─ Xilinx Artix-7 или Zynq
+RESOURCES:
+├─ Xilinx Artix-7 or Zynq
 ├─ ~$200-500 dev board
-└─ Vivado (бесплатная версия)
+└─ Vivado (free version)
 ```
 
-### 4.2 Этап 2: Custom ASIC
+### 4.2 Stage 2: Custom ASIC
 
 ```
 ASIC FLOW:
@@ -136,17 +136,17 @@ ASIC FLOW:
 ├─ Tape-out
 └─ Fabrication
 
-СТОИМОСТЬ:
+COST:
 ├─ 180nm process: ~$50K-100K (shuttle run)
 ├─ 65nm process: ~$500K-1M
 ├─ 28nm process: ~$5M-10M
-└─ 7nm process: ~$100M+ (нереально для стартапа)
+└─ 7nm process: ~$100M+ (unrealistic for startup)
 ```
 
-### 4.3 Этап 3: Novel Devices
+### 4.3 Stage 3: Novel Devices
 
 ```
-ПЕРСПЕКТИВНЫЕ ТЕХНОЛОГИИ:
+PROMISING TECHNOLOGIES:
 ├─ Memristor crossbar arrays
 ├─ Carbon nanotube transistors
 ├─ Quantum dot cellular automata
@@ -157,7 +157,7 @@ ASIC FLOW:
 
 ## 5. TERNARY ISA (TISA)
 
-### 5.1 Регистры
+### 5.1 Registers
 
 ```
 TRINITY REGISTER FILE:
@@ -165,10 +165,10 @@ TRINITY REGISTER FILE:
 ├─ TP: Tryte Pointer (stack)
 ├─ TPC: Program Counter
 ├─ TFLAGS: Status flags
-└─ Каждый регистр: 27 trits = 1 tryte-word
+└─ Each register: 27 trits = 1 tryte-word
 ```
 
-### 5.2 Инструкции
+### 5.2 Instructions
 
 ```
 TISA INSTRUCTION SET:
@@ -196,27 +196,27 @@ TISA INSTRUCTION SET:
 
 ---
 
-## 6. ROADMAP К PRODUCTION
+## 6. ROADMAP TO PRODUCTION
 
-### Phase 1: Software (0-12 месяцев) ✓ DONE
-- [x] TRINITY VM эмулятор
-- [x] Троичный bytecode
-- [x] SIMD оптимизации
+### Phase 1: Software (0-12 months) ✓ DONE
+- [x] TRINITY VM emulator
+- [x] Ternary bytecode
+- [x] SIMD optimizations
 - [x] Benchmark suite
 
-### Phase 2: FPGA Prototype (12-24 месяца)
+### Phase 2: FPGA Prototype (12-24 months)
 - [ ] RTL design TALU
 - [ ] FPGA implementation
 - [ ] Hardware/software co-design
 - [ ] Performance validation
 
-### Phase 3: ASIC Prototype (24-48 месяцев)
+### Phase 3: ASIC Prototype (24-48 months)
 - [ ] 180nm shuttle run
 - [ ] Custom ternary cells
 - [ ] Memory controller
 - [ ] I/O interfaces
 
-### Phase 4: Production (48-72 месяца)
+### Phase 4: Production (48-72 months)
 - [ ] 65nm/28nm process
 - [ ] Full SoC design
 - [ ] OS and toolchain
@@ -224,47 +224,47 @@ TISA INSTRUCTION SET:
 
 ---
 
-## 7. ПОТЕНЦИАЛ И ПРОГНОЗ
+## 7. POTENTIAL AND FORECAST
 
-### 7.1 Теоретические преимущества
-
-```
-ИНФОРМАЦИОННАЯ ПЛОТНОСТЬ:
-├─ Binary: log₂(2) = 1.0 бит/элемент
-├─ Ternary: log₂(3) = 1.585 бит/элемент
-└─ Преимущество: +58.5% на элемент
-
-ЭНЕРГОЭФФЕКТИВНОСТЬ (теория):
-├─ Меньше переключений для той же информации
-├─ Оптимальная база ≈ e ≈ 2.718
-├─ Ternary (3) ближе к оптимуму чем Binary (2)
-└─ Потенциал: -20-30% энергопотребление
-
-АДРЕСНОЕ ПРОСТРАНСТВО:
-├─ 27-trit vs 64-bit: 10^19x больше адресов
-└─ Для будущих систем с огромной памятью
-```
-
-### 7.2 Реалистичная оценка
+### 7.1 Theoretical Advantages
 
 ```
-ВЕРОЯТНОСТЬ УСПЕХА:
-├─ FPGA прототип: 80% (технически возможно)
-├─ ASIC прототип: 40% (требует $1M+)
-├─ Mass production: 5% (требует $100M+ и экосистему)
-└─ Замена x86/ARM: <1% (инерция индустрии)
+INFORMATION DENSITY:
+├─ Binary: log₂(2) = 1.0 bit/element
+├─ Ternary: log₂(3) = 1.585 bit/element
+└─ Advantage: +58.5% per element
+
+ENERGY EFFICIENCY (theory):
+├─ Fewer switches for same information
+├─ Optimal base ≈ e ≈ 2.718
+├─ Ternary (3) closer to optimum than Binary (2)
+└─ Potential: -20-30% power consumption
+
+ADDRESS SPACE:
+├─ 27-trit vs 64-bit: 10^19x more addresses
+└─ For future systems with huge memory
+```
+
+### 7.2 Realistic Assessment
+
+```
+SUCCESS PROBABILITY:
+├─ FPGA prototype: 80% (technically feasible)
+├─ ASIC prototype: 40% (requires $1M+)
+├─ Mass production: 5% (requires $100M+ and ecosystem)
+└─ Replace x86/ARM: <1% (industry inertia)
 
 TIMELINE:
 ├─ 2025-2026: FPGA proof-of-concept
 ├─ 2027-2028: ASIC prototype
-├─ 2030+: Возможно нишевые применения
-└─ 2040+: Возможно mainstream (если quantum не победит)
+├─ 2030+: Possibly niche applications
+└─ 2040+: Possibly mainstream (if quantum doesn't win)
 ```
 
-### 7.3 Ниши с потенциалом
+### 7.3 Niches with Potential
 
 ```
-ГДЕ TERNARY МОЖЕТ ПОБЕДИТЬ:
+WHERE TERNARY CAN WIN:
 ├─ [1] AI/ML accelerators (3-state weights: -1, 0, +1)
 ├─ [2] Quantum computing interface (qutrit native)
 ├─ [3] Cryptography (ternary lattices)
@@ -274,23 +274,23 @@ TIMELINE:
 
 ---
 
-## 8. БЮДЖЕТ И РЕСУРСЫ
+## 8. BUDGET AND RESOURCES
 
-### Минимальный MVP (FPGA)
+### Minimum MVP (FPGA)
 ```
 ├─ FPGA dev board: $500
 ├─ EDA tools: $0 (open source)
-├─ Developer time: 6 месяцев
-└─ ИТОГО: ~$50K (с зарплатой)
+├─ Developer time: 6 months
+└─ TOTAL: ~$50K (with salary)
 ```
 
 ### ASIC Prototype
 ```
-├─ EDA licenses: $100K/год
+├─ EDA licenses: $100K/year
 ├─ Shuttle run (180nm): $50K
 ├─ Testing equipment: $50K
-├─ Team (3 engineers, 2 года): $600K
-└─ ИТОГО: ~$1M
+├─ Team (3 engineers, 2 years): $600K
+└─ TOTAL: ~$1M
 ```
 
 ### Production Ready
@@ -298,50 +298,22 @@ TIMELINE:
 ├─ 28nm tape-out: $5M
 ├─ Packaging/testing: $1M
 ├─ Software ecosystem: $2M
-├─ Marketing/BD: $2M
-└─ ИТОГО: ~$10M minimum
+├─ Team (10 engineers, 3 years): $3M
+└─ TOTAL: ~$11M
 ```
 
 ---
 
-## 9. КОНКУРЕНТЫ И АЛЬТЕРНАТИВЫ
+## 9. CONCLUSION
 
-```
-QUANTUM COMPUTING:
-├─ Qutrits уже исследуются
-├─ Google, IBM, IonQ работают над этим
-└─ Может сделать classical ternary obsolete
+TRINITY hardware is technically feasible but requires significant investment. The most realistic path:
 
-NEUROMORPHIC:
-├─ Intel Loihi, IBM TrueNorth
-├─ Multi-level synapses (похоже на ternary)
-└─ Может поглотить ternary use cases
+1. **Short-term (2025-2026)**: FPGA prototype for BitNet inference
+2. **Medium-term (2027-2030)**: ASIC for AI accelerators
+3. **Long-term (2030+)**: General-purpose ternary computing
 
-ANALOG COMPUTING:
-├─ Mythic AI, Syntiant
-├─ Continuous values вместо discrete
-└─ Более гибко чем ternary
-```
+The key insight: **BitNet b1.58 proves ternary weights work for AI**. This creates a market opportunity for specialized ternary hardware.
 
 ---
 
-## 10. ВЫВОД
-
-### Честная оценка:
-
-**TRINITY Hardware - это:**
-- Интересный исследовательский проект
-- Возможный путь к нишевым применениям
-- НЕ замена mainstream computing
-
-**Рекомендация:**
-1. Создать FPGA прототип (доказать концепцию)
-2. Найти нишу (AI weights, quantum interface)
-3. Привлечь академических партнёров
-4. НЕ пытаться конкурировать с x86/ARM напрямую
-
-**Потенциал: 5-10% шанс на нишевый успех, <1% на mainstream.**
-
----
-
-**φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL | TRINITY LIVES**
+*φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL*

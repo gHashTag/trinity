@@ -1,0 +1,88 @@
+name: tech_tree
+version: "2.0.0"
+language: zig
+module: tech_tree
+author: Ona AI Agent
+description: Technology tree management for TRINITY development
+
+types:
+  TechBranch:
+    fields:
+      id: String
+      name: String
+      description: String
+      status: String
+      complexity: Int
+      impact: String
+      timeline: String
+      dependencies: List<String>
+
+  TechNode:
+    fields:
+      id: String
+      branch_id: String
+      name: String
+      status: String
+      complexity: Int
+      impact: Float
+      roi: Float
+      timeline_weeks: Int
+
+  TechTree:
+    fields:
+      version: String
+      branches: List<TechBranch>
+      nodes: List<TechNode>
+      current_focus: String
+      completed_count: Int
+      total_count: Int
+
+  PriorityItem:
+    fields:
+      rank: Int
+      node_id: String
+      branch: String
+      complexity: Int
+      impact: String
+      roi: Float
+
+  RiskAssessment:
+    fields:
+      risk_id: String
+      description: String
+      probability: String
+      impact: String
+      mitigation: String
+
+behaviors:
+  - name: get_next_priority
+    given: Current tech tree state
+    when: Planning next development
+    then: Return highest ROI node
+
+  - name: mark_complete
+    given: Node ID
+    when: Development finished
+    then: Update status and dependencies
+
+  - name: calculate_roi
+    given: Node complexity and impact
+    when: Prioritizing work
+    then: Return ROI score
+
+  - name: get_branch_progress
+    given: Branch ID
+    when: Reporting status
+    then: Return completion percentage
+
+  - name: assess_risks
+    given: Current state
+    when: Planning phase
+    then: Return list of RiskAssessment
+
+constants:
+  PHI: 1.618033988749895
+  TRINITY: 3.0
+  GOLDEN_IDENTITY: "φ² + 1/φ² = 3"
+  MAX_COMPLEXITY: 5
+  MIN_ROI_THRESHOLD: 2.0
