@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { useI18n } from '../../i18n/context'
 import Section from '../Section'
 
@@ -30,94 +31,149 @@ export default function TheoremsSection() {
 
   return (
     <Section id="theorems">
+      <div className="radial-glow" style={{ opacity: 0.2 }} />
       <div className="tight fade">
         <div className="badge" style={{ marginBottom: '1rem' }}>MATHEMATICAL FOUNDATION</div>
         <h2 dangerouslySetInnerHTML={{ __html: theorems.title }} />
         <p style={{ maxWidth: '700px', margin: '0 auto', opacity: 0.9 }}>{theorems.sub}</p>
       </div>
 
-      <div className="grid fade" style={{ 
+      {/* Vertical layout - 4 rows */}
+      <div className="fade" style={{ 
         marginTop: '3rem',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '1.5rem',
-        maxWidth: '1200px',
-        margin: '3rem auto 0'
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.2rem',
+        maxWidth: '850px',
+        margin: '3rem auto 0',
+        padding: '0 1rem'
       }}>
         {theorems.cards?.map((card: TheoremCard, i: number) => (
-          <div key={i} className="premium-card" style={{ 
-            padding: '2rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <motion.div 
+            key={i} 
+            className="premium-card"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1, duration: 0.4 }}
+            viewport={{ once: true }}
+            style={{ 
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem'
+            }}
+          >
+            {/* Header row: Number + Title + Verified */}
+            <div style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              flexWrap: 'wrap'
+            }}>
+              {/* Number badge - smaller, cleaner */}
               <div style={{ 
-                width: '48px', 
-                height: '48px', 
-                borderRadius: '50%', 
-                background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
+                width: '36px', 
+                height: '36px', 
+                borderRadius: '8px', 
+                background: 'var(--accent)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.5rem',
+                fontSize: '1rem',
                 fontWeight: 700,
-                color: '#fff'
+                color: '#000',
+                flexShrink: 0
               }}>
-                {card.number}
+                #{card.number}
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text)' }}>{card.title}</h3>
+
+              {/* Title */}
+              <h3 style={{ 
+                margin: 0, 
+                fontSize: '1.1rem', 
+                color: 'var(--text)',
+                fontWeight: 600,
+                flex: 1,
+                minWidth: '150px'
+              }}>
+                {card.title}
+              </h3>
+
+              {/* Verified badge - compact */}
+              <div style={{ 
+                padding: '0.4rem 0.8rem',
+                background: 'rgba(34, 197, 94, 0.15)',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                flexShrink: 0
+              }}>
+                <span style={{ color: '#22c55e', fontSize: '0.75rem' }}>✓</span>
+                <span style={{ 
+                  fontSize: '0.75rem', 
+                  color: '#22c55e',
+                  fontWeight: 600
+                }}>
+                  {card.verified.metric}
+                </span>
+              </div>
             </div>
 
+            {/* Formula */}
             <div style={{ 
-              background: 'rgba(99, 102, 241, 0.1)', 
-              padding: '1rem', 
-              borderRadius: '8px',
-              fontFamily: 'monospace',
-              fontSize: '1.1rem',
+              background: 'rgba(99, 102, 241, 0.08)', 
+              padding: '0.8rem 1rem', 
+              borderRadius: '6px',
+              fontFamily: 'ui-monospace, monospace',
+              fontSize: '1rem',
               color: 'var(--accent)',
-              textAlign: 'center'
+              textAlign: 'center',
+              letterSpacing: '0.02em'
             }}>
               {card.formula}
             </div>
 
-            <p style={{ fontSize: '0.9rem', color: 'var(--muted)', margin: 0 }}>
-              <strong style={{ color: 'var(--text)' }}>Proof:</strong> {card.proof}
-            </p>
-
-            <p style={{ fontSize: '0.9rem', color: 'var(--text)', margin: 0 }}>
-              <strong>Result:</strong> {card.result}
-            </p>
-
-            <div style={{ 
-              marginTop: 'auto',
-              padding: '1rem',
-              background: 'rgba(34, 197, 94, 0.1)',
-              borderRadius: '8px',
-              borderLeft: '3px solid #22c55e'
+            {/* Result */}
+            <p style={{ 
+              fontSize: '0.9rem', 
+              color: 'var(--text)', 
+              margin: 0,
+              lineHeight: 1.5
             }}>
-              <div style={{ fontSize: '0.8rem', color: '#22c55e', fontWeight: 600, marginBottom: '0.3rem' }}>
-                ✓ VERIFIED: {card.verified.metric}
-              </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
-                {card.verified.value}
-              </div>
-            </div>
+              {card.result}
+            </p>
 
-            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', fontStyle: 'italic' }}>
-              Source: {card.source}
-            </div>
-          </div>
+            {/* Source - subtle */}
+            <p style={{ 
+              fontSize: '0.75rem', 
+              color: 'var(--muted)', 
+              margin: 0,
+              opacity: 0.6
+            }}>
+              {card.source}
+            </p>
+          </motion.div>
         ))}
       </div>
 
+      {/* Reports links */}
       {theorems.reports && (
-        <div className="fade" style={{ marginTop: '3rem', textAlign: 'center' }}>
-          <h3 style={{ marginBottom: '1.5rem', color: 'var(--text)' }}>{theorems.reportsTitle}</h3>
+        <div className="fade" style={{ marginTop: '2.5rem', textAlign: 'center' }}>
+          <h4 style={{ 
+            marginBottom: '1rem', 
+            color: 'var(--muted)',
+            fontSize: '0.8rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em'
+          }}>
+            {theorems.reportsTitle}
+          </h4>
           <div style={{ 
             display: 'flex', 
             flexWrap: 'wrap', 
             justifyContent: 'center', 
-            gap: '1rem' 
+            gap: '0.6rem' 
           }}>
             {theorems.reports.map((report: Report, i: number) => (
               <a 
@@ -125,24 +181,26 @@ export default function TheoremsSection() {
                 href={report.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="premium-card"
                 style={{
-                  padding: '0.8rem 1.5rem',
-                  background: 'rgba(99, 102, 241, 0.1)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
+                  padding: '0.5rem 1rem',
                   color: 'var(--text)',
                   textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  transition: 'all 0.2s'
+                  fontSize: '0.8rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
                 }}
               >
-                {report.name} <span style={{ color: 'var(--accent)' }}>({report.highlight})</span>
+                {report.name}
+                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{report.highlight}</span>
               </a>
             ))}
           </div>
         </div>
       )}
 
+      {/* CTA Button */}
       {theorems.cta && (
         <div className="fade" style={{ marginTop: '2rem', textAlign: 'center' }}>
           <a 
@@ -150,7 +208,6 @@ export default function TheoremsSection() {
             target="_blank"
             rel="noopener noreferrer"
             className="btn"
-            style={{ display: 'inline-block' }}
           >
             {theorems.cta} →
           </a>
