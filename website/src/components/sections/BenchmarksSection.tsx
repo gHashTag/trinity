@@ -17,20 +17,37 @@ export default function BenchmarksSection() {
         <p>{b.sub}</p>
       </div>
       
-      <div className="grid fade" style={{ marginTop: '3rem', marginBottom: '4rem' }}>
+      <div className="fade" style={{ 
+        marginTop: '3rem', 
+        marginBottom: '4rem',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '1rem',
+        maxWidth: '1000px',
+        margin: '3rem auto 4rem'
+      }}>
         {b.metrics?.map((item: { value: string; label: string; desc: string }, i: number) => (
           <motion.div 
             key={i} 
             className="premium-card" 
-            style={{ textAlign: 'center' }}
+            style={{ textAlign: 'center', padding: '1.5rem 1rem' }}
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.1, duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <div style={{ fontSize: '2.5rem', fontWeight: 500, color: i === 0 ? 'var(--accent)' : 'var(--text)', marginBottom: '0.5rem' }}>{item.value}</div>
-            <div style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.3rem' }}>{item.label}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{item.desc}</div>
+            <div style={{ 
+              fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', 
+              fontWeight: 600, 
+              color: 'var(--accent)', 
+              marginBottom: '0.5rem',
+              background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>{item.value}</div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' }}>{item.label}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>{item.desc}</div>
           </motion.div>
         ))}
       </div>
