@@ -467,14 +467,28 @@
       { 
         "title": "Complex Binary Compute", 
         "desc": "Requires billions of transistors, massive energy, and cooling to approximate answers.",
-        "icon": "📉" 
+        "icon": "📉",
+        "examples": [
+          { "op": "Matrix 1024×1024", "binary": "2.1B operations", "ternary": "890M operations", "savings": "58%" },
+          { "op": "log₂(x) calculation", "binary": "Taylor series ~50 iterations", "ternary": "Native in 3 steps", "savings": "94%" },
+          { "op": "FFT 4096 points", "binary": "49K multiplications", "ternary": "12K ternary ops", "savings": "75%" },
+          { "op": "Neural inference", "binary": "FP32 → 4 bytes/weight", "ternary": "1.58 bits/weight", "savings": "95%" }
+        ]
       },
       { 
         "title": "Ternary Calculator", 
         "desc": "Solves the same tasks using native math (φ² + 1/φ² = 3) with a fraction of the energy.",
-        "icon": "✨" 
+        "icon": "✨",
+        "features": [
+          "Logarithms computed via golden ratio identity",
+          "Matrix ops use SU(3) symmetry groups",
+          "FFT leverages ternary butterfly structure",
+          "Neural nets run natively in {-1, 0, +1}"
+        ]
       }
     ],
+    "tableTitle": "Binary vs Ternary: Operation Comparison",
+    "tableHeaders": ["Operation", "Binary Approach", "Ternary Approach", "Energy Savings"],
     "quote": "\"We are trying to simulate intelligence with brute force, when the universe uses elegant math.\""
   },
   "technology": {
