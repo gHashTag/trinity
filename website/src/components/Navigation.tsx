@@ -38,35 +38,6 @@ export default memo(function Navigation() {
           {item}
         </a>
       ))}
-      <a 
-        href="/play" 
-        style={{ 
-          color: 'var(--accent)', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '6px',
-          fontWeight: 600,
-          textDecoration: 'none',
-          padding: '6px 14px',
-          background: 'rgba(0, 229, 153, 0.1)',
-          border: '1px solid rgba(0, 229, 153, 0.3)',
-          borderRadius: '20px',
-          marginLeft: '8px',
-          transition: 'all 0.2s'
-        }}
-        onMouseEnter={(e) => {
-           e.currentTarget.style.background = 'rgba(0, 229, 153, 0.2)';
-           e.currentTarget.style.borderColor = 'var(--accent)';
-           e.currentTarget.style.boxShadow = '0 0 10px rgba(0,229,153,0.2)';
-        }}
-        onMouseLeave={(e) => {
-           e.currentTarget.style.background = 'rgba(0, 229, 153, 0.1)';
-           e.currentTarget.style.borderColor = 'rgba(0, 229, 153, 0.3)';
-           e.currentTarget.style.boxShadow = 'none';
-        }}
-      >
-        <span>⚡</span> Playground
-      </a>
       <LanguageSwitcher />
     </nav>
   )
