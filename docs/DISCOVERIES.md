@@ -9,11 +9,29 @@
 
 ## Latest Updates (2026-02-03)
 
-- Translated 5 Russian documents to English for international accessibility
-- E2E testing verified all binaries (vibee, firebird, trinity-kg)
-- FIREBIRD evolution: 0.86 fitness @ 10K dimension, 50 generations
-- Benchmark throughput: 4ms/generation
-- Created session_report.vibee specification
+### Documentation
+- Translated 8+ Russian documents to English for international accessibility
+- Created TECH_TREE_STRATEGY.md with development roadmap
+- Updated PRODUCTION_BENCHMARKS.md with current metrics
+
+### E2E Testing
+- All binaries verified: vibee, firebird, trinity-kg
+- 43 .vibee specs generated in 42ms (~1ms/spec)
+- FIREBIRD evolution: 0.87 fitness @ 10K dimension, 100 generations
+
+### New Specifications
+- tech_tree.vibee - Technology tree management
+- bitnet_loader.vibee - Native ternary model loading
+- session_report.vibee - Session tracking
+
+### Benchmarks
+| Dimension | Bind Time | Memory |
+|-----------|-----------|--------|
+| 1K | 11μs | <1KB |
+| 10K | 8μs | 9KB |
+| 100K | 33μs | 97KB |
+
+**Evolution throughput**: 2.5ms/generation
 
 ---
 
