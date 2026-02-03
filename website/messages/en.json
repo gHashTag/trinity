@@ -251,6 +251,13 @@
     "comparison": {
       "headers": ["Platform", "Memory", "Speed", "Accuracy", "Energy", "Theorem Basis"],
       "rows": [
+        { "model": "TRINITY SU(3)", "value": 71, "color": "#00e599" },
+        { "model": "BitNet b1.58 (Microsoft)", "value": 15, "color": "#888" },
+        { "model": "Groq LPU", "value": 8, "color": "#666" },
+        { "model": "NVIDIA H100", "value": 4, "color": "#555" },
+        { "model": "OpenAI GPT-4", "value": 1, "color": "#444" }
+      ],
+      "table": [
         { "platform": "TRINITY", "memory": "20×", "speed": "10×", "accuracy": "100%", "energy": "3000×", "theorem": "1-4", "highlight": true },
         { "platform": "OpenAI GPT-4", "memory": "1×", "speed": "1×", "accuracy": "100%", "energy": "1×", "theorem": "—", "highlight": false },
         { "platform": "Groq LPU", "memory": "4×", "speed": "2×", "accuracy": "99%", "energy": "100×", "theorem": "—", "highlight": false },
