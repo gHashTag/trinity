@@ -1,5 +1,6 @@
 "use client";
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 
 export default function Footer() {
@@ -61,36 +62,37 @@ export default function Footer() {
             <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
               {t.footer?.vizTitle || 'Quantum Lab'}
             </h4>
-            <motion.a 
-              href="/quantum"
-              whileHover={{ scale: 1.02 }}
-              style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '1rem',
-                background: 'rgba(0, 229, 153, 0.1)',
-                border: '1px solid rgba(0, 229, 153, 0.2)',
-                borderRadius: '12px',
-                textDecoration: 'none',
-                marginBottom: '1rem'
-              }}
-            >
-              <span style={{ fontSize: '2rem' }}>🔮</span>
-              <div>
-                <div style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '1rem' }}>
-                  Launch Quantum Lab
+            <motion.div whileHover={{ scale: 1.02 }}>
+              <Link 
+                to="/quantum"
+                style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '1rem',
+                  background: 'rgba(0, 229, 153, 0.1)',
+                  border: '1px solid rgba(0, 229, 153, 0.2)',
+                  borderRadius: '12px',
+                  textDecoration: 'none',
+                  marginBottom: '1rem'
+                }}
+              >
+                <span style={{ fontSize: '2rem' }}>🔮</span>
+                <div>
+                  <div style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '1rem' }}>
+                    Launch Quantum Lab
+                  </div>
+                  <div style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>
+                    29 interactive visualizations
+                  </div>
                 </div>
-                <div style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>
-                  29 interactive visualizations
-                </div>
-              </div>
-            </motion.a>
+              </Link>
+            </motion.div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {['⚛️', '🧠', '🌊', '🔗', '🌀', '👁️', '🔺', '🔥'].map((icon, i) => (
-                <a 
+                <Link 
                   key={i}
-                  href="/quantum" 
+                  to="/quantum" 
                   style={{ 
                     padding: '0.5rem',
                     background: 'rgba(255,255,255,0.05)',
@@ -100,7 +102,7 @@ export default function Footer() {
                   }}
                 >
                   {icon}
-                </a>
+                </Link>
               ))}
             </div>
           </div>
