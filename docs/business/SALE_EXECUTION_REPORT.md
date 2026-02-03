@@ -3,7 +3,7 @@
 **Date:** 03 February 2026  
 **Status:** READY FOR EXECUTION  
 **Round:** Seed  
-**Target:** $3,000,000 for 5%
+**Target:** $3,000,000 for 1%
 
 ---
 
@@ -28,10 +28,10 @@ All materials prepared for $3M seed round execution:
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  RAISE:              $3,000,000 USD                             │
-│  EQUITY:             5% of token supply                         │
-│  TOKENS:             523,017,660 $TRI                           │
-│  PRICE:              $0.005736 per token                        │
-│  FDV:                $60,000,000                                │
+│  EQUITY:             1% of token supply                         │
+│  TOKENS:             104,603,532 $TRI                           │
+│  PRICE:              $0.02868 per token                         │
+│  FDV:                $300,000,000                               │
 │                                                                 │
 │  VESTING:                                                       │
 │  ├── Cliff:          12 months                                  │
@@ -39,8 +39,8 @@ All materials prepared for $3M seed round execution:
 │  └── Total:          36 months                                  │
 │                                                                 │
 │  POST-ROUND:                                                    │
-│  ├── Founder:        95% (was 100%)                             │
-│  └── Seed:           5%                                         │
+│  ├── Founder:        99% (was 100%)                             │
+│  └── Seed:           1%                                         │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -54,11 +54,11 @@ All materials prepared for $3M seed round execution:
 ```javascript
 Total Supply = 3²¹ = 10,460,353,203 $TRI ✓
 
-5% Allocation = 10,460,353,203 × 0.05 = 523,017,660 $TRI ✓
+1% Allocation = 10,460,353,203 × 0.01 = 104,603,532 $TRI ✓
 
-Price per Token = $3,000,000 / 523,017,660 = $0.005736 ✓
+Price per Token = $3,000,000 / 104,603,532 = $0.02868 ✓
 
-FDV = $0.005736 × 10,460,353,203 = $60,000,000 ✓
+FDV = $0.02868 × 10,460,353,203 = $300,000,000 ✓
 ```
 
 ### Allocation Table
@@ -78,13 +78,13 @@ FDV = $0.005736 × 10,460,353,203 = $60,000,000 ✓
 
 | Token | Market Cap | FDV | Our Position |
 |-------|------------|-----|--------------|
-| Bittensor (TAO) | $2.07B | $4.1B | 68× higher |
-| Render (RNDR) | $805M | $1.6B | 27× higher |
-| Akash (AKT) | $370M | $800M | 13× higher |
-| io.net (IO) | $120M | $500M | 8× higher |
-| **Trinity ($TRI)** | — | **$60M** | **Entry point** |
+| Bittensor (TAO) | $2.07B | $4.1B | 14× higher |
+| Render (RNDR) | $805M | $1.6B | 5× higher |
+| Akash (AKT) | $370M | $800M | 3× higher |
+| io.net (IO) | $120M | $500M | 2× higher |
+| **Trinity ($TRI)** | — | **$300M** | **Entry point** |
 
-**Conclusion:** $60M FDV is conservative. Upside potential 8-68× based on comparables.
+**Conclusion:** $300M FDV reflects strong fundamentals. Upside potential 2-14× based on comparables.
 
 ---
 
@@ -92,10 +92,10 @@ FDV = $0.005736 × 10,460,353,203 = $60,000,000 ✓
 
 | Scenario | Token Price | FDV | ROI for Seed |
 |----------|-------------|-----|--------------|
-| Bear | $0.01 | $104M | **1.7×** |
-| Base | $0.05 | $523M | **8.7×** |
-| Bull | $0.10 | $1.05B | **17.4×** |
-| Moon | $0.30 | $3.1B | **52×** |
+| Bear | $0.05 | $523M | **1.7×** |
+| Base | $0.10 | $1.05B | **3.5×** |
+| Bull | $0.20 | $2.1B | **7×** |
+| Moon | $0.50 | $5.2B | **17×** |
 
 ---
 

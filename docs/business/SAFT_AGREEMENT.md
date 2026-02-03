@@ -17,10 +17,10 @@
 | Parameter | Value |
 |-----------|-------|
 | **Investment Amount** | $3,000,000 USD |
-| **Token Allocation** | 523,017,660 $TRI |
-| **Percentage of Supply** | 5% |
-| **Price per Token** | $0.005736 |
-| **Fully Diluted Valuation** | $60,000,000 |
+| **Token Allocation** | 104,603,532 $TRI |
+| **Percentage of Supply** | 1% |
+| **Price per Token** | $0.02868 |
+| **Fully Diluted Valuation** | $300,000,000 |
 | **Total Token Supply** | 10,460,353,203 $TRI (3²¹) |
 
 ---
@@ -38,17 +38,17 @@
 │  LINEAR VESTING:     24 months (after cliff)                    │
 │  TOTAL DURATION:     36 months                                  │
 │                                                                 │
-│  MONTHLY UNLOCK:     ~21.8M $TRI (after cliff)                  │
+│  MONTHLY UNLOCK:     ~4.36M $TRI (after cliff)                  │
 │                                                                 │
 │  SCHEDULE:                                                      │
 │  ─────────────────────────────                                  │
 │  Month 0-12:         0 tokens (cliff)                           │
-│  Month 13:           21,792,402 $TRI                            │
-│  Month 14:           21,792,402 $TRI                            │
+│  Month 13:           4,358,480 $TRI                             │
+│  Month 14:           4,358,480 $TRI                             │
 │  ...                                                            │
-│  Month 36:           21,792,402 $TRI (final)                    │
+│  Month 36:           4,358,480 $TRI (final)                     │
 │                                                                 │
-│  TOTAL:              523,017,660 $TRI                           │
+│  TOTAL:              104,603,532 $TRI                           │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```

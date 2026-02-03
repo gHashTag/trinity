@@ -1,6 +1,6 @@
 # Investor Outreach Templates
 
-**$TRI Seed Round: $3M for 5%**
+**$TRI Seed Round: $3M for 1%**
 
 ---
 
@@ -28,7 +28,7 @@ I'm Dmitrii, founder of Trinity Network — the first AI inference platform buil
 - 100% noise robustness at 20% bit errors
 - 8.1× SIMD speedup on standard hardware
 
-**The Ask:** $3M seed for 5% ($60M FDV)
+**The Ask:** $3M seed for 1% ($300M FDV)
 
 **Use of Funds:**
 - 40% ASIC tape-out
@@ -63,7 +63,7 @@ Quick context on Trinity:
 **What:** Decentralized AI inference network using ternary computing
 **Why Different:** Built on 4 mathematical theorems (not hype)
 **Traction:** Working prototype, 20× efficiency verified
-**Ask:** $3M for 5% at $60M FDV
+**Ask:** $3M for 1% at $300M FDV
 
 Comparable exits: Render ($4.5B), Akash ($370M), io.net ($120M)
 
@@ -151,8 +151,8 @@ Dmitrii
 - Comparables: TAO $2B, RNDR $805M, AKT $370M
 
 ### Slide 5: Ask
-- $3M for 5% equity
-- $60M FDV (conservative)
+- $3M for 1% equity
+- $300M FDV
 - Use: ASIC tape-out, team, marketing
 
 ---
@@ -160,7 +160,7 @@ Dmitrii
 ## Objection Handling
 
 ### "Valuation too high"
-> "At $60M FDV, we're 6× cheaper than io.net ($120M) with stronger tech (theorems vs hype). Comparable seed rounds in AI crypto average $100-500M."
+> "At $300M FDV, we're priced at market for proven AI infrastructure. Comparable projects: TAO ($4.1B), RNDR ($1.6B), io.net ($500M). Our 4 mathematical theorems provide defensible moat."
 
 ### "Team too small"
 > "Solo founder with 15+ years engineering. Funds will expand team to 5-7 by Q2. Lean = capital efficient."
@@ -182,7 +182,7 @@ Dmitrii
 2. **Problem** (3 min): GPU monopoly, energy crisis
 3. **Solution** (5 min): 4 theorems, demo FPGA
 4. **Traction** (3 min): Benchmarks, prototype
-5. **Ask** (2 min): $3M for 5%, use of funds
+5. **Ask** (2 min): $3M for 1%, use of funds
 6. **Q&A** (5 min): Address concerns
 
 ---
