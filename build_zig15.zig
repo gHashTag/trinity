@@ -1,19 +1,23 @@
 const std = @import("std");
 
+// Build file for Zig 0.15.x
+// For Zig 0.13.x use build.zig
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Library module
-    const trinity_mod = b.addModule("trinity", .{
+    // Library module for imports
+    const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
         .target = target,
         .optimize = optimize,
     });
 
     // Library artifact
-    const lib = b.addStaticLibrary(.{
+    const lib = b.addLibrary(.{
         .name = "trinity",
+        .linkage = .static,
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/trinity.zig"),
             .target = target,
@@ -159,14 +163,14 @@ pub fn build(b: *std.Build) void {
     // Cross-platform release builds
     const release_step = b.step("release", "Build release binaries for all platforms");
 
-    const targets: []const std.Target.Query = &.{
+    const targets_list: []const std.Target.Query = &.{
         .{ .cpu_arch = .x86_64, .os_tag = .linux },
         .{ .cpu_arch = .x86_64, .os_tag = .macos },
         .{ .cpu_arch = .aarch64, .os_tag = .macos },
         .{ .cpu_arch = .x86_64, .os_tag = .windows },
     };
 
-    for (targets) |t| {
+    for (targets_list) |t| {
         const release_target = b.resolveTargetQuery(t);
         const release_exe = b.addExecutable(.{
             .name = "firebird",
