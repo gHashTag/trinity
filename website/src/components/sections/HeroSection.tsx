@@ -23,7 +23,7 @@ export default function HeroSection() {
       
       <div className="fade" style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
         <motion.a 
-          href="#invest" className="btn" style={{ minWidth: '200px' }}
+          href="#theorems" className="btn" style={{ minWidth: '200px' }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
