@@ -549,7 +549,9 @@
       { "value": "$3M", "label": "for 1% equity" },
       { "value": "$300M", "label": "valuation" },
       { "value": "3²¹", "label": "Phoenix Number" },
-      { "value": "99%", "label": "founder ownership" }
+      { "value": "99%", "label": "founder ownership" },
+      { "value": "578×", "label": "energy efficiency" },
+      { "value": "∞", "label": "potential" }
     ],
     "milestonesTitle": "18-Month Milestones:",
     "milestones": [

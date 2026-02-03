@@ -12,7 +12,12 @@ export default function InvestSection() {
       <div className="radial-glow" style={{ opacity: 0.4 }} />
       <h2 className="fade" dangerouslySetInnerHTML={{ __html: inv.title }} />
       
-      <div className="grid">
+      <div className="grid" style={{ 
+        gridTemplateColumns: 'repeat(3, 1fr)', 
+        gap: '1.5rem',
+        maxWidth: '900px',
+        margin: '0 auto'
+      }}>
         {inv?.cards?.map((card: { value: string; label: string }, i: number) => (
           <motion.div 
             key={i} 
@@ -22,18 +27,26 @@ export default function InvestSection() {
             transition={{ duration: 0.5, delay: i * 0.1, type: 'spring', stiffness: 100 }}
             viewport={{ once: true }}
             whileHover={{ scale: 1.05 }}
-            style={{ textAlign: 'center' }}
+            style={{ textAlign: 'center', padding: '2rem 1rem' }}
           >
             <motion.h3 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 + 0.2 }}
               viewport={{ once: true }}
-              style={{ fontSize: '3rem', fontWeight: 500, marginBottom: '0.5rem' }}
+              style={{ 
+                fontSize: 'clamp(2rem, 5vw, 3rem)', 
+                fontWeight: 600, 
+                marginBottom: '0.5rem',
+                background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
             >
               {card.value}
             </motion.h3>
-            <p style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>{card.label}</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0 }}>{card.label}</p>
           </motion.div>
         ))}
       </div>
