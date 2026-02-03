@@ -453,6 +453,8 @@ pub const VibeeParser = struct {
         while (self.pos < self.source.len) {
             const c = self.source[self.pos];
             if (c == '\n' or c == '\r') break;
+            // Stop at comment marker '#'
+            if (c == '#') break;
             self.pos += 1;
         }
         return std.mem.trim(u8, self.source[start..self.pos], " \t");

@@ -110,7 +110,7 @@ pub const ZigCodeGen = struct {
         try self.writeConstants(spec.constants.items);
         try self.writeTypes(spec.types.items);
         try self.writeMemoryBuffers();
-        try self.writeCreationPatterns(spec.creation_patterns.items);
+        try self.writeCreationPatterns(spec.creation_patterns.items, spec.types.items);
         try self.writeBehaviorFunctions(spec.behaviors.items);
         try self.writeTests(spec.behaviors.items);
 
@@ -2199,7 +2199,7 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
     }
 
-    fn writeCreationPatterns(self: *Self, patterns: []const CreationPattern) !void {
+    fn writeCreationPatterns(self: *Self, patterns: []const CreationPattern, types: []const TypeDef) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("// CREATION PATTERNS");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
@@ -2212,8 +2212,8 @@ pub const ZigCodeGen = struct {
             try self.builder.newline();
         }
 
-        // Генерируем стандартные φ-функции
-        try self.generateStandardFunctions();
+        // Генерируем стандартные φ-функции (pass types to check for existing definitions)
+        try self.generateStandardFunctions(types);
     }
 
     fn generatePatternFunction(self: *Self, pattern: CreationPattern) !void {
@@ -2353,35 +2353,47 @@ pub const ZigCodeGen = struct {
         }
     }
 
-    fn generateStandardFunctions(self: *Self) !void {
-        // Trit type and operations
-        try self.builder.writeLine("/// Trit - ternary digit (-1, 0, +1)");
-        try self.builder.writeLine("pub const Trit = enum(i8) {");
-        try self.builder.writeLine("    negative = -1, // ▽ FALSE");
-        try self.builder.writeLine("    zero = 0,      // ○ UNKNOWN");
-        try self.builder.writeLine("    positive = 1,  // △ TRUE");
-        try self.builder.newline();
-        try self.builder.writeLine("    pub fn trit_and(a: Trit, b: Trit) Trit {");
-        try self.builder.writeLine("        return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));");
-        try self.builder.writeLine("    }");
-        try self.builder.newline();
-        try self.builder.writeLine("    pub fn trit_or(a: Trit, b: Trit) Trit {");
-        try self.builder.writeLine("        return @enumFromInt(@max(@intFromEnum(a), @intFromEnum(b)));");
-        try self.builder.writeLine("    }");
-        try self.builder.newline();
-        try self.builder.writeLine("    pub fn trit_not(a: Trit) Trit {");
-        try self.builder.writeLine("        return @enumFromInt(-@intFromEnum(a));");
-        try self.builder.writeLine("    }");
-        try self.builder.newline();
-        try self.builder.writeLine("    pub fn trit_xor(a: Trit, b: Trit) Trit {");
-        try self.builder.writeLine("        const av = @intFromEnum(a);");
-        try self.builder.writeLine("        const bv = @intFromEnum(b);");
-        try self.builder.writeLine("        if (av == 0 or bv == 0) return .zero;");
-        try self.builder.writeLine("        if (av == bv) return .negative;");
-        try self.builder.writeLine("        return .positive;");
-        try self.builder.writeLine("    }");
-        try self.builder.writeLine("};");
-        try self.builder.newline();
+    fn generateStandardFunctions(self: *Self, types: []const TypeDef) !void {
+        // Check if Trit is already defined in types
+        var has_trit = false;
+        for (types) |t| {
+            if (std.mem.eql(u8, t.name, "Trit")) {
+                has_trit = true;
+                break;
+            }
+        }
+
+        // Only generate Trit if not already defined
+        if (!has_trit) {
+            // Trit type and operations
+            try self.builder.writeLine("/// Trit - ternary digit (-1, 0, +1)");
+            try self.builder.writeLine("pub const Trit = enum(i8) {");
+            try self.builder.writeLine("    negative = -1, // ▽ FALSE");
+            try self.builder.writeLine("    zero = 0,      // ○ UNKNOWN");
+            try self.builder.writeLine("    positive = 1,  // △ TRUE");
+            try self.builder.newline();
+            try self.builder.writeLine("    pub fn trit_and(a: Trit, b: Trit) Trit {");
+            try self.builder.writeLine("        return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));");
+            try self.builder.writeLine("    }");
+            try self.builder.newline();
+            try self.builder.writeLine("    pub fn trit_or(a: Trit, b: Trit) Trit {");
+            try self.builder.writeLine("        return @enumFromInt(@max(@intFromEnum(a), @intFromEnum(b)));");
+            try self.builder.writeLine("    }");
+            try self.builder.newline();
+            try self.builder.writeLine("    pub fn trit_not(a: Trit) Trit {");
+            try self.builder.writeLine("        return @enumFromInt(-@intFromEnum(a));");
+            try self.builder.writeLine("    }");
+            try self.builder.newline();
+            try self.builder.writeLine("    pub fn trit_xor(a: Trit, b: Trit) Trit {");
+            try self.builder.writeLine("        const av = @intFromEnum(a);");
+            try self.builder.writeLine("        const bv = @intFromEnum(b);");
+            try self.builder.writeLine("        if (av == 0 or bv == 0) return .zero;");
+            try self.builder.writeLine("        if (av == bv) return .negative;");
+            try self.builder.writeLine("        return .positive;");
+            try self.builder.writeLine("    }");
+            try self.builder.writeLine("};");
+            try self.builder.newline();
+        }
 
         // verify_trinity
         try self.builder.writeLine("/// Проверка TRINITY identity: φ² + 1/φ² = 3");

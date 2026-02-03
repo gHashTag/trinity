@@ -1,0 +1,83 @@
+# Browser Extension Manifest Specification
+# Generates manifest.json for Chrome/Firefox
+# φ² + 1/φ² = 3 = TRINITY
+
+name: firebird_manifest
+version: "1.0.0"
+language: json
+module: manifest
+
+description: |
+  Chrome Extension Manifest V3 для ЖАР ПТИЦА.
+  Определяет permissions, scripts, и UI компоненты.
+
+manifest_version: 3
+
+extension:
+  name: "ЖАР ПТИЦА - Ternary Anti-Detect"
+  short_name: "Firebird"
+  version: "1.0.0"
+  description: "Ternary fingerprint evasion browser with DePIN rewards. φ² + 1/φ² = 3"
+  
+  author: "Trinity Team (@vibee_dev)"
+  homepage_url: "https://github.com/gHashTag/trinity"
+
+icons:
+  16: "icons/firebird-16.png"
+  32: "icons/firebird-32.png"
+  48: "icons/firebird-48.png"
+  128: "icons/firebird-128.png"
+
+permissions:
+  - storage           # Сохранение профилей и настроек
+  - activeTab         # Доступ к текущей вкладке
+  - scripting         # Инъекция content scripts
+  - webNavigation     # Отслеживание навигации
+  - alarms            # Периодические задачи (DePIN sync)
+
+host_permissions:
+  - "<all_urls>"      # Доступ ко всем сайтам для evasion
+
+background:
+  service_worker: "background.js"
+  type: "module"
+
+content_scripts:
+  - matches:
+      - "<all_urls>"
+    js:
+      - "content.js"
+    run_at: "document_start"
+    all_frames: true
+
+action:
+  default_popup: "popup.html"
+  default_title: "ЖАР ПТИЦА"
+  default_icon:
+    16: "icons/firebird-16.png"
+    32: "icons/firebird-32.png"
+
+options_page: "options.html"
+
+web_accessible_resources:
+  - resources:
+      - "wasm/firebird.wasm"
+      - "wasm/firebird.js"
+    matches:
+      - "<all_urls>"
+
+# Content Security Policy для WASM
+content_security_policy:
+  extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+
+# Минимальная версия Chrome
+minimum_chrome_version: "102"
+
+# Ключевые слова для Chrome Web Store
+key_words:
+  - anti-detect
+  - fingerprint
+  - privacy
+  - ternary
+  - DePIN
+  - evasion
