@@ -5,6 +5,62 @@
 
 ---
 
+## [101.0.0] - 2026-02-03 - ЖАР ПТИЦА (FIREBIRD) RELEASE
+
+### 🔥 Firebird Anti-Detect Browser
+
+#### Core Features
+- **B2T Pipeline**: Full Binary-to-Ternary WASM conversion
+  - WASM binary parser (magic, sections, LEB128)
+  - WASM-to-TVC lifter with 15+ opcode mappings
+  - TVC IR file format (.tvc) with save/load
+  
+- **CLI Commands**:
+  - `firebird convert --input=<wasm> --output=<tvc>`
+  - `firebird execute --ir=<tvc> --steps=N`
+  - `firebird evolve --ir=<tvc> --output=<fp>`
+  - `firebird benchmark --dim=N --iterations=N`
+  - `firebird info` / `firebird help`
+
+- **VSA SIMD Acceleration**:
+  - Bind: 4.7x speedup
+  - Dot Product: 16.5x speedup
+  - Hamming: 24-39x speedup
+  - Throughput: 880 MB/s
+
+- **Navigation Algorithm**:
+  - Adaptive strength (0.3 → 0.98)
+  - Convergence: 0.80 similarity in 25 steps
+  - Momentum-based navigation
+  - History tracking
+
+- **Cross-Platform**:
+  - Linux x86_64
+  - macOS x86_64 / aarch64
+  - Windows x86_64
+
+#### Performance Metrics
+| Metric | Value |
+|--------|-------|
+| SIMD Speedup | 4-39x |
+| Evolution | 3ms/gen |
+| Similarity | 0.80 in 25 steps |
+| Tests | 23 passing |
+
+#### Files Added
+- `src/firebird/wasm_parser.zig`
+- `src/firebird/b2t_integration.zig`
+- `src/firebird/cli.zig` (enhanced)
+- `src/firebird/README.md`
+- `docs/MARKET_ANALYSIS_RU.md`
+
+#### Market Potential
+- TAM: $85B (AI browsers + anti-detect)
+- SOM: $85M-850M (1-10% market share)
+- Revenue projection: $60M by 2030
+
+---
+
 ## [100.0.0] - 2026-01-20 - TRANSCENDENCE
 
 ### Strategic Technology Tree v86-v99

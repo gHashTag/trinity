@@ -1,0 +1,214 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FIREBIRD VSA - Vector Symbolic Architecture for ЖАР ПТИЦА
+# High-dimensional ternary vector operations for virtual space navigation
+# V = n × 3^k × π^m × φ^p × e^q
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: firebird_vsa
+version: "1.0.0"
+language: zig
+module: firebird_vsa
+
+description: |
+  Vector Symbolic Architecture operations for Firebird virtual browser.
+  Implements bind, bundle, permute, and similarity operations on
+  high-dimensional ternary vectors (10000 dimensions).
+  Used for fingerprint generation, evasion, and virtual navigation.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DIM: 10000
+  PHI: 1.6180339887498948482
+  TRINITY: 3.0
+  SIMILARITY_THRESHOLD: 0.7
+  ORTHOGONALITY_THRESHOLD: 0.1
+  SPARSITY: 0.333
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  TritValue:
+    description: "Single balanced ternary digit: -1, 0, +1"
+    fields:
+      value: Int
+    constraints:
+      - "value >= -1"
+      - "value <= 1"
+
+  TritVec:
+    description: "High-dimensional ternary vector for VSA operations"
+    fields:
+      data: List<Int>
+      len: Int
+
+  SimilarityMetrics:
+    description: "Result of similarity computation"
+    fields:
+      cosine: Float
+      hamming: Int
+      dot: Float
+      normalized_hamming: Float
+
+  BindResult:
+    description: "Result of bind operation"
+    fields:
+      vector: TritVec
+      is_self_inverse: Bool
+
+  BundleResult:
+    description: "Result of bundle operation"
+    fields:
+      vector: TritVec
+      num_inputs: Int
+      sparsity: Float
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS - Core VSA Operations
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # Vector Creation
+  - name: create_zero_vector
+    given: Dimension size
+    when: Creating empty vector
+    then: Return TritVec with all zeros
+
+  - name: create_random_vector
+    given: Dimension and seed
+    when: Creating random vector
+    then: Return TritVec with uniform random trits {-1, 0, +1}
+
+  - name: create_sparse_vector
+    given: Dimension, seed, and sparsity ratio
+    when: Creating sparse random vector
+    then: Return TritVec with specified proportion of zeros
+
+  # Bind Operation (Multiplication)
+  - name: bind
+    given: Two TritVecs of same dimension
+    when: Binding vectors (creating association)
+    then: Return element-wise multiplication result
+
+  - name: unbind
+    given: Bound vector and key vector
+    when: Unbinding (retrieving associated vector)
+    then: Return bind(bound, key) since bind is self-inverse
+
+  - name: self_bind
+    given: Single TritVec
+    when: Binding vector with itself
+    then: Return vector of all +1 for non-zero elements
+
+  # Bundle Operation (Majority Voting)
+  - name: bundle2
+    given: Two TritVecs
+    when: Bundling two vectors
+    then: Return majority vote per dimension with tie-breaker
+
+  - name: bundle3
+    given: Three TritVecs
+    when: Bundling three vectors (true majority)
+    then: Return majority vote per dimension
+
+  - name: bundle_n
+    given: Array of TritVecs
+    when: Bundling multiple vectors
+    then: Return weighted majority vote per dimension
+
+  # Permute Operation (Cyclic Shift)
+  - name: permute
+    given: TritVec and shift amount k
+    when: Permuting vector
+    then: Return cyclically shifted vector (right by k)
+
+  - name: inverse_permute
+    given: TritVec and shift amount k
+    when: Inverse permuting vector
+    then: Return cyclically shifted vector (left by k)
+
+  # Similarity Operations
+  - name: cosine_similarity
+    given: Two TritVecs
+    when: Computing cosine similarity
+    then: Return value in range [-1, 1]
+
+  - name: hamming_distance
+    given: Two TritVecs
+    when: Computing Hamming distance
+    then: Return count of differing positions
+
+  - name: dot_product
+    given: Two TritVecs
+    when: Computing dot product
+    then: Return sum of element-wise products
+
+  - name: normalized_similarity
+    given: Two TritVecs
+    when: Computing normalized similarity
+    then: Return 1 - hamming_distance / dimension
+
+  - name: compute_all_metrics
+    given: Two TritVecs
+    when: Computing all similarity metrics
+    then: Return SimilarityMetrics struct
+
+  # Sequence Encoding
+  - name: encode_sequence
+    given: Array of TritVecs
+    when: Encoding ordered sequence
+    then: Return sum of permuted vectors
+
+  - name: probe_sequence
+    given: Sequence vector, candidate, and position
+    when: Probing for element at position
+    then: Return similarity with permuted candidate
+
+  # Utility Operations
+  - name: count_nonzero
+    given: TritVec
+    when: Counting non-zero elements
+    then: Return count of elements != 0
+
+  - name: compute_sparsity
+    given: TritVec
+    when: Computing sparsity ratio
+    then: Return proportion of zero elements
+
+  - name: negate
+    given: TritVec
+    when: Negating vector
+    then: Return element-wise negation
+
+  - name: is_orthogonal
+    given: Two TritVecs and threshold
+    when: Checking orthogonality
+    then: Return true if |similarity| < threshold
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_cases:
+  - name: bind_self_inverse
+    description: "bind(a, a) should produce all +1 for non-zero elements"
+    
+  - name: bind_unbind_roundtrip
+    description: "unbind(bind(a, b), b) should return a"
+    
+  - name: bundle_preserves_similarity
+    description: "bundle(a, b) should be similar to both a and b"
+    
+  - name: permute_inverse_roundtrip
+    description: "inverse_permute(permute(v, k), k) should return v"
+    
+  - name: random_vectors_orthogonal
+    description: "Random high-dim vectors should be nearly orthogonal"
+    
+  - name: sequence_encoding_retrieval
+    description: "Encoded sequence should allow element retrieval"

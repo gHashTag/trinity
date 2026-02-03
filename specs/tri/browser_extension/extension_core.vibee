@@ -1,0 +1,198 @@
+# ЖАР ПТИЦА Browser Extension Specification
+# Ternary Anti-Detect Browser Extension
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+name: firebird_extension
+version: "1.0.0"
+language: zig
+module: extension_core
+
+description: |
+  Browser extension для ЖАР ПТИЦА, интегрирующий B2T pipeline
+  с реальным браузером для fingerprint evasion.
+  
+  Архитектура:
+  - Background Script: Zig→WASM для VSA операций
+  - Content Script: Инъекция fingerprint overrides
+  - Popup UI: Управление evasion и $TRI rewards
+  - Storage: Сохранение профилей и настроек
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ТИПЫ ДАННЫХ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  ExtensionConfig:
+    description: "Конфигурация расширения"
+    fields:
+      enabled: Bool
+      auto_evasion: Bool
+      similarity_target: Float
+      navigation_steps: Int
+      depin_enabled: Bool
+      wallet_address: Option<String>
+
+  FingerprintProfile:
+    description: "Профиль fingerprint для evasion"
+    fields:
+      id: String
+      name: String
+      canvas_hash: String
+      webgl_hash: String
+      audio_hash: String
+      font_list: List<String>
+      screen_resolution: String
+      timezone: String
+      language: String
+      platform: String
+      trit_vector: List<Int>
+      similarity: Float
+      created_at: Timestamp
+      last_used: Timestamp
+
+  EvasionMetrics:
+    description: "Метрики evasion для отображения"
+    fields:
+      current_similarity: Float
+      target_similarity: Float
+      steps_completed: Int
+      detection_risk: String
+      tri_earned: Float
+
+  NavigationState:
+    description: "Состояние виртуальной навигации"
+    fields:
+      position: List<Int>
+      module_vec: List<Int>
+      history_depth: Int
+      step_count: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ПОВЕДЕНИЯ (BEHAVIORS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: initialize_extension
+    description: "Инициализация расширения при загрузке"
+    given: Browser загружен
+    when: Extension активируется
+    then: |
+      1. Загрузить конфигурацию из storage
+      2. Инициализировать WASM модуль VSA
+      3. Загрузить сохранённые профили
+      4. Подключиться к DePIN (если включено)
+      5. Установить content script listeners
+
+  - name: generate_fingerprint
+    description: "Генерация нового fingerprint профиля"
+    given: Пользователь запросил новый профиль
+    when: Нажата кнопка "Generate"
+    then: |
+      1. Создать random TritVec (dim=10000)
+      2. Эволюционировать до target similarity
+      3. Извлечь fingerprint компоненты
+      4. Сохранить профиль в storage
+      5. Обновить UI с метриками
+
+  - name: apply_evasion
+    description: "Применение evasion к текущей странице"
+    given: Профиль выбран и страница загружена
+    when: Auto-evasion включён или manual trigger
+    then: |
+      1. Инъектировать canvas override
+      2. Инъектировать WebGL override
+      3. Инъектировать AudioContext override
+      4. Подменить navigator properties
+      5. Записать $TRI reward (если DePIN)
+
+  - name: navigate_virtual_space
+    description: "Виртуальная навигация в ternary space"
+    given: TVC IR загружен
+    when: Пользователь запускает навигацию
+    then: |
+      1. Инициализировать NavigationState
+      2. Выполнить N шагов navigateTowardsModule
+      3. Обновить similarity метрики
+      4. Отобразить progress в popup
+      5. Начислить $TRI за каждый шаг
+
+  - name: stake_tri_tokens
+    description: "Стейкинг $TRI токенов"
+    given: Wallet подключён и баланс > 0
+    when: Пользователь стейкает токены
+    then: |
+      1. Проверить баланс
+      2. Отправить stake транзакцию
+      3. Обновить pending rewards
+      4. Показать confirmation
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# КОНСТАНТЫ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DEFAULT_DIM: 10000
+  DEFAULT_SIMILARITY_TARGET: 0.80
+  DEFAULT_NAVIGATION_STEPS: 25
+  TRI_REWARD_PER_STEP: 0.0001
+  TRI_REWARD_PER_EVASION: 0.001
+  MAX_PROFILES: 100
+  STORAGE_KEY_CONFIG: "firebird_config"
+  STORAGE_KEY_PROFILES: "firebird_profiles"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MANIFEST (для генерации manifest.json)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+manifest:
+  name: "ЖАР ПТИЦА - Ternary Anti-Detect"
+  version: "1.0.0"
+  description: "Ternary fingerprint evasion with DePIN rewards"
+  permissions:
+    - storage
+    - activeTab
+    - scripting
+    - webNavigation
+  host_permissions:
+    - "<all_urls>"
+  background:
+    service_worker: "background.js"
+    type: "module"
+  content_scripts:
+    - matches: ["<all_urls>"]
+      js: ["content.js"]
+      run_at: "document_start"
+  action:
+    default_popup: "popup.html"
+    default_icon:
+      16: "icons/firebird-16.png"
+      48: "icons/firebird-48.png"
+      128: "icons/firebird-128.png"
+  web_accessible_resources:
+    - resources: ["wasm/firebird.wasm"]
+      matches: ["<all_urls>"]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ТЕСТЫ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: test_config_load
+    description: "Загрузка конфигурации"
+    assert: config.enabled == true
+
+  - name: test_profile_generation
+    description: "Генерация профиля"
+    assert: profile.similarity >= 0.80
+
+  - name: test_evasion_injection
+    description: "Инъекция evasion"
+    assert: canvas_hash != original_hash
+
+  - name: test_navigation_convergence
+    description: "Сходимость навигации"
+    assert: final_similarity > initial_similarity + 0.5
+
+  - name: test_tri_rewards
+    description: "Начисление $TRI"
+    assert: wallet.pending_rewards > 0
