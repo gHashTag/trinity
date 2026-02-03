@@ -18,7 +18,6 @@ const ProductSection = lazy(() => import('./components/sections/ProductSection')
 const FinancialsSection = lazy(() => import('./components/sections/FinancialsSection'))
 const BusinessModelSection = lazy(() => import('./components/sections/BusinessModelSection'))
 const TechnologySection = lazy(() => import('./components/sections/TechnologySection'))
-const InvestorProofSection = lazy(() => import('./components/sections/InvestorProofSection'))
 const BitNetProofSection = lazy(() => import('./components/sections/BitNetProofSection'))
 const SU3MiningRealitySection = lazy(() => import('./components/SU3MiningRealitySection'))
 const TechAssetsSection = lazy(() => import('./components/sections/TechAssetsSection'))
@@ -65,7 +64,6 @@ export default function App() {
         <FinancialsSection />
         <BusinessModelSection />
         <TechnologySection />
-        <InvestorProofSection />
         <BitNetProofSection />
         <SU3MiningRealitySection />
         <TechAssetsSection />

@@ -599,25 +599,6 @@
       }
     },
     "investorTitle": "Investors",
-    "investorProof": {
-      "badge": "INVESTOR PROOF-OF-CONCEPT",
-      "title": "Hardware Truth Demo",
-      "desc": "**Investor Demonstration:** This prototype proves the superiority of our approach. We demonstrate not just a concept, but a working software stack for blockchain based on SU(3) principles — the foundation for future Trinity chips.",
-      "cards": [
-        {
-          "title": "De-risking Phase",
-          "desc": "Algorithms verified on real silicon (ARM/FPGA). SU(3) logic is fully production-ready for ASIC."
-        },
-        {
-          "title": "Market Capture",
-          "desc": "Trinity turns 7 billion smartphones into legal and highly profitable mining nodes without overheating or wear."
-        },
-        {
-          "title": "Exponential ROI",
-          "desc": "578x energy efficiency advantage is the only path to mining survival after 2026."
-        }
-      ]
-    },
     "partnerTitle": "Partners",
     "talentTitle": "Talents",
     "ctaGithub": "Explore Code on GitHub",

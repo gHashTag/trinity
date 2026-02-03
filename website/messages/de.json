@@ -315,25 +315,6 @@
       "talent": "Trinity Beitreten"
     },
     "investorTitle": "Investoren",
-    "investorProof": {
-      "badge": "PROOF-OF-CONCEPT",
-      "title": "Hardware-Wahrheit Demo",
-      "desc": "**Investoren-Demonstration:** Dieser Prototyp beweist die Überlegenheit unseres Ansatzes. Wir demonstrieren nicht nur ein Konzept, sondern einen funktionierenden Software-Stack für Blockchain auf SU(3)-Prinzipien — die Grundlage für zukünftige Trinity-Chips.",
-      "cards": [
-        {
-          "title": "De-Risking Phase",
-          "desc": "Algorithmen auf echtem Silizium verifiziert (ARM/FPGA). SU(3)-Logik ist vollständig produktionsreif für ASIC."
-        },
-        {
-          "title": "Markteroberung",
-          "desc": "Trinity verwandelt 7 Milliarden Smartphones in legale und hochprofitable Mining-Knoten ohne Überhitzung oder Verschleiß."
-        },
-        {
-          "title": "Exponentieller ROI",
-          "desc": "578-facher Energieeffizienz-Vorteil ist der einzige Weg zum Mining-Überleben nach 2026."
-        }
-      ]
-    },
     "partnerTitle": "Partner",
     "talentTitle": "Talente",
     "ctaGithub": "Code auf GitHub Erkunden",

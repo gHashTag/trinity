@@ -315,25 +315,6 @@
       "talent": "加入Trinity"
     },
     "investorTitle": "投资者",
-    "investorProof": {
-      "badge": "投资者概念验证",
-      "title": "硬件真理演示",
-      "desc": "**投资者演示：**此原型证明了我们方法的优越性。我们展示的不仅是概念，而是基于SU(3)原理的区块链工作软件堆栈——未来Trinity芯片的基础。",
-      "cards": [
-        {
-          "title": "去风险阶段",
-          "desc": "算法已在真实硅片上验证（ARM/FPGA）。SU(3)逻辑已完全为ASIC生产做好准备。"
-        },
-        {
-          "title": "市场征服",
-          "desc": "Trinity将70亿智能手机转变为合法且高利润的挖矿节点，无过热或磨损。"
-        },
-        {
-          "title": "指数级ROI",
-          "desc": "578倍能效优势是2026年后挖矿生存的唯一途径。"
-        }
-      ]
-    },
     "partnerTitle": "合作伙伴",
     "talentTitle": "人才",
     "ctaGithub": "在GitHub上探索代码",
