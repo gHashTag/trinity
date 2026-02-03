@@ -14,6 +14,7 @@ interface ComparisonItem {
   icon: string
   title: string
   desc: string
+  details?: string[]
   examples?: Example[]
   features?: string[]
 }
@@ -55,6 +56,31 @@ export default function CalculatorLogicSection() {
             <div style={{ fontSize: 'clamp(2.5rem, 8vw, 3.5rem)', marginBottom: '1rem' }}>{item.icon}</div>
             <h3 style={{ marginBottom: '1rem', color: i === 1 ? 'var(--accent)' : 'var(--text)', fontSize: 'clamp(1.2rem, 4vw, 1.5rem)' }}>{item.title}</h3>
             <p style={{ color: 'var(--muted)', fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', lineHeight: '1.6', marginBottom: '1.5rem' }}>{item.desc}</p>
+            
+            {/* Detailed breakdown */}
+            {item.details && (
+              <div style={{ 
+                textAlign: 'left', 
+                background: i === 0 ? 'rgba(239, 68, 68, 0.05)' : 'rgba(34, 197, 94, 0.05)',
+                border: `1px solid ${i === 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)'}`,
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem',
+                fontFamily: 'ui-monospace, monospace',
+                fontSize: '0.8rem',
+                lineHeight: '1.6'
+              }}>
+                {item.details.map((line: string, j: number) => (
+                  <div key={j} style={{ 
+                    color: line.startsWith('•') ? 'var(--muted)' : (i === 0 ? '#ef4444' : 'var(--accent)'),
+                    fontWeight: line.startsWith('•') ? 400 : 600,
+                    marginTop: line === '' ? '0.5rem' : 0
+                  }}>
+                    {line || '\u00A0'}
+                  </div>
+                ))}
+              </div>
+            )}
             
             {/* Features list for ternary */}
             {item.features && (
