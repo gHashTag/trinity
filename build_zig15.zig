@@ -1,15 +1,11 @@
-// build.zig для Zig 0.15.x
-// Используй этот файл если у тебя Zig 0.15.x (Homebrew на macOS)
-// Переименуй в build.zig: mv build_zig15.zig build.zig
-
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Library module (Zig 0.15.x syntax)
-    const trinity_mod = b.createModule(.{
+    // Library module
+    const trinity_mod = b.addModule("trinity", .{
         .root_source_file = b.path("src/trinity.zig"),
         .target = target,
         .optimize = optimize,
@@ -83,9 +79,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("examples/memory.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{
-                .{ .name = "trinity", .module = trinity_mod },
-            },
+            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
         }),
     });
     b.installArtifact(example_memory);
@@ -96,9 +90,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("examples/sequence.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{
-                .{ .name = "trinity", .module = trinity_mod },
-            },
+            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
         }),
     });
     b.installArtifact(example_sequence);
@@ -109,9 +101,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("examples/vm.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{
-                .{ .name = "trinity", .module = trinity_mod },
-            },
+            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
         }),
     });
     b.installArtifact(example_vm);
@@ -166,39 +156,17 @@ pub fn build(b: *std.Build) void {
     const run_wasm_tests = b.addRunArtifact(wasm_tests);
     test_step.dependOn(&run_wasm_tests.step);
 
-    // Extension WASM tests
-    const extension_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/firebird/extension_wasm.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_extension_tests = b.addRunArtifact(extension_tests);
-    test_step.dependOn(&run_extension_tests.step);
-
-    // DePIN tests
-    const depin_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/firebird/depin.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_depin_tests = b.addRunArtifact(depin_tests);
-    test_step.dependOn(&run_depin_tests.step);
-
     // Cross-platform release builds
     const release_step = b.step("release", "Build release binaries for all platforms");
 
-    const release_targets: []const std.Target.Query = &.{
+    const targets: []const std.Target.Query = &.{
         .{ .cpu_arch = .x86_64, .os_tag = .linux },
         .{ .cpu_arch = .x86_64, .os_tag = .macos },
         .{ .cpu_arch = .aarch64, .os_tag = .macos },
         .{ .cpu_arch = .x86_64, .os_tag = .windows },
     };
 
-    for (release_targets) |t| {
+    for (targets) |t| {
         const release_target = b.resolveTargetQuery(t);
         const release_exe = b.addExecutable(.{
             .name = "firebird",
@@ -222,4 +190,26 @@ pub fn build(b: *std.Build) void {
 
         release_step.dependOn(&target_output.step);
     }
+
+    // Extension WASM tests
+    const extension_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/firebird/extension_wasm.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_extension_tests = b.addRunArtifact(extension_tests);
+    test_step.dependOn(&run_extension_tests.step);
+
+    // DePIN tests
+    const depin_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/firebird/depin.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_depin_tests = b.addRunArtifact(depin_tests);
+    test_step.dependOn(&run_depin_tests.step);
 }
