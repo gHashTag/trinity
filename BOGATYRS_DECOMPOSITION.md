@@ -1,8 +1,8 @@
-# 33 BOGATYRS DECOMPOSITION - ФАЗА 2.2
+# 33 BOGATYRS DECOMPOSITION - PHASE 2.2
 
-## ОТРЯД СИНТАКСИСА (5 богатырей)
+## SYNTAX SQUAD (5 bogatyrs)
 
-### 1. Богатырь Лексического Анализа
+### 1. Lexical Analysis Bogatyr
 ```vibee
 name: syntax_lexer
 version: "1.0.0"
@@ -34,7 +34,7 @@ behaviors:
           tokens: "[name, :, test, version, :, 1.0]"
 ```
 
-### 2. Богатырь Синтаксического Парсера
+### 2. Syntactic Parser Bogatyr
 ```vibee
 name: syntax_parser
 version: "1.0.0"
@@ -73,7 +73,7 @@ behaviors:
     then: Valid YAML structure
 ```
 
-### 3. Богатырь Структуры Спецификации
+### 3. Specification Structure Bogatyr
 ```vibee
 name: spec_structure_validator
 version: "1.0.0"
@@ -112,7 +112,7 @@ behaviors:
           error: "missing_name"
 ```
 
-### 4. Богатырь Именования и Конвенций
+### 4. Naming Conventions Bogatyr
 ```vibee
 name: naming_conventions_validator
 version: "1.0.0"
@@ -156,7 +156,7 @@ behaviors:
           valid: true
 ```
 
-### 5. Богатырь Циклических Зависимостей
+### 5. Cyclic Dependencies Bogatyr
 ```vibee
 name: cyclic_deps_validator
 version: "1.0.0"
@@ -201,9 +201,9 @@ behaviors:
 
 ---
 
-## ОТРЯД СЕМАНТИКИ (7 богатырей)
+## SEMANTICS SQUAD (7 bogatyrs)
 
-### 6. Богатырь Проверки Типов Данных
+### 6. Type Validation Bogatyr
 ```vibee
 name: type_validation_bogatyr
 version: "1.0.0"
@@ -252,7 +252,7 @@ behaviors:
           defined: true
 ```
 
-### 7. Богатырь Областей Видимости
+### 7. Scope Validator Bogatyr
 ```vibee
 name: scope_validator
 version: "1.0.0"
@@ -293,7 +293,7 @@ behaviors:
           error: "symbol_not_found"
 ```
 
-### 8. Богатырь Неиспользуемых Определений
+### 8. Unused Definitions Bogatyr
 ```vibee
 name: unused_definitions_validator
 version: "1.0.0"
@@ -325,7 +325,7 @@ behaviors:
           unused: "[UnusedType]"
 ```
 
-### 9. Богатырь Корректности Выражений
+### 9. Expression Validator Bogatyr
 ```vibee
 name: expression_validator
 version: "1.0.0"
@@ -358,7 +358,7 @@ behaviors:
           error: "type_mismatch"
 ```
 
-### 10. Богатырь Бизнес-Правил
+### 10. Business Rules Bogatyr
 ```vibee
 name: business_rules_validator
 version: "1.0.0"
@@ -394,7 +394,7 @@ behaviors:
     then: All rules have given/when/then
 ```
 
-### 11. Богатырь Мутабельности/Иммутабельности
+### 11. Mutability/Immutability Bogatyr
 ```vibee
 name: mutability_validator
 version: "1.0.0"
@@ -426,7 +426,7 @@ behaviors:
           mutable: true
 ```
 
-### 12. Богатырь Dead Code
+### 12. Dead Code Bogatyr
 ```vibee
 name: dead_code_validator
 version: "1.0.0"
@@ -460,9 +460,9 @@ behaviors:
 
 ---
 
-## ОТРЯД ЛОГИКИ И ИНВАРИАНТОВ (8 богатырей)
+## LOGIC AND INVARIANTS SQUAD (8 bogatyrs)
 
-### 17. Богатырь Дублирования Логики (КЛЮЧЕВОЙ!)
+### 17. Logic Duplication Bogatyr (KEY!)
 ```vibee
 name: logic_duplication_validator
 version: "1.0.0"
@@ -521,9 +521,9 @@ behaviors:
 
 ---
 
-## ОСТАЛЬНЫЕ БОГАТЫРИ (для делегирования)
+## REMAINING BOGATYRS (for delegation)
 
-### ОТРЯД ЛОГИКИ (оставшиеся 7):
+### LOGIC SQUAD (remaining 7):
 13. idempotency_validator
 14. logic_isolation_validator
 15. state_transitions_validator
@@ -532,14 +532,14 @@ behaviors:
 19. module_contracts_validator
 20. data_integrity_validator
 
-### ОТРЯД ПРОИЗВОДИТЕЛЬНОСТИ (5):
+### PERFORMANCE SQUAD (5):
 21. static_analysis_bottlenecks_validator
 22. memory_usage_validator
 23. parallelism_validator
 24. lock_escalation_validator
 25. cold_start_validator
 
-### ОТРЯД БЕЗОПАСНОСТИ (8):
+### SECURITY SQUAD (8):
 26. injection_scanner_validator
 27. access_control_validator
 28. data_leaks_validator
@@ -551,9 +551,9 @@ behaviors:
 
 ---
 
-## ДОКУМЕНТАЦИЯ КОГОВ:
+## COGS DOCUMENTATION:
 
-### Синтактические Богатыри
+### Syntax Bogatyrs
 ```
 ✅ syntax_lexer - 100%
 ✅ syntax_parser - 100%
@@ -562,7 +562,7 @@ behaviors:
 ✅ cyclic_deps_validator - 100%
 ```
 
-### Семантические Богатыри
+### Semantic Bogatyrs
 ```
 ✅ type_validation_bogatyr - 100%
 ✅ scope_validator - 100%
@@ -573,7 +573,7 @@ behaviors:
 ✅ dead_code_validator - 100%
 ```
 
-### Логические Богатыри
+### Logic Bogatyrs
 ```
 ✅ logic_duplication_validator - 100%
 🔲 idempotency_validator - 0% (TODO)
@@ -587,6 +587,6 @@ behaviors:
 
 ---
 
-**STATUS**: ✅ ФАЗА 2.2 ЗАВЕРШЕНА (частично)
-**PROGRESS**: 13/33 богатырей специфицированы (39%)
-**NEXT**: ФАЗА 3 - Спецификация в `.vibee` для всех 33 богатырей
+**STATUS**: ✅ PHASE 2.2 COMPLETED (partially)
+**PROGRESS**: 13/33 bogatyrs specified (39%)
+**NEXT**: PHASE 3 - Specification in `.vibee` for all 33 bogatyrs
