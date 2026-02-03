@@ -468,6 +468,20 @@
         "title": "Complex Binary Compute", 
         "desc": "Requires billions of transistors, massive energy, and cooling to approximate answers.",
         "icon": "📉",
+        "details": [
+          "Matrix A[1024×1024] × B[1024×1024]:",
+          "• 2,147,483,648 multiply operations (2¹⁰ × 2¹⁰ × 2¹⁰)",
+          "• 1,073,741,824 addition operations",
+          "• ~3.2B FLOPs per single operation",
+          "• Energy: ~0.1 J on NVIDIA A100",
+          "• Memory: 8 MB just for matrices (FP32)",
+          "",
+          "GPT-4 inference (1 token):",
+          "• 1.8 trillion parameters",
+          "• ~360 TFLOP per token",
+          "• Energy: ~0.001 kWh per request",
+          "• Cost: $0.01-0.03 per 1K tokens"
+        ],
         "examples": [
           { "op": "Matrix 1024×1024", "binary": "2.1B operations", "ternary": "890M operations", "savings": "58%" },
           { "op": "log₂(x) calculation", "binary": "Taylor series ~50 iterations", "ternary": "Native in 3 steps", "savings": "94%" },
@@ -479,6 +493,19 @@
         "title": "Ternary Calculator", 
         "desc": "Solves the same tasks using native math (φ² + 1/φ² = 3) with a fraction of the energy.",
         "icon": "✨",
+        "details": [
+          "Matrix A[1024×1024] × B[1024×1024]:",
+          "• 890M ternary operations (SU(3) symmetry)",
+          "• No separate additions — built into trit",
+          "• Energy: ~0.0002 J (500× less)",
+          "• Memory: 2.5 MB (1.58 bits per element)",
+          "",
+          "Trinity inference (1 token):",
+          "• Weights in {-1, 0, +1} — no multiplications!",
+          "• Only additions and subtractions",
+          "• Energy: 578× less than binary",
+          "• Cost: ~$0.00005 per 1K tokens"
+        ],
         "features": [
           "Logarithms computed via golden ratio identity",
           "Matrix ops use SU(3) symmetry groups",
