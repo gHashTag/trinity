@@ -92,6 +92,74 @@ pub fn ternaryMatVec(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ACTIVATION QUANTIZATION (8-bit per-token absmax)
+// BitNet b1.58: activations quantized to 8-bit signed [-127, 127]
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Quantize activations to 8-bit using per-token absmax scaling
+/// Returns the scale factor for dequantization
+pub fn quantizeActivations8bit(input: []const f32, output: []i8, scale: *f32) void {
+    // Find maximum absolute value (absmax)
+    var max_abs: f32 = 0.0;
+    for (input) |x| {
+        const abs_x = @abs(x);
+        if (abs_x > max_abs) max_abs = abs_x;
+    }
+    
+    // Avoid division by zero
+    if (max_abs < 1e-10) {
+        @memset(output, 0);
+        scale.* = 1.0;
+        return;
+    }
+    
+    // Scale to [-127, 127] range
+    const quant_scale = 127.0 / max_abs;
+    scale.* = max_abs / 127.0; // Store dequant scale
+    
+    // Quantize
+    for (input, 0..) |x, i| {
+        const scaled = x * quant_scale;
+        // Clamp and round
+        const clamped = @max(-127.0, @min(127.0, scaled));
+        output[i] = @intFromFloat(@round(clamped));
+    }
+}
+
+/// Dequantize 8-bit activations back to f32
+pub fn dequantizeActivations8bit(input: []const i8, output: []f32, scale: f32) void {
+    for (input, 0..) |x, i| {
+        output[i] = @as(f32, @floatFromInt(x)) * scale;
+    }
+}
+
+/// Quantize activations in-place (for efficiency)
+/// Modifies input array and returns scale
+pub fn quantizeActivationsInPlace(input: []f32) f32 {
+    // Find maximum absolute value
+    var max_abs: f32 = 0.0;
+    for (input) |x| {
+        const abs_x = @abs(x);
+        if (abs_x > max_abs) max_abs = abs_x;
+    }
+    
+    if (max_abs < 1e-10) return 1.0;
+    
+    // Scale to [-127, 127] and back (simulates quantization noise)
+    const quant_scale = 127.0 / max_abs;
+    const dequant_scale = max_abs / 127.0;
+    
+    for (input) |*x| {
+        const scaled = x.* * quant_scale;
+        const clamped = @max(-127.0, @min(127.0, scaled));
+        const quantized = @round(clamped);
+        x.* = quantized * dequant_scale;
+    }
+    
+    return dequant_scale;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // RMS NORMALIZATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -441,4 +509,48 @@ test "ternary matvec" {
     try std.testing.expectApproxEqAbs(@as(f32, -2.0), output[1], 1e-5);
     // Row 2: 1*1 + 1*2 + 0*3 = 3
     try std.testing.expectApproxEqAbs(@as(f32, 3.0), output[2], 1e-5);
+}
+
+test "8-bit activation quantization" {
+    const input = [_]f32{ 0.5, -1.0, 0.25, 0.75, -0.5 };
+    var output: [5]i8 = undefined;
+    var scale: f32 = undefined;
+    
+    quantizeActivations8bit(&input, &output, &scale);
+    
+    // Max abs is 1.0, so scale should be 1.0/127.0
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0 / 127.0), scale, 1e-6);
+    
+    // Check quantized values
+    // 0.5 * 127 = 63.5 -> 64
+    try std.testing.expectEqual(@as(i8, 64), output[0]);
+    // -1.0 * 127 = -127
+    try std.testing.expectEqual(@as(i8, -127), output[1]);
+    // 0.25 * 127 = 31.75 -> 32
+    try std.testing.expectEqual(@as(i8, 32), output[2]);
+}
+
+test "8-bit activation dequantization" {
+    const input = [_]i8{ 64, -127, 32, 95, -64 };
+    var output: [5]f32 = undefined;
+    const scale: f32 = 1.0 / 127.0;
+    
+    dequantizeActivations8bit(&input, &output, scale);
+    
+    // Check dequantized values
+    try std.testing.expectApproxEqAbs(@as(f32, 64.0 / 127.0), output[0], 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f32, -1.0), output[1], 1e-5);
+}
+
+test "in-place activation quantization" {
+    var input = [_]f32{ 0.5, -1.0, 0.25, 0.75, -0.5 };
+    const original = [_]f32{ 0.5, -1.0, 0.25, 0.75, -0.5 };
+    
+    const scale = quantizeActivationsInPlace(&input);
+    _ = scale;
+    
+    // Values should be close to original (quantization noise)
+    for (input, original) |q, o| {
+        try std.testing.expectApproxEqAbs(o, q, 0.01);
+    }
 }
