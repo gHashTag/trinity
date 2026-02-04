@@ -1,0 +1,116 @@
+name: firebird_inference
+version: "1.0.0"
+language: zig
+module: firebird_inference
+
+# FIREBIRD CPU Inference Module
+# Adds AI inference capability to anti-detect browser extension
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+metadata:
+  author: "Dmitrii Vasilev"
+  sacred_formula: "φ² + 1/φ² = 3"
+  target_latency: "<500ms"
+  target_size: "<15KB extension"
+  platform: "Chrome Extension (WASM)"
+
+types:
+  # Ternary model for browser inference
+  TernaryModel:
+    fields:
+      vocab_size: Int
+      hidden_dim: Int
+      num_layers: Int
+      weights: List<Int>  # Packed ternary weights
+      embeddings: List<Int>  # Packed embeddings
+
+  # Inference configuration
+  InferenceConfig:
+    fields:
+      max_tokens: Int  # Default: 100
+      temperature: Float  # Default: 0.7
+      top_p: Float  # Default: 0.9
+      seed: Int
+
+  # Generation result
+  GenerationResult:
+    fields:
+      tokens: List<Int>
+      text: String
+      latency_ms: Float
+      tokens_per_second: Float
+
+  # Fingerprint variation using inference
+  FingerprintVariation:
+    fields:
+      canvas_noise: List<Float>
+      webgl_params: List<Float>
+      audio_noise: List<Float>
+      generated_seed: Int
+
+behaviors:
+  - name: load_model
+    given: Model weights in packed ternary format
+    when: Extension initializes or model requested
+    then: Load into WASM memory, return model handle
+
+  - name: generate_tokens
+    given: Input prompt tokens and config
+    when: User requests text generation
+    then: Run forward pass, sample tokens, return result
+
+  - name: generate_fingerprint_variation
+    given: Current fingerprint and target similarity
+    when: Fingerprint evolution requested
+    then: Use inference to generate human-like variations
+
+  - name: forward_pass
+    given: Input token and model state
+    when: Single token inference needed
+    then: Compute logits using ternary matmul
+
+  - name: sample_token
+    given: Logits and sampling config
+    when: Next token selection needed
+    then: Apply temperature, top-p, return sampled token
+
+# WASM EXPORTS
+# ============
+# wasm_load_model(weights_ptr, weights_len, config_ptr) -> model_id
+# wasm_generate(model_id, prompt_ptr, prompt_len, config_ptr) -> result_ptr
+# wasm_generate_variation(model_id, fingerprint_ptr, target_sim) -> variation_ptr
+# wasm_free_result(result_ptr)
+# wasm_get_latency() -> f64
+
+# IMPLEMENTATION NOTES
+# ====================
+# 1. Use packed ternary weights (2 bits per trit)
+# 2. Lookup-based matmul (no multiplications)
+# 3. Small model: 1M params = ~250KB packed
+# 4. Cache model in extension storage
+# 5. Run inference in service worker
+
+# INTEGRATION WITH EXTENSION
+# ==========================
+# background/service-worker.js:
+#   - Load WASM module on startup
+#   - Cache model in chrome.storage.local
+#   - Handle 'generate' messages from content script
+#
+# content/content.js:
+#   - Request generation for human-like responses
+#   - Use generated variations for fingerprint noise
+
+# PERFORMANCE TARGETS
+# ===================
+# - Model load: <100ms (from cache)
+# - Token generation: <5ms/token
+# - 100 tokens: <500ms total
+# - Memory: <10MB WASM heap
+
+# PRIVACY
+# =======
+# - All inference runs locally
+# - No network calls for generation
+# - Model weights bundled in extension
+# - No telemetry or data collection

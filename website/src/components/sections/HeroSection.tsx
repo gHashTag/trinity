@@ -116,14 +116,17 @@ export default function HeroSection() {
       
       <AnimatedEquation />
       
-      <motion.h2 
-        className="fade" 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 1.8 }}
-        style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)', marginBottom: '1.2rem', letterSpacing: '-0.03em' }} 
-        dangerouslySetInnerHTML={{ __html: t.headline }} 
-      />
+      {/* Only show headline if it's not the φ equation (already shown above) */}
+      {t.headline && !t.headline.includes('φ²') && (
+        <motion.h2 
+          className="fade" 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.8 }}
+          style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)', marginBottom: '1.2rem', letterSpacing: '-0.03em' }} 
+          dangerouslySetInnerHTML={{ __html: t.headline }} 
+        />
+      )}
       
       <motion.p 
         className="fade" 

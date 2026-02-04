@@ -12,6 +12,10 @@ const resetBtn = document.getElementById('reset-btn');
 const autoEvolve = document.getElementById('auto-evolve');
 const canvasProtect = document.getElementById('canvas-protect');
 const webglProtect = document.getElementById('webgl-protect');
+const aiMode = document.getElementById('ai-mode');
+const aiStatus = document.getElementById('ai-status');
+const inferenceStatus = document.getElementById('inference-status');
+const aiEvolveBtn = document.getElementById('ai-evolve-btn');
 
 // State
 let state = {
@@ -20,6 +24,8 @@ let state = {
   autoEvolve: true,
   canvasProtect: true,
   webglProtect: true,
+  aiMode: false,
+  inferenceReady: false,
   evolving: false
 };
 
@@ -64,6 +70,17 @@ function updateUI() {
   autoEvolve.checked = state.autoEvolve;
   canvasProtect.checked = state.canvasProtect;
   webglProtect.checked = state.webglProtect;
+  aiMode.checked = state.aiMode;
+  
+  // AI Mode UI
+  aiStatus.style.display = state.aiMode ? 'block' : 'none';
+  if (state.inferenceReady) {
+    inferenceStatus.textContent = 'Ready';
+    inferenceStatus.style.color = '#2ecc71';
+  } else {
+    inferenceStatus.textContent = 'JS Fallback';
+    inferenceStatus.style.color = '#f39c12';
+  }
   
   // Evolve button
   evolveBtn.disabled = state.evolving;
@@ -170,5 +187,67 @@ webglProtect.addEventListener('change', async (e) => {
   notifyContentScripts();
 });
 
+// AI Mode toggle
+aiMode.addEventListener('change', async (e) => {
+  state.aiMode = e.target.checked;
+  
+  // Get AI status from background
+  try {
+    const response = await chrome.runtime.sendMessage({ action: 'toggleAI' });
+    if (response) {
+      state.aiMode = response.aiMode;
+      state.inferenceReady = response.inferenceReady;
+    }
+  } catch (e) {
+    console.error('AI toggle failed:', e);
+  }
+  
+  await saveState();
+  updateUI();
+});
+
+// AI-powered evolution
+aiEvolveBtn.addEventListener('click', async () => {
+  if (state.evolving) return;
+  
+  state.evolving = true;
+  updateUI();
+  
+  try {
+    const response = await chrome.runtime.sendMessage({ 
+      action: 'aiEvolve',
+      targetSimilarity: 0.90 // Higher target with AI
+    });
+    
+    if (response && response.similarity) {
+      state.similarity = response.similarity;
+    }
+  } catch (e) {
+    console.error('AI evolution failed:', e);
+    // Fallback to regular evolution
+    await simulateEvolution();
+  }
+  
+  state.evolving = false;
+  await saveState();
+  updateUI();
+  notifyContentScripts();
+});
+
+// Check AI status on load
+async function checkAIStatus() {
+  try {
+    const response = await chrome.runtime.sendMessage({ action: 'getAIStatus' });
+    if (response) {
+      state.aiMode = response.aiMode;
+      state.inferenceReady = response.inferenceReady;
+      updateUI();
+    }
+  } catch (e) {
+    console.log('AI status check failed:', e);
+  }
+}
+
 // Initialize
 loadState();
+checkAIStatus();

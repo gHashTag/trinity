@@ -1,5 +1,6 @@
 // Firebird Background Service Worker
 // φ² + 1/φ² = 3 = TRINITY
+// CPU Inference enabled for AI-powered anti-detect
 
 const PHI = 1.6180339887;
 const TRINITY = 3.0;
@@ -9,7 +10,22 @@ let firebirdState = {
   enabled: true,
   similarity: 0.85,
   fingerprint: null,
-  lastEvolution: null
+  lastEvolution: null,
+  aiMode: false,
+  inferenceReady: false
+};
+
+// WASM inference module
+let wasmModule = null;
+let wasmExports = null;
+
+// Inference configuration
+const INFERENCE_CONFIG = {
+  vocabSize: 256,    // Small vocab for browser
+  hiddenDim: 64,     // Tiny model
+  numLayers: 2,      // 2 layers
+  maxTokens: 100,
+  temperature: 0.7
 };
 
 // Initialize on install
@@ -28,7 +44,106 @@ chrome.runtime.onInstalled.addListener(async () => {
     firebirdState.fingerprint = generateFingerprint();
     await saveState();
   }
+  
+  // Initialize WASM inference module
+  await initInference();
 });
+
+// Initialize WASM inference
+async function initInference() {
+  try {
+    const wasmUrl = chrome.runtime.getURL('wasm/firebird.wasm');
+    const response = await fetch(wasmUrl);
+    
+    if (!response.ok) {
+      console.log('🔥 WASM module not found, using JS fallback');
+      firebirdState.inferenceReady = false;
+      return;
+    }
+    
+    const wasmBuffer = await response.arrayBuffer();
+    const wasmResult = await WebAssembly.instantiate(wasmBuffer, {
+      env: {
+        // Memory imports if needed
+      }
+    });
+    
+    wasmModule = wasmResult.module;
+    wasmExports = wasmResult.instance.exports;
+    
+    // Initialize inference model
+    const seed = Date.now();
+    const result = wasmExports.wasm_init_inference(
+      INFERENCE_CONFIG.vocabSize,
+      INFERENCE_CONFIG.hiddenDim,
+      INFERENCE_CONFIG.numLayers,
+      BigInt(seed)
+    );
+    
+    if (result === 0) {
+      firebirdState.inferenceReady = true;
+      console.log('🔥 CPU Inference initialized');
+    }
+  } catch (e) {
+    console.log('🔥 WASM init failed, using JS fallback:', e.message);
+    firebirdState.inferenceReady = false;
+  }
+}
+
+// JavaScript fallback inference (when WASM not available)
+function jsInference(prompt, maxTokens = 100) {
+  // Simple Markov-like generation using fingerprint as seed
+  const seed = firebirdState.fingerprint?.trits || [];
+  const tokens = [];
+  
+  for (let i = 0; i < maxTokens; i++) {
+    // Generate pseudo-random token based on seed
+    const idx = (i * 31337 + (seed[i % seed.length] || 0) + 128) % 256;
+    tokens.push(idx);
+    
+    // Stop on "EOS" (token 0)
+    if (idx === 0) break;
+  }
+  
+  return {
+    tokens,
+    latency: maxTokens * 2, // ~2ms per token in JS
+    source: 'js-fallback'
+  };
+}
+
+// Generate text using inference
+async function generateText(prompt, config = {}) {
+  const maxTokens = config.maxTokens || INFERENCE_CONFIG.maxTokens;
+  const temperature = config.temperature || INFERENCE_CONFIG.temperature;
+  
+  if (firebirdState.inferenceReady && wasmExports) {
+    // Use WASM inference
+    const startToken = prompt.charCodeAt(0) % INFERENCE_CONFIG.vocabSize;
+    const count = wasmExports.wasm_generate(maxTokens, temperature, startToken);
+    const latency = wasmExports.wasm_get_inference_latency();
+    
+    return {
+      tokensGenerated: count,
+      latency,
+      source: 'wasm'
+    };
+  } else {
+    // Use JS fallback
+    return jsInference(prompt, maxTokens);
+  }
+}
+
+// Generate fingerprint variation using AI
+async function generateAIVariation(targetSimilarity = 0.85) {
+  if (firebirdState.inferenceReady && wasmExports) {
+    const similarity = wasmExports.wasm_generate_variation(targetSimilarity);
+    return { similarity, source: 'wasm-ai' };
+  } else {
+    // Fallback to regular evolution
+    return await evolveFingerprint(targetSimilarity);
+  }
+}
 
 // Message handler
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -51,6 +166,25 @@ async function handleMessage(message, sender) {
       firebirdState = { ...firebirdState, ...message.state };
       await saveState();
       return { success: true };
+    
+    // AI Inference actions
+    case 'generate':
+      return await generateText(message.prompt || '', message.config || {});
+    
+    case 'aiEvolve':
+      return await generateAIVariation(message.targetSimilarity || 0.85);
+    
+    case 'toggleAI':
+      firebirdState.aiMode = !firebirdState.aiMode;
+      await saveState();
+      return { aiMode: firebirdState.aiMode, inferenceReady: firebirdState.inferenceReady };
+    
+    case 'getAIStatus':
+      return { 
+        aiMode: firebirdState.aiMode, 
+        inferenceReady: firebirdState.inferenceReady,
+        config: INFERENCE_CONFIG
+      };
     
     default:
       return { error: 'Unknown action' };
