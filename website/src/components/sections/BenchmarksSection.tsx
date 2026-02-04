@@ -82,6 +82,64 @@ export default function BenchmarksSection() {
         <p>{b.sub}</p>
       </div>
       
+      {/* GPU Verification Badge */}
+      {b.gpuVerified && (
+        <motion.div 
+          className="fade"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          style={{
+            background: 'linear-gradient(135deg, rgba(0, 229, 153, 0.1), rgba(0, 179, 119, 0.05))',
+            border: '1px solid var(--accent)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginTop: '2rem',
+            marginBottom: '2rem',
+            maxWidth: '800px',
+            margin: '2rem auto'
+          }}
+        >
+          <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+            <span style={{ 
+              background: 'var(--accent)', 
+              color: '#000', 
+              padding: '0.3rem 1rem', 
+              borderRadius: '20px',
+              fontSize: '0.85rem',
+              fontWeight: 600
+            }}>
+              {b.gpuVerified.badge}
+            </span>
+          </div>
+          <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+            {b.gpuVerified.note}
+          </p>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '1rem' 
+          }}>
+            {b.gpuVerified.gpus?.map((gpu: { name: string; tokens: string; noise: string; power: string }, i: number) => (
+              <div key={i} style={{ 
+                background: 'rgba(0, 0, 0, 0.3)', 
+                padding: '1rem', 
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontWeight: 600, color: 'var(--accent)', marginBottom: '0.5rem' }}>{gpu.name}</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>{gpu.tokens}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>tokens/s</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
+                  Noise: {gpu.noise} | {gpu.power}
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+      
       <div className="fade" style={{ 
         marginTop: '3rem', 
         marginBottom: '4rem',

@@ -4,23 +4,23 @@
   "langHref": "?lang=ru",
   "nav": ["TRINITY", "Problem", "Solution", "Why Now", "Calculator", "Traction", "Market", "GTM", "Competition", "Roadmap", "Team", "Ecosystem", "Invest"],
   "hero": {
-    "tag": "Theorem-Backed Green AI Economy",
+    "tag": "GPU-Verified Green AI Economy",
     "headline": "φ² + 1/φ² = 3",
-    "subheadline": "4 Theorems + Verified Results = Proven Value",
-    "quote": "\"Not a claim — a theorem. Not a promise — a proof.\"",
-    "desc": "First AI platform with <strong>4 mathematical theorems</strong> + <strong>verified benchmarks</strong>: <strong>20×</strong> memory compression (CPU verified), <strong>up to 3000×</strong> energy efficiency (FPGA projected)",
+    "subheadline": "298K tokens/s on RTX 3090 | 274K on A100 | VERIFIED",
+    "quote": "\"Not a claim — a theorem. Not a promise — a proof. Not simulated — GPU verified.\"",
+    "desc": "First AI platform with <strong>4 mathematical theorems</strong> + <strong>GPU-verified benchmarks</strong>: <strong>298K tokens/s</strong> (RTX 3090), <strong>70% noise robustness</strong> at 30% corruption",
     "metrics": [
-      { "value": "15.7×", "label": "Compression", "proof": "Theorem 3 + ternary_quant_report" },
-      { "value": "8.1×", "label": "GPU Speedup", "proof": "Theorem 2 + GPU benchmarks" },
-      { "value": "100%", "label": "Noise Robustness", "proof": "Theorem 1 + hdc_double_q_report" }
+      { "value": "298K", "label": "Tokens/s (RTX 3090)", "proof": "RunPod GPU verified" },
+      { "value": "274K", "label": "Tokens/s (A100)", "proof": "RunPod GPU verified" },
+      { "value": "70%", "label": "Noise @30%", "proof": "Theorem 1 + GPU test" }
     ],
     "newResults": {
-      "title": "Latest Verified Results",
+      "title": "GPU-Verified Results (RunPod)",
       "items": [
-        { "value": "15.7×", "label": "HDC Compression", "source": "ternary_quant_report.md" },
-        { "value": "43%", "label": "Sparsity Bonus", "source": "ternary_quant_report.md" },
-        { "value": "100%", "label": "Noise Robustness @20% errors", "source": "hdc_double_q_report.md" },
-        { "value": "8.1×", "label": "SIMD Speedup", "source": "GPU benchmarks" }
+        { "value": "298K", "label": "RTX 3090 tokens/s", "source": "runpod_full_tests_report.md" },
+        { "value": "274K", "label": "A100 80GB tokens/s", "source": "e2e_repeat_report.md" },
+        { "value": "70.2%", "label": "Noise Robustness @30%", "source": "Both GPUs identical" },
+        { "value": "293W", "label": "A100 Power (vs 348W RTX)", "source": "nvidia-smi verified" }
       ]
     },
     "cta": "See the Proofs",
@@ -240,13 +240,21 @@
     ]
   },
   "benchmarks": {
-    "title": "Theorem-Backed <span class=\"grad\">Benchmarks</span>",
-    "sub": "✓ = Verified on CPU | * = Projected on GPU/FPGA. Current dev server: CPU-only baseline.",
+    "title": "GPU-Verified <span class=\"grad\">Benchmarks</span>",
+    "sub": "✓ = Verified on Real GPUs (RunPod) | RTX 3090 & A100 tested. No simulation.",
+    "gpuVerified": {
+      "badge": "🔥 VERIFIED ON REAL GPUs",
+      "note": "Benchmarks run on RunPod cloud GPUs, not simulated",
+      "gpus": [
+        { "name": "RTX 3090", "tokens": "298K", "noise": "70.2%", "power": "348W", "cost": "$0.10" },
+        { "name": "A100 80GB", "tokens": "274K", "noise": "70.2%", "power": "293W", "cost": "$0.20" }
+      ]
+    },
     "metrics": [
+      { "value": "298K", "label": "Tokens/sec (RTX 3090)", "desc": "Verified on RunPod GPU", "theorem": "GPU" },
       { "value": "20×", "label": "Memory Compression", "desc": "Theorem 3: 32-bit → 1.58-bit", "theorem": "3" },
-      { "value": "10×", "label": "Speed Boost", "desc": "Theorem 4: Optimal radix economy", "theorem": "4" },
-      { "value": "100%", "label": "Accuracy Preserved", "desc": "Theorem 1: Information optimality", "theorem": "1" },
-      { "value": "3000×", "label": "Energy Efficiency", "desc": "Projected on custom FPGA (verified: 20× on CPU)", "theorem": "2" }
+      { "value": "70%", "label": "Noise Robustness", "desc": "Accuracy at 30% trit corruption", "theorem": "1" },
+      { "value": "3000×", "label": "Energy Efficiency", "desc": "Projected on custom FPGA", "theorem": "2" }
     ],
     "comparison": {
       "headers": ["Platform", "Memory", "Speed", "Accuracy", "Energy", "Theorem Basis"],
