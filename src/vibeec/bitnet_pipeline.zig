@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
+const simd_matmul = @import("simd_ternary_matmul.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS - BitNet 2B Architecture
@@ -139,41 +140,28 @@ pub const KVCache = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TERNARY MATMUL - Using packed 2-bit weights
+// TERNARY MATMUL - Using optimized SIMD from simd_ternary_matmul.zig
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// SIMD-optimized ternary matmul: output = weights @ input
+/// Uses simdTernaryMatmulOpt16 for 16-wide SIMD (AVX-512 style) - fastest option
+pub fn ternaryMatmul(output: []f32, weights: []const u8, input: []const f32, rows: usize, cols: usize) void {
+    // Use optimized 16-wide SIMD implementation for best performance
+    simd_matmul.simdTernaryMatmulOpt16(output, weights, input, rows, cols);
+}
+
+// Keep local LUT for tests that don't use the full SIMD path
 const SIGN_LUT: [4]f32 = .{ 0.0, 1.0, -1.0, 0.0 };
 
-/// SIMD ternary matmul: output = weights @ input
-pub fn ternaryMatmul(output: []f32, weights: []const u8, input: []const f32, rows: usize, cols: usize) void {
+/// Scalar fallback for testing (not used in production)
+fn ternaryMatmulScalar(output: []f32, weights: []const u8, input: []const f32, rows: usize, cols: usize) void {
     const cols_packed = (cols + 3) / 4;
-    const Vec8 = @Vector(8, f32);
     
     for (0..rows) |row| {
         var sum: f32 = 0.0;
         const row_start = row * cols_packed;
-        var col: usize = 0;
         
-        // SIMD loop
-        while (col + 8 <= cols) {
-            const byte_idx = row_start + col / 4;
-            if (byte_idx + 1 >= weights.len) break;
-            
-            const in_vec: Vec8 = input[col..][0..8].*;
-            const b0 = weights[byte_idx];
-            const b1 = weights[byte_idx + 1];
-            const signs: Vec8 = .{
-                SIGN_LUT[(b0 >> 0) & 0x3], SIGN_LUT[(b0 >> 2) & 0x3],
-                SIGN_LUT[(b0 >> 4) & 0x3], SIGN_LUT[(b0 >> 6) & 0x3],
-                SIGN_LUT[(b1 >> 0) & 0x3], SIGN_LUT[(b1 >> 2) & 0x3],
-                SIGN_LUT[(b1 >> 4) & 0x3], SIGN_LUT[(b1 >> 6) & 0x3],
-            };
-            sum += @reduce(.Add, in_vec * signs);
-            col += 8;
-        }
-        
-        // Scalar tail
-        while (col < cols) : (col += 1) {
+        for (0..cols) |col| {
             const byte_idx = row_start + col / 4;
             if (byte_idx >= weights.len) break;
             const shift: u3 = @intCast((col % 4) * 2);
