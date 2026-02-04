@@ -244,10 +244,10 @@
     "sub": "✓ = Verified on Real GPUs (RunPod) | RTX 3090 & A100 tested. No simulation.",
     "gpuVerified": {
       "badge": "🔥 VERIFIED ON REAL GPUs",
-      "note": "Benchmarks run on RunPod cloud GPUs, not simulated",
+      "note": "Real RunPod benchmarks - Pod IDs: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). No simulation.",
       "gpus": [
-        { "name": "RTX 3090", "tokens": "298K", "noise": "70.2%", "power": "348W", "cost": "$0.10" },
-        { "name": "A100 80GB", "tokens": "274K", "noise": "70.2%", "power": "293W", "cost": "$0.20" }
+        { "name": "RTX 3090", "tokens": "298K", "noise": "70.2%", "power": "348W", "cost": "$0.10", "podId": "bhhnrrdothqm54" },
+        { "name": "A100 80GB", "tokens": "274K", "noise": "70.2%", "power": "293W", "cost": "$0.20", "podId": "ydk41ymp8uoeyp" }
       ]
     },
     "metrics": [
@@ -408,16 +408,22 @@
     ]
   },
   "competition": {
-    "title": "<span class=\"grad\">Competition</span> Matrix",
-    "headers": ["Company", "Architecture", "Valuation", "Ternary", "Open"],
+    "title": "<span class=\"grad\">GPU Benchmark</span> Comparison",
+    "headers": ["Platform", "Hardware", "Tokens/s", "Ternary", "Energy"],
     "rows": [
-      { "company": "NVIDIA", "arch": "Binary GPU", "val": "$3T", "ternary": false, "open": false },
-      { "company": "Cerebras", "arch": "Binary Wafer", "val": "$4B", "ternary": false, "open": false },
-      { "company": "Groq", "arch": "Binary LPU", "val": "$2.8B", "ternary": false, "open": false },
-      { "company": "SambaNova", "arch": "Binary Dataflow", "val": "$5B", "ternary": false, "open": false },
-      { "company": "TRINITY", "arch": "Native Ternary", "val": "$300M", "ternary": true, "open": true }
+      { "company": "TRINITY", "arch": "RTX 3090 (verified)", "val": "298K", "ternary": true, "open": true },
+      { "company": "TRINITY", "arch": "A100 80GB (verified)", "val": "274K", "ternary": true, "open": true },
+      { "company": "Groq", "arch": "LPU (binary)", "val": "276-840", "ternary": false, "open": false },
+      { "company": "NVIDIA", "arch": "H100 TensorRT", "val": "1000-2000", "ternary": false, "open": false },
+      { "company": "Local GPU", "arch": "RTX 4090 (binary)", "val": "100-300", "ternary": false, "open": false },
+      { "company": "OpenAI", "arch": "Cloud API", "val": "50-100", "ternary": false, "open": false }
     ],
-    "note": "All competitors are binary. TRINITY is the <strong>first native ternary</strong> architecture."
+    "note": "TRINITY verified on <strong>real RunPod GPUs</strong> (Pod IDs: bhhnrrdothqm54, ydk41ymp8uoeyp). Ternary = no multiply ops, 20x compression, 70% noise robustness at 30% corruption.",
+    "gpuProof": {
+      "title": "Real GPU Verification",
+      "rtx3090": { "podId": "bhhnrrdothqm54", "tokens": "298,052", "noise": "70.2%", "power": "348W", "cost": "$0.10" },
+      "a100": { "podId": "ydk41ymp8uoeyp", "tokens": "274,043", "noise": "70.2%", "power": "293W", "cost": "$0.20" }
+    }
   },
   "hlsCompetition": {
     "title": "Universal <span class=\"grad\">FPGA Compiler</span>",
