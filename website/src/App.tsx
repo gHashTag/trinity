@@ -1,41 +1,9 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense } from 'react'
 import { HeroSection } from './components/sections'
 import Navigation from './components/Navigation'
 import QuantumBackground from './components/QuantumBackground'
 import Footer from './components/Footer'
 import StickyCTA from './components/StickyCTA'
-import { useI18n } from './i18n/context'
-
-// Mysticism toggle component with i18n
-function MysticismToggle({ showMysticism, setShowMysticism }: { showMysticism: boolean; setShowMysticism: (v: boolean) => void }) {
-  const { t } = useI18n();
-  const m = t.mysticism;
-  
-  return (
-    <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-      <button 
-        onClick={() => setShowMysticism(!showMysticism)}
-        style={{
-          background: 'transparent',
-          border: '1px solid var(--border)',
-          color: 'var(--muted)',
-          padding: '0.5rem 1.5rem',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '0.9rem',
-          opacity: 0.6,
-          transition: 'opacity 0.3s'
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
-      >
-        {showMysticism 
-          ? (m?.toggleHide || '▼ Hide Mathematical Foundations') 
-          : (m?.toggleShow || '▶ For Mathematicians: SU(3), Chern-Simons, φ')}
-      </button>
-    </div>
-  );
-}
 
 // OPTIMIZED: 8 sections only (was 29)
 // Target: +40% conversion through focused flow
@@ -57,8 +25,6 @@ const SectionFallback = () => (
 )
 
 export default function App() {
-  const [showMysticism, setShowMysticism] = useState(false)
-
   return (
     <main>
       <QuantumBackground />
@@ -86,9 +52,8 @@ export default function App() {
         {/* 7. TEAM - Trust builder (3 members max) */}
         <TeamSection />
         
-        {/* MYSTICISM SUBTAB - Hidden by default */}
-        <MysticismToggle showMysticism={showMysticism} setShowMysticism={setShowMysticism} />
-        {showMysticism && <MysticismSection />}
+        {/* 8. SCIENCE - Mathematical foundations */}
+        <MysticismSection />
         
         {/* 8. INVEST - Final CTA */}
         <InvestSection />
