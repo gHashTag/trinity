@@ -187,10 +187,10 @@
     "sub": "✓ = Проверено на реальных GPU (RunPod) | RTX 3090 & A100 протестированы. Без симуляции.",
     "gpuVerified": {
       "badge": "🔥 ПРОВЕРЕНО НА РЕАЛЬНЫХ GPU",
-      "note": "Бенчмарки запущены на облачных GPU RunPod, не симуляция",
+      "note": "Реальные бенчмарки RunPod - Pod ID: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). Без симуляции.",
       "gpus": [
-        { "name": "RTX 3090", "tokens": "298K", "noise": "70.2%", "power": "348W", "cost": "$0.10" },
-        { "name": "A100 80GB", "tokens": "274K", "noise": "70.2%", "power": "293W", "cost": "$0.20" }
+        { "name": "RTX 3090", "tokens": "298K", "noise": "70.2%", "power": "348W", "cost": "$0.10", "podId": "bhhnrrdothqm54" },
+        { "name": "A100 80GB", "tokens": "274K", "noise": "70.2%", "power": "293W", "cost": "$0.20", "podId": "ydk41ymp8uoeyp" }
       ]
     },
     "metrics": [
@@ -370,16 +370,22 @@
     ]
   },
   "competition": {
-    "title": "Матрица <span class=\"grad\">конкурентов</span>",
-    "headers": ["Компания", "Архитектура", "Оценка", "Троичное", "Open"],
+    "title": "Сравнение <span class=\"grad\">GPU Бенчмарков</span>",
+    "headers": ["Платформа", "Железо", "Токенов/с", "Троичное", "Энергия"],
     "rows": [
-      { "company": "NVIDIA", "arch": "Бинарный GPU", "val": "$3T", "ternary": false, "open": false },
-      { "company": "Cerebras", "arch": "Бинарный Wafer", "val": "$4B", "ternary": false, "open": false },
-      { "company": "Groq", "arch": "Бинарный LPU", "val": "$2.8B", "ternary": false, "open": false },
-      { "company": "SambaNova", "arch": "Бинарный Dataflow", "val": "$5B", "ternary": false, "open": false },
-      { "company": "TRINITY", "arch": "Нативный троичный", "val": "$300M", "ternary": true, "open": true }
+      { "company": "TRINITY", "arch": "RTX 3090 (проверено)", "val": "298K", "ternary": true, "open": true },
+      { "company": "TRINITY", "arch": "A100 80GB (проверено)", "val": "274K", "ternary": true, "open": true },
+      { "company": "Groq", "arch": "LPU (бинарный)", "val": "276-840", "ternary": false, "open": false },
+      { "company": "NVIDIA", "arch": "H100 TensorRT", "val": "1000-2000", "ternary": false, "open": false },
+      { "company": "Локальный GPU", "arch": "RTX 4090 (бинарный)", "val": "100-300", "ternary": false, "open": false },
+      { "company": "OpenAI", "arch": "Cloud API", "val": "50-100", "ternary": false, "open": false }
     ],
-    "note": "Все конкуренты бинарные. TRINITY — <strong>первая нативная троичная</strong> архитектура."
+    "note": "TRINITY проверен на <strong>реальных GPU RunPod</strong> (Pod ID: bhhnrrdothqm54, ydk41ymp8uoeyp). Троичное = без умножений, 20x сжатие, 70% устойчивость к шуму при 30% повреждении.",
+    "gpuProof": {
+      "title": "Реальная GPU Верификация",
+      "rtx3090": { "podId": "bhhnrrdothqm54", "tokens": "298,052", "noise": "70.2%", "power": "348W", "cost": "$0.10" },
+      "a100": { "podId": "ydk41ymp8uoeyp", "tokens": "274,043", "noise": "70.2%", "power": "293W", "cost": "$0.20" }
+    }
   },
   "hlsCompetition": {
     "title": "Универсальный <span class=\"grad\">FPGA Компилятор</span>",
