@@ -661,10 +661,10 @@ pub const BitNetFullModel = struct {
             rmsNorm(self.hidden_state, layer.input_layernorm, normed, self.config.rms_norm_eps);
             
             // ═══════════════════════════════════════════════════════════════
-            // ACTIVATION QUANTIZATION: Before Q/K/V projections (BitNet b1.58)
-            // Quantize activations to 8-bit per-token absmax
+            // NOTE: Activation quantization REMOVED - was destroying information
+            // F32 weights need F32 activations for accurate inference
+            // Original BitNet b1.58 uses ternary weights which we don't have here
             // ═══════════════════════════════════════════════════════════════
-            _ = quantizeActivationsInPlace(normed);
             
             // Compute Q, K, V
             const q = self.allocator.alloc(f32, hidden) catch return;
@@ -757,9 +757,9 @@ pub const BitNetFullModel = struct {
             }
             
             // ═══════════════════════════════════════════════════════════════
-            // ACTIVATION QUANTIZATION: Before O projection (BitNet b1.58)
+            // NOTE: Activation quantization REMOVED before O projection
+            // F32 weights require F32 activations for correct computation
             // ═══════════════════════════════════════════════════════════════
-            _ = quantizeActivationsInPlace(self.attn_output);
             
             // O projection
             const o_out = self.allocator.alloc(f32, hidden) catch return;
@@ -775,9 +775,9 @@ pub const BitNetFullModel = struct {
             rmsNorm(self.hidden_state, layer.post_attention_layernorm, normed, self.config.rms_norm_eps);
             
             // ═══════════════════════════════════════════════════════════════
-            // ACTIVATION QUANTIZATION: Before gate/up projections (BitNet b1.58)
+            // NOTE: Activation quantization REMOVED before gate/up projections
+            // Premature quantization was destroying activation precision
             // ═══════════════════════════════════════════════════════════════
-            _ = quantizeActivationsInPlace(normed);
             
             // FFN: gate and up projections
             f32MatVec(layer.gate_proj, normed, self.ffn_intermediate, inter, hidden);
@@ -789,15 +789,16 @@ pub const BitNetFullModel = struct {
             // FFN LayerNorm
             rmsNorm(self.ffn_intermediate, layer.ffn_layernorm, self.ffn_intermediate, self.config.rms_norm_eps);
             
-            // SwiGLU: gate * silu(up)
+            // SwiGLU: silu(gate) * up (standard formula)
+            // silu(x) = x * sigmoid(x)
             for (self.ffn_intermediate, up_out) |*g, u| {
-                g.* = g.* * silu(u);
+                g.* = silu(g.*) * u;
             }
             
             // ═══════════════════════════════════════════════════════════════
-            // ACTIVATION QUANTIZATION: Before down projection (BitNet b1.58)
+            // NOTE: Activation quantization REMOVED before down projection
+            // F32 inference pipeline - no intermediate quantization
             // ═══════════════════════════════════════════════════════════════
-            _ = quantizeActivationsInPlace(self.ffn_intermediate);
             
             // Down projection
             const down_out = self.allocator.alloc(f32, hidden) catch return;
