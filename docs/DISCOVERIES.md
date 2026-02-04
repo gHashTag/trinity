@@ -40,6 +40,14 @@
 - Generic dequantizeBlock() dispatcher for all types
 - Enables Phi-3, Mistral, CodeLlama, Llama 2 models
 
+### Unified Inference Pipeline (NEW)
+- Created unified_inference.zig integrating GGUF + K-quant + BitNet
+- Auto-detection of quantization type from GGUF metadata
+- PipelineStats for comprehensive performance tracking
+- Support for 9 quantization types
+- Memory compression tracking (up to 8x vs FP16)
+- Created inference_pipeline.vibee specification
+
 ### Benchmarks
 | Dimension | Bind Time | Memory |
 |-----------|-----------|--------|
