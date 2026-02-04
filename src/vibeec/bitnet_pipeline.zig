@@ -5,6 +5,7 @@
 
 const std = @import("std");
 const simd_matmul = @import("simd_ternary_matmul.zig");
+const trinity_format = @import("trinity_format.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SIMD TYPES AND HELPERS
@@ -633,6 +634,79 @@ pub const BitNetModel = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// MODEL LOADER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Load BitNetModel from .tri file
+pub fn loadFromTriFile(allocator: std.mem.Allocator, path: []const u8) !BitNetModel {
+    // Load weights from .tri file
+    var weights = try trinity_format.loadTriFile(allocator, path);
+    errdefer weights.deinit();
+    
+    // Create config from header
+    const header = weights.header;
+    const config = Config{
+        .hidden_size = header.hidden_size,
+        .intermediate_size = header.intermediate_size,
+        .num_layers = header.num_layers,
+        .num_heads = header.num_heads,
+        .num_kv_heads = header.num_kv_heads,
+        .head_dim = header.hidden_size / header.num_heads,
+        .vocab_size = header.vocab_size,
+        .max_seq_len = 4096,
+        .rope_theta = 10000.0,
+        .rms_norm_eps = 1e-5,
+    };
+    
+    // Create RoPE
+    var rope = try RoPE.init(allocator, config.head_dim, config.max_seq_len, config.rope_theta);
+    errdefer rope.deinit(allocator);
+    
+    // Create KV caches
+    const kv_caches = try allocator.alloc(KVCache, config.num_layers);
+    errdefer allocator.free(kv_caches);
+    for (kv_caches) |*cache| {
+        cache.* = try KVCache.init(allocator, config);
+    }
+    
+    // Create layers from loaded weights
+    const layers = try allocator.alloc(BitNetLayer, config.num_layers);
+    errdefer allocator.free(layers);
+    
+    for (0..config.num_layers) |i| {
+        const lw = weights.layers[i];
+        layers[i] = BitNetLayer{
+            .attention = Attention{
+                .config = config,
+                .w_q = lw.q_proj,
+                .w_k = lw.k_proj,
+                .w_v = lw.v_proj,
+                .w_o = lw.o_proj,
+            },
+            .mlp = MLP{
+                .config = config,
+                .w_gate = lw.gate_proj,
+                .w_up = lw.up_proj,
+                .w_down = lw.down_proj,
+            },
+            .input_norm = RMSNorm{ .weight = lw.input_norm, .eps = config.rms_norm_eps },
+            .post_attn_norm = RMSNorm{ .weight = lw.post_attn_norm, .eps = config.rms_norm_eps },
+        };
+    }
+    
+    return BitNetModel{
+        .config = config,
+        .allocator = allocator,
+        .embed = weights.embed,
+        .layers = layers,
+        .final_norm = RMSNorm{ .weight = weights.final_norm, .eps = config.rms_norm_eps },
+        .lm_head = weights.lm_head,
+        .rope = rope,
+        .kv_caches = kv_caches,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1028,6 +1102,342 @@ pub fn runBenchmark(allocator: std.mem.Allocator) !void {
 
 test "benchmark runs" {
     try runBenchmark(std.testing.allocator);
+}
+
+test "create and load tri file" {
+    const allocator = std.testing.allocator;
+    
+    // Create a minimal .tri file for testing
+    const test_path = "/tmp/test_bitnet.tri";
+    
+    // Mini config
+    const hidden_size: u32 = 32;
+    const intermediate_size: u32 = 64;
+    const num_layers: u32 = 1;
+    const num_heads: u32 = 4;
+    const num_kv_heads: u32 = 2;
+    const vocab_size: u32 = 100;
+    const head_dim = hidden_size / num_heads;
+    
+    // Create file
+    var file = try std.fs.cwd().createFile(test_path, .{});
+    var writer = file.writer();
+    
+    // Write header
+    try writer.writeAll(&trinity_format.MAGIC);
+    try writer.writeInt(u32, trinity_format.VERSION, .little);
+    try writer.writeInt(u64, 10000, .little); // total_params
+    try writer.writeInt(u32, vocab_size, .little);
+    try writer.writeInt(u32, hidden_size, .little);
+    try writer.writeInt(u32, intermediate_size, .little);
+    try writer.writeInt(u32, num_layers, .little);
+    try writer.writeInt(u32, num_heads, .little);
+    try writer.writeInt(u32, num_kv_heads, .little);
+    try writer.writeInt(u32, 1, .little); // num_tensors
+    try writer.writeByteNTimes(0, 20); // reserved
+    
+    // Write embeddings (f32)
+    const embed_size = vocab_size * hidden_size;
+    for (0..embed_size) |i| {
+        const val: f32 = @as(f32, @floatFromInt(i % 100)) * 0.01;
+        try writer.writeAll(std.mem.asBytes(&val));
+    }
+    
+    // Write layer weights
+    const q_size = (num_heads * head_dim * hidden_size + 3) / 4;
+    const kv_size = (num_kv_heads * head_dim * hidden_size + 3) / 4;
+    const o_size = (hidden_size * num_heads * head_dim + 3) / 4;
+    const gate_size = (intermediate_size * hidden_size + 3) / 4;
+    const down_size = (hidden_size * intermediate_size + 3) / 4;
+    
+    // input_norm (f32)
+    for (0..hidden_size) |_| {
+        const val: f32 = 1.0;
+        try writer.writeAll(std.mem.asBytes(&val));
+    }
+    
+    // q_proj (packed ternary - all +1 = 0x55)
+    try writer.writeByteNTimes(0x55, q_size);
+    // k_proj
+    try writer.writeByteNTimes(0x55, kv_size);
+    // v_proj
+    try writer.writeByteNTimes(0x55, kv_size);
+    // o_proj
+    try writer.writeByteNTimes(0x55, o_size);
+    
+    // post_attn_norm (f32)
+    for (0..hidden_size) |_| {
+        const val: f32 = 1.0;
+        try writer.writeAll(std.mem.asBytes(&val));
+    }
+    
+    // gate_proj
+    try writer.writeByteNTimes(0x55, gate_size);
+    // up_proj
+    try writer.writeByteNTimes(0x55, gate_size);
+    // down_proj
+    try writer.writeByteNTimes(0x55, down_size);
+    
+    // final_norm (f32)
+    for (0..hidden_size) |_| {
+        const val: f32 = 1.0;
+        try writer.writeAll(std.mem.asBytes(&val));
+    }
+    
+    // lm_head (packed ternary)
+    const lm_head_size = (vocab_size * hidden_size + 3) / 4;
+    try writer.writeByteNTimes(0x55, lm_head_size);
+    
+    // Close file before loading
+    file.close();
+    
+    // Load the model
+    var model = try loadFromTriFile(allocator, test_path);
+    defer model.deinit();
+    
+    // Verify config
+    try std.testing.expectEqual(@as(usize, hidden_size), model.config.hidden_size);
+    try std.testing.expectEqual(@as(usize, num_layers), model.config.num_layers);
+    try std.testing.expectEqual(@as(usize, vocab_size), model.config.vocab_size);
+    
+    // Test forward pass
+    const logits = try model.forward(1, 0);
+    defer allocator.free(logits);
+    
+    // Check logits shape
+    try std.testing.expectEqual(@as(usize, vocab_size), logits.len);
+    
+    // Clean up
+    try std.fs.cwd().deleteFile(test_path);
+    
+    std.debug.print("\n✅ .tri file load and forward pass successful!\n", .{});
+}
+
+test "generation produces valid tokens" {
+    const allocator = std.testing.allocator;
+    
+    // Mini config
+    const config = Config{
+        .hidden_size = 32,
+        .intermediate_size = 64,
+        .num_layers = 1,
+        .num_heads = 4,
+        .num_kv_heads = 2,
+        .head_dim = 8,
+        .vocab_size = 100,
+        .max_seq_len = 32,
+    };
+    
+    // Create dummy weights
+    const q_size = config.num_heads * config.head_dim * config.hidden_size / 4;
+    const kv_size = config.num_kv_heads * config.head_dim * config.hidden_size / 4;
+    const o_size = config.hidden_size * config.num_heads * config.head_dim / 4;
+    const gate_size = config.intermediate_size * config.hidden_size / 4;
+    const down_size = config.hidden_size * config.intermediate_size / 4;
+    const lm_head_size = config.vocab_size * config.hidden_size / 4;
+    const embed_size = config.vocab_size * config.hidden_size;
+    
+    const w_q = try allocator.alloc(u8, q_size);
+    defer allocator.free(w_q);
+    @memset(w_q, 0x55);
+    
+    const w_k = try allocator.alloc(u8, kv_size);
+    defer allocator.free(w_k);
+    @memset(w_k, 0x55);
+    
+    const w_v = try allocator.alloc(u8, kv_size);
+    defer allocator.free(w_v);
+    @memset(w_v, 0x55);
+    
+    const w_o = try allocator.alloc(u8, o_size);
+    defer allocator.free(w_o);
+    @memset(w_o, 0x55);
+    
+    const w_gate = try allocator.alloc(u8, gate_size);
+    defer allocator.free(w_gate);
+    @memset(w_gate, 0x55);
+    
+    const w_up = try allocator.alloc(u8, gate_size);
+    defer allocator.free(w_up);
+    @memset(w_up, 0x55);
+    
+    const w_down = try allocator.alloc(u8, down_size);
+    defer allocator.free(w_down);
+    @memset(w_down, 0x55);
+    
+    const lm_head = try allocator.alloc(u8, lm_head_size);
+    defer allocator.free(lm_head);
+    @memset(lm_head, 0x55);
+    
+    const embed = try allocator.alloc(f32, embed_size);
+    defer allocator.free(embed);
+    for (embed, 0..) |*e, i| e.* = @as(f32, @floatFromInt(i % 100)) * 0.01;
+    
+    const norm_weight = try allocator.alloc(f32, config.hidden_size);
+    defer allocator.free(norm_weight);
+    for (norm_weight) |*w| w.* = 1.0;
+    
+    // Create layers
+    const layers = try allocator.alloc(BitNetLayer, config.num_layers);
+    defer allocator.free(layers);
+    
+    for (layers) |*layer| {
+        layer.* = BitNetLayer{
+            .attention = Attention{
+                .config = config,
+                .w_q = w_q,
+                .w_k = w_k,
+                .w_v = w_v,
+                .w_o = w_o,
+            },
+            .mlp = MLP{
+                .config = config,
+                .w_gate = w_gate,
+                .w_up = w_up,
+                .w_down = w_down,
+            },
+            .input_norm = RMSNorm{ .weight = norm_weight, .eps = config.rms_norm_eps },
+            .post_attn_norm = RMSNorm{ .weight = norm_weight, .eps = config.rms_norm_eps },
+        };
+    }
+    
+    // Create KV caches
+    const kv_caches = try allocator.alloc(KVCache, config.num_layers);
+    defer {
+        for (kv_caches) |*cache| cache.deinit(allocator);
+        allocator.free(kv_caches);
+    }
+    for (kv_caches) |*cache| {
+        cache.* = try KVCache.init(allocator, config);
+    }
+    
+    // Create RoPE
+    var rope = try RoPE.init(allocator, config.head_dim, config.max_seq_len, config.rope_theta);
+    defer rope.deinit(allocator);
+    
+    // Create model for generation test
+    var model = BitNetModel{
+        .config = config,
+        .allocator = allocator,
+        .embed = embed,
+        .layers = layers,
+        .final_norm = RMSNorm{ .weight = norm_weight, .eps = config.rms_norm_eps },
+        .lm_head = lm_head,
+        .rope = rope,
+        .kv_caches = kv_caches,
+    };
+    
+    // Test 1: All generated tokens are within vocab range
+    const prompt = [_]u32{ 1, 5, 10 };
+    const generated = try model.generate(&prompt, 10, 1.0, 0.9);
+    defer allocator.free(generated);
+    
+    for (generated) |token| {
+        try std.testing.expect(token < config.vocab_size);
+    }
+    
+    // Test 2: Generation produces more tokens than prompt
+    try std.testing.expect(generated.len > prompt.len);
+    
+    // Test 3: Prompt tokens are preserved
+    try std.testing.expectEqualSlices(u32, &prompt, generated[0..prompt.len]);
+    
+    std.debug.print("\n✅ Generation produces valid tokens!\n", .{});
+}
+
+test "sampling with different temperatures" {
+    // Test that temperature affects output distribution
+    const logits = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0 };
+    
+    // High temperature (more random)
+    var high_temp = logits;
+    for (&high_temp) |*l| l.* /= 2.0; // temp=2.0
+    
+    // Low temperature (more deterministic)
+    var low_temp = logits;
+    for (&low_temp) |*l| l.* /= 0.5; // temp=0.5
+    
+    // Softmax both
+    var max_h: f32 = -std.math.inf(f32);
+    var max_l: f32 = -std.math.inf(f32);
+    for (high_temp) |l| if (l > max_h) { max_h = l; };
+    for (low_temp) |l| if (l > max_l) { max_l = l; };
+    
+    var sum_h: f32 = 0.0;
+    var sum_l: f32 = 0.0;
+    for (&high_temp) |*l| { l.* = @exp(l.* - max_h); sum_h += l.*; }
+    for (&low_temp) |*l| { l.* = @exp(l.* - max_l); sum_l += l.*; }
+    for (&high_temp) |*l| l.* /= sum_h;
+    for (&low_temp) |*l| l.* /= sum_l;
+    
+    // Low temp should have higher max probability
+    var max_prob_h: f32 = 0.0;
+    var max_prob_l: f32 = 0.0;
+    for (high_temp) |p| if (p > max_prob_h) { max_prob_h = p; };
+    for (low_temp) |p| if (p > max_prob_l) { max_prob_l = p; };
+    
+    try std.testing.expect(max_prob_l > max_prob_h);
+    
+    std.debug.print("\n✅ Temperature affects sampling distribution!\n", .{});
+}
+
+test "KV cache grows correctly" {
+    const allocator = std.testing.allocator;
+    
+    const config = Config{
+        .hidden_size = 16,
+        .num_kv_heads = 2,
+        .head_dim = 4,
+        .max_seq_len = 10,
+    };
+    
+    var cache = try KVCache.init(allocator, config);
+    defer cache.deinit(allocator);
+    
+    // Initially empty
+    try std.testing.expectEqual(@as(usize, 0), cache.len);
+    
+    // Add tokens
+    const k = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
+    const v = [_]f32{ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8 };
+    
+    cache.append(&k, &v);
+    try std.testing.expectEqual(@as(usize, 1), cache.len);
+    
+    cache.append(&k, &v);
+    try std.testing.expectEqual(@as(usize, 2), cache.len);
+    
+    cache.append(&k, &v);
+    try std.testing.expectEqual(@as(usize, 3), cache.len);
+    
+    // Clear
+    cache.clear();
+    try std.testing.expectEqual(@as(usize, 0), cache.len);
+    
+    std.debug.print("\n✅ KV cache grows correctly!\n", .{});
+}
+
+test "RoPE rotates vectors" {
+    const allocator = std.testing.allocator;
+    
+    var rope = try RoPE.init(allocator, 4, 10, 10000.0);
+    defer rope.deinit(allocator);
+    
+    // Test that rotation at pos > 0 changes the vector
+    var vec1 = [_]f32{ 1.0, 0.0, 0.0, 1.0 };
+    var vec2 = [_]f32{ 1.0, 0.0, 0.0, 1.0 };
+    
+    rope.apply(&vec1, 0);
+    rope.apply(&vec2, 5);
+    
+    // Vectors should be different after rotation at different positions
+    var diff: f32 = 0.0;
+    for (0..4) |i| {
+        diff += @abs(vec1[i] - vec2[i]);
+    }
+    try std.testing.expect(diff > 0.01);
+    
+    std.debug.print("\n✅ RoPE rotates vectors correctly!\n", .{});
 }
 
 test "end-to-end generation" {

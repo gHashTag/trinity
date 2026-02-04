@@ -170,10 +170,10 @@ pub fn unpackTrits(allocator: std.mem.Allocator, packed_data: []const u8, num_tr
         const trit_val: i8 = @as(i8, @intCast(value)) - 1; // 0->-1, 1->0, 2->+1
 
         trits[i] = switch (trit_val) {
-            -1 => .neg,
-            0 => .zero,
-            1 => .pos,
-            else => .zero,
+            -1 => .Neg,
+            0 => .Zero,
+            1 => .Pos,
+            else => .Zero,
         };
     }
 
@@ -416,13 +416,161 @@ pub const TrinityReader = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// BITNET MODEL LOADER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Loaded BitNet model weights for inference
+pub const BitNetWeights = struct {
+    allocator: std.mem.Allocator,
+    header: TrinityHeader,
+    
+    // Embeddings (f32)
+    embed: []f32,
+    
+    // Per-layer weights (packed ternary)
+    layers: []LayerWeights,
+    
+    // Final norm and LM head
+    final_norm: []f32,
+    lm_head: []u8,
+    
+    pub const LayerWeights = struct {
+        input_norm: []f32,
+        q_proj: []u8,
+        k_proj: []u8,
+        v_proj: []u8,
+        o_proj: []u8,
+        post_attn_norm: []f32,
+        gate_proj: []u8,
+        up_proj: []u8,
+        down_proj: []u8,
+    };
+    
+    pub fn deinit(self: *BitNetWeights) void {
+        self.allocator.free(self.embed);
+        for (self.layers) |layer| {
+            self.allocator.free(layer.input_norm);
+            self.allocator.free(layer.q_proj);
+            self.allocator.free(layer.k_proj);
+            self.allocator.free(layer.v_proj);
+            self.allocator.free(layer.o_proj);
+            self.allocator.free(layer.post_attn_norm);
+            self.allocator.free(layer.gate_proj);
+            self.allocator.free(layer.up_proj);
+            self.allocator.free(layer.down_proj);
+        }
+        self.allocator.free(self.layers);
+        self.allocator.free(self.final_norm);
+        self.allocator.free(self.lm_head);
+    }
+};
+
+/// Load a .tri file and return BitNet weights
+pub fn loadTriFile(allocator: std.mem.Allocator, path: []const u8) !BitNetWeights {
+    var file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    
+    var reader = file.reader();
+    
+    // Read header
+    const header = try TrinityHeader.read(reader);
+    
+    // Validate magic
+    if (!std.mem.eql(u8, &header.magic, &MAGIC)) {
+        return error.InvalidMagic;
+    }
+    
+    // Calculate sizes
+    const hidden_size = header.hidden_size;
+    const intermediate_size = header.intermediate_size;
+    const vocab_size = header.vocab_size;
+    const num_layers = header.num_layers;
+    const num_heads = header.num_heads;
+    const num_kv_heads = header.num_kv_heads;
+    const head_dim = hidden_size / num_heads;
+    
+    // Embedding size (f32)
+    const embed_size = vocab_size * hidden_size;
+    const embed = try allocator.alloc(f32, embed_size);
+    errdefer allocator.free(embed);
+    
+    // Read embeddings
+    const embed_bytes = std.mem.sliceAsBytes(embed);
+    _ = try reader.readAll(embed_bytes);
+    
+    // Allocate layers
+    const layers = try allocator.alloc(BitNetWeights.LayerWeights, num_layers);
+    errdefer allocator.free(layers);
+    
+    // Calculate per-layer sizes (packed ternary = /4)
+    const q_size = (num_heads * head_dim * hidden_size + 3) / 4;
+    const kv_size = (num_kv_heads * head_dim * hidden_size + 3) / 4;
+    const o_size = (hidden_size * num_heads * head_dim + 3) / 4;
+    const gate_size = (intermediate_size * hidden_size + 3) / 4;
+    const down_size = (hidden_size * intermediate_size + 3) / 4;
+    
+    // Read each layer
+    for (0..num_layers) |i| {
+        layers[i] = BitNetWeights.LayerWeights{
+            .input_norm = try allocator.alloc(f32, hidden_size),
+            .q_proj = try allocator.alloc(u8, q_size),
+            .k_proj = try allocator.alloc(u8, kv_size),
+            .v_proj = try allocator.alloc(u8, kv_size),
+            .o_proj = try allocator.alloc(u8, o_size),
+            .post_attn_norm = try allocator.alloc(f32, hidden_size),
+            .gate_proj = try allocator.alloc(u8, gate_size),
+            .up_proj = try allocator.alloc(u8, gate_size),
+            .down_proj = try allocator.alloc(u8, down_size),
+        };
+        
+        // Read layer weights
+        _ = try reader.readAll(std.mem.sliceAsBytes(layers[i].input_norm));
+        _ = try reader.readAll(layers[i].q_proj);
+        _ = try reader.readAll(layers[i].k_proj);
+        _ = try reader.readAll(layers[i].v_proj);
+        _ = try reader.readAll(layers[i].o_proj);
+        _ = try reader.readAll(std.mem.sliceAsBytes(layers[i].post_attn_norm));
+        _ = try reader.readAll(layers[i].gate_proj);
+        _ = try reader.readAll(layers[i].up_proj);
+        _ = try reader.readAll(layers[i].down_proj);
+    }
+    
+    // Final norm
+    const final_norm = try allocator.alloc(f32, hidden_size);
+    errdefer allocator.free(final_norm);
+    _ = try reader.readAll(std.mem.sliceAsBytes(final_norm));
+    
+    // LM head (packed ternary)
+    const lm_head_size = (vocab_size * hidden_size + 3) / 4;
+    const lm_head = try allocator.alloc(u8, lm_head_size);
+    errdefer allocator.free(lm_head);
+    _ = try reader.readAll(lm_head);
+    
+    return BitNetWeights{
+        .allocator = allocator,
+        .header = header,
+        .embed = embed,
+        .layers = layers,
+        .final_norm = final_norm,
+        .lm_head = lm_head,
+    };
+}
+
+/// Get model info from .tri file without loading weights
+pub fn getTriInfo(path: []const u8) !TrinityHeader {
+    var file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    return try TrinityHeader.read(file.reader());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "pack and unpack trits" {
     const allocator = std.testing.allocator;
 
-    const trits = [_]prometheus.TritWeight{ .pos, .neg, .zero, .pos, .neg, .neg, .zero, .pos };
+    const trits = [_]prometheus.TritWeight{ .Pos, .Neg, .Zero, .Pos, .Neg, .Neg, .Zero, .Pos };
 
     const packed_data = try packTrits(allocator, &trits);
     defer allocator.free(packed_data);
@@ -481,7 +629,7 @@ test "write and read trinity file" {
     const test_path = "/tmp/test_trinity.tri";
 
     // Create test data
-    const trits = [_]prometheus.TritWeight{ .pos, .neg, .zero, .pos, .neg, .neg, .zero, .pos, .pos, .zero, .neg, .pos };
+    const trits = [_]prometheus.TritWeight{ .Pos, .Neg, .Zero, .Pos, .Neg, .Neg, .Zero, .Pos, .Pos, .Zero, .Neg, .Pos };
     const shape = [_]usize{ 3, 4 };
 
     // Write
