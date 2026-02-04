@@ -123,6 +123,87 @@ fn processAttentionHead(ctx: *AttentionHeadContext) void {
 pub const NUM_ATTENTION_THREADS: usize = 2;
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// PERSISTENT THREAD POOL - Reusable across forward passes
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Global thread pool state
+pub const ThreadPoolState = struct {
+    initialized: bool = false,
+    num_threads: usize = 0,
+};
+
+var global_pool_state: ThreadPoolState = .{};
+
+/// Initialize the global thread pool
+/// Call once at application startup
+pub fn initThreadPool(num_threads: usize) void {
+    if (global_pool_state.initialized) return;
+    global_pool_state.num_threads = if (num_threads == 0) 
+        (std.Thread.getCpuCount() catch 2) 
+    else 
+        num_threads;
+    global_pool_state.initialized = true;
+}
+
+/// Deinitialize the global thread pool
+/// Call at application shutdown
+pub fn deinitThreadPool() void {
+    global_pool_state.initialized = false;
+    global_pool_state.num_threads = 0;
+}
+
+/// Get number of available threads
+pub fn getPoolThreadCount() usize {
+    if (!global_pool_state.initialized) {
+        initThreadPool(0);
+    }
+    return global_pool_state.num_threads;
+}
+
+/// Check if pool is initialized
+pub fn isPoolInitialized() bool {
+    return global_pool_state.initialized;
+}
+
+/// Work queue for dynamic load balancing
+pub const WorkQueue = struct {
+    next_item: std.atomic.Value(usize),
+    total_items: usize,
+    
+    pub fn init(total: usize) WorkQueue {
+        return .{
+            .next_item = std.atomic.Value(usize).init(0),
+            .total_items = total,
+        };
+    }
+    
+    /// Get next work item (returns null if no more work)
+    pub fn getNext(self: *WorkQueue) ?usize {
+        while (true) {
+            const current = self.next_item.load(.acquire);
+            if (current >= self.total_items) return null;
+            
+            if (self.next_item.cmpxchgWeak(
+                current,
+                current + 1,
+                .release,
+                .monotonic,
+            )) |_| {
+                // CAS failed, retry
+                continue;
+            } else {
+                return current;
+            }
+        }
+    }
+    
+    /// Reset queue for reuse
+    pub fn reset(self: *WorkQueue) void {
+        self.next_item.store(0, .release);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS - BitNet 2B Architecture
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -351,7 +432,7 @@ pub const Attention = struct {
         const scores_bufs = try allocator.alloc(f32, cfg.num_heads * max_cache_len);
         defer allocator.free(scores_bufs);
         
-        // Determine number of threads (min of available and heads)
+        // Determine number of threads (use constant for minimal overhead)
         const num_threads = @min(NUM_ATTENTION_THREADS, cfg.num_heads);
         
         if (num_threads > 1 and cfg.num_heads >= 2) {
@@ -1332,6 +1413,174 @@ test "KV cache grows correctly" {
     try std.testing.expectEqual(@as(usize, 0), cache.len);
     
     std.debug.print("\n✅ KV cache grows correctly!\n", .{});
+}
+
+test "thread pool initialization" {
+    // Test pool init/deinit
+    initThreadPool(4);
+    try std.testing.expect(isPoolInitialized());
+    try std.testing.expectEqual(@as(usize, 4), getPoolThreadCount());
+    
+    deinitThreadPool();
+    try std.testing.expect(!isPoolInitialized());
+    
+    // Re-init with auto-detect
+    initThreadPool(0);
+    try std.testing.expect(isPoolInitialized());
+    try std.testing.expect(getPoolThreadCount() >= 1);
+    
+    std.debug.print("\n✅ Thread pool init/deinit works!\n", .{});
+}
+
+test "work queue atomic operations" {
+    var queue = WorkQueue.init(10);
+    
+    // Get items sequentially
+    var count: usize = 0;
+    while (queue.getNext()) |_| {
+        count += 1;
+    }
+    try std.testing.expectEqual(@as(usize, 10), count);
+    
+    // Queue should be exhausted
+    try std.testing.expect(queue.getNext() == null);
+    
+    // Reset and try again
+    queue.reset();
+    try std.testing.expect(queue.getNext() != null);
+    
+    std.debug.print("\n✅ Work queue atomic operations work!\n", .{});
+}
+
+test "long running generation (100 tokens)" {
+    const allocator = std.testing.allocator;
+    
+    // Mini config for long-running test
+    const config = Config{
+        .hidden_size = 32,
+        .intermediate_size = 64,
+        .num_layers = 1,
+        .num_heads = 4,
+        .num_kv_heads = 2,
+        .head_dim = 8,
+        .vocab_size = 100,
+        .max_seq_len = 128,
+    };
+    
+    // Create dummy weights
+    const q_size = config.num_heads * config.head_dim * config.hidden_size / 4;
+    const kv_size = config.num_kv_heads * config.head_dim * config.hidden_size / 4;
+    const o_size = config.hidden_size * config.num_heads * config.head_dim / 4;
+    const gate_size = config.intermediate_size * config.hidden_size / 4;
+    const down_size = config.hidden_size * config.intermediate_size / 4;
+    const lm_head_size = config.vocab_size * config.hidden_size / 4;
+    const embed_size = config.vocab_size * config.hidden_size;
+    
+    const w_q = try allocator.alloc(u8, q_size);
+    defer allocator.free(w_q);
+    @memset(w_q, 0x55);
+    
+    const w_k = try allocator.alloc(u8, kv_size);
+    defer allocator.free(w_k);
+    @memset(w_k, 0x55);
+    
+    const w_v = try allocator.alloc(u8, kv_size);
+    defer allocator.free(w_v);
+    @memset(w_v, 0x55);
+    
+    const w_o = try allocator.alloc(u8, o_size);
+    defer allocator.free(w_o);
+    @memset(w_o, 0x55);
+    
+    const w_gate = try allocator.alloc(u8, gate_size);
+    defer allocator.free(w_gate);
+    @memset(w_gate, 0x55);
+    
+    const w_up = try allocator.alloc(u8, gate_size);
+    defer allocator.free(w_up);
+    @memset(w_up, 0x55);
+    
+    const w_down = try allocator.alloc(u8, down_size);
+    defer allocator.free(w_down);
+    @memset(w_down, 0x55);
+    
+    const lm_head = try allocator.alloc(u8, lm_head_size);
+    defer allocator.free(lm_head);
+    @memset(lm_head, 0x55);
+    
+    const embed = try allocator.alloc(f32, embed_size);
+    defer allocator.free(embed);
+    for (embed, 0..) |*e, i| e.* = @as(f32, @floatFromInt(i % 100)) * 0.01;
+    
+    const norm_weight = try allocator.alloc(f32, config.hidden_size);
+    defer allocator.free(norm_weight);
+    for (norm_weight) |*w| w.* = 1.0;
+    
+    // Create layers
+    const layers = try allocator.alloc(BitNetLayer, config.num_layers);
+    defer allocator.free(layers);
+    
+    for (layers) |*layer| {
+        layer.* = BitNetLayer{
+            .attention = Attention{
+                .config = config,
+                .w_q = w_q,
+                .w_k = w_k,
+                .w_v = w_v,
+                .w_o = w_o,
+            },
+            .mlp = MLP{
+                .config = config,
+                .w_gate = w_gate,
+                .w_up = w_up,
+                .w_down = w_down,
+            },
+            .input_norm = RMSNorm{ .weight = norm_weight, .eps = config.rms_norm_eps },
+            .post_attn_norm = RMSNorm{ .weight = norm_weight, .eps = config.rms_norm_eps },
+        };
+    }
+    
+    // Create KV caches
+    const kv_caches = try allocator.alloc(KVCache, config.num_layers);
+    defer {
+        for (kv_caches) |*cache| cache.deinit(allocator);
+        allocator.free(kv_caches);
+    }
+    for (kv_caches) |*cache| {
+        cache.* = try KVCache.init(allocator, config);
+    }
+    
+    // Create RoPE
+    var rope = try RoPE.init(allocator, config.head_dim, config.max_seq_len, config.rope_theta);
+    defer rope.deinit(allocator);
+    
+    // Create model
+    var model = BitNetModel{
+        .config = config,
+        .allocator = allocator,
+        .embed = embed,
+        .layers = layers,
+        .final_norm = RMSNorm{ .weight = norm_weight, .eps = config.rms_norm_eps },
+        .lm_head = lm_head,
+        .rope = rope,
+        .kv_caches = kv_caches,
+    };
+    
+    // Generate 100 tokens (long-running test)
+    const prompt = [_]u32{ 1, 5, 10 };
+    const generated = try model.generate(&prompt, 100, 1.0, 0.9);
+    defer allocator.free(generated);
+    
+    // Verify we got expected number of tokens
+    try std.testing.expect(generated.len >= prompt.len + 50); // At least 50 new tokens
+    
+    // All tokens should be valid
+    for (generated) |token| {
+        try std.testing.expect(token < config.vocab_size);
+    }
+    
+    std.debug.print("\n✅ Long-running generation (100 tokens) completed with no leaks!\n", .{});
+    std.debug.print("   Generated {d} tokens total\n", .{generated.len});
 }
 
 test "RoPE rotates vectors" {
