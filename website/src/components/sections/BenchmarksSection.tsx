@@ -1,8 +1,73 @@
 "use client";
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { useI18n } from '../../i18n/context'
 import Section from '../Section'
 import ComparisonChart from '../charts/ComparisonChart'
+import { useRef, useEffect, useState } from 'react'
+
+// Animated counter component
+function AnimatedValue({ value, delay }: { value: string; delay: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true })
+  const [displayValue, setDisplayValue] = useState('0')
+  
+  useEffect(() => {
+    if (!isInView) return
+    
+    // Extract numeric part and suffix (e.g., "8x" -> 8, "x")
+    const match = value.match(/^([\d.]+)(.*)$/)
+    if (!match) {
+      setDisplayValue(value)
+      return
+    }
+    
+    const targetNum = parseFloat(match[1])
+    const suffix = match[2]
+    const duration = 1500
+    const startTime = Date.now() + delay * 1000
+    
+    const animate = () => {
+      const now = Date.now()
+      if (now < startTime) {
+        requestAnimationFrame(animate)
+        return
+      }
+      
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
+      const current = targetNum * eased
+      
+      if (Number.isInteger(targetNum)) {
+        setDisplayValue(Math.round(current) + suffix)
+      } else {
+        setDisplayValue(current.toFixed(1) + suffix)
+      }
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+    
+    requestAnimationFrame(animate)
+  }, [isInView, value, delay])
+  
+  return (
+    <div ref={ref} style={{ 
+      fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', 
+      fontWeight: 600, 
+      color: 'var(--accent)', 
+      marginBottom: '0.5rem',
+      background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text'
+    }}>
+      {displayValue}
+    </div>
+  )
+}
 
 export default function BenchmarksSection() {
   const { t } = useI18n()
@@ -21,7 +86,7 @@ export default function BenchmarksSection() {
         marginTop: '3rem', 
         marginBottom: '4rem',
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1rem',
         maxWidth: '1000px',
         margin: '3rem auto 4rem'
@@ -36,16 +101,7 @@ export default function BenchmarksSection() {
             transition={{ delay: i * 0.1, duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <div style={{ 
-              fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', 
-              fontWeight: 600, 
-              color: 'var(--accent)', 
-              marginBottom: '0.5rem',
-              background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>{item.value}</div>
+            <AnimatedValue value={item.value} delay={i * 0.15} />
             <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' }}>{item.label}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.4 }}>{item.desc}</div>
           </motion.div>
