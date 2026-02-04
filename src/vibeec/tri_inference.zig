@@ -2049,6 +2049,21 @@ pub fn main() !void {
     for (generated[0..i]) |t| {
         std.debug.print("{d} ", .{t});
     }
+    
+    // Try to decode tokens to text using simple vocab lookup
+    std.debug.print("\n\nDecoded text: ", .{});
+    for (generated[0..i]) |t| {
+        // Simple decode: map common tokens
+        const text = switch (t) {
+            0 => "<pad>",
+            1 => "<s>",
+            2 => "</s>",
+            3...31 => " ",
+            32 => " ",
+            else => "?",
+        };
+        std.debug.print("{s}", .{text});
+    }
 
     std.debug.print("\n\nSTATS\n", .{});
     std.debug.print("  Tokens generated: {d}\n", .{i});

@@ -55,6 +55,13 @@
 │  ✅ KV cache: 33% TTFT reduction                                │
 │  ✅ Version comparison: 298x vs v1.0 baseline                   │
 │                                                                 │
+│  IN PROGRESS (Phase 5c - SIMD-16 + Tokenizer)                   │
+│  ═════════════════════════════════════════════                  │
+│  ✅ SIMD-16 matmul integrated (small matrices)                  │
+│  ✅ Tokenizer spec created (tokenizer_integration.vibee)        │
+│  ⏳ SIMD-16 parallel worker (large matrices)                    │
+│  ⏳ Full tokenizer integration (text output)                    │
+│                                                                 │
 │  NEXT: Phase 7 - ASIC Design Prep                               │
 │  ═══════════════════════════════════                            │
 │  ⏳ RTL synthesis for ternary ALU                               │
