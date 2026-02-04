@@ -7,6 +7,7 @@
 const std = @import("std");
 const ternary = @import("ternary_weights.zig");
 const flash = @import("flash_attention.zig");
+const simd16 = @import("simd_ternary_matmul.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -416,9 +417,9 @@ pub fn parallelTernaryMatmul(
     cols: usize,
     scale: f32,
 ) void {
-    // For small matrices, use single-threaded batch SIMD (fastest)
+    // For small matrices, use single-threaded SIMD-16 (fastest)
     if (rows < MIN_PARALLEL_ROWS) {
-        ternary.batchTernaryMatVec(output, weights, input, rows, cols);
+        simd16.simdTernaryMatmulOpt16(output, weights, input, rows, cols);
         for (output) |*o| o.* *= scale;
         return;
     }

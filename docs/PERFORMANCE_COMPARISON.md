@@ -196,10 +196,16 @@ Trinity now supports converting any GGUF model to ternary .tri format:
 - Compression vs F32: 16x
 
 **Next optimizations needed:**
-1. SIMD-16 ternary matmul (currently scalar)
-2. Flash Attention integration
-3. Streaming loader for large models
-4. Parallel layer processing
+1. SIMD-16 parallel worker (currently 8-wide in parallel mode)
+2. Flash Attention integration in inference
+3. Streaming loader implementation
+4. Tokenizer integration for text output
+
+**Current optimization status:**
+- SIMD-16 matmul: Integrated for small matrices (<512 rows)
+- Parallel inference: Uses 8-wide SIMD workers
+- Tokenizer spec: Created (specs/tri/tokenizer_integration.vibee)
+- Streaming spec: Created (specs/tri/streaming_loader.vibee)
 
 ### 7.2 Performance Targets
 

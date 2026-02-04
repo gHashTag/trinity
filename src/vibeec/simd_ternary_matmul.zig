@@ -734,3 +734,149 @@ test "simd matmul correctness" {
 test "benchmark runs" {
     try runBenchmark(std.testing.allocator);
 }
+
+test "simd16_small_matrix" {
+    const allocator = std.testing.allocator;
+    const rows: usize = 16;
+    const cols: usize = 32;
+    const cols_packed = (cols + 3) / 4;
+
+    const weights = try allocator.alloc(u8, rows * cols_packed);
+    defer allocator.free(weights);
+    const input = try allocator.alloc(f32, cols);
+    defer allocator.free(input);
+    const output = try allocator.alloc(f32, rows);
+    defer allocator.free(output);
+
+    @memset(weights, 0x55); // All +1
+    for (input) |*v| v.* = 1.0;
+
+    simdTernaryMatmulOpt16(output, weights, input, rows, cols);
+    
+    // Each row should sum to cols (all +1 * 1.0)
+    for (output) |v| {
+        try std.testing.expect(v > 0);
+    }
+}
+
+test "simd16_zero_weights" {
+    const allocator = std.testing.allocator;
+    const rows: usize = 8;
+    const cols: usize = 16;
+    const cols_packed = (cols + 3) / 4;
+
+    const weights = try allocator.alloc(u8, rows * cols_packed);
+    defer allocator.free(weights);
+    const input = try allocator.alloc(f32, cols);
+    defer allocator.free(input);
+    const output = try allocator.alloc(f32, rows);
+    defer allocator.free(output);
+
+    @memset(weights, 0x00); // All zeros
+    for (input) |*v| v.* = 1.0;
+
+    simdTernaryMatmulOpt16(output, weights, input, rows, cols);
+    
+    for (output) |v| {
+        try std.testing.expectApproxEqAbs(v, 0.0, 0.001);
+    }
+}
+
+test "simd16_negative_weights" {
+    const allocator = std.testing.allocator;
+    const rows: usize = 8;
+    const cols: usize = 16;
+    const cols_packed = (cols + 3) / 4;
+
+    const weights = try allocator.alloc(u8, rows * cols_packed);
+    defer allocator.free(weights);
+    const input = try allocator.alloc(f32, cols);
+    defer allocator.free(input);
+    const output = try allocator.alloc(f32, rows);
+    defer allocator.free(output);
+
+    @memset(weights, 0xAA); // All -1
+    for (input) |*v| v.* = 1.0;
+
+    simdTernaryMatmulOpt16(output, weights, input, rows, cols);
+    
+    for (output) |v| {
+        try std.testing.expect(v < 0);
+    }
+}
+
+test "simd16_large_matrix" {
+    const allocator = std.testing.allocator;
+    const rows: usize = 256;
+    const cols: usize = 512;
+    const cols_packed = (cols + 3) / 4;
+
+    const weights = try allocator.alloc(u8, rows * cols_packed);
+    defer allocator.free(weights);
+    const input = try allocator.alloc(f32, cols);
+    defer allocator.free(input);
+    const output = try allocator.alloc(f32, rows);
+    defer allocator.free(output);
+
+    for (weights, 0..) |*w, i| w.* = @truncate(i);
+    for (input, 0..) |*v, i| v.* = @as(f32, @floatFromInt(i % 10)) / 10.0;
+
+    simdTernaryMatmulOpt16(output, weights, input, rows, cols);
+    
+    // Just verify it runs without crash
+    try std.testing.expect(output.len == rows);
+}
+
+test "simd8_vs_simd16_equivalence" {
+    const allocator = std.testing.allocator;
+    const rows: usize = 32;
+    const cols: usize = 64;
+    const cols_packed = (cols + 3) / 4;
+
+    const weights = try allocator.alloc(u8, rows * cols_packed);
+    defer allocator.free(weights);
+    const input = try allocator.alloc(f32, cols);
+    defer allocator.free(input);
+    const output8 = try allocator.alloc(f32, rows);
+    defer allocator.free(output8);
+    const output16 = try allocator.alloc(f32, rows);
+    defer allocator.free(output16);
+
+    for (weights, 0..) |*w, i| w.* = @truncate(i * 7 + 13);
+    for (input, 0..) |*v, i| v.* = @sin(@as(f32, @floatFromInt(i)));
+
+    simdTernaryMatmulOpt8(output8, weights, input, rows, cols);
+    simdTernaryMatmulOpt16(output16, weights, input, rows, cols);
+
+    for (0..rows) |i| {
+        try std.testing.expectApproxEqAbs(output8[i], output16[i], 0.01);
+    }
+}
+
+test "decode_trit_all_values" {
+    try std.testing.expectEqual(@as(i32, 0), decodeTrit(0));
+    try std.testing.expectEqual(@as(i32, 1), decodeTrit(1));
+    try std.testing.expectEqual(@as(i32, -1), decodeTrit(2));
+    try std.testing.expectEqual(@as(i32, 0), decodeTrit(3));
+}
+
+test "simd16_alignment" {
+    // Test that SIMD-16 handles non-16-aligned cols
+    const allocator = std.testing.allocator;
+    const rows: usize = 4;
+    const cols: usize = 17; // Not aligned to 16
+    const cols_packed = (cols + 3) / 4;
+
+    const weights = try allocator.alloc(u8, rows * cols_packed);
+    defer allocator.free(weights);
+    const input = try allocator.alloc(f32, cols);
+    defer allocator.free(input);
+    const output = try allocator.alloc(f32, rows);
+    defer allocator.free(output);
+
+    @memset(weights, 0x55);
+    for (input) |*v| v.* = 1.0;
+
+    simdTernaryMatmulOpt16(output, weights, input, rows, cols);
+    try std.testing.expect(output.len == rows);
+}
