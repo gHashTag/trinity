@@ -30,6 +30,7 @@ pub const Command = enum {
     gen,
     check,
     pas,
+    convert,  // GGUF -> TRI converter
     help,
     version,
     unknown,
@@ -72,10 +73,10 @@ pub const CLI = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator, force_color: ?bool) Self {
-        var stdout_file = std.fs.File.stdout();
+        const stdout = std.io.getStdOut();
         return Self{
             .allocator = allocator,
-            .writer = ColorWriter.init(stdout_file.deprecatedWriter().any(), force_color),
+            .writer = ColorWriter.init(stdout.writer().any(), force_color),
             .options = CLIOptions{},
         };
     }
@@ -87,6 +88,7 @@ pub const CLI = struct {
             .gen => self.executeGen(),
             .check => self.executeCheck(),
             .pas => self.executePAS(),
+            .convert => self.executeConvert(),
             .help => self.printHelp(),
             .version => self.printVersion(),
             .unknown => self.printUnknownCommand(),
@@ -116,6 +118,8 @@ pub const CLI = struct {
                     i += 1;
                     opts.subcommand = args[i];
                 }
+            } else if (std.mem.eql(u8, arg, "convert") or std.mem.eql(u8, arg, "gguf-convert")) {
+                opts.command = .convert;
             } else if (std.mem.eql(u8, arg, "help") or std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
                 opts.command = .help;
             } else if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-V")) {
@@ -271,6 +275,50 @@ pub const CLI = struct {
         return 0;
     }
 
+    fn executeConvert(self: *Self) !u8 {
+        const gguf_to_tri = @import("gguf_to_tri.zig");
+        
+        if (self.options.input_file == null) {
+            try self.writer.printColored(.red, "error", .{});
+            try self.writer.print(": no input GGUF file specified\n", .{});
+            try self.writer.print("\nUsage: vibeec convert <input.gguf> [output.tri]\n", .{});
+            return 1;
+        }
+
+        const input_path = self.options.input_file.?;
+        
+        // Generate output path if not specified
+        const output_path = blk: {
+            if (self.options.output_dir.len > 0 and !std.mem.eql(u8, self.options.output_dir, "./generated")) {
+                break :blk self.options.output_dir;
+            }
+            // Replace .gguf with .tri
+            const stem = std.fs.path.stem(input_path);
+            var buf: [256]u8 = undefined;
+            break :blk std.fmt.bufPrint(&buf, "{s}.tri", .{stem}) catch "output.tri";
+        };
+
+        try self.writer.print("\n", .{});
+        try self.writer.printColored(.cyan, "═══ GGUF → TRI CONVERTER ═══", .{});
+        try self.writer.print("\n", .{});
+        try self.writer.print("φ² + 1/φ² = 3 = TRINITY\n\n", .{});
+        
+        try self.writer.print("Input:  {s}\n", .{input_path});
+        try self.writer.print("Output: {s}\n\n", .{output_path});
+
+        // Run conversion
+        gguf_to_tri.convertGgufToTri(self.allocator, input_path, output_path) catch |err| {
+            try self.writer.printColored(.red, "error", .{});
+            try self.writer.print(": conversion failed: {}\n", .{err});
+            return 1;
+        };
+
+        try self.writer.printColored(.green, "✓", .{});
+        try self.writer.print(" Conversion complete!\n", .{});
+
+        return 0;
+    }
+
     fn executePAS(self: *Self) !u8 {
         try self.writer.printColored(.cyan, "═══ PAS DAEMON V34 ═══", .{});
         try self.writer.print("\n\n", .{});
@@ -325,6 +373,7 @@ pub const CLI = struct {
         try self.writer.bold("COMMANDS:\n");
         try self.printCommand("gen", "Generate code from .vibee specification");
         try self.printCommand("check", "Validate .vibee specification");
+        try self.printCommand("convert", "Convert GGUF model to ternary .tri format");
         try self.printCommand("pas", "PAS analysis commands");
         try self.printCommand("help", "Show this help message");
         try self.printCommand("version", "Show version information");

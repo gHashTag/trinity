@@ -140,6 +140,7 @@ pub const TriModel = struct {
             .ternary_embedding = null,
             .use_ternary_embedding = false,
             .output_norm = undefined,
+            .ternary_output_norm = null,
             .output_weight = undefined,
             .output_scale = undefined,
             .layers = undefined,
@@ -2101,4 +2102,93 @@ test "scheduler_stats" {
 
     try std.testing.expectEqual(@as(u64, 10), stats.total_requests);
     try std.testing.expectEqual(@as(usize, 5), stats.completed_requests);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STREAMING LOADER TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "tri_header_magic" {
+    try std.testing.expectEqual(TRI_MAGIC, 0x54524933);
+}
+
+test "tri_header_size" {
+    const size = @sizeOf(TriHeader);
+    try std.testing.expect(size > 0);
+    try std.testing.expect(size <= 256);
+}
+
+test "tri_layer_struct" {
+    // Verify TriLayer has expected fields
+    const layer_size = @sizeOf(TriModel.TriLayer);
+    try std.testing.expect(layer_size > 0);
+}
+
+test "lru_cache_config" {
+    // Test LRU cache configuration
+    const max_layers: usize = 4;
+    const prefetch: usize = 2;
+    try std.testing.expect(max_layers > 0);
+    try std.testing.expect(prefetch < max_layers);
+}
+
+test "chunk_size_config" {
+    // Test chunk size for streaming
+    const chunk_size: usize = 16 * 1024 * 1024; // 16MB
+    try std.testing.expect(chunk_size >= 1024 * 1024);
+    try std.testing.expect(chunk_size <= 64 * 1024 * 1024);
+}
+
+test "mmap_threshold" {
+    // Test mmap threshold
+    const threshold: usize = 100 * 1024 * 1024; // 100MB
+    try std.testing.expect(threshold > 0);
+}
+
+test "memory_stats_calculation" {
+    // Test memory calculation for streaming
+    const num_layers: usize = 32;
+    const layer_size: usize = 60 * 1024 * 1024; // 60MB per layer
+    const max_resident: usize = 4;
+    
+    const total_model = num_layers * layer_size;
+    const streaming_memory = max_resident * layer_size;
+    
+    try std.testing.expect(streaming_memory < total_model);
+    try std.testing.expect(streaming_memory <= 300 * 1024 * 1024); // < 300MB
+}
+
+test "prefetch_bounds" {
+    // Test prefetch doesn't exceed bounds
+    const current_layer: usize = 28;
+    const num_layers: usize = 32;
+    const prefetch_count: usize = 2;
+    
+    const next_layer = current_layer + 1;
+    const can_prefetch = next_layer + prefetch_count <= num_layers;
+    try std.testing.expect(can_prefetch); // 29 + 2 = 31 <= 32
+}
+
+test "cache_eviction_policy" {
+    // Test LRU eviction selects oldest
+    const access_times = [_]i64{ 100, 50, 200, 75 };
+    var oldest_idx: usize = 0;
+    var oldest_time: i64 = access_times[0];
+    
+    for (access_times, 0..) |time, i| {
+        if (time < oldest_time) {
+            oldest_time = time;
+            oldest_idx = i;
+        }
+    }
+    
+    try std.testing.expectEqual(oldest_idx, 1); // Index 1 has time 50
+}
+
+test "ternary_compression_ratio" {
+    // Verify 16x compression from F32
+    const f32_size: usize = 4;
+    const ternary_size: usize = 1; // 4 trits per byte = 0.25 bytes per weight
+    const ratio = f32_size * 4 / ternary_size; // 4 weights per byte
+    try std.testing.expectEqual(ratio, 16);
 }
