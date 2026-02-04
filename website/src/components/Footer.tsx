@@ -114,7 +114,7 @@ export default function Footer() {
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <li>
-                <a href="https://github.com/gHashTag/vibee-lang" target="_blank" rel="noopener" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }}>
+                <a href="https://github.com/gHashTag/trinity" target="_blank" rel="noopener" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }}>
                   GitHub
                 </a>
               </li>

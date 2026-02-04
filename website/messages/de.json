@@ -102,7 +102,7 @@
     "title": "Erreichte <span class=\"grad\">Singularität</span>",
     "sub": "Binäre Emulation ist tot. Trinity-Projekt wechselte zu nativer Ternarität.",
     "verifyLink": "Benchmarks auf GitHub Verifizieren ↗",
-    "url": "https://github.com/gHashTag/vibee-lang",
+    "url": "https://github.com/gHashTag/trinity",
     "techTitle": "Phase 5.0 Tech (Verifiziert)",
     "techs": [
       { "title": "SU(3) Core", "desc": "Unitäre Phasenrotationen im Gell-Mann-Raum", "tests": "Verilog Verifiziert ✓" },
@@ -140,7 +140,7 @@
       ]
     },
     "verifyLink": "Benchmarks auf GitHub Verifizieren ↗",
-    "url": "https://github.com/gHashTag/vibee-lang"
+    "url": "https://github.com/gHashTag/trinity"
   },
   "mining": {
     "title": "Mining <span class=\"grad\">Industrie</span> 2026",
@@ -321,7 +321,7 @@
     "contact": {
       "email": "raoffonom@icloud.com",
       "website": "https://trinity-site-one.vercel.app",
-      "github": "https://github.com/gHashTag/vibee-lang"
+      "github": "https://github.com/gHashTag/trinity"
     }
   },
   "bitnetProof": {
@@ -389,7 +389,7 @@
       { "label": "ROI Jahr 3", "value": "635%" }
     ],
     "cta": "Vollständigen Bericht auf GitHub lesen",
-    "ctaUrl": "https://github.com/gHashTag/vibee-lang/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
   },
   "mysticism": {
     "title": "Mathematische Grundlagen",
