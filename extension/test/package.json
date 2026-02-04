@@ -1,0 +1,16 @@
+{
+  "name": "neodetect-e2e-tests",
+  "version": "1.0.0",
+  "description": "E2E tests for NeoDetect extension",
+  "scripts": {
+    "test": "node wasm-test.js",
+    "test:wasm": "node wasm-test.js",
+    "test:browser": "node test-extension.js",
+    "screenshots": "node capture-screenshots.js",
+    "validate": "node validate-fingerprint.js"
+  },
+  "dependencies": {
+    "playwright": "^1.58.1",
+    "puppeteer": "^22.0.0"
+  }
+}

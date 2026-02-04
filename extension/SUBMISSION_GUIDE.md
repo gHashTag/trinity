@@ -71,10 +71,10 @@ Copy from `extension/chrome/STORE_LISTING.md`:
 - Does NOT transmit data externally
 - All processing happens locally
 
-**Privacy Policy URL**: 
-Host PRIVACY_POLICY.md at a public URL, e.g.:
-- https://github.com/gHashTag/trinity/blob/main/extension/chrome/PRIVACY_POLICY.md
-- Or create a GitHub Pages site
+**Privacy Policy URL** (copy this exactly):
+```
+https://github.com/gHashTag/trinity/blob/main/extension/chrome/PRIVACY_POLICY.md
+```
 
 ### Step 4: Distribution Tab
 
