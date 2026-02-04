@@ -61,6 +61,92 @@ pub const TensorInfo = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// KV-CACHE (Key-Value Cache for Attention)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const KVCache = struct {
+    allocator: std.mem.Allocator,
+    num_layers: usize,
+    num_heads: usize,
+    head_dim: usize,
+    max_seq_len: usize,
+    current_len: usize,
+    
+    // Cache storage: [layer][position][head][dim]
+    // Flattened to: [layer * max_seq * hidden]
+    k_cache: []f32,
+    v_cache: []f32,
+    
+    pub fn init(allocator: std.mem.Allocator, config: BitNetConfig, max_seq_len: usize) !KVCache {
+        const num_layers = config.num_hidden_layers;
+        const num_heads = config.num_attention_heads;
+        const head_dim = config.headDim();
+        const hidden = config.hidden_size;
+        
+        // Allocate cache for all layers and positions
+        const cache_size = num_layers * max_seq_len * hidden;
+        
+        return KVCache{
+            .allocator = allocator,
+            .num_layers = num_layers,
+            .num_heads = num_heads,
+            .head_dim = head_dim,
+            .max_seq_len = max_seq_len,
+            .current_len = 0,
+            .k_cache = try allocator.alloc(f32, cache_size),
+            .v_cache = try allocator.alloc(f32, cache_size),
+        };
+    }
+    
+    pub fn deinit(self: *KVCache) void {
+        self.allocator.free(self.k_cache);
+        self.allocator.free(self.v_cache);
+    }
+    
+    pub fn reset(self: *KVCache) void {
+        self.current_len = 0;
+    }
+    
+    /// Store K and V for a layer at current position
+    pub fn store(self: *KVCache, layer_idx: usize, k: []const f32, v: []const f32) void {
+        if (self.current_len >= self.max_seq_len) return;
+        
+        const hidden = self.num_heads * self.head_dim;
+        const layer_offset = layer_idx * self.max_seq_len * hidden;
+        const pos_offset = self.current_len * hidden;
+        const start = layer_offset + pos_offset;
+        
+        @memcpy(self.k_cache[start..start + hidden], k);
+        @memcpy(self.v_cache[start..start + hidden], v);
+    }
+    
+    /// Get K for a layer at a specific position
+    pub fn getK(self: *KVCache, layer_idx: usize, pos: usize) []f32 {
+        const hidden = self.num_heads * self.head_dim;
+        const layer_offset = layer_idx * self.max_seq_len * hidden;
+        const pos_offset = pos * hidden;
+        const start = layer_offset + pos_offset;
+        return self.k_cache[start..start + hidden];
+    }
+    
+    /// Get V for a layer at a specific position
+    pub fn getV(self: *KVCache, layer_idx: usize, pos: usize) []f32 {
+        const hidden = self.num_heads * self.head_dim;
+        const layer_offset = layer_idx * self.max_seq_len * hidden;
+        const pos_offset = pos * hidden;
+        const start = layer_offset + pos_offset;
+        return self.v_cache[start..start + hidden];
+    }
+    
+    /// Increment position after storing
+    pub fn advance(self: *KVCache) void {
+        if (self.current_len < self.max_seq_len) {
+            self.current_len += 1;
+        }
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // LAYER WEIGHTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -112,6 +198,9 @@ pub const BitNetFullModel = struct {
     // Ternary buffers (reused)
     ternary_weights: []i8,
     
+    // KV-Cache for attention
+    kv_cache: ?KVCache,
+    
     pub fn init(allocator: std.mem.Allocator, config: BitNetConfig) !BitNetFullModel {
         const hidden = config.hidden_size;
         const inter = config.intermediate_size;
@@ -150,6 +239,7 @@ pub const BitNetFullModel = struct {
             .ffn_intermediate = try allocator.alloc(f32, inter),
             .logits = try allocator.alloc(f32, vocab),
             .ternary_weights = try allocator.alloc(i8, max_weight_size),
+            .kv_cache = null,
         };
     }
     
@@ -180,6 +270,23 @@ pub const BitNetFullModel = struct {
         self.allocator.free(self.ffn_intermediate);
         self.allocator.free(self.logits);
         self.allocator.free(self.ternary_weights);
+        
+        // Free KV-cache
+        if (self.kv_cache) |*cache| {
+            cache.deinit();
+        }
+    }
+    
+    /// Initialize KV-cache for generation
+    pub fn initKVCache(self: *BitNetFullModel, max_seq_len: usize) !void {
+        self.kv_cache = try KVCache.init(self.allocator, self.config, max_seq_len);
+    }
+    
+    /// Reset KV-cache for new generation
+    pub fn resetKVCache(self: *BitNetFullModel) void {
+        if (self.kv_cache) |*cache| {
+            cache.reset();
+        }
     }
     
     /// Load model from safetensors file
@@ -338,7 +445,7 @@ pub const BitNetFullModel = struct {
         }
     }
     
-    /// Forward pass for a single token
+    /// Forward pass for a single token with KV-cache
     pub fn forward(self: *BitNetFullModel, token_id: u32, position: usize) void {
         const hidden = self.config.hidden_size;
         const inter = self.config.intermediate_size;
@@ -354,7 +461,7 @@ pub const BitNetFullModel = struct {
         @memcpy(self.hidden_state, self.embed_tokens[embed_start..embed_start + hidden]);
         
         // 2. Process each layer
-        for (self.layers) |layer| {
+        for (self.layers, 0..) |layer, layer_idx| {
             // Skip if layer not loaded
             if (layer.q_proj.len == 0) continue;
             
@@ -363,7 +470,7 @@ pub const BitNetFullModel = struct {
             defer self.allocator.free(normed);
             rmsNorm(self.hidden_state, layer.input_layernorm, normed, self.config.rms_norm_eps);
             
-            // Quantize and compute Q, K, V
+            // Compute Q, K, V
             const q = self.allocator.alloc(f32, hidden) catch return;
             defer self.allocator.free(q);
             const k_buf = self.allocator.alloc(f32, hidden) catch return;
@@ -371,7 +478,7 @@ pub const BitNetFullModel = struct {
             const v_buf = self.allocator.alloc(f32, hidden) catch return;
             defer self.allocator.free(v_buf);
             
-            // Q projection (use F32 weights directly - QAT model)
+            // Q projection
             f32MatVec(layer.q_proj, normed, q, hidden, hidden);
             
             // K projection
@@ -386,29 +493,70 @@ pub const BitNetFullModel = struct {
                 applyRoPE(q[start..start + head_dim], k_buf[start..start + head_dim], position, head_dim, self.config.rope_theta);
             }
             
+            // Store K, V in cache
+            if (self.kv_cache) |*cache| {
+                cache.store(layer_idx, k_buf, v_buf);
+            }
+            
             // Inner attention LayerNorm
             rmsNorm(q, layer.inner_attn_ln, q, self.config.rms_norm_eps);
             
-            // Simplified self-attention (single position)
-            const attn_weights = self.allocator.alloc(f32, num_heads) catch return;
+            // Full self-attention with KV-cache
+            const seq_len = if (self.kv_cache) |cache| cache.current_len + 1 else 1;
+            const attn_weights = self.allocator.alloc(f32, seq_len * num_heads) catch return;
             defer self.allocator.free(attn_weights);
             
+            // Compute attention scores for all positions
             for (0..num_heads) |h| {
-                const start = h * head_dim;
-                var dot: f32 = 0.0;
-                for (0..head_dim) |d| {
-                    dot += q[start + d] * k_buf[start + d];
+                const h_start = h * head_dim;
+                
+                for (0..seq_len) |pos| {
+                    var dot: f32 = 0.0;
+                    
+                    if (pos < position) {
+                        // Use cached K
+                        if (self.kv_cache) |*cache| {
+                            const cached_k = cache.getK(layer_idx, pos);
+                            for (0..head_dim) |d| {
+                                dot += q[h_start + d] * cached_k[h_start + d];
+                            }
+                        }
+                    } else {
+                        // Current position K
+                        for (0..head_dim) |d| {
+                            dot += q[h_start + d] * k_buf[h_start + d];
+                        }
+                    }
+                    
+                    attn_weights[h * seq_len + pos] = dot / @sqrt(@as(f32, @floatFromInt(head_dim)));
                 }
-                attn_weights[h] = dot / @sqrt(@as(f32, @floatFromInt(head_dim)));
+                
+                // Softmax per head
+                softmax(attn_weights[h * seq_len .. (h + 1) * seq_len]);
             }
-            softmax(attn_weights);
             
             // Weighted sum of V
             @memset(self.attn_output, 0.0);
             for (0..num_heads) |h| {
-                const start = h * head_dim;
-                for (0..head_dim) |d| {
-                    self.attn_output[start + d] += attn_weights[h] * v_buf[start + d];
+                const h_start = h * head_dim;
+                
+                for (0..seq_len) |pos| {
+                    const weight = attn_weights[h * seq_len + pos];
+                    
+                    if (pos < position) {
+                        // Use cached V
+                        if (self.kv_cache) |*cache| {
+                            const cached_v = cache.getV(layer_idx, pos);
+                            for (0..head_dim) |d| {
+                                self.attn_output[h_start + d] += weight * cached_v[h_start + d];
+                            }
+                        }
+                    } else {
+                        // Current position V
+                        for (0..head_dim) |d| {
+                            self.attn_output[h_start + d] += weight * v_buf[h_start + d];
+                        }
+                    }
                 }
             }
             
@@ -498,7 +646,7 @@ pub const BitNetFullModel = struct {
         return 0;
     }
     
-    /// Generate text
+    /// Generate text with KV-cache
     pub fn generate(
         self: *BitNetFullModel,
         prompt_tokens: []const u32,
@@ -508,13 +656,24 @@ pub const BitNetFullModel = struct {
         var rng = std.Random.DefaultPrng.init(@intCast(std.time.milliTimestamp()));
         var generated = std.ArrayList(u32).init(self.allocator);
         
-        // Process prompt
+        // Initialize KV-cache if not already done
+        if (self.kv_cache == null) {
+            try self.initKVCache(prompt_tokens.len + max_new_tokens + 10);
+        }
+        self.resetKVCache();
+        
+        // Process prompt (prefill)
         for (prompt_tokens, 0..) |token, pos| {
             self.forward(token, pos);
             try generated.append(token);
+            
+            // Advance cache after each token
+            if (self.kv_cache) |*cache| {
+                cache.advance();
+            }
         }
         
-        // Generate new tokens
+        // Generate new tokens (decode)
         var pos = prompt_tokens.len;
         for (0..max_new_tokens) |_| {
             const next_token = self.sampleToken(temperature, &rng);
@@ -524,6 +683,12 @@ pub const BitNetFullModel = struct {
             
             try generated.append(next_token);
             self.forward(next_token, pos);
+            
+            // Advance cache
+            if (self.kv_cache) |*cache| {
+                cache.advance();
+            }
+            
             pos += 1;
         }
         
