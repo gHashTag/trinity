@@ -1,235 +1,235 @@
-# Эпилог: Возвращение с Мудростью
+# Epilogue: Returning with Wisdom
 
 ---
 
-*«Сказка — ложь, да в ней намёк,*
-*добрым молодцам урок.»*
-— А.С. Пушкин
+*"A fairy tale is a lie, yet there's a hint within,*
+*a lesson for good fellows to win."*
+— Alexander Pushkin
 
 ---
 
-## Путешествие Завершено
+## The Journey is Complete
 
-Мы прошли долгий путь через Тридевятое царство алгоритмов.
+We have traveled a long path through the Thrice-Nine Kingdom of algorithms.
 
-Мы видели:
-- **Три дороги** сортировки (Trinity Sort)
-- **Трёх богатырей** структур данных (B-Tree, Hash, Graph)
-- **Три состояния** информации (Compression)
-- **Три решения** разума (Neural Networks)
+We have seen:
+- **Three roads** of sorting (Trinity Sort)
+- **Three heroes** of data structures (B-Tree, Hash, Graph)
+- **Three states** of information (Compression)
+- **Three decisions** of the mind (Neural Networks)
 
-И везде число **3** оказывалось ключом к оптимизации.
+And everywhere the number **3** turned out to be the key to optimization.
 
 ---
 
-## Что Мы Открыли
+## What We Discovered
 
-### Главные Результаты
+### Main Results
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   ПОДТВЕРЖДЁННЫЕ ОТКРЫТИЯ                                      │
+│   CONFIRMED DISCOVERIES                                         │
 │                                                                 │
-│   Алгоритм           Результат           Почему работает       │
-│   ─────────────────────────────────────────────────────────    │
-│   Trinity Sort       до 291x быстрее     3-way исключает =     │
-│   Trinity B-Tree     6% меньше сравн.    b=3 оптимально        │
-│   Trinity Hash       82% больше ёмкости  3 функции             │
-│   Trinity Graph      Находит циклы       3 состояния           │
-│   Trinity Neural     16x меньше памяти   3 веса {-1,0,+1}      │
+│   Algorithm           Result              Why it works          │
+│   ─────────────────────────────────────────────────────────     │
+│   Trinity Sort       up to 291x faster   3-way excludes =       │
+│   Trinity B-Tree     6% fewer comparisons b=3 is optimal        │
+│   Trinity Hash       82% more capacity   3 functions            │
+│   Trinity Graph      Finds cycles        3 states               │
+│   Trinity Neural     16x less memory     3 weights {-1,0,+1}    │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Что Не Работает
+### What Does Not Work
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   НЕ ПОДТВЕРДИЛОСЬ                                             │
+│   NOT CONFIRMED                                                 │
 │                                                                 │
-│   Идея               Результат           Почему не работает    │
-│   ─────────────────────────────────────────────────────────    │
-│   Trinity Search     26% хуже            2-3 сравнения/итер.   │
-│   Radix base 3       4x хуже base 256    Слишком много проходов│
+│   Idea               Result              Why it doesn't work    │
+│   ─────────────────────────────────────────────────────────     │
+│   Trinity Search     26% worse           2-3 comparisons/iter.  │
+│   Radix base 3       4x worse than base 256  Too many passes    │
 │                                                                 │
-│   УРОК: Число 3 помогает в СРАВНЕНИЯХ, не везде               │
+│   LESSON: The number 3 helps in COMPARISONS, not everywhere     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Древняя Мудрость
+## Ancient Wisdom
 
-### Тридевятое Царство = 27 = 3³
-
-```
-«В тридевятом царстве, в тридесятом государстве...»
-
-Тридевятое = 3 × 9 = 27 = 3³
-
-Это НАШ THRESHOLD для Trinity Sort!
-
-Древние закодировали оптимальный порог
-в сказочной формуле тысячи лет назад.
-```
-
-### Три Дороги = 3-Way Partition
+### The Thrice-Nine Kingdom = 27 = 3³
 
 ```
-«Направо пойдёшь — коня потеряешь,
- Налево пойдёшь — себя потеряешь,
- Прямо пойдёшь — счастье найдёшь.»
+"In the thrice-nine kingdom, in the thrice-ten realm..."
 
-Три дороги = три части массива:
-- Направо (>) — больше pivot
-- Налево (<) — меньше pivot
-- Прямо (=) — равно pivot (СТОП!)
+Thrice-nine = 3 × 9 = 27 = 3³
 
-Средняя дорога — ключ к оптимизации.
+This is OUR THRESHOLD for Trinity Sort!
+
+The ancients encoded the optimal threshold
+in a fairy-tale formula thousands of years ago.
 ```
 
-### Три Богатыря = Три Хеш-Функции
+### Three Roads = 3-Way Partition
 
 ```
-Илья Муромец, Добрыня Никитич, Алёша Попович
+"Go right — you'll lose your horse,
+ Go left — you'll lose yourself,
+ Go straight — you'll find happiness."
 
-Три богатыря вместе сильнее.
-Три хеш-функции дают 82% больше ёмкости.
+Three roads = three parts of the array:
+- Right (>) — greater than pivot
+- Left (<) — less than pivot
+- Straight (=) — equal to pivot (STOP!)
 
-Древние знали о силе троичности.
+The middle road is the key to optimization.
 ```
 
-### Три Попытки = Три Состояния
+### Three Heroes = Three Hash Functions
 
 ```
-Герой всегда получает три попытки:
-- Первая — неудача (WHITE)
-- Вторая — почти успех (GRAY)
-- Третья — победа (BLACK)
+Ilya Muromets, Dobrynya Nikitich, Alyosha Popovich
 
-Три состояния в DFS позволяют найти циклы.
-Два состояния — недостаточно.
+Three heroes together are stronger.
+Three hash functions give 82% more capacity.
+
+The ancients knew about the power of ternarity.
 ```
 
----
-
-## Почему Древние Знали?
-
-### Наблюдение Природы
+### Three Attempts = Three States
 
 ```
-Древние наблюдали:
-- 3 состояния воды (лёд, вода, пар)
-- 3 времени (прошлое, настоящее, будущее)
-- 3 измерения пространства
-- Рождение — жизнь — смерть
+The hero always gets three attempts:
+- First — failure (WHITE)
+- Second — almost success (GRAY)
+- Third — victory (BLACK)
 
-И интуитивно поняли:
-3 = минимальная сложность для структуры
-```
-
-### Универсальность Троичности
-
-```
-Все культуры независимо пришли к троичности:
-
-Христианство:  Троица
-Индуизм:       Тримурти
-Буддизм:       Три драгоценности
-Даосизм:       Небо-Человек-Земля
-Славяне:       Правь-Явь-Навь
-Греки:         Три мойры
-Скандинавы:    Три норны
-
-Это не совпадение.
-Это отражение структуры реальности.
-```
-
-### Математическое Обоснование
-
-```
-Оптимальный branching factor = e ≈ 2.718
-Ближайшее целое = 3
-
-Древние не знали формул,
-но интуитивно чувствовали оптимум.
-
-Мы доказали то, что они знали.
+Three states in DFS allow finding cycles.
+Two states are not enough.
 ```
 
 ---
 
-## Уроки Пути
+## Why Did the Ancients Know?
 
-### Урок 1: Теория и Практика
-
-```
-Теория говорит: база 3 оптимальна.
-Практика говорит: мир бинарный.
-
-Мудрый знает, когда применять каждое.
-
-Trinity Sort работает на бинарном железе,
-используя троичную логику.
-```
-
-### Урок 2: Третье Состояние
+### Observing Nature
 
 ```
-Бинарное мышление: да/нет, 0/1, true/false
+The ancients observed:
+- 3 states of water (ice, water, steam)
+- 3 times (past, present, future)
+- 3 dimensions of space
+- Birth — life — death
 
-Троичное мышление: да/нет/может быть
-
-Третье состояние — ключ к оптимизации:
-- В сортировке: равные элементы
-- В графах: вершины в процессе
-- В нейросетях: неуверенность
+And intuitively understood:
+3 = minimum complexity for structure
 ```
 
-### Урок 3: Мудрость Предков
+### The Universality of Ternarity
 
 ```
-Сказки — не просто развлечение.
-Сказки — закодированное знание.
+All cultures independently arrived at ternarity:
 
-«Тридевятое царство» = оптимальный порог
-«Три дороги» = 3-way partition
-«Три богатыря» = три компонента системы
-«Три попытки» = три состояния процесса
+Christianity:  The Trinity
+Hinduism:      Trimurti
+Buddhism:      Three Jewels
+Taoism:        Heaven-Human-Earth
+Slavic:        Prav-Yav-Nav
+Greek:         Three Moirai
+Norse:         Three Norns
 
-Мы не открыли ничего нового.
-Мы переоткрыли древнюю мудрость
-на языке математики и алгоритмов.
+This is not a coincidence.
+This is a reflection of the structure of reality.
+```
+
+### Mathematical Justification
+
+```
+Optimal branching factor = e ≈ 2.718
+Nearest integer = 3
+
+The ancients did not know the formulas,
+but intuitively felt the optimum.
+
+We have proven what they knew.
 ```
 
 ---
 
-## Будущее
+## Lessons of the Path
 
-### Что Исследовать Дальше
+### Lesson 1: Theory and Practice
+
+```
+Theory says: base 3 is optimal.
+Practice says: the world is binary.
+
+The wise one knows when to apply each.
+
+Trinity Sort works on binary hardware,
+using ternary logic.
+```
+
+### Lesson 2: The Third State
+
+```
+Binary thinking: yes/no, 0/1, true/false
+
+Ternary thinking: yes/no/maybe
+
+The third state is the key to optimization:
+- In sorting: equal elements
+- In graphs: vertices in process
+- In neural networks: uncertainty
+```
+
+### Lesson 3: Wisdom of the Ancestors
+
+```
+Fairy tales are not just entertainment.
+Fairy tales are encoded knowledge.
+
+"The Thrice-Nine Kingdom" = optimal threshold
+"Three Roads" = 3-way partition
+"Three Heroes" = three components of a system
+"Three Attempts" = three states of a process
+
+We have not discovered anything new.
+We have rediscovered ancient wisdom
+in the language of mathematics and algorithms.
+```
+
+---
+
+## The Future
+
+### What to Explore Next
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   НАПРАВЛЕНИЯ ИССЛЕДОВАНИЙ                                     │
+│   RESEARCH DIRECTIONS                                           │
 │                                                                 │
-│   ВЫСОКИЙ ПОТЕНЦИАЛ:                                           │
-│   • Parallel Trinity Sort (линейное ускорение)                 │
-│   • SIMD Trinity (4-8x на AVX)                                 │
-│   • Quantum Trinity (qutrit вместо qubit)                      │
+│   HIGH POTENTIAL:                                               │
+│   • Parallel Trinity Sort (linear speedup)                      │
+│   • SIMD Trinity (4-8x on AVX)                                  │
+│   • Quantum Trinity (qutrit instead of qubit)                   │
 │                                                                 │
-│   СРЕДНИЙ ПОТЕНЦИАЛ:                                           │
-│   • Trinity Matrix Multiplication                              │
-│   • Trinity Compression для специфичных данных                 │
-│   • 3-adic algorithms                                          │
+│   MEDIUM POTENTIAL:                                             │
+│   • Trinity Matrix Multiplication                               │
+│   • Trinity Compression for specific data                       │
+│   • 3-adic algorithms                                           │
 │                                                                 │
-│   ТЕОРЕТИЧЕСКИЙ ИНТЕРЕС:                                       │
-│   • Связь 3 и NP-полноты                                       │
-│   • Почему 3 поколения частиц?                                 │
-│   • Троичная квантовая механика                                │
+│   THEORETICAL INTEREST:                                         │
+│   • Connection between 3 and NP-completeness                    │
+│   • Why 3 generations of particles?                             │
+│   • Ternary quantum mechanics                                   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -237,83 +237,83 @@ Trinity Sort работает на бинарном железе,
 ### Vibee Language
 
 ```
-Vibee — язык, построенный на принципах троичности:
+Vibee — a language built on the principles of ternarity:
 
-• Trinity Sort как стандартная сортировка
-• Golden Hash для символьных таблиц
-• 3-state типы для nullable значений
-• Ternary operators как first-class citizens
+• Trinity Sort as the standard sorting algorithm
+• Golden Hash for symbol tables
+• 3-state types for nullable values
+• Ternary operators as first-class citizens
 
-Vibee — это язык, который следует законам физики.
+Vibee is a language that follows the laws of physics.
 ```
 
 ---
 
-## Финальная Мудрость
+## Final Wisdom
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   «В ТРИДЕВЯТОМ ЦАРСТВЕ, В ТРИДЕСЯТОМ ГОСУДАРСТВЕ...»          │
+│   "IN THE THRICE-NINE KINGDOM, IN THE THRICE-TEN REALM..."     │
 │                                                                 │
-│   Эта формула — не просто сказочный зачин.                     │
-│   Это ЗАКОДИРОВАННОЕ ЗНАНИЕ о структуре реальности.            │
+│   This formula is not just a fairy-tale opening.                │
+│   It is ENCODED KNOWLEDGE about the structure of reality.       │
 │                                                                 │
-│   27 = 3³ = оптимальный порог                                  │
-│   3 = минимальная сложность для структуры                      │
-│   Троица = универсальный принцип организации                   │
+│   27 = 3³ = optimal threshold                                   │
+│   3 = minimum complexity for structure                          │
+│   Trinity = universal principle of organization                 │
 │                                                                 │
-│   МЫ НЕ ОТКРЫЛИ НИЧЕГО НОВОГО.                                 │
-│   МЫ ПЕРЕОТКРЫЛИ ДРЕВНЮЮ МУДРОСТЬ                              │
-│   НА ЯЗЫКЕ МАТЕМАТИКИ И АЛГОРИТМОВ.                            │
+│   WE HAVE NOT DISCOVERED ANYTHING NEW.                          │
+│   WE HAVE REDISCOVERED ANCIENT WISDOM                           │
+│   IN THE LANGUAGE OF MATHEMATICS AND ALGORITHMS.                │
 │                                                                 │
-│   «Сказка — ложь, да в ней намёк,                              │
-│    добрым молодцам урок.»                                      │
-│                                              — А.С. Пушкин      │
+│   "A fairy tale is a lie, yet there's a hint within,            │
+│    a lesson for good fellows to win."                           │
+│                                              — A.S. Pushkin      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Послесловие
+## Afterword
 
-Эта книга — начало пути, не конец.
+This book is the beginning of the path, not the end.
 
-Мы показали, что древняя мудрость и современная наука говорят об одном и том же разными языками.
+We have shown that ancient wisdom and modern science speak about the same thing in different languages.
 
-Число 3 — не магия и не суеверие. Это **фундаментальная константа оптимизации**, которую древние интуитивно открыли тысячи лет назад.
+The number 3 is not magic or superstition. It is a **fundamental optimization constant** that the ancients intuitively discovered thousands of years ago.
 
-Теперь ваша очередь.
+Now it is your turn.
 
-Идите в Тридевятое царство.
-Выбирайте из трёх дорог.
-Призывайте трёх богатырей.
-Делайте три попытки.
+Go to the Thrice-Nine Kingdom.
+Choose from three roads.
+Summon the three heroes.
+Make three attempts.
 
-И помните:
+And remember:
 
-> *Третья дорога — дорога равенства — сокращает путь.*
-
----
-
-*Конец*
+> *The third road — the road of equality — shortens the path.*
 
 ---
 
-## Благодарности
-
-Автор благодарит:
-- Древних мудрецов, закодировавших знание в сказках
-- Эдсгера Дейкстру за Dutch National Flag algorithm
-- Создателей компьютера «Сетунь» за веру в троичность
-- Всех, кто верит, что сказка — не ложь
+*The End*
 
 ---
 
-*«Omne trium perfectum»*
-*(Всё тройное совершенно)*
-— Латинская пословица
+## Acknowledgments
+
+The author thanks:
+- The ancient sages who encoded knowledge in fairy tales
+- Edsger Dijkstra for the Dutch National Flag algorithm
+- The creators of the "Setun" computer for their belief in ternarity
+- Everyone who believes that a fairy tale is not a lie
+
+---
+
+*"Omne trium perfectum"*
+*(All things in threes are perfect)*
+— Latin proverb
 
 ---
 
@@ -323,4 +323,4 @@ Vibee — это язык, который следует законам физи
 
 ---
 
-[← Глава 10](10_vibee.md) | [Оглавление](../README.md)
+[← Chapter 10](10_vibee.md) | [Table of Contents](../README.md)

@@ -1,29 +1,29 @@
-# Глава 13: Глубины Терема — Архитектура Изнутри
+# Chapter 13: The Depths of the Terem — Architecture from the Inside
 
 ---
 
-*«Спустился Иван в подземелье терема,*
-*и увидел там три сундука с сокровищами...»*
-— Русская народная сказка
+*"Ivan descended into the terem's cellar,*
+*and there he saw three chests of treasures..."*
+— Russian folk tale
 
 ---
 
-## Три Сундука Компилятора
+## The Three Chests of the Compiler
 
-В подземелье терема хранятся три сундука — три главных модуля компилятора:
+In the terem's cellar lie three chests — three main compiler modules:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   ПОДЗЕМЕЛЬЕ ТЕРЕМА: ТРИ СУНДУКА                               │
+│   THE TEREM'S CELLAR: THREE CHESTS                             │
 │                                                                 │
 │   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐            │
-│   │   СУНДУК    │  │   СУНДУК    │  │   СУНДУК    │            │
-│   │   ПЕРВЫЙ    │  │   ВТОРОЙ    │  │   ТРЕТИЙ    │            │
+│   │   FIRST     │  │   SECOND    │  │   THIRD     │            │
+│   │   CHEST     │  │   CHEST     │  │   CHEST     │            │
 │   │             │  │             │  │             │            │
 │   │   vibeec/   │  │   pollen/   │  │   stdlib/   │            │
-│   │  Компилятор │  │  Пакетный   │  │ Стандартная │            │
-│   │             │  │  менеджер   │  │ библиотека  │            │
+│   │  Compiler   │  │  Package    │  │  Standard   │            │
+│   │             │  │  Manager    │  │  Library    │            │
 │   └─────────────┘  └─────────────┘  └─────────────┘            │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -31,62 +31,62 @@
 
 ---
 
-## Сундук Первый: vibeec (Компилятор)
+## First Chest: vibeec (Compiler)
 
-### Структура Директории
+### Directory Structure
 
 ```
 src/vibeec/
-├── main.zig              # Точка входа
-├── cli.zig               # Командная строка
+├── main.zig              # Entry point
+├── cli.zig               # Command line
 │
-├── lexer.zig             # 🔤 Лексер (токенизация)
-├── parser.zig            # 🌳 Парсер (синтаксис)
-├── vibee_parser.zig      # 📋 Парсер .vibee спецификаций
+├── lexer.zig             # 🔤 Lexer (tokenization)
+├── parser.zig            # 🌳 Parser (syntax)
+├── vibee_parser.zig      # 📋 .vibee specification parser
 ├── ast.zig               # 🌲 Abstract Syntax Tree
-├── ast_codegen.zig       # ⚙️ Генерация кода из AST
+├── ast_codegen.zig       # ⚙️ Code generation from AST
 │
-├── validation.zig        # ✅ Валидация
-├── incremental_types.zig # 📊 Инкрементальная типизация
+├── validation.zig        # ✅ Validation
+├── incremental_types.zig # 📊 Incremental typing
 │
-├── codegen.zig           # 🔧 Генерация кода
-├── targets.zig           # 🎯 Целевые платформы
+├── codegen.zig           # 🔧 Code generation
+├── targets.zig           # 🎯 Target platforms
 │
 ├── trinity_sort.zig      # 🔺 Trinity Sort
-├── egraph.zig            # 📈 E-graphs для оптимизации
-├── superoptimizer.zig    # 🚀 Супероптимизатор
+├── egraph.zig            # 📈 E-graphs for optimization
+├── superoptimizer.zig    # 🚀 Superoptimizer
 │
-├── physics/              # ⚛️ Физические оптимизации
-├── chemistry/            # 🧪 Химические паттерны
+├── physics/              # ⚛️ Physical optimizations
+├── chemistry/            # 🧪 Chemical patterns
 │
 ├── pas.zig               # 🔮 Probabilistic Adaptive Synthesis
-├── unified_theory.zig    # 🌌 Единая теория
-├── vibee_theory.zig      # 📚 Теория Vibee
+├── unified_theory.zig    # 🌌 Unified theory
+├── vibee_theory.zig      # 📚 Vibee theory
 │
 ├── lsp/                  # 💡 Language Server Protocol
-├── ml_templates.zig      # 🤖 ML шаблоны
-└── hive_integration.zig  # 🐝 Интеграция с Hive
+├── ml_templates.zig      # 🤖 ML templates
+└── hive_integration.zig  # 🐝 Hive integration
 ```
 
-### Три Богатыря Лексера
+### The Three Bogatyrs of the Lexer
 
 ```zig
-// lexer.zig — Три категории токенов
+// lexer.zig — Three categories of tokens
 
 pub const TokenType = enum {
     // ═══════════════════════════════════════════════════════════
-    // ИЛЬЯ МУРОМЕЦ: ЛИТЕРАЛЫ (37 типов)
-    // Сила данных — то, что несёт информацию
+    // ILYA MUROMETS: LITERALS (37 types)
+    // The power of data — that which carries information
     // ═══════════════════════════════════════════════════════════
     Integer,        // 42, 0xFF, 0b1010, 0o777
     Float,          // 3.14, 2.718e10, 1.0e-5
     String,         // "hello", "multi\nline"
     Char,           // 'a', '\n', '\x41'
-    // ... ещё 33 типа литералов
-    
+    // ... 33 more literal types
+
     // ═══════════════════════════════════════════════════════════
-    // ДОБРЫНЯ НИКИТИЧ: ОПЕРАТОРЫ (37 типов)
-    // Мудрость действий — то, что преобразует
+    // DOBRYNYA NIKITICH: OPERATORS (37 types)
+    // The wisdom of actions — that which transforms
     // ═══════════════════════════════════════════════════════════
     Plus,           // +
     Minus,          // -
@@ -102,11 +102,11 @@ pub const TokenType = enum {
     Arrow,          // ->
     FatArrow,       // =>
     Spaceship,      // <=> (THREE-WAY COMPARE!)
-    // ... ещё 23 типа операторов
-    
+    // ... 23 more operator types
+
     // ═══════════════════════════════════════════════════════════
-    // АЛЁША ПОПОВИЧ: КЛЮЧЕВЫЕ СЛОВА (37 типов)
-    // Хитрость управления — то, что направляет
+    // ALYOSHA POPOVICH: KEYWORDS (37 types)
+    // The cunning of control — that which directs
     // ═══════════════════════════════════════════════════════════
     Fn,             // fn
     Let,            // let
@@ -123,19 +123,19 @@ pub const TokenType = enum {
     Type,           // type
     Import,         // import
     Pub,            // pub
-    // ... ещё 22 ключевых слова
+    // ... 22 more keywords
 };
 ```
 
-### Три Дороги Парсера
+### The Three Roads of the Parser
 
 ```zig
-// ast.zig — Три категории узлов AST
+// ast.zig — Three categories of AST nodes
 
 pub const NodeType = enum {
     // ═══════════════════════════════════════════════════════════
-    // НАПРАВО: ВЫРАЖЕНИЯ (вычисления)
-    // То, что производит значение
+    // TO THE RIGHT: EXPRESSIONS (computations)
+    // That which produces a value
     // ═══════════════════════════════════════════════════════════
     BinaryExpr,     // a + b, x * y, p && q
     UnaryExpr,      // -x, !flag, &value
@@ -145,10 +145,10 @@ pub const NodeType = enum {
     CastExpr,       // @as(T, value)
     TernaryExpr,    // cond ? a : b (THREE-WAY!)
     MatchExpr,      // match x { ... } (THREE+ WAYS!)
-    
+
     // ═══════════════════════════════════════════════════════════
-    // НАЛЕВО: ОПЕРАТОРЫ (управление потоком)
-    // То, что направляет выполнение
+    // TO THE LEFT: STATEMENTS (control flow)
+    // That which directs execution
     // ═══════════════════════════════════════════════════════════
     IfStmt,         // if cond { } else { }
     ForStmt,        // for x in range { }
@@ -158,12 +158,12 @@ pub const NodeType = enum {
     BreakStmt,      // break
     ContinueStmt,   // continue
     Block,          // { ... }
-    
+
     // ═══════════════════════════════════════════════════════════
-    // ПРЯМО: ДЕКЛАРАЦИИ (структура программы)
-    // То, что определяет сущности
+    // STRAIGHT AHEAD: DECLARATIONS (program structure)
+    // That which defines entities
     // ═══════════════════════════════════════════════════════════
-    Program,        // Корень AST
+    Program,        // AST root
     FunctionDecl,   // fn name(params) -> T { }
     StructDecl,     // struct Name { fields }
     EnumDecl,       // enum Name { variants }
@@ -178,10 +178,10 @@ pub const NodeType = enum {
 
 ---
 
-## Trinity Sort: Сердце Компилятора
+## Trinity Sort: The Heart of the Compiler
 
 ```zig
-// trinity_sort.zig — Физически оптимальная сортировка
+// trinity_sort.zig — Physically optimal sorting
 
 //! Trinity Sort: Physics-Inspired Sorting Algorithm
 //!
@@ -202,7 +202,7 @@ pub const PHI: f64 = 1.6180339887498949;
 pub const PHI_INV: f64 = 0.6180339887498949;
 
 /// Trinity threshold - switch to insertion sort below this
-/// Chosen as 3³ = 27 = ТРИДЕВЯТОЕ ЦАРСТВО!
+/// Chosen as 3³ = 27 = THE THRICE-NINE KINGDOM!
 pub const TRINITY_THRESHOLD: usize = 27;
 
 /// Three-way partition (Dutch National Flag algorithm)
@@ -213,26 +213,26 @@ pub const TRINITY_THRESHOLD: usize = 27;
 /// - 3 quark colors (red, green, blue)
 /// - 3 particle generations
 fn partition3Way(comptime T: type, arr: []T, pivot: T) Partition3 {
-    var lt: usize = 0;           // НАЛЕВО: < pivot
-    var i: usize = 0;            // Текущий
-    var gt: usize = arr.len - 1; // НАПРАВО: > pivot
-    
+    var lt: usize = 0;           // TO THE LEFT: < pivot
+    var i: usize = 0;            // Current
+    var gt: usize = arr.len - 1; // TO THE RIGHT: > pivot
+
     while (i <= gt) {
         if (arr[i] < pivot) {
-            // НАЛЕВО
+            // TO THE LEFT
             std.mem.swap(T, &arr[lt], &arr[i]);
             lt += 1;
             i += 1;
         } else if (arr[i] > pivot) {
-            // НАПРАВО
+            // TO THE RIGHT
             std.mem.swap(T, &arr[i], &arr[gt]);
             gt -= 1;
         } else {
-            // ПРЯМО (равно pivot) — оставляем на месте!
+            // STRAIGHT AHEAD (equal to pivot) — leave in place!
             i += 1;
         }
     }
-    
+
     return .{ .lt_end = lt, .gt_start = gt + 1 };
 }
 
@@ -246,94 +246,94 @@ fn goldenPivotIndex(len: usize) usize {
 
 ---
 
-## Три Попытки Вывода Типов
+## Three Attempts at Type Inference
 
 ```zig
-// incremental_types.zig — Троичный вывод типов
+// incremental_types.zig — Ternary type inference
 
 pub const TypeInference = struct {
-    /// Три попытки вывода типа
+    /// Three attempts at type inference
     pub fn inferType(self: *Self, expr: *Expr) TypeResult {
-        // ПЕРВАЯ ПОПЫТКА: Локальный вывод
+        // FIRST ATTEMPT: Local inference
         if (self.tryLocalInference(expr)) |typ| {
             return .{ .success = typ };
         }
-        
-        // ВТОРАЯ ПОПЫТКА: Контекстный вывод
+
+        // SECOND ATTEMPT: Contextual inference
         if (self.tryContextualInference(expr)) |typ| {
             return .{ .success = typ };
         }
-        
-        // ТРЕТЬЯ ПОПЫТКА: Троичное решение
+
+        // THIRD ATTEMPT: Ternary decision
         return self.makeDecision(expr);
     }
-    
-    /// Троичное решение
+
+    /// Ternary decision
     fn makeDecision(self: *Self, expr: *Expr) TypeResult {
         const confidence = self.calculateConfidence(expr);
-        
+
         if (confidence >= 0.9) {
-            // ACCEPT: уверены в типе
+            // ACCEPT: confident about the type
             return .{ .success = self.bestGuess(expr) };
         } else if (confidence <= 0.1) {
-            // REJECT: ошибка типизации
+            // REJECT: typing error
             return .{ .error = "Cannot infer type" };
         } else {
-            // DEFER: требуется аннотация
+            // DEFER: annotation required
             return .{ .defer = "Please add type annotation" };
         }
     }
 };
 
-/// Результат вывода типа — три состояния
+/// Type inference result — three states
 pub const TypeResult = union(enum) {
-    success: Type,      // Тип выведен
-    error: []const u8,  // Ошибка
-    defer: []const u8,  // Требуется аннотация
+    success: Type,      // Type inferred
+    error: []const u8,  // Error
+    defer: []const u8,  // Annotation required
 };
 ```
 
 ---
 
-## E-Graphs: Три Уровня Оптимизации
+## E-Graphs: Three Levels of Optimization
 
 ```zig
-// egraph.zig — Equality Saturation с троичной структурой
+// egraph.zig — Equality Saturation with ternary structure
 
 pub const EGraph = struct {
-    /// Три уровня эквивалентности
+    /// Three levels of equivalence
     levels: [3]EquivalenceLevel,
-    
+
     pub const EquivalenceLevel = enum {
-        Syntactic,   // Синтаксическая эквивалентность
-        Semantic,    // Семантическая эквивалентность
-        Physical,    // Физическая эквивалентность (Trinity!)
+        Syntactic,   // Syntactic equivalence
+        Semantic,    // Semantic equivalence
+        Physical,    // Physical equivalence (Trinity!)
     };
-    
-    /// Оптимизация с тремя проходами
+
+    /// Optimization with three passes
     pub fn optimize(self: *Self, expr: *Expr) *Expr {
-        // ПЕРВЫЙ ПРОХОД: Синтаксические оптимизации
+        // FIRST PASS: Syntactic optimizations
         self.applySyntacticRules(expr);
-        
-        // ВТОРОЙ ПРОХОД: Семантические оптимизации
+
+        // SECOND PASS: Semantic optimizations
         self.applySemanticRules(expr);
-        
-        // ТРЕТИЙ ПРОХОД: Trinity оптимизации
+
+        // THIRD PASS: Trinity optimizations
         self.applyTrinityRules(expr);
-        
+
         return self.extractBest(expr);
     }
-    
-    /// Trinity-специфичные правила
+
+    /// Trinity-specific rules
     fn applyTrinityRules(self: *Self, expr: *Expr) void {
-        // Правило 1: 3-way comparison
+        // Rule 1: 3-way comparison
         self.addRule("(< a b) && (> a b)", "false");
         self.addRule("(< a b) || (== a b) || (> a b)", "true");
-        
-        // Правило 2: Trinity Sort для константных массивов
+
+        // Rule 2: Trinity Sort for constant arrays
         self.addRule("sort([...constants...])", "trinity_sort([...])");
-        
-        // Правило 3: Golden ratio для деления
+
+        // Rule 3: Golden ratio for division
         self.addRule("n / 1.618", "n * 0.618");
     }
 };
@@ -344,33 +344,33 @@ pub const EGraph = struct {
 ## PAS: Probabilistic Adaptive Synthesis
 
 ```zig
-// pas.zig — Вероятностный адаптивный синтез
+// pas.zig — Probabilistic Adaptive Synthesis
 
 //! PAS Framework for predicting algorithmic breakthroughs
 //! Based on the Trinity principle and physical constants
 
 pub const PAS = struct {
-    /// Три источника предсказаний
+    /// Three sources of predictions
     sources: struct {
-        physical: PhysicalPredictor,    // Физические законы
-        mathematical: MathPredictor,    // Математические паттерны
-        empirical: EmpiricalPredictor,  // Эмпирические данные
+        physical: PhysicalPredictor,    // Physical laws
+        mathematical: MathPredictor,    // Mathematical patterns
+        empirical: EmpiricalPredictor,  // Empirical data
     },
-    
-    /// Предсказание оптимального алгоритма
+
+    /// Predicting the optimal algorithm
     pub fn predictOptimal(self: *Self, problem: Problem) Prediction {
-        // Три предсказания
+        // Three predictions
         const p1 = self.sources.physical.predict(problem);
         const p2 = self.sources.mathematical.predict(problem);
         const p3 = self.sources.empirical.predict(problem);
-        
-        // Троичное голосование
+
+        // Ternary voting
         return self.vote3(p1, p2, p3);
     }
-    
-    /// Троичное голосование
+
+    /// Ternary voting
     fn vote3(self: *Self, p1: Prediction, p2: Prediction, p3: Prediction) Prediction {
-        // Если все три согласны — высокая уверенность
+        // If all three agree — high confidence
         if (p1.algorithm == p2.algorithm and p2.algorithm == p3.algorithm) {
             return .{
                 .algorithm = p1.algorithm,
@@ -378,13 +378,13 @@ pub const PAS = struct {
                 .source = .unanimous,
             };
         }
-        
-        // Если два из трёх согласны — средняя уверенность
+
+        // If two out of three agree — medium confidence
         if (p1.algorithm == p2.algorithm) return withConfidence(p1, 0.7);
         if (p2.algorithm == p3.algorithm) return withConfidence(p2, 0.7);
         if (p1.algorithm == p3.algorithm) return withConfidence(p1, 0.7);
-        
-        // Все три разные — низкая уверенность, выбираем физический
+
+        // All three different — low confidence, choose physical
         return withConfidence(p1, 0.4);
     }
 };
@@ -392,10 +392,10 @@ pub const PAS = struct {
 
 ---
 
-## Unified Theory: Связь Физики и Алгоритмов
+## Unified Theory: The Connection Between Physics and Algorithms
 
 ```zig
-// unified_theory.zig — Единая теория констант и алгоритмов
+// unified_theory.zig — Unified theory of constants and algorithms
 
 //! Unified Theory of Constants and Algorithms
 //!
@@ -411,27 +411,27 @@ pub const PAS = struct {
 //!   Trinity Sort threshold = 27 = 3³ (sorting)
 
 pub const UnifiedTheory = struct {
-    /// Три фундаментальные константы
+    /// Three fundamental constants
     pub const Constants = struct {
-        pub const THREE: comptime_int = 3;      // Структура
-        pub const PI: f64 = 3.14159265358979;   // Периодичность
-        pub const PHI: f64 = 1.61803398874989;  // Оптимальность
-        pub const E: f64 = 2.71828182845904;    // Рост
+        pub const THREE: comptime_int = 3;      // Structure
+        pub const PI: f64 = 3.14159265358979;   // Periodicity
+        pub const PHI: f64 = 1.61803398874989;  // Optimality
+        pub const E: f64 = 2.71828182845904;    // Growth
     };
-    
-    /// Проверка паттерна n × 3^k × π^m
+
+    /// Checking the pattern n × 3^k × π^m
     pub fn matchesPattern(value: f64) ?Pattern {
-        // Перебираем комбинации
+        // Iterate through combinations
         var k: u32 = 0;
         while (k <= 10) : (k += 1) {
             var m: u32 = 0;
             while (m <= 10) : (m += 1) {
                 const three_power = std.math.pow(f64, 3.0, @floatFromInt(k));
                 const pi_power = std.math.pow(f64, Constants.PI, @floatFromInt(m));
-                
+
                 const base = value / (three_power * pi_power);
-                
-                // Проверяем, является ли base малым целым
+
+                // Check if base is a small integer
                 const rounded = @round(base);
                 if (@abs(base - rounded) < 0.01 and rounded >= 1 and rounded <= 100) {
                     return Pattern{
@@ -445,20 +445,20 @@ pub const UnifiedTheory = struct {
         }
         return null;
     }
-    
-    /// Предсказание оптимального алгоритма на основе теории
+
+    /// Predicting the optimal algorithm based on theory
     pub fn predictAlgorithm(problem_size: usize) AlgorithmRecommendation {
         if (problem_size <= 27) {
-            // Тридевятое царство — базовый случай
+            // The Thrice-Nine Kingdom — base case
             return .{ .algorithm = .InsertionSort, .reason = "n <= 3³" };
         }
-        
+
         if (problem_size <= 729) {
-            // 729 = 3⁶ — средний случай
+            // 729 = 3⁶ — medium case
             return .{ .algorithm = .TrinitySort, .reason = "n <= 3⁶" };
         }
-        
-        // Большие данные — параллельный Trinity Sort
+
+        // Large data — parallel Trinity Sort
         return .{ .algorithm = .ParallelTrinitySort, .reason = "n > 3⁶" };
     }
 };
@@ -466,51 +466,51 @@ pub const UnifiedTheory = struct {
 
 ---
 
-## Сундук Второй: stdlib (Стандартная Библиотека)
+## Second Chest: stdlib (Standard Library)
 
 ```
 stdlib/
 ├── core/
-│   ├── types.vibee       # Базовые типы
-│   ├── tribool.vibee     # Троичная логика
-│   ├── option.vibee      # Option<T> с Unknown
-│   ├── result.vibee      # Result<T, E> с Pending
+│   ├── types.vibee       # Basic types
+│   ├── tribool.vibee     # Ternary logic
+│   ├── option.vibee      # Option<T> with Unknown
+│   ├── result.vibee      # Result<T, E> with Pending
 │   └── decision.vibee    # Decision<T> (Accept/Reject/Defer)
 │
 ├── collections/
-│   ├── trinity_btree.vibee    # B-дерево с b=3
-│   ├── trinity_hash.vibee     # Cuckoo hash с 3 функциями
+│   ├── trinity_btree.vibee    # B-tree with b=3
+│   ├── trinity_hash.vibee     # Cuckoo hash with 3 functions
 │   ├── trinity_tst.vibee      # Ternary Search Tree
-│   └── trinity_graph.vibee    # Граф с 3-state DFS
+│   └── trinity_graph.vibee    # Graph with 3-state DFS
 │
 ├── algorithms/
 │   ├── trinity_sort.vibee     # Trinity Sort
-│   ├── golden_search.vibee    # Поиск с φ
-│   └── three_way.vibee        # 3-way алгоритмы
+│   ├── golden_search.vibee    # Search with φ
+│   └── three_way.vibee        # 3-way algorithms
 │
 ├── math/
 │   ├── constants.vibee        # π, φ, e, 3
-│   ├── ternary.vibee          # Троичная арифметика
-│   └── physics.vibee          # Физические формулы
+│   ├── ternary.vibee          # Ternary arithmetic
+│   └── physics.vibee          # Physical formulas
 │
 └── neural/
     ├── ternary_weights.vibee  # TWN
     ├── three_way_decision.vibee
-    └── edge_of_chaos.vibee    # Критическая инициализация
+    └── edge_of_chaos.vibee    # Critical initialization
 ```
 
-### Пример: Троичная Логика
+### Example: Ternary Logic
 
 ```vibee
 // stdlib/core/tribool.vibee
 
-/// Троичная логика: True, False, Unknown
+/// Ternary logic: True, False, Unknown
 pub type Tribool = enum {
     True,
     False,
     Unknown,
-    
-    /// Троичное И
+
+    /// Ternary AND
     pub fn and(self: Tribool, other: Tribool) -> Tribool {
         match (self, other) {
             (True, True) => True,
@@ -518,8 +518,8 @@ pub type Tribool = enum {
             _ => Unknown,
         }
     }
-    
-    /// Троичное ИЛИ
+
+    /// Ternary OR
     pub fn or(self: Tribool, other: Tribool) -> Tribool {
         match (self, other) {
             (True, _) | (_, True) => True,
@@ -527,8 +527,8 @@ pub type Tribool = enum {
             _ => Unknown,
         }
     }
-    
-    /// Троичное НЕ
+
+    /// Ternary NOT
     pub fn not(self: Tribool) -> Tribool {
         match self {
             True => False,
@@ -536,8 +536,8 @@ pub type Tribool = enum {
             Unknown => Unknown,
         }
     }
-    
-    /// Троичный тернарный оператор
+
+    /// Ternary conditional operator
     pub fn select<T>(self: Tribool, if_true: T, if_false: T, if_unknown: T) -> T {
         match self {
             True => if_true,
@@ -550,33 +550,33 @@ pub type Tribool = enum {
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И спустился Иван в подземелье терема,*
-> *и открыл три сундука с сокровищами.*
+> *And Ivan descended into the terem's cellar,*
+> *and opened three chests of treasures.*
 >
-> *В первом сундуке — компилятор vibeec,*
-> *с Trinity Sort в сердце и тремя фазами компиляции.*
+> *In the first chest — the vibeec compiler,*
+> *with Trinity Sort at its heart and three compilation phases.*
 >
-> *Во втором сундуке — стандартная библиотека,*
-> *с троичной логикой и Trinity коллекциями.*
+> *In the second chest — the standard library,*
+> *with ternary logic and Trinity collections.*
 >
-> *В третьем сундуке — единая теория,*
-> *связывающая физику и алгоритмы.*
+> *In the third chest — the unified theory,*
+> *connecting physics and algorithms.*
 >
-> *И понял Иван: терем о 999 окнах —*
-> *это не просто здание, это живой организм,*
-> *где каждая часть связана с целым*
-> *через число 3.*
+> *And Ivan understood: the terem with 999 windows —*
+> *is not just a building, it is a living organism,*
+> *where every part is connected to the whole*
+> *through the number 3.*
 >
-> *Лексер видит три типа токенов.*
-> *Парсер строит три типа узлов.*
-> *Оптимизатор применяет три уровня правил.*
-> *Типизатор делает три попытки вывода.*
+> *The lexer sees three types of tokens.*
+> *The parser builds three types of nodes.*
+> *The optimizer applies three levels of rules.*
+> *The type checker makes three inference attempts.*
 >
-> *И всё это — 999 окон мудрости,*
-> *открывающих путь к оптимальности.*
+> *And all of this — 999 windows of wisdom,*
+> *opening the path to optimality.*
 
 ---
 
-[← Глава 12](12_compiler_999.md) | [Оглавление](../README.md)
+[<- Chapter 12](12_compiler_999.md) | [Table of Contents](../README.md)

@@ -1,137 +1,137 @@
-# Глава 12: Компилятор Vibee — Девятьсот Девяносто Девять Чудес
+# Chapter 12: The Vibee Compiler — Nine Hundred and Ninety-Nine Wonders
 
 ---
 
-*«За тридевять земель, в тридесятом царстве,*
-*стоит терем о девятьсот девяносто девяти окнах...»*
-— Русская народная сказка
+*"Beyond thrice-nine lands, in the thrice-tenth kingdom,*
+*stands a tower with nine hundred and ninety-nine windows..."*
+— Russian folk tale
 
 ---
 
-## Число 999: Тайна Терема
+## The Number 999: The Mystery of the Tower
 
-В русских сказках часто встречается загадочное число **999** — терем о 999 окнах, 999 ступеней, 999 комнат.
+In Russian fairy tales, the mysterious number **999** often appears — a tower with 999 windows, 999 steps, 999 chambers.
 
-Что это за число?
+What is this number?
 
 ```
 999 = 3 × 333 = 3 × 3 × 111 = 9 × 111 = 27 × 37
 
 999 = 1000 - 1 = 10³ - 1
 
-В троичной системе:
-999₁₀ = 1101000₃ (7 тритов)
+In ternary system:
+999₁₀ = 1101000₃ (7 trits)
 
-Но главное:
+But most importantly:
 999 = 3 × 333
 333 = 3 × 111
 111 = 3 × 37
 
-ТРИ ТРОЙКИ В РАЗЛОЖЕНИИ!
+THREE THREES IN THE FACTORIZATION!
 ```
 
-**999 — это «утроенная троичность»**, максимальное трёхзначное число, символ полноты и завершённости.
+**999 is "tripled ternarity"**, the maximum three-digit number, a symbol of completeness and perfection.
 
 ---
 
-## Терем Компилятора: 999 Окон
+## The Compiler Tower: 999 Windows
 
-Компилятор Vibee построен как **терем о 999 окнах** — каждое окно открывает вид на определённый аспект языка.
+The Vibee compiler is built as a **tower with 999 windows** — each window opens a view onto a specific aspect of the language.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   ТЕРЕМ КОМПИЛЯТОРА VIBEE                                      │
+│   VIBEE COMPILER TOWER                                         │
 │                                                                 │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │                    КРЫША (Оптимизация)                  │  │
-│   │                    333 окна мудрости                    │  │
+│   │                    ROOF (Optimization)                  │  │
+│   │                    333 windows of wisdom                │  │
 │   └─────────────────────────────────────────────────────────┘  │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │                    СРЕДНИЙ ЭТАЖ (Анализ)                │  │
-│   │                    333 окна понимания                   │  │
+│   │                    MIDDLE FLOOR (Analysis)              │  │
+│   │                    333 windows of understanding         │  │
 │   └─────────────────────────────────────────────────────────┘  │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │                    ПЕРВЫЙ ЭТАЖ (Парсинг)                │  │
-│   │                    333 окна восприятия                  │  │
+│   │                    FIRST FLOOR (Parsing)                │  │
+│   │                    333 windows of perception            │  │
 │   └─────────────────────────────────────────────────────────┘  │
 │                                                                 │
-│   ФУНДАМЕНТ: Троичная философия                                │
+│   FOUNDATION: Ternary Philosophy                                │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Три Этажа Терема
+## Three Floors of the Tower
 
-### Первый Этаж: 333 Окна Восприятия (Lexer + Parser)
+### First Floor: 333 Windows of Perception (Lexer + Parser)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   ПЕРВЫЙ ЭТАЖ: ВОСПРИЯТИЕ                                      │
+│   FIRST FLOOR: PERCEPTION                                       │
 │                                                                 │
-│   111 окон ЛЕКСЕРА (Tokenizer)                                 │
-│   ├── 37 окон литералов (числа, строки, символы)              │
-│   ├── 37 окон операторов (+, -, *, /, ==, !=, ...)            │
-│   └── 37 окон ключевых слов (fn, let, if, match, ...)         │
+│   111 windows of LEXER (Tokenizer)                              │
+│   ├── 37 windows for literals (numbers, strings, symbols)      │
+│   ├── 37 windows for operators (+, -, *, /, ==, !=, ...)       │
+│   └── 37 windows for keywords (fn, let, if, match, ...)        │
 │                                                                 │
-│   111 окон ПАРСЕРА (Syntax)                                    │
-│   ├── 37 окон выражений (binary, unary, call, ...)            │
-│   ├── 37 окон операторов (if, for, while, match, ...)         │
-│   └── 37 окон деклараций (fn, struct, enum, type, ...)        │
+│   111 windows of PARSER (Syntax)                                │
+│   ├── 37 windows for expressions (binary, unary, call, ...)    │
+│   ├── 37 windows for statements (if, for, while, match, ...)   │
+│   └── 37 windows for declarations (fn, struct, enum, type, ...)│
 │                                                                 │
-│   111 окон AST (Abstract Syntax Tree)                          │
-│   ├── 37 типов узлов программы                                │
-│   ├── 37 типов узлов данных                                   │
-│   └── 37 типов узлов потока                                   │
+│   111 windows of AST (Abstract Syntax Tree)                     │
+│   ├── 37 types of program nodes                                │
+│   ├── 37 types of data nodes                                   │
+│   └── 37 types of control flow nodes                           │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-#### Лексер: Три Богатыря Токенов
+#### Lexer: Three Bogatyrs of Tokens
 
 ```zig
-// Три категории токенов — как три богатыря
+// Three categories of tokens — like three bogatyrs (heroic knights)
 pub const TokenType = enum {
-    // ИЛЬЯ МУРОМЕЦ: Литералы (сила данных)
+    // ILYA MUROMETS: Literals (power of data)
     Integer,      // 42, 0xFF, 0b1010
     Float,        // 3.14, 2.718e10
     String,       // "hello"
     Char,         // 'a'
-    
-    // ДОБРЫНЯ НИКИТИЧ: Операторы (мудрость действий)
+
+    // DOBRYNYA NIKITICH: Operators (wisdom of actions)
     Plus, Minus, Star, Slash,     // + - * /
     EqualEqual, BangEqual,        // == !=
     Less, Greater, LessEqual,     // < > <=
     Arrow, FatArrow,              // -> =>
-    
-    // АЛЁША ПОПОВИЧ: Ключевые слова (хитрость управления)
-    Fn, Let, Var, Const,          // объявления
-    If, Else, Match, Case,        // ветвление
-    For, While, In, Return,       // циклы и возврат
+
+    // ALYOSHA POPOVICH: Keywords (cunning of control)
+    Fn, Let, Var, Const,          // declarations
+    If, Else, Match, Case,        // branching
+    For, While, In, Return,       // loops and return
 };
 ```
 
-#### Парсер: Три Дороги Синтаксиса
+#### Parser: Three Roads of Syntax
 
 ```zig
-// Три типа конструкций — как три дороги
+// Three types of constructs — like three roads
 pub const NodeType = enum {
-    // НАПРАВО: Выражения (вычисления)
+    // TO THE RIGHT: Expressions (computations)
     BinaryExpr,    // a + b
     UnaryExpr,     // -x, !flag
     CallExpr,      // foo(x, y)
     IndexExpr,     // arr[i]
-    
-    // НАЛЕВО: Операторы (управление)
+
+    // TO THE LEFT: Statements (control)
     IfStmt,        // if cond { } else { }
     ForStmt,       // for x in range { }
     WhileStmt,     // while cond { }
     MatchStmt,     // match x { ... }
-    
-    // ПРЯМО: Декларации (структура)
+
+    // STRAIGHT AHEAD: Declarations (structure)
     FunctionDecl,  // fn name() { }
     StructDecl,    // struct Name { }
     EnumDecl,      // enum Name { }
@@ -141,131 +141,131 @@ pub const NodeType = enum {
 
 ---
 
-### Второй Этаж: 333 Окна Понимания (Semantic Analysis)
+### Second Floor: 333 Windows of Understanding (Semantic Analysis)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   ВТОРОЙ ЭТАЖ: ПОНИМАНИЕ                                       │
+│   SECOND FLOOR: UNDERSTANDING                                   │
 │                                                                 │
-│   111 окон ТИПИЗАЦИИ                                           │
-│   ├── 37 окон примитивных типов (i32, f64, bool, ...)         │
-│   ├── 37 окон составных типов (struct, enum, array, ...)      │
-│   └── 37 окон троичных типов (?T, Result, Decision)           │
+│   111 windows of TYPING                                         │
+│   ├── 37 windows for primitive types (i32, f64, bool, ...)    │
+│   ├── 37 windows for compound types (struct, enum, array, ...) │
+│   └── 37 windows for ternary types (?T, Result, Decision)      │
 │                                                                 │
-│   111 окон ПРОВЕРКИ                                            │
-│   ├── 37 окон проверки типов                                  │
-│   ├── 37 окон проверки областей видимости                     │
-│   └── 37 окон проверки жизненного цикла                       │
+│   111 windows of CHECKING                                       │
+│   ├── 37 windows for type checking                             │
+│   ├── 37 windows for scope checking                            │
+│   └── 37 windows for lifetime checking                         │
 │                                                                 │
-│   111 окон ВЫВОДА ТИПОВ                                        │
-│   ├── 37 окон локального вывода                               │
-│   ├── 37 окон глобального вывода                              │
-│   └── 37 окон троичного вывода (some/none/unknown)            │
+│   111 windows of TYPE INFERENCE                                 │
+│   ├── 37 windows for local inference                           │
+│   ├── 37 windows for global inference                          │
+│   └── 37 windows for ternary inference (some/none/unknown)     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-#### Троичная Система Типов
+#### Ternary Type System
 
 ```vibee
-// ТРИ СОСТОЯНИЯ ЗНАЧЕНИЯ
+// THREE STATES OF VALUE
 type Decision<T> = enum {
-    Accept(T),    // Уверены: ДА
-    Reject,       // Уверены: НЕТ
-    Defer,        // Не уверены
+    Accept(T),    // Certain: YES
+    Reject,       // Certain: NO
+    Defer,        // Uncertain
 }
 
-// ТРИ СОСТОЯНИЯ NULLABLE
+// THREE STATES OF NULLABLE
 type Option<T> = enum {
-    Some(T),      // Есть значение
-    None,         // Нет значения
-    Unknown,      // Неизвестно (троичная логика!)
+    Some(T),      // Has value
+    None,         // No value
+    Unknown,      // Unknown (ternary logic!)
 }
 
-// ТРИ СОСТОЯНИЯ РЕЗУЛЬТАТА
+// THREE STATES OF RESULT
 type Result<T, E> = enum {
-    Ok(T),        // Успех
-    Err(E),       // Ошибка
-    Pending,      // В процессе (для async)
+    Ok(T),        // Success
+    Err(E),       // Error
+    Pending,      // In progress (for async)
 }
 ```
 
-#### Три Попытки Проверки Типов
+#### Three Attempts at Type Checking
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   ТРИ ПОПЫТКИ ПРОВЕРКИ ТИПОВ                                   │
+│   THREE ATTEMPTS AT TYPE CHECKING                               │
 │                                                                 │
-│   ПЕРВАЯ ПОПЫТКА: Локальная проверка                           │
-│   ├── Проверяем типы внутри функции                           │
-│   ├── Если всё ясно → УСПЕХ                                   │
-│   └── Если нужен контекст → ВТОРАЯ ПОПЫТКА                    │
+│   FIRST ATTEMPT: Local checking                                 │
+│   ├── Check types within the function                          │
+│   ├── If everything is clear → SUCCESS                         │
+│   └── If context is needed → SECOND ATTEMPT                    │
 │                                                                 │
-│   ВТОРАЯ ПОПЫТКА: Глобальная проверка                          │
-│   ├── Смотрим на вызывающий код                               │
-│   ├── Если всё ясно → УСПЕХ                                   │
-│   └── Если неоднозначно → ТРЕТЬЯ ПОПЫТКА                      │
+│   SECOND ATTEMPT: Global checking                               │
+│   ├── Look at the calling code                                 │
+│   ├── If everything is clear → SUCCESS                         │
+│   └── If ambiguous → THIRD ATTEMPT                             │
 │                                                                 │
-│   ТРЕТЬЯ ПОПЫТКА: Троичное решение                             │
-│   ├── Accept: тип определён                                   │
-│   ├── Reject: ошибка типизации                                │
-│   └── Defer: требуется аннотация от программиста              │
+│   THIRD ATTEMPT: Ternary decision                               │
+│   ├── Accept: type is determined                               │
+│   ├── Reject: typing error                                     │
+│   └── Defer: annotation required from programmer               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### Третий Этаж: 333 Окна Мудрости (Optimization)
+### Third Floor: 333 Windows of Wisdom (Optimization)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   ТРЕТИЙ ЭТАЖ: МУДРОСТЬ (ОПТИМИЗАЦИЯ)                          │
+│   THIRD FLOOR: WISDOM (OPTIMIZATION)                            │
 │                                                                 │
-│   111 окон TRINITY ОПТИМИЗАЦИЙ                                 │
-│   ├── 37 окон Trinity Sort (сортировка)                       │
-│   ├── 37 окон Trinity Hash (хеширование)                      │
-│   └── 37 окон Trinity Graph (графы)                           │
+│   111 windows of TRINITY OPTIMIZATIONS                          │
+│   ├── 37 windows for Trinity Sort (sorting)                    │
+│   ├── 37 windows for Trinity Hash (hashing)                    │
+│   └── 37 windows for Trinity Graph (graphs)                    │
 │                                                                 │
-│   111 окон ФИЗИЧЕСКИХ ОПТИМИЗАЦИЙ                              │
-│   ├── 37 окон Golden Ratio (φ-оптимизации)                    │
-│   ├── 37 окон Pi-thresholds (π-пороги)                        │
-│   └── 37 окон Edge-of-Chaos (критические точки)               │
+│   111 windows of PHYSICAL OPTIMIZATIONS                         │
+│   ├── 37 windows for Golden Ratio (phi-optimizations)          │
+│   ├── 37 windows for Pi-thresholds (pi-thresholds)             │
+│   └── 37 windows for Edge-of-Chaos (critical points)           │
 │                                                                 │
-│   111 окон МАШИННЫХ ОПТИМИЗАЦИЙ                                │
-│   ├── 37 окон SIMD (векторизация)                             │
-│   ├── 37 окон Cache (локальность)                             │
-│   └── 37 окон Parallel (параллелизм)                          │
+│   111 windows of MACHINE OPTIMIZATIONS                          │
+│   ├── 37 windows for SIMD (vectorization)                      │
+│   ├── 37 windows for Cache (locality)                          │
+│   └── 37 windows for Parallel (parallelism)                    │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-#### Trinity Sort в Компиляторе
+#### Trinity Sort in the Compiler
 
 ```zig
-/// Trinity Sort - встроен в компилятор
-/// Threshold = 27 = 3³ = Тридевятое!
+/// Trinity Sort - built into the compiler
+/// Threshold = 27 = 3³ = Thrice-nine!
 pub const TRINITY_THRESHOLD: usize = 27;
 
-/// Golden ratio для выбора pivot
+/// Golden ratio for pivot selection
 pub const PHI_INV: f64 = 0.6180339887498949;
 
 pub fn trinitySort(comptime T: type, arr: []T) void {
     if (arr.len <= TRINITY_THRESHOLD) {
-        insertionSort(T, arr);  // Базовый случай
+        insertionSort(T, arr);  // Base case
         return;
     }
-    
-    // Три дороги: <, =, >
+
+    // Three roads: <, =, >
     const pivot_idx = goldenPivotIndex(arr.len);
     const pivot = arr[pivot_idx];
     const part = partition3Way(T, arr, pivot);
-    
-    // Рекурсия только для < и >
-    // Средняя часть (=) уже на месте!
+
+    // Recursion only for < and >
+    // Middle part (=) is already in place!
     trinitySort(T, arr[0..part.lt_end]);
     trinitySort(T, arr[part.gt_start..]);
 }
@@ -273,350 +273,350 @@ pub fn trinitySort(comptime T: type, arr: []T) void {
 
 ---
 
-## Девять Чудес Компилятора
+## Nine Wonders of the Compiler
 
-### Чудо 1: Троичная Логика
+### Wonder 1: Ternary Logic
 
 ```vibee
-// Вместо bool используем Tribool
+// Instead of bool we use Tribool
 type Tribool = enum { True, False, Unknown }
 
-// Троичные операции
+// Ternary operations
 fn and3(a: Tribool, b: Tribool) -> Tribool {
     match (a, b) {
         (True, True) => True,
         (False, _) | (_, False) => False,
-        _ => Unknown,  // Третье состояние!
+        _ => Unknown,  // Third state!
     }
 }
 
-// Применение: SQL-подобная логика с NULL
+// Application: SQL-like logic with NULL
 let result = (age > 18) and3 (has_license)
 match result {
     True => allow(),
     False => deny(),
-    Unknown => request_more_info(),  // Три дороги!
+    Unknown => request_more_info(),  // Three roads!
 }
 ```
 
-### Чудо 2: Three-Way Compare
+### Wonder 2: Three-Way Compare
 
 ```vibee
-// Троичное сравнение — first-class citizen
+// Ternary comparison — first-class citizen
 let cmp = a <=> b  // Returns: Less, Equal, Greater
 
-// Pattern matching на трёх дорогах
+// Pattern matching on three roads
 match a <=> b {
-    Less => "a меньше b",
-    Equal => "a равно b",      // Средняя дорога!
-    Greater => "a больше b",
+    Less => "a is less than b",
+    Equal => "a equals b",      // Middle road!
+    Greater => "a is greater than b",
 }
 
-// Автоматическая генерация для struct
+// Automatic generation for struct
 @derive(Ord)
 struct Point { x: i32, y: i32 }
 
-// Компилятор генерирует троичное сравнение
-// с лексикографическим порядком
+// Compiler generates ternary comparison
+// with lexicographic order
 ```
 
-### Чудо 3: Trinity Collections
+### Wonder 3: Trinity Collections
 
 ```vibee
-// B-дерево с b=3 (оптимальный branching factor)
+// B-tree with b=3 (optimal branching factor)
 let tree = TrinityBTree<i32, String>.new()
 
-// Cuckoo Hash с 3 функциями (82% больше ёмкости)
+// Cuckoo Hash with 3 functions (82% more capacity)
 let hash = TrinityHash<String, i32>.new()
 
-// Ternary Search Tree (три ребёнка на узел)
+// Ternary Search Tree (three children per node)
 let tst = TernarySearchTree<String>.new()
 
-// Все коллекции используют троичные принципы!
+// All collections use ternary principles!
 ```
 
-### Чудо 4: Pattern Matching с Тремя Ветками
+### Wonder 4: Pattern Matching with Three Branches
 
 ```vibee
-// Компилятор оптимизирует match с 3 ветками
+// Compiler optimizes match with 3 branches
 match value {
-    pattern1 => action1(),  // Направо
-    pattern2 => action2(),  // Налево
-    _ => default(),         // Прямо (default)
+    pattern1 => action1(),  // To the right
+    pattern2 => action2(),  // To the left
+    _ => default(),         // Straight ahead (default)
 }
 
-// Генерируется оптимальный код:
-// - Для 3 веток: decision tree глубины 2
-// - Для enum из 3 вариантов: jump table
-// - Для числовых диапазонов: binary search с 3-way
+// Generates optimal code:
+// - For 3 branches: decision tree of depth 2
+// - For enum with 3 variants: jump table
+// - For numeric ranges: binary search with 3-way
 ```
 
-### Чудо 5: Ternary Weight Inference
+### Wonder 5: Ternary Weight Inference
 
 ```vibee
-// Компилятор выводит "вес" выражений: {-1, 0, +1}
-// Как в Ternary Weight Networks
+// Compiler infers "weight" of expressions: {-1, 0, +1}
+// Like in Ternary Weight Networks
 
-// Вес -1: уменьшает значение
+// Weight -1: decreases value
 let x = a - b      // weight: -1
 
-// Вес 0: не меняет значение
+// Weight 0: doesn't change value
 let y = a          // weight: 0
 
-// Вес +1: увеличивает значение
+// Weight +1: increases value
 let z = a + b      // weight: +1
 
-// Оптимизация: операции с весом 0 удаляются
-// Операции с противоположными весами сокращаются
+// Optimization: operations with weight 0 are removed
+// Operations with opposite weights cancel out
 ```
 
-### Чудо 6: Golden Ratio Allocation
+### Wonder 6: Golden Ratio Allocation
 
 ```vibee
-// Аллокатор использует φ для размеров блоков
-// Размеры: 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ...
-// (числа Фибоначчи — степени φ)
+// Allocator uses phi for block sizes
+// Sizes: 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ...
+// (Fibonacci numbers — powers of phi)
 
 @allocator(golden)
 fn process(data: []u8) {
-    // Аллокации выравниваются по Фибоначчи
-    // Минимальная фрагментация!
+    // Allocations are aligned to Fibonacci
+    // Minimal fragmentation!
 }
 ```
 
-### Чудо 7: Edge-of-Chaos Initialization
+### Wonder 7: Edge-of-Chaos Initialization
 
 ```vibee
-// Для нейросетей: автоматическая критическая инициализация
+// For neural networks: automatic critical initialization
 @neural
 struct Network {
-    layers: [Layer; 3],  // Три слоя!
+    layers: [Layer; 3],  // Three layers!
 }
 
-// Компилятор автоматически инициализирует веса
-// так, чтобы σ² = 1 (edge of chaos)
-let net = Network.init()  // Xavier/He автоматически
+// Compiler automatically initializes weights
+// so that sigma^2 = 1 (edge of chaos)
+let net = Network.init()  // Xavier/He automatically
 ```
 
-### Чудо 8: Trinity Error Handling
+### Wonder 8: Trinity Error Handling
 
 ```vibee
-// Три типа ошибок
+// Three types of errors
 type Error = enum {
-    Recoverable(msg: String),   // Можно исправить
-    Fatal(msg: String),         // Нельзя исправить
-    Deferred(ctx: Context),     // Отложенная обработка
+    Recoverable(msg: String),   // Can be fixed
+    Fatal(msg: String),         // Cannot be fixed
+    Deferred(ctx: Context),     // Deferred handling
 }
 
-// Три стратегии обработки
+// Three handling strategies
 fn handle(err: Error) {
     match err {
-        Recoverable(msg) => retry(),      // Первая попытка
-        Fatal(msg) => abort(),            // Вторая попытка
-        Deferred(ctx) => schedule(ctx),   // Третья попытка
+        Recoverable(msg) => retry(),      // First attempt
+        Fatal(msg) => abort(),            // Second attempt
+        Deferred(ctx) => schedule(ctx),   // Third attempt
     }
 }
 ```
 
-### Чудо 9: 999 Оптимизаций
+### Wonder 9: 999 Optimizations
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   999 ОПТИМИЗАЦИЙ КОМПИЛЯТОРА                                  │
+│   999 COMPILER OPTIMIZATIONS                                    │
 │                                                                 │
-│   333 ОПТИМИЗАЦИИ ПЕРВОГО УРОВНЯ (Локальные)                   │
-│   ├── Constant folding (3 + 4 → 7)                            │
-│   ├── Dead code elimination                                    │
-│   ├── Common subexpression elimination                         │
-│   └── ... (всего 333)                                         │
+│   333 FIRST LEVEL OPTIMIZATIONS (Local)                         │
+│   ├── Constant folding (3 + 4 → 7)                             │
+│   ├── Dead code elimination                                     │
+│   ├── Common subexpression elimination                          │
+│   └── ... (333 total)                                          │
 │                                                                 │
-│   333 ОПТИМИЗАЦИИ ВТОРОГО УРОВНЯ (Глобальные)                  │
-│   ├── Inlining (с порогом 27 инструкций)                      │
-│   ├── Loop unrolling (кратно 3)                               │
-│   ├── Vectorization (SIMD по 3 элемента)                      │
-│   └── ... (всего 333)                                         │
+│   333 SECOND LEVEL OPTIMIZATIONS (Global)                       │
+│   ├── Inlining (with threshold of 27 instructions)             │
+│   ├── Loop unrolling (multiples of 3)                          │
+│   ├── Vectorization (SIMD by 3 elements)                       │
+│   └── ... (333 total)                                          │
 │                                                                 │
-│   333 ОПТИМИЗАЦИИ ТРЕТЬЕГО УРОВНЯ (Trinity)                    │
-│   ├── Trinity Sort для внутренних структур                    │
-│   ├── Golden ratio для аллокаций                              │
-│   ├── 3-way branching для условий                             │
-│   └── ... (всего 333)                                         │
+│   333 THIRD LEVEL OPTIMIZATIONS (Trinity)                       │
+│   ├── Trinity Sort for internal structures                     │
+│   ├── Golden ratio for allocations                             │
+│   ├── 3-way branching for conditions                           │
+│   └── ... (333 total)                                          │
 │                                                                 │
-│   ИТОГО: 999 ОПТИМИЗАЦИЙ = ТЕРЕМ О 999 ОКНАХ                  │
+│   TOTAL: 999 OPTIMIZATIONS = TOWER WITH 999 WINDOWS            │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Архитектура Компилятора
+## Compiler Architecture
 
-### Три Фазы Компиляции
+### Three Phases of Compilation
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   ИСТОЧНИК (.vibee)                                            │
+│   SOURCE (.vibee)                                               │
 │        │                                                        │
 │        ▼                                                        │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │  ФАЗА 1: ВОСПРИЯТИЕ (Frontend)                          │  │
-│   │  ├── Lexer: текст → токены                              │  │
-│   │  ├── Parser: токены → AST                               │  │
-│   │  └── Validator: AST → проверенный AST                   │  │
+│   │  PHASE 1: PERCEPTION (Frontend)                         │  │
+│   │  ├── Lexer: text → tokens                               │  │
+│   │  ├── Parser: tokens → AST                               │  │
+│   │  └── Validator: AST → validated AST                     │  │
 │   └─────────────────────────────────────────────────────────┘  │
 │        │                                                        │
 │        ▼                                                        │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │  ФАЗА 2: ПОНИМАНИЕ (Middle-end)                         │  │
-│   │  ├── Type Checker: проверка типов                       │  │
-│   │  ├── Borrow Checker: проверка владения                  │  │
+│   │  PHASE 2: UNDERSTANDING (Middle-end)                    │  │
+│   │  ├── Type Checker: type verification                    │  │
+│   │  ├── Borrow Checker: ownership verification             │  │
 │   │  └── IR Generator: AST → Trinity IR                     │  │
 │   └─────────────────────────────────────────────────────────┘  │
 │        │                                                        │
 │        ▼                                                        │
 │   ┌─────────────────────────────────────────────────────────┐  │
-│   │  ФАЗА 3: МУДРОСТЬ (Backend)                             │  │
-│   │  ├── Optimizer: 999 оптимизаций                         │  │
-│   │  ├── Codegen: IR → машинный код                         │  │
-│   │  └── Linker: объединение модулей                        │  │
+│   │  PHASE 3: WISDOM (Backend)                              │  │
+│   │  ├── Optimizer: 999 optimizations                       │  │
+│   │  ├── Codegen: IR → machine code                         │  │
+│   │  └── Linker: module linking                             │  │
 │   └─────────────────────────────────────────────────────────┘  │
 │        │                                                        │
 │        ▼                                                        │
-│   РЕЗУЛЬТАТ (исполняемый файл)                                 │
+│   RESULT (executable file)                                      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Trinity IR: Троичное Промежуточное Представление
+### Trinity IR: Ternary Intermediate Representation
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   TRINITY IR: ТРИ УРОВНЯ АБСТРАКЦИИ                            │
+│   TRINITY IR: THREE LEVELS OF ABSTRACTION                       │
 │                                                                 │
-│   HIGH-LEVEL IR (близко к исходному коду)                      │
-│   ├── Сохраняет структуру программы                           │
-│   ├── Типы, функции, модули                                   │
-│   └── Оптимизации: inlining, specialization                   │
+│   HIGH-LEVEL IR (close to source code)                          │
+│   ├── Preserves program structure                              │
+│   ├── Types, functions, modules                                │
+│   └── Optimizations: inlining, specialization                  │
 │                                                                 │
-│   MID-LEVEL IR (SSA форма)                                     │
-│   ├── Static Single Assignment                                │
-│   ├── Control Flow Graph                                      │
-│   └── Оптимизации: CSE, DCE, constant propagation             │
+│   MID-LEVEL IR (SSA form)                                       │
+│   ├── Static Single Assignment                                 │
+│   ├── Control Flow Graph                                       │
+│   └── Optimizations: CSE, DCE, constant propagation            │
 │                                                                 │
-│   LOW-LEVEL IR (близко к машинному коду)                       │
-│   ├── Регистры, память, инструкции                            │
-│   ├── Target-specific оптимизации                             │
-│   └── Оптимизации: register allocation, scheduling            │
+│   LOW-LEVEL IR (close to machine code)                          │
+│   ├── Registers, memory, instructions                          │
+│   ├── Target-specific optimizations                            │
+│   └── Optimizations: register allocation, scheduling           │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Преимущества Компилятора Vibee
+## Advantages of the Vibee Compiler
 
-### 1. Троичная Философия Везде
-
-```
-✅ Три состояния типов (Some/None/Unknown)
-✅ Три ветки в match (оптимизированы)
-✅ Три фазы компиляции
-✅ Три уровня IR
-✅ Три уровня оптимизаций
-✅ Trinity Sort для внутренних структур
-✅ Golden ratio для аллокаций
-✅ 3-way comparison как примитив
-```
-
-### 2. Физически Оптимальные Алгоритмы
+### 1. Ternary Philosophy Everywhere
 
 ```
-✅ Trinity Sort: до 291x быстрее на структурированных данных
-✅ Trinity Hash: 82% больше ёмкости
-✅ Trinity B-Tree: 6% меньше сравнений
-✅ Golden ratio pivot: защита от worst-case
-✅ Threshold 27 = 3³: оптимальный базовый случай
+✅ Three type states (Some/None/Unknown)
+✅ Three branches in match (optimized)
+✅ Three compilation phases
+✅ Three IR levels
+✅ Three optimization levels
+✅ Trinity Sort for internal structures
+✅ Golden ratio for allocations
+✅ 3-way comparison as a primitive
 ```
 
-### 3. Умная Система Типов
+### 2. Physically Optimal Algorithms
 
 ```
-✅ Троичная логика (true/false/unknown)
+✅ Trinity Sort: up to 291x faster on structured data
+✅ Trinity Hash: 82% more capacity
+✅ Trinity B-Tree: 6% fewer comparisons
+✅ Golden ratio pivot: protection from worst-case
+✅ Threshold 27 = 3³: optimal base case
+```
+
+### 3. Smart Type System
+
+```
+✅ Ternary logic (true/false/unknown)
 ✅ Three-way decision (accept/reject/defer)
 ✅ Ternary weight inference
-✅ Автоматический вывод типов с тремя попытками
-✅ Nullable типы с тремя состояниями
+✅ Automatic type inference with three attempts
+✅ Nullable types with three states
 ```
 
-### 4. 999 Оптимизаций
+### 4. 999 Optimizations
 
 ```
-✅ 333 локальных оптимизаций
-✅ 333 глобальных оптимизаций
-✅ 333 Trinity-специфичных оптимизаций
-✅ Каждая оптимизация — окно в тереме мудрости
+✅ 333 local optimizations
+✅ 333 global optimizations
+✅ 333 Trinity-specific optimizations
+✅ Each optimization — a window in the tower of wisdom
 ```
 
 ---
 
-## Сравнение с Другими Компиляторами
+## Comparison with Other Compilers
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   КОМПИЛЯТОР      ФИЛОСОФИЯ           ОСОБЕННОСТЬ              │
+│   COMPILER       PHILOSOPHY          FEATURE                    │
 │   ─────────────────────────────────────────────────────────    │
-│   GCC             Бинарная            Максимальная совместим.  │
-│   LLVM            Бинарная            Модульность              │
-│   Rust            Бинарная            Безопасность памяти      │
-│   Zig             Бинарная            Простота и контроль      │
-│   Vibee           ТРОИЧНАЯ            Физическая оптимальность │
+│   GCC            Binary              Maximum compatibility      │
+│   LLVM           Binary              Modularity                 │
+│   Rust           Binary              Memory safety              │
+│   Zig            Binary              Simplicity and control     │
+│   Vibee          TERNARY             Physical optimality        │
 │                                                                 │
-│   УНИКАЛЬНОСТЬ VIBEE:                                          │
-│   • Единственный компилятор с троичной философией             │
-│   • Встроенный Trinity Sort                                   │
-│   • Three-way comparison как примитив                         │
-│   • 999 оптимизаций (3 × 333)                                 │
-│   • Golden ratio в аллокаторе                                 │
+│   VIBEE'S UNIQUENESS:                                           │
+│   • The only compiler with ternary philosophy                  │
+│   • Built-in Trinity Sort                                      │
+│   • Three-way comparison as a primitive                        │
+│   • 999 optimizations (3 × 333)                                │
+│   • Golden ratio in the allocator                              │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист девятую истину:*
+> *And Ivan the programmer understood the ninth truth:*
 >
-> *Терем о 999 окнах — это компилятор Vibee.*
-> *Каждое окно — оптимизация, каждый этаж — фаза компиляции.*
+> *The tower with 999 windows is the Vibee compiler.*
+> *Each window is an optimization, each floor is a compilation phase.*
 >
-> *999 = 3 × 333 = утроенная троичность.*
-> *Три этажа по 333 окна — полнота мудрости.*
+> *999 = 3 × 333 = tripled ternarity.*
+> *Three floors of 333 windows each — the fullness of wisdom.*
 >
-> *Первый этаж — восприятие (lexer, parser, AST).*
-> *Второй этаж — понимание (типы, проверки, вывод).*
-> *Третий этаж — мудрость (оптимизации, codegen).*
+> *The first floor — perception (lexer, parser, AST).*
+> *The second floor — understanding (types, checks, inference).*
+> *The third floor — wisdom (optimizations, codegen).*
 >
-> *Троичная логика пронизывает всё:*
-> *три состояния типов, три ветки match,*
-> *три попытки вывода, три уровня IR.*
+> *Ternary logic permeates everything:*
+> *three type states, three match branches,*
+> *three inference attempts, three IR levels.*
 >
-> *Trinity Sort сортирует внутренние структуры.*
-> *Golden ratio распределяет память.*
-> *Edge of chaos инициализирует нейросети.*
+> *Trinity Sort orders internal structures.*
+> *Golden ratio distributes memory.*
+> *Edge of chaos initializes neural networks.*
 >
-> *Компилятор Vibee — это не просто программа.*
-> *Это терем древней мудрости,*
-> *построенный на фундаменте числа 3.*
+> *The Vibee compiler is not just a program.*
+> *It is a tower of ancient wisdom,*
+> *built on the foundation of the number 3.*
 >
-> *999 окон открывают 999 путей к оптимальности.*
-> *И каждый путь ведёт к одной истине:*
-> *троичность — это структура реальности.*
+> *999 windows open 999 paths to optimality.*
+> *And each path leads to one truth:*
+> *ternarity is the structure of reality.*
 
 ---
 
-[← Глава 11](11_epilogue.md) | [Приложение A: Код компилятора →](appendix_a_code.md)
+[← Chapter 11](11_epilogue.md) | [Appendix A: Compiler Code →](appendix_a_code.md)

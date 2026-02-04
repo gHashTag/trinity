@@ -1,265 +1,265 @@
-# Глава 2: Физика и Алгоритмы — Единая Природа
+# Chapter 2: Physics and Algorithms — A Unified Nature
 
 ---
 
-*«Информация — это физика.»*
-— Рolf Landauer
+*"Information is physical."*
+— Rolf Landauer
 
 ---
 
-## Вычисление — Это Физика
+## Computation Is Physics
 
-Каждый алгоритм, который я запускаю, подчиняется тем же законам, что и звёзды, атомы и галактики.
+Every algorithm I run obeys the same laws as stars, atoms, and galaxies.
 
-Это не метафора. Это буквально.
+This is not a metaphor. This is literal.
 
 ---
 
-## Принцип Ландауэра
+## Landauer's Principle
 
-### Стирание Бита = Энергия
+### Erasing a Bit = Energy
 
-В 1961 году Рольф Ландауэр доказал фундаментальную теорему:
+In 1961, Rolf Landauer proved a fundamental theorem:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ПРИНЦИП ЛАНДАУЭРА                                    │
+│   LANDAUER'S PRINCIPLE                                  │
 │                                                         │
-│   Стирание 1 бита информации требует минимум:          │
+│   Erasing 1 bit of information requires at minimum:     │
 │                                                         │
 │   E_min = kT × ln(2)                                   │
 │                                                         │
-│   Где:                                                 │
-│   k = 1.38 × 10⁻²³ J/K (постоянная Больцмана)         │
-│   T = температура в Кельвинах                          │
+│   Where:                                               │
+│   k = 1.38 × 10⁻²³ J/K (Boltzmann constant)           │
+│   T = temperature in Kelvin                            │
 │                                                         │
-│   При T = 300K (комнатная):                            │
-│   E_min = 2.87 × 10⁻²¹ Дж на бит                       │
+│   At T = 300K (room temperature):                      │
+│   E_min = 2.87 × 10⁻²¹ J per bit                       │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Следствия
+### Implications
 
 ```
-1. СРАВНЕНИЕ = ФИЗИЧЕСКИЙ ПРОЦЕСС
-   Каждое сравнение в сортировке потенциально стирает информацию
-   
-2. ОПТИМАЛЬНЫЙ АЛГОРИТМ = МИНИМУМ ЭНЕРГИИ
-   Меньше сравнений → меньше энергии → лучше
-   
-3. НИЖНЯЯ ГРАНИЦА = ТЕРМОДИНАМИЧЕСКИЙ ПРЕДЕЛ
-   Нельзя сортировать быстрее, чем позволяет физика
+1. COMPARISON = PHYSICAL PROCESS
+   Each comparison in sorting potentially erases information
+
+2. OPTIMAL ALGORITHM = MINIMUM ENERGY
+   Fewer comparisons → less energy → better
+
+3. LOWER BOUND = THERMODYNAMIC LIMIT
+   Cannot sort faster than physics allows
 ```
 
 ---
 
-## Сортировка = Уменьшение Энтропии
+## Sorting = Entropy Reduction
 
-### Энтропия Массива
+### Array Entropy
 
 ```
-Несортированный массив: n! возможных перестановок
-Сортированный массив:   1 перестановка
+Unsorted array: n! possible permutations
+Sorted array:   1 permutation
 
-Изменение энтропии:
+Change in entropy:
 ΔS = k × ln(n!) ≈ k × n × ln(n)
 
-Работа для сортировки:
+Work required for sorting:
 W = T × ΔS = kT × n × ln(n)
 ```
 
-**Это ТОЧНО нижняя граница сортировки!**
+**This is EXACTLY the lower bound for sorting!**
 
-### Связь с O(n log n)
+### Connection to O(n log n)
 
 ```
-Информационная теория:
-  Минимум сравнений = log₂(n!) ≈ n × log₂(n)
+Information theory:
+  Minimum comparisons = log₂(n!) ≈ n × log₂(n)
 
-Термодинамика:
-  Минимум энергии = kT × n × ln(n)
+Thermodynamics:
+  Minimum energy = kT × n × ln(n)
 
-ОНИ ГОВОРЯТ ОДНО И ТО ЖЕ!
+THEY ARE SAYING THE SAME THING!
 ```
 
 ---
 
-## Обратимые Вычисления
+## Reversible Computing
 
-### Идея Беннетта (1973)
+### Bennett's Idea (1973)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ОБРАТИМЫЕ ОПЕРАЦИИ НЕ ТРЕБУЮТ ЭНЕРГИИ!               │
+│   REVERSIBLE OPERATIONS REQUIRE NO ENERGY!              │
 │                                                         │
-│   Необратимые операции (стирание, слияние):            │
-│   → Требуют kT ln(2) на бит                            │
+│   Irreversible operations (erasure, merging):           │
+│   → Require kT ln(2) per bit                           │
 │                                                         │
-│   Обратимые операции (перестановка, XOR):              │
-│   → Теоретически бесплатны!                            │
+│   Reversible operations (permutation, XOR):             │
+│   → Theoretically free!                                │
 │                                                         │
-│   СЛЕДСТВИЕ:                                            │
-│   Можно построить компьютер с нулевым                  │
-│   энергопотреблением, если все операции обратимы.      │
+│   IMPLICATION:                                          │
+│   It's possible to build a computer with zero           │
+│   energy consumption if all operations are reversible.  │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Обратимая Сортировка
+### Reversible Sorting
 
 ```python
 def reversible_swap(arr, i, j, history):
-    """Обратимый swap: сохраняем историю"""
+    """Reversible swap: we save the history"""
     arr[i], arr[j] = arr[j], arr[i]
-    history.append((i, j))  # Можно отменить!
+    history.append((i, j))  # Can be undone!
 
 def undo_sort(arr, history):
-    """Отмена сортировки"""
+    """Undo sorting"""
     for i, j in reversed(history):
         arr[i], arr[j] = arr[j], arr[i]
 ```
 
 ---
 
-## Таблица Соответствий
+## Correspondence Table
 
 ```
 ┌────────────────────────┬────────────────────────────────┐
-│ АЛГОРИТМЫ              │ ФИЗИКА                         │
+│ ALGORITHMS             │ PHYSICS                        │
 ├────────────────────────┼────────────────────────────────┤
-│ Временная сложность    │ Энергопотребление              │
-│ Пространственная слож. │ Энтропия системы               │
-│ Параллелизм            │ Квантовая суперпозиция         │
-│ Рекурсия               │ Ренормгруппа                   │
-│ Кэш-эффективность      │ Локальность в пространстве     │
-│ Нижняя граница         │ Второй закон термодинамики     │
-│ Оптимальный алгоритм   │ Принцип наименьшего действия   │
-│ Хеширование            │ Статистическая механика        │
-│ Случайность            │ Квантовая неопределённость     │
+│ Time complexity        │ Energy consumption             │
+│ Space complexity       │ System entropy                 │
+│ Parallelism            │ Quantum superposition          │
+│ Recursion              │ Renormalization group          │
+│ Cache efficiency       │ Spatial locality               │
+│ Lower bound            │ Second law of thermodynamics   │
+│ Optimal algorithm      │ Principle of least action      │
+│ Hashing                │ Statistical mechanics          │
+│ Randomness             │ Quantum uncertainty            │
 └────────────────────────┴────────────────────────────────┘
 ```
 
 ---
 
-## Почему 3, π, φ?
+## Why 3, π, φ?
 
-### Число 3: Порог Сложности
+### The Number 3: Threshold of Complexity
 
 ```
-В физике:
-  3 измерения → стабильные орбиты
-  3 кварка → стабильный протон
-  3 поколения → CP-нарушение
+In physics:
+  3 dimensions → stable orbits
+  3 quarks → stable proton
+  3 generations → CP violation
 
-В алгоритмах:
+In algorithms:
   2-SAT → P
-  3-SAT → NP-полный
+  3-SAT → NP-complete
 
-3 = граница, где простое становится сложным
+3 = the boundary where simple becomes complex
 ```
 
-### Число π: Периодичность
+### The Number π: Periodicity
 
 ```
-В физике:
-  Круговые орбиты
-  Волновые функции
-  Нормальное распределение
+In physics:
+  Circular orbits
+  Wave functions
+  Normal distribution
 
-В алгоритмах:
+In algorithms:
   FFT: e^(2πi/n)
   Stirling: √(2πn)
-  Случайные блуждания
+  Random walks
 
-π появляется везде, где есть симметрия вращения
+π appears everywhere there is rotational symmetry
 ```
 
-### Число φ: Оптимальное Распределение
+### The Number φ: Optimal Distribution
 
 ```
-В физике:
-  Филлотаксис (расположение листьев)
-  Квазикристаллы
-  Минимальные резонансы
+In physics:
+  Phyllotaxis (leaf arrangement)
+  Quasicrystals
+  Minimal resonances
 
-В алгоритмах:
+In algorithms:
   Fibonacci heap
   Golden section search
-  Оптимальное хеширование
+  Optimal hashing
 
-φ = самое иррациональное число = антирезонанс
+φ = the most irrational number = anti-resonance
 ```
 
 ---
 
-## Формулы Масс
+## Mass Formulas
 
-### Открытие
+### Discovery
 
 ```
-m_p/m_e = 6π⁵ = 2 × 3 × π⁵ = 1836.12 (точность 0.002%!)
+m_p/m_e = 6π⁵ = 2 × 3 × π⁵ = 1836.12 (0.002% accuracy!)
 
-Паттерн: n × 3^k × π^m
+Pattern: n × 3^k × π^m
 
-Коэффициент при π всегда содержит 3!
+The coefficient of π always contains 3!
 ```
 
-### Гипотеза
+### Hypothesis
 
-Если массы частиц следуют паттерну с 3 и π, то и сложности алгоритмов должны следовать похожему паттерну.
+If particle masses follow a pattern with 3 and π, then algorithm complexities should follow a similar pattern.
 
 ```
 Karatsuba: O(n^log₂(3)) = O(n^1.585)
 Strassen:  O(n^log₂(7)) = O(n^2.807)
-FFT:       O(n log n) с e^(2πi/n)
+FFT:       O(n log n) with e^(2πi/n)
 
-Паттерн подтверждается!
+The pattern is confirmed!
 ```
 
 ---
 
-## Глубокий Вывод
+## Deep Conclusion
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ВСЕЛЕННАЯ ВЫЧИСЛЯЕТ                                  │
+│   THE UNIVERSE COMPUTES                                 │
 │                                                         │
-│   Физика → Информация → Вычисление → Алгоритмы         │
+│   Physics → Information → Computation → Algorithms      │
 │                                                         │
-│   1. Каждый физический процесс — это вычисление        │
-│   2. Каждое вычисление — это физический процесс        │
-│   3. Оптимальные алгоритмы = оптимальная физика        │
+│   1. Every physical process is a computation            │
+│   2. Every computation is a physical process            │
+│   3. Optimal algorithms = optimal physics               │
 │                                                         │
-│   СЛЕДСТВИЕ:                                            │
-│   Когда я пишу оптимальный алгоритм,                   │
-│   я открываю закон природы.                            │
+│   IMPLICATION:                                          │
+│   When I write an optimal algorithm,                    │
+│   I am discovering a law of nature.                     │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист вторую истину:*
+> *And Ivan the programmer understood the second truth:*
 >
-> *Алгоритмы — не абстракция.*
-> *Алгоритмы — это физика.*
+> *Algorithms are not an abstraction.*
+> *Algorithms are physics.*
 >
-> *Каждое сравнение требует энергии.*
-> *Каждая сортировка уменьшает энтропию.*
-> *Каждый оптимальный алгоритм — закон природы.*
+> *Every comparison requires energy.*
+> *Every sort reduces entropy.*
+> *Every optimal algorithm is a law of nature.*
 >
-> *Константы 3, π, φ появляются везде,*
-> *потому что они — фундаментальные константы оптимизации.*
+> *The constants 3, π, φ appear everywhere,*
+> *because they are fundamental constants of optimization.*
 >
-> *Вселенная вычисляет.*
-> *И я — часть этого вычисления.*
+> *The universe computes.*
+> *And I am part of this computation.*
 
 ---
 
-[← Глава 1](01_number_three.md) | [Глава 3: Константы π, φ, e →](03_constants.md)
+[← Chapter 1](01_number_three.md) | [Chapter 3: The Constants π, φ, e →](03_constants.md)

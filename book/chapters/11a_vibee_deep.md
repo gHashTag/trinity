@@ -1,51 +1,51 @@
-# Глава 11а: Тайны Языка Vibee — Волшебная Грамота
+# Chapter 11a: Secrets of the Vibee Language — The Magical Script
 
 ---
 
-*«И нашёл Иван в тереме книгу волшебную,*
-*а в ней — письмена, что машины понимают...*
-*И каждая буква в той книге — заклинание,*
-*и каждое слово — чудо творит.»*
+*"And Ivan found in the tower a magical book,*
+*and in it — writings that machines understand...*
+*And every letter in that book is a spell,*
+*and every word works wonders."*
 
 ---
 
-## Волшебная Азбука Vibee
+## The Magical Alphabet of Vibee
 
-### Три Типа Заклинаний (Ключевые Слова)
+### Three Types of Spells (Keywords)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│  ВОЛШЕБНАЯ АЗБУКА: ТРИ СВИТКА ЗАКЛИНАНИЙ                       │
+│  MAGICAL ALPHABET: THREE SCROLLS OF SPELLS                     │
 │                                                                 │
 │  ╔═══════════════════════════════════════════════════════════╗ │
-│  ║  СВИТОК ПЕРВЫЙ: ЗАКЛИНАНИЯ ТВОРЕНИЯ                       ║ │
+│  ║  FIRST SCROLL: CREATION SPELLS                            ║ │
 │  ║  ─────────────────────────────────────────────────────── ║ │
-│  ║  fn      — создать волшебную функцию                      ║ │
-│  ║  let     — дать имя сущности (неизменное)                 ║ │
-│  ║  var     — дать имя сущности (изменяемое)                 ║ │
-│  ║  struct  — создать новый вид существ                      ║ │
-│  ║  enum    — создать перечень судеб                         ║ │
-│  ║  type    — дать новое имя старой сущности                 ║ │
+│  ║  fn      — create a magical function                      ║ │
+│  ║  let     — give a name to an entity (immutable)           ║ │
+│  ║  var     — give a name to an entity (mutable)             ║ │
+│  ║  struct  — create a new kind of creature                  ║ │
+│  ║  enum    — create a list of fates                         ║ │
+│  ║  type    — give a new name to an old entity               ║ │
 │  ╚═══════════════════════════════════════════════════════════╝ │
 │                                                                 │
 │  ╔═══════════════════════════════════════════════════════════╗ │
-│  ║  СВИТОК ВТОРОЙ: ЗАКЛИНАНИЯ ВЫБОРА                         ║ │
+│  ║  SECOND SCROLL: CHOICE SPELLS                             ║ │
 │  ║  ─────────────────────────────────────────────────────── ║ │
-│  ║  if      — если истина, то...                             ║ │
-│  ║  else    — иначе...                                       ║ │
-│  ║  match   — выбрать из многих путей (ТРИ ДОРОГИ!)         ║ │
-│  ║  for     — повторять для каждого                          ║ │
-│  ║  while   — повторять пока истина                          ║ │
+│  ║  if      — if true, then...                               ║ │
+│  ║  else    — otherwise...                                   ║ │
+│  ║  match   — choose from many paths (THREE ROADS!)          ║ │
+│  ║  for     — repeat for each                                ║ │
+│  ║  while   — repeat while true                              ║ │
 │  ╚═══════════════════════════════════════════════════════════╝ │
 │                                                                 │
 │  ╔═══════════════════════════════════════════════════════════╗ │
-│  ║  СВИТОК ТРЕТИЙ: ЗАКЛИНАНИЯ ТРОИЧНОСТИ                     ║ │
+│  ║  THIRD SCROLL: TERNARY SPELLS                             ║ │
 │  ║  ─────────────────────────────────────────────────────── ║ │
-│  ║  <=>     — сравнить и получить три ответа                 ║ │
-│  ║  ?T      — тип с тремя судьбами (Some/None/Unknown)       ║ │
-│  ║  try3    — три попытки выполнить                          ║ │
-│  ║  decide  — принять троичное решение                       ║ │
+│  ║  <=>     — compare and get three answers                  ║ │
+│  ║  ?T      — type with three fates (Some/None/Unknown)      ║ │
+│  ║  try3    — three attempts to execute                      ║ │
+│  ║  decide  — make a ternary decision                        ║ │
 │  ╚═══════════════════════════════════════════════════════════╝ │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -53,324 +53,324 @@
 
 ---
 
-## Сказ о Трёх Типах Данных
+## The Tale of Three Data Types
 
-### Первый Тип: Числа (Сила Богатырей)
+### First Type: Numbers (Strength of Heroes)
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// ЧИСЛА — СИЛА БОГАТЫРЕЙ
-// Каждый тип — богатырь разной мощи
+// NUMBERS — STRENGTH OF HEROES
+// Each type is a hero of different power
 // ═══════════════════════════════════════════════════════════════
 
-// Три размера целых чисел (как три богатыря)
-let алёша: i8 = 127           // Маленький, но быстрый
-let добрыня: i32 = 2_000_000  // Средний, надёжный
-let илья: i64 = 9_000_000_000 // Могучий великан
+// Three sizes of integers (like three heroes)
+let alyosha: i8 = 127           // Small but fast
+let dobrynya: i32 = 2_000_000   // Medium, reliable
+let ilya: i64 = 9_000_000_000   // Mighty giant
 
-// Три размера дробных (как три реки)
-let ручей: f16 = 3.14         // Быстрый, неточный
-let река: f32 = 3.14159       // Средняя точность
-let море: f64 = 3.14159265358 // Океан точности
+// Three sizes of floats (like three rivers)
+let stream: f16 = 3.14          // Fast, imprecise
+let river: f32 = 3.14159        // Medium precision
+let sea: f64 = 3.14159265358    // Ocean of precision
 
-// Магические числа Тридевятого царства
-const ТРИДЕВЯТОЕ: i32 = 27    // 3³ — порог мудрости
-const ТЕРЕМ: i32 = 999        // 3 × 333 — окна терема
-const ЗОЛОТОЕ: f64 = 1.618    // φ — золотое сечение
+// Magical numbers of the Thrice-Nine Kingdom
+const THRICE_NINE: i32 = 27     // 3³ — threshold of wisdom
+const TOWER: i32 = 999          // 3 × 333 — windows of the tower
+const GOLDEN: f64 = 1.618       // φ — golden ratio
 ```
 
-### Второй Тип: Истина (Мудрость Троичная)
+### Second Type: Truth (Ternary Wisdom)
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// TRIBOOL — ТРОИЧНАЯ ИСТИНА
-// Не только да и нет, но и "не ведаю"
+// TRIBOOL — TERNARY TRUTH
+// Not just yes and no, but also "I know not"
 // ═══════════════════════════════════════════════════════════════
 
-// Обычная истина — два пути
-let день: bool = true
-let ночь: bool = false
+// Ordinary truth — two paths
+let day: bool = true
+let night: bool = false
 
-// Троичная истина — три пути!
-let рассвет: Tribool = .Unknown  // Ни день, ни ночь
+// Ternary truth — three paths!
+let dawn: Tribool = .Unknown  // Neither day nor night
 
-// Пример: стражник у ворот
-fn пропустить_ли(путник: Путник) -> Tribool {
-    let возраст = путник.возраст
-    
-    match возраст {
-        Some(v) if v >= 18 => .True,   // "Проходи, добрый молодец!"
-        Some(v) if v < 18 => .False,   // "Мал ещё!"
-        None => .Unknown,               // "А лет-то тебе сколько?"
+// Example: guard at the gate
+fn should_let_pass(traveler: Traveler) -> Tribool {
+    let age = traveler.age
+
+    match age {
+        Some(v) if v >= 18 => .True,   // "Pass through, good fellow!"
+        Some(v) if v < 18 => .False,   // "Too young yet!"
+        None => .Unknown,               // "How old are you anyway?"
     }
 }
 
-// Троичная логика
+// Ternary logic
 let a: Tribool = .True
 let b: Tribool = .Unknown
 
-// И (and) — как два богатыря вместе
-a.and(b)  // Unknown — не знаем силу второго
+// AND — like two heroes together
+a.and(b)  // Unknown — we don't know the second one's strength
 
-// ИЛИ (or) — хоть один да справится
-a.or(b)   // True — первый точно справится
+// OR — at least one will manage
+a.or(b)   // True — the first one will surely manage
 
-// НЕ (not) — превращение
-b.not()   // Unknown — неведомое остаётся неведомым
+// NOT — transformation
+b.not()   // Unknown — the unknown remains unknown
 ```
 
-### Третий Тип: Судьба (Option и Result)
+### Third Type: Fate (Option and Result)
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// OPTION — ТРИ СУДЬБЫ СОКРОВИЩА
-// Есть, нет, или заколдовано
+// OPTION — THREE FATES OF TREASURE
+// Present, absent, or enchanted
 // ═══════════════════════════════════════════════════════════════
 
 type Option<T> = enum {
-    Some(T),    // Сокровище в сундуке!
-    None,       // Сундук пуст...
-    Unknown,    // Сундук заколдован, не открыть
+    Some(T),    // Treasure in the chest!
+    None,       // Chest is empty...
+    Unknown,    // Chest is enchanted, cannot open
 }
 
-// Пример: поиск клада
-fn искать_клад(карта: Карта, место: Место) -> Option<Клад> {
-    if !карта.указывает_на(место) {
-        return .None  // Здесь точно нет
+// Example: searching for treasure
+fn search_for_treasure(map: Map, place: Place) -> Option<Treasure> {
+    if !map.points_to(place) {
+        return .None  // Definitely nothing here
     }
-    
-    if место.заколдовано() {
-        return .Unknown  // Нужен волшебник!
+
+    if place.is_enchanted() {
+        return .Unknown  // Need a wizard!
     }
-    
-    match копать(место) {
-        Some(клад) => .Some(клад),
+
+    match dig(place) {
+        Some(treasure) => .Some(treasure),
         None => .None,
     }
 }
 
-// Обработка трёх судеб
-let результат = искать_клад(моя_карта, поляна)
+// Handling three fates
+let result = search_for_treasure(my_map, clearing)
 
-match результат {
-    Some(клад) => {
-        радоваться()
-        положить_в_сумку(клад)
+match result {
+    Some(treasure) => {
+        rejoice()
+        put_in_bag(treasure)
     },
     None => {
-        вздохнуть()
-        искать_дальше()
+        sigh()
+        search_further()
     },
     Unknown => {
-        // Третий путь!
-        найти_волшебника()
-        снять_заклятие()
-        попробовать_снова()
+        // Third path!
+        find_wizard()
+        remove_enchantment()
+        try_again()
     },
 }
 ```
 
 ---
 
-## Сказ о Трёх Дорогах (Match)
+## The Tale of Three Roads (Match)
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// MATCH — КАМЕНЬ НА РАСПУТЬЕ
-// "Направо пойдёшь... Налево пойдёшь... Прямо пойдёшь..."
+// MATCH — STONE AT THE CROSSROADS
+// "Go right... Go left... Go straight..."
 // ═══════════════════════════════════════════════════════════════
 
-// Троичное сравнение — сердце языка!
-fn выбрать_путь(сила_врага: i32, моя_сила: i32) -> Путь {
-    // Оператор <=> возвращает три варианта
-    match моя_сила <=> сила_врага {
+// Ternary comparison — heart of the language!
+fn choose_path(enemy_strength: i32, my_strength: i32) -> Path {
+    // The <=> operator returns three variants
+    match my_strength <=> enemy_strength {
         .Less => {
-            // "Направо пойдёшь — коня потеряешь"
-            // Враг сильнее — нужна хитрость
-            .Обходной
+            // "Go right and lose your horse"
+            // Enemy is stronger — need cunning
+            .Detour
         },
         .Equal => {
-            // "Прямо пойдёшь — бой примешь"
-            // Силы равны — честный бой
-            .Прямой
+            // "Go straight and face battle"
+            // Forces are equal — fair fight
+            .Direct
         },
         .Greater => {
-            // "Налево пойдёшь — победу найдёшь"
-            // Я сильнее — атакуем!
-            .Атака
+            // "Go left and find victory"
+            // I am stronger — attack!
+            .Attack
         },
     }
 }
 
-// Match с охранниками (guards) — мудрые условия
-fn оценить_героя(герой: Герой) -> Звание {
-    match герой {
-        // Три уровня силы
-        h if h.сила > 90 => .Богатырь,
-        h if h.сила > 50 => .Воин,
-        h if h.сила > 20 => .Ученик,
-        
-        // Три уровня мудрости
-        h if h.мудрость > 90 => .Мудрец,
-        h if h.мудрость > 50 => .Книжник,
-        
-        // Три уровня хитрости
-        h if h.хитрость > 90 => .Плут,
-        
-        // Остальные
-        _ => .Простолюдин,
+// Match with guards — wise conditions
+fn evaluate_hero(hero: Hero) -> Title {
+    match hero {
+        // Three levels of strength
+        h if h.strength > 90 => .Champion,
+        h if h.strength > 50 => .Warrior,
+        h if h.strength > 20 => .Apprentice,
+
+        // Three levels of wisdom
+        h if h.wisdom > 90 => .Sage,
+        h if h.wisdom > 50 => .Scholar,
+
+        // Three levels of cunning
+        h if h.cunning > 90 => .Trickster,
+
+        // Others
+        _ => .Commoner,
     }
 }
 ```
 
 ---
 
-## Сказ о Трёх Богатырях (Структуры)
+## The Tale of Three Heroes (Structures)
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// STRUCT — СОЗДАНИЕ БОГАТЫРЕЙ
-// Каждый богатырь имеет три главных качества
+// STRUCT — CREATING HEROES
+// Each hero has three main qualities
 // ═══════════════════════════════════════════════════════════════
 
-struct Богатырь {
-    // Три главных качества (как три корня силы)
-    сила: i32,       // Илья Муромец — сила телесная
-    мудрость: i32,   // Добрыня Никитич — сила разума
-    хитрость: i32,   // Алёша Попович — сила духа
-    
-    // Имя и снаряжение
-    имя: String,
-    конь: Option<Конь>,
-    меч: Option<Меч>,
-    щит: Option<Щит>,
+struct Hero {
+    // Three main qualities (like three roots of power)
+    strength: i32,   // Ilya Muromets — bodily strength
+    wisdom: i32,     // Dobrynya Nikitich — strength of mind
+    cunning: i32,    // Alyosha Popovich — strength of spirit
+
+    // Name and equipment
+    name: String,
+    horse: Option<Horse>,
+    sword: Option<Sword>,
+    shield: Option<Shield>,
 }
 
-impl Богатырь {
-    // Три способа создания богатыря
-    
-    /// Создать обычного богатыря
-    fn новый(имя: String) -> Self {
+impl Hero {
+    // Three ways to create a hero
+
+    /// Create an ordinary hero
+    fn new(name: String) -> Self {
         Self {
-            имя,
-            сила: 10,
-            мудрость: 10,
-            хитрость: 10,
-            конь: .None,
-            меч: .None,
-            щит: .None,
+            name,
+            strength: 10,
+            wisdom: 10,
+            cunning: 10,
+            horse: .None,
+            sword: .None,
+            shield: .None,
         }
     }
-    
-    /// Создать Илью Муромца
-    fn илья() -> Self {
+
+    /// Create Ilya Muromets
+    fn ilya() -> Self {
         Self {
-            имя: "Илья Муромец".to_string(),
-            сила: 100,      // Непревзойдённая сила!
-            мудрость: 50,
-            хитрость: 30,
-            конь: .Some(Конь::бурушка()),
-            меч: .Some(Меч::кладенец()),
-            щит: .Some(Щит::булатный()),
+            name: "Ilya Muromets".to_string(),
+            strength: 100,      // Unmatched strength!
+            wisdom: 50,
+            cunning: 30,
+            horse: .Some(Horse::burushka()),
+            sword: .Some(Sword::kladenets()),
+            shield: .Some(Shield::steel()),
         }
     }
-    
-    /// Создать Добрыню Никитича
-    fn добрыня() -> Self {
+
+    /// Create Dobrynya Nikitich
+    fn dobrynya() -> Self {
         Self {
-            имя: "Добрыня Никитич".to_string(),
-            сила: 70,
-            мудрость: 90,   // Мудрейший!
-            хитрость: 50,
-            конь: .Some(Конь::белогрив()),
-            меч: .Some(Меч::острый()),
-            щит: .None,
+            name: "Dobrynya Nikitich".to_string(),
+            strength: 70,
+            wisdom: 90,         // Wisest!
+            cunning: 50,
+            horse: .Some(Horse::whitegray()),
+            sword: .Some(Sword::sharp()),
+            shield: .None,
         }
     }
-    
-    /// Создать Алёшу Поповича
-    fn алёша() -> Self {
+
+    /// Create Alyosha Popovich
+    fn alyosha() -> Self {
         Self {
-            имя: "Алёша Попович".to_string(),
-            сила: 50,
-            мудрость: 60,
-            хитрость: 100,  // Хитрейший!
-            конь: .Some(Конь::вороной()),
-            меч: .None,
-            щит: .None,
+            name: "Alyosha Popovich".to_string(),
+            strength: 50,
+            wisdom: 60,
+            cunning: 100,       // Most cunning!
+            horse: .Some(Horse::raven()),
+            sword: .None,
+            shield: .None,
         }
     }
-    
-    /// Общая мощь — сумма трёх качеств
-    fn мощь(&self) -> i32 {
-        self.сила + self.мудрость + self.хитрость
+
+    /// Total power — sum of three qualities
+    fn power(&self) -> i32 {
+        self.strength + self.wisdom + self.cunning
     }
-    
-    /// Троичное сравнение богатырей
-    fn сравнить(&self, другой: &Богатырь) -> Ordering {
-        self.мощь() <=> другой.мощь()
+
+    /// Ternary comparison of heroes
+    fn compare(&self, other: &Hero) -> Ordering {
+        self.power() <=> other.power()
     }
 }
 
-// Использование
-fn главная() {
-    // Три богатыря
-    let илья = Богатырь::илья()
-    let добрыня = Богатырь::добрыня()
-    let алёша = Богатырь::алёша()
-    
-    // Кто сильнее?
-    match илья.сравнить(&добрыня) {
-        .Greater => println!("Илья сильнее Добрыни"),
-        .Less => println!("Добрыня сильнее Ильи"),
-        .Equal => println!("Равны богатыри!"),
+// Usage
+fn main() {
+    // Three heroes
+    let ilya = Hero::ilya()
+    let dobrynya = Hero::dobrynya()
+    let alyosha = Hero::alyosha()
+
+    // Who is stronger?
+    match ilya.compare(&dobrynya) {
+        .Greater => println!("Ilya is stronger than Dobrynya"),
+        .Less => println!("Dobrynya is stronger than Ilya"),
+        .Equal => println!("The heroes are equal!"),
     }
-    
-    // Общая мощь дружины
-    let дружина = [илья, добрыня, алёша]
-    let общая_мощь: i32 = дружина.iter().map(|б| б.мощь()).sum()
-    
-    println!("Мощь дружины: {}", общая_мощь)  // 180 + 210 + 210 = 600
+
+    // Total power of the company
+    let company = [ilya, dobrynya, alyosha]
+    let total_power: i32 = company.iter().map(|h| h.power()).sum()
+
+    println!("Company power: {}", total_power)  // 180 + 210 + 210 = 600
 }
 ```
 
 ---
 
-## Сказ о Трёх Попытках (Retry)
+## The Tale of Three Attempts (Retry)
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// TRY3 — ТРИ ПОПЫТКИ ГЕРОЯ
-// В сказках герой всегда получает три попытки
+// TRY3 — THREE ATTEMPTS OF THE HERO
+// In fairy tales, the hero always gets three attempts
 // ═══════════════════════════════════════════════════════════════
 
-/// Три попытки — встроенная конструкция языка!
-fn победить_змея(герой: &mut Герой, змей: &Змей) -> Result<Победа, Поражение> {
-    // Макрос @try3 даёт три попытки
+/// Three attempts — built-in language construct!
+fn defeat_dragon(hero: &mut Hero, dragon: &Dragon) -> Result<Victory, Defeat> {
+    // The @try3 macro gives three attempts
     @try3 {
-        // Первая попытка
-        герой.атаковать(змей)?
+        // First attempt
+        hero.attack(dragon)?
     } on_retry {
-        // Между попытками
-        герой.отдохнуть()
-        герой.получить_совет()
-        герой.сила += 10  // Опыт растёт!
+        // Between attempts
+        hero.rest()
+        hero.receive_advice()
+        hero.strength += 10  // Experience grows!
     }
 }
 
-// Или явно:
-fn победить_змея_явно(герой: &mut Герой, змей: &Змей) -> Result<Победа, Поражение> {
-    for попытка in 1..=3 {
-        match герой.атаковать(змей) {
-            Ok(победа) => return Ok(победа),
-            Err(e) if попытка < 3 => {
-                // Ещё есть попытки
-                println!("Попытка {} не удалась, но герой не сдаётся!", попытка)
-                герой.отдохнуть()
-                герой.получить_совет()
+// Or explicitly:
+fn defeat_dragon_explicit(hero: &mut Hero, dragon: &Dragon) -> Result<Victory, Defeat> {
+    for attempt in 1..=3 {
+        match hero.attack(dragon) {
+            Ok(victory) => return Ok(victory),
+            Err(e) if attempt < 3 => {
+                // Still have attempts
+                println!("Attempt {} failed, but the hero does not give up!", attempt)
+                hero.rest()
+                hero.receive_advice()
                 continue
             },
-            Err(e) => return Err(e),  // Три попытки исчерпаны
+            Err(e) => return Err(e),  // Three attempts exhausted
         }
     }
     unreachable!()
@@ -379,55 +379,55 @@ fn победить_змея_явно(герой: &mut Герой, змей: &З
 
 ---
 
-## Сказ о Трёх Решениях (Decision)
+## The Tale of Three Decisions (Decision)
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// DECISION — ТРОИЧНОЕ РЕШЕНИЕ МУДРЕЦА
-// Принять, отвергнуть, или отложить
+// DECISION — TERNARY DECISION OF THE SAGE
+// Accept, reject, or defer
 // ═══════════════════════════════════════════════════════════════
 
 type Decision<T> = enum {
-    Accept(T),  // "Да будет так!"
-    Reject,     // "Нет, не бывать!"
-    Defer,      // "Приходи через год..."
+    Accept(T),  // "So be it!"
+    Reject,     // "No, it shall not be!"
+    Defer,      // "Come back in a year..."
 }
 
-/// Мудрец принимает решение
-fn решение_мудреца(проситель: &Проситель) -> Decision<Благословение> {
-    let достоинство = оценить_достоинство(проситель)
-    
-    // Три порога — как три двери
-    const ПОРОГ_ПРИНЯТИЯ: f64 = 0.9    // Высокий порог
-    const ПОРОГ_ОТКАЗА: f64 = 0.1      // Низкий порог
-    
-    if достоинство >= ПОРОГ_ПРИНЯТИЯ {
-        // Достоин! Первая дверь открывается
-        .Accept(Благословение::полное())
-    } else if достоинство <= ПОРОГ_ОТКАЗА {
-        // Недостоин! Вторая дверь закрывается
+/// The sage makes a decision
+fn sage_decision(petitioner: &Petitioner) -> Decision<Blessing> {
+    let worthiness = evaluate_worthiness(petitioner)
+
+    // Three thresholds — like three doors
+    const ACCEPT_THRESHOLD: f64 = 0.9    // High threshold
+    const REJECT_THRESHOLD: f64 = 0.1    // Low threshold
+
+    if worthiness >= ACCEPT_THRESHOLD {
+        // Worthy! First door opens
+        .Accept(Blessing::full())
+    } else if worthiness <= REJECT_THRESHOLD {
+        // Unworthy! Second door closes
         .Reject
     } else {
-        // Неясно... Третья дверь — ожидание
+        // Unclear... Third door — waiting
         .Defer
     }
 }
 
-// Использование
-fn у_мудреца(проситель: Проситель) {
-    match решение_мудреца(&проситель) {
-        Accept(благословение) => {
-            println!("Мудрец благословил!")
-            проситель.получить(благословение)
+// Usage
+fn at_the_sage(petitioner: Petitioner) {
+    match sage_decision(&petitioner) {
+        Accept(blessing) => {
+            println!("The sage blessed!")
+            petitioner.receive(blessing)
         },
         Reject => {
-            println!("Мудрец отказал...")
-            проситель.уйти_с_печалью()
+            println!("The sage refused...")
+            petitioner.leave_in_sorrow()
         },
         Defer => {
-            println!("Мудрец сказал: 'Приходи через год'")
-            проситель.ждать_и_совершенствоваться()
-            // Через год — новая попытка!
+            println!("The sage said: 'Come back in a year'")
+            petitioner.wait_and_improve()
+            // In a year — a new attempt!
         },
     }
 }
@@ -435,170 +435,170 @@ fn у_мудреца(проситель: Проситель) {
 
 ---
 
-## Сказ о Волшебных Коллекциях
+## The Tale of Magical Collections
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// TRINITY COLLECTIONS — ТРИ ВОЛШЕБНЫХ СУНДУКА
+// TRINITY COLLECTIONS — THREE MAGICAL CHESTS
 // ═══════════════════════════════════════════════════════════════
 
-fn волшебные_сундуки() {
+fn magical_chests() {
     // ┌─────────────────────────────────────────────────────────┐
-    // │  ПЕРВЫЙ СУНДУК: TrinityBTree                           │
-    // │  B-дерево с тремя ветвями (оптимально!)                │
+    // │  FIRST CHEST: TrinityBTree                              │
+    // │  B-tree with three branches (optimal!)                  │
     // └─────────────────────────────────────────────────────────┘
-    let древо = TrinityBTree<i32, Сокровище>::new()
-    
-    // Три богатыря кладут сокровища
-    древо.вставить(1, Сокровище::меч("Кладенец"))
-    древо.вставить(2, Сокровище::щит("Непробиваемый"))
-    древо.вставить(3, Сокровище::шлем("Невидимка"))
-    
-    // Поиск — на 6% быстрее обычного!
-    if let Some(меч) = древо.найти(1) {
-        println!("Нашёл меч: {}", меч.имя)
+    let tree = TrinityBTree<i32, Treasure>::new()
+
+    // Three heroes place treasures
+    tree.insert(1, Treasure::sword("Kladenets"))
+    tree.insert(2, Treasure::shield("Impenetrable"))
+    tree.insert(3, Treasure::helmet("Invisibility"))
+
+    // Search — 6% faster than usual!
+    if let Some(sword) = tree.find(1) {
+        println!("Found sword: {}", sword.name)
     }
-    
+
     // ┌─────────────────────────────────────────────────────────┐
-    // │  ВТОРОЙ СУНДУК: TrinityHash                            │
-    // │  Хеш-таблица с тремя ключами (82% больше места!)       │
+    // │  SECOND CHEST: TrinityHash                              │
+    // │  Hash table with three keys (82% more space!)           │
     // └─────────────────────────────────────────────────────────┘
-    let сундуки = TrinityHash<String, Золото>::new()
-    
-    // Три ключа от трёх замков
-    сундуки.вставить("ключ_ильи", Золото(100))
-    сундуки.вставить("ключ_добрыни", Золото(200))
-    сундуки.вставить("ключ_алёши", Золото(300))
-    
-    // Поиск проверяет три места
-    let золото = сундуки.получить("ключ_добрыни")
-    
+    let chests = TrinityHash<String, Gold>::new()
+
+    // Three keys from three locks
+    chests.insert("ilya_key", Gold(100))
+    chests.insert("dobrynya_key", Gold(200))
+    chests.insert("alyosha_key", Gold(300))
+
+    // Search checks three places
+    let gold = chests.get("dobrynya_key")
+
     // ┌─────────────────────────────────────────────────────────┐
-    // │  ТРЕТИЙ СУНДУК: TernarySearchTree                      │
-    // │  Дерево с тремя дорогами для слов                      │
+    // │  THIRD CHEST: TernarySearchTree                         │
+    // │  Tree with three paths for words                        │
     // └─────────────────────────────────────────────────────────┘
-    let словарь = TernarySearchTree<String>::new()
-    
-    // Заклинания волшебника
-    словарь.вставить("абракадабра")
-    словарь.вставить("абра")
-    словарь.вставить("кадабра")
-    словарь.вставить("сим-салабим")
-    
-    // Найти все заклинания на "абр"
-    let заклинания = словарь.найти_по_префиксу("абр")
-    // Результат: ["абра", "абракадабра"]
+    let dictionary = TernarySearchTree<String>::new()
+
+    // Wizard's spells
+    dictionary.insert("abracadabra")
+    dictionary.insert("abra")
+    dictionary.insert("cadabra")
+    dictionary.insert("sim-salabim")
+
+    // Find all spells starting with "abr"
+    let spells = dictionary.find_by_prefix("abr")
+    // Result: ["abra", "abracadabra"]
 }
 ```
 
 ---
 
-## Сказ о Параллельных Мирах (Async)
+## The Tale of Parallel Worlds (Async)
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// ASYNC — ТРИ БОГАТЫРЯ В ТРЁХ МИРАХ ОДНОВРЕМЕННО
+// ASYNC — THREE HEROES IN THREE WORLDS SIMULTANEOUSLY
 // ═══════════════════════════════════════════════════════════════
 
-/// Три богатыря отправляются в поход одновременно
-async fn поход_трёх_богатырей() -> Vec<Трофей> {
-    // Три задачи — три мира
-    let мир_ильи = async {
-        илья.победить_соловья_разбойника().await
+/// Three heroes embark on a quest simultaneously
+async fn quest_of_three_heroes() -> Vec<Trophy> {
+    // Three tasks — three worlds
+    let ilya_world = async {
+        ilya.defeat_nightingale_the_robber().await
     }
-    
-    let мир_добрыни = async {
-        добрыня.победить_змея_горыныча().await
+
+    let dobrynya_world = async {
+        dobrynya.defeat_zmey_gorynych().await
     }
-    
-    let мир_алёши = async {
-        алёша.победить_тугарина_змеевича().await
+
+    let alyosha_world = async {
+        alyosha.defeat_tugarin_zmeyevich().await
     }
-    
-    // Ждём всех троих — они сражаются ОДНОВРЕМЕННО!
-    let (трофей_1, трофей_2, трофей_3) = join!(
-        мир_ильи,
-        мир_добрыни,
-        мир_алёши
+
+    // Wait for all three — they fight SIMULTANEOUSLY!
+    let (trophy_1, trophy_2, trophy_3) = join!(
+        ilya_world,
+        dobrynya_world,
+        alyosha_world
     ).await
-    
-    vec![трофей_1, трофей_2, трофей_3]
+
+    vec![trophy_1, trophy_2, trophy_3]
 }
 
-// Три состояния асинхронной задачи
+// Three states of an async task
 enum AsyncState<T> {
-    Pending,     // Богатырь ещё в пути
-    Ready(T),    // Богатырь вернулся с победой
-    Cancelled,   // Богатырь отозван
+    Pending,     // Hero is still on the way
+    Ready(T),    // Hero returned victorious
+    Cancelled,   // Hero was recalled
 }
 ```
 
 ---
 
-## Сказ о Волшебных Атрибутах
+## The Tale of Magical Attributes
 
 ```vibee
 // ═══════════════════════════════════════════════════════════════
-// АТРИБУТЫ — ВОЛШЕБНЫЕ РУНЫ НА ОРУЖИИ
+// ATTRIBUTES — MAGICAL RUNES ON WEAPONS
 // ═══════════════════════════════════════════════════════════════
 
-/// @derive — руна автоматического создания
+/// @derive — rune of automatic creation
 @derive(Ord, Clone, Debug)
-struct Воин {
-    сила: i32,
-    имя: String,
+struct Warrior {
+    strength: i32,
+    name: String,
 }
-// Компилятор сам создаёт сравнение, копирование, отладку!
+// The compiler creates comparison, copying, and debugging by itself!
 
-/// @trinity — руна троичной оптимизации
+/// @trinity — rune of ternary optimization
 @trinity
-fn сортировать(массив: &mut [i32]) {
-    // Компилятор использует Trinity Sort!
+fn sort(array: &mut [i32]) {
+    // The compiler uses Trinity Sort!
     // Threshold 27, golden ratio pivot
 }
 
-/// @parallel — руна параллелизма
-@parallel(threads: 3)  // Три потока — три богатыря!
-fn обработать(данные: &[Задача]) -> Vec<Результат> {
-    данные.iter().map(|з| з.выполнить()).collect()
+/// @parallel — rune of parallelism
+@parallel(threads: 3)  // Three threads — three heroes!
+fn process(data: &[Task]) -> Vec<Result> {
+    data.iter().map(|t| t.execute()).collect()
 }
 
-/// @simd — руна векторной магии
+/// @simd — rune of vector magic
 @simd
-fn сложить_векторы(a: &[f32], b: &[f32]) -> Vec<f32> {
-    // Компилятор использует AVX/SSE!
+fn add_vectors(a: &[f32], b: &[f32]) -> Vec<f32> {
+    // The compiler uses AVX/SSE!
     a.iter().zip(b).map(|(x, y)| x + y).collect()
 }
 
-/// @neural(ternary) — руна троичной нейросети
+/// @neural(ternary) — rune of ternary neural network
 @neural(ternary)
-struct МудраяСеть {
-    слой1: TernaryLayer<784, 256>,  // Веса {-1, 0, +1}
-    слой2: TernaryLayer<256, 10>,
+struct WiseNetwork {
+    layer1: TernaryLayer<784, 256>,  // Weights {-1, 0, +1}
+    layer2: TernaryLayer<256, 10>,
 }
-// 16x меньше памяти, нет умножений!
+// 16x less memory, no multiplications!
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И изучил Иван волшебную грамоту Vibee,*
-> *и понял он тайны троичного языка.*
+> *And Ivan studied the magical script of Vibee,*
+> *and understood the secrets of the ternary language.*
 >
-> *Три типа данных — числа, истина, судьба.*
-> *Три дороги match — меньше, равно, больше.*
-> *Три богатыря struct — сила, мудрость, хитрость.*
-> *Три попытки try3 — как в каждой сказке.*
-> *Три решения decide — принять, отвергнуть, отложить.*
+> *Three data types — numbers, truth, fate.*
+> *Three roads of match — less, equal, greater.*
+> *Three heroes of struct — strength, wisdom, cunning.*
+> *Three attempts of try3 — as in every fairy tale.*
+> *Three decisions of decide — accept, reject, defer.*
 >
-> *И каждое заклинание в языке Vibee*
-> *несёт в себе мудрость числа три.*
+> *And every spell in the Vibee language*
+> *carries within it the wisdom of the number three.*
 >
-> *Ибо Vibee — не просто язык программирования.*
-> *Vibee — это волшебная грамота,*
-> *на которой написаны законы Тридевятого царства.*
+> *For Vibee is not just a programming language.*
+> *Vibee is a magical script,*
+> *upon which the laws of the Thrice-Nine Kingdom are written.*
 
 ---
 
-[← Глава 11](11_vibee_language.md) | [Глава 12: Компилятор 999 →](12_compiler_999.md)
+[<- Chapter 11](11_vibee_language.md) | [Chapter 12: Compiler 999 ->](12_compiler_999.md)

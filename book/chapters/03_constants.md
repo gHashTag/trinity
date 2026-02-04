@@ -1,78 +1,78 @@
-# Глава 3: Константы π, φ, e — Язык Вселенной
+# Chapter 3: Constants π, φ, e — The Language of the Universe
 
 ---
 
-*«Математика — это язык, на котором написана книга природы.»*
-— Галилео Галилей
+*"Mathematics is the language in which the book of nature is written."*
+— Galileo Galilei
 
 ---
 
-## Три Константы Оптимизации
+## Three Constants of Optimization
 
-Вселенная говорит на языке трёх констант:
+The Universe speaks in the language of three constants:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ТРИ КОНСТАНТЫ ВСЕЛЕННОЙ                              │
+│   THREE CONSTANTS OF THE UNIVERSE                       │
 │                                                         │
-│   π = 3.14159...    Периодичность, вращение            │
-│   φ = 1.61803...    Оптимальное распределение          │
-│   e = 2.71828...    Рост, оптимальная база             │
+│   π = 3.14159...    Periodicity, rotation               │
+│   φ = 1.61803...    Optimal distribution                │
+│   e = 2.71828...    Growth, optimal base                │
 │                                                         │
-│   И все три связаны с числом 3!                        │
+│   And all three are connected to the number 3!          │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## π: Константа Периодичности
+## π: The Constant of Periodicity
 
-### Где Появляется π
+### Where π Appears
 
 ```
-ГЕОМЕТРИЯ:
-  Окружность: C = 2πr
-  Площадь круга: A = πr²
-  Сфера: V = (4/3)πr³
+GEOMETRY:
+  Circumference: C = 2πr
+  Circle area: A = πr²
+  Sphere: V = (4/3)πr³
 
-ФИЗИКА:
-  Волны: sin(2πft)
-  Квантовая механика: ℏ = h/2π
-  Гравитация: период орбиты содержит π
+PHYSICS:
+  Waves: sin(2πft)
+  Quantum mechanics: ℏ = h/2π
+  Gravity: orbital period contains π
 
-АЛГОРИТМЫ:
+ALGORITHMS:
   FFT: ω_n = e^(2πi/n)
   Stirling: n! ≈ √(2πn)(n/e)^n
-  Нормальное распределение: (1/√2π)e^(-x²/2)
+  Normal distribution: (1/√2π)e^(-x²/2)
 ```
 
-### π в Сортировке
+### π in Sorting
 
 ```
-Нижняя граница сортировки:
+Lower bound of sorting:
   log₂(n!) ≈ n log₂(n) - n/ln(2)
 
-Используя Stirling:
+Using Stirling:
   n! ≈ √(2πn)(n/e)^n
-  
+
   log₂(n!) ≈ log₂(√(2πn)) + n log₂(n/e)
            ≈ (1/2)log₂(2πn) + n log₂(n) - n log₂(e)
 
-π появляется в НИЖНЕЙ ГРАНИЦЕ сортировки!
+π appears in the LOWER BOUND of sorting!
 ```
 
 ---
 
-## φ: Золотое Сечение
+## φ: The Golden Ratio
 
-### Определение
+### Definition
 
 ```
 φ = (1 + √5) / 2 = 1.6180339887...
 
-Свойства:
+Properties:
   φ² = φ + 1
   1/φ = φ - 1
   φ = 1 + 1/φ
@@ -81,212 +81,213 @@ Continued fraction:
   φ = 1 + 1/(1 + 1/(1 + 1/(1 + ...)))
     = [1; 1, 1, 1, 1, ...]
 
-φ — САМОЕ ИРРАЦИОНАЛЬНОЕ ЧИСЛО!
+φ — THE MOST IRRATIONAL NUMBER!
 ```
 
-### Почему φ Оптимально?
+### Why is φ Optimal?
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   φ = АНТИРЕЗОНАНС                                     │
+│   φ = ANTI-RESONANCE                                    │
 │                                                         │
-│   Рациональные числа создают резонансы:                │
-│   1/2 → каждый второй                                  │
-│   1/3 → каждый третий                                  │
-│   2/3 → паттерн повторяется                            │
+│   Rational numbers create resonances:                   │
+│   1/2 → every second                                    │
+│   1/3 → every third                                     │
+│   2/3 → pattern repeats                                 │
 │                                                         │
-│   φ — самое далёкое от всех рациональных!              │
-│   Его приближения сходятся МЕДЛЕННЕЕ ВСЕХ.             │
+│   φ — the furthest from all rationals!                  │
+│   Its approximations converge SLOWEST OF ALL.           │
 │                                                         │
-│   СЛЕДСТВИЕ:                                            │
-│   φ даёт максимально равномерное распределение         │
+│   CONSEQUENCE:                                          │
+│   φ gives the most uniform distribution                 │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### φ в Алгоритмах
+### φ in Algorithms
 
 ```
 FIBONACCI HEAP:
-  Степень узла ≤ log_φ(n)
-  Амортизированная сложность O(1) для decrease-key
+  Node degree ≤ log_φ(n)
+  Amortized complexity O(1) for decrease-key
 
 GOLDEN SECTION SEARCH:
-  Делим отрезок в отношении φ
-  Оптимально для унимодальных функций
+  Divide segment in ratio φ
+  Optimal for unimodal functions
 
-ХЕШИРОВАНИЕ:
+HASHING:
   h(k) = floor(n × (k × φ mod 1))
-  Даёт равномерное распределение
+  Gives uniform distribution
 
 TRINITY SORT:
   pivot_idx = lo + (hi - lo) × (φ - 1)
             = lo + (hi - lo) × 0.618
-  Избегает worst-case на структурированных данных
+  Avoids worst-case on structured data
 ```
 
 ---
 
-## e: Основание Натурального Логарифма
+## e: The Base of Natural Logarithm
 
-### Определение
+### Definition
 
 ```
 e = lim(n→∞) (1 + 1/n)^n = 2.7182818284...
 
-Свойства:
+Properties:
   d/dx e^x = e^x
   ∫ e^x dx = e^x
   ln(e) = 1
 ```
 
-### e и Оптимальная База
+### e and the Optimal Base
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ОПТИМАЛЬНАЯ БАЗА ДЛЯ ПРЕДСТАВЛЕНИЯ ЧИСЕЛ             │
+│   OPTIMAL BASE FOR NUMBER REPRESENTATION                │
 │                                                         │
-│   Стоимость представления N в базе b:                  │
-│   E(b) = b × log_b(N) = b × ln(N) / ln(b)             │
+│   Cost of representing N in base b:                     │
+│   E(b) = b × log_b(N) = b × ln(N) / ln(b)              │
 │                                                         │
-│   Минимизируем b / ln(b):                              │
-│   d/db [b / ln(b)] = 0                                 │
-│   ln(b) = 1                                            │
-│   b = e ≈ 2.718                                        │
+│   Minimize b / ln(b):                                   │
+│   d/db [b / ln(b)] = 0                                  │
+│   ln(b) = 1                                             │
+│   b = e ≈ 2.718                                         │
 │                                                         │
-│   ОПТИМАЛЬНАЯ БАЗА = e                                 │
-│   БЛИЖАЙШЕЕ ЦЕЛОЕ = 3                                  │
+│   OPTIMAL BASE = e                                      │
+│   NEAREST INTEGER = 3                                   │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### e в Алгоритмах
+### e in Algorithms
 
 ```
-СЛОЖНОСТЬ АЛГОРИТМОВ:
+ALGORITHM COMPLEXITY:
   O(n log n) = O(n × ln(n) / ln(2))
-  Натуральный логарифм — естественная мера
+  Natural logarithm — the natural measure
 
-ВЕРОЯТНОСТЬ:
-  Пуассоновское распределение: e^(-λ)λ^k/k!
-  Случайные перестановки: ~1/e не имеют фиксированных точек
+PROBABILITY:
+  Poisson distribution: e^(-λ)λ^k/k!
+  Random permutations: ~1/e have no fixed points
 
-ОПТИМИЗАЦИЯ:
-  Градиентный спуск: e^(-αt)
+OPTIMIZATION:
+  Gradient descent: e^(-αt)
   Simulated annealing: e^(-ΔE/kT)
 ```
 
 ---
 
-## Связь Констант
+## Connection Between Constants
 
-### Формула Эйлера
+### Euler's Formula
 
 ```
 e^(iπ) + 1 = 0
 
-Связывает:
-  e — основание натурального логарифма
-  i — мнимая единица
-  π — отношение окружности к диаметру
-  1 — единица
-  0 — ноль
+Connects:
+  e — base of natural logarithm
+  i — imaginary unit
+  π — ratio of circumference to diameter
+  1 — unity
+  0 — zero
 
-Самая красивая формула математики!
+The most beautiful formula in mathematics!
 ```
 
-### Связь с Числом 3
+### Connection with the Number 3
 
 ```
-e ≈ 3 (ближайшее целое)
-π ≈ 3 (грубое приближение)
-φ + 1/φ = √5 ≈ 2.236, но φ² = φ + 1 ≈ 2.618 ≈ 3
+e ≈ 3 (nearest integer)
+π ≈ 3 (rough approximation)
+φ + 1/φ = √5 ≈ 2.236, but φ² = φ + 1 ≈ 2.618 ≈ 3
 
-Все три константы "вращаются" вокруг 3!
+All three constants "revolve" around 3!
 ```
 
-### Формулы Масс
+### Mass Formulas
 
 ```
 m_p/m_e = 6π⁵ = 2 × 3 × π⁵
 
-Коэффициент 6 = 2 × 3 содержит тройку!
+The coefficient 6 = 2 × 3 contains three!
 
-Гипотеза: 3 — структурная константа,
-π — константа периодичности,
-их комбинация определяет массы частиц.
+Hypothesis: 3 — structural constant,
+π — periodicity constant,
+their combination determines particle masses.
 ```
 
 ---
 
-## Практическое Применение
+## Practical Application
 
-### Golden Ratio в Trinity Sort
+### Golden Ratio in Trinity Sort
 
 ```python
 def trinity_sort(arr):
     PHI = 0.6180339887  # φ - 1 = 1/φ
-    
+
     def partition3(a, lo, hi):
-        # Выбираем pivot на позиции φ от начала
+        # Choose pivot at position φ from start
         pivot_idx = lo + int((hi - lo) * PHI)
         pivot = a[pivot_idx]
         # ... 3-way partition
 ```
 
-### e в Хешировании
+### e in Hashing
 
 ```python
 def golden_hash(key, table_size):
-    """Хеширование с золотым сечением"""
+    """Hashing with golden ratio"""
     PHI = 1.6180339887
-    # Используем дробную часть key × φ
+    # Use fractional part of key × φ
     return int(table_size * ((key * PHI) % 1))
 ```
 
-### π в FFT
+### π in FFT
 
 ```python
 def fft(x):
     """Fast Fourier Transform"""
     import cmath
     n = len(x)
-    # Twiddle factor использует π
+    # Twiddle factor uses π
     omega = cmath.exp(-2j * cmath.pi / n)
     # ...
 ```
 
 ---
 
-## Единая Картина
+## The Unified Picture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   ТРИ КОНСТАНТЫ — ОДИН ЯЗЫК                                    │
+│   THREE CONSTANTS — ONE LANGUAGE                                │
 │                                                                 │
 │   ┌─────────┐     ┌─────────┐     ┌─────────┐                  │
 │   │    π    │     │    φ    │     │    e    │                  │
 │   ├─────────┤     ├─────────┤     ├─────────┤                  │
-│   │Периодич.│     │Распредел│     │  Рост   │                  │
-│   │Вращение │     │Антирезон│     │Оптим.баз│                  │
-│   │  Волны  │     │ Баланс  │     │Сложность│                  │
+│   │Periodici│     │Distribut│     │  Growth │                  │
+│   │Rotation │     │Antireso.│     │Optim.bas│                  │
+│   │  Waves  │     │ Balance │     │Complexit│                  │
 │   └────┬────┘     └────┬────┘     └────┬────┘                  │
 │        │              │              │                         │
 │        └──────────────┼──────────────┘                         │
 │                       │                                        │
 │                       ▼                                        │
 │              ┌─────────────────┐                               │
-│              │   ЧИСЛО 3       │                               │
+│              │   NUMBER 3      │                               │
 │              │                 │                               │
 │              │ e ≈ 3           │                               │
 │              │ π ≈ 3           │                               │
 │              │ φ² ≈ 3          │                               │
 │              │                 │                               │
-│              │ Все вращается   │                               │
-│              │ вокруг тройки!  │                               │
+│              │ Everything      │                               │
+│              │ revolves        │                               │
+│              │ around three!   │                               │
 │              └─────────────────┘                               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -294,27 +295,27 @@ def fft(x):
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист третью истину:*
+> *And Ivan the programmer understood the third truth:*
 >
-> *Вселенная говорит на языке трёх констант:*
-> *π — язык периодичности и волн,*
-> *φ — язык оптимального распределения,*
-> *e — язык роста и сложности.*
+> *The Universe speaks in the language of three constants:*
+> *π — the language of periodicity and waves,*
+> *φ — the language of optimal distribution,*
+> *e — the language of growth and complexity.*
 >
-> *И все три связаны с числом 3:*
+> *And all three are connected to the number 3:*
 > *e ≈ 3, π ≈ 3, φ² ≈ 3.*
 >
-> *Формула Эйлера e^(iπ) + 1 = 0*
-> *связывает их в единое целое.*
+> *Euler's formula e^(iπ) + 1 = 0*
+> *binds them into a unified whole.*
 >
-> *Когда я использую φ для выбора pivot,*
-> *я говорю на языке Вселенной.*
+> *When I use φ to choose a pivot,*
+> *I speak the language of the Universe.*
 >
-> *Древние знали этот язык интуитивно.*
-> *Я учусь говорить на нём осознанно.*
+> *The ancients knew this language intuitively.*
+> *I am learning to speak it consciously.*
 
 ---
 
-[← Глава 2](02_physics_algorithms.md) | [Глава 4: Trinity Sort →](04_trinity_sort.md)
+[← Chapter 2](02_physics_algorithms.md) | [Chapter 4: Trinity Sort →](04_trinity_sort.md)

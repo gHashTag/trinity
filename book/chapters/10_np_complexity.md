@@ -1,42 +1,42 @@
-# Глава 10: Число 3 и NP-полнота — Порог Сложности
+# Chapter 10: The Number 3 and NP-Completeness — The Threshold of Complexity
 
 ---
 
-*«На распутье стоит камень, а на камне написано:*
-*"Два пути — просто, три пути — сложно..."»*
+*"At the crossroads stands a stone, and on the stone is written:*
+*'Two paths — easy, three paths — hard...'"*
 
 ---
 
-## Загадка Порога
+## The Riddle of the Threshold
 
-В мире алгоритмов есть странная закономерность:
+In the world of algorithms, there is a strange pattern:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│  ПЕРЕХОД ОТ ПРОСТОГО К СЛОЖНОМУ                                │
+│  TRANSITION FROM EASY TO HARD                                   │
 │                                                                 │
 │  k = 2                          k = 3                          │
 │  ─────                          ─────                          │
-│  ПРОСТО (P)                     СЛОЖНО (NP-полно)              │
+│  EASY (P)                       HARD (NP-complete)             │
 │                                                                 │
 │  2-SAT ✓                        3-SAT ✗                        │
-│  2-раскраска ✓                  3-раскраска ✗                  │
+│  2-coloring ✓                   3-coloring ✗                   │
 │  2D-matching ✓                  3D-matching ✗                  │
 │                                                                 │
-│  Почему именно при k = 3?                                      │
+│  Why exactly at k = 3?                                         │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Сказка о Двух и Трёх Дорогах
+## A Tale of Two and Three Roads
 
-### Две Дороги: Простой Выбор
+### Two Roads: A Simple Choice
 
 ```
-На распутье две дороги:
+At the crossroads, two roads:
   ┌─────┐
   │  ?  │
   └──┬──┘
@@ -44,17 +44,17 @@
    ╱   ╲
   A     B
 
-Если A плохо → иди в B
-Если B плохо → иди в A
+If A is bad → go to B
+If B is bad → go to A
 
-Всегда можно найти путь за линейное время!
-Это как 2-SAT: (A ∨ B) означает "если не A, то B"
+You can always find a path in linear time!
+This is like 2-SAT: (A ∨ B) means "if not A, then B"
 ```
 
-### Три Дороги: Сложный Выбор
+### Three Roads: A Hard Choice
 
 ```
-На распутье три дороги:
+At the crossroads, three roads:
       ┌─────┐
       │  ?  │
       └──┬──┘
@@ -62,63 +62,63 @@
       ╱  │  ╲
      A   B   C
 
-Если A плохо и B плохо → иди в C?
-Но что если C тоже плохо?
-А что если выбор A влияет на другие распутья?
+If A is bad and B is bad → go to C?
+But what if C is also bad?
+And what if choosing A affects other crossroads?
 
-Нет простого правила!
-Нужно проверять ВСЕ комбинации: 3ⁿ вариантов!
+There is no simple rule!
+You need to check ALL combinations: 3ⁿ variants!
 ```
 
 ---
 
 ## 2-SAT vs 3-SAT
 
-### 2-SAT: Линейное Время
+### 2-SAT: Linear Time
 
 ```
-Формула: (x₁ ∨ x₂) ∧ (¬x₁ ∨ x₃) ∧ (¬x₂ ∨ ¬x₃)
+Formula: (x₁ ∨ x₂) ∧ (¬x₁ ∨ x₃) ∧ (¬x₂ ∨ ¬x₃)
 
-Каждый дизъюнкт (a ∨ b) = две импликации:
+Each clause (a ∨ b) = two implications:
   ¬a → b
   ¬b → a
 
-Строим граф импликаций:
+Build an implication graph:
   ¬x₁ → x₂     x₁ → x₃     x₂ → ¬x₃
   ¬x₂ → x₁     ¬x₃ → ¬x₁   x₃ → ¬x₂
 
-Проверяем: есть ли путь x → ¬x И ¬x → x?
-Если да — противоречие, формула невыполнима.
-Если нет — находим решение за O(n).
+Check: is there a path x → ¬x AND ¬x → x?
+If yes — contradiction, formula is unsatisfiable.
+If no — find a solution in O(n).
 
-КЛАСС: P ✓
+CLASS: P ✓
 ```
 
-### 3-SAT: Экспоненциальное Время
+### 3-SAT: Exponential Time
 
 ```
-Формула: (x₁ ∨ x₂ ∨ x₃) ∧ (¬x₁ ∨ x₂ ∨ ¬x₄) ∧ ...
+Formula: (x₁ ∨ x₂ ∨ x₃) ∧ (¬x₁ ∨ x₂ ∨ ¬x₄) ∧ ...
 
-Дизъюнкт (a ∨ b ∨ c) НЕ даёт простых импликаций!
-  ¬a ∧ ¬b → c  (нужны ОБА условия!)
+A clause (a ∨ b ∨ c) does NOT give simple implications!
+  ¬a ∧ ¬b → c  (BOTH conditions are needed!)
 
-Граф импликаций не работает.
-Нужен перебор: 2ⁿ комбинаций.
+The implication graph does not work.
+Exhaustive search is required: 2ⁿ combinations.
 
-Лучший известный алгоритм: O(1.307ⁿ)
-Всё ещё экспоненциальный!
+Best known algorithm: O(1.307ⁿ)
+Still exponential!
 
-КЛАСС: NP-complete ✗
+CLASS: NP-complete ✗
 ```
 
 ---
 
-## Три Богатыря Раскраски
+## Three Heroes of Graph Coloring
 
-### 2-Раскраска: Проверка Двудольности
+### 2-Coloring: Bipartiteness Check
 
 ```
-Можно ли раскрасить граф в 2 цвета?
+Can you color a graph with 2 colors?
 
     ●───●
    ╱     ╲
@@ -126,21 +126,21 @@
    ╲     ╱
     ●───●
 
-Алгоритм:
-1. Начни с любой вершины, покрась в цвет 1
-2. Все соседи — в цвет 2
-3. Их соседи — в цвет 1
-4. Если конфликт — невозможно
+Algorithm:
+1. Start with any vertex, color it with color 1
+2. All neighbors — color 2
+3. Their neighbors — color 1
+4. If there is a conflict — impossible
 
-Время: O(V + E) — линейное!
+Time: O(V + E) — linear!
 
-КЛАСС: P ✓
+CLASS: P ✓
 ```
 
-### 3-Раскраска: NP-полная!
+### 3-Coloring: NP-complete!
 
 ```
-Можно ли раскрасить граф в 3 цвета?
+Can you color a graph with 3 colors?
 
     🔴───🔵
    ╱       ╲
@@ -148,147 +148,147 @@
    ╲       ╱
     🔵───🟢
 
-Нет простого локального правила!
-Выбор цвета для одной вершины
-влияет на далёкие вершины.
+There is no simple local rule!
+The choice of color for one vertex
+affects distant vertices.
 
-Нужен перебор: 3ⁿ комбинаций.
+Exhaustive search is required: 3ⁿ combinations.
 
-КЛАСС: NP-complete ✗
+CLASS: NP-complete ✗
 
-Даже для ПЛАНАРНЫХ графов!
-(Хотя 4 цветов всегда достаточно — теорема о 4 красках)
+Even for PLANAR graphs!
+(Although 4 colors are always sufficient — the four color theorem)
 ```
 
 ---
 
-## Почему Именно 3?
+## Why Exactly 3?
 
-### Гипотеза 1: Минимальная Нелинейность
-
-```
-2 элемента: линейные отношения
-  a → b (если не a, то b)
-  Цепочка импликаций
-
-3 элемента: нелинейные отношения
-  a ∧ b → c (нужны ОБА)
-  Дерево решений
-
-3 = минимум для нелинейности!
-```
-
-### Гипотеза 2: Комбинаторный Взрыв
+### Hypothesis 1: Minimal Nonlinearity
 
 ```
-2 варианта на элемент: 2ⁿ комбинаций
-3 варианта на элемент: 3ⁿ комбинаций
+2 elements: linear relationships
+  a → b (if not a, then b)
+  Chain of implications
 
-Отношение: (3/2)ⁿ = 1.5ⁿ
+3 elements: nonlinear relationships
+  a ∧ b → c (BOTH are needed)
+  Decision tree
 
-При n = 100:
+3 = the minimum for nonlinearity!
+```
+
+### Hypothesis 2: Combinatorial Explosion
+
+```
+2 variants per element: 2ⁿ combinations
+3 variants per element: 3ⁿ combinations
+
+Ratio: (3/2)ⁿ = 1.5ⁿ
+
+At n = 100:
   2¹⁰⁰ ≈ 10³⁰
   3¹⁰⁰ ≈ 10⁴⁸
 
-Разница в 10¹⁸ раз!
+A difference of 10¹⁸ times!
 ```
 
-### Гипотеза 3: Структура Решений
+### Hypothesis 3: Solution Structure
 
 ```
-2-SAT: решения образуют ВЫПУКЛОЕ множество
-  Если A и B — решения, то их "смесь" тоже решение
-  Можно найти градиентным спуском
+2-SAT: solutions form a CONVEX set
+  If A and B are solutions, then their "mixture" is also a solution
+  Can be found by gradient descent
 
-3-SAT: решения РАЗБРОСАНЫ
-  Между двумя решениями может быть пустота
-  Нужен полный перебор
+3-SAT: solutions are SCATTERED
+  Between two solutions there may be emptiness
+  Full search is required
 ```
 
 ---
 
-## Связь с Trinity Sort
+## Connection to Trinity Sort
 
-### Парадокс?
+### A Paradox?
 
 ```
-NP-полнота: 3 = сложно
-Trinity Sort: 3 = быстро
+NP-completeness: 3 = hard
+Trinity Sort: 3 = fast
 
-Как это совместить?
+How do we reconcile this?
 ```
 
-### Разгадка: Выбор vs Классификация
+### The Answer: Choice vs Classification
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│  NP-ПОЛНОТА: 3 ВАРИАНТА ВЫБОРА                                 │
+│  NP-COMPLETENESS: 3 VARIANTS OF CHOICE                         │
 │                                                                 │
-│  Каждый элемент может быть в 3 состояниях                      │
-│  n элементов → 3ⁿ комбинаций                                   │
-│  Нужно найти ОДНУ правильную комбинацию                        │
+│  Each element can be in 3 states                               │
+│  n elements → 3ⁿ combinations                                  │
+│  Need to find ONE correct combination                          │
 │                                                                 │
-│  Пример: 3-раскраска                                           │
-│  Каждая вершина: R или G или B                                 │
-│  Нужно найти раскраску без конфликтов                          │
+│  Example: 3-coloring                                           │
+│  Each vertex: R or G or B                                      │
+│  Need to find a coloring without conflicts                     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│  TRINITY SORT: 3 КАТЕГОРИИ КЛАССИФИКАЦИИ                       │
+│  TRINITY SORT: 3 CATEGORIES OF CLASSIFICATION                  │
 │                                                                 │
-│  Каждый элемент ДЕТЕРМИНИРОВАННО попадает в 1 из 3 категорий  │
-│  n элементов → 3n операций (линейно!)                          │
-│  Нет выбора — только классификация                             │
+│  Each element DETERMINISTICALLY falls into 1 of 3 categories   │
+│  n elements → 3n operations (linear!)                          │
+│  No choice — only classification                               │
 │                                                                 │
-│  Пример: 3-way partition                                       │
-│  Каждый элемент: < pivot ИЛИ = pivot ИЛИ > pivot              │
-│  Результат определён однозначно                                │
+│  Example: 3-way partition                                      │
+│  Each element: < pivot OR = pivot OR > pivot                   │
+│  The result is determined unambiguously                        │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Ключевое Различие
+### The Key Difference
 
 ```
-ВЫБОР (NP):
-  "Какой цвет назначить вершине?"
-  Много вариантов, нужно найти правильный
-  3ⁿ комбинаций
+CHOICE (NP):
+  "What color to assign to the vertex?"
+  Many variants, need to find the right one
+  3ⁿ combinations
 
-КЛАССИФИКАЦИЯ (P):
-  "В какую категорию попадает элемент?"
-  Один правильный ответ, определяется сравнением
-  3n операций
+CLASSIFICATION (P):
+  "Which category does the element fall into?"
+  One correct answer, determined by comparison
+  3n operations
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист глубокую истину:*
+> *And Ivan the Programmer understood a deep truth:*
 >
-> *Число 3 — порог между простым и сложным.*
+> *The number 3 is the threshold between easy and hard.*
 >
-> *Когда 3 означает ВЫБОР — это начало NP-полноты.*
-> *Три варианта на каждый элемент — 3ⁿ комбинаций.*
-> *Экспоненциальный взрыв!*
+> *When 3 means CHOICE — this is the beginning of NP-completeness.*
+> *Three variants for each element — 3ⁿ combinations.*
+> *Exponential explosion!*
 >
-> *Когда 3 означает КЛАССИФИКАЦИЮ — это оптимум.*
-> *Три категории для каждого элемента — 3n операций.*
-> *Линейное время!*
+> *When 3 means CLASSIFICATION — this is the optimum.*
+> *Three categories for each element — 3n operations.*
+> *Linear time!*
 >
-> *Trinity Sort использует 3 для классификации:*
-> *меньше, равно, больше.*
-> *Нет выбора — есть определённость.*
-> *Поэтому он быстр.*
+> *Trinity Sort uses 3 for classification:*
+> *less than, equal to, greater than.*
+> *No choice — there is certainty.*
+> *That is why it is fast.*
 >
-> *Древние знали: три дороги на распутье*
-> *могут вести к мудрости или к погибели.*
-> *Всё зависит от того, как ты их используешь.*
+> *The ancients knew: three roads at the crossroads*
+> *can lead to wisdom or to ruin.*
+> *It all depends on how you use them.*
 
 ---
 
-[← Глава 9](09_lessons.md) | [Глава 11: Язык Vibee →](11_vibee_language.md)
+[← Chapter 9](09_lessons.md) | [Chapter 11: The Vibee Language →](11_vibee_language.md)

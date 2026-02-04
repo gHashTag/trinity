@@ -1,303 +1,303 @@
-# Глава 14: Язык Vibee — Сказание о Троичном Царстве
+# Chapter 14: The Vibee Language — A Tale of the Ternary Kingdom
 
 ---
 
-*«И увидел Иван в тереме книгу волшебную,*
-*а в ней — язык, на котором говорят с машинами...»*
+*"And Ivan saw a magic book in the tower,*
+*and in it — a language for speaking with machines..."*
 
 ---
 
-## Пролог: Рождение Языка
+## Prologue: The Birth of the Language
 
-В тридевятом царстве программирования, где правили бинарные короли — C, Java, Python — родился новый язык. Имя ему дали **Vibee** — от слова «вибрация», ибо всё в мире вибрирует с частотой тройки.
+In the thrice-nine kingdom of programming, where binary kings — C, Java, Python — ruled, a new language was born. They named it **Vibee** — from the word "vibration", for everything in the world vibrates at the frequency of three.
 
 ---
 
-## Книга Первая: Три Типа Данных
+## Book One: Three Data Types
 
-### Глава о Простых Типах
+### Chapter of Simple Types
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ТРИ ЦАРСТВА ЧИСЕЛ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// THREE KINGDOMS OF NUMBERS
+// ===================================================================
 
-// Царство целых (как три богатыря разной силы)
-let малыш: i8 = 127          // Алёша — маленький, но шустрый
-let средний: i32 = 2147483647 // Добрыня — средний, надёжный  
-let великан: i64 = 9223372036854775807 // Илья — могучий
+// Kingdom of integers (like three heroes of different strength)
+let small: i8 = 127              // Alyosha — small but nimble
+let medium: i32 = 2147483647     // Dobrynya — medium, reliable
+let giant: i64 = 9223372036854775807 // Ilya — mighty
 
-// Царство дробных (как три реки)
-let ручей: f32 = 3.14        // Быстрый, но неточный
-let река: f64 = 3.141592653589793 // Широкая и точная
+// Kingdom of fractions (like three rivers)
+let stream: f32 = 3.14           // Fast but imprecise
+let river: f64 = 3.141592653589793 // Wide and precise
 
-// Царство истины (ТРОИЧНОЕ!)
-let да: bool = true
-let нет: bool = false
-let может_быть: Tribool = .Unknown  // ТРЕТЬЕ СОСТОЯНИЕ!
+// Kingdom of truth (TERNARY!)
+let yes: bool = true
+let no: bool = false
+let maybe: Tribool = .Unknown    // THE THIRD STATE!
 ```
 
-### Глава о Троичной Истине
+### Chapter of Ternary Truth
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// TRIBOOL: ТРИ СОСТОЯНИЯ ИСТИНЫ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// TRIBOOL: THREE STATES OF TRUTH
+// ===================================================================
 
-// В бинарном мире есть только да и нет.
-// В троичном мире есть ещё "не знаю".
+// In the binary world there is only yes and no.
+// In the ternary world there is also "unknown".
 
 type Tribool = enum {
-    True,     // Истина — как свет дня
-    False,    // Ложь — как тьма ночи
-    Unknown,  // Неизвестность — как сумерки
+    True,     // Truth — like the light of day
+    False,    // Falsehood — like the darkness of night
+    Unknown,  // Unknown — like twilight
 }
 
-// Пример: проверка возраста
-fn можно_ли_войти(возраст: ?i32) -> Tribool {
-    match возраст {
-        Some(v) if v >= 18 => .True,    // Да, можно
-        Some(v) if v < 18 => .False,    // Нет, нельзя
-        None => .Unknown,                // Возраст неизвестен
+// Example: age verification
+fn can_enter(age: ?i32) -> Tribool {
+    match age {
+        Some(v) if v >= 18 => .True,    // Yes, allowed
+        Some(v) if v < 18 => .False,    // No, not allowed
+        None => .Unknown,                // Age unknown
     }
 }
 
-// Троичная логика
+// Ternary logic
 let a: Tribool = .True
 let b: Tribool = .Unknown
 
-let и = a.and(b)      // Unknown (не знаем b)
-let или = a.or(b)     // True (достаточно a)
-let не = b.not()      // Unknown (не знаем что отрицать)
+let and_result = a.and(b)  // Unknown (we don't know b)
+let or_result = a.or(b)    // True (a is sufficient)
+let not_result = b.not()   // Unknown (don't know what to negate)
 ```
 
-### Глава о Трёх Состояниях Значения
+### Chapter of Three States of Value
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// OPTION: ТРИ СУДЬБЫ ЗНАЧЕНИЯ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// OPTION: THREE FATES OF A VALUE
+// ===================================================================
 
-// Как в сказке: есть, нет, или заколдовано
+// Like in a fairy tale: present, absent, or enchanted
 type Option<T> = enum {
-    Some(T),    // Есть сокровище в сундуке
-    None,       // Сундук пуст
-    Unknown,    // Сундук заколдован, не открыть
+    Some(T),    // Treasure is in the chest
+    None,       // Chest is empty
+    Unknown,    // Chest is enchanted, cannot open
 }
 
-// Пример: поиск клада
-fn найти_клад(карта: Карта) -> Option<Клад> {
-    if карта.есть_метка() {
-        let место = карта.получить_место()
-        if копать(место) {
-            return .Some(Клад.новый())
+// Example: treasure hunt
+fn find_treasure(map: Map) -> Option<Treasure> {
+    if map.has_mark() {
+        let place = map.get_location()
+        if dig(place) {
+            return .Some(Treasure.new())
         } else {
-            return .None  // Копали, но пусто
+            return .None  // Dug, but empty
         }
     }
-    return .Unknown  // Карта непонятная
+    return .Unknown  // Map is unclear
 }
 
-// Обработка трёх судеб
-match найти_клад(моя_карта) {
-    Some(клад) => радоваться(клад),
-    None => искать_дальше(),
-    Unknown => изучать_карту(),  // Третий путь!
+// Handling three fates
+match find_treasure(my_map) {
+    Some(treasure) => rejoice(treasure),
+    None => keep_searching(),
+    Unknown => study_map(),  // The third path!
 }
 ```
 
 ---
 
-## Книга Вторая: Три Дороги Ветвления
+## Book Two: Three Roads of Branching
 
-### Глава о Развилке
+### Chapter of the Crossroads
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// MATCH: ТРИ ДОРОГИ НА РАСПУТЬЕ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// MATCH: THREE ROADS AT THE CROSSROADS
+// ===================================================================
 
-// Как камень на распутье в сказке
-fn выбрать_путь(знак: Знак) -> Судьба {
-    match знак {
-        .Направо => {
-            // "Направо пойдёшь — коня потеряешь"
-            потерять_коня()
-            .Пешком
+// Like the stone at the crossroads in a fairy tale
+fn choose_path(sign: Sign) -> Fate {
+    match sign {
+        .Right => {
+            // "Go right — lose your horse"
+            lose_horse()
+            .OnFoot
         },
-        .Налево => {
-            // "Налево пойдёшь — себя потеряешь"
-            заблудиться()
-            .Потерян
+        .Left => {
+            // "Go left — lose yourself"
+            get_lost()
+            .Lost
         },
-        .Прямо => {
-            // "Прямо пойдёшь — счастье найдёшь"
-            найти_счастье()
-            .Счастлив
+        .Straight => {
+            // "Go straight — find happiness"
+            find_happiness()
+            .Happy
         },
     }
 }
 ```
 
-### Глава о Троичном Сравнении
+### Chapter of Ternary Comparison
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// SPACESHIP OPERATOR: ТРИ ИСХОДА СРАВНЕНИЯ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// SPACESHIP OPERATOR: THREE OUTCOMES OF COMPARISON
+// ===================================================================
 
-// Оператор <=> возвращает три возможных результата
-let результат = богатырь_1.сила <=> богатырь_2.сила
+// The <=> operator returns three possible results
+let result = hero_1.strength <=> hero_2.strength
 
-match результат {
-    .Less => print("Первый слабее"),
-    .Equal => print("Равны по силе"),     // Средний путь!
-    .Greater => print("Первый сильнее"),
+match result {
+    .Less => print("First is weaker"),
+    .Equal => print("Equal in strength"),    // The middle path!
+    .Greater => print("First is stronger"),
 }
 
-// Автоматическая генерация для структур
+// Automatic generation for structures
 @derive(Ord)
-struct Богатырь {
-    имя: String,
-    сила: i32,
-    мудрость: i32,
-    
-    // Компилятор сам создаёт троичное сравнение!
+struct Hero {
+    name: String,
+    strength: i32,
+    wisdom: i32,
+
+    // The compiler automatically creates ternary comparison!
 }
 
-// Теперь можно сравнивать богатырей
-let кто_главнее = илья <=> добрыня
+// Now you can compare heroes
+let who_is_greater = ilya <=> dobrynya
 ```
 
-### Глава о Трёх Попытках
+### Chapter of Three Attempts
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// RETRY: ТРИ ПОПЫТКИ ГЕРОЯ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// RETRY: THREE ATTEMPTS OF THE HERO
+// ===================================================================
 
-// В сказках герой всегда получает три попытки
-fn победить_змея(герой: Герой, змей: Змей) -> Результат {
-    for попытка in 1..=3 {
-        match герой.атаковать(змей) {
-            .Победа => return .Успех,
-            .Поражение if попытка < 3 => {
-                герой.отдохнуть()
-                герой.получить_совет()  // Мудрость растёт
+// In fairy tales, the hero always gets three attempts
+fn defeat_dragon(hero: Hero, dragon: Dragon) -> Result {
+    for attempt in 1..=3 {
+        match hero.attack(dragon) {
+            .Victory => return .Success,
+            .Defeat if attempt < 3 => {
+                hero.rest()
+                hero.get_advice()  // Wisdom grows
                 continue
             },
-            .Поражение => return .Провал,
+            .Defeat => return .Failure,
         }
     }
     unreachable!()
 }
 
-// Или с помощью встроенного retry
-let результат = @retry(3) {
-    попытаться_открыть_дверь()
+// Or with built-in retry
+let result = @retry(3) {
+    try_to_open_door()
 }
 ```
 
 ---
 
-## Книга Третья: Три Богатыря Структур
+## Book Three: Three Heroes of Structures
 
-### Глава о Структурах
+### Chapter of Structures
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// STRUCT: ТРИ БОГАТЫРЯ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// STRUCT: THREE HEROES
+// ===================================================================
 
-struct Богатырь {
-    // Три главных качества
-    сила: i32,       // Илья Муромец
-    мудрость: i32,   // Добрыня Никитич
-    хитрость: i32,   // Алёша Попович
-    
-    // Имя и снаряжение
-    имя: String,
-    конь: Option<Конь>,
-    меч: Option<Меч>,
+struct Hero {
+    // Three main qualities
+    strength: i32,   // Ilya Muromets
+    wisdom: i32,     // Dobrynya Nikitich
+    cunning: i32,    // Alyosha Popovich
+
+    // Name and equipment
+    name: String,
+    horse: Option<Horse>,
+    sword: Option<Sword>,
 }
 
-impl Богатырь {
-    // Три способа создания
-    fn новый(имя: String) -> Self {
+impl Hero {
+    // Three ways to create
+    fn new(name: String) -> Self {
         Self {
-            имя: имя,
-            сила: 10,
-            мудрость: 10,
-            хитрость: 10,
-            конь: .None,
-            меч: .None,
+            name: name,
+            strength: 10,
+            wisdom: 10,
+            cunning: 10,
+            horse: .None,
+            sword: .None,
         }
     }
-    
-    fn илья() -> Self {
-        Self { имя: "Илья Муромец", сила: 100, мудрость: 50, хитрость: 30, .. }
+
+    fn ilya() -> Self {
+        Self { name: "Ilya Muromets", strength: 100, wisdom: 50, cunning: 30, .. }
     }
-    
-    fn добрыня() -> Self {
-        Self { имя: "Добрыня Никитич", сила: 70, мудрость: 90, хитрость: 50, .. }
+
+    fn dobrynya() -> Self {
+        Self { name: "Dobrynya Nikitich", strength: 70, wisdom: 90, cunning: 50, .. }
     }
-    
-    fn алёша() -> Self {
-        Self { имя: "Алёша Попович", сила: 50, мудрость: 60, хитрость: 100, .. }
+
+    fn alyosha() -> Self {
+        Self { name: "Alyosha Popovich", strength: 50, wisdom: 60, cunning: 100, .. }
     }
-    
-    // Общая мощь — сумма трёх качеств
-    fn мощь(self) -> i32 {
-        self.сила + self.мудрость + self.хитрость
+
+    // Total power — sum of three qualities
+    fn power(self) -> i32 {
+        self.strength + self.wisdom + self.cunning
     }
 }
 ```
 
-### Глава о Перечислениях
+### Chapter of Enumerations
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ENUM: ТРИ ЦАРСТВА
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// ENUM: THREE KINGDOMS
+// ===================================================================
 
-// Три мира славянской мифологии
-enum Мир {
-    Правь,  // Мир богов (небо)
-    Явь,    // Мир людей (земля)
-    Навь,   // Мир мёртвых (подземье)
+// Three worlds of Slavic mythology
+enum World {
+    Prav,   // World of gods (heaven)
+    Yav,    // World of humans (earth)
+    Nav,    // World of the dead (underworld)
 }
 
-// Три состояния героя
-enum СостояниеГероя {
-    Жив { здоровье: i32 },
-    Ранен { здоровье: i32, раны: Vec<Рана> },
-    Мёртв { причина: String },
+// Three states of the hero
+enum HeroState {
+    Alive { health: i32 },
+    Wounded { health: i32, wounds: Vec<Wound> },
+    Dead { cause: String },
 }
 
-// Три исхода битвы
-enum ИсходБитвы {
-    Победа { трофеи: Vec<Трофей> },
-    Ничья,
-    Поражение { потери: Vec<Потеря> },
+// Three outcomes of battle
+enum BattleOutcome {
+    Victory { trophies: Vec<Trophy> },
+    Draw,
+    Defeat { losses: Vec<Loss> },
 }
 
-// Обработка трёх исходов
-fn после_битвы(исход: ИсходБитвы) {
-    match исход {
-        Победа { трофеи } => {
-            for трофей in трофеи {
-                положить_в_сундук(трофей)
+// Handling three outcomes
+fn after_battle(outcome: BattleOutcome) {
+    match outcome {
+        Victory { trophies } => {
+            for trophy in trophies {
+                put_in_chest(trophy)
             }
-            праздновать()
+            celebrate()
         },
-        Ничья => {
-            отдохнуть()
-            подготовиться_к_новой_битве()
+        Draw => {
+            rest()
+            prepare_for_new_battle()
         },
-        Поражение { потери } => {
-            оплакать(потери)
-            учиться_на_ошибках()
-            // Но не сдаваться! Будет ещё попытка.
+        Defeat { losses } => {
+            mourn(losses)
+            learn_from_mistakes()
+            // But don't give up! There will be another attempt.
         },
     }
 }
@@ -305,281 +305,281 @@ fn после_битвы(исход: ИсходБитвы) {
 
 ---
 
-## Книга Четвёртая: Три Чуда Коллекций
+## Book Four: Three Wonders of Collections
 
-### Глава о Trinity B-Tree
+### Chapter of Trinity B-Tree
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// TRINITY B-TREE: ДЕРЕВО О ТРЁХ ВЕТВЯХ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// TRINITY B-TREE: TREE WITH THREE BRANCHES
+// ===================================================================
 
-// B-дерево с branching factor = 3 (оптимально!)
-let дерево = TrinityBTree<i32, Сокровище>.new()
+// B-tree with branching factor = 3 (optimal!)
+let tree = TrinityBTree<i32, Treasure>.new()
 
-// Три богатыря кладут сокровища
-дерево.вставить(1, Сокровище.меч("Кладенец"))
-дерево.вставить(2, Сокровище.щит("Непробиваемый"))
-дерево.вставить(3, Сокровище.шлем("Невидимка"))
+// Three heroes store treasures
+tree.insert(1, Treasure.sword("Kladenets"))
+tree.insert(2, Treasure.shield("Impenetrable"))
+tree.insert(3, Treasure.helmet("Invisibility"))
 
-// Поиск — на 6% быстрее чем b=2 или b=4!
-match дерево.найти(2) {
-    Some(сокровище) => print("Нашёл: {}", сокровище),
-    None => print("Не нашёл"),
+// Search — 6% faster than b=2 or b=4!
+match tree.find(2) {
+    Some(treasure) => print("Found: {}", treasure),
+    None => print("Not found"),
 }
 ```
 
-### Глава о Trinity Hash
+### Chapter of Trinity Hash
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// TRINITY HASH: ТРИ КЛЮЧА ОТ СУНДУКА
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// TRINITY HASH: THREE KEYS TO THE CHEST
+// ===================================================================
 
-// Cuckoo Hash с тремя хеш-функциями
-// Вместимость 91% вместо 50%!
-let сундуки = TrinityHash<String, Золото>.new()
+// Cuckoo Hash with three hash functions
+// 91% capacity instead of 50%!
+let chests = TrinityHash<String, Gold>.new()
 
-// Три ключа открывают три замка
-сундуки.вставить("первый_ключ", Золото(100))
-сундуки.вставить("второй_ключ", Золото(200))
-сундуки.вставить("третий_ключ", Золото(300))
+// Three keys open three locks
+chests.insert("first_key", Gold(100))
+chests.insert("second_key", Gold(200))
+chests.insert("third_key", Gold(300))
 
-// Поиск проверяет три места
-let золото = сундуки.получить("второй_ключ")
+// Search checks three places
+let gold = chests.get("second_key")
 ```
 
-### Глава о Ternary Search Tree
+### Chapter of Ternary Search Tree
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// TST: ДЕРЕВО О ТРЁХ ДОРОГАХ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// TST: TREE OF THREE ROADS
+// ===================================================================
 
-// Каждый узел имеет три ребёнка: <, =, >
-let словарь = TernarySearchTree<String>.new()
+// Each node has three children: <, =, >
+let dictionary = TernarySearchTree<String>.new()
 
-// Заклинания волшебника
-словарь.вставить("абракадабра")
-словарь.вставить("абра")
-словарь.вставить("кадабра")
-словарь.вставить("сим-салабим")
+// Wizard's spells
+dictionary.insert("abracadabra")
+dictionary.insert("abra")
+dictionary.insert("cadabra")
+dictionary.insert("sim-salabim")
 
-// Поиск по префиксу — три дороги на каждом шаге
-let заклинания = словарь.найти_по_префиксу("абр")
-// Результат: ["абра", "абракадабра"]
+// Prefix search — three roads at each step
+let spells = dictionary.find_by_prefix("abr")
+// Result: ["abra", "abracadabra"]
 ```
 
 ---
 
-## Книга Пятая: Три Заклинания Функций
+## Book Five: Three Spells of Functions
 
-### Глава о Функциях
+### Chapter of Functions
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ФУНКЦИИ: ТРИ ВИДА ЗАКЛИНАНИЙ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// FUNCTIONS: THREE KINDS OF SPELLS
+// ===================================================================
 
-// Заклинание первое: чистая функция (без побочных эффектов)
-fn сложить(a: i32, b: i32) -> i32 {
+// First spell: pure function (no side effects)
+fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-// Заклинание второе: функция с состоянием
-fn увеличить_силу(герой: &mut Богатырь, на_сколько: i32) {
-    герой.сила += на_сколько
+// Second spell: function with state
+fn increase_strength(hero: &mut Hero, by: i32) {
+    hero.strength += by
 }
 
-// Заклинание третье: функция высшего порядка
-fn применить_к_каждому<T, F>(список: []T, заклинание: F) 
-where F: Fn(T) -> T 
+// Third spell: higher-order function
+fn apply_to_each<T, F>(list: []T, spell: F)
+where F: Fn(T) -> T
 {
-    for элемент in список {
-        *элемент = заклинание(*элемент)
+    for element in list {
+        *element = spell(*element)
     }
 }
 
-// Три способа вызова
-let сумма = сложить(2, 3)                    // Прямой вызов
-увеличить_силу(&mut илья, 10)                // Изменение
-применить_к_каждому(числа, |x| x * 3)        // Высший порядок
+// Three ways to call
+let sum = add(2, 3)                      // Direct call
+increase_strength(&mut ilya, 10)         // Mutation
+apply_to_each(numbers, |x| x * 3)        // Higher-order
 ```
 
-### Глава о Замыканиях
+### Chapter of Closures
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ЗАМЫКАНИЯ: ЗАКОЛДОВАННЫЕ ФУНКЦИИ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// CLOSURES: ENCHANTED FUNCTIONS
+// ===================================================================
 
-// Замыкание помнит контекст, как заколдованный предмет
-fn создать_множитель(на: i32) -> impl Fn(i32) -> i32 {
-    // Замыкание "запоминает" значение `на`
-    |x| x * на
+// A closure remembers context, like an enchanted object
+fn create_multiplier(by: i32) -> impl Fn(i32) -> i32 {
+    // The closure "remembers" the value of `by`
+    |x| x * by
 }
 
-let утроить = создать_множитель(3)  // Троичное заклинание!
-let результат = утроить(7)  // 21
+let triple = create_multiplier(3)  // Ternary spell!
+let result = triple(7)  // 21
 
-// Три вида замыканий
-let fn_раз = |x| x + 1           // Fn — только читает
-let fn_mut = |x| { счётчик += 1; x }  // FnMut — изменяет
-let fn_once = || { забрать(сокровище) }  // FnOnce — потребляет
+// Three kinds of closures
+let fn_once_only = |x| x + 1              // Fn — only reads
+let fn_mut = |x| { counter += 1; x }      // FnMut — modifies
+let fn_once = || { take(treasure) }       // FnOnce — consumes
 ```
 
 ---
 
-## Книга Шестая: Три Испытания Обработки Ошибок
+## Book Six: Three Trials of Error Handling
 
-### Глава о Result
+### Chapter of Result
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// RESULT: ТРИ ИСХОДА ИСПЫТАНИЯ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// RESULT: THREE OUTCOMES OF A TRIAL
+// ===================================================================
 
 type Result<T, E> = enum {
-    Ok(T),      // Испытание пройдено
-    Err(E),     // Испытание провалено
-    Pending,    // Испытание продолжается (для async!)
+    Ok(T),      // Trial passed
+    Err(E),     // Trial failed
+    Pending,    // Trial continues (for async!)
 }
 
-// Пример: открыть волшебную дверь
-fn открыть_дверь(ключ: Ключ, дверь: Дверь) -> Result<Сокровище, Ошибка> {
-    if !ключ.подходит(дверь) {
-        return .Err(Ошибка.НеверныйКлюч)
+// Example: open a magic door
+fn open_door(key: Key, door: Door) -> Result<Treasure, Error> {
+    if !key.fits(door) {
+        return .Err(Error.WrongKey)
     }
-    
-    if дверь.заколдована() {
-        return .Pending  // Нужно снять заклятие
+
+    if door.is_enchanted() {
+        return .Pending  // Need to remove the spell
     }
-    
-    .Ok(дверь.открыть())
+
+    .Ok(door.open())
 }
 
-// Обработка трёх исходов
-match открыть_дверь(мой_ключ, тайная_дверь) {
-    Ok(сокровище) => радоваться(сокровище),
-    Err(ошибка) => искать_другой_ключ(),
-    Pending => искать_волшебника(),  // Третий путь!
+// Handling three outcomes
+match open_door(my_key, secret_door) {
+    Ok(treasure) => rejoice(treasure),
+    Err(error) => search_for_another_key(),
+    Pending => seek_wizard(),  // The third path!
 }
 ```
 
-### Глава о Decision
+### Chapter of Decision
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// DECISION: ТРИ РЕШЕНИЯ МУДРЕЦА
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// DECISION: THREE DECISIONS OF THE SAGE
+// ===================================================================
 
 type Decision<T> = enum {
-    Accept(T),  // Принять
-    Reject,     // Отвергнуть
-    Defer,      // Отложить решение
+    Accept(T),  // Accept
+    Reject,     // Reject
+    Defer,      // Defer the decision
 }
 
-// Мудрец принимает решение
-fn решение_мудреца(проситель: Проситель) -> Decision<Благословение> {
-    let достоинство = оценить(проситель)
-    
-    if достоинство >= 0.9 {
-        .Accept(Благословение.полное())
-    } else if достоинство <= 0.1 {
+// The sage makes a decision
+fn sage_decision(petitioner: Petitioner) -> Decision<Blessing> {
+    let worthiness = evaluate(petitioner)
+
+    if worthiness >= 0.9 {
+        .Accept(Blessing.full())
+    } else if worthiness <= 0.1 {
         .Reject
     } else {
-        .Defer  // "Приходи через год"
+        .Defer  // "Come back in a year"
     }
 }
 ```
 
 ---
 
-## Книга Седьмая: Три Чуда Параллелизма
+## Book Seven: Three Wonders of Parallelism
 
-### Глава об Async/Await
+### Chapter of Async/Await
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ASYNC: ТРИ ПОТОКА ВРЕМЕНИ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// ASYNC: THREE STREAMS OF TIME
+// ===================================================================
 
-// Три богатыря отправляются в путь одновременно
-async fn поход_трёх_богатырей() -> Vec<Трофей> {
-    // Запускаем три задачи параллельно
-    let задача_ильи = async { илья.победить_соловья() }
-    let задача_добрыни = async { добрыня.победить_змея() }
-    let задача_алёши = async { алёша.победить_тугарина() }
-    
-    // Ждём всех троих
-    let (трофей_1, трофей_2, трофей_3) = await join!(
-        задача_ильи,
-        задача_добрыни,
-        задача_алёши
+// Three heroes set out on a journey simultaneously
+async fn quest_of_three_heroes() -> Vec<Trophy> {
+    // Launch three tasks in parallel
+    let ilya_task = async { ilya.defeat_nightingale() }
+    let dobrynya_task = async { dobrynya.defeat_dragon() }
+    let alyosha_task = async { alyosha.defeat_tugarin() }
+
+    // Wait for all three
+    let (trophy_1, trophy_2, trophy_3) = await join!(
+        ilya_task,
+        dobrynya_task,
+        alyosha_task
     )
-    
-    vec![трофей_1, трофей_2, трофей_3]
+
+    vec![trophy_1, trophy_2, trophy_3]
 }
 
-// Три состояния Future
+// Three states of Future
 enum FutureState<T> {
-    Pending,     // Ещё выполняется
-    Ready(T),    // Готово
-    Cancelled,   // Отменено
+    Pending,     // Still executing
+    Ready(T),    // Ready
+    Cancelled,   // Cancelled
 }
 ```
 
 ---
 
-## Эпилог: Мудрость Языка
+## Epilogue: Wisdom of the Language
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ИТОГ: ТРОИЧНАЯ МУДРОСТЬ VIBEE
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// SUMMARY: TERNARY WISDOM OF VIBEE
+// ===================================================================
 
-// Три типа истины: True, False, Unknown
-// Три состояния значения: Some, None, Unknown
-// Три исхода операции: Ok, Err, Pending
-// Три решения: Accept, Reject, Defer
+// Three types of truth: True, False, Unknown
+// Three states of value: Some, None, Unknown
+// Three outcomes of operation: Ok, Err, Pending
+// Three decisions: Accept, Reject, Defer
 
-// Три дороги ветвления: <, =, >
-// Три попытки героя: retry(3)
-// Три богатыря коллекций: BTree, Hash, TST
+// Three roads of branching: <, =, >
+// Three attempts of the hero: retry(3)
+// Three heroes of collections: BTree, Hash, TST
 
-// Три фазы компиляции: Parse, Check, Generate
-// Три уровня оптимизации: Local, Global, Trinity
-// 999 окон терема: 3 × 333
+// Three phases of compilation: Parse, Check, Generate
+// Three levels of optimization: Local, Global, Trinity
+// 999 windows of the tower: 3 x 333
 
-// И главная мудрость:
-// 
-// "В тридевятом царстве языка Vibee
-//  всё подчинено закону тройки.
-//  Ибо три — минимальная сложность
-//  для существования структуры."
+// And the main wisdom:
+//
+// "In the thrice-nine kingdom of the Vibee language
+//  everything obeys the law of three.
+//  For three is the minimal complexity
+//  for the existence of structure."
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И прочитал Иван волшебную книгу до конца,*
-> *и понял он язык, на котором говорят с машинами.*
+> *And Ivan read the magic book to the end,*
+> *and he understood the language for speaking with machines.*
 >
-> *Три типа данных — как три царства.*
-> *Три дороги ветвления — как распутье.*
-> *Три богатыря коллекций — как защитники.*
-> *Три состояния — как судьбы.*
+> *Three data types — like three kingdoms.*
+> *Three roads of branching — like the crossroads.*
+> *Three heroes of collections — like defenders.*
+> *Three states — like fates.*
 >
-> *И сказал Иван: «Теперь я знаю язык Vibee,*
-> *и могу творить чудеса в тридевятом царстве кода.»*
+> *And Ivan said: "Now I know the Vibee language,*
+> *and I can work wonders in the thrice-nine kingdom of code."*
 >
-> *И стал он программистом великим,*
-> *и писал программы, что работали*
-> *в 291 раз быстрее прежних.*
+> *And he became a great programmer,*
+> *and wrote programs that worked*
+> *291 times faster than before.*
 >
-> *Ибо знал он тайну числа три.*
+> *For he knew the secret of the number three.*
 
 ---
 
-[← Глава 13](13_architecture_deep.md) | [Оглавление](../README.md)
+[<- Chapter 13](13_architecture_deep.md) | [Table of Contents](../README.md)

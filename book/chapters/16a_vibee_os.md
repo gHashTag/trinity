@@ -1,122 +1,122 @@
-# Глава 16а: Vibee OS — Живая Операционная Система
+# Chapter 16a: Vibee OS — A Living Operating System
 
 ---
 
-*«И построил Иван-царевич терем о трёх этажах:*
-*первый — для памяти, второй — для процессов,*
-*третий — для пикселей живых...»*
+*"And Ivan-Tsarevich built a tower of three floors:*
+*the first — for memory, the second — for processes,*
+*the third — for living pixels..."*
 
 ---
 
-## Терем Живой Системы
+## The Tower of the Living System
 
 ```
-╔═══════════════════════════════════════════════════════════════════════════╗
-║                                                                           ║
-║   VIBEE OS — ОПЕРАЦИОННАЯ СИСТЕМА ТРИДЕВЯТОГО ЦАРСТВА                    ║
-║                                                                           ║
-║   "Каждый пиксель — живой процесс"                                       ║
-║   "Каждый процесс — отдельная сущность"                                  ║
-║   "Каждая сущность — часть целого"                                       ║
-║                                                                           ║
-║   1920 × 1080 = 2,073,600 процессов = 2М живых пикселей                  ║
-║                                                                           ║
-╚═══════════════════════════════════════════════════════════════════════════╝
-```
-
----
-
-## Три Этажа Терема (Архитектура)
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                                                                         │
-│   ТРЕТИЙ ЭТАЖ: ПИКСЕЛЬНАЯ СЕТКА (UI)                                   │
-│   ┌─────────────────────────────────────────────────────────────────┐  │
-│   │  ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐       │  │
-│   │  │ P │ │ P │ │ P │ │ P │ │ P │ │ P │ │ P │ │ P │ │ P │       │  │
-│   │  └───┘ └───┘ └───┘ └───┘ └───┘ └───┘ └───┘ └───┘ └───┘       │  │
-│   │  Каждый P = BEAM процесс (gen_server)                         │  │
-│   │  Волновая диффузия: Sin/Cos/Gaussian                          │  │
-│   │  Эмоции → Цвета                                               │  │
-│   └─────────────────────────────────────────────────────────────────┘  │
-│                                                                         │
-│   ВТОРОЙ ЭТАЖ: СОТЫ ПЛАГИНОВ (Приложения)                              │
-│   ┌─────────────────────────────────────────────────────────────────┐  │
-│   │     ⬡ Calc    ⬡ Notes   ⬡ Clock   ⬡ Agent                     │  │
-│   │        ⬡ Files   ⬡ Shell   ⬡ Browser                          │  │
-│   │  Гексагональная раскладка — как пчелиные соты                  │  │
-│   │  Hot reload — горячая перезагрузка                             │  │
-│   │  Fault isolation — изоляция сбоев                              │  │
-│   └─────────────────────────────────────────────────────────────────┘  │
-│                                                                         │
-│   ПЕРВЫЙ ЭТАЖ: ЯДРО (Kernel)                                           │
-│   ┌─────────────────────────────────────────────────────────────────┐  │
-│   │  Memory │ Process │ IPC │ Syscall │ Scheduler │ Drivers        │  │
-│   │                                                                 │  │
-│   │  BEAM/OTP Runtime — Erlang виртуальная машина                  │  │
-│   │  Supervision trees — деревья надзора                           │  │
-│   │  "Let it crash" — философия отказоустойчивости                 │  │
-│   └─────────────────────────────────────────────────────────────────┘  │
-│                                                                         │
-│   ФУНДАМЕНТ: ПЛАТФОРМЫ                                                 │
-│   ┌─────────────────────────────────────────────────────────────────┐  │
-│   │     WASM (браузер)  │  Native (сервер)  │  Hosted (облако)     │  │
-│   └─────────────────────────────────────────────────────────────────┘  │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
++===============================================================================+
+|                                                                               |
+|   VIBEE OS — THE OPERATING SYSTEM OF THE THRICE-NINE KINGDOM                 |
+|                                                                               |
+|   "Every pixel — a living process"                                           |
+|   "Every process — a separate entity"                                        |
+|   "Every entity — part of the whole"                                         |
+|                                                                               |
+|   1920 x 1080 = 2,073,600 processes = 2M living pixels                       |
+|                                                                               |
++===============================================================================+
 ```
 
 ---
 
-## Три Богатыря Ядра
+## Three Floors of the Tower (Architecture)
+
+```
++-------------------------------------------------------------------------+
+|                                                                         |
+|   THIRD FLOOR: PIXEL GRID (UI)                                         |
+|   +-------------------------------------------------------------+      |
+|   |  +---+ +---+ +---+ +---+ +---+ +---+ +---+ +---+ +---+       |      |
+|   |  | P | | P | | P | | P | | P | | P | | P | | P | | P |       |      |
+|   |  +---+ +---+ +---+ +---+ +---+ +---+ +---+ +---+ +---+       |      |
+|   |  Each P = BEAM process (gen_server)                          |      |
+|   |  Wave diffusion: Sin/Cos/Gaussian                            |      |
+|   |  Emotions -> Colors                                          |      |
+|   +-------------------------------------------------------------+      |
+|                                                                         |
+|   SECOND FLOOR: PLUGIN HONEYCOMB (Applications)                        |
+|   +-------------------------------------------------------------+      |
+|   |     * Calc    * Notes   * Clock   * Agent                    |      |
+|   |        * Files   * Shell   * Browser                         |      |
+|   |  Hexagonal layout — like honeycomb cells                     |      |
+|   |  Hot reload — live reloading                                 |      |
+|   |  Fault isolation — failure isolation                         |      |
+|   +-------------------------------------------------------------+      |
+|                                                                         |
+|   FIRST FLOOR: KERNEL                                                  |
+|   +-------------------------------------------------------------+      |
+|   |  Memory | Process | IPC | Syscall | Scheduler | Drivers      |      |
+|   |                                                              |      |
+|   |  BEAM/OTP Runtime — Erlang virtual machine                   |      |
+|   |  Supervision trees — supervisor hierarchies                  |      |
+|   |  "Let it crash" — fault tolerance philosophy                 |      |
+|   +-------------------------------------------------------------+      |
+|                                                                         |
+|   FOUNDATION: PLATFORMS                                                |
+|   +-------------------------------------------------------------+      |
+|   |     WASM (browser)  |  Native (server)  |  Hosted (cloud)    |      |
+|   +-------------------------------------------------------------+      |
+|                                                                         |
++-------------------------------------------------------------------------+
+```
+
+---
+
+## Three Bogatyrs of the Kernel
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ТРИ БОГАТЫРЯ ЯДРА VIBEE OS
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// THREE BOGATYRS OF THE VIBEE OS KERNEL
+// ===================================================================
 
-/// ИЛЬЯ МУРОМЕЦ — Управление памятью
-/// Сила: держит всю память системы
+/// ILYA MUROMETS — Memory Management
+/// Strength: holds all system memory
 struct MemoryManager {
-    total: usize,      // Всего памяти
-    used: usize,       // Использовано
-    free: usize,       // Свободно
-    
-    /// Три типа памяти
-    stack: StackMemory,   // Стек — быстрая, локальная
-    heap: HeapMemory,     // Куча — динамическая
-    static_: StaticMem,   // Статическая — вечная
+    total: usize,      // Total memory
+    used: usize,       // Used
+    free: usize,       // Free
+
+    /// Three types of memory
+    stack: StackMemory,   // Stack — fast, local
+    heap: HeapMemory,     // Heap — dynamic
+    static_: StaticMem,   // Static — eternal
 }
 
-/// ДОБРЫНЯ НИКИТИЧ — Планировщик процессов
-/// Мудрость: знает, кому когда работать
+/// DOBRYNYA NIKITICH — Process Scheduler
+/// Wisdom: knows who should work when
 struct Scheduler {
     current_pid: ProcessId,
     ready_queue: Queue<Process>,
     waiting_queue: Queue<Process>,
-    
-    /// Три состояния процесса
+
+    /// Three process states
     fn schedule(&mut self) -> Decision {
         match self.analyze() {
-            HighPriority => Decision::Accept,   // Запустить сейчас
-            LowPriority => Decision::Defer,     // Отложить
-            Blocked => Decision::Reject,        // Не запускать
+            HighPriority => Decision::Accept,   // Run now
+            LowPriority => Decision::Defer,     // Defer
+            Blocked => Decision::Reject,        // Don't run
         }
     }
 }
 
-/// АЛЁША ПОПОВИЧ — Межпроцессное взаимодействие (IPC)
-/// Хитрость: передаёт сообщения между процессами
+/// ALYOSHA POPOVICH — Inter-Process Communication (IPC)
+/// Cunning: passes messages between processes
 struct IPCManager {
     channels: HashMap<ChannelId, Channel>,
-    
-    /// Три типа сообщений
+
+    /// Three message types
     fn send(&mut self, msg: Message) -> Result<(), Error> {
         match msg.priority {
-            Urgent => self.send_sync(msg),      // Синхронно
-            Normal => self.send_async(msg),     // Асинхронно
-            Lazy => self.queue_for_later(msg),  // Отложенно
+            Urgent => self.send_sync(msg),      // Synchronous
+            Normal => self.send_async(msg),     // Asynchronous
+            Lazy => self.queue_for_later(msg),  // Deferred
         }
     }
 }
@@ -124,52 +124,52 @@ struct IPCManager {
 
 ---
 
-## Три Дороги Платформ
+## Three Roads of Platforms
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ТРИ ПЛАТФОРМЫ VIBEE OS
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// THREE PLATFORMS OF VIBEE OS
+// ===================================================================
 
-/// Три дороги — три платформы
+/// Three roads — three platforms
 enum Platform {
-    /// НАЛЕВО — WASM (браузер)
-    /// Потеряешь производительность, обретёшь доступность
+    /// LEFT — WASM (browser)
+    /// Lose performance, gain accessibility
     WASM {
         canvas: HtmlCanvas,
         websocket: WebSocket,
     },
-    
-    /// ПРЯМО — Native (сервер/десктоп)
-    /// Сбалансированный путь
+
+    /// STRAIGHT — Native (server/desktop)
+    /// The balanced path
     Native {
         window: NativeWindow,
         gpu: GpuContext,
     },
-    
-    /// НАПРАВО — Hosted (облако)
-    /// Потеряешь контроль, обретёшь масштаб
+
+    /// RIGHT — Hosted (cloud)
+    /// Lose control, gain scale
     Hosted {
         cluster: ClusterConfig,
         nodes: Vec<Node>,
     },
 }
 
-/// Один код — три платформы!
+/// One code — three platforms!
 fn main(platform: Platform) {
     let os = VibeeOS::new();
-    
+
     match platform {
         Platform::WASM { .. } => {
-            // В браузере: Canvas + WebSocket
+            // In browser: Canvas + WebSocket
             os.run_in_browser();
         },
         Platform::Native { .. } => {
-            // На сервере: нативное окно + GPU
+            // On server: native window + GPU
             os.run_native();
         },
         Platform::Hosted { .. } => {
-            // В облаке: распределённый кластер
+            // In cloud: distributed cluster
             os.run_distributed();
         },
     }
@@ -178,35 +178,35 @@ fn main(platform: Platform) {
 
 ---
 
-## Пиксельная Сетка: Каждый Пиксель — Процесс
+## Pixel Grid: Every Pixel — A Process
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// РЕВОЛЮЦИОННАЯ ИДЕЯ: ПИКСЕЛЬ = ПРОЦЕСС
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// REVOLUTIONARY IDEA: PIXEL = PROCESS
+// ===================================================================
 
-/// Один пиксель — один BEAM процесс
+/// One pixel — one BEAM process
 struct Pixel {
     x: u16,
     y: u16,
     color: RGB,
     state: PixelState,
-    
-    /// Пиксель получает сообщения и реагирует
+
+    /// Pixel receives messages and reacts
     fn handle_message(&mut self, msg: PixelMessage) {
         match msg {
-            // Волна цвета проходит через пиксель
+            // Color wave passes through the pixel
             Wave { color, intensity } => {
                 self.color = self.color.blend(color, intensity);
             },
-            
-            // Курсор рядом — пиксель "чувствует"
+
+            // Cursor nearby — pixel "senses" it
             CursorNear { distance } => {
                 let glow = 1.0 / (distance + 1.0);
                 self.color = self.color.brighten(glow);
             },
-            
-            // Клик — пиксель "активируется"
+
+            // Click — pixel "activates"
             Click => {
                 self.state = PixelState::Active;
                 self.notify_neighbors();
@@ -215,20 +215,20 @@ struct Pixel {
     }
 }
 
-/// 1920 × 1080 = 2,073,600 процессов!
+/// 1920 x 1080 = 2,073,600 processes!
 struct PixelGrid {
     width: u16,   // 1920
     height: u16,  // 1080
-    pixels: Vec<Vec<Pixel>>,  // 2М процессов
-    
-    /// Волновая диффузия — эмоции распространяются
+    pixels: Vec<Vec<Pixel>>,  // 2M processes
+
+    /// Wave diffusion — emotions spread
     fn emit_wave(&mut self, center: Point, emotion: Emotion) {
         let color = emotion.to_color();
-        
-        // Волна распространяется по синусоиде
+
+        // Wave spreads in a sinusoidal pattern
         for r in 0..self.max_radius() {
             let intensity = (r as f32 * PI / 100.0).sin();
-            
+
             for pixel in self.pixels_at_radius(center, r) {
                 pixel.send(Wave { color, intensity });
             }
@@ -236,23 +236,23 @@ struct PixelGrid {
     }
 }
 
-/// Эмоции → Цвета (синестезия)
+/// Emotions -> Colors (synesthesia)
 enum Emotion {
-    Joy,      // Жёлтый, тёплый
-    Calm,     // Синий, холодный
-    Energy,   // Красный, яркий
-    Focus,    // Зелёный, чёткий
-    Mystery,  // Фиолетовый, глубокий
+    Joy,      // Yellow, warm
+    Calm,     // Blue, cool
+    Energy,   // Red, bright
+    Focus,    // Green, sharp
+    Mystery,  // Purple, deep
 }
 
 impl Emotion {
     fn to_color(&self) -> RGB {
         match self {
-            Joy => RGB(255, 223, 0),      // Золотой
-            Calm => RGB(100, 149, 237),   // Васильковый
-            Energy => RGB(255, 69, 0),    // Огненный
-            Focus => RGB(50, 205, 50),    // Лаймовый
-            Mystery => RGB(148, 0, 211),  // Фиолетовый
+            Joy => RGB(255, 223, 0),      // Golden
+            Calm => RGB(100, 149, 237),   // Cornflower blue
+            Energy => RGB(255, 69, 0),    // Fiery
+            Focus => RGB(50, 205, 50),    // Lime
+            Mystery => RGB(148, 0, 211),  // Violet
         }
     }
 }
@@ -260,54 +260,54 @@ impl Emotion {
 
 ---
 
-## Соты Плагинов: Пчелиный Улей
+## Plugin Honeycomb: The Beehive
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ПЛАГИНЫ КАК ПЧЕЛИНЫЕ СОТЫ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// PLUGINS AS HONEYCOMB CELLS
+// ===================================================================
 
-/// Плагин — это сота в улье
+/// A plugin is a cell in the hive
 struct Plugin {
     name: String,
     version: Version,
-    
-    /// Три обязательных метода
-    fn init(&mut self) -> Result<(), Error>;      // Рождение
-    fn tick(&mut self, dt: Duration);              // Жизнь
-    fn shutdown(&mut self);                        // Смерть
-    
-    /// Три типа плагинов
+
+    /// Three mandatory methods
+    fn init(&mut self) -> Result<(), Error>;      // Birth
+    fn tick(&mut self, dt: Duration);              // Life
+    fn shutdown(&mut self);                        // Death
+
+    /// Three plugin types
     category: PluginCategory,
 }
 
 enum PluginCategory {
-    /// Системные — часть ядра
+    /// System — part of the kernel
     System,   // Shell, VFS, Init
-    
-    /// Пользовательские — приложения
+
+    /// User — applications
     User,     // Calculator, Notes, Browser
-    
-    /// Агентные — AI-помощники
+
+    /// Agent — AI assistants
     Agent,    // LLM, Vision, Voice
 }
 
-/// Гексагональная раскладка — как соты
+/// Hexagonal layout — like honeycomb
 struct PluginHive {
     plugins: HashMap<PluginId, Plugin>,
     layout: HexGrid,
-    
-    /// Три уровня изоляции
+
+    /// Three levels of isolation
     fn spawn_plugin(&mut self, plugin: Plugin) -> PluginId {
-        // 1. Отдельный процесс (BEAM actor)
+        // 1. Separate process (BEAM actor)
         let pid = spawn_process(plugin);
-        
-        // 2. Отдельная память (sandbox)
+
+        // 2. Separate memory (sandbox)
         let sandbox = create_sandbox(pid);
-        
-        // 3. Ограниченные права (capabilities)
+
+        // 3. Limited rights (capabilities)
         let caps = minimal_capabilities();
-        
+
         self.register(pid, sandbox, caps)
     }
 }
@@ -315,71 +315,71 @@ struct PluginHive {
 
 ---
 
-## Агент-Ядро: AI внутри ОС
+## Agent Kernel: AI Inside the OS
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// АГЕНТ — ДУША ОПЕРАЦИОННОЙ СИСТЕМЫ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// AGENT — THE SOUL OF THE OPERATING SYSTEM
+// ===================================================================
 
-/// Агент видит экран, понимает контекст, помогает
+/// Agent sees the screen, understands context, helps
 struct AgentKernel {
-    llm: LLMCore,           // Языковая модель
-    vision: VisionCore,     // Компьютерное зрение
-    memory: AgentMemory,    // Долгосрочная память
-    
-    /// Три режима работы агента
+    llm: LLMCore,           // Language model
+    vision: VisionCore,     // Computer vision
+    memory: AgentMemory,    // Long-term memory
+
+    /// Three agent operating modes
     mode: AgentMode,
 }
 
 enum AgentMode {
-    /// Наблюдатель — смотрит, но не вмешивается
+    /// Observer — watches but doesn't interfere
     Observer,
-    
-    /// Помощник — подсказывает, когда просят
+
+    /// Assistant — suggests when asked
     Assistant,
-    
-    /// Автопилот — действует самостоятельно
+
+    /// Autopilot — acts independently
     Autopilot,
 }
 
 impl AgentKernel {
-    /// Агент "видит" экран
+    /// Agent "sees" the screen
     fn see_screen(&self) -> ScreenUnderstanding {
         let pixels = self.capture_screen();
         let elements = self.vision.detect_elements(pixels);
         let context = self.understand_context(elements);
-        
+
         ScreenUnderstanding {
             elements,
             context,
             suggestions: self.generate_suggestions(context),
         }
     }
-    
-    /// Агент создаёт UI по описанию
+
+    /// Agent creates UI from description
     fn create_ui(&mut self, description: &str) -> UISpec {
-        // "Создай калькулятор с тремя колонками"
+        // "Create a calculator with three columns"
         let spec = self.llm.generate_ui_spec(description);
-        
-        // Валидация через три проверки
+
+        // Validation through three checks
         self.validate_spec(&spec)?;
-        
-        // Генерация пикселей
+
+        // Pixel generation
         self.render_spec_to_pixels(spec)
     }
-    
-    /// Три уровня понимания
+
+    /// Three levels of understanding
     fn understand_context(&self, elements: Vec<UIElement>) -> Context {
-        // 1. Синтаксический: что на экране?
+        // 1. Syntactic: what's on screen?
         let syntax = self.parse_elements(elements);
-        
-        // 2. Семантический: что это значит?
+
+        // 2. Semantic: what does it mean?
         let semantics = self.interpret_meaning(syntax);
-        
-        // 3. Прагматический: что пользователь хочет?
+
+        // 3. Pragmatic: what does the user want?
         let pragmatics = self.infer_intent(semantics);
-        
+
         Context { syntax, semantics, pragmatics }
     }
 }
@@ -387,53 +387,53 @@ impl AgentKernel {
 
 ---
 
-## Эволюционный Движок: UI Эволюционирует
+## Evolution Engine: UI Evolves
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// UI ЭВОЛЮЦИОНИРУЕТ КАК ЖИВОЙ ОРГАНИЗМ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// UI EVOLVES LIKE A LIVING ORGANISM
+// ===================================================================
 
-/// Генетический алгоритм для UI
+/// Genetic algorithm for UI
 struct EvolutionEngine {
     population: Vec<UIGenome>,
     generation: u32,
-    
-    /// Три критерия приспособленности
+
+    /// Three fitness criteria
     fn fitness(&self, genome: &UIGenome) -> f64 {
-        let usability = self.measure_usability(genome);      // Удобство
-        let aesthetics = self.measure_aesthetics(genome);    // Красота
-        let performance = self.measure_performance(genome);  // Скорость
-        
-        // Взвешенная сумма по золотому сечению
+        let usability = self.measure_usability(genome);      // Usability
+        let aesthetics = self.measure_aesthetics(genome);    // Beauty
+        let performance = self.measure_performance(genome);  // Speed
+
+        // Weighted sum by golden ratio
         usability + aesthetics * PHI + performance * PHI * PHI
     }
-    
-    /// Три типа мутаций
+
+    /// Three mutation types
     fn mutate(&mut self, genome: &mut UIGenome) {
         match random_choice() {
-            // Изменение цвета
+            // Color change
             ColorMutation => genome.mutate_colors(),
-            
-            // Изменение расположения
+
+            // Layout change
             LayoutMutation => genome.mutate_layout(),
-            
-            // Изменение поведения
+
+            // Behavior change
             BehaviorMutation => genome.mutate_behavior(),
         }
     }
-    
-    /// Эволюция с участием человека
+
+    /// Evolution with human participation
     fn evolve_with_human(&mut self, feedback: HumanFeedback) {
-        // Человек выбирает лучшие варианты
+        // Human selects the best variants
         let selected = self.select_by_feedback(feedback);
-        
-        // Скрещивание лучших
+
+        // Crossover of the best
         let offspring = self.crossover(selected);
-        
-        // Мутации для разнообразия
+
+        // Mutations for diversity
         let mutated = self.mutate_population(offspring);
-        
+
         self.population = mutated;
         self.generation += 1;
     }
@@ -442,90 +442,90 @@ struct EvolutionEngine {
 
 ---
 
-## Три Царства Vibee OS
+## Three Kingdoms of Vibee OS
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                                                                         │
-│   ТРИ ЦАРСТВА VIBEE OS                                                 │
-│                                                                         │
-│   ╔═══════════════════════════════════════════════════════════════╗    │
-│   ║  МЕДНОЕ ЦАРСТВО — ЯДРО (Kernel)                               ║    │
-│   ║  ─────────────────────────────────────────────────────────── ║    │
-│   ║  • Управление памятью                                         ║    │
-│   ║  • Планировщик процессов                                      ║    │
-│   ║  • Межпроцессное взаимодействие                               ║    │
-│   ║  • Системные вызовы                                           ║    │
-│   ║  • Драйверы устройств                                         ║    │
-│   ╚═══════════════════════════════════════════════════════════════╝    │
-│                                                                         │
-│   ╔═══════════════════════════════════════════════════════════════╗    │
-│   ║  СЕРЕБРЯНОЕ ЦАРСТВО — СЕРВИСЫ (Services)                      ║    │
-│   ║  ─────────────────────────────────────────────────────────── ║    │
-│   ║  • Виртуальная файловая система (VFS)                         ║    │
-│   ║  • Сетевой стек                                               ║    │
-│   ║  • Shell — командная оболочка                                 ║    │
-│   ║  • Init — первый процесс                                      ║    │
-│   ║  • Плагины и приложения                                       ║    │
-│   ╚═══════════════════════════════════════════════════════════════╝    │
-│                                                                         │
-│   ╔═══════════════════════════════════════════════════════════════╗    │
-│   ║  ЗОЛОТОЕ ЦАРСТВО — ИНТЕРФЕЙС (UI)                             ║    │
-│   ║  ─────────────────────────────────────────────────────────── ║    │
-│   ║  • Пиксельная сетка (2М процессов)                            ║    │
-│   ║  • Волновая диффузия                                          ║    │
-│   ║  • Агент-ядро (AI)                                            ║    │
-│   ║  • Эволюционный движок                                        ║    │
-│   ║  • Эмоциональные цвета                                        ║    │
-│   ╚═══════════════════════════════════════════════════════════════╝    │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------------------+
+|                                                                         |
+|   THREE KINGDOMS OF VIBEE OS                                           |
+|                                                                         |
+|   +===============================================================+    |
+|   |  COPPER KINGDOM — KERNEL                                       |    |
+|   |  ------------------------------------------------------------- |    |
+|   |  * Memory management                                           |    |
+|   |  * Process scheduler                                           |    |
+|   |  * Inter-process communication                                 |    |
+|   |  * System calls                                                |    |
+|   |  * Device drivers                                              |    |
+|   +===============================================================+    |
+|                                                                         |
+|   +===============================================================+    |
+|   |  SILVER KINGDOM — SERVICES                                     |    |
+|   |  ------------------------------------------------------------- |    |
+|   |  * Virtual File System (VFS)                                   |    |
+|   |  * Network stack                                               |    |
+|   |  * Shell — command shell                                       |    |
+|   |  * Init — first process                                        |    |
+|   |  * Plugins and applications                                    |    |
+|   +===============================================================+    |
+|                                                                         |
+|   +===============================================================+    |
+|   |  GOLDEN KINGDOM — INTERFACE (UI)                               |    |
+|   |  ------------------------------------------------------------- |    |
+|   |  * Pixel grid (2M processes)                                   |    |
+|   |  * Wave diffusion                                              |    |
+|   |  * Agent kernel (AI)                                           |    |
+|   |  * Evolution engine                                            |    |
+|   |  * Emotional colors                                            |    |
+|   +===============================================================+    |
+|                                                                         |
++-------------------------------------------------------------------------+
 ```
 
 ---
 
-## Команды Shell: Три Категории
+## Shell Commands: Three Categories
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// КОМАНДЫ SHELL — ТРИ КАТЕГОРИИ
-// ═══════════════════════════════════════════════════════════════
+// ===================================================================
+// SHELL COMMANDS — THREE CATEGORIES
+// ===================================================================
 
-/// Три категории команд
+/// Three command categories
 enum ShellCommand {
-    // ═══════════════════════════════════════════════════════════
-    // НАВИГАЦИЯ (Илья Муромец — Сила)
-    // ═══════════════════════════════════════════════════════════
-    Ls,      // Список файлов
-    Cd,      // Сменить директорию
-    Pwd,     // Текущая директория
-    
-    // ═══════════════════════════════════════════════════════════
-    // ИНФОРМАЦИЯ (Добрыня Никитич — Мудрость)
-    // ═══════════════════════════════════════════════════════════
-    Help,    // Справка
-    Ps,      // Список процессов
-    Cat,     // Вывод файла
-    
-    // ═══════════════════════════════════════════════════════════
-    // ДЕЙСТВИЯ (Алёша Попович — Хитрость)
-    // ═══════════════════════════════════════════════════════════
-    Echo,    // Вывод текста
-    Clear,   // Очистка экрана
-    Exit,    // Выход
+    // ===================================================================
+    // NAVIGATION (Ilya Muromets — Strength)
+    // ===================================================================
+    Ls,      // List files
+    Cd,      // Change directory
+    Pwd,     // Current directory
+
+    // ===================================================================
+    // INFORMATION (Dobrynya Nikitich — Wisdom)
+    // ===================================================================
+    Help,    // Help
+    Ps,      // Process list
+    Cat,     // File output
+
+    // ===================================================================
+    // ACTIONS (Alyosha Popovich — Cunning)
+    // ===================================================================
+    Echo,    // Text output
+    Clear,   // Clear screen
+    Exit,    // Exit
 }
 
-// Пример сессии:
-// 
+// Example session:
+//
 // vibee> help
-// Доступные команды:
-//   ls    - список файлов
-//   cd    - сменить директорию
-//   cat   - вывод файла
-//   ps    - список процессов
-//   echo  - вывод текста
-//   clear - очистка экрана
-//   exit  - выход
+// Available commands:
+//   ls    - list files
+//   cd    - change directory
+//   cat   - file output
+//   ps    - process list
+//   echo  - text output
+//   clear - clear screen
+//   exit  - exit
 //
 // vibee> ps
 // PID  NAME        STATE
@@ -533,37 +533,37 @@ enum ShellCommand {
 // 2    shell       running
 // 3    vfs         running
 //
-// vibee> echo "Тридевятое царство!"
-// Тридевятое царство!
+// vibee> echo "Thrice-Nine Kingdom!"
+// Thrice-Nine Kingdom!
 ```
 
 ---
 
-## Мудрость Главы
+## Chapter Wisdom
 
-> *И создал Иван-программист Живую Систему,*
-> *где каждый пиксель — отдельный процесс,*
-> *где каждый процесс — часть целого,*
-> *где целое — больше суммы частей.*
+> *And Ivan the Programmer created a Living System,*
+> *where every pixel — a separate process,*
+> *where every process — part of the whole,*
+> *where the whole — greater than the sum of its parts.*
 >
-> *Три этажа у терема:*
-> *Первый — Ядро (память, процессы, связи),*
-> *Второй — Сервисы (файлы, сеть, приложения),*
-> *Третий — Интерфейс (пиксели, волны, эмоции).*
+> *Three floors has the tower:*
+> *First — Kernel (memory, processes, connections),*
+> *Second — Services (files, network, applications),*
+> *Third — Interface (pixels, waves, emotions).*
 >
-> *Три платформы у системы:*
-> *WASM — для браузера,*
-> *Native — для сервера,*
-> *Hosted — для облака.*
+> *Three platforms has the system:*
+> *WASM — for the browser,*
+> *Native — for the server,*
+> *Hosted — for the cloud.*
 >
-> *И живёт эта система,*
-> *и дышит,*
-> *и эволюционирует,*
-> *и помогает человеку.*
+> *And this system lives,*
+> *and breathes,*
+> *and evolves,*
+> *and helps the human.*
 >
-> *Ибо Vibee OS — не просто система,*
-> *а живой организм Тридевятого царства.*
+> *For Vibee OS is not just a system,*
+> *but a living organism of the Thrice-Nine Kingdom.*
 
 ---
 
-[← Глава 16](16_beyond.md) | [Глава 17: Эпилог →](17_epilogue.md)
+[<- Chapter 16](16_beyond.md) | [Chapter 17: Epilogue ->](17_epilogue.md)

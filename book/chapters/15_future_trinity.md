@@ -1,32 +1,32 @@
-# Глава 15: Quantum Trinity — Второй Горизонт
+# Chapter 15: Quantum Trinity — The Second Horizon
 
 ---
 
-*«И сказал мудрец: то, что ты видел — лишь начало.*
-*Впереди — чудеса, о которых ещё не слагали сказок...»*
+*"And the sage said: what you have seen is only the beginning.*
+*Ahead lie wonders that have yet to be told in tales..."*
 
 ---
 
-## Три Горизонта Будущего
+## Three Horizons of the Future
 
 ```
                     ╭─────────────────────────────────────╮
-                    │     ТРЕТИЙ ГОРИЗОНТ (2035+)        │
-                    │     Квантовое Тридевятое Царство   │
-                    │     • Кутриты вместо кубитов       │
+                    │     THIRD HORIZON (2035+)          │
+                    │     Quantum Thrice-Nine Kingdom    │
+                    │     • Qutrits instead of qubits    │
                     │     • Quantum Trinity Sort         │
                     ╰───────────────┬─────────────────────╯
                                     │
                     ╭───────────────┴─────────────────────╮
-                    │     ВТОРОЙ ГОРИЗОНТ (2028-2035)    │
-                    │     Параллельное Царство           │
+                    │     SECOND HORIZON (2028-2035)     │
+                    │     Parallel Kingdom               │
                     │     • SIMD Trinity (10x)           │
                     │     • GPU Trinity Sort             │
                     ╰───────────────┬─────────────────────╯
                                     │
                     ╭───────────────┴─────────────────────╮
-                    │     ПЕРВЫЙ ГОРИЗОНТ (2026-2028)    │
-                    │     Царство Vibee                  │
+                    │     FIRST HORIZON (2026-2028)      │
+                    │     Kingdom of Vibee               │
                     │     • Parallel Trinity (4x)        │
                     │     • Ternary Weight Networks      │
                     ╰─────────────────────────────────────╯
@@ -34,49 +34,49 @@
 
 ---
 
-## Первый Горизонт: Царство Vibee
+## First Horizon: Kingdom of Vibee
 
 ### Parallel Trinity Sort
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│  ПАРАЛЛЕЛЬНЫЙ TRINITY SORT                                     │
+│  PARALLEL TRINITY SORT                                         │
 │                                                                 │
-│  Массив: [████████████████████████████████████████]            │
+│  Array: [████████████████████████████████████████]             │
 │                          │                                      │
 │                     partition3                                  │
 │                    ╱     │     ╲                                │
 │                   ╱      │      ╲                               │
 │          [████████]   [████]   [████████]                       │
 │           < pivot    = pivot    > pivot                         │
-│              │         СТОП!       │                            │
+│              │         STOP!       │                            │
 │              │                     │                            │
 │         Thread 1              Thread 2                          │
 │              │                     │                            │
 │              ▼                     ▼                            │
 │          [sorted]              [sorted]                         │
 │                                                                 │
-│  Ускорение: 2-4x на 4+ ядрах                                   │
+│  Speedup: 2-4x on 4+ cores                                     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Ternary Weight Networks в Vibee
+### Ternary Weight Networks in Vibee
 
 ```vibee
-// Нейросеть с троичными весами — встроена в язык!
+// Neural network with ternary weights — built into the language!
 @neural(ternary)
 struct TrinityNet {
-    layer1: TernaryLayer<784, 256>,  // Веса ∈ {-1, 0, +1}
+    layer1: TernaryLayer<784, 256>,  // Weights ∈ {-1, 0, +1}
     layer2: TernaryLayer<256, 128>,
     layer3: TernaryLayer<128, 10>,
 }
 
 impl TrinityNet {
     fn forward(self, input: [f32; 784]) -> [f32; 10] {
-        // Нет умножений! Только сложения и вычитания
-        let h1 = self.layer1.forward(input)   // 16x быстрее
+        // No multiplications! Only additions and subtractions
+        let h1 = self.layer1.forward(input)   // 16x faster
         let h2 = self.layer2.forward(h1)
         self.layer3.forward(h2)
     }
@@ -85,7 +85,7 @@ impl TrinityNet {
 
 ---
 
-## Второй Горизонт: Параллельное Царство
+## Second Horizon: Parallel Kingdom
 
 ### SIMD Trinity
 
@@ -94,19 +94,19 @@ impl TrinityNet {
 │                                                                 │
 │  SIMD 3-WAY PARTITION (AVX-512)                                │
 │                                                                 │
-│  Загружаем 16 элементов:                                       │
+│  Load 16 elements:                                             │
 │  ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
 │  │ 3 │ 7 │ 5 │ 2 │ 5 │ 9 │ 1 │ 5 │ 4 │ 5 │ 8 │ 5 │ 6 │ 5 │ 0 │ 5 │
 │  └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
 │                          pivot = 5                              │
 │                                                                 │
-│  Три маски (одновременно!):                                    │
+│  Three masks (simultaneously!):                                │
 │  mask_lt: [1,0,0,1,0,0,1,0,1,0,0,0,0,0,1,0]  (< 5)             │
 │  mask_eq: [0,0,1,0,1,0,0,1,0,1,0,1,0,1,0,1]  (= 5)             │
 │  mask_gt: [0,1,0,0,0,1,0,0,0,0,1,0,1,0,0,0]  (> 5)             │
 │                                                                 │
-│  Результат: 16 элементов за 3 инструкции!                      │
-│  Ускорение: 5-10x                                              │
+│  Result: 16 elements in 3 instructions!                        │
+│  Speedup: 5-10x                                                │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -119,32 +119,32 @@ impl TrinityNet {
 │  GPU TRINITY SORT                                              │
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  GPU: 1000+ ядер                                        │   │
+│  │  GPU: 1000+ cores                                       │   │
 │  │  ┌───┐┌───┐┌───┐┌───┐┌───┐┌───┐┌───┐┌───┐ ...         │   │
 │  │  │ T ││ T ││ T ││ T ││ T ││ T ││ T ││ T │              │   │
 │  │  └───┘└───┘└───┘└───┘└───┘└───┘└───┘└───┘              │   │
 │  │                                                         │   │
-│  │  Каждый блок: Trinity Sort на своей части              │   │
-│  │  Затем: параллельное слияние                           │   │
+│  │  Each block: Trinity Sort on its portion               │   │
+│  │  Then: parallel merge                                  │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                 │
-│  Ускорение: 50-100x для больших массивов                       │
+│  Speedup: 50-100x for large arrays                             │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Третий Горизонт: Квантовое Тридевятое Царство
+## Third Horizon: Quantum Thrice-Nine Kingdom
 
-### Кутриты — Квантовые Три Дороги
+### Qutrits — Quantum Three Roads
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│  КУБИТ vs КУТРИТ                                               │
+│  QUBIT vs QUTRIT                                               │
 │                                                                 │
-│  КУБИТ (2 состояния):          КУТРИТ (3 состояния):          │
+│  QUBIT (2 states):            QUTRIT (3 states):              │
 │                                                                 │
 │       |0⟩                           |0⟩                        │
 │        ●                             ●                          │
@@ -153,13 +153,13 @@ impl TrinityNet {
 │     ●                             ●  ●  ●                       │
 │    |1⟩                          |1⟩ |2⟩                        │
 │                                                                 │
-│  1 бит информации              1.585 бит информации            │
+│  1 bit of information             1.585 bits of information    │
 │                                (+58%!)                          │
 │                                                                 │
-│  СУПЕРПОЗИЦИЯ:                                                 │
+│  SUPERPOSITION:                                                │
 │  |ψ⟩ = α|0⟩ + β|1⟩ + γ|2⟩                                     │
 │                                                                 │
-│  Герой ОДНОВРЕМЕННО на всех трёх дорогах!                     │
+│  The hero is SIMULTANEOUSLY on all three roads!               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -169,43 +169,43 @@ impl TrinityNet {
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│  QUANTUM TRINITY SORT (концепция)                              │
+│  QUANTUM TRINITY SORT (concept)                                │
 │                                                                 │
-│  1. Кодируем массив в кутритах:                                │
+│  1. Encode the array in qutrits:                               │
 │     |array⟩ = |a₁⟩ ⊗ |a₂⟩ ⊗ ... ⊗ |aₙ⟩                        │
 │                                                                 │
-│  2. Применяем квантовый оракул сравнения:                      │
+│  2. Apply quantum comparison oracle:                           │
 │     O|aᵢ, pivot⟩ = |aᵢ, result⟩                                │
-│     где result ∈ {|0⟩=меньше, |1⟩=равно, |2⟩=больше}          │
+│     where result ∈ {|0⟩=less, |1⟩=equal, |2⟩=greater}         │
 │                                                                 │
-│  3. Квантовая интерференция группирует элементы                │
+│  3. Quantum interference groups the elements                   │
 │                                                                 │
-│  4. Измерение даёт отсортированный массив                      │
+│  4. Measurement yields the sorted array                        │
 │                                                                 │
-│  Теоретическая сложность: O(√n) ?                              │
+│  Theoretical complexity: O(√n) ?                               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И увидел Иван три горизонта будущего:*
+> *And Ivan saw three horizons of the future:*
 >
-> *На первом — Царство Vibee,*
-> *где Trinity Sort летает на крыльях параллелизма.*
+> *On the first — the Kingdom of Vibee,*
+> *where Trinity Sort flies on the wings of parallelism.*
 >
-> *На втором — Параллельное Царство,*
-> *где SIMD-богатыри обрабатывают 16 элементов за миг.*
+> *On the second — the Parallel Kingdom,*
+> *where SIMD bogatyrs process 16 elements in an instant.*
 >
-> *На третьем — Квантовое Тридевятое Царство,*
-> *где кутриты хранят три состояния в одной частице.*
+> *On the third — the Quantum Thrice-Nine Kingdom,*
+> *where qutrits store three states in a single particle.*
 >
-> *И понял Иван: сказка только начинается.*
-> *Число 3 будет вести нас в будущее,*
-> *как вело наших предков в прошлом.*
+> *And Ivan understood: the tale is only beginning.*
+> *The number 3 will lead us into the future,*
+> *as it led our ancestors in the past.*
 
 ---
 
-[← Глава 14](14_vibee_language.md) | [Глоссарий →](glossary.md)
+[<- Chapter 14](14_vibee_language.md) | [Glossary ->](glossary.md)

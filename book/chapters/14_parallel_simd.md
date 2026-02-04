@@ -1,28 +1,28 @@
-# Глава 14: Parallel & SIMD — Первый Горизонт
+# Chapter 14: Parallel & SIMD — The First Horizon
 
 ---
 
-*«И разделился Иван на трёх,*
-*и каждый пошёл своей дорогой,*
-*но все трое делали одно дело...»*
+*"And Ivan divided himself into three,*
+*and each went his own way,*
+*but all three were doing the same work..."*
 
 ---
 
-## Три Богатыря Параллелизма
+## Three Heroes of Parallelism
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│  ТРИ УРОВНЯ ПАРАЛЛЕЛИЗМА                                       │
+│  THREE LEVELS OF PARALLELISM                                    │
 │                                                                 │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │   ИЛЬЯ      │  │  ДОБРЫНЯ    │  │   АЛЁША     │             │
+│  │   ILYA      │  │  DOBRYNYA   │  │   ALYOSHA   │             │
 │  │  (Threads)  │  │   (SIMD)    │  │   (GPU)     │             │
 │  ├─────────────┤  ├─────────────┤  ├─────────────┤             │
-│  │ Несколько   │  │ Один поток, │  │ Тысячи      │             │
-│  │ потоков,    │  │ много данных│  │ потоков,    │             │
-│  │ разные      │  │ одновременно│  │ массивный   │             │
-│  │ задачи      │  │             │  │ параллелизм │             │
+│  │ Multiple    │  │ One thread, │  │ Thousands   │             │
+│  │ threads,    │  │ many data   │  │ of threads, │             │
+│  │ different   │  │ at once     │  │ massive     │             │
+│  │ tasks       │  │             │  │ parallelism │             │
 │  ├─────────────┤  ├─────────────┤  ├─────────────┤             │
 │  │ 2-8x        │  │ 4-16x       │  │ 50-100x     │             │
 │  └─────────────┘  └─────────────┘  └─────────────┘             │
@@ -34,53 +34,53 @@
 
 ## Parallel Trinity Sort
 
-### Идея: Три Независимые Части
+### Idea: Three Independent Parts
 
 ```
-После 3-way partition:
+After 3-way partition:
 
 ┌────────────────────────────────────────────────────────────────┐
 │                                                                │
 │  [████████████]  [████]  [████████████]                       │
 │    < pivot      = pivot    > pivot                            │
 │       │           │           │                               │
-│       │         ГОТОВО!       │                               │
+│       │         DONE!         │                               │
 │       │                       │                               │
 │       ▼                       ▼                               │
 │   Thread 1               Thread 2                             │
-│   (рекурсия)             (рекурсия)                           │
+│   (recursion)            (recursion)                          │
 │                                                                │
-│  Средняя часть НЕ ТРЕБУЕТ РАБОТЫ!                             │
-│  Это преимущество Trinity перед обычным Quicksort.            │
+│  The middle part REQUIRES NO WORK!                            │
+│  This is Trinity's advantage over regular Quicksort.          │
 │                                                                │
 └────────────────────────────────────────────────────────────────┘
 ```
 
-### Код на Vibee
+### Code in Vibee
 
 ```vibee
 fn parallel_trinity_sort<T: Ord>(arr: &mut [T]) {
-    if arr.len() <= 27 {  // Тридевятое царство!
+    if arr.len() <= 27 {  // The Thrice-Nine Kingdom!
         insertion_sort(arr)
         return
     }
-    
+
     let (lt, gt) = partition3(arr)
-    
-    // Три богатыря работают параллельно
+
+    // Three heroes work in parallel
     @parallel {
-        trinity_sort(&mut arr[..lt])      // Илья — левая часть
-        // Средняя часть уже готова!      // Добрыня отдыхает
-        trinity_sort(&mut arr[gt+1..])    // Алёша — правая часть
+        trinity_sort(&mut arr[..lt])      // Ilya — left part
+        // Middle part is already done!   // Dobrynya rests
+        trinity_sort(&mut arr[gt+1..])    // Alyosha — right part
     }
 }
 ```
 
-### Результаты
+### Results
 
 ```
 ┌─────────────┬─────────────┬─────────────┬─────────────┐
-│ Ядра        │ Ускорение   │ Эффективн.  │ Примечание  │
+│ Cores       │ Speedup     │ Efficiency  │ Notes       │
 ├─────────────┼─────────────┼─────────────┼─────────────┤
 │ 1           │ 1.0x        │ 100%        │ baseline    │
 │ 2           │ 1.8x        │ 90%         │             │
@@ -94,19 +94,19 @@ fn parallel_trinity_sort<T: Ord>(arr: &mut [T]) {
 
 ## SIMD Trinity
 
-### Идея: Три Маски Одновременно
+### Idea: Three Masks Simultaneously
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
 │  SIMD 3-WAY PARTITION                                          │
 │                                                                 │
-│  Загружаем 8 элементов (AVX):                                  │
+│  Load 8 elements (AVX):                                        │
 │  ┌───┬───┬───┬───┬───┬───┬───┬───┐                            │
 │  │ 3 │ 7 │ 5 │ 2 │ 5 │ 9 │ 1 │ 5 │  pivot = 5                 │
 │  └───┴───┴───┴───┴───┴───┴───┴───┘                            │
 │                                                                 │
-│  Три сравнения ОДНОВРЕМЕННО:                                   │
+│  Three comparisons SIMULTANEOUSLY:                              │
 │                                                                 │
 │  cmp_lt = data < pivot                                         │
 │  ┌───┬───┬───┬───┬───┬───┬───┬───┐                            │
@@ -123,98 +123,98 @@ fn parallel_trinity_sort<T: Ord>(arr: &mut [T]) {
 │  │ 0 │ 1 │ 0 │ 0 │ 0 │ 1 │ 0 │ 0 │  (7,9 > 5)                 │
 │  └───┴───┴───┴───┴───┴───┴───┴───┘                            │
 │                                                                 │
-│  8 элементов за 3 инструкции!                                  │
+│  8 elements in 3 instructions!                                  │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Преимущество Trinity
+### Trinity's Advantage
 
 ```
-ОБЫЧНЫЙ QUICKSORT (2-way):
-  cmp_lt = data < pivot   ← 1 сравнение
-  cmp_ge = NOT cmp_lt     ← вычисляется
-  
-  2 категории, но равные идут в одну из них!
+REGULAR QUICKSORT (2-way):
+  cmp_lt = data < pivot   ← 1 comparison
+  cmp_ge = NOT cmp_lt     ← computed
+
+  2 categories, but equals go into one of them!
 
 TRINITY SORT (3-way):
-  cmp_lt = data < pivot   ← 1 сравнение
-  cmp_gt = data > pivot   ← 1 сравнение
-  cmp_eq = NOT (lt OR gt) ← 1 логическая операция
-  
-  3 категории, равные ОТДЕЛЬНО!
-  
-  Это естественно для SIMD:
-  - Три маски из двух сравнений
-  - Равные элементы не перемещаются
+  cmp_lt = data < pivot   ← 1 comparison
+  cmp_gt = data > pivot   ← 1 comparison
+  cmp_eq = NOT (lt OR gt) ← 1 logical operation
+
+  3 categories, equals are SEPARATE!
+
+  This is natural for SIMD:
+  - Three masks from two comparisons
+  - Equal elements don't move
 ```
 
-### Результаты
+### Results
 
 ```
 ┌─────────────┬─────────────┬─────────────┐
-│ Технология  │ Ускорение   │ Примечание  │
+│ Technology  │ Speedup     │ Notes       │
 ├─────────────┼─────────────┼─────────────┤
 │ Scalar      │ 1.0x        │ baseline    │
-│ SSE (128b)  │ 1.5-2x      │ 4 элемента  │
-│ AVX (256b)  │ 2-4x        │ 8 элементов │
-│ AVX-512     │ 5-10x       │ 16 элементов│
+│ SSE (128b)  │ 1.5-2x      │ 4 elements  │
+│ AVX (256b)  │ 2-4x        │ 8 elements  │
+│ AVX-512     │ 5-10x       │ 16 elements │
 └─────────────┴─────────────┴─────────────┘
 ```
 
 ---
 
-## Комбинация: Parallel + SIMD
+## Combination: Parallel + SIMD
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│  ГИБРИДНЫЙ TRINITY SORT                                        │
+│  HYBRID TRINITY SORT                                           │
 │                                                                 │
-│  Уровень 1-3: Parallel (потоки)                                │
+│  Level 1-3: Parallel (threads)                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │  Thread 1    Thread 2    Thread 3    Thread 4           │   │
 │  │     │           │           │           │               │   │
 │  │     ▼           ▼           ▼           ▼               │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                 │
-│  Уровень 4+: SIMD (векторизация)                               │
+│  Level 4+: SIMD (vectorization)                                │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │  [████████] [████████] [████████] [████████]            │   │
 │  │   AVX-256    AVX-256    AVX-256    AVX-256              │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                 │
-│  Уровень 7+: Scalar (базовый случай ≤ 27)                      │
+│  Level 7+: Scalar (base case <= 27)                            │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  insertion_sort для малых массивов                      │   │
+│  │  insertion_sort for small arrays                        │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                 │
-│  ОБЩЕЕ УСКОРЕНИЕ: 10-40x на современных CPU!                   │
+│  TOTAL SPEEDUP: 10-40x on modern CPUs!                         │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И разделился Иван на трёх богатырей:*
+> *And Ivan divided himself into three heroes:*
 >
-> *Илья (Threads) взял на себя большие части,*
-> *каждый поток — своя дорога.*
+> *Ilya (Threads) took on the large parts,*
+> *each thread — its own path.*
 >
-> *Добрыня (SIMD) взял на себя средние части,*
-> *восемь элементов за один удар меча.*
+> *Dobrynya (SIMD) took on the medium parts,*
+> *eight elements in a single sword strike.*
 >
-> *Алёша (Scalar) взял на себя малые части,*
-> *где хитрость важнее силы.*
+> *Alyosha (Scalar) took on the small parts,*
+> *where cunning matters more than strength.*
 >
-> *И вместе они победили любой массив*
-> *в 10-40 раз быстрее, чем поодиночке.*
+> *And together they conquered any array*
+> *10-40 times faster than alone.*
 >
-> *Ибо три богатыря вместе сильнее,*
-> *чем каждый по отдельности.*
+> *For three heroes together are stronger*
+> *than each one separately.*
 
 ---
 
-[← Глава 13](13_architecture.md) | [Глава 15: Quantum Trinity →](15_quantum_trinity.md)
+[<- Chapter 13](13_architecture.md) | [Chapter 15: Quantum Trinity ->](15_quantum_trinity.md)

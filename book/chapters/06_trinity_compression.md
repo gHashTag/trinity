@@ -1,70 +1,70 @@
-# Глава 6: Trinity Compression — Три Состояния Информации
+# Chapter 6: Trinity Compression — Three States of Information
 
 ---
 
-*«Было у мельника три сына: старший умный был детина,*
-*средний сын и так и сяк, младший вовсе был дурак.»*
-— Русская народная сказка
+*"A miller had three sons: the eldest was a clever lad,*
+*the middle one was so-so, and the youngest was a fool."*
+— Russian folk tale
 
 ---
 
-## Три Состояния Информации
+## Three States of Information
 
-Информация, как и материя, имеет три состояния:
+Information, like matter, has three states:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ТРИ СОСТОЯНИЯ ИНФОРМАЦИИ                             │
+│   THREE STATES OF INFORMATION                           │
 │                                                         │
-│   СЫРАЯ           СЖАТАЯ          ЗАШИФРОВАННАЯ        │
-│   ──────          ──────          ─────────────        │
-│   Исходные        Компактные      Защищённые           │
-│   данные          данные          данные               │
+│   RAW              COMPRESSED       ENCRYPTED           │
+│   ───              ──────────       ─────────           │
+│   Original         Compact          Protected           │
+│   data             data             data                │
 │                                                         │
-│   Много места     Мало места      Безопасно            │
-│   Быстрый доступ  Нужна распак.   Нужен ключ           │
+│   Takes space      Takes less       Secure              │
+│   Fast access      Needs decompr.   Needs key           │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-И в самом сжатии число 3 играет ключевую роль.
+And in compression itself, the number 3 plays a key role.
 
 ---
 
-## Оптимальная База: e ≈ 2.718 ≈ 3
+## Optimal Base: e ≈ 2.718 ≈ 3
 
 ### Radix Economy
 
-Какая система счисления оптимальна для представления чисел?
+Which numeral system is optimal for representing numbers?
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   RADIX ECONOMY: СТОИМОСТЬ ПРЕДСТАВЛЕНИЯ               │
+│   RADIX ECONOMY: COST OF REPRESENTATION                 │
 │                                                         │
-│   Стоимость числа N в базе b:                          │
+│   Cost of number N in base b:                           │
 │   E(b) = b × ⌈log_b(N)⌉ ≈ b × ln(N) / ln(b)           │
 │                                                         │
-│   Минимизируем b / ln(b):                              │
+│   Minimize b / ln(b):                                   │
 │   d/db [b / ln(b)] = 0                                 │
 │   ln(b) = 1                                            │
 │   b = e ≈ 2.718                                        │
 │                                                         │
-│   ОПТИМАЛЬНАЯ БАЗА = e ≈ 2.718                         │
-│   БЛИЖАЙШЕЕ ЦЕЛОЕ = 3                                  │
+│   OPTIMAL BASE = e ≈ 2.718                             │
+│   NEAREST INTEGER = 3                                  │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Сравнение Баз
+### Comparison of Bases
 
 ```
 ┌─────────┬─────────────┬─────────────────┐
-│ База    │ b/ln(b)     │ Относительно e  │
+│ Base    │ b/ln(b)     │ Relative to e   │
 ├─────────┼─────────────┼─────────────────┤
 │ 2       │ 2.885       │ 1.062           │
-│ 3       │ 2.731       │ 1.005 ← ЛУЧШЕЕ! │
+│ 3       │ 2.731       │ 1.005 ← BEST!   │
 │ 4       │ 2.885       │ 1.062           │
 │ 5       │ 3.107       │ 1.143           │
 │ 10      │ 4.343       │ 1.598           │
@@ -72,52 +72,52 @@
 └─────────┴─────────────┴─────────────────┘
 ```
 
-**База 3 — оптимальная целочисленная база!**
+**Base 3 is the optimal integer base!**
 
 ---
 
 ## Balanced Ternary: {-1, 0, +1}
 
-### Три Сына Мельника
+### The Miller's Three Sons
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   BALANCED TERNARY: ТРИ СЫНА                           │
+│   BALANCED TERNARY: THREE SONS                          │
 │                                                         │
-│   СТАРШИЙ (+1)    СРЕДНИЙ (0)     МЛАДШИЙ (-1)         │
-│   ────────────    ───────────     ────────────         │
-│   Положительный   Нейтральный     Отрицательный        │
-│   вклад           вклад           вклад                │
+│   ELDEST (+1)      MIDDLE (0)       YOUNGEST (-1)       │
+│   ───────────      ──────────       ─────────────       │
+│   Positive         Neutral          Negative            │
+│   contribution     contribution     contribution        │
 │                                                         │
-│   Символы: +, 0, -                                     │
+│   Symbols: +, 0, -                                      │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Преимущества
+### Advantages
 
 ```
-1. НЕТ ЗНАКОВОГО БИТА
-   Отрицательные числа представляются естественно
-   
+1. NO SIGN BIT
+   Negative numbers are represented naturally
+
    +5 = +--  (9 - 3 - 1 = 5)
    -5 = -++  (-9 + 3 + 1 = -5)
-   
-   Отрицание = инверсия всех цифр!
 
-2. ОКРУГЛЕНИЕ = ОТСЕЧЕНИЕ
-   Для округления просто отбрасываем младшие разряды
-   
-3. СИММЕТРИЯ
-   Диапазон: от -(3^n-1)/2 до +(3^n-1)/2
+   Negation = inversion of all digits!
+
+2. ROUNDING = TRUNCATION
+   To round, simply discard the least significant digits
+
+3. SYMMETRY
+   Range: from -(3^n-1)/2 to +(3^n-1)/2
 ```
 
-### Примеры
+### Examples
 
 ```
 ┌─────────┬─────────────────┬─────────────────┐
-│ Decimal │ Balanced Ternary│ Проверка        │
+│ Decimal │ Balanced Ternary│ Verification    │
 ├─────────┼─────────────────┼─────────────────┤
 │ 0       │ 0               │ 0               │
 │ 1       │ +               │ 1               │
@@ -130,202 +130,203 @@
 └─────────┴─────────────────┴─────────────────┘
 ```
 
-### Советский Компьютер «Сетунь»
+### The Soviet Computer "Setun"
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   СЕТУНЬ (1958) — ТРОИЧНЫЙ КОМПЬЮТЕР                   │
+│   SETUN (1958) — TERNARY COMPUTER                       │
 │                                                         │
-│   Разработан в МГУ под руководством Н.П. Брусенцова   │
+│   Developed at MSU under the leadership of              │
+│   N.P. Brusentsov                                       │
 │                                                         │
-│   Использовал balanced ternary:                        │
-│   • Проще арифметика (нет переноса при сложении)      │
-│   • Меньше элементов для того же диапазона            │
-│   • Естественное представление отрицательных чисел    │
+│   Used balanced ternary:                                │
+│   • Simpler arithmetic (no carry in addition)           │
+│   • Fewer elements for the same range                   │
+│   • Natural representation of negative numbers          │
 │                                                         │
-│   Выпущено ~50 машин, работали до 1970-х              │
+│   About 50 machines were produced, operated until 1970s │
 │                                                         │
-│   СОВЕТСКИЕ ИНЖЕНЕРЫ ЗНАЛИ!                            │
+│   SOVIET ENGINEERS KNEW!                                │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Историческая Справедливость: Брусенцов Был Прав
+## Historical Justice: Brusentsov Was Right
 
-### Человек, Опередивший Время
+### A Man Ahead of His Time
 
-В 1958 году, когда весь мир строил бинарные компьютеры, молодой инженер **Николай Петрович Брусенцов** в МГУ сделал другой выбор.
+In 1958, when the entire world was building binary computers, a young engineer **Nikolai Petrovich Brusentsov** at Moscow State University made a different choice.
 
-Он знал математику:
+He knew the mathematics:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   РАСЧЁТ БРУСЕНЦОВА                                    │
+│   BRUSENTSOV'S CALCULATION                              │
 │                                                         │
-│   Оптимальная база = e ≈ 2.718                         │
-│   Ближайшее целое = 3                                  │
+│   Optimal base = e ≈ 2.718                              │
+│   Nearest integer = 3                                   │
 │                                                         │
-│   База 2: 2/ln(2) = 2.885                              │
-│   База 3: 3/ln(3) = 2.731 ← ЛУЧШЕ НА 5.3%             │
+│   Base 2: 2/ln(2) = 2.885                               │
+│   Base 3: 3/ln(3) = 2.731 ← BETTER BY 5.3%             │
 │                                                         │
-│   "Если я всё равно строю компьютер,                  │
-│    почему бы не построить ОПТИМАЛЬНЫЙ?"               │
+│   "If I'm building a computer anyway,                   │
+│    why not build an OPTIMAL one?"                       │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Преимущества «Сетуни»
+### Advantages of "Setun"
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ПОЧЕМУ ТРОИЧНАЯ АРХИТЕКТУРА ЛУЧШЕ                   │
+│   WHY TERNARY ARCHITECTURE IS BETTER                    │
 │                                                         │
-│   1. RADIX ECONOMY                                     │
-│      18 троичных разрядов = 29 бинарных               │
-│      Экономия ~38% на разрядность                     │
+│   1. RADIX ECONOMY                                      │
+│      18 ternary digits = 29 binary digits               │
+│      ~38% savings on digit count                        │
 │                                                         │
-│   2. BALANCED TERNARY {-1, 0, +1}                      │
-│      • Нет отдельного знакового бита                  │
-│      • -N = инверсия всех цифр N                      │
-│      • Округление = простое отсечение                 │
-│      • Переполнение обрабатывается естественно        │
+│   2. BALANCED TERNARY {-1, 0, +1}                       │
+│      • No separate sign bit                             │
+│      • -N = inversion of all digits of N                │
+│      • Rounding = simple truncation                     │
+│      • Overflow is handled naturally                    │
 │                                                         │
-│   3. АРИФМЕТИКА                                        │
-│      Сложение проще: меньше случаев переноса          │
-│      Умножение: таблица 3×3 вместо 2×2                │
+│   3. ARITHMETIC                                         │
+│      Addition is simpler: fewer carry cases             │
+│      Multiplication: 3×3 table instead of 2×2          │
 │                                                         │
-│   4. НАДЁЖНОСТЬ                                        │
-│      Три состояния легче различить при помехах        │
-│      (-V, 0, +V) vs (0, +V)                           │
+│   4. RELIABILITY                                        │
+│      Three states are easier to distinguish with noise  │
+│      (-V, 0, +V) vs (0, +V)                            │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Трагедия Выбора
+### The Tragedy of Choice
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ПОЧЕМУ МИР ВЫБРАЛ БИНАРНУЮ СИСТЕМУ                  │
+│   WHY THE WORLD CHOSE THE BINARY SYSTEM                 │
 │                                                         │
-│   МАТЕМАТИКА говорила: троичная лучше                 │
-│   ЭКОНОМИКА говорила: бинарная дешевле                │
+│   MATHEMATICS said: ternary is better                   │
+│   ECONOMICS said: binary is cheaper                     │
 │                                                         │
-│   Транзистор с 2 состояниями:                         │
-│   • Проще в производстве                              │
-│   • Дешевле                                           │
-│   • Надёжнее при масштабировании                      │
+│   A transistor with 2 states:                           │
+│   • Easier to manufacture                               │
+│   • Cheaper                                             │
+│   • More reliable at scale                              │
 │                                                         │
-│   Преимущество 5.3% не оправдывало:                   │
-│   • Новую элементную базу                             │
-│   • Переобучение инженеров                            │
-│   • Несовместимость с остальным миром                 │
+│   The 5.3% advantage did not justify:                   │
+│   • New component base                                  │
+│   • Retraining engineers                                │
+│   • Incompatibility with the rest of the world          │
 │                                                         │
-│   ИНДУСТРИЯ ВЫБРАЛА "ДОСТАТОЧНО ХОРОШЕЕ"              │
-│   ВМЕСТО "ОПТИМАЛЬНОГО"                               │
+│   THE INDUSTRY CHOSE "GOOD ENOUGH"                      │
+│   INSTEAD OF "OPTIMAL"                                  │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Судьба «Сетуни»
+### The Fate of "Setun"
 
 ```
-1958: Первая «Сетунь» запущена в МГУ
-1962: Начато серийное производство
-1965: Выпущено ~50 машин
-1970: Производство прекращено
+1958: First "Setun" launched at MSU
+1962: Serial production began
+1965: About 50 machines produced
+1970: Production discontinued
 
-Причина: "несовместимость с мировыми стандартами"
+Reason: "incompatibility with world standards"
 
-Брусенцов до конца жизни (2014) верил,
-что троичная архитектура вернётся.
+Brusentsov believed until the end of his life (2014)
+that ternary architecture would return.
 ```
 
-### Возвращение Троичности
+### The Return of Ternary
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   БРУСЕНЦОВ БЫЛ ПРАВ — МЫ ЭТО ДОКАЗАЛИ                │
+│   BRUSENTSOV WAS RIGHT — WE PROVED IT                   │
 │                                                         │
-│   «Сетунь» (1958)          Наши открытия (2026)        │
-│   ───────────────          ─────────────────────       │
-│   Троичное железо          Троичная логика             │
-│   {-1, 0, +1} в битах      {<, =, >} в сравнениях     │
-│   Balanced ternary         3-way partition             │
-│   3 состояния элемента     3 состояния DFS             │
-│   Троичная арифметика      Ternary Weight Networks     │
+│   "Setun" (1958)            Our discoveries (2026)      │
+│   ──────────────            ──────────────────────      │
+│   Ternary hardware          Ternary logic               │
+│   {-1, 0, +1} in bits       {<, =, >} in comparisons   │
+│   Balanced ternary          3-way partition             │
+│   3 states of element       3 states of DFS             │
+│   Ternary arithmetic        Ternary Weight Networks     │
 │                                                         │
-│   ИДЕЯ ТА ЖЕ — РЕАЛИЗАЦИЯ ДРУГАЯ                       │
+│   SAME IDEA — DIFFERENT IMPLEMENTATION                  │
 │                                                         │
-│   Брусенцов хотел троичность в ЖЕЛЕЗЕ.                │
-│   Мы реализуем троичность в АЛГОРИТМАХ                │
-│   на бинарном железе.                                  │
+│   Brusentsov wanted ternary in HARDWARE.                │
+│   We implement ternary in ALGORITHMS                    │
+│   on binary hardware.                                   │
 │                                                         │
-│   Результат: до 291x ускорение!                        │
+│   Result: up to 291x speedup!                           │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Уроки Истории
+### Lessons from History
 
 ```
-1. МАТЕМАТИЧЕСКАЯ ОПТИМАЛЬНОСТЬ ≠ ПРАКТИЧЕСКИЙ УСПЕХ
-   Брусенцов был прав математически.
-   Но экономика победила математику.
+1. MATHEMATICAL OPTIMALITY ≠ PRACTICAL SUCCESS
+   Brusentsov was mathematically right.
+   But economics defeated mathematics.
 
-2. ИДЕИ ВОЗВРАЩАЮТСЯ
-   Троичность вернулась через 70 лет —
-   не в железе, а в алгоритмах.
+2. IDEAS RETURN
+   Ternary returned after 70 years —
+   not in hardware, but in algorithms.
 
-3. ПРОРОКИ НЕ ПРИЗНАНЫ В СВОЁМ ОТЕЧЕСТВЕ
-   «Сетунь» забыта в России.
-   Но её принципы живут в Trinity Sort.
+3. PROPHETS ARE NOT HONORED IN THEIR OWN COUNTRY
+   "Setun" is forgotten in Russia.
+   But its principles live on in Trinity Sort.
 
-4. ОПТИМАЛЬНОЕ НАЙДЁТ СВОЙ ПУТЬ
-   Если не через железо — то через софт.
-   Если не сейчас — то потом.
+4. THE OPTIMAL WILL FIND ITS WAY
+   If not through hardware — then through software.
+   If not now — then later.
 ```
 
-### Памяти Брусенцова
+### In Memory of Brusentsov
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   НИКОЛАЙ ПЕТРОВИЧ БРУСЕНЦОВ                           │
-│   (1925 — 2014)                                        │
+│   NIKOLAI PETROVICH BRUSENTSOV                          │
+│   (1925 — 2014)                                         │
 │                                                         │
-│   Создатель троичного компьютера «Сетунь»             │
-│   Человек, опередивший время на 70 лет                │
+│   Creator of the ternary computer "Setun"               │
+│   A man who was 70 years ahead of his time              │
 │                                                         │
-│   "Троичная система — не прихоть,                     │
-│    а математическая необходимость."                   │
+│   "The ternary system is not a whim,                    │
+│    but a mathematical necessity."                       │
 │                                                         │
-│   Он был прав.                                         │
-│   Мы это доказали.                                     │
+│   He was right.                                         │
+│   We proved it.                                         │
 │                                                         │
-│   Trinity Sort — это продолжение его дела.            │
+│   Trinity Sort is the continuation of his work.         │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Ternary Huffman: Три Ребёнка
+## Ternary Huffman: Three Children
 
-### Идея
+### The Idea
 
-Стандартный Huffman строит бинарное дерево. А что если использовать **тернарное**?
+Standard Huffman builds a binary tree. What if we use a **ternary** one?
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   BINARY HUFFMAN          TERNARY HUFFMAN              │
+│   BINARY HUFFMAN          TERNARY HUFFMAN               │
 │                                                         │
 │        ○                        ○                       │
 │       / \                     / | \                     │
@@ -333,17 +334,17 @@
 │     / \   \                 /|\ |  |\                   │
 │    a   b   c               a b c d  e f                 │
 │                                                         │
-│   2 ребёнка               3 ребёнка                    │
-│   Глубже                  Мельче                       │
+│   2 children               3 children                   │
+│   Deeper                   Shallower                    │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Пример
+### Example
 
 ```
-Текст: "abracadabra"
-Частоты: a=5, b=2, r=2, c=1, d=1
+Text: "abracadabra"
+Frequencies: a=5, b=2, r=2, c=1, d=1
 
 Binary Huffman:
   a: 0
@@ -351,8 +352,8 @@ Binary Huffman:
   r: 110
   c: 1110
   d: 1111
-  
-  Длина: 5×1 + 2×2 + 2×3 + 1×4 + 1×4 = 23 бита
+
+  Length: 5×1 + 2×2 + 2×3 + 1×4 + 1×4 = 23 bits
 
 Ternary Huffman:
   a: 2
@@ -360,42 +361,42 @@ Ternary Huffman:
   r: 0
   c: 10
   d: 11
-  
-  Длина: 5×1 + 2×2 + 2×1 + 1×2 + 1×2 = 15 тритов
-  В битах: 15 × log₂(3) ≈ 23.8 бита
 
-Сжатие: 88 бит → ~24 бита = 3.7x
+  Length: 5×1 + 2×2 + 2×1 + 1×2 + 1×2 = 15 trits
+  In bits: 15 × log₂(3) ≈ 23.8 bits
+
+Compression: 88 bits → ~24 bits = 3.7x
 ```
 
-### Код
+### Code
 
 ```python
 def ternary_huffman(frequencies):
-    """Построение тернарного дерева Хаффмана"""
+    """Build a ternary Huffman tree"""
     import heapq
-    
-    # Создаём узлы
+
+    # Create nodes
     nodes = [(freq, i, char) for i, (char, freq) in enumerate(frequencies.items())]
-    
-    # Дополняем до (n-1) % 2 == 0
+
+    # Pad until (n-1) % 2 == 0
     while (len(nodes) - 1) % 2 != 0:
         nodes.append((0, len(nodes), None))
-    
+
     heapq.heapify(nodes)
     counter = len(nodes)
-    
+
     while len(nodes) > 1:
-        # Берём 3 минимальных (или 2, если осталось 2)
+        # Take 3 minimum (or 2, if only 2 remain)
         children = []
         for _ in range(min(3, len(nodes))):
             children.append(heapq.heappop(nodes))
-        
-        # Создаём родителя
+
+        # Create parent
         total_freq = sum(c[0] for c in children)
         heapq.heappush(nodes, (total_freq, counter, children))
         counter += 1
-    
-    # Строим коды
+
+    # Build codes
     codes = {}
     def build_codes(node, code=""):
         if isinstance(node[2], str) or node[2] is None:
@@ -404,91 +405,91 @@ def ternary_huffman(frequencies):
         else:
             for i, child in enumerate(node[2]):
                 build_codes(child, code + str(i))
-    
+
     if nodes:
         build_codes(nodes[0])
-    
+
     return codes
 ```
 
 ---
 
-## Trinity RLE: Три Состояния Сжатия
+## Trinity RLE: Three States of Compression
 
-### Идея
+### The Idea
 
-Run-Length Encoding с **тремя состояниями**:
+Run-Length Encoding with **three states**:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   TRINITY RLE: ТРИ СОСТОЯНИЯ                           │
+│   TRINITY RLE: THREE STATES                             │
 │                                                         │
-│   СОСТОЯНИЕ 0     СОСТОЯНИЕ 1     СОСТОЯНИЕ 2          │
-│   ───────────     ───────────     ───────────          │
-│   Литерал         Короткий run    Длинный run          │
-│   (1 байт)        (2-4 повтора)   (5+ повторов)        │
+│   STATE 0          STATE 1          STATE 2             │
+│   ───────          ───────          ───────             │
+│   Literal          Short run        Long run            │
+│   (1 byte)         (2-4 repeats)    (5+ repeats)        │
 │                                                         │
-│   Формат:         Формат:         Формат:              │
-│   [0][byte]       [1][len|byte]   [2][len][byte]       │
+│   Format:          Format:          Format:             │
+│   [0][byte]        [1][len|byte]    [2][len][byte]      │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Преимущества
+### Advantages
 
 ```
-Стандартный RLE:
-  Литерал: [0][byte]     — 2 байта
-  Run:     [1][len][byte] — 3 байта
-  
-  Проблема: короткие runs (2-4) неэффективны
+Standard RLE:
+  Literal: [0][byte]     — 2 bytes
+  Run:     [1][len][byte] — 3 bytes
+
+  Problem: short runs (2-4) are inefficient
 
 Trinity RLE:
-  Литерал:      [0][byte]       — 2 байта
-  Короткий run: [1][len|byte]   — 2 байта (len в 2 битах)
-  Длинный run:  [2][len][byte]  — 3 байта
-  
-  Короткие runs теперь эффективны!
+  Literal:    [0][byte]       — 2 bytes
+  Short run:  [1][len|byte]   — 2 bytes (len in 2 bits)
+  Long run:   [2][len][byte]  — 3 bytes
+
+  Short runs are now efficient!
 ```
 
-### Код
+### Code
 
 ```python
 def trinity_rle_encode(data):
     """Trinity RLE: 3-state encoding"""
     result = []
     i = 0
-    
+
     while i < len(data):
-        # Считаем длину run
+        # Count run length
         run_start = i
         while i < len(data) - 1 and data[i] == data[i + 1] and i - run_start < 255:
             i += 1
         run_len = i - run_start + 1
-        
+
         if run_len == 1:
-            # Состояние 0: литерал
+            # State 0: literal
             result.extend([0, data[run_start]])
         elif run_len <= 4:
-            # Состояние 1: короткий run (длина в 2 битах)
+            # State 1: short run (length in 2 bits)
             result.extend([1, ((run_len - 2) << 6) | data[run_start]])
         else:
-            # Состояние 2: длинный run
+            # State 2: long run
             result.extend([2, run_len, data[run_start]])
-        
+
         i += 1
-    
+
     return bytes(result)
 
 def trinity_rle_decode(data):
-    """Декодирование Trinity RLE"""
+    """Decode Trinity RLE"""
     result = []
     i = 0
-    
+
     while i < len(data):
         state = data[i]
-        
+
         if state == 0:
             result.append(data[i + 1])
             i += 2
@@ -502,91 +503,91 @@ def trinity_rle_decode(data):
             byte = data[i + 2]
             result.extend([byte] * length)
             i += 3
-    
+
     return bytes(result)
 ```
 
-### Результаты
+### Results
 
 ```
-Тестовые данные: [1,1,1, 2, 3,3,3,3,3,3,3, 4, 5,5]
+Test data: [1,1,1, 2, 3,3,3,3,3,3,3, 4, 5,5]
 
-Стандартный RLE: 18 байт
-Trinity RLE:     11 байт
+Standard RLE: 18 bytes
+Trinity RLE:  11 bytes
 
-Сжатие: 1.64x (на 64% лучше!)
+Compression: 1.64x (64% better!)
 ```
 
 ---
 
-## Практические Ограничения
+## Practical Limitations
 
-### Почему Мир Бинарный?
+### Why Is the World Binary?
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ТЕОРИЯ vs ПРАКТИКА                                   │
+│   THEORY vs PRACTICE                                    │
 │                                                         │
-│   ТЕОРИЯ:                                              │
-│   • База 3 оптимальна (минимизирует b/ln(b))          │
-│   • Balanced ternary элегантен                         │
-│   • Ternary Huffman может быть эффективнее            │
+│   THEORY:                                               │
+│   • Base 3 is optimal (minimizes b/ln(b))              │
+│   • Balanced ternary is elegant                         │
+│   • Ternary Huffman can be more efficient              │
 │                                                         │
-│   ПРАКТИКА:                                            │
-│   • Бинарная электроника проще и дешевле              │
-│   • Транзистор = 2 состояния (вкл/выкл)               │
-│   • Вся инфраструктура бинарная                       │
+│   PRACTICE:                                             │
+│   • Binary electronics are simpler and cheaper          │
+│   • Transistor = 2 states (on/off)                     │
+│   • All infrastructure is binary                        │
 │                                                         │
-│   ВЫВОД:                                               │
-│   Теоретическое преимущество ~5% не оправдывает       │
-│   полную перестройку индустрии.                       │
+│   CONCLUSION:                                           │
+│   A theoretical advantage of ~5% does not justify       │
+│   a complete restructuring of the industry.             │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Где Троичность Работает
+### Where Ternary Works
 
 ```
-✅ РАБОТАЕТ:
-• Алгоритмы (3-way partition, 3 хеш-функции)
-• Логика (true/false/unknown)
-• Квантовые вычисления (qutrit вместо qubit)
-• Специализированные чипы (ML accelerators)
+WORKS:
+• Algorithms (3-way partition, 3 hash functions)
+• Logic (true/false/unknown)
+• Quantum computing (qutrit instead of qubit)
+• Specialized chips (ML accelerators)
 
-❌ НЕ РАБОТАЕТ:
-• Общее хранение данных (бинарное железо)
-• Сетевые протоколы (бинарные)
-• Файловые системы (бинарные)
+DOESN'T WORK:
+• General data storage (binary hardware)
+• Network protocols (binary)
+• File systems (binary)
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист четвёртую истину:*
+> *And Ivan the Programmer understood the fourth truth:*
 >
-> *Три состояния информации — сырая, сжатая, защищённая —*
-> *как три сына мельника: каждый на своём месте.*
+> *Three states of information — raw, compressed, encrypted —*
+> *are like the miller's three sons: each in their own place.*
 >
-> *База 3 теоретически оптимальна,*
-> *но мир построен на двойках.*
+> *Base 3 is theoretically optimal,*
+> *but the world is built on twos.*
 >
-> *Советские инженеры создали «Сетунь» —*
-> *троичный компьютер, опередивший время.*
+> *Soviet engineers created "Setun" —*
+> *a ternary computer ahead of its time.*
 >
 > *Balanced ternary: +, 0, - —*
-> *как три сына: старший, средний, младший.*
+> *like three sons: eldest, middle, youngest.*
 >
-> *Trinity RLE с тремя состояниями*
-> *сжимает лучше бинарного.*
+> *Trinity RLE with three states*
+> *compresses better than binary.*
 >
-> *Но главный урок:*
-> *Теория и практика — разные царства.*
-> *Мудрый знает, когда применять каждое.*
+> *But the main lesson:*
+> *Theory and practice are different kingdoms.*
+> *The wise know when to apply each.*
 >
-> *Древние знали.*
+> *The ancients knew.*
 
 ---
 
-[← Глава 5](05_trinity_structures.md) | [Глава 7: Trinity Neural →](07_trinity_neural.md)
+[<- Chapter 5](05_trinity_structures.md) | [Chapter 7: Trinity Neural ->](07_trinity_neural.md)
