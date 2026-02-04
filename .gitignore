@@ -44,7 +44,7 @@ models/*.gguf
 generated/
 
 # Temporary binaries
-vibee
+/vibee
 
 # Compiled Zig binaries
 src/vibeec/flash_benchmark
