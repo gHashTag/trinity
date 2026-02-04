@@ -811,9 +811,9 @@
     "toggleHide": "▼ Hide Mathematical Foundations",
     "items": [
       {
-        "title": "SU(3) Gauge Symmetry",
-        "description": "Ternary states {-1, 0, +1} map to color charge in quantum chromodynamics. The 8 gluon generators of SU(3) provide natural error correction.",
-        "formula": "SU(3) → 8 generators → ternary stability"
+        "title": "SU(3) — Special Unitary Group",
+        "description": "SU = Special Unitary (matrices with determinant = 1 that preserve vector length). SU(3) describes 3 quark colors (red, green, blue) inside protons and neutrons. Our ternary {-1, 0, +1} mirrors this natural 3-state pattern. The 8 gluon generators provide natural error correction.",
+        "formula": "SU(3) = 3×3 matrices → 3 colors → 8 gluons"
       },
       {
         "title": "Chern-Simons Invariants",

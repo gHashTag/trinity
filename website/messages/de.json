@@ -398,9 +398,9 @@
     "toggleHide": "▼ Mathematische Grundlagen ausblenden",
     "items": [
       {
-        "title": "SU(3) Eichsymmetrie",
-        "description": "Ternäre Zustände {-1, 0, +1} entsprechen der Farbladung in der Quantenchromodynamik. Die 8 Gluon-Generatoren von SU(3) bieten natürliche Fehlerkorrektur.",
-        "formula": "SU(3) → 8 Generatoren → ternäre Stabilität"
+        "title": "SU(3) — Spezielle Unitäre Gruppe",
+        "description": "SU = Special Unitary (Matrizen mit Determinante = 1, die Vektorlängen erhalten). SU(3) beschreibt 3 Quark-Farben (rot, grün, blau) in Protonen und Neutronen. Unser ternäres System {-1, 0, +1} spiegelt dieses natürliche 3-Zustands-Muster wider. Die 8 Gluon-Generatoren bieten natürliche Fehlerkorrektur.",
+        "formula": "SU(3) = 3×3 Matrizen → 3 Farben → 8 Gluonen"
       },
       {
         "title": "Chern-Simons Invarianten",
