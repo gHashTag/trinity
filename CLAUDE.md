@@ -368,4 +368,57 @@ specs/tri/telegram_bot/
 
 ---
 
+## 🌐 WEBSITE DEPLOYMENT RULES
+
+### CANONICAL URL (DO NOT CHANGE!)
+
+```
+Production URL: https://trinity-site-ghashtag.vercel.app
+Vercel Project: trinity-site
+GitHub Repo:    gHashTag/trinity
+Root Directory: website/
+Framework:      Vite (React SPA)
+```
+
+### ⛔ FORBIDDEN ACTIONS
+
+```
+❌ DO NOT create new Vercel projects for the website
+❌ DO NOT change the production URL
+❌ DO NOT deploy to different project names
+❌ DO NOT create duplicate website folders
+```
+
+### ✅ ALLOWED ACTIONS
+
+```
+✅ Edit files in website/ folder
+✅ Push to main branch (auto-deploys via GitHub webhook)
+✅ Update translations in website/messages/*.json
+✅ Modify components in website/src/
+```
+
+### Deployment Process
+
+```bash
+# 1. Make changes in website/ folder
+# 2. Build locally to verify
+cd website && npm run build
+
+# 3. Commit and push (auto-deploys)
+git add -A && git commit -m "feat: description" && git push origin main
+
+# 4. Verify at canonical URL
+# https://trinity-site-ghashtag.vercel.app
+```
+
+### GitHub Links (USE ONLY THIS!)
+
+```
+Repository: https://github.com/gHashTag/trinity
+NOT: vibee-lang, trinity-os, or any other repo
+```
+
+---
+
 **KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**

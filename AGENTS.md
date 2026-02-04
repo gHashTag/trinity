@@ -311,4 +311,38 @@ git config core.hooksPath .githooks
 
 ---
 
+## 🌐 WEBSITE DEPLOYMENT RULES
+
+### CANONICAL URL (NEVER CHANGE!)
+
+| Setting | Value |
+|---------|-------|
+| **Production URL** | `https://trinity-site-ghashtag.vercel.app` |
+| **Vercel Project** | `trinity-site` |
+| **GitHub Repo** | `gHashTag/trinity` |
+| **Root Directory** | `website/` |
+| **Framework** | Vite (React SPA) |
+
+### ⛔ CRITICAL: DO NOT
+
+- Create new Vercel projects
+- Change the production URL
+- Deploy to different project names
+- Create duplicate website folders
+- Use `vibee-lang` repo (use `trinity` only!)
+
+### ✅ ALLOWED
+
+- Edit files in `website/` folder
+- Push to main branch (auto-deploys)
+- Update translations in `website/messages/*.json`
+
+### All GitHub Links Must Use:
+
+```
+https://github.com/gHashTag/trinity
+```
+
+---
+
 **KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**
