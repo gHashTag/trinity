@@ -1,0 +1,30 @@
+{
+  "name": "neodetect-extension",
+  "version": "2.0.0",
+  "description": "NeoDetect Anti-Detect Browser Extension build tools",
+  "scripts": {
+    "build": "node build.js",
+    "build:chrome": "node build.js chrome",
+    "build:firefox": "node build.js firefox",
+    "build:wasm": "node build.js wasm",
+    "build:all": "node build.js all",
+    "clean": "node build.js clean",
+    "test": "cd test && npm test"
+  },
+  "keywords": [
+    "antidetect",
+    "fingerprint",
+    "privacy",
+    "browser-extension",
+    "wasm"
+  ],
+  "author": "gHashTag",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gHashTag/trinity.git"
+  },
+  "devDependencies": {
+    "archiver": "^6.0.0"
+  }
+}
