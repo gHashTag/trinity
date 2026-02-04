@@ -241,6 +241,21 @@ pub const VSAVM = struct {
         const dst = self.getVReg(inst.dst);
         var src1 = self.getVReg(inst.src1).*;
         var src2 = self.getVReg(inst.src2).*;
+
+        // Try JIT-accelerated bind if enabled
+        if (self.jit_enabled) {
+            if (self.jit_engine) |*engine| {
+                // Copy src1 to dst, then bind in place
+                dst.* = src1;
+                if (engine.bind(dst, &src2)) {
+                    return;
+                } else |_| {
+                    // JIT failed, fall through to scalar
+                }
+            }
+        }
+
+        // Scalar fallback
         dst.* = tvc_vsa.bind(&src1, &src2);
     }
 
@@ -248,6 +263,20 @@ pub const VSAVM = struct {
         const dst = self.getVReg(inst.dst);
         var src1 = self.getVReg(inst.src1).*;
         var src2 = self.getVReg(inst.src2).*;
+
+        // Try JIT-accelerated unbind (same as bind) if enabled
+        if (self.jit_enabled) {
+            if (self.jit_engine) |*engine| {
+                dst.* = src1;
+                if (engine.bind(dst, &src2)) {
+                    return;
+                } else |_| {
+                    // JIT failed, fall through to scalar
+                }
+            }
+        }
+
+        // Scalar fallback
         dst.* = tvc_vsa.unbind(&src1, &src2);
     }
 
@@ -289,12 +318,40 @@ pub const VSAVM = struct {
     fn execVCosine(self: *VSAVM, inst: VSAInstruction) void {
         var src1 = self.getVReg(inst.src1).*;
         var src2 = self.getVReg(inst.src2).*;
+
+        // Try JIT-accelerated cosine similarity if enabled
+        if (self.jit_enabled) {
+            if (self.jit_engine) |*engine| {
+                if (engine.cosineSimilarity(&src1, &src2)) |result| {
+                    self.registers.f0 = result;
+                    return;
+                } else |_| {
+                    // JIT failed, fall through to scalar
+                }
+            }
+        }
+
+        // Scalar fallback
         self.registers.f0 = tvc_vsa.cosineSimilarity(&src1, &src2);
     }
 
     fn execVHamming(self: *VSAVM, inst: VSAInstruction) void {
         var src1 = self.getVReg(inst.src1).*;
         var src2 = self.getVReg(inst.src2).*;
+
+        // Try JIT-accelerated hamming distance if enabled
+        if (self.jit_enabled) {
+            if (self.jit_engine) |*engine| {
+                if (engine.hammingDistance(&src1, &src2)) |result| {
+                    self.registers.s0 = result;
+                    return;
+                } else |_| {
+                    // JIT failed, fall through to scalar
+                }
+            }
+        }
+
+        // Scalar fallback
         self.registers.s0 = @intCast(tvc_vsa.hammingDistance(&src1, &src2));
     }
 
