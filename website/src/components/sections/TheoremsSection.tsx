@@ -122,7 +122,7 @@ export default function TheoremsSection() {
 
             {/* Formula */}
             <div style={{ 
-              background: 'rgba(99, 102, 241, 0.08)', 
+              background: 'rgba(0, 229, 153, 0.08)', 
               padding: '0.8rem 1rem', 
               borderRadius: '6px',
               fontFamily: 'ui-monospace, monospace',

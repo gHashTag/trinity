@@ -59,7 +59,7 @@ function AnimatedValue({ value, delay }: { value: string; delay: number }) {
       fontWeight: 600, 
       color: 'var(--accent)', 
       marginBottom: '0.5rem',
-      background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
+      background: 'linear-gradient(135deg, var(--accent), #00b377)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       backgroundClip: 'text'
