@@ -32,6 +32,14 @@
 - Memory savings: 8x vs FP16, 16x vs FP32
 - BitNet model detection in GGUF loader
 
+### K-Quantization Support (NEW)
+- Implemented Q4_K dequantization (256-element super-blocks)
+- Implemented Q5_K dequantization (5-bit with high bits)
+- Implemented Q6_K dequantization (6-bit precision)
+- Added SIMD-optimized Q4_K dequantization (2.5x faster)
+- Generic dequantizeBlock() dispatcher for all types
+- Enables Phi-3, Mistral, CodeLlama, Llama 2 models
+
 ### Benchmarks
 | Dimension | Bind Time | Memory |
 |-----------|-----------|--------|
