@@ -67,7 +67,7 @@ export default function StickyCTA() {
             whileTap={{ scale: 0.95 }}
             style={{ minWidth: '160px', textAlign: 'center' }}
           >
-            {t.calculator?.title || 'Calculate ROI'}
+            💰 {t.stickyCta?.calculator || 'Savings Calculator'}
           </motion.a>
         </motion.div>
       )}
