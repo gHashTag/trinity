@@ -235,6 +235,66 @@ behaviors:
       return output
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# THREAD POOL INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+thread_pool:
+  # Uses persistent thread pool from bitnet_pipeline.zig
+  source: "src/vibeec/bitnet_pipeline.zig"
+  
+  functions:
+    - initThreadPool: "Initialize global thread pool at startup"
+    - getPoolThreadCount: "Get number of available threads"
+    - WorkQueue: "Atomic work queue for dynamic load balancing"
+    
+  parallel_strategy:
+    # Parallelize across attention heads (not KV tiles)
+    # KV tiles must be sequential for online softmax correctness
+    unit: "attention_head"
+    min_seq_for_parallel: 256  # Below this, sequential is faster
+    
+  work_distribution:
+    method: "dynamic"  # Atomic fetch-add for load balancing
+    granularity: "per_head"  # Each work item = one head
+    
+  integration_code: |
+    // In flash_attention_forward:
+    if (seq_len >= MIN_SEQ_FOR_PARALLEL and num_heads > 1) {
+        var work_queue = WorkQueue.init(num_heads);
+        // Spawn threads, each processes heads from queue
+        // Thread function:
+        while (work_queue.getNext()) |head_idx| {
+            process_head_flash(head_idx, Q, K, V, output);
+        }
+    } else {
+        // Sequential fallback
+        for (0..num_heads) |h| {
+            process_head_flash(h, Q, K, V, output);
+        }
+    }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TERNARY WEIGHT INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+ternary_integration:
+  # Uses SIMD ternary matmul from simd_ternary_matmul.zig
+  source: "src/vibeec/simd_ternary_matmul.zig"
+  
+  functions:
+    - simdTernaryMatmulOpt16: "16-wide SIMD ternary matmul (fastest)"
+    
+  qkv_projection: |
+    // Q, K, V projections use ternary weights
+    ternaryMatmul(q, self.w_q, input, q_size, hidden_size);
+    ternaryMatmul(k, self.w_k, input, kv_size, hidden_size);
+    ternaryMatmul(v, self.w_v, input, kv_size, hidden_size);
+    
+  output_projection: |
+    // Output projection also ternary
+    ternaryMatmul(output, self.w_o, attn_out, hidden_size, q_size);
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # MEMORY ANALYSIS
 # ═══════════════════════════════════════════════════════════════════════════════
 

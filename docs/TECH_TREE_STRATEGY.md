@@ -10,7 +10,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    TRINITY TECH TREE v2.1                       │
+│                    TRINITY TECH TREE v2.2                       │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  COMPLETED (Phase 1-4)                                          │
@@ -27,6 +27,15 @@
 │  ✅ K-quantization (Q4_K, Q5_K, Q6_K) - 3.4x compression        │
 │  ✅ Chrome Extension MVP (FIREBIRD anti-detect)                 │
 │  ✅ Unified inference pipeline (9 quant types)                  │
+│                                                                 │
+│  COMPLETED (Phase 5 - Flash Attention)                          │
+│  ═════════════════════════════════════                          │
+│  ✅ Flash Attention v2 (online softmax)                         │
+│  ✅ O(N) memory vs O(N²) baseline                               │
+│  ✅ 1.15-1.16x speedup on seq 128-512                           │
+│  ✅ Integration with BitNet pipeline                            │
+│  ✅ GQA (Grouped Query Attention) support                       │
+│  ✅ Ternary QKV projection integration                          │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```

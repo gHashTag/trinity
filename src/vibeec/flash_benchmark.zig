@@ -24,8 +24,8 @@ pub fn main() !void {
     const head_dim: usize = 64;
     const iterations: usize = 100;
 
-    // Test different sequence lengths
-    const seq_lengths = [_]usize{ 32, 64, 128, 256, 512, 1024 };
+    // Test different sequence lengths (including long sequences)
+    const seq_lengths = [_]usize{ 128, 256, 512, 1024, 2048, 4096 };
 
     std.debug.print("Config: {d} heads, {d} KV heads, {d} head_dim, {d} iterations\n\n", .{ num_heads, num_kv_heads, head_dim, iterations });
     std.debug.print("┌──────────┬────────────────┬────────────────┬──────────┐\n", .{});
