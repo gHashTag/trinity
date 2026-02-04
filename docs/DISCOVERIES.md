@@ -48,6 +48,14 @@
 - Memory compression tracking (up to 8x vs FP16)
 - Created inference_pipeline.vibee specification
 
+### Full Forward Pass Integration (NEW)
+- Implemented forward() for single token inference
+- Implemented sample() with top-p and temperature
+- Implemented generate() for autoregressive text generation
+- Block-by-block dequantization in loadWeights()
+- GGUF tensor name parsing in mapTensorToWeight()
+- Created forward_pass.vibee specification
+
 ### Benchmarks
 | Dimension | Bind Time | Memory |
 |-----------|-----------|--------|

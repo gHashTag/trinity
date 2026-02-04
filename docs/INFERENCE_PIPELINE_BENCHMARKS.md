@@ -62,16 +62,19 @@
 | v0.9 | 2026-01-30 | Basic GGUF, Q8_0 only |
 | v1.0 | 2026-02-02 | BitNet pipeline, SIMD |
 | v1.1 | 2026-02-03 | TQ1_0 ternary support |
-| **v1.2** | 2026-02-04 | K-quant (Q4_K, Q5_K, Q6_K) |
+| v1.2 | 2026-02-04 | K-quant (Q4_K, Q5_K, Q6_K) |
+| **v1.3** | 2026-02-04 | Full forward pass integration |
 
 ### Performance Improvements
 
-| Metric | v0.9 | v1.0 | v1.1 | v1.2 |
-|--------|------|------|------|------|
-| Quant types | 2 | 4 | 6 | 9 |
-| SIMD speedup | 1x | 3.7x | 3.7x | 3.7x |
-| Memory savings | 2x | 4x | 8x | 8x |
-| Evolution fitness | 0.52 | 0.80 | 0.85 | 0.87 |
+| Metric | v0.9 | v1.0 | v1.1 | v1.2 | v1.3 |
+|--------|------|------|------|------|------|
+| Quant types | 2 | 4 | 6 | 9 | 9 |
+| SIMD speedup | 1x | 3.7x | 3.7x | 3.7x | 3.7x |
+| Memory savings | 2x | 4x | 8x | 8x | 8x |
+| Evolution fitness | 0.52 | 0.80 | 0.85 | 0.87 | 0.86 |
+| Forward pass | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Text generation | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
