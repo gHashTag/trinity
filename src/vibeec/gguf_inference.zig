@@ -396,7 +396,60 @@ pub fn dequantizeQ6_KTensor(allocator: std.mem.Allocator, data: []const u8, num_
     return result;
 }
 
-// Dequantize IQ2_S (BitNet i2_s format) - 2-bit ternary with scale
+// Dequantize I2_S (BitNet format) - 2-bit ternary without inline scale
+// Format: 2 bits per value, 4 values per byte
+// Mapping: 00=-1, 01=0, 10=+1, 11=0 (from BitNet source)
+// Scale is provided externally (typically 1.0 for ternary)
+pub fn dequantizeI2_STensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
+    const result = try allocator.alloc(f32, @intCast(num_elements));
+    errdefer allocator.free(result);
+
+    // BitNet ternary lookup: 00=-1, 01=0, 10=+1, 11=0
+    const MAP2BIT: [4]f32 = .{ -1.0, 0.0, 1.0, 0.0 };
+    const scale: f32 = 1.0; // Default scale for ternary
+
+    var out_idx: usize = 0;
+    var byte_idx: usize = 0;
+
+    // Process in 128-element blocks like BitNet.cpp
+    while (out_idx < num_elements) {
+        const blk_end = @min(out_idx + 128, @as(usize, @intCast(num_elements)));
+        const blk_size = blk_end - out_idx;
+
+        // Process 32 bytes = 128 values per block
+        var gp: usize = 0;
+        while (gp < 32 and byte_idx < data.len) : (gp += 1) {
+            const b = data[byte_idx];
+            byte_idx += 1;
+
+            // Extract 4 2-bit values (high to low bits)
+            const c0 = (b >> 6) & 0x3;
+            const c1 = (b >> 4) & 0x3;
+            const c2 = (b >> 2) & 0x3;
+            const c3 = (b >> 0) & 0x3;
+
+            // Write to output in interleaved pattern (matching BitNet.cpp)
+            if (gp < @min(32, blk_size)) {
+                if (out_idx + 0 * 32 + gp < num_elements) result[out_idx + 0 * 32 + gp] = scale * MAP2BIT[c0];
+            }
+            if (gp < @min(32, @max(0, @as(i64, @intCast(blk_size)) - 32))) {
+                if (out_idx + 1 * 32 + gp < num_elements) result[out_idx + 1 * 32 + gp] = scale * MAP2BIT[c1];
+            }
+            if (gp < @min(32, @max(0, @as(i64, @intCast(blk_size)) - 64))) {
+                if (out_idx + 2 * 32 + gp < num_elements) result[out_idx + 2 * 32 + gp] = scale * MAP2BIT[c2];
+            }
+            if (gp < @min(32, @max(0, @as(i64, @intCast(blk_size)) - 96))) {
+                if (out_idx + 3 * 32 + gp < num_elements) result[out_idx + 3 * 32 + gp] = scale * MAP2BIT[c3];
+            }
+        }
+
+        out_idx = blk_end;
+    }
+
+    return result;
+}
+
+// Dequantize IQ2_S (standard GGML format) - 2-bit ternary with scale
 // Structure: scale(f16) + 32 2-bit values packed in 8 bytes = 10 bytes per block
 pub fn dequantizeIQ2_STensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
     const block_size: usize = 32;
@@ -441,6 +494,22 @@ pub fn dequantizeIQ2_STensor(allocator: std.mem.Allocator, data: []const u8, num
     return result;
 }
 
+// Dequantize F16 tensor to f32
+pub fn dequantizeF16Tensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
+    const result = try allocator.alloc(f32, @intCast(num_elements));
+    errdefer allocator.free(result);
+
+    var i: usize = 0;
+    while (i < num_elements) : (i += 1) {
+        const offset = i * 2;
+        if (offset + 2 > data.len) break;
+        const bits = @as(u16, data[offset]) | (@as(u16, data[offset + 1]) << 8);
+        result[i] = gguf.f16ToF32(bits);
+    }
+
+    return result;
+}
+
 // Dequantize tensor based on type
 pub fn dequantizeTensor(allocator: std.mem.Allocator, data: []const u8, tensor_type: gguf.GGMLType, num_elements: u64) ![]f32 {
     return switch (tensor_type) {
@@ -450,9 +519,13 @@ pub fn dequantizeTensor(allocator: std.mem.Allocator, data: []const u8, tensor_t
         .Q4_K => dequantizeQ4_KTensor(allocator, data, num_elements),
         .Q6_K => dequantizeQ6_KTensor(allocator, data, num_elements),
         .F32 => dequantizeF32Tensor(allocator, data, num_elements),
+        .F16 => dequantizeF16Tensor(allocator, data, num_elements),
         .IQ2_S => dequantizeIQ2_STensor(allocator, data, num_elements),
-        .TQ1_0 => dequantizeIQ2_STensor(allocator, data, num_elements), // Same format
-        .TQ2_0 => dequantizeIQ2_STensor(allocator, data, num_elements), // Same format
+        .TQ1_0 => dequantizeIQ2_STensor(allocator, data, num_elements),
+        .TQ2_0 => dequantizeIQ2_STensor(allocator, data, num_elements),
+        .I2_S => dequantizeI2_STensor(allocator, data, num_elements),  // BitNet type 36
+        .TL1 => dequantizeI2_STensor(allocator, data, num_elements),   // BitNet TL1
+        .TL2 => dequantizeI2_STensor(allocator, data, num_elements),   // BitNet TL2
         else => error.UnsupportedQuantization,
     };
 }
