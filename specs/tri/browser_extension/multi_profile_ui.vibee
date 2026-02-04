@@ -1,0 +1,160 @@
+# Multi-Profile Manager UI Specification
+# Profile management interface for NeoDetect extension
+# φ² + 1/φ² = 3 = TRINITY
+
+name: multi_profile_ui
+version: "1.0.0"
+language: javascript
+module: profile_manager_ui
+
+description: |
+  Multi-profile management UI for NeoDetect antidetect browser.
+  Allows users to create, save, load, delete, and export profiles.
+  Each profile contains complete fingerprint configuration.
+
+constants:
+  MAX_PROFILES: 50
+  PROFILE_NAME_MAX_LENGTH: 32
+  EXPORT_FORMAT_VERSION: 1
+
+types:
+  SavedProfile:
+    description: "Saved profile with metadata"
+    fields:
+      id: String
+      name: String
+      createdAt: Timestamp
+      lastUsed: Timestamp
+      osType: Int
+      hwType: Int
+      gpuType: Int
+      seed: Int
+      similarity: Float
+      icon: String
+      color: String
+  
+  ProfileListItem:
+    description: "Profile item for display in list"
+    fields:
+      id: String
+      name: String
+      osLabel: String
+      hwLabel: String
+      lastUsed: String
+      isActive: Bool
+  
+  ExportData:
+    description: "Exported profile data"
+    fields:
+      version: Int
+      exportedAt: Timestamp
+      profiles: List<SavedProfile>
+
+ui_components:
+  profile_list:
+    description: "Scrollable list of saved profiles"
+    elements:
+      - profile_item: Clickable row with profile info
+      - active_indicator: Shows which profile is active
+      - delete_button: Remove profile
+      - edit_button: Rename profile
+  
+  profile_actions:
+    description: "Action buttons for profile management"
+    elements:
+      - save_current: Save current profile
+      - create_new: Create new random profile
+      - import_btn: Import profiles from file
+      - export_btn: Export profiles to file
+  
+  profile_editor:
+    description: "Modal for editing profile name"
+    elements:
+      - name_input: Text input for profile name
+      - save_btn: Confirm changes
+      - cancel_btn: Discard changes
+
+behaviors:
+  # Profile List
+  - name: display_profiles
+    given: Profiles exist in storage
+    when: Popup opened
+    then: Show list of saved profiles with metadata
+  
+  - name: highlight_active
+    given: Profile is currently active
+    when: Profile list rendered
+    then: Show visual indicator on active profile
+  
+  # Profile Actions
+  - name: save_current_profile
+    given: User clicks save
+    when: Current profile not saved
+    then: Prompt for name and save to storage
+  
+  - name: load_profile
+    given: User clicks profile in list
+    when: Profile exists
+    then: Load profile and apply fingerprint
+  
+  - name: delete_profile
+    given: User clicks delete
+    when: Confirmation received
+    then: Remove profile from storage
+  
+  - name: rename_profile
+    given: User clicks edit
+    when: New name provided
+    then: Update profile name in storage
+  
+  # Import/Export
+  - name: export_profiles
+    given: User clicks export
+    when: Profiles exist
+    then: Download JSON file with all profiles
+  
+  - name: import_profiles
+    given: User selects file
+    when: Valid JSON format
+    then: Add profiles to storage
+
+# OS Labels for display
+os_labels:
+  0: "Windows 10"
+  1: "Windows 11"
+  2: "macOS"
+  3: "Linux"
+
+# Hardware Labels for display
+hw_labels:
+  0: "Intel i5"
+  1: "Intel i7"
+  2: "Intel i9"
+  3: "Ryzen 5"
+  4: "Ryzen 7"
+  5: "Ryzen 9"
+  6: "Apple M1"
+  7: "Apple M2"
+  8: "Apple M3"
+
+# Profile colors for visual distinction
+profile_colors:
+  - "#e74c3c"
+  - "#e67e22"
+  - "#f1c40f"
+  - "#2ecc71"
+  - "#1abc9c"
+  - "#3498db"
+  - "#9b59b6"
+  - "#34495e"
+
+# Profile icons
+profile_icons:
+  - "🔴"
+  - "🟠"
+  - "🟡"
+  - "🟢"
+  - "🔵"
+  - "🟣"
+  - "⚫"
+  - "🔶"

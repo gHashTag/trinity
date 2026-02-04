@@ -1,40 +1,52 @@
-// Firebird Background Service Worker
+// NeoDetect Background Service Worker
+// WASM-powered antidetect browser extension
 // φ² + 1/φ² = 3 = TRINITY
-// CPU Inference enabled for AI-powered anti-detect
 
 const PHI = 1.6180339887;
 const TRINITY = 3.0;
 
-// Firebird state
-let firebirdState = {
+// NeoDetect state
+let neodetectState = {
   enabled: true,
   similarity: 0.85,
-  fingerprint: null,
+  profile: null,
   lastEvolution: null,
   aiMode: false,
-  inferenceReady: false
+  wasmReady: false,
+  osType: 0,
+  hwType: 1,
+  gpuType: 1,
+  // Core protections
+  canvasProtect: true,
+  webglProtect: true,
+  audioProtect: true,
+  navigatorProtect: true,
+  // Advanced protections
+  webrtcProtect: true,
+  batteryProtect: true,
+  bluetoothProtect: true,
+  permissionsProtect: true,
+  storageProtect: true,
+  autoEvolve: true
 };
 
-// WASM inference module
+// WASM module
 let wasmModule = null;
 let wasmExports = null;
 
-// Inference configuration
-const INFERENCE_CONFIG = {
-  vocabSize: 256,    // Small vocab for browser
-  hiddenDim: 64,     // Tiny model
-  numLayers: 2,      // 2 layers
-  maxTokens: 100,
-  temperature: 0.7
-};
+// Languages
+const LANGUAGES = [
+  'en-US', 'en-GB', 'de-DE', 'fr-FR', 'es-ES',
+  'it-IT', 'pt-BR', 'ru-RU', 'zh-CN', 'ja-JP'
+];
 
 // Version info
-const CURRENT_VERSION = '1.1.0';
+const CURRENT_VERSION = '2.0.0';
 const UPDATE_CHECK_URL = 'https://raw.githubusercontent.com/gHashTag/trinity/main/extension/version.json';
 
 // Initialize on install
 chrome.runtime.onInstalled.addListener(async (details) => {
-  console.log('🔥 Firebird Anti-Detect installed');
+  console.log('🔥 NeoDetect Anti-Detect installed');
   console.log(`φ² + 1/φ² = ${PHI * PHI + 1 / (PHI * PHI)} = TRINITY`);
   console.log(`Version: ${CURRENT_VERSION}`);
   
@@ -43,306 +55,278 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
   
   // Load saved state
-  const result = await chrome.storage.local.get(['firebirdState']);
-  if (result.firebirdState) {
-    firebirdState = { ...firebirdState, ...result.firebirdState };
+  const result = await chrome.storage.local.get(['neodetectState']);
+  if (result.neodetectState) {
+    neodetectState = { ...neodetectState, ...result.neodetectState };
   }
   
-  // Generate initial fingerprint
-  if (!firebirdState.fingerprint) {
-    firebirdState.fingerprint = generateFingerprint();
-    await saveState();
-  }
+  // Initialize WASM module
+  await initWasm();
   
-  // Initialize WASM inference module
-  await initInference();
+  // Generate initial profile if needed
+  if (!neodetectState.profile) {
+    await createProfile();
+  }
   
   // Check for updates
   await checkForUpdates();
 });
 
-// Check for updates (daily)
-async function checkForUpdates() {
-  try {
-    const response = await fetch(UPDATE_CHECK_URL, { cache: 'no-store' });
-    if (!response.ok) return;
-    
-    const data = await response.json();
-    if (data.version && data.version !== CURRENT_VERSION) {
-      console.log(`🔥 New version available: ${data.version}`);
-      firebirdState.updateAvailable = data.version;
-      firebirdState.updateUrl = data.downloadUrl || 'https://github.com/gHashTag/trinity/releases';
-      await saveState();
-      
-      // Notify user via badge
-      chrome.action.setBadgeText({ text: '!' });
-      chrome.action.setBadgeBackgroundColor({ color: '#00E599' });
-    }
-  } catch (e) {
-    console.log('Update check failed:', e.message);
+// Initialize on startup
+chrome.runtime.onStartup.addListener(async () => {
+  console.log('🔥 NeoDetect starting...');
+  
+  const result = await chrome.storage.local.get(['neodetectState']);
+  if (result.neodetectState) {
+    neodetectState = { ...neodetectState, ...result.neodetectState };
   }
-}
-
-// Schedule daily update check
-chrome.alarms.create('updateCheck', { periodInMinutes: 1440 }); // 24 hours
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'updateCheck') {
-    checkForUpdates();
+  
+  await initWasm();
+  
+  if (!neodetectState.profile) {
+    await createProfile();
   }
 });
 
-// Initialize WASM inference
-async function initInference() {
+// Initialize WASM module
+async function initWasm() {
   try {
-    const wasmUrl = chrome.runtime.getURL('wasm/firebird.wasm');
+    const wasmUrl = chrome.runtime.getURL('wasm/neodetect.wasm');
     const response = await fetch(wasmUrl);
     
     if (!response.ok) {
-      console.log('🔥 WASM module not found, using JS fallback');
-      firebirdState.inferenceReady = false;
+      console.log('🔥 NeoDetect WASM not found, using fallback');
+      neodetectState.wasmReady = false;
       return;
     }
     
     const wasmBuffer = await response.arrayBuffer();
     const wasmResult = await WebAssembly.instantiate(wasmBuffer, {
-      env: {
-        // Memory imports if needed
-      }
+      env: {}
     });
     
     wasmModule = wasmResult.module;
     wasmExports = wasmResult.instance.exports;
     
-    // Initialize inference model
+    // Initialize module
     const seed = Date.now();
-    const result = wasmExports.wasm_init_inference(
-      INFERENCE_CONFIG.vocabSize,
-      INFERENCE_CONFIG.hiddenDim,
-      INFERENCE_CONFIG.numLayers,
-      BigInt(seed)
-    );
+    const result = wasmExports.wasm_neodetect_init(BigInt(seed));
     
     if (result === 0) {
-      firebirdState.inferenceReady = true;
-      console.log('🔥 CPU Inference initialized');
+      neodetectState.wasmReady = true;
+      console.log('🔥 NeoDetect WASM initialized');
     }
   } catch (e) {
-    console.log('🔥 WASM init failed, using JS fallback:', e.message);
-    firebirdState.inferenceReady = false;
+    console.log('🔥 WASM init failed:', e.message);
+    neodetectState.wasmReady = false;
   }
 }
 
-// JavaScript fallback inference (when WASM not available)
-function jsInference(prompt, maxTokens = 100) {
-  // Simple Markov-like generation using fingerprint as seed
-  const seed = firebirdState.fingerprint?.trits || [];
-  const tokens = [];
+// Read string from WASM memory
+function readWasmString(ptr, maxLen = 1024) {
+  if (!wasmExports || !wasmExports.memory) return '';
+  const memory = new Uint8Array(wasmExports.memory.buffer);
+  let str = '';
+  for (let i = 0; i < maxLen; i++) {
+    const char = memory[ptr + i];
+    if (char === 0) break;
+    str += String.fromCharCode(char);
+  }
+  return str;
+}
+
+// Create browser profile
+async function createProfile(config = {}) {
+  const seed = BigInt(config.seed || Date.now());
+  const osType = config.osType ?? neodetectState.osType;
+  const hwType = config.hwType ?? neodetectState.hwType;
+  const gpuType = config.gpuType ?? neodetectState.gpuType;
   
-  for (let i = 0; i < maxTokens; i++) {
-    // Generate pseudo-random token based on seed
-    const idx = (i * 31337 + (seed[i % seed.length] || 0) + 128) % 256;
-    tokens.push(idx);
+  if (neodetectState.wasmReady && wasmExports) {
+    // Use WASM
+    wasmExports.wasm_create_profile(seed, osType, hwType, gpuType);
     
-    // Stop on "EOS" (token 0)
-    if (idx === 0) break;
+    // Get profile data
+    wasmExports.wasm_get_platform();
+    const platform = readWasmString(wasmExports.wasm_get_string_buffer());
+    
+    wasmExports.wasm_get_user_agent();
+    const userAgent = readWasmString(wasmExports.wasm_get_string_buffer());
+    
+    wasmExports.wasm_get_gpu_vendor();
+    const gpuVendor = readWasmString(wasmExports.wasm_get_string_buffer());
+    
+    wasmExports.wasm_get_gpu_renderer();
+    const gpuRenderer = readWasmString(wasmExports.wasm_get_string_buffer());
+    
+    const langIndex = wasmExports.wasm_get_language_index();
+    
+    neodetectState.profile = {
+      platform,
+      userAgent,
+      screenWidth: wasmExports.wasm_get_screen_width(),
+      screenHeight: wasmExports.wasm_get_screen_height(),
+      pixelRatio: wasmExports.wasm_get_pixel_ratio(),
+      colorDepth: wasmExports.wasm_get_color_depth(),
+      hardwareConcurrency: wasmExports.wasm_get_hardware_concurrency(),
+      deviceMemory: wasmExports.wasm_get_device_memory(),
+      timezoneOffset: wasmExports.wasm_get_timezone_offset(),
+      language: LANGUAGES[langIndex] || 'en-US',
+      languages: [LANGUAGES[langIndex] || 'en-US'],
+      gpuVendor,
+      gpuRenderer,
+      canvasHash: wasmExports.wasm_get_canvas_hash().toString(),
+      webglHash: wasmExports.wasm_get_webgl_hash().toString(),
+      audioHash: wasmExports.wasm_get_audio_hash().toString()
+    };
+    
+    neodetectState.similarity = wasmExports.wasm_get_similarity();
+  } else {
+    // Fallback profile
+    neodetectState.profile = generateFallbackProfile(Number(seed), osType, hwType, gpuType);
+    neodetectState.similarity = 0.7;
   }
   
+  neodetectState.osType = osType;
+  neodetectState.hwType = hwType;
+  neodetectState.gpuType = gpuType;
+  
+  await saveState();
+  await notifyAllTabs();
+  
+  return neodetectState.profile;
+}
+
+// Generate fallback profile (when WASM not available)
+function generateFallbackProfile(seed, osType, hwType, gpuType) {
+  const platforms = ['Win32', 'Win32', 'MacIntel', 'Linux x86_64'];
+  const userAgents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+  ];
+  const gpuVendors = ['NVIDIA Corporation', 'NVIDIA Corporation', 'NVIDIA Corporation', 'AMD', 'AMD', 'Intel Inc.', 'Apple Inc.', 'Apple Inc.', 'Apple Inc.'];
+  const gpuRenderers = ['NVIDIA GeForce RTX 3060/PCIe/SSE2', 'NVIDIA GeForce RTX 4070/PCIe/SSE2', 'NVIDIA GeForce RTX 4090/PCIe/SSE2', 'AMD Radeon RX 6700 XT', 'AMD Radeon RX 7900 XTX', 'Intel(R) UHD Graphics 770', 'Apple M1', 'Apple M2', 'Apple M3'];
+  const screens = [[1920, 1080], [2560, 1440], [3840, 2160], [1366, 768], [2560, 1600]];
+  const hwConfigs = [[6, 8], [8, 16], [16, 32], [6, 8], [8, 16], [16, 32], [8, 8], [8, 16], [8, 24]];
+  
+  const screenIdx = seed % screens.length;
+  const langIdx = seed % LANGUAGES.length;
+  
   return {
-    tokens,
-    latency: maxTokens * 2, // ~2ms per token in JS
-    source: 'js-fallback'
+    platform: platforms[osType % platforms.length],
+    userAgent: userAgents[osType % userAgents.length],
+    screenWidth: screens[screenIdx][0],
+    screenHeight: screens[screenIdx][1],
+    pixelRatio: osType >= 2 ? 2.0 : 1.0,
+    colorDepth: 24,
+    hardwareConcurrency: hwConfigs[hwType % hwConfigs.length][0],
+    deviceMemory: hwConfigs[hwType % hwConfigs.length][1],
+    timezoneOffset: [-480, -420, -360, -300, -240, 0, 60, 120, 180, 480][seed % 10],
+    language: LANGUAGES[langIdx],
+    languages: [LANGUAGES[langIdx]],
+    gpuVendor: gpuVendors[gpuType % gpuVendors.length],
+    gpuRenderer: gpuRenderers[gpuType % gpuRenderers.length],
+    canvasHash: (seed * 31337).toString(),
+    webglHash: (seed * 65537).toString(),
+    audioHash: (seed * 131071).toString()
   };
 }
 
-// Generate text using inference
-async function generateText(prompt, config = {}) {
-  const maxTokens = config.maxTokens || INFERENCE_CONFIG.maxTokens;
-  const temperature = config.temperature || INFERENCE_CONFIG.temperature;
-  
-  if (firebirdState.inferenceReady && wasmExports) {
-    // Use WASM inference
-    const startToken = prompt.charCodeAt(0) % INFERENCE_CONFIG.vocabSize;
-    const count = wasmExports.wasm_generate(maxTokens, temperature, startToken);
-    const latency = wasmExports.wasm_get_inference_latency();
+// Evolve fingerprint
+async function evolveFingerprint(targetSimilarity = 0.85, useAI = false) {
+  if (neodetectState.wasmReady && wasmExports) {
+    let similarity;
     
-    return {
-      tokensGenerated: count,
-      latency,
-      source: 'wasm'
-    };
+    if (useAI) {
+      similarity = wasmExports.wasm_ai_evolve(targetSimilarity);
+    } else {
+      similarity = wasmExports.wasm_evolve_fingerprint(targetSimilarity, 100);
+    }
+    
+    neodetectState.similarity = similarity;
+    neodetectState.lastEvolution = Date.now();
+    
+    // Update profile hashes
+    if (neodetectState.profile) {
+      neodetectState.profile.canvasHash = wasmExports.wasm_get_canvas_hash().toString();
+      neodetectState.profile.webglHash = wasmExports.wasm_get_webgl_hash().toString();
+      neodetectState.profile.audioHash = wasmExports.wasm_get_audio_hash().toString();
+    }
   } else {
-    // Use JS fallback
-    return jsInference(prompt, maxTokens);
+    // Fallback evolution
+    neodetectState.similarity = Math.min(targetSimilarity, neodetectState.similarity + 0.05);
+    neodetectState.lastEvolution = Date.now();
   }
+  
+  await saveState();
+  await notifyAllTabs();
+  
+  return {
+    similarity: neodetectState.similarity,
+    profile: neodetectState.profile
+  };
 }
 
-// Generate fingerprint variation using AI
-async function generateAIVariation(targetSimilarity = 0.85) {
-  if (firebirdState.inferenceReady && wasmExports) {
-    const similarity = wasmExports.wasm_generate_variation(targetSimilarity);
-    return { similarity, source: 'wasm-ai' };
-  } else {
-    // Fallback to regular evolution
-    return await evolveFingerprint(targetSimilarity);
+// Initialize AI model
+async function initAIModel() {
+  if (neodetectState.wasmReady && wasmExports) {
+    const result = wasmExports.wasm_init_ai_model(256, 64, 2, BigInt(Date.now()));
+    return result === 0;
   }
+  return false;
 }
 
 // Message handler
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   handleMessage(message, sender).then(sendResponse);
-  return true; // Keep channel open for async response
+  return true;
 });
 
 async function handleMessage(message, sender) {
   switch (message.action) {
-    case 'evolve':
-      return await evolveFingerprint(message.targetSimilarity || 0.85);
-    
     case 'getState':
-      return firebirdState;
-    
-    case 'getFingerprint':
-      return firebirdState.fingerprint;
+      return {
+        ...neodetectState,
+        wasmReady: neodetectState.wasmReady
+      };
     
     case 'setState':
-      firebirdState = { ...firebirdState, ...message.state };
+      neodetectState = { ...neodetectState, ...message.state };
       await saveState();
+      await notifyAllTabs();
       return { success: true };
     
-    // AI Inference actions
-    case 'generate':
-      return await generateText(message.prompt || '', message.config || {});
+    case 'evolve':
+      return await evolveFingerprint(message.targetSimilarity || 0.85, message.useAI || false);
     
     case 'aiEvolve':
-      return await generateAIVariation(message.targetSimilarity || 0.85);
+      return await evolveFingerprint(message.targetSimilarity || 0.90, true);
     
-    case 'toggleAI':
-      firebirdState.aiMode = !firebirdState.aiMode;
-      await saveState();
-      return { aiMode: firebirdState.aiMode, inferenceReady: firebirdState.inferenceReady };
+    case 'reset':
+      return await createProfile({
+        seed: message.seed || Date.now(),
+        osType: message.osType ?? neodetectState.osType,
+        hwType: message.hwType ?? neodetectState.hwType,
+        gpuType: message.gpuType ?? neodetectState.gpuType
+      });
     
-    case 'getAIStatus':
-      return { 
-        aiMode: firebirdState.aiMode, 
-        inferenceReady: firebirdState.inferenceReady,
-        config: INFERENCE_CONFIG
-      };
+    case 'initAI':
+      const aiResult = await initAIModel();
+      return { success: aiResult };
+    
+    case 'getProfile':
+      return neodetectState.profile;
     
     default:
       return { error: 'Unknown action' };
   }
 }
 
-// Generate ternary fingerprint vector
-function generateFingerprint(dim = 1000) {
-  const trits = new Int8Array(dim);
-  for (let i = 0; i < dim; i++) {
-    const r = Math.random();
-    if (r < 0.333) trits[i] = -1;
-    else if (r < 0.666) trits[i] = 0;
-    else trits[i] = 1;
-  }
-  return {
-    trits: Array.from(trits),
-    dim: dim,
-    created: Date.now()
-  };
-}
-
-// Evolve fingerprint towards human-like pattern
-async function evolveFingerprint(targetSimilarity) {
-  const dim = firebirdState.fingerprint?.dim || 1000;
-  const humanPattern = generateHumanPattern(dim);
-  
-  let currentFp = firebirdState.fingerprint?.trits || generateFingerprint(dim).trits;
-  let similarity = cosineSimilarity(currentFp, humanPattern);
-  
-  const maxGenerations = 50;
-  const guideRate = 0.9;
-  
-  for (let gen = 0; gen < maxGenerations; gen++) {
-    if (similarity >= targetSimilarity) break;
-    
-    // Guided mutation: move towards human pattern
-    const newFp = new Int8Array(dim);
-    for (let i = 0; i < dim; i++) {
-      if (Math.random() < guideRate) {
-        newFp[i] = humanPattern[i];
-      } else if (Math.random() < 0.3) {
-        newFp[i] = currentFp[i];
-      } else {
-        // Random trit
-        const r = Math.random();
-        if (r < 0.333) newFp[i] = -1;
-        else if (r < 0.666) newFp[i] = 0;
-        else newFp[i] = 1;
-      }
-    }
-    
-    const newSim = cosineSimilarity(Array.from(newFp), humanPattern);
-    if (newSim > similarity) {
-      currentFp = Array.from(newFp);
-      similarity = newSim;
-    }
-  }
-  
-  firebirdState.fingerprint = {
-    trits: currentFp,
-    dim: dim,
-    created: Date.now()
-  };
-  firebirdState.similarity = similarity;
-  firebirdState.lastEvolution = Date.now();
-  
-  await saveState();
-  
-  // Notify all tabs
-  notifyAllTabs();
-  
-  return {
-    success: true,
-    similarity: similarity,
-    generations: maxGenerations
-  };
-}
-
-// Generate human-like pattern (seeded for consistency)
-function generateHumanPattern(dim) {
-  const pattern = new Int8Array(dim);
-  // Use φ-based seed for reproducibility
-  let seed = PHI * 1000000;
-  
-  for (let i = 0; i < dim; i++) {
-    seed = (seed * 1103515245 + 12345) % 2147483648;
-    const r = (seed / 2147483648);
-    if (r < 0.333) pattern[i] = -1;
-    else if (r < 0.666) pattern[i] = 0;
-    else pattern[i] = 1;
-  }
-  
-  return Array.from(pattern);
-}
-
-// Cosine similarity for ternary vectors
-function cosineSimilarity(a, b) {
-  let dot = 0;
-  let normA = 0;
-  let normB = 0;
-  
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
-  }
-  
-  if (normA === 0 || normB === 0) return 0;
-  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
-}
-
 // Save state to storage
 async function saveState() {
-  await chrome.storage.local.set({ firebirdState });
+  await chrome.storage.local.set({ neodetectState });
 }
 
 // Notify all tabs of state change
@@ -351,9 +335,10 @@ async function notifyAllTabs() {
   for (const tab of tabs) {
     try {
       await chrome.tabs.sendMessage(tab.id, {
-        action: 'fingerprintUpdated',
-        fingerprint: firebirdState.fingerprint,
-        similarity: firebirdState.similarity
+        action: 'profileUpdated',
+        profile: neodetectState.profile,
+        similarity: neodetectState.similarity,
+        wasmReady: neodetectState.wasmReady
       });
     } catch (e) {
       // Tab might not have content script
@@ -361,17 +346,43 @@ async function notifyAllTabs() {
   }
 }
 
-// Periodic evolution check (auto-evolve)
+// Check for updates
+async function checkForUpdates() {
+  try {
+    const response = await fetch(UPDATE_CHECK_URL, { cache: 'no-store' });
+    if (!response.ok) return;
+    
+    const data = await response.json();
+    if (data.version && data.version !== CURRENT_VERSION) {
+      console.log(`🔥 New version available: ${data.version}`);
+      neodetectState.updateAvailable = data.version;
+      neodetectState.updateUrl = data.downloadUrl || 'https://github.com/gHashTag/trinity/releases';
+      await saveState();
+      
+      chrome.action.setBadgeText({ text: '!' });
+      chrome.action.setBadgeBackgroundColor({ color: '#f39c12' });
+    }
+  } catch (e) {
+    console.log('Update check failed:', e.message);
+  }
+}
+
+// Schedule update check
+chrome.alarms.create('updateCheck', { periodInMinutes: 1440 });
+
+// Auto-evolve check
 chrome.alarms.create('autoEvolve', { periodInMinutes: 30 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name === 'autoEvolve') {
-    const result = await chrome.storage.local.get(['firebirdState']);
-    if (result.firebirdState?.autoEvolve) {
+  if (alarm.name === 'updateCheck') {
+    await checkForUpdates();
+  } else if (alarm.name === 'autoEvolve') {
+    const result = await chrome.storage.local.get(['neodetectState']);
+    if (result.neodetectState?.autoEvolve) {
       console.log('🔥 Auto-evolving fingerprint...');
       await evolveFingerprint(0.85);
     }
   }
 });
 
-console.log('🔥 Firebird service worker started');
+console.log('🔥 NeoDetect service worker started');
