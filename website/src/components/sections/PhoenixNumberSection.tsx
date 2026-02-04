@@ -20,7 +20,7 @@ export default function PhoenixNumberSection() {
       <div className="fade" style={{ 
         marginTop: '2rem',
         padding: '2rem',
-        background: 'linear-gradient(135deg, rgba(0, 229, 153, 0.1), rgba(0, 180, 120, 0.1))',
+        background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 102, 0.1))',
         borderRadius: '16px',
         border: '1px solid var(--border)',
         textAlign: 'center'
@@ -128,12 +128,12 @@ export default function PhoenixNumberSection() {
           {p.genetics?.items?.map((g: { symbol: string; formula: string; name: string }, i: number) => (
             <div key={i} style={{
               padding: '1rem',
-              background: 'rgba(0, 229, 153, 0.05)',
+              background: 'rgba(0, 255, 136, 0.05)',
               borderRadius: '8px',
-              border: '1px solid rgba(0, 229, 153, 0.2)',
+              border: '1px solid rgba(0, 255, 136, 0.2)',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '1.5rem', color: '#00E599' }}>{g.symbol}</div>
+              <div style={{ fontSize: '1.5rem', color: '#00FF88' }}>{g.symbol}</div>
               <div style={{ fontSize: '0.9rem', fontFamily: 'monospace', color: 'var(--text)' }}>{g.formula}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{g.name}</div>
             </div>

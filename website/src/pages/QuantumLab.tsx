@@ -11,14 +11,14 @@ const categories = [
     name: 'TRINITY',
     modes: [
       { id: 'trinity-computer', icon: '🔮', title: 'TRINITY Computer', color: '#ffd700' },
-      { id: 'trinity', icon: '🔺', title: 'Trinity Core', color: '#0e9' },
-      { id: 'universal-translator', icon: '⚡', title: 'Universal Translator', color: '#00E599' },
+      { id: 'trinity', icon: '🔺', title: 'Trinity Core', color: '#0f8' },
+      { id: 'universal-translator', icon: '⚡', title: 'Universal Translator', color: '#00FF88' },
     ]
   },
   {
     name: 'Quantum',
     modes: [
-      { id: 'quantum-field', icon: '⚛️', title: 'Quantum Field', color: '#00E599' },
+      { id: 'quantum-field', icon: '⚛️', title: 'Quantum Field', color: '#00FF88' },
       { id: 'wave-interference', icon: '🌊', title: 'Wave Interference', color: '#6f6' },
       { id: 'entanglement', icon: '🔗', title: 'Entanglement', color: '#f6f' },
       { id: 'supremacy', icon: '⚡', title: 'Supremacy', color: '#f44' },
