@@ -21,8 +21,74 @@ pub const softmax = forward.softmax;
 pub const silu = forward.silu;
 pub const quantizeActivationsInPlace = forward.quantizeActivationsInPlace;
 
-/// F32 matrix-vector multiplication (for QAT models)
+// SIMD vector types for optimized matmul
+const Vec8f32 = @Vector(8, f32);
+const Vec16f32 = @Vector(16, f32);
+
+/// SIMD-optimized F32 matrix-vector multiplication
+/// Uses 8-wide vectors with 4x unrolling for maximum throughput
 pub fn f32MatVec(
+    weights: []const f32,
+    input: []const f32,
+    output: []f32,
+    rows: usize,
+    cols: usize,
+) void {
+    for (0..rows) |i| {
+        var sum0: Vec8f32 = @splat(0.0);
+        var sum1: Vec8f32 = @splat(0.0);
+        var sum2: Vec8f32 = @splat(0.0);
+        var sum3: Vec8f32 = @splat(0.0);
+        var sum_scalar: f32 = 0.0;
+        const row_start = i * cols;
+        
+        var j: usize = 0;
+        
+        // Main SIMD loop - 32 elements at a time (4x8 unrolled)
+        while (j + 32 <= cols) : (j += 32) {
+            // Load weight vectors
+            const w0: Vec8f32 = weights[row_start + j ..][0..8].*;
+            const w1: Vec8f32 = weights[row_start + j + 8 ..][0..8].*;
+            const w2: Vec8f32 = weights[row_start + j + 16 ..][0..8].*;
+            const w3: Vec8f32 = weights[row_start + j + 24 ..][0..8].*;
+            
+            // Load input vectors
+            const in0: Vec8f32 = input[j..][0..8].*;
+            const in1: Vec8f32 = input[j + 8 ..][0..8].*;
+            const in2: Vec8f32 = input[j + 16 ..][0..8].*;
+            const in3: Vec8f32 = input[j + 24 ..][0..8].*;
+            
+            // FMA: sum += weight * input
+            sum0 += w0 * in0;
+            sum1 += w1 * in1;
+            sum2 += w2 * in2;
+            sum3 += w3 * in3;
+        }
+        
+        // 8-element SIMD loop for remainder
+        while (j + 8 <= cols) : (j += 8) {
+            const w: Vec8f32 = weights[row_start + j ..][0..8].*;
+            const in_vec: Vec8f32 = input[j..][0..8].*;
+            sum0 += w * in_vec;
+        }
+        
+        // Combine partial sums
+        sum0 += sum1;
+        sum2 += sum3;
+        sum0 += sum2;
+        sum_scalar = @reduce(.Add, sum0);
+        
+        // Scalar tail for remaining elements
+        while (j < cols) : (j += 1) {
+            sum_scalar += weights[row_start + j] * input[j];
+        }
+        
+        output[i] = sum_scalar;
+    }
+}
+
+/// Scalar F32 matrix-vector multiplication (fallback)
+pub fn f32MatVecScalar(
     weights: []const f32,
     input: []const f32,
     output: []f32,
@@ -731,4 +797,30 @@ test "full model init" {
     
     try std.testing.expectEqual(@as(usize, 24), model.layers.len);
     try std.testing.expectEqual(@as(usize, 1536), model.hidden_state.len);
+}
+
+test "SIMD f32MatVec" {
+    // Test 32-element matmul (exercises SIMD path)
+    const weights = [_]f32{1.0} ** 64 ++ [_]f32{2.0} ** 64; // 2 rows x 64 cols
+    const input = [_]f32{1.0} ** 64;
+    var output: [2]f32 = undefined;
+    
+    f32MatVec(&weights, &input, &output, 2, 64);
+    
+    // Row 0: 64 * 1.0 * 1.0 = 64.0
+    try std.testing.expectApproxEqAbs(@as(f32, 64.0), output[0], 0.001);
+    // Row 1: 64 * 2.0 * 1.0 = 128.0
+    try std.testing.expectApproxEqAbs(@as(f32, 128.0), output[1], 0.001);
+}
+
+test "SIMD f32MatVec with remainder" {
+    // Test with non-multiple of 32 (exercises scalar tail)
+    const weights = [_]f32{1.0} ** 100; // 1 row x 100 cols
+    const input = [_]f32{2.0} ** 100;
+    var output: [1]f32 = undefined;
+    
+    f32MatVec(&weights, &input, &output, 1, 100);
+    
+    // 100 * 1.0 * 2.0 = 200.0
+    try std.testing.expectApproxEqAbs(@as(f32, 200.0), output[0], 0.001);
 }
