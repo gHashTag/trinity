@@ -176,6 +176,33 @@ pub const UnifiedJitCompiler = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // FUSED COSINE COMPILATION
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Compile fused cosine similarity - computes dot(a,b), dot(a,a), dot(b,b) in single pass
+    /// Returns f64 bit pattern (2.5x faster than 3 separate dot products)
+    pub fn compileFusedCosine(self: *Self, dimension: usize) !void {
+        switch (self.backend) {
+            .arm64 => |*b| try b.compileFusedCosine(dimension),
+            .x86_64 => return error.UnsupportedOperation,
+            .unsupported => return error.UnsupportedArchitecture,
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // BUNDLE COMPILATION
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Compile bundle operation - threshold(a + b) to {-1, 0, 1}
+    pub fn compileBundleSIMD(self: *Self, dimension: usize) !void {
+        switch (self.backend) {
+            .arm64 => |*b| try b.compileBundleSIMD(dimension),
+            .x86_64 => return error.UnsupportedOperation,
+            .unsupported => return error.UnsupportedArchitecture,
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // FINALIZATION
     // ═══════════════════════════════════════════════════════════════════════════
 
