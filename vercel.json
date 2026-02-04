@@ -1,7 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd website && npm install && npm run build",
+  "buildCommand": "cd website && npm run build",
   "outputDirectory": "website/dist",
   "installCommand": "cd website && npm install",
-  "framework": "vite"
+  "framework": "vite",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/((?!assets|icons|favicon\\.ico|sw\\.js|manifest\\.json|vite\\.svg).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
