@@ -25,9 +25,132 @@ pub const quantizeActivationsInPlace = forward.quantizeActivationsInPlace;
 const Vec8f32 = @Vector(8, f32);
 const Vec16f32 = @Vector(16, f32);
 
-/// SIMD-optimized F32 matrix-vector multiplication
-/// Uses 8-wide vectors with 4x unrolling for maximum throughput
+// ═══════════════════════════════════════════════════════════════════════════════
+// MULTI-THREADED MATMUL - Parallel row processing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Number of threads for parallel matmul
+const MAX_MATMUL_THREADS: usize = 16;
+const MIN_ROWS_PER_THREAD: usize = 128; // Increased to reduce thread overhead
+
+fn getNumThreads() usize {
+    return @min(MAX_MATMUL_THREADS, std.Thread.getCpuCount() catch 2);
+}
+
+/// Context for parallel matmul worker
+const MatmulWorkerContext = struct {
+    weights: []const f32,
+    input: []const f32,
+    output: []f32,
+    cols: usize,
+    start_row: usize,
+    end_row: usize,
+};
+
+/// Worker function for parallel matmul
+fn matmulWorkerFn(ctx: *MatmulWorkerContext) void {
+    const cols = ctx.cols;
+    
+    for (ctx.start_row..ctx.end_row) |i| {
+        var sum0: Vec8f32 = @splat(0.0);
+        var sum1: Vec8f32 = @splat(0.0);
+        var sum2: Vec8f32 = @splat(0.0);
+        var sum3: Vec8f32 = @splat(0.0);
+        var sum_scalar: f32 = 0.0;
+        const row_start = i * cols;
+        
+        var j: usize = 0;
+        
+        // Main SIMD loop - 32 elements at a time (4x8 unrolled)
+        while (j + 32 <= cols) : (j += 32) {
+            const w0: Vec8f32 = ctx.weights[row_start + j ..][0..8].*;
+            const w1: Vec8f32 = ctx.weights[row_start + j + 8 ..][0..8].*;
+            const w2: Vec8f32 = ctx.weights[row_start + j + 16 ..][0..8].*;
+            const w3: Vec8f32 = ctx.weights[row_start + j + 24 ..][0..8].*;
+            
+            const in0: Vec8f32 = ctx.input[j..][0..8].*;
+            const in1: Vec8f32 = ctx.input[j + 8 ..][0..8].*;
+            const in2: Vec8f32 = ctx.input[j + 16 ..][0..8].*;
+            const in3: Vec8f32 = ctx.input[j + 24 ..][0..8].*;
+            
+            sum0 += w0 * in0;
+            sum1 += w1 * in1;
+            sum2 += w2 * in2;
+            sum3 += w3 * in3;
+        }
+        
+        // 8-element SIMD loop for remainder
+        while (j + 8 <= cols) : (j += 8) {
+            const w: Vec8f32 = ctx.weights[row_start + j ..][0..8].*;
+            const in_vec: Vec8f32 = ctx.input[j..][0..8].*;
+            sum0 += w * in_vec;
+        }
+        
+        // Combine partial sums
+        sum0 += sum1;
+        sum2 += sum3;
+        sum0 += sum2;
+        sum_scalar = @reduce(.Add, sum0);
+        
+        // Scalar tail
+        while (j < cols) : (j += 1) {
+            sum_scalar += ctx.weights[row_start + j] * ctx.input[j];
+        }
+        
+        ctx.output[i] = sum_scalar;
+    }
+}
+
+/// Multi-threaded SIMD-optimized F32 matrix-vector multiplication
+/// Uses 8-wide vectors with 4x unrolling + parallel row processing
 pub fn f32MatVec(
+    weights: []const f32,
+    input: []const f32,
+    output: []f32,
+    rows: usize,
+    cols: usize,
+) void {
+    // For small matrices, use single-threaded SIMD
+    const available_threads = getNumThreads();
+    if (rows < MIN_ROWS_PER_THREAD * 2 or available_threads < 2) {
+        f32MatVecSingleThread(weights, input, output, rows, cols);
+        return;
+    }
+    
+    // Divide work across threads
+    const num_threads = @min(available_threads, rows / MIN_ROWS_PER_THREAD);
+    const rows_per_thread = rows / num_threads;
+    
+    var contexts: [MAX_MATMUL_THREADS]MatmulWorkerContext = undefined;
+    var threads: [MAX_MATMUL_THREADS]?std.Thread = undefined;
+    
+    // Create worker contexts and spawn threads
+    for (0..num_threads) |t| {
+        const start_row = t * rows_per_thread;
+        const end_row = if (t == num_threads - 1) rows else (t + 1) * rows_per_thread;
+        
+        contexts[t] = MatmulWorkerContext{
+            .weights = weights,
+            .input = input,
+            .output = output,
+            .cols = cols,
+            .start_row = start_row,
+            .end_row = end_row,
+        };
+        
+        threads[t] = std.Thread.spawn(.{}, matmulWorkerFn, .{&contexts[t]}) catch null;
+    }
+    
+    // Join all threads
+    for (0..num_threads) |t| {
+        if (threads[t]) |thread| {
+            thread.join();
+        }
+    }
+}
+
+/// Single-threaded SIMD matmul (for small matrices or fallback)
+fn f32MatVecSingleThread(
     weights: []const f32,
     input: []const f32,
     output: []f32,
