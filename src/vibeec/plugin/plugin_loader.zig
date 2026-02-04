@@ -117,7 +117,7 @@ pub const PluginLoader = struct {
             .allocator = allocator,
             .registry = registry,
             .security_config = config,
-            .loaded_modules = std.ArrayList(*WASMModule).init(allocator),
+            .loaded_modules = .{},
         };
     }
 
@@ -127,7 +127,7 @@ pub const PluginLoader = struct {
             module.deinit();
             self.allocator.destroy(module);
         }
-        self.loaded_modules.deinit();
+        self.loaded_modules.deinit(self.allocator);
     }
 
     /// Load plugin from filesystem path
