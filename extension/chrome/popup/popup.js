@@ -248,6 +248,34 @@ async function checkAIStatus() {
   }
 }
 
+// Check for update notification
+async function checkUpdateNotification() {
+  try {
+    const result = await chrome.storage.local.get(['firebirdState']);
+    if (result.firebirdState?.updateAvailable) {
+      const updateBanner = document.createElement('div');
+      updateBanner.style.cssText = `
+        background: linear-gradient(135deg, var(--accent), #00b377);
+        color: #000;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        font-size: 12px;
+        text-align: center;
+        cursor: pointer;
+      `;
+      updateBanner.innerHTML = `🔥 Update available: v${result.firebirdState.updateAvailable} <u>Download</u>`;
+      updateBanner.onclick = () => {
+        chrome.tabs.create({ url: result.firebirdState.updateUrl || 'https://github.com/gHashTag/trinity/releases' });
+      };
+      document.body.insertBefore(updateBanner, document.body.firstChild);
+    }
+  } catch (e) {
+    console.log('Update check failed:', e);
+  }
+}
+
 // Initialize
 loadState();
 checkAIStatus();
+checkUpdateNotification();

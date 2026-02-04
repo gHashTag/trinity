@@ -180,7 +180,10 @@ export default function CalculatorSection() {
 
         {/* Efficiency Note */}
         <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)', opacity: 0.7 }}>
-          Based on TRINITY Hyper-Singularity V5.0 efficiency factor: {MINING_EFFICIENCY}x
+          * Projected efficiency on custom FPGA hardware. Verified on CPU: 20× memory savings.
+        </div>
+        <div style={{ marginTop: '0.5rem', textAlign: 'center', fontSize: '0.7rem', color: 'var(--muted)', opacity: 0.5 }}>
+          ✓ = Verified (BitNet b1.58) | * = Projected (FPGA/ASIC)
         </div>
       </div>
     </Section>

@@ -28,10 +28,19 @@ const INFERENCE_CONFIG = {
   temperature: 0.7
 };
 
+// Version info
+const CURRENT_VERSION = '1.1.0';
+const UPDATE_CHECK_URL = 'https://raw.githubusercontent.com/gHashTag/trinity/main/extension/version.json';
+
 // Initialize on install
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
   console.log('🔥 Firebird Anti-Detect installed');
   console.log(`φ² + 1/φ² = ${PHI * PHI + 1 / (PHI * PHI)} = TRINITY`);
+  console.log(`Version: ${CURRENT_VERSION}`);
+  
+  if (details.reason === 'update') {
+    console.log(`🔥 Updated from ${details.previousVersion} to ${CURRENT_VERSION}`);
+  }
   
   // Load saved state
   const result = await chrome.storage.local.get(['firebirdState']);
@@ -47,6 +56,40 @@ chrome.runtime.onInstalled.addListener(async () => {
   
   // Initialize WASM inference module
   await initInference();
+  
+  // Check for updates
+  await checkForUpdates();
+});
+
+// Check for updates (daily)
+async function checkForUpdates() {
+  try {
+    const response = await fetch(UPDATE_CHECK_URL, { cache: 'no-store' });
+    if (!response.ok) return;
+    
+    const data = await response.json();
+    if (data.version && data.version !== CURRENT_VERSION) {
+      console.log(`🔥 New version available: ${data.version}`);
+      firebirdState.updateAvailable = data.version;
+      firebirdState.updateUrl = data.downloadUrl || 'https://github.com/gHashTag/trinity/releases';
+      await saveState();
+      
+      // Notify user via badge
+      chrome.action.setBadgeText({ text: '!' });
+      chrome.action.setBadgeBackgroundColor({ color: '#00E599' });
+    }
+  } catch (e) {
+    console.log('Update check failed:', e.message);
+  }
+}
+
+// Schedule daily update check
+chrome.alarms.create('updateCheck', { periodInMinutes: 1440 }); // 24 hours
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'updateCheck') {
+    checkForUpdates();
+  }
 });
 
 // Initialize WASM inference
