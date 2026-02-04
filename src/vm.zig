@@ -110,6 +110,9 @@ pub const VSAInstruction = struct {
 // VSA VM
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Import JIT engine for accelerated operations
+const vsa_jit = @import("vsa_jit.zig");
+
 pub const VSAVM = struct {
     registers: VSARegisters,
     program: std.ArrayList(VSAInstruction),
@@ -117,21 +120,29 @@ pub const VSAVM = struct {
     allocator: std.mem.Allocator,
     cycle_count: u64 = 0,
 
+    // JIT engine for accelerated VSA operations
+    jit_engine: ?vsa_jit.JitVSAEngine = null,
+    jit_enabled: bool = true,
+
     pub fn init(allocator: std.mem.Allocator) VSAVM {
         return VSAVM{
             .registers = .{},
-            .program = std.ArrayList(VSAInstruction).init(allocator),
+            .program = .empty,
             .allocator = allocator,
+            .jit_engine = vsa_jit.JitVSAEngine.init(allocator),
         };
     }
 
     pub fn deinit(self: *VSAVM) void {
-        self.program.deinit();
+        self.program.deinit(self.allocator);
+        if (self.jit_engine) |*engine| {
+            engine.deinit();
+        }
     }
 
     pub fn loadProgram(self: *VSAVM, instructions: []const VSAInstruction) !void {
         self.program.clearRetainingCapacity();
-        try self.program.appendSlice(instructions);
+        try self.program.appendSlice(self.allocator, instructions);
         self.registers.pc = 0;
         self.halted = false;
         self.cycle_count = 0;
@@ -258,6 +269,20 @@ pub const VSAVM = struct {
     fn execVDot(self: *VSAVM, inst: VSAInstruction) void {
         var src1 = self.getVReg(inst.src1).*;
         var src2 = self.getVReg(inst.src2).*;
+
+        // Try JIT-accelerated dot product if enabled
+        if (self.jit_enabled) {
+            if (self.jit_engine) |*engine| {
+                if (engine.dotProduct(&src1, &src2)) |result| {
+                    self.registers.s0 = result;
+                    return;
+                } else |_| {
+                    // JIT failed, fall through to scalar
+                }
+            }
+        }
+
+        // Scalar fallback
         self.registers.s0 = src1.dotProduct(&src2);
     }
 
@@ -346,6 +371,32 @@ pub const VSAVM = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // JIT CONTROL
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Enable or disable JIT acceleration
+    pub fn setJitEnabled(self: *VSAVM, enabled: bool) void {
+        self.jit_enabled = enabled;
+    }
+
+    /// Get JIT statistics (null if JIT not initialized)
+    pub fn getJitStats(self: *const VSAVM) ?vsa_jit.JitVSAEngine.Stats {
+        if (self.jit_engine) |*engine| {
+            return engine.getStats();
+        }
+        return null;
+    }
+
+    /// Print JIT statistics
+    pub fn printJitStats(self: *const VSAVM) void {
+        if (self.jit_engine) |*engine| {
+            engine.printStats();
+        } else {
+            std.debug.print("JIT engine not initialized\n", .{});
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // DEBUG
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -369,6 +420,15 @@ pub const VSAVM = struct {
         std.debug.print("║  pc: {}, cycles: {}                      ║\n", .{ self.registers.pc, self.cycle_count });
         std.debug.print("║  halted: {}                              ║\n", .{self.halted});
         std.debug.print("║  total memory: {} bytes                  ║\n", .{self.registers.total_packed_bytes});
+        std.debug.print("╠══════════════════════════════════════════╣\n", .{});
+        std.debug.print("║ JIT ACCELERATION:                        ║\n", .{});
+        std.debug.print("║  enabled: {}                             ║\n", .{self.jit_enabled});
+        if (self.jit_engine) |*engine| {
+            const stats = engine.getStats();
+            std.debug.print("║  ops: {}, hits: {}, rate: {d:.1}%         ║\n", .{ stats.total_ops, stats.jit_hits, stats.hit_rate });
+        } else {
+            std.debug.print("║  engine: not initialized                 ║\n", .{});
+        }
         std.debug.print("╚══════════════════════════════════════════╝\n\n", .{});
     }
 };
