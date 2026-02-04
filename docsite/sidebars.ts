@@ -14,6 +14,25 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'VIBEE Language',
+      items: [
+        'vibee/index',
+        'vibee/specification',
+        'vibee/examples',
+        'vibee/theorems',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Sacred Mathematics',
+      items: [
+        'sacred-math/index',
+        'sacred-math/formulas',
+        'sacred-math/proofs',
+      ],
+    },
+    {
+      type: 'category',
       label: 'API Reference',
       items: [
         'api/index',
