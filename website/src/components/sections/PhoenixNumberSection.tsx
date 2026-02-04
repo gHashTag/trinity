@@ -20,7 +20,7 @@ export default function PhoenixNumberSection() {
       <div className="fade" style={{ 
         marginTop: '2rem',
         padding: '2rem',
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1))',
+        background: 'linear-gradient(135deg, rgba(0, 229, 153, 0.1), rgba(0, 180, 120, 0.1))',
         borderRadius: '16px',
         border: '1px solid var(--border)',
         textAlign: 'center'
@@ -193,7 +193,7 @@ export default function PhoenixNumberSection() {
           ))}
           <div style={{
             padding: '1rem',
-            background: 'rgba(99, 102, 241, 0.1)',
+            background: 'rgba(0, 229, 153, 0.1)',
             textAlign: 'center',
             fontWeight: 600,
             color: 'var(--accent)'

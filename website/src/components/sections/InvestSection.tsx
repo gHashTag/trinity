@@ -38,7 +38,7 @@ export default function InvestSection() {
                 fontSize: 'clamp(2rem, 5vw, 3rem)', 
                 fontWeight: 600, 
                 marginBottom: '0.5rem',
-                background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
+                background: 'linear-gradient(135deg, var(--accent), #00b377)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
