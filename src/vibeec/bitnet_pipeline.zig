@@ -62,6 +62,66 @@ inline fn simdScaleAdd(out: []f32, vec: []const f32, scale: f32) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// PARALLEL ATTENTION - Multi-threaded head processing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Context for parallel attention head computation
+const AttentionHeadContext = struct {
+    head_idx: usize,
+    q: []const f32,
+    k_cache: []const f32,
+    v_cache: []const f32,
+    attn_out: []f32,
+    scores_buf: []f32,
+    head_dim: usize,
+    num_kv_heads: usize,
+    kv_group_size: usize,
+    cache_len: usize,
+    scale: f32,
+};
+
+/// Process single attention head (called from thread)
+fn processAttentionHead(ctx: *AttentionHeadContext) void {
+    const h = ctx.head_idx;
+    const kv_h = h / ctx.kv_group_size;
+    const q_vec = ctx.q[h * ctx.head_dim ..][0..ctx.head_dim];
+    const scores = ctx.scores_buf;
+    
+    // Compute attention scores with SIMD dot product
+    var max_score: f32 = -std.math.inf(f32);
+    for (0..ctx.cache_len) |t| {
+        const k_offset = t * ctx.num_kv_heads * ctx.head_dim + kv_h * ctx.head_dim;
+        const k_vec = ctx.k_cache[k_offset..][0..ctx.head_dim];
+        const score = simdDotProduct(q_vec, k_vec) * ctx.scale;
+        scores[t] = score;
+        if (score > max_score) max_score = score;
+    }
+    
+    // Softmax
+    var sum_exp: f32 = 0.0;
+    for (scores[0..ctx.cache_len]) |*s| {
+        s.* = @exp(s.* - max_score);
+        sum_exp += s.*;
+    }
+    for (scores[0..ctx.cache_len]) |*s| {
+        s.* /= sum_exp;
+    }
+    
+    // SIMD weighted sum of V
+    const head_out = ctx.attn_out[h * ctx.head_dim ..][0..ctx.head_dim];
+    @memset(head_out, 0.0);
+    for (0..ctx.cache_len) |t| {
+        const v_offset = t * ctx.num_kv_heads * ctx.head_dim + kv_h * ctx.head_dim;
+        const v_vec = ctx.v_cache[v_offset..][0..ctx.head_dim];
+        simdScaleAdd(head_out, v_vec, scores[t]);
+    }
+}
+
+/// Number of threads for parallel attention (configurable)
+/// Set to 2 for environments with limited cores
+pub const NUM_ATTENTION_THREADS: usize = 2;
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS - BitNet 2B Architecture
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -277,7 +337,7 @@ pub const Attention = struct {
         // Append K, V to cache
         kv_cache.append(k, v);
         
-        // Compute attention for each head
+        // Compute attention for each head (parallel when possible)
         const attn_out = try allocator.alloc(f32, q_size);
         defer allocator.free(attn_out);
         @memset(attn_out, 0.0);
@@ -285,41 +345,73 @@ pub const Attention = struct {
         const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(cfg.head_dim)));
         const kv_group_size = cfg.num_heads / cfg.num_kv_heads;
         
-        for (0..cfg.num_heads) |h| {
-            const kv_h = h / kv_group_size;
-            const q_vec = q[h * cfg.head_dim ..][0..cfg.head_dim];
+        // Allocate score buffers for all heads
+        const max_cache_len = @max(kv_cache.len, 1);
+        const scores_bufs = try allocator.alloc(f32, cfg.num_heads * max_cache_len);
+        defer allocator.free(scores_bufs);
+        
+        // Determine number of threads (min of available and heads)
+        const num_threads = @min(NUM_ATTENTION_THREADS, cfg.num_heads);
+        
+        if (num_threads > 1 and cfg.num_heads >= 2) {
+            // Parallel execution with threads
+            var contexts: [8]AttentionHeadContext = undefined;
+            var threads: [8]std.Thread = undefined;
+            var active_threads: usize = 0;
             
-            // Compute attention scores
-            const scores = try allocator.alloc(f32, kv_cache.len);
-            defer allocator.free(scores);
-            
-            var max_score: f32 = -std.math.inf(f32);
-            for (0..kv_cache.len) |t| {
-                const k_offset = t * cfg.num_kv_heads * cfg.head_dim + kv_h * cfg.head_dim;
-                const k_vec = kv_cache.k[k_offset..][0..cfg.head_dim];
+            var h: usize = 0;
+            while (h < cfg.num_heads) {
+                // Launch batch of threads
+                const batch_size = @min(num_threads, cfg.num_heads - h);
                 
-                // SIMD dot product for Q @ K^T
-                const score = simdDotProduct(q_vec, k_vec) * scale;
-                scores[t] = score;
-                if (score > max_score) max_score = score;
+                for (0..batch_size) |t| {
+                    const head_idx = h + t;
+                    contexts[t] = AttentionHeadContext{
+                        .head_idx = head_idx,
+                        .q = q,
+                        .k_cache = kv_cache.k,
+                        .v_cache = kv_cache.v,
+                        .attn_out = attn_out,
+                        .scores_buf = scores_bufs[head_idx * max_cache_len ..][0..max_cache_len],
+                        .head_dim = cfg.head_dim,
+                        .num_kv_heads = cfg.num_kv_heads,
+                        .kv_group_size = kv_group_size,
+                        .cache_len = kv_cache.len,
+                        .scale = scale,
+                    };
+                    threads[t] = std.Thread.spawn(.{}, processAttentionHead, .{&contexts[t]}) catch {
+                        // Fallback to sequential if spawn fails
+                        processAttentionHead(&contexts[t]);
+                        continue;
+                    };
+                    active_threads += 1;
+                }
+                
+                // Wait for batch to complete
+                for (0..active_threads) |t| {
+                    threads[t].join();
+                }
+                active_threads = 0;
+                
+                h += batch_size;
             }
-            
-            // Softmax
-            var sum_exp: f32 = 0.0;
-            for (scores) |*s| {
-                s.* = @exp(s.* - max_score);
-                sum_exp += s.*;
-            }
-            for (scores) |*s| {
-                s.* /= sum_exp;
-            }
-            
-            // SIMD weighted sum of V
-            const head_out = attn_out[h * cfg.head_dim ..][0..cfg.head_dim];
-            for (0..kv_cache.len) |t| {
-                const v_offset = t * cfg.num_kv_heads * cfg.head_dim + kv_h * cfg.head_dim;
-                const v_vec = kv_cache.v[v_offset..][0..cfg.head_dim];
-                simdScaleAdd(head_out, v_vec, scores[t]);
+        } else {
+            // Sequential fallback for single head or single thread
+            for (0..cfg.num_heads) |h| {
+                var ctx = AttentionHeadContext{
+                    .head_idx = h,
+                    .q = q,
+                    .k_cache = kv_cache.k,
+                    .v_cache = kv_cache.v,
+                    .attn_out = attn_out,
+                    .scores_buf = scores_bufs[h * max_cache_len ..][0..max_cache_len],
+                    .head_dim = cfg.head_dim,
+                    .num_kv_heads = cfg.num_kv_heads,
+                    .kv_group_size = kv_group_size,
+                    .cache_len = kv_cache.len,
+                    .scale = scale,
+                };
+                processAttentionHead(&ctx);
             }
         }
         
