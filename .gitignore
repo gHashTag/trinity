@@ -54,3 +54,5 @@ src/vibeec/gguf_to_tri
 src/vibeec/tri_inference
 .vercel
 .env*.local
+models/bitnet/
+src/vibeec/bitnet_inference_test
