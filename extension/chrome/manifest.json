@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Firebird Anti-Detect",
-  "version": "1.1.0",
-  "description": "Protect your browser fingerprint with ternary evolution. Canvas, WebGL, Audio protection. No data collection.",
+  "name": "NeoDetect Anti-Detect",
+  "version": "2.0.0",
+  "description": "Advanced antidetect browser with WASM-powered fingerprint protection. Canvas, WebGL, Audio, Navigator spoofing. Cross-OS emulation.",
   "homepage_url": "https://github.com/gHashTag/trinity",
   
   "icons": {
@@ -17,7 +17,7 @@
       "16": "icons/icon16.png",
       "48": "icons/icon48.png"
     },
-    "default_title": "Firebird"
+    "default_title": "NeoDetect"
   },
   
   "background": {
@@ -47,7 +47,7 @@
   
   "web_accessible_resources": [
     {
-      "resources": ["wasm/*", "content/inject.js"],
+      "resources": ["wasm/*", "wasm/neodetect.wasm", "wasm/neodetect-loader.js", "content/inject.js"],
       "matches": ["<all_urls>"]
     }
   ],

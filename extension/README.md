@@ -1,129 +1,181 @@
-# ЖАР ПТИЦА Browser Extension
+# NeoDetect Anti-Detect Browser Extension
 
-## Структура
+Advanced antidetect browser extension with WASM-powered fingerprint protection.
 
-```
-extension/
-├── manifest.json       # Chrome Manifest V3 (генерируется из .vibee)
-├── popup/
-│   ├── popup.html      # Popup UI (генерируется)
-│   ├── popup.js        # Popup logic (генерируется)
-│   └── popup.css       # Styles (генерируется)
-├── background/
-│   └── background.js   # Service worker (генерируется)
-├── content/
-│   └── content.js      # Content script (генерируется)
-├── wasm/
-│   ├── firebird.wasm   # Compiled from extension_wasm.zig
-│   └── firebird.js     # WASM loader (генерируется)
-├── icons/
-│   ├── firebird-16.png
-│   ├── firebird-32.png
-│   ├── firebird-48.png
-│   └── firebird-128.png
-└── README.md           # This file
-```
+## Features
 
-## Сборка
+### Core Protections
+- **Canvas Fingerprint** - Adds ternary noise to canvas operations
+- **WebGL Fingerprint** - Spoofs GPU vendor and renderer
+- **Audio Fingerprint** - Injects noise into audio context
+- **Navigator Spoofing** - Spoofs platform, userAgent, hardware info
 
-### 1. Компиляция WASM модуля
+### Advanced Protections
+- **WebRTC IP Leak** - Filters local IP addresses from ICE candidates
+- **Battery API** - Returns spoofed battery status (100%, charging)
+- **Bluetooth API** - Blocks device enumeration
+- **Permissions API** - Returns configured permission states
+- **Storage API** - Spoofs quota and usage information
+- **Client Hints** - Spoofs User-Agent Client Hints
 
+### Profile Management
+- Save/load multiple browser profiles
+- Import/export profiles as JSON
+- Deterministic fingerprint recreation from seed
+- Profile presets (Paranoid, Balanced, Minimal)
+
+### OS Emulation
+Emulate different operating systems without VM:
+- Windows 10/11
+- macOS Sonoma
+- Linux Ubuntu
+
+### Hardware Emulation
+- Intel i5/i7/i9
+- AMD Ryzen 5/7/9
+- Apple M1/M2/M3
+
+### GPU Emulation
+- NVIDIA RTX 3060/4070/4090
+- AMD RX 6700/7900
+- Intel UHD 770
+- Apple M1/M2/M3 GPU
+
+## Installation
+
+### From Release
+1. Download `neodetect-v2.0.0.zip` from releases
+2. Open `chrome://extensions/`
+3. Enable "Developer mode"
+4. Click "Load unpacked"
+5. Select the extracted folder
+
+### From Source
 ```bash
-# Из корня проекта
-cd /workspaces/trinity
+# Clone repository
+git clone https://github.com/gHashTag/trinity.git
+cd trinity
 
-# Компиляция Zig → WASM (требует wasm32 target)
-zig build-lib src/firebird/extension_wasm.zig \
+# Build WASM module
+zig build-lib src/firebird/neodetect_wasm.zig \
   -target wasm32-freestanding \
   -O ReleaseFast \
-  -femit-bin=extension/wasm/firebird.wasm
+  -femit-bin=extension/chrome/wasm/neodetect.wasm
+
+# Load extension/chrome folder in Chrome
 ```
 
-### 2. Генерация JS/HTML из .vibee
+## Usage
 
-```bash
-# Генерация из спецификаций
-./bin/vibee gen specs/tri/browser_extension/manifest.vibee
-./bin/vibee gen specs/tri/browser_extension/popup_ui.vibee
-./bin/vibee gen specs/tri/browser_extension/content_script.vibee
-./bin/vibee gen specs/tri/browser_extension/tri_staking.vibee
+### Quick Start
+1. Click the NeoDetect icon in toolbar
+2. Select a preset (Paranoid, Balanced, or Minimal)
+3. Browse normally - fingerprint protection is active
+
+### Protection Presets
+
+| Preset | Description | Use Case |
+|--------|-------------|----------|
+| Paranoid | All protections enabled | Maximum privacy |
+| Balanced | Most protections, some disabled for compatibility | Daily browsing |
+| Minimal | Basic protections only | When sites break |
+
+### Profile Management
+1. Configure OS/Hardware/GPU settings
+2. Click "Save" to save current profile
+3. Click a saved profile to load it
+4. Use "Export" to backup profiles
+5. Use "Import" to restore profiles
+
+## File Structure
+
 ```
-
-### 3. Загрузка в Chrome
-
-1. Открыть `chrome://extensions/`
-2. Включить "Developer mode"
-3. Нажать "Load unpacked"
-4. Выбрать папку `extension/`
-
-## Спецификации (.vibee)
-
-Все файлы extension генерируются из спецификаций:
-
-| Спецификация | Генерирует |
-|--------------|------------|
-| `extension_core.vibee` | Основная логика |
-| `manifest.vibee` | manifest.json |
-| `popup_ui.vibee` | popup.html/js/css |
-| `content_script.vibee` | content.js |
-| `tri_staking.vibee` | Staking UI/logic |
+extension/chrome/
+├── manifest.json           # Chrome Manifest V3
+├── background/
+│   └── service-worker.js   # WASM initialization, state management
+├── content/
+│   └── content.js          # Fingerprint injection
+├── popup/
+│   ├── popup.html          # Extension popup UI
+│   └── popup.js            # Popup logic
+├── wasm/
+│   ├── neodetect.wasm      # Compiled WASM module
+│   └── neodetect-loader.js # WASM JavaScript wrapper
+└── icons/
+    └── *.png               # Extension icons
+```
 
 ## WASM API
 
-Экспортируемые функции из `extension_wasm.zig`:
+The extension uses a custom WASM module for fingerprint generation:
 
-```zig
-// Инициализация
-export fn wasm_init(seed: u64) i32;
+```javascript
+// Initialize
+NeoDetect.loadWasm();
+NeoDetect.init(seed);
 
-// Профили
-export fn wasm_create_profile(seed: u64, dim: u32) i32;
-export fn wasm_get_similarity() f64;
-export fn wasm_get_canvas_hash() u64;
-export fn wasm_get_webgl_hash() u64;
-export fn wasm_get_audio_hash() u64;
+// Create profile
+NeoDetect.createProfile({ osType, hwType, gpuType });
 
-// Навигация
-export fn wasm_init_navigation(dim: u32, seed: u64) i32;
-export fn wasm_navigate_step(strength: f64) f64;
-export fn wasm_get_nav_steps() u32;
+// Get profile data
+const profile = NeoDetect.getProfileData();
 
-// DePIN
-export fn wasm_get_pending_tri() f64;
-export fn wasm_get_total_tri() f64;
-export fn wasm_claim_rewards() f64;
-export fn wasm_record_evasion() void;
-
-// Evasion helpers
-export fn wasm_get_screen_width() u32;
-export fn wasm_get_screen_height() u32;
-export fn wasm_get_timezone_offset() i32;
-export fn wasm_get_language_index() u32;
-
-// Cleanup
-export fn wasm_cleanup() void;
+// Evolution
+NeoDetect.evolveFingerprint(targetSimilarity, maxGenerations);
+NeoDetect.aiEvolve(targetSimilarity);
 ```
 
-## Тестирование
+## Testing
 
-```bash
-# Unit tests для WASM модуля
-zig test src/firebird/extension_wasm.zig
-# 31 tests passed
+### Fingerprint Test Page
+Open `extension/test/fingerprint-test.html` to verify protections:
+- Navigator properties
+- Screen properties
+- Canvas fingerprint
+- WebGL fingerprint
+- Audio fingerprint
+- WebRTC IP leak
+- Battery API
+- Bluetooth API
+- Permissions API
+- Client Hints
+- Storage API
 
-# После загрузки в Chrome
-# 1. Открыть https://browserleaks.com/canvas
-# 2. Проверить что canvas hash отличается
-# 3. Проверить консистентность при перезагрузке
-```
+### External Testing
+- [BrowserLeaks](https://browserleaks.com) - Comprehensive fingerprint test
+- [CreepJS](https://abrahamjuliot.github.io/creepjs/) - Advanced detection test
+- [AmIUnique](https://amiunique.org) - Uniqueness test
 
-## Ограничения
+## Privacy
 
-⚠️ **Согласно правилам проекта (AGENTS.md):**
-- .js, .html, .css файлы НЕ создаются вручную
-- Все файлы ГЕНЕРИРУЮТСЯ из .vibee спецификаций
-- Только .vibee и .zig файлы редактируются напрямую
+- **No data collection** - All processing happens locally
+- **No external requests** - Extension works offline
+- **No telemetry** - Zero tracking or analytics
+- **Open source** - Full code transparency
+
+## Specifications
+
+All code is generated from `.vibee` specifications:
+
+| Specification | Purpose |
+|---------------|---------|
+| `neodetect_core.vibee` | Core antidetect types and behaviors |
+| `neodetect_wasm.vibee` | WASM exports and memory layout |
+| `os_emulation.vibee` | OS fingerprint emulation |
+| `behavior_simulation.vibee` | Human behavior simulation |
+| `ai_evolution.vibee` | AI-powered fingerprint evolution |
+| `profile_manager.vibee` | Profile storage and encryption |
+| `advanced_protection.vibee` | WebRTC, Battery, Bluetooth protection |
+
+## Version History
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
+## License
+
+MIT License - See LICENSE file for details.
 
 ---
 
-*φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL*
+**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**

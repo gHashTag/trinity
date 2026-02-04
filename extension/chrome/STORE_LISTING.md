@@ -1,31 +1,53 @@
 # Chrome Web Store Listing
 
 ## Extension Name
-**Firebird Anti-Detect - Ternary Privacy Protection**
+**NeoDetect Anti-Detect - WASM-Powered Privacy Protection**
 
 ## Short Description (132 chars max)
-Protect your browser fingerprint with ternary evolution. Canvas, WebGL, Audio protection. No data collection. Open source.
+Advanced antidetect browser with WASM fingerprint protection. Canvas, WebGL, Audio, WebRTC. OS/GPU emulation. Open source.
 
 ## Detailed Description
 
-### 🔥 Firebird Anti-Detect
+### NeoDetect Anti-Detect
 
-Protect your online privacy with next-generation ternary fingerprint evolution technology.
+Protect your online privacy with WASM-powered fingerprint protection and cross-platform emulation.
 
 **What is Browser Fingerprinting?**
 Websites can identify you by collecting unique characteristics of your browser - canvas rendering, WebGL parameters, audio processing, and more. Even without cookies, you can be tracked across the web.
 
-**How Firebird Protects You**
-Firebird uses advanced ternary computing (φ² + 1/φ² = 3) to evolve your browser fingerprint, making you appear as a different user while maintaining human-like characteristics.
+**How NeoDetect Protects You**
+NeoDetect uses a high-performance WASM engine compiled from Zig to generate deterministic fingerprints, allowing you to appear as different users across different operating systems and hardware configurations.
 
-**Features:**
-✅ Canvas fingerprint protection - Adds imperceptible noise to canvas data
-✅ WebGL protection - Spoofs GPU vendor and renderer information  
-✅ Audio fingerprint protection - Modifies audio context parameters
-✅ Navigator spoofing - Randomizes hardware and screen properties
-✅ One-click evolution - Instantly generate a new fingerprint
-✅ Auto-evolve - Automatically adapt when detection is suspected
-✅ Human similarity targeting - Stay undetectable (0.85 similarity score)
+**Core Protections:**
+✅ Canvas fingerprint - Adds ternary noise to canvas operations
+✅ WebGL protection - Spoofs GPU vendor and renderer
+✅ Audio fingerprint - Injects noise into audio context
+✅ Navigator spoofing - Spoofs platform, userAgent, hardware info
+✅ WebRTC IP leak - Filters local IP addresses
+✅ Battery API - Returns spoofed battery status
+✅ Client Hints - Spoofs User-Agent Client Hints
+
+**OS Emulation:**
+• Windows 10/11
+• macOS Sonoma
+• Linux Ubuntu
+
+**Hardware Emulation:**
+• Intel i5/i7/i9
+• AMD Ryzen 5/7/9
+• Apple M1/M2/M3
+
+**GPU Emulation:**
+• NVIDIA RTX 3060/4070/4090
+• AMD RX 6700/7900
+• Intel UHD 770
+• Apple M1/M2/M3 GPU
+
+**Profile Management:**
+• Save/load multiple browser profiles
+• Import/export profiles as JSON
+• Deterministic fingerprint recreation from seed
+• Presets: Paranoid, Balanced, Minimal
 
 **Privacy First:**
 🔒 Zero data collection - Everything stays on your device
@@ -34,9 +56,9 @@ Firebird uses advanced ternary computing (φ² + 1/φ² = 3) to evolve your brow
 🔒 Open source - Verify our code on GitHub
 
 **Technical Innovation:**
-• Ternary computing: 1.58x information density vs binary
-• φ-evolution algorithm: Mathematically optimal convergence
-• SIMD acceleration: 148,000+ operations per second
+• WASM engine compiled from Zig for maximum performance
+• Deterministic fingerprint generation from seed
+• AI-powered fingerprint evolution
 • <10MB memory footprint
 
 **Perfect For:**
@@ -46,12 +68,11 @@ Firebird uses advanced ternary computing (φ² + 1/φ² = 3) to evolve your brow
 • Anyone who values online anonymity
 
 **Open Source:**
-Firebird is fully open source. Review our code, contribute, or fork:
+NeoDetect is fully open source. Review our code, contribute, or fork:
 https://github.com/gHashTag/trinity
 
 ---
-φ² + 1/φ² = 3 = TRINITY
-Your privacy, protected by mathematics.
+KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED
 
 ## Category
 Privacy & Security
@@ -63,29 +84,31 @@ English
 - privacy
 - fingerprint
 - anti-detect
+- antidetect
 - canvas
 - webgl
+- webrtc
 - security
 - anonymity
-- ternary
+- wasm
 - open source
 
 ## Screenshots Descriptions
 
 1. **Popup Interface**
-   "Clean, intuitive interface showing protection status and similarity score"
+   "Clean interface showing protection status, OS/Hardware/GPU selection"
 
-2. **Evolution in Action**
-   "One-click fingerprint evolution with real-time progress"
+2. **Profile Management**
+   "Save, load, import, and export browser profiles"
 
-3. **Protection Settings**
-   "Granular control over Canvas, WebGL, Audio, and Navigator protection"
+3. **Protection Presets**
+   "Choose from Paranoid, Balanced, or Minimal protection levels"
 
 4. **Before/After Comparison**
-   "Fingerprint test results showing unique → common transformation"
+   "Fingerprint test results showing protection effectiveness"
 
 ## Promotional Tile Text (Small)
-"Ternary Privacy"
+"WASM Privacy"
 
 ## Promotional Tile Text (Large)
-"Protect Your Browser Fingerprint with Ternary Evolution Technology"
+"Advanced Antidetect Browser with WASM-Powered Fingerprint Protection"

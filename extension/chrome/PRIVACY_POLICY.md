@@ -1,19 +1,19 @@
-# Firebird Anti-Detect Privacy Policy
+# NeoDetect Anti-Detect Privacy Policy
 
 **Last Updated**: February 4, 2026  
-**Version**: 1.0.0
+**Version**: 2.0.0
 
 ---
 
 ## Overview
 
-Firebird Anti-Detect ("Firebird", "we", "our", "the extension") is a browser extension that protects your privacy by modifying browser fingerprints. This privacy policy explains how we handle your data.
+NeoDetect Anti-Detect ("NeoDetect", "we", "our", "the extension") is a browser extension that protects your privacy by modifying browser fingerprints. This privacy policy explains how we handle your data.
 
 ## Data Collection
 
 ### What We DO NOT Collect
 
-Firebird does **NOT** collect, store, transmit, or share:
+NeoDetect does **NOT** collect, store, transmit, or share:
 
 - Personal information (name, email, address)
 - Browsing history or visited URLs
@@ -25,47 +25,51 @@ Firebird does **NOT** collect, store, transmit, or share:
 
 ### What We Store Locally
 
-Firebird stores the following data **only on your device** using Chrome's local storage API:
+NeoDetect stores the following data **only on your device** using Chrome's local storage API:
 
-- **Extension settings**: Your protection preferences (canvas, WebGL, audio toggles)
+- **Extension settings**: Your protection preferences (canvas, WebGL, audio, WebRTC toggles)
 - **Fingerprint seed**: A random number used to generate consistent fingerprint modifications
-- **Similarity score**: A number indicating fingerprint evolution progress
+- **Profile data**: Saved browser profiles (OS, hardware, GPU configurations)
+- **Protection preset**: Your selected preset (Paranoid, Balanced, Minimal)
 
 This data:
 - Never leaves your device
 - Is not transmitted to any server
 - Is not shared with third parties
-- Can be deleted by uninstalling the extension
+- Can be deleted by uninstalling the extension or clearing extension data
 
-## How Firebird Works
+## How NeoDetect Works
 
-1. **Local Processing**: All fingerprint modifications happen entirely in your browser
-2. **No Network Requests**: Firebird makes zero network requests to external servers
+1. **Local Processing**: All fingerprint modifications happen entirely in your browser via WASM
+2. **No Network Requests**: NeoDetect makes zero network requests to external servers
 3. **No Analytics**: We do not use any analytics, tracking, or telemetry
 4. **No Accounts**: No registration or login required
+5. **Deterministic Generation**: Fingerprints are generated from a seed, ensuring reproducibility
 
 ## Permissions Explained
 
 | Permission | Purpose |
 |------------|---------|
-| `storage` | Save your settings locally |
+| `storage` | Save your settings and profiles locally |
 | `activeTab` | Apply protection to current tab |
 | `scripting` | Inject fingerprint protection code |
+| `alarms` | Schedule periodic fingerprint updates |
 | `<all_urls>` | Protect you on all websites |
 
 ## Third-Party Services
 
-Firebird does **NOT** use any third-party services, APIs, or SDKs.
+NeoDetect does **NOT** use any third-party services, APIs, or SDKs.
 
 ## Data Security
 
 - All data remains on your device
 - No encryption needed as no data is transmitted
 - Chrome's built-in storage security applies
+- Profile export files are plain JSON (user responsibility to secure)
 
 ## Children's Privacy
 
-Firebird does not knowingly collect data from anyone, including children under 13.
+NeoDetect does not knowingly collect data from anyone, including children under 13.
 
 ## Changes to This Policy
 
@@ -75,15 +79,15 @@ We may update this policy. Changes will be posted here with an updated date.
 
 For privacy questions:
 - GitHub: https://github.com/gHashTag/trinity
-- Email: privacy@vibee.dev
+- Issues: https://github.com/gHashTag/trinity/issues
 
 ## Open Source
 
-Firebird is open source. You can verify our privacy claims by reviewing the code:
+NeoDetect is open source. You can verify our privacy claims by reviewing the code:
 https://github.com/gHashTag/trinity/tree/main/extension/chrome
 
 ---
 
-**φ² + 1/φ² = 3 = TRINITY**
+**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
 
-*Your privacy is protected by mathematics, not promises.*
+*Your privacy is protected by code, not promises.*

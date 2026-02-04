@@ -1,11 +1,60 @@
 {
-  "version": "1.1.0",
+  "name": "NeoDetect Anti-Detect Browser Extension",
+  "version": "2.0.0",
   "releaseDate": "2026-02-04",
   "downloadUrl": "https://github.com/gHashTag/trinity/releases",
-  "changelog": [
-    "Added CPU inference for AI-powered fingerprint evolution",
-    "Added AI Mode toggle in popup",
-    "Added auto-update check (daily)",
-    "Improved ternary evolution algorithms"
+  "changelog": {
+    "2.0.0": {
+      "date": "2026-02-04",
+      "changes": [
+        "Complete rewrite with WASM-powered fingerprint engine",
+        "Added OS emulation: Windows 10/11, macOS Sonoma, Linux Ubuntu",
+        "Added hardware profiles: Intel i5/i7/i9, AMD Ryzen 5/7/9, Apple M1/M2/M3",
+        "Added GPU spoofing: NVIDIA RTX, AMD RX, Intel UHD, Apple GPU",
+        "New popup UI with profile configuration and presets",
+        "Detection risk indicator with real-time scoring",
+        "AI-powered fingerprint evolution",
+        "Profile management: save, load, import, export",
+        "Advanced protections: WebRTC IP leak, Battery API, Bluetooth API",
+        "Client Hints spoofing for modern browsers",
+        "Permissions API and Storage API protection",
+        "Deterministic fingerprint recreation from seed"
+      ]
+    },
+    "1.1.0": {
+      "date": "2026-01-15",
+      "changes": [
+        "Added WebGL fingerprint protection",
+        "Added audio context fingerprint protection",
+        "Improved canvas noise algorithm",
+        "Bug fixes and performance improvements"
+      ]
+    },
+    "1.0.0": {
+      "date": "2026-01-01",
+      "changes": [
+        "Initial release",
+        "Canvas fingerprint protection",
+        "Navigator spoofing",
+        "Basic popup UI"
+      ]
+    }
+  },
+  "features": [
+    "Canvas fingerprint protection",
+    "WebGL fingerprint protection",
+    "Audio fingerprint protection",
+    "Navigator spoofing",
+    "WebRTC IP leak protection",
+    "Battery API spoofing",
+    "Bluetooth API blocking",
+    "Permissions API spoofing",
+    "Storage API spoofing",
+    "Client Hints spoofing",
+    "OS emulation",
+    "Hardware emulation",
+    "GPU emulation",
+    "Profile management",
+    "AI fingerprint evolution"
   ]
 }
