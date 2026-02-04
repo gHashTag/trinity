@@ -398,9 +398,9 @@
     "toggleHide": "▼ Ocultar Fundamentos Matemáticos",
     "items": [
       {
-        "title": "Simetría de Gauge SU(3)",
-        "description": "Los estados ternarios {-1, 0, +1} corresponden a la carga de color en cromodinámica cuántica. Los 8 generadores de gluones de SU(3) proporcionan corrección de errores natural.",
-        "formula": "SU(3) → 8 generadores → estabilidad ternaria"
+        "title": "SU(3) — Grupo Unitario Especial",
+        "description": "SU = Special Unitary (matrices con determinante = 1 que preservan la longitud de vectores). SU(3) describe 3 colores de quarks (rojo, verde, azul) dentro de protones y neutrones. Nuestro sistema ternario {-1, 0, +1} refleja este patrón natural de 3 estados. Los 8 generadores de gluones proporcionan corrección de errores natural.",
+        "formula": "SU(3) = matrices 3×3 → 3 colores → 8 gluones"
       },
       {
         "title": "Invariantes de Chern-Simons",
