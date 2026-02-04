@@ -261,6 +261,24 @@
     </label>
   </div>
   
+  <div class="toggle-row" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 8px;">
+    <span class="toggle-label">🤖 AI Mode (CPU Inference)</span>
+    <label class="toggle">
+      <input type="checkbox" id="ai-mode">
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+  
+  <div id="ai-status" style="display: none; margin-top: 12px; padding: 12px; background: rgba(243, 156, 18, 0.1); border-radius: 8px; font-size: 12px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+      <span style="color: rgba(255,255,255,0.7);">Inference Status</span>
+      <span id="inference-status" style="color: #2ecc71;">Ready</span>
+    </div>
+    <button class="btn btn-secondary" id="ai-evolve-btn" style="margin-bottom: 0; padding: 8px;">
+      🧠 AI-Powered Evolution
+    </button>
+  </div>
+  
   <div class="footer">
     <div class="footer-text">
       <span class="phi-formula">φ² + 1/φ² = 3</span> = TRINITY

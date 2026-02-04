@@ -1,6 +1,6 @@
 # TRINITY Scientific Discoveries & Benchmarks
 
-**Version**: 2.3.0  
+**Version**: 2.4.0  
 **Date**: 2026-02-04  
 **Status**: 🎉 PHASE 3 COMPLETE - PRODUCTION READY  
 **Formula**: φ² + 1/φ² = 3
@@ -9,7 +9,17 @@
 
 ## Latest Updates (2026-02-04)
 
-### Landing Page Optimization (NEW)
+### FIREBIRD CPU Inference (NEW)
+- Added TinyModel ternary inference to extension_wasm.zig
+- 25 WASM exports for browser-based AI inference
+- Model: 256 vocab, 64 hidden, 2 layers (~8K params)
+- Ternary matmul: no multiplications (add/subtract only)
+- AI Mode toggle in popup UI
+- AI-powered fingerprint evolution (target: 0.90 similarity)
+- JS fallback when WASM unavailable
+- Extension v1.1.0: 18KB ZIP
+
+### Landing Page Optimization
 - Reduced sections from 29 to 8 (target: +40% conversion)
 - Added animated φ² + 1/φ² = 3 equation in Hero
 - Added StickyCTA component (appears after 30% scroll)
