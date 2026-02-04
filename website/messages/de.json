@@ -392,30 +392,30 @@
     "ctaUrl": "https://github.com/gHashTag/vibee-lang/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
   },
   "mysticism": {
-    "title": "Mathematische Grundlagen",
-    "subtitle": "Diese mathematischen Strukturen bilden die theoretische Grundlage für die Vorteile ternärer Berechnungen.",
-    "toggleShow": "▶ Für Mathematiker: SU(3), Chern-Simons, φ",
-    "toggleHide": "▼ Mathematische Grundlagen ausblenden",
+    "title": "Inspiration aus der Physik",
+    "subtitle": "Die Natur verwendet bereits 'ternäre' Muster. Wir lassen uns davon inspirieren, wie das Universum Informationen organisiert.",
+    "toggleShow": "▶ Warum 3? Inspiration aus der Physik",
+    "toggleHide": "▼ Physik ausblenden",
     "items": [
       {
-        "title": "SU(3) Eichsymmetrie",
-        "description": "Ternäre Zustände {-1, 0, +1} entsprechen der Farbladung in der Quantenchromodynamik. Die 8 Gluon-Generatoren von SU(3) bieten natürliche Fehlerkorrektur.",
-        "formula": "SU(3) → 8 Generatoren → ternäre Stabilität"
+        "title": "SU(3): Warum die Natur 3 liebt",
+        "description": "In jedem Proton und Neutron haben Quarks genau 3 'Farben' (rot, grün, blau). Das ist kein Zufall — es ist die SU(3)-Symmetrie, die Atome zusammenhält. Unser ternäres System {-1, 0, +1} spiegelt dieses natürliche 3-Zustands-Muster wider.",
+        "formula": "3 Quark-Farben → 3 Trit-Werte → natürliche Stabilität"
       },
       {
-        "title": "Chern-Simons Invarianten",
-        "description": "Topologischer Schutz von Quantenzuständen durch Chern-Simons-Theorie. Die Invariante k=3 entspricht der ternären Logiktiefe.",
-        "formula": "CS(A) = k/4π ∫ Tr(A∧dA + ⅔A∧A∧A)"
+        "title": "Topologischer Schutz",
+        "description": "In der Physik sind einige Quantenzustände durch Topologie geschützt — sie können nicht leicht beschädigt werden. Ebenso bietet ternäre Kodierung mit 3 Zuständen natürliche Fehlergrenzen, die binär (2 Zustände) fehlen.",
+        "formula": "3 Zustände = robuster als 2 Zustände"
       },
       {
         "title": "Goldener Schnitt Identität",
-        "description": "Die heilige Formel φ² + 1/φ² = 3 verbindet den goldenen Schnitt mit der Ternärität.",
-        "formula": "φ² + 1/φ² = 3 = TRINITÄT"
+        "description": "Hier ist eine schöne mathematische Tatsache: φ² + 1/φ² = 3 exakt. Der goldene Schnitt (in Natur, Kunst, DNA) verbindet sich direkt mit der Zahl 3. Das ist keine Mystik — es ist reine Algebra.",
+        "formula": "φ² + 1/φ² = 3 = TRINITÄT (mathematisch bewiesen)"
       },
       {
-        "title": "Phoenix-Zahl",
-        "description": "Die selbstreferentielle Konstante, die aus ternärer Rekursion entsteht. Verwandt mit Feigenbaum-Konstanten.",
-        "formula": "Φ = lim(n→∞) T(n)/T(n-1) ≈ 1.618..."
+        "title": "Optimales Basis-Theorem",
+        "description": "Die Informationstheorie beweist: Die effizienteste Zahlenbasis ist e ≈ 2,718. Die nächste ganze Zahl ist 3, nicht 2. Das bedeutet, ternäre Computer sind theoretisch 1,58× effizienter als binäre.",
+        "formula": "Optimale Basis = e ≈ 2,718 → nächste ganze Zahl = 3"
       }
     ]
   },

@@ -392,30 +392,30 @@
     "ctaUrl": "https://github.com/gHashTag/vibee-lang/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
   },
   "mysticism": {
-    "title": "Fundamentos Matemáticos",
-    "subtitle": "Estas estructuras matemáticas proporcionan la base teórica para las ventajas de la computación ternaria.",
-    "toggleShow": "▶ Para Matemáticos: SU(3), Chern-Simons, φ",
-    "toggleHide": "▼ Ocultar Fundamentos Matemáticos",
+    "title": "Inspiración de la Física",
+    "subtitle": "La naturaleza ya usa patrones 'ternarios'. Nos inspiramos en cómo el universo organiza la información.",
+    "toggleShow": "▶ ¿Por qué 3? Inspiración de la Física",
+    "toggleHide": "▼ Ocultar Física",
     "items": [
       {
-        "title": "Simetría de Gauge SU(3)",
-        "description": "Los estados ternarios {-1, 0, +1} corresponden a la carga de color en cromodinámica cuántica. Los 8 generadores de gluones de SU(3) proporcionan corrección de errores natural.",
-        "formula": "SU(3) → 8 generadores → estabilidad ternaria"
+        "title": "SU(3): Por qué la Naturaleza Ama el 3",
+        "description": "Dentro de cada protón y neutrón, los quarks tienen exactamente 3 'colores' (rojo, verde, azul). Esto no es coincidencia — es la simetría SU(3) que mantiene unidos los átomos. Nuestro sistema ternario {-1, 0, +1} refleja este patrón natural de 3 estados.",
+        "formula": "3 colores de quarks → 3 valores de trit → estabilidad natural"
       },
       {
-        "title": "Invariantes de Chern-Simons",
-        "description": "Protección topológica de estados cuánticos a través de la teoría de Chern-Simons. El invariante k=3 corresponde a la profundidad lógica ternaria.",
-        "formula": "CS(A) = k/4π ∫ Tr(A∧dA + ⅔A∧A∧A)"
+        "title": "Protección Topológica",
+        "description": "En física, algunos estados cuánticos están protegidos por topología — no pueden corromperse fácilmente. De manera similar, la codificación ternaria con 3 estados proporciona límites de error naturales que el binario (2 estados) carece.",
+        "formula": "3 estados = más robusto que 2 estados"
       },
       {
         "title": "Identidad de la Proporción Áurea",
-        "description": "La fórmula sagrada φ² + 1/φ² = 3 conecta la proporción áurea con lo ternario.",
-        "formula": "φ² + 1/φ² = 3 = TRINIDAD"
+        "description": "Aquí hay un hermoso hecho matemático: φ² + 1/φ² = 3 exactamente. La proporción áurea (encontrada en naturaleza, arte, ADN) se conecta directamente con el número 3. Esto no es misticismo — es álgebra pura.",
+        "formula": "φ² + 1/φ² = 3 = TRINIDAD (probado matemáticamente)"
       },
       {
-        "title": "Número Fénix",
-        "description": "La constante autorreferencial que emerge de la recursión ternaria. Relacionada con las constantes de Feigenbaum.",
-        "formula": "Φ = lim(n→∞) T(n)/T(n-1) ≈ 1.618..."
+        "title": "Teorema de Base Óptima",
+        "description": "La teoría de la información demuestra: la base numérica más eficiente es e ≈ 2.718. El entero más cercano es 3, no 2. Esto significa que las computadoras ternarias son teóricamente 1.58× más eficientes que las binarias.",
+        "formula": "Base óptima = e ≈ 2.718 → entero más cercano = 3"
       }
     ]
   },

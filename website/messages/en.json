@@ -805,30 +805,30 @@
     "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/business/TOKENOMICS.md"
   },
   "mysticism": {
-    "title": "Mathematical Foundations",
-    "subtitle": "These mathematical structures provide theoretical grounding for ternary computing advantages.",
-    "toggleShow": "▶ For Mathematicians: SU(3), Chern-Simons, φ",
-    "toggleHide": "▼ Hide Mathematical Foundations",
+    "title": "Inspiration from Physics",
+    "subtitle": "Nature already uses 'ternary' patterns. We're inspired by how the universe organizes information.",
+    "toggleShow": "▶ Why 3? Inspiration from Physics",
+    "toggleHide": "▼ Hide Physics Inspiration",
     "items": [
       {
-        "title": "SU(3) Gauge Symmetry",
-        "description": "Ternary states {-1, 0, +1} map to color charge in quantum chromodynamics. The 8 gluon generators of SU(3) provide natural error correction.",
-        "formula": "SU(3) → 8 generators → ternary stability"
+        "title": "SU(3): Why Nature Loves 3",
+        "description": "Inside every proton and neutron, quarks come in exactly 3 'colors' (red, green, blue). This isn't a coincidence — it's the SU(3) symmetry that holds atoms together. Our ternary system {-1, 0, +1} mirrors this natural 3-state pattern.",
+        "formula": "3 quark colors → 3 trit values → natural stability"
       },
       {
-        "title": "Chern-Simons Invariants",
-        "description": "Topological protection of quantum states through Chern-Simons theory. The invariant k=3 corresponds to ternary logic depth.",
-        "formula": "CS(A) = k/4π ∫ Tr(A∧dA + ⅔A∧A∧A)"
+        "title": "Topological Protection",
+        "description": "In physics, some quantum states are protected by topology — they can't be easily corrupted. Similarly, ternary encoding with 3 states provides natural error boundaries that binary (2 states) lacks.",
+        "formula": "3 states = more robust than 2 states"
       },
       {
         "title": "Golden Ratio Identity",
-        "description": "The sacred formula φ² + 1/φ² = 3 connects golden ratio to ternary. This identity underlies optimal information encoding.",
-        "formula": "φ² + 1/φ² = 3 = TRINITY"
+        "description": "Here's a beautiful mathematical fact: φ² + 1/φ² = 3 exactly. The golden ratio (found in nature, art, DNA) connects directly to the number 3. This isn't mysticism — it's pure algebra that links optimal proportions to ternary.",
+        "formula": "φ² + 1/φ² = 3 = TRINITY (proven mathematically)"
       },
       {
-        "title": "Phoenix Number",
-        "description": "The self-referential constant that emerges from ternary recursion. Related to Feigenbaum constants in chaos theory.",
-        "formula": "Φ = lim(n→∞) T(n)/T(n-1) ≈ 1.618..."
+        "title": "Optimal Radix Theorem",
+        "description": "Information theory proves: the most efficient number base is e ≈ 2.718. The closest integer is 3, not 2. This means ternary computers are theoretically 1.58× more efficient than binary at storing information.",
+        "formula": "Optimal base = e ≈ 2.718 → nearest integer = 3"
       }
     ]
   },
