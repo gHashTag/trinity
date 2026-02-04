@@ -8,7 +8,7 @@
     "headline": "φ² + 1/φ² = 3",
     "subheadline": "4 Theorems + Verified Results = Proven Value",
     "quote": "\"Not a claim — a theorem. Not a promise — a proof.\"",
-    "desc": "First AI platform with <strong>4 mathematical theorems</strong> + <strong>verified benchmarks</strong>: <strong>15.7×</strong> compression, <strong>8.1×</strong> GPU speedup, <strong>100%</strong> noise robustness",
+    "desc": "First AI platform with <strong>4 mathematical theorems</strong> + <strong>verified benchmarks</strong>: <strong>20×</strong> memory compression (CPU verified), <strong>up to 3000×</strong> energy efficiency (FPGA projected)",
     "metrics": [
       { "value": "15.7×", "label": "Compression", "proof": "Theorem 3 + ternary_quant_report" },
       { "value": "8.1×", "label": "GPU Speedup", "proof": "Theorem 2 + GPU benchmarks" },
@@ -241,7 +241,7 @@
   },
   "benchmarks": {
     "title": "Theorem-Backed <span class=\"grad\">Benchmarks</span>",
-    "sub": "Every metric is mathematically proven and independently verifiable",
+    "sub": "✓ = Verified on CPU | * = Projected on GPU/FPGA. Current dev server: CPU-only baseline.",
     "metrics": [
       { "value": "20×", "label": "Memory Compression", "desc": "Theorem 3: 32-bit → 1.58-bit", "theorem": "3" },
       { "value": "10×", "label": "Speed Boost", "desc": "Theorem 4: Optimal radix economy", "theorem": "4" },
