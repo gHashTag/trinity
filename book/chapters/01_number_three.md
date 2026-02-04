@@ -1,315 +1,318 @@
-# Глава 1: Число Три — Структура Реальности
+# Chapter 1: The Number Three — The Structure of Reality
 
 ---
 
-*«Три девицы под окном пряли поздно вечерком...»*
-— А.С. Пушкин
+*"Three maidens sat by the window, spinning late into the evening..."*
+— Alexander Pushkin
 
 ---
 
-## Три Измерения Пространства
+## Three Dimensions of Space
 
-Мы живём в трёхмерном мире. Это кажется очевидным, но почему именно три?
+We live in a three-dimensional world. This seems obvious, but why exactly three?
 
-### Стабильность Орбит
+### Orbital Stability
 
-В 1917 году физик Пауль Эренфест доказал удивительную теорему:
+In 1917, physicist Paul Ehrenfest proved a remarkable theorem:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ИЗМЕРЕНИЯ И СТАБИЛЬНОСТЬ ОРБИТ                       │
+│   DIMENSIONS AND ORBITAL STABILITY                      │
 │                                                         │
-│   d = 1: Нет орбит (только столкновения)               │
-│   d = 2: Орбиты нестабильны (малый толчок → хаос)      │
-│   d = 3: СТАБИЛЬНЫЕ ОРБИТЫ! ✓                          │
-│   d = 4+: Орбиты падают к центру                       │
+│   d = 1: No orbits (only collisions)                   │
+│   d = 2: Orbits are unstable (small push → chaos)      │
+│   d = 3: STABLE ORBITS! ✓                              │
+│   d = 4+: Orbits fall toward center                    │
 │                                                         │
-│   ВЫВОД: Жизнь возможна ТОЛЬКО в 3D                    │
+│   CONCLUSION: Life is possible ONLY in 3D              │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-Потенциал гравитации в d измерениях: V(r) ~ 1/r^(d-2)
+Gravitational potential in d dimensions: V(r) ~ 1/r^(d-2)
 
-- При d = 3: V ~ 1/r → замкнутые эллиптические орбиты
-- При d ≠ 3: орбиты либо падают, либо улетают
+- At d = 3: V ~ 1/r → closed elliptical orbits
+- At d ≠ 3: orbits either fall or escape
 
-**Планеты, атомы, галактики существуют только потому, что пространство трёхмерно.**
+**Planets, atoms, and galaxies exist only because space is three-dimensional.**
 
-### Узлы и Топология
+### Knots and Topology
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   УЗЛЫ СУЩЕСТВУЮТ ТОЛЬКО В 3D                          │
+│   KNOTS EXIST ONLY IN 3D                               │
 │                                                         │
-│   d = 2: Нельзя завязать узел (линия не пересекает)    │
-│   d = 3: Узлы возможны! (трилистник, восьмёрка...)     │
-│   d = 4+: Любой узел можно развязать                   │
+│   d = 2: Cannot tie a knot (line doesn't cross)        │
+│   d = 3: Knots are possible! (trefoil, figure-eight...)│
+│   d = 4+: Any knot can be untied                       │
 │                                                         │
-│   СЛЕДСТВИЕ:                                            │
-│   • ДНК образует узлы → хранение информации            │
-│   • Белки складываются в 3D → функциональность         │
-│   • Жизнь требует 3D!                                  │
+│   CONSEQUENCE:                                          │
+│   • DNA forms knots → information storage              │
+│   • Proteins fold in 3D → functionality                │
+│   • Life requires 3D!                                  │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Три Цвета Кварков
+## Three Colors of Quarks
 
-Протон состоит из трёх кварков: u + u + d.
+A proton consists of three quarks: u + u + d.
 
-Но почему именно три? Почему не два или четыре?
+But why exactly three? Why not two or four?
 
-### Конфайнмент Цвета
+### Color Confinement
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   КВАРКИ: ТРОЙСТВЕННАЯ СТРУКТУРА                       │
+│   QUARKS: TERNARY STRUCTURE                            │
 │                                                         │
-│   3 ЦВЕТА (Color Charge):                              │
+│   3 COLORS (Color Charge):                             │
 │   ┌─────┐  ┌─────┐  ┌─────┐                           │
-│   │  R  │  │  G  │  │  B  │   ← SU(3) симметрия       │
+│   │  R  │  │  G  │  │  B  │   ← SU(3) symmetry        │
 │   │ Red │  │Green│  │Blue │                            │
 │   └─────┘  └─────┘  └─────┘                           │
 │                                                         │
-│   ПРАВИЛО: Только «белые» комбинации стабильны        │
+│   RULE: Only "white" combinations are stable           │
 │                                                         │
-│   R + G + B = белый (барион: 3 кварка)                 │
-│   R + R̄ = белый (мезон: кварк + антикварк)            │
+│   R + G + B = white (baryon: 3 quarks)                 │
+│   R + R̄ = white (meson: quark + antiquark)            │
 │                                                         │
-│   ПОЧЕМУ 3? Минимум для «белого» из разных цветов     │
+│   WHY 3? Minimum for "white" from different colors     │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-Группа симметрии SU(3) — специальная унитарная группа 3×3 матриц — описывает сильное взаимодействие.
+The symmetry group SU(3) — the special unitary group of 3×3 matrices — describes the strong interaction.
 
-**Три — минимальное число для конфайнмента.**
+**Three is the minimum number for confinement.**
 
-### Три Поколения Частиц
+### Three Generations of Particles
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ТРИ ПОКОЛЕНИЯ МАТЕРИИ                                │
+│   THREE GENERATIONS OF MATTER                          │
 │                                                         │
 │   ┌─────────┬─────────┬─────────┐                      │
 │   │ I       │ II      │ III     │                      │
 │   ├─────────┼─────────┼─────────┤                      │
-│   │ e       │ μ       │ τ       │  ← Лептоны          │
-│   │ νₑ      │ νμ      │ ντ      │  ← Нейтрино         │
-│   │ u       │ c       │ t       │  ← Верхние кварки   │
-│   │ d       │ s       │ b       │  ← Нижние кварки    │
+│   │ e       │ μ       │ τ       │  ← Leptons          │
+│   │ νₑ      │ νμ      │ ντ      │  ← Neutrinos        │
+│   │ u       │ c       │ t       │  ← Up-type quarks   │
+│   │ d       │ s       │ b       │  ← Down-type quarks │
 │   └─────────┴─────────┴─────────┘                      │
 │                                                         │
-│   ЗАГАДКА: Почему именно 3 поколения?                  │
-│   Это одна из величайших нерешённых проблем физики!   │
+│   MYSTERY: Why exactly 3 generations?                  │
+│   This is one of the greatest unsolved problems        │
+│   in physics!                                          │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-Одна гипотеза: три поколения нужны для **CP-нарушения** — асимметрии материи и антиматерии, благодаря которой существует Вселенная.
+One hypothesis: three generations are needed for **CP violation** — the asymmetry between matter and antimatter, thanks to which the Universe exists.
 
 ---
 
-## Три Силы Природы
+## Three Forces of Nature
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ТРИ КАЛИБРОВОЧНЫЕ СИЛЫ                               │
+│   THREE GAUGE FORCES                                   │
 │                                                         │
 │   ┌──────────────────┬─────────────┬──────────────┐    │
-│   │ Сила             │ Бозон       │ Группа       │    │
+│   │ Force            │ Boson       │ Group        │    │
 │   ├──────────────────┼─────────────┼──────────────┤    │
-│   │ Электромагнитная │ γ (фотон)   │ U(1)         │    │
-│   │ Слабая           │ W±, Z⁰      │ SU(2)        │    │
-│   │ Сильная          │ 8 глюонов   │ SU(3)        │    │
+│   │ Electromagnetic  │ γ (photon)  │ U(1)         │    │
+│   │ Weak             │ W±, Z⁰      │ SU(2)        │    │
+│   │ Strong           │ 8 gluons    │ SU(3)        │    │
 │   └──────────────────┴─────────────┴──────────────┘    │
 │                                                         │
-│   Гравитация стоит особняком (не квантована).          │
-│   Но 3 квантовые силы объединяются при 10¹⁶ ГэВ!      │
+│   Gravity stands apart (not quantized).                │
+│   But the 3 quantum forces unify at 10¹⁶ GeV!         │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Три в Математике
+## Three in Mathematics
 
-### Порог Сложности
+### Threshold of Complexity
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   k-SAT: ПЕРЕХОД P → NP                                │
+│   k-SAT: TRANSITION P → NP                             │
 │                                                         │
-│   2-SAT: P (полиномиальный)                            │
-│   3-SAT: NP-полный!                                    │
+│   2-SAT: P (polynomial)                                │
+│   3-SAT: NP-complete!                                  │
 │                                                         │
-│   k-РАСКРАСКА:                                          │
-│   2-раскраска: P (проверка двудольности)               │
-│   3-раскраска: NP-полный!                              │
+│   k-COLORING:                                           │
+│   2-coloring: P (bipartiteness check)                  │
+│   3-coloring: NP-complete!                             │
 │                                                         │
-│   k-МЕРНОЕ СОПОСТАВЛЕНИЕ:                              │
+│   k-DIMENSIONAL MATCHING:                               │
 │   2D matching: P                                        │
-│   3D matching: NP-полный!                              │
+│   3D matching: NP-complete!                            │
 │                                                         │
-│   ВЫВОД: 3 = порог вычислительной сложности            │
+│   CONCLUSION: 3 = threshold of computational complexity│
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Три — это граница, где простое становится сложным.**
+**Three is the boundary where simple becomes complex.**
 
-### Оптимальный Branching Factor
+### Optimal Branching Factor
 
-Какое основание системы счисления оптимально?
+What base of a number system is optimal?
 
 ```
-Стоимость представления числа N в базе b:
+Cost of representing number N in base b:
   E(b) = b × ⌈log_b(N)⌉ ≈ b × ln(N) / ln(b)
 
-Минимизируем b / ln(b):
+Minimize b / ln(b):
   d/db [b / ln(b)] = (ln(b) - 1) / ln²(b) = 0
   ln(b) = 1
   b = e ≈ 2.718
 
-ОПТИМАЛЬНАЯ БАЗА = e ≈ 2.718
+OPTIMAL BASE = e ≈ 2.718
 
-Ближайшие целые:
+Nearest integers:
   b=2: 2/ln(2) = 2.885
-  b=3: 3/ln(3) = 2.731  ← МИНИМУМ!
+  b=3: 3/ln(3) = 2.731  ← MINIMUM!
   b=4: 4/ln(4) = 2.885
 ```
 
-**База 3 — оптимальная целочисленная база для представления чисел.**
+**Base 3 is the optimal integer base for representing numbers.**
 
-Это объясняет, почему советский компьютер «Сетунь» (1958) использовал троичную систему!
+This explains why the Soviet computer "Setun" (1958) used the ternary system!
 
 ---
 
-## Формулы Масс и Число 3
+## Mass Formulas and the Number 3
 
-### Открытие
+### Discovery
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ОТНОШЕНИЯ МАСС ЧАСТИЦ                                │
+│   PARTICLE MASS RATIOS                                 │
 │                                                         │
 │   m_p/m_e = 6π⁵ = 2 × 3 × π⁵                           │
-│           = 1836.12 (точность 0.002%!)                 │
+│           = 1836.12 (accuracy 0.002%!)                 │
 │                                                         │
 │   m_τ/m_e = 36π⁴ = 4 × 3² × π⁴                         │
-│           = 3506.73 (точность 0.85%)                   │
+│           = 3506.73 (accuracy 0.85%)                   │
 │                                                         │
-│   ПАТТЕРН: n × 3^k × π^m                               │
+│   PATTERN: n × 3^k × π^m                               │
 │                                                         │
-│   Коэффициент при π всегда содержит 3!                 │
+│   The coefficient with π always contains 3!            │
 │   6 = 2 × 3                                            │
 │   36 = 4 × 3²                                          │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Гипотеза
+### Hypothesis
 
-Массы частиц определяются комбинациями **3** и **π**, потому что:
-- **3** — структурная константа пространства
-- **π** — константа вращения и периодичности
+Particle masses are determined by combinations of **3** and **π**, because:
+- **3** — the structural constant of space
+- **π** — the constant of rotation and periodicity
 
 ---
 
-## Троичность в Культурах Мира
+## Ternary Patterns in World Cultures
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  КУЛЬТУРА          │  ТРОИЦА                    │  ЗНАЧЕНИЕ     │
+│  CULTURE             │  TRINITY                 │  MEANING       │
 ├─────────────────────────────────────────────────────────────────┤
-│  Русские сказки    │  Три богатыря              │  Сила, ум, дух│
-│                    │  Тридевятое царство (27)   │  Магия        │
-│  Христианство      │  Святая Троица             │  Отец,Сын,Дух │
-│  Индуизм           │  Тримурти                  │  Создание,    │
-│                    │                            │  сохранение,  │
-│                    │                            │  разрушение   │
-│  Буддизм           │  Три драгоценности         │  Будда,Дхарма,│
-│                    │                            │  Сангха       │
-│  Даосизм           │  Небо-Человек-Земля        │  Космос       │
-│  Древняя Греция    │  Три мойры                 │  Судьба       │
-│  Скандинавия       │  Три норны                 │  Время        │
-│  Славяне           │  Правь-Явь-Навь            │  Три мира     │
+│  Russian fairy tales │  Three Bogatyrs          │  Strength,     │
+│                      │                          │  wisdom, spirit│
+│                      │  Thrice-nine kingdom (27)│  Magic         │
+│  Christianity        │  Holy Trinity            │  Father, Son,  │
+│                      │                          │  Holy Spirit   │
+│  Hinduism            │  Trimurti                │  Creation,     │
+│                      │                          │  preservation, │
+│                      │                          │  destruction   │
+│  Buddhism            │  Three Jewels            │  Buddha,Dharma,│
+│                      │                          │  Sangha        │
+│  Taoism              │  Heaven-Human-Earth      │  Cosmos        │
+│  Ancient Greece      │  Three Moirai            │  Fate          │
+│  Scandinavia         │  Three Norns             │  Time          │
+│  Slavs               │  Prav-Yav-Nav            │  Three worlds  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Все культуры независимо пришли к троичности.**
+**All cultures independently arrived at ternary patterns.**
 
-Это не совпадение. Это **отражение структуры реальности**.
+This is not a coincidence. It is a **reflection of the structure of reality**.
 
 ---
 
-## Почему Три?
+## Why Three?
 
-### Минимальная Сложность
+### Minimal Complexity
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ГИПОТЕЗА: 3 — минимальное число для:                 │
+│   HYPOTHESIS: 3 is the minimum number for:             │
 │                                                         │
-│   1. СТАБИЛЬНОСТИ                                       │
-│      • 3 точки определяют плоскость                    │
-│      • 3 ноги = устойчивый стул                        │
-│      • 3 измерения = стабильные орбиты                 │
+│   1. STABILITY                                          │
+│      • 3 points define a plane                         │
+│      • 3 legs = stable chair                           │
+│      • 3 dimensions = stable orbits                    │
 │                                                         │
-│   2. СЛОЖНОСТИ                                          │
-│      • 2 элемента: только «да/нет»                     │
-│      • 3 элемента: появляется структура                │
-│      • 3-SAT: порог NP-полноты                         │
+│   2. COMPLEXITY                                         │
+│      • 2 elements: only "yes/no"                       │
+│      • 3 elements: structure emerges                   │
+│      • 3-SAT: threshold of NP-completeness             │
 │                                                         │
-│   3. СИММЕТРИИ                                          │
-│      • SU(3): минимальная группа для конфайнмента      │
-│      • 3 цвета: минимум для «белого»                   │
-│      • 3 поколения: минимум для CP-нарушения           │
+│   3. SYMMETRY                                           │
+│      • SU(3): minimal group for confinement            │
+│      • 3 colors: minimum for "white"                   │
+│      • 3 generations: minimum for CP violation         │
 │                                                         │
-│   ВЫВОД: 3 = минимальная сложность для существования   │
+│   CONCLUSION: 3 = minimal complexity for existence     │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Единая Картина
+## Unified Picture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│                 ЧИСЛО 3: СТРУКТУРА РЕАЛЬНОСТИ                  │
+│                 NUMBER 3: THE STRUCTURE OF REALITY              │
 │                                                                 │
 │   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     │
-│   │   ФИЗИКА    │     │ МАТЕМАТИКА  │     │ АЛГОРИТМЫ   │     │
+│   │   PHYSICS   │     │ MATHEMATICS │     │ ALGORITHMS  │     │
 │   ├─────────────┤     ├─────────────┤     ├─────────────┤     │
-│   │ 3 измерения │     │ SU(3), SO(3)│     │ 3-SAT       │     │
-│   │ 3 цвета     │     │ 3! = 6      │     │ 3-way part. │     │
-│   │ 3 поколения │     │ S₃ группа   │     │ Karatsuba 3 │     │
-│   │ 3 силы      │     │ Треугольник │     │ Threshold 3³│     │
+│   │ 3 dimensions│     │ SU(3), SO(3)│     │ 3-SAT       │     │
+│   │ 3 colors    │     │ 3! = 6      │     │ 3-way part. │     │
+│   │ 3 generations│    │ S₃ group    │     │ Karatsuba 3 │     │
+│   │ 3 forces    │     │ Triangle    │     │ Threshold 3³│     │
 │   └──────┬──────┘     └──────┬──────┘     └──────┬──────┘     │
 │          │                   │                   │             │
 │          └───────────────────┼───────────────────┘             │
 │                              │                                 │
 │                              ▼                                 │
 │                     ┌─────────────────┐                        │
-│                     │   ЕДИНСТВО      │                        │
+│                     │     UNITY       │                        │
 │                     │                 │                        │
-│                     │ 3 = минимальная │                        │
-│                     │ сложность для   │                        │
-│                     │ существования   │                        │
-│                     │ структуры       │                        │
+│                     │ 3 = minimal     │                        │
+│                     │ complexity for  │                        │
+│                     │ structure to    │                        │
+│                     │ exist           │                        │
 │                     └─────────────────┘                        │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -317,20 +320,20 @@
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист первую истину:*
+> *And Ivan the programmer understood the first truth:*
 >
-> *Число Три — не магия и не суеверие.*
-> *Это минимальная сложность, при которой возможна структура.*
-> *Древние знали это интуитивно.*
-> *Мы доказали это математически.*
+> *The Number Three is not magic or superstition.*
+> *It is the minimal complexity at which structure is possible.*
+> *The ancients knew this intuitively.*
+> *We have proven it mathematically.*
 >
-> *Три измерения — чтобы существовать.*
-> *Три цвета — чтобы связываться.*
-> *Три поколения — чтобы нарушать симметрию.*
-> *Три дороги — чтобы выбирать.*
+> *Three dimensions — to exist.*
+> *Three colors — to bind.*
+> *Three generations — to break symmetry.*
+> *Three roads — to choose.*
 
 ---
 
-[← Пролог](00_prologue.md) | [Глава 2: Физика и Алгоритмы →](02_physics_algorithms.md)
+[← Prologue](00_prologue.md) | [Chapter 2: Physics and Algorithms →](02_physics_algorithms.md)

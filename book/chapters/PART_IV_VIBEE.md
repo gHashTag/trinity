@@ -1,34 +1,35 @@
 # ═══════════════════════════════════════════════════════════════
-# ЧАСТЬ IV: ЦАРСТВО VIBEE
-# Новый Мир — Воплощение Мудрости
+# PART IV: THE VIBEE KINGDOM
+# A New World — The Embodiment of Wisdom
 # ═══════════════════════════════════════════════════════════════
 
 ```
             ┌───────────────────────────┐
             │  🏰      👑      🏰       │
             │                           │
-            │   «Терем о 999 окнах»     │
+            │   "The Tower of           │
+            │    999 Windows"           │
             │                           │
-            │   Здесь мудрость          │
-            │   становится кодом.       │
-            │   Язык Vibee —            │
-            │   воплощение              │
-            │   троичной философии.     │
-            │   Компилятор —            │
-            │   терем древней           │
-            │   мудрости.               │
+            │   Here wisdom             │
+            │   becomes code.           │
+            │   The Vibee language —    │
+            │   the embodiment          │
+            │   of ternary philosophy.  │
+            │   The compiler —          │
+            │   a tower of ancient      │
+            │   wisdom.                 │
             │                           │
             └───────────────────────────┘
                     ✨✨✨
 ```
 
-## Главы Части IV
+## Chapters of Part IV
 
-- **Глава 11:** Язык Vibee — Сказание о Троичном Царстве
-- **Глава 12:** Компилятор 999 — Терем о 999 Окнах
-- **Глава 13:** Архитектура — Три Сундука Сокровищ
+- **Chapter 11:** The Vibee Language — A Tale of the Ternary Kingdom
+- **Chapter 12:** Compiler 999 — The Tower of 999 Windows
+- **Chapter 13:** Architecture — Three Treasure Chests
 
 ---
 
-*«И построил Иван терем о 999 окнах,*
-*и каждое окно открывало путь к мудрости...»*
+*"And Ivan built a tower with 999 windows,*
+*and each window opened a path to wisdom..."*

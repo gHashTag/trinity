@@ -1,256 +1,256 @@
-# Интерлюдия: Пророк Троичности
+# Interlude: The Prophet of Ternary
 
-*Посвящается Николаю Петровичу Брусенцову (1925-2014)*
-
----
-
-## Человек, Который Знал
-
-В 1958 году, когда IBM строила бинарные мейнфреймы, а советские инженеры копировали западные архитектуры, один человек в МГУ пошёл другим путём.
-
-**Николай Петрович Брусенцов** задал простой вопрос:
-
-> *«Если я строю компьютер с нуля, почему бы не построить ОПТИМАЛЬНЫЙ?»*
+*Dedicated to Nikolai Petrovich Brusentsov (1925-2014)*
 
 ---
 
-## Математика Брусенцова
+## The Man Who Knew
 
-Брусенцов знал теорему о radix economy:
+In 1958, while IBM was building binary mainframes and Soviet engineers were copying Western architectures, one man at Moscow State University took a different path.
+
+**Nikolai Petrovich Brusentsov** asked a simple question:
+
+> *"If I'm building a computer from scratch, why not build an OPTIMAL one?"*
+
+---
+
+## Brusentsov's Mathematics
+
+Brusentsov knew the radix economy theorem:
 
 ```
-Стоимость представления числа N в базе b:
+Cost of representing number N in base b:
 E(b) = b × digits = b × ln(N) / ln(b)
 
-Минимум при b = e ≈ 2.718
+Minimum at b = e ≈ 2.718
 
-Целочисленные базы:
-  b=2: 2.885 (на 5.6% хуже оптимума)
-  b=3: 2.731 (на 0.5% хуже оптимума) ← ЛУЧШЕЕ ЦЕЛОЕ!
-  b=4: 2.885 (на 5.6% хуже оптимума)
+Integer bases:
+  b=2: 2.885 (5.6% worse than optimal)
+  b=3: 2.731 (0.5% worse than optimal) ← BEST INTEGER!
+  b=4: 2.885 (5.6% worse than optimal)
 ```
 
-Вывод был очевиден: **троичная система оптимальна**.
+The conclusion was obvious: **ternary system is optimal**.
 
 ---
 
-## Balanced Ternary: Гениальное Решение
+## Balanced Ternary: The Brilliant Solution
 
-Брусенцов не просто выбрал базу 3. Он выбрал **balanced ternary** — систему с цифрами {-1, 0, +1}.
+Brusentsov didn't just choose base 3. He chose **balanced ternary** — a system with digits {-1, 0, +1}.
 
-### Почему Это Гениально
+### Why This Is Brilliant
 
 ```
-ОБЫЧНАЯ ТРОИЧНАЯ: {0, 1, 2}
-  Нужен знаковый бит для отрицательных чисел
-  -5 = знак + представление 5
+STANDARD TERNARY: {0, 1, 2}
+  Needs a sign bit for negative numbers
+  -5 = sign + representation of 5
 
 BALANCED TERNARY: {-, 0, +}
-  Отрицательные числа естественны!
-  -5 = инверсия +5
-  
+  Negative numbers are natural!
+  -5 = inversion of +5
+
   +5 = +--  (9 - 3 - 1 = 5)
   -5 = -++  (-9 + 3 + 1 = -5)
-  
-  ОТРИЦАНИЕ = ИНВЕРСИЯ ВСЕХ ЦИФР!
+
+  NEGATION = INVERSION OF ALL DIGITS!
 ```
 
-### Преимущества
+### Advantages
 
 ```
-1. НЕТ ЗНАКОВОГО БИТА
-   Экономия одного разряда на каждое число
+1. NO SIGN BIT
+   Save one digit per number
 
-2. СИММЕТРИЧНЫЙ ДИАПАЗОН
-   n разрядов: от -(3ⁿ-1)/2 до +(3ⁿ-1)/2
-   Нет "лишнего" отрицательного числа как в two's complement
+2. SYMMETRIC RANGE
+   n digits: from -(3ⁿ-1)/2 to +(3ⁿ-1)/2
+   No "extra" negative number like in two's complement
 
-3. ОКРУГЛЕНИЕ = ОТСЕЧЕНИЕ
-   Просто отбрасываем младшие разряды
-   Нет сложной логики округления
+3. ROUNDING = TRUNCATION
+   Just drop the least significant digits
+   No complex rounding logic
 
-4. ПРОСТОЕ СЛОЖЕНИЕ
-   Меньше случаев переноса
-   Таблица сложения симметрична
+4. SIMPLE ADDITION
+   Fewer carry cases
+   Addition table is symmetric
 ```
 
 ---
 
-## «Сетунь»: Машина Мечты
+## "Setun": The Dream Machine
 
-### Технические Характеристики
+### Technical Specifications
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   «СЕТУНЬ» (1958-1965)                                 │
+│   "SETUN" (1958-1965)                                   │
 │                                                         │
-│   Разрядность:     18 тритов (≈ 29 бит)               │
-│   Память:          162 слова (расширяемо до 3888)     │
-│   Быстродействие:  4500 операций/сек                  │
-│   Потребление:     2.5 кВт                            │
-│   Элементная база: ферритовые сердечники + диоды      │
+│   Word size:      18 trits (≈ 29 bits)                  │
+│   Memory:         162 words (expandable to 3888)        │
+│   Performance:    4500 operations/sec                   │
+│   Power:          2.5 kW                                │
+│   Components:     ferrite cores + diodes                │
 │                                                         │
-│   Особенности:                                         │
-│   • Balanced ternary арифметика                        │
-│   • Естественная обработка знака                       │
-│   • Простая схема округления                           │
-│   • Высокая надёжность                                 │
+│   Features:                                             │
+│   • Balanced ternary arithmetic                         │
+│   • Natural sign handling                               │
+│   • Simple rounding scheme                              │
+│   • High reliability                                    │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Отзывы Пользователей
+### User Reviews
 
 ```
-"Программировать на «Сетуни» было удовольствием.
- Отрицательные числа обрабатывались естественно,
- без всяких дополнительных кодов."
- — Из воспоминаний программиста МГУ
+"Programming on Setun was a pleasure.
+ Negative numbers were handled naturally,
+ without any additional codes."
+ — From memoirs of an MSU programmer
 
-"Машина была невероятно надёжной.
- Работала годами без серьёзных сбоев."
- — Из отчёта о эксплуатации
-```
-
----
-
-## Почему «Сетунь» Проиграла
-
-### Экономика vs Математика
-
-```
-МАТЕМАТИКА:
-  Троичная система на 5.3% эффективнее
-  Balanced ternary элегантнее
-  Арифметика проще
-
-ЭКОНОМИКА:
-  Бинарный транзистор дешевле
-  Вся индустрия уже бинарная
-  Совместимость важнее оптимальности
-
-РЕЗУЛЬТАТ:
-  Экономика победила математику
-```
-
-### Политика
-
-```
-1965: Госкомитет по науке и технике СССР
-      решает стандартизировать на бинарной архитектуре
-      "для совместимости с мировыми стандартами"
-
-1970: Производство «Сетуни» прекращено
-
-Брусенцов: "Это было политическое решение,
-            а не техническое."
+"The machine was incredibly reliable.
+ It worked for years without serious failures."
+ — From an operational report
 ```
 
 ---
 
-## Наследие Брусенцова
+## Why Setun Lost
 
-### Что Он Оставил
+### Economics vs Mathematics
 
 ```
-1. ДОКАЗАТЕЛЬСТВО КОНЦЕПЦИИ
-   Троичный компьютер возможен и работает
+MATHEMATICS:
+  Ternary system is 5.3% more efficient
+  Balanced ternary is more elegant
+  Arithmetic is simpler
+
+ECONOMICS:
+  Binary transistor is cheaper
+  The entire industry is already binary
+  Compatibility matters more than optimality
+
+RESULT:
+  Economics defeated mathematics
+```
+
+### Politics
+
+```
+1965: USSR State Committee for Science and Technology
+      decides to standardize on binary architecture
+      "for compatibility with world standards"
+
+1970: Setun production discontinued
+
+Brusentsov: "It was a political decision,
+             not a technical one."
+```
+
+---
+
+## Brusentsov's Legacy
+
+### What He Left Behind
+
+```
+1. PROOF OF CONCEPT
+   A ternary computer is possible and works
 
 2. BALANCED TERNARY
-   Элегантная система счисления
+   An elegant numeral system
 
-3. ПРИНЦИП ОПТИМАЛЬНОСТИ
-   "Не копируй — думай!"
+3. PRINCIPLE OF OPTIMALITY
+   "Don't copy — think!"
 
-4. ВДОХНОВЕНИЕ
-   Для всех, кто ищет лучшие решения
+4. INSPIRATION
+   For everyone seeking better solutions
 ```
 
-### Что Мы Продолжаем
+### What We Continue
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   БРУСЕНЦОВ → TRINITY ALGORITHMS                       │
+│   BRUSENTSOV → TRINITY ALGORITHMS                       │
 │                                                         │
-│   Его идея:           Наша реализация:                 │
-│   ─────────           ────────────────                 │
-│   Троичное железо     Троичная логика в софте          │
-│   {-1, 0, +1}         {<, =, >}                        │
-│   Balanced ternary    3-way partition                  │
-│   Троичная память     Ternary Weight Networks          │
+│   His idea:             Our implementation:             │
+│   ─────────             ────────────────                │
+│   Ternary hardware      Ternary logic in software       │
+│   {-1, 0, +1}           {<, =, >}                       │
+│   Balanced ternary      3-way partition                 │
+│   Ternary memory        Ternary Weight Networks         │
 │                                                         │
-│   Он хотел изменить ЖЕЛЕЗО.                           │
-│   Мы меняем АЛГОРИТМЫ.                                │
+│   He wanted to change HARDWARE.                         │
+│   We change ALGORITHMS.                                 │
 │                                                         │
-│   Результат тот же: оптимальность через троичность.   │
+│   The result is the same: optimality through ternary.   │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Цитаты Брусенцова
+## Brusentsov's Quotes
 
-> *«Двоичная система — это не закон природы, а исторический выбор. И не лучший.»*
+> *"The binary system is not a law of nature, but a historical choice. And not the best one."*
 
-> *«Троичная система естественна. Посмотрите: плюс, минус, ноль. Это же очевидно!»*
+> *"The ternary system is natural. Look: plus, minus, zero. It's obvious!"*
 
-> *«Меня спрашивают: зачем усложнять? Я отвечаю: я упрощаю. Это бинарная система всё усложняет.»*
+> *"They ask me: why complicate things? I answer: I simplify. It's the binary system that complicates everything."*
 
-> *«Когда-нибудь к троичности вернутся. Математику не обманешь.»*
+> *"Someday they'll return to ternary. You can't fool mathematics."*
 
 ---
 
-## Эпитафия
+## Epitaph
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   НИКОЛАЙ ПЕТРОВИЧ БРУСЕНЦОВ                           │
-│   7 февраля 1925 — 4 декабря 2014                      │
+│   NIKOLAI PETROVICH BRUSENTSOV                          │
+│   February 7, 1925 — December 4, 2014                   │
 │                                                         │
-│   Создатель троичного компьютера «Сетунь»             │
-│   Доктор технических наук                              │
-│   Профессор МГУ                                        │
+│   Creator of the ternary computer "Setun"               │
+│   Doctor of Technical Sciences                          │
+│   Professor at Moscow State University                  │
 │                                                         │
-│   Он знал, что троичность оптимальна.                 │
-│   Он доказал это работающей машиной.                  │
-│   Мир не послушал.                                     │
+│   He knew that ternary was optimal.                     │
+│   He proved it with a working machine.                  │
+│   The world didn't listen.                              │
 │                                                         │
-│   Но идеи не умирают.                                  │
-│   Через 70 лет троичность возвращается —              │
-│   не в железе, но в алгоритмах.                       │
+│   But ideas don't die.                                  │
+│   70 years later, ternary returns —                     │
+│   not in hardware, but in algorithms.                   │
 │                                                         │
-│   Trinity Sort — это его наследие.                    │
-│   3-way partition — это его принцип.                  │
-│   {-1, 0, +1} — это его система.                      │
+│   Trinity Sort — this is his legacy.                    │
+│   3-way partition — this is his principle.              │
+│   {-1, 0, +1} — this is his system.                     │
 │                                                         │
-│   Он был прав.                                         │
-│   Мы помним.                                           │
+│   He was right.                                         │
+│   We remember.                                          │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Послесловие
+## Afterword
 
-Когда вы используете Trinity Sort и видите ускорение в 291 раз, вспомните человека, который 70 лет назад знал, что троичность — это правильный путь.
+When you use Trinity Sort and see a 291x speedup, remember the man who knew 70 years ago that ternary was the right path.
 
-Николай Петрович Брусенцов не дожил до нашего времени. Но его идея живёт.
+Nikolai Petrovich Brusentsov didn't live to see our time. But his idea lives on.
 
-**Каждый раз, когда 3-way partition исключает равные элементы из рекурсии, это дань уважения человеку, который верил в силу тройки.**
-
----
-
-*«Сказка — ложь, да в ней намёк...»*
-
-Брусенцов рассказал нам сказку о троичном компьютере.
-Мы услышали намёк.
-И превратили его в реальность.
+**Every time 3-way partition excludes equal elements from recursion, it's a tribute to the man who believed in the power of three.**
 
 ---
 
-[← Глава 6](06_trinity_compression.md) | [Глава 7 →](07_trinity_neural.md)
+*"A fairy tale is a lie, but there's a hint in it..."*
+
+Brusentsov told us a fairy tale about a ternary computer.
+We heard the hint.
+And turned it into reality.
+
+---
+
+[← Chapter 6](06_trinity_compression.md) | [Chapter 7 →](07_trinity_neural.md)

@@ -1,545 +1,545 @@
-# Глава 11б: Смерть Кощея — Тайна Указателей
+# Chapter 11b: Koschei's Death — The Secret of Pointers
 
 ---
 
-*«Смерть моя — на конце иглы,*
-*та игла — в яйце,*
-*то яйцо — в утке,*
-*та утка — в зайце,*
-*тот заяц — в сундуке,*
-*тот сундук — на дубу,*
-*тот дуб — на острове Буяне,*
-*посреди моря-океана...»*
+*"My death is at the tip of a needle,*
+*that needle is in an egg,*
+*that egg is in a duck,*
+*that duck is in a hare,*
+*that hare is in a chest,*
+*that chest is on an oak,*
+*that oak is on the island of Buyan,*
+*in the middle of the ocean-sea..."*
 
 ---
 
-## Загадка Кощея
+## The Riddle of Koschei
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│  СМЕРТЬ КОЩЕЯ: ЦЕПОЧКА ВЛОЖЕННОСТИ                             │
-│                                                                 │
-│  Море-океан                                                     │
-│    └── Остров Буян                                             │
-│          └── Дуб                                                │
-│                └── Сундук                                       │
-│                      └── Заяц                                   │
-│                            └── Утка                             │
-│                                  └── Яйцо                       │
-│                                        └── Игла                 │
-│                                              └── СМЕРТЬ!       │
-│                                                                 │
-│  ЭТО ЖЕ ЦЕПОЧКА УКАЗАТЕЛЕЙ!                                    │
-│                                                                 │
-│  море -> остров -> дуб -> сундук -> заяц -> утка -> яйцо -> игла -> смерть
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++---------------------------------------------------------------+
+|                                                                 |
+|  KOSCHEI'S DEATH: CHAIN OF NESTING                             |
+|                                                                 |
+|  Ocean-sea                                                      |
+|    +-- Island of Buyan                                         |
+|          +-- Oak                                                |
+|                +-- Chest                                        |
+|                      +-- Hare                                   |
+|                            +-- Duck                             |
+|                                  +-- Egg                        |
+|                                        +-- Needle               |
+|                                              +-- DEATH!         |
+|                                                                 |
+|  THIS IS A CHAIN OF POINTERS!                                  |
+|                                                                 |
+|  sea -> island -> oak -> chest -> hare -> duck -> egg -> needle -> death
+|                                                                 |
++---------------------------------------------------------------+
 ```
 
 ---
 
-## Кощей как Legacy-код
+## Koschei as Legacy Code
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// КОЩЕЙ — ЭТО LEGACY-КОД!
-// Бессмертный, потому что никто не может найти,
-// где же его "смерть" (точка отказа)
-// ═══════════════════════════════════════════════════════════════
+// ===============================================================
+// KOSCHEI IS LEGACY CODE!
+// Immortal because no one can find
+// where his "death" (failure point) is
+// ===============================================================
 
-// Так выглядит код Кощея на C (небезопасный!)
-// void* море = malloc(sizeof(Остров));
-// ((Остров*)море)->дуб->сундук->заяц->утка->яйцо->игла->смерть = true;
-// 
-// Попробуй найди баг в этой цепочке!
-// Кощей БЕССМЕРТЕН, пока не найдёшь все указатели!
+// This is what Koschei's code looks like in C (unsafe!)
+// void* sea = malloc(sizeof(Island));
+// ((Island*)sea)->oak->chest->hare->duck->egg->needle->death = true;
+//
+// Try to find the bug in this chain!
+// Koschei is IMMORTAL until you find all the pointers!
 
-// На Vibee — безопасно и понятно:
-struct СмертьКощея {
-    море: Box<Остров>,
+// In Vibee — safe and clear:
+struct KoscheisDeath {
+    sea: Box<Island>,
 }
 
-struct Остров {
-    дуб: Box<Дуб>,
+struct Island {
+    oak: Box<Oak>,
 }
 
-struct Дуб {
-    сундук: Box<Сундук>,
+struct Oak {
+    chest: Box<Chest>,
 }
 
-struct Сундук {
-    заяц: Box<Заяц>,
+struct Chest {
+    hare: Box<Hare>,
 }
 
-struct Заяц {
-    утка: Box<Утка>,
+struct Hare {
+    duck: Box<Duck>,
 }
 
-struct Утка {
-    яйцо: Box<Яйцо>,
+struct Duck {
+    egg: Box<Egg>,
 }
 
-struct Яйцо {
-    игла: Box<Игла>,
+struct Egg {
+    needle: Box<Needle>,
 }
 
-struct Игла {
-    смерть: bool,  // ВОТ ОНА!
-}
-```
-
----
-
-## Путь Ивана-царевича (Разыменование)
-
-```vibee
-// ═══════════════════════════════════════════════════════════════
-// ИВАН-ЦАРЕВИЧ — ЭТО ПРОГРАММИСТ-ОТЛАДЧИК!
-// Он проходит всю цепочку указателей
-// ═══════════════════════════════════════════════════════════════
-
-fn найти_смерть_кощея(мир: &СмертьКощея) -> &mut bool {
-    // Иван плывёт через море...
-    let остров = &мир.море;
-    
-    // Находит остров Буян...
-    let дуб = &остров.дуб;
-    
-    // Залезает на дуб...
-    let сундук = &дуб.сундук;
-    
-    // Открывает сундук (первое испытание!)
-    let заяц = &сундук.заяц;
-    
-    // Ловит зайца (второе испытание!)
-    let утка = &заяц.утка;
-    
-    // Ловит утку (третье испытание!)
-    let яйцо = &утка.яйцо;
-    
-    // Разбивает яйцо...
-    let игла = &яйцо.игла;
-    
-    // НАШЁЛ!
-    &mut игла.смерть
-}
-
-// Или короче — цепочка разыменований:
-fn убить_кощея(мир: &mut СмертьКощея) {
-    мир.море.дуб.сундук.заяц.утка.яйцо.игла.смерть = true;
-    // Кощей повержен!
+struct Needle {
+    death: bool,  // HERE IT IS!
 }
 ```
 
 ---
 
-## Три Испытания = Три Проверки
+## Ivan Tsarevich's Path (Dereferencing)
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ТРИ ИСПЫТАНИЯ ИВАНА = ТРИ ПРОВЕРКИ УКАЗАТЕЛЕЙ
-// ═══════════════════════════════════════════════════════════════
+// ===============================================================
+// IVAN TSAREVICH IS A PROGRAMMER-DEBUGGER!
+// He traverses the entire chain of pointers
+// ===============================================================
 
-// В сказке Иван должен:
-// 1. Поймать зайца (он убегает!)
-// 2. Поймать утку (она улетает!)
-// 3. Достать яйцо (оно падает в море!)
+fn find_koscheis_death(world: &KoscheisDeath) -> &mut bool {
+    // Ivan sails across the sea...
+    let island = &world.sea;
 
-// В программировании это — проверка на null/None!
+    // Finds the island of Buyan...
+    let oak = &island.oak;
 
-fn безопасный_путь_к_смерти(мир: &СмертьКощея) -> Option<&mut bool> {
-    // Первое испытание: заяц может убежать
-    let заяц = мир.море.дуб.сундук.заяц.as_ref()?;
-    
-    // Второе испытание: утка может улететь
-    let утка = заяц.утка.as_ref()?;
-    
-    // Третье испытание: яйцо может упасть
-    let яйцо = утка.яйцо.as_ref()?;
-    
-    // Если все три испытания пройдены — смерть найдена!
-    Some(&mut яйцо.игла.смерть)
+    // Climbs the oak...
+    let chest = &oak.chest;
+
+    // Opens the chest (first trial!)
+    let hare = &chest.hare;
+
+    // Catches the hare (second trial!)
+    let duck = &hare.duck;
+
+    // Catches the duck (third trial!)
+    let egg = &duck.egg;
+
+    // Breaks the egg...
+    let needle = &egg.needle;
+
+    // FOUND IT!
+    &mut needle.death
 }
 
-// С помощью match — три дороги на каждом шаге:
-fn путь_героя(мир: &СмертьКощея) -> Result<(), Ошибка> {
-    // Заяц
-    match &мир.море.дуб.сундук.заяц {
-        Some(заяц) => println!("Заяц пойман!"),
-        None => return Err(Ошибка::ЗаяцУбежал),
+// Or shorter — chain of dereferences:
+fn kill_koschei(world: &mut KoscheisDeath) {
+    world.sea.oak.chest.hare.duck.egg.needle.death = true;
+    // Koschei is defeated!
+}
+```
+
+---
+
+## Three Trials = Three Checks
+
+```vibee
+// ===============================================================
+// IVAN'S THREE TRIALS = THREE POINTER CHECKS
+// ===============================================================
+
+// In the tale Ivan must:
+// 1. Catch the hare (it runs away!)
+// 2. Catch the duck (it flies away!)
+// 3. Get the egg (it falls into the sea!)
+
+// In programming this is — null/None checking!
+
+fn safe_path_to_death(world: &KoscheisDeath) -> Option<&mut bool> {
+    // First trial: the hare may escape
+    let hare = world.sea.oak.chest.hare.as_ref()?;
+
+    // Second trial: the duck may fly away
+    let duck = hare.duck.as_ref()?;
+
+    // Third trial: the egg may fall
+    let egg = duck.egg.as_ref()?;
+
+    // If all three trials are passed — death is found!
+    Some(&mut egg.needle.death)
+}
+
+// Using match — three paths at each step:
+fn hero_path(world: &KoscheisDeath) -> Result<(), Error> {
+    // Hare
+    match &world.sea.oak.chest.hare {
+        Some(hare) => println!("Hare caught!"),
+        None => return Err(Error::HareEscaped),
     }
-    
-    // Утка
-    match &заяц.утка {
-        Some(утка) => println!("Утка поймана!"),
-        None => return Err(Ошибка::УткаУлетела),
+
+    // Duck
+    match &hare.duck {
+        Some(duck) => println!("Duck caught!"),
+        None => return Err(Error::DuckFlewAway),
     }
-    
-    // Яйцо
-    match &утка.яйцо {
-        Some(яйцо) => println!("Яйцо в руках!"),
-        None => return Err(Ошибка::ЯйцоУпало),
+
+    // Egg
+    match &duck.egg {
+        Some(egg) => println!("Egg in hand!"),
+        None => return Err(Error::EggFell),
     }
-    
-    // Победа!
-    яйцо.игла.смерть = true;
+
+    // Victory!
+    egg.needle.death = true;
     Ok(())
 }
 ```
 
 ---
 
-## Помощники Ивана = Умные Указатели
+## Ivan's Helpers = Smart Pointers
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ПОМОЩНИКИ ИВАНА — УМНЫЕ УКАЗАТЕЛИ VIBEE
-// ═══════════════════════════════════════════════════════════════
+// ===============================================================
+// IVAN'S HELPERS — VIBEE SMART POINTERS
+// ===============================================================
 
-// В сказке Ивану помогают:
-// - Волк (ловит зайца)
-// - Сокол (ловит утку)  
-// - Щука (достаёт яйцо из моря)
+// In the tale Ivan is helped by:
+// - Wolf (catches the hare)
+// - Falcon (catches the duck)
+// - Pike (retrieves the egg from the sea)
 
-// В Vibee это — умные указатели!
+// In Vibee these are — smart pointers!
 
-/// Box<T> — Волк
-/// Владеет данными, освобождает при уничтожении
-let волк: Box<Заяц> = Box::new(Заяц::new());
-// Волк поймал зайца и держит его!
+/// Box<T> — Wolf
+/// Owns the data, frees it on destruction
+let wolf: Box<Hare> = Box::new(Hare::new());
+// The wolf caught the hare and holds it!
 
-/// Rc<T> — Сокол
-/// Разделяемое владение (несколько ссылок)
-let сокол: Rc<Утка> = Rc::new(Утка::new());
-let сокол2 = Rc::clone(&сокол);
-// Два сокола следят за одной уткой!
+/// Rc<T> — Falcon
+/// Shared ownership (multiple references)
+let falcon: Rc<Duck> = Rc::new(Duck::new());
+let falcon2 = Rc::clone(&falcon);
+// Two falcons watch one duck!
 
-/// Arc<T> — Щука
-/// Потокобезопасное разделяемое владение
-let щука: Arc<Яйцо> = Arc::new(Яйцо::new());
-// Щука достаёт яйцо из глубин (из другого потока)!
+/// Arc<T> — Pike
+/// Thread-safe shared ownership
+let pike: Arc<Egg> = Arc::new(Egg::new());
+// The pike retrieves the egg from the depths (from another thread)!
 
-// Три помощника = три типа умных указателей
-// Каждый для своей задачи!
+// Three helpers = three types of smart pointers
+// Each for its own task!
 ```
 
 ---
 
-## Сундук на Дубе = Стек и Куча
+## Chest on the Oak = Stack and Heap
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│  ДУБ = СТЕК (Stack)                                            │
-│  Растёт вверх, данные на виду                                  │
-│                                                                 │
-│       🌳 Дуб                                                    │
-│        │                                                        │
-│        ├── Локальная переменная 1                              │
-│        ├── Локальная переменная 2                              │
-│        └── Локальная переменная 3                              │
-│                                                                 │
-│  СУНДУК = КУЧА (Heap)                                          │
-│  Закрыт, данные спрятаны, нужен ключ (указатель)              │
-│                                                                 │
-│       📦 Сундук (Box, Rc, Arc)                                 │
-│        │                                                        │
-│        └── [Данные где-то в памяти...]                         │
-│             └── Заяц                                            │
-│                  └── Утка                                       │
-│                       └── Яйцо                                  │
-│                            └── Игла                             │
-│                                                                 │
-│  Кощей прячет смерть В КУЧЕ, чтобы её было сложно найти!      │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Семь Уровней Вложенности
-
-```vibee
-// ═══════════════════════════════════════════════════════════════
-// СЕМЬ УРОВНЕЙ = СЕМЬ СЛОЁВ АБСТРАКЦИИ
-// (Но три из них — главные испытания!)
-// ═══════════════════════════════════════════════════════════════
-
-// Уровень 1: Море — Операционная система
-// Уровень 2: Остров — Процесс
-// Уровень 3: Дуб — Стек вызовов
-// Уровень 4: Сундук — Куча (heap)
-// Уровень 5: Заяц — Первый указатель (Box)     ← ИСПЫТАНИЕ 1
-// Уровень 6: Утка — Второй указатель (Rc)      ← ИСПЫТАНИЕ 2
-// Уровень 7: Яйцо — Третий указатель (Arc)     ← ИСПЫТАНИЕ 3
-// Уровень 8: Игла — Сами данные
-// Уровень 9: Смерть — Булево значение
-
-// Три главных испытания — три типа указателей!
-// Пройди все три — победишь Кощея (legacy-код)!
++---------------------------------------------------------------+
+|                                                                 |
+|  OAK = STACK                                                   |
+|  Grows upward, data is visible                                 |
+|                                                                 |
+|       [Oak]                                                     |
+|        |                                                        |
+|        +-- Local variable 1                                    |
+|        +-- Local variable 2                                    |
+|        +-- Local variable 3                                    |
+|                                                                 |
+|  CHEST = HEAP                                                  |
+|  Locked, data is hidden, needs a key (pointer)                 |
+|                                                                 |
+|       [Chest] (Box, Rc, Arc)                                   |
+|        |                                                        |
+|        +-- [Data somewhere in memory...]                       |
+|             +-- Hare                                            |
+|                  +-- Duck                                       |
+|                       +-- Egg                                   |
+|                            +-- Needle                           |
+|                                                                 |
+|  Koschei hides his death IN THE HEAP to make it hard to find!  |
+|                                                                 |
++---------------------------------------------------------------+
 ```
 
 ---
 
-## Кощей Бессмертный = Memory Leak
+## Seven Levels of Nesting
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ПОЧЕМУ КОЩЕЙ БЕССМЕРТЕН?
-// Потому что у него ЦИКЛИЧЕСКАЯ ССЫЛКА!
-// ═══════════════════════════════════════════════════════════════
+// ===============================================================
+// SEVEN LEVELS = SEVEN LAYERS OF ABSTRACTION
+// (But three of them are the main trials!)
+// ===============================================================
 
-// Кощей создал цикл — он ссылается сам на себя!
-struct Кощей {
-    сила: i32,
-    // Кощей хранит ссылку на свою смерть,
-    // а смерть хранит ссылку на Кощея!
-    смерть: Rc<СмертьКощея>,
+// Level 1: Sea — Operating system
+// Level 2: Island — Process
+// Level 3: Oak — Call stack
+// Level 4: Chest — Heap
+// Level 5: Hare — First pointer (Box)     <- TRIAL 1
+// Level 6: Duck — Second pointer (Rc)      <- TRIAL 2
+// Level 7: Egg — Third pointer (Arc)       <- TRIAL 3
+// Level 8: Needle — The data itself
+// Level 9: Death — Boolean value
+
+// Three main trials — three types of pointers!
+// Pass all three — defeat Koschei (legacy code)!
+```
+
+---
+
+## Koschei the Deathless = Memory Leak
+
+```vibee
+// ===============================================================
+// WHY IS KOSCHEI IMMORTAL?
+// Because he has a CIRCULAR REFERENCE!
+// ===============================================================
+
+// Koschei created a cycle — he references himself!
+struct Koschei {
+    power: i32,
+    // Koschei stores a reference to his death,
+    // and death stores a reference to Koschei!
+    death: Rc<KoscheisDeath>,
 }
 
-struct СмертьКощея {
-    владелец: Rc<Кощей>,  // Циклическая ссылка!
-    игла: bool,
+struct KoscheisDeath {
+    owner: Rc<Koschei>,  // Circular reference!
+    needle: bool,
 }
 
-// Это MEMORY LEAK!
-// Кощей никогда не будет освобождён,
-// потому что счётчик ссылок никогда не станет 0!
+// This is a MEMORY LEAK!
+// Koschei will never be freed,
+// because the reference count will never reach 0!
 
-// РЕШЕНИЕ: Weak-ссылка (слабая ссылка)
-struct СмертьКощеяПравильно {
-    владелец: Weak<Кощей>,  // Слабая ссылка не увеличивает счётчик!
-    игла: bool,
+// SOLUTION: Weak reference
+struct KoscheisDeathCorrect {
+    owner: Weak<Koschei>,  // Weak reference doesn't increment the counter!
+    needle: bool,
 }
 
-// Теперь Иван может убить Кощея:
-fn убить_кощея_правильно(кощей: Rc<Кощей>) {
-    // Получаем доступ к смерти через Weak
-    if let Some(смерть) = кощей.смерть.владелец.upgrade() {
-        смерть.смерть.игла = true;
+// Now Ivan can kill Koschei:
+fn kill_koschei_correctly(koschei: Rc<Koschei>) {
+    // Access death through Weak
+    if let Some(death) = koschei.death.owner.upgrade() {
+        death.death.needle = true;
     }
-    // Кощей уничтожен, память освобождена!
+    // Koschei is destroyed, memory is freed!
 }
 ```
 
 ---
 
-## Игла = Атомарная Операция
+## Needle = Atomic Operation
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ИГЛА — ЭТО АТОМАРНАЯ ПЕРЕМЕННАЯ!
-// Сломать иглу нужно АТОМАРНО, иначе Кощей выживет
-// ═══════════════════════════════════════════════════════════════
+// ===============================================================
+// THE NEEDLE IS AN ATOMIC VARIABLE!
+// Breaking the needle must be ATOMIC, otherwise Koschei survives
+// ===============================================================
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
-struct ИглаАтомарная {
-    сломана: AtomicBool,
+struct AtomicNeedle {
+    broken: AtomicBool,
 }
 
-impl ИглаАтомарная {
-    fn сломать(&self) -> bool {
-        // Атомарная операция — Кощей не успеет среагировать!
-        self.сломана.compare_exchange(
-            false,              // Ожидаем: игла цела
-            true,               // Устанавливаем: игла сломана
-            Ordering::SeqCst,   // Строгий порядок
+impl AtomicNeedle {
+    fn break_needle(&self) -> bool {
+        // Atomic operation — Koschei won't have time to react!
+        self.broken.compare_exchange(
+            false,              // Expect: needle is intact
+            true,               // Set: needle is broken
+            Ordering::SeqCst,   // Strict ordering
             Ordering::SeqCst,
         ).is_ok()
     }
 }
 
-// Если не атомарно — Кощей может "воскреснуть"!
-// (Race condition — гонка данных)
+// If not atomic — Koschei can "resurrect"!
+// (Race condition — data race)
 ```
 
 ---
 
-## Три Царства Памяти
+## Three Kingdoms of Memory
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│  ТРИ ЦАРСТВА ПАМЯТИ В VIBEE                                    │
-│                                                                 │
-│  ╔═══════════════════════════════════════════════════════════╗ │
-│  ║  МЕДНОЕ ЦАРСТВО — СТЕК (Stack)                            ║ │
-│  ║  ─────────────────────────────────────────────────────── ║ │
-│  ║  • Быстрый доступ                                         ║ │
-│  ║  • Автоматическое освобождение                            ║ │
-│  ║  • Ограниченный размер                                    ║ │
-│  ║  • let x = 42;  // На стеке                              ║ │
-│  ╚═══════════════════════════════════════════════════════════╝ │
-│                                                                 │
-│  ╔═══════════════════════════════════════════════════════════╗ │
-│  ║  СЕРЕБРЯНОЕ ЦАРСТВО — КУЧА (Heap)                         ║ │
-│  ║  ─────────────────────────────────────────────────────── ║ │
-│  ║  • Динамический размер                                    ║ │
-│  ║  • Требует явного управления                              ║ │
-│  ║  • Здесь прячется Кощей!                                  ║ │
-│  ║  • let x = Box::new(42);  // На куче                      ║ │
-│  ╚═══════════════════════════════════════════════════════════╝ │
-│                                                                 │
-│  ╔═══════════════════════════════════════════════════════════╗ │
-│  ║  ЗОЛОТОЕ ЦАРСТВО — СТАТИЧЕСКАЯ ПАМЯТЬ                     ║ │
-│  ║  ─────────────────────────────────────────────────────── ║ │
-│  ║  • Живёт всю программу                                    ║ │
-│  ║  • Константы и статические переменные                     ║ │
-│  ║  • const ТРИДЕВЯТОЕ: i32 = 27;                           ║ │
-│  ╚═══════════════════════════════════════════════════════════╝ │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
++---------------------------------------------------------------+
+|                                                                 |
+|  THREE KINGDOMS OF MEMORY IN VIBEE                             |
+|                                                                 |
+|  +=========================================================+   |
+|  |  COPPER KINGDOM — STACK                                 |   |
+|  |  --------------------------------------------------------|   |
+|  |  * Fast access                                          |   |
+|  |  * Automatic deallocation                               |   |
+|  |  * Limited size                                         |   |
+|  |  * let x = 42;  // On the stack                        |   |
+|  +=========================================================+   |
+|                                                                 |
+|  +=========================================================+   |
+|  |  SILVER KINGDOM — HEAP                                  |   |
+|  |  --------------------------------------------------------|   |
+|  |  * Dynamic size                                         |   |
+|  |  * Requires explicit management                         |   |
+|  |  * This is where Koschei hides!                         |   |
+|  |  * let x = Box::new(42);  // On the heap               |   |
+|  +=========================================================+   |
+|                                                                 |
+|  +=========================================================+   |
+|  |  GOLDEN KINGDOM — STATIC MEMORY                         |   |
+|  |  --------------------------------------------------------|   |
+|  |  * Lives for the entire program                         |   |
+|  |  * Constants and static variables                       |   |
+|  |  * const THRICE_NINE: i32 = 27;                        |   |
+|  +=========================================================+   |
+|                                                                 |
++---------------------------------------------------------------+
 ```
 
 ---
 
-## Полный Код: Победа над Кощеем
+## Complete Code: Victory over Koschei
 
 ```vibee
-// ═══════════════════════════════════════════════════════════════
-// ПОЛНАЯ ИСТОРИЯ: ИВАН ПОБЕЖДАЕТ КОЩЕЯ
-// ═══════════════════════════════════════════════════════════════
+// ===============================================================
+// THE COMPLETE STORY: IVAN DEFEATS KOSCHEI
+// ===============================================================
 
 use std::sync::{Arc, Weak};
 use std::sync::atomic::{AtomicBool, Ordering};
 
-/// Кощей Бессмертный — legacy-система
-struct Кощей {
-    имя: String,
-    сила: i32,
-    смерть: Arc<СмертьКощея>,
+/// Koschei the Deathless — legacy system
+struct Koschei {
+    name: String,
+    power: i32,
+    death: Arc<KoscheisDeath>,
 }
 
-/// Смерть Кощея — глубоко вложенная структура
-struct СмертьКощея {
-    море: Море,
+/// Koschei's death — deeply nested structure
+struct KoscheisDeath {
+    sea: Sea,
 }
 
-struct Море {
-    остров: Option<Box<Остров>>,
+struct Sea {
+    island: Option<Box<Island>>,
 }
 
-struct Остров {
-    дуб: Option<Box<Дуб>>,
+struct Island {
+    oak: Option<Box<Oak>>,
 }
 
-struct Дуб {
-    сундук: Option<Box<Сундук>>,
+struct Oak {
+    chest: Option<Box<Chest>>,
 }
 
-struct Сундук {
-    заяц: Option<Box<Заяц>>,  // Первое испытание
+struct Chest {
+    hare: Option<Box<Hare>>,  // First trial
 }
 
-struct Заяц {
-    утка: Option<Box<Утка>>,  // Второе испытание
+struct Hare {
+    duck: Option<Box<Duck>>,  // Second trial
 }
 
-struct Утка {
-    яйцо: Option<Box<Яйцо>>,  // Третье испытание
+struct Duck {
+    egg: Option<Box<Egg>>,  // Third trial
 }
 
-struct Яйцо {
-    игла: Игла,
+struct Egg {
+    needle: Needle,
 }
 
-struct Игла {
-    сломана: AtomicBool,
+struct Needle {
+    broken: AtomicBool,
 }
 
-/// Иван-царевич — программист-герой
-struct Иван {
-    имя: String,
-    помощники: Помощники,
+/// Ivan Tsarevich — programmer-hero
+struct Ivan {
+    name: String,
+    helpers: Helpers,
 }
 
-struct Помощники {
-    волк: bool,   // Поможет поймать зайца
-    сокол: bool,  // Поможет поймать утку
-    щука: bool,   // Поможет достать яйцо
+struct Helpers {
+    wolf: bool,   // Will help catch the hare
+    falcon: bool, // Will help catch the duck
+    pike: bool,   // Will help retrieve the egg
 }
 
-impl Иван {
-    fn победить_кощея(&self, кощей: &Кощей) -> Result<(), String> {
-        println!("🗡️ {} отправляется победить {}!", self.имя, кощей.имя);
-        
-        // Путь к смерти Кощея
-        let море = &кощей.смерть.море;
-        
-        // Находим остров
-        let остров = море.остров.as_ref()
-            .ok_or("Остров Буян не найден!")?;
-        println!("🏝️ Нашёл остров Буян!");
-        
-        // Находим дуб
-        let дуб = остров.дуб.as_ref()
-            .ok_or("Дуб не найден!")?;
-        println!("🌳 Нашёл дуб!");
-        
-        // Открываем сундук
-        let сундук = дуб.сундук.as_ref()
-            .ok_or("Сундук не найден!")?;
-        println!("📦 Открыл сундук!");
-        
-        // ПЕРВОЕ ИСПЫТАНИЕ: Заяц
-        let заяц = if self.помощники.волк {
-            println!("🐺 Волк помогает поймать зайца!");
-            сундук.заяц.as_ref().ok_or("Заяц убежал!")?
+impl Ivan {
+    fn defeat_koschei(&self, koschei: &Koschei) -> Result<(), String> {
+        println!("[Sword] {} sets out to defeat {}!", self.name, koschei.name);
+
+        // Path to Koschei's death
+        let sea = &koschei.death.sea;
+
+        // Find the island
+        let island = sea.island.as_ref()
+            .ok_or("Island of Buyan not found!")?;
+        println!("[Island] Found the island of Buyan!");
+
+        // Find the oak
+        let oak = island.oak.as_ref()
+            .ok_or("Oak not found!")?;
+        println!("[Tree] Found the oak!");
+
+        // Open the chest
+        let chest = oak.chest.as_ref()
+            .ok_or("Chest not found!")?;
+        println!("[Chest] Opened the chest!");
+
+        // FIRST TRIAL: Hare
+        let hare = if self.helpers.wolf {
+            println!("[Wolf] The wolf helps catch the hare!");
+            chest.hare.as_ref().ok_or("The hare escaped!")?
         } else {
-            return Err("Заяц убежал! Нужен волк!".to_string());
+            return Err("The hare escaped! Need the wolf!".to_string());
         };
-        println!("🐰 Заяц пойман!");
-        
-        // ВТОРОЕ ИСПЫТАНИЕ: Утка
-        let утка = if self.помощники.сокол {
-            println!("🦅 Сокол помогает поймать утку!");
-            заяц.утка.as_ref().ok_or("Утка улетела!")?
+        println!("[Hare] Hare caught!");
+
+        // SECOND TRIAL: Duck
+        let duck = if self.helpers.falcon {
+            println!("[Eagle] The falcon helps catch the duck!");
+            hare.duck.as_ref().ok_or("The duck flew away!")?
         } else {
-            return Err("Утка улетела! Нужен сокол!".to_string());
+            return Err("The duck flew away! Need the falcon!".to_string());
         };
-        println!("🦆 Утка поймана!");
-        
-        // ТРЕТЬЕ ИСПЫТАНИЕ: Яйцо
-        let яйцо = if self.помощники.щука {
-            println!("🐟 Щука помогает достать яйцо!");
-            утка.яйцо.as_ref().ok_or("Яйцо упало в море!")?
+        println!("[Duck] Duck caught!");
+
+        // THIRD TRIAL: Egg
+        let egg = if self.helpers.pike {
+            println!("[Fish] The pike helps retrieve the egg!");
+            duck.egg.as_ref().ok_or("The egg fell into the sea!")?
         } else {
-            return Err("Яйцо упало в море! Нужна щука!".to_string());
+            return Err("The egg fell into the sea! Need the pike!".to_string());
         };
-        println!("🥚 Яйцо в руках!");
-        
-        // ЛОМАЕМ ИГЛУ!
-        if яйцо.игла.сломана.compare_exchange(
+        println!("[Egg] Egg in hand!");
+
+        // BREAK THE NEEDLE!
+        if egg.needle.broken.compare_exchange(
             false, true,
             Ordering::SeqCst,
             Ordering::SeqCst
         ).is_ok() {
-            println!("💥 ИГЛА СЛОМАНА!");
-            println!("☠️ {} ПОВЕРЖЕН!", кощей.имя);
+            println!("[Explosion] NEEDLE BROKEN!");
+            println!("[Skull] {} IS DEFEATED!", koschei.name);
             Ok(())
         } else {
-            Err("Игла уже сломана?!".to_string())
+            Err("Needle already broken?!".to_string())
         }
     }
 }
 
 fn main() {
-    // Создаём Кощея (legacy-систему)
-    let кощей = Кощей {
-        имя: "Кощей Бессмертный".to_string(),
-        сила: 1000,
-        смерть: Arc::new(СмертьКощея {
-            море: Море {
-                остров: Some(Box::new(Остров {
-                    дуб: Some(Box::new(Дуб {
-                        сундук: Some(Box::new(Сундук {
-                            заяц: Some(Box::new(Заяц {
-                                утка: Some(Box::new(Утка {
-                                    яйцо: Some(Box::new(Яйцо {
-                                        игла: Игла {
-                                            сломана: AtomicBool::new(false),
+    // Create Koschei (legacy system)
+    let koschei = Koschei {
+        name: "Koschei the Deathless".to_string(),
+        power: 1000,
+        death: Arc::new(KoscheisDeath {
+            sea: Sea {
+                island: Some(Box::new(Island {
+                    oak: Some(Box::new(Oak {
+                        chest: Some(Box::new(Chest {
+                            hare: Some(Box::new(Hare {
+                                duck: Some(Box::new(Duck {
+                                    egg: Some(Box::new(Egg {
+                                        needle: Needle {
+                                            broken: AtomicBool::new(false),
                                         },
                                     })),
                                 })),
@@ -550,56 +550,56 @@ fn main() {
             },
         }),
     };
-    
-    // Создаём Ивана (программиста с инструментами)
-    let иван = Иван {
-        имя: "Иван-царевич".to_string(),
-        помощники: Помощники {
-            волк: true,   // Box — владеющий указатель
-            сокол: true,  // Rc — разделяемый указатель
-            щука: true,   // Arc — потокобезопасный указатель
+
+    // Create Ivan (programmer with tools)
+    let ivan = Ivan {
+        name: "Ivan Tsarevich".to_string(),
+        helpers: Helpers {
+            wolf: true,   // Box — owning pointer
+            falcon: true, // Rc — shared pointer
+            pike: true,   // Arc — thread-safe pointer
         },
     };
-    
-    // БИТВА!
-    match иван.победить_кощея(&кощей) {
-        Ok(()) => println!("\n🎉 ПОБЕДА! Legacy-код повержен!"),
-        Err(e) => println!("\n💀 Поражение: {}", e),
+
+    // BATTLE!
+    match ivan.defeat_koschei(&koschei) {
+        Ok(()) => println!("\n[Celebration] VICTORY! Legacy code is defeated!"),
+        Err(e) => println!("\n[Skull] Defeat: {}", e),
     }
 }
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист тайну Кощея:*
+> *And Ivan the programmer understood Koschei's secret:*
 >
-> *Смерть его — в игле (атомарная переменная),*
-> *та игла — в яйце (третий указатель, Arc),*
-> *то яйцо — в утке (второй указатель, Rc),*
-> *та утка — в зайце (первый указатель, Box),*
-> *тот заяц — в сундуке (куча, heap),*
-> *тот сундук — на дубу (стек, stack),*
-> *тот дуб — на острове (процесс),*
-> *тот остров — в море-океане (операционная система).*
+> *His death is in the needle (atomic variable),*
+> *that needle is in the egg (third pointer, Arc),*
+> *that egg is in the duck (second pointer, Rc),*
+> *that duck is in the hare (first pointer, Box),*
+> *that hare is in the chest (heap),*
+> *that chest is on the oak (stack),*
+> *that oak is on the island (process),*
+> *that island is in the ocean-sea (operating system).*
 >
-> *Кощей бессмертен, пока есть циклические ссылки.*
-> *Кощей бессмертен, пока есть memory leaks.*
-> *Кощей бессмертен, пока есть legacy-код.*
+> *Koschei is immortal as long as there are circular references.*
+> *Koschei is immortal as long as there are memory leaks.*
+> *Koschei is immortal as long as there is legacy code.*
 >
-> *Но у Ивана есть три помощника:*
-> *Волк (Box) — владеет и освобождает,*
-> *Сокол (Rc) — разделяет без гонок,*
-> *Щука (Arc) — работает в потоках.*
+> *But Ivan has three helpers:*
+> *Wolf (Box) — owns and frees,*
+> *Falcon (Rc) — shares without races,*
+> *Pike (Arc) — works across threads.*
 >
-> *С ними Иван прошёл три испытания*
-> *и сломал иглу атомарно.*
+> *With them Ivan passed three trials*
+> *and broke the needle atomically.*
 >
-> *И пал Кощей.*
-> *И освободилась память.*
-> *И стал код чистым.*
+> *And Koschei fell.*
+> *And memory was freed.*
+> *And the code became clean.*
 
 ---
 
-[← Глава 11а](11a_vibee_deep.md) | [Глава 12: Компилятор 999 →](12_compiler_999.md)
+[<- Chapter 11a](11a_vibee_deep.md) | [Chapter 12: The 999 Compiler ->](12_compiler_999.md)

@@ -1,193 +1,193 @@
-# Глава 9: Уроки Пути — Что Работает, Что Нет
+# Chapter 9: Lessons of the Path — What Works, What Doesn't
 
 ---
 
-*«Умный учится на чужих ошибках,*
-*дурак — на своих.»*
-— Русская пословица
+*"A wise man learns from others' mistakes,*
+*a fool — from his own."*
+— Russian proverb
 
 ---
 
-## Уроки Пути
+## Lessons of the Path
 
-Мы прошли долгий путь. Пора подвести итоги.
+We have traveled a long way. It's time to summarize.
 
 ---
 
-## ✅ Что Работает
+## ✅ What Works
 
-### Принцип: 3-Way Partition
-
-```
-РАБОТАЕТ потому что:
-  • Исключает равные элементы из рекурсии
-  • Уменьшает глубину рекурсии
-  • Защищает от worst-case
-
-ПРИМЕНЕНИЯ:
-  • Trinity Sort: до 291x быстрее
-  • Dutch National Flag: классический алгоритм
-  • Quickselect: поиск k-го элемента
-```
-
-### Принцип: Branching Factor = 3
+### Principle: 3-Way Partition
 
 ```
-РАБОТАЕТ потому что:
-  • Минимизирует b/log(b)
-  • Оптимум при b = e ≈ 2.718 ≈ 3
+WORKS because:
+  • Excludes equal elements from recursion
+  • Reduces recursion depth
+  • Protects from worst-case
 
-ПРИМЕНЕНИЯ:
-  • Trinity B-Tree: 6% меньше сравнений
-  • Ternary Search Tree: эффективный prefix search
+APPLICATIONS:
+  • Trinity Sort: up to 291x faster
+  • Dutch National Flag: classic algorithm
+  • Quickselect: finding the k-th element
 ```
 
-### Принцип: 3 Хеш-Функции
+### Principle: Branching Factor = 3
 
 ```
-РАБОТАЕТ потому что:
-  • Максимальный прирост load factor
+WORKS because:
+  • Minimizes b/log(b)
+  • Optimum at b = e ≈ 2.718 ≈ 3
+
+APPLICATIONS:
+  • Trinity B-Tree: 6% fewer comparisons
+  • Ternary Search Tree: efficient prefix search
+```
+
+### Principle: 3 Hash Functions
+
+```
+WORKS because:
+  • Maximum load factor increase
   • d=2→d=3: +82%
   • d=3→d=4: +7%
 
-ПРИМЕНЕНИЯ:
-  • Cuckoo Hashing: 91% заполнения
-  • Bloom Filter: оптимальное k ≈ 3
+APPLICATIONS:
+  • Cuckoo Hashing: 91% fill rate
+  • Bloom Filter: optimal k ≈ 3
 ```
 
-### Принцип: 3 Состояния
+### Principle: 3 States
 
 ```
-РАБОТАЕТ потому что:
-  • Позволяет отличить "в процессе" от "завершено"
-  • Необходимо для поиска циклов
+WORKS because:
+  • Allows distinguishing "in progress" from "completed"
+  • Necessary for cycle detection
 
-ПРИМЕНЕНИЯ:
+APPLICATIONS:
   • DFS: WHITE/GRAY/BLACK
-  • Топологическая сортировка
-  • Сильно связные компоненты
+  • Topological sort
+  • Strongly connected components
 ```
 
 ---
 
-## ❌ Что НЕ Работает
+## ❌ What Does NOT Work
 
 ### Trinity Search
 
 ```
-НЕ РАБОТАЕТ потому что:
-  • 2-3 сравнения за итерацию
+DOES NOT WORK because:
+  • 2-3 comparisons per iteration
   • log₃(n) × 2 > log₂(n) × 1
-  • Нет "равных элементов" для исключения
+  • No "equal elements" to exclude
 
-УРОК:
-  3-way помогает когда есть что ИСКЛЮЧИТЬ
-  В поиске нечего исключать
+LESSON:
+  3-way helps when there's something to EXCLUDE
+  In search, there's nothing to exclude
 ```
 
 ### Radix Base 3
 
 ```
-НЕ РАБОТАЕТ потому что:
-  • Radix не использует сравнения
-  • Больше база = меньше проходов
-  • Base 256 = 3 прохода, Base 3 = 13 проходов
+DOES NOT WORK because:
+  • Radix doesn't use comparisons
+  • Larger base = fewer passes
+  • Base 256 = 3 passes, Base 3 = 13 passes
 
-УРОК:
-  Число 3 помогает в COMPARISON-BASED алгоритмах
-  Radix — не comparison-based
+LESSON:
+  The number 3 helps in COMPARISON-BASED algorithms
+  Radix is not comparison-based
 ```
 
 ### Ternary Hardware
 
 ```
-НЕ РАБОТАЕТ (на практике) потому что:
-  • Вся инфраструктура бинарная
-  • Теоретическое преимущество ~5%
-  • Не оправдывает перестройку индустрии
+DOES NOT WORK (in practice) because:
+  • All infrastructure is binary
+  • Theoretical advantage ~5%
+  • Doesn't justify rebuilding the industry
 
-УРОК:
-  Теория и практика — разные царства
+LESSON:
+  Theory and practice are different realms
 ```
 
 ---
 
-## Ключевой Инсайт
+## Key Insight
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ЧИСЛО 3 ПОМОГАЕТ КОГДА:                              │
+│   THE NUMBER 3 HELPS WHEN:                              │
 │                                                         │
-│   1. Есть СРАВНЕНИЯ (comparison-based)                 │
-│   2. Есть что ИСКЛЮЧИТЬ (равные элементы)              │
-│   3. Нужен БАЛАНС (branching factor)                   │
-│   4. Нужны СОСТОЯНИЯ (процесс vs результат)            │
+│   1. There are COMPARISONS (comparison-based)           │
+│   2. There's something to EXCLUDE (equal elements)      │
+│   3. BALANCE is needed (branching factor)               │
+│   4. STATES are needed (process vs result)              │
 │                                                         │
-│   ЧИСЛО 3 НЕ ПОМОГАЕТ КОГДА:                           │
+│   THE NUMBER 3 DOES NOT HELP WHEN:                      │
 │                                                         │
-│   1. Нет сравнений (radix sort)                        │
-│   2. Нечего исключать (binary search)                  │
-│   3. Нужно железо (ternary computers)                  │
+│   1. No comparisons (radix sort)                        │
+│   2. Nothing to exclude (binary search)                 │
+│   3. Hardware is needed (ternary computers)             │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Рекомендации
+## Recommendations
 
-### Когда Использовать Trinity
-
-```
-✅ ИСПОЛЬЗУЙ Trinity Sort когда:
-   • Данные могут содержать дубликаты
-   • Данные могут быть частично отсортированы
-   • Неизвестно распределение данных
-
-✅ ИСПОЛЬЗУЙ Trinity B-Tree когда:
-   • Нужно in-memory дерево
-   • Важна cache locality
-
-✅ ИСПОЛЬЗУЙ Trinity Hash когда:
-   • Нужна высокая загрузка таблицы
-   • Допустимы 3 проверки при lookup
-
-✅ ИСПОЛЬЗУЙ 3-state DFS когда:
-   • Нужно найти циклы
-   • Нужна топологическая сортировка
-```
-
-### Когда НЕ Использовать Trinity
+### When to Use Trinity
 
 ```
-❌ НЕ ИСПОЛЬЗУЙ Trinity Search:
-   Binary search всегда лучше
+✅ USE Trinity Sort when:
+   • Data may contain duplicates
+   • Data may be partially sorted
+   • Data distribution is unknown
 
-❌ НЕ ИСПОЛЬЗУЙ Radix base 3:
-   Base 256 всегда лучше
+✅ USE Trinity B-Tree when:
+   • In-memory tree is needed
+   • Cache locality matters
 
-❌ НЕ ИСПОЛЬЗУЙ ternary hardware:
-   Бинарное железо доминирует
+✅ USE Trinity Hash when:
+   • High table load is needed
+   • 3 checks per lookup are acceptable
+
+✅ USE 3-state DFS when:
+   • Cycle detection is needed
+   • Topological sort is needed
+```
+
+### When NOT to Use Trinity
+
+```
+❌ DO NOT USE Trinity Search:
+   Binary search is always better
+
+❌ DO NOT USE Radix base 3:
+   Base 256 is always better
+
+❌ DO NOT USE ternary hardware:
+   Binary hardware dominates
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист седьмую истину:*
+> *And Ivan the Programmer understood the seventh truth:*
 >
-> *Мудрость — знать, когда применять знание.*
+> *Wisdom is knowing when to apply knowledge.*
 >
-> *Число 3 — не универсальный ключ.*
-> *Оно работает там, где есть сравнения и исключения.*
+> *The number 3 is not a universal key.*
+> *It works where there are comparisons and exclusions.*
 >
-> *Trinity Sort — для данных с повторами.*
-> *Binary Search — для уникальных данных.*
+> *Trinity Sort — for data with repeats.*
+> *Binary Search — for unique data.*
 >
-> *Умный учится на чужих ошибках.*
-> *Мы показали, где ошибки, чтобы ты не повторял.*
+> *A wise man learns from others' mistakes.*
+> *We showed where the mistakes are, so you don't repeat them.*
 
 ---
 
-[← Глава 8](08_benchmarks.md) | [Глава 10: Vibee Language →](10_vibee.md)
+[← Chapter 8](08_benchmarks.md) | [Chapter 10: Vibee Language →](10_vibee.md)

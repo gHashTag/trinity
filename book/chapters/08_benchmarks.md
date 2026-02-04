@@ -1,37 +1,37 @@
-# Глава 8: Бенчмарки — Испытания Героя
+# Chapter 8: Benchmarks — The Hero's Trials
 
 ---
 
-*«Не всё то золото, что блестит.»*
-— Русская пословица
+*"All that glitters is not gold."*
+— Russian proverb
 
 ---
 
-## Испытания Героя
+## The Hero's Trials
 
-В каждой сказке герой проходит испытания. Наши алгоритмы тоже должны доказать свою силу.
+In every fairy tale, the hero undergoes trials. Our algorithms must also prove their strength.
 
 ---
 
-## Методология
+## Methodology
 
-### Честное Сравнение
+### Fair Comparison
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ПРАВИЛА ЧЕСТНОГО БЕНЧМАРКА                           │
+│   RULES OF FAIR BENCHMARKING                           │
 │                                                         │
-│   1. Один язык (Python) для всех алгоритмов            │
-│   2. Одинаковые данные для всех тестов                 │
-│   3. Считаем СРАВНЕНИЯ, не время                       │
-│   4. Множественные запуски для статистики              │
-│   5. Разные распределения данных                       │
+│   1. One language (Python) for all algorithms          │
+│   2. Same data for all tests                           │
+│   3. Count COMPARISONS, not time                       │
+│   4. Multiple runs for statistics                      │
+│   5. Different data distributions                      │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Тестовые Данные
+### Test Data
 
 ```python
 test_cases = {
@@ -46,43 +46,43 @@ test_cases = {
 
 ---
 
-## Результаты: Trinity Sort
+## Results: Trinity Sort
 
-### Сравнения (n = 5000)
+### Comparisons (n = 5000)
 
 ```
 ┌──────────────────┬─────────────┬─────────────┬───────────┐
-│ Распределение    │ Quicksort   │ Trinity     │ Ускорение │
+│ Distribution     │ Quicksort   │ Trinity     │ Speedup   │
 ├──────────────────┼─────────────┼─────────────┼───────────┤
-│ Случайные        │ 89,432      │ 127,891     │ 0.7x      │
-│ Отсортированные  │ 12,497,500  │ 60,612      │ 206x ✓    │
-│ Обратный порядок │ 12,497,500  │ 77,543      │ 161x ✓    │
-│ 3 уник. значения │ 8,331,667   │ 28,612      │ 291x ✓    │
-│ Много дубликатов │ 2,156,789   │ 156,234     │ 14x ✓     │
-│ Почти сортиров.  │ 1,234,567   │ 89,234      │ 14x ✓     │
+│ Random           │ 89,432      │ 127,891     │ 0.7x      │
+│ Sorted           │ 12,497,500  │ 60,612      │ 206x ✓    │
+│ Reverse order    │ 12,497,500  │ 77,543      │ 161x ✓    │
+│ 3 unique values  │ 8,331,667   │ 28,612      │ 291x ✓    │
+│ Many duplicates  │ 2,156,789   │ 156,234     │ 14x ✓     │
+│ Nearly sorted    │ 1,234,567   │ 89,234      │ 14x ✓     │
 └──────────────────┴─────────────┴─────────────┴───────────┘
 ```
 
-### Выводы
+### Conclusions
 
 ```
-✅ Trinity Sort ЛУЧШЕ когда:
-   • Данные отсортированы или почти отсортированы
-   • Много дубликатов
-   • Мало уникальных значений
+✅ Trinity Sort is BETTER when:
+   • Data is sorted or nearly sorted
+   • Many duplicates
+   • Few unique values
 
-❌ Trinity Sort ХУЖЕ когда:
-   • Данные полностью случайные и уникальные
-   • Overhead от 3-way partition не окупается
+❌ Trinity Sort is WORSE when:
+   • Data is completely random and unique
+   • Overhead from 3-way partition doesn't pay off
 ```
 
 ---
 
-## Результаты: Trinity B-Tree
+## Results: Trinity B-Tree
 
 ```
 ┌─────────────┬─────────────┬─────────────┐
-│ Branching   │ Сравнения   │ Относительно│
+│ Branching   │ Comparisons │ Relative    │
 ├─────────────┼─────────────┼─────────────┤
 │ b = 2       │ 16,610      │ 1.06x       │
 │ b = 3       │ 15,612      │ 1.00x ✓     │
@@ -90,71 +90,71 @@ test_cases = {
 │ b = 8       │ 18,456      │ 1.18x       │
 └─────────────┴─────────────┴─────────────┘
 
-ВЫВОД: b = 3 оптимально (6% меньше сравнений)
+CONCLUSION: b = 3 is optimal (6% fewer comparisons)
 ```
 
 ---
 
-## Результаты: Trinity Hash
+## Results: Trinity Hash
 
 ```
 ┌─────────────┬─────────────┬─────────────┐
-│ Функций     │ Max Load    │ Прирост     │
+│ Functions   │ Max Load    │ Gain        │
 ├─────────────┼─────────────┼─────────────┤
 │ d = 2       │ 50%         │ baseline    │
 │ d = 3       │ 91%         │ +82% ✓      │
 │ d = 4       │ 97%         │ +7%         │
 └─────────────┴─────────────┴─────────────┘
 
-ВЫВОД: d = 3 даёт максимальный прирост
+CONCLUSION: d = 3 provides maximum gain
 ```
 
 ---
 
-## Что НЕ Работает
+## What Does NOT Work
 
 ### Trinity Search
 
 ```
 ┌──────────────┬─────────────┬─────────────┬─────────┐
-│ n            │ Binary      │ Trinity     │ Разница │
+│ n            │ Binary      │ Trinity     │ Diff    │
 ├──────────────┼─────────────┼─────────────┼─────────┤
-│ 1,000        │ 9.4 сравн.  │ 16.8 сравн. │ +79% ❌ │
-│ 100,000      │ 16.3 сравн. │ 29.3 сравн. │ +80% ❌ │
-│ 1,000,000    │ 19.2 сравн. │ 35.2 сравн. │ +84% ❌ │
+│ 1,000        │ 9.4 comp.   │ 16.8 comp.  │ +79% ❌ │
+│ 100,000      │ 16.3 comp.  │ 29.3 comp.  │ +80% ❌ │
+│ 1,000,000    │ 19.2 comp.  │ 35.2 comp.  │ +84% ❌ │
 └──────────────┴─────────────┴─────────────┴─────────┘
 
-ПРИЧИНА: 2-3 сравнения за итерацию не окупаются
+REASON: 2-3 comparisons per iteration don't pay off
 ```
 
 ### Radix Base 3
 
 ```
 ┌──────────┬─────────┬───────────┐
-│ Base     │ Проходы │ Время     │
+│ Base     │ Passes  │ Time      │
 ├──────────┼─────────┼───────────┤
 │ 3        │ 13      │ 243 ms ❌ │
 │ 256      │ 3       │ 56 ms ✓   │
 └──────────┴─────────┴───────────┘
 
-ПРИЧИНА: Radix не использует сравнения
+REASON: Radix doesn't use comparisons
 ```
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист шестую истину:*
+> *And Ivan the Programmer understood the sixth truth:*
 >
-> *Не всё то золото, что блестит.*
-> *Не каждая идея работает на практике.*
+> *All that glitters is not gold.*
+> *Not every idea works in practice.*
 >
-> *Trinity Sort — золото для структурированных данных.*
-> *Trinity Search — пустая порода.*
+> *Trinity Sort — gold for structured data.*
+> *Trinity Search — fool's gold.*
 >
-> *Мудрый проверяет теорию практикой.*
-> *Бенчмарк — испытание героя.*
+> *The wise one tests theory with practice.*
+> *The benchmark — the hero's trial.*
 
 ---
 
-[← Глава 7](07_trinity_neural.md) | [Глава 9: Уроки Пути →](09_lessons.md)
+[← Chapter 7](07_trinity_neural.md) | [Chapter 9: Lessons of the Path →](09_lessons.md)

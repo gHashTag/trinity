@@ -1,52 +1,52 @@
-# Глава 7: Trinity Neural — Три Решения Разума
+# Chapter 7: Trinity Neural — Three Decisions of the Mind
 
 ---
 
-*«Три раза закинул старик невод в море:*
-*первый раз — пусто, второй раз — тина,*
-*третий раз — золотая рыбка.»*
-— А.С. Пушкин, «Сказка о рыбаке и рыбке»
+*"Three times the old man cast his net into the sea:*
+*the first time — empty, the second time — seaweed,*
+*the third time — a golden fish."*
+— Alexander Pushkin, "The Tale of the Fisherman and the Fish"
 
 ---
 
-## Три Попытки Нейросети
+## Three Attempts of the Neural Network
 
-Как старик закидывал невод три раза, так и нейросеть принимает решения в три этапа:
+Just as the old man cast his net three times, so does a neural network make decisions in three stages:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ТРИ РЕШЕНИЯ НЕЙРОСЕТИ                                │
+│   THREE DECISIONS OF THE NEURAL NETWORK                │
 │                                                         │
-│   ПЕРВЫЙ ЗАБРОС    ВТОРОЙ ЗАБРОС    ТРЕТИЙ ЗАБРОС      │
-│   ─────────────    ─────────────    ─────────────      │
-│   REJECT           DEFER            ACCEPT             │
-│   (Отвергнуть)     (Отложить)       (Принять)          │
+│   FIRST CAST       SECOND CAST       THIRD CAST        │
+│   ──────────       ───────────       ──────────        │
+│   REJECT           DEFER             ACCEPT            │
+│   (Decline)        (Postpone)        (Accept)          │
 │                                                         │
-│   Уверен: НЕТ      Не уверен        Уверен: ДА         │
+│   Confident: NO    Uncertain         Confident: YES    │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Three-Way Decision: Три Решения
+## Three-Way Decision: Three Decisions
 
-### Проблема Бинарной Классификации
+### The Problem of Binary Classification
 
 ```
-Стандартная классификация:
+Standard classification:
   if P(A|x) > 0.5:
-      return "ДА"
+      return "YES"
   else:
-      return "НЕТ"
+      return "NO"
 
-Проблема: что если P(A|x) = 0.51?
-  Мы говорим "ДА" с уверенностью 51%!
-  Это почти случайное угадывание.
+Problem: what if P(A|x) = 0.51?
+  We say "YES" with 51% confidence!
+  This is almost random guessing.
 ```
 
-### Решение: Три Зоны
+### Solution: Three Zones
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -56,133 +56,133 @@
 │   0.0 ──────── β ──────── α ──────── 1.0               │
 │        REJECT     DEFER      ACCEPT                    │
 │                                                         │
-│   P(A|x) ≤ β  →  REJECT  (уверен: НЕТ)                │
-│   P(A|x) ≥ α  →  ACCEPT  (уверен: ДА)                 │
-│   β < P(A|x) < α  →  DEFER  (не уверен)               │
+│   P(A|x) ≤ β  →  REJECT  (confident: NO)              │
+│   P(A|x) ≥ α  →  ACCEPT  (confident: YES)             │
+│   β < P(A|x) < α  →  DEFER  (uncertain)               │
 │                                                         │
-│   Типичные значения: α = 0.7, β = 0.3                  │
+│   Typical values: α = 0.7, β = 0.3                     │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Код
+### Code
 
 ```python
 def three_way_classify(probability, alpha=0.7, beta=0.3):
     """
-    Три решения классификации
-    
-    Как три заброса невода:
-    - Первый (REJECT): пусто, уверены что нет
-    - Второй (DEFER): тина, не уверены
-    - Третий (ACCEPT): золотая рыбка!
+    Three-way classification decisions
+
+    Like three casts of the net:
+    - First (REJECT): empty, confident it's no
+    - Second (DEFER): seaweed, uncertain
+    - Third (ACCEPT): golden fish!
     """
     if probability >= alpha:
-        return "ACCEPT"   # Третий заброс — успех!
+        return "ACCEPT"   # Third cast — success!
     elif probability <= beta:
-        return "REJECT"   # Первый заброс — пусто
+        return "REJECT"   # First cast — empty
     else:
-        return "DEFER"    # Второй заброс — нужно ещё раз
+        return "DEFER"    # Second cast — need another try
 ```
 
-### Применение
+### Applications
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ПРИМЕРЫ ПРИМЕНЕНИЯ                                   │
+│   APPLICATION EXAMPLES                                 │
 │                                                         │
-│   МЕДИЦИНА:                                            │
-│   • ACCEPT: Диагноз подтверждён, лечить               │
-│   • REJECT: Диагноз исключён, здоров                  │
-│   • DEFER: Нужны дополнительные анализы               │
+│   MEDICINE:                                            │
+│   • ACCEPT: Diagnosis confirmed, proceed with treatment│
+│   • REJECT: Diagnosis excluded, patient is healthy    │
+│   • DEFER: Additional tests required                  │
 │                                                         │
-│   МОДЕРАЦИЯ:                                           │
-│   • ACCEPT: Контент безопасен, публиковать            │
-│   • REJECT: Контент опасен, удалить                   │
-│   • DEFER: Отправить на ручную проверку               │
+│   CONTENT MODERATION:                                  │
+│   • ACCEPT: Content is safe, publish                  │
+│   • REJECT: Content is dangerous, remove              │
+│   • DEFER: Send for manual review                     │
 │                                                         │
-│   КРЕДИТНЫЙ СКОРИНГ:                                   │
-│   • ACCEPT: Выдать кредит                             │
-│   • REJECT: Отказать                                  │
-│   • DEFER: Запросить дополнительные документы         │
+│   CREDIT SCORING:                                      │
+│   • ACCEPT: Approve the loan                          │
+│   • REJECT: Decline                                   │
+│   • DEFER: Request additional documents               │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Ternary Weight Networks: Три Веса
+## Ternary Weight Networks: Three Weights
 
-### Идея
+### The Idea
 
-Вместо 32-битных float весов используем только **три значения**: {-1, 0, +1}
+Instead of 32-bit float weights, we use only **three values**: {-1, 0, +1}
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   TERNARY WEIGHTS: ТРИ БОГАТЫРЯ ВЕСОВ                  │
+│   TERNARY WEIGHTS: THREE BOGATYRS OF WEIGHTS          │
 │                                                         │
 │   -1              0               +1                    │
 │   ──              ─               ──                    │
-│   Отрицательный   Нейтральный     Положительный        │
-│   вклад           (отключён)      вклад                │
+│   Negative        Neutral         Positive             │
+│   contribution    (disabled)      contribution         │
 │                                                         │
-│   ПРЕИМУЩЕСТВА:                                        │
-│   • 2 бита вместо 32 → 16x меньше памяти              │
-│   • Умножение → сложение/вычитание                    │
-│   • Быстрее на специализированном железе              │
+│   ADVANTAGES:                                          │
+│   • 2 bits instead of 32 → 16x less memory            │
+│   • Multiplication → addition/subtraction             │
+│   • Faster on specialized hardware                    │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Квантизация
+### Quantization
 
 ```python
 def ternarize_weights(weights):
     """
-    Преобразование float весов в ternary {-1, 0, +1}
-    
-    Как три сына мельника:
-    - Старший (+1): большие положительные веса
-    - Средний (0): малые веса (отключены)
-    - Младший (-1): большие отрицательные веса
+    Convert float weights to ternary {-1, 0, +1}
+
+    Like the miller's three sons:
+    - Eldest (+1): large positive weights
+    - Middle (0): small weights (disabled)
+    - Youngest (-1): large negative weights
     """
-    # Порог = 0.7 × среднее абсолютное значение
+    # Threshold = 0.7 × mean absolute value
     mean_abs = sum(abs(w) for w in weights) / len(weights)
     threshold = 0.7 * mean_abs
-    
+
     ternary = []
     for w in weights:
         if w > threshold:
-            ternary.append(1)    # Старший сын
+            ternary.append(1)    # Eldest son
         elif w < -threshold:
-            ternary.append(-1)   # Младший сын
+            ternary.append(-1)   # Youngest son
         else:
-            ternary.append(0)    # Средний сын
-    
-    # Масштабирующий коэффициент
+            ternary.append(0)    # Middle son
+
+    # Scaling coefficient
     non_zero = [abs(w) for w, t in zip(weights, ternary) if t != 0]
     scale = sum(non_zero) / len(non_zero) if non_zero else 1.0
-    
+
     return ternary, scale
 ```
 
-### Результаты
+### Results
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   СРАВНЕНИЕ: FLOAT vs TERNARY                          │
+│   COMPARISON: FLOAT vs TERNARY                         │
 │                                                         │
-│   Метрика          Float32     Ternary     Разница     │
+│   Metric          Float32     Ternary     Difference   │
 │   ─────────────────────────────────────────────────    │
-│   Память           32 бита     2 бита      16x ↓       │
-│   Умножение        FP MUL      ADD/SUB     10x ↓       │
-│   Точность         100%        ~95%        5% ↓        │
-│   Энергия          100%        ~10%        10x ↓       │
+│   Memory          32 bits     2 bits      16x ↓        │
+│   Multiplication  FP MUL      ADD/SUB     10x ↓        │
+│   Accuracy        100%        ~95%        5% ↓         │
+│   Energy          100%        ~10%        10x ↓        │
 │                                                         │
-│   ВЫВОД: Потеря 5% точности за 16x экономию памяти    │
+│   CONCLUSION: 5% accuracy loss for 16x memory savings  │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -192,36 +192,36 @@ def ternarize_weights(weights):
 ```python
 def ternary_matmul(weights, x, scale):
     """
-    Умножение матрицы с ternary весами
-    
-    Вместо: result[i] = sum(w[i][j] * x[j])
-    Делаем: result[i] = sum(x[j] if w=+1 else -x[j] if w=-1 else 0)
-    
-    Нет умножений! Только сложения и вычитания.
+    Matrix multiplication with ternary weights
+
+    Instead of: result[i] = sum(w[i][j] * x[j])
+    We do:      result[i] = sum(x[j] if w=+1 else -x[j] if w=-1 else 0)
+
+    No multiplications! Only additions and subtractions.
     """
     result = []
     for row in weights:
         total = 0.0
         for w, xi in zip(row, x):
             if w == 1:
-                total += xi      # Старший сын добавляет
+                total += xi      # Eldest son adds
             elif w == -1:
-                total -= xi      # Младший сын вычитает
-            # w == 0: средний сын молчит
+                total -= xi      # Youngest son subtracts
+            # w == 0: middle son stays silent
         result.append(total * scale)
     return result
 ```
 
 ---
 
-## Ternary Activation: Три Состояния Нейрона
+## Ternary Activation: Three States of the Neuron
 
-### Стандартные Активации
+### Standard Activations
 
 ```
-ReLU:    max(0, x)           — 2 состояния (0 или +)
-Sigmoid: 1/(1+e^-x)          — непрерывно [0, 1]
-Tanh:    (e^x-e^-x)/(e^x+e^-x) — непрерывно [-1, 1]
+ReLU:    max(0, x)           — 2 states (0 or +)
+Sigmoid: 1/(1+e^-x)          — continuous [0, 1]
+Tanh:    (e^x-e^-x)/(e^x+e^-x) — continuous [-1, 1]
 ```
 
 ### Ternary Activation
@@ -229,12 +229,12 @@ Tanh:    (e^x-e^-x)/(e^x+e^-x) — непрерывно [-1, 1]
 ```python
 def hard_ternary(x, threshold=0.5):
     """
-    Жёсткая тернарная активация: {-1, 0, +1}
-    
-    Как три дороги:
-    - x > threshold  → +1 (направо)
-    - x < -threshold → -1 (налево)
-    - иначе          → 0  (прямо/стоп)
+    Hard ternary activation: {-1, 0, +1}
+
+    Like three roads:
+    - x > threshold  → +1 (go right)
+    - x < -threshold → -1 (go left)
+    - otherwise      → 0  (straight/stop)
     """
     if x > threshold:
         return 1
@@ -244,21 +244,21 @@ def hard_ternary(x, threshold=0.5):
 
 def soft_ternary(x, k=5.0):
     """
-    Мягкая тернарная активация (дифференцируемая)
-    
-    Аппроксимация hard_ternary для обучения
+    Soft ternary activation (differentiable)
+
+    Approximation of hard_ternary for training
     """
     import math
     return math.tanh(k * (x - 0.5)) / 2 + math.tanh(k * (x + 0.5)) / 2
 
 def leaky_ternary(x, alpha=0.1):
     """
-    Leaky тернарная: 3 линейных региона
-    
-    Как три царства:
-    - x > 1:  1 + α(x-1)   (за пределами)
-    - x < -1: -1 + α(x+1)  (за пределами)
-    - иначе:  x            (в царстве)
+    Leaky ternary: 3 linear regions
+
+    Like three kingdoms:
+    - x > 1:  1 + α(x-1)   (beyond the border)
+    - x < -1: -1 + α(x+1)  (beyond the border)
+    - otherwise: x         (within the kingdom)
     """
     if x > 1:
         return 1 + alpha * (x - 1)
@@ -267,7 +267,7 @@ def leaky_ternary(x, alpha=0.1):
     return x
 ```
 
-### Сравнение
+### Comparison
 
 ```
 ┌─────────┬─────────┬─────────────┬─────────────┬─────────────┐
@@ -285,123 +285,123 @@ def leaky_ternary(x, alpha=0.1):
 
 ---
 
-## Edge of Chaos: Критическая Инициализация
+## Edge of Chaos: Critical Initialization
 
-### Три Состояния Сети
+### Three States of the Network
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ТРИ СОСТОЯНИЯ НЕЙРОСЕТИ                              │
+│   THREE STATES OF THE NEURAL NETWORK                   │
 │                                                         │
-│   ЗАТУХАНИЕ        КРИТИЧНОСТЬ      ВЗРЫВ              │
-│   ─────────        ───────────      ─────              │
-│   σ² < 1           σ² = 1           σ² > 1             │
+│   DECAY              CRITICALITY        EXPLOSION      │
+│   ─────              ───────────        ─────────      │
+│   σ² < 1             σ² = 1             σ² > 1         │
 │                                                         │
-│   Сигнал           Сигнал           Сигнал             │
-│   исчезает         сохраняется      взрывается         │
+│   Signal             Signal             Signal         │
+│   vanishes           is preserved       explodes       │
 │                                                         │
-│   Не обучается     ОБУЧАЕТСЯ!       Не обучается       │
+│   Does not learn     LEARNS!            Does not learn │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Условие Критичности
+### Criticality Condition
 
 ```
 σ_w² × σ_b² = 1
 
-Где:
-  σ_w² = дисперсия весов
-  σ_b² = дисперсия активаций (≈1 для tanh)
+Where:
+  σ_w² = variance of weights
+  σ_b² = variance of activations (≈1 for tanh)
 
-Для tanh: σ_w² = 1/n_in  (Xavier initialization)
-Для ReLU: σ_w² = 2/n_in  (He initialization)
+For tanh: σ_w² = 1/n_in  (Xavier initialization)
+For ReLU: σ_w² = 2/n_in  (He initialization)
 ```
 
-### Эксперимент
+### Experiment
 
 ```python
 def simulate_signal(n_layers, width, sigma_w):
-    """Симуляция распространения сигнала"""
+    """Simulate signal propagation"""
     import random
     import math
-    
-    # Начальный сигнал
+
+    # Initial signal
     signal = [random.gauss(0, 1) for _ in range(width)]
-    
+
     for _ in range(n_layers):
         new_signal = []
         for _ in range(width):
             z = sum(random.gauss(0, sigma_w) * s for s in signal) / math.sqrt(width)
             new_signal.append(math.tanh(z))
         signal = new_signal
-    
-    # Норма сигнала
+
+    # Signal norm
     return math.sqrt(sum(s**2 for s in signal) / width)
 
-# Результаты (10 слоёв, ширина 100)
-# σ_w = 0.5: норма → 0.0007 (ЗАТУХАНИЕ)
-# σ_w = 0.8: норма → 0.0408 (ЗАТУХАНИЕ)
-# σ_w = 1.0: норма → 0.2424 (КРИТИЧНОСТЬ) ✓
-# σ_w = 1.2: норма → 0.4568 (КРИТИЧНОСТЬ) ✓
-# σ_w = 1.5: норма → 0.5912 (КРИТИЧНОСТЬ) ✓
+# Results (10 layers, width 100)
+# σ_w = 0.5: norm → 0.0007 (DECAY)
+# σ_w = 0.8: norm → 0.0408 (DECAY)
+# σ_w = 1.0: norm → 0.2424 (CRITICALITY) ✓
+# σ_w = 1.2: norm → 0.4568 (CRITICALITY) ✓
+# σ_w = 1.5: norm → 0.5912 (CRITICALITY) ✓
 ```
 
 ---
 
-## Trinity Perceptron: Три Выхода
+## Trinity Perceptron: Three Outputs
 
-### Идея
+### The Idea
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   СТАНДАРТНЫЙ PERCEPTRON                               │
+│   STANDARD PERCEPTRON                                  │
 │   y = sign(w·x + b) → {-1, +1}                         │
 │                                                         │
 │   TRINITY PERCEPTRON                                   │
 │   y = ternary(w·x + b) → {-1, 0, +1}                   │
 │                                                         │
-│   Третий выход (0) = "не знаю" / "нейтрально"          │
+│   Third output (0) = "don't know" / "neutral"          │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Код
+### Code
 
 ```python
 class TrinityPerceptron:
     """
-    Перцептрон с тремя выходами
-    
-    Как три дороги:
-    - +1: уверен в положительном классе
-    - -1: уверен в отрицательном классе
-    - 0:  не уверен / нейтрально
+    Perceptron with three outputs
+
+    Like three roads:
+    - +1: confident in positive class
+    - -1: confident in negative class
+    - 0:  uncertain / neutral
     """
-    
+
     def __init__(self, n_features, threshold=0.5):
         import random
         self.weights = [random.gauss(0, 0.1) for _ in range(n_features)]
         self.bias = 0.0
         self.threshold = threshold
-    
+
     def predict(self, x):
         z = sum(w * xi for w, xi in zip(self.weights, x)) + self.bias
-        
+
         if z > self.threshold:
-            return 1    # Направо — положительный
+            return 1    # Right — positive
         elif z < -self.threshold:
-            return -1   # Налево — отрицательный
-        return 0        # Прямо — нейтрально
-    
+            return -1   # Left — negative
+        return 0        # Straight — neutral
+
     def train(self, X, y, epochs=100, lr=0.1):
         for _ in range(epochs):
             for xi, yi in zip(X, y):
                 pred = self.predict(xi)
                 error = yi - pred
-                
+
                 for j in range(len(self.weights)):
                     self.weights[j] += lr * error * xi[j]
                 self.bias += lr * error
@@ -409,22 +409,22 @@ class TrinityPerceptron:
 
 ---
 
-## Сводка: Число 3 в Нейросетях
+## Summary: The Number 3 in Neural Networks
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ЧИСЛО 3 В НЕЙРОСЕТЯХ                                 │
+│   THE NUMBER 3 IN NEURAL NETWORKS                      │
 │                                                         │
-│   КОНЦЕПЦИЯ           ПРИМЕНЕНИЕ                       │
+│   CONCEPT            APPLICATION                       │
 │   ─────────────────────────────────────────────────    │
-│   3-way decision      Accept / Reject / Defer          │
-│   Ternary weights     {-1, 0, +1} → 16x меньше памяти │
-│   Ternary activation  3 региона активации              │
-│   Edge of chaos       3 состояния: затух./крит./взрыв │
-│   Trinity perceptron  3 выхода: +1, 0, -1              │
+│   3-way decision     Accept / Reject / Defer          │
+│   Ternary weights    {-1, 0, +1} → 16x less memory    │
+│   Ternary activation 3 activation regions             │
+│   Edge of chaos      3 states: decay/crit./explosion  │
+│   Trinity perceptron 3 outputs: +1, 0, -1             │
 │                                                         │
-│   ПРАКТИКА:                                            │
+│   PRACTICE:                                            │
 │   • Mobile/edge deployment (TWN)                       │
 │   • Uncertainty quantification (3-way)                 │
 │   • Efficient inference (ternary ops)                  │
@@ -434,33 +434,33 @@ class TrinityPerceptron:
 
 ---
 
-## Мудрость Главы
+## Wisdom of the Chapter
 
-> *И понял Иван-программист пятую истину:*
+> *And Ivan the Programmer understood the fifth truth:*
 >
-> *Три заброса невода — три решения нейросети:*
-> *первый — пусто (REJECT),*
-> *второй — тина (DEFER),*
-> *третий — золотая рыбка (ACCEPT).*
+> *Three casts of the net — three decisions of the neural network:*
+> *the first — empty (REJECT),*
+> *the second — seaweed (DEFER),*
+> *the third — golden fish (ACCEPT).*
 >
-> *Три веса нейрона — три сына мельника:*
-> *старший (+1) добавляет,*
-> *младший (-1) вычитает,*
-> *средний (0) молчит.*
+> *Three weights of the neuron — the miller's three sons:*
+> *the eldest (+1) adds,*
+> *the youngest (-1) subtracts,*
+> *the middle (0) stays silent.*
 >
-> *Три состояния сети — три царства:*
-> *затухание (Навь),*
-> *критичность (Явь),*
-> *взрыв (Правь).*
+> *Three states of the network — three realms:*
+> *decay (Nav'),*
+> *criticality (Yav'),*
+> *explosion (Prav').*
 >
-> *Только на границе хаоса и порядка*
-> *сеть обучается.*
+> *Only at the edge of chaos and order*
+> *does the network learn.*
 >
-> *Как герой сказки на распутье —*
-> *нейросеть выбирает из трёх дорог.*
+> *Like the hero of a fairy tale at a crossroads —*
+> *the neural network chooses from three roads.*
 >
-> *Древние знали.*
+> *The ancients knew.*
 
 ---
 
-[← Глава 6](06_trinity_compression.md) | [Глава 8: Бенчмарки →](08_benchmarks.md)
+[<- Chapter 6](06_trinity_compression.md) | [Chapter 8: Benchmarks ->](08_benchmarks.md)

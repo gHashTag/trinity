@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════
-# ЧАСТЬ I: ТЕОРИЯ
-# Небо — Мир Богов и Идей
+# PART I: THEORY
+# Heaven — The World of Gods and Ideas
 # ═══════════════════════════════════════════════════════════════
 
 ```
@@ -11,23 +11,23 @@
                      ╱   │   ╲
             ┌───────────────────────────┐
             │                           │
-            │   «Почему число 3?»       │
+            │   "Why the number 3?"     │
             │                           │
-            │   Здесь я узнаю,          │
-            │   почему тройка —         │
-            │   не случайность,         │
-            │   а структура             │
-            │   самой реальности.       │
+            │   Here I will learn       │
+            │   why three is            │
+            │   not a coincidence,      │
+            │   but the structure       │
+            │   of reality itself.      │
             │                           │
             └───────────────────────────┘
 ```
 
-## Главы Части I
+## Chapters of Part I
 
-- **Глава 1:** Число Три — Структура Реальности
-- **Глава 2:** Физика и Алгоритмы — Единая Природа  
-- **Глава 3:** Константы π, φ, e — Язык Вселенной
+- **Chapter 1:** The Number Three — The Structure of Reality
+- **Chapter 2:** Physics and Algorithms — A Unified Nature
+- **Chapter 3:** Constants π, φ, e — The Language of the Universe
 
 ---
 
-*«В начале было Число, и Число было Три...»*
+*"In the beginning was the Number, and the Number was Three..."*

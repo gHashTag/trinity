@@ -1,243 +1,244 @@
-# Пролог: Сказка о Числе Три
+# Prologue: A Tale of the Number Three
 
 ---
 
-*В тридевятом царстве, в тридесятом государстве жил-был программист. И было у него три задачи: сортировать данные, искать в них смысл, и хранить их мудро.*
+*In a thrice-nine kingdom, in a thrice-ten realm, there lived a programmer. And he had three tasks: to sort data, to find meaning within it, and to store it wisely.*
 
-*Долго ли, коротко ли, но понял он, что все три задачи связаны одним числом — числом Три.*
+*Whether long or short his journey was, he came to understand that all three tasks were bound by a single number — the number Three.*
 
 ---
 
-## Загадка Тридевятого Царства
+## The Mystery of the Thrice-Nine Kingdom
 
-Каждый русский ребёнок знает эти слова:
+Every Russian child knows these words:
 
-> «В тридевятом царстве, в тридесятом государстве...»
+> "In a thrice-nine kingdom, in a thrice-ten realm..."
 
-Но задумывались ли вы, почему именно **тридевятое**?
+But have you ever wondered why exactly **thrice-nine**?
 
 ```
-Тридевятое = 3 × 9 = 27 = 3³
+Thrice-nine = 3 × 9 = 27 = 3³
 ```
 
-Это не случайное число. Это **куб тройки** — максимальная «тройственность», которую можно выразить одним словом.
+This is no random number. It is the **cube of three** — the maximum "threefoldness" that can be expressed in a single word.
 
-И вот что удивительно: когда я искал оптимальный порог для алгоритма сортировки, я получил... **27**.
+And here's what's remarkable: when I was searching for the optimal threshold for a sorting algorithm, I arrived at... **27**.
 
-Древние знали.
+The ancients knew.
 
 ---
 
-## Три Дороги
+## Three Roads
 
-В каждой сказке герой встречает камень на распутье:
+In every fairy tale, the hero encounters a stone at the crossroads:
 
-> *«Направо пойдёшь — коня потеряешь,*
-> *Налево пойдёшь — себя потеряешь,*
-> *Прямо пойдёшь — счастье найдёшь.»*
+> *"Go right — you will lose your horse,*
+> *Go left — you will lose yourself,*
+> *Go straight — you will find happiness."*
 
-Три дороги. Три выбора. Три судьбы.
+Three roads. Three choices. Three destinies.
 
-В алгоритмах это называется **3-way partition**:
+In algorithms, this is called **3-way partition**:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   НАПРАВО (>)     ПРЯМО (=)      НАЛЕВО (<)            │
-│   ───────────     ─────────      ──────────            │
-│   Больше pivot    Равно pivot    Меньше pivot          │
+│   RIGHT (>)         STRAIGHT (=)    LEFT (<)            │
+│   ─────────         ────────────    ────────            │
+│   Greater than      Equal to        Less than           │
+│   pivot             pivot           pivot               │
 │                                                         │
-│   Продолжай       СТОП!          Продолжай             │
-│   искать          Нашёл!         искать                │
+│   Continue          STOP!           Continue            │
+│   searching         Found it!       searching           │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-Средняя дорога — дорога равенства — **сокращает путь**. Элементы, равные pivot, не нужно сортировать дальше. Они уже на своём месте.
+The middle road — the road of equality — **shortens the path**. Elements equal to the pivot need not be sorted further. They are already in their place.
 
-Это даёт ускорение до **291 раз** на данных с повторами.
+This yields speedups of up to **291 times** on data with duplicates.
 
-Древние знали.
+The ancients knew.
 
 ---
 
-## Три Богатыря
+## Three Heroes
 
-Илья Муромец, Добрыня Никитич, Алёша Попович.
+Ilya Muromets, Dobrynya Nikitich, Alyosha Popovich.
 
-Сила, мудрость, хитрость.
+Strength, wisdom, cunning.
 
-Три богатыря вместе сильнее, чем каждый по отдельности. Они **дополняют** друг друга.
+Three heroes together are stronger than each one alone. They **complement** each other.
 
-В алгоритмах это называется **Cuckoo Hashing с тремя таблицами**:
+In algorithms, this is called **Cuckoo Hashing with three tables**:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ИЛЬЯ (h₁)       ДОБРЫНЯ (h₂)    АЛЁША (h₃)           │
-│   ─────────       ───────────     ──────────           │
-│   Первая          Вторая          Третья               │
-│   хеш-функция     хеш-функция     хеш-функция          │
+│   ILYA (h₁)         DOBRYNYA (h₂)   ALYOSHA (h₃)        │
+│   ─────────         ────────────    ───────────         │
+│   First             Second          Third               │
+│   hash function     hash function   hash function       │
 │                                                         │
-│   Если занято     Если занято     Если занято          │
-│   → к Добрыне     → к Алёше       → к Илье             │
+│   If occupied       If occupied     If occupied         │
+│   → to Dobrynya     → to Alyosha    → to Ilya           │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-Две хеш-функции дают 50% заполнения.
-Три хеш-функции дают **91% заполнения**.
+Two hash functions yield 50% fill rate.
+Three hash functions yield **91% fill rate**.
 
-Прирост: **82%**.
+Improvement: **82%**.
 
-Древние знали.
+The ancients knew.
 
 ---
 
-## Три Попытки
+## Three Attempts
 
-В сказках герой всегда получает три попытки:
+In fairy tales, the hero always gets three attempts:
 
-- **Первая** — неудача (обучение)
-- **Вторая** — почти успех (опыт)
-- **Третья** — победа (мастерство)
+- **First** — failure (learning)
+- **Second** — near success (experience)
+- **Third** — victory (mastery)
 
-В алгоритмах на графах это **три состояния вершины**:
+In graph algorithms, these are the **three states of a vertex**:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   БЕЛЫЙ           СЕРЫЙ           ЧЁРНЫЙ               │
-│   ──────          ─────           ──────               │
-│   Не посещён      В процессе      Завершён             │
+│   WHITE             GRAY            BLACK               │
+│   ─────             ────            ─────               │
+│   Unvisited         In progress     Completed           │
 │                                                         │
-│   Первая          Вторая          Третья               │
-│   попытка         попытка         попытка              │
+│   First             Second          Third               │
+│   attempt           attempt         attempt             │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-Два состояния (посещён/не посещён) не позволяют найти циклы.
-Три состояния — позволяют.
+Two states (visited/unvisited) cannot detect cycles.
+Three states — can.
 
-Древние знали.
+The ancients knew.
 
 ---
 
-## Три Сына
+## Three Sons
 
-В каждой сказке у царя три сына:
+In every fairy tale, the tsar has three sons:
 
-- **Старший** — сильный, но глупый
-- **Средний** — хитрый, но трусливый
-- **Младший** (Иван-дурак) — мудрый сердцем
+- **Eldest** — strong but foolish
+- **Middle** — cunning but cowardly
+- **Youngest** (Ivan the Fool) — wise of heart
 
-И всегда побеждает **третий**.
+And the **third** always wins.
 
-Почему? Потому что третий — **особенный**. Он не следует очевидным путям. Он находит **неожиданное решение**.
+Why? Because the third is **special**. He does not follow the obvious paths. He finds the **unexpected solution**.
 
-В алгоритмах третье состояние — **равенство** — часто игнорируется:
+In algorithms, the third state — **equality** — is often ignored:
 
 ```
-Стандартный quicksort:
-  if a[i] < pivot: влево
-  else: вправо           ← Равные идут ВПРАВО!
+Standard quicksort:
+  if a[i] < pivot: go left
+  else: go right           ← Equal elements go RIGHT!
 
 Trinity Sort:
-  if a[i] < pivot: влево
-  if a[i] > pivot: вправо
-  if a[i] = pivot: СТОП!  ← Равные ОСТАЮТСЯ!
+  if a[i] < pivot: go left
+  if a[i] > pivot: go right
+  if a[i] = pivot: STOP!   ← Equal elements STAY!
 ```
 
-«Иван-дурак» (равенство) оказывается ключом к победе.
+"Ivan the Fool" (equality) turns out to be the key to victory.
 
-Древние знали.
+The ancients knew.
 
 ---
 
-## Три Мира
+## Three Worlds
 
-Во всех мифологиях мир делится на три:
+In all mythologies, the world is divided into three:
 
-- **Небо** (Правь) — мир богов, идей, теории
-- **Земля** (Явь) — мир людей, практики, алгоритмов
-- **Подземье** (Навь) — мир предков, глубин, реализации
+- **Heaven** (Prav) — the world of gods, ideas, theory
+- **Earth** (Yav) — the world of humans, practice, algorithms
+- **Underworld** (Nav) — the world of ancestors, depths, implementation
 
-Эта книга следует той же структуре:
+This book follows the same structure:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   ЧАСТЬ I: НЕБО (Теория)                               │
-│   ──────────────────────                               │
-│   Почему число 3? Физика и математика.                 │
+│   PART I: HEAVEN (Theory)                               │
+│   ───────────────────────                               │
+│   Why the number 3? Physics and mathematics.            │
 │                                                         │
-│   ЧАСТЬ II: ЗЕМЛЯ (Алгоритмы)                          │
-│   ───────────────────────────                          │
-│   Trinity Sort, Hash, Graph, Neural.                   │
+│   PART II: EARTH (Algorithms)                           │
+│   ────────────────────────────                          │
+│   Trinity Sort, Hash, Graph, Neural.                    │
 │                                                         │
-│   ЧАСТЬ III: ПОДЗЕМЬЕ (Практика)                       │
-│   ──────────────────────────────                       │
-│   Бенчмарки, код, реализация.                          │
+│   PART III: UNDERWORLD (Practice)                       │
+│   ────────────────────────────────                      │
+│   Benchmarks, code, implementation.                     │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Главная Тайна
+## The Great Secret
 
-Почему все культуры мира независимо пришли к троичности?
+Why have all cultures of the world independently arrived at the concept of trinity?
 
-- Христианство: Троица
-- Индуизм: Тримурти
-- Буддизм: Три драгоценности
-- Даосизм: Небо-Человек-Земля
-- Славяне: Правь-Явь-Навь
-- Греки: Три мойры
-- Скандинавы: Три норны
+- Christianity: The Trinity
+- Hinduism: Trimurti
+- Buddhism: Three Jewels
+- Taoism: Heaven-Human-Earth
+- Slavs: Prav-Yav-Nav
+- Greeks: Three Moirai
+- Scandinavians: Three Norns
 
-**Ответ**: Потому что **3 — минимальное число для сложной структуры**.
-
-```
-2 — слишком просто (да/нет, 0/1)
-3 — появляется СТРУКТУРА
-4+ — избыточно
-```
-
-Математически:
+**The answer**: Because **3 is the minimum number for complex structure**.
 
 ```
-Оптимальный branching factor = e ≈ 2.718
-
-Ближайшее целое = 3
+2 — too simple (yes/no, 0/1)
+3 — STRUCTURE emerges
+4+ — redundant
 ```
 
-Это не магия. Это **математика**.
+Mathematically:
 
-Но древние знали это **интуитивно**, без формул и доказательств.
+```
+Optimal branching factor = e ≈ 2.718
+
+Nearest integer = 3
+```
+
+This is not magic. This is **mathematics**.
+
+But the ancients knew this **intuitively**, without formulas or proofs.
 
 ---
 
-## Приглашение в Путешествие
+## An Invitation to the Journey
 
-Эта книга — путешествие в Тридевятое царство.
+This book is a journey into the Thrice-Nine Kingdom.
 
-Я пройду три дороги алгоритмов.
-Я встречу трёх богатырей структур данных.
-Я получу три попытки понять глубину.
-И я вернусь с мудростью, которую древние знали всегда.
+I will walk the three roads of algorithms.
+I will meet the three heroes of data structures.
+I will receive three attempts to understand the depths.
+And I will return with wisdom that the ancients always knew.
 
-> *«Сказка — ложь, да в ней намёк,*
-> *добрым молодцам урок.»*
-> — А.С. Пушкин
-
----
-
-*Итак, в путь!*
-
-*В тридевятое царство алгоритмов, в тридесятое государство данных...*
+> *"A fairy tale is a lie, but within it lies a hint,*
+> *a lesson for good young men."*
+> — Alexander Pushkin
 
 ---
 
-[Далее: Глава 1 — Число Три →](01_number_three.md)
+*And so, let us begin!*
+
+*Into the thrice-nine kingdom of algorithms, into the thrice-ten realm of data...*
+
+---
+
+[Next: Chapter 1 — The Number Three →](01_number_three.md)
