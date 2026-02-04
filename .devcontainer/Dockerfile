@@ -14,3 +14,14 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 # Verify Zig installation
 RUN zig version
+
+# Install Node.js for Playwright bridge (WebArena agent)
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+        nodejs \
+        npm \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify Node.js installation
+RUN node --version && npm --version
