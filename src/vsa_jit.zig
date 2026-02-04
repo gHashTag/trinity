@@ -24,6 +24,7 @@ pub const JitVSAEngine = struct {
     // Cached JIT-compiled functions for common dimensions
     dot_cache: std.AutoHashMap(usize, jit_unified.JitDotFn),
     bind_cache: std.AutoHashMap(usize, jit_unified.JitDotFn),
+    hamming_cache: std.AutoHashMap(usize, jit_unified.JitDotFn),
 
     // Keep compilers alive to prevent exec_mem from being freed
     compilers: std.ArrayList(jit_unified.UnifiedJitCompiler),
@@ -40,6 +41,7 @@ pub const JitVSAEngine = struct {
             .allocator = allocator,
             .dot_cache = std.AutoHashMap(usize, jit_unified.JitDotFn).init(allocator),
             .bind_cache = std.AutoHashMap(usize, jit_unified.JitDotFn).init(allocator),
+            .hamming_cache = std.AutoHashMap(usize, jit_unified.JitDotFn).init(allocator),
             .compilers = .empty,
         };
     }
@@ -52,6 +54,7 @@ pub const JitVSAEngine = struct {
         self.compilers.deinit(self.allocator);
         self.dot_cache.deinit();
         self.bind_cache.deinit();
+        self.hamming_cache.deinit();
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -179,6 +182,32 @@ pub const JitVSAEngine = struct {
     // JIT HAMMING DISTANCE (count of differing positions)
     // ═══════════════════════════════════════════════════════════════════════════
 
+    /// Get or compile JIT function for hamming distance
+    fn getHammingFunction(self: *Self, dimension: usize) !?jit_unified.JitDotFn {
+        if (self.hamming_cache.get(dimension)) |func| {
+            self.jit_hits += 1;
+            return func;
+        }
+
+        // Try to compile new function (only available on ARM64)
+        try self.compilers.append(self.allocator, jit_unified.UnifiedJitCompiler.init(self.allocator));
+        const compiler = &self.compilers.items[self.compilers.items.len - 1];
+
+        compiler.compileHamming(dimension) catch |err| {
+            // Remove the failed compiler
+            _ = self.compilers.pop();
+            if (err == error.UnsupportedOperation) {
+                return null; // Fall back to scalar
+            }
+            return err;
+        };
+
+        self.jit_misses += 1;
+        const func = try compiler.finalize();
+        try self.hamming_cache.put(dimension, func);
+        return func;
+    }
+
     /// JIT-accelerated hamming distance
     /// For ternary: counts positions where a[i] != b[i]
     pub fn hammingDistance(self: *Self, a: *HybridBigInt, b: *HybridBigInt) !i64 {
@@ -190,13 +219,14 @@ pub const JitVSAEngine = struct {
 
         const dim = @max(a.trit_len, b.trit_len);
 
-        // Use JIT dot product trick: for matching positions, a[i]*b[i] contributes +1
-        // For ternary (-1, 0, 1), this doesn't give us exact hamming directly
-        // So we compute it via: hamming = sum(1 if a[i] != b[i] else 0)
-        // Using SIMD, we can compute: count of (a XOR b != 0)
+        // Try JIT SIMD version (available on ARM64)
+        if (try self.getHammingFunction(dim)) |func| {
+            const a_ptr: *anyopaque = @ptrCast(&a.unpacked_cache);
+            const b_ptr: *anyopaque = @ptrCast(&b.unpacked_cache);
+            return func(a_ptr, b_ptr);
+        }
 
-        // For now, leverage dot product: if a[i] == b[i], a[i]*b[i] = a[i]^2
-        // Actually for ternary, let's use scalar path with JIT warmup benefit
+        // Scalar fallback
         var count: i64 = 0;
         for (0..dim) |i| {
             if (a.unpacked_cache[i] != b.unpacked_cache[i]) {
@@ -221,7 +251,7 @@ pub const JitVSAEngine = struct {
             .total_ops = self.total_ops,
             .jit_hits = self.jit_hits,
             .jit_misses = self.jit_misses,
-            .cache_size = self.dot_cache.count() + self.bind_cache.count(),
+            .cache_size = self.dot_cache.count() + self.bind_cache.count() + self.hamming_cache.count(),
             .hit_rate = hit_rate,
         };
     }

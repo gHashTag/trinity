@@ -144,11 +144,33 @@ pub const UnifiedJitCompiler = struct {
     // BIND COMPILATION
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Compile bind operation
+    /// Compile bind operation - uses SIMD on ARM64
     pub fn compileBind(self: *Self, dimension: usize) !void {
+        switch (self.backend) {
+            .arm64 => |*b| try b.compileBindSIMD(dimension),
+            .x86_64 => |*b| try b.compileBindDirect(dimension),
+            .unsupported => return error.UnsupportedArchitecture,
+        }
+    }
+
+    /// Compile bind operation (scalar version)
+    pub fn compileBindScalar(self: *Self, dimension: usize) !void {
         switch (self.backend) {
             .arm64 => |*b| try b.compileBindDirect(dimension),
             .x86_64 => |*b| try b.compileBindDirect(dimension),
+            .unsupported => return error.UnsupportedArchitecture,
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HAMMING DISTANCE COMPILATION
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Compile hamming distance - uses SIMD on ARM64
+    pub fn compileHamming(self: *Self, dimension: usize) !void {
+        switch (self.backend) {
+            .arm64 => |*b| try b.compileHammingSIMD(dimension),
+            .x86_64 => return error.UnsupportedOperation,
             .unsupported => return error.UnsupportedArchitecture,
         }
     }
