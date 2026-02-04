@@ -1,0 +1,25 @@
+{
+  "name": "firebird-playwright-bridge",
+  "version": "1.0.0",
+  "description": "WebArena Playwright Bridge for FIREBIRD Agent",
+  "main": "playwright_bridge.js",
+  "scripts": {
+    "start": "node playwright_bridge.js",
+    "test": "node -e \"require('./playwright_bridge.js'); console.log('Bridge module loaded successfully')\""
+  },
+  "keywords": [
+    "webarena",
+    "playwright",
+    "firebird",
+    "browser-automation",
+    "ternary"
+  ],
+  "author": "FIREBIRD Team",
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
