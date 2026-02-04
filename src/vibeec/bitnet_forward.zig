@@ -133,27 +133,69 @@ pub fn dequantizeActivations8bit(input: []const i8, output: []f32, scale: f32) v
     }
 }
 
-/// Quantize activations in-place (for efficiency)
-/// Modifies input array and returns scale
+// SIMD vector types for optimized quantization
+const Vec8f32 = @Vector(8, f32);
+
+/// SIMD-optimized activation quantization in-place
+/// Uses 8-wide vectors for finding max and applying quantization
 pub fn quantizeActivationsInPlace(input: []f32) f32 {
-    // Find maximum absolute value
-    var max_abs: f32 = 0.0;
-    for (input) |x| {
-        const abs_x = @abs(x);
+    if (input.len == 0) return 1.0;
+    
+    // SIMD find maximum absolute value
+    var max_vec: Vec8f32 = @splat(0.0);
+    var i: usize = 0;
+    
+    // Process 8 elements at a time
+    while (i + 8 <= input.len) : (i += 8) {
+        const v: Vec8f32 = input[i..][0..8].*;
+        const abs_v = @abs(v);
+        max_vec = @max(max_vec, abs_v);
+    }
+    
+    // Reduce SIMD max to scalar
+    var max_abs = @reduce(.Max, max_vec);
+    
+    // Scalar tail
+    while (i < input.len) : (i += 1) {
+        const abs_x = @abs(input[i]);
         if (abs_x > max_abs) max_abs = abs_x;
     }
     
     if (max_abs < 1e-10) return 1.0;
     
-    // Scale to [-127, 127] and back (simulates quantization noise)
+    // Compute scales
     const quant_scale = 127.0 / max_abs;
     const dequant_scale = max_abs / 127.0;
+    const quant_vec: Vec8f32 = @splat(quant_scale);
+    const dequant_vec: Vec8f32 = @splat(dequant_scale);
+    const min_vec: Vec8f32 = @splat(-127.0);
+    const max_clamp: Vec8f32 = @splat(127.0);
     
-    for (input) |*x| {
-        const scaled = x.* * quant_scale;
+    // SIMD quantize and dequantize
+    i = 0;
+    while (i + 8 <= input.len) : (i += 8) {
+        var v: Vec8f32 = input[i..][0..8].*;
+        // Scale
+        v = v * quant_vec;
+        // Clamp
+        v = @max(min_vec, @min(max_clamp, v));
+        // Round (using floor(x + 0.5) trick)
+        const half: Vec8f32 = @splat(0.5);
+        const sign_mask = v < @as(Vec8f32, @splat(0.0));
+        const offset = @select(f32, sign_mask, -half, half);
+        v = @floor(v + offset);
+        // Dequantize
+        v = v * dequant_vec;
+        // Store
+        input[i..][0..8].* = v;
+    }
+    
+    // Scalar tail
+    while (i < input.len) : (i += 1) {
+        const scaled = input[i] * quant_scale;
         const clamped = @max(-127.0, @min(127.0, scaled));
         const quantized = @round(clamped);
-        x.* = quantized * dequant_scale;
+        input[i] = quantized * dequant_scale;
     }
     
     return dequant_scale;
