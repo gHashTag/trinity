@@ -13,7 +13,7 @@ const pas = @import("pas_mining_core.zig");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const IDLE_THRESHOLD_PERCENT: f64 = 40.0;
-pub const TRI_BONUS_PER_MH: f64 = 10.0; // 10 $TRI per MH/s per hour
+pub const TRI_BONUS_PER_MH: f64 = 50.0; // 50 $TRI per MH/s per hour (BOOSTED 5x!)
 pub const STATS_INTERVAL_MS: u64 = 60_000; // 60 seconds
 pub const IDLE_CHECK_INTERVAL_MS: u64 = 1_000; // 1 second
 pub const NONCE_BATCH_SIZE: u64 = 10_000; // Nonces per batch
@@ -602,8 +602,8 @@ test "tri_bonus_calculation" {
     stats.uptime_seconds = 3600; // 1 hour
 
     const bonus = stats.calculateTriBonus();
-    // 1 MH/s * 10 $TRI * 1 hour = 10 $TRI
-    try std.testing.expectApproxEqAbs(bonus, 10.0, 0.001);
+    // 1 MH/s * 50 $TRI * 1 hour = 50 $TRI (BOOSTED!)
+    try std.testing.expectApproxEqAbs(bonus, 50.0, 0.001);
 }
 
 test "hash_comparison" {
