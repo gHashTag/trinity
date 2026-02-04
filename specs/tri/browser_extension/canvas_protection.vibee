@@ -1,0 +1,123 @@
+# Canvas Fingerprint Protection Specification
+# Single Source of Truth for Canvas spoofing
+# φ² + 1/φ² = 3 = TRINITY
+
+name: canvas_protection
+version: "1.0.0"
+language: zig
+module: canvas_protection
+
+constants:
+  PHI: 1.6180339887
+  TRINITY: 3.0
+  
+  # Noise parameters
+  NOISE_AMPLITUDE: 2  # Max pixel value change
+  NOISE_DENSITY: 0.1  # Fraction of pixels to modify
+  
+  # Canvas methods to intercept
+  INTERCEPTED_METHODS:
+    - "toDataURL"
+    - "toBlob"
+    - "getImageData"
+    - "measureText"
+    - "fillText"
+    - "strokeText"
+
+types:
+  CanvasFingerprint:
+    description: "Canvas fingerprint data"
+    fields:
+      data_url_hash: String
+      image_data_hash: String
+      text_metrics: Map<String, Float>
+      font_rendering: String
+  
+  NoiseConfig:
+    description: "Configuration for canvas noise injection"
+    fields:
+      enabled: Bool
+      amplitude: Int
+      density: Float
+      seed: Int
+      trit_vector: List<Int>
+  
+  PixelData:
+    description: "RGBA pixel data"
+    fields:
+      data: List<Int>
+      width: Int
+      height: Int
+
+behaviors:
+  - name: inject_pixel_noise
+    given: Canvas with rendered content
+    when: toDataURL or getImageData called
+    then: Modify pixel values using ternary noise pattern
+    
+  - name: consistent_noise
+    given: Same seed and canvas content
+    when: Multiple calls to same canvas
+    then: Return identical noised result (deterministic)
+    
+  - name: preserve_visual
+    given: Canvas with important visual content
+    when: Noise injection applied
+    then: Changes imperceptible to human eye (amplitude <= 2)
+    
+  - name: spoof_text_metrics
+    given: measureText called with any string
+    when: Font fingerprinting attempted
+    then: Add φ-based noise to width/height metrics
+    
+  - name: randomize_font_rendering
+    given: fillText or strokeText called
+    when: Text rendered to canvas
+    then: Apply sub-pixel shifts based on ternary vector
+
+functions:
+  - name: init_noise_config
+    params:
+      - seed: Int
+      - dimension: Int
+    returns: NoiseConfig
+    description: "Initialize noise configuration with ternary vector"
+    
+  - name: apply_pixel_noise
+    params:
+      - image_data: PixelData
+      - config: NoiseConfig
+    returns: PixelData
+    description: "Apply ternary noise to pixel data"
+    
+  - name: get_noise_value
+    params:
+      - index: Int
+      - config: NoiseConfig
+    returns: Int
+    description: "Get noise value for specific pixel index"
+    
+  - name: spoof_text_width
+    params:
+      - original_width: Float
+      - text: String
+      - config: NoiseConfig
+    returns: Float
+    description: "Spoof text measurement width"
+    
+  - name: compute_canvas_hash
+    params:
+      - data: PixelData
+    returns: String
+    description: "Compute hash of canvas data for verification"
+
+# Noise algorithm
+noise_algorithm: |
+  For each pixel at index i:
+    trit = trit_vector[i % dimension]
+    if random(seed + i) < density:
+      noise = trit * amplitude * PHI / 3
+      pixel[R] = clamp(pixel[R] + noise, 0, 255)
+      pixel[G] = clamp(pixel[G] + noise, 0, 255)
+      pixel[B] = clamp(pixel[B] + noise, 0, 255)
+      # Alpha unchanged for transparency preservation
