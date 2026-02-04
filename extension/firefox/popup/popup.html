@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeoDetect</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 360px;
+      min-height: 500px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+      color: #fff;
+      padding: 16px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .logo {
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+    
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .subtitle {
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 2px;
+      letter-spacing: 1px;
+    }
+    
+    .section {
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .status-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .status-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .status-value {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .status-value.active {
+      color: #2ecc71;
+    }
+    
+    .status-value.warning {
+      color: #f39c12;
+    }
+    
+    .status-value.inactive {
+      color: #e74c3c;
+    }
+    
+    .similarity-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    
+    .similarity-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #e74c3c 0%, #f39c12 50%, #2ecc71 100%);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    .detection-risk {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(231, 76, 60, 0.1);
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    
+    .detection-risk.low {
+      background: rgba(46, 204, 113, 0.1);
+    }
+    
+    .detection-risk.medium {
+      background: rgba(243, 156, 18, 0.1);
+    }
+    
+    .detection-risk.high {
+      background: rgba(231, 76, 60, 0.1);
+    }
+    
+    .risk-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    .risk-indicator.low { background: #2ecc71; }
+    .risk-indicator.medium { background: #f39c12; }
+    .risk-indicator.high { background: #e74c3c; }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .risk-text {
+      font-size: 11px;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    /* Profile Config */
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .config-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .config-item.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    .config-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+    }
+    
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: #f39c12;
+    }
+    
+    select option {
+      background: #1a1a2e;
+      color: #fff;
+    }
+    
+    /* Profile Info */
+    .profile-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      font-size: 11px;
+    }
+    
+    .profile-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    
+    .profile-row span:first-child {
+      color: rgba(255,255,255,0.5);
+    }
+    
+    .profile-row span:last-child {
+      color: rgba(255,255,255,0.9);
+      font-weight: 500;
+      text-align: right;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.12);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* Toggles */
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    
+    .toggle-row:last-child {
+      border-bottom: none;
+    }
+    
+    .toggle-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+    }
+    
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.15);
+      border-radius: 22px;
+      transition: 0.3s;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    
+    .toggle input:checked + .toggle-slider {
+      background: #2ecc71;
+    }
+    
+    .toggle input:checked + .toggle-slider:before {
+      transform: translateX(18px);
+    }
+    
+    /* AI Section */
+    .ai-section {
+      background: rgba(243, 156, 18, 0.05);
+      border: 1px solid rgba(243, 156, 18, 0.2);
+    }
+    
+    .ai-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .wasm-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: rgba(46, 204, 113, 0.2);
+      border-radius: 10px;
+      font-size: 10px;
+      color: #2ecc71;
+    }
+    
+    .wasm-badge.fallback {
+      background: rgba(243, 156, 18, 0.2);
+      color: #f39c12;
+    }
+    
+    /* Presets */
+    .preset-row {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .preset-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .preset-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+    }
+    
+    .preset-btn.active {
+      background: rgba(243, 156, 18, 0.15);
+      border-color: #f39c12;
+    }
+    
+    .preset-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    
+    .preset-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .preset-btn.active .preset-label {
+      color: #f39c12;
+    }
+    
+    .preset-description {
+      text-align: center;
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 8px;
+      font-style: italic;
+    }
+    
+    /* Profile List */
+    .profile-list {
+      max-height: 120px;
+      overflow-y: auto;
+      margin-bottom: 8px;
+    }
+    
+    .profile-list::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .profile-list::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+    }
+    
+    .profile-list::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+    }
+    
+    .profile-empty {
+      text-align: center;
+      color: rgba(255,255,255,0.3);
+      font-size: 11px;
+      padding: 12px;
+    }
+    
+    .profile-item {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: 1px solid transparent;
+    }
+    
+    .profile-item:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .profile-item.active {
+      background: rgba(243, 156, 18, 0.1);
+      border-color: rgba(243, 156, 18, 0.3);
+    }
+    
+    .profile-icon {
+      font-size: 16px;
+      margin-right: 8px;
+    }
+    
+    .profile-details {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .profile-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .profile-meta {
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+    }
+    
+    .profile-delete {
+      opacity: 0;
+      background: none;
+      border: none;
+      color: #e74c3c;
+      cursor: pointer;
+      padding: 4px;
+      font-size: 12px;
+      transition: opacity 0.2s;
+    }
+    
+    .profile-item:hover .profile-delete {
+      opacity: 1;
+    }
+    
+    .profile-actions {
+      display: flex;
+      gap: 4px;
+    }
+    
+    .btn-small {
+      flex: 1;
+      padding: 6px 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .btn-small:hover {
+      background: rgba(255,255,255,0.12);
+    }
+    
+    .profile-count {
+      font-weight: normal;
+      color: rgba(255,255,255,0.4);
+    }
+    
+    /* Save Profile Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 16px;
+      width: 280px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #f39c12;
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    
+    .modal-input:focus {
+      outline: none;
+      border-color: #f39c12;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .footer-text {
+      font-size: 9px;
+      color: rgba(255,255,255,0.3);
+    }
+    
+    .phi-formula {
+      font-family: 'Times New Roman', serif;
+      font-style: italic;
+      color: #f39c12;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🛡️</div>
+    <h1>NEODETECT</h1>
+    <div class="subtitle">WASM-POWERED ANTIDETECT</div>
+  </div>
+  
+  <!-- Status Section -->
+  <div class="section">
+    <div class="section-title">Protection Status</div>
+    <div class="status-row">
+      <span class="status-label">Status</span>
+      <span class="status-value active" id="protection-status">Active</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Human Similarity</span>
+      <span class="status-value" id="similarity-value">0.85</span>
+    </div>
+    <div class="similarity-bar">
+      <div class="similarity-fill" id="similarity-bar" style="width: 85%"></div>
+    </div>
+    <div class="detection-risk low" id="detection-risk">
+      <div class="risk-indicator low" id="risk-indicator"></div>
+      <span class="risk-text" id="risk-text">Low detection risk</span>
+    </div>
+  </div>
+  
+  <!-- Profile Configuration -->
+  <div class="section">
+    <div class="section-title">Profile Configuration</div>
+    <div class="config-grid">
+      <div class="config-item">
+        <span class="config-label">Operating System</span>
+        <select id="os-select">
+          <option value="0">Windows 10</option>
+          <option value="1">Windows 11</option>
+          <option value="2">macOS Sonoma</option>
+          <option value="3">Linux Ubuntu</option>
+        </select>
+      </div>
+      <div class="config-item">
+        <span class="config-label">Hardware</span>
+        <select id="hw-select">
+          <option value="0">Intel i5 (6 cores)</option>
+          <option value="1" selected>Intel i7 (8 cores)</option>
+          <option value="2">Intel i9 (16 cores)</option>
+          <option value="3">AMD Ryzen 5</option>
+          <option value="4">AMD Ryzen 7</option>
+          <option value="5">AMD Ryzen 9</option>
+          <option value="6">Apple M1</option>
+          <option value="7">Apple M2</option>
+          <option value="8">Apple M3</option>
+        </select>
+      </div>
+      <div class="config-item full-width">
+        <span class="config-label">Graphics Card</span>
+        <select id="gpu-select">
+          <option value="0">NVIDIA RTX 3060</option>
+          <option value="1" selected>NVIDIA RTX 4070</option>
+          <option value="2">NVIDIA RTX 4090</option>
+          <option value="3">AMD RX 6700 XT</option>
+          <option value="4">AMD RX 7900 XTX</option>
+          <option value="5">Intel UHD 770</option>
+          <option value="6">Apple M1 GPU</option>
+          <option value="7">Apple M2 GPU</option>
+          <option value="8">Apple M3 GPU</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Saved Profiles -->
+  <div class="section">
+    <div class="section-title">
+      Saved Profiles
+      <span class="profile-count" id="profile-count">(0)</span>
+    </div>
+    <div class="profile-list" id="profile-list">
+      <div class="profile-empty" id="profile-empty">No saved profiles</div>
+    </div>
+    <div class="profile-actions">
+      <button class="btn-small" id="save-profile-btn" title="Save current profile">💾 Save</button>
+      <button class="btn-small" id="import-btn" title="Import profiles">📥 Import</button>
+      <button class="btn-small" id="export-btn" title="Export profiles">📤 Export</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display: none;">
+  </div>
+  
+  <!-- Current Profile Info -->
+  <div class="section">
+    <div class="section-title">Current Profile</div>
+    <div id="profile-info" class="profile-info">
+      <div class="profile-row">
+        <span>Platform</span>
+        <span id="info-platform">Win32</span>
+      </div>
+      <div class="profile-row">
+        <span>Screen</span>
+        <span id="info-screen">1920x1080</span>
+      </div>
+      <div class="profile-row">
+        <span>GPU</span>
+        <span id="info-gpu">RTX 4070</span>
+      </div>
+      <div class="profile-row">
+        <span>Cores</span>
+        <span id="info-cores">8</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Action Buttons -->
+  <div class="btn-row" style="margin-bottom: 12px;">
+    <button class="btn btn-primary" id="evolve-btn">🧬 Evolve</button>
+    <button class="btn btn-secondary" id="reset-btn">🔄 New</button>
+  </div>
+  
+  <!-- Protection Presets -->
+  <div class="section">
+    <div class="section-title">Quick Presets</div>
+    <div class="preset-row">
+      <button class="preset-btn" id="preset-paranoid" title="Maximum protection, may break some sites">
+        <span class="preset-icon">🛡️</span>
+        <span class="preset-label">Paranoid</span>
+      </button>
+      <button class="preset-btn active" id="preset-balanced" title="Recommended for most users">
+        <span class="preset-icon">⚖️</span>
+        <span class="preset-label">Balanced</span>
+      </button>
+      <button class="preset-btn" id="preset-minimal" title="Basic protection, maximum compatibility">
+        <span class="preset-icon">🌐</span>
+        <span class="preset-label">Minimal</span>
+      </button>
+    </div>
+    <div class="preset-description" id="preset-description">Recommended settings for most users</div>
+  </div>
+  
+  <!-- Core Protection Toggles -->
+  <div class="section">
+    <div class="section-title">Core Protections</div>
+    <div class="toggle-row">
+      <span class="toggle-label">Canvas Fingerprint</span>
+      <label class="toggle">
+        <input type="checkbox" id="canvas-protect" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">WebGL Fingerprint</span>
+      <label class="toggle">
+        <input type="checkbox" id="webgl-protect" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Audio Fingerprint</span>
+      <label class="toggle">
+        <input type="checkbox" id="audio-protect" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Navigator Spoofing</span>
+      <label class="toggle">
+        <input type="checkbox" id="navigator-protect" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+  
+  <!-- Advanced Protection Toggles -->
+  <div class="section">
+    <div class="section-title">Advanced Protections</div>
+    <div class="toggle-row">
+      <span class="toggle-label">WebRTC IP Leak</span>
+      <label class="toggle">
+        <input type="checkbox" id="webrtc-protect" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Battery API</span>
+      <label class="toggle">
+        <input type="checkbox" id="battery-protect" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Bluetooth API</span>
+      <label class="toggle">
+        <input type="checkbox" id="bluetooth-protect" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Permissions API</span>
+      <label class="toggle">
+        <input type="checkbox" id="permissions-protect" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Storage API</span>
+      <label class="toggle">
+        <input type="checkbox" id="storage-protect" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Auto-evolve</span>
+      <label class="toggle">
+        <input type="checkbox" id="auto-evolve" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+  
+  <!-- AI Section -->
+  <div class="section ai-section" id="ai-section">
+    <div class="section-title">AI Evolution</div>
+    <div class="ai-status-row">
+      <span class="toggle-label">Enable AI Mode</span>
+      <label class="toggle">
+        <input type="checkbox" id="ai-mode">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="ai-status-row">
+      <span class="status-label">Engine</span>
+      <span class="wasm-badge" id="wasm-badge">
+        <span>●</span> WASM Ready
+      </span>
+    </div>
+    <button class="btn btn-secondary" id="ai-evolve-btn" style="width: 100%; margin-top: 8px;" disabled>
+      🧠 AI-Powered Evolution
+    </button>
+  </div>
+  
+  <div class="footer">
+    <div class="footer-text">
+      <span class="phi-formula">φ² + 1/φ² = 3</span> = TRINITY
+    </div>
+    <div class="footer-text" style="margin-top: 2px;">
+      v2.0.0 | NeoDetect Engine
+    </div>
+  </div>
+  
+  <!-- Save Profile Modal -->
+  <div class="modal-overlay" id="save-modal">
+    <div class="modal">
+      <div class="modal-title">💾 Save Profile</div>
+      <input type="text" class="modal-input" id="profile-name-input" placeholder="Enter profile name..." maxlength="32">
+      <div class="modal-buttons">
+        <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="modal-save">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
