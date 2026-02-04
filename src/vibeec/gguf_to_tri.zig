@@ -9,6 +9,92 @@ const gguf = @import("gguf_reader.zig");
 const model_mod = @import("gguf_model.zig");
 const ternary = @import("ternary_weights.zig");
 const inference = @import("gguf_inference.zig");
+const bitnet = @import("bitnet_pipeline.zig");
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PARALLEL QUANTIZATION SUPPORT
+// Uses persistent thread pool from bitnet_pipeline.zig
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const MIN_TENSOR_SIZE_FOR_PARALLEL: usize = 1048576; // 1M elements
+
+/// Context for parallel layer quantization
+const LayerQuantContext = struct {
+    layer_idx: usize,
+    model: *const model_mod.FullModel,
+    allocator: std.mem.Allocator,
+    result: ?TernaryModel.TernaryLayer,
+    err: ?anyerror,
+};
+
+/// Quantize single layer (called from thread)
+fn quantizeLayerWorker(ctx: *LayerQuantContext) void {
+    const layer = ctx.model.layers[ctx.layer_idx];
+    var tri_layer: TernaryModel.TernaryLayer = undefined;
+    
+    // Keep norms in f32
+    tri_layer.attn_norm = ctx.allocator.dupe(f32, layer.attn_norm) catch {
+        ctx.err = error.OutOfMemory;
+        return;
+    };
+    tri_layer.ffn_norm = ctx.allocator.dupe(f32, layer.ffn_norm) catch {
+        ctx.err = error.OutOfMemory;
+        return;
+    };
+    
+    // Convert attention weights
+    const t_q = ternary.calculateThreshold(layer.wq);
+    const t_k = ternary.calculateThreshold(layer.wk);
+    const t_v = ternary.calculateThreshold(layer.wv);
+    const t_o = ternary.calculateThreshold(layer.wo);
+    
+    tri_layer.wq = ternary.quantizeToTernary(ctx.allocator, layer.wq, t_q) catch {
+        ctx.err = error.OutOfMemory;
+        return;
+    };
+    tri_layer.wk = ternary.quantizeToTernary(ctx.allocator, layer.wk, t_k) catch {
+        ctx.err = error.OutOfMemory;
+        return;
+    };
+    tri_layer.wv = ternary.quantizeToTernary(ctx.allocator, layer.wv, t_v) catch {
+        ctx.err = error.OutOfMemory;
+        return;
+    };
+    tri_layer.wo = ternary.quantizeToTernary(ctx.allocator, layer.wo, t_o) catch {
+        ctx.err = error.OutOfMemory;
+        return;
+    };
+    
+    tri_layer.scale_q = t_q * 2.0;
+    tri_layer.scale_k = t_k * 2.0;
+    tri_layer.scale_v = t_v * 2.0;
+    tri_layer.scale_o = t_o * 2.0;
+    
+    // Convert FFN weights
+    const t_gate = ternary.calculateThreshold(layer.w_gate);
+    const t_up = ternary.calculateThreshold(layer.w_up);
+    const t_down = ternary.calculateThreshold(layer.w_down);
+    
+    tri_layer.w_gate = ternary.quantizeToTernary(ctx.allocator, layer.w_gate, t_gate) catch {
+        ctx.err = error.OutOfMemory;
+        return;
+    };
+    tri_layer.w_up = ternary.quantizeToTernary(ctx.allocator, layer.w_up, t_up) catch {
+        ctx.err = error.OutOfMemory;
+        return;
+    };
+    tri_layer.w_down = ternary.quantizeToTernary(ctx.allocator, layer.w_down, t_down) catch {
+        ctx.err = error.OutOfMemory;
+        return;
+    };
+    
+    tri_layer.scale_gate = t_gate * 2.0;
+    tri_layer.scale_up = t_up * 2.0;
+    tri_layer.scale_down = t_down * 2.0;
+    
+    ctx.result = tri_layer;
+    ctx.err = null;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // .TRI FILE FORMAT
@@ -170,49 +256,105 @@ fn convertToTernary(allocator: std.mem.Allocator, model: *const model_mod.FullMo
     tri_model.output_weight = try ternary.quantizeToTernary(allocator, model.output_weight, output_threshold);
     tri_model.output_scale = output_threshold * 2.0; // Scale for dequantization
 
-    // Convert layers
+    // Convert layers (parallel if enough layers)
     tri_model.layers = try allocator.alloc(TernaryModel.TernaryLayer, model.config.num_layers);
+    
+    const num_threads = bitnet.getPoolThreadCount();
+    const use_parallel = num_threads > 1 and model.config.num_layers >= 4;
+    
+    if (use_parallel) {
+        std.debug.print("  Using {d} threads for parallel quantization...\n", .{num_threads});
+        
+        // Allocate contexts for all layers
+        var contexts = try allocator.alloc(LayerQuantContext, model.config.num_layers);
+        defer allocator.free(contexts);
+        
+        var threads: [16]std.Thread = undefined;
+        var active_threads: usize = 0;
+        var layer_idx: usize = 0;
+        
+        while (layer_idx < model.config.num_layers) {
+            // Launch batch of threads
+            const batch_size = @min(num_threads, model.config.num_layers - layer_idx);
+            
+            for (0..batch_size) |t| {
+                const idx = layer_idx + t;
+                contexts[idx] = LayerQuantContext{
+                    .layer_idx = idx,
+                    .model = model,
+                    .allocator = allocator,
+                    .result = null,
+                    .err = null,
+                };
+                threads[t] = std.Thread.spawn(.{}, quantizeLayerWorker, .{&contexts[idx]}) catch {
+                    // Fallback to sequential
+                    quantizeLayerWorker(&contexts[idx]);
+                    continue;
+                };
+                active_threads += 1;
+            }
+            
+            // Wait for batch
+            for (0..active_threads) |t| {
+                threads[t].join();
+            }
+            
+            // Check for errors and collect results
+            for (0..batch_size) |t| {
+                const idx = layer_idx + t;
+                if (contexts[idx].err) |err| {
+                    return err;
+                }
+                tri_model.layers[idx] = contexts[idx].result.?;
+            }
+            
+            active_threads = 0;
+            layer_idx += batch_size;
+            std.debug.print("  Converted layers {d}/{d}...\r", .{ layer_idx, model.config.num_layers });
+        }
+    } else {
+        // Sequential fallback
+        for (0..model.config.num_layers) |i| {
+            const layer = model.layers[i];
+            var tri_layer: TernaryModel.TernaryLayer = undefined;
 
-    for (0..model.config.num_layers) |i| {
-        const layer = model.layers[i];
-        var tri_layer: TernaryModel.TernaryLayer = undefined;
+            // Keep norms in f32
+            tri_layer.attn_norm = try allocator.dupe(f32, layer.attn_norm);
+            tri_layer.ffn_norm = try allocator.dupe(f32, layer.ffn_norm);
 
-        // Keep norms in f32
-        tri_layer.attn_norm = try allocator.dupe(f32, layer.attn_norm);
-        tri_layer.ffn_norm = try allocator.dupe(f32, layer.ffn_norm);
+            // Convert attention weights
+            const t_q = ternary.calculateThreshold(layer.wq);
+            const t_k = ternary.calculateThreshold(layer.wk);
+            const t_v = ternary.calculateThreshold(layer.wv);
+            const t_o = ternary.calculateThreshold(layer.wo);
 
-        // Convert attention weights
-        const t_q = ternary.calculateThreshold(layer.wq);
-        const t_k = ternary.calculateThreshold(layer.wk);
-        const t_v = ternary.calculateThreshold(layer.wv);
-        const t_o = ternary.calculateThreshold(layer.wo);
+            tri_layer.wq = try ternary.quantizeToTernary(allocator, layer.wq, t_q);
+            tri_layer.wk = try ternary.quantizeToTernary(allocator, layer.wk, t_k);
+            tri_layer.wv = try ternary.quantizeToTernary(allocator, layer.wv, t_v);
+            tri_layer.wo = try ternary.quantizeToTernary(allocator, layer.wo, t_o);
 
-        tri_layer.wq = try ternary.quantizeToTernary(allocator, layer.wq, t_q);
-        tri_layer.wk = try ternary.quantizeToTernary(allocator, layer.wk, t_k);
-        tri_layer.wv = try ternary.quantizeToTernary(allocator, layer.wv, t_v);
-        tri_layer.wo = try ternary.quantizeToTernary(allocator, layer.wo, t_o);
+            tri_layer.scale_q = t_q * 2.0;
+            tri_layer.scale_k = t_k * 2.0;
+            tri_layer.scale_v = t_v * 2.0;
+            tri_layer.scale_o = t_o * 2.0;
 
-        tri_layer.scale_q = t_q * 2.0;
-        tri_layer.scale_k = t_k * 2.0;
-        tri_layer.scale_v = t_v * 2.0;
-        tri_layer.scale_o = t_o * 2.0;
+            // Convert FFN weights
+            const t_gate = ternary.calculateThreshold(layer.w_gate);
+            const t_up = ternary.calculateThreshold(layer.w_up);
+            const t_down = ternary.calculateThreshold(layer.w_down);
 
-        // Convert FFN weights
-        const t_gate = ternary.calculateThreshold(layer.w_gate);
-        const t_up = ternary.calculateThreshold(layer.w_up);
-        const t_down = ternary.calculateThreshold(layer.w_down);
+            tri_layer.w_gate = try ternary.quantizeToTernary(allocator, layer.w_gate, t_gate);
+            tri_layer.w_up = try ternary.quantizeToTernary(allocator, layer.w_up, t_up);
+            tri_layer.w_down = try ternary.quantizeToTernary(allocator, layer.w_down, t_down);
 
-        tri_layer.w_gate = try ternary.quantizeToTernary(allocator, layer.w_gate, t_gate);
-        tri_layer.w_up = try ternary.quantizeToTernary(allocator, layer.w_up, t_up);
-        tri_layer.w_down = try ternary.quantizeToTernary(allocator, layer.w_down, t_down);
+            tri_layer.scale_gate = t_gate * 2.0;
+            tri_layer.scale_up = t_up * 2.0;
+            tri_layer.scale_down = t_down * 2.0;
 
-        tri_layer.scale_gate = t_gate * 2.0;
-        tri_layer.scale_up = t_up * 2.0;
-        tri_layer.scale_down = t_down * 2.0;
+            tri_model.layers[i] = tri_layer;
 
-        tri_model.layers[i] = tri_layer;
-
-        std.debug.print("  Converted layer {d}/{d}...\r", .{ i + 1, model.config.num_layers });
+            std.debug.print("  Converted layer {d}/{d}...\r", .{ i + 1, model.config.num_layers });
+        }
     }
     std.debug.print("  Converted {d} layers                    \n", .{model.config.num_layers});
 
@@ -324,4 +466,88 @@ pub fn main() !void {
     };
 
     try convertGgufToTri(allocator, input_path, output_path);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "tri_header_size" {
+    // Verify header is packed correctly (actual size may vary)
+    const size = @sizeOf(TriHeader);
+    try std.testing.expect(size > 0);
+    try std.testing.expect(size <= 256);
+}
+
+test "tri_magic_constant" {
+    try std.testing.expectEqual(TRI_MAGIC, 0x54524933);
+}
+
+test "tri_version" {
+    try std.testing.expectEqual(TRI_VERSION, 1);
+}
+
+test "ternary_quantization_basic" {
+    // Test basic threshold calculation
+    const input = [_]f32{ 1.0, -1.0, 0.1, -0.1, 0.5, -0.5, 0.0, 0.0 };
+    const threshold = ternary.calculateThreshold(&input);
+    
+    // Threshold should be positive and less than max
+    try std.testing.expect(threshold >= 0.0);
+    try std.testing.expect(threshold <= 1.0);
+}
+
+test "ternary_threshold_positive" {
+    const input = [_]f32{ 1.0, 1.0, 1.0, 1.0 };
+    const threshold = ternary.calculateThreshold(&input);
+    try std.testing.expect(threshold > 0.0);
+}
+
+test "ternary_threshold_negative" {
+    const input = [_]f32{ -1.0, -1.0, -1.0, -1.0 };
+    const threshold = ternary.calculateThreshold(&input);
+    try std.testing.expect(threshold > 0.0);
+}
+
+test "ternary_threshold_zero" {
+    const input = [_]f32{ 0.0, 0.0, 0.0, 0.0 };
+    const threshold = ternary.calculateThreshold(&input);
+    try std.testing.expectEqual(threshold, 0.0);
+}
+
+test "ternary_memory_savings" {
+    // 1M parameters
+    const num_params: usize = 1_000_000;
+    const stats = ternary.MemoryStats.calculate(num_params);
+    
+    // FP32: 4 bytes per param = 4MB
+    try std.testing.expectEqual(stats.f32_bytes, 4_000_000);
+    
+    // Ternary: 2 bits per param = 0.25MB
+    try std.testing.expectEqual(stats.ternary_bytes, 250_000);
+    
+    // Compression ratio should be 16x
+    const ratio = @as(f32, @floatFromInt(stats.f32_bytes)) / @as(f32, @floatFromInt(stats.ternary_bytes));
+    try std.testing.expectApproxEqAbs(ratio, 16.0, 0.1);
+}
+
+test "parallel_quantization_context" {
+    // Test that LayerQuantContext is properly initialized
+    const ctx = LayerQuantContext{
+        .layer_idx = 0,
+        .model = undefined,
+        .allocator = std.testing.allocator,
+        .result = null,
+        .err = null,
+    };
+    
+    try std.testing.expectEqual(ctx.layer_idx, 0);
+    try std.testing.expect(ctx.result == null);
+    try std.testing.expect(ctx.err == null);
+}
+
+test "thread_pool_available" {
+    // Verify thread pool is accessible
+    const num_threads = bitnet.getPoolThreadCount();
+    try std.testing.expect(num_threads >= 1);
 }

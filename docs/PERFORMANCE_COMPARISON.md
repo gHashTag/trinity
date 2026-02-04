@@ -159,7 +159,24 @@ Speedup: 1.1x over baseline
 | llama.cpp | GGUF | Q4/Q8 | No | High |
 | vLLM | HF | FP16/INT8 | No | High |
 | TGI | HF | FP16/INT8 | No | High |
-| **Trinity** | **.tri** | **Ternary** | **Yes** | **Low** |
+| **Trinity** | **GGUF → .tri** | **Ternary** | **Yes** | **Low** |
+
+### 7.2 GGUF → TRI Converter
+
+Trinity now supports converting any GGUF model to ternary .tri format:
+
+| Input Format | Compression | Memory Savings |
+|--------------|-------------|----------------|
+| F32 → Ternary | 16x | 93.75% |
+| F16 → Ternary | 8x | 87.5% |
+| Q8 → Ternary | 4x | 75% |
+| Q4 → Ternary | 2x | 50% |
+
+**Supported GGUF tensor types:**
+- F32, F16, BF16 (full precision)
+- Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, Q8_1 (legacy quants)
+- Q4_K, Q5_K, Q6_K, Q8_K (K-quants)
+- TQ1_0, TQ2_0 (native ternary)
 
 ### 7.2 Performance Targets
 

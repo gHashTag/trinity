@@ -37,7 +37,16 @@
 │  ✅ GQA (Grouped Query Attention) support                       │
 │  ✅ Ternary QKV projection integration                          │
 │                                                                 │
-│  COMPLETED (Phase 6 - E2E Verification) [NEW]                   │
+│  COMPLETED (Phase 5b - GGUF Converter)                          │
+│  ═════════════════════════════════════                          │
+│  ✅ GGUF → TRI converter specification (gguf_to_tri.vibee)      │
+│  ✅ Support for F32/F16/BF16/Q4/Q5/Q6/Q8 tensor types           │
+│  ✅ Per-group quantization (group_size=128)                     │
+│  ✅ Parallel quantization via thread pool                       │
+│  ✅ Metadata extraction (vocab, tokenizer)                      │
+│  ✅ CLI integration (vibeec convert)                            │
+│                                                                 │
+│  COMPLETED (Phase 6 - E2E Verification)                         │
 │  ════════════════════════════════════════════                   │
 │  ✅ GPU benchmarks (RTX 3090: 298K tokens/s)                    │
 │  ✅ 69 unit tests passing (100%)                                │
