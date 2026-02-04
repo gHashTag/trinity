@@ -1,0 +1,223 @@
+# NeoDetect Extension Release Workflow
+# Triggers on version tags (v*) and creates GitHub Release with artifacts
+
+name: Extension Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 2.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build Extensions
+    runs-on: ubuntu-latest
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+      
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Update version in package.json
+        run: |
+          cd extension
+          VERSION="${{ steps.version.outputs.version }}"
+          jq ".version = \"$VERSION\"" package.json > tmp.json && mv tmp.json package.json
+          cat package.json | grep version
+      
+      - name: Build WASM module
+        run: |
+          zig build-exe src/firebird/neodetect_wasm.zig \
+            -target wasm32-freestanding \
+            -O ReleaseFast \
+            -fno-entry \
+            -rdynamic \
+            -femit-bin=extension/chrome/wasm/neodetect.wasm
+          
+          cp extension/chrome/wasm/neodetect.wasm extension/firefox/wasm/
+          
+          echo "WASM built:"
+          ls -la extension/chrome/wasm/neodetect.wasm
+      
+      - name: Update Chrome manifest version
+        run: |
+          cd extension/chrome
+          VERSION="${{ steps.version.outputs.version }}"
+          jq ".version = \"$VERSION\"" manifest.json > tmp.json && mv tmp.json manifest.json
+      
+      - name: Update Firefox manifest version
+        run: |
+          cd extension/firefox
+          VERSION="${{ steps.version.outputs.version }}"
+          jq ".version = \"$VERSION\"" manifest.json > tmp.json && mv tmp.json manifest.json
+      
+      - name: Sync Firefox files
+        run: |
+          cd extension
+          # Copy shared files
+          cp chrome/icons/*.png firefox/icons/
+          cp chrome/wasm/neodetect-loader.js firefox/wasm/
+          cp chrome/popup/popup.html firefox/popup/
+          
+          # Transform popup.js
+          sed 's/chrome\./browser./g' chrome/popup/popup.js > firefox/popup/popup.js
+          
+          # Transform content.js
+          sed 's/chrome\./browser./g' chrome/content/content.js > firefox/content/content.js
+      
+      - name: Package Chrome extension
+        run: |
+          cd extension/chrome
+          VERSION="${{ steps.version.outputs.version }}"
+          zip -r ../neodetect-chrome-v${VERSION}.zip . \
+            -x "*.DS_Store" \
+            -x "__MACOSX/*" \
+            -x "screenshots/*" \
+            -x "promo/*" \
+            -x "*.md"
+          
+          echo "Chrome package:"
+          ls -la ../neodetect-chrome-v${VERSION}.zip
+      
+      - name: Package Firefox extension
+        run: |
+          cd extension/firefox
+          VERSION="${{ steps.version.outputs.version }}"
+          zip -r ../neodetect-firefox-v${VERSION}.zip . \
+            -x "*.DS_Store" \
+            -x "__MACOSX/*" \
+            -x "screenshots/*" \
+            -x "promo/*" \
+            -x "*.md"
+          
+          echo "Firefox package:"
+          ls -la ../neodetect-firefox-v${VERSION}.zip
+      
+      - name: Upload Chrome artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neodetect-chrome
+          path: extension/neodetect-chrome-*.zip
+      
+      - name: Upload Firefox artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neodetect-firefox
+          path: extension/neodetect-firefox-*.zip
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Chrome artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: neodetect-chrome
+          path: ./artifacts
+      
+      - name: Download Firefox artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: neodetect-firefox
+          path: ./artifacts
+      
+      - name: List artifacts
+        run: ls -la ./artifacts/
+      
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${{ needs.build.outputs.version }}"
+          cat << EOF > release_notes.md
+          ## NeoDetect Anti-Detect Browser Extension v${VERSION}
+          
+          ### Downloads
+          
+          | Browser | File |
+          |---------|------|
+          | Chrome | \`neodetect-chrome-v${VERSION}.zip\` |
+          | Firefox | \`neodetect-firefox-v${VERSION}.zip\` |
+          
+          ### Installation
+          
+          **Chrome:**
+          1. Download \`neodetect-chrome-v${VERSION}.zip\`
+          2. Extract the ZIP file
+          3. Open \`chrome://extensions/\`
+          4. Enable "Developer mode"
+          5. Click "Load unpacked" and select the extracted folder
+          
+          **Firefox:**
+          1. Download \`neodetect-firefox-v${VERSION}.zip\`
+          2. Open \`about:debugging#/runtime/this-firefox\`
+          3. Click "Load Temporary Add-on"
+          4. Select the ZIP file
+          
+          ### Features
+          
+          - WASM-powered fingerprint protection
+          - Canvas, WebGL, Audio fingerprint spoofing
+          - Navigator and screen property spoofing
+          - WebRTC IP leak protection
+          - OS/Hardware/GPU emulation
+          - Profile management (save/load/export)
+          - AI-powered fingerprint evolution
+          
+          ### Links
+          
+          - [Documentation](https://github.com/gHashTag/trinity/tree/main/extension)
+          - [Privacy Policy](https://github.com/gHashTag/trinity/blob/main/extension/chrome/PRIVACY_POLICY.md)
+          - [Source Code](https://github.com/gHashTag/trinity)
+          
+          ---
+          **KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
+          EOF
+          
+          cat release_notes.md
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: NeoDetect v${{ needs.build.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: |
+            ./artifacts/neodetect-chrome-*.zip
+            ./artifacts/neodetect-firefox-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
