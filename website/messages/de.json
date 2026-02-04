@@ -390,5 +390,37 @@
     ],
     "cta": "Vollständigen Bericht auf GitHub lesen",
     "ctaUrl": "https://github.com/gHashTag/vibee-lang/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+  },
+  "mysticism": {
+    "title": "Mathematische Grundlagen",
+    "subtitle": "Diese mathematischen Strukturen bilden die theoretische Grundlage für die Vorteile ternärer Berechnungen.",
+    "toggleShow": "▶ Für Mathematiker: SU(3), Chern-Simons, φ",
+    "toggleHide": "▼ Mathematische Grundlagen ausblenden",
+    "items": [
+      {
+        "title": "SU(3) Eichsymmetrie",
+        "description": "Ternäre Zustände {-1, 0, +1} entsprechen der Farbladung in der Quantenchromodynamik. Die 8 Gluon-Generatoren von SU(3) bieten natürliche Fehlerkorrektur.",
+        "formula": "SU(3) → 8 Generatoren → ternäre Stabilität"
+      },
+      {
+        "title": "Chern-Simons Invarianten",
+        "description": "Topologischer Schutz von Quantenzuständen durch Chern-Simons-Theorie. Die Invariante k=3 entspricht der ternären Logiktiefe.",
+        "formula": "CS(A) = k/4π ∫ Tr(A∧dA + ⅔A∧A∧A)"
+      },
+      {
+        "title": "Goldener Schnitt Identität",
+        "description": "Die heilige Formel φ² + 1/φ² = 3 verbindet den goldenen Schnitt mit der Ternärität.",
+        "formula": "φ² + 1/φ² = 3 = TRINITÄT"
+      },
+      {
+        "title": "Phoenix-Zahl",
+        "description": "Die selbstreferentielle Konstante, die aus ternärer Rekursion entsteht. Verwandt mit Feigenbaum-Konstanten.",
+        "formula": "Φ = lim(n→∞) T(n)/T(n-1) ≈ 1.618..."
+      }
+    ]
+  },
+  "stickyCta": {
+    "invest": "Jetzt Investieren",
+    "calculator": "Sparrechner"
   }
 }
