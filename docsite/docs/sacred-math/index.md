@@ -102,7 +102,7 @@ The simplest infinite continued fraction.
 <div class="theorem-card">
 <h4>Property 4: Fibonacci Limit</h4>
 
-**lim(F_{n+1}/F_n) = φ** as n → ∞
+**lim(F(n+1)/F(n)) = φ** as n → ∞
 
 Ratio of consecutive Fibonacci numbers approaches φ.
 </div>
