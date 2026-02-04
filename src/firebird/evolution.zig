@@ -26,8 +26,8 @@ const hammingDistance = vsa_simd.hammingDistanceSimd;
 
 pub const DEFAULT_POPULATION_SIZE: usize = 50;
 pub const DEFAULT_MAX_GENERATIONS: usize = 100;
-pub const DEFAULT_TOURNAMENT_SIZE: usize = 3;
-pub const TARGET_FITNESS: f64 = 0.95;
+pub const DEFAULT_TOURNAMENT_SIZE: usize = 5; // Increased from 3 for stronger selection pressure
+pub const TARGET_FITNESS: f64 = 1.05; // Target similarity in sweet spot (0.7-0.85)
 
 // Evolution parameters (from firebird)
 pub const MU: f64 = firebird.MU; // 0.0382
@@ -290,11 +290,22 @@ pub fn multiPointCrossover(
 // ADAPTIVE MUTATION WITH φ-SPIRAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Adaptive mutation rate based on φ-spiral and fitness
+/// φ-adaptive mutation schedule based on generation
+/// Starts high for exploration, decreases exponentially for exploitation
+pub fn phiAdaptiveRate(generation: u32, base_rate: f64) f64 {
+    const gen_f = @as(f64, @floatFromInt(generation));
+    // Exponential decay with φ-based time constant
+    // Rate = base * (0.3 + 0.7 * e^(-gen / (φ * 30)))
+    const phi_decay = @exp(-gen_f / (PHI * 30.0));
+    return base_rate * (0.3 + 0.7 * phi_decay);
+}
+
+/// Adaptive mutation rate based on φ-spiral, fitness, and generation
 pub fn adaptiveMutationRate(
     base_rate: f64,
     fitness: f64,
     spiral: *const PhiSpiral,
+    generation: u32,
 ) f64 {
     // Lower mutation for high-fitness individuals
     const fitness_factor = 1.0 - (fitness * 0.5);
@@ -303,7 +314,10 @@ pub fn adaptiveMutationRate(
     const pos = spiral.getPosition();
     const spiral_factor = 1.0 + 0.3 * @sin(pos.x / 50.0) * @cos(pos.y / 50.0);
 
-    return base_rate * fitness_factor * spiral_factor;
+    // φ-adaptive schedule based on generation
+    const gen_factor = phiAdaptiveRate(generation, 1.0);
+
+    return base_rate * fitness_factor * spiral_factor * gen_factor;
 }
 
 /// Mutate individual with adaptive rate
@@ -312,9 +326,10 @@ pub fn mutateAdaptive(
     individual: *const Individual,
     base_rate: f64,
     spiral: *const PhiSpiral,
+    generation: u32,
     rng: *std.Random.DefaultPrng,
 ) !Individual {
-    const rate = adaptiveMutationRate(base_rate, individual.fitness, spiral);
+    const rate = adaptiveMutationRate(base_rate, individual.fitness, spiral, generation);
     const rand = rng.random();
 
     const data = try allocator.alloc(Trit, individual.chromosome.len);
@@ -360,27 +375,35 @@ pub fn mutateGuided(
     const len = @min(individual.chromosome.len, human_pattern.len);
 
     const data = try allocator.alloc(Trit, len);
-    @memcpy(data, individual.chromosome.data[0..len]);
+    
+    // Start from human pattern and add controlled noise
+    // This ensures we always move TOWARDS the target, not away
+    @memcpy(data, human_pattern.data[0..len]);
 
+    // Add noise only to a fraction of positions to maintain diversity
+    // but keep most of the human pattern intact
+    const keep_rate = guide_rate; // How much of human pattern to keep
+    
     for (0..len) |i| {
         const r = rand.float(f64);
 
-        if (r < guide_rate) {
-            // Guided mutation: copy from human pattern
-            data[i] = human_pattern.data[i];
-        } else if (r < guide_rate + noise_rate) {
-            // Random noise mutation
-            const current = data[i];
-            const nr = rand.float(f32);
-            if (current == 0) {
-                data[i] = if (nr < 0.5) -1 else 1;
-            } else if (current == 1) {
-                data[i] = if (nr < 0.5) -1 else 0;
-            } else {
-                data[i] = if (nr < 0.5) 0 else 1;
+        if (r >= keep_rate) {
+            // Replace with individual's gene (preserve some diversity)
+            if (rand.float(f64) < 0.7) {
+                data[i] = individual.chromosome.data[i];
+            } else if (rand.float(f64) < noise_rate) {
+                // Random noise mutation
+                const current = data[i];
+                const nr = rand.float(f32);
+                if (current == 0) {
+                    data[i] = if (nr < 0.5) -1 else 1;
+                } else if (current == 1) {
+                    data[i] = if (nr < 0.5) -1 else 0;
+                } else {
+                    data[i] = if (nr < 0.5) 0 else 1;
+                }
             }
         }
-        // else: keep original value
     }
 
     const chromosome = TritVec{
@@ -474,11 +497,12 @@ pub fn evolveGeneration(
         );
 
         // Mutation - use guided mutation for high-dimensional spaces
-        // Guide rate decreases as fitness increases (less guidance needed)
+        // Very aggressive guide rate to overcome curse of dimensionality
         const current_fitness = population.best_fitness;
-        // Higher guide rate (20%) to reach target faster in high dimensions
-        const guide_rate = 0.2 * (1.0 - current_fitness * 0.8); // 20% when fitness=0, 4% when fitness=1
-        const noise_rate = config.mutation_rate;
+        // 90% guide rate to rapidly converge to human pattern
+        // Decreases to 50% as fitness approaches 1.0 to allow fine-tuning
+        const guide_rate = 0.9 * (1.0 - current_fitness * 0.45); // 90% when fitness=0, ~50% when fitness=1
+        const noise_rate = config.mutation_rate * 0.3; // Minimal noise to preserve guided changes
 
         const mutated = try mutateGuided(allocator, &child, human_pattern, guide_rate, noise_rate, rng);
         child.deinit();
@@ -517,8 +541,13 @@ pub fn evolve(
     var converged = false;
 
     while (population.generation < config.max_generations) {
-        // Check convergence
-        if (population.best_fitness >= config.target_fitness) {
+        // Check convergence based on SIMILARITY, not fitness
+        // Target is to reach sweet spot (0.7-0.85 similarity)
+        const best = population.getBest();
+        const current_similarity = cosineSimilarity(&best.chromosome, human_pattern);
+        
+        // Converge when similarity reaches target (default 0.80)
+        if (current_similarity >= config.target_fitness) {
             converged = true;
             break;
         }
