@@ -116,7 +116,7 @@ export default function BenchmarksSection() {
 
       <div className="fade" style={{ textAlign: 'center', marginTop: '3rem' }}>
         <a 
-          href={b.url || "https://github.com/gHashTag/vibee-lang"} 
+          href={b.url || "https://github.com/gHashTag/trinity"} 
           target="_blank" 
           rel="noopener noreferrer"
           style={{

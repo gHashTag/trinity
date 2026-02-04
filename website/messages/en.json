@@ -217,7 +217,7 @@
     "title": "Achieved <span class=\"grad\">Singularity</span>",
     "sub": "Binary emulation is dead. Trinity project transitioned to native ternarity.",
     "verifyLink": "Verify Benchmarks on GitHub ↗",
-    "url": "https://github.com/gHashTag/vibee-lang",
+    "url": "https://github.com/gHashTag/trinity",
     "techTitle": "Phase 5.0 Tech (Verified)",
     "techs": [
       { "title": "SU(3) Core", "desc": "Unitary phase rotations in Gell-Mann space", "tests": "Verilog Verified ✓" },
@@ -660,7 +660,7 @@
     "contact": {
       "email": "raoffonom@icloud.com",
       "website": "https://trinity-site-one.vercel.app",
-      "github": "https://github.com/gHashTag/vibee-lang"
+      "github": "https://github.com/gHashTag/trinity"
     }
   },
   "bitnetProof": {
@@ -728,7 +728,7 @@
       { "label": "Year 3 ROI", "value": "635%" }
     ],
     "cta": "Read Full Report on GitHub",
-    "ctaUrl": "https://github.com/gHashTag/vibee-lang/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
   },
   "phoenixNumber": {
     "badge": "SACRED MATHEMATICS",

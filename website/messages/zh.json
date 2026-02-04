@@ -102,7 +102,7 @@
     "title": "已达成<span class=\"grad\">奇点</span>",
     "sub": "二进制仿真已死。Trinity项目已转向原生三进制。",
     "verifyLink": "在GitHub上验证基准测试 ↗",
-    "url": "https://github.com/gHashTag/vibee-lang",
+    "url": "https://github.com/gHashTag/trinity",
     "techTitle": "Phase 5.0技术（已验证）",
     "techs": [
       { "title": "SU(3) Core", "desc": "Gell-Mann空间中的幺正相位旋转", "tests": "Verilog已验证 ✓" },
@@ -140,7 +140,7 @@
       ]
     },
     "verifyLink": "在GitHub上验证基准测试 ↗",
-    "url": "https://github.com/gHashTag/vibee-lang"
+    "url": "https://github.com/gHashTag/trinity"
   },
   "mining": {
     "title": "挖矿<span class=\"grad\">行业</span> 2026",
@@ -321,7 +321,7 @@
     "contact": {
       "email": "raoffonom@icloud.com",
       "website": "https://trinity-site-one.vercel.app",
-      "github": "https://github.com/gHashTag/vibee-lang"
+      "github": "https://github.com/gHashTag/trinity"
     }
   },
   "bitnetProof": {
@@ -389,7 +389,7 @@
       { "label": "第三年ROI", "value": "635%" }
     ],
     "cta": "在GitHub阅读完整报告",
-    "ctaUrl": "https://github.com/gHashTag/vibee-lang/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
   },
   "mysticism": {
     "title": "数学基础",
