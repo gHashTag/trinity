@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebird</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 320px;
+      min-height: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      padding: 16px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .logo {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f39c12;
+    }
+    
+    .subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 4px;
+    }
+    
+    .status-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .status-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .status-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .status-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .status-value.active {
+      color: #2ecc71;
+    }
+    
+    .status-value.inactive {
+      color: #e74c3c;
+    }
+    
+    .similarity-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    
+    .similarity-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #e74c3c 0%, #f39c12 50%, #2ecc71 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 8px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .toggle-label {
+      font-size: 13px;
+    }
+    
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+    
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.2);
+      border-radius: 24px;
+      transition: 0.3s;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    
+    .toggle input:checked + .toggle-slider {
+      background: #2ecc71;
+    }
+    
+    .toggle input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .footer-text {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+    }
+    
+    .phi-formula {
+      font-family: 'Times New Roman', serif;
+      font-style: italic;
+      color: #f39c12;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🔥</div>
+    <h1>FIREBIRD</h1>
+    <div class="subtitle">Ternary Anti-Detect Browser</div>
+  </div>
+  
+  <div class="status-card">
+    <div class="status-row">
+      <span class="status-label">Protection Status</span>
+      <span class="status-value active" id="protection-status">Active</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Human Similarity</span>
+      <span class="status-value" id="similarity-value">0.85</span>
+    </div>
+    <div class="similarity-bar">
+      <div class="similarity-fill" id="similarity-bar" style="width: 85%"></div>
+    </div>
+  </div>
+  
+  <button class="btn btn-primary" id="evolve-btn">
+    🧬 Evolve Fingerprint
+  </button>
+  
+  <button class="btn btn-secondary" id="reset-btn">
+    🔄 Reset to Default
+  </button>
+  
+  <div class="toggle-row">
+    <span class="toggle-label">Auto-evolve on detection</span>
+    <label class="toggle">
+      <input type="checkbox" id="auto-evolve" checked>
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+  
+  <div class="toggle-row">
+    <span class="toggle-label">Canvas fingerprint protection</span>
+    <label class="toggle">
+      <input type="checkbox" id="canvas-protect" checked>
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+  
+  <div class="toggle-row">
+    <span class="toggle-label">WebGL fingerprint protection</span>
+    <label class="toggle">
+      <input type="checkbox" id="webgl-protect" checked>
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+  
+  <div class="footer">
+    <div class="footer-text">
+      <span class="phi-formula">φ² + 1/φ² = 3</span> = TRINITY
+    </div>
+    <div class="footer-text" style="margin-top: 4px;">
+      v1.0.0 | Firebird Engine
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
