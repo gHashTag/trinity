@@ -20,6 +20,7 @@ pub const applyRoPE = forward.applyRoPE;
 pub const softmax = forward.softmax;
 pub const silu = forward.silu;
 pub const quantizeActivationsInPlace = forward.quantizeActivationsInPlace;
+pub const quantizeWeightsInPlace = forward.quantizeWeightsInPlace;
 
 // SIMD vector types for optimized matmul
 const Vec8f32 = @Vector(8, f32);
@@ -661,11 +662,11 @@ pub const BitNetFullModel = struct {
             rmsNorm(self.hidden_state, layer.input_layernorm, normed, self.config.rms_norm_eps);
             
             // ═══════════════════════════════════════════════════════════════
-            // NOTE: Activation quantization REMOVED - was destroying information
-            // F32 weights need F32 activations for accurate inference
-            // Original BitNet b1.58 uses ternary weights which we don't have here
+            // ACTIVATION QUANTIZATION: 8-bit per-token before Q/K/V projections
+            // BitNet model trained with quantized activations - must match
             // ═══════════════════════════════════════════════════════════════
-            
+            _ = quantizeActivationsInPlace(normed);
+
             // Compute Q, K, V
             const q = self.allocator.alloc(f32, hidden) catch return;
             defer self.allocator.free(q);
@@ -757,10 +758,10 @@ pub const BitNetFullModel = struct {
             }
             
             // ═══════════════════════════════════════════════════════════════
-            // NOTE: Activation quantization REMOVED before O projection
-            // F32 weights require F32 activations for correct computation
+            // ACTIVATION QUANTIZATION: 8-bit before O projection
             // ═══════════════════════════════════════════════════════════════
-            
+            _ = quantizeActivationsInPlace(self.attn_output);
+
             // O projection
             const o_out = self.allocator.alloc(f32, hidden) catch return;
             defer self.allocator.free(o_out);
@@ -775,10 +776,10 @@ pub const BitNetFullModel = struct {
             rmsNorm(self.hidden_state, layer.post_attention_layernorm, normed, self.config.rms_norm_eps);
             
             // ═══════════════════════════════════════════════════════════════
-            // NOTE: Activation quantization REMOVED before gate/up projections
-            // Premature quantization was destroying activation precision
+            // ACTIVATION QUANTIZATION: 8-bit before gate/up projections
             // ═══════════════════════════════════════════════════════════════
-            
+            _ = quantizeActivationsInPlace(normed);
+
             // FFN: gate and up projections
             f32MatVec(layer.gate_proj, normed, self.ffn_intermediate, inter, hidden);
             
@@ -796,10 +797,10 @@ pub const BitNetFullModel = struct {
             }
             
             // ═══════════════════════════════════════════════════════════════
-            // NOTE: Activation quantization REMOVED before down projection
-            // F32 inference pipeline - no intermediate quantization
+            // ACTIVATION QUANTIZATION: 8-bit before down projection
             // ═══════════════════════════════════════════════════════════════
-            
+            _ = quantizeActivationsInPlace(self.ffn_intermediate);
+
             // Down projection
             const down_out = self.allocator.alloc(f32, hidden) catch return;
             defer self.allocator.free(down_out);

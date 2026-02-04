@@ -504,6 +504,105 @@ pub const Arm64JitCompiler = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // BUNDLE SIMD INSTRUCTIONS (for ternary thresholding)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// ADD Vd.16B, Vn.16B, Vm.16B - Vector add (16 bytes)
+    fn add_16b(self: *Self, vd: u5, vn: u5, vm: u5) !void {
+        const instr: u32 = 0x4E208400 |
+            (@as(u32, vm) << 16) |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// SSHR Vd.16B, Vn.16B, #7 - Signed shift right (arithmetic) by 7
+    fn sshr_16b_7(self: *Self, vd: u5, vn: u5) !void {
+        // For shift by 7 on 8-bit: immh:immb = 16-7 = 9
+        const instr: u32 = 0x4F090400 |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// CMGT Vd.16B, Vn.16B, #0 - Compare greater than zero
+    fn cmgt_16b_zero(self: *Self, vd: u5, vn: u5) !void {
+        const instr: u32 = 0x4E20A800 |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// NEG Vd.16B, Vn.16B - Vector negate
+    fn neg_16b(self: *Self, vd: u5, vn: u5) !void {
+        const instr: u32 = 0x6E20B800 |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// ORR Vd.16B, Vn.16B, Vm.16B - Bitwise OR
+    fn orr_16b(self: *Self, vd: u5, vn: u5, vm: u5) !void {
+        const instr: u32 = 0x4EA01C00 |
+            (@as(u32, vm) << 16) |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // FLOATING POINT INSTRUCTIONS (for cosine computation)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // FP double registers D0-D3 (same encoding as V registers)
+    const d0: u5 = 0;
+    const d1: u5 = 1;
+    const d2: u5 = 2;
+    const d3: u5 = 3;
+
+    /// SCVTF Dd, Xn - Signed integer to double precision float
+    fn scvtf_d_x(self: *Self, vd: u5, xn: u5) !void {
+        const instr: u32 = 0x9E620000 |
+            (@as(u32, xn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// FMUL Dd, Dn, Dm - Floating point multiply (double)
+    fn fmul_d(self: *Self, vd: u5, vn: u5, vm: u5) !void {
+        const instr: u32 = 0x1E600800 |
+            (@as(u32, vm) << 16) |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// FSQRT Dd, Dn - Floating point square root (double)
+    fn fsqrt_d(self: *Self, vd: u5, vn: u5) !void {
+        const instr: u32 = 0x1E61C000 |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// FDIV Dd, Dn, Dm - Floating point divide (double)
+    fn fdiv_d(self: *Self, vd: u5, vn: u5, vm: u5) !void {
+        const instr: u32 = 0x1E601800 |
+            (@as(u32, vm) << 16) |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// FMOV Xd, Dn - Move f64 from FP register to GPR
+    fn fmov_x_d(self: *Self, xd: u5, vn: u5) !void {
+        const instr: u32 = 0x9E660000 |
+            (@as(u32, vn) << 5) |
+            @as(u32, xd);
+        try self.emit32(instr);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // VSA OPERATION COMPILATION
     // ═══════════════════════════════════════════════════════════════════════════
 

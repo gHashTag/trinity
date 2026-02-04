@@ -165,17 +165,17 @@ unbind(bind(a,b), b) = bind(a,b) × b
 <div class="theorem-card">
 <h4>Theorem</h4>
 
-**lim(F_{n+1}/F_n) = φ** as n → ∞
+**lim(F(n+1)/F(n)) = φ** as n → ∞
 </div>
 
 ### Proof
 
-**Step 1**: Fibonacci recurrence: F_n = F_{n-1} + F_{n-2}
+**Step 1**: Fibonacci recurrence: F(n) = F(n-1) + F(n-2)
 
 **Step 2**: Assume limit L exists:
 ```
-L = lim(F_{n+1}/F_n) = lim(F_n + F_{n-1})/F_n
-  = 1 + lim(F_{n-1}/F_n)
+L = lim(F(n+1)/F(n)) = lim(F(n) + F(n-1))/F(n)
+  = 1 + lim(F(n-1)/F(n))
   = 1 + 1/L
 ```
 
