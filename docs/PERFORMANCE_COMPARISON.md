@@ -64,6 +64,20 @@ Best: 1.04 GFLOPS
 Speedup: 1.1x over baseline
 ```
 
+### 2.3 Latest Benchmark (2026-02-04, 2048x2048)
+
+| Method | Time (μs) | GFLOPS | Status |
+|--------|-----------|--------|--------|
+| SIMD-8 (LUT-free) | 9,545 | 0.88 | ✅ |
+| **SIMD-16 (LUT-free)** | **8,152** | **1.03** | ✅ BEST |
+| Tiled (cache-opt) | 14,779 | 0.57 | ✅ |
+| Unrolled (4x) | 8,518 | 0.98 | ✅ |
+| Batch Row (4 rows) | 9,351 | 0.90 | ✅ |
+
+**E2E Test Results:**
+- Test model (64 hidden, 2 layers): 17,383 tok/s
+- All 15 SIMD tests passing
+
 ---
 
 ## 3. VSA OPERATIONS COMPARISON

@@ -259,7 +259,8 @@ pub const PASSHA256 = struct {
     }
 
     fn rotateRight(x: u32, n: u5) u32 {
-        return (x >> n) | (x << (32 - n));
+        const shift: u5 = @truncate(32 -% @as(u6, n));
+        return (x >> n) | (x << shift);
     }
 
     fn compareHashes(hash: [32]u8, target: [32]u8) bool {

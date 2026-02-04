@@ -1,0 +1,268 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# E2E ALL MODELS TEST SPECIFICATION
+# Comprehensive testing across all supported model sizes and technologies
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: e2e_all_models
+version: "1.0.0"
+language: zig
+module: e2e_all_models
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODELS TO TEST
+# ═══════════════════════════════════════════════════════════════════════════════
+
+models:
+  # Small models (CPU-friendly)
+  - name: test_minimal
+    path: src/vibeec/test_minimal.tri
+    size_params: 8K
+    hidden_size: 64
+    layers: 2
+    target_tokens_per_sec: 10000
+    
+  - name: trinity_god_weights_v2
+    path: src/vibeec/trinity_god_weights_v2.tri
+    size_params: 21K
+    hidden_size: 128
+    layers: 4
+    target_tokens_per_sec: 5000
+
+  # Medium models (GPU recommended)
+  - name: smollm2_360m
+    path: models/smollm2-360m.tri
+    size_params: 360M
+    hidden_size: 1024
+    layers: 24
+    target_tokens_per_sec: 50
+    
+  - name: tinyllama_1b
+    path: models/tinyllama-1.1b.tri
+    size_params: 1.1B
+    hidden_size: 2048
+    layers: 22
+    target_tokens_per_sec: 20
+
+  # Large models (GPU required)
+  - name: llama3_8b
+    path: models/llama-3-8b.tri
+    size_params: 8B
+    hidden_size: 4096
+    layers: 32
+    target_tokens_per_sec: 5
+    
+  - name: mistral_7b
+    path: models/mistral-7b.tri
+    size_params: 7B
+    hidden_size: 4096
+    layers: 32
+    target_tokens_per_sec: 5
+
+  # Extra large (multi-GPU)
+  - name: llama3_70b
+    path: models/llama-3-70b.tri
+    size_params: 70B
+    hidden_size: 8192
+    layers: 80
+    target_tokens_per_sec: 1
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CONFIGURATIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_configs:
+  generation:
+    num_tokens: 100
+    temperature: 0.7
+    top_p: 0.9
+    repetition_penalty: 1.1
+    
+  noise_robustness:
+    levels: [0, 10, 20, 30]
+    target_retention_30: 70.0
+    
+  memory:
+    track_peak: true
+    track_average: true
+    
+  latency:
+    warmup_iterations: 5
+    measure_iterations: 20
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TECHNOLOGIES TO TEST
+# ═══════════════════════════════════════════════════════════════════════════════
+
+technologies:
+  - name: simd_8
+    description: "8-wide SIMD ternary matmul"
+    file: src/vibeec/simd_ternary_matmul.zig
+    function: simdTernaryMatmulOpt8
+    
+  - name: simd_16
+    description: "16-wide SIMD ternary matmul (AVX-512 style)"
+    file: src/vibeec/simd_ternary_matmul.zig
+    function: simdTernaryMatmulOpt16
+    
+  - name: parallel_inference
+    description: "Multi-threaded parallel inference"
+    file: src/vibeec/parallel_inference.zig
+    function: parallelTernaryMatmul
+    
+  - name: flash_attention
+    description: "Flash Attention v2 (O(N) memory)"
+    file: src/vibeec/flash_attention.zig
+    function: flashAttention
+    
+  - name: pas_daemons
+    description: "PAS optimization with phi-modulation"
+    file: src/pas_mining_core.zig
+    function: PASSHA256
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HARDWARE TARGETS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+hardware:
+  cpu:
+    - name: local_cpu
+      cores: 8
+      expected_gflops: 1.0
+      
+  gpu:
+    - name: rtx_3090
+      vram_gb: 24
+      expected_tokens_per_sec: 298000
+      verified: true
+      
+    - name: a100_80gb
+      vram_gb: 80
+      expected_tokens_per_sec: 274000
+      verified: true
+      
+    - name: h100
+      vram_gb: 80
+      expected_tokens_per_sec: 500000
+      verified: false
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: load_model
+    given: Model path and allocator
+    when: Test starts
+    then: Load .tri model, verify header, return TriModel
+
+  - name: run_generation_test
+    given: Loaded model and config
+    when: Generation test requested
+    then: |
+      1. Reset KV cache
+      2. Start timer
+      3. Generate num_tokens tokens
+      4. Stop timer
+      5. Calculate tokens/sec
+      6. Return GenerationResult
+
+  - name: run_noise_test
+    given: Loaded model and noise levels
+    when: Noise robustness test requested
+    then: |
+      1. For each noise level:
+         - Inject noise into weights
+         - Run generation
+         - Measure accuracy retention
+      2. Return NoiseResult
+
+  - name: measure_memory
+    given: Model during inference
+    when: Memory tracking enabled
+    then: |
+      1. Record baseline memory
+      2. Run inference
+      3. Record peak memory
+      4. Calculate delta
+      5. Return MemoryResult
+
+  - name: compare_technologies
+    given: Model and list of technologies
+    when: Technology comparison requested
+    then: |
+      1. For each technology:
+         - Configure matmul function
+         - Run benchmark
+         - Record GFLOPS
+      2. Return ComparisonResult
+
+  - name: generate_report
+    given: All test results
+    when: Tests complete
+    then: |
+      1. Format results as markdown table
+      2. Include proofs (logs, timestamps)
+      3. Calculate deltas vs baseline
+      4. Write to docs/e2e_all_models_report.md
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  ModelConfig:
+    fields:
+      name: String
+      path: String
+      size_params: String
+      hidden_size: Int
+      layers: Int
+      target_tokens_per_sec: Int
+
+  GenerationResult:
+    fields:
+      model_name: String
+      tokens_generated: Int
+      time_seconds: Float
+      tokens_per_sec: Float
+      memory_mb: Float
+
+  NoiseResult:
+    fields:
+      model_name: String
+      noise_level: Int
+      accuracy_retention: Float
+
+  ComparisonResult:
+    fields:
+      technology: String
+      gflops: Float
+      speedup_vs_baseline: Float
+
+  E2EReport:
+    fields:
+      timestamp: Timestamp
+      models_tested: Int
+      all_passed: Bool
+      results: List<GenerationResult>
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METRICS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metrics:
+  verified_benchmarks:
+    rtx_3090_tokens_per_sec: 298052
+    a100_tokens_per_sec: 274000
+    noise_retention_30: 70.2
+    simd_16_gflops: 1.03
+    
+  targets:
+    min_tokens_per_sec_cpu: 1.0
+    min_noise_retention: 70.0
+    max_memory_overhead: 1.5
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════
