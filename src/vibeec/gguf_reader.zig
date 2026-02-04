@@ -45,6 +45,9 @@ pub const GGMLType = enum(u32) {
     // BitNet ternary types
     TQ1_0 = 16, // Ternary {-1, 0, +1} packed 4 per byte
     TQ2_0 = 17, // Ternary with scale factor
+    IQ2_S = 18, // BitNet i2_s format (2-bit integer with scale)
+    IQ2_XXS = 19, // 2-bit ultra-low
+    IQ3_S = 20, // 3-bit with scale
     BF16 = 30,
     _,
 };
@@ -76,6 +79,9 @@ pub fn getTypeSize(t: GGMLType) usize {
         // BitNet ternary: 32 trits * 2 bits / 8 = 8 bytes per block
         .TQ1_0 => 8,  // Pure ternary, no scale
         .TQ2_0 => 10, // Ternary with 2-byte scale
+        .IQ2_S => 10, // BitNet i2_s: 2-bit with scale (similar to TQ2_0)
+        .IQ2_XXS => 8,
+        .IQ3_S => 12,
         else => 0,
     };
 }

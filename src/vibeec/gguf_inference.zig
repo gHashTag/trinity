@@ -396,6 +396,51 @@ pub fn dequantizeQ6_KTensor(allocator: std.mem.Allocator, data: []const u8, num_
     return result;
 }
 
+// Dequantize IQ2_S (BitNet i2_s format) - 2-bit ternary with scale
+// Structure: scale(f16) + 32 2-bit values packed in 8 bytes = 10 bytes per block
+pub fn dequantizeIQ2_STensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
+    const block_size: usize = 32;
+    const type_size: usize = 10; // 2 bytes scale + 8 bytes data
+    const num_blocks = (num_elements + block_size - 1) / block_size;
+
+    const result = try allocator.alloc(f32, @intCast(num_elements));
+    errdefer allocator.free(result);
+
+    // Ternary lookup: 00=0, 01=+1, 10=-1, 11=0
+    const TRIT_LUT: [4]f32 = .{ 0.0, 1.0, -1.0, 0.0 };
+
+    var block_idx: usize = 0;
+    while (block_idx < num_blocks) : (block_idx += 1) {
+        const block_start = block_idx * type_size;
+        if (block_start + type_size > data.len) break;
+
+        const block = data[block_start..][0..type_size];
+        const out_start = block_idx * block_size;
+
+        // Scale is f16 (2 bytes)
+        const scale_bits = @as(u16, block[0]) | (@as(u16, block[1]) << 8);
+        const scale = gguf.f16ToF32(scale_bits);
+
+        // 8 bytes = 32 2-bit values (4 per byte)
+        var i: usize = 0;
+        while (i < 8 and out_start + i * 4 < num_elements) : (i += 1) {
+            const byte = block[2 + i];
+            // Extract 4 2-bit values
+            const v0 = TRIT_LUT[(byte >> 0) & 0x03];
+            const v1 = TRIT_LUT[(byte >> 2) & 0x03];
+            const v2 = TRIT_LUT[(byte >> 4) & 0x03];
+            const v3 = TRIT_LUT[(byte >> 6) & 0x03];
+
+            if (out_start + i * 4 + 0 < num_elements) result[out_start + i * 4 + 0] = v0 * scale;
+            if (out_start + i * 4 + 1 < num_elements) result[out_start + i * 4 + 1] = v1 * scale;
+            if (out_start + i * 4 + 2 < num_elements) result[out_start + i * 4 + 2] = v2 * scale;
+            if (out_start + i * 4 + 3 < num_elements) result[out_start + i * 4 + 3] = v3 * scale;
+        }
+    }
+
+    return result;
+}
+
 // Dequantize tensor based on type
 pub fn dequantizeTensor(allocator: std.mem.Allocator, data: []const u8, tensor_type: gguf.GGMLType, num_elements: u64) ![]f32 {
     return switch (tensor_type) {
@@ -405,6 +450,9 @@ pub fn dequantizeTensor(allocator: std.mem.Allocator, data: []const u8, tensor_t
         .Q4_K => dequantizeQ4_KTensor(allocator, data, num_elements),
         .Q6_K => dequantizeQ6_KTensor(allocator, data, num_elements),
         .F32 => dequantizeF32Tensor(allocator, data, num_elements),
+        .IQ2_S => dequantizeIQ2_STensor(allocator, data, num_elements),
+        .TQ1_0 => dequantizeIQ2_STensor(allocator, data, num_elements), // Same format
+        .TQ2_0 => dequantizeIQ2_STensor(allocator, data, num_elements), // Same format
         else => error.UnsupportedQuantization,
     };
 }
