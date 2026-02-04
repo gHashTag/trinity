@@ -1,0 +1,174 @@
+# Trinity Plugin Manifest Format
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3
+
+name: plugin_manifest
+version: "1.0.0"
+language: zig
+module: plugin_manifest
+
+description: |
+  Plugin manifest format (plugin.vibee).
+  Describes plugin metadata, dependencies, entry points.
+  Used for both local and remote registry plugins.
+  YAML format consistent with .vibee specifications.
+
+imports:
+  - plugin_interface
+
+types:
+  PluginManifest:
+    description: "Complete plugin description"
+    fields:
+      # Identity
+      id: String                    # "trinity.codegen.rust"
+      name: String                  # "Rust Code Generator"
+      version: String               # "1.0.0" (semver)
+      description: String
+      author: String
+      license: String
+      repository: Option<String>
+      homepage: Option<String>
+      keywords: List<String>
+
+      # Classification
+      kind: PluginKind
+      capabilities: List<PluginCapability>
+
+      # Dependencies
+      trinity_version: String       # ">=22.0.0"
+      dependencies: List<Dependency>
+      dev_dependencies: List<Dependency>
+      optional_dependencies: List<Dependency>
+      peer_dependencies: List<Dependency>
+
+      # Entry points
+      entry_point: String           # "plugin.wasm" or "src/main.zig"
+      exports: List<String>         # ["plugin_init", "plugin_invoke"]
+
+      # Execution environment
+      sandbox: SandboxConfig
+
+      # Configuration schema
+      config_schema: Option<String> # JSON schema
+
+      # Sacred metadata
+      sacred: SacredMetadata
+
+  Dependency:
+    description: "Plugin dependency"
+    fields:
+      id: String                    # "trinity-core"
+      version_constraint: String    # "^1.0.0", ">=0.5.0"
+
+  SandboxConfig:
+    description: "Sandbox configuration for plugin execution"
+    fields:
+      type: SandboxType
+      permissions: List<Permission>
+      memory_limit_mb: Int
+      timeout_ms: Int
+
+  SandboxType:
+    description: "Type of sandbox"
+    variants:
+      - wasm                        # WASM sandbox (default)
+      - native                      # Native code (requires trust level 3)
+      - hybrid                      # WASM with native extensions
+
+  Permission:
+    description: "Permission granted to plugin"
+    variants:
+      - file_read                   # Read files
+      - file_write                  # Write files
+      - codegen_output              # Write to trinity/output/
+      - spec_read                   # Read specs/tri/
+      - network                     # Network access (rare)
+
+  SacredMetadata:
+    description: "Trinity-specific sacred metadata"
+    fields:
+      phoenix_compatible: Bool      # Compatible with Phoenix architecture
+      trinity_score: Float          # Quality score 0.0-1.0
+      golden_chain_verified: Bool   # Passed Golden Chain validation
+
+  VersionConstraint:
+    description: "Semantic version constraint"
+    fields:
+      operator: VersionOp
+      major: Int
+      minor: Int
+      patch: Int
+
+  VersionOp:
+    description: "Version comparison operator"
+    variants:
+      - exact                       # "=1.0.0"
+      - gte                         # ">=1.0.0"
+      - lte                         # "<=1.0.0"
+      - gt                          # ">1.0.0"
+      - lt                          # "<1.0.0"
+      - compatible                  # "^1.0.0" (>=1.0.0 <2.0.0)
+      - tilde                       # "~1.0.0" (>=1.0.0 <1.1.0)
+
+  ParsedManifest:
+    description: "Result of parsing manifest"
+    fields:
+      manifest: Option<PluginManifest>
+      errors: List<String>
+      warnings: List<String>
+
+behaviors:
+  - name: parse_manifest
+    given: YAML source string
+    when: Loading plugin manifest
+    then: Parse and validate, return ParsedManifest
+
+  - name: parse_manifest_from_file
+    given: File path
+    when: Loading manifest from filesystem
+    then: Read file, parse YAML, return ParsedManifest
+
+  - name: validate_manifest
+    given: PluginManifest
+    when: Before installation
+    then: Check required fields, valid version, dependencies exist
+
+  - name: resolve_dependencies
+    given: PluginManifest and registry
+    when: Installing plugin
+    then: Resolve all dependencies, return ordered list
+
+  - name: check_version_constraint
+    given: Version and VersionConstraint
+    when: Checking dependency satisfaction
+    then: Return true if version satisfies constraint
+
+  - name: serialize_manifest
+    given: PluginManifest
+    when: Publishing plugin
+    then: Return YAML string representation
+
+  - name: generate_lockfile_entry
+    given: PluginManifest and resolved versions
+    when: Creating lockfile
+    then: Return lockfile entry with checksums
+
+constants:
+  MANIFEST_FILENAME: "plugin.vibee"
+  LOCKFILE_FILENAME: "plugin-lock.yaml"
+  MAX_DEPENDENCIES: 256
+  MAX_KEYWORDS: 32
+
+theorems:
+  - id: THM-MAN-001
+    statement: "Manifest id follows namespace format"
+    proof: "id = <namespace>.<kind>.<name>"
+
+  - id: THM-MAN-002
+    statement: "Version follows semver 2.0.0"
+    proof: "major.minor.patch format validated"
+
+  - id: THM-MAN-003
+    statement: "Dependencies form directed acyclic graph"
+    proof: "Cycle detection in resolve_dependencies"

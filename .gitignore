@@ -56,3 +56,15 @@ src/vibeec/tri_inference
 .env*.local
 models/bitnet/
 src/vibeec/bitnet_inference_test
+
+# Zig SDK downloads
+zig-macos-*/
+zig-linux-*/
+zig-windows-*/
+*.tar.xz
+
+# Ralph logs (keep config)
+.ralph/logs/
+
+# Temporary scripts
+check_ssh.py

@@ -1,121 +1,101 @@
-# CLAUDE.md - GOLDEN CHAIN Development Guidelines
+# CLAUDE.md
 
-**Author**: Dmitrii Vasilev
-**Sacred Formula**: `V = n × 3^k × π^m × φ^p × e^q`
-**Golden Identity**: `φ² + 1/φ² = 3`
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ---
 
-## 🚨 FIRST: RUN KOSCHEI
+## Build & Test Commands
 
 ```bash
-./bin/vibee koschei
-```
+# Build
+zig build                    # Compile library and executables
+zig build firebird           # Build Firebird LLM CLI (ReleaseFast)
+zig build release            # Cross-platform release builds (linux/macos/windows)
 
-This shows 16 links of the Golden Chain - **MANDATORY** development cycle!
+# Test
+zig build test               # Run ALL tests (trinity, vsa, vm, firebird, wasm, depin)
+zig test src/vsa.zig         # Run single test file
+zig test src/vm.zig          # VM tests only
+zig test src/firebird/b2t_integration.zig  # Firebird integration tests
 
----
+# Benchmark
+zig build bench              # Run benchmarks
 
-## ⛓️ GOLDEN CHAIN - 16 LINKS
+# Examples
+zig build examples           # Build and run all examples
 
-> *"By the curved seashore stands a green oak, a golden chain upon that oak..."*
-
-```
-┌────┬──────────────────┬─────────────────────────────────────────┐
-│  # │ LINK             │ DESCRIPTION                             │
-├────┼──────────────────┼─────────────────────────────────────────┤
-│  1 │ BASELINE         │ Analyze current version                 │
-│  2 │ METRICS          │ Collect metrics v(n-1)                  │
-│  3 │ PAS ANALYZE      │ Research scientific papers              │
-│  4 │ TECH TREE        │ Build technology tree                   │
-│  5 │ SPEC CREATE      │ Create .vibee specifications            │
-│  6 │ CODE GENERATE    │ Generate .zig from .vibee               │
-│  7 │ TEST RUN         │ Run all tests                           │
-│  8 │ BENCHMARK PREV   │ ⚡ COMPARE with v(n-1) [CRITICAL]       │
-│  9 │ BENCHMARK THEORY │ Compare with theoretical max            │
-│ 10 │ DELTA REPORT     │ Report v(n) - v(n-1)                    │
-│ 11 │ OPTIMIZE         │ Optimize based on results               │
-│ 12 │ DOCS             │ Documentation with proofs               │
-│ 13 │ GIT              │ Commit with changelog                   │
-│ 14 │ TOXIC VERDICT    │ 🔥 HARSH SELF-CRITICISM                 │
-│ 15 │ TECH TREE SELECT │ 🌳 Choose next research                 │
-│ 16 │ LOOP/EXIT        │ Decision: v(n+1) or EXIT                │
-└────┴──────────────────┴─────────────────────────────────────────┘
+# Format
+zig fmt src/                 # Format Zig code
 ```
 
 ---
 
-## 🔥 LINK 14: TOXIC VERDICT
+## Architecture
 
-After each iteration - **MANDATORY** write harsh self-criticism:
+### Core VSA System (src/)
 
+| Module | Purpose |
+|--------|---------|
+| `trinity.zig` | Library exports, version |
+| `vsa.zig` | Vector Symbolic Architecture: bind, unbind, bundle, similarity |
+| `vm.zig` | Ternary Virtual Machine (stack-based bytecode) |
+| `hybrid.zig` | HybridBigInt: packed (1.58 bits/trit) ↔ unpacked cache |
+| `packed_trit.zig` | Bit-packed ternary encoding |
+| `sdk.zig` | High-level API (Hypervector, Codebook) |
+
+### Key VSA Operations (src/vsa.zig)
+
+```zig
+bind(a, b)           // Bind two vectors (association)
+unbind(bound, key)   // Retrieve vector from binding
+bundle2(a, b)        // Majority vote of 2 vectors
+bundle3(a, b, c)     // Majority vote of 3 vectors
+cosineSimilarity()   // Measure similarity [-1, 1]
+hammingDistance()    // Count differing trits
+dotSimilarity()      // Inner product
+permute(v, count)    // Cyclic permutation
 ```
-╔══════════════════════════════════════════════════════════════════╗
-║                    🔥 TOXIC VERDICT 🔥                           ║
-╠══════════════════════════════════════════════════════════════════╣
-║ WHAT WAS DONE:                                                   ║
-║ - [specifically what was implemented]                            ║
-║                                                                  ║
-║ WHAT FAILED:                                                     ║
-║ - [honest about mistakes]                                        ║
-║                                                                  ║
-║ METRICS:                                                         ║
-║ - Before: X tok/s | After: Y tok/s | Δ = Z%                      ║
-║                                                                  ║
-║ SELF-CRITICISM:                                                  ║
-║ - [harsh analysis without rose-colored glasses]                  ║
-║ - [what could have been done better]                             ║
-║                                                                  ║
-║ SCORE: [1-10]/10                                                 ║
-╚══════════════════════════════════════════════════════════════════╝
-```
+
+### Firebird LLM Engine (src/firebird/)
+
+| File | Purpose |
+|------|---------|
+| `cli.zig` | Command-line interface |
+| `b2t_integration.zig` | BitNet-to-Ternary conversion |
+| `wasm_parser.zig` | WebAssembly module loading |
+| `extension_wasm.zig` | Extension system |
+| `depin.zig` | Decentralized Physical Infrastructure |
+
+### VIBEE Compiler (src/vibeec/)
+
+| File | Purpose |
+|------|---------|
+| `vibee_parser.zig` | Parse .vibee specifications |
+| `zig_codegen.zig` | Generate Zig code |
+| `verilog_codegen.zig` | Generate Verilog (FPGA) |
+| `gen_cmd.zig` | CLI entry point |
+| `gguf_chat.zig` | GGUF model interface |
+| `http_server.zig` | HTTP API server |
+
+### Other Subsystems
+
+| Directory | Purpose |
+|-----------|---------|
+| `src/b2t/` | BitNet inference (21 files) |
+| `src/phi-engine/` | Quantum-inspired computation |
+| `src/tvc/` | Ternary Vector Computing |
+| `src/maxwell/` | Constraint solving |
 
 ---
 
-## 🌳 LINK 15: TECH TREE SELECT
+## Golden Chain Development Cycle
 
-After self-criticism - propose 3 options from Tech Tree for next iteration:
+**MANDATORY** 16-link cycle. Run `./bin/vibee koschei` to see all links.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│              🌳 TECH TREE - SELECT NEXT                         │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  Current branch: [name]                                         │
-│                                                                 │
-│  OPTIONS FOR NEXT RESEARCH:                                     │
-│                                                                 │
-│  [A] ──────────────────────────────────────────────────────     │
-│      Name: ...                                                  │
-│      Complexity: ★★☆☆☆                                          │
-│      Potential: +X% to metric Y                                 │
-│      Dependencies: [what's needed first]                        │
-│                                                                 │
-│  [B] ──────────────────────────────────────────────────────     │
-│      Name: ...                                                  │
-│      Complexity: ★★★☆☆                                          │
-│      Potential: +X% to metric Y                                 │
-│      Dependencies: [what's needed first]                        │
-│                                                                 │
-│  [C] ──────────────────────────────────────────────────────     │
-│      Name: ...                                                  │
-│      Complexity: ★★★★☆                                          │
-│      Potential: +X% to metric Y                                 │
-│      Dependencies: [what's needed first]                        │
-│                                                                 │
-│  RECOMMENDATION: [A/B/C] because [reason]                       │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🔥 MINIMAL CYCLE
-
-For EVERY task execute at minimum these links:
+### Minimal Cycle
 
 ```bash
-# [5] SPEC CREATE - For SOFTWARE (Zig)
+# 1. Create specification
 cat > specs/tri/feature.vibee << 'EOF'
 name: feature
 version: "1.0.0"
@@ -134,106 +114,71 @@ behaviors:
     then: Result
 EOF
 
-# [5] SPEC CREATE - For HARDWARE (Verilog/FPGA)
-cat > specs/tri/feature_fpga.vibee << 'EOF'
-name: feature_fpga
-version: "1.0.0"
-language: varlog  # ← THIS GENERATES .v VERILOG!
-module: feature_fpga
+# 2. Generate code
+./bin/vibee gen specs/tri/feature.vibee  # → trinity/output/feature.zig
 
-types:
-  DataWord:
-    fields:
-      value: Int
-    width: 32
-
-behaviors:
-  - name: process_data
-    given: Input data word
-    when: Clock edge
-    then: Output processed result
-EOF
-
-# [6] CODE GENERATE
-./bin/vibee gen specs/tri/feature.vibee        # → trinity/output/feature.zig
-./bin/vibee gen specs/tri/feature_fpga.vibee   # → trinity/output/fpga/feature_fpga.v
-
-# [7] TEST RUN
+# 3. Test
 zig test trinity/output/feature.zig
-# For Verilog: iverilog -o test trinity/output/fpga/feature_fpga.v && vvp test
 
-# [14] TOXIC VERDICT
-# Write harsh self-criticism!
+# 4. Write TOXIC VERDICT (harsh self-criticism)
+# 5. Propose 3 TECH TREE options for next iteration
+```
 
-# [15] TECH TREE SELECT
-# Propose 3 options for next research!
+### For Hardware (Verilog/FPGA)
 
-# [16] LOOP/EXIT
-# Tests passed? → EXIT or new iteration
-# Tests failed? → Return to [5]
+```bash
+# Use language: varlog
+./bin/vibee gen specs/tri/feature_fpga.vibee  # → trinity/output/fpga/feature_fpga.v
 ```
 
 ---
 
-## ⛔ FORBIDDEN
+## Code Generation Rules
 
-### 🚫 ANTI-PATTERN #1: WRITING CODE MANUALLY
+### ANTI-PATTERN: Writing code manually
 
 ```
-╔══════════════════════════════════════════════════════════════════╗
-║  ❌ WRITING .zig CODE MANUALLY IS AN ANTI-PATTERN!               ║
-║  ❌ WRITING .v CODE MANUALLY IS AN ANTI-PATTERN!                 ║
-║  ❌ ALL CODE MUST BE GENERATED FROM .vibee SPECIFICATIONS!       ║
-╚══════════════════════════════════════════════════════════════════╝
+ALL CODE MUST BE GENERATED FROM .vibee SPECIFICATIONS!
 ```
 
-### NEVER create manually:
+### Allowed to edit
 
-| Forbidden | Reason |
-|-----------|--------|
-| `*.html` | Legacy |
-| `*.css` | Legacy |
-| `*.js` | Legacy |
-| `*.ts` | Legacy |
-| `*.zig` | **ANTI-PATTERN!** Generate from .vibee |
-| `*.v` | **ANTI-PATTERN!** Generate from .vibee (language: varlog) |
-| `*.py` | **ANTI-PATTERN!** Generate from .vibee |
-
-### CORRECT WORKFLOW:
-
-```bash
-# For Zig code:
-specs/tri/feature.vibee (language: zig) → ./bin/vibee gen → trinity/output/feature.zig
-
-# For Verilog/FPGA code:
-specs/tri/feature.vibee (language: varlog) → ./bin/vibee gen → trinity/output/fpga/feature.v
-```
-
-### ALLOWED to edit:
-
-| Allowed | Description |
-|---------|-------------|
+| Path | Description |
+|------|-------------|
 | `specs/tri/*.vibee` | Specifications (SOURCE OF TRUTH) |
 | `src/vibeec/*.zig` | Compiler source ONLY |
 | `docs/*.md` | Documentation |
 
-### NEVER EDIT (auto-generated):
+### Never edit (auto-generated)
 
-| Never Edit | Reason |
-|------------|--------|
+| Path | Reason |
+|------|--------|
 | `trinity/output/*.zig` | Generated from .vibee |
-| `trinity/output/fpga/*.v` | Generated from .vibee (language: varlog) |
+| `trinity/output/fpga/*.v` | Generated from .vibee |
 | `generated/*.zig` | Generated from .vibee |
-| `generated/*.v` | Generated from .vibee |
 
 ---
 
-## 📝 .vibee FORMAT
+## CLI Commands
+
+```bash
+# VIBEE Compiler
+./bin/vibee gen <spec.vibee>         # Generate Zig code
+./bin/vibee gen-multi <spec> all     # Generate for 42 languages
+./bin/vibee run <file.999>           # Run via bytecode VM
+./bin/vibee koschei                  # Show Golden Chain
+./bin/vibee chat --model <path>      # Chat with model
+./bin/vibee serve --port 8080        # Start HTTP server
+```
+
+---
+
+## .vibee Specification Format
 
 ```yaml
 name: module_name
 version: "1.0.0"
-language: zig
+language: zig          # or: varlog (Verilog), python, etc.
 module: module_name
 
 types:
@@ -255,61 +200,47 @@ behaviors:
 
 ---
 
-## 🔧 COMMANDS
+## Mathematical Foundation
 
-```bash
-# EXECUTION (ONLY VM - NO INTERPRETER!)
-./bin/vibee run <file.999>   # Run via bytecode VM (5x faster!)
-
-# GOLDEN CHAIN
-./bin/vibee koschei          # 16 links (default)
-./bin/vibee koschei chain    # Lukomorye architecture
-./bin/vibee koschei status   # Status from Learned Cat
-
-# GENERATION
-./bin/vibee gen <spec.vibee>                    # Zig
-./bin/vibee gen-multi <spec.vibee> all           # 42 languages
-
-# TESTING
-zig test trinity/output/<module>.zig
 ```
+φ = (1 + √5) / 2 ≈ 1.618      (Golden Ratio)
+φ² + 1/φ² = 3 = TRINITY       (Trinity Identity)
+3²¹ = 10,460,353,203          (Phoenix Number - Total $TRI supply)
+V = n × 3^k × π^m × φ^p × e^q (Sakra Formula)
+```
+
+Ternary {-1, 0, +1} is mathematically optimal:
+- Information density: 1.58 bits/trit (vs 1 bit/binary)
+- Memory savings: 20x vs float32
+- Compute: Add-only (no multiply)
 
 ---
 
-## ⚡ EXECUTION MODEL
-
-**ONLY BYTECODE VM!** Tree-walking interpreter is DEPRECATED.
+## Telegram Bot Rules
 
 ```
-.999 SOURCE → PARSER → AST → BYTECODE COMPILER → VM EXECUTION
+FORBIDDEN: InlineKeyboardMarkup (buttons in message)
+ONLY: ReplyKeyboardMarkup (buttons at bottom of screen)
 ```
 
-**Why VM only:**
-- 5-6x faster than interpreter
-- Proper stack-based execution
-- Native functions (print, len, range, etc.)
-- Foundation for JIT compilation
-
-**NEVER use coptic_interpreter.zig directly!**
+Specifications: `specs/tri/telegram_bot/`
 
 ---
 
-## 📁 STRUCTURE
+## Website Deployment
 
 ```
-vibee-lang/
-├── specs/tri/          # .vibee (SOURCE)
-├── trinity/output/     # .zig (DO NOT EDIT!)
-├── src/vibeec/         # Compiler
-├── bin/vibee           # CLI
-└── docs/               # Documentation
+Canonical URL: https://trinity-site-ghashtag.vercel.app
+GitHub Repo:   gHashTag/trinity
+Root:          website/
+Framework:     Vite (React SPA)
 ```
+
+DO NOT create new Vercel projects. Push to main branch auto-deploys.
 
 ---
 
-## 🏆 EXIT_SIGNAL
-
-Complete work when:
+## Exit Criteria
 
 ```
 EXIT_SIGNAL = (
@@ -323,101 +254,48 @@ EXIT_SIGNAL = (
 
 ---
 
----
+## Ralph Autonomous Development
 
-## 🤖 TELEGRAM BOT RULES
+Ralph enables continuous autonomous development cycles for Claude Code.
 
-### BUTTONS AT BOTTOM ONLY!
-
-```
-⛔ FORBIDDEN: InlineKeyboardMarkup (buttons in message)
-✅ ONLY: ReplyKeyboardMarkup (buttons at bottom of screen)
-```
-
-### Bot Specifications:
+### Configuration
 
 ```
-specs/tri/telegram_bot/
-├── navigation/unified_navigation.vibee  # Single source of truth
-├── menu/reply_keyboard.vibee            # ReplyKeyboard generator
-├── services/replicate_api.vibee         # AI generation
-└── handlers/message_handler.vibee       # Message routing
+.ralph/
+├── PROMPT.md      # Main prompt for autonomous work
+├── AGENT.md       # Agent configuration (build/test/run)
+├── fix_plan.md    # Fix plan tracking
+├── specs/         # Specifications
+├── examples/      # Examples
+├── logs/          # Execution logs
+└── docs/generated/
+.ralphrc           # Ralph settings
 ```
 
-### Multi-level Menu Structure:
-
-```
-🏠 MAIN
-├── 📸 Neurophoto → ✨ Neurophoto, 🔍 Prompt from photo, 🎭 Face swap, ⬆️ Upscale
-├── 🎥 Video → 🎥 Photo to video, 🎬 Text to video, 👄 Lip Sync
-├── 🎤 Audio → 🎤 Avatar voice, 🎙️ Text to speech
-├── 🤖 Avatar → 🤖 Digital body, 🧠 Avatar brain, 💬 Chat
-├── 🛠 Tools
-├── 💰 Balance | 💎 Top up
-└── 💬 Support | 🌐 EN/RU
-```
-
-### Code Generation:
+### Commands
 
 ```bash
-./bin/vibee gen specs/tri/telegram_bot/navigation/unified_navigation.vibee
-./bin/vibee gen specs/tri/telegram_bot/menu/reply_keyboard.vibee
-./bin/vibee gen specs/tri/telegram_bot/services/replicate_api.vibee
-./bin/vibee gen specs/tri/telegram_bot/handlers/message_handler.vibee
+ralph --monitor          # Start with live monitoring dashboard
+ralph --help             # Show options
+ralph-enable             # Enable Ralph in project (interactive)
+ralph-import prd.md      # Convert PRD to Ralph tasks
+ralph-migrate            # Migrate to .ralph/ structure
 ```
 
----
+### Usage
 
-## 🌐 WEBSITE DEPLOYMENT RULES
+1. Edit `.ralph/PROMPT.md` with requirements
+2. Run `ralph --monitor`
+3. Ralph will loop Claude Code until task completion
 
-### CANONICAL URL (DO NOT CHANGE!)
+### Safeguards
 
-```
-Production URL: https://trinity-site-ghashtag.vercel.app
-Vercel Project: trinity-site
-GitHub Repo:    gHashTag/trinity
-Root Directory: website/
-Framework:      Vite (React SPA)
-```
+- Rate limiting: 100 calls/hour (configurable)
+- Circuit breaker for error detection
+- Intelligent exit detection (completion + explicit confirmation)
+- Session continuity across iterations
 
-### ⛔ FORBIDDEN ACTIONS
-
-```
-❌ DO NOT create new Vercel projects for the website
-❌ DO NOT change the production URL
-❌ DO NOT deploy to different project names
-❌ DO NOT create duplicate website folders
-```
-
-### ✅ ALLOWED ACTIONS
-
-```
-✅ Edit files in website/ folder
-✅ Push to main branch (auto-deploys via GitHub webhook)
-✅ Update translations in website/messages/*.json
-✅ Modify components in website/src/
-```
-
-### Deployment Process
-
-```bash
-# 1. Make changes in website/ folder
-# 2. Build locally to verify
-cd website && npm run build
-
-# 3. Commit and push (auto-deploys)
-git add -A && git commit -m "feat: description" && git push origin main
-
-# 4. Verify at canonical URL
-# https://trinity-site-ghashtag.vercel.app
-```
-
-### GitHub Links (USE ONLY THIS!)
-
-```
-Repository: https://github.com/gHashTag/trinity
-NOT: vibee-lang, trinity-os, or any other repo
-```
+Repository: https://github.com/frankbria/ralph-claude-code
 
 ---
 

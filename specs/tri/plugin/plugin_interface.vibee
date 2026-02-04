@@ -1,0 +1,135 @@
+# Trinity Unified Plugin Interface
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3
+
+name: plugin_interface
+version: "1.0.0"
+language: zig
+module: plugin_interface
+
+description: |
+  Unified Plugin Interface for Trinity Network.
+  All plugins (codegen, validators, firebird, vsa) implement this trait.
+  Supports compile-time (core) and runtime (WASM) loading.
+  Extends BogatyrPlugin pattern to universal plugin system.
+
+types:
+  PluginKind:
+    description: "Category of plugin functionality"
+    variants:
+      - codegen      # Code generation (Zig, Verilog, Python, etc.)
+      - validator    # Bogatyr validators (33+1 pattern)
+      - vsa_op       # VSA operations (bind, bundle, permute)
+      - firebird_ext # Firebird browser extensions
+      - optimizer    # Optimization passes
+      - backend      # Inference backends (CPU, CUDA, Metal)
+
+  PluginCapability:
+    description: "Single capability provided by plugin"
+    fields:
+      name: String
+      version: String
+
+  PluginMetadata:
+    description: "Plugin identification and metadata"
+    fields:
+      id: String              # "trinity.codegen.python"
+      name: String            # "Python Code Generator"
+      version: String         # "1.0.0"
+      author: String
+      kind: PluginKind
+      capabilities: List<PluginCapability>
+      dependencies: List<String>
+      trinity_version: String # Minimum required
+
+  PluginState:
+    description: "Runtime state of plugin"
+    fields:
+      loaded: Bool
+      enabled: Bool
+      error_count: Int
+      last_error: Option<String>
+
+  PluginResult:
+    description: "Result of plugin operation"
+    fields:
+      success: Bool
+      output: Option<String>
+      errors: List<String>
+      duration_ns: Int
+      memory_bytes: Int
+
+  PluginContext:
+    description: "Execution context for plugin operations"
+    fields:
+      allocator: Allocator
+      config: Map<String, String>
+      input_path: Option<String>
+      output_path: Option<String>
+
+  Plugin:
+    description: "Core Plugin structure with vtable"
+    fields:
+      metadata: PluginMetadata
+      state: PluginState
+      vtable: PluginVTable
+      context: Pointer
+
+  PluginVTable:
+    description: "Virtual function table for plugin operations"
+    fields:
+      init_fn: FunctionPointer
+      deinit_fn: FunctionPointer
+      invoke_fn: FunctionPointer
+      capabilities_fn: FunctionPointer
+
+behaviors:
+  - name: plugin_init
+    given: Allocator and configuration bytes
+    when: Plugin is loaded into registry
+    then: Initialize internal state, return success or error
+
+  - name: plugin_deinit
+    given: Plugin instance
+    when: Plugin is unloaded from registry
+    then: Release all resources, cleanup state
+
+  - name: plugin_invoke
+    given: Plugin, operation name, and input bytes
+    when: Operation requested by host
+    then: Execute operation, return PluginResult with output
+
+  - name: plugin_capabilities
+    given: Plugin instance
+    when: Host queries available operations
+    then: Return list of PluginCapability
+
+  - name: plugin_metadata
+    given: Plugin path or bytes
+    when: Querying plugin info without loading
+    then: Return PluginMetadata from manifest
+
+  - name: create_plugin
+    given: Metadata and vtable
+    when: Registering new plugin
+    then: Return initialized Plugin structure
+
+  - name: wrap_bogatyr
+    given: BogatyrPlugin (legacy validator)
+    when: Adapting existing validator
+    then: Return Plugin with validator vtable
+
+constants:
+  PLUGIN_API_VERSION: 1
+  MAX_PLUGIN_NAME_LEN: 256
+  MAX_CAPABILITIES: 64
+  DEFAULT_TIMEOUT_MS: 30000
+
+theorems:
+  - id: THM-PLUGIN-001
+    statement: "Every plugin has unique id in namespace format"
+    proof: "id = <namespace>.<kind>.<name>"
+
+  - id: THM-PLUGIN-002
+    statement: "Plugin vtable is immutable after registration"
+    proof: "VTable is const pointer, no mutation allowed"
