@@ -12,6 +12,7 @@ const flash = @import("flash_attention.zig");
 const parallel = @import("parallel_inference.zig");
 const kv_cache = @import("kv_cache.zig");
 const simd = @import("simd_matmul.zig");
+const tokenizer_mod = @import("gguf_tokenizer.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // .TRI FILE FORMAT
