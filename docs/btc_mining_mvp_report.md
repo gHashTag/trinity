@@ -37,14 +37,14 @@ Trinity BTC Mining MVP successfully implemented with:
 | **Total Hashes** | 1,000,000 |
 | **Elapsed Time** | 781 ms |
 
-### $TRI Bonus Calculation
+### $TRI Bonus Calculation (BOOSTED 5x!)
 
 | Hashrate | Duration | $TRI Earned |
 |----------|----------|-------------|
-| 1 MH/s | 1 hour | 10 $TRI |
-| 1.28 MH/s | 1 hour | 12.8 $TRI |
-| 1.28 MH/s | 24 hours | 307.2 $TRI |
-| 10 nodes @ 1.28 MH/s | 24 hours | 3,072 $TRI |
+| 1 MH/s | 1 hour | **50 $TRI** |
+| 1.28 MH/s | 1 hour | **64 $TRI** |
+| 1.28 MH/s | 24 hours | **1,536 $TRI** |
+| 10 nodes @ 1.28 MH/s | 24 hours | **15,360 $TRI** |
 
 ---
 
