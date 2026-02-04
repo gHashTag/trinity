@@ -129,9 +129,9 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
 
       // Three main nodes: Physical, Protocol, Intelligence
       const nodes = [
-        { name: 'PHYSICAL', color: '#8a2be2', desc: 'Ternary Hardware' },
-        { name: 'PROTOCOL', color: '#00ffff', desc: 'Quantum Network' },
-        { name: 'INTELLIGENCE', color: '#ff00ff', desc: 'AI/ML Layer' }
+        { name: 'PHYSICAL', color: '#00E599', desc: 'Ternary Hardware' },
+        { name: 'PROTOCOL', color: '#00E599', desc: 'Quantum Network' },
+        { name: 'INTELLIGENCE', color: '#00b377', desc: 'AI/ML Layer' }
       ];
 
       for (let i = 0; i < 3; i++) {
@@ -214,7 +214,7 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
         const x = cx + (outerRadius + wobble) * Math.cos(angle);
         const y = cy + (outerRadius + wobble) * Math.sin(angle);
 
-        ctx.fillStyle = ['#0ff', '#f0f', '#ff0'][i % 3];
+        ctx.fillStyle = ['#0e9', '#0b7', '#ff0'][i % 3];
         ctx.beginPath();
         ctx.arc(x, y, 6 * scale, 0, TAU);
         ctx.fill();
@@ -237,17 +237,17 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
 
       ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
       ctx.fillRect(boxX, boxY, boxW, boxH);
-      ctx.strokeStyle = '#0ff';
+      ctx.strokeStyle = '#0e9';
       ctx.lineWidth = 1;
       ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-      ctx.fillStyle = '#0ff';
+      ctx.fillStyle = '#0e9';
       ctx.font = `bold ${10 * scale}px monospace`;
       ctx.textAlign = 'center';
       ctx.fillText('PROTOCOL STACK', boxX + boxW / 2, boxY + 14 * scale);
 
       const layers = ['Application', 'Transport', 'Network', 'Link', 'Physical'];
-      const layerColors = ['#f0f', '#ff0', '#0f0', '#0ff', '#8a2be2'];
+      const layerColors = ['#0b7', '#ff0', '#0f0', '#0e9', '#00E599'];
       layers.forEach((layer, i) => {
         const ly = boxY + 22 * scale + i * 16 * scale;
         ctx.fillStyle = layerColors[i] + '40';
@@ -280,10 +280,10 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
       const invY = h / 2 - 60 * scale; // Upper middle right
       ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
       ctx.fillRect(invX, invY, boxW, 70 * scale);
-      ctx.strokeStyle = '#0ff';
+      ctx.strokeStyle = '#0e9';
       ctx.strokeRect(invX, invY, boxW, 70 * scale);
 
-      ctx.fillStyle = '#0ff';
+      ctx.fillStyle = '#0e9';
       ctx.font = `bold ${10 * scale}px monospace`;
       ctx.textAlign = 'center';
       ctx.fillText('SSOT INVARIANTS', invX + boxW / 2, invY + 14 * scale);
