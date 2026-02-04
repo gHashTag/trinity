@@ -62,38 +62,57 @@ pub const SimpleTokenizer = struct {
         // Add BOS token
         try tokens.append(self.bos_token_id);
         
-        // Simple word-level tokenization
+        // Tokenize with ▁ prefix for word boundaries
         var i: usize = 0;
+        var at_word_start = true;
+        
         while (i < text.len) {
+            // Skip spaces, mark next as word start
+            if (text[i] == ' ') {
+                at_word_start = true;
+                i += 1;
+                continue;
+            }
+            
             var found = false;
             
-            // Try to match longest token first (up to 15 chars)
-            var max_len = @min(text.len - i, 15);
+            // Try to match longest token first (up to 20 chars)
+            var max_len = @min(text.len - i, 20);
             while (max_len > 0) : (max_len -= 1) {
                 const substr = text[i..i + max_len];
                 
-                // Try with space prefix (Ġ in tokenizer)
-                var buf: [20]u8 = undefined;
-                const with_space = std.fmt.bufPrint(&buf, "Ġ{s}", .{substr}) catch substr;
-                
-                if (self.vocab.get(with_space)) |id| {
-                    try tokens.append(id);
-                    i += max_len;
-                    found = true;
-                    break;
+                // Try with ▁ prefix if at word start (U+2581 = 0xE2 0x96 0x81)
+                if (at_word_start) {
+                    var buf: [30]u8 = undefined;
+                    buf[0] = 0xE2;
+                    buf[1] = 0x96;
+                    buf[2] = 0x81;
+                    @memcpy(buf[3..3 + substr.len], substr);
+                    const with_prefix = buf[0..3 + substr.len];
+                    
+                    if (self.vocab.get(with_prefix)) |id| {
+                        try tokens.append(id);
+                        i += max_len;
+                        at_word_start = false;
+                        found = true;
+                        break;
+                    }
                 }
                 
+                // Try without prefix
                 if (self.vocab.get(substr)) |id| {
                     try tokens.append(id);
                     i += max_len;
+                    at_word_start = false;
                     found = true;
                     break;
                 }
             }
             
             if (!found) {
-                // Skip unknown character
+                // Single character fallback
                 i += 1;
+                at_word_start = false;
             }
         }
         
@@ -104,22 +123,68 @@ pub const SimpleTokenizer = struct {
         var result = std.ArrayList(u8).init(self.allocator);
         
         for (tokens) |id| {
+            // Skip special tokens
             if (id == self.bos_token_id or id == self.eos_token_id) continue;
+            if (id == 0) continue; // <unk>
             
             if (self.id_to_token.get(id)) |token| {
-                for (token) |c| {
-                    // Handle Ġ (space prefix in LLaMA tokenizer)
-                    if (c == 0xC4) continue;
-                    if (c == 0xA0) {
+                var i: usize = 0;
+                while (i < token.len) {
+                    // Check for ▁ (U+2581) - UTF-8: 0xE2 0x96 0x81
+                    if (i + 2 < token.len and 
+                        token[i] == 0xE2 and 
+                        token[i + 1] == 0x96 and 
+                        token[i + 2] == 0x81) {
+                        // Replace ▁ with space
                         try result.append(' ');
-                    } else {
-                        try result.append(c);
+                        i += 3;
+                        continue;
                     }
+                    
+                    // Check for Ġ (U+0120) - UTF-8: 0xC4 0xA0 (GPT-2 style)
+                    if (i + 1 < token.len and 
+                        token[i] == 0xC4 and 
+                        token[i + 1] == 0xA0) {
+                        try result.append(' ');
+                        i += 2;
+                        continue;
+                    }
+                    
+                    // Check for byte fallback tokens <0xXX>
+                    if (i + 5 < token.len and
+                        token[i] == '<' and
+                        token[i + 1] == '0' and
+                        token[i + 2] == 'x') {
+                        // Parse hex byte
+                        const hex_str = token[i + 3 .. i + 5];
+                        const byte_val = std.fmt.parseInt(u8, hex_str, 16) catch {
+                            try result.append(token[i]);
+                            i += 1;
+                            continue;
+                        };
+                        try result.append(byte_val);
+                        i += 6; // Skip <0xXX>
+                        continue;
+                    }
+                    
+                    // Regular character
+                    try result.append(token[i]);
+                    i += 1;
                 }
             }
         }
         
-        return result.toOwnedSlice();
+        // Trim leading space if present
+        const owned = try result.toOwnedSlice();
+        if (owned.len > 0 and owned[0] == ' ') {
+            // Return slice without first character
+            const trimmed = try self.allocator.alloc(u8, owned.len - 1);
+            @memcpy(trimmed, owned[1..]);
+            self.allocator.free(owned);
+            return trimmed;
+        }
+        
+        return owned;
     }
     
     pub fn deinit(self: *SimpleTokenizer) void {
