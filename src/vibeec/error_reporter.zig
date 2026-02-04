@@ -278,8 +278,8 @@ pub const Diagnostic = struct {
     code: DiagnosticCode,
     message: []const u8,
     span: SourceSpan,
-    notes: ArrayList(Diagnostic) = .empty,
-    suggestions: ArrayList(Suggestion) = .empty,
+    notes: ArrayList(Diagnostic),
+    suggestions: ArrayList(Suggestion),
     allocator: Allocator,
 
     const Self = @This();
@@ -290,6 +290,8 @@ pub const Diagnostic = struct {
             .code = code,
             .message = message,
             .span = span,
+            .notes = ArrayList(Diagnostic).init(allocator),
+            .suggestions = ArrayList(Suggestion).init(allocator),
             .allocator = allocator,
         };
     }
@@ -298,8 +300,8 @@ pub const Diagnostic = struct {
         for (self.notes.items) |*note| {
             note.deinit();
         }
-        self.notes.deinit(self.allocator);
-        self.suggestions.deinit(self.allocator);
+        self.notes.deinit();
+        self.suggestions.deinit();
     }
 
     pub fn isError(self: Self) bool {
@@ -309,11 +311,11 @@ pub const Diagnostic = struct {
     pub fn addNote(self: *Self, message: []const u8, span: ?SourceSpan) !void {
         const note_span = span orelse self.span;
         const note = Diagnostic.init(self.allocator, .note, self.code, message, note_span);
-        try self.notes.append(self.allocator, note);
+        try self.notes.append(note);
     }
 
     pub fn addSuggestion(self: *Self, message: []const u8, replacement: ?[]const u8) !void {
-        try self.suggestions.append(self.allocator, .{
+        try self.suggestions.append(.{
             .message = message,
             .replacement = replacement,
         });
@@ -398,9 +400,9 @@ pub const ErrorReporter = struct {
     pub fn init(allocator: Allocator, source: []const u8, file_name: []const u8) !Self {
         var self = Self{
             .allocator = allocator,
-            .diagnostics = .empty,
+            .diagnostics = std.ArrayList(Diagnostic).init(allocator),
             .source = source,
-            .source_lines = .empty,
+            .source_lines = std.ArrayList([]const u8).init(allocator),
             .file_name = file_name,
             .error_count = 0,
             .warning_count = 0,
@@ -410,7 +412,7 @@ pub const ErrorReporter = struct {
         // Split source into lines
         var lines = std.mem.splitScalar(u8, source, '\n');
         while (lines.next()) |line| {
-            try self.source_lines.append(allocator, line);
+            try self.source_lines.append(line);
         }
 
         return self;
@@ -420,8 +422,8 @@ pub const ErrorReporter = struct {
         for (self.diagnostics.items) |*diag| {
             diag.deinit();
         }
-        self.diagnostics.deinit(self.allocator);
-        self.source_lines.deinit(self.allocator);
+        self.diagnostics.deinit();
+        self.source_lines.deinit();
     }
 
     pub fn report(self: *Self, severity: DiagnosticSeverity, code: DiagnosticCode, span: SourceSpan, message: []const u8) !*Diagnostic {
@@ -433,7 +435,7 @@ pub const ErrorReporter = struct {
         diag_span.source_line = self.getSourceLine(span.start.line);
 
         const diag = Diagnostic.init(self.allocator, severity, code, message, diag_span);
-        try self.diagnostics.append(self.allocator, diag);
+        try self.diagnostics.append(diag);
 
         if (severity == .error_level) {
             self.error_count += 1;

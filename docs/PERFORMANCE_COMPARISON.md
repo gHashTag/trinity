@@ -178,6 +178,29 @@ Trinity now supports converting any GGUF model to ternary .tri format:
 - Q4_K, Q5_K, Q6_K, Q8_K (K-quants)
 - TQ1_0, TQ2_0 (native ternary)
 
+### 7.3 E2E Inference Results (TinyLlama-1.1B)
+
+| Metric | GGUF (Q4_K_M) | TRI (Ternary) | Improvement |
+|--------|---------------|---------------|-------------|
+| Model Size | 638 MB | 497 MB | 22% smaller |
+| Load Time | ~2s | 4.3s | -2x (needs streaming) |
+| Inference | ~5-10 tok/s* | 1.98 tok/s | Needs optimization |
+| Memory (runtime) | ~800 MB | ~600 MB | 25% less |
+
+*Estimated for llama.cpp on similar CPU
+
+**Conversion Stats:**
+- Input: TinyLlama-1.1B Q4_K_M (638 MB)
+- Output: TinyLlama-1.1B TRI (497 MB)
+- Conversion time: ~10 seconds
+- Compression vs F32: 16x
+
+**Next optimizations needed:**
+1. SIMD-16 ternary matmul (currently scalar)
+2. Flash Attention integration
+3. Streaming loader for large models
+4. Parallel layer processing
+
 ### 7.2 Performance Targets
 
 | Metric | llama.cpp | vLLM | Trinity Target |
