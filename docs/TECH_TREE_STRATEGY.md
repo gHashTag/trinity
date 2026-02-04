@@ -1,177 +1,138 @@
-# TRINITY Technology Tree Strategy
+# Trinity Technology Tree - Development Strategy
 
-**Date**: 2026-02-03
-**Version**: 2.0
-**Formula**: φ² + 1/φ² = 3
-
----
-
-## Current State
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    TRINITY TECH TREE v2.0                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  COMPLETED (Phase 1-3)                                          │
-│  ═══════════════════                                            │
-│  ✅ Ternary VM (bytecode, 5.6x faster)                          │
-│  ✅ Vec27 SIMD (34% optimization)                               │
-│  ✅ FIREBIRD VSA (anti-detect browser)                          │
-│  ✅ Code generation (.vibee → .zig)                             │
-│  ✅ Knowledge Graph CLI                                         │
-│  ✅ LLM inference (Q8_0 models)                                 │
-│  ✅ Ternary MatMul (0.91 GFLOPS)                                │
-│  ✅ Memory-mapped loading (2000x faster)                        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+**Date**: 2026-02-04  
+**Author**: Ona AI Agent  
+**Formula**: φ² + 1/φ² = 3 = TRINITY
 
 ---
 
-## Technology Branches
+## 1. CURRENT STATE
 
-### Branch A: AI/ML Acceleration
-
-```
-[CURRENT] Ternary Inference ────────────────────────────────────
-           │
-           ├── [NEXT] Q4_K_M Quantization Support
-           │          Complexity: ★★★☆☆
-           │          Impact: +80% model compatibility
-           │          Timeline: 2-4 weeks
-           │
-           ├── [NEXT] BitNet Tensor Loading Fix
-           │          Complexity: ★★☆☆☆
-           │          Impact: 16x memory savings
-           │          Timeline: 1-2 weeks
-           │
-           └── [FUTURE] Native BitNet Training
-                        Complexity: ★★★★★
-                        Impact: End-to-end ternary ML
-                        Timeline: 3-6 months
-```
-
-### Branch B: Hardware Acceleration
+### 1.1 Completed Branches
 
 ```
-[CURRENT] Software Emulation ───────────────────────────────────
-           │
-           ├── [NEXT] FPGA Prototype (Alveo U280)
-           │          Complexity: ★★★★☆
-           │          Impact: 10x energy efficiency
-           │          Timeline: 3-6 months
-           │
-           ├── [FUTURE] ASIC Design (180nm)
-           │          Complexity: ★★★★★
-           │          Impact: Production hardware
-           │          Timeline: 12-24 months
-           │
-           └── [VISION] Ternary SoC
-                        Complexity: ★★★★★
-                        Impact: Full ternary computer
-                        Timeline: 3-5 years
+[✓] CORE OPTIMIZATION ─────────────────────────────────────────────
+     │
+     ├── [✓] Scalar baseline (v1.0)
+     │        └── 17.4 ms/layer, 0.34 GFLOPS, 2.1 tok/s
+     │
+     ├── [✓] SIMD-16 matmul (v1.1)
+     │        └── 10.0 ms/layer, 0.54 GFLOPS, 3.3 tok/s (+1.7x)
+     │
+     ├── [✓] SIMD attention (v1.2)
+     │        └── 6.7 ms/layer, 0.77 GFLOPS, 4.9 tok/s (+2.6x)
+     │
+     └── [✓] Parallel heads (v1.3)
+              └── 6.5 ms/layer, 0.91 GFLOPS, 5.5 tok/s (+2.7x)
 ```
 
-### Branch C: Anti-Detect Browser
+### 1.2 Current Metrics
+
+| Metric | Value | Target | Gap |
+|--------|-------|--------|-----|
+| Layer latency | 6.5 ms | 3.0 ms | 2.2x |
+| GFLOPS | 0.91 | 3.6 | 4.0x |
+| tok/s | 5.5 | 100 | 18x |
+| Memory (7B) | ~1.65 GB | ~1.65 GB | ✓ |
+
+---
+
+## 2. TECHNOLOGY TREE
+
+### 2.1 Short-term (1-2 weeks)
 
 ```
-[CURRENT] FIREBIRD v1.0 ────────────────────────────────────────
-           │
-           ├── [NEXT] Browser Extension
-           │          Complexity: ★★★☆☆
-           │          Impact: Real-world deployment
-           │          Timeline: 1-2 months
-           │
-           ├── [NEXT] DePIN Integration ($TRI)
-           │          Complexity: ★★★★☆
-           │          Impact: Token economy
-           │          Timeline: 2-3 months
-           │
-           └── [FUTURE] Full Browser Fork
-                        Complexity: ★★★★★
-                        Impact: Complete anti-detect solution
-                        Timeline: 6-12 months
+[NEXT] INFERENCE PIPELINE ─────────────────────────────────────────
+        │
+        ├── [ ] .tri weight loader
+        │        ├── Complexity: ★★☆☆☆
+        │        ├── Potential: Real model inference
+        │        └── Dependencies: trinity_format.zig
+        │
+        ├── [ ] Persistent thread pool
+        │        ├── Complexity: ★★★☆☆
+        │        ├── Potential: +20-30% (eliminate spawn overhead)
+        │        └── Dependencies: Global pool, work queue
+        │
+        └── [ ] Flash Attention
+                 ├── Complexity: ★★★★☆
+                 ├── Potential: 2-4x on long sequences
+                 └── Dependencies: Online softmax, tiled attention
 ```
 
-### Branch D: Language & Tooling
+### 2.2 Medium-term (1-2 months)
 
 ```
-[CURRENT] VIBEE Compiler ───────────────────────────────────────
-           │
-           ├── [NEXT] Multi-target Codegen
-           │          Complexity: ★★★☆☆
-           │          Impact: Python, Rust, Go output
-           │          Timeline: 1-2 months
-           │
-           ├── [NEXT] LSP Server
-           │          Complexity: ★★★☆☆
-           │          Impact: IDE integration
-           │          Timeline: 2-4 weeks
-           │
-           └── [FUTURE] Self-hosting Compiler
-                        Complexity: ★★★★★
-                        Impact: Bootstrap independence
-                        Timeline: 6-12 months
+[FUTURE] HARDWARE ACCELERATION ────────────────────────────────────
+          │
+          ├── [ ] AVX-512 / ARM NEON specialization
+          │        ├── Complexity: ★★★★☆
+          │        ├── Potential: +50-100% (6-8 GFLOPS)
+          │        └── Dependencies: CPU feature detection
+          │
+          ├── [ ] FPGA integration
+          │        ├── Complexity: ★★★★★
+          │        ├── Potential: 400x speedup
+          │        └── Dependencies: bitnet_mac.v, PCIe driver
+          │
+          └── [ ] CUDA backend
+                   ├── Complexity: ★★★★★
+                   ├── Potential: 100x speedup
+                   └── Dependencies: CUDA toolkit, kernel optimization
+```
+
+### 2.3 Long-term (3-6 months)
+
+```
+[VISION] PRODUCTION DEPLOYMENT ────────────────────────────────────
+          │
+          ├── [ ] Trinity Network (decentralized inference)
+          │        ├── Complexity: ★★★★★
+          │        ├── Potential: Unlimited scale
+          │        └── Dependencies: P2P protocol, consensus
+          │
+          ├── [ ] ASIC design
+          │        ├── Complexity: ★★★★★
+          │        ├── Potential: 1000x efficiency
+          │        └── Dependencies: RTL, tape-out
+          │
+          └── [ ] Cloud service (Trinity-as-a-Service)
+                   ├── Complexity: ★★★★☆
+                   ├── Potential: Revenue generation
+                   └── Dependencies: API, billing, monitoring
 ```
 
 ---
 
-## Priority Matrix
+## 3. RECOMMENDED PATH
 
-| Priority | Item | Branch | Complexity | Impact | ROI |
-|----------|------|--------|------------|--------|-----|
-| 1 | BitNet Tensor Fix | A | ★★☆☆☆ | High | ★★★★★ |
-| 2 | Q4_K_M Support | A | ★★★☆☆ | High | ★★★★☆ |
-| 3 | Browser Extension | C | ★★★☆☆ | High | ★★★★☆ |
-| 4 | FPGA Prototype | B | ★★★★☆ | Very High | ★★★☆☆ |
-| 5 | Multi-target Codegen | D | ★★★☆☆ | Medium | ★★★☆☆ |
+### 3.1 Immediate Actions (This Week)
 
----
+1. **[A] .tri Weight Loader** - Enable real model testing
+2. **[B] Persistent Thread Pool** - Reduce overhead
 
-## Recommended Path
+### 3.2 Next Sprint (2 weeks)
 
-### Short-term (1-3 months)
+3. **[C] Flash Attention** - Scale to long sequences
+4. **[D] Real Model Benchmark** - Validate performance
 
-1. **BitNet Tensor Loading Fix** - Enable native ternary model support
-2. **Q4_K_M Quantization** - Support popular model formats
-3. **Browser Extension MVP** - Real-world FIREBIRD deployment
+### 3.3 Q1 Goals
 
-### Medium-term (3-6 months)
-
-4. **FPGA Prototype** - Hardware acceleration proof-of-concept
-5. **DePIN Token Launch** - $TRI token economy
-6. **Multi-target Codegen** - Expand language support
-
-### Long-term (6-12 months)
-
-7. **ASIC Design** - Custom ternary hardware
-8. **Full Browser Fork** - Complete anti-detect solution
-9. **Self-hosting Compiler** - Bootstrap independence
+5. **[E] FPGA Prototype** - Hardware acceleration
+6. **[F] Production Release** - v2.0
 
 ---
 
-## Success Metrics
+## 4. SUCCESS METRICS
 
-| Metric | Current | Target (3mo) | Target (12mo) |
-|--------|---------|--------------|---------------|
-| Models supported | 3 | 10 | 50+ |
-| Inference speed | 10 tok/s | 50 tok/s | 200 tok/s |
-| Memory efficiency | 5x | 10x | 20x |
-| FIREBIRD users | 0 | 1,000 | 100,000 |
-| $TRI market cap | $0 | $1M | $50M |
-
----
-
-## Risk Assessment
-
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| FPGA delays | Medium | High | Start with simpler design |
-| Competition | High | Medium | Focus on unique ternary moat |
-| Regulatory | Low | High | Compliance-first approach |
-| Technical debt | Medium | Medium | Continuous refactoring |
+| Milestone | Metric | Target | Deadline |
+|-----------|--------|--------|----------|
+| M1 | Real model inference | Working | Week 1 |
+| M2 | 10 tok/s | Achieved | Week 2 |
+| M3 | 50 tok/s | Achieved | Week 4 |
+| M4 | 100 tok/s | Achieved | Week 8 |
+| M5 | FPGA demo | Working | Week 12 |
 
 ---
 
-*φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL*
+**φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
