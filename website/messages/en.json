@@ -348,6 +348,11 @@
       { "date": "Q1 2027", "title": "ASIC Tape-out", "desc": "First native SU(3) chip (TSMC 180nm)" }
     ]
   },
+  "techTree": {
+    "title": "TRINITY <span style=\"color: var(--accent)\">RESEARCH</span> LABORATORY",
+    "sub": "X-COM Style Technology Development Tree",
+    "hint": "Click on nodes to view research details"
+  },
   "product": {
     "title": "Product <span class=\"grad\">Roadmap</span>",
     "phases": [

@@ -119,11 +119,11 @@ export default function SU3MiningRealitySection() {
         maxWidth: '1200px',
         margin: '0 auto',
         background: 'rgba(10, 10, 10, 0.9)',
-        border: '1px solid rgba(0, 229, 153, 0.2)',
+        border: '1px solid rgba(0, 255, 136, 0.2)',
         borderRadius: '16px',
         padding: '1.2rem',
         position: 'relative',
-        boxShadow: '0 0 40px rgba(0, 229, 153, 0.05)',
+        boxShadow: '0 0 40px rgba(0, 255, 136, 0.05)',
         backdropFilter: 'blur(20px)',
         minHeight: '320px',
         display: 'flex',
@@ -182,7 +182,7 @@ export default function SU3MiningRealitySection() {
               style={{
                 position: 'absolute',
                 inset: '-15px',
-                background: 'radial-gradient(circle, rgba(0, 229, 153, 0.25) 0%, transparent 75%)',
+                background: 'radial-gradient(circle, rgba(0, 255, 136, 0.25) 0%, transparent 75%)',
                 zIndex: 0
               }}
             />
@@ -194,7 +194,7 @@ export default function SU3MiningRealitySection() {
                 width: '100%',
                 height: '100%',
                 borderRadius: '50%',
-                border: '2px double rgba(0, 229, 153, 0.4)',
+                border: '2px double rgba(0, 255, 136, 0.4)',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
@@ -202,11 +202,11 @@ export default function SU3MiningRealitySection() {
                 background: 'rgba(0,0,0,0.95)',
                 zIndex: 1,
                 position: 'relative',
-                boxShadow: '0 0 30px rgba(0, 229, 153, 0.15)'
+                boxShadow: '0 0 30px rgba(0, 255, 136, 0.15)'
               }}
             >
               <div style={{ fontSize: '0.5rem', fontWeight: '800', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', marginBottom: '0.4rem' }}>{reality.coreLabel}</div>
-              <div style={{ fontSize: '3rem', fontWeight: '900', color: '#00E599', lineHeight: 1, filter: 'drop-shadow(0 0 15px rgba(0, 229, 153, 0.5))' }}>SU(3)</div>
+              <div style={{ fontSize: '3rem', fontWeight: '900', color: '#00FF88', lineHeight: 1, filter: 'drop-shadow(0 0 15px rgba(0, 255, 136, 0.5))' }}>SU(3)</div>
               <div style={{ fontSize: '0.45rem', color: 'var(--accent)', marginTop: '0.8rem', opacity: 0.7, letterSpacing: '0.05em' }}>{reality.phaseLocked}</div>
             </motion.div>
           </div>
@@ -246,7 +246,7 @@ export default function SU3MiningRealitySection() {
             borderRadius: '12px',
             padding: '0.6rem',
             textAlign: 'center',
-            background: 'rgba(0, 229, 153, 0.03)',
+            background: 'rgba(0, 255, 136, 0.03)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center'
@@ -254,10 +254,10 @@ export default function SU3MiningRealitySection() {
             <div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.2rem' }}>
               {reality.efficiency}
             </div>
-            <div style={{ fontSize: '1.4rem', fontWeight: '800', color: '#00E599', lineHeight: 1 }}>
+            <div style={{ fontSize: '1.4rem', fontWeight: '800', color: '#00FF88', lineHeight: 1 }}>
                {stats.efficiency.toFixed(1)}x
             </div>
-            <div style={{ fontSize: '0.45rem', color: '#00E599', fontWeight: '700', marginTop: '0.3rem' }}>
+            <div style={{ fontSize: '0.45rem', color: '#00FF88', fontWeight: '700', marginTop: '0.3rem' }}>
               {reality.active}
             </div>
           </div>
@@ -265,14 +265,14 @@ export default function SU3MiningRealitySection() {
           {/* Coptic Terminal (Instruction Bridge) */}
           <div style={{ 
             background: 'rgba(0,0,0,0.7)', 
-            border: '1px solid rgba(0, 229, 153, 0.15)', 
+            border: '1px solid rgba(0, 255, 136, 0.15)', 
             borderRadius: '8px', 
             padding: '0.5rem',
             position: 'relative',
             overflow: 'hidden',
             fontFamily: '"JetBrains Mono", monospace'
           }}>
-            <div style={{ marginBottom: '0.3rem', color: '#00E599', fontWeight: '800', fontSize: '0.4rem', textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.1em' }}>
+            <div style={{ marginBottom: '0.3rem', color: '#00FF88', fontWeight: '800', fontSize: '0.4rem', textTransform: 'uppercase', opacity: 0.5, letterSpacing: '0.1em' }}>
               {reality.terminalTitle}
             </div>
             <div 
