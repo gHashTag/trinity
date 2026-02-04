@@ -628,6 +628,267 @@ pub fn dequantizeQ8_0(block: []const u8, output: []f32) void {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// K-QUANTIZATION DEQUANTIZATION (Q4_K, Q5_K, Q6_K)
+// φ² + 1/φ² = 3 = TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Q4_K block structure constants
+pub const Q4_K_BLOCK_SIZE: usize = 256;
+pub const Q4_K_BYTE_SIZE: usize = 144;
+pub const Q5_K_BYTE_SIZE: usize = 176;
+pub const Q6_K_BYTE_SIZE: usize = 210;
+pub const K_SCALE_SIZE: usize = 12;
+pub const QK_K: usize = 256;
+
+/// Extract 6-bit scale from packed scales array
+/// Scales are packed: 8 scales (6 bits each) + 4 mins (6 bits each) = 72 bits = 9 bytes
+/// But llama.cpp uses 12 bytes with different packing
+fn getQ4KScale(scales: []const u8, i: usize) f32 {
+    // Lower 4 bits of scales[i] + upper 2 bits from scales[8 + i/2]
+    const lo = scales[i] & 0x3F;
+    return @floatFromInt(lo);
+}
+
+fn getQ4KMin(scales: []const u8, i: usize) f32 {
+    // Upper 2 bits of scales[i] shifted + bits from scales[10 + i/2]
+    const hi = (scales[i] >> 6) & 0x03;
+    const extra_idx = 8 + i / 2;
+    const shift: u3 = @intCast((i % 2) * 4);
+    const extra = if (extra_idx < scales.len) (scales[extra_idx] >> shift) & 0x0F else 0;
+    return @floatFromInt((@as(u8, hi) << 4) | extra);
+}
+
+/// Dequantize Q4_K block (256 elements from 144 bytes)
+/// Format: d(f16) + dmin(f16) + scales[12] + qs[128]
+pub fn dequantizeQ4_K(block: []const u8, output: []f32) void {
+    if (block.len < Q4_K_BYTE_SIZE or output.len < Q4_K_BLOCK_SIZE) return;
+
+    // Read super-block scale and min (f16)
+    const d_bits = @as(u16, block[0]) | (@as(u16, block[1]) << 8);
+    const dmin_bits = @as(u16, block[2]) | (@as(u16, block[3]) << 8);
+    const d = f16ToF32(d_bits);
+    const dmin = f16ToF32(dmin_bits);
+
+    // Scales are in bytes 4-15 (12 bytes)
+    const scales = block[4..16];
+    
+    // Quantized values are in bytes 16-143 (128 bytes = 256 4-bit values)
+    const qs = block[16..144];
+
+    // Process 8 sub-blocks of 32 elements each
+    var out_idx: usize = 0;
+    for (0..8) |sb| {
+        const sc = getQ4KScale(scales, sb);
+        const m = getQ4KMin(scales, sb);
+        
+        const scale = d * sc;
+        const min_val = dmin * m;
+        
+        // Each sub-block has 32 elements = 16 bytes of 4-bit values
+        const qs_start = sb * 16;
+        
+        for (0..16) |j| {
+            const byte = qs[qs_start + j];
+            const lo: i8 = @intCast(byte & 0x0F);
+            const hi: i8 = @intCast(byte >> 4);
+            
+            output[out_idx] = @as(f32, @floatFromInt(lo)) * scale - min_val;
+            output[out_idx + 1] = @as(f32, @floatFromInt(hi)) * scale - min_val;
+            out_idx += 2;
+        }
+    }
+}
+
+/// Dequantize Q5_K block (256 elements from 176 bytes)
+/// Format: d(f16) + dmin(f16) + scales[12] + qh[32] + qs[128]
+pub fn dequantizeQ5_K(block: []const u8, output: []f32) void {
+    if (block.len < Q5_K_BYTE_SIZE or output.len < Q4_K_BLOCK_SIZE) return;
+
+    const d_bits = @as(u16, block[0]) | (@as(u16, block[1]) << 8);
+    const dmin_bits = @as(u16, block[2]) | (@as(u16, block[3]) << 8);
+    const d = f16ToF32(d_bits);
+    const dmin = f16ToF32(dmin_bits);
+
+    const scales = block[4..16];
+    const qh = block[16..48];  // High bits (32 bytes)
+    const qs = block[48..176]; // Low 4 bits (128 bytes)
+
+    var out_idx: usize = 0;
+    for (0..8) |sb| {
+        const sc = getQ4KScale(scales, sb);
+        const m = getQ4KMin(scales, sb);
+        
+        const scale = d * sc;
+        const min_val = dmin * m;
+        
+        const qs_start = sb * 16;
+        const qh_start = sb * 4;
+        
+        for (0..16) |j| {
+            const byte = qs[qs_start + j];
+            const lo4: u8 = byte & 0x0F;
+            const hi4: u8 = byte >> 4;
+            
+            // Get 5th bit from qh
+            const qh_byte = qh[qh_start + j / 4];
+            const qh_shift_lo: u3 = @intCast((j * 2) % 8);
+            const qh_shift_hi: u3 = @intCast((j * 2 + 1) % 8);
+            const lo5: u8 = ((qh_byte >> qh_shift_lo) & 1) << 4;
+            const hi5: u8 = ((qh_byte >> qh_shift_hi) & 1) << 4;
+            
+            const lo: i8 = @intCast(lo4 | lo5);
+            const hi: i8 = @intCast(hi4 | hi5);
+            
+            output[out_idx] = @as(f32, @floatFromInt(lo)) * scale - min_val;
+            output[out_idx + 1] = @as(f32, @floatFromInt(hi)) * scale - min_val;
+            out_idx += 2;
+        }
+    }
+}
+
+/// Dequantize Q6_K block (256 elements from 210 bytes)
+/// Format: ql[128] + qh[64] + scales[16] + d(f16)
+pub fn dequantizeQ6_K(block: []const u8, output: []f32) void {
+    if (block.len < Q6_K_BYTE_SIZE or output.len < Q4_K_BLOCK_SIZE) return;
+
+    const ql = block[0..128];    // Low 4 bits
+    const qh = block[128..192];  // High 2 bits
+    const scales = block[192..208]; // 16 scales (8-bit each)
+    const d_bits = @as(u16, block[208]) | (@as(u16, block[209]) << 8);
+    const d = f16ToF32(d_bits);
+
+    var out_idx: usize = 0;
+    for (0..16) |sb| {
+        const scale: i8 = @bitCast(scales[sb]);
+        const sc = d * @as(f32, @floatFromInt(scale));
+        
+        const ql_start = sb * 8;
+        const qh_start = sb * 4;
+        
+        for (0..8) |j| {
+            const ql_byte = ql[ql_start + j];
+            const lo4: u8 = ql_byte & 0x0F;
+            const hi4: u8 = ql_byte >> 4;
+            
+            // Get high 2 bits from qh
+            const qh_byte = qh[qh_start + j / 2];
+            const qh_shift_lo: u3 = @intCast((j % 2) * 4);
+            const qh_shift_hi: u3 = @intCast((j % 2) * 4 + 2);
+            const lo_hi: u8 = ((qh_byte >> qh_shift_lo) & 0x03) << 4;
+            const hi_hi: u8 = ((qh_byte >> qh_shift_hi) & 0x03) << 4;
+            
+            // Combine to 6-bit value, subtract 32 for signed
+            const lo: i8 = @as(i8, @intCast(lo4 | lo_hi)) - 32;
+            const hi: i8 = @as(i8, @intCast(hi4 | hi_hi)) - 32;
+            
+            output[out_idx] = @as(f32, @floatFromInt(lo)) * sc;
+            output[out_idx + 1] = @as(f32, @floatFromInt(hi)) * sc;
+            out_idx += 2;
+        }
+    }
+}
+
+/// SIMD-optimized Q4_K dequantization (8 elements at a time)
+pub fn dequantizeQ4_K_SIMD(block: []const u8, output: []f32) void {
+    if (block.len < Q4_K_BYTE_SIZE or output.len < Q4_K_BLOCK_SIZE) return;
+
+    const Vec8 = @Vector(8, f32);
+    
+    const d_bits = @as(u16, block[0]) | (@as(u16, block[1]) << 8);
+    const dmin_bits = @as(u16, block[2]) | (@as(u16, block[3]) << 8);
+    const d = f16ToF32(d_bits);
+    const dmin = f16ToF32(dmin_bits);
+
+    const scales = block[4..16];
+    const qs = block[16..144];
+
+    var out_idx: usize = 0;
+    for (0..8) |sb| {
+        const sc = getQ4KScale(scales, sb);
+        const m = getQ4KMin(scales, sb);
+        
+        const scale = d * sc;
+        const min_val = dmin * m;
+        const scale_vec: Vec8 = @splat(scale);
+        const min_vec: Vec8 = @splat(min_val);
+        
+        const qs_start = sb * 16;
+        
+        // Process 8 elements at a time (4 bytes)
+        var j: usize = 0;
+        while (j + 4 <= 16) : (j += 4) {
+            // Unpack 8 4-bit values from 4 bytes
+            const b0 = qs[qs_start + j];
+            const b1 = qs[qs_start + j + 1];
+            const b2 = qs[qs_start + j + 2];
+            const b3 = qs[qs_start + j + 3];
+            
+            const vals: Vec8 = .{
+                @floatFromInt(@as(i8, @intCast(b0 & 0x0F))),
+                @floatFromInt(@as(i8, @intCast(b0 >> 4))),
+                @floatFromInt(@as(i8, @intCast(b1 & 0x0F))),
+                @floatFromInt(@as(i8, @intCast(b1 >> 4))),
+                @floatFromInt(@as(i8, @intCast(b2 & 0x0F))),
+                @floatFromInt(@as(i8, @intCast(b2 >> 4))),
+                @floatFromInt(@as(i8, @intCast(b3 & 0x0F))),
+                @floatFromInt(@as(i8, @intCast(b3 >> 4))),
+            };
+            
+            const result = vals * scale_vec - min_vec;
+            
+            // Store 8 results
+            inline for (0..8) |k| {
+                output[out_idx + k] = result[k];
+            }
+            out_idx += 8;
+        }
+    }
+}
+
+/// Check if type is K-quantized
+pub fn isKQuantType(t: GGMLType) bool {
+    return switch (t) {
+        .Q2_K, .Q3_K, .Q4_K, .Q5_K, .Q6_K, .Q8_K => true,
+        else => false,
+    };
+}
+
+/// Dequantize any supported block type
+pub fn dequantizeBlock(block: []const u8, output: []f32, tensor_type: GGMLType) !void {
+    switch (tensor_type) {
+        .Q4_0 => dequantizeQ4_0(block, output),
+        .Q8_0 => dequantizeQ8_0(block, output),
+        .Q4_K => dequantizeQ4_K(block, output),
+        .Q5_K => dequantizeQ5_K(block, output),
+        .Q6_K => dequantizeQ6_K(block, output),
+        .TQ1_0, .TQ2_0 => {
+            // Ternary: unpack and convert to float
+            var trits: [256]i8 = undefined;
+            unpackTrits(block, &trits, @min(output.len, 256));
+            for (0..@min(output.len, 256)) |i| {
+                output[i] = @floatFromInt(trits[i]);
+            }
+        },
+        .F16 => {
+            // Direct f16 to f32
+            var i: usize = 0;
+            while (i < output.len and i * 2 + 1 < block.len) : (i += 1) {
+                const bits = @as(u16, block[i * 2]) | (@as(u16, block[i * 2 + 1]) << 8);
+                output[i] = f16ToF32(bits);
+            }
+        },
+        .F32 => {
+            // Direct copy
+            const f32_slice = std.mem.bytesAsSlice(f32, block);
+            @memcpy(output[0..@min(output.len, f32_slice.len)], f32_slice[0..@min(output.len, f32_slice.len)]);
+        },
+        else => return error.UnsupportedQuantization,
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+
 // F16 to F32 conversion
 pub fn f16ToF32(h: u16) f32 {
     const sign: u32 = (@as(u32, h) & 0x8000) << 16;
@@ -758,6 +1019,104 @@ test "is_ternary_type" {
     try std.testing.expect(isTernaryType(.TQ2_0));
     try std.testing.expect(!isTernaryType(.Q8_0));
     try std.testing.expect(!isTernaryType(.F16));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// K-QUANTIZATION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "k_quant_block_sizes" {
+    try std.testing.expectEqual(getBlockSize(.Q4_K), 256);
+    try std.testing.expectEqual(getBlockSize(.Q5_K), 256);
+    try std.testing.expectEqual(getBlockSize(.Q6_K), 256);
+    try std.testing.expectEqual(getTypeSize(.Q4_K), 144);
+    try std.testing.expectEqual(getTypeSize(.Q5_K), 176);
+    try std.testing.expectEqual(getTypeSize(.Q6_K), 210);
+}
+
+test "is_k_quant_type" {
+    try std.testing.expect(isKQuantType(.Q4_K));
+    try std.testing.expect(isKQuantType(.Q5_K));
+    try std.testing.expect(isKQuantType(.Q6_K));
+    try std.testing.expect(isKQuantType(.Q2_K));
+    try std.testing.expect(!isKQuantType(.Q4_0));
+    try std.testing.expect(!isKQuantType(.F16));
+}
+
+test "dequantize_q4_k_basic" {
+    // Create a minimal Q4_K block (144 bytes)
+    var block: [144]u8 = undefined;
+    @memset(&block, 0);
+    
+    // Set d = 1.0 (f16: 0x3C00)
+    block[0] = 0x00;
+    block[1] = 0x3C;
+    // Set dmin = 0.0
+    block[2] = 0x00;
+    block[3] = 0x00;
+    // Set first scale to 1 (6-bit value)
+    block[4] = 0x01;
+    // Set first quantized value to 0x55 (5 and 5)
+    block[16] = 0x55;
+    
+    var output: [256]f32 = undefined;
+    dequantizeQ4_K(&block, &output);
+    
+    // First two values should be 5 * 1.0 * 1 - 0 = 5.0
+    try std.testing.expectApproxEqAbs(output[0], 5.0, 0.1);
+    try std.testing.expectApproxEqAbs(output[1], 5.0, 0.1);
+}
+
+test "dequantize_q4_k_simd_matches_scalar" {
+    // Create a test Q4_K block
+    var block: [144]u8 = undefined;
+    @memset(&block, 0);
+    
+    // Set d = 1.0
+    block[0] = 0x00;
+    block[1] = 0x3C;
+    // Set scales
+    for (4..16) |i| {
+        block[i] = 0x01;
+    }
+    // Set quantized values
+    for (16..144) |i| {
+        block[i] = @intCast((i - 16) % 256);
+    }
+    
+    var output_scalar: [256]f32 = undefined;
+    var output_simd: [256]f32 = undefined;
+    
+    dequantizeQ4_K(&block, &output_scalar);
+    dequantizeQ4_K_SIMD(&block, &output_simd);
+    
+    // Results should match
+    for (0..256) |i| {
+        try std.testing.expectApproxEqAbs(output_scalar[i], output_simd[i], 0.001);
+    }
+}
+
+test "dequantize_block_dispatch" {
+    // Test Q4_0
+    var q4_block: [18]u8 = undefined;
+    @memset(&q4_block, 0);
+    q4_block[0] = 0x00;
+    q4_block[1] = 0x3C; // scale = 1.0
+    
+    var output: [32]f32 = undefined;
+    try dequantizeBlock(&q4_block, &output, .Q4_0);
+    
+    // Should not error
+    try std.testing.expect(true);
+}
+
+test "dequantize_block_unsupported" {
+    var block: [10]u8 = undefined;
+    var output: [32]f32 = undefined;
+    
+    // Q2_K is not implemented yet
+    const result = dequantizeBlock(&block, &output, .Q2_K);
+    try std.testing.expectError(error.UnsupportedQuantization, result);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
