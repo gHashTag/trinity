@@ -498,7 +498,10 @@ fn cmdEvolve(allocator: std.mem.Allocator, args: []const []const u8) !void {
             });
         }
 
-        if (population.best_fitness >= opts.target) {
+        // Check convergence based on SIMILARITY, not fitness
+        const best_for_check = population.getBest();
+        const current_sim = vsa_simd.cosineSimilaritySimd(&best_for_check.chromosome, &human);
+        if (current_sim >= opts.target) {
             break;
         }
     }
@@ -521,7 +524,7 @@ fn cmdEvolve(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("  Human similarity: {d:.4}\n", .{final_sim});
     std.debug.print("  Total time:       {d}ms\n", .{total_time});
     std.debug.print("  Time/generation:  {d}ms\n", .{if (population.generation > 0) total_time / population.generation else 0});
-    std.debug.print("  Converged:        {}\n", .{population.best_fitness >= opts.target});
+    std.debug.print("  Converged:        {}\n", .{final_sim >= opts.target});
 
     // Save fingerprint if output specified
     if (opts.output) |out_path| {
