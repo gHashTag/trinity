@@ -52,3 +52,5 @@ src/vibeec/gguf_chat
 src/vibeec/gguf_full_generate
 src/vibeec/gguf_to_tri
 src/vibeec/tri_inference
+.vercel
+.env*.local
