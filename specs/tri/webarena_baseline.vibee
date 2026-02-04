@@ -1,0 +1,142 @@
+# WebArena Baseline Agent Specification
+# Target: Establish baseline success rate before FIREBIRD integration
+
+name: webarena_baseline
+version: "1.0.0"
+language: zig
+module: webarena_baseline
+
+constants:
+  PHI: 1.6180339887
+  TRINITY: 3
+  TOTAL_TASKS: 812
+  
+  # Task distribution (from analysis)
+  SHOPPING_TASKS: 192      # shopping + shopping_admin combined
+  GITLAB_TASKS: 196        # gitlab + gitlab cross-site
+  REDDIT_TASKS: 114        # reddit + reddit cross-site
+  MAP_TASKS: 112           # map + map cross-site
+  WIKIPEDIA_TASKS: 16      # wikipedia cross-site only
+  
+  # Baseline targets (no stealth)
+  BASELINE_TARGET: 0.45    # 45% without FIREBIRD
+  STEALTH_TARGET: 0.71     # 71% with FIREBIRD
+
+types:
+  # Task from WebArena config
+  WebArenaConfig:
+    fields:
+      task_id: Int
+      sites: List<String>
+      intent: String
+      start_url: String
+      require_login: Bool
+      eval_types: List<String>
+      reference_answers: Object
+
+  # Evaluation result
+  EvalResult:
+    fields:
+      task_id: Int
+      success: Bool
+      steps_taken: Int
+      time_ms: Int
+      error: Option<String>
+      detection_triggered: Bool
+
+  # Category statistics
+  CategoryStats:
+    fields:
+      category: String
+      total: Int
+      passed: Int
+      failed: Int
+      success_rate: Float
+      avg_steps: Float
+      detection_rate: Float
+
+  # Baseline report
+  BaselineReport:
+    fields:
+      total_tasks: Int
+      total_passed: Int
+      overall_success: Float
+      categories: List<CategoryStats>
+      timestamp: Timestamp
+      agent_version: String
+
+behaviors:
+  - name: load_task_config
+    given: Task ID and config file path
+    when: Agent needs to run a specific task
+    then: Parse JSON config, return WebArenaConfig struct
+
+  - name: categorize_task
+    given: WebArenaConfig with sites array
+    when: Need to determine task category for strategy
+    then: Return primary category (shopping/gitlab/reddit/map/wikipedia)
+
+  - name: run_baseline_task
+    given: WebArenaConfig and browser environment
+    when: Running task without stealth features
+    then: Execute actions, return EvalResult with success/failure
+
+  - name: evaluate_result
+    given: Agent output and reference answers
+    when: Task execution completed
+    then: Compare using eval_types (string_match, url_match, etc.)
+
+  - name: aggregate_stats
+    given: List of EvalResult from all tasks
+    when: All tasks completed
+    then: Calculate CategoryStats for each category
+
+  - name: generate_report
+    given: All CategoryStats and metadata
+    when: Baseline run completed
+    then: Generate BaselineReport with overall metrics
+
+functions:
+  # Load single task
+  load_task:
+    params:
+      - config_path: String
+      - task_id: Int
+    returns: WebArenaConfig
+    description: Load task configuration from JSON file
+
+  # Run single task (baseline, no stealth)
+  run_task:
+    params:
+      - config: WebArenaConfig
+      - max_steps: Int
+    returns: EvalResult
+    description: Execute task with basic agent, no fingerprint evolution
+
+  # Batch run
+  run_batch:
+    params:
+      - configs: List<WebArenaConfig>
+      - parallel: Bool
+    returns: List<EvalResult>
+    description: Run multiple tasks, optionally in parallel
+
+  # Generate baseline report
+  generate_baseline_report:
+    params:
+      - results: List<EvalResult>
+    returns: BaselineReport
+    description: Aggregate results into baseline report
+
+test_cases:
+  - name: task_loading
+    input: "config_files/test.raw.json, task_id=0"
+    expected: "WebArenaConfig with shopping_admin site"
+
+  - name: category_detection
+    input: "sites=['shopping']"
+    expected: "category='shopping'"
+
+  - name: baseline_success_rate
+    input: "100 random tasks"
+    expected: "success_rate >= 0.40"
