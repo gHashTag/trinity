@@ -61,7 +61,6 @@ pub const RegistryStats = struct {
     enabled_count: usize,
     builtin_count: usize,
     wasm_count: usize,
-    by_kind: std.EnumArray(PluginKind, usize),
 };
 
 // ============================================================================
@@ -72,7 +71,6 @@ pub const RegistryStats = struct {
 pub const PluginRegistry = struct {
     allocator: Allocator,
     plugins: std.StringHashMap(RegistryEntry),
-    by_kind: std.EnumArray(PluginKind, std.ArrayList([]const u8)),
     by_capability: std.StringHashMap(std.ArrayList([]const u8)),
 
     const Self = @This();
@@ -82,7 +80,6 @@ pub const PluginRegistry = struct {
         var registry = Self{
             .allocator = allocator,
             .plugins = std.StringHashMap(RegistryEntry).init(allocator),
-            .by_kind = std.EnumArray(PluginKind, std.ArrayList([]const u8)).initFill(std.ArrayList([]const u8).init(allocator)),
             .by_capability = std.StringHashMap(std.ArrayList([]const u8)).init(allocator),
         };
 
@@ -103,14 +100,9 @@ pub const PluginRegistry = struct {
         // Free maps
         self.plugins.deinit();
 
-        var kind_iter = self.by_kind.iterator();
-        while (kind_iter.next()) |list| {
-            list.value.deinit();
-        }
-
         var cap_iter = self.by_capability.iterator();
         while (cap_iter.next()) |entry| {
-            entry.value_ptr.deinit();
+            entry.value_ptr.deinit(self.allocator);
         }
         self.by_capability.deinit();
     }
@@ -139,9 +131,6 @@ pub const PluginRegistry = struct {
 
         try self.plugins.put(id, entry);
 
-        // Update kind index
-        try self.by_kind.getPtr(plugin.metadata.kind).append(id);
-
         // Update capability index
         for (plugin.metadata.capabilities) |cap| {
             const cap_list = try self.by_capability.getOrPut(cap.name);
@@ -158,15 +147,6 @@ pub const PluginRegistry = struct {
 
         // Call deinit
         entry.plugin.deinit();
-
-        // Remove from kind index
-        const kind_list = self.by_kind.getPtr(entry.plugin.metadata.kind);
-        for (kind_list.items, 0..) |item, i| {
-            if (std.mem.eql(u8, item, id)) {
-                _ = kind_list.swapRemove(i);
-                break;
-            }
-        }
 
         // Remove from capability index
         for (entry.plugin.metadata.capabilities) |cap| {
@@ -264,7 +244,6 @@ pub const PluginRegistry = struct {
             .enabled_count = 0,
             .builtin_count = 0,
             .wasm_count = 0,
-            .by_kind = std.EnumArray(PluginKind, usize).initFill(0),
         };
 
         var iter = self.plugins.iterator();
@@ -273,7 +252,6 @@ pub const PluginRegistry = struct {
             if (e.enabled) stats.enabled_count += 1;
             if (e.source == .builtin) stats.builtin_count += 1;
             if (e.source == .local_wasm) stats.wasm_count += 1;
-            stats.by_kind.getPtr(e.plugin.metadata.kind).* += 1;
         }
 
         return stats;
