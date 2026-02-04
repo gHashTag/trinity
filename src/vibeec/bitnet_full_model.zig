@@ -577,7 +577,20 @@ pub const BitNetFullModel = struct {
         }
         
         std.debug.print("\n✅ Loaded {d} tensors successfully!\n", .{tensors_loaded});
-        
+
+        // Quantize all linear projection weights to ternary (BitNet b1.58)
+        std.debug.print("Quantizing weights to ternary...\n", .{});
+        for (self.layers) |*layer| {
+            if (layer.q_proj.len > 0) quantizeWeightsInPlace(layer.q_proj);
+            if (layer.k_proj.len > 0) quantizeWeightsInPlace(layer.k_proj);
+            if (layer.v_proj.len > 0) quantizeWeightsInPlace(layer.v_proj);
+            if (layer.o_proj.len > 0) quantizeWeightsInPlace(layer.o_proj);
+            if (layer.gate_proj.len > 0) quantizeWeightsInPlace(layer.gate_proj);
+            if (layer.up_proj.len > 0) quantizeWeightsInPlace(layer.up_proj);
+            if (layer.down_proj.len > 0) quantizeWeightsInPlace(layer.down_proj);
+        }
+        std.debug.print("✅ Weights quantized to ternary!\n", .{});
+
         // Calculate memory usage
         var total_params: usize = self.embed_tokens.len + self.norm.len;
         for (self.layers) |layer| {
