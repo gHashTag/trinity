@@ -57,7 +57,7 @@ export default function StickyCTA() {
             whileTap={{ scale: 0.95 }}
             style={{ minWidth: '160px', textAlign: 'center' }}
           >
-            {t.invest?.cta || 'Invest Now'}
+            💎 {t.stickyCta?.invest || 'Invest Now'}
           </motion.a>
           
           <motion.a

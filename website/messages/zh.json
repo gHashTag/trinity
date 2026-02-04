@@ -390,5 +390,37 @@
     ],
     "cta": "在GitHub阅读完整报告",
     "ctaUrl": "https://github.com/gHashTag/vibee-lang/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+  },
+  "mysticism": {
+    "title": "数学基础",
+    "subtitle": "这些数学结构为三进制计算的优势提供了理论基础。",
+    "toggleShow": "▶ 数学家专区：SU(3)、陈-西蒙斯、φ",
+    "toggleHide": "▼ 隐藏数学基础",
+    "items": [
+      {
+        "title": "SU(3)规范对称性",
+        "description": "三进制状态{-1, 0, +1}对应量子色动力学中的色荷。SU(3)的8个胶子生成元提供自然纠错。",
+        "formula": "SU(3) → 8个生成元 → 三进制稳定性"
+      },
+      {
+        "title": "陈-西蒙斯不变量",
+        "description": "通过陈-西蒙斯理论对量子态进行拓扑保护。不变量k=3对应三进制逻辑深度。",
+        "formula": "CS(A) = k/4π ∫ Tr(A∧dA + ⅔A∧A∧A)"
+      },
+      {
+        "title": "黄金比例恒等式",
+        "description": "神圣公式φ² + 1/φ² = 3将黄金比例与三进制联系起来。",
+        "formula": "φ² + 1/φ² = 3 = 三位一体"
+      },
+      {
+        "title": "凤凰数",
+        "description": "从三进制递归中产生的自指常数。与混沌理论中的费根鲍姆常数相关。",
+        "formula": "Φ = lim(n→∞) T(n)/T(n-1) ≈ 1.618..."
+      }
+    ]
+  },
+  "stickyCta": {
+    "invest": "立即投资",
+    "calculator": "节省计算器"
   }
 }

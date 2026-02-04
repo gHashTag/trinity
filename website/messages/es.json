@@ -390,5 +390,37 @@
     ],
     "cta": "Leer Informe Completo en GitHub",
     "ctaUrl": "https://github.com/gHashTag/vibee-lang/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+  },
+  "mysticism": {
+    "title": "Fundamentos Matemáticos",
+    "subtitle": "Estas estructuras matemáticas proporcionan la base teórica para las ventajas de la computación ternaria.",
+    "toggleShow": "▶ Para Matemáticos: SU(3), Chern-Simons, φ",
+    "toggleHide": "▼ Ocultar Fundamentos Matemáticos",
+    "items": [
+      {
+        "title": "Simetría de Gauge SU(3)",
+        "description": "Los estados ternarios {-1, 0, +1} corresponden a la carga de color en cromodinámica cuántica. Los 8 generadores de gluones de SU(3) proporcionan corrección de errores natural.",
+        "formula": "SU(3) → 8 generadores → estabilidad ternaria"
+      },
+      {
+        "title": "Invariantes de Chern-Simons",
+        "description": "Protección topológica de estados cuánticos a través de la teoría de Chern-Simons. El invariante k=3 corresponde a la profundidad lógica ternaria.",
+        "formula": "CS(A) = k/4π ∫ Tr(A∧dA + ⅔A∧A∧A)"
+      },
+      {
+        "title": "Identidad de la Proporción Áurea",
+        "description": "La fórmula sagrada φ² + 1/φ² = 3 conecta la proporción áurea con lo ternario.",
+        "formula": "φ² + 1/φ² = 3 = TRINIDAD"
+      },
+      {
+        "title": "Número Fénix",
+        "description": "La constante autorreferencial que emerge de la recursión ternaria. Relacionada con las constantes de Feigenbaum.",
+        "formula": "Φ = lim(n→∞) T(n)/T(n-1) ≈ 1.618..."
+      }
+    ]
+  },
+  "stickyCta": {
+    "invest": "Invertir Ahora",
+    "calculator": "Calculadora de Ahorro"
   }
 }
