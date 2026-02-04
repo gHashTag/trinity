@@ -1,6 +1,7 @@
 "use client";
 import { motion } from 'framer-motion';
 import { useI18n } from '../../i18n/context';
+import Section from '../Section';
 
 interface MysticismItem {
   title: string;
@@ -30,91 +31,71 @@ export default function MysticismSection() {
       formula: 'φ² + 1/φ² = 3 = TRINITY'
     },
     {
-      title: 'Phoenix Number',
-      description: 'The self-referential constant that emerges from ternary recursion.',
-      formula: 'Φ = lim(n→∞) T(n)/T(n-1) ≈ 1.618...'
+      title: 'Optimal Radix Theorem',
+      description: 'Information theory proves: optimal base is e ≈ 2.718, nearest integer = 3.',
+      formula: 'Optimal base = e ≈ 2.718 → nearest integer = 3'
     }
   ];
   
   const items: MysticismItem[] = m?.items || defaultItems;
 
   return (
-    <section id="mysticism" style={{ padding: '4rem 2rem', background: 'rgba(0,0,0,0.3)' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <motion.h2 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          style={{ textAlign: 'center', marginBottom: '3rem', fontSize: '2rem' }}
-        >
-          {m?.title || 'Mathematical Foundations'}
-        </motion.h2>
-        
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-          gap: '1.5rem' 
-        }}>
-          {items.map((item: MysticismItem, index: number) => (
-            <motion.div
-              key={item.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                padding: '1.5rem',
-                transition: 'border-color 0.3s'
-              }}
-              whileHover={{ borderColor: 'var(--accent)' }}
-            >
-              <h3 style={{ 
-                color: 'var(--accent)', 
-                marginBottom: '0.75rem',
-                fontSize: '1.1rem'
-              }}>
-                {item.title}
-              </h3>
-              <p style={{ 
-                color: 'var(--muted)', 
-                fontSize: '0.9rem',
-                lineHeight: 1.6,
-                marginBottom: '1rem'
-              }}>
-                {item.description}
-              </p>
-              <code style={{
-                display: 'block',
-                background: 'rgba(0,0,0,0.3)',
-                padding: '0.5rem',
-                borderRadius: '4px',
-                fontSize: '0.8rem',
-                color: 'var(--accent)',
-                fontFamily: 'monospace'
-              }}>
-                {item.formula}
-              </code>
-            </motion.div>
-          ))}
-        </div>
-        
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 0.5 }}
-          viewport={{ once: true }}
-          style={{ 
-            textAlign: 'center', 
-            marginTop: '2rem', 
-            fontSize: '0.85rem',
-            fontStyle: 'italic'
-          }}
-        >
-          {m?.subtitle || 'These mathematical structures provide theoretical grounding for ternary computing advantages.'}
-        </motion.p>
+    <Section id="science">
+      <div className="tight fade">
+        <h2>{m?.title || 'Mathematical Foundations'}</h2>
+        <p style={{ maxWidth: '800px', margin: '0 auto 3rem', opacity: 0.7, lineHeight: 1.7 }}>
+          {m?.subtitle || 'Why 3? Inside every proton and neutron, quarks have exactly 3 colors — this is SU(3) symmetry that holds atoms together. Our ternary system {-1, 0, +1} mirrors this natural pattern.'}
+        </p>
       </div>
-    </section>
+      
+      <div className="fade" style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+        gap: '1.5rem',
+        maxWidth: '1200px',
+        margin: '0 auto'
+      }}>
+        {items.map((item: MysticismItem, index: number) => (
+          <motion.div
+            key={item.title}
+            className="premium-card"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1 }}
+            style={{ padding: '1.5rem' }}
+            whileHover={{ borderColor: 'var(--accent)' }}
+          >
+            <h3 style={{ 
+              color: 'var(--accent)', 
+              marginBottom: '0.75rem',
+              fontSize: '1.1rem'
+            }}>
+              {item.title}
+            </h3>
+            <p style={{ 
+              color: 'var(--muted)', 
+              fontSize: '0.9rem',
+              lineHeight: 1.6,
+              marginBottom: '1rem'
+            }}>
+              {item.description}
+            </p>
+            <code style={{
+              display: 'block',
+              background: 'rgba(0,229,153,0.08)',
+              padding: '0.75rem',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              color: 'var(--accent)',
+              fontFamily: 'monospace',
+              border: '1px solid rgba(0,229,153,0.2)'
+            }}>
+              {item.formula}
+            </code>
+          </motion.div>
+        ))}
+      </div>
+    </Section>
   );
 }
