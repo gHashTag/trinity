@@ -98,10 +98,7 @@ pub fn packTrits(trits: []const i8, output: []u8) void {
         var byte: u8 = 0;
         var shift: u3 = 0;
         
-        while (shift < 8 and trit_idx < trits.len) : ({
-            shift += 2;
-            trit_idx += 1;
-        }) {
+        while (shift < 8 and trit_idx < trits.len) {
             const trit = trits[trit_idx];
             const encoded: u8 = switch (trit) {
                 0 => 0b00,
@@ -110,6 +107,8 @@ pub fn packTrits(trits: []const i8, output: []u8) void {
                 else => 0b00,
             };
             byte |= encoded << shift;
+            shift +%= 2;
+            trit_idx += 1;
         }
         
         output[byte_idx] = byte;
@@ -118,17 +117,16 @@ pub fn packTrits(trits: []const i8, output: []u8) void {
 }
 
 /// Unpack bytes into array of trits {-1, 0, +1}
-pub fn unpackTrits(packed: []const u8, output: []i8, num_trits: usize) void {
+pub fn unpackTrits(data: []const u8, output: []i8, num_trits: usize) void {
     var trit_idx: usize = 0;
     
-    for (packed) |byte| {
+    for (data) |byte| {
         var shift: u3 = 0;
-        while (shift < 8 and trit_idx < num_trits) : ({
-            shift += 2;
-            trit_idx += 1;
-        }) {
+        while (shift < 8 and trit_idx < num_trits) {
             const encoded = (byte >> shift) & 0x3;
             output[trit_idx] = TRIT_LUT[encoded];
+            shift +%= 2;
+            trit_idx += 1;
         }
     }
 }
@@ -951,16 +949,16 @@ test "ternary_block_sizes" {
 test "pack_unpack_trits" {
     // Test packing: [+1, -1, 0, +1] should become 0b01_10_00_01 = 0x59
     const trits = [_]i8{ 1, -1, 0, 1 };
-    var packed: [1]u8 = undefined;
-    packTrits(&trits, &packed);
+    var pack_buf: [1]u8 = undefined;
+    packTrits(&trits, &pack_buf);
     
     // Encoding: +1=01, -1=10, 0=00
     // Byte: (01) | (10 << 2) | (00 << 4) | (01 << 6) = 0x49
-    try std.testing.expectEqual(packed[0], 0x49);
+    try std.testing.expectEqual(pack_buf[0], 0x49);
     
     // Test unpacking
     var unpacked: [4]i8 = undefined;
-    unpackTrits(&packed, &unpacked, 4);
+    unpackTrits(&pack_buf, &unpacked, 4);
     try std.testing.expectEqual(unpacked[0], 1);
     try std.testing.expectEqual(unpacked[1], -1);
     try std.testing.expectEqual(unpacked[2], 0);
