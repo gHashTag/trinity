@@ -17,10 +17,10 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    // Default paths
-    const tri_path = if (args.len > 1) args[1] else "models/tinyllama-1.1b.tri";
-    const gguf_path = if (args.len > 2) args[2] else "models/TinyLlama-1.1B-Chat-v1.0.Q4_K_M.gguf";
-    const prompt = if (args.len > 3) args[3] else "Hello, Trinity! What is";
+    // Default paths - TinyLlama 1.1B (real model!)
+    const tri_path = if (args.len > 1) args[1] else "../../models/tinyllama-1.1b.tri";
+    const gguf_path = if (args.len > 2) args[2] else "../../models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+    const prompt = if (args.len > 3) args[3] else "Hello, Trinity! What is the meaning of";
 
     std.debug.print("\n", .{});
     std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
