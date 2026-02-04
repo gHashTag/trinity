@@ -125,8 +125,8 @@ pub const PluginCLI = struct {
     allocator: Allocator,
     registry: *PluginRegistry,
     loader: *PluginLoader,
-    stdout: std.fs.File.Writer,
-    stderr: std.fs.File.Writer,
+    stdout: std.io.AnyWriter,
+    stderr: std.io.AnyWriter,
 
     const Self = @This();
 
@@ -570,6 +570,6 @@ test "plugin cli init" {
     var loader = PluginLoader.init(allocator, &registry, .{});
     defer loader.deinit();
 
-    var cli = PluginCLI.init(allocator, &registry, &loader);
+    const cli = PluginCLI.init(allocator, &registry, &loader);
     _ = cli;
 }
