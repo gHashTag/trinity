@@ -26,7 +26,34 @@ pub const Trit = enum(i8) {
             .Zero => '0',
         };
     }
+
+    /// Convert to integer value {-1, 0, +1}
+    pub fn toInt(self: Trit) i8 {
+        return @intFromEnum(self);
+    }
+
+    /// Create from 2-bit encoding (00=0, 01=+1, 10=-1)
+    pub fn fromEncoding(bits: u2) Trit {
+        return switch (bits) {
+            0b00 => .Zero,
+            0b01 => .Pos,
+            0b10 => .Neg,
+            0b11 => .Zero, // reserved, treat as zero
+        };
+    }
+
+    /// Convert to 2-bit encoding
+    pub fn toEncoding(self: Trit) u2 {
+        return switch (self) {
+            .Zero => 0b00,
+            .Pos => 0b01,
+            .Neg => 0b10,
+        };
+    }
 };
+
+/// Alias for compatibility with trinity_format.zig
+pub const TritWeight = Trit;
 
 // ============================================================================
 // LOGIC
