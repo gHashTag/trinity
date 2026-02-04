@@ -7,6 +7,61 @@ const std = @import("std");
 const simd_matmul = @import("simd_ternary_matmul.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// SIMD TYPES AND HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const Vec8f32 = @Vector(8, f32);
+const Vec16f32 = @Vector(16, f32);
+
+/// SIMD dot product for attention Q@K^T
+/// Processes 8 elements at a time for AVX2-style performance
+inline fn simdDotProduct(a: []const f32, b: []const f32) f32 {
+    const len = @min(a.len, b.len);
+    const aligned_len = len & ~@as(usize, 7); // Round down to multiple of 8
+    
+    var sum_vec: Vec8f32 = @splat(0.0);
+    var i: usize = 0;
+    
+    // SIMD loop - 8 elements at a time
+    while (i < aligned_len) : (i += 8) {
+        const a_vec: Vec8f32 = a[i..][0..8].*;
+        const b_vec: Vec8f32 = b[i..][0..8].*;
+        sum_vec += a_vec * b_vec;
+    }
+    
+    // Reduce SIMD vector
+    var sum: f32 = @reduce(.Add, sum_vec);
+    
+    // Scalar tail
+    while (i < len) : (i += 1) {
+        sum += a[i] * b[i];
+    }
+    
+    return sum;
+}
+
+/// SIMD scale-add for attention weighted sum: out += scale * vec
+inline fn simdScaleAdd(out: []f32, vec: []const f32, scale: f32) void {
+    const len = @min(out.len, vec.len);
+    const aligned_len = len & ~@as(usize, 7);
+    
+    const scale_vec: Vec8f32 = @splat(scale);
+    var i: usize = 0;
+    
+    // SIMD loop
+    while (i < aligned_len) : (i += 8) {
+        const out_vec: Vec8f32 = out[i..][0..8].*;
+        const v_vec: Vec8f32 = vec[i..][0..8].*;
+        out[i..][0..8].* = out_vec + v_vec * scale_vec;
+    }
+    
+    // Scalar tail
+    while (i < len) : (i += 1) {
+        out[i] += scale * vec[i];
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS - BitNet 2B Architecture
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -243,12 +298,10 @@ pub const Attention = struct {
                 const k_offset = t * cfg.num_kv_heads * cfg.head_dim + kv_h * cfg.head_dim;
                 const k_vec = kv_cache.k[k_offset..][0..cfg.head_dim];
                 
-                var score: f32 = 0.0;
-                for (0..cfg.head_dim) |i| {
-                    score += q_vec[i] * k_vec[i];
-                }
-                scores[t] = score * scale;
-                if (scores[t] > max_score) max_score = scores[t];
+                // SIMD dot product for Q @ K^T
+                const score = simdDotProduct(q_vec, k_vec) * scale;
+                scores[t] = score;
+                if (score > max_score) max_score = score;
             }
             
             // Softmax
@@ -261,13 +314,12 @@ pub const Attention = struct {
                 s.* /= sum_exp;
             }
             
-            // Weighted sum of V
+            // SIMD weighted sum of V
+            const head_out = attn_out[h * cfg.head_dim ..][0..cfg.head_dim];
             for (0..kv_cache.len) |t| {
                 const v_offset = t * cfg.num_kv_heads * cfg.head_dim + kv_h * cfg.head_dim;
                 const v_vec = kv_cache.v[v_offset..][0..cfg.head_dim];
-                for (0..cfg.head_dim) |i| {
-                    attn_out[h * cfg.head_dim + i] += scores[t] * v_vec[i];
-                }
+                simdScaleAdd(head_out, v_vec, scores[t]);
             }
         }
         
