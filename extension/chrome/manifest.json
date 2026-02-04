@@ -2,7 +2,8 @@
   "manifest_version": 3,
   "name": "Firebird Anti-Detect",
   "version": "1.0.0",
-  "description": "Ternary fingerprint evolution for privacy protection. φ² + 1/φ² = 3",
+  "description": "Protect your browser fingerprint with ternary evolution. Canvas, WebGL, Audio protection. No data collection.",
+  "homepage_url": "https://github.com/gHashTag/trinity",
   
   "icons": {
     "16": "icons/icon16.png",
