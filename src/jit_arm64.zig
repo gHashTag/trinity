@@ -388,6 +388,121 @@ pub const Arm64JitCompiler = struct {
         try self.emit32(instr);
     }
 
+    /// ST1 {Vt.16B}, [Xn] - Store 16 bytes from vector register
+    fn st1_16b(self: *Self, vt: u5, xn: u5) !void {
+        // ST1 (single structure, no offset): 0 1 001100 0 00 0000 0111 00 Rn Rt
+        const instr: u32 = 0x4C007000 |
+            (@as(u32, xn) << 5) |
+            @as(u32, vt);
+        try self.emit32(instr);
+    }
+
+    /// ST1 {Vt.16B}, [Xn], #16 - Store 16 bytes with post-increment
+    fn st1_16b_post(self: *Self, vt: u5, xn: u5) !void {
+        // ST1 (single structure, post-index, imm): 0 1 001100 1 00 11111 0111 00 Rn Rt
+        const instr: u32 = 0x4C9F7000 |
+            (@as(u32, xn) << 5) |
+            @as(u32, vt);
+        try self.emit32(instr);
+    }
+
+    /// MUL Vd.16B, Vn.16B, Vm.16B - Vector multiply (16 x i8)
+    fn mul_16b(self: *Self, vd: u5, vn: u5, vm: u5) !void {
+        // MUL (vector): 0 1 0 01110 00 1 Rm 1 00111 Rn Rd
+        const instr: u32 = 0x4E209C00 |
+            (@as(u32, vm) << 16) |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// CMEQ Vd.16B, Vn.16B, Vm.16B - Compare equal (sets 0xFF where equal, 0 where not)
+    fn cmeq_16b(self: *Self, vd: u5, vn: u5, vm: u5) !void {
+        // CMEQ (register): 0 1 1 01110 00 1 Rm 1 00011 Rn Rd
+        const instr: u32 = 0x6E208C00 |
+            (@as(u32, vm) << 16) |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// NOT Vd.16B, Vn.16B - Bitwise NOT
+    fn not_16b(self: *Self, vd: u5, vn: u5) !void {
+        // NOT: 0 1 1 01110 00 10000 00101 10 Rn Rd
+        const instr: u32 = 0x6E205800 |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// CNT Vd.16B, Vn.16B - Population count per byte
+    fn cnt_16b(self: *Self, vd: u5, vn: u5) !void {
+        // CNT: 0 1 0 01110 00 10000 00101 10 Rn Rd
+        const instr: u32 = 0x4E205800 |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// UADDLV Hd, Vn.16B - Unsigned add long across vector (sum all bytes to u16)
+    fn uaddlv_h(self: *Self, vd: u5, vn: u5) !void {
+        // UADDLV: 0 1 1 01110 00 11000 0 0011 10 Rn Rd
+        const instr: u32 = 0x6E303800 |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// UMOV Wd, Vn.H[0] - Unsigned move from vector element to GPR (16-bit)
+    fn umov_h(self: *Self, wd: u5, vn: u5, index: u3) !void {
+        // UMOV: 0 0 0 01110 00 0 imm5 0 0111 1 Rn Rd
+        // For H (16-bit) element, imm5 = (index << 1) | 0b00010
+        const imm5: u5 = (@as(u5, index) << 1) | 0b00010;
+        const instr: u32 = 0x0E003C00 |
+            (@as(u32, imm5) << 16) |
+            (@as(u32, vn) << 5) |
+            @as(u32, wd);
+        try self.emit32(instr);
+    }
+
+    /// USHR Vd.16B, Vn.16B, #shift - Unsigned shift right
+    fn ushr_16b(self: *Self, vd: u5, vn: u5, shift: u4) !void {
+        // USHR: 0 1 1 01111 0 shift 00000 1 Rn Rd
+        // For 16B: Q=1, immh:immb encodes shift, for 8-bit elements immh=0001, immb=8-shift
+        // Actually: 0 1 1 01111 immh immb 0 0000 1 Rn Rd
+        // immh=0001 for 8-bit, immb = (8 - shift) for shift amount
+        const immh: u4 = 0b0001;
+        const immb: u3 = @intCast(8 - shift);
+        const instr: u32 = 0x6F080400 |
+            (@as(u32, immh) << 19) |
+            (@as(u32, immb) << 16) |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// ADDV Bd, Vn.16B - Add across vector (8-bit result for byte vectors)
+    fn addv_16b(self: *Self, vd: u5, vn: u5) !void {
+        // ADDV: 0 1 0 01110 00 11000 1 1011 10 Rn Rd
+        // Q=1, size=00 (8-bit)
+        const instr: u32 = 0x4E31B800 |
+            (@as(u32, vn) << 5) |
+            @as(u32, vd);
+        try self.emit32(instr);
+    }
+
+    /// UMOV Wd, Vn.B[0] - Unsigned move from vector byte element to GPR
+    fn umov_b(self: *Self, wd: u5, vn: u5, index: u4) !void {
+        // UMOV: 0 0 0 01110 00 0 imm5 0 0111 1 Rn Rd
+        // For B (8-bit) element, imm5 = (index << 1) | 0b00001
+        const imm5: u5 = (@as(u5, index) << 1) | 0b00001;
+        const instr: u32 = 0x0E003C00 |
+            (@as(u32, imm5) << 16) |
+            (@as(u32, vn) << 5) |
+            @as(u32, wd);
+        try self.emit32(instr);
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     // VSA OPERATION COMPILATION
     // ═══════════════════════════════════════════════════════════════════════════
@@ -734,6 +849,207 @@ pub const Arm64JitCompiler = struct {
             (@as(u32, @as(u19, @bitCast(forward_offset))) << 5) |
             @as(u32, COND_GE);
         @memcpy(self.code.items[bge_offset..][0..4], &std.mem.toBytes(patched_instr));
+
+        try self.ldpPostIndex(x21, x22, sp, 2);
+        try self.ldpPostIndex(x19, x20, sp, 2);
+        try self.ldpPostIndex(x29, x30, sp, 2);
+        try self.retInstr();
+    }
+
+    /// Compile SIMD bind operation using NEON vector multiply
+    /// Processes 16 elements per iteration
+    pub fn compileBindSIMD(self: *Self, dimension: usize) !void {
+        self.reset();
+
+        // Function prologue
+        try self.stpPreIndex(x29, x30, sp, -2);
+        try self.movReg(x29, sp);
+        try self.stpPreIndex(x19, x20, sp, -2);
+        try self.stpPreIndex(x21, x22, sp, -2);
+
+        // x19 = a pointer (modified in place), x20 = b pointer
+        try self.movReg(x19, x0);
+        try self.movReg(x20, x1);
+
+        // SIMD loop for dimension / 16 iterations
+        const simd_iters = dimension / 16;
+        if (simd_iters > 0) {
+            if (simd_iters <= 0xFFFF) {
+                try self.movImm16(x21, @intCast(simd_iters), 0);
+            } else {
+                try self.loadImm64(x21, simd_iters);
+            }
+            try self.movImm16(x22, 0, 0); // counter
+
+            const simd_loop = self.code.items.len;
+            try self.cmpReg(x22, x21);
+            const bge_simd = self.code.items.len;
+            try self.bcond(COND_GE, 0);
+
+            // Load 16 bytes from a and b
+            try self.ld1_16b(v0, x19);
+            try self.ld1_16b(v1, x20);
+
+            // Multiply: v0 = v0 * v1 (element-wise i8 multiply)
+            try self.mul_16b(v0, v0, v1);
+
+            // Store result back to a with post-increment
+            try self.st1_16b_post(v0, x19);
+
+            // Advance b pointer
+            try self.addImm(x20, x20, 16);
+
+            // Increment counter
+            try self.addImm(x22, x22, 1);
+
+            const simd_end_check = self.code.items.len;
+            const back: i26 = @intCast(@divExact(@as(i32, @intCast(simd_loop)) - @as(i32, @intCast(simd_end_check)), 4));
+            try self.b(back);
+
+            // Patch branch
+            const simd_end = self.code.items.len;
+            const fwd: i19 = @intCast(@divExact(@as(i32, @intCast(simd_end)) - @as(i32, @intCast(bge_simd)), 4));
+            const patched: u32 = 0x54000000 | (@as(u32, @as(u19, @bitCast(fwd))) << 5) | @as(u32, COND_GE);
+            @memcpy(self.code.items[bge_simd..][0..4], &std.mem.toBytes(patched));
+        }
+
+        // Scalar loop for remainder (dimension % 16)
+        const remainder = dimension % 16;
+        if (remainder > 0) {
+            try self.movImm16(x21, @intCast(remainder), 0);
+            try self.movImm16(x22, 0, 0);
+
+            const scalar_loop = self.code.items.len;
+            try self.cmpReg(x22, x21);
+            const bge_scalar = self.code.items.len;
+            try self.bcond(COND_GE, 0);
+
+            try self.ldrsbReg(x10, x19, x22);
+            try self.ldrsbReg(x11, x20, x22);
+            try self.smull(x10, x10, x11);
+            try self.strbReg(x10, x19, x22);
+            try self.addImm(x22, x22, 1);
+
+            const scalar_end_check = self.code.items.len;
+            const back: i26 = @intCast(@divExact(@as(i32, @intCast(scalar_loop)) - @as(i32, @intCast(scalar_end_check)), 4));
+            try self.b(back);
+
+            const scalar_end = self.code.items.len;
+            const fwd: i19 = @intCast(@divExact(@as(i32, @intCast(scalar_end)) - @as(i32, @intCast(bge_scalar)), 4));
+            const patched: u32 = 0x54000000 | (@as(u32, @as(u19, @bitCast(fwd))) << 5) | @as(u32, COND_GE);
+            @memcpy(self.code.items[bge_scalar..][0..4], &std.mem.toBytes(patched));
+        }
+
+        try self.ldpPostIndex(x21, x22, sp, 2);
+        try self.ldpPostIndex(x19, x20, sp, 2);
+        try self.ldpPostIndex(x29, x30, sp, 2);
+        try self.retInstr();
+    }
+
+    /// Compile SIMD hamming distance using NEON compare
+    /// Counts positions where a[i] != b[i]
+    pub fn compileHammingSIMD(self: *Self, dimension: usize) !void {
+        self.reset();
+
+        // Function prologue
+        try self.stpPreIndex(x29, x30, sp, -2);
+        try self.movReg(x29, sp);
+        try self.stpPreIndex(x19, x20, sp, -2);
+        try self.stpPreIndex(x21, x22, sp, -2);
+
+        // x19 = a pointer, x20 = b pointer, x21 = accumulator
+        try self.movReg(x19, x0);
+        try self.movReg(x20, x1);
+        try self.movImm16(x21, 0, 0); // hamming distance = 0
+
+        // SIMD loop for dimension / 16 iterations
+        const simd_iters = dimension / 16;
+        if (simd_iters > 0) {
+            if (simd_iters <= 0xFFFF) {
+                try self.movImm16(x9, @intCast(simd_iters), 0);
+            } else {
+                try self.loadImm64(x9, simd_iters);
+            }
+            try self.movImm16(x22, 0, 0); // counter
+
+            const simd_loop = self.code.items.len;
+            try self.cmpReg(x22, x9);
+            const bge_simd = self.code.items.len;
+            try self.bcond(COND_GE, 0);
+
+            // Load 16 bytes from a and b with post-increment
+            try self.ld1_16b_post(v0, x19);
+            try self.ld1_16b_post(v1, x20);
+
+            // Compare equal: v2 = (v0 == v1) ? 0xFF : 0x00
+            try self.cmeq_16b(v2, v0, v1);
+
+            // NOT: v2 = (v0 != v1) ? 0xFF : 0x00
+            try self.not_16b(v2, v2);
+
+            // Shift right by 7: 0xFF >> 7 = 1, 0x00 >> 7 = 0
+            // Now each byte is 1 if positions differ, 0 if same
+            try self.ushr_16b(v2, v2, 7);
+
+            // Sum all 16 bytes into a single value
+            try self.addv_16b(v3, v2); // v3.b[0] = sum of all bytes
+
+            // Move byte to GPR
+            try self.umov_b(x10, v3, 0);
+
+            // Add to accumulator
+            try self.addReg(x21, x21, x10);
+
+            // Increment counter
+            try self.addImm(x22, x22, 1);
+
+            const simd_end_check = self.code.items.len;
+            const back: i26 = @intCast(@divExact(@as(i32, @intCast(simd_loop)) - @as(i32, @intCast(simd_end_check)), 4));
+            try self.b(back);
+
+            const simd_end = self.code.items.len;
+            const fwd: i19 = @intCast(@divExact(@as(i32, @intCast(simd_end)) - @as(i32, @intCast(bge_simd)), 4));
+            const patched: u32 = 0x54000000 | (@as(u32, @as(u19, @bitCast(fwd))) << 5) | @as(u32, COND_GE);
+            @memcpy(self.code.items[bge_simd..][0..4], &std.mem.toBytes(patched));
+        }
+
+        // Scalar loop for remainder
+        const remainder = dimension % 16;
+        if (remainder > 0) {
+            try self.movImm16(x9, @intCast(remainder), 0);
+            try self.movImm16(x22, 0, 0);
+
+            const scalar_loop = self.code.items.len;
+            try self.cmpReg(x22, x9);
+            const bge_scalar = self.code.items.len;
+            try self.bcond(COND_GE, 0);
+
+            try self.ldrsbReg(x10, x19, x22);
+            try self.ldrsbReg(x11, x20, x22);
+
+            // Compare and increment if not equal
+            try self.cmpReg(x10, x11);
+            // CSINC x10, xzr, xzr, EQ -> x10 = (EQ) ? 0 : 1
+            const csinc: u32 = 0x9A9F07E0 | // CSINC Xd, XZR, XZR, cond
+                (@as(u32, COND_EQ) << 12) |
+                @as(u32, x10);
+            try self.emit32(csinc);
+            try self.addReg(x21, x21, x10);
+
+            try self.addImm(x22, x22, 1);
+
+            const scalar_end_check = self.code.items.len;
+            const back: i26 = @intCast(@divExact(@as(i32, @intCast(scalar_loop)) - @as(i32, @intCast(scalar_end_check)), 4));
+            try self.b(back);
+
+            const scalar_end = self.code.items.len;
+            const fwd: i19 = @intCast(@divExact(@as(i32, @intCast(scalar_end)) - @as(i32, @intCast(bge_scalar)), 4));
+            const patched: u32 = 0x54000000 | (@as(u32, @as(u19, @bitCast(fwd))) << 5) | @as(u32, COND_GE);
+            @memcpy(self.code.items[bge_scalar..][0..4], &std.mem.toBytes(patched));
+        }
+
+        // Return result
+        try self.movReg(x0, x21);
 
         try self.ldpPostIndex(x21, x22, sp, 2);
         try self.ldpPostIndex(x19, x20, sp, 2);
@@ -1199,4 +1515,180 @@ test "ARM64 hybrid benchmark vs pure scalar" {
 
     // Hybrid should be faster
     try std.testing.expect(speedup > 1.5);
+}
+
+test "ARM64 SIMD bind correctness" {
+    var compiler = Arm64JitCompiler.init(std.testing.allocator);
+    defer compiler.deinit();
+
+    const dim = 64;
+    try compiler.compileBindSIMD(dim);
+    const func = try compiler.finalize();
+
+    var a: [dim]i8 = undefined;
+    var b: [dim]i8 = undefined;
+    var expected: [dim]i8 = undefined;
+
+    // Initialize: a = [1, -1, 0, 1, ...], b = [1, 1, -1, -1, ...]
+    for (0..dim) |i| {
+        a[i] = @intCast(@as(i32, @intCast(i % 3)) - 1);
+        b[i] = if (i % 4 < 2) @as(i8, 1) else @as(i8, -1);
+        expected[i] = a[i] * b[i];
+    }
+
+    // Run SIMD bind (modifies a in place)
+    _ = func(@ptrCast(&a), @ptrCast(&b));
+
+    // Verify
+    for (0..dim) |i| {
+        try std.testing.expectEqual(expected[i], a[i]);
+    }
+}
+
+test "ARM64 SIMD bind non-aligned dimension" {
+    var compiler = Arm64JitCompiler.init(std.testing.allocator);
+    defer compiler.deinit();
+
+    const dim = 100; // Not divisible by 16
+    try compiler.compileBindSIMD(dim);
+    const func = try compiler.finalize();
+
+    var a: [dim]i8 = undefined;
+    var b: [dim]i8 = undefined;
+    var expected: [dim]i8 = undefined;
+
+    for (0..dim) |i| {
+        a[i] = @intCast(@as(i32, @intCast(i % 3)) - 1);
+        b[i] = @intCast(@as(i32, @intCast((i + 1) % 3)) - 1);
+        expected[i] = a[i] * b[i];
+    }
+
+    _ = func(@ptrCast(&a), @ptrCast(&b));
+
+    for (0..dim) |i| {
+        try std.testing.expectEqual(expected[i], a[i]);
+    }
+}
+
+test "ARM64 SIMD hamming correctness" {
+    var compiler = Arm64JitCompiler.init(std.testing.allocator);
+    defer compiler.deinit();
+
+    const dim = 64;
+    try compiler.compileHammingSIMD(dim);
+    const func = try compiler.finalize();
+
+    // Test 1: identical vectors -> hamming = 0
+    var a: [dim]i8 = undefined;
+    var b: [dim]i8 = undefined;
+    for (0..dim) |i| {
+        a[i] = 1;
+        b[i] = 1;
+    }
+    const hamming_identical = func(@ptrCast(&a), @ptrCast(&b));
+    try std.testing.expectEqual(@as(i64, 0), hamming_identical);
+
+    // Test 2: all different -> hamming = dim
+    for (0..dim) |i| {
+        a[i] = 1;
+        b[i] = -1;
+    }
+    const hamming_all_diff = func(@ptrCast(&a), @ptrCast(&b));
+    try std.testing.expectEqual(@as(i64, dim), hamming_all_diff);
+
+    // Test 3: half different
+    for (0..dim) |i| {
+        a[i] = 1;
+        b[i] = if (i < dim / 2) @as(i8, 1) else @as(i8, -1);
+    }
+    const hamming_half = func(@ptrCast(&a), @ptrCast(&b));
+    try std.testing.expectEqual(@as(i64, dim / 2), hamming_half);
+}
+
+test "ARM64 SIMD hamming non-aligned dimension" {
+    var compiler = Arm64JitCompiler.init(std.testing.allocator);
+    defer compiler.deinit();
+
+    const dim = 100; // Not divisible by 16
+    try compiler.compileHammingSIMD(dim);
+    const func = try compiler.finalize();
+
+    var a: [dim]i8 = undefined;
+    var b: [dim]i8 = undefined;
+
+    // Count expected differences manually
+    var expected_hamming: i64 = 0;
+    for (0..dim) |i| {
+        a[i] = @intCast(@as(i32, @intCast(i % 3)) - 1);
+        b[i] = @intCast(@as(i32, @intCast((i + 1) % 3)) - 1);
+        if (a[i] != b[i]) expected_hamming += 1;
+    }
+
+    const result = func(@ptrCast(&a), @ptrCast(&b));
+    try std.testing.expectEqual(expected_hamming, result);
+}
+
+test "ARM64 SIMD bind benchmark vs scalar" {
+    const dim = 1024;
+    const iterations = 10000;
+
+    var a_simd: [dim]i8 = undefined;
+    var a_scalar: [dim]i8 = undefined;
+    var b: [dim]i8 = undefined;
+
+    for (0..dim) |i| {
+        const val = @as(i8, @intCast(@as(i32, @intCast(i % 3)) - 1));
+        a_simd[i] = val;
+        a_scalar[i] = val;
+        b[i] = @intCast(@as(i32, @intCast((i + 1) % 3)) - 1);
+    }
+
+    // Compile SIMD
+    var simd_compiler = Arm64JitCompiler.init(std.testing.allocator);
+    defer simd_compiler.deinit();
+    try simd_compiler.compileBindSIMD(dim);
+    const simd_func = try simd_compiler.finalize();
+
+    // Compile scalar
+    var scalar_compiler = Arm64JitCompiler.init(std.testing.allocator);
+    defer scalar_compiler.deinit();
+    try scalar_compiler.compileBindDirect(dim);
+    const scalar_func = try scalar_compiler.finalize();
+
+    // Benchmark SIMD
+    var timer = std.time.Timer.start() catch unreachable;
+    for (0..iterations) |_| {
+        // Reset a for fair comparison
+        for (0..dim) |i| {
+            a_simd[i] = @intCast(@as(i32, @intCast(i % 3)) - 1);
+        }
+        _ = simd_func(@ptrCast(&a_simd), @ptrCast(&b));
+    }
+    const simd_ns = timer.read();
+
+    // Benchmark scalar
+    timer.reset();
+    for (0..iterations) |_| {
+        for (0..dim) |i| {
+            a_scalar[i] = @intCast(@as(i32, @intCast(i % 3)) - 1);
+        }
+        _ = scalar_func(@ptrCast(&a_scalar), @ptrCast(&b));
+    }
+    const scalar_ns = timer.read();
+
+    const simd_ms = @as(f64, @floatFromInt(simd_ns)) / 1_000_000.0;
+    const scalar_ms = @as(f64, @floatFromInt(scalar_ns)) / 1_000_000.0;
+    const speedup = scalar_ms / simd_ms;
+
+    std.debug.print("\n", .{});
+    std.debug.print("═══════════════════════════════════════════════════════════════\n", .{});
+    std.debug.print("           ARM64 SIMD BIND BENCHMARK (dim={d})\n", .{dim});
+    std.debug.print("═══════════════════════════════════════════════════════════════\n", .{});
+    std.debug.print("  Scalar: {d:.3} ms\n", .{scalar_ms});
+    std.debug.print("  SIMD:   {d:.3} ms\n", .{simd_ms});
+    std.debug.print("  SPEEDUP: {d:.2}x\n", .{speedup});
+    std.debug.print("═══════════════════════════════════════════════════════════════\n", .{});
+
+    // SIMD should be faster
+    try std.testing.expect(speedup > 1.0);
 }
