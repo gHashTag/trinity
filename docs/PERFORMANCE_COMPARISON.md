@@ -15,18 +15,31 @@
 | v1.0 | Baseline (scalar) | 17.4 ms/layer | 0.34 | 2.1 | 1.0x |
 | v1.1 | + SIMD-16 matmul | 10.0 ms/layer | 0.54 | 3.3 | 1.7x |
 | v1.2 | + SIMD attention | 6.7 ms/layer | 0.77 | 4.9 | 2.6x |
-| v1.3 | + Parallel heads | 6.5 ms/layer | 0.91 | 5.5 | **2.7x** |
+| v1.3 | + Parallel heads | 6.5 ms/layer | 0.91 | 5.5 | 2.7x |
+| v1.4 | + Flash Attention | 7.0 ms/layer | 0.84 | 5.1 | **2.4x** |
 
-### 1.2 Current Performance (v1.3)
+### 1.2 Current Performance (v1.4 with Flash Attention)
 
 ```
 Config: hidden_size=512, intermediate_size=1408, num_layers=4, num_heads=8
 
-Single layer forward: 6.455 ms
-Estimated 28 layers: 180.7 ms
-Throughput: 0.91 GFLOPS
-Generation speed: 5.5 tok/s
+Single layer forward: 7.038 ms
+Estimated 28 layers: 197.1 ms
+Throughput: 0.84 GFLOPS
+Generation speed: 5.1 tok/s
 ```
+
+### 1.3 Flash Attention Benefits
+
+| Sequence Length | Standard (ms) | Flash (ms) | Speedup | Memory |
+|-----------------|---------------|------------|---------|--------|
+| 128 | 0.158 | 0.138 | 1.15x | O(N) vs O(N²) |
+| 256 | 0.307 | 0.266 | 1.15x | O(N) vs O(N²) |
+| 512 | 0.609 | 0.523 | 1.16x | O(N) vs O(N²) |
+| 1024 | 1.341 | 1.307 | 1.03x | O(N) vs O(N²) |
+| 4096 | 12.256 | 10.543 | 1.16x | O(N) vs O(N²) |
+
+**Key insight**: Flash Attention uses online softmax to avoid materializing the full N×N attention matrix, reducing memory from O(N²) to O(N).
 
 ---
 

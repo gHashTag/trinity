@@ -6,6 +6,7 @@
 const std = @import("std");
 const simd_matmul = @import("simd_ternary_matmul.zig");
 const trinity_format = @import("trinity_format.zig");
+const flash_attn = @import("flash_attention.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SIMD TYPES AND HELPERS
@@ -500,7 +501,73 @@ pub const Attention = struct {
         // Output projection
         ternaryMatmul(output, self.w_o, attn_out, cfg.hidden_size, q_size);
     }
+    
+    /// Forward pass using Flash Attention (O(N) memory instead of O(N²))
+    /// Use this for long sequences (>256 tokens) for better memory efficiency
+    pub fn forwardFlash(
+        self: *const Attention,
+        allocator: std.mem.Allocator,
+        output: []f32,
+        input: []const f32,
+        kv_cache: *KVCache,
+        rope: *const RoPE,
+        pos: usize,
+    ) !void {
+        const cfg = self.config;
+        const q_size = cfg.num_heads * cfg.head_dim;
+        const kv_size = cfg.num_kv_heads * cfg.head_dim;
+        
+        // Allocate Q, K, V
+        const q = try allocator.alloc(f32, q_size);
+        defer allocator.free(q);
+        const k = try allocator.alloc(f32, kv_size);
+        defer allocator.free(k);
+        const v = try allocator.alloc(f32, kv_size);
+        defer allocator.free(v);
+        
+        // Project Q, K, V using ternary matmul
+        ternaryMatmul(q, self.w_q, input, q_size, cfg.hidden_size);
+        ternaryMatmul(k, self.w_k, input, kv_size, cfg.hidden_size);
+        ternaryMatmul(v, self.w_v, input, kv_size, cfg.hidden_size);
+        
+        // Apply RoPE to Q and K
+        for (0..cfg.num_heads) |h| {
+            rope.apply(q[h * cfg.head_dim ..][0..cfg.head_dim], pos);
+        }
+        for (0..cfg.num_kv_heads) |h| {
+            rope.apply(k[h * cfg.head_dim ..][0..cfg.head_dim], pos);
+        }
+        
+        // Append K, V to cache
+        kv_cache.append(k, v);
+        
+        // Use Flash Attention for O(N) memory complexity
+        const attn_out = try allocator.alloc(f32, q_size);
+        defer allocator.free(attn_out);
+        
+        const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(cfg.head_dim)));
+        
+        // Flash Attention with GQA support
+        try flash_attn.flashAttentionGQA(
+            allocator,
+            attn_out,
+            q,
+            kv_cache.k,
+            kv_cache.v,
+            cfg.num_heads,
+            cfg.num_kv_heads,
+            cfg.head_dim,
+            kv_cache.len,
+            scale,
+        );
+        
+        // Output projection
+        ternaryMatmul(output, self.w_o, attn_out, cfg.hidden_size, q_size);
+    }
 };
+
+/// Use Flash Attention for sequences longer than this threshold
+pub const FLASH_ATTENTION_THRESHOLD: usize = 256;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MLP - Feed Forward Network with SiLU
@@ -562,10 +629,14 @@ pub const BitNetLayer = struct {
         defer allocator.free(normed);
         self.input_norm.forward(normed, input);
         
-        // Attention
+        // Attention (use Flash Attention for long sequences)
         const attn_out = try allocator.alloc(f32, hidden_size);
         defer allocator.free(attn_out);
-        try self.attention.forward(allocator, attn_out, normed, kv_cache, rope, pos);
+        if (kv_cache.len > FLASH_ATTENTION_THRESHOLD) {
+            try self.attention.forwardFlash(allocator, attn_out, normed, kv_cache, rope, pos);
+        } else {
+            try self.attention.forward(allocator, attn_out, normed, kv_cache, rope, pos);
+        }
         
         // Residual
         const post_attn = try allocator.alloc(f32, hidden_size);
