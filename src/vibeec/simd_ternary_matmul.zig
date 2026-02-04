@@ -35,7 +35,10 @@ pub const TILE_M: usize = 64;
 pub const TILE_N: usize = 64;
 pub const TILE_K: usize = 256;
 pub const UNROLL_FACTOR: usize = 8;
-pub const PREFETCH_DISTANCE: usize = 8;
+pub const PREFETCH_DISTANCE: usize = 16; // Optimized from 8 to 16 for better cache utilization
+
+// Cache line size for prefetch alignment
+pub const CACHE_LINE: usize = 64;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // OPTIMIZED TERNARY DECODE WITH F32 LUT
