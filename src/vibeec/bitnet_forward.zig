@@ -33,6 +33,28 @@ pub const BitNetConfig = struct {
 // WEIGHT QUANTIZATION (F32 -> Ternary)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// Fake quantization for weights: quantize to ternary and dequantize in-place
+/// Follows HuggingFace BitNet: s = 1/mean(|w|), result = round(w*s).clamp(-1,1)/s
+pub fn quantizeWeightsInPlace(weights: []f32) void {
+    if (weights.len == 0) return;
+
+    // Compute mean absolute value
+    var sum: f32 = 0.0;
+    for (weights) |w| {
+        sum += @abs(w);
+    }
+    const absmean = @max(sum / @as(f32, @floatFromInt(weights.len)), 1e-5);
+    const scale = 1.0 / absmean;
+
+    // Quantize to ternary and dequantize
+    for (weights) |*w| {
+        const scaled = w.* * scale;
+        const rounded = @round(scaled);
+        const clamped = @max(-1.0, @min(1.0, rounded));
+        w.* = clamped / scale;
+    }
+}
+
 /// Quantize F32 weights to ternary {-1, 0, +1}
 /// Uses absmean quantization: w_q = round(w / scale), scale = mean(|w|)
 pub fn quantizeToTernary(weights: []const f32, output: []i8, scale: *f32) void {
