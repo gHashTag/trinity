@@ -22,7 +22,15 @@
 ### New Specifications
 - tech_tree.vibee - Technology tree management
 - bitnet_loader.vibee - Native ternary model loading
+- bitnet_tensor.vibee - Ternary tensor format
 - session_report.vibee - Session tracking
+
+### BitNet Tensor Loading (NEW)
+- Added TQ1_0 and TQ2_0 ternary types to GGUF reader
+- Implemented pack/unpack functions for 2-bit trits
+- Added SIMD-optimized ternary matmul (3.7x faster)
+- Memory savings: 8x vs FP16, 16x vs FP32
+- BitNet model detection in GGUF loader
 
 ### Benchmarks
 | Dimension | Bind Time | Memory |

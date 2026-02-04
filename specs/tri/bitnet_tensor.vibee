@@ -1,0 +1,96 @@
+name: bitnet_tensor
+version: "1.0.0"
+language: zig
+module: bitnet_tensor
+author: Ona AI Agent
+description: BitNet ternary tensor format and operations for native {-1, 0, +1} weights
+
+types:
+  TritValue:
+    description: Single ternary digit
+    fields:
+      value: Int
+    constraints:
+      - value in [-1, 0, 1]
+
+  PackedTrits:
+    description: 4 trits packed into 1 byte (2 bits each)
+    fields:
+      data: List<Int>
+      num_trits: Int
+      encoding: String
+
+  TernaryBlock:
+    description: Block of 32 ternary weights (like Q8_0 block size)
+    fields:
+      trits: List<Int>
+      scale: Float
+
+  BitNetTensor:
+    description: Full ternary tensor for BitNet models
+    fields:
+      name: String
+      shape: List<Int>
+      num_elements: Int
+      packed_data: List<Int>
+      dtype: String
+      memory_bytes: Int
+
+  DequantResult:
+    description: Result of dequantizing ternary to float
+    fields:
+      data: List<Float>
+      scale: Float
+
+  QuantizeResult:
+    description: Result of quantizing float to ternary
+    fields:
+      packed: PackedTrits
+      scale: Float
+      error: Float
+
+behaviors:
+  - name: pack_trits
+    given: Array of trit values {-1, 0, +1}
+    when: Compressing for storage
+    then: Return PackedTrits with 2 bits per trit (4 trits per byte)
+
+  - name: unpack_trits
+    given: PackedTrits structure
+    when: Preparing for computation
+    then: Return array of trit values {-1, 0, +1}
+
+  - name: quantize_to_ternary
+    given: Float tensor and scale
+    when: Converting FP16/FP32 to ternary
+    then: Return QuantizeResult with packed trits
+
+  - name: dequantize_from_ternary
+    given: BitNetTensor
+    when: Converting back to float for verification
+    then: Return DequantResult with float values
+
+  - name: ternary_matmul_packed
+    given: Packed ternary weights and float activations
+    when: Forward pass computation
+    then: Return result using lookup table (no multiply needed)
+
+  - name: calculate_compression_ratio
+    given: Original FP16 size and ternary size
+    when: Reporting efficiency
+    then: Return ratio (should be ~10x for FP16, ~16x for FP32)
+
+constants:
+  TRIT_ENCODING_00: 0
+  TRIT_ENCODING_01: 1
+  TRIT_ENCODING_10: -1
+  TRIT_ENCODING_11: 0
+  BITS_PER_TRIT: 2
+  TRITS_PER_BYTE: 4
+  BLOCK_SIZE: 32
+  BYTES_PER_BLOCK: 8
+  GGML_TYPE_TQ1_0: 16
+  COMPRESSION_VS_FP16: 10.0
+  COMPRESSION_VS_FP32: 16.0
+  PHI: 1.618033988749895
+  TRINITY: 3.0
