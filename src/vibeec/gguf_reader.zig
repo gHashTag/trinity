@@ -42,6 +42,9 @@ pub const GGMLType = enum(u32) {
     Q5_K = 13,
     Q6_K = 14,
     Q8_K = 15,
+    // BitNet ternary types
+    TQ1_0 = 16, // Ternary {-1, 0, +1} packed 4 per byte
+    TQ2_0 = 17, // Ternary with scale factor
     BF16 = 30,
     _,
 };
@@ -51,6 +54,7 @@ pub fn getBlockSize(t: GGMLType) usize {
     return switch (t) {
         .Q4_0, .Q4_1, .Q5_0, .Q5_1, .Q8_0, .Q8_1 => 32,
         .Q2_K, .Q3_K, .Q4_K, .Q5_K, .Q6_K, .Q8_K => 256,
+        .TQ1_0, .TQ2_0 => 32, // BitNet ternary block size
         else => 1,
     };
 }
@@ -69,9 +73,156 @@ pub fn getTypeSize(t: GGMLType) usize {
         .Q4_K => 144, // Complex
         .Q5_K => 176,
         .Q6_K => 210,
+        // BitNet ternary: 32 trits * 2 bits / 8 = 8 bytes per block
+        .TQ1_0 => 8,  // Pure ternary, no scale
+        .TQ2_0 => 10, // Ternary with 2-byte scale
         else => 0,
     };
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BITNET TERNARY OPERATIONS
+// φ² + 1/φ² = 3 = TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Lookup table for 2-bit trit encoding: 00=0, 01=+1, 10=-1, 11=0 (unused)
+pub const TRIT_LUT: [4]i8 = .{ 0, 1, -1, 0 };
+pub const TRIT_LUT_F32: [4]f32 = .{ 0.0, 1.0, -1.0, 0.0 };
+
+/// Pack array of trits {-1, 0, +1} into bytes (4 trits per byte)
+pub fn packTrits(trits: []const i8, output: []u8) void {
+    var byte_idx: usize = 0;
+    var trit_idx: usize = 0;
+    
+    while (trit_idx < trits.len) {
+        var byte: u8 = 0;
+        var shift: u3 = 0;
+        
+        while (shift < 8 and trit_idx < trits.len) : ({
+            shift += 2;
+            trit_idx += 1;
+        }) {
+            const trit = trits[trit_idx];
+            const encoded: u8 = switch (trit) {
+                0 => 0b00,
+                1 => 0b01,
+                -1 => 0b10,
+                else => 0b00,
+            };
+            byte |= encoded << shift;
+        }
+        
+        output[byte_idx] = byte;
+        byte_idx += 1;
+    }
+}
+
+/// Unpack bytes into array of trits {-1, 0, +1}
+pub fn unpackTrits(packed: []const u8, output: []i8, num_trits: usize) void {
+    var trit_idx: usize = 0;
+    
+    for (packed) |byte| {
+        var shift: u3 = 0;
+        while (shift < 8 and trit_idx < num_trits) : ({
+            shift += 2;
+            trit_idx += 1;
+        }) {
+            const encoded = (byte >> shift) & 0x3;
+            output[trit_idx] = TRIT_LUT[encoded];
+        }
+    }
+}
+
+/// Ternary matrix-vector multiply using lookup (no actual multiplication!)
+/// output[i] = sum_j(weights[i,j] * input[j]) where weights are {-1, 0, +1}
+pub fn ternaryMatVec(output: []f32, packed_weights: []const u8, input: []const f32, rows: usize, cols: usize) void {
+    const cols_packed = (cols + 3) / 4; // 4 trits per byte
+    
+    for (0..rows) |row| {
+        var sum: f32 = 0.0;
+        const row_start = row * cols_packed;
+        var col: usize = 0;
+        
+        // Process 4 columns at a time (1 byte)
+        for (0..cols_packed) |byte_idx| {
+            if (row_start + byte_idx >= packed_weights.len) break;
+            const byte = packed_weights[row_start + byte_idx];
+            
+            // Unroll 4 trits from byte
+            inline for (0..4) |shift_idx| {
+                if (col >= cols) break;
+                const shift: u3 = @intCast(shift_idx * 2);
+                const trit = (byte >> shift) & 0x3;
+                sum += input[col] * TRIT_LUT_F32[trit];
+                col += 1;
+            }
+        }
+        
+        output[row] = sum;
+    }
+}
+
+/// SIMD-optimized ternary matmul (8 elements at a time)
+pub fn ternaryMatVecSIMD(output: []f32, packed_weights: []const u8, input: []const f32, rows: usize, cols: usize) void {
+    const Vec8 = @Vector(8, f32);
+    const cols_packed = (cols + 3) / 4;
+    
+    for (0..rows) |row| {
+        var sum: f32 = 0.0;
+        const row_start = row * cols_packed;
+        var col: usize = 0;
+        
+        // SIMD loop: process 8 columns (2 bytes) at a time
+        while (col + 8 <= cols) {
+            const byte_idx = row_start + col / 4;
+            if (byte_idx + 1 >= packed_weights.len) break;
+            
+            const b0 = packed_weights[byte_idx];
+            const b1 = packed_weights[byte_idx + 1];
+            
+            const in_vec: Vec8 = input[col..][0..8].*;
+            const signs: Vec8 = .{
+                TRIT_LUT_F32[(b0 >> 0) & 0x3],
+                TRIT_LUT_F32[(b0 >> 2) & 0x3],
+                TRIT_LUT_F32[(b0 >> 4) & 0x3],
+                TRIT_LUT_F32[(b0 >> 6) & 0x3],
+                TRIT_LUT_F32[(b1 >> 0) & 0x3],
+                TRIT_LUT_F32[(b1 >> 2) & 0x3],
+                TRIT_LUT_F32[(b1 >> 4) & 0x3],
+                TRIT_LUT_F32[(b1 >> 6) & 0x3],
+            };
+            
+            sum += @reduce(.Add, in_vec * signs);
+            col += 8;
+        }
+        
+        // Scalar tail
+        while (col < cols) : (col += 1) {
+            const byte_idx = row_start + col / 4;
+            if (byte_idx >= packed_weights.len) break;
+            const shift: u3 = @intCast((col % 4) * 2);
+            const trit = (packed_weights[byte_idx] >> shift) & 0x3;
+            sum += input[col] * TRIT_LUT_F32[trit];
+        }
+        
+        output[row] = sum;
+    }
+}
+
+/// Check if tensor type is BitNet ternary
+pub fn isTernaryType(t: GGMLType) bool {
+    return t == .TQ1_0 or t == .TQ2_0;
+}
+
+/// Calculate memory savings vs FP16
+pub fn ternaryMemorySavings(num_elements: u64) struct { ternary_bytes: u64, fp16_bytes: u64, ratio: f32 } {
+    const ternary_bytes = (num_elements + 3) / 4; // 4 trits per byte
+    const fp16_bytes = num_elements * 2;
+    const ratio = @as(f32, @floatFromInt(fp16_bytes)) / @as(f32, @floatFromInt(ternary_bytes));
+    return .{ .ternary_bytes = ternary_bytes, .fp16_bytes = fp16_bytes, .ratio = ratio };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 
 // GGUF Header
 pub const GGUFHeader = struct {
@@ -373,6 +524,72 @@ pub const GGUFReader = struct {
         if (self.getMetadataString("general.name")) |name| {
             std.debug.print("  Name:           {s}\n", .{name});
         }
+        
+        // BitNet detection
+        if (self.hasTernaryTensors()) {
+            std.debug.print("  BitNet:         YES (ternary weights detected)\n", .{});
+            const stats = self.getTernaryStats();
+            std.debug.print("  Ternary tensors: {d}\n", .{stats.ternary_count});
+            std.debug.print("  Memory savings: {d:.1}x vs FP16\n", .{stats.compression_ratio});
+        }
+    }
+    
+    /// Check if model has any ternary (BitNet) tensors
+    pub fn hasTernaryTensors(self: *const GGUFReader) bool {
+        for (self.tensors.items) |tensor| {
+            if (isTernaryType(tensor.tensor_type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /// Get statistics about ternary tensors
+    pub fn getTernaryStats(self: *const GGUFReader) struct { 
+        ternary_count: usize, 
+        total_elements: u64, 
+        ternary_bytes: u64,
+        fp16_bytes: u64,
+        compression_ratio: f32,
+    } {
+        var ternary_count: usize = 0;
+        var total_elements: u64 = 0;
+        
+        for (self.tensors.items) |tensor| {
+            if (isTernaryType(tensor.tensor_type)) {
+                ternary_count += 1;
+                total_elements += tensor.numElements();
+            }
+        }
+        
+        const savings = ternaryMemorySavings(total_elements);
+        return .{
+            .ternary_count = ternary_count,
+            .total_elements = total_elements,
+            .ternary_bytes = savings.ternary_bytes,
+            .fp16_bytes = savings.fp16_bytes,
+            .compression_ratio = savings.ratio,
+        };
+    }
+    
+    /// Check if this is a BitNet model by architecture name
+    pub fn isBitNetModel(self: *const GGUFReader) bool {
+        if (self.getMetadataString("general.architecture")) |arch| {
+            // Check for known BitNet architectures
+            if (std.mem.indexOf(u8, arch, "bitnet") != null) return true;
+            if (std.mem.indexOf(u8, arch, "BitNet") != null) return true;
+            if (std.mem.indexOf(u8, arch, "ternary") != null) return true;
+        }
+        // Also check if model has ternary tensors
+        return self.hasTernaryTensors();
+    }
+    
+    /// Read ternary tensor data and return packed bytes
+    pub fn readTernaryTensor(self: *GGUFReader, info: *const TensorInfo) ![]u8 {
+        if (!isTernaryType(info.tensor_type)) {
+            return error.NotTernaryTensor;
+        }
+        return self.readTensorData(info);
     }
 };
 
@@ -457,6 +674,90 @@ test "f16_to_f32" {
     // Test 0.5 in f16 (0x3800)
     const half = f16ToF32(0x3800);
     try std.testing.expectApproxEqAbs(half, 0.5, 0.001);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BITNET TERNARY TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ternary_block_sizes" {
+    try std.testing.expectEqual(getBlockSize(.TQ1_0), 32);
+    try std.testing.expectEqual(getBlockSize(.TQ2_0), 32);
+    try std.testing.expectEqual(getTypeSize(.TQ1_0), 8);  // 32 trits * 2 bits / 8
+    try std.testing.expectEqual(getTypeSize(.TQ2_0), 10); // + 2 byte scale
+}
+
+test "pack_unpack_trits" {
+    // Test packing: [+1, -1, 0, +1] should become 0b01_10_00_01 = 0x59
+    const trits = [_]i8{ 1, -1, 0, 1 };
+    var packed: [1]u8 = undefined;
+    packTrits(&trits, &packed);
+    
+    // Encoding: +1=01, -1=10, 0=00
+    // Byte: (01) | (10 << 2) | (00 << 4) | (01 << 6) = 0x49
+    try std.testing.expectEqual(packed[0], 0x49);
+    
+    // Test unpacking
+    var unpacked: [4]i8 = undefined;
+    unpackTrits(&packed, &unpacked, 4);
+    try std.testing.expectEqual(unpacked[0], 1);
+    try std.testing.expectEqual(unpacked[1], -1);
+    try std.testing.expectEqual(unpacked[2], 0);
+    try std.testing.expectEqual(unpacked[3], 1);
+}
+
+test "ternary_matvec_basic" {
+    // 2x4 matrix with all +1 weights
+    // Packed: 4 trits of +1 = 0b01_01_01_01 = 0x55
+    const weights = [_]u8{ 0x55, 0x55 }; // 2 rows, 4 cols each
+    const input = [_]f32{ 1.0, 2.0, 3.0, 4.0 };
+    var output: [2]f32 = undefined;
+    
+    ternaryMatVec(&output, &weights, &input, 2, 4);
+    
+    // Each row: 1*1 + 1*2 + 1*3 + 1*4 = 10
+    try std.testing.expectApproxEqAbs(output[0], 10.0, 0.01);
+    try std.testing.expectApproxEqAbs(output[1], 10.0, 0.01);
+}
+
+test "ternary_matvec_mixed" {
+    // Row with [+1, -1, +1, -1]
+    // Packed: 0b10_01_10_01 = 0x69
+    const weights = [_]u8{ 0x69 };
+    const input = [_]f32{ 1.0, 2.0, 3.0, 4.0 };
+    var output: [1]f32 = undefined;
+    
+    ternaryMatVec(&output, &weights, &input, 1, 4);
+    
+    // 1*1 + (-1)*2 + 1*3 + (-1)*4 = 1 - 2 + 3 - 4 = -2
+    try std.testing.expectApproxEqAbs(output[0], -2.0, 0.01);
+}
+
+test "ternary_matvec_simd" {
+    // 1x8 matrix with alternating +1, -1
+    // Packed: 2 bytes of 0x69 each
+    const weights = [_]u8{ 0x69, 0x69 };
+    const input = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
+    var output: [1]f32 = undefined;
+    
+    ternaryMatVecSIMD(&output, &weights, &input, 1, 8);
+    
+    // (1-2+3-4) + (5-6+7-8) = -2 + -2 = -4
+    try std.testing.expectApproxEqAbs(output[0], -4.0, 0.01);
+}
+
+test "ternary_memory_savings" {
+    const savings = ternaryMemorySavings(1_000_000);
+    try std.testing.expectEqual(savings.ternary_bytes, 250_000);
+    try std.testing.expectEqual(savings.fp16_bytes, 2_000_000);
+    try std.testing.expectApproxEqAbs(savings.ratio, 8.0, 0.01);
+}
+
+test "is_ternary_type" {
+    try std.testing.expect(isTernaryType(.TQ1_0));
+    try std.testing.expect(isTernaryType(.TQ2_0));
+    try std.testing.expect(!isTernaryType(.Q8_0));
+    try std.testing.expect(!isTernaryType(.F16));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
