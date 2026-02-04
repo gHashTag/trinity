@@ -1,0 +1,11 @@
+{
+  "version": "1.1.0",
+  "releaseDate": "2026-02-04",
+  "downloadUrl": "https://github.com/gHashTag/trinity/releases",
+  "changelog": [
+    "Added CPU inference for AI-powered fingerprint evolution",
+    "Added AI Mode toggle in popup",
+    "Added auto-update check (daily)",
+    "Improved ternary evolution algorithms"
+  ]
+}
