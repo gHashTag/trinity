@@ -323,7 +323,7 @@ pub const MultiTaskLearner = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// SHARED TEXT ENCODER
+// SHARED TEXT ENCODER (Basic)
 // ═══════════════════════════════════════════════════════════════
 
 pub const TextEncoder = struct {
@@ -398,6 +398,213 @@ pub const TextEncoder = struct {
         // Normalize to ternary
         for (result.data) |*t| {
             if (t.* > 0) t.* = 1 else if (t.* < 0) t.* = -1;
+        }
+
+        return result;
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ENHANCED TEXT ENCODER (N-grams + TF-IDF weighting)
+// ═══════════════════════════════════════════════════════════════
+
+pub const EnhancedTextEncoder = struct {
+    pub const Config = struct {
+        use_bigrams: bool = true,
+        use_trigrams: bool = true,
+        use_tfidf: bool = true,
+        ngram_weight: f64 = 1.5, // Weight for n-grams vs unigrams
+    };
+
+    codebook: std.StringHashMap(HyperVector),
+    doc_freq: std.StringHashMap(u32), // Document frequency for IDF
+    total_docs: u32,
+    dim: usize,
+    allocator: std.mem.Allocator,
+    config: Config,
+
+    pub fn init(allocator: std.mem.Allocator, dim: usize, config: Config) EnhancedTextEncoder {
+        return .{
+            .codebook = std.StringHashMap(HyperVector).init(allocator),
+            .doc_freq = std.StringHashMap(u32).init(allocator),
+            .total_docs = 0,
+            .dim = dim,
+            .allocator = allocator,
+            .config = config,
+        };
+    }
+
+    pub fn deinit(self: *EnhancedTextEncoder) void {
+        var iter = self.codebook.iterator();
+        while (iter.next()) |entry| {
+            var vec = entry.value_ptr;
+            vec.deinit();
+        }
+        self.codebook.deinit();
+        self.doc_freq.deinit();
+    }
+
+    /// Get or create a random vector for a token/n-gram
+    fn getTokenVector(self: *EnhancedTextEncoder, token: []const u8) ![]const Trit {
+        if (self.codebook.get(token)) |vec| {
+            return vec.data;
+        }
+
+        var hasher = std.hash.Wyhash.init(0);
+        hasher.update(token);
+        const seed = hasher.final();
+
+        const vec = try hdc.randomVector(self.allocator, self.dim, seed);
+        try self.codebook.put(token, vec);
+        return vec.data;
+    }
+
+    /// Update document frequency for IDF calculation
+    pub fn updateDocFreq(self: *EnhancedTextEncoder, text: []const u8) !void {
+        self.total_docs += 1;
+
+        var seen = std.StringHashMap(bool).init(self.allocator);
+        defer seen.deinit();
+
+        var tokens = std.mem.tokenizeAny(u8, text, " \t\n\r");
+        while (tokens.next()) |token| {
+            if (!seen.contains(token)) {
+                try seen.put(token, true);
+                const current = self.doc_freq.get(token) orelse 0;
+                try self.doc_freq.put(token, current + 1);
+            }
+        }
+    }
+
+    /// Calculate IDF weight for a token
+    fn getIdfWeight(self: *EnhancedTextEncoder, token: []const u8) f64 {
+        if (!self.config.use_tfidf or self.total_docs == 0) return 1.0;
+
+        const df = self.doc_freq.get(token) orelse 1;
+        // IDF = log(N / df) + 1
+        const idf = @log(@as(f64, @floatFromInt(self.total_docs)) / @as(f64, @floatFromInt(df))) + 1.0;
+        return @min(idf, 3.0); // Cap at 3x weight
+    }
+
+    /// Encode text with n-grams and TF-IDF weighting
+    pub fn encode(self: *EnhancedTextEncoder, text: []const u8) !HyperVector {
+        var accumulator = try self.allocator.alloc(f64, self.dim);
+        defer self.allocator.free(accumulator);
+        @memset(accumulator, 0.0);
+
+        var temp = try HyperVector.init(self.allocator, self.dim);
+        defer temp.deinit();
+
+        // Collect tokens
+        var token_list = std.ArrayList([]const u8).init(self.allocator);
+        defer token_list.deinit();
+
+        var tokens = std.mem.tokenizeAny(u8, text, " \t\n\r");
+        while (tokens.next()) |token| {
+            try token_list.append(token);
+        }
+
+        const token_arr = token_list.items;
+
+        // Process unigrams with TF-IDF weighting
+        for (token_arr, 0..) |token, pos| {
+            const token_vec = try self.getTokenVector(token);
+            const weight = self.getIdfWeight(token);
+
+            hdc.permute(token_vec, pos, temp.data);
+
+            for (0..self.dim) |i| {
+                accumulator[i] += weight * @as(f64, @floatFromInt(temp.data[i]));
+            }
+        }
+
+        // Process bigrams
+        if (self.config.use_bigrams and token_arr.len >= 2) {
+            for (0..token_arr.len - 1) |i| {
+                // Create bigram by binding two consecutive tokens
+                const t1_vec = try self.getTokenVector(token_arr[i]);
+                const t2_vec = try self.getTokenVector(token_arr[i + 1]);
+
+                // Bind t1 and t2 for bigram
+                for (0..self.dim) |j| {
+                    const bound: Trit = t1_vec[j] * t2_vec[j];
+                    accumulator[j] += self.config.ngram_weight * @as(f64, @floatFromInt(bound));
+                }
+            }
+        }
+
+        // Process trigrams
+        if (self.config.use_trigrams and token_arr.len >= 3) {
+            for (0..token_arr.len - 2) |i| {
+                const t1_vec = try self.getTokenVector(token_arr[i]);
+                const t2_vec = try self.getTokenVector(token_arr[i + 1]);
+                const t3_vec = try self.getTokenVector(token_arr[i + 2]);
+
+                // Bind t1, t2, t3 for trigram
+                for (0..self.dim) |j| {
+                    const bound: Trit = t1_vec[j] * t2_vec[j] * t3_vec[j];
+                    accumulator[j] += self.config.ngram_weight * 1.2 * @as(f64, @floatFromInt(bound));
+                }
+            }
+        }
+
+        // Quantize to ternary
+        var result = try hdc.zeroVector(self.allocator, self.dim);
+        for (0..self.dim) |i| {
+            if (accumulator[i] > 0.5) {
+                result.data[i] = 1;
+            } else if (accumulator[i] < -0.5) {
+                result.data[i] = -1;
+            } else {
+                result.data[i] = 0;
+            }
+        }
+
+        return result;
+    }
+
+    /// Encode with character-level n-grams (for robustness)
+    pub fn encodeWithCharNgrams(self: *EnhancedTextEncoder, text: []const u8) !HyperVector {
+        var accumulator = try self.allocator.alloc(f64, self.dim);
+        defer self.allocator.free(accumulator);
+        @memset(accumulator, 0.0);
+
+        // Word-level encoding
+        var word_vec = try self.encode(text);
+        defer word_vec.deinit();
+
+        for (0..self.dim) |i| {
+            accumulator[i] += @as(f64, @floatFromInt(word_vec.data[i]));
+        }
+
+        // Character trigrams (3-grams)
+        if (text.len >= 3) {
+            for (0..text.len - 2) |i| {
+                const trigram = text[i .. i + 3];
+                var hasher = std.hash.Wyhash.init(12345); // Different seed for char n-grams
+                hasher.update(trigram);
+                const seed = hasher.final();
+
+                var rng = std.Random.DefaultPrng.init(seed);
+                const random = rng.random();
+
+                for (0..self.dim) |j| {
+                    const trit: f64 = @floatFromInt(random.intRangeAtMost(i8, -1, 1));
+                    accumulator[j] += 0.3 * trit; // Lower weight for char n-grams
+                }
+            }
+        }
+
+        // Quantize
+        var result = try hdc.zeroVector(self.allocator, self.dim);
+        for (0..self.dim) |i| {
+            if (accumulator[i] > 0.5) {
+                result.data[i] = 1;
+            } else if (accumulator[i] < -0.5) {
+                result.data[i] = -1;
+            } else {
+                result.data[i] = 0;
+            }
         }
 
         return result;
