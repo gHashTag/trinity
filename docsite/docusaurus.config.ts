@@ -32,6 +32,7 @@ const config: Config = {
       'classic',
       {
         docs: {
+          routeBasePath: '/',
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/gHashTag/trinity/tree/main/docsite/',
         },
@@ -76,9 +77,9 @@ const config: Config = {
         {
           title: 'Docs',
           items: [
-            {label: 'Getting Started', to: '/docs/getting-started/quickstart'},
-            {label: 'API Reference', to: '/docs/api/'},
-            {label: 'Troubleshooting', to: '/docs/troubleshooting'},
+            {label: 'Getting Started', to: '/getting-started/quickstart'},
+            {label: 'API Reference', to: '/api/'},
+            {label: 'Troubleshooting', to: '/troubleshooting'},
           ],
         },
         {
@@ -91,7 +92,7 @@ const config: Config = {
         {
           title: 'More',
           items: [
-            {label: 'Contributing', to: '/docs/contributing'},
+            {label: 'Contributing', to: '/contributing'},
           ],
         },
       ],
