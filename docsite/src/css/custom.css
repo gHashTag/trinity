@@ -1,62 +1,289 @@
-:root {
-  --ifm-color-primary: #00FF88;
-  --ifm-color-primary-dark: #00CC66;
-  --ifm-color-primary-darker: #00B35A;
-  --ifm-color-primary-darkest: #008542;
-  --ifm-color-primary-light: #33FF9F;
-  --ifm-color-primary-lighter: #66FFB7;
-  --ifm-color-primary-lightest: #99FFCF;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 255, 136, 0.1);
+/*
+ * Trinity Docsite Theme
+ * Matches landing page: black bg, white/grey text, subtle green accent
+ */
 
-  /* Trinity custom colors */
+:root {
+  --ifm-color-primary: #00CC66;
+  --ifm-color-primary-dark: #00b35a;
+  --ifm-color-primary-darker: #00a854;
+  --ifm-color-primary-darkest: #008a45;
+  --ifm-color-primary-light: #00e572;
+  --ifm-color-primary-lighter: #0df27e;
+  --ifm-color-primary-lightest: #33ff9f;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 255, 136, 0.08);
+
+  /* Trinity palette (from landing page) */
+  --trinity-bg: #0a1a0f;
+  --trinity-surface: #0f1f14;
+  --trinity-text: #FFFFFF;
+  --trinity-muted: #888888;
+  --trinity-border: rgba(255, 255, 255, 0.08);
+  --trinity-accent: #00FF88;
   --trinity-golden: #ffd700;
   --trinity-golden-dark: #b8860b;
-  --trinity-bg-dark: #0a1a0f;
-  --trinity-muted: #888888;
-  --trinity-accent: #00FF88;
-  --trinity-red: #FF6B6B;
 }
 
-[data-theme='dark'] {
-  --ifm-color-primary: #00FF88;
-  --ifm-color-primary-dark: #00CC66;
-  --ifm-color-primary-darker: #00B35A;
-  --ifm-color-primary-darkest: #008542;
-  --ifm-color-primary-light: #33FF9F;
-  --ifm-color-primary-lighter: #66FFB7;
-  --ifm-color-primary-lightest: #99FFCF;
+/* Force dark theme everywhere */
+[data-theme='dark'],
+:root {
   --ifm-background-color: #0a1a0f;
   --ifm-background-surface-color: #0f1f14;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 255, 136, 0.2);
+  --ifm-font-color-base: #e0e0e0;
+  --ifm-font-color-secondary: #888888;
+  --ifm-heading-color: #FFFFFF;
+  --ifm-link-color: #00CC66;
+  --ifm-link-hover-color: #00FF88;
+  --ifm-menu-color: #c0c0c0;
+  --ifm-menu-color-active: #FFFFFF;
+  --ifm-menu-color-background-active: rgba(255, 255, 255, 0.05);
+  --ifm-menu-color-background-hover: rgba(255, 255, 255, 0.03);
+  --ifm-navbar-background-color: rgba(10, 26, 15, 0.95);
+  --ifm-navbar-link-color: #c0c0c0;
+  --ifm-navbar-link-hover-color: #FFFFFF;
+  --ifm-footer-background-color: rgba(0, 0, 0, 0.95);
+  --ifm-toc-border-color: rgba(255, 255, 255, 0.08);
+  --ifm-color-emphasis-300: rgba(255, 255, 255, 0.12);
+  --ifm-hr-background-color: rgba(255, 255, 255, 0.08);
+  --ifm-table-border-color: rgba(255, 255, 255, 0.08);
+  --ifm-table-stripe-background: rgba(255, 255, 255, 0.02);
+  --ifm-code-background: rgba(255, 255, 255, 0.06);
+  --ifm-global-shadow-lw: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --ifm-global-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --ifm-global-shadow-tl: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 255, 136, 0.06);
+}
+
+/* ---- Global overrides ---- */
+
+html {
+  background-color: #0a1a0f;
+}
+
+body {
+  color: #e0e0e0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #FFFFFF;
+}
+
+p, li {
+  color: #c0c0c0;
+}
+
+a {
+  color: var(--ifm-link-color);
+}
+
+a:hover {
+  color: var(--ifm-link-hover-color);
+}
+
+/* ---- Navbar ---- */
+
+.navbar {
+  background: rgba(10, 26, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.navbar__title {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.navbar__link {
+  color: #c0c0c0;
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: #FFFFFF;
+}
+
+/* ---- Hero ---- */
+
+.hero--primary {
+  background: #0a1a0f;
+  color: #FFFFFF;
 }
 
 .hero__title {
   font-size: 3rem;
-  background: linear-gradient(135deg, #00FF88, #FFD700);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #FFFFFF;
+  background: none;
+  -webkit-text-fill-color: #FFFFFF;
 }
 
 .hero__subtitle {
   font-size: 1.5rem;
+  color: #888888;
 }
+
+.hero .button--secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  border-radius: 999px;
+  transition: all 0.2s;
+}
+
+.hero .button--secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+}
+
+/* ---- Sidebar ---- */
+
+.menu {
+  background: transparent;
+}
+
+.menu__link {
+  color: #888888;
+  border-radius: 6px;
+}
+
+.menu__link:hover {
+  color: #c0c0c0;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.menu__link--active {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu__link--sublist-caret {
+  color: #888888;
+}
+
+.theme-doc-sidebar-container {
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ---- Footer ---- */
 
 .footer {
-  background-color: var(--ifm-color-primary-darkest);
+  background: rgba(0, 0, 0, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+.footer__title {
+  color: #FFFFFF;
+}
+
+.footer__link-item {
+  color: #888888;
+}
+
+.footer__link-item:hover {
+  color: #c0c0c0;
+}
+
+.footer__copyright {
+  color: #555555;
+}
+
+/* ---- Code blocks ---- */
 
 code {
-  background-color: var(--ifm-code-background);
+  background-color: rgba(255, 255, 255, 0.06);
   border-radius: 4px;
   padding: 2px 6px;
+  color: #e0e0e0;
 }
 
-/* Theorem card styling with golden accent */
+.prism-code {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+/* ---- Tables ---- */
+
+table {
+  border-collapse: collapse;
+}
+
+table th {
+  background: rgba(255, 255, 255, 0.04);
+  color: #FFFFFF;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #c0c0c0;
+}
+
+table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ---- Breadcrumbs / TOC ---- */
+
+.breadcrumbs__link {
+  color: #888888;
+}
+
+.table-of-contents__link {
+  color: #888888;
+}
+
+.table-of-contents__link:hover,
+.table-of-contents__link--active {
+  color: #FFFFFF;
+}
+
+/* ---- Pagination ---- */
+
+.pagination-nav__link {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+}
+
+.pagination-nav__link:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.pagination-nav__sublabel {
+  color: #888888;
+}
+
+.pagination-nav__label {
+  color: #FFFFFF;
+}
+
+/* ---- Admonitions (alerts) ---- */
+
+.alert {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: #c0c0c0;
+}
+
+/* ---- Search ---- */
+
+.DocSearch-Button {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #888888;
+}
+
+/* ================================================================
+   Custom card components -- subtle, not acid
+   ================================================================ */
+
+/* Theorem card -- subtle golden border, barely visible bg */
 .theorem-card {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(184, 134, 11, 0.05) 100%);
-  border: 1px solid var(--trinity-golden);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 215, 0, 0.15);
   border-radius: 8px;
   padding: 1.5rem;
   margin: 1rem 0;
@@ -69,69 +296,71 @@ code {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--trinity-golden), var(--trinity-golden-dark));
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.4), rgba(255, 215, 0, 0.1));
   border-radius: 8px 8px 0 0;
 }
 
 .theorem-card h4 {
-  color: var(--trinity-golden);
+  color: #ffd700;
   margin-top: 0;
+  font-weight: 600;
 }
 
-/* Green accent card */
+/* Green card -- subtle green border */
 .green-card {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.08) 0%, rgba(0, 204, 102, 0.04) 100%);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(0, 255, 136, 0.12);
   border-radius: 8px;
   padding: 1.5rem;
   margin: 1rem 0;
 }
 
 .green-card h4 {
-  color: var(--trinity-accent);
+  color: #00CC66;
   margin-top: 0;
+  font-weight: 600;
 }
 
-/* Formula styling */
+/* Formula -- subtle, understated */
 .formula {
   font-family: 'Times New Roman', serif;
   font-size: 1.25rem;
   text-align: center;
   padding: 1rem;
-  background: rgba(0, 255, 136, 0.05);
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 4px;
   margin: 1rem 0;
+  color: #e0e0e0;
 }
 
 .formula-golden {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(184, 134, 11, 0.05) 100%);
-  border-left: 3px solid var(--trinity-golden);
+  border-left: 2px solid rgba(255, 215, 0, 0.3);
 }
 
 .formula-green {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 204, 102, 0.05) 100%);
-  border-left: 3px solid var(--trinity-accent);
+  border-left: 2px solid rgba(0, 255, 136, 0.2);
 }
 
 /* Sacred math section */
 .sacred-math {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.02) 0%, transparent 100%);
+  background: rgba(255, 255, 255, 0.01);
   padding: 2rem;
   border-radius: 12px;
   margin: 2rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* VIBEE code block styling */
+/* VIBEE code block */
 .vibee-spec {
-  border-left: 3px solid var(--ifm-color-primary);
-  background: rgba(0, 255, 136, 0.03);
+  border-left: 2px solid rgba(0, 204, 102, 0.3);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-/* Metric card */
+/* Metric card -- very subtle */
 .metric-card {
-  background: rgba(0, 255, 136, 0.08);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
@@ -141,77 +370,61 @@ code {
 .metric-card .value {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--trinity-accent);
-  text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+  color: #FFFFFF;
 }
 
 .metric-card .label {
   font-size: 0.85rem;
-  color: var(--trinity-muted);
+  color: #888888;
   margin-top: 0.3rem;
 }
 
-/* Animation for interactive elements */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
-}
-
-@keyframes golden-pulse {
-  0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
-}
-
-.glow-effect {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.golden-glow {
-  animation: golden-pulse 2s ease-in-out infinite;
-}
-
-/* Constants table styling */
+/* Constants table */
 .constants-table {
   border-collapse: collapse;
   width: 100%;
 }
 
 .constants-table th {
-  background: linear-gradient(135deg, var(--ifm-color-primary), var(--ifm-color-primary-dark));
-  color: #000;
+  background: rgba(255, 255, 255, 0.04);
+  color: #FFFFFF;
   padding: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .constants-table td {
   padding: 10px;
-  border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #c0c0c0;
 }
 
 .constants-table tr:hover {
-  background: rgba(0, 255, 136, 0.05);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-/* Badge styling */
+/* Badge -- small, understated */
 .badge-green {
-  background: var(--trinity-accent);
-  color: #000;
-  padding: 0.25rem 0.75rem;
+  background: rgba(0, 204, 102, 0.15);
+  color: #00CC66;
+  padding: 0.2rem 0.6rem;
   border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(0, 204, 102, 0.2);
 }
 
 .badge-golden {
-  background: var(--trinity-golden);
-  color: #000;
-  padding: 0.25rem 0.75rem;
+  background: rgba(255, 215, 0, 0.1);
+  color: #ffd700;
+  padding: 0.2rem 0.6rem;
   border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 215, 0, 0.15);
 }
 
-/* Chain link visual */
+/* Chain link */
 .chain-link {
   position: relative;
   padding-left: 2rem;
@@ -219,7 +432,42 @@ code {
 }
 
 .chain-link::before {
-  content: '⛓';
+  content: '\26D3';
   position: absolute;
   left: 0;
+}
+
+/* No animations -- keep it calm */
+
+/* ---- Features section (homepage) ---- */
+
+.features_cAfv {
+  background: transparent;
+}
+
+.features_cAfv h3 {
+  color: #FFFFFF;
+}
+
+.features_cAfv p {
+  color: #888888;
+}
+
+/* ---- Scrollbar ---- */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
