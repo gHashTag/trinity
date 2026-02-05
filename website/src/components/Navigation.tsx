@@ -39,7 +39,7 @@ export default memo(function Navigation() {
         </a>
       ))}
       <a
-        href="https://gHashTag.github.io/trinity/"
+        href="/trinity/docs/"
         target="_blank"
         rel="noopener noreferrer"
         style={{ color: 'var(--accent)', fontWeight: 600 }}
