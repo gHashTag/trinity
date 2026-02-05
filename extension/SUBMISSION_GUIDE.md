@@ -121,6 +121,16 @@ Common rejection reasons:
 | `SCREENSHOT_GUIDE.md` | Instructions for screenshots |
 | `ASSETS_CHECKLIST.md` | Asset requirements checklist |
 
+## Firefox Add-ons Submission
+
+For Firefox submission, see [FIREFOX_SUBMISSION_GUIDE.md](FIREFOX_SUBMISSION_GUIDE.md).
+
+Quick summary:
+1. Register at https://addons.mozilla.org/developers/
+2. Upload `neodetect-firefox-v2.0.0.zip`
+3. Fill in add-on details
+4. Submit for review (1-7 days)
+
 ## Support
 
 - GitHub Issues: https://github.com/gHashTag/trinity/issues
