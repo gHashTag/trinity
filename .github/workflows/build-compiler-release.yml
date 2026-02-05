@@ -8,6 +8,8 @@ on:
   push:
     tags:
       - 'v*'
+      - 'compiler-v*'
+      - '!ext-v*'
   workflow_dispatch:
 
 env:

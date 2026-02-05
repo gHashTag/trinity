@@ -1,12 +1,12 @@
 # NeoDetect Extension Release Workflow
-# Triggers on version tags (v*) and creates GitHub Release with artifacts
+# Triggers on extension-specific tags (ext-v*) to avoid conflicts with other releases
 
 name: Extension Release
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'ext-v*'
   workflow_dispatch:
     inputs:
       version:
@@ -31,10 +31,11 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             VERSION="${{ github.event.inputs.version }}"
           else
-            VERSION="${GITHUB_REF#refs/tags/v}"
+            # Remove ext-v prefix from tag (ext-v2.0.0 -> 2.0.0)
+            VERSION="${GITHUB_REF#refs/tags/ext-v}"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Building version: $VERSION"
+          echo "Building extension version: $VERSION"
       
       - name: Setup Zig
         uses: goto-bus-stop/setup-zig@v2
