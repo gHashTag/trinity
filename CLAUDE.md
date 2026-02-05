@@ -204,15 +204,28 @@ behaviors:
 
 ```
 φ = (1 + √5) / 2 ≈ 1.618      (Golden Ratio)
-φ² + 1/φ² = 3 = TRINITY       (Trinity Identity)
-3²¹ = 10,460,353,203          (Phoenix Number - Total $TRI supply)
-V = n × 3^k × π^m × φ^p × e^q (Sakra Formula)
+φ² + 1/φ² = 3                 (Trinity Identity - proven algebraically)
+3²¹ = 10,460,353,203          (Total $TRI token supply)
 ```
 
-Ternary {-1, 0, +1} is mathematically optimal:
-- Information density: 1.58 bits/trit (vs 1 bit/binary)
-- Memory savings: 20x vs float32
-- Compute: Add-only (no multiply)
+### Trinity Identity Proof
+
+From φ² = φ + 1 and 1/φ = φ - 1:
+```
+φ² + 1/φ² = (φ + 1) + (2 - φ) = 3  ∎
+```
+
+### Ternary Optimality
+
+Ternary {-1, 0, +1} is mathematically optimal (Hayes, 2001):
+- Information density: log₂(3) = 1.585 bits/trit (vs 1 bit/binary)
+- Optimal radix: e ≈ 2.718, nearest integer = 3
+- Memory savings: 20x vs float32 for neural network weights
+
+**References**:
+- Shannon, C.E. (1948). A Mathematical Theory of Communication
+- Hayes, B. (2001). Third Base. *American Scientist*
+- Kanerva, P. (2009). Hyperdimensional Computing
 
 ---
 
@@ -299,4 +312,4 @@ Repository: https://github.com/frankbria/ralph-claude-code
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**
+**φ² + 1/φ² = 3**
