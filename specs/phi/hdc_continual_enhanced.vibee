@@ -1,0 +1,163 @@
+name: hdc_continual_enhanced
+version: "1.0.0"
+language: zig
+module: hdc_continual_enhanced
+
+description: |
+  Enhanced HDC Continual Learning with 10+ phases.
+  Demonstrates no catastrophic forgetting - old prototypes remain untouched.
+  
+  Key Properties:
+  - Prototype independence: Each class has its own prototype vector
+  - No weight sharing: Unlike neural nets, no shared parameters to corrupt
+  - Incremental learning: New classes added without retraining old ones
+  - Forgetting measurement: Track accuracy on old classes after new learning
+  
+  Scientific Basis:
+  - Kanerva (2009): Hyperdimensional Computing
+  - Rahimi et al. (2016): Brain-Inspired Hyperdimensional Computing
+  
+  Mathematical Foundation:
+  - φ² + 1/φ² = 3 (Trinity Identity)
+  - Interference = max(cosine_similarity(proto_i, proto_j)) for i ≠ j
+  - Forgetting = accuracy_before - accuracy_after for old classes
+
+constants:
+  VECTOR_DIM: 10000
+  LEARNING_RATE: 0.3
+  NUM_PHASES: 10
+  SAMPLES_PER_PHASE: 50
+  TEST_SAMPLES_PER_CLASS: 20
+  INTERFERENCE_THRESHOLD: 0.05
+  FORGETTING_THRESHOLD: 0.1
+
+types:
+  Phase:
+    description: "Learning phase with new classes"
+    fields:
+      phase_id: Int
+      class_labels: List<String>
+      train_samples: List<Sample>
+      test_samples: List<Sample>
+
+  Sample:
+    description: "Training/test sample"
+    fields:
+      text: String
+      label: String
+
+  PhaseResult:
+    description: "Results after completing a phase"
+    fields:
+      phase_id: Int
+      new_class_accuracy: Float
+      old_class_accuracy: Float
+      forgetting: Float
+      interference: Float
+      total_classes: Int
+
+  ContinualMetrics:
+    description: "Overall continual learning metrics"
+    fields:
+      phases_completed: Int
+      total_classes: Int
+      avg_forgetting: Float
+      max_forgetting: Float
+      avg_interference: Float
+      max_interference: Float
+      final_accuracy: Float
+
+  ContinualLearner:
+    description: "HDC continual learning system"
+    fields:
+      encoder: TextEncoder
+      prototypes: Map<String, Prototype>
+      phase_history: List<PhaseResult>
+      dim: Int
+
+behaviors:
+  # Initialization
+  - name: create_continual_learner
+    given: Dimension and encoder config
+    when: Initializing continual learning system
+    then: Returns ContinualLearner with empty prototypes
+
+  # Phase Management
+  - name: create_phase
+    given: Phase ID and list of class labels
+    when: Setting up new learning phase
+    then: Returns Phase with generated samples
+
+  - name: run_phase
+    given: ContinualLearner and Phase
+    when: Learning new classes in phase
+    then: Returns PhaseResult with accuracy and forgetting metrics
+
+  # Learning
+  - name: learn_class
+    given: ContinualLearner, class label, and samples
+    when: Training prototype for new class
+    then: Updates learner with new prototype
+
+  - name: test_class
+    given: ContinualLearner, class label, and test samples
+    when: Evaluating accuracy on specific class
+    then: Returns accuracy percentage
+
+  # Metrics
+  - name: measure_forgetting
+    given: ContinualLearner and old class labels
+    when: Checking if old knowledge is retained
+    then: Returns forgetting score (0 = no forgetting)
+
+  - name: measure_interference
+    given: ContinualLearner
+    when: Checking prototype independence
+    then: Returns max cosine similarity between any two prototypes
+
+  - name: get_continual_metrics
+    given: ContinualLearner
+    when: Summarizing all phases
+    then: Returns ContinualMetrics
+
+  # Comparison
+  - name: compare_to_neural_baseline
+    given: ContinualMetrics
+    when: Comparing to typical neural net forgetting
+    then: Returns comparison table
+
+tests:
+  - name: test_10_phases_no_catastrophic_forgetting
+    input:
+      num_phases: 10
+      classes_per_phase: 2
+    expected:
+      max_forgetting: < 0.1
+      all_phases_complete: true
+
+  - name: test_prototype_independence
+    input:
+      num_classes: 20
+    expected:
+      max_interference: < 0.05
+
+  - name: test_old_prototypes_untouched
+    input:
+      phase_1_classes: ["spam", "ham"]
+      phase_2_classes: ["tech", "sports"]
+    expected:
+      phase_1_prototypes_unchanged: true
+
+  - name: test_incremental_accuracy
+    input:
+      phases: 10
+      samples_per_class: 50
+    expected:
+      final_accuracy: > 0.6
+
+  - name: test_scalability
+    input:
+      total_classes: 50
+    expected:
+      memory_linear: true
+      time_linear: true
