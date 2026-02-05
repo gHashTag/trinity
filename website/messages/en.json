@@ -88,7 +88,7 @@
       }
     ],
     "cta": "Read Full Mathematical Proofs",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/research/SACRED_FORMULA_COMPLETE_v2.md",
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/MATH_FOUNDATIONS.md",
     "reportsTitle": "Verified Benchmark Reports",
     "reports": [
       { "name": "Ternary Quantization Report", "url": "https://github.com/gHashTag/trinity/blob/main/docs/ternary_quant_report.md", "highlight": "15.7× compression" },
@@ -402,7 +402,7 @@
     "title": "Ternary <span class=\"grad\">Ecosystem .TRI</span>",
     "sub": "Transmuted the entire .vibee knowledge base into native .tri format.",
     "quote": "«ⲁⲃⲅ» is not text. It is a configuration of qutrits. We removed the final barrier between thought and action.",
-    "formula": "Sacred Formula V5: V = n × 3^k × π^m × φ^p × e^q",
+    "formula": "Parametric Formula: V = n × 3^k × π^m × φ^p × e^q",
     "items": [
       { "title": "Coptic Compiler", "desc": "TNC V1.0 • Direct Triad generation from alphabet" },
       { "title": "Native Knowledge", "desc": "20,645 .tri files • Native knowledge base" },
@@ -620,7 +620,7 @@
     "cards": [
       { "value": "$3M", "label": "for 1% equity" },
       { "value": "$300M", "label": "valuation" },
-      { "value": "3²¹", "label": "Phoenix Number" },
+      { "value": "3²¹", "label": "Token Supply" },
       { "value": "99%", "label": "founder ownership" },
       { "value": "578×", "label": "energy efficiency" },
       { "value": "∞", "label": "potential" }
@@ -750,9 +750,9 @@
     "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
   },
   "phoenixNumber": {
-    "badge": "SACRED MATHEMATICS",
-    "title": "Phoenix Number <span class=\"grad\">3²¹</span>",
-    "sub": "Total Supply derived from sacred mathematics of the universe",
+    "badge": "MATHEMATICAL FOUNDATION",
+    "title": "Token Supply <span class=\"grad\">3²¹</span>",
+    "sub": "Total Supply derived from ternary mathematics",
     "supply": {
       "value": "10,460,353,203",
       "label": "$TRI Total Supply",
@@ -765,14 +765,14 @@
     },
     "formulas": [
       {
-        "title": "Sacred Formula",
+        "title": "Parametric Formula",
         "formula": "V = n × 3ᵏ × πᵐ × φᵖ × eᵍ",
-        "desc": "Universal value equation"
+        "desc": "Approximation formula for constants"
       },
       {
-        "title": "Phoenix Number",
+        "title": "Token Supply",
         "formula": "3²¹ = 10,460,353,203",
-        "desc": "3 = TRINITY, 21 = 3×7 (Trinity × Sacred Seven)"
+        "desc": "3 = Ternary base, 21 = Bitcoin-inspired levels"
       },
       {
         "title": "Transcendental Product",
@@ -841,7 +841,7 @@
       },
       {
         "title": "Golden Ratio Identity",
-        "description": "The sacred formula φ² + 1/φ² = 3 connects golden ratio to ternary. This identity underlies optimal information encoding.",
+        "description": "The mathematical identity φ² + 1/φ² = 3 connects golden ratio to ternary. This identity underlies optimal information encoding.",
         "formula": "φ² + 1/φ² = 3 = TRINITY"
       },
       {
