@@ -95,5 +95,5 @@ zig test src/vsa.zig  # Bypasses build.zig
 
 ## Next Steps
 
-- [Quick Start](/docs/getting-started/quickstart) — First steps
-- [Development Setup](/docs/getting-started/development-setup) — IDE configuration
+- [Quick Start](/getting-started/quickstart) — First steps
+- [Development Setup](/getting-started/development-setup) — IDE configuration

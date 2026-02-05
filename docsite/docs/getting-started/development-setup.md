@@ -73,5 +73,5 @@ lldb ./zig-out/bin/trinity-bench
 
 ## Next Steps
 
-- [API Reference](/docs/api/) — Module documentation
-- [Contributing](/docs/contributing) — Contribution guidelines
+- [API Reference](/api/) — Module documentation
+- [Contributing](/contributing) — Contribution guidelines
