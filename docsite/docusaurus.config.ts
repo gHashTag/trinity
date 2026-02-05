@@ -13,7 +13,7 @@ const config: Config = {
 
   // GitHub Pages deployment
   url: 'https://gHashTag.github.io',
-  baseUrl: '/trinity/',
+  baseUrl: '/trinity/docs/',
   organizationName: 'gHashTag',
   projectName: 'trinity',
   deploymentBranch: 'gh-pages',
