@@ -32,7 +32,7 @@ const Vec16f32 = @Vector(16, f32);
 
 /// Number of threads for parallel matmul
 const MAX_MATMUL_THREADS: usize = 16;
-const MIN_ROWS_PER_THREAD: usize = 128; // Increased to reduce thread overhead
+const MIN_ROWS_PER_THREAD: usize = 32; // Lowered from 128 for better multi-core utilization
 
 fn getNumThreads() usize {
     return @min(MAX_MATMUL_THREADS, std.Thread.getCpuCount() catch 2);
@@ -388,7 +388,17 @@ pub const BitNetFullModel = struct {
     
     // Ternary buffers (reused)
     ternary_weights: []i8,
-    
+
+    // Pre-allocated inference buffers (avoid per-token allocation)
+    buf_normed: []f32,
+    buf_q: []f32,
+    buf_k: []f32,
+    buf_v: []f32,
+    buf_o_out: []f32,
+    buf_up_out: []f32,
+    buf_down_out: []f32,
+    buf_attn_weights: []f32, // max_seq_len * num_heads
+
     // KV-Cache for attention
     kv_cache: ?KVCache,
     
@@ -418,7 +428,8 @@ pub const BitNetFullModel = struct {
         
         // Allocate buffers
         const max_weight_size = @max(hidden * hidden, inter * hidden);
-        
+        const max_seq_len: usize = 4096; // Pre-allocate for max sequence
+
         return BitNetFullModel{
             .allocator = allocator,
             .config = config,
@@ -430,6 +441,14 @@ pub const BitNetFullModel = struct {
             .ffn_intermediate = try allocator.alloc(f32, inter),
             .logits = try allocator.alloc(f32, vocab),
             .ternary_weights = try allocator.alloc(i8, max_weight_size),
+            .buf_normed = try allocator.alloc(f32, hidden),
+            .buf_q = try allocator.alloc(f32, hidden),
+            .buf_k = try allocator.alloc(f32, hidden),
+            .buf_v = try allocator.alloc(f32, hidden),
+            .buf_o_out = try allocator.alloc(f32, hidden),
+            .buf_up_out = try allocator.alloc(f32, inter),
+            .buf_down_out = try allocator.alloc(f32, hidden),
+            .buf_attn_weights = try allocator.alloc(f32, max_seq_len * config.num_attention_heads),
             .kv_cache = null,
         };
     }
@@ -461,6 +480,14 @@ pub const BitNetFullModel = struct {
         self.allocator.free(self.ffn_intermediate);
         self.allocator.free(self.logits);
         self.allocator.free(self.ternary_weights);
+        self.allocator.free(self.buf_normed);
+        self.allocator.free(self.buf_q);
+        self.allocator.free(self.buf_k);
+        self.allocator.free(self.buf_v);
+        self.allocator.free(self.buf_o_out);
+        self.allocator.free(self.buf_up_out);
+        self.allocator.free(self.buf_down_out);
+        self.allocator.free(self.buf_attn_weights);
         
         // Free KV-cache
         if (self.kv_cache) |*cache| {
@@ -649,13 +676,57 @@ pub const BitNetFullModel = struct {
         }
     }
     
+    /// SIMD dot product for attention scores (8-wide vectorized)
+    inline fn simdDot(a: []const f32, b: []const f32, len: usize) f32 {
+        var sum0: Vec8f32 = @splat(0.0);
+        var sum1: Vec8f32 = @splat(0.0);
+        var scalar: f32 = 0.0;
+        var j: usize = 0;
+
+        while (j + 16 <= len) : (j += 16) {
+            const a0: Vec8f32 = a[j..][0..8].*;
+            const a1: Vec8f32 = a[j + 8 ..][0..8].*;
+            const b0: Vec8f32 = b[j..][0..8].*;
+            const b1: Vec8f32 = b[j + 8 ..][0..8].*;
+            sum0 += a0 * b0;
+            sum1 += a1 * b1;
+        }
+        while (j + 8 <= len) : (j += 8) {
+            const av: Vec8f32 = a[j..][0..8].*;
+            const bv: Vec8f32 = b[j..][0..8].*;
+            sum0 += av * bv;
+        }
+        sum0 += sum1;
+        scalar = @reduce(.Add, sum0);
+        while (j < len) : (j += 1) {
+            scalar += a[j] * b[j];
+        }
+        return scalar;
+    }
+
+    /// SIMD weighted accumulate: output[d] += weight * src[d]
+    inline fn simdWeightedAdd(output: []f32, src: []const f32, weight: f32, len: usize) void {
+        const w_vec: Vec8f32 = @splat(weight);
+        var j: usize = 0;
+        while (j + 8 <= len) : (j += 8) {
+            var out_v: Vec8f32 = output[j..][0..8].*;
+            const src_v: Vec8f32 = src[j..][0..8].*;
+            out_v += w_vec * src_v;
+            output[j..][0..8].* = out_v;
+        }
+        while (j < len) : (j += 1) {
+            output[j] += weight * src[j];
+        }
+    }
+
     /// Forward pass for a single token with KV-cache
+    /// Optimized: pre-allocated buffers, SIMD attention, vectorized LM head
     pub fn forward(self: *BitNetFullModel, token_id: u32, position: usize) void {
         const hidden = self.config.hidden_size;
         const inter = self.config.intermediate_size;
         const head_dim = self.config.headDim();
         const num_heads = self.config.num_attention_heads;
-        
+
         // 1. Embedding lookup
         const embed_start = @as(usize, token_id) * hidden;
         if (embed_start + hidden > self.embed_tokens.len) {
@@ -663,187 +734,171 @@ pub const BitNetFullModel = struct {
             return;
         }
         @memcpy(self.hidden_state, self.embed_tokens[embed_start..embed_start + hidden]);
-        
+
+        // Pre-allocated buffers (zero-alloc forward pass)
+        const normed = self.buf_normed;
+        const q = self.buf_q;
+        const k_buf = self.buf_k;
+        const v_buf = self.buf_v;
+        const o_out = self.buf_o_out;
+        const up_out = self.buf_up_out;
+        const down_out = self.buf_down_out;
+
         // 2. Process each layer
         for (self.layers, 0..) |layer, layer_idx| {
-            // Skip if layer not loaded
             if (layer.q_proj.len == 0) continue;
-            
+
             // Input LayerNorm
-            const normed = self.allocator.alloc(f32, hidden) catch return;
-            defer self.allocator.free(normed);
             rmsNorm(self.hidden_state, layer.input_layernorm, normed, self.config.rms_norm_eps);
-            
-            // ═══════════════════════════════════════════════════════════════
-            // ACTIVATION QUANTIZATION: 8-bit per-token before Q/K/V projections
-            // BitNet model trained with quantized activations - must match
-            // ═══════════════════════════════════════════════════════════════
+
+            // Activation quantization: 8-bit before Q/K/V
             _ = quantizeActivationsInPlace(normed);
 
-            // Compute Q, K, V
-            const q = self.allocator.alloc(f32, hidden) catch return;
-            defer self.allocator.free(q);
-            const k_buf = self.allocator.alloc(f32, hidden) catch return;
-            defer self.allocator.free(k_buf);
-            const v_buf = self.allocator.alloc(f32, hidden) catch return;
-            defer self.allocator.free(v_buf);
-            
-            // Q projection
+            // Q, K, V projections (multi-threaded SIMD matmul)
             f32MatVec(layer.q_proj, normed, q, hidden, hidden);
-            
-            // K projection
             f32MatVec(layer.k_proj, normed, k_buf, hidden, hidden);
-            
-            // V projection
             f32MatVec(layer.v_proj, normed, v_buf, hidden, hidden);
-            
+
             // Apply RoPE to Q and K
             for (0..num_heads) |h| {
                 const start = h * head_dim;
                 applyRoPE(q[start..start + head_dim], k_buf[start..start + head_dim], position, head_dim, self.config.rope_theta);
             }
-            
+
             // Store K, V in cache
             if (self.kv_cache) |*cache| {
                 cache.store(layer_idx, k_buf, v_buf);
             }
-            
+
             // Inner attention LayerNorm
             rmsNorm(q, layer.inner_attn_ln, q, self.config.rms_norm_eps);
-            
-            // Full self-attention with KV-cache
+
+            // Self-attention with KV-cache (SIMD-optimized)
             const seq_len = if (self.kv_cache) |cache| cache.current_len + 1 else 1;
-            const attn_weights = self.allocator.alloc(f32, seq_len * num_heads) catch return;
-            defer self.allocator.free(attn_weights);
-            
-            // Compute attention scores for all positions
+            const attn_weights = self.buf_attn_weights;
+            const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(head_dim)));
+
+            // Compute attention scores (SIMD dot products)
             for (0..num_heads) |h| {
                 const h_start = h * head_dim;
-                
+                const q_head = q[h_start..h_start + head_dim];
+
                 for (0..seq_len) |pos| {
-                    var dot: f32 = 0.0;
-                    
-                    if (pos < position) {
-                        // Use cached K
+                    const k_head = if (pos < position) blk: {
                         if (self.kv_cache) |*cache| {
                             const cached_k = cache.getK(layer_idx, pos);
-                            for (0..head_dim) |d| {
-                                dot += q[h_start + d] * cached_k[h_start + d];
-                            }
+                            break :blk cached_k[h_start..h_start + head_dim];
                         }
-                    } else {
-                        // Current position K
-                        for (0..head_dim) |d| {
-                            dot += q[h_start + d] * k_buf[h_start + d];
-                        }
-                    }
-                    
-                    attn_weights[h * seq_len + pos] = dot / @sqrt(@as(f32, @floatFromInt(head_dim)));
+                        break :blk k_buf[h_start..h_start + head_dim];
+                    } else k_buf[h_start..h_start + head_dim];
+
+                    attn_weights[h * seq_len + pos] = simdDot(q_head, k_head, head_dim) * scale;
                 }
-                
+
                 // Softmax per head
                 softmax(attn_weights[h * seq_len .. (h + 1) * seq_len]);
             }
-            
-            // Weighted sum of V
+
+            // Weighted sum of V (SIMD-optimized)
             @memset(self.attn_output, 0.0);
             for (0..num_heads) |h| {
                 const h_start = h * head_dim;
-                
+
                 for (0..seq_len) |pos| {
                     const weight = attn_weights[h * seq_len + pos];
-                    
-                    if (pos < position) {
-                        // Use cached V
+                    if (weight < 1e-8) continue; // Skip near-zero weights
+
+                    const v_head = if (pos < position) blk: {
                         if (self.kv_cache) |*cache| {
                             const cached_v = cache.getV(layer_idx, pos);
-                            for (0..head_dim) |d| {
-                                self.attn_output[h_start + d] += weight * cached_v[h_start + d];
-                            }
+                            break :blk cached_v[h_start..h_start + head_dim];
                         }
-                    } else {
-                        // Current position V
-                        for (0..head_dim) |d| {
-                            self.attn_output[h_start + d] += weight * v_buf[h_start + d];
-                        }
-                    }
+                        break :blk v_buf[h_start..h_start + head_dim];
+                    } else v_buf[h_start..h_start + head_dim];
+
+                    simdWeightedAdd(self.attn_output[h_start..h_start + head_dim], v_head, weight, head_dim);
                 }
             }
-            
-            // ═══════════════════════════════════════════════════════════════
-            // ACTIVATION QUANTIZATION: 8-bit before O projection
-            // ═══════════════════════════════════════════════════════════════
+
+            // Activation quantization: 8-bit before O projection
             _ = quantizeActivationsInPlace(self.attn_output);
 
             // O projection
-            const o_out = self.allocator.alloc(f32, hidden) catch return;
-            defer self.allocator.free(o_out);
             f32MatVec(layer.o_proj, self.attn_output, o_out, hidden, hidden);
-            
-            // Residual connection
-            for (self.hidden_state, o_out) |*h, o| {
-                h.* += o;
+
+            // Residual connection (SIMD)
+            {
+                var j: usize = 0;
+                while (j + 8 <= hidden) : (j += 8) {
+                    var hv: Vec8f32 = self.hidden_state[j..][0..8].*;
+                    const ov: Vec8f32 = o_out[j..][0..8].*;
+                    hv += ov;
+                    self.hidden_state[j..][0..8].* = hv;
+                }
+                while (j < hidden) : (j += 1) {
+                    self.hidden_state[j] += o_out[j];
+                }
             }
-            
+
             // Post-attention LayerNorm
             rmsNorm(self.hidden_state, layer.post_attention_layernorm, normed, self.config.rms_norm_eps);
-            
-            // ═══════════════════════════════════════════════════════════════
-            // ACTIVATION QUANTIZATION: 8-bit before gate/up projections
-            // ═══════════════════════════════════════════════════════════════
+
+            // Activation quantization: 8-bit before gate/up
             _ = quantizeActivationsInPlace(normed);
 
             // FFN: gate and up projections
             f32MatVec(layer.gate_proj, normed, self.ffn_intermediate, inter, hidden);
-            
-            const up_out = self.allocator.alloc(f32, inter) catch return;
-            defer self.allocator.free(up_out);
             f32MatVec(layer.up_proj, normed, up_out, inter, hidden);
-            
+
             // FFN LayerNorm
             rmsNorm(self.ffn_intermediate, layer.ffn_layernorm, self.ffn_intermediate, self.config.rms_norm_eps);
-            
-            // SwiGLU: silu(gate) * up (standard formula)
-            // silu(x) = x * sigmoid(x)
-            for (self.ffn_intermediate, up_out) |*g, u| {
-                g.* = silu(g.*) * u;
+
+            // SwiGLU: silu(gate) * up (SIMD-friendly)
+            {
+                var j: usize = 0;
+                while (j + 8 <= inter) : (j += 8) {
+                    var g_vec: Vec8f32 = self.ffn_intermediate[j..][0..8].*;
+                    const u_vec: Vec8f32 = up_out[j..][0..8].*;
+                    // silu(x) = x * sigmoid(x) = x / (1 + exp(-x))
+                    var silu_vec: Vec8f32 = undefined;
+                    inline for (0..8) |k| {
+                        silu_vec[k] = silu(g_vec[k]);
+                    }
+                    g_vec = silu_vec * u_vec;
+                    self.ffn_intermediate[j..][0..8].* = g_vec;
+                }
+                while (j < inter) : (j += 1) {
+                    self.ffn_intermediate[j] = silu(self.ffn_intermediate[j]) * up_out[j];
+                }
             }
-            
-            // ═══════════════════════════════════════════════════════════════
-            // ACTIVATION QUANTIZATION: 8-bit before down projection
-            // ═══════════════════════════════════════════════════════════════
+
+            // Activation quantization: 8-bit before down
             _ = quantizeActivationsInPlace(self.ffn_intermediate);
 
             // Down projection
-            const down_out = self.allocator.alloc(f32, hidden) catch return;
-            defer self.allocator.free(down_out);
             f32MatVec(layer.down_proj, self.ffn_intermediate, down_out, hidden, inter);
-            
-            // Residual connection
-            for (self.hidden_state, down_out) |*h, d| {
-                h.* += d;
+
+            // Residual connection (SIMD)
+            {
+                var j: usize = 0;
+                while (j + 8 <= hidden) : (j += 8) {
+                    var hv: Vec8f32 = self.hidden_state[j..][0..8].*;
+                    const dv: Vec8f32 = down_out[j..][0..8].*;
+                    hv += dv;
+                    self.hidden_state[j..][0..8].* = hv;
+                }
+                while (j < hidden) : (j += 1) {
+                    self.hidden_state[j] += down_out[j];
+                }
             }
         }
-        
+
         // 3. Final LayerNorm
         rmsNorm(self.hidden_state, self.norm, self.hidden_state, self.config.rms_norm_eps);
-        
-        // 4. LM Head (tied to embeddings)
-        // logits = hidden_state @ embed_tokens.T
+
+        // 4. LM Head (SIMD-optimized, multi-threaded)
         const vocab = self.config.vocab_size;
-        for (0..vocab) |v| {
-            const embed_start_v = v * hidden;
-            if (embed_start_v + hidden > self.embed_tokens.len) {
-                self.logits[v] = -1000.0;
-                continue;
-            }
-            
-            var dot: f32 = 0.0;
-            for (0..hidden) |d| {
-                dot += self.hidden_state[d] * self.embed_tokens[embed_start_v + d];
-            }
-            self.logits[v] = dot;
-        }
+        f32MatVec(self.embed_tokens, self.hidden_state, self.logits, vocab, hidden);
     }
     
     /// Sample next token from logits
