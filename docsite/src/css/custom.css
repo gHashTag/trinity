@@ -1,68 +1,60 @@
 /*
  * Trinity Docsite Theme
- * Matches landing page: black bg, white/grey text, subtle green accent
+ * Pure black background, white/grey text, minimal accents
  */
 
 :root {
-  --ifm-color-primary: #00CC66;
-  --ifm-color-primary-dark: #00b35a;
-  --ifm-color-primary-darker: #00a854;
-  --ifm-color-primary-darkest: #008a45;
-  --ifm-color-primary-light: #00e572;
-  --ifm-color-primary-lighter: #0df27e;
-  --ifm-color-primary-lightest: #33ff9f;
+  --ifm-color-primary: #4ade80;
+  --ifm-color-primary-dark: #22c55e;
+  --ifm-color-primary-darker: #16a34a;
+  --ifm-color-primary-darkest: #15803d;
+  --ifm-color-primary-light: #86efac;
+  --ifm-color-primary-lighter: #bbf7d0;
+  --ifm-color-primary-lightest: #dcfce7;
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 255, 136, 0.08);
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.05);
 
-  /* Trinity palette (from landing page) */
-  --trinity-bg: #0a1a0f;
-  --trinity-surface: #0f1f14;
-  --trinity-text: #FFFFFF;
+  --trinity-golden: #d4a843;
+  --trinity-golden-dark: #a68532;
   --trinity-muted: #888888;
-  --trinity-border: rgba(255, 255, 255, 0.08);
-  --trinity-accent: #00FF88;
-  --trinity-golden: #ffd700;
-  --trinity-golden-dark: #b8860b;
+  --trinity-accent: #4ade80;
 }
 
-/* Force dark theme everywhere */
+/* Force dark theme */
 [data-theme='dark'],
 :root {
-  --ifm-background-color: #0a1a0f;
-  --ifm-background-surface-color: #0f1f14;
-  --ifm-font-color-base: #e0e0e0;
-  --ifm-font-color-secondary: #888888;
+  --ifm-background-color: #000000;
+  --ifm-background-surface-color: #0a0a0a;
+  --ifm-font-color-base: #d4d4d4;
+  --ifm-font-color-secondary: #737373;
   --ifm-heading-color: #FFFFFF;
-  --ifm-link-color: #00CC66;
-  --ifm-link-hover-color: #00FF88;
-  --ifm-menu-color: #c0c0c0;
+  --ifm-link-color: #a3a3a3;
+  --ifm-link-hover-color: #FFFFFF;
+  --ifm-menu-color: #a3a3a3;
   --ifm-menu-color-active: #FFFFFF;
   --ifm-menu-color-background-active: rgba(255, 255, 255, 0.05);
   --ifm-menu-color-background-hover: rgba(255, 255, 255, 0.03);
-  --ifm-navbar-background-color: rgba(10, 26, 15, 0.95);
-  --ifm-navbar-link-color: #c0c0c0;
+  --ifm-navbar-background-color: #000000;
+  --ifm-navbar-link-color: #a3a3a3;
   --ifm-navbar-link-hover-color: #FFFFFF;
-  --ifm-footer-background-color: rgba(0, 0, 0, 0.95);
-  --ifm-toc-border-color: rgba(255, 255, 255, 0.08);
-  --ifm-color-emphasis-300: rgba(255, 255, 255, 0.12);
-  --ifm-hr-background-color: rgba(255, 255, 255, 0.08);
-  --ifm-table-border-color: rgba(255, 255, 255, 0.08);
+  --ifm-footer-background-color: #000000;
+  --ifm-toc-border-color: rgba(255, 255, 255, 0.06);
+  --ifm-color-emphasis-300: rgba(255, 255, 255, 0.1);
+  --ifm-hr-background-color: rgba(255, 255, 255, 0.06);
+  --ifm-table-border-color: rgba(255, 255, 255, 0.06);
   --ifm-table-stripe-background: rgba(255, 255, 255, 0.02);
-  --ifm-code-background: rgba(255, 255, 255, 0.06);
-  --ifm-global-shadow-lw: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --ifm-global-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --ifm-global-shadow-tl: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --docusaurus-highlighted-code-line-bg: rgba(0, 255, 136, 0.06);
+  --ifm-code-background: rgba(255, 255, 255, 0.05);
+  --ifm-global-shadow-lw: none;
+  --ifm-global-shadow-md: none;
+  --ifm-global-shadow-tl: none;
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.05);
 }
 
-/* ---- Global overrides ---- */
+/* ---- Global ---- */
 
-html {
-  background-color: #0a1a0f;
-}
-
-body {
-  color: #e0e0e0;
+html, body {
+  background-color: #000000;
+  color: #d4d4d4;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -70,7 +62,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 p, li {
-  color: #c0c0c0;
+  color: #a3a3a3;
+}
+
+strong {
+  color: #d4d4d4;
 }
 
 a {
@@ -78,15 +74,18 @@ a {
 }
 
 a:hover {
-  color: var(--ifm-link-hover-color);
+  color: #FFFFFF;
+}
+
+hr {
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 /* ---- Navbar ---- */
 
 .navbar {
-  background: rgba(10, 26, 15, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #000000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: none;
 }
 
@@ -96,7 +95,7 @@ a:hover {
 }
 
 .navbar__link {
-  color: #c0c0c0;
+  color: #a3a3a3;
 }
 
 .navbar__link:hover,
@@ -107,8 +106,7 @@ a:hover {
 /* ---- Hero ---- */
 
 .hero--primary {
-  background: #0a1a0f;
-  color: #FFFFFF;
+  background: #000000;
 }
 
 .hero__title {
@@ -120,12 +118,12 @@ a:hover {
 
 .hero__subtitle {
   font-size: 1.5rem;
-  color: #888888;
+  color: #737373;
 }
 
 .hero .button--secondary {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #FFFFFF;
   border-radius: 999px;
   transition: all 0.2s;
@@ -133,7 +131,7 @@ a:hover {
 
 .hero .button--secondary:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
   color: #FFFFFF;
 }
 
@@ -144,63 +142,63 @@ a:hover {
 }
 
 .menu__link {
-  color: #888888;
+  color: #737373;
   border-radius: 6px;
 }
 
 .menu__link:hover {
-  color: #c0c0c0;
+  color: #a3a3a3;
   background: rgba(255, 255, 255, 0.03);
 }
 
 .menu__link--active {
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   background: rgba(255, 255, 255, 0.05);
 }
 
 .menu__link--sublist-caret {
-  color: #888888;
+  color: #525252;
 }
 
 .theme-doc-sidebar-container {
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* ---- Footer ---- */
 
 .footer {
-  background: rgba(0, 0, 0, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #000000;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .footer__title {
-  color: #FFFFFF;
+  color: #d4d4d4;
 }
 
 .footer__link-item {
-  color: #888888;
+  color: #737373;
 }
 
 .footer__link-item:hover {
-  color: #c0c0c0;
+  color: #a3a3a3;
 }
 
 .footer__copyright {
-  color: #555555;
+  color: #404040;
 }
 
-/* ---- Code blocks ---- */
+/* ---- Code ---- */
 
 code {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
   padding: 2px 6px;
-  color: #e0e0e0;
+  color: #d4d4d4;
 }
 
 .prism-code {
-  background: rgba(0, 0, 0, 0.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 8px;
 }
 
@@ -211,14 +209,14 @@ table {
 }
 
 table th {
-  background: rgba(255, 255, 255, 0.04);
-  color: #FFFFFF;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #d4d4d4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 table td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: #c0c0c0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #a3a3a3;
 }
 
 table tr:hover td {
@@ -228,62 +226,53 @@ table tr:hover td {
 /* ---- Breadcrumbs / TOC ---- */
 
 .breadcrumbs__link {
-  color: #888888;
+  color: #525252;
 }
 
 .table-of-contents__link {
-  color: #888888;
+  color: #525252;
 }
 
 .table-of-contents__link:hover,
 .table-of-contents__link--active {
-  color: #FFFFFF;
+  color: #a3a3a3;
 }
 
 /* ---- Pagination ---- */
 
 .pagination-nav__link {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   background: transparent;
 }
 
 .pagination-nav__link:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.02);
 }
 
 .pagination-nav__sublabel {
-  color: #888888;
+  color: #525252;
 }
 
 .pagination-nav__label {
-  color: #FFFFFF;
+  color: #d4d4d4;
 }
 
-/* ---- Admonitions (alerts) ---- */
+/* ---- Alerts ---- */
 
 .alert {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.02);
-  color: #c0c0c0;
-}
-
-/* ---- Search ---- */
-
-.DocSearch-Button {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #888888;
+  color: #a3a3a3;
 }
 
 /* ================================================================
-   Custom card components -- subtle, not acid
+   Custom components
    ================================================================ */
 
-/* Theorem card -- subtle golden border, barely visible bg */
 .theorem-card {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 1.5rem;
   margin: 1rem 0;
@@ -296,33 +285,31 @@ table tr:hover td {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.4), rgba(255, 215, 0, 0.1));
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 8px 8px 0 0;
 }
 
 .theorem-card h4 {
-  color: #ffd700;
+  color: #d4a843;
   margin-top: 0;
   font-weight: 600;
 }
 
-/* Green card -- subtle green border */
 .green-card {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(0, 255, 136, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 1.5rem;
   margin: 1rem 0;
 }
 
 .green-card h4 {
-  color: #00CC66;
+  color: #4ade80;
   margin-top: 0;
   font-weight: 600;
 }
 
-/* Formula -- subtle, understated */
 .formula {
   font-family: 'Times New Roman', serif;
   font-size: 1.25rem;
@@ -331,36 +318,32 @@ table tr:hover td {
   background: rgba(255, 255, 255, 0.02);
   border-radius: 4px;
   margin: 1rem 0;
-  color: #e0e0e0;
+  color: #d4d4d4;
 }
 
 .formula-golden {
-  border-left: 2px solid rgba(255, 215, 0, 0.3);
+  border-left: 2px solid rgba(212, 168, 67, 0.3);
 }
 
 .formula-green {
-  border-left: 2px solid rgba(0, 255, 136, 0.2);
+  border-left: 2px solid rgba(74, 222, 128, 0.2);
 }
 
-/* Sacred math section */
 .sacred-math {
   background: rgba(255, 255, 255, 0.01);
   padding: 2rem;
   border-radius: 12px;
   margin: 2rem 0;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-/* VIBEE code block */
 .vibee-spec {
-  border-left: 2px solid rgba(0, 204, 102, 0.3);
-  background: rgba(255, 255, 255, 0.02);
+  border-left: 2px solid rgba(74, 222, 128, 0.2);
 }
 
-/* Metric card -- very subtle */
 .metric-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
@@ -375,56 +358,51 @@ table tr:hover td {
 
 .metric-card .label {
   font-size: 0.85rem;
-  color: #888888;
+  color: #525252;
   margin-top: 0.3rem;
 }
 
-/* Constants table */
 .constants-table {
   border-collapse: collapse;
   width: 100%;
 }
 
 .constants-table th {
-  background: rgba(255, 255, 255, 0.04);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.03);
+  color: #d4d4d4;
   padding: 12px;
   font-weight: 600;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .constants-table td {
   padding: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: #c0c0c0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #a3a3a3;
 }
 
 .constants-table tr:hover {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* Badge -- small, understated */
 .badge-green {
-  background: rgba(0, 204, 102, 0.15);
-  color: #00CC66;
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
   padding: 0.2rem 0.6rem;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
-  border: 1px solid rgba(0, 204, 102, 0.2);
 }
 
 .badge-golden {
-  background: rgba(255, 215, 0, 0.1);
-  color: #ffd700;
+  background: rgba(212, 168, 67, 0.1);
+  color: #d4a843;
   padding: 0.2rem 0.6rem;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
-  border: 1px solid rgba(255, 215, 0, 0.15);
 }
 
-/* Chain link */
 .chain-link {
   position: relative;
   padding-left: 2rem;
@@ -437,9 +415,7 @@ table tr:hover td {
   left: 0;
 }
 
-/* No animations -- keep it calm */
-
-/* ---- Features section (homepage) ---- */
+/* ---- Homepage features ---- */
 
 .features_cAfv {
   background: transparent;
@@ -450,7 +426,7 @@ table tr:hover td {
 }
 
 .features_cAfv p {
-  color: #888888;
+  color: #737373;
 }
 
 /* ---- Scrollbar ---- */
@@ -464,10 +440,10 @@ table tr:hover td {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
 }
