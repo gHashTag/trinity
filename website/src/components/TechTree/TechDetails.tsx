@@ -316,7 +316,7 @@ export default function TechDetails({ node, onClose }: TechDetailsProps) {
               </motion.div>
             )}
 
-            {/* X-COM style footer */}
+            {/* Research footer */}
             <div style={{
               marginTop: '3rem',
               padding: '1rem',

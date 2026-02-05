@@ -46,7 +46,7 @@ export default function App() {
         {/* 5. CALCULATOR - ROI with GPU/mining options */}
         <CalculatorSection />
         
-        {/* 6. TECH TREE - X-COM style research laboratory */}
+        {/* 6. TECH TREE - Research laboratory */}
         <TechTree />
         
         {/* 7. TEAM - Trust builder (3 members max) */}
