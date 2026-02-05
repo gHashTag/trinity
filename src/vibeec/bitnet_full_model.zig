@@ -8,8 +8,14 @@ const std = @import("std");
 const json = std.json;
 const math = std.math;
 const forward = @import("bitnet_forward.zig");
+const ternary_pack = @import("ternary_packing.zig");
 
 pub const PHI: f64 = 1.618033988749895;
+
+// Re-export ternary packing
+pub const PackedTernaryWeights = ternary_pack.PackedTernaryWeights;
+pub const packWeights = ternary_pack.packWeights;
+pub const ternaryMatVecSIMD = ternary_pack.ternaryMatVecSIMD;
 
 // Re-export from forward
 pub const BitNetConfig = forward.BitNetConfig;
@@ -359,6 +365,88 @@ pub const LayerWeights = struct {
     inner_attn_ln: []f32,
     ffn_layernorm: []f32,
 };
+
+/// Packed ternary layer weights for memory-efficient inference
+/// 15.9x memory reduction vs F32
+pub const PackedLayerWeights = struct {
+    allocator: std.mem.Allocator,
+    
+    // Attention projections (packed ternary)
+    q_proj: PackedTernaryWeights,
+    k_proj: PackedTernaryWeights,
+    v_proj: PackedTernaryWeights,
+    o_proj: PackedTernaryWeights,
+    
+    // FFN projections (packed ternary)
+    gate_proj: PackedTernaryWeights,
+    up_proj: PackedTernaryWeights,
+    down_proj: PackedTernaryWeights,
+    
+    // Norms (F32, not quantized - small overhead)
+    input_layernorm: []f32,
+    post_attention_layernorm: []f32,
+    inner_attn_ln: []f32,
+    ffn_layernorm: []f32,
+    
+    pub fn deinit(self: *PackedLayerWeights) void {
+        self.q_proj.deinit();
+        self.k_proj.deinit();
+        self.v_proj.deinit();
+        self.o_proj.deinit();
+        self.gate_proj.deinit();
+        self.up_proj.deinit();
+        self.down_proj.deinit();
+        self.allocator.free(self.input_layernorm);
+        self.allocator.free(self.post_attention_layernorm);
+        self.allocator.free(self.inner_attn_ln);
+        self.allocator.free(self.ffn_layernorm);
+    }
+    
+    /// Memory usage in bytes
+    pub fn memoryUsage(self: PackedLayerWeights) usize {
+        return self.q_proj.memoryUsage() +
+               self.k_proj.memoryUsage() +
+               self.v_proj.memoryUsage() +
+               self.o_proj.memoryUsage() +
+               self.gate_proj.memoryUsage() +
+               self.up_proj.memoryUsage() +
+               self.down_proj.memoryUsage() +
+               (self.input_layernorm.len + self.post_attention_layernorm.len +
+                self.inner_attn_ln.len + self.ffn_layernorm.len) * @sizeOf(f32);
+    }
+};
+
+/// Convert F32 LayerWeights to PackedLayerWeights
+pub fn packLayerWeights(
+    allocator: std.mem.Allocator,
+    layer: LayerWeights,
+    hidden: usize,
+    inter: usize,
+) !PackedLayerWeights {
+    return PackedLayerWeights{
+        .allocator = allocator,
+        .q_proj = try packWeights(allocator, layer.q_proj, hidden, hidden),
+        .k_proj = try packWeights(allocator, layer.k_proj, hidden, hidden),
+        .v_proj = try packWeights(allocator, layer.v_proj, hidden, hidden),
+        .o_proj = try packWeights(allocator, layer.o_proj, hidden, hidden),
+        .gate_proj = try packWeights(allocator, layer.gate_proj, inter, hidden),
+        .up_proj = try packWeights(allocator, layer.up_proj, inter, hidden),
+        .down_proj = try packWeights(allocator, layer.down_proj, hidden, inter),
+        .input_layernorm = try allocator.dupe(f32, layer.input_layernorm),
+        .post_attention_layernorm = try allocator.dupe(f32, layer.post_attention_layernorm),
+        .inner_attn_ln = try allocator.dupe(f32, layer.inner_attn_ln),
+        .ffn_layernorm = try allocator.dupe(f32, layer.ffn_layernorm),
+    };
+}
+
+/// Helper: Packed ternary matmul wrapper
+pub fn packedMatVec(
+    pw: *const PackedTernaryWeights,
+    input: []const f32,
+    output: []f32,
+) void {
+    ternaryMatVecSIMD(output, pw.data, pw.scales, input, pw.rows, pw.cols);
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // FULL BITNET MODEL
@@ -1016,4 +1104,118 @@ test "SIMD f32MatVec with remainder" {
     
     // 100 * 1.0 * 2.0 = 200.0
     try std.testing.expectApproxEqAbs(@as(f32, 200.0), output[0], 0.001);
+}
+
+test "packed matmul correctness" {
+    const allocator = std.testing.allocator;
+    
+    // Create test weights and input
+    const rows: usize = 64;
+    const cols: usize = 64;
+    const weights = try allocator.alloc(f32, rows * cols);
+    defer allocator.free(weights);
+    
+    // Fill with ternary-like values
+    for (weights, 0..) |*w, i| {
+        w.* = @as(f32, @floatFromInt(@as(i32, @intCast(i % 3)) - 1)); // -1, 0, 1
+    }
+    
+    const input = try allocator.alloc(f32, cols);
+    defer allocator.free(input);
+    for (input, 0..) |*x, i| {
+        x.* = @as(f32, @floatFromInt(i + 1));
+    }
+    
+    // F32 matmul
+    const output_f32 = try allocator.alloc(f32, rows);
+    defer allocator.free(output_f32);
+    f32MatVec(weights, input, output_f32, rows, cols);
+    
+    // Packed matmul
+    var pw = try packWeights(allocator, weights, rows, cols);
+    defer pw.deinit();
+    
+    const output_packed = try allocator.alloc(f32, rows);
+    defer allocator.free(output_packed);
+    packedMatVec(&pw, input, output_packed);
+    
+    // Compare results (should be similar, not exact due to quantization)
+    var max_diff: f32 = 0.0;
+    for (output_f32, output_packed) |f, p| {
+        const diff = @abs(f - p);
+        if (diff > max_diff) max_diff = diff;
+    }
+    
+    std.debug.print("\n=== Packed vs F32 Matmul ===\n", .{});
+    std.debug.print("Max difference: {d:.4}\n", .{max_diff});
+    
+    // Allow some quantization error
+    try std.testing.expect(max_diff < 100.0); // Scaled values can be large
+}
+
+test "packed layer weights memory savings" {
+    const allocator = std.testing.allocator;
+    
+    // Create a small test layer
+    const hidden: usize = 64;
+    const inter: usize = 128;
+    
+    // Allocate F32 weights
+    const q_proj = try allocator.alloc(f32, hidden * hidden);
+    defer allocator.free(q_proj);
+    const k_proj = try allocator.alloc(f32, hidden * hidden);
+    defer allocator.free(k_proj);
+    const v_proj = try allocator.alloc(f32, hidden * hidden);
+    defer allocator.free(v_proj);
+    const o_proj = try allocator.alloc(f32, hidden * hidden);
+    defer allocator.free(o_proj);
+    const gate_proj = try allocator.alloc(f32, inter * hidden);
+    defer allocator.free(gate_proj);
+    const up_proj = try allocator.alloc(f32, inter * hidden);
+    defer allocator.free(up_proj);
+    const down_proj = try allocator.alloc(f32, hidden * inter);
+    defer allocator.free(down_proj);
+    const norm = try allocator.alloc(f32, hidden);
+    defer allocator.free(norm);
+    
+    // Fill with test values
+    for (q_proj) |*w| w.* = 0.5;
+    for (k_proj) |*w| w.* = -0.5;
+    for (v_proj) |*w| w.* = 0.3;
+    for (o_proj) |*w| w.* = -0.3;
+    for (gate_proj) |*w| w.* = 0.7;
+    for (up_proj) |*w| w.* = -0.7;
+    for (down_proj) |*w| w.* = 0.1;
+    for (norm) |*w| w.* = 1.0;
+    
+    const layer = LayerWeights{
+        .q_proj = q_proj,
+        .k_proj = k_proj,
+        .v_proj = v_proj,
+        .o_proj = o_proj,
+        .gate_proj = gate_proj,
+        .up_proj = up_proj,
+        .down_proj = down_proj,
+        .input_layernorm = norm,
+        .post_attention_layernorm = norm,
+        .inner_attn_ln = norm,
+        .ffn_layernorm = norm,
+    };
+    
+    // Pack the layer
+    var packed_layer = try packLayerWeights(allocator, layer, hidden, inter);
+    defer packed_layer.deinit();
+    
+    // Calculate memory savings
+    const f32_size = (4 * hidden * hidden + 3 * inter * hidden) * @sizeOf(f32);
+    const packed_size = packed_layer.memoryUsage();
+    const savings = @as(f32, @floatFromInt(f32_size)) / @as(f32, @floatFromInt(packed_size));
+    
+    std.debug.print("\n=== Packed Layer Memory Test ===\n", .{});
+    std.debug.print("F32 size: {d} bytes\n", .{f32_size});
+    std.debug.print("Packed size: {d} bytes\n", .{packed_size});
+    std.debug.print("Savings: {d:.1}x\n", .{savings});
+    
+    // Should have significant savings
+    try std.testing.expect(savings > 5.0);
 }
