@@ -1,221 +1,189 @@
-# BitNet b1.58-2B-4T — TL2 Kernel Conversion & Benchmark Report
+# BitNet b1.58-2B-4T — TL2 Kernel Conversion Report
 
 **Date:** February 6, 2026
-**Status:** SCRIPT READY — Awaiting RTX 4090 pod deployment
-**Target:** 100-200 tok/s with TL2 lookup-table kernels
-**Script:** `scripts/runpod_tl2_bitnet.sh`
+**Status:** TL2 CONVERSION BLOCKED — I2_S Baseline Confirmed
+**Platform:** RTX 4090 Pod (AMD EPYC 7282 Rome, 64 vCPU, AVX2 only)
 
 ---
 
 ## Executive Summary
 
-TL2 (Table Lookup Level 2) kernels promise **2.32x speedup** over the current I2_S MAD kernel. Based on the B200 benchmark (52.67 tok/s with I2_S), TL2 should achieve **~120 tok/s** on the same hardware. On RTX 4090 pod (35 tok/s I2_S baseline), TL2 targets **~80 tok/s**.
+TL2 conversion from the pre-quantized HuggingFace model **failed to produce coherent output**. The official Microsoft I2_S GGUF works correctly at **20.79 tok/s** with coherent text generation.
 
-### Three Critical Patches
+### Key Findings
 
-The upstream Microsoft BitNet repo has three bugs preventing TL2 from working with BitNet b1.58-2B-4T:
+| Metric | I2_S (Official) | TL2 (Our Conversion) |
+|--------|-----------------|---------------------|
+| **Coherence** | ✅ PASS | ❌ FAIL (garbage) |
+| **Speed** | 20.79 tok/s | 19.93 tok/s |
+| **Model loads** | ✅ 332 tensors | ✅ 332 tensors |
+| **Source** | Microsoft GGUF | HF → Unpack → TL2 |
 
-| Patch | File | Bug | Fix |
-|-------|------|-----|-----|
-| **1** | `setup_env.py` | `BITNET_X86_TL2=OFF` hardcoded for x86_64 | Change to `=ON` |
-| **2** | `convert-hf-to-gguf-bitnet.py` | Only registers `BitnetForCausalLM` (lowercase n) | Add `@Model.register("BitNetForCausalLM")` |
-| **3** | `convert-hf-to-gguf-bitnet.py` | `set_vocab()` hardcodes `_set_vocab_sentencepiece()` | Try/except fallback: SP → LlamaHF → GPT2/BPE |
+### Root Cause
 
----
-
-## Background
-
-### I2_S vs TL2 Kernel Comparison
-
-| Feature | I2_S (MAD) | TL2 (Table Lookup) |
-|---------|-----------|---------------------|
-| **Encoding** | 2-bit signed integer | 5-bit lookup table (3 ternary values) |
-| **Bits/weight** | 2.0 | ~1.67 |
-| **Kernel** | Multiply-Add-Dot | Table lookup + accumulate |
-| **AVX-512 utilization** | Partial (VNNI underused) | Full (optimized LUT) |
-| **Expected speed** | 35-56 tok/s | 80-200 tok/s |
-| **Speedup factor** | 1x (baseline) | **2.32x** (published benchmarks) |
-
-### Why TL2 Was Not Used Previously
-
-On the B200 pod (February 5, 2026), TL2 failed because:
-
-1. **Tokenizer bug:** `convert-hf-to-gguf-bitnet.py` hardcodes SentencePiece tokenizer, but BitNet b1.58-2B-4T uses BPE (`tokenizer.json`, LLaMA 3 style)
-2. **Architecture name bug:** Model config has `BitNetForCausalLM` (capital N), converter only registers `BitnetForCausalLM` (lowercase n)
-3. **CMake flag bug:** `setup_env.py` hardcodes `-DBITNET_X86_TL2=OFF` for x86_64, never enabling TL2 kernels even when `-q tl2` is passed
-
-**Critical finding from B200:** Loading an I2_S model with TL2 kernels compiled drops inference from 50 tok/s to **1.55 tok/s** — the formats are incompatible.
+The BitNet b1.58-2B-4T model on HuggingFace is **pre-quantized with packed uint8 weights** (4 ternary values per byte). Our unpacking + TL2 transformation pipeline introduces errors in the weight encoding that break coherent generation.
 
 ---
 
-## Patch Details
+## Work Completed
 
-### Patch 1: Enable TL2 in CMake
+### 1. Patches Applied (7 total)
 
-**File:** `setup_env.py`
+| # | File | Issue | Fix |
+|---|------|-------|-----|
+| 1 | `setup_env.py` | `BITNET_X86_TL2=OFF` hardcoded | Set to `ON` |
+| 2 | `convert-hf-to-gguf-bitnet.py` | `BitnetForCausalLM` lowercase | Added `BitNetForCausalLM` |
+| 3 | `convert-hf-to-gguf-bitnet.py` | SentencePiece hardcoded | Added BPE fallback |
+| 4 | `codegen_tl2.py` | Missing 2B-4T shapes | Added `[[640, 2560], [2560, 2560], [2560, 6912], [6912, 2560]]` |
+| 5 | `setup_env.py` | Wrong model name in codegen | Fixed to `BitNet-b1.58-2B-4T` |
+| 6 | `convert-hf-to-gguf-bitnet.py` | `weight_scale` tensors not skipped | Added `if name.endswith("weight_scale"): continue` |
+| 7 | Block sizes | BK=64 not divisible by 3 | Changed to BK=96 |
+
+### 2. Unpacking Script Created
+
+`/tmp/unpack_bitnet.py` — unpacks uint8 packed weights to float32 ternary:
 
 ```python
-# BEFORE (line ~30):
-COMPILER_EXTRA_ARGS = {
-    "arm64": ["-DBITNET_ARM_TL1=OFF"],
-    "x86_64": ["-DBITNET_X86_TL2=OFF"]    # <-- BUG: Always OFF
-}
+def unpack_ternary_blocked(packed, packed_shape, factor=4):
+    """Unpack uint8 -> ternary float tensor.
+    2-bit encoding: 00->-1, 01->0, 10->+1
+    """
+    M_packed, K = packed_shape
+    M_logical = M_packed * factor
+    data = packed.numpy().astype(np.uint8)
+    result = np.zeros((M_logical, K), dtype=np.float32)
 
-# AFTER:
-COMPILER_EXTRA_ARGS = {
-    "arm64": ["-DBITNET_ARM_TL1=OFF"],
-    "x86_64": ["-DBITNET_X86_TL2=ON"]     # <-- FIXED: Enable TL2
-}
+    for i in range(factor):
+        bits = (data >> (i * 2)) & 0x03
+        mapped = bits.astype(np.float32) - 1.0  # 0->-1, 1->0, 2->+1
+        result[i * M_packed:(i + 1) * M_packed] = mapped
+
+    return torch.from_numpy(result)
 ```
 
-**Analysis:** This is likely an upstream oversight. The `gen_code()` function in `setup_env.py` runs `codegen_tl2.py` to generate TL2 kernel source files, but the cmake flag that includes them in the build is hardcoded OFF. The `quant_type` parameter (`-q tl2`) only affects model conversion, not cmake flags.
+### 3. TL2 GGUF Generated
 
-### Patch 2: Architecture Name Registration
+- **File:** `ggml-model-tl2.gguf`
+- **Size:** 1.1 GB
+- **Tensors:** 332 (210 TL2 + 121 F32 + 1 F16)
+- **Kernel config:** BM=128,256,256,128 BK=96,96,96,96 bm=32,32,32,32
 
-**File:** `utils/convert-hf-to-gguf-bitnet.py`
+### 4. Inference Test Results
 
-```python
-# BEFORE:
-@Model.register("BitnetForCausalLM")
-class BitnetModel(Model):
-    ...
-
-# AFTER:
-@Model.register("BitNetForCausalLM")   # Capital N (as in config.json)
-@Model.register("BitnetForCausalLM")   # Original lowercase n
-class BitnetModel(Model):
-    ...
+**TL2 (Our Conversion):**
 ```
-
-**Analysis:** BitNet b1.58-2B-4T's `config.json` lists architecture as `BitNetForCausalLM` (capital N), but the converter only registers lowercase `BitnetForCausalLM`. PR #213 on GitHub attempted this fix but was closed without merge.
-
-### Patch 3: BPE Tokenizer Support
-
-**File:** `utils/convert-hf-to-gguf-bitnet.py`
-
-```python
-# BEFORE:
-def set_vocab(self):
-    self._set_vocab_sentencepiece()   # Fails: no tokenizer.model file
-
-# AFTER (LlamaModel pattern):
-def set_vocab(self):
-    try:
-        self._set_vocab_sentencepiece()
-    except FileNotFoundError:
-        try:
-            self._set_vocab_llama_hf()
-        except (FileNotFoundError, TypeError):
-            # BitNet b1.58-2B-4T uses BPE tokenizer (tokenizer.json)
-            self._set_vocab_gpt2()
+The future of artificial intelligence is residue FarGil Harmarth Rolling
+Nearbyabyzel connected aster cooler Again developing Damkem locking...
 ```
+Speed: 19.93 tok/s, **OUTPUT: GARBAGE**
 
-**Analysis:** BitNet b1.58-2B-4T uses a BPE tokenizer (`tokenizer.json`) derived from LLaMA 3, not SentencePiece (`tokenizer.model`). The `LlamaModel` class in the same file already has this exact try/except fallback pattern. The `_set_vocab_gpt2()` method is defined in the base `Model` class and handles BPE tokenizers correctly.
+**I2_S (Official Microsoft):**
+```
+The future of artificial intelligence is uncertain, but one thing is clear:
+AI will be a major player in the world of finance. The impact of AI on the
+financial industry is likely to be significant...
+```
+Speed: 20.79 tok/s, **OUTPUT: COHERENT** ✅
 
 ---
 
-## TL2 Build Flow
+## Technical Analysis
 
-The complete TL2 build pipeline after patches:
+### Why TL2 Produces Garbage
 
+The pre-quantized model has these complexities:
+
+1. **Packed uint8 weights:** 4 ternary values per byte (2 bits each)
+2. **Per-layer weight_scale:** 210 scalar scales (one per weight matrix)
+3. **Unknown packing layout:** "Blocked" vs "Interleaved" vs "Reversed"
+4. **TL2 transform:** Groups 3 ternary values into 5-bit LUT indices
+
+Our unpacking correctly extracts ternary values (-1, 0, +1), but the TL2 `transform_to_tl2()` function may:
+- Expect weights in a different layout
+- Apply incorrect scale normalization
+- Have dimension ordering issues
+
+### Weight Distribution (Verified Correct)
 ```
-setup_env.py -hr microsoft/BitNet-b1.58-2B-4T -q tl2
-  │
-  ├── 1. setup_gguf()        → pip install gguf
-  │
-  ├── 2. gen_code()           → codegen_tl2.py --model bitnet_b1_58-2B-4T
-  │                              --BM "160,320,320" --BK "96,96,96" --bm "32,32,32"
-  │                              (generates TL2 kernel C++ source files)
-  │
-  ├── 3. compile()            → cmake -B build -DBITNET_X86_TL2=ON [PATCHED]
-  │                              cmake --build build
-  │
-  └── 4. prepare_model()      → convert-hf-to-gguf-bitnet.py [PATCHED]
-                                  --outtype tl2 --quant-embd
-                                  (downloads HF model → converts to TL2 GGUF)
+2-bit value distribution:
+  0 (->-1): 25.2%
+  1 (-> 0): 49.6%
+  2 (->+1): 25.2%
+  3 (unused): 0%
 ```
 
-### Codegen Parameters for 2B-4T
-
-The 2B-4T model shares codegen parameters with the 3B model:
-- `--BM "160,320,320"` — block sizes for M dimension
-- `--BK "96,96,96"` — block sizes for K dimension
-- `--bm "32,32,32"` — micro-block sizes
-
----
-
-## Expected Results
-
-### RTX 4090 Pod ($0.20/hr)
-
-| Kernel | Threads | Expected tok/s |
-|--------|---------|---------------|
-| I2_S (current) | 4 | 35 (measured) |
-| **TL2 (target)** | **4** | **~80** |
-| **TL2 (target)** | **6** | **~100** |
-
-### B200 Pod (reference)
-
-| Kernel | Threads | Expected tok/s |
-|--------|---------|---------------|
-| I2_S (measured) | 16 | 52.67 |
-| **TL2 (projected)** | **16** | **~120** |
-
----
-
-## Comparison: All Benchmarks
-
-| Platform | CPU | Kernel | Threads | tok/s | Cost/hr |
-|----------|-----|--------|---------|-------|---------|
-| RTX 4090 pod | AMD EPYC 75F3 | I2_S | 4 | 35 | $0.20 |
-| B200 pod | Intel Xeon 8568Y+ | I2_S | 16 | 52.67 | $4.24 |
-| RTX 4090 pod | AMD EPYC 75F3 | TL2 | 4 | TBD | $0.20 |
-| RTX 4090 pod | AMD EPYC 75F3 | TL2 | 6 | TBD | $0.20 |
-
----
-
-## Deployment
-
-```bash
-# 1. Launch RTX 4090 pod on RunPod ($0.20/hr Community Cloud)
-# 2. SSH into pod
-ssh root@<IP> -p <PORT> -i ~/.ssh/id_rsa
-
-# 3. Run TL2 script
-cd /root
-git clone https://github.com/gHashTag/trinity.git
-bash trinity/scripts/runpod_tl2_bitnet.sh
-
-# 4. Copy results
-scp -P <PORT> root@<IP>:/root/bitnet_tl2_results.txt docs/
-scp -P <PORT> root@<IP>:/root/bitnet_tl2_metrics.json docs/
-
-# 5. STOP POD immediately
+### Architecture Mismatch
+```
+I2_S GGUF:  general.architecture = "bitnet-b1.58"
+TL2 GGUF:   general.architecture = "bitnet"
 ```
 
 ---
 
-## Risk Assessment
+## Recommendations
 
-| Risk | Likelihood | Mitigation |
-|------|-----------|------------|
-| TL2 conversion still fails (unknown bug) | Medium | Fall back to manual conversion with `convert-ms-to-gguf-bitnet.py` |
-| TL2 slower than expected | Low | I2_S benchmark already establishes baseline |
-| Patches break I2_S path | None | Patches only affect TL2 code path |
-| codegen_tl2.py fails | Low | Parameters verified from setup_env.py source |
+### Option A: Use Official I2_S GGUF (Recommended)
+- Download: `microsoft/bitnet-b1.58-2B-4T-gguf`
+- Speed: 20.79 tok/s on RTX 4090 pod
+- Quality: Coherent output
+- **No conversion needed**
 
----
+### Option B: TL2 via Upstream Fix
+Wait for Microsoft to:
+1. Publish TL2 GGUF for b1.58-2B-4T
+2. Fix `convert-hf-to-gguf-bitnet.py` for pre-quantized models
+3. Document the weight packing format
 
-## Status
-
-- [x] Research TL2 conversion mechanism
-- [x] Identify three critical patches
-- [x] Create patched build script (`scripts/runpod_tl2_bitnet.sh`)
-- [x] Create preliminary report
-- [ ] Deploy RTX 4090 pod
-- [ ] Run TL2 benchmark
-- [ ] Update report with real metrics
+### Option C: Debug TL2 Transform (High Effort)
+1. Compare I2_S tensor bytes with TL2 tensor bytes
+2. Reverse-engineer the correct unpacking order
+3. Validate against known working TL2 models (Llama3 variants)
 
 ---
 
-**KOSCHEI IS IMMORTAL | TL2 = 2.32x SPEEDUP | THREE PATCHES TO 100+ tok/s | phi^2 + 1/phi^2 = 3**
+## Benchmark Summary
+
+| Test | Platform | Kernel | Threads | tok/s | Coherent |
+|------|----------|--------|---------|-------|----------|
+| B200 (prev) | Blackwell | I2_S | 16 | 52.67 | ✅ |
+| RTX 4090 | EPYC 7282 | I2_S | 16 | 20.79 | ✅ |
+| RTX 4090 | EPYC 7282 | TL2 | 4 | 19.93 | ❌ |
+
+**Note:** RTX 4090 pod has AMD EPYC 7282 Rome (AVX2 only, no AVX-512) which limits TL2 performance gains.
+
+---
+
+## Files Modified on Pod
+
+```
+/root/BitNet/
+├── setup_env.py                   (patched x2)
+├── utils/
+│   ├── codegen_tl2.py             (patched)
+│   └── convert-hf-to-gguf-bitnet.py (patched x3)
+├── include/
+│   ├── kernel_config.ini          (generated)
+│   └── bitnet-lut-kernels.h       (generated)
+├── models/
+│   ├── BitNet-b1.58-2B-4T/        (HF download)
+│   ├── BitNet-b1.58-2B-4T-unpacked/ (8.4 GB float32)
+│   └── bitnet-gguf/ggml-model-i2_s.gguf (official)
+└── build/bin/llama-cli            (compiled with TL2=ON)
+```
+
+---
+
+## Conclusion
+
+**TL2 conversion from pre-quantized HuggingFace weights is not viable without additional reverse-engineering.** The official I2_S GGUF provides reliable inference at 20.79 tok/s.
+
+The 2.32x TL2 speedup would require:
+1. Microsoft publishing official TL2 GGUF, or
+2. Converting from float16 weights (not the pre-quantized release), or
+3. Understanding the exact packing format for proper unpacking
+
+**Recommendation:** Use official I2_S GGUF for production. TL2 effort is blocked pending upstream support.
+
+---
+
+**KOSCHEI IS IMMORTAL | I2_S = 20.79 tok/s | TL2 BLOCKED | φ² + 1/φ² = 3**
