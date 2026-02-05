@@ -102,7 +102,7 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
       const scale = Math.min(w, h) / 800;
 
       // Background grid
-      ctx.strokeStyle = 'rgba(0, 255, 136, 0.05)';
+      ctx.strokeStyle = 'rgba(0, 255, 136, 0.02)';
       ctx.lineWidth = 1;
       for (let x = 0; x < w; x += 50) {
         ctx.beginPath();
@@ -121,8 +121,8 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
       const coreRadius = 120 * scale;
       
       // Outer rotating ring
-      ctx.strokeStyle = 'rgba(0, 255, 136, 0.3)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0, 255, 136, 0.15)';
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(cx, cy, coreRadius + 40, 0, TAU);
       ctx.stroke();
@@ -141,7 +141,7 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
 
         // Node glow
         const grad = ctx.createRadialGradient(x, y, 0, x, y, 50 * scale);
-        grad.addColorStop(0, nodes[i].color + '40');
+        grad.addColorStop(0, nodes[i].color + '20');
         grad.addColorStop(1, 'transparent');
         ctx.fillStyle = grad;
         ctx.beginPath();
@@ -149,7 +149,7 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
         ctx.fill();
 
         // Node circle
-        ctx.fillStyle = nodes[i].color + '80';
+        ctx.fillStyle = nodes[i].color + '40';
         ctx.beginPath();
         ctx.arc(x, y, 35 * scale, 0, TAU);
         ctx.fill();
