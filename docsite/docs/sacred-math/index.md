@@ -86,7 +86,7 @@ The Sakra Formula expresses physical constants as combinations of five fundament
 | **p** | Power of phi | Golden ratio -- self-similar proportion |
 | **q** | Power of e | Euler's number -- natural growth and decay |
 
-Every verified constant in the [Formulas](/sacred-math/formulas) page can be decomposed into this form, suggesting a deep unity among mathematical constants and physical law.
+Every verified constant in the [Formulas](/docs/sacred-math/formulas) page can be decomposed into this form, suggesting a deep unity among mathematical constants and physical law.
 
 ---
 
@@ -330,5 +330,5 @@ The ternary foundation enables:
 
 ## Next Steps
 
-- [Formulas](/sacred-math/formulas) -- Physical constants expressed through the Sakra Formula
-- [Proofs](/sacred-math/proofs) -- Rigorous mathematical proofs and derivations
+- [Formulas](/docs/sacred-math/formulas) -- Physical constants expressed through the Sakra Formula
+- [Proofs](/docs/sacred-math/proofs) -- Rigorous mathematical proofs and derivations

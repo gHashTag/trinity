@@ -11,12 +11,12 @@ Complete API documentation for Trinity modules.
 
 | Module | Description |
 |--------|-------------|
-| [VSA](/api/vsa) | Vector Symbolic Architecture |
-| [VM](/api/vm) | Ternary Virtual Machine |
-| [Hybrid](/api/hybrid) | HybridBigInt storage |
-| [Firebird](/api/firebird) | LLM inference engine |
-| [VIBEE](/api/vibee) | Specification compiler |
-| [Plugin](/api/plugin) | Extension system |
+| [VSA](/docs/api/vsa) | Vector Symbolic Architecture |
+| [VM](/docs/api/vm) | Ternary Virtual Machine |
+| [Hybrid](/docs/api/hybrid) | HybridBigInt storage |
+| [Firebird](/docs/api/firebird) | LLM inference engine |
+| [VIBEE](/docs/api/vibee) | Specification compiler |
+| [Plugin](/docs/api/plugin) | Extension system |
 
 ## Quick Reference
 
