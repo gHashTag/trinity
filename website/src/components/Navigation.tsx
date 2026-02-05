@@ -38,6 +38,14 @@ export default memo(function Navigation() {
           {item}
         </a>
       ))}
+      <a
+        href="https://gHashTag.github.io/trinity/"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: 'var(--accent)', fontWeight: 600 }}
+      >
+        Docs
+      </a>
       <LanguageSwitcher />
     </nav>
   )

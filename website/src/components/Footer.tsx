@@ -54,6 +54,11 @@ export default function Footer() {
               <li><a href="#solution" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.solution || 'Solution'}</a></li>
               <li><a href="#technology" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.technology || 'Technology'}</a></li>
               <li><a href="#invest" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.invest || 'Invest'}</a></li>
+              <li>
+                <a href="https://gHashTag.github.io/trinity/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }}>
+                  Documentation
+                </a>
+              </li>
             </ul>
           </div>
 
