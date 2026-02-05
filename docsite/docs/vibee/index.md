@@ -84,6 +84,6 @@ The ternary logic system provides:
 
 ## Next Steps
 
-- [Specification Format](./specification) - Learn the `.vibee` syntax
-- [Examples](./examples) - See practical specifications
-- [Theorems](./theorems) - Understand the formal proofs
+- [Specification Format](/docs/vibee/specification) - Learn the `.vibee` syntax
+- [Examples](/docs/vibee/examples) - See practical specifications
+- [Theorems](/docs/vibee/theorems) - Understand the formal proofs
