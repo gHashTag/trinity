@@ -1,5 +1,11 @@
 # Chrome Web Store Submission Guide - NeoDetect v2.0.0
 
+## Quick Start
+
+Download the latest release from GitHub:
+- **Chrome**: https://github.com/gHashTag/trinity/releases/download/ext-v2.0.0/neodetect-chrome-v2.0.0.zip
+- **Firefox**: https://github.com/gHashTag/trinity/releases/download/ext-v2.0.0/neodetect-firefox-v2.0.0.zip
+
 ## Pre-Submission Checklist
 
 ### Developer Account
@@ -8,10 +14,11 @@
 - [ ] Complete identity verification (if required)
 
 ### Extension Package
-- [x] `neodetect-v2.0.0.zip` created (177KB)
+- [x] `neodetect-chrome-v2.0.0.zip` created (186KB)
 - [x] Manifest V3 compliant
 - [x] All icons present (16, 48, 128 px)
-- [x] WASM module included and working (521KB, proper magic bytes)
+- [x] WASM module included and working (529KB, proper magic bytes)
+- [x] GitHub Release available: https://github.com/gHashTag/trinity/releases/tag/ext-v2.0.0
 
 ### Store Listing Content
 - [x] Extension name: "NeoDetect Anti-Detect - WASM-Powered Privacy Protection"
