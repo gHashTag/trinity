@@ -54,7 +54,6 @@ export default function TechTree() {
   return (
     <Section id="tech-tree">
       <div className="tight fade" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <span className="badge">X-COM STYLE</span>
         <h2 dangerouslySetInnerHTML={{ __html: techTree.title }} />
         <p className="sub">{techTree.sub}</p>
       </div>

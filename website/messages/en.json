@@ -350,7 +350,7 @@
   },
   "techTree": {
     "title": "TRINITY <span style=\"color: var(--accent)\">RESEARCH</span> LABORATORY",
-    "sub": "X-COM Style Technology Development Tree",
+    "sub": "Technology Development Tree",
     "hint": "Click on nodes to view research details"
   },
   "product": {

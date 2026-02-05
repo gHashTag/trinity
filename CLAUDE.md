@@ -230,7 +230,7 @@ Specifications: `specs/tri/telegram_bot/`
 ## Website Deployment
 
 ```
-Canonical URL: https://trinity-site-ghashtag.vercel.app
+Canonical URL: https://trinity-site-one.vercel.app
 GitHub Repo:   gHashTag/trinity
 Root:          website/
 Framework:     Vite (React SPA)

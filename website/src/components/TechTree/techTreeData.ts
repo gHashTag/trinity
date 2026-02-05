@@ -1,4 +1,4 @@
-// X-COM Style Tech Tree Data
+// Tech Tree Data
 // Based on docs/TECH_TREE.md
 
 export type NodeStatus = 'done' | 'in_progress' | 'locked';
