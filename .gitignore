@@ -68,3 +68,9 @@ zig-windows-*/
 
 # Temporary scripts
 check_ssh.py
+
+# BitNet upstream repo (large, cloned locally)
+bitnet-cpp/
+
+# Microsoft model weights
+models/microsoft-bitnet-2b/
