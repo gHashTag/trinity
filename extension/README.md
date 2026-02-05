@@ -2,6 +2,27 @@
 
 Advanced antidetect browser extension with WASM-powered fingerprint protection.
 
+## Downloads
+
+| Browser | Package | Store |
+|---------|---------|-------|
+| Chrome | [neodetect-chrome-v2.0.0.zip](https://github.com/gHashTag/trinity/releases/download/ext-v2.0.0/neodetect-chrome-v2.0.0.zip) | Coming soon |
+| Firefox | [neodetect-firefox-v2.0.0.zip](https://github.com/gHashTag/trinity/releases/download/ext-v2.0.0/neodetect-firefox-v2.0.0.zip) | Coming soon |
+| Edge | [Same as Chrome](https://github.com/gHashTag/trinity/releases/download/ext-v2.0.0/neodetect-chrome-v2.0.0.zip) | Coming soon |
+
+**Latest Release**: [ext-v2.0.0](https://github.com/gHashTag/trinity/releases/tag/ext-v2.0.0)
+
+## Browser Support
+
+| Browser | Version | Status |
+|---------|---------|--------|
+| Chrome | 88+ | ✅ Supported |
+| Edge | 88+ | ✅ Supported |
+| Firefox | 109+ | ✅ Supported |
+| Opera | 74+ | ✅ Supported (use Chrome package) |
+| Brave | Latest | ✅ Supported (use Chrome package) |
+| Safari | - | ❌ Not supported |
+
 ## Features
 
 ### Core Protections
@@ -43,26 +64,40 @@ Emulate different operating systems without VM:
 
 ## Installation
 
-### From Release
-1. Download `neodetect-v2.0.0.zip` from releases
-2. Open `chrome://extensions/`
-3. Enable "Developer mode"
-4. Click "Load unpacked"
-5. Select the extracted folder
+### Chrome / Edge / Brave / Opera
+
+1. Download [neodetect-chrome-v2.0.0.zip](https://github.com/gHashTag/trinity/releases/download/ext-v2.0.0/neodetect-chrome-v2.0.0.zip)
+2. Extract the ZIP file
+3. Open browser extensions page:
+   - Chrome: `chrome://extensions/`
+   - Edge: `edge://extensions/`
+   - Brave: `brave://extensions/`
+   - Opera: `opera://extensions/`
+4. Enable "Developer mode"
+5. Click "Load unpacked"
+6. Select the extracted folder
+
+### Firefox
+
+1. Download [neodetect-firefox-v2.0.0.zip](https://github.com/gHashTag/trinity/releases/download/ext-v2.0.0/neodetect-firefox-v2.0.0.zip)
+2. Open `about:debugging#/runtime/this-firefox`
+3. Click "Load Temporary Add-on"
+4. Select the ZIP file
 
 ### From Source
+
 ```bash
 # Clone repository
 git clone https://github.com/gHashTag/trinity.git
-cd trinity
+cd trinity/extension
 
-# Build WASM module
-zig build-lib src/firebird/neodetect_wasm.zig \
-  -target wasm32-freestanding \
-  -O ReleaseFast \
-  -femit-bin=extension/chrome/wasm/neodetect.wasm
+# Build all (WASM + Chrome + Firefox)
+npm run build
 
-# Load extension/chrome folder in Chrome
+# Or build specific target
+npm run build:chrome
+npm run build:firefox
+npm run build:wasm
 ```
 
 ## Usage
@@ -168,6 +203,81 @@ All code is generated from `.vibee` specifications:
 | `profile_manager.vibee` | Profile storage and encryption |
 | `advanced_protection.vibee` | WebRTC, Battery, Bluetooth protection |
 
+## Store Submission Guides
+
+| Store | Guide | Status |
+|-------|-------|--------|
+| Chrome Web Store | [SUBMISSION_GUIDE.md](SUBMISSION_GUIDE.md) | Ready |
+| Firefox Add-ons | [FIREFOX_SUBMISSION_GUIDE.md](FIREFOX_SUBMISSION_GUIDE.md) | Ready |
+| Edge Add-ons | [EDGE_SUBMISSION_GUIDE.md](EDGE_SUBMISSION_GUIDE.md) | Ready |
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [CHANGELOG.md](CHANGELOG.md) | Version history and release notes |
+| [SUBMISSION_GUIDE.md](SUBMISSION_GUIDE.md) | Chrome Web Store submission |
+| [FIREFOX_SUBMISSION_GUIDE.md](FIREFOX_SUBMISSION_GUIDE.md) | Firefox Add-ons submission |
+| [EDGE_SUBMISSION_GUIDE.md](EDGE_SUBMISSION_GUIDE.md) | Edge Add-ons submission |
+| [chrome/PRIVACY_POLICY.md](chrome/PRIVACY_POLICY.md) | Privacy policy |
+| [chrome/STORE_LISTING.md](chrome/STORE_LISTING.md) | Store listing content |
+| [chrome/SCREENSHOT_GUIDE.md](chrome/SCREENSHOT_GUIDE.md) | Screenshot instructions |
+
+## Project Structure
+
+```
+extension/
+├── README.md                    # This file
+├── CHANGELOG.md                 # Version history
+├── SUBMISSION_GUIDE.md          # Chrome submission guide
+├── FIREFOX_SUBMISSION_GUIDE.md  # Firefox submission guide
+├── EDGE_SUBMISSION_GUIDE.md     # Edge submission guide
+├── build.js                     # Unified build script
+├── package.json                 # Build dependencies
+├── chrome/                      # Chrome/Edge extension
+│   ├── manifest.json            # Manifest V3
+│   ├── background/              # Service worker
+│   ├── content/                 # Content scripts
+│   ├── popup/                   # Popup UI
+│   ├── wasm/                    # WASM module
+│   ├── icons/                   # Extension icons
+│   ├── PRIVACY_POLICY.md        # Privacy policy
+│   └── STORE_LISTING.md         # Store listing
+├── firefox/                     # Firefox extension
+│   ├── manifest.json            # Manifest V2
+│   ├── background/              # Background script
+│   ├── content/                 # Content scripts
+│   ├── popup/                   # Popup UI
+│   ├── wasm/                    # WASM module
+│   └── icons/                   # Extension icons
+└── test/                        # E2E tests
+    ├── package.json             # Test dependencies
+    ├── wasm-test.js             # WASM module tests
+    └── fingerprint-test.html    # Browser fingerprint test
+```
+
+## CI/CD
+
+### GitHub Actions Workflows
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| Extension Tests | Push to `extension/**` | Build WASM, run tests |
+| Extension Release | Tag `ext-v*` | Build and release packages |
+
+### Creating a Release
+
+```bash
+# Create extension release
+git tag -a ext-v2.1.0 -m "NeoDetect v2.1.0"
+git push origin ext-v2.1.0
+
+# Workflow automatically:
+# 1. Builds WASM module
+# 2. Packages Chrome and Firefox extensions
+# 3. Creates GitHub Release with artifacts
+```
+
 ## Version History
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes.
@@ -175,6 +285,13 @@ See [CHANGELOG.md](CHANGELOG.md) for release notes.
 ## License
 
 MIT License - See LICENSE file for details.
+
+## Links
+
+- **Repository**: https://github.com/gHashTag/trinity
+- **Releases**: https://github.com/gHashTag/trinity/releases
+- **Issues**: https://github.com/gHashTag/trinity/issues
+- **Privacy Policy**: https://github.com/gHashTag/trinity/blob/main/extension/chrome/PRIVACY_POLICY.md
 
 ---
 
