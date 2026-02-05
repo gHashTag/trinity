@@ -47,8 +47,8 @@ const config: Config = {
     image: 'img/trinity-social-card.png',
     colorMode: {
       defaultMode: 'dark',
-      disableSwitch: true,
-      respectPrefersColorScheme: false,
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
     },
     navbar: {
       title: 'Trinity',

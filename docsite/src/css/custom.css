@@ -1,9 +1,270 @@
 /*
  * Trinity Docsite Theme
- * Pure black background, white/grey text, minimal accents
+ * Two themes: Dark (pure black) + Light (white)
  */
 
+/* ================================================================
+   LIGHT THEME
+   ================================================================ */
+
 :root {
+  --ifm-color-primary: #16a34a;
+  --ifm-color-primary-dark: #15803d;
+  --ifm-color-primary-darker: #166534;
+  --ifm-color-primary-darkest: #14532d;
+  --ifm-color-primary-light: #22c55e;
+  --ifm-color-primary-lighter: #4ade80;
+  --ifm-color-primary-lightest: #86efac;
+  --ifm-code-font-size: 95%;
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #f9fafb;
+  --ifm-font-color-base: #1f2937;
+  --ifm-font-color-secondary: #6b7280;
+  --ifm-heading-color: #111827;
+  --ifm-link-color: #374151;
+  --ifm-link-hover-color: #111827;
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-navbar-link-color: #6b7280;
+  --ifm-navbar-link-hover-color: #111827;
+  --ifm-footer-background-color: #f9fafb;
+  --ifm-toc-border-color: #e5e7eb;
+  --ifm-color-emphasis-300: #d1d5db;
+  --ifm-hr-background-color: #e5e7eb;
+  --ifm-table-border-color: #e5e7eb;
+  --ifm-table-stripe-background: #f9fafb;
+  --ifm-code-background: #f3f4f6;
+  --ifm-global-shadow-lw: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ifm-global-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --ifm-global-shadow-tl: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.03);
+
+  --trinity-golden: #92711a;
+  --trinity-golden-dark: #6b5214;
+  --trinity-muted: #6b7280;
+  --trinity-accent: #16a34a;
+}
+
+[data-theme='light'] .navbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: none;
+}
+
+[data-theme='light'] .navbar__title {
+  color: #111827;
+}
+
+[data-theme='light'] .navbar__link {
+  color: #6b7280;
+}
+
+[data-theme='light'] .navbar__link:hover,
+[data-theme='light'] .navbar__link--active {
+  color: #111827;
+}
+
+[data-theme='light'] .hero--primary {
+  background: #ffffff;
+}
+
+[data-theme='light'] .hero__title {
+  color: #111827;
+  background: none;
+  -webkit-text-fill-color: #111827;
+}
+
+[data-theme='light'] .hero__subtitle {
+  color: #6b7280;
+}
+
+[data-theme='light'] .hero .button--secondary {
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #111827;
+  border-radius: 999px;
+}
+
+[data-theme='light'] .hero .button--secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+[data-theme='light'] .menu__link {
+  color: #6b7280;
+}
+
+[data-theme='light'] .menu__link:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+[data-theme='light'] .menu__link--active {
+  color: #111827 !important;
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+[data-theme='light'] .theme-doc-sidebar-container {
+  border-right: 1px solid #e5e7eb;
+}
+
+[data-theme='light'] .footer {
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+[data-theme='light'] .footer__title {
+  color: #111827;
+}
+
+[data-theme='light'] .footer__link-item {
+  color: #6b7280;
+}
+
+[data-theme='light'] .footer__link-item:hover {
+  color: #374151;
+}
+
+[data-theme='light'] .footer__copyright {
+  color: #9ca3af;
+}
+
+[data-theme='light'] code {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+[data-theme='light'] .prism-code {
+  background: #f9fafb !important;
+  border: 1px solid #e5e7eb;
+}
+
+[data-theme='light'] table th {
+  background: #f9fafb;
+  color: #111827;
+  border-bottom: 1px solid #d1d5db;
+}
+
+[data-theme='light'] table td {
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+[data-theme='light'] table tr:hover td {
+  background: #f9fafb;
+}
+
+[data-theme='light'] .pagination-nav__link {
+  border: 1px solid #e5e7eb;
+}
+
+[data-theme='light'] .pagination-nav__link:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+[data-theme='light'] .pagination-nav__sublabel {
+  color: #9ca3af;
+}
+
+[data-theme='light'] .pagination-nav__label {
+  color: #111827;
+}
+
+[data-theme='light'] .theorem-card {
+  background: #fefce8;
+  border: 1px solid #e5e7eb;
+}
+
+[data-theme='light'] .theorem-card::before {
+  background: #e5e7eb;
+}
+
+[data-theme='light'] .theorem-card h4 {
+  color: #92711a;
+}
+
+[data-theme='light'] .green-card {
+  background: #f0fdf4;
+  border: 1px solid #e5e7eb;
+}
+
+[data-theme='light'] .green-card h4 {
+  color: #16a34a;
+}
+
+[data-theme='light'] .formula {
+  background: #f9fafb;
+  color: #1f2937;
+}
+
+[data-theme='light'] .formula-golden {
+  border-left-color: rgba(146, 113, 26, 0.4);
+}
+
+[data-theme='light'] .formula-green {
+  border-left-color: rgba(22, 163, 74, 0.3);
+}
+
+[data-theme='light'] .sacred-math {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+[data-theme='light'] .metric-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+[data-theme='light'] .metric-card .value {
+  color: #111827;
+}
+
+[data-theme='light'] .metric-card .label {
+  color: #9ca3af;
+}
+
+[data-theme='light'] .badge-green {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+[data-theme='light'] .badge-golden {
+  background: #fefce8;
+  color: #92711a;
+}
+
+[data-theme='light'] .features_cAfv h3 {
+  color: #111827;
+}
+
+[data-theme='light'] .features_cAfv p {
+  color: #6b7280;
+}
+
+[data-theme='light'] h1,
+[data-theme='light'] h2,
+[data-theme='light'] h3,
+[data-theme='light'] h4,
+[data-theme='light'] h5,
+[data-theme='light'] h6 {
+  color: #111827;
+}
+
+[data-theme='light'] p,
+[data-theme='light'] li {
+  color: #374151;
+}
+
+[data-theme='light'] strong {
+  color: #1f2937;
+}
+
+/* ================================================================
+   DARK THEME
+   ================================================================ */
+
+[data-theme='dark'] {
   --ifm-color-primary: #4ade80;
   --ifm-color-primary-dark: #22c55e;
   --ifm-color-primary-darker: #16a34a;
@@ -11,18 +272,6 @@
   --ifm-color-primary-light: #86efac;
   --ifm-color-primary-lighter: #bbf7d0;
   --ifm-color-primary-lightest: #dcfce7;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.05);
-
-  --trinity-golden: #d4a843;
-  --trinity-golden-dark: #a68532;
-  --trinity-muted: #888888;
-  --trinity-accent: #4ade80;
-}
-
-/* Force dark theme */
-[data-theme='dark'],
-:root {
   --ifm-background-color: #000000;
   --ifm-background-surface-color: #0a0a0a;
   --ifm-font-color-base: #d4d4d4;
@@ -30,10 +279,6 @@
   --ifm-heading-color: #FFFFFF;
   --ifm-link-color: #a3a3a3;
   --ifm-link-hover-color: #FFFFFF;
-  --ifm-menu-color: #a3a3a3;
-  --ifm-menu-color-active: #FFFFFF;
-  --ifm-menu-color-background-active: rgba(255, 255, 255, 0.05);
-  --ifm-menu-color-background-hover: rgba(255, 255, 255, 0.03);
   --ifm-navbar-background-color: #000000;
   --ifm-navbar-link-color: #a3a3a3;
   --ifm-navbar-link-hover-color: #FFFFFF;
@@ -48,231 +293,288 @@
   --ifm-global-shadow-md: none;
   --ifm-global-shadow-tl: none;
   --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.05);
+
+  --trinity-golden: #d4a843;
+  --trinity-golden-dark: #a68532;
+  --trinity-muted: #737373;
+  --trinity-accent: #4ade80;
 }
 
-/* ---- Global ---- */
-
-html, body {
+[data-theme='dark'] html,
+[data-theme='dark'] body {
   background-color: #000000;
-  color: #d4d4d4;
 }
 
-h1, h2, h3, h4, h5, h6 {
+[data-theme='dark'] h1,
+[data-theme='dark'] h2,
+[data-theme='dark'] h3,
+[data-theme='dark'] h4,
+[data-theme='dark'] h5,
+[data-theme='dark'] h6 {
   color: #FFFFFF;
 }
 
-p, li {
+[data-theme='dark'] p,
+[data-theme='dark'] li {
   color: #a3a3a3;
 }
 
-strong {
+[data-theme='dark'] strong {
   color: #d4d4d4;
 }
 
-a {
-  color: var(--ifm-link-color);
-}
-
-a:hover {
+[data-theme='dark'] a:hover {
   color: #FFFFFF;
 }
 
-hr {
-  border-color: rgba(255, 255, 255, 0.06);
-}
-
-/* ---- Navbar ---- */
-
-.navbar {
+[data-theme='dark'] .navbar {
   background: #000000;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: none;
 }
 
-.navbar__title {
+[data-theme='dark'] .navbar__title {
   color: #FFFFFF;
-  font-weight: 700;
 }
 
-.navbar__link {
+[data-theme='dark'] .navbar__link {
   color: #a3a3a3;
 }
 
-.navbar__link:hover,
-.navbar__link--active {
+[data-theme='dark'] .navbar__link:hover,
+[data-theme='dark'] .navbar__link--active {
   color: #FFFFFF;
 }
 
-/* ---- Hero ---- */
-
-.hero--primary {
+[data-theme='dark'] .hero--primary {
   background: #000000;
 }
 
-.hero__title {
-  font-size: 3rem;
+[data-theme='dark'] .hero__title {
   color: #FFFFFF;
   background: none;
   -webkit-text-fill-color: #FFFFFF;
 }
 
-.hero__subtitle {
-  font-size: 1.5rem;
+[data-theme='dark'] .hero__subtitle {
   color: #737373;
 }
 
-.hero .button--secondary {
+[data-theme='dark'] .hero .button--secondary {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #FFFFFF;
   border-radius: 999px;
-  transition: all 0.2s;
 }
 
-.hero .button--secondary:hover {
+[data-theme='dark'] .hero .button--secondary:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.4);
-  color: #FFFFFF;
 }
 
-/* ---- Sidebar ---- */
-
-.menu {
-  background: transparent;
-}
-
-.menu__link {
+[data-theme='dark'] .menu__link {
   color: #737373;
-  border-radius: 6px;
 }
 
-.menu__link:hover {
+[data-theme='dark'] .menu__link:hover {
   color: #a3a3a3;
   background: rgba(255, 255, 255, 0.03);
 }
 
-.menu__link--active {
+[data-theme='dark'] .menu__link--active {
   color: #FFFFFF !important;
   background: rgba(255, 255, 255, 0.05);
 }
 
-.menu__link--sublist-caret {
+[data-theme='dark'] .menu__link--sublist-caret {
   color: #525252;
 }
 
-.theme-doc-sidebar-container {
+[data-theme='dark'] .theme-doc-sidebar-container {
   border-right: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* ---- Footer ---- */
-
-.footer {
+[data-theme='dark'] .footer {
   background: #000000;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.footer__title {
+[data-theme='dark'] .footer__title {
   color: #d4d4d4;
 }
 
-.footer__link-item {
+[data-theme='dark'] .footer__link-item {
   color: #737373;
 }
 
-.footer__link-item:hover {
+[data-theme='dark'] .footer__link-item:hover {
   color: #a3a3a3;
 }
 
-.footer__copyright {
+[data-theme='dark'] .footer__copyright {
   color: #404040;
 }
 
-/* ---- Code ---- */
-
-code {
+[data-theme='dark'] code {
   background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  padding: 2px 6px;
   color: #d4d4d4;
 }
 
-.prism-code {
+[data-theme='dark'] .prism-code {
   background: #0a0a0a !important;
   border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
 }
 
-/* ---- Tables ---- */
-
-table {
-  border-collapse: collapse;
-}
-
-table th {
+[data-theme='dark'] table th {
   background: rgba(255, 255, 255, 0.03);
   color: #d4d4d4;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-table td {
+[data-theme='dark'] table td {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   color: #a3a3a3;
 }
 
-table tr:hover td {
+[data-theme='dark'] table tr:hover td {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* ---- Breadcrumbs / TOC ---- */
-
-.breadcrumbs__link {
-  color: #525252;
-}
-
-.table-of-contents__link {
-  color: #525252;
-}
-
-.table-of-contents__link:hover,
-.table-of-contents__link--active {
-  color: #a3a3a3;
-}
-
-/* ---- Pagination ---- */
-
-.pagination-nav__link {
+[data-theme='dark'] .pagination-nav__link {
   border: 1px solid rgba(255, 255, 255, 0.06);
-  background: transparent;
 }
 
-.pagination-nav__link:hover {
+[data-theme='dark'] .pagination-nav__link:hover {
   border-color: rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.02);
 }
 
-.pagination-nav__sublabel {
+[data-theme='dark'] .pagination-nav__sublabel {
   color: #525252;
 }
 
-.pagination-nav__label {
+[data-theme='dark'] .pagination-nav__label {
   color: #d4d4d4;
 }
 
-/* ---- Alerts ---- */
+[data-theme='dark'] .theorem-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
 
-.alert {
+[data-theme='dark'] .theorem-card::before {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='dark'] .theorem-card h4 {
+  color: #d4a843;
+}
+
+[data-theme='dark'] .green-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .green-card h4 {
+  color: #4ade80;
+}
+
+[data-theme='dark'] .formula {
+  background: rgba(255, 255, 255, 0.02);
+  color: #d4d4d4;
+}
+
+[data-theme='dark'] .formula-golden {
+  border-left-color: rgba(212, 168, 67, 0.3);
+}
+
+[data-theme='dark'] .formula-green {
+  border-left-color: rgba(74, 222, 128, 0.2);
+}
+
+[data-theme='dark'] .sacred-math {
+  background: rgba(255, 255, 255, 0.01);
+  border-color: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme='dark'] .metric-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .metric-card .value {
+  color: #FFFFFF;
+}
+
+[data-theme='dark'] .metric-card .label {
+  color: #525252;
+}
+
+[data-theme='dark'] .badge-green {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+[data-theme='dark'] .badge-golden {
+  background: rgba(212, 168, 67, 0.1);
+  color: #d4a843;
+}
+
+[data-theme='dark'] .features_cAfv h3 {
+  color: #FFFFFF;
+}
+
+[data-theme='dark'] .features_cAfv p {
+  color: #737373;
+}
+
+[data-theme='dark'] .alert {
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.02);
   color: #a3a3a3;
 }
 
 /* ================================================================
-   Custom components
+   SHARED (both themes)
    ================================================================ */
 
+.hero__title {
+  font-size: 3rem;
+}
+
+.hero__subtitle {
+  font-size: 1.5rem;
+}
+
+.hero .button--secondary {
+  border-radius: 999px;
+  transition: all 0.2s;
+}
+
+.menu {
+  background: transparent;
+}
+
+.menu__link {
+  border-radius: 6px;
+}
+
+code {
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.prism-code {
+  border-radius: 8px;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/* Custom components -- shared layout */
+
 .theorem-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 1.5rem;
   margin: 1rem 0;
@@ -286,26 +588,21 @@ table tr:hover td {
   left: 0;
   right: 0;
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
   border-radius: 8px 8px 0 0;
 }
 
 .theorem-card h4 {
-  color: #d4a843;
   margin-top: 0;
   font-weight: 600;
 }
 
 .green-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 1.5rem;
   margin: 1rem 0;
 }
 
 .green-card h4 {
-  color: #4ade80;
   margin-top: 0;
   font-weight: 600;
 }
@@ -315,26 +612,23 @@ table tr:hover td {
   font-size: 1.25rem;
   text-align: center;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.02);
   border-radius: 4px;
   margin: 1rem 0;
-  color: #d4d4d4;
 }
 
 .formula-golden {
-  border-left: 2px solid rgba(212, 168, 67, 0.3);
+  border-left: 2px solid;
 }
 
 .formula-green {
-  border-left: 2px solid rgba(74, 222, 128, 0.2);
+  border-left: 2px solid;
 }
 
 .sacred-math {
-  background: rgba(255, 255, 255, 0.01);
   padding: 2rem;
   border-radius: 12px;
   margin: 2rem 0;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid;
 }
 
 .vibee-spec {
@@ -342,8 +636,6 @@ table tr:hover td {
 }
 
 .metric-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
@@ -353,12 +645,10 @@ table tr:hover td {
 .metric-card .value {
   font-size: 2rem;
   font-weight: 700;
-  color: #FFFFFF;
 }
 
 .metric-card .label {
   font-size: 0.85rem;
-  color: #525252;
   margin-top: 0.3rem;
 }
 
@@ -368,35 +658,16 @@ table tr:hover td {
 }
 
 .constants-table th {
-  background: rgba(255, 255, 255, 0.03);
-  color: #d4d4d4;
   padding: 12px;
   font-weight: 600;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .constants-table td {
   padding: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  color: #a3a3a3;
 }
 
-.constants-table tr:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.badge-green {
-  background: rgba(74, 222, 128, 0.1);
-  color: #4ade80;
-  padding: 0.2rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
+.badge-green,
 .badge-golden {
-  background: rgba(212, 168, 67, 0.1);
-  color: #d4a843;
   padding: 0.2rem 0.6rem;
   border-radius: 20px;
   font-size: 0.75rem;
@@ -415,35 +686,24 @@ table tr:hover td {
   left: 0;
 }
 
-/* ---- Homepage features ---- */
-
 .features_cAfv {
   background: transparent;
 }
 
-.features_cAfv h3 {
-  color: #FFFFFF;
-}
-
-.features_cAfv p {
-  color: #737373;
-}
-
-/* ---- Scrollbar ---- */
-
-::-webkit-scrollbar {
+/* Scrollbar (dark only) */
+[data-theme='dark'] ::-webkit-scrollbar {
   width: 6px;
 }
 
-::-webkit-scrollbar-track {
+[data-theme='dark'] ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.15);
 }
