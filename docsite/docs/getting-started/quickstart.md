@@ -73,6 +73,6 @@ zig test src/vsa.zig
 
 ## Next Steps
 
-- [Installation Guide](/getting-started/installation) — Detailed setup
-- [Development Setup](/getting-started/development-setup) — IDE configuration
-- [API Reference](/api/) — Complete API documentation
+- [Installation Guide](/docs/getting-started/installation) — Detailed setup
+- [Development Setup](/docs/getting-started/development-setup) — IDE configuration
+- [API Reference](/docs/api/) — Complete API documentation

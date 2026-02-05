@@ -46,21 +46,21 @@ zig build test
 
 | Module | Description |
 |--------|-------------|
-| [VSA](/api/vsa) | Vector Symbolic Architecture |
-| [VM](/api/vm) | Ternary Virtual Machine |
-| [Hybrid](/api/hybrid) | HybridBigInt storage |
-| [Firebird](/api/firebird) | LLM inference engine |
-| [VIBEE](/api/vibee) | Specification compiler |
-| [Plugin](/api/plugin) | Extension system |
+| [VSA](/docs/api/vsa) | Vector Symbolic Architecture |
+| [VM](/docs/api/vm) | Ternary Virtual Machine |
+| [Hybrid](/docs/api/hybrid) | HybridBigInt storage |
+| [Firebird](/docs/api/firebird) | LLM inference engine |
+| [VIBEE](/docs/api/vibee) | Specification compiler |
+| [Plugin](/docs/api/plugin) | Extension system |
 
 ## Getting Started
 
-1. [Installation](/getting-started/installation)
-2. [Quick Start](/getting-started/quickstart)
-3. [Development Setup](/getting-started/development-setup)
+1. [Installation](/docs/getting-started/installation)
+2. [Quick Start](/docs/getting-started/quickstart)
+3. [Development Setup](/docs/getting-started/development-setup)
 
 ## Community
 
 - [GitHub Repository](https://github.com/gHashTag/trinity)
 - [Report Issues](https://github.com/gHashTag/trinity/issues)
-- [Contributing Guide](/contributing)
+- [Contributing Guide](/docs/contributing)
