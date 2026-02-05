@@ -1,0 +1,24 @@
+# Build artifacts
+*.zip
+neodetect-*.zip
+
+# Node modules
+node_modules/
+package-lock.json
+
+# Test artifacts
+test/node_modules/
+test/package-lock.json
+test/*.json
+!test/package.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# WASM build artifacts
+*.wasm.o
