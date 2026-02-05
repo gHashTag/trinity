@@ -131,6 +131,16 @@ Quick summary:
 3. Fill in add-on details
 4. Submit for review (1-7 days)
 
+## Microsoft Edge Add-ons Submission
+
+For Edge submission, see [EDGE_SUBMISSION_GUIDE.md](EDGE_SUBMISSION_GUIDE.md).
+
+Edge uses the same package as Chrome:
+1. Register at https://partner.microsoft.com/dashboard/microsoftedge/
+2. Upload `neodetect-chrome-v2.0.0.zip` (same as Chrome!)
+3. Fill in extension details
+4. Submit for certification (1-7 days)
+
 ## Support
 
 - GitHub Issues: https://github.com/gHashTag/trinity/issues
