@@ -252,6 +252,94 @@ Documentation is in `docs/` directory:
 
 ---
 
+## Release Process
+
+### Tag Conventions
+
+Trinity uses different tag prefixes to trigger specific release workflows:
+
+| Tag Pattern | Workflow | Purpose |
+|-------------|----------|---------|
+| `ext-v*` | Extension Release | NeoDetect browser extension (Chrome + Firefox) |
+| `compiler-v*` | Build Compiler Release | VIBEE compiler binaries |
+| `v*` | Build & Release | Main project releases |
+
+### Creating a Release
+
+#### Extension Release (NeoDetect)
+
+```bash
+# 1. Ensure all changes are committed and pushed
+git status
+
+# 2. Create extension release tag
+git tag -a ext-v2.1.0 -m "NeoDetect v2.1.0 - Description of changes"
+
+# 3. Push tag to trigger workflow
+git push origin ext-v2.1.0
+
+# 4. Monitor workflow at:
+# https://github.com/gHashTag/trinity/actions/workflows/extension-release.yml
+```
+
+The workflow will:
+- Build WASM module with Zig
+- Package Chrome and Firefox extensions
+- Create GitHub Release with both packages
+- Generate release notes with installation instructions
+
+#### Compiler Release
+
+```bash
+git tag -a compiler-v1.0.0 -m "VIBEE Compiler v1.0.0"
+git push origin compiler-v1.0.0
+```
+
+#### Main Project Release
+
+```bash
+git tag -a v1.0.0 -m "Trinity v1.0.0"
+git push origin v1.0.0
+```
+
+### Manual Workflow Dispatch
+
+All release workflows support manual triggering:
+
+1. Go to Actions → Select workflow
+2. Click "Run workflow"
+3. Enter version number
+4. Click "Run workflow"
+
+### Release Artifacts
+
+| Release Type | Artifacts |
+|--------------|-----------|
+| Extension | `neodetect-chrome-v*.zip`, `neodetect-firefox-v*.zip` |
+| Compiler | Linux/macOS binaries (x86_64, aarch64) |
+| Main | Platform-specific installers |
+
+### Extension Build Script
+
+For local development:
+
+```bash
+cd extension
+
+# Build all (WASM + Chrome + Firefox)
+npm run build
+
+# Build specific target
+npm run build:chrome
+npm run build:firefox
+npm run build:wasm
+
+# Clean artifacts
+npm run clean
+```
+
+---
+
 ## Getting Help
 
 - **Issues:** https://github.com/gHashTag/trinity/issues
