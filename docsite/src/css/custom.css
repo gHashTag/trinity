@@ -1,35 +1,42 @@
 :root {
-  --ifm-color-primary: #00E599;
-  --ifm-color-primary-dark: #00b377;
-  --ifm-color-primary-darker: #00a36b;
-  --ifm-color-primary-darkest: #008558;
-  --ifm-color-primary-light: #1aebaa;
-  --ifm-color-primary-lighter: #33edb5;
-  --ifm-color-primary-lightest: #66f2c9;
+  --ifm-color-primary: #00FF88;
+  --ifm-color-primary-dark: #00CC66;
+  --ifm-color-primary-darker: #00B35A;
+  --ifm-color-primary-darkest: #008542;
+  --ifm-color-primary-light: #33FF9F;
+  --ifm-color-primary-lighter: #66FFB7;
+  --ifm-color-primary-lightest: #99FFCF;
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 229, 153, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 255, 136, 0.1);
 
   /* Trinity custom colors */
   --trinity-golden: #ffd700;
   --trinity-golden-dark: #b8860b;
-  --trinity-bg-dark: #0f0f0f;
+  --trinity-bg-dark: #0a1a0f;
   --trinity-muted: #888888;
+  --trinity-accent: #00FF88;
+  --trinity-red: #FF6B6B;
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: #00E599;
-  --ifm-color-primary-dark: #00cc88;
-  --ifm-color-primary-darker: #00b377;
-  --ifm-color-primary-darkest: #008558;
-  --ifm-color-primary-light: #1aebaa;
-  --ifm-color-primary-lighter: #4df0c0;
-  --ifm-color-primary-lightest: #80f5d4;
-  --ifm-background-color: #0f0f0f;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 229, 153, 0.2);
+  --ifm-color-primary: #00FF88;
+  --ifm-color-primary-dark: #00CC66;
+  --ifm-color-primary-darker: #00B35A;
+  --ifm-color-primary-darkest: #008542;
+  --ifm-color-primary-light: #33FF9F;
+  --ifm-color-primary-lighter: #66FFB7;
+  --ifm-color-primary-lightest: #99FFCF;
+  --ifm-background-color: #0a1a0f;
+  --ifm-background-surface-color: #0f1f14;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 255, 136, 0.2);
 }
 
 .hero__title {
   font-size: 3rem;
+  background: linear-gradient(135deg, #00FF88, #FFD700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero__subtitle {
@@ -72,13 +79,27 @@ code {
   margin-top: 0;
 }
 
+/* Green accent card */
+.green-card {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.08) 0%, rgba(0, 204, 102, 0.04) 100%);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+.green-card h4 {
+  color: var(--trinity-accent);
+  margin-top: 0;
+}
+
 /* Formula styling */
 .formula {
   font-family: 'Times New Roman', serif;
   font-size: 1.25rem;
   text-align: center;
   padding: 1rem;
-  background: rgba(0, 229, 153, 0.05);
+  background: rgba(0, 255, 136, 0.05);
   border-radius: 4px;
   margin: 1rem 0;
 }
@@ -86,6 +107,11 @@ code {
 .formula-golden {
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(184, 134, 11, 0.05) 100%);
   border-left: 3px solid var(--trinity-golden);
+}
+
+.formula-green {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 204, 102, 0.05) 100%);
+  border-left: 3px solid var(--trinity-accent);
 }
 
 /* Sacred math section */
@@ -99,17 +125,49 @@ code {
 /* VIBEE code block styling */
 .vibee-spec {
   border-left: 3px solid var(--ifm-color-primary);
-  background: rgba(0, 229, 153, 0.03);
+  background: rgba(0, 255, 136, 0.03);
+}
+
+/* Metric card */
+.metric-card {
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  margin: 0.5rem;
+}
+
+.metric-card .value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--trinity-accent);
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.metric-card .label {
+  font-size: 0.85rem;
+  color: var(--trinity-muted);
+  margin-top: 0.3rem;
 }
 
 /* Animation for interactive elements */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(0, 229, 153, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(0, 229, 153, 0.6); }
+  0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
+}
+
+@keyframes golden-pulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
 }
 
 .glow-effect {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.golden-glow {
+  animation: golden-pulse 2s ease-in-out infinite;
 }
 
 /* Constants table styling */
@@ -120,15 +178,48 @@ code {
 
 .constants-table th {
   background: linear-gradient(135deg, var(--ifm-color-primary), var(--ifm-color-primary-dark));
-  color: white;
+  color: #000;
   padding: 12px;
+  font-weight: 700;
 }
 
 .constants-table td {
   padding: 10px;
-  border-bottom: 1px solid rgba(0, 229, 153, 0.2);
+  border-bottom: 1px solid rgba(0, 255, 136, 0.2);
 }
 
 .constants-table tr:hover {
-  background: rgba(0, 229, 153, 0.05);
+  background: rgba(0, 255, 136, 0.05);
+}
+
+/* Badge styling */
+.badge-green {
+  background: var(--trinity-accent);
+  color: #000;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.badge-golden {
+  background: var(--trinity-golden);
+  color: #000;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* Chain link visual */
+.chain-link {
+  position: relative;
+  padding-left: 2rem;
+  margin: 0.5rem 0;
+}
+
+.chain-link::before {
+  content: '⛓';
+  position: absolute;
+  left: 0;
 }
