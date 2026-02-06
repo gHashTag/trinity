@@ -1,0 +1,117 @@
+name: hdc_stream_classifier
+version: "1.0.0"
+language: zig
+module: hdc_stream_classifier
+
+description: |
+  HDC Streaming / Online Classifier — Adaptive learning from data streams.
+  Maintains a sliding window of recent samples, periodically rebuilds
+  class prototypes. Detects concept drift via confidence monitoring.
+
+  Architecture:
+    Stream → [Window Buffer] → [Periodic Rebuild] → [Predict]
+                                                    ↓
+                                           [Confidence History]
+                                                    ↓
+                                           [Drift Detection]
+
+  Sliding Window:
+    Ring buffer of last N (text, label) samples.
+    When full, oldest sample is evicted.
+    Prototypes rebuilt from window every rebuild_interval samples.
+
+  Concept Drift Detection:
+    Track rolling mean of prediction confidences.
+    drift_score = 1 - (recent_mean_conf / historical_mean_conf)
+    High drift_score → model is stale, data distribution has shifted.
+
+  Properties:
+    - Adapts to evolving data without full retraining
+    - Bounded memory: only window_size samples stored
+    - Concept drift detection built-in
+    - Observe-and-predict pattern for streaming evaluation
+
+types:
+  StreamSample:
+    fields:
+      text: String
+      label: String
+
+  StreamPrediction:
+    fields:
+      label: String
+      confidence: Float
+      drift_score: Float
+      is_drift: Bool
+
+  ObserveResult:
+    fields:
+      prediction: Option<StreamPrediction>
+      was_correct: Bool
+      window_accuracy: Float
+
+  StreamConfig:
+    fields:
+      window_size: usize         # max samples in buffer (default 100)
+      rebuild_interval: usize    # rebuild every N samples (default 10)
+      drift_window: usize        # confidence history size (default 50)
+      drift_threshold: Float     # drift alert threshold (default 0.3)
+
+  StreamStats:
+    fields:
+      total_observed: usize
+      window_fill: usize
+      num_classes: usize
+      drift_score: Float
+      recent_accuracy: Float
+
+  HDCStreamClassifier:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoder: HDCTextEncoder
+      window: RingBuffer<StreamSample>
+      prototypes: HashMap<String, ClassPrototype>
+      confidence_history: RingBuffer<Float>
+      correct_history: RingBuffer<Bool>
+      config: StreamConfig
+      total_observed: usize
+      samples_since_rebuild: usize
+
+behaviors:
+  - name: observe
+    given: Text and label from stream
+    when: Adds to window, triggers rebuild if interval reached
+    then: Prototypes updated, window advanced
+
+  - name: predict
+    given: Text to classify
+    when: Classifies against current prototypes
+    then: Returns StreamPrediction with confidence and drift score
+
+  - name: observeAndPredict
+    given: Text and true label
+    when: Predicts THEN observes (test-then-train)
+    then: Returns ObserveResult with prediction accuracy
+
+  - name: getDriftScore
+    given: Nothing
+    when: Compares recent vs historical confidence
+    then: Returns drift score (0 = stable, 1 = fully drifted)
+
+  - name: getRecentAccuracy
+    given: Nothing
+    when: Computes accuracy over recent correct_history
+    then: Returns rolling accuracy [0, 1]
+
+  - name: stats
+    given: Nothing
+    when: Computes stream statistics
+    then: Returns StreamStats
+
+  - name: reset
+    given: Nothing
+    when: Clears all state (window, prototypes, history)
+    then: Classifier reset to initial state

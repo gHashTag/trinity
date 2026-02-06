@@ -1,0 +1,117 @@
+name: hdc_multi_task
+version: "1.0.0"
+language: zig
+module: hdc_multi_task
+
+description: |
+  HDC Multi-Task Learning — One Encoder, Multiple Classification Heads.
+  Shared HDC encoding with task-specific prototype banks for simultaneous
+  multi-label classification from a single text encoding.
+
+  Core Insight (Why HDC is ideal for Multi-Task):
+    Neural networks: multi-task requires careful loss balancing,
+    shared representations can interfere, gradient conflicts.
+    HDC: the encoder is FIXED (character-level VSA).
+    Task heads are INDEPENDENT prototype banks.
+    No gradient, no interference, no balancing needed.
+
+  Architecture:
+    Text → [Shared Encoder] → text_hv
+                                  ↓
+            ┌─────────────────────┼─────────────────────┐
+            ↓                     ↓                     ↓
+     [Sentiment Head]      [Topic Head]          [Language Head]
+     pos/neg/neutral       tech/sport/...        en/fr/de/...
+            ↓                     ↓                     ↓
+     sentiment=positive    topic=tech            lang=english
+
+  Task Head = HashMap<class_label, prototype_hv>
+  Each task head is a complete, independent classifier.
+  Same text_hv is compared against each head's prototypes.
+
+  Task Interference:
+    Because prototype banks are independent, tasks CANNOT interfere.
+    Measure: avg cosine between prototypes of DIFFERENT tasks.
+    Should be near-zero (quasi-orthogonal).
+
+  Properties:
+    - Single encoding pass regardless of number of tasks
+    - Zero task interference (independent prototype banks)
+    - Add/remove tasks dynamically
+    - Per-task accuracy tracking
+    - No hyperparameter tuning for task balancing
+
+types:
+  TaskHead:
+    fields:
+      name: String
+      prototypes: HashMap<String, ClassPrototype>
+      sample_count: u32
+
+  MultiTaskPrediction:
+    fields:
+      task_name: String
+      predicted_label: String
+      confidence: Float
+
+  TaskAccuracy:
+    fields:
+      task_name: String
+      accuracy: Float
+      num_classes: usize
+
+  TaskInterference:
+    fields:
+      task_a: String
+      task_b: String
+      avg_cosine: Float     # avg cosine between all cross-task prototype pairs
+
+  HDCMultiTaskLearner:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoder: HDCTextEncoder
+      tasks: HashMap<String, TaskHead>
+
+behaviors:
+  - name: addTask
+    given: Task name
+    when: Creates a new empty task head
+    then: Task registered with empty prototype bank
+
+  - name: trainTask
+    given: Task name, label, text
+    when: Encodes text, bundles into task's class prototype
+    then: Task head updated
+
+  - name: predictTask
+    given: Task name, text
+    when: Encodes text, compares to task's prototypes
+    then: Returns predicted label and confidence
+
+  - name: predictAll
+    given: Text
+    when: Encodes text once, queries all task heads
+    then: Returns list of MultiTaskPrediction (one per task)
+
+  - name: evaluateTask
+    given: Task name, test samples
+    when: Predicts each sample, computes accuracy
+    then: Returns TaskAccuracy
+
+  - name: measureInterference
+    given: Nothing
+    when: Computes pairwise cosine between prototypes of different tasks
+    then: Returns list of TaskInterference scores
+
+  - name: taskCount
+    given: Nothing
+    when: Returns number of registered tasks
+    then: Returns usize
+
+  - name: removeTask
+    given: Task name
+    when: Removes task head and frees prototypes
+    then: Task removed

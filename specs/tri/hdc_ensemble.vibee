@@ -1,0 +1,105 @@
+name: hdc_ensemble
+version: "1.0.0"
+language: zig
+module: hdc_ensemble
+
+description: |
+  HDC Ensemble — Unified Cognitive Pipeline combining:
+    Classifier (supervised) + AnomalyDetector (novelty) + Clustering (unsupervised)
+
+  Pipeline:
+    Input → [Anomaly Gate] → [Classifier] → [Cluster Context] → Decision
+              ↓                  ↓                ↓
+          anomaly_score      class_label      cluster_id
+          is_anomaly         confidence       cluster_sim
+
+  Decision Logic:
+    if anomaly_detector.is_anomaly → ANOMALY_REJECTED
+    if classifier.confidence > threshold → CLASSIFIED
+    if confidence low → UNCERTAIN
+    if nothing trained → UNINITIALIZED
+
+  Shared Encoding:
+    All subsystems initialized with same seed → identical ItemMemory
+    → identical text encoding across all modules (no inconsistency)
+
+  Properties:
+    - Anomaly gating: reject out-of-distribution inputs before classification
+    - Cluster context: add structural information to predictions
+    - Confidence thresholding: refuse low-confidence predictions
+    - Single API: train once, predict with full ensemble intelligence
+
+types:
+  EnsembleDecision:
+    enum:
+      - classified          # Normal, classified with confidence
+      - anomaly_rejected    # Flagged as anomaly, classification unreliable
+      - uncertain           # Low confidence, needs more training data
+      - uninitialized       # No models trained yet
+
+  EnsembleResult:
+    fields:
+      label: String
+      confidence: Float
+      is_anomaly: Bool
+      anomaly_score: Float
+      cluster_id: Option<usize>
+      cluster_similarity: Float
+      decision: EnsembleDecision
+
+  EnsembleConfig:
+    fields:
+      confidence_threshold: Float  # min confidence for CLASSIFIED (default 0.3)
+      anomaly_gating: Bool         # if true, reject anomalies (default true)
+
+  EnsembleStats:
+    fields:
+      num_classes: usize
+      total_class_samples: u32
+      num_anomaly_profiles: usize
+      total_normal_samples: u32
+      num_clusters: usize
+      dimension: usize
+
+  HDCEnsemble:
+    fields:
+      allocator: Allocator
+      classifier: HDCClassifier
+      anomaly_detector: HDCAnomalyDetector
+      clustering: HDCClustering
+      dimension: usize
+      confidence_threshold: Float
+      anomaly_gating: Bool
+      cluster_result: Option<ClusterResult>
+      cluster_vectors: Option<List<HybridBigInt>>
+
+behaviors:
+  - name: trainClassifier
+    given: Class label and text
+    when: Trains supervised classifier
+    then: Class prototype updated
+
+  - name: trainNormal
+    given: Normal text sample
+    when: Trains anomaly detector "normal" profile
+    then: Normal prototype updated
+
+  - name: fitClusters
+    given: List of texts and k
+    when: Runs k-means clustering on texts
+    then: Cluster centroids stored for future prediction
+
+  - name: calibrate
+    given: Normal text samples
+    when: Calibrates anomaly threshold from training data
+    then: Threshold set to mean + sensitivity * std
+
+  - name: predict
+    given: Text to classify
+    when: Runs full ensemble pipeline
+    then: Returns EnsembleResult with decision
+
+  - name: stats
+    given: Nothing
+    when: Computes ensemble-wide statistics
+    then: Returns EnsembleStats

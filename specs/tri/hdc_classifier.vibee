@@ -1,0 +1,93 @@
+name: hdc_classifier
+version: "1.0.0"
+language: zig
+module: hdc_classifier
+
+description: |
+  HDC Classifier using Hyperdimensional Computing.
+  One-shot and few-shot classification via bundled class prototypes.
+
+  Architecture:
+    class_prototype[c] = bundle(sample_1, sample_2, ..., sample_N)
+    prediction = argmax_c similarity(query_hv, class_prototype[c])
+
+  Training:
+    train(class_label, text) encodes text as hypervector, bundles into class prototype.
+    One-shot: single example per class works due to high-dimensional geometry.
+    Few-shot: more examples → stronger prototype → higher accuracy.
+
+  Encoding:
+    Text → char-level n-gram encoding via NGramEncoder.
+    Each text produces a single D-dimensional hypervector.
+
+  Properties:
+    - No backpropagation, no gradient descent
+    - Incremental: add new classes/samples without retraining
+    - Interpretable: similarity scores show confidence per class
+    - Capacity: O(sqrt(D)) classes before degradation
+
+types:
+  ClassPrototype:
+    fields:
+      label: String
+      prototype_hv: Ptr<HybridBigInt>
+      sample_count: u32
+
+  PredictionResult:
+    fields:
+      label: String
+      confidence: Float
+      top_k: List<ClassScore>
+
+  ClassScore:
+    fields:
+      label: String
+      similarity: Float
+
+  ClassifierStats:
+    fields:
+      num_classes: usize
+      total_samples: u32
+      dimension: usize
+      avg_samples_per_class: Float
+
+  HDCClassifier:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      classes: HashMap<String, Ptr<ClassPrototype>>
+      total_samples: u32
+      jit_engine: Option<JitVSAEngine>
+
+behaviors:
+  - name: train
+    given: Class label and text sample
+    when: Encodes text as hypervector, bundles into class prototype
+    then: Class prototype updated (created if new class)
+
+  - name: trainBatch
+    given: List of (label, text) pairs
+    when: Trains on all pairs sequentially
+    then: All class prototypes updated
+
+  - name: predict
+    given: Text to classify
+    when: Encodes text, computes similarity to all class prototypes
+    then: Returns PredictionResult with best class and confidence
+
+  - name: predictTopK
+    given: Text and k
+    when: Same as predict but returns top-k classes
+    then: Returns list of ClassScores sorted by similarity
+
+  - name: removeClass
+    given: Class label
+    when: Removes class prototype from classifier
+    then: Returns true if class existed and was removed
+
+  - name: stats
+    given: Nothing
+    when: Computes classifier statistics
+    then: Returns ClassifierStats

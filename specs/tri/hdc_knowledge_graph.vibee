@@ -1,0 +1,99 @@
+name: hdc_knowledge_graph
+version: "1.0.0"
+language: zig
+module: hdc_knowledge_graph
+
+description: |
+  HDC Knowledge Graph using Hyperdimensional Computing.
+  Stores (subject, relation, object) triples in holographic memory.
+
+  Encoding:
+    triple_hv = bind(S_hv, R_hv, O_hv)  [three-way trit-wise multiply]
+    memory_hv = bundle(triple_1, triple_2, ..., triple_N)
+
+  Queries (pattern matching via unbind):
+    (S, R, ?) → unbind(memory, bind(S, R)) → decode against entity codebook
+    (?, R, O) → unbind(memory, bind(R, O)) → decode against entity codebook
+    (S, ?, O) → unbind(memory, bind(S, O)) → decode against relation codebook
+
+  Properties:
+    - Bind is commutative and self-inverse in ternary VSA
+    - Bind is associative: bind(a, bind(b, c)) = bind(bind(a, b), c)
+    - Capacity: O(sqrt(D)) triples per memory vector
+    - Graceful degradation: similarity decreases as memory fills
+
+types:
+  Triple:
+    fields:
+      subject: String
+      relation: String
+      object: String
+      binding_hv: Ptr<HybridBigInt>
+
+  QueryPattern:
+    fields:
+      subject: Option<String>
+      relation: Option<String>
+      object: Option<String>
+
+  QueryResult:
+    fields:
+      value: String
+      similarity: Float
+      role: String
+
+  GraphStats:
+    fields:
+      num_triples: usize
+      num_entities: usize
+      num_relations: usize
+      dimension: usize
+      estimated_capacity: usize
+      load_factor: Float
+
+  HDCKnowledgeGraph:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      dimension: usize
+      memory_vec: Option<Ptr<HybridBigInt>>
+      triples: List<Ptr<Triple>>
+      entity_codebook: HashMap<String, Ptr<HybridBigInt>>
+      relation_codebook: HashMap<String, Ptr<HybridBigInt>>
+      jit_engine: Option<JitVSAEngine>
+
+behaviors:
+  - name: addTriple
+    given: Subject, relation, and object strings
+    when: Encodes all three, binds into triple_hv, bundles into memory
+    then: Triple stored, codebooks updated
+
+  - name: query
+    given: QueryPattern with 1-2 known slots and 1-2 wildcards
+    when: Binds known slots, unbinds from memory, decodes result
+    then: Returns QueryResult with best matching value for wildcard
+
+  - name: queryTopK
+    given: QueryPattern and k
+    when: Same as query but returns top-k matches
+    then: Returns list of QueryResults sorted by similarity
+
+  - name: removeTriple
+    given: Subject, relation, and object strings
+    when: Finds matching triple, removes, rebuilds memory
+    then: Returns true if found and removed
+
+  - name: hasTriple
+    given: Subject, relation, and object strings
+    when: Checks if exact triple exists in storage
+    then: Returns bool
+
+  - name: getTriplesBySubject
+    given: Subject string
+    when: Filters stored triples by subject
+    then: Returns matching triples
+
+  - name: stats
+    given: Nothing
+    when: Computes graph statistics
+    then: Returns GraphStats with capacity info

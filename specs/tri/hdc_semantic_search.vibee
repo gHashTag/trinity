@@ -1,0 +1,93 @@
+name: hdc_semantic_search
+version: "1.0.0"
+language: zig
+module: hdc_semantic_search
+
+description: |
+  HDC Semantic Search — Document Retrieval via Hyperdimensional Similarity.
+
+  Architecture:
+    Index: document → HDCTextEncoder → document_hv (stored)
+    Query: query_text → HDCTextEncoder → query_hv
+    Search: top-k documents by cosine(query_hv, doc_hv)
+
+  Encoding Modes:
+    word_tfidf: Best for relevance ranking (rare words weighted higher)
+    hybrid: Best for semantic similarity (char + word combined)
+    word_pos: Best for exact phrase matching (positional encoding)
+
+  TF-IDF Integration:
+    1. Index all documents (stores text + HV)
+    2. Call buildIndex() to compute corpus-wide IDF weights
+    3. Re-encodes all documents with TF-IDF weighting
+    4. Queries automatically use TF-IDF encoding
+
+  Properties:
+    - No inverted index needed (dense vector retrieval)
+    - Incremental: add documents without rebuilding entire index
+    - Similarity-based: captures semantic relatedness
+    - Sublinear potential via LSH (future: locality-sensitive hashing)
+
+types:
+  Document:
+    fields:
+      id: String
+      text: String
+      hv: HybridBigInt
+      metadata: Option<String>
+
+  SearchResult:
+    fields:
+      id: String
+      text: String
+      similarity: Float
+      metadata: Option<String>
+      rank: usize
+
+  IndexStats:
+    fields:
+      num_documents: usize
+      vocabulary_size: usize
+      dimension: usize
+      is_tfidf_built: Bool
+
+  HDCSemanticSearch:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoder: HDCTextEncoder
+      documents: List<Document>
+      tfidf_built: Bool
+
+behaviors:
+  - name: addDocument
+    given: Document ID and text
+    when: Encodes text as HV, stores in index
+    then: Document indexed
+
+  - name: addDocumentWithMetadata
+    given: Document ID, text, and metadata string
+    when: Encodes text, stores with metadata
+    then: Document indexed with metadata
+
+  - name: buildIndex
+    given: Nothing (all documents already added)
+    when: Computes TF-IDF from corpus, re-encodes all documents
+    then: Index optimized for relevance-ranked retrieval
+
+  - name: search
+    given: Query text and k
+    when: Encodes query, computes similarity to all documents
+    then: Returns top-k SearchResults sorted by similarity
+
+  - name: remove
+    given: Document ID
+    when: Removes document from index
+    then: Returns true if existed
+
+  - name: stats
+    given: Nothing
+    when: Computes index statistics
+    then: Returns IndexStats

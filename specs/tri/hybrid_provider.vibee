@@ -1,0 +1,120 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# HYBRID PROVIDER - Auto Groq/Zhipu Language Switch
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Generated from IGLA dogfooding (Test 2)
+# Purpose: Automatic language detection and provider routing
+#
+# - Groq: Fast English inference (1000+ tok/s)
+# - Zhipu: Chinese text (GLM-4)
+# - Local: IGLA fallback (1955+ ops/s)
+#
+# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: hybrid_provider
+version: "1.0.0"
+language: zig
+module: trinity_hybrid
+
+types:
+  Provider:
+    description: "Available inference providers"
+    variants:
+      - Groq      # Fast English (Llama-3)
+      - Zhipu     # Chinese (GLM-4)
+      - Local     # IGLA semantic engine
+
+  Language:
+    description: "Detected input language"
+    variants:
+      - English
+      - Chinese
+      - Unknown
+
+  InferenceRequest:
+    description: "Request for hybrid inference"
+    fields:
+      prompt: String
+      max_tokens: Int
+      prefer_speed: Bool
+      fallback_enabled: Bool
+
+  InferenceResult:
+    description: "Result from hybrid inference"
+    fields:
+      output: String
+      provider_used: Provider
+      latency_ms: Float
+      confidence: Float
+
+  ProviderConfig:
+    description: "Configuration for a provider"
+    fields:
+      api_key: String
+      base_url: String
+      model_name: String
+      timeout_ms: Int
+
+behaviors:
+  - name: detect_language
+    description: "Detect input language from text"
+    given: "Input text string"
+    when: "Contains Chinese characters (CJK range U+4E00-U+9FFF)"
+    then: "Return Chinese, else English"
+
+  - name: select_provider
+    description: "Select optimal provider based on language and preferences"
+    given: "Language detected and preference flags"
+    when: "Chinese detected"
+    then: "Use Zhipu"
+    else: "Use Groq (faster for English)"
+
+  - name: fallback_on_error
+    description: "Handle provider failures gracefully"
+    given: "Primary provider fails (timeout, error, rate limit)"
+    when: "Error or timeout > threshold"
+    then: "Switch to secondary provider, then Local"
+
+  - name: route_request
+    description: "Route request to appropriate provider"
+    given: "InferenceRequest with prompt"
+    when: "Request received"
+    then: >
+      1. Detect language
+      2. Select primary provider
+      3. Execute with timeout
+      4. Fallback on error
+      5. Return result with metadata
+
+  - name: aggregate_responses
+    description: "Combine responses for multi-provider queries"
+    given: "Responses from multiple providers"
+    when: "Ensemble mode enabled"
+    then: "Weighted average based on confidence scores"
+
+# Validation rules
+invariants:
+  - "At least one provider must be configured"
+  - "Fallback chain: Groq -> Zhipu -> Local"
+  - "Local provider is always available (no API needed)"
+  - "Timeout must be positive integer"
+  - "max_tokens must be >= 1 and <= 4096"
+
+# Example usage
+examples:
+  - input: "What is machine learning?"
+    expected_provider: Groq
+    expected_language: English
+
+  - input: "什么是机器学习？"
+    expected_provider: Zhipu
+    expected_language: Chinese
+
+  - input: "king - man + woman = ?"
+    expected_provider: Local
+    expected_language: English
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════

@@ -74,3 +74,70 @@ bitnet-cpp/
 
 # Microsoft model weights
 models/microsoft-bitnet-2b/
+models/microsoft-bitnet-2b-bf16/
+models/bitnet-2b.bin
+models/embeddings/
+
+# Binary executables (root)
+bitnet_ffi
+bitnet_full_layers
+igla_batch
+igla_batch_v5
+igla_dogfooding
+igla_glove
+igla_infinite_opt
+igla_local_m1
+igla_metal_swe
+igla_opt
+parallel_downloader
+trinity_node_igla
+trinity_ona_ui
+trinity_swe_agent
+trinity_ui
+trinity_ui_app
+test_io*
+test_mmap_ret
+test_page_size*
+debug_test
+
+# Debug symbols
+*.dSYM/
+
+# Python
+__pycache__/
+*.pyc
+
+# Node modules everywhere
+node_modules/
+
+# Contracts build
+contracts/artifacts/
+contracts/cache/
+
+# VSCode extension build
+vscode-trinity-swe/out/
+
+# Temp Python scripts
+convert_safetensors.py
+diagnose_*.py
+verify_forward.py
+
+# Website static (deployed via gh-pages)
+.nojekyll
+404.html
+index.html
+docs.html
+quantum-runtime.html
+assets/
+icons/
+img/
+favicon.ico
+manifest.json
+og-image.svg
+robots.txt
+sitemap.xml
+sw.js
+vite.svg
+
+# Vibee client (separate project)
+vibee-client/
