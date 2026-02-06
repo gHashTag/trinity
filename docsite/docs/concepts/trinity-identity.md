@@ -93,9 +93,37 @@ These approximations are empirical curve fits, not derivations from first princi
 
 :::
 
-## Computational Verification
+## Interactive Verification
 
-The identity can be verified in Zig:
+import MathVerify from '@site/src/components/MathVerify';
+
+Try it yourself — run the code below to verify the Trinity Identity:
+
+<MathVerify
+  formula="φ² + 1/φ² = 3"
+  pythonCode={`import math
+
+# Calculate the golden ratio
+phi = (1 + math.sqrt(5)) / 2
+
+# Compute each term
+phi_squared = phi ** 2
+inv_phi_squared = 1 / (phi ** 2)
+result = phi_squared + inv_phi_squared
+
+# Display results
+print(f"φ = {phi:.15f}")
+print(f"φ² = {phi_squared:.15f}")
+print(f"1/φ² = {inv_phi_squared:.15f}")
+print(f"")
+print(f"φ² + 1/φ² = {result:.15f}")
+print(f"")
+print(f"✓ Equals 3: {abs(result - 3) < 1e-10}")`}
+/>
+
+## Computational Verification (Zig)
+
+The identity can also be verified in Zig:
 
 ```zig
 const std = @import("std");
