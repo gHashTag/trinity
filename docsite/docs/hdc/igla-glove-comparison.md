@@ -10,6 +10,16 @@ How Trinity's IGLA (HDC/VSA zero-shot with GloVe ternary) compares to traditiona
 **Status:** Verified
 **Finding:** 76.2% analogy accuracy with 20x compression, zero-shot symbolic reasoning.
 
+## Academic References
+
+This comparison builds on foundational NLP research:
+
+- **Pennington et al. (2014)** - "GloVe: Global Vectors for Word Representation" - *EMNLP* - [Stanford NLP](https://nlp.stanford.edu/projects/glove/)
+- **Mikolov et al. (2013)** - "Efficient Estimation of Word Representations" (Word2Vec) - [arXiv:1301.3781](https://arxiv.org/abs/1301.3781)
+- **Devlin et al. (2019)** - "BERT: Pre-training of Deep Bidirectional Transformers" - [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
+- **Bojanowski et al. (2017)** - "Enriching Word Vectors with Subword Information" (fastText) - [arXiv:1607.04606](https://arxiv.org/abs/1607.04606)
+- **Kanerva (2009)** - "Hyperdimensional Computing" - *Cognitive Computation* - [DOI:10.1007/s12559-009-9009-8](https://doi.org/10.1007/s12559-009-9009-8)
+
 ## Executive Summary
 
 IGLA is Trinity's semantic reasoning engine using Hyperdimensional Computing (HDC/VSA) with ternary-encoded GloVe embeddings. It achieves competitive accuracy on word analogy tasks while offering massive compression, zero training requirements, and symbolic reasoning capabilities that traditional embeddings lack.

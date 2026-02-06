@@ -10,6 +10,12 @@ This report documents the results of testing Microsoft's official BitNet b1.58-2
 **Model:** microsoft/bitnet-b1.58-2B-4T
 **Finding:** Incoherent output observed across all three frameworks on CPU hardware. GPU testing is required to establish baseline quality.
 
+## Academic References
+
+- **Ma et al. (2024)** - "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits" - [arXiv:2402.17764](https://arxiv.org/abs/2402.17764)
+- **Microsoft (2024)** - "BitNet b1.58 2B4T Technical Report" - [arXiv:2504.12285](https://arxiv.org/abs/2504.12285)
+- **Microsoft (2024)** - "1-bit AI Infra: Fast and Lossless BitNet b1.58 Inference" - [arXiv:2410.16144](https://arxiv.org/abs/2410.16144)
+
 ## Model Specifications
 
 | Parameter | Value |

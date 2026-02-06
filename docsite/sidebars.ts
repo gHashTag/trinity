@@ -110,6 +110,7 @@ const sidebars: SidebarsConfig = {
         'research/index',
         'research/bitnet-report',
         'research/trinity-node-ffi',
+        'research/bibliography',
       ],
     },
     'faq',
