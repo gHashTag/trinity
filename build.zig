@@ -249,4 +249,97 @@ pub fn build(b: *std.Build) void {
     const run_claude_ui = b.addRunArtifact(claude_ui);
     const claude_ui_step = b.step("claude-ui", "Run Claude UI Demo");
     claude_ui_step.dependOn(&run_claude_ui.step);
+
+    // Trinity CLI - Interactive AI Agent
+    const trinity_cli = b.addExecutable(.{
+        .name = "trinity-cli",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/trinity_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(trinity_cli);
+
+    const run_trinity_cli = b.addRunArtifact(trinity_cli);
+    if (b.args) |args| {
+        run_trinity_cli.addArgs(args);
+    }
+    const trinity_cli_step = b.step("cli", "Run Trinity CLI (Interactive AI Agent)");
+    trinity_cli_step.dependOn(&run_trinity_cli.step);
+
+    // VIBEE Compiler CLI
+    const vibee = b.addExecutable(.{
+        .name = "vibee",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/gen_cmd.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(vibee);
+
+    const run_vibee = b.addRunArtifact(vibee);
+    if (b.args) |args| {
+        run_vibee.addArgs(args);
+    }
+    const vibee_step = b.step("vibee", "Run VIBEE Compiler CLI");
+    vibee_step.dependOn(&run_vibee.step);
+
+    // Vibeec modules for TRI
+    const vibeec_swe = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/trinity_swe_agent.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const vibeec_chat = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/igla_local_chat.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const vibeec_coder = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/igla_local_coder.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // TRI - Unified Trinity CLI
+    const tri = b.addExecutable(.{
+        .name = "tri",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity_swe", .module = vibeec_swe },
+                .{ .name = "igla_chat", .module = vibeec_chat },
+                .{ .name = "igla_coder", .module = vibeec_coder },
+            },
+        }),
+    });
+    b.installArtifact(tri);
+
+    const run_tri = b.addRunArtifact(tri);
+    if (b.args) |args| {
+        run_tri.addArgs(args);
+    }
+    const tri_step = b.step("tri", "Run TRI - Unified Trinity CLI");
+    tri_step.dependOn(&run_tri.step);
+
+    // Trinity Hybrid Local Coder (IGLA + Ollama)
+    const hybrid_local = b.addExecutable(.{
+        .name = "trinity-hybrid",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/trinity_hybrid_local.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(hybrid_local);
+
+    const run_hybrid = b.addRunArtifact(hybrid_local);
+    if (b.args) |args| {
+        run_hybrid.addArgs(args);
+    }
+    const hybrid_step = b.step("hybrid", "Run Trinity Hybrid Local Coder (IGLA + Ollama)");
+    hybrid_step.dependOn(&run_hybrid.step);
 }
