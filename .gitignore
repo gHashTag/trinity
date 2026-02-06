@@ -141,3 +141,12 @@ vite.svg
 
 # Vibee client (separate project)
 vibee-client/
+
+# Releases (use GitHub Releases for binaries)
+releases/
+
+# Temp test files
+debug_test.zig
+
+# Old build files
+build_zig13_old.zig

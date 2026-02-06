@@ -44,47 +44,47 @@ pub const Instruction = struct {
 pub const BasicBlock = struct {
     start_address: u64,
     end_address: u64,
-    instructions: std.ArrayList(Instruction),
-    successors: std.ArrayList(u64),
-    predecessors: std.ArrayList(u64),
+    instructions: std.ArrayListUnmanaged(Instruction),
+    successors: std.ArrayListUnmanaged(u64),
+    predecessors: std.ArrayListUnmanaged(u64),
 
-    pub fn init(allocator: std.mem.Allocator, start: u64) BasicBlock {
+    pub fn init(start: u64) BasicBlock {
         return BasicBlock{
             .start_address = start,
             .end_address = start,
-            .instructions = std.ArrayList(Instruction).init(allocator),
-            .successors = std.ArrayList(u64).init(allocator),
-            .predecessors = std.ArrayList(u64).init(allocator),
+            .instructions = .{},
+            .successors = .{},
+            .predecessors = .{},
         };
     }
 
-    pub fn deinit(self: *BasicBlock) void {
-        self.instructions.deinit();
-        self.successors.deinit();
-        self.predecessors.deinit();
+    pub fn deinit(self: *BasicBlock, allocator: std.mem.Allocator) void {
+        self.instructions.deinit(allocator);
+        self.successors.deinit(allocator);
+        self.predecessors.deinit(allocator);
     }
 };
 
 pub const WasmFunction = struct {
     index: u32,
     type_index: u32,
-    locals: std.ArrayList(WasmLocal),
+    locals: std.ArrayListUnmanaged(WasmLocal),
     code: []const u8,
-    instructions: std.ArrayList(Instruction),
+    instructions: std.ArrayListUnmanaged(Instruction),
 
-    pub fn init(allocator: std.mem.Allocator, idx: u32, type_idx: u32) WasmFunction {
+    pub fn init(idx: u32, type_idx: u32) WasmFunction {
         return WasmFunction{
             .index = idx,
             .type_index = type_idx,
-            .locals = std.ArrayList(WasmLocal).init(allocator),
+            .locals = .{},
             .code = &[_]u8{},
-            .instructions = std.ArrayList(Instruction).init(allocator),
+            .instructions = .{},
         };
     }
 
-    pub fn deinit(self: *WasmFunction) void {
-        self.locals.deinit();
-        self.instructions.deinit();
+    pub fn deinit(self: *WasmFunction, allocator: std.mem.Allocator) void {
+        self.locals.deinit(allocator);
+        self.instructions.deinit(allocator);
     }
 };
 
@@ -96,23 +96,23 @@ pub const WasmLocal = struct {
 pub const DisassemblyResult = struct {
     allocator: std.mem.Allocator,
     architecture: b2t_loader.Architecture,
-    functions: std.ArrayList(WasmFunction),
+    functions: std.ArrayListUnmanaged(WasmFunction),
     entry_point: u64,
 
     pub fn init(allocator: std.mem.Allocator) DisassemblyResult {
         return DisassemblyResult{
             .allocator = allocator,
             .architecture = .unknown,
-            .functions = std.ArrayList(WasmFunction).init(allocator),
+            .functions = .{},
             .entry_point = 0,
         };
     }
 
     pub fn deinit(self: *DisassemblyResult) void {
         for (self.functions.items) |*func| {
-            func.deinit();
+            func.deinit(self.allocator);
         }
-        self.functions.deinit();
+        self.functions.deinit(self.allocator);
     }
 };
 
@@ -244,8 +244,8 @@ pub fn disassembleWasm(allocator: std.mem.Allocator, binary: *const b2t_loader.L
     }
 
     // Parse function types from function section
-    var func_types = std.ArrayList(u32).init(allocator);
-    defer func_types.deinit();
+    var func_types = std.ArrayListUnmanaged(u32){};
+    defer func_types.deinit(allocator);
 
     if (func_section) |fs| {
         var offset: usize = 0;
@@ -253,7 +253,7 @@ pub fn disassembleWasm(allocator: std.mem.Allocator, binary: *const b2t_loader.L
         var i: u32 = 0;
         while (i < num_funcs) : (i += 1) {
             const type_idx = readLeb128u32(fs.raw_data, &offset);
-            try func_types.append(type_idx);
+            try func_types.append(allocator, type_idx);
         }
     }
 
@@ -273,7 +273,7 @@ pub fn disassembleWasm(allocator: std.mem.Allocator, binary: *const b2t_loader.L
         // Get type index
         const type_idx = if (func_idx < func_types.items.len) func_types.items[func_idx] else 0;
 
-        var func = WasmFunction.init(allocator, func_idx, type_idx);
+        var func = WasmFunction.init(func_idx, type_idx);
 
         // Parse locals
         const num_local_entries = readLeb128u32(code_data, &offset);
@@ -282,7 +282,7 @@ pub fn disassembleWasm(allocator: std.mem.Allocator, binary: *const b2t_loader.L
             const count = readLeb128u32(code_data, &offset);
             const value_type = code_data[offset];
             offset += 1;
-            try func.locals.append(WasmLocal{ .count = count, .value_type = value_type });
+            try func.locals.append(allocator, WasmLocal{ .count = count, .value_type = value_type });
         }
 
         // Store code bytes
@@ -294,15 +294,15 @@ pub fn disassembleWasm(allocator: std.mem.Allocator, binary: *const b2t_loader.L
             var local_offset: usize = 0;
             const remaining = code_data[offset..body_end];
             if (remaining.len == 0) break;
-            
+
             const inst = disassembleWasmInstruction(remaining, &local_offset) catch break;
             var instruction = inst;
             instruction.address = inst_start;
-            try func.instructions.append(instruction);
+            try func.instructions.append(allocator, instruction);
             offset += local_offset;
         }
 
-        try result.functions.append(func);
+        try result.functions.append(allocator, func);
     }
 
     return result;
@@ -469,7 +469,7 @@ const X86_REG_NAMES = [_][]const u8{
 };
 
 const X86_REG_NAMES_32 = [_][]const u8{
-    "eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi",
+    "eax", "ecx", "edx",  "ebx",  "esp",  "ebp",  "esi",  "edi",
     "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d",
 };
 
@@ -482,7 +482,7 @@ pub fn disassembleX86_64(allocator: std.mem.Allocator, binary: *const b2t_loader
     for (binary.sections.items) |section| {
         if (section.is_executable and section.raw_data.len > 0) {
             // Create a pseudo-function for each code section
-            var func = WasmFunction.init(allocator, @intCast(result.functions.items.len), 0);
+            var func = WasmFunction.init(@intCast(result.functions.items.len), 0);
             func.code = section.raw_data;
 
             // Disassemble the section
@@ -495,12 +495,12 @@ pub fn disassembleX86_64(allocator: std.mem.Allocator, binary: *const b2t_loader
                 const inst = disassembleX86Instruction(remaining, &local_offset) catch break;
                 var instruction = inst;
                 instruction.address = section.virtual_address + offset;
-                try func.instructions.append(instruction);
+                try func.instructions.append(allocator, instruction);
                 offset += local_offset;
                 if (local_offset == 0) break; // Prevent infinite loop
             }
 
-            try result.functions.append(func);
+            try result.functions.append(allocator, func);
         }
     }
 
