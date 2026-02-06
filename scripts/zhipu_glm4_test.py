@@ -30,10 +30,10 @@ PHOENIX = 999
 class ZhipuClient:
     """Zhipu GLM-4 API client."""
 
-    # Try multiple endpoints (China first)
+    # Try multiple endpoints (Coding Plan first!)
     ENDPOINTS = [
-        "https://open.bigmodel.cn/api/paas/v4/chat/completions",  # China main
-        "https://bigmodel.cn/api/paas/v4/chat/completions",  # China alt
+        "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions",  # CODING PLAN!
+        "https://open.bigmodel.cn/api/paas/v4/chat/completions",  # Standard
         "https://api.z.ai/api/paas/v4/chat/completions",  # International
     ]
     # Try different model codes (correct names from docs)
