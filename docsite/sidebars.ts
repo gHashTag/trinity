@@ -8,8 +8,36 @@ const sidebars: SidebarsConfig = {
       label: 'Getting Started',
       items: [
         'getting-started/quickstart',
+        'getting-started/tutorial',
         'getting-started/installation',
         'getting-started/development-setup',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Concepts',
+      items: [
+        'concepts/index',
+        'concepts/balanced-ternary',
+        'concepts/trinity-identity',
+        'concepts/glossary',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'BitNet Integration',
+      items: [
+        'bitnet/index',
+        'bitnet/inference',
+        'bitnet/model-format',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'HDC Applications',
+      items: [
+        'hdc/index',
+        'hdc/applications',
       ],
     },
     {
@@ -24,11 +52,22 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Sacred Mathematics',
+      label: 'Benchmarks',
       items: [
-        'sacred-math/index',
-        'sacred-math/formulas',
-        'sacred-math/proofs',
+        'benchmarks/index',
+        'benchmarks/gpu-inference',
+        'benchmarks/jit-performance',
+        'benchmarks/memory-efficiency',
+        'benchmarks/competitor-comparison',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Deployment',
+      items: [
+        'deployment/index',
+        'deployment/runpod',
+        'deployment/local',
       ],
     },
     {
@@ -42,6 +81,9 @@ const sidebars: SidebarsConfig = {
         'api/firebird',
         'api/vibee',
         'api/plugin',
+        'api/sequence-hdc',
+        'api/jit',
+        'api/sparse',
       ],
     },
     {
@@ -51,6 +93,24 @@ const sidebars: SidebarsConfig = {
         'architecture/overview',
       ],
     },
+    {
+      type: 'category',
+      label: 'Mathematical Foundations',
+      items: [
+        'math-foundations/index',
+        'math-foundations/formulas',
+        'math-foundations/proofs',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Research',
+      items: [
+        'research/index',
+        'research/bitnet-report',
+      ],
+    },
+    'faq',
     'troubleshooting',
     'contributing',
   ],
