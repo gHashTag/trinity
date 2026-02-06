@@ -39,6 +39,8 @@ const config: Config = {
     },
   ],
 
+  themes: ['@docusaurus/theme-live-codeblock'],
+
   presets: [
     [
       'classic',
@@ -115,6 +117,9 @@ const config: Config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
       additionalLanguages: ['bash', 'yaml', 'json'],
+    },
+    liveCodeBlock: {
+      playgroundPosition: 'bottom',
     },
   } satisfies Preset.ThemeConfig,
 };

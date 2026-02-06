@@ -95,31 +95,30 @@ These approximations are empirical curve fits, not derivations from first princi
 
 ## Interactive Verification
 
-import MathVerify from '@site/src/components/MathVerify';
+Try it yourself — edit the code and see the result live:
 
-Try it yourself — run the code below to verify the Trinity Identity:
+```jsx live
+function TrinityIdentity() {
+  const phi = (1 + Math.sqrt(5)) / 2;
+  const phiSquared = phi * phi;
+  const invPhiSquared = 1 / (phi * phi);
+  const result = phiSquared + invPhiSquared;
 
-<MathVerify
-  formula="φ² + 1/φ² = 3"
-  pythonCode={`import math
-
-# Calculate the golden ratio
-phi = (1 + math.sqrt(5)) / 2
-
-# Compute each term
-phi_squared = phi ** 2
-inv_phi_squared = 1 / (phi ** 2)
-result = phi_squared + inv_phi_squared
-
-# Display results
-print(f"φ = {phi:.15f}")
-print(f"φ² = {phi_squared:.15f}")
-print(f"1/φ² = {inv_phi_squared:.15f}")
-print(f"")
-print(f"φ² + 1/φ² = {result:.15f}")
-print(f"")
-print(f"✓ Equals 3: {abs(result - 3) < 1e-10}")`}
-/>
+  return (
+    <div style={{fontFamily: 'monospace', padding: '1rem'}}>
+      <div>φ = {phi.toFixed(15)}</div>
+      <div>φ² = {phiSquared.toFixed(15)}</div>
+      <div>1/φ² = {invPhiSquared.toFixed(15)}</div>
+      <div style={{marginTop: '0.5rem', fontWeight: 'bold'}}>
+        φ² + 1/φ² = {result.toFixed(15)}
+      </div>
+      <div style={{marginTop: '0.5rem', color: '#16a34a'}}>
+        ✓ Equals 3: {Math.abs(result - 3) < 1e-10 ? 'TRUE' : 'FALSE'}
+      </div>
+    </div>
+  );
+}
+```
 
 ## Computational Verification (Zig)
 
