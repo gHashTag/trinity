@@ -1,0 +1,122 @@
+{
+  "name": "trinity-swe",
+  "displayName": "Trinity SWE Agent",
+  "description": "100% Local AI coding assistant - Cursor/Claude Code competitor",
+  "version": "1.0.0",
+  "publisher": "trinity",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "coding",
+    "assistant",
+    "local",
+    "zig",
+    "ternary",
+    "cursor",
+    "copilot"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "trinity.generate",
+        "title": "Trinity: Generate Code"
+      },
+      {
+        "command": "trinity.explain",
+        "title": "Trinity: Explain Code"
+      },
+      {
+        "command": "trinity.fix",
+        "title": "Trinity: Fix Bug"
+      },
+      {
+        "command": "trinity.refactor",
+        "title": "Trinity: Refactor"
+      },
+      {
+        "command": "trinity.reason",
+        "title": "Trinity: Chain-of-Thought Reasoning"
+      },
+      {
+        "command": "trinity.test",
+        "title": "Trinity: Generate Test"
+      },
+      {
+        "command": "trinity.document",
+        "title": "Trinity: Generate Documentation"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "trinity.generate",
+        "key": "ctrl+shift+g",
+        "mac": "cmd+shift+g"
+      },
+      {
+        "command": "trinity.explain",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e"
+      },
+      {
+        "command": "trinity.fix",
+        "key": "ctrl+shift+f",
+        "mac": "cmd+shift+f"
+      }
+    ],
+    "configuration": {
+      "title": "Trinity SWE Agent",
+      "properties": {
+        "trinity.binaryPath": {
+          "type": "string",
+          "default": "./trinity_swe_agent",
+          "description": "Path to Trinity SWE Agent binary"
+        },
+        "trinity.vocabularyPath": {
+          "type": "string",
+          "default": "./models/embeddings/glove.6B.300d.txt",
+          "description": "Path to GloVe vocabulary"
+        },
+        "trinity.enableReasoning": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable chain-of-thought reasoning"
+        },
+        "trinity.maxTokens": {
+          "type": "number",
+          "default": 256,
+          "description": "Maximum tokens to generate"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gHashTag/trinity"
+  },
+  "license": "MIT"
+}
