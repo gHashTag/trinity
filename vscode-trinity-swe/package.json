@@ -2,7 +2,7 @@
   "name": "trinity-swe",
   "displayName": "Trinity SWE Agent",
   "description": "100% Local AI coding assistant - Cursor/Claude Code competitor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "trinity",
   "engines": {
     "vscode": "^1.85.0"
