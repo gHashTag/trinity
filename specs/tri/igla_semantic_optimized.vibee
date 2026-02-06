@@ -1,0 +1,251 @@
+name: igla_semantic_optimized
+version: "2.0.0"
+language: zig
+module: igla_semantic_opt
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IGLA SEMANTIC OPTIMIZED - 80%+ Accuracy, 100+ ops/s
+# ═══════════════════════════════════════════════════════════════════════════════
+# PAS DAEMONS Analysis:
+#   P (Problem): 76.2% accuracy, 8.3 ops/s - below targets
+#   A (Agitation): Competitors achieve 85%+ with float, we need ternary edge
+#   S (Solution): Top-k matching + SIMD parallel + adaptive thresholds
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  PHI_SQ: 2.618033988749895
+  TRINITY: 3.0
+  EMBEDDING_DIM: 300
+  SIMD_WIDTH: 16
+  TOP_K: 10
+  VOCAB_SIZE: 400000
+  BATCH_SIZE: 64
+
+types:
+  Trit:
+    base: i8
+    range: [-1, 0, 1]
+    description: "Ternary value for VSA operations"
+
+  TritVector:
+    fields:
+      data: List<Trit>
+      dim: Int
+    invariants:
+      - dim == 300
+      - all(t in data: t in [-1, 0, 1])
+
+  SimilarityResult:
+    fields:
+      word_idx: Int
+      similarity: Float
+      confidence: Float
+
+  TopKResult:
+    fields:
+      results: List<SimilarityResult>
+      query_time_ns: Int
+
+  AnalogyResult:
+    fields:
+      answer: String
+      top_k: List<SimilarityResult>
+      correct: Bool
+      method: String
+
+  BatchQuery:
+    fields:
+      vectors: List<TritVector>
+      batch_id: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CORE OPERATIONS (SIMD Optimized)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # Bind operation with SIMD (element-wise multiply)
+  - name: bind_simd
+    given: Two TritVectors a and b of dimension 300
+    when: Performing binding operation for association
+    then: Return element-wise product using SIMD vectors of width 16
+    performance:
+      target_ns: 50
+      simd: true
+
+  # Bundle operation with majority vote
+  - name: bundle_majority
+    given: List of TritVectors to combine
+    when: Creating superposition of concepts
+    then: Return majority vote at each position, random tiebreak
+    performance:
+      target_ns: 100
+      simd: true
+
+  # SIMD dot product for similarity
+  - name: dot_product_simd
+    given: Two TritVectors a and b
+    when: Computing similarity score
+    then: Return sum of element-wise products using SIMD accumulation
+    performance:
+      target_ns: 30
+      simd: true
+
+  # Cosine similarity with L2 normalization
+  - name: cosine_similarity_normalized
+    given: Two TritVectors with precomputed norms
+    when: Computing normalized similarity
+    then: Return dot_product / (norm_a * norm_b), range [-1, 1]
+    performance:
+      target_ns: 50
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TOP-K SEARCH (Key for 80%+ Accuracy)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # Parallel top-k search across vocabulary
+  - name: top_k_search_parallel
+    given: Query TritVector and vocabulary of 400K vectors
+    when: Finding k most similar words
+    then: Use min-heap with parallel threads, return k best matches
+    parameters:
+      k: 10
+      num_threads: 8
+    performance:
+      target_ops_per_sec: 100
+      parallel: true
+
+  # Batch similarity computation
+  - name: batch_similarity
+    given: Query vector and batch of 64 vocabulary vectors
+    when: Processing vocabulary in batches
+    then: Compute all 64 similarities using SIMD, return sorted batch
+    performance:
+      target_ns: 1000
+      simd: true
+      batch_size: 64
+
+  # Heap-based top-k maintenance
+  - name: maintain_top_k_heap
+    given: Current top-k heap and new similarity score
+    when: Potentially better match found
+    then: If score > heap.min, replace min and heapify
+    complexity: O(log k)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANALOGY ENGINE (Improved Algorithm)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # Vector analogy with top-k verification
+  - name: analogy_top_k
+    given: Words a, b, c for "a - b + c = ?"
+    when: Computing word analogy
+    then: |
+      1. Compute query = vec(a) - vec(b) + vec(c)
+      2. Find top-k=10 most similar words
+      3. Exclude a, b, c from results
+      4. Return best match with confidence
+    accuracy_target: 80%
+
+  # Weighted analogy (experimental)
+  - name: analogy_weighted
+    given: Words a, b, c with optional weights
+    when: Computing weighted analogy
+    then: |
+      query = w1*vec(a) - w2*vec(b) + w3*vec(c)
+      Default weights: w1=1.0, w2=1.0, w3=1.0
+      Experimental: w1=1.2, w2=1.0, w3=1.0 for emphasis
+
+  # Multi-step reasoning
+  - name: chain_reasoning
+    given: Sequence of analogy steps
+    when: Performing multi-hop reasoning
+    then: Chain analogies, verify each step confidence > 0.3
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ADAPTIVE QUANTIZATION (Accuracy Boost)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # Percentile-based thresholding
+  - name: quantize_percentile
+    given: Float vector and percentile p (default 33%)
+    when: Converting float to ternary
+    then: |
+      threshold = percentile(abs(values), p)
+      if val > threshold: +1
+      if val < -threshold: -1
+      else: 0
+    rationale: "Better distribution than mean-based threshold"
+
+  # Per-dimension adaptive threshold
+  - name: quantize_adaptive
+    given: Float vector with dimension statistics
+    when: Converting with per-dim normalization
+    then: |
+      For each dimension:
+        z_score = (val - mean[dim]) / std[dim]
+        if z_score > 0.5: +1
+        if z_score < -0.5: -1
+        else: 0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# VERIFICATION & COHERENCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # Confidence verification
+  - name: verify_confidence
+    given: AnalogyResult with similarity score
+    when: Checking if result is reliable
+    then: |
+      high_confidence = similarity > 0.4
+      coherent = top_k[0].similarity - top_k[1].similarity > 0.1
+      return high_confidence AND coherent
+
+  # Semantic coherence check
+  - name: check_coherence
+    given: Query and result word
+    when: Verifying semantic relationship
+    then: |
+      Verify result shares category with expected output
+      E.g., capital query should return city, not country adjective
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARKS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+benchmarks:
+  - name: accuracy_test
+    tests: 50
+    categories: [gender, plural, capital, tense, comparative, opposite]
+    target: 80%
+
+  - name: speed_test
+    iterations: 1000
+    target_ops_per_sec: 100
+
+  - name: coherence_test
+    tests: 50
+    target: 100%
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METRICS & REPORTING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metrics:
+  accuracy:
+    formula: correct_analogies / total_analogies
+    target: 0.80
+
+  speed:
+    formula: analogies_per_second
+    target: 100
+
+  coherence:
+    formula: semantically_valid / total_results
+    target: 1.00
+
+  memory_efficiency:
+    formula: vocab_size * dim * 1_byte / (1024 * 1024)
+    expected: 114  # MB for 400K x 300d ternary
