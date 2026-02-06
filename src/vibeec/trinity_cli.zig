@@ -156,8 +156,10 @@ fn printStats(state: *CLIState) void {
 }
 
 fn processQuery(state: *CLIState, query: []const u8) void {
-    // Auto-detect conversational prompts and switch to Chat mode
-    const effective_mode = if (trinity_swe.TrinitySWEAgent.isConversationalPrompt(query))
+    // Auto-detect prompt type: Code > Chat > default mode
+    const effective_mode = if (trinity_swe.TrinitySWEAgent.isCodePrompt(query))
+        SWETaskType.CodeGen // Code prompts take priority
+    else if (trinity_swe.TrinitySWEAgent.isConversationalPrompt(query))
         SWETaskType.Chat
     else
         state.mode;
