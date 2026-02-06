@@ -62,6 +62,10 @@ Trinity uses the golden ratio (phi) as a mathematical constant in its formulas:
 
 Testing of Microsoft's BitNet b1.58-2B-4T model across three inference frameworks revealed that CPU-only inference produced incoherent output (likely due to a GGUF tokenizer metadata issue), while GPU-based inference via bitnet.cpp on RunPod RTX 4090 produced coherent text. See the [BitNet b1.58 Coherence Report](/docs/research/bitnet-report) for full methodology and results.
 
+### Trinity Node FFI Integration
+
+Trinity node now includes fully local BitNet inference via FFI wrapper to official Microsoft bitnet.cpp. Results: 100% coherent text generation (5/5 requests), 13.7 tok/s average on CPU, fully local operation (no cloud API required). This enables Trinity nodes to function as decentralized AI inference endpoints with zero per-token cost. See the [Trinity Node FFI Integration Report](/docs/research/trinity-node-ffi) for technical details and benchmarks.
+
 ### HDC Continual Learning
 
 Trinity's HDC implementation was tested for continual learning across 10 phases with 20 classes. Results: 3.04% average forgetting, 12.5% maximum forgetting -- compared to 50-90% catastrophic forgetting typical in neural networks. The independent-prototype architecture eliminates the need for replay buffers or regularization techniques like EWC. See [Hyperdimensional Computing](/docs/hdc/) for details.
