@@ -1,30 +1,13 @@
 /*
  * Trinity Docsite Theme
- * Academic styling with serif typography
  * Two themes: Dark (pure black) + Light (white)
  */
-
-/* Academic Typography - Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ================================================================
    LIGHT THEME
    ================================================================ */
 
 :root {
-  /* Academic Typography */
-  --ifm-font-family-base: 'Merriweather', Georgia, 'Times New Roman', serif;
-  --ifm-heading-font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  --ifm-font-family-monospace: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
-
-  /* Academic Semantic Colors */
-  --color-theorem: #1e40af;
-  --color-lemma: #7c3aed;
-  --color-definition: #6b7280;
-  --color-proof: #059669;
-  --color-example: #d97706;
-  --color-corollary: #0891b2;
-  --color-remark: #64748b;
   --ifm-color-primary: #16a34a;
   --ifm-color-primary-dark: #15803d;
   --ifm-color-primary-darker: #166534;
@@ -58,7 +41,7 @@
   --trinity-golden: #92711a;
   --trinity-golden-dark: #6b5214;
   --trinity-muted: #6b7280;
-  --trinity-accent: #00E599;
+  --trinity-accent: #16a34a;
 }
 
 [data-theme='light'] .navbar {
@@ -223,8 +206,7 @@
   border-left-color: rgba(22, 163, 74, 0.3);
 }
 
-[data-theme='light'] .sacred-math,
-[data-theme='light'] .math-block {
+[data-theme='light'] .sacred-math {
   background: #f9fafb;
   border-color: #e5e7eb;
 }
@@ -315,7 +297,7 @@
   --trinity-golden: #d4a843;
   --trinity-golden-dark: #a68532;
   --trinity-muted: #737373;
-  --trinity-accent: #00E599;
+  --trinity-accent: #4ade80;
 }
 
 [data-theme='dark'] html,
@@ -510,8 +492,7 @@
   border-left-color: rgba(74, 222, 128, 0.2);
 }
 
-[data-theme='dark'] .sacred-math,
-[data-theme='dark'] .math-block {
+[data-theme='dark'] .sacred-math {
   background: rgba(255, 255, 255, 0.01);
   border-color: rgba(255, 255, 255, 0.03);
 }
@@ -643,8 +624,7 @@ table {
   border-left: 2px solid;
 }
 
-.sacred-math,
-.math-block {
+.sacred-math {
   padding: 2rem;
   border-radius: 12px;
   margin: 2rem 0;
@@ -726,308 +706,4 @@ table {
 
 [data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.15);
-}
-
-/* ================================================================
-   ACADEMIC CONTENT STYLING
-   ================================================================ */
-
-/* Academic block base styling */
-.theorem,
-.lemma,
-.definition,
-.proof,
-.corollary,
-.example,
-.remark {
-  border-left: 4px solid;
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
-  border-radius: 0 8px 8px 0;
-}
-
-/* Theorem */
-.theorem {
-  border-left-color: var(--color-theorem);
-  background: rgba(30, 64, 175, 0.05);
-}
-
-[data-theme='dark'] .theorem {
-  background: rgba(30, 64, 175, 0.15);
-}
-
-.theorem-title {
-  font-weight: 700;
-  font-variant: small-caps;
-  color: var(--color-theorem);
-  margin-bottom: 0.5rem;
-}
-
-/* Lemma */
-.lemma {
-  border-left-color: var(--color-lemma);
-  background: rgba(124, 58, 237, 0.05);
-}
-
-[data-theme='dark'] .lemma {
-  background: rgba(124, 58, 237, 0.15);
-}
-
-.lemma-title {
-  font-weight: 700;
-  font-variant: small-caps;
-  color: var(--color-lemma);
-  margin-bottom: 0.5rem;
-}
-
-/* Definition */
-.definition {
-  border-left-color: var(--color-definition);
-  background: rgba(107, 114, 128, 0.05);
-}
-
-[data-theme='dark'] .definition {
-  background: rgba(107, 114, 128, 0.15);
-}
-
-.definition-title {
-  font-weight: 700;
-  font-variant: small-caps;
-  color: var(--color-definition);
-  margin-bottom: 0.5rem;
-}
-
-/* Proof */
-.proof {
-  border-left-color: var(--color-proof);
-  background: rgba(5, 150, 105, 0.05);
-  font-style: italic;
-}
-
-[data-theme='dark'] .proof {
-  background: rgba(5, 150, 105, 0.15);
-}
-
-.proof-title {
-  font-weight: 700;
-  font-style: normal;
-  color: var(--color-proof);
-  margin-bottom: 0.5rem;
-}
-
-/* QED symbol */
-.qed {
-  float: right;
-  font-style: normal;
-}
-
-.qed::after {
-  content: "□";
-}
-
-/* Corollary */
-.corollary {
-  border-left-color: var(--color-corollary);
-  background: rgba(8, 145, 178, 0.05);
-}
-
-[data-theme='dark'] .corollary {
-  background: rgba(8, 145, 178, 0.15);
-}
-
-.corollary-title {
-  font-weight: 700;
-  font-variant: small-caps;
-  color: var(--color-corollary);
-  margin-bottom: 0.5rem;
-}
-
-/* Example */
-.example {
-  border-left-color: var(--color-example);
-  background: rgba(217, 119, 6, 0.05);
-}
-
-[data-theme='dark'] .example {
-  background: rgba(217, 119, 6, 0.15);
-}
-
-.example-title {
-  font-weight: 700;
-  font-variant: small-caps;
-  color: var(--color-example);
-  margin-bottom: 0.5rem;
-}
-
-/* Remark */
-.remark {
-  border-left-color: var(--color-remark);
-  background: rgba(100, 116, 139, 0.05);
-}
-
-[data-theme='dark'] .remark {
-  background: rgba(100, 116, 139, 0.15);
-}
-
-.remark-title {
-  font-weight: 700;
-  font-variant: small-caps;
-  color: var(--color-remark);
-  margin-bottom: 0.5rem;
-}
-
-/* ================================================================
-   FIGURE & TABLE ACADEMIC STYLING
-   ================================================================ */
-
-/* Figure styling */
-.academic-figure {
-  margin: 2rem 0;
-  text-align: center;
-}
-
-.academic-figure img {
-  max-width: 100%;
-  border-radius: 4px;
-}
-
-.academic-figure figcaption {
-  font-size: 0.9rem;
-  color: var(--ifm-font-color-secondary);
-  margin-top: 0.75rem;
-  font-style: italic;
-}
-
-.academic-figure figcaption strong {
-  font-style: normal;
-  color: var(--ifm-font-color-base);
-}
-
-/* Table styling */
-.academic-table {
-  margin: 2rem 0;
-}
-
-.table-caption {
-  font-size: 0.9rem;
-  color: var(--ifm-font-color-secondary);
-  margin-bottom: 0.75rem;
-  font-style: italic;
-}
-
-.table-caption strong {
-  font-style: normal;
-  color: var(--ifm-font-color-base);
-}
-
-/* ================================================================
-   PAPER METADATA STYLING
-   ================================================================ */
-
-.paper-meta {
-  background: var(--ifm-background-surface-color);
-  border: 1px solid var(--ifm-table-border-color);
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
-  font-size: 0.9rem;
-}
-
-.paper-meta p {
-  margin: 0.25rem 0;
-}
-
-.paper-meta strong {
-  color: var(--ifm-font-color-base);
-}
-
-/* Abstract styling */
-.abstract {
-  background: var(--ifm-background-surface-color);
-  border-left: 4px solid var(--ifm-color-primary);
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
-  border-radius: 0 8px 8px 0;
-}
-
-.abstract-title {
-  font-weight: 700;
-  font-variant: small-caps;
-  margin-bottom: 0.5rem;
-  color: var(--ifm-color-primary);
-}
-
-.keywords {
-  font-size: 0.85rem;
-  color: var(--ifm-font-color-secondary);
-  margin-top: 1rem;
-}
-
-.keywords strong {
-  color: var(--ifm-font-color-base);
-}
-
-/* ================================================================
-   KATEX STYLING ENHANCEMENTS
-   ================================================================ */
-
-/* Equation numbering */
-.katex-display {
-  margin: 1.5rem 0;
-}
-
-/* Inline math spacing */
-.katex {
-  font-size: 1.05em;
-}
-
-/* Equation block styling */
-.math-display {
-  overflow-x: auto;
-  padding: 1rem;
-  background: var(--ifm-background-surface-color);
-  border-radius: 4px;
-  margin: 1rem 0;
-}
-
-/* ================================================================
-   TYPOGRAPHY ENHANCEMENTS
-   ================================================================ */
-
-/* Better heading spacing for academic feel */
-article h1 {
-  font-family: var(--ifm-heading-font-family);
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-}
-
-article h2 {
-  font-family: var(--ifm-heading-font-family);
-  margin-top: 1.75rem;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid var(--ifm-toc-border-color);
-  padding-bottom: 0.5rem;
-}
-
-article h3 {
-  font-family: var(--ifm-heading-font-family);
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Better paragraph spacing */
-article p {
-  line-height: 1.7;
-  margin-bottom: 1.25rem;
-}
-
-/* Better list spacing */
-article ul,
-article ol {
-  line-height: 1.7;
-  margin-bottom: 1.25rem;
-}
-
-article li {
-  margin-bottom: 0.5rem;
 }
