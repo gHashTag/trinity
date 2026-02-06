@@ -234,4 +234,19 @@ pub fn build(b: *std.Build) void {
     }
     const b2t_step = b.step("b2t", "Run B2T CLI");
     b2t_step.dependOn(&run_b2t.step);
+
+    // Claude UI Demo
+    const claude_ui = b.addExecutable(.{
+        .name = "claude-ui",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/claude_ui.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(claude_ui);
+
+    const run_claude_ui = b.addRunArtifact(claude_ui);
+    const claude_ui_step = b.step("claude-ui", "Run Claude UI Demo");
+    claude_ui_step.dependOn(&run_claude_ui.step);
 }

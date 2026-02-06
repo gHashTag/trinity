@@ -159,10 +159,10 @@ pub const TritOpcode = enum(u8) {
 
 pub const Codegen = struct {
     allocator: std.mem.Allocator,
-    output: std.ArrayList(u8),
-    function_offsets: std.ArrayList(u32),
+    output: std.ArrayListUnmanaged(u8),
+    function_offsets: std.ArrayListUnmanaged(u32),
     label_addresses: std.AutoHashMap(u32, u32), // label ID -> address
-    branch_fixups: std.ArrayList(BranchFixup), // branches to fix up
+    branch_fixups: std.ArrayListUnmanaged(BranchFixup), // branches to fix up
 
     const BranchFixup = struct {
         address: u32, // Address of the branch target field
@@ -172,18 +172,18 @@ pub const Codegen = struct {
     pub fn init(allocator: std.mem.Allocator) Codegen {
         return Codegen{
             .allocator = allocator,
-            .output = std.ArrayList(u8).init(allocator),
-            .function_offsets = std.ArrayList(u32).init(allocator),
+            .output = .{},
+            .function_offsets = .{},
             .label_addresses = std.AutoHashMap(u32, u32).init(allocator),
-            .branch_fixups = std.ArrayList(BranchFixup).init(allocator),
+            .branch_fixups = .{},
         };
     }
 
     pub fn deinit(self: *Codegen) void {
-        self.output.deinit();
-        self.function_offsets.deinit();
+        self.output.deinit(self.allocator);
+        self.function_offsets.deinit(self.allocator);
         self.label_addresses.deinit();
-        self.branch_fixups.deinit();
+        self.branch_fixups.deinit(self.allocator);
     }
 
     pub fn generate(self: *Codegen, module: *const b2t_lifter.TVCModule) ![]const u8 {
@@ -202,7 +202,7 @@ pub const Codegen = struct {
         // Generate code for each function
         for (module.functions.items, 0..) |func, i| {
             const func_offset: u32 = @intCast(self.output.items.len);
-            try self.function_offsets.append(func_offset);
+            try self.function_offsets.append(self.allocator, func_offset);
 
             const func_size = try self.generateFunction(&func);
 
@@ -430,7 +430,7 @@ pub const Codegen = struct {
                 try self.writeTritOpcode(.T_BR);
                 // Record fixup for label resolution
                 const fixup_addr: u32 = @intCast(self.output.items.len);
-                try self.branch_fixups.append(.{
+                try self.branch_fixups.append(self.allocator, .{
                     .address = fixup_addr,
                     .label_id = inst.operands[0],
                 });
@@ -442,7 +442,7 @@ pub const Codegen = struct {
                 try self.writeU32(inst.operands[0]); // condition register
                 // Record fixup for label resolution
                 const fixup_addr: u32 = @intCast(self.output.items.len);
-                try self.branch_fixups.append(.{
+                try self.branch_fixups.append(self.allocator, .{
                     .address = fixup_addr,
                     .label_id = inst.operands[1],
                 });
@@ -454,7 +454,7 @@ pub const Codegen = struct {
                 try self.writeU32(inst.operands[0]); // condition
                 // Record fixup for label resolution
                 const fixup_addr: u32 = @intCast(self.output.items.len);
-                try self.branch_fixups.append(.{
+                try self.branch_fixups.append(self.allocator, .{
                     .address = fixup_addr,
                     .label_id = inst.operands[1],
                 });
@@ -527,25 +527,25 @@ pub const Codegen = struct {
     }
 
     fn writeTritOpcode(self: *Codegen, opcode: TritOpcode) !void {
-        try self.output.append(@intFromEnum(opcode));
+        try self.output.append(self.allocator, @intFromEnum(opcode));
     }
 
     fn writeU32(self: *Codegen, value: u32) !void {
         var buf: [4]u8 = undefined;
         std.mem.writeInt(u32, &buf, value, .little);
-        try self.output.appendSlice(&buf);
+        try self.output.appendSlice(self.allocator, &buf);
     }
 
     fn writeI32(self: *Codegen, value: i32) !void {
         var buf: [4]u8 = undefined;
         std.mem.writeInt(i32, &buf, value, .little);
-        try self.output.appendSlice(&buf);
+        try self.output.appendSlice(self.allocator, &buf);
     }
 
     fn writeU16(self: *Codegen, value: u16) !void {
         var buf: [2]u8 = undefined;
         std.mem.writeInt(u16, &buf, value, .little);
-        try self.output.appendSlice(&buf);
+        try self.output.appendSlice(self.allocator, &buf);
     }
 };
 
@@ -601,10 +601,10 @@ pub const TritFile = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn disassembleTrit(allocator: std.mem.Allocator, code: []const u8) ![]const u8 {
-    var output = std.ArrayList(u8).init(allocator);
-    errdefer output.deinit();
+    var output = std.ArrayListUnmanaged(u8){};
+    errdefer output.deinit(allocator);
 
-    var writer = output.writer();
+    var writer = output.writer(allocator);
     var offset: usize = 0;
 
     while (offset < code.len) {
@@ -653,7 +653,7 @@ pub fn disassembleTrit(allocator: std.mem.Allocator, code: []const u8) ![]const 
         }
     }
 
-    return try output.toOwnedSlice();
+    return try output.toOwnedSlice(allocator);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
