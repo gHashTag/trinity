@@ -1,0 +1,63 @@
+# Multi-Provider Hybrid Service
+# Groq + Zhipu + Anthropic + Cohere
+# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+
+FROM python:3.11-slim
+
+LABEL maintainer="Trinity Team"
+LABEL description="Multi-Provider Hybrid LLM Service"
+LABEL version="2.0.0"
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    pyjwt \
+    requests
+
+# Copy hybrid script
+COPY scripts/multi_provider_hybrid.py /app/hybrid.py
+
+# Create entrypoint script
+RUN echo '#!/bin/bash\n\
+echo "=============================================="\n\
+echo "Multi-Provider Hybrid Service v2.0.0"\n\
+echo "Providers: Groq, Zhipu, Anthropic, Cohere"\n\
+echo "Languages: Chinese, Japanese, Korean, Russian, English"\n\
+echo "=============================================="\n\
+\n\
+# Check for at least one API key\n\
+if [ -z "$GROQ_API_KEY" ] && [ -z "$ZHIPU_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$COHERE_API_KEY" ]; then\n\
+    echo "ERROR: No API keys configured!"\n\
+    echo "Set at least one: GROQ_API_KEY, ZHIPU_API_KEY, ANTHROPIC_API_KEY, COHERE_API_KEY"\n\
+    exit 1\n\
+fi\n\
+\n\
+echo "Available providers:"\n\
+[ -n "$GROQ_API_KEY" ] && echo "  - Groq (227 tok/s, FREE)"\n\
+[ -n "$ZHIPU_API_KEY" ] && echo "  - Zhipu (200K context)"\n\
+[ -n "$ANTHROPIC_API_KEY" ] && echo "  - Anthropic (quality)"\n\
+[ -n "$COHERE_API_KEY" ] && echo "  - Cohere (FREE tier)"\n\
+echo ""\n\
+\n\
+python /app/hybrid.py "$@"\n\
+' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+
+# Environment variables (set at runtime)
+ENV GROQ_API_KEY=""
+ENV ZHIPU_API_KEY=""
+ENV ANTHROPIC_API_KEY=""
+ENV COHERE_API_KEY=""
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('https://api.groq.com', timeout=5)" || exit 1
+
+ENTRYPOINT ["/app/entrypoint.sh"]
