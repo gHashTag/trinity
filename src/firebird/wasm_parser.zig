@@ -48,35 +48,39 @@ pub const WasmFunction = struct {
     type_idx: u32,
     locals: std.ArrayList(ValueType),
     code: std.ArrayList(u8),
+    allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, type_idx: u32) WasmFunction {
         return WasmFunction{
             .type_idx = type_idx,
-            .locals = std.ArrayList(ValueType).init(allocator),
-            .code = std.ArrayList(u8).init(allocator),
+            .locals = .{},
+            .code = .{},
+            .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *WasmFunction) void {
-        self.locals.deinit();
-        self.code.deinit();
+        self.locals.deinit(self.allocator);
+        self.code.deinit(self.allocator);
     }
 };
 
 pub const WasmFuncType = struct {
     params: std.ArrayList(ValueType),
     results: std.ArrayList(ValueType),
+    allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) WasmFuncType {
         return WasmFuncType{
-            .params = std.ArrayList(ValueType).init(allocator),
-            .results = std.ArrayList(ValueType).init(allocator),
+            .params = .{},
+            .results = .{},
+            .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *WasmFuncType) void {
-        self.params.deinit();
-        self.results.deinit();
+        self.params.deinit(self.allocator);
+        self.results.deinit(self.allocator);
     }
 };
 
@@ -91,9 +95,9 @@ pub const WasmModule = struct {
     pub fn init(allocator: std.mem.Allocator) WasmModule {
         return WasmModule{
             .allocator = allocator,
-            .types = std.ArrayList(WasmFuncType).init(allocator),
-            .functions = std.ArrayList(WasmFunction).init(allocator),
-            .func_type_indices = std.ArrayList(u32).init(allocator),
+            .types = .{},
+            .functions = .{},
+            .func_type_indices = .{},
             .memory_min = 0,
             .memory_max = null,
         };
@@ -103,14 +107,14 @@ pub const WasmModule = struct {
         for (self.types.items) |*t| {
             t.deinit();
         }
-        self.types.deinit();
+        self.types.deinit(self.allocator);
 
         for (self.functions.items) |*f| {
             f.deinit();
         }
-        self.functions.deinit();
+        self.functions.deinit(self.allocator);
 
-        self.func_type_indices.deinit();
+        self.func_type_indices.deinit(self.allocator);
     }
 };
 
@@ -182,17 +186,17 @@ pub const WasmParser = struct {
             const param_count = try self.readLEB128u32();
             for (0..param_count) |_| {
                 const vtype = self.readByte() orelse return error.UnexpectedEnd;
-                try func_type.params.append(@enumFromInt(vtype));
+                try func_type.params.append(self.allocator, @enumFromInt(vtype));
             }
 
             // Parse results
             const result_count = try self.readLEB128u32();
             for (0..result_count) |_| {
                 const vtype = self.readByte() orelse return error.UnexpectedEnd;
-                try func_type.results.append(@enumFromInt(vtype));
+                try func_type.results.append(self.allocator, @enumFromInt(vtype));
             }
 
-            try module.types.append(func_type);
+            try module.types.append(self.allocator, func_type);
         }
     }
 
@@ -201,7 +205,7 @@ pub const WasmParser = struct {
 
         for (0..count) |_| {
             const type_idx = try self.readLEB128u32();
-            try module.func_type_indices.append(type_idx);
+            try module.func_type_indices.append(self.allocator, type_idx);
         }
     }
 
@@ -238,7 +242,7 @@ pub const WasmParser = struct {
                 const n = try self.readLEB128u32();
                 const vtype = self.readByte() orelse return error.UnexpectedEnd;
                 for (0..n) |_| {
-                    try func.locals.append(@enumFromInt(vtype));
+                    try func.locals.append(self.allocator, @enumFromInt(vtype));
                 }
             }
 
@@ -246,10 +250,10 @@ pub const WasmParser = struct {
             const code_len = func_end - self.pos;
             for (0..code_len) |_| {
                 const byte = self.readByte() orelse break;
-                try func.code.append(byte);
+                try func.code.append(self.allocator, byte);
             }
 
-            try module.functions.append(func);
+            try module.functions.append(self.allocator, func);
             self.pos = func_end;
         }
     }
@@ -410,34 +414,44 @@ pub fn loadWasmFile(allocator: std.mem.Allocator, path: []const u8) ![]u8 {
 
 /// Save TVC IR to file (simple binary format)
 pub fn saveTVCFile(allocator: std.mem.Allocator, module: *const b2t.TVCModule, path: []const u8) !void {
+    _ = allocator;
     const file = try std.fs.cwd().createFile(path, .{});
     defer file.close();
 
-    var writer = file.writer();
-
     // Write header
-    try writer.writeAll("TVC1"); // Magic
-    try writer.writeInt(u32, @intCast(module.blocks.items.len), .little);
+    try file.writeAll("TVC1"); // Magic
+    var block_count: [4]u8 = undefined;
+    std.mem.writeInt(u32, &block_count, @intCast(module.blocks.items.len), .little);
+    try file.writeAll(&block_count);
 
     // Write each block
     for (module.blocks.items) |*block| {
         // Write label length and label
-        try writer.writeInt(u16, @intCast(block.label.len), .little);
-        try writer.writeAll(block.label);
+        var label_len: [2]u8 = undefined;
+        std.mem.writeInt(u16, &label_len, @intCast(block.label.len), .little);
+        try file.writeAll(&label_len);
+        try file.writeAll(block.label);
 
         // Write instruction count
-        try writer.writeInt(u32, @intCast(block.instructions.items.len), .little);
+        var instr_count: [4]u8 = undefined;
+        std.mem.writeInt(u32, &instr_count, @intCast(block.instructions.items.len), .little);
+        try file.writeAll(&instr_count);
 
         // Write instructions
         for (block.instructions.items) |*instr| {
-            try writer.writeByte(@intFromEnum(instr.opcode));
-            try writer.writeInt(i32, instr.operand1, .little);
-            try writer.writeInt(i32, instr.operand2, .little);
-            try writer.writeInt(i32, instr.operand3, .little);
+            const opcode_byte: [1]u8 = .{@intFromEnum(instr.opcode)};
+            try file.writeAll(&opcode_byte);
+            var op1: [4]u8 = undefined;
+            var op2: [4]u8 = undefined;
+            var op3: [4]u8 = undefined;
+            std.mem.writeInt(i32, &op1, instr.operand1, .little);
+            std.mem.writeInt(i32, &op2, instr.operand2, .little);
+            std.mem.writeInt(i32, &op3, instr.operand3, .little);
+            try file.writeAll(&op1);
+            try file.writeAll(&op2);
+            try file.writeAll(&op3);
         }
     }
-
-    _ = allocator;
 }
 
 /// Load TVC IR from file
@@ -445,35 +459,63 @@ pub fn loadTVCFile(allocator: std.mem.Allocator, path: []const u8) !b2t.TVCModul
     const file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
 
-    var reader = file.reader();
+    // Read entire file into memory
+    const stat = try file.stat();
+    const data = try allocator.alloc(u8, stat.size);
+    defer allocator.free(data);
 
-    // Read and verify header
-    var magic: [4]u8 = undefined;
-    _ = try reader.readAll(&magic);
-    if (!std.mem.eql(u8, &magic, "TVC1")) {
+    const bytes_read = try file.readAll(data);
+    if (bytes_read != stat.size) {
         return error.InvalidTVCFile;
     }
 
-    const block_count = try reader.readInt(u32, .little);
+    var pos: usize = 0;
+
+    // Read and verify header (4 bytes magic)
+    if (pos + 4 > data.len) return error.InvalidTVCFile;
+    if (!std.mem.eql(u8, data[pos..][0..4], "TVC1")) {
+        return error.InvalidTVCFile;
+    }
+    pos += 4;
+
+    // Read block count (u32)
+    if (pos + 4 > data.len) return error.InvalidTVCFile;
+    const block_count = std.mem.readInt(u32, data[pos..][0..4], .little);
+    pos += 4;
 
     var module = b2t.TVCModule.init(allocator, "loaded");
     errdefer module.deinit();
 
     // Read each block
     for (0..block_count) |_| {
-        const label_len = try reader.readInt(u16, .little);
-        const label = try allocator.alloc(u8, label_len);
-        defer allocator.free(label);
-        _ = try reader.readAll(label);
+        // Read label length (u16)
+        if (pos + 2 > data.len) return error.InvalidTVCFile;
+        const label_len = std.mem.readInt(u16, data[pos..][0..2], .little);
+        pos += 2;
+
+        // Read label
+        if (pos + label_len > data.len) return error.InvalidTVCFile;
+        const label = data[pos..][0..label_len];
+        pos += label_len;
 
         const block = try module.addBlock(label);
 
-        const instr_count = try reader.readInt(u32, .little);
+        // Read instruction count (u32)
+        if (pos + 4 > data.len) return error.InvalidTVCFile;
+        const instr_count = std.mem.readInt(u32, data[pos..][0..4], .little);
+        pos += 4;
+
         for (0..instr_count) |_| {
-            const opcode_byte = try reader.readByte();
-            const op1 = try reader.readInt(i32, .little);
-            const op2 = try reader.readInt(i32, .little);
-            const op3 = try reader.readInt(i32, .little);
+            // Read opcode (1 byte) + 3 operands (i32 each = 12 bytes)
+            if (pos + 13 > data.len) return error.InvalidTVCFile;
+            const opcode_byte = data[pos];
+            pos += 1;
+            const op1 = std.mem.readInt(i32, data[pos..][0..4], .little);
+            pos += 4;
+            const op2 = std.mem.readInt(i32, data[pos..][0..4], .little);
+            pos += 4;
+            const op3 = std.mem.readInt(i32, data[pos..][0..4], .little);
+            pos += 4;
 
             try block.addInstruction(.{
                 .opcode = @enumFromInt(opcode_byte),
@@ -537,13 +579,13 @@ test "wasm to tvc conversion" {
 
     var func = WasmFunction.init(allocator, 0);
     // i32.const 42, i32.const 10, i32.add, end
-    try func.code.append(0x41); // i32.const
-    try func.code.append(42); // 42
-    try func.code.append(0x41); // i32.const
-    try func.code.append(10); // 10
-    try func.code.append(0x6A); // i32.add
-    try func.code.append(0x0B); // end
-    try wasm.functions.append(func);
+    try func.code.append(allocator, 0x41); // i32.const
+    try func.code.append(allocator, 42); // 42
+    try func.code.append(allocator, 0x41); // i32.const
+    try func.code.append(allocator, 10); // 10
+    try func.code.append(allocator, 0x6A); // i32.add
+    try func.code.append(allocator, 0x0B); // end
+    try wasm.functions.append(allocator, func);
 
     var converter = WasmToTVC.init(allocator);
     var tvc = try converter.convert(&wasm, "test");

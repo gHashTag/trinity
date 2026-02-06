@@ -126,7 +126,48 @@ pub const FullModel = struct {
             .buf_scores = undefined,
         };
 
-        model.config.head_dim = model.config.hidden_size / model.config.num_heads;
+        // Calculate head_dim - try from metadata first, then from Q tensor, finally fallback
+        var key_buf2: [64]u8 = undefined;
+        if (reader.getMetadataU32(std.fmt.bufPrint(&key_buf2, "{s}.attention.head_dim", .{arch}) catch "")) |hd| {
+            model.config.head_dim = hd;
+            std.debug.print("  head_dim from metadata: {}\n", .{hd});
+        } else {
+            // Infer head_dim from Q tensor dimensions
+            // Q weight is [hidden_size, num_heads * head_dim] or [num_heads * head_dim, hidden_size]
+            if (reader.getTensor("blk.0.attn_q.weight")) |q_tensor| {
+                const q_out_dim = if (q_tensor.dims[0] == model.config.hidden_size)
+                    q_tensor.dims[1]  // [hidden, q_dim] format
+                else
+                    q_tensor.dims[0]; // [q_dim, hidden] format
+                model.config.head_dim = @intCast(q_out_dim / model.config.num_heads);
+                std.debug.print("  head_dim inferred from Q tensor: {} (Q_dim={}, num_heads={})\n", .{
+                    model.config.head_dim, q_out_dim, model.config.num_heads
+                });
+            } else {
+                // Fallback to traditional calculation
+                model.config.head_dim = model.config.hidden_size / model.config.num_heads;
+                std.debug.print("  head_dim fallback: {}\n", .{model.config.head_dim});
+            }
+        }
+
+        // Infer FFN dimensions from tensors (BitNet has different FFN structure)
+        if (reader.getTensor("blk.0.ffn_gate.weight")) |gate_tensor| {
+            // gate is [hidden_size, ffn_gate_dim] format
+            const gate_out = if (gate_tensor.dims[0] == model.config.hidden_size)
+                gate_tensor.dims[1]
+            else
+                gate_tensor.dims[0];
+            model.config.ffn_gate_dim = @intCast(gate_out);
+            std.debug.print("  ffn_gate_dim from tensor: {}\n", .{model.config.ffn_gate_dim});
+        }
+
+        if (reader.getTensor("blk.0.ffn_down.weight")) |down_tensor| {
+            // down is [intermediate, ffn_down_output] format
+            // For BitNet: [6912 x 640] means 6912 → 640
+            const down_out = @min(down_tensor.dims[0], down_tensor.dims[1]);
+            model.config.ffn_down_out_dim = @intCast(down_out);
+            std.debug.print("  ffn_down_out_dim from tensor: {}\n", .{model.config.ffn_down_out_dim});
+        }
 
         return model;
     }
@@ -155,7 +196,7 @@ pub const FullModel = struct {
         // Load embeddings
         phase_timer.reset();
         self.token_embedding = try self.loadTensor("token_embd.weight");
-        
+
         // Try to load output.weight, fallback to tied embeddings (token_embd)
         self.output_weight = self.loadTensor("output.weight") catch |err| blk: {
             if (err == error.TensorNotFound) {
@@ -671,15 +712,35 @@ pub const FullModel = struct {
         // Pre-FFN norm
         inference.rmsNorm(self.buf_normed, output, layer.ffn_norm, rms_eps);
 
-        // FFN with SwiGLU (use buf_ffn_gate, buf_ffn_up) - with ternary support
-        self.matVecAuto(self.buf_ffn_gate, layer.w_gate, layer.ternary_w_gate, self.buf_normed, intermediate_size, hidden_size);
-        self.matVecAuto(self.buf_ffn_up, layer.w_up, layer.ternary_w_up, self.buf_normed, intermediate_size, hidden_size);
+        // FFN dimensions - use inferred values for BitNet, fallback for standard Llama
+        // BitNet: gate/up output to ffn_gate_dim (1728), then expand 4x to intermediate (6912)
+        const ffn_gate_out = if (self.config.ffn_gate_dim > 0) self.config.ffn_gate_dim else intermediate_size;
+        const ffn_down_out = if (self.config.ffn_down_out_dim > 0) self.config.ffn_down_out_dim else hidden_size;
 
-        // SwiGLU - SIMD optimized
-        simd.simdSwiGLU(self.buf_ffn_gate, self.buf_ffn_gate, self.buf_ffn_up);
+        // FFN with SwiGLU (use buf_ffn_gate, buf_ffn_up) - with ternary support
+        // gate/up: hidden_size → ffn_gate_out
+        self.matVecAuto(self.buf_ffn_gate[0..ffn_gate_out], layer.w_gate, layer.ternary_w_gate, self.buf_normed, ffn_gate_out, hidden_size);
+        self.matVecAuto(self.buf_ffn_up[0..ffn_gate_out], layer.w_up, layer.ternary_w_up, self.buf_normed, ffn_gate_out, hidden_size);
+
+        // SwiGLU on partial buffers
+        simd.simdSwiGLU(self.buf_ffn_gate[0..ffn_gate_out], self.buf_ffn_gate[0..ffn_gate_out], self.buf_ffn_up[0..ffn_gate_out]);
+
+        // BitNet expansion: replicate 4x if ffn_gate_dim < intermediate_size
+        if (ffn_gate_out < intermediate_size) {
+            const expand_ratio = intermediate_size / ffn_gate_out;
+            var i: usize = 0;
+            while (i < ffn_gate_out) : (i += 1) {
+                const val = self.buf_ffn_gate[i];
+                var j: usize = 0;
+                while (j < expand_ratio) : (j += 1) {
+                    self.buf_ffn_gate[i * expand_ratio + j] = val;
+                }
+            }
+        }
 
         // Down projection (use buf_ffn_out) - with ternary support
-        self.matVecAuto(self.buf_ffn_out, layer.w_down, layer.ternary_w_down, self.buf_ffn_gate, hidden_size, intermediate_size);
+        // down: intermediate_size → ffn_down_out
+        self.matVecAuto(self.buf_ffn_out[0..ffn_down_out], layer.w_down, layer.ternary_w_down, self.buf_ffn_gate, ffn_down_out, intermediate_size);
 
         // Residual - SIMD optimized
         simd.simdResidualAdd(output, self.buf_ffn_out);
