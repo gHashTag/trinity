@@ -1,0 +1,102 @@
+name: hdc_sequence_predictor
+version: "1.0.0"
+language: zig
+module: hdc_sequence_predictor
+
+description: |
+  HDC Sequence Prediction — word-level next-token prediction.
+  Uses sliding n-gram windows with positional word encoding.
+  Builds on HDCTextEncoder word-level encoder.
+
+  Architecture:
+    Training: For text "the cat sat on the mat" with window=3:
+      context("the","cat") → "sat"
+      context("cat","sat") → "on"
+      context("sat","on") → "the"
+      context("on","the") → "mat"
+
+    Context Encoding:
+      context_hv = bundle(perm(word_hv[0], 0), perm(word_hv[1], 50), ...)
+
+    Prediction:
+      query_ctx = encodeContext(current_words)
+      next_word = argmax_w similarity(query_ctx, stored_ctx_for_w)
+
+    Beam Search:
+      Extend predictions multi-step by feeding predicted word back.
+      beam[i] = (partial_sequence, cumulative_score)
+
+  Properties:
+    - Uses HDCTextEncoder.encodeWord for word vectors
+    - Context window configurable (default 3)
+    - Nearest-neighbor retrieval for next-token
+    - Beam search for multi-step generation
+    - No gradient descent, no backpropagation
+
+types:
+  ContextEntry:
+    fields:
+      context_hv: HybridBigInt
+      next_word: String
+
+  PredictionEntry:
+    fields:
+      word: String
+      score: Float
+
+  BeamEntry:
+    fields:
+      words: List<String>
+      score: Float
+
+  SequencePredictorConfig:
+    fields:
+      context_window: usize        # n-gram size (default 3)
+      beam_width: usize            # beam search width (default 5)
+
+  HDCSequencePredictor:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoder: HDCTextEncoder
+      context_window: usize
+      contexts: List<ContextEntry>
+      vocabulary: HashMap<String, HybridBigInt>
+
+behaviors:
+  - name: train
+    given: Text string
+    when: Extracts sliding n-gram windows, stores context → next_word
+    then: Contexts and vocabulary updated
+
+  - name: encodeContext
+    given: Array of context words
+    when: Encodes each word, applies positional permutation, bundles
+    then: Returns context hypervector
+
+  - name: predictNext
+    given: Array of context words
+    when: Finds most similar stored context
+    then: Returns best next word and score
+
+  - name: predictTopK
+    given: Context words and k
+    when: Scores all stored contexts, aggregates by next_word
+    then: Returns top-k (word, score) pairs
+
+  - name: generate
+    given: Seed words and number of steps
+    when: Iteratively predicts next word, appends to sequence
+    then: Returns generated word sequence
+
+  - name: generateBeam
+    given: Seed words, steps, beam width
+    when: Multi-step beam search prediction
+    then: Returns best beam sequence
+
+  - name: deinit
+    given: Self
+    when: Frees contexts, vocabulary
+    then: Memory released

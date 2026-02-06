@@ -143,6 +143,55 @@
 
 ## ⚡ Quick Start
 
+### Trinity ONA UI (v1.0.1) - Instant Install
+
+**100% Local AI Coding Assistant - 287KB binary, 6.5M ops/s, NO cloud!**
+
+<table>
+<tr>
+<td align="center"><b>macOS (Apple Silicon)</b></td>
+<td align="center"><b>macOS (Intel)</b></td>
+<td align="center"><b>Linux</b></td>
+<td align="center"><b>Windows</b></td>
+</tr>
+<tr>
+<td align="center">
+<a href="https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_macos_arm64">
+<img src="https://img.shields.io/badge/Download-287KB-28C840?style=for-the-badge" alt="macOS ARM64">
+</a>
+</td>
+<td align="center">
+<a href="https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_macos_x64">
+<img src="https://img.shields.io/badge/Download-293KB-28C840?style=for-the-badge" alt="macOS x64">
+</a>
+</td>
+<td align="center">
+<a href="https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_linux_x64">
+<img src="https://img.shields.io/badge/Download-2.3MB-FCC624?style=for-the-badge" alt="Linux">
+</a>
+</td>
+<td align="center">
+<a href="https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_windows_x64.exe">
+<img src="https://img.shields.io/badge/Download-559KB-0078D6?style=for-the-badge" alt="Windows">
+</a>
+</td>
+</tr>
+</table>
+
+**VS Code Extension (13KB):**
+```bash
+# Download and install
+curl -LO https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity-swe-1.0.1.vsix
+code --install-extension trinity-swe-1.0.1.vsix
+```
+
+**One-line install (macOS/Linux):**
+```bash
+curl -LO https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_macos_arm64 && chmod +x trinity_ona_ui_macos_arm64 && ./trinity_ona_ui_macos_arm64
+```
+
+---
+
 ### For Node Operators (Earn $TRI)
 
 Run LLM inference on your CPU and earn $TRI tokens for every request processed.

@@ -56,7 +56,7 @@ module.exports = {
     apiKey: ETHERSCAN_API_KEY
   },
   paths: {
-    sources: "./",
+    sources: "./src",
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts"
