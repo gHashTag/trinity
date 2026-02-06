@@ -4,7 +4,7 @@ sidebar_position: 100
 
 # Contributing to Trinity
 
-Thank you for your interest in contributing to Trinity. This guide covers everything you need to know -- from our specification-first philosophy to the mandatory Golden Chain development cycle.
+Thank you for your interest in contributing to Trinity. This guide covers everything you need to know -- from our specification-first philosophy to the 16-step development cycle.
 
 ---
 
@@ -26,22 +26,22 @@ The philosophy is simple:
 - **Testing is automatic.** Behaviors defined in specs produce tests by construction.
 - **Manual code is forbidden.** The only hand-written code lives in the VIBEE compiler itself (`src/vibeec/`), documentation, and specification files.
 
-This approach guarantees type safety, 100% test coverage, and consistency across all 42+ supported language targets.
+This approach guarantees type safety, test coverage for all specified behaviors, and consistency across all 42+ supported language targets.
 
 ---
 
-## 2. The Golden Chain
+## 2. The 16-Step Development Cycle
 
 <div class="theorem-card">
 <h4>MANDATORY 16-Link Development Cycle</h4>
 
-Every contribution -- no matter how small -- must follow the Golden Chain. Run `./bin/vibee koschei` to display the full chain at any time.
+Every contribution -- no matter how small -- must follow the 16-step development cycle. Run `./bin/vibee koschei` to display the full cycle at any time.
 
-**The chain is closed. No link may be skipped.**
+**All steps are mandatory. No step may be skipped.**
 
 </div>
 
-The 16 links of the Golden Chain are:
+The 16 steps are:
 
 | Link | Name | Description |
 |------|------|-------------|
@@ -55,11 +55,11 @@ The 16 links of the Golden Chain are:
 | 8 | <span class="badge-green">BENCH</span> | Run `zig build bench` to measure performance. Record baseline metrics for comparison. |
 | 9 | <span class="badge-golden">ITERATE</span> | If tests fail or performance regresses, return to link 3 (SPEC) and refine. Repeat links 3-8 until green. |
 | 10 | <span class="badge-golden">REVIEW</span> | Self-review the specification and generated output. Verify the design matches requirements. |
-| 11 | <span class="badge-golden">VERDICT</span> | Write a **TOXIC VERDICT** -- a brutally honest self-criticism of the work (see [Section 10](#10-toxic-verdict)). |
+| 11 | <span class="badge-golden">VERDICT</span> | Write a **Critical Assessment** -- a brutally honest self-criticism of the work (see [Section 10](#10-critical-assessment)). |
 | 12 | <span class="badge-golden">TREE</span> | Propose exactly **3 TECH TREE options** for the next iteration (see [Section 8](#8-tech-tree)). |
 | 13 | <span class="badge-green">DOCUMENT</span> | Update relevant documentation if the change affects public APIs or user-facing behavior. |
 | 14 | <span class="badge-green">COMMIT</span> | Create a single atomic commit following [Conventional Commits](#9-commit-convention). |
-| 15 | <span class="badge-green">PR</span> | Submit a pull request referencing the relevant issue. Include the Toxic Verdict and Tech Tree. |
+| 15 | <span class="badge-green">PR</span> | Submit a pull request referencing the relevant issue. Include the Critical Assessment and Tech Tree. |
 | 16 | <span class="badge-golden">CLOSE</span> | Once merged, verify the chain is closed. All exit criteria must be satisfied. |
 
 ### Minimal Quick Cycle
@@ -92,7 +92,7 @@ EOF
 # Link 7: Test
 zig test trinity/output/feature.zig
 
-# Link 11: Write TOXIC VERDICT (harsh self-criticism)
+# Link 11: Write Critical Assessment (honest self-criticism)
 # Link 12: Propose 3 TECH TREE options for next iteration
 ```
 
@@ -107,11 +107,11 @@ zig test trinity/output/feature.zig
 
 <div class="formula formula-green">
 
-**EXIT_SIGNAL = ( tests_pass AND spec_complete AND toxic_verdict_written AND tech_tree_options_proposed AND committed )**
+**EXIT_SIGNAL = ( tests_pass AND spec_complete AND critical_assessment_written AND tech_tree_options_proposed AND committed )**
 
 </div>
 
-The Golden Chain is only closed when every condition in the exit signal is true.
+The cycle is only complete when every condition in the exit signal is true.
 
 ---
 
@@ -300,38 +300,23 @@ Trinity is built on a rigorous mathematical foundation connecting the golden rat
 
 ### The Trinity Identity
 
-<div class="formula formula-golden">
+<div class="formula">
 
-**phi^2 + 1/phi^2 = 3 = TRINITY**
+**phi^2 + 1/phi^2 = 3**
 
 </div>
 
-Where phi = (1 + sqrt(5)) / 2 ~ 1.618 (the Golden Ratio). This identity connects the golden ratio to the ternary base of our computing model. The number 3 is not arbitrary -- it emerges from the deepest structure of mathematics.
+Where phi = (1 + sqrt(5)) / 2 ~ 1.618 (the golden ratio). This algebraic identity connects the golden ratio to the number 3, which is the optimal integer radix.
 
-### The Sakra Formula
+### Parametric Constant Approximation
 
-<div class="formula formula-golden">
+<div class="formula">
 
 **V = n * 3^k * pi^m * phi^p * e^q**
 
 </div>
 
-Every fundamental physical constant can be expressed as a combination of:
-- **n** -- integer coefficient
-- **3^k** -- powers of trinity
-- **pi^m** -- powers of pi
-- **phi^p** -- powers of the golden ratio
-- **e^q** -- powers of Euler's number
-
-### The Phoenix Number
-
-<div class="formula formula-green">
-
-**3^21 = 10,460,353,203**
-
-</div>
-
-The Phoenix Number defines the total supply of $TRI tokens. It is derived from 3 (trinity) raised to the 21st power, connecting the ternary foundation to the project's tokenomics.
+Several physical constants can be closely approximated using this parameterization. See [Constant Approximation Formulas](/docs/math-foundations/formulas) for details and error analysis.
 
 ### Why Ternary?
 
@@ -343,16 +328,16 @@ The Phoenix Number defines the total supply of $TRI tokens. It is derived from 3
 | Compute model | Multiply-accumulate | Add-only | **No multiply** |
 | Optimal radix | -- | Closest integer to *e* | **Mathematically optimal** |
 
-See the full [Sacred Mathematics](./sacred-math/) section for proofs and derivations.
+See the full [Mathematical Foundations](./math-foundations/) section for proofs and derivations.
 
 ---
 
-## 7. Genetic Algorithm Constants (PAS DAEMONS)
+## 7. Genetic Algorithm Parameters
 
 <div class="theorem-card">
-<h4>PAS DAEMONS Constants</h4>
+<h4>Evolutionary Optimization Constants</h4>
 
-The evolutionary optimization engine in Trinity uses four sacred constants derived from the golden ratio and ternary mathematics. These govern the genetic algorithm that evolves specifications and optimizes generated code.
+The evolutionary optimization engine in Trinity uses four constants derived from the golden ratio for genetic algorithm optimization. These govern the genetic algorithm that evolves specifications and optimizes generated code.
 
 </div>
 
@@ -360,20 +345,10 @@ The evolutionary optimization engine in Trinity uses four sacred constants deriv
 |----------|--------|-------|------------|---------|
 | **Mutation Rate** | mu | 0.0382 | 1 - 1/phi^(phi+1) | Controls random perturbation of candidate solutions. Low value ensures stability -- only ~3.8% of genes mutate per generation, preventing catastrophic loss of good traits. |
 | **Crossover Rate** | chi | 0.0618 | 1/phi^3 | Governs recombination of parent solutions. At ~6.2%, crossover is selective, combining only the strongest traits from each parent while preserving individual structure. |
-| **Selection Pressure** | sigma | 1.618 | phi | Determines how aggressively the fittest individuals are favored. Equal to the golden ratio itself, this ensures a balanced tournament where strong candidates win but diversity is maintained. |
-| **Elitism Fraction** | epsilon | 0.333 | 1/3 | The fraction of the population that survives unchanged into the next generation. Exactly 1/3 (one trit-value), guaranteeing that the best third of solutions persist while leaving room for evolution. |
+| **Selection Pressure** | sigma | 1.618 | phi | Determines how aggressively the fittest individuals are favored. Ensures a balanced tournament where strong candidates win but diversity is maintained. |
+| **Elitism Fraction** | epsilon | 0.333 | 1/3 | The fraction of the population that survives unchanged into the next generation. Guarantees that the best third of solutions persist while leaving room for evolution. |
 
-These four constants form a self-consistent system:
-
-<div class="formula formula-golden">
-
-**mu * chi * sigma ~ epsilon^3**
-
-*0.0382 * 0.0618 * 1.618 ~ 0.0038 ~ 0.333^3 = 0.0369*
-
-</div>
-
-The near-equality demonstrates that the constants are not arbitrary but emerge from the same golden-ratio/ternary structure underlying all of Trinity.
+These constants are derived from the golden ratio and ternary base to provide a coherent set of hyperparameters. Their effectiveness should be validated empirically for each specific optimization problem.
 
 ---
 
@@ -384,7 +359,7 @@ The near-equality demonstrates that the constants are not arbitrary but emerge f
 
 The Tech Tree maps all development paths in Trinity. View the full interactive version at the [Architecture Overview](./architecture/overview).
 
-Every Golden Chain cycle ends with proposing **3 TECH TREE options** -- one from each of three different branches -- giving reviewers meaningful choices for the project's direction.
+Every development cycle ends with proposing **3 TECH TREE options** -- one from each of three different branches -- giving reviewers meaningful choices for the project's direction.
 
 </div>
 
@@ -400,7 +375,7 @@ Every Golden Chain cycle ends with proposing **3 TECH TREE options** -- one from
 
 ### How to Propose Tech Tree Options
 
-At the end of each Golden Chain cycle (link 12), propose exactly 3 options:
+At the end of each development cycle (step 12), propose exactly 3 options:
 
 ```markdown
 ## TECH TREE
@@ -470,16 +445,16 @@ Refs: #42
 
 ---
 
-## 10. Toxic Verdict
+## 10. Critical Assessment
 
 <div class="theorem-card">
 <h4>Mandatory Self-Criticism</h4>
 
-Every Golden Chain cycle **must** include a Toxic Verdict -- a brutally honest assessment of the work's weaknesses. This is not optional. No PR will be accepted without one.
+Every development cycle **must** include a Critical Assessment -- a brutally honest assessment of the work's weaknesses. This is not optional. No PR will be accepted without one.
 
 </div>
 
-The Toxic Verdict serves three purposes:
+The Critical Assessment serves three purposes:
 
 1. **Intellectual honesty** -- forces you to confront what you glossed over.
 2. **Review efficiency** -- reviewers know exactly where to look for problems.
@@ -488,7 +463,7 @@ The Toxic Verdict serves three purposes:
 ### Format
 
 ```markdown
-## TOXIC VERDICT
+## CRITICAL ASSESSMENT
 
 ### What went wrong
 - [Specific technical weakness #1]
@@ -506,7 +481,7 @@ The Toxic Verdict serves three purposes:
 ### Example
 
 ```markdown
-## TOXIC VERDICT
+## CRITICAL ASSESSMENT
 
 ### What went wrong
 - The sparse vector encoding wastes 12% memory on vectors with density > 0.4
@@ -567,7 +542,7 @@ Quick reference for all Trinity CLI commands used during development.
 | `./bin/vibee gen-multi <spec> all` | Generate for all 42 supported languages |
 | `./bin/vibee validate <spec.vibee>` | Validate specification syntax and semantics |
 | `./bin/vibee run <file.999>` | Execute via bytecode VM |
-| `./bin/vibee koschei` | Display the full Golden Chain |
+| `./bin/vibee koschei` | Display the full development cycle |
 | `./bin/vibee chat --model <path>` | Interactive chat with a model |
 | `./bin/vibee serve --port 8080` | Start the HTTP API server |
 
@@ -585,7 +560,7 @@ Quick reference for all Trinity CLI commands used during development.
 
 1. **Fork** the repository and clone your fork.
 2. **Create a branch**: `git checkout -b feat/my-feature`
-3. **Follow the Golden Chain** (all 16 links).
+3. **Follow the 16-step development cycle**.
 4. **Push** your branch: `git push origin feat/my-feature`
 5. **Open a PR** against `main` with the following template:
 
@@ -599,7 +574,7 @@ Link to the .vibee file(s) added or modified.
 ## Testing
 How the changes were tested. Include test output.
 
-## TOXIC VERDICT
+## CRITICAL ASSESSMENT
 [Your honest self-criticism]
 
 ## TECH TREE
@@ -610,7 +585,7 @@ How the changes were tested. Include test output.
 
 - Be respectful and constructive.
 - Focus criticism on code and design, never on people.
-- The Toxic Verdict is for **self**-criticism only -- never direct it at others.
+- The Critical Assessment is for **self**-criticism only -- never direct it at others.
 - Assume good intent. Ask clarifying questions before judging.
 
 ### Documentation Website
@@ -624,14 +599,7 @@ The documentation site is hosted at [https://trinity-site-ghashtag.vercel.app](h
 | Repository | [github.com/gHashTag/trinity](https://github.com/gHashTag/trinity) |
 | Documentation | [trinity-site-ghashtag.vercel.app](https://trinity-site-ghashtag.vercel.app) |
 | VIBEE Guide | [/docs/vibee](./vibee/) |
-| Sacred Mathematics | [/docs/sacred-math](./sacred-math/) |
+| Mathematical Foundations | [/docs/math-foundations](./math-foundations/) |
 | API Reference | [/docs/api](./api/) |
 | Architecture | [/docs/architecture/overview](./architecture/overview) |
 
----
-
-<div class="formula formula-golden">
-
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3**
-
-</div>

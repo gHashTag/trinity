@@ -1,89 +1,110 @@
-# Docs Restructure Report
+# Documentation Remaining Work Report
 
-**Date**: 2026-02-05
-**Status**: Complete
-
-## Summary
-
-Removed mysticism terminology from documentation and website i18n files. Replaced with formal mathematical language and academic references.
-
-## Changes Made
-
-### 1. Directory Renames
-
-| Before | After |
-|--------|-------|
-| `docs/SACRED_MATH_REFERENCE.md` | `docs/MATH_FOUNDATIONS.md` |
-| `docs/archive/.../sacred/` | `docs/archive/.../chapters/` |
-
-### 2. CLAUDE.md Updates
-
-**Before:**
-- "Phoenix Number - Total $TRI supply"
-- "Sakra Formula"
-- "KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED"
-
-**After:**
-- "Total $TRI token supply"
-- "Trinity Identity Proof" with formal derivation
-- Academic references (Shannon, Hayes, Kanerva)
-- Footer: "φ² + 1/φ² = 3"
-
-### 3. MATH_FOUNDATIONS.md (New)
-
-Replaced `SACRED_MATH_REFERENCE.md` with formal content:
-- Removed: "Sacred Mathematics", "Sakra Formula", "Phoenix Number", "KOSCHEI"
-- Added: Academic references (Livio, Shannon, Hayes, Kanerva, Euclid)
-- Added: Disclaimer for physical constant approximations
-- Renamed: "Sakra Formula" → "Parametric Approximation Formula"
-
-### 4. Website i18n Files
-
-**en.json changes:**
-| Before | After |
-|--------|-------|
-| "SACRED MATHEMATICS" | "MATHEMATICAL FOUNDATION" |
-| "Phoenix Number" | "Token Supply" |
-| "Sacred Formula" | "Parametric Formula" |
-| "sacred formula φ²..." | "mathematical identity φ²..." |
-| ctaUrl: SACRED_FORMULA_COMPLETE_v2.md | ctaUrl: MATH_FOUNDATIONS.md |
-
-**ru.json changes:**
-| Before | After |
-|--------|-------|
-| "САКРАЛЬНАЯ МАТЕМАТИКА" | "МАТЕМАТИЧЕСКИЕ ОСНОВЫ" |
-| "Число Феникса" | "Эмиссия токенов" |
-| "Священная Формула" | "Параметрическая формула" |
-| "Священная формула φ²..." | "Математическое тождество φ²..." |
-| "Троица × Священная Семёрка" | "уровни по модели Bitcoin" |
-
-## Metrics
-
-| Metric | Before | After |
-|--------|--------|-------|
-| "Sacred" occurrences | 15+ | 0 |
-| "KOSCHEI" occurrences | 3 | 0 |
-| "Phoenix" (user-facing) | 5 | 0 |
-| Academic references | 0 | 5 |
-
-## Files Modified
-
-1. `CLAUDE.md` - Mathematical foundation section
-2. `docs/MATH_FOUNDATIONS.md` - New file (replaced SACRED_MATH_REFERENCE.md)
-3. `website/messages/en.json` - i18n strings
-4. `website/messages/ru.json` - i18n strings
-5. `docs/archive/.../sacred/` → `chapters/` - Directory rename
-
-## Build Status
-
-Website build: ✅ Success (6.14s)
-
-## Deployment
-
-Changes ready for commit. Vercel auto-deploys on push to main branch.
-
-**Production URL**: https://trinity-site-ghashtag.vercel.app
+**Date:** 2026-02-06
+**Site:** https://gHashTag.github.io/trinity/docs
+**Status:** All items completed and deployed to gh-pages
 
 ---
 
-**φ² + 1/φ² = 3**
+## Tasks Completed
+
+### 1. Directory Rename: `sacred-math/` -> `math-foundations/`
+
+| Action | Detail |
+|--------|--------|
+| Created `docs/math-foundations/` | New directory with 3 files (index.md, formulas.md, proofs.md) |
+| Deleted `docs/sacred-math/` | Old directory removed entirely |
+| Updated `sidebars.ts` | All 3 references: `sacred-math/*` -> `math-foundations/*` |
+| Updated internal links | 9 link references across 4 files |
+
+**Files with link updates:**
+- `math-foundations/index.md` -- 2 internal links updated
+- `concepts/trinity-identity.md` -- 3 internal links updated
+- `concepts/index.md` -- 2 internal links updated
+- `research/index.md` -- 1 internal link updated
+
+### 2. CLAUDE.md Update
+
+| Change | Before | After |
+|--------|--------|-------|
+| Section heading | "Golden Chain Development Cycle" | "16-Step Development Cycle" |
+| Cycle description | "16-link cycle... see all links" | "16-step cycle... display all steps" |
+| Step 4 | "Write TOXIC VERDICT (harsh self-criticism)" | "Write Critical Assessment (honest self-criticism)" |
+| CLI comment | "Show Golden Chain" | "Show development cycle" |
+| Math section | Phoenix Number + "= TRINITY" + "Sakra Formula" | Removed Phoenix Number, clean "Trinity Identity", "Parametric Constant Approximation" |
+| Exit criteria | `toxic_verdict_written` | `critical_assessment_written` |
+| Footer | "KOSCHEI IS IMMORTAL \| GOLDEN CHAIN IS CLOSED \| phi^2 + 1/phi^2 = 3" | Removed entirely |
+
+### 3. Contributing.md Rewrite
+
+All mystical language removed from the reverted file (22 edits applied):
+
+| Change | Before | After |
+|--------|--------|-------|
+| Intro | "mandatory Golden Chain development cycle" | "16-step development cycle" |
+| Test coverage | "100% test coverage" | "test coverage for all specified behaviors" |
+| Section 2 title | "The Golden Chain" | "The 16-Step Development Cycle" |
+| Mandate | "The chain is closed. No link may be skipped." | "All steps are mandatory. No step may be skipped." |
+| Link 11 | "TOXIC VERDICT" | "Critical Assessment" |
+| Link 15 | "Include the Toxic Verdict" | "Include the Critical Assessment" |
+| Exit signal | `toxic_verdict_written` | `critical_assessment_written` |
+| Trinity Identity | `phi^2 + 1/phi^2 = 3 = TRINITY` + mystical text | `phi^2 + 1/phi^2 = 3` + factual description |
+| Formula section | "The Sakra Formula" + overclaiming | "Parametric Constant Approximation" + honest caveat |
+| Phoenix Number | Entire section present | Removed entirely |
+| GA section | "Genetic Algorithm Constants (PAS DAEMONS)" | "Genetic Algorithm Parameters" |
+| GA description | "four sacred constants" | "four constants derived from the golden ratio" |
+| mu*chi*sigma | Numerological formula block present | Replaced with empirical validation disclaimer |
+| Section 8 | "Every Golden Chain cycle" | "Every development cycle" |
+| Section 10 | "Toxic Verdict" throughout | "Critical Assessment" throughout |
+| CLI | "Display the full Golden Chain" | "Display the full development cycle" |
+| PR template | "TOXIC VERDICT" | "CRITICAL ASSESSMENT" |
+| Useful Links | "Sacred Mathematics" + `/sacred-math/` | "Mathematical Foundations" + `/math-foundations/` |
+| Footer | KOSCHEI IS IMMORTAL block | Removed entirely |
+
+### 4. CSS Migration
+
+Added `.math-block` alias alongside `.sacred-math` in 3 locations:
+- Shared styles (base definition)
+- Light theme overrides
+- Dark theme overrides
+
+No doc files contained `.sacred-math` CSS class usage directly. The only `formula-golden` usage in contributing.md was replaced with plain `.formula`.
+
+### 5. i18n Sync
+
+**Result:** No changes needed. Website messages files (`website/messages/{en,ru,de,es,zh}.json`) were searched for "Sacred", "Sakra", "Phoenix Number", "KOSCHEI", "Golden Chain", "Toxic Verdict", "PAS DAEMON" -- zero matches found.
+
+---
+
+## Build and Deploy
+
+- **Build:** `npm run build` -- 0 MDX errors, 0 missing page errors
+- **Pre-existing warnings:** Broken navbar link to `/trinity/` (docs-only site) and 4 broken glossary anchors -- not caused by our changes
+- **Deploy:** `GIT_USER=gHashTag USE_SSH=true npm run deploy` -- pushed to gh-pages
+- **Live at:** https://gHashTag.github.io/trinity/docs
+
+---
+
+## Verification: Zero Mysticism in Docsite
+
+| Term | Occurrences |
+|------|-------------|
+| "Sacred Mathematics" (page title) | 0 |
+| "Sakra Formula" | 0 |
+| "Phoenix Number" (section) | 0 |
+| "KOSCHEI" | 0 |
+| "Golden Chain" (in prose) | 0 |
+| "TOXIC VERDICT" | 0 |
+| "PAS DAEMONS" | 0 |
+| "= TRINITY" | 0 |
+| `formula-golden` (CSS in docs) | 0 |
+| `sacred-math/` (URL path) | 0 |
+
+---
+
+## Future Work (Low Priority)
+
+1. **DOI links**: Add DOI identifiers to academic citations in proofs.md and index.md
+2. **Glossary anchors**: Fix 4 broken anchors in glossary.md (#bind, #bundle2, #permute, #unbind)
+3. **Navbar landing page**: Create root `/trinity/` redirect to fix pre-existing broken navbar link
+4. **CSS cleanup**: Remove `.sacred-math` class entirely once all external references confirmed gone
