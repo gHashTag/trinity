@@ -60,20 +60,22 @@ pub const TVCInstruction = struct {
 pub const TVCBlock = struct {
     instructions: std.ArrayList(TVCInstruction),
     label: []const u8,
+    allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, label: []const u8) TVCBlock {
         return TVCBlock{
-            .instructions = std.ArrayList(TVCInstruction).init(allocator),
+            .instructions = .{},
             .label = label,
+            .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *TVCBlock) void {
-        self.instructions.deinit();
+        self.instructions.deinit(self.allocator);
     }
 
     pub fn addInstruction(self: *TVCBlock, instr: TVCInstruction) !void {
-        try self.instructions.append(instr);
+        try self.instructions.append(self.allocator, instr);
     }
 };
 
@@ -85,7 +87,7 @@ pub const TVCModule = struct {
     pub fn init(allocator: std.mem.Allocator, name: []const u8) TVCModule {
         return TVCModule{
             .allocator = allocator,
-            .blocks = std.ArrayList(TVCBlock).init(allocator),
+            .blocks = .{},
             .name = name,
         };
     }
@@ -94,11 +96,11 @@ pub const TVCModule = struct {
         for (self.blocks.items) |*block| {
             block.deinit();
         }
-        self.blocks.deinit();
+        self.blocks.deinit(self.allocator);
     }
 
     pub fn addBlock(self: *TVCModule, label: []const u8) !*TVCBlock {
-        try self.blocks.append(TVCBlock.init(self.allocator, label));
+        try self.blocks.append(self.allocator, TVCBlock.init(self.allocator, label));
         return &self.blocks.items[self.blocks.items.len - 1];
     }
 };
@@ -208,7 +210,7 @@ pub const NavigationState = struct {
             .allocator = allocator,
             .position = position,
             .module_vec = module_vec,
-            .history = std.ArrayList(TritVec).init(allocator),
+            .history = .{},
             .step = 0,
         };
     }
@@ -219,14 +221,14 @@ pub const NavigationState = struct {
         for (self.history.items) |*h| {
             h.deinit();
         }
-        self.history.deinit();
+        self.history.deinit(self.allocator);
     }
 
     /// Navigate by binding current position with action
     pub fn navigate(self: *NavigationState, action: *const TritVec) !void {
         // Save current position to history
         const history_entry = try self.position.clone();
-        try self.history.append(history_entry);
+        try self.history.append(self.allocator, history_entry);
 
         // New position = bind(position, action)
         const new_pos = try vsa_simd.bindSimd(self.allocator, &self.position, action);
@@ -241,7 +243,7 @@ pub const NavigationState = struct {
     pub fn navigateTowardsModule(self: *NavigationState, strength: f64) !void {
         // Save current position to history
         const history_entry = try self.position.clone();
-        try self.history.append(history_entry);
+        try self.history.append(self.allocator, history_entry);
 
         // Improved algorithm: Direct interpolation with adaptive strength
         var rng = std.Random.DefaultPrng.init(@as(u64, @intCast(self.step)) *% 31337);
