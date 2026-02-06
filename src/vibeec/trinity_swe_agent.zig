@@ -58,6 +58,7 @@ pub const SWETaskType = enum {
     Complete,         // Code completion
     Test,             // Generate tests
     Document,         // Generate documentation
+    Chat,             // Conversational mode (greetings, questions)
 
     pub fn getName(self: SWETaskType) []const u8 {
         return switch (self) {
@@ -70,6 +71,7 @@ pub const SWETaskType = enum {
             .Complete => "complete",
             .Test => "test",
             .Document => "document",
+            .Chat => "chat",
         };
     }
 };
@@ -459,7 +461,7 @@ pub const TrinitySWEAgent = struct {
     // Statistics
     total_requests: usize,
     total_time_us: u64,
-    requests_by_type: [9]usize,
+    requests_by_type: [10]usize,  // 10 task types including Chat
 
     // Self-optimization
     optimization_iterations: usize,
@@ -474,7 +476,7 @@ pub const TrinitySWEAgent = struct {
             .loaded = false,
             .total_requests = 0,
             .total_time_us = 0,
-            .requests_by_type = [_]usize{0} ** 9,
+            .requests_by_type = [_]usize{0} ** 10,
             .optimization_iterations = 0,
             .last_speed = 0,
         };
@@ -536,6 +538,7 @@ pub const TrinitySWEAgent = struct {
             .Complete => self.processComplete(request),
             .Test => self.processTest(request),
             .Document => self.processDocument(request),
+            .Chat => self.processChat(request),
         };
 
         const elapsed = @as(u64, @intCast(std.time.microTimestamp() - start));
@@ -873,6 +876,260 @@ pub const TrinitySWEAgent = struct {
             .confidence = 0.75,
             .coherent = true,
         };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // CHAT MODE - Conversational responses (multilingual)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    fn processChat(self: *Self, request: SWERequest) InternalResult {
+        _ = self;
+        const prompt = request.prompt;
+        const lang = detectInputLanguage(prompt);
+
+        // Russian greetings
+        if (lang == .Russian) {
+            if (containsAny(prompt, &.{ "привет", "здравствуй", "здорово", "хай", "хелло" })) {
+                return InternalResult{
+                    .output = "Привет! Я Trinity — локальный AI-ассистент. Чем могу помочь?",
+                    .reasoning = "Russian greeting detected",
+                    .confidence = 0.98,
+                    .coherent = true,
+                };
+            }
+            if (containsAny(prompt, &.{ "как дела", "как ты", "что нового", "как жизнь" })) {
+                return InternalResult{
+                    .output = "Отлично! Работаю на 100% локально, без облака. Готов помочь с кодом, математикой или просто поболтать. φ² + 1/φ² = 3!",
+                    .reasoning = "Russian 'how are you' detected",
+                    .confidence = 0.98,
+                    .coherent = true,
+                };
+            }
+            if (containsAny(prompt, &.{ "кто ты", "что ты", "расскажи о себе" })) {
+                return InternalResult{
+                    .output = "Я Trinity — локальный AI на тернарной логике. 287KB бинарник, 3.75M ops/s, 100% приватность. Никакого облака!",
+                    .reasoning = "Russian 'who are you' detected",
+                    .confidence = 0.97,
+                    .coherent = true,
+                };
+            }
+            if (containsAny(prompt, &.{ "спасибо", "благодарю" })) {
+                return InternalResult{
+                    .output = "Пожалуйста! Рад помочь. Если нужна помощь с кодом — просто напиши /code.",
+                    .reasoning = "Russian thanks detected",
+                    .confidence = 0.98,
+                    .coherent = true,
+                };
+            }
+            if (containsAny(prompt, &.{ "пока", "до свидания", "увидимся" })) {
+                return InternalResult{
+                    .output = "До встречи! φ² + 1/φ² = 3 = TRINITY. KOSCHEI IS IMMORTAL!",
+                    .reasoning = "Russian goodbye detected",
+                    .confidence = 0.98,
+                    .coherent = true,
+                };
+            }
+            // Default Russian
+            return InternalResult{
+                .output = "Понял! Я Trinity — чем могу помочь? Для кода используй /code, для объяснений /explain, для рассуждений /reason.",
+                .reasoning = "Russian prompt, general response",
+                .confidence = 0.85,
+                .coherent = true,
+            };
+        }
+
+        // Chinese greetings
+        if (lang == .Chinese) {
+            if (containsAny(prompt, &.{ "你好", "您好", "嗨", "哈喽" })) {
+                return InternalResult{
+                    .output = "你好！我是Trinity — 本地AI助手。有什么可以帮您的？",
+                    .reasoning = "Chinese greeting detected",
+                    .confidence = 0.98,
+                    .coherent = true,
+                };
+            }
+            if (containsAny(prompt, &.{ "怎么样", "你好吗", "最近如何" })) {
+                return InternalResult{
+                    .output = "很好！我100%本地运行，无需云端。可以帮您写代码、解决数学问题。φ² + 1/φ² = 3!",
+                    .reasoning = "Chinese 'how are you' detected",
+                    .confidence = 0.98,
+                    .coherent = true,
+                };
+            }
+            // Default Chinese
+            return InternalResult{
+                .output = "明白了！我是Trinity。用 /code 生成代码，/explain 解释概念，/reason 推理。",
+                .reasoning = "Chinese prompt, general response",
+                .confidence = 0.85,
+                .coherent = true,
+            };
+        }
+
+        // English greetings
+        if (containsAny(prompt, &.{ "hello", "hi", "hey", "greetings", "howdy" })) {
+            return InternalResult{
+                .output = "Hello! I'm Trinity — a 100% local AI assistant. No cloud, full privacy. How can I help?",
+                .reasoning = "English greeting detected",
+                .confidence = 0.98,
+                .coherent = true,
+            };
+        }
+        if (containsAny(prompt, &.{ "how are you", "how's it going", "what's up", "how do you do" })) {
+            return InternalResult{
+                .output = "Doing great! Running at 3.75M ops/s, 100% local, 287KB binary. Ready to help with code, math, or chat. φ² + 1/φ² = 3!",
+                .reasoning = "English 'how are you' detected",
+                .confidence = 0.98,
+                .coherent = true,
+            };
+        }
+        if (containsAny(prompt, &.{ "who are you", "what are you", "tell me about yourself" })) {
+            return InternalResult{
+                .output = "I'm Trinity — a local AI built on ternary logic. 287KB binary, 3.75M ops/s, zero cloud. Privacy-first coding assistant!",
+                .reasoning = "English 'who are you' detected",
+                .confidence = 0.97,
+                .coherent = true,
+            };
+        }
+        if (containsAny(prompt, &.{ "thanks", "thank you", "thx" })) {
+            return InternalResult{
+                .output = "You're welcome! Need code help? Try /code. Math reasoning? /reason. Explanations? /explain.",
+                .reasoning = "English thanks detected",
+                .confidence = 0.98,
+                .coherent = true,
+            };
+        }
+        if (containsAny(prompt, &.{ "bye", "goodbye", "see you", "later" })) {
+            return InternalResult{
+                .output = "Goodbye! φ² + 1/φ² = 3 = TRINITY. KOSCHEI IS IMMORTAL!",
+                .reasoning = "English goodbye detected",
+                .confidence = 0.98,
+                .coherent = true,
+            };
+        }
+
+        // Default conversational
+        return InternalResult{
+            .output = "I understand! I'm Trinity — use /code for generation, /explain for explanations, /reason for math. How can I help?",
+            .reasoning = "General conversational response",
+            .confidence = 0.85,
+            .coherent = true,
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // LANGUAGE DETECTION
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    pub const InputLanguage = enum {
+        English,
+        Russian,
+        Chinese,
+        Unknown,
+    };
+
+    pub fn detectInputLanguage(text: []const u8) InputLanguage {
+        var cyrillic_count: usize = 0;
+        var cjk_count: usize = 0;
+        var ascii_count: usize = 0;
+        var i: usize = 0;
+
+        while (i < text.len) {
+            const byte = text[i];
+
+            // UTF-8 multi-byte sequence detection
+            if (byte >= 0xD0 and byte <= 0xD3 and i + 1 < text.len) {
+                // Cyrillic (Russian) range: U+0400-U+04FF (D0 80 - D3 BF)
+                cyrillic_count += 1;
+                i += 2;
+            } else if (byte >= 0xE4 and byte <= 0xE9 and i + 2 < text.len) {
+                // CJK (Chinese) range: U+4E00-U+9FFF (E4 B8 80 - E9 BF BF)
+                cjk_count += 1;
+                i += 3;
+            } else if (byte < 0x80) {
+                // ASCII
+                if ((byte >= 'a' and byte <= 'z') or (byte >= 'A' and byte <= 'Z')) {
+                    ascii_count += 1;
+                }
+                i += 1;
+            } else {
+                i += 1;
+            }
+        }
+
+        // Return based on highest count
+        if (cyrillic_count > 0 and cyrillic_count >= cjk_count) {
+            return .Russian;
+        }
+        if (cjk_count > 0) {
+            return .Chinese;
+        }
+        if (ascii_count > 0) {
+            return .English;
+        }
+        return .Unknown;
+    }
+
+    pub fn containsAny(text: []const u8, patterns: []const []const u8) bool {
+        const lower_buf = lowercaseBuffer(text);
+        const lower = lower_buf[0..@min(text.len, 256)];
+
+        for (patterns) |pattern| {
+            if (std.mem.indexOf(u8, lower, pattern) != null) {
+                return true;
+            }
+            // Also check original (for non-ASCII)
+            if (std.mem.indexOf(u8, text, pattern) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    fn lowercaseBuffer(text: []const u8) [256]u8 {
+        var buf: [256]u8 = undefined;
+        const len = @min(text.len, 256);
+        for (text[0..len], 0..) |c, i| {
+            buf[i] = if (c >= 'A' and c <= 'Z') c + 32 else c;
+        }
+        return buf;
+    }
+
+    /// Detect if prompt is conversational (not code-related)
+    pub fn isConversationalPrompt(prompt: []const u8) bool {
+        const lang = detectInputLanguage(prompt);
+
+        // Russian conversational keywords
+        if (lang == .Russian) {
+            if (containsAny(prompt, &.{
+                "привет", "здравствуй", "как дела", "как ты", "кто ты", "что ты",
+                "спасибо", "пожалуйста", "пока", "до свидания", "помоги",
+            })) return true;
+        }
+
+        // Chinese conversational keywords
+        if (lang == .Chinese) {
+            if (containsAny(prompt, &.{
+                "你好", "您好", "怎么样", "你好吗", "谢谢", "再见",
+            })) return true;
+        }
+
+        // English conversational keywords
+        if (containsAny(prompt, &.{
+            "hello", "hi", "hey", "how are you", "who are you", "what are you",
+            "thanks", "thank you", "bye", "goodbye", "help me", "can you",
+        })) return true;
+
+        // Short prompts without code keywords are likely conversational
+        if (prompt.len < 20) {
+            const has_code_keyword = containsAny(prompt, &.{
+                "function", "struct", "code", "bug", "fix", "test", "doc",
+                "prove", "calculate", "explain", "refactor", "generate",
+                "simd", "bind", "bundle", "matmul", "vector",
+            });
+            if (!has_code_keyword) return true;
+        }
+
+        return false;
     }
 
     /// Get agent statistics

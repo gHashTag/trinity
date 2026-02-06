@@ -63,6 +63,7 @@ fn printHeader() void {
 
 fn printHelp() void {
     std.debug.print("\n{s}Commands:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}/chat{s}     - Conversational mode (auto-detected)\n", .{ GREEN, RESET });
     std.debug.print("  {s}/code{s}     - Code generation mode\n", .{ GREEN, RESET });
     std.debug.print("  {s}/reason{s}   - Chain-of-thought reasoning\n", .{ GREEN, RESET });
     std.debug.print("  {s}/explain{s}  - Explain code/concepts\n", .{ GREEN, RESET });
@@ -78,7 +79,8 @@ fn printHelp() void {
     std.debug.print("  {s}/verbose{s}  - Toggle verbose mode\n", .{ GREEN, RESET });
     std.debug.print("  {s}/help{s}     - Show this help\n", .{ GREEN, RESET });
     std.debug.print("  {s}/quit{s}     - Exit CLI\n", .{ GREEN, RESET });
-    std.debug.print("\n{s}Just type your prompt to use current mode ({s}explain{s}).{s}\n\n", .{ GRAY, GREEN, GRAY, RESET });
+    std.debug.print("\n{s}Multilingual:{s} Russian, Chinese, English auto-detected!\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}Try:{s} привет, 你好, hello\n\n", .{ GRAY, RESET });
 }
 
 fn printPrompt(state: *CLIState) void {
@@ -154,8 +156,14 @@ fn printStats(state: *CLIState) void {
 }
 
 fn processQuery(state: *CLIState, query: []const u8) void {
+    // Auto-detect conversational prompts and switch to Chat mode
+    const effective_mode = if (trinity_swe.TrinitySWEAgent.isConversationalPrompt(query))
+        SWETaskType.Chat
+    else
+        state.mode;
+
     const request = trinity_swe.SWERequest{
-        .task_type = state.mode,
+        .task_type = effective_mode,
         .prompt = query,
         .language = state.language,
         .reasoning_steps = state.verbose,
