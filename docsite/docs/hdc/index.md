@@ -73,3 +73,16 @@ The HDC subsystem is built on top of Trinity's core VSA operations. The `sequenc
 - **HDCTextEncoder**: A shared text encoding module supporting multiple encoding modes -- character n-gram, word-level with positional encoding, word-level with TF-IDF weighting, and hybrid combinations. This encoder is the foundation for all downstream HDC applications.
 
 The full HDC application suite comprises 23 modules specified as `.vibee` specifications in the `specs/tri/` directory, covering classification, anomaly detection, knowledge graphs, reinforcement learning, and more. See the [HDC Applications](/docs/hdc/applications) page for the complete catalog.
+
+## Semantic Reasoning with IGLA
+
+Trinity's IGLA system combines HDC/VSA with ternary-encoded GloVe embeddings for semantic reasoning tasks like word analogies. Key results:
+
+| Metric | Value |
+|--------|-------|
+| Analogy accuracy | **76.2%** (vs 80% GloVe float32) |
+| Memory compression | **20x** (114 MB vs 2 GB) |
+| Operations | Zero-shot symbolic (bind/bundle) |
+| Speed | 8.3 ops/s (M1 Pro CPU) |
+
+IGLA achieves competitive accuracy while offering massive compression and symbolic reasoning capabilities that distance-based embeddings lack. See the [IGLA GloVe Comparison](/docs/hdc/igla-glove-comparison) for detailed benchmarks against Word2Vec, BERT, and fastText.

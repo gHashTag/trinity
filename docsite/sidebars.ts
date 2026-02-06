@@ -38,6 +38,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'hdc/index',
         'hdc/applications',
+        'hdc/igla-glove-comparison',
       ],
     },
     {
