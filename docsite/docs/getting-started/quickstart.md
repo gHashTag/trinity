@@ -71,6 +71,50 @@ zig test src/vsa.zig
 ./bin/vibee chat --model path/to/model.gguf
 ```
 
+## Try It Now
+
+No installation needed — experiment with ternary vectors in your browser:
+
+```jsx live
+function TernaryDemo() {
+  const [dim, setDim] = React.useState(8);
+
+  // Generate random ternary vector {-1, 0, +1}
+  const randomTernary = (n) =>
+    Array.from({length: n}, () => Math.floor(Math.random() * 3) - 1);
+
+  const [vecA, setVecA] = React.useState(randomTernary(8));
+  const [vecB, setVecB] = React.useState(randomTernary(8));
+
+  const regenerate = () => {
+    setVecA(randomTernary(dim));
+    setVecB(randomTernary(dim));
+  };
+
+  // VSA operations
+  const bind = (a, b) => a.map((v, i) => v * b[i]);
+  const similarity = (a, b) => {
+    const dot = a.reduce((s, v, i) => s + v * b[i], 0);
+    return dot / Math.sqrt(a.length);
+  };
+
+  const bound = bind(vecA, vecB);
+  const sim = similarity(vecA, vecB).toFixed(3);
+
+  return (
+    <div style={{fontFamily: 'monospace'}}>
+      <button onClick={regenerate}>Generate New Vectors</button>
+      <div style={{marginTop: '1rem'}}>
+        <div><b>A:</b> [{vecA.join(', ')}]</div>
+        <div><b>B:</b> [{vecB.join(', ')}]</div>
+        <div><b>bind(A,B):</b> [{bound.join(', ')}]</div>
+        <div><b>similarity:</b> {sim}</div>
+      </div>
+    </div>
+  );
+}
+```
+
 ## Next Steps
 
 - [Installation Guide](/docs/getting-started/installation) — Detailed setup

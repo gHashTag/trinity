@@ -81,3 +81,41 @@ Cyclic right shift for sequence encoding.
 ```zig
 const shifted = vsa.permute(&vector, 3);
 ```
+
+## Try It Live
+
+```jsx live
+function VSADemo() {
+  // Ternary vectors: {-1, 0, +1}
+  const vecA = [1, -1, 0, 1, -1, 1, 0, -1];
+  const vecB = [-1, 1, 1, 0, -1, 1, -1, 0];
+
+  // Bind: element-wise multiplication
+  const bind = (a, b) => a.map((v, i) => v * b[i]);
+
+  // Similarity: dot product normalized
+  const similarity = (a, b) => {
+    const dot = a.reduce((s, v, i) => s + v * b[i], 0);
+    return (dot / a.length).toFixed(3);
+  };
+
+  // Hamming distance: count differences
+  const hamming = (a, b) => a.filter((v, i) => v !== b[i]).length;
+
+  const bound = bind(vecA, vecB);
+  const selfBound = bind(vecA, vecA);
+
+  return (
+    <div style={{fontFamily: 'monospace', fontSize: '14px'}}>
+      <div><b>Vector A:</b> [{vecA.join(', ')}]</div>
+      <div><b>Vector B:</b> [{vecB.join(', ')}]</div>
+      <hr/>
+      <div><b>bind(A, B):</b> [{bound.join(', ')}]</div>
+      <div><b>bind(A, A):</b> [{selfBound.join(', ')}] (all +1 = self-inverse)</div>
+      <hr/>
+      <div><b>similarity(A, B):</b> {similarity(vecA, vecB)}</div>
+      <div><b>hamming(A, B):</b> {hamming(vecA, vecB)} differences</div>
+    </div>
+  );
+}
+```

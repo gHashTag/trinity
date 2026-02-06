@@ -395,3 +395,79 @@ pub fn verifyCMBSpectralIndex() f64 {
     // Returns ~0.96490
 }
 ```
+
+## Try It Live
+
+Verify the formulas interactively:
+
+```jsx live
+function FormulaVerifier() {
+  const PI = Math.PI;
+  const PHI = (1 + Math.sqrt(5)) / 2;
+  const E = Math.E;
+
+  const formulas = [
+    {
+      name: 'Trinity Identity',
+      formula: 'φ² + 1/φ² = 3',
+      calc: PHI**2 + 1/(PHI**2),
+      expected: 3,
+    },
+    {
+      name: 'Fine Structure (1/α)',
+      formula: '4π³ + π² + π',
+      calc: 4*PI**3 + PI**2 + PI,
+      expected: 137.036,
+    },
+    {
+      name: 'Proton/Electron Mass',
+      formula: '6π⁵',
+      calc: 6 * PI**5,
+      expected: 1836.15,
+    },
+    {
+      name: 'Koide Q',
+      formula: '2/3',
+      calc: 2/3,
+      expected: 0.666656,
+    },
+    {
+      name: 'CMB Spectral Index',
+      formula: '94/π⁴',
+      calc: 94 / PI**4,
+      expected: 0.9649,
+    },
+    {
+      name: 'E8 Dimension',
+      formula: '3⁵ + 5',
+      calc: 3**5 + 5,
+      expected: 248,
+    },
+  ];
+
+  return (
+    <table style={{width: '100%', fontSize: '14px'}}>
+      <thead>
+        <tr>
+          <th>Constant</th>
+          <th>Formula</th>
+          <th>Calculated</th>
+          <th>Expected</th>
+          <th>Match</th>
+        </tr>
+      </thead>
+      <tbody>
+        {formulas.map((f, i) => (
+          <tr key={i}>
+            <td>{f.name}</td>
+            <td><code>{f.formula}</code></td>
+            <td>{f.calc.toFixed(6)}</td>
+            <td>{f.expected}</td>
+            <td>{Math.abs(f.calc - f.expected) < 0.01 ? '✓' : '~'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+```
