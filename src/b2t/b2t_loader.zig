@@ -54,9 +54,9 @@ pub const LoadedBinary = struct {
     format: BinaryFormat,
     architecture: Architecture,
     entry_point: u64,
-    sections: std.ArrayList(Section),
-    symbols: std.ArrayList(Symbol),
-    relocations: std.ArrayList(Relocation),
+    sections: std.ArrayListUnmanaged(Section),
+    symbols: std.ArrayListUnmanaged(Symbol),
+    relocations: std.ArrayListUnmanaged(Relocation),
     raw_data: []const u8,
 
     pub fn init(allocator: std.mem.Allocator) LoadedBinary {
@@ -65,30 +65,30 @@ pub const LoadedBinary = struct {
             .format = .unknown,
             .architecture = .unknown,
             .entry_point = 0,
-            .sections = std.ArrayList(Section).init(allocator),
-            .symbols = std.ArrayList(Symbol).init(allocator),
-            .relocations = std.ArrayList(Relocation).init(allocator),
+            .sections = .{},
+            .symbols = .{},
+            .relocations = .{},
             .raw_data = &[_]u8{},
         };
     }
 
     pub fn deinit(self: *LoadedBinary) void {
-        self.sections.deinit();
-        self.symbols.deinit();
-        self.relocations.deinit();
+        self.sections.deinit(self.allocator);
+        self.symbols.deinit(self.allocator);
+        self.relocations.deinit(self.allocator);
     }
 
     pub fn getCodeSections(self: *const LoadedBinary) []const Section {
-        var code_sections = std.ArrayList(Section).init(self.allocator);
-        defer code_sections.deinit();
+        var code_sections = std.ArrayListUnmanaged(Section){};
+        defer code_sections.deinit(self.allocator);
 
         for (self.sections.items) |section| {
             if (section.is_executable) {
-                code_sections.append(section) catch continue;
+                code_sections.append(self.allocator, section) catch continue;
             }
         }
 
-        return code_sections.toOwnedSlice() catch &[_]Section{};
+        return code_sections.toOwnedSlice(self.allocator) catch &[_]Section{};
     }
 };
 
@@ -241,7 +241,7 @@ pub fn loadWasm(allocator: std.mem.Allocator, data: []const u8) LoadError!Loaded
             .is_writable = section_id == 11, // data section
         };
 
-        binary.sections.append(section) catch return LoadError.OutOfMemory;
+        binary.sections.append(binary.allocator, section) catch return LoadError.OutOfMemory;
 
         // Handle start section (entry point)
         if (section_id == 8 and section_size > 0) {
@@ -338,7 +338,7 @@ pub fn loadElf64(allocator: std.mem.Allocator, data: []const u8) LoadError!Loade
             .is_writable = (sh_flags & 0x1) != 0, // SHF_WRITE
         };
 
-        binary.sections.append(section) catch return LoadError.OutOfMemory;
+        binary.sections.append(binary.allocator, section) catch return LoadError.OutOfMemory;
     }
 
     _ = e_phoff;
@@ -428,7 +428,7 @@ pub fn loadPe64(allocator: std.mem.Allocator, data: []const u8) LoadError!Loaded
             .is_writable = (characteristics & 0x80000000) != 0, // IMAGE_SCN_MEM_WRITE
         };
 
-        binary.sections.append(section) catch return LoadError.OutOfMemory;
+        binary.sections.append(binary.allocator, section) catch return LoadError.OutOfMemory;
     }
 
     return binary;
@@ -519,7 +519,7 @@ pub fn loadMachO64(allocator: std.mem.Allocator, data: []const u8) LoadError!Loa
                     .is_executable = (maxprot & 0x04) != 0, // VM_PROT_EXECUTE
                     .is_writable = (maxprot & 0x02) != 0, // VM_PROT_WRITE
                 };
-                binary.sections.append(segment) catch return LoadError.OutOfMemory;
+                binary.sections.append(binary.allocator, segment) catch return LoadError.OutOfMemory;
 
                 // Parse sections within segment
                 var sect_offset = cmd_offset + 72;
@@ -553,7 +553,7 @@ pub fn loadMachO64(allocator: std.mem.Allocator, data: []const u8) LoadError!Loa
                         .is_executable = is_exec,
                         .is_writable = !is_text,
                     };
-                    binary.sections.append(section) catch return LoadError.OutOfMemory;
+                    binary.sections.append(binary.allocator, section) catch return LoadError.OutOfMemory;
 
                     sect_offset += 80;
                 }
@@ -675,7 +675,8 @@ const TEST_ELF64 = [_]u8{
     0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // p_align = 0x1000
 
     // Padding to offset 128 (8 bytes)
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00,
 
     // Section Header 0: NULL (64 bytes) at offset 128
     0x00, 0x00, 0x00, 0x00, // sh_name = 0

@@ -216,4 +216,22 @@ pub fn build(b: *std.Build) void {
     });
     const run_depin_tests = b.addRunArtifact(depin_tests);
     test_step.dependOn(&run_depin_tests.step);
+
+    // B2T CLI
+    const b2t = b.addExecutable(.{
+        .name = "b2t",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/b2t/b2t_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(b2t);
+
+    const run_b2t = b.addRunArtifact(b2t);
+    if (b.args) |args| {
+        run_b2t.addArgs(args);
+    }
+    const b2t_step = b.step("b2t", "Run B2T CLI");
+    b2t_step.dependOn(&run_b2t.step);
 }
