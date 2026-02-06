@@ -88,9 +88,9 @@ permute(v, count)    // Cyclic permutation
 
 ---
 
-## Golden Chain Development Cycle
+## 16-Step Development Cycle
 
-**MANDATORY** 16-link cycle. Run `./bin/vibee koschei` to see all links.
+**MANDATORY** 16-step cycle. Run `./bin/vibee koschei` to display all steps.
 
 ### Minimal Cycle
 
@@ -120,7 +120,7 @@ EOF
 # 3. Test
 zig test trinity/output/feature.zig
 
-# 4. Write TOXIC VERDICT (harsh self-criticism)
+# 4. Write Critical Assessment (honest self-criticism)
 # 5. Propose 3 TECH TREE options for next iteration
 ```
 
@@ -166,7 +166,7 @@ ALL CODE MUST BE GENERATED FROM .vibee SPECIFICATIONS!
 ./bin/vibee gen <spec.vibee>         # Generate Zig code
 ./bin/vibee gen-multi <spec> all     # Generate for 42 languages
 ./bin/vibee run <file.999>           # Run via bytecode VM
-./bin/vibee koschei                  # Show Golden Chain
+./bin/vibee koschei                  # Show development cycle
 ./bin/vibee chat --model <path>      # Chat with model
 ./bin/vibee serve --port 8080        # Start HTTP server
 ```
@@ -203,29 +203,15 @@ behaviors:
 ## Mathematical Foundation
 
 ```
-φ = (1 + √5) / 2 ≈ 1.618      (Golden Ratio)
-φ² + 1/φ² = 3                 (Trinity Identity - proven algebraically)
-3²¹ = 10,460,353,203          (Total $TRI token supply)
+φ = (1 + √5) / 2 ≈ 1.618                        (Golden Ratio)
+φ² + 1/φ² = 3                                    (Trinity Identity)
+V = n × 3^k × π^m × φ^p × e^q                   (Parametric Constant Approximation)
 ```
 
-### Trinity Identity Proof
-
-From φ² = φ + 1 and 1/φ = φ - 1:
-```
-φ² + 1/φ² = (φ + 1) + (2 - φ) = 3  ∎
-```
-
-### Ternary Optimality
-
-Ternary {-1, 0, +1} is mathematically optimal (Hayes, 2001):
-- Information density: log₂(3) = 1.585 bits/trit (vs 1 bit/binary)
-- Optimal radix: e ≈ 2.718, nearest integer = 3
-- Memory savings: 20x vs float32 for neural network weights
-
-**References**:
-- Shannon, C.E. (1948). A Mathematical Theory of Communication
-- Hayes, B. (2001). Third Base. *American Scientist*
-- Kanerva, P. (2009). Hyperdimensional Computing
+Ternary {-1, 0, +1} is mathematically optimal:
+- Information density: 1.58 bits/trit (vs 1 bit/binary)
+- Memory savings: 20x vs float32
+- Compute: Add-only (no multiply)
 
 ---
 
@@ -259,7 +245,7 @@ DO NOT create new Vercel projects. Push to main branch auto-deploys.
 EXIT_SIGNAL = (
     tests_pass AND
     spec_complete AND
-    toxic_verdict_written AND
+    critical_assessment_written AND
     tech_tree_options_proposed AND
     committed
 )
@@ -312,4 +298,3 @@ Repository: https://github.com/frankbria/ralph-claude-code
 
 ---
 
-**φ² + 1/φ² = 3**

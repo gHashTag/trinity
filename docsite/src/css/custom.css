@@ -41,7 +41,7 @@
   --trinity-golden: #92711a;
   --trinity-golden-dark: #6b5214;
   --trinity-muted: #6b7280;
-  --trinity-accent: #16a34a;
+  --trinity-accent: #00E599;
 }
 
 [data-theme='light'] .navbar {
@@ -206,7 +206,8 @@
   border-left-color: rgba(22, 163, 74, 0.3);
 }
 
-[data-theme='light'] .sacred-math {
+[data-theme='light'] .sacred-math,
+[data-theme='light'] .math-block {
   background: #f9fafb;
   border-color: #e5e7eb;
 }
@@ -297,7 +298,7 @@
   --trinity-golden: #d4a843;
   --trinity-golden-dark: #a68532;
   --trinity-muted: #737373;
-  --trinity-accent: #4ade80;
+  --trinity-accent: #00E599;
 }
 
 [data-theme='dark'] html,
@@ -492,7 +493,8 @@
   border-left-color: rgba(74, 222, 128, 0.2);
 }
 
-[data-theme='dark'] .sacred-math {
+[data-theme='dark'] .sacred-math,
+[data-theme='dark'] .math-block {
   background: rgba(255, 255, 255, 0.01);
   border-color: rgba(255, 255, 255, 0.03);
 }
@@ -624,7 +626,8 @@ table {
   border-left: 2px solid;
 }
 
-.sacred-math {
+.sacred-math,
+.math-block {
   padding: 2rem;
   border-radius: 12px;
   margin: 2rem 0;
