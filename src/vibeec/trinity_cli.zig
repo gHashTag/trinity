@@ -90,7 +90,10 @@ fn printPrompt(state: *CLIState) void {
 }
 
 fn processCommand(state: *CLIState, cmd: []const u8) void {
-    if (std.mem.eql(u8, cmd, "/code")) {
+    if (std.mem.eql(u8, cmd, "/chat")) {
+        state.mode = .Chat;
+        std.debug.print("{s}Mode: Conversational Chat{s}\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, cmd, "/code")) {
         state.mode = .CodeGen;
         std.debug.print("{s}Mode: Code Generation{s}\n", .{ GREEN, RESET });
     } else if (std.mem.eql(u8, cmd, "/reason")) {
