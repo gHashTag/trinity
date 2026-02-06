@@ -10,6 +10,16 @@ This report documents the successful integration of BitNet ternary inference int
 **Status:** Production-ready
 **Finding:** 100% coherent text generation, fully local inference, no cloud API required.
 
+## Academic References
+
+### BitNet Foundation
+- **Ma et al. (2024)** - "The Era of 1-bit LLMs" - [arXiv:2402.17764](https://arxiv.org/abs/2402.17764)
+- **Microsoft (2024)** - "1-bit AI Infra: Fast BitNet Inference" - [arXiv:2410.16144](https://arxiv.org/abs/2410.16144)
+
+### Energy Efficiency
+- **Horowitz, M. (2014)** - "Computing's Energy Problem" - *IEEE ISSCC* - [DOI:10.1109/ISSCC.2014.6757323](https://doi.org/10.1109/ISSCC.2014.6757323)
+- **Patterson et al. (2021)** - "Carbon Emissions and Large Neural Network Training" - [arXiv:2104.10350](https://arxiv.org/abs/2104.10350)
+
 ## Executive Summary
 
 Trinity node now includes **fully local AI inference** using BitNet b1.58 ternary weights. The integration uses an FFI wrapper to Microsoft's official bitnet.cpp, achieving coherent text generation at 13.7 tokens/second on CPU.

@@ -7,6 +7,15 @@ sidebar_label: 'Theorems'
 
 VIBEE's formal verification is backed by **33 proven theorems** establishing correctness, efficiency, and coverage. All theorems are constructive -- they come with proofs and empirical evidence.
 
+## Scientific Foundations
+
+These theorems build on established formal methods research:
+
+- **Hoare, C. A. R. (1969)** - "An Axiomatic Basis for Computer Programming" - *CACM* 12(10):576-580 - [DOI:10.1145/363235.363259](https://doi.org/10.1145/363235.363259)
+- **Leroy, X. (2009)** - "Formal Verification of a Realistic Compiler" (CompCert) - *CACM* 52(7):107-115 - [DOI:10.1145/1538788.1538814](https://doi.org/10.1145/1538788.1538814)
+- **Bryant, R. E. (1986)** - "Graph-Based Algorithms for Boolean Function Manipulation" (BDDs) - *IEEE Trans. Computers* - [DOI:10.1109/TC.1986.1676819](https://doi.org/10.1109/TC.1986.1676819)
+- **Holland, J. H. (1992)** - "Adaptation in Natural and Artificial Systems" (Genetic Algorithms) - *MIT Press*
+
 ---
 
 ## Core Correctness (Theorems 1-3)
@@ -469,8 +478,24 @@ VIBEE uses three verification levels:
 
 ---
 
-## References
+## Academic References
 
-1. **VIBEE Formal Specification** -- `docs/research/VIBEE_FORMAL_SPECIFICATION.md`
-2. **VIBEE Theorems and Proofs** -- `docs/research/VIBEE_THEOREMS_AND_PROOFS.md`
-3. **VIBEE Book** -- `docs/architecture/VIBEE_BOOK.md`
+### Formal Verification
+
+1. **Hoare, C. A. R. (1969)** - "An Axiomatic Basis for Computer Programming" - *Communications of the ACM* 12(10):576-580 - Foundation of Hoare logic used in Theorems 1-3.
+2. **Leroy, X. (2009)** - "Formal Verification of a Realistic Compiler" - *Communications of the ACM* 52(7):107-115 - CompCert reference for Theorem 25.
+3. **Milner, R. (1978)** - "A Theory of Type Polymorphism in Programming" - *Journal of Computer and System Sciences* 17(3):348-375 - Type theory foundation.
+
+### Binary Decision Diagrams
+
+4. **Bryant, R. E. (1986)** - "Graph-Based Algorithms for Boolean Function Manipulation" - *IEEE Transactions on Computers* C-35(8):677-691 - BDD theory for Theorems 1, 8-10.
+
+### Genetic Algorithms
+
+5. **Holland, J. H. (1992)** - "Adaptation in Natural and Artificial Systems" - *MIT Press* - Foundation for Theorems 16-18.
+6. **Goldberg, D. E. (1989)** - "Genetic Algorithms in Search, Optimization, and Machine Learning" - *Addison-Wesley* - Convergence theory for Theorem 17.
+
+### Project Documentation
+
+7. **VIBEE Formal Specification** -- `docs/research/VIBEE_FORMAL_SPECIFICATION.md`
+8. **Scientific Bibliography** -- [Full paper list](/docs/research/bibliography)
