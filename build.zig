@@ -116,6 +116,19 @@ pub fn build(b: *std.Build) void {
     const firebird_step = b.step("firebird", "Run Firebird CLI");
     firebird_step.dependOn(&run_firebird.step);
 
+    // IGLA GloVe - Production semantic reasoning
+    const igla_glove = b.addExecutable(.{
+        .name = "igla-glove",
+        .root_source_file = b.path("src/vibeec/igla_glove.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
+    });
+    b.installArtifact(igla_glove);
+
+    const run_igla_glove = b.addRunArtifact(igla_glove);
+    const igla_step = b.step("igla-glove", "Run IGLA GloVe semantic engine");
+    igla_step.dependOn(&run_igla_glove.step);
+
     // Firebird tests
     const firebird_tests = b.addTest(.{
         .root_source_file = b.path("src/firebird/b2t_integration.zig"),
@@ -184,4 +197,32 @@ pub fn build(b: *std.Build) void {
     });
     const run_depin_tests = b.addRunArtifact(depin_tests);
     test_step.dependOn(&run_depin_tests.step);
+
+    // IGLA Metal SWE - GPU accelerated semantic agent
+    const igla_metal_swe = b.addExecutable(.{
+        .name = "igla-metal-swe",
+        .root_source_file = b.path("src/vibeec/igla_metal_swe.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
+    });
+    // Link Accelerate framework on macOS
+    igla_metal_swe.linkFramework("Accelerate");
+    b.installArtifact(igla_metal_swe);
+
+    const run_igla_metal = b.addRunArtifact(igla_metal_swe);
+    const igla_metal_step = b.step("igla-metal", "Run IGLA Metal SWE agent");
+    igla_metal_step.dependOn(&run_igla_metal.step);
+
+    // IGLA Semantic Optimized
+    const igla_opt = b.addExecutable(.{
+        .name = "igla-opt",
+        .root_source_file = b.path("src/vibeec/igla_semantic_opt.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
+    });
+    b.installArtifact(igla_opt);
+
+    const run_igla_opt = b.addRunArtifact(igla_opt);
+    const igla_opt_step = b.step("igla-opt", "Run IGLA optimized semantic engine");
+    igla_opt_step.dependOn(&run_igla_opt.step);
 }
