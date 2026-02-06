@@ -272,6 +272,118 @@ cd trinity/output && for f in *.zig; do zig test "$f"; done  # Test all
 
 ---
 
+## 📝 MANDATORY: DOCUMENT ACHIEVEMENTS
+
+After completing ANY significant milestone, agents MUST automatically document it:
+
+### What Requires Documentation
+
+| Achievement Type | Action Required |
+|-----------------|-----------------|
+| New feature working | Create `docsite/docs/research/<feature>-report.md` |
+| Benchmark improvement | Update `docsite/docs/benchmarks/` |
+| Integration success | Create research report with metrics |
+| Node/inference milestone | Document in research section |
+| Performance breakthrough | Add to benchmarks with proof |
+
+### Documentation Workflow (MANDATORY)
+
+```bash
+# 1. CREATE report in docsite
+# File: docsite/docs/research/<milestone>-report.md
+
+---
+sidebar_position: N
+---
+
+# <Milestone> Report
+
+**Date:** YYYY-MM-DD
+**Status:** Production-ready / In Progress
+
+## Key Metrics
+| Metric | Value | Status |
+|--------|-------|--------|
+| ... | ... | ... |
+
+## What This Means
+- For users: ...
+- For node operators: ...
+- For investors: ...
+
+## Technical Details
+...
+
+# 2. UPDATE sidebar
+# File: docsite/sidebars.ts
+# Add new page to appropriate category
+
+# 3. BUILD & DEPLOY
+cd docsite && npm run build
+USE_SSH=true npm run deploy
+
+# 4. COMMIT & PUSH
+git add docsite/
+git commit -m "docs: Add <milestone> report"
+git push
+```
+
+### Report Template
+
+```markdown
+---
+sidebar_position: N
+---
+
+# <Feature/Milestone> Report
+
+**Date:** February X, 2026
+**Status:** Production-ready
+
+## Executive Summary
+One paragraph summary of achievement.
+
+## Key Metrics
+
+| Metric | Value | Status |
+|--------|-------|--------|
+| Coherence | X% | Verified |
+| Speed | X tok/s | CPU/GPU |
+| Cost | $X/hr | vs $Y cloud |
+
+## What This Means
+
+### For Users
+- Benefit 1
+- Benefit 2
+
+### For Node Operators
+- $TRI earning potential
+
+### For Investors
+- Proof of technology
+
+## Technical Details
+Architecture, implementation, test results.
+
+## Conclusion
+Summary and next steps.
+
+---
+**Formula:** phi^2 + 1/phi^2 = 3
+```
+
+### Examples of Documented Achievements
+
+| Achievement | Report Location |
+|-------------|-----------------|
+| BitNet coherence testing | `/docs/research/bitnet-report` |
+| Trinity Node FFI integration | `/docs/research/trinity-node-ffi` |
+| Competitor comparison | `/docs/benchmarks/competitor-comparison` |
+| GPU inference benchmarks | `/docs/benchmarks/gpu-inference` |
+
+---
+
 ## 🏆 EXIT_SIGNAL
 
 Agent must continue iterations until:
@@ -279,7 +391,8 @@ Agent must continue iterations until:
 2. Specification is complete
 3. TOXIC VERDICT is written
 4. TECH TREE SELECT is proposed
-5. Changes are committed
+5. **Achievement documented** (if milestone reached)
+6. Changes are committed
 
 ```yaml
 EXIT_SIGNAL = (

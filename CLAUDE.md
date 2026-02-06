@@ -247,9 +247,61 @@ EXIT_SIGNAL = (
     spec_complete AND
     critical_assessment_written AND
     tech_tree_options_proposed AND
+    achievement_documented AND
     committed
 )
 ```
+
+---
+
+## Mandatory Achievement Documentation
+
+When completing significant milestones, AUTOMATICALLY document them:
+
+### What Requires Documentation
+
+| Type | Location | Action |
+|------|----------|--------|
+| Feature integration | `docsite/docs/research/` | Create report |
+| Benchmark improvement | `docsite/docs/benchmarks/` | Update metrics |
+| Node milestone | `docsite/docs/research/` | Create report |
+| Performance proof | `docsite/docs/benchmarks/` | Add data |
+
+### Documentation Steps (ALWAYS DO)
+
+```bash
+# 1. Create report
+# docsite/docs/research/<milestone>-report.md
+
+# 2. Update sidebars.ts
+# Add entry to appropriate category
+
+# 3. Build & deploy
+cd docsite && npm run build
+USE_SSH=true npm run deploy
+
+# 4. Commit & push
+git add docsite/
+git commit -m "docs: Add <milestone> report"
+git push
+```
+
+### Required Report Sections
+
+| Section | Content |
+|---------|---------|
+| Key Metrics | Table with values, status |
+| What This Means | For users, operators, investors |
+| Technical Details | Architecture, implementation |
+| Conclusion | Summary, next steps |
+
+### Live Documentation
+
+| Page | URL |
+|------|-----|
+| Research | https://gHashTag.github.io/trinity/docs/research |
+| Benchmarks | https://gHashTag.github.io/trinity/docs/benchmarks |
+| API Reference | https://gHashTag.github.io/trinity/docs/api |
 
 ---
 
