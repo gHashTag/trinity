@@ -23,7 +23,7 @@ pub const GroqProvider = struct {
         return Self{
             .allocator = allocator,
             .api_key = api_key,
-            .model = "llama-3.3-70b-versatile",
+            .model = "llama-3.1-8b-instant",
             .base_url = "https://api.groq.com/openai/v1/chat/completions",
         };
     }
@@ -94,6 +94,9 @@ pub const GroqProvider = struct {
             },
             else => return error.GroqRequestFailed,
         }
+
+        // Debug: print raw response
+        std.debug.print("[GROQ] RAW: {s}\n", .{stdout_list.items});
 
         return self.extractContent(stdout_list.items);
     }
