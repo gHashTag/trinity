@@ -570,6 +570,120 @@ pub const TrinitySWEAgent = struct {
         _ = self;
         const prompt = request.prompt;
 
+        // HELLO WORLD detection (multilingual)
+        if (containsAny(prompt, &.{ "hello world", "helloworld", "хелло ворлд" })) {
+            return switch (request.language) {
+                .Zig => InternalResult{
+                    .output =
+                        \\const std = @import("std");
+                        \\
+                        \\pub fn main() void {
+                        \\    std.debug.print("Hello, World!\n", .{});
+                        \\}
+                    ,
+                    .reasoning = "Generated Zig Hello World program",
+                    .confidence = 0.98,
+                    .coherent = true,
+                },
+                .Python => InternalResult{
+                    .output = "print(\"Hello, World!\")",
+                    .reasoning = "Generated Python Hello World",
+                    .confidence = 0.98,
+                    .coherent = true,
+                },
+                .JavaScript => InternalResult{
+                    .output = "console.log(\"Hello, World!\");",
+                    .reasoning = "Generated JavaScript Hello World",
+                    .confidence = 0.98,
+                    .coherent = true,
+                },
+                else => InternalResult{
+                    .output =
+                        \\const std = @import("std");
+                        \\
+                        \\pub fn main() void {
+                        \\    std.debug.print("Hello, World!\n", .{});
+                        \\}
+                    ,
+                    .reasoning = "Generated Zig Hello World (default)",
+                    .confidence = 0.98,
+                    .coherent = true,
+                },
+            };
+        }
+
+        // FIBONACCI detection (multilingual)
+        if (containsAny(prompt, &.{ "fibonacci", "фибоначчи", "斐波那契" })) {
+            return switch (request.language) {
+                .Zig => InternalResult{
+                    .output =
+                        \\pub fn fibonacci(n: u32) u64 {
+                        \\    if (n <= 1) return n;
+                        \\    var a: u64 = 0;
+                        \\    var b: u64 = 1;
+                        \\    var i: u32 = 2;
+                        \\    while (i <= n) : (i += 1) {
+                        \\        const c = a + b;
+                        \\        a = b;
+                        \\        b = c;
+                        \\    }
+                        \\    return b;
+                        \\}
+                        \\
+                        \\test "fibonacci" {
+                        \\    try std.testing.expectEqual(@as(u64, 55), fibonacci(10));
+                        \\}
+                    ,
+                    .reasoning = "Generated iterative Fibonacci (O(n) time, O(1) space)",
+                    .confidence = 0.95,
+                    .coherent = true,
+                },
+                .Python => InternalResult{
+                    .output =
+                        \\def fibonacci(n: int) -> int:
+                        \\    if n <= 1:
+                        \\        return n
+                        \\    a, b = 0, 1
+                        \\    for _ in range(2, n + 1):
+                        \\        a, b = b, a + b
+                        \\    return b
+                    ,
+                    .reasoning = "Generated Python Fibonacci",
+                    .confidence = 0.95,
+                    .coherent = true,
+                },
+                else => InternalResult{
+                    .output =
+                        \\pub fn fibonacci(n: u32) u64 {
+                        \\    if (n <= 1) return n;
+                        \\    var a: u64 = 0;
+                        \\    var b: u64 = 1;
+                        \\    var i: u32 = 2;
+                        \\    while (i <= n) : (i += 1) {
+                        \\        const c = a + b;
+                        \\        a = b;
+                        \\        b = c;
+                        \\    }
+                        \\    return b;
+                        \\}
+                    ,
+                    .reasoning = "Generated Zig Fibonacci (default)",
+                    .confidence = 0.95,
+                    .coherent = true,
+                },
+            };
+        }
+
+        // "Can you code?" / "кодить умеешь?" detection
+        if (containsAny(prompt, &.{ "can you code", "кодить умеешь", "умеешь кодить", "можешь программ" })) {
+            return InternalResult{
+                .output = "Да! Я умею генерировать код на Zig, Python, JavaScript, Rust. Попробуй: 'hello world на zig' или 'fibonacci function'.",
+                .reasoning = "Capability question detected",
+                .confidence = 0.95,
+                .coherent = true,
+            };
+        }
+
         // Match against templates
         const templates = switch (request.language) {
             .Zig => &ZIG_TEMPLATES,
@@ -1094,8 +1208,48 @@ pub const TrinitySWEAgent = struct {
         return buf;
     }
 
+    /// Detect if prompt is a CODE request (takes priority over chat)
+    pub fn isCodePrompt(prompt: []const u8) bool {
+        const lang = detectInputLanguage(prompt);
+
+        // Russian code keywords - HIGH PRIORITY
+        if (lang == .Russian) {
+            if (containsAny(prompt, &.{
+                "создай", "сгенерируй", "напиши", "код", "кодить", "функци",
+                "программ", "алгоритм", "класс", "структур", "массив",
+                "цикл", "hello world", "helloworld", "фибоначчи",
+            })) return true;
+        }
+
+        // Chinese code keywords
+        if (lang == .Chinese) {
+            if (containsAny(prompt, &.{
+                "代码", "编程", "函数", "程序", "生成", "创建", "编写",
+                "算法", "类", "结构", "数组", "循环",
+            })) return true;
+        }
+
+        // English code keywords
+        if (containsAny(prompt, &.{
+            "hello world", "helloworld", "fibonacci", "generate", "create",
+            "write code", "function", "struct", "class", "algorithm",
+            "implement", "build", "make a", "program", "script",
+            "code", "coding", "zig", "python", "rust", "javascript",
+        })) return true;
+
+        // File extensions indicate code
+        if (containsAny(prompt, &.{
+            ".zig", ".py", ".rs", ".js", ".ts", ".go", ".c", ".cpp",
+        })) return true;
+
+        return false;
+    }
+
     /// Detect if prompt is conversational (not code-related)
     pub fn isConversationalPrompt(prompt: []const u8) bool {
+        // FIRST: Check if it's a code prompt - code takes priority!
+        if (isCodePrompt(prompt)) return false;
+
         const lang = detectInputLanguage(prompt);
 
         // Russian conversational keywords
@@ -1113,11 +1267,16 @@ pub const TrinitySWEAgent = struct {
             })) return true;
         }
 
-        // English conversational keywords
+        // English conversational keywords (but NOT "hello world")
         if (containsAny(prompt, &.{
-            "hello", "hi", "hey", "how are you", "who are you", "what are you",
+            "hi", "hey", "how are you", "who are you", "what are you",
             "thanks", "thank you", "bye", "goodbye", "help me", "can you",
         })) return true;
+
+        // "hello" alone is greeting, but "hello world" is code
+        if (containsAny(prompt, &.{"hello"}) and !containsAny(prompt, &.{"world"})) {
+            return true;
+        }
 
         // Short prompts without code keywords are likely conversational
         if (prompt.len < 20) {
