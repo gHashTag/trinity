@@ -1,0 +1,30 @@
+{
+  "name": "trinity-contracts",
+  "version": "1.0.0",
+  "description": "$TRI Token Smart Contracts - Trinity Network",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet",
+    "verify": "hardhat verify --network mainnet",
+    "pool:create": "hardhat run scripts/create-pool.js --network mainnet",
+    "pool:add-liquidity": "hardhat run scripts/add-liquidity.js --network mainnet"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "@uniswap/v3-core": "^1.0.1",
+    "@uniswap/v3-periphery": "^1.4.4",
+    "@uniswap/v3-sdk": "^3.10.0",
+    "ethers": "^6.9.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0",
+    "dotenv": "^16.3.1"
+  },
+  "keywords": ["trinity", "tri", "defi", "uniswap", "ternary", "ai"],
+  "author": "@gHashTag",
+  "license": "MIT"
+}
