@@ -18,6 +18,9 @@ pub const ModelConfig = struct {
     context_length: u32,
     rope_theta: f32,
     rms_norm_eps: f32,
+    // BitNet-specific dimensions (inferred from tensors)
+    ffn_gate_dim: u32 = 0,      // Actual gate/up output dim (0 = use intermediate_size)
+    ffn_down_out_dim: u32 = 0,  // Actual down output dim (0 = use hidden_size)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -533,9 +533,12 @@ fn cmdEvolve(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
         // Write fingerprint as binary trit data
         try file.writeAll("FP01"); // Magic
-        try file.writer().writeInt(u32, @intCast(best.chromosome.len), .little);
+        var len_bytes: [4]u8 = undefined;
+        std.mem.writeInt(u32, &len_bytes, @intCast(best.chromosome.len), .little);
+        try file.writeAll(&len_bytes);
         for (best.chromosome.data) |trit| {
-            try file.writer().writeByte(@as(u8, @bitCast(trit)));
+            const byte: [1]u8 = .{@as(u8, @bitCast(trit))};
+            try file.writeAll(&byte);
         }
         std.debug.print("  Saved to:         {s}\n", .{out_path});
     }
