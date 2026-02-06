@@ -22,12 +22,14 @@ pub const DEFAULT_TEMPERATURE: f32 = 0.7;
 
 pub const ApiProvider = enum {
     groq,
+    zhipu,
     openai,
     custom,
 
     pub fn getBaseUrl(self: ApiProvider) []const u8 {
         return switch (self) {
             .groq => "https://api.groq.com/openai/v1",
+            .zhipu => "https://open.bigmodel.cn/api/coding/paas/v4",
             .openai => "https://api.openai.com/v1",
             .custom => "",
         };
@@ -36,8 +38,27 @@ pub const ApiProvider = enum {
     pub fn getDefaultModel(self: ApiProvider) []const u8 {
         return switch (self) {
             .groq => "llama-3.3-70b-versatile",
+            .zhipu => "glm-4",
             .openai => "gpt-4o-mini",
             .custom => "gpt-oss-120b",
+        };
+    }
+
+    pub fn getContextLimit(self: ApiProvider) u32 {
+        return switch (self) {
+            .groq => 128000, // 128K
+            .zhipu => 200000, // 200K
+            .openai => 128000, // 128K
+            .custom => 32000, // 32K default
+        };
+    }
+
+    pub fn getAvgSpeed(self: ApiProvider) u32 {
+        return switch (self) {
+            .groq => 227, // tok/s (tested)
+            .zhipu => 70, // tok/s (tested)
+            .openai => 80, // tok/s (estimated)
+            .custom => 50, // tok/s (estimated)
         };
     }
 };
@@ -75,7 +96,79 @@ pub const ApiConfig = struct {
             .model = model,
         };
     }
+
+    pub fn forZhipu(api_key: []const u8) ApiConfig {
+        return .{
+            .provider = .zhipu,
+            .api_key = api_key,
+            .base_url = ApiProvider.zhipu.getBaseUrl(),
+            .model = ApiProvider.zhipu.getDefaultModel(),
+        };
+    }
 };
+
+/// Check if text contains Chinese characters (CJK Unified Ideographs)
+pub fn containsChinese(text: []const u8) bool {
+    var i: usize = 0;
+    while (i < text.len) {
+        const c = text[i];
+        // UTF-8 Chinese characters start with 0xE4-0xE9
+        if (c >= 0xE4 and c <= 0xE9 and i + 2 < text.len) {
+            // CJK Unified Ideographs: U+4E00 to U+9FFF
+            // In UTF-8: E4 B8 80 to E9 BF BF
+            return true;
+        }
+        // Advance to next character
+        if (c < 0x80) {
+            i += 1;
+        } else if (c < 0xE0) {
+            i += 2;
+        } else if (c < 0xF0) {
+            i += 3;
+        } else {
+            i += 4;
+        }
+    }
+    return false;
+}
+
+/// Estimate tokens in text (rough: 4 chars = 1 token English, 2 chars = 1 token Chinese)
+pub fn estimateTokens(text: []const u8) u32 {
+    // Simplified: count UTF-8 characters
+    var char_count: u32 = 0;
+    var i: usize = 0;
+    while (i < text.len) {
+        const c = text[i];
+        char_count += 1;
+        if (c < 0x80) {
+            i += 1;
+        } else if (c < 0xE0) {
+            i += 2;
+        } else if (c < 0xF0) {
+            i += 3;
+        } else {
+            i += 4;
+        }
+    }
+    return char_count / 3; // Rough average
+}
+
+/// Select best provider based on prompt characteristics
+pub fn selectProvider(text: []const u8, context_length: u32) ApiProvider {
+    // Chinese content → Zhipu (native support)
+    if (containsChinese(text)) {
+        return .zhipu;
+    }
+
+    // Long context → Zhipu (200K vs 128K)
+    const total_tokens = estimateTokens(text) + context_length;
+    if (total_tokens > ApiProvider.groq.getContextLimit()) {
+        return .zhipu;
+    }
+
+    // Default: Groq (faster: 227 tok/s vs 70 tok/s)
+    return .groq;
+}
 
 pub const Message = struct {
     role: []const u8,
@@ -282,4 +375,40 @@ test "parse content from json" {
     var buffer: [1024]u8 = undefined;
     const content = try parseContentFromJson(response, &buffer);
     try std.testing.expectEqualStrings("Hello world!", content);
+}
+
+test "api config for zhipu" {
+    const config = ApiConfig.forZhipu("test-key");
+    try std.testing.expectEqualStrings("glm-4", config.model);
+    try std.testing.expectEqualStrings("https://open.bigmodel.cn/api/coding/paas/v4", config.base_url);
+}
+
+test "zhipu context limit is 200K" {
+    try std.testing.expectEqual(@as(u32, 200000), ApiProvider.zhipu.getContextLimit());
+}
+
+test "groq is faster than zhipu" {
+    try std.testing.expect(ApiProvider.groq.getAvgSpeed() > ApiProvider.zhipu.getAvgSpeed());
+}
+
+test "chinese detection" {
+    // Chinese text (你好 = hello in Chinese)
+    try std.testing.expect(containsChinese("你好世界"));
+    // English only
+    try std.testing.expect(!containsChinese("Hello world"));
+    // Mixed
+    try std.testing.expect(containsChinese("Hello 你好"));
+}
+
+test "provider selection for chinese" {
+    try std.testing.expectEqual(ApiProvider.zhipu, selectProvider("用中文解释", 0));
+}
+
+test "provider selection for english" {
+    try std.testing.expectEqual(ApiProvider.groq, selectProvider("explain in english", 0));
+}
+
+test "provider selection for long context" {
+    // Force long context by setting context_length > 128K
+    try std.testing.expectEqual(ApiProvider.zhipu, selectProvider("short prompt", 150000));
 }
