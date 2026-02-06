@@ -1,0 +1,37 @@
+.heroBanner {
+  padding: 4rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.features {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.formula {
+  padding: 3rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.mathFormula {
+  font-family: 'Times New Roman', serif;
+  font-size: 2.5rem;
+  font-weight: 400;
+  margin: 1.5rem 0;
+  color: var(--trinity-golden, #92711a);
+}
+
+[data-theme='dark'] .mathFormula {
+  color: var(--trinity-golden, #d4a843);
+}
