@@ -785,12 +785,12 @@ fn disassembleX86Instruction(code: []const u8, offset: *usize) !Instruction {
 
 fn readLeb128u32(data: []const u8, offset: *usize) u32 {
     var result: u32 = 0;
-    var shift: u5 = 0;
+    var shift: u8 = 0;
 
     while (offset.* < data.len) {
         const byte = data[offset.*];
         offset.* += 1;
-        result |= @as(u32, byte & 0x7F) << shift;
+        result |= @as(u32, byte & 0x7F) << @intCast(shift);
         if ((byte & 0x80) == 0) break;
         shift += 7;
     }
@@ -800,20 +800,20 @@ fn readLeb128u32(data: []const u8, offset: *usize) u32 {
 
 fn readLeb128i32(data: []const u8, offset: *usize) i32 {
     var result: i32 = 0;
-    var shift: u5 = 0;
+    var shift: u8 = 0;
     var byte: u8 = 0;
 
     while (offset.* < data.len) {
         byte = data[offset.*];
         offset.* += 1;
-        result |= @as(i32, @intCast(byte & 0x7F)) << shift;
+        result |= @as(i32, @intCast(byte & 0x7F)) << @intCast(shift);
         shift += 7;
         if ((byte & 0x80) == 0) break;
     }
 
     // Sign extend
     if (shift < 32 and (byte & 0x40) != 0) {
-        result |= @as(i32, -1) << shift;
+        result |= @as(i32, -1) << @intCast(shift);
     }
 
     return result;
@@ -821,20 +821,20 @@ fn readLeb128i32(data: []const u8, offset: *usize) i32 {
 
 fn readLeb128i64(data: []const u8, offset: *usize) i64 {
     var result: i64 = 0;
-    var shift: u6 = 0;
+    var shift: u8 = 0;
     var byte: u8 = 0;
 
     while (offset.* < data.len) {
         byte = data[offset.*];
         offset.* += 1;
-        result |= @as(i64, @intCast(byte & 0x7F)) << shift;
+        result |= @as(i64, @intCast(byte & 0x7F)) << @intCast(shift);
         shift += 7;
         if ((byte & 0x80) == 0) break;
     }
 
     // Sign extend
     if (shift < 64 and (byte & 0x40) != 0) {
-        result |= @as(i64, -1) << shift;
+        result |= @as(i64, -1) << @intCast(shift);
     }
 
     return result;

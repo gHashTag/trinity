@@ -110,64 +110,68 @@ pub const TVCInstruction = struct {
 };
 
 pub const TVCBlock = struct {
+    allocator: std.mem.Allocator,
     id: u32,
-    instructions: std.ArrayList(TVCInstruction),
-    successors: std.ArrayList(u32),
-    predecessors: std.ArrayList(u32),
+    instructions: std.ArrayListUnmanaged(TVCInstruction),
+    successors: std.ArrayListUnmanaged(u32),
+    predecessors: std.ArrayListUnmanaged(u32),
 
     pub fn init(allocator: std.mem.Allocator, block_id: u32) TVCBlock {
         return TVCBlock{
+            .allocator = allocator,
             .id = block_id,
-            .instructions = std.ArrayList(TVCInstruction).init(allocator),
-            .successors = std.ArrayList(u32).init(allocator),
-            .predecessors = std.ArrayList(u32).init(allocator),
+            .instructions = .{},
+            .successors = .{},
+            .predecessors = .{},
         };
     }
 
-    pub fn deinit(self: *TVCBlock) void {
-        self.instructions.deinit();
-        self.successors.deinit();
-        self.predecessors.deinit();
+    pub fn deinit(self: *TVCBlock, allocator: std.mem.Allocator) void {
+        self.instructions.deinit(allocator);
+        self.successors.deinit(allocator);
+        self.predecessors.deinit(allocator);
     }
 };
 
 pub const TVCFunction = struct {
+    allocator: std.mem.Allocator,
     id: u32,
     name: []const u8,
-    params: std.ArrayList(TVCType),
+    params: std.ArrayListUnmanaged(TVCType),
     return_type: TVCType,
-    locals: std.ArrayList(TVCType),
-    blocks: std.ArrayList(TVCBlock),
-    values: std.ArrayList(TVCValue),
+    locals: std.ArrayListUnmanaged(TVCType),
+    blocks: std.ArrayListUnmanaged(TVCBlock),
+    values: std.ArrayListUnmanaged(TVCValue),
     next_value_id: u32,
 
     pub fn init(allocator: std.mem.Allocator, func_id: u32) TVCFunction {
         return TVCFunction{
+            .allocator = allocator,
             .id = func_id,
             .name = "",
-            .params = std.ArrayList(TVCType).init(allocator),
+            .params = .{},
             .return_type = .void,
-            .locals = std.ArrayList(TVCType).init(allocator),
-            .blocks = std.ArrayList(TVCBlock).init(allocator),
-            .values = std.ArrayList(TVCValue).init(allocator),
+            .locals = .{},
+            .blocks = .{},
+            .values = .{},
             .next_value_id = 0,
         };
     }
 
-    pub fn deinit(self: *TVCFunction) void {
-        self.params.deinit();
-        self.locals.deinit();
+    pub fn deinit(self: *TVCFunction, allocator: std.mem.Allocator) void {
+        self.params.deinit(allocator);
+        self.locals.deinit(allocator);
         for (self.blocks.items) |*block| {
-            block.deinit();
+            block.deinit(allocator);
         }
-        self.blocks.deinit();
-        self.values.deinit();
+        self.blocks.deinit(allocator);
+        self.values.deinit(allocator);
     }
 
     pub fn newValue(self: *TVCFunction, value_type: TVCType) !u32 {
         const id = self.next_value_id;
         self.next_value_id += 1;
-        try self.values.append(TVCValue{
+        try self.values.append(self.allocator, TVCValue{
             .id = id,
             .value_type = value_type,
             .is_const = false,
@@ -179,7 +183,7 @@ pub const TVCFunction = struct {
     pub fn newConst(self: *TVCFunction, value_type: TVCType, value: i64) !u32 {
         const id = self.next_value_id;
         self.next_value_id += 1;
-        try self.values.append(TVCValue{
+        try self.values.append(self.allocator, TVCValue{
             .id = id,
             .value_type = value_type,
             .is_const = true,
@@ -192,26 +196,26 @@ pub const TVCFunction = struct {
 pub const TVCModule = struct {
     allocator: std.mem.Allocator,
     name: []const u8,
-    functions: std.ArrayList(TVCFunction),
-    globals: std.ArrayList(TVCValue),
+    functions: std.ArrayListUnmanaged(TVCFunction),
+    globals: std.ArrayListUnmanaged(TVCValue),
     entry_point: ?u32,
 
     pub fn init(allocator: std.mem.Allocator) TVCModule {
         return TVCModule{
             .allocator = allocator,
             .name = "module",
-            .functions = std.ArrayList(TVCFunction).init(allocator),
-            .globals = std.ArrayList(TVCValue).init(allocator),
+            .functions = .{},
+            .globals = .{},
             .entry_point = null,
         };
     }
 
     pub fn deinit(self: *TVCModule) void {
         for (self.functions.items) |*func| {
-            func.deinit();
+            func.deinit(self.allocator);
         }
-        self.functions.deinit();
-        self.globals.deinit();
+        self.functions.deinit(self.allocator);
+        self.globals.deinit(self.allocator);
     }
 };
 
@@ -235,24 +239,24 @@ pub const BlockInfo = struct {
 pub const Lifter = struct {
     allocator: std.mem.Allocator,
     module: TVCModule,
-    stack: std.ArrayList(u32), // Value stack for WASM
-    block_stack: std.ArrayList(BlockInfo), // Block stack for control flow
+    stack: std.ArrayListUnmanaged(u32), // Value stack for WASM
+    block_stack: std.ArrayListUnmanaged(BlockInfo), // Block stack for control flow
     next_label: u32, // Next label ID
 
     pub fn init(allocator: std.mem.Allocator) Lifter {
         return Lifter{
             .allocator = allocator,
             .module = TVCModule.init(allocator),
-            .stack = std.ArrayList(u32).init(allocator),
-            .block_stack = std.ArrayList(BlockInfo).init(allocator),
+            .stack = .{},
+            .block_stack = .{},
             .next_label = 0,
         };
     }
 
     pub fn deinit(self: *Lifter) void {
         self.module.deinit();
-        self.stack.deinit();
-        self.block_stack.deinit();
+        self.stack.deinit(self.allocator);
+        self.block_stack.deinit(self.allocator);
     }
 
     fn newLabel(self: *Lifter) u32 {
@@ -292,7 +296,7 @@ pub const Lifter = struct {
             var i: u32 = 0;
             while (i < local.count) : (i += 1) {
                 const local_type = wasmTypeToTVC(local.value_type);
-                try func.locals.append(local_type);
+                try func.locals.append(self.allocator, local_type);
             }
         }
 
@@ -304,8 +308,8 @@ pub const Lifter = struct {
             try self.liftInstruction(&func, &entry_block, &inst);
         }
 
-        try func.blocks.append(entry_block);
-        try self.module.functions.append(func);
+        try func.blocks.append(self.allocator, entry_block);
+        try self.module.functions.append(self.allocator, func);
     }
 
     fn liftInstruction(self: *Lifter, func: *TVCFunction, block: *TVCBlock, inst: *const b2t_disasm.Instruction) !void {
@@ -314,9 +318,9 @@ pub const Lifter = struct {
             0x41 => { // i32.const
                 const value = inst.operands[0].value;
                 const val_id = try func.newConst(.trit32, value);
-                try self.stack.append(val_id);
+                try self.stack.append(self.allocator, val_id);
 
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_const,
                     .dest = val_id,
                     .operands = .{ @intCast(value & 0xFFFFFFFF), 0, 0, 0 },
@@ -328,9 +332,9 @@ pub const Lifter = struct {
             0x42 => { // i64.const
                 const value = inst.operands[0].value;
                 const val_id = try func.newConst(.trit64, value);
-                try self.stack.append(val_id);
+                try self.stack.append(self.allocator, val_id);
 
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_const,
                     .dest = val_id,
                     .operands = .{ @intCast(value & 0xFFFFFFFF), @intCast((value >> 32) & 0xFFFFFFFF), 0, 0 },
@@ -342,12 +346,12 @@ pub const Lifter = struct {
             // Arithmetic - Binary to Ternary conversion
             0x6A => { // i32.add → t_add
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_add,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -359,12 +363,12 @@ pub const Lifter = struct {
 
             0x6B => { // i32.sub → t_sub
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_sub,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -376,12 +380,12 @@ pub const Lifter = struct {
 
             0x6C => { // i32.mul → t_mul
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_mul,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -393,12 +397,12 @@ pub const Lifter = struct {
 
             0x6D, 0x6E => { // i32.div_s, i32.div_u → t_div
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_div,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -411,12 +415,12 @@ pub const Lifter = struct {
             // Logic - Binary to Ternary (KILLER OPTIMIZATION!)
             0x71 => { // i32.and → t_and (ternary MIN)
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_and,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -428,12 +432,12 @@ pub const Lifter = struct {
 
             0x72 => { // i32.or → t_or (ternary MAX)
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_or,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -445,12 +449,12 @@ pub const Lifter = struct {
 
             0x73 => { // i32.xor → t_xor (ternary MUL)
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_xor,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -463,12 +467,12 @@ pub const Lifter = struct {
             // Comparison - TERNARY 3-WAY COMPARISON!
             0x46 => { // i32.eq → t_eq
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit); // Result is single trit!
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_eq,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -480,12 +484,12 @@ pub const Lifter = struct {
 
             0x45 => { // i32.eqz → compare with zero
                 if (self.stack.items.len >= 1) {
-                    const a = self.stack.pop();
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
                     // eqz: result = (a == 0) ? 1 : 0
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_eq,
                         .dest = result,
                         .operands = .{ a, 0, 0, 0 }, // compare with implicit 0
@@ -497,12 +501,12 @@ pub const Lifter = struct {
 
             0x47 => { // i32.ne → not equal
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_cmp, // cmp returns -1, 0, +1; ne is non-zero
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -514,13 +518,13 @@ pub const Lifter = struct {
 
             0x48, 0x49 => { // i32.lt_s, i32.lt_u → t_cmp (returns -1, 0, +1)
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
                     // lt: result = (a < b) ? 1 : 0
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_lt,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -532,12 +536,12 @@ pub const Lifter = struct {
 
             0x4A, 0x4B => { // i32.gt_s, i32.gt_u
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_gt,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -549,12 +553,12 @@ pub const Lifter = struct {
 
             0x4C, 0x4D => { // i32.le_s, i32.le_u
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_le,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -566,12 +570,12 @@ pub const Lifter = struct {
 
             0x4E, 0x4F => { // i32.ge_s, i32.ge_u
                 if (self.stack.items.len >= 2) {
-                    const b = self.stack.pop();
-                    const a = self.stack.pop();
+                    const b = self.stack.pop().?;
+                    const a = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_ge,
                         .dest = result,
                         .operands = .{ a, b, 0, 0 },
@@ -585,9 +589,9 @@ pub const Lifter = struct {
             0x20 => { // local.get
                 const local_idx: u32 = @intCast(inst.operands[0].value);
                 const result = try func.newValue(.trit32);
-                try self.stack.append(result);
+                try self.stack.append(self.allocator, result);
 
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_get_local,
                     .dest = result,
                     .operands = .{ local_idx, 0, 0, 0 },
@@ -599,9 +603,9 @@ pub const Lifter = struct {
             0x21 => { // local.set
                 const local_idx: u32 = @intCast(inst.operands[0].value);
                 if (self.stack.items.len >= 1) {
-                    const value = self.stack.pop();
+                    const value = self.stack.pop().?;
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_set_local,
                         .dest = null,
                         .operands = .{ local_idx, value, 0, 0 },
@@ -615,11 +619,11 @@ pub const Lifter = struct {
             0x28 => { // i32.load
                 const offset: u32 = @intCast(inst.operands[1].value);
                 if (self.stack.items.len >= 1) {
-                    const addr = self.stack.pop();
+                    const addr = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_load,
                         .dest = result,
                         .operands = .{ addr, offset, 0, 0 },
@@ -632,10 +636,10 @@ pub const Lifter = struct {
             0x36 => { // i32.store
                 const offset: u32 = @intCast(inst.operands[1].value);
                 if (self.stack.items.len >= 2) {
-                    const value = self.stack.pop();
-                    const addr = self.stack.pop();
+                    const value = self.stack.pop().?;
+                    const addr = self.stack.pop().?;
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_store,
                         .dest = null,
                         .operands = .{ addr, value, offset, 0 },
@@ -648,11 +652,11 @@ pub const Lifter = struct {
             0x2C, 0x2D => { // i32.load8_s, i32.load8_u
                 const offset: u32 = @intCast(inst.operands[1].value);
                 if (self.stack.items.len >= 1) {
-                    const addr = self.stack.pop();
+                    const addr = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_load, // Will load byte and extend
                         .dest = result,
                         .operands = .{ addr, offset, 1, 0 }, // size=1 byte
@@ -665,10 +669,10 @@ pub const Lifter = struct {
             0x3A => { // i32.store8
                 const offset: u32 = @intCast(inst.operands[1].value);
                 if (self.stack.items.len >= 2) {
-                    const value = self.stack.pop();
-                    const addr = self.stack.pop();
+                    const value = self.stack.pop().?;
+                    const addr = self.stack.pop().?;
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_store,
                         .dest = null,
                         .operands = .{ addr, value, offset, 1 }, // size=1 byte
@@ -682,9 +686,9 @@ pub const Lifter = struct {
             0x10 => { // call
                 const func_idx: u32 = @intCast(inst.operands[0].value);
                 const result = try func.newValue(.trit32);
-                try self.stack.append(result);
+                try self.stack.append(self.allocator, result);
 
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_call,
                     .dest = result,
                     .operands = .{ func_idx, 0, 0, 0 },
@@ -696,10 +700,10 @@ pub const Lifter = struct {
             0x0F => { // return
                 var ret_val: u32 = 0;
                 if (self.stack.items.len >= 1) {
-                    ret_val = self.stack.pop();
+                    ret_val = self.stack.pop().?;
                 }
 
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_ret,
                     .dest = null,
                     .operands = .{ ret_val, 0, 0, 0 },
@@ -712,7 +716,7 @@ pub const Lifter = struct {
                 const depth: u32 = @intCast(inst.operands[0].value);
                 const target = self.getBranchTarget(depth) orelse 0;
 
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_br,
                     .dest = null,
                     .operands = .{ target, 0, 0, 0 },
@@ -725,9 +729,9 @@ pub const Lifter = struct {
                 const depth: u32 = @intCast(inst.operands[0].value);
                 const target = self.getBranchTarget(depth) orelse 0;
                 if (self.stack.items.len >= 1) {
-                    const cond = self.stack.pop();
+                    const cond = self.stack.pop().?;
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_br_if,
                         .dest = null,
                         .operands = .{ cond, target, 0, 0 },
@@ -740,9 +744,9 @@ pub const Lifter = struct {
             // Stack operations
             0x1A => { // drop
                 if (self.stack.items.len >= 1) {
-                    _ = self.stack.pop();
+                    _ = self.stack.pop().?;
 
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_drop,
                         .dest = null,
                         .operands = .{ 0, 0, 0, 0 },
@@ -753,7 +757,7 @@ pub const Lifter = struct {
             },
 
             0x00 => { // unreachable
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_unreachable,
                     .dest = null,
                     .operands = .{ 0, 0, 0, 0 },
@@ -763,7 +767,7 @@ pub const Lifter = struct {
             },
 
             0x01 => { // nop
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_nop,
                     .dest = null,
                     .operands = .{ 0, 0, 0, 0 },
@@ -776,7 +780,7 @@ pub const Lifter = struct {
                 // Block: br jumps to end
                 const start_label = self.newLabel();
                 const end_label = self.newLabel();
-                try self.block_stack.append(BlockInfo{
+                try self.block_stack.append(self.allocator, BlockInfo{
                     .block_type = .block,
                     .start_label = start_label,
                     .end_label = end_label,
@@ -787,13 +791,13 @@ pub const Lifter = struct {
                 // Loop: br jumps to start (re-execute)
                 const start_label = self.newLabel();
                 const end_label = self.newLabel();
-                try self.block_stack.append(BlockInfo{
+                try self.block_stack.append(self.allocator, BlockInfo{
                     .block_type = .loop,
                     .start_label = start_label,
                     .end_label = end_label,
                 });
                 // Emit start label for loop
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_label,
                     .dest = null,
                     .operands = .{ start_label, 0, 0, 0 },
@@ -806,16 +810,16 @@ pub const Lifter = struct {
                 // If block: br jumps to end
                 const start_label = self.newLabel();
                 const end_label = self.newLabel();
-                try self.block_stack.append(BlockInfo{
+                try self.block_stack.append(self.allocator, BlockInfo{
                     .block_type = .if_block,
                     .start_label = start_label,
                     .end_label = end_label,
                 });
                 // Conditional - pop condition and branch to end if zero
                 if (self.stack.items.len >= 1) {
-                    const cond = self.stack.pop();
+                    const cond = self.stack.pop().?;
                     // Branch to end_label if cond == 0
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_br_if,
                         .dest = null,
                         .operands = .{ cond, end_label, 1, 0 }, // invert=1 (branch if zero)
@@ -830,7 +834,7 @@ pub const Lifter = struct {
                 if (self.block_stack.items.len > 0) {
                     const block_info = self.block_stack.items[self.block_stack.items.len - 1];
                     // Jump over else block
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_br,
                         .dest = null,
                         .operands = .{ block_info.end_label, 0, 0, 0 },
@@ -838,7 +842,7 @@ pub const Lifter = struct {
                         .source_address = inst.address,
                     });
                     // Emit else label (where if-false jumps to)
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_label,
                         .dest = null,
                         .operands = .{ block_info.start_label, 0, 0, 0 },
@@ -851,8 +855,8 @@ pub const Lifter = struct {
             0x0B => { // end
                 // Pop block and emit end label
                 if (self.block_stack.items.len > 0) {
-                    const block_info = self.block_stack.pop();
-                    try block.instructions.append(TVCInstruction{
+                    const block_info = self.block_stack.pop().?;
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_label,
                         .dest = null,
                         .operands = .{ block_info.end_label, 0, 0, 0 },
@@ -865,14 +869,14 @@ pub const Lifter = struct {
             0x1B => { // select
                 // select: [val1, val2, cond] -> val1 if cond != 0, else val2
                 if (self.stack.items.len >= 3) {
-                    const cond = self.stack.pop();
-                    const val2 = self.stack.pop();
-                    const val1 = self.stack.pop();
+                    const cond = self.stack.pop().?;
+                    const val2 = self.stack.pop().?;
+                    const val1 = self.stack.pop().?;
                     const result = try func.newValue(.trit32);
-                    try self.stack.append(result);
+                    try self.stack.append(self.allocator, result);
 
                     // Emit: result = cond ? val1 : val2
-                    try block.instructions.append(TVCInstruction{
+                    try block.instructions.append(self.allocator, TVCInstruction{
                         .opcode = .t_select,
                         .dest = result,
                         .operands = .{ val1, val2, cond, 0 },
@@ -884,7 +888,7 @@ pub const Lifter = struct {
 
             else => {
                 // Unknown opcode - emit nop
-                try block.instructions.append(TVCInstruction{
+                try block.instructions.append(self.allocator, TVCInstruction{
                     .opcode = .t_nop,
                     .dest = null,
                     .operands = .{ 0, 0, 0, 0 },

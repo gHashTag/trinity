@@ -368,7 +368,7 @@ pub const UIContext = struct {
     }
 
     pub fn popPanel(self: *Self) void {
-        if (self.panel_stack.popOrNull()) |p| {
+        if (self.panel_stack.pop()) |p| {
             self.current_panel = p;
             self.cursor = Vec2{ .x = p.x, .y = p.y };
         } else {
@@ -407,30 +407,31 @@ pub const UIContext = struct {
     /// Panel with golden ratio border
     pub fn panel(self: *Self, bounds: Rect, title: []const u8) void {
         // Background
-        self.drawRectRounded(bounds, COLORS.PANEL_BG, 8);
+        self.drawRect(bounds, COLORS.PANEL_BG);
 
         // Golden border
-        self.drawRectOutline(bounds, COLORS.GOLDEN, 2);
+        self.drawRectOutline(bounds, COLORS.GOLDEN, 1);
 
-        // Title bar (φ-height)
-        const title_height = 32;
+        // Title bar
+        const title_height = 2;
         const title_rect = Rect{ .x = bounds.x, .y = bounds.y, .w = bounds.w, .h = title_height };
-        self.drawRectRounded(title_rect, COLORS.DARK_BG, 8);
+        self.drawRect(title_rect, COLORS.DARK_BG);
+        self.drawRectOutline(title_rect, COLORS.GOLDEN, 1);
 
         // Title text
         self.drawText(
-            Vec2{ .x = bounds.x + 12, .y = bounds.y + 8 },
+            Vec2{ .x = bounds.x + 2, .y = bounds.y + 1 },
             title,
             COLORS.GREEN_TEAL,
-            16,
+            1,
         );
 
         // Push content area
         self.pushPanel(Rect{
-            .x = bounds.x + 8,
-            .y = bounds.y + title_height + 8,
-            .w = bounds.w - 16,
-            .h = bounds.h - title_height - 16,
+            .x = bounds.x + 1,
+            .y = bounds.y + title_height + 1,
+            .w = bounds.w - 2,
+            .h = bounds.h - title_height - 2,
         });
     }
 
@@ -491,20 +492,20 @@ pub const UIContext = struct {
         // Text
         const text = buffer[0..len.*];
         self.drawText(
-            Vec2{ .x = bounds.x + 8, .y = bounds.y + (bounds.h - 16) / 2 },
+            Vec2{ .x = bounds.x + 4, .y = bounds.y + 0 },
             text,
             COLORS.WHITE,
-            14,
+            1,
         );
 
         // Cursor blink
         if (focused and (self.frame_count / 30) % 2 == 0) {
-            const cursor_x = bounds.x + 8 + @as(f32, @floatFromInt(len.*)) * 8;
+            const cursor_x = bounds.x + 4 + @as(f32, @floatFromInt(len.*)) * 1;
             self.drawLine(
-                Vec2{ .x = cursor_x, .y = bounds.y + 4 },
-                Vec2{ .x = cursor_x, .y = bounds.y + bounds.h - 4 },
+                Vec2{ .x = cursor_x, .y = bounds.y + 0 },
+                Vec2{ .x = cursor_x, .y = bounds.y + bounds.h - 1 },
                 COLORS.GREEN_TEAL,
-                2,
+                1,
             );
         }
 
@@ -603,10 +604,10 @@ pub const UIContext = struct {
 
         // Code text (green teal)
         self.drawText(
-            Vec2{ .x = bounds.x + 12, .y = bounds.y + 8 },
+            Vec2{ .x = bounds.x + 4, .y = bounds.y + 0 },
             code,
             COLORS.GREEN_TEAL,
-            12,
+            1,
         );
     }
 
@@ -619,10 +620,10 @@ pub const UIContext = struct {
         self.drawRectOutline(bounds, border, 1);
 
         self.drawText(
-            Vec2{ .x = bounds.x + 12, .y = bounds.y + 8 },
+            Vec2{ .x = bounds.x + 2, .y = bounds.y + 0 },
             message,
             COLORS.WHITE,
-            14,
+            1,
         );
     }
 };
@@ -666,29 +667,39 @@ pub fn trinityLayout(bounds: Rect, padding: f32) [3]Rect {
 // TERMINAL RENDERER (ANSI for demo)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+pub const Cell = struct {
+    char: u32 = ' ',
+    fg: Color = COLORS.WHITE,
+    bg: Color = COLORS.DARK_BG,
+};
+
 pub const TerminalRenderer = struct {
     width: usize,
     height: usize,
-    buffer: []u8,
+    cells: []Cell,
     allocator: std.mem.Allocator,
 
     const Self = @This();
 
     pub fn init(allocator: std.mem.Allocator, width: usize, height: usize) !Self {
-        return Self{
+        const cells = try allocator.alloc(Cell, width * height);
+        const self = Self{
             .width = width,
             .height = height,
-            .buffer = try allocator.alloc(u8, width * height),
+            .cells = cells,
             .allocator = allocator,
         };
+        return self;
     }
 
     pub fn deinit(self: *Self) void {
-        self.allocator.free(self.buffer);
+        self.allocator.free(self.cells);
     }
 
     pub fn clear(self: *Self) void {
-        @memset(self.buffer, ' ');
+        for (self.cells) |*cell| {
+            cell.* = Cell{};
+        }
     }
 
     pub fn render(self: *Self, ctx: *UIContext) void {
@@ -697,71 +708,142 @@ pub const TerminalRenderer = struct {
         for (ctx.draw_commands.items) |cmd| {
             switch (cmd) {
                 .rect => |r| {
-                    self.drawBox(r.bounds, '#');
+                    self.drawBox(r.bounds, ' ', r.color, null);
+                },
+                .rect_outline => |r| {
+                    self.drawOutline(r.bounds, r.color);
                 },
                 .text => |t| {
-                    self.drawString(t.pos, t.text);
+                    self.drawString(t.pos, t.text, t.color);
                 },
                 .line => |l| {
-                    self.drawLine(l.start, l.end);
+                    self.drawLine(l.start, l.end, l.color);
                 },
                 else => {},
             }
         }
     }
 
-    fn drawBox(self: *Self, bounds: Rect, char: u8) void {
+    fn drawBox(self: *Self, bounds: Rect, char: u32, fg: Color, bg: ?Color) void {
         const x0 = @as(usize, @intFromFloat(@max(0, bounds.x)));
         const y0 = @as(usize, @intFromFloat(@max(0, bounds.y)));
-        const x1 = @min(self.width, @as(usize, @intFromFloat(bounds.x + bounds.w)));
-        const y1 = @min(self.height, @as(usize, @intFromFloat(bounds.y + bounds.h)));
+        const x1 = @min(self.width, @as(usize, @intFromFloat(@max(@as(f32, @floatFromInt(x0)), bounds.x + bounds.w))));
+        const y1 = @min(self.height, @as(usize, @intFromFloat(@max(@as(f32, @floatFromInt(y0)), bounds.y + bounds.h))));
+
+        if (x1 <= x0 or y1 <= y0) return;
 
         for (y0..y1) |y| {
             for (x0..x1) |x| {
-                self.buffer[y * self.width + x] = char;
+                var cell = &self.cells[y * self.width + x];
+                if (char != ' ') cell.char = char;
+                cell.fg = fg;
+                if (bg) |b| cell.bg = b else cell.bg = fg;
             }
         }
     }
 
-    fn drawString(self: *Self, pos: Vec2, text: []const u8) void {
-        const x = @as(usize, @intFromFloat(@max(0, pos.x)));
+    fn drawOutline(self: *Self, bounds: Rect, color: Color) void {
+        const x0 = @as(usize, @intFromFloat(@max(0, bounds.x)));
+        const y0 = @as(usize, @intFromFloat(@max(0, bounds.y)));
+        const x1 = @min(self.width, @as(usize, @intFromFloat(@max(@as(f32, @floatFromInt(x0)), bounds.x + bounds.w))));
+        const y1 = @min(self.height, @as(usize, @intFromFloat(@max(@as(f32, @floatFromInt(y0)), bounds.y + bounds.h))));
+
+        if (x1 <= x0 or y1 <= y0) return;
+        if (x1 - x0 < 1 or y1 - y0 < 1) return;
+
+        // Corners
+        self.putCell(x0, y0, '┌', color);
+        self.putCell(x1 - 1, y0, '┐', color);
+        self.putCell(x0, y1 - 1, '└', color);
+        self.putCell(x1 - 1, y1 - 1, '┘', color);
+
+        // Horizontal
+        for (x0 + 1..x1 - 1) |x| {
+            self.putCell(x, y0, '─', color);
+            self.putCell(x, y1 - 1, '─', color);
+        }
+
+        // Vertical
+        for (y0 + 1..y1 - 1) |y| {
+            self.putCell(x0, y, '│', color);
+            self.putCell(x1 - 1, y, '│', color);
+        }
+    }
+
+    fn putCell(self: *Self, x: usize, y: usize, char: u32, fg: Color) void {
+        if (x >= self.width or y >= self.height) return;
+        var cell = &self.cells[y * self.width + x];
+        cell.char = char;
+        cell.fg = fg;
+    }
+
+    fn drawString(self: *Self, pos: Vec2, text: []const u8, fg: Color) void {
+        const x_start = @as(usize, @intFromFloat(@max(0, pos.x)));
         const y = @as(usize, @intFromFloat(@max(0, pos.y)));
 
         if (y >= self.height) return;
 
         for (text, 0..) |c, i| {
-            const px = x + i;
+            const px = x_start + i;
             if (px >= self.width) break;
-            self.buffer[y * self.width + px] = c;
+            var cell = &self.cells[y * self.width + px];
+            cell.char = c;
+            cell.fg = fg;
         }
     }
 
-    fn drawLine(self: *Self, start: Vec2, end: Vec2) void {
+    fn drawLine(self: *Self, start: Vec2, end: Vec2, color: Color) void {
         // Simple horizontal/vertical line
         const x0 = @as(usize, @intFromFloat(@max(0, @min(start.x, end.x))));
-        const x1 = @as(usize, @intFromFloat(@min(@as(f32, @floatFromInt(self.width)), @max(start.x, end.x))));
+        const x1 = @min(self.width, @as(usize, @intFromFloat(@max(@as(f32, @floatFromInt(x0)), @max(start.x, end.x)))));
         const y = @as(usize, @intFromFloat(@max(0, start.y)));
 
-        if (y >= self.height) return;
+        if (y >= self.height or x1 <= x0) return;
 
         for (x0..x1) |x| {
-            self.buffer[y * self.width + x] = '-';
+            var cell = &self.cells[y * self.width + x];
+            cell.char = '─';
+            cell.fg = color;
         }
     }
 
     pub fn print(self: *Self) void {
-        // ANSI: Clear screen, move cursor home
-        std.debug.print("\x1b[2J\x1b[H", .{});
+        // ANSI: Move cursor home (don't clear screen every frame to reduce flicker)
+        std.debug.print("\x1b[H", .{});
 
-        // Print with colors
-        std.debug.print("\x1b[38;2;0;255;136m", .{}); // Green teal
+        var last_fg: ?Color = null;
+        var last_bg: ?Color = null;
 
         for (0..self.height) |y| {
-            const line = self.buffer[y * self.width .. (y + 1) * self.width];
-            std.debug.print("{s}\n", .{line});
-        }
+            for (0..self.width) |x| {
+                const cell = self.cells[y * self.width + x];
 
-        std.debug.print("\x1b[0m", .{}); // Reset
+                // Change colors only if they differ from last
+                if (last_fg == null or !std.meta.eql(last_fg.?, cell.fg) or last_bg == null or !std.meta.eql(last_bg.?, cell.bg)) {
+                    std.debug.print("\x1b[38;2;{d};{d};{d};48;2;{d};{d};{d}m", .{
+                        cell.fg.r, cell.fg.g, cell.fg.b,
+                        cell.bg.r, cell.bg.g, cell.bg.b,
+                    });
+                    last_fg = cell.fg;
+                    last_bg = cell.bg;
+                }
+
+                if (cell.char < 128) {
+                    std.debug.print("{c}", .{@as(u8, @intCast(cell.char))});
+                } else {
+                    // Primitive UTF-8 encoding for box characters
+                    var buf: [4]u8 = undefined;
+                    const len = std.unicode.utf8Encode(@as(u21, @intCast(cell.char)), &buf) catch {
+                        std.debug.print("?", .{});
+                        continue;
+                    };
+                    std.debug.print("{s}", .{buf[0..len]});
+                }
+            }
+            std.debug.print("\x1b[0m\n", .{});
+            last_fg = null;
+            last_bg = null;
+        }
     }
 };
 
