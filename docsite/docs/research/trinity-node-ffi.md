@@ -4,11 +4,21 @@ sidebar_position: 3
 
 # Trinity Node BitNet FFI Integration
 
-This report documents the successful integration of BitNet ternary inference into the Trinity node via FFI (Foreign Function Interface) wrapper to the official Microsoft bitnet.cpp.
+<div className="paper-meta">
+<p><strong>Authors:</strong> Trinity Research Team</p>
+<p><strong>Date:</strong> February 6, 2026</p>
+<p><strong>Status:</strong> Production-ready</p>
+</div>
 
-**Date:** February 6, 2026
-**Status:** Production-ready
-**Finding:** 100% coherent text generation, fully local inference, no cloud API required.
+<div className="abstract">
+<div className="abstract-title">Abstract</div>
+
+This report documents the successful integration of BitNet ternary inference into the Trinity node via FFI (Foreign Function Interface) wrapper to the official Microsoft bitnet.cpp. The integration achieves 100% coherent text generation at 13.7 tokens/second on CPU hardware, with fully local inference requiring no cloud API. This enables Trinity nodes to provide decentralized AI services with minimal energy consumption through ternary weight operations ({-1, 0, +1}).
+
+<div className="keywords">
+<strong>Keywords:</strong> BitNet, FFI integration, ternary inference, decentralized AI, local LLM
+</div>
+</div>
 
 ## Academic References
 

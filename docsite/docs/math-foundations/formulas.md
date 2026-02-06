@@ -15,48 +15,54 @@ The formulas below are **empirical approximations**, not derived physical theori
 
 <div class="formula">
 
-**V = n * 3^k * pi^m * phi^p * e^q**
+$$V = n \cdot 3^k \cdot \pi^m \cdot \varphi^p \cdot e^q \tag{1}$$
 
 </div>
 
 Several measured physical constants can be approximated by combinations of:
-- **n** -- Integer coefficient
-- **3^k** -- Powers of 3
-- **pi^m** -- Powers of pi (geometric symmetry)
-- **phi^p** -- Powers of the golden ratio (self-similar proportion)
-- **e^q** -- Powers of Euler's number (natural growth)
+- $n$ — Integer coefficient
+- $3^k$ — Powers of 3
+- $\pi^m$ — Powers of pi (geometric symmetry)
+- $\varphi^p$ — Powers of the golden ratio (self-similar proportion)
+- $e^q$ — Powers of Euler's number (natural growth)
 
 ---
 
 ## Electromagnetic Constants
 
-### Fine Structure Constant (alpha)
+### Fine Structure Constant ($\alpha$)
 
 <div class="theorem-card">
 <h4>Formula</h4>
 
-**1/alpha = 4*pi^3 + pi^2 + pi**
+$$\frac{1}{\alpha} = 4\pi^3 + \pi^2 + \pi \tag{2}$$
 
-**Calculated**: 137.0363...
-**Measured**: 137.0360...
-**Error**: 0.0002%
+| Metric | Value |
+|--------|-------|
+| Calculated | 137.0363... |
+| Measured | 137.0360... |
+| Error | 0.0002% |
+
 </div>
 
-The fine structure constant alpha = 1/137.036 governs the strength of electromagnetic interactions. It determines the probability of a photon being absorbed or emitted by a charged particle. This approximation expresses it purely in terms of pi with integer coefficients.
+The fine structure constant $\alpha = 1/137.036$ governs the strength of electromagnetic interactions. It determines the probability of a photon being absorbed or emitted by a charged particle. This approximation expresses it purely in terms of $\pi$ with integer coefficients.
 
 ### Proton-Electron Mass Ratio
 
 <div class="theorem-card">
 <h4>Formula</h4>
 
-**m(p)/m(e) = 6*pi^5**
+$$\frac{m_p}{m_e} = 6\pi^5 \tag{3}$$
 
-**Calculated**: 1836.12...
-**Measured**: 1836.15...
-**Error**: 0.002%
+| Metric | Value |
+|--------|-------|
+| Calculated | 1836.12... |
+| Measured | 1836.15... |
+| Error | 0.002% |
+
 </div>
 
-The proton is approximately 1836 times heavier than the electron. This ratio is closely approximated by 6*pi^5.
+The proton is approximately 1836 times heavier than the electron. This ratio is closely approximated by $6\pi^5$.
 
 ---
 
@@ -67,14 +73,17 @@ The proton is approximately 1836 times heavier than the electron. This ratio is 
 <div class="theorem-card">
 <h4>Formula</h4>
 
-**Q = (m(e) + m(mu) + m(tau)) / (sqrt(m(e)) + sqrt(m(mu)) + sqrt(m(tau)))^2 = 2/3**
+$$Q = \frac{m_e + m_\mu + m_\tau}{\left(\sqrt{m_e} + \sqrt{m_\mu} + \sqrt{m_\tau}\right)^2} = \frac{2}{3} \tag{4}$$
 
-**Calculated**: 0.666661...
-**Measured**: 0.666656...
-**Error**: 0.0009%
+| Metric | Value |
+|--------|-------|
+| Calculated | 0.666661... |
+| Measured | 0.666656... |
+| Error | 0.0009% |
+
 </div>
 
-The Koide formula relates the three charged lepton masses (electron, muon, tau) through a remarkably simple ratio of 2/3. The precision of this relationship remains unexplained by the Standard Model.
+The Koide formula relates the three charged lepton masses (electron, muon, tau) through a remarkably simple ratio of $\frac{2}{3}$. The precision of this relationship remains unexplained by the Standard Model.
 
 ### Muon-Electron Mass Ratio
 
@@ -137,11 +146,14 @@ Dark energy constitutes approximately 68% of the universe's energy. Note that Om
 <div class="theorem-card">
 <h4>Formula</h4>
 
-**n(s) = 94/pi^4**
+$$n_s = \frac{94}{\pi^4} \tag{5}$$
 
-**Calculated**: 0.96490...
-**Measured**: 0.96490...
-**Error**: 0.0002%
+| Metric | Value |
+|--------|-------|
+| Calculated | 0.96490... |
+| Measured | 0.96490... |
+| Error | 0.0002% |
+
 </div>
 
 The scalar spectral index of primordial density fluctuations measured from the Cosmic Microwave Background. This expression achieves extraordinary precision.
@@ -224,13 +236,13 @@ Simplified: **M(Z) = M(W) / cos(theta(W))**
 
 <div class="formula">
 
-**dim(E8) = 3^5 + 5 = 243 + 5 = 248**
+$$\dim(E_8) = 3^5 + 5 = 243 + 5 = 248 \tag{6}$$
 
-**roots(E8) = 3^5 - 3 = 243 - 3 = 240**
+$$\text{roots}(E_8) = 3^5 - 3 = 243 - 3 = 240 \tag{7}$$
 
 </div>
 
-The exceptional Lie group E8 appears in string theory and attempts at grand unification. Both its dimension and root count can be written arithmetically in terms of powers of 3 with small additive corrections. This is a numerical coincidence, not evidence of a structural connection between E8 and ternary computing.
+The exceptional Lie group $E_8$ appears in string theory and attempts at grand unification. Both its dimension and root count can be written arithmetically in terms of powers of 3 with small additive corrections. This is a numerical coincidence, not evidence of a structural connection between $E_8$ and ternary computing.
 
 ---
 

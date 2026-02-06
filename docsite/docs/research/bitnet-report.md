@@ -4,11 +4,22 @@ sidebar_position: 2
 
 # BitNet b1.58 Coherence Report
 
-This report documents the results of testing Microsoft's official BitNet b1.58-2B-4T model across three different inference frameworks. The goal was to evaluate output coherence, inference speed, and practical usability of ternary-weight language models.
+<div className="paper-meta">
+<p><strong>Authors:</strong> Trinity Research Team</p>
+<p><strong>Date:</strong> February 5, 2026</p>
+<p><strong>Status:</strong> Technical Report</p>
+<p><strong>Model:</strong> microsoft/bitnet-b1.58-2B-4T</p>
+</div>
 
-**Date:** February 5, 2026
-**Model:** microsoft/bitnet-b1.58-2B-4T
-**Finding:** Incoherent output observed across all three frameworks on CPU hardware. GPU testing is required to establish baseline quality.
+<div className="abstract">
+<div className="abstract-title">Abstract</div>
+
+This report documents the results of testing Microsoft's official BitNet b1.58-2B-4T model across three different inference frameworks: HuggingFace Transformers (greedy and sampling modes) and the official bitnet.cpp. We evaluate output coherence, inference speed, and practical usability of ternary-weight language models. Initial testing on CPU hardware (Apple M1 Pro) revealed incoherent output across all frameworks, attributed to GGUF tokenizer metadata errors. Subsequent GPU testing (RTX 4090) confirmed coherent text generation is achievable with proper configuration.
+
+<div className="keywords">
+<strong>Keywords:</strong> BitNet, ternary inference, LLM evaluation, 1.58-bit quantization, coherence testing
+</div>
+</div>
 
 ## Academic References
 

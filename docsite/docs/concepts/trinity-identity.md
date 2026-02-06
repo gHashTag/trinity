@@ -8,69 +8,50 @@ sidebar_position: 3
 
 The Trinity Identity is the equation at the heart of this project:
 
-```
-phi^2 + 1/phi^2 = 3
-```
+$$\varphi^2 + \frac{1}{\varphi^2} = 3$$
 
-where phi = (1 + sqrt(5)) / 2 = 1.6180339887... is the **golden ratio**. This identity connects the golden ratio -- one of the most widely studied irrational constants in mathematics -- to the number **3**, the optimal integer base for computing.
+where $\varphi = \frac{1 + \sqrt{5}}{2} \approx 1.618$ is the **golden ratio**. This identity connects the golden ratio — one of the most widely studied irrational constants in mathematics — to the number **3**, the optimal integer base for computing.
 
 ## The Golden Ratio
 
-The golden ratio phi is defined as the positive root of the equation:
+The golden ratio $\varphi$ is defined as the positive root of the equation:
 
-```
-x^2 - x - 1 = 0
-```
+$$x^2 - x - 1 = 0$$
 
-which gives phi = (1 + sqrt(5)) / 2. It satisfies the fundamental property:
+which gives $\varphi = \frac{1 + \sqrt{5}}{2}$. It satisfies the fundamental property:
 
-```
-phi^2 = phi + 1
-```
+$$\varphi^2 = \varphi + 1$$
 
-This means that squaring the golden ratio is the same as adding one to it. Equivalently, the reciprocal of phi has a remarkably simple form:
+This means that squaring the golden ratio is the same as adding one to it. Equivalently, the reciprocal of $\varphi$ has a remarkably simple form:
 
-```
-1/phi = phi - 1 = 0.6180339887...
-```
+$$\frac{1}{\varphi} = \varphi - 1 \approx 0.618$$
 
-The golden ratio appears throughout mathematics and the natural sciences: in Fibonacci sequences, optimal packing problems, quasicrystal tilings (Penrose tilings), and phyllotaxis (the spiral arrangement of leaves and seeds in plants). Its key mathematical property is that it is the "most irrational" number -- its continued fraction representation converges more slowly than that of any other irrational number, making it maximally resistant to rational approximation (Livio, 2002).
+The golden ratio appears throughout mathematics and the natural sciences: in Fibonacci sequences, optimal packing problems, quasicrystal tilings (Penrose tilings), and phyllotaxis (the spiral arrangement of leaves and seeds in plants). Its key mathematical property is that it is the "most irrational" number — its continued fraction representation converges more slowly than that of any other irrational number, making it maximally resistant to rational approximation (Livio, 2002).
 
 ## Algebraic Proof
 
-**Step 1.** Compute phi^2 using the identity phi^2 = phi + 1:
+<div className="proof">
+<div className="proof-title">Proof</div>
 
-```
-phi^2 = phi + 1 = (3 + sqrt(5)) / 2
-```
+**Step 1.** Compute $\varphi^2$ using the identity $\varphi^2 = \varphi + 1$:
 
-**Step 2.** Compute 1/phi using rationalization:
+$$\varphi^2 = \varphi + 1 = \frac{3 + \sqrt{5}}{2}$$
 
-```
-1/phi = 2 / (1 + sqrt(5))
-      = 2(1 - sqrt(5)) / ((1)^2 - (sqrt(5))^2)
-      = 2(1 - sqrt(5)) / (-4)
-      = (sqrt(5) - 1) / 2
-      = phi - 1
-```
+**Step 2.** Compute $\frac{1}{\varphi}$ using rationalization:
 
-**Step 3.** Compute 1/phi^2:
+$$\frac{1}{\varphi} = \frac{2}{1 + \sqrt{5}} = \frac{2(1 - \sqrt{5})}{1 - 5} = \frac{2(1 - \sqrt{5})}{-4} = \frac{\sqrt{5} - 1}{2} = \varphi - 1$$
 
-```
-1/phi^2 = (phi - 1)^2
-        = phi^2 - 2*phi + 1
-        = (phi + 1) - 2*phi + 1     [substituting phi^2 = phi + 1]
-        = 2 - phi
-```
+**Step 3.** Compute $\frac{1}{\varphi^2}$:
+
+$$\frac{1}{\varphi^2} = (\varphi - 1)^2 = \varphi^2 - 2\varphi + 1 = (\varphi + 1) - 2\varphi + 1 = 2 - \varphi$$
 
 **Step 4.** Sum the two terms:
 
-```
-phi^2 + 1/phi^2 = (phi + 1) + (2 - phi)
-                = 3
-```
+$$\varphi^2 + \frac{1}{\varphi^2} = (\varphi + 1) + (2 - \varphi) = 3$$
 
-The phi terms cancel exactly, leaving the integer 3. **QED.**
+The $\varphi$ terms cancel exactly, leaving the integer 3.
+<span className="qed"></span>
+</div>
 
 ## Why This Matters
 
@@ -86,11 +67,9 @@ The constant of optimal proportion, squared and added to its inverse square, yie
 
 The information content of a ternary digit is:
 
-```
-log2(3) = 1.58496... bits/trit
-```
+$$\log_2(3) = 1.58496... \text{ bits/trit}$$
 
-The Trinity Identity evaluates to 3, which is the base of the ternary number system used by Trinity. While this is an elegant coincidence -- the golden ratio's algebraic properties yielding the ternary base -- these are two mathematically independent facts: the identity phi^2 + 1/phi^2 = 3 follows from the minimal polynomial of phi, while the information density of a trit follows from Shannon's entropy formula. The project takes its name from this numerical coincidence.
+The Trinity Identity evaluates to 3, which is the base of the ternary number system used by Trinity. While this is an elegant coincidence — the golden ratio's algebraic properties yielding the ternary base — these are two mathematically independent facts: the identity $\varphi^2 + \frac{1}{\varphi^2} = 3$ follows from the minimal polynomial of $\varphi$, while the information density of a trit follows from Shannon's entropy formula. The project takes its name from this numerical coincidence.
 
 The 58.5% information advantage of ternary over binary (1.585 bits per trit vs. 1 bit per bit) is a direct consequence of 3 being a larger base, and is the reason ternary representations are more compact than binary ones for a given range of values.
 
@@ -98,17 +77,15 @@ The 58.5% information advantage of ternary over binary (1.585 bits per trit vs. 
 
 Building on this connection, the Parametric Constant Approximation proposes that certain mathematical and physical constants can be expressed (exactly or approximately) in the form:
 
-```
-V = n * 3^k * pi^m * phi^p * e^q
-```
+$$V = n \cdot 3^k \cdot \pi^m \cdot \varphi^p \cdot e^q$$
 
-where n is an integer, and k, m, p, q are rational exponents. This decomposition combines:
-- **3^k** -- powers of the optimal base (ternary)
-- **pi^m** -- powers of pi (circular/geometric symmetry)
-- **phi^p** -- powers of the golden ratio (self-similar proportion)
-- **e^q** -- powers of Euler's number (natural growth/decay)
+where $n$ is an integer, and $k, m, p, q$ are rational exponents. This decomposition combines:
+- $3^k$ — powers of the optimal base (ternary)
+- $\pi^m$ — powers of pi (circular/geometric symmetry)
+- $\varphi^p$ — powers of the golden ratio (self-similar proportion)
+- $e^q$ — powers of Euler's number (natural growth/decay)
 
-The [Constant Approximation Formulas](/docs/math-foundations/formulas) page demonstrates this decomposition for physical constants including the fine structure constant (1/alpha = 4*pi^3 + pi^2 + pi = 137.036...) and the proton-electron mass ratio (m_p/m_e = 6*pi^5 = 1836.12...).
+The [Constant Approximation Formulas](/docs/math-foundations/formulas) page demonstrates this decomposition for physical constants including the fine structure constant ($\frac{1}{\alpha} = 4\pi^3 + \pi^2 + \pi = 137.036...$) and the proton-electron mass ratio ($\frac{m_p}{m_e} = 6\pi^5 = 1836.12...$).
 
 :::caution
 
