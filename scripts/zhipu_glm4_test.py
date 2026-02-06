@@ -219,13 +219,17 @@ def main():
     print(f"\nφ² + 1/φ² = {phi_result:.10f}")
     print(f"Trinity identity verified: {abs(phi_result - 3.0) < 0.0001}")
 
-    # Get API key
+    # Get API key from environment
     api_key = os.environ.get("ZHIPU_API_KEY")
     if not api_key:
-        # Try hardcoded key for testing
-        api_key = "fcbb5dadc5ea462284f5475a04daa174.Ei5KkZb0WQMwasmd"
+        print("\n" + "=" * 70)
+        print("ERROR: ZHIPU_API_KEY not set!")
+        print("Run: export ZHIPU_API_KEY='your-key-here'")
+        print("Get key at: https://open.bigmodel.cn")
+        print("=" * 70)
+        return
 
-    print(f"\nAPI Key: {api_key[:20]}...")
+    print(f"\nAPI Key: {api_key[:8]}***")
 
     # Initialize client
     try:

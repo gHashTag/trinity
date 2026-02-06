@@ -604,7 +604,7 @@ def main():
 
     # Get API keys from environment
     groq_key = os.environ.get("GROQ_API_KEY")
-    zhipu_key = os.environ.get("ZHIPU_API_KEY", "fcbb5dadc5ea462284f5475a04daa174.Ei5KkZb0WQMwasmd")
+    zhipu_key = os.environ.get("ZHIPU_API_KEY")
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
     cohere_key = os.environ.get("COHERE_API_KEY")
 
@@ -617,13 +617,13 @@ def main():
 
     print("\nAvailable Providers:")
     if groq_key:
-        print(f"  ✓ Groq: {groq_key[:20]}...")
+        print(f"  ✓ Groq: {groq_key[:8]}***")
     if zhipu_key:
-        print(f"  ✓ Zhipu: {zhipu_key[:20]}...")
+        print(f"  ✓ Zhipu: {zhipu_key[:8]}***")
     if anthropic_key:
-        print(f"  ✓ Anthropic: {anthropic_key[:20]}...")
+        print(f"  ✓ Anthropic: {anthropic_key[:8]}***")
     if cohere_key:
-        print(f"  ✓ Cohere: {cohere_key[:20]}...")
+        print(f"  ✓ Cohere: {cohere_key[:8]}***")
 
     # Initialize hybrid with available providers
     try:
