@@ -23,6 +23,8 @@ pub const DEFAULT_TEMPERATURE: f32 = 0.7;
 pub const ApiProvider = enum {
     groq,
     zhipu,
+    anthropic,
+    cohere,
     openai,
     custom,
 
@@ -30,6 +32,8 @@ pub const ApiProvider = enum {
         return switch (self) {
             .groq => "https://api.groq.com/openai/v1",
             .zhipu => "https://open.bigmodel.cn/api/coding/paas/v4",
+            .anthropic => "https://api.anthropic.com/v1",
+            .cohere => "https://api.cohere.ai/v1",
             .openai => "https://api.openai.com/v1",
             .custom => "",
         };
@@ -39,6 +43,8 @@ pub const ApiProvider = enum {
         return switch (self) {
             .groq => "llama-3.3-70b-versatile",
             .zhipu => "glm-4",
+            .anthropic => "claude-3-5-sonnet-20241022",
+            .cohere => "command-r-plus",
             .openai => "gpt-4o-mini",
             .custom => "gpt-oss-120b",
         };
@@ -48,6 +54,8 @@ pub const ApiProvider = enum {
         return switch (self) {
             .groq => 128000, // 128K
             .zhipu => 200000, // 200K
+            .anthropic => 200000, // 200K
+            .cohere => 128000, // 128K
             .openai => 128000, // 128K
             .custom => 32000, // 32K default
         };
@@ -57,8 +65,32 @@ pub const ApiProvider = enum {
         return switch (self) {
             .groq => 227, // tok/s (tested)
             .zhipu => 70, // tok/s (tested)
+            .anthropic => 80, // tok/s (estimated)
+            .cohere => 100, // tok/s (estimated)
             .openai => 80, // tok/s (estimated)
             .custom => 50, // tok/s (estimated)
+        };
+    }
+
+    pub fn getCostPer1MTokens(self: ApiProvider) f32 {
+        return switch (self) {
+            .groq => 0.59, // FREE tier available
+            .zhipu => 1.0, // Estimated
+            .anthropic => 15.0, // Claude 3.5 Sonnet
+            .cohere => 3.0, // Command R+
+            .openai => 15.0, // GPT-4o-mini
+            .custom => 0.0, // Custom/local
+        };
+    }
+
+    pub fn hasFreeTier(self: ApiProvider) bool {
+        return switch (self) {
+            .groq => true, // 1K req/day
+            .zhipu => false,
+            .anthropic => false,
+            .cohere => true, // Limited free tier
+            .openai => false,
+            .custom => true, // Local = free
         };
     }
 };
@@ -105,6 +137,44 @@ pub const ApiConfig = struct {
             .model = ApiProvider.zhipu.getDefaultModel(),
         };
     }
+
+    pub fn forAnthropic(api_key: []const u8) ApiConfig {
+        return .{
+            .provider = .anthropic,
+            .api_key = api_key,
+            .base_url = ApiProvider.anthropic.getBaseUrl(),
+            .model = ApiProvider.anthropic.getDefaultModel(),
+        };
+    }
+
+    pub fn forCohere(api_key: []const u8) ApiConfig {
+        return .{
+            .provider = .cohere,
+            .api_key = api_key,
+            .base_url = ApiProvider.cohere.getBaseUrl(),
+            .model = ApiProvider.cohere.getDefaultModel(),
+        };
+    }
+};
+
+/// Detected language type
+pub const Language = enum {
+    english,
+    chinese,
+    japanese,
+    korean,
+    russian,
+    arabic,
+    other,
+
+    pub fn needsSpecialProvider(self: Language) bool {
+        return switch (self) {
+            .chinese => true, // Zhipu preferred
+            .japanese, .korean => true, // CJK models preferred
+            .russian, .arabic => false, // Standard providers OK
+            .english, .other => false,
+        };
+    }
 };
 
 /// Check if text contains Chinese characters (CJK Unified Ideographs)
@@ -132,6 +202,85 @@ pub fn containsChinese(text: []const u8) bool {
     return false;
 }
 
+/// Check if text contains Japanese Hiragana/Katakana
+pub fn containsJapanese(text: []const u8) bool {
+    var i: usize = 0;
+    while (i < text.len) {
+        const c = text[i];
+        // Hiragana: U+3040-U+309F (E3 81 80 - E3 82 9F)
+        // Katakana: U+30A0-U+30FF (E3 82 A0 - E3 83 BF)
+        if (c == 0xE3 and i + 2 < text.len) {
+            const c2 = text[i + 1];
+            if ((c2 >= 0x81 and c2 <= 0x83)) {
+                return true;
+            }
+        }
+        if (c < 0x80) {
+            i += 1;
+        } else if (c < 0xE0) {
+            i += 2;
+        } else if (c < 0xF0) {
+            i += 3;
+        } else {
+            i += 4;
+        }
+    }
+    return false;
+}
+
+/// Check if text contains Korean Hangul
+pub fn containsKorean(text: []const u8) bool {
+    var i: usize = 0;
+    while (i < text.len) {
+        const c = text[i];
+        // Hangul Syllables: U+AC00-U+D7A3 (EA B0 80 - ED 9E A3)
+        if ((c >= 0xEA and c <= 0xED) and i + 2 < text.len) {
+            return true;
+        }
+        if (c < 0x80) {
+            i += 1;
+        } else if (c < 0xE0) {
+            i += 2;
+        } else if (c < 0xF0) {
+            i += 3;
+        } else {
+            i += 4;
+        }
+    }
+    return false;
+}
+
+/// Check if text contains Cyrillic (Russian, etc.)
+pub fn containsCyrillic(text: []const u8) bool {
+    var i: usize = 0;
+    while (i < text.len) {
+        const c = text[i];
+        // Cyrillic: U+0400-U+04FF (D0 80 - D3 BF)
+        if ((c == 0xD0 or c == 0xD1 or c == 0xD2 or c == 0xD3) and i + 1 < text.len) {
+            return true;
+        }
+        if (c < 0x80) {
+            i += 1;
+        } else if (c < 0xE0) {
+            i += 2;
+        } else if (c < 0xF0) {
+            i += 3;
+        } else {
+            i += 4;
+        }
+    }
+    return false;
+}
+
+/// Detect primary language in text
+pub fn detectLanguage(text: []const u8) Language {
+    if (containsChinese(text)) return .chinese;
+    if (containsJapanese(text)) return .japanese;
+    if (containsKorean(text)) return .korean;
+    if (containsCyrillic(text)) return .russian;
+    return .english; // Default
+}
+
 /// Estimate tokens in text (rough: 4 chars = 1 token English, 2 chars = 1 token Chinese)
 pub fn estimateTokens(text: []const u8) u32 {
     // Simplified: count UTF-8 characters
@@ -153,20 +302,53 @@ pub fn estimateTokens(text: []const u8) u32 {
     return char_count / 3; // Rough average
 }
 
+/// Provider selection criteria
+pub const SelectionCriteria = struct {
+    prefer_speed: bool = true,
+    prefer_free: bool = true,
+    prefer_quality: bool = false,
+    max_cost_per_1m: f32 = 100.0,
+};
+
 /// Select best provider based on prompt characteristics
 pub fn selectProvider(text: []const u8, context_length: u32) ApiProvider {
-    // Chinese content → Zhipu (native support)
-    if (containsChinese(text)) {
-        return .zhipu;
-    }
+    return selectProviderAdvanced(text, context_length, .{});
+}
 
-    // Long context → Zhipu (200K vs 128K)
+/// Advanced provider selection with criteria
+pub fn selectProviderAdvanced(text: []const u8, context_length: u32, criteria: SelectionCriteria) ApiProvider {
+    const lang = detectLanguage(text);
     const total_tokens = estimateTokens(text) + context_length;
-    if (total_tokens > ApiProvider.groq.getContextLimit()) {
+
+    // CJK languages → Zhipu (native support)
+    if (lang == .chinese or lang == .japanese or lang == .korean) {
         return .zhipu;
     }
 
-    // Default: Groq (faster: 227 tok/s vs 70 tok/s)
+    // Long context → Zhipu or Anthropic (200K)
+    if (total_tokens > ApiProvider.groq.getContextLimit()) {
+        if (criteria.prefer_free or criteria.prefer_speed) {
+            return .zhipu; // 200K, cheaper
+        } else {
+            return .anthropic; // 200K, higher quality
+        }
+    }
+
+    // Quality preference → Anthropic
+    if (criteria.prefer_quality and !criteria.prefer_free) {
+        return .anthropic;
+    }
+
+    // Free tier preference → Groq or Cohere
+    if (criteria.prefer_free) {
+        if (criteria.prefer_speed) {
+            return .groq; // 227 tok/s, FREE
+        } else {
+            return .cohere; // FREE tier available
+        }
+    }
+
+    // Default: Groq (fastest: 227 tok/s)
     return .groq;
 }
 
@@ -411,4 +593,48 @@ test "provider selection for english" {
 test "provider selection for long context" {
     // Force long context by setting context_length > 128K
     try std.testing.expectEqual(ApiProvider.zhipu, selectProvider("short prompt", 150000));
+}
+
+test "api config for anthropic" {
+    const config = ApiConfig.forAnthropic("test-key");
+    try std.testing.expectEqualStrings("claude-3-5-sonnet-20241022", config.model);
+    try std.testing.expectEqualStrings("https://api.anthropic.com/v1", config.base_url);
+}
+
+test "api config for cohere" {
+    const config = ApiConfig.forCohere("test-key");
+    try std.testing.expectEqualStrings("command-r-plus", config.model);
+    try std.testing.expectEqualStrings("https://api.cohere.ai/v1", config.base_url);
+}
+
+test "groq has free tier" {
+    try std.testing.expect(ApiProvider.groq.hasFreeTier());
+    try std.testing.expect(ApiProvider.cohere.hasFreeTier());
+    try std.testing.expect(!ApiProvider.anthropic.hasFreeTier());
+}
+
+test "anthropic context is 200K" {
+    try std.testing.expectEqual(@as(u32, 200000), ApiProvider.anthropic.getContextLimit());
+}
+
+test "language detection chinese" {
+    try std.testing.expectEqual(Language.chinese, detectLanguage("你好世界"));
+}
+
+test "language detection russian" {
+    try std.testing.expectEqual(Language.russian, detectLanguage("Привет мир"));
+}
+
+test "language detection english" {
+    try std.testing.expectEqual(Language.english, detectLanguage("Hello world"));
+}
+
+test "advanced provider selection quality" {
+    const criteria = SelectionCriteria{ .prefer_quality = true, .prefer_free = false };
+    try std.testing.expectEqual(ApiProvider.anthropic, selectProviderAdvanced("high quality task", 0, criteria));
+}
+
+test "advanced provider selection free" {
+    const criteria = SelectionCriteria{ .prefer_free = true, .prefer_speed = true };
+    try std.testing.expectEqual(ApiProvider.groq, selectProviderAdvanced("fast task", 0, criteria));
 }
