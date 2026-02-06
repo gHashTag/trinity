@@ -161,14 +161,12 @@ pub fn runChat(allocator: std.mem.Allocator, model_path: []const u8, initial_pro
 }
 
 fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial_prompt: ?[]const u8, max_tokens: u32, temperature: f32, top_p: f32, use_ternary: bool) !void {
-    const stdout = std.io.getStdOut().writer();
-
-    try stdout.print("\n", .{});
-    try stdout.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
-    try stdout.print("║           TRINITY CHAT - SIMD Optimized LLM                  ║\n", .{});
-    try stdout.print("║           Temperature + Top-p Sampling                       ║\n", .{});
-    try stdout.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
-    try stdout.print("\n", .{});
+    std.debug.print("\n", .{});
+    std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║           TRINITY CHAT - SIMD Optimized LLM                  ║\n", .{});
+    std.debug.print("║           Temperature + Top-p Sampling                       ║\n", .{});
+    std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+    std.debug.print("\n", .{});
 
     // Create sampling params
     const sampling_params = SamplingParams{
@@ -243,21 +241,31 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
     // Handle initial prompt if provided
     if (initial_prompt) |prompt| {
         try history.addMessage(.user, prompt);
-        const response = try generateWithHistory(allocator, stdout, &model, &tokenizer, &template, &history, max_tokens, sampling_params);
+        const stdout_initial = std.fs.File.stdout();
+        const response = try generateWithHistory(allocator, stdout_initial, &model, &tokenizer, &template, &history, max_tokens, sampling_params);
         if (response) |resp| {
             try history.addMessage(.assistant, resp);
             allocator.free(resp);
         }
     }
 
-    // Interactive loop
-    const stdin = std.io.getStdIn().reader();
+    // Interactive loop - using low-level read for Zig 0.15 compatibility
+    const stdin_file = std.fs.File.stdin();
     var buf: [1024]u8 = undefined;
 
     while (true) {
-        try stdout.print("User: ", .{});
-        const line = stdin.readUntilDelimiter(&buf, '\n') catch break;
-        const trimmed = std.mem.trim(u8, line, " \t\r\n");
+        std.debug.print("User: ", .{});
+
+        // Read line byte by byte (Zig 0.15 compatible)
+        var line_len: usize = 0;
+        while (line_len < buf.len - 1) {
+            const read_result = stdin_file.read(buf[line_len .. line_len + 1]) catch break;
+            if (read_result == 0) break; // EOF
+            if (buf[line_len] == '\n') break;
+            line_len += 1;
+        }
+
+        const trimmed = std.mem.trim(u8, buf[0..line_len], " \t\r\n");
 
         if (trimmed.len == 0) continue;
         if (std.mem.eql(u8, trimmed, "quit") or std.mem.eql(u8, trimmed, "exit")) break;
@@ -267,12 +275,12 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
             history.clear();
             try history.addMessage(.system, system_prompt);
             model.resetKVCache();
-            try stdout.print("[History cleared]\n\n", .{});
+            std.debug.print("[History cleared]\n\n", .{});
             continue;
         }
 
         if (std.mem.eql(u8, trimmed, "/history")) {
-            try stdout.print("[{d} messages in history]\n\n", .{history.getMessageCount()});
+            std.debug.print("[{d} messages in history]\n\n", .{history.getMessageCount()});
             continue;
         }
 
@@ -280,7 +288,8 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
         try history.addMessage(.user, trimmed);
 
         // Generate response with full history
-        const response = try generateWithHistory(allocator, stdout, &model, &tokenizer, &template, &history, max_tokens, sampling_params);
+        const stdout_file = std.fs.File.stdout();
+        const response = try generateWithHistory(allocator, stdout_file, &model, &tokenizer, &template, &history, max_tokens, sampling_params);
 
         // Add assistant response to history
         if (response) |resp| {
@@ -289,13 +298,13 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
         }
     }
 
-    try stdout.print("Goodbye!\n", .{});
+    std.debug.print("Goodbye!\n", .{});
 }
 
 // Generate response with conversation history
 fn generateWithHistory(
     allocator: std.mem.Allocator,
-    writer: anytype,
+    _: std.fs.File, // unused, using std.debug.print
     model: *model_mod.FullModel,
     tokenizer: *tokenizer_mod.Tokenizer,
     template: *const ChatTemplate,
@@ -307,19 +316,19 @@ fn generateWithHistory(
     const formatted = try history.formatForModel(allocator, template);
     defer allocator.free(formatted);
 
-    try writer.print("Assistant: ", .{});
+    std.debug.print("Assistant: ", .{});
     var gen_timer = try std.time.Timer.start();
 
     // Tokenize formatted prompt
     const tokens = tokenizer.encode(allocator, formatted) catch {
-        try writer.print("[tokenization error]\n", .{});
+        std.debug.print("[tokenization error]\n", .{});
         return null;
     };
     defer allocator.free(tokens);
 
     // Check context length
     if (tokens.len > model.config.context_length - max_tokens) {
-        try writer.print("[context too long, use /clear]\n", .{});
+        std.debug.print("[context too long, use /clear]\n", .{});
         return null;
     }
 
@@ -331,7 +340,7 @@ fn generateWithHistory(
     for (tokens, 0..) |token, pos| {
         if (last_logits) |l| allocator.free(l);
         last_logits = model.forward(token, pos) catch {
-            try writer.print("[forward error]\n", .{});
+            std.debug.print("[forward error]\n", .{});
             return null;
         };
     }
@@ -370,7 +379,7 @@ fn generateWithHistory(
         defer if (decoded.len > 0) allocator.free(decoded);
 
         // Stream output
-        try writer.print("{s}", .{decoded});
+        std.debug.print("{s}", .{decoded});
 
         // Collect for history
         try response.appendSlice(decoded);
@@ -384,20 +393,20 @@ fn generateWithHistory(
         current_logits = model.forward(last_token, current_pos) catch break;
         current_pos += 1;
     }
-    try writer.print("\n", .{});
+    std.debug.print("\n", .{});
 
     const gen_time = gen_timer.read();
     const tok_per_sec = @as(f64, @floatFromInt(generated)) / (@as(f64, @floatFromInt(gen_time)) / 1e9);
-    try writer.print("[{d} tokens, {d:.1} tok/s, history: {d} msgs]\n\n", .{ generated, tok_per_sec, history.getMessageCount() });
+    std.debug.print("[{d} tokens, {d:.1} tok/s, history: {d} msgs]\n\n", .{ generated, tok_per_sec, history.getMessageCount() });
 
     const result = try response.toOwnedSlice();
     return result;
 }
 
 // Generate response with chat template and streaming output (legacy single-turn)
+// NOTE: This function is kept for compatibility but is not currently used
 fn generateWithTemplate(
     allocator: std.mem.Allocator,
-    writer: anytype,
     model: *model_mod.FullModel,
     tokenizer: *tokenizer_mod.Tokenizer,
     template: *const ChatTemplate,
@@ -410,12 +419,12 @@ fn generateWithTemplate(
     const formatted = try template.formatPrompt(allocator, system, user_input);
     defer allocator.free(formatted);
 
-    try writer.print("Assistant: ", .{});
+    std.debug.print("Assistant: ", .{});
     var gen_timer = try std.time.Timer.start();
 
     // Tokenize formatted prompt
     const tokens = tokenizer.encode(allocator, formatted) catch {
-        try writer.print("[tokenization error]\n", .{});
+        std.debug.print("[tokenization error]\n", .{});
         return;
     };
     defer allocator.free(tokens);
@@ -428,7 +437,7 @@ fn generateWithTemplate(
     for (tokens, 0..) |token, pos| {
         if (last_logits) |l| allocator.free(l);
         last_logits = model.forward(token, pos) catch {
-            try writer.print("[forward error]\n", .{});
+            std.debug.print("[forward error]\n", .{});
             return;
         };
     }
@@ -465,10 +474,10 @@ fn generateWithTemplate(
         // Decode and stream output immediately
         const decoded = tokenizer.decode(allocator, &[_]u32{sampled_token}) catch " ";
         defer if (decoded.len > 0) allocator.free(decoded);
-        
+
         // Stream: print immediately without buffering
-        try writer.print("{s}", .{decoded});
-        
+        std.debug.print("{s}", .{decoded});
+
         // Check for </s> or end markers in decoded text
         if (std.mem.indexOf(u8, decoded, "</s>") != null) break;
         if (std.mem.indexOf(u8, decoded, "<|") != null) break;
@@ -478,11 +487,11 @@ fn generateWithTemplate(
         current_logits = model.forward(last_token, current_pos) catch break;
         current_pos += 1;
     }
-    try writer.print("\n", .{});
+    std.debug.print("\n", .{});
 
     const gen_time = gen_timer.read();
     const tok_per_sec = @as(f64, @floatFromInt(generated)) / (@as(f64, @floatFromInt(gen_time)) / 1e9);
-    try writer.print("[{d} tokens, {d:.1} tok/s]\n\n", .{ generated, tok_per_sec });
+    std.debug.print("[{d} tokens, {d:.1} tok/s]\n\n", .{ generated, tok_per_sec });
 }
 
 pub fn main() !void {
