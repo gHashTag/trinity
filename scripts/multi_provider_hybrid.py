@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-Multi-Provider Hybrid: Groq + Zhipu GLM-4 Auto-Switch
-Default: Groq (227 tok/s, 128K context)
-Long Context (>128K) or Chinese: Zhipu (69.5 tok/s, 200K context)
+Multi-Provider Hybrid: Groq + Zhipu + Anthropic + Cohere Auto-Switch
+Providers:
+- Groq (227 tok/s, 128K, FREE) - Default for speed
+- Zhipu GLM-4 (69.5 tok/s, 200K) - Chinese/CJK, long context
+- Anthropic Claude (80 tok/s, 200K) - Quality preference
+- Cohere Command R+ (100 tok/s, 128K, FREE) - Alternative
 φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
 """
 
@@ -31,13 +34,47 @@ GROQ_CONTEXT_LIMIT = 128000  # 128K tokens
 
 def contains_chinese(text: str) -> bool:
     """Detect if text contains Chinese characters."""
-    # Chinese Unicode ranges: CJK Unified Ideographs
     for char in text:
-        if '\u4e00' <= char <= '\u9fff':
+        if '\u4e00' <= char <= '\u9fff':  # CJK Unified Ideographs
             return True
         if '\u3400' <= char <= '\u4dbf':  # Extension A
             return True
     return False
+
+def contains_japanese(text: str) -> bool:
+    """Detect if text contains Japanese Hiragana/Katakana."""
+    for char in text:
+        if '\u3040' <= char <= '\u309f':  # Hiragana
+            return True
+        if '\u30a0' <= char <= '\u30ff':  # Katakana
+            return True
+    return False
+
+def contains_korean(text: str) -> bool:
+    """Detect if text contains Korean Hangul."""
+    for char in text:
+        if '\uac00' <= char <= '\ud7a3':  # Hangul Syllables
+            return True
+    return False
+
+def contains_cyrillic(text: str) -> bool:
+    """Detect if text contains Cyrillic (Russian, etc.)."""
+    for char in text:
+        if '\u0400' <= char <= '\u04ff':  # Cyrillic
+            return True
+    return False
+
+def detect_language(text: str) -> str:
+    """Detect primary language in text."""
+    if contains_chinese(text):
+        return "chinese"
+    if contains_japanese(text):
+        return "japanese"
+    if contains_korean(text):
+        return "korean"
+    if contains_cyrillic(text):
+        return "russian"
+    return "english"
 
 def estimate_tokens(text: str) -> int:
     """Rough token estimation (4 chars ≈ 1 token for English, 2 for Chinese)."""
@@ -45,21 +82,44 @@ def estimate_tokens(text: str) -> int:
     other_chars = len(text) - chinese_chars
     return chinese_chars // 2 + other_chars // 4
 
-def needs_zhipu(prompt: str, context_length: int = 0) -> Tuple[bool, str]:
+def select_provider(
+    prompt: str,
+    context_length: int = 0,
+    prefer_quality: bool = False,
+    prefer_free: bool = True
+) -> Tuple[str, str]:
     """
-    Determine if Zhipu should be used instead of Groq.
-    Returns (use_zhipu, reason).
+    Select best provider based on prompt and preferences.
+    Returns (provider_name, reason).
     """
-    # Check for Chinese content
-    if contains_chinese(prompt):
-        return True, "Chinese content detected"
-
-    # Check for long context
+    lang = detect_language(prompt)
     total_tokens = estimate_tokens(prompt) + context_length
-    if total_tokens > GROQ_CONTEXT_LIMIT:
-        return True, f"Long context ({total_tokens} tokens > 128K)"
 
-    return False, "Default to Groq (fast)"
+    # CJK languages → Zhipu (native support)
+    if lang in ("chinese", "japanese", "korean"):
+        return "zhipu", f"{lang.capitalize()} content detected"
+
+    # Long context → Zhipu or Anthropic
+    if total_tokens > GROQ_CONTEXT_LIMIT:
+        if prefer_quality:
+            return "anthropic", f"Long context ({total_tokens} tokens), quality mode"
+        return "zhipu", f"Long context ({total_tokens} tokens > 128K)"
+
+    # Quality preference → Anthropic
+    if prefer_quality:
+        return "anthropic", "Quality mode enabled"
+
+    # Free tier preference → Groq (fastest) or Cohere
+    if prefer_free:
+        return "groq", "Default (fast, FREE)"
+
+    return "groq", "Default to Groq (fastest)"
+
+
+def needs_zhipu(prompt: str, context_length: int = 0) -> Tuple[bool, str]:
+    """Legacy compatibility: Determine if Zhipu should be used."""
+    provider, reason = select_provider(prompt, context_length)
+    return provider == "zhipu", reason
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # IGLA PLANNER
@@ -154,6 +214,108 @@ class GroqClient:
 # ═══════════════════════════════════════════════════════════════════════════════
 # ZHIPU CLIENT
 # ═══════════════════════════════════════════════════════════════════════════════
+
+class AnthropicClient:
+    """Anthropic Claude API client."""
+
+    BASE_URL = "https://api.anthropic.com/v1/messages"
+    MODEL = "claude-3-5-sonnet-20241022"
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    def chat(self, prompt: str, max_tokens: int = 256, temperature: float = 0.7) -> dict:
+        """Send chat completion request."""
+        data = {
+            "model": self.MODEL,
+            "max_tokens": max_tokens,
+            "messages": [{"role": "user", "content": prompt}]
+        }
+
+        req = urllib.request.Request(
+            self.BASE_URL,
+            data=json.dumps(data).encode('utf-8'),
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": self.api_key,
+                "anthropic-version": "2023-06-01",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            }
+        )
+
+        start_time = time.time()
+
+        ctx = ssl.create_default_context()
+        with urllib.request.urlopen(req, context=ctx, timeout=60) as response:
+            result = json.loads(response.read().decode('utf-8'))
+
+        elapsed = time.time() - start_time
+
+        content = result['content'][0]['text'] if result.get('content') else ""
+        usage = result.get('usage', {})
+        total_tokens = usage.get('input_tokens', 0) + usage.get('output_tokens', 0)
+
+        return {
+            "content": content,
+            "tokens": total_tokens,
+            "elapsed": elapsed,
+            "speed": usage.get('output_tokens', 0) / elapsed if elapsed > 0 else 0,
+            "coherent": is_coherent(content),
+            "provider": "Anthropic",
+            "model": self.MODEL
+        }
+
+
+class CohereClient:
+    """Cohere Command R+ API client."""
+
+    BASE_URL = "https://api.cohere.ai/v1/chat"
+    MODEL = "command-r-plus"
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    def chat(self, prompt: str, max_tokens: int = 256, temperature: float = 0.7) -> dict:
+        """Send chat completion request."""
+        data = {
+            "model": self.MODEL,
+            "message": prompt,
+            "max_tokens": max_tokens,
+            "temperature": temperature
+        }
+
+        req = urllib.request.Request(
+            self.BASE_URL,
+            data=json.dumps(data).encode('utf-8'),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            }
+        )
+
+        start_time = time.time()
+
+        ctx = ssl.create_default_context()
+        with urllib.request.urlopen(req, context=ctx, timeout=60) as response:
+            result = json.loads(response.read().decode('utf-8'))
+
+        elapsed = time.time() - start_time
+
+        content = result.get('text', '')
+        # Cohere doesn't return token count in simple response
+        estimated_tokens = len(content.split()) * 1.3
+
+        return {
+            "content": content,
+            "tokens": int(estimated_tokens),
+            "elapsed": elapsed,
+            "speed": estimated_tokens / elapsed if elapsed > 0 else 0,
+            "coherent": is_coherent(content),
+            "provider": "Cohere",
+            "model": self.MODEL
+        }
+
 
 class ZhipuClient:
     """Zhipu GLM-4 API client (Coding Plan endpoint)."""
@@ -250,34 +412,62 @@ class ZhipuClient:
 class MultiProviderHybrid:
     """
     IGLA + Multi-Provider LLM Hybrid.
-    Auto-switches between Groq (fast) and Zhipu (long context/Chinese).
+    Auto-switches between providers based on task requirements.
+
+    Providers:
+    - Groq: Fast (227 tok/s), FREE tier, 128K context
+    - Zhipu: Chinese native, 200K context
+    - Anthropic: High quality, 200K context
+    - Cohere: FREE tier alternative, 128K context
     """
 
-    def __init__(self, groq_key: str, zhipu_key: str):
-        self.groq = GroqClient(groq_key)
-        self.zhipu = ZhipuClient(zhipu_key)
+    def __init__(
+        self,
+        groq_key: str = None,
+        zhipu_key: str = None,
+        anthropic_key: str = None,
+        cohere_key: str = None
+    ):
+        self.providers = {}
+
+        if groq_key:
+            self.providers['groq'] = GroqClient(groq_key)
+        if zhipu_key:
+            self.providers['zhipu'] = ZhipuClient(zhipu_key)
+        if anthropic_key:
+            self.providers['anthropic'] = AnthropicClient(anthropic_key)
+        if cohere_key:
+            self.providers['cohere'] = CohereClient(cohere_key)
+
         self.stats = {
             "groq_calls": 0,
             "zhipu_calls": 0,
+            "anthropic_calls": 0,
+            "cohere_calls": 0,
             "total_tokens": 0,
             "total_time": 0
         }
+
+        # Provider priority for fallback
+        self.fallback_order = ['groq', 'cohere', 'zhipu', 'anthropic']
 
     def hybrid_inference(
         self,
         task: str,
         force_provider: Optional[str] = None,
         context_length: int = 0,
-        use_igla: bool = True
+        use_igla: bool = True,
+        prefer_quality: bool = False
     ) -> dict:
         """
         Execute hybrid inference with auto-provider selection.
 
         Args:
             task: The task/prompt to execute
-            force_provider: "groq" or "zhipu" to force specific provider
+            force_provider: Provider name to force (groq, zhipu, anthropic, cohere)
             context_length: Estimated context length for long context detection
             use_igla: Whether to include IGLA symbolic planning
+            prefer_quality: Prefer quality over speed (uses Anthropic)
         """
         result = {
             "task": task,
@@ -285,7 +475,8 @@ class MultiProviderHybrid:
             "provider": None,
             "provider_reason": None,
             "response": None,
-            "phi_verified": False
+            "phi_verified": False,
+            "language": detect_language(task)
         }
 
         # Step 1: IGLA symbolic planning
@@ -295,14 +486,26 @@ class MultiProviderHybrid:
             result["phi_verified"] = abs(phi_result - 3.0) < 0.0001
 
         # Step 2: Select provider
-        if force_provider:
-            use_zhipu = force_provider.lower() == "zhipu"
+        if force_provider and force_provider.lower() in self.providers:
+            selected_provider = force_provider.lower()
             reason = f"Forced: {force_provider}"
         else:
-            use_zhipu, reason = needs_zhipu(task, context_length)
+            selected_provider, reason = select_provider(
+                task, context_length, prefer_quality
+            )
+            # Check if selected provider is available
+            if selected_provider not in self.providers:
+                # Fall back to first available
+                selected_provider = next(iter(self.providers.keys()), None)
+                if selected_provider:
+                    reason += f" (fallback to {selected_provider})"
 
-        result["provider"] = "Zhipu" if use_zhipu else "Groq"
+        result["provider"] = selected_provider.capitalize() if selected_provider else "None"
         result["provider_reason"] = reason
+
+        if not selected_provider or selected_provider not in self.providers:
+            result["response"] = {"error": "No providers available"}
+            return result
 
         # Step 3: Enhance prompt with IGLA if enabled
         enhanced_prompt = task
@@ -315,13 +518,10 @@ Execute the task: {task}
 Provide a precise, coherent response."""
 
         # Step 4: Execute with selected provider
+        client = self.providers[selected_provider]
         try:
-            if use_zhipu:
-                result["response"] = self.zhipu.chat(enhanced_prompt)
-                self.stats["zhipu_calls"] += 1
-            else:
-                result["response"] = self.groq.chat(enhanced_prompt)
-                self.stats["groq_calls"] += 1
+            result["response"] = client.chat(enhanced_prompt)
+            self.stats[f"{selected_provider}_calls"] += 1
 
             if result["response"].get("tokens"):
                 self.stats["total_tokens"] += result["response"]["tokens"]
@@ -331,23 +531,25 @@ Provide a precise, coherent response."""
         except Exception as e:
             result["response"] = {"error": str(e)}
 
-            # Fallback to other provider
-            try:
-                fallback_provider = "Groq" if use_zhipu else "Zhipu"
-                print(f"   Fallback to {fallback_provider}...")
+            # Fallback to next available provider
+            for fallback in self.fallback_order:
+                if fallback != selected_provider and fallback in self.providers:
+                    try:
+                        print(f"   Fallback to {fallback}...")
+                        fallback_client = self.providers[fallback]
+                        result["response"] = fallback_client.chat(enhanced_prompt)
+                        self.stats[f"{fallback}_calls"] += 1
 
-                if use_zhipu:
-                    result["response"] = self.groq.chat(enhanced_prompt)
-                    self.stats["groq_calls"] += 1
-                else:
-                    result["response"] = self.zhipu.chat(enhanced_prompt)
-                    self.stats["zhipu_calls"] += 1
+                        if result["response"].get("tokens"):
+                            self.stats["total_tokens"] += result["response"]["tokens"]
+                        if result["response"].get("elapsed"):
+                            self.stats["total_time"] += result["response"]["elapsed"]
 
-                result["provider"] = fallback_provider
-                result["provider_reason"] += f" (fallback from {result['provider']})"
-
-            except Exception as e2:
-                result["response"] = {"error": f"Both providers failed: {str(e)}, {str(e2)}"}
+                        result["provider"] = fallback.capitalize()
+                        result["provider_reason"] += f" (fallback from {selected_provider})"
+                        break
+                    except Exception:
+                        continue
 
         return result
 
@@ -363,20 +565,25 @@ Provide a precise, coherent response."""
 # ═══════════════════════════════════════════════════════════════════════════════
 
 TEST_PROMPTS = [
-    # English prompts → Groq
-    ("prove φ² + 1/φ² = 3 where φ = (1+√5)/2", None),
-    ("solve 2+2 step by step", None),
-    ("write a Python one-liner to reverse a string", None),
-    ("what is the capital of France?", None),
+    # English prompts → Groq (fast, default)
+    ("prove φ² + 1/φ² = 3 where φ = (1+√5)/2", None, False),
+    ("solve 2+2 step by step", None, False),
+    ("write a Python one-liner to reverse a string", None, False),
+    ("what is the capital of France?", None, False),
 
     # Chinese prompts → Zhipu (auto-detect)
-    ("用中文解释什么是人工智能", None),  # Explain AI in Chinese
-    ("北京的首都是什么？", None),  # What is Beijing's capital?
-    ("计算 2+2 的结果", None),  # Calculate 2+2
+    ("用中文解释什么是人工智能", None, False),  # Explain AI in Chinese
+    ("计算 2+2 的结果", None, False),  # Calculate 2+2
+
+    # Russian prompt → test Cyrillic detection
+    ("Объясни что такое искусственный интеллект", None, False),
+
+    # Quality mode → Anthropic (if key available)
+    ("explain the theory of relativity", None, True),
 
     # Forced provider tests
-    ("what comes next: 1, 1, 2, 3, 5, 8, ?", "groq"),
-    ("explain quantum computing simply", "zhipu"),
+    ("what comes next: 1, 1, 2, 3, 5, 8, ?", "groq", False),
+    ("explain quantum computing simply", "zhipu", False),
 ]
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -395,37 +602,53 @@ def main():
     print(f"\nφ² + 1/φ² = {phi_result:.10f}")
     print(f"Trinity identity verified: {abs(phi_result - 3.0) < 0.0001}")
 
-    # Get API keys
+    # Get API keys from environment
     groq_key = os.environ.get("GROQ_API_KEY")
     zhipu_key = os.environ.get("ZHIPU_API_KEY", "fcbb5dadc5ea462284f5475a04daa174.Ei5KkZb0WQMwasmd")
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+    cohere_key = os.environ.get("COHERE_API_KEY")
 
-    if not groq_key:
+    if not groq_key and not zhipu_key:
         print("\n" + "=" * 70)
-        print("ERROR: GROQ_API_KEY not set!")
-        print("Run: export GROQ_API_KEY='your-key-here'")
+        print("ERROR: No API keys set!")
+        print("Set at least one: GROQ_API_KEY, ZHIPU_API_KEY, ANTHROPIC_API_KEY, COHERE_API_KEY")
         print("=" * 70)
         return
 
-    print(f"\nGroq Key: {groq_key[:20]}...")
-    print(f"Zhipu Key: {zhipu_key[:20]}...")
+    print("\nAvailable Providers:")
+    if groq_key:
+        print(f"  ✓ Groq: {groq_key[:20]}...")
+    if zhipu_key:
+        print(f"  ✓ Zhipu: {zhipu_key[:20]}...")
+    if anthropic_key:
+        print(f"  ✓ Anthropic: {anthropic_key[:20]}...")
+    if cohere_key:
+        print(f"  ✓ Cohere: {cohere_key[:20]}...")
 
-    # Initialize hybrid
+    # Initialize hybrid with available providers
     try:
-        hybrid = MultiProviderHybrid(groq_key, zhipu_key)
+        hybrid = MultiProviderHybrid(
+            groq_key=groq_key,
+            zhipu_key=zhipu_key,
+            anthropic_key=anthropic_key,
+            cohere_key=cohere_key
+        )
+        print(f"\nActive providers: {list(hybrid.providers.keys())}")
     except Exception as e:
         print(f"Error initializing hybrid: {e}")
         return
 
     results = []
 
-    for i, (prompt, force_provider) in enumerate(TEST_PROMPTS):
+    for i, (prompt, force_provider, quality_mode) in enumerate(TEST_PROMPTS):
         print(f"\n[{i+1}/{len(TEST_PROMPTS)}] {prompt[:50]}...")
 
         try:
             result = hybrid.hybrid_inference(
                 prompt,
                 force_provider=force_provider,
-                use_igla=True
+                use_igla=True,
+                prefer_quality=quality_mode
             )
 
             provider = result.get("provider", "?")
