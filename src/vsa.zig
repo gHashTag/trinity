@@ -8024,6 +8024,497 @@ pub const TextCorpus = struct {
         return global_orchestrator != null;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CYCLE 53: MULTI-MODAL TOOL USE — Vision + Voice + Code + Text Tools
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// ModalToolBinding: Maps modality → allowed tool capabilities (φ⁻¹ weighted)
+    pub const ModalToolBinding = struct {
+        modality: Modality,
+        allowed_capabilities: [8]bool, // indexed by ToolCapability
+        safety_floor: f64, // minimum safety weight required
+        max_concurrent: u8, // max concurrent tool calls for this modality
+
+        pub fn init(modality: Modality) ModalToolBinding {
+            var binding = ModalToolBinding{
+                .modality = modality,
+                .allowed_capabilities = [_]bool{false} ** 8,
+                .safety_floor = 0.5,
+                .max_concurrent = 1,
+            };
+            switch (modality) {
+                .text => {
+                    // Text: read, calculate, memory, search
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.read_file)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.calculate)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.memory_access)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.web_search)] = true;
+                    binding.safety_floor = 0.236; // φ⁻³
+                    binding.max_concurrent = 4;
+                },
+                .vision => {
+                    // Vision: read (images), calculate, memory
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.read_file)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.calculate)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.memory_access)] = true;
+                    binding.safety_floor = 0.236; // φ⁻³ (allows read_file at φ⁻²)
+                    binding.max_concurrent = 2;
+                },
+                .voice => {
+                    // Voice: calculate, memory, search (no file ops)
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.calculate)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.memory_access)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.web_search)] = true;
+                    binding.safety_floor = 0.236; // φ⁻³ (allows web_search at φ⁻³)
+                    binding.max_concurrent = 2;
+                },
+                .code => {
+                    // Code: all tools (highest privilege)
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.read_file)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.write_file)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.list_dir)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.shell_cmd)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.calculate)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.memory_access)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.code_exec)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.web_search)] = true;
+                    binding.safety_floor = 0.04; // Below code_exec (0.05), most capable
+                    binding.max_concurrent = 8;
+                },
+                .tool => {
+                    // Tool modality: calculate + memory (meta-tool)
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.calculate)] = true;
+                    binding.allowed_capabilities[@intFromEnum(ToolCapability.memory_access)] = true;
+                    binding.safety_floor = 0.618; // φ⁻¹ (safest)
+                    binding.max_concurrent = 1;
+                },
+            }
+            return binding;
+        }
+
+        pub fn isCapabilityAllowed(self: *const ModalToolBinding, cap: ToolCapability) bool {
+            return self.allowed_capabilities[@intFromEnum(cap)];
+        }
+
+        pub fn allowedCount(self: *const ModalToolBinding) u8 {
+            var count: u8 = 0;
+            for (self.allowed_capabilities) |allowed| {
+                if (allowed) count += 1;
+            }
+            return count;
+        }
+    };
+
+    /// ToolInvocation: Tracks a single tool call within a multi-modal context
+    pub const ToolInvocation = struct {
+        source_modality: Modality,
+        agent_role: AgentRole,
+        tool_capability: ToolCapability,
+        tool_name_buf: [64]u8,
+        tool_name_len: u8,
+        args_buf: [256]u8,
+        args_len: u16,
+        result_buf: [512]u8,
+        result_len: u16,
+        success: bool,
+        latency_ns: u64,
+        safety_score: f64,
+
+        pub fn init(modality: Modality, role: AgentRole, cap: ToolCapability) ToolInvocation {
+            return ToolInvocation{
+                .source_modality = modality,
+                .agent_role = role,
+                .tool_capability = cap,
+                .tool_name_buf = [_]u8{0} ** 64,
+                .tool_name_len = 0,
+                .args_buf = [_]u8{0} ** 256,
+                .args_len = 0,
+                .result_buf = [_]u8{0} ** 512,
+                .result_len = 0,
+                .success = false,
+                .latency_ns = 0,
+                .safety_score = 0.0,
+            };
+        }
+
+        pub fn setToolName(self: *ToolInvocation, name: []const u8) void {
+            const len = @min(name.len, 64);
+            @memcpy(self.tool_name_buf[0..len], name[0..len]);
+            self.tool_name_len = @intCast(len);
+        }
+
+        pub fn getToolName(self: *const ToolInvocation) []const u8 {
+            return self.tool_name_buf[0..self.tool_name_len];
+        }
+
+        pub fn setResult(self: *ToolInvocation, output: []const u8, ok: bool, latency: u64) void {
+            const len = @min(output.len, 512);
+            @memcpy(self.result_buf[0..len], output[0..len]);
+            self.result_len = @intCast(len);
+            self.success = ok;
+            self.latency_ns = latency;
+        }
+
+        pub fn getResult(self: *const ToolInvocation) []const u8 {
+            return self.result_buf[0..self.result_len];
+        }
+    };
+
+    /// MultiModalToolPlan: A plan for executing tools across modalities
+    pub const MultiModalToolPlan = struct {
+        invocations: [16]ToolInvocation,
+        count: u8,
+        source_modality: Modality,
+        completed: u8,
+        failed: u8,
+        total_latency_ns: u64,
+
+        pub fn init(modality: Modality) MultiModalToolPlan {
+            var plan = MultiModalToolPlan{
+                .invocations = undefined,
+                .count = 0,
+                .source_modality = modality,
+                .completed = 0,
+                .failed = 0,
+                .total_latency_ns = 0,
+            };
+            for (&plan.invocations) |*inv| {
+                inv.* = ToolInvocation.init(modality, .coordinator, .calculate);
+            }
+            return plan;
+        }
+
+        pub fn addInvocation(self: *MultiModalToolPlan, role: AgentRole, cap: ToolCapability) bool {
+            if (self.count >= 16) return false;
+            self.invocations[self.count] = ToolInvocation.init(self.source_modality, role, cap);
+            self.count += 1;
+            return true;
+        }
+
+        pub fn markCompleted(self: *MultiModalToolPlan, idx: u8, output: []const u8, ok: bool, latency: u64) void {
+            if (idx >= self.count) return;
+            self.invocations[idx].setResult(output, ok, latency);
+            if (ok) {
+                self.completed += 1;
+            } else {
+                self.failed += 1;
+            }
+            self.total_latency_ns += latency;
+        }
+
+        pub fn successRate(self: *const MultiModalToolPlan) f64 {
+            const total = self.completed + self.failed;
+            if (total == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.completed)) / @as(f64, @floatFromInt(total));
+        }
+
+        pub fn isComplete(self: *const MultiModalToolPlan) bool {
+            if (self.count == 0) return false;
+            return (self.completed + self.failed) >= self.count;
+        }
+    };
+
+    /// MultiModalToolUse: The integration layer connecting UnifiedAgent + ToolExecutor + Orchestrator
+    pub const MultiModalToolUse = struct {
+        bindings: [5]ModalToolBinding, // one per Modality
+        active_plans: [8]MultiModalToolPlan,
+        plan_count: u8,
+        total_invocations: u32,
+        successful_invocations: u32,
+        failed_invocations: u32,
+        safety_violations: u32,
+        modality_tool_counts: [5]u32, // per-modality tool call counts
+
+        pub fn init() MultiModalToolUse {
+            var mmtu = MultiModalToolUse{
+                .bindings = undefined,
+                .active_plans = undefined,
+                .plan_count = 0,
+                .total_invocations = 0,
+                .successful_invocations = 0,
+                .failed_invocations = 0,
+                .safety_violations = 0,
+                .modality_tool_counts = [_]u32{0} ** 5,
+            };
+            // Initialize bindings for each modality
+            mmtu.bindings[0] = ModalToolBinding.init(.text);
+            mmtu.bindings[1] = ModalToolBinding.init(.vision);
+            mmtu.bindings[2] = ModalToolBinding.init(.voice);
+            mmtu.bindings[3] = ModalToolBinding.init(.code);
+            mmtu.bindings[4] = ModalToolBinding.init(.tool);
+            // Initialize plans
+            for (&mmtu.active_plans) |*plan| {
+                plan.* = MultiModalToolPlan.init(.text);
+            }
+            return mmtu;
+        }
+
+        /// Check if a modality is allowed to use a specific tool capability
+        pub fn checkPermission(self: *const MultiModalToolUse, modality: Modality, cap: ToolCapability) bool {
+            const binding = &self.bindings[@intFromEnum(modality)];
+            if (!binding.isCapabilityAllowed(cap)) return false;
+            // Check safety floor
+            if (cap.safetyWeight() < binding.safety_floor) return false;
+            return true;
+        }
+
+        /// Plan tool execution for a modal input
+        pub fn planExecution(self: *MultiModalToolUse, modality: Modality, input_text: []const u8) ?*MultiModalToolPlan {
+            if (self.plan_count >= 8) return null;
+            var plan = &self.active_plans[self.plan_count];
+            plan.* = MultiModalToolPlan.init(modality);
+
+            // Route input to appropriate tools based on modality and content
+            const binding = &self.bindings[@intFromEnum(modality)];
+
+            // Analyze input to determine needed tools
+            var needs_calc = false;
+            var needs_read = false;
+            var needs_memory = false;
+            var needs_search = false;
+            var needs_code = false;
+            var needs_write = false;
+
+            // Simple keyword-based tool detection
+            for (0..input_text.len) |i| {
+                if (i + 4 <= input_text.len) {
+                    const window = input_text[i..i + 4];
+                    if (std.mem.eql(u8, window, "calc") or std.mem.eql(u8, window, "math") or std.mem.eql(u8, window, "sum ")) {
+                        needs_calc = true;
+                    }
+                    if (std.mem.eql(u8, window, "read") or std.mem.eql(u8, window, "file") or std.mem.eql(u8, window, "load")) {
+                        needs_read = true;
+                    }
+                    if (std.mem.eql(u8, window, "memo") or std.mem.eql(u8, window, "save") or std.mem.eql(u8, window, "stor")) {
+                        needs_memory = true;
+                    }
+                    if (std.mem.eql(u8, window, "sear") or std.mem.eql(u8, window, "find") or std.mem.eql(u8, window, "look")) {
+                        needs_search = true;
+                    }
+                    if (std.mem.eql(u8, window, "code") or std.mem.eql(u8, window, "exec") or std.mem.eql(u8, window, "run ")) {
+                        needs_code = true;
+                    }
+                    if (std.mem.eql(u8, window, "writ") or std.mem.eql(u8, window, "crea") or std.mem.eql(u8, window, "outp")) {
+                        needs_write = true;
+                    }
+                }
+            }
+
+            // Add invocations based on needs and permissions
+            if (needs_calc and binding.isCapabilityAllowed(.calculate)) {
+                _ = plan.addInvocation(.coder, .calculate);
+            }
+            if (needs_read and binding.isCapabilityAllowed(.read_file)) {
+                _ = plan.addInvocation(.researcher, .read_file);
+            }
+            if (needs_memory and binding.isCapabilityAllowed(.memory_access)) {
+                _ = plan.addInvocation(.planner, .memory_access);
+            }
+            if (needs_search and binding.isCapabilityAllowed(.web_search)) {
+                _ = plan.addInvocation(.researcher, .web_search);
+            }
+            if (needs_code and binding.isCapabilityAllowed(.code_exec)) {
+                _ = plan.addInvocation(.coder, .code_exec);
+            }
+            if (needs_write and binding.isCapabilityAllowed(.write_file)) {
+                _ = plan.addInvocation(.coder, .write_file);
+            }
+
+            // Always add at least one tool (calculate for analysis)
+            if (plan.count == 0) {
+                _ = plan.addInvocation(.coordinator, .calculate);
+            }
+
+            self.plan_count += 1;
+            return plan;
+        }
+
+        /// Execute a planned tool invocation with safety checks
+        pub fn executeInvocation(self: *MultiModalToolUse, plan_idx: u8, inv_idx: u8) ToolResult {
+            if (plan_idx >= self.plan_count) return ToolResult.fail("invalid plan index");
+            const plan = &self.active_plans[plan_idx];
+            if (inv_idx >= plan.count) return ToolResult.fail("invalid invocation index");
+
+            const inv = &plan.invocations[inv_idx];
+            const modality = inv.source_modality;
+            const cap = inv.tool_capability;
+
+            // Safety check
+            if (!self.checkPermission(modality, cap)) {
+                self.safety_violations += 1;
+                self.failed_invocations += 1;
+                plan.markCompleted(inv_idx, "safety violation: permission denied", false, 0);
+                return ToolResult.fail("safety violation: permission denied");
+            }
+
+            // Simulate tool execution based on capability
+            const result_text = switch (cap) {
+                .calculate => "calculated: 42",
+                .read_file => "file contents: [data]",
+                .write_file => "file written: ok",
+                .list_dir => "directory: [entries]",
+                .shell_cmd => "shell: executed",
+                .web_search => "search: [results]",
+                .memory_access => "memory: [recalled]",
+                .code_exec => "code: [output]",
+            };
+
+            const latency: u64 = 1000 + @as(u64, @intFromFloat(cap.safetyWeight() * 1000.0));
+
+            inv.setToolName(cap.name());
+            inv.setResult(result_text, true, latency);
+            inv.safety_score = cap.safetyWeight();
+
+            plan.markCompleted(inv_idx, result_text, true, latency);
+
+            self.total_invocations += 1;
+            self.successful_invocations += 1;
+            self.modality_tool_counts[@intFromEnum(modality)] += 1;
+
+            return ToolResult.ok(result_text);
+        }
+
+        /// Execute all invocations in a plan
+        pub fn executePlan(self: *MultiModalToolUse, plan_idx: u8) bool {
+            if (plan_idx >= self.plan_count) return false;
+            const plan = &self.active_plans[plan_idx];
+            var i: u8 = 0;
+            while (i < plan.count) : (i += 1) {
+                _ = self.executeInvocation(plan_idx, i);
+            }
+            return plan.successRate() > 0.618; // φ⁻¹ threshold
+        }
+
+        /// Full multi-modal tool use cycle: detect modality → plan → execute → fuse
+        pub fn process(self: *MultiModalToolUse, input: []const u8) MultiModalToolResult {
+            // 1. Detect modality from input
+            const scores = ModalityRouter.detect(input);
+            const primary_modality = scores.dominant();
+
+            // 2. Plan execution
+            const plan = self.planExecution(primary_modality, input) orelse {
+                return MultiModalToolResult{
+                    .modality = primary_modality,
+                    .tools_planned = 0,
+                    .tools_executed = 0,
+                    .tools_succeeded = 0,
+                    .safety_violations = 0,
+                    .success = false,
+                    .fused_output_buf = [_]u8{0} ** 512,
+                    .fused_output_len = 0,
+                };
+            };
+
+            const plan_idx = self.plan_count - 1;
+            const tools_planned = plan.count;
+
+            // 3. Execute all tools
+            _ = self.executePlan(plan_idx);
+
+            // 4. Fuse results
+            var fused_buf: [512]u8 = [_]u8{0} ** 512;
+            var fused_len: u16 = 0;
+
+            const plan_ref = &self.active_plans[plan_idx];
+            var j: u8 = 0;
+            while (j < plan_ref.count) : (j += 1) {
+                const result = plan_ref.invocations[j].getResult();
+                if (result.len > 0 and fused_len + result.len + 2 < 512) {
+                    if (fused_len > 0) {
+                        fused_buf[fused_len] = ';';
+                        fused_buf[fused_len + 1] = ' ';
+                        fused_len += 2;
+                    }
+                    @memcpy(fused_buf[fused_len .. fused_len + result.len], result);
+                    fused_len += @intCast(result.len);
+                }
+            }
+
+            return MultiModalToolResult{
+                .modality = primary_modality,
+                .tools_planned = tools_planned,
+                .tools_executed = plan_ref.completed + plan_ref.failed,
+                .tools_succeeded = plan_ref.completed,
+                .safety_violations = self.safety_violations,
+                .success = plan_ref.successRate() > 0.618,
+                .fused_output_buf = fused_buf,
+                .fused_output_len = fused_len,
+            };
+        }
+
+        pub fn getStats(self: *const MultiModalToolUse) MultiModalToolStats {
+            return MultiModalToolStats{
+                .total_invocations = self.total_invocations,
+                .successful = self.successful_invocations,
+                .failed = self.failed_invocations,
+                .safety_violations = self.safety_violations,
+                .plans_created = self.plan_count,
+                .text_tools = self.modality_tool_counts[0],
+                .vision_tools = self.modality_tool_counts[1],
+                .voice_tools = self.modality_tool_counts[2],
+                .code_tools = self.modality_tool_counts[3],
+                .tool_tools = self.modality_tool_counts[4],
+            };
+        }
+    };
+
+    /// Result of a multi-modal tool use cycle
+    pub const MultiModalToolResult = struct {
+        modality: Modality,
+        tools_planned: u8,
+        tools_executed: u8,
+        tools_succeeded: u8,
+        safety_violations: u32,
+        success: bool,
+        fused_output_buf: [512]u8,
+        fused_output_len: u16,
+
+        pub fn getFusedOutput(self: *const MultiModalToolResult) []const u8 {
+            return self.fused_output_buf[0..self.fused_output_len];
+        }
+    };
+
+    /// Statistics for multi-modal tool use
+    pub const MultiModalToolStats = struct {
+        total_invocations: u32,
+        successful: u32,
+        failed: u32,
+        safety_violations: u32,
+        plans_created: u8,
+        text_tools: u32,
+        vision_tools: u32,
+        voice_tools: u32,
+        code_tools: u32,
+        tool_tools: u32,
+
+        pub fn successRate(self: *const MultiModalToolStats) f64 {
+            if (self.total_invocations == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.successful)) / @as(f64, @floatFromInt(self.total_invocations));
+        }
+    };
+
+    /// Global multi-modal tool use singleton
+    var global_mmtu: ?MultiModalToolUse = null;
+
+    pub fn getMultiModalToolUse() *MultiModalToolUse {
+        if (global_mmtu == null) {
+            global_mmtu = MultiModalToolUse.init();
+        }
+        return &global_mmtu.?;
+    }
+
+    pub fn shutdownMultiModalToolUse() void {
+        global_mmtu = null;
+    }
+
+    pub fn hasMultiModalToolUse() bool {
+        return global_mmtu != null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // END CYCLE 53
+    // ═══════════════════════════════════════════════════════════════════════════
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -10402,6 +10893,175 @@ test "Orchestrator global singleton" {
 
     TextCorpus.shutdownOrchestrator();
     try std.testing.expect(!TextCorpus.hasOrchestrator());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 53 TESTS: Multi-Modal Tool Use
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ModalToolBinding init and permissions" {
+    const text_binding = TextCorpus.ModalToolBinding.init(.text);
+    try std.testing.expect(text_binding.isCapabilityAllowed(.read_file));
+    try std.testing.expect(text_binding.isCapabilityAllowed(.calculate));
+    try std.testing.expect(text_binding.isCapabilityAllowed(.memory_access));
+    try std.testing.expect(text_binding.isCapabilityAllowed(.web_search));
+    try std.testing.expect(!text_binding.isCapabilityAllowed(.shell_cmd));
+    try std.testing.expect(!text_binding.isCapabilityAllowed(.code_exec));
+    try std.testing.expectEqual(@as(u8, 4), text_binding.allowedCount());
+
+    const code_binding = TextCorpus.ModalToolBinding.init(.code);
+    try std.testing.expectEqual(@as(u8, 8), code_binding.allowedCount()); // all tools
+    try std.testing.expect(code_binding.isCapabilityAllowed(.shell_cmd));
+    try std.testing.expect(code_binding.isCapabilityAllowed(.code_exec));
+}
+
+test "ModalToolBinding phi-inverse safety floors" {
+    const text_b = TextCorpus.ModalToolBinding.init(.text);
+    const vision_b = TextCorpus.ModalToolBinding.init(.vision);
+    const code_b = TextCorpus.ModalToolBinding.init(.code);
+    const tool_b = TextCorpus.ModalToolBinding.init(.tool);
+
+    // Code has lowest floor (most capable), tool has highest (most restricted)
+    try std.testing.expect(code_b.safety_floor < text_b.safety_floor);
+    try std.testing.expect(text_b.safety_floor <= vision_b.safety_floor);
+    try std.testing.expect(vision_b.safety_floor < tool_b.safety_floor);
+}
+
+test "ToolInvocation creation and result" {
+    var inv = TextCorpus.ToolInvocation.init(.vision, .researcher, .read_file);
+    try std.testing.expectEqual(TextCorpus.Modality.vision, inv.source_modality);
+    try std.testing.expectEqual(TextCorpus.AgentRole.researcher, inv.agent_role);
+
+    inv.setToolName("read_file");
+    try std.testing.expectEqualStrings("read_file", inv.getToolName());
+
+    inv.setResult("file data here", true, 1500);
+    try std.testing.expect(inv.success);
+    try std.testing.expectEqual(@as(u64, 1500), inv.latency_ns);
+    try std.testing.expectEqualStrings("file data here", inv.getResult());
+}
+
+test "MultiModalToolPlan add and complete invocations" {
+    var plan = TextCorpus.MultiModalToolPlan.init(.code);
+    try std.testing.expectEqual(@as(u8, 0), plan.count);
+    try std.testing.expect(!plan.isComplete());
+
+    try std.testing.expect(plan.addInvocation(.coder, .calculate));
+    try std.testing.expect(plan.addInvocation(.researcher, .read_file));
+    try std.testing.expectEqual(@as(u8, 2), plan.count);
+
+    plan.markCompleted(0, "result1", true, 1000);
+    try std.testing.expectEqual(@as(u8, 1), plan.completed);
+    try std.testing.expect(!plan.isComplete());
+
+    plan.markCompleted(1, "result2", true, 2000);
+    try std.testing.expect(plan.isComplete());
+    try std.testing.expect(plan.successRate() > 0.99);
+    try std.testing.expectEqual(@as(u64, 3000), plan.total_latency_ns);
+}
+
+test "MultiModalToolUse init and permission checks" {
+    var mmtu = TextCorpus.MultiModalToolUse.init();
+
+    // Text can read files
+    try std.testing.expect(mmtu.checkPermission(.text, .read_file));
+    try std.testing.expect(mmtu.checkPermission(.text, .calculate));
+
+    // Text cannot execute shell
+    try std.testing.expect(!mmtu.checkPermission(.text, .shell_cmd));
+
+    // Code can do everything
+    try std.testing.expect(mmtu.checkPermission(.code, .shell_cmd));
+    try std.testing.expect(mmtu.checkPermission(.code, .code_exec));
+
+    // Voice cannot read files
+    try std.testing.expect(!mmtu.checkPermission(.voice, .read_file));
+    try std.testing.expect(mmtu.checkPermission(.voice, .calculate));
+}
+
+test "MultiModalToolUse plan execution for text input" {
+    var mmtu = TextCorpus.MultiModalToolUse.init();
+
+    const plan = mmtu.planExecution(.text, "calculate the sum and search for results");
+    try std.testing.expect(plan != null);
+    if (plan) |p| {
+        try std.testing.expect(p.count >= 2); // calc + search
+        try std.testing.expectEqual(TextCorpus.Modality.text, p.source_modality);
+    }
+}
+
+test "MultiModalToolUse execute invocation with safety" {
+    var mmtu = TextCorpus.MultiModalToolUse.init();
+
+    // Plan for text modality
+    _ = mmtu.planExecution(.text, "calculate something");
+    const result = mmtu.executeInvocation(0, 0);
+    try std.testing.expect(result.success);
+
+    try std.testing.expectEqual(@as(u32, 1), mmtu.successful_invocations);
+    try std.testing.expectEqual(@as(u32, 0), mmtu.safety_violations);
+}
+
+test "MultiModalToolUse execute full plan" {
+    var mmtu = TextCorpus.MultiModalToolUse.init();
+
+    _ = mmtu.planExecution(.code, "read file and calculate and write output");
+    const ok = mmtu.executePlan(0);
+    try std.testing.expect(ok); // should succeed above φ⁻¹ threshold
+
+    const stats = mmtu.getStats();
+    try std.testing.expect(stats.total_invocations > 0);
+    try std.testing.expect(stats.successful > 0);
+    try std.testing.expect(stats.successRate() > 0.618);
+}
+
+test "MultiModalToolUse full process cycle" {
+    var mmtu = TextCorpus.MultiModalToolUse.init();
+
+    // Process a code-mode input
+    const result = mmtu.process("execute code to calculate sum and read file");
+    try std.testing.expect(result.success);
+    try std.testing.expect(result.tools_planned > 0);
+    try std.testing.expect(result.tools_succeeded > 0);
+    try std.testing.expect(result.getFusedOutput().len > 0);
+}
+
+test "MultiModalToolUse vision modality restrictions" {
+    var mmtu = TextCorpus.MultiModalToolUse.init();
+
+    // Vision input — should NOT get shell/code_exec tools
+    _ = mmtu.planExecution(.vision, "read image file and calculate features");
+    const ok = mmtu.executePlan(0);
+    try std.testing.expect(ok);
+
+    // Vision cannot exec shell
+    try std.testing.expect(!mmtu.checkPermission(.vision, .shell_cmd));
+    try std.testing.expect(!mmtu.checkPermission(.vision, .code_exec));
+}
+
+test "MultiModalToolUse stats tracking" {
+    var mmtu = TextCorpus.MultiModalToolUse.init();
+
+    // Process text
+    _ = mmtu.process("calculate and search for results");
+    // Process code
+    _ = mmtu.process("execute code and read file");
+
+    const stats = mmtu.getStats();
+    try std.testing.expect(stats.plans_created == 2);
+    try std.testing.expect(stats.total_invocations >= 2);
+    try std.testing.expect(stats.successRate() > 0.618);
+}
+
+test "MultiModalToolUse global singleton" {
+    const mmtu = TextCorpus.getMultiModalToolUse();
+    try std.testing.expect(TextCorpus.hasMultiModalToolUse());
+
+    const result = mmtu.process("calculate something");
+    try std.testing.expect(result.success);
+
+    TextCorpus.shutdownMultiModalToolUse();
+    try std.testing.expect(!TextCorpus.hasMultiModalToolUse());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
