@@ -46,8 +46,8 @@ pub const ValueType = enum(u8) {
 
 pub const WasmFunction = struct {
     type_idx: u32,
-    locals: std.ArrayList(ValueType),
-    code: std.ArrayList(u8),
+    locals: std.ArrayListUnmanaged(ValueType),
+    code: std.ArrayListUnmanaged(u8),
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, type_idx: u32) WasmFunction {
@@ -66,8 +66,8 @@ pub const WasmFunction = struct {
 };
 
 pub const WasmFuncType = struct {
-    params: std.ArrayList(ValueType),
-    results: std.ArrayList(ValueType),
+    params: std.ArrayListUnmanaged(ValueType),
+    results: std.ArrayListUnmanaged(ValueType),
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) WasmFuncType {
@@ -86,9 +86,9 @@ pub const WasmFuncType = struct {
 
 pub const WasmModule = struct {
     allocator: std.mem.Allocator,
-    types: std.ArrayList(WasmFuncType),
-    functions: std.ArrayList(WasmFunction),
-    func_type_indices: std.ArrayList(u32),
+    types: std.ArrayListUnmanaged(WasmFuncType),
+    functions: std.ArrayListUnmanaged(WasmFunction),
+    func_type_indices: std.ArrayListUnmanaged(u32),
     memory_min: u32,
     memory_max: ?u32,
 

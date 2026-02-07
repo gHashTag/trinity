@@ -29,7 +29,7 @@ pub const JitVSAEngine = struct {
     bundle_cache: std.AutoHashMap(usize, jit_unified.JitDotFn),
 
     // Keep compilers alive to prevent exec_mem from being freed
-    compilers: std.ArrayList(jit_unified.UnifiedJitCompiler),
+    compilers: std.ArrayListUnmanaged(jit_unified.UnifiedJitCompiler),
 
     // Statistics
     jit_hits: u64 = 0,
@@ -46,7 +46,7 @@ pub const JitVSAEngine = struct {
             .hamming_cache = std.AutoHashMap(usize, jit_unified.JitDotFn).init(allocator),
             .cosine_cache = std.AutoHashMap(usize, jit_unified.JitDotFn).init(allocator),
             .bundle_cache = std.AutoHashMap(usize, jit_unified.JitDotFn).init(allocator),
-            .compilers = .empty,
+            .compilers = .{},
         };
     }
 
