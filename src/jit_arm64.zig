@@ -18,7 +18,7 @@ pub const is_arm64 = builtin.cpu.arch == .aarch64;
 pub const Arm64JitCompiler = struct {
     code: std.ArrayListUnmanaged(u8),
     allocator: std.mem.Allocator,
-    exec_mem: ?[]align(std.mem.page_size) u8 = null,
+    exec_mem: ?[]align(std.heap.page_size_min) u8 = null,
 
     const Self = @This();
 
@@ -1413,7 +1413,7 @@ pub const Arm64JitCompiler = struct {
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// Make code executable and return function pointer
-    pub fn finalize(self: *Self) !*const fn (*anyopaque, *anyopaque) callconv(.C) i64 {
+    pub fn finalize(self: *Self) !*const fn (*anyopaque, *anyopaque) callconv(.c) i64 {
         const code_size = self.code.items.len;
         if (code_size == 0) return error.EmptyCode;
 

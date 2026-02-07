@@ -7382,6 +7382,354 @@ pub const TextCorpus = struct {
         }
     };
 
+    // ═══════════════════════════════════════════════════════════════
+    // CYCLE 51: Tool Execution Engine
+    // ═══════════════════════════════════════════════════════════════
+
+    /// Tool capability flags
+    pub const ToolCapability = enum(u8) {
+        read_file = 0,
+        write_file = 1,
+        list_dir = 2,
+        shell_cmd = 3,
+        web_search = 4,
+        calculate = 5,
+        memory_access = 6,
+        code_exec = 7,
+
+        pub fn name(self: ToolCapability) []const u8 {
+            return switch (self) {
+                .read_file => "read_file",
+                .write_file => "write_file",
+                .list_dir => "list_dir",
+                .shell_cmd => "shell_cmd",
+                .web_search => "web_search",
+                .calculate => "calculate",
+                .memory_access => "memory_access",
+                .code_exec => "code_exec",
+            };
+        }
+
+        /// Safety level (phi-inverse weighted: higher = safer)
+        pub fn safetyWeight(self: ToolCapability) f64 {
+            return switch (self) {
+                .calculate => 1.0,
+                .memory_access => PHI_INVERSE,
+                .read_file => PHI_INVERSE * PHI_INVERSE,
+                .list_dir => PHI_INVERSE * PHI_INVERSE,
+                .web_search => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE,
+                .write_file => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE * PHI_INVERSE,
+                .shell_cmd => 0.09,
+                .code_exec => 0.05,
+            };
+        }
+
+        pub fn requiresSandbox(self: ToolCapability) bool {
+            return switch (self) {
+                .shell_cmd, .code_exec, .write_file => true,
+                else => false,
+            };
+        }
+    };
+
+    /// Tool definition
+    pub const ToolDef = struct {
+        tool_name: [64]u8,
+        tool_name_len: usize,
+        description: [256]u8,
+        desc_len: usize,
+        capability: ToolCapability,
+        enabled: bool,
+        sandboxed: bool,
+        call_count: usize,
+        success_count: usize,
+        fail_count: usize,
+
+        pub fn init(tname: []const u8, desc: []const u8, capability: ToolCapability) ToolDef {
+            var def = ToolDef{
+                .tool_name = .{0} ** 64,
+                .tool_name_len = 0,
+                .description = .{0} ** 256,
+                .desc_len = 0,
+                .capability = capability,
+                .enabled = true,
+                .sandboxed = capability.requiresSandbox(),
+                .call_count = 0,
+                .success_count = 0,
+                .fail_count = 0,
+            };
+            const nlen = @min(tname.len, 64);
+            @memcpy(def.tool_name[0..nlen], tname[0..nlen]);
+            def.tool_name_len = nlen;
+            const dlen = @min(desc.len, 256);
+            @memcpy(def.description[0..dlen], desc[0..dlen]);
+            def.desc_len = dlen;
+            return def;
+        }
+
+        pub fn getName(self: *const ToolDef) []const u8 {
+            return self.tool_name[0..self.tool_name_len];
+        }
+
+        pub fn getDescription(self: *const ToolDef) []const u8 {
+            return self.description[0..self.desc_len];
+        }
+
+        pub fn successRate(self: *const ToolDef) f64 {
+            if (self.call_count == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.success_count)) / @as(f64, @floatFromInt(self.call_count));
+        }
+    };
+
+    /// Tool call request
+    pub const ToolCall = struct {
+        call_tool_name: [64]u8,
+        call_tool_name_len: usize,
+        args: [512]u8,
+        args_len: usize,
+
+        pub fn init(tname: []const u8, args: []const u8) ToolCall {
+            var call = ToolCall{
+                .call_tool_name = .{0} ** 64,
+                .call_tool_name_len = 0,
+                .args = .{0} ** 512,
+                .args_len = 0,
+            };
+            const nlen = @min(tname.len, 64);
+            @memcpy(call.call_tool_name[0..nlen], tname[0..nlen]);
+            call.call_tool_name_len = nlen;
+            const alen = @min(args.len, 512);
+            @memcpy(call.args[0..alen], args[0..alen]);
+            call.args_len = alen;
+            return call;
+        }
+
+        pub fn getToolName(self: *const ToolCall) []const u8 {
+            return self.call_tool_name[0..self.call_tool_name_len];
+        }
+
+        pub fn getArgs(self: *const ToolCall) []const u8 {
+            return self.args[0..self.args_len];
+        }
+    };
+
+    /// Tool execution result
+    pub const ToolResult = struct {
+        success: bool,
+        output: [512]u8,
+        output_len: usize,
+        execution_time_ns: u64,
+
+        pub fn ok(output: []const u8) ToolResult {
+            var result = ToolResult{
+                .success = true,
+                .output = .{0} ** 512,
+                .output_len = 0,
+                .execution_time_ns = 0,
+            };
+            const olen = @min(output.len, 512);
+            @memcpy(result.output[0..olen], output[0..olen]);
+            result.output_len = olen;
+            return result;
+        }
+
+        pub fn fail(reason: []const u8) ToolResult {
+            var result = ToolResult{
+                .success = false,
+                .output = .{0} ** 512,
+                .output_len = 0,
+                .execution_time_ns = 0,
+            };
+            const olen = @min(reason.len, 512);
+            @memcpy(result.output[0..olen], reason[0..olen]);
+            result.output_len = olen;
+            return result;
+        }
+
+        pub fn getOutput(self: *const ToolResult) []const u8 {
+            return self.output[0..self.output_len];
+        }
+    };
+
+    /// Tool registry
+    pub const ToolRegistry = struct {
+        tools: [32]?ToolDef,
+        count: usize,
+        max_safety_level: f64,
+
+        pub fn init() ToolRegistry {
+            return ToolRegistry{
+                .tools = .{null} ** 32,
+                .count = 0,
+                .max_safety_level = 0.0,
+            };
+        }
+
+        pub fn register(self: *ToolRegistry, tool: ToolDef) bool {
+            if (self.count >= 32) return false;
+            for (self.tools[0..32]) |*slot| {
+                if (slot.* == null) {
+                    slot.* = tool;
+                    self.count += 1;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        pub fn findTool(self: *ToolRegistry, tname: []const u8) ?*ToolDef {
+            for (self.tools[0..32]) |*maybe_tool| {
+                if (maybe_tool.*) |*tool| {
+                    if (std.mem.eql(u8, tool.getName(), tname)) {
+                        return tool;
+                    }
+                }
+            }
+            return null;
+        }
+
+        pub fn isAllowed(self: *const ToolRegistry, capability: ToolCapability) bool {
+            return capability.safetyWeight() >= self.max_safety_level;
+        }
+
+        pub fn setSafetyLevel(self: *ToolRegistry, level: f64) void {
+            self.max_safety_level = level;
+        }
+
+        pub fn enabledCount(self: *const ToolRegistry) usize {
+            var enabled: usize = 0;
+            for (self.tools[0..32]) |maybe_tool| {
+                if (maybe_tool) |tool| {
+                    if (tool.enabled) enabled += 1;
+                }
+            }
+            return enabled;
+        }
+    };
+
+    /// Tool executor with safety checks
+    pub const ToolExecutor = struct {
+        registry: ToolRegistry,
+        total_calls: usize,
+        total_success: usize,
+        total_failed: usize,
+        total_blocked: usize,
+        sandbox_enabled: bool,
+
+        pub fn init() ToolExecutor {
+            var executor = ToolExecutor{
+                .registry = ToolRegistry.init(),
+                .total_calls = 0,
+                .total_success = 0,
+                .total_failed = 0,
+                .total_blocked = 0,
+                .sandbox_enabled = true,
+            };
+            _ = executor.registry.register(ToolDef.init("calculate", "Perform calculations", .calculate));
+            _ = executor.registry.register(ToolDef.init("read_file", "Read file contents", .read_file));
+            _ = executor.registry.register(ToolDef.init("list_dir", "List directory", .list_dir));
+            _ = executor.registry.register(ToolDef.init("write_file", "Write to file", .write_file));
+            _ = executor.registry.register(ToolDef.init("shell", "Execute shell command", .shell_cmd));
+            _ = executor.registry.register(ToolDef.init("search", "Web search", .web_search));
+            _ = executor.registry.register(ToolDef.init("memory", "Access agent memory", .memory_access));
+            _ = executor.registry.register(ToolDef.init("code_exec", "Execute code", .code_exec));
+            return executor;
+        }
+
+        pub fn execute(self: *ToolExecutor, call: *const ToolCall) ToolResult {
+            self.total_calls += 1;
+
+            const tool = self.registry.findTool(call.getToolName()) orelse {
+                self.total_failed += 1;
+                return ToolResult.fail("tool not found");
+            };
+
+            if (!tool.enabled) {
+                self.total_blocked += 1;
+                return ToolResult.fail("tool disabled");
+            }
+
+            if (!self.registry.isAllowed(tool.capability)) {
+                self.total_blocked += 1;
+                tool.fail_count += 1;
+                return ToolResult.fail("blocked by safety policy");
+            }
+
+            if (tool.sandboxed and !self.sandbox_enabled) {
+                self.total_blocked += 1;
+                tool.fail_count += 1;
+                return ToolResult.fail("sandbox required but disabled");
+            }
+
+            tool.call_count += 1;
+            const result = simulateExecution(tool.capability, call.getArgs());
+
+            if (result.success) {
+                tool.success_count += 1;
+                self.total_success += 1;
+            } else {
+                tool.fail_count += 1;
+                self.total_failed += 1;
+            }
+
+            return result;
+        }
+
+        fn simulateExecution(capability: ToolCapability, args: []const u8) ToolResult {
+            _ = args;
+            return switch (capability) {
+                .calculate => ToolResult.ok("[calculate: result computed]"),
+                .read_file => ToolResult.ok("[read_file: content returned]"),
+                .list_dir => ToolResult.ok("[list_dir: entries listed]"),
+                .write_file => ToolResult.ok("[write_file: content written]"),
+                .shell_cmd => ToolResult.ok("[shell: command executed]"),
+                .web_search => ToolResult.ok("[search: results returned]"),
+                .memory_access => ToolResult.ok("[memory: data accessed]"),
+                .code_exec => ToolResult.ok("[code_exec: code executed]"),
+            };
+        }
+
+        pub const ExecutorStats = struct {
+            total_calls: usize,
+            total_success: usize,
+            total_failed: usize,
+            total_blocked: usize,
+            registered_tools: usize,
+            enabled_tools: usize,
+            success_rate: f64,
+        };
+
+        pub fn getStats(self: *const ToolExecutor) ExecutorStats {
+            return ExecutorStats{
+                .total_calls = self.total_calls,
+                .total_success = self.total_success,
+                .total_failed = self.total_failed,
+                .total_blocked = self.total_blocked,
+                .registered_tools = self.registry.count,
+                .enabled_tools = self.registry.enabledCount(),
+                .success_rate = if (self.total_calls == 0) 0.0 else @as(f64, @floatFromInt(self.total_success)) / @as(f64, @floatFromInt(self.total_calls)),
+            };
+        }
+    };
+
+    /// Global tool executor singleton
+    var global_executor: ?ToolExecutor = null;
+
+    pub fn getToolExecutor() *ToolExecutor {
+        if (global_executor == null) {
+            global_executor = ToolExecutor.init();
+        }
+        return &global_executor.?;
+    }
+
+    pub fn shutdownToolExecutor() void {
+        global_executor = null;
+    }
+
+    pub fn hasToolExecutor() bool {
+        return global_executor != null;
+    }
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -9421,6 +9769,198 @@ test "MemorySerializer checksum integrity" {
     // Should fail checksum
     var corrupted = TextCorpus.AgentMemory.init();
     try std.testing.expect(!TextCorpus.MemorySerializer.deserialize(&corrupted, buffer[0..written]));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 51: Tool Execution Engine Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ToolCapability properties" {
+    // Names
+    try std.testing.expectEqualStrings("calculate", TextCorpus.ToolCapability.calculate.name());
+    try std.testing.expectEqualStrings("shell_cmd", TextCorpus.ToolCapability.shell_cmd.name());
+    try std.testing.expectEqualStrings("read_file", TextCorpus.ToolCapability.read_file.name());
+
+    // Safety weights (descending)
+    const calc_w = TextCorpus.ToolCapability.calculate.safetyWeight();
+    const mem_w = TextCorpus.ToolCapability.memory_access.safetyWeight();
+    const read_w = TextCorpus.ToolCapability.read_file.safetyWeight();
+    const search_w = TextCorpus.ToolCapability.web_search.safetyWeight();
+    const write_w = TextCorpus.ToolCapability.write_file.safetyWeight();
+    const shell_w = TextCorpus.ToolCapability.shell_cmd.safetyWeight();
+    const code_w = TextCorpus.ToolCapability.code_exec.safetyWeight();
+
+    try std.testing.expect(calc_w > mem_w);
+    try std.testing.expect(mem_w > read_w);
+    try std.testing.expect(read_w > search_w);
+    try std.testing.expect(search_w > write_w);
+    try std.testing.expect(write_w > shell_w);
+    try std.testing.expect(shell_w > code_w);
+
+    // Sandbox requirements
+    try std.testing.expect(TextCorpus.ToolCapability.shell_cmd.requiresSandbox());
+    try std.testing.expect(TextCorpus.ToolCapability.code_exec.requiresSandbox());
+    try std.testing.expect(TextCorpus.ToolCapability.write_file.requiresSandbox());
+    try std.testing.expect(!TextCorpus.ToolCapability.calculate.requiresSandbox());
+    try std.testing.expect(!TextCorpus.ToolCapability.read_file.requiresSandbox());
+}
+
+test "ToolDef creation" {
+    const tool = TextCorpus.ToolDef.init("my_tool", "A test tool", .calculate);
+    try std.testing.expectEqualStrings("my_tool", tool.getName());
+    try std.testing.expectEqualStrings("A test tool", tool.getDescription());
+    try std.testing.expect(tool.enabled);
+    try std.testing.expect(!tool.sandboxed); // calculate doesn't need sandbox
+    try std.testing.expectEqual(@as(usize, 0), tool.call_count);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), tool.successRate(), 0.001);
+}
+
+test "ToolCall creation" {
+    const call = TextCorpus.ToolCall.init("calculate", "2 + 2");
+    try std.testing.expectEqualStrings("calculate", call.getToolName());
+    try std.testing.expectEqualStrings("2 + 2", call.getArgs());
+}
+
+test "ToolResult success and failure" {
+    const ok = TextCorpus.ToolResult.ok("result: 42");
+    try std.testing.expect(ok.success);
+    try std.testing.expectEqualStrings("result: 42", ok.getOutput());
+
+    const err = TextCorpus.ToolResult.fail("not found");
+    try std.testing.expect(!err.success);
+    try std.testing.expectEqualStrings("not found", err.getOutput());
+}
+
+test "ToolRegistry register and find" {
+    var registry = TextCorpus.ToolRegistry.init();
+    try std.testing.expectEqual(@as(usize, 0), registry.count);
+
+    const tool = TextCorpus.ToolDef.init("calc", "Calculator", .calculate);
+    try std.testing.expect(registry.register(tool));
+    try std.testing.expectEqual(@as(usize, 1), registry.count);
+
+    // Find registered tool
+    const found = registry.findTool("calc");
+    try std.testing.expect(found != null);
+    try std.testing.expectEqualStrings("calc", found.?.getName());
+
+    // Not found
+    const missing = registry.findTool("nonexistent");
+    try std.testing.expect(missing == null);
+}
+
+test "ToolRegistry safety policy" {
+    var registry = TextCorpus.ToolRegistry.init();
+
+    // Default: allow all
+    try std.testing.expect(registry.isAllowed(.calculate));
+    try std.testing.expect(registry.isAllowed(.code_exec));
+
+    // Set high safety level (only allow calculate)
+    registry.setSafetyLevel(0.9);
+    try std.testing.expect(registry.isAllowed(.calculate)); // 1.0 >= 0.9
+    try std.testing.expect(!registry.isAllowed(.read_file)); // 0.382 < 0.9
+    try std.testing.expect(!registry.isAllowed(.shell_cmd)); // 0.09 < 0.9
+
+    // Medium safety (allow compute + memory + read)
+    registry.setSafetyLevel(0.3);
+    try std.testing.expect(registry.isAllowed(.calculate));
+    try std.testing.expect(registry.isAllowed(.memory_access));
+    try std.testing.expect(registry.isAllowed(.read_file));
+    try std.testing.expect(!registry.isAllowed(.write_file)); // 0.146 < 0.3
+}
+
+test "ToolExecutor init with default tools" {
+    var executor = TextCorpus.ToolExecutor.init();
+    try std.testing.expectEqual(@as(usize, 8), executor.registry.count);
+    try std.testing.expectEqual(@as(usize, 8), executor.registry.enabledCount());
+    try std.testing.expect(executor.sandbox_enabled);
+
+    // All default tools findable
+    try std.testing.expect(executor.registry.findTool("calculate") != null);
+    try std.testing.expect(executor.registry.findTool("read_file") != null);
+    try std.testing.expect(executor.registry.findTool("shell") != null);
+    try std.testing.expect(executor.registry.findTool("memory") != null);
+}
+
+test "ToolExecutor execute calculate" {
+    var executor = TextCorpus.ToolExecutor.init();
+    const call = TextCorpus.ToolCall.init("calculate", "2+2");
+    const result = executor.execute(&call);
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqualStrings("[calculate: result computed]", result.getOutput());
+    try std.testing.expectEqual(@as(usize, 1), executor.total_calls);
+    try std.testing.expectEqual(@as(usize, 1), executor.total_success);
+}
+
+test "ToolExecutor execute unknown tool" {
+    var executor = TextCorpus.ToolExecutor.init();
+    const call = TextCorpus.ToolCall.init("nonexistent", "args");
+    const result = executor.execute(&call);
+
+    try std.testing.expect(!result.success);
+    try std.testing.expectEqualStrings("tool not found", result.getOutput());
+    try std.testing.expectEqual(@as(usize, 1), executor.total_failed);
+}
+
+test "ToolExecutor safety policy blocks" {
+    var executor = TextCorpus.ToolExecutor.init();
+    executor.registry.setSafetyLevel(0.5); // Block low-safety tools
+
+    const safe_call = TextCorpus.ToolCall.init("calculate", "1+1");
+    const safe_result = executor.execute(&safe_call);
+    try std.testing.expect(safe_result.success);
+
+    const dangerous_call = TextCorpus.ToolCall.init("shell", "rm -rf /");
+    const dangerous_result = executor.execute(&dangerous_call);
+    try std.testing.expect(!dangerous_result.success);
+    try std.testing.expectEqualStrings("blocked by safety policy", dangerous_result.getOutput());
+    try std.testing.expectEqual(@as(usize, 1), executor.total_blocked);
+}
+
+test "ToolExecutor disabled tool" {
+    var executor = TextCorpus.ToolExecutor.init();
+    if (executor.registry.findTool("calculate")) |tool| {
+        tool.enabled = false;
+    }
+
+    const call = TextCorpus.ToolCall.init("calculate", "1+1");
+    const result = executor.execute(&call);
+    try std.testing.expect(!result.success);
+    try std.testing.expectEqualStrings("tool disabled", result.getOutput());
+}
+
+test "ToolExecutor stats" {
+    var executor = TextCorpus.ToolExecutor.init();
+
+    const c1 = TextCorpus.ToolCall.init("calculate", "1");
+    _ = executor.execute(&c1);
+    const c2 = TextCorpus.ToolCall.init("read_file", "test.txt");
+    _ = executor.execute(&c2);
+    const c3 = TextCorpus.ToolCall.init("missing", "x");
+    _ = executor.execute(&c3);
+
+    const stats = executor.getStats();
+    try std.testing.expectEqual(@as(usize, 3), stats.total_calls);
+    try std.testing.expectEqual(@as(usize, 2), stats.total_success);
+    try std.testing.expectEqual(@as(usize, 1), stats.total_failed);
+    try std.testing.expectEqual(@as(usize, 8), stats.registered_tools);
+    try std.testing.expect(stats.success_rate > 0.6);
+}
+
+test "ToolExecutor global singleton" {
+    const executor = TextCorpus.getToolExecutor();
+    try std.testing.expect(TextCorpus.hasToolExecutor());
+
+    const call = TextCorpus.ToolCall.init("calculate", "test");
+    _ = executor.execute(&call);
+
+    const stats = executor.getStats();
+    try std.testing.expect(stats.total_calls >= 1);
+
+    TextCorpus.shutdownToolExecutor();
+    try std.testing.expect(!TextCorpus.hasToolExecutor());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
