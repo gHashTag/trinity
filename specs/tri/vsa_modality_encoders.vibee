@@ -1,0 +1,384 @@
+# ============================================================================
+# VSA Modality Encoders - Cycle 49
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_modality_encoders
+version: "1.0.0"
+language: zig
+module: vsa_modality_encoders
+
+description: |
+  Real VSA modality encoders for multi-modal agent.
+  Connects Cycle 48 routing layer to actual hypervector encoding.
+
+  Four encoders using VSA primitives (bind, bundle, permute):
+    1. Text: N-gram encoding with character-level binding
+    2. Vision: Patch-based encoding with position binding
+    3. Voice: MFCC-frame encoding with temporal binding
+    4. Code: Token-based encoding with structural binding
+
+  Each encoder maps raw input to a fixed-dimension ternary hypervector
+  in the shared VSA space, enabling cross-modal similarity comparison.
+
+constants:
+  DEFAULT_DIMENSION: 1024
+  TEXT_NGRAM_SIZE: 3
+  VISION_PATCH_SIZE: 8
+  VOICE_FRAME_SIZE: 256
+  VOICE_HOP_SIZE: 128
+  MFCC_COEFFICIENTS: 13
+  CODE_MAX_TOKENS: 512
+  ALPHABET_SIZE: 128
+  MAX_PATCHES: 256
+  MAX_FRAMES: 512
+  MAX_AST_DEPTH: 32
+  PHI: 1.6180339887498948482
+  PHI_INV: 0.6180339887498948482
+
+types:
+  EncoderConfig:
+    description: "Configuration for all encoders"
+    fields:
+      dimension: Int
+      ngram_size: Int
+      patch_size: Int
+      frame_size: Int
+      hop_size: Int
+      mfcc_coeffs: Int
+
+  HypervectorResult:
+    description: "Encoded hypervector with metadata"
+    fields:
+      dimension: Int
+      modality: String
+      encoding_time_us: Int
+      non_zero_ratio: Float
+      checksum: Int
+
+  # Text Encoder Types
+  NGram:
+    description: "Character n-gram"
+    fields:
+      chars: String
+      position: Int
+      hash: Int
+
+  TextEncoding:
+    description: "Text encoding result"
+    fields:
+      dimension: Int
+      ngram_count: Int
+      unique_chars: Int
+      language_hint: String
+
+  # Vision Encoder Types
+  ImagePatch:
+    description: "Image patch for encoding"
+    fields:
+      x: Int
+      y: Int
+      width: Int
+      height: Int
+      mean_intensity: Float
+      variance: Float
+
+  VisionEncoding:
+    description: "Vision encoding result"
+    fields:
+      dimension: Int
+      patch_count: Int
+      image_width: Int
+      image_height: Int
+
+  # Voice Encoder Types
+  AudioFrame:
+    description: "Audio frame for MFCC extraction"
+    fields:
+      start_sample: Int
+      end_sample: Int
+      energy: Float
+      zero_crossing_rate: Float
+
+  MFCCFeatures:
+    description: "MFCC feature vector for one frame"
+    fields:
+      coefficients_count: Int
+      frame_index: Int
+      energy: Float
+
+  VoiceEncoding:
+    description: "Voice encoding result"
+    fields:
+      dimension: Int
+      frame_count: Int
+      duration_ms: Int
+      sample_rate: Int
+
+  # Code Encoder Types
+  CodeToken:
+    description: "Tokenized code element"
+    fields:
+      token_type: String
+      value: String
+      depth: Int
+      position: Int
+
+  CodeEncoding:
+    description: "Code encoding result"
+    fields:
+      dimension: Int
+      token_count: Int
+      language: String
+      max_depth: Int
+
+  # Cross-Modal Types
+  ModalitySimilarity:
+    description: "Similarity between two encoded modalities"
+    fields:
+      modality_a: String
+      modality_b: String
+      cosine_similarity: Float
+      hamming_distance: Int
+
+  EncoderStats:
+    description: "Encoder performance statistics"
+    fields:
+      text_encodings: Int
+      vision_encodings: Int
+      voice_encodings: Int
+      code_encodings: Int
+      avg_text_time_us: Float
+      avg_vision_time_us: Float
+      avg_voice_time_us: Float
+      avg_code_time_us: Float
+      cross_modal_queries: Int
+
+behaviors:
+  # Text Encoder
+  - name: encodeText
+    given: Text string and encoder config
+    when: Encoding text to hypervector
+    then: N-gram encoding with character binding and position permutation
+
+  - name: extractNGrams
+    given: Text string and n-gram size
+    when: Tokenizing text into n-grams
+    then: Return list of NGram with positions
+
+  - name: encodeNGram
+    given: Single n-gram characters
+    when: Encoding one n-gram to hypervector
+    then: Bind character vectors with position permutation
+
+  - name: encodeCharacter
+    given: Single ASCII character
+    when: Mapping character to base hypervector
+    then: Return deterministic hypervector from character seed
+
+  - name: bundleNGrams
+    given: List of n-gram hypervectors
+    when: Combining all n-grams into document vector
+    then: Majority-vote bundle of all n-gram vectors
+
+  # Vision Encoder
+  - name: encodeImage
+    given: Pixel data, width, height, and config
+    when: Encoding image to hypervector
+    then: Patch-based encoding with position binding
+
+  - name: extractPatches
+    given: Pixel data, width, height, patch_size
+    when: Splitting image into patches
+    then: Return list of ImagePatch with statistics
+
+  - name: encodePatch
+    given: Patch pixel data and patch index
+    when: Encoding one patch to hypervector
+    then: Quantize pixels to ternary, bind with position vector
+
+  - name: computePatchStatistics
+    given: Patch pixel data
+    when: Computing patch features
+    then: Return mean intensity and variance
+
+  - name: bundlePatches
+    given: List of patch hypervectors
+    when: Combining patches into image vector
+    then: Majority-vote bundle of all patch vectors
+
+  # Voice Encoder
+  - name: encodeAudio
+    given: Audio samples, sample rate, and config
+    when: Encoding audio to hypervector
+    then: MFCC-frame encoding with temporal binding
+
+  - name: extractFrames
+    given: Audio samples, frame_size, hop_size
+    when: Windowing audio into frames
+    then: Return list of AudioFrame
+
+  - name: computeFrameEnergy
+    given: Audio frame samples
+    when: Computing frame energy
+    then: Return sum of squared samples
+
+  - name: computeZeroCrossingRate
+    given: Audio frame samples
+    when: Counting zero crossings
+    then: Return zero crossing rate
+
+  - name: encodeFrame
+    given: Audio frame features and frame index
+    when: Encoding one frame to hypervector
+    then: Encode energy and ZCR, bind with temporal position
+
+  - name: bundleFrames
+    given: List of frame hypervectors
+    when: Combining frames into audio vector
+    then: Majority-vote bundle of all frame vectors
+
+  # Code Encoder
+  - name: encodeCode
+    given: Source code string, language, and config
+    when: Encoding code to hypervector
+    then: Token-based encoding with structural binding
+
+  - name: tokenizeCode
+    given: Source code string and language
+    when: Splitting code into tokens
+    then: Return list of CodeToken with types and depths
+
+  - name: classifyToken
+    given: Token string
+    when: Determining token type
+    then: Return keyword, identifier, operator, literal, or punctuation
+
+  - name: encodeToken
+    given: CodeToken
+    when: Encoding one token to hypervector
+    then: Bind type vector with value vector and depth permutation
+
+  - name: bundleTokens
+    given: List of token hypervectors
+    when: Combining tokens into code vector
+    then: Majority-vote bundle of all token vectors
+
+  # Cross-Modal Operations
+  - name: computeSimilarity
+    given: Two encoded hypervectors
+    when: Comparing representations across modalities
+    then: Return cosine similarity score
+
+  - name: computeHammingDistance
+    given: Two encoded hypervectors
+    when: Measuring distance between representations
+    then: Return hamming distance count
+
+  - name: compareModalities
+    given: Two modality encodings
+    when: Cross-modal comparison
+    then: Return ModalitySimilarity with both metrics
+
+  # Utility
+  - name: generateBaseVector
+    given: Seed value and dimension
+    when: Creating deterministic random hypervector
+    then: Return ternary vector from seed
+
+  - name: permuteVector
+    given: Hypervector and shift count
+    when: Cyclic permutation for position encoding
+    then: Return shifted hypervector
+
+  - name: getEncoderStats
+    given: Encoder instance
+    when: Querying performance
+    then: Return EncoderStats
+
+  - name: resetStats
+    given: Encoder instance
+    when: Clearing metrics
+    then: Reset all counters
+
+tests:
+  - name: test_text_encode_hello
+    given: "Hello world"
+    then: Returns hypervector with correct dimension
+
+  - name: test_text_ngram_extraction
+    given: "abc" with ngram_size=2
+    then: Returns ["ab", "bc"] n-grams
+
+  - name: test_text_character_encoding
+    given: Character 'A'
+    then: Returns deterministic hypervector
+
+  - name: test_text_similar_texts
+    given: "hello world" and "hello earth"
+    then: Cosine similarity > 0.3
+
+  - name: test_text_different_texts
+    given: "hello world" and "xyz 123"
+    then: Cosine similarity < 0.5
+
+  - name: test_vision_patch_extraction
+    given: 16x16 image with patch_size=8
+    then: Returns 4 patches
+
+  - name: test_vision_patch_statistics
+    given: Uniform patch (all 128)
+    then: Mean=128, variance=0
+
+  - name: test_vision_encode_image
+    given: 32x32 test image
+    then: Returns hypervector with correct dimension
+
+  - name: test_voice_frame_extraction
+    given: 1024 samples with frame=256, hop=128
+    then: Returns correct frame count
+
+  - name: test_voice_energy_computation
+    given: Sine wave frame
+    then: Returns positive energy value
+
+  - name: test_voice_zero_crossing
+    given: Alternating samples
+    then: Returns high zero crossing rate
+
+  - name: test_voice_encode_audio
+    given: 4096 samples at 16kHz
+    then: Returns hypervector with correct dimension
+
+  - name: test_code_tokenization
+    given: "fn main() { return 0; }"
+    then: Returns tokens with types
+
+  - name: test_code_token_classification
+    given: "fn" token
+    then: Classified as keyword
+
+  - name: test_code_encode_source
+    given: Simple function source
+    then: Returns hypervector with correct dimension
+
+  - name: test_cross_modal_similarity
+    given: Two text encodings
+    then: Returns valid similarity in [-1, 1]
+
+  - name: test_base_vector_determinism
+    given: Same seed twice
+    then: Produces identical vectors
+
+  - name: test_permutation_invertible
+    given: Vector permuted then inverse-permuted
+    then: Returns original vector
+
+  - name: test_encoder_stats
+    given: Multiple encodings performed
+    then: Stats reflect correct counts
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
