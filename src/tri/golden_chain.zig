@@ -19,6 +19,7 @@ pub const TRINITY: f64 = 3.0;
 // ============================================================================
 
 pub const ChainLink = enum(u8) {
+    tvc_gate = 0, // LINK 0: TVC Gate - Mandatory first check (distributed learning)
     baseline = 1, // LINK 1: Analyze previous version v(n-1)
     metrics = 2, // LINK 2: Collect v(n-1) metrics
     pas_analyze = 3, // LINK 3: Research patterns (PAS)
@@ -38,6 +39,7 @@ pub const ChainLink = enum(u8) {
 
     pub fn getName(self: ChainLink) []const u8 {
         return switch (self) {
+            .tvc_gate => "TVC_GATE",
             .baseline => "BASELINE",
             .metrics => "METRICS",
             .pas_analyze => "PAS_ANALYZE",
@@ -59,6 +61,7 @@ pub const ChainLink = enum(u8) {
 
     pub fn getDescription(self: ChainLink) []const u8 {
         return switch (self) {
+            .tvc_gate => "TVC Gate: Search corpus, return cached or continue",
             .baseline => "Analyze previous version v(n-1)",
             .metrics => "Collect performance metrics",
             .pas_analyze => "Research patterns and science",
@@ -80,7 +83,7 @@ pub const ChainLink = enum(u8) {
 
     pub fn isCritical(self: ChainLink) bool {
         return switch (self) {
-            .benchmark_prev, .test_run, .loop_decision => true,
+            .tvc_gate, .benchmark_prev, .test_run, .loop_decision => true,
             else => false,
         };
     }
@@ -97,7 +100,7 @@ pub const ChainLink = enum(u8) {
 
     pub fn prev(self: ChainLink) ?ChainLink {
         const val = @intFromEnum(self);
-        if (val <= 1) return null;
+        if (val == 0) return null;
         return @enumFromInt(val - 1);
     }
 };
@@ -218,37 +221,43 @@ pub const PipelineState = struct {
     phase: ChainLink,
     status: PipelineStatus,
     started_at: i64,
-    results: [16]LinkResult,
+    results: [17]LinkResult, // Links 0-16 (TVC_GATE + 16 original)
     improvement_rate: f64,
     task_description: []const u8,
     verbose: bool,
+    /// Cached response from TVC Gate (if hit)
+    cached_response: ?[]const u8,
+    /// TVC Gate skipped pipeline (cache hit)
+    tvc_hit: bool,
 
     pub fn init(allocator: std.mem.Allocator, version: u32, task: []const u8) PipelineState {
-        var results: [16]LinkResult = undefined;
-        inline for (0..16) |i| {
-            results[i] = LinkResult.init(@enumFromInt(i + 1));
+        var results: [17]LinkResult = undefined;
+        inline for (0..17) |i| {
+            results[i] = LinkResult.init(@enumFromInt(i));
         }
 
         return .{
             .allocator = allocator,
             .version = version,
-            .phase = .baseline,
+            .phase = .tvc_gate, // Start at TVC Gate (Link 0)
             .status = .not_started,
             .started_at = std.time.timestamp(),
             .results = results,
             .improvement_rate = 0.0,
             .task_description = task,
             .verbose = false,
+            .cached_response = null,
+            .tvc_hit = false,
         };
     }
 
     pub fn getResult(self: *const PipelineState, link: ChainLink) *const LinkResult {
-        const idx = @intFromEnum(link) - 1;
+        const idx = @intFromEnum(link);
         return &self.results[idx];
     }
 
     pub fn setResult(self: *PipelineState, link: ChainLink, result: LinkResult) void {
-        const idx = @intFromEnum(link) - 1;
+        const idx = @intFromEnum(link);
         self.results[idx] = result;
     }
 
@@ -261,9 +270,12 @@ pub const PipelineState = struct {
     }
 
     pub fn canContinue(self: *const PipelineState) bool {
+        // TVC hit means we can skip the rest
+        if (self.tvc_hit) return true;
+
         // Check if all mandatory links up to current passed
         for (self.results, 0..) |result, i| {
-            const link: ChainLink = @enumFromInt(i + 1);
+            const link: ChainLink = @enumFromInt(i);
             if (link.isMandatory() and result.status == .failed) {
                 return false;
             }
@@ -283,7 +295,7 @@ pub const PipelineState = struct {
     }
 
     pub fn getProgressPercent(self: *const PipelineState) f64 {
-        return @as(f64, @floatFromInt(self.getCompletedCount())) / 16.0 * 100.0;
+        return @as(f64, @floatFromInt(self.getCompletedCount())) / 17.0 * 100.0;
     }
 
     pub fn getMetricsFilePath(self: *const PipelineState, buf: []u8) ![]const u8 {
@@ -401,6 +413,12 @@ pub fn calculateImprovementRate(prev: *const VersionMetrics, curr: *const Versio
 // ============================================================================
 
 test "ChainLink enumeration" {
+    const tvc_gate = ChainLink.tvc_gate;
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(tvc_gate));
+    try std.testing.expectEqualStrings("TVC_GATE", tvc_gate.getName());
+    try std.testing.expect(tvc_gate.isCritical()); // TVC Gate is critical
+    try std.testing.expect(tvc_gate.isMandatory());
+
     const baseline = ChainLink.baseline;
     try std.testing.expectEqual(@as(u8, 1), @intFromEnum(baseline));
     try std.testing.expectEqualStrings("BASELINE", baseline.getName());
@@ -416,9 +434,13 @@ test "ChainLink enumeration" {
 }
 
 test "ChainLink navigation" {
+    const tvc_gate = ChainLink.tvc_gate;
+    try std.testing.expectEqual(ChainLink.baseline, tvc_gate.next().?);
+    try std.testing.expectEqual(@as(?ChainLink, null), tvc_gate.prev());
+
     const baseline = ChainLink.baseline;
     try std.testing.expectEqual(ChainLink.metrics, baseline.next().?);
-    try std.testing.expectEqual(@as(?ChainLink, null), baseline.prev());
+    try std.testing.expectEqual(ChainLink.tvc_gate, baseline.prev().?);
 
     const loop = ChainLink.loop_decision;
     try std.testing.expectEqual(@as(?ChainLink, null), loop.next());
@@ -459,7 +481,9 @@ test "PipelineState initialization" {
 
     const state = PipelineState.init(allocator, 1, "test task");
     try std.testing.expectEqual(@as(u32, 1), state.version);
-    try std.testing.expectEqual(ChainLink.baseline, state.phase);
+    try std.testing.expectEqual(ChainLink.tvc_gate, state.phase); // Starts at TVC Gate
     try std.testing.expectEqual(PipelineStatus.not_started, state.status);
     try std.testing.expectEqual(@as(u32, 0), state.getCompletedCount());
+    try std.testing.expect(state.cached_response == null);
+    try std.testing.expect(!state.tvc_hit);
 }

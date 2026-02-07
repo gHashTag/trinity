@@ -15,7 +15,7 @@ const config: Config = {
 
   // GitHub Pages deployment
   url: 'https://gHashTag.github.io',
-  baseUrl: '/trinity/',
+  baseUrl: '/trinity/docs/',
   organizationName: 'gHashTag',
   projectName: 'trinity',
   deploymentBranch: 'gh-pages',
@@ -50,6 +50,7 @@ const config: Config = {
           editUrl: 'https://github.com/gHashTag/trinity/tree/main/docsite/',
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
+          routeBasePath: '/', // Docs at root of /trinity/docs/
         },
         blog: false,
         theme: {
@@ -92,9 +93,9 @@ const config: Config = {
         {
           title: 'Docs',
           items: [
-            {label: 'Getting Started', to: '/docs/getting-started/quickstart'},
-            {label: 'API Reference', to: '/docs/api/'},
-            {label: 'Troubleshooting', to: '/docs/troubleshooting'},
+            {label: 'Getting Started', to: '/getting-started/quickstart'},
+            {label: 'API Reference', to: '/api/'},
+            {label: 'Troubleshooting', to: '/troubleshooting'},
           ],
         },
         {
@@ -107,7 +108,7 @@ const config: Config = {
         {
           title: 'More',
           items: [
-            {label: 'Contributing', to: '/docs/contributing'},
+            {label: 'Contributing', to: '/contributing'},
           ],
         },
       ],
