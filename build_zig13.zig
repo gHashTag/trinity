@@ -184,4 +184,39 @@ pub fn build(b: *std.Build) void {
     });
     const run_depin_tests = b.addRunArtifact(depin_tests);
     test_step.dependOn(&run_depin_tests.step);
+
+    // VSA module for generated code imports
+    const vsa_mod = b.addModule("vsa", .{
+        .root_source_file = b.path("src/vsa.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Generated VSA Imported System tests (real @import)
+    const vsa_imported_tests = b.addTest(.{
+        .root_source_file = b.path("generated/vsa_imported_system.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    vsa_imported_tests.root_module.addImport("vsa", vsa_mod);
+    const run_vsa_imported = b.addRunArtifact(vsa_imported_tests);
+    const vsa_imported_step = b.step("test-vsa-imported", "Test VSA Imported System (real @import)");
+    vsa_imported_step.dependOn(&run_vsa_imported.step);
+    test_step.dependOn(&run_vsa_imported.step);
+
+    // VIBEE Compiler CLI
+    const vibee = b.addExecutable(.{
+        .name = "vibee",
+        .root_source_file = b.path("src/vibeec/gen_cmd.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    b.installArtifact(vibee);
+
+    const run_vibee = b.addRunArtifact(vibee);
+    if (b.args) |args| {
+        run_vibee.addArgs(args);
+    }
+    const vibee_step = b.step("vibee", "Run VIBEE Compiler CLI");
+    vibee_step.dependOn(&run_vibee.step);
 }
