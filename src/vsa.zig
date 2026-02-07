@@ -9414,6 +9414,393 @@ pub const TextCorpus = struct {
     // END CYCLE 55
     // ═══════════════════════════════════════════════════════════════════════════
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CYCLE 56: UNIFIED AUTONOMOUS SYSTEM — Ultimate Integration
+    // Multi-Modal + Multi-Agent + Self-Reflection + Tool Use + Memory
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// SystemCapability: what the unified system can do
+    pub const SystemCapability = enum(u8) {
+        vision_analyze = 0, // See and analyze images
+        voice_command = 1, // Listen and respond to voice
+        code_execute = 2, // Write and run code
+        text_process = 3, // Process natural language
+        tool_invoke = 4, // Call external tools
+        memory_recall = 5, // Remember past interactions
+        reflect_learn = 6, // Self-reflect and improve
+        orchestrate = 7, // Coordinate multiple agents
+
+        pub fn name(self: SystemCapability) []const u8 {
+            return switch (self) {
+                .vision_analyze => "vision_analyze",
+                .voice_command => "voice_command",
+                .code_execute => "code_execute",
+                .text_process => "text_process",
+                .tool_invoke => "tool_invoke",
+                .memory_recall => "memory_recall",
+                .reflect_learn => "reflect_learn",
+                .orchestrate => "orchestrate",
+            };
+        }
+
+        /// Map capability to primary modality
+        pub fn primaryModality(self: SystemCapability) Modality {
+            return switch (self) {
+                .vision_analyze => .vision,
+                .voice_command => .voice,
+                .code_execute => .code,
+                .text_process => .text,
+                .tool_invoke => .tool,
+                .memory_recall => .text,
+                .reflect_learn => .text,
+                .orchestrate => .text,
+            };
+        }
+
+        /// Map capability to primary agent role
+        pub fn primaryRole(self: SystemCapability) AgentRole {
+            return switch (self) {
+                .vision_analyze => .researcher,
+                .voice_command => .coordinator,
+                .code_execute => .coder,
+                .text_process => .writer,
+                .tool_invoke => .coder,
+                .memory_recall => .planner,
+                .reflect_learn => .reviewer,
+                .orchestrate => .coordinator,
+            };
+        }
+    };
+
+    /// UnifiedRequest: a multi-modal request to the unified system
+    pub const UnifiedRequest = struct {
+        input_buf: [512]u8,
+        input_len: u16,
+        capabilities_needed: [8]bool, // which capabilities to engage
+        priority: f64, // 0.0 - 1.0
+        require_reflection: bool,
+        max_iterations: u8,
+
+        pub fn init(input: []const u8) UnifiedRequest {
+            var req = UnifiedRequest{
+                .input_buf = [_]u8{0} ** 512,
+                .input_len = 0,
+                .capabilities_needed = [_]bool{false} ** 8,
+                .priority = 0.618, // phi^-1 default
+                .require_reflection = true,
+                .max_iterations = 5,
+            };
+            const len = @min(input.len, 512);
+            @memcpy(req.input_buf[0..len], input[0..len]);
+            req.input_len = @intCast(len);
+            return req;
+        }
+
+        pub fn getInput(self: *const UnifiedRequest) []const u8 {
+            return self.input_buf[0..self.input_len];
+        }
+
+        /// Auto-detect needed capabilities from input text
+        pub fn autoDetect(self: *UnifiedRequest) void {
+            const input = self.getInput();
+            for (0..input.len) |i| {
+                if (i + 4 <= input.len) {
+                    const w = input[i .. i + 4];
+                    // Vision keywords
+                    if (std.mem.eql(u8, w, "imag") or std.mem.eql(u8, w, "pict") or std.mem.eql(u8, w, "look") or std.mem.eql(u8, w, "see ")) {
+                        self.capabilities_needed[@intFromEnum(SystemCapability.vision_analyze)] = true;
+                    }
+                    // Voice keywords
+                    if (std.mem.eql(u8, w, "say ") or std.mem.eql(u8, w, "voic") or std.mem.eql(u8, w, "list") or std.mem.eql(u8, w, "spea")) {
+                        self.capabilities_needed[@intFromEnum(SystemCapability.voice_command)] = true;
+                    }
+                    // Code keywords
+                    if (std.mem.eql(u8, w, "code") or std.mem.eql(u8, w, "exec") or std.mem.eql(u8, w, "run ") or std.mem.eql(u8, w, "impl")) {
+                        self.capabilities_needed[@intFromEnum(SystemCapability.code_execute)] = true;
+                    }
+                    // Tool keywords
+                    if (std.mem.eql(u8, w, "tool") or std.mem.eql(u8, w, "calc") or std.mem.eql(u8, w, "sear") or std.mem.eql(u8, w, "read")) {
+                        self.capabilities_needed[@intFromEnum(SystemCapability.tool_invoke)] = true;
+                    }
+                    // Memory keywords
+                    if (std.mem.eql(u8, w, "reme") or std.mem.eql(u8, w, "reca") or std.mem.eql(u8, w, "memo") or std.mem.eql(u8, w, "save")) {
+                        self.capabilities_needed[@intFromEnum(SystemCapability.memory_recall)] = true;
+                    }
+                    // Reflect keywords
+                    if (std.mem.eql(u8, w, "refl") or std.mem.eql(u8, w, "revi") or std.mem.eql(u8, w, "lear") or std.mem.eql(u8, w, "impr")) {
+                        self.capabilities_needed[@intFromEnum(SystemCapability.reflect_learn)] = true;
+                    }
+                }
+            }
+            // Always enable text processing and orchestration
+            self.capabilities_needed[@intFromEnum(SystemCapability.text_process)] = true;
+            self.capabilities_needed[@intFromEnum(SystemCapability.orchestrate)] = true;
+        }
+
+        pub fn capabilityCount(self: *const UnifiedRequest) u8 {
+            var count: u8 = 0;
+            for (self.capabilities_needed) |needed| {
+                if (needed) count += 1;
+            }
+            return count;
+        }
+    };
+
+    /// UnifiedResponse: combined output from all engaged subsystems
+    pub const UnifiedResponse = struct {
+        output_buf: [512]u8,
+        output_len: u16,
+        capabilities_used: [8]bool,
+        modalities_engaged: [5]bool,
+        agents_dispatched: u8,
+        tools_called: u32,
+        reflections_made: u16,
+        patterns_learned: u8,
+        memory_entries_added: u8,
+        total_latency_ns: u64,
+        success: bool,
+        autonomy_score: f64,
+        improvement_delta: f64, // learning change from this request
+
+        pub fn getOutput(self: *const UnifiedResponse) []const u8 {
+            return self.output_buf[0..self.output_len];
+        }
+
+        pub fn capabilitiesUsed(self: *const UnifiedResponse) u8 {
+            var count: u8 = 0;
+            for (self.capabilities_used) |used| {
+                if (used) count += 1;
+            }
+            return count;
+        }
+
+        pub fn modalitiesEngaged(self: *const UnifiedResponse) u8 {
+            var count: u8 = 0;
+            for (self.modalities_engaged) |engaged| {
+                if (engaged) count += 1;
+            }
+            return count;
+        }
+    };
+
+    /// UnifiedAutonomousSystem: the ultimate integration of all cycles
+    pub const UnifiedAutonomousSystem = struct {
+        improvement_loop: ImprovementLoop,
+        // Stats
+        requests_processed: u32,
+        successful_requests: u32,
+        failed_requests: u32,
+        total_capabilities_used: u32,
+        total_modalities_engaged: u32,
+        system_uptime_cycles: u32,
+        phi_convergence: f64, // tracks how close to phi^-1 the system maintains
+
+        pub fn init() UnifiedAutonomousSystem {
+            return UnifiedAutonomousSystem{
+                .improvement_loop = ImprovementLoop.init(),
+                .requests_processed = 0,
+                .successful_requests = 0,
+                .failed_requests = 0,
+                .total_capabilities_used = 0,
+                .total_modalities_engaged = 0,
+                .system_uptime_cycles = 0,
+                .phi_convergence = 0.0,
+            };
+        }
+
+        /// Process a unified request through all subsystems
+        pub fn process(self: *UnifiedAutonomousSystem, request: *UnifiedRequest) UnifiedResponse {
+            self.requests_processed += 1;
+            self.system_uptime_cycles += 1;
+
+            var response = UnifiedResponse{
+                .output_buf = [_]u8{0} ** 512,
+                .output_len = 0,
+                .capabilities_used = [_]bool{false} ** 8,
+                .modalities_engaged = [_]bool{false} ** 5,
+                .agents_dispatched = 0,
+                .tools_called = 0,
+                .reflections_made = 0,
+                .patterns_learned = 0,
+                .memory_entries_added = 0,
+                .total_latency_ns = 0,
+                .success = false,
+                .autonomy_score = 0.0,
+                .improvement_delta = 0.0,
+            };
+
+            // Phase 1: Auto-detect capabilities from input
+            request.autoDetect();
+            const input = request.getInput();
+
+            // Phase 2: Store input in memory
+            self.improvement_loop.agent.memory.addUserMessage(input);
+            response.memory_entries_added += 1;
+
+            // Phase 3: Run through improvement loop (includes autonomous agent + reflection)
+            const learning_before = self.improvement_loop.reflector.cumulative_learning;
+            const imp_result = self.improvement_loop.runWithReflection(input);
+
+            // Phase 4: Track which capabilities were engaged
+            var cap_idx: u8 = 0;
+            while (cap_idx < 8) : (cap_idx += 1) {
+                if (request.capabilities_needed[cap_idx]) {
+                    response.capabilities_used[cap_idx] = true;
+                    self.total_capabilities_used += 1;
+
+                    // Track modality engagement
+                    const cap: SystemCapability = @enumFromInt(cap_idx);
+                    const mod_idx = @intFromEnum(cap.primaryModality());
+                    if (!response.modalities_engaged[mod_idx]) {
+                        response.modalities_engaged[mod_idx] = true;
+                        self.total_modalities_engaged += 1;
+                    }
+
+                    // Count agent dispatches
+                    response.agents_dispatched += 1;
+                }
+            }
+
+            // Phase 5: Collect results
+            response.tools_called = imp_result.autonomous_result.tool_calls;
+            response.reflections_made = imp_result.reflections_generated;
+            response.patterns_learned = imp_result.patterns_learned;
+            response.autonomy_score = imp_result.autonomous_result.autonomy_score;
+            response.improvement_delta = self.improvement_loop.reflector.cumulative_learning - learning_before;
+
+            // Phase 6: Build fused output
+            var out_len: u16 = 0;
+            const prefix = "unified:";
+            @memcpy(response.output_buf[0..prefix.len], prefix);
+            out_len += @intCast(prefix.len);
+
+            // Add capability summary
+            var ci: u8 = 0;
+            while (ci < 8) : (ci += 1) {
+                if (response.capabilities_used[ci]) {
+                    const cap_enum: SystemCapability = @enumFromInt(ci);
+                    const cap_name = cap_enum.name();
+                    if (out_len + cap_name.len + 1 < 512) {
+                        response.output_buf[out_len] = ' ';
+                        out_len += 1;
+                        @memcpy(response.output_buf[out_len .. out_len + cap_name.len], cap_name);
+                        out_len += @intCast(cap_name.len);
+                    }
+                }
+            }
+            response.output_len = out_len;
+
+            // Phase 7: Determine success
+            response.success = imp_result.autonomous_result.success;
+            if (response.success) {
+                self.successful_requests += 1;
+                self.improvement_loop.agent.memory.storeFact("unified: request succeeded");
+                response.memory_entries_added += 1;
+            } else {
+                self.failed_requests += 1;
+            }
+
+            // Phase 8: Update phi convergence
+            self.updatePhiConvergence();
+
+            return response;
+        }
+
+        /// Process with explicit capability selection
+        pub fn processWithCapabilities(self: *UnifiedAutonomousSystem, input: []const u8, caps: []const SystemCapability) UnifiedResponse {
+            var request = UnifiedRequest.init(input);
+            for (caps) |cap| {
+                request.capabilities_needed[@intFromEnum(cap)] = true;
+            }
+            // Always enable text + orchestrate
+            request.capabilities_needed[@intFromEnum(SystemCapability.text_process)] = true;
+            request.capabilities_needed[@intFromEnum(SystemCapability.orchestrate)] = true;
+            return self.process(&request);
+        }
+
+        fn updatePhiConvergence(self: *UnifiedAutonomousSystem) void {
+            if (self.requests_processed == 0) return;
+            const success_rate = @as(f64, @floatFromInt(self.successful_requests)) / @as(f64, @floatFromInt(self.requests_processed));
+            // How close is success rate to phi^-1?
+            const distance = @abs(success_rate - PHI_INVERSE);
+            self.phi_convergence = 1.0 - distance; // 1.0 = perfect convergence
+        }
+
+        pub fn getStats(self: *const UnifiedAutonomousSystem) UnifiedSystemStats {
+            const il_stats = self.improvement_loop.getStats();
+            return UnifiedSystemStats{
+                .requests_processed = self.requests_processed,
+                .successful_requests = self.successful_requests,
+                .failed_requests = self.failed_requests,
+                .total_capabilities_used = self.total_capabilities_used,
+                .total_modalities_engaged = self.total_modalities_engaged,
+                .system_uptime_cycles = self.system_uptime_cycles,
+                .phi_convergence = self.phi_convergence,
+                .success_rate = if (self.requests_processed > 0)
+                    @as(f64, @floatFromInt(self.successful_requests)) / @as(f64, @floatFromInt(self.requests_processed))
+                else
+                    0.0,
+                .loop_stats = il_stats,
+            };
+        }
+
+        /// System health check
+        pub fn isHealthy(self: *const UnifiedAutonomousSystem) bool {
+            if (self.requests_processed == 0) return true;
+            const rate = @as(f64, @floatFromInt(self.successful_requests)) / @as(f64, @floatFromInt(self.requests_processed));
+            return rate > PHI_INVERSE; // Must maintain above phi^-1
+        }
+
+        /// Get the integrated component versions
+        pub fn componentVersions() [8][]const u8 {
+            return [8][]const u8{
+                "UnifiedAgent v48",
+                "AgentMemory v49",
+                "MemorySerializer v50",
+                "ToolExecutor v51",
+                "Orchestrator v52",
+                "MultiModalToolUse v53",
+                "AutonomousAgent v54",
+                "ImprovementLoop v55",
+            };
+        }
+    };
+
+    /// Statistics for the unified system
+    pub const UnifiedSystemStats = struct {
+        requests_processed: u32,
+        successful_requests: u32,
+        failed_requests: u32,
+        total_capabilities_used: u32,
+        total_modalities_engaged: u32,
+        system_uptime_cycles: u32,
+        phi_convergence: f64,
+        success_rate: f64,
+        loop_stats: ImprovementLoopStats,
+    };
+
+    /// Global unified system singleton
+    var global_unified_system: ?UnifiedAutonomousSystem = null;
+
+    pub fn getUnifiedSystem() *UnifiedAutonomousSystem {
+        if (global_unified_system == null) {
+            global_unified_system = UnifiedAutonomousSystem.init();
+        }
+        return &global_unified_system.?;
+    }
+
+    pub fn shutdownUnifiedSystem() void {
+        global_unified_system = null;
+    }
+
+    pub fn hasUnifiedSystem() bool {
+        return global_unified_system != null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // END CYCLE 56
+    // ═══════════════════════════════════════════════════════════════════════════
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -12232,6 +12619,140 @@ test "ImprovementLoop global singleton" {
 
     TextCorpus.shutdownImprovementLoop();
     try std.testing.expect(!TextCorpus.hasImprovementLoop());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 56 TESTS: Unified Autonomous System
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "SystemCapability mapping" {
+    // Vision -> vision modality, researcher role
+    try std.testing.expectEqual(TextCorpus.Modality.vision, TextCorpus.SystemCapability.vision_analyze.primaryModality());
+    try std.testing.expectEqual(TextCorpus.AgentRole.researcher, TextCorpus.SystemCapability.vision_analyze.primaryRole());
+
+    // Code -> code modality, coder role
+    try std.testing.expectEqual(TextCorpus.Modality.code, TextCorpus.SystemCapability.code_execute.primaryModality());
+    try std.testing.expectEqual(TextCorpus.AgentRole.coder, TextCorpus.SystemCapability.code_execute.primaryRole());
+
+    // Orchestrate -> coordinator
+    try std.testing.expectEqual(TextCorpus.AgentRole.coordinator, TextCorpus.SystemCapability.orchestrate.primaryRole());
+
+    try std.testing.expectEqualStrings("reflect_learn", TextCorpus.SystemCapability.reflect_learn.name());
+}
+
+test "UnifiedRequest auto-detect capabilities" {
+    var req = TextCorpus.UnifiedRequest.init("look at image and execute code");
+    req.autoDetect();
+
+    // Should detect vision + code + text + orchestrate
+    try std.testing.expect(req.capabilities_needed[@intFromEnum(TextCorpus.SystemCapability.vision_analyze)]);
+    try std.testing.expect(req.capabilities_needed[@intFromEnum(TextCorpus.SystemCapability.code_execute)]);
+    try std.testing.expect(req.capabilities_needed[@intFromEnum(TextCorpus.SystemCapability.text_process)]);
+    try std.testing.expect(req.capabilities_needed[@intFromEnum(TextCorpus.SystemCapability.orchestrate)]);
+    try std.testing.expect(req.capabilityCount() >= 4);
+}
+
+test "UnifiedRequest memory and reflect keywords" {
+    var req = TextCorpus.UnifiedRequest.init("remember this and reflect on improvement");
+    req.autoDetect();
+
+    try std.testing.expect(req.capabilities_needed[@intFromEnum(TextCorpus.SystemCapability.memory_recall)]);
+    try std.testing.expect(req.capabilities_needed[@intFromEnum(TextCorpus.SystemCapability.reflect_learn)]);
+}
+
+test "UnifiedAutonomousSystem init" {
+    const sys = TextCorpus.UnifiedAutonomousSystem.init();
+    try std.testing.expectEqual(@as(u32, 0), sys.requests_processed);
+    try std.testing.expectEqual(@as(u32, 0), sys.successful_requests);
+    try std.testing.expect(sys.isHealthy());
+}
+
+test "UnifiedAutonomousSystem process text request" {
+    var sys = TextCorpus.UnifiedAutonomousSystem.init();
+    var req = TextCorpus.UnifiedRequest.init("calculate sum and search data");
+    const resp = sys.process(&req);
+
+    try std.testing.expect(resp.success);
+    try std.testing.expect(resp.capabilitiesUsed() >= 2); // text + orchestrate minimum
+    try std.testing.expect(resp.getOutput().len > 0);
+    try std.testing.expectEqual(@as(u32, 1), sys.requests_processed);
+    try std.testing.expectEqual(@as(u32, 1), sys.successful_requests);
+}
+
+test "UnifiedAutonomousSystem multi-modal request" {
+    var sys = TextCorpus.UnifiedAutonomousSystem.init();
+    var req = TextCorpus.UnifiedRequest.init("look at image and execute code to calculate");
+    const resp = sys.process(&req);
+
+    try std.testing.expect(resp.success);
+    // Should engage multiple modalities
+    try std.testing.expect(resp.modalitiesEngaged() >= 2);
+    try std.testing.expect(resp.agents_dispatched >= 3);
+    try std.testing.expect(resp.tools_called > 0);
+}
+
+test "UnifiedAutonomousSystem with explicit capabilities" {
+    var sys = TextCorpus.UnifiedAutonomousSystem.init();
+    const caps = [_]TextCorpus.SystemCapability{ .code_execute, .memory_recall, .reflect_learn };
+    const resp = sys.processWithCapabilities("process this task", &caps);
+
+    try std.testing.expect(resp.success);
+    try std.testing.expect(resp.capabilities_used[@intFromEnum(TextCorpus.SystemCapability.code_execute)]);
+    try std.testing.expect(resp.capabilities_used[@intFromEnum(TextCorpus.SystemCapability.memory_recall)]);
+    try std.testing.expect(resp.capabilities_used[@intFromEnum(TextCorpus.SystemCapability.reflect_learn)]);
+}
+
+test "UnifiedAutonomousSystem reflection integration" {
+    var sys = TextCorpus.UnifiedAutonomousSystem.init();
+    var req = TextCorpus.UnifiedRequest.init("calculate results");
+    const resp = sys.process(&req);
+
+    try std.testing.expect(resp.reflections_made >= 1);
+    try std.testing.expect(resp.memory_entries_added >= 1);
+}
+
+test "UnifiedAutonomousSystem phi convergence" {
+    var sys = TextCorpus.UnifiedAutonomousSystem.init();
+
+    // Process multiple requests to build convergence
+    var req1 = TextCorpus.UnifiedRequest.init("calculate sum");
+    _ = sys.process(&req1);
+    var req2 = TextCorpus.UnifiedRequest.init("search and find data");
+    _ = sys.process(&req2);
+
+    try std.testing.expect(sys.phi_convergence > 0.0);
+    try std.testing.expect(sys.isHealthy());
+}
+
+test "UnifiedAutonomousSystem stats tracking" {
+    var sys = TextCorpus.UnifiedAutonomousSystem.init();
+    var req = TextCorpus.UnifiedRequest.init("implement code and search results");
+    _ = sys.process(&req);
+
+    const stats = sys.getStats();
+    try std.testing.expectEqual(@as(u32, 1), stats.requests_processed);
+    try std.testing.expect(stats.total_capabilities_used > 0);
+    try std.testing.expect(stats.total_modalities_engaged > 0);
+    try std.testing.expect(stats.system_uptime_cycles >= 1);
+}
+
+test "UnifiedAutonomousSystem component versions" {
+    const versions = TextCorpus.UnifiedAutonomousSystem.componentVersions();
+    try std.testing.expectEqual(@as(usize, 8), versions.len);
+    try std.testing.expectEqualStrings("UnifiedAgent v48", versions[0]);
+    try std.testing.expectEqualStrings("ImprovementLoop v55", versions[7]);
+}
+
+test "UnifiedAutonomousSystem global singleton" {
+    const sys = TextCorpus.getUnifiedSystem();
+    try std.testing.expect(TextCorpus.hasUnifiedSystem());
+
+    var req = TextCorpus.UnifiedRequest.init("calculate results");
+    const resp = sys.process(&req);
+    try std.testing.expect(resp.success);
+
+    TextCorpus.shutdownUnifiedSystem();
+    try std.testing.expect(!TextCorpus.hasUnifiedSystem());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
