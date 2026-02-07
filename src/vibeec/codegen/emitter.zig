@@ -1521,6 +1521,180 @@ pub const ZigCodeGen = struct {
             return true;
         }
 
+        // ═══════════════════════════════════════════════════════════════
+        // Modality-Specific VSA Strategies (Cycle 52)
+        // ═══════════════════════════════════════════════════════════════
+
+        // Vision: 2D spatial binding — bind(patch, permute(permute(base, x), y*width))
+        if (std_mem.eql(u8, b.name, "realSpatialBind")) {
+            try self.builder.writeLine("/// Bind patch vector with 2D spatial position (vision encoding)");
+            try self.builder.writeLine("/// Uses double permutation: permute(x) then permute(y*width) for 2D grid");
+            try self.builder.writeLine("pub fn realSpatialBind(patch: *vsa.HybridBigInt, position_vec: *vsa.HybridBigInt, x: usize, y: usize, width: usize) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("var pos_x = vsa.permute(position_vec, x);");
+            try self.builder.writeLine("var pos_xy = vsa.permute(&pos_x, y * width);");
+            try self.builder.writeLine("return vsa.bind(patch, &pos_xy);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realSpatialBundle")) {
+            try self.builder.writeLine("/// Bundle spatially-bound patch vectors into image representation");
+            try self.builder.writeLine("pub fn realSpatialBundle(a: *vsa.HybridBigInt, b_vec: *vsa.HybridBigInt) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.bundle2(a, b_vec);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realSpatialSimilarity")) {
+            try self.builder.writeLine("/// Compare two spatially-encoded images");
+            try self.builder.writeLine("pub fn realSpatialSimilarity(img_a: *vsa.HybridBigInt, img_b: *vsa.HybridBigInt) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.cosineSimilarity(img_a, img_b);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realSpatialDistance")) {
+            try self.builder.writeLine("/// Hamming distance between spatially-encoded images");
+            try self.builder.writeLine("pub fn realSpatialDistance(img_a: *vsa.HybridBigInt, img_b: *vsa.HybridBigInt) usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.hammingDistance(img_a, img_b);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realPatchToVector")) {
+            try self.builder.writeLine("/// Convert patch intensity to base hypervector");
+            try self.builder.writeLine("pub fn realPatchToVector(intensity: u8) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.charToVector(intensity);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // Voice: temporal binding — bind(frame, permute(base, time_index))
+        if (std_mem.eql(u8, b.name, "realTemporalBind")) {
+            try self.builder.writeLine("/// Bind frame vector with temporal position (voice encoding)");
+            try self.builder.writeLine("/// Uses single permutation for sequential time ordering");
+            try self.builder.writeLine("pub fn realTemporalBind(frame: *vsa.HybridBigInt, time_base: *vsa.HybridBigInt, time_index: usize) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("var time_pos = vsa.permute(time_base, time_index);");
+            try self.builder.writeLine("return vsa.bind(frame, &time_pos);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realTemporalBundle")) {
+            try self.builder.writeLine("/// Bundle temporally-bound frame vectors into audio representation");
+            try self.builder.writeLine("pub fn realTemporalBundle(a: *vsa.HybridBigInt, b_vec: *vsa.HybridBigInt) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.bundle2(a, b_vec);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realTemporalSimilarity")) {
+            try self.builder.writeLine("/// Compare two temporally-encoded audio clips");
+            try self.builder.writeLine("pub fn realTemporalSimilarity(audio_a: *vsa.HybridBigInt, audio_b: *vsa.HybridBigInt) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.cosineSimilarity(audio_a, audio_b);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realTemporalDistance")) {
+            try self.builder.writeLine("/// Hamming distance between temporally-encoded audio");
+            try self.builder.writeLine("pub fn realTemporalDistance(audio_a: *vsa.HybridBigInt, audio_b: *vsa.HybridBigInt) usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.hammingDistance(audio_a, audio_b);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realFrameToVector")) {
+            try self.builder.writeLine("/// Convert audio frame energy to base hypervector");
+            try self.builder.writeLine("pub fn realFrameToVector(energy_quantized: u8) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.charToVector(energy_quantized);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // Code: structural depth binding — bind(token, permute(base, depth * depth_scale))
+        if (std_mem.eql(u8, b.name, "realDepthBind")) {
+            try self.builder.writeLine("/// Bind token vector with AST depth (code encoding)");
+            try self.builder.writeLine("/// Uses depth-scaled permutation for structural nesting");
+            try self.builder.writeLine("pub fn realDepthBind(token: *vsa.HybridBigInt, depth_base: *vsa.HybridBigInt, depth: usize, scale: usize) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("var depth_pos = vsa.permute(depth_base, depth * scale);");
+            try self.builder.writeLine("return vsa.bind(token, &depth_pos);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realStructuralBundle")) {
+            try self.builder.writeLine("/// Bundle depth-bound token vectors into code representation");
+            try self.builder.writeLine("pub fn realStructuralBundle(a: *vsa.HybridBigInt, b_vec: *vsa.HybridBigInt) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.bundle2(a, b_vec);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realStructuralSimilarity")) {
+            try self.builder.writeLine("/// Compare two structurally-encoded code snippets");
+            try self.builder.writeLine("pub fn realStructuralSimilarity(code_a: *vsa.HybridBigInt, code_b: *vsa.HybridBigInt) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.cosineSimilarity(code_a, code_b);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realStructuralDistance")) {
+            try self.builder.writeLine("/// Hamming distance between structurally-encoded code");
+            try self.builder.writeLine("pub fn realStructuralDistance(code_a: *vsa.HybridBigInt, code_b: *vsa.HybridBigInt) usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.hammingDistance(code_a, code_b);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realTokenToVector")) {
+            try self.builder.writeLine("/// Convert code token to base hypervector");
+            try self.builder.writeLine("pub fn realTokenToVector(token_char: u8) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.charToVector(token_char);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realTokenTypeVector")) {
+            try self.builder.writeLine("/// Generate type-specific base vector for token classification");
+            try self.builder.writeLine("pub fn realTokenTypeVector(type_seed: u64) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.randomVector(1024, type_seed);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
         return false;
     }
 };

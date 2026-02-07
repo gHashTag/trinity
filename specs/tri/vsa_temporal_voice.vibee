@@ -1,0 +1,136 @@
+# ============================================================================
+# VSA Temporal Voice Encoder - Cycle 52
+# Sequential temporal permutation for frame-based audio encoding
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_temporal_voice
+version: "1.0.0"
+language: zig
+module: vsa_temporal_voice
+
+imports:
+  - name: vsa
+    path: "../src/vsa.zig"
+
+description: |
+  Voice encoder with temporal sequence strategy.
+  Key difference: uses single permutation permute(base, time_index)
+  to encode frame ordering. Preserves temporal relationships —
+  adjacent frames have similar position encodings.
+
+constants:
+  DIMENSION: 1024
+  FRAME_SIZE: 256
+  HOP_SIZE: 128
+  PHI: 1.6180339887498948482
+
+types:
+  TemporalConfig:
+    fields:
+      sample_rate: Int
+      frame_size: Int
+      hop_size: Int
+
+behaviors:
+  - name: realTemporalBind
+    given: Frame vector and time index
+    when: Encoding frame with temporal position
+    then: Single permutation bind for time ordering
+
+  - name: realTemporalBundle
+    given: Multiple temporally-bound frame vectors
+    when: Combining into audio representation
+    then: Majority vote bundle
+
+  - name: realTemporalSimilarity
+    given: Two temporally-encoded audio clips
+    when: Comparing audio similarity
+    then: Cosine similarity preserving temporal structure
+
+  - name: realTemporalDistance
+    given: Two temporally-encoded audio clips
+    when: Measuring audio distance
+    then: Hamming distance between temporal encodings
+
+  - name: realFrameToVector
+    given: Frame energy quantized value
+    when: Converting audio feature to base vector
+    then: Character-to-vector mapping for energy
+
+  - name: realRandomVector
+    given: Seed for temporal base vector
+    when: Creating temporal reference frame
+    then: Deterministic random vector for time axis
+
+  - name: realBind
+    given: Two vectors for association
+    when: Generic binding operation
+    then: VSA bind
+
+  - name: realBundle2
+    given: Two vectors for superposition
+    when: Generic bundling operation
+    then: VSA bundle2
+
+  - name: realPermute
+    given: Vector and shift amount
+    when: Temporal position encoding
+    then: VSA permute
+
+  - name: realCosineSimilarity
+    given: Two vectors
+    when: Measuring similarity
+    then: Cosine similarity score
+
+  - name: realHammingDistance
+    given: Two vectors
+    when: Measuring distance
+    then: Hamming distance count
+
+  - name: realCharToVector
+    given: Energy quantized as char
+    when: Base encoding
+    then: Character to hypervector
+
+  - name: realEncodeText
+    given: Frame data as text
+    when: Fallback encoding
+    then: Text-based encoding
+
+tests:
+  - name: test_temporal_bind
+    given: Frame at time index 10
+    then: Temporal permutation produces unique binding
+
+  - name: test_temporal_bundle
+    given: Two temporally-bound frames
+    then: Bundle preserves both frames
+
+  - name: test_temporal_self_similarity
+    given: Same audio encoded twice
+    then: Cosine similarity = 1.0
+
+  - name: test_temporal_different_audio
+    given: Two different audio clips
+    then: Lower similarity than identical
+
+  - name: test_frame_energy
+    given: Energy value 200
+    then: Maps to valid hypervector
+
+  - name: test_temporal_order_matters
+    given: Same frame at different time positions
+    then: Different encodings (order preserved)
+
+  - name: test_temporal_reference
+    given: Time seed 42
+    then: Deterministic reference frame
+
+  - name: test_temporal_hamming
+    given: Two temporal encodings
+    then: Valid hamming distance
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
