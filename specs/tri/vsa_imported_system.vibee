@@ -766,6 +766,84 @@ behaviors:
     when: Getting PHI_INVERSE
     then: Return TextCorpus.PHI_INVERSE
 
+  # BATCHED WORK-STEALING (Multiple Jobs Per Steal)
+  - name: realGetBatchedPool
+    given: Global batched pool
+    when: Getting batched pool
+    then: Call TextCorpus.getGlobalBatchedPool()
+
+  - name: realHasBatchedPool
+    given: Batched pool state
+    when: Checking if batched pool exists
+    then: Call TextCorpus.hasGlobalBatchedPool()
+
+  - name: realGetBatchedStats
+    given: Batched pool
+    when: Getting batched statistics
+    then: Call TextCorpus.getBatchedStats()
+
+  - name: realCalculateBatchSize
+    given: Victim queue depth
+    when: Calculating optimal batch size
+    then: Return TextCorpus.calculateBatchSize(depth)
+
+  - name: realGetMaxBatchSize
+    given: Batch size constant
+    when: Getting MAX_BATCH_SIZE
+    then: Return TextCorpus.MAX_BATCH_SIZE
+
+  # PRIORITY JOB QUEUE (Priority-Based Scheduling)
+  - name: realGetPriorityPool
+    given: Global priority pool
+    when: Getting priority pool
+    then: Call TextCorpus.getGlobalPriorityPool()
+
+  - name: realHasPriorityPool
+    given: Priority pool state
+    when: Checking if priority pool exists
+    then: Call TextCorpus.hasGlobalPriorityPool()
+
+  - name: realGetPriorityStats
+    given: Priority pool
+    when: Getting priority statistics
+    then: Call TextCorpus.getPriorityStats()
+
+  - name: realGetPriorityLevels
+    given: Priority levels constant
+    when: Getting PRIORITY_LEVELS
+    then: Return TextCorpus.PRIORITY_LEVELS
+
+  - name: realGetPriorityWeight
+    given: Priority level
+    when: Getting priority weight
+    then: Return PriorityLevel.weight()
+
+  # Cycle 46: Deadline Scheduling (EDF)
+  - name: realGetDeadlinePool
+    given: Deadline pool manager
+    when: Getting or creating deadline pool
+    then: Call TextCorpus.getDeadlinePool()
+
+  - name: realHasDeadlinePool
+    given: Deadline pool state
+    when: Checking if deadline pool exists
+    then: Call TextCorpus.hasDeadlinePool()
+
+  - name: realGetDeadlineStats
+    given: Deadline pool
+    when: Getting deadline statistics
+    then: Call TextCorpus.getDeadlineStats()
+
+  - name: realGetDeadlineUrgencyLevels
+    given: Deadline urgency constant
+    when: Getting DEADLINE_URGENCY_LEVELS
+    then: Return 5 (immediate, urgent, normal, relaxed, flexible)
+
+  - name: realGetDeadlineUrgencyWeight
+    given: Deadline urgency level
+    when: Getting urgency weight
+    then: Return DeadlineUrgency.weight()
+
   # Processing
   - name: processVSA
     given: VSARequest

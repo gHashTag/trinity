@@ -834,12 +834,14 @@ pub const GGUFModel = struct {
         const vocab_size = self.config.vocab_size;
 
         // Get embedding for token
-        // NOTE: Embedding tensor is stored as [hidden_size][vocab_size] (row-major)
+        // NOTE: GGUF stores tensors in column-major order
+        // token_embd.weight has dims=[hidden_size, vocab_size] where hidden_size is innermost
+        // Memory layout: for each token t, all hidden dims h are contiguous
+        // Access: embedding[t][h] = data[t * hidden_size + h]
         const embedding = try self.allocator.alloc(f32, hidden_size);
         defer self.allocator.free(embedding);
-        for (0..hidden_size) |h| {
-            embedding[h] = self.token_embedding.?[h * vocab_size + token];
-        }
+        const emb_offset = @as(usize, token) * hidden_size;
+        @memcpy(embedding, self.token_embedding.?[emb_offset..][0..hidden_size]);
 
         // Apply RMS norm
         const normed = try self.allocator.alloc(f32, hidden_size);

@@ -463,14 +463,14 @@ pub const FullModel = struct {
     // Forward pass for single token - OPTIMIZED with pre-allocated buffers
     pub fn forward(self: *FullModel, token: u32, pos: usize) ![]f32 {
         const hidden_size = self.config.hidden_size;
-        const vocab_size = self.config.vocab_size;
 
         // Get embedding (use pre-allocated buffer)
-        // NOTE: Embedding tensor is stored as [hidden_size][vocab_size] (row-major)
-        // So we gather from each hidden dimension row at column = token
-        for (0..hidden_size) |h| {
-            self.buf_hidden[h] = self.token_embedding[h * vocab_size + token];
-        }
+        // NOTE: GGUF stores tensors in column-major order
+        // token_embd.weight has dims=[hidden_size, vocab_size] where hidden_size is innermost
+        // Memory layout: for each token t, all hidden dims h are contiguous
+        // Access: embedding[t][h] = data[t * hidden_size + h]
+        const emb_offset = @as(usize, token) * hidden_size;
+        @memcpy(self.buf_hidden, self.token_embedding[emb_offset..][0..hidden_size]);
 
         // Process through all layers (no allocations!)
         for (0..self.config.num_layers) |i| {
@@ -626,7 +626,7 @@ pub const FullModel = struct {
     }
 
     // OPTIMIZED forward layer - uses pre-allocated buffers (NO ALLOCATIONS!)
-    fn forwardLayerOptimized(self: *FullModel, output: []f32, input: []const f32, layer_idx: usize, pos: usize) void {
+    pub fn forwardLayerOptimized(self: *FullModel, output: []f32, input: []const f32, layer_idx: usize, pos: usize) void {
         const layer = self.layers[layer_idx];
         const hidden_size = self.config.hidden_size;
         const num_heads = self.config.num_heads;
