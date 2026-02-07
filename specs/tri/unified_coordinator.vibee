@@ -1,0 +1,386 @@
+# ============================================================================
+# Unified Coordinator - Central Multi-Modal Multi-Agent Router
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: unified_coordinator
+version: "1.0.0"
+language: zig
+module: unified_coordinator
+
+description: |
+  Central coordinator that routes all modalities and tools through a single
+  entry point. Integrates: chat, code, vision, voice, RAG, sandbox, streaming,
+  multi-agent, long context, and compression.
+
+  Architecture:
+    Input (any modality) → Modality Detector → Route to Agent
+    Agent processes → Output (any modality) → Streaming delivery
+
+  Routing Table:
+    text → chat_agent OR coder_agent (based on intent)
+    image → vision_agent → text description
+    audio → stt_agent → text → process → tts_agent → audio
+    code → coder_agent → sandbox_agent → verified output
+    mixed → coordinator splits → parallel agents → fused response
+
+  Integration Points:
+    - Chat → RAG (auto-retrieve context from codebase/docs)
+    - Code gen → Sandbox (execute + verify correctness)
+    - Voice input → STT → process → TTS output
+    - Long context → sliding window + summarization for all modalities
+    - Streaming → token-by-token for all text/code outputs
+    - Compression → TCV5 (11x ratio) for storage/transfer
+
+constants:
+  MAX_AGENTS: 8
+  MAX_MODALITIES: 5
+  ROUTING_TIMEOUT_MS: 5000
+  MAX_CONTEXT_TOKENS: 32768
+  STREAMING_BUFFER_SIZE: 4096
+  RAG_TOP_K: 5
+  SANDBOX_TIMEOUT_MS: 10000
+  COMPRESSION_RATIO_TARGET: 11
+  NEEDLE_THRESHOLD: 0.618
+  PHI: 1.6180339887498948482
+
+types:
+  Modality:
+    description: "Input/output modality type"
+    enum:
+      - text
+      - code
+      - voice
+      - vision
+      - structured
+
+  AgentRole:
+    description: "Specialist agent roles"
+    enum:
+      - chat
+      - coder
+      - reasoner
+      - researcher
+      - vision
+      - voice_stt
+      - voice_tts
+      - sandbox
+
+  RequestPriority:
+    description: "Request priority levels"
+    enum:
+      - low
+      - normal
+      - high
+      - critical
+
+  InputLanguage:
+    description: "Detected natural language"
+    enum:
+      - english
+      - russian
+      - chinese
+      - auto
+
+  RoutingDecision:
+    description: "Result of modality detection and routing"
+    fields:
+      primary_modality: Modality
+      secondary_modalities: List<Modality>
+      target_agent: AgentRole
+      fallback_agent: AgentRole
+      priority: RequestPriority
+      requires_rag: Bool
+      requires_sandbox: Bool
+      requires_streaming: Bool
+      detected_language: InputLanguage
+      confidence: Float
+
+  UnifiedRequest:
+    description: "Request to the unified coordinator"
+    fields:
+      id: String
+      text: String
+      modality_hint: Option<Modality>
+      language_hint: Option<InputLanguage>
+      context_id: Option<String>
+      priority: RequestPriority
+      stream: Bool
+      timestamp: Timestamp
+
+  UnifiedResponse:
+    description: "Response from the unified coordinator"
+    fields:
+      id: String
+      request_id: String
+      text: String
+      code: Option<String>
+      code_language: Option<String>
+      code_verified: Bool
+      audio_output: Option<String>
+      modality: Modality
+      agent_used: AgentRole
+      rag_sources: List<String>
+      confidence: Float
+      latency_ms: Int
+      tokens_generated: Int
+      streaming: Bool
+      needle_score: Float
+
+  AgentState:
+    description: "State of a specialist agent"
+    fields:
+      role: AgentRole
+      active: Bool
+      requests_handled: Int
+      avg_latency_ms: Float
+      last_active: Timestamp
+      error_count: Int
+
+  CoordinatorState:
+    description: "Full coordinator state"
+    fields:
+      agents: List<AgentState>
+      total_requests: Int
+      total_responses: Int
+      avg_latency_ms: Float
+      uptime_seconds: Int
+      rag_queries: Int
+      sandbox_executions: Int
+      streaming_sessions: Int
+      compression_ratio: Float
+      needle_score: Float
+
+  RAGContext:
+    description: "Retrieved context from RAG"
+    fields:
+      query: String
+      results: List<String>
+      scores: List<Float>
+      source_files: List<String>
+      total_tokens: Int
+
+  SandboxResult:
+    description: "Result from code sandbox execution"
+    fields:
+      success: Bool
+      output: String
+      error: Option<String>
+      execution_time_ms: Int
+      memory_used_bytes: Int
+
+  StreamingSession:
+    description: "Active streaming session"
+    fields:
+      session_id: String
+      tokens_sent: Int
+      start_time: Timestamp
+      is_active: Bool
+      rate_tokens_per_sec: Float
+
+  E2ETestCase:
+    description: "End-to-end test case for unified system"
+    fields:
+      name: String
+      input: String
+      expected_modality: Modality
+      expected_agent: AgentRole
+      expected_contains: String
+      max_latency_ms: Int
+
+  E2ETestResult:
+    description: "Result of E2E test execution"
+    fields:
+      test_name: String
+      passed: Bool
+      actual_modality: Modality
+      actual_agent: AgentRole
+      response_text: String
+      latency_ms: Int
+      needle_score: Float
+
+behaviors:
+  # Core Routing
+  - name: init
+    given: Allocator
+    when: Creating coordinator
+    then: Initialize all agents, RAG index, sandbox, streaming
+
+  - name: deinit
+    given: Coordinator instance
+    when: Shutting down
+    then: Clean up all resources
+
+  - name: detectModality
+    given: UnifiedRequest
+    when: Analyzing input
+    then: Return detected Modality with confidence
+
+  - name: routeRequest
+    given: UnifiedRequest, detected Modality
+    when: Deciding which agent handles request
+    then: Return RoutingDecision with agent, RAG/sandbox flags
+
+  - name: processRequest
+    given: UnifiedRequest
+    when: Full request processing pipeline
+    then: Detect → Route → Agent → RAG → Sandbox → Stream → Response
+
+  # Agent Dispatch
+  - name: dispatchToChat
+    given: UnifiedRequest, RAGContext
+    when: Chat agent selected
+    then: Process with context, return text response
+
+  - name: dispatchToCoder
+    given: UnifiedRequest, RAGContext
+    when: Coder agent selected
+    then: Generate code, optionally execute in sandbox
+
+  - name: dispatchToReasoner
+    given: UnifiedRequest
+    when: Complex reasoning needed
+    then: Chain-of-thought processing, return structured answer
+
+  - name: dispatchToVision
+    given: UnifiedRequest with image data
+    when: Vision agent selected
+    then: Analyze image, return text description
+
+  - name: dispatchToVoice
+    given: UnifiedRequest with audio data
+    when: Voice agent selected
+    then: STT → process → TTS pipeline
+
+  # Integration Points
+  - name: queryRAG
+    given: Query string, top_k
+    when: Context retrieval needed
+    then: Search codebase/docs, return RAGContext
+
+  - name: executeSandbox
+    given: Code string, language
+    when: Code verification needed
+    then: Execute safely, return SandboxResult
+
+  - name: startStreaming
+    given: Response to stream
+    when: Streaming enabled
+    then: Token-by-token output, return StreamingSession
+
+  - name: compressContext
+    given: Long context string
+    when: Context exceeds MAX_CONTEXT_TOKENS
+    then: Apply sliding window + summarization
+
+  # Multi-Agent Coordination
+  - name: coordinateAgents
+    given: Complex request requiring multiple agents
+    when: Mixed modality or multi-step task
+    then: Split task, dispatch to agents, fuse results
+
+  - name: fuseResponses
+    given: List of agent responses
+    when: Multiple agents contributed
+    then: Merge into single coherent UnifiedResponse
+
+  # Monitoring
+  - name: getState
+    given: Coordinator instance
+    when: Status query
+    then: Return CoordinatorState with all metrics
+
+  - name: getNeedleScore
+    given: Coordinator instance
+    when: Quality check
+    then: Return needle score (must be > 0.618)
+
+  # E2E Testing
+  - name: runE2ETest
+    given: E2ETestCase
+    when: Testing unified system
+    then: Execute test, return E2ETestResult
+
+  - name: runE2ESuite
+    given: List of E2ETestCase
+    when: Running full test suite
+    then: Execute all tests, return summary with pass rate
+
+tests:
+  - name: test_text_chat_routing
+    given: "Hello, how are you?"
+    then: Routes to chat agent, returns text response
+
+  - name: test_code_routing
+    given: "Write a fibonacci function in Python"
+    then: Routes to coder agent, returns code
+
+  - name: test_russian_chat
+    given: "Привет! Как дела?"
+    then: Detects Russian, routes to chat, responds in Russian
+
+  - name: test_chinese_code
+    given: "用Python写排序算法"
+    then: Detects Chinese, routes to coder, generates sort code
+
+  - name: test_hybrid_routing
+    given: "Hello! Write quicksort in Zig"
+    then: Detects hybrid, routes to coder with greeting
+
+  - name: test_rag_integration
+    given: "Explain the VSA bind operation in this codebase"
+    then: Queries RAG, retrieves vsa.zig context, explains
+
+  - name: test_sandbox_integration
+    given: "Write and run a fibonacci function"
+    then: Generates code, executes in sandbox, verifies output
+
+  - name: test_streaming_output
+    given: "Tell me about ternary computing"
+    then: Streams response token-by-token
+
+  - name: test_long_context
+    given: "Summarize the last 50 messages"
+    then: Applies sliding window, returns summary
+
+  - name: test_multi_agent_coordination
+    given: "Analyze this code, fix bugs, and write tests"
+    then: Dispatches to reasoner + coder, fuses results
+
+  - name: test_needle_score
+    given: Coordinator after 100 requests
+    then: Needle score > 0.618
+
+  - name: test_e2e_multilingual
+    given: "Привет! Write binary search на JavaScript"
+    then: Mixed language, routes correctly, generates code
+
+metrics:
+  - name: routing_accuracy
+    description: "Correct modality detection rate"
+    target: "> 95%"
+
+  - name: avg_latency
+    description: "Average request-to-response time"
+    target: "< 500ms for chat, < 2000ms for code"
+
+  - name: needle_score
+    description: "Golden Chain quality metric"
+    target: "> 0.618"
+
+  - name: e2e_pass_rate
+    description: "E2E test suite pass rate"
+    target: "> 90%"
+
+  - name: rag_hit_rate
+    description: "RAG retrieval relevance"
+    target: "> 80%"
+
+  - name: sandbox_success_rate
+    description: "Code execution success rate"
+    target: "> 85%"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
