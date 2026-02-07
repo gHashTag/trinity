@@ -1,0 +1,659 @@
+# ============================================================================
+# Voice I/O Multi-Modal Engine - Cycle 29
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: voice_io_multimodal
+version: "1.0.0"
+language: zig
+module: voice_io_multimodal
+
+description: |
+  Voice I/O Multi-Modal Engine — Local Speech-to-Text & Text-to-Speech
+  with full cross-modal integration (chat/code/vision/tools).
+  Cycle 29 feature: audio capture, MFCC extraction, phoneme recognition,
+  language model decoding, speech synthesis, and cross-modal voice commands.
+
+  Architecture:
+    STT Pipeline:
+      Audio Input (PCM/WAV) → Pre-processing (normalize, VAD)
+      → MFCC Feature Extraction (13 coefficients + deltas)
+      → Phoneme Recognition (VSA codebook matching)
+      → Language Model Decoding (beam search)
+      → Text Output + Confidence
+
+    TTS Pipeline:
+      Text Input → Phoneme Conversion (grapheme-to-phoneme)
+      → Prosody Generation (pitch, duration, energy)
+      → Waveform Synthesis (concatenative / parametric)
+      → Audio Output (PCM/WAV)
+
+    Cross-Modal Integration:
+      Voice → Chat: "What time is it?" → text response → TTS
+      Voice → Code: "Write a function to sort" → code generation
+      Voice → Vision: "Describe this image" → vision analysis → TTS
+      Voice → Tools: "Read file config.zig" → tool execution → TTS
+      Voice → Voice: Real-time translation (STT → translate → TTS)
+
+  Supported Languages:
+    - English (en)
+    - Russian (ru)
+    - Chinese (zh) — basic support
+
+  Audio Formats:
+    - PCM (16-bit, mono/stereo, 8kHz-48kHz)
+    - WAV (RIFF header + PCM data)
+    - Raw float32 samples
+
+  Safety:
+    - Max audio duration: 60 seconds
+    - Max sample rate: 48kHz
+    - Memory limit: 256MB for audio processing
+    - No external network calls
+    - All processing local
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+constants:
+  MAX_AUDIO_DURATION_S: 60        # Max 60 seconds
+  DEFAULT_SAMPLE_RATE: 16000      # 16kHz default
+  MAX_SAMPLE_RATE: 48000          # 48kHz max
+  MFCC_COEFFICIENTS: 13           # Standard MFCC count
+  MFCC_FRAME_SIZE_MS: 25          # 25ms analysis frames
+  MFCC_FRAME_STEP_MS: 10          # 10ms frame step (overlap)
+  MEL_FILTER_COUNT: 26            # Mel filterbank count
+  FFT_SIZE: 512                   # FFT window size
+  VAD_ENERGY_THRESHOLD: 0.01      # Voice Activity Detection threshold
+  VAD_MIN_SPEECH_MS: 200          # Minimum speech segment
+  VAD_MIN_SILENCE_MS: 300         # Minimum silence for segment break
+  BEAM_WIDTH: 5                   # Beam search width for decoding
+  PHONEME_COUNT: 44               # English phoneme set size
+  PHONEME_COUNT_RU: 42            # Russian phoneme set size
+  TTS_PITCH_DEFAULT: 150.0        # Default pitch in Hz
+  TTS_SPEED_DEFAULT: 1.0          # Default speaking speed
+  TTS_VOLUME_DEFAULT: 0.8         # Default volume [0, 1]
+  CONFIDENCE_THRESHOLD: 0.50      # Min STT confidence
+  VSA_DIMENSION: 10000            # Hypervector dimension
+  PHI: 1.6180339887498948482
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+types:
+  # Audio Data
+  AudioFormat:
+    description: "Supported audio formats"
+    variants:
+      - pcm_16bit       # Raw 16-bit PCM
+      - pcm_float32     # Raw float32 samples
+      - wav             # WAV file (RIFF + PCM)
+
+  AudioConfig:
+    description: "Audio configuration"
+    fields:
+      sample_rate: u32
+      channels: u8           # 1=mono, 2=stereo
+      bits_per_sample: u16
+      format: AudioFormat
+
+  AudioBuffer:
+    description: "Audio sample buffer"
+    fields:
+      samples: List<f32>     # Normalized to [-1.0, 1.0]
+      config: AudioConfig
+      duration_ms: u64
+      rms_energy: f32        # Root mean square energy
+
+  AudioSegment:
+    description: "Speech segment detected by VAD"
+    fields:
+      start_ms: u64
+      end_ms: u64
+      energy: f32
+      is_speech: Bool
+
+  # MFCC Features
+  MFCCFrame:
+    description: "Single MFCC feature frame"
+    fields:
+      coefficients: List<f32>    # 13 MFCC coefficients
+      delta: List<f32>           # First derivative
+      delta_delta: List<f32>     # Second derivative
+      energy: f32
+      timestamp_ms: u64
+
+  MFCCFeatures:
+    description: "Full MFCC feature sequence"
+    fields:
+      frames: List<MFCCFrame>
+      frame_count: u32
+      frame_size_ms: u32
+      frame_step_ms: u32
+      sample_rate: u32
+
+  # Phoneme Recognition
+  Phoneme:
+    description: "Recognized phoneme"
+    fields:
+      symbol: List<u8>          # IPA symbol (e.g., "p", "ae", "sh")
+      confidence: f32
+      start_ms: u64
+      duration_ms: u32
+
+  PhonemeSequence:
+    description: "Sequence of recognized phonemes"
+    fields:
+      phonemes: List<Phoneme>
+      language: List<u8>
+      total_confidence: f32
+
+  # Language
+  Language:
+    description: "Supported languages"
+    variants:
+      - en           # English
+      - ru           # Russian
+      - zh           # Chinese (basic)
+
+  # STT Results
+  STTWord:
+    description: "Recognized word"
+    fields:
+      text: List<u8>
+      confidence: f32
+      start_ms: u64
+      end_ms: u64
+      alternatives: List<u8>
+
+  STTResult:
+    description: "Speech-to-text result"
+    fields:
+      text: List<u8>              # Full transcription
+      words: List<STTWord>
+      language: Language
+      confidence: f32
+      processing_time_ms: u64
+      audio_duration_ms: u64
+
+  # TTS Configuration
+  TTSVoice:
+    description: "TTS voice configuration"
+    variants:
+      - default_en       # English default
+      - default_ru       # Russian default
+      - default_zh       # Chinese default
+
+  TTSConfig:
+    description: "Text-to-speech configuration"
+    fields:
+      voice: TTSVoice
+      pitch_hz: f32
+      speed: f32              # 0.5 = slow, 1.0 = normal, 2.0 = fast
+      volume: f32             # 0.0 to 1.0
+      sample_rate: u32
+
+  # TTS Results
+  ProsodyMarker:
+    description: "Prosody marker for TTS"
+    fields:
+      position: u32           # Character position in text
+      pitch_delta: f32        # Pitch change from baseline
+      duration_scale: f32     # Duration multiplier
+      energy_scale: f32       # Energy multiplier
+      pause_ms: u32           # Pause duration after
+
+  TTSResult:
+    description: "Text-to-speech result"
+    fields:
+      audio: AudioBuffer
+      phonemes_generated: u32
+      duration_ms: u64
+      processing_time_ms: u64
+
+  # Cross-Modal Results
+  VoiceToChatResult:
+    description: "Voice → Chat response"
+    fields:
+      transcription: STTResult
+      response_text: List<u8>
+      response_audio: TTSResult
+      total_time_ms: u64
+
+  VoiceToCodeResult:
+    description: "Voice → Code generation"
+    fields:
+      transcription: STTResult
+      language: List<u8>
+      code: List<u8>
+      confidence: f32
+      total_time_ms: u64
+
+  VoiceToVisionResult:
+    description: "Voice → Vision description"
+    fields:
+      transcription: STTResult
+      image_description: List<u8>
+      response_audio: TTSResult
+      total_time_ms: u64
+
+  VoiceToToolResult:
+    description: "Voice → Tool execution"
+    fields:
+      transcription: STTResult
+      tool_kind: List<u8>
+      tool_result: List<u8>
+      response_audio: TTSResult
+      total_time_ms: u64
+
+  VoiceTranslationResult:
+    description: "Voice → Translation → Voice"
+    fields:
+      source_stt: STTResult
+      source_language: Language
+      target_language: Language
+      translated_text: List<u8>
+      target_tts: TTSResult
+      total_time_ms: u64
+
+  # Engine State
+  VoiceEngine:
+    description: "Voice I/O multi-modal engine"
+    fields:
+      allocator: Allocator
+      stt_config: AudioConfig
+      tts_config: TTSConfig
+      phoneme_codebook: List<u8>
+      language_models: List<u8>
+      stats: VoiceStats
+
+  VoiceStats:
+    description: "Voice processing statistics"
+    fields:
+      stt_calls: u64
+      tts_calls: u64
+      total_audio_processed_ms: u64
+      total_audio_generated_ms: u64
+      avg_stt_confidence: f64
+      avg_processing_ratio: f64    # processing_time / audio_duration
+      cross_modal_calls: u64
+      translations: u64
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  # Initialization
+  - name: init
+    given: Allocator, optional AudioConfig
+    when: Creating voice engine
+    then: Initialize with phoneme codebook and language models
+
+  - name: deinit
+    given: Engine instance
+    when: Destroying engine
+    then: Free all resources
+
+  # Audio Loading
+  - name: loadAudio
+    given: File path or raw buffer
+    when: Loading audio for STT
+    then: Parse format, decode samples, return AudioBuffer
+    impl: |
+      1. Detect format (WAV: RIFF header, PCM: raw samples)
+      2. Parse header (sample rate, channels, bit depth)
+      3. Decode samples to float32 [-1.0, 1.0]
+      4. Resample if needed (to 16kHz)
+      5. Mix to mono if stereo
+      6. Return AudioBuffer
+
+  - name: loadWAV
+    given: WAV file data
+    when: Loading WAV format
+    then: Parse RIFF header, extract PCM data
+
+  - name: loadPCM
+    given: Raw PCM data, AudioConfig
+    when: Loading raw PCM
+    then: Convert to float32 AudioBuffer
+
+  # Pre-processing
+  - name: preProcess
+    given: AudioBuffer
+    when: Preparing audio for feature extraction
+    then: Normalize, apply pre-emphasis, window
+    impl: |
+      1. Normalize amplitude to [-1.0, 1.0]
+      2. Apply pre-emphasis filter (y[n] = x[n] - 0.97 * x[n-1])
+      3. Remove DC offset
+      4. Apply Hamming window per frame
+
+  - name: detectVAD
+    given: AudioBuffer
+    when: Finding speech segments
+    then: Return list of AudioSegments (speech vs silence)
+    impl: |
+      1. Compute short-time energy per frame
+      2. Threshold: frame energy > VAD_ENERGY_THRESHOLD → speech
+      3. Merge adjacent speech frames
+      4. Filter: segments < VAD_MIN_SPEECH_MS → silence
+      5. Filter: gaps < VAD_MIN_SILENCE_MS → merge
+
+  # MFCC Extraction
+  - name: extractMFCC
+    given: AudioBuffer (pre-processed)
+    when: Computing MFCC features
+    then: Return MFCCFeatures
+    impl: |
+      1. Frame audio (25ms frames, 10ms step)
+      2. Apply FFT per frame (512-point)
+      3. Apply Mel filterbank (26 triangular filters)
+      4. Log energy per filter
+      5. DCT → 13 MFCC coefficients
+      6. Compute delta (first derivative)
+      7. Compute delta-delta (second derivative)
+
+  - name: computeFFT
+    given: Audio frame (float32 samples)
+    when: Computing frequency spectrum
+    then: Return magnitude spectrum
+
+  - name: applyMelFilterbank
+    given: Magnitude spectrum
+    when: Converting to mel scale
+    then: Return mel energies (26 values)
+
+  # Phoneme Recognition
+  - name: recognizePhonemes
+    given: MFCCFeatures
+    when: Converting features to phoneme sequence
+    then: Return PhonemeSequence
+    impl: |
+      1. Encode MFCC frame into VSA hypervector
+      2. Compare against phoneme codebook
+      3. Select best match per frame
+      4. Merge consecutive same phonemes
+      5. Return PhonemeSequence with confidence
+
+  # Language Model Decoding
+  - name: decodeText
+    given: PhonemeSequence
+    when: Converting phonemes to words
+    then: Return STTResult with word boundaries
+    impl: |
+      1. Beam search over phoneme sequence
+      2. Match phoneme sequences to dictionary words
+      3. Apply language model probabilities
+      4. Select best hypothesis
+      5. Return STTResult
+
+  # Full STT Pipeline
+  - name: speechToText
+    given: AudioBuffer or file path
+    when: Full STT pipeline
+    then: Return STTResult
+    impl: |
+      1. loadAudio → AudioBuffer
+      2. preProcess → normalized audio
+      3. detectVAD → speech segments
+      4. extractMFCC → features per segment
+      5. recognizePhonemes → phoneme sequences
+      6. decodeText → final text
+
+  # TTS Pipeline
+  - name: textToSpeech
+    given: Text, optional TTSConfig
+    when: Converting text to speech
+    then: Return TTSResult with audio
+    impl: |
+      1. Text normalization (numbers, abbreviations)
+      2. Grapheme-to-phoneme conversion
+      3. Prosody generation (pitch contour, duration, energy)
+      4. Waveform synthesis
+      5. Return TTSResult
+
+  - name: graphemeToPhoneme
+    given: Text, Language
+    when: Converting text to phoneme sequence
+    then: Return PhonemeSequence
+    impl: |
+      English: Rule-based + exception dictionary
+      Russian: Letter-to-sound rules (more regular)
+      Chinese: Pinyin lookup table
+
+  - name: generateProsody
+    given: PhonemeSequence, text
+    when: Generating natural prosody
+    then: Return ProsodyMarkers
+    impl: |
+      1. Detect sentence boundaries → pitch reset
+      2. Questions → rising pitch at end
+      3. Emphasis → higher pitch + longer duration
+      4. Pauses at punctuation marks
+      5. Breathing pauses at natural boundaries
+
+  - name: synthesizeWaveform
+    given: PhonemeSequence, ProsodyMarkers
+    when: Generating audio waveform
+    then: Return AudioBuffer
+    impl: |
+      Concatenative: Stitch phoneme audio segments
+      Adjust: pitch, duration, energy per prosody markers
+      Smooth: Cross-fade at phoneme boundaries
+      Output: 16kHz mono float32
+
+  # Cross-Modal Integration
+  - name: voiceToChat
+    given: Audio input (question/command)
+    when: Voice interaction with chat
+    then: STT → process → response text → TTS
+    impl: |
+      1. speechToText → transcription
+      2. Process command / answer question
+      3. textToSpeech → response audio
+      4. Return VoiceToChatResult
+
+  - name: voiceToCode
+    given: Audio input (code request)
+    when: Voice command for code generation
+    then: STT → detect code intent → generate code
+    impl: |
+      1. speechToText → transcription
+      2. Detect code intent (Cycle 25 fluent coder)
+      3. Generate code from description
+      4. Return VoiceToCodeResult
+
+  - name: voiceToVision
+    given: Audio input + image reference
+    when: "Describe this image" by voice
+    then: STT → vision analysis → TTS description
+    impl: |
+      1. speechToText → "describe this image"
+      2. analyzeScene (Cycle 28 vision)
+      3. textToSpeech → spoken description
+      4. Return VoiceToVisionResult
+
+  - name: voiceToTool
+    given: Audio input (tool command)
+    when: Voice command for tool execution
+    then: STT → detect tool intent → execute → TTS result
+    impl: |
+      1. speechToText → "read file config.zig"
+      2. detectIntent (Cycle 27 tool use)
+      3. executeTool → result
+      4. textToSpeech → spoken result
+      5. Return VoiceToToolResult
+
+  - name: voiceTranslate
+    given: Audio input, target language
+    when: Real-time voice translation
+    then: STT (source lang) → translate → TTS (target lang)
+    impl: |
+      1. speechToText (detect source language)
+      2. Translate text to target language
+      3. textToSpeech in target language
+      4. Return VoiceTranslationResult
+
+  # Statistics
+  - name: getStats
+    given: Engine instance
+    when: Querying usage
+    then: Return VoiceStats
+
+# ============================================================================
+# INTEGRATION
+# ============================================================================
+
+integration:
+  - target: vision_understanding.vibee
+    description: "Vision engine for voice→vision (Cycle 28)"
+
+  - target: multi_modal_tool_use.vibee
+    description: "Tool use for voice→tools (Cycle 27)"
+
+  - target: multi_modal_unified.vibee
+    description: "Unified multi-modal engine (Cycle 26)"
+
+  - target: fluent_coder.vibee
+    description: "Code generation for voice→code (Cycle 25)"
+
+  - target: vsa.zig
+    description: "VSA operations for phoneme encoding"
+
+# ============================================================================
+# TESTS
+# ============================================================================
+
+tests:
+  - name: test_load_wav
+    given: Valid WAV file (16kHz mono 16-bit)
+    then: Returns AudioBuffer with correct duration
+
+  - name: test_load_pcm
+    given: Raw PCM float32 samples
+    then: Returns AudioBuffer normalized to [-1.0, 1.0]
+
+  - name: test_pre_emphasis
+    given: Audio buffer
+    then: High frequencies boosted (pre-emphasis filter applied)
+
+  - name: test_vad_speech
+    given: Audio with speech + silence
+    then: Detects speech segments with correct boundaries
+
+  - name: test_vad_silence
+    given: Silent audio
+    then: Returns empty segments list
+
+  - name: test_mfcc_extraction
+    given: Pre-processed audio frame
+    then: Returns 13 MFCC coefficients + delta + delta-delta
+
+  - name: test_mfcc_frame_count
+    given: 1 second audio at 16kHz, 25ms frames, 10ms step
+    then: Returns ~98 frames
+
+  - name: test_phoneme_recognition_en
+    given: MFCC features of "hello"
+    then: Recognizes phoneme sequence [h, eh, l, ow]
+
+  - name: test_phoneme_recognition_ru
+    given: MFCC features of "привет"
+    then: Recognizes phoneme sequence [p, r, i, v, e, t]
+
+  - name: test_stt_english
+    given: Audio of "read the file"
+    then: Returns "read the file" with confidence > 0.50
+
+  - name: test_stt_russian
+    given: Audio of "прочитай файл"
+    then: Returns "прочитай файл" with confidence > 0.50
+
+  - name: test_tts_english
+    given: Text "Hello world"
+    then: Returns AudioBuffer with synthesized speech
+
+  - name: test_tts_russian
+    given: Text "Привет мир"
+    then: Returns AudioBuffer with synthesized speech
+
+  - name: test_grapheme_to_phoneme_en
+    given: "hello"
+    then: Returns [h, eh, l, ow] phoneme sequence
+
+  - name: test_grapheme_to_phoneme_ru
+    given: "привет"
+    then: Returns [p, r, i, v, e, t] phoneme sequence
+
+  - name: test_prosody_question
+    given: "What is this?"
+    then: Rising pitch at end marker
+
+  - name: test_prosody_statement
+    given: "This is a test."
+    then: Falling pitch at end marker
+
+  - name: test_voice_to_chat
+    given: Audio "what time is it"
+    then: STT → response → TTS pipeline completes
+
+  - name: test_voice_to_code
+    given: Audio "write a sort function"
+    then: STT → code generation → returns code
+
+  - name: test_voice_to_vision
+    given: Audio "describe this image" + image ref
+    then: STT → vision analysis → TTS description
+
+  - name: test_voice_to_tool
+    given: Audio "read file config.zig"
+    then: STT → tool execution → TTS result
+
+  - name: test_voice_translation
+    given: English audio → Russian target
+    then: STT(en) → translate → TTS(ru) pipeline
+
+  - name: test_max_duration
+    given: Audio exceeding 60 seconds
+    then: Returns error (audio too long)
+
+  - name: test_empty_audio
+    given: 0-length audio buffer
+    then: Returns error (empty audio)
+
+# ============================================================================
+# METRICS
+# ============================================================================
+
+metrics:
+  - name: stt_word_accuracy
+    description: "Word-level recognition accuracy"
+    target: "> 80%"
+
+  - name: stt_processing_ratio
+    description: "Processing time / audio duration"
+    target: "< 0.5x (real-time capable)"
+
+  - name: tts_naturalness
+    description: "Synthesized speech naturalness score"
+    target: "> 70%"
+
+  - name: cross_modal_latency
+    description: "End-to-end voice command latency"
+    target: "< 2000ms"
+
+  - name: language_support
+    description: "Languages with > 70% accuracy"
+    target: ">= 2 (en, ru)"
+
+  - name: phoneme_recognition
+    description: "Phoneme-level accuracy"
+    target: "> 75%"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
