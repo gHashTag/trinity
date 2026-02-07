@@ -19,11 +19,11 @@ const rag = @import("igla_rag_engine.zig");
 // CONFIGURATION
 // =============================================================================
 
-pub const MAX_CONVERSATIONS: usize = 10;
-pub const MAX_MESSAGES_PER_CONV: usize = 50;
-pub const MAX_LONG_TERM_MEMORIES: usize = 50;
-pub const MAX_EPISODIC_EVENTS: usize = 30;
-pub const MAX_FACTS: usize = 30;
+pub const MAX_CONVERSATIONS: usize = 5;
+pub const MAX_MESSAGES_PER_CONV: usize = 20;
+pub const MAX_LONG_TERM_MEMORIES: usize = 20;
+pub const MAX_EPISODIC_EVENTS: usize = 15;
+pub const MAX_FACTS: usize = 15;
 pub const MEMORY_FILE_VERSION: u32 = 1;
 pub const DEFAULT_MEMORY_PATH: []const u8 = ".igla_memory";
 
@@ -436,7 +436,7 @@ pub const MemoryStore = struct {
     }
 
     fn consolidateLongTermMemory(self: *MemoryStore) void {
-        if (self.long_term_count < 5) return;
+        if (self.long_term_count < 3) return;
 
         // Find and remove least important memory
         var min_idx: usize = 0;
@@ -464,7 +464,7 @@ pub const MemoryStore = struct {
     }
 
     fn pruneEpisodicMemory(self: *MemoryStore) void {
-        if (self.episodic_count < 10) return;
+        if (self.episodic_count < 5) return;
 
         // Remove oldest 10%
         const remove_count = self.episodic_count / 10;
