@@ -5374,8 +5374,8 @@ pub const TextCorpus = struct {
 
         /// Create a deadline job
         pub fn init(func: JobFn, context: *anyopaque, deadline_ns: i64) Self {
-            const now = std.time.nanoTimestamp();
-            const remaining = deadline_ns - now;
+            const now: i64 = @intCast(std.time.nanoTimestamp());
+            const remaining: i64 = deadline_ns - now;
             const urgency = calculateUrgency(remaining);
 
             return Self{
@@ -5400,19 +5400,21 @@ pub const TextCorpus = struct {
 
         /// Update urgency based on current time
         pub fn updateUrgency(self: *Self) void {
-            const now = std.time.nanoTimestamp();
-            const remaining = self.deadline - now;
+            const now: i64 = @intCast(std.time.nanoTimestamp());
+            const remaining: i64 = self.deadline - now;
             self.urgency = calculateUrgency(remaining);
         }
 
         /// Check if deadline has passed
         pub fn isExpired(self: *const Self) bool {
-            return std.time.nanoTimestamp() > self.deadline;
+            const now: i64 = @intCast(std.time.nanoTimestamp());
+            return now > self.deadline;
         }
 
         /// Get remaining time in nanoseconds
         pub fn remainingTime(self: *const Self) i64 {
-            return self.deadline - std.time.nanoTimestamp();
+            const now: i64 = @intCast(std.time.nanoTimestamp());
+            return self.deadline - now;
         }
 
         /// Get deadline class based on remaining time
@@ -5584,7 +5586,7 @@ pub const TextCorpus = struct {
 
         pub fn executeOne(self: *Self) bool {
             if (self.queue.popMostUrgent()) |job| {
-                const now = std.time.nanoTimestamp();
+                const now: i64 = @intCast(std.time.nanoTimestamp());
                 const was_expired = now > job.deadline;
 
                 // Execute the job
@@ -5673,7 +5675,8 @@ pub const TextCorpus = struct {
 
         /// Submit with relative deadline (from now)
         pub fn submitWithTimeout(self: *Self, func: JobFn, context: *anyopaque, timeout_ns: i64) bool {
-            const deadline = std.time.nanoTimestamp() + timeout_ns;
+            const now: i64 = @intCast(std.time.nanoTimestamp());
+            const deadline: i64 = now + timeout_ns;
             return self.submit(func, context, deadline);
         }
 
@@ -6945,6 +6948,123 @@ test "TextCorpus Priority worker state tracking" {
 
     state.resetBackoff();
     try std.testing.expectEqual(@as(usize, 1), state.getBackoffYields());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 46: DEADLINE SCHEDULING TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "DeadlineUrgency weight calculation" {
+    const immediate = TextCorpus.DeadlineUrgency.immediate;
+    const urgent = TextCorpus.DeadlineUrgency.urgent;
+    const normal = TextCorpus.DeadlineUrgency.normal;
+    const relaxed = TextCorpus.DeadlineUrgency.relaxed;
+    const flexible = TextCorpus.DeadlineUrgency.flexible;
+
+    // Immediate has highest weight (1.0)
+    try std.testing.expectEqual(@as(f64, 1.0), immediate.weight());
+
+    // Weights decrease with φ⁻¹ ratio
+    try std.testing.expect(urgent.weight() < immediate.weight());
+    try std.testing.expect(normal.weight() < urgent.weight());
+    try std.testing.expect(relaxed.weight() < normal.weight());
+    try std.testing.expect(flexible.weight() < relaxed.weight());
+
+    // Verify φ⁻¹ relationship
+    try std.testing.expect(@abs(urgent.weight() / immediate.weight() - TextCorpus.PHI_INVERSE) < 0.01);
+}
+
+test "DeadlineJob urgency calculation" {
+    const now: i64 = @intCast(std.time.nanoTimestamp());
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+
+    // Job with deadline in the past = immediate urgency
+    const past_job = TextCorpus.DeadlineJob.init(dummyJobFn, ctx_ptr, now - 1_000_000);
+    try std.testing.expectEqual(@as(f64, 1.0), past_job.urgency);
+    try std.testing.expect(past_job.isExpired());
+
+    // Job with deadline in 1 second = lower urgency
+    const future_job = TextCorpus.DeadlineJob.init(dummyJobFn, ctx_ptr, now + 1_000_000_000);
+    try std.testing.expect(future_job.urgency < 1.0);
+    try std.testing.expect(!future_job.isExpired());
+
+    // Future job should have positive remaining time
+    try std.testing.expect(future_job.remainingTime() > 0);
+}
+
+test "DeadlineJobQueue push and pop EDF order" {
+    var queue = TextCorpus.DeadlineJobQueue.init();
+    const now: i64 = @intCast(std.time.nanoTimestamp());
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+
+    // Push jobs with different deadlines (out of order)
+    const job1 = TextCorpus.DeadlineJob.init(dummyJobFn, ctx_ptr, now + 100_000_000); // 100ms
+    const job2 = TextCorpus.DeadlineJob.init(dummyJobFn, ctx_ptr, now + 10_000_000); // 10ms (earliest)
+    const job3 = TextCorpus.DeadlineJob.init(dummyJobFn, ctx_ptr, now + 50_000_000); // 50ms
+
+    try std.testing.expect(queue.push(job1));
+    try std.testing.expect(queue.push(job2));
+    try std.testing.expect(queue.push(job3));
+
+    try std.testing.expectEqual(@as(usize, 3), queue.getCount());
+
+    // Pop should return earliest deadline first (job2)
+    const first = queue.pop();
+    try std.testing.expect(first != null);
+    try std.testing.expect(first.?.deadline <= job1.deadline);
+    try std.testing.expect(first.?.deadline <= job3.deadline);
+}
+
+test "DeadlineWorkerState miss rate tracking" {
+    var state = TextCorpus.DeadlineWorkerState.init(0);
+
+    // Initial state - no executions, no misses
+    try std.testing.expectEqual(@as(usize, 0), state.executed);
+    try std.testing.expectEqual(@as(usize, 0), state.missed_deadlines);
+    try std.testing.expectEqual(@as(f64, 0.0), state.getMissRate());
+}
+
+test "DeadlinePool initialization and stats" {
+    var pool = TextCorpus.DeadlinePool.init();
+
+    // Initial state
+    try std.testing.expect(!pool.running);
+    try std.testing.expectEqual(@as(usize, 0), pool.total_submitted);
+    try std.testing.expectEqual(@as(usize, 0), pool.total_executed);
+    try std.testing.expectEqual(@as(usize, 0), pool.total_missed);
+
+    // Start pool
+    pool.start();
+    try std.testing.expect(pool.running);
+
+    // Efficiency should be 1.0 (no misses)
+    try std.testing.expectEqual(@as(f64, 1.0), pool.getDeadlineEfficiency());
+
+    // Stop pool
+    pool.stop();
+    try std.testing.expect(!pool.running);
+}
+
+test "DeadlinePool global singleton" {
+    // Get deadline pool
+    const pool = TextCorpus.getDeadlinePool();
+    try std.testing.expect(pool.running);
+    try std.testing.expect(TextCorpus.hasDeadlinePool());
+
+    // Verify stats structure
+    const stats = TextCorpus.getDeadlineStats();
+    try std.testing.expect(stats.efficiency >= 0.0);
+    try std.testing.expect(stats.efficiency <= 1.0);
+
+    // Shutdown
+    TextCorpus.shutdownDeadlinePool();
+    try std.testing.expect(!TextCorpus.hasDeadlinePool());
+}
+
+fn dummyJobFn(_: *anyopaque) void {
+    // No-op for testing
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
