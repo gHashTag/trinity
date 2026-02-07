@@ -23,7 +23,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Get version
         id: version
@@ -142,7 +142,7 @@ jobs:
       contents: write
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Download Chrome artifact
         uses: actions/download-artifact@v4
