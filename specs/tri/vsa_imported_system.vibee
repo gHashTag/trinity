@@ -585,6 +585,118 @@ behaviors:
     when: Calculating compression ratio
     then: Call corpus.compressionRatio()
 
+  # ADAPTIVE RLE COMPRESSION (TCV2 format)
+  - name: realSaveCorpusRLE
+    given: Corpus and file path
+    when: Saving corpus with adaptive RLE
+    then: Call corpus.saveRLE(path)
+
+  - name: realLoadCorpusRLE
+    given: File path
+    when: Loading RLE-compressed corpus
+    then: Call TextCorpus.loadRLE(path)
+
+  - name: realRLECompressionRatio
+    given: Corpus
+    when: Calculating RLE compression ratio
+    then: Call corpus.rleCompressionRatio()
+
+  # DICTIONARY COMPRESSION (TCV3 format)
+  - name: realSaveCorpusDict
+    given: Corpus and file path
+    when: Saving corpus with dictionary compression
+    then: Call corpus.saveDict(path)
+
+  - name: realLoadCorpusDict
+    given: File path
+    when: Loading dictionary-compressed corpus
+    then: Call TextCorpus.loadDict(path)
+
+  - name: realDictCompressionRatio
+    given: Corpus
+    when: Calculating dictionary compression ratio
+    then: Call corpus.dictCompressionRatio()
+
+  # HUFFMAN COMPRESSION (TCV4 format)
+  - name: realSaveCorpusHuffman
+    given: Corpus and file path
+    when: Saving corpus with Huffman compression
+    then: Call corpus.saveHuffman(path)
+
+  - name: realLoadCorpusHuffman
+    given: File path
+    when: Loading Huffman-compressed corpus
+    then: Call TextCorpus.loadHuffman(path)
+
+  - name: realHuffmanCompressionRatio
+    given: Corpus
+    when: Calculating Huffman compression ratio
+    then: Call corpus.huffmanCompressionRatio()
+
+  # ARITHMETIC COMPRESSION (TCV5 format)
+  - name: realSaveCorpusArithmetic
+    given: Corpus and file path
+    when: Saving corpus with arithmetic compression
+    then: Call corpus.saveArithmetic(path)
+
+  - name: realLoadCorpusArithmetic
+    given: File path
+    when: Loading arithmetic-compressed corpus
+    then: Call TextCorpus.loadArithmetic(path)
+
+  - name: realArithmeticCompressionRatio
+    given: Corpus
+    when: Calculating arithmetic compression ratio
+    then: Call corpus.arithmeticCompressionRatio()
+
+  # CORPUS SHARDING (TCV6 format)
+  - name: realSaveCorpusSharded
+    given: Corpus and file path and shard size
+    when: Saving corpus with sharding
+    then: Call corpus.saveSharded(path, entries_per_shard)
+
+  - name: realLoadCorpusSharded
+    given: File path
+    when: Loading sharded corpus
+    then: Call TextCorpus.loadSharded(path)
+
+  - name: realGetShardCount
+    given: Corpus and shard size
+    when: Getting number of shards
+    then: Call corpus.getShardCount(entries_per_shard)
+
+  # PARALLEL LOADING (Zig threads)
+  - name: realLoadCorpusParallel
+    given: File path
+    when: Loading sharded corpus with parallel threads
+    then: Call TextCorpus.loadShardedParallel(path)
+
+  - name: realGetRecommendedThreads
+    given: Corpus and shard size
+    when: Getting recommended thread count
+    then: Call corpus.getRecommendedThreadCount(entries_per_shard)
+
+  - name: realIsParallelBeneficial
+    given: Corpus and shard size
+    when: Checking if parallel is beneficial
+    then: Call corpus.isParallelBeneficial(entries_per_shard)
+
+  # THREAD POOL (Reusable workers)
+  - name: realLoadCorpusWithPool
+    given: File path
+    when: Loading corpus with thread pool
+    then: Call TextCorpus.loadShardedWithPool(path)
+
+  - name: realGetPoolWorkerCount
+    given: Global pool
+    when: Getting worker count
+    then: Call TextCorpus.getPoolWorkerCount()
+
+  - name: realHasGlobalPool
+    given: Pool state
+    when: Checking if pool exists
+    then: Call TextCorpus.hasGlobalPool()
+
   # Processing
   - name: processVSA
     given: VSARequest
