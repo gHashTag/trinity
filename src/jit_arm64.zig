@@ -16,15 +16,15 @@ pub const is_arm64 = builtin.cpu.arch == .aarch64;
 
 /// ARM64 JIT Compiler
 pub const Arm64JitCompiler = struct {
-    code: std.ArrayList(u8),
+    code: std.ArrayListUnmanaged(u8),
     allocator: std.mem.Allocator,
-    exec_mem: ?[]align(16384) u8 = null, // ARM64 page size can be 16KB
+    exec_mem: ?[]align(std.mem.page_size) u8 = null,
 
     const Self = @This();
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
-            .code = .empty,
+            .code = .{},
             .allocator = allocator,
         };
     }
@@ -1413,7 +1413,7 @@ pub const Arm64JitCompiler = struct {
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// Make code executable and return function pointer
-    pub fn finalize(self: *Self) !*const fn (*anyopaque, *anyopaque) callconv(std.builtin.CallingConvention.c) i64 {
+    pub fn finalize(self: *Self) !*const fn (*anyopaque, *anyopaque) callconv(.C) i64 {
         const code_size = self.code.items.len;
         if (code_size == 0) return error.EmptyCode;
 
@@ -1869,6 +1869,7 @@ test "ARM64 hybrid benchmark vs pure scalar" {
 }
 
 test "ARM64 SIMD bind correctness" {
+    if (!is_arm64) return;
     var compiler = Arm64JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 
@@ -1897,6 +1898,7 @@ test "ARM64 SIMD bind correctness" {
 }
 
 test "ARM64 SIMD bind non-aligned dimension" {
+    if (!is_arm64) return;
     var compiler = Arm64JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 
@@ -1922,6 +1924,7 @@ test "ARM64 SIMD bind non-aligned dimension" {
 }
 
 test "ARM64 SIMD hamming correctness" {
+    if (!is_arm64) return;
     var compiler = Arm64JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 
@@ -1957,6 +1960,7 @@ test "ARM64 SIMD hamming correctness" {
 }
 
 test "ARM64 SIMD hamming non-aligned dimension" {
+    if (!is_arm64) return;
     var compiler = Arm64JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 
@@ -1980,6 +1984,7 @@ test "ARM64 SIMD hamming non-aligned dimension" {
 }
 
 test "ARM64 SIMD bind benchmark vs scalar" {
+    if (!is_arm64) return;
     const dim = 1024;
     const iterations = 10000;
 
@@ -2044,6 +2049,7 @@ test "ARM64 SIMD bind benchmark vs scalar" {
 }
 
 test "ARM64 fused cosine correctness" {
+    if (!is_arm64) return;
     var compiler = Arm64JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 
@@ -2074,6 +2080,7 @@ test "ARM64 fused cosine correctness" {
 }
 
 test "ARM64 fused cosine benchmark vs 3x dot" {
+    if (!is_arm64) return;
     var fused_compiler = Arm64JitCompiler.init(std.testing.allocator);
     defer fused_compiler.deinit();
     var dot_compiler = Arm64JitCompiler.init(std.testing.allocator);
@@ -2132,6 +2139,7 @@ test "ARM64 fused cosine benchmark vs 3x dot" {
 }
 
 test "ARM64 bundle SIMD compilation" {
+    if (!is_arm64) return;
     // Just verify compilation works, bundle correctness tested via vsa_jit
     var compiler = Arm64JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
@@ -2143,6 +2151,7 @@ test "ARM64 bundle SIMD compilation" {
 }
 
 test "ARM64 bundle SIMD non-aligned" {
+    if (!is_arm64) return;
     var compiler = Arm64JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 

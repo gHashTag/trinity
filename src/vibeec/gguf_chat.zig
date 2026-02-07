@@ -34,7 +34,7 @@ const ConversationHistory = struct {
     pub fn init(allocator: std.mem.Allocator, max_messages: usize) ConversationHistory {
         return .{
             .allocator = allocator,
-            .messages = .{},
+            .messages = std.ArrayList(Message).init(allocator),
             .max_messages = max_messages,
         };
     }
@@ -43,7 +43,7 @@ const ConversationHistory = struct {
         for (self.messages.items) |msg| {
             self.allocator.free(msg.content);
         }
-        self.messages.deinit(self.allocator);
+        self.messages.deinit();
     }
 
     pub fn addMessage(self: *ConversationHistory, role: Message.Role, content: []const u8) !void {
@@ -64,40 +64,40 @@ const ConversationHistory = struct {
             }
         }
 
-        try self.messages.append(self.allocator, .{ .role = role, .content = content_copy });
+        try self.messages.append(.{ .role = role, .content = content_copy });
     }
 
     pub fn formatForModel(self: *const ConversationHistory, allocator: std.mem.Allocator, template: *const ChatTemplate) ![]u8 {
-        var result: std.ArrayList(u8) = .{};
-        errdefer result.deinit(allocator);
+        var result = std.ArrayList(u8).init(allocator);
+        errdefer result.deinit();
 
         for (self.messages.items) |msg| {
             switch (msg.role) {
                 .system => {
                     // Skip system message if template doesn't support it (empty prefix)
                     if (template.system_prefix.len > 0) {
-                        try result.appendSlice(allocator, template.system_prefix);
-                        try result.appendSlice(allocator, msg.content);
-                        try result.appendSlice(allocator, template.system_suffix);
+                        try result.appendSlice(template.system_prefix);
+                        try result.appendSlice(msg.content);
+                        try result.appendSlice(template.system_suffix);
                     }
                 },
                 .user => {
-                    try result.appendSlice(allocator, template.user_prefix);
-                    try result.appendSlice(allocator, msg.content);
-                    try result.appendSlice(allocator, template.user_suffix);
+                    try result.appendSlice(template.user_prefix);
+                    try result.appendSlice(msg.content);
+                    try result.appendSlice(template.user_suffix);
                 },
                 .assistant => {
-                    try result.appendSlice(allocator, template.assistant_prefix);
-                    try result.appendSlice(allocator, msg.content);
-                    try result.appendSlice(allocator, template.assistant_suffix);
+                    try result.appendSlice(template.assistant_prefix);
+                    try result.appendSlice(msg.content);
+                    try result.appendSlice(template.assistant_suffix);
                 },
             }
         }
 
         // Add assistant prefix for generation
-        try result.appendSlice(allocator, template.assistant_prefix);
+        try result.appendSlice(template.assistant_prefix);
 
-        return result.toOwnedSlice(allocator);
+        return result.toOwnedSlice();
     }
 
     pub fn getMessageCount(self: *const ConversationHistory) usize {
@@ -241,7 +241,7 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
     // Handle initial prompt if provided
     if (initial_prompt) |prompt| {
         try history.addMessage(.user, prompt);
-        const stdout_initial = std.fs.File.stdout();
+        const stdout_initial = std.io.getStdOut();
         const response = try generateWithHistory(allocator, stdout_initial, &model, &tokenizer, &template, &history, max_tokens, sampling_params);
         if (response) |resp| {
             try history.addMessage(.assistant, resp);
@@ -250,7 +250,7 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
     }
 
     // Interactive loop - using low-level read for Zig 0.15 compatibility
-    const stdin_file = std.fs.File.stdin();
+    const stdin_file = std.io.getStdIn();
     var buf: [1024]u8 = undefined;
 
     while (true) {
@@ -288,7 +288,7 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
         try history.addMessage(.user, trimmed);
 
         // Generate response with full history
-        const stdout_file = std.fs.File.stdout();
+        const stdout_file = std.io.getStdOut();
         const response = try generateWithHistory(allocator, stdout_file, &model, &tokenizer, &template, &history, max_tokens, sampling_params);
 
         // Add assistant response to history
@@ -352,8 +352,8 @@ fn generateWithHistory(
     var last_token: u32 = 0;
 
     // Collect response for history
-    var response: std.ArrayList(u8) = .{};
-    errdefer response.deinit(allocator);
+    var response = std.ArrayList(u8).init(allocator);
+    errdefer response.deinit();
 
     while (generated < max_tokens) : (generated += 1) {
         // Sample next token
@@ -382,7 +382,7 @@ fn generateWithHistory(
         std.debug.print("{s}", .{decoded});
 
         // Collect for history
-        try response.appendSlice(allocator, decoded);
+        try response.appendSlice(decoded);
 
         // Check for end markers
         if (std.mem.indexOf(u8, decoded, "</s>") != null) break;
@@ -399,7 +399,7 @@ fn generateWithHistory(
     const tok_per_sec = @as(f64, @floatFromInt(generated)) / (@as(f64, @floatFromInt(gen_time)) / 1e9);
     std.debug.print("[{d} tokens, {d:.1} tok/s, history: {d} msgs]\n\n", .{ generated, tok_per_sec, history.getMessageCount() });
 
-    const result = try response.toOwnedSlice(allocator);
+    const result = try response.toOwnedSlice();
     return result;
 }
 

@@ -1,0 +1,453 @@
+# ============================================================================
+# Long Context E2E Test Suite - Cycle 22 Validation
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: long_context_e2e
+version: "1.0.0"
+language: zig
+module: long_context_e2e
+
+description: |
+  End-to-end test suite for the long context system.
+  Tests sliding window, summarization, key fact extraction,
+  topic tracking, recall, compression, and persistence.
+
+  Test Categories:
+    1. Sliding Window Behavior (8 tests)
+    2. Summarization Quality (8 tests)
+    3. Key Fact Extraction (8 tests)
+    4. Topic Tracking (6 tests)
+    5. Context Assembly (6 tests)
+    6. Recall Accuracy (6 tests)
+    7. Compression (4 tests)
+    8. Persistence (4 tests)
+    9. Multilingual Context (5 tests)
+    10. Edge Cases (5 tests)
+
+  Total: 60 test cases
+
+constants:
+  TOTAL_TESTS: 60
+  PASS_THRESHOLD: 0.90
+  NEEDLE_THRESHOLD: 0.618
+  PHI: 1.6180339887498948482
+
+types:
+  TestCategory:
+    description: "Category of E2E test"
+    enum:
+      - sliding_window
+      - summarization
+      - key_facts
+      - topic_tracking
+      - context_assembly
+      - recall
+      - compression
+      - persistence
+      - multilingual
+      - edge_case
+
+  TestVerdict:
+    description: "Test outcome"
+    enum:
+      - passed
+      - failed
+      - skipped
+      - timeout
+
+  ContextTestCase:
+    description: "Single test case"
+    fields:
+      id: Int
+      category: TestCategory
+      description: String
+      input_messages: List<String>
+      expected_behavior: String
+      max_latency_ms: Int
+
+  ContextTestResult:
+    description: "Result of single test"
+    fields:
+      test_id: Int
+      verdict: TestVerdict
+      actual_behavior: String
+      latency_ms: Int
+      needle_score: Float
+      error: Option<String>
+
+  SuiteResult:
+    description: "Full suite result"
+    fields:
+      total: Int
+      passed: Int
+      failed: Int
+      pass_rate: Float
+      avg_latency_ms: Float
+      needle_score: Float
+      improvement_rate: Float
+
+behaviors:
+  # Suite Management
+  - name: initSuite
+    given: Allocator
+    when: Creating test suite
+    then: Load all 60 test cases
+
+  - name: runSuite
+    given: Initialized suite
+    when: Executing all tests
+    then: Run each test, collect results
+
+  - name: getSuiteResult
+    given: Completed suite
+    when: Querying results
+    then: Return SuiteResult with metrics
+
+  # Category Runners
+  - name: runSlidingWindowTests
+    given: 8 sliding window test cases
+    when: Testing window behavior
+    then: Window maintains correct size and order
+
+  - name: runSummarizationTests
+    given: 8 summarization test cases
+    when: Testing summary quality
+    then: Summaries retain key information
+
+  - name: runKeyFactTests
+    given: 8 key fact test cases
+    when: Testing fact extraction
+    then: Facts correctly identified and scored
+
+  - name: runTopicTrackingTests
+    given: 6 topic tracking test cases
+    when: Testing topic detection
+    then: Topics detected and transitions tracked
+
+  - name: runContextAssemblyTests
+    given: 6 assembly test cases
+    when: Testing context building
+    then: Context fits budget with important content
+
+  - name: runRecallTests
+    given: 6 recall test cases
+    when: Testing context recall
+    then: Relevant past content retrieved
+
+  - name: runCompressionTests
+    given: 4 compression test cases
+    when: Testing TCV5 compression
+    then: Compression ratio > 10x, key facts preserved
+
+  - name: runPersistenceTests
+    given: 4 persistence test cases
+    when: Testing save/load
+    then: State preserved across save/load cycles
+
+  - name: runMultilingualTests
+    given: 5 multilingual test cases
+    when: Testing context in multiple languages
+    then: Context maintained across EN/RU/ZH
+
+  - name: runEdgeCaseTests
+    given: 5 edge case test cases
+    when: Testing boundary conditions
+    then: Graceful handling of edge cases
+
+  # Validation
+  - name: validateResult
+    given: ContextTestResult
+    when: Checking test outcome
+    then: Verify behavior matches expected
+
+  - name: computeImprovementRate
+    given: SuiteResult
+    when: Computing cycle improvement
+    then: Return improvement rate (target > 0.618)
+
+  - name: generateReport
+    given: SuiteResult
+    when: Creating test report
+    then: Return formatted report string
+
+test_cases:
+  # === SLIDING WINDOW (8) ===
+  - name: sw01_basic_add
+    given: "Add 5 messages to empty window"
+    expected: "Window contains 5 messages in order"
+
+  - name: sw02_eviction
+    given: "Add 25 messages to window of size 20"
+    expected: "Window has 20, 5 evicted"
+
+  - name: sw03_order_preserved
+    given: "Add messages A, B, C, D, E"
+    expected: "Window returns A, B, C, D, E in order"
+
+  - name: sw04_ring_buffer
+    given: "Fill window, add more, check wrap"
+    expected: "Ring buffer wraps correctly"
+
+  - name: sw05_single_message
+    given: "Add 1 message to window of size 20"
+    expected: "Window has 1 message"
+
+  - name: sw06_exact_capacity
+    given: "Add exactly 20 messages to window of 20"
+    expected: "Window full, no eviction"
+
+  - name: sw07_rapid_eviction
+    given: "Add 100 messages to window of 5"
+    expected: "95 evicted, 5 remain"
+
+  - name: sw08_empty_window
+    given: "Query empty window"
+    expected: "Returns empty list, no error"
+
+  # === SUMMARIZATION (8) ===
+  - name: sm01_basic_summary
+    given: "Evict 3 messages about Zig allocators"
+    expected: "Summary mentions allocators"
+
+  - name: sm02_rolling_update
+    given: "Evict 10 messages over time"
+    expected: "Summary grows, stays within limit"
+
+  - name: sm03_trim_to_budget
+    given: "Summary exceeds 2000 chars"
+    expected: "Trimmed, important parts kept"
+
+  - name: sm04_preserve_code
+    given: "Evict message with code snippet"
+    expected: "Code reference preserved in summary"
+
+  - name: sm05_preserve_names
+    given: "Evict message with user name"
+    expected: "Name preserved in summary"
+
+  - name: sm06_discard_filler
+    given: "Evict 'ok', 'thanks', 'yes'"
+    expected: "Filler not in summary"
+
+  - name: sm07_multiple_topics
+    given: "Evict messages spanning 3 topics"
+    expected: "All 3 topics represented in summary"
+
+  - name: sm08_empty_eviction
+    given: "No messages evicted yet"
+    expected: "Summary is empty string"
+
+  # === KEY FACTS (8) ===
+  - name: kf01_extract_name
+    given: "My name is Alex"
+    expected: "Fact: user_info, 'Alex', importance > 0.8"
+
+  - name: kf02_extract_decision
+    given: "I want to use Zig for this project"
+    expected: "Fact: decision, 'use Zig', importance > 0.7"
+
+  - name: kf03_extract_code
+    given: "The function uses ArenaAllocator"
+    expected: "Fact: code_reference, 'ArenaAllocator'"
+
+  - name: kf04_reinforcement
+    given: "Mention Alex twice"
+    expected: "Fact importance increases"
+
+  - name: kf05_decay
+    given: "Fact not mentioned for 30 turns"
+    expected: "Importance decreased"
+
+  - name: kf06_eviction
+    given: "11 facts with max 10"
+    expected: "Lowest importance fact removed"
+
+  - name: kf07_duplicate_merge
+    given: "Same fact extracted twice"
+    expected: "Merged, not duplicated"
+
+  - name: kf08_no_facts
+    given: "ok"
+    expected: "No facts extracted"
+
+  # === TOPIC TRACKING (6) ===
+  - name: tt01_detect_topic
+    given: "Let's discuss memory allocation"
+    expected: "Topic 'memory allocation' detected"
+
+  - name: tt02_topic_transition
+    given: "Now about error handling"
+    expected: "New topic, previous deactivated"
+
+  - name: tt03_topic_return
+    given: "Back to memory allocation"
+    expected: "Topic reactivated"
+
+  - name: tt04_multiple_active
+    given: "Discussing both memory and errors"
+    expected: "2 active topics"
+
+  - name: tt05_topic_history
+    given: "After 5 topic changes"
+    expected: "All 5 in history"
+
+  - name: tt06_no_topic
+    given: "Hello!"
+    expected: "No topic detected (greeting)"
+
+  # === CONTEXT ASSEMBLY (6) ===
+  - name: ca01_within_budget
+    given: "10 messages, 3 facts, 1 topic"
+    expected: "Assembled within 8192 tokens"
+
+  - name: ca02_over_budget_trim
+    given: "100 messages, 20 facts"
+    expected: "Trimmed to fit, important content kept"
+
+  - name: ca03_priority_order
+    given: "Window + summary + facts + topics"
+    expected: "Window first, then facts, then summary"
+
+  - name: ca04_empty_context
+    given: "No messages yet"
+    expected: "Valid empty context"
+
+  - name: ca05_facts_included
+    given: "5 key facts available"
+    expected: "All 5 facts in assembled context"
+
+  - name: ca06_topics_included
+    given: "2 active topics"
+    expected: "Both topics in assembled context"
+
+  # === RECALL (6) ===
+  - name: rc01_recall_by_content
+    given: "What did I say about allocators?"
+    expected: "Returns allocator-related messages"
+
+  - name: rc02_recall_by_topic
+    given: "Recall error handling discussion"
+    expected: "Returns error handling messages"
+
+  - name: rc03_recall_from_summary
+    given: "What was discussed 50 messages ago?"
+    expected: "Returns summary excerpt"
+
+  - name: rc04_recall_fact
+    given: "What is my name?"
+    expected: "Returns 'Alex' from key facts"
+
+  - name: rc05_recall_no_match
+    given: "What about quantum physics?"
+    expected: "No relevant content found"
+
+  - name: rc06_recall_recent
+    given: "What did I just say?"
+    expected: "Returns last message from window"
+
+  # === COMPRESSION (4) ===
+  - name: cp01_compression_ratio
+    given: "10000 byte context"
+    expected: "Compressed to < 1000 bytes"
+
+  - name: cp02_roundtrip
+    given: "Compress then decompress"
+    expected: "Key facts preserved exactly"
+
+  - name: cp03_empty_compress
+    given: "Empty context"
+    expected: "Compressed to minimal size"
+
+  - name: cp04_large_context
+    given: "100000 byte context"
+    expected: "Compressed successfully, ratio > 10x"
+
+  # === PERSISTENCE (4) ===
+  - name: ps01_save_load
+    given: "20 messages, 5 facts, 3 topics"
+    expected: "Identical state after save/load"
+
+  - name: ps02_empty_save
+    given: "Empty context manager"
+    expected: "Saves and loads empty state"
+
+  - name: ps03_large_state
+    given: "1000 messages processed"
+    expected: "State saved and restored correctly"
+
+  - name: ps04_corrupt_load
+    given: "Corrupted save file"
+    expected: "Error reported, no crash"
+
+  # === MULTILINGUAL (5) ===
+  - name: ml01_russian_context
+    given: "Conversation in Russian"
+    expected: "Context maintained in Russian"
+
+  - name: ml02_chinese_context
+    given: "Conversation in Chinese"
+    expected: "Context maintained in Chinese"
+
+  - name: ml03_mixed_language
+    given: "EN then RU then ZH messages"
+    expected: "All languages in context"
+
+  - name: ml04_russian_facts
+    given: "Меня зовут Алексей"
+    expected: "Fact extracted in Russian"
+
+  - name: ml05_chinese_topics
+    given: "让我们讨论内存分配"
+    expected: "Topic detected in Chinese"
+
+  # === EDGE CASES (5) ===
+  - name: ec01_empty_message
+    given: "Empty string message"
+    expected: "Handled, low importance"
+
+  - name: ec02_huge_message
+    given: "50000 character message"
+    expected: "Truncated, key content kept"
+
+  - name: ec03_special_chars
+    given: "Message with unicode, emoji, control chars"
+    expected: "Handled without crash"
+
+  - name: ec04_rapid_fire
+    given: "1000 messages in 1 second"
+    expected: "All processed correctly"
+
+  - name: ec05_window_resize
+    given: "Change window size mid-conversation"
+    expected: "Adapts, evicts excess if shrunk"
+
+metrics:
+  - name: total_pass_rate
+    description: "Overall test pass rate"
+    target: "> 90% (54/60)"
+
+  - name: recall_accuracy
+    description: "Context recall accuracy"
+    target: "> 85%"
+
+  - name: summary_retention
+    description: "Key info retained in summaries"
+    target: "> 90%"
+
+  - name: compression_ratio
+    description: "Average compression ratio"
+    target: "> 10x"
+
+  - name: improvement_rate
+    description: "Cycle 22 improvement"
+    target: "> 0.618"
+
+  - name: needle_score
+    description: "Golden Chain quality metric"
+    target: "> 0.618"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

@@ -37,11 +37,11 @@ pub const is_jit_supported = current_arch != .unsupported;
 
 /// JIT-compiled dot product function
 /// Takes two i8 array pointers and returns i64 dot product
-pub const JitDotFn = *const fn (*anyopaque, *anyopaque) callconv(std.builtin.CallingConvention.c) i64;
+pub const JitDotFn = *const fn (*anyopaque, *anyopaque) callconv(.C) i64;
 
 /// JIT-compiled bind function
 /// Takes two i8 array pointers, stores result in first
-pub const JitBindFn = *const fn (*anyopaque, *anyopaque) callconv(std.builtin.CallingConvention.c) void;
+pub const JitBindFn = *const fn (*anyopaque, *anyopaque) callconv(.C) void;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // UNIFIED JIT COMPILER

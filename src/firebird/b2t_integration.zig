@@ -58,7 +58,7 @@ pub const TVCInstruction = struct {
 };
 
 pub const TVCBlock = struct {
-    instructions: std.ArrayList(TVCInstruction),
+    instructions: std.ArrayListUnmanaged(TVCInstruction),
     label: []const u8,
     allocator: std.mem.Allocator,
 
@@ -81,7 +81,7 @@ pub const TVCBlock = struct {
 
 pub const TVCModule = struct {
     allocator: std.mem.Allocator,
-    blocks: std.ArrayList(TVCBlock),
+    blocks: std.ArrayListUnmanaged(TVCBlock),
     name: []const u8,
 
     pub fn init(allocator: std.mem.Allocator, name: []const u8) TVCModule {
@@ -199,7 +199,7 @@ pub const NavigationState = struct {
     allocator: std.mem.Allocator,
     position: TritVec, // Current position in virtual space
     module_vec: TritVec, // Encoded TVC module
-    history: std.ArrayList(TritVec), // Navigation history
+    history: std.ArrayListUnmanaged(TritVec), // Navigation history
     step: usize,
 
     pub fn init(allocator: std.mem.Allocator, module: *const TVCModule, dim: usize, seed: u64) !NavigationState {

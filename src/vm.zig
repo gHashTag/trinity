@@ -115,7 +115,7 @@ const vsa_jit = @import("vsa_jit.zig");
 
 pub const VSAVM = struct {
     registers: VSARegisters,
-    program: std.ArrayList(VSAInstruction),
+    program: std.ArrayListUnmanaged(VSAInstruction),
     halted: bool = false,
     allocator: std.mem.Allocator,
     cycle_count: u64 = 0,
@@ -127,7 +127,7 @@ pub const VSAVM = struct {
     pub fn init(allocator: std.mem.Allocator) VSAVM {
         return VSAVM{
             .registers = .{},
-            .program = .empty,
+            .program = .{},
             .allocator = allocator,
             .jit_engine = vsa_jit.JitVSAEngine.init(allocator),
         };

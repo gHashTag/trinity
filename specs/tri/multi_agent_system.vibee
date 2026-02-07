@@ -1,0 +1,497 @@
+# ============================================================================
+# Multi-Agent System - Coordinator + Specialist Agents (Cycle 21)
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: multi_agent_system
+version: "1.0.0"
+language: zig
+module: multi_agent_system
+
+description: |
+  Multi-agent system with a central coordinator and 4 specialist agents.
+  The coordinator decomposes tasks, assigns to specialists, collects results,
+  and fuses them into a single coherent response.
+
+  Agent Roles:
+    [C]  Coordinator  - Task decomposition, assignment, result fusion
+    [<>] Coder        - Code generation, debugging, refactoring, testing
+    [~]  Chat         - Fluent conversation, multilingual, personality
+    [?]  Reasoner     - Chain-of-thought analysis, planning, logic
+    [#]  Researcher   - Information retrieval, fact extraction, RAG
+
+  Coordination Protocol:
+    1. Request arrives at Coordinator
+    2. Coordinator classifies task type
+    3. Coordinator decomposes into sub-tasks
+    4. Sub-tasks dispatched to specialist agents (parallel)
+    5. Specialists return partial results
+    6. Coordinator fuses results (weighted by confidence)
+    7. Quality check (Needle > 0.618)
+    8. Return unified response
+
+  Task Routing Matrix:
+    CodeGeneration   → Coder
+    CodeExplanation  → Coder + Chat
+    CodeDebugging    → Coder + Reasoner
+    CodeReview       → Coder + Reasoner + Researcher
+    Analysis         → Reasoner
+    Planning         → Reasoner + Coordinator
+    Research         → Researcher
+    Summarization    → Researcher + Chat
+    Conversation     → Chat
+    Translation      → Chat
+    FullPipeline     → Coordinator + Coder + Reasoner + Researcher
+
+  Conflict Resolution:
+    When agents disagree, Coordinator uses weighted voting:
+    - Higher confidence agent wins
+    - If tied, Reasoner breaks tie
+    - If still tied, most conservative answer wins
+
+constants:
+  MAX_AGENTS: 5
+  MAX_SUB_TASKS: 8
+  MAX_RETRIES: 3
+  COORDINATION_TIMEOUT_MS: 10000
+  AGENT_TIMEOUT_MS: 5000
+  NEEDLE_THRESHOLD: 0.618
+  HIGH_CONFIDENCE: 0.90
+  MED_CONFIDENCE: 0.70
+  LOW_CONFIDENCE: 0.50
+  MIN_CONFIDENCE: 0.30
+  PHI: 1.6180339887498948482
+
+types:
+  AgentRole:
+    description: "Role of each specialist agent"
+    enum:
+      - coordinator
+      - coder
+      - chat
+      - reasoner
+      - researcher
+
+  TaskType:
+    description: "Classified task type"
+    enum:
+      - code_generation
+      - code_explanation
+      - code_debugging
+      - code_review
+      - code_testing
+      - analysis
+      - planning
+      - research
+      - summarization
+      - conversation
+      - translation
+      - full_pipeline
+      - unknown
+
+  TaskPriority:
+    description: "Task execution priority"
+    enum:
+      - low
+      - normal
+      - high
+      - critical
+
+  AgentStatus:
+    description: "Current agent status"
+    enum:
+      - idle
+      - busy
+      - error
+      - disabled
+
+  InputLanguage:
+    description: "Detected input language"
+    enum:
+      - english
+      - russian
+      - chinese
+      - auto
+
+  SubTask:
+    description: "Decomposed sub-task for a specialist"
+    fields:
+      id: Int
+      parent_task_id: Int
+      description: String
+      assigned_agent: AgentRole
+      priority: TaskPriority
+      input_data: String
+      timeout_ms: Int
+
+  SubTaskResult:
+    description: "Result from a specialist agent"
+    fields:
+      sub_task_id: Int
+      agent: AgentRole
+      output: String
+      confidence: Float
+      latency_ms: Int
+      success: Bool
+      error: Option<String>
+
+  AgentState:
+    description: "State of a single agent"
+    fields:
+      role: AgentRole
+      status: AgentStatus
+      tasks_completed: Int
+      tasks_failed: Int
+      avg_confidence: Float
+      avg_latency_ms: Float
+      total_tokens_generated: Int
+
+  CoordinatorRequest:
+    description: "Request to the multi-agent coordinator"
+    fields:
+      id: Int
+      query: String
+      language: InputLanguage
+      priority: TaskPriority
+      context: Option<String>
+      max_agents: Int
+
+  CoordinatorResponse:
+    description: "Fused response from multi-agent system"
+    fields:
+      request_id: Int
+      text: String
+      code: Option<String>
+      agents_used: List<String>
+      sub_task_count: Int
+      total_confidence: Float
+      total_latency_ms: Int
+      needle_score: Float
+      task_type: TaskType
+
+  TaskDecomposition:
+    description: "Result of task decomposition"
+    fields:
+      task_type: TaskType
+      sub_tasks: List<SubTask>
+      required_agents: List<AgentRole>
+      estimated_latency_ms: Int
+      complexity_score: Float
+
+  FusionStrategy:
+    description: "How to fuse multiple agent results"
+    enum:
+      - best_confidence
+      - weighted_average
+      - concatenate
+      - vote_majority
+      - sequential_chain
+
+  FusionResult:
+    description: "Result of fusing agent outputs"
+    fields:
+      fused_text: String
+      fused_code: Option<String>
+      strategy_used: FusionStrategy
+      contributing_agents: List<String>
+      final_confidence: Float
+
+  SystemMetrics:
+    description: "Overall multi-agent system metrics"
+    fields:
+      total_requests: Int
+      total_responses: Int
+      avg_latency_ms: Float
+      avg_confidence: Float
+      avg_agents_per_task: Float
+      multi_agent_rate: Float
+      coordination_success_rate: Float
+      needle_score: Float
+      agent_states: List<AgentState>
+
+  ConflictResolution:
+    description: "How a conflict between agents was resolved"
+    fields:
+      conflicting_agents: List<String>
+      winner: AgentRole
+      reason: String
+      confidence_delta: Float
+
+behaviors:
+  # Coordinator Core
+  - name: init
+    given: Allocator
+    when: Creating multi-agent system
+    then: Initialize coordinator and all 4 specialist agents
+
+  - name: deinit
+    given: System instance
+    when: Shutting down
+    then: Clean up all agent resources
+
+  - name: processRequest
+    given: CoordinatorRequest
+    when: New request arrives
+    then: Classify, decompose, dispatch, fuse, return CoordinatorResponse
+
+  # Task Classification
+  - name: classifyTask
+    given: Query string, detected language
+    when: Determining task type
+    then: Return TaskType based on keyword and pattern analysis
+
+  - name: detectLanguage
+    given: Query string
+    when: Analyzing input language
+    then: Return InputLanguage (en/ru/zh/auto)
+
+  # Task Decomposition
+  - name: decomposeTask
+    given: TaskType, query string
+    when: Breaking task into sub-tasks
+    then: Return TaskDecomposition with sub-tasks and agent assignments
+
+  - name: assignAgents
+    given: TaskType
+    when: Determining which agents handle the task
+    then: Return list of AgentRole based on routing matrix
+
+  # Agent Dispatch
+  - name: dispatchSubTasks
+    given: List of SubTask
+    when: Sending work to specialists
+    then: Execute sub-tasks (parallel where possible), collect results
+
+  - name: dispatchToCoder
+    given: SubTask for code work
+    when: Code generation, debugging, or review needed
+    then: Return SubTaskResult with generated code
+
+  - name: dispatchToChat
+    given: SubTask for conversation
+    when: Chat, translation, or explanation needed
+    then: Return SubTaskResult with fluent text
+
+  - name: dispatchToReasoner
+    given: SubTask for analysis
+    when: Reasoning, planning, or logic needed
+    then: Return SubTaskResult with structured analysis
+
+  - name: dispatchToResearcher
+    given: SubTask for research
+    when: Information retrieval or fact extraction needed
+    then: Return SubTaskResult with findings
+
+  # Result Fusion
+  - name: fuseResults
+    given: List of SubTaskResult, FusionStrategy
+    when: Combining agent outputs
+    then: Return FusionResult with merged response
+
+  - name: selectFusionStrategy
+    given: TaskType, number of agents
+    when: Choosing how to merge results
+    then: Return FusionStrategy
+
+  - name: resolveConflict
+    given: Two conflicting SubTaskResults
+    when: Agents disagree on output
+    then: Return ConflictResolution with winner
+
+  # Quality Control
+  - name: computeNeedleScore
+    given: CoordinatorResponse
+    when: Checking response quality
+    then: Return needle score (must be > 0.618)
+
+  - name: validateResponse
+    given: CoordinatorResponse
+    when: Final quality check
+    then: Return true if response meets quality threshold
+
+  - name: shouldRetry
+    given: CoordinatorResponse with low needle score
+    when: Quality below threshold
+    then: Return true if retry would help, false if best effort
+
+  # Agent Management
+  - name: getAgentState
+    given: AgentRole
+    when: Querying agent status
+    then: Return AgentState
+
+  - name: getSystemMetrics
+    given: System instance
+    when: Querying overall metrics
+    then: Return SystemMetrics
+
+  - name: resetAgent
+    given: AgentRole
+    when: Agent in error state
+    then: Reset agent to idle, clear error
+
+  - name: disableAgent
+    given: AgentRole
+    when: Agent consistently failing
+    then: Mark agent as disabled, redistribute tasks
+
+  # Batch Processing
+  - name: processBatch
+    given: List of CoordinatorRequest
+    when: Multiple requests queued
+    then: Process in priority order, return list of CoordinatorResponse
+
+  - name: estimateLatency
+    given: CoordinatorRequest
+    when: Predicting response time
+    then: Return estimated latency based on task type and agent load
+
+tests:
+  # Task Classification
+  - name: test_classify_code_generation
+    given: "Write a fibonacci function in Python"
+    then: Returns code_generation
+
+  - name: test_classify_code_explanation
+    given: "Explain how this sorting algorithm works"
+    then: Returns code_explanation
+
+  - name: test_classify_code_debugging
+    given: "Fix the null pointer bug in line 42"
+    then: Returns code_debugging
+
+  - name: test_classify_analysis
+    given: "Analyze the performance of this function"
+    then: Returns analysis
+
+  - name: test_classify_planning
+    given: "Plan the implementation of a new feature"
+    then: Returns planning
+
+  - name: test_classify_research
+    given: "What are the best practices for error handling?"
+    then: Returns research
+
+  - name: test_classify_conversation
+    given: "Hello, how are you?"
+    then: Returns conversation
+
+  - name: test_classify_russian
+    given: "Напиши функцию сортировки"
+    then: Returns code_generation, language russian
+
+  - name: test_classify_chinese
+    given: "用Python写二分搜索"
+    then: Returns code_generation, language chinese
+
+  # Task Decomposition
+  - name: test_decompose_simple
+    given: code_generation task
+    then: Returns 1 sub-task assigned to coder
+
+  - name: test_decompose_complex
+    given: code_review task
+    then: Returns 3 sub-tasks (coder + reasoner + researcher)
+
+  - name: test_decompose_full_pipeline
+    given: full_pipeline task
+    then: Returns 4+ sub-tasks across all agents
+
+  # Agent Dispatch
+  - name: test_dispatch_coder
+    given: Code generation sub-task
+    then: Coder returns code with confidence > 0.7
+
+  - name: test_dispatch_chat
+    given: Conversation sub-task
+    then: Chat returns fluent text with confidence > 0.8
+
+  - name: test_dispatch_reasoner
+    given: Analysis sub-task
+    then: Reasoner returns structured analysis
+
+  - name: test_dispatch_researcher
+    given: Research sub-task
+    then: Researcher returns findings with sources
+
+  # Result Fusion
+  - name: test_fusion_best_confidence
+    given: Two results with different confidence
+    then: Higher confidence result wins
+
+  - name: test_fusion_concatenate
+    given: Code explanation (coder + chat)
+    then: Code and explanation concatenated
+
+  - name: test_fusion_conflict
+    given: Two agents disagree
+    then: Conflict resolved, winner selected
+
+  # Quality Control
+  - name: test_needle_score_pass
+    given: High quality response
+    then: Needle score > 0.618
+
+  - name: test_needle_score_fail
+    given: Low quality response
+    then: Needle score < 0.618, retry triggered
+
+  # System Metrics
+  - name: test_system_metrics
+    given: After 10 requests processed
+    then: Metrics show correct counts and averages
+
+  - name: test_multi_agent_rate
+    given: Mix of simple and complex tasks
+    then: Multi-agent rate reflects task complexity
+
+  # Edge Cases
+  - name: test_agent_timeout
+    given: Agent exceeds timeout
+    then: Coordinator handles gracefully, uses fallback
+
+  - name: test_all_agents_busy
+    given: All agents processing
+    then: Request queued, processed when agent available
+
+  - name: test_empty_query
+    given: Empty string input
+    then: Returns helpful prompt, no crash
+
+  - name: test_very_long_query
+    given: 10000 character input
+    then: Handles gracefully, truncates if needed
+
+metrics:
+  - name: coordination_success_rate
+    description: "Successful multi-agent coordinations"
+    target: "> 95%"
+
+  - name: avg_agents_per_task
+    description: "Average specialist agents per request"
+    target: "> 1.5"
+
+  - name: multi_agent_rate
+    description: "Fraction of tasks using 2+ agents"
+    target: "> 40%"
+
+  - name: avg_confidence
+    description: "Average response confidence"
+    target: "> 0.80"
+
+  - name: needle_score
+    description: "Golden Chain quality metric"
+    target: "> 0.618"
+
+  - name: avg_latency_ms
+    description: "Average response latency"
+    target: "< 1000ms"
+
+  - name: conflict_resolution_rate
+    description: "Conflicts resolved without retry"
+    target: "> 90%"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
