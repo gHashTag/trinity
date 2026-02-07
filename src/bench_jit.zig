@@ -139,7 +139,7 @@ pub fn main() !void {
 
         // Finalize with correct signature
         const code_size = compiler3.code.items.len;
-        const page_size = std.mem.page_size;
+        const page_size = std.heap.page_size_min;
         const alloc_size = std.mem.alignForward(usize, code_size, page_size);
 
         const mem = try std.posix.mmap(
@@ -155,7 +155,7 @@ pub fn main() !void {
         @memcpy(mem[0..code_size], compiler3.code.items);
         try std.posix.mprotect(mem, std.posix.PROT.READ | std.posix.PROT.EXEC);
 
-        const jit_dot: *const fn (*anyopaque, *anyopaque) callconv(.C) i64 = @ptrCast(mem.ptr);
+        const jit_dot: *const fn (*anyopaque, *anyopaque) callconv(.c) i64 = @ptrCast(mem.ptr);
 
         // Interpreted dot product (using similarity which computes dot)
         timer = std.time.Timer.start() catch unreachable;

@@ -18,7 +18,7 @@ pub const is_x86_64 = builtin.cpu.arch == .x86_64;
 pub const X86_64JitCompiler = struct {
     code: std.ArrayListUnmanaged(u8),
     allocator: std.mem.Allocator,
-    exec_mem: ?[]align(std.mem.page_size) u8 = null,
+    exec_mem: ?[]align(std.heap.page_size_min) u8 = null,
 
     const Self = @This();
 
@@ -340,12 +340,12 @@ pub const X86_64JitCompiler = struct {
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// Make code executable and return function pointer
-    pub fn finalize(self: *Self) !*const fn (*anyopaque, *anyopaque) callconv(.C) i64 {
+    pub fn finalize(self: *Self) !*const fn (*anyopaque, *anyopaque) callconv(.c) i64 {
         const code_size = self.code.items.len;
         if (code_size == 0) return error.EmptyCode;
 
         // Use system page size for compatibility
-        const page_size: usize = std.mem.page_size;
+        const page_size: usize = std.heap.page_size_min;
         const alloc_size = std.mem.alignForward(usize, code_size, page_size);
 
         // mmap with PROT_READ | PROT_WRITE first
