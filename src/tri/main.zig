@@ -92,6 +92,9 @@ const Command = enum {
     // Batched Stealing
     batched_demo,
     batched_bench,
+    // Priority Queue
+    priority_demo,
+    priority_bench,
     // Info
     info,
     version,
@@ -325,6 +328,9 @@ fn parseCommand(arg: []const u8) Command {
     // Batched Stealing
     if (std.mem.eql(u8, arg, "batched-demo") or std.mem.eql(u8, arg, "batched")) return .batched_demo;
     if (std.mem.eql(u8, arg, "batched-bench")) return .batched_bench;
+    // Priority Queue
+    if (std.mem.eql(u8, arg, "priority-demo") or std.mem.eql(u8, arg, "priority")) return .priority_demo;
+    if (std.mem.eql(u8, arg, "priority-bench")) return .priority_bench;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
@@ -1380,6 +1386,9 @@ pub fn main() !void {
         // Batched Stealing
         .batched_demo => runBatchedDemo(),
         .batched_bench => runBatchedBench(),
+        // Priority Queue
+        .priority_demo => runPriorityDemo(),
+        .priority_bench => runPriorityBench(),
         .info => printInfo(),
         .version => printVersion(),
         .help => printHelp(),
@@ -3010,4 +3019,236 @@ fn runBatchedBench() void {
     }
 
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | BATCHED STEALING BENCHMARK{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRIORITY QUEUE - CYCLE 45
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runPriorityDemo() void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}         PRIORITY JOB QUEUE (PRIORITY-BASED SCHEDULING) DEMO{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Architecture:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  ┌─────────────────────────────────────────────┐\n", .{});
+    std.debug.print("  │        PRIORITY JOB QUEUE (4 LEVELS)        │\n", .{});
+    std.debug.print("  ├─────────────────────────────────────────────┤\n", .{});
+    std.debug.print("  │  {s}Level 0{s} → CRITICAL (deadline-aware)        │\n", .{ GREEN, RESET });
+    std.debug.print("  │       ↓                                     │\n", .{});
+    std.debug.print("  │  {s}Level 1{s} → HIGH (important tasks)           │\n", .{ GREEN, RESET });
+    std.debug.print("  │       ↓                                     │\n", .{});
+    std.debug.print("  │  {s}Level 2{s} → NORMAL (default priority)        │\n", .{ GREEN, RESET });
+    std.debug.print("  │       ↓                                     │\n", .{});
+    std.debug.print("  │  {s}Level 3{s} → LOW (background tasks)           │\n", .{ GREEN, RESET });
+    std.debug.print("  └─────────────────────────────────────────────┘\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Configuration:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  PRIORITY_LEVELS:        4 (critical, high, normal, low)\n", .{});
+    std.debug.print("  QUEUE_CAPACITY:         256 jobs per level\n", .{});
+    std.debug.print("  AGE_THRESHOLD:          100 (starvation prevention)\n", .{});
+    std.debug.print("  WEIGHT_FORMULA:         phi^-level (0.618^level)\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Priority Weights (phi^-1 based):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  critical (0): 1.000 (immediate execution)\n", .{});
+    std.debug.print("  high     (1): 0.618 (phi^-1)\n", .{});
+    std.debug.print("  normal   (2): 0.382 (phi^-2)\n", .{});
+    std.debug.print("  low      (3): 0.236 (phi^-3)\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Components:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  PriorityLevel     - Enum (critical, high, normal, low)\n", .{});
+    std.debug.print("  PriorityJob       - Job with priority + deadline\n", .{});
+    std.debug.print("  PriorityJobQueue  - 4 separate queues by level\n", .{});
+    std.debug.print("  PriorityWorkerState - Worker with priority tracking\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Scheduling Algorithm:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  1. Pop from highest priority (level 0) first\n", .{});
+    std.debug.print("  2. If empty, try next level (level 1)\n", .{});
+    std.debug.print("  3. Continue until job found or all empty\n", .{});
+    std.debug.print("  4. Age-based promotion prevents starvation\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | PRIORITY QUEUE DEMO{s}\n\n", .{ GOLDEN, RESET });
+}
+
+fn runPriorityBench() void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}      PRIORITY QUEUE BENCHMARK (GOLDEN CHAIN CYCLE 45){s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n", .{});
+
+    const vsa = @import("vsa");
+
+    // Dummy job function for testing
+    const dummyFn: vsa.TextCorpus.JobFn = struct {
+        fn f(_: *anyopaque) void {}
+    }.f;
+    var dummy_ctx: usize = 0;
+
+    // Phase 1: FIFO baseline (no priority)
+    std.debug.print("  {s}Phase 1: FIFO Baseline (No Priority){s}\n", .{ CYAN, RESET });
+
+    var fifo_deque = vsa.TextCorpus.OptimizedChaseLevDeque.init();
+    const total_jobs: usize = 400; // 100 per priority level
+
+    // Push all jobs to single FIFO queue
+    for (0..total_jobs) |_| {
+        const job = vsa.TextCorpus.PoolJob{
+            .func = dummyFn,
+            .context = @ptrCast(&dummy_ctx),
+            .completed = false,
+        };
+        _ = fifo_deque.push(job);
+    }
+
+    var fifo_pops: usize = 0;
+    const fifo_start = std.time.nanoTimestamp();
+
+    // Pop all jobs (FIFO order, no priority awareness)
+    while (fifo_deque.pop() != null) {
+        fifo_pops += 1;
+    }
+
+    var fifo_time = std.time.nanoTimestamp() - fifo_start;
+    if (fifo_time <= 0) fifo_time = 1;
+
+    std.debug.print("    Jobs pushed:       {d}\n", .{total_jobs});
+    std.debug.print("    Jobs popped:       {d}\n", .{fifo_pops});
+    std.debug.print("    Time:              {d}ns\n", .{fifo_time});
+    std.debug.print("\n", .{});
+
+    // Phase 2: Priority queue
+    std.debug.print("  {s}Phase 2: Priority Queue (4 Levels){s}\n", .{ CYAN, RESET });
+
+    var priority_queue = vsa.TextCorpus.PriorityJobQueue.init();
+
+    // Push jobs with different priorities
+    const jobs_per_level: usize = 100;
+
+    // Push in reverse priority order (low first, critical last)
+    // to test that priority queue correctly orders them
+    for (0..jobs_per_level) |_| {
+        const job_low = vsa.TextCorpus.PriorityJob{
+            .func = dummyFn,
+            .context = @ptrCast(&dummy_ctx),
+            .priority = .low,
+            .age = 0,
+            .completed = false,
+        };
+        _ = priority_queue.push(job_low);
+    }
+    for (0..jobs_per_level) |_| {
+        const job_normal = vsa.TextCorpus.PriorityJob{
+            .func = dummyFn,
+            .context = @ptrCast(&dummy_ctx),
+            .priority = .normal,
+            .age = 0,
+            .completed = false,
+        };
+        _ = priority_queue.push(job_normal);
+    }
+    for (0..jobs_per_level) |_| {
+        const job_high = vsa.TextCorpus.PriorityJob{
+            .func = dummyFn,
+            .context = @ptrCast(&dummy_ctx),
+            .priority = .high,
+            .age = 0,
+            .completed = false,
+        };
+        _ = priority_queue.push(job_high);
+    }
+    for (0..jobs_per_level) |_| {
+        const job_critical = vsa.TextCorpus.PriorityJob{
+            .func = dummyFn,
+            .context = @ptrCast(&dummy_ctx),
+            .priority = .critical,
+            .age = 0,
+            .completed = false,
+        };
+        _ = priority_queue.push(job_critical);
+    }
+
+    var priority_pops: usize = 0;
+    var critical_first: usize = 0;
+    var correct_order: usize = 0;
+    var last_priority: u8 = 0; // critical = 0
+
+    const priority_start = std.time.nanoTimestamp();
+
+    // Pop all jobs (should come out in priority order)
+    while (priority_queue.pop()) |job| {
+        priority_pops += 1;
+        const current_priority = @intFromEnum(job.priority);
+
+        // Count critical jobs popped first
+        if (priority_pops <= jobs_per_level and current_priority == 0) {
+            critical_first += 1;
+        }
+
+        // Check if order is correct (priority should stay same or increase)
+        if (current_priority >= last_priority) {
+            correct_order += 1;
+        }
+        last_priority = current_priority;
+    }
+
+    var priority_time = std.time.nanoTimestamp() - priority_start;
+    if (priority_time <= 0) priority_time = 1;
+
+    const order_correctness = @as(f64, @floatFromInt(correct_order)) / @as(f64, @floatFromInt(priority_pops));
+    const critical_ratio = @as(f64, @floatFromInt(critical_first)) / @as(f64, @floatFromInt(jobs_per_level));
+
+    std.debug.print("    Jobs pushed:       {d} ({d} per level)\n", .{ total_jobs, jobs_per_level });
+    std.debug.print("    Jobs popped:       {d}\n", .{priority_pops});
+    std.debug.print("    Time:              {d}ns\n", .{priority_time});
+    std.debug.print("    Critical first:    {d}/{d} ({d:.1}%%)\n", .{ critical_first, jobs_per_level, critical_ratio * 100 });
+    std.debug.print("    Order correctness: {d:.1}%%\n", .{order_correctness * 100});
+    std.debug.print("\n", .{});
+
+    // Phase 3: Comparison
+    std.debug.print("  {s}Phase 3: Comparison{s}\n", .{ CYAN, RESET });
+
+    const fifo_time_f: f64 = @floatFromInt(fifo_time);
+    const priority_time_f: f64 = @floatFromInt(priority_time);
+
+    // Priority scheduling has overhead but provides ordering guarantees
+    const fifo_throughput = @as(f64, @floatFromInt(fifo_pops)) / (fifo_time_f / 1_000_000_000.0);
+    const priority_throughput = @as(f64, @floatFromInt(priority_pops)) / (priority_time_f / 1_000_000_000.0);
+
+    std.debug.print("    FIFO time:         {d}ns\n", .{fifo_time});
+    std.debug.print("    Priority time:     {d}ns\n", .{priority_time});
+    std.debug.print("    FIFO throughput:   {d:.0} jobs/s\n", .{fifo_throughput});
+    std.debug.print("    Priority throughput: {d:.0} jobs/s\n", .{priority_throughput});
+    std.debug.print("    Order guarantee:   {d:.1}%%\n", .{order_correctness * 100});
+    std.debug.print("    Critical priority: {d:.1}%%\n", .{critical_ratio * 100});
+    std.debug.print("\n", .{});
+
+    // Calculate improvement rate
+    // Based on: order_correctness, critical_ratio, throughput ratio
+    const throughput_ratio = priority_throughput / fifo_throughput;
+    const improvement_rate = (order_correctness + critical_ratio + throughput_ratio) / 3.0;
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}                        BENCHMARK RESULTS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Priority levels:       4 (critical, high, normal, low)\n", .{});
+    std.debug.print("  Jobs per level:        {d}\n", .{jobs_per_level});
+    std.debug.print("  Order correctness:     {d:.1}%%\n", .{order_correctness * 100});
+    std.debug.print("  Critical first rate:   {d:.1}%%\n", .{critical_ratio * 100});
+    std.debug.print("  Throughput ratio:      {d:.2}x\n", .{throughput_ratio});
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n  {s}IMPROVEMENT RATE: {d:.3}{s}\n", .{ GOLDEN, improvement_rate, RESET });
+
+    if (improvement_rate > 0.618) {
+        std.debug.print("  {s}NEEDLE CHECK: PASSED{s} (> 0.618 = phi^-1)\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("  {s}NEEDLE CHECK: NEEDS IMPROVEMENT{s} (< 0.618)\n", .{ RED, RESET });
+    }
+
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | PRIORITY QUEUE BENCHMARK{s}\n\n", .{ GOLDEN, RESET });
 }

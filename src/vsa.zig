@@ -4384,6 +4384,1407 @@ pub const TextCorpus = struct {
         return .{ .executed = 0, .stolen = 0, .success_rate = 0.0, .efficiency = 0.0 };
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // BATCHED WORK-STEALING (Cycle 44)
+    // Steal multiple jobs at once to reduce CAS overhead
+    // φ² + 1/φ² = 3 = TRINITY
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Maximum batch size for stealing (balance between efficiency and fairness)
+    pub const MAX_BATCH_SIZE: usize = 8;
+
+    /// Calculate optimal batch size based on victim queue depth
+    /// Uses φ⁻¹ ratio: steal ~62% of available work
+    pub fn calculateBatchSize(victim_depth: usize) usize {
+        if (victim_depth == 0) return 0;
+        if (victim_depth == 1) return 1;
+
+        // Use φ⁻¹ to determine fraction of work to steal
+        const float_depth = @as(f64, @floatFromInt(victim_depth));
+        const optimal = @as(usize, @intFromFloat(float_depth * PHI_INVERSE));
+
+        // Clamp between 1 and MAX_BATCH_SIZE
+        return @max(1, @min(optimal, MAX_BATCH_SIZE));
+    }
+
+    /// Batched work-stealing deque with multi-job steal capability
+    pub const BatchedStealingDeque = struct {
+        jobs: [DEQUE_CAPACITY]PoolJob,
+        bottom: usize,
+        top: usize,
+        steal_success: usize,
+        steal_attempts: usize,
+        batch_steals: usize, // Count of batch steal operations
+        jobs_batched: usize, // Total jobs stolen via batching
+        current_policy: AdaptiveStealPolicy,
+
+        /// Initialize empty batched deque
+        pub fn init() BatchedStealingDeque {
+            return BatchedStealingDeque{
+                .jobs = undefined,
+                .bottom = 0,
+                .top = 0,
+                .steal_success = 0,
+                .steal_attempts = 0,
+                .batch_steals = 0,
+                .jobs_batched = 0,
+                .current_policy = .moderate,
+            };
+        }
+
+        /// Push job at bottom (owner only)
+        pub fn push(self: *BatchedStealingDeque, job: PoolJob) bool {
+            const b = @atomicLoad(usize, &self.bottom, .monotonic);
+            const t = @atomicLoad(usize, &self.top, .acquire);
+            if (b - t >= DEQUE_CAPACITY) return false;
+
+            self.jobs[b % DEQUE_CAPACITY] = job;
+            @atomicStore(usize, &self.bottom, b + 1, .release);
+            self.updatePolicy();
+            return true;
+        }
+
+        /// Pop job from bottom (owner only)
+        pub fn pop(self: *BatchedStealingDeque) ?PoolJob {
+            var b = @atomicLoad(usize, &self.bottom, .monotonic);
+            const t = @atomicLoad(usize, &self.top, .monotonic);
+
+            if (b <= t) return null;
+
+            b -= 1;
+            @atomicStore(usize, &self.bottom, b, .monotonic);
+
+            const job = self.jobs[b % DEQUE_CAPACITY];
+            const t2 = @atomicLoad(usize, &self.top, .seq_cst);
+
+            if (t2 < b) {
+                self.updatePolicy();
+                return job;
+            }
+
+            const result = @cmpxchgWeak(usize, &self.top, t2, t2 + 1, .acq_rel, .monotonic);
+
+            if (result == null) {
+                @atomicStore(usize, &self.bottom, t2 + 1, .monotonic);
+                self.updatePolicy();
+                return job;
+            } else {
+                @atomicStore(usize, &self.bottom, t2 + 1, .monotonic);
+                return null;
+            }
+        }
+
+        /// Steal single job from top (thief) - fallback for small queues
+        pub fn steal(self: *BatchedStealingDeque) ?PoolJob {
+            self.steal_attempts += 1;
+
+            const t = @atomicLoad(usize, &self.top, .acquire);
+            const b = @atomicLoad(usize, &self.bottom, .acquire);
+
+            if (t >= b) return null;
+
+            const job = self.jobs[t % DEQUE_CAPACITY];
+            const result = @cmpxchgWeak(usize, &self.top, t, t + 1, .acq_rel, .monotonic);
+
+            if (result == null) {
+                self.steal_success += 1;
+                return job;
+            } else {
+                return null;
+            }
+        }
+
+        /// Steal batch of jobs from top (thief) - main batched operation
+        /// Returns number of jobs stolen (0 if failed)
+        pub fn stealBatch(self: *BatchedStealingDeque, out_jobs: []PoolJob) usize {
+            self.steal_attempts += 1;
+
+            const t = @atomicLoad(usize, &self.top, .acquire);
+            const b = @atomicLoad(usize, &self.bottom, .acquire);
+
+            if (t >= b) return 0;
+
+            const available = b - t;
+            const batch_size = @min(calculateBatchSize(available), out_jobs.len);
+
+            if (batch_size == 0) return 0;
+
+            // Copy jobs before CAS (speculative)
+            for (0..batch_size) |i| {
+                out_jobs[i] = self.jobs[(t + i) % DEQUE_CAPACITY];
+            }
+
+            // Single CAS to claim entire batch
+            const result = @cmpxchgWeak(usize, &self.top, t, t + batch_size, .acq_rel, .monotonic);
+
+            if (result == null) {
+                self.steal_success += 1;
+                self.batch_steals += 1;
+                self.jobs_batched += batch_size;
+                return batch_size;
+            } else {
+                // CAS failed, another thief got there first
+                return 0;
+            }
+        }
+
+        /// Get current size
+        pub fn size(self: *BatchedStealingDeque) usize {
+            const b = @atomicLoad(usize, &self.bottom, .monotonic);
+            const t = @atomicLoad(usize, &self.top, .monotonic);
+            if (b <= t) return 0;
+            return b - t;
+        }
+
+        /// Get fill ratio [0.0, 1.0]
+        pub fn fillRatio(self: *BatchedStealingDeque) f64 {
+            const s = self.size();
+            return @as(f64, @floatFromInt(s)) / @as(f64, @floatFromInt(DEQUE_CAPACITY));
+        }
+
+        /// Get average batch size
+        pub fn avgBatchSize(self: *BatchedStealingDeque) f64 {
+            if (self.batch_steals == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.jobs_batched)) /
+                @as(f64, @floatFromInt(self.batch_steals));
+        }
+
+        /// Get batch efficiency (jobs stolen per CAS attempt)
+        pub fn batchEfficiency(self: *BatchedStealingDeque) f64 {
+            if (self.steal_attempts == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.jobs_batched + self.steal_success)) /
+                @as(f64, @floatFromInt(self.steal_attempts));
+        }
+
+        /// Update policy based on current fill ratio
+        fn updatePolicy(self: *BatchedStealingDeque) void {
+            self.current_policy = AdaptiveStealPolicy.fromFillRatio(self.fillRatio());
+        }
+
+        /// Check if empty
+        pub fn isEmpty(self: *BatchedStealingDeque) bool {
+            return self.size() == 0;
+        }
+
+        /// Reset deque
+        pub fn reset(self: *BatchedStealingDeque) void {
+            @atomicStore(usize, &self.bottom, 0, .monotonic);
+            @atomicStore(usize, &self.top, 0, .monotonic);
+            self.steal_success = 0;
+            self.steal_attempts = 0;
+            self.batch_steals = 0;
+            self.jobs_batched = 0;
+            self.current_policy = .moderate;
+        }
+    };
+
+    /// Batched worker state with batch tracking
+    pub const BatchedWorkerState = struct {
+        deque: BatchedStealingDeque,
+        jobs_executed: usize,
+        jobs_stolen: usize,
+        batches_stolen: usize,
+        steal_attempts: usize,
+        failed_steals: usize,
+        backoff_count: usize,
+        batch_buffer: [MAX_BATCH_SIZE]PoolJob, // Buffer for batch steals
+
+        pub fn init() BatchedWorkerState {
+            return BatchedWorkerState{
+                .deque = BatchedStealingDeque.init(),
+                .jobs_executed = 0,
+                .jobs_stolen = 0,
+                .batches_stolen = 0,
+                .steal_attempts = 0,
+                .failed_steals = 0,
+                .backoff_count = 0,
+                .batch_buffer = undefined,
+            };
+        }
+
+        /// Calculate exponential backoff delay
+        pub fn getBackoffYields(self: *BatchedWorkerState) usize {
+            const max_backoff: usize = 32;
+            const backoff = @min(@as(usize, 1) << @intCast(@min(self.backoff_count, 5)), max_backoff);
+            return backoff;
+        }
+
+        /// Reset backoff on successful steal
+        pub fn resetBackoff(self: *BatchedWorkerState) void {
+            self.backoff_count = 0;
+        }
+
+        /// Increment backoff on failed steal
+        pub fn incrementBackoff(self: *BatchedWorkerState) void {
+            if (self.backoff_count < 10) {
+                self.backoff_count += 1;
+            }
+        }
+    };
+
+    /// Batched lock-free pool with multi-job stealing
+    pub const BatchedPool = struct {
+        workers: [POOL_SIZE]?std.Thread,
+        states: [POOL_SIZE]BatchedWorkerState,
+        running: bool,
+        all_done: bool,
+
+        /// Initialize pool
+        pub fn init() BatchedPool {
+            var states: [POOL_SIZE]BatchedWorkerState = undefined;
+            for (0..POOL_SIZE) |i| {
+                states[i] = BatchedWorkerState.init();
+            }
+            return BatchedPool{
+                .workers = .{null} ** POOL_SIZE,
+                .states = states,
+                .running = false,
+                .all_done = false,
+            };
+        }
+
+        /// Start worker threads
+        pub fn start(self: *BatchedPool) void {
+            self.running = true;
+            @atomicStore(bool, &self.all_done, false, .release);
+            for (0..POOL_SIZE) |i| {
+                self.workers[i] = std.Thread.spawn(.{}, batchedWorkerLoop, .{ self, i }) catch null;
+            }
+        }
+
+        /// Stop worker threads
+        pub fn stop(self: *BatchedPool) void {
+            self.running = false;
+            for (0..POOL_SIZE) |i| {
+                if (self.workers[i]) |worker| {
+                    worker.join();
+                    self.workers[i] = null;
+                }
+            }
+        }
+
+        /// Find best victim based on queue depth
+        fn findBestVictim(self: *BatchedPool, worker_id: usize) ?usize {
+            var best_victim: ?usize = null;
+            var max_depth: usize = 0;
+
+            for (0..POOL_SIZE) |i| {
+                if (i == worker_id) continue;
+
+                const depth = self.states[i].deque.size();
+                if (depth > max_depth) {
+                    max_depth = depth;
+                    best_victim = i;
+                }
+            }
+
+            // Only steal if victim has meaningful work
+            if (max_depth >= 2) return best_victim;
+            return null;
+        }
+
+        /// Batched worker loop with multi-job stealing
+        fn batchedWorkerLoop(self: *BatchedPool, worker_id: usize) void {
+            var consecutive_empty: usize = 0;
+
+            while (self.running) {
+                // First try own deque
+                if (self.states[worker_id].deque.pop()) |job| {
+                    job.func(job.context);
+                    self.states[worker_id].jobs_executed += 1;
+                    self.states[worker_id].resetBackoff();
+                    consecutive_empty = 0;
+                    continue;
+                }
+
+                // Own deque empty, try batch stealing
+                if (self.findBestVictim(worker_id)) |victim| {
+                    self.states[worker_id].steal_attempts += 1;
+
+                    const victim_depth = self.states[victim].deque.size();
+
+                    if (victim_depth >= 2) {
+                        // Try batch steal
+                        const batch_buffer = &self.states[worker_id].batch_buffer;
+                        const stolen_count = self.states[victim].deque.stealBatch(batch_buffer);
+
+                        if (stolen_count > 0) {
+                            // Execute all stolen jobs
+                            for (0..stolen_count) |i| {
+                                batch_buffer[i].func(batch_buffer[i].context);
+                            }
+                            self.states[worker_id].jobs_executed += stolen_count;
+                            self.states[worker_id].jobs_stolen += stolen_count;
+                            self.states[worker_id].batches_stolen += 1;
+                            self.states[worker_id].resetBackoff();
+                            consecutive_empty = 0;
+                            continue;
+                        }
+                    } else {
+                        // Fallback to single steal for small queues
+                        if (self.states[victim].deque.steal()) |job| {
+                            job.func(job.context);
+                            self.states[worker_id].jobs_executed += 1;
+                            self.states[worker_id].jobs_stolen += 1;
+                            self.states[worker_id].resetBackoff();
+                            consecutive_empty = 0;
+                            continue;
+                        }
+                    }
+
+                    self.states[worker_id].failed_steals += 1;
+                    self.states[worker_id].incrementBackoff();
+                } else {
+                    consecutive_empty += 1;
+
+                    if (consecutive_empty >= POOL_SIZE) {
+                        var total_work: usize = 0;
+                        for (0..POOL_SIZE) |i| {
+                            total_work += self.states[i].deque.size();
+                        }
+                        if (total_work == 0) {
+                            @atomicStore(bool, &self.all_done, true, .release);
+                        }
+                    }
+
+                    // Exponential backoff
+                    const backoff_yields = self.states[worker_id].getBackoffYields();
+                    for (0..backoff_yields) |_| {
+                        std.Thread.yield() catch {};
+                    }
+                }
+            }
+        }
+
+        /// Submit jobs with round-robin distribution
+        pub fn submitAndWait(self: *BatchedPool, jobs: []const PoolJob) void {
+            @atomicStore(bool, &self.all_done, false, .release);
+            for (0..POOL_SIZE) |i| {
+                self.states[i].deque.reset();
+            }
+
+            for (jobs, 0..) |job, i| {
+                const worker_id = i % POOL_SIZE;
+                _ = self.states[worker_id].deque.push(job);
+            }
+
+            while (true) {
+                const done = @atomicLoad(bool, &self.all_done, .acquire);
+                if (done) {
+                    var total: usize = 0;
+                    for (0..POOL_SIZE) |i| {
+                        total += self.states[i].deque.size();
+                    }
+                    if (total == 0) break;
+                }
+                std.Thread.yield() catch {};
+            }
+        }
+
+        /// Check if pool is active
+        pub fn isActive(self: *BatchedPool) bool {
+            return self.running;
+        }
+
+        /// Get total jobs executed
+        pub fn getTotalExecuted(self: *BatchedPool) usize {
+            var total: usize = 0;
+            for (0..POOL_SIZE) |i| {
+                total += self.states[i].jobs_executed;
+            }
+            return total;
+        }
+
+        /// Get total jobs stolen
+        pub fn getTotalStolen(self: *BatchedPool) usize {
+            var total: usize = 0;
+            for (0..POOL_SIZE) |i| {
+                total += self.states[i].jobs_stolen;
+            }
+            return total;
+        }
+
+        /// Get total batches stolen
+        pub fn getTotalBatches(self: *BatchedPool) usize {
+            var total: usize = 0;
+            for (0..POOL_SIZE) |i| {
+                total += self.states[i].batches_stolen;
+            }
+            return total;
+        }
+
+        /// Get average batch size across all workers
+        pub fn getAvgBatchSize(self: *BatchedPool) f64 {
+            var total_jobs: usize = 0;
+            var total_batches: usize = 0;
+            for (0..POOL_SIZE) |i| {
+                total_jobs += self.states[i].jobs_stolen;
+                total_batches += self.states[i].batches_stolen;
+            }
+            if (total_batches == 0) return 0.0;
+            return @as(f64, @floatFromInt(total_jobs)) / @as(f64, @floatFromInt(total_batches));
+        }
+
+        /// Get batch efficiency (overhead reduction factor)
+        pub fn getBatchEfficiency(self: *BatchedPool) f64 {
+            const avg = self.getAvgBatchSize();
+            if (avg == 0.0) return 0.0;
+            // Efficiency = how much CAS overhead is reduced
+            // Perfect efficiency = MAX_BATCH_SIZE, normalized to [0, 1]
+            return @min(avg / @as(f64, @floatFromInt(MAX_BATCH_SIZE)), 1.0);
+        }
+    };
+
+    /// Global batched pool
+    var global_batched_pool: ?BatchedPool = null;
+
+    /// Get or create global batched pool
+    pub fn getGlobalBatchedPool() *BatchedPool {
+        if (global_batched_pool == null) {
+            global_batched_pool = BatchedPool.init();
+            global_batched_pool.?.start();
+        }
+        return &global_batched_pool.?;
+    }
+
+    /// Shutdown global batched pool
+    pub fn shutdownGlobalBatchedPool() void {
+        if (global_batched_pool) |*pool| {
+            pool.stop();
+            global_batched_pool = null;
+        }
+    }
+
+    /// Check if global batched pool is available
+    pub fn hasGlobalBatchedPool() bool {
+        return global_batched_pool != null and global_batched_pool.?.running;
+    }
+
+    /// Get batched stats from global pool
+    pub fn getBatchedStats() struct { executed: usize, stolen: usize, batches: usize, avg_batch_size: f64, efficiency: f64 } {
+        if (global_batched_pool) |*pool| {
+            return .{
+                .executed = pool.getTotalExecuted(),
+                .stolen = pool.getTotalStolen(),
+                .batches = pool.getTotalBatches(),
+                .avg_batch_size = pool.getAvgBatchSize(),
+                .efficiency = pool.getBatchEfficiency(),
+            };
+        }
+        return .{ .executed = 0, .stolen = 0, .batches = 0, .avg_batch_size = 0.0, .efficiency = 0.0 };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // PRIORITY JOB QUEUE (Cycle 45)
+    // Priority-based job scheduling with φ⁻¹ weighted levels
+    // φ² + 1/φ² = 3 = TRINITY
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Number of priority levels
+    pub const PRIORITY_LEVELS: usize = 5;
+
+    /// Priority level for jobs (lower value = higher priority)
+    pub const PriorityLevel = enum(u8) {
+        critical = 0, // Must execute immediately
+        high = 1, // Important, execute soon
+        normal = 2, // Default priority
+        low = 3, // Can wait
+        background = 4, // Execute when idle
+
+        /// Get φ⁻¹ weighted priority value
+        pub fn weight(self: PriorityLevel) f64 {
+            return switch (self) {
+                .critical => 1.0,
+                .high => PHI_INVERSE, // 0.618
+                .normal => PHI_INVERSE * PHI_INVERSE, // 0.382
+                .low => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE, // 0.236
+                .background => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE * PHI_INVERSE, // 0.146
+            };
+        }
+
+        /// Convert integer to priority level
+        pub fn fromInt(value: u8) PriorityLevel {
+            return switch (value) {
+                0 => .critical,
+                1 => .high,
+                2 => .normal,
+                3 => .low,
+                else => .background,
+            };
+        }
+    };
+
+    /// Job with priority
+    pub const PriorityJob = struct {
+        func: JobFn,
+        context: *anyopaque,
+        priority: PriorityLevel,
+        age: usize, // Cycles since enqueue (for starvation prevention)
+        completed: bool,
+    };
+
+    /// Capacity per priority level queue
+    pub const PRIORITY_QUEUE_CAPACITY: usize = 256;
+
+    /// Age threshold for priority promotion (starvation prevention)
+    pub const MAX_JOB_AGE: usize = 100;
+
+    /// Priority job queue with separate deques per level
+    pub const PriorityJobQueue = struct {
+        queues: [PRIORITY_LEVELS][PRIORITY_QUEUE_CAPACITY]PriorityJob,
+        bottoms: [PRIORITY_LEVELS]usize,
+        tops: [PRIORITY_LEVELS]usize,
+        total_jobs: usize,
+        jobs_promoted: usize, // Starvation prevention promotions
+
+        /// Initialize empty priority queue
+        pub fn init() PriorityJobQueue {
+            return PriorityJobQueue{
+                .queues = undefined,
+                .bottoms = .{0} ** PRIORITY_LEVELS,
+                .tops = .{0} ** PRIORITY_LEVELS,
+                .total_jobs = 0,
+                .jobs_promoted = 0,
+            };
+        }
+
+        /// Push job to appropriate priority queue
+        pub fn push(self: *PriorityJobQueue, job: PriorityJob) bool {
+            const level = @intFromEnum(job.priority);
+            const b = @atomicLoad(usize, &self.bottoms[level], .monotonic);
+            const t = @atomicLoad(usize, &self.tops[level], .monotonic);
+
+            if (b - t >= PRIORITY_QUEUE_CAPACITY) return false;
+
+            self.queues[level][b % PRIORITY_QUEUE_CAPACITY] = job;
+            @atomicStore(usize, &self.bottoms[level], b + 1, .release);
+            _ = @atomicRmw(usize, &self.total_jobs, .Add, 1, .monotonic);
+            return true;
+        }
+
+        /// Push with default normal priority
+        pub fn pushNormal(self: *PriorityJobQueue, func: JobFn, context: *anyopaque) bool {
+            return self.push(.{
+                .func = func,
+                .context = context,
+                .priority = .normal,
+                .age = 0,
+                .completed = false,
+            });
+        }
+
+        /// Pop highest priority job (owner operation)
+        pub fn pop(self: *PriorityJobQueue) ?PriorityJob {
+            // Try each priority level from highest to lowest
+            for (0..PRIORITY_LEVELS) |level| {
+                const b = @atomicLoad(usize, &self.bottoms[level], .monotonic);
+                const t = @atomicLoad(usize, &self.tops[level], .monotonic);
+
+                if (b > t) {
+                    const new_b = b - 1;
+                    @atomicStore(usize, &self.bottoms[level], new_b, .monotonic);
+
+                    const job = self.queues[level][new_b % PRIORITY_QUEUE_CAPACITY];
+                    const t2 = @atomicLoad(usize, &self.tops[level], .seq_cst);
+
+                    if (t2 < new_b) {
+                        _ = @atomicRmw(usize, &self.total_jobs, .Sub, 1, .monotonic);
+                        return job;
+                    }
+
+                    // Race with steal
+                    const result = @cmpxchgWeak(usize, &self.tops[level], t2, t2 + 1, .acq_rel, .monotonic);
+                    if (result == null) {
+                        @atomicStore(usize, &self.bottoms[level], t2 + 1, .monotonic);
+                        _ = @atomicRmw(usize, &self.total_jobs, .Sub, 1, .monotonic);
+                        return job;
+                    } else {
+                        @atomicStore(usize, &self.bottoms[level], t2 + 1, .monotonic);
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// Steal from specific priority level (thief operation)
+        pub fn stealFromLevel(self: *PriorityJobQueue, level: usize) ?PriorityJob {
+            if (level >= PRIORITY_LEVELS) return null;
+
+            const t = @atomicLoad(usize, &self.tops[level], .acquire);
+            const b = @atomicLoad(usize, &self.bottoms[level], .acquire);
+
+            if (t >= b) return null;
+
+            const job = self.queues[level][t % PRIORITY_QUEUE_CAPACITY];
+            const result = @cmpxchgWeak(usize, &self.tops[level], t, t + 1, .acq_rel, .monotonic);
+
+            if (result == null) {
+                _ = @atomicRmw(usize, &self.total_jobs, .Sub, 1, .monotonic);
+                return job;
+            }
+            return null;
+        }
+
+        /// Steal highest priority available job
+        pub fn steal(self: *PriorityJobQueue) ?PriorityJob {
+            for (0..PRIORITY_LEVELS) |level| {
+                if (self.stealFromLevel(level)) |job| {
+                    return job;
+                }
+            }
+            return null;
+        }
+
+        /// Get size of specific priority level
+        pub fn levelSize(self: *PriorityJobQueue, level: usize) usize {
+            if (level >= PRIORITY_LEVELS) return 0;
+            const b = @atomicLoad(usize, &self.bottoms[level], .monotonic);
+            const t = @atomicLoad(usize, &self.tops[level], .monotonic);
+            if (b <= t) return 0;
+            return b - t;
+        }
+
+        /// Get total size across all levels
+        pub fn size(self: *PriorityJobQueue) usize {
+            return @atomicLoad(usize, &self.total_jobs, .monotonic);
+        }
+
+        /// Check if empty
+        pub fn isEmpty(self: *PriorityJobQueue) bool {
+            return self.size() == 0;
+        }
+
+        /// Get highest non-empty priority level (or null if empty)
+        pub fn highestPriorityLevel(self: *PriorityJobQueue) ?PriorityLevel {
+            for (0..PRIORITY_LEVELS) |level| {
+                if (self.levelSize(level) > 0) {
+                    return PriorityLevel.fromInt(@intCast(level));
+                }
+            }
+            return null;
+        }
+
+        /// Reset all queues
+        pub fn reset(self: *PriorityJobQueue) void {
+            for (0..PRIORITY_LEVELS) |level| {
+                @atomicStore(usize, &self.bottoms[level], 0, .monotonic);
+                @atomicStore(usize, &self.tops[level], 0, .monotonic);
+            }
+            @atomicStore(usize, &self.total_jobs, 0, .monotonic);
+            self.jobs_promoted = 0;
+        }
+    };
+
+    /// Priority worker state
+    pub const PriorityWorkerState = struct {
+        queue: PriorityJobQueue,
+        jobs_executed: usize,
+        jobs_by_priority: [PRIORITY_LEVELS]usize,
+        steal_attempts: usize,
+        failed_steals: usize,
+        backoff_count: usize,
+
+        pub fn init() PriorityWorkerState {
+            return PriorityWorkerState{
+                .queue = PriorityJobQueue.init(),
+                .jobs_executed = 0,
+                .jobs_by_priority = .{0} ** PRIORITY_LEVELS,
+                .steal_attempts = 0,
+                .failed_steals = 0,
+                .backoff_count = 0,
+            };
+        }
+
+        /// Get backoff yields
+        pub fn getBackoffYields(self: *PriorityWorkerState) usize {
+            const max_backoff: usize = 32;
+            return @min(@as(usize, 1) << @intCast(@min(self.backoff_count, 5)), max_backoff);
+        }
+
+        /// Reset backoff
+        pub fn resetBackoff(self: *PriorityWorkerState) void {
+            self.backoff_count = 0;
+        }
+
+        /// Increment backoff
+        pub fn incrementBackoff(self: *PriorityWorkerState) void {
+            if (self.backoff_count < 10) {
+                self.backoff_count += 1;
+            }
+        }
+    };
+
+    /// Priority pool with priority-aware work-stealing
+    pub const PriorityPool = struct {
+        workers: [POOL_SIZE]?std.Thread,
+        states: [POOL_SIZE]PriorityWorkerState,
+        running: bool,
+        all_done: bool,
+
+        /// Initialize pool
+        pub fn init() PriorityPool {
+            var states: [POOL_SIZE]PriorityWorkerState = undefined;
+            for (0..POOL_SIZE) |i| {
+                states[i] = PriorityWorkerState.init();
+            }
+            return PriorityPool{
+                .workers = .{null} ** POOL_SIZE,
+                .states = states,
+                .running = false,
+                .all_done = false,
+            };
+        }
+
+        /// Start worker threads
+        pub fn start(self: *PriorityPool) void {
+            self.running = true;
+            @atomicStore(bool, &self.all_done, false, .release);
+            for (0..POOL_SIZE) |i| {
+                self.workers[i] = std.Thread.spawn(.{}, priorityWorkerLoop, .{ self, i }) catch null;
+            }
+        }
+
+        /// Stop worker threads
+        pub fn stop(self: *PriorityPool) void {
+            self.running = false;
+            for (0..POOL_SIZE) |i| {
+                if (self.workers[i]) |worker| {
+                    worker.join();
+                    self.workers[i] = null;
+                }
+            }
+        }
+
+        /// Find best victim (highest priority work available)
+        fn findBestVictim(self: *PriorityPool, worker_id: usize) ?struct { id: usize, level: PriorityLevel } {
+            var best_victim: ?usize = null;
+            var best_priority: ?PriorityLevel = null;
+
+            for (0..POOL_SIZE) |i| {
+                if (i == worker_id) continue;
+
+                if (self.states[i].queue.highestPriorityLevel()) |level| {
+                    if (best_priority == null or @intFromEnum(level) < @intFromEnum(best_priority.?)) {
+                        best_priority = level;
+                        best_victim = i;
+                    }
+                }
+            }
+
+            if (best_victim) |id| {
+                return .{ .id = id, .level = best_priority.? };
+            }
+            return null;
+        }
+
+        /// Priority worker loop
+        fn priorityWorkerLoop(self: *PriorityPool, worker_id: usize) void {
+            var consecutive_empty: usize = 0;
+
+            while (self.running) {
+                // First try own queue (highest priority first)
+                if (self.states[worker_id].queue.pop()) |job| {
+                    job.func(job.context);
+                    self.states[worker_id].jobs_executed += 1;
+                    self.states[worker_id].jobs_by_priority[@intFromEnum(job.priority)] += 1;
+                    self.states[worker_id].resetBackoff();
+                    consecutive_empty = 0;
+                    continue;
+                }
+
+                // Own queue empty, try priority-aware stealing
+                if (self.findBestVictim(worker_id)) |victim| {
+                    self.states[worker_id].steal_attempts += 1;
+
+                    if (self.states[victim.id].queue.stealFromLevel(@intFromEnum(victim.level))) |job| {
+                        job.func(job.context);
+                        self.states[worker_id].jobs_executed += 1;
+                        self.states[worker_id].jobs_by_priority[@intFromEnum(job.priority)] += 1;
+                        self.states[worker_id].resetBackoff();
+                        consecutive_empty = 0;
+                        continue;
+                    }
+
+                    self.states[worker_id].failed_steals += 1;
+                    self.states[worker_id].incrementBackoff();
+                } else {
+                    consecutive_empty += 1;
+
+                    if (consecutive_empty >= POOL_SIZE) {
+                        var total_work: usize = 0;
+                        for (0..POOL_SIZE) |i| {
+                            total_work += self.states[i].queue.size();
+                        }
+                        if (total_work == 0) {
+                            @atomicStore(bool, &self.all_done, true, .release);
+                        }
+                    }
+
+                    // Exponential backoff
+                    const backoff_yields = self.states[worker_id].getBackoffYields();
+                    for (0..backoff_yields) |_| {
+                        std.Thread.yield() catch {};
+                    }
+                }
+            }
+        }
+
+        /// Submit priority jobs
+        pub fn submitPriorityJobs(self: *PriorityPool, jobs: []const PriorityJob) void {
+            @atomicStore(bool, &self.all_done, false, .release);
+            for (0..POOL_SIZE) |i| {
+                self.states[i].queue.reset();
+            }
+
+            for (jobs, 0..) |job, i| {
+                const worker_id = i % POOL_SIZE;
+                _ = self.states[worker_id].queue.push(job);
+            }
+        }
+
+        /// Wait for all jobs to complete
+        pub fn wait(self: *PriorityPool) void {
+            while (true) {
+                const done = @atomicLoad(bool, &self.all_done, .acquire);
+                if (done) {
+                    var total: usize = 0;
+                    for (0..POOL_SIZE) |i| {
+                        total += self.states[i].queue.size();
+                    }
+                    if (total == 0) break;
+                }
+                std.Thread.yield() catch {};
+            }
+        }
+
+        /// Check if pool is active
+        pub fn isActive(self: *PriorityPool) bool {
+            return self.running;
+        }
+
+        /// Get total jobs executed
+        pub fn getTotalExecuted(self: *PriorityPool) usize {
+            var total: usize = 0;
+            for (0..POOL_SIZE) |i| {
+                total += self.states[i].jobs_executed;
+            }
+            return total;
+        }
+
+        /// Get jobs executed per priority
+        pub fn getExecutedByPriority(self: *PriorityPool) [PRIORITY_LEVELS]usize {
+            var totals: [PRIORITY_LEVELS]usize = .{0} ** PRIORITY_LEVELS;
+            for (0..POOL_SIZE) |i| {
+                for (0..PRIORITY_LEVELS) |p| {
+                    totals[p] += self.states[i].jobs_by_priority[p];
+                }
+            }
+            return totals;
+        }
+
+        /// Get priority scheduling efficiency
+        pub fn getPriorityEfficiency(self: *PriorityPool) f64 {
+            const by_priority = self.getExecutedByPriority();
+            var weighted_sum: f64 = 0.0;
+            var total: f64 = 0.0;
+
+            for (0..PRIORITY_LEVELS) |p| {
+                const level = PriorityLevel.fromInt(@intCast(p));
+                const count = @as(f64, @floatFromInt(by_priority[p]));
+                weighted_sum += count * level.weight();
+                total += count;
+            }
+
+            if (total == 0) return 0.0;
+            return weighted_sum / total;
+        }
+    };
+
+    /// Global priority pool
+    var global_priority_pool: ?PriorityPool = null;
+
+    /// Get or create global priority pool
+    pub fn getGlobalPriorityPool() *PriorityPool {
+        if (global_priority_pool == null) {
+            global_priority_pool = PriorityPool.init();
+            global_priority_pool.?.start();
+        }
+        return &global_priority_pool.?;
+    }
+
+    /// Shutdown global priority pool
+    pub fn shutdownGlobalPriorityPool() void {
+        if (global_priority_pool) |*pool| {
+            pool.stop();
+            global_priority_pool = null;
+        }
+    }
+
+    /// Check if global priority pool is available
+    pub fn hasGlobalPriorityPool() bool {
+        return global_priority_pool != null and global_priority_pool.?.running;
+    }
+
+    /// Get priority stats from global pool
+    pub fn getPriorityStats() struct { executed: usize, by_priority: [PRIORITY_LEVELS]usize, efficiency: f64 } {
+        if (global_priority_pool) |*pool| {
+            return .{
+                .executed = pool.getTotalExecuted(),
+                .by_priority = pool.getExecutedByPriority(),
+                .efficiency = pool.getPriorityEfficiency(),
+            };
+        }
+        return .{ .executed = 0, .by_priority = .{0} ** PRIORITY_LEVELS, .efficiency = 0.0 };
+    }
+
+    // ============================================================
+    // CYCLE 46: DEADLINE SCHEDULING (EDF - Earliest Deadline First)
+    // Real-time constraints with φ⁻¹ urgency calculation
+    // ============================================================
+
+    /// Deadline urgency levels with φ⁻¹ weighted values
+    pub const DeadlineUrgency = enum(u8) {
+        immediate = 0, // Deadline passed or imminent
+        urgent = 1, // Very soon
+        normal = 2, // Standard timing
+        relaxed = 3, // Can wait
+        flexible = 4, // No strict deadline
+
+        /// Get urgency weight (φ⁻¹ based)
+        pub fn weight(self: DeadlineUrgency) f64 {
+            return switch (self) {
+                .immediate => 1.0,
+                .urgent => PHI_INVERSE, // 0.618
+                .normal => PHI_INVERSE * PHI_INVERSE, // 0.382
+                .relaxed => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE, // 0.236
+                .flexible => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE * PHI_INVERSE, // 0.146
+            };
+        }
+    };
+
+    /// Job with deadline for real-time scheduling
+    pub const DeadlineJob = struct {
+        func: JobFn,
+        context: *anyopaque,
+        deadline: i64, // Absolute deadline in nanoseconds
+        urgency: f64, // Calculated urgency (higher = more urgent)
+        completed: std.atomic.Value(bool),
+
+        const Self = @This();
+
+        /// Create a deadline job
+        pub fn init(func: JobFn, context: *anyopaque, deadline_ns: i64) Self {
+            const now = std.time.nanoTimestamp();
+            const remaining = deadline_ns - now;
+            const urgency = calculateUrgency(remaining);
+
+            return Self{
+                .func = func,
+                .context = context,
+                .deadline = deadline_ns,
+                .urgency = urgency,
+                .completed = std.atomic.Value(bool).init(false),
+            };
+        }
+
+        /// Calculate urgency based on remaining time
+        pub fn calculateUrgency(remaining_ns: i64) f64 {
+            if (remaining_ns <= 0) return 1.0; // Immediate - deadline passed
+            if (remaining_ns < 1_000_000) return 1.0; // < 1ms = immediate
+
+            const remaining_ms = @as(f64, @floatFromInt(remaining_ns)) / 1_000_000.0;
+
+            // Urgency = 1.0 / max(1, remaining_ms * φ⁻¹)
+            return 1.0 / @max(1.0, remaining_ms * PHI_INVERSE);
+        }
+
+        /// Update urgency based on current time
+        pub fn updateUrgency(self: *Self) void {
+            const now = std.time.nanoTimestamp();
+            const remaining = self.deadline - now;
+            self.urgency = calculateUrgency(remaining);
+        }
+
+        /// Check if deadline has passed
+        pub fn isExpired(self: *const Self) bool {
+            return std.time.nanoTimestamp() > self.deadline;
+        }
+
+        /// Get remaining time in nanoseconds
+        pub fn remainingTime(self: *const Self) i64 {
+            return self.deadline - std.time.nanoTimestamp();
+        }
+
+        /// Get deadline class based on remaining time
+        pub fn getDeadlineClass(self: *const Self) DeadlineUrgency {
+            const remaining = self.remainingTime();
+            if (remaining <= 0) return .immediate;
+            if (remaining < 10_000_000) return .urgent; // < 10ms
+            if (remaining < 100_000_000) return .normal; // < 100ms
+            if (remaining < 1_000_000_000) return .relaxed; // < 1s
+            return .flexible;
+        }
+    };
+
+    /// EDF (Earliest Deadline First) Job Queue
+    pub const DeadlineJobQueue = struct {
+        jobs: [MAX_QUEUE_SIZE]?DeadlineJob,
+        count: std.atomic.Value(usize),
+        expired_count: usize,
+        executed_count: usize,
+        by_urgency: [5]usize, // Track by DeadlineUrgency
+
+        const Self = @This();
+        const MAX_QUEUE_SIZE = 256;
+
+        pub fn init() Self {
+            return Self{
+                .jobs = .{null} ** MAX_QUEUE_SIZE,
+                .count = std.atomic.Value(usize).init(0),
+                .expired_count = 0,
+                .executed_count = 0,
+                .by_urgency = .{0} ** 5,
+            };
+        }
+
+        /// Push job (sorted by deadline - earliest first)
+        pub fn push(self: *Self, job: DeadlineJob) bool {
+            const current_count = self.count.load(.acquire);
+            if (current_count >= MAX_QUEUE_SIZE) return false;
+
+            // Find insertion point (earliest deadline first)
+            var insert_idx: usize = current_count;
+            for (0..current_count) |i| {
+                if (self.jobs[i]) |existing| {
+                    if (job.deadline < existing.deadline) {
+                        insert_idx = i;
+                        break;
+                    }
+                }
+            }
+
+            // Shift jobs to make room
+            if (insert_idx < current_count) {
+                var i = current_count;
+                while (i > insert_idx) : (i -= 1) {
+                    self.jobs[i] = self.jobs[i - 1];
+                }
+            }
+
+            self.jobs[insert_idx] = job;
+            _ = self.count.fetchAdd(1, .release);
+            return true;
+        }
+
+        /// Pop job with earliest deadline
+        pub fn pop(self: *Self) ?DeadlineJob {
+            const current_count = self.count.load(.acquire);
+            if (current_count == 0) return null;
+
+            const job = self.jobs[0];
+            if (job == null) return null;
+
+            // Shift remaining jobs
+            for (0..current_count - 1) |i| {
+                self.jobs[i] = self.jobs[i + 1];
+            }
+            self.jobs[current_count - 1] = null;
+            _ = self.count.fetchSub(1, .release);
+
+            // Track by urgency class
+            if (job) |j| {
+                const class = j.getDeadlineClass();
+                self.by_urgency[@intFromEnum(class)] += 1;
+            }
+
+            return job;
+        }
+
+        /// Pop most urgent job (update all urgencies first)
+        pub fn popMostUrgent(self: *Self) ?DeadlineJob {
+            const current_count = self.count.load(.acquire);
+            if (current_count == 0) return null;
+
+            // Update all urgencies and find most urgent
+            var most_urgent_idx: usize = 0;
+            var highest_urgency: f64 = 0.0;
+
+            for (0..current_count) |i| {
+                if (self.jobs[i]) |*job| {
+                    var mutable_job = job.*;
+                    mutable_job.updateUrgency();
+                    self.jobs[i] = mutable_job;
+
+                    if (mutable_job.urgency > highest_urgency) {
+                        highest_urgency = mutable_job.urgency;
+                        most_urgent_idx = i;
+                    }
+                }
+            }
+
+            const job = self.jobs[most_urgent_idx];
+            if (job == null) return null;
+
+            // Shift remaining jobs
+            for (most_urgent_idx..current_count - 1) |i| {
+                self.jobs[i] = self.jobs[i + 1];
+            }
+            self.jobs[current_count - 1] = null;
+            _ = self.count.fetchSub(1, .release);
+
+            // Track by urgency class
+            if (job) |j| {
+                const class = j.getDeadlineClass();
+                self.by_urgency[@intFromEnum(class)] += 1;
+            }
+
+            return job;
+        }
+
+        /// Get count of expired jobs
+        pub fn countExpired(self: *Self) usize {
+            var expired: usize = 0;
+            const current_count = self.count.load(.acquire);
+            for (0..current_count) |i| {
+                if (self.jobs[i]) |job| {
+                    if (job.isExpired()) expired += 1;
+                }
+            }
+            return expired;
+        }
+
+        pub fn getCount(self: *const Self) usize {
+            return self.count.load(.acquire);
+        }
+
+        pub fn getExecutedByUrgency(self: *const Self) [5]usize {
+            return self.by_urgency;
+        }
+    };
+
+    /// Worker with deadline awareness
+    pub const DeadlineWorkerState = struct {
+        id: usize,
+        queue: DeadlineJobQueue,
+        executed: usize,
+        missed_deadlines: usize,
+        total_lateness: i64, // Sum of lateness for missed deadlines
+
+        const Self = @This();
+
+        pub fn init(id: usize) Self {
+            return Self{
+                .id = id,
+                .queue = DeadlineJobQueue.init(),
+                .executed = 0,
+                .missed_deadlines = 0,
+                .total_lateness = 0,
+            };
+        }
+
+        pub fn executeOne(self: *Self) bool {
+            if (self.queue.popMostUrgent()) |job| {
+                const now = std.time.nanoTimestamp();
+                const was_expired = now > job.deadline;
+
+                // Execute the job
+                job.func(job.context);
+
+                self.executed += 1;
+                if (was_expired) {
+                    self.missed_deadlines += 1;
+                    self.total_lateness += (now - job.deadline);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        pub fn getMissRate(self: *const Self) f64 {
+            if (self.executed == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.missed_deadlines)) / @as(f64, @floatFromInt(self.executed));
+        }
+
+        pub fn getAverageLateness(self: *const Self) f64 {
+            if (self.missed_deadlines == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.total_lateness)) / @as(f64, @floatFromInt(self.missed_deadlines));
+        }
+    };
+
+    /// Pool with deadline-aware scheduling
+    pub const DeadlinePool = struct {
+        workers: [MAX_WORKERS]DeadlineWorkerState,
+        worker_count: usize,
+        running: bool,
+        total_submitted: usize,
+        total_executed: usize,
+        total_missed: usize,
+
+        const Self = @This();
+        const MAX_WORKERS = 8;
+
+        pub fn init() Self {
+            var workers: [MAX_WORKERS]DeadlineWorkerState = undefined;
+            for (0..MAX_WORKERS) |i| {
+                workers[i] = DeadlineWorkerState.init(i);
+            }
+            return Self{
+                .workers = workers,
+                .worker_count = MAX_WORKERS,
+                .running = false,
+                .total_submitted = 0,
+                .total_executed = 0,
+                .total_missed = 0,
+            };
+        }
+
+        pub fn start(self: *Self) void {
+            self.running = true;
+        }
+
+        pub fn stop(self: *Self) void {
+            self.running = false;
+        }
+
+        /// Submit job with deadline
+        pub fn submit(self: *Self, func: JobFn, context: *anyopaque, deadline_ns: i64) bool {
+            if (!self.running) return false;
+
+            const job = DeadlineJob.init(func, context, deadline_ns);
+
+            // Find worker with least load
+            var min_load: usize = self.workers[0].queue.getCount();
+            var target_worker: usize = 0;
+
+            for (1..self.worker_count) |i| {
+                const worker_load = self.workers[i].queue.getCount();
+                if (worker_load < min_load) {
+                    min_load = worker_load;
+                    target_worker = i;
+                }
+            }
+
+            if (self.workers[target_worker].queue.push(job)) {
+                self.total_submitted += 1;
+                return true;
+            }
+            return false;
+        }
+
+        /// Submit with relative deadline (from now)
+        pub fn submitWithTimeout(self: *Self, func: JobFn, context: *anyopaque, timeout_ns: i64) bool {
+            const deadline = std.time.nanoTimestamp() + timeout_ns;
+            return self.submit(func, context, deadline);
+        }
+
+        /// Execute jobs from all workers
+        pub fn tick(self: *Self) usize {
+            var executed: usize = 0;
+            for (0..self.worker_count) |i| {
+                if (self.workers[i].executeOne()) {
+                    executed += 1;
+                    self.total_executed += 1;
+                    if (self.workers[i].missed_deadlines > 0) {
+                        self.total_missed = self.getTotalMissed();
+                    }
+                }
+            }
+            return executed;
+        }
+
+        /// Run until all jobs complete
+        pub fn drain(self: *Self) void {
+            while (self.getPendingCount() > 0) {
+                _ = self.tick();
+            }
+        }
+
+        pub fn getPendingCount(self: *const Self) usize {
+            var total: usize = 0;
+            for (0..self.worker_count) |i| {
+                total += self.workers[i].queue.getCount();
+            }
+            return total;
+        }
+
+        pub fn getTotalExecuted(self: *const Self) usize {
+            var total: usize = 0;
+            for (0..self.worker_count) |i| {
+                total += self.workers[i].executed;
+            }
+            return total;
+        }
+
+        pub fn getTotalMissed(self: *const Self) usize {
+            var total: usize = 0;
+            for (0..self.worker_count) |i| {
+                total += self.workers[i].missed_deadlines;
+            }
+            return total;
+        }
+
+        /// Get deadline miss rate (0.0 = perfect, 1.0 = all missed)
+        pub fn getMissRate(self: *const Self) f64 {
+            const executed = self.getTotalExecuted();
+            if (executed == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.getTotalMissed())) / @as(f64, @floatFromInt(executed));
+        }
+
+        /// Get deadline efficiency (inverse of miss rate)
+        pub fn getDeadlineEfficiency(self: *const Self) f64 {
+            return 1.0 - self.getMissRate();
+        }
+
+        pub fn getExecutedByUrgency(self: *const Self) [5]usize {
+            var total: [5]usize = .{0} ** 5;
+            for (0..self.worker_count) |i| {
+                const worker_urgency = self.workers[i].queue.getExecutedByUrgency();
+                for (0..5) |u| {
+                    total[u] += worker_urgency[u];
+                }
+            }
+            return total;
+        }
+    };
+
+    // Global deadline pool
+    var global_deadline_pool: ?DeadlinePool = null;
+
+    /// Get or create global deadline pool
+    pub fn getDeadlinePool() *DeadlinePool {
+        if (global_deadline_pool == null) {
+            global_deadline_pool = DeadlinePool.init();
+            global_deadline_pool.?.start();
+        }
+        return &global_deadline_pool.?;
+    }
+
+    /// Shutdown deadline pool
+    pub fn shutdownDeadlinePool() void {
+        if (global_deadline_pool) |*pool| {
+            pool.stop();
+            global_deadline_pool = null;
+        }
+    }
+
+    /// Check if deadline pool is available
+    pub fn hasDeadlinePool() bool {
+        return global_deadline_pool != null and global_deadline_pool.?.running;
+    }
+
+    /// Get deadline scheduling stats
+    pub fn getDeadlineStats() struct { executed: usize, missed: usize, efficiency: f64, by_urgency: [5]usize } {
+        if (global_deadline_pool) |*pool| {
+            return .{
+                .executed = pool.getTotalExecuted(),
+                .missed = pool.getTotalMissed(),
+                .efficiency = pool.getDeadlineEfficiency(),
+                .by_urgency = pool.getExecutedByUrgency(),
+            };
+        }
+        return .{ .executed = 0, .missed = 0, .efficiency = 0.0, .by_urgency = .{0} ** 5 };
+    }
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -5390,6 +6791,158 @@ test "TextCorpus Adaptive worker state backoff" {
     try std.testing.expectEqual(@as(usize, 8), state.getBackoffYields());
 
     // Reset should bring back to 1
+    state.resetBackoff();
+    try std.testing.expectEqual(@as(usize, 1), state.getBackoffYields());
+}
+
+test "TextCorpus Batched work-stealing deque exists" {
+    // Verify batched structures exist
+    _ = TextCorpus.BatchedStealingDeque;
+    _ = TextCorpus.BatchedPool;
+    _ = TextCorpus.BatchedWorkerState;
+    _ = TextCorpus.MAX_BATCH_SIZE;
+    _ = &TextCorpus.calculateBatchSize;
+    _ = &TextCorpus.getGlobalBatchedPool;
+    _ = &TextCorpus.shutdownGlobalBatchedPool;
+    _ = &TextCorpus.hasGlobalBatchedPool;
+    _ = &TextCorpus.getBatchedStats;
+
+    // Verify MAX_BATCH_SIZE is reasonable
+    try std.testing.expectEqual(@as(usize, 8), TextCorpus.MAX_BATCH_SIZE);
+
+    // Test batch size calculation
+    try std.testing.expectEqual(@as(usize, 0), TextCorpus.calculateBatchSize(0));
+    try std.testing.expectEqual(@as(usize, 1), TextCorpus.calculateBatchSize(1));
+    try std.testing.expectEqual(@as(usize, 1), TextCorpus.calculateBatchSize(2)); // 2 * 0.618 ≈ 1
+    try std.testing.expectEqual(@as(usize, 3), TextCorpus.calculateBatchSize(5)); // 5 * 0.618 ≈ 3
+    try std.testing.expectEqual(@as(usize, 6), TextCorpus.calculateBatchSize(10)); // 10 * 0.618 ≈ 6
+    try std.testing.expectEqual(@as(usize, 8), TextCorpus.calculateBatchSize(20)); // capped at MAX
+
+    // Test batched deque operations
+    var deque = TextCorpus.BatchedStealingDeque.init();
+    try std.testing.expect(deque.isEmpty());
+    try std.testing.expectEqual(@as(usize, 0), deque.size());
+
+    // Push multiple jobs
+    const dummy_job = TextCorpus.PoolJob{
+        .func = undefined,
+        .context = undefined,
+        .completed = false,
+    };
+
+    for (0..5) |_| {
+        try std.testing.expect(deque.push(dummy_job));
+    }
+    try std.testing.expectEqual(@as(usize, 5), deque.size());
+
+    // Single steal
+    _ = deque.steal();
+    try std.testing.expect(deque.steal_attempts > 0);
+
+    // Batch steal
+    var batch_buffer: [TextCorpus.MAX_BATCH_SIZE]TextCorpus.PoolJob = undefined;
+    const stolen_count = deque.stealBatch(&batch_buffer);
+    try std.testing.expect(stolen_count >= 0);
+
+    // Test batched pool initialization
+    var pool = TextCorpus.BatchedPool.init();
+    try std.testing.expect(!pool.isActive());
+
+    // Start pool
+    pool.start();
+    try std.testing.expect(pool.isActive());
+
+    // Stop pool
+    pool.stop();
+    try std.testing.expect(!pool.isActive());
+
+    // Verify batch efficiency function
+    const batch_efficiency = pool.getBatchEfficiency();
+    try std.testing.expect(batch_efficiency >= 0.0 and batch_efficiency <= 1.0);
+}
+
+test "TextCorpus Batched worker state tracking" {
+    var state = TextCorpus.BatchedWorkerState.init();
+
+    // Initial state
+    try std.testing.expectEqual(@as(usize, 0), state.jobs_executed);
+    try std.testing.expectEqual(@as(usize, 0), state.jobs_stolen);
+    try std.testing.expectEqual(@as(usize, 0), state.batches_stolen);
+    try std.testing.expectEqual(@as(usize, 1), state.getBackoffYields());
+
+    // Backoff works same as adaptive
+    state.incrementBackoff();
+    try std.testing.expectEqual(@as(usize, 2), state.getBackoffYields());
+
+    state.resetBackoff();
+    try std.testing.expectEqual(@as(usize, 1), state.getBackoffYields());
+}
+
+test "TextCorpus Priority job queue exists" {
+    // Verify priority structures exist
+    _ = TextCorpus.PriorityJobQueue;
+    _ = TextCorpus.PriorityPool;
+    _ = TextCorpus.PriorityWorkerState;
+    _ = TextCorpus.PriorityLevel;
+    _ = TextCorpus.PriorityJob;
+    _ = TextCorpus.PRIORITY_LEVELS;
+    _ = TextCorpus.PRIORITY_QUEUE_CAPACITY;
+    _ = &TextCorpus.getGlobalPriorityPool;
+    _ = &TextCorpus.shutdownGlobalPriorityPool;
+    _ = &TextCorpus.hasGlobalPriorityPool;
+    _ = &TextCorpus.getPriorityStats;
+
+    // Verify PRIORITY_LEVELS
+    try std.testing.expectEqual(@as(usize, 5), TextCorpus.PRIORITY_LEVELS);
+
+    // Test priority level weights (φ⁻¹ based)
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), TextCorpus.PriorityLevel.critical.weight(), 0.001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.618), TextCorpus.PriorityLevel.high.weight(), 0.001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.382), TextCorpus.PriorityLevel.normal.weight(), 0.001);
+
+    // Test priority level from int
+    try std.testing.expectEqual(TextCorpus.PriorityLevel.critical, TextCorpus.PriorityLevel.fromInt(0));
+    try std.testing.expectEqual(TextCorpus.PriorityLevel.high, TextCorpus.PriorityLevel.fromInt(1));
+    try std.testing.expectEqual(TextCorpus.PriorityLevel.normal, TextCorpus.PriorityLevel.fromInt(2));
+
+    // Test priority job queue operations
+    var queue = TextCorpus.PriorityJobQueue.init();
+    try std.testing.expect(queue.isEmpty());
+    try std.testing.expectEqual(@as(usize, 0), queue.size());
+
+    // Test priority pool initialization
+    var pool = TextCorpus.PriorityPool.init();
+    try std.testing.expect(!pool.isActive());
+
+    // Start pool
+    pool.start();
+    try std.testing.expect(pool.isActive());
+
+    // Stop pool
+    pool.stop();
+    try std.testing.expect(!pool.isActive());
+
+    // Verify priority efficiency function
+    const priority_efficiency = pool.getPriorityEfficiency();
+    try std.testing.expect(priority_efficiency >= 0.0 and priority_efficiency <= 1.0);
+}
+
+test "TextCorpus Priority worker state tracking" {
+    var state = TextCorpus.PriorityWorkerState.init();
+
+    // Initial state
+    try std.testing.expectEqual(@as(usize, 0), state.jobs_executed);
+    try std.testing.expectEqual(@as(usize, 1), state.getBackoffYields());
+
+    // Jobs by priority should be zero
+    for (0..TextCorpus.PRIORITY_LEVELS) |p| {
+        try std.testing.expectEqual(@as(usize, 0), state.jobs_by_priority[p]);
+    }
+
+    // Backoff works
+    state.incrementBackoff();
+    try std.testing.expectEqual(@as(usize, 2), state.getBackoffYields());
+
     state.resetBackoff();
     try std.testing.expectEqual(@as(usize, 1), state.getBackoffYields());
 }
