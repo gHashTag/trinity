@@ -6761,6 +6761,400 @@ pub const TextCorpus = struct {
         };
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // CYCLE 49: Agent Memory / Context Window
+    // ═══════════════════════════════════════════════════════════════
+
+    /// Memory entry type
+    pub const MemoryType = enum(u8) {
+        message = 0, // Conversation message
+        summary = 1, // Compressed summary
+        fact = 2, // Extracted fact
+        context = 3, // System context
+        anchor = 4, // Pinned memory (never evicted)
+
+        pub fn name(self: MemoryType) []const u8 {
+            return switch (self) {
+                .message => "message",
+                .summary => "summary",
+                .fact => "fact",
+                .context => "context",
+                .anchor => "anchor",
+            };
+        }
+
+        /// φ⁻¹ retention weight (higher = kept longer)
+        pub fn retentionWeight(self: MemoryType) f64 {
+            return switch (self) {
+                .anchor => 1.0, // Never evicted
+                .fact => PHI_INVERSE, // 0.618
+                .context => PHI_INVERSE * PHI_INVERSE, // 0.382
+                .summary => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE, // 0.236
+                .message => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE * PHI_INVERSE, // 0.146
+            };
+        }
+    };
+
+    /// Single memory entry
+    pub const MemoryEntry = struct {
+        entry_type: MemoryType,
+        content: [512]u8,
+        content_len: usize,
+        timestamp: i64,
+        relevance: f64, // 0.0-1.0 relevance score
+        access_count: usize,
+        active: bool,
+
+        pub fn init(entry_type: MemoryType, content: []const u8) MemoryEntry {
+            var entry = MemoryEntry{
+                .entry_type = entry_type,
+                .content = .{0} ** 512,
+                .content_len = 0,
+                .timestamp = 0,
+                .relevance = 1.0,
+                .access_count = 0,
+                .active = true,
+            };
+            const copy_len = @min(content.len, 512);
+            @memcpy(entry.content[0..copy_len], content[0..copy_len]);
+            entry.content_len = copy_len;
+            return entry;
+        }
+
+        /// Get content slice
+        pub fn getContent(self: *const MemoryEntry) []const u8 {
+            return self.content[0..self.content_len];
+        }
+
+        /// Effective retention score (type weight * relevance * access boost)
+        pub fn retentionScore(self: *const MemoryEntry) f64 {
+            const type_weight = self.entry_type.retentionWeight();
+            const access_boost = 1.0 + @as(f64, @floatFromInt(@min(self.access_count, 10))) * 0.1;
+            return type_weight * self.relevance * access_boost;
+        }
+
+        /// Mark as accessed
+        pub fn touch(self: *MemoryEntry) void {
+            self.access_count += 1;
+        }
+
+        /// Decay relevance by φ⁻¹
+        pub fn decay(self: *MemoryEntry) void {
+            self.relevance *= PHI_INVERSE;
+            if (self.relevance < 0.01) {
+                self.relevance = 0.01;
+            }
+        }
+    };
+
+    /// Context window with sliding window + summarization
+    pub const ContextWindow = struct {
+        entries: [256]?MemoryEntry,
+        count: usize,
+        capacity: usize,
+        total_added: usize,
+        total_evicted: usize,
+        total_summarized: usize,
+
+        pub fn init() ContextWindow {
+            return ContextWindow{
+                .entries = .{null} ** 256,
+                .count = 0,
+                .capacity = 256,
+                .total_added = 0,
+                .total_evicted = 0,
+                .total_summarized = 0,
+            };
+        }
+
+        /// Add entry to context window
+        pub fn add(self: *ContextWindow, entry: MemoryEntry) bool {
+            // Find empty slot
+            for (self.entries[0..self.capacity], 0..) |*slot, i| {
+                _ = i;
+                if (slot.* == null) {
+                    slot.* = entry;
+                    self.count += 1;
+                    self.total_added += 1;
+                    return true;
+                }
+            }
+            // Window full — evict lowest retention score
+            if (self.evictLowest()) {
+                return self.add(entry);
+            }
+            return false;
+        }
+
+        /// Add message to context
+        pub fn addMessage(self: *ContextWindow, content: []const u8) bool {
+            const entry = MemoryEntry.init(.message, content);
+            return self.add(entry);
+        }
+
+        /// Add fact to context
+        pub fn addFact(self: *ContextWindow, content: []const u8) bool {
+            const entry = MemoryEntry.init(.fact, content);
+            return self.add(entry);
+        }
+
+        /// Add anchor (pinned, never evicted)
+        pub fn addAnchor(self: *ContextWindow, content: []const u8) bool {
+            const entry = MemoryEntry.init(.anchor, content);
+            return self.add(entry);
+        }
+
+        /// Get entry by index
+        pub fn get(self: *ContextWindow, index: usize) ?*MemoryEntry {
+            if (index >= self.capacity) return null;
+            if (self.entries[index]) |*entry| {
+                entry.touch();
+                return entry;
+            }
+            return null;
+        }
+
+        /// Count entries by type
+        pub fn countByType(self: *const ContextWindow, entry_type: MemoryType) usize {
+            var result: usize = 0;
+            for (self.entries[0..self.capacity]) |maybe_entry| {
+                if (maybe_entry) |entry| {
+                    if (entry.entry_type == entry_type) result += 1;
+                }
+            }
+            return result;
+        }
+
+        /// Evict entry with lowest retention score (skips anchors)
+        fn evictLowest(self: *ContextWindow) bool {
+            var min_score: f64 = 1e10;
+            var min_idx: ?usize = null;
+
+            for (self.entries[0..self.capacity], 0..) |maybe_entry, i| {
+                if (maybe_entry) |entry| {
+                    if (entry.entry_type == .anchor) continue; // Never evict anchors
+                    const score = entry.retentionScore();
+                    if (score < min_score) {
+                        min_score = score;
+                        min_idx = i;
+                    }
+                }
+            }
+
+            if (min_idx) |idx| {
+                self.entries[idx] = null;
+                self.count -= 1;
+                self.total_evicted += 1;
+                return true;
+            }
+            return false;
+        }
+
+        /// Decay all entries by φ⁻¹
+        pub fn decayAll(self: *ContextWindow) void {
+            for (self.entries[0..self.capacity]) |*maybe_entry| {
+                if (maybe_entry.*) |*entry| {
+                    if (entry.entry_type != .anchor) {
+                        entry.decay();
+                    }
+                }
+            }
+        }
+
+        /// Summarize old messages into a summary entry
+        pub fn summarize(self: *ContextWindow) bool {
+            // Count messages with low relevance
+            var low_relevance_count: usize = 0;
+            for (self.entries[0..self.capacity]) |maybe_entry| {
+                if (maybe_entry) |entry| {
+                    if (entry.entry_type == .message and entry.relevance < 0.3) {
+                        low_relevance_count += 1;
+                    }
+                }
+            }
+
+            if (low_relevance_count < 3) return false; // Need at least 3 to summarize
+
+            // Remove low-relevance messages
+            var removed: usize = 0;
+            for (self.entries[0..self.capacity]) |*maybe_entry| {
+                if (maybe_entry.*) |entry| {
+                    if (entry.entry_type == .message and entry.relevance < 0.3) {
+                        maybe_entry.* = null;
+                        self.count -= 1;
+                        removed += 1;
+                    }
+                }
+            }
+
+            // Add summary entry
+            if (removed > 0) {
+                var summary_buf: [512]u8 = .{0} ** 512;
+                const summary_text = std.fmt.bufPrint(&summary_buf, "[Summary: {d} messages compressed]", .{removed}) catch "[Summary]";
+                const summary_entry = MemoryEntry.init(.summary, summary_text);
+                _ = self.add(summary_entry);
+                self.total_summarized += removed;
+                return true;
+            }
+            return false;
+        }
+
+        /// Get window utilization
+        pub fn utilization(self: *const ContextWindow) f64 {
+            if (self.capacity == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.count)) / @as(f64, @floatFromInt(self.capacity));
+        }
+    };
+
+    /// Agent memory with short-term and long-term storage
+    pub const AgentMemory = struct {
+        short_term: ContextWindow, // Active context (sliding window)
+        long_term: ContextWindow, // Persistent facts and anchors
+        conversation_id: u64,
+        turn_count: usize,
+        total_tokens_processed: usize,
+
+        pub fn init() AgentMemory {
+            return AgentMemory{
+                .short_term = ContextWindow.init(),
+                .long_term = ContextWindow.init(),
+                .conversation_id = 0,
+                .turn_count = 0,
+                .total_tokens_processed = 0,
+            };
+        }
+
+        /// Start new conversation
+        pub fn newConversation(self: *AgentMemory) void {
+            // Summarize short-term before clearing
+            _ = self.short_term.summarize();
+            self.conversation_id += 1;
+            self.turn_count = 0;
+        }
+
+        /// Add user message
+        pub fn addUserMessage(self: *AgentMemory, content: []const u8) void {
+            _ = self.short_term.addMessage(content);
+            self.turn_count += 1;
+            self.total_tokens_processed += content.len;
+        }
+
+        /// Add assistant response
+        pub fn addAssistantResponse(self: *AgentMemory, content: []const u8) void {
+            _ = self.short_term.addMessage(content);
+            self.total_tokens_processed += content.len;
+        }
+
+        /// Store persistent fact (long-term)
+        pub fn storeFact(self: *AgentMemory, content: []const u8) void {
+            _ = self.long_term.addFact(content);
+        }
+
+        /// Store anchor (never evicted)
+        pub fn storeAnchor(self: *AgentMemory, content: []const u8) void {
+            _ = self.long_term.addAnchor(content);
+        }
+
+        /// Add system context
+        pub fn addContext(self: *AgentMemory, content: []const u8) void {
+            const entry = MemoryEntry.init(.context, content);
+            _ = self.short_term.add(entry);
+        }
+
+        /// Get memory stats
+        pub const MemoryStats = struct {
+            short_term_count: usize,
+            long_term_count: usize,
+            short_term_utilization: f64,
+            long_term_utilization: f64,
+            conversation_id: u64,
+            turn_count: usize,
+            total_tokens: usize,
+            total_evicted: usize,
+            total_summarized: usize,
+        };
+
+        pub fn getStats(self: *const AgentMemory) MemoryStats {
+            return MemoryStats{
+                .short_term_count = self.short_term.count,
+                .long_term_count = self.long_term.count,
+                .short_term_utilization = self.short_term.utilization(),
+                .long_term_utilization = self.long_term.utilization(),
+                .conversation_id = self.conversation_id,
+                .turn_count = self.turn_count,
+                .total_tokens = self.total_tokens_processed,
+                .total_evicted = self.short_term.total_evicted + self.long_term.total_evicted,
+                .total_summarized = self.short_term.total_summarized + self.long_term.total_summarized,
+            };
+        }
+
+        /// Decay short-term memories (call periodically)
+        pub fn decayShortTerm(self: *AgentMemory) void {
+            self.short_term.decayAll();
+        }
+
+        /// Perform maintenance: decay + summarize
+        pub fn maintain(self: *AgentMemory) void {
+            self.short_term.decayAll();
+            _ = self.short_term.summarize();
+        }
+
+        /// Search memory for relevant entries (simple keyword match)
+        pub fn search(self: *AgentMemory, query: []const u8) usize {
+            var found: usize = 0;
+            // Search short-term
+            for (self.short_term.entries[0..self.short_term.capacity]) |maybe_entry| {
+                if (maybe_entry) |entry| {
+                    const content = entry.getContent();
+                    if (content.len >= query.len) {
+                        // Simple substring search
+                        var i: usize = 0;
+                        while (i + query.len <= content.len) : (i += 1) {
+                            if (std.mem.eql(u8, content[i..][0..query.len], query)) {
+                                found += 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            // Search long-term
+            for (self.long_term.entries[0..self.long_term.capacity]) |maybe_entry| {
+                if (maybe_entry) |entry| {
+                    const content = entry.getContent();
+                    if (content.len >= query.len) {
+                        var i: usize = 0;
+                        while (i + query.len <= content.len) : (i += 1) {
+                            if (std.mem.eql(u8, content[i..][0..query.len], query)) {
+                                found += 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return found;
+        }
+    };
+
+    /// Global agent memory singleton
+    var global_memory: ?AgentMemory = null;
+
+    pub fn getAgentMemory() *AgentMemory {
+        if (global_memory == null) {
+            global_memory = AgentMemory.init();
+        }
+        return &global_memory.?;
+    }
+
+    pub fn shutdownAgentMemory() void {
+        global_memory = null;
+    }
+
+    pub fn hasAgentMemory() bool {
+        return global_memory != null;
+    }
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -8438,6 +8832,201 @@ test "UnifiedAgent global singleton" {
 
     TextCorpus.shutdownUnifiedAgent();
     try std.testing.expect(!TextCorpus.hasUnifiedAgent());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 49: Agent Memory / Context Window Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "MemoryType properties" {
+    // Names
+    try std.testing.expectEqualStrings("message", TextCorpus.MemoryType.message.name());
+    try std.testing.expectEqualStrings("anchor", TextCorpus.MemoryType.anchor.name());
+    try std.testing.expectEqualStrings("fact", TextCorpus.MemoryType.fact.name());
+
+    // φ⁻¹ retention weights (descending)
+    const anchor_w = TextCorpus.MemoryType.anchor.retentionWeight();
+    const fact_w = TextCorpus.MemoryType.fact.retentionWeight();
+    const context_w = TextCorpus.MemoryType.context.retentionWeight();
+    const summary_w = TextCorpus.MemoryType.summary.retentionWeight();
+    const message_w = TextCorpus.MemoryType.message.retentionWeight();
+
+    try std.testing.expect(anchor_w > fact_w);
+    try std.testing.expect(fact_w > context_w);
+    try std.testing.expect(context_w > summary_w);
+    try std.testing.expect(summary_w > message_w);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), anchor_w, 0.001);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.618), fact_w, 0.01);
+}
+
+test "MemoryEntry creation and content" {
+    var entry = TextCorpus.MemoryEntry.init(.message, "Hello world");
+    try std.testing.expectEqualStrings("Hello world", entry.getContent());
+    try std.testing.expectEqual(TextCorpus.MemoryType.message, entry.entry_type);
+    try std.testing.expect(entry.active);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), entry.relevance, 0.001);
+    try std.testing.expectEqual(@as(usize, 0), entry.access_count);
+
+    // Touch increases access count
+    entry.touch();
+    try std.testing.expectEqual(@as(usize, 1), entry.access_count);
+}
+
+test "MemoryEntry retention score" {
+    const anchor = TextCorpus.MemoryEntry.init(.anchor, "pinned");
+    const msg = TextCorpus.MemoryEntry.init(.message, "chat");
+
+    // Anchor has higher retention than message
+    try std.testing.expect(anchor.retentionScore() > msg.retentionScore());
+}
+
+test "MemoryEntry decay" {
+    var entry = TextCorpus.MemoryEntry.init(.message, "decay test");
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), entry.relevance, 0.001);
+
+    entry.decay();
+    try std.testing.expectApproxEqAbs(@as(f64, 0.618), entry.relevance, 0.01);
+
+    entry.decay();
+    try std.testing.expectApproxEqAbs(@as(f64, 0.382), entry.relevance, 0.01);
+
+    // Minimum floor
+    for (0..100) |_| entry.decay();
+    try std.testing.expect(entry.relevance >= 0.01);
+}
+
+test "ContextWindow add and get" {
+    var window = TextCorpus.ContextWindow.init();
+    try std.testing.expectEqual(@as(usize, 0), window.count);
+
+    const added = window.addMessage("first message");
+    try std.testing.expect(added);
+    try std.testing.expectEqual(@as(usize, 1), window.count);
+    try std.testing.expectEqual(@as(usize, 1), window.total_added);
+
+    // Get entry
+    if (window.get(0)) |entry| {
+        try std.testing.expectEqualStrings("first message", entry.getContent());
+        try std.testing.expectEqual(@as(usize, 1), entry.access_count); // touched by get
+    } else {
+        return error.TestExpectedEqual;
+    }
+}
+
+test "ContextWindow multiple types" {
+    var window = TextCorpus.ContextWindow.init();
+    _ = window.addMessage("msg1");
+    _ = window.addMessage("msg2");
+    _ = window.addFact("fact1");
+    _ = window.addAnchor("anchor1");
+
+    try std.testing.expectEqual(@as(usize, 4), window.count);
+    try std.testing.expectEqual(@as(usize, 2), window.countByType(.message));
+    try std.testing.expectEqual(@as(usize, 1), window.countByType(.fact));
+    try std.testing.expectEqual(@as(usize, 1), window.countByType(.anchor));
+}
+
+test "ContextWindow utilization" {
+    var window = TextCorpus.ContextWindow.init();
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), window.utilization(), 0.001);
+
+    _ = window.addMessage("test");
+    const expected = 1.0 / 256.0;
+    try std.testing.expectApproxEqAbs(expected, window.utilization(), 0.001);
+}
+
+test "ContextWindow decay all" {
+    var window = TextCorpus.ContextWindow.init();
+    _ = window.addMessage("msg");
+    _ = window.addAnchor("pinned");
+
+    window.decayAll();
+
+    // Message should decay
+    if (window.get(0)) |entry| {
+        try std.testing.expectApproxEqAbs(@as(f64, 0.618), entry.relevance, 0.01);
+    }
+
+    // Anchor should NOT decay
+    if (window.get(1)) |entry| {
+        try std.testing.expectApproxEqAbs(@as(f64, 1.0), entry.relevance, 0.001);
+    }
+}
+
+test "AgentMemory init and messages" {
+    var memory = TextCorpus.AgentMemory.init();
+    try std.testing.expectEqual(@as(u64, 0), memory.conversation_id);
+    try std.testing.expectEqual(@as(usize, 0), memory.turn_count);
+
+    memory.addUserMessage("Hello");
+    try std.testing.expectEqual(@as(usize, 1), memory.turn_count);
+    try std.testing.expectEqual(@as(usize, 5), memory.total_tokens_processed);
+
+    memory.addAssistantResponse("Hi there!");
+    try std.testing.expectEqual(@as(usize, 1), memory.turn_count); // Only user msgs increment turns
+    try std.testing.expectEqual(@as(usize, 14), memory.total_tokens_processed);
+}
+
+test "AgentMemory long-term storage" {
+    var memory = TextCorpus.AgentMemory.init();
+    memory.storeFact("User prefers dark mode");
+    memory.storeAnchor("System prompt: be helpful");
+
+    try std.testing.expectEqual(@as(usize, 1), memory.long_term.countByType(.fact));
+    try std.testing.expectEqual(@as(usize, 1), memory.long_term.countByType(.anchor));
+}
+
+test "AgentMemory new conversation" {
+    var memory = TextCorpus.AgentMemory.init();
+    memory.addUserMessage("msg1");
+    memory.addUserMessage("msg2");
+    try std.testing.expectEqual(@as(u64, 0), memory.conversation_id);
+
+    memory.newConversation();
+    try std.testing.expectEqual(@as(u64, 1), memory.conversation_id);
+    try std.testing.expectEqual(@as(usize, 0), memory.turn_count);
+}
+
+test "AgentMemory search" {
+    var memory = TextCorpus.AgentMemory.init();
+    memory.addUserMessage("the quick brown fox");
+    memory.addUserMessage("jumped over the lazy dog");
+    memory.storeFact("foxes are fast");
+
+    const found_fox = memory.search("fox");
+    try std.testing.expectEqual(@as(usize, 2), found_fox); // short-term + long-term
+
+    const found_dog = memory.search("dog");
+    try std.testing.expectEqual(@as(usize, 1), found_dog);
+
+    const found_cat = memory.search("cat");
+    try std.testing.expectEqual(@as(usize, 0), found_cat);
+}
+
+test "AgentMemory stats" {
+    var memory = TextCorpus.AgentMemory.init();
+    memory.addUserMessage("hello");
+    memory.addAssistantResponse("hi");
+    memory.storeFact("test fact");
+
+    const stats = memory.getStats();
+    try std.testing.expectEqual(@as(usize, 2), stats.short_term_count);
+    try std.testing.expectEqual(@as(usize, 1), stats.long_term_count);
+    try std.testing.expectEqual(@as(u64, 0), stats.conversation_id);
+    try std.testing.expectEqual(@as(usize, 1), stats.turn_count);
+    try std.testing.expect(stats.total_tokens > 0);
+    try std.testing.expect(stats.short_term_utilization > 0.0);
+}
+
+test "AgentMemory global singleton" {
+    const mem = TextCorpus.getAgentMemory();
+    try std.testing.expect(TextCorpus.hasAgentMemory());
+
+    mem.addUserMessage("test singleton");
+    try std.testing.expectEqual(@as(usize, 1), mem.turn_count);
+
+    TextCorpus.shutdownAgentMemory();
+    try std.testing.expect(!TextCorpus.hasAgentMemory());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
