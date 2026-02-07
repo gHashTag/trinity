@@ -490,6 +490,80 @@ pub const TestGenerator = struct {
             // PHI_INVERSE test
             try self.builder.writeLine("const phi_inv = realGetPhiInverse();");
             try self.builder.writeLine("try std.testing.expectApproxEqAbs(@as(f64, 0.618), phi_inv, 0.001);");
+        } else if (std.mem.eql(u8, name, "realGetBatchedPool")) {
+            // Batched pool test (Cycle 44)
+            try self.builder.writeLine("const btc_pool = realGetBatchedPool();");
+            try self.builder.writeLine("_ = btc_pool;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realHasBatchedPool")) {
+            // Batched pool check test
+            try self.builder.writeLine("const has_batched = realHasBatchedPool();");
+            try self.builder.writeLine("_ = has_batched;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realGetBatchedStats")) {
+            // Batched stats test
+            try self.builder.writeLine("const btc_stats = realGetBatchedStats();");
+            try self.builder.writeLine("_ = btc_stats.executed;");
+            try self.builder.writeLine("_ = btc_stats.stolen;");
+            try self.builder.writeLine("_ = btc_stats.batches;");
+            try self.builder.writeLine("_ = btc_stats.avg_batch_size;");
+            try self.builder.writeLine("_ = btc_stats.efficiency;");
+        } else if (std.mem.eql(u8, name, "realCalculateBatchSize")) {
+            // Batch size calculation test
+            try self.builder.writeLine("const batch_size = realCalculateBatchSize(10);");
+            try self.builder.writeLine("try std.testing.expect(batch_size >= 1);");
+            try self.builder.writeLine("try std.testing.expect(batch_size <= 8);"); // MAX_BATCH_SIZE
+        } else if (std.mem.eql(u8, name, "realGetMaxBatchSize")) {
+            // MAX_BATCH_SIZE test
+            try self.builder.writeLine("const max_batch = realGetMaxBatchSize();");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(usize, 8), max_batch);");
+        } else if (std.mem.eql(u8, name, "realGetPriorityPool")) {
+            // Priority pool test (Cycle 45)
+            try self.builder.writeLine("const pri_pool = realGetPriorityPool();");
+            try self.builder.writeLine("_ = pri_pool;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realHasPriorityPool")) {
+            // Priority pool check test
+            try self.builder.writeLine("const has_priority = realHasPriorityPool();");
+            try self.builder.writeLine("_ = has_priority;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realGetPriorityStats")) {
+            // Priority stats test
+            try self.builder.writeLine("const pri_stats = realGetPriorityStats();");
+            try self.builder.writeLine("_ = pri_stats.executed;");
+            try self.builder.writeLine("_ = pri_stats.by_priority;");
+            try self.builder.writeLine("_ = pri_stats.efficiency;");
+        } else if (std.mem.eql(u8, name, "realGetPriorityLevels")) {
+            // Priority levels test
+            try self.builder.writeLine("const levels = realGetPriorityLevels();");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(usize, 5), levels);");
+        } else if (std.mem.eql(u8, name, "realGetPriorityWeight")) {
+            // Priority weight test
+            try self.builder.writeLine("const critical_weight = realGetPriorityWeight(0);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(@as(f64, 1.0), critical_weight, 0.001);");
+            try self.builder.writeLine("const high_weight = realGetPriorityWeight(1);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(@as(f64, 0.618), high_weight, 0.001);");
+        } else if (std.mem.eql(u8, name, "realGetDeadlinePool")) {
+            // Deadline pool test
+            try self.builder.writeLine("const dl_pool = realGetDeadlinePool();");
+            try self.builder.writeLine("try std.testing.expect(dl_pool.running);");
+        } else if (std.mem.eql(u8, name, "realHasDeadlinePool")) {
+            // Deadline pool exists test
+            try self.builder.writeLine("_ = realGetDeadlinePool(); // Ensure pool exists");
+            try self.builder.writeLine("try std.testing.expect(realHasDeadlinePool());");
+        } else if (std.mem.eql(u8, name, "realGetDeadlineStats")) {
+            // Deadline stats test
+            try self.builder.writeLine("const dl_stats = realGetDeadlineStats();");
+            try self.builder.writeLine("_ = dl_stats.executed;");
+            try self.builder.writeLine("_ = dl_stats.missed;");
+            try self.builder.writeLine("_ = dl_stats.efficiency;");
+            try self.builder.writeLine("_ = dl_stats.by_urgency;");
+        } else if (std.mem.eql(u8, name, "realGetDeadlineUrgencyLevels")) {
+            // Deadline urgency levels test
+            try self.builder.writeLine("const urgency_levels = realGetDeadlineUrgencyLevels();");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(usize, 5), urgency_levels);");
+        } else if (std.mem.eql(u8, name, "realGetDeadlineUrgencyWeight")) {
+            // Deadline urgency weight test
+            try self.builder.writeLine("const immediate_weight = realGetDeadlineUrgencyWeight(0);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(@as(f64, 1.0), immediate_weight, 0.001);");
+            try self.builder.writeLine("const urgent_weight = realGetDeadlineUrgencyWeight(1);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(@as(f64, 0.618), urgent_weight, 0.001);");
         } else {
             try self.builder.writeLine("// TODO: Add test assertions");
         }

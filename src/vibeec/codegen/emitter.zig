@@ -1031,6 +1031,168 @@ pub const ZigCodeGen = struct {
             return true;
         }
 
+        // BATCHED WORK-STEALING (Cycle 44)
+        if (std_mem.eql(u8, b.name, "realGetBatchedPool")) {
+            try self.builder.writeLine("/// Get global batched pool");
+            try self.builder.writeLine("pub fn realGetBatchedPool() *vsa.TextCorpus.BatchedPool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.getGlobalBatchedPool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHasBatchedPool")) {
+            try self.builder.writeLine("/// Check if batched pool exists");
+            try self.builder.writeLine("pub fn realHasBatchedPool() bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.hasGlobalBatchedPool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetBatchedStats")) {
+            try self.builder.writeLine("/// Get batched statistics");
+            try self.builder.writeLine("pub const BatchedStats = struct { executed: usize, stolen: usize, batches: usize, avg_batch_size: f64, efficiency: f64 };");
+            try self.builder.writeLine("pub fn realGetBatchedStats() BatchedStats {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const stats = vsa.TextCorpus.getBatchedStats();");
+            try self.builder.writeLine("return BatchedStats{ .executed = stats.executed, .stolen = stats.stolen, .batches = stats.batches, .avg_batch_size = stats.avg_batch_size, .efficiency = stats.efficiency };");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realCalculateBatchSize")) {
+            try self.builder.writeLine("/// Calculate optimal batch size for stealing");
+            try self.builder.writeLine("pub fn realCalculateBatchSize(depth: usize) usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.calculateBatchSize(depth);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetMaxBatchSize")) {
+            try self.builder.writeLine("/// Get maximum batch size constant");
+            try self.builder.writeLine("pub fn realGetMaxBatchSize() usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.MAX_BATCH_SIZE;");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // PRIORITY JOB QUEUE (Cycle 45)
+        if (std_mem.eql(u8, b.name, "realGetPriorityPool")) {
+            try self.builder.writeLine("/// Get global priority pool");
+            try self.builder.writeLine("pub fn realGetPriorityPool() *vsa.TextCorpus.PriorityPool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.getGlobalPriorityPool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHasPriorityPool")) {
+            try self.builder.writeLine("/// Check if priority pool exists");
+            try self.builder.writeLine("pub fn realHasPriorityPool() bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.hasGlobalPriorityPool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetPriorityStats")) {
+            try self.builder.writeLine("/// Get priority statistics");
+            try self.builder.writeLine("pub const PriorityStats = struct { executed: usize, by_priority: [5]usize, efficiency: f64 };");
+            try self.builder.writeLine("pub fn realGetPriorityStats() PriorityStats {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const stats = vsa.TextCorpus.getPriorityStats();");
+            try self.builder.writeLine("return PriorityStats{ .executed = stats.executed, .by_priority = stats.by_priority, .efficiency = stats.efficiency };");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetPriorityLevels")) {
+            try self.builder.writeLine("/// Get number of priority levels");
+            try self.builder.writeLine("pub fn realGetPriorityLevels() usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.PRIORITY_LEVELS;");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetPriorityWeight")) {
+            try self.builder.writeLine("/// Get weight for a priority level (0=critical, 4=background)");
+            try self.builder.writeLine("pub fn realGetPriorityWeight(level: u8) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.PriorityLevel.fromInt(level).weight();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // Cycle 46: Deadline Scheduling generators
+        if (std_mem.eql(u8, b.name, "realGetDeadlinePool")) {
+            try self.builder.writeLine("/// Get or create global deadline pool");
+            try self.builder.writeLine("pub fn realGetDeadlinePool() *vsa.TextCorpus.DeadlinePool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.getDeadlinePool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHasDeadlinePool")) {
+            try self.builder.writeLine("/// Check if deadline pool is available");
+            try self.builder.writeLine("pub fn realHasDeadlinePool() bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.hasDeadlinePool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetDeadlineStats")) {
+            try self.builder.writeLine("/// Deadline stats return type");
+            try self.builder.writeLine("pub const DeadlineStats = struct { executed: usize, missed: usize, efficiency: f64, by_urgency: [5]usize };");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("/// Get deadline scheduling statistics");
+            try self.builder.writeLine("pub fn realGetDeadlineStats() DeadlineStats {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const stats = vsa.TextCorpus.getDeadlineStats();");
+            try self.builder.writeLine("return .{ .executed = stats.executed, .missed = stats.missed, .efficiency = stats.efficiency, .by_urgency = stats.by_urgency };");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetDeadlineUrgencyLevels")) {
+            try self.builder.writeLine("/// Get number of deadline urgency levels");
+            try self.builder.writeLine("pub fn realGetDeadlineUrgencyLevels() usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return 5; // immediate, urgent, normal, relaxed, flexible");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetDeadlineUrgencyWeight")) {
+            try self.builder.writeLine("/// Get weight for a deadline urgency level (0=immediate, 4=flexible)");
+            try self.builder.writeLine("pub fn realGetDeadlineUrgencyWeight(level: u8) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const urgency: vsa.TextCorpus.DeadlineUrgency = @enumFromInt(level);");
+            try self.builder.writeLine("return urgency.weight();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
         return false;
     }
 };

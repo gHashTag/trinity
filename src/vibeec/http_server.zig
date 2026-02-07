@@ -265,22 +265,23 @@ pub const HttpServer = struct {
         // Start timing for tok/s measurement
         var gen_timer = std.time.Timer.start() catch null;
 
-        // Generate response with system prompt for better quality
+        // Use greedy decoding for testing
         const sampling = SamplingParams{
-            .temperature = 0.7,
-            .top_p = 0.9,
-            .top_k = 40,
-            .repeat_penalty = 1.1,
+            .temperature = 0.0,
+            .top_p = 1.0,
+            .top_k = 0,
+            .repeat_penalty = 1.0,
         };
 
         var response_text: []const u8 = "I am TRINITY, a Zig-based LLM inference engine.";
         var generated: ?[]u8 = null;
         defer if (generated) |g| self.allocator.free(g);
 
-        // Build full prompt with ChatML format (works with most models)
-        const system_prompt = "You are TRINITY, a helpful AI assistant. Be concise and direct.";
-        const full_prompt = std.fmt.allocPrint(self.allocator, 
-            "<|im_start|>system\n{s}<|im_end|>\n<|im_start|>user\n{s}<|im_end|>\n<|im_start|>assistant\n", 
+        // Build full prompt with TinyLlama format
+        // TinyLlama uses: <|system|>\n{sys}</s>\n<|user|>\n{prompt}</s>\n<|assistant|>\n
+        const system_prompt = "You are a helpful AI assistant. Be concise and direct.";
+        const full_prompt = std.fmt.allocPrint(self.allocator,
+            "<|system|>\n{s}</s>\n<|user|>\n{s}</s>\n<|assistant|>\n",
             .{system_prompt, prompt}
         ) catch prompt;
         defer if (full_prompt.ptr != prompt.ptr) self.allocator.free(full_prompt);
@@ -295,24 +296,44 @@ pub const HttpServer = struct {
             var output_tokens: std.ArrayList(u32) = .{};
             defer output_tokens.deinit(self.allocator);
 
-            // Process input tokens (prefill)
+            // Process input tokens (prefill) - save logits from last token
             var pos: usize = 0;
+            var last_logits: ?[]f32 = null;
             for (toks) |tok| {
-                _ = model.forward(tok, pos) catch null;
+                if (last_logits) |l| self.allocator.free(l);
+                last_logits = model.forward(tok, pos) catch null;
                 pos += 1;
             }
 
-            // Generate new tokens (max 50)
-            var last_token: u32 = if (toks.len > 0) toks[toks.len - 1] else 0;
-            var i: usize = 0;
-            while (i < 50) : (i += 1) {
-                const logits = model.forward(last_token, pos) catch break;
-                const next_token = inference.sampleWithParams(self.allocator, @constCast(logits), sampling) catch break;
-                
-                if (next_token == tokenizer.eos_token) break;
-                output_tokens.append(self.allocator, next_token) catch break;
-                last_token = next_token;
-                pos += 1;
+            // Generate new tokens (max 50) - start from prefill logits
+            if (last_logits) |logits| {
+                defer self.allocator.free(logits);
+
+                var current_logits: []f32 = logits;
+                var owns_logits = false; // First iteration uses prefill logits
+
+                var i: usize = 0;
+                while (i < 50) : (i += 1) {
+                    const next_token = inference.sampleWithParams(self.allocator, @constCast(current_logits), sampling) catch break;
+
+                    // Free previous logits if we own them (not the prefill ones)
+                    if (owns_logits) {
+                        self.allocator.free(current_logits);
+                    }
+
+                    if (next_token == tokenizer.eos_token) break;
+                    output_tokens.append(self.allocator, next_token) catch break;
+
+                    // Get logits for next token
+                    current_logits = model.forward(next_token, pos) catch break;
+                    owns_logits = true;
+                    pos += 1;
+                }
+
+                // Free final logits if we own them
+                if (owns_logits) {
+                    self.allocator.free(current_logits);
+                }
             }
 
             generated_token_count = output_tokens.items.len;
@@ -399,10 +420,10 @@ pub const HttpServer = struct {
             "Connection: keep-alive\r\n\r\n";
         try connection.stream.writeAll(sse_header);
 
-        // Build prompt with ChatML format
-        const system_prompt = "You are TRINITY, a helpful AI assistant. Be concise and direct.";
-        const full_prompt = std.fmt.allocPrint(self.allocator, 
-            "<|im_start|>system\n{s}<|im_end|>\n<|im_start|>user\n{s}<|im_end|>\n<|im_start|>assistant\n", 
+        // Build full prompt with TinyLlama format
+        const system_prompt = "You are a helpful AI assistant. Be concise and direct.";
+        const full_prompt = std.fmt.allocPrint(self.allocator,
+            "<|system|>\n{s}</s>\n<|user|>\n{s}</s>\n<|assistant|>\n",
             .{system_prompt, prompt}
         ) catch prompt;
         defer if (full_prompt.ptr != prompt.ptr) self.allocator.free(full_prompt);
@@ -419,21 +440,31 @@ pub const HttpServer = struct {
         };
 
         if (tokens) |toks| {
-            // Process input tokens
+            // Process input tokens (prefill) - save logits from last token
             var pos: usize = 0;
+            var last_logits: ?[]f32 = null;
             for (toks) |tok| {
-                _ = model.forward(tok, pos) catch null;
+                if (last_logits) |l| self.allocator.free(l);
+                last_logits = model.forward(tok, pos) catch null;
                 pos += 1;
             }
 
-            // Generate and stream tokens
-            var last_token: u32 = if (toks.len > 0) toks[toks.len - 1] else 0;
-            var i: usize = 0;
-            while (i < 100) : (i += 1) {
-                const logits = model.forward(last_token, pos) catch break;
-                const next_token = inference.sampleWithParams(self.allocator, @constCast(logits), sampling) catch break;
-                
-                if (next_token == tokenizer.eos_token) break;
+            // Generate and stream tokens - start from prefill logits
+            if (last_logits) |logits| {
+                defer self.allocator.free(logits);
+
+                var current_logits: []f32 = logits;
+                var owns_logits = false;
+
+                var i: usize = 0;
+                while (i < 100) : (i += 1) {
+                    const next_token = inference.sampleWithParams(self.allocator, @constCast(current_logits), sampling) catch break;
+
+                    if (owns_logits) {
+                        self.allocator.free(current_logits);
+                    }
+
+                    if (next_token == tokenizer.eos_token) break;
 
                 // Decode single token
                 const token_arr = [_]u32{next_token};
@@ -463,9 +494,17 @@ pub const HttpServer = struct {
                     connection.stream.writeAll(event) catch break;
                 }
 
-                last_token = next_token;
+                // Get logits for next token
+                current_logits = model.forward(next_token, pos) catch break;
+                owns_logits = true;
                 pos += 1;
             }
+
+            // Free final logits if we own them
+            if (owns_logits) {
+                self.allocator.free(current_logits);
+            }
+          }
         }
 
         // Send done event

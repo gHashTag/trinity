@@ -26,23 +26,23 @@ pub const JitSimilarityFn = *const fn (*HybridBigInt, *HybridBigInt) f64;
 /// JIT Compiler for VSA operations
 pub const JitCompiler = struct {
     /// Code buffer for generated machine code
-    code: std.ArrayList(u8),
+    code: std.ArrayListUnmanaged(u8) = .{},
     /// Allocator
     allocator: std.mem.Allocator,
     /// Executable memory (mmap'd)
-    exec_mem: ?[]align(std.mem.page_size) u8 = null,
+    exec_mem: ?[]align(std.heap.page_size_min) u8 = null,
 
     const Self = @This();
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
-            .code = std.ArrayList(u8).init(allocator),
+            .code = .{},
             .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *Self) void {
-        self.code.deinit();
+        self.code.deinit(self.allocator);
         if (self.exec_mem) |mem| {
             std.posix.munmap(mem);
         }
@@ -59,24 +59,24 @@ pub const JitCompiler = struct {
 
     /// Emit raw bytes
     fn emit(self: *Self, bytes: []const u8) !void {
-        try self.code.appendSlice(bytes);
+        try self.code.appendSlice(self.allocator, bytes);
     }
 
     /// Emit single byte
     fn emit1(self: *Self, b: u8) !void {
-        try self.code.append(b);
+        try self.code.append(self.allocator, b);
     }
 
     /// Emit 32-bit immediate
     fn emitImm32(self: *Self, imm: i32) !void {
         const bytes = std.mem.asBytes(&imm);
-        try self.code.appendSlice(bytes);
+        try self.code.appendSlice(self.allocator, bytes);
     }
 
     /// Emit 64-bit immediate
     fn emitImm64(self: *Self, imm: i64) !void {
         const bytes = std.mem.asBytes(&imm);
-        try self.code.appendSlice(bytes);
+        try self.code.appendSlice(self.allocator, bytes);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -260,7 +260,7 @@ pub const JitCompiler = struct {
         if (code_size == 0) return error.EmptyCode;
 
         // Allocate executable memory
-        const page_size = std.mem.page_size;
+        const page_size = std.heap.page_size_min;
         const alloc_size = std.mem.alignForward(usize, code_size, page_size);
 
         // mmap with PROT_READ | PROT_WRITE first
@@ -553,6 +553,12 @@ test "JitCompiler bind code generation" {
 }
 
 test "JitCompiler finalize and execute" {
+    // Skip on non-x86 architectures (this test executes x86-64 machine code)
+    const builtin = @import("builtin");
+    if (builtin.cpu.arch != .x86_64) {
+        return error.SkipZigTest;
+    }
+
     var compiler = JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 
@@ -572,6 +578,12 @@ test "JitCompiler finalize and execute" {
 }
 
 test "JitCompiler bind correctness" {
+    // Skip on non-x86 architectures (this test executes x86-64 machine code)
+    const builtin = @import("builtin");
+    if (builtin.cpu.arch != .x86_64) {
+        return error.SkipZigTest;
+    }
+
     var compiler = JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 
@@ -600,6 +612,12 @@ test "JitCompiler bind correctness" {
 }
 
 test "JitCompiler bundle correctness" {
+    // Skip on non-x86 architectures (this test executes x86-64 machine code)
+    const builtin = @import("builtin");
+    if (builtin.cpu.arch != .x86_64) {
+        return error.SkipZigTest;
+    }
+
     var compiler = JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 
@@ -631,6 +649,12 @@ test "JitCompiler bundle correctness" {
 }
 
 test "JitCompiler dot product correctness" {
+    // Skip on non-x86 architectures (this test executes x86-64 machine code)
+    const builtin = @import("builtin");
+    if (builtin.cpu.arch != .x86_64) {
+        return error.SkipZigTest;
+    }
+
     var compiler = JitCompiler.init(std.testing.allocator);
     defer compiler.deinit();
 
@@ -639,7 +663,7 @@ test "JitCompiler dot product correctness" {
 
     // Get function pointer with correct signature
     const code_size = compiler.code.items.len;
-    const page_size = std.mem.page_size;
+    const page_size = std.heap.page_size_min;
     const alloc_size = std.mem.alignForward(usize, code_size, page_size);
 
     const mem = try std.posix.mmap(
@@ -655,7 +679,7 @@ test "JitCompiler dot product correctness" {
     @memcpy(mem[0..code_size], compiler.code.items);
     try std.posix.mprotect(mem, std.posix.PROT.READ | std.posix.PROT.EXEC);
 
-    const func: *const fn (*const [dim]i8, *const [dim]i8) callconv(.C) i64 = @ptrCast(mem.ptr);
+    const func: *const fn (*const [dim]i8, *const [dim]i8) callconv(.c) i64 = @ptrCast(mem.ptr);
 
     // Create test data
     const a = [dim]i8{ 1, -1, 1, 0, 1, -1, 0, 1 };

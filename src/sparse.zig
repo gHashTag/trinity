@@ -20,9 +20,9 @@ const Trit = hybrid.Trit;
 /// Memory: O(nnz) instead of O(dimension)
 pub const SparseVector = struct {
     /// Indices of non-zero elements (sorted)
-    indices: std.ArrayList(u32),
+    indices: std.ArrayListUnmanaged(u32) = .{},
     /// Values at those indices (-1, 0, or +1)
-    values: std.ArrayList(Trit),
+    values: std.ArrayListUnmanaged(Trit) = .{},
     /// Total dimension of the vector
     dimension: u32,
     /// Allocator for dynamic memory
@@ -33,8 +33,8 @@ pub const SparseVector = struct {
     /// Create empty sparse vector
     pub fn init(allocator: std.mem.Allocator, dimension: u32) Self {
         return Self{
-            .indices = std.ArrayList(u32).init(allocator),
-            .values = std.ArrayList(Trit).init(allocator),
+            .indices = .{},
+            .values = .{},
             .dimension = dimension,
             .allocator = allocator,
         };
@@ -42,8 +42,8 @@ pub const SparseVector = struct {
 
     /// Free memory
     pub fn deinit(self: *Self) void {
-        self.indices.deinit();
-        self.values.deinit();
+        self.indices.deinit(self.allocator);
+        self.values.deinit(self.allocator);
     }
 
     /// Number of non-zero elements
@@ -90,8 +90,8 @@ pub const SparseVector = struct {
             }
         } else if (value != 0) {
             // Insert new non-zero
-            try self.indices.insert(pos, index);
-            try self.values.insert(pos, value);
+            try self.indices.insert(self.allocator, pos, index);
+            try self.values.insert(self.allocator, pos, value);
         }
     }
 
@@ -135,8 +135,8 @@ pub const SparseVector = struct {
         for (0..dense.trit_len) |i| {
             const t = dense.unpacked_cache[i];
             if (t != 0) {
-                try sparse.indices.append(@intCast(i));
-                try sparse.values.append(t);
+                try sparse.indices.append(allocator, @intCast(i));
+                try sparse.values.append(allocator, t);
             }
         }
 
@@ -174,8 +174,8 @@ pub const SparseVector = struct {
         for (0..dimension) |i| {
             if (rand.float(f64) < density) {
                 const value: Trit = if (rand.boolean()) 1 else -1;
-                try sparse.indices.append(@intCast(i));
-                try sparse.values.append(value);
+                try sparse.indices.append(allocator, @intCast(i));
+                try sparse.values.append(allocator, value);
             }
         }
 
@@ -203,8 +203,8 @@ pub const SparseVector = struct {
             if (a_idx == b_idx) {
                 const prod = a.values.items[i] * b.values.items[j];
                 if (prod != 0) {
-                    try result.indices.append(a_idx);
-                    try result.values.append(prod);
+                    try result.indices.append(allocator, a_idx);
+                    try result.values.append(allocator, prod);
                 }
                 i += 1;
                 j += 1;
@@ -274,8 +274,8 @@ pub const SparseVector = struct {
             }
 
             if (value != 0) {
-                try result.indices.append(idx);
-                try result.values.append(value);
+                try result.indices.append(allocator, idx);
+                try result.values.append(allocator, value);
             }
         }
 
@@ -293,8 +293,8 @@ pub const SparseVector = struct {
         for (0..v.indices.items.len) |i| {
             const old_idx = v.indices.items[i];
             const new_idx = (old_idx + shift) % v.dimension;
-            try result.indices.append(new_idx);
-            try result.values.append(v.values.items[i]);
+            try result.indices.append(allocator, new_idx);
+            try result.values.append(allocator, v.values.items[i]);
         }
 
         // Sort by new indices
