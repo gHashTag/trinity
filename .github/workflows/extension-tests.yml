@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Zig
         uses: goto-bus-stop/setup-zig@v2
@@ -63,7 +63,7 @@ jobs:
     needs: build-wasm
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Download WASM artifact
         uses: actions/download-artifact@v4
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Validate manifest.json
         run: |
@@ -128,7 +128,7 @@ jobs:
     needs: [build-wasm, test-wasm, validate-manifest]
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Download WASM artifact
         uses: actions/download-artifact@v4
