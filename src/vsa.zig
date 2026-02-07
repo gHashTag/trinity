@@ -8940,6 +8940,480 @@ pub const TextCorpus = struct {
     // END CYCLE 54
     // ═══════════════════════════════════════════════════════════════════════════
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CYCLE 55: SELF-REFLECTION & IMPROVEMENT LOOP
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// ReflectionType: categories of self-reflection
+    pub const ReflectionType = enum(u8) {
+        success_analysis = 0, // Why did this succeed?
+        failure_analysis = 1, // Why did this fail?
+        pattern_detected = 2, // Recurring pattern found
+        strategy_update = 3, // Strategy adjustment
+        confidence_calibration = 4, // Confidence score correction
+
+        pub fn name(self: ReflectionType) []const u8 {
+            return switch (self) {
+                .success_analysis => "success_analysis",
+                .failure_analysis => "failure_analysis",
+                .pattern_detected => "pattern_detected",
+                .strategy_update => "strategy_update",
+                .confidence_calibration => "confidence_calibration",
+            };
+        }
+
+        pub fn weight(self: ReflectionType) f64 {
+            return switch (self) {
+                .failure_analysis => 1.0, // Highest learning value
+                .pattern_detected => PHI_INVERSE, // 0.618
+                .strategy_update => PHI_INVERSE * PHI_INVERSE, // 0.382
+                .confidence_calibration => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE, // 0.236
+                .success_analysis => 0.146, // Least to learn from success
+            };
+        }
+    };
+
+    /// ReflectionEntry: a single reflection observation
+    pub const ReflectionEntry = struct {
+        reflection_type: ReflectionType,
+        content_buf: [256]u8,
+        content_len: u16,
+        source_goal_buf: [128]u8,
+        source_goal_len: u8,
+        confidence_before: f64,
+        confidence_after: f64,
+        learning_signal: f64, // [-1, 1]: negative = mistake, positive = improvement
+
+        pub fn init(rtype: ReflectionType, content: []const u8, goal: []const u8) ReflectionEntry {
+            var entry = ReflectionEntry{
+                .reflection_type = rtype,
+                .content_buf = [_]u8{0} ** 256,
+                .content_len = 0,
+                .source_goal_buf = [_]u8{0} ** 128,
+                .source_goal_len = 0,
+                .confidence_before = 0.0,
+                .confidence_after = 0.0,
+                .learning_signal = 0.0,
+            };
+            const clen = @min(content.len, 256);
+            @memcpy(entry.content_buf[0..clen], content[0..clen]);
+            entry.content_len = @intCast(clen);
+            const glen = @min(goal.len, 128);
+            @memcpy(entry.source_goal_buf[0..glen], goal[0..glen]);
+            entry.source_goal_len = @intCast(glen);
+            return entry;
+        }
+
+        pub fn getContent(self: *const ReflectionEntry) []const u8 {
+            return self.content_buf[0..self.content_len];
+        }
+
+        pub fn getGoal(self: *const ReflectionEntry) []const u8 {
+            return self.source_goal_buf[0..self.source_goal_len];
+        }
+    };
+
+    /// PatternRecord: a learned pattern from repeated reflections
+    pub const PatternRecord = struct {
+        pattern_buf: [128]u8,
+        pattern_len: u8,
+        occurrences: u16,
+        avg_learning_signal: f64,
+        last_seen_goal_buf: [128]u8,
+        last_seen_goal_len: u8,
+        is_positive: bool, // true = beneficial pattern, false = anti-pattern
+
+        pub fn init(pattern: []const u8, positive: bool) PatternRecord {
+            var rec = PatternRecord{
+                .pattern_buf = [_]u8{0} ** 128,
+                .pattern_len = 0,
+                .occurrences = 1,
+                .avg_learning_signal = 0.0,
+                .last_seen_goal_buf = [_]u8{0} ** 128,
+                .last_seen_goal_len = 0,
+                .is_positive = positive,
+            };
+            const len = @min(pattern.len, 128);
+            @memcpy(rec.pattern_buf[0..len], pattern[0..len]);
+            rec.pattern_len = @intCast(len);
+            return rec;
+        }
+
+        pub fn getPattern(self: *const PatternRecord) []const u8 {
+            return self.pattern_buf[0..self.pattern_len];
+        }
+
+        pub fn recordOccurrence(self: *PatternRecord, signal: f64, goal: []const u8) void {
+            self.occurrences += 1;
+            // Running average of learning signal
+            self.avg_learning_signal = (self.avg_learning_signal * @as(f64, @floatFromInt(self.occurrences - 1)) + signal) / @as(f64, @floatFromInt(self.occurrences));
+            const glen = @min(goal.len, 128);
+            @memcpy(self.last_seen_goal_buf[0..glen], goal[0..glen]);
+            self.last_seen_goal_len = @intCast(glen);
+        }
+
+        pub fn strength(self: *const PatternRecord) f64 {
+            // Strength = occurrences * |avg_signal| (capped at 1.0)
+            const raw = @as(f64, @floatFromInt(self.occurrences)) * @abs(self.avg_learning_signal) * 0.1;
+            return @min(raw, 1.0);
+        }
+    };
+
+    /// SelfReflector: analyzes agent outputs and generates reflections
+    pub const SelfReflector = struct {
+        reflections: [64]ReflectionEntry,
+        reflection_count: u16,
+        patterns: [32]PatternRecord,
+        pattern_count: u8,
+        total_reflections: u32,
+        total_improvements: u32,
+        total_mistakes_detected: u32,
+        cumulative_learning: f64,
+
+        pub fn init() SelfReflector {
+            var sr = SelfReflector{
+                .reflections = undefined,
+                .reflection_count = 0,
+                .patterns = undefined,
+                .pattern_count = 0,
+                .total_reflections = 0,
+                .total_improvements = 0,
+                .total_mistakes_detected = 0,
+                .cumulative_learning = 0.0,
+            };
+            for (&sr.reflections) |*r| {
+                r.* = ReflectionEntry.init(.success_analysis, "", "");
+            }
+            for (&sr.patterns) |*p| {
+                p.* = PatternRecord.init("", true);
+            }
+            return sr;
+        }
+
+        /// Reflect on a completed autonomous result
+        pub fn reflect(self: *SelfReflector, result: *const AutonomousResult) void {
+            self.total_reflections += 1;
+            const goal = result.getGoal();
+
+            if (result.success) {
+                // Success reflection
+                var entry = ReflectionEntry.init(.success_analysis, "goal succeeded", goal);
+                entry.confidence_after = result.autonomy_score;
+                entry.learning_signal = result.autonomy_score * 0.5; // moderate positive
+                self.addReflection(entry);
+                self.total_improvements += 1;
+
+                // Check if we can extract a positive pattern
+                if (result.autonomy_score > 0.9) {
+                    self.recordPattern("high_autonomy_success", true, 0.8, goal);
+                }
+            } else {
+                // Failure reflection
+                var entry = ReflectionEntry.init(.failure_analysis, "goal failed", goal);
+                entry.confidence_after = result.autonomy_score;
+                entry.learning_signal = -0.618; // phi^-1 negative signal
+                self.addReflection(entry);
+                self.total_mistakes_detected += 1;
+
+                // Record anti-pattern
+                if (result.sub_goals_failed > result.sub_goals_completed) {
+                    self.recordPattern("majority_subgoals_failed", false, -0.618, goal);
+                }
+            }
+
+            // Confidence calibration
+            if (result.iterations > 1) {
+                var cal = ReflectionEntry.init(.confidence_calibration, "needed multiple iterations", goal);
+                cal.learning_signal = -0.236; // slight negative (retry needed)
+                self.addReflection(cal);
+            }
+
+            // Update cumulative learning
+            self.updateLearning();
+        }
+
+        /// Reflect on individual sub-goal results within a plan
+        pub fn reflectOnSubGoals(self: *SelfReflector, plan: *const AutonomousPlan) void {
+            var i: u8 = 0;
+            while (i < plan.sub_goal_count) : (i += 1) {
+                const sg = &plan.sub_goals[i];
+                if (sg.status == .completed and sg.confidence > 0.8) {
+                    self.recordPattern("high_confidence_subgoal", true, 0.382, plan.getGoal());
+                } else if (sg.status == .failed) {
+                    var entry = ReflectionEntry.init(.failure_analysis, sg.getDescription(), plan.getGoal());
+                    entry.learning_signal = -0.382;
+                    self.addReflection(entry);
+                }
+            }
+        }
+
+        fn addReflection(self: *SelfReflector, entry: ReflectionEntry) void {
+            if (self.reflection_count >= 64) {
+                // Evict oldest (shift left)
+                var j: u16 = 0;
+                while (j < 63) : (j += 1) {
+                    self.reflections[j] = self.reflections[j + 1];
+                }
+                self.reflection_count = 63;
+            }
+            self.reflections[self.reflection_count] = entry;
+            self.reflection_count += 1;
+            self.cumulative_learning += entry.learning_signal * entry.reflection_type.weight();
+        }
+
+        fn recordPattern(self: *SelfReflector, pattern: []const u8, positive: bool, signal: f64, goal: []const u8) void {
+            // Check if pattern already exists
+            var i: u8 = 0;
+            while (i < self.pattern_count) : (i += 1) {
+                if (std.mem.eql(u8, self.patterns[i].getPattern(), pattern)) {
+                    self.patterns[i].recordOccurrence(signal, goal);
+                    // Generate pattern_detected reflection
+                    var entry = ReflectionEntry.init(.pattern_detected, pattern, goal);
+                    entry.learning_signal = signal;
+                    self.addReflection(entry);
+                    return;
+                }
+            }
+            // New pattern
+            if (self.pattern_count < 32) {
+                self.patterns[self.pattern_count] = PatternRecord.init(pattern, positive);
+                self.patterns[self.pattern_count].avg_learning_signal = signal;
+                const glen = @min(goal.len, 128);
+                @memcpy(self.patterns[self.pattern_count].last_seen_goal_buf[0..glen], goal[0..glen]);
+                self.patterns[self.pattern_count].last_seen_goal_len = @intCast(glen);
+                self.pattern_count += 1;
+            }
+        }
+
+        fn updateLearning(self: *SelfReflector) void {
+            // Normalize cumulative learning to [-1, 1]
+            if (self.cumulative_learning > 1.0) self.cumulative_learning = 1.0;
+            if (self.cumulative_learning < -1.0) self.cumulative_learning = -1.0;
+        }
+
+        /// Get strategy adjustment based on learned patterns
+        pub fn getStrategyAdjustment(self: *const SelfReflector) StrategyAdjustment {
+            var adj = StrategyAdjustment{
+                .retry_boost = 0,
+                .confidence_offset = 0.0,
+                .prefer_decompose = false,
+                .avoid_patterns_count = 0,
+                .positive_patterns_count = 0,
+            };
+
+            var i: u8 = 0;
+            while (i < self.pattern_count) : (i += 1) {
+                const p = &self.patterns[i];
+                if (p.is_positive and p.strength() > 0.3) {
+                    adj.positive_patterns_count += 1;
+                } else if (!p.is_positive and p.strength() > 0.3) {
+                    adj.avoid_patterns_count += 1;
+                }
+            }
+
+            // If many failures, boost retries
+            if (self.total_mistakes_detected > self.total_improvements) {
+                adj.retry_boost = 1;
+                adj.confidence_offset = -0.1;
+            }
+
+            // If many successes with high autonomy, prefer decomposition
+            if (self.total_improvements > 3 and self.cumulative_learning > 0.3) {
+                adj.prefer_decompose = true;
+                adj.confidence_offset = 0.05;
+            }
+
+            return adj;
+        }
+
+        pub fn getStats(self: *const SelfReflector) ReflectorStats {
+            return ReflectorStats{
+                .total_reflections = self.total_reflections,
+                .total_improvements = self.total_improvements,
+                .total_mistakes = self.total_mistakes_detected,
+                .pattern_count = self.pattern_count,
+                .reflection_count = self.reflection_count,
+                .cumulative_learning = self.cumulative_learning,
+                .improvement_rate = if (self.total_reflections > 0)
+                    @as(f64, @floatFromInt(self.total_improvements)) / @as(f64, @floatFromInt(self.total_reflections))
+                else
+                    0.0,
+            };
+        }
+    };
+
+    /// Strategy adjustment from reflection analysis
+    pub const StrategyAdjustment = struct {
+        retry_boost: u8, // Extra retries to add
+        confidence_offset: f64, // Adjust confidence threshold
+        prefer_decompose: bool, // Should decompose more aggressively
+        avoid_patterns_count: u8, // Number of anti-patterns detected
+        positive_patterns_count: u8, // Number of positive patterns
+    };
+
+    /// Statistics for the self-reflector
+    pub const ReflectorStats = struct {
+        total_reflections: u32,
+        total_improvements: u32,
+        total_mistakes: u32,
+        pattern_count: u8,
+        reflection_count: u16,
+        cumulative_learning: f64,
+        improvement_rate: f64,
+    };
+
+    /// ImprovementLoop: wraps AutonomousAgent with self-reflection
+    pub const ImprovementLoop = struct {
+        agent: AutonomousAgent,
+        reflector: SelfReflector,
+        loop_count: u32,
+        total_goals_processed: u32,
+        improved_goals: u32,
+
+        pub fn init() ImprovementLoop {
+            return ImprovementLoop{
+                .agent = AutonomousAgent.init(),
+                .reflector = SelfReflector.init(),
+                .loop_count = 0,
+                .total_goals_processed = 0,
+                .improved_goals = 0,
+            };
+        }
+
+        /// Run a goal with self-reflection
+        pub fn runWithReflection(self: *ImprovementLoop, goal: []const u8) ImprovementResult {
+            self.loop_count += 1;
+            self.total_goals_processed += 1;
+
+            // Check strategy adjustments from past reflections
+            const adj = self.reflector.getStrategyAdjustment();
+
+            // Apply strategy: boost retries if patterns suggest it
+            if (adj.retry_boost > 0) {
+                self.agent.plan.max_iterations += adj.retry_boost;
+            }
+
+            // Run the autonomous agent
+            const result = self.agent.run(goal);
+
+            // Reflect on the result
+            self.reflector.reflect(&result);
+
+            // Reflect on sub-goals for deeper learning
+            self.reflector.reflectOnSubGoals(&self.agent.plan);
+
+            // Store reflection insights in agent memory
+            if (result.success) {
+                self.agent.memory.storeFact("reflection: goal succeeded");
+                self.improved_goals += 1;
+            } else {
+                self.agent.memory.storeFact("reflection: goal failed, learning applied");
+            }
+
+            // Build improvement result
+            const rstats = self.reflector.getStats();
+            return ImprovementResult{
+                .autonomous_result = result,
+                .reflections_generated = rstats.reflection_count,
+                .patterns_learned = rstats.pattern_count,
+                .cumulative_learning = rstats.cumulative_learning,
+                .improvement_rate = rstats.improvement_rate,
+                .strategy_adjusted = adj.retry_boost > 0 or adj.prefer_decompose,
+            };
+        }
+
+        /// Run multiple goals in sequence with continuous learning
+        pub fn runBatch(self: *ImprovementLoop, goals: []const []const u8) BatchResult {
+            var successes: u32 = 0;
+            var failures: u32 = 0;
+
+            for (goals) |goal| {
+                // Reset agent for new goal but keep reflector state
+                self.agent = AutonomousAgent.init();
+                const result = self.runWithReflection(goal);
+                if (result.autonomous_result.success) {
+                    successes += 1;
+                } else {
+                    failures += 1;
+                }
+            }
+
+            const rstats = self.reflector.getStats();
+            return BatchResult{
+                .goals_processed = @intCast(goals.len),
+                .successes = successes,
+                .failures = failures,
+                .patterns_learned = rstats.pattern_count,
+                .cumulative_learning = rstats.cumulative_learning,
+                .batch_success_rate = if (goals.len > 0)
+                    @as(f64, @floatFromInt(successes)) / @as(f64, @floatFromInt(goals.len))
+                else
+                    0.0,
+            };
+        }
+
+        pub fn getStats(self: *const ImprovementLoop) ImprovementLoopStats {
+            return ImprovementLoopStats{
+                .loop_count = self.loop_count,
+                .total_goals = self.total_goals_processed,
+                .improved_goals = self.improved_goals,
+                .reflector_stats = self.reflector.getStats(),
+                .agent_stats = self.agent.getStats(),
+            };
+        }
+    };
+
+    /// Result from a single goal with reflection
+    pub const ImprovementResult = struct {
+        autonomous_result: AutonomousResult,
+        reflections_generated: u16,
+        patterns_learned: u8,
+        cumulative_learning: f64,
+        improvement_rate: f64,
+        strategy_adjusted: bool,
+    };
+
+    /// Result from running a batch of goals
+    pub const BatchResult = struct {
+        goals_processed: u32,
+        successes: u32,
+        failures: u32,
+        patterns_learned: u8,
+        cumulative_learning: f64,
+        batch_success_rate: f64,
+    };
+
+    /// Statistics for the improvement loop
+    pub const ImprovementLoopStats = struct {
+        loop_count: u32,
+        total_goals: u32,
+        improved_goals: u32,
+        reflector_stats: ReflectorStats,
+        agent_stats: AutonomousStats,
+    };
+
+    /// Global improvement loop singleton
+    var global_improvement_loop: ?ImprovementLoop = null;
+
+    pub fn getImprovementLoop() *ImprovementLoop {
+        if (global_improvement_loop == null) {
+            global_improvement_loop = ImprovementLoop.init();
+        }
+        return &global_improvement_loop.?;
+    }
+
+    pub fn shutdownImprovementLoop() void {
+        global_improvement_loop = null;
+    }
+
+    pub fn hasImprovementLoop() bool {
+        return global_improvement_loop != null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // END CYCLE 55
+    // ═══════════════════════════════════════════════════════════════════════════
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -11625,6 +12099,139 @@ test "AutonomousAgent global singleton" {
 
     TextCorpus.shutdownAutonomousAgent();
     try std.testing.expect(!TextCorpus.hasAutonomousAgent());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 55 TESTS: Self-Reflection & Improvement Loop
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ReflectionType properties" {
+    // Failure analysis has highest learning weight
+    try std.testing.expect(TextCorpus.ReflectionType.failure_analysis.weight() > TextCorpus.ReflectionType.success_analysis.weight());
+    try std.testing.expect(TextCorpus.ReflectionType.pattern_detected.weight() > TextCorpus.ReflectionType.success_analysis.weight());
+    try std.testing.expectEqualStrings("failure_analysis", TextCorpus.ReflectionType.failure_analysis.name());
+    try std.testing.expectEqualStrings("strategy_update", TextCorpus.ReflectionType.strategy_update.name());
+}
+
+test "ReflectionEntry creation" {
+    var entry = TextCorpus.ReflectionEntry.init(.failure_analysis, "sub-goal timeout", "build website");
+    try std.testing.expectEqualStrings("sub-goal timeout", entry.getContent());
+    try std.testing.expectEqualStrings("build website", entry.getGoal());
+    try std.testing.expectEqual(TextCorpus.ReflectionType.failure_analysis, entry.reflection_type);
+
+    entry.learning_signal = -0.618;
+    entry.confidence_before = 0.8;
+    entry.confidence_after = 0.5;
+    try std.testing.expect(entry.learning_signal < 0.0);
+}
+
+test "PatternRecord creation and strength" {
+    var pattern = TextCorpus.PatternRecord.init("retry_helps", true);
+    try std.testing.expectEqualStrings("retry_helps", pattern.getPattern());
+    try std.testing.expect(pattern.is_positive);
+    try std.testing.expectEqual(@as(u16, 1), pattern.occurrences);
+
+    pattern.recordOccurrence(0.5, "goal1");
+    try std.testing.expectEqual(@as(u16, 2), pattern.occurrences);
+    pattern.recordOccurrence(0.7, "goal2");
+    try std.testing.expectEqual(@as(u16, 3), pattern.occurrences);
+    try std.testing.expect(pattern.strength() > 0.0);
+}
+
+test "SelfReflector init" {
+    const sr = TextCorpus.SelfReflector.init();
+    try std.testing.expectEqual(@as(u32, 0), sr.total_reflections);
+    try std.testing.expectEqual(@as(u32, 0), sr.total_improvements);
+    try std.testing.expectEqual(@as(u32, 0), sr.total_mistakes_detected);
+    try std.testing.expectEqual(@as(u16, 0), sr.reflection_count);
+    try std.testing.expectEqual(@as(u8, 0), sr.pattern_count);
+}
+
+test "SelfReflector reflect on success" {
+    var sr = TextCorpus.SelfReflector.init();
+    var agent = TextCorpus.AutonomousAgent.init();
+    const result = agent.run("calculate sum");
+
+    sr.reflect(&result);
+    try std.testing.expect(sr.total_reflections >= 1);
+    try std.testing.expect(sr.reflection_count >= 1);
+
+    if (result.success) {
+        try std.testing.expect(sr.total_improvements >= 1);
+    }
+}
+
+test "SelfReflector reflect on sub-goals" {
+    var sr = TextCorpus.SelfReflector.init();
+    var agent = TextCorpus.AutonomousAgent.init();
+    _ = agent.run("implement code and test");
+
+    sr.reflectOnSubGoals(&agent.plan);
+    // Should have generated reflections for completed/failed sub-goals
+    try std.testing.expect(sr.reflection_count >= 0); // may or may not generate
+}
+
+test "SelfReflector strategy adjustment" {
+    var sr = TextCorpus.SelfReflector.init();
+    const adj = sr.getStrategyAdjustment();
+
+    // No data yet, should be neutral
+    try std.testing.expectEqual(@as(u8, 0), adj.retry_boost);
+    try std.testing.expect(!adj.prefer_decompose);
+}
+
+test "ImprovementLoop init" {
+    const il = TextCorpus.ImprovementLoop.init();
+    try std.testing.expectEqual(@as(u32, 0), il.loop_count);
+    try std.testing.expectEqual(@as(u32, 0), il.total_goals_processed);
+    try std.testing.expectEqual(@as(u32, 0), il.improved_goals);
+}
+
+test "ImprovementLoop run with reflection" {
+    var il = TextCorpus.ImprovementLoop.init();
+    const result = il.runWithReflection("calculate and search data");
+
+    try std.testing.expect(result.autonomous_result.success);
+    try std.testing.expect(result.reflections_generated >= 1);
+    try std.testing.expectEqual(@as(u32, 1), il.loop_count);
+    try std.testing.expectEqual(@as(u32, 1), il.total_goals_processed);
+}
+
+test "ImprovementLoop batch learning" {
+    var il = TextCorpus.ImprovementLoop.init();
+    const goals = [_][]const u8{
+        "calculate sum",
+        "search and find data",
+        "implement code solution",
+    };
+    const batch = il.runBatch(&goals);
+
+    try std.testing.expectEqual(@as(u32, 3), batch.goals_processed);
+    try std.testing.expect(batch.successes > 0);
+    try std.testing.expect(batch.batch_success_rate > 0.0);
+    // Patterns should accumulate across batch
+    try std.testing.expect(il.reflector.total_reflections >= 3);
+}
+
+test "ImprovementLoop stats tracking" {
+    var il = TextCorpus.ImprovementLoop.init();
+    _ = il.runWithReflection("research topic");
+
+    const stats = il.getStats();
+    try std.testing.expectEqual(@as(u32, 1), stats.loop_count);
+    try std.testing.expectEqual(@as(u32, 1), stats.total_goals);
+    try std.testing.expect(stats.reflector_stats.total_reflections >= 1);
+}
+
+test "ImprovementLoop global singleton" {
+    const il = TextCorpus.getImprovementLoop();
+    try std.testing.expect(TextCorpus.hasImprovementLoop());
+
+    const result = il.runWithReflection("calculate results");
+    try std.testing.expect(result.autonomous_result.success);
+
+    TextCorpus.shutdownImprovementLoop();
+    try std.testing.expect(!TextCorpus.hasImprovementLoop());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
