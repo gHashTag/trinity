@@ -130,7 +130,7 @@ export const techBranches: TechBranch[] = [
         status: 'done',
         branch: 'inference',
         prerequisites: ['inf-003'],
-        unlocks: ['dep-003'],
+        unlocks: ['dep-003', 'agent-001'],
         metrics: '8x throughput',
         x: 3,
         y: 1
@@ -242,7 +242,7 @@ export const techBranches: TechBranch[] = [
         status: 'done',
         branch: 'deployment',
         prerequisites: ['dep-003'],
-        unlocks: [],
+        unlocks: ['dist-001'],
         metrics: '< 50ms latency',
         x: 3,
         y: 3
@@ -287,10 +287,193 @@ export const techBranches: TechBranch[] = [
         status: 'locked',
         branch: 'hardware',
         prerequisites: ['hw-002'],
-        unlocks: [],
+        unlocks: ['hw-004'],
         metrics: '1000x efficiency',
         x: 2,
         y: 4
+      },
+      {
+        id: 'hw-004',
+        name: 'ASIC Design',
+        description: 'Custom ternary chip design for maximum efficiency',
+        status: 'locked',
+        branch: 'hardware',
+        prerequisites: ['hw-003'],
+        unlocks: [],
+        metrics: '10000x efficiency',
+        x: 3,
+        y: 4
+      }
+    ]
+  },
+  {
+    id: 'agents',
+    name: 'AGENTS',
+    color: '#FF1493',
+    icon: '🤖',
+    nodes: [
+      {
+        id: 'agent-001',
+        name: 'IGLA Core',
+        description: 'Instruction-based Generative Learning Architecture',
+        status: 'done',
+        branch: 'agents',
+        prerequisites: ['inf-004'],
+        unlocks: ['agent-002', 'agent-003'],
+        metrics: 'v1.0 stable',
+        x: 0,
+        y: 5
+      },
+      {
+        id: 'agent-002',
+        name: 'Tool Use Engine',
+        description: 'Local function calling and tool integration',
+        status: 'done',
+        branch: 'agents',
+        prerequisites: ['agent-001'],
+        unlocks: ['agent-004'],
+        metrics: '50+ tools',
+        x: 1,
+        y: 5
+      },
+      {
+        id: 'agent-003',
+        name: 'Long Context',
+        description: 'Unlimited history with adaptive context windows',
+        status: 'done',
+        branch: 'agents',
+        prerequisites: ['agent-001'],
+        unlocks: ['agent-004'],
+        metrics: '∞ tokens',
+        x: 2,
+        y: 5
+      },
+      {
+        id: 'agent-004',
+        name: 'Multi-Agent',
+        description: 'Coordinator + Specialist agent orchestration',
+        status: 'in_progress',
+        progress: 75,
+        branch: 'agents',
+        prerequisites: ['agent-002', 'agent-003'],
+        unlocks: [],
+        metrics: '8 specialists',
+        x: 3,
+        y: 5
+      }
+    ]
+  },
+  {
+    id: 'knowledge',
+    name: 'KNOWLEDGE',
+    color: '#00CED1',
+    icon: '📚',
+    nodes: [
+      {
+        id: 'know-001',
+        name: 'VSA Core',
+        description: 'Vector Symbolic Architecture with bind/bundle ops',
+        status: 'done',
+        branch: 'knowledge',
+        prerequisites: [],
+        unlocks: ['know-002'],
+        metrics: '10K dims',
+        x: 0,
+        y: 6
+      },
+      {
+        id: 'know-002',
+        name: 'Knowledge Graph',
+        description: 'Triple-based semantic networks with VSA encoding',
+        status: 'done',
+        branch: 'knowledge',
+        prerequisites: ['know-001'],
+        unlocks: ['know-003'],
+        metrics: '1M triples',
+        x: 1,
+        y: 6
+      },
+      {
+        id: 'know-003',
+        name: 'Semantic Search',
+        description: 'Cosine similarity search over hypervectors',
+        status: 'done',
+        branch: 'knowledge',
+        prerequisites: ['know-002'],
+        unlocks: ['know-004'],
+        metrics: '<1ms query',
+        x: 2,
+        y: 6
+      },
+      {
+        id: 'know-004',
+        name: 'RAG Engine',
+        description: 'Retrieval Augmented Generation with VSA',
+        status: 'in_progress',
+        progress: 80,
+        branch: 'knowledge',
+        prerequisites: ['know-003'],
+        unlocks: [],
+        metrics: '95% accuracy',
+        x: 3,
+        y: 6
+      }
+    ]
+  },
+  {
+    id: 'distributed',
+    name: 'DISTRIBUTED',
+    color: '#FFA500',
+    icon: '🌐',
+    nodes: [
+      {
+        id: 'dist-001',
+        name: 'Node Network',
+        description: 'Decentralized node discovery and routing',
+        status: 'done',
+        branch: 'distributed',
+        prerequisites: ['dep-004'],
+        unlocks: ['dist-002'],
+        metrics: '1000+ nodes',
+        x: 0,
+        y: 7
+      },
+      {
+        id: 'dist-002',
+        name: 'TVC Sharding',
+        description: 'Ternary Vector Computing distributed shards',
+        status: 'in_progress',
+        progress: 65,
+        branch: 'distributed',
+        prerequisites: ['dist-001'],
+        unlocks: ['dist-003'],
+        metrics: '256 shards',
+        x: 1,
+        y: 7
+      },
+      {
+        id: 'dist-003',
+        name: 'DePIN Network',
+        description: 'Decentralized Physical Infrastructure with TRI rewards',
+        status: 'locked',
+        branch: 'distributed',
+        prerequisites: ['dist-002'],
+        unlocks: ['dist-004'],
+        metrics: '$TRI mining',
+        x: 2,
+        y: 7
+      },
+      {
+        id: 'dist-004',
+        name: 'Global Consensus',
+        description: 'Byzantine fault-tolerant consensus for ternary state',
+        status: 'locked',
+        branch: 'distributed',
+        prerequisites: ['dist-003'],
+        unlocks: [],
+        metrics: '10K TPS',
+        x: 3,
+        y: 7
       }
     ]
   }
