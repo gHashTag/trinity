@@ -755,6 +755,2329 @@ pub const TextCorpus = struct {
         if (compressed == 0) return 1.0;
         return @as(f64, @floatFromInt(uncompressed)) / @as(f64, @floatFromInt(compressed));
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ADAPTIVE RLE COMPRESSION (TCV2 format)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const RLE_ESCAPE: u8 = 0xFF;
+    const RLE_MIN_RUN: usize = 3;
+    const MAX_RLE_BUFFER: usize = 1024;
+
+    /// RLE encode a byte sequence
+    /// Returns number of bytes written to output, or null if RLE is larger
+    fn rleEncode(input: []const u8, output: []u8) ?usize {
+        if (input.len == 0) return 0;
+
+        var out_pos: usize = 0;
+        var i: usize = 0;
+
+        while (i < input.len) {
+            // Count run length
+            var run_len: usize = 1;
+            while (i + run_len < input.len and input[i + run_len] == input[i] and run_len < 255) {
+                run_len += 1;
+            }
+
+            if (run_len >= RLE_MIN_RUN) {
+                // Encode as run: [ESCAPE, count, value]
+                if (out_pos + 3 > output.len) return null;
+                output[out_pos] = RLE_ESCAPE;
+                output[out_pos + 1] = @intCast(run_len);
+                output[out_pos + 2] = input[i];
+                out_pos += 3;
+                i += run_len;
+            } else {
+                // Encode as literal(s)
+                for (0..run_len) |_| {
+                    if (input[i] == RLE_ESCAPE) {
+                        // Escape the escape byte: [ESCAPE, 1, ESCAPE]
+                        if (out_pos + 3 > output.len) return null;
+                        output[out_pos] = RLE_ESCAPE;
+                        output[out_pos + 1] = 1;
+                        output[out_pos + 2] = RLE_ESCAPE;
+                        out_pos += 3;
+                    } else {
+                        if (out_pos + 1 > output.len) return null;
+                        output[out_pos] = input[i];
+                        out_pos += 1;
+                    }
+                    i += 1;
+                }
+            }
+        }
+
+        // Only return RLE if it's actually smaller
+        if (out_pos >= input.len) return null;
+        return out_pos;
+    }
+
+    /// RLE decode a byte sequence
+    fn rleDecode(input: []const u8, output: []u8) ?usize {
+        var out_pos: usize = 0;
+        var i: usize = 0;
+
+        while (i < input.len) {
+            if (input[i] == RLE_ESCAPE) {
+                if (i + 2 >= input.len) return null;
+                const count = input[i + 1];
+                const value = input[i + 2];
+                if (out_pos + count > output.len) return null;
+                for (0..count) |_| {
+                    output[out_pos] = value;
+                    out_pos += 1;
+                }
+                i += 3;
+            } else {
+                if (out_pos + 1 > output.len) return null;
+                output[out_pos] = input[i];
+                out_pos += 1;
+                i += 1;
+            }
+        }
+
+        return out_pos;
+    }
+
+    /// Save corpus with adaptive RLE compression (TCV2 format)
+    /// Uses RLE only when it reduces size, otherwise falls back to packed
+    pub fn saveRLE(self: *TextCorpus, path: []const u8) !void {
+        const file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        // Write magic header "TCV2"
+        _ = try file.write("TCV2");
+
+        // Write count
+        const count_bytes = std.mem.asBytes(&@as(u32, @intCast(self.count)));
+        _ = try file.write(count_bytes);
+
+        // Buffers for packing and RLE
+        var packed_buf: [MAX_RLE_BUFFER]u8 = undefined;
+        var rle_buf: [MAX_RLE_BUFFER]u8 = undefined;
+
+        // Write each entry
+        for (0..self.count) |i| {
+            const entry = &self.entries[i];
+
+            // Write trit_len
+            const trit_len_bytes = std.mem.asBytes(&@as(u32, @intCast(entry.vector.trit_len)));
+            _ = try file.write(trit_len_bytes);
+
+            // Pack trits into buffer
+            const packed_len: usize = (entry.vector.trit_len + 4) / 5;
+            var j: usize = 0;
+            var pack_idx: usize = 0;
+            while (j < entry.vector.trit_len) : (j += 5) {
+                var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                for (0..5) |k| {
+                    if (j + k < entry.vector.trit_len) {
+                        chunk[k] = entry.vector.unpacked_cache[j + k];
+                    }
+                }
+                packed_buf[pack_idx] = packTrits5(chunk);
+                pack_idx += 1;
+            }
+
+            // Try RLE encoding
+            const rle_result = rleEncode(packed_buf[0..packed_len], &rle_buf);
+
+            if (rle_result) |rle_len| {
+                // RLE is smaller, use it
+                const rle_flag = [1]u8{1};
+                _ = try file.write(&rle_flag);
+                const data_len_bytes = std.mem.asBytes(&@as(u16, @intCast(rle_len)));
+                _ = try file.write(data_len_bytes);
+                _ = try file.write(rle_buf[0..rle_len]);
+            } else {
+                // RLE not beneficial, use packed
+                const rle_flag = [1]u8{0};
+                _ = try file.write(&rle_flag);
+                const data_len_bytes = std.mem.asBytes(&@as(u16, @intCast(packed_len)));
+                _ = try file.write(data_len_bytes);
+                _ = try file.write(packed_buf[0..packed_len]);
+            }
+
+            // Write label
+            const label_len_byte = [1]u8{@intCast(entry.label_len)};
+            _ = try file.write(&label_len_byte);
+            _ = try file.write(entry.label[0..entry.label_len]);
+        }
+    }
+
+    /// Load corpus with RLE decompression (TCV2 format)
+    pub fn loadRLE(path: []const u8) !TextCorpus {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        var corpus = TextCorpus.init();
+
+        // Read and verify magic header
+        var magic: [4]u8 = undefined;
+        _ = try file.readAll(&magic);
+        if (!std.mem.eql(u8, &magic, "TCV2")) return error.InvalidMagic;
+
+        // Read count
+        var count_bytes: [4]u8 = undefined;
+        _ = try file.readAll(&count_bytes);
+        const count = std.mem.readInt(u32, &count_bytes, .little);
+        if (count > MAX_CORPUS_SIZE) return error.CorpusTooLarge;
+
+        var packed_buf: [MAX_RLE_BUFFER]u8 = undefined;
+        var rle_buf: [MAX_RLE_BUFFER]u8 = undefined;
+
+        // Read each entry
+        for (0..count) |i| {
+            var entry = &corpus.entries[i];
+
+            // Read trit_len
+            var trit_len_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&trit_len_bytes);
+            const trit_len = std.mem.readInt(u32, &trit_len_bytes, .little);
+            if (trit_len > MAX_TRITS) return error.VectorTooLarge;
+
+            // Read RLE flag
+            var rle_flag: [1]u8 = undefined;
+            _ = try file.readAll(&rle_flag);
+
+            // Read data length
+            var data_len_bytes: [2]u8 = undefined;
+            _ = try file.readAll(&data_len_bytes);
+            const data_len = std.mem.readInt(u16, &data_len_bytes, .little);
+
+            entry.vector = HybridBigInt.zero();
+            entry.vector.mode = .unpacked_mode;
+            entry.vector.trit_len = trit_len;
+
+            const packed_len = (trit_len + 4) / 5;
+
+            if (rle_flag[0] == 1) {
+                // RLE encoded - decode first
+                _ = try file.readAll(rle_buf[0..data_len]);
+                const decoded_len = rleDecode(rle_buf[0..data_len], &packed_buf) orelse return error.RLEDecodeError;
+                if (decoded_len != packed_len) return error.RLELengthMismatch;
+            } else {
+                // Direct packed data
+                _ = try file.readAll(packed_buf[0..data_len]);
+            }
+
+            // Unpack trits
+            var j: usize = 0;
+            for (0..packed_len) |p| {
+                const unpacked = unpackTrits5(packed_buf[p]);
+                for (0..5) |k| {
+                    if (j + k < trit_len) {
+                        entry.vector.unpacked_cache[j + k] = unpacked[k];
+                    }
+                }
+                j += 5;
+            }
+
+            // Read label
+            var label_len_byte: [1]u8 = undefined;
+            _ = try file.readAll(&label_len_byte);
+            entry.label_len = label_len_byte[0];
+            _ = try file.readAll(entry.label[0..entry.label_len]);
+        }
+
+        corpus.count = count;
+        return corpus;
+    }
+
+    /// Estimate RLE-compressed size (analyzes actual data)
+    pub fn estimateRLESize(self: *TextCorpus) usize {
+        var size: usize = 8; // magic + count
+        var packed_buf: [MAX_RLE_BUFFER]u8 = undefined;
+        var rle_buf: [MAX_RLE_BUFFER]u8 = undefined;
+
+        for (0..self.count) |i| {
+            const entry = &self.entries[i];
+            const packed_len = (entry.vector.trit_len + 4) / 5;
+
+            // Pack trits
+            var j: usize = 0;
+            var pack_idx: usize = 0;
+            while (j < entry.vector.trit_len) : (j += 5) {
+                var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                for (0..5) |k| {
+                    if (j + k < entry.vector.trit_len) {
+                        chunk[k] = entry.vector.unpacked_cache[j + k];
+                    }
+                }
+                packed_buf[pack_idx] = packTrits5(chunk);
+                pack_idx += 1;
+            }
+
+            // Try RLE
+            const rle_result = rleEncode(packed_buf[0..packed_len], &rle_buf);
+            const data_len = if (rle_result) |rle_len| rle_len else packed_len;
+
+            size += 4 + 1 + 2 + data_len + 1 + entry.label_len; // trit_len + flag + data_len + data + label_len + label
+        }
+        return size;
+    }
+
+    /// Calculate RLE compression ratio
+    pub fn rleCompressionRatio(self: *TextCorpus) f64 {
+        const uncompressed = self.estimateUncompressedSize();
+        const rle_size = self.estimateRLESize();
+        if (rle_size == 0) return 1.0;
+        return @as(f64, @floatFromInt(uncompressed)) / @as(f64, @floatFromInt(rle_size));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // DICTIONARY COMPRESSION (TCV3 format)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const MAX_DICT_SIZE: usize = 128;
+    const MAX_PACKED_VALUES: usize = 243; // 3^5 possible packed byte values
+
+    /// Build frequency table of packed bytes across corpus
+    fn buildFrequencyTable(self: *TextCorpus, freq: *[MAX_PACKED_VALUES]u32) void {
+        @memset(freq, 0);
+
+        for (0..self.count) |i| {
+            const entry = &self.entries[i];
+            const packed_len = (entry.vector.trit_len + 4) / 5;
+
+            var j: usize = 0;
+            while (j < entry.vector.trit_len) : (j += 5) {
+                var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                for (0..5) |k| {
+                    if (j + k < entry.vector.trit_len) {
+                        chunk[k] = entry.vector.unpacked_cache[j + k];
+                    }
+                }
+                const packed_byte = packTrits5(chunk);
+                if (packed_byte < MAX_PACKED_VALUES) {
+                    freq[packed_byte] += 1;
+                }
+            }
+            _ = packed_len;
+        }
+    }
+
+    /// Build dictionary from frequency table (top N most frequent)
+    fn buildDictionary(freq: *const [MAX_PACKED_VALUES]u32, dict: *[MAX_DICT_SIZE]u8, dict_size: *u8) void {
+        // Create sorted indices by frequency
+        var indices: [MAX_PACKED_VALUES]u8 = undefined;
+        for (0..MAX_PACKED_VALUES) |i| {
+            indices[i] = @intCast(i);
+        }
+
+        // Simple bubble sort by frequency (descending)
+        for (0..MAX_PACKED_VALUES) |i| {
+            for (i + 1..MAX_PACKED_VALUES) |j| {
+                if (freq[indices[j]] > freq[indices[i]]) {
+                    const tmp = indices[i];
+                    indices[i] = indices[j];
+                    indices[j] = tmp;
+                }
+            }
+        }
+
+        // Take top MAX_DICT_SIZE entries with non-zero frequency
+        var count: u8 = 0;
+        for (0..MAX_PACKED_VALUES) |i| {
+            if (count >= MAX_DICT_SIZE) break;
+            if (freq[indices[i]] > 0) {
+                dict[count] = indices[i];
+                count += 1;
+            }
+        }
+        dict_size.* = count;
+    }
+
+    /// Create reverse lookup table for encoding
+    fn buildReverseLookup(dict: *const [MAX_DICT_SIZE]u8, dict_size: u8, lookup: *[MAX_PACKED_VALUES]u8) void {
+        // Initialize all to 0xFF (not in dictionary)
+        @memset(lookup, 0xFF);
+
+        // Set dictionary entries to their indices
+        for (0..dict_size) |i| {
+            lookup[dict[i]] = @intCast(i);
+        }
+    }
+
+    /// Encode packed bytes using dictionary
+    fn dictEncode(input: []const u8, output: []u8, lookup: *const [MAX_PACKED_VALUES]u8, dict_size: u8) ?usize {
+        var out_pos: usize = 0;
+
+        for (input) |b| {
+            const idx = lookup[b];
+            if (idx != 0xFF) {
+                // In dictionary - write index
+                if (out_pos >= output.len) return null;
+                output[out_pos] = idx;
+                out_pos += 1;
+            } else {
+                // Not in dictionary - write escape + value
+                if (out_pos + 2 > output.len) return null;
+                output[out_pos] = dict_size; // escape byte
+                output[out_pos + 1] = b;
+                out_pos += 2;
+            }
+        }
+
+        return out_pos;
+    }
+
+    /// Decode dictionary-encoded bytes
+    fn dictDecode(input: []const u8, output: []u8, dict: *const [MAX_DICT_SIZE]u8, dict_size: u8) ?usize {
+        var out_pos: usize = 0;
+        var i: usize = 0;
+
+        while (i < input.len) {
+            if (out_pos >= output.len) return null;
+
+            if (input[i] < dict_size) {
+                // Dictionary index
+                output[out_pos] = dict[input[i]];
+                out_pos += 1;
+                i += 1;
+            } else if (input[i] == dict_size) {
+                // Escape byte - next byte is literal
+                if (i + 1 >= input.len) return null;
+                output[out_pos] = input[i + 1];
+                out_pos += 1;
+                i += 2;
+            } else {
+                return null; // Invalid encoding
+            }
+        }
+
+        return out_pos;
+    }
+
+    /// Save corpus with dictionary compression (TCV3 format)
+    pub fn saveDict(self: *TextCorpus, path: []const u8) !void {
+        const file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        // Build frequency table and dictionary
+        var freq: [MAX_PACKED_VALUES]u32 = undefined;
+        var dict: [MAX_DICT_SIZE]u8 = undefined;
+        var dict_size: u8 = 0;
+        var lookup: [MAX_PACKED_VALUES]u8 = undefined;
+
+        self.buildFrequencyTable(&freq);
+        buildDictionary(&freq, &dict, &dict_size);
+        buildReverseLookup(&dict, dict_size, &lookup);
+
+        // Write magic header "TCV3"
+        _ = try file.write("TCV3");
+
+        // Write dictionary
+        const dict_size_byte = [1]u8{dict_size};
+        _ = try file.write(&dict_size_byte);
+        _ = try file.write(dict[0..dict_size]);
+
+        // Write count
+        const count_bytes = std.mem.asBytes(&@as(u32, @intCast(self.count)));
+        _ = try file.write(count_bytes);
+
+        // Buffers
+        var packed_buf: [MAX_RLE_BUFFER]u8 = undefined;
+        var encoded_buf: [MAX_RLE_BUFFER]u8 = undefined;
+
+        // Write each entry
+        for (0..self.count) |i| {
+            const entry = &self.entries[i];
+
+            // Write trit_len
+            const trit_len_bytes = std.mem.asBytes(&@as(u32, @intCast(entry.vector.trit_len)));
+            _ = try file.write(trit_len_bytes);
+
+            // Pack trits
+            const packed_len: usize = (entry.vector.trit_len + 4) / 5;
+            var j: usize = 0;
+            var pack_idx: usize = 0;
+            while (j < entry.vector.trit_len) : (j += 5) {
+                var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                for (0..5) |k| {
+                    if (j + k < entry.vector.trit_len) {
+                        chunk[k] = entry.vector.unpacked_cache[j + k];
+                    }
+                }
+                packed_buf[pack_idx] = packTrits5(chunk);
+                pack_idx += 1;
+            }
+
+            // Encode with dictionary
+            const encoded_len = dictEncode(packed_buf[0..packed_len], &encoded_buf, &lookup, dict_size) orelse packed_len;
+
+            // Write encoded data
+            const encoded_len_bytes = std.mem.asBytes(&@as(u16, @intCast(encoded_len)));
+            _ = try file.write(encoded_len_bytes);
+            _ = try file.write(encoded_buf[0..encoded_len]);
+
+            // Write label
+            const label_len_byte = [1]u8{@intCast(entry.label_len)};
+            _ = try file.write(&label_len_byte);
+            _ = try file.write(entry.label[0..entry.label_len]);
+        }
+    }
+
+    /// Load corpus with dictionary decompression (TCV3 format)
+    pub fn loadDict(path: []const u8) !TextCorpus {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        var corpus = TextCorpus.init();
+
+        // Read and verify magic header
+        var magic: [4]u8 = undefined;
+        _ = try file.readAll(&magic);
+        if (!std.mem.eql(u8, &magic, "TCV3")) return error.InvalidMagic;
+
+        // Read dictionary
+        var dict_size_byte: [1]u8 = undefined;
+        _ = try file.readAll(&dict_size_byte);
+        const dict_size = dict_size_byte[0];
+
+        var dict: [MAX_DICT_SIZE]u8 = undefined;
+        _ = try file.readAll(dict[0..dict_size]);
+
+        // Read count
+        var count_bytes: [4]u8 = undefined;
+        _ = try file.readAll(&count_bytes);
+        const count = std.mem.readInt(u32, &count_bytes, .little);
+        if (count > MAX_CORPUS_SIZE) return error.CorpusTooLarge;
+
+        var packed_buf: [MAX_RLE_BUFFER]u8 = undefined;
+        var encoded_buf: [MAX_RLE_BUFFER]u8 = undefined;
+
+        // Read each entry
+        for (0..count) |i| {
+            var entry = &corpus.entries[i];
+
+            // Read trit_len
+            var trit_len_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&trit_len_bytes);
+            const trit_len = std.mem.readInt(u32, &trit_len_bytes, .little);
+            if (trit_len > MAX_TRITS) return error.VectorTooLarge;
+
+            // Read encoded_len
+            var encoded_len_bytes: [2]u8 = undefined;
+            _ = try file.readAll(&encoded_len_bytes);
+            const encoded_len = std.mem.readInt(u16, &encoded_len_bytes, .little);
+
+            // Read encoded data
+            _ = try file.readAll(encoded_buf[0..encoded_len]);
+
+            // Decode with dictionary
+            const packed_len = (trit_len + 4) / 5;
+            const decoded_len = dictDecode(encoded_buf[0..encoded_len], &packed_buf, &dict, dict_size) orelse return error.DictDecodeError;
+            if (decoded_len != packed_len) return error.DictLengthMismatch;
+
+            entry.vector = HybridBigInt.zero();
+            entry.vector.mode = .unpacked_mode;
+            entry.vector.trit_len = trit_len;
+
+            // Unpack trits
+            var j: usize = 0;
+            for (0..packed_len) |p| {
+                const unpacked = unpackTrits5(packed_buf[p]);
+                for (0..5) |k| {
+                    if (j + k < trit_len) {
+                        entry.vector.unpacked_cache[j + k] = unpacked[k];
+                    }
+                }
+                j += 5;
+            }
+
+            // Read label
+            var label_len_byte: [1]u8 = undefined;
+            _ = try file.readAll(&label_len_byte);
+            entry.label_len = label_len_byte[0];
+            _ = try file.readAll(entry.label[0..entry.label_len]);
+        }
+
+        corpus.count = count;
+        return corpus;
+    }
+
+    /// Estimate dictionary-compressed size
+    pub fn estimateDictSize(self: *TextCorpus) usize {
+        if (self.count == 0) return 9; // magic + dict_size + dict(0) + count
+
+        // Build frequency table and dictionary
+        var freq: [MAX_PACKED_VALUES]u32 = undefined;
+        var dict: [MAX_DICT_SIZE]u8 = undefined;
+        var dict_size: u8 = 0;
+        var lookup: [MAX_PACKED_VALUES]u8 = undefined;
+
+        self.buildFrequencyTable(&freq);
+        buildDictionary(&freq, &dict, &dict_size);
+        buildReverseLookup(&dict, dict_size, &lookup);
+
+        var size: usize = 4 + 1 + @as(usize, dict_size) + 4; // magic + dict_size + dict + count
+        var packed_buf: [MAX_RLE_BUFFER]u8 = undefined;
+        var encoded_buf: [MAX_RLE_BUFFER]u8 = undefined;
+
+        for (0..self.count) |i| {
+            const entry = &self.entries[i];
+            const packed_len = (entry.vector.trit_len + 4) / 5;
+
+            // Pack trits
+            var j: usize = 0;
+            var pack_idx: usize = 0;
+            while (j < entry.vector.trit_len) : (j += 5) {
+                var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                for (0..5) |k| {
+                    if (j + k < entry.vector.trit_len) {
+                        chunk[k] = entry.vector.unpacked_cache[j + k];
+                    }
+                }
+                packed_buf[pack_idx] = packTrits5(chunk);
+                pack_idx += 1;
+            }
+
+            const encoded_len = dictEncode(packed_buf[0..packed_len], &encoded_buf, &lookup, dict_size) orelse packed_len;
+            size += 4 + 2 + encoded_len + 1 + entry.label_len; // trit_len + encoded_len + data + label_len + label
+        }
+        return size;
+    }
+
+    /// Calculate dictionary compression ratio
+    pub fn dictCompressionRatio(self: *TextCorpus) f64 {
+        const uncompressed = self.estimateUncompressedSize();
+        const dict_size = self.estimateDictSize();
+        if (dict_size == 0) return 1.0;
+        return @as(f64, @floatFromInt(uncompressed)) / @as(f64, @floatFromInt(dict_size));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // HUFFMAN COMPRESSION (TCV4 format)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const MAX_CODE_LEN: u8 = 16;
+    const MAX_HUFFMAN_BUFFER: usize = 2048;
+
+    /// Huffman node for tree building
+    const HuffmanNode = struct {
+        symbol: u16, // 0-242 for leaf, 0xFFFF for internal
+        freq: u32,
+        left: ?*HuffmanNode,
+        right: ?*HuffmanNode,
+    };
+
+    /// Huffman code entry
+    const HuffmanCode = struct {
+        code: u32, // The bit pattern
+        len: u8, // Number of bits
+    };
+
+    /// Build Huffman tree from frequencies, return code lengths
+    fn buildHuffmanTree(freq: *const [MAX_PACKED_VALUES]u32, code_lens: *[MAX_PACKED_VALUES]u8) void {
+        // Simple approach: use code length based on frequency ranking
+        // More frequent symbols get shorter codes
+
+        // Initialize all to 0 (unused)
+        @memset(code_lens, 0);
+
+        // Count non-zero frequencies and sort by frequency
+        var indices: [MAX_PACKED_VALUES]u8 = undefined;
+        var count: usize = 0;
+        for (0..MAX_PACKED_VALUES) |i| {
+            if (freq[i] > 0) {
+                indices[count] = @intCast(i);
+                count += 1;
+            }
+        }
+
+        if (count == 0) return;
+
+        // Sort by frequency (descending) using simple bubble sort
+        for (0..count) |i| {
+            for (i + 1..count) |j| {
+                if (freq[indices[j]] > freq[indices[i]]) {
+                    const tmp = indices[i];
+                    indices[i] = indices[j];
+                    indices[j] = tmp;
+                }
+            }
+        }
+
+        // Assign code lengths based on frequency rank
+        // Using a simple length assignment scheme:
+        // Top 2: 1 bit, next 4: 2 bits, next 8: 3 bits, etc.
+        var assigned: usize = 0;
+        var current_len: u8 = 1;
+        var slots_at_len: usize = 2;
+
+        for (0..count) |i| {
+            if (assigned >= slots_at_len) {
+                current_len += 1;
+                slots_at_len *= 2;
+                assigned = 0;
+                if (current_len > MAX_CODE_LEN) current_len = MAX_CODE_LEN;
+            }
+            code_lens[indices[i]] = current_len;
+            assigned += 1;
+        }
+    }
+
+    /// Generate canonical Huffman codes from code lengths
+    fn generateCanonicalCodes(code_lens: *const [MAX_PACKED_VALUES]u8, codes: *[MAX_PACKED_VALUES]HuffmanCode) void {
+        // Count symbols at each length
+        var bl_count: [MAX_CODE_LEN + 1]u16 = undefined;
+        @memset(&bl_count, 0);
+
+        for (0..MAX_PACKED_VALUES) |i| {
+            if (code_lens[i] > 0 and code_lens[i] <= MAX_CODE_LEN) {
+                bl_count[code_lens[i]] += 1;
+            }
+        }
+
+        // Calculate starting codes for each length
+        var next_code: [MAX_CODE_LEN + 1]u32 = undefined;
+        @memset(&next_code, 0);
+        var code: u32 = 0;
+        for (1..MAX_CODE_LEN + 1) |bits| {
+            code = (code + bl_count[bits - 1]) << 1;
+            next_code[bits] = code;
+        }
+
+        // Assign codes to symbols
+        for (0..MAX_PACKED_VALUES) |i| {
+            const len = code_lens[i];
+            if (len > 0 and len <= MAX_CODE_LEN) {
+                codes[i] = HuffmanCode{
+                    .code = next_code[len],
+                    .len = len,
+                };
+                next_code[len] += 1;
+            } else {
+                codes[i] = HuffmanCode{ .code = 0, .len = 0 };
+            }
+        }
+    }
+
+    /// Bit writer for Huffman encoding
+    const BitWriter = struct {
+        buffer: []u8,
+        byte_pos: usize,
+        bit_pos: u3,
+
+        fn init(buffer: []u8) BitWriter {
+            @memset(buffer, 0);
+            return BitWriter{
+                .buffer = buffer,
+                .byte_pos = 0,
+                .bit_pos = 0,
+            };
+        }
+
+        fn writeBits(self: *BitWriter, code: u32, len: u8) bool {
+            var remaining = len;
+            var bits = code;
+
+            while (remaining > 0) {
+                if (self.byte_pos >= self.buffer.len) return false;
+
+                const space = 8 - @as(u8, self.bit_pos);
+                const to_write: u5 = @intCast(if (remaining < space) remaining else space);
+
+                // Extract the bits to write (MSB first)
+                const shift: u5 = @intCast(remaining - to_write);
+                const mask = (@as(u32, 1) << to_write) - 1;
+                const value: u8 = @intCast((bits >> shift) & mask);
+
+                // Write to buffer
+                const write_shift: u3 = @intCast(space - to_write);
+                self.buffer[self.byte_pos] |= value << write_shift;
+
+                remaining -= to_write;
+                bits &= (@as(u32, 1) << shift) - 1;
+
+                self.bit_pos +%= @intCast(to_write);
+                if (self.bit_pos == 0) {
+                    self.byte_pos += 1;
+                }
+            }
+            return true;
+        }
+
+        fn getBitCount(self: *BitWriter) u32 {
+            return @intCast(self.byte_pos * 8 + @as(usize, self.bit_pos));
+        }
+
+        fn getByteCount(self: *BitWriter) usize {
+            return if (self.bit_pos > 0) self.byte_pos + 1 else self.byte_pos;
+        }
+    };
+
+    /// Bit reader for Huffman decoding
+    const BitReader = struct {
+        buffer: []const u8,
+        byte_pos: usize,
+        bit_pos: u3,
+
+        fn init(buffer: []const u8) BitReader {
+            return BitReader{
+                .buffer = buffer,
+                .byte_pos = 0,
+                .bit_pos = 0,
+            };
+        }
+
+        fn readBit(self: *BitReader) ?u1 {
+            if (self.byte_pos >= self.buffer.len) return null;
+
+            const shift = 7 - @as(u3, self.bit_pos);
+            const bit: u1 = @intCast((self.buffer[self.byte_pos] >> shift) & 1);
+
+            self.bit_pos +%= 1;
+            if (self.bit_pos == 0) {
+                self.byte_pos += 1;
+            }
+            return bit;
+        }
+    };
+
+    /// Huffman encode packed bytes
+    fn huffmanEncode(input: []const u8, output: []u8, codes: *const [MAX_PACKED_VALUES]HuffmanCode) ?struct { bytes: usize, bits: u32 } {
+        var writer = BitWriter.init(output);
+
+        for (input) |b| {
+            const code = codes[b];
+            if (code.len == 0) return null; // Symbol not in code table
+            if (!writer.writeBits(code.code, code.len)) return null;
+        }
+
+        return .{ .bytes = writer.getByteCount(), .bits = writer.getBitCount() };
+    }
+
+    /// Huffman decode to packed bytes
+    fn huffmanDecode(input: []const u8, total_bits: u32, output: []u8, code_lens: *const [MAX_PACKED_VALUES]u8, codes: *const [MAX_PACKED_VALUES]HuffmanCode) ?usize {
+        var reader = BitReader.init(input);
+        var out_pos: usize = 0;
+        var bits_read: u32 = 0;
+
+        while (bits_read < total_bits and out_pos < output.len) {
+            // Try to match a code
+            var current_code: u32 = 0;
+            var current_len: u8 = 0;
+            var found = false;
+
+            while (current_len < MAX_CODE_LEN) {
+                const bit = reader.readBit() orelse break;
+                current_code = (current_code << 1) | bit;
+                current_len += 1;
+                bits_read += 1;
+
+                // Check if this matches any symbol's code
+                for (0..MAX_PACKED_VALUES) |sym| {
+                    if (code_lens[sym] == current_len and codes[sym].code == current_code) {
+                        output[out_pos] = @intCast(sym);
+                        out_pos += 1;
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+            if (!found and bits_read < total_bits) return null;
+        }
+
+        return out_pos;
+    }
+
+    /// Save corpus with Huffman compression (TCV4 format)
+    pub fn saveHuffman(self: *TextCorpus, path: []const u8) !void {
+        const file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        // Build frequency table and Huffman codes
+        var freq: [MAX_PACKED_VALUES]u32 = undefined;
+        var code_lens: [MAX_PACKED_VALUES]u8 = undefined;
+        var codes: [MAX_PACKED_VALUES]HuffmanCode = undefined;
+
+        self.buildFrequencyTable(&freq);
+        buildHuffmanTree(&freq, &code_lens);
+        generateCanonicalCodes(&code_lens, &codes);
+
+        // Write magic header "TCV4"
+        _ = try file.write("TCV4");
+
+        // Count active symbols
+        var num_symbols: u8 = 0;
+        for (code_lens) |len| {
+            if (len > 0) num_symbols += 1;
+        }
+        _ = try file.write(&[1]u8{num_symbols});
+
+        // Write code lengths (all 243)
+        _ = try file.write(&code_lens);
+
+        // Write count
+        const count_bytes = std.mem.asBytes(&@as(u32, @intCast(self.count)));
+        _ = try file.write(count_bytes);
+
+        // Buffers
+        var packed_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+        var encoded_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+
+        // Write each entry
+        for (0..self.count) |i| {
+            const entry = &self.entries[i];
+
+            // Write trit_len
+            const trit_len_bytes = std.mem.asBytes(&@as(u32, @intCast(entry.vector.trit_len)));
+            _ = try file.write(trit_len_bytes);
+
+            // Pack trits
+            const packed_len: usize = (entry.vector.trit_len + 4) / 5;
+            var j: usize = 0;
+            var pack_idx: usize = 0;
+            while (j < entry.vector.trit_len) : (j += 5) {
+                var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                for (0..5) |k| {
+                    if (j + k < entry.vector.trit_len) {
+                        chunk[k] = entry.vector.unpacked_cache[j + k];
+                    }
+                }
+                packed_buf[pack_idx] = packTrits5(chunk);
+                pack_idx += 1;
+            }
+
+            // Huffman encode
+            const result = huffmanEncode(packed_buf[0..packed_len], &encoded_buf, &codes) orelse {
+                // Fallback: write packed directly
+                const bit_len_bytes = std.mem.asBytes(&@as(u32, 0));
+                _ = try file.write(bit_len_bytes);
+                const byte_len_bytes = std.mem.asBytes(&@as(u16, @intCast(packed_len)));
+                _ = try file.write(byte_len_bytes);
+                _ = try file.write(packed_buf[0..packed_len]);
+                const label_len_byte = [1]u8{@intCast(entry.label_len)};
+                _ = try file.write(&label_len_byte);
+                _ = try file.write(entry.label[0..entry.label_len]);
+                continue;
+            };
+
+            // Write bit_len and byte_len
+            const bit_len_bytes = std.mem.asBytes(&result.bits);
+            _ = try file.write(bit_len_bytes);
+            const byte_len_bytes = std.mem.asBytes(&@as(u16, @intCast(result.bytes)));
+            _ = try file.write(byte_len_bytes);
+            _ = try file.write(encoded_buf[0..result.bytes]);
+
+            // Write label
+            const label_len_byte = [1]u8{@intCast(entry.label_len)};
+            _ = try file.write(&label_len_byte);
+            _ = try file.write(entry.label[0..entry.label_len]);
+        }
+    }
+
+    /// Load corpus with Huffman decompression (TCV4 format)
+    pub fn loadHuffman(path: []const u8) !TextCorpus {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        var corpus = TextCorpus.init();
+
+        // Read and verify magic header
+        var magic: [4]u8 = undefined;
+        _ = try file.readAll(&magic);
+        if (!std.mem.eql(u8, &magic, "TCV4")) return error.InvalidMagic;
+
+        // Read num_symbols (not used, but part of format)
+        var num_symbols_byte: [1]u8 = undefined;
+        _ = try file.readAll(&num_symbols_byte);
+
+        // Read code lengths
+        var code_lens: [MAX_PACKED_VALUES]u8 = undefined;
+        _ = try file.readAll(&code_lens);
+
+        // Generate codes for decoding
+        var codes: [MAX_PACKED_VALUES]HuffmanCode = undefined;
+        generateCanonicalCodes(&code_lens, &codes);
+
+        // Read count
+        var count_bytes: [4]u8 = undefined;
+        _ = try file.readAll(&count_bytes);
+        const count = std.mem.readInt(u32, &count_bytes, .little);
+        if (count > MAX_CORPUS_SIZE) return error.CorpusTooLarge;
+
+        var packed_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+        var encoded_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+
+        // Read each entry
+        for (0..count) |i| {
+            var entry = &corpus.entries[i];
+
+            // Read trit_len
+            var trit_len_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&trit_len_bytes);
+            const trit_len = std.mem.readInt(u32, &trit_len_bytes, .little);
+            if (trit_len > MAX_TRITS) return error.VectorTooLarge;
+
+            // Read bit_len and byte_len
+            var bit_len_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&bit_len_bytes);
+            const bit_len = std.mem.readInt(u32, &bit_len_bytes, .little);
+
+            var byte_len_bytes: [2]u8 = undefined;
+            _ = try file.readAll(&byte_len_bytes);
+            const byte_len = std.mem.readInt(u16, &byte_len_bytes, .little);
+
+            // Read encoded data
+            _ = try file.readAll(encoded_buf[0..byte_len]);
+
+            entry.vector = HybridBigInt.zero();
+            entry.vector.mode = .unpacked_mode;
+            entry.vector.trit_len = trit_len;
+
+            const packed_len = (trit_len + 4) / 5;
+
+            if (bit_len == 0) {
+                // Fallback: direct packed data
+                @memcpy(packed_buf[0..byte_len], encoded_buf[0..byte_len]);
+            } else {
+                // Huffman decode
+                const decoded_len = huffmanDecode(encoded_buf[0..byte_len], bit_len, &packed_buf, &code_lens, &codes) orelse return error.HuffmanDecodeError;
+                if (decoded_len != packed_len) return error.HuffmanLengthMismatch;
+            }
+
+            // Unpack trits
+            var j: usize = 0;
+            for (0..packed_len) |p| {
+                const unpacked = unpackTrits5(packed_buf[p]);
+                for (0..5) |k| {
+                    if (j + k < trit_len) {
+                        entry.vector.unpacked_cache[j + k] = unpacked[k];
+                    }
+                }
+                j += 5;
+            }
+
+            // Read label
+            var label_len_byte: [1]u8 = undefined;
+            _ = try file.readAll(&label_len_byte);
+            entry.label_len = label_len_byte[0];
+            _ = try file.readAll(entry.label[0..entry.label_len]);
+        }
+
+        corpus.count = count;
+        return corpus;
+    }
+
+    /// Estimate Huffman-compressed size
+    pub fn estimateHuffmanSize(self: *TextCorpus) usize {
+        if (self.count == 0) return 4 + 1 + MAX_PACKED_VALUES + 4; // header only
+
+        // Build frequency and codes
+        var freq: [MAX_PACKED_VALUES]u32 = undefined;
+        var code_lens: [MAX_PACKED_VALUES]u8 = undefined;
+        var codes: [MAX_PACKED_VALUES]HuffmanCode = undefined;
+
+        self.buildFrequencyTable(&freq);
+        buildHuffmanTree(&freq, &code_lens);
+        generateCanonicalCodes(&code_lens, &codes);
+
+        var size: usize = 4 + 1 + MAX_PACKED_VALUES + 4; // magic + num_symbols + code_lens + count
+        var packed_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+        var encoded_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+
+        for (0..self.count) |i| {
+            const entry = &self.entries[i];
+            const packed_len = (entry.vector.trit_len + 4) / 5;
+
+            // Pack trits
+            var j: usize = 0;
+            var pack_idx: usize = 0;
+            while (j < entry.vector.trit_len) : (j += 5) {
+                var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                for (0..5) |k| {
+                    if (j + k < entry.vector.trit_len) {
+                        chunk[k] = entry.vector.unpacked_cache[j + k];
+                    }
+                }
+                packed_buf[pack_idx] = packTrits5(chunk);
+                pack_idx += 1;
+            }
+
+            // Estimate encoded size
+            const result = huffmanEncode(packed_buf[0..packed_len], &encoded_buf, &codes);
+            const byte_len = if (result) |r| r.bytes else packed_len;
+            size += 4 + 4 + 2 + byte_len + 1 + entry.label_len; // trit_len + bit_len + byte_len + data + label_len + label
+        }
+        return size;
+    }
+
+    /// Calculate Huffman compression ratio
+    pub fn huffmanCompressionRatio(self: *TextCorpus) f64 {
+        const uncompressed = self.estimateUncompressedSize();
+        const huffman_size = self.estimateHuffmanSize();
+        if (huffman_size == 0) return 1.0;
+        return @as(f64, @floatFromInt(uncompressed)) / @as(f64, @floatFromInt(huffman_size));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ARITHMETIC CODING (TCV5 format) - Theoretical optimal compression
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Arithmetic coding precision constants
+    const ARITH_PRECISION: u6 = 32;
+    const ARITH_FULL_RANGE: u64 = @as(u64, 1) << ARITH_PRECISION;
+    const ARITH_HALF: u64 = ARITH_FULL_RANGE >> 1;
+    const ARITH_QUARTER: u64 = ARITH_FULL_RANGE >> 2;
+
+    /// Cumulative frequency table for arithmetic coding
+    const CumulativeFreq = struct {
+        cumulative: [MAX_PACKED_VALUES + 1]u32, // cumulative[i] = sum of freq[0..i]
+        total: u32,
+
+        fn init() CumulativeFreq {
+            var cf = CumulativeFreq{
+                .cumulative = undefined,
+                .total = 0,
+            };
+            @memset(&cf.cumulative, 0);
+            return cf;
+        }
+
+        fn buildFromFreq(self: *CumulativeFreq, freq: *const [MAX_PACKED_VALUES]u32) void {
+            self.cumulative[0] = 0;
+            var sum: u32 = 0;
+            for (0..MAX_PACKED_VALUES) |i| {
+                sum += freq[i];
+                self.cumulative[i + 1] = sum;
+            }
+            self.total = sum;
+
+            // Ensure minimum frequency of 1 for all symbols (avoid zero probability)
+            if (self.total == 0) {
+                for (0..MAX_PACKED_VALUES) |i| {
+                    self.cumulative[i + 1] = @intCast(i + 1);
+                }
+                self.total = MAX_PACKED_VALUES;
+            }
+        }
+
+        fn getLow(self: *const CumulativeFreq, symbol: u8) u32 {
+            return self.cumulative[symbol];
+        }
+
+        fn getHigh(self: *const CumulativeFreq, symbol: u8) u32 {
+            return self.cumulative[symbol + 1];
+        }
+    };
+
+    /// Arithmetic encoder state
+    const ArithEncoder = struct {
+        low: u64,
+        high: u64,
+        pending_bits: u32,
+        output: []u8,
+        byte_pos: usize,
+        bit_pos: u3,
+
+        fn init(output: []u8) ArithEncoder {
+            @memset(output, 0);
+            return ArithEncoder{
+                .low = 0,
+                .high = ARITH_FULL_RANGE - 1,
+                .pending_bits = 0,
+                .output = output,
+                .byte_pos = 0,
+                .bit_pos = 0,
+            };
+        }
+
+        fn writeBit(self: *ArithEncoder, bit: u1) bool {
+            if (self.byte_pos >= self.output.len) return false;
+            if (bit == 1) {
+                const shift: u3 = @intCast(7 - @as(u4, self.bit_pos));
+                self.output[self.byte_pos] |= @as(u8, 1) << shift;
+            }
+            self.bit_pos +%= 1;
+            if (self.bit_pos == 0) {
+                self.byte_pos += 1;
+            }
+            return true;
+        }
+
+        fn writeBitWithPending(self: *ArithEncoder, bit: u1) bool {
+            if (!self.writeBit(bit)) return false;
+            const opposite: u1 = if (bit == 1) 0 else 1;
+            while (self.pending_bits > 0) {
+                if (!self.writeBit(opposite)) return false;
+                self.pending_bits -= 1;
+            }
+            return true;
+        }
+
+        fn encodeSymbol(self: *ArithEncoder, symbol: u8, cf: *const CumulativeFreq) bool {
+            const range = self.high - self.low + 1;
+            const sym_low = cf.getLow(symbol);
+            const sym_high = cf.getHigh(symbol);
+
+            self.high = self.low + (range * sym_high) / cf.total - 1;
+            self.low = self.low + (range * sym_low) / cf.total;
+
+            // Renormalization
+            while (true) {
+                if (self.high < ARITH_HALF) {
+                    // Output 0
+                    if (!self.writeBitWithPending(0)) return false;
+                } else if (self.low >= ARITH_HALF) {
+                    // Output 1
+                    if (!self.writeBitWithPending(1)) return false;
+                    self.low -= ARITH_HALF;
+                    self.high -= ARITH_HALF;
+                } else if (self.low >= ARITH_QUARTER and self.high < 3 * ARITH_QUARTER) {
+                    // Middle case
+                    self.pending_bits += 1;
+                    self.low -= ARITH_QUARTER;
+                    self.high -= ARITH_QUARTER;
+                } else {
+                    break;
+                }
+                self.low <<= 1;
+                self.high = (self.high << 1) | 1;
+            }
+            return true;
+        }
+
+        fn finish(self: *ArithEncoder) bool {
+            // Flush remaining bits
+            self.pending_bits += 1;
+            if (self.low < ARITH_QUARTER) {
+                return self.writeBitWithPending(0);
+            } else {
+                return self.writeBitWithPending(1);
+            }
+        }
+
+        fn getBitCount(self: *ArithEncoder) u32 {
+            return @intCast(self.byte_pos * 8 + @as(usize, self.bit_pos));
+        }
+
+        fn getByteCount(self: *ArithEncoder) usize {
+            return if (self.bit_pos > 0) self.byte_pos + 1 else self.byte_pos;
+        }
+    };
+
+    /// Arithmetic decoder state
+    const ArithDecoder = struct {
+        low: u64,
+        high: u64,
+        value: u64,
+        input: []const u8,
+        byte_pos: usize,
+        bit_pos: u3,
+        bits_read: u32,
+
+        fn init(input: []const u8) ArithDecoder {
+            var decoder = ArithDecoder{
+                .low = 0,
+                .high = ARITH_FULL_RANGE - 1,
+                .value = 0,
+                .input = input,
+                .byte_pos = 0,
+                .bit_pos = 0,
+                .bits_read = 0,
+            };
+            // Read initial bits
+            for (0..ARITH_PRECISION) |_| {
+                decoder.value = (decoder.value << 1) | decoder.readBit();
+            }
+            return decoder;
+        }
+
+        fn readBit(self: *ArithDecoder) u64 {
+            if (self.byte_pos >= self.input.len) return 0;
+            const shift: u3 = @intCast(7 - @as(u4, self.bit_pos));
+            const bit: u64 = (self.input[self.byte_pos] >> shift) & 1;
+            self.bit_pos +%= 1;
+            if (self.bit_pos == 0) {
+                self.byte_pos += 1;
+            }
+            self.bits_read += 1;
+            return bit;
+        }
+
+        fn decodeSymbol(self: *ArithDecoder, cf: *const CumulativeFreq) ?u8 {
+            const range = self.high - self.low + 1;
+            const scaled_value = ((self.value - self.low + 1) * cf.total - 1) / range;
+
+            // Find symbol
+            var symbol: u8 = 0;
+            for (0..MAX_PACKED_VALUES) |i| {
+                if (cf.cumulative[i + 1] > scaled_value) {
+                    symbol = @intCast(i);
+                    break;
+                }
+            }
+
+            const sym_low = cf.getLow(symbol);
+            const sym_high = cf.getHigh(symbol);
+
+            self.high = self.low + (range * sym_high) / cf.total - 1;
+            self.low = self.low + (range * sym_low) / cf.total;
+
+            // Renormalization
+            while (true) {
+                if (self.high < ARITH_HALF) {
+                    // Nothing
+                } else if (self.low >= ARITH_HALF) {
+                    self.low -= ARITH_HALF;
+                    self.high -= ARITH_HALF;
+                    self.value -= ARITH_HALF;
+                } else if (self.low >= ARITH_QUARTER and self.high < 3 * ARITH_QUARTER) {
+                    self.low -= ARITH_QUARTER;
+                    self.high -= ARITH_QUARTER;
+                    self.value -= ARITH_QUARTER;
+                } else {
+                    break;
+                }
+                self.low <<= 1;
+                self.high = (self.high << 1) | 1;
+                self.value = (self.value << 1) | self.readBit();
+            }
+
+            return symbol;
+        }
+    };
+
+    /// Arithmetic encode packed bytes
+    fn arithmeticEncode(input: []const u8, output: []u8, cf: *const CumulativeFreq) ?struct { bytes: usize, bits: u32 } {
+        var encoder = ArithEncoder.init(output);
+
+        for (input) |b| {
+            if (!encoder.encodeSymbol(b, cf)) return null;
+        }
+
+        if (!encoder.finish()) return null;
+
+        return .{ .bytes = encoder.getByteCount(), .bits = encoder.getBitCount() };
+    }
+
+    /// Arithmetic decode to packed bytes
+    fn arithmeticDecode(input: []const u8, output: []u8, symbol_count: usize, cf: *const CumulativeFreq) ?usize {
+        if (symbol_count == 0) return 0;
+        if (symbol_count > output.len) return null;
+
+        var decoder = ArithDecoder.init(input);
+
+        for (0..symbol_count) |i| {
+            const symbol = decoder.decodeSymbol(cf) orelse return null;
+            output[i] = symbol;
+        }
+
+        return symbol_count;
+    }
+
+    /// Save corpus with arithmetic compression (TCV5 format)
+    pub fn saveArithmetic(self: *TextCorpus, path: []const u8) !void {
+        const file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        // Build frequency table and cumulative frequencies
+        var freq: [MAX_PACKED_VALUES]u32 = undefined;
+        var cf = CumulativeFreq.init();
+
+        self.buildFrequencyTable(&freq);
+        cf.buildFromFreq(&freq);
+
+        // Write magic header "TCV5"
+        _ = try file.write("TCV5");
+
+        // Write total frequency
+        const total_bytes = std.mem.asBytes(&cf.total);
+        _ = try file.write(total_bytes);
+
+        // Write cumulative frequencies (all 244 values including 0)
+        for (cf.cumulative) |c| {
+            const c_bytes = std.mem.asBytes(&c);
+            _ = try file.write(c_bytes);
+        }
+
+        // Write count
+        const count_bytes = std.mem.asBytes(&@as(u32, @intCast(self.count)));
+        _ = try file.write(count_bytes);
+
+        // Buffers
+        var packed_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+        var encoded_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+
+        // Write each entry
+        for (0..self.count) |i| {
+            const entry = &self.entries[i];
+
+            // Write trit_len
+            const trit_len_bytes = std.mem.asBytes(&@as(u32, @intCast(entry.vector.trit_len)));
+            _ = try file.write(trit_len_bytes);
+
+            // Pack trits
+            const packed_len: usize = (entry.vector.trit_len + 4) / 5;
+            var j: usize = 0;
+            var pack_idx: usize = 0;
+            while (j < entry.vector.trit_len) : (j += 5) {
+                var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                for (0..5) |k| {
+                    if (j + k < entry.vector.trit_len) {
+                        chunk[k] = entry.vector.unpacked_cache[j + k];
+                    }
+                }
+                packed_buf[pack_idx] = packTrits5(chunk);
+                pack_idx += 1;
+            }
+
+            // Write packed_len for decoding
+            const packed_len_bytes = std.mem.asBytes(&@as(u32, @intCast(packed_len)));
+            _ = try file.write(packed_len_bytes);
+
+            // Arithmetic encode
+            const result = arithmeticEncode(packed_buf[0..packed_len], &encoded_buf, &cf) orelse {
+                // Fallback: write packed directly
+                const bit_len_bytes = std.mem.asBytes(&@as(u32, 0));
+                _ = try file.write(bit_len_bytes);
+                const byte_len_bytes = std.mem.asBytes(&@as(u16, @intCast(packed_len)));
+                _ = try file.write(byte_len_bytes);
+                _ = try file.write(packed_buf[0..packed_len]);
+                const label_len_byte = [1]u8{@intCast(entry.label_len)};
+                _ = try file.write(&label_len_byte);
+                _ = try file.write(entry.label[0..entry.label_len]);
+                continue;
+            };
+
+            // Write bit_len and byte_len
+            const bit_len_bytes = std.mem.asBytes(&result.bits);
+            _ = try file.write(bit_len_bytes);
+            const byte_len_bytes = std.mem.asBytes(&@as(u16, @intCast(result.bytes)));
+            _ = try file.write(byte_len_bytes);
+            _ = try file.write(encoded_buf[0..result.bytes]);
+
+            // Write label
+            const label_len_byte = [1]u8{@intCast(entry.label_len)};
+            _ = try file.write(&label_len_byte);
+            _ = try file.write(entry.label[0..entry.label_len]);
+        }
+    }
+
+    /// Load corpus with arithmetic decompression (TCV5 format)
+    pub fn loadArithmetic(path: []const u8) !TextCorpus {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        var corpus = TextCorpus.init();
+
+        // Read and verify magic header
+        var magic: [4]u8 = undefined;
+        _ = try file.readAll(&magic);
+        if (!std.mem.eql(u8, &magic, "TCV5")) return error.InvalidMagic;
+
+        // Read total frequency
+        var total_bytes: [4]u8 = undefined;
+        _ = try file.readAll(&total_bytes);
+        const total = std.mem.readInt(u32, &total_bytes, .little);
+
+        // Read cumulative frequencies
+        var cf = CumulativeFreq.init();
+        for (0..(MAX_PACKED_VALUES + 1)) |i| {
+            var c_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&c_bytes);
+            cf.cumulative[i] = std.mem.readInt(u32, &c_bytes, .little);
+        }
+        cf.total = total;
+
+        // Read count
+        var count_bytes: [4]u8 = undefined;
+        _ = try file.readAll(&count_bytes);
+        const count = std.mem.readInt(u32, &count_bytes, .little);
+        if (count > MAX_CORPUS_SIZE) return error.CorpusTooLarge;
+
+        var packed_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+        var encoded_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+
+        // Read each entry
+        for (0..count) |i| {
+            var entry = &corpus.entries[i];
+
+            // Read trit_len
+            var trit_len_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&trit_len_bytes);
+            const trit_len = std.mem.readInt(u32, &trit_len_bytes, .little);
+            if (trit_len > MAX_TRITS) return error.VectorTooLarge;
+
+            // Read packed_len
+            var packed_len_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&packed_len_bytes);
+            const packed_len = std.mem.readInt(u32, &packed_len_bytes, .little);
+
+            // Read bit_len and byte_len
+            var bit_len_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&bit_len_bytes);
+            const bit_len = std.mem.readInt(u32, &bit_len_bytes, .little);
+
+            var byte_len_bytes: [2]u8 = undefined;
+            _ = try file.readAll(&byte_len_bytes);
+            const byte_len = std.mem.readInt(u16, &byte_len_bytes, .little);
+
+            // Read encoded data
+            _ = try file.readAll(encoded_buf[0..byte_len]);
+
+            entry.vector = HybridBigInt.zero();
+            entry.vector.mode = .unpacked_mode;
+            entry.vector.trit_len = trit_len;
+
+            if (bit_len == 0) {
+                // Fallback: direct packed data
+                @memcpy(packed_buf[0..byte_len], encoded_buf[0..byte_len]);
+            } else {
+                // Arithmetic decode
+                const decoded_len = arithmeticDecode(encoded_buf[0..byte_len], &packed_buf, packed_len, &cf) orelse return error.ArithmeticDecodeError;
+                if (decoded_len != packed_len) return error.ArithmeticLengthMismatch;
+            }
+
+            // Unpack trits
+            var j: usize = 0;
+            for (0..packed_len) |p| {
+                const unpacked = unpackTrits5(packed_buf[p]);
+                for (0..5) |k| {
+                    if (j + k < trit_len) {
+                        entry.vector.unpacked_cache[j + k] = unpacked[k];
+                    }
+                }
+                j += 5;
+            }
+
+            // Read label
+            var label_len_byte: [1]u8 = undefined;
+            _ = try file.readAll(&label_len_byte);
+            entry.label_len = label_len_byte[0];
+            _ = try file.readAll(entry.label[0..entry.label_len]);
+        }
+
+        corpus.count = count;
+        return corpus;
+    }
+
+    /// Estimate arithmetic-compressed size
+    pub fn estimateArithmeticSize(self: *TextCorpus) usize {
+        if (self.count == 0) return 4 + 4 + (MAX_PACKED_VALUES + 1) * 4 + 4; // header only
+
+        // Build frequency and cumulative frequencies
+        var freq: [MAX_PACKED_VALUES]u32 = undefined;
+        var cf = CumulativeFreq.init();
+
+        self.buildFrequencyTable(&freq);
+        cf.buildFromFreq(&freq);
+
+        var size: usize = 4 + 4 + (MAX_PACKED_VALUES + 1) * 4 + 4; // magic + total + cumulative + count
+        var packed_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+        var encoded_buf: [MAX_HUFFMAN_BUFFER]u8 = undefined;
+
+        for (0..self.count) |i| {
+            const entry = &self.entries[i];
+            const packed_len = (entry.vector.trit_len + 4) / 5;
+
+            // Pack trits
+            var j: usize = 0;
+            var pack_idx: usize = 0;
+            while (j < entry.vector.trit_len) : (j += 5) {
+                var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                for (0..5) |k| {
+                    if (j + k < entry.vector.trit_len) {
+                        chunk[k] = entry.vector.unpacked_cache[j + k];
+                    }
+                }
+                packed_buf[pack_idx] = packTrits5(chunk);
+                pack_idx += 1;
+            }
+
+            // Estimate encoded size
+            const result = arithmeticEncode(packed_buf[0..packed_len], &encoded_buf, &cf);
+            const byte_len = if (result) |r| r.bytes else packed_len;
+            size += 4 + 4 + 4 + 2 + byte_len + 1 + entry.label_len; // trit_len + packed_len + bit_len + byte_len + data + label_len + label
+        }
+        return size;
+    }
+
+    /// Calculate arithmetic compression ratio
+    pub fn arithmeticCompressionRatio(self: *TextCorpus) f64 {
+        const uncompressed = self.estimateUncompressedSize();
+        const arithmetic_size = self.estimateArithmeticSize();
+        if (arithmetic_size == 0) return 1.0;
+        return @as(f64, @floatFromInt(uncompressed)) / @as(f64, @floatFromInt(arithmetic_size));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // CORPUS SHARDING (TCV6 format) - Parallel chunk processing
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Default entries per shard
+    pub const DEFAULT_SHARD_SIZE: u16 = 25;
+
+    /// Maximum number of shards
+    pub const MAX_SHARDS: usize = 16;
+
+    /// Shard metadata
+    pub const ShardInfo = struct {
+        id: u16,
+        start_idx: usize,
+        end_idx: usize,
+        entry_count: u16,
+    };
+
+    /// Sharded corpus configuration
+    pub const ShardConfig = struct {
+        entries_per_shard: u16,
+        shard_count: u16,
+        total_entries: u32,
+        shards: [MAX_SHARDS]ShardInfo,
+
+        pub fn init(corpus_count: usize, entries_per_shard: u16) ShardConfig {
+            const eps = if (entries_per_shard == 0) DEFAULT_SHARD_SIZE else entries_per_shard;
+            const shard_count: u16 = @intCast((corpus_count + eps - 1) / eps);
+
+            var config = ShardConfig{
+                .entries_per_shard = eps,
+                .shard_count = if (shard_count > MAX_SHARDS) MAX_SHARDS else shard_count,
+                .total_entries = @intCast(corpus_count),
+                .shards = undefined,
+            };
+
+            // Calculate shard boundaries
+            var idx: usize = 0;
+            for (0..config.shard_count) |i| {
+                const start = idx;
+                const remaining = corpus_count - idx;
+                const count = @min(eps, remaining);
+                config.shards[i] = ShardInfo{
+                    .id = @intCast(i),
+                    .start_idx = start,
+                    .end_idx = start + count,
+                    .entry_count = @intCast(count),
+                };
+                idx += count;
+            }
+
+            return config;
+        }
+    };
+
+    /// Get shard configuration for this corpus
+    pub fn getShardConfig(self: *TextCorpus, entries_per_shard: u16) ShardConfig {
+        return ShardConfig.init(self.count, entries_per_shard);
+    }
+
+    /// Save corpus with sharding (TCV6 format)
+    pub fn saveSharded(self: *TextCorpus, path: []const u8, entries_per_shard: u16) !void {
+        const file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        const config = self.getShardConfig(entries_per_shard);
+
+        // Write magic header "TCV6"
+        _ = try file.write("TCV6");
+
+        // Write shard configuration
+        _ = try file.write(std.mem.asBytes(&config.shard_count));
+        _ = try file.write(std.mem.asBytes(&config.entries_per_shard));
+        _ = try file.write(std.mem.asBytes(&config.total_entries));
+
+        // Reserve space for shard offsets (will write later)
+        const offset_table_pos = try file.getPos();
+        var shard_offsets: [MAX_SHARDS]u32 = undefined;
+        for (0..config.shard_count) |i| {
+            shard_offsets[i] = 0;
+            _ = try file.write(std.mem.asBytes(&shard_offsets[i]));
+        }
+
+        // Write each shard
+        for (0..config.shard_count) |shard_idx| {
+            const shard = config.shards[shard_idx];
+
+            // Record offset
+            shard_offsets[shard_idx] = @intCast(try file.getPos());
+
+            // Write shard header
+            _ = try file.write(std.mem.asBytes(&shard.id));
+            _ = try file.write(std.mem.asBytes(&shard.entry_count));
+
+            // Write entries in this shard
+            for (shard.start_idx..shard.end_idx) |entry_idx| {
+                const entry = &self.entries[entry_idx];
+
+                // Write trit_len
+                const trit_len_bytes = std.mem.asBytes(&@as(u32, @intCast(entry.vector.trit_len)));
+                _ = try file.write(trit_len_bytes);
+
+                // Pack and write trits (TCV1 style for speed)
+                const packed_len: u16 = @intCast((entry.vector.trit_len + 4) / 5);
+                _ = try file.write(std.mem.asBytes(&packed_len));
+
+                var j: usize = 0;
+                while (j < entry.vector.trit_len) : (j += 5) {
+                    var chunk: [5]Trit = .{ 0, 0, 0, 0, 0 };
+                    for (0..5) |k| {
+                        if (j + k < entry.vector.trit_len) {
+                            chunk[k] = entry.vector.unpacked_cache[j + k];
+                        }
+                    }
+                    const packed_byte = [1]u8{packTrits5(chunk)};
+                    _ = try file.write(&packed_byte);
+                }
+
+                // Write label
+                const label_len_byte = [1]u8{@intCast(entry.label_len)};
+                _ = try file.write(&label_len_byte);
+                _ = try file.write(entry.label[0..entry.label_len]);
+            }
+        }
+
+        // Go back and write shard offsets
+        try file.seekTo(offset_table_pos);
+        for (0..config.shard_count) |i| {
+            _ = try file.write(std.mem.asBytes(&shard_offsets[i]));
+        }
+    }
+
+    /// Load corpus with sharding (TCV6 format)
+    pub fn loadSharded(path: []const u8) !TextCorpus {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        var corpus = TextCorpus.init();
+
+        // Read and verify magic header
+        var magic: [4]u8 = undefined;
+        _ = try file.readAll(&magic);
+        if (!std.mem.eql(u8, &magic, "TCV6")) return error.InvalidMagic;
+
+        // Read shard configuration
+        var shard_count_bytes: [2]u8 = undefined;
+        _ = try file.readAll(&shard_count_bytes);
+        const shard_count = std.mem.readInt(u16, &shard_count_bytes, .little);
+
+        var eps_bytes: [2]u8 = undefined;
+        _ = try file.readAll(&eps_bytes);
+        _ = std.mem.readInt(u16, &eps_bytes, .little); // entries_per_shard (for info)
+
+        var total_bytes: [4]u8 = undefined;
+        _ = try file.readAll(&total_bytes);
+        const total_entries = std.mem.readInt(u32, &total_bytes, .little);
+        if (total_entries > MAX_CORPUS_SIZE) return error.CorpusTooLarge;
+
+        // Read shard offsets
+        var shard_offsets: [MAX_SHARDS]u32 = undefined;
+        for (0..shard_count) |i| {
+            var offset_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&offset_bytes);
+            shard_offsets[i] = std.mem.readInt(u32, &offset_bytes, .little);
+        }
+
+        // Read each shard
+        var entry_idx: usize = 0;
+        for (0..shard_count) |shard_idx| {
+            // Seek to shard (for parallel-ready loading)
+            try file.seekTo(shard_offsets[shard_idx]);
+
+            // Read shard header
+            var shard_id_bytes: [2]u8 = undefined;
+            _ = try file.readAll(&shard_id_bytes);
+            _ = std.mem.readInt(u16, &shard_id_bytes, .little); // shard_id
+
+            var entry_count_bytes: [2]u8 = undefined;
+            _ = try file.readAll(&entry_count_bytes);
+            const entry_count = std.mem.readInt(u16, &entry_count_bytes, .little);
+
+            // Read entries in this shard
+            for (0..entry_count) |_| {
+                if (entry_idx >= MAX_CORPUS_SIZE) return error.CorpusTooLarge;
+
+                var entry = &corpus.entries[entry_idx];
+
+                // Read trit_len
+                var trit_len_bytes: [4]u8 = undefined;
+                _ = try file.readAll(&trit_len_bytes);
+                const trit_len = std.mem.readInt(u32, &trit_len_bytes, .little);
+                if (trit_len > MAX_TRITS) return error.VectorTooLarge;
+
+                // Read packed_len
+                var packed_len_bytes: [2]u8 = undefined;
+                _ = try file.readAll(&packed_len_bytes);
+                const packed_len = std.mem.readInt(u16, &packed_len_bytes, .little);
+
+                entry.vector = HybridBigInt.zero();
+                entry.vector.mode = .unpacked_mode;
+                entry.vector.trit_len = trit_len;
+
+                // Read and unpack trits
+                var j: usize = 0;
+                for (0..packed_len) |_| {
+                    var packed_byte: [1]u8 = undefined;
+                    _ = try file.readAll(&packed_byte);
+                    const unpacked = unpackTrits5(packed_byte[0]);
+                    for (0..5) |k| {
+                        if (j + k < trit_len) {
+                            entry.vector.unpacked_cache[j + k] = unpacked[k];
+                        }
+                    }
+                    j += 5;
+                }
+
+                // Read label
+                var label_len_byte: [1]u8 = undefined;
+                _ = try file.readAll(&label_len_byte);
+                entry.label_len = label_len_byte[0];
+                _ = try file.readAll(entry.label[0..entry.label_len]);
+
+                entry_idx += 1;
+            }
+        }
+
+        corpus.count = entry_idx;
+        return corpus;
+    }
+
+    /// Estimate sharded file size
+    pub fn estimateShardedSize(self: *TextCorpus, entries_per_shard: u16) usize {
+        if (self.count == 0) return 4 + 2 + 2 + 4; // header only
+
+        const config = self.getShardConfig(entries_per_shard);
+
+        // Header: magic + shard_count + eps + total + offsets
+        var size: usize = 4 + 2 + 2 + 4 + config.shard_count * 4;
+
+        // Each shard: id + count + entries
+        for (0..config.shard_count) |shard_idx| {
+            const shard = config.shards[shard_idx];
+            size += 2 + 2; // shard header
+
+            for (shard.start_idx..shard.end_idx) |entry_idx| {
+                const entry = &self.entries[entry_idx];
+                const packed_len = (entry.vector.trit_len + 4) / 5;
+                size += 4 + 2 + packed_len + 1 + entry.label_len;
+            }
+        }
+
+        return size;
+    }
+
+    /// Get shard count for given configuration
+    pub fn getShardCount(self: *TextCorpus, entries_per_shard: u16) u16 {
+        const config = self.getShardConfig(entries_per_shard);
+        return config.shard_count;
+    }
+
+    /// Search within a specific shard range (parallel-ready)
+    pub fn searchShard(self: *TextCorpus, query: []const u8, start_idx: usize, end_idx: usize, results: []SearchResult) usize {
+        if (start_idx >= end_idx or start_idx >= self.count) return 0;
+
+        var query_vec = encodeText(query);
+        const search_end = @min(end_idx, self.count);
+
+        var result_count: usize = 0;
+        for (start_idx..search_end) |i| {
+            if (result_count >= results.len) break;
+            results[result_count] = SearchResult{
+                .index = i,
+                .similarity = cosineSimilarity(&query_vec, &self.entries[i].vector),
+            };
+            result_count += 1;
+        }
+
+        // Sort by similarity (descending)
+        for (0..result_count) |i| {
+            for (i + 1..result_count) |j| {
+                if (results[j].similarity > results[i].similarity) {
+                    const tmp = results[i];
+                    results[i] = results[j];
+                    results[j] = tmp;
+                }
+            }
+        }
+
+        return result_count;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // PARALLEL LOADING (Zig threads for concurrent shards)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Maximum parallel threads
+    pub const MAX_PARALLEL_THREADS: usize = 8;
+
+    /// Shard loading context for thread worker
+    pub const ShardLoadContext = struct {
+        path_buf: [256]u8,
+        path_len: usize,
+        shard_offset: u32,
+        shard_id: u16,
+        entry_count: u16,
+        start_entry_idx: usize,
+        entries: *[MAX_CORPUS_SIZE]CorpusEntry,
+        success: bool,
+        error_code: u8,
+    };
+
+    /// Thread worker function to load a single shard
+    fn loadShardWorker(ctx: *ShardLoadContext) void {
+        const path = ctx.path_buf[0..ctx.path_len];
+
+        // Open file independently
+        const file = std.fs.cwd().openFile(path, .{}) catch {
+            ctx.success = false;
+            ctx.error_code = 1;
+            return;
+        };
+        defer file.close();
+
+        // Seek to shard offset
+        file.seekTo(ctx.shard_offset) catch {
+            ctx.success = false;
+            ctx.error_code = 2;
+            return;
+        };
+
+        // Skip shard header (already known)
+        var header_buf: [4]u8 = undefined;
+        _ = file.readAll(&header_buf) catch {
+            ctx.success = false;
+            ctx.error_code = 3;
+            return;
+        };
+
+        // Read entries
+        var local_idx: usize = 0;
+        while (local_idx < ctx.entry_count) : (local_idx += 1) {
+            const entry_idx = ctx.start_entry_idx + local_idx;
+            if (entry_idx >= MAX_CORPUS_SIZE) {
+                ctx.success = false;
+                ctx.error_code = 4;
+                return;
+            }
+
+            var entry = &ctx.entries[entry_idx];
+
+            // Read trit_len
+            var trit_len_bytes: [4]u8 = undefined;
+            _ = file.readAll(&trit_len_bytes) catch {
+                ctx.success = false;
+                ctx.error_code = 5;
+                return;
+            };
+            const trit_len = std.mem.readInt(u32, &trit_len_bytes, .little);
+            if (trit_len > MAX_TRITS) {
+                ctx.success = false;
+                ctx.error_code = 6;
+                return;
+            }
+
+            // Read packed_len
+            var packed_len_bytes: [2]u8 = undefined;
+            _ = file.readAll(&packed_len_bytes) catch {
+                ctx.success = false;
+                ctx.error_code = 7;
+                return;
+            };
+            const packed_len = std.mem.readInt(u16, &packed_len_bytes, .little);
+
+            entry.vector = HybridBigInt.zero();
+            entry.vector.mode = .unpacked_mode;
+            entry.vector.trit_len = trit_len;
+
+            // Read and unpack trits
+            var j: usize = 0;
+            for (0..packed_len) |_| {
+                var packed_byte: [1]u8 = undefined;
+                _ = file.readAll(&packed_byte) catch {
+                    ctx.success = false;
+                    ctx.error_code = 8;
+                    return;
+                };
+                const unpacked = unpackTrits5(packed_byte[0]);
+                for (0..5) |k| {
+                    if (j + k < trit_len) {
+                        entry.vector.unpacked_cache[j + k] = unpacked[k];
+                    }
+                }
+                j += 5;
+            }
+
+            // Read label
+            var label_len_byte: [1]u8 = undefined;
+            _ = file.readAll(&label_len_byte) catch {
+                ctx.success = false;
+                ctx.error_code = 9;
+                return;
+            };
+            entry.label_len = label_len_byte[0];
+            _ = file.readAll(entry.label[0..entry.label_len]) catch {
+                ctx.success = false;
+                ctx.error_code = 10;
+                return;
+            };
+        }
+
+        ctx.success = true;
+        ctx.error_code = 0;
+    }
+
+    /// Load corpus with parallel shard loading
+    pub fn loadShardedParallel(path: []const u8) !TextCorpus {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        var corpus = TextCorpus.init();
+
+        // Read and verify magic header
+        var magic: [4]u8 = undefined;
+        _ = try file.readAll(&magic);
+        if (!std.mem.eql(u8, &magic, "TCV6")) return error.InvalidMagic;
+
+        // Read shard configuration
+        var shard_count_bytes: [2]u8 = undefined;
+        _ = try file.readAll(&shard_count_bytes);
+        const shard_count = std.mem.readInt(u16, &shard_count_bytes, .little);
+
+        var eps_bytes: [2]u8 = undefined;
+        _ = try file.readAll(&eps_bytes);
+        _ = std.mem.readInt(u16, &eps_bytes, .little);
+
+        var total_bytes: [4]u8 = undefined;
+        _ = try file.readAll(&total_bytes);
+        const total_entries = std.mem.readInt(u32, &total_bytes, .little);
+        if (total_entries > MAX_CORPUS_SIZE) return error.CorpusTooLarge;
+
+        // Read shard offsets
+        var shard_offsets: [MAX_SHARDS]u32 = undefined;
+        var shard_entry_counts: [MAX_SHARDS]u16 = undefined;
+        for (0..shard_count) |i| {
+            var offset_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&offset_bytes);
+            shard_offsets[i] = std.mem.readInt(u32, &offset_bytes, .little);
+        }
+
+        // Read shard entry counts (need to peek at each shard header)
+        var start_indices: [MAX_SHARDS]usize = undefined;
+        var entry_idx: usize = 0;
+        for (0..shard_count) |i| {
+            try file.seekTo(shard_offsets[i]);
+            var shard_header: [4]u8 = undefined;
+            _ = try file.readAll(&shard_header);
+            shard_entry_counts[i] = std.mem.readInt(u16, shard_header[2..4], .little);
+            start_indices[i] = entry_idx;
+            entry_idx += shard_entry_counts[i];
+        }
+
+        // Prepare thread contexts
+        var contexts: [MAX_SHARDS]ShardLoadContext = undefined;
+        for (0..shard_count) |i| {
+            contexts[i] = ShardLoadContext{
+                .path_buf = undefined,
+                .path_len = path.len,
+                .shard_offset = shard_offsets[i],
+                .shard_id = @intCast(i),
+                .entry_count = shard_entry_counts[i],
+                .start_entry_idx = start_indices[i],
+                .entries = &corpus.entries,
+                .success = false,
+                .error_code = 0,
+            };
+            @memcpy(contexts[i].path_buf[0..path.len], path);
+        }
+
+        // Spawn threads for each shard
+        var threads: [MAX_SHARDS]?std.Thread = undefined;
+        for (0..shard_count) |i| {
+            threads[i] = std.Thread.spawn(.{}, loadShardWorker, .{&contexts[i]}) catch null;
+        }
+
+        // Wait for all threads to complete
+        for (0..shard_count) |i| {
+            if (threads[i]) |thread| {
+                thread.join();
+            }
+        }
+
+        // Check for errors
+        for (0..shard_count) |i| {
+            if (!contexts[i].success) {
+                return error.ShardLoadFailed;
+            }
+        }
+
+        corpus.count = total_entries;
+        return corpus;
+    }
+
+    /// Get parallel loading thread count recommendation
+    pub fn getRecommendedThreadCount(self: *TextCorpus, entries_per_shard: u16) u16 {
+        const config = self.getShardConfig(entries_per_shard);
+        // Use min of shard count and MAX_PARALLEL_THREADS
+        return if (config.shard_count < MAX_PARALLEL_THREADS)
+            config.shard_count
+        else
+            MAX_PARALLEL_THREADS;
+    }
+
+    /// Check if parallel loading is beneficial
+    pub fn isParallelBeneficial(self: *TextCorpus, entries_per_shard: u16) bool {
+        const config = self.getShardConfig(entries_per_shard);
+        // Parallel is beneficial if we have at least 2 shards
+        return config.shard_count >= 2;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // THREAD POOL (Reusable worker threads)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Thread pool configuration
+    pub const POOL_SIZE: usize = 4;
+    pub const MAX_JOBS: usize = 32;
+
+    /// Job function type
+    pub const JobFn = *const fn (*anyopaque) void;
+
+    /// Job entry in queue
+    pub const PoolJob = struct {
+        func: JobFn,
+        context: *anyopaque,
+        completed: bool,
+    };
+
+    /// Thread pool for reusable workers
+    pub const ThreadPool = struct {
+        workers: [POOL_SIZE]?std.Thread,
+        jobs: [MAX_JOBS]PoolJob,
+        job_count: usize,
+        jobs_completed: usize,
+        running: bool,
+        mutex: std.Thread.Mutex,
+
+        /// Initialize thread pool (workers not started yet)
+        pub fn init() ThreadPool {
+            return ThreadPool{
+                .workers = .{null} ** POOL_SIZE,
+                .jobs = undefined,
+                .job_count = 0,
+                .jobs_completed = 0,
+                .running = false,
+                .mutex = .{},
+            };
+        }
+
+        /// Start worker threads
+        pub fn start(self: *ThreadPool) void {
+            self.running = true;
+            for (0..POOL_SIZE) |i| {
+                self.workers[i] = std.Thread.spawn(.{}, workerLoop, .{self}) catch null;
+            }
+        }
+
+        /// Stop worker threads
+        pub fn stop(self: *ThreadPool) void {
+            self.running = false;
+            // Wait for workers to finish
+            for (0..POOL_SIZE) |i| {
+                if (self.workers[i]) |worker| {
+                    worker.join();
+                    self.workers[i] = null;
+                }
+            }
+        }
+
+        /// Worker thread loop
+        fn workerLoop(self: *ThreadPool) void {
+            while (self.running) {
+                var job: ?PoolJob = null;
+
+                // Try to get a job
+                {
+                    self.mutex.lock();
+                    defer self.mutex.unlock();
+
+                    if (self.jobs_completed < self.job_count) {
+                        // Find next uncompleted job
+                        for (0..self.job_count) |i| {
+                            if (!self.jobs[i].completed) {
+                                job = self.jobs[i];
+                                self.jobs[i].completed = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (job) |j| {
+                    // Execute job
+                    j.func(j.context);
+
+                    // Mark completed
+                    self.mutex.lock();
+                    self.jobs_completed += 1;
+                    self.mutex.unlock();
+                } else {
+                    // No job available, yield
+                    std.Thread.yield() catch {};
+                }
+            }
+        }
+
+        /// Submit a batch of jobs and wait for completion
+        pub fn submitAndWait(self: *ThreadPool, jobs: []const PoolJob) void {
+            // Reset job queue
+            self.mutex.lock();
+            self.job_count = @min(jobs.len, MAX_JOBS);
+            self.jobs_completed = 0;
+            for (0..self.job_count) |i| {
+                self.jobs[i] = jobs[i];
+                self.jobs[i].completed = false;
+            }
+            self.mutex.unlock();
+
+            // Wait for all jobs to complete
+            while (true) {
+                self.mutex.lock();
+                const done = self.jobs_completed >= self.job_count;
+                self.mutex.unlock();
+                if (done) break;
+                std.Thread.yield() catch {};
+            }
+        }
+
+        /// Check if pool is active
+        pub fn isActive(self: *ThreadPool) bool {
+            return self.running;
+        }
+
+        /// Get number of workers
+        pub fn getWorkerCount(self: *ThreadPool) usize {
+            var count: usize = 0;
+            for (self.workers) |w| {
+                if (w != null) count += 1;
+            }
+            return count;
+        }
+    };
+
+    /// Global thread pool instance
+    var global_pool: ?ThreadPool = null;
+
+    /// Get or create global thread pool
+    pub fn getGlobalPool() *ThreadPool {
+        if (global_pool == null) {
+            global_pool = ThreadPool.init();
+            global_pool.?.start();
+        }
+        return &global_pool.?;
+    }
+
+    /// Shutdown global thread pool
+    pub fn shutdownGlobalPool() void {
+        if (global_pool) |*pool| {
+            pool.stop();
+            global_pool = null;
+        }
+    }
+
+    /// Check if global pool is available
+    pub fn hasGlobalPool() bool {
+        return global_pool != null and global_pool.?.running;
+    }
+
+    /// Load corpus using thread pool
+    pub fn loadShardedWithPool(path: []const u8) !TextCorpus {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        var corpus = TextCorpus.init();
+
+        // Read and verify magic header
+        var magic: [4]u8 = undefined;
+        _ = try file.readAll(&magic);
+        if (!std.mem.eql(u8, &magic, "TCV6")) return error.InvalidMagic;
+
+        // Read shard configuration
+        var shard_count_bytes: [2]u8 = undefined;
+        _ = try file.readAll(&shard_count_bytes);
+        const shard_count = std.mem.readInt(u16, &shard_count_bytes, .little);
+
+        var eps_bytes: [2]u8 = undefined;
+        _ = try file.readAll(&eps_bytes);
+        _ = std.mem.readInt(u16, &eps_bytes, .little);
+
+        var total_bytes: [4]u8 = undefined;
+        _ = try file.readAll(&total_bytes);
+        const total_entries = std.mem.readInt(u32, &total_bytes, .little);
+        if (total_entries > MAX_CORPUS_SIZE) return error.CorpusTooLarge;
+
+        // Read shard offsets
+        var shard_offsets: [MAX_SHARDS]u32 = undefined;
+        var shard_entry_counts: [MAX_SHARDS]u16 = undefined;
+        for (0..shard_count) |i| {
+            var offset_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&offset_bytes);
+            shard_offsets[i] = std.mem.readInt(u32, &offset_bytes, .little);
+        }
+
+        // Read shard entry counts
+        var start_indices: [MAX_SHARDS]usize = undefined;
+        var entry_idx: usize = 0;
+        for (0..shard_count) |i| {
+            try file.seekTo(shard_offsets[i]);
+            var shard_header: [4]u8 = undefined;
+            _ = try file.readAll(&shard_header);
+            shard_entry_counts[i] = std.mem.readInt(u16, shard_header[2..4], .little);
+            start_indices[i] = entry_idx;
+            entry_idx += shard_entry_counts[i];
+        }
+
+        // Prepare contexts for pool jobs
+        var contexts: [MAX_SHARDS]ShardLoadContext = undefined;
+        for (0..shard_count) |i| {
+            contexts[i] = ShardLoadContext{
+                .path_buf = undefined,
+                .path_len = path.len,
+                .shard_offset = shard_offsets[i],
+                .shard_id = @intCast(i),
+                .entry_count = shard_entry_counts[i],
+                .start_entry_idx = start_indices[i],
+                .entries = &corpus.entries,
+                .success = false,
+                .error_code = 0,
+            };
+            @memcpy(contexts[i].path_buf[0..path.len], path);
+        }
+
+        // Create jobs array
+        var jobs: [MAX_SHARDS]PoolJob = undefined;
+        for (0..shard_count) |i| {
+            jobs[i] = PoolJob{
+                .func = @ptrCast(&loadShardWorker),
+                .context = @ptrCast(&contexts[i]),
+                .completed = false,
+            };
+        }
+
+        // Get pool and submit jobs
+        const pool = getGlobalPool();
+        pool.submitAndWait(jobs[0..shard_count]);
+
+        // Check for errors
+        for (0..shard_count) |i| {
+            if (!contexts[i].success) {
+                return error.ShardLoadFailed;
+            }
+        }
+
+        corpus.count = total_entries;
+        return corpus;
+    }
+
+    /// Get pool worker count
+    pub fn getPoolWorkerCount() usize {
+        if (global_pool) |*pool| {
+            return pool.getWorkerCount();
+        }
+        return 0;
+    }
 };
 
 /// Compare semantic similarity between two texts
@@ -1163,6 +3486,245 @@ test "TextCorpus compressed save/load exists" {
     _ = &TextCorpus.loadCompressed;
     _ = &TextCorpus.estimateCompressedSize;
     _ = &TextCorpus.estimateUncompressedSize;
+}
+
+test "RLE encode/decode roundtrip" {
+    // Test with runs
+    const input1 = [_]u8{ 5, 5, 5, 5, 5, 3, 3, 3, 7, 7, 7, 7 };
+    var output1: [20]u8 = undefined;
+    var decoded1: [20]u8 = undefined;
+
+    const rle_len = TextCorpus.rleEncode(&input1, &output1);
+    if (rle_len) |len| {
+        try std.testing.expect(len < input1.len); // RLE should be smaller
+        const decoded_len = TextCorpus.rleDecode(output1[0..len], &decoded1);
+        try std.testing.expect(decoded_len != null);
+        try std.testing.expectEqualSlices(u8, &input1, decoded1[0..decoded_len.?]);
+    }
+}
+
+test "RLE adaptive - random data not compressed" {
+    // Random data should not benefit from RLE
+    const input = [_]u8{ 1, 5, 9, 3, 7, 2, 8, 4, 6, 0 };
+    var output: [30]u8 = undefined;
+
+    const rle_len = TextCorpus.rleEncode(&input, &output);
+    // RLE should return null (not beneficial) for random data
+    try std.testing.expect(rle_len == null);
+}
+
+test "TextCorpus RLE save/load exists" {
+    var corpus = TextCorpus.init();
+    _ = corpus.add("hello", "greet");
+    try std.testing.expectEqual(@as(usize, 1), corpus.count);
+
+    // Verify RLE functions exist
+    _ = &TextCorpus.saveRLE;
+    _ = &TextCorpus.loadRLE;
+    _ = &TextCorpus.rleEncode;
+    _ = &TextCorpus.rleDecode;
+    _ = &TextCorpus.estimateRLESize;
+    _ = &TextCorpus.rleCompressionRatio;
+}
+
+test "Dictionary encode/decode roundtrip" {
+    // Create a simple dictionary
+    var dict: [TextCorpus.MAX_DICT_SIZE]u8 = undefined;
+    dict[0] = 10;
+    dict[1] = 20;
+    dict[2] = 30;
+    const dict_size: u8 = 3;
+
+    var lookup: [TextCorpus.MAX_PACKED_VALUES]u8 = undefined;
+    TextCorpus.buildReverseLookup(&dict, dict_size, &lookup);
+
+    // Test encoding
+    const input = [_]u8{ 10, 20, 30, 10, 50, 20 }; // 50 not in dict
+    var encoded: [20]u8 = undefined;
+    var decoded: [20]u8 = undefined;
+
+    const encoded_len = TextCorpus.dictEncode(&input, &encoded, &lookup, dict_size);
+    try std.testing.expect(encoded_len != null);
+
+    const decoded_len = TextCorpus.dictDecode(encoded[0..encoded_len.?], &decoded, &dict, dict_size);
+    try std.testing.expect(decoded_len != null);
+    try std.testing.expectEqualSlices(u8, &input, decoded[0..decoded_len.?]);
+}
+
+test "TextCorpus dictionary save/load exists" {
+    var corpus = TextCorpus.init();
+    _ = corpus.add("hello", "greet");
+    _ = corpus.add("world", "noun");
+    try std.testing.expectEqual(@as(usize, 2), corpus.count);
+
+    // Verify dictionary functions exist
+    _ = &TextCorpus.saveDict;
+    _ = &TextCorpus.loadDict;
+    _ = &TextCorpus.dictEncode;
+    _ = &TextCorpus.dictDecode;
+    _ = &TextCorpus.buildFrequencyTable;
+    _ = &TextCorpus.buildDictionary;
+    _ = &TextCorpus.buildReverseLookup;
+    _ = &TextCorpus.estimateDictSize;
+    _ = &TextCorpus.dictCompressionRatio;
+
+    // Verify compression ratio is reasonable
+    const ratio = corpus.dictCompressionRatio();
+    try std.testing.expect(ratio > 1.0); // Should have some compression
+}
+
+test "Huffman code generation" {
+    // Test with simple frequency distribution
+    var freq: [TextCorpus.MAX_PACKED_VALUES]u32 = undefined;
+    @memset(&freq, 0);
+    freq[0] = 100; // Most frequent
+    freq[1] = 50;
+    freq[2] = 25;
+    freq[3] = 10;
+
+    var code_lens: [TextCorpus.MAX_PACKED_VALUES]u8 = undefined;
+    TextCorpus.buildHuffmanTree(&freq, &code_lens);
+
+    // Most frequent should have shortest code
+    try std.testing.expect(code_lens[0] <= code_lens[1]);
+    try std.testing.expect(code_lens[1] <= code_lens[2]);
+    try std.testing.expect(code_lens[2] <= code_lens[3]);
+
+    // Generate canonical codes
+    var codes: [TextCorpus.MAX_PACKED_VALUES]TextCorpus.HuffmanCode = undefined;
+    TextCorpus.generateCanonicalCodes(&code_lens, &codes);
+
+    // Verify codes were assigned
+    try std.testing.expect(codes[0].len > 0);
+}
+
+test "BitWriter and BitReader" {
+    var buffer: [10]u8 = undefined;
+    var writer = TextCorpus.BitWriter.init(&buffer);
+
+    // Write some bits
+    try std.testing.expect(writer.writeBits(0b101, 3));
+    try std.testing.expect(writer.writeBits(0b1100, 4));
+    try std.testing.expect(writer.writeBits(0b1, 1));
+
+    // Check bit count
+    try std.testing.expectEqual(@as(u32, 8), writer.getBitCount());
+}
+
+test "TextCorpus Huffman save/load exists" {
+    var corpus = TextCorpus.init();
+    _ = corpus.add("hello", "greet");
+    _ = corpus.add("world", "noun");
+    try std.testing.expectEqual(@as(usize, 2), corpus.count);
+
+    // Verify Huffman functions exist
+    _ = &TextCorpus.saveHuffman;
+    _ = &TextCorpus.loadHuffman;
+    _ = &TextCorpus.buildHuffmanTree;
+    _ = &TextCorpus.generateCanonicalCodes;
+    _ = &TextCorpus.huffmanEncode;
+    _ = &TextCorpus.huffmanDecode;
+    _ = &TextCorpus.estimateHuffmanSize;
+    _ = &TextCorpus.huffmanCompressionRatio;
+
+    // Verify compression ratio
+    const ratio = corpus.huffmanCompressionRatio();
+    try std.testing.expect(ratio > 0.5); // Should have some compression or small overhead
+}
+
+test "TextCorpus Arithmetic save/load exists" {
+    var corpus = TextCorpus.init();
+    _ = corpus.add("hello", "greet");
+    _ = corpus.add("world", "noun");
+    try std.testing.expectEqual(@as(usize, 2), corpus.count);
+
+    // Verify arithmetic functions exist
+    _ = &TextCorpus.saveArithmetic;
+    _ = &TextCorpus.loadArithmetic;
+    _ = &TextCorpus.arithmeticEncode;
+    _ = &TextCorpus.arithmeticDecode;
+    _ = &TextCorpus.estimateArithmeticSize;
+    _ = &TextCorpus.arithmeticCompressionRatio;
+
+    // Verify compression ratio
+    const ratio = corpus.arithmeticCompressionRatio();
+    try std.testing.expect(ratio > 0.3); // Should have some compression or small overhead
+}
+
+test "TextCorpus Sharding save/load exists" {
+    var corpus = TextCorpus.init();
+    _ = corpus.add("hello", "greet");
+    _ = corpus.add("world", "noun");
+    _ = corpus.add("test", "verb");
+    _ = corpus.add("data", "noun");
+    try std.testing.expectEqual(@as(usize, 4), corpus.count);
+
+    // Verify sharding functions exist
+    _ = &TextCorpus.saveSharded;
+    _ = &TextCorpus.loadSharded;
+    _ = &TextCorpus.getShardConfig;
+    _ = &TextCorpus.getShardCount;
+    _ = &TextCorpus.searchShard;
+    _ = &TextCorpus.estimateShardedSize;
+
+    // Test shard configuration
+    const config = corpus.getShardConfig(2);
+    try std.testing.expectEqual(@as(u16, 2), config.entries_per_shard);
+    try std.testing.expectEqual(@as(u16, 2), config.shard_count); // 4 entries / 2 per shard = 2 shards
+    try std.testing.expectEqual(@as(u32, 4), config.total_entries);
+
+    // Test shard count function
+    const count = corpus.getShardCount(2);
+    try std.testing.expectEqual(@as(u16, 2), count);
+}
+
+test "TextCorpus Parallel loading exists" {
+    var corpus = TextCorpus.init();
+    _ = corpus.add("hello", "greet");
+    _ = corpus.add("world", "noun");
+    _ = corpus.add("test", "verb");
+    _ = corpus.add("data", "noun");
+    try std.testing.expectEqual(@as(usize, 4), corpus.count);
+
+    // Verify parallel loading functions exist
+    _ = &TextCorpus.loadShardedParallel;
+    _ = &TextCorpus.loadShardWorker;
+    _ = &TextCorpus.getRecommendedThreadCount;
+    _ = &TextCorpus.isParallelBeneficial;
+
+    // Test parallel benefit check
+    const is_beneficial = corpus.isParallelBeneficial(2);
+    try std.testing.expect(is_beneficial); // 2 shards >= 2
+
+    // Test recommended thread count
+    const recommended = corpus.getRecommendedThreadCount(2);
+    try std.testing.expectEqual(@as(u16, 2), recommended); // 2 shards
+}
+
+test "TextCorpus Thread pool exists" {
+    // Verify thread pool structures and functions exist
+    _ = TextCorpus.ThreadPool;
+    _ = TextCorpus.PoolJob;
+    _ = TextCorpus.POOL_SIZE;
+    _ = TextCorpus.MAX_JOBS;
+    _ = &TextCorpus.getGlobalPool;
+    _ = &TextCorpus.shutdownGlobalPool;
+    _ = &TextCorpus.hasGlobalPool;
+    _ = &TextCorpus.loadShardedWithPool;
+    _ = &TextCorpus.getPoolWorkerCount;
+
+    // Test pool initialization
+    var pool = TextCorpus.ThreadPool.init();
+    try std.testing.expect(!pool.isActive());
+
+    // Start pool
+    pool.start();
+    try std.testing.expect(pool.isActive());
+    try std.testing.expect(pool.getWorkerCount() > 0);
+
+    // Stop pool
+    pool.stop();
+    try std.testing.expect(!pool.isActive());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

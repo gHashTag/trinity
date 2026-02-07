@@ -68,11 +68,11 @@ This eliminates the multiply step entirely, reducing energy consumption and enab
 
 | Deployment | Monthly Cost (24/7) | Notes |
 |------------|---------------------|-------|
-| **Trinity on L40S** | **$7.20** | RunPod spot pricing |
-| **Trinity on RTX 4090** | **$252** | RunPod on-demand |
+| **Trinity on RTX 4090** | **$316** | RunPod on-demand ($0.44/hr) |
+| **Trinity on L40S** | **$612** | RunPod spot (~$0.85/hr) |
 | OpenAI GPT-4o-mini | Variable | ~$0.15/1M input tokens |
 | Anthropic Claude | Variable | ~$3/1M input tokens |
-| Self-hosted Llama 70B | $500-2000 | GPU server rental |
+| Self-hosted Llama 70B | $1,360-2,050 | A100/H100 rental |
 
 For high-volume use cases, Trinity's self-hosted model offers significant cost advantages.
 
@@ -94,7 +94,8 @@ Trinity is positioned as the **green computing leader** in LLM inference. The te
 ## Methodology
 
 - Trinity benchmarks: RunPod RTX 4090 and L40S, BitNet b1.58-2B-4T model
-- Groq benchmarks: Public API testing, February 2026
+- GPU pricing: [RunPod](https://www.runpod.io/pricing), February 2025
+- Groq benchmarks: Public API testing
 - GPT-4/Claude: Estimated from API response times
 - All coherence verified with standard prompts (12/12 coherent responses for Trinity)
 

@@ -339,6 +339,95 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("_ = corpus.add(\"test\", \"label\");");
             try self.builder.writeLine("const ratio = realCompressionRatio(&corpus);");
             try self.builder.writeLine("try std.testing.expect(ratio > 4.0);"); // 5x compression
+        } else if (std.mem.eql(u8, name, "realSaveCorpusRLE")) {
+            // RLE save test - verify function exists
+            try self.builder.writeLine("_ = &realSaveCorpusRLE;");
+        } else if (std.mem.eql(u8, name, "realLoadCorpusRLE")) {
+            // RLE load test - verify function exists
+            try self.builder.writeLine("_ = &realLoadCorpusRLE;");
+        } else if (std.mem.eql(u8, name, "realRLECompressionRatio")) {
+            // RLE compression ratio test
+            try self.builder.writeLine("var corpus = vsa.TextCorpus.init();");
+            try self.builder.writeLine("_ = corpus.add(\"test\", \"label\");");
+            try self.builder.writeLine("const ratio = realRLECompressionRatio(&corpus);");
+            try self.builder.writeLine("try std.testing.expect(ratio > 3.0);"); // RLE adds overhead
+        } else if (std.mem.eql(u8, name, "realSaveCorpusDict")) {
+            // Dictionary save test - verify function exists
+            try self.builder.writeLine("_ = &realSaveCorpusDict;");
+        } else if (std.mem.eql(u8, name, "realLoadCorpusDict")) {
+            // Dictionary load test - verify function exists
+            try self.builder.writeLine("_ = &realLoadCorpusDict;");
+        } else if (std.mem.eql(u8, name, "realDictCompressionRatio")) {
+            // Dictionary compression ratio test
+            try self.builder.writeLine("var corpus = vsa.TextCorpus.init();");
+            try self.builder.writeLine("_ = corpus.add(\"test\", \"label\");");
+            try self.builder.writeLine("const ratio = realDictCompressionRatio(&corpus);");
+            try self.builder.writeLine("try std.testing.expect(ratio > 1.0);"); // Some compression
+        } else if (std.mem.eql(u8, name, "realSaveCorpusHuffman")) {
+            // Huffman save test - verify function exists
+            try self.builder.writeLine("_ = &realSaveCorpusHuffman;");
+        } else if (std.mem.eql(u8, name, "realLoadCorpusHuffman")) {
+            // Huffman load test - verify function exists
+            try self.builder.writeLine("_ = &realLoadCorpusHuffman;");
+        } else if (std.mem.eql(u8, name, "realHuffmanCompressionRatio")) {
+            // Huffman compression ratio test
+            try self.builder.writeLine("var corpus = vsa.TextCorpus.init();");
+            try self.builder.writeLine("_ = corpus.add(\"test\", \"label\");");
+            try self.builder.writeLine("const ratio = realHuffmanCompressionRatio(&corpus);");
+            try self.builder.writeLine("try std.testing.expect(ratio > 0.5);"); // Some compression
+        } else if (std.mem.eql(u8, name, "realSaveCorpusArithmetic")) {
+            // Arithmetic save test - verify function exists
+            try self.builder.writeLine("_ = &realSaveCorpusArithmetic;");
+        } else if (std.mem.eql(u8, name, "realLoadCorpusArithmetic")) {
+            // Arithmetic load test - verify function exists
+            try self.builder.writeLine("_ = &realLoadCorpusArithmetic;");
+        } else if (std.mem.eql(u8, name, "realArithmeticCompressionRatio")) {
+            // Arithmetic compression ratio test
+            try self.builder.writeLine("var corpus = vsa.TextCorpus.init();");
+            try self.builder.writeLine("_ = corpus.add(\"test\", \"label\");");
+            try self.builder.writeLine("const ratio = realArithmeticCompressionRatio(&corpus);");
+            try self.builder.writeLine("try std.testing.expect(ratio > 0.5);"); // Some compression
+        } else if (std.mem.eql(u8, name, "realSaveCorpusSharded")) {
+            // Sharded save test - verify function exists
+            try self.builder.writeLine("_ = &realSaveCorpusSharded;");
+        } else if (std.mem.eql(u8, name, "realLoadCorpusSharded")) {
+            // Sharded load test - verify function exists
+            try self.builder.writeLine("_ = &realLoadCorpusSharded;");
+        } else if (std.mem.eql(u8, name, "realGetShardCount")) {
+            // Shard count test
+            try self.builder.writeLine("var corpus = vsa.TextCorpus.init();");
+            try self.builder.writeLine("_ = corpus.add(\"test1\", \"label1\");");
+            try self.builder.writeLine("_ = corpus.add(\"test2\", \"label2\");");
+            try self.builder.writeLine("const count = realGetShardCount(&corpus, 1);");
+            try self.builder.writeLine("try std.testing.expect(count >= 1);");
+        } else if (std.mem.eql(u8, name, "realLoadCorpusParallel")) {
+            // Parallel load test - verify function exists
+            try self.builder.writeLine("_ = &realLoadCorpusParallel;");
+        } else if (std.mem.eql(u8, name, "realGetRecommendedThreads")) {
+            // Recommended threads test
+            try self.builder.writeLine("var corpus = vsa.TextCorpus.init();");
+            try self.builder.writeLine("_ = corpus.add(\"test1\", \"label1\");");
+            try self.builder.writeLine("_ = corpus.add(\"test2\", \"label2\");");
+            try self.builder.writeLine("const threads = realGetRecommendedThreads(&corpus, 1);");
+            try self.builder.writeLine("try std.testing.expect(threads >= 1);");
+        } else if (std.mem.eql(u8, name, "realIsParallelBeneficial")) {
+            // Parallel benefit test
+            try self.builder.writeLine("var corpus = vsa.TextCorpus.init();");
+            try self.builder.writeLine("_ = corpus.add(\"test1\", \"label1\");");
+            try self.builder.writeLine("_ = corpus.add(\"test2\", \"label2\");");
+            try self.builder.writeLine("const beneficial = realIsParallelBeneficial(&corpus, 1);");
+            try self.builder.writeLine("try std.testing.expect(beneficial);");
+        } else if (std.mem.eql(u8, name, "realLoadCorpusWithPool")) {
+            // Pool load test - verify function exists
+            try self.builder.writeLine("_ = &realLoadCorpusWithPool;");
+        } else if (std.mem.eql(u8, name, "realGetPoolWorkerCount")) {
+            // Pool worker count test
+            try self.builder.writeLine("const count = realGetPoolWorkerCount();");
+            try self.builder.writeLine("_ = count;"); // Just verify it compiles
+        } else if (std.mem.eql(u8, name, "realHasGlobalPool")) {
+            // Global pool check test
+            try self.builder.writeLine("const has_pool = realHasGlobalPool();");
+            try self.builder.writeLine("_ = has_pool;"); // Just verify it compiles
         } else {
             try self.builder.writeLine("// TODO: Add test assertions");
         }

@@ -672,6 +672,223 @@ pub const ZigCodeGen = struct {
             return true;
         }
 
+        // Adaptive RLE compression (TCV2 format)
+        if (std_mem.eql(u8, b.name, "realSaveCorpusRLE")) {
+            try self.builder.writeLine("/// Save corpus with adaptive RLE compression (TCV2)");
+            try self.builder.writeLine("pub fn realSaveCorpusRLE(corpus: *vsa.TextCorpus, path: []const u8) !void {");
+            self.builder.incIndent();
+            try self.builder.writeLine("try corpus.saveRLE(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realLoadCorpusRLE")) {
+            try self.builder.writeLine("/// Load RLE-compressed corpus (TCV2)");
+            try self.builder.writeLine("pub fn realLoadCorpusRLE(path: []const u8) !vsa.TextCorpus {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.loadRLE(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realRLECompressionRatio")) {
+            try self.builder.writeLine("/// Get RLE compression ratio");
+            try self.builder.writeLine("pub fn realRLECompressionRatio(corpus: *vsa.TextCorpus) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return corpus.rleCompressionRatio();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // Dictionary compression (TCV3 format)
+        if (std_mem.eql(u8, b.name, "realSaveCorpusDict")) {
+            try self.builder.writeLine("/// Save corpus with dictionary compression (TCV3)");
+            try self.builder.writeLine("pub fn realSaveCorpusDict(corpus: *vsa.TextCorpus, path: []const u8) !void {");
+            self.builder.incIndent();
+            try self.builder.writeLine("try corpus.saveDict(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realLoadCorpusDict")) {
+            try self.builder.writeLine("/// Load dictionary-compressed corpus (TCV3)");
+            try self.builder.writeLine("pub fn realLoadCorpusDict(path: []const u8) !vsa.TextCorpus {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.loadDict(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realDictCompressionRatio")) {
+            try self.builder.writeLine("/// Get dictionary compression ratio");
+            try self.builder.writeLine("pub fn realDictCompressionRatio(corpus: *vsa.TextCorpus) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return corpus.dictCompressionRatio();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // Huffman compression (TCV4 format)
+        if (std_mem.eql(u8, b.name, "realSaveCorpusHuffman")) {
+            try self.builder.writeLine("/// Save corpus with Huffman compression (TCV4)");
+            try self.builder.writeLine("pub fn realSaveCorpusHuffman(corpus: *vsa.TextCorpus, path: []const u8) !void {");
+            self.builder.incIndent();
+            try self.builder.writeLine("try corpus.saveHuffman(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realLoadCorpusHuffman")) {
+            try self.builder.writeLine("/// Load Huffman-compressed corpus (TCV4)");
+            try self.builder.writeLine("pub fn realLoadCorpusHuffman(path: []const u8) !vsa.TextCorpus {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.loadHuffman(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHuffmanCompressionRatio")) {
+            try self.builder.writeLine("/// Get Huffman compression ratio");
+            try self.builder.writeLine("pub fn realHuffmanCompressionRatio(corpus: *vsa.TextCorpus) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return corpus.huffmanCompressionRatio();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // ARITHMETIC COMPRESSION (TCV5)
+        if (std_mem.eql(u8, b.name, "realSaveCorpusArithmetic")) {
+            try self.builder.writeLine("/// Save corpus with arithmetic compression (TCV5)");
+            try self.builder.writeLine("pub fn realSaveCorpusArithmetic(corpus: *vsa.TextCorpus, path: []const u8) !void {");
+            self.builder.incIndent();
+            try self.builder.writeLine("try corpus.saveArithmetic(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realLoadCorpusArithmetic")) {
+            try self.builder.writeLine("/// Load arithmetic-compressed corpus (TCV5)");
+            try self.builder.writeLine("pub fn realLoadCorpusArithmetic(path: []const u8) !vsa.TextCorpus {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.loadArithmetic(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realArithmeticCompressionRatio")) {
+            try self.builder.writeLine("/// Get arithmetic compression ratio");
+            try self.builder.writeLine("pub fn realArithmeticCompressionRatio(corpus: *vsa.TextCorpus) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return corpus.arithmeticCompressionRatio();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // CORPUS SHARDING (TCV6)
+        if (std_mem.eql(u8, b.name, "realSaveCorpusSharded")) {
+            try self.builder.writeLine("/// Save corpus with sharding (TCV6)");
+            try self.builder.writeLine("pub fn realSaveCorpusSharded(corpus: *vsa.TextCorpus, path: []const u8, entries_per_shard: u16) !void {");
+            self.builder.incIndent();
+            try self.builder.writeLine("try corpus.saveSharded(path, entries_per_shard);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realLoadCorpusSharded")) {
+            try self.builder.writeLine("/// Load sharded corpus (TCV6)");
+            try self.builder.writeLine("pub fn realLoadCorpusSharded(path: []const u8) !vsa.TextCorpus {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.loadSharded(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetShardCount")) {
+            try self.builder.writeLine("/// Get shard count for corpus");
+            try self.builder.writeLine("pub fn realGetShardCount(corpus: *vsa.TextCorpus, entries_per_shard: u16) u16 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return corpus.getShardCount(entries_per_shard);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // PARALLEL LOADING (Zig threads)
+        if (std_mem.eql(u8, b.name, "realLoadCorpusParallel")) {
+            try self.builder.writeLine("/// Load sharded corpus with parallel threads");
+            try self.builder.writeLine("pub fn realLoadCorpusParallel(path: []const u8) !vsa.TextCorpus {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.loadShardedParallel(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetRecommendedThreads")) {
+            try self.builder.writeLine("/// Get recommended thread count for parallel loading");
+            try self.builder.writeLine("pub fn realGetRecommendedThreads(corpus: *vsa.TextCorpus, entries_per_shard: u16) u16 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return corpus.getRecommendedThreadCount(entries_per_shard);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realIsParallelBeneficial")) {
+            try self.builder.writeLine("/// Check if parallel loading is beneficial");
+            try self.builder.writeLine("pub fn realIsParallelBeneficial(corpus: *vsa.TextCorpus, entries_per_shard: u16) bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return corpus.isParallelBeneficial(entries_per_shard);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // THREAD POOL (Reusable workers)
+        if (std_mem.eql(u8, b.name, "realLoadCorpusWithPool")) {
+            try self.builder.writeLine("/// Load corpus with thread pool");
+            try self.builder.writeLine("pub fn realLoadCorpusWithPool(path: []const u8) !vsa.TextCorpus {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.loadShardedWithPool(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetPoolWorkerCount")) {
+            try self.builder.writeLine("/// Get pool worker count");
+            try self.builder.writeLine("pub fn realGetPoolWorkerCount() usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.getPoolWorkerCount();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHasGlobalPool")) {
+            try self.builder.writeLine("/// Check if global pool exists");
+            try self.builder.writeLine("pub fn realHasGlobalPool() bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.hasGlobalPool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
         return false;
     }
 };
