@@ -7730,6 +7730,300 @@ pub const TextCorpus = struct {
         return global_executor != null;
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // CYCLE 52: Multi-Agent Orchestration
+    // ═══════════════════════════════════════════════════════════════
+
+    /// Specialist agent roles
+    pub const AgentRole = enum(u8) {
+        coordinator = 0, // Decomposes tasks, delegates, fuses results
+        coder = 1, // Code generation and review
+        researcher = 2, // Information gathering and analysis
+        reviewer = 3, // Quality assurance and testing
+        planner = 4, // Task planning and scheduling
+        writer = 5, // Documentation and content
+
+        pub fn roleName(self: AgentRole) []const u8 {
+            return switch (self) {
+                .coordinator => "coordinator",
+                .coder => "coder",
+                .researcher => "researcher",
+                .reviewer => "reviewer",
+                .planner => "planner",
+                .writer => "writer",
+            };
+        }
+
+        /// Capability weight (phi-inverse hierarchy)
+        pub fn capabilityWeight(self: AgentRole) f64 {
+            return switch (self) {
+                .coordinator => 1.0,
+                .coder => PHI_INVERSE,
+                .researcher => PHI_INVERSE * PHI_INVERSE,
+                .reviewer => PHI_INVERSE * PHI_INVERSE,
+                .planner => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE,
+                .writer => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE,
+            };
+        }
+    };
+
+    /// Message between agents
+    pub const AgentMessage = struct {
+        from_role: AgentRole,
+        to_role: AgentRole,
+        content: [512]u8,
+        content_len: usize,
+        msg_type: MessageType,
+
+        pub const MessageType = enum(u8) {
+            task_assign, // Coordinator assigns task
+            result, // Agent returns result
+            query, // Agent asks another
+            status, // Status update
+        };
+
+        pub fn init(from: AgentRole, to: AgentRole, msg_type: MessageType, content: []const u8) AgentMessage {
+            var msg = AgentMessage{
+                .from_role = from,
+                .to_role = to,
+                .content = .{0} ** 512,
+                .content_len = 0,
+                .msg_type = msg_type,
+            };
+            const clen = @min(content.len, 512);
+            @memcpy(msg.content[0..clen], content[0..clen]);
+            msg.content_len = clen;
+            return msg;
+        }
+
+        pub fn getContent(self: *const AgentMessage) []const u8 {
+            return self.content[0..self.content_len];
+        }
+    };
+
+    /// Individual agent node
+    pub const AgentNode = struct {
+        role: AgentRole,
+        active: bool,
+        tasks_received: usize,
+        tasks_completed: usize,
+        tasks_failed: usize,
+        messages_sent: usize,
+        messages_received: usize,
+
+        pub fn init(role: AgentRole) AgentNode {
+            return AgentNode{
+                .role = role,
+                .active = true,
+                .tasks_received = 0,
+                .tasks_completed = 0,
+                .tasks_failed = 0,
+                .messages_sent = 0,
+                .messages_received = 0,
+            };
+        }
+
+        /// Process a message
+        pub fn processMessage(self: *AgentNode, msg: *const AgentMessage) AgentMessage {
+            self.messages_received += 1;
+            self.tasks_received += 1;
+
+            // Simulate processing based on role
+            const response_content = switch (self.role) {
+                .coder => "[coder: code generated]",
+                .researcher => "[researcher: analysis complete]",
+                .reviewer => "[reviewer: review complete]",
+                .planner => "[planner: plan created]",
+                .writer => "[writer: document written]",
+                .coordinator => "[coordinator: task delegated]",
+            };
+
+            self.tasks_completed += 1;
+            self.messages_sent += 1;
+
+            return AgentMessage.init(
+                self.role,
+                msg.from_role,
+                .result,
+                response_content,
+            );
+        }
+
+        pub fn completionRate(self: *const AgentNode) f64 {
+            if (self.tasks_received == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.tasks_completed)) / @as(f64, @floatFromInt(self.tasks_received));
+        }
+    };
+
+    /// Multi-agent orchestrator
+    pub const Orchestrator = struct {
+        agents: [6]AgentNode,
+        agent_count: usize,
+        message_log: [256]?AgentMessage,
+        log_count: usize,
+        tasks_decomposed: usize,
+        tasks_fused: usize,
+        total_rounds: usize,
+
+        pub fn init() Orchestrator {
+            return Orchestrator{
+                .agents = .{
+                    AgentNode.init(.coordinator),
+                    AgentNode.init(.coder),
+                    AgentNode.init(.researcher),
+                    AgentNode.init(.reviewer),
+                    AgentNode.init(.planner),
+                    AgentNode.init(.writer),
+                },
+                .agent_count = 6,
+                .message_log = .{null} ** 256,
+                .log_count = 0,
+                .tasks_decomposed = 0,
+                .tasks_fused = 0,
+                .total_rounds = 0,
+            };
+        }
+
+        /// Get agent by role
+        pub fn getAgent(self: *Orchestrator, role: AgentRole) *AgentNode {
+            return &self.agents[@intFromEnum(role)];
+        }
+
+        /// Send message between agents
+        pub fn sendMessage(self: *Orchestrator, msg: AgentMessage) ?AgentMessage {
+            // Log message
+            if (self.log_count < 256) {
+                self.message_log[self.log_count] = msg;
+                self.log_count += 1;
+            }
+
+            // Deliver to target agent
+            const target = self.getAgent(msg.to_role);
+            if (!target.active) return null;
+
+            const response = target.processMessage(&msg);
+
+            // Log response
+            if (self.log_count < 256) {
+                self.message_log[self.log_count] = response;
+                self.log_count += 1;
+            }
+
+            return response;
+        }
+
+        /// Decompose task: coordinator assigns to specialists
+        pub fn decompose(self: *Orchestrator, task: []const u8) usize {
+            self.tasks_decomposed += 1;
+            self.total_rounds += 1;
+            var dispatched: usize = 0;
+
+            // Coordinator assigns to relevant specialists
+            const roles = [_]AgentRole{ .coder, .researcher, .planner };
+            for (roles) |role| {
+                const msg = AgentMessage.init(.coordinator, role, .task_assign, task);
+                self.agents[0].messages_sent += 1; // coordinator sends
+                if (self.sendMessage(msg) != null) {
+                    dispatched += 1;
+                }
+            }
+
+            return dispatched;
+        }
+
+        /// Fuse: collect results and synthesize
+        pub fn fuse(self: *Orchestrator) usize {
+            self.tasks_fused += 1;
+            self.total_rounds += 1;
+            var collected: usize = 0;
+
+            // Reviewer checks all specialist results
+            const specialists = [_]AgentRole{ .coder, .researcher, .planner };
+            for (specialists) |role| {
+                const query = AgentMessage.init(.reviewer, role, .query, "review request");
+                self.agents[@intFromEnum(AgentRole.reviewer)].messages_sent += 1;
+                if (self.sendMessage(query) != null) {
+                    collected += 1;
+                }
+            }
+
+            return collected;
+        }
+
+        /// Full orchestration cycle: decompose → parallel → fuse
+        pub fn orchestrate(self: *Orchestrator, task: []const u8) OrchestrateResult {
+            const dispatched = self.decompose(task);
+            const collected = self.fuse();
+
+            return OrchestrateResult{
+                .dispatched = dispatched,
+                .collected = collected,
+                .rounds = 2,
+                .success = dispatched > 0 and collected > 0,
+            };
+        }
+
+        pub const OrchestrateResult = struct {
+            dispatched: usize,
+            collected: usize,
+            rounds: usize,
+            success: bool,
+        };
+
+        /// Disable an agent
+        pub fn disableAgent(self: *Orchestrator, role: AgentRole) void {
+            self.agents[@intFromEnum(role)].active = false;
+        }
+
+        /// Enable an agent
+        pub fn enableAgent(self: *Orchestrator, role: AgentRole) void {
+            self.agents[@intFromEnum(role)].active = true;
+        }
+
+        /// Get orchestrator stats
+        pub const OrchestratorStats = struct {
+            active_agents: usize,
+            total_agents: usize,
+            total_messages: usize,
+            tasks_decomposed: usize,
+            tasks_fused: usize,
+            total_rounds: usize,
+        };
+
+        pub fn getStats(self: *const Orchestrator) OrchestratorStats {
+            var active: usize = 0;
+            for (self.agents[0..self.agent_count]) |agent| {
+                if (agent.active) active += 1;
+            }
+            return OrchestratorStats{
+                .active_agents = active,
+                .total_agents = self.agent_count,
+                .total_messages = self.log_count,
+                .tasks_decomposed = self.tasks_decomposed,
+                .tasks_fused = self.tasks_fused,
+                .total_rounds = self.total_rounds,
+            };
+        }
+    };
+
+    /// Global orchestrator singleton
+    var global_orchestrator: ?Orchestrator = null;
+
+    pub fn getOrchestrator() *Orchestrator {
+        if (global_orchestrator == null) {
+            global_orchestrator = Orchestrator.init();
+        }
+        return &global_orchestrator.?;
+    }
+
+    pub fn shutdownOrchestrator() void {
+        global_orchestrator = null;
+    }
+
+    pub fn hasOrchestrator() bool {
+        return global_orchestrator != null;
+    }
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -9961,6 +10255,153 @@ test "ToolExecutor global singleton" {
 
     TextCorpus.shutdownToolExecutor();
     try std.testing.expect(!TextCorpus.hasToolExecutor());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 52: Multi-Agent Orchestration Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "AgentRole properties" {
+    try std.testing.expectEqualStrings("coordinator", TextCorpus.AgentRole.coordinator.roleName());
+    try std.testing.expectEqualStrings("coder", TextCorpus.AgentRole.coder.roleName());
+    try std.testing.expectEqualStrings("researcher", TextCorpus.AgentRole.researcher.roleName());
+
+    // Capability weights (phi-inverse hierarchy)
+    const coord_w = TextCorpus.AgentRole.coordinator.capabilityWeight();
+    const coder_w = TextCorpus.AgentRole.coder.capabilityWeight();
+    const research_w = TextCorpus.AgentRole.researcher.capabilityWeight();
+    const planner_w = TextCorpus.AgentRole.planner.capabilityWeight();
+
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), coord_w, 0.001);
+    try std.testing.expect(coord_w > coder_w);
+    try std.testing.expect(coder_w > research_w);
+    try std.testing.expect(research_w >= planner_w);
+}
+
+test "AgentMessage creation" {
+    const msg = TextCorpus.AgentMessage.init(.coordinator, .coder, .task_assign, "write tests");
+    try std.testing.expectEqual(TextCorpus.AgentRole.coordinator, msg.from_role);
+    try std.testing.expectEqual(TextCorpus.AgentRole.coder, msg.to_role);
+    try std.testing.expectEqual(TextCorpus.AgentMessage.MessageType.task_assign, msg.msg_type);
+    try std.testing.expectEqualStrings("write tests", msg.getContent());
+}
+
+test "AgentNode init and process" {
+    var node = TextCorpus.AgentNode.init(.coder);
+    try std.testing.expectEqual(TextCorpus.AgentRole.coder, node.role);
+    try std.testing.expect(node.active);
+    try std.testing.expectEqual(@as(usize, 0), node.tasks_received);
+
+    const msg = TextCorpus.AgentMessage.init(.coordinator, .coder, .task_assign, "implement feature");
+    const response = node.processMessage(&msg);
+
+    try std.testing.expectEqual(TextCorpus.AgentRole.coder, response.from_role);
+    try std.testing.expectEqual(TextCorpus.AgentRole.coordinator, response.to_role);
+    try std.testing.expectEqual(TextCorpus.AgentMessage.MessageType.result, response.msg_type);
+    try std.testing.expectEqualStrings("[coder: code generated]", response.getContent());
+    try std.testing.expectEqual(@as(usize, 1), node.tasks_received);
+    try std.testing.expectEqual(@as(usize, 1), node.tasks_completed);
+}
+
+test "AgentNode completion rate" {
+    var node = TextCorpus.AgentNode.init(.researcher);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), node.completionRate(), 0.001);
+
+    const msg = TextCorpus.AgentMessage.init(.coordinator, .researcher, .task_assign, "research");
+    _ = node.processMessage(&msg);
+
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), node.completionRate(), 0.001);
+}
+
+test "Orchestrator init" {
+    var orch = TextCorpus.Orchestrator.init();
+    try std.testing.expectEqual(@as(usize, 6), orch.agent_count);
+    try std.testing.expectEqual(@as(usize, 0), orch.log_count);
+    try std.testing.expectEqual(@as(usize, 0), orch.tasks_decomposed);
+
+    // All agents active
+    for (orch.agents[0..orch.agent_count]) |agent| {
+        try std.testing.expect(agent.active);
+    }
+}
+
+test "Orchestrator send message" {
+    var orch = TextCorpus.Orchestrator.init();
+    const msg = TextCorpus.AgentMessage.init(.coordinator, .coder, .task_assign, "test task");
+
+    const response = orch.sendMessage(msg);
+    try std.testing.expect(response != null);
+    try std.testing.expectEqual(TextCorpus.AgentRole.coder, response.?.from_role);
+    try std.testing.expectEqual(@as(usize, 2), orch.log_count); // msg + response
+}
+
+test "Orchestrator decompose" {
+    var orch = TextCorpus.Orchestrator.init();
+    const dispatched = orch.decompose("build a feature");
+
+    try std.testing.expectEqual(@as(usize, 3), dispatched); // coder, researcher, planner
+    try std.testing.expectEqual(@as(usize, 1), orch.tasks_decomposed);
+    try std.testing.expect(orch.log_count > 0);
+}
+
+test "Orchestrator fuse" {
+    var orch = TextCorpus.Orchestrator.init();
+    _ = orch.decompose("task");
+    const collected = orch.fuse();
+
+    try std.testing.expectEqual(@as(usize, 3), collected); // reviews 3 specialists
+    try std.testing.expectEqual(@as(usize, 1), orch.tasks_fused);
+}
+
+test "Orchestrator full orchestrate cycle" {
+    var orch = TextCorpus.Orchestrator.init();
+    const result = orch.orchestrate("implement authentication");
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(usize, 3), result.dispatched);
+    try std.testing.expectEqual(@as(usize, 3), result.collected);
+    try std.testing.expectEqual(@as(usize, 2), result.rounds);
+}
+
+test "Orchestrator disable agent" {
+    var orch = TextCorpus.Orchestrator.init();
+    orch.disableAgent(.coder);
+
+    const agent = orch.getAgent(.coder);
+    try std.testing.expect(!agent.active);
+
+    // Send to disabled agent
+    const msg = TextCorpus.AgentMessage.init(.coordinator, .coder, .task_assign, "task");
+    const response = orch.sendMessage(msg);
+    try std.testing.expect(response == null);
+
+    // Re-enable
+    orch.enableAgent(.coder);
+    try std.testing.expect(orch.getAgent(.coder).active);
+}
+
+test "Orchestrator stats" {
+    var orch = TextCorpus.Orchestrator.init();
+    _ = orch.orchestrate("test task");
+
+    const stats = orch.getStats();
+    try std.testing.expectEqual(@as(usize, 6), stats.total_agents);
+    try std.testing.expectEqual(@as(usize, 6), stats.active_agents);
+    try std.testing.expectEqual(@as(usize, 1), stats.tasks_decomposed);
+    try std.testing.expectEqual(@as(usize, 1), stats.tasks_fused);
+    try std.testing.expectEqual(@as(usize, 2), stats.total_rounds);
+    try std.testing.expect(stats.total_messages > 0);
+}
+
+test "Orchestrator global singleton" {
+    const orch = TextCorpus.getOrchestrator();
+    try std.testing.expect(TextCorpus.hasOrchestrator());
+
+    _ = orch.orchestrate("singleton test");
+    try std.testing.expect(orch.tasks_decomposed >= 1);
+
+    TextCorpus.shutdownOrchestrator();
+    try std.testing.expect(!TextCorpus.hasOrchestrator());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
