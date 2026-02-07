@@ -38,20 +38,48 @@ cp zig-out/bin/vibee "$RESOURCES/vibee"
 cp zig-out/bin/firebird "$RESOURCES/firebird"
 chmod +x "$RESOURCES"/*
 
-# Create launcher
+# Create launcher (uses temp script to avoid stdin leak)
 cat > "$MACOS_DIR/Trinity" << 'LAUNCHER'
 #!/bin/bash
 DIR="$(cd "$(dirname "$0")" && pwd)"
 RESOURCES="$DIR/../Resources"
 BINARY="$RESOURCES/fluent"
 
-osascript <<APPLESCRIPT
-tell application "Terminal"
+# Find the project directory (where models/ lives)
+PROJECT_DIR=""
+for candidate in "$HOME/trinity" "$(dirname "$RESOURCES")/../../.." "$HOME"; do
+    if [ -d "$candidate/models" ]; then
+        PROJECT_DIR="$(cd "$candidate" && pwd)"
+        break
+    fi
+done
+[ -z "$PROJECT_DIR" ] && PROJECT_DIR="$HOME"
+
+# Write a temp script so Terminal gets a clean command (no stdin leak)
+LAUNCH_SCRIPT=$(mktemp /tmp/trinity_launch.XXXXXX.sh)
+cat > "$LAUNCH_SCRIPT" << SCRIPT
+#!/bin/bash
+clear
+echo ""
+echo "  ═══════════════════════════════════════════════════════════"
+echo "  ║  TRINITY AI v2.1.0 — Local Autonomous Multi-Modal Agent ║"
+echo "  ║  56 IMMORTAL Cycles  |  phi^2 + 1/phi^2 = 3            ║"
+echo "  ║  Chat + Code + Vision + Voice + Tools + Self-Reflection  ║"
+echo "  ═══════════════════════════════════════════════════════════"
+echo ""
+echo "  Binaries: fluent | tri | vibee | firebird"
+echo "  Run:  tri --help  for full command list"
+echo ""
+export PATH="$RESOURCES:\\\$PATH"
+cd "$PROJECT_DIR"
+exec "$BINARY"
+SCRIPT
+chmod +x "$LAUNCH_SCRIPT"
+
+osascript -e "tell application \"Terminal\"
     activate
-    set bannerCmd to "clear; printf '\\n'; printf '  ═══════════════════════════════════════════════════════════\\n'; printf '  ║  TRINITY AI v2.1.0 — Local Autonomous Multi-Modal Agent ║\\n'; printf '  ║  56 IMMORTAL Cycles  |  phi^2 + 1/phi^2 = 3            ║\\n'; printf '  ║  Chat + Code + Vision + Voice + Tools + Self-Reflection  ║\\n'; printf '  ═══════════════════════════════════════════════════════════\\n'; printf '\\n'; printf '  Binaries: fluent | tri | vibee | firebird\\n'; printf '  Run:  tri --help  for full command list\\n'; printf '\\n'"
-    do script bannerCmd & "; export PATH=\"$RESOURCES:\$PATH\"; \"$BINARY\"" in front window
-end tell
-APPLESCRIPT
+    do script \"bash '$LAUNCH_SCRIPT'; rm -f '$LAUNCH_SCRIPT'\"
+end tell"
 LAUNCHER
 chmod +x "$MACOS_DIR/Trinity"
 
