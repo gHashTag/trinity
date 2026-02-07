@@ -125,6 +125,7 @@ const sidebars: SidebarsConfig = {
         'research/cycle41-chase-lev-report',
         'research/cycle42-memory-ordering-report',
         'research/cycle43-finetune-engine-report',
+        'research/cycle44-batched-stealing-report',
       ],
     },
     'faq',

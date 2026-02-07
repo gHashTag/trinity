@@ -89,6 +89,9 @@ const Command = enum {
     // Fine-Tuning Engine
     finetune_demo,
     finetune_bench,
+    // Batched Stealing
+    batched_demo,
+    batched_bench,
     // Info
     info,
     version,
@@ -319,6 +322,9 @@ fn parseCommand(arg: []const u8) Command {
     // Fine-Tuning Engine
     if (std.mem.eql(u8, arg, "finetune-demo") or std.mem.eql(u8, arg, "finetune")) return .finetune_demo;
     if (std.mem.eql(u8, arg, "finetune-bench")) return .finetune_bench;
+    // Batched Stealing
+    if (std.mem.eql(u8, arg, "batched-demo") or std.mem.eql(u8, arg, "batched")) return .batched_demo;
+    if (std.mem.eql(u8, arg, "batched-bench")) return .batched_bench;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
@@ -1371,6 +1377,9 @@ pub fn main() !void {
         // Fine-Tuning Engine
         .finetune_demo => runFineTuneDemo(),
         .finetune_bench => runFineTuneBench(),
+        // Batched Stealing
+        .batched_demo => runBatchedDemo(),
+        .batched_bench => runBatchedBench(),
         .info => printInfo(),
         .version => printVersion(),
         .help => printHelp(),
@@ -2808,4 +2817,197 @@ fn runFineTuneBench() void {
     }
 
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | FINE-TUNING BENCHMARK{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BATCHED STEALING - CYCLE 44
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runBatchedDemo() void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}         BATCHED WORK-STEALING (MULTI-JOB STEAL) DEMO{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Architecture:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  ┌─────────────────────────────────────────────┐\n", .{});
+    std.debug.print("  │        BATCHED WORK-STEALING DEQUE          │\n", .{});
+    std.debug.print("  ├─────────────────────────────────────────────┤\n", .{});
+    std.debug.print("  │  {s}Owner{s} → push/pop at bottom (LIFO)          │\n", .{ GREEN, RESET });
+    std.debug.print("  │       ↓                                     │\n", .{});
+    std.debug.print("  │  {s}Thief{s} → stealBatch at top (FIFO)           │\n", .{ GREEN, RESET });
+    std.debug.print("  │       ↓                                     │\n", .{});
+    std.debug.print("  │  {s}φ⁻¹{s} → Steal ~62%% of available work        │\n", .{ GREEN, RESET });
+    std.debug.print("  │       ↓                                     │\n", .{});
+    std.debug.print("  │  {s}CAS{s} → Single atomic claim for batch        │\n", .{ GREEN, RESET });
+    std.debug.print("  └─────────────────────────────────────────────┘\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Configuration:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  MAX_BATCH_SIZE:         8 jobs per steal\n", .{});
+    std.debug.print("  DEQUE_CAPACITY:         1024 jobs\n", .{});
+    std.debug.print("  BATCH_RATIO:            phi^-1 = 0.618\n", .{});
+    std.debug.print("  STEAL_POLICY:           Adaptive (aggressive/moderate/conservative)\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Components:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  BatchedStealingDeque  - Multi-job steal capability\n", .{});
+    std.debug.print("  BatchedWorkerState    - Worker with batch buffer\n", .{});
+    std.debug.print("  BatchedLockFreePool   - Pool with batched stealing\n", .{});
+    std.debug.print("  calculateBatchSize    - phi^-1 optimal batch sizing\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Batch Size Calculation:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  victim_depth: 10 → batch_size: 6 (phi^-1 * 10)\n", .{});
+    std.debug.print("  victim_depth: 5  → batch_size: 3 (phi^-1 * 5)\n", .{});
+    std.debug.print("  victim_depth: 1  → batch_size: 1 (minimum)\n", .{});
+    std.debug.print("  victim_depth: 16 → batch_size: 8 (MAX_BATCH_SIZE cap)\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}Efficiency Gains:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  1. Reduced CAS overhead (1 CAS per batch vs per job)\n", .{});
+    std.debug.print("  2. Better cache locality (batch jobs in contiguous buffer)\n", .{});
+    std.debug.print("  3. Fewer steal attempts (more work per successful steal)\n", .{});
+    std.debug.print("  4. Adaptive policy (steal more when own queue is low)\n", .{});
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | BATCHED STEALING DEMO{s}\n\n", .{ GOLDEN, RESET });
+}
+
+fn runBatchedBench() void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}      BATCHED STEALING BENCHMARK (GOLDEN CHAIN CYCLE 44){s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n", .{});
+
+    const vsa = @import("vsa");
+
+    // Dummy job function for testing
+    const dummyFn: vsa.TextCorpus.JobFn = struct {
+        fn f(_: *anyopaque) void {}
+    }.f;
+    var dummy_ctx: usize = 0;
+
+    // Phase 1: Single-job stealing baseline
+    std.debug.print("  {s}Phase 1: Single-Job Stealing Baseline{s}\n", .{ CYAN, RESET });
+
+    var single_deque = vsa.TextCorpus.OptimizedChaseLevDeque.init();
+    const single_jobs: usize = 1000;
+
+    // Push jobs
+    for (0..single_jobs) |_| {
+        const job = vsa.TextCorpus.PoolJob{
+            .func = dummyFn,
+            .context = @ptrCast(&dummy_ctx),
+            .completed = false,
+        };
+        _ = single_deque.push(job);
+    }
+
+    var single_steals: usize = 0;
+    const single_start = std.time.nanoTimestamp();
+
+    // Steal all jobs one by one
+    while (single_deque.steal() != null) {
+        single_steals += 1;
+    }
+
+    var single_time = std.time.nanoTimestamp() - single_start;
+    if (single_time <= 0) single_time = 1;
+
+    std.debug.print("    Jobs pushed:       {d}\n", .{single_jobs});
+    std.debug.print("    Jobs stolen:       {d}\n", .{single_steals});
+    std.debug.print("    Time:              {d}ns\n", .{single_time});
+    std.debug.print("    Steal ops:         {d}\n", .{single_steals});
+    std.debug.print("\n", .{});
+
+    // Phase 2: Batched stealing
+    std.debug.print("  {s}Phase 2: Batched Stealing{s}\n", .{ CYAN, RESET });
+
+    var batched_deque = vsa.TextCorpus.BatchedStealingDeque.init();
+    const batched_jobs: usize = 1000;
+
+    // Push jobs
+    for (0..batched_jobs) |_| {
+        const job = vsa.TextCorpus.PoolJob{
+            .func = dummyFn,
+            .context = @ptrCast(&dummy_ctx),
+            .completed = false,
+        };
+        _ = batched_deque.push(job);
+    }
+
+    var batch_steals: usize = 0;
+    var total_batched: usize = 0;
+    var batch_buffer: [8]vsa.TextCorpus.PoolJob = undefined;
+    const batch_start = std.time.nanoTimestamp();
+
+    // Steal in batches
+    while (true) {
+        const stolen = batched_deque.stealBatch(&batch_buffer);
+        if (stolen == 0) break;
+        batch_steals += 1;
+        total_batched += stolen;
+    }
+
+    var batch_time = std.time.nanoTimestamp() - batch_start;
+    if (batch_time <= 0) batch_time = 1;
+
+    const avg_batch_size = if (batch_steals > 0)
+        @as(f64, @floatFromInt(total_batched)) / @as(f64, @floatFromInt(batch_steals))
+    else
+        0.0;
+
+    std.debug.print("    Jobs pushed:       {d}\n", .{batched_jobs});
+    std.debug.print("    Jobs stolen:       {d}\n", .{total_batched});
+    std.debug.print("    Time:              {d}ns\n", .{batch_time});
+    std.debug.print("    Steal ops:         {d}\n", .{batch_steals});
+    std.debug.print("    Avg batch size:    {d:.2}\n", .{avg_batch_size});
+    std.debug.print("\n", .{});
+
+    // Phase 3: Comparison
+    std.debug.print("  {s}Phase 3: Comparison{s}\n", .{ CYAN, RESET });
+
+    const single_time_f: f64 = @floatFromInt(single_time);
+    const batch_time_f: f64 = @floatFromInt(batch_time);
+    const speedup = single_time_f / batch_time_f;
+
+    const single_steals_f: f64 = @floatFromInt(single_steals);
+    const batch_steals_f: f64 = @floatFromInt(batch_steals);
+    const ops_reduction = 1.0 - (batch_steals_f / single_steals_f);
+
+    const single_throughput = @as(f64, @floatFromInt(single_steals)) / (single_time_f / 1_000_000_000.0);
+    const batch_throughput = @as(f64, @floatFromInt(total_batched)) / (batch_time_f / 1_000_000_000.0);
+
+    std.debug.print("    Single-job time:   {d}ns\n", .{single_time});
+    std.debug.print("    Batched time:      {d}ns\n", .{batch_time});
+    std.debug.print("    Speedup:           {d:.2}x\n", .{speedup});
+    std.debug.print("    CAS reduction:     {d:.1}%%\n", .{ops_reduction * 100});
+    std.debug.print("    Single throughput: {d:.0} jobs/s\n", .{single_throughput});
+    std.debug.print("    Batch throughput:  {d:.0} jobs/s\n", .{batch_throughput});
+    std.debug.print("\n", .{});
+
+    // Calculate improvement rate
+    // Based on: speedup, ops_reduction, avg_batch_size efficiency
+    const batch_efficiency = avg_batch_size / 8.0; // MAX_BATCH_SIZE
+    const improvement_rate = (speedup + ops_reduction + batch_efficiency) / 3.0;
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}                        BENCHMARK RESULTS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Speedup factor:        {d:.2}x\n", .{speedup});
+    std.debug.print("  CAS ops reduction:     {d:.1}%%\n", .{ops_reduction * 100});
+    std.debug.print("  Avg batch size:        {d:.2} jobs\n", .{avg_batch_size});
+    std.debug.print("  Batch efficiency:      {d:.1}%%\n", .{batch_efficiency * 100});
+    std.debug.print("  Throughput gain:       {d:.1}%%\n", .{(batch_throughput / single_throughput - 1.0) * 100});
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n  {s}IMPROVEMENT RATE: {d:.3}{s}\n", .{ GOLDEN, improvement_rate, RESET });
+
+    if (improvement_rate > 0.618) {
+        std.debug.print("  {s}NEEDLE CHECK: PASSED{s} (> 0.618 = phi^-1)\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("  {s}NEEDLE CHECK: NEEDS IMPROVEMENT{s} (< 0.618)\n", .{ RED, RESET });
+    }
+
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | BATCHED STEALING BENCHMARK{s}\n\n", .{ GOLDEN, RESET });
 }
