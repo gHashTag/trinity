@@ -72,40 +72,39 @@ pub fn simdMatVec(output: []f32, mat: []const f32, vec: []const f32, rows: usize
     }
 }
 
-/// SIMD-optimized matrix-vector multiplication with transposed matrix
-/// output[i] = sum(mat[j,i] * vec[j]) for all j
-/// mat is [cols, rows] but we want mat^T @ vec
-pub fn simdMatVecT(output: []f32, mat: []const f32, vec: []const f32, rows: usize, cols: usize) void {
+/// SIMD-optimized matrix-vector multiplication for COLUMN-MAJOR matrices (GGUF format)
+/// output[i] = sum(mat[i,j] * vec[j]) for all j
+/// mat is stored in column-major order: mat[i][j] = data[j * rows + i]
+/// This is the correct layout for GGUF weight tensors
+pub fn simdMatVecColMajor(output: []f32, mat: []const f32, vec: []const f32, rows: usize, cols: usize) void {
     @memset(output, 0.0);
 
-    const aligned_cols = cols & ~@as(usize, SIMD_WIDTH - 1);
+    const aligned_rows = rows & ~@as(usize, SIMD_WIDTH - 1);
 
-    // Process in blocks for better cache utilization
-    var j: usize = 0;
-    while (j < aligned_cols) : (j += SIMD_WIDTH) {
-        const vec_vec: Vec8f = vec[j..][0..SIMD_WIDTH].*;
+    // Process column by column (each column is contiguous in memory)
+    for (0..cols) |j| {
+        const scale = vec[j];
+        const scale_vec: Vec8f = @splat(scale);
+        const col_offset = j * rows;
 
-        for (0..rows) |i| {
-            const mat_vec: Vec8f = mat[j * rows + i ..][0..SIMD_WIDTH].*;
-            const prod: Vec8f = mat_vec * vec_vec;
+        // SIMD loop - process 8 output elements at a time
+        var i: usize = 0;
+        while (i < aligned_rows) : (i += SIMD_WIDTH) {
+            const mat_vec: Vec8f = mat[col_offset + i ..][0..SIMD_WIDTH].*;
+            const out_vec: Vec8f = output[i..][0..SIMD_WIDTH].*;
+            output[i..][0..SIMD_WIDTH].* = out_vec + scale_vec * mat_vec;
+        }
 
-            // Horizontal sum
-            const prod_arr: [SIMD_WIDTH]f32 = prod;
-            var sum: f32 = 0.0;
-            inline for (prod_arr) |v| {
-                sum += v;
-            }
-            output[i] += sum;
+        // Scalar tail
+        while (i < rows) : (i += 1) {
+            output[i] += scale * mat[col_offset + i];
         }
     }
+}
 
-    // Scalar tail
-    while (j < cols) : (j += 1) {
-        const v = vec[j];
-        for (0..rows) |i| {
-            output[i] += mat[j * rows + i] * v;
-        }
-    }
+/// Legacy transposed matrix-vector multiplication (DEPRECATED - use simdMatVecColMajor)
+pub fn simdMatVecT(output: []f32, mat: []const f32, vec: []const f32, rows: usize, cols: usize) void {
+    simdMatVecColMajor(output, mat, vec, rows, cols);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -359,45 +358,14 @@ pub fn deinitThreadPool() void {
     }
 }
 
-/// Parallel SIMD matrix-vector multiplication
+/// Parallel SIMD matrix-vector multiplication for GGUF weight matrices
+/// GGUF stores weight matrices in [input_dim, output_dim] layout with input_dim innermost (stride 1)
+/// This means W[out][in] = data[out * input_dim + in], which is row-major access!
 /// Uses thread pool for very large matrices only (rows > 10000)
-/// On 2-core systems, threading overhead often exceeds benefit
 pub fn parallelMatVec(output: []f32, mat: []const f32, vec: []const f32, rows: usize, cols: usize) void {
+    // GGUF uses row-major layout for weight matrices
     // For most matrices, single-threaded SIMD is faster on 2 cores
-    // Only use threading for vocab projection (32000 rows)
-    if (rows < 10000 or !pool_initialized) {
-        simdMatVec(output, mat, vec, rows, cols);
-        return;
-    }
-
-    const num_threads: usize = 2; // Match CPU cores
-    const rows_per_thread = rows / num_threads;
-    
-    var contexts: [2]ParallelMatVecContext = undefined;
-    var wg = std.Thread.WaitGroup{};
-
-    for (0..num_threads) |t| {
-        const start = t * rows_per_thread;
-        const end = if (t == num_threads - 1) rows else (t + 1) * rows_per_thread;
-        
-        contexts[t] = ParallelMatVecContext{
-            .output = output,
-            .mat = mat,
-            .vec = vec,
-            .cols = cols,
-            .start_row = start,
-            .end_row = end,
-        };
-        
-        wg.start();
-        global_pool.spawn(parallelMatVecWorker, .{&contexts[t], &wg}) catch {
-            // Fallback to single-threaded
-            wg.finish();
-            simdMatVec(output[start..end], mat[start * cols ..], vec, end - start, cols);
-        };
-    }
-
-    wg.wait();
+    simdMatVec(output, mat, vec, rows, cols);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -412,7 +380,7 @@ test "simd_dot" {
 }
 
 test "simd_matvec" {
-    // 2x3 matrix
+    // 2x3 matrix in ROW-MAJOR order (legacy test)
     const mat = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
     const vec = [_]f32{ 1.0, 2.0, 3.0 };
     var output: [2]f32 = undefined;
@@ -423,6 +391,23 @@ test "simd_matvec" {
     // [4,5,6] @ [1,2,3] = 4+10+18 = 32
     try std.testing.expectApproxEqAbs(output[0], 14.0, 0.001);
     try std.testing.expectApproxEqAbs(output[1], 32.0, 0.001);
+}
+
+test "simd_matvec_colmajor" {
+    // 2x3 matrix in COLUMN-MAJOR order (GGUF format)
+    // Matrix W = [[1, 3, 5], [2, 4, 6]] conceptually (2 rows, 3 cols)
+    // Column-major storage: col0=[1,2], col1=[3,4], col2=[5,6]
+    const mat = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    const vec = [_]f32{ 1.0, 2.0, 3.0 };
+    var output: [2]f32 = undefined;
+
+    simdMatVecColMajor(&output, &mat, &vec, 2, 3);
+
+    // W @ vec = [[1,3,5], [2,4,6]] @ [1,2,3]
+    // row 0: 1*1 + 3*2 + 5*3 = 1 + 6 + 15 = 22
+    // row 1: 2*1 + 4*2 + 6*3 = 2 + 8 + 18 = 28
+    try std.testing.expectApproxEqAbs(output[0], 22.0, 0.001);
+    try std.testing.expectApproxEqAbs(output[1], 28.0, 0.001);
 }
 
 test "simd_rms_norm" {
