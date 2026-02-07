@@ -7155,6 +7155,233 @@ pub const TextCorpus = struct {
         return global_memory != null;
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // CYCLE 50: Memory Persistence / Serialization
+    // ═══════════════════════════════════════════════════════════════
+
+    /// Binary format magic number: "TRMM" (Trinity Memory)
+    pub const MEMORY_MAGIC: u32 = 0x4D4D5254;
+    /// Format version
+    pub const MEMORY_FORMAT_VERSION: u16 = 1;
+
+    /// Serialized memory header
+    pub const MemoryHeader = struct {
+        magic: u32,
+        version: u16,
+        flags: u16,
+        conversation_id: u64,
+        turn_count: u32,
+        total_tokens: u32,
+        short_term_count: u32,
+        long_term_count: u32,
+        checksum: u32,
+
+        pub fn init(memory: *const AgentMemory) MemoryHeader {
+            return MemoryHeader{
+                .magic = MEMORY_MAGIC,
+                .version = MEMORY_FORMAT_VERSION,
+                .flags = 0,
+                .conversation_id = memory.conversation_id,
+                .turn_count = @intCast(memory.turn_count),
+                .total_tokens = @intCast(memory.total_tokens_processed),
+                .short_term_count = @intCast(memory.short_term.count),
+                .long_term_count = @intCast(memory.long_term.count),
+                .checksum = 0,
+            };
+        }
+
+        /// Validate header
+        pub fn isValid(self: *const MemoryHeader) bool {
+            return self.magic == MEMORY_MAGIC and self.version == MEMORY_FORMAT_VERSION;
+        }
+
+        /// Header size in bytes
+        pub fn byteSize() usize {
+            return @sizeOf(MemoryHeader);
+        }
+    };
+
+    /// Serialized entry record (fixed-size for fast I/O)
+    pub const EntryRecord = struct {
+        entry_type: u8,
+        content_len: u16,
+        relevance_fixed: u32, // f64 * 1_000_000 as u32
+        access_count: u16,
+        timestamp_lo: u32,
+        timestamp_hi: u32,
+        content: [512]u8,
+
+        pub fn fromEntry(entry: *const MemoryEntry) EntryRecord {
+            var record = EntryRecord{
+                .entry_type = @intFromEnum(entry.entry_type),
+                .content_len = @intCast(entry.content_len),
+                .relevance_fixed = @intFromFloat(entry.relevance * 1_000_000.0),
+                .access_count = @intCast(@min(entry.access_count, 65535)),
+                .timestamp_lo = @intCast(@as(u64, @bitCast(entry.timestamp)) & 0xFFFFFFFF),
+                .timestamp_hi = @intCast((@as(u64, @bitCast(entry.timestamp)) >> 32) & 0xFFFFFFFF),
+                .content = .{0} ** 512,
+            };
+            @memcpy(record.content[0..entry.content_len], entry.content[0..entry.content_len]);
+            return record;
+        }
+
+        pub fn toEntry(self: *const EntryRecord) MemoryEntry {
+            var entry = MemoryEntry{
+                .entry_type = @enumFromInt(self.entry_type),
+                .content = .{0} ** 512,
+                .content_len = @intCast(self.content_len),
+                .timestamp = @bitCast(@as(u64, self.timestamp_lo) | (@as(u64, self.timestamp_hi) << 32)),
+                .relevance = @as(f64, @floatFromInt(self.relevance_fixed)) / 1_000_000.0,
+                .access_count = @intCast(self.access_count),
+                .active = true,
+            };
+            const len: usize = @intCast(self.content_len);
+            @memcpy(entry.content[0..len], self.content[0..len]);
+            return entry;
+        }
+
+        pub fn byteSize() usize {
+            return @sizeOf(EntryRecord);
+        }
+    };
+
+    /// Memory serializer — save/load AgentMemory to byte buffers
+    pub const MemorySerializer = struct {
+        /// Calculate required buffer size for serialization
+        pub fn calculateSize(memory: *const AgentMemory) usize {
+            const header_size = MemoryHeader.byteSize();
+            const entry_size = EntryRecord.byteSize();
+            const total_entries = memory.short_term.count + memory.long_term.count;
+            return header_size + (total_entries * entry_size);
+        }
+
+        /// Serialize AgentMemory to byte buffer
+        /// Returns number of bytes written, or 0 on failure
+        pub fn serialize(memory: *const AgentMemory, buffer: []u8) usize {
+            const needed = calculateSize(memory);
+            if (buffer.len < needed) return 0;
+
+            var offset: usize = 0;
+
+            // Write header
+            const header = MemoryHeader.init(memory);
+            const header_bytes = std.mem.asBytes(&header);
+            @memcpy(buffer[offset..][0..header_bytes.len], header_bytes);
+            offset += header_bytes.len;
+
+            // Write short-term entries
+            for (memory.short_term.entries[0..memory.short_term.capacity]) |maybe_entry| {
+                if (maybe_entry) |entry| {
+                    const record = EntryRecord.fromEntry(&entry);
+                    const record_bytes = std.mem.asBytes(&record);
+                    @memcpy(buffer[offset..][0..record_bytes.len], record_bytes);
+                    offset += record_bytes.len;
+                }
+            }
+
+            // Write long-term entries
+            for (memory.long_term.entries[0..memory.long_term.capacity]) |maybe_entry| {
+                if (maybe_entry) |entry| {
+                    const record = EntryRecord.fromEntry(&entry);
+                    const record_bytes = std.mem.asBytes(&record);
+                    @memcpy(buffer[offset..][0..record_bytes.len], record_bytes);
+                    offset += record_bytes.len;
+                }
+            }
+
+            // Write checksum at header offset
+            const checksum = computeChecksum(buffer[MemoryHeader.byteSize()..offset]);
+            const checksum_offset = @offsetOf(MemoryHeader, "checksum");
+            const checksum_bytes = std.mem.asBytes(&checksum);
+            @memcpy(buffer[checksum_offset..][0..checksum_bytes.len], checksum_bytes);
+
+            return offset;
+        }
+
+        /// Deserialize AgentMemory from byte buffer
+        /// Returns true on success
+        pub fn deserialize(memory: *AgentMemory, buffer: []const u8) bool {
+            if (buffer.len < MemoryHeader.byteSize()) return false;
+
+            // Read header
+            const header: *const MemoryHeader = @ptrCast(@alignCast(buffer[0..MemoryHeader.byteSize()]));
+            if (!header.isValid()) return false;
+
+            // Verify checksum
+            const data_size = (@as(usize, header.short_term_count) + @as(usize, header.long_term_count)) * EntryRecord.byteSize();
+            const expected_total = MemoryHeader.byteSize() + data_size;
+            if (buffer.len < expected_total) return false;
+
+            const payload = buffer[MemoryHeader.byteSize()..expected_total];
+            const computed = computeChecksum(payload);
+            if (header.checksum != computed) return false;
+
+            // Restore metadata
+            memory.conversation_id = header.conversation_id;
+            memory.turn_count = @intCast(header.turn_count);
+            memory.total_tokens_processed = @intCast(header.total_tokens);
+
+            // Clear existing entries
+            memory.short_term = ContextWindow.init();
+            memory.long_term = ContextWindow.init();
+
+            var offset: usize = MemoryHeader.byteSize();
+            const record_size = EntryRecord.byteSize();
+
+            // Read short-term entries
+            var st_count: usize = 0;
+            while (st_count < header.short_term_count) : (st_count += 1) {
+                if (offset + record_size > buffer.len) return false;
+                const record: *const EntryRecord = @ptrCast(@alignCast(buffer[offset..][0..record_size]));
+                const entry = record.toEntry();
+                _ = memory.short_term.add(entry);
+                offset += record_size;
+            }
+
+            // Read long-term entries
+            var lt_count: usize = 0;
+            while (lt_count < header.long_term_count) : (lt_count += 1) {
+                if (offset + record_size > buffer.len) return false;
+                const record: *const EntryRecord = @ptrCast(@alignCast(buffer[offset..][0..record_size]));
+                const entry = record.toEntry();
+                _ = memory.long_term.add(entry);
+                offset += record_size;
+            }
+
+            return true;
+        }
+
+        /// Simple checksum (FNV-1a inspired)
+        fn computeChecksum(data: []const u8) u32 {
+            var hash: u32 = 2166136261;
+            for (data) |byte| {
+                hash ^= @as(u32, byte);
+                hash *%= 16777619;
+            }
+            return hash;
+        }
+
+        /// Validate a serialized buffer without loading
+        pub fn validate(buffer: []const u8) bool {
+            if (buffer.len < MemoryHeader.byteSize()) return false;
+            const header: *const MemoryHeader = @ptrCast(@alignCast(buffer[0..MemoryHeader.byteSize()]));
+            return header.isValid();
+        }
+
+        /// Get entry count from serialized buffer
+        pub fn getEntryCount(buffer: []const u8) ?usize {
+            if (buffer.len < MemoryHeader.byteSize()) return null;
+            const header: *const MemoryHeader = @ptrCast(@alignCast(buffer[0..MemoryHeader.byteSize()]));
+            if (!header.isValid()) return null;
+            return @as(usize, header.short_term_count) + @as(usize, header.long_term_count);
+        }
+
+        /// Get format info string
+        pub fn formatInfo() []const u8 {
+            return "TRMM v1 (Trinity Memory Format)";
+        }
+    };
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -9027,6 +9254,173 @@ test "AgentMemory global singleton" {
 
     TextCorpus.shutdownAgentMemory();
     try std.testing.expect(!TextCorpus.hasAgentMemory());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 50: Memory Persistence / Serialization Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "MemoryHeader creation and validation" {
+    var memory = TextCorpus.AgentMemory.init();
+    memory.conversation_id = 42;
+    memory.turn_count = 10;
+    memory.total_tokens_processed = 500;
+    memory.addUserMessage("test");
+
+    const header = TextCorpus.MemoryHeader.init(&memory);
+    try std.testing.expectEqual(TextCorpus.MEMORY_MAGIC, header.magic);
+    try std.testing.expectEqual(@as(u16, 1), header.version);
+    try std.testing.expectEqual(@as(u64, 42), header.conversation_id);
+    try std.testing.expect(header.isValid());
+}
+
+test "MemoryHeader invalid detection" {
+    var header = TextCorpus.MemoryHeader{
+        .magic = 0xDEADBEEF, // Wrong magic
+        .version = 1,
+        .flags = 0,
+        .conversation_id = 0,
+        .turn_count = 0,
+        .total_tokens = 0,
+        .short_term_count = 0,
+        .long_term_count = 0,
+        .checksum = 0,
+    };
+    try std.testing.expect(!header.isValid());
+
+    header.magic = TextCorpus.MEMORY_MAGIC;
+    header.version = 99; // Wrong version
+    try std.testing.expect(!header.isValid());
+}
+
+test "EntryRecord round-trip" {
+    const entry = TextCorpus.MemoryEntry.init(.fact, "test fact data");
+    const record = TextCorpus.EntryRecord.fromEntry(&entry);
+
+    try std.testing.expectEqual(@as(u8, @intFromEnum(TextCorpus.MemoryType.fact)), record.entry_type);
+    try std.testing.expectEqual(@as(u16, 14), record.content_len);
+
+    const restored = record.toEntry();
+    try std.testing.expectEqualStrings("test fact data", restored.getContent());
+    try std.testing.expectEqual(TextCorpus.MemoryType.fact, restored.entry_type);
+    try std.testing.expect(restored.active);
+}
+
+test "EntryRecord relevance precision" {
+    var entry = TextCorpus.MemoryEntry.init(.message, "precision");
+    entry.relevance = 0.618034;
+
+    const record = TextCorpus.EntryRecord.fromEntry(&entry);
+    const restored = record.toEntry();
+
+    // Precision within 0.001 after fixed-point round-trip
+    try std.testing.expectApproxEqAbs(@as(f64, 0.618034), restored.relevance, 0.001);
+}
+
+test "MemorySerializer calculate size" {
+    var memory = TextCorpus.AgentMemory.init();
+    const empty_size = TextCorpus.MemorySerializer.calculateSize(&memory);
+    try std.testing.expectEqual(TextCorpus.MemoryHeader.byteSize(), empty_size);
+
+    memory.addUserMessage("hello");
+    const one_size = TextCorpus.MemorySerializer.calculateSize(&memory);
+    try std.testing.expectEqual(TextCorpus.MemoryHeader.byteSize() + TextCorpus.EntryRecord.byteSize(), one_size);
+}
+
+test "MemorySerializer serialize empty memory" {
+    var memory = TextCorpus.AgentMemory.init();
+    var buffer: [4096]u8 = .{0} ** 4096;
+
+    const written = TextCorpus.MemorySerializer.serialize(&memory, &buffer);
+    try std.testing.expect(written > 0);
+    try std.testing.expectEqual(TextCorpus.MemoryHeader.byteSize(), written);
+
+    // Validate
+    try std.testing.expect(TextCorpus.MemorySerializer.validate(&buffer));
+}
+
+test "MemorySerializer serialize and deserialize" {
+    // Create memory with data
+    var original = TextCorpus.AgentMemory.init();
+    original.addUserMessage("hello world");
+    original.addAssistantResponse("hi there");
+    original.storeFact("user likes dark mode");
+    original.storeAnchor("system: be helpful");
+    original.conversation_id = 7;
+
+    // Serialize
+    var buffer: [524288]u8 align(8) = .{0} ** 524288;
+    const written = TextCorpus.MemorySerializer.serialize(&original, &buffer);
+    try std.testing.expect(written > 0);
+
+    // Deserialize into new memory
+    var restored = TextCorpus.AgentMemory.init();
+    const success = TextCorpus.MemorySerializer.deserialize(&restored, buffer[0..written]);
+    try std.testing.expect(success);
+
+    // Verify metadata
+    try std.testing.expectEqual(@as(u64, 7), restored.conversation_id);
+
+    // Verify entry counts
+    try std.testing.expectEqual(original.short_term.count, restored.short_term.count);
+    try std.testing.expectEqual(original.long_term.count, restored.long_term.count);
+}
+
+test "MemorySerializer buffer too small" {
+    var memory = TextCorpus.AgentMemory.init();
+    memory.addUserMessage("test");
+
+    var tiny_buffer: [4]u8 = .{0} ** 4;
+    const written = TextCorpus.MemorySerializer.serialize(&memory, &tiny_buffer);
+    try std.testing.expectEqual(@as(usize, 0), written); // Should fail
+}
+
+test "MemorySerializer deserialize corrupt data" {
+    var memory = TextCorpus.AgentMemory.init();
+    var corrupt: [64]u8 = .{0xFF} ** 64;
+    const success = TextCorpus.MemorySerializer.deserialize(&memory, &corrupt);
+    try std.testing.expect(!success); // Should fail validation
+}
+
+test "MemorySerializer getEntryCount" {
+    var memory = TextCorpus.AgentMemory.init();
+    memory.addUserMessage("a");
+    memory.addUserMessage("b");
+    memory.storeFact("c");
+
+    var buffer: [524288]u8 align(8) = .{0} ** 524288;
+    const written = TextCorpus.MemorySerializer.serialize(&memory, &buffer);
+    try std.testing.expect(written > 0);
+
+    const count = TextCorpus.MemorySerializer.getEntryCount(&buffer);
+    try std.testing.expect(count != null);
+    try std.testing.expectEqual(@as(usize, 3), count.?);
+}
+
+test "MemorySerializer format info" {
+    const info = TextCorpus.MemorySerializer.formatInfo();
+    try std.testing.expect(info.len > 0);
+    try std.testing.expectEqualStrings("TRMM v1 (Trinity Memory Format)", info);
+}
+
+test "MemorySerializer checksum integrity" {
+    var memory = TextCorpus.AgentMemory.init();
+    memory.addUserMessage("checksum test");
+
+    var buffer: [524288]u8 align(8) = .{0} ** 524288;
+    const written = TextCorpus.MemorySerializer.serialize(&memory, &buffer);
+    try std.testing.expect(written > 0);
+
+    // Verify deserialization works
+    var restored = TextCorpus.AgentMemory.init();
+    try std.testing.expect(TextCorpus.MemorySerializer.deserialize(&restored, buffer[0..written]));
+
+    // Corrupt one byte in the data section
+    buffer[TextCorpus.MemoryHeader.byteSize() + 10] ^= 0xFF;
+
+    // Should fail checksum
+    var corrupted = TextCorpus.AgentMemory.init();
+    try std.testing.expect(!TextCorpus.MemorySerializer.deserialize(&corrupted, buffer[0..written]));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
