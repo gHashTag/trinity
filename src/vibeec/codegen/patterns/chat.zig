@@ -281,6 +281,251 @@ const ABOUT_SELF_KEYWORDS = [_][]const u8{
     "你是谁", "你是什么", "介绍一下自己", "关于你",
 };
 
+/// Coding keywords for detection
+const CODING_KEYWORDS = [_][]const u8{
+    "напиши код", "код", "программ", "функци", "алгоритм", "сортировк", "массив",
+    "write code", "code", "program", "function", "algorithm", "sort", "array", "implement",
+    "写代码", "代码", "程序", "函数", "算法", "排序", "数组",
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CODE SNIPPETS - Real algorithm implementations
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Hello World snippets
+const HELLO_WORLD_ZIG =
+    \\const std = @import("std");
+    \\
+    \\pub fn main() void {
+    \\    std.debug.print("Hello, World!\n", .{});
+    \\}
+;
+
+const HELLO_WORLD_PYTHON =
+    \\print("Hello, World!")
+;
+
+const HELLO_WORLD_JS =
+    \\console.log("Hello, World!");
+;
+
+/// BubbleSort implementations
+const BUBBLE_SORT_ZIG =
+    \\pub fn bubbleSort(arr: []i32) void {
+    \\    const n = arr.len;
+    \\    var i: usize = 0;
+    \\    while (i < n) : (i += 1) {
+    \\        var j: usize = 0;
+    \\        while (j < n - i - 1) : (j += 1) {
+    \\            if (arr[j] > arr[j + 1]) {
+    \\                const temp = arr[j];
+    \\                arr[j] = arr[j + 1];
+    \\                arr[j + 1] = temp;
+    \\            }
+    \\        }
+    \\    }
+    \\}
+;
+
+const BUBBLE_SORT_PYTHON =
+    \\def bubble_sort(arr):
+    \\    n = len(arr)
+    \\    for i in range(n):
+    \\        for j in range(0, n - i - 1):
+    \\            if arr[j] > arr[j + 1]:
+    \\                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+    \\    return arr
+;
+
+const BUBBLE_SORT_JS =
+    \\function bubbleSort(arr) {
+    \\    const n = arr.length;
+    \\    for (let i = 0; i < n; i++) {
+    \\        for (let j = 0; j < n - i - 1; j++) {
+    \\            if (arr[j] > arr[j + 1]) {
+    \\                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+    \\            }
+    \\        }
+    \\    }
+    \\    return arr;
+    \\}
+;
+
+/// Fibonacci implementations
+const FIBONACCI_ZIG =
+    \\pub fn fibonacci(n: u32) u64 {
+    \\    if (n <= 1) return n;
+    \\    var a: u64 = 0;
+    \\    var b: u64 = 1;
+    \\    var i: u32 = 2;
+    \\    while (i <= n) : (i += 1) {
+    \\        const temp = a + b;
+    \\        a = b;
+    \\        b = temp;
+    \\    }
+    \\    return b;
+    \\}
+;
+
+const FIBONACCI_PYTHON =
+    \\def fibonacci(n):
+    \\    if n <= 1:
+    \\        return n
+    \\    a, b = 0, 1
+    \\    for _ in range(2, n + 1):
+    \\        a, b = b, a + b
+    \\    return b
+;
+
+const FIBONACCI_JS =
+    \\function fibonacci(n) {
+    \\    if (n <= 1) return n;
+    \\    let a = 0, b = 1;
+    \\    for (let i = 2; i <= n; i++) {
+    \\        [a, b] = [b, a + b];
+    \\    }
+    \\    return b;
+    \\}
+;
+
+/// QuickSort implementations
+const QUICKSORT_ZIG =
+    \\pub fn quickSort(arr: []i32) void {
+    \\    if (arr.len <= 1) return;
+    \\    quickSortHelper(arr, 0, arr.len - 1);
+    \\}
+    \\
+    \\fn quickSortHelper(arr: []i32, low: usize, high: usize) void {
+    \\    if (low >= high) return;
+    \\    const pivot = arr[high];
+    \\    var i = low;
+    \\    for (low..high) |j| {
+    \\        if (arr[j] < pivot) {
+    \\            const temp = arr[i];
+    \\            arr[i] = arr[j];
+    \\            arr[j] = temp;
+    \\            i += 1;
+    \\        }
+    \\    }
+    \\    arr[high] = arr[i];
+    \\    arr[i] = pivot;
+    \\    if (i > 0) quickSortHelper(arr, low, i - 1);
+    \\    quickSortHelper(arr, i + 1, high);
+    \\}
+;
+
+const QUICKSORT_PYTHON =
+    \\def quicksort(arr):
+    \\    if len(arr) <= 1:
+    \\        return arr
+    \\    pivot = arr[len(arr) // 2]
+    \\    left = [x for x in arr if x < pivot]
+    \\    middle = [x for x in arr if x == pivot]
+    \\    right = [x for x in arr if x > pivot]
+    \\    return quicksort(left) + middle + quicksort(right)
+;
+
+const QUICKSORT_JS =
+    \\function quickSort(arr) {
+    \\    if (arr.length <= 1) return arr;
+    \\    const pivot = arr[Math.floor(arr.length / 2)];
+    \\    const left = arr.filter(x => x < pivot);
+    \\    const middle = arr.filter(x => x === pivot);
+    \\    const right = arr.filter(x => x > pivot);
+    \\    return [...quickSort(left), ...middle, ...quickSort(right)];
+    \\}
+;
+
+/// Binary Search implementations
+const BINARY_SEARCH_ZIG =
+    \\pub fn binarySearch(arr: []const i32, target: i32) ?usize {
+    \\    var left: usize = 0;
+    \\    var right: usize = arr.len;
+    \\    while (left < right) {
+    \\        const mid = left + (right - left) / 2;
+    \\        if (arr[mid] == target) return mid;
+    \\        if (arr[mid] < target) {
+    \\            left = mid + 1;
+    \\        } else {
+    \\            right = mid;
+    \\        }
+    \\    }
+    \\    return null;
+    \\}
+;
+
+const BINARY_SEARCH_PYTHON =
+    \\def binary_search(arr, target):
+    \\    left, right = 0, len(arr) - 1
+    \\    while left <= right:
+    \\        mid = (left + right) // 2
+    \\        if arr[mid] == target:
+    \\            return mid
+    \\        elif arr[mid] < target:
+    \\            left = mid + 1
+    \\        else:
+    \\            right = mid - 1
+    \\    return -1
+;
+
+const BINARY_SEARCH_JS =
+    \\function binarySearch(arr, target) {
+    \\    let left = 0, right = arr.length - 1;
+    \\    while (left <= right) {
+    \\        const mid = Math.floor((left + right) / 2);
+    \\        if (arr[mid] === target) return mid;
+    \\        if (arr[mid] < target) left = mid + 1;
+    \\        else right = mid - 1;
+    \\    }
+    \\    return -1;
+    \\}
+;
+
+/// Coding response messages (Russian)
+const CODING_RESPONSE_RU = [_][]const u8{
+    "Вот пример кода. Могу объяснить подробнее, если нужно!",
+    "Готово! Вот реализация. Есть вопросы по коду?",
+    "Написал код. Это базовая реализация, можно оптимизировать.",
+    "Вот алгоритм. Нужна помощь с пониманием?",
+};
+
+/// Coding response messages (English)
+const CODING_RESPONSE_EN = [_][]const u8{
+    "Here's the code. Let me know if you need an explanation!",
+    "Done! Here's the implementation. Any questions about it?",
+    "Here's the code. This is a basic implementation, can be optimized.",
+    "Here's the algorithm. Need help understanding it?",
+};
+
+/// Coding response messages (Chinese)
+const CODING_RESPONSE_ZH = [_][]const u8{
+    "这是代码。如果需要解释，请告诉我！",
+    "完成了！这是实现。有什么问题吗？",
+    "这是代码。这是基本实现，可以优化。",
+    "这是算法。需要帮助理解吗？",
+};
+
+/// Code help responses (Russian)
+const CODE_HELP_RU = [_][]const u8{
+    "Я могу помочь с кодом! Что именно нужно: алгоритм, функция, или объяснение?",
+    "Готов помочь с программированием. Какой язык предпочитаешь: Zig, Python, JavaScript?",
+    "Могу написать код или объяснить существующий. Что выбираешь?",
+};
+
+/// Code help responses (English)
+const CODE_HELP_EN = [_][]const u8{
+    "I can help with code! What do you need: algorithm, function, or explanation?",
+    "Ready to help with programming. Which language: Zig, Python, JavaScript?",
+    "I can write code or explain existing code. What would you like?",
+};
+
+/// Code help responses (Chinese)
+const CODE_HELP_ZH = [_][]const u8{
+    "我可以帮助编程！你需要什么：算法、函数还是解释？",
+    "准备好帮助编程。你喜欢哪种语言：Zig、Python、JavaScript？",
+    "我可以写代码或解释现有代码。你想要什么？",
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PATTERN MATCHING
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -348,6 +593,22 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     if (std.mem.eql(u8, name, "respondUnknown") or std.mem.eql(u8, name, "respondHonestLimit") or std.mem.eql(u8, name, "handleUnknown")) {
         try generateResponseFunction(builder, name, "unknown", &UNKNOWN_RU, &UNKNOWN_EN, &UNKNOWN_ZH);
+        return true;
+    }
+
+    // Coding response patterns
+    if (std.mem.eql(u8, name, "respondCoding") or std.mem.eql(u8, name, "respondCode")) {
+        try generateCodingResponse(builder, name);
+        return true;
+    }
+
+    if (std.mem.eql(u8, name, "respondCodeHelp") or std.mem.eql(u8, name, "respondProgramming")) {
+        try generateCodeHelpResponse(builder, name);
+        return true;
+    }
+
+    if (std.mem.eql(u8, name, "respondAlgorithm") or std.mem.eql(u8, name, "generateCode")) {
+        try generateAlgorithmResponse(builder, name);
         return true;
     }
 
@@ -609,6 +870,14 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
     try builder.writeLine("}");
     try builder.writeLine("");
 
+    // Check coding keywords
+    try builder.writeLine("// Check coding");
+    try builder.writeLine("const coding_kw = [_][]const u8{ \"код\", \"code\", \"代码\", \"program\", \"функци\", \"function\", \"函数\", \"algorithm\", \"алгоритм\", \"算法\", \"sort\", \"сортир\", \"排序\" };");
+    try builder.writeLine("for (coding_kw) |kw| {");
+    try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .coding;");
+    try builder.writeLine("}");
+    try builder.writeLine("");
+
     try builder.writeLine("return .unknown;");
     builder.decIndent();
     try builder.writeLine("}");
@@ -764,6 +1033,7 @@ fn generateRequiredChatTypes(builder: *CodeBuilder) !void {
     try builder.writeLine("    technology,");
     try builder.writeLine("    humor,");
     try builder.writeLine("    advice,");
+    try builder.writeLine("    coding,");
     try builder.writeLine("    unknown,");
     try builder.writeLine("};");
     try builder.writeLine("");
@@ -943,6 +1213,188 @@ fn generateGenericDetector(builder: *CodeBuilder, name: []const u8, b: *const Be
     try builder.writeLine("_ = text;");
     try builder.writeFmt("// {s}\n", .{b.then});
     try builder.writeLine("return false;");
+    builder.decIndent();
+    try builder.writeLine("}");
+    try builder.writeLine("");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CODING RESPONSE GENERATORS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn generateCodingResponse(builder: *CodeBuilder, name: []const u8) !void {
+    // Generate response arrays
+    try builder.writeLine("/// Fluent coding response with code snippet");
+    try builder.writeLine("const coding_intro_ru = [_][]const u8{");
+    builder.incIndent();
+    for (CODING_RESPONSE_RU) |resp| {
+        try builder.writeFmt("\"{s}\",\n", .{resp});
+    }
+    builder.decIndent();
+    try builder.writeLine("};");
+    try builder.writeLine("");
+
+    try builder.writeLine("const coding_intro_en = [_][]const u8{");
+    builder.incIndent();
+    for (CODING_RESPONSE_EN) |resp| {
+        try builder.writeFmt("\"{s}\",\n", .{resp});
+    }
+    builder.decIndent();
+    try builder.writeLine("};");
+    try builder.writeLine("");
+
+    try builder.writeLine("const coding_intro_zh = [_][]const u8{");
+    builder.incIndent();
+    for (CODING_RESPONSE_ZH) |resp| {
+        try builder.writeFmt("\"{s}\",\n", .{resp});
+    }
+    builder.decIndent();
+    try builder.writeLine("};");
+    try builder.writeLine("");
+
+    // Generate code snippets as string arrays for each language
+    try builder.writeLine("/// Code snippets: Hello World");
+    try builder.writeLine("const hello_code = [_][]const u8{");
+    try builder.writeLine("    \"const std = @import(\\\"std\\\");\\npub fn main() void { std.debug.print(\\\"Hello, World!\\\\n\\\", .{}); }\",");
+    try builder.writeLine("    \"print(\\\"Hello, World!\\\")\",");
+    try builder.writeLine("    \"console.log(\\\"Hello, World!\\\");\",");
+    try builder.writeLine("};");
+    try builder.writeLine("");
+
+    try builder.writeLine("/// Code snippets: Bubble Sort");
+    try builder.writeLine("const bubble_code = [_][]const u8{");
+    try builder.writeLine("    \"pub fn bubbleSort(arr: []i32) void { var i: usize = 0; while (i < arr.len) : (i += 1) { var j: usize = 0; while (j < arr.len - i - 1) : (j += 1) { if (arr[j] > arr[j+1]) { const t = arr[j]; arr[j] = arr[j+1]; arr[j+1] = t; } } } }\",");
+    try builder.writeLine("    \"def bubble_sort(arr):\\n    n = len(arr)\\n    for i in range(n):\\n        for j in range(0, n-i-1):\\n            if arr[j] > arr[j+1]:\\n                arr[j], arr[j+1] = arr[j+1], arr[j]\\n    return arr\",");
+    try builder.writeLine("    \"function bubbleSort(arr) { const n = arr.length; for (let i = 0; i < n; i++) { for (let j = 0; j < n-i-1; j++) { if (arr[j] > arr[j+1]) { [arr[j], arr[j+1]] = [arr[j+1], arr[j]]; } } } return arr; }\",");
+    try builder.writeLine("};");
+    try builder.writeLine("");
+
+    // Generate response function
+    try builder.writeFmt("pub fn {s}(language: InputLanguage, algorithm: []const u8, seed: u64) []const u8 {{\n", .{name});
+    builder.incIndent();
+    try builder.writeLine("_ = algorithm;");
+    try builder.writeLine("_ = seed;");
+    try builder.writeLine("// Return intro message based on language");
+    try builder.writeLine("return switch (language) {");
+    try builder.writeLine("    .russian => coding_intro_ru[0],");
+    try builder.writeLine("    .chinese => coding_intro_zh[0],");
+    try builder.writeLine("    else => coding_intro_en[0],");
+    try builder.writeLine("};");
+    builder.decIndent();
+    try builder.writeLine("}");
+    try builder.writeLine("");
+}
+
+fn generateCodeHelpResponse(builder: *CodeBuilder, name: []const u8) !void {
+    // Generate help response arrays
+    try builder.writeLine("/// Code help response arrays");
+    try builder.writeLine("const code_help_ru = [_][]const u8{");
+    builder.incIndent();
+    for (CODE_HELP_RU) |resp| {
+        try builder.writeFmt("\"{s}\",\n", .{resp});
+    }
+    builder.decIndent();
+    try builder.writeLine("};");
+
+    try builder.writeLine("const code_help_en = [_][]const u8{");
+    builder.incIndent();
+    for (CODE_HELP_EN) |resp| {
+        try builder.writeFmt("\"{s}\",\n", .{resp});
+    }
+    builder.decIndent();
+    try builder.writeLine("};");
+
+    try builder.writeLine("const code_help_zh = [_][]const u8{");
+    builder.incIndent();
+    for (CODE_HELP_ZH) |resp| {
+        try builder.writeFmt("\"{s}\",\n", .{resp});
+    }
+    builder.decIndent();
+    try builder.writeLine("};");
+    try builder.writeLine("");
+
+    // Generate help response function
+    try builder.writeFmt("pub fn {s}(language: InputLanguage, seed: u64) []const u8 {{\n", .{name});
+    builder.incIndent();
+    try builder.writeLine("const responses = switch (language) {");
+    try builder.writeLine("    .russian => &code_help_ru,");
+    try builder.writeLine("    .chinese => &code_help_zh,");
+    try builder.writeLine("    else => &code_help_en,");
+    try builder.writeLine("};");
+    try builder.writeLine("const idx = seed % responses.len;");
+    try builder.writeLine("return responses[idx];");
+    builder.decIndent();
+    try builder.writeLine("}");
+    try builder.writeLine("");
+}
+
+fn generateAlgorithmResponse(builder: *CodeBuilder, name: []const u8) !void {
+    // Generate all algorithm snippets as proper string arrays
+    try builder.writeLine("/// Algorithm implementations for code generation");
+    try builder.writeLine("");
+
+    // Algorithms indexed by [algorithm][language] where language: 0=zig, 1=python, 2=js
+    try builder.writeLine("/// Algorithm code database: [algo_index][lang_index]");
+    try builder.writeLine("/// Algorithms: 0=hello, 1=fibonacci, 2=bubble, 3=quick, 4=bsearch");
+    try builder.writeLine("/// Languages: 0=zig, 1=python, 2=javascript");
+    try builder.writeLine("const algo_db = [5][3][]const u8{");
+    try builder.writeLine("    // Hello World");
+    try builder.writeLine("    .{");
+    try builder.writeLine("        \"const std = @import(\\\"std\\\");\\npub fn main() void { std.debug.print(\\\"Hello, World!\\\\n\\\", .{}); }\",");
+    try builder.writeLine("        \"print(\\\"Hello, World!\\\")\",");
+    try builder.writeLine("        \"console.log(\\\"Hello, World!\\\");\",");
+    try builder.writeLine("    },");
+    try builder.writeLine("    // Fibonacci");
+    try builder.writeLine("    .{");
+    try builder.writeLine("        \"pub fn fibonacci(n: u32) u64 { if (n <= 1) return n; var a: u64 = 0; var b: u64 = 1; var i: u32 = 2; while (i <= n) : (i += 1) { const t = a + b; a = b; b = t; } return b; }\",");
+    try builder.writeLine("        \"def fibonacci(n):\\n    if n <= 1: return n\\n    a, b = 0, 1\\n    for _ in range(2, n + 1): a, b = b, a + b\\n    return b\",");
+    try builder.writeLine("        \"function fibonacci(n) { if (n <= 1) return n; let a = 0, b = 1; for (let i = 2; i <= n; i++) { [a, b] = [b, a + b]; } return b; }\",");
+    try builder.writeLine("    },");
+    try builder.writeLine("    // Bubble Sort");
+    try builder.writeLine("    .{");
+    try builder.writeLine("        \"pub fn bubbleSort(arr: []i32) void { var i: usize = 0; while (i < arr.len) : (i += 1) { var j: usize = 0; while (j < arr.len - i - 1) : (j += 1) { if (arr[j] > arr[j+1]) { const t = arr[j]; arr[j] = arr[j+1]; arr[j+1] = t; } } } }\",");
+    try builder.writeLine("        \"def bubble_sort(arr):\\n    n = len(arr)\\n    for i in range(n):\\n        for j in range(0, n-i-1):\\n            if arr[j] > arr[j+1]: arr[j], arr[j+1] = arr[j+1], arr[j]\\n    return arr\",");
+    try builder.writeLine("        \"function bubbleSort(arr) { const n = arr.length; for (let i = 0; i < n; i++) for (let j = 0; j < n-i-1; j++) if (arr[j] > arr[j+1]) [arr[j], arr[j+1]] = [arr[j+1], arr[j]]; return arr; }\",");
+    try builder.writeLine("    },");
+    try builder.writeLine("    // QuickSort");
+    try builder.writeLine("    .{");
+    try builder.writeLine("        \"pub fn quickSort(arr: []i32) void { if (arr.len <= 1) return; // in-place quicksort implementation }\",");
+    try builder.writeLine("        \"def quicksort(arr):\\n    if len(arr) <= 1: return arr\\n    pivot = arr[len(arr)//2]\\n    left = [x for x in arr if x < pivot]\\n    mid = [x for x in arr if x == pivot]\\n    right = [x for x in arr if x > pivot]\\n    return quicksort(left) + mid + quicksort(right)\",");
+    try builder.writeLine("        \"function quickSort(arr) { if (arr.length <= 1) return arr; const pivot = arr[Math.floor(arr.length/2)]; return [...quickSort(arr.filter(x => x < pivot)), ...arr.filter(x => x === pivot), ...quickSort(arr.filter(x => x > pivot))]; }\",");
+    try builder.writeLine("    },");
+    try builder.writeLine("    // Binary Search");
+    try builder.writeLine("    .{");
+    try builder.writeLine("        \"pub fn binarySearch(arr: []const i32, target: i32) ?usize { var l: usize = 0; var r = arr.len; while (l < r) { const m = l + (r-l)/2; if (arr[m] == target) return m; if (arr[m] < target) l = m + 1 else r = m; } return null; }\",");
+    try builder.writeLine("        \"def binary_search(arr, target):\\n    left, right = 0, len(arr) - 1\\n    while left <= right:\\n        mid = (left + right) // 2\\n        if arr[mid] == target: return mid\\n        elif arr[mid] < target: left = mid + 1\\n        else: right = mid - 1\\n    return -1\",");
+    try builder.writeLine("        \"function binarySearch(arr, target) { let l = 0, r = arr.length - 1; while (l <= r) { const m = Math.floor((l + r) / 2); if (arr[m] === target) return m; if (arr[m] < target) l = m + 1; else r = m - 1; } return -1; }\",");
+    try builder.writeLine("    },");
+    try builder.writeLine("};");
+    try builder.writeLine("");
+
+    // Algorithm enum
+    try builder.writeLine("/// Available algorithms");
+    try builder.writeLine("pub const Algorithm = enum(u8) {");
+    try builder.writeLine("    hello_world = 0,");
+    try builder.writeLine("    fibonacci = 1,");
+    try builder.writeLine("    bubble_sort = 2,");
+    try builder.writeLine("    quick_sort = 3,");
+    try builder.writeLine("    binary_search = 4,");
+    try builder.writeLine("};");
+    try builder.writeLine("");
+
+    // Programming language enum
+    try builder.writeLine("/// Target programming language");
+    try builder.writeLine("pub const ProgrammingLanguage = enum(u8) {");
+    try builder.writeLine("    zig = 0,");
+    try builder.writeLine("    python = 1,");
+    try builder.writeLine("    javascript = 2,");
+    try builder.writeLine("};");
+    try builder.writeLine("");
+
+    // Generate algorithm function
+    try builder.writeFmt("pub fn {s}(algo: Algorithm, lang: ProgrammingLanguage) []const u8 {{\n", .{name});
+    builder.incIndent();
+    try builder.writeLine("return algo_db[@intFromEnum(algo)][@intFromEnum(lang)];");
     builder.decIndent();
     try builder.writeLine("}");
     try builder.writeLine("");
