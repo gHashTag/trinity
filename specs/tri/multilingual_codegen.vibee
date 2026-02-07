@@ -1,0 +1,267 @@
+# ============================================================================
+# Multilingual Code Generation v2 - Enhanced Russian/Chinese to Zig
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: multilingual_codegen
+version: "2.0.0"
+language: zig
+module: multilingual_codegen
+
+description: |
+  Enhanced multilingual code generation with template matching.
+  Accepts prompts in Russian, Chinese, or English and generates
+  Zig code regardless of input language. Uses VSA pattern matching
+  for intent detection and template-based code synthesis.
+
+constants:
+  MAX_PROMPT_LENGTH: 4096
+  MIN_CONFIDENCE: 0.7
+  SUPPORTED_LANGS: 3
+  TEMPLATE_COUNT: 50
+  PATTERN_DIMENSION: 512
+
+types:
+  Language:
+    description: "Detected input language"
+    enum:
+      - russian
+      - chinese
+      - english
+      - unknown
+
+  LanguageDetectionResult:
+    description: "Result of language detection"
+    fields:
+      language: Language
+      confidence: Float
+      script_detected: String
+
+  ProgrammingIntent:
+    description: "Detected programming intent"
+    enum:
+      - function_definition
+      - variable_declaration
+      - loop_construct
+      - conditional
+      - data_structure
+      - algorithm
+      - io_operation
+
+  MultilingualPrompt:
+    description: "Parsed multilingual prompt"
+    fields:
+      original: String
+      language: Language
+      normalized: String
+      keywords: List<String>
+      intent: ProgrammingIntent
+
+  CodeTemplate:
+    description: "Template for code generation"
+    fields:
+      intent: ProgrammingIntent
+      template: String
+      placeholders: List<String>
+      example: String
+
+  CodeGenConfig:
+    description: "Configuration for multilingual code gen"
+    fields:
+      target_language: String
+      preserve_comments: Bool
+      translate_identifiers: Bool
+      use_templates: Bool
+
+  CodeGenResult:
+    description: "Generated code result"
+    fields:
+      code: String
+      language_detected: Language
+      intent_detected: ProgrammingIntent
+      template_used: String
+      tokens_used: Int
+      generation_time_ms: Int
+
+  CodeGenStats:
+    description: "Statistics for code generation"
+    fields:
+      total_generations: Int
+      by_language: List<Int>
+      by_intent: List<Int>
+      avg_generation_ms: Float
+      template_hit_rate: Float
+
+behaviors:
+  - name: init
+    given: CodeGenConfig with settings
+    when: Initializing code generator
+    then: Return initialized generator with templates
+
+  - name: detectLanguage
+    given: Input text string
+    when: Analyzing text for language
+    then: Return LanguageDetectionResult with confidence score
+
+  - name: detectRussian
+    given: Text containing Cyrillic characters
+    when: Checking for Russian text
+    then: Return true if Cyrillic script detected
+
+  - name: detectChinese
+    given: Text containing CJK characters
+    when: Checking for Chinese text
+    then: Return true if CJK Unified Ideographs detected
+
+  - name: detectIntent
+    given: Normalized prompt keywords
+    when: Identifying programming task
+    then: Return ProgrammingIntent with confidence
+
+  - name: normalizePrompt
+    given: MultilingualPrompt with any language
+    when: Preparing for code generation
+    then: Extract programming keywords regardless of language
+
+  - name: extractKeywords
+    given: Text in any supported language
+    when: Identifying programming concepts
+    then: Return list of normalized English keywords
+
+  - name: selectTemplate
+    given: ProgrammingIntent and keywords
+    when: Finding matching template
+    then: Return best matching CodeTemplate
+
+  - name: generateCode
+    given: Normalized prompt and CodeGenConfig
+    when: Generating Zig code
+    then: Return CodeGenResult with generated code
+
+  - name: translateComment
+    given: Comment in Russian or Chinese
+    when: preserve_comments is true
+    then: Keep original comment with English translation
+
+  - name: getStats
+    given: Current generator state
+    when: Statistics requested
+    then: Return CodeGenStats with metrics
+
+keyword_mappings:
+  russian:
+    - original: "функция"
+      english: "function"
+    - original: "переменная"
+      english: "variable"
+    - original: "цикл"
+      english: "loop"
+    - original: "если"
+      english: "if"
+    - original: "иначе"
+      english: "else"
+    - original: "возврат"
+      english: "return"
+    - original: "структура"
+      english: "struct"
+    - original: "массив"
+      english: "array"
+    - original: "строка"
+      english: "string"
+    - original: "число"
+      english: "number"
+    - original: "печать"
+      english: "print"
+    - original: "сортировка"
+      english: "sort"
+    - original: "поиск"
+      english: "search"
+    - original: "фибоначчи"
+      english: "fibonacci"
+    - original: "факториал"
+      english: "factorial"
+    - original: "напиши"
+      english: "write"
+    - original: "создай"
+      english: "create"
+    - original: "вычисли"
+      english: "calculate"
+
+  chinese:
+    - original: "函数"
+      english: "function"
+    - original: "变量"
+      english: "variable"
+    - original: "循环"
+      english: "loop"
+    - original: "如果"
+      english: "if"
+    - original: "否则"
+      english: "else"
+    - original: "返回"
+      english: "return"
+    - original: "结构"
+      english: "struct"
+    - original: "数组"
+      english: "array"
+    - original: "字符串"
+      english: "string"
+    - original: "数字"
+      english: "number"
+    - original: "打印"
+      english: "print"
+    - original: "排序"
+      english: "sort"
+    - original: "搜索"
+      english: "search"
+    - original: "斐波那契"
+      english: "fibonacci"
+    - original: "阶乘"
+      english: "factorial"
+    - original: "写"
+      english: "write"
+    - original: "创建"
+      english: "create"
+    - original: "计算"
+      english: "calculate"
+
+cli:
+  flags:
+    - name: lang
+      short: l
+      type: String
+      default: "auto"
+      description: Force input language (auto, ru, zh, en)
+    - name: preserve-comments
+      type: Bool
+      default: true
+      description: Keep original language in comments
+    - name: use-templates
+      type: Bool
+      default: true
+      description: Use template matching for generation
+
+test_cases:
+  - name: detect_russian
+    input: "напиши функцию фибоначчи"
+    expected_language: russian
+    expected_keywords: ["function", "fibonacci"]
+
+  - name: detect_chinese
+    input: "写一个斐波那契函数"
+    expected_language: chinese
+    expected_keywords: ["function", "fibonacci"]
+
+  - name: detect_english
+    input: "write fibonacci function"
+    expected_language: english
+    expected_keywords: ["function", "fibonacci"]
+
+  - name: intent_detection
+    input: "создай структуру для пользователя"
+    expected_intent: data_structure
+
+  - name: template_matching
+    input: "напиши цикл for"
+    expected_intent: loop_construct

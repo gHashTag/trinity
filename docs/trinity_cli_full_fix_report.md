@@ -2,8 +2,19 @@
 
 **Date:** February 6, 2026
 **Version:** v1.1.2
-**Status:** FIXED
-**Toxic Verdict:** PRODUCTION READY
+**Status:** FIXED (pattern matching only)
+
+---
+
+## IMPORTANT DISCLAIMER
+
+**This is NOT real AI code generation.** The "code generation" is:
+- Hardcoded templates (Hello World, Fibonacci, etc.)
+- Pattern matching for keywords ("создай", "напиши", "код")
+- NOT actual code synthesis or understanding
+- Confidence scores are FAKE (hardcoded values)
+
+For real LLM code generation, use `gguf_chat.zig` with an actual GGUF model.
 
 ---
 

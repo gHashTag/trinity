@@ -309,10 +309,92 @@ pub const GGUFReader = struct {
     file: std.fs.File,
     header: GGUFHeader,
     metadata: std.StringHashMap(MetadataValue),
-    tensors: std.ArrayList(TensorInfo),
+    tensors: std.ArrayListUnmanaged(TensorInfo),
     alignment: u32,
     data_offset: u64,
-    tensor_names: std.ArrayList([]u8),
+    tensor_names: std.ArrayListUnmanaged([]u8),
+
+    /// Read u8 from file
+    fn readU8(self: *GGUFReader) !u8 {
+        var buf: [1]u8 = undefined;
+        const n = try self.file.readAll(&buf);
+        if (n != 1) return error.UnexpectedEof;
+        return buf[0];
+    }
+
+    /// Read i8 from file
+    fn readI8(self: *GGUFReader) !i8 {
+        return @bitCast(try self.readU8());
+    }
+
+    /// Read u16 from file (little-endian)
+    fn readU16(self: *GGUFReader) !u16 {
+        var buf: [2]u8 = undefined;
+        const n = try self.file.readAll(&buf);
+        if (n != 2) return error.UnexpectedEof;
+        return std.mem.readInt(u16, &buf, .little);
+    }
+
+    /// Read i16 from file (little-endian)
+    fn readI16(self: *GGUFReader) !i16 {
+        var buf: [2]u8 = undefined;
+        const n = try self.file.readAll(&buf);
+        if (n != 2) return error.UnexpectedEof;
+        return std.mem.readInt(i16, &buf, .little);
+    }
+
+    /// Read u32 from file (little-endian)
+    fn readU32(self: *GGUFReader) !u32 {
+        var buf: [4]u8 = undefined;
+        const n = try self.file.readAll(&buf);
+        if (n != 4) return error.UnexpectedEof;
+        return std.mem.readInt(u32, &buf, .little);
+    }
+
+    /// Read u64 from file (little-endian)
+    fn readU64(self: *GGUFReader) !u64 {
+        var buf: [8]u8 = undefined;
+        const n = try self.file.readAll(&buf);
+        if (n != 8) return error.UnexpectedEof;
+        return std.mem.readInt(u64, &buf, .little);
+    }
+
+    /// Read i32 from file (little-endian)
+    fn readI32(self: *GGUFReader) !i32 {
+        var buf: [4]u8 = undefined;
+        const n = try self.file.readAll(&buf);
+        if (n != 4) return error.UnexpectedEof;
+        return std.mem.readInt(i32, &buf, .little);
+    }
+
+    /// Read i64 from file (little-endian)
+    fn readI64(self: *GGUFReader) !i64 {
+        var buf: [8]u8 = undefined;
+        const n = try self.file.readAll(&buf);
+        if (n != 8) return error.UnexpectedEof;
+        return std.mem.readInt(i64, &buf, .little);
+    }
+
+    /// Read f32 from file (little-endian)
+    fn readF32(self: *GGUFReader) !f32 {
+        var buf: [4]u8 = undefined;
+        const n = try self.file.readAll(&buf);
+        if (n != 4) return error.UnexpectedEof;
+        return @bitCast(std.mem.readInt(u32, &buf, .little));
+    }
+
+    /// Read f64 from file (little-endian)
+    fn readF64(self: *GGUFReader) !f64 {
+        var buf: [8]u8 = undefined;
+        const n = try self.file.readAll(&buf);
+        if (n != 8) return error.UnexpectedEof;
+        return @bitCast(std.mem.readInt(u64, &buf, .little));
+    }
+
+    /// Read bytes from file
+    fn readBytes(self: *GGUFReader, buf: []u8) !usize {
+        return self.file.readAll(buf);
+    }
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !GGUFReader {
         const file = try std.fs.cwd().openFile(path, .{});
@@ -323,10 +405,10 @@ pub const GGUFReader = struct {
             .file = file,
             .header = undefined,
             .metadata = std.StringHashMap(MetadataValue).init(allocator),
-            .tensors = std.ArrayList(TensorInfo).init(allocator),
+            .tensors = .{},
             .alignment = DEFAULT_ALIGNMENT,
             .data_offset = 0,
-            .tensor_names = std.ArrayList([]u8).init(allocator),
+            .tensor_names = .{},
         };
 
         try reader.parseHeader();
@@ -340,8 +422,8 @@ pub const GGUFReader = struct {
         for (self.tensor_names.items) |name| {
             self.allocator.free(name);
         }
-        self.tensor_names.deinit();
-        self.tensors.deinit();
+        self.tensor_names.deinit(self.allocator);
+        self.tensors.deinit(self.allocator);
         // Free metadata strings
         var it = self.metadata.iterator();
         while (it.next()) |entry| {
@@ -355,25 +437,23 @@ pub const GGUFReader = struct {
     }
 
     fn parseHeader(self: *GGUFReader) !void {
-        const r = self.file.reader();
-        self.header.magic = try r.readInt(u32, .little);
+        self.header.magic = try self.readU32();
         if (self.header.magic != GGUF_MAGIC) {
             return error.InvalidMagic;
         }
-        self.header.version = try r.readInt(u32, .little);
+        self.header.version = try self.readU32();
         if (self.header.version < 2 or self.header.version > 3) {
             return error.UnsupportedVersion;
         }
-        self.header.tensor_count = try r.readInt(u64, .little);
-        self.header.metadata_kv_count = try r.readInt(u64, .little);
+        self.header.tensor_count = try self.readU64();
+        self.header.metadata_kv_count = try self.readU64();
     }
 
     fn readString(self: *GGUFReader) ![]u8 {
-        const r = self.file.reader();
-        const len = try r.readInt(u64, .little);
+        const len = try self.readU64();
         if (len > 1024 * 1024) return error.StringTooLong;
         const str = try self.allocator.alloc(u8, @intCast(len));
-        const bytes_read = try r.readAtLeast(str, str.len);
+        const bytes_read = try self.readBytes(str);
         if (bytes_read != str.len) {
             self.allocator.free(str);
             return error.UnexpectedEof;
@@ -382,23 +462,22 @@ pub const GGUFReader = struct {
     }
 
     fn readMetadataValue(self: *GGUFReader, vtype: GGUFValueType) !MetadataValue {
-        const r = self.file.reader();
         return switch (vtype) {
-            .UINT8 => MetadataValue{ .uint8 = try r.readInt(u8, .little) },
-            .INT8 => MetadataValue{ .int8 = try r.readInt(i8, .little) },
-            .UINT16 => MetadataValue{ .uint16 = try r.readInt(u16, .little) },
-            .INT16 => MetadataValue{ .int16 = try r.readInt(i16, .little) },
-            .UINT32 => MetadataValue{ .uint32 = try r.readInt(u32, .little) },
-            .INT32 => MetadataValue{ .int32 = try r.readInt(i32, .little) },
-            .FLOAT32 => MetadataValue{ .float32 = @bitCast(try r.readInt(u32, .little)) },
-            .BOOL => MetadataValue{ .bool_ = (try r.readInt(u8, .little)) != 0 },
+            .UINT8 => MetadataValue{ .uint8 = try self.readU8() },
+            .INT8 => MetadataValue{ .int8 = try self.readI8() },
+            .UINT16 => MetadataValue{ .uint16 = try self.readU16() },
+            .INT16 => MetadataValue{ .int16 = try self.readI16() },
+            .UINT32 => MetadataValue{ .uint32 = try self.readU32() },
+            .INT32 => MetadataValue{ .int32 = try self.readI32() },
+            .FLOAT32 => MetadataValue{ .float32 = try self.readF32() },
+            .BOOL => MetadataValue{ .bool_ = (try self.readU8()) != 0 },
             .STRING => MetadataValue{ .string = try self.readString() },
-            .UINT64 => MetadataValue{ .uint64 = try r.readInt(u64, .little) },
-            .INT64 => MetadataValue{ .int64 = try r.readInt(i64, .little) },
-            .FLOAT64 => MetadataValue{ .float64 = @bitCast(try r.readInt(u64, .little)) },
+            .UINT64 => MetadataValue{ .uint64 = try self.readU64() },
+            .INT64 => MetadataValue{ .int64 = try self.readI64() },
+            .FLOAT64 => MetadataValue{ .float64 = try self.readF64() },
             .ARRAY => blk: {
-                const arr_type: GGUFValueType = @enumFromInt(try r.readInt(u32, .little));
-                const arr_len = try r.readInt(u64, .little);
+                const arr_type: GGUFValueType = @enumFromInt(try self.readU32());
+                const arr_len = try self.readU64();
                 if (arr_len > 1024 * 1024) return error.ArrayTooLong;
                 const arr = try self.allocator.alloc(MetadataValue, @intCast(arr_len));
                 for (arr, 0..) |*item, i| {
@@ -416,7 +495,7 @@ pub const GGUFReader = struct {
             const key = try self.readString();
             defer self.allocator.free(key);
 
-            const vtype: GGUFValueType = @enumFromInt(try self.file.reader().readInt(u32, .little));
+            const vtype: GGUFValueType = @enumFromInt(try self.readU32());
             const value = try self.readMetadataValue(vtype);
 
             // Check for alignment
@@ -433,25 +512,23 @@ pub const GGUFReader = struct {
     }
 
     fn parseTensorInfos(self: *GGUFReader) !void {
-        const r = self.file.reader();
-
         var i: u64 = 0;
         while (i < self.header.tensor_count) : (i += 1) {
             const name = try self.readString();
-            try self.tensor_names.append(name);
+            try self.tensor_names.append(self.allocator, name);
 
-            const n_dims = try r.readInt(u32, .little);
+            const n_dims = try self.readU32();
             var dims = [_]u64{1} ** 4;
 
             var d: usize = 0;
             while (d < n_dims) : (d += 1) {
-                dims[d] = try r.readInt(u64, .little);
+                dims[d] = try self.readU64();
             }
 
-            const tensor_type: GGMLType = @enumFromInt(try r.readInt(u32, .little));
-            const offset = try r.readInt(u64, .little);
+            const tensor_type: GGMLType = @enumFromInt(try self.readU32());
+            const offset = try self.readU64();
 
-            try self.tensors.append(TensorInfo{
+            try self.tensors.append(self.allocator, TensorInfo{
                 .name = name,
                 .n_dims = n_dims,
                 .dims = dims,
@@ -487,7 +564,7 @@ pub const GGUFReader = struct {
         errdefer self.allocator.free(data);
 
         try self.file.seekTo(self.data_offset + info.offset);
-        const bytes_read = try self.file.reader().readAtLeast(data, data.len);
+        const bytes_read = try self.readBytes(data);
         if (bytes_read != data.len) {
             return error.UnexpectedEof;
         }
@@ -1152,9 +1229,16 @@ test "dequantize_block_unsupported" {
 // Near-instant loading via mmap, shared memory across processes
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// Page size - use system page size for mmap alignment
+/// System page size for mmap alignment (16KB on Apple Silicon, 4KB on x86)
+const PAGE_SIZE: usize = switch (@import("builtin").cpu.arch) {
+    .aarch64 => 16384,
+    else => 4096,
+};
+
 /// Memory-mapped file handle
 pub const MmapFile = struct {
-    data: []align(std.mem.page_size) u8,
+    data: []align(PAGE_SIZE) u8,
     size: usize,
 
     pub fn init(path: []const u8) !MmapFile {
@@ -1214,8 +1298,8 @@ pub const MmapGGUFReader = struct {
     mmap: MmapFile,
     header: GGUFHeader,
     metadata: std.StringHashMap(MetadataValue),
-    tensors: std.ArrayList(TensorInfo),
-    tensor_names: std.ArrayList([]u8),
+    tensors: std.ArrayListUnmanaged(TensorInfo),
+    tensor_names: std.ArrayListUnmanaged([]u8),
     data_offset: u64,
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !MmapGGUFReader {
@@ -1227,8 +1311,8 @@ pub const MmapGGUFReader = struct {
             .mmap = mmap,
             .header = undefined,
             .metadata = std.StringHashMap(MetadataValue).init(allocator),
-            .tensors = std.ArrayList(TensorInfo).init(allocator),
-            .tensor_names = std.ArrayList([]u8).init(allocator),
+            .tensors = .{},
+            .tensor_names = .{},
             .data_offset = 0,
         };
 
@@ -1243,8 +1327,8 @@ pub const MmapGGUFReader = struct {
         for (self.tensor_names.items) |name| {
             self.allocator.free(name);
         }
-        self.tensor_names.deinit();
-        self.tensors.deinit();
+        self.tensor_names.deinit(self.allocator);
+        self.tensors.deinit(self.allocator);
         var it = self.metadata.iterator();
         while (it.next()) |entry| {
             switch (entry.value_ptr.*) {
@@ -1362,7 +1446,7 @@ pub const MmapGGUFReader = struct {
 
             const name = try self.allocator.alloc(u8, name_data.len);
             @memcpy(name, name_data);
-            try self.tensor_names.append(name);
+            try self.tensor_names.append(self.allocator, name);
 
             // Read dimensions
             const n_dims = self.mmap.readU32(offset);
@@ -1381,7 +1465,7 @@ pub const MmapGGUFReader = struct {
             const tensor_offset = self.mmap.readU64(offset);
             offset += 8;
 
-            try self.tensors.append(TensorInfo{
+            try self.tensors.append(self.allocator, TensorInfo{
                 .name = name,
                 .n_dims = n_dims,
                 .dims = dims,

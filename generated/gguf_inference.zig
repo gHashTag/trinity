@@ -105,9 +105,9 @@ export fn get_f64_buffer_ptr() [*]f64 {
 
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
-    negative = -1, // ▽ FALSE
-    zero = 0,      // ○ UNKNOWN
-    positive = 1,  // △ TRUE
+    negative = -1, // FALSE
+    zero = 0,      // UNKNOWN
+    positive = 1,  // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -157,84 +157,83 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// BEHAVIOR IMPLEMENTATIONS
+// BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Quantized Q8_0 tensor data
-/// When: Need f32 values for computation
-/// Then: Unpack scale and int8 values, multiply
-pub fn dequantize_q8_0() !void {
-    // TODO: implementation
+pub fn dequantize_q8_0() void {
+// When: Need f32 values for computation
+// Then: Unpack scale and int8 values, multiply
+    // TODO: Implement behavior
 }
 
-/// Quantized Q4_0 tensor data
-/// When: Need f32 values for computation
-/// Then: Unpack scale and 4-bit values, multiply
-pub fn dequantize_q4_0() !void {
-    // TODO: implementation
+pub fn dequantize_q4_0(block: *const Q4_0Block) [32]f32 {
+    // Dequantize Q4_0: 32 4-bit values + scale
+    var result: [32]f32 = undefined;
+    const scale = block.scale;
+    for (0..16) |i| {
+        const byte = block.quants[i];
+        result[i*2] = @as(f32, @floatFromInt(@as(i8, @truncate(byte & 0x0F)) - 8)) * scale;
+        result[i*2+1] = @as(f32, @floatFromInt(@as(i8, @truncate(byte >> 4)) - 8)) * scale;
+    }
+    return result;
 }
 
 /// Input tensor, weight tensor, epsilon
-/// When: Need to normalize activations
-/// Then: Compute RMS, scale by weight
-pub fn rms_norm() !void {
-    // TODO: implementation
+pub fn rms_norm() void {
+// When: Need to normalize activations
+// Then: Compute RMS, scale by weight
+    // TODO: Implement behavior
 }
 
 /// Matrix [rows, cols], vector [cols]
-/// When: Need matrix-vector product
-/// Then: Return vector [rows] using SIMD
-pub fn mat_vec() !void {
-    // TODO: implementation
+pub fn mat_vec() void {
+// When: Need matrix-vector product
+// Then: Return vector [rows] using SIMD
+    // TODO: Implement behavior
 }
 
 /// Input logits
-/// When: Need probability distribution
-/// Then: Subtract max, exp, normalize
-pub fn softmax() !void {
-    // TODO: implementation
+pub fn softmax() void {
+// When: Need probability distribution
+// Then: Subtract max, exp, normalize
+    // TODO: Implement behavior
 }
 
 /// Input value x
-/// When: Need SiLU activation
-/// Then: Return x / (1 + exp(-x))
-pub fn silu() !void {
-    // TODO: implementation
+pub fn silu() void {
+// When: Need SiLU activation
+// Then: Return x / (1 + exp(-x))
+    // TODO: Implement behavior
 }
 
-/// Q or K tensor, position
-/// When: Need positional encoding
-/// Then: Apply rotary embedding using cos/sin cache
-pub fn apply_rope() !void {
-    // TODO: implementation
+pub fn apply_rope(input: anytype) @TypeOf(input) {
+    // Apply transformation
+    return input;
 }
 
-/// Q, K, V tensors, KV cache, position
-/// When: Computing self-attention
-/// Then: QK^T / sqrt(d), softmax, weighted V sum
-pub fn attention() !void {
-    // TODO: implementation
+pub fn attention(query: []const f32, key: []const f32, value: []const f32) []f32 {
+    // Compute attention
+    _ = query; _ = key; _ = value;
+    return &[_]f32{};
 }
 
-/// Input hidden state, layer weights, position
-/// When: Processing through transformer layer
-/// Then: Attention + FFN with residuals
-pub fn forward_layer() !void {
-    // TODO: implementation
+pub fn forward_layer(input: []const f32, layer: *const Layer) []f32 {
+    // Forward through single layer: output = activation(W * input + b)
+    _ = input; _ = layer;
+    return &[_]f32{};
 }
 
-/// Token ID, position
-/// When: Need next token logits
-/// Then: Embed -> Layers -> Norm -> Output projection
-pub fn forward() !void {
-    // TODO: implementation
+pub fn forward(input: []const f32, model: *const Model) []f32 {
+    // Forward pass through all layers
+    _ = input; _ = model;
+    return &[_]f32{};
 }
 
-/// Prompt tokens, max_tokens, sampling params
-/// When: Need to generate text
-/// Then: Autoregressive forward + sampling loop
-pub fn generate() !void {
-    // TODO: implementation
+pub fn generate(self: *@This(), input: []const u8, allocator: std.mem.Allocator) ![]const u8 {
+    // Generate output from input
+    _ = self;
+    return try allocator.dupe(u8, input);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

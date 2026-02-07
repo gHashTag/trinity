@@ -1,0 +1,257 @@
+# ============================================================================
+# Metal GPU Scale - 10,000+ ops/s IGLA Acceleration
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: metal_gpu_scale
+version: "1.0.0"
+language: zig
+module: metal_gpu_scale
+
+description: |
+  High-performance Metal GPU acceleration for IGLA VSA operations.
+  Targets 10,000+ ops/s through advanced compute shaders.
+  Optimized for Apple Silicon M1/M2/M3/M4 Pro/Max/Ultra.
+  Includes batch processing, memory coalescing, and shader fusion.
+
+constants:
+  TARGET_OPS_PER_SEC: 10000
+  METAL_THREADGROUP_SIZE: 256
+  METAL_SIMD_WIDTH: 32
+  METAL_MAX_THREADS_PER_GROUP: 1024
+  METAL_MAX_BUFFER_SIZE: 268435456
+  EMBEDDING_DIM: 1024
+  VOCAB_SIZE: 100000
+  BATCH_SIZE: 4096
+  CACHE_LINE_SIZE: 128
+  SHARED_MEMORY_SIZE: 32768
+
+types:
+  MetalDeviceType:
+    description: "Apple Silicon GPU type"
+    enum:
+      - m1
+      - m1_pro
+      - m1_max
+      - m1_ultra
+      - m2
+      - m2_pro
+      - m2_max
+      - m2_ultra
+      - m3
+      - m3_pro
+      - m3_max
+      - m4
+
+  MetalConfig:
+    description: "Metal compute configuration"
+    fields:
+      device_type: MetalDeviceType
+      max_threads: Int
+      shared_memory: Int
+      use_simd_groups: Bool
+      use_tile_shaders: Bool
+      enable_fusion: Bool
+
+  MetalBuffer:
+    description: "GPU buffer wrapper"
+    fields:
+      ptr: Int
+      size: Int
+      label: String
+      is_private: Bool
+      is_shared: Bool
+
+  ComputePipeline:
+    description: "Metal compute pipeline state"
+    fields:
+      name: String
+      function: String
+      threadgroup_size: Int
+      max_threads: Int
+
+  KernelConfig:
+    description: "Configuration for compute kernel"
+    fields:
+      threadgroup_width: Int
+      threadgroup_height: Int
+      grid_width: Int
+      grid_height: Int
+      shared_memory_size: Int
+
+  BatchOperation:
+    description: "Batched VSA operation"
+    fields:
+      op_type: String
+      batch_size: Int
+      input_buffers: List<MetalBuffer>
+      output_buffer: MetalBuffer
+      kernel_config: KernelConfig
+
+  PerformanceMetrics:
+    description: "GPU performance metrics"
+    fields:
+      ops_per_second: Float
+      gpu_utilization: Float
+      memory_bandwidth_gbps: Float
+      shader_occupancy: Float
+      simd_efficiency: Float
+
+  BenchmarkResult:
+    description: "Benchmark run result"
+    fields:
+      operation: String
+      batch_size: Int
+      total_ops: Int
+      duration_ms: Float
+      ops_per_second: Float
+      passed: Bool
+
+behaviors:
+  - name: init
+    given: MetalConfig with device settings
+    when: Initializing Metal compute
+    then: Create device, command queue, compile shaders
+
+  - name: detectDevice
+    given: System hardware
+    when: Auto-detecting Apple Silicon
+    then: Return MetalDeviceType and capabilities
+
+  - name: createBuffer
+    given: Size and storage mode
+    when: Allocating GPU memory
+    then: Return MetalBuffer with device pointer
+
+  - name: compileKernels
+    given: Metal shader source
+    when: Building compute pipelines
+    then: Compile all kernels, cache pipelines
+
+  - name: bindBatch
+    given: Batch of vector pairs
+    when: Executing bind on GPU
+    then: Run fused kernel, return results
+
+  - name: bundleBatch
+    given: Batch of vector groups
+    when: Executing bundle on GPU
+    then: Run majority vote kernel
+
+  - name: dotProductBatch
+    given: Query vectors and vocabulary
+    When: Computing similarities
+    then: Run SIMD-optimized dot product kernel
+
+  - name: topKBatch
+    given: Similarity scores and k
+    when: Selecting top-k matches
+    then: Run parallel selection kernel
+
+  - name: fuseOperations
+    given: Sequence of operations
+    when: Optimizing kernel launches
+    then: Fuse into single kernel dispatch
+
+  - name: optimizeMemoryLayout
+    given: Buffer access patterns
+    when: Improving memory bandwidth
+    then: Coalesce accesses, align to cache lines
+
+  - name: runBenchmark
+    given: Operation type and batch size
+    when: Measuring performance
+    then: Return BenchmarkResult with ops/s
+
+  - name: getMetrics
+    given: Current GPU state
+    when: Querying performance
+    then: Return PerformanceMetrics
+
+  - name: syncToHost
+    given: GPU buffer
+    when: Reading results
+    then: Copy to host memory
+
+metal_shaders:
+  - name: bind_batch_fused
+    description: "Fused batch bind with memory coalescing"
+    threadgroup_size: 256
+    simd_groups: 8
+    shared_memory: 4096
+    optimizations:
+      - "Coalesced memory access"
+      - "SIMD group shuffle"
+      - "Thread-local accumulation"
+
+  - name: bundle_batch_parallel
+    description: "Parallel majority vote with reduction"
+    threadgroup_size: 256
+    simd_groups: 8
+    shared_memory: 8192
+    optimizations:
+      - "Hierarchical reduction"
+      - "Ballot operations for majority"
+      - "Warp-level primitives"
+
+  - name: dot_product_tiled
+    description: "Tiled dot product for large batches"
+    threadgroup_size: 256
+    tile_size: 32
+    shared_memory: 16384
+    optimizations:
+      - "Tile-based memory access"
+      - "Shared memory caching"
+      - "Register blocking"
+
+  - name: top_k_bitonic
+    description: "Bitonic sort for top-k selection"
+    threadgroup_size: 512
+    stages: 20
+    optimizations:
+      - "In-place bitonic sort"
+      - "Early termination"
+      - "Parallel merge"
+
+performance_targets:
+  bind_batch:
+    target_ops_s: 50000
+    batch_size: 4096
+
+  bundle_batch:
+    target_ops_s: 20000
+    batch_size: 1024
+
+  dot_product_batch:
+    target_ops_s: 10000
+    batch_size: 4096
+
+  top_k:
+    target_ops_s: 100000
+    k: 10
+
+  combined_analogy:
+    target_ops_s: 10000
+    description: "Full analogy pipeline"
+
+test_cases:
+  - name: achieves_10k_ops
+    given: "M1 Pro or better"
+    expected: "10,000+ ops/s on analogies"
+
+  - name: gpu_utilization_high
+    given: "Batch size 4096"
+    expected: "GPU utilization > 90%"
+
+  - name: memory_bandwidth_optimal
+    given: "Coalesced access pattern"
+    expected: "Bandwidth > 200 GB/s"
+
+  - name: simd_efficiency_high
+    given: "SIMD group operations"
+    expected: "SIMD efficiency > 95%"
+
+  - name: scales_with_batch
+    given: "Batch 1024 → 4096"
+    expected: "Linear scaling"

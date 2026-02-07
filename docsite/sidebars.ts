@@ -5,6 +5,15 @@ const sidebars: SidebarsConfig = {
     'intro',
     {
       type: 'category',
+      label: 'Overview',
+      items: [
+        'overview/introduction',
+        'overview/roadmap',
+        'overview/tech-tree',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Getting Started',
       items: [
         'getting-started/quickstart',
@@ -111,6 +120,7 @@ const sidebars: SidebarsConfig = {
         'research/bitnet-report',
         'research/trinity-node-ffi',
         'research/bibliography',
+        'research/references',
       ],
     },
     'faq',

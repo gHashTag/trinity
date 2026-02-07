@@ -1,10 +1,16 @@
 // Trinity Parallel Compute
-// Multi-threaded VSA operations simulating GPU-like parallelism
+// Multi-threaded VSA operations using CPU threads
 //
-// This module demonstrates GPU compute patterns using CPU threads.
-// When GPU is available, these can be replaced with actual CUDA/OpenCL kernels.
+// IMPLEMENTATION STATUS:
+// - parallelBind, parallelBundle, parallelDot: WORKING (spawn threads per call)
+// - pooledBind, pooledBundle, pooledDot: WORKING (create pool per call)
+// - getPool(): NOT IMPLEMENTED (returns error.NotImplemented)
+// - batchBind, batchSimilarity: WORKING
 //
-// ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
+// NOTE: The pooled operations create a new thread pool for each call.
+// This is less efficient than a singleton pool but still works correctly.
+// The getPool() function was intended for a singleton pool but never implemented.
+//
 // φ² + 1/φ² = 3
 
 const std = @import("std");
@@ -61,9 +67,12 @@ pub const ThreadPool = struct {
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 
 /// Get or create global thread pool
+/// WARNING: NOT IMPLEMENTED - this was planned for a singleton pool pattern
+/// but was never finished. Use pooledBind/pooledBundle/pooledDot instead,
+/// which create their own pools per call.
 pub fn getPool() !*ThreadPool {
-    // For simplicity, create new pool each time (still faster than spawn)
-    // In production, would use proper singleton
+    // TODO: Implement proper singleton pool with thread-safe initialization
+    // For now, use the pooled* functions which create pools per call
     return error.NotImplemented;
 }
 

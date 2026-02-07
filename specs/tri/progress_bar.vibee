@@ -1,0 +1,132 @@
+# ============================================================================
+# Progress Bar - Visual Feedback for Long Operations
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: progress_bar
+version: "1.0.0"
+language: zig
+module: progress_bar
+
+description: |
+  Provides visual progress feedback for long-running operations.
+  Includes spinner animation, progress bar, and percentage display.
+  Update rate optimized for human perception (100-200ms).
+
+constants:
+  DEFAULT_UPDATE_MS: 100
+  SPINNER_FRAMES: 4
+  BAR_WIDTH: 40
+  MIN_UPDATE_MS: 50
+  MAX_UPDATE_MS: 500
+
+types:
+  ProgressStyle:
+    description: "Style of progress indicator"
+    enum:
+      - spinner
+      - bar
+      - percentage
+      - combined
+
+  ProgressConfig:
+    description: "Configuration for progress display"
+    fields:
+      style: ProgressStyle
+      update_ms: Int
+      show_elapsed: Bool
+      show_eta: Bool
+      bar_width: Int
+
+  ProgressState:
+    description: "Current state of progress"
+    fields:
+      current: Int
+      total: Int
+      started_at: Int
+      last_update: Int
+      message: String
+
+  ProgressStats:
+    description: "Statistics for progress session"
+    fields:
+      elapsed_ms: Int
+      items_per_second: Float
+      estimated_remaining_ms: Int
+
+behaviors:
+  - name: init
+    given: ProgressConfig with style and update rate
+    when: Starting a long operation
+    then: Return initialized ProgressState
+
+  - name: update
+    given: Current progress count
+    when: Progress has changed
+    then: Update state and render if interval elapsed
+
+  - name: render
+    given: ProgressState
+    when: Update interval reached
+    then: Output appropriate progress indicator
+
+  - name: renderSpinner
+    given: Frame index
+    when: Spinner style selected
+    then: Output rotating character
+
+  - name: renderBar
+    given: Current and total counts
+    when: Bar style selected
+    then: Output progress bar with fill
+
+  - name: renderPercentage
+    given: Current and total counts
+    when: Percentage style selected
+    then: Output percentage value
+
+  - name: complete
+    given: ProgressState
+    when: Operation finished
+    then: Clear progress line and show completion
+
+  - name: getStats
+    given: ProgressState
+    when: Stats requested
+    then: Return ProgressStats with timing info
+
+spinner_frames:
+  - "|"
+  - "/"
+  - "-"
+  - "\\"
+
+cli:
+  flags:
+    - name: progress
+      short: p
+      type: Bool
+      default: false
+      description: Show progress indicator
+    - name: progress-style
+      type: String
+      default: "spinner"
+      description: Progress style (spinner, bar, percentage, combined)
+
+test_cases:
+  - name: spinner_rotates
+    given: "4 updates"
+    expected: "Cycles through | / - \\"
+
+  - name: bar_fills
+    given: "50% progress"
+    expected: "[====================                    ] 50%"
+
+  - name: percentage_accurate
+    given: "75 of 100"
+    expected: "75.0%"
+
+  - name: completion_clears
+    given: "100% reached"
+    expected: "Progress line cleared, completion shown"
