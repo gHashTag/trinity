@@ -40,6 +40,7 @@ types:
       - technology
       - humor
       - advice
+      - coding
       - unknown
 
   ConversationTone:
@@ -158,6 +159,21 @@ behaviors:
     when: Cannot confidently respond
     then: Return honest uncertainty with guidance
 
+  - name: respondCoding
+    given: Code request from user
+    when: User asks for code or algorithm
+    then: Return fluent coding response with code snippet
+
+  - name: respondCodeHelp
+    given: Programming help request
+    when: User needs coding assistance
+    then: Return helpful programming guidance in user language
+
+  - name: respondAlgorithm
+    given: Algorithm request
+    when: User asks for specific algorithm implementation
+    then: Return algorithm code in Zig Python or JavaScript
+
   - name: generateFollowUp
     given: Current response
     when: Keeping conversation flowing
@@ -197,3 +213,15 @@ test_cases:
   - name: humor_request
     given: "Расскажи шутку"
     expected: "Appropriate joke in Russian"
+
+  - name: coding_request_ru
+    given: "Напиши код сортировки пузырьком"
+    expected: "BubbleSort implementation with Russian intro"
+
+  - name: coding_request_en
+    given: "Write me a fibonacci function"
+    expected: "Fibonacci implementation in Zig Python or JS"
+
+  - name: algorithm_request
+    given: "实现二分查找"
+    expected: "Binary search implementation with Chinese intro"
