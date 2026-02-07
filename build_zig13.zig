@@ -204,6 +204,24 @@ pub fn build(b: *std.Build) void {
     vsa_imported_step.dependOn(&run_vsa_imported.step);
     test_step.dependOn(&run_vsa_imported.step);
 
+    // Real VSA Encoder tests (Cycle 51)
+    const encoder_files = [_][]const u8{
+        "generated/vsa_real_text_encoder.zig",
+        "generated/vsa_real_vision_encoder.zig",
+        "generated/vsa_real_voice_encoder.zig",
+        "generated/vsa_real_code_encoder.zig",
+    };
+    for (encoder_files) |enc_file| {
+        const enc_tests = b.addTest(.{
+            .root_source_file = b.path(enc_file),
+            .target = target,
+            .optimize = optimize,
+        });
+        enc_tests.root_module.addImport("vsa", vsa_mod);
+        const run_enc = b.addRunArtifact(enc_tests);
+        test_step.dependOn(&run_enc.step);
+    }
+
     // VIBEE Compiler CLI
     const vibee = b.addExecutable(.{
         .name = "vibee",

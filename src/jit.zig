@@ -30,7 +30,7 @@ pub const JitCompiler = struct {
     /// Allocator
     allocator: std.mem.Allocator,
     /// Executable memory (mmap'd)
-    exec_mem: ?[]align(std.heap.page_size_min) u8 = null,
+    exec_mem: ?[]align(std.mem.page_size) u8 = null,
 
     const Self = @This();
 
@@ -260,7 +260,7 @@ pub const JitCompiler = struct {
         if (code_size == 0) return error.EmptyCode;
 
         // Allocate executable memory
-        const page_size = std.heap.page_size_min;
+        const page_size = std.mem.page_size;
         const alloc_size = std.mem.alignForward(usize, code_size, page_size);
 
         // mmap with PROT_READ | PROT_WRITE first
@@ -679,7 +679,7 @@ test "JitCompiler dot product correctness" {
     @memcpy(mem[0..code_size], compiler.code.items);
     try std.posix.mprotect(mem, std.posix.PROT.READ | std.posix.PROT.EXEC);
 
-    const func: *const fn (*const [dim]i8, *const [dim]i8) callconv(.c) i64 = @ptrCast(mem.ptr);
+    const func: *const fn (*const [dim]i8, *const [dim]i8) callconv(.C) i64 = @ptrCast(mem.ptr);
 
     // Create test data
     const a = [dim]i8{ 1, -1, 1, 0, 1, -1, 0, 1 };
