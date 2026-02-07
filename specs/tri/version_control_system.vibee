@@ -1,0 +1,841 @@
+# ============================================================================
+# Version Control System - Git Integration for Local Development
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: version_control_system
+version: "1.0.0"
+language: zig
+module: version_control_system
+
+description: |
+  Version control system with Git integration.
+  Builds on Cycle 22 File I/O System.
+  18 algorithms in 10 languages = 180 templates.
+  NEW: Git operations, branch management, history.
+  NEW: Remote operations, stash, tags.
+  Complete local development with version control.
+
+constants:
+  HIGH_CONFIDENCE: 0.95
+  MED_CONFIDENCE: 0.75
+  LOW_CONFIDENCE: 0.5
+  UNKNOWN_CONFIDENCE: 0.2
+  ALGORITHM_COUNT: 18
+  LANGUAGE_COUNT: 10
+  TEMPLATE_COMBINATIONS: 180
+  MAX_COMMIT_MESSAGE: 500
+  MAX_BRANCH_NAME: 100
+  MAX_STASH_COUNT: 50
+
+types:
+  SystemMode:
+    description: "Operating mode"
+    enum:
+      - chat
+      - code
+      - hybrid
+      - execute
+      - validate
+      - repl
+      - debug
+      - file
+      - project
+      - git
+      - unknown
+
+  InputLanguage:
+    description: "Detected input language"
+    enum:
+      - russian
+      - chinese
+      - english
+
+  OutputLanguage:
+    description: "Code output language (10 total)"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+      - go
+      - rust
+      - cpp
+      - java
+      - csharp
+      - swift
+
+  ChatTopic:
+    description: "Conversation topics"
+    enum:
+      - greeting
+      - farewell
+      - help
+      - capabilities
+      - feelings
+      - weather
+      - time
+      - jokes
+      - facts
+      - memory
+      - execution
+      - repl
+      - debug
+      - file
+      - project
+      - git
+      - unknown
+
+  Algorithm:
+    description: "Supported algorithms (18)"
+    enum:
+      - bubble_sort
+      - quick_sort
+      - merge_sort
+      - heap_sort
+      - linear_search
+      - binary_search
+      - fibonacci
+      - factorial
+      - is_prime
+      - stack
+      - queue
+      - linked_list
+      - binary_tree
+      - hash_map
+      - bfs
+      - dfs
+      - dijkstra
+      - topological_sort
+      - unknown
+
+  PersonalityTrait:
+    description: "Bot personality"
+    enum:
+      - friendly
+      - helpful
+      - honest
+      - curious
+      - humble
+
+  ExecutionStatus:
+    description: "Execution status"
+    enum:
+      - pending
+      - running
+      - success
+      - error
+      - timeout
+      - cancelled
+
+  ErrorType:
+    description: "Type of error"
+    enum:
+      - compile_error
+      - runtime_error
+      - timeout_error
+      - memory_error
+      - file_error
+      - git_error
+      - merge_conflict
+      - unknown_error
+
+  GitOperation:
+    description: "Git operation type"
+    enum:
+      - init
+      - add
+      - commit
+      - status
+      - log
+      - diff
+      - show
+      - branch
+      - checkout
+      - merge
+      - push
+      - pull
+      - fetch
+      - stash
+      - tag
+      - reset
+      - revert
+      - clone
+
+  FileStatus:
+    description: "Git file status"
+    enum:
+      - untracked
+      - modified
+      - staged
+      - deleted
+      - renamed
+      - copied
+      - unmerged
+      - ignored
+
+  BranchInfo:
+    description: "Git branch information"
+    fields:
+      name: String
+      is_current: Bool
+      is_remote: Bool
+      last_commit: String
+      ahead: Int
+      behind: Int
+
+  CommitInfo:
+    description: "Git commit information"
+    fields:
+      hash: String
+      short_hash: String
+      author: String
+      email: String
+      date: Int
+      message: String
+      parent_hash: String
+
+  FileChange:
+    description: "Changed file information"
+    fields:
+      path: String
+      status: FileStatus
+      additions: Int
+      deletions: Int
+
+  DiffHunk:
+    description: "Diff hunk"
+    fields:
+      old_start: Int
+      old_count: Int
+      new_start: Int
+      new_count: Int
+      content: String
+
+  StashEntry:
+    description: "Stash entry"
+    fields:
+      index: Int
+      message: String
+      branch: String
+      timestamp: Int
+
+  TagInfo:
+    description: "Git tag information"
+    fields:
+      name: String
+      commit_hash: String
+      message: String
+      is_annotated: Bool
+      timestamp: Int
+
+  RemoteInfo:
+    description: "Git remote information"
+    fields:
+      name: String
+      url: String
+      fetch_url: String
+      push_url: String
+
+  MergeResult:
+    description: "Result of merge operation"
+    fields:
+      success: Bool
+      has_conflicts: Bool
+      conflicts: List<String>
+      merged_files: Int
+      commit_hash: String
+
+  GitStatus:
+    description: "Full git status"
+    fields:
+      branch: String
+      is_clean: Bool
+      staged: List<FileChange>
+      modified: List<FileChange>
+      untracked: List<String>
+      ahead: Int
+      behind: Int
+
+  GitResult:
+    description: "Result of git operation"
+    fields:
+      success: Bool
+      operation: GitOperation
+      message: String
+      error_message: String
+      commit_hash: String
+      affected_files: Int
+
+  FileInfo:
+    description: "File information"
+    fields:
+      path: String
+      name: String
+      extension: String
+      size: Int
+      created_at: Int
+      modified_at: Int
+
+  ProjectInfo:
+    description: "Project information"
+    fields:
+      name: String
+      path: String
+      files: List<FileInfo>
+      main_file: String
+      language: OutputLanguage
+      is_git_repo: Bool
+      current_branch: String
+
+  ExecutionResult:
+    description: "Execution result"
+    fields:
+      status: ExecutionStatus
+      output: String
+      error_message: String
+      error_type: ErrorType
+      execution_time_ms: Int
+      memory_used_bytes: Int
+
+  ReplState:
+    description: "REPL state"
+    fields:
+      variables: List<String>
+      history: List<String>
+      current_language: OutputLanguage
+      current_file: FileInfo
+      project: ProjectInfo
+
+  MemoryEntry:
+    description: "Memory entry"
+    fields:
+      query: String
+      response: String
+      topic: ChatTopic
+      algorithm: Algorithm
+      language: OutputLanguage
+      timestamp: Int
+
+  UserPreferences:
+    description: "User preferences"
+    fields:
+      favorite_language: OutputLanguage
+      preferred_input: InputLanguage
+      default_project_path: String
+      git_author_name: String
+      git_author_email: String
+
+  SessionMemory:
+    description: "Session memory"
+    fields:
+      entries: List<MemoryEntry>
+      preferences: UserPreferences
+      turn_count: Int
+      session_start: Int
+      current_project: ProjectInfo
+
+  GitContext:
+    description: "Full system context with Git"
+    fields:
+      current_mode: SystemMode
+      current_topic: ChatTopic
+      current_algorithm: Algorithm
+      input_language: InputLanguage
+      output_language: OutputLanguage
+      memory: SessionMemory
+      user_mood: String
+      last_execution: ExecutionResult
+      repl_state: ReplState
+      git_status: GitStatus
+      current_branch: BranchInfo
+      last_commit: CommitInfo
+
+  GitRequest:
+    description: "Request with Git context"
+    fields:
+      text: String
+      code: String
+      context: GitContext
+      git_operation: GitOperation
+      target_path: String
+      commit_message: String
+      branch_name: String
+
+  GitResponse:
+    description: "Response with Git result"
+    fields:
+      text: String
+      code: String
+      mode: SystemMode
+      topic: ChatTopic
+      algorithm: Algorithm
+      output_language: OutputLanguage
+      confidence: Float
+      is_honest: Bool
+      personality: PersonalityTrait
+      memory_updated: Bool
+      execution_result: ExecutionResult
+      git_result: GitResult
+      repl_state: ReplState
+
+behaviors:
+  # Mode Detection
+  - name: detectMode
+    given: User input
+    when: Analyzing intent
+    then: Return SystemMode (includes git)
+
+  - name: detectInputLanguage
+    given: User input
+    when: Analyzing text patterns
+    then: Return InputLanguage
+
+  - name: detectOutputLanguage
+    given: User input
+    when: Analyzing code request
+    then: Return OutputLanguage
+
+  - name: detectTopic
+    given: User input
+    when: Analyzing conversation
+    then: Return ChatTopic (includes git)
+
+  - name: detectAlgorithm
+    given: User input
+    when: Analyzing code request
+    then: Return Algorithm
+
+  - name: detectGitOperation
+    given: User input
+    when: Analyzing git command
+    then: Return GitOperation
+
+  # Chat Responses (17 topics)
+  - name: respondGreeting
+    given: Greeting detected
+    when: User says hello
+    then: Return warm greeting
+
+  - name: respondFarewell
+    given: Farewell detected
+    when: User says goodbye
+    then: Return farewell
+
+  - name: respondHelp
+    given: Help request
+    when: User asks for help
+    then: Return guidance with git features
+
+  - name: respondCapabilities
+    given: Capabilities query
+    when: User asks what bot can do
+    then: Return 180 templates + git
+
+  - name: respondFeelings
+    given: Feelings question
+    when: User asks about emotions
+    then: Return HONEST AI response
+
+  - name: respondWeather
+    given: Weather question
+    when: User asks about weather
+    then: Return HONEST cannot check
+
+  - name: respondTime
+    given: Time question
+    when: User asks about time
+    then: Return HONEST cannot check
+
+  - name: respondJoke
+    given: Joke request
+    when: User wants humor
+    then: Return programming joke
+
+  - name: respondFact
+    given: Fact request
+    when: User wants fact
+    then: Return tech fact
+
+  - name: respondMemory
+    given: Memory query
+    when: User asks about history
+    then: Return session history
+
+  - name: respondExecution
+    given: Execution query
+    when: User asks about running code
+    then: Return execution capabilities
+
+  - name: respondRepl
+    given: REPL query
+    when: User asks about REPL
+    then: Return REPL capabilities
+
+  - name: respondDebug
+    given: Debug query
+    when: User asks about debugging
+    then: Return debug capabilities
+
+  - name: respondFile
+    given: File query
+    when: User asks about files
+    then: Return file capabilities
+
+  - name: respondProject
+    given: Project query
+    when: User asks about projects
+    then: Return project capabilities
+
+  - name: respondGit
+    given: Git query
+    when: User asks about git
+    then: Return git capabilities
+
+  - name: respondUnknown
+    given: Unknown topic
+    when: Cannot understand
+    then: Return honest uncertainty
+
+  # Code Generation (18 algorithms)
+  - name: generateBubbleSort
+    given: Output language
+    when: User requests bubble sort
+    then: Return bubble sort in 10 languages
+
+  - name: generateQuickSort
+    given: Output language
+    when: User requests quick sort
+    then: Return quick sort in 10 languages
+
+  - name: generateMergeSort
+    given: Output language
+    when: User requests merge sort
+    then: Return merge sort in 10 languages
+
+  - name: generateHeapSort
+    given: Output language
+    when: User requests heap sort
+    then: Return heap sort in 10 languages
+
+  - name: generateLinearSearch
+    given: Output language
+    when: User requests linear search
+    then: Return linear search in 10 languages
+
+  - name: generateBinarySearch
+    given: Output language
+    when: User requests binary search
+    then: Return binary search in 10 languages
+
+  - name: generateFibonacci
+    given: Output language
+    when: User requests fibonacci
+    then: Return fibonacci in 10 languages
+
+  - name: generateFactorial
+    given: Output language
+    when: User requests factorial
+    then: Return factorial in 10 languages
+
+  - name: generateIsPrime
+    given: Output language
+    when: User requests prime check
+    then: Return prime check in 10 languages
+
+  - name: generateStack
+    given: Output language
+    when: User requests stack
+    then: Return stack in 10 languages
+
+  - name: generateQueue
+    given: Output language
+    when: User requests queue
+    then: Return queue in 10 languages
+
+  - name: generateLinkedList
+    given: Output language
+    when: User requests linked list
+    then: Return linked list in 10 languages
+
+  - name: generateBinaryTree
+    given: Output language
+    when: User requests binary tree
+    then: Return binary tree in 10 languages
+
+  - name: generateHashMap
+    given: Output language
+    when: User requests hash map
+    then: Return hash map in 10 languages
+
+  - name: generateBFS
+    given: Output language
+    when: User requests BFS
+    then: Return BFS in 10 languages
+
+  - name: generateDFS
+    given: Output language
+    when: User requests DFS
+    then: Return DFS in 10 languages
+
+  - name: generateDijkstra
+    given: Output language
+    when: User requests Dijkstra
+    then: Return Dijkstra in 10 languages
+
+  - name: generateTopologicalSort
+    given: Output language
+    when: User requests topological sort
+    then: Return topological sort in 10 languages
+
+  # Memory Management
+  - name: initMemory
+    given: New session
+    when: First message
+    then: Return empty SessionMemory
+
+  - name: addMemoryEntry
+    given: Query and response
+    when: After processing
+    then: Add entry to memory
+
+  - name: recallMemory
+    given: Current query
+    when: Looking for context
+    then: Return relevant memories
+
+  - name: updatePreferences
+    given: User behavior
+    when: Detecting patterns
+    then: Update UserPreferences
+
+  - name: summarizeSession
+    given: Session memory
+    When: User asks for history
+    then: Return session summary
+
+  - name: clearMemory
+    given: Clear request
+    when: User wants fresh start
+    then: Clear all memory
+
+  # Execution Engine
+  - name: executeCode
+    given: Code snippet
+    when: User wants to run code
+    then: Execute in sandbox
+
+  - name: validateOutput
+    given: Execution result
+    when: Checking correctness
+    then: Return validation result
+
+  # NEW: Git Core Operations (Cycle 23)
+  - name: gitInit
+    given: Directory path
+    when: User initializes repo
+    then: Create new git repository
+
+  - name: gitAdd
+    given: File paths
+    when: User stages files
+    then: Add files to staging
+
+  - name: gitCommit
+    given: Commit message
+    when: User commits changes
+    then: Create new commit
+
+  - name: gitStatus
+    given: Repository path
+    when: User checks status
+    then: Return GitStatus
+
+  # NEW: Git History Operations
+  - name: gitLog
+    given: Options
+    when: User views history
+    then: Return list of commits
+
+  - name: gitDiff
+    given: Commit or file
+    when: User views changes
+    then: Return diff hunks
+
+  - name: gitShow
+    given: Commit hash
+    when: User views commit
+    then: Return CommitInfo
+
+  # NEW: Git Branch Operations
+  - name: gitBranch
+    given: Branch name
+    when: User creates branch
+    then: Create new branch
+
+  - name: gitCheckout
+    given: Branch or commit
+    when: User switches branch
+    then: Checkout target
+
+  - name: gitMerge
+    given: Branch name
+    when: User merges branch
+    then: Return MergeResult
+
+  - name: gitDeleteBranch
+    given: Branch name
+    when: User deletes branch
+    then: Remove branch
+
+  - name: gitListBranches
+    given: Include remotes
+    when: User lists branches
+    then: Return branch list
+
+  # NEW: Git Remote Operations
+  - name: gitPush
+    given: Remote and branch
+    when: User pushes changes
+    then: Push to remote
+
+  - name: gitPull
+    given: Remote and branch
+    when: User pulls changes
+    then: Pull from remote
+
+  - name: gitFetch
+    given: Remote
+    when: User fetches updates
+    then: Fetch from remote
+
+  - name: gitClone
+    given: Repository URL
+    when: User clones repo
+    then: Clone repository
+
+  - name: gitRemoteAdd
+    given: Name and URL
+    when: User adds remote
+    then: Add remote
+
+  - name: gitRemoteList
+    given: Repository
+    when: User lists remotes
+    then: Return remote list
+
+  # NEW: Git Stash Operations
+  - name: gitStash
+    given: Message
+    when: User stashes changes
+    then: Stash working directory
+
+  - name: gitStashPop
+    given: Stash index
+    when: User pops stash
+    then: Apply and remove stash
+
+  - name: gitStashList
+    given: Repository
+    when: User lists stashes
+    then: Return stash list
+
+  - name: gitStashDrop
+    given: Stash index
+    when: User drops stash
+    then: Remove stash entry
+
+  # NEW: Git Tag Operations
+  - name: gitTag
+    given: Tag name and message
+    when: User creates tag
+    then: Create new tag
+
+  - name: gitTagList
+    given: Repository
+    when: User lists tags
+    then: Return tag list
+
+  - name: gitTagDelete
+    given: Tag name
+    when: User deletes tag
+    then: Remove tag
+
+  # NEW: Git Undo Operations
+  - name: gitReset
+    given: Commit and mode
+    when: User resets changes
+    then: Reset to commit
+
+  - name: gitRevert
+    given: Commit hash
+    when: User reverts commit
+    then: Create revert commit
+
+  # Unified Processing
+  - name: processGit
+    given: GitRequest
+    when: Processing user input
+    then: Return GitResponse
+
+  - name: handleChat
+    given: Chat mode
+    when: Processing chat
+    then: Return chat response
+
+  - name: handleCode
+    given: Code mode
+    when: Processing code
+    then: Return code
+
+  - name: handleGit
+    given: Git mode
+    when: Git operation
+    then: Process git operation
+
+  # Context Management
+  - name: initContext
+    given: New session
+    when: First message
+    then: Return initialized GitContext
+
+  - name: updateContext
+    given: Current context
+    when: After processing
+    then: Return updated context
+
+  - name: selectPersonality
+    given: Mode and topic
+    when: Choosing style
+    then: Return PersonalityTrait
+
+  - name: validateResponse
+    given: GitResponse
+    when: Checking quality
+    then: Reject generic patterns
+
+test_cases:
+  - name: git_init
+    given: "Initialize git repository"
+    expected: "Repository initialized"
+
+  - name: git_commit
+    given: "Commit changes with message"
+    expected: "Commit created"
+
+  - name: git_branch
+    given: "Create new branch feature"
+    expected: "Branch created"
+
+  - name: git_merge
+    given: "Merge branch feature"
+    expected: "Branch merged"
+
+  - name: git_push
+    given: "Push to origin"
+    expected: "Changes pushed"
+
+  - name: git_stash
+    given: "Stash changes"
+    expected: "Changes stashed"

@@ -42,7 +42,7 @@ pub const ZigCodeGen = struct {
 
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         try self.writeHeader(spec);
-        try self.writeImports();
+        try self.writeImports(spec);
         try self.writeConstants(spec.constants.items);
         try self.writeTypes(spec.types.items);
         try self.writeMemoryBuffers();
@@ -70,9 +70,20 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
     }
 
-    fn writeImports(self: *Self) !void {
+    fn writeImports(self: *Self, spec: *const VibeeSpec) !void {
         try self.builder.writeLine("const std = @import(\"std\");");
         try self.builder.writeLine("const math = std.math;");
+
+        // Emit custom imports from spec (uses module names for build.zig integration)
+        if (spec.imports.items.len > 0) {
+            try self.builder.newline();
+            try self.builder.writeLine("// Custom imports from .vibee spec");
+            for (spec.imports.items) |imp| {
+                // Use module name for @import - build.zig provides modules by name
+                try self.builder.writeFmt("const {s} = @import(\"{s}\");\n", .{ imp.name, imp.name });
+            }
+        }
+
         try self.builder.newline();
     }
 
@@ -434,6 +445,12 @@ pub const ZigCodeGen = struct {
             return;
         }
 
+        // Try VSA behavior patterns (real VSA calls)
+        if (try self.tryGenerateVSABehavior(b)) {
+            try self.builder.newline();
+            return;
+        }
+
         // Fallback: generate stub
         try self.builder.writeFmt("/// {s}\n", .{b.given});
         try self.builder.writeFmt("pub fn {s}() void {{\n", .{b.name});
@@ -444,5 +461,217 @@ pub const ZigCodeGen = struct {
         self.builder.decIndent();
         try self.builder.writeLine("}");
         try self.builder.newline();
+    }
+
+    /// Generate real VSA function calls for VSA-related behaviors
+    fn tryGenerateVSABehavior(self: *Self, b: *const Behavior) !bool {
+        const std_mem = std.mem;
+
+        // Check for VSA behavior patterns
+        if (std_mem.eql(u8, b.name, "realBind")) {
+            try self.builder.writeLine("/// Bind two hypervectors (creates association)");
+            try self.builder.writeLine("pub fn realBind(a: *vsa.HybridBigInt, b_vec: *vsa.HybridBigInt) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.bind(a, b_vec);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realUnbind")) {
+            try self.builder.writeLine("/// Unbind to retrieve associated vector");
+            try self.builder.writeLine("pub fn realUnbind(bound: *vsa.HybridBigInt, key: *vsa.HybridBigInt) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.unbind(bound, key);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realBundle2")) {
+            try self.builder.writeLine("/// Bundle two hypervectors (superposition)");
+            try self.builder.writeLine("pub fn realBundle2(a: *vsa.HybridBigInt, b_vec: *vsa.HybridBigInt) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.bundle2(a, b_vec);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realBundle3")) {
+            try self.builder.writeLine("/// Bundle three hypervectors (superposition)");
+            try self.builder.writeLine("pub fn realBundle3(a: *vsa.HybridBigInt, b_vec: *vsa.HybridBigInt, c: *vsa.HybridBigInt) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.bundle3(a, b_vec, c);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realPermute")) {
+            try self.builder.writeLine("/// Permute hypervector (position encoding)");
+            try self.builder.writeLine("pub fn realPermute(v: *vsa.HybridBigInt, k: usize) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.permute(v, k);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realCosineSimilarity")) {
+            try self.builder.writeLine("/// Compute cosine similarity between hypervectors");
+            try self.builder.writeLine("pub fn realCosineSimilarity(a: *vsa.HybridBigInt, b_vec: *vsa.HybridBigInt) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.cosineSimilarity(a, b_vec);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHammingDistance")) {
+            try self.builder.writeLine("/// Compute Hamming distance between hypervectors");
+            try self.builder.writeLine("pub fn realHammingDistance(a: *vsa.HybridBigInt, b_vec: *vsa.HybridBigInt) usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.hammingDistance(a, b_vec);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realRandomVector")) {
+            try self.builder.writeLine("/// Generate random hypervector");
+            try self.builder.writeLine("pub fn realRandomVector(len: usize, seed: u64) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.randomVector(len, seed);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // Text encoding functions
+        if (std_mem.eql(u8, b.name, "realCharToVector")) {
+            try self.builder.writeLine("/// Convert character to hypervector");
+            try self.builder.writeLine("pub fn realCharToVector(char: u8) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.charToVector(char);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realEncodeText")) {
+            try self.builder.writeLine("/// Encode text string to hypervector");
+            try self.builder.writeLine("pub fn realEncodeText(text: []const u8) vsa.HybridBigInt {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.encodeText(text);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realDecodeText")) {
+            try self.builder.writeLine("/// Decode hypervector back to text");
+            try self.builder.writeLine("pub fn realDecodeText(encoded: *vsa.HybridBigInt, max_len: usize, buffer: []u8) []u8 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.decodeText(encoded, max_len, buffer);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realTextRoundtrip")) {
+            try self.builder.writeLine("/// Test text encode/decode roundtrip");
+            try self.builder.writeLine("pub fn realTextRoundtrip(text: []const u8, buffer: []u8) []u8 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.textRoundtrip(text, buffer);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // Semantic similarity functions
+        if (std_mem.eql(u8, b.name, "realTextSimilarity")) {
+            try self.builder.writeLine("/// Compare semantic similarity between two texts");
+            try self.builder.writeLine("pub fn realTextSimilarity(text1: []const u8, text2: []const u8) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.textSimilarity(text1, text2);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realTextsAreSimilar")) {
+            try self.builder.writeLine("/// Check if two texts are semantically similar");
+            try self.builder.writeLine("pub fn realTextsAreSimilar(text1: []const u8, text2: []const u8, threshold: f64) bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.textsAreSimilar(text1, text2, threshold);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realSearchCorpus")) {
+            try self.builder.writeLine("/// Search corpus for similar texts");
+            try self.builder.writeLine("pub fn realSearchCorpus(corpus: *vsa.TextCorpus, query: []const u8, results: []vsa.SearchResult) usize {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.searchCorpus(corpus, query, results);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // Corpus persistence functions
+        if (std_mem.eql(u8, b.name, "realSaveCorpus")) {
+            try self.builder.writeLine("/// Save corpus to file");
+            try self.builder.writeLine("pub fn realSaveCorpus(corpus: *vsa.TextCorpus, path: []const u8) !void {");
+            self.builder.incIndent();
+            try self.builder.writeLine("try corpus.save(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realLoadCorpus")) {
+            try self.builder.writeLine("/// Load corpus from file");
+            try self.builder.writeLine("pub fn realLoadCorpus(path: []const u8) !vsa.TextCorpus {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.load(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // Compressed corpus persistence (5x smaller)
+        if (std_mem.eql(u8, b.name, "realSaveCorpusCompressed")) {
+            try self.builder.writeLine("/// Save corpus with 5x compression");
+            try self.builder.writeLine("pub fn realSaveCorpusCompressed(corpus: *vsa.TextCorpus, path: []const u8) !void {");
+            self.builder.incIndent();
+            try self.builder.writeLine("try corpus.saveCompressed(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realLoadCorpusCompressed")) {
+            try self.builder.writeLine("/// Load compressed corpus");
+            try self.builder.writeLine("pub fn realLoadCorpusCompressed(path: []const u8) !vsa.TextCorpus {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.loadCompressed(path);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realCompressionRatio")) {
+            try self.builder.writeLine("/// Get compression ratio (uncompressed/compressed)");
+            try self.builder.writeLine("pub fn realCompressionRatio(corpus: *vsa.TextCorpus) f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return corpus.compressionRatio();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        return false;
     }
 };

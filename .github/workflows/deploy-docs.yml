@@ -1,10 +1,11 @@
-name: Deploy Documentation to GitHub Pages
+name: Deploy Website + Docs to GitHub Pages
 
 on:
   push:
     branches:
       - main
     paths:
+      - 'website/**'
       - 'docsite/**'
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
@@ -21,9 +22,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: docsite
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,11 +31,32 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
+      # Build Website (Vite React SPA)
+      - name: Install website dependencies
+        working-directory: website
         run: npm install
 
       - name: Build website
+        working-directory: website
         run: npm run build
+
+      # Build Docsite (Docusaurus)
+      - name: Install docsite dependencies
+        working-directory: docsite
+        run: npm install
+
+      - name: Build docsite
+        working-directory: docsite
+        run: npm run build
+
+      # Combine builds
+      - name: Combine website + docs
+        run: |
+          mkdir -p combined
+          cp -r website/dist/* combined/
+          mkdir -p combined/docs
+          cp -r docsite/build/* combined/docs/
+          touch combined/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -45,7 +64,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docsite/build
+          path: combined
 
   deploy:
     environment:

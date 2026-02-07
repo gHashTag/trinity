@@ -5,6 +5,8 @@
 
 const std = @import("std");
 const golden_chain = @import("golden_chain.zig");
+const tvc_gate_mod = @import("tvc_gate.zig");
+const tvc_corpus = @import("tvc_corpus");
 
 const ChainLink = golden_chain.ChainLink;
 const PipelineState = golden_chain.PipelineState;
@@ -13,6 +15,8 @@ const LinkResult = golden_chain.LinkResult;
 const LinkMetrics = golden_chain.LinkMetrics;
 const ChainError = golden_chain.ChainError;
 const NeedleStatus = golden_chain.NeedleStatus;
+const TVCGate = tvc_gate_mod.TVCGate;
+const TVCCorpus = tvc_corpus.TVCCorpus;
 
 // ============================================================================
 // COLORS
@@ -35,11 +39,35 @@ pub const PipelineExecutor = struct {
     state: PipelineState,
     verbose: bool,
 
+    /// TVC Corpus for distributed learning
+    tvc_corpus: ?*TVCCorpus,
+
+    /// TVC Gate for cache hit/miss
+    tvc_gate: ?*TVCGate,
+
+    /// Generated response (for TVC storage)
+    generated_response: ?[]const u8,
+
     pub fn init(allocator: std.mem.Allocator, version: u32, task: []const u8) PipelineExecutor {
         return .{
             .allocator = allocator,
             .state = PipelineState.init(allocator, version, task),
             .verbose = false,
+            .tvc_corpus = null,
+            .tvc_gate = null,
+            .generated_response = null,
+        };
+    }
+
+    /// Initialize with TVC support
+    pub fn initWithTVC(allocator: std.mem.Allocator, version: u32, task: []const u8, corpus: *TVCCorpus, gate: *TVCGate) PipelineExecutor {
+        return .{
+            .allocator = allocator,
+            .state = PipelineState.init(allocator, version, task),
+            .verbose = false,
+            .tvc_corpus = corpus,
+            .tvc_gate = gate,
+            .generated_response = null,
         };
     }
 
@@ -56,7 +84,8 @@ pub const PipelineExecutor = struct {
         self.state.status = .in_progress;
         self.printHeader();
 
-        var current_link: u8 = 1;
+        // Start from Link 0 (TVC Gate)
+        var current_link: u8 = 0;
         while (current_link <= 16) : (current_link += 1) {
             const link: ChainLink = @enumFromInt(current_link);
             self.state.phase = link;
@@ -77,6 +106,15 @@ pub const PipelineExecutor = struct {
                 result.status = .completed;
                 result.metrics = metrics;
                 self.printLinkSuccess(link, result.completed_at - start_time);
+
+                // Check TVC Gate hit - skip rest of pipeline
+                if (link == .tvc_gate and self.state.tvc_hit) {
+                    self.state.setResult(link, result);
+                    self.printTVCHit();
+                    self.state.status = .completed;
+                    self.printFooter();
+                    return;
+                }
             } else |err| {
                 result.status = .failed;
                 self.printLinkFailure(link, err);
@@ -121,8 +159,29 @@ pub const PipelineExecutor = struct {
             }
         }
 
+        // Post-pipeline: store response to TVC for future queries
+        self.storeToTVC();
+
         self.state.status = .completed;
         self.printFooter();
+    }
+
+    /// Store generated response to TVC (post-pipeline)
+    fn storeToTVC(self: *PipelineExecutor) void {
+        if (self.tvc_gate) |gate| {
+            if (self.generated_response) |response| {
+                _ = gate.storeResponse(self.state.task_description, response) catch |err| {
+                    std.debug.print("{s}[TVC] Failed to store response: {}{s}\n", .{ GOLDEN, err, RESET });
+                };
+            }
+        }
+    }
+
+    /// Print TVC cache hit message
+    fn printTVCHit(self: *PipelineExecutor) void {
+        _ = self;
+        std.debug.print("\n{s}TVC GATE HIT - Returning cached response{s}\n", .{ GREEN, RESET });
+        std.debug.print("{s}Pipeline skipped (distributed learning in action){s}\n\n", .{ GOLDEN, RESET });
     }
 
     // ========================================================================
@@ -131,6 +190,7 @@ pub const PipelineExecutor = struct {
 
     pub fn executeLink(self: *PipelineExecutor, link: ChainLink) ChainError!LinkMetrics {
         return switch (link) {
+            .tvc_gate => self.executeTVCGate(),
             .baseline => self.executeBaseline(),
             .metrics => self.executeMetrics(),
             .pas_analyze => self.executePasAnalyze(),
@@ -148,6 +208,44 @@ pub const PipelineExecutor = struct {
             .git => self.executeGit(),
             .loop_decision => self.executeLoopDecision(),
         };
+    }
+
+    /// Execute TVC Gate (Link 0) - Mandatory first check
+    fn executeTVCGate(self: *PipelineExecutor) ChainError!LinkMetrics {
+        var metrics = LinkMetrics{};
+
+        // If no TVC gate configured, continue pipeline
+        if (self.tvc_gate == null) {
+            std.debug.print("  {s}[TVC] No corpus configured, continuing pipeline{s}\n", .{ GRAY, RESET });
+            return metrics;
+        }
+
+        const gate = self.tvc_gate.?;
+        const result = gate.execute(self.state.task_description);
+
+        switch (result) {
+            .hit => |h| {
+                // Cache hit - store response and set flag
+                self.state.cached_response = h.response;
+                self.state.tvc_hit = true;
+                metrics.improvement_rate = 1.0; // 100% improvement (skipped pipeline)
+                metrics.coverage_percent = h.similarity * 100.0;
+
+                std.debug.print("  {s}[TVC] Cache HIT: similarity={d:.3}, entry={d}{s}\n", .{
+                    GREEN,
+                    h.similarity,
+                    h.entry_id,
+                    RESET,
+                });
+            },
+            .miss => {
+                // Cache miss - continue pipeline
+                metrics.improvement_rate = 0.0;
+                std.debug.print("  {s}[TVC] Cache MISS, continuing pipeline{s}\n", .{ CYAN, RESET });
+            },
+        }
+
+        return metrics;
     }
 
     // ========================================================================
@@ -348,9 +446,14 @@ pub const PipelineExecutor = struct {
         std.debug.print("\n{s}", .{GOLDEN});
         std.debug.print("================================================================\n", .{});
         std.debug.print("              GOLDEN CHAIN PIPELINE v{d}\n", .{self.state.version});
-        std.debug.print("              16 Links | Fail-Fast | phi^-1 Threshold\n", .{});
+        std.debug.print("              17 Links | TVC Gate | Fail-Fast | phi^-1\n", .{});
         std.debug.print("================================================================{s}\n\n", .{RESET});
-        std.debug.print("Task: {s}\n\n", .{self.state.task_description});
+        std.debug.print("Task: {s}\n", .{self.state.task_description});
+        if (self.tvc_gate != null) {
+            std.debug.print("{s}TVC: Distributed Learning Enabled{s}\n\n", .{ GREEN, RESET });
+        } else {
+            std.debug.print("{s}TVC: Disabled (no corpus){s}\n\n", .{ GRAY, RESET });
+        }
     }
 
     fn printFooter(self: *PipelineExecutor) void {
@@ -365,11 +468,19 @@ pub const PipelineExecutor = struct {
         std.debug.print("================================================================\n", .{});
         std.debug.print("              GOLDEN CHAIN CLOSED\n", .{});
         std.debug.print("================================================================{s}\n", .{RESET});
-        std.debug.print("\nCompleted: {d}/16 links\n", .{self.state.getCompletedCount()});
+        std.debug.print("\nCompleted: {d}/17 links\n", .{self.state.getCompletedCount()});
+
+        // Show TVC status
+        if (self.state.tvc_hit) {
+            std.debug.print("{s}TVC: Cache HIT (pipeline skipped){s}\n", .{ GREEN, RESET });
+        } else if (self.tvc_gate != null) {
+            std.debug.print("TVC: Cache MISS (result stored)\n", .{});
+        }
+
         std.debug.print("Improvement: {d:.2}%\n", .{self.state.improvement_rate * 100});
         std.debug.print("Threshold: {d:.2}% (phi^-1)\n", .{golden_chain.PHI_INVERSE * 100});
         std.debug.print("\n{s}{s}{s}\n", .{ status_color, needle.getMessage(), RESET });
-        std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | TVC DISTRIBUTED{s}\n", .{ GOLDEN, RESET });
     }
 
     fn printLinkStart(self: *PipelineExecutor, link: ChainLink) void {
@@ -441,4 +552,22 @@ test "PipelineExecutor initialization" {
 
     try std.testing.expectEqual(@as(u32, 1), executor.state.version);
     try std.testing.expectEqual(PipelineStatus.not_started, executor.state.status);
+    try std.testing.expect(executor.tvc_gate == null);
+    try std.testing.expect(executor.tvc_corpus == null);
+}
+
+test "PipelineExecutor with TVC" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var corpus = TVCCorpus.init();
+    var gate = TVCGate.init(&corpus);
+
+    var executor = PipelineExecutor.initWithTVC(allocator, 1, "test task", &corpus, &gate);
+    defer executor.deinit();
+
+    try std.testing.expect(executor.tvc_gate != null);
+    try std.testing.expect(executor.tvc_corpus != null);
+    try std.testing.expectEqual(ChainLink.tvc_gate, executor.state.phase);
 }

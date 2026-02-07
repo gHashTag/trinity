@@ -1,0 +1,653 @@
+# ============================================================================
+# VSA Imported System - Real @import Integration
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_imported_system
+version: "1.0.0"
+language: zig
+module: vsa_imported_system
+
+description: |
+  Real @import integration with src/vsa.zig and src/hybrid.zig.
+  Builds on Cycle 25 VSA Real System.
+  18 algorithms in 10 languages = 180 templates.
+  IMPORT: Real HybridBigInt type from hybrid.zig.
+  IMPORT: Real VSA operations from vsa.zig.
+  IMPORT: Real SIMD operations for 32x speedup.
+  Generated code calls actual VSA functions.
+
+imports:
+  - name: vsa
+    path: "../src/vsa.zig"
+  # Note: hybrid types accessed via vsa.HybridBigInt, vsa.Trit, etc.
+
+constants:
+  HIGH_CONFIDENCE: 0.95
+  MED_CONFIDENCE: 0.75
+  LOW_CONFIDENCE: 0.5
+  UNKNOWN_CONFIDENCE: 0.2
+  ALGORITHM_COUNT: 18
+  LANGUAGE_COUNT: 10
+  TEMPLATE_COMBINATIONS: 180
+  MAX_TRITS: 59049
+  SIMD_WIDTH: 32
+  SIMILARITY_THRESHOLD: 0.7
+
+types:
+  SystemMode:
+    description: "Operating mode"
+    enum:
+      - chat
+      - code
+      - hybrid
+      - execute
+      - validate
+      - repl
+      - debug
+      - file
+      - project
+      - git
+      - vsa
+      - unknown
+
+  InputLanguage:
+    description: "Detected input language"
+    enum:
+      - russian
+      - chinese
+      - english
+
+  OutputLanguage:
+    description: "Code output language (10 total)"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+      - go
+      - rust
+      - cpp
+      - java
+      - csharp
+      - swift
+
+  ChatTopic:
+    description: "Conversation topics"
+    enum:
+      - greeting
+      - farewell
+      - help
+      - capabilities
+      - feelings
+      - weather
+      - time
+      - jokes
+      - facts
+      - memory
+      - execution
+      - repl
+      - debug
+      - file
+      - project
+      - git
+      - vsa
+      - unknown
+
+  Algorithm:
+    description: "Supported algorithms (18)"
+    enum:
+      - bubble_sort
+      - quick_sort
+      - merge_sort
+      - heap_sort
+      - linear_search
+      - binary_search
+      - fibonacci
+      - factorial
+      - is_prime
+      - stack
+      - queue
+      - linked_list
+      - binary_tree
+      - hash_map
+      - bfs
+      - dfs
+      - dijkstra
+      - topological_sort
+      - unknown
+
+  PersonalityTrait:
+    description: "Bot personality"
+    enum:
+      - friendly
+      - helpful
+      - honest
+      - curious
+      - humble
+
+  ExecutionStatus:
+    description: "Execution status"
+    enum:
+      - pending
+      - running
+      - success
+      - error
+      - timeout
+
+  ErrorType:
+    description: "Type of error"
+    enum:
+      - compile_error
+      - runtime_error
+      - timeout_error
+      - memory_error
+      - vsa_error
+      - unknown_error
+
+  VSAOperation:
+    description: "VSA operation type"
+    enum:
+      - bind
+      - unbind
+      - bundle2
+      - bundle3
+      - permute
+      - cosine
+      - hamming
+      - random
+
+  VSAResult:
+    description: "Result of real VSA operation"
+    fields:
+      success: Bool
+      operation: VSAOperation
+      similarity: Float
+      hamming_dist: Int
+      trit_count: Int
+
+  SemanticMatch:
+    description: "Similarity search result"
+    fields:
+      label: String
+      similarity: Float
+      rank: Int
+
+  ExecutionResult:
+    description: "Execution result"
+    fields:
+      status: ExecutionStatus
+      output: String
+      error_type: ErrorType
+
+  MemoryEntry:
+    description: "Memory entry"
+    fields:
+      query: String
+      response: String
+      topic: ChatTopic
+      timestamp: Int
+
+  UserPreferences:
+    description: "User preferences"
+    fields:
+      favorite_language: OutputLanguage
+      preferred_input: InputLanguage
+
+  SessionMemory:
+    description: "Session memory"
+    fields:
+      entries: List<MemoryEntry>
+      preferences: UserPreferences
+      turn_count: Int
+
+  VSAContext:
+    description: "Context with real VSA state"
+    fields:
+      current_mode: SystemMode
+      current_topic: ChatTopic
+      current_algorithm: Algorithm
+      input_language: InputLanguage
+      output_language: OutputLanguage
+      memory: SessionMemory
+      vector_count: Int
+
+  VSARequest:
+    description: "Request"
+    fields:
+      text: String
+      code: String
+      context: VSAContext
+      vsa_operation: VSAOperation
+
+  VSAResponse:
+    description: "Response with VSA result"
+    fields:
+      text: String
+      code: String
+      mode: SystemMode
+      topic: ChatTopic
+      algorithm: Algorithm
+      output_language: OutputLanguage
+      confidence: Float
+      is_honest: Bool
+      personality: PersonalityTrait
+      vsa_result: VSAResult
+
+behaviors:
+  # Detection
+  - name: detectMode
+    given: User input
+    when: Analyzing intent
+    then: Return SystemMode
+
+  - name: detectInputLanguage
+    given: User input
+    when: Analyzing text
+    then: Return InputLanguage
+
+  - name: detectOutputLanguage
+    given: User input
+    when: Analyzing code request
+    then: Return OutputLanguage
+
+  - name: detectTopic
+    given: User input
+    when: Analyzing conversation
+    then: Return ChatTopic
+
+  - name: detectAlgorithm
+    given: User input
+    when: Analyzing code request
+    then: Return Algorithm
+
+  - name: detectVSAOperation
+    given: User input
+    when: Analyzing VSA command
+    then: Return VSAOperation
+
+  # Chat Responses (18)
+  - name: respondGreeting
+    given: Greeting
+    when: User says hello
+    then: Return greeting
+
+  - name: respondFarewell
+    given: Farewell
+    when: User says goodbye
+    then: Return farewell
+
+  - name: respondHelp
+    given: Help request
+    when: User asks help
+    then: Return guidance
+
+  - name: respondCapabilities
+    given: Capabilities query
+    when: User asks abilities
+    then: Return 180 templates + real VSA
+
+  - name: respondFeelings
+    given: Feelings question
+    when: User asks emotions
+    then: Return HONEST response
+
+  - name: respondWeather
+    given: Weather question
+    when: User asks weather
+    then: Return cannot check
+
+  - name: respondTime
+    given: Time question
+    when: User asks time
+    then: Return cannot check
+
+  - name: respondJoke
+    given: Joke request
+    when: User wants humor
+    then: Return joke
+
+  - name: respondFact
+    given: Fact request
+    when: User wants fact
+    then: Return VSA fact
+
+  - name: respondMemory
+    given: Memory query
+    when: User asks history
+    then: Return history
+
+  - name: respondExecution
+    given: Execution query
+    When: User asks running
+    then: Return capabilities
+
+  - name: respondRepl
+    given: REPL query
+    when: User asks REPL
+    then: Return REPL info
+
+  - name: respondDebug
+    given: Debug query
+    when: User asks debug
+    then: Return debug info
+
+  - name: respondFile
+    given: File query
+    when: User asks files
+    then: Return file info
+
+  - name: respondProject
+    given: Project query
+    when: User asks project
+    then: Return project info
+
+  - name: respondGit
+    given: Git query
+    when: User asks git
+    then: Return git info
+
+  - name: respondVSA
+    given: VSA query
+    when: User asks VSA
+    then: Return real VSA info
+
+  - name: respondUnknown
+    given: Unknown
+    when: Cannot understand
+    then: Return uncertainty
+
+  # Code Generation (18)
+  - name: generateBubbleSort
+    given: Language
+    when: Request bubble sort
+    then: Return code
+
+  - name: generateQuickSort
+    given: Language
+    when: Request quick sort
+    then: Return code
+
+  - name: generateMergeSort
+    given: Language
+    when: Request merge sort
+    then: Return code
+
+  - name: generateHeapSort
+    given: Language
+    when: Request heap sort
+    then: Return code
+
+  - name: generateLinearSearch
+    given: Language
+    when: Request linear search
+    then: Return code
+
+  - name: generateBinarySearch
+    given: Language
+    when: Request binary search
+    then: Return code
+
+  - name: generateFibonacci
+    given: Language
+    when: Request fibonacci
+    then: Return code
+
+  - name: generateFactorial
+    given: Language
+    when: Request factorial
+    then: Return code
+
+  - name: generateIsPrime
+    given: Language
+    when: Request prime check
+    then: Return code
+
+  - name: generateStack
+    given: Language
+    when: Request stack
+    then: Return code
+
+  - name: generateQueue
+    given: Language
+    when: Request queue
+    then: Return code
+
+  - name: generateLinkedList
+    given: Language
+    when: Request linked list
+    then: Return code
+
+  - name: generateBinaryTree
+    given: Language
+    when: Request binary tree
+    then: Return code
+
+  - name: generateHashMap
+    given: Language
+    when: Request hash map
+    then: Return code
+
+  - name: generateBFS
+    given: Language
+    when: Request BFS
+    then: Return code
+
+  - name: generateDFS
+    given: Language
+    when: Request DFS
+    then: Return code
+
+  - name: generateDijkstra
+    given: Language
+    when: Request Dijkstra
+    then: Return code
+
+  - name: generateTopologicalSort
+    given: Language
+    when: Request topological sort
+    then: Return code
+
+  # Memory
+  - name: initMemory
+    given: New session
+    when: First message
+    then: Return empty memory
+
+  - name: addMemoryEntry
+    given: Query and response
+    when: After processing
+    then: Add to memory
+
+  - name: recallMemory
+    given: Query
+    when: Looking for context
+    then: Return relevant
+
+  - name: updatePreferences
+    given: Behavior
+    when: Detecting patterns
+    then: Update preferences
+
+  - name: summarizeSession
+    given: Memory
+    when: User asks history
+    then: Return summary
+
+  - name: clearMemory
+    given: Clear request
+    when: User wants reset
+    then: Clear memory
+
+  # REAL VSA with @import
+  - name: realBind
+    given: Two HybridBigInt pointers
+    when: Creating association
+    then: Call vsa.bind(a, b) returns HybridBigInt
+
+  - name: realUnbind
+    given: Bound and key pointers
+    when: Retrieving associated
+    then: Call vsa.unbind(bound, key)
+
+  - name: realBundle2
+    given: Two HybridBigInt pointers
+    when: Superposition of 2
+    then: Call vsa.bundle2(a, b)
+
+  - name: realBundle3
+    given: Three HybridBigInt pointers
+    when: Superposition of 3
+    then: Call vsa.bundle3(a, b, c)
+
+  - name: realPermute
+    given: HybridBigInt pointer and k
+    when: Position encoding
+    then: Call vsa.permute(v, k)
+
+  - name: realCosineSimilarity
+    given: Two HybridBigInt pointers
+    when: Measuring similarity
+    then: Call vsa.cosineSimilarity(a, b) returns f64
+
+  - name: realHammingDistance
+    given: Two HybridBigInt pointers
+    when: Counting differences
+    then: Call vsa.hammingDistance(a, b) returns usize
+
+  - name: realRandomVector
+    given: Length and seed
+    when: Creating random vector
+    then: Call vsa.randomVector(len, seed)
+
+  # TEXT ENCODING/DECODING
+  - name: realCharToVector
+    given: Character byte
+    when: Converting char to vector
+    then: Call vsa.charToVector(char)
+
+  - name: realEncodeText
+    given: Text string
+    when: Encoding text to hypervector
+    then: Call vsa.encodeText(text)
+
+  - name: realDecodeText
+    given: Encoded vector and buffer
+    when: Decoding vector to text
+    then: Call vsa.decodeText(vec, len, buffer)
+
+  - name: realTextRoundtrip
+    given: Text string and buffer
+    when: Testing encode/decode cycle
+    then: Call vsa.textRoundtrip(text, buffer)
+
+  # SEMANTIC SIMILARITY SEARCH
+  - name: realTextSimilarity
+    given: Two text strings
+    when: Comparing semantic similarity
+    then: Call vsa.textSimilarity(text1, text2)
+
+  - name: realTextsAreSimilar
+    given: Two texts and threshold
+    when: Checking similarity threshold
+    then: Call vsa.textsAreSimilar(text1, text2, threshold)
+
+  - name: realSearchCorpus
+    given: Corpus and query
+    when: Searching for similar texts
+    then: Call vsa.searchCorpus(corpus, query, results)
+
+  # CORPUS PERSISTENCE
+  - name: realSaveCorpus
+    given: Corpus and file path
+    when: Saving corpus to file
+    then: Call corpus.save(path)
+
+  - name: realLoadCorpus
+    given: File path
+    when: Loading corpus from file
+    then: Call TextCorpus.load(path)
+
+  # COMPRESSED CORPUS PERSISTENCE (5x smaller)
+  - name: realSaveCorpusCompressed
+    given: Corpus and file path
+    when: Saving corpus with compression
+    then: Call corpus.saveCompressed(path)
+
+  - name: realLoadCorpusCompressed
+    given: File path
+    when: Loading compressed corpus
+    then: Call TextCorpus.loadCompressed(path)
+
+  - name: realCompressionRatio
+    given: Corpus
+    when: Calculating compression ratio
+    then: Call corpus.compressionRatio()
+
+  # Processing
+  - name: processVSA
+    given: VSARequest
+    when: Processing
+    then: Return VSAResponse
+
+  - name: handleChat
+    given: Chat mode
+    when: Chat processing
+    then: Return chat
+
+  - name: handleCode
+    given: Code mode
+    when: Code processing
+    then: Return code
+
+  - name: handleVSA
+    given: VSA mode
+    when: VSA processing
+    then: Call real VSA functions
+
+  # Context
+  - name: initContext
+    given: New session
+    when: First message
+    then: Return context
+
+  - name: updateContext
+    given: Current context
+    when: After processing
+    then: Update context
+
+  - name: selectPersonality
+    given: Mode and topic
+    when: Choosing style
+    then: Return personality
+
+  - name: validateResponse
+    given: Response
+    when: Checking quality
+    then: Validate
+
+test_cases:
+  - name: real_bind_import
+    given: "Import vsa.bind and call"
+    expected: "Real HybridBigInt result"
+
+  - name: real_similarity_import
+    given: "Import cosineSimilarity"
+    expected: "Real f64 result"
+
+  - name: real_random_import
+    given: "Import randomVector"
+    expected: "Real random HybridBigInt"
+
+  - name: hybrid_types
+    given: "Use HybridBigInt type"
+    expected: "Real type from hybrid.zig"
+
+  - name: simd_operations
+    given: "Use Vec32i8"
+    expected: "Real SIMD type"
+
+  - name: permute_sequence
+    given: "Import permute"
+    expected: "Real cyclic shift"

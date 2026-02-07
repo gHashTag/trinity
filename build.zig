@@ -348,6 +348,40 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // VSA module for TRI
+    const vsa_tri = b.createModule(.{
+        .root_source_file = b.path("src/vsa.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // TVC Corpus module for TRI (distributed learning)
+    const tvc_corpus_mod = b.createModule(.{
+        .root_source_file = b.path("src/tvc/tvc_corpus.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+    // TVC Distributed module for TRI (file-based sharing)
+    const tvc_distributed_mod = b.createModule(.{
+        .root_source_file = b.path("src/tvc/tvc_distributed.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
+        },
+    });
+    // IGLA TVC Chat module (fluent chat + TVC integration)
+    const igla_tvc_chat_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/igla_tvc_chat.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "igla_chat", .module = vibeec_chat },
+            .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
+        },
+    });
     // TRI - Unified Trinity CLI
     const tri = b.addExecutable(.{
         .name = "tri",
@@ -359,6 +393,10 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "trinity_swe", .module = vibeec_swe },
                 .{ .name = "igla_chat", .module = vibeec_chat },
                 .{ .name = "igla_coder", .module = vibeec_coder },
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
+                .{ .name = "tvc_distributed", .module = tvc_distributed_mod },
+                .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
             },
         }),
     });
@@ -388,4 +426,27 @@ pub fn build(b: *std.Build) void {
     }
     const hybrid_step = b.step("hybrid", "Run Trinity Hybrid Local Coder (IGLA + Ollama)");
     hybrid_step.dependOn(&run_hybrid.step);
+
+    // VSA module (re-exports HybridBigInt from hybrid.zig)
+    const vsa_mod = b.createModule(.{
+        .root_source_file = b.path("src/vsa.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Generated VSA Imported System tests (Cycle 27)
+    // Uses vsa module only - hybrid types accessed via vsa.HybridBigInt
+    const vsa_imported_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/vsa_imported_system.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_vsa_imported = b.addRunArtifact(vsa_imported_tests);
+    const vsa_imported_step = b.step("test-vsa-imported", "Test VSA Imported System (real @import)");
+    vsa_imported_step.dependOn(&run_vsa_imported.step);
 }

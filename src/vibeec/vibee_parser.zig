@@ -26,6 +26,7 @@ pub const VibeeSpec = struct {
     fpga_target: []const u8, // generic, xilinx, intel, lattice
     pipeline: []const u8, // none, auto, stage1, stage2
     target_frequency: u32, // MHz
+    imports: ArrayList(Import), // Custom @import statements
     constants: ArrayList(Constant),
     types: ArrayList(TypeDef),
     creation_patterns: ArrayList(CreationPattern),
@@ -50,6 +51,7 @@ pub const VibeeSpec = struct {
             .fpga_target = "generic",
             .pipeline = "none",
             .target_frequency = 100,
+            .imports = .{}, // Custom imports
             .constants = .{},
             .types = .{},
             .creation_patterns = .{},
@@ -88,6 +90,7 @@ pub const VibeeSpec = struct {
 
         // Освобождаем основные списки
         self.targets.deinit(self.allocator);
+        self.imports.deinit(self.allocator);
         self.constants.deinit(self.allocator);
         self.types.deinit(self.allocator);
         self.creation_patterns.deinit(self.allocator);
@@ -104,6 +107,12 @@ pub const Constant = struct {
     name: []const u8,
     value: f64,
     description: []const u8,
+};
+
+/// Import definition for @import statements in generated code
+pub const Import = struct {
+    name: []const u8, // Alias name (e.g., "vsa")
+    path: []const u8, // Path to import (e.g., "../src/vsa.zig")
 };
 
 pub const ResetDef = struct {
@@ -368,6 +377,9 @@ pub const VibeeParser = struct {
             } else if (std.mem.eql(u8, key, "constants")) {
                 self.skipToNextLine();
                 try self.parseConstants(&spec.constants);
+            } else if (std.mem.eql(u8, key, "imports")) {
+                self.skipToNextLine();
+                try self.parseImports(&spec.imports);
             } else if (std.mem.eql(u8, key, "types")) {
                 self.skipToNextLine();
                 try self.parseTypes(&spec.types);
@@ -564,6 +576,74 @@ pub const VibeeParser = struct {
             }
 
             try constants.append(self.allocator, constant);
+        }
+    }
+
+    fn parseImports(self: *Self, imports: *ArrayList(Import)) !void {
+        // Parse imports section with format:
+        // imports:
+        //   - name: vsa
+        //     path: "../src/vsa.zig"
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 2) break; // End of imports section
+            self.pos += indent;
+
+            // Check for list item marker "- "
+            if (self.source[self.pos] == '-') {
+                self.pos += 1; // Skip '-'
+                self.skipInlineWhitespace();
+
+                var imp = Import{
+                    .name = "",
+                    .path = "",
+                };
+
+                // Read inline or nested format
+                const first_key = self.readKey();
+                if (first_key.len > 0) {
+                    self.skipColon();
+                    self.skipInlineWhitespace();
+
+                    if (std.mem.eql(u8, first_key, "name")) {
+                        imp.name = self.readValue();
+                    } else if (std.mem.eql(u8, first_key, "path")) {
+                        imp.path = self.readQuotedValue();
+                    }
+                }
+                self.skipToNextLine();
+
+                // Read remaining fields
+                while (self.pos < self.source.len) {
+                    self.skipEmptyLinesAndComments();
+                    if (self.pos >= self.source.len) break;
+
+                    const field_indent = self.countIndent();
+                    if (field_indent < 4) break; // Less than 4 = next import or end
+                    self.pos += field_indent;
+
+                    const field_key = self.readKey();
+                    if (field_key.len == 0) break;
+                    self.skipColon();
+                    self.skipInlineWhitespace();
+
+                    if (std.mem.eql(u8, field_key, "name")) {
+                        imp.name = self.readValue();
+                    } else if (std.mem.eql(u8, field_key, "path")) {
+                        imp.path = self.readQuotedValue();
+                    }
+                    self.skipToNextLine();
+                }
+
+                if (imp.name.len > 0 and imp.path.len > 0) {
+                    try imports.append(self.allocator, imp);
+                }
+            } else {
+                self.skipToNextLine();
+            }
         }
     }
 

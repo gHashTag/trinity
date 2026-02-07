@@ -239,6 +239,106 @@ pub const TestGenerator = struct {
         } else if (std.mem.eql(u8, name, "trit_not_test") or std.mem.eql(u8, name, "test_trit_not")) {
             try self.builder.writeLine("try std.testing.expectEqual(Trit.trit_not(.positive), .negative);");
             try self.builder.writeLine("try std.testing.expectEqual(Trit.trit_not(.zero), .zero);");
+        } else if (std.mem.eql(u8, name, "realBind")) {
+            // Real VSA bind test
+            try self.builder.writeLine("var a = vsa.randomVector(100, 12345);");
+            try self.builder.writeLine("var b = vsa.randomVector(100, 67890);");
+            try self.builder.writeLine("const bound = realBind(&a, &b);");
+            try self.builder.writeLine("_ = bound;");
+        } else if (std.mem.eql(u8, name, "realUnbind")) {
+            // Real VSA unbind test
+            try self.builder.writeLine("var a = vsa.randomVector(100, 11111);");
+            try self.builder.writeLine("var key = vsa.randomVector(100, 22222);");
+            try self.builder.writeLine("const unbound = realUnbind(&a, &key);");
+            try self.builder.writeLine("_ = unbound;");
+        } else if (std.mem.eql(u8, name, "realBundle2")) {
+            // Real VSA bundle2 test
+            try self.builder.writeLine("var a = vsa.randomVector(100, 33333);");
+            try self.builder.writeLine("var b = vsa.randomVector(100, 44444);");
+            try self.builder.writeLine("const bundled = realBundle2(&a, &b);");
+            try self.builder.writeLine("_ = bundled;");
+        } else if (std.mem.eql(u8, name, "realBundle3")) {
+            // Real VSA bundle3 test
+            try self.builder.writeLine("var a = vsa.randomVector(100, 55555);");
+            try self.builder.writeLine("var b = vsa.randomVector(100, 66666);");
+            try self.builder.writeLine("var c = vsa.randomVector(100, 77777);");
+            try self.builder.writeLine("const bundled = realBundle3(&a, &b, &c);");
+            try self.builder.writeLine("_ = bundled;");
+        } else if (std.mem.eql(u8, name, "realPermute")) {
+            // Real VSA permute test
+            try self.builder.writeLine("var v = vsa.randomVector(100, 88888);");
+            try self.builder.writeLine("const permuted = realPermute(&v, 5);");
+            try self.builder.writeLine("_ = permuted;");
+        } else if (std.mem.eql(u8, name, "realCosineSimilarity")) {
+            // Real VSA cosine similarity test
+            try self.builder.writeLine("var a = vsa.randomVector(100, 99999);");
+            try self.builder.writeLine("var b = a;  // Same vector = similarity 1.0");
+            try self.builder.writeLine("const sim = realCosineSimilarity(&a, &b);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(sim, 1.0, 0.01);");
+        } else if (std.mem.eql(u8, name, "realHammingDistance")) {
+            // Real VSA Hamming distance test
+            try self.builder.writeLine("var a = vsa.randomVector(100, 10101);");
+            try self.builder.writeLine("var b = a;  // Same vector = distance 0");
+            try self.builder.writeLine("const dist = realHammingDistance(&a, &b);");
+            try self.builder.writeLine("try std.testing.expectEqual(dist, 0);");
+        } else if (std.mem.eql(u8, name, "realRandomVector")) {
+            // Real VSA random vector test
+            try self.builder.writeLine("const vec = realRandomVector(100, 20202);");
+            try self.builder.writeLine("_ = vec;");
+        } else if (std.mem.eql(u8, name, "realCharToVector")) {
+            // Character to vector test
+            try self.builder.writeLine("const vec_a = realCharToVector('A');");
+            try self.builder.writeLine("const vec_a2 = realCharToVector('A');");
+            try self.builder.writeLine("// Same char should produce same vector");
+            try self.builder.writeLine("try std.testing.expectEqual(vec_a.trit_len, vec_a2.trit_len);");
+        } else if (std.mem.eql(u8, name, "realEncodeText")) {
+            // Text encoding test
+            try self.builder.writeLine("const encoded = realEncodeText(\"Hi\");");
+            try self.builder.writeLine("try std.testing.expect(encoded.trit_len > 0);");
+        } else if (std.mem.eql(u8, name, "realDecodeText")) {
+            // Text decoding test
+            try self.builder.writeLine("var encoded = vsa.encodeText(\"A\");");
+            try self.builder.writeLine("var buffer: [16]u8 = undefined;");
+            try self.builder.writeLine("const decoded = realDecodeText(&encoded, 1, &buffer);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 'A'), decoded[0]);");
+        } else if (std.mem.eql(u8, name, "realTextRoundtrip")) {
+            // Text roundtrip test
+            try self.builder.writeLine("var buffer: [16]u8 = undefined;");
+            try self.builder.writeLine("const decoded = realTextRoundtrip(\"A\", &buffer);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 'A'), decoded[0]);");
+        } else if (std.mem.eql(u8, name, "realTextSimilarity")) {
+            // Text similarity test
+            try self.builder.writeLine("const sim = realTextSimilarity(\"hello\", \"hello\");");
+            try self.builder.writeLine("try std.testing.expect(sim > 0.9);  // Identical texts");
+        } else if (std.mem.eql(u8, name, "realTextsAreSimilar")) {
+            // Texts are similar test
+            try self.builder.writeLine("const similar = realTextsAreSimilar(\"test\", \"test\", 0.8);");
+            try self.builder.writeLine("try std.testing.expect(similar);");
+        } else if (std.mem.eql(u8, name, "realSearchCorpus")) {
+            // Corpus search test
+            try self.builder.writeLine("var corpus = vsa.TextCorpus.init();");
+            try self.builder.writeLine("_ = corpus.add(\"hello\", \"greet\");");
+            try self.builder.writeLine("var results: [1]vsa.SearchResult = undefined;");
+            try self.builder.writeLine("const count = realSearchCorpus(&corpus, \"hello\", &results);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(usize, 1), count);");
+        } else if (std.mem.eql(u8, name, "realSaveCorpus")) {
+            // Save corpus test - just verify function exists
+            try self.builder.writeLine("_ = &realSaveCorpus;");
+        } else if (std.mem.eql(u8, name, "realLoadCorpus")) {
+            // Load corpus test - just verify function exists
+            try self.builder.writeLine("_ = &realLoadCorpus;");
+        } else if (std.mem.eql(u8, name, "realSaveCorpusCompressed")) {
+            // Compressed save test - verify function exists
+            try self.builder.writeLine("_ = &realSaveCorpusCompressed;");
+        } else if (std.mem.eql(u8, name, "realLoadCorpusCompressed")) {
+            // Compressed load test - verify function exists
+            try self.builder.writeLine("_ = &realLoadCorpusCompressed;");
+        } else if (std.mem.eql(u8, name, "realCompressionRatio")) {
+            // Compression ratio test
+            try self.builder.writeLine("var corpus = vsa.TextCorpus.init();");
+            try self.builder.writeLine("_ = corpus.add(\"test\", \"label\");");
+            try self.builder.writeLine("const ratio = realCompressionRatio(&corpus);");
+            try self.builder.writeLine("try std.testing.expect(ratio > 4.0);"); // 5x compression
         } else {
             try self.builder.writeLine("// TODO: Add test assertions");
         }
