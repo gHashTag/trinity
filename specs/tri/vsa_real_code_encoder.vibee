@@ -1,0 +1,157 @@
+# ============================================================================
+# VSA Real Code Encoder - Cycle 51
+# Real @import("vsa") integration for token-based code encoding
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_real_code_encoder
+version: "1.0.0"
+language: zig
+module: vsa_real_code_encoder
+
+imports:
+  - name: vsa
+    path: "../src/vsa.zig"
+
+description: |
+  Code encoder using real VSA operations via @import("vsa").
+  Token-based: source → tokens → classify type → bind with depth → bundle.
+
+constants:
+  DEFAULT_DIMENSION: 1024
+  MAX_TOKENS: 512
+  MAX_DEPTH: 32
+  PHI: 1.6180339887498948482
+
+types:
+  CodeEncoderConfig:
+    fields:
+      dimension: Int
+      max_tokens: Int
+
+  TokenInfo:
+    fields:
+      token_type: String
+      value: String
+      depth: Int
+
+behaviors:
+  - name: realBind
+    given: Token type vector and value vector
+    when: Binding token type with its value
+    then: Use vsa.bind for type-value association
+
+  - name: realBundle2
+    given: Two token hypervectors
+    when: Combining tokens
+    then: Use vsa.bundle2 for majority vote
+
+  - name: realBundle3
+    given: Three token hypervectors
+    when: Combining three tokens
+    then: Use vsa.bundle3 for majority vote
+
+  - name: realPermute
+    given: Hypervector and nesting depth
+    when: Encoding structural depth
+    then: Use vsa.permute for depth encoding
+
+  - name: realRandomVector
+    given: Token type seed
+    when: Generating base vector for token type
+    then: Use vsa.randomVector for deterministic type vector
+
+  - name: realCosineSimilarity
+    given: Two code hypervectors
+    when: Comparing code similarity
+    then: Use vsa.cosineSimilarity
+
+  - name: realHammingDistance
+    given: Two code hypervectors
+    when: Measuring code distance
+    then: Use vsa.hammingDistance
+
+  - name: realCharToVector
+    given: Token character
+    when: Mapping token char to base vector
+    then: Use vsa.charToVector for character-level encoding
+
+  - name: realEncodeText
+    given: Source code string
+    when: Encoding code as text
+    then: Use vsa.encodeText for n-gram encoding of source
+
+  - name: realCodeSelfSimilarity
+    given: Same code encoded twice
+    when: Verifying determinism
+    then: Cosine similarity = 1.0
+
+  - name: realCodeComparison
+    given: Two different code snippets
+    when: Comparing via VSA
+    then: Returns valid similarity score
+
+  - name: realTokenEncoding
+    given: Single code token
+    when: Encoding token to hypervector
+    then: Bind type vector with value vector and depth permutation
+
+  - name: realTokenBundling
+    given: Multiple token vectors
+    when: Combining into code vector
+    then: Bundle all tokens via majority vote
+
+  - name: realTextSimilarity
+    given: Two code strings
+    when: Comparing code content via text encoding
+    then: Use vsa text similarity
+
+  - name: realSearchCorpus
+    given: Query code and corpus of code snippets
+    when: Finding most similar code
+    then: Encode all, return highest cosine match
+
+tests:
+  - name: test_token_type_vector
+    given: Token type seed 42
+    then: vsa.randomVector returns deterministic vector
+
+  - name: test_bind_type_value
+    given: Type vector and value vector
+    then: vsa.bind produces valid result
+
+  - name: test_bundle_tokens
+    given: Two token vectors
+    then: vsa.bundle2 produces valid result
+
+  - name: test_permute_depth
+    given: Vector and depth 3
+    then: vsa.permute shifts correctly
+
+  - name: test_code_self_similarity
+    given: Same code encoded twice
+    then: Cosine similarity = 1.0
+
+  - name: test_code_comparison
+    given: Two different code encodings
+    then: Returns valid similarity in [-1, 1]
+
+  - name: test_char_to_vector
+    given: Token character 'f'
+    then: vsa.charToVector maps correctly
+
+  - name: test_encode_source
+    given: "fn main() {}"
+    then: vsa.encodeText returns valid vector
+
+  - name: test_hamming_tokens
+    given: Two token vectors
+    then: vsa.hammingDistance returns valid count
+
+  - name: test_corpus_search
+    given: Query code and 3-snippet corpus
+    then: Returns best match index
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
