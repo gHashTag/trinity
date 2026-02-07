@@ -803,6 +803,73 @@ pub const ApiServer = struct {
     pub fn isHealthy(self: *const ApiServer) bool {
         return self.handler.metrics.getSuccessRate() >= 0.9;
     }
+
+    /// Run the server and listen for connections
+    pub fn run(self: *ApiServer) !void {
+        std.debug.print("\n", .{});
+        std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
+        std.debug.print("║           IGLA API SERVER v1.0                               ║\n", .{});
+        std.debug.print("║           OpenAI-compatible /v1/chat/completions             ║\n", .{});
+        std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
+        std.debug.print("\n", .{});
+
+        std.debug.print("Starting server on http://0.0.0.0:{d}\n", .{self.port});
+        std.debug.print("Endpoints:\n", .{});
+        std.debug.print("  POST /v1/chat/completions - Chat completion\n", .{});
+        std.debug.print("  GET  /v1/models           - List models\n", .{});
+        std.debug.print("  GET  /health              - Health check\n", .{});
+        std.debug.print("  GET  /metrics             - Server metrics\n", .{});
+        std.debug.print("  GET  /                    - Server info\n", .{});
+        std.debug.print("\n", .{});
+
+        const address = std.net.Address.initIp4(.{ 0, 0, 0, 0 }, self.port);
+        var server = try address.listen(.{
+            .reuse_address = true,
+        });
+        defer server.deinit();
+
+        self.is_running = true;
+        std.debug.print("Server ready! Listening on port {d}...\n", .{self.port});
+        std.debug.print("Press Ctrl+C to stop.\n\n", .{});
+
+        while (self.is_running) {
+            var connection = server.accept() catch |err| {
+                std.debug.print("Accept error: {}\n", .{err});
+                continue;
+            };
+
+            self.handleConnection(&connection) catch |err| {
+                std.debug.print("Request error: {}\n", .{err});
+            };
+
+            connection.stream.close();
+        }
+    }
+
+    fn handleConnection(self: *ApiServer, connection: *std.net.Server.Connection) !void {
+        var buf: [MAX_REQUEST_SIZE]u8 = undefined;
+        const n = try connection.stream.read(&buf);
+        if (n == 0) return;
+
+        const request_data = buf[0..n];
+        const response = self.processRequest(request_data);
+
+        // Build and send response
+        var response_buf: [MAX_RESPONSE_SIZE]u8 = undefined;
+        const response_len = response.build(&response_buf);
+
+        if (response_len > 0) {
+            try connection.stream.writeAll(response_buf[0..response_len]);
+        }
+
+        // Log request
+        const request = RequestParser.parse(request_data);
+        std.debug.print("{s} {s} -> {d}\n", .{
+            request.method.toString(),
+            request.getPath(),
+            response.status.getCode(),
+        });
+    }
 };
 
 // =============================================================================
@@ -1278,7 +1345,8 @@ pub fn runBenchmark() void {
     std.debug.print("\n", .{});
 }
 
-// Run benchmark when file is executed directly
-pub fn main() void {
-    runBenchmark();
+// Run server when file is executed directly
+pub fn main() !void {
+    var server = ApiServer.init();
+    try server.run();
 }
