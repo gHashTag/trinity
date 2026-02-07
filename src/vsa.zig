@@ -5788,6 +5788,453 @@ pub const TextCorpus = struct {
         return .{ .executed = 0, .missed = 0, .efficiency = 0.0, .by_urgency = .{0} ** 5 };
     }
 
+    // ============================================================
+    // CYCLE 47: TASK DEPENDENCY GRAPH (DAG-based execution)
+    // Topological ordering with φ⁻¹ priority integration
+    // ============================================================
+
+    /// Maximum nodes in dependency graph
+    pub const MAX_DAG_NODES = 256;
+    /// Maximum dependencies per node
+    pub const MAX_DEPENDENCIES = 16;
+
+    /// Task state in DAG execution
+    pub const TaskState = enum(u8) {
+        pending, // Not yet ready (dependencies not satisfied)
+        ready, // All dependencies satisfied, can execute
+        running, // Currently executing
+        completed, // Finished successfully
+        failed, // Execution failed
+
+        /// Check if task can be scheduled
+        pub fn canSchedule(self: TaskState) bool {
+            return self == .ready;
+        }
+
+        /// Check if task is terminal (completed or failed)
+        pub fn isTerminal(self: TaskState) bool {
+            return self == .completed or self == .failed;
+        }
+    };
+
+    /// Job priority levels for DAG scheduler
+    pub const JobPriority = enum(u8) {
+        immediate = 0, // Highest priority
+        urgent = 1,
+        normal = 2,
+        relaxed = 3,
+        flexible = 4, // Lowest priority
+
+        /// Get numeric priority (lower = higher priority)
+        pub fn toValue(self: JobPriority) u8 {
+            return @intFromEnum(self);
+        }
+
+        /// Get weight (φ⁻¹ based, higher = more priority)
+        pub fn weight(self: JobPriority) f64 {
+            return switch (self) {
+                .immediate => 1.0,
+                .urgent => PHI_INVERSE, // 0.618
+                .normal => PHI_INVERSE * PHI_INVERSE, // 0.382
+                .relaxed => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE, // 0.236
+                .flexible => PHI_INVERSE * PHI_INVERSE * PHI_INVERSE * PHI_INVERSE, // 0.146
+            };
+        }
+    };
+
+    /// Task node in dependency graph
+    pub const TaskNode = struct {
+        id: u32,
+        func: JobFn,
+        context: *anyopaque,
+        priority: JobPriority,
+        deadline: ?i64, // Optional deadline
+        state: TaskState,
+        dependencies: [MAX_DEPENDENCIES]u32,
+        dep_count: usize,
+        dependents: [MAX_DEPENDENCIES]u32, // Tasks that depend on this
+        dependent_count: usize,
+        deps_remaining: std.atomic.Value(usize), // Unsatisfied dependencies
+
+        const Self = @This();
+
+        /// Create a new task node
+        pub fn init(id: u32, func: JobFn, context: *anyopaque) Self {
+            return Self{
+                .id = id,
+                .func = func,
+                .context = context,
+                .priority = .normal,
+                .deadline = null,
+                .state = .pending,
+                .dependencies = .{0} ** MAX_DEPENDENCIES,
+                .dep_count = 0,
+                .dependents = .{0} ** MAX_DEPENDENCIES,
+                .dependent_count = 0,
+                .deps_remaining = std.atomic.Value(usize).init(0),
+            };
+        }
+
+        /// Add dependency (this task depends on dep_id)
+        pub fn addDependency(self: *Self, dep_id: u32) bool {
+            if (self.dep_count >= MAX_DEPENDENCIES) return false;
+            self.dependencies[self.dep_count] = dep_id;
+            self.dep_count += 1;
+            _ = self.deps_remaining.fetchAdd(1, .monotonic);
+            return true;
+        }
+
+        /// Add dependent (dep_id depends on this task)
+        pub fn addDependent(self: *Self, dep_id: u32) bool {
+            if (self.dependent_count >= MAX_DEPENDENCIES) return false;
+            self.dependents[self.dependent_count] = dep_id;
+            self.dependent_count += 1;
+            return true;
+        }
+
+        /// Mark dependency satisfied (returns true if task becomes ready)
+        pub fn satisfyDependency(self: *Self) bool {
+            const prev = self.deps_remaining.fetchSub(1, .acq_rel);
+            if (prev == 1 and self.state == .pending) {
+                self.state = .ready;
+                return true;
+            }
+            return false;
+        }
+
+        /// Check if all dependencies are satisfied
+        pub fn isReady(self: *const Self) bool {
+            return self.deps_remaining.load(.acquire) == 0 and self.state == .pending;
+        }
+
+        /// Get effective priority (adjusted by deadline urgency if set)
+        pub fn getEffectivePriority(self: *const Self) f64 {
+            var base_priority = self.priority.weight();
+
+            if (self.deadline) |deadline| {
+                const now: i64 = @intCast(std.time.nanoTimestamp());
+                const remaining: i64 = deadline - now;
+                const urgency = DeadlineJob.calculateUrgency(remaining);
+                // Combine priority with urgency using φ ratio
+                base_priority = base_priority * (1.0 + urgency * PHI_INVERSE);
+            }
+
+            return base_priority;
+        }
+    };
+
+    /// DAG execution statistics
+    pub const DAGStats = struct {
+        total: usize,
+        completed: usize,
+        failed: usize,
+        pending: usize,
+        ready: usize,
+        completion_rate: f64,
+    };
+
+    /// Dependency graph for DAG-based task execution
+    pub const DependencyGraph = struct {
+        nodes: [MAX_DAG_NODES]?TaskNode,
+        node_count: usize,
+        ready_queue: [MAX_DAG_NODES]u32, // IDs of ready tasks
+        ready_count: std.atomic.Value(usize),
+        completed_count: usize,
+        failed_count: usize,
+        execution_order: [MAX_DAG_NODES]u32, // Topological order
+        order_computed: bool,
+
+        const Self = @This();
+
+        /// Initialize empty graph
+        pub fn init() Self {
+            return Self{
+                .nodes = .{null} ** MAX_DAG_NODES,
+                .node_count = 0,
+                .ready_queue = .{0} ** MAX_DAG_NODES,
+                .ready_count = std.atomic.Value(usize).init(0),
+                .completed_count = 0,
+                .failed_count = 0,
+                .execution_order = .{0} ** MAX_DAG_NODES,
+                .order_computed = false,
+            };
+        }
+
+        /// Add a task to the graph
+        pub fn addTask(self: *Self, func: JobFn, context: *anyopaque) ?u32 {
+            if (self.node_count >= MAX_DAG_NODES) return null;
+
+            const id: u32 = @intCast(self.node_count);
+            self.nodes[id] = TaskNode.init(id, func, context);
+            self.node_count += 1;
+            self.order_computed = false;
+            return id;
+        }
+
+        /// Add task with priority
+        pub fn addTaskWithPriority(self: *Self, func: JobFn, context: *anyopaque, priority: JobPriority) ?u32 {
+            const id = self.addTask(func, context) orelse return null;
+            if (self.nodes[id]) |*node| {
+                node.priority = priority;
+            }
+            return id;
+        }
+
+        /// Add task with deadline
+        pub fn addTaskWithDeadline(self: *Self, func: JobFn, context: *anyopaque, deadline_ns: i64) ?u32 {
+            const id = self.addTask(func, context) orelse return null;
+            if (self.nodes[id]) |*node| {
+                node.deadline = deadline_ns;
+            }
+            return id;
+        }
+
+        /// Add dependency edge (from_id must complete before to_id)
+        pub fn addDependency(self: *Self, from_id: u32, to_id: u32) bool {
+            if (from_id >= self.node_count or to_id >= self.node_count) return false;
+            if (from_id == to_id) return false; // No self-loops
+
+            // Add to_id as dependent of from_id
+            if (self.nodes[from_id]) |*from_node| {
+                if (!from_node.addDependent(to_id)) return false;
+            } else return false;
+
+            // Add from_id as dependency of to_id
+            if (self.nodes[to_id]) |*to_node| {
+                if (!to_node.addDependency(from_id)) return false;
+            } else return false;
+
+            self.order_computed = false;
+            return true;
+        }
+
+        /// Compute topological order using Kahn's algorithm
+        pub fn computeTopologicalOrder(self: *Self) bool {
+            if (self.order_computed) return true;
+
+            var in_degree: [MAX_DAG_NODES]usize = .{0} ** MAX_DAG_NODES;
+            var queue: [MAX_DAG_NODES]u32 = .{0} ** MAX_DAG_NODES;
+            var queue_start: usize = 0;
+            var queue_end: usize = 0;
+            var order_idx: usize = 0;
+
+            // Calculate in-degrees
+            for (0..self.node_count) |i| {
+                if (self.nodes[i]) |node| {
+                    in_degree[i] = node.dep_count;
+                    if (in_degree[i] == 0) {
+                        queue[queue_end] = @intCast(i);
+                        queue_end += 1;
+                    }
+                }
+            }
+
+            // Process queue (Kahn's algorithm)
+            while (queue_start < queue_end) {
+                const current = queue[queue_start];
+                queue_start += 1;
+
+                self.execution_order[order_idx] = current;
+                order_idx += 1;
+
+                // Process dependents
+                if (self.nodes[current]) |node| {
+                    for (0..node.dependent_count) |i| {
+                        const dep_id = node.dependents[i];
+                        in_degree[dep_id] -= 1;
+                        if (in_degree[dep_id] == 0) {
+                            queue[queue_end] = dep_id;
+                            queue_end += 1;
+                        }
+                    }
+                }
+            }
+
+            // Check for cycles
+            if (order_idx != self.node_count) {
+                return false; // Cycle detected
+            }
+
+            self.order_computed = true;
+            return true;
+        }
+
+        /// Check if graph has cycles
+        pub fn hasCycle(self: *Self) bool {
+            return !self.computeTopologicalOrder();
+        }
+
+        /// Initialize ready queue (tasks with no dependencies)
+        pub fn initializeReadyQueue(self: *Self) void {
+            var ready_idx: usize = 0;
+            for (0..self.node_count) |i| {
+                if (self.nodes[i]) |*node| {
+                    if (node.dep_count == 0) {
+                        node.state = .ready;
+                        self.ready_queue[ready_idx] = @intCast(i);
+                        ready_idx += 1;
+                    }
+                }
+            }
+            self.ready_count.store(ready_idx, .release);
+        }
+
+        /// Get next ready task (priority-ordered)
+        pub fn popNextReady(self: *Self) ?*TaskNode {
+            const ready_count = self.ready_count.load(.acquire);
+            if (ready_count == 0) return null;
+
+            // Find highest priority ready task
+            var best_idx: usize = 0;
+            var best_priority: f64 = 0.0;
+            var found = false;
+
+            for (0..ready_count) |i| {
+                const id = self.ready_queue[i];
+                if (self.nodes[id]) |*node| {
+                    if (node.state == .ready) {
+                        const priority = node.getEffectivePriority();
+                        if (!found or priority > best_priority) {
+                            best_priority = priority;
+                            best_idx = i;
+                            found = true;
+                        }
+                    }
+                }
+            }
+
+            if (!found) return null;
+
+            const best_id = self.ready_queue[best_idx];
+
+            // Mark as running
+            if (self.nodes[best_id]) |*node| {
+                node.state = .running;
+                return node;
+            }
+            return null;
+        }
+
+        /// Mark task as completed and update dependents
+        pub fn completeTask(self: *Self, task_id: u32, success: bool) usize {
+            if (task_id >= self.node_count) return 0;
+
+            var newly_ready: usize = 0;
+
+            if (self.nodes[task_id]) |*node| {
+                node.state = if (success) .completed else .failed;
+                if (success) {
+                    self.completed_count += 1;
+
+                    // Notify dependents
+                    for (0..node.dependent_count) |i| {
+                        const dep_id = node.dependents[i];
+                        if (self.nodes[dep_id]) |*dep_node| {
+                            if (dep_node.satisfyDependency()) {
+                                // Add to ready queue
+                                const idx = self.ready_count.fetchAdd(1, .release);
+                                if (idx < MAX_DAG_NODES) {
+                                    self.ready_queue[idx] = dep_id;
+                                }
+                                newly_ready += 1;
+                            }
+                        }
+                    }
+                } else {
+                    self.failed_count += 1;
+                }
+            }
+
+            return newly_ready;
+        }
+
+        /// Execute all tasks in topological order
+        pub fn executeAll(self: *Self) struct { completed: usize, failed: usize } {
+            if (!self.computeTopologicalOrder()) {
+                return .{ .completed = 0, .failed = self.node_count }; // Cycle detected
+            }
+
+            self.initializeReadyQueue();
+
+            while (true) {
+                const task = self.popNextReady();
+                if (task == null) break;
+
+                if (task) |t| {
+                    // Execute the task
+                    t.func(t.context);
+                    _ = self.completeTask(t.id, true);
+                }
+            }
+
+            return .{
+                .completed = self.completed_count,
+                .failed = self.failed_count,
+            };
+        }
+
+        /// Get execution statistics
+        pub fn getStats(self: *const Self) DAGStats {
+            var pending: usize = 0;
+            var ready: usize = 0;
+
+            for (0..self.node_count) |i| {
+                if (self.nodes[i]) |node| {
+                    switch (node.state) {
+                        .pending => pending += 1,
+                        .ready => ready += 1,
+                        else => {},
+                    }
+                }
+            }
+
+            const completion_rate = if (self.node_count == 0) 1.0 else @as(f64, @floatFromInt(self.completed_count)) / @as(f64, @floatFromInt(self.node_count));
+
+            return DAGStats{
+                .total = self.node_count,
+                .completed = self.completed_count,
+                .failed = self.failed_count,
+                .pending = pending,
+                .ready = ready,
+                .completion_rate = completion_rate,
+            };
+        }
+
+        /// Check if all tasks are complete
+        pub fn isComplete(self: *const Self) bool {
+            return self.completed_count + self.failed_count >= self.node_count;
+        }
+    };
+
+    // Global dependency graph instance
+    var global_dag: ?DependencyGraph = null;
+
+    /// Get or create global dependency graph
+    pub fn getDAG() *DependencyGraph {
+        if (global_dag == null) {
+            global_dag = DependencyGraph.init();
+        }
+        return &global_dag.?;
+    }
+
+    /// Shutdown global DAG
+    pub fn shutdownDAG() void {
+        global_dag = null;
+    }
+
+    /// Check if DAG is available
+    pub fn hasDAG() bool {
+        return global_dag != null;
+    }
+
+    /// Get DAG execution stats
+    pub fn getDAGStats() DAGStats {
+        if (global_dag) |*dag| {
+            return dag.getStats();
+        }
+        return DAGStats{ .total = 0, .completed = 0, .failed = 0, .pending = 0, .ready = 0, .completion_rate = 0.0 };
+    }
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -7065,6 +7512,214 @@ test "DeadlinePool global singleton" {
 
 fn dummyJobFn(_: *anyopaque) void {
     // No-op for testing
+}
+
+fn incrementCounter(ctx: *anyopaque) void {
+    const counter: *usize = @ptrCast(@alignCast(ctx));
+    counter.* += 1;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 47: DAG EXECUTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "TaskState transitions" {
+    // Test state properties
+    try std.testing.expect(TextCorpus.TaskState.pending.canSchedule() == false);
+    try std.testing.expect(TextCorpus.TaskState.ready.canSchedule() == true);
+    try std.testing.expect(TextCorpus.TaskState.running.canSchedule() == false);
+    try std.testing.expect(TextCorpus.TaskState.completed.isTerminal() == true);
+    try std.testing.expect(TextCorpus.TaskState.failed.isTerminal() == true);
+    try std.testing.expect(TextCorpus.TaskState.pending.isTerminal() == false);
+}
+
+test "TaskNode creation and dependencies" {
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+
+    var node = TextCorpus.TaskNode.init(0, dummyJobFn, ctx_ptr);
+
+    try std.testing.expectEqual(@as(u32, 0), node.id);
+    try std.testing.expectEqual(TextCorpus.TaskState.pending, node.state);
+    try std.testing.expectEqual(@as(usize, 0), node.dep_count);
+    try std.testing.expectEqual(@as(usize, 0), node.dependent_count);
+
+    // Add dependencies
+    try std.testing.expect(node.addDependency(1));
+    try std.testing.expect(node.addDependency(2));
+    try std.testing.expectEqual(@as(usize, 2), node.dep_count);
+    try std.testing.expectEqual(@as(usize, 2), node.deps_remaining.load(.acquire));
+
+    // Satisfy dependencies
+    try std.testing.expect(!node.satisfyDependency()); // Still 1 left
+    try std.testing.expect(node.satisfyDependency()); // Now ready
+    try std.testing.expectEqual(TextCorpus.TaskState.ready, node.state);
+}
+
+test "TaskNode effective priority with deadline" {
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+
+    var node = TextCorpus.TaskNode.init(0, dummyJobFn, ctx_ptr);
+    node.priority = .urgent;
+
+    // Without deadline
+    const base_priority = node.getEffectivePriority();
+    try std.testing.expect(base_priority > 0);
+
+    // With urgent deadline (boosts priority)
+    const now: i64 = @intCast(std.time.nanoTimestamp());
+    node.deadline = now + 1_000_000; // 1ms deadline
+    const urgent_priority = node.getEffectivePriority();
+    try std.testing.expect(urgent_priority > base_priority);
+}
+
+test "DependencyGraph creation and task addition" {
+    var graph = TextCorpus.DependencyGraph.init();
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+
+    try std.testing.expectEqual(@as(usize, 0), graph.node_count);
+
+    // Add tasks
+    const id0 = graph.addTask(dummyJobFn, ctx_ptr);
+    const id1 = graph.addTask(dummyJobFn, ctx_ptr);
+    const id2 = graph.addTask(dummyJobFn, ctx_ptr);
+
+    try std.testing.expect(id0 != null);
+    try std.testing.expect(id1 != null);
+    try std.testing.expect(id2 != null);
+    try std.testing.expectEqual(@as(usize, 3), graph.node_count);
+}
+
+test "DependencyGraph dependency edges" {
+    var graph = TextCorpus.DependencyGraph.init();
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+
+    // Create diamond dependency: 0 -> 1, 0 -> 2, 1 -> 3, 2 -> 3
+    _ = graph.addTask(dummyJobFn, ctx_ptr); // 0
+    _ = graph.addTask(dummyJobFn, ctx_ptr); // 1
+    _ = graph.addTask(dummyJobFn, ctx_ptr); // 2
+    _ = graph.addTask(dummyJobFn, ctx_ptr); // 3
+
+    try std.testing.expect(graph.addDependency(0, 1)); // 0 -> 1
+    try std.testing.expect(graph.addDependency(0, 2)); // 0 -> 2
+    try std.testing.expect(graph.addDependency(1, 3)); // 1 -> 3
+    try std.testing.expect(graph.addDependency(2, 3)); // 2 -> 3
+
+    // Self-loop should fail
+    try std.testing.expect(!graph.addDependency(1, 1));
+
+    // Check node states
+    if (graph.nodes[0]) |node| {
+        try std.testing.expectEqual(@as(usize, 0), node.dep_count);
+        try std.testing.expectEqual(@as(usize, 2), node.dependent_count);
+    }
+    if (graph.nodes[3]) |node| {
+        try std.testing.expectEqual(@as(usize, 2), node.dep_count);
+        try std.testing.expectEqual(@as(usize, 0), node.dependent_count);
+    }
+}
+
+test "DependencyGraph topological sort" {
+    var graph = TextCorpus.DependencyGraph.init();
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+
+    // Linear chain: 0 -> 1 -> 2
+    _ = graph.addTask(dummyJobFn, ctx_ptr);
+    _ = graph.addTask(dummyJobFn, ctx_ptr);
+    _ = graph.addTask(dummyJobFn, ctx_ptr);
+
+    _ = graph.addDependency(0, 1);
+    _ = graph.addDependency(1, 2);
+
+    // Should compute valid order
+    try std.testing.expect(graph.computeTopologicalOrder());
+    try std.testing.expect(!graph.hasCycle());
+
+    // Order should be 0, 1, 2
+    try std.testing.expectEqual(@as(u32, 0), graph.execution_order[0]);
+    try std.testing.expectEqual(@as(u32, 1), graph.execution_order[1]);
+    try std.testing.expectEqual(@as(u32, 2), graph.execution_order[2]);
+}
+
+test "DependencyGraph cycle detection" {
+    var graph = TextCorpus.DependencyGraph.init();
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+
+    // Create cycle: 0 -> 1 -> 2 -> 0
+    _ = graph.addTask(dummyJobFn, ctx_ptr);
+    _ = graph.addTask(dummyJobFn, ctx_ptr);
+    _ = graph.addTask(dummyJobFn, ctx_ptr);
+
+    _ = graph.addDependency(0, 1);
+    _ = graph.addDependency(1, 2);
+    _ = graph.addDependency(2, 0); // Creates cycle
+
+    // Should detect cycle
+    try std.testing.expect(graph.hasCycle());
+    try std.testing.expect(!graph.computeTopologicalOrder());
+}
+
+test "DependencyGraph execution" {
+    var graph = TextCorpus.DependencyGraph.init();
+    var counter: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&counter);
+
+    // Add 3 independent tasks
+    _ = graph.addTask(incrementCounter, ctx_ptr);
+    _ = graph.addTask(incrementCounter, ctx_ptr);
+    _ = graph.addTask(incrementCounter, ctx_ptr);
+
+    // Execute all
+    const result = graph.executeAll();
+
+    try std.testing.expectEqual(@as(usize, 3), result.completed);
+    try std.testing.expectEqual(@as(usize, 0), result.failed);
+    try std.testing.expectEqual(@as(usize, 3), counter);
+}
+
+test "DependencyGraph stats" {
+    var graph = TextCorpus.DependencyGraph.init();
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+
+    _ = graph.addTask(dummyJobFn, ctx_ptr);
+    _ = graph.addTask(dummyJobFn, ctx_ptr);
+
+    const initial_stats = graph.getStats();
+    try std.testing.expectEqual(@as(usize, 2), initial_stats.total);
+    try std.testing.expectEqual(@as(usize, 0), initial_stats.completed);
+
+    // Execute
+    _ = graph.executeAll();
+
+    const final_stats = graph.getStats();
+    try std.testing.expectEqual(@as(usize, 2), final_stats.completed);
+    try std.testing.expectEqual(@as(f64, 1.0), final_stats.completion_rate);
+}
+
+test "DependencyGraph global singleton" {
+    // Get DAG
+    const dag = TextCorpus.getDAG();
+    try std.testing.expect(TextCorpus.hasDAG());
+
+    // Add a task
+    var dummy_ctx: usize = 0;
+    const ctx_ptr: *anyopaque = @ptrCast(&dummy_ctx);
+    const id = dag.addTask(dummyJobFn, ctx_ptr);
+    try std.testing.expect(id != null);
+
+    // Get stats
+    const stats = TextCorpus.getDAGStats();
+    try std.testing.expect(stats.total >= 1);
+
+    // Shutdown
+    TextCorpus.shutdownDAG();
+    try std.testing.expect(!TextCorpus.hasDAG());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
