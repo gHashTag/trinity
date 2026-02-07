@@ -17,7 +17,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const local_chat = @import("igla_local_chat.zig");
+const enhanced_chat = @import("igla_enhanced_chat.zig");
 const hybrid_chat = @import("igla_hybrid_chat.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -154,7 +154,7 @@ pub const ConversationHistory = struct {
 pub const FluentChatEngine = struct {
     allocator: std.mem.Allocator,
     history: ConversationHistory,
-    symbolic: local_chat.IglaLocalChat,
+    symbolic: enhanced_chat.IglaEnhancedChat,
     hybrid: ?hybrid_chat.IglaHybridChat,
     llm_enabled: bool,
 
@@ -170,7 +170,7 @@ pub const FluentChatEngine = struct {
         var engine = Self{
             .allocator = allocator,
             .history = ConversationHistory.init(allocator),
-            .symbolic = local_chat.IglaLocalChat.init(),
+            .symbolic = enhanced_chat.IglaEnhancedChat.init(),
             .hybrid = null,
             .llm_enabled = enable_llm,
             .total_queries = 0,
