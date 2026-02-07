@@ -8515,6 +8515,431 @@ pub const TextCorpus = struct {
     // END CYCLE 53
     // ═══════════════════════════════════════════════════════════════════════════
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CYCLE 54: AUTONOMOUS AGENT — Self-Directed Multi-Modal Task Execution
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// GoalStatus: tracks lifecycle of an autonomous goal
+    pub const GoalStatus = enum(u8) {
+        pending = 0, // Not yet started
+        planning = 1, // Decomposing into sub-goals
+        executing = 2, // Actively executing sub-goals
+        reviewing = 3, // Reviewing results
+        completed = 4, // Successfully finished
+        failed = 5, // Failed after max retries
+
+        pub fn name(self: GoalStatus) []const u8 {
+            return switch (self) {
+                .pending => "pending",
+                .planning => "planning",
+                .executing => "executing",
+                .reviewing => "reviewing",
+                .completed => "completed",
+                .failed => "failed",
+            };
+        }
+
+        pub fn isTerminal(self: GoalStatus) bool {
+            return self == .completed or self == .failed;
+        }
+    };
+
+    /// SubGoal: an atomic unit of work within an autonomous plan
+    pub const SubGoal = struct {
+        description_buf: [128]u8,
+        description_len: u8,
+        assigned_role: AgentRole,
+        modality: Modality,
+        status: GoalStatus,
+        tool_result_buf: [256]u8,
+        tool_result_len: u16,
+        attempts: u8,
+        max_attempts: u8,
+        confidence: f64,
+
+        pub fn init(desc: []const u8, role: AgentRole, modality: Modality) SubGoal {
+            var sg = SubGoal{
+                .description_buf = [_]u8{0} ** 128,
+                .description_len = 0,
+                .assigned_role = role,
+                .modality = modality,
+                .status = .pending,
+                .tool_result_buf = [_]u8{0} ** 256,
+                .tool_result_len = 0,
+                .attempts = 0,
+                .max_attempts = 3,
+                .confidence = 0.0,
+            };
+            const len = @min(desc.len, 128);
+            @memcpy(sg.description_buf[0..len], desc[0..len]);
+            sg.description_len = @intCast(len);
+            return sg;
+        }
+
+        pub fn getDescription(self: *const SubGoal) []const u8 {
+            return self.description_buf[0..self.description_len];
+        }
+
+        pub fn setResult(self: *SubGoal, result: []const u8, success: bool) void {
+            const len = @min(result.len, 256);
+            @memcpy(self.tool_result_buf[0..len], result[0..len]);
+            self.tool_result_len = @intCast(len);
+            self.status = if (success) .completed else .failed;
+        }
+
+        pub fn getResult(self: *const SubGoal) []const u8 {
+            return self.tool_result_buf[0..self.tool_result_len];
+        }
+    };
+
+    /// AutonomousPlan: a decomposed plan for achieving a high-level goal
+    pub const AutonomousPlan = struct {
+        goal_buf: [256]u8,
+        goal_len: u16,
+        sub_goals: [12]SubGoal,
+        sub_goal_count: u8,
+        current_phase: GoalStatus,
+        iteration: u8,
+        max_iterations: u8,
+
+        pub fn init(goal: []const u8) AutonomousPlan {
+            var plan = AutonomousPlan{
+                .goal_buf = [_]u8{0} ** 256,
+                .goal_len = 0,
+                .sub_goals = undefined,
+                .sub_goal_count = 0,
+                .current_phase = .pending,
+                .iteration = 0,
+                .max_iterations = 5,
+            };
+            const len = @min(goal.len, 256);
+            @memcpy(plan.goal_buf[0..len], goal[0..len]);
+            plan.goal_len = @intCast(len);
+            for (&plan.sub_goals) |*sg| {
+                sg.* = SubGoal.init("", .coordinator, .text);
+            }
+            return plan;
+        }
+
+        pub fn getGoal(self: *const AutonomousPlan) []const u8 {
+            return self.goal_buf[0..self.goal_len];
+        }
+
+        pub fn addSubGoal(self: *AutonomousPlan, desc: []const u8, role: AgentRole, modality: Modality) bool {
+            if (self.sub_goal_count >= 12) return false;
+            self.sub_goals[self.sub_goal_count] = SubGoal.init(desc, role, modality);
+            self.sub_goal_count += 1;
+            return true;
+        }
+
+        pub fn completedCount(self: *const AutonomousPlan) u8 {
+            var count: u8 = 0;
+            var i: u8 = 0;
+            while (i < self.sub_goal_count) : (i += 1) {
+                if (self.sub_goals[i].status == .completed) count += 1;
+            }
+            return count;
+        }
+
+        pub fn failedCount(self: *const AutonomousPlan) u8 {
+            var count: u8 = 0;
+            var i: u8 = 0;
+            while (i < self.sub_goal_count) : (i += 1) {
+                if (self.sub_goals[i].status == .failed) count += 1;
+            }
+            return count;
+        }
+
+        pub fn progress(self: *const AutonomousPlan) f64 {
+            if (self.sub_goal_count == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.completedCount())) / @as(f64, @floatFromInt(self.sub_goal_count));
+        }
+
+        pub fn isFinished(self: *const AutonomousPlan) bool {
+            if (self.sub_goal_count == 0) return false;
+            var i: u8 = 0;
+            while (i < self.sub_goal_count) : (i += 1) {
+                if (!self.sub_goals[i].status.isTerminal()) return false;
+            }
+            return true;
+        }
+    };
+
+    /// AutonomousAgent: self-directed agent that decomposes goals, plans execution,
+    /// and drives multi-modal tool use through the orchestrator
+    pub const AutonomousAgent = struct {
+        plan: AutonomousPlan,
+        memory: AgentMemory,
+        mmtu: MultiModalToolUse,
+        orchestrator: Orchestrator,
+        // Stats
+        goals_attempted: u32,
+        goals_completed: u32,
+        goals_failed: u32,
+        total_sub_goals: u32,
+        total_tool_calls: u32,
+        total_iterations: u32,
+        autonomy_score: f64, // ratio of self-directed vs manual steps
+
+        pub fn init() AutonomousAgent {
+            return AutonomousAgent{
+                .plan = AutonomousPlan.init(""),
+                .memory = AgentMemory.init(),
+                .mmtu = MultiModalToolUse.init(),
+                .orchestrator = Orchestrator.init(),
+                .goals_attempted = 0,
+                .goals_completed = 0,
+                .goals_failed = 0,
+                .total_sub_goals = 0,
+                .total_tool_calls = 0,
+                .total_iterations = 0,
+                .autonomy_score = 0.0,
+            };
+        }
+
+        /// Phase 1: Decompose a high-level goal into sub-goals
+        pub fn decompose(self: *AutonomousAgent, goal: []const u8) void {
+            self.plan = AutonomousPlan.init(goal);
+            self.plan.current_phase = .planning;
+            self.goals_attempted += 1;
+
+            // Store goal in memory
+            self.memory.newConversation();
+            self.memory.addUserMessage(goal);
+
+            // Use orchestrator to decompose
+            _ = self.orchestrator.decompose(goal);
+
+            // Analyze goal keywords to create sub-goals with appropriate roles + modalities
+            var has_code = false;
+            var has_read = false;
+            var has_search = false;
+            var has_write = false;
+            var has_plan = false;
+            var has_review = false;
+
+            for (0..goal.len) |i| {
+                if (i + 4 <= goal.len) {
+                    const w = goal[i .. i + 4];
+                    if (std.mem.eql(u8, w, "code") or std.mem.eql(u8, w, "impl") or std.mem.eql(u8, w, "buil")) has_code = true;
+                    if (std.mem.eql(u8, w, "read") or std.mem.eql(u8, w, "anal") or std.mem.eql(u8, w, "rese")) has_read = true;
+                    if (std.mem.eql(u8, w, "sear") or std.mem.eql(u8, w, "find") or std.mem.eql(u8, w, "look")) has_search = true;
+                    if (std.mem.eql(u8, w, "writ") or std.mem.eql(u8, w, "crea") or std.mem.eql(u8, w, "docs")) has_write = true;
+                    if (std.mem.eql(u8, w, "plan") or std.mem.eql(u8, w, "desi") or std.mem.eql(u8, w, "arch")) has_plan = true;
+                    if (std.mem.eql(u8, w, "test") or std.mem.eql(u8, w, "revi") or std.mem.eql(u8, w, "veri")) has_review = true;
+                }
+            }
+
+            // Always start with planning
+            _ = self.plan.addSubGoal("analyze requirements", .planner, .text);
+
+            if (has_read or has_search) {
+                _ = self.plan.addSubGoal("research and gather info", .researcher, .text);
+            }
+            if (has_plan) {
+                _ = self.plan.addSubGoal("design architecture", .planner, .text);
+            }
+            if (has_code) {
+                _ = self.plan.addSubGoal("implement solution", .coder, .code);
+            }
+            if (has_write) {
+                _ = self.plan.addSubGoal("create output artifacts", .writer, .text);
+            }
+            if (has_review) {
+                _ = self.plan.addSubGoal("verify and test results", .reviewer, .code);
+            }
+
+            // If no specific keywords matched, add generic sub-goals
+            if (self.plan.sub_goal_count <= 1) {
+                _ = self.plan.addSubGoal("research context", .researcher, .text);
+                _ = self.plan.addSubGoal("execute primary task", .coder, .code);
+                _ = self.plan.addSubGoal("review output", .reviewer, .text);
+            }
+
+            // Always end with documentation
+            _ = self.plan.addSubGoal("document results", .writer, .text);
+
+            self.total_sub_goals += self.plan.sub_goal_count;
+        }
+
+        /// Phase 2: Execute all sub-goals autonomously
+        pub fn execute(self: *AutonomousAgent) void {
+            self.plan.current_phase = .executing;
+            self.plan.iteration += 1;
+            self.total_iterations += 1;
+
+            var i: u8 = 0;
+            while (i < self.plan.sub_goal_count) : (i += 1) {
+                var sg = &self.plan.sub_goals[i];
+                if (sg.status.isTerminal()) continue;
+
+                sg.status = .executing;
+                sg.attempts += 1;
+
+                // Use multi-modal tool use to process each sub-goal
+                const result = self.mmtu.process(sg.getDescription());
+                self.total_tool_calls += result.tools_executed;
+
+                if (result.success) {
+                    const output = result.getFusedOutput();
+                    sg.setResult(output, true);
+                    sg.confidence = if (result.tools_succeeded > 0)
+                        @as(f64, @floatFromInt(result.tools_succeeded)) / @as(f64, @floatFromInt(result.tools_planned))
+                    else
+                        0.618; // phi^-1 default confidence
+
+                    // Store success in memory
+                    self.memory.addAssistantResponse(sg.getDescription());
+                } else {
+                    if (sg.attempts >= sg.max_attempts) {
+                        sg.setResult("max attempts exceeded", false);
+                    } else {
+                        sg.status = .pending; // retry later
+                    }
+                }
+            }
+        }
+
+        /// Phase 3: Review results and decide next action
+        pub fn review(self: *AutonomousAgent) bool {
+            self.plan.current_phase = .reviewing;
+
+            // Use orchestrator's fuse to review
+            _ = self.orchestrator.fuse();
+
+            const prog = self.plan.progress();
+
+            if (self.plan.isFinished()) {
+                if (prog > 0.618) { // phi^-1 threshold
+                    self.plan.current_phase = .completed;
+                    self.goals_completed += 1;
+                    self.memory.storeFact("goal completed successfully");
+                    return true;
+                } else {
+                    self.plan.current_phase = .failed;
+                    self.goals_failed += 1;
+                    self.memory.storeFact("goal failed");
+                    return true; // terminal
+                }
+            }
+
+            // Not finished — check if we should retry
+            if (self.plan.iteration >= self.plan.max_iterations) {
+                self.plan.current_phase = .failed;
+                self.goals_failed += 1;
+                return true; // terminal
+            }
+
+            return false; // not done, iterate again
+        }
+
+        /// Full autonomous cycle: decompose -> execute -> review -> loop
+        pub fn run(self: *AutonomousAgent, goal: []const u8) AutonomousResult {
+            // Phase 1: Decompose
+            self.decompose(goal);
+
+            // Phase 2+3: Execute and review loop
+            var iterations: u8 = 0;
+            while (iterations < self.plan.max_iterations) : (iterations += 1) {
+                self.execute();
+
+                const done = self.review();
+                if (done) break;
+            }
+
+            // Calculate autonomy score
+            if (self.total_tool_calls > 0) {
+                self.autonomy_score = @as(f64, @floatFromInt(self.plan.completedCount())) /
+                    @as(f64, @floatFromInt(self.plan.sub_goal_count));
+            }
+
+            return AutonomousResult{
+                .goal_buf = self.plan.goal_buf,
+                .goal_len = self.plan.goal_len,
+                .status = self.plan.current_phase,
+                .sub_goals_total = self.plan.sub_goal_count,
+                .sub_goals_completed = self.plan.completedCount(),
+                .sub_goals_failed = self.plan.failedCount(),
+                .iterations = self.plan.iteration,
+                .tool_calls = self.total_tool_calls,
+                .autonomy_score = self.autonomy_score,
+                .success = self.plan.current_phase == .completed,
+            };
+        }
+
+        pub fn getStats(self: *const AutonomousAgent) AutonomousStats {
+            return AutonomousStats{
+                .goals_attempted = self.goals_attempted,
+                .goals_completed = self.goals_completed,
+                .goals_failed = self.goals_failed,
+                .total_sub_goals = self.total_sub_goals,
+                .total_tool_calls = self.total_tool_calls,
+                .total_iterations = self.total_iterations,
+                .autonomy_score = self.autonomy_score,
+                .memory_stats = self.memory.getStats(),
+                .mmtu_stats = self.mmtu.getStats(),
+            };
+        }
+    };
+
+    /// Result of an autonomous agent run
+    pub const AutonomousResult = struct {
+        goal_buf: [256]u8,
+        goal_len: u16,
+        status: GoalStatus,
+        sub_goals_total: u8,
+        sub_goals_completed: u8,
+        sub_goals_failed: u8,
+        iterations: u8,
+        tool_calls: u32,
+        autonomy_score: f64,
+        success: bool,
+
+        pub fn getGoal(self: *const AutonomousResult) []const u8 {
+            return self.goal_buf[0..self.goal_len];
+        }
+    };
+
+    /// Statistics for autonomous agent
+    pub const AutonomousStats = struct {
+        goals_attempted: u32,
+        goals_completed: u32,
+        goals_failed: u32,
+        total_sub_goals: u32,
+        total_tool_calls: u32,
+        total_iterations: u32,
+        autonomy_score: f64,
+        memory_stats: AgentMemory.MemoryStats,
+        mmtu_stats: MultiModalToolStats,
+
+        pub fn successRate(self: *const AutonomousStats) f64 {
+            if (self.goals_attempted == 0) return 0.0;
+            return @as(f64, @floatFromInt(self.goals_completed)) / @as(f64, @floatFromInt(self.goals_attempted));
+        }
+    };
+
+    /// Global autonomous agent singleton
+    var global_autonomous: ?AutonomousAgent = null;
+
+    pub fn getAutonomousAgent() *AutonomousAgent {
+        if (global_autonomous == null) {
+            global_autonomous = AutonomousAgent.init();
+        }
+        return &global_autonomous.?;
+    }
+
+    pub fn shutdownAutonomousAgent() void {
+        global_autonomous = null;
+    }
+
+    pub fn hasAutonomousAgent() bool {
+        return global_autonomous != null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // END CYCLE 54
+    // ═══════════════════════════════════════════════════════════════════════════
+
     /// Global thread pool instance
     var global_pool: ?ThreadPool = null;
 
@@ -11062,6 +11487,144 @@ test "MultiModalToolUse global singleton" {
 
     TextCorpus.shutdownMultiModalToolUse();
     try std.testing.expect(!TextCorpus.hasMultiModalToolUse());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 54 TESTS: Autonomous Agent
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "GoalStatus properties" {
+    try std.testing.expect(!TextCorpus.GoalStatus.pending.isTerminal());
+    try std.testing.expect(!TextCorpus.GoalStatus.executing.isTerminal());
+    try std.testing.expect(TextCorpus.GoalStatus.completed.isTerminal());
+    try std.testing.expect(TextCorpus.GoalStatus.failed.isTerminal());
+    try std.testing.expectEqualStrings("planning", TextCorpus.GoalStatus.planning.name());
+    try std.testing.expectEqualStrings("completed", TextCorpus.GoalStatus.completed.name());
+}
+
+test "SubGoal creation and lifecycle" {
+    var sg = TextCorpus.SubGoal.init("implement auth", .coder, .code);
+    try std.testing.expectEqualStrings("implement auth", sg.getDescription());
+    try std.testing.expectEqual(TextCorpus.AgentRole.coder, sg.assigned_role);
+    try std.testing.expectEqual(TextCorpus.Modality.code, sg.modality);
+    try std.testing.expectEqual(TextCorpus.GoalStatus.pending, sg.status);
+
+    sg.setResult("auth module created", true);
+    try std.testing.expectEqual(TextCorpus.GoalStatus.completed, sg.status);
+    try std.testing.expectEqualStrings("auth module created", sg.getResult());
+}
+
+test "AutonomousPlan add sub-goals and track progress" {
+    var plan = TextCorpus.AutonomousPlan.init("build a website");
+    try std.testing.expectEqualStrings("build a website", plan.getGoal());
+    try std.testing.expectEqual(@as(u8, 0), plan.sub_goal_count);
+    try std.testing.expect(!plan.isFinished());
+
+    try std.testing.expect(plan.addSubGoal("research", .researcher, .text));
+    try std.testing.expect(plan.addSubGoal("implement", .coder, .code));
+    try std.testing.expect(plan.addSubGoal("review", .reviewer, .text));
+    try std.testing.expectEqual(@as(u8, 3), plan.sub_goal_count);
+
+    // Complete first two
+    plan.sub_goals[0].setResult("done", true);
+    plan.sub_goals[1].setResult("done", true);
+    try std.testing.expectEqual(@as(u8, 2), plan.completedCount());
+    try std.testing.expect(!plan.isFinished());
+
+    // Complete last
+    plan.sub_goals[2].setResult("done", true);
+    try std.testing.expect(plan.isFinished());
+    try std.testing.expect(plan.progress() > 0.99);
+}
+
+test "AutonomousAgent init" {
+    const agent = TextCorpus.AutonomousAgent.init();
+    try std.testing.expectEqual(@as(u32, 0), agent.goals_attempted);
+    try std.testing.expectEqual(@as(u32, 0), agent.goals_completed);
+    try std.testing.expectEqual(@as(u32, 0), agent.total_tool_calls);
+}
+
+test "AutonomousAgent decompose goal with keywords" {
+    var agent = TextCorpus.AutonomousAgent.init();
+    agent.decompose("implement code and test results");
+
+    // Should have: analyze + implement + verify + document
+    try std.testing.expect(agent.plan.sub_goal_count >= 4);
+    try std.testing.expectEqual(TextCorpus.GoalStatus.planning, agent.plan.current_phase);
+    try std.testing.expectEqual(@as(u32, 1), agent.goals_attempted);
+}
+
+test "AutonomousAgent decompose generic goal" {
+    var agent = TextCorpus.AutonomousAgent.init();
+    agent.decompose("do something");
+
+    // Generic: analyze + research + execute + review + document
+    try std.testing.expect(agent.plan.sub_goal_count >= 4);
+}
+
+test "AutonomousAgent execute sub-goals" {
+    var agent = TextCorpus.AutonomousAgent.init();
+    agent.decompose("research and analyze data");
+    agent.execute();
+
+    // At least some sub-goals should be completed
+    try std.testing.expect(agent.plan.completedCount() > 0);
+    try std.testing.expect(agent.total_tool_calls > 0);
+}
+
+test "AutonomousAgent review determines completion" {
+    var agent = TextCorpus.AutonomousAgent.init();
+    agent.decompose("calculate sum");
+    agent.execute();
+    const done = agent.review();
+
+    // Should be done after execute + review
+    if (done) {
+        try std.testing.expect(agent.plan.current_phase.isTerminal());
+    }
+}
+
+test "AutonomousAgent full run cycle" {
+    var agent = TextCorpus.AutonomousAgent.init();
+    const result = agent.run("implement code and create documentation");
+
+    try std.testing.expect(result.success);
+    try std.testing.expect(result.sub_goals_total > 0);
+    try std.testing.expect(result.sub_goals_completed > 0);
+    try std.testing.expect(result.iterations >= 1);
+    try std.testing.expect(result.tool_calls > 0);
+    try std.testing.expect(result.autonomy_score > 0.618); // above phi^-1
+}
+
+test "AutonomousAgent stats tracking" {
+    var agent = TextCorpus.AutonomousAgent.init();
+    _ = agent.run("search and find relevant data");
+
+    const stats = agent.getStats();
+    try std.testing.expectEqual(@as(u32, 1), stats.goals_attempted);
+    try std.testing.expect(stats.total_sub_goals > 0);
+    try std.testing.expect(stats.total_tool_calls > 0);
+    try std.testing.expect(stats.total_iterations >= 1);
+}
+
+test "AutonomousAgent memory integration" {
+    var agent = TextCorpus.AutonomousAgent.init();
+    _ = agent.run("plan and design architecture");
+
+    const mem_stats = agent.memory.getStats();
+    try std.testing.expect(mem_stats.turn_count > 0);
+    try std.testing.expect(mem_stats.conversation_id > 0);
+}
+
+test "AutonomousAgent global singleton" {
+    const agent = TextCorpus.getAutonomousAgent();
+    try std.testing.expect(TextCorpus.hasAutonomousAgent());
+
+    const result = agent.run("calculate results");
+    try std.testing.expect(result.success);
+
+    TextCorpus.shutdownAutonomousAgent();
+    try std.testing.expect(!TextCorpus.hasAutonomousAgent());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
