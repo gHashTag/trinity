@@ -697,6 +697,75 @@ behaviors:
     when: Checking if pool exists
     then: Call TextCorpus.hasGlobalPool()
 
+  # WORK-STEALING POOL (Load balancing)
+  - name: realGetStealingPool
+    given: Global stealing pool
+    when: Getting work-stealing pool
+    then: Call TextCorpus.getGlobalStealingPool()
+
+  - name: realHasStealingPool
+    given: Stealing pool state
+    when: Checking if stealing pool exists
+    then: Call TextCorpus.hasGlobalStealingPool()
+
+  - name: realGetStealStats
+    given: Stealing pool
+    when: Getting steal statistics
+    then: Call TextCorpus.getStealStats()
+
+  # LOCK-FREE CHASE-LEV DEQUE (Zero contention)
+  - name: realGetLockFreePool
+    given: Global lock-free pool
+    when: Getting lock-free pool
+    then: Call TextCorpus.getGlobalLockFreePool()
+
+  - name: realHasLockFreePool
+    given: Lock-free pool state
+    when: Checking if lock-free pool exists
+    then: Call TextCorpus.hasGlobalLockFreePool()
+
+  - name: realGetLockFreeStats
+    given: Lock-free pool
+    when: Getting lock-free statistics
+    then: Call TextCorpus.getLockFreeStats()
+
+  # OPTIMIZED MEMORY ORDERING (Relaxed/Acquire-Release)
+  - name: realGetOptimizedPool
+    given: Global optimized pool
+    when: Getting optimized pool
+    then: Call TextCorpus.getGlobalOptimizedPool()
+
+  - name: realHasOptimizedPool
+    given: Optimized pool state
+    when: Checking if optimized pool exists
+    then: Call TextCorpus.hasGlobalOptimizedPool()
+
+  - name: realGetOptimizedStats
+    given: Optimized pool
+    when: Getting optimized statistics
+    then: Call TextCorpus.getOptimizedStats()
+
+  # ADAPTIVE WORK-STEALING (Dynamic Threshold Tuning)
+  - name: realGetAdaptivePool
+    given: Global adaptive pool
+    when: Getting adaptive pool
+    then: Call TextCorpus.getGlobalAdaptivePool()
+
+  - name: realHasAdaptivePool
+    given: Adaptive pool state
+    when: Checking if adaptive pool exists
+    then: Call TextCorpus.hasGlobalAdaptivePool()
+
+  - name: realGetAdaptiveStats
+    given: Adaptive pool
+    when: Getting adaptive statistics
+    then: Call TextCorpus.getAdaptiveStats()
+
+  - name: realGetPhiInverse
+    given: Golden ratio constant
+    when: Getting PHI_INVERSE
+    then: Return TextCorpus.PHI_INVERSE
+
   # Processing
   - name: processVSA
     given: VSARequest

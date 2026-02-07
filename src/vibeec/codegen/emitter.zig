@@ -889,6 +889,148 @@ pub const ZigCodeGen = struct {
             return true;
         }
 
+        // WORK-STEALING POOL (Load balancing)
+        if (std_mem.eql(u8, b.name, "realGetStealingPool")) {
+            try self.builder.writeLine("/// Get global work-stealing pool");
+            try self.builder.writeLine("pub fn realGetStealingPool() *vsa.TextCorpus.WorkStealingPool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.getGlobalStealingPool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHasStealingPool")) {
+            try self.builder.writeLine("/// Check if work-stealing pool exists");
+            try self.builder.writeLine("pub fn realHasStealingPool() bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.hasGlobalStealingPool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetStealStats")) {
+            try self.builder.writeLine("/// Get work-stealing statistics");
+            try self.builder.writeLine("pub const StealStats = struct { executed: usize, stolen: usize, efficiency: f64 };");
+            try self.builder.writeLine("pub fn realGetStealStats() StealStats {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const stats = vsa.TextCorpus.getStealStats();");
+            try self.builder.writeLine("return StealStats{ .executed = stats.executed, .stolen = stats.stolen, .efficiency = stats.efficiency };");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // LOCK-FREE CHASE-LEV DEQUE (Zero contention)
+        if (std_mem.eql(u8, b.name, "realGetLockFreePool")) {
+            try self.builder.writeLine("/// Get global lock-free pool");
+            try self.builder.writeLine("pub fn realGetLockFreePool() *vsa.TextCorpus.LockFreePool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.getGlobalLockFreePool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHasLockFreePool")) {
+            try self.builder.writeLine("/// Check if lock-free pool exists");
+            try self.builder.writeLine("pub fn realHasLockFreePool() bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.hasGlobalLockFreePool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetLockFreeStats")) {
+            try self.builder.writeLine("/// Get lock-free statistics");
+            try self.builder.writeLine("pub const LockFreeStats = struct { executed: usize, stolen: usize, cas_retries: usize, efficiency: f64 };");
+            try self.builder.writeLine("pub fn realGetLockFreeStats() LockFreeStats {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const stats = vsa.TextCorpus.getLockFreeStats();");
+            try self.builder.writeLine("return LockFreeStats{ .executed = stats.executed, .stolen = stats.stolen, .cas_retries = stats.cas_retries, .efficiency = stats.efficiency };");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // OPTIMIZED MEMORY ORDERING (Relaxed/Acquire-Release)
+        if (std_mem.eql(u8, b.name, "realGetOptimizedPool")) {
+            try self.builder.writeLine("/// Get global optimized pool");
+            try self.builder.writeLine("pub fn realGetOptimizedPool() *vsa.TextCorpus.OptimizedPool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.getGlobalOptimizedPool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHasOptimizedPool")) {
+            try self.builder.writeLine("/// Check if optimized pool exists");
+            try self.builder.writeLine("pub fn realHasOptimizedPool() bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.hasGlobalOptimizedPool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetOptimizedStats")) {
+            try self.builder.writeLine("/// Get optimized statistics");
+            try self.builder.writeLine("pub const OptimizedStats = struct { executed: usize, stolen: usize, ordering_efficiency: f64 };");
+            try self.builder.writeLine("pub fn realGetOptimizedStats() OptimizedStats {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const stats = vsa.TextCorpus.getOptimizedStats();");
+            try self.builder.writeLine("return OptimizedStats{ .executed = stats.executed, .stolen = stats.stolen, .ordering_efficiency = stats.ordering_efficiency };");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // ADAPTIVE WORK-STEALING (Cycle 43)
+        if (std_mem.eql(u8, b.name, "realGetAdaptivePool")) {
+            try self.builder.writeLine("/// Get global adaptive pool");
+            try self.builder.writeLine("pub fn realGetAdaptivePool() *vsa.TextCorpus.AdaptivePool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.getGlobalAdaptivePool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realHasAdaptivePool")) {
+            try self.builder.writeLine("/// Check if adaptive pool exists");
+            try self.builder.writeLine("pub fn realHasAdaptivePool() bool {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.hasGlobalAdaptivePool();");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetAdaptiveStats")) {
+            try self.builder.writeLine("/// Get adaptive statistics");
+            try self.builder.writeLine("pub const AdaptiveStats = struct { executed: usize, stolen: usize, success_rate: f64, efficiency: f64 };");
+            try self.builder.writeLine("pub fn realGetAdaptiveStats() AdaptiveStats {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const stats = vsa.TextCorpus.getAdaptiveStats();");
+            try self.builder.writeLine("return AdaptiveStats{ .executed = stats.executed, .stolen = stats.stolen, .success_rate = stats.success_rate, .efficiency = stats.efficiency };");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        if (std_mem.eql(u8, b.name, "realGetPhiInverse")) {
+            try self.builder.writeLine("/// Get golden ratio inverse (φ⁻¹ = 0.618...)");
+            try self.builder.writeLine("pub fn realGetPhiInverse() f64 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("return vsa.TextCorpus.PHI_INVERSE;");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
         return false;
     }
 };

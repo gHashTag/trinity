@@ -428,6 +428,68 @@ pub const TestGenerator = struct {
             // Global pool check test
             try self.builder.writeLine("const has_pool = realHasGlobalPool();");
             try self.builder.writeLine("_ = has_pool;"); // Just verify it compiles
+        } else if (std.mem.eql(u8, name, "realGetStealingPool")) {
+            // Work-stealing pool test
+            try self.builder.writeLine("const pool = realGetStealingPool();");
+            try self.builder.writeLine("_ = pool;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realHasStealingPool")) {
+            // Work-stealing pool check test
+            try self.builder.writeLine("const has_stealing = realHasStealingPool();");
+            try self.builder.writeLine("_ = has_stealing;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realGetStealStats")) {
+            // Work-stealing stats test
+            try self.builder.writeLine("const stats = realGetStealStats();");
+            try self.builder.writeLine("_ = stats.executed;");
+            try self.builder.writeLine("_ = stats.stolen;");
+            try self.builder.writeLine("_ = stats.efficiency;");
+        } else if (std.mem.eql(u8, name, "realGetLockFreePool")) {
+            // Lock-free pool test
+            try self.builder.writeLine("const pool = realGetLockFreePool();");
+            try self.builder.writeLine("_ = pool;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realHasLockFreePool")) {
+            // Lock-free pool check test
+            try self.builder.writeLine("const has_lockfree = realHasLockFreePool();");
+            try self.builder.writeLine("_ = has_lockfree;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realGetLockFreeStats")) {
+            // Lock-free stats test
+            try self.builder.writeLine("const lf_stats = realGetLockFreeStats();");
+            try self.builder.writeLine("_ = lf_stats.executed;");
+            try self.builder.writeLine("_ = lf_stats.stolen;");
+            try self.builder.writeLine("_ = lf_stats.cas_retries;");
+            try self.builder.writeLine("_ = lf_stats.efficiency;");
+        } else if (std.mem.eql(u8, name, "realGetOptimizedPool")) {
+            // Optimized pool test
+            try self.builder.writeLine("const opt_pool = realGetOptimizedPool();");
+            try self.builder.writeLine("_ = opt_pool;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realHasOptimizedPool")) {
+            // Optimized pool check test
+            try self.builder.writeLine("const has_optimized = realHasOptimizedPool();");
+            try self.builder.writeLine("_ = has_optimized;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realGetOptimizedStats")) {
+            // Optimized stats test
+            try self.builder.writeLine("const opt_stats = realGetOptimizedStats();");
+            try self.builder.writeLine("_ = opt_stats.executed;");
+            try self.builder.writeLine("_ = opt_stats.stolen;");
+            try self.builder.writeLine("_ = opt_stats.ordering_efficiency;");
+        } else if (std.mem.eql(u8, name, "realGetAdaptivePool")) {
+            // Adaptive pool test (Cycle 43)
+            try self.builder.writeLine("const adp_pool = realGetAdaptivePool();");
+            try self.builder.writeLine("_ = adp_pool;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realHasAdaptivePool")) {
+            // Adaptive pool check test
+            try self.builder.writeLine("const has_adaptive = realHasAdaptivePool();");
+            try self.builder.writeLine("_ = has_adaptive;"); // Verify it compiles
+        } else if (std.mem.eql(u8, name, "realGetAdaptiveStats")) {
+            // Adaptive stats test
+            try self.builder.writeLine("const adp_stats = realGetAdaptiveStats();");
+            try self.builder.writeLine("_ = adp_stats.executed;");
+            try self.builder.writeLine("_ = adp_stats.stolen;");
+            try self.builder.writeLine("_ = adp_stats.success_rate;");
+            try self.builder.writeLine("_ = adp_stats.efficiency;");
+        } else if (std.mem.eql(u8, name, "realGetPhiInverse")) {
+            // PHI_INVERSE test
+            try self.builder.writeLine("const phi_inv = realGetPhiInverse();");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(@as(f64, 0.618), phi_inv, 0.001);");
         } else {
             try self.builder.writeLine("// TODO: Add test assertions");
         }
