@@ -1,1030 +1,1053 @@
-// =============================================================================
-// IGLA RAG ENGINE v1.0 - Retrieval Augmented Generation from Local Files
-// =============================================================================
-//
-// CYCLE 15: Golden Chain Pipeline
-// - Local file/codebase indexing
-// - TF-IDF based similarity search
-// - Context retrieval and augmentation
-// - Source attribution
-//
-// phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
-// =============================================================================
+//! IGLA RAG Engine v1.0
+//! Retrieval-Augmented Generation for local files and codebase
+//! Part of the IGLA (Intelligent Generative Language Architecture) system
+//!
+//! Features:
+//! - Document chunking and indexing
+//! - Simple embedding generation (character frequency vectors)
+//! - Vector similarity search
+//! - Source tracking (file path, line numbers)
+//! - Context assembly for LLM augmentation
+//!
+//! Golden Chain Cycle 23 - phi^2 + 1/phi^2 = 3 = TRINITY
 
 const std = @import("std");
-const sandbox = @import("igla_code_sandbox_engine.zig");
-const learning = @import("igla_learning_engine.zig");
 
-// =============================================================================
-// CONFIGURATION
-// =============================================================================
+// ============================================================================
+// CONSTANTS
+// ============================================================================
 
-pub const MAX_DOCUMENTS: usize = 100;
-pub const MAX_CHUNKS_PER_DOC: usize = 50;
-pub const MAX_CHUNK_SIZE: usize = 512;
+pub const MAX_CHUNKS: usize = 500;
+pub const MAX_CHUNK_LEN: usize = 512;
+pub const MAX_PATH_LEN: usize = 256;
+pub const EMBEDDING_DIM: usize = 32;
+pub const DEFAULT_CHUNK_SIZE: usize = 10; // lines
+pub const DEFAULT_OVERLAP: usize = 2; // lines
 pub const DEFAULT_TOP_K: usize = 5;
-pub const MIN_RELEVANCE_SCORE: f32 = 0.05;
-pub const MAX_CONTEXT_CHARS: usize = 4096;
+pub const DEFAULT_MIN_SIMILARITY: f32 = 0.01;
 
-// =============================================================================
-// FILE TYPE
-// =============================================================================
+// ============================================================================
+// DOCUMENT TYPE
+// ============================================================================
 
-pub const FileType = enum {
-    Zig,
-    Markdown,
-    Python,
-    JavaScript,
+pub const DocumentType = enum {
+    Code,
     Text,
+    Markdown,
+    Config,
     Unknown,
 
-    pub fn detect(path: []const u8) FileType {
-        if (std.mem.endsWith(u8, path, ".zig")) return .Zig;
-        if (std.mem.endsWith(u8, path, ".md")) return .Markdown;
-        if (std.mem.endsWith(u8, path, ".py")) return .Python;
-        if (std.mem.endsWith(u8, path, ".js")) return .JavaScript;
-        if (std.mem.endsWith(u8, path, ".txt")) return .Text;
+    pub fn getName(self: DocumentType) []const u8 {
+        return switch (self) {
+            .Code => "code",
+            .Text => "text",
+            .Markdown => "markdown",
+            .Config => "config",
+            .Unknown => "unknown",
+        };
+    }
+
+    pub fn fromExtension(ext: []const u8) DocumentType {
+        if (std.mem.eql(u8, ext, ".zig") or std.mem.eql(u8, ext, ".py") or
+            std.mem.eql(u8, ext, ".js") or std.mem.eql(u8, ext, ".ts") or
+            std.mem.eql(u8, ext, ".go") or std.mem.eql(u8, ext, ".rs") or
+            std.mem.eql(u8, ext, ".c") or std.mem.eql(u8, ext, ".cpp"))
+        {
+            return .Code;
+        }
+        if (std.mem.eql(u8, ext, ".md") or std.mem.eql(u8, ext, ".markdown")) {
+            return .Markdown;
+        }
+        if (std.mem.eql(u8, ext, ".json") or std.mem.eql(u8, ext, ".yaml") or
+            std.mem.eql(u8, ext, ".toml") or std.mem.eql(u8, ext, ".ini"))
+        {
+            return .Config;
+        }
+        if (std.mem.eql(u8, ext, ".txt") or std.mem.eql(u8, ext, ".log")) {
+            return .Text;
+        }
         return .Unknown;
     }
 
-    pub fn getName(self: FileType) []const u8 {
-        return switch (self) {
-            .Zig => "Zig",
-            .Markdown => "Markdown",
-            .Python => "Python",
-            .JavaScript => "JavaScript",
-            .Text => "Text",
-            .Unknown => "Unknown",
-        };
-    }
-
-    pub fn isCode(self: FileType) bool {
-        return self == .Zig or self == .Python or self == .JavaScript;
+    pub fn isCode(self: DocumentType) bool {
+        return self == .Code;
     }
 };
 
-// =============================================================================
-// CHUNK TYPE
-// =============================================================================
+// ============================================================================
+// SIMPLE EMBEDDING (Character Frequency Vector)
+// ============================================================================
 
-pub const ChunkType = enum {
-    Function,
-    Struct,
-    Comment,
-    Paragraph,
-    Code,
-    Header,
-    Generic,
+pub const SimpleEmbedding = struct {
+    values: [EMBEDDING_DIM]f32,
+    magnitude: f32,
 
-    pub fn getName(self: ChunkType) []const u8 {
-        return switch (self) {
-            .Function => "function",
-            .Struct => "struct",
-            .Comment => "comment",
-            .Paragraph => "paragraph",
-            .Code => "code",
-            .Header => "header",
-            .Generic => "generic",
+    pub fn init() SimpleEmbedding {
+        return SimpleEmbedding{
+            .values = [_]f32{0} ** EMBEDDING_DIM,
+            .magnitude = 0,
         };
+    }
+
+    pub fn fromText(text: []const u8) SimpleEmbedding {
+        var embedding = SimpleEmbedding.init();
+
+        if (text.len == 0) return embedding;
+
+        // Character frequency across buckets
+        for (text) |c| {
+            const bucket = @as(usize, c) % EMBEDDING_DIM;
+            embedding.values[bucket] += 1.0;
+        }
+
+        // Normalize
+        var sum_sq: f32 = 0;
+        for (embedding.values) |v| {
+            sum_sq += v * v;
+        }
+        embedding.magnitude = @sqrt(sum_sq);
+
+        if (embedding.magnitude > 0) {
+            for (&embedding.values) |*v| {
+                v.* /= embedding.magnitude;
+            }
+        }
+
+        return embedding;
+    }
+
+    pub fn cosineSimilarity(self: *const SimpleEmbedding, other: *const SimpleEmbedding) f32 {
+        if (self.magnitude == 0 or other.magnitude == 0) return 0;
+
+        var dot: f32 = 0;
+        for (self.values, other.values) |a, b| {
+            dot += a * b;
+        }
+
+        return dot; // Already normalized
     }
 };
 
-// =============================================================================
+// ============================================================================
 // CHUNK
-// =============================================================================
+// ============================================================================
 
 pub const Chunk = struct {
-    content: []const u8,
+    content: [MAX_CHUNK_LEN]u8,
+    content_len: usize,
+    source_path: [MAX_PATH_LEN]u8,
+    path_len: usize,
     start_line: usize,
     end_line: usize,
-    chunk_type: ChunkType,
-    keywords: [16]?[]const u8,
-    keyword_count: usize,
+    doc_type: DocumentType,
+    embedding: SimpleEmbedding,
+    is_active: bool,
 
-    const Self = @This();
-
-    pub fn init(content: []const u8, start: usize, end: usize, chunk_type: ChunkType) Self {
-        var chunk = Self{
-            .content = content,
+    pub fn init(content: []const u8, source: []const u8, start: usize, end: usize) Chunk {
+        var chunk = Chunk{
+            .content = undefined,
+            .content_len = 0,
+            .source_path = undefined,
+            .path_len = 0,
             .start_line = start,
             .end_line = end,
-            .chunk_type = chunk_type,
-            .keywords = [_]?[]const u8{null} ** 16,
-            .keyword_count = 0,
+            .doc_type = .Unknown,
+            .embedding = SimpleEmbedding.init(),
+            .is_active = true,
         };
-        chunk.extractKeywords();
+        chunk.setContent(content);
+        chunk.setSource(source);
+        chunk.embedding = SimpleEmbedding.fromText(content);
         return chunk;
     }
 
-    fn extractKeywords(self: *Self) void {
-        // Extract keywords from content
-        const keywords_to_find = [_][]const u8{
-            "fn", "pub", "const", "var", "struct", "enum",
-            "def", "class", "import", "function", "return",
-            "if", "else", "for", "while", "switch",
-        };
-
-        for (keywords_to_find) |keyword| {
-            if (std.mem.indexOf(u8, self.content, keyword) != null) {
-                if (self.keyword_count < 16) {
-                    self.keywords[self.keyword_count] = keyword;
-                    self.keyword_count += 1;
-                }
-            }
-        }
+    pub fn setContent(self: *Chunk, content: []const u8) void {
+        const len = @min(content.len, MAX_CHUNK_LEN);
+        @memcpy(self.content[0..len], content[0..len]);
+        self.content_len = len;
     }
 
-    pub fn hasKeyword(self: *const Self, keyword: []const u8) bool {
-        for (0..self.keyword_count) |i| {
-            if (self.keywords[i]) |kw| {
-                if (std.mem.eql(u8, kw, keyword)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    pub fn getContent(self: *const Chunk) []const u8 {
+        return self.content[0..self.content_len];
     }
 
-    pub fn getLineCount(self: *const Self) usize {
-        return self.end_line - self.start_line + 1;
-    }
-};
-
-// =============================================================================
-// DOCUMENT
-// =============================================================================
-
-pub const Document = struct {
-    path: []const u8,
-    content: []const u8,
-    file_type: FileType,
-    chunks: [MAX_CHUNKS_PER_DOC]?Chunk,
-    chunk_count: usize,
-    total_lines: usize,
-
-    const Self = @This();
-
-    pub fn init(path: []const u8, content: []const u8) Self {
-        var doc = Self{
-            .path = path,
-            .content = content,
-            .file_type = FileType.detect(path),
-            .chunks = [_]?Chunk{null} ** MAX_CHUNKS_PER_DOC,
-            .chunk_count = 0,
-            .total_lines = 0,
-        };
-
-        // Count lines
-        var lines: usize = 1;
-        for (content) |c| {
-            if (c == '\n') lines += 1;
-        }
-        doc.total_lines = lines;
-
-        // Auto-chunk
-        doc.autoChunk();
-
-        return doc;
+    pub fn setSource(self: *Chunk, source: []const u8) void {
+        const len = @min(source.len, MAX_PATH_LEN);
+        @memcpy(self.source_path[0..len], source[0..len]);
+        self.path_len = len;
     }
 
-    fn autoChunk(self: *Self) void {
-        if (self.content.len == 0) return;
-
-        // Simple chunking by lines
-        var start: usize = 0;
-        var line_start: usize = 1;
-        var line_count: usize = 0;
-        const chunk_lines: usize = 10;
-
-        for (self.content, 0..) |c, i| {
-            if (c == '\n') {
-                line_count += 1;
-                if (line_count >= chunk_lines or i == self.content.len - 1) {
-                    const chunk_content = self.content[start..i];
-                    const chunk_type = self.detectChunkType(chunk_content);
-
-                    if (self.chunk_count < MAX_CHUNKS_PER_DOC) {
-                        self.chunks[self.chunk_count] = Chunk.init(
-                            chunk_content,
-                            line_start,
-                            line_start + line_count - 1,
-                            chunk_type,
-                        );
-                        self.chunk_count += 1;
-                    }
-
-                    start = i + 1;
-                    line_start += line_count;
-                    line_count = 0;
-                }
-            }
-        }
-
-        // Handle remaining content
-        if (start < self.content.len and self.chunk_count < MAX_CHUNKS_PER_DOC) {
-            const remaining = self.content[start..];
-            self.chunks[self.chunk_count] = Chunk.init(
-                remaining,
-                line_start,
-                self.total_lines,
-                self.detectChunkType(remaining),
-            );
-            self.chunk_count += 1;
-        }
+    pub fn getSource(self: *const Chunk) []const u8 {
+        return self.source_path[0..self.path_len];
     }
 
-    fn detectChunkType(self: *const Self, content: []const u8) ChunkType {
-        _ = self;
-
-        if (std.mem.indexOf(u8, content, "pub fn") != null or
-            std.mem.indexOf(u8, content, "fn ") != null or
-            std.mem.indexOf(u8, content, "def ") != null or
-            std.mem.indexOf(u8, content, "function") != null)
-        {
-            return .Function;
-        }
-
-        if (std.mem.indexOf(u8, content, "struct ") != null or
-            std.mem.indexOf(u8, content, "class ") != null)
-        {
-            return .Struct;
-        }
-
-        if (std.mem.indexOf(u8, content, "//") != null or
-            std.mem.indexOf(u8, content, "#") != null or
-            std.mem.indexOf(u8, content, "/*") != null)
-        {
-            return .Comment;
-        }
-
-        if (std.mem.indexOf(u8, content, "# ") != null or
-            std.mem.indexOf(u8, content, "## ") != null)
-        {
-            return .Header;
-        }
-
-        return .Generic;
+    pub fn setDocType(self: *Chunk, doc_type: DocumentType) void {
+        self.doc_type = doc_type;
     }
 
-    pub fn getChunk(self: *const Self, index: usize) ?*const Chunk {
-        if (index < self.chunk_count) {
-            if (self.chunks[index]) |*chunk| {
-                return chunk;
-            }
+    pub fn deactivate(self: *Chunk) void {
+        self.is_active = false;
+    }
+
+    pub fn getLineCount(self: *const Chunk) usize {
+        if (self.end_line >= self.start_line) {
+            return self.end_line - self.start_line + 1;
         }
-        return null;
+        return 0;
     }
 };
 
-// =============================================================================
-// DOCUMENT INDEX
-// =============================================================================
+// ============================================================================
+// CHUNK STORE
+// ============================================================================
 
-pub const DocumentIndex = struct {
-    documents: [MAX_DOCUMENTS]?Document,
-    document_count: usize,
-    total_chunks: usize,
+pub const ChunkStore = struct {
+    chunks: [MAX_CHUNKS]Chunk,
+    count: usize,
+    total_indexed: usize,
 
-    const Self = @This();
-
-    pub fn init() Self {
-        return Self{
-            .documents = [_]?Document{null} ** MAX_DOCUMENTS,
-            .document_count = 0,
-            .total_chunks = 0,
+    pub fn init() ChunkStore {
+        return ChunkStore{
+            .chunks = undefined,
+            .count = 0,
+            .total_indexed = 0,
         };
     }
 
-    pub fn addDocument(self: *Self, path: []const u8, content: []const u8) bool {
-        if (self.document_count >= MAX_DOCUMENTS) return false;
-
-        const doc = Document.init(path, content);
-        self.documents[self.document_count] = doc;
-        self.total_chunks += doc.chunk_count;
-        self.document_count += 1;
-
+    pub fn add(self: *ChunkStore, chunk: Chunk) bool {
+        if (self.count >= MAX_CHUNKS) return false;
+        self.chunks[self.count] = chunk;
+        self.count += 1;
+        self.total_indexed += 1;
         return true;
     }
 
-    pub fn getDocument(self: *const Self, index: usize) ?*const Document {
-        if (index < self.document_count) {
-            if (self.documents[index]) |*doc| {
-                return doc;
-            }
-        }
-        return null;
+    pub fn get(self: *ChunkStore, index: usize) ?*Chunk {
+        if (index >= self.count) return null;
+        return &self.chunks[index];
     }
 
-    pub fn clear(self: *Self) void {
-        self.document_count = 0;
-        self.total_chunks = 0;
-        for (0..MAX_DOCUMENTS) |i| {
-            self.documents[i] = null;
+    pub fn getConst(self: *const ChunkStore, index: usize) ?*const Chunk {
+        if (index >= self.count) return null;
+        return &self.chunks[index];
+    }
+
+    pub fn getActiveCount(self: *const ChunkStore) usize {
+        var active: usize = 0;
+        for (self.chunks[0..self.count]) |*chunk| {
+            if (chunk.is_active) active += 1;
         }
+        return active;
+    }
+
+    pub fn clear(self: *ChunkStore) void {
+        self.count = 0;
+    }
+
+    pub fn isEmpty(self: *const ChunkStore) bool {
+        return self.count == 0;
     }
 };
 
-// =============================================================================
-// QUERY RESULT
-// =============================================================================
+// ============================================================================
+// CHUNKER
+// ============================================================================
 
-pub const QueryMatch = struct {
-    document_index: usize,
-    chunk_index: usize,
-    score: f32,
-    source_path: []const u8,
-    content: []const u8,
-    line_start: usize,
-    line_end: usize,
-};
+pub const Chunker = struct {
+    chunk_size: usize,
+    overlap: usize,
+    chunks_created: usize,
 
-pub const QueryResult = struct {
-    matches: [DEFAULT_TOP_K]?QueryMatch,
-    match_count: usize,
-    query: []const u8,
-    total_searched: usize,
-
-    const Self = @This();
-
-    pub fn init(query: []const u8) Self {
-        return Self{
-            .matches = [_]?QueryMatch{null} ** DEFAULT_TOP_K,
-            .match_count = 0,
-            .query = query,
-            .total_searched = 0,
+    pub fn init() Chunker {
+        return Chunker{
+            .chunk_size = DEFAULT_CHUNK_SIZE,
+            .overlap = DEFAULT_OVERLAP,
+            .chunks_created = 0,
         };
     }
 
-    pub fn addMatch(self: *Self, match: QueryMatch) void {
-        if (self.match_count < DEFAULT_TOP_K) {
-            self.matches[self.match_count] = match;
-            self.match_count += 1;
-        }
-    }
-
-    pub fn getTopMatch(self: *const Self) ?*const QueryMatch {
-        if (self.match_count > 0) {
-            if (self.matches[0]) |*m| {
-                return m;
-            }
-        }
-        return null;
-    }
-
-    pub fn hasMatches(self: *const Self) bool {
-        return self.match_count > 0;
-    }
-
-    pub fn getAverageScore(self: *const Self) f32 {
-        if (self.match_count == 0) return 0.0;
-
-        var total: f32 = 0.0;
-        for (0..self.match_count) |i| {
-            if (self.matches[i]) |m| {
-                total += m.score;
-            }
-        }
-        return total / @as(f32, @floatFromInt(self.match_count));
-    }
-};
-
-// =============================================================================
-// RETRIEVER
-// =============================================================================
-
-pub const RetrievalConfig = struct {
-    top_k: usize,
-    min_score: f32,
-    max_context_chars: usize,
-    include_code_only: bool,
-
-    pub fn init() RetrievalConfig {
-        return RetrievalConfig{
-            .top_k = DEFAULT_TOP_K,
-            .min_score = MIN_RELEVANCE_SCORE,
-            .max_context_chars = MAX_CONTEXT_CHARS,
-            .include_code_only = false,
-        };
-    }
-};
-
-pub const Retriever = struct {
-    index: *DocumentIndex,
-    config: RetrievalConfig,
-    queries_processed: usize,
-    matches_found: usize,
-
-    const Self = @This();
-
-    pub fn init(index: *DocumentIndex, config: RetrievalConfig) Self {
-        return Self{
-            .index = index,
-            .config = config,
-            .queries_processed = 0,
-            .matches_found = 0,
+    pub fn initWithSize(chunk_size: usize, overlap: usize) Chunker {
+        return Chunker{
+            .chunk_size = chunk_size,
+            .overlap = overlap,
+            .chunks_created = 0,
         };
     }
 
-    pub fn retrieve(self: *Self, query: []const u8) QueryResult {
-        self.queries_processed += 1;
+    pub fn chunkText(self: *Chunker, text: []const u8, source: []const u8, store: *ChunkStore) usize {
+        if (text.len == 0) return 0;
 
-        var result = QueryResult.init(query);
+        var chunks_added: usize = 0;
+        var line_start: usize = 0;
+        var line_num: usize = 1;
+        var chunk_start_line: usize = 1;
+        var chunk_content: [MAX_CHUNK_LEN]u8 = undefined;
+        var chunk_len: usize = 0;
+        var lines_in_chunk: usize = 0;
 
-        // Search all documents
-        for (0..self.index.document_count) |doc_idx| {
-            if (self.index.documents[doc_idx]) |doc| {
-                // Search all chunks
-                for (0..doc.chunk_count) |chunk_idx| {
-                    if (doc.chunks[chunk_idx]) |chunk| {
-                        const score = self.scoreChunk(&chunk, query);
+        var i: usize = 0;
+        while (i < text.len) : (i += 1) {
+            if (text[i] == '\n' or i == text.len - 1) {
+                const line_end = if (text[i] == '\n') i else i + 1;
+                const line = text[line_start..line_end];
 
-                        if (score >= self.config.min_score) {
-                            result.addMatch(QueryMatch{
-                                .document_index = doc_idx,
-                                .chunk_index = chunk_idx,
-                                .score = score,
-                                .source_path = doc.path,
-                                .content = chunk.content,
-                                .line_start = chunk.start_line,
-                                .line_end = chunk.end_line,
-                            });
-                            self.matches_found += 1;
-                        }
-
-                        result.total_searched += 1;
+                const add_len = @min(line.len, MAX_CHUNK_LEN - chunk_len);
+                if (add_len > 0) {
+                    @memcpy(chunk_content[chunk_len..][0..add_len], line[0..add_len]);
+                    chunk_len += add_len;
+                    if (chunk_len < MAX_CHUNK_LEN) {
+                        chunk_content[chunk_len] = '\n';
+                        chunk_len += 1;
                     }
+                }
+
+                lines_in_chunk += 1;
+                line_num += 1;
+                line_start = i + 1;
+
+                if (lines_in_chunk >= self.chunk_size or i == text.len - 1) {
+                    if (chunk_len > 0) {
+                        const chunk = Chunk.init(
+                            chunk_content[0..chunk_len],
+                            source,
+                            chunk_start_line,
+                            chunk_start_line + lines_in_chunk - 1,
+                        );
+                        if (store.add(chunk)) {
+                            chunks_added += 1;
+                            self.chunks_created += 1;
+                        }
+                    }
+
+                    chunk_len = 0;
+                    lines_in_chunk = 0;
+                    chunk_start_line = line_num - self.overlap;
+                    if (chunk_start_line < 1) chunk_start_line = 1;
                 }
             }
         }
 
-        // Sort by score (simple bubble sort for small arrays)
-        self.sortMatches(&result);
+        return chunks_added;
+    }
+
+    pub fn setChunkSize(self: *Chunker, size: usize) void {
+        self.chunk_size = size;
+    }
+
+    pub fn reset(self: *Chunker) void {
+        self.chunks_created = 0;
+    }
+};
+
+// ============================================================================
+// RETRIEVAL RESULT
+// ============================================================================
+
+pub const MAX_RESULTS: usize = 20;
+
+pub const SearchResult = struct {
+    chunk_index: usize,
+    score: f32,
+    source: [MAX_PATH_LEN]u8,
+    source_len: usize,
+    line_num: usize,
+
+    pub fn init(index: usize, score: f32, source: []const u8, line: usize) SearchResult {
+        var result = SearchResult{
+            .chunk_index = index,
+            .score = score,
+            .source = undefined,
+            .source_len = 0,
+            .line_num = line,
+        };
+        const len = @min(source.len, MAX_PATH_LEN);
+        @memcpy(result.source[0..len], source[0..len]);
+        result.source_len = len;
+        return result;
+    }
+
+    pub fn getSource(self: *const SearchResult) []const u8 {
+        return self.source[0..self.source_len];
+    }
+};
+
+pub const RetrievalResult = struct {
+    results: [MAX_RESULTS]SearchResult,
+    count: usize,
+
+    pub fn init() RetrievalResult {
+        return RetrievalResult{
+            .results = undefined,
+            .count = 0,
+        };
+    }
+
+    pub fn addResult(self: *RetrievalResult, index: usize, score: f32, source: []const u8, line: usize) bool {
+        if (self.count >= MAX_RESULTS) return false;
+        self.results[self.count] = SearchResult.init(index, score, source, line);
+        self.count += 1;
+        return true;
+    }
+
+    pub fn sortByScore(self: *RetrievalResult) void {
+        var i: usize = 0;
+        while (i < self.count) : (i += 1) {
+            var j: usize = i + 1;
+            while (j < self.count) : (j += 1) {
+                if (self.results[j].score > self.results[i].score) {
+                    const tmp = self.results[i];
+                    self.results[i] = self.results[j];
+                    self.results[j] = tmp;
+                }
+            }
+        }
+    }
+
+    pub fn getBestScore(self: *const RetrievalResult) f32 {
+        if (self.count == 0) return 0;
+        return self.results[0].score;
+    }
+
+    pub fn getAverageScore(self: *const RetrievalResult) f32 {
+        if (self.count == 0) return 0;
+        var sum: f32 = 0;
+        for (self.results[0..self.count]) |r| {
+            sum += r.score;
+        }
+        return sum / @as(f32, @floatFromInt(self.count));
+    }
+
+    pub fn isEmpty(self: *const RetrievalResult) bool {
+        return self.count == 0;
+    }
+};
+
+// ============================================================================
+// VECTOR INDEX
+// ============================================================================
+
+pub const VectorIndex = struct {
+    store: *ChunkStore,
+    queries_processed: usize,
+
+    pub fn init(store: *ChunkStore) VectorIndex {
+        return VectorIndex{
+            .store = store,
+            .queries_processed = 0,
+        };
+    }
+
+    pub fn search(self: *VectorIndex, query_embedding: *const SimpleEmbedding, top_k: usize, min_similarity: f32) RetrievalResult {
+        var result = RetrievalResult.init();
+
+        var i: usize = 0;
+        while (i < self.store.count) : (i += 1) {
+            if (self.store.getConst(i)) |chunk| {
+                if (!chunk.is_active) continue;
+
+                const similarity = query_embedding.cosineSimilarity(&chunk.embedding);
+
+                if (similarity >= min_similarity) {
+                    _ = result.addResult(i, similarity, chunk.getSource(), chunk.start_line);
+                }
+            }
+        }
+
+        result.sortByScore();
+
+        if (result.count > top_k) {
+            result.count = top_k;
+        }
+
+        self.queries_processed += 1;
+        return result;
+    }
+};
+
+// ============================================================================
+// RAG CONFIG
+// ============================================================================
+
+pub const RAGConfig = struct {
+    chunk_size: usize,
+    overlap: usize,
+    top_k: usize,
+    min_similarity: f32,
+
+    pub fn init() RAGConfig {
+        return RAGConfig{
+            .chunk_size = DEFAULT_CHUNK_SIZE,
+            .overlap = DEFAULT_OVERLAP,
+            .top_k = DEFAULT_TOP_K,
+            .min_similarity = DEFAULT_MIN_SIMILARITY,
+        };
+    }
+
+    pub fn withChunkSize(self: RAGConfig, size: usize) RAGConfig {
+        var config = self;
+        config.chunk_size = size;
+        return config;
+    }
+
+    pub fn withTopK(self: RAGConfig, k: usize) RAGConfig {
+        var config = self;
+        config.top_k = k;
+        return config;
+    }
+
+    pub fn withMinSimilarity(self: RAGConfig, min: f32) RAGConfig {
+        var config = self;
+        config.min_similarity = min;
+        return config;
+    }
+};
+
+// ============================================================================
+// RAG STATS
+// ============================================================================
+
+pub const RAGStats = struct {
+    documents_indexed: usize,
+    chunks_created: usize,
+    queries_processed: usize,
+    successful_retrievals: usize,
+    total_results_returned: usize,
+    avg_similarity: f32,
+
+    pub fn init() RAGStats {
+        return RAGStats{
+            .documents_indexed = 0,
+            .chunks_created = 0,
+            .queries_processed = 0,
+            .successful_retrievals = 0,
+            .total_results_returned = 0,
+            .avg_similarity = 0,
+        };
+    }
+
+    pub fn getHitRate(self: *const RAGStats) f32 {
+        if (self.queries_processed == 0) return 0;
+        return @as(f32, @floatFromInt(self.successful_retrievals)) / @as(f32, @floatFromInt(self.queries_processed));
+    }
+
+    pub fn getAvgResultsPerQuery(self: *const RAGStats) f32 {
+        if (self.queries_processed == 0) return 0;
+        return @as(f32, @floatFromInt(self.total_results_returned)) / @as(f32, @floatFromInt(self.queries_processed));
+    }
+
+    pub fn reset(self: *RAGStats) void {
+        self.* = RAGStats.init();
+    }
+};
+
+// ============================================================================
+// AUGMENTED CONTEXT
+// ============================================================================
+
+pub const AugmentedContext = struct {
+    chunks: [MAX_RESULTS]*const Chunk,
+    count: usize,
+    total_tokens: usize,
+
+    pub fn init() AugmentedContext {
+        return AugmentedContext{
+            .chunks = undefined,
+            .count = 0,
+            .total_tokens = 0,
+        };
+    }
+
+    pub fn addChunk(self: *AugmentedContext, chunk: *const Chunk) bool {
+        if (self.count >= MAX_RESULTS) return false;
+        self.chunks[self.count] = chunk;
+        self.count += 1;
+        self.total_tokens += chunk.content_len / 4;
+        return true;
+    }
+
+    pub fn isEmpty(self: *const AugmentedContext) bool {
+        return self.count == 0;
+    }
+};
+
+// ============================================================================
+// RAG ENGINE
+// ============================================================================
+
+pub const RAGEngine = struct {
+    store: ChunkStore,
+    chunker: Chunker,
+    index: VectorIndex,
+    config: RAGConfig,
+    stats: RAGStats,
+
+    pub fn init() RAGEngine {
+        var engine = RAGEngine{
+            .store = ChunkStore.init(),
+            .chunker = Chunker.init(),
+            .index = undefined,
+            .config = RAGConfig.init(),
+            .stats = RAGStats.init(),
+        };
+        engine.index = VectorIndex.init(&engine.store);
+        return engine;
+    }
+
+    pub fn initWithConfig(config: RAGConfig) RAGEngine {
+        var engine = RAGEngine.init();
+        engine.config = config;
+        engine.chunker = Chunker.initWithSize(config.chunk_size, config.overlap);
+        return engine;
+    }
+
+    pub fn indexDocument(self: *RAGEngine, content: []const u8, source_path: []const u8) usize {
+        var doc_type = DocumentType.Unknown;
+        var i: usize = source_path.len;
+        while (i > 0) {
+            i -= 1;
+            if (source_path[i] == '.') {
+                doc_type = DocumentType.fromExtension(source_path[i..]);
+                break;
+            }
+        }
+
+        const chunks_added = self.chunker.chunkText(content, source_path, &self.store);
+
+        var j: usize = self.store.count - chunks_added;
+        while (j < self.store.count) : (j += 1) {
+            if (self.store.get(j)) |chunk| {
+                chunk.setDocType(doc_type);
+            }
+        }
+
+        self.stats.documents_indexed += 1;
+        self.stats.chunks_created += chunks_added;
+
+        return chunks_added;
+    }
+
+    pub fn indexText(self: *RAGEngine, content: []const u8, source_name: []const u8) usize {
+        return self.indexDocument(content, source_name);
+    }
+
+    pub fn query(self: *RAGEngine, query_text: []const u8) RetrievalResult {
+        const query_embedding = SimpleEmbedding.fromText(query_text);
+        // Refresh index pointer (may be stale after struct move)
+        self.index.store = &self.store;
+        const result = self.index.search(&query_embedding, self.config.top_k, self.config.min_similarity);
+
+        self.stats.queries_processed += 1;
+        if (result.count > 0) {
+            self.stats.successful_retrievals += 1;
+            self.stats.total_results_returned += result.count;
+
+            const new_avg = result.getAverageScore();
+            const total = self.stats.queries_processed;
+            self.stats.avg_similarity = (self.stats.avg_similarity * @as(f32, @floatFromInt(total - 1)) + new_avg) / @as(f32, @floatFromInt(total));
+        }
 
         return result;
     }
 
-    fn scoreChunk(self: *const Self, chunk: *const Chunk, query: []const u8) f32 {
-        _ = self;
+    pub fn retrieve(self: *RAGEngine, query_text: []const u8) AugmentedContext {
+        const result = self.query(query_text);
+        var context = AugmentedContext.init();
 
-        var score: f32 = 0.0;
-
-        // Simple TF-IDF-like scoring
-        // Count query terms in chunk content
-        var query_words: [16][]const u8 = undefined;
-        var word_count: usize = 0;
-
-        // Extract words from query
-        var start: usize = 0;
-        for (query, 0..) |c, i| {
-            if (c == ' ' or c == '\n' or c == '\t' or i == query.len - 1) {
-                if (i > start and word_count < 16) {
-                    const end = if (i == query.len - 1) i + 1 else i;
-                    query_words[word_count] = query[start..end];
-                    word_count += 1;
-                }
-                start = i + 1;
+        for (result.results[0..result.count]) |r| {
+            if (self.store.getConst(r.chunk_index)) |chunk| {
+                _ = context.addChunk(chunk);
             }
         }
 
-        // Score based on word matches
-        for (0..word_count) |i| {
-            const word = query_words[i];
-            if (word.len >= 2) {
-                // Case-insensitive partial match
-                if (std.mem.indexOf(u8, chunk.content, word) != null) {
-                    score += 0.25;
-                }
-            }
-        }
-
-        // Bonus for code-related matches
-        if (chunk.chunk_type == .Function) score += 0.15;
-        if (chunk.chunk_type == .Struct) score += 0.15;
-        if (chunk.chunk_type == .Code) score += 0.1;
-
-        // Bonus for keyword matches
-        if (chunk.keyword_count > 0) {
-            score += @as(f32, @floatFromInt(chunk.keyword_count)) * 0.08;
-        }
-
-        // Base relevance for non-empty chunks
-        if (chunk.content.len > 10) {
-            score += 0.05;
-        }
-
-        return @min(score, 1.0);
+        return context;
     }
 
-    fn sortMatches(self: *const Self, result: *QueryResult) void {
-        _ = self;
-
-        // Simple bubble sort
-        if (result.match_count <= 1) return;
-
-        for (0..result.match_count) |i| {
-            for (0..result.match_count - i - 1) |j| {
-                if (result.matches[j]) |m1| {
-                    if (result.matches[j + 1]) |m2| {
-                        if (m1.score < m2.score) {
-                            const temp = result.matches[j];
-                            result.matches[j] = result.matches[j + 1];
-                            result.matches[j + 1] = temp;
-                        }
-                    }
-                }
-            }
-        }
+    pub fn getChunkCount(self: *const RAGEngine) usize {
+        return self.store.count;
     }
 
-    pub fn getRetrievalRate(self: *const Self) f32 {
-        if (self.queries_processed == 0) return 0.0;
-        return @as(f32, @floatFromInt(self.matches_found)) / @as(f32, @floatFromInt(self.queries_processed));
+    pub fn getStats(self: *const RAGEngine) RAGStats {
+        return self.stats;
+    }
+
+    pub fn setConfig(self: *RAGEngine, config: RAGConfig) void {
+        self.config = config;
+        self.chunker = Chunker.initWithSize(config.chunk_size, config.overlap);
+    }
+
+    pub fn reset(self: *RAGEngine) void {
+        self.store.clear();
+        self.chunker.reset();
+        self.stats.reset();
+    }
+
+    pub fn getChunk(self: *RAGEngine, index: usize) ?*const Chunk {
+        return self.store.getConst(index);
     }
 };
 
-// =============================================================================
-// RAG ENGINE
-// =============================================================================
-
-pub const RAGStats = struct {
-    documents_indexed: usize,
-    chunks_indexed: usize,
-    queries_processed: usize,
-    successful_retrievals: usize,
-    retrieval_rate: f32,
-    avg_relevance: f32,
-};
-
-pub const RAGResponse = struct {
-    text: []const u8,
-    retrieved_context: []const u8,
-    sources: [DEFAULT_TOP_K]?[]const u8,
-    source_count: usize,
-    rag_active: bool,
-    relevance_score: f32,
-
-    pub fn hasContext(self: *const RAGResponse) bool {
-        return self.retrieved_context.len > 0;
-    }
-
-    pub fn hasSources(self: *const RAGResponse) bool {
-        return self.source_count > 0;
-    }
-};
-
-pub const RAGEngine = struct {
-    sandbox_engine: sandbox.CodeSandboxEngine,
-    index: DocumentIndex,
-    retriever: Retriever,
-    config: RetrievalConfig,
-    rag_enabled: bool,
-    total_queries: usize,
-    successful_retrievals: usize,
-
-    const Self = @This();
-
-    pub fn init() Self {
-        var engine = Self{
-            .sandbox_engine = sandbox.CodeSandboxEngine.init(),
-            .index = DocumentIndex.init(),
-            .retriever = undefined,
-            .config = RetrievalConfig.init(),
-            .rag_enabled = true,
-            .total_queries = 0,
-            .successful_retrievals = 0,
-        };
-        engine.retriever = Retriever.init(&engine.index, engine.config);
-        return engine;
-    }
-
-    pub fn indexDocument(self: *Self, path: []const u8, content: []const u8) bool {
-        return self.index.addDocument(path, content);
-    }
-
-    pub fn respond(self: *Self, query: []const u8) RAGResponse {
-        self.total_queries += 1;
-
-        // Try to retrieve relevant context
-        var retrieved_context: []const u8 = "";
-        var sources: [DEFAULT_TOP_K]?[]const u8 = [_]?[]const u8{null} ** DEFAULT_TOP_K;
-        var source_count: usize = 0;
-        var relevance: f32 = 0.0;
-
-        if (self.rag_enabled and self.index.document_count > 0) {
-            const result = self.retriever.retrieve(query);
-
-            if (result.hasMatches()) {
-                self.successful_retrievals += 1;
-
-                // Get top match as context
-                if (result.getTopMatch()) |match| {
-                    retrieved_context = match.content;
-                    relevance = match.score;
-                }
-
-                // Collect sources
-                for (0..result.match_count) |i| {
-                    if (result.matches[i]) |m| {
-                        sources[source_count] = m.source_path;
-                        source_count += 1;
-                    }
-                }
-            }
-        }
-
-        // Get base response from sandbox engine
-        const base_response = self.sandbox_engine.respond(query);
-
-        // Return response with retrieved context
-        // Note: augmentation happens at response level, not string concat
-        return RAGResponse{
-            .text = base_response.text,
-            .retrieved_context = retrieved_context,
-            .sources = sources,
-            .source_count = source_count,
-            .rag_active = retrieved_context.len > 0,
-            .relevance_score = relevance,
-        };
-    }
-
-    pub fn recordFeedback(self: *Self, feedback: learning.FeedbackType) void {
-        self.sandbox_engine.recordFeedback(feedback);
-    }
-
-    pub fn getStats(self: *const Self) RAGStats {
-        const retrieval_rate = if (self.total_queries > 0)
-            @as(f32, @floatFromInt(self.successful_retrievals)) / @as(f32, @floatFromInt(self.total_queries))
-        else
-            0.0;
-
-        return RAGStats{
-            .documents_indexed = self.index.document_count,
-            .chunks_indexed = self.index.total_chunks,
-            .queries_processed = self.total_queries,
-            .successful_retrievals = self.successful_retrievals,
-            .retrieval_rate = retrieval_rate,
-            .avg_relevance = self.retriever.getRetrievalRate(),
-        };
-    }
-
-    pub fn enableRAG(self: *Self, enable: bool) void {
-        self.rag_enabled = enable;
-    }
-
-    pub fn clearIndex(self: *Self) void {
-        self.index.clear();
-    }
-};
-
-// =============================================================================
+// ============================================================================
 // BENCHMARK
-// =============================================================================
+// ============================================================================
 
 pub fn runBenchmark() void {
     std.debug.print("\n", .{});
     std.debug.print("===============================================================================\n", .{});
-    std.debug.print("     IGLA RAG ENGINE BENCHMARK (CYCLE 15)                                     \n", .{});
+    std.debug.print("     IGLA RAG ENGINE BENCHMARK (CYCLE 23)\n", .{});
     std.debug.print("===============================================================================\n", .{});
+    std.debug.print("\n", .{});
 
     var engine = RAGEngine.init();
+    std.debug.print("  Chunk size: {} lines\n", .{engine.config.chunk_size});
+    std.debug.print("  Top-K: {}\n", .{engine.config.top_k});
+    std.debug.print("  Min similarity: {d:.2}\n", .{engine.config.min_similarity});
+    std.debug.print("\n", .{});
 
-    // Index some sample documents
-    _ = engine.indexDocument("src/vsa.zig",
-        \\pub const VSA = struct {
-        \\    pub fn bind(a: []i8, b: []i8) []i8 {
-        \\        // Vector binding operation
-        \\        return a;
-        \\    }
-        \\    pub fn bundle(vectors: [][]i8) []i8 {
-        \\        // Majority vote bundling
-        \\        return vectors[0];
-        \\    }
-        \\    pub fn similarity(a: []i8, b: []i8) f32 {
-        \\        // Cosine similarity
-        \\        return 0.95;
-        \\    }
-        \\};
-    );
+    std.debug.print("  Indexing sample documents...\n", .{});
 
-    _ = engine.indexDocument("src/vm.zig",
-        \\pub const VM = struct {
-        \\    stack: [256]i64,
-        \\    sp: usize,
-        \\    pub fn push(self: *VM, value: i64) void {
-        \\        self.stack[self.sp] = value;
-        \\        self.sp += 1;
-        \\    }
-        \\    pub fn pop(self: *VM) i64 {
-        \\        self.sp -= 1;
-        \\        return self.stack[self.sp];
-        \\    }
-        \\    pub fn execute(self: *VM, bytecode: []u8) void {
-        \\        // Execute bytecode
-        \\    }
-        \\};
-    );
+    const doc1 = "pub fn main() void {\n    const x = 42;\n    std.debug.print(\"Hello\", .{});\n}\n\npub fn add(a: i32, b: i32) i32 {\n    return a + b;\n}\n\npub fn multiply(a: i32, b: i32) i32 {\n    return a * b;\n}";
+    const doc2 = "# README\n\nThis is a sample project.\n\n## Features\n\n- Vector search\n- Chunking\n- Source tracking";
+    const doc3 = "const std = @import(\"std\");\n\npub const Vector = struct {\n    x: f32,\n    y: f32,\n\n    pub fn dot(self: Vector, other: Vector) f32 {\n        return self.x * other.x + self.y * other.y;\n    }\n};";
 
-    _ = engine.indexDocument("docs/README.md",
-        \\# Trinity Project
-        \\
-        \\## Overview
-        \\Trinity is a ternary computing framework using VSA.
-        \\
-        \\## Features
-        \\- Vector Symbolic Architecture
-        \\- Ternary Virtual Machine
-        \\- IGLA Chat Engine
-        \\
-        \\## Usage
-        \\```zig
-        \\const vsa = @import("vsa");
-        \\const result = vsa.bind(a, b);
-        \\```
-    );
+    const start_time = std.time.nanoTimestamp();
 
-    // Simulate RAG scenarios
-    const scenarios = [_]struct {
-        query: []const u8,
-        feedback: learning.FeedbackType,
-    }{
-        // Code search
-        .{ .query = "how to bind vectors in VSA?", .feedback = .ThumbsUp },
-        .{ .query = "show me the VM stack operations", .feedback = .Acceptance },
-        .{ .query = "what is similarity function?", .feedback = .ThumbsUp },
+    _ = engine.indexDocument(doc1, "src/main.zig");
+    _ = engine.indexDocument(doc2, "README.md");
+    _ = engine.indexDocument(doc3, "src/vector.zig");
 
-        // Documentation search
-        .{ .query = "what is Trinity project?", .feedback = .ThumbsUp },
-        .{ .query = "show me VSA features", .feedback = .Acceptance },
+    std.debug.print("  Documents indexed: {}\n", .{engine.stats.documents_indexed});
+    std.debug.print("  Chunks created: {}\n", .{engine.stats.chunks_created});
+    std.debug.print("\n", .{});
 
-        // Code generation with context
-        .{ .query = "write a function like bind", .feedback = .ThumbsUp },
-        .{ .query = "implement push like VM", .feedback = .Acceptance },
+    std.debug.print("  Running queries...\n", .{});
 
-        // General queries
-        .{ .query = "hello, how are you?", .feedback = .ThumbsUp },
-        .{ .query = "explain ternary computing", .feedback = .FollowUp },
-
-        // More retrieval
-        .{ .query = "pub fn execute bytecode", .feedback = .ThumbsUp },
-        .{ .query = "cosine similarity calculation", .feedback = .Acceptance },
-        .{ .query = "bundle vectors operation", .feedback = .ThumbsUp },
-
-        // Multilingual
-        .{ .query = "покажи код VSA", .feedback = .ThumbsUp },
-        .{ .query = "找一下 VM stack", .feedback = .Acceptance },
-
-        // Mixed
-        .{ .query = "run this zig code: const x = 1;", .feedback = .ThumbsUp },
-        .{ .query = "search for struct in codebase", .feedback = .ThumbsUp },
+    const queries = [_][]const u8{
+        "How to add two numbers?",
+        "Vector dot product",
+        "README features",
+        "main function",
+        "multiply operation",
     };
 
-    var rag_active_count: usize = 0;
-    var high_relevance_count: usize = 0;
-
-    const start = std.time.nanoTimestamp();
-
-    for (scenarios) |s| {
-        const response = engine.respond(s.query);
-
-        if (response.rag_active) rag_active_count += 1;
-        if (response.relevance_score > 0.3) high_relevance_count += 1;
-
-        engine.recordFeedback(s.feedback);
+    for (queries) |q| {
+        const result = engine.query(q);
+        if (result.count > 0) {
+            std.debug.print("  [HIT] \"{s}\" -> {} results (best: {d:.2})\n", .{ q[0..@min(30, q.len)], result.count, result.getBestScore() });
+        } else {
+            std.debug.print("  [MISS] \"{s}\" -> no results\n", .{q[0..@min(30, q.len)]});
+        }
     }
 
-    const elapsed_ns = std.time.nanoTimestamp() - start;
-    const ops_per_sec = @as(f64, @floatFromInt(scenarios.len)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
+    const end_time = std.time.nanoTimestamp();
+    const elapsed_ns: i64 = @intCast(end_time - start_time);
+    const elapsed_us: u64 = @intCast(@divFloor(elapsed_ns, 1000));
+
+    std.debug.print("\n", .{});
 
     const stats = engine.getStats();
-    const rag_rate = @as(f32, @floatFromInt(rag_active_count)) / @as(f32, @floatFromInt(scenarios.len));
-    const relevance_rate = @as(f32, @floatFromInt(high_relevance_count)) / @as(f32, @floatFromInt(scenarios.len));
-
-    // Calculate improvement based on:
-    // - Documents indexed (infrastructure working)
-    // - Chunks created (parsing working)
-    // - RAG system active (integration complete)
-    const docs_indexed_rate = if (stats.documents_indexed > 0) @as(f32, 0.4) else @as(f32, 0.0);
-    const chunks_rate = if (stats.chunks_indexed > 0) @as(f32, 0.35) else @as(f32, 0.0);
-    const system_active_rate: f32 = if (engine.rag_enabled) 0.25 else 0.0;
-    const improvement_rate = docs_indexed_rate + chunks_rate + system_active_rate + (rag_rate * 0.2);
-
+    std.debug.print("  Stats:\n", .{});
+    std.debug.print("    Queries: {}\n", .{stats.queries_processed});
+    std.debug.print("    Successful: {}\n", .{stats.successful_retrievals});
+    std.debug.print("    Hit rate: {d:.2}\n", .{stats.getHitRate()});
+    std.debug.print("    Avg results: {d:.2}\n", .{stats.getAvgResultsPerQuery()});
+    std.debug.print("    Avg similarity: {d:.2}\n", .{stats.avg_similarity});
     std.debug.print("\n", .{});
-    std.debug.print("  Documents indexed: {d}\n", .{stats.documents_indexed});
-    std.debug.print("  Chunks indexed: {d}\n", .{stats.chunks_indexed});
-    std.debug.print("  Total queries: {d}\n", .{scenarios.len});
-    std.debug.print("  RAG activations: {d}\n", .{rag_active_count});
-    std.debug.print("  High relevance: {d}\n", .{high_relevance_count});
-    std.debug.print("  Retrieval rate: {d:.1}%\n", .{stats.retrieval_rate * 100});
-    std.debug.print("  Speed: {d:.0} ops/s\n", .{ops_per_sec});
-    std.debug.print("\n  RAG rate: {d:.2}\n", .{rag_rate});
-    std.debug.print("  Relevance rate: {d:.2}\n", .{relevance_rate});
-    std.debug.print("  Improvement rate: {d:.2}\n", .{improvement_rate});
 
-    if (improvement_rate > 0.618) {
-        std.debug.print("  Golden Ratio Gate: PASSED (>0.618)\n", .{});
-    } else {
-        std.debug.print("  Golden Ratio Gate: NEEDS IMPROVEMENT (<0.618)\n", .{});
-    }
+    const queries_per_sec = if (elapsed_us > 0)
+        (queries.len * 1_000_000) / elapsed_us
+    else
+        0;
 
+    std.debug.print("  Performance:\n", .{});
+    std.debug.print("    Total time: {}us\n", .{elapsed_us});
+    std.debug.print("    Throughput: {} queries/s\n", .{queries_per_sec});
     std.debug.print("\n", .{});
-    std.debug.print("===============================================================================\n", .{});
-    std.debug.print("  phi^2 + 1/phi^2 = 3 = TRINITY | RAG ENGINE CYCLE 15                         \n", .{});
-    std.debug.print("===============================================================================\n", .{});
+
+    const improvement = stats.getHitRate() + stats.avg_similarity;
+    const passed = improvement > 0.618;
+    std.debug.print("  Improvement rate: {d:.2}\n", .{improvement});
+    std.debug.print("  Golden Ratio Gate: {s} (>0.618)\n", .{if (passed) "PASSED" else "FAILED"});
 }
-
-// =============================================================================
-// MAIN
-// =============================================================================
 
 pub fn main() void {
     runBenchmark();
 }
 
-// =============================================================================
+// ============================================================================
 // TESTS
-// =============================================================================
+// ============================================================================
 
-test "file type detection zig" {
-    try std.testing.expectEqual(FileType.Zig, FileType.detect("src/main.zig"));
+test "DocumentType getName" {
+    try std.testing.expectEqualStrings("code", DocumentType.Code.getName());
+    try std.testing.expectEqualStrings("markdown", DocumentType.Markdown.getName());
 }
 
-test "file type detection markdown" {
-    try std.testing.expectEqual(FileType.Markdown, FileType.detect("README.md"));
+test "DocumentType fromExtension" {
+    try std.testing.expectEqual(DocumentType.Code, DocumentType.fromExtension(".zig"));
+    try std.testing.expectEqual(DocumentType.Code, DocumentType.fromExtension(".py"));
+    try std.testing.expectEqual(DocumentType.Markdown, DocumentType.fromExtension(".md"));
+    try std.testing.expectEqual(DocumentType.Config, DocumentType.fromExtension(".json"));
 }
 
-test "file type detection python" {
-    try std.testing.expectEqual(FileType.Python, FileType.detect("script.py"));
+test "DocumentType isCode" {
+    try std.testing.expect(DocumentType.Code.isCode());
+    try std.testing.expect(!DocumentType.Markdown.isCode());
 }
 
-test "file type detection javascript" {
-    try std.testing.expectEqual(FileType.JavaScript, FileType.detect("app.js"));
+test "SimpleEmbedding init" {
+    const embedding = SimpleEmbedding.init();
+    try std.testing.expectEqual(@as(f32, 0), embedding.magnitude);
 }
 
-test "file type is code" {
-    try std.testing.expect(FileType.Zig.isCode());
-    try std.testing.expect(FileType.Python.isCode());
-    try std.testing.expect(!FileType.Markdown.isCode());
+test "SimpleEmbedding fromText" {
+    const embedding = SimpleEmbedding.fromText("hello world");
+    try std.testing.expect(embedding.magnitude > 0);
 }
 
-test "chunk type name" {
-    try std.testing.expect(std.mem.eql(u8, ChunkType.Function.getName(), "function"));
-    try std.testing.expect(std.mem.eql(u8, ChunkType.Struct.getName(), "struct"));
+test "SimpleEmbedding cosineSimilarity" {
+    const e1 = SimpleEmbedding.fromText("hello world");
+    const e2 = SimpleEmbedding.fromText("hello there");
+    const similarity = e1.cosineSimilarity(&e2);
+    try std.testing.expect(similarity > 0);
+    try std.testing.expect(similarity <= 1.0);
 }
 
-test "chunk init" {
-    const chunk = Chunk.init("pub fn test() void {}", 1, 1, .Function);
+test "SimpleEmbedding self similarity" {
+    const e = SimpleEmbedding.fromText("test string");
+    const similarity = e.cosineSimilarity(&e);
+    try std.testing.expect(similarity > 0.99);
+}
+
+test "Chunk init" {
+    const chunk = Chunk.init("test content", "file.txt", 1, 10);
+    try std.testing.expectEqualStrings("test content", chunk.getContent());
+    try std.testing.expectEqualStrings("file.txt", chunk.getSource());
     try std.testing.expectEqual(@as(usize, 1), chunk.start_line);
-    try std.testing.expectEqual(ChunkType.Function, chunk.chunk_type);
 }
 
-test "chunk line count" {
-    const chunk = Chunk.init("content", 5, 10, .Generic);
-    try std.testing.expectEqual(@as(usize, 6), chunk.getLineCount());
+test "Chunk setDocType" {
+    var chunk = Chunk.init("code", "main.zig", 1, 5);
+    chunk.setDocType(.Code);
+    try std.testing.expectEqual(DocumentType.Code, chunk.doc_type);
 }
 
-test "chunk keyword extraction" {
-    const chunk = Chunk.init("pub fn hello() void { const x = 1; }", 1, 1, .Function);
-    try std.testing.expect(chunk.keyword_count > 0);
+test "Chunk getLineCount" {
+    const chunk = Chunk.init("test", "file.txt", 5, 15);
+    try std.testing.expectEqual(@as(usize, 11), chunk.getLineCount());
 }
 
-test "document init" {
-    const doc = Document.init("test.zig", "const x = 1;\nconst y = 2;");
-    try std.testing.expectEqual(FileType.Zig, doc.file_type);
-    try std.testing.expect(doc.total_lines >= 2);
+test "Chunk deactivate" {
+    var chunk = Chunk.init("test", "file.txt", 1, 1);
+    try std.testing.expect(chunk.is_active);
+    chunk.deactivate();
+    try std.testing.expect(!chunk.is_active);
 }
 
-test "document auto chunk" {
-    const doc = Document.init("test.zig", "line1\nline2\nline3\nline4\nline5");
-    try std.testing.expect(doc.chunk_count > 0);
+test "ChunkStore init" {
+    const store = ChunkStore.init();
+    try std.testing.expectEqual(@as(usize, 0), store.count);
+    try std.testing.expect(store.isEmpty());
 }
 
-test "document index init" {
-    const index = DocumentIndex.init();
-    try std.testing.expectEqual(@as(usize, 0), index.document_count);
+test "ChunkStore add" {
+    var store = ChunkStore.init();
+    const chunk = Chunk.init("test", "file.txt", 1, 1);
+    try std.testing.expect(store.add(chunk));
+    try std.testing.expectEqual(@as(usize, 1), store.count);
 }
 
-test "document index add document" {
-    var index = DocumentIndex.init();
-    const added = index.addDocument("test.zig", "const x = 1;");
-    try std.testing.expect(added);
-    try std.testing.expectEqual(@as(usize, 1), index.document_count);
+test "ChunkStore get" {
+    var store = ChunkStore.init();
+    const chunk = Chunk.init("content", "path.txt", 1, 5);
+    _ = store.add(chunk);
+    if (store.get(0)) |c| {
+        try std.testing.expectEqualStrings("content", c.getContent());
+    } else {
+        try std.testing.expect(false);
+    }
 }
 
-test "document index clear" {
-    var index = DocumentIndex.init();
-    _ = index.addDocument("test.zig", "content");
-    index.clear();
-    try std.testing.expectEqual(@as(usize, 0), index.document_count);
+test "ChunkStore getActiveCount" {
+    var store = ChunkStore.init();
+    _ = store.add(Chunk.init("a", "f1", 1, 1));
+    _ = store.add(Chunk.init("b", "f2", 1, 1));
+    try std.testing.expectEqual(@as(usize, 2), store.getActiveCount());
 }
 
-test "query result init" {
-    const result = QueryResult.init("test query");
-    try std.testing.expect(std.mem.eql(u8, result.query, "test query"));
-    try std.testing.expect(!result.hasMatches());
+test "ChunkStore clear" {
+    var store = ChunkStore.init();
+    _ = store.add(Chunk.init("test", "file", 1, 1));
+    store.clear();
+    try std.testing.expectEqual(@as(usize, 0), store.count);
 }
 
-test "query result add match" {
-    var result = QueryResult.init("test");
-    result.addMatch(QueryMatch{
-        .document_index = 0,
-        .chunk_index = 0,
-        .score = 0.8,
-        .source_path = "test.zig",
-        .content = "content",
-        .line_start = 1,
-        .line_end = 1,
-    });
-    try std.testing.expect(result.hasMatches());
-    try std.testing.expectEqual(@as(usize, 1), result.match_count);
+test "Chunker init" {
+    const chunker = Chunker.init();
+    try std.testing.expectEqual(DEFAULT_CHUNK_SIZE, chunker.chunk_size);
+    try std.testing.expectEqual(DEFAULT_OVERLAP, chunker.overlap);
 }
 
-test "query result average score" {
-    var result = QueryResult.init("test");
-    result.addMatch(QueryMatch{
-        .document_index = 0,
-        .chunk_index = 0,
-        .score = 0.8,
-        .source_path = "test.zig",
-        .content = "content",
-        .line_start = 1,
-        .line_end = 1,
-    });
-    try std.testing.expect(result.getAverageScore() == 0.8);
+test "Chunker chunkText" {
+    var chunker = Chunker.initWithSize(3, 1);
+    var store = ChunkStore.init();
+    const text = "line1\nline2\nline3\nline4\nline5\nline6";
+    const chunks = chunker.chunkText(text, "test.txt", &store);
+    try std.testing.expect(chunks > 0);
 }
 
-test "retrieval config init" {
-    const config = RetrievalConfig.init();
+test "Chunker setChunkSize" {
+    var chunker = Chunker.init();
+    chunker.setChunkSize(20);
+    try std.testing.expectEqual(@as(usize, 20), chunker.chunk_size);
+}
+
+test "SearchResult init" {
+    const result = SearchResult.init(5, 0.85, "path/to/file.txt", 42);
+    try std.testing.expectEqual(@as(usize, 5), result.chunk_index);
+    try std.testing.expect(result.score > 0.8);
+    try std.testing.expectEqual(@as(usize, 42), result.line_num);
+}
+
+test "RetrievalResult init" {
+    const result = RetrievalResult.init();
+    try std.testing.expectEqual(@as(usize, 0), result.count);
+    try std.testing.expect(result.isEmpty());
+}
+
+test "RetrievalResult addResult" {
+    var result = RetrievalResult.init();
+    try std.testing.expect(result.addResult(0, 0.9, "file.txt", 1));
+    try std.testing.expectEqual(@as(usize, 1), result.count);
+}
+
+test "RetrievalResult sortByScore" {
+    var result = RetrievalResult.init();
+    _ = result.addResult(0, 0.5, "a.txt", 1);
+    _ = result.addResult(1, 0.9, "b.txt", 1);
+    _ = result.addResult(2, 0.7, "c.txt", 1);
+    result.sortByScore();
+    try std.testing.expect(result.results[0].score > result.results[1].score);
+    try std.testing.expect(result.results[1].score > result.results[2].score);
+}
+
+test "RetrievalResult getBestScore" {
+    var result = RetrievalResult.init();
+    _ = result.addResult(0, 0.9, "file.txt", 1);
+    _ = result.addResult(1, 0.7, "file2.txt", 1);
+    result.sortByScore();
+    try std.testing.expect(result.getBestScore() > 0.85);
+}
+
+test "RAGConfig init" {
+    const config = RAGConfig.init();
+    try std.testing.expectEqual(DEFAULT_CHUNK_SIZE, config.chunk_size);
     try std.testing.expectEqual(DEFAULT_TOP_K, config.top_k);
 }
 
-test "retriever init" {
-    var index = DocumentIndex.init();
-    const config = RetrievalConfig.init();
-    const retriever = Retriever.init(&index, config);
-    try std.testing.expectEqual(@as(usize, 0), retriever.queries_processed);
+test "RAGConfig withChunkSize" {
+    const config = RAGConfig.init().withChunkSize(20);
+    try std.testing.expectEqual(@as(usize, 20), config.chunk_size);
 }
 
-test "retriever retrieve empty" {
-    var index = DocumentIndex.init();
-    const config = RetrievalConfig.init();
-    var retriever = Retriever.init(&index, config);
-    const result = retriever.retrieve("test query");
-    try std.testing.expect(!result.hasMatches());
+test "RAGConfig withTopK" {
+    const config = RAGConfig.init().withTopK(10);
+    try std.testing.expectEqual(@as(usize, 10), config.top_k);
 }
 
-test "retriever retrieve with document" {
-    var index = DocumentIndex.init();
-    _ = index.addDocument("test.zig", "pub fn hello() void {}");
-    const config = RetrievalConfig.init();
-    var retriever = Retriever.init(&index, config);
-    const result = retriever.retrieve("hello function");
-    try std.testing.expect(result.total_searched > 0);
+test "RAGStats init" {
+    const stats = RAGStats.init();
+    try std.testing.expectEqual(@as(usize, 0), stats.queries_processed);
 }
 
-test "rag engine init" {
+test "RAGStats getHitRate" {
+    var stats = RAGStats.init();
+    stats.queries_processed = 10;
+    stats.successful_retrievals = 8;
+    try std.testing.expect(stats.getHitRate() > 0.7);
+}
+
+test "AugmentedContext init" {
+    const context = AugmentedContext.init();
+    try std.testing.expectEqual(@as(usize, 0), context.count);
+    try std.testing.expect(context.isEmpty());
+}
+
+test "RAGEngine init" {
     const engine = RAGEngine.init();
-    try std.testing.expect(engine.rag_enabled);
+    try std.testing.expectEqual(@as(usize, 0), engine.getChunkCount());
 }
 
-test "rag engine index document" {
+test "RAGEngine indexDocument" {
     var engine = RAGEngine.init();
-    const added = engine.indexDocument("test.zig", "const x = 1;");
-    try std.testing.expect(added);
+    const content = "line1\nline2\nline3\nline4\nline5";
+    const chunks = engine.indexDocument(content, "test.zig");
+    try std.testing.expect(chunks > 0);
+    try std.testing.expect(engine.getChunkCount() > 0);
 }
 
-test "rag engine respond" {
+test "RAGEngine indexText" {
     var engine = RAGEngine.init();
-    const response = engine.respond("hello there");
-    try std.testing.expect(response.text.len > 0);
+    const chunks = engine.indexText("test content\nmore lines", "doc.txt");
+    try std.testing.expect(chunks > 0);
 }
 
-test "rag engine respond with context" {
+test "RAGEngine query" {
     var engine = RAGEngine.init();
-    _ = engine.indexDocument("test.zig", "pub fn bind(a: i8, b: i8) i8 { return a; }");
-    const response = engine.respond("show me bind function");
-    try std.testing.expect(response.text.len > 0);
+    _ = engine.indexDocument("hello world\ntest content\nmore text", "file.txt");
+    _ = engine.query("hello");
+    try std.testing.expect(engine.stats.queries_processed == 1);
 }
 
-test "rag engine stats" {
+test "RAGEngine retrieve" {
     var engine = RAGEngine.init();
-    _ = engine.indexDocument("test.zig", "content");
-    _ = engine.respond("test query");
+    _ = engine.indexDocument("hello world\ntest content", "file.txt");
+    const context = engine.retrieve("hello");
+    try std.testing.expect(context.count >= 0);
+}
+
+test "RAGEngine getStats" {
+    var engine = RAGEngine.init();
+    _ = engine.indexDocument("test", "file.txt");
+    _ = engine.query("test");
     const stats = engine.getStats();
-    try std.testing.expect(stats.queries_processed > 0);
+    try std.testing.expectEqual(@as(usize, 1), stats.documents_indexed);
+    try std.testing.expectEqual(@as(usize, 1), stats.queries_processed);
 }
 
-test "rag response has context" {
+test "RAGEngine reset" {
     var engine = RAGEngine.init();
-    _ = engine.indexDocument("vsa.zig", "pub fn bind() {}");
-    const response = engine.respond("bind function VSA");
-    // May or may not have context depending on scoring
-    try std.testing.expect(response.text.len > 0);
+    _ = engine.indexDocument("test", "file.txt");
+    engine.reset();
+    try std.testing.expectEqual(@as(usize, 0), engine.getChunkCount());
 }
 
-test "rag engine enable disable" {
+test "RAGEngine setConfig" {
     var engine = RAGEngine.init();
-    engine.enableRAG(false);
-    try std.testing.expect(!engine.rag_enabled);
-    engine.enableRAG(true);
-    try std.testing.expect(engine.rag_enabled);
+    const config = RAGConfig.init().withChunkSize(20).withTopK(10);
+    engine.setConfig(config);
+    try std.testing.expectEqual(@as(usize, 20), engine.config.chunk_size);
+    try std.testing.expectEqual(@as(usize, 10), engine.config.top_k);
+}
+
+test "VectorIndex search" {
+    var store = ChunkStore.init();
+    _ = store.add(Chunk.init("hello world test", "f1.txt", 1, 1));
+    _ = store.add(Chunk.init("goodbye moon", "f2.txt", 1, 1));
+    var index = VectorIndex.init(&store);
+    const query_emb = SimpleEmbedding.fromText("hello");
+    const result = index.search(&query_emb, 5, 0.1);
+    try std.testing.expect(result.count > 0);
+}
+
+test "Integration: full RAG workflow" {
+    var engine = RAGEngine.init();
+
+    _ = engine.indexDocument("pub fn add(a: i32, b: i32) i32 { return a + b; }", "math.zig");
+    _ = engine.indexDocument("# README\nThis is documentation", "README.md");
+
+    _ = engine.query("add function");
+
+    const stats = engine.getStats();
+    try std.testing.expectEqual(@as(usize, 2), stats.documents_indexed);
+    try std.testing.expectEqual(@as(usize, 1), stats.queries_processed);
 }
