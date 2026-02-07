@@ -834,8 +834,12 @@ pub const GGUFModel = struct {
         const vocab_size = self.config.vocab_size;
 
         // Get embedding for token
-        const emb_start = token * hidden_size;
-        const embedding = self.token_embedding.?[emb_start..][0..hidden_size];
+        // NOTE: Embedding tensor is stored as [hidden_size][vocab_size] (row-major)
+        const embedding = try self.allocator.alloc(f32, hidden_size);
+        defer self.allocator.free(embedding);
+        for (0..hidden_size) |h| {
+            embedding[h] = self.token_embedding.?[h * vocab_size + token];
+        }
 
         // Apply RMS norm
         const normed = try self.allocator.alloc(f32, hidden_size);

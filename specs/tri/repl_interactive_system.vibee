@@ -1,0 +1,760 @@
+# ============================================================================
+# REPL Interactive System - Interactive Execution + State Persistence
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: repl_interactive_system
+version: "1.0.0"
+language: zig
+module: repl_interactive_system
+
+description: |
+  REPL interactive system with state persistence.
+  Builds on Cycle 20 Code Execution System.
+  18 algorithms in 10 languages = 180 templates.
+  NEW: REPL mode, state persistence, command history.
+  NEW: Variable inspection, step execution, multi-line input.
+  Interactive code sessions with context carry-over.
+
+constants:
+  HIGH_CONFIDENCE: 0.95
+  MED_CONFIDENCE: 0.75
+  LOW_CONFIDENCE: 0.5
+  UNKNOWN_CONFIDENCE: 0.2
+  ALGORITHM_COUNT: 18
+  LANGUAGE_COUNT: 10
+  TEMPLATE_COMBINATIONS: 180
+  MAX_MEMORY_TURNS: 50
+  MEMORY_DECAY_RATE: 0.1
+  EXECUTION_TIMEOUT_MS: 5000
+  MAX_OUTPUT_SIZE: 10000
+  MAX_HISTORY_SIZE: 100
+  MAX_VARIABLES: 50
+  MAX_BREAKPOINTS: 20
+
+types:
+  SystemMode:
+    description: "Operating mode"
+    enum:
+      - chat
+      - code
+      - hybrid
+      - execute
+      - validate
+      - repl
+      - debug
+      - unknown
+
+  InputLanguage:
+    description: "Detected input language"
+    enum:
+      - russian
+      - chinese
+      - english
+
+  OutputLanguage:
+    description: "Code output language (10 total)"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+      - go
+      - rust
+      - cpp
+      - java
+      - csharp
+      - swift
+
+  ChatTopic:
+    description: "Conversation topics"
+    enum:
+      - greeting
+      - farewell
+      - help
+      - capabilities
+      - feelings
+      - weather
+      - time
+      - jokes
+      - facts
+      - memory
+      - execution
+      - repl
+      - debug
+      - unknown
+
+  Algorithm:
+    description: "Supported algorithms (18)"
+    enum:
+      - bubble_sort
+      - quick_sort
+      - merge_sort
+      - heap_sort
+      - linear_search
+      - binary_search
+      - fibonacci
+      - factorial
+      - is_prime
+      - stack
+      - queue
+      - linked_list
+      - binary_tree
+      - hash_map
+      - bfs
+      - dfs
+      - dijkstra
+      - topological_sort
+      - unknown
+
+  PersonalityTrait:
+    description: "Bot personality"
+    enum:
+      - friendly
+      - helpful
+      - honest
+      - curious
+      - humble
+
+  ExecutionStatus:
+    description: "Code execution status"
+    enum:
+      - pending
+      - running
+      - success
+      - error
+      - timeout
+      - cancelled
+      - paused
+      - stepping
+
+  ErrorType:
+    description: "Type of execution error"
+    enum:
+      - compile_error
+      - runtime_error
+      - timeout_error
+      - memory_error
+      - validation_error
+      - breakpoint_error
+      - unknown_error
+
+  ReplCommand:
+    description: "REPL command type"
+    enum:
+      - execute
+      - inspect
+      - history
+      - clear
+      - step
+      - continue
+      - breakpoint
+      - variables
+      - help
+      - exit
+      - multiline
+      - undo
+      - redo
+
+  VariableType:
+    description: "Variable type in REPL"
+    enum:
+      - integer
+      - float
+      - string
+      - boolean
+      - array
+      - object
+      - function
+      - null
+      - undefined
+
+  Variable:
+    description: "Single variable in REPL state"
+    fields:
+      name: String
+      value: String
+      var_type: VariableType
+      is_mutable: Bool
+      created_at: Int
+      modified_at: Int
+
+  ReplState:
+    description: "Current REPL state"
+    fields:
+      variables: List<Variable>
+      history: List<String>
+      history_index: Int
+      is_multiline: Bool
+      multiline_buffer: String
+      current_language: OutputLanguage
+      is_debug_mode: Bool
+      breakpoints: List<Int>
+      current_line: Int
+
+  HistoryEntry:
+    description: "Single history entry"
+    fields:
+      command: String
+      output: String
+      timestamp: Int
+      was_successful: Bool
+
+  Breakpoint:
+    description: "Debug breakpoint"
+    fields:
+      line: Int
+      condition: String
+      is_enabled: Bool
+      hit_count: Int
+
+  DebugState:
+    description: "Debug session state"
+    fields:
+      is_paused: Bool
+      current_line: Int
+      call_stack: List<String>
+      breakpoints: List<Breakpoint>
+      step_mode: Bool
+
+  ExecutionResult:
+    description: "Result of code execution"
+    fields:
+      status: ExecutionStatus
+      output: String
+      error_message: String
+      error_type: ErrorType
+      execution_time_ms: Int
+      memory_used_bytes: Int
+
+  ValidationResult:
+    description: "Result of output validation"
+    fields:
+      is_valid: Bool
+      expected: String
+      actual: String
+      diff: String
+      confidence: Float
+
+  MemoryEntry:
+    description: "Single memory entry"
+    fields:
+      query: String
+      response: String
+      topic: ChatTopic
+      algorithm: Algorithm
+      language: OutputLanguage
+      timestamp: Int
+      importance: Float
+      execution_result: ExecutionResult
+
+  UserPreferences:
+    description: "User preferences"
+    fields:
+      favorite_language: OutputLanguage
+      preferred_input: InputLanguage
+      common_topics: List<ChatTopic>
+      common_algorithms: List<Algorithm>
+      auto_execute: Bool
+      repl_auto_save: Bool
+
+  SessionMemory:
+    description: "Full session memory"
+    fields:
+      entries: List<MemoryEntry>
+      preferences: UserPreferences
+      turn_count: Int
+      session_start: Int
+      executions_count: Int
+      tests_passed: Int
+      repl_sessions: Int
+
+  InteractiveContext:
+    description: "Full system context with REPL"
+    fields:
+      current_mode: SystemMode
+      current_topic: ChatTopic
+      current_algorithm: Algorithm
+      input_language: InputLanguage
+      output_language: OutputLanguage
+      memory: SessionMemory
+      user_mood: String
+      last_execution: ExecutionResult
+      sandbox_enabled: Bool
+      repl_state: ReplState
+      debug_state: DebugState
+
+  InteractiveRequest:
+    description: "Request with REPL context"
+    fields:
+      text: String
+      code: String
+      context: InteractiveContext
+      use_memory: Bool
+      auto_execute: Bool
+      validate_output: Bool
+      repl_command: ReplCommand
+
+  InteractiveResponse:
+    description: "Response with REPL result"
+    fields:
+      text: String
+      code: String
+      mode: SystemMode
+      topic: ChatTopic
+      algorithm: Algorithm
+      output_language: OutputLanguage
+      confidence: Float
+      is_honest: Bool
+      personality: PersonalityTrait
+      memory_updated: Bool
+      execution_result: ExecutionResult
+      validation_result: ValidationResult
+      repl_state: ReplState
+      variables_changed: List<Variable>
+
+behaviors:
+  # Mode Detection
+  - name: detectMode
+    given: User input
+    when: Analyzing intent
+    then: Return SystemMode (includes repl/debug)
+
+  - name: detectInputLanguage
+    given: User input
+    when: Analyzing text patterns
+    then: Return InputLanguage
+
+  - name: detectOutputLanguage
+    given: User input
+    when: Analyzing code request
+    then: Return OutputLanguage (10 options)
+
+  - name: detectTopic
+    given: User input
+    when: Analyzing conversation
+    then: Return ChatTopic (includes repl/debug)
+
+  - name: detectAlgorithm
+    given: User input
+    when: Analyzing code request
+    then: Return Algorithm
+
+  - name: detectReplCommand
+    given: User input
+    when: In REPL mode
+    then: Return ReplCommand
+
+  # Chat Responses (14 topics)
+  - name: respondGreeting
+    given: Greeting detected
+    when: User says hello
+    then: Return warm greeting with memory recall
+
+  - name: respondFarewell
+    given: Farewell detected
+    when: User says goodbye
+    then: Return farewell with session summary
+
+  - name: respondHelp
+    given: Help request
+    when: User asks for help
+    then: Return guidance with REPL features
+
+  - name: respondCapabilities
+    given: Capabilities query
+    when: User asks what bot can do
+    then: Return 180 templates + REPL + debug
+
+  - name: respondFeelings
+    given: Feelings question
+    when: User asks about emotions
+    then: Return HONEST AI response
+
+  - name: respondWeather
+    given: Weather question
+    when: User asks about weather
+    then: Return HONEST cannot check
+
+  - name: respondTime
+    given: Time question
+    when: User asks about time
+    then: Return HONEST cannot check
+
+  - name: respondJoke
+    given: Joke request
+    when: User wants humor
+    then: Return programming joke
+
+  - name: respondFact
+    given: Fact request
+    when: User wants fact
+    then: Return tech fact
+
+  - name: respondMemory
+    given: Memory query
+    when: User asks about history
+    then: Return session history
+
+  - name: respondExecution
+    given: Execution query
+    when: User asks about running code
+    then: Return execution capabilities
+
+  - name: respondRepl
+    given: REPL query
+    when: User asks about REPL
+    then: Return REPL capabilities
+
+  - name: respondDebug
+    given: Debug query
+    when: User asks about debugging
+    then: Return debug capabilities
+
+  - name: respondUnknown
+    given: Unknown topic
+    when: Cannot understand
+    then: Return honest uncertainty
+
+  # Code Generation (18 algorithms)
+  - name: generateBubbleSort
+    given: Output language
+    when: User requests bubble sort
+    then: Return bubble sort in 10 languages
+
+  - name: generateQuickSort
+    given: Output language
+    when: User requests quick sort
+    then: Return quick sort in 10 languages
+
+  - name: generateMergeSort
+    given: Output language
+    when: User requests merge sort
+    then: Return merge sort in 10 languages
+
+  - name: generateHeapSort
+    given: Output language
+    when: User requests heap sort
+    then: Return heap sort in 10 languages
+
+  - name: generateLinearSearch
+    given: Output language
+    when: User requests linear search
+    then: Return linear search in 10 languages
+
+  - name: generateBinarySearch
+    given: Output language
+    when: User requests binary search
+    then: Return binary search in 10 languages
+
+  - name: generateFibonacci
+    given: Output language
+    when: User requests fibonacci
+    then: Return fibonacci in 10 languages
+
+  - name: generateFactorial
+    given: Output language
+    when: User requests factorial
+    then: Return factorial in 10 languages
+
+  - name: generateIsPrime
+    given: Output language
+    when: User requests prime check
+    then: Return prime check in 10 languages
+
+  - name: generateStack
+    given: Output language
+    when: User requests stack
+    then: Return stack in 10 languages
+
+  - name: generateQueue
+    given: Output language
+    when: User requests queue
+    then: Return queue in 10 languages
+
+  - name: generateLinkedList
+    given: Output language
+    when: User requests linked list
+    then: Return linked list in 10 languages
+
+  - name: generateBinaryTree
+    given: Output language
+    when: User requests binary tree
+    then: Return binary tree in 10 languages
+
+  - name: generateHashMap
+    given: Output language
+    when: User requests hash map
+    then: Return hash map in 10 languages
+
+  - name: generateBFS
+    given: Output language
+    when: User requests BFS
+    then: Return BFS in 10 languages
+
+  - name: generateDFS
+    given: Output language
+    when: User requests DFS
+    then: Return DFS in 10 languages
+
+  - name: generateDijkstra
+    given: Output language
+    when: User requests Dijkstra
+    then: Return Dijkstra in 10 languages
+
+  - name: generateTopologicalSort
+    given: Output language
+    when: User requests topological sort
+    then: Return topological sort in 10 languages
+
+  # Memory Management (from Cycle 19)
+  - name: initMemory
+    given: New session
+    when: First message
+    then: Return empty SessionMemory
+
+  - name: addMemoryEntry
+    given: Query and response
+    when: After processing
+    then: Add entry to memory
+
+  - name: recallMemory
+    given: Current query
+    when: Looking for context
+    then: Return relevant memories
+
+  - name: updatePreferences
+    given: User behavior
+    when: Detecting patterns
+    then: Update UserPreferences
+
+  - name: summarizeSession
+    given: Session memory
+    when: User asks for history
+    then: Return session summary
+
+  - name: clearMemory
+    given: Clear request
+    when: User wants fresh start
+    then: Clear all memory
+
+  # Code Execution (from Cycle 20)
+  - name: executeCode
+    given: Code snippet and language
+    when: User wants to run code
+    then: Execute in sandbox and return result
+
+  - name: validateOutput
+    given: Execution result and expected
+    when: Checking correctness
+    then: Return validation result
+
+  - name: handleError
+    given: Execution error
+    when: Code fails to run
+    then: Return error details and suggestions
+
+  - name: runTestCase
+    given: Single test case
+    when: Running validation
+    then: Execute and compare output
+
+  - name: runTestSuite
+    given: Test suite
+    when: Running full validation
+    then: Execute all tests and return results
+
+  - name: createSandbox
+    given: Language and constraints
+    when: Preparing execution
+    then: Initialize sandboxed environment
+
+  - name: cacheResult
+    given: Execution result
+    when: Caching for reuse
+    then: Store result with code hash
+
+  - name: retrieveCache
+    given: Code hash
+    when: Checking cache
+    then: Return cached result if exists
+
+  # NEW: REPL Mode (Cycle 21)
+  - name: startRepl
+    given: Language selection
+    when: User starts REPL
+    then: Initialize REPL state
+
+  - name: executeReplCommand
+    given: Command and state
+    when: User enters command
+    then: Execute and update state
+
+  - name: inspectVariable
+    given: Variable name
+    when: User wants to see value
+    then: Return variable details
+
+  - name: listVariables
+    given: REPL state
+    when: User wants all variables
+    then: Return all variables
+
+  - name: getHistory
+    given: REPL state
+    when: User wants history
+    then: Return command history
+
+  - name: navigateHistory
+    given: Direction (up/down)
+    when: User navigates history
+    then: Return previous/next command
+
+  - name: clearRepl
+    given: REPL state
+    when: User wants fresh state
+    then: Clear variables and history
+
+  - name: handleMultiline
+    given: Multi-line input
+    when: User enters complex code
+    then: Buffer and execute on complete
+
+  - name: undoCommand
+    given: REPL state
+    when: User wants to undo
+    then: Restore previous state
+
+  - name: redoCommand
+    given: REPL state
+    when: User wants to redo
+    then: Restore next state
+
+  # NEW: Debug Mode (Cycle 21)
+  - name: startDebug
+    given: Code and breakpoints
+    when: User starts debugging
+    then: Initialize debug state
+
+  - name: setBreakpoint
+    given: Line number
+    when: User sets breakpoint
+    then: Add breakpoint to list
+
+  - name: removeBreakpoint
+    given: Line number
+    when: User removes breakpoint
+    then: Remove from list
+
+  - name: stepOver
+    given: Debug state
+    when: User steps over
+    then: Execute next line
+
+  - name: stepInto
+    given: Debug state
+    when: User steps into
+    then: Enter function call
+
+  - name: stepOut
+    given: Debug state
+    when: User steps out
+    then: Exit current function
+
+  - name: continueExecution
+    given: Debug state
+    when: User continues
+    then: Run until breakpoint
+
+  - name: getCallStack
+    given: Debug state
+    when: User wants stack
+    then: Return call stack
+
+  # Unified Processing
+  - name: processInteractive
+    given: InteractiveRequest
+    when: Processing user input
+    then: Return InteractiveResponse with REPL
+
+  - name: handleChat
+    given: Chat mode
+    when: Processing chat
+    then: Return chat response with context
+
+  - name: handleCode
+    given: Code mode
+    when: Processing code
+    then: Return code with preference
+
+  - name: handleHybrid
+    given: Hybrid mode
+    when: Both needed
+    then: Return greeting + code
+
+  - name: handleExecute
+    given: Execute mode
+    when: Running code
+    then: Return execution result
+
+  - name: handleValidate
+    given: Validate mode
+    when: Checking output
+    then: Return validation result
+
+  - name: handleRepl
+    given: REPL mode
+    when: Interactive session
+    then: Process REPL command
+
+  - name: handleDebug
+    given: Debug mode
+    when: Debugging session
+    then: Process debug command
+
+  # Context Management
+  - name: initContext
+    given: New session
+    when: First message
+    then: Return initialized InteractiveContext
+
+  - name: updateContext
+    given: Current context
+    when: After processing
+    then: Return updated context with REPL
+
+  - name: selectPersonality
+    given: Mode and topic
+    when: Choosing style
+    then: Return PersonalityTrait
+
+  - name: validateResponse
+    given: InteractiveResponse
+    when: Checking quality
+    then: Reject generic patterns
+
+test_cases:
+  - name: start_python_repl
+    given: "Start Python REPL"
+    expected: "REPL initialized with Python"
+
+  - name: execute_in_repl
+    given: "x = 5 + 3"
+    expected: "Variable x = 8"
+
+  - name: inspect_variable
+    given: "inspect x"
+    expected: "x: integer = 8"
+
+  - name: show_history
+    given: "history"
+    expected: "List of previous commands"
+
+  - name: set_breakpoint
+    given: "break 10"
+    expected: "Breakpoint set at line 10"
+
+  - name: step_execution
+    given: "step"
+    expected: "Executed line N, paused at N+1"

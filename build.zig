@@ -195,6 +195,34 @@ pub fn build(b: *std.Build) void {
         release_step.dependOn(&target_output.step);
     }
 
+    // Cross-platform Fluent CLI release builds
+    const fluent_release_step = b.step("release-fluent", "Build Fluent CLI binaries for all platforms");
+
+    for (targets_list) |t| {
+        const release_target = b.resolveTargetQuery(t);
+        const fluent_release_exe = b.addExecutable(.{
+            .name = "fluent",
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/vibeec/igla_fluent_cli.zig"),
+                .target = release_target,
+                .optimize = .ReleaseFast,
+            }),
+        });
+
+        const fluent_target_output = b.addInstallArtifact(fluent_release_exe, .{
+            .dest_dir = .{
+                .override = .{
+                    .custom = b.fmt("release-fluent/{s}-{s}", .{
+                        @tagName(t.cpu_arch.?),
+                        @tagName(t.os_tag.?),
+                    }),
+                },
+            },
+        });
+
+        fluent_release_step.dependOn(&fluent_target_output.step);
+    }
+
     // Extension WASM tests
     const extension_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -267,6 +295,24 @@ pub fn build(b: *std.Build) void {
     }
     const trinity_cli_step = b.step("cli", "Run Trinity CLI (Interactive AI Agent)");
     trinity_cli_step.dependOn(&run_trinity_cli.step);
+
+    // Fluent CLI - Local Chat with History Truncation (NO HANG!)
+    const fluent_cli = b.addExecutable(.{
+        .name = "fluent",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/igla_fluent_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(fluent_cli);
+
+    const run_fluent_cli = b.addRunArtifact(fluent_cli);
+    if (b.args) |args| {
+        run_fluent_cli.addArgs(args);
+    }
+    const fluent_cli_step = b.step("fluent", "Run Fluent CLI (Local Chat with History Truncation)");
+    fluent_cli_step.dependOn(&run_fluent_cli.step);
 
     // VIBEE Compiler CLI
     const vibee = b.addExecutable(.{

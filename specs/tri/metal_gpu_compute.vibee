@@ -1,0 +1,177 @@
+# ============================================================================
+# Metal GPU Compute - Real 10,000+ ops/s IGLA Acceleration
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: metal_gpu_compute
+version: "1.0.0"
+language: zig
+module: metal_gpu_compute
+
+description: |
+  Real Metal GPU compute implementation for IGLA VSA operations.
+  Achieves 10,000+ ops/s through SIMD vectorization, batch processing,
+  and cache-optimized memory access patterns.
+  Target: M1/M2/M3/M4 Apple Silicon with unified memory.
+
+constants:
+  TARGET_OPS_PER_SEC: 10000
+  VECTOR_DIM: 1024
+  BATCH_SIZE: 4096
+  SIMD_WIDTH: 8
+  CACHE_LINE: 64
+  VOCAB_SIZE: 50000
+  TOP_K: 10
+
+types:
+  TritVector:
+    description: "Ternary vector for VSA operations"
+    fields:
+      data: List<Int>
+      dim: Int
+
+  VectorBatch:
+    description: "Batch of vectors for GPU processing"
+    fields:
+      vectors: List<TritVector>
+      count: Int
+      dim: Int
+
+  SimilarityResult:
+    description: "Result of similarity computation"
+    fields:
+      index: Int
+      score: Float
+      label: String
+
+  TopKResult:
+    description: "Top-K most similar vectors"
+    fields:
+      results: List<SimilarityResult>
+      query_time_ns: Int
+      ops_per_second: Float
+
+  GPUContext:
+    description: "GPU compute context"
+    fields:
+      device_name: String
+      max_threads: Int
+      simd_width: Int
+      memory_gb: Float
+      is_unified: Bool
+
+  AnalogyQuery:
+    description: "Analogy query: A is to B as C is to ?"
+    fields:
+      a: TritVector
+      b: TritVector
+      c: TritVector
+
+  BenchmarkRun:
+    description: "Benchmark execution result"
+    fields:
+      operation: String
+      batch_size: Int
+      iterations: Int
+      total_ops: Int
+      elapsed_ns: Int
+      ops_per_second: Float
+      passed: Bool
+
+behaviors:
+  - name: initGPU
+    given: System with Apple Silicon
+    when: Initializing GPU context
+    then: Return GPUContext with device capabilities
+
+  - name: allocVectorBatch
+    given: Batch size and dimension
+    when: Allocating vector batch
+    then: Return aligned VectorBatch with SIMD padding
+
+  - name: bindVectorsSIMD
+    given: Two TritVectors of same dimension
+    when: Computing VSA bind operation
+    then: Return element-wise product using SIMD lanes
+
+  - name: bundleVectorsSIMD
+    given: List of TritVectors
+    when: Computing VSA bundle operation
+    then: Return majority vote using SIMD parallel sum
+
+  - name: dotProductSIMD
+    given: Two TritVectors
+    when: Computing similarity score
+    then: Return normalized dot product using SIMD reduction
+
+  - name: batchDotProduct
+    given: Query vector and VectorBatch vocabulary
+    when: Computing all similarities
+    then: Return scores array using parallel processing
+
+  - name: selectTopK
+    given: Scores array and k value
+    when: Selecting top-k highest scores
+    then: Return TopKResult with indices and scores
+
+  - name: solveAnalogy
+    given: AnalogyQuery and vocabulary batch
+    when: Finding best answer to A:B::C:?
+    then: Return TopKResult for bind(unbind(B,A), C)
+
+  - name: runBenchmark
+    given: Operation type and iterations
+    when: Measuring throughput
+    then: Return BenchmarkRun with ops/s
+
+  - name: verifyTarget
+    given: BenchmarkRun result
+    when: Checking performance target
+    then: Return true if ops_per_second >= 10000
+
+performance_targets:
+  bind_simd:
+    target_ops_s: 100000
+    description: "Single bind with SIMD"
+
+  bundle_simd:
+    target_ops_s: 50000
+    description: "Bundle 3 vectors with SIMD"
+
+  dot_product_simd:
+    target_ops_s: 100000
+    description: "Single dot product with SIMD"
+
+  batch_dot_product:
+    target_ops_s: 20000
+    description: "Query vs 50K vocab"
+
+  full_analogy:
+    target_ops_s: 10000
+    description: "Complete analogy pipeline"
+
+test_cases:
+  - name: simd_bind_correctness
+    given: "Two random 1024-dim vectors"
+    expected: "Element-wise product matches scalar version"
+
+  - name: simd_bundle_correctness
+    given: "Three random 1024-dim vectors"
+    expected: "Majority vote matches scalar version"
+
+  - name: simd_dot_correctness
+    given: "Two random 1024-dim vectors"
+    expected: "Dot product matches scalar version"
+
+  - name: batch_topk_correctness
+    given: "Query and 1000 vocab vectors"
+    expected: "Top-10 matches brute force"
+
+  - name: achieves_10k_ops
+    given: "M1 Pro or better"
+    expected: "Full analogy >= 10,000 ops/s"
+
+  - name: memory_aligned
+    given: "Any vector allocation"
+    expected: "64-byte aligned for cache"

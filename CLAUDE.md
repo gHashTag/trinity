@@ -6,23 +6,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build & Test Commands
 
+**Requires Zig 0.15.x**
+
 ```bash
 # Build
 zig build                    # Compile library and executables
+zig build tri                # Run TRI - Unified Trinity CLI (recommended)
+zig build cli                # Run Trinity CLI (Interactive AI Agent)
+zig build vibee              # Run VIBEE Compiler CLI
 zig build firebird           # Build Firebird LLM CLI (ReleaseFast)
-zig build release            # Cross-platform release builds (linux/macos/windows)
+zig build b2t                # Build BitNet-to-Ternary CLI
+zig build claude-ui          # Build Claude UI Demo
+zig build release            # Cross-platform builds (linux/macos/windows x64, macos arm64)
 
 # Test
 zig build test               # Run ALL tests (trinity, vsa, vm, firebird, wasm, depin)
 zig test src/vsa.zig         # Run single test file
 zig test src/vm.zig          # VM tests only
-zig test src/firebird/b2t_integration.zig  # Firebird integration tests
 
-# Benchmark
+# Run
 zig build bench              # Run benchmarks
-
-# Examples
-zig build examples           # Build and run all examples
+zig build examples           # Run all examples
 
 # Format
 zig fmt src/                 # Format Zig code
@@ -52,7 +56,6 @@ bundle2(a, b)        // Majority vote of 2 vectors
 bundle3(a, b, c)     // Majority vote of 3 vectors
 cosineSimilarity()   // Measure similarity [-1, 1]
 hammingDistance()    // Count differing trits
-dotSimilarity()      // Inner product
 permute(v, count)    // Cyclic permutation
 ```
 
@@ -81,18 +84,18 @@ permute(v, count)    // Cyclic permutation
 
 | Directory | Purpose |
 |-----------|---------|
-| `src/b2t/` | BitNet inference (21 files) |
+| `src/b2t/` | BitNet inference |
 | `src/phi-engine/` | Quantum-inspired computation |
 | `src/tvc/` | Ternary Vector Computing |
 | `src/maxwell/` | Constraint solving |
 
 ---
 
-## 16-Step Development Cycle
+## Development Cycle
 
-**MANDATORY** 16-step cycle. Run `./bin/vibee koschei` to display all steps.
+Run `zig build vibee -- koschei` to display the full development cycle.
 
-### Minimal Cycle
+### Minimal Workflow
 
 ```bash
 # 1. Create specification
@@ -115,7 +118,7 @@ behaviors:
 EOF
 
 # 2. Generate code
-./bin/vibee gen specs/tri/feature.vibee  # → trinity/output/feature.zig
+zig build vibee -- gen specs/tri/feature.vibee  # → trinity/output/feature.zig
 
 # 3. Test
 zig test trinity/output/feature.zig
@@ -128,18 +131,14 @@ zig test trinity/output/feature.zig
 
 ```bash
 # Use language: varlog
-./bin/vibee gen specs/tri/feature_fpga.vibee  # → trinity/output/fpga/feature_fpga.v
+zig build vibee -- gen specs/tri/feature_fpga.vibee  # → trinity/output/fpga/feature_fpga.v
 ```
 
 ---
 
 ## Code Generation Rules
 
-### ANTI-PATTERN: Writing code manually
-
-```
-ALL CODE MUST BE GENERATED FROM .vibee SPECIFICATIONS!
-```
+**ALL APPLICATION CODE MUST BE GENERATED FROM .vibee SPECIFICATIONS**
 
 ### Allowed to edit
 
@@ -147,6 +146,7 @@ ALL CODE MUST BE GENERATED FROM .vibee SPECIFICATIONS!
 |------|-------------|
 | `specs/tri/*.vibee` | Specifications (SOURCE OF TRUTH) |
 | `src/vibeec/*.zig` | Compiler source ONLY |
+| `src/*.zig` | Core library (vsa, vm, etc.) |
 | `docs/*.md` | Documentation |
 
 ### Never edit (auto-generated)
@@ -159,16 +159,18 @@ ALL CODE MUST BE GENERATED FROM .vibee SPECIFICATIONS!
 
 ---
 
-## CLI Commands
+## VIBEE CLI Commands
 
 ```bash
-# VIBEE Compiler
-./bin/vibee gen <spec.vibee>         # Generate Zig code
-./bin/vibee gen-multi <spec> all     # Generate for 42 languages
-./bin/vibee run <file.999>           # Run via bytecode VM
-./bin/vibee koschei                  # Show development cycle
-./bin/vibee chat --model <path>      # Chat with model
-./bin/vibee serve --port 8080        # Start HTTP server
+# Run VIBEE compiler (builds and runs)
+zig build vibee -- gen <spec.vibee>         # Generate Zig code
+zig build vibee -- chat --model <path>      # Chat with model
+zig build vibee -- serve --port 8080        # Start HTTP server
+zig build vibee -- help                     # Show all commands
+
+# Or use the built binary directly
+./zig-out/bin/vibee gen <spec.vibee>
+./zig-out/bin/vibee chat --model <path>
 ```
 
 ---
@@ -197,45 +199,6 @@ behaviors:
     when: Action description
     then: Expected result
 ```
-
----
-
-## Mathematical Foundation
-
-```
-φ = (1 + √5) / 2 ≈ 1.618                        (Golden Ratio)
-φ² + 1/φ² = 3                                    (Trinity Identity)
-V = n × 3^k × π^m × φ^p × e^q                   (Parametric Constant Approximation)
-```
-
-Ternary {-1, 0, +1} is mathematically optimal:
-- Information density: 1.58 bits/trit (vs 1 bit/binary)
-- Memory savings: 20x vs float32
-- Compute: Add-only (no multiply)
-
----
-
-## Telegram Bot Rules
-
-```
-FORBIDDEN: InlineKeyboardMarkup (buttons in message)
-ONLY: ReplyKeyboardMarkup (buttons at bottom of screen)
-```
-
-Specifications: `specs/tri/telegram_bot/`
-
----
-
-## Website Deployment
-
-```
-Canonical URL: https://trinity-site-one.vercel.app
-GitHub Repo:   gHashTag/trinity
-Root:          website/
-Framework:     Vite (React SPA)
-```
-
-DO NOT create new Vercel projects. Push to main branch auto-deploys.
 
 ---
 
@@ -295,6 +258,31 @@ git push
 | Technical Details | Architecture, implementation |
 | Conclusion | Summary, next steps |
 
+---
+
+## Telegram Bot Rules
+
+```
+FORBIDDEN: InlineKeyboardMarkup (buttons in message)
+ONLY: ReplyKeyboardMarkup (buttons at bottom of screen)
+```
+
+Specifications: `specs/tri/telegram_bot/`
+
+---
+
+## Website Deployment
+
+```
+Canonical URL: https://trinity-site-one.vercel.app
+Root:          website/
+Framework:     Vite (React SPA)
+```
+
+DO NOT create new Vercel projects. Push to main branch auto-deploys.
+
+---
+
 ### Live Documentation
 
 | Page | URL |
@@ -347,6 +335,17 @@ ralph-migrate            # Migrate to .ralph/ structure
 - Session continuity across iterations
 
 Repository: https://github.com/frankbria/ralph-claude-code
+
+---
+
+## Mathematical Foundation
+
+Ternary {-1, 0, +1} provides:
+- Information density: 1.58 bits/trit (vs 1 bit/binary)
+- Memory savings: 20x vs float32
+- Compute: Add-only (no multiply)
+
+Trinity Identity: `φ² + 1/φ² = 3` where φ = (1 + √5) / 2
 
 ---
 

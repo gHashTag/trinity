@@ -1,0 +1,168 @@
+# ============================================================================
+# Fluent Multilingual Code Generation - Real Code from Natural Language
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: fluent_codegen
+version: "1.0.0"
+language: zig
+module: fluent_codegen
+
+description: |
+  Full fluent multilingual code generation system.
+  Generates real, working code from natural language prompts.
+  Supports Russian, Chinese, English prompts.
+  Outputs Zig, Python, JavaScript code.
+  No generic templates - real implementations.
+
+constants:
+  MAX_CODE_LENGTH: 4096
+  MIN_CONFIDENCE: 0.7
+  TEMPLATE_COUNT: 50
+
+types:
+  InputLanguage:
+    description: "Input prompt language"
+    enum:
+      - russian
+      - chinese
+      - english
+      - auto
+
+  OutputLanguage:
+    description: "Generated code language"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+      - rust
+
+  CodeIntent:
+    description: "Detected programming intent"
+    enum:
+      - sort_algorithm
+      - search_algorithm
+      - math_function
+      - data_structure
+      - file_operation
+      - web_request
+      - string_manipulation
+      - array_operation
+      - class_definition
+      - test_function
+      - unknown
+
+  CodeRequest:
+    description: "Code generation request"
+    fields:
+      prompt: String
+      input_lang: InputLanguage
+      output_lang: OutputLanguage
+      intent: CodeIntent
+
+  GeneratedCode:
+    description: "Generated code result"
+    fields:
+      code: String
+      language: OutputLanguage
+      intent: CodeIntent
+      confidence: Float
+      explanation: String
+      is_complete: Bool
+
+  CodeTemplate:
+    description: "Code template for generation"
+    fields:
+      intent: CodeIntent
+      languages: List<OutputLanguage>
+      template: String
+      variables: List<String>
+
+behaviors:
+  - name: detectIntent
+    given: Natural language prompt
+    when: Analyzing code request
+    then: Return CodeIntent enum value
+
+  - name: detectInputLanguage
+    given: Prompt text
+    when: Analyzing input
+    then: Return InputLanguage (ru/zh/en)
+
+  - name: generateCode
+    given: CodeRequest with prompt and languages
+    when: Generating code
+    then: Return GeneratedCode with real implementation
+
+  - name: generateSort
+    given: Sort request in any language
+    when: Generating sorting algorithm
+    then: Return bubble/quick/merge sort code
+
+  - name: generateSearch
+    given: Search request
+    when: Generating search algorithm
+    then: Return linear/binary search code
+
+  - name: generateMath
+    given: Math function request
+    when: Generating mathematical code
+    then: Return fibonacci/factorial/prime code
+
+  - name: generateDataStructure
+    given: Data structure request
+    when: Generating struct/class
+    then: Return stack/queue/tree code
+
+  - name: generateZig
+    given: Request for Zig code
+    when: Generating Zig
+    then: Return idiomatic Zig code
+
+  - name: generatePython
+    given: Request for Python code
+    when: Generating Python
+    then: Return idiomatic Python code
+
+  - name: generateJS
+    given: Request for JavaScript code
+    when: Generating JavaScript
+    then: Return idiomatic JS code
+
+  - name: translatePrompt
+    given: Non-English prompt
+    when: Normalizing input
+    then: Return English equivalent intent
+
+  - name: validateCode
+    given: Generated code
+    when: Checking quality
+    then: Return true if syntactically correct
+
+  - name: explainCode
+    given: Generated code and input language
+    when: Adding explanation
+    then: Return explanation in input language
+
+test_cases:
+  - name: russian_sort_zig
+    given: "Напиши сортировку массива на Zig"
+    expected: "Real bubble/quick sort in Zig"
+
+  - name: chinese_fibonacci_python
+    given: "用Python写斐波那契函数"
+    expected: "Real fibonacci in Python"
+
+  - name: english_binary_search
+    given: "Write binary search in JavaScript"
+    expected: "Real binary search in JS"
+
+  - name: russian_stack_python
+    given: "Создай класс стека на Python"
+    expected: "Real Stack class in Python"
+
+  - name: multilingual_detection
+    given: "写排序算法 на Zig"
+    expected: "Detects Chinese, outputs Zig sort"

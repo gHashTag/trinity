@@ -1,0 +1,265 @@
+# ============================================================================
+# VS Code Extension - Trinity Local Coder Integration
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vscode_extension
+version: "1.0.0"
+language: zig
+module: vscode_extension
+
+description: |
+  VS Code extension backend for Trinity local coder.
+  Provides IGLA chat, code generation, and inline assistance.
+  Communicates via Language Server Protocol (LSP) for IDE integration.
+  Works offline with local GGUF models.
+
+constants:
+  EXTENSION_ID: "trinity.local-coder"
+  DISPLAY_NAME: "Trinity Local Coder"
+  EXTENSION_VERSION: "1.0.0"
+  LSP_PORT: 9527
+  DEFAULT_MODEL: "tinyllama"
+  MAX_CONTEXT_LINES: 100
+  DEBOUNCE_MS: 300
+
+types:
+  ExtensionCommand:
+    description: "Available extension commands"
+    enum:
+      - chat
+      - generate_code
+      - explain_code
+      - refactor
+      - add_tests
+      - fix_error
+      - complete_inline
+
+  ExtensionConfig:
+    description: "Extension configuration settings"
+    fields:
+      model: String
+      local_only: Bool
+      streaming: Bool
+      max_tokens: Int
+      temperature: Float
+      show_inline_hints: Bool
+      auto_complete: Bool
+
+  CodeContext:
+    description: "Context for code operations"
+    fields:
+      file_path: String
+      language: String
+      selection: String
+      surrounding_code: String
+      cursor_line: Int
+      cursor_column: Int
+
+  ChatMessage:
+    description: "Message in chat conversation"
+    fields:
+      role: String
+      content: String
+      timestamp: Int
+
+  ChatSession:
+    description: "Active chat session"
+    fields:
+      id: String
+      messages: List<ChatMessage>
+      context: CodeContext
+      model_used: String
+
+  GenerationResult:
+    description: "Result of code generation"
+    fields:
+      code: String
+      language: String
+      explanation: String
+      tokens_used: Int
+      generation_time_ms: Int
+
+  InlineCompletion:
+    description: "Inline code completion"
+    fields:
+      text: String
+      range_start: Int
+      range_end: Int
+      confidence: Float
+
+  LSPRequest:
+    description: "Language Server Protocol request"
+    fields:
+      method: String
+      params: String
+      id: Int
+
+  LSPResponse:
+    description: "Language Server Protocol response"
+    fields:
+      id: Int
+      result: String
+      error: String
+
+  ExtensionStats:
+    description: "Extension usage statistics"
+    fields:
+      total_generations: Int
+      total_chats: Int
+      tokens_generated: Int
+      avg_latency_ms: Float
+      local_usage_percent: Float
+
+behaviors:
+  - name: init
+    given: ExtensionConfig with settings
+    when: Extension activates in VS Code
+    then: Initialize LSP server, load model
+
+  - name: handleCommand
+    given: ExtensionCommand and context
+    when: User triggers command
+    then: Route to appropriate handler
+
+  - name: chat
+    given: User message and chat session
+    when: Chat command invoked
+    then: Send to IGLA, stream response
+
+  - name: generateCode
+    given: Prompt and code context
+    when: Generate code command invoked
+    then: Generate code, insert at cursor
+
+  - name: explainCode
+    given: Selected code
+    when: Explain command invoked
+    then: Generate explanation in panel
+
+  - name: refactorCode
+    given: Selected code and refactor type
+    when: Refactor command invoked
+    then: Generate refactored version
+
+  - name: addTests
+    given: Selected function or class
+    When: Add tests command invoked
+    then: Generate test cases
+
+  - name: fixError
+    given: Error message and code context
+    When: Fix error command invoked
+    then: Suggest fix based on error
+
+  - name: completeInline
+    given: Cursor position and surrounding code
+    when: Typing pause detected
+    then: Suggest inline completion
+
+  - name: startLSPServer
+    given: LSP port configuration
+    when: Extension initializes
+    then: Start LSP server on port
+
+  - name: handleLSPRequest
+    given: LSPRequest from client
+    when: Request received
+    then: Process and return LSPResponse
+
+  - name: getStats
+    given: Extension state
+    when: Statistics requested
+    then: Return ExtensionStats
+
+  - name: shutdown
+    given: Extension deactivating
+    when: VS Code closing
+    then: Save state, stop LSP server
+
+commands:
+  - id: "trinity.chat"
+    title: "Trinity: Open Chat"
+    shortcut: "Ctrl+Shift+T"
+
+  - id: "trinity.generateCode"
+    title: "Trinity: Generate Code"
+    shortcut: "Ctrl+Shift+G"
+
+  - id: "trinity.explainCode"
+    title: "Trinity: Explain Selection"
+    shortcut: "Ctrl+Shift+E"
+
+  - id: "trinity.refactor"
+    title: "Trinity: Refactor Selection"
+    shortcut: "Ctrl+Shift+R"
+
+  - id: "trinity.addTests"
+    title: "Trinity: Add Tests"
+    shortcut: "Ctrl+Shift+A"
+
+  - id: "trinity.fixError"
+    title: "Trinity: Fix Error"
+    shortcut: "Ctrl+Shift+F"
+
+  - id: "trinity.toggleInline"
+    title: "Trinity: Toggle Inline Suggestions"
+    shortcut: "Ctrl+Shift+I"
+
+configuration:
+  - name: "trinity.model"
+    type: "string"
+    default: "tinyllama"
+    description: "Local model to use"
+    enum: ["tinyllama", "phi2", "mistral", "igla"]
+
+  - name: "trinity.localOnly"
+    type: "boolean"
+    default: false
+    description: "Force local model (no cloud)"
+
+  - name: "trinity.streaming"
+    type: "boolean"
+    default: true
+    description: "Stream responses"
+
+  - name: "trinity.maxTokens"
+    type: "number"
+    default: 512
+    description: "Maximum tokens per generation"
+
+  - name: "trinity.showInlineHints"
+    type: "boolean"
+    default: true
+    description: "Show inline code suggestions"
+
+activation_events:
+  - "onLanguage:zig"
+  - "onLanguage:python"
+  - "onLanguage:javascript"
+  - "onLanguage:typescript"
+  - "onLanguage:rust"
+  - "onCommand:trinity.chat"
+  - "onCommand:trinity.generateCode"
+
+test_cases:
+  - name: extension_activates
+    given: "VS Code opens Zig file"
+    expected: "Extension activates, LSP starts"
+
+  - name: chat_works_local
+    given: "Chat command, local model"
+    expected: "Response streamed to panel"
+
+  - name: generate_code_inserts
+    given: "Generate command at cursor"
+    expected: "Code inserted at position"
+
+  - name: inline_completion_appears
+    given: "Typing pause 300ms"
+    expected: "Inline suggestion shown"
+
+  - name: explain_shows_panel
+    given: "Code selected, explain command"
+    expected: "Explanation in side panel"

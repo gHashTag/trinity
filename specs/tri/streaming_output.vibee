@@ -1,0 +1,162 @@
+# ============================================================================
+# Streaming Output v2 - Real-time Token Display with Rate Control
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: streaming_output
+version: "2.0.0"
+language: zig
+module: streaming_output
+
+description: |
+  Real-time streaming output for LLM inference with token-level control.
+  Displays tokens as they are generated without buffering.
+  Supports ANSI colors, progress indicators, rate limiting, and statistics.
+  Enhanced for TRI CLI chat and code generation workflows.
+
+constants:
+  DEFAULT_DELAY_MS: 10
+  MIN_DELAY_MS: 1
+  MAX_DELAY_MS: 100
+  BUFFER_SIZE: 4096
+  TOKEN_RATE_WINDOW: 100
+  ANSI_RESET: 0
+  ANSI_GREEN: 32
+  ANSI_YELLOW: 33
+  ANSI_CYAN: 36
+
+types:
+  StreamMode:
+    description: "Mode of streaming output"
+    enum:
+      - immediate
+      - buffered
+      - rate_limited
+
+  StreamConfig:
+    description: "Configuration for streaming output"
+    fields:
+      enabled: Bool
+      delay_ms: Int
+      show_cursor: Bool
+      color_enabled: Bool
+      mode: StreamMode
+      show_token_rate: Bool
+
+  StreamState:
+    description: "Current state of streaming output"
+    fields:
+      is_streaming: Bool
+      chars_written: Int
+      tokens_emitted: Int
+      start_time: Int
+      last_token_time: Int
+      buffer: String
+
+  TokenEvent:
+    description: "Event for single token emission"
+    fields:
+      token: String
+      timestamp_ms: Int
+      token_id: Int
+      is_special: Bool
+
+  StreamStats:
+    description: "Statistics for streaming session"
+    fields:
+      total_chars: Int
+      total_tokens: Int
+      duration_ms: Int
+      chars_per_second: Float
+      tokens_per_second: Float
+      avg_token_latency_ms: Float
+
+behaviors:
+  - name: init
+    given: StreamConfig with optional settings
+    when: Starting streaming session
+    then: Return initialized StreamState
+
+  - name: streamChar
+    given: Single character to output
+    when: Outputting next character
+    then: Write character with optional delay
+
+  - name: streamToken
+    given: Token string to output
+    when: New token generated from LLM
+    then: Write token immediately, update stats
+
+  - name: streamText
+    given: Text string to output
+    when: Outputting full text with streaming effect
+    then: Output each character with delay between
+
+  - name: streamLine
+    given: Line of text
+    when: Outputting line with streaming
+    then: Stream text then newline
+
+  - name: flush
+    given: Pending output
+    when: Immediate output needed
+    then: Write all pending characters immediately
+
+  - name: setColor
+    given: ANSI color code
+    when: Color output enabled
+    then: Write color escape sequence to stdout
+
+  - name: resetColor
+    given: Current color state
+    when: Resetting to default terminal color
+    then: Write reset escape sequence
+
+  - name: showTokenRate
+    given: Current token rate
+    when: Rate display enabled
+    then: Update inline rate indicator
+
+  - name: complete
+    given: StreamState with final stats
+    when: Generation finished
+    then: Flush remaining, show stats, print newline
+
+  - name: getStats
+    given: Current stream state
+    when: Statistics requested
+    then: Return StreamStats with timing info
+
+test_cases:
+  - name: immediate_mode_no_buffer
+    given: "StreamMode.immediate"
+    expected: "Each token written instantly"
+
+  - name: token_rate_accurate
+    given: "100 tokens in 1 second"
+    expected: "Rate shows 100 tok/s"
+
+  - name: ansi_colors_work
+    given: "color_enabled: true"
+    expected: "Color codes in output"
+
+  - name: complete_shows_stats
+    given: "Session finished"
+    expected: "Stats printed with newline"
+
+cli:
+  flags:
+    - name: stream
+      short: s
+      type: Bool
+      default: true
+      description: Enable streaming output (default on)
+    - name: delay
+      type: Int
+      default: 10
+      description: Delay between characters in ms
+    - name: show-rate
+      type: Bool
+      default: false
+      description: Show token generation rate

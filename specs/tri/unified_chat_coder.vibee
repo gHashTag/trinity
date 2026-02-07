@@ -1,0 +1,239 @@
+# ============================================================================
+# Unified Chat + Coder - Full Local Fluent Conversational AI with Code Gen
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: unified_chat_coder
+version: "1.0.0"
+language: zig
+module: unified_chat_coder
+
+description: |
+  Unified system combining fluent general chat with code generation.
+  Handles normal conversation AND code requests seamlessly.
+  Detects user intent (chat vs code) and routes appropriately.
+  Honest responses throughout - no generic bullshit.
+  Supports Russian, Chinese, English for both chat and code.
+
+constants:
+  HIGH_CONFIDENCE: 0.9
+  MED_CONFIDENCE: 0.7
+  LOW_CONFIDENCE: 0.4
+  UNKNOWN_CONFIDENCE: 0.3
+  MAX_CODE_LENGTH: 8192
+  MAX_RESPONSE_LENGTH: 4096
+
+types:
+  UserMode:
+    description: "Current user interaction mode"
+    enum:
+      - chat
+      - code
+      - hybrid
+      - unknown
+
+  ChatTopic:
+    description: "Conversation topic categories"
+    enum:
+      - greeting
+      - farewell
+      - gratitude
+      - weather
+      - time
+      - feelings
+      - help
+      - about_self
+      - philosophy
+      - humor
+      - advice
+      - code_request
+      - unknown
+
+  CodeIntent:
+    description: "Detected programming intent"
+    enum:
+      - sort_algorithm
+      - search_algorithm
+      - math_function
+      - data_structure
+      - file_operation
+      - web_request
+      - class_definition
+      - test_function
+      - explain_code
+      - fix_bug
+      - unknown
+
+  OutputLanguage:
+    description: "Generated code language"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+      - rust
+
+  InputLanguage:
+    description: "User input language"
+    enum:
+      - russian
+      - chinese
+      - english
+      - auto
+
+  UnifiedRequest:
+    description: "Unified request combining chat and code"
+    fields:
+      text: String
+      input_lang: InputLanguage
+      detected_mode: UserMode
+      chat_topic: ChatTopic
+      code_intent: CodeIntent
+
+  UnifiedResponse:
+    description: "Unified response for chat or code"
+    fields:
+      text: String
+      mode: UserMode
+      confidence: Float
+      is_honest: Bool
+      code: String
+      code_language: OutputLanguage
+      follow_up: String
+
+  SessionState:
+    description: "Current session state"
+    fields:
+      turn_count: Int
+      current_mode: UserMode
+      last_topic: ChatTopic
+      last_code_intent: CodeIntent
+      user_language: InputLanguage
+      context_buffer: String
+
+behaviors:
+  - name: detectMode
+    given: User input text
+    when: Analyzing if chat or code request
+    then: Return UserMode (chat/code/hybrid)
+
+  - name: detectInputLanguage
+    given: User input text
+    when: Analyzing language
+    then: Return InputLanguage (ru/zh/en)
+
+  - name: detectChatTopic
+    given: User input for chat
+    when: Analyzing conversation topic
+    then: Return ChatTopic enum value
+
+  - name: detectCodeIntent
+    given: User input for code
+    when: Analyzing code request
+    then: Return CodeIntent enum value
+
+  - name: processUnified
+    given: UnifiedRequest with all detections
+    when: Processing user request
+    then: Return UnifiedResponse with chat or code
+
+  - name: handleChat
+    given: Chat topic and input language
+    when: User wants conversation
+    then: Return fluent chat response
+
+  - name: handleCode
+    given: Code intent and output language
+    when: User wants code
+    then: Return generated code with explanation
+
+  - name: handleHybrid
+    given: Mixed chat and code request
+    when: User combines conversation with code
+    then: Return response with both chat and code
+
+  - name: generateSort
+    given: Sort request in any language
+    when: Generating sorting algorithm
+    then: Return real bubble/quick sort code
+
+  - name: generateSearch
+    given: Search request
+    when: Generating search algorithm
+    then: Return real binary search code
+
+  - name: generateMath
+    given: Math function request
+    when: Generating mathematical code
+    then: Return real fibonacci/factorial code
+
+  - name: generateDataStructure
+    given: Data structure request
+    when: Generating struct/class
+    then: Return real stack/queue code
+
+  - name: respondGreeting
+    given: Greeting in any language
+    when: User says hello
+    then: Return warm greeting in same language
+
+  - name: respondFarewell
+    given: Goodbye in any language
+    when: User says goodbye
+    then: Return farewell with invitation
+
+  - name: respondWeather
+    given: Weather question
+    when: User asks about weather
+    then: Return honest "I cannot check weather"
+
+  - name: respondFeelings
+    given: How are you question
+    when: User asks about AI feelings
+    then: Return honest AI state response
+
+  - name: respondUnknown
+    given: Unrecognized query
+    when: Cannot confidently respond
+    then: Return honest uncertainty with guidance
+
+  - name: validateResponse
+    given: Generated response
+    when: Checking quality
+    then: Return true if honest and not generic
+
+  - name: initSession
+    given: New conversation start
+    when: Initializing session
+    then: Return initialized SessionState
+
+  - name: updateSession
+    given: Current state and new request
+    when: Tracking conversation
+    then: Return updated SessionState
+
+test_cases:
+  - name: russian_greeting_chat
+    given: "Привет!"
+    expected: "Warm Russian greeting, mode=chat"
+
+  - name: chinese_code_request
+    given: "用Python写斐波那契"
+    expected: "Real fibonacci code, mode=code"
+
+  - name: english_hybrid
+    given: "Hello! Can you write a sort function?"
+    expected: "Greeting + sort code, mode=hybrid"
+
+  - name: weather_honest
+    given: "What's the weather like?"
+    expected: "Honest 'I cannot check' response"
+
+  - name: unknown_honest
+    given: "Tell me about Tokyo restaurants"
+    expected: "Honest uncertainty, confidence < 0.4"
+
+  - name: multilingual_code
+    given: "Напиши binary search на JavaScript"
+    expected: "Real binary search in JS"

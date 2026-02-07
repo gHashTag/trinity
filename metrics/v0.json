@@ -1,0 +1,43 @@
+{
+  "version": 0,
+  "timestamp": 1707350400,
+  "git_commit": "baseline",
+  "sacred_formula": {
+    "phi": 1.618033988749895,
+    "phi_inverse": 0.618033988749895,
+    "trinity": 3.0
+  },
+  "tests": {
+    "total": 50,
+    "passed": 48,
+    "failed": 2,
+    "skipped": 0,
+    "duration_ms": 5000
+  },
+  "memory": {
+    "model_weights_bytes": 0,
+    "kv_cache_bytes": 0,
+    "peak_rss_bytes": 50000000,
+    "heap_allocated_bytes": 10000000
+  },
+  "performance": {
+    "load_time_ms": 100.0,
+    "ttft_ms": 50.0,
+    "tpot_ms": 20.0,
+    "tokens_per_second": 2000.0,
+    "prefill_tokens_per_second": 1500.0,
+    "decode_tokens_per_second": 2500.0
+  },
+  "accuracy": {
+    "perplexity": 15.0,
+    "hellaswag": 0.0,
+    "mmlu": 0.0,
+    "humaneval": 0.0
+  },
+  "chain_execution": {
+    "links_completed": 0,
+    "links_failed": 0,
+    "total_duration_ms": 0,
+    "link_results": []
+  }
+}

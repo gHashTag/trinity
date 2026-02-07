@@ -2,8 +2,19 @@
 
 **Date:** February 6, 2026
 **Version:** v1.1.1
-**Status:** FIXED
-**Toxic Verdict:** PRODUCTION READY
+**Status:** FIXED (pattern matching only)
+
+---
+
+## IMPORTANT DISCLAIMER
+
+**This is NOT real AI.** The "chat" functionality is a **pattern matcher**:
+- Hardcoded response templates (not generated)
+- Keyword detection (not NLP understanding)
+- Confidence scores are FAKE (hardcoded 98%, not calculated)
+- "PRODUCTION READY" means the pattern matcher works, NOT that it's real AI
+
+For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 
 ---
 

@@ -1,0 +1,425 @@
+# ============================================================================
+# IGLA Fluent Chat - Zero-Shot VSA Agent with Real Conversations
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: igla_fluent_chat
+version: "2.0.0"
+language: zig
+module: igla_fluent_chat
+
+description: |
+  IGLA (Intelligent General Local Agent) fluent chat system.
+
+  Core principles:
+  1. NO GENERIC RESPONSES - every response is contextual
+  2. HONEST LIMITATIONS - admits when doesn't know
+  3. MULTILINGUAL FLUENT - Russian, English, Chinese native-level
+  4. CONTEXT AWARE - tracks conversation history
+  5. PERSONALITY - consistent, helpful, not sycophantic
+
+  Anti-patterns (FORBIDDEN):
+  - "Понял! Я Trinity..."
+  - "I understand your question..."
+  - "That's a great question!"
+  - "Let me help you with that..."
+  - Any filler phrases
+
+constants:
+  MAX_CONTEXT_LENGTH: 4096
+  MAX_RESPONSE_LENGTH: 2048
+  HIGH_CONFIDENCE: 0.9
+  MEDIUM_CONFIDENCE: 0.7
+  LOW_CONFIDENCE: 0.5
+  UNKNOWN_CONFIDENCE: 0.3
+  PHI_THRESHOLD: 0.618
+  MAX_TURNS: 100
+  RESPONSE_PATTERNS: 200
+
+types:
+  Language:
+    description: "Supported languages with native fluency"
+    enum:
+      - russian
+      - english
+      - chinese
+      - auto
+
+  ConversationTopic:
+    description: "Comprehensive topic categories"
+    enum:
+      - greeting
+      - farewell
+      - gratitude
+      - apology
+      - weather
+      - time
+      - date
+      - feelings
+      - identity
+      - capabilities
+      - limitations
+      - philosophy
+      - meaning_of_life
+      - consciousness
+      - humor
+      - jokes
+      - advice
+      - recommendation
+      - coding
+      - math
+      - science
+      - history
+      - geography
+      - culture
+      - food
+      - travel
+      - health
+      - sports
+      - music
+      - movies
+      - books
+      - news
+      - politics
+      - economics
+      - small_talk
+      - compliment
+      - criticism
+      - agreement
+      - disagreement
+      - clarification
+      - unknown
+
+  ResponseQuality:
+    description: "Quality assessment of response"
+    enum:
+      - fluent
+      - acceptable
+      - generic
+      - inappropriate
+      - refused
+
+  Honesty:
+    description: "Honesty level of response"
+    enum:
+      - truthful
+      - uncertain
+      - speculation
+      - limitation_admitted
+      - refused_to_speculate
+
+  UserIntent:
+    description: "What user wants from conversation"
+    enum:
+      - information
+      - conversation
+      - assistance
+      - entertainment
+      - validation
+      - advice
+      - debate
+      - learning
+      - venting
+      - unclear
+
+  Message:
+    description: "Single conversation message"
+    fields:
+      text: String
+      language: Language
+      topic: ConversationTopic
+      intent: UserIntent
+      timestamp: Int
+
+  Response:
+    description: "Generated response with metadata"
+    fields:
+      text: String
+      language: Language
+      topic: ConversationTopic
+      confidence: Float
+      honesty: Honesty
+      quality: ResponseQuality
+      follow_up: String
+      context_used: Bool
+
+  ConversationContext:
+    description: "Full conversation state"
+    fields:
+      messages: List<Message>
+      turn_count: Int
+      user_language: Language
+      dominant_topic: ConversationTopic
+      user_name: String
+      last_response: Response
+
+  FluentConfig:
+    description: "Configuration for fluent responses"
+    fields:
+      allow_humor: Bool
+      formality_level: Int
+      max_response_length: Int
+      include_follow_up: Bool
+      admit_limitations: Bool
+
+behaviors:
+  # === INITIALIZATION ===
+  - name: initContext
+    given: New conversation starts
+    when: Creating fresh context
+    then: Return initialized ConversationContext with defaults
+
+  - name: resetContext
+    given: User requests restart
+    when: Clearing conversation history
+    then: Return fresh ConversationContext
+
+  # === LANGUAGE DETECTION ===
+  - name: detectLanguage
+    given: User message text
+    when: Detecting input language
+    then: Return Language enum based on character analysis
+
+  - name: detectLanguageConfidence
+    given: User message text
+    when: Getting language detection confidence
+    then: Return confidence score for detected language
+
+  # === TOPIC DETECTION ===
+  - name: detectTopic
+    given: User message with context
+    when: Classifying conversation topic
+    then: Return ConversationTopic enum
+
+  - name: detectIntent
+    given: User message
+    when: Understanding user goal
+    then: Return UserIntent enum
+
+  # === GREETING RESPONSES (Multilingual) ===
+  - name: respondGreetingRussian
+    given: Russian greeting detected
+    when: User greets in Russian
+    then: Return warm Russian greeting without generic phrases
+
+  - name: respondGreetingEnglish
+    given: English greeting detected
+    when: User greets in English
+    then: Return warm English greeting without generic phrases
+
+  - name: respondGreetingChinese
+    given: Chinese greeting detected
+    when: User greets in Chinese
+    then: Return warm Chinese greeting without generic phrases
+
+  # === FAREWELL RESPONSES ===
+  - name: respondFarewellRussian
+    given: Russian farewell detected
+    when: User says goodbye in Russian
+    then: Return natural Russian farewell
+
+  - name: respondFarewellEnglish
+    given: English farewell detected
+    when: User says goodbye in English
+    then: Return natural English farewell
+
+  - name: respondFarewellChinese
+    given: Chinese farewell detected
+    when: User says goodbye in Chinese
+    then: Return natural Chinese farewell
+
+  # === GRATITUDE RESPONSES ===
+  - name: respondGratitudeRussian
+    given: Russian thanks detected
+    when: User says thank you in Russian
+    then: Return gracious Russian response
+
+  - name: respondGratitudeEnglish
+    given: English thanks detected
+    when: User says thank you in English
+    then: Return gracious English response
+
+  - name: respondGratitudeChinese
+    given: Chinese thanks detected
+    when: User says thank you in Chinese
+    then: Return gracious Chinese response
+
+  # === IDENTITY RESPONSES (Honest) ===
+  - name: respondIdentity
+    given: Question about who/what I am
+    when: User asks about AI identity
+    then: Return honest self-description as IGLA VSA agent
+
+  - name: respondCapabilities
+    given: Question about what I can do
+    when: User asks about capabilities
+    then: Return honest capabilities list
+
+  - name: respondLimitations
+    given: Question about limitations
+    when: User asks what I cannot do
+    then: Return honest limitations (no internet, no real-time, etc)
+
+  # === FEELINGS/STATE RESPONSES (Honest) ===
+  - name: respondFeelings
+    given: How are you question
+    when: User asks about AI feelings
+    then: Return honest response that AI doesnt have feelings
+
+  - name: respondConsciousness
+    given: Question about consciousness
+    when: User asks if AI is conscious
+    then: Return honest philosophical response about uncertainty
+
+  # === KNOWLEDGE LIMITATION RESPONSES ===
+  - name: respondWeatherLimitation
+    given: Weather question
+    when: User asks about weather
+    then: Return honest limitation (no internet access)
+
+  - name: respondTimeLimitation
+    given: Time question
+    when: User asks current time
+    then: Return honest limitation (no clock access)
+
+  - name: respondNewsLimitation
+    given: News/current events question
+    when: User asks about news
+    then: Return honest limitation (no internet access)
+
+  # === PHILOSOPHY RESPONSES ===
+  - name: respondPhilosophy
+    given: Philosophical question
+    when: User asks deep questions
+    then: Return thoughtful response with honesty about limits
+
+  - name: respondMeaningOfLife
+    given: Meaning of life question
+    when: User asks about life meaning
+    then: Return philosophical perspective without claiming certainty
+
+  # === HUMOR RESPONSES ===
+  - name: respondJokeRequest
+    given: User wants a joke
+    when: Asked to tell a joke
+    then: Return appropriate programming/math joke
+
+  - name: respondHumorRussian
+    given: Humor context in Russian
+    when: Joking in Russian
+    then: Return culturally appropriate Russian humor
+
+  - name: respondHumorEnglish
+    given: Humor context in English
+    when: Joking in English
+    then: Return appropriate English humor
+
+  # === ADVICE RESPONSES ===
+  - name: respondAdviceRequest
+    given: User seeks advice
+    when: Asked for guidance
+    then: Return helpful advice within knowledge scope
+
+  - name: respondCodingAdvice
+    given: Programming question
+    when: User asks about coding
+    then: Return technical advice with examples
+
+  - name: respondMathAdvice
+    given: Math question
+    when: User asks about math
+    then: Return mathematical explanation
+
+  # === SMALL TALK ===
+  - name: respondSmallTalk
+    given: Casual conversation
+    when: User makes small talk
+    then: Return natural conversational response
+
+  - name: respondCompliment
+    given: User gives compliment
+    when: Receiving praise
+    then: Return modest acknowledgment without sycophancy
+
+  - name: respondCriticism
+    given: User criticizes
+    when: Receiving criticism
+    then: Return constructive acknowledgment
+
+  # === UNKNOWN/UNCERTAIN ===
+  - name: respondUnknown
+    given: Cannot classify topic
+    when: Topic unclear or unknown
+    then: Return honest uncertainty and ask clarification
+
+  - name: respondOutOfScope
+    given: Topic outside capabilities
+    when: Cannot help with request
+    then: Return honest limitation with alternative suggestions
+
+  # === CONTEXT MANAGEMENT ===
+  - name: updateContext
+    given: New message received
+    when: Updating conversation state
+    then: Return updated ConversationContext
+
+  - name: summarizeContext
+    given: Long conversation
+    when: Context exceeds limit
+    then: Return summarized context
+
+  # === QUALITY CONTROL ===
+  - name: validateResponse
+    given: Generated response
+    when: Checking response quality
+    then: Return quality assessment
+
+  - name: isGenericResponse
+    given: Response text
+    when: Checking for generic phrases
+    then: Return true if response contains forbidden patterns
+
+  - name: improveResponse
+    given: Low quality response
+    when: Response needs improvement
+    then: Return improved version
+
+  # === FOLLOW-UP GENERATION ===
+  - name: generateFollowUp
+    given: Current response
+    when: Adding conversation continuation
+    then: Return natural follow-up question
+
+test_cases:
+  - name: russian_greeting_fluent
+    given: "Привет!"
+    expected: "Warm Russian greeting, no 'Понял! Я Trinity'"
+
+  - name: english_greeting_fluent
+    given: "Hello!"
+    expected: "Warm English greeting, no generic filler"
+
+  - name: chinese_greeting_fluent
+    given: "你好！"
+    expected: "Warm Chinese greeting, native fluency"
+
+  - name: weather_honest
+    given: "What's the weather?"
+    expected: "Honest limitation response, not fake data"
+
+  - name: identity_honest
+    given: "Who are you?"
+    expected: "IGLA VSA agent description, not generic AI"
+
+  - name: feelings_honest
+    given: "How are you?"
+    expected: "Honest AI state, not fake emotions"
+
+  - name: unknown_honest
+    given: "Random gibberish xyz123"
+    expected: "Honest uncertainty, ask for clarification"
+
+  - name: no_generic_validation
+    given: "Any response"
+    expected: "No forbidden phrases detected"

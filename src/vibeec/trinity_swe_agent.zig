@@ -1043,11 +1043,11 @@ pub const TrinitySWEAgent = struct {
                     .coherent = true,
                 };
             }
-            // Default Russian
+            // Default Russian - honest about uncertainty
             return InternalResult{
-                .output = "Понял! Я Trinity — чем могу помочь? Для кода используй /code, для объяснений /explain, для рассуждений /reason.",
-                .reasoning = "Russian prompt, general response",
-                .confidence = 0.85,
+                .output = "Не уверен в точном ответе на этот вопрос. Я специализируюсь на: коде (/code), математике, VSA. Попробуй уточнить или спроси про Fibonacci, sorting, phi!",
+                .reasoning = "Russian prompt, no pattern match - honest uncertainty",
+                .confidence = 0.4, // Low confidence for unknown queries
                 .coherent = true,
             };
         }
@@ -1070,11 +1070,11 @@ pub const TrinitySWEAgent = struct {
                     .coherent = true,
                 };
             }
-            // Default Chinese
+            // Default Chinese - honest about uncertainty
             return InternalResult{
-                .output = "明白了！我是Trinity。用 /code 生成代码，/explain 解释概念，/reason 推理。",
-                .reasoning = "Chinese prompt, general response",
-                .confidence = 0.85,
+                .output = "这个问题我不太确定。我专长于：代码(/code)、数学、VSA。试试问Fibonacci、排序或phi^2 + 1/phi^2 = 3！",
+                .reasoning = "Chinese prompt, no pattern match - honest uncertainty",
+                .confidence = 0.4, // Low confidence for unknown queries
                 .coherent = true,
             };
         }
@@ -1121,11 +1121,11 @@ pub const TrinitySWEAgent = struct {
             };
         }
 
-        // Default conversational
+        // Default conversational - honest about uncertainty
         return InternalResult{
-            .output = "I understand! I'm Trinity — use /code for generation, /explain for explanations, /reason for math. How can I help?",
-            .reasoning = "General conversational response",
-            .confidence = 0.85,
+            .output = "I'm not certain about this specific question. I specialize in: code (/code), math, VSA. Try asking about Fibonacci, sorting, or phi^2 + 1/phi^2 = 3!",
+            .reasoning = "No pattern match - honest uncertainty",
+            .confidence = 0.4, // Low confidence for unknown queries
             .coherent = true,
         };
     }

@@ -1,0 +1,125 @@
+# ============================================================================
+# Needle v2 - Stricter Improvement Threshold with Adaptive Rate
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: needle_v2
+version: "2.0.0"
+language: zig
+module: needle_v2
+
+description: |
+  Stricter Needle threshold (0.7 instead of phi^-1 = 0.618).
+  Adaptive rate adjustment based on iteration count.
+  Faster convergence through higher improvement requirements.
+
+constants:
+  NEEDLE_THRESHOLD_V2: 0.7
+  PHI_INVERSE: 0.618033988749895
+  ADAPTIVE_INCREMENT: 0.02
+  MAX_THRESHOLD: 0.85
+  MIN_THRESHOLD: 0.5
+  CONVERGENCE_WINDOW: 5
+
+types:
+  NeedleVersion:
+    description: "Needle threshold version"
+    enum:
+      - v1_phi_inverse
+      - v2_strict
+      - v3_adaptive
+
+  NeedleStatus:
+    description: "Result of needle check"
+    enum:
+      - immortal
+      - mortal_improving
+      - regression
+      - accelerating
+
+  NeedleConfig:
+    description: "Configuration for needle threshold"
+    fields:
+      version: NeedleVersion
+      base_threshold: Float
+      adaptive: Bool
+      convergence_window: Int
+
+  NeedleResult:
+    description: "Result of needle evaluation"
+    fields:
+      status: NeedleStatus
+      improvement_rate: Float
+      threshold_used: Float
+      iterations_to_convergence: Int
+
+  NeedleHistory:
+    description: "History of needle evaluations"
+    fields:
+      rates: List<Float>
+      thresholds: List<Float>
+      statuses: List<NeedleStatus>
+      total_iterations: Int
+
+behaviors:
+  - name: init
+    given: NeedleConfig with version and threshold
+    when: Creating needle evaluator
+    then: Return initialized evaluator
+
+  - name: evaluate
+    given: Improvement rate from current iteration
+    when: Checking needle threshold
+    then: Return NeedleResult with status
+
+  - name: adaptThreshold
+    given: NeedleHistory and current rate
+    when: Adaptive mode enabled
+    then: Adjust threshold based on convergence pattern
+
+  - name: checkConvergence
+    given: NeedleHistory window
+    when: Multiple iterations complete
+    then: Return true if rates stabilizing
+
+  - name: calculateAcceleration
+    given: Last N improvement rates
+    when: Checking improvement trend
+    then: Return acceleration (positive = faster convergence)
+
+  - name: recordIteration
+    given: NeedleResult and history
+    when: Iteration complete
+    then: Update history with new data
+
+  - name: getOptimalThreshold
+    given: NeedleHistory analysis
+    When: Threshold optimization requested
+    then: Return optimal threshold for fastest convergence
+
+  - name: getStats
+    given: Needle evaluator state
+    when: Statistics requested
+    then: Return convergence metrics
+
+test_cases:
+  - name: v2_stricter_than_v1
+    given: "Rate 0.65"
+    expected: "v1: IMMORTAL, v2: MORTAL"
+
+  - name: adaptive_increases_threshold
+    given: "5 consecutive immortal"
+    expected: "Threshold increases by 0.02"
+
+  - name: convergence_detected
+    given: "Rates: 0.8, 0.78, 0.79, 0.78, 0.79"
+    expected: "Convergence = true"
+
+  - name: acceleration_positive
+    given: "Rates: 0.6, 0.7, 0.8"
+    expected: "Acceleration > 0"
+
+  - name: max_threshold_respected
+    given: "10 consecutive immortal"
+    expected: "Threshold caps at 0.85"

@@ -1,0 +1,219 @@
+# ============================================================================
+# Local LLM Fallback - TinyLlama GGUF for Fluent Chat/Code When Offline
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: local_llm_fallback
+version: "1.0.0"
+language: zig
+module: local_llm_fallback
+
+description: |
+  Local fluent LLM fallback using TinyLlama GGUF format.
+  Automatically switches to local inference when cloud (Groq/OpenAI) unavailable.
+  Provides fluent chat and code generation with streaming support.
+  Optimized for Apple Silicon with Metal acceleration.
+
+constants:
+  DEFAULT_MODEL_PATH: "models/tinyllama-1.1b-chat.gguf"
+  FALLBACK_TIMEOUT_MS: 5000
+  MAX_CONTEXT_LENGTH: 2048
+  DEFAULT_MAX_TOKENS: 512
+  DEFAULT_TEMPERATURE: 0.7
+  DEFAULT_TOP_K: 40
+  DEFAULT_TOP_P: 0.9
+  HEALTH_CHECK_INTERVAL_MS: 30000
+
+types:
+  ProviderType:
+    description: "LLM provider type"
+    enum:
+      - groq
+      - openai
+      - anthropic
+      - local_gguf
+      - igla_symbolic
+
+  ProviderStatus:
+    description: "Current status of provider"
+    enum:
+      - available
+      - unavailable
+      - rate_limited
+      - error
+      - unknown
+
+  FallbackConfig:
+    description: "Configuration for fallback behavior"
+    fields:
+      primary_provider: ProviderType
+      fallback_chain: List<ProviderType>
+      timeout_ms: Int
+      auto_fallback: Bool
+      prefer_local: Bool
+
+  ModelInfo:
+    description: "Information about loaded model"
+    fields:
+      name: String
+      path: String
+      size_bytes: Int
+      vocab_size: Int
+      context_length: Int
+      quantization: String
+
+  GenerationRequest:
+    description: "Request for text generation"
+    fields:
+      prompt: String
+      max_tokens: Int
+      temperature: Float
+      top_k: Int
+      top_p: Float
+      stop_sequences: List<String>
+      stream: Bool
+
+  GenerationResponse:
+    description: "Response from generation"
+    fields:
+      text: String
+      tokens_generated: Int
+      provider_used: ProviderType
+      generation_time_ms: Int
+      is_fallback: Bool
+
+  ProviderHealth:
+    description: "Health status of provider"
+    fields:
+      provider: ProviderType
+      status: ProviderStatus
+      last_check_ms: Int
+      latency_ms: Int
+      error_message: String
+
+  FallbackStats:
+    description: "Statistics for fallback usage"
+    fields:
+      total_requests: Int
+      primary_success: Int
+      fallback_used: Int
+      local_generations: Int
+      avg_latency_ms: Float
+
+behaviors:
+  - name: init
+    given: FallbackConfig with provider chain
+    when: Initializing fallback system
+    then: Load local model, check provider health
+
+  - name: loadLocalModel
+    given: Model path for GGUF file
+    when: Loading local TinyLlama
+    then: Parse GGUF, allocate weights, return ModelInfo
+
+  - name: checkProviderHealth
+    given: ProviderType to check
+    when: Verifying provider availability
+    then: Return ProviderHealth with status
+
+  - name: selectProvider
+    given: FallbackConfig and provider health states
+    when: Choosing provider for request
+    then: Return first available provider in chain
+
+  - name: generate
+    given: GenerationRequest and selected provider
+    when: Generating text
+    then: Route to provider, return GenerationResponse
+
+  - name: generateLocal
+    given: GenerationRequest for local GGUF
+    when: Using local TinyLlama
+    then: Run inference, stream tokens, return response
+
+  - name: generateCloud
+    given: GenerationRequest for cloud provider
+    when: Using Groq/OpenAI/Anthropic
+    then: Call API, handle errors, return response
+
+  - name: fallbackOnError
+    given: Failed request and remaining providers
+    when: Primary provider fails
+    then: Try next provider in chain
+
+  - name: streamTokens
+    given: Generation in progress
+    when: Streaming enabled
+    then: Yield tokens as generated
+
+  - name: cacheResponse
+    given: Successful generation response
+    when: Caching enabled
+    then: Store response for similar prompts
+
+  - name: getStats
+    given: Current fallback system state
+    when: Statistics requested
+    then: Return FallbackStats with metrics
+
+  - name: updateHealth
+    given: Provider and new status
+    When: Health check completed
+    then: Update provider health state
+
+supported_models:
+  - name: "TinyLlama-1.1B-Chat"
+    path: "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
+    size: "670MB"
+    context: 2048
+    speed: "~30 tok/s on M1"
+
+  - name: "Phi-2"
+    path: "models/phi-2.Q4_K_M.gguf"
+    size: "1.6GB"
+    context: 2048
+    speed: "~20 tok/s on M1"
+
+  - name: "Mistral-7B-Instruct"
+    path: "models/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+    size: "4.1GB"
+    context: 8192
+    speed: "~10 tok/s on M1"
+
+cli:
+  flags:
+    - name: local-only
+      type: Bool
+      default: false
+      description: Force local model only (no cloud)
+    - name: model
+      short: m
+      type: String
+      default: "tinyllama"
+      description: Local model to use (tinyllama, phi2, mistral)
+    - name: fallback-timeout
+      type: Int
+      default: 5000
+      description: Timeout before fallback in ms
+
+test_cases:
+  - name: local_model_loads
+    given: "Valid GGUF path"
+    expected: "ModelInfo returned with vocab/context"
+
+  - name: fallback_on_cloud_failure
+    given: "Cloud provider unavailable"
+    expected: "Automatically uses local model"
+
+  - name: streaming_works_local
+    given: "stream: true, local model"
+    expected: "Tokens yielded incrementally"
+
+  - name: health_check_updates
+    given: "Provider goes offline"
+    expected: "Status changes to unavailable"
+
+  - name: prefer_local_respected
+    given: "prefer_local: true, cloud available"
+    expected: "Uses local model"

@@ -11,15 +11,18 @@
 
 <p align="center">
   <a href="#-why-trinity">Why Trinity</a> •
+  <a href="#-igla---local-ai-agent">IGLA Agent</a> •
+  <a href="#-trinity-cli">CLI</a> •
   <a href="#-quick-start">Quick Start</a> •
   <a href="#-libraries">Libraries</a> •
   <a href="#-tokenomics">Tokenomics</a> •
-  <a href="#-roadmap">Roadmap</a> •
-  <a href="docs/business/BUSINESS_MODEL.md">Business Model</a>
+  <a href="#-roadmap">Roadmap</a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Languages-29-blue" alt="29 Languages">
+  <img src="https://img.shields.io/badge/IGLA-Local_Agent-purple" alt="IGLA Local Agent">
+  <img src="https://img.shields.io/badge/Multilingual-RU_EN_ZH-brightgreen" alt="Multilingual">
   <img src="https://img.shields.io/badge/Token-$TRI-green" alt="$TRI Token">
   <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License">
   <img src="https://img.shields.io/badge/CPU-Inference-orange" alt="CPU Inference">
@@ -135,6 +138,121 @@
 │   • Multiply by +1 → nothing (free)                             │
 │                                                                 │
 │   Result: 20x memory savings, 10x faster on CPU                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🤖 IGLA - Local AI Agent
+
+**100% Local AI Agent - No cloud, no API keys required**
+
+IGLA (Intelligent Global Learning Agent) provides fully local AI capabilities:
+
+| Component | Description | Performance |
+|-----------|-------------|-------------|
+| **igla_local_chat** | 60+ conversation patterns (RU/EN/ZH) | 0-13 μs response |
+| **igla_local_coder** | 30+ code generation templates | Real Zig code output |
+| **igla_hybrid_chat** | Symbolic + LLM fallback | Best of both worlds |
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              IGLA HYBRID ARCHITECTURE                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   User Query → Pattern Matcher (microseconds)                   │
+│                      │                                          │
+│            ┌────────┴────────┐                                  │
+│            │                 │                                  │
+│       MATCH FOUND       NO MATCH                                │
+│            │                 │                                  │
+│            ▼                 ▼                                  │
+│   Fast Symbolic        LLM Fallback                             │
+│   Response             (TinyLlama/Groq)                         │
+│                                                                 │
+│   Result: Speed when possible, fluency when needed              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Performance Benchmarks:**
+- Trinity Node IGLA: **1955 ops/s** (M1 Pro)
+- Local Chat: **1696 ops/s** (100% coherent)
+- Batch Processing: **1495 ops/s** (2.7x speedup)
+
+---
+
+## 💻 TRI - Unified CLI
+
+**Single command for all Trinity features:**
+
+```bash
+# Build and run TRI (recommended)
+zig build tri
+
+# Or use the binary directly
+zig build
+./zig-out/bin/tri
+
+# Available commands
+tri                    # Interactive REPL (default)
+tri code fibonacci     # Generate code
+tri chat "hello"       # Chat
+tri explain <file>     # Explain code
+tri fix <file>         # Fix bugs
+tri test <file>        # Generate tests
+tri help               # Full help
+```
+
+**TRI Commands:**
+
+| Command | Description |
+|---------|-------------|
+| `tri` | Interactive REPL (default) |
+| `tri code <prompt>` | Generate code |
+| `tri chat <message>` | Chat |
+| `tri fix <file>` | Detect and fix bugs |
+| `tri explain <prompt>` | Explain code/concept |
+| `tri test <file>` | Generate tests |
+| `tri doc <file>` | Generate documentation |
+| `tri reason <prompt>` | Chain-of-thought reasoning |
+| `tri help` | Full help |
+
+**REPL Commands:** `/chat`, `/code`, `/fix`, `/explain`, `/test`, `/doc`, `/reason`, `/zig`, `/python`, `/quit`
+
+**Multilingual:** Russian, English, Chinese - auto-detected.
+
+```bash
+# Examples
+tri code "quicksort algorithm"
+tri chat "привет, как дела?"
+tri explain "what is VSA?"
+```
+
+---
+
+## 🔌 Multi-Provider Integration
+
+Trinity supports multiple AI providers with automatic fallback:
+
+| Provider | Model | Speed | Cost |
+|----------|-------|-------|------|
+| **Local** | TinyLlama 1.1B GGUF | 100% offline | FREE |
+| **Groq** | Llama-3.1-8b-instant | 276 tok/s | FREE tier |
+| **Claude** | Claude API | Full capability | API pricing |
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              MULTI-PROVIDER ROUTING                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   1. Try IGLA symbolic patterns (fastest, free)                 │
+│   2. Fallback to local GGUF model (offline capable)             │
+│   3. Route to Groq for complex queries (fast, free tier)        │
+│   4. Use Claude for highest quality (API key required)          │
+│                                                                 │
+│   Result: Optimal cost/quality balance per query                │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -526,21 +644,27 @@ TOTAL: 3²¹ = 10,460,353,203 $TRI (Phoenix Number)
 ## 🗺️ Roadmap
 
 ```
-Q1 2025  ✅ Trinity VSA libraries (29 languages)
+2025     ✅ Trinity VSA libraries (29 languages)
          ✅ C library with AVX2 SIMD
-         □  Trinity Node alpha
+         ✅ VIBEE compiler (42 language targets)
+         ✅ Firebird anti-detect browser engine
 
-Q2 2025  □  $TRI token launch
+Feb 2026 ✅ IGLA Local Agent (100% offline AI)
+         ✅ Trinity CLI v1.1.2 (multilingual chat + code)
+         ✅ GGUF model integration (TinyLlama support)
+         ✅ Multi-provider system (Groq, Claude, Local)
+         ✅ Hybrid symbolic + LLM architecture
+         ✅ 1955 ops/s local performance
+
+Current  □  Trinity Node public alpha
+         □  $TRI token launch
          □  Mainnet beta
-         □  BitNet 7B model
+         □  10,000+ node network
 
-Q3 2025  □  BitNet 70B model
-         □  Mobile apps
-         □  10,000 nodes
-
-Q4 2025  □  DAO governance
+Future   □  BitNet 70B model support
+         □  Mobile apps (iOS/Android)
+         □  DAO governance
          □  Enterprise partnerships
-         □  100,000 nodes
 ```
 
 ---
@@ -549,15 +673,28 @@ Q4 2025  □  DAO governance
 
 ```
 trinity/
-├── libs/           # 29-language VSA libraries
-├── src/            # Core source code
-│   ├── vibeec/     # VIBEE compiler
-│   └── phi-engine/ # Quantum-inspired engine
-├── specs/          # .vibee specifications
-├── docs/           # Documentation
-│   └── business/   # Business model, tokenomics
-├── fpga-network/   # FPGA acceleration
-└── examples/       # Usage examples
+├── libs/               # 29-language VSA libraries
+├── src/                # Core source code
+│   ├── vsa.zig         # Vector Symbolic Architecture
+│   ├── vm.zig          # Ternary Virtual Machine
+│   ├── hybrid.zig      # HybridBigInt (1.58 bits/trit)
+│   ├── vibeec/         # VIBEE compiler + IGLA
+│   │   ├── igla_local_chat.zig    # 60+ chat patterns
+│   │   ├── igla_local_coder.zig   # 30+ code templates
+│   │   ├── igla_hybrid_chat.zig   # Symbolic + LLM
+│   │   ├── igla_hybrid_codegen.zig # Multi-provider code
+│   │   ├── trinity_cli.zig        # CLI interface
+│   │   ├── gguf_reader.zig        # GGUF model loader
+│   │   ├── gguf_inference.zig     # Local inference
+│   │   └── http_server.zig        # HTTP API
+│   ├── firebird/       # Anti-detect browser engine
+│   └── phi-engine/     # Quantum-inspired engine
+├── specs/              # .vibee specifications (105 files)
+├── docs/               # Documentation (170+ files)
+│   └── business/       # Business model, tokenomics
+├── docsite/            # Documentation website
+├── fpga-network/       # FPGA acceleration
+└── examples/           # Usage examples
 ```
 
 ---
