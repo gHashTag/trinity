@@ -4,12 +4,13 @@ import { motion } from 'framer-motion'
 import { useI18n } from '../../i18n/context'
 import Section from '../Section'
 
-// GPU pricing data ($/hour)
+// GPU pricing data ($/hour) - Market prices Feb 2025 (RunPod, Fluence)
+// TFLOPS = FP16 Tensor Core performance
 const GPU_OPTIONS = [
-  { id: 'a100', name: 'NVIDIA A100 (80GB)', price: 2.0, tflops: 312 },
-  { id: 'h100', name: 'NVIDIA H100 (80GB)', price: 3.5, tflops: 989 },
-  { id: 'rtx4090', name: 'RTX 4090 (24GB)', price: 0.8, tflops: 82 },
-  { id: 'l40s', name: 'NVIDIA L40S (48GB)', price: 1.5, tflops: 362 },
+  { id: 'rtx4090', name: 'RTX 4090 (24GB)', price: 0.50, tflops: 330 },  // Best $/TFLOPS
+  { id: 'h100', name: 'NVIDIA H100 (80GB)', price: 2.85, tflops: 990 },
+  { id: 'l40s', name: 'NVIDIA L40S (48GB)', price: 1.0, tflops: 362 },
+  { id: 'a100', name: 'NVIDIA A100 (80GB)', price: 1.0, tflops: 312 },
 ]
 
 // Mining mode calculations

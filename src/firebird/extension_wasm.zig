@@ -302,10 +302,10 @@ pub const TinyModel = struct {
         const weights_size = hidden_dim * hidden_dim * num_layers;
         const embed_size = vocab_size * hidden_dim;
         
-        var weights = try allocator.alloc(i8, weights_size);
-        var embeddings = try allocator.alloc(i8, embed_size);
-        var hidden_state = try allocator.alloc(f32, hidden_dim);
-        var logits = try allocator.alloc(f32, vocab_size);
+        const weights = try allocator.alloc(i8, weights_size);
+        const embeddings = try allocator.alloc(i8, embed_size);
+        const hidden_state = try allocator.alloc(f32, hidden_dim);
+        const logits = try allocator.alloc(f32, vocab_size);
         
         // Initialize with seeded random ternary values
         var rng_seed = seed;
@@ -416,7 +416,7 @@ pub const TinyModel = struct {
         // Sample
         var rng = seed;
         rng = rng *% 6364136223846793005 +% 1442695040888963407;
-        var r = @as(f32, @floatFromInt(rng >> 33)) / @as(f32, @floatFromInt(@as(u64, 1) << 31));
+        const r = @as(f32, @floatFromInt(rng >> 33)) / @as(f32, @floatFromInt(@as(u64, 1) << 31));
         
         var cumsum: f32 = 0.0;
         for (self.logits, 0..) |p, i| {
@@ -453,7 +453,7 @@ export fn wasm_generate(max_tokens: u32, temperature: f32, start_token: u32) u32
         var count: u32 = 0;
         
         // Simple timing (WASM doesn't have real time, use iteration count)
-        const start_iter: u64 = inference_seed;
+        _ = inference_seed; // Track start state for timing
         
         while (count < max_tokens) {
             model.forward(token);

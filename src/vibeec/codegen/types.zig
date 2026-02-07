@@ -14,6 +14,7 @@ pub const ArrayList = std.ArrayListUnmanaged;
 
 // Re-export parser types
 pub const VibeeSpec = vibee_parser.VibeeSpec;
+pub const Import = vibee_parser.Import;
 pub const Constant = vibee_parser.Constant;
 pub const TypeDef = vibee_parser.TypeDef;
 pub const CreationPattern = vibee_parser.CreationPattern;

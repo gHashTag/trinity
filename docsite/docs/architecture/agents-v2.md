@@ -110,8 +110,8 @@ All other files that contradict this file are considered **DEPRECATED**.
 ```
 
 **Application**:
-- TVC IR: 3 basic tryte states ({-1, 0, +1})
-- Qutrit State: 3 amplitudes ({α, β, γ})
+- TVC IR: 3 basic tryte states (-1, 0, +1)
+- Qutrit State: 3 amplitudes (α, β, γ)
 - SIMD Ternary: 32 trits in parallel
 - Golden Wrap: 27 = 3^3 values
 

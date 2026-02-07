@@ -1,0 +1,819 @@
+# ============================================================================
+# File I/O System - Save/Load Scripts + Project Management
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: file_io_system
+version: "1.0.0"
+language: zig
+module: file_io_system
+
+description: |
+  File I/O system with project management.
+  Builds on Cycle 21 REPL Interactive System.
+  18 algorithms in 10 languages = 180 templates.
+  NEW: File I/O, project management, script persistence.
+  NEW: Import/Export, directory navigation, auto-save.
+  Save and load code sessions for later use.
+
+constants:
+  HIGH_CONFIDENCE: 0.95
+  MED_CONFIDENCE: 0.75
+  LOW_CONFIDENCE: 0.5
+  UNKNOWN_CONFIDENCE: 0.2
+  ALGORITHM_COUNT: 18
+  LANGUAGE_COUNT: 10
+  TEMPLATE_COMBINATIONS: 180
+  MAX_MEMORY_TURNS: 50
+  EXECUTION_TIMEOUT_MS: 5000
+  MAX_FILE_SIZE: 10485760
+  AUTO_SAVE_INTERVAL_MS: 30000
+  MAX_RECENT_FILES: 20
+
+types:
+  SystemMode:
+    description: "Operating mode"
+    enum:
+      - chat
+      - code
+      - hybrid
+      - execute
+      - validate
+      - repl
+      - debug
+      - file
+      - project
+      - unknown
+
+  InputLanguage:
+    description: "Detected input language"
+    enum:
+      - russian
+      - chinese
+      - english
+
+  OutputLanguage:
+    description: "Code output language (10 total)"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+      - go
+      - rust
+      - cpp
+      - java
+      - csharp
+      - swift
+
+  ChatTopic:
+    description: "Conversation topics"
+    enum:
+      - greeting
+      - farewell
+      - help
+      - capabilities
+      - feelings
+      - weather
+      - time
+      - jokes
+      - facts
+      - memory
+      - execution
+      - repl
+      - debug
+      - file
+      - project
+      - unknown
+
+  Algorithm:
+    description: "Supported algorithms (18)"
+    enum:
+      - bubble_sort
+      - quick_sort
+      - merge_sort
+      - heap_sort
+      - linear_search
+      - binary_search
+      - fibonacci
+      - factorial
+      - is_prime
+      - stack
+      - queue
+      - linked_list
+      - binary_tree
+      - hash_map
+      - bfs
+      - dfs
+      - dijkstra
+      - topological_sort
+      - unknown
+
+  PersonalityTrait:
+    description: "Bot personality"
+    enum:
+      - friendly
+      - helpful
+      - honest
+      - curious
+      - humble
+
+  ExecutionStatus:
+    description: "Code execution status"
+    enum:
+      - pending
+      - running
+      - success
+      - error
+      - timeout
+      - cancelled
+      - paused
+      - stepping
+
+  ErrorType:
+    description: "Type of error"
+    enum:
+      - compile_error
+      - runtime_error
+      - timeout_error
+      - memory_error
+      - validation_error
+      - file_error
+      - permission_error
+      - unknown_error
+
+  FileOperation:
+    description: "File operation type"
+    enum:
+      - open
+      - save
+      - save_as
+      - close
+      - new
+      - delete
+      - rename
+      - copy
+      - move
+      - export
+      - import
+
+  FileType:
+    description: "File type"
+    enum:
+      - script
+      - session
+      - project
+      - config
+      - data
+      - export
+      - unknown
+
+  FileInfo:
+    description: "File information"
+    fields:
+      path: String
+      name: String
+      extension: String
+      size: Int
+      created_at: Int
+      modified_at: Int
+      file_type: FileType
+      language: OutputLanguage
+
+  DirectoryInfo:
+    description: "Directory information"
+    fields:
+      path: String
+      name: String
+      files: List<FileInfo>
+      subdirs: List<String>
+      total_size: Int
+
+  ProjectInfo:
+    description: "Project information"
+    fields:
+      name: String
+      path: String
+      files: List<FileInfo>
+      main_file: String
+      language: OutputLanguage
+      created_at: Int
+      last_opened: Int
+
+  RecentFile:
+    description: "Recently opened file"
+    fields:
+      path: String
+      name: String
+      opened_at: Int
+      file_type: FileType
+
+  FileResult:
+    description: "Result of file operation"
+    fields:
+      success: Bool
+      operation: FileOperation
+      path: String
+      error_message: String
+      bytes_written: Int
+      bytes_read: Int
+
+  ExportFormat:
+    description: "Export format"
+    enum:
+      - raw
+      - json
+      - markdown
+      - html
+      - pdf
+
+  ExportResult:
+    description: "Result of export operation"
+    fields:
+      success: Bool
+      format: ExportFormat
+      path: String
+      size: Int
+
+  AutoSaveState:
+    description: "Auto-save state"
+    fields:
+      enabled: Bool
+      interval_ms: Int
+      last_save_at: Int
+      dirty: Bool
+      backup_path: String
+
+  ReplState:
+    description: "Current REPL state"
+    fields:
+      variables: List<String>
+      history: List<String>
+      history_index: Int
+      is_multiline: Bool
+      multiline_buffer: String
+      current_language: OutputLanguage
+      is_debug_mode: Bool
+      current_file: FileInfo
+      project: ProjectInfo
+
+  ExecutionResult:
+    description: "Result of code execution"
+    fields:
+      status: ExecutionStatus
+      output: String
+      error_message: String
+      error_type: ErrorType
+      execution_time_ms: Int
+      memory_used_bytes: Int
+
+  ValidationResult:
+    description: "Result of output validation"
+    fields:
+      is_valid: Bool
+      expected: String
+      actual: String
+      diff: String
+      confidence: Float
+
+  MemoryEntry:
+    description: "Single memory entry"
+    fields:
+      query: String
+      response: String
+      topic: ChatTopic
+      algorithm: Algorithm
+      language: OutputLanguage
+      timestamp: Int
+      importance: Float
+
+  UserPreferences:
+    description: "User preferences"
+    fields:
+      favorite_language: OutputLanguage
+      preferred_input: InputLanguage
+      default_project_path: String
+      auto_save_enabled: Bool
+      recent_files: List<RecentFile>
+
+  SessionMemory:
+    description: "Full session memory"
+    fields:
+      entries: List<MemoryEntry>
+      preferences: UserPreferences
+      turn_count: Int
+      session_start: Int
+      current_project: ProjectInfo
+
+  FileContext:
+    description: "Full system context with file I/O"
+    fields:
+      current_mode: SystemMode
+      current_topic: ChatTopic
+      current_algorithm: Algorithm
+      input_language: InputLanguage
+      output_language: OutputLanguage
+      memory: SessionMemory
+      user_mood: String
+      last_execution: ExecutionResult
+      repl_state: ReplState
+      current_file: FileInfo
+      current_directory: DirectoryInfo
+      auto_save: AutoSaveState
+
+  FileRequest:
+    description: "Request with file context"
+    fields:
+      text: String
+      code: String
+      context: FileContext
+      file_operation: FileOperation
+      target_path: String
+
+  FileResponse:
+    description: "Response with file result"
+    fields:
+      text: String
+      code: String
+      mode: SystemMode
+      topic: ChatTopic
+      algorithm: Algorithm
+      output_language: OutputLanguage
+      confidence: Float
+      is_honest: Bool
+      personality: PersonalityTrait
+      memory_updated: Bool
+      execution_result: ExecutionResult
+      file_result: FileResult
+      repl_state: ReplState
+
+behaviors:
+  # Mode Detection
+  - name: detectMode
+    given: User input
+    when: Analyzing intent
+    then: Return SystemMode (includes file/project)
+
+  - name: detectInputLanguage
+    given: User input
+    when: Analyzing text patterns
+    then: Return InputLanguage
+
+  - name: detectOutputLanguage
+    given: User input
+    when: Analyzing code request
+    then: Return OutputLanguage (10 options)
+
+  - name: detectTopic
+    given: User input
+    when: Analyzing conversation
+    then: Return ChatTopic (includes file/project)
+
+  - name: detectAlgorithm
+    given: User input
+    when: Analyzing code request
+    then: Return Algorithm
+
+  - name: detectFileOperation
+    given: User input
+    when: Analyzing file command
+    then: Return FileOperation
+
+  # Chat Responses (16 topics)
+  - name: respondGreeting
+    given: Greeting detected
+    when: User says hello
+    then: Return warm greeting
+
+  - name: respondFarewell
+    given: Farewell detected
+    when: User says goodbye
+    then: Return farewell with session summary
+
+  - name: respondHelp
+    given: Help request
+    when: User asks for help
+    then: Return guidance with file features
+
+  - name: respondCapabilities
+    given: Capabilities query
+    when: User asks what bot can do
+    then: Return 180 templates + file I/O
+
+  - name: respondFeelings
+    given: Feelings question
+    when: User asks about emotions
+    then: Return HONEST AI response
+
+  - name: respondWeather
+    given: Weather question
+    when: User asks about weather
+    then: Return HONEST cannot check
+
+  - name: respondTime
+    given: Time question
+    when: User asks about time
+    then: Return HONEST cannot check
+
+  - name: respondJoke
+    given: Joke request
+    when: User wants humor
+    then: Return programming joke
+
+  - name: respondFact
+    given: Fact request
+    when: User wants fact
+    then: Return tech fact
+
+  - name: respondMemory
+    given: Memory query
+    when: User asks about history
+    then: Return session history
+
+  - name: respondExecution
+    given: Execution query
+    When: User asks about running code
+    then: Return execution capabilities
+
+  - name: respondRepl
+    given: REPL query
+    when: User asks about REPL
+    then: Return REPL capabilities
+
+  - name: respondDebug
+    given: Debug query
+    when: User asks about debugging
+    then: Return debug capabilities
+
+  - name: respondFile
+    given: File query
+    when: User asks about files
+    then: Return file capabilities
+
+  - name: respondProject
+    given: Project query
+    when: User asks about projects
+    then: Return project capabilities
+
+  - name: respondUnknown
+    given: Unknown topic
+    when: Cannot understand
+    then: Return honest uncertainty
+
+  # Code Generation (18 algorithms)
+  - name: generateBubbleSort
+    given: Output language
+    when: User requests bubble sort
+    then: Return bubble sort in 10 languages
+
+  - name: generateQuickSort
+    given: Output language
+    when: User requests quick sort
+    then: Return quick sort in 10 languages
+
+  - name: generateMergeSort
+    given: Output language
+    when: User requests merge sort
+    then: Return merge sort in 10 languages
+
+  - name: generateHeapSort
+    given: Output language
+    when: User requests heap sort
+    then: Return heap sort in 10 languages
+
+  - name: generateLinearSearch
+    given: Output language
+    when: User requests linear search
+    then: Return linear search in 10 languages
+
+  - name: generateBinarySearch
+    given: Output language
+    when: User requests binary search
+    then: Return binary search in 10 languages
+
+  - name: generateFibonacci
+    given: Output language
+    when: User requests fibonacci
+    then: Return fibonacci in 10 languages
+
+  - name: generateFactorial
+    given: Output language
+    when: User requests factorial
+    then: Return factorial in 10 languages
+
+  - name: generateIsPrime
+    given: Output language
+    when: User requests prime check
+    then: Return prime check in 10 languages
+
+  - name: generateStack
+    given: Output language
+    when: User requests stack
+    then: Return stack in 10 languages
+
+  - name: generateQueue
+    given: Output language
+    when: User requests queue
+    then: Return queue in 10 languages
+
+  - name: generateLinkedList
+    given: Output language
+    when: User requests linked list
+    then: Return linked list in 10 languages
+
+  - name: generateBinaryTree
+    given: Output language
+    when: User requests binary tree
+    then: Return binary tree in 10 languages
+
+  - name: generateHashMap
+    given: Output language
+    when: User requests hash map
+    then: Return hash map in 10 languages
+
+  - name: generateBFS
+    given: Output language
+    when: User requests BFS
+    then: Return BFS in 10 languages
+
+  - name: generateDFS
+    given: Output language
+    when: User requests DFS
+    then: Return DFS in 10 languages
+
+  - name: generateDijkstra
+    given: Output language
+    when: User requests Dijkstra
+    then: Return Dijkstra in 10 languages
+
+  - name: generateTopologicalSort
+    given: Output language
+    when: User requests topological sort
+    then: Return topological sort in 10 languages
+
+  # Memory Management
+  - name: initMemory
+    given: New session
+    when: First message
+    then: Return empty SessionMemory
+
+  - name: addMemoryEntry
+    given: Query and response
+    when: After processing
+    then: Add entry to memory
+
+  - name: recallMemory
+    given: Current query
+    when: Looking for context
+    then: Return relevant memories
+
+  - name: updatePreferences
+    given: User behavior
+    when: Detecting patterns
+    then: Update UserPreferences
+
+  - name: summarizeSession
+    given: Session memory
+    when: User asks for history
+    then: Return session summary
+
+  - name: clearMemory
+    given: Clear request
+    when: User wants fresh start
+    then: Clear all memory
+
+  # Execution Engine
+  - name: executeCode
+    given: Code snippet and language
+    when: User wants to run code
+    then: Execute in sandbox
+
+  - name: validateOutput
+    given: Execution result and expected
+    when: Checking correctness
+    then: Return validation result
+
+  - name: handleError
+    given: Execution error
+    when: Code fails to run
+    then: Return error details
+
+  # REPL Mode
+  - name: startRepl
+    given: Language selection
+    when: User starts REPL
+    then: Initialize REPL state
+
+  - name: executeReplCommand
+    given: Command and state
+    when: User enters command
+    then: Execute and update state
+
+  # NEW: File I/O (Cycle 22)
+  - name: openFile
+    given: File path
+    when: User opens file
+    then: Read and return contents
+
+  - name: saveFile
+    given: Content and path
+    when: User saves file
+    then: Write to file system
+
+  - name: saveFileAs
+    given: Content and new path
+    when: User saves as new file
+    then: Write to new location
+
+  - name: closeFile
+    given: File info
+    when: User closes file
+    then: Close and cleanup
+
+  - name: newFile
+    given: File type
+    when: User creates new file
+    then: Initialize new file
+
+  - name: deleteFile
+    given: File path
+    when: User deletes file
+    then: Remove from file system
+
+  - name: renameFile
+    given: Old and new path
+    when: User renames file
+    then: Rename in file system
+
+  - name: copyFile
+    given: Source and dest path
+    when: User copies file
+    then: Duplicate file
+
+  - name: moveFile
+    given: Source and dest path
+    when: User moves file
+    then: Move to new location
+
+  # NEW: Directory Navigation
+  - name: listDirectory
+    given: Directory path
+    when: User lists files
+    then: Return directory contents
+
+  - name: changeDirectory
+    given: New path
+    when: User navigates
+    then: Update current directory
+
+  - name: createDirectory
+    given: Directory path
+    when: User creates folder
+    then: Create new directory
+
+  # NEW: Project Management
+  - name: createProject
+    given: Project name and path
+    when: User creates project
+    then: Initialize project structure
+
+  - name: openProject
+    given: Project path
+    when: User opens project
+    then: Load project files
+
+  - name: closeProject
+    given: Project info
+    when: User closes project
+    then: Close all project files
+
+  - name: saveProject
+    given: Project info
+    when: User saves project
+    then: Save all project files
+
+  # NEW: Export/Import
+  - name: exportCode
+    given: Code and format
+    when: User exports code
+    then: Export to specified format
+
+  - name: importCode
+    given: File path
+    when: User imports code
+    then: Import from file
+
+  - name: exportSession
+    given: Session and format
+    when: User exports session
+    then: Export full session
+
+  # NEW: Auto-save
+  - name: enableAutoSave
+    given: Interval
+    when: User enables auto-save
+    then: Start auto-save timer
+
+  - name: disableAutoSave
+    given: Auto-save state
+    when: User disables auto-save
+    then: Stop auto-save timer
+
+  - name: triggerAutoSave
+    given: Current content
+    when: Auto-save timer fires
+    then: Save to backup
+
+  # NEW: Recent Files
+  - name: addRecentFile
+    given: File info
+    when: File opened
+    then: Add to recent list
+
+  - name: getRecentFiles
+    given: User preferences
+    when: User requests recent
+    then: Return recent files list
+
+  - name: clearRecentFiles
+    given: User preferences
+    when: User clears recent
+    then: Clear recent list
+
+  # Unified Processing
+  - name: processFile
+    given: FileRequest
+    when: Processing user input
+    then: Return FileResponse
+
+  - name: handleChat
+    given: Chat mode
+    when: Processing chat
+    then: Return chat response
+
+  - name: handleCode
+    given: Code mode
+    when: Processing code
+    then: Return code
+
+  - name: handleHybrid
+    given: Hybrid mode
+    when: Both needed
+    then: Return greeting + code
+
+  - name: handleFile
+    given: File mode
+    when: File operation
+    then: Process file operation
+
+  - name: handleProject
+    given: Project mode
+    when: Project operation
+    then: Process project operation
+
+  # Context Management
+  - name: initContext
+    given: New session
+    when: First message
+    then: Return initialized FileContext
+
+  - name: updateContext
+    given: Current context
+    when: After processing
+    then: Return updated context
+
+  - name: selectPersonality
+    given: Mode and topic
+    when: Choosing style
+    then: Return PersonalityTrait
+
+  - name: validateResponse
+    given: FileResponse
+    when: Checking quality
+    then: Reject generic patterns
+
+test_cases:
+  - name: save_script
+    given: "Save this code to script.py"
+    expected: "File saved to script.py"
+
+  - name: open_file
+    given: "Open main.zig"
+    expected: "File contents loaded"
+
+  - name: create_project
+    given: "Create new Python project"
+    expected: "Project initialized"
+
+  - name: export_session
+    given: "Export session as markdown"
+    expected: "Session exported"
+
+  - name: auto_save
+    given: "Enable auto-save"
+    expected: "Auto-save enabled"
+
+  - name: list_directory
+    given: "List files"
+    expected: "Directory contents shown"
