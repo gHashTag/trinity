@@ -1,0 +1,58 @@
+name: Pages Health Check
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check site health
+        id: health
+        run: |
+          max_retries=3
+          retry_count=0
+
+          while [ $retry_count -lt $max_retries ]; do
+            response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://ghashtag.github.io/trinity/)
+
+            if [ "$response" = "200" ]; then
+              echo "Site is healthy (200 OK)"
+              echo "status=healthy" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            echo "Attempt $((retry_count + 1)): Site returned $response"
+            retry_count=$((retry_count + 1))
+
+            if [ $retry_count -lt $max_retries ]; then
+              sleep 10
+            fi
+          done
+
+          echo "Site is unhealthy after $max_retries attempts"
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          echo "http_code=$response" >> $GITHUB_OUTPUT
+          exit 1
+
+      - name: Trigger redeploy on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('Site health check failed, triggering redeploy workflow...');
+
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-docs.yml',
+              ref: 'main'
+            });
+
+            console.log('Redeploy triggered successfully');
