@@ -339,7 +339,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     const vibeec_chat = b.createModule(.{
-        .root_source_file = b.path("src/vibeec/igla_local_chat.zig"),
+        .root_source_file = b.path("src/vibeec/igla_fluent_cli.zig"),
         .target = target,
         .optimize = optimize,
     });
