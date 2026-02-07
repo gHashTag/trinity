@@ -126,6 +126,7 @@ const sidebars: SidebarsConfig = {
         'research/cycle42-memory-ordering-report',
         'research/cycle43-finetune-engine-report',
         'research/cycle44-batched-stealing-report',
+        'research/cycle45-priority-queue-report',
       ],
     },
     'faq',
