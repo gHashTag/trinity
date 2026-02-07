@@ -6,6 +6,18 @@
 
 ---
 
+## IMPORTANT DISCLAIMER
+
+**This is NOT AI/ML.** The `igla_local_chat.zig` module is a **pattern matcher** with hardcoded responses:
+- 60+ pre-written response templates
+- Simple keyword matching (no neural network)
+- Confidence scores are hardcoded, not calculated
+- No learning, no understanding, no generation
+
+For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
+
+---
+
 ## Problem
 
 | Input | Before (Bug) | After (Fixed) |

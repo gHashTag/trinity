@@ -463,10 +463,14 @@ pub const FullModel = struct {
     // Forward pass for single token - OPTIMIZED with pre-allocated buffers
     pub fn forward(self: *FullModel, token: u32, pos: usize) ![]f32 {
         const hidden_size = self.config.hidden_size;
+        const vocab_size = self.config.vocab_size;
 
         // Get embedding (use pre-allocated buffer)
-        const emb_start = token * hidden_size;
-        @memcpy(self.buf_hidden, self.token_embedding[emb_start..][0..hidden_size]);
+        // NOTE: Embedding tensor is stored as [hidden_size][vocab_size] (row-major)
+        // So we gather from each hidden dimension row at column = token
+        for (0..hidden_size) |h| {
+            self.buf_hidden[h] = self.token_embedding[h * vocab_size + token];
+        }
 
         // Process through all layers (no allocations!)
         for (0..self.config.num_layers) |i| {

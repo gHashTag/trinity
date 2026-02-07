@@ -68,11 +68,11 @@ pub const Tokenizer = struct {
     // Simple greedy tokenization (longest match)
     // Supports both GPT-2 style (Ġ = 0xC4 0xA0) and Llama style (▁ = 0xE2 0x96 0x81)
     pub fn encode(self: *const Tokenizer, allocator: std.mem.Allocator, text: []const u8) ![]u32 {
-        var tokens = std.ArrayList(u32).init(allocator);
-        errdefer tokens.deinit();
+        var tokens: std.ArrayListUnmanaged(u32) = .{};
+        errdefer tokens.deinit(allocator);
 
         // Add BOS token
-        try tokens.append(self.bos_token);
+        try tokens.append(allocator, self.bos_token);
 
         var pos: usize = 0;
         while (pos < text.len) {
@@ -99,7 +99,7 @@ pub const Tokenizer = struct {
                 if (pos + special.len <= text.len and 
                     std.mem.eql(u8, text[pos..][0..special.len], special)) {
                     if (self.token_to_id.get(special)) |id| {
-                        try tokens.append(id);
+                        try tokens.append(allocator, id);
                         pos += special.len;
                         found_special = true;
                         break;
@@ -234,29 +234,29 @@ pub const Tokenizer = struct {
 
             if (best_len > 0) {
                 if (best_token != 0) { // Skip UNK for spaces
-                    try tokens.append(best_token);
+                    try tokens.append(allocator, best_token);
                 }
                 pos += best_len;
             } else {
                 // Unknown character - try single byte
                 const byte_str = text[pos..][0..1];
                 if (self.token_to_id.get(byte_str)) |id| {
-                    try tokens.append(id);
+                    try tokens.append(allocator, id);
                 } else {
                     // Skip unknown byte
-                    try tokens.append(0); // UNK token
+                    try tokens.append(allocator, 0); // UNK token
                 }
                 pos += 1;
             }
         }
 
-        return tokens.toOwnedSlice();
+        return tokens.toOwnedSlice(allocator);
     }
 
     // Decode tokens to text
     pub fn decode(self: *const Tokenizer, allocator: std.mem.Allocator, tokens: []const u32) ![]u8 {
-        var result = std.ArrayList(u8).init(allocator);
-        errdefer result.deinit();
+        var result: std.ArrayListUnmanaged(u8) = .{};
+        errdefer result.deinit(allocator);
 
         for (tokens) |token| {
             if (token < self.vocab_size) {
@@ -266,28 +266,28 @@ pub const Tokenizer = struct {
                 while (i < text.len) {
                     // Llama-style space: ▁ (U+2581) = 0xE2 0x96 0x81
                     if (i + 2 < text.len and text[i] == 0xE2 and text[i + 1] == 0x96 and text[i + 2] == 0x81) {
-                        try result.append(' ');
+                        try result.append(allocator, ' ');
                         i += 3;
                     }
                     // GPT-2 style space: Ġ (U+0120) = 0xC4 0xA0
                     else if (i + 1 < text.len and text[i] == 0xC4 and text[i + 1] == 0xA0) {
-                        try result.append(' ');
+                        try result.append(allocator, ' ');
                         i += 2;
                     }
                     // Newline token: Ċ (U+010A) = 0xC4 0x8A
                     else if (i + 1 < text.len and text[i] == 0xC4 and text[i + 1] == 0x8A) {
-                        try result.append('\n');
+                        try result.append(allocator, '\n');
                         i += 2;
                     }
                     else {
-                        try result.append(text[i]);
+                        try result.append(allocator, text[i]);
                         i += 1;
                     }
                 }
             }
         }
 
-        return result.toOwnedSlice();
+        return result.toOwnedSlice(allocator);
     }
 
     // Get token string
@@ -370,25 +370,25 @@ pub const ChatTemplate = struct {
         system: ?[]const u8,
         user: []const u8,
     ) ![]u8 {
-        var result = std.ArrayList(u8).init(allocator);
-        errdefer result.deinit();
+        var result: std.ArrayListUnmanaged(u8) = .{};
+        errdefer result.deinit(allocator);
 
         // System message
         if (system) |sys| {
-            try result.appendSlice(self.system_prefix);
-            try result.appendSlice(sys);
-            try result.appendSlice(self.system_suffix);
+            try result.appendSlice(allocator, self.system_prefix);
+            try result.appendSlice(allocator, sys);
+            try result.appendSlice(allocator, self.system_suffix);
         }
 
         // User message
-        try result.appendSlice(self.user_prefix);
-        try result.appendSlice(user);
-        try result.appendSlice(self.user_suffix);
+        try result.appendSlice(allocator, self.user_prefix);
+        try result.appendSlice(allocator, user);
+        try result.appendSlice(allocator, self.user_suffix);
 
         // Assistant prefix (model will continue from here)
-        try result.appendSlice(self.assistant_prefix);
+        try result.appendSlice(allocator, self.assistant_prefix);
 
-        return result.toOwnedSlice();
+        return result.toOwnedSlice(allocator);
     }
 };
 

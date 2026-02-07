@@ -1,6 +1,25 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// BITNET b1.58 FULL FORWARD PASS
-// Complete transformer implementation with ternary quantization
+// BITNET b1.58 FORWARD PASS - FOR BENCHMARKING ONLY
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// WARNING: This module performs "FAKE QUANTIZATION"!
+//
+// quantizeWeightsInPlace() quantizes weights to ternary {-1, 0, +1}
+// but then IMMEDIATELY DEQUANTIZES back to float32 (line 54).
+// This means there is NO actual memory savings or ternary compute benefits.
+//
+// This is useful for:
+// - Benchmarking quantization overhead
+// - Testing numerical accuracy of quantization
+// - Development/prototyping
+//
+// This is NOT useful for:
+// - Actual memory reduction (weights remain F32)
+// - Production inference (no real ternary compute)
+// - Claims about "20x memory savings" (that requires packed ternary storage)
+//
+// For real ternary inference, use src/b2t/ or external BitNet implementations.
+//
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
 

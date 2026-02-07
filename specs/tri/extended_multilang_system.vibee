@@ -1,0 +1,370 @@
+# ============================================================================
+# Extended Multi-Language System - 18 Algorithms × 7 Languages
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: extended_multilang_system
+version: "1.0.0"
+language: zig
+module: extended_multilang_system
+
+description: |
+  Extended multi-language code generation system.
+  Builds on Cycle 17 MEGA UNIFICATION.
+  18 algorithms (up from 15) in 7 languages (up from 4).
+  NEW: Go, Rust, C++ support.
+  NEW: heap_sort, dijkstra, topological_sort.
+  Total: 126 code templates (up from 60).
+  Full chat integration + honest limitations.
+
+constants:
+  HIGH_CONFIDENCE: 0.95
+  MED_CONFIDENCE: 0.75
+  LOW_CONFIDENCE: 0.5
+  UNKNOWN_CONFIDENCE: 0.2
+  ALGORITHM_COUNT: 18
+  LANGUAGE_COUNT: 7
+  TEMPLATE_COMBINATIONS: 126
+  TOPIC_COUNT: 10
+
+types:
+  SystemMode:
+    description: "Operating mode"
+    enum:
+      - chat
+      - code
+      - hybrid
+      - unknown
+
+  InputLanguage:
+    description: "Detected input language"
+    enum:
+      - russian
+      - chinese
+      - english
+
+  OutputLanguage:
+    description: "Code output language (7 total)"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+      - go
+      - rust
+      - cpp
+
+  ChatTopic:
+    description: "Conversation topics (10)"
+    enum:
+      - greeting
+      - farewell
+      - help
+      - capabilities
+      - feelings
+      - weather
+      - time
+      - jokes
+      - facts
+      - unknown
+
+  Algorithm:
+    description: "Supported algorithms (18 total)"
+    enum:
+      - bubble_sort
+      - quick_sort
+      - merge_sort
+      - heap_sort
+      - linear_search
+      - binary_search
+      - fibonacci
+      - factorial
+      - is_prime
+      - stack
+      - queue
+      - linked_list
+      - binary_tree
+      - hash_map
+      - bfs
+      - dfs
+      - dijkstra
+      - topological_sort
+      - unknown
+
+  PersonalityTrait:
+    description: "Bot personality (5)"
+    enum:
+      - friendly
+      - helpful
+      - honest
+      - curious
+      - humble
+
+  ExtendedContext:
+    description: "Full system context"
+    fields:
+      turn_count: Int
+      current_mode: SystemMode
+      current_topic: ChatTopic
+      current_algorithm: Algorithm
+      input_language: InputLanguage
+      output_language: OutputLanguage
+      user_mood: String
+
+  ExtendedRequest:
+    description: "Request to extended system"
+    fields:
+      text: String
+      context: ExtendedContext
+
+  ExtendedResponse:
+    description: "Response from extended system"
+    fields:
+      text: String
+      code: String
+      mode: SystemMode
+      topic: ChatTopic
+      algorithm: Algorithm
+      output_language: OutputLanguage
+      confidence: Float
+      is_honest: Bool
+      personality: PersonalityTrait
+
+behaviors:
+  # Mode Detection
+  - name: detectMode
+    given: User input
+    when: Analyzing intent
+    then: Return SystemMode (chat/code/hybrid)
+
+  - name: detectInputLanguage
+    given: User input
+    when: Analyzing text patterns
+    then: Return InputLanguage (ru/zh/en)
+
+  - name: detectOutputLanguage
+    given: User input
+    when: Analyzing code request
+    then: Return OutputLanguage (7 options)
+
+  - name: detectTopic
+    given: User input in chat mode
+    when: Analyzing conversation
+    then: Return ChatTopic
+
+  - name: detectAlgorithm
+    given: User input in code mode
+    when: Analyzing code request
+    then: Return Algorithm (18 options)
+
+  # Chat Responses (10 topics)
+  - name: respondGreeting
+    given: Greeting detected
+    when: User says hello
+    then: Return warm greeting
+
+  - name: respondFarewell
+    given: Farewell detected
+    when: User says goodbye
+    then: Return friendly farewell
+
+  - name: respondHelp
+    given: Help request
+    when: User asks for help
+    then: Return guidance with 18 algorithms + 7 languages
+
+  - name: respondCapabilities
+    given: Capabilities query
+    when: User asks what bot can do
+    then: Return 126 templates available
+
+  - name: respondFeelings
+    given: Feelings question
+    when: User asks about emotions
+    then: Return HONEST AI response
+
+  - name: respondWeather
+    given: Weather question
+    when: User asks about weather
+    then: Return HONEST cannot check
+
+  - name: respondTime
+    given: Time question
+    when: User asks about time
+    then: Return HONEST cannot check
+
+  - name: respondJoke
+    given: Joke request
+    when: User wants humor
+    then: Return programming joke
+
+  - name: respondFact
+    given: Fact request
+    when: User wants interesting fact
+    then: Return tech/math fact
+
+  - name: respondUnknown
+    given: Unknown topic
+    when: Cannot understand
+    then: Return honest uncertainty
+
+  # Original Algorithms (15)
+  - name: generateBubbleSort
+    given: Output language
+    when: User requests bubble sort
+    then: Return real bubble sort in 7 languages
+
+  - name: generateQuickSort
+    given: Output language
+    when: User requests quick sort
+    then: Return real quick sort in 7 languages
+
+  - name: generateMergeSort
+    given: Output language
+    when: User requests merge sort
+    then: Return real merge sort in 7 languages
+
+  - name: generateLinearSearch
+    given: Output language
+    when: User requests linear search
+    then: Return real linear search in 7 languages
+
+  - name: generateBinarySearch
+    given: Output language
+    when: User requests binary search
+    then: Return real binary search in 7 languages
+
+  - name: generateFibonacci
+    given: Output language
+    when: User requests fibonacci
+    then: Return real fibonacci in 7 languages
+
+  - name: generateFactorial
+    given: Output language
+    when: User requests factorial
+    then: Return real factorial in 7 languages
+
+  - name: generateIsPrime
+    given: Output language
+    when: User requests prime check
+    then: Return real prime check in 7 languages
+
+  - name: generateStack
+    given: Output language
+    when: User requests stack
+    then: Return real stack in 7 languages
+
+  - name: generateQueue
+    given: Output language
+    when: User requests queue
+    then: Return real queue in 7 languages
+
+  - name: generateLinkedList
+    given: Output language
+    when: User requests linked list
+    then: Return real linked list in 7 languages
+
+  - name: generateBinaryTree
+    given: Output language
+    when: User requests binary tree
+    then: Return real binary tree in 7 languages
+
+  - name: generateHashMap
+    given: Output language
+    when: User requests hash map
+    then: Return real hash map in 7 languages
+
+  - name: generateBFS
+    given: Output language
+    when: User requests BFS
+    then: Return real BFS in 7 languages
+
+  - name: generateDFS
+    given: Output language
+    when: User requests DFS
+    then: Return real DFS in 7 languages
+
+  # NEW Algorithms (3)
+  - name: generateHeapSort
+    given: Output language
+    when: User requests heap sort
+    then: Return real heap sort in 7 languages
+
+  - name: generateDijkstra
+    given: Output language
+    when: User requests Dijkstra
+    then: Return real Dijkstra in 7 languages
+
+  - name: generateTopologicalSort
+    given: Output language
+    when: User requests topological sort
+    then: Return real topological sort in 7 languages
+
+  # Unified Processing
+  - name: processExtended
+    given: ExtendedRequest
+    when: Processing user input
+    then: Return ExtendedResponse
+
+  - name: handleChat
+    given: Chat mode detected
+    when: Processing chat request
+    then: Return chat response
+
+  - name: handleCode
+    given: Code mode detected
+    when: Processing code request
+    then: Return code in selected language
+
+  - name: handleHybrid
+    given: Hybrid mode detected
+    when: Both chat and code needed
+    then: Return greeting + code
+
+  # Context Management
+  - name: initContext
+    given: New session
+    when: First message
+    then: Return initialized ExtendedContext
+
+  - name: updateContext
+    given: Current context and response
+    when: After processing
+    then: Return updated ExtendedContext
+
+  - name: selectPersonality
+    given: Mode and topic
+    when: Choosing style
+    then: Return PersonalityTrait
+
+  # Validation
+  - name: validateResponse
+    given: ExtendedResponse
+    when: Checking quality
+    then: Reject generic patterns
+
+test_cases:
+  - name: go_dijkstra
+    given: "Write Dijkstra in Go"
+    expected: "Real Dijkstra algorithm in Go"
+
+  - name: rust_heap_sort
+    given: "Напиши heap sort на Rust"
+    expected: "Real heap sort in Rust"
+
+  - name: cpp_topological
+    given: "用C++写拓扑排序"
+    expected: "Real topological sort in C++"
+
+  - name: capabilities_extended
+    given: "What can you do?"
+    expected: "18 algorithms in 7 languages = 126 templates"
+
+  - name: hybrid_go
+    given: "Hello! Write fibonacci in Go"
+    expected: "Greeting + fibonacci in Go"
+
+  - name: honest_weather
+    given: "What's the weather?"
+    expected: "Cannot check - honest response"

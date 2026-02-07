@@ -1,0 +1,132 @@
+# ============================================================================
+# Auto Spec - Generate VIBEE Specifications from Natural Language Prompts
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: auto_spec
+version: "1.0.0"
+language: zig
+module: auto_spec
+
+description: |
+  Automatically generate .vibee specifications from natural language prompts.
+  Uses IGLA symbolic reasoning to extract types, behaviors, and test cases.
+  Reduces manual VIBEE authoring by 80%+.
+
+constants:
+  MAX_TYPES: 20
+  MAX_BEHAVIORS: 30
+  MAX_TEST_CASES: 50
+  PROMPT_DIMENSION: 1024
+  TEMPLATE_COUNT: 100
+
+types:
+  PromptAnalysis:
+    description: "Analysis of input prompt"
+    fields:
+      entities: List<String>
+      actions: List<String>
+      constraints: List<String>
+      test_hints: List<String>
+
+  TypeTemplate:
+    description: "Template for generating types"
+    fields:
+      name: String
+      pattern: String
+      fields: List<String>
+      example: String
+
+  BehaviorTemplate:
+    description: "Template for generating behaviors"
+    fields:
+      name: String
+      given_pattern: String
+      when_pattern: String
+      then_pattern: String
+
+  GeneratedSpec:
+    description: "Generated VIBEE specification"
+    fields:
+      name: String
+      version: String
+      types: List<String>
+      behaviors: List<String>
+      test_cases: List<String>
+      confidence: Float
+
+  AutoSpecConfig:
+    description: "Configuration for auto-spec generation"
+    fields:
+      max_types: Int
+      max_behaviors: Int
+      use_templates: Bool
+      validate_output: Bool
+
+behaviors:
+  - name: init
+    given: AutoSpecConfig with limits
+    when: Creating auto-spec generator
+    then: Return initialized generator with templates
+
+  - name: analyzePrompt
+    given: Natural language prompt
+    when: Processing user request
+    then: Return PromptAnalysis with extracted elements
+
+  - name: extractEntities
+    given: Prompt text
+    When: Finding nouns and objects
+    then: Return list of potential type names
+
+  - name: extractActions
+    given: Prompt text
+    when: Finding verbs and operations
+    then: Return list of potential behavior names
+
+  - name: generateTypes
+    given: PromptAnalysis entities
+    when: Building type definitions
+    then: Return VIBEE type blocks
+
+  - name: generateBehaviors
+    given: PromptAnalysis actions and entities
+    when: Building behavior definitions
+    then: Return VIBEE behavior blocks with given/when/then
+
+  - name: generateTestCases
+    given: Behaviors and constraints
+    when: Creating test coverage
+    then: Return VIBEE test_cases blocks
+
+  - name: assembleSpec
+    given: Types, behaviors, and test cases
+    when: Building final spec
+    then: Return complete GeneratedSpec
+
+  - name: validateSpec
+    given: GeneratedSpec content
+    when: Checking syntax and completeness
+    then: Return validation result with errors
+
+test_cases:
+  - name: entity_extraction_accurate
+    given: "Create a user authentication system"
+    expected: "Entities: user, authentication, system"
+
+  - name: action_extraction_accurate
+    given: "Users can login, logout, and register"
+    expected: "Actions: login, logout, register"
+
+  - name: types_generated_correctly
+    given: "Order with items and total"
+    expected: "Type: Order { items: List, total: Float }"
+
+  - name: behaviors_have_given_when_then
+    given: "Add item to cart"
+    expected: "Behavior with given/when/then structure"
+
+  - name: test_cases_cover_behaviors
+    given: "3 behaviors generated"
+    expected: "At least 3 test cases"
