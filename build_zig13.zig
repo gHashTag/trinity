@@ -210,6 +210,9 @@ pub fn build(b: *std.Build) void {
         "generated/vsa_real_vision_encoder.zig",
         "generated/vsa_real_voice_encoder.zig",
         "generated/vsa_real_code_encoder.zig",
+        "generated/vsa_spatial_vision.zig",
+        "generated/vsa_temporal_voice.zig",
+        "generated/vsa_structural_code.zig",
     };
     for (encoder_files) |enc_file| {
         const enc_tests = b.addTest(.{
