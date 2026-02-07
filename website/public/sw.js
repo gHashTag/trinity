@@ -1,9 +1,10 @@
-const CACHE_NAME = 'trinity-v1';
+const CACHE_NAME = 'trinity-v2';
+const BASE_PATH = '/trinity';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/vite.svg',
-  '/manifest.json'
+  BASE_PATH + '/',
+  BASE_PATH + '/index.html',
+  BASE_PATH + '/vite.svg',
+  BASE_PATH + '/manifest.json'
 ];
 
 // Install - cache static assets
