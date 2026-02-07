@@ -1,57 +1,20 @@
-const CACHE_NAME = 'trinity-v2';
-const BASE_PATH = '/trinity';
-const STATIC_ASSETS = [
-  BASE_PATH + '/',
-  BASE_PATH + '/index.html',
-  BASE_PATH + '/vite.svg',
-  BASE_PATH + '/manifest.json'
-];
-
-// Install - cache static assets
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
+// Self-destroying service worker - unregisters itself and clears all caches
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-// Activate - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      );
-    })
-  );
-  self.clients.claim();
-});
-
-// Fetch - network first, fallback to cache
-self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
-  
-  // Skip external requests
-  if (!event.request.url.startsWith(self.location.origin)) return;
-
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Clone and cache successful responses
-        if (response && response.status === 200 && response.type === 'basic') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clone);
-          });
-        }
-        return response;
+    Promise.all([
+      // Unregister this service worker
+      self.registration.unregister(),
+      // Clear all caches
+      caches.keys().then((keys) => {
+        return Promise.all(keys.map((key) => caches.delete(key)));
       })
-      .catch(() => {
-        // Fallback to cache
-        return caches.match(event.request);
-      })
+    ])
   );
 });
+
+// Don't intercept any requests
+self.addEventListener('fetch', () => {});
