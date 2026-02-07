@@ -1,0 +1,548 @@
+# ============================================================================
+# Multi-Agent Orchestration - Cycle 32
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: multi_agent_orchestration
+version: "1.0.0"
+language: zig
+module: multi_agent_orchestration
+
+description: |
+  Multi-Agent Orchestration — Multiple autonomous agents collaborate on complex
+  goals through a Coordinator-Specialist architecture. Agents communicate via
+  VSA message passing, share context through a unified blackboard, and resolve
+  conflicts through consensus voting.
+
+  Architecture:
+    Coordinator Agent:
+      Receives high-level goal → decomposes into specialist assignments
+      Monitors specialist progress → resolves conflicts → fuses results
+      Makes CONTINUE/REASSIGN/ESCALATE decisions
+
+    Specialist Agents (5 types):
+      CodeAgent:   Code generation, analysis, refactoring, testing
+      VisionAgent: Image understanding, scene description, OCR
+      VoiceAgent:  STT, TTS, prosody, cross-lingual
+      DataAgent:   File I/O, search, data processing, transformation
+      SystemAgent: Shell execution, deployment, monitoring, HTTP
+
+    Communication Protocol:
+      VSA Message Passing:
+        message_hv = bind(sender_hv, bind(content_hv, recipient_hv))
+        decode: unbind(message_hv, sender_hv) → bind(content_hv, recipient_hv)
+      Message Types: REQUEST, RESPONSE, STATUS, CONFLICT, CONSENSUS
+
+    Shared Blackboard:
+      Global context accessible to all agents
+      Write: bind(agent_hv, data_hv) → store in blackboard
+      Read:  unbind(blackboard, agent_hv) → retrieve agent's contribution
+      Merge: bundle(all agent contributions) → unified context
+
+    Conflict Resolution:
+      When specialists disagree on approach:
+      1. Each agent proposes solution as hypervector
+      2. Coordinator computes pairwise similarity
+      3. Majority vote via bundle → winning approach
+      4. Dissenting agents adapt or escalate
+
+    Workflow Patterns:
+      Pipeline:    Agent_A → Agent_B → Agent_C (sequential handoff)
+      Fan-out:     Coordinator → [Agent_A, Agent_B, Agent_C] (parallel)
+      Fan-in:      [Agent_A, Agent_B, Agent_C] → Coordinator (merge)
+      Round-robin: Agents take turns refining shared result
+      Debate:      Two agents argue, Coordinator arbitrates
+
+    Example: "Build a website that describes images with voice"
+      1. Coordinator parses goal → 3 specialist assignments
+      2. Fan-out: CodeAgent(html/css/js) | VisionAgent(image pipeline) | VoiceAgent(TTS)
+      3. CodeAgent writes scaffold, signals DONE
+      4. VisionAgent builds image description, writes to blackboard
+      5. VoiceAgent reads blackboard, generates TTS for descriptions
+      6. Fan-in: Coordinator merges results, runs integration test
+      7. SystemAgent deploys locally, reports success
+
+  Safety:
+    - Max agents: 8 concurrent
+    - Max messages: 1000 per orchestration
+    - Max rounds: 20 per goal
+    - Conflict resolution timeout: 10s
+    - All processing local
+
+# ============================================================================
+# Constants
+# ============================================================================
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_AGENTS: 8
+  MAX_MESSAGES: 1000
+  MAX_ROUNDS: 20
+  CONFLICT_TIMEOUT_MS: 10000
+  CONSENSUS_THRESHOLD: 0.60
+  ASSIGNMENT_CONFIDENCE_MIN: 0.50
+  BLACKBOARD_MAX_ENTRIES: 200
+  SPECIALIST_TYPES: 5
+  MESSAGE_TYPES: 5
+  WORKFLOW_PATTERNS: 5
+
+# ============================================================================
+# Types
+# ============================================================================
+
+types:
+  AgentRole:
+    enum:
+      - coordinator
+      - code_agent
+      - vision_agent
+      - voice_agent
+      - data_agent
+      - system_agent
+
+  AgentStatus:
+    enum:
+      - idle
+      - assigned
+      - working
+      - blocked
+      - done
+      - failed
+
+  MessageType:
+    enum:
+      - request
+      - response
+      - status_update
+      - conflict
+      - consensus
+
+  WorkflowPattern:
+    enum:
+      - pipeline
+      - fan_out
+      - fan_in
+      - round_robin
+      - debate
+
+  AgentMessage:
+    fields:
+      id: Int
+      sender: AgentRole
+      recipient: AgentRole
+      msg_type: MessageType
+      content: String
+      content_hv: Option<List<Int>>
+      timestamp_ms: Int
+      priority: Int
+
+  SpecialistAgent:
+    fields:
+      role: AgentRole
+      name: String
+      status: AgentStatus
+      capabilities: List<String>
+      current_task: Option<String>
+      result: Option<String>
+      quality: Float
+      messages_sent: Int
+      messages_received: Int
+
+  Assignment:
+    fields:
+      id: Int
+      specialist: AgentRole
+      task_description: String
+      dependencies: List<Int>
+      priority: Int
+      deadline_ms: Int
+      status: AgentStatus
+      result: Option<String>
+      quality: Float
+
+  BlackboardEntry:
+    fields:
+      agent: AgentRole
+      key: String
+      value: String
+      value_hv: Option<List<Int>>
+      timestamp_ms: Int
+      version: Int
+
+  Blackboard:
+    fields:
+      entries: List<BlackboardEntry>
+      total_entries: Int
+      last_update_ms: Int
+
+  ConflictInfo:
+    fields:
+      agents_involved: List<AgentRole>
+      proposals: List<String>
+      proposal_hvs: List<List<Int>>
+      similarity_matrix: List<Float>
+      resolution: String
+      winner: AgentRole
+
+  CoordinatorDecision:
+    enum:
+      - continue_work
+      - reassign_task
+      - escalate
+      - resolve_conflict
+      - merge_results
+      - complete
+
+  OrchestrationPlan:
+    fields:
+      goal: String
+      workflow: WorkflowPattern
+      assignments: List<Assignment>
+      total_assignments: Int
+      parallel_groups: List<List<Int>>
+      estimated_rounds: Int
+
+  RoundResult:
+    fields:
+      round_number: Int
+      active_agents: Int
+      messages_exchanged: Int
+      tasks_completed: Int
+      conflicts_resolved: Int
+      coordinator_decision: CoordinatorDecision
+
+  OrchestrationResult:
+    fields:
+      goal: String
+      success: Bool
+      total_rounds: Int
+      total_messages: Int
+      agents_used: List<AgentRole>
+      tasks_completed: Int
+      tasks_failed: Int
+      conflicts_resolved: Int
+      avg_quality: Float
+      total_duration_ms: Int
+      final_output: String
+
+  OrchestratorConfig:
+    fields:
+      max_agents: Int
+      max_rounds: Int
+      max_messages: Int
+      consensus_threshold: Float
+      auto_resolve_conflicts: Bool
+      verbose: Bool
+
+  Orchestrator:
+    fields:
+      config: OrchestratorConfig
+      agents: List<SpecialistAgent>
+      blackboard: Blackboard
+      message_log: List<AgentMessage>
+      current_plan: Option<OrchestrationPlan>
+      round_history: List<RoundResult>
+
+# ============================================================================
+# Behaviors
+# ============================================================================
+
+behaviors:
+  # --- Coordinator ---
+  - name: parse_and_assign
+    given: High-level goal string
+    when: Coordinator receives new goal
+    then: Creates OrchestrationPlan with specialist assignments and workflow pattern
+
+  - name: select_workflow
+    given: Parsed goal with specialist requirements
+    when: Coordinator chooses execution pattern
+    then: Returns WorkflowPattern (pipeline/fan_out/fan_in/round_robin/debate)
+
+  - name: monitor_round
+    given: Current round state with agent statuses
+    when: Coordinator checks progress after each round
+    then: Returns CoordinatorDecision (continue/reassign/escalate/merge/complete)
+
+  - name: merge_results
+    given: All specialist results on blackboard
+    when: Coordinator fuses final output
+    then: Returns merged result combining all specialist contributions
+
+  # --- Message Passing ---
+  - name: send_message
+    given: Sender agent, recipient, content
+    when: Agent sends VSA-encoded message
+    then: Message delivered to recipient via blackboard
+
+  - name: receive_messages
+    given: Agent role
+    when: Agent checks for incoming messages
+    then: Returns list of messages addressed to this agent
+
+  - name: broadcast
+    given: Sender agent, content
+    when: Agent sends message to all specialists
+    then: All agents receive the broadcast message
+
+  # --- Blackboard ---
+  - name: write_blackboard
+    given: Agent role, key, value
+    when: Agent stores result on shared blackboard
+    then: Entry added/updated with agent identity and timestamp
+
+  - name: read_blackboard
+    given: Key or agent filter
+    when: Agent reads from shared blackboard
+    then: Returns matching entries
+
+  - name: merge_blackboard
+    given: All entries from all agents
+    when: Coordinator merges blackboard into unified context
+    then: Returns VSA bundle of all agent contributions
+
+  # --- Conflict Resolution ---
+  - name: detect_conflict
+    given: Multiple specialist results for same task
+    when: Coordinator checks for disagreement
+    then: Returns ConflictInfo if similarity between proposals < threshold
+
+  - name: resolve_conflict
+    given: ConflictInfo with proposals
+    when: Coordinator runs consensus protocol
+    then: Returns winning proposal via VSA majority vote
+
+  # --- Specialist Execution ---
+  - name: run_code_agent
+    given: Task description for code work
+    when: CodeAgent executes assigned task
+    then: Returns code result with quality score
+
+  - name: run_vision_agent
+    given: Task description for vision work
+    when: VisionAgent executes assigned task
+    then: Returns vision result with quality score
+
+  - name: run_voice_agent
+    given: Task description for voice work
+    when: VoiceAgent executes assigned task
+    then: Returns voice result with quality score
+
+  - name: run_data_agent
+    given: Task description for data work
+    when: DataAgent executes assigned task
+    then: Returns data result with quality score
+
+  - name: run_system_agent
+    given: Task description for system work
+    when: SystemAgent executes assigned task
+    then: Returns system result with quality score
+
+  # --- Orchestration Lifecycle ---
+  - name: create_orchestrator
+    given: OrchestratorConfig
+    when: Initializing new orchestrator
+    then: Returns Orchestrator with empty state
+
+  - name: run_orchestration
+    given: Orchestrator and goal string
+    when: Full orchestration loop starts
+    then: Runs parse→assign→execute rounds→merge→deliver
+
+  - name: get_orchestration_report
+    given: Orchestrator after execution
+    when: Retrieving execution report
+    then: Returns OrchestrationResult with full metrics
+
+# ============================================================================
+# Tests
+# ============================================================================
+
+tests:
+  # --- Coordinator Tests ---
+  - name: parse_simple_goal
+    category: coordinator
+    input: "'Write a hello world program'"
+    expected: "Plan{assignments:1, workflow: pipeline}"
+    description: Coordinator assigns simple goal to single agent
+
+  - name: parse_multi_agent_goal
+    category: coordinator
+    input: "'Build website with image descriptions spoken aloud'"
+    expected: "Plan{assignments:3, agents:[code,vision,voice]}"
+    description: Coordinator assigns to multiple specialists
+
+  - name: select_fan_out
+    category: coordinator
+    input: "3 independent tasks"
+    expected: "WorkflowPattern: fan_out"
+    description: Select fan-out for parallel independent tasks
+
+  - name: select_pipeline
+    category: coordinator
+    input: "3 sequential dependent tasks"
+    expected: "WorkflowPattern: pipeline"
+    description: Select pipeline for sequential dependencies
+
+  - name: monitor_continue
+    category: coordinator
+    input: "2/3 agents working, 1 done"
+    expected: "Decision: continue_work"
+    description: Coordinator continues when agents still working
+
+  - name: monitor_complete
+    category: coordinator
+    input: "3/3 agents done, all quality>0.50"
+    expected: "Decision: complete"
+    description: Coordinator completes when all done
+
+  # --- Message Passing Tests ---
+  - name: send_request
+    category: messaging
+    input: "coordinator → code_agent: 'write index.html'"
+    expected: "Message delivered, type: request"
+    description: Send request message between agents
+
+  - name: send_response
+    category: messaging
+    input: "code_agent → coordinator: 'index.html created'"
+    expected: "Message delivered, type: response"
+    description: Send response message back to coordinator
+
+  - name: broadcast_status
+    category: messaging
+    input: "coordinator → all: 'round 2 starting'"
+    expected: "5 agents received broadcast"
+    description: Broadcast message to all specialists
+
+  - name: vsa_message_encode
+    category: messaging
+    input: "bind(sender_hv, bind(content_hv, recipient_hv))"
+    expected: "Decodable: unbind recovers content"
+    description: VSA message encoding preserves content
+
+  # --- Blackboard Tests ---
+  - name: write_and_read
+    category: blackboard
+    input: "code_agent writes 'result: index.html'"
+    expected: "Read returns 'result: index.html'"
+    description: Write and read blackboard entry
+
+  - name: multi_agent_write
+    category: blackboard
+    input: "3 agents write different entries"
+    expected: "Blackboard has 3 entries, correct agents"
+    description: Multiple agents write to shared blackboard
+
+  - name: merge_entries
+    category: blackboard
+    input: "3 agent contributions"
+    expected: "Merged HV preserves all contributions"
+    description: Merge blackboard into unified context
+
+  # --- Conflict Resolution Tests ---
+  - name: detect_conflict
+    category: conflict
+    input: "2 agents propose different approaches"
+    expected: "ConflictInfo{agents:2, similarity<0.60}"
+    description: Detect disagreement between specialists
+
+  - name: resolve_by_vote
+    category: conflict
+    input: "3 proposals, 2 similar + 1 different"
+    expected: "Winner: majority proposal"
+    description: Resolve conflict via VSA majority vote
+
+  - name: no_conflict
+    category: conflict
+    input: "2 agents with similar proposals"
+    expected: "No conflict detected (similarity>0.60)"
+    description: No conflict when agents agree
+
+  # --- Specialist Tests ---
+  - name: code_agent_gen
+    category: specialist
+    input: "CodeAgent: 'write sort function'"
+    expected: "Result{code, quality>0.50}"
+    description: Code agent generates code
+
+  - name: vision_agent_describe
+    category: specialist
+    input: "VisionAgent: 'describe image'"
+    expected: "Result{description, quality>0.50}"
+    description: Vision agent describes image
+
+  - name: voice_agent_tts
+    category: specialist
+    input: "VoiceAgent: 'speak this text'"
+    expected: "Result{audio, quality>0.50}"
+    description: Voice agent synthesizes speech
+
+  - name: data_agent_search
+    category: specialist
+    input: "DataAgent: 'find VSA files'"
+    expected: "Result{file_list, quality>0.50}"
+    description: Data agent searches codebase
+
+  - name: system_agent_exec
+    category: specialist
+    input: "SystemAgent: 'run tests'"
+    expected: "Result{test_output, quality>0.50}"
+    description: System agent runs shell command
+
+  # --- Full Orchestration Tests ---
+  - name: orchestrate_simple
+    category: orchestration
+    input: "'Write hello world'"
+    expected: "Result{rounds:1, agents:1, success}"
+    description: Simple single-agent orchestration
+
+  - name: orchestrate_fan_out
+    category: orchestration
+    input: "'Create html + css + js files'"
+    expected: "Result{rounds:2, agents:1(code), parallel, success}"
+    description: Fan-out parallel orchestration
+
+  - name: orchestrate_pipeline
+    category: orchestration
+    input: "'Read code, analyze, explain by voice'"
+    expected: "Result{rounds:3, agents:[data,code,voice], pipeline}"
+    description: Pipeline sequential orchestration
+
+  - name: orchestrate_multi_specialist
+    category: orchestration
+    input: "'Build site with images described by voice'"
+    expected: "Result{rounds:3+, agents:[code,vision,voice], success}"
+    description: Multi-specialist collaboration
+
+  - name: orchestrate_with_conflict
+    category: orchestration
+    input: "Goal where 2 agents disagree on approach"
+    expected: "Result{conflicts:1, resolved, success}"
+    description: Orchestration handles agent conflict
+
+  - name: orchestrate_with_reassign
+    category: orchestration
+    input: "Goal where specialist fails, reassigned"
+    expected: "Result{reassignments:1, success}"
+    description: Orchestration handles task reassignment
+
+  # --- Performance Tests ---
+  - name: message_throughput
+    category: performance
+    input: "1000 VSA messages"
+    expected: ">5000 msg/sec"
+    description: Message passing throughput
+
+  - name: blackboard_throughput
+    category: performance
+    input: "1000 read/write ops"
+    expected: ">3000 ops/sec"
+    description: Blackboard read/write throughput
+
+  - name: orchestration_latency
+    category: performance
+    input: "Simple 1-agent orchestration"
+    expected: "<50ms overhead"
+    description: Per-round orchestration overhead
