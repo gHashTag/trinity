@@ -1,0 +1,317 @@
+# ============================================================================
+# VSA Benchmark Suite - Cycle 53
+# Prove ternary performance advantage vs float32
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_benchmark_suite
+version: "1.0.0"
+language: zig
+module: vsa_benchmark_suite
+
+imports:
+  - name: vsa
+    path: "../src/vsa.zig"
+
+description: |
+  Benchmark suite proving ternary VSA advantage over float32:
+  - Encode throughput (ops/sec)
+  - Compare throughput (similarity ops/sec)
+  - Memory usage (bytes per vector)
+  - Accuracy (similarity precision)
+
+  Ternary {-1,0,+1} advantages:
+  - 1.58 bits/trit vs 32 bits/float = 20x memory savings
+  - Add-only compute (no multiply) = faster operations
+  - Exact integer arithmetic = no floating point drift
+
+constants:
+  BENCH_ITERATIONS: 10000
+  WARMUP_ITERATIONS: 100
+  DIM_SMALL: 256
+  DIM_MEDIUM: 1024
+  DIM_LARGE: 4096
+  DIM_XLARGE: 10000
+  FLOAT32_BYTES_PER_ELEMENT: 4
+  TRIT_BITS_PER_ELEMENT: 2
+  PHI: 1.6180339887498948482
+
+types:
+  BenchmarkResult:
+    description: "Result of a single benchmark run"
+    fields:
+      name: String
+      dimension: Int
+      iterations: Int
+      total_ns: Int
+      ops_per_sec: Float
+      bytes_used: Int
+
+  MemoryComparison:
+    description: "Memory usage comparison ternary vs float32"
+    fields:
+      dimension: Int
+      ternary_bytes: Int
+      float32_bytes: Int
+      savings_ratio: Float
+
+  ThroughputComparison:
+    description: "Throughput comparison"
+    fields:
+      operation: String
+      dimension: Int
+      ternary_ops_per_sec: Float
+      float32_ops_per_sec: Float
+      speedup: Float
+
+  AccuracyResult:
+    description: "Accuracy measurement"
+    fields:
+      test_name: String
+      expected: Float
+      actual: Float
+      error: Float
+
+behaviors:
+  # Memory benchmarks
+  - name: realBenchMemoryTernary
+    given: Dimension size
+    when: Measuring ternary vector memory
+    then: Return bytes = ceil(dim * 2 / 8) for packed trits
+
+  - name: realBenchMemoryFloat32
+    given: Dimension size
+    when: Measuring float32 vector memory
+    then: Return bytes = dim * 4
+
+  - name: realBenchMemoryRatio
+    given: Dimension size
+    when: Comparing memory usage
+    then: Return float32_bytes / ternary_bytes ratio
+
+  # Encode throughput benchmarks
+  - name: realBenchEncodeText
+    given: Text string and iteration count
+    when: Benchmarking text encoding throughput
+    then: Return ops/sec for vsa.encodeText
+
+  - name: realBenchRandomVector
+    given: Dimension and iteration count
+    when: Benchmarking vector generation throughput
+    then: Return ops/sec for vsa.randomVector
+
+  - name: realBenchCharToVector
+    given: Character and iteration count
+    when: Benchmarking character encoding throughput
+    then: Return ops/sec for vsa.charToVector
+
+  # VSA operation benchmarks
+  - name: realBenchBind
+    given: Two vectors and iteration count
+    when: Benchmarking bind throughput
+    then: Return ops/sec for vsa.bind
+
+  - name: realBenchBundle2
+    given: Two vectors and iteration count
+    when: Benchmarking bundle2 throughput
+    then: Return ops/sec for vsa.bundle2
+
+  - name: realBenchBundle3
+    given: Three vectors and iteration count
+    when: Benchmarking bundle3 throughput
+    then: Return ops/sec for vsa.bundle3
+
+  - name: realBenchPermute
+    given: Vector and iteration count
+    when: Benchmarking permute throughput
+    then: Return ops/sec for vsa.permute
+
+  # Similarity benchmarks
+  - name: realBenchCosineSimilarity
+    given: Two vectors and iteration count
+    when: Benchmarking cosine similarity throughput
+    then: Return ops/sec for vsa.cosineSimilarity
+
+  - name: realBenchHammingDistance
+    given: Two vectors and iteration count
+    when: Benchmarking hamming distance throughput
+    then: Return ops/sec for vsa.hammingDistance
+
+  # Accuracy benchmarks
+  - name: realBenchSelfSimilarity
+    given: Vector compared to itself
+    when: Verifying self-similarity = 1.0
+    then: Exact result (no floating point drift)
+
+  - name: realBenchOrthogonality
+    given: Two random vectors
+    when: Verifying near-orthogonality
+    then: Similarity near 0 for high dimensions
+
+  - name: realBenchBindUnbindAccuracy
+    given: Bind then unbind operation
+    when: Verifying round-trip accuracy
+    then: Unbound vector matches original
+
+  - name: realBenchTextRoundtrip
+    given: Text encoded and self-compared
+    when: Verifying encoding determinism
+    then: Same text always produces same vector
+
+  # Scaling benchmarks
+  - name: realBenchScalingBind
+    given: Multiple dimensions
+    when: Measuring bind scaling with dimension
+    then: Linear scaling (O(n) in dimension)
+
+  - name: realBenchScalingSimilarity
+    given: Multiple dimensions
+    when: Measuring similarity scaling with dimension
+    then: Linear scaling (O(n) in dimension)
+
+  # Comparison helpers
+  - name: realRandomVector
+    given: Dimension and seed
+    when: Creating test vectors
+    then: Deterministic random vector
+
+  - name: realBind
+    given: Two vectors
+    when: Bind operation
+    then: VSA bind
+
+  - name: realUnbind
+    given: Bound vector and key
+    when: Unbind operation
+    then: VSA unbind
+
+  - name: realBundle2
+    given: Two vectors
+    when: Bundle operation
+    then: VSA bundle2
+
+  - name: realBundle3
+    given: Three vectors
+    when: Triple bundle
+    then: VSA bundle3
+
+  - name: realPermute
+    given: Vector and shift
+    when: Permute operation
+    then: VSA permute
+
+  - name: realCosineSimilarity
+    given: Two vectors
+    when: Similarity measurement
+    then: Cosine similarity
+
+  - name: realHammingDistance
+    given: Two vectors
+    when: Distance measurement
+    then: Hamming distance
+
+  - name: realEncodeText
+    given: Text string
+    when: Text encoding
+    then: VSA text encoding
+
+  - name: realCharToVector
+    given: Character
+    when: Character encoding
+    then: VSA char to vector
+
+  - name: realTextSimilarity
+    given: Two texts
+    when: Text comparison
+    then: Encode and compare
+
+  - name: realTextsAreSimilar
+    given: Two texts and threshold
+    when: Similarity check
+    then: Boolean similarity
+
+  - name: realSearchCorpus
+    given: Query and corpus
+    when: Corpus search
+    then: Best match
+
+tests:
+  # Memory tests
+  - name: test_memory_256
+    given: Dimension 256
+    then: Ternary uses ~64 bytes vs float32 1024 bytes (16x savings)
+
+  - name: test_memory_1024
+    given: Dimension 1024
+    then: Ternary uses ~256 bytes vs float32 4096 bytes (16x savings)
+
+  - name: test_memory_4096
+    given: Dimension 4096
+    then: Ternary uses ~1024 bytes vs float32 16384 bytes (16x savings)
+
+  - name: test_memory_10000
+    given: Dimension 10000
+    then: Ternary uses ~2500 bytes vs float32 40000 bytes (16x savings)
+
+  # Throughput tests (verify operations complete)
+  - name: test_bind_throughput
+    given: 1000 bind operations
+    then: Completes within time limit
+
+  - name: test_bundle_throughput
+    given: 1000 bundle operations
+    then: Completes within time limit
+
+  - name: test_permute_throughput
+    given: 1000 permute operations
+    then: Completes within time limit
+
+  - name: test_similarity_throughput
+    given: 1000 similarity operations
+    then: Completes within time limit
+
+  - name: test_hamming_throughput
+    given: 1000 hamming operations
+    then: Completes within time limit
+
+  - name: test_encode_text_throughput
+    given: 1000 text encode operations
+    then: Completes within time limit
+
+  # Accuracy tests
+  - name: test_self_similarity_exact
+    given: Vector compared to itself
+    then: Cosine similarity = 1.0 exactly
+
+  - name: test_orthogonality_high_dim
+    given: Two random vectors dim=4096
+    then: Similarity magnitude < 0.1
+
+  - name: test_bind_unbind_roundtrip
+    given: Bind then unbind
+    then: Recovered vector has high similarity to original
+
+  - name: test_text_determinism
+    given: Same text encoded twice
+    then: Identical vectors (similarity = 1.0)
+
+  - name: test_similar_texts_detected
+    given: "hello world" and "hello earth"
+    then: Similarity > 0 (shared structure detected)
+
+  - name: test_different_texts_low_sim
+    given: "hello" and "xyz"
+    then: Lower similarity than similar texts
+
+  # Scaling tests
+  - name: test_scaling_linear
+    given: Bind at dim 256 vs 1024
+    then: Time ratio approximately 4x (linear)
+
+  - name: test_corpus_search_accuracy
+    given: Query and 3-text corpus
+    then: Returns correct best match
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

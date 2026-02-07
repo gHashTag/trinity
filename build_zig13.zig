@@ -213,6 +213,7 @@ pub fn build(b: *std.Build) void {
         "generated/vsa_spatial_vision.zig",
         "generated/vsa_temporal_voice.zig",
         "generated/vsa_structural_code.zig",
+        "generated/vsa_benchmark_suite.zig",
     };
     for (encoder_files) |enc_file| {
         const enc_tests = b.addTest(.{
