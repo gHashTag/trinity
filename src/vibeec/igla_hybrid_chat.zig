@@ -303,19 +303,32 @@ pub const IglaHybridChat = struct {
             .temperature = self.config.temperature,
             .top_p = self.config.top_p,
             .top_k = 40,
-            .repeat_penalty = 1.1,
+            .repeat_penalty = 1.3,
         };
+
+        // Token history for repeat penalty (last 64 tokens)
+        var token_history: std.ArrayListUnmanaged(u32) = .{};
+        defer token_history.deinit(self.allocator);
 
         // Process prompt tokens (prefill)
         std.debug.print("[LLM] Prefill {d} tokens: ", .{tokens.len});
         var logits: ?[]f32 = null;
+        const prefill_start = std.time.microTimestamp();
         for (tokens, 0..) |token, pos| {
             if (logits) |l| self.allocator.free(l);
             logits = try model.forward(token, pos);
             // Show progress dot every 5 tokens
             if ((pos + 1) % 5 == 0) std.debug.print(".", .{});
         }
-        std.debug.print(" ok\n[LLM] ", .{});
+        const prefill_us = @as(u64, @intCast(std.time.microTimestamp() - prefill_start));
+        const prefill_tps = if (prefill_us > 0) @as(u64, tokens.len) * 1_000_000 / prefill_us else 0;
+        std.debug.print(" ok ({d}ms, {d} tok/s)\n[LLM] ", .{ prefill_us / 1000, prefill_tps });
+
+        // Seed history with last prompt tokens for context
+        const history_seed = if (tokens.len > 16) tokens[tokens.len - 16..] else tokens;
+        for (history_seed) |t| {
+            try token_history.append(self.allocator, t);
+        }
 
         // Generate response tokens
         var pos = tokens.len;
@@ -323,8 +336,17 @@ pub const IglaHybridChat = struct {
 
         while (generated < self.config.max_tokens) {
             if (logits) |l| {
-                // Sample next token
-                const next_token = try inference.sampleWithParams(self.allocator, l, sampling_params);
+                // Sample with repeat penalty
+                const next_token = try inference.sampleWithRepeatPenalty(
+                    self.allocator, l, sampling_params, token_history.items,
+                );
+
+                // Track token for repeat penalty
+                try token_history.append(self.allocator, next_token);
+                // Keep window at 64 tokens max
+                if (token_history.items.len > 64) {
+                    _ = token_history.orderedRemove(0);
+                }
 
                 // Check for end of sequence
                 if (next_token == tokenizer.eos_token) break;
@@ -337,7 +359,16 @@ pub const IglaHybridChat = struct {
                 if (std.mem.indexOf(u8, token_str, "<|im_end|>") != null) break;
                 if (std.mem.indexOf(u8, token_str, "<|im_start|>") != null) break;
 
-                // Skip leaked special token fragments
+                // Forward next token (must always advance even for filtered tokens)
+                self.allocator.free(l);
+                const fwd_start = std.time.microTimestamp();
+                logits = try model.forward(next_token, pos);
+                const fwd_us = @as(u64, @intCast(std.time.microTimestamp() - fwd_start));
+                if (generated < 3) std.debug.print("[{d}ms]", .{fwd_us / 1000});
+                pos += 1;
+                generated += 1;
+
+                // Skip leaked special token fragments (after forwarding!)
                 if (std.mem.indexOf(u8, token_str, "/chat") != null) continue;
                 if (std.mem.indexOf(u8, token_str, "/user") != null) continue;
                 if (std.mem.indexOf(u8, token_str, "/system") != null) continue;
@@ -347,12 +378,6 @@ pub const IglaHybridChat = struct {
 
                 // Stream token to stdout immediately
                 std.debug.print("{s}", .{token_str});
-
-                // Forward next token
-                self.allocator.free(l);
-                logits = try model.forward(next_token, pos);
-                pos += 1;
-                generated += 1;
             } else {
                 break;
             }

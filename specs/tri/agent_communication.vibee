@@ -1,0 +1,412 @@
+# ============================================================================
+# Agent Communication Protocol - Cycle 41
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: agent_communication
+version: "1.0.0"
+language: zig
+module: agent_communication
+
+description: |
+  Agent Communication Protocol — Formalized inter-agent messaging with
+  request/response, pub/sub, priority queues, dead letter handling, and
+  message routing through the distributed cluster.
+
+  Architecture:
+    Message Bus:
+      Central message router for all inter-agent communication
+      Topic-based pub/sub with wildcard subscriptions
+      Point-to-point request/response with correlation IDs
+      Broadcast messages to all agents on a node/cluster
+
+    Message Types:
+      request: Expects a response (with timeout)
+      response: Reply to a request (correlation ID)
+      event: Fire-and-forget notification
+      broadcast: Sent to all subscribers
+      command: Directive with acknowledgment
+
+    Priority Queues:
+      4 priority levels: urgent, high, normal, low
+      Urgent messages bypass normal queue (fast path)
+      Per-agent inbox with priority sorting
+      Configurable queue depth per agent
+
+    Topics & Subscriptions:
+      Hierarchical topics: "agent.vision.frame"
+      Wildcard: "agent.*.frame" or "agent.#"
+      Durable subscriptions survive agent restart
+      Transient subscriptions cleared on disconnect
+
+    Dead Letter Handling:
+      Messages that fail delivery go to dead letter queue
+      Configurable retry count (default 3)
+      Exponential backoff between retries
+      Dead letter inspection and replay
+      TTL-based message expiration
+
+    Routing:
+      Local routing (same node): direct memory pass
+      Remote routing (cross-node): via Cycle 37 cluster RPC
+      Content-based routing: route by message payload
+      Load-balanced routing: distribute across agent group
+
+  Safety:
+    - Max message size: 64KB
+    - Max queue depth per agent: 1024
+    - Message TTL: 30s default
+    - Max retry count: 3
+    - Max topics per agent: 32
+    - Max subscriptions per topic: 64
+    - Dead letter queue max: 256
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_MESSAGE_SIZE: 65536
+  MAX_QUEUE_DEPTH: 1024
+  DEFAULT_TTL_MS: 30000
+  MAX_RETRY_COUNT: 3
+  RETRY_BACKOFF_INIT_MS: 100
+  RETRY_BACKOFF_MAX_MS: 5000
+  MAX_TOPICS_PER_AGENT: 32
+  MAX_SUBSCRIPTIONS_PER_TOPIC: 64
+  DEAD_LETTER_QUEUE_MAX: 256
+  MAX_CORRELATION_TIMEOUT_MS: 10000
+  MAX_AGENTS: 512
+  BROADCAST_FANOUT_MAX: 128
+
+types:
+  MessageType:
+    enum:
+      - request
+      - response
+      - event
+      - broadcast
+      - command
+
+  MessagePriority:
+    enum:
+      - urgent
+      - high
+      - normal
+      - low
+
+  DeliveryStatus:
+    enum:
+      - pending
+      - delivered
+      - acknowledged
+      - failed
+      - expired
+      - dead_lettered
+      - retrying
+
+  SubscriptionType:
+    enum:
+      - durable
+      - transient
+      - exclusive
+      - shared
+
+  RoutingStrategy:
+    enum:
+      - direct
+      - topic_based
+      - content_based
+      - load_balanced
+      - broadcast
+
+  Message:
+    fields:
+      message_id: Int
+      correlation_id: Int
+      sender_agent: Int
+      target_agent: Int
+      message_type: MessageType
+      priority: MessagePriority
+      topic: String
+      payload: String
+      payload_size: Int
+      created_ms: Int
+      ttl_ms: Int
+      retry_count: Int
+
+  Subscription:
+    fields:
+      subscription_id: Int
+      agent_id: Int
+      topic_pattern: String
+      sub_type: SubscriptionType
+      created_ms: Int
+      messages_received: Int
+      active: Bool
+
+  DeadLetter:
+    fields:
+      original_message: Message
+      failure_reason: String
+      retry_attempts: Int
+      dead_lettered_ms: Int
+      replayable: Bool
+
+  AgentInbox:
+    fields:
+      agent_id: Int
+      queue_depth: Int
+      urgent_count: Int
+      high_count: Int
+      normal_count: Int
+      low_count: Int
+      total_received: Int
+      total_processed: Int
+
+  TopicStats:
+    fields:
+      topic: String
+      subscriber_count: Int
+      messages_published: Int
+      messages_delivered: Int
+      messages_failed: Int
+
+  ProtocolMetrics:
+    fields:
+      total_messages_sent: Int
+      total_messages_delivered: Int
+      total_messages_failed: Int
+      total_dead_letters: Int
+      total_retries: Int
+      avg_delivery_latency_ms: Int
+      avg_queue_depth: Float
+      active_subscriptions: Int
+      active_topics: Int
+
+  RequestResponse:
+    fields:
+      request_id: Int
+      requester_agent: Int
+      responder_agent: Int
+      request_payload: String
+      response_payload: String
+      request_ms: Int
+      response_ms: Int
+      timed_out: Bool
+
+  BroadcastResult:
+    fields:
+      message_id: Int
+      recipients_total: Int
+      recipients_delivered: Int
+      recipients_failed: Int
+      fanout_ms: Int
+
+  ProtocolConfig:
+    fields:
+      max_message_size: Int
+      max_queue_depth: Int
+      default_ttl_ms: Int
+      max_retries: Int
+      enable_dead_letter: Bool
+      enable_priority: Bool
+      enable_cross_node: Bool
+
+behaviors:
+  - name: send_message
+    given: Message with target agent and payload
+    when: Agent sends inter-agent message
+    then: Message routed to target inbox with priority
+
+  - name: request_response
+    given: Request message with correlation ID
+    when: Agent needs synchronous response
+    then: Request sent, response awaited with timeout
+
+  - name: publish_event
+    given: Event message with topic
+    when: Agent publishes to topic
+    then: All subscribers on topic receive the event
+
+  - name: subscribe_topic
+    given: Agent ID and topic pattern
+    when: Agent wants to receive topic messages
+    then: Subscription registered, future messages delivered
+
+  - name: unsubscribe_topic
+    given: Subscription ID
+    when: Agent no longer wants topic messages
+    then: Subscription removed, delivery stops
+
+  - name: broadcast_message
+    given: Broadcast message and scope
+    when: Agent sends to all agents
+    then: Message delivered to all agents in scope
+
+  - name: handle_dead_letter
+    given: Failed message exceeding retry count
+    when: Delivery permanently failed
+    then: Message moved to dead letter queue
+
+  - name: retry_delivery
+    given: Failed message with remaining retries
+    when: Delivery attempt failed
+    then: Message requeued with exponential backoff
+
+  - name: expire_message
+    given: Message exceeding TTL
+    when: TTL check triggered
+    then: Message removed, sender notified if request
+
+  - name: route_cross_node
+    given: Message targeting agent on remote node
+    when: Target agent not on local node
+    then: Message forwarded via cluster RPC
+
+  - name: get_protocol_metrics
+    given: Protocol state
+    when: Metrics requested
+    then: Returns ProtocolMetrics with delivery stats
+
+  - name: replay_dead_letter
+    given: Dead letter message ID
+    when: Operator requests replay
+    then: Message reinjected into routing with fresh TTL
+
+tests:
+  # Messaging (4)
+  - name: point_to_point
+    category: messaging
+    input: "Agent A sends to Agent B"
+    expected: "B receives message in inbox"
+    description: Basic point-to-point messaging
+
+  - name: request_response_sync
+    category: messaging
+    input: "Agent A requests, B responds"
+    expected: "A receives correlated response"
+    description: Synchronous request-response
+
+  - name: request_timeout
+    category: messaging
+    input: "Request with 100ms timeout, no response"
+    expected: "Timeout error after 100ms"
+    description: Request-response timeout
+
+  - name: priority_ordering
+    category: messaging
+    input: "4 messages: urgent, high, normal, low"
+    expected: "Delivered in priority order"
+    description: Priority queue ordering
+
+  # Pub/Sub (4)
+  - name: topic_subscribe
+    category: pubsub
+    input: "Subscribe to agent.vision.frame"
+    expected: "Events on topic delivered"
+    description: Basic topic subscription
+
+  - name: wildcard_subscribe
+    category: pubsub
+    input: "Subscribe to agent.*.frame"
+    expected: "Matches agent.vision.frame etc"
+    description: Wildcard topic matching
+
+  - name: broadcast_all
+    category: pubsub
+    input: "Broadcast to 16 agents"
+    expected: "All 16 receive message"
+    description: Broadcast to all agents
+
+  - name: durable_subscription
+    category: pubsub
+    input: "Agent restarts with durable sub"
+    expected: "Subscription survives restart"
+    description: Durable subscription persistence
+
+  # Dead Letter (4)
+  - name: dead_letter_on_failure
+    category: dead_letter
+    input: "Message fails 3 retries"
+    expected: "Moved to dead letter queue"
+    description: Dead letter after max retries
+
+  - name: retry_with_backoff
+    category: dead_letter
+    input: "First delivery fails"
+    expected: "Retried with 100ms backoff"
+    description: Exponential retry backoff
+
+  - name: dead_letter_replay
+    category: dead_letter
+    input: "Replay dead letter message"
+    expected: "Message reinjected with fresh TTL"
+    description: Dead letter replay
+
+  - name: ttl_expiration
+    category: dead_letter
+    input: "Message with 30s TTL after 31s"
+    expected: "Message expired and removed"
+    description: TTL-based expiration
+
+  # Routing (3)
+  - name: local_routing
+    category: routing
+    input: "Both agents on same node"
+    expected: "Direct memory pass, <1ms"
+    description: Local same-node routing
+
+  - name: cross_node_routing
+    category: routing
+    input: "Target agent on remote node"
+    expected: "Forwarded via cluster RPC"
+    description: Cross-node message routing
+
+  - name: load_balanced_routing
+    category: routing
+    input: "Message to agent group of 4"
+    expected: "Delivered to least-loaded agent"
+    description: Load-balanced group routing
+
+  # Performance (3)
+  - name: message_throughput
+    category: performance
+    input: "10000 messages across 16 agents"
+    expected: ">5000 msg/sec throughput"
+    description: Message throughput
+
+  - name: delivery_latency
+    category: performance
+    input: "Local point-to-point message"
+    expected: "<1ms delivery latency"
+    description: Local delivery latency
+
+  - name: pubsub_fanout
+    category: performance
+    input: "Publish to topic with 64 subs"
+    expected: "All 64 delivered <10ms"
+    description: Pub/sub fanout performance
+
+  # Integration (4)
+  - name: comms_with_agents
+    category: integration
+    input: "Orchestrated agent conversation"
+    expected: "Agents exchange messages"
+    description: Communication with agent pool
+
+  - name: comms_with_streaming
+    category: integration
+    input: "Stream chunks as messages"
+    expected: "Chunks delivered via protocol"
+    description: Communication with streaming
+
+  - name: comms_with_scheduler
+    category: integration
+    input: "Scheduler distributes via messages"
+    expected: "Jobs communicated to workers"
+    description: Communication with scheduler
+
+  - name: comms_with_plugins
+    category: integration
+    input: "Plugin sends inter-agent message"
+    expected: "Message routed through protocol"
+    description: Communication from plugins
