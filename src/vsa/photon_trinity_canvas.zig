@@ -113,6 +113,17 @@ const LogoBlock = struct {
     scale: f32, // Current scale
     delay: f32, // Animation start delay
     center: rl.Vector2, // Center of the block for positioning
+    // Assembly animation velocity (spring physics)
+    anim_vx: f32,
+    anim_vy: f32,
+    anim_vr: f32,
+    // Cursor physics
+    push_x: f32, // Current push displacement from cursor
+    push_y: f32,
+    push_rot: f32, // Rotation from cursor push
+    vel_x: f32, // Velocity for spring-back
+    vel_y: f32,
+    vel_rot: f32,
 };
 
 const LogoAnimation = struct {
@@ -122,6 +133,7 @@ const LogoAnimation = struct {
     is_complete: bool,
     logo_scale: f32, // Scale the logo to fit screen
     logo_offset: rl.Vector2, // Center the logo on screen
+    hovered_block: i32, // Index of block under cursor (-1 = none)
 
     // SVG viewBox: 596 x 526, center at ~298, 263
     const SVG_WIDTH: f32 = 596.0;
@@ -133,10 +145,11 @@ const LogoAnimation = struct {
         var self = LogoAnimation{
             .blocks = undefined,
             .time = 0,
-            .duration = 2.0,
+            .duration = 5.0, // Luxury slow animation (Apple-style)
             .is_complete = false,
-            .logo_scale = @min(screen_w / SVG_WIDTH, screen_h / SVG_HEIGHT) * 0.6,
+            .logo_scale = @min(screen_w / SVG_WIDTH, screen_h / SVG_HEIGHT) * 0.35,
             .logo_offset = .{ .x = screen_w / 2, .y = screen_h / 2 },
+            .hovered_block = -1,
         };
 
         // 27 blocks parsed from assets/999.svg
@@ -198,10 +211,6 @@ const LogoAnimation = struct {
         };
         const counts = [27]u8{ 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
 
-        // Initialize blocks with random start positions
-        var prng = std.Random.DefaultPrng.init(12345);
-        const random = prng.random();
-
         for (0..27) |i| {
             var center_x: f32 = 0;
             var center_y: f32 = 0;
@@ -220,16 +229,28 @@ const LogoAnimation = struct {
             self.blocks[i].count = cnt;
             self.blocks[i].center = .{ .x = center_x, .y = center_y };
 
-            // Random start offset (fly from outside screen)
-            const angle = random.float(f32) * TAU;
-            const distance = 800.0 + random.float(f32) * 400.0;
+            // Each block flies straight from its own direction — no chaos
+            // Direction = from center through block's position, extended far out
+            const dir_len = @sqrt(center_x * center_x + center_y * center_y);
+            const norm_x = if (dir_len > 0.1) center_x / dir_len else @cos(@as(f32, @floatFromInt(i)) * TAU / 27.0);
+            const norm_y = if (dir_len > 0.1) center_y / dir_len else @sin(@as(f32, @floatFromInt(i)) * TAU / 27.0);
+            const distance: f32 = 1200.0; // Same distance for all — clean formation
             self.blocks[i].offset = .{
-                .x = @cos(angle) * distance,
-                .y = @sin(angle) * distance,
+                .x = norm_x * distance,
+                .y = norm_y * distance,
             };
-            self.blocks[i].rotation = (random.float(f32) - 0.5) * 6.0; // -3 to +3 radians
-            self.blocks[i].scale = 0.3 + random.float(f32) * 0.3;
-            self.blocks[i].delay = @as(f32, @floatFromInt(i)) * 0.02; // Staggered
+            self.blocks[i].rotation = 0; // No rotation — flat, clean
+            self.blocks[i].scale = 1.0; // Full size from start
+            self.blocks[i].delay = 0; // All start simultaneously
+            self.blocks[i].anim_vx = 0;
+            self.blocks[i].anim_vy = 0;
+            self.blocks[i].anim_vr = 0;
+            self.blocks[i].push_x = 0;
+            self.blocks[i].push_y = 0;
+            self.blocks[i].push_rot = 0;
+            self.blocks[i].vel_x = 0;
+            self.blocks[i].vel_y = 0;
+            self.blocks[i].vel_rot = 0;
         }
 
         return self;
@@ -245,28 +266,101 @@ const LogoAnimation = struct {
             const t = @max(0, self.time - block.delay);
             const progress = @min(1.0, t / self.duration);
 
-            // Phi-based easing (ease out)
-            const eased = 1.0 - (1.0 - progress) * (1.0 - progress) * PHI_INV;
+            // Two phases:
+            // Phase 1 (0–0.7): straight linear flight toward center
+            // Phase 2 (0.7–1.0): spring compression + bounce
+            const arrival = 0.7; // when blocks "arrive" and spring kicks in
 
-            // Animate offset towards zero
-            block.offset.x = block.offset.x * (1.0 - eased * 0.1);
-            block.offset.y = block.offset.y * (1.0 - eased * 0.1);
+            if (progress < arrival) {
+                // Straight linear flight — each block slides to its place
+                const speed = 2.0 * dt;
+                block.offset.x -= block.offset.x * speed;
+                block.offset.y -= block.offset.y * speed;
 
-            // Animate rotation towards zero
-            block.rotation = block.rotation * (1.0 - eased * 0.05);
+                // Carry momentum into spring phase
+                block.anim_vx = -block.offset.x * 0.3;
+                block.anim_vy = -block.offset.y * 0.3;
+                block.anim_vr = 0;
+            } else {
+                // Spring phase — elastic bounce at destination
+                const spring_k: f32 = 18.0;
+                const damp: f32 = 0.90;
 
-            // Animate scale towards 1.0
-            block.scale = block.scale + (1.0 - block.scale) * eased * 0.05;
+                // Spring force pulls offset to zero
+                block.anim_vx += (-block.offset.x * spring_k) * dt;
+                block.anim_vy += (-block.offset.y * spring_k) * dt;
+                block.anim_vx *= damp;
+                block.anim_vy *= damp;
+                block.offset.x += block.anim_vx * dt * 60.0;
+                block.offset.y += block.anim_vy * dt * 60.0;
 
-            // Check if block is "home"
+                // Spring on rotation
+                block.anim_vr += (-block.rotation * spring_k) * dt;
+                block.anim_vr *= damp;
+                block.rotation += block.anim_vr * dt * 60.0;
+
+                // Scale settles to 1.0
+                block.scale += (1.0 - block.scale) * 0.1;
+            }
+
+            // Check if settled
             const dist = @sqrt(block.offset.x * block.offset.x + block.offset.y * block.offset.y);
-            if (dist > 2.0 or @abs(block.rotation) > 0.02 or @abs(block.scale - 1.0) > 0.02) {
+            const vel = @sqrt(block.anim_vx * block.anim_vx + block.anim_vy * block.anim_vy);
+            if (dist > 0.3 or vel > 0.3 or @abs(block.rotation) > 0.003) {
                 all_done = false;
             }
         }
 
-        if (all_done and self.time > self.duration + 0.5) {
+        // Linger for 1.5s after assembly (Apple-style pause before transition)
+        if (all_done and self.time > self.duration + 1.5) {
             self.is_complete = true;
+        }
+    }
+
+    /// Point-in-polygon test (ray casting)
+    fn pointInPoly(verts: [5]rl.Vector2, cnt: u8, px: f32, py: f32) bool {
+        var inside = false;
+        var j: usize = cnt - 1;
+        var i: usize = 0;
+        while (i < cnt) : (i += 1) {
+            const yi = verts[i].y;
+            const yj = verts[j].y;
+            const xi = verts[i].x;
+            const xj = verts[j].x;
+            if (((yi > py) != (yj > py)) and
+                (px < (xj - xi) * (py - yi) / (yj - yi) + xi))
+            {
+                inside = !inside;
+            }
+            j = i;
+        }
+        return inside;
+    }
+
+    /// Highlight block under cursor (no physics — just detect hover)
+    pub fn applyMouse(self: *LogoAnimation, mouse_x: f32, mouse_y: f32, _: f32) void {
+        const scale = self.logo_scale;
+        const ox = self.logo_offset.x;
+        const oy = self.logo_offset.y;
+
+        self.hovered_block = -1;
+
+        for (self.blocks, 0..) |block, i| {
+            var verts: [5]rl.Vector2 = undefined;
+            const cnt = block.count;
+
+            for (0..cnt) |j| {
+                const bx = block.v[j].x * block.scale + block.offset.x;
+                const by = block.v[j].y * block.scale + block.offset.y;
+                verts[j] = .{
+                    .x = ox + bx * scale,
+                    .y = oy + by * scale,
+                };
+            }
+
+            if (pointInPoly(verts, cnt, mouse_x, mouse_y)) {
+                self.hovered_block = @intCast(i);
+            }
         }
     }
 
@@ -275,8 +369,15 @@ const LogoAnimation = struct {
         const ox = self.logo_offset.x;
         const oy = self.logo_offset.y;
 
-        for (self.blocks) |block| {
-            // Transform vertices
+        // Base color #08FAB5, highlight color #08FAE6
+        const base_color = rl.Color{ .r = 0x08, .g = 0xFA, .b = 0xB5, .a = 255 };
+        const highlight_color = rl.Color{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = 255 };
+
+        // Black outline — clear separation between parts
+        const outline_color = rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 };
+
+        for (self.blocks, 0..) |block, idx| {
+            const fill_color = if (self.hovered_block >= 0 and idx == @as(usize, @intCast(self.hovered_block))) highlight_color else base_color;
             var verts: [5]rl.Vector2 = undefined;
             const cnt = block.count;
 
@@ -284,45 +385,37 @@ const LogoAnimation = struct {
             const sin_r = @sin(block.rotation);
 
             for (0..cnt) |j| {
-                // Apply block animation: offset + rotation + scale
-                var x = block.v[j].x * block.scale;
-                var y = block.v[j].y * block.scale;
+                var bx = block.v[j].x * block.scale;
+                var by = block.v[j].y * block.scale;
 
-                // Rotate around block center
-                const dx = x - block.center.x * block.scale;
-                const dy = y - block.center.y * block.scale;
-                x = block.center.x * block.scale + dx * cos_r - dy * sin_r;
-                y = block.center.y * block.scale + dx * sin_r + dy * cos_r;
+                const ddx = bx - block.center.x * block.scale;
+                const ddy = by - block.center.y * block.scale;
+                bx = block.center.x * block.scale + ddx * cos_r - ddy * sin_r;
+                by = block.center.y * block.scale + ddx * sin_r + ddy * cos_r;
 
-                // Apply offset
-                x += block.offset.x;
-                y += block.offset.y;
+                bx += block.offset.x;
+                by += block.offset.y;
 
-                // Scale and translate to screen
                 verts[j] = .{
-                    .x = ox + x * scale,
-                    .y = oy + y * scale,
+                    .x = ox + bx * scale,
+                    .y = oy + by * scale,
                 };
             }
 
-            // Draw filled polygon (triangle fan from first vertex)
+            // Fill
             if (cnt >= 3) {
                 var k: usize = 1;
                 while (k < cnt - 1) : (k += 1) {
-                    rl.DrawTriangle(
-                        verts[0],
-                        verts[k],
-                        verts[k + 1],
-                        LOGO_GREEN,
-                    );
+                    rl.DrawTriangle(verts[0], verts[k], verts[k + 1], fill_color);
+                    rl.DrawTriangle(verts[0], verts[k + 1], verts[k], fill_color);
                 }
             }
 
-            // Draw outline
+            // Transparent outline
             var m: usize = 0;
             while (m < cnt) : (m += 1) {
                 const next = (m + 1) % cnt;
-                rl.DrawLineEx(verts[m], verts[next], 1.5, withAlpha(BG_BLACK, 180));
+                rl.DrawLineEx(verts[m], verts[next], 5.0, outline_color);
             }
         }
     }
@@ -2958,32 +3051,21 @@ pub fn main() !void {
         defer rl.EndDrawing();
 
         // Pure black background - landing page style (alpha = 180 for transparency)
-        rl.ClearBackground(rl.Color{ .r = 0x00, .g = 0x00, .b = 0x00, .a = 180 });
+        rl.ClearBackground(rl.Color{ .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xF5 });
 
-        // === LOGO LOADING ANIMATION ===
+        // === LOGO LOADING ANIMATION (Apple-style luxury welcome) ===
         if (!loading_complete) {
             // Update logo animation
-            logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.6;
+            logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
             logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
             logo_anim.update(dt);
 
             // Draw logo animation
             logo_anim.draw();
 
-            // Draw loading text
-            const loading_text = "TRINITY";
-            const text_size: f32 = 24;
-            const text_width = rl.MeasureTextEx(font, loading_text, text_size, 1).x;
-            rl.DrawTextEx(font, loading_text, .{
-                .x = (@as(f32, @floatFromInt(g_width)) - text_width) / 2,
-                .y = @as(f32, @floatFromInt(g_height)) * 0.8,
-            }, text_size, 1, LOGO_GREEN);
-
             // Check if animation complete
             if (logo_anim.is_complete) {
                 loading_complete = true;
-                // Spawn welcome hint after loading
-                clusters.spawn(640.0, 400.0, "SHIFT+1 = CHAT | SHIFT+2 = CODE", false);
             }
 
             continue; // Skip main canvas rendering during loading
@@ -2999,8 +3081,11 @@ pub fn main() !void {
         effects.draw();
         goal.draw(time);
 
-        // Cursor
-        drawPhotonCursor(mx, my, cursor_hue, time);
+        // Static logo in center (small, glassmorphism green, stays after loading)
+        logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
+        logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
+        logo_anim.applyMouse(mx, my, dt);
+        logo_anim.draw();
 
         // Glass panels (on top of everything except UI)
         panels.draw(time, font);
