@@ -68,6 +68,29 @@ pub const ShardConfig = struct {
             },
         };
     }
+
+    /// Auto-split for N nodes: divides layers as evenly as possible
+    /// Returns ShardConfig for the given node_idx (0-based)
+    pub fn autoSplitN(total_layers: u32, num_nodes: u32, node_idx: u32, model_path: []const u8, hidden_size: u32) ShardConfig {
+        const base = total_layers / num_nodes;
+        const remainder = total_layers % num_nodes;
+        // First `remainder` nodes get one extra layer
+        var start: u32 = 0;
+        var idx: u32 = 0;
+        while (idx < node_idx) : (idx += 1) {
+            start += base + @as(u32, if (idx < remainder) 1 else 0);
+        }
+        const count = base + @as(u32, if (node_idx < remainder) 1 else 0);
+        return ShardConfig{
+            .total_layers = total_layers,
+            .start_layer = start,
+            .end_layer = start + count,
+            .is_first = (node_idx == 0),
+            .is_last = (node_idx == num_nodes - 1),
+            .hidden_size = hidden_size,
+            .model_path = model_path,
+        };
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -296,6 +319,353 @@ pub const PipelineWorker = struct {
         _ = try std.posix.write(sock, resp_payload);
 
         return req.batch_size;
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PIPELINE RELAY (runs on middle nodes — Worker + Coordinator hybrid)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// A relay node sits between coordinator and worker in an N-node chain:
+//   [Coordinator] --TCP--> [Relay] --TCP--> [Worker]
+// It listens for upstream requests (like Worker), processes its layers,
+// then forwards hidden state downstream (like Coordinator).
+// The sampled token flows back through the chain.
+//
+
+pub const PipelineRelay = struct {
+    allocator: std.mem.Allocator,
+    model: gguf_model.FullModel,
+    shard: ShardConfig,
+    listen_port: u16,
+    downstream_host: []const u8,
+    downstream_port: u16,
+    running: std.atomic.Value(bool),
+    server_thread: ?std.Thread = null,
+    // Downstream connection (persistent)
+    downstream_sock: ?std.posix.socket_t = null,
+    // Pre-allocated hot-path buffer
+    output_buf: []f32,
+
+    pub fn init(allocator: std.mem.Allocator, shard: ShardConfig, listen_port: u16, downstream_host: []const u8, downstream_port: u16) !PipelineRelay {
+        std.debug.print("\n\x1b[38;2;255;215;0m[Relay] Initializing pipeline shard: layers {d}..{d}\x1b[0m\n", .{
+            shard.start_layer, shard.end_layer,
+        });
+
+        var model = try gguf_model.FullModel.init(allocator, shard.model_path);
+        try model.loadPartialWeights(shard.start_layer, shard.end_layer, shard.is_first, shard.is_last);
+
+        std.debug.print("\x1b[38;2;0;229;153m[Relay] Model shard loaded. Listen:{d} → Downstream:{s}:{d}\x1b[0m\n", .{
+            listen_port, downstream_host, downstream_port,
+        });
+
+        return PipelineRelay{
+            .allocator = allocator,
+            .model = model,
+            .shard = shard,
+            .listen_port = listen_port,
+            .downstream_host = downstream_host,
+            .downstream_port = downstream_port,
+            .running = std.atomic.Value(bool).init(true),
+            .output_buf = try allocator.alloc(f32, shard.hidden_size),
+        };
+    }
+
+    pub fn deinit(self: *PipelineRelay) void {
+        self.disconnectDownstream();
+        self.allocator.free(self.output_buf);
+        self.model.deinit();
+    }
+
+    // ─── Downstream connection (Coordinator-like) ───
+
+    fn connectDownstream(self: *PipelineRelay) !void {
+        if (self.downstream_sock != null) return;
+
+        std.debug.print("\x1b[38;2;0;255;255m[Relay] Connecting to downstream {s}:{d}...\x1b[0m\n", .{
+            self.downstream_host, self.downstream_port,
+        });
+
+        var ip_parts: [4]u8 = .{ 127, 0, 0, 1 };
+        var part_idx: usize = 0;
+        var current: u8 = 0;
+        for (self.downstream_host) |c| {
+            if (c == '.') {
+                if (part_idx < 4) ip_parts[part_idx] = current;
+                part_idx += 1;
+                current = 0;
+            } else if (c >= '0' and c <= '9') {
+                current = current * 10 + (c - '0');
+            }
+        }
+        if (part_idx < 4) ip_parts[part_idx] = current;
+
+        const addr = std.net.Address.initIp4(ip_parts, self.downstream_port);
+        const sock = try std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, 0);
+        errdefer std.posix.close(sock);
+
+        try std.posix.connect(sock, &addr.any, addr.getOsSockLen());
+        setTcpNodelay(sock);
+        self.downstream_sock = sock;
+
+        std.debug.print("\x1b[38;2;0;229;153m[Relay] Connected to downstream\x1b[0m\n", .{});
+    }
+
+    fn disconnectDownstream(self: *PipelineRelay) void {
+        if (self.downstream_sock) |s| {
+            std.posix.close(s);
+            self.downstream_sock = null;
+        }
+    }
+
+    // ─── Upstream server (Worker-like) ───
+
+    pub fn serverLoop(self: *PipelineRelay) void {
+        const addr = std.net.Address.initIp4(.{ 0, 0, 0, 0 }, self.listen_port);
+        const sock = std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, 0) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Relay] Socket error: {}\x1b[0m\n", .{err});
+            return;
+        };
+        defer std.posix.close(sock);
+
+        const optval: u32 = 1;
+        std.posix.setsockopt(sock, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, std.mem.asBytes(&optval)) catch {};
+
+        std.posix.bind(sock, &addr.any, addr.getOsSockLen()) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Relay] Bind error on port {d}: {}\x1b[0m\n", .{ self.listen_port, err });
+            return;
+        };
+
+        std.posix.listen(sock, 10) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Relay] Listen error: {}\x1b[0m\n", .{err});
+            return;
+        };
+
+        std.debug.print("\x1b[38;2;0;229;153m[Relay] Listening on 0.0.0.0:{d} — ready for relay\x1b[0m\n", .{self.listen_port});
+
+        while (self.running.load(.acquire)) {
+            var client_addr: std.net.Address = undefined;
+            var addr_len: std.posix.socklen_t = @sizeOf(std.posix.sockaddr);
+            const client = std.posix.accept(sock, &client_addr.any, &addr_len, 0) catch |err| {
+                if (!self.running.load(.acquire)) break;
+                std.debug.print("\x1b[38;2;239;68;68m[Relay] Accept error: {}\x1b[0m\n", .{err});
+                continue;
+            };
+
+            setTcpNodelay(client);
+            std.debug.print("\x1b[38;2;0;255;255m[Relay] Connection from upstream\x1b[0m\n", .{});
+            self.handleSession(client);
+            std.posix.close(client);
+            self.disconnectDownstream();
+            std.debug.print("\x1b[38;2;156;156;160m[Relay] Session ended\x1b[0m\n", .{});
+        }
+    }
+
+    fn handleSession(self: *PipelineRelay, sock: std.posix.socket_t) void {
+        var tokens_processed: u32 = 0;
+        const session_start = std.time.milliTimestamp();
+
+        while (self.running.load(.acquire)) {
+            var header_buf: [protocol.MessageHeader.SIZE]u8 = undefined;
+            const header_read = readExact(sock, &header_buf) catch break;
+            if (header_read < protocol.MessageHeader.SIZE) break;
+
+            const header = protocol.MessageHeader.deserialize(&header_buf) catch break;
+
+            switch (header.msg_type) {
+                .forward_request => {
+                    self.handleSingleForward(sock, header.length) catch break;
+                    tokens_processed += 1;
+                },
+                .batch_forward_request => {
+                    const batch_count = self.handleBatchForward(sock, header.length) catch break;
+                    tokens_processed += batch_count;
+                },
+                else => break,
+            }
+        }
+
+        const elapsed = std.time.milliTimestamp() - session_start;
+        std.debug.print("\x1b[38;2;0;229;153m[Relay] Relayed {d} tokens in {d}ms\x1b[0m\n", .{ tokens_processed, elapsed });
+    }
+
+    // ─── Single-token relay (decode phase) ───
+
+    fn handleSingleForward(self: *PipelineRelay, upstream_sock: std.posix.socket_t, payload_len: u32) !void {
+        // Read request from upstream
+        const payload = try self.allocator.alloc(u8, payload_len);
+        defer self.allocator.free(payload);
+        const payload_read = try readExact(upstream_sock, payload);
+        if (payload_read < payload.len) return error.IncompleteRead;
+
+        const req = try protocol.ForwardRequest.deserialize(payload, self.allocator);
+        defer self.allocator.free(req.hidden_state);
+
+        // Process through local layers
+        self.model.forwardShard(self.output_buf, req.hidden_state, req.token_pos);
+
+        // Forward downstream and get token back
+        const sampled_token = try self.forwardRemoteDownstream(self.output_buf, req.token_pos, req.temperature);
+
+        // Send token back to upstream (coalesced)
+        const resp = protocol.ForwardResponse{
+            .sequence_id = req.sequence_id,
+            .token_pos = req.token_pos,
+            .sampled_token = sampled_token,
+        };
+        const resp_header = protocol.MessageHeader{
+            .msg_type = .forward_response,
+            .length = protocol.ForwardResponse.SIZE,
+        };
+        var combined: [protocol.MessageHeader.SIZE + protocol.ForwardResponse.SIZE]u8 = undefined;
+        const hdr_bytes = resp_header.serialize();
+        const resp_bytes = resp.serialize();
+        @memcpy(combined[0..protocol.MessageHeader.SIZE], &hdr_bytes);
+        @memcpy(combined[protocol.MessageHeader.SIZE..], &resp_bytes);
+        _ = try std.posix.write(upstream_sock, &combined);
+    }
+
+    /// Forward hidden state to downstream node, get sampled token back
+    fn forwardRemoteDownstream(self: *PipelineRelay, hidden: []const f32, pos: u32, temperature: f32) !u32 {
+        try self.connectDownstream();
+        const sock = self.downstream_sock orelse return error.NotConnected;
+
+        const req = protocol.ForwardRequest{
+            .sequence_id = 0,
+            .token_pos = pos,
+            .hidden_size = self.shard.hidden_size,
+            .temperature = temperature,
+            .hidden_state = hidden,
+        };
+        const fwd_payload = try req.serialize(self.allocator);
+        defer self.allocator.free(fwd_payload);
+
+        const header = protocol.MessageHeader{
+            .msg_type = .forward_request,
+            .length = @intCast(fwd_payload.len),
+        };
+        const hdr_bytes = header.serialize();
+        const fwd_combined = try self.allocator.alloc(u8, protocol.MessageHeader.SIZE + fwd_payload.len);
+        defer self.allocator.free(fwd_combined);
+        @memcpy(fwd_combined[0..protocol.MessageHeader.SIZE], &hdr_bytes);
+        @memcpy(fwd_combined[protocol.MessageHeader.SIZE..], fwd_payload);
+        _ = try std.posix.write(sock, fwd_combined);
+
+        // Read response
+        var resp_buf: [protocol.MessageHeader.SIZE + protocol.ForwardResponse.SIZE]u8 = undefined;
+        _ = try readExact(sock, &resp_buf);
+        const resp_hdr = try protocol.MessageHeader.deserialize(resp_buf[0..protocol.MessageHeader.SIZE]);
+        if (resp_hdr.msg_type != .forward_response) return error.UnexpectedResponse;
+        const resp = protocol.ForwardResponse.deserialize(resp_buf[protocol.MessageHeader.SIZE..][0..protocol.ForwardResponse.SIZE]);
+
+        return resp.sampled_token;
+    }
+
+    // ─── Batch relay (prefill phase) ───
+
+    fn handleBatchForward(self: *PipelineRelay, upstream_sock: std.posix.socket_t, payload_len: u32) !u32 {
+        // Read batch request from upstream
+        const payload = try self.allocator.alloc(u8, payload_len);
+        defer self.allocator.free(payload);
+        const payload_read = try readExact(upstream_sock, payload);
+        if (payload_read < payload.len) return error.IncompleteRead;
+
+        const req = try protocol.BatchForwardRequest.deserialize(payload, self.allocator);
+        defer self.allocator.free(@constCast(req.token_positions));
+        defer self.allocator.free(@constCast(req.hidden_states));
+
+        std.debug.print("\x1b[38;2;0;255;255m[Relay] Relaying batch of {d} tokens: \x1b[0m", .{req.batch_size});
+
+        // Process each token through local layers, accumulate output hidden states
+        const relay_hidden = try self.allocator.alloc(f32, req.batch_size * req.hidden_size);
+        defer self.allocator.free(relay_hidden);
+
+        for (0..req.batch_size) |idx| {
+            const hs_offset = idx * req.hidden_size;
+            const input_slice = req.hidden_states[hs_offset..][0..req.hidden_size];
+
+            self.model.forwardShard(self.output_buf, input_slice, req.token_positions[idx]);
+
+            // Store processed hidden state
+            @memcpy(relay_hidden[hs_offset..][0..req.hidden_size], self.output_buf);
+
+            if (idx % 5 == 0) std.debug.print(".", .{});
+        }
+        std.debug.print(" local done, ", .{});
+
+        // Forward entire batch downstream
+        const batch_tokens = try self.batchForwardRemoteDownstream(
+            relay_hidden,
+            req.token_positions,
+            req.batch_size,
+            req.temperature,
+        );
+        defer self.allocator.free(batch_tokens);
+
+        std.debug.print("relay done\n", .{});
+
+        // Send batch response back to upstream
+        const resp = protocol.BatchForwardResponse{
+            .sequence_id = req.sequence_id,
+            .batch_size = req.batch_size,
+            .sampled_tokens = batch_tokens,
+        };
+        const resp_payload = try resp.serialize(self.allocator);
+        defer self.allocator.free(resp_payload);
+
+        const resp_header = protocol.MessageHeader{
+            .msg_type = .batch_forward_response,
+            .length = @intCast(resp_payload.len),
+        };
+        const resp_hdr_bytes = resp_header.serialize();
+        _ = try std.posix.write(upstream_sock, &resp_hdr_bytes);
+        _ = try std.posix.write(upstream_sock, resp_payload);
+
+        return req.batch_size;
+    }
+
+    /// Forward all hidden states to downstream node in one batch, get tokens back
+    fn batchForwardRemoteDownstream(
+        self: *PipelineRelay,
+        hidden_states: []const f32,
+        positions: []const u32,
+        batch_size: u32,
+        temperature: f32,
+    ) ![]u32 {
+        try self.connectDownstream();
+        const sock = self.downstream_sock orelse return error.NotConnected;
+
+        const req = protocol.BatchForwardRequest{
+            .sequence_id = 0,
+            .batch_size = batch_size,
+            .hidden_size = self.shard.hidden_size,
+            .temperature = temperature,
+            .token_positions = positions,
+            .hidden_states = hidden_states,
+        };
+        const fwd_payload = try req.serialize(self.allocator);
+        defer self.allocator.free(fwd_payload);
+
+        const header = protocol.MessageHeader{
+            .msg_type = .batch_forward_request,
+            .length = @intCast(fwd_payload.len),
+        };
+        const hdr_bytes = header.serialize();
+        _ = try std.posix.write(sock, &hdr_bytes);
+        _ = try std.posix.write(sock, fwd_payload);
+
+        // Read batch response
+        var resp_hdr_buf: [protocol.MessageHeader.SIZE]u8 = undefined;
+        _ = try readExact(sock, &resp_hdr_buf);
+        const resp_hdr = try protocol.MessageHeader.deserialize(&resp_hdr_buf);
+        if (resp_hdr.msg_type != .batch_forward_response) return error.UnexpectedResponse;
+
+        const resp_payload = try self.allocator.alloc(u8, resp_hdr.length);
+        defer self.allocator.free(resp_payload);
+        _ = try readExact(sock, resp_payload);
+
+        const resp = try protocol.BatchForwardResponse.deserialize(resp_payload, self.allocator);
+        return @constCast(resp.sampled_tokens);
     }
 };
 
@@ -619,9 +989,13 @@ pub fn runDistributed(allocator: std.mem.Allocator, args: []const []const u8) !v
     var port: u16 = 9335;
     var peer_host: []const u8 = "127.0.0.1";
     var peer_port: u16 = 9335;
+    var downstream_host: []const u8 = "127.0.0.1";
+    var downstream_port: u16 = 9335;
     var prompt: []const u8 = "Hello, how are you?";
     var max_tokens: u32 = 20;
     var temperature: f32 = 0.7;
+    var total_layers: u32 = 22;
+    var hidden_size: u32 = 2048;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -665,6 +1039,21 @@ pub fn runDistributed(allocator: std.mem.Allocator, args: []const []const u8) !v
             if (colon_pos < peer_arg.len) {
                 peer_port = std.fmt.parseInt(u16, peer_arg[colon_pos + 1 ..], 10) catch 9335;
             }
+        } else if (std.mem.eql(u8, arg, "--downstream") and i + 1 < args.len) {
+            i += 1;
+            // Parse "host:port" for relay downstream
+            const ds_arg = args[i];
+            var colon_pos: usize = ds_arg.len;
+            for (ds_arg, 0..) |c, j| {
+                if (c == ':') {
+                    colon_pos = j;
+                    break;
+                }
+            }
+            downstream_host = ds_arg[0..colon_pos];
+            if (colon_pos < ds_arg.len) {
+                downstream_port = std.fmt.parseInt(u16, ds_arg[colon_pos + 1 ..], 10) catch 9335;
+            }
         } else if (std.mem.eql(u8, arg, "--prompt") and i + 1 < args.len) {
             i += 1;
             prompt = args[i];
@@ -674,20 +1063,26 @@ pub fn runDistributed(allocator: std.mem.Allocator, args: []const []const u8) !v
         } else if (std.mem.eql(u8, arg, "--temperature") and i + 1 < args.len) {
             i += 1;
             temperature = std.fmt.parseFloat(f32, args[i]) catch 0.7;
+        } else if (std.mem.eql(u8, arg, "--total-layers") and i + 1 < args.len) {
+            i += 1;
+            total_layers = std.fmt.parseInt(u32, args[i], 10) catch 22;
+        } else if (std.mem.eql(u8, arg, "--hidden-size") and i + 1 < args.len) {
+            i += 1;
+            hidden_size = std.fmt.parseInt(u32, args[i], 10) catch 2048;
         }
     }
 
-    std.debug.print("\n\x1b[38;2;255;215;0m═══ TRINITY DISTRIBUTED INFERENCE v2 (Batched) ═══\x1b[0m\n", .{});
+    std.debug.print("\n\x1b[38;2;255;215;0m═══ TRINITY DISTRIBUTED INFERENCE v3 (N-Node Pipeline) ═══\x1b[0m\n", .{});
     std.debug.print("Role: {s} | Layers: {d}..{d} | Model: {s}\n", .{ role, layers_start, layers_end, model_path });
 
     if (std.mem.eql(u8, role, "worker")) {
         const shard = ShardConfig{
-            .total_layers = 22,
+            .total_layers = total_layers,
             .start_layer = layers_start,
             .end_layer = layers_end,
             .is_first = layers_start == 0,
             .is_last = true,
-            .hidden_size = 2048,
+            .hidden_size = hidden_size,
             .model_path = model_path,
         };
 
@@ -696,14 +1091,32 @@ pub fn runDistributed(allocator: std.mem.Allocator, args: []const []const u8) !v
 
         // Run in foreground (blocking)
         worker.serverLoop();
+    } else if (std.mem.eql(u8, role, "relay")) {
+        const shard = ShardConfig{
+            .total_layers = total_layers,
+            .start_layer = layers_start,
+            .end_layer = layers_end,
+            .is_first = false,
+            .is_last = false,
+            .hidden_size = hidden_size,
+            .model_path = model_path,
+        };
+
+        std.debug.print("Downstream: {s}:{d}\n", .{ downstream_host, downstream_port });
+
+        var relay = try PipelineRelay.init(allocator, shard, port, downstream_host, downstream_port);
+        defer relay.deinit();
+
+        // Run in foreground (blocking)
+        relay.serverLoop();
     } else {
         const shard = ShardConfig{
-            .total_layers = 22,
+            .total_layers = total_layers,
             .start_layer = layers_start,
             .end_layer = layers_end,
             .is_first = true,
             .is_last = false,
-            .hidden_size = 2048,
+            .hidden_size = hidden_size,
             .model_path = model_path,
         };
 
