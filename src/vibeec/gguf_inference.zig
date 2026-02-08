@@ -320,6 +320,7 @@ fn getScaleMinK4(j: usize, scales: []const u8, d: *u8, m: *u8) void {
 // Dequantize Q6_K tensor to f32
 // Q6_K: 256 elements per block, 6-bit quantization
 // Structure: ql[128] + qh[64] + scales[16] + d(f16)
+// Matches llama.cpp dequantize_row_q6_K exactly
 pub fn dequantizeQ6_KTensor(allocator: std.mem.Allocator, data: []const u8, num_elements: u64) ![]f32 {
     const QK_K: usize = 256;
     const type_size: usize = 210; // 128 + 64 + 16 + 2
@@ -334,65 +335,56 @@ pub fn dequantizeQ6_KTensor(allocator: std.mem.Allocator, data: []const u8, num_
         if (block_start + type_size > data.len) break;
 
         const block = data[block_start..][0..type_size];
-        const out_start = block_idx * QK_K;
+        const out_base = block_idx * QK_K;
 
         // Q6_K structure:
-        // - ql[128]: low 4 bits of 6-bit values
-        // - qh[64]: high 2 bits of 6-bit values
-        // - scales[16]: 8-bit scales for 16 sub-blocks
+        // - ql[128]: low 4 bits packed (64 bytes per 128-element half)
+        // - qh[64]: high 2 bits packed (32 bytes per 128-element half)
+        // - scales[16]: 8-bit signed scales (8 per 128-element half)
         // - d (f16): super-block scale
 
-        const ql = block[0..128];
-        const qh = block[128..192];
-        const scales = block[192..208];
+        const ql_ptr = block[0..128];
+        const qh_ptr = block[128..192];
+        const scales_ptr = block[192..208];
         const d_bits = @as(u16, block[208]) | (@as(u16, block[209]) << 8);
         const d = gguf.f16ToF32(d_bits);
 
-        var out_idx: usize = out_start;
-        var ql_idx: usize = 0;
-        var qh_idx: usize = 0;
-        var sc_idx: usize = 0;
-
-        // Process 16 sub-blocks of 16 elements each
+        // Process two 128-element halves (n = 0, 128)
         var n: usize = 0;
         while (n < QK_K) : (n += 128) {
-            var shift: u3 = 0;
-            while (shift < 4) : (shift += 1) {
-                var m: usize = 0;
-                while (m < 16) : (m += 1) {
-                    if (out_idx >= num_elements) break;
-                    
-                    const sc: i8 = @bitCast(scales[sc_idx]);
-                    const scale = d * @as(f32, @floatFromInt(sc));
-                    
-                    // Combine low 4 bits and high 2 bits
-                    const q_lo = ql[ql_idx + m] & 0x0F;
-                    const q_hi = (qh[qh_idx + m] >> @intCast(shift * 2)) & 0x03;
-                    const q: i8 = @as(i8, @intCast((q_lo | (q_hi << 4)))) - 32;
-                    
-                    result[out_idx] = scale * @as(f32, @floatFromInt(q));
-                    out_idx += 1;
-                }
-                
-                m = 0;
-                while (m < 16) : (m += 1) {
-                    if (out_idx >= num_elements) break;
-                    
-                    const sc: i8 = @bitCast(scales[sc_idx + 1]);
-                    const scale = d * @as(f32, @floatFromInt(sc));
-                    
-                    const q_lo = ql[ql_idx + m] >> 4;
-                    const q_hi = (qh[qh_idx + m] >> @intCast(shift * 2 + 1)) & 0x03;
-                    const q: i8 = @as(i8, @intCast((q_lo | (q_hi << 4)))) - 32;
-                    
-                    result[out_idx] = scale * @as(f32, @floatFromInt(q));
-                    out_idx += 1;
-                }
-                
-                ql_idx += 16;
-                sc_idx += 2;
+            const ql = ql_ptr[(n / 2)..];
+            const qh = qh_ptr[(n / 4)..];
+            const sc = scales_ptr[(n / 16)..];
+            const y_offset = out_base + n;
+
+            // Process 32 groups of 4 elements each
+            var l: usize = 0;
+            while (l < 32) : (l += 1) {
+                const is = l / 16; // 0 for l<16, 1 for l>=16
+
+                // Extract 4 6-bit values per llama.cpp layout
+                const q1: i8 = @as(i8, @intCast((ql[l] & 0x0F) | (((qh[l] >> 0) & 0x03) << 4))) - 32;
+                const q2: i8 = @as(i8, @intCast((ql[l + 32] & 0x0F) | (((qh[l] >> 2) & 0x03) << 4))) - 32;
+                const q3: i8 = @as(i8, @intCast((ql[l] >> 4) | (((qh[l] >> 4) & 0x03) << 4))) - 32;
+                const q4: i8 = @as(i8, @intCast((ql[l + 32] >> 4) | (((qh[l] >> 6) & 0x03) << 4))) - 32;
+
+                // Scale indices: is+0, is+2, is+4, is+6
+                const sc0: i8 = @bitCast(sc[is + 0]);
+                const sc2: i8 = @bitCast(sc[is + 2]);
+                const sc4: i8 = @bitCast(sc[is + 4]);
+                const sc6: i8 = @bitCast(sc[is + 6]);
+
+                // Output to y[l+0], y[l+32], y[l+64], y[l+96]
+                const idx0 = y_offset + l;
+                const idx1 = y_offset + l + 32;
+                const idx2 = y_offset + l + 64;
+                const idx3 = y_offset + l + 96;
+
+                if (idx0 < num_elements) result[idx0] = d * @as(f32, @floatFromInt(sc0)) * @as(f32, @floatFromInt(q1));
+                if (idx1 < num_elements) result[idx1] = d * @as(f32, @floatFromInt(sc2)) * @as(f32, @floatFromInt(q2));
+                if (idx2 < num_elements) result[idx2] = d * @as(f32, @floatFromInt(sc4)) * @as(f32, @floatFromInt(q3));
+                if (idx3 < num_elements) result[idx3] = d * @as(f32, @floatFromInt(sc6)) * @as(f32, @floatFromInt(q4));
             }
-            qh_idx += 32;
         }
     }
 
@@ -619,16 +611,34 @@ pub fn applyTemperature(logits: []f32, temperature: f32) void {
     }
 }
 
-/// Sample with temperature and top-p (nucleus sampling)
-/// Returns token index
+/// Sample with temperature, top-k, top-p, and repeat penalty
+/// `prev_tokens` is the list of previously generated tokens for repeat penalty
 pub fn sampleWithParams(allocator: std.mem.Allocator, logits: []f32, params: SamplingParams) !u32 {
+    return sampleWithRepeatPenalty(allocator, logits, params, &[_]u32{});
+}
+
+/// Sample with full repeat penalty support
+pub fn sampleWithRepeatPenalty(allocator: std.mem.Allocator, logits: []f32, params: SamplingParams, prev_tokens: []const u32) !u32 {
     const n = logits.len;
-    
+
+    // Apply repeat penalty to previously generated tokens
+    if (params.repeat_penalty != 1.0 and prev_tokens.len > 0) {
+        for (prev_tokens) |token| {
+            if (token < n) {
+                if (logits[token] > 0) {
+                    logits[token] /= params.repeat_penalty;
+                } else {
+                    logits[token] *= params.repeat_penalty;
+                }
+            }
+        }
+    }
+
     // Apply temperature
     if (params.temperature > 0.0 and params.temperature != 1.0) {
         applyTemperature(logits, params.temperature);
     }
-    
+
     // Greedy if temperature is 0
     if (params.temperature == 0.0) {
         var max_idx: u32 = 0;
@@ -641,40 +651,65 @@ pub fn sampleWithParams(allocator: std.mem.Allocator, logits: []f32, params: Sam
         }
         return max_idx;
     }
-    
-    // Convert to probabilities with softmax
-    var max_logit: f32 = logits[0];
-    for (logits[1..]) |l| {
-        if (l > max_logit) max_logit = l;
-    }
-    
-    var sum: f32 = 0.0;
-    for (logits) |*l| {
-        l.* = @exp(l.* - max_logit);
-        sum += l.*;
-    }
-    
-    const inv_sum = 1.0 / sum;
-    for (logits) |*l| {
-        l.* *= inv_sum;
-    }
-    
-    // Top-p (nucleus) sampling
-    if (params.top_p < 1.0) {
-        // Create index array for sorting
+
+    // Top-k filtering: keep only top_k highest logits
+    if (params.top_k > 0 and params.top_k < n) {
+        // Find the top_k-th largest logit value as threshold
         const indices = try allocator.alloc(u32, n);
         defer allocator.free(indices);
         for (indices, 0..) |*idx, i| {
             idx.* = @intCast(i);
         }
-        
-        // Sort indices by probability (descending)
+
         std.mem.sort(u32, indices, logits, struct {
             fn lessThan(probs: []f32, a: u32, b: u32) bool {
                 return probs[a] > probs[b]; // Descending
             }
         }.lessThan);
-        
+
+        // Zero out everything below top_k
+        for (indices[params.top_k..]) |idx| {
+            logits[idx] = -std.math.inf(f32);
+        }
+    }
+
+    // Convert to probabilities with softmax
+    var max_logit: f32 = logits[0];
+    for (logits[1..]) |l| {
+        if (l > max_logit) max_logit = l;
+    }
+
+    var sum: f32 = 0.0;
+    for (logits) |*l| {
+        if (l.* == -std.math.inf(f32)) {
+            l.* = 0.0;
+        } else {
+            l.* = @exp(l.* - max_logit);
+            sum += l.*;
+        }
+    }
+
+    if (sum > 0.0) {
+        const inv_sum = 1.0 / sum;
+        for (logits) |*l| {
+            l.* *= inv_sum;
+        }
+    }
+
+    // Top-p (nucleus) sampling
+    if (params.top_p < 1.0) {
+        const indices = try allocator.alloc(u32, n);
+        defer allocator.free(indices);
+        for (indices, 0..) |*idx, i| {
+            idx.* = @intCast(i);
+        }
+
+        std.mem.sort(u32, indices, logits, struct {
+            fn lessThan(probs: []f32, a: u32, b: u32) bool {
+                return probs[a] > probs[b]; // Descending
+            }
+        }.lessThan);
+
         // Find cutoff for top-p
         var cumsum: f32 = 0.0;
         var cutoff_idx: usize = n;
@@ -685,12 +720,12 @@ pub fn sampleWithParams(allocator: std.mem.Allocator, logits: []f32, params: Sam
                 break;
             }
         }
-        
+
         // Zero out tokens below cutoff
         for (indices[cutoff_idx..]) |idx| {
             logits[idx] = 0.0;
         }
-        
+
         // Renormalize
         sum = 0.0;
         for (logits) |l| {
@@ -703,12 +738,12 @@ pub fn sampleWithParams(allocator: std.mem.Allocator, logits: []f32, params: Sam
             }
         }
     }
-    
+
     // Sample from distribution
     var prng = std.Random.DefaultPrng.init(@intCast(std.time.milliTimestamp()));
     const random = prng.random();
     const r = random.float(f32);
-    
+
     var cumsum: f32 = 0.0;
     for (logits, 0..) |p, i| {
         cumsum += p;
@@ -716,7 +751,7 @@ pub fn sampleWithParams(allocator: std.mem.Allocator, logits: []f32, params: Sam
             return @intCast(i);
         }
     }
-    
+
     // Fallback to last token
     return @intCast(n - 1);
 }

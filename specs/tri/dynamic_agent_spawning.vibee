@@ -1,0 +1,396 @@
+# ============================================================================
+# Dynamic Agent Spawning & Load Balancing - Cycle 36
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: dynamic_agent_spawning
+version: "1.0.0"
+language: zig
+module: dynamic_agent_spawning
+
+description: |
+  Dynamic Agent Spawning & Load Balancing — Create and destroy specialist agents
+  on demand, with modality-aware load balancing across the agent pool. Cycle 36
+  builds on Cycles 32-35 by replacing the fixed 6-agent roster with a dynamic
+  agent pool that scales based on workload.
+
+  Architecture:
+    Agent Pool:
+      Pool of agent slots (max 16), initially empty
+      Spawn agents on demand when tasks arrive
+      Destroy idle agents after timeout
+      Clone running agents for parallel workloads
+
+    Spawning Strategies:
+      On-demand: spawn when task arrives, no matching agent available
+      Predictive: pre-spawn based on episodic memory (Cycle 34)
+      Clone: duplicate running agent for parallel fan-out
+      Warm pool: keep N agents warm for instant dispatch
+
+    Load Balancer:
+      Round-robin: simple rotation across available agents
+      Least-loaded: route to agent with fewest active tasks
+      Skill-aware: route to agent with best skill profile for modality pair
+      Affinity: route related tasks to same agent (cache locality)
+
+    Agent Lifecycle:
+      SPAWNING → READY → BUSY → IDLE → DESTROYING
+      Spawn cost: initialize agent state + load skill profile
+      Ready: waiting for task assignment
+      Busy: processing one or more tasks
+      Idle timeout: configurable (default 60s)
+      Destroy: save state, release resources
+
+    Health Monitoring:
+      Per-agent metrics: tasks completed, avg quality, avg latency
+      Pool metrics: utilization, queue depth, spawn rate
+      Alerts: agent stuck (no progress), pool exhausted, high latency
+      Auto-restart: replace failed agent with fresh spawn
+
+  Safety:
+    - Max agents: 16
+    - Max queue depth: 100
+    - Idle timeout: 60s
+    - Spawn rate limit: 10/sec
+    - All agents local (no remote spawning)
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_POOL_SIZE: 16
+  MIN_POOL_SIZE: 1
+  DEFAULT_WARM_POOL: 3
+  MAX_QUEUE_DEPTH: 100
+  IDLE_TIMEOUT_MS: 60000
+  SPAWN_RATE_LIMIT: 10
+  HEALTH_CHECK_INTERVAL_MS: 5000
+  STUCK_THRESHOLD_MS: 30000
+  CLONE_OVERHEAD_MS: 50
+  LOAD_BALANCE_INTERVAL_MS: 1000
+
+types:
+  AgentType:
+    enum:
+      - coordinator
+      - code_agent
+      - vision_agent
+      - voice_agent
+      - data_agent
+      - system_agent
+      - generic_agent
+
+  AgentLifecycle:
+    enum:
+      - spawning
+      - ready
+      - busy
+      - idle
+      - destroying
+      - failed
+
+  SpawnStrategy:
+    enum:
+      - on_demand
+      - predictive
+      - clone
+      - warm_pool
+
+  LoadBalanceStrategy:
+    enum:
+      - round_robin
+      - least_loaded
+      - skill_aware
+      - affinity
+
+  AgentInstance:
+    fields:
+      id: Int
+      agent_type: AgentType
+      lifecycle: AgentLifecycle
+      active_tasks: Int
+      completed_tasks: Int
+      avg_quality: Float
+      avg_latency_ms: Int
+      spawn_time_ms: Int
+      last_active_ms: Int
+      modality_affinity: List<String>
+
+  SpawnRequest:
+    fields:
+      agent_type: AgentType
+      strategy: SpawnStrategy
+      priority: Int
+      source_agent_id: Option<Int>
+      modality_hint: Option<String>
+
+  SpawnResult:
+    fields:
+      success: Bool
+      agent_id: Int
+      spawn_time_ms: Int
+      strategy_used: SpawnStrategy
+      from_warm_pool: Bool
+
+  TaskAssignment:
+    fields:
+      task_id: Int
+      agent_id: Int
+      modality: String
+      priority: Int
+      assigned_ms: Int
+
+  PoolMetrics:
+    fields:
+      total_agents: Int
+      active_agents: Int
+      idle_agents: Int
+      spawning_agents: Int
+      queue_depth: Int
+      utilization: Float
+      spawns_total: Int
+      destroys_total: Int
+      avg_spawn_time_ms: Int
+
+  HealthStatus:
+    fields:
+      agent_id: Int
+      healthy: Bool
+      tasks_stuck: Int
+      last_heartbeat_ms: Int
+      quality_trend: Float
+      latency_trend: Float
+
+  LoadBalanceDecision:
+    fields:
+      task_id: Int
+      selected_agent_id: Int
+      strategy: LoadBalanceStrategy
+      reason: String
+      alternatives_considered: Int
+
+  PoolConfig:
+    fields:
+      max_size: Int
+      min_size: Int
+      warm_pool_size: Int
+      idle_timeout_ms: Int
+      spawn_rate_limit: Int
+      default_lb_strategy: LoadBalanceStrategy
+      health_check_interval_ms: Int
+      auto_scale: Bool
+
+  AgentPool:
+    fields:
+      config: PoolConfig
+      agents: List<AgentInstance>
+      queue: List<TaskAssignment>
+      metrics: PoolMetrics
+      lb_strategy: LoadBalanceStrategy
+
+behaviors:
+  - name: spawn_agent
+    given: SpawnRequest with agent type and strategy
+    when: Pool needs a new agent
+    then: Agent created, lifecycle set to spawning then ready
+
+  - name: destroy_agent
+    given: Agent ID of idle agent
+    when: Idle timeout exceeded or pool downsizing
+    then: Agent state saved, resources released, removed from pool
+
+  - name: clone_agent
+    given: Running agent ID for parallel workload
+    when: Fan-out requires duplicate specialist
+    then: New agent created with copied state and skill profile
+
+  - name: assign_task
+    given: Task and load balance strategy
+    when: New task arrives for processing
+    then: Best agent selected via LB strategy, task assigned
+
+  - name: balance_load
+    given: Current pool state and pending tasks
+    when: Load balancer runs periodic check
+    then: Tasks redistributed across agents for optimal utilization
+
+  - name: check_health
+    given: Agent instance
+    when: Health check interval fires
+    then: Returns HealthStatus with stuck detection and trends
+
+  - name: auto_scale
+    given: Pool metrics and queue depth
+    when: Auto-scaler evaluates pool size
+    then: Spawn or destroy agents to match workload
+
+  - name: handle_agent_failure
+    given: Failed agent ID
+    when: Agent crashes or becomes unresponsive
+    then: Tasks reassigned, agent replaced with fresh spawn
+
+  - name: warm_pool_maintain
+    given: Pool config warm_pool_size
+    when: Warm pool drops below threshold
+    then: Pre-spawn agents to maintain warm pool size
+
+  - name: predictive_spawn
+    given: Incoming goal and episodic memory
+    when: System predicts needed agent types
+    then: Pre-spawn likely-needed specialists before task assignment
+
+  - name: get_pool_metrics
+    given: AgentPool state
+    when: Retrieving pool statistics
+    then: Returns PoolMetrics with utilization and counts
+
+tests:
+  # Spawning (4)
+  - name: spawn_on_demand
+    category: spawning
+    input: "Task arrives, no matching agent"
+    expected: "Agent spawned, lifecycle=ready"
+    description: Spawn agent on demand when needed
+
+  - name: spawn_from_warm_pool
+    category: spawning
+    input: "Task arrives, warm agent available"
+    expected: "Warm agent assigned instantly"
+    description: Use warm pool agent for fast dispatch
+
+  - name: clone_for_fanout
+    category: spawning
+    input: "Fan-out needs 3 parallel CodeAgents"
+    expected: "2 clones created from original"
+    description: Clone running agent for parallel work
+
+  - name: predictive_spawn
+    category: spawning
+    input: "Goal similar to past: needed vision+code"
+    expected: "Pre-spawn VisionAgent + CodeAgent"
+    description: Predictive spawning from episodic memory
+
+  # Lifecycle (4)
+  - name: lifecycle_full_cycle
+    category: lifecycle
+    input: "Agent: spawn→ready→busy→idle→destroy"
+    expected: "All lifecycle transitions valid"
+    description: Full agent lifecycle transitions
+
+  - name: idle_timeout_destroy
+    category: lifecycle
+    input: "Agent idle for 60s (timeout=60s)"
+    expected: "Agent destroyed, state saved"
+    description: Idle timeout triggers agent destruction
+
+  - name: failed_agent_restart
+    category: lifecycle
+    input: "Agent stuck for 30s"
+    expected: "Agent replaced with fresh spawn"
+    description: Failed agent automatically restarted
+
+  - name: graceful_shutdown
+    category: lifecycle
+    input: "Pool shutdown with 3 busy agents"
+    expected: "Wait for tasks, save state, destroy"
+    description: Graceful shutdown saves agent states
+
+  # Load Balancing (4)
+  - name: round_robin_lb
+    category: load_balance
+    input: "3 agents, 6 tasks"
+    expected: "Each agent gets 2 tasks"
+    description: Round-robin distributes evenly
+
+  - name: least_loaded_lb
+    category: load_balance
+    input: "Agent A: 3 tasks, B: 1 task, C: 2 tasks"
+    expected: "New task → Agent B (least loaded)"
+    description: Least-loaded routes to lightest agent
+
+  - name: skill_aware_lb
+    category: load_balance
+    input: "vision→code task, CodeAgent skill=0.92"
+    expected: "Task → CodeAgent (best skill match)"
+    description: Skill-aware routes to best specialist
+
+  - name: affinity_lb
+    category: load_balance
+    input: "Related tasks from same goal"
+    expected: "All routed to same agent (affinity)"
+    description: Affinity keeps related tasks together
+
+  # Auto-Scaling (3)
+  - name: scale_up_on_queue
+    category: scaling
+    input: "Queue depth=20, agents=3"
+    expected: "Auto-spawn 2 more agents"
+    description: Scale up when queue grows
+
+  - name: scale_down_idle
+    category: scaling
+    input: "Queue empty, 5 agents idle"
+    expected: "Destroy 2 idle agents (keep warm=3)"
+    description: Scale down when underutilized
+
+  - name: respect_pool_limits
+    category: scaling
+    input: "Scale up request, already at max=16"
+    expected: "No spawn, queue tasks instead"
+    description: Pool limits prevent over-provisioning
+
+  # Health Monitoring (3)
+  - name: detect_stuck_agent
+    category: health
+    input: "Agent no progress for 30s"
+    expected: "HealthStatus{healthy:false, stuck:1}"
+    description: Detect stuck agent by progress timeout
+
+  - name: quality_trend_tracking
+    category: health
+    input: "Agent quality: 0.90, 0.85, 0.80"
+    expected: "Declining trend detected"
+    description: Track agent quality trend over time
+
+  - name: pool_utilization
+    category: health
+    input: "5 agents, 3 busy, 2 idle"
+    expected: "Utilization: 0.60"
+    description: Pool utilization calculation
+
+  # Performance (3)
+  - name: spawn_latency
+    category: performance
+    input: "Spawn single agent"
+    expected: "<100ms spawn time"
+    description: Agent spawn latency
+
+  - name: lb_decision_speed
+    category: performance
+    input: "1000 LB decisions"
+    expected: ">10000 decisions/sec"
+    description: Load balance decision throughput
+
+  - name: pool_ops_throughput
+    category: performance
+    input: "1000 spawn+assign+destroy cycles"
+    expected: ">5000 ops/sec"
+    description: Full pool operation throughput
+
+  # Integration (3)
+  - name: multi_type_pool
+    category: integration
+    input: "Pool with Code+Vision+Voice agents"
+    expected: "Each type handles its modality"
+    description: Mixed agent type pool works
+
+  - name: dynamic_rebalance
+    category: integration
+    input: "Burst of vision tasks, then code tasks"
+    expected: "Pool adapts: more vision → more code"
+    description: Pool rebalances on workload shift
+
+  - name: memory_aware_spawn
+    category: integration
+    input: "Spawn with skill profile from Cycle 34"
+    expected: "New agent inherits learned skills"
+    description: Spawned agents get learned skill profiles

@@ -1,0 +1,415 @@
+# ============================================================================
+# Adaptive Work-Stealing Scheduler - Cycle 39
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: adaptive_workstealing
+version: "1.0.0"
+language: zig
+module: adaptive_workstealing
+
+description: |
+  Adaptive Work-Stealing Scheduler — Cross-node work-stealing with preemption,
+  batched stealing, locality-aware scheduling, and priority-based job management
+  for efficient utilization of distributed agent pools.
+
+  Architecture:
+    Deques (per-worker):
+      Each worker has a double-ended queue (deque)
+      Owner pushes/pops from bottom (LIFO - cache locality)
+      Thieves steal from top (FIFO - oldest first)
+      Lock-free CAS-based operations
+
+    Stealing Strategies:
+      Single steal: Take one job at a time
+      Batched steal: Take up to half the victim's deque
+      Locality-aware: Prefer stealing from same node
+      Adaptive: Switch strategy based on contention
+
+    Priority System:
+      4 priority levels: critical, high, normal, low
+      Priority deques per worker (separate deque per level)
+      Preemption: critical jobs can interrupt normal execution
+      Starvation prevention: aging promotes old low-priority jobs
+
+    Cross-Node Stealing:
+      Local stealing preferred (0 network latency)
+      Remote stealing when local deques empty
+      Batched remote steals to amortize network cost
+      Affinity tracking: remember which nodes have work
+
+    Preemption:
+      Cooperative checkpoints in long-running jobs
+      Priority inversion prevention
+      Preempted jobs resume from checkpoint
+      Max preemption depth: 3 (no unbounded nesting)
+
+    Load Balancing:
+      Per-worker utilization tracking
+      Global load imbalance detection
+      Proactive rebalancing when imbalance > threshold
+      Backoff on failed steal attempts (exponential)
+
+  Safety:
+    - Max workers per node: 16
+    - Max deque depth: 1024 jobs
+    - Max steal batch size: 64 jobs
+    - Steal backoff max: 1000ms
+    - Preemption depth limit: 3
+    - Job timeout: 30s
+    - Graceful drain on shutdown
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_WORKERS_PER_NODE: 16
+  MAX_DEQUE_DEPTH: 1024
+  MAX_STEAL_BATCH: 64
+  STEAL_BACKOFF_INIT_MS: 1
+  STEAL_BACKOFF_MAX_MS: 1000
+  MAX_PREEMPTION_DEPTH: 3
+  JOB_TIMEOUT_MS: 30000
+  LOAD_IMBALANCE_THRESHOLD: 0.3
+  STARVATION_AGE_MS: 5000
+  REBALANCE_INTERVAL_MS: 1000
+  MAX_NODES: 32
+
+types:
+  JobPriority:
+    enum:
+      - critical
+      - high
+      - normal
+      - low
+
+  JobState:
+    enum:
+      - pending
+      - running
+      - preempted
+      - completed
+      - failed
+      - timed_out
+      - stolen
+
+  StealStrategy:
+    enum:
+      - single
+      - batched
+      - locality_aware
+      - adaptive
+
+  WorkerState:
+    enum:
+      - idle
+      - working
+      - stealing
+      - preempting
+      - draining
+      - shutdown
+
+  Job:
+    fields:
+      job_id: Int
+      priority: JobPriority
+      state: JobState
+      payload: String
+      created_ms: Int
+      started_ms: Int
+      deadline_ms: Int
+      source_node: Int
+      source_worker: Int
+      preemption_count: Int
+      checkpoint: String
+
+  WorkerStats:
+    fields:
+      worker_id: Int
+      node_id: Int
+      jobs_completed: Int
+      jobs_stolen_from: Int
+      jobs_stolen_to: Int
+      total_steal_attempts: Int
+      failed_steal_attempts: Int
+      avg_job_duration_ms: Int
+      utilization: Float
+      idle_time_ms: Int
+
+  StealRequest:
+    fields:
+      thief_worker: Int
+      thief_node: Int
+      victim_worker: Int
+      victim_node: Int
+      strategy: StealStrategy
+      max_jobs: Int
+      timestamp_ms: Int
+
+  StealResult:
+    fields:
+      jobs_stolen: Int
+      from_worker: Int
+      from_node: Int
+      strategy_used: StealStrategy
+      latency_ms: Int
+      was_remote: Bool
+
+  PreemptionEvent:
+    fields:
+      preempted_job: Int
+      preempting_job: Int
+      worker_id: Int
+      reason: String
+      checkpoint_saved: Bool
+      depth: Int
+
+  LoadSnapshot:
+    fields:
+      node_id: Int
+      total_workers: Int
+      active_workers: Int
+      total_jobs_queued: Int
+      avg_utilization: Float
+      max_utilization: Float
+      min_utilization: Float
+      imbalance_score: Float
+
+  SchedulerConfig:
+    fields:
+      steal_strategy: StealStrategy
+      max_batch_size: Int
+      backoff_init_ms: Int
+      backoff_max_ms: Int
+      enable_preemption: Bool
+      enable_cross_node: Bool
+      rebalance_interval_ms: Int
+      starvation_age_ms: Int
+
+  SchedulerMetrics:
+    fields:
+      total_jobs_scheduled: Int
+      total_jobs_completed: Int
+      total_steals: Int
+      total_remote_steals: Int
+      total_preemptions: Int
+      avg_job_latency_ms: Int
+      avg_steal_latency_ms: Int
+      cluster_utilization: Float
+      load_imbalance: Float
+      starvation_events: Int
+
+  RebalanceAction:
+    fields:
+      source_node: Int
+      target_node: Int
+      jobs_moved: Int
+      reason: String
+      latency_ms: Int
+
+  AffinityEntry:
+    fields:
+      node_id: Int
+      last_successful_steal_ms: Int
+      steal_success_rate: Float
+      avg_steal_latency_ms: Int
+      preferred: Bool
+
+behaviors:
+  - name: submit_job
+    given: Job with priority and payload
+    when: New work submitted to scheduler
+    then: Job placed in appropriate priority deque
+
+  - name: steal_work
+    given: Worker with empty deque
+    when: Worker becomes idle
+    then: Attempt to steal from busiest local worker
+
+  - name: batched_steal
+    given: Worker with empty deque and batched strategy
+    when: Single steal insufficient
+    then: Steal up to half of victim's deque in one operation
+
+  - name: remote_steal
+    given: All local deques empty
+    when: No local work available
+    then: Steal from remote node with known work (affinity-based)
+
+  - name: preempt_job
+    given: Critical job arrives while normal job running
+    when: Priority inversion detected
+    then: Current job checkpointed, critical job starts
+
+  - name: resume_preempted
+    given: Preempted job with saved checkpoint
+    when: Higher priority job completes
+    then: Preempted job resumes from checkpoint
+
+  - name: detect_imbalance
+    given: Load snapshots from all workers
+    when: Rebalance interval elapsed
+    then: Imbalance score computed, rebalance triggered if > threshold
+
+  - name: adaptive_strategy
+    given: Steal attempt history
+    when: Strategy evaluation requested
+    then: Strategy switched based on success rate and contention
+
+  - name: age_starving_jobs
+    given: Low-priority jobs exceeding starvation age
+    when: Starvation check triggered
+    then: Jobs promoted to higher priority deque
+
+  - name: drain_scheduler
+    given: Scheduler in active state
+    when: Graceful shutdown requested
+    then: No new jobs accepted, existing jobs complete
+
+  - name: get_scheduler_metrics
+    given: Scheduler state
+    when: Metrics requested
+    then: Returns SchedulerMetrics with utilization and steal stats
+
+  - name: update_affinity
+    given: Steal result from remote node
+    when: Remote steal completes
+    then: Affinity table updated with success rate and latency
+
+tests:
+  # Work Stealing (4)
+  - name: single_steal
+    category: stealing
+    input: "Worker A idle, Worker B has 10 jobs"
+    expected: "Worker A steals 1 job from B"
+    description: Basic single-job stealing
+
+  - name: batched_steal_half
+    category: stealing
+    input: "Worker A idle, Worker B has 20 jobs, batch mode"
+    expected: "Worker A steals 10 jobs (half)"
+    description: Batched steal takes half
+
+  - name: locality_prefer_local
+    category: stealing
+    input: "Local worker has 5, remote has 50"
+    expected: "Steal from local first"
+    description: Locality-aware prefers local
+
+  - name: adaptive_switch
+    category: stealing
+    input: "High contention, single steal failing"
+    expected: "Switch to batched strategy"
+    description: Adaptive strategy switching
+
+  # Priority & Preemption (4)
+  - name: priority_ordering
+    category: priority
+    input: "4 jobs: critical, high, normal, low"
+    expected: "Executed in priority order"
+    description: Priority deque ordering
+
+  - name: preemption_critical
+    category: priority
+    input: "Normal running, critical arrives"
+    expected: "Normal preempted, critical runs"
+    description: Critical preempts normal
+
+  - name: preemption_depth_limit
+    category: priority
+    input: "3 nested preemptions, 4th arrives"
+    expected: "4th queued, not preempted (depth=3)"
+    description: Preemption depth limit
+
+  - name: starvation_prevention
+    category: priority
+    input: "Low-priority job waiting 5s"
+    expected: "Promoted to normal priority"
+    description: Starvation aging promotes jobs
+
+  # Cross-Node (4)
+  - name: remote_steal_fallback
+    category: cross_node
+    input: "All local deques empty"
+    expected: "Remote steal from affinity-preferred node"
+    description: Remote steal on local exhaustion
+
+  - name: affinity_tracking
+    category: cross_node
+    input: "Successful steal from node 3"
+    expected: "Node 3 affinity score increases"
+    description: Affinity updates on success
+
+  - name: remote_batch_amortize
+    category: cross_node
+    input: "Remote steal with 100ms latency"
+    expected: "Batch steal amortizes network cost"
+    description: Batched remote steal
+
+  - name: cross_node_rebalance
+    category: cross_node
+    input: "Node 1 at 90%, Node 2 at 10%"
+    expected: "Jobs redistributed to balance"
+    description: Cross-node rebalancing
+
+  # Load Balancing (3)
+  - name: imbalance_detection
+    category: load_balance
+    input: "Workers at 90%, 80%, 10%, 5%"
+    expected: "Imbalance > 0.3, rebalance triggered"
+    description: Load imbalance detection
+
+  - name: exponential_backoff
+    category: load_balance
+    input: "5 consecutive failed steals"
+    expected: "Backoff at 16ms (2^4 * 1ms)"
+    description: Exponential backoff on failed steals
+
+  - name: utilization_tracking
+    category: load_balance
+    input: "Worker runs 800ms in 1000ms window"
+    expected: "Utilization = 0.80"
+    description: Per-worker utilization tracking
+
+  # Performance (3)
+  - name: steal_throughput
+    category: performance
+    input: "10000 jobs across 16 workers"
+    expected: ">5000 jobs/sec throughput"
+    description: Scheduling throughput
+
+  - name: steal_latency
+    category: performance
+    input: "Local steal operation"
+    expected: "<1ms per steal"
+    description: Local steal latency
+
+  - name: lock_free_contention
+    category: performance
+    input: "8 workers stealing simultaneously"
+    expected: ">80% steal success rate"
+    description: Lock-free CAS contention
+
+  # Integration (4)
+  - name: scheduler_with_agents
+    category: integration
+    input: "16 agents, adaptive scheduler"
+    expected: "All agents utilized efficiently"
+    description: Scheduler integrated with agent pool
+
+  - name: scheduler_with_streaming
+    category: integration
+    input: "Streaming chunks as jobs"
+    expected: "Chunks processed via work-stealing"
+    description: Scheduler with streaming pipeline
+
+  - name: scheduler_with_cluster
+    category: integration
+    input: "4-node cluster, cross-node stealing"
+    expected: "Balanced across all nodes"
+    description: Scheduler with distributed cluster
+
+  - name: graceful_drain
+    category: integration
+    input: "Shutdown with 50 pending jobs"
+    expected: "All 50 complete before stop"
+    description: Graceful scheduler drain

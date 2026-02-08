@@ -1,0 +1,410 @@
+# ============================================================================
+# Capability-Based Security Model - Cycle 48
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: capability_security
+version: "1.0.0"
+language: zig
+module: capability_security
+
+description: |
+  Capability-Based Security Model — Fine-grained permission tokens for
+  agent operations, hierarchical delegation with attenuation, revocation
+  with propagation, audit trail, and zero-trust inter-agent communication.
+
+  Architecture:
+    Capability Tokens:
+      Unforgeable tokens granting specific permissions
+      Each token: subject, object, permissions, constraints
+      Content-addressed token ID (hash of fields)
+      Expiry time with automatic invalidation
+      Scope restriction (per-agent, per-stream, per-resource)
+      VSA-encoded capability vectors for fast matching
+
+    Permission Model:
+      Read: access data or query state
+      Write: modify state or append events
+      Execute: invoke behaviors or run commands
+      Delegate: grant sub-capabilities to others
+      Admin: manage capabilities and policies
+      Deny: explicit deny (overrides allow)
+
+    Delegation:
+      Parent capability can create child capabilities
+      Attenuation: child never exceeds parent permissions
+      Depth limit prevents infinite delegation chains
+      Delegation chain tracked for audit
+      Time-bounded delegations with auto-expiry
+
+    Revocation:
+      Immediate revocation of specific capability
+      Cascading revocation: revoking parent revokes all children
+      Revocation list (CRL) with propagation delay
+      Epoch-based revocation for bulk invalidation
+      Grace period for in-flight operations
+
+    Audit Trail:
+      Every capability operation logged
+      Grant, delegate, use, revoke, deny events
+      Per-agent audit stream
+      Tamper-proof via event sourcing (Cycle 47)
+      Audit query by capability, agent, or time range
+
+    Zero-Trust:
+      Every inter-agent call requires valid capability
+      No implicit trust between agents
+      Capability verification on every operation
+      Mutual authentication via capability exchange
+      Principle of least privilege enforced
+
+  Safety:
+    - Max capabilities per agent: 256
+    - Max delegation depth: 8
+    - Max active capabilities: 65536
+    - Capability expiry max: 24 hours
+    - Revocation propagation max: 5000ms
+    - Audit retention: 90 days
+    - Max permissions per capability: 16
+    - Grace period: 1000ms
+    - CRL max entries: 10000
+    - Epoch rotation interval: 3600s
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_CAPABILITIES_PER_AGENT: 256
+  MAX_DELEGATION_DEPTH: 8
+  MAX_ACTIVE_CAPABILITIES: 65536
+  CAPABILITY_EXPIRY_MAX_MS: 86400000
+  REVOCATION_PROPAGATION_MAX_MS: 5000
+  AUDIT_RETENTION_DAYS: 90
+  MAX_PERMISSIONS_PER_CAPABILITY: 16
+  GRACE_PERIOD_MS: 1000
+  CRL_MAX_ENTRIES: 10000
+  EPOCH_ROTATION_INTERVAL_S: 3600
+  TOKEN_HASH_SIZE: 32
+  MAX_SCOPE_DEPTH: 4
+  DEFAULT_EXPIRY_MS: 3600000
+  VERIFICATION_CACHE_TTL_MS: 60000
+  MAX_AUDIT_BATCH_SIZE: 100
+
+types:
+  Permission:
+    enum:
+      - read
+      - write
+      - execute
+      - delegate
+      - admin
+      - deny
+
+  CapabilityStatus:
+    enum:
+      - active
+      - expired
+      - revoked
+      - suspended
+      - delegated
+
+  AuditAction:
+    enum:
+      - granted
+      - delegated
+      - used
+      - revoked
+      - denied
+      - expired
+      - verified
+
+  TrustLevel:
+    enum:
+      - untrusted
+      - basic
+      - verified
+      - trusted
+      - privileged
+
+  RevocationMode:
+    enum:
+      - single
+      - cascade
+      - epoch
+      - bulk
+
+  ScopeType:
+    enum:
+      - global
+      - per_agent
+      - per_stream
+      - per_resource
+
+  Capability:
+    fields:
+      capability_id: Int
+      subject_agent_id: Int
+      object_id: Int
+      scope_type: ScopeType
+      permission_mask: Int
+      delegation_depth: Int
+      max_delegation_depth: Int
+      parent_capability_id: Int
+      status: CapabilityStatus
+      created_ms: Int
+      expires_ms: Int
+      token_hash: Int
+
+  DelegationChain:
+    fields:
+      capability_id: Int
+      parent_id: Int
+      root_id: Int
+      depth: Int
+      attenuated_permissions: Int
+      delegator_agent_id: Int
+      delegatee_agent_id: Int
+      created_ms: Int
+
+  RevocationEntry:
+    fields:
+      capability_id: Int
+      revoked_by: Int
+      mode: RevocationMode
+      cascade_count: Int
+      grace_period_ms: Int
+      revoked_ms: Int
+      effective_ms: Int
+
+  AuditRecord:
+    fields:
+      record_id: Int
+      capability_id: Int
+      agent_id: Int
+      action: AuditAction
+      target_object_id: Int
+      permission_used: Permission
+      success: Bool
+      timestamp_ms: Int
+
+  AgentTrust:
+    fields:
+      agent_id: Int
+      trust_level: TrustLevel
+      capabilities_count: Int
+      delegations_given: Int
+      delegations_received: Int
+      violations_count: Int
+      last_verified_ms: Int
+
+  VerificationResult:
+    fields:
+      capability_id: Int
+      agent_id: Int
+      permission: Permission
+      allowed: Bool
+      reason_code: Int
+      verified_ms: Int
+      cache_hit: Bool
+
+  SecurityMetrics:
+    fields:
+      total_capabilities: Int
+      active_capabilities: Int
+      revoked_capabilities: Int
+      total_delegations: Int
+      total_verifications: Int
+      verification_failures: Int
+      total_revocations: Int
+      cascade_revocations: Int
+      audit_records: Int
+      avg_verification_ms: Float
+      cache_hit_rate: Float
+      violation_count: Int
+
+  SecurityConfig:
+    fields:
+      max_capabilities_per_agent: Int
+      max_delegation_depth: Int
+      default_expiry_ms: Int
+      grace_period_ms: Int
+      epoch_rotation_s: Int
+      enable_audit: Bool
+      enable_zero_trust: Bool
+      verification_cache_ttl_ms: Int
+      crl_max_entries: Int
+      audit_retention_days: Int
+
+behaviors:
+  - name: grant_capability
+    given: Admin agent and target agent
+    when: New capability requested
+    then: Capability token created with permissions and expiry
+
+  - name: verify_capability
+    given: Agent presenting capability for operation
+    when: Operation attempted on protected resource
+    then: Capability verified against permissions and status
+
+  - name: delegate_capability
+    given: Agent with delegate permission
+    when: Sub-capability created for another agent
+    then: Attenuated capability issued with delegation chain
+
+  - name: attenuate_permissions
+    given: Parent capability and requested child permissions
+    when: Delegation with reduced permissions
+    then: Child permissions subset of parent, never exceeds
+
+  - name: revoke_capability
+    given: Capability owner or admin
+    when: Revocation requested
+    then: Capability invalidated with optional cascade
+
+  - name: cascade_revoke
+    given: Parent capability revoked
+    when: Cascade mode enabled
+    then: All child delegations recursively revoked
+
+  - name: check_expiry
+    given: Capability with expiry timestamp
+    when: Expiry check triggered
+    then: Expired capabilities marked inactive
+
+  - name: record_audit
+    given: Capability operation performed
+    when: Audit enabled
+    then: Audit record appended to agent audit stream
+
+  - name: verify_zero_trust
+    given: Inter-agent call with capability
+    when: Zero-trust mode enabled
+    then: Both agents mutually verify capabilities
+
+  - name: rotate_epoch
+    given: Epoch rotation interval reached
+    when: Epoch rotates
+    then: All capabilities re-verified, stale ones expired
+
+  - name: query_audit
+    given: Audit query parameters
+    when: Audit search requested
+    then: Matching audit records returned
+
+  - name: get_security_metrics
+    given: Security system state
+    when: Metrics requested
+    then: Returns SecurityMetrics with security stats
+
+tests:
+  # Capabilities (4)
+  - name: grant_and_verify
+    category: capabilities
+    input: "Grant read+write to agent 1"
+    expected: "Capability verified for read and write"
+    description: Basic capability grant and verification
+
+  - name: permission_denied
+    category: capabilities
+    input: "Agent with read-only tries write"
+    expected: "Write denied, read allowed"
+    description: Permission boundary enforcement
+
+  - name: capability_expiry
+    category: capabilities
+    input: "Capability with 1h expiry after 2h"
+    expected: "Capability expired, access denied"
+    description: Automatic capability expiry
+
+  - name: scope_restriction
+    category: capabilities
+    input: "Per-stream capability on different stream"
+    expected: "Access denied outside scope"
+    description: Scope-based restriction
+
+  # Delegation (4)
+  - name: delegate_attenuate
+    category: delegation
+    input: "Agent delegates read+write, child requests read only"
+    expected: "Child gets read only (attenuated)"
+    description: Delegation with attenuation
+
+  - name: delegation_depth_limit
+    category: delegation
+    input: "Delegation chain at max depth 8"
+    expected: "Further delegation rejected"
+    description: Delegation depth enforcement
+
+  - name: delegation_chain_audit
+    category: delegation
+    input: "3-level delegation chain"
+    expected: "Full chain traceable root to leaf"
+    description: Delegation chain tracking
+
+  - name: delegate_without_permission
+    category: delegation
+    input: "Agent without delegate permission tries"
+    expected: "Delegation rejected"
+    description: Delegate permission required
+
+  # Revocation (3)
+  - name: single_revoke
+    category: revocation
+    input: "Revoke single capability"
+    expected: "Capability invalidated, access denied"
+    description: Single capability revocation
+
+  - name: cascade_revoke
+    category: revocation
+    input: "Revoke parent with 5 children"
+    expected: "Parent and all 5 children revoked"
+    description: Cascading revocation
+
+  - name: epoch_revoke
+    category: revocation
+    input: "Epoch rotation with stale capabilities"
+    expected: "Stale capabilities bulk-expired"
+    description: Epoch-based bulk revocation
+
+  # Audit & Zero-Trust (4)
+  - name: audit_trail_complete
+    category: audit
+    input: "Grant, use, delegate, revoke sequence"
+    expected: "All 4 operations in audit log"
+    description: Complete audit trail
+
+  - name: zero_trust_mutual
+    category: audit
+    input: "Agent A calls Agent B"
+    expected: "Both verify each other's capabilities"
+    description: Zero-trust mutual verification
+
+  - name: audit_query_by_agent
+    category: audit
+    input: "Query audit for agent 5"
+    expected: "Only agent 5 records returned"
+    description: Audit query filtering
+
+  - name: violation_detection
+    category: audit
+    input: "5 consecutive access denials"
+    expected: "Violation count incremented, alert"
+    description: Security violation detection
+
+  # Integration (3)
+  - name: capsec_with_comms
+    category: integration
+    input: "Messages require capabilities"
+    expected: "Unauthorized messages rejected"
+    description: Integration with agent communication
+
+  - name: capsec_with_events
+    category: integration
+    input: "Event append requires write capability"
+    expected: "Audit via event sourcing stream"
+    description: Integration with event sourcing
+
+  - name: capsec_with_governor
+    category: integration
+    input: "Resource access requires capability"
+    expected: "Governor enforces capability + budget"
+    description: Integration with resource governor

@@ -188,9 +188,8 @@ pub const FullModel = struct {
         var time_layers: u64 = 0;
         var time_buffers: u64 = 0;
 
-        // Initialize thread pool for parallel matVec
+        // Thread pool auto-initializes on first use (persistent spin-wait pool)
         phase_timer.reset();
-        try simd.initThreadPool(self.allocator);
         time_thread_pool = phase_timer.read();
 
         // Load embeddings
@@ -388,8 +387,7 @@ pub const FullModel = struct {
         self.allocator.free(self.buf_ffn_out);
         self.allocator.free(self.buf_scores);
 
-        // Deinit thread pool
-        simd.deinitThreadPool();
+        // Thread pool cleanup handled at process exit (persistent daemon threads)
 
         self.reader.deinit();
     }
@@ -460,6 +458,13 @@ pub const FullModel = struct {
         inference.matVec(output, weights_f32, input, rows, cols);
     }
 
+    /// Matrix-vector multiply using column-major (transposed) layout
+    /// GGUF attention weights are stored with output_dim as innermost dimension
+    /// This is the correct interpretation for attention projections (QKV, O)
+    fn matVecColMajor(_: *const FullModel, output: []f32, weights_f32: []const f32, input: []const f32, rows: usize, cols: usize) void {
+        simd.simdMatVecColMajor(output, weights_f32, input, rows, cols);
+    }
+
     // Forward pass for single token - OPTIMIZED with pre-allocated buffers
     pub fn forward(self: *FullModel, token: u32, pos: usize) ![]f32 {
         const hidden_size = self.config.hidden_size;
@@ -481,9 +486,10 @@ pub const FullModel = struct {
         // Final RMS norm
         inference.rmsNorm(self.buf_temp, self.buf_hidden, self.output_norm, self.config.rms_norm_eps);
 
-        // Output projection (only allocation is for return value) - with ternary support
+        // Output projection (only allocation is for return value)
+        // Use parallel matVec for large vocab_size (32000 rows = big win from threading)
         const logits = try self.allocator.alloc(f32, self.config.vocab_size);
-        self.matVecAuto(logits, self.output_weight, self.ternary_output_weight, self.buf_temp, self.config.vocab_size, hidden_size);
+        simd.simdMatVecParallel(logits, self.output_weight, self.buf_temp, self.config.vocab_size, hidden_size);
 
         return logits;
     }
@@ -638,10 +644,11 @@ pub const FullModel = struct {
         // Pre-attention norm (use buf_normed)
         inference.rmsNorm(self.buf_normed, input, layer.attn_norm, rms_eps);
 
-        // Compute Q, K, V (use buf_q, buf_k, buf_v) - with ternary support
-        self.matVecAuto(self.buf_q, layer.wq, layer.ternary_wq, self.buf_normed, num_heads * head_dim, hidden_size);
-        self.matVecAuto(self.buf_k, layer.wk, layer.ternary_wk, self.buf_normed, num_kv_heads * head_dim, hidden_size);
-        self.matVecAuto(self.buf_v, layer.wv, layer.ternary_wv, self.buf_normed, num_kv_heads * head_dim, hidden_size);
+        // Compute Q, K, V (use buf_q, buf_k, buf_v)
+        // Row-major matVec: output[i] = sum_j(mat[i * cols + j] * vec[j])
+        simd.simdMatVecParallel(self.buf_q, layer.wq, self.buf_normed, num_heads * head_dim, hidden_size);
+        simd.simdMatVec(self.buf_k, layer.wk, self.buf_normed, num_kv_heads * head_dim, hidden_size);
+        simd.simdMatVec(self.buf_v, layer.wv, self.buf_normed, num_kv_heads * head_dim, hidden_size);
 
         // Add QKV bias if present (Qwen2 architecture)
         if (layer.bq) |bq| {
@@ -706,8 +713,8 @@ pub const FullModel = struct {
             }
         }
 
-        // Output projection (use buf_attn_proj) - with ternary support
-        self.matVecAuto(self.buf_attn_proj, layer.wo, layer.ternary_wo, self.buf_attn_out, hidden_size, num_heads * head_dim);
+        // Output projection (use buf_attn_proj)
+        simd.simdMatVecParallel(self.buf_attn_proj, layer.wo, self.buf_attn_out, hidden_size, num_heads * head_dim);
 
         // Residual - SIMD optimized
         @memcpy(output, input);
@@ -721,10 +728,10 @@ pub const FullModel = struct {
         const ffn_gate_out = if (self.config.ffn_gate_dim > 0) self.config.ffn_gate_dim else intermediate_size;
         const ffn_down_out = if (self.config.ffn_down_out_dim > 0) self.config.ffn_down_out_dim else hidden_size;
 
-        // FFN with SwiGLU (use buf_ffn_gate, buf_ffn_up) - with ternary support
-        // gate/up: hidden_size → ffn_gate_out
-        self.matVecAuto(self.buf_ffn_gate[0..ffn_gate_out], layer.w_gate, layer.ternary_w_gate, self.buf_normed, ffn_gate_out, hidden_size);
-        self.matVecAuto(self.buf_ffn_up[0..ffn_gate_out], layer.w_up, layer.ternary_w_up, self.buf_normed, ffn_gate_out, hidden_size);
+        // FFN with SwiGLU (use buf_ffn_gate, buf_ffn_up)
+        // gate/up: hidden_size → ffn_gate_out (5632 rows — parallelize!)
+        simd.simdMatVecParallel(self.buf_ffn_gate[0..ffn_gate_out], layer.w_gate, self.buf_normed, ffn_gate_out, hidden_size);
+        simd.simdMatVecParallel(self.buf_ffn_up[0..ffn_gate_out], layer.w_up, self.buf_normed, ffn_gate_out, hidden_size);
 
         // SwiGLU on partial buffers
         simd.simdSwiGLU(self.buf_ffn_gate[0..ffn_gate_out], self.buf_ffn_gate[0..ffn_gate_out], self.buf_ffn_up[0..ffn_gate_out]);
@@ -742,9 +749,9 @@ pub const FullModel = struct {
             }
         }
 
-        // Down projection (use buf_ffn_out) - with ternary support
-        // down: intermediate_size → ffn_down_out
-        self.matVecAuto(self.buf_ffn_out[0..ffn_down_out], layer.w_down, layer.ternary_w_down, self.buf_ffn_gate, ffn_down_out, intermediate_size);
+        // Down projection (use buf_ffn_out)
+        // down: intermediate_size → ffn_down_out (2048 rows — parallelize!)
+        simd.simdMatVecParallel(self.buf_ffn_out[0..ffn_down_out], layer.w_down, self.buf_ffn_gate, ffn_down_out, intermediate_size);
 
         // Residual - SIMD optimized
         simd.simdResidualAdd(output, self.buf_ffn_out);

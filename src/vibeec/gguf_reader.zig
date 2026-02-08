@@ -1004,7 +1004,8 @@ pub fn f16ToF32(h: u16) f32 {
         if (mant == 0) {
             return @bitCast(sign);
         }
-        // Denormalized
+        // Denormalized f16: value = 2^(-14) * (mant/1024)
+        // Normalize by shifting until implicit 1 is at bit 10
         var e: u32 = 1;
         var m = mant;
         while ((m & 0x400) == 0) {
@@ -1012,7 +1013,9 @@ pub fn f16ToF32(h: u16) f32 {
             e += 1;
         }
         m &= 0x3FF;
-        return @bitCast(sign | ((127 - 15 + 1 - e) << 23) | (m << 13));
+        // Effective exponent: -14 - (e-1) = -13 - e
+        // f32 biased exponent: 127 + (-13 - e) = 114 - e
+        return @bitCast(sign | ((114 - e) << 23) | (m << 13));
     } else if (exp == 31) {
         // Inf or NaN
         return @bitCast(sign | 0x7F800000 | (mant << 13));

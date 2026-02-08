@@ -72,6 +72,194 @@ pub fn simdMatVec(output: []f32, mat: []const f32, vec: []const f32, rows: usize
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// MULTI-THREADED SIMD MATRIX-VECTOR MULTIPLICATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const DEFAULT_NUM_THREADS: usize = 8; // Increased for better scaling
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PERSISTENT THREAD POOL - Eliminates spawn overhead
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const MatVecContext = struct {
+    output: []f32,
+    mat: []const f32,
+    vec: []const f32,
+    cols: usize,
+    start_row: usize,
+    end_row: usize,
+};
+
+const ThreadPoolTask = struct {
+    ctx: MatVecContext,
+    ready: std.atomic.Value(bool),
+    done: std.atomic.Value(bool),
+};
+
+const ThreadPool = struct {
+    tasks: [DEFAULT_NUM_THREADS]ThreadPoolTask,
+    threads: [DEFAULT_NUM_THREADS]?std.Thread,
+    running: std.atomic.Value(bool),
+    initialized: bool,
+
+    pub fn init() ThreadPool {
+        var pool = ThreadPool{
+            .tasks = undefined,
+            .threads = undefined,
+            .running = std.atomic.Value(bool).init(true),
+            .initialized = false,
+        };
+        for (0..DEFAULT_NUM_THREADS) |i| {
+            pool.tasks[i].ready = std.atomic.Value(bool).init(false);
+            pool.tasks[i].done = std.atomic.Value(bool).init(true);
+        }
+        return pool;
+    }
+
+    pub fn start(self: *ThreadPool) void {
+        if (self.initialized) return;
+        for (0..DEFAULT_NUM_THREADS) |i| {
+            self.threads[i] = std.Thread.spawn(.{}, threadWorker, .{ self, i }) catch null;
+        }
+        self.initialized = true;
+    }
+
+    fn threadWorker(self: *ThreadPool, id: usize) void {
+        while (self.running.load(.acquire)) {
+            if (self.tasks[id].ready.load(.acquire)) {
+                matVecWorkerInline(&self.tasks[id].ctx);
+                self.tasks[id].done.store(true, .release);
+                self.tasks[id].ready.store(false, .release);
+            } else {
+                std.atomic.spinLoopHint();
+            }
+        }
+    }
+
+    pub fn submit(self: *ThreadPool, id: usize, ctx: MatVecContext) void {
+        self.tasks[id].ctx = ctx;
+        self.tasks[id].done.store(false, .release);
+        self.tasks[id].ready.store(true, .release);
+    }
+
+    pub fn wait(self: *ThreadPool, num_tasks: usize) void {
+        for (0..num_tasks) |i| {
+            while (!self.tasks[i].done.load(.acquire)) {
+                std.atomic.spinLoopHint();
+            }
+        }
+    }
+
+    pub fn deinit(self: *ThreadPool) void {
+        self.running.store(false, .release);
+        for (self.threads) |maybe_thread| {
+            if (maybe_thread) |thread| {
+                thread.join();
+            }
+        }
+    }
+};
+
+var global_pool: ThreadPool = ThreadPool.init();
+var pool_initialized: bool = false;
+
+fn ensurePoolInitialized() void {
+    if (!pool_initialized) {
+        global_pool.start();
+        pool_initialized = true;
+    }
+}
+
+fn matVecWorkerInline(ctx: *const MatVecContext) void {
+    const aligned_cols = ctx.cols & ~@as(usize, SIMD_WIDTH * 4 - 1);
+    const aligned_cols_single = ctx.cols & ~@as(usize, SIMD_WIDTH - 1);
+
+    var i = ctx.start_row;
+    while (i < ctx.end_row) : (i += 1) {
+        var sum_vec0: Vec8f = @splat(0.0);
+        var sum_vec1: Vec8f = @splat(0.0);
+        var sum_vec2: Vec8f = @splat(0.0);
+        var sum_vec3: Vec8f = @splat(0.0);
+        var sum_scalar: f32 = 0.0;
+        const row_offset = i * ctx.cols;
+
+        var j: usize = 0;
+        while (j < aligned_cols) : (j += SIMD_WIDTH * 4) {
+            const mat_vec0: Vec8f = ctx.mat[row_offset + j ..][0..SIMD_WIDTH].*;
+            const mat_vec1: Vec8f = ctx.mat[row_offset + j + SIMD_WIDTH ..][0..SIMD_WIDTH].*;
+            const mat_vec2: Vec8f = ctx.mat[row_offset + j + SIMD_WIDTH * 2 ..][0..SIMD_WIDTH].*;
+            const mat_vec3: Vec8f = ctx.mat[row_offset + j + SIMD_WIDTH * 3 ..][0..SIMD_WIDTH].*;
+            const vec_vec0: Vec8f = ctx.vec[j..][0..SIMD_WIDTH].*;
+            const vec_vec1: Vec8f = ctx.vec[j + SIMD_WIDTH ..][0..SIMD_WIDTH].*;
+            const vec_vec2: Vec8f = ctx.vec[j + SIMD_WIDTH * 2 ..][0..SIMD_WIDTH].*;
+            const vec_vec3: Vec8f = ctx.vec[j + SIMD_WIDTH * 3 ..][0..SIMD_WIDTH].*;
+            sum_vec0 += mat_vec0 * vec_vec0;
+            sum_vec1 += mat_vec1 * vec_vec1;
+            sum_vec2 += mat_vec2 * vec_vec2;
+            sum_vec3 += mat_vec3 * vec_vec3;
+        }
+
+        sum_vec0 += sum_vec1;
+        sum_vec2 += sum_vec3;
+        sum_vec0 += sum_vec2;
+
+        while (j < aligned_cols_single) : (j += SIMD_WIDTH) {
+            const mat_vec: Vec8f = ctx.mat[row_offset + j ..][0..SIMD_WIDTH].*;
+            const vec_vec: Vec8f = ctx.vec[j..][0..SIMD_WIDTH].*;
+            sum_vec0 += mat_vec * vec_vec;
+        }
+
+        const sum_arr: [SIMD_WIDTH]f32 = sum_vec0;
+        inline for (sum_arr) |v| {
+            sum_scalar += v;
+        }
+
+        while (j < ctx.cols) : (j += 1) {
+            sum_scalar += ctx.mat[row_offset + j] * ctx.vec[j];
+        }
+
+        ctx.output[i] = sum_scalar;
+    }
+}
+
+/// Multi-threaded SIMD matrix-vector multiplication
+/// Uses PERSISTENT THREAD POOL to eliminate spawn overhead
+/// Threshold lowered to 2048 rows to parallelize LLM matVec ops:
+///   - Output projection: 32000×2048 (vocab × hidden)
+///   - FFN gate/up: 5632×2048
+///   - Q/O projections: 2048×2048
+pub fn simdMatVecParallel(output: []f32, mat: []const f32, vec: []const f32, rows: usize, cols: usize) void {
+    if (rows < 2048) {
+        simdMatVec(output, mat, vec, rows, cols);
+        return;
+    }
+
+    // Ensure thread pool is initialized (one-time cost)
+    ensurePoolInitialized();
+
+    const num_threads = @min(DEFAULT_NUM_THREADS, rows / 64);
+    const rows_per_thread = rows / num_threads;
+
+    // Submit tasks to thread pool (NO spawn overhead!)
+    for (0..num_threads) |t| {
+        const start_row = t * rows_per_thread;
+        const end_row = if (t == num_threads - 1) rows else (t + 1) * rows_per_thread;
+
+        global_pool.submit(t, MatVecContext{
+            .output = output,
+            .mat = mat,
+            .vec = vec,
+            .cols = cols,
+            .start_row = start_row,
+            .end_row = end_row,
+        });
+    }
+
+    // Wait for all tasks (spin-wait, no syscall)
+    global_pool.wait(num_threads);
+}
+
 /// SIMD-optimized matrix-vector multiplication for COLUMN-MAJOR matrices (GGUF format)
 /// output[i] = sum(mat[i,j] * vec[j]) for all j
 /// mat is stored in column-major order: mat[i][j] = data[j * rows + i]
@@ -338,25 +526,7 @@ fn parallelMatVecWorker(ctx: *ParallelMatVecContext, wg: *std.Thread.WaitGroup) 
     }
 }
 
-/// Global thread pool for parallel operations
-var global_pool: std.Thread.Pool = undefined;
-var pool_initialized: bool = false;
-
-/// Initialize global thread pool
-pub fn initThreadPool(allocator: std.mem.Allocator) !void {
-    if (!pool_initialized) {
-        try global_pool.init(.{ .allocator = allocator });
-        pool_initialized = true;
-    }
-}
-
-/// Deinitialize global thread pool
-pub fn deinitThreadPool() void {
-    if (pool_initialized) {
-        global_pool.deinit();
-        pool_initialized = false;
-    }
-}
+// Thread pool is defined above (lines 100-172) - persistent pool with atomic spin-wait
 
 /// Parallel SIMD matrix-vector multiplication for GGUF weight matrices
 /// GGUF stores weight matrices in [input_dim, output_dim] layout with input_dim innermost (stride 1)

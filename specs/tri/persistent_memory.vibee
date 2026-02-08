@@ -1,0 +1,423 @@
+# ============================================================================
+# Persistent Memory & Disk Serialization - Cycle 35
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: persistent_memory
+version: "1.0.0"
+language: zig
+module: persistent_memory
+
+description: |
+  Persistent Memory & Disk Serialization — Save and load agent memory to/from
+  disk so episodic memory, semantic facts, and skill profiles survive process
+  restarts. Cycle 35 builds on Cycle 34 Agent Memory by adding TRMM (Trinity
+  Memory) binary format, incremental snapshots, and compressed VSA hypervector
+  storage.
+
+  Architecture:
+    TRMM Binary Format (Trinity Memory):
+      Header: magic("TRMM"), version(1), flags, timestamp
+      Section 1: Episodic Memory (episodes as packed VSA HVs)
+      Section 2: Semantic Facts (concept-knowledge pairs)
+      Section 3: Skill Profiles (agent x modality-pair scores)
+      Section 4: Metadata (stats, checksums, config)
+      Footer: CRC32 checksum for integrity verification
+
+    VSA Hypervector Compression:
+      Full HV: 10000 trits = 10000 bytes (uncompressed)
+      Packed: 2 trits per byte (5000 bytes per HV)
+      Run-length encoding for sparse HVs: ~2000 bytes average
+      Delta encoding for similar sequential episodes: ~500 bytes
+
+    Incremental Snapshots:
+      Full snapshot: serialize entire memory state
+      Delta snapshot: only changed episodes/facts since last save
+      Auto-save: after every N episodes (configurable)
+      Recovery: load last full + apply deltas
+
+    File Layout:
+      ~/.trinity/memory/
+        agent_memory.trmm          (latest full snapshot)
+        agent_memory.trmm.bak      (previous backup)
+        deltas/
+          delta_001.trmm           (incremental changes)
+          delta_002.trmm
+
+  Safety:
+    - Max file size: 100MB
+    - CRC32 integrity check on load
+    - Backup before overwrite
+    - Atomic write (write temp, then rename)
+    - Max episodes on disk: 10000
+    - Max facts on disk: 5000
+
+constants:
+  VSA_DIMENSION: 10000
+  TRMM_MAGIC: 1414808397
+  TRMM_VERSION: 1
+  MAX_FILE_SIZE_MB: 100
+  MAX_DISK_EPISODES: 10000
+  MAX_DISK_FACTS: 5000
+  MAX_DISK_PROFILES: 30
+  PACKED_HV_SIZE: 5000
+  AUTO_SAVE_INTERVAL: 10
+  MAX_DELTAS: 100
+  COMPRESSION_THRESHOLD: 0.30
+
+types:
+  TRMMHeader:
+    fields:
+      magic: Int
+      version: Int
+      flags: Int
+      timestamp_ms: Int
+      episode_count: Int
+      fact_count: Int
+      profile_count: Int
+      checksum: Int
+
+  TRMMSection:
+    enum:
+      - episodic
+      - semantic
+      - skills
+      - metadata
+
+  PackedHV:
+    fields:
+      dimension: Int
+      packed_data: List<Int>
+      packed_size: Int
+
+  SerializedEpisode:
+    fields:
+      id: Int
+      goal: String
+      goal_hv_packed: Option<PackedHV>
+      agents_used: List<String>
+      modalities_in: List<String>
+      modalities_out: List<String>
+      cross_modal_transfers: Int
+      quality: Float
+      outcome: String
+      strategy: String
+      duration_ms: Int
+      timestamp_ms: Int
+
+  SerializedFact:
+    fields:
+      id: Int
+      concept: String
+      knowledge: String
+      concept_hv_packed: Option<PackedHV>
+      confidence: Float
+      source_episodes: List<Int>
+      modality_context: List<String>
+      times_used: Int
+      times_helpful: Int
+
+  SerializedSkillScore:
+    fields:
+      source_modality: String
+      target_modality: String
+      score: Float
+      attempts: Int
+      successes: Int
+
+  SerializedProfile:
+    fields:
+      agent: String
+      skills: List<SerializedSkillScore>
+      overall_score: Float
+      total_tasks: Int
+
+  MemorySnapshot:
+    fields:
+      header: TRMMHeader
+      episodes: List<SerializedEpisode>
+      facts: List<SerializedFact>
+      profiles: List<SerializedProfile>
+      total_bytes: Int
+
+  DeltaEntry:
+    fields:
+      delta_id: Int
+      timestamp_ms: Int
+      new_episodes: List<SerializedEpisode>
+      new_facts: List<SerializedFact>
+      updated_profiles: List<SerializedProfile>
+      removed_episode_ids: List<Int>
+      removed_fact_ids: List<Int>
+
+  DeltaSnapshot:
+    fields:
+      header: TRMMHeader
+      base_snapshot_checksum: Int
+      delta: DeltaEntry
+      total_bytes: Int
+
+  SaveResult:
+    fields:
+      success: Bool
+      path: String
+      bytes_written: Int
+      episodes_saved: Int
+      facts_saved: Int
+      profiles_saved: Int
+      duration_ms: Int
+      is_delta: Bool
+
+  LoadResult:
+    fields:
+      success: Bool
+      path: String
+      bytes_read: Int
+      episodes_loaded: Int
+      facts_loaded: Int
+      profiles_loaded: Int
+      duration_ms: Int
+      deltas_applied: Int
+      integrity_ok: Bool
+
+  PersistenceConfig:
+    fields:
+      memory_dir: String
+      auto_save: Bool
+      auto_save_interval: Int
+      max_deltas: Int
+      compress_hvs: Bool
+      backup_on_save: Bool
+      verify_on_load: Bool
+
+  PersistenceStats:
+    fields:
+      total_saves: Int
+      total_loads: Int
+      total_deltas: Int
+      bytes_on_disk: Int
+      last_save_ms: Int
+      last_load_ms: Int
+      integrity_failures: Int
+
+  PersistentMemorySystem:
+    fields:
+      config: PersistenceConfig
+      stats: PersistenceStats
+      current_snapshot: Option<MemorySnapshot>
+      pending_deltas: Int
+      dirty: Bool
+
+behaviors:
+  - name: pack_hypervector
+    given: Full VSA hypervector (10000 trits)
+    when: Compressing for disk storage
+    then: Returns PackedHV with 2 trits per byte (5000 bytes)
+
+  - name: unpack_hypervector
+    given: PackedHV from disk
+    when: Restoring full hypervector
+    then: Returns full 10000-trit VSA vector
+
+  - name: serialize_episode
+    given: Episode from episodic memory
+    when: Preparing for disk write
+    then: Returns SerializedEpisode with packed HVs
+
+  - name: deserialize_episode
+    given: SerializedEpisode from disk
+    when: Restoring episode to memory
+    then: Returns full Episode with unpacked HVs
+
+  - name: serialize_snapshot
+    given: Full agent memory state
+    when: Creating full memory snapshot
+    then: Returns MemorySnapshot with header, episodes, facts, profiles
+
+  - name: write_trmm_file
+    given: MemorySnapshot and file path
+    when: Saving memory to disk
+    then: Atomic write with CRC32 checksum, backup created
+
+  - name: read_trmm_file
+    given: File path to .trmm file
+    when: Loading memory from disk
+    then: Returns MemorySnapshot with integrity verification
+
+  - name: create_delta
+    given: Changes since last save
+    when: Incremental save triggered
+    then: Returns DeltaSnapshot with only new/changed entries
+
+  - name: apply_deltas
+    given: Base snapshot and list of deltas
+    when: Reconstructing full state from incremental saves
+    then: Returns merged MemorySnapshot
+
+  - name: auto_save_check
+    given: Episode count since last save
+    when: Checking if auto-save threshold reached
+    then: Triggers save if count >= auto_save_interval
+
+  - name: verify_integrity
+    given: Loaded MemorySnapshot
+    when: Checking data integrity after load
+    then: Returns true if CRC32 matches, false if corrupted
+
+  - name: get_persistence_stats
+    given: PersistentMemorySystem state
+    when: Retrieving disk I/O statistics
+    then: Returns PersistenceStats with all metrics
+
+tests:
+  # HV Packing (3)
+  - name: pack_unpack_identity
+    category: packing
+    input: "Random 10000-trit HV"
+    expected: "Unpack(pack(hv)) == hv, sim=1.00"
+    description: Pack and unpack preserves HV exactly
+
+  - name: packed_size_correct
+    category: packing
+    input: "10000-trit HV"
+    expected: "Packed size = 5000 bytes (2 trits/byte)"
+    description: Packed HV uses expected storage
+
+  - name: pack_sparse_hv
+    category: packing
+    input: "HV with 70% zeros"
+    expected: "Packed correctly, unpack matches"
+    description: Sparse HV packs and unpacks correctly
+
+  # Serialization (4)
+  - name: serialize_episode_roundtrip
+    category: serialization
+    input: "Episode with goal, agents, quality"
+    expected: "Deserialize(serialize(ep)) == ep"
+    description: Episode serialization roundtrip
+
+  - name: serialize_fact_roundtrip
+    category: serialization
+    input: "Fact with concept, knowledge, confidence"
+    expected: "Deserialize(serialize(fact)) == fact"
+    description: Semantic fact serialization roundtrip
+
+  - name: serialize_profile_roundtrip
+    category: serialization
+    input: "Profile with 5 skill scores"
+    expected: "Deserialize(serialize(prof)) == prof"
+    description: Skill profile serialization roundtrip
+
+  - name: serialize_full_snapshot
+    category: serialization
+    input: "100 episodes + 50 facts + 6 profiles"
+    expected: "Snapshot serialized, all counts match"
+    description: Full snapshot serialization
+
+  # File I/O (4)
+  - name: write_read_trmm
+    category: file_io
+    input: "Snapshot → write → read"
+    expected: "Read matches written, integrity OK"
+    description: Write and read TRMM file roundtrip
+
+  - name: trmm_header_valid
+    category: file_io
+    input: "Written TRMM file"
+    expected: "Magic=TRMM, version=1, counts correct"
+    description: TRMM header validation
+
+  - name: atomic_write_safety
+    category: file_io
+    input: "Write to temp, rename to target"
+    expected: "No partial files on failure"
+    description: Atomic write prevents corruption
+
+  - name: backup_on_overwrite
+    category: file_io
+    input: "Save when file exists"
+    expected: "Old file → .bak, new file written"
+    description: Backup created before overwrite
+
+  # Delta Snapshots (4)
+  - name: create_delta_new_episodes
+    category: delta
+    input: "5 new episodes since last save"
+    expected: "Delta has 5 new episodes, no removals"
+    description: Delta captures new episodes
+
+  - name: create_delta_mixed
+    category: delta
+    input: "3 new episodes + 2 new facts + 1 profile update"
+    expected: "Delta has all changes"
+    description: Delta with mixed changes
+
+  - name: apply_single_delta
+    category: delta
+    input: "Base snapshot + 1 delta"
+    expected: "Merged snapshot = base + delta changes"
+    description: Apply single delta to base
+
+  - name: apply_multiple_deltas
+    category: delta
+    input: "Base + 5 deltas sequentially"
+    expected: "Final state matches incremental additions"
+    description: Apply multiple deltas in order
+
+  # Integrity (3)
+  - name: crc32_valid
+    category: integrity
+    input: "Written file, CRC32 computed"
+    expected: "verify_integrity returns true"
+    description: CRC32 checksum validates correctly
+
+  - name: detect_corruption
+    category: integrity
+    input: "File with flipped byte"
+    expected: "verify_integrity returns false"
+    description: Corruption detected by checksum
+
+  - name: recover_from_backup
+    category: integrity
+    input: "Corrupted main + valid .bak"
+    expected: "Falls back to .bak, integrity OK"
+    description: Recovery from backup on corruption
+
+  # Auto-Save (3)
+  - name: auto_save_triggers
+    category: auto_save
+    input: "10 episodes added (interval=10)"
+    expected: "Auto-save triggered"
+    description: Auto-save fires at interval
+
+  - name: auto_save_no_trigger
+    category: auto_save
+    input: "5 episodes added (interval=10)"
+    expected: "No auto-save yet"
+    description: Auto-save waits for threshold
+
+  - name: auto_save_delta_mode
+    category: auto_save
+    input: "Auto-save with existing snapshot"
+    expected: "Delta saved, not full snapshot"
+    description: Auto-save uses delta when possible
+
+  # Performance (3)
+  - name: save_throughput
+    category: performance
+    input: "1000 episodes, 500 facts, 6 profiles"
+    expected: "<500ms save time"
+    description: Full snapshot save performance
+
+  - name: load_throughput
+    category: performance
+    input: "1000 episodes from disk"
+    expected: "<200ms load time"
+    description: Full snapshot load performance
+
+  - name: delta_save_speed
+    category: performance
+    input: "10 new episodes delta"
+    expected: "<10ms delta save"
+    description: Delta save is fast for small changes

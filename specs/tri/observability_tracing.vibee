@@ -1,0 +1,454 @@
+# ============================================================================
+# Observability & Tracing System - Cycle 42
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: observability_tracing
+version: "1.0.0"
+language: zig
+module: observability_tracing
+
+description: |
+  Observability & Tracing System — Distributed tracing across agents, nodes,
+  and plugins with OpenTelemetry-compatible spans, metrics collection,
+  anomaly detection, and real-time pipeline visualization.
+
+  Architecture:
+    Distributed Tracing:
+      OpenTelemetry-compatible span model
+      Trace context propagation across agents and nodes
+      Parent-child span relationships with timing
+      Baggage items for cross-cutting concerns
+      Sampling strategies: always, probabilistic, rate-limited
+
+    Metrics Collection:
+      Counter, Gauge, Histogram metric types
+      Per-agent, per-node, per-pipeline metrics
+      Configurable export interval
+      Label-based metric filtering
+      Pre-aggregated metrics for efficiency
+
+    Anomaly Detection:
+      Latency anomaly: z-score on sliding window
+      Error rate spike: threshold + trend detection
+      Queue depth anomaly: capacity-based alerting
+      Throughput drop: percentage decline detection
+      Custom anomaly rules via plugin hooks
+
+    Log Correlation:
+      Structured logging with trace/span IDs
+      Log level filtering: trace, debug, info, warn, error, fatal
+      Correlation of logs across distributed spans
+      Ring buffer for recent logs (no allocation)
+
+    Dashboard:
+      Real-time pipeline topology view
+      Agent health status with heartbeat
+      Message flow visualization
+      Metric time-series charts
+      Alert history and acknowledgment
+
+  Safety:
+    - Max spans per trace: 256
+    - Max active traces: 1024
+    - Max metrics: 512
+    - Span timeout: 30s
+    - Max baggage items: 16
+    - Max labels per metric: 8
+    - Anomaly window size: 100 samples
+    - Log ring buffer: 4096 entries
+    - Export batch size: 64
+    - Max alerts: 128
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_SPANS_PER_TRACE: 256
+  MAX_ACTIVE_TRACES: 1024
+  MAX_METRICS: 512
+  SPAN_TIMEOUT_MS: 30000
+  MAX_BAGGAGE_ITEMS: 16
+  MAX_LABELS_PER_METRIC: 8
+  ANOMALY_WINDOW_SIZE: 100
+  LOG_RING_BUFFER_SIZE: 4096
+  EXPORT_BATCH_SIZE: 64
+  EXPORT_INTERVAL_MS: 10000
+  MAX_ALERTS: 128
+  HEARTBEAT_INTERVAL_MS: 5000
+  HEARTBEAT_TIMEOUT_MS: 15000
+  Z_SCORE_THRESHOLD: 3.0
+  ERROR_RATE_THRESHOLD: 0.05
+  THROUGHPUT_DROP_THRESHOLD: 0.3
+
+types:
+  SpanKind:
+    enum:
+      - internal
+      - server
+      - client
+      - producer
+      - consumer
+
+  SpanStatus:
+    enum:
+      - unset
+      - ok
+      - error
+
+  MetricType:
+    enum:
+      - counter
+      - gauge
+      - histogram
+
+  LogLevel:
+    enum:
+      - trace
+      - debug
+      - info
+      - warn
+      - error
+      - fatal
+
+  SamplingStrategy:
+    enum:
+      - always_on
+      - always_off
+      - probabilistic
+      - rate_limited
+
+  AnomalyType:
+    enum:
+      - latency_spike
+      - error_rate_spike
+      - queue_depth_high
+      - throughput_drop
+      - heartbeat_timeout
+      - memory_pressure
+
+  AlertSeverity:
+    enum:
+      - info
+      - warning
+      - critical
+      - fatal
+
+  Span:
+    fields:
+      trace_id: Int
+      span_id: Int
+      parent_span_id: Int
+      operation_name: String
+      kind: SpanKind
+      status: SpanStatus
+      start_ns: Int
+      end_ns: Int
+      agent_id: Int
+      node_id: Int
+      attributes_count: Int
+      events_count: Int
+
+  TraceContext:
+    fields:
+      trace_id: Int
+      span_id: Int
+      trace_flags: Int
+      baggage_count: Int
+
+  MetricPoint:
+    fields:
+      name: String
+      metric_type: MetricType
+      value: Float
+      timestamp_ms: Int
+      labels_count: Int
+      agent_id: Int
+      node_id: Int
+
+  MetricHistogram:
+    fields:
+      name: String
+      count: Int
+      sum: Float
+      min: Float
+      max: Float
+      p50: Float
+      p95: Float
+      p99: Float
+
+  LogEntry:
+    fields:
+      timestamp_ns: Int
+      level: LogLevel
+      message: String
+      trace_id: Int
+      span_id: Int
+      agent_id: Int
+      source: String
+
+  AnomalyEvent:
+    fields:
+      anomaly_type: AnomalyType
+      severity: AlertSeverity
+      metric_name: String
+      current_value: Float
+      expected_value: Float
+      z_score: Float
+      detected_ms: Int
+      agent_id: Int
+      node_id: Int
+      description: String
+
+  AgentHealth:
+    fields:
+      agent_id: Int
+      node_id: Int
+      last_heartbeat_ms: Int
+      cpu_percent: Float
+      memory_used_bytes: Int
+      active_spans: Int
+      messages_per_sec: Float
+      error_rate: Float
+      healthy: Bool
+
+  TracingConfig:
+    fields:
+      sampling_strategy: SamplingStrategy
+      sampling_rate: Float
+      export_interval_ms: Int
+      export_batch_size: Int
+      max_spans_per_trace: Int
+      enable_anomaly_detection: Bool
+      enable_log_correlation: Bool
+      enable_dashboard: Bool
+
+  ExportBatch:
+    fields:
+      batch_id: Int
+      spans_count: Int
+      metrics_count: Int
+      logs_count: Int
+      exported_ms: Int
+      export_latency_ms: Int
+      destination: String
+
+  PipelineTopology:
+    fields:
+      total_agents: Int
+      total_nodes: Int
+      active_connections: Int
+      message_rate: Float
+      avg_latency_ms: Float
+      error_rate: Float
+
+  ObservabilityMetrics:
+    fields:
+      total_traces: Int
+      total_spans: Int
+      total_metrics_collected: Int
+      total_anomalies_detected: Int
+      total_alerts_fired: Int
+      total_exports: Int
+      avg_export_latency_ms: Int
+      active_traces: Int
+      dropped_spans: Int
+
+behaviors:
+  - name: start_span
+    given: Operation name, parent context, span kind
+    when: New operation begins
+    then: Span created with trace context propagation
+
+  - name: end_span
+    given: Active span with status
+    when: Operation completes or fails
+    then: Span finished, duration recorded, exported
+
+  - name: propagate_context
+    given: Trace context and target agent/node
+    when: Cross-agent or cross-node call
+    then: Context injected into message headers
+
+  - name: record_metric
+    given: Metric name, type, value, labels
+    when: Metric observation occurs
+    then: Metric recorded and aggregated
+
+  - name: detect_anomaly
+    given: Metric time-series and thresholds
+    when: New metric value arrives
+    then: Z-score computed, alert fired if anomalous
+
+  - name: correlate_logs
+    given: Log entry with trace/span IDs
+    when: Structured log emitted
+    then: Log correlated with active span
+
+  - name: export_batch
+    given: Accumulated spans, metrics, logs
+    when: Export interval reached or batch full
+    then: Batch serialized and sent to collector
+
+  - name: check_heartbeat
+    given: Agent health registry
+    when: Heartbeat interval elapsed
+    then: Stale agents marked unhealthy, alert fired
+
+  - name: compute_histogram
+    given: Metric observations over window
+    when: Histogram requested
+    then: Percentiles computed (p50, p95, p99)
+
+  - name: sample_trace
+    given: Incoming request and sampling config
+    when: New trace decision needed
+    then: Trace accepted or rejected per strategy
+
+  - name: fire_alert
+    given: Anomaly event exceeding severity threshold
+    when: Anomaly confirmed
+    then: Alert dispatched to operators
+
+  - name: get_topology
+    given: Active agents, nodes, connections
+    when: Dashboard requests topology
+    then: Returns PipelineTopology with live stats
+
+tests:
+  # Tracing (4)
+  - name: span_lifecycle
+    category: tracing
+    input: "Start span, add events, end span"
+    expected: "Span recorded with correct duration"
+    description: Basic span lifecycle
+
+  - name: context_propagation
+    category: tracing
+    input: "Agent A calls Agent B with trace context"
+    expected: "B span has A span as parent"
+    description: Cross-agent context propagation
+
+  - name: nested_spans
+    category: tracing
+    input: "3 nested operations"
+    expected: "Parent-child chain with correct timing"
+    description: Nested span hierarchy
+
+  - name: span_timeout
+    category: tracing
+    input: "Span open for 31s"
+    expected: "Span force-closed with timeout status"
+    description: Span timeout enforcement
+
+  # Metrics (4)
+  - name: counter_increment
+    category: metrics
+    input: "Counter incremented 100 times"
+    expected: "Counter value is 100"
+    description: Counter metric accuracy
+
+  - name: gauge_value
+    category: metrics
+    input: "Gauge set to 42.5"
+    expected: "Gauge reads 42.5"
+    description: Gauge metric accuracy
+
+  - name: histogram_percentiles
+    category: metrics
+    input: "1000 latency observations"
+    expected: "p50, p95, p99 within 5% of actual"
+    description: Histogram percentile accuracy
+
+  - name: metric_labels
+    category: metrics
+    input: "Metric with 4 labels"
+    expected: "Labels preserved in export"
+    description: Label-based metric filtering
+
+  # Anomaly Detection (4)
+  - name: latency_spike
+    category: anomaly
+    input: "Latency jumps from 5ms to 50ms"
+    expected: "Anomaly detected, z-score > 3.0"
+    description: Latency spike detection
+
+  - name: error_rate_spike
+    category: anomaly
+    input: "Error rate jumps from 1% to 15%"
+    expected: "Alert fired with critical severity"
+    description: Error rate anomaly
+
+  - name: throughput_drop
+    category: anomaly
+    input: "Throughput drops 50%"
+    expected: "Throughput anomaly detected"
+    description: Throughput drop detection
+
+  - name: heartbeat_timeout
+    category: anomaly
+    input: "Agent silent for 16s"
+    expected: "Agent marked unhealthy"
+    description: Heartbeat timeout detection
+
+  # Export (3)
+  - name: batch_export
+    category: export
+    input: "64 spans accumulated"
+    expected: "Batch exported within interval"
+    description: Batch export trigger
+
+  - name: otel_compatibility
+    category: export
+    input: "Span with all OTel fields"
+    expected: "Compatible with OTel collector"
+    description: OpenTelemetry format compatibility
+
+  - name: export_under_load
+    category: export
+    input: "1000 spans/sec generation"
+    expected: "No dropped spans, <100ms export"
+    description: Export performance under load
+
+  # Performance (3)
+  - name: span_overhead
+    category: performance
+    input: "Span start + end"
+    expected: "<1us overhead per span"
+    description: Span creation overhead
+
+  - name: metric_throughput
+    category: performance
+    input: "10000 metric observations"
+    expected: ">50000 obs/sec throughput"
+    description: Metric recording throughput
+
+  - name: anomaly_latency
+    category: performance
+    input: "Anomaly check on 100-sample window"
+    expected: "<10us per check"
+    description: Anomaly detection latency
+
+  # Integration (4)
+  - name: trace_with_comms
+    category: integration
+    input: "Trace across agent communication"
+    expected: "Spans linked via Cycle 41 messages"
+    description: Integration with agent communication
+
+  - name: trace_with_plugins
+    category: integration
+    input: "Trace through plugin execution"
+    expected: "Plugin spans nested under host span"
+    description: Integration with plugin system
+
+  - name: trace_with_cluster
+    category: integration
+    input: "Trace across cluster nodes"
+    expected: "Context propagated via Cycle 37 RPC"
+    description: Integration with distributed cluster
+
+  - name: anomaly_with_scheduler
+    category: integration
+    input: "Anomaly triggers scheduler rebalance"
+    expected: "Work-stealing adapts to anomaly"
+    description: Integration with work-stealing scheduler
