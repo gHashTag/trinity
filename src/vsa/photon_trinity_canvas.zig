@@ -354,9 +354,22 @@ const LogoAnimation = struct {
             var verts: [5]rl.Vector2 = undefined;
             const cnt = block.count;
 
+            const cos_r = @cos(block.rotation);
+            const sin_r = @sin(block.rotation);
+
             for (0..cnt) |j| {
-                const bx = block.v[j].x * block.scale + block.offset.x;
-                const by = block.v[j].y * block.scale + block.offset.y;
+                var bx = block.v[j].x * block.scale;
+                var by = block.v[j].y * block.scale;
+
+                // Apply rotation around block center (must match draw())
+                const ddx = bx - block.center.x * block.scale;
+                const ddy = by - block.center.y * block.scale;
+                bx = block.center.x * block.scale + ddx * cos_r - ddy * sin_r;
+                by = block.center.y * block.scale + ddx * sin_r + ddy * cos_r;
+
+                bx += block.offset.x;
+                by += block.offset.y;
+
                 verts[j] = .{
                     .x = ox + bx * scale,
                     .y = oy + by * scale,
@@ -377,22 +390,17 @@ const LogoAnimation = struct {
         const ox = self.logo_offset.x;
         const oy = self.logo_offset.y;
 
-        // Highlight color (pink on hover)
-        const highlight_color = rl.Color{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = 255 };
+        // Hover color: white petal on hover
+        const highlight_color = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 255 };
 
-        // Black outline — clear separation between parts
-        const outline_color = rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 };
+        // Black petals — inverted spider web look
+        const petal_color = rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 };
+
+        // White outline — spider web threads
+        const outline_color = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 255 };
 
         for (self.blocks, 0..) |block, idx| {
-            // Realm-based coloring: Gold (phi), Cyan (pi), Purple (e)
-            const realm = sacred_worlds.blockToRealm(idx);
-            const realm_color = rl.Color{
-                .r = sacred_worlds.realmColorR(realm),
-                .g = sacred_worlds.realmColorG(realm),
-                .b = sacred_worlds.realmColorB(realm),
-                .a = 255,
-            };
-            const fill_color = if (self.hovered_block >= 0 and idx == @as(usize, @intCast(self.hovered_block))) highlight_color else realm_color;
+            const fill_color = if (self.hovered_block >= 0 and idx == @as(usize, @intCast(self.hovered_block))) highlight_color else petal_color;
             var verts: [5]rl.Vector2 = undefined;
             const cnt = block.count;
 
@@ -430,13 +438,115 @@ const LogoAnimation = struct {
             var m: usize = 0;
             while (m < cnt) : (m += 1) {
                 const next = (m + 1) % cnt;
-                rl.DrawLineEx(verts[m], verts[next], 5.0, outline_color);
+                rl.DrawLineEx(verts[m], verts[next], 1.5, outline_color);
             }
         }
     }
 };
 
 // =============================================================================
+// =============================================================================
+// SACRED FORMULA PARTICLES - Fibonacci spiral orbiting formulas
+// =============================================================================
+
+const FormulaParticle = struct {
+    text: [48:0]u8,
+    text_len: u8,
+    desc: [80:0]u8,
+    desc_len: u8,
+    // Fibonacci spiral parameters
+    base_angle: f32, // base position on spiral
+    orbit_radius: f32, // distance from center
+    orbit_speed: f32, // angular velocity (rad/s)
+    angle_offset: f32, // current offset from mouse push
+    expanded: bool,
+    expand_anim: f32,
+
+    fn init(text: []const u8, desc: []const u8, base_angle_val: f32, radius: f32, speed: f32) FormulaParticle {
+        var p: FormulaParticle = undefined;
+        const tlen = @min(text.len, 47);
+        @memcpy(p.text[0..tlen], text[0..tlen]);
+        p.text[tlen] = 0;
+        p.text_len = @intCast(tlen);
+        const dlen = @min(desc.len, 79);
+        @memcpy(p.desc[0..dlen], desc[0..dlen]);
+        p.desc[dlen] = 0;
+        p.desc_len = @intCast(dlen);
+        p.base_angle = base_angle_val;
+        p.orbit_radius = radius;
+        p.orbit_speed = speed;
+        p.angle_offset = 0;
+        p.expanded = false;
+        p.expand_anim = 0;
+        return p;
+    }
+
+    fn getPos(self: *const FormulaParticle, time_val: f32, cx: f32, cy: f32) struct { x: f32, y: f32 } {
+        const angle = self.base_angle + time_val * self.orbit_speed + self.angle_offset;
+        return .{
+            .x = cx + @cos(angle) * self.orbit_radius,
+            .y = cy + @sin(angle) * self.orbit_radius,
+        };
+    }
+
+    fn update(self: *FormulaParticle, dt: f32, time_val: f32, mouse_x: f32, mouse_y: f32, mouse_pressed: bool, cx: f32, cy: f32) void {
+        const pos = self.getPos(time_val, cx, cy);
+
+        // Check if mouse is near this formula
+        const ddx = pos.x - mouse_x;
+        const ddy = pos.y - mouse_y;
+        const dist = @sqrt(ddx * ddx + ddy * ddy + 1.0);
+        const hover_radius: f32 = 60.0;
+
+        if (dist < hover_radius) {
+            // STOP: counter the orbital rotation so formula stays in place
+            self.angle_offset -= self.orbit_speed * dt;
+        }
+
+        // Slowly return angle_offset to 0 when not hovered
+        if (dist >= hover_radius) {
+            self.angle_offset *= (1.0 - 0.8 * dt);
+        }
+
+        // Click to expand
+        if (mouse_pressed) {
+            const tw = @as(f32, @floatFromInt(self.text_len)) * 8.0;
+            const half_tw = tw / 2;
+            if (mouse_x >= pos.x - half_tw - 5 and mouse_x <= pos.x + half_tw + 5 and
+                mouse_y >= pos.y - 10 and mouse_y <= pos.y + 18)
+            {
+                self.expanded = !self.expanded;
+            }
+        }
+
+        // Expand animation
+        if (self.expanded and self.expand_anim < 1.0) {
+            self.expand_anim = @min(1.0, self.expand_anim + dt * 4.0);
+        } else if (!self.expanded and self.expand_anim > 0.0) {
+            self.expand_anim = @max(0.0, self.expand_anim - dt * 4.0);
+        }
+    }
+
+    fn draw(self: *const FormulaParticle, time_val: f32, cx: f32, cy: f32, font: rl.Font) void {
+        const pos = self.getPos(time_val, cx, cy);
+        const text_color = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 160 };
+        const tw = @as(f32, @floatFromInt(self.text_len)) * 8.0;
+
+        // Draw formula text (centered)
+        rl.DrawTextEx(font, &self.text, .{ .x = pos.x - tw / 2, .y = pos.y - 7 }, 14, 0.5, text_color);
+
+        // Expanded description (no background rect — clean text only)
+        if (self.expand_anim > 0.3) {
+            const desc_alpha: u8 = @intFromFloat(@min(self.expand_anim, 1.0) * 200.0);
+            const desc_color = rl.Color{ .r = 0x08, .g = 0xFA, .b = 0xB5, .a = desc_alpha };
+            const dw = @as(f32, @floatFromInt(self.desc_len)) * 7.0;
+            rl.DrawTextEx(font, &self.desc, .{ .x = pos.x - dw / 2, .y = pos.y + 12 }, 12, 0.5, desc_color);
+        }
+    }
+};
+
+const MAX_FORMULA_PARTICLES = 42;
+
 // ADVANCED WINDOW SYSTEM - GLASSMORPHISM PANELS
 // Floating невесомые windows with phi-based animations
 // =============================================================================
@@ -1067,12 +1177,13 @@ const GlassPanel = struct {
             rl.Color{ .r = 0, .g = 0, .b = 0, .a = shadow_alpha },
         );
 
-        // Main glass background (Hyper style)
-        const bg_alpha: u8 = @intFromFloat(self.opacity * 230);
+        // Main glass background (Hyper style) — sacred_world panels are fully opaque pure black
+        const bg_alpha: u8 = @intFromFloat(self.opacity * if (self.panel_type == .sacred_world) @as(f32, 255) else @as(f32, 230));
+        const bg_color = if (self.panel_type == .sacred_world) rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 } else BG_SURFACE;
         rl.DrawRectangleRounded(
             .{ .x = sx, .y = sy, .width = sw, .height = sh },
             roundness, 32,
-            withAlpha(BG_SURFACE, bg_alpha),
+            withAlpha(bg_color, bg_alpha),
         );
 
         // Gradient overlay REMOVED (clean Hyper style - no gradient)
@@ -2874,6 +2985,9 @@ pub fn main() !void {
     rl.InitWindow(1280, 800, "TRINITY v1.7 | Shift+1-7 = Panels | phi^2 + 1/phi^2 = 3");
     defer rl.CloseWindow();
 
+    // Disable ESC auto-close — ESC hides panels, Cmd+Q quits
+    rl.SetExitKey(0);
+
     // Set minimum window size for responsive design
     rl.SetWindowMinSize(800, 600);
 
@@ -2923,10 +3037,75 @@ pub fn main() !void {
     var logo_anim = LogoAnimation.init(@floatFromInt(g_width), @floatFromInt(g_height));
     var loading_complete = false;
 
+    // Sacred formula particles — Fibonacci spiral orbit
+    const formula_texts = [42][]const u8{
+        // 27 world formulas
+        "phi = 1.618", "pi*phi*e = 13.82", "L(10) = 123",
+        "1/alpha = 137.036", "phi^2 = 2.618", "Feigenbaum = 4.669",
+        "F(7) = 13", "sqrt(5) = 2.236", "999 = 37 x 27",
+        "pi = 3.14159", "27 = 3^3", "CHSH = 2*sqrt(2)",
+        "m_p/m_e = 1836", "pi^2 = 9.87", "e^pi = 23.14",
+        "E8 = 248 dim", "603 = 67*9", "76 photons",
+        "phi^2+1/phi^2 = 3", "tau = 6.283", "Menger = 2.727",
+        "mu = 0.0382", "chi = 0.0618", "sigma = phi",
+        "e = 2.71828", "13.82 Gyr", "H0 = 70.74",
+        // 15 extra sacred formulas
+        "V = n*3^k*pi^m*phi^p*e^q", "1.58 bits/trit",
+        "phi = (1+sqrt(5))/2", "e^(i*pi) + 1 = 0",
+        "3 = phi^2 + 1/phi^2", "F(n) = F(n-1)+F(n-2)",
+        "hbar = 1.054e-34", "c = 299792458 m/s",
+        "G = 6.674e-11", "L(n): 2,1,3,4,7,11,18...",
+        "tau/phi = 3.883", "pi*e = 8.539",
+        "phi^phi = 2.390", "3^3^3 = 7625597484987",
+        "sqrt(2) = 1.414",
+    };
+    const formula_descs = [42][]const u8{
+        "Golden ratio — nature's proportion", "Product of transcendentals", "10th Lucas number",
+        "Fine structure constant inverse", "Golden ratio squared", "Feigenbaum chaos constant",
+        "7th Fibonacci number", "Square root of five", "Sacred number 999",
+        "Circle ratio", "Cube of trinity", "Quantum Bell bound",
+        "Proton-electron mass ratio", "Basel problem result", "Euler to pi",
+        "E8 Lie group dimension", "Energy efficiency", "Quantum advantage",
+        "TRINITY IDENTITY", "Full turn tau", "Menger sponge fractal",
+        "Mutation rate from phi", "Crossover rate from phi", "Selection = phi",
+        "Euler's number", "Age of universe", "Hubble constant",
+        "Trinity value formula", "Ternary information density",
+        "Golden ratio definition", "Euler's identity",
+        "Trinity identity", "Fibonacci recurrence",
+        "Reduced Planck constant", "Speed of light",
+        "Gravitational constant", "Lucas sequence",
+        "Tau over phi", "Pi times e",
+        "Phi to phi power", "Tower of threes",
+        "Pythagoras' constant",
+    };
+    var formula_particles: [MAX_FORMULA_PARTICLES]FormulaParticle = undefined;
+    // Golden angle = 2*pi/phi^2 ~ 137.508 degrees — Fibonacci spiral
+    const golden_angle: f32 = 2.0 * std.math.pi / (1.618 * 1.618);
+    const min_radius: f32 = 210.0; // avoid overlapping the logo
+    for (0..42) |fi| {
+        const n = @as(f32, @floatFromInt(fi));
+        const angle = n * golden_angle;
+        const radius = min_radius + n * 8.5; // Fibonacci spiral growth
+        // Alternate direction: even layers clockwise, odd layers counter-clockwise
+        const layer = fi / 9; // 0..4 layers of ~9
+        const direction: f32 = if (layer % 2 == 0) 1.0 else -1.0;
+        const speed: f32 = direction * (0.04 - n * 0.0004);
+        formula_particles[fi] = FormulaParticle.init(
+            formula_texts[fi],
+            formula_descs[fi],
+            angle, radius, speed,
+        );
+    }
+
     // Main loop
     while (!rl.WindowShouldClose()) {
         const dt = rl.GetFrameTime();
         time += dt;
+
+        // Cmd+Q to quit (replaces ESC)
+        if ((rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER)) and rl.IsKeyPressed(rl.KEY_Q)) {
+            break;
+        }
 
         // Update window size (adaptive/resizable)
         g_width = rl.GetScreenWidth();
@@ -2994,22 +3173,32 @@ pub fn main() !void {
                 // Close all other sacred_world panels first (one world at a time)
                 for (0..panels.count) |pi| {
                     if (panels.panels[pi].panel_type == .sacred_world) {
-                        panels.panels[pi].close();
+                        panels.panels[pi].state = .closed;
                         panels.panels[pi].is_focused = false;
                     }
                 }
 
-                // Spawn fullscreen sacred world panel (reuse slot or add new)
-                if (panels.count < MAX_PANELS) {
-                    panels.panels[panels.count] = GlassPanel.init(
+                // Find a closed slot to reuse, or append if space available
+                var slot: ?usize = null;
+                for (0..panels.count) |pi| {
+                    if (panels.panels[pi].state == .closed) {
+                        slot = pi;
+                        break;
+                    }
+                }
+                if (slot == null and panels.count < MAX_PANELS) {
+                    slot = panels.count;
+                    panels.count += 1;
+                }
+                if (slot) |si| {
+                    panels.panels[si] = GlassPanel.init(
                         0, 0, screen_w, screen_h,
                         .sacred_world, title_slice,
                     );
-                    panels.panels[panels.count].world_id = @intCast(wi);
-                    panels.panels[panels.count].open();
-                    panels.panels[panels.count].jarvisFocus();
-                    panels.active_panel = panels.count;
-                    panels.count += 1;
+                    panels.panels[si].world_id = @intCast(wi);
+                    panels.panels[si].open();
+                    panels.panels[si].jarvisFocus();
+                    panels.active_panel = si;
                 }
             }
         }
@@ -3243,6 +3432,17 @@ pub fn main() !void {
         logo_anim.applyMouse(mx, my, dt, mouse_pressed);
         logo_anim.draw();
 
+        // === SACRED FORMULA PARTICLES — Fibonacci spiral orbit ===
+        {
+            const fcx = @as(f32, @floatFromInt(g_width)) / 2;
+            const fcy = @as(f32, @floatFromInt(g_height)) / 2;
+            const formula_click = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT);
+            for (&formula_particles) |*fp| {
+                fp.update(dt, time, mx, my, formula_click, fcx, fcy);
+                fp.draw(time, fcx, fcy, font_small);
+            }
+        }
+
         // Handle logo block click — open sacred world panel
         if (logo_anim.clicked_block >= 0) {
             const block_idx = @as(usize, @intCast(logo_anim.clicked_block));
@@ -3251,24 +3451,34 @@ pub fn main() !void {
             // Close all other sacred_world panels (one at a time)
             for (0..panels.count) |pi| {
                 if (panels.panels[pi].panel_type == .sacred_world) {
-                    panels.panels[pi].close();
+                    panels.panels[pi].state = .closed;
                     panels.panels[pi].is_focused = false;
                 }
             }
 
-            // Spawn new fullscreen sacred world panel
-            if (panels.count < MAX_PANELS) {
+            // Find a closed slot to reuse, or append if space available
+            var slot: ?usize = null;
+            for (0..panels.count) |pi| {
+                if (panels.panels[pi].state == .closed) {
+                    slot = pi;
+                    break;
+                }
+            }
+            if (slot == null and panels.count < MAX_PANELS) {
+                slot = panels.count;
+                panels.count += 1;
+            }
+            if (slot) |si| {
                 const title_slice = world.name[0..world.name_len];
-                panels.panels[panels.count] = GlassPanel.init(
+                panels.panels[si] = GlassPanel.init(
                     0, 0, screen_w, screen_h,
                     .sacred_world,
                     title_slice,
                 );
-                panels.panels[panels.count].world_id = @intCast(block_idx);
-                panels.panels[panels.count].open();
-                panels.panels[panels.count].jarvisFocus();
-                panels.active_panel = panels.count;
-                panels.count += 1;
+                panels.panels[si].world_id = @intCast(block_idx);
+                panels.panels[si].open();
+                panels.panels[si].jarvisFocus();
+                panels.active_panel = si;
             }
         }
 
@@ -3276,27 +3486,21 @@ pub fn main() !void {
         if (logo_anim.hovered_block >= 0) {
             const hi = @as(usize, @intCast(logo_anim.hovered_block));
             const world = sacred_worlds.getWorldByBlock(hi);
-            const realm = sacred_worlds.blockToRealm(hi);
-            const rc = rl.Color{
-                .r = sacred_worlds.realmColorR(realm),
-                .g = sacred_worlds.realmColorG(realm),
-                .b = sacred_worlds.realmColorB(realm),
-                .a = 255,
-            };
 
-            // Tooltip background
+            // White tooltip: white bg, black text, black dot
             const tw: f32 = @as(f32, @floatFromInt(world.name_len)) * 9.0 + 30;
             const tx = mx + 15;
             const ty = my - 28;
-            rl.DrawRectangle(@intFromFloat(tx), @intFromFloat(ty), @intFromFloat(tw), 24, withAlpha(BG_SURFACE, 230));
-            rl.DrawRectangleLines(@intFromFloat(tx), @intFromFloat(ty), @intFromFloat(tw), 24, rc);
+            const white_bg = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 240 };
+            const black_text = rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 };
+            rl.DrawRectangleRounded(.{ .x = tx, .y = ty, .width = tw, .height = 24 }, 0.3, 8, white_bg);
 
-            // Realm dot + world name
-            rl.DrawCircle(@intFromFloat(tx + 10), @intFromFloat(ty + 12), 4, rc);
+            // Black dot + world name in black
+            rl.DrawCircle(@intFromFloat(tx + 10), @intFromFloat(ty + 12), 4, black_text);
             var tooltip_buf: [28:0]u8 = undefined;
             @memcpy(tooltip_buf[0..world.name_len], world.name[0..world.name_len]);
             tooltip_buf[world.name_len] = 0;
-            rl.DrawTextEx(font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, TEXT_WHITE);
+            rl.DrawTextEx(font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, black_text);
         }
 
         // Glass panels (on top of everything except UI)
