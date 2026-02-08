@@ -19,7 +19,7 @@
 const std = @import("std");
 const enhanced_chat = @import("igla_enhanced_chat.zig");
 const hybrid_chat = @import("igla_hybrid_chat.zig");
-const local_chat = @import("igla_local_chat.zig");
+const local_chat = @import("igla_chat");
 
 // Re-export types for backward compatibility (igla_tvc_chat uses these)
 pub const IglaLocalChat = local_chat.IglaLocalChat;

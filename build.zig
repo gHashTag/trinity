@@ -200,12 +200,20 @@ pub fn build(b: *std.Build) void {
 
     for (targets_list) |t| {
         const release_target = b.resolveTargetQuery(t);
+        const fluent_release_chat = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/igla_local_chat.zig"),
+            .target = release_target,
+            .optimize = .ReleaseFast,
+        });
         const fluent_release_exe = b.addExecutable(.{
             .name = "fluent",
             .root_module = b.createModule(.{
                 .root_source_file = b.path("src/vibeec/igla_fluent_cli.zig"),
                 .target = release_target,
                 .optimize = .ReleaseFast,
+                .imports = &.{
+                    .{ .name = "igla_chat", .module = fluent_release_chat },
+                },
             }),
         });
 
@@ -296,6 +304,13 @@ pub fn build(b: *std.Build) void {
     const trinity_cli_step = b.step("cli", "Run Trinity CLI (Interactive AI Agent)");
     trinity_cli_step.dependOn(&run_trinity_cli.step);
 
+    // Shared chat module (used by fluent CLI, hybrid chat, TRI, etc.)
+    const vibeec_chat = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/igla_local_chat.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Fluent CLI - Local Chat with History Truncation (NO HANG!)
     const fluent_cli = b.addExecutable(.{
         .name = "fluent",
@@ -303,6 +318,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/igla_fluent_cli.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "igla_chat", .module = vibeec_chat },
+            },
         }),
     });
     b.installArtifact(fluent_cli);
@@ -338,11 +356,6 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    const vibeec_chat = b.createModule(.{
-        .root_source_file = b.path("src/vibeec/igla_fluent_cli.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
     const vibeec_coder = b.createModule(.{
         .root_source_file = b.path("src/vibeec/igla_local_coder.zig"),
         .target = target,
@@ -372,6 +385,15 @@ pub fn build(b: *std.Build) void {
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
         },
     });
+    // IGLA Hybrid Chat module (symbolic + LLM fallback)
+    const vibeec_hybrid_chat = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/igla_hybrid_chat.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "igla_chat", .module = vibeec_chat },
+        },
+    });
     // IGLA TVC Chat module (fluent chat + TVC integration)
     const igla_tvc_chat_mod = b.createModule(.{
         .root_source_file = b.path("src/vibeec/igla_tvc_chat.zig"),
@@ -392,6 +414,7 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "trinity_swe", .module = vibeec_swe },
                 .{ .name = "igla_chat", .module = vibeec_chat },
+                .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
                 .{ .name = "igla_coder", .module = vibeec_coder },
                 .{ .name = "vsa", .module = vsa_tri },
                 .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
