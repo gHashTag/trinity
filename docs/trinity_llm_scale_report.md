@@ -234,20 +234,74 @@ Improvement over v2 localhost: 1.8x faster total, 1.9x faster prefill, 1.6x fast
 Improvement over v1: 3x faster total, 3.7x faster prefill, 2.4x faster decode
 ```
 
+### v4 3-Node Pipeline (2026-02-08, relay chain, multi-machine)
+
+```
+Model: TinyLlama 1.1B Chat Q4_K_M (638MB GGUF)
+Coordinator: macOS arm64 (Apple Silicon), layers 0-7 (8 layers)
+Relay: macOS arm64 (same machine as coordinator), layers 8-14 (7 layers)
+Worker: Ubuntu 24.04 x86_64 (Intel Xeon, VPS), layers 15-21 (7 layers)
+Network: Coordinator → Relay (localhost) → Worker (internet)
+
+Prefill: 20 tokens in 31,369ms (local=9,401ms, net=21,968ms)
+Decode: 20 tokens, avg 1,193ms/token (compute=15,025ms, net=23,675ms)
+Total: 70,073ms
+Network fraction: 65.1%
+Note: Relay shares CPU with coordinator (2 processes on 1 Mac)
+```
+
+## Detailed Profile (v4 — 3-Node Multi-Machine)
+
+```
+╔══════════════════════════════════════════════════════════╗
+║   DISTRIBUTED INFERENCE PROFILE (3-Node Multi-Machine)   ║
+╠══════════════════════════════════════════════════════════╣
+║  Topology: Coordinator(Mac) → Relay(Mac) → Worker(VPS)
+║  Layers:   [0-7]           → [8-14]      → [15-21]
+║
+║  Prefill: 20 tokens
+║    Local compute:     9,401ms   (coordinator 8 layers)
+║    Network (batch):  21,968ms   (relay 7 layers + worker 7 layers + sampling)
+║    Total prefill:    31,369ms
+║  Decode: 20 tokens
+║    Total compute:    15,025ms   (coordinator local layers)
+║    Total network:    23,675ms   (relay + worker + 2x TCP round-trips)
+║    Total decode:     38,700ms
+║    Avg per token:    ~1,193ms   (vs 706ms with 2-node)
+║  Network fraction: 65.1%
+║  Total:             70,073ms
+╚══════════════════════════════════════════════════════════╝
+```
+
+### 3-Node Analysis
+
+The 3-node test on 2 machines shows 70s total (vs 47s with 2-node). This is expected because:
+
+1. **CPU contention**: Relay shares the Mac's CPU with coordinator (2 processes on 1 machine)
+2. **Extra TCP hop**: Each decode token requires 2 round-trips instead of 1 (coordinator→relay→worker→relay→coordinator)
+3. **Memory per node**: ~400MB (33% of model each, vs 50% with 2-node split)
+
+**On 3 separate machines**, expected performance:
+- Prefill: ~12s (coordinator 9s, relay and worker compute in parallel)
+- Decode: ~0.7s/token (pipeline overlap, but 2 network hops add ~200ms)
+- Total: ~26s (theoretical optimum with full parallelism)
+
 ## Conclusion
 
-Distributed inference v3 on separate machines achieves **3x speedup** over v1:
+Distributed inference v4 adds **N-node pipeline support** with relay chain:
 
-| Version | Total Time | vs v1 |
-|---------|-----------|-------|
-| v1 (per-token, localhost) | 143s | baseline |
-| v2 (batched, localhost) | 83s | 1.7x |
-| **v3 (batched, multi-machine)** | **47s** | **3x** |
+| Version | Nodes | Total Time | vs v1 | Topology |
+|---------|-------|-----------|-------|----------|
+| v1 (per-token, localhost) | 2 | 143s | baseline | Coordinator + Worker |
+| v2 (batched, localhost) | 2 | 83s | 1.7x | Coordinator + Worker |
+| v3 (batched, 2-machine) | 2 | **47s** | **3x** | Coordinator(Mac) + Worker(VPS) |
+| v4 (batched, 3-node, 2-machine) | 3 | 70s | 2x | Coordinator + Relay(Mac) + Worker(VPS) |
+| v4 (3 machines, projected) | 3 | ~26s | ~5.5x | Each node on separate CPU |
 
-- Prefill: 77s → 39s → **21s** (3.7x, batch TCP + parallel compute)
-- Decode: 1.7s → 1.1s → **0.7s/token** (2.4x, dedicated CPUs + zero-alloc)
-- Network fraction: 51.7% (compute-bound, not network-bound)
-- Cross-platform: Single Zig codebase compiles to macOS arm64 + Linux x86_64 with zero dependencies
+- **N-node pipeline proven**: PipelineRelay chains coordinator → relay → worker correctly
+- **No protocol changes**: Relay reuses existing ForwardRequest/ForwardResponse messages
+- **autoSplitN()**: Divides any model's layers evenly across N nodes
+- **Cross-platform**: macOS arm64 coordinator + Linux x86_64 worker, zero dependencies
 
 ### Key Finding
 The dominant bottleneck on localhost was **CPU contention**, not network. When each node has its own CPU, pipeline parallelism delivers the expected parallel speedup. Network adds ~100ms RTT overhead per decode step but this is dwarfed by the compute savings from eliminating contention.
@@ -255,7 +309,8 @@ The dominant bottleneck on localhost was **CPU contention**, not network. When e
 ### Next Steps
 
 1. ~~**Multi-machine test**: Deploy on 2 separate machines to measure real parallel speedup~~ **DONE**
-2. **Tokenizer integration**: GGUF tokenizer for coherent text output
-3. **Larger models**: Qwen2.5 7B Q4_K_M (requires download, ~4GB per shard)
-4. **N-way pipeline**: Extend for >2 nodes
-5. **Tensor parallelism**: Split matmul across nodes (complementary to pipeline)
+2. ~~**N-way pipeline**: Extend for >2 nodes~~ **DONE** (PipelineRelay)
+3. **3 separate machines**: Deploy on 3 VPS to measure real 3-way parallel speedup
+4. **Tokenizer integration**: GGUF tokenizer for coherent text output
+5. **Larger models**: Qwen2.5 7B Q4_K_M (requires download, ~4GB per shard)
+6. **Tensor parallelism**: Split matmul across nodes (complementary to pipeline)
