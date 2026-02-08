@@ -293,8 +293,8 @@ pub const HttpServer = struct {
         var generated_token_count: usize = 0;
 
         if (tokens) |toks| {
-            var output_tokens = std.ArrayList(u32).init(self.allocator);
-            defer output_tokens.deinit();
+            var output_tokens: std.ArrayListUnmanaged(u32) = .{};
+            defer output_tokens.deinit(self.allocator);
 
             // Process input tokens (prefill) - save logits from last token
             var pos: usize = 0;
@@ -322,7 +322,7 @@ pub const HttpServer = struct {
                     }
 
                     if (next_token == tokenizer.eos_token) break;
-                    output_tokens.append(next_token) catch break;
+                    output_tokens.append(self.allocator, next_token) catch break;
 
                     // Get logits for next token
                     current_logits = model.forward(next_token, pos) catch break;
@@ -365,16 +365,16 @@ pub const HttpServer = struct {
         std.debug.print("  Requests: {d} total, {d} active\n", .{ total, active });
 
         // Escape JSON string
-        var escaped = std.ArrayList(u8).init(self.allocator);
-        defer escaped.deinit();
+        var escaped: std.ArrayListUnmanaged(u8) = .{};
+        defer escaped.deinit(self.allocator);
         for (response_text) |c| {
             switch (c) {
-                '"' => try escaped.appendSlice("\\\""),
-                '\\' => try escaped.appendSlice("\\\\"),
-                '\n' => try escaped.appendSlice("\\n"),
-                '\r' => try escaped.appendSlice("\\r"),
-                '\t' => try escaped.appendSlice("\\t"),
-                else => try escaped.append(c),
+                '"' => try escaped.appendSlice(self.allocator, "\\\""),
+                '\\' => try escaped.appendSlice(self.allocator, "\\\\"),
+                '\n' => try escaped.appendSlice(self.allocator, "\\n"),
+                '\r' => try escaped.appendSlice(self.allocator, "\\r"),
+                '\t' => try escaped.appendSlice(self.allocator, "\\t"),
+                else => try escaped.append(self.allocator, c),
             }
         }
 
@@ -473,15 +473,15 @@ pub const HttpServer = struct {
 
                 if (token_text) |text| {
                     // Escape for JSON
-                    var escaped = std.ArrayList(u8).init(self.allocator);
-                    defer escaped.deinit();
+                    var escaped: std.ArrayListUnmanaged(u8) = .{};
+                    defer escaped.deinit(self.allocator);
                     for (text) |c| {
                         switch (c) {
-                            '"' => escaped.appendSlice("\\\"") catch break,
-                            '\\' => escaped.appendSlice("\\\\") catch break,
-                            '\n' => escaped.appendSlice("\\n") catch break,
-                            '\r' => escaped.appendSlice("\\r") catch break,
-                            else => escaped.append(c) catch break,
+                            '"' => escaped.appendSlice(self.allocator, "\\\"") catch break,
+                            '\\' => escaped.appendSlice(self.allocator, "\\\\") catch break,
+                            '\n' => escaped.appendSlice(self.allocator, "\\n") catch break,
+                            '\r' => escaped.appendSlice(self.allocator, "\\r") catch break,
+                            else => escaped.append(self.allocator, c) catch break,
                         }
                     }
 

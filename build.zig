@@ -450,6 +450,88 @@ pub fn build(b: *std.Build) void {
     const hybrid_step = b.step("hybrid", "Run Trinity Hybrid Local Coder (IGLA + Ollama)");
     hybrid_step.dependOn(&run_hybrid.step);
 
+    // Trinity Node - Decentralized Inference Network
+    const trinity_node = b.addExecutable(.{
+        .name = "trinity-node",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(trinity_node);
+
+    const run_node = b.addRunArtifact(trinity_node);
+    if (b.args) |args| {
+        run_node.addArgs(args);
+    }
+    const node_step = b.step("node", "Run Trinity Node - Decentralized Inference");
+    node_step.dependOn(&run_node.step);
+
+    // Trinity Node GUI - with Raylib UI (requires raylib installed)
+    // Install raylib: brew install raylib (macOS) / apt install libraylib-dev (Linux)
+    const trinity_node_gui = b.addExecutable(.{
+        .name = "trinity-node-gui",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/main_gui.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    trinity_node_gui.linkSystemLibrary("raylib");
+    trinity_node_gui.linkLibC();
+    b.installArtifact(trinity_node_gui);
+
+    const run_node_gui = b.addRunArtifact(trinity_node_gui);
+    if (b.args) |args| {
+        run_node_gui.addArgs(args);
+    }
+    const node_gui_step = b.step("node-gui", "Run Trinity Node with Raylib GUI");
+    node_gui_step.dependOn(&run_node_gui.step);
+
+    // Emergent Photon AI Demo - Interactive wave visualization
+    // phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+    const photon_demo = b.addExecutable(.{
+        .name = "photon-demo",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vsa/photon_demo.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    photon_demo.linkSystemLibrary("raylib");
+    photon_demo.linkLibC();
+    b.installArtifact(photon_demo);
+
+    const run_photon_demo = b.addRunArtifact(photon_demo);
+    if (b.args) |args| {
+        run_photon_demo.addArgs(args);
+    }
+    const photon_demo_step = b.step("photon-demo", "Run Emergent Photon AI Demo");
+    photon_demo_step.dependOn(&run_photon_demo.step);
+
+    // Emergent Photon AI v0.3 - IMMERSIVE COSMIC CANVAS
+    // No UI panels. No buttons. Pure emergent wave intelligence.
+    // phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+    const photon_immersive = b.addExecutable(.{
+        .name = "photon-immersive",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vsa/photon_immersive.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    photon_immersive.linkSystemLibrary("raylib");
+    photon_immersive.linkLibC();
+    b.installArtifact(photon_immersive);
+
+    const run_photon_immersive = b.addRunArtifact(photon_immersive);
+    if (b.args) |args| {
+        run_photon_immersive.addArgs(args);
+    }
+    const photon_immersive_step = b.step("photon-immersive", "Run Immersive Cosmic Canvas (v0.3)");
+    photon_immersive_step.dependOn(&run_photon_immersive.step);
+
     // VSA module (re-exports HybridBigInt from hybrid.zig)
     const vsa_mod = b.createModule(.{
         .root_source_file = b.path("src/vsa.zig"),
