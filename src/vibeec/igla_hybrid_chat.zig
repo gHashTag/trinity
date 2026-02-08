@@ -23,7 +23,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const local_chat = @import("igla_local_chat.zig");
+const local_chat = @import("igla_chat");
 const model_mod = @import("gguf_model.zig");
 const tokenizer_mod = @import("gguf_tokenizer.zig");
 const inference = @import("gguf_inference.zig");
@@ -37,7 +37,7 @@ pub const HybridConfig = struct {
     symbolic_confidence_threshold: f32 = 0.3,
 
     /// Max tokens for LLM generation
-    max_tokens: u32 = 256,
+    max_tokens: u32 = 64,
 
     /// LLM sampling temperature (0.0 = deterministic, 1.0 = creative)
     temperature: f32 = 0.7,
@@ -307,11 +307,13 @@ pub const IglaHybridChat = struct {
         };
 
         // Process prompt tokens (prefill)
+        std.debug.print("[LLM] Processing {d} prompt tokens...", .{tokens.len});
         var logits: ?[]f32 = null;
         for (tokens, 0..) |token, pos| {
             if (logits) |l| self.allocator.free(l);
             logits = try model.forward(token, pos);
         }
+        std.debug.print(" done\n[LLM] Generating: ", .{});
 
         // Generate response tokens
         var pos = tokens.len;
@@ -335,6 +337,9 @@ pub const IglaHybridChat = struct {
 
                 try response.appendSlice(self.allocator, token_str);
 
+                // Stream token to stdout immediately
+                std.debug.print("{s}", .{token_str});
+
                 // Forward next token
                 self.allocator.free(l);
                 logits = try model.forward(next_token, pos);
@@ -345,6 +350,7 @@ pub const IglaHybridChat = struct {
             }
         }
 
+        std.debug.print("\n", .{});
         if (logits) |l| self.allocator.free(l);
 
         return response.toOwnedSlice(self.allocator);
