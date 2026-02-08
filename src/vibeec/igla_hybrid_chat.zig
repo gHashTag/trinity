@@ -337,6 +337,12 @@ pub const IglaHybridChat = struct {
                 if (std.mem.indexOf(u8, token_str, "<|im_end|>") != null) break;
                 if (std.mem.indexOf(u8, token_str, "<|im_start|>") != null) break;
 
+                // Skip leaked special token fragments
+                if (std.mem.indexOf(u8, token_str, "/chat") != null) continue;
+                if (std.mem.indexOf(u8, token_str, "/user") != null) continue;
+                if (std.mem.indexOf(u8, token_str, "/system") != null) continue;
+                if (std.mem.indexOf(u8, token_str, "/assistant") != null) continue;
+
                 try response.appendSlice(self.allocator, token_str);
 
                 // Stream token to stdout immediately
