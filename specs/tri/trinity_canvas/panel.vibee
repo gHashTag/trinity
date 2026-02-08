@@ -1,0 +1,178 @@
+name: trinity_panel
+version: "2.0.0"
+language: zig
+module: panel
+description: "Base GlassPanel struct with glassmorphism rendering"
+
+# =============================================================================
+# GLASS PANEL
+# Floating window with macOS-style title bar and content area
+# =============================================================================
+
+imports:
+  - theme
+  - types
+
+types:
+  GlassPanel:
+    description: "Floating glassmorphism panel"
+    fields:
+      # Position and size
+      x: Float
+      y: Float
+      width: Float
+      height: Float
+      target_x: Float
+      target_y: Float
+      target_width: Float
+      target_height: Float
+
+      # State
+      state: PanelState
+      panel_type: PanelType
+      opacity: Float
+      scale: Float
+      scroll_y: Float
+
+      # Title
+      title: String[64]
+      title_len: USize
+
+      # Focus state
+      is_focused: Bool
+      focus_ripple: Float
+      pre_focus_x: Float
+      pre_focus_y: Float
+      pre_focus_w: Float
+      pre_focus_h: Float
+
+      # JARVIS animation
+      jarvis_morph: Float
+      jarvis_glow_pulse: Float
+      jarvis_ring_rotation: Float
+
+      # Interaction
+      is_dragging: Bool
+      is_resizing: Bool
+      drag_offset_x: Float
+      drag_offset_y: Float
+
+      # Chat panel data
+      chat_messages: Array<String[256], 8>
+      chat_msg_lens: Array<USize, 8>
+      chat_msg_is_user: Array<Bool, 8>
+      chat_msg_count: USize
+      chat_input: String[256]
+      chat_input_len: USize
+      chat_ripple: Float
+
+      # Code panel data
+      code_wave_phase: Float
+      code_cursor_line: USize
+
+      # Tools panel data
+      tool_selected: USize
+
+      # Vision panel data
+      vision_analyzing: Bool
+      vision_progress: Float
+      vision_result: String[256]
+      vision_result_len: USize
+
+      # Voice panel data
+      voice_recording: Bool
+      voice_wave_phase: Float
+      voice_amplitude: Float
+
+      # Finder panel data
+      finder_entries: Array<FinderEntry, 64>
+      finder_entry_count: USize
+      finder_path: String[512]
+      finder_path_len: USize
+      finder_selected: USize
+      finder_animation: Float
+      finder_ripple: Float
+
+      # System panel data
+      sys_cpu_usage: Float
+      sys_mem_used: Float
+      sys_mem_total: Float
+      sys_cpu_temp: Float
+      sys_update_timer: Float
+
+constants:
+  MIN_WIDTH: 200.0
+  MIN_HEIGHT: 150.0
+  RESIZE_HANDLE_SIZE: 16.0
+  TITLE_BAR_HEIGHT: 32.0
+
+behaviors:
+  - name: init
+    given: PanelType, x, y, width, height, title
+    when: Creating new panel
+    then: Initialize all fields with defaults
+
+  - name: update
+    given: Delta time, global time
+    when: Each frame
+    then: Animate position, scale, opacity, panel-specific updates
+
+  - name: draw
+    given: Time, font
+    when: Rendering panel
+    then: Draw background, title bar, content, handle
+
+  - name: draw_title_bar
+    given: Rect, alpha
+    when: Rendering title bar
+    then: Draw traffic light buttons, centered title
+
+  - name: draw_content
+    given: Rect, time, font, alpha
+    when: Rendering content area
+    then: Dispatch to panel-type-specific drawer
+
+  - name: is_point_inside
+    given: Point x, y
+    when: Hit testing
+    then: Return true if point inside panel bounds
+
+  - name: is_point_in_title_bar
+    given: Point x, y
+    when: Hit testing for drag
+    then: Return true if point in title bar area
+
+  - name: is_point_on_close
+    given: Point x, y
+    when: Hit testing close button
+    then: Return true if point on red button
+
+  - name: is_point_on_resize
+    given: Point x, y
+    when: Hit testing resize handle
+    then: Return true if point in bottom-right corner
+
+  - name: focus
+    given: Nothing
+    when: Panel gains focus
+    then: Set is_focused, start ripple animation
+
+  - name: unfocus
+    given: Nothing
+    when: Panel loses focus
+    then: Clear is_focused, restore pre-focus position
+
+  - name: jarvis_focus
+    given: Nothing
+    when: JARVIS-style focus
+    then: Trigger spherical morph animation
+
+  - name: add_chat_message
+    given: Message text, is_user
+    when: Adding chat message
+    then: Append to messages array, scroll if needed
+
+  - name: load_directory
+    given: Path string
+    when: Opening finder directory
+    then: Populate finder_entries array

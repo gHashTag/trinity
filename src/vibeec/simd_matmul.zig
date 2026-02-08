@@ -533,9 +533,8 @@ fn parallelMatVecWorker(ctx: *ParallelMatVecContext, wg: *std.Thread.WaitGroup) 
 /// This means W[out][in] = data[out * input_dim + in], which is row-major access!
 /// Uses thread pool for very large matrices only (rows > 10000)
 pub fn parallelMatVec(output: []f32, mat: []const f32, vec: []const f32, rows: usize, cols: usize) void {
-    // GGUF uses row-major layout for weight matrices
-    // For most matrices, single-threaded SIMD is faster on 2 cores
-    simdMatVec(output, mat, vec, rows, cols);
+    // Delegate to thread-pool-enabled version (threshold 2048 rows)
+    simdMatVecParallel(output, mat, vec, rows, cols);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

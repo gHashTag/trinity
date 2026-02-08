@@ -20,6 +20,11 @@ pub const MessageType = enum(u8) {
     reward_notification = 0x05,
     peer_announce = 0x06,
     peer_list = 0x07,
+    // Pipeline-parallel distributed inference
+    forward_request = 0x11,
+    forward_response = 0x12,
+    batch_forward_request = 0x13,
+    batch_forward_response = 0x14,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -374,6 +379,190 @@ pub fn calculateJobReward(tokens: u64, latency_ms: u32, uptime_pct: f32) u128 {
     const multiplier = 1.0 + latency_bonus + uptime_bonus;
     return @intFromFloat(@as(f64, @floatFromInt(base)) * multiplier);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PIPELINE-PARALLEL DISTRIBUTED INFERENCE MESSAGES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// ForwardRequest: Coordinator sends hidden state to worker for pipeline processing
+/// Wire format: [4B seq_id][4B pos][4B hidden_size][4B temperature][hidden_size*4B data]
+pub const ForwardRequest = struct {
+    sequence_id: u32,
+    token_pos: u32,
+    hidden_size: u32,
+    temperature: f32,
+    hidden_state: []const f32,
+
+    pub const HEADER_SIZE: usize = 16; // 4 + 4 + 4 + 4
+
+    pub fn serialize(self: *const ForwardRequest, allocator: std.mem.Allocator) ![]u8 {
+        const data_size = self.hidden_size * 4;
+        const total = HEADER_SIZE + data_size;
+        const buf = try allocator.alloc(u8, total);
+
+        std.mem.writeInt(u32, buf[0..4], self.sequence_id, .little);
+        std.mem.writeInt(u32, buf[4..8], self.token_pos, .little);
+        std.mem.writeInt(u32, buf[8..12], self.hidden_size, .little);
+        @memcpy(buf[12..16], std.mem.asBytes(&self.temperature));
+
+        const float_bytes = std.mem.sliceAsBytes(self.hidden_state);
+        @memcpy(buf[HEADER_SIZE..][0..data_size], float_bytes);
+
+        return buf;
+    }
+
+    pub fn deserialize(data: []const u8, allocator: std.mem.Allocator) !ForwardRequest {
+        if (data.len < HEADER_SIZE) return error.InvalidData;
+
+        const hidden_size = std.mem.readInt(u32, data[8..12], .little);
+        const expected_size = HEADER_SIZE + hidden_size * 4;
+        if (data.len < expected_size) return error.InvalidData;
+
+        const hidden = try allocator.alloc(f32, hidden_size);
+        const src_bytes = data[HEADER_SIZE..][0 .. hidden_size * 4];
+        @memcpy(std.mem.sliceAsBytes(hidden), src_bytes);
+
+        return ForwardRequest{
+            .sequence_id = std.mem.readInt(u32, data[0..4], .little),
+            .token_pos = std.mem.readInt(u32, data[4..8], .little),
+            .hidden_size = hidden_size,
+            .temperature = @bitCast(std.mem.readInt(u32, data[12..16], .little)),
+            .hidden_state = hidden,
+        };
+    }
+};
+
+/// ForwardResponse: Worker sends sampled token back to coordinator
+/// Wire format: [4B seq_id][4B pos][4B token]
+pub const ForwardResponse = struct {
+    sequence_id: u32,
+    token_pos: u32,
+    sampled_token: u32,
+
+    pub const SIZE: usize = 12;
+
+    pub fn serialize(self: *const ForwardResponse) [SIZE]u8 {
+        var buf: [SIZE]u8 = undefined;
+        std.mem.writeInt(u32, buf[0..4], self.sequence_id, .little);
+        std.mem.writeInt(u32, buf[4..8], self.token_pos, .little);
+        std.mem.writeInt(u32, buf[8..12], self.sampled_token, .little);
+        return buf;
+    }
+
+    pub fn deserialize(data: *const [SIZE]u8) ForwardResponse {
+        return ForwardResponse{
+            .sequence_id = std.mem.readInt(u32, data[0..4], .little),
+            .token_pos = std.mem.readInt(u32, data[4..8], .little),
+            .sampled_token = std.mem.readInt(u32, data[8..12], .little),
+        };
+    }
+};
+
+/// BatchForwardRequest: Coordinator sends N hidden states in one TCP message (prefill optimization)
+/// Wire format: [4B seq_id][4B batch_size][4B hidden_size][4B temperature]
+///              then per item: [4B token_pos][hidden_size*4B data]
+pub const BatchForwardRequest = struct {
+    sequence_id: u32,
+    batch_size: u32,
+    hidden_size: u32,
+    temperature: f32,
+    token_positions: []const u32,
+    hidden_states: []const f32, // batch_size * hidden_size contiguous
+
+    pub const HEADER_SIZE: usize = 16;
+
+    pub fn serialize(self: *const BatchForwardRequest, allocator: std.mem.Allocator) ![]u8 {
+        const per_item = 4 + self.hidden_size * 4;
+        const total = HEADER_SIZE + self.batch_size * per_item;
+        const buf = try allocator.alloc(u8, total);
+
+        std.mem.writeInt(u32, buf[0..4], self.sequence_id, .little);
+        std.mem.writeInt(u32, buf[4..8], self.batch_size, .little);
+        std.mem.writeInt(u32, buf[8..12], self.hidden_size, .little);
+        @memcpy(buf[12..16], std.mem.asBytes(&self.temperature));
+
+        var offset: usize = HEADER_SIZE;
+        for (0..self.batch_size) |i| {
+            std.mem.writeInt(u32, buf[offset..][0..4], self.token_positions[i], .little);
+            offset += 4;
+            const hs_start = i * self.hidden_size;
+            const float_bytes = std.mem.sliceAsBytes(self.hidden_states[hs_start..][0..self.hidden_size]);
+            @memcpy(buf[offset..][0 .. self.hidden_size * 4], float_bytes);
+            offset += self.hidden_size * 4;
+        }
+        return buf;
+    }
+
+    pub fn deserialize(data: []const u8, allocator: std.mem.Allocator) !BatchForwardRequest {
+        if (data.len < HEADER_SIZE) return error.InvalidData;
+
+        const batch_size = std.mem.readInt(u32, data[4..8], .little);
+        const hidden_size = std.mem.readInt(u32, data[8..12], .little);
+        const per_item = 4 + hidden_size * 4;
+        if (data.len < HEADER_SIZE + batch_size * per_item) return error.InvalidData;
+
+        const positions = try allocator.alloc(u32, batch_size);
+        const hidden_states = try allocator.alloc(f32, batch_size * hidden_size);
+
+        var offset: usize = HEADER_SIZE;
+        for (0..batch_size) |i| {
+            positions[i] = std.mem.readInt(u32, data[offset..][0..4], .little);
+            offset += 4;
+            const hs_start = i * hidden_size;
+            const src_bytes = data[offset..][0 .. hidden_size * 4];
+            @memcpy(std.mem.sliceAsBytes(hidden_states[hs_start..][0..hidden_size]), src_bytes);
+            offset += hidden_size * 4;
+        }
+
+        return BatchForwardRequest{
+            .sequence_id = std.mem.readInt(u32, data[0..4], .little),
+            .batch_size = batch_size,
+            .hidden_size = hidden_size,
+            .temperature = @bitCast(std.mem.readInt(u32, data[12..16], .little)),
+            .token_positions = positions,
+            .hidden_states = hidden_states,
+        };
+    }
+};
+
+/// BatchForwardResponse: Worker returns N sampled tokens in one message
+/// Wire format: [4B seq_id][4B batch_size][batch_size * 4B tokens]
+pub const BatchForwardResponse = struct {
+    sequence_id: u32,
+    batch_size: u32,
+    sampled_tokens: []const u32,
+
+    pub const HEADER_SIZE: usize = 8;
+
+    pub fn serialize(self: *const BatchForwardResponse, allocator: std.mem.Allocator) ![]u8 {
+        const total = HEADER_SIZE + self.batch_size * 4;
+        const buf = try allocator.alloc(u8, total);
+        std.mem.writeInt(u32, buf[0..4], self.sequence_id, .little);
+        std.mem.writeInt(u32, buf[4..8], self.batch_size, .little);
+        for (0..self.batch_size) |i| {
+            const off = HEADER_SIZE + i * 4;
+            std.mem.writeInt(u32, buf[off..][0..4], self.sampled_tokens[i], .little);
+        }
+        return buf;
+    }
+
+    pub fn deserialize(data: []const u8, allocator: std.mem.Allocator) !BatchForwardResponse {
+        if (data.len < HEADER_SIZE) return error.InvalidData;
+        const batch_size = std.mem.readInt(u32, data[4..8], .little);
+        if (data.len < HEADER_SIZE + batch_size * 4) return error.InvalidData;
+
+        const tokens = try allocator.alloc(u32, batch_size);
+        for (0..batch_size) |i| {
+            const off = HEADER_SIZE + i * 4;
+            tokens[i] = std.mem.readInt(u32, data[off..][0..4], .little);
+        }
+        return BatchForwardResponse{
+            .sequence_id = std.mem.readInt(u32, data[0..4], .little),
+            .batch_size = batch_size,
+            .sampled_tokens = tokens,
+        };
+    }
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS

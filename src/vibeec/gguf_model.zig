@@ -322,6 +322,157 @@ pub const FullModel = struct {
         std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
     }
 
+    /// Load only a subset of layers for pipeline-parallel distributed inference.
+    /// start_layer: first layer to load (inclusive)
+    /// end_layer: last layer to load (exclusive)
+    /// load_embedding: if true, load token_embedding (needed by first shard)
+    /// load_output: if true, load output_weight + output_norm (needed by last shard)
+    pub fn loadPartialWeights(self: *FullModel, start_layer: u32, end_layer: u32, load_embedding: bool, load_output: bool) !void {
+        const num_local_layers = end_layer - start_layer;
+        std.debug.print("Loading partial weights: layers {d}..{d} (embedding={}, output={})\n", .{
+            start_layer, end_layer, load_embedding, load_output,
+        });
+
+        // Embeddings
+        if (load_embedding) {
+            self.token_embedding = try self.loadTensor("token_embd.weight");
+        } else {
+            self.token_embedding = try self.allocator.alloc(f32, 0);
+        }
+
+        // Output weights (only last shard needs these)
+        if (load_output) {
+            self.output_weight = self.loadTensor("output.weight") catch |err| blk: {
+                if (err == error.TensorNotFound) {
+                    // Tied embeddings — need to load embedding if not already loaded
+                    if (!load_embedding) {
+                        self.output_weight = try self.loadTensor("token_embd.weight");
+                        break :blk self.output_weight;
+                    }
+                    break :blk self.token_embedding;
+                }
+                return err;
+            };
+            self.output_norm = try self.loadTensor("output_norm.weight");
+        } else {
+            self.output_weight = try self.allocator.alloc(f32, 0);
+            self.output_norm = try self.allocator.alloc(f32, 0);
+        }
+
+        // RoPE (needed by all shards for positional encoding)
+        self.rope = try transformer.RoPE.init(
+            self.allocator,
+            self.config.head_dim,
+            self.config.context_length,
+            self.config.rope_theta,
+        );
+
+        // KV caches only for local layers
+        self.kv_caches = try self.allocator.alloc(transformer.KVCache, num_local_layers);
+        for (0..num_local_layers) |i| {
+            self.kv_caches[i] = try transformer.KVCache.init(
+                self.allocator,
+                self.config.num_kv_heads,
+                self.config.head_dim,
+                self.config.context_length,
+            );
+        }
+
+        // Load only the specified layer range
+        self.layers = try self.allocator.alloc(LayerWeights, num_local_layers);
+        for (0..num_local_layers) |i| {
+            const global_idx = start_layer + i;
+            std.debug.print("  Loading layer {d}/{d} (global {d})...\r", .{ i + 1, num_local_layers, global_idx });
+            var name_buf: [64]u8 = undefined;
+            self.layers[i] = LayerWeights{
+                .attn_norm = try self.loadTensorFmt(&name_buf, "blk.{d}.attn_norm.weight", .{global_idx}),
+                .ffn_norm = try self.loadTensorFmt(&name_buf, "blk.{d}.ffn_norm.weight", .{global_idx}),
+                .wq = try self.loadTensorFmt(&name_buf, "blk.{d}.attn_q.weight", .{global_idx}),
+                .wk = try self.loadTensorFmt(&name_buf, "blk.{d}.attn_k.weight", .{global_idx}),
+                .wv = try self.loadTensorFmt(&name_buf, "blk.{d}.attn_v.weight", .{global_idx}),
+                .wo = try self.loadTensorFmt(&name_buf, "blk.{d}.attn_output.weight", .{global_idx}),
+                .w_gate = try self.loadTensorFmt(&name_buf, "blk.{d}.ffn_gate.weight", .{global_idx}),
+                .w_up = try self.loadTensorFmt(&name_buf, "blk.{d}.ffn_up.weight", .{global_idx}),
+                .w_down = try self.loadTensorFmt(&name_buf, "blk.{d}.ffn_down.weight", .{global_idx}),
+                .bq = self.loadTensorFmt(&name_buf, "blk.{d}.attn_q.bias", .{global_idx}) catch null,
+                .bk = self.loadTensorFmt(&name_buf, "blk.{d}.attn_k.bias", .{global_idx}) catch null,
+                .bv = self.loadTensorFmt(&name_buf, "blk.{d}.attn_v.bias", .{global_idx}) catch null,
+            };
+        }
+        std.debug.print("  Loaded {d} layers (shard {d}..{d})            \n", .{ num_local_layers, start_layer, end_layer });
+
+        // Pre-allocate forward-pass buffers (same as loadWeights)
+        const hidden_size = self.config.hidden_size;
+        const num_heads = self.config.num_heads;
+        const num_kv_heads = self.config.num_kv_heads;
+        const head_dim = self.config.head_dim;
+        const intermediate_size = self.config.intermediate_size;
+        const context_length = self.config.context_length;
+
+        self.buf_hidden = try self.allocator.alloc(f32, hidden_size);
+        self.buf_temp = try self.allocator.alloc(f32, hidden_size);
+        self.buf_normed = try self.allocator.alloc(f32, hidden_size);
+        self.buf_q = try self.allocator.alloc(f32, num_heads * head_dim);
+        self.buf_k = try self.allocator.alloc(f32, num_kv_heads * head_dim);
+        self.buf_v = try self.allocator.alloc(f32, num_kv_heads * head_dim);
+        self.buf_attn_out = try self.allocator.alloc(f32, num_heads * head_dim);
+        self.buf_attn_proj = try self.allocator.alloc(f32, hidden_size);
+        self.buf_ffn_gate = try self.allocator.alloc(f32, intermediate_size);
+        self.buf_ffn_up = try self.allocator.alloc(f32, intermediate_size);
+        self.buf_ffn_out = try self.allocator.alloc(f32, hidden_size);
+        self.buf_scores = try self.allocator.alloc(f32, context_length);
+    }
+
+    /// Forward pass for a pipeline shard — processes only local layers.
+    /// Caller provides hidden state input, receives processed hidden state output.
+    /// Does NOT embed tokens or compute logits — those are handled by coordinator/worker.
+    pub fn forwardShard(self: *FullModel, output: []f32, input: []const f32, pos: usize) void {
+        @memcpy(output, input);
+        for (0..self.layers.len) |i| {
+            self.forwardLayerOptimized(self.buf_temp, output, i, pos);
+            @memcpy(output, self.buf_temp);
+        }
+    }
+
+    /// Apply final output norm and project to logits (last shard only).
+    pub fn computeLogits(self: *FullModel, hidden: []const f32) ![]f32 {
+        inference.rmsNorm(self.buf_temp, hidden, self.output_norm, self.config.rms_norm_eps);
+        const logits = try self.allocator.alloc(f32, self.config.vocab_size);
+        simd.simdMatVecParallel(logits, self.output_weight, self.buf_temp, self.config.vocab_size, self.config.hidden_size);
+        return logits;
+    }
+
+    /// Apply temperature, softmax, and sample a token from logits.
+    /// Caller must free the logits slice separately.
+    pub fn sampleFromLogits(self: *FullModel, logits: []f32, temperature: f32) !u32 {
+        if (temperature > 0) {
+            for (logits) |*l| {
+                l.* /= temperature;
+            }
+        }
+        const probs = try self.allocator.alloc(f32, logits.len);
+        defer self.allocator.free(probs);
+        inference.softmax(probs, logits);
+        return inference.sample(probs, temperature);
+    }
+
+    /// Zero-alloc variant: write logits into caller-provided buffer.
+    pub fn computeLogitsInto(self: *FullModel, logits: []f32, hidden: []const f32) void {
+        inference.rmsNorm(self.buf_temp, hidden, self.output_norm, self.config.rms_norm_eps);
+        simd.simdMatVecParallel(logits, self.output_weight, self.buf_temp, self.config.vocab_size, self.config.hidden_size);
+    }
+
+    /// Zero-alloc variant: softmax + sample using caller-provided probs buffer.
+    pub fn sampleFromLogitsInto(_: *FullModel, logits: []f32, probs: []f32, temperature: f32) u32 {
+        if (temperature > 0) {
+            for (logits) |*l| {
+                l.* /= temperature;
+            }
+        }
+        inference.softmax(probs, logits);
+        return inference.sample(probs, temperature);
+    }
+
     fn loadTensor(self: *FullModel, name: []const u8) ![]f32 {
         const info = self.reader.getTensor(name) orelse return error.TensorNotFound;
         const data = try self.reader.readTensorData(info);
@@ -647,8 +798,8 @@ pub const FullModel = struct {
         // Compute Q, K, V (use buf_q, buf_k, buf_v)
         // Row-major matVec: output[i] = sum_j(mat[i * cols + j] * vec[j])
         simd.simdMatVecParallel(self.buf_q, layer.wq, self.buf_normed, num_heads * head_dim, hidden_size);
-        simd.simdMatVec(self.buf_k, layer.wk, self.buf_normed, num_kv_heads * head_dim, hidden_size);
-        simd.simdMatVec(self.buf_v, layer.wv, self.buf_normed, num_kv_heads * head_dim, hidden_size);
+        simd.simdMatVecParallel(self.buf_k, layer.wk, self.buf_normed, num_kv_heads * head_dim, hidden_size);
+        simd.simdMatVecParallel(self.buf_v, layer.wv, self.buf_normed, num_kv_heads * head_dim, hidden_size);
 
         // Add QKV bias if present (Qwen2 architecture)
         if (layer.bq) |bq| {
@@ -694,20 +845,32 @@ pub const FullModel = struct {
                 self.buf_scores[t] = simd.simdDot(q_head, k_vec) * scale;
             }
 
-            // Softmax
-            inference.softmax(self.buf_scores[0..seq_len], self.buf_scores[0..seq_len]);
+            // Softmax (SIMD-accelerated normalization)
+            simd.simdSoftmax(self.buf_scores[0..seq_len], self.buf_scores[0..seq_len]);
 
-            // Weighted sum with SIMD
+            // Weighted sum with SIMD (vectorized scale-and-accumulate)
             const out_head = self.buf_attn_out[h * head_dim ..][0..head_dim];
             @memset(out_head, 0.0);
+
+            const simd_width = 8;
+            const aligned_dim = head_dim & ~@as(usize, simd_width - 1);
 
             for (0..seq_len) |t| {
                 const v_offset = t * num_kv_heads * head_dim + kv_h * head_dim;
                 const v_vec = self.kv_caches[layer_idx].v_cache[v_offset..][0..head_dim];
                 const score = self.buf_scores[t];
+                const score_vec: @Vector(8, f32) = @splat(score);
 
-                // SIMD scale and add
-                for (0..head_dim) |i| {
+                // SIMD: process 8 floats at a time
+                var i: usize = 0;
+                while (i < aligned_dim) : (i += simd_width) {
+                    const v: @Vector(8, f32) = v_vec[i..][0..simd_width].*;
+                    const o: @Vector(8, f32) = out_head[i..][0..simd_width].*;
+                    out_head[i..][0..simd_width].* = o + score_vec * v;
+                }
+
+                // Scalar tail
+                while (i < head_dim) : (i += 1) {
                     out_head[i] += score * v_vec[i];
                 }
             }

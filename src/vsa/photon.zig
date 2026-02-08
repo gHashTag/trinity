@@ -93,10 +93,12 @@ pub const Photon = struct {
         // Wave equation: d2u/dt2 = c^2 * laplacian(u)
         // Discretized: new_amp = 2*amp - old_amp + c^2*dt^2*(neighbor_avg - amp)
         const c: f32 = PHI; // Wave speed = golden ratio
-        const damping: f32 = 0.999; // Slight energy loss
+        const damping: f32 = 0.96; // Strong energy decay for stability
 
         self.interference = neighbor_avg - self.amplitude;
-        self.amplitude = damping * (self.amplitude + c * c * dt * dt * self.interference);
+        const new_amp = damping * (self.amplitude + c * c * dt * dt * self.interference);
+        // Clamp amplitude for stability
+        self.amplitude = @max(-1.0, @min(1.0, new_amp));
 
         // Update phase
         self.phase = @mod(self.phase + TAU * self.frequency * dt, TAU);
@@ -260,7 +262,7 @@ pub const PhotonGrid = struct {
         }
 
         const c2dt2: f32 = PHI * PHI * self.dt * self.dt;
-        const damping: f32 = 0.999;
+        const damping: f32 = 0.96; // Strong decay for stability
 
         // Process in SIMD chunks
         var i: usize = 0;

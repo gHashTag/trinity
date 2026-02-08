@@ -450,6 +450,14 @@ pub fn build(b: *std.Build) void {
     const hybrid_step = b.step("hybrid", "Run Trinity Hybrid Local Coder (IGLA + Ollama)");
     hybrid_step.dependOn(&run_hybrid.step);
 
+    // GGUF model module (for distributed inference)
+    // Single module — gguf_model.zig internally imports gguf_inference.zig
+    const gguf_model_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/gguf_model.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Trinity Node - Decentralized Inference Network
     const trinity_node = b.addExecutable(.{
         .name = "trinity-node",
@@ -457,6 +465,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/main.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "gguf_model", .module = gguf_model_mod },
+            },
         }),
     });
     b.installArtifact(trinity_node);
@@ -531,6 +542,62 @@ pub fn build(b: *std.Build) void {
     }
     const photon_immersive_step = b.step("photon-immersive", "Run Immersive Cosmic Canvas (v0.3)");
     photon_immersive_step.dependOn(&run_photon_immersive.step);
+
+    // Emergent Photon AI v0.4 - TRINITY COSMIC CANVAS
+    // Full Trinity functionality emerges from wave interference
+    // Chat/Code/Vision/Voice/Tools/Autonomous all in cosmic canvas
+    const trinity_canvas = b.addExecutable(.{
+        .name = "trinity-canvas",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vsa/photon_trinity_canvas.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    trinity_canvas.linkSystemLibrary("raylib");
+    b.installArtifact(trinity_canvas);
+
+    const run_trinity_canvas = b.addRunArtifact(trinity_canvas);
+    if (b.args) |args| {
+        run_trinity_canvas.addArgs(args);
+    }
+    const trinity_canvas_step = b.step("trinity-canvas", "Run Trinity Cosmic Canvas (v0.4)");
+    trinity_canvas_step.dependOn(&run_trinity_canvas.step);
+
+    // Keyboard Debug Test - minimal keyboard input test
+    const keyboard_test = b.addExecutable(.{
+        .name = "keyboard-test",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vsa/keyboard_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    keyboard_test.linkSystemLibrary("raylib");
+    b.installArtifact(keyboard_test);
+
+    const run_keyboard_test = b.addRunArtifact(keyboard_test);
+    const keyboard_test_step = b.step("keyboard-test", "Run Keyboard Debug Test");
+    keyboard_test_step.dependOn(&run_keyboard_test.step);
+
+    // Photon Terminal v1.0 - TERNARY EMERGENT TUI
+    // Not a grid of cells — a living wave field in your terminal.
+    const photon_terminal = b.addExecutable(.{
+        .name = "photon-terminal",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vsa/photon_terminal.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(photon_terminal);
+
+    const run_photon_terminal = b.addRunArtifact(photon_terminal);
+    if (b.args) |args| {
+        run_photon_terminal.addArgs(args);
+    }
+    const photon_terminal_step = b.step("photon-terminal", "Run Photon Terminal (Emergent TUI v1.0)");
+    photon_terminal_step.dependOn(&run_photon_terminal.step);
 
     // VSA module (re-exports HybridBigInt from hybrid.zig)
     const vsa_mod = b.createModule(.{
