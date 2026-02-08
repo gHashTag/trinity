@@ -2949,53 +2949,74 @@ pub fn main() !void {
 
         // === INPUT HANDLING ===
 
-        // Panel focus (Shift+1-7)
+        // Sacred Worlds keyboard shortcuts:
+        // Shift+1-9 = Realm RAZUM (blocks 0-8)
+        // Ctrl+1-9  = Realm MATERIYA (blocks 9-17)
+        // Cmd+1-9   = Realm DUKH (blocks 18-26)
         const shift_held = rl.IsKeyDown(rl.KEY_LEFT_SHIFT) or rl.IsKeyDown(rl.KEY_RIGHT_SHIFT);
+        const ctrl_held = rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL);
+        const cmd_held = rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER);
 
-        // Calculate centered panel positions
+        // Calculate fullscreen panel positions
         const screen_w = @as(f32, @floatFromInt(g_width));
         const screen_h = @as(f32, @floatFromInt(g_height));
 
-        if (shift_held) {
-            if (rl.IsKeyPressed(rl.KEY_ONE)) {
-                const pw: f32 = 500;
-                const ph: f32 = 400;
-                panels.jarvisFocus(.chat, (screen_w - pw) / 2, (screen_h - ph) / 2, pw, ph, "CHAT");
+        // Number keys 1-9
+        const key_nums = [9]c_int{ rl.KEY_ONE, rl.KEY_TWO, rl.KEY_THREE, rl.KEY_FOUR, rl.KEY_FIVE, rl.KEY_SIX, rl.KEY_SEVEN, rl.KEY_EIGHT, rl.KEY_NINE };
+
+        // Detect which number key was pressed
+        var pressed_num: ?usize = null;
+        for (key_nums, 0..) |key, idx| {
+            if (rl.IsKeyPressed(key)) {
+                pressed_num = idx;
+                break;
             }
-            if (rl.IsKeyPressed(rl.KEY_TWO)) {
-                const pw: f32 = 550;
-                const ph: f32 = 450;
-                panels.jarvisFocus(.code, (screen_w - pw) / 2, (screen_h - ph) / 2, pw, ph, "CODE");
+        }
+
+        if (pressed_num) |num| {
+            var world_idx: ?usize = null;
+
+            if (shift_held) {
+                // Shift+1-9 = Realm RAZUM (blocks 0-8)
+                world_idx = num; // 0-8
+            } else if (ctrl_held) {
+                // Ctrl+1-9 = Realm MATERIYA (blocks 9-17)
+                world_idx = 9 + num; // 9-17
+            } else if (cmd_held) {
+                // Cmd+1-9 = Realm DUKH (blocks 18-26)
+                world_idx = 18 + num; // 18-26
             }
-            if (rl.IsKeyPressed(rl.KEY_THREE)) {
-                const pw: f32 = 400;
-                const ph: f32 = 350;
-                panels.jarvisFocus(.tools, (screen_w - pw) / 2, (screen_h - ph) / 2, pw, ph, "TOOLS");
-            }
-            if (rl.IsKeyPressed(rl.KEY_FOUR)) {
-                const pw: f32 = 380;
-                const ph: f32 = 320;
-                panels.jarvisFocus(.settings, (screen_w - pw) / 2, (screen_h - ph) / 2, pw, ph, "SETTINGS");
-            }
-            if (rl.IsKeyPressed(rl.KEY_FIVE)) {
-                const pw: f32 = 450;
-                const ph: f32 = 400;
-                panels.jarvisFocus(.vision, (screen_w - pw) / 2, (screen_h - ph) / 2, pw, ph, "VISION");
-            }
-            if (rl.IsKeyPressed(rl.KEY_SIX)) {
-                const pw: f32 = 420;
-                const ph: f32 = 350;
-                panels.jarvisFocus(.voice, (screen_w - pw) / 2, (screen_h - ph) / 2, pw, ph, "VOICE");
-            }
-            if (rl.IsKeyPressed(rl.KEY_SEVEN)) {
-                const pw: f32 = 500;
-                const ph: f32 = 450;
-                panels.jarvisFocus(.finder, (screen_w - pw) / 2, (screen_h - ph) / 2, pw, ph, "FINDER");
-            }
-            if (rl.IsKeyPressed(rl.KEY_EIGHT)) {
-                const pw: f32 = 400;
-                const ph: f32 = 320;
-                panels.jarvisFocus(.system, (screen_w - pw) / 2, (screen_h - ph) / 2, pw, ph, "SYSTEM");
+
+            if (world_idx) |wi| {
+                const world = sacred_worlds.getWorldByBlock(wi);
+                const title_slice = world.name[0..world.name_len];
+
+                // Find existing sacred_world panel with this world_id
+                var found = false;
+                for (0..panels.count) |pi| {
+                    if (panels.panels[pi].panel_type == .sacred_world and
+                        panels.panels[pi].world_id == @as(u8, @intCast(wi)))
+                    {
+                        // Focus existing — fullscreen
+                        panels.panels[pi].jarvisFocus();
+                        panels.active_panel = pi;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found and panels.count < MAX_PANELS) {
+                    // Spawn new fullscreen sacred world panel
+                    panels.panels[panels.count] = GlassPanel.init(
+                        0, 0, screen_w, screen_h,
+                        .sacred_world, title_slice,
+                    );
+                    panels.panels[panels.count].world_id = @intCast(wi);
+                    panels.panels[panels.count].open();
+                    panels.panels[panels.count].jarvisFocus();
+                    panels.active_panel = panels.count;
+                    panels.count += 1;
+                }
             }
         }
 
@@ -3217,24 +3238,20 @@ pub fn main() !void {
             }
 
             if (found) {
-                // Focus existing panel
+                // Focus existing panel — fullscreen
+                panels.panels[found_idx].jarvisFocus();
                 panels.active_panel = found_idx;
-                panels.panels[found_idx].is_focused = true;
             } else if (panels.count < MAX_PANELS) {
-                // Spawn new sacred world panel
-                const pw: f32 = 500;
-                const ph: f32 = 420;
+                // Spawn new fullscreen sacred world panel
                 const title_slice = world.name[0..world.name_len];
                 panels.panels[panels.count] = GlassPanel.init(
-                    (screen_w - pw) / 2,
-                    (screen_h - ph) / 2,
-                    pw,
-                    ph,
+                    0, 0, screen_w, screen_h,
                     .sacred_world,
                     title_slice,
                 );
                 panels.panels[panels.count].world_id = @intCast(block_idx);
                 panels.panels[panels.count].open();
+                panels.panels[panels.count].jarvisFocus();
                 panels.active_panel = panels.count;
                 panels.count += 1;
             }
