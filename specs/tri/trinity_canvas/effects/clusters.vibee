@@ -1,0 +1,54 @@
+name: wave_clusters
+version: "2.0.0"
+language: zig
+module: effects.clusters
+description: "Wave cluster text visualization"
+
+imports:
+  - ../theme
+  - ../types
+
+types:
+  WaveCluster:
+    description: "Floating text cluster"
+    fields:
+      x: Float
+      y: Float
+      text: String[256]
+      len: USize
+      phase: Float
+      amplitude: Float
+      hue: Float
+      is_user: Bool
+      opacity: Float
+
+  ClusterSystem:
+    description: "Manages text clusters"
+    fields:
+      clusters: Array<WaveCluster, 32>
+      count: USize
+
+constants:
+  MAX_CLUSTERS: 32
+  MAX_CLUSTER_CHARS: 256
+
+behaviors:
+  - name: init
+    given: Nothing
+    when: System startup
+    then: Initialize empty cluster array
+
+  - name: spawn
+    given: x, y, text, is_user
+    when: Creating cluster
+    then: Add cluster at position
+
+  - name: update
+    given: Delta time
+    when: Each frame
+    then: Update wave phases, fade opacity
+
+  - name: draw
+    given: Time
+    when: Rendering
+    then: Draw all clusters with wave effect

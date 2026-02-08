@@ -1,0 +1,89 @@
+name: panel_system
+version: "2.0.0"
+language: zig
+module: panel_system
+description: "Panel management system - create, update, draw, focus panels"
+
+# =============================================================================
+# PANEL SYSTEM
+# Manages collection of GlassPanels with z-ordering and focus
+# =============================================================================
+
+imports:
+  - theme
+  - types
+  - panel
+
+types:
+  PanelSystem:
+    description: "Manages all panels"
+    fields:
+      panels: Array<GlassPanel, 8>
+      count: USize
+      active_panel: Option<USize>
+      drag_panel: Option<USize>
+      resize_panel: Option<USize>
+
+constants:
+  MAX_PANELS: 8
+
+behaviors:
+  - name: init
+    given: Nothing
+    when: System startup
+    then: Initialize empty panel array
+
+  - name: spawn
+    given: PanelType, x, y, width, height, title
+    when: Creating new panel
+    then: Add panel to array, return index
+
+  - name: close
+    given: Panel index
+    when: Closing panel
+    then: Start closing animation, remove when done
+
+  - name: update
+    given: dt, time, mouse_x, mouse_y, mouse_pressed, mouse_down, mouse_released, mouse_wheel
+    when: Each frame
+    then: Update all panels, handle drag/resize, scroll
+
+  - name: draw
+    given: Time, font
+    when: Rendering
+    then: Draw all open panels in z-order
+
+  - name: focus_by_type
+    given: PanelType, x, y, width, height, title
+    when: Focus request
+    then: Find existing panel of type or spawn new, bring to front
+
+  - name: jarvis_focus
+    given: PanelType, x, y, width, height, title
+    when: JARVIS-style focus
+    then: Find/spawn panel, trigger JARVIS animation
+
+  - name: unfocus_all
+    given: Nothing
+    when: ESC pressed
+    then: Unfocus all panels, restore positions
+
+  - name: bring_to_front
+    given: Panel index
+    when: Panel clicked
+    then: Move panel to end of array (top z-order)
+
+  - name: handle_mouse_down
+    given: Mouse x, y
+    when: Mouse pressed
+    then: Check for panel hit, start drag/resize if needed
+
+  - name: handle_mouse_up
+    given: Nothing
+    when: Mouse released
+    then: End any drag/resize operation
+
+  - name: handle_mouse_move
+    given: Mouse x, y
+    when: Mouse moved while dragging/resizing
+    then: Update panel position/size

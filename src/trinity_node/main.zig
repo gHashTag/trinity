@@ -14,6 +14,7 @@ const network_mod = @import("network.zig");
 const discovery = @import("discovery.zig");
 const config_mod = @import("config.zig");
 const inference_mod = @import("inference.zig");
+const distributed = @import("distributed.zig");
 
 // GUI is enabled separately via 'zig build node-gui' which links raylib
 // This file is for headless mode; ui.zig has its own entry point
@@ -31,6 +32,7 @@ pub const PROTOCOL_VERSION: u16 = 1;
 
 const Args = struct {
     headless: bool = false,
+    distributed: bool = false,
     port: u16 = network_mod.JOB_PORT,
     model_path: ?[]const u8 = null,
     wallet_password: ?[]const u8 = null,
@@ -45,6 +47,8 @@ fn parseArgs() Args {
     while (arg_iter.next()) |arg| {
         if (std.mem.eql(u8, arg, "--headless") or std.mem.eql(u8, arg, "-d")) {
             args.headless = true;
+        } else if (std.mem.eql(u8, arg, "--distributed") or std.mem.eql(u8, arg, "--dist")) {
+            args.distributed = true;
         } else if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
             args.help = true;
         } else if (std.mem.startsWith(u8, arg, "--port=")) {
@@ -114,6 +118,16 @@ pub fn main() !void {
 
     if (args.help) {
         printHelp();
+        return;
+    }
+
+    // Distributed inference mode — bypass normal node startup
+    if (args.distributed) {
+        const alloc = std.heap.page_allocator;
+        const process_args = try std.process.argsAlloc(alloc);
+        defer std.process.argsFree(alloc, process_args);
+        const dist_args = if (process_args.len > 1) process_args[1..] else &[_][]const u8{};
+        try distributed.runDistributed(alloc, dist_args);
         return;
     }
 

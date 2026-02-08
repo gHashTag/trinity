@@ -1,0 +1,110 @@
+name: trinity_types
+version: "2.0.0"
+language: zig
+module: types
+description: "Common types, enums, and constants for Trinity Canvas"
+
+# =============================================================================
+# TRINITY CANVAS TYPES
+# Shared enums, structs, and constants
+# =============================================================================
+
+imports:
+  - theme
+
+types:
+  PanelState:
+    description: "Panel lifecycle state"
+    enum:
+      - closed
+      - opening
+      - open
+      - closing
+      - minimizing
+      - maximizing
+
+  PanelType:
+    description: "Type of panel content"
+    enum:
+      - chat      # Chat with AI
+      - code      # Code editor
+      - tools     # Tool execution
+      - settings  # App settings
+      - vision    # Image analysis
+      - voice     # Voice STT/TTS
+      - finder    # File browser
+      - system    # System monitor
+
+  FileType:
+    description: "File type for finder panel"
+    enum:
+      - folder
+      - code_zig
+      - code_other
+      - image
+      - audio
+      - document
+      - data
+      - unknown
+
+  TrinityMode:
+    description: "Application mode"
+    enum:
+      - idle
+      - chat
+      - code
+      - goal
+      - vision
+      - voice
+
+  Rect:
+    description: "Rectangle for layout"
+    fields:
+      x: Float
+      y: Float
+      width: Float
+      height: Float
+
+  FinderEntry:
+    description: "File/folder entry in finder"
+    fields:
+      name: String[128]
+      name_len: USize
+      is_dir: Bool
+      file_type: FileType
+      size_bytes: U64
+      orbit_angle: Float
+      orbit_radius: Float
+
+constants:
+  MAX_PANELS: 8
+  MAX_CLUSTERS: 32
+  MAX_CLUSTER_CHARS: 256
+  MAX_SPIRALS: 16
+  MAX_TOOLS: 8
+  MAX_EFFECTS: 16
+  MAX_FINDER_ENTRIES: 64
+  MAX_CHAT_MESSAGES: 8
+  MAX_MESSAGE_LEN: 256
+  MAX_INPUT_LEN: 512
+
+behaviors:
+  - name: file_type_from_extension
+    given: Filename string
+    when: Determining file type
+    then: Return appropriate FileType enum based on extension
+
+  - name: file_type_color
+    given: FileType enum value
+    when: Rendering file icon
+    then: Return theme color for that file type
+
+  - name: panel_type_title
+    given: PanelType enum value
+    when: Creating panel title
+    then: Return display title string (CHAT, CODE, etc.)
+
+  - name: panel_type_icon
+    given: PanelType enum value
+    when: Rendering panel header
+    then: Return icon character or glyph
