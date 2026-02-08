@@ -26,14 +26,15 @@ types:
   PanelType:
     description: "Type of panel content"
     enum:
-      - chat      # Chat with AI
-      - code      # Code editor
-      - tools     # Tool execution
-      - settings  # App settings
-      - vision    # Image analysis
-      - voice     # Voice STT/TTS
-      - finder    # File browser
-      - system    # System monitor
+      - chat          # Chat with AI
+      - code          # Code editor
+      - tools         # Tool execution
+      - settings      # App settings
+      - vision        # Image analysis
+      - voice         # Voice STT/TTS
+      - finder        # File browser
+      - system        # System monitor
+      - sacred_world  # Sacred Mathematics world (27 worlds of 999 kingdom)
 
   FileType:
     description: "File type for finder panel"
@@ -77,7 +78,7 @@ types:
       orbit_radius: Float
 
 constants:
-  MAX_PANELS: 8
+  MAX_PANELS: 12
   MAX_CLUSTERS: 32
   MAX_CLUSTER_CHARS: 256
   MAX_SPIRALS: 16

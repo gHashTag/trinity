@@ -126,6 +126,8 @@ const LogoBlock = struct {
     vel_rot: f32,
 };
 
+const sacred_worlds = @import("trinity_canvas/sacred_worlds.zig");
+
 const LogoAnimation = struct {
     blocks: [27]LogoBlock,
     time: f32,
@@ -134,6 +136,7 @@ const LogoAnimation = struct {
     logo_scale: f32, // Scale the logo to fit screen
     logo_offset: rl.Vector2, // Center the logo on screen
     hovered_block: i32, // Index of block under cursor (-1 = none)
+    clicked_block: i32, // Block clicked this frame (-1 = none)
 
     // SVG viewBox: 596 x 526, center at ~298, 263
     const SVG_WIDTH: f32 = 596.0;
@@ -150,6 +153,7 @@ const LogoAnimation = struct {
             .logo_scale = @min(screen_w / SVG_WIDTH, screen_h / SVG_HEIGHT) * 0.35,
             .logo_offset = .{ .x = screen_w / 2, .y = screen_h / 2 },
             .hovered_block = -1,
+            .clicked_block = -1,
         };
 
         // 27 blocks parsed from assets/999.svg
@@ -337,13 +341,14 @@ const LogoAnimation = struct {
         return inside;
     }
 
-    /// Highlight block under cursor (no physics — just detect hover)
-    pub fn applyMouse(self: *LogoAnimation, mouse_x: f32, mouse_y: f32, _: f32) void {
+    /// Highlight block under cursor + detect clicks
+    pub fn applyMouse(self: *LogoAnimation, mouse_x: f32, mouse_y: f32, _: f32, mouse_pressed: bool) void {
         const scale = self.logo_scale;
         const ox = self.logo_offset.x;
         const oy = self.logo_offset.y;
 
         self.hovered_block = -1;
+        self.clicked_block = -1;
 
         for (self.blocks, 0..) |block, i| {
             var verts: [5]rl.Vector2 = undefined;
@@ -360,6 +365,9 @@ const LogoAnimation = struct {
 
             if (pointInPoly(verts, cnt, mouse_x, mouse_y)) {
                 self.hovered_block = @intCast(i);
+                if (mouse_pressed) {
+                    self.clicked_block = @intCast(i);
+                }
             }
         }
     }
@@ -369,15 +377,22 @@ const LogoAnimation = struct {
         const ox = self.logo_offset.x;
         const oy = self.logo_offset.y;
 
-        // Base color #08FAB5, highlight color #08FAE6
-        const base_color = rl.Color{ .r = 0x08, .g = 0xFA, .b = 0xB5, .a = 255 };
+        // Highlight color (pink on hover)
         const highlight_color = rl.Color{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = 255 };
 
         // Black outline — clear separation between parts
         const outline_color = rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 };
 
         for (self.blocks, 0..) |block, idx| {
-            const fill_color = if (self.hovered_block >= 0 and idx == @as(usize, @intCast(self.hovered_block))) highlight_color else base_color;
+            // Realm-based coloring: Gold (phi), Cyan (pi), Purple (e)
+            const realm = sacred_worlds.blockToRealm(idx);
+            const realm_color = rl.Color{
+                .r = sacred_worlds.realmColorR(realm),
+                .g = sacred_worlds.realmColorG(realm),
+                .b = sacred_worlds.realmColorB(realm),
+                .a = 255,
+            };
+            const fill_color = if (self.hovered_block >= 0 and idx == @as(usize, @intCast(self.hovered_block))) highlight_color else realm_color;
             var verts: [5]rl.Vector2 = undefined;
             const cnt = block.count;
 
@@ -426,7 +441,7 @@ const LogoAnimation = struct {
 // Floating невесомые windows with phi-based animations
 // =============================================================================
 
-const MAX_PANELS = 8;
+const MAX_PANELS = 12;
 const PANEL_RADIUS: f32 = 16.0;
 
 const PanelState = enum {
@@ -447,6 +462,7 @@ const PanelType = enum {
     voice, // Voice - STT/TTS waves
     finder, // Emergent Finder - wave-based file system
     system, // System monitor - CPU, Memory, Temperature
+    sacred_world, // Sacred Mathematics world panel (27 worlds)
 };
 
 // =============================================================================
@@ -627,6 +643,10 @@ const GlassPanel = struct {
     sys_cpu_temp: f32, // Celsius
     sys_update_timer: f32, // Timer for updates
 
+    // For sacred world panel (27 worlds of 999 kingdom)
+    world_id: u8, // Block index 0-26
+    world_anim_phase: f32, // phi-spiral animation
+
     pub fn init(px: f32, py: f32, pw: f32, ph: f32, ptype: PanelType, title_str: []const u8) GlassPanel {
         var panel = GlassPanel{
             .x = px,
@@ -692,6 +712,8 @@ const GlassPanel = struct {
             .sys_mem_total = 16.0, // Default 16GB
             .sys_cpu_temp = 45.0, // Default temp
             .sys_update_timer = 0,
+            .world_id = 0,
+            .world_anim_phase = 0,
         };
         @memcpy(panel.title[0..panel.title_len], title_str[0..panel.title_len]);
         panel.title[panel.title_len] = 0;
@@ -711,6 +733,7 @@ const GlassPanel = struct {
             .voice => "Press to speak...",
             .finder => "Loading directory...",
             .system => "System monitor",
+            .sacred_world => "Sacred Mathematics",
         };
 
         // Initialize finder with current directory for finder panels
@@ -1584,6 +1607,94 @@ const GlassPanel = struct {
                 // Pulse effect for active monitoring
                 const pulse_alpha: u8 = @intFromFloat(50 + @sin(time * 3) * 20);
                 rl.DrawCircle(@intFromFloat(sx + sw - 30), @intFromFloat(content_y + 20), 4, rl.Color{ .r = 0x00, .g = 0xFF, .b = 0x88, .a = pulse_alpha });
+            },
+
+            .sacred_world => {
+                // === SACRED WORLD PANEL — 27 Worlds of 999 Kingdom ===
+                const world = sacred_worlds.getWorldByBlock(self.world_id);
+                const realm = sacred_worlds.blockToRealm(self.world_id);
+                const realm_r = sacred_worlds.realmColorR(realm);
+                const realm_g = sacred_worlds.realmColorG(realm);
+                const realm_b = sacred_worlds.realmColorB(realm);
+                const rc = rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = content_alpha };
+                const margin: f32 = 20;
+
+                // Realm header bar
+                rl.DrawRectangle(@intFromFloat(sx), @intFromFloat(content_y), @intFromFloat(sw), 36, withAlpha(rc, @intFromFloat(@as(f32, @floatFromInt(content_alpha)) * 0.3)));
+                rl.DrawLine(@intFromFloat(sx), @intFromFloat(content_y + 36), @intFromFloat(sx + sw), @intFromFloat(content_y + 36), withAlpha(rc, content_alpha));
+
+                // Realm name
+                const ri = @intFromEnum(realm);
+                const rn_len = sacred_worlds.REALM_NAME_LENS[ri];
+                var realm_buf: [16:0]u8 = undefined;
+                @memcpy(realm_buf[0..rn_len], sacred_worlds.REALM_NAMES[ri][0..rn_len]);
+                realm_buf[rn_len] = 0;
+                rl.DrawTextEx(font, &realm_buf, .{ .x = sx + margin, .y = content_y + 10 }, 14, 0.5, rc);
+
+                // Realm symbol (phi/pi/e)
+                const rs_len = sacred_worlds.REALM_SYMBOL_LENS[ri];
+                var sym_buf: [8:0]u8 = undefined;
+                @memcpy(sym_buf[0..rs_len], sacred_worlds.REALM_SYMBOLS[ri][0..rs_len]);
+                sym_buf[rs_len] = 0;
+                rl.DrawTextEx(font, &sym_buf, .{ .x = sx + sw - margin - 30, .y = content_y + 10 }, 14, 0.5, rc);
+
+                // Domain name
+                const di = @intFromEnum(world.domain);
+                const dn_len = sacred_worlds.DOMAIN_NAME_LENS[di];
+                var domain_buf: [20:0]u8 = undefined;
+                @memcpy(domain_buf[0..dn_len], sacred_worlds.DOMAIN_NAMES[di][0..dn_len]);
+                domain_buf[dn_len] = 0;
+                rl.DrawTextEx(font, &domain_buf, .{ .x = sx + margin, .y = content_y + 50 }, 12, 0.5, MUTED_GRAY);
+
+                // World title (large)
+                var title_buf: [28:0]u8 = undefined;
+                @memcpy(title_buf[0..world.name_len], world.name[0..world.name_len]);
+                title_buf[world.name_len] = 0;
+                rl.DrawTextEx(font, &title_buf, .{ .x = sx + margin, .y = content_y + 75 }, 24, 1, rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = content_alpha });
+
+                // Separator
+                rl.DrawLine(@intFromFloat(sx + margin), @intFromFloat(content_y + 110), @intFromFloat(sx + sw - margin), @intFromFloat(content_y + 110), withAlpha(BORDER_SUBTLE, content_alpha));
+
+                // Sacred formula
+                var formula_buf: [52:0]u8 = undefined;
+                @memcpy(formula_buf[0..world.formula_len], world.formula[0..world.formula_len]);
+                formula_buf[world.formula_len] = 0;
+                rl.DrawTextEx(font, &formula_buf, .{ .x = sx + margin, .y = content_y + 125 }, 16, 0.5, TEXT_WHITE);
+
+                // Sacred value (large, pulsing)
+                var val_buf: [32:0]u8 = undefined;
+                _ = std.fmt.bufPrintZ(&val_buf, "{d:.4}", .{world.sacred_value}) catch {};
+                const pulse_val: f32 = 0.8 + @sin(time * PHI) * 0.2;
+                const val_alpha: u8 = @intFromFloat(@as(f32, @floatFromInt(content_alpha)) * pulse_val);
+                rl.DrawTextEx(font, &val_buf, .{ .x = sx + margin, .y = content_y + 155 }, 32, 1, rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = val_alpha });
+
+                // Golden Identity reminder
+                rl.DrawLine(@intFromFloat(sx + margin), @intFromFloat(content_y + 200), @intFromFloat(sx + sw - margin), @intFromFloat(content_y + 200), withAlpha(BORDER_SUBTLE, content_alpha));
+                rl.DrawTextEx(font, "phi^2 + 1/phi^2 = 3 = TRINITY", .{ .x = sx + margin, .y = content_y + 215 }, 12, 0.5, withAlpha(MUTED_GRAY, content_alpha));
+                rl.DrawTextEx(font, "V = n * 3^k * pi^m * phi^p * e^q", .{ .x = sx + margin, .y = content_y + 235 }, 12, 0.5, withAlpha(MUTED_GRAY, content_alpha));
+
+                // Sacred spiral visualization
+                const spiral_cx = sx + sw - 80;
+                const spiral_cy = content_y + 280;
+                const spiral_points: u32 = 40;
+                var sp: u32 = 0;
+                while (sp < spiral_points) : (sp += 1) {
+                    const n = @as(f32, @floatFromInt(sp));
+                    const angle = n * PHI * std.math.pi + time * 0.5;
+                    const radius = 5.0 + n * 1.5;
+                    const px = spiral_cx + @cos(angle) * radius;
+                    const py = spiral_cy + @sin(angle) * radius;
+                    const dot_alpha: u8 = @intFromFloat(@max(30, @as(f32, @floatFromInt(content_alpha)) * (1.0 - n / @as(f32, @floatFromInt(spiral_points)))));
+                    rl.DrawCircle(@intFromFloat(px), @intFromFloat(py), 2, rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = dot_alpha });
+                }
+
+                // Block index badge
+                var idx_buf: [16:0]u8 = undefined;
+                _ = std.fmt.bufPrintZ(&idx_buf, "Block {d}/27", .{@as(u32, self.world_id) + 1}) catch {};
+                rl.DrawTextEx(font, &idx_buf, .{ .x = sx + margin, .y = content_y + 320 }, 11, 0.5, withAlpha(TEXT_DIM, content_alpha));
+
+                // 999 = 37 x 27 reminder
+                rl.DrawTextEx(font, "999 = 37 x 27 = SACRED", .{ .x = sx + margin, .y = content_y + 340 }, 11, 0.5, withAlpha(TEXT_DIM, content_alpha));
             },
         }
 
@@ -3081,22 +3192,86 @@ pub fn main() !void {
         effects.draw();
         goal.draw(time);
 
-        // Static logo in center (small, glassmorphism green, stays after loading)
+        // Static logo in center (realm-colored, stays after loading)
         logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
         logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
-        logo_anim.applyMouse(mx, my, dt);
+        logo_anim.applyMouse(mx, my, dt, mouse_pressed);
         logo_anim.draw();
+
+        // Handle logo block click — open sacred world panel
+        if (logo_anim.clicked_block >= 0) {
+            const block_idx = @as(usize, @intCast(logo_anim.clicked_block));
+            const world = sacred_worlds.getWorldByBlock(block_idx);
+
+            // Check if world panel already exists
+            var found = false;
+            var found_idx: usize = 0;
+            for (0..panels.count) |pi| {
+                if (panels.panels[pi].panel_type == .sacred_world and
+                    panels.panels[pi].world_id == @as(u8, @intCast(block_idx)))
+                {
+                    found = true;
+                    found_idx = pi;
+                    break;
+                }
+            }
+
+            if (found) {
+                // Focus existing panel
+                panels.active_panel = found_idx;
+                panels.panels[found_idx].is_focused = true;
+            } else if (panels.count < MAX_PANELS) {
+                // Spawn new sacred world panel
+                const pw: f32 = 500;
+                const ph: f32 = 420;
+                const title_slice = world.name[0..world.name_len];
+                panels.panels[panels.count] = GlassPanel.init(
+                    (screen_w - pw) / 2,
+                    (screen_h - ph) / 2,
+                    pw,
+                    ph,
+                    .sacred_world,
+                    title_slice,
+                );
+                panels.panels[panels.count].world_id = @intCast(block_idx);
+                panels.panels[panels.count].open();
+                panels.active_panel = panels.count;
+                panels.count += 1;
+            }
+        }
+
+        // Hover tooltip: show world name + realm color
+        if (logo_anim.hovered_block >= 0) {
+            const hi = @as(usize, @intCast(logo_anim.hovered_block));
+            const world = sacred_worlds.getWorldByBlock(hi);
+            const realm = sacred_worlds.blockToRealm(hi);
+            const rc = rl.Color{
+                .r = sacred_worlds.realmColorR(realm),
+                .g = sacred_worlds.realmColorG(realm),
+                .b = sacred_worlds.realmColorB(realm),
+                .a = 255,
+            };
+
+            // Tooltip background
+            const tw: f32 = @as(f32, @floatFromInt(world.name_len)) * 9.0 + 30;
+            const tx = mx + 15;
+            const ty = my - 28;
+            rl.DrawRectangle(@intFromFloat(tx), @intFromFloat(ty), @intFromFloat(tw), 24, withAlpha(BG_SURFACE, 230));
+            rl.DrawRectangleLines(@intFromFloat(tx), @intFromFloat(ty), @intFromFloat(tw), 24, rc);
+
+            // Realm dot + world name
+            rl.DrawCircle(@intFromFloat(tx + 10), @intFromFloat(ty + 12), 4, rc);
+            var tooltip_buf: [28:0]u8 = undefined;
+            @memcpy(tooltip_buf[0..world.name_len], world.name[0..world.name_len]);
+            tooltip_buf[world.name_len] = 0;
+            rl.DrawTextEx(font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, TEXT_WHITE);
+        }
 
         // Glass panels (on top of everything except UI)
         panels.draw(time, font);
 
-        // Mode indicator - REMOVED (Hyper style doesn't need it)
-        // drawModeIndicator(mode, time);
-
-        // No global input box - all input is inside panel windows
-
-        // Keyboard hint (minimal, top-left) - larger font
-        rl.DrawTextEx(font_small, "Shift+1-8 = Panel | ESC = Unfocus", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+        // Keyboard hint (minimal, top-left)
+        rl.DrawTextEx(font_small, "Click Logo = World | Shift+1-8 = Panel | ESC = Close", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
 
         // === STATUS BAR (Hyper terminal style, bottom) ===
         const status_bar_h: f32 = 24;

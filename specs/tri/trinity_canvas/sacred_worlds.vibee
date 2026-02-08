@@ -1,0 +1,123 @@
+name: sacred_worlds
+version: "1.0.0"
+language: zig
+module: sacred_worlds
+description: |
+  27 Worlds of the 999 Kingdom - Sacred Mathematics Menu System
+  999 = 37 x 27 = SACRED_MULTIPLIER x TRIDEVYATITSA
+  27 = 3^3 = (phi^2 + 1/phi^2)^3
+  V = n x 3^k x pi^m x phi^p x e^q
+
+imports:
+  - theme
+
+constants:
+  TOTAL_WORLDS: 27
+  TOTAL_REALMS: 3
+  DOMAINS_PER_REALM: 3
+  WORLDS_PER_DOMAIN: 3
+  SACRED_NUMBER: 999
+  PHI: 1.6180339887
+  PI: 3.1415926536
+  E: 2.7182818285
+  GOLDEN_IDENTITY: 3.0
+
+types:
+  RealmId:
+    description: "3 Realms — phi, pi, e"
+    enum:
+      - razum       # phi - Mind/Intelligence (Gold)
+      - materiya    # pi - Matter/Physical (Cyan)
+      - dukh        # e - Spirit/Transcendental (Purple)
+
+  DomainId:
+    description: "9 Domains (3 per Realm)"
+    enum:
+      - communication  # Realm 1: Chat, Voice, Translate
+      - analysis       # Realm 1: Code, Explain, Debug
+      - creation       # Realm 1: Generate, Design, Compose
+      - system_domain  # Realm 2: Monitor, Files, Network
+      - tools_domain   # Realm 2: Build, Test, Deploy
+      - hardware       # Realm 2: FPGA, GPU, Quantum
+      - mathematics    # Realm 3: Sacred, Geometry, Topology
+      - evolution      # Realm 3: Mutation, Crossover, Selection
+      - transcendence  # Realm 3: Meditation, Vision, Prophecy
+
+  WorldId:
+    description: "27 Sacred Worlds"
+    enum:
+      # Realm 1: RAZUM (phi) — blocks 0-8
+      - chat          # phi = 1.618
+      - voice         # pi*phi*e = 13.82
+      - translate     # L(10) = 123
+      - code          # 1/alpha = 137.036
+      - explain       # phi^2 = 2.618
+      - debug         # delta = 4.669
+      - generate      # F(7) = 13
+      - design        # sqrt(5) = 2.236
+      - compose       # 999 = 37*27
+      # Realm 2: MATERIYA (pi) — blocks 9-17
+      - monitor       # pi = 3.14159
+      - files         # 27 = 3^3
+      - network       # CHSH = 2*sqrt(2)
+      - build         # m_p/m_e = 1836.15
+      - test_world    # pi^2 = 9.87
+      - deploy        # e^pi = 23.14
+      - fpga          # E8 = 248
+      - gpu           # 603x energy
+      - quantum_world # 76 photons
+      # Realm 3: DUKH (e) — blocks 18-26
+      - sacred        # 3.0 = Golden Identity
+      - geometry      # tau = 6.283
+      - topology      # Menger = 2.727
+      - mutation      # mu = 0.0382
+      - crossover     # chi = 0.0618
+      - selection     # sigma = 1.618
+      - meditation    # e = 2.718
+      - vision_world  # 13.82 Gyr universe age
+      - prophecy      # H0 = 70.74
+
+  WorldInfo:
+    description: "Complete info for one world"
+    fields:
+      id: WorldId
+      realm: RealmId
+      domain: DomainId
+      block_index: U8
+      name: String
+      sacred_formula: String
+      sacred_value: Float
+
+behaviors:
+  - name: get_world_by_block
+    given: Block index 0-26
+    when: Logo block clicked or hovered
+    then: Return WorldInfo for that block
+
+  - name: get_realm_color
+    given: RealmId
+    when: Rendering realm indicator
+    then: Return gold for phi(razum), cyan for pi(materiya), purple for e(dukh)
+
+  - name: get_world_sacred_formula
+    given: WorldId
+    when: Displaying world panel
+    then: Return sacred math formula string
+
+  - name: get_domain_name
+    given: DomainId
+    when: Displaying domain label
+    then: Return domain display name
+
+test_cases:
+  - name: golden_identity
+    given: "phi^2 + 1/phi^2"
+    expected: "3.0 = TRINITY"
+
+  - name: sacred_number
+    given: "37 * 27"
+    expected: "999"
+
+  - name: total_worlds
+    given: "3 * 3 * 3"
+    expected: "27"

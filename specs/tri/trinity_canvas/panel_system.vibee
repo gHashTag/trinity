@@ -18,14 +18,14 @@ types:
   PanelSystem:
     description: "Manages all panels"
     fields:
-      panels: Array<GlassPanel, 8>
+      panels: Array<GlassPanel, 12>
       count: USize
       active_panel: Option<USize>
       drag_panel: Option<USize>
       resize_panel: Option<USize>
 
 constants:
-  MAX_PANELS: 8
+  MAX_PANELS: 12
 
 behaviors:
   - name: init
