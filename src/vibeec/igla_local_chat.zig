@@ -1232,6 +1232,20 @@ pub const IglaLocalChat = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Check if haystack contains needle (UTF-8 aware, case-insensitive for ASCII)
+/// Case-insensitive UTF-8 byte compare (supports ASCII + Cyrillic)
+fn toLowerUTF8Byte(b0: u8, b1: u8) struct { u8, u8 } {
+    // ASCII lowercase
+    if (b0 < 128) return .{ std.ascii.toLower(b0), b1 };
+    // Cyrillic uppercase А-Я (U+0410-U+042F) → а-я (U+0430-U+044F)
+    // А-П: 0xD0 0x90-0x9F → 0xD0 0xB0-0xBF
+    if (b0 == 0xD0 and b1 >= 0x90 and b1 <= 0x9F) return .{ 0xD0, b1 + 0x20 };
+    // Р-Я: 0xD0 0xA0-0xAF → 0xD1 0x80-0x8F
+    if (b0 == 0xD0 and b1 >= 0xA0 and b1 <= 0xAF) return .{ 0xD1, b1 - 0x20 };
+    // Ё: 0xD0 0x81 → ё: 0xD1 0x91
+    if (b0 == 0xD0 and b1 == 0x81) return .{ 0xD1, 0x91 };
+    return .{ b0, b1 };
+}
+
 fn containsUTF8(haystack: []const u8, needle: []const u8) bool {
     if (needle.len > haystack.len) return false;
 
@@ -1241,14 +1255,34 @@ fn containsUTF8(haystack: []const u8, needle: []const u8) bool {
         if (std.mem.eql(u8, haystack[i .. i + needle.len], needle)) {
             return true;
         }
-        // Also try lowercase for ASCII
+        // Case-insensitive compare (ASCII + Cyrillic)
         var match = true;
-        for (0..needle.len) |j| {
-            const h = if (haystack[i + j] < 128) std.ascii.toLower(haystack[i + j]) else haystack[i + j];
-            const n = if (needle[j] < 128) std.ascii.toLower(needle[j]) else needle[j];
-            if (h != n) {
+        var j: usize = 0;
+        while (j < needle.len) {
+            if (i + j >= haystack.len) {
                 match = false;
                 break;
+            }
+            const hb = haystack[i + j];
+            const nb = needle[j];
+            // For multi-byte UTF-8 (Cyrillic), compare pairs
+            if (hb >= 0xC0 and j + 1 < needle.len and i + j + 1 < haystack.len) {
+                const h_low = toLowerUTF8Byte(hb, haystack[i + j + 1]);
+                const n_low = toLowerUTF8Byte(nb, needle[j + 1]);
+                if (h_low[0] != n_low[0] or h_low[1] != n_low[1]) {
+                    match = false;
+                    break;
+                }
+                j += 2;
+            } else {
+                // ASCII single byte
+                const h = if (hb < 128) std.ascii.toLower(hb) else hb;
+                const n = if (nb < 128) std.ascii.toLower(nb) else nb;
+                if (h != n) {
+                    match = false;
+                    break;
+                }
+                j += 1;
             }
         }
         if (match) return true;

@@ -37,7 +37,7 @@ pub const HybridConfig = struct {
     symbolic_confidence_threshold: f32 = 0.3,
 
     /// Max tokens for LLM generation
-    max_tokens: u32 = 64,
+    max_tokens: u32 = 32,
 
     /// LLM sampling temperature (0.0 = deterministic, 1.0 = creative)
     temperature: f32 = 0.7,
@@ -48,8 +48,8 @@ pub const HybridConfig = struct {
     /// Enable ternary mode for LLM (BitNet weights)
     use_ternary: bool = false,
 
-    /// System prompt for LLM
-    system_prompt: []const u8 = "You are Trinity, a helpful local AI assistant. Be concise, friendly, and accurate. Respond in the same language as the user.",
+    /// System prompt for LLM (keep short to reduce prefill time on CPU)
+    system_prompt: []const u8 = "Be concise.",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -307,13 +307,15 @@ pub const IglaHybridChat = struct {
         };
 
         // Process prompt tokens (prefill)
-        std.debug.print("[LLM] Processing {d} prompt tokens...", .{tokens.len});
+        std.debug.print("[LLM] Prefill {d} tokens: ", .{tokens.len});
         var logits: ?[]f32 = null;
         for (tokens, 0..) |token, pos| {
             if (logits) |l| self.allocator.free(l);
             logits = try model.forward(token, pos);
+            // Show progress dot every 5 tokens
+            if ((pos + 1) % 5 == 0) std.debug.print(".", .{});
         }
-        std.debug.print(" done\n[LLM] Generating: ", .{});
+        std.debug.print(" ok\n[LLM] ", .{});
 
         // Generate response tokens
         var pos = tokens.len;
