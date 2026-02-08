@@ -2991,22 +2991,16 @@ pub fn main() !void {
                 const world = sacred_worlds.getWorldByBlock(wi);
                 const title_slice = world.name[0..world.name_len];
 
-                // Find existing sacred_world panel with this world_id
-                var found = false;
+                // Close all other sacred_world panels first (one world at a time)
                 for (0..panels.count) |pi| {
-                    if (panels.panels[pi].panel_type == .sacred_world and
-                        panels.panels[pi].world_id == @as(u8, @intCast(wi)))
-                    {
-                        // Focus existing — fullscreen
-                        panels.panels[pi].jarvisFocus();
-                        panels.active_panel = pi;
-                        found = true;
-                        break;
+                    if (panels.panels[pi].panel_type == .sacred_world) {
+                        panels.panels[pi].close();
+                        panels.panels[pi].is_focused = false;
                     }
                 }
 
-                if (!found and panels.count < MAX_PANELS) {
-                    // Spawn new fullscreen sacred world panel
+                // Spawn fullscreen sacred world panel (reuse slot or add new)
+                if (panels.count < MAX_PANELS) {
                     panels.panels[panels.count] = GlassPanel.init(
                         0, 0, screen_w, screen_h,
                         .sacred_world, title_slice,
@@ -3023,6 +3017,36 @@ pub fn main() !void {
         // ESC unfocuses all panels
         if (rl.IsKeyPressed(rl.KEY_ESCAPE)) {
             panels.unfocusAll();
+            // Close all sacred world panels
+            for (0..panels.count) |pi| {
+                if (panels.panels[pi].panel_type == .sacred_world) {
+                    panels.panels[pi].close();
+                }
+            }
+        }
+
+        // Click outside any panel = close all panels (return to logo menu)
+        if (rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT) and !shift_held and !ctrl_held and !cmd_held) {
+            var clicked_on_panel = false;
+            for (0..panels.count) |pi| {
+                const p = &panels.panels[pi];
+                if (p.state == .open or p.state == .opening) {
+                    if (mx >= p.x and mx <= p.x + p.width and my >= p.y and my <= p.y + p.height) {
+                        clicked_on_panel = true;
+                        break;
+                    }
+                }
+            }
+            // Also check if click is on the logo (don't close if clicking logo)
+            const on_logo = logo_anim.hovered_block >= 0;
+            if (!clicked_on_panel and !on_logo) {
+                // Close all panels — return to main logo menu
+                for (0..panels.count) |pi| {
+                    panels.panels[pi].close();
+                    panels.panels[pi].is_focused = false;
+                }
+                panels.unfocusAll();
+            }
         }
 
         // === DIRECT CHAT PANEL INPUT ===
@@ -3224,25 +3248,16 @@ pub fn main() !void {
             const block_idx = @as(usize, @intCast(logo_anim.clicked_block));
             const world = sacred_worlds.getWorldByBlock(block_idx);
 
-            // Check if world panel already exists
-            var found = false;
-            var found_idx: usize = 0;
+            // Close all other sacred_world panels (one at a time)
             for (0..panels.count) |pi| {
-                if (panels.panels[pi].panel_type == .sacred_world and
-                    panels.panels[pi].world_id == @as(u8, @intCast(block_idx)))
-                {
-                    found = true;
-                    found_idx = pi;
-                    break;
+                if (panels.panels[pi].panel_type == .sacred_world) {
+                    panels.panels[pi].close();
+                    panels.panels[pi].is_focused = false;
                 }
             }
 
-            if (found) {
-                // Focus existing panel — fullscreen
-                panels.panels[found_idx].jarvisFocus();
-                panels.active_panel = found_idx;
-            } else if (panels.count < MAX_PANELS) {
-                // Spawn new fullscreen sacred world panel
+            // Spawn new fullscreen sacred world panel
+            if (panels.count < MAX_PANELS) {
                 const title_slice = world.name[0..world.name_len];
                 panels.panels[panels.count] = GlassPanel.init(
                     0, 0, screen_w, screen_h,
@@ -3288,7 +3303,7 @@ pub fn main() !void {
         panels.draw(time, font);
 
         // Keyboard hint (minimal, top-left)
-        rl.DrawTextEx(font_small, "Click Logo = World | Shift+1-8 = Panel | ESC = Close", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+        rl.DrawTextEx(font_small, "Shift+1-9 RAZUM | Ctrl+1-9 MATERIYA | Cmd+1-9 DUKH | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
 
         // === STATUS BAR (Hyper terminal style, bottom) ===
         const status_bar_h: f32 = 24;
