@@ -8,6 +8,7 @@
 const std = @import("std");
 const photon = @import("photon.zig");
 const theme = @import("trinity_canvas/theme.zig"); // SINGLE SOURCE OF TRUTH
+const world_docs = @import("trinity_canvas/world_docs.zig");
 const math = std.math;
 const rl = @cImport({
     @cInclude("raylib.h");
@@ -25,6 +26,10 @@ const TAU: f32 = theme.TAU;
 var g_width: c_int = 1512;
 var g_height: c_int = 982;
 var g_pixel_size: c_int = 4;
+// Adaptive font scale: proportional to screen width (reference: 1280px)
+var g_font_scale: f32 = 1.0;
+// HiDPI scale factor (2.0 on Retina, 1.0 on standard displays)
+var g_dpi_scale: f32 = 1.0;
 
 // =============================================================================
 // HYPER TERMINAL STYLE COLORS (from theme.zig - SINGLE SOURCE OF TRUTH)
@@ -35,67 +40,93 @@ fn toRl(c: theme.Color) rl.Color {
     return @bitCast(c);
 }
 
-const BG_BLACK: rl.Color = @bitCast(theme.colors.bg);
-const TEXT_WHITE: rl.Color = @bitCast(theme.colors.text);
-const HYPER_MAGENTA: rl.Color = @bitCast(theme.colors.magenta);
-const HYPER_CYAN: rl.Color = @bitCast(theme.colors.cyan);
-const HYPER_GREEN: rl.Color = @bitCast(theme.colors.green);
-const HYPER_YELLOW: rl.Color = @bitCast(theme.colors.yellow);
-const HYPER_RED: rl.Color = @bitCast(theme.colors.red);
-const MUTED_GRAY: rl.Color = @bitCast(theme.colors.text_muted);
-const BORDER_SUBTLE: rl.Color = @bitCast(theme.colors.border);
+// === SWITCHABLE surface colors (var — re-read from theme on toggle) ===
+// Initialized with comptime dark defaults; reloadThemeAliases() updates at runtime.
+var BG_BLACK: rl.Color = @bitCast(theme.colors.bg);
+var TEXT_WHITE: rl.Color = @bitCast(theme.colors.text);
+var MUTED_GRAY: rl.Color = @bitCast(theme.colors.text_muted);
+var BORDER_SUBTLE: rl.Color = @bitCast(theme.colors.border);
+var VOID_BLACK: rl.Color = @bitCast(theme.colors.bg);
+var NOVA_WHITE: rl.Color = @bitCast(theme.colors.text);
+var GLASS_BG: rl.Color = @bitCast(theme.colors.bg_panel);
+var GLASS_BORDER: rl.Color = @bitCast(theme.colors.border);
+var BG_SURFACE: rl.Color = @bitCast(theme.colors.bg_surface);
+var BG_INPUT: rl.Color = @bitCast(theme.colors.bg_input);
+var BG_BAR: rl.Color = @bitCast(theme.colors.bg_bar);
+var BG_HOVER: rl.Color = @bitCast(theme.colors.bg_hover);
+var SEPARATOR: rl.Color = @bitCast(theme.colors.separator);
+var BORDER_LIGHT: rl.Color = @bitCast(theme.colors.border_light);
+var TEXT_DIM: rl.Color = @bitCast(theme.colors.text_dim);
+var TEXT_HINT: rl.Color = @bitCast(theme.colors.text_hint);
+var CONTENT_TEXT: rl.Color = @bitCast(theme.colors.content_text);
 
-// Legacy aliases (all point to theme.zig via @bitCast)
-const VOID_BLACK: rl.Color = @bitCast(theme.colors.bg);
-const ACCENT_GREEN: rl.Color = @bitCast(theme.colors.green);
-const NEON_CYAN: rl.Color = @bitCast(theme.colors.cyan);
-const NEON_MAGENTA: rl.Color = @bitCast(theme.colors.magenta);
-const NEON_GREEN: rl.Color = @bitCast(theme.colors.green);
-const NEON_GOLD: rl.Color = @bitCast(theme.colors.yellow);
-const NEON_PURPLE: rl.Color = @bitCast(theme.colors.magenta);
-const NOVA_WHITE: rl.Color = @bitCast(theme.colors.text);
-const SINK_RED: rl.Color = @bitCast(theme.colors.red);
+// === ACCENT colors (const — same in dark and light) ===
+const HYPER_MAGENTA: rl.Color = @bitCast(theme.accents.magenta);
+const HYPER_CYAN: rl.Color = @bitCast(theme.accents.cyan);
+const HYPER_GREEN: rl.Color = @bitCast(theme.accents.green);
+const HYPER_YELLOW: rl.Color = @bitCast(theme.accents.yellow);
+const HYPER_RED: rl.Color = @bitCast(theme.accents.red);
+const ACCENT_GREEN: rl.Color = @bitCast(theme.accents.green);
+const NEON_CYAN: rl.Color = @bitCast(theme.accents.cyan);
+const NEON_MAGENTA: rl.Color = @bitCast(theme.accents.magenta);
+const NEON_GREEN: rl.Color = @bitCast(theme.accents.green);
+const NEON_GOLD: rl.Color = @bitCast(theme.accents.yellow);
+const NEON_PURPLE: rl.Color = @bitCast(theme.accents.magenta);
+const SINK_RED: rl.Color = @bitCast(theme.accents.red);
+const GLASS_GLOW: rl.Color = @bitCast(theme.accents.glow_magenta);
+const RECORDING_RED: rl.Color = @bitCast(theme.accents.recording_red);
+const GOLD: rl.Color = @bitCast(theme.accents.gold);
+const BLUE: rl.Color = @bitCast(theme.accents.blue);
+const ORANGE: rl.Color = @bitCast(theme.accents.orange);
+const PURPLE: rl.Color = @bitCast(theme.accents.purple);
+const LOGO_GREEN: rl.Color = @bitCast(theme.accents.logo_green);
 
-// Glass colors (from theme.zig via @bitCast)
-const GLASS_BG: rl.Color = @bitCast(theme.colors.bg_panel);
-const GLASS_BORDER: rl.Color = @bitCast(theme.colors.border);
-const GLASS_GLOW: rl.Color = @bitCast(theme.colors.glow_magenta);
-
-// Additional Hyper UI colors
-const BG_SURFACE: rl.Color = @bitCast(theme.colors.bg_surface);
-const BG_INPUT: rl.Color = @bitCast(theme.colors.bg_input);
-const BG_BAR: rl.Color = @bitCast(theme.colors.bg_bar);
-const BG_HOVER: rl.Color = @bitCast(theme.colors.bg_hover);
-const SEPARATOR: rl.Color = @bitCast(theme.colors.separator);
-const BORDER_LIGHT: rl.Color = @bitCast(theme.colors.border_light);
-const TEXT_DIM: rl.Color = @bitCast(theme.colors.text_dim);
-const TEXT_HINT: rl.Color = @bitCast(theme.colors.text_hint);
-const CONTENT_TEXT: rl.Color = @bitCast(theme.colors.content_text);
-const RECORDING_RED: rl.Color = @bitCast(theme.colors.recording_red);
-const GOLD: rl.Color = @bitCast(theme.colors.gold);
-const BLUE: rl.Color = @bitCast(theme.colors.blue);
-const ORANGE: rl.Color = @bitCast(theme.colors.orange);
-const PURPLE: rl.Color = @bitCast(theme.colors.purple);
-const LOGO_GREEN: rl.Color = @bitCast(theme.colors.logo_green);
-
-// Panel traffic light buttons
+// Panel traffic light buttons (const — always same)
 const BTN_CLOSE: rl.Color = @bitCast(theme.panel.btn_close);
 const BTN_MINIMIZE: rl.Color = @bitCast(theme.panel.btn_minimize);
 const BTN_MAXIMIZE: rl.Color = @bitCast(theme.panel.btn_maximize);
 
-// File type colors (Hyper palette)
-const FILE_FOLDER: rl.Color = @bitCast(theme.colors.file_folder);
-const FILE_ZIG: rl.Color = @bitCast(theme.colors.file_zig);
-const FILE_CODE: rl.Color = @bitCast(theme.colors.file_code);
-const FILE_IMAGE: rl.Color = @bitCast(theme.colors.file_image);
-const FILE_AUDIO: rl.Color = @bitCast(theme.colors.file_audio);
-const FILE_DOCUMENT: rl.Color = @bitCast(theme.colors.file_document);
-const FILE_DATA: rl.Color = @bitCast(theme.colors.file_data);
-const FILE_UNKNOWN: rl.Color = @bitCast(theme.colors.file_unknown);
+// File type colors (const — accent-based)
+const FILE_FOLDER: rl.Color = @bitCast(theme.accents.file_folder);
+const FILE_ZIG: rl.Color = @bitCast(theme.accents.file_zig);
+const FILE_CODE: rl.Color = @bitCast(theme.accents.file_code);
+const FILE_IMAGE: rl.Color = @bitCast(theme.accents.file_image);
+const FILE_AUDIO: rl.Color = @bitCast(theme.accents.file_audio);
+const FILE_DOCUMENT: rl.Color = @bitCast(theme.accents.file_document);
+const FILE_DATA: rl.Color = @bitCast(theme.accents.file_data);
+const FILE_UNKNOWN: rl.Color = @bitCast(theme.accents.file_unknown);
 
 // Helper: apply runtime alpha to a color
 fn withAlpha(c: rl.Color, alpha: u8) rl.Color {
     return rl.Color{ .r = c.r, .g = c.g, .b = c.b, .a = alpha };
+}
+
+// Accent text color — vivid on dark theme, dark monochrome on light theme
+// Use for any text that would be accent-colored; keeps icons/borders/decorative elements vivid.
+fn accentText(accent: rl.Color, alpha: u8) rl.Color {
+    // Dark theme: vivid accent color. Light theme: pure black for max contrast
+    return if (theme.isDark()) withAlpha(accent, alpha) else rl.Color{ .r = 0x00, .g = 0x00, .b = 0x00, .a = alpha };
+}
+
+// Reload all var aliases from theme after toggle()
+fn reloadThemeAliases() void {
+    BG_BLACK = @bitCast(theme.bg);
+    TEXT_WHITE = @bitCast(theme.text);
+    MUTED_GRAY = @bitCast(theme.text_muted);
+    BORDER_SUBTLE = @bitCast(theme.border);
+    VOID_BLACK = @bitCast(theme.bg);
+    NOVA_WHITE = @bitCast(theme.text);
+    GLASS_BG = @bitCast(theme.bg_panel);
+    GLASS_BORDER = @bitCast(theme.border);
+    BG_SURFACE = @bitCast(theme.bg_surface);
+    BG_INPUT = @bitCast(theme.bg_input);
+    BG_BAR = @bitCast(theme.bg_bar);
+    BG_HOVER = @bitCast(theme.bg_hover);
+    SEPARATOR = @bitCast(theme.separator);
+    BORDER_LIGHT = @bitCast(theme.border_light);
+    TEXT_DIM = @bitCast(theme.text_dim);
+    TEXT_HINT = @bitCast(theme.text_hint);
+    CONTENT_TEXT = @bitCast(theme.content_text);
 }
 
 // =============================================================================
@@ -148,7 +179,7 @@ const LogoAnimation = struct {
         var self = LogoAnimation{
             .blocks = undefined,
             .time = 0,
-            .duration = 5.0, // Luxury slow animation (Apple-style)
+            .duration = 2.5, // Fast assembly animation
             .is_complete = false,
             .logo_scale = @min(screen_w / SVG_WIDTH, screen_h / SVG_HEIGHT) * 0.35,
             .logo_offset = .{ .x = screen_w / 2, .y = screen_h / 2 },
@@ -238,7 +269,7 @@ const LogoAnimation = struct {
             const dir_len = @sqrt(center_x * center_x + center_y * center_y);
             const norm_x = if (dir_len > 0.1) center_x / dir_len else @cos(@as(f32, @floatFromInt(i)) * TAU / 27.0);
             const norm_y = if (dir_len > 0.1) center_y / dir_len else @sin(@as(f32, @floatFromInt(i)) * TAU / 27.0);
-            const distance: f32 = 1200.0; // Same distance for all — clean formation
+            const distance: f32 = 800.0; // Shorter travel distance — faster entrance
             self.blocks[i].offset = .{
                 .x = norm_x * distance,
                 .y = norm_y * distance,
@@ -276,19 +307,19 @@ const LogoAnimation = struct {
             const arrival = 0.7; // when blocks "arrive" and spring kicks in
 
             if (progress < arrival) {
-                // Straight linear flight — each block slides to its place
-                const speed = 2.0 * dt;
+                // Straight flight — exponential ease-in toward center
+                const speed = 4.5 * dt;
                 block.offset.x -= block.offset.x * speed;
                 block.offset.y -= block.offset.y * speed;
 
                 // Carry momentum into spring phase
-                block.anim_vx = -block.offset.x * 0.3;
-                block.anim_vy = -block.offset.y * 0.3;
+                block.anim_vx = -block.offset.x * 0.4;
+                block.anim_vy = -block.offset.y * 0.4;
                 block.anim_vr = 0;
             } else {
-                // Spring phase — elastic bounce at destination
-                const spring_k: f32 = 18.0;
-                const damp: f32 = 0.90;
+                // Spring phase — snappy elastic settle
+                const spring_k: f32 = 28.0;
+                const damp: f32 = 0.86;
 
                 // Spring force pulls offset to zero
                 block.anim_vx += (-block.offset.x * spring_k) * dt;
@@ -315,8 +346,8 @@ const LogoAnimation = struct {
             }
         }
 
-        // Linger for 1.5s after assembly (Apple-style pause before transition)
-        if (all_done and self.time > self.duration + 1.5) {
+        // Brief pause after assembly before transitioning
+        if (all_done and self.time > self.duration + 0.5) {
             self.is_complete = true;
         }
     }
@@ -390,14 +421,14 @@ const LogoAnimation = struct {
         const ox = self.logo_offset.x;
         const oy = self.logo_offset.y;
 
-        // Hover color: white petal on hover
-        const highlight_color = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 255 };
+        // Hover color: highlight petal on hover (switches with theme)
+        const highlight_color: rl.Color = @bitCast(theme.logo_highlight);
 
-        // Black petals — inverted spider web look
-        const petal_color = rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 };
+        // Petals — spider web look (switches with theme: black on dark, white on light)
+        const petal_color: rl.Color = @bitCast(theme.logo_petal);
 
-        // White outline — spider web threads
-        const outline_color = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 255 };
+        // Outline — spider web threads (switches with theme)
+        const outline_color: rl.Color = @bitCast(theme.logo_outline);
 
         for (self.blocks, 0..) |block, idx| {
             const fill_color = if (self.hovered_block >= 0 and idx == @as(usize, @intCast(self.hovered_block))) highlight_color else petal_color;
@@ -434,11 +465,11 @@ const LogoAnimation = struct {
                 }
             }
 
-            // Transparent outline
+            // Outline — integer-width line to avoid sub-pixel artifacts
             var m: usize = 0;
             while (m < cnt) : (m += 1) {
                 const next = (m + 1) % cnt;
-                rl.DrawLineEx(verts[m], verts[next], 1.5, outline_color);
+                rl.DrawLineEx(verts[m], verts[next], 1.0, outline_color);
             }
         }
     }
@@ -529,7 +560,7 @@ const FormulaParticle = struct {
 
     fn draw(self: *const FormulaParticle, time_val: f32, cx: f32, cy: f32, font: rl.Font) void {
         const pos = self.getPos(time_val, cx, cy);
-        const text_color = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 160 };
+        const text_color = withAlpha(@as(rl.Color, @bitCast(theme.formula_text)), 160);
         const tw = @as(f32, @floatFromInt(self.text_len)) * 8.0;
 
         // Draw formula text (centered)
@@ -538,7 +569,9 @@ const FormulaParticle = struct {
         // Expanded description (no background rect — clean text only)
         if (self.expand_anim > 0.3) {
             const desc_alpha: u8 = @intFromFloat(@min(self.expand_anim, 1.0) * 200.0);
-            const desc_color = rl.Color{ .r = 0x08, .g = 0xFA, .b = 0xB5, .a = desc_alpha };
+            // On light theme: dark text (accent green invisible on white)
+            const desc_accent = @as(rl.Color, @bitCast(theme.accents.logo_green));
+            const desc_color = if (theme.isDark()) withAlpha(desc_accent, desc_alpha) else withAlpha(@as(rl.Color, @bitCast(theme.text)), desc_alpha);
             const dw = @as(f32, @floatFromInt(self.desc_len)) * 7.0;
             rl.DrawTextEx(font, &self.desc, .{ .x = pos.x - dw / 2, .y = pos.y + 12 }, 12, 0.5, desc_color);
         }
@@ -696,6 +729,7 @@ const GlassPanel = struct {
     content_text: [512]u8,
     content_len: usize,
     scroll_y: f32,
+    scroll_target: f32, // Smooth scroll target (lerp toward this)
 
     // For tools panel
     tool_selected: usize,
@@ -784,6 +818,7 @@ const GlassPanel = struct {
             .content_text = undefined,
             .content_len = 0,
             .scroll_y = 0,
+            .scroll_target = 0,
             .tool_selected = 0,
             .voice_amplitude = 0,
             .voice_recording = false,
@@ -1168,18 +1203,20 @@ const GlassPanel = struct {
 
         // === PROFESSIONAL GLASSMORPHISM ===
 
-        // Shadow (soft, offset down-right)
+        // Shadow (soft, offset down-right — darker on light theme for visibility)
         const shadow_offset: f32 = 4.0;
-        const shadow_alpha: u8 = @intFromFloat(self.opacity * 40);
+        const shadow_strength: f32 = if (theme.isDark()) 40 else 80;
+        const shadow_alpha: u8 = @intFromFloat(self.opacity * shadow_strength);
+        const shadow_color = rl.Color{ .r = 0x00, .g = 0x00, .b = 0x00, .a = shadow_alpha };
         rl.DrawRectangleRounded(
             .{ .x = sx + shadow_offset, .y = sy + shadow_offset, .width = sw, .height = sh },
             roundness, 32, // More segments for smoother corners
-            rl.Color{ .r = 0, .g = 0, .b = 0, .a = shadow_alpha },
+            shadow_color,
         );
 
-        // Main glass background (Hyper style) — sacred_world panels are fully opaque pure black
+        // Main glass background (Hyper style) — sacred_world panels are fully opaque
         const bg_alpha: u8 = @intFromFloat(self.opacity * if (self.panel_type == .sacred_world) @as(f32, 255) else @as(f32, 230));
-        const bg_color = if (self.panel_type == .sacred_world) rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 } else BG_SURFACE;
+        const bg_color = if (self.panel_type == .sacred_world) @as(rl.Color, @bitCast(theme.sacred_world_bg)) else BG_SURFACE;
         rl.DrawRectangleRounded(
             .{ .x = sx, .y = sy, .width = sw, .height = sh },
             roundness, 32,
@@ -1194,12 +1231,13 @@ const GlassPanel = struct {
         //     withAlpha(TEXT_WHITE, grad_alpha),
         // );
 
-        // Border (1px, subtle white like landing page)
-        const border_alpha: u8 = @intFromFloat(self.opacity * 40);
+        // Border — visible on both themes (stronger on light)
+        const border_strength: f32 = if (theme.isDark()) 40 else 180;
+        const border_alpha: u8 = @intFromFloat(self.opacity * border_strength);
         rl.DrawRectangleRoundedLinesEx(
             .{ .x = sx, .y = sy, .width = sw, .height = sh },
             roundness, 32, 1.0,
-            rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = border_alpha },
+            withAlpha(@as(rl.Color, @bitCast(theme.border)), border_alpha),
         );
 
         // === TITLE BAR (Hyper style - no traffic lights) ===
@@ -1214,17 +1252,17 @@ const GlassPanel = struct {
         const title_alpha: u8 = @intFromFloat(self.opacity * 200);
         const title_width: f32 = @floatFromInt(rl.MeasureText(&self.title, 14));
         const title_x = sx + (sw - title_width) / 2;
-        rl.DrawTextEx(font, &self.title, .{ .x = title_x, .y = sy + 6 }, 16, 0.5, rl.Color{ .r = 0xE0, .g = 0xE0, .b = 0xE0, .a = title_alpha });
+        rl.DrawTextEx(font, &self.title, .{ .x = title_x, .y = sy + 6 }, 16, 0.5, withAlpha(@as(rl.Color, @bitCast(theme.panel_title)), title_alpha));
 
         // Title bar separator
         const sep_alpha: u8 = @intFromFloat(self.opacity * 30);
-        rl.DrawLine(@intFromFloat(sx), @intFromFloat(sy + 32), @intFromFloat(sx + sw), @intFromFloat(sy + 32), rl.Color{ .r = 0x80, .g = 0x80, .b = 0x80, .a = sep_alpha });
+        rl.DrawLine(@intFromFloat(sx), @intFromFloat(sy + 32), @intFromFloat(sx + sw), @intFromFloat(sy + 32), withAlpha(@as(rl.Color, @bitCast(theme.panel_title_sep)), sep_alpha));
 
         // === CONTENT AREA (Multi-Modal) ===
         const content_y = sy + 40;
         const content_h = sh - 50;
         const content_alpha: u8 = @intFromFloat(self.opacity * 180);
-        const text_color = rl.Color{ .r = 0xC0, .g = 0xC8, .b = 0xD0, .a = content_alpha };
+        const text_color = withAlpha(CONTENT_TEXT, content_alpha);
 
         switch (self.panel_type) {
             .chat => {
@@ -1326,7 +1364,7 @@ const GlassPanel = struct {
                     const ln_alpha: u8 = @intFromFloat(50 + ln_glow * 30);
                     var ln_buf: [8:0]u8 = undefined;
                     _ = std.fmt.bufPrintZ(&ln_buf, "{d:>3}", .{i + 1}) catch {};
-                    rl.DrawTextEx(font, &ln_buf, .{ .x = sx + 8, .y = line_y }, 10, 0.5, rl.Color{ .r = 0x60, .g = 0x60, .b = 0x60, .a = ln_alpha + content_alpha / 2 });
+                    rl.DrawTextEx(font, &ln_buf, .{ .x = sx + 8, .y = line_y }, 10, 0.5, withAlpha(@as(rl.Color, @bitCast(theme.line_number)), ln_alpha + content_alpha / 2));
 
                     if (line.len == 0) continue;
 
@@ -1371,7 +1409,7 @@ const GlassPanel = struct {
                     const is_selected = i == self.tool_selected;
                     // Background
                     if (is_selected) {
-                        rl.DrawRectangle(@intFromFloat(sx + 8), @intFromFloat(tool_y - 2), @intFromFloat(sw - 16), 24, rl.Color{ .r = 0x18, .g = 0x28, .b = 0x18, .a = content_alpha });
+                        rl.DrawRectangle(@intFromFloat(sx + 8), @intFromFloat(tool_y - 2), @intFromFloat(sw - 16), 24, withAlpha(@as(rl.Color, @bitCast(theme.tool_selected_bg)), content_alpha));
                     }
                     // Icon placeholder
                     rl.DrawCircle(@intFromFloat(sx + 22), @intFromFloat(tool_y + 10), 6, withAlpha(HYPER_GREEN, content_alpha));
@@ -1394,7 +1432,7 @@ const GlassPanel = struct {
                     rl.DrawText(setting.name.ptr, @intFromFloat(sx + 16), @intFromFloat(set_y + 4), 12, text_color);
                     // Toggle
                     const toggle_x = sx + sw - 50;
-                    const toggle_color = if (setting.on) rl.Color{ .r = 0x28, .g = 0xC8, .b = 0x40, .a = content_alpha } else rl.Color{ .r = 0x40, .g = 0x40, .b = 0x50, .a = content_alpha };
+                    const toggle_color = if (setting.on) withAlpha(@as(rl.Color, @bitCast(theme.settings_toggle_on)), content_alpha) else withAlpha(@as(rl.Color, @bitCast(theme.settings_toggle_off)), content_alpha);
                     rl.DrawRectangleRounded(.{ .x = toggle_x, .y = set_y, .width = 36, .height = 20 }, 0.5, 8, toggle_color);
                     const knob_x = if (setting.on) toggle_x + 20 else toggle_x + 4;
                     rl.DrawCircle(@intFromFloat(knob_x + 6), @intFromFloat(set_y + 10), 8, withAlpha(TEXT_WHITE, content_alpha));
@@ -1728,26 +1766,36 @@ const GlassPanel = struct {
                 const realm_g = sacred_worlds.realmColorG(realm);
                 const realm_b = sacred_worlds.realmColorB(realm);
                 const rc = rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = content_alpha };
-                const margin: f32 = 20;
+                const margin: f32 = 20 * g_font_scale;
+                const fs = g_font_scale; // font scale shorthand
 
-                // Realm header bar
-                rl.DrawRectangle(@intFromFloat(sx), @intFromFloat(content_y), @intFromFloat(sw), 36, withAlpha(rc, @intFromFloat(@as(f32, @floatFromInt(content_alpha)) * 0.3)));
-                rl.DrawLine(@intFromFloat(sx), @intFromFloat(content_y + 36), @intFromFloat(sx + sw), @intFromFloat(content_y + 36), withAlpha(rc, content_alpha));
+                // ── Compact header (scaled) ──
+                const header_h: f32 = 36 * fs;
 
-                // Realm name
+                // Realm header bar — theme-aware bg (dark on dark, light tint on light)
+                // Header bar: solid black on both themes
+                const hdr_bg = rl.Color{ .r = 0x0A, .g = 0x0A, .b = 0x0A, .a = content_alpha };
+                rl.DrawRectangle(@intFromFloat(sx), @intFromFloat(content_y), @intFromFloat(sw), @intFromFloat(header_h), hdr_bg);
+                // Realm color accent dot (left)
+                rl.DrawCircle(@intFromFloat(sx + 12 * fs), @intFromFloat(content_y + header_h / 2), 4 * fs, withAlpha(rc, content_alpha));
+                rl.DrawLine(@intFromFloat(sx), @intFromFloat(content_y + header_h), @intFromFloat(sx + sw), @intFromFloat(content_y + header_h), withAlpha(rc, content_alpha));
+
+                // Realm name (white on black header)
                 const ri = @intFromEnum(realm);
                 const rn_len = sacred_worlds.REALM_NAME_LENS[ri];
                 var realm_buf: [16:0]u8 = undefined;
                 @memcpy(realm_buf[0..rn_len], sacred_worlds.REALM_NAMES[ri][0..rn_len]);
                 realm_buf[rn_len] = 0;
-                rl.DrawTextEx(font, &realm_buf, .{ .x = sx + margin, .y = content_y + 10 }, 14, 0.5, rc);
+                // White text on black header (both themes)
+                const hdr_text = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = content_alpha };
+                rl.DrawTextEx(font, &realm_buf, .{ .x = sx + margin + 4, .y = content_y + 10 * fs }, 14 * fs, 0.5, hdr_text);
 
-                // Realm symbol (phi/pi/e)
+                // Realm symbol (phi/pi/e) — white on black
                 const rs_len = sacred_worlds.REALM_SYMBOL_LENS[ri];
                 var sym_buf: [8:0]u8 = undefined;
                 @memcpy(sym_buf[0..rs_len], sacred_worlds.REALM_SYMBOLS[ri][0..rs_len]);
                 sym_buf[rs_len] = 0;
-                rl.DrawTextEx(font, &sym_buf, .{ .x = sx + sw - margin - 30, .y = content_y + 10 }, 14, 0.5, rc);
+                rl.DrawTextEx(font, &sym_buf, .{ .x = sx + sw - margin - 30 * fs, .y = content_y + 10 * fs }, 14 * fs, 0.5, hdr_text);
 
                 // Domain name
                 const di = @intFromEnum(world.domain);
@@ -1755,57 +1803,161 @@ const GlassPanel = struct {
                 var domain_buf: [20:0]u8 = undefined;
                 @memcpy(domain_buf[0..dn_len], sacred_worlds.DOMAIN_NAMES[di][0..dn_len]);
                 domain_buf[dn_len] = 0;
-                rl.DrawTextEx(font, &domain_buf, .{ .x = sx + margin, .y = content_y + 50 }, 12, 0.5, MUTED_GRAY);
+                rl.DrawTextEx(font, &domain_buf, .{ .x = sx + margin, .y = content_y + header_h + 14 * fs }, 12 * fs, 0.5, MUTED_GRAY);
 
-                // World title (large)
+                // World title (large — phi ratio: 24 = ~14 * phi)
                 var title_buf: [28:0]u8 = undefined;
                 @memcpy(title_buf[0..world.name_len], world.name[0..world.name_len]);
                 title_buf[world.name_len] = 0;
-                rl.DrawTextEx(font, &title_buf, .{ .x = sx + margin, .y = content_y + 75 }, 24, 1, rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = content_alpha });
+                rl.DrawTextEx(font, &title_buf, .{ .x = sx + margin, .y = content_y + header_h + 34 * fs }, 24 * fs, 1, accentText(rc, content_alpha));
 
-                // Separator
-                rl.DrawLine(@intFromFloat(sx + margin), @intFromFloat(content_y + 110), @intFromFloat(sx + sw - margin), @intFromFloat(content_y + 110), withAlpha(BORDER_SUBTLE, content_alpha));
-
-                // Sacred formula
+                // Formula + value (inline right side)
                 var formula_buf: [52:0]u8 = undefined;
                 @memcpy(formula_buf[0..world.formula_len], world.formula[0..world.formula_len]);
                 formula_buf[world.formula_len] = 0;
-                rl.DrawTextEx(font, &formula_buf, .{ .x = sx + margin, .y = content_y + 125 }, 16, 0.5, TEXT_WHITE);
+                rl.DrawTextEx(font, &formula_buf, .{ .x = sx + margin, .y = content_y + header_h + 69 * fs }, 13 * fs, 0.5, TEXT_WHITE);
 
-                // Sacred value (large, pulsing)
                 var val_buf: [32:0]u8 = undefined;
                 _ = std.fmt.bufPrintZ(&val_buf, "{d:.4}", .{world.sacred_value}) catch {};
                 const pulse_val: f32 = 0.8 + @sin(time * PHI) * 0.2;
                 const val_alpha: u8 = @intFromFloat(@as(f32, @floatFromInt(content_alpha)) * pulse_val);
-                rl.DrawTextEx(font, &val_buf, .{ .x = sx + margin, .y = content_y + 155 }, 32, 1, rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = val_alpha });
+                rl.DrawTextEx(font, &val_buf, .{ .x = sx + sw - margin - 120 * fs, .y = content_y + header_h + 62 * fs }, 20 * fs, 1, accentText(rc, val_alpha));
 
-                // Golden Identity reminder
-                rl.DrawLine(@intFromFloat(sx + margin), @intFromFloat(content_y + 200), @intFromFloat(sx + sw - margin), @intFromFloat(content_y + 200), withAlpha(BORDER_SUBTLE, content_alpha));
-                rl.DrawTextEx(font, "phi^2 + 1/phi^2 = 3 = TRINITY", .{ .x = sx + margin, .y = content_y + 215 }, 12, 0.5, withAlpha(MUTED_GRAY, content_alpha));
-                rl.DrawTextEx(font, "V = n * 3^k * pi^m * phi^p * e^q", .{ .x = sx + margin, .y = content_y + 235 }, 12, 0.5, withAlpha(MUTED_GRAY, content_alpha));
-
-                // Sacred spiral visualization
-                const spiral_cx = sx + sw - 80;
-                const spiral_cy = content_y + 280;
-                const spiral_points: u32 = 40;
+                // Golden spiral (right side, inline with formula area)
+                const spiral_cx = sx + sw - 50 * fs;
+                const spiral_cy = content_y + header_h + 44 * fs;
+                const spiral_points: u32 = 30;
                 var sp: u32 = 0;
                 while (sp < spiral_points) : (sp += 1) {
                     const n = @as(f32, @floatFromInt(sp));
                     const angle = n * PHI * std.math.pi + time * 0.5;
-                    const radius = 5.0 + n * 1.5;
-                    const px = spiral_cx + @cos(angle) * radius;
-                    const py = spiral_cy + @sin(angle) * radius;
+                    const radius_sp = (3.0 + n * 1.0) * fs;
+                    const px = spiral_cx + @cos(angle) * radius_sp;
+                    const py = spiral_cy + @sin(angle) * radius_sp;
                     const dot_alpha: u8 = @intFromFloat(@max(30, @as(f32, @floatFromInt(content_alpha)) * (1.0 - n / @as(f32, @floatFromInt(spiral_points)))));
-                    rl.DrawCircle(@intFromFloat(px), @intFromFloat(py), 2, rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = dot_alpha });
+                    rl.DrawCircle(@intFromFloat(px), @intFromFloat(py), 1.5 * fs, rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = dot_alpha });
                 }
 
-                // Block index badge
+                // Separator + doc subtitle
+                const sep1_y = content_y + header_h + 94 * fs;
+                rl.DrawLine(@intFromFloat(sx + margin), @intFromFloat(sep1_y), @intFromFloat(sx + sw - margin), @intFromFloat(sep1_y), withAlpha(BORDER_SUBTLE, content_alpha));
+
+                // Doc subtitle
+                const doc = world_docs.WORLD_DOCS[self.world_id];
+                var subtitle_buf: [64:0]u8 = undefined;
+                const sub_len = @min(doc.subtitle.len, 63);
+                @memcpy(subtitle_buf[0..sub_len], doc.subtitle[0..sub_len]);
+                subtitle_buf[sub_len] = 0;
+                rl.DrawTextEx(font, &subtitle_buf, .{ .x = sx + margin, .y = sep1_y + 8 * fs }, 13 * fs, 0.5, accentText(rc, content_alpha));
+
+                // Block badge (right of subtitle)
                 var idx_buf: [16:0]u8 = undefined;
                 _ = std.fmt.bufPrintZ(&idx_buf, "Block {d}/27", .{@as(u32, self.world_id) + 1}) catch {};
-                rl.DrawTextEx(font, &idx_buf, .{ .x = sx + margin, .y = content_y + 320 }, 11, 0.5, withAlpha(TEXT_DIM, content_alpha));
+                rl.DrawTextEx(font, &idx_buf, .{ .x = sx + sw - margin - 80 * fs, .y = sep1_y + 10 * fs }, 11 * fs, 0.5, withAlpha(TEXT_DIM, content_alpha));
 
-                // 999 = 37 x 27 reminder
-                rl.DrawTextEx(font, "999 = 37 x 27 = SACRED", .{ .x = sx + margin, .y = content_y + 340 }, 11, 0.5, withAlpha(TEXT_DIM, content_alpha));
+                const sep2_y = sep1_y + 30 * fs;
+                rl.DrawLine(@intFromFloat(sx + margin), @intFromFloat(sep2_y), @intFromFloat(sx + sw - margin), @intFromFloat(sep2_y), withAlpha(BORDER_SUBTLE, content_alpha));
+
+                // ── Scrollable documentation text area ──
+                const doc_header_h = header_h + 130 * fs; // total header height
+                const doc_y = content_y + doc_header_h;
+                const doc_h = content_h - doc_header_h - 10;
+                const doc_x = sx + margin;
+                const doc_w = sw - margin * 2;
+                const line_h: f32 = 18 * fs;
+                const font_size: f32 = 13 * fs;
+                const char_w: f32 = 7.0 * fs;
+                const chars_per_line: usize = @max(20, @as(usize, @intFromFloat(doc_w / char_w)));
+
+                // Scissor clip to doc area
+                rl.BeginScissorMode(@intFromFloat(sx), @intFromFloat(doc_y), @intFromFloat(sw), @intFromFloat(@max(1, doc_h)));
+
+                // Iterate lines of the markdown, skip noise, render visible ones
+                var iter = world_docs.LineIterator.init(doc.raw);
+                var render_y: f32 = doc_y - self.scroll_y;
+                var in_frontmatter = false;
+                var line_buf: [256:0]u8 = undefined;
+
+                while (iter.next()) |raw_line| {
+                    // Track frontmatter
+                    const trimmed = blk: {
+                        var ti: usize = 0;
+                        while (ti < raw_line.len and (raw_line[ti] == ' ' or raw_line[ti] == '\t')) : (ti += 1) {}
+                        break :blk raw_line[ti..];
+                    };
+                    if (trimmed.len >= 3 and trimmed[0] == '-' and trimmed[1] == '-' and trimmed[2] == '-') {
+                        in_frontmatter = !in_frontmatter;
+                        continue;
+                    }
+                    if (in_frontmatter) continue;
+                    if (world_docs.isNoiseLine(raw_line)) continue;
+
+                    // Strip heading markers
+                    const heading_stripped = world_docs.stripHeading(raw_line);
+                    const is_heading = (heading_stripped.ptr != raw_line.ptr or heading_stripped.len != raw_line.len);
+
+                    // Strip inline markdown (**bold**, *italic*, `code`, [link](url), |pipes|)
+                    var stripped_buf: [512]u8 = undefined;
+                    const stripped_len = world_docs.stripInline(heading_stripped, &stripped_buf);
+                    const display_line = stripped_buf[0..stripped_len];
+
+                    // Word-wrap: split long lines
+                    var line_start: usize = 0;
+                    while (line_start < display_line.len or line_start == 0) {
+                        const remaining = if (line_start < display_line.len) display_line[line_start..] else "";
+                        const chunk_len = if (remaining.len <= chars_per_line) remaining.len else blk2: {
+                            // Find last space within chars_per_line
+                            var best: usize = chars_per_line;
+                            var si: usize = chars_per_line;
+                            while (si > 0) {
+                                si -= 1;
+                                if (remaining[si] == ' ') {
+                                    best = si;
+                                    break;
+                                }
+                            }
+                            break :blk2 best;
+                        };
+
+                        // Only render if visible (within scissor)
+                        if (render_y >= doc_y - line_h and render_y <= doc_y + doc_h) {
+                            const copy_len = @min(chunk_len, 255);
+                            @memcpy(line_buf[0..copy_len], remaining[0..copy_len]);
+                            line_buf[copy_len] = 0;
+
+                            const doc_text_color = if (is_heading and line_start == 0)
+                                accentText(rc, content_alpha)
+                            else
+                                withAlpha(CONTENT_TEXT, content_alpha);
+                            const fsize: f32 = if (is_heading and line_start == 0) font_size + 3 else font_size;
+                            rl.DrawTextEx(font, &line_buf, .{ .x = doc_x, .y = render_y }, fsize, 0.5, doc_text_color);
+                        }
+
+                        render_y += line_h;
+                        if (chunk_len == 0) break;
+                        line_start += chunk_len;
+                        // Skip the space at wrap point
+                        if (line_start < display_line.len and display_line[line_start] == ' ') line_start += 1;
+                        if (remaining.len <= chars_per_line) break;
+                    }
+                }
+
+                rl.EndScissorMode();
+
+                // Scroll indicator (thin bar, right side)
+                const total_text_h = render_y + self.scroll_y - doc_y;
+                if (total_text_h > doc_h) {
+                    const scroll_track_x = sx + sw - 6;
+                    const max_scroll_val = total_text_h - doc_h;
+                    const scroll_pct = if (max_scroll_val > 0) self.scroll_y / max_scroll_val else 0;
+                    const thumb_h = @max(20.0, doc_h * (doc_h / total_text_h));
+                    const thumb_y = doc_y + scroll_pct * (doc_h - thumb_h);
+                    rl.DrawRectangleRounded(
+                        .{ .x = scroll_track_x, .y = thumb_y, .width = 4, .height = thumb_h },
+                        1.0, 4,
+                        withAlpha(rc, 60),
+                    );
+                }
             },
         }
 
@@ -2228,11 +2380,51 @@ const PanelSystem = struct {
             for (0..self.count) |i| {
                 const panel = &self.panels[i];
                 if (panel.state == .open and panel.isPointInside(mx, my)) {
-                    // Scroll the panel content (30px per scroll unit)
-                    panel.scroll_y -= mouse_wheel * 30.0;
-                    // Clamp scroll (max 500px for now)
-                    panel.scroll_y = @max(0, @min(panel.scroll_y, 500.0));
+                    // Scroll target (30px per scroll unit) — smooth lerp applied below
+                    panel.scroll_target -= mouse_wheel * 30.0;
+                    // Dynamic max scroll for sacred_world panels (based on doc size)
+                    const max_scroll: f32 = if (panel.panel_type == .sacred_world)
+                        @as(f32, @floatFromInt(world_docs.countVisibleLines(world_docs.WORLD_DOCS[panel.world_id].raw))) * 18.0
+                    else
+                        500.0;
+                    panel.scroll_target = @max(0, @min(panel.scroll_target, max_scroll));
                     break;
+                }
+            }
+        }
+
+        // Smooth scroll interpolation (lerp toward target)
+        for (0..self.count) |i| {
+            const panel = &self.panels[i];
+            if (panel.state == .open) {
+                const diff = panel.scroll_target - panel.scroll_y;
+                if (@abs(diff) > 0.5) {
+                    panel.scroll_y += diff * @min(1.0, dt * 12.0); // Smooth factor
+                } else {
+                    panel.scroll_y = panel.scroll_target;
+                }
+            }
+        }
+
+        // Adaptive resize: update focused panel targets to current window size
+        const cur_w = @as(f32, @floatFromInt(g_width));
+        const cur_h = @as(f32, @floatFromInt(g_height));
+        const card_margin: f32 = 40; // Card padding from edges
+        const card_top: f32 = 50; // Top margin (space for status bar)
+        const card_bottom: f32 = 50; // Bottom margin
+        for (0..self.count) |i| {
+            const p = &self.panels[i];
+            if ((p.state == .open or p.state == .opening) and p.is_focused) {
+                p.target_x = card_margin;
+                p.target_y = card_top;
+                p.target_w = cur_w - card_margin * 2;
+                p.target_h = cur_h - card_top - card_bottom;
+                // Snap sacred_world panels immediately (no animation lag on resize)
+                if (p.panel_type == .sacred_world) {
+                    p.x = p.target_x;
+                    p.y = p.target_y;
+                    p.width = p.target_w;
+                    p.height = p.target_h;
                 }
             }
         }
@@ -2981,7 +3173,7 @@ pub fn main() !void {
 
     // Raylib init - RESIZABLE WINDOW (responsive!)
     // High DPI + MSAA + TRANSPARENT background (see desktop through)
-    rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE | rl.FLAG_VSYNC_HINT | rl.FLAG_MSAA_4X_HINT | rl.FLAG_WINDOW_HIGHDPI | rl.FLAG_WINDOW_TRANSPARENT);
+    rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE | rl.FLAG_VSYNC_HINT | rl.FLAG_MSAA_4X_HINT | rl.FLAG_WINDOW_HIGHDPI | rl.FLAG_WINDOW_TRANSPARENT | rl.FLAG_WINDOW_MAXIMIZED);
     rl.InitWindow(1280, 800, "TRINITY v1.7 | Shift+1-7 = Panels | phi^2 + 1/phi^2 = 3");
     defer rl.CloseWindow();
 
@@ -2994,13 +3186,21 @@ pub fn main() !void {
     g_width = rl.GetScreenWidth();
     g_height = rl.GetScreenHeight();
 
-    // Load custom font (Montserrat - clean modern like Outfit)
-    // Load Outfit font (same as website landing page) - larger sizes for HiDPI
-    const font = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", 48, null, 0);
+    // ── HiDPI / Retina detection ──
+    // GetWindowScaleDPI returns (sx, sy) — 2.0 on Mac Retina, 1.0 on standard
+    const dpi_scale_v = rl.GetWindowScaleDPI();
+    g_dpi_scale = @max(dpi_scale_v.x, dpi_scale_v.y);
+    if (g_dpi_scale < 1.0) g_dpi_scale = 1.0;
+
+    // Load fonts at physical pixel size for crisp Retina text
+    // Base sizes: 48pt (headings), 32pt (body) — on 2x Retina → 96pt, 64pt atlas
+    const font_size_large: c_int = @intFromFloat(48.0 * g_dpi_scale);
+    const font_size_small: c_int = @intFromFloat(32.0 * g_dpi_scale);
+    const font = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", font_size_large, null, 0);
     defer rl.UnloadFont(font);
-    const font_small = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", 32, null, 0);
+    const font_small = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", font_size_small, null, 0);
     defer rl.UnloadFont(font_small);
-    // Enable texture filtering for smooth fonts
+    // Enable bilinear filtering for smooth text at all sizes
     rl.SetTextureFilter(font.texture, rl.TEXTURE_FILTER_BILINEAR);
     rl.SetTextureFilter(font_small.texture, rl.TEXTURE_FILTER_BILINEAR);
 
@@ -3081,15 +3281,15 @@ pub fn main() !void {
     var formula_particles: [MAX_FORMULA_PARTICLES]FormulaParticle = undefined;
     // Golden angle = 2*pi/phi^2 ~ 137.508 degrees — Fibonacci spiral
     const golden_angle: f32 = 2.0 * std.math.pi / (1.618 * 1.618);
-    const min_radius: f32 = 210.0; // avoid overlapping the logo
+    const min_radius: f32 = 240.0; // avoid overlapping the logo
     for (0..42) |fi| {
         const n = @as(f32, @floatFromInt(fi));
         const angle = n * golden_angle;
-        const radius = min_radius + n * 8.5; // Fibonacci spiral growth
+        const radius = min_radius + n * 14.0; // Wider spacing — each formula separate
         // Alternate direction: even layers clockwise, odd layers counter-clockwise
         const layer = fi / 9; // 0..4 layers of ~9
         const direction: f32 = if (layer % 2 == 0) 1.0 else -1.0;
-        const speed: f32 = direction * (0.04 - n * 0.0004);
+        const speed: f32 = direction * (0.03 - n * 0.0003);
         formula_particles[fi] = FormulaParticle.init(
             formula_texts[fi],
             formula_descs[fi],
@@ -3107,14 +3307,40 @@ pub fn main() !void {
             break;
         }
 
+        // Cmd+D = toggle dark/light theme
+        if ((rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER)) and rl.IsKeyPressed(rl.KEY_D)) {
+            theme.toggle();
+            reloadThemeAliases();
+        }
+
+        // Click on sun/moon toggle button (top-right)
+        if (rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT)) {
+            const tcx: f32 = @as(f32, @floatFromInt(g_width)) - 35;
+            const tcy: f32 = 30;
+            const tmx = @as(f32, @floatFromInt(rl.GetMouseX()));
+            const tmy = @as(f32, @floatFromInt(rl.GetMouseY()));
+            const dx_t = tmx - tcx;
+            const dy_t = tmy - tcy;
+            if (dx_t * dx_t + dy_t * dy_t <= 14 * 14) {
+                theme.toggle();
+                reloadThemeAliases();
+            }
+        }
+
         // Update window size (adaptive/resizable)
         g_width = rl.GetScreenWidth();
         g_height = rl.GetScreenHeight();
 
-        // Calculate pixel size to fit grid in window
-        const px_w = @divTrunc(g_width, @as(c_int, @intCast(grid.width)));
-        const px_h = @divTrunc(g_height, @as(c_int, @intCast(grid.height)));
-        g_pixel_size = @max(1, @min(px_w, px_h));
+        // Adaptive font scale: proportional to screen width (ref 1280px)
+        // Trinity rule: scale by phi^(log3(w/1280)) for ternary harmony
+        g_font_scale = @max(0.75, @min(2.0, @as(f32, @floatFromInt(g_width)) / 1280.0));
+
+        // Calculate pixel size to COVER full window (no gaps at edges)
+        const grid_w_c: c_int = @intCast(grid.width);
+        const grid_h_c: c_int = @intCast(grid.height);
+        const px_w = @divTrunc(g_width + grid_w_c - 1, grid_w_c); // ceil division
+        const px_h = @divTrunc(g_height + grid_h_c - 1, grid_h_c);
+        g_pixel_size = @max(1, @max(px_w, px_h));
 
         const mouse_x = rl.GetMouseX();
         const mouse_y = rl.GetMouseY();
@@ -3200,6 +3426,21 @@ pub fn main() !void {
                     panels.panels[si].jarvisFocus();
                     panels.active_panel = si;
                 }
+            }
+        }
+
+        // Keyboard scroll for active sacred_world panel
+        if (panels.active_panel) |ap_idx| {
+            const ap = &panels.panels[ap_idx];
+            if (ap.panel_type == .sacred_world and ap.state == .open) {
+                const max_scroll_kb: f32 = @as(f32, @floatFromInt(world_docs.countVisibleLines(world_docs.WORLD_DOCS[ap.world_id].raw))) * 18.0;
+                if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyDown(rl.KEY_DOWN)) ap.scroll_target += 4.0;
+                if (rl.IsKeyPressed(rl.KEY_UP) or rl.IsKeyDown(rl.KEY_UP)) ap.scroll_target -= 4.0;
+                if (rl.IsKeyPressed(rl.KEY_PAGE_DOWN)) ap.scroll_target += 300;
+                if (rl.IsKeyPressed(rl.KEY_PAGE_UP)) ap.scroll_target -= 300;
+                if (rl.IsKeyPressed(rl.KEY_HOME)) ap.scroll_target = 0;
+                if (rl.IsKeyPressed(rl.KEY_END)) ap.scroll_target = max_scroll_kb;
+                ap.scroll_target = @max(0, @min(ap.scroll_target, max_scroll_kb));
             }
         }
 
@@ -3395,8 +3636,8 @@ pub fn main() !void {
         rl.BeginDrawing();
         defer rl.EndDrawing();
 
-        // Pure black background - landing page style (alpha = 180 for transparency)
-        rl.ClearBackground(rl.Color{ .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xF5 });
+        // Theme-aware background with transparency
+        rl.ClearBackground(@as(rl.Color, @bitCast(theme.clear_bg)));
 
         // === LOGO LOADING ANIMATION (Apple-style luxury welcome) ===
         if (!loading_complete) {
@@ -3487,20 +3728,20 @@ pub fn main() !void {
             const hi = @as(usize, @intCast(logo_anim.hovered_block));
             const world = sacred_worlds.getWorldByBlock(hi);
 
-            // White tooltip: white bg, black text, black dot
+            // Tooltip: adapts to theme (white bg/black text on dark, dark bg/white text on light)
             const tw: f32 = @as(f32, @floatFromInt(world.name_len)) * 9.0 + 30;
             const tx = mx + 15;
             const ty = my - 28;
-            const white_bg = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 240 };
-            const black_text = rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 };
-            rl.DrawRectangleRounded(.{ .x = tx, .y = ty, .width = tw, .height = 24 }, 0.3, 8, white_bg);
+            const tt_bg: rl.Color = @bitCast(theme.tooltip_bg);
+            const tt_text: rl.Color = @bitCast(theme.tooltip_text);
+            rl.DrawRectangleRounded(.{ .x = tx, .y = ty, .width = tw, .height = 24 }, 0.3, 8, tt_bg);
 
-            // Black dot + world name in black
-            rl.DrawCircle(@intFromFloat(tx + 10), @intFromFloat(ty + 12), 4, black_text);
+            // Dot + world name
+            rl.DrawCircle(@intFromFloat(tx + 10), @intFromFloat(ty + 12), 4, tt_text);
             var tooltip_buf: [28:0]u8 = undefined;
             @memcpy(tooltip_buf[0..world.name_len], world.name[0..world.name_len]);
             tooltip_buf[world.name_len] = 0;
-            rl.DrawTextEx(font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, black_text);
+            rl.DrawTextEx(font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, tt_text);
         }
 
         // Glass panels (on top of everything except UI)
@@ -3508,6 +3749,32 @@ pub fn main() !void {
 
         // Keyboard hint (minimal, top-left)
         rl.DrawTextEx(font_small, "Shift+1-9 RAZUM | Ctrl+1-9 MATERIYA | Cmd+1-9 DUKH | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+
+        // === SUN/MOON THEME TOGGLE (top-right, 20px from top) ===
+        {
+            const toggle_cx: f32 = @as(f32, @floatFromInt(g_width)) - 35;
+            const toggle_cy: f32 = 30; // 20px margin from top + radius
+            const toggle_r: f32 = 10;
+            if (theme.isDark()) {
+                // Crescent moon: white circle + bg-colored circle offset
+                const moon_color = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 220 };
+                rl.DrawCircle(@intFromFloat(toggle_cx), @intFromFloat(toggle_cy), toggle_r, moon_color);
+                rl.DrawCircle(@intFromFloat(toggle_cx + 5), @intFromFloat(toggle_cy - 3), toggle_r - 1, @as(rl.Color, @bitCast(theme.clear_bg)));
+            } else {
+                // Sun: black on light theme (visible on white background)
+                const sun_color = rl.Color{ .r = 0x1A, .g = 0x1A, .b = 0x1A, .a = 220 };
+                rl.DrawCircle(@intFromFloat(toggle_cx), @intFromFloat(toggle_cy), toggle_r - 2, sun_color);
+                var ray: usize = 0;
+                while (ray < 8) : (ray += 1) {
+                    const angle = @as(f32, @floatFromInt(ray)) * (TAU / 8.0);
+                    const rx1 = toggle_cx + @cos(angle) * (toggle_r + 1);
+                    const ry1 = toggle_cy + @sin(angle) * (toggle_r + 1);
+                    const rx2 = toggle_cx + @cos(angle) * (toggle_r + 5);
+                    const ry2 = toggle_cy + @sin(angle) * (toggle_r + 5);
+                    rl.DrawLineEx(.{ .x = rx1, .y = ry1 }, .{ .x = rx2, .y = ry2 }, 1.5, sun_color);
+                }
+            }
+        }
 
         // === STATUS BAR (Hyper terminal style, bottom) ===
         const status_bar_h: f32 = 24;
@@ -3532,8 +3799,11 @@ pub fn main() !void {
         var stat_buf: [64:0]u8 = undefined;
         const sw = @as(f32, @floatFromInt(g_width));
 
-        // Left: TRINITY label in GREEN
-        rl.DrawTextEx(font_small, "TRINITY", .{ .x = 12, .y = status_y + 5 }, 13, 0.5, HYPER_GREEN);
+        // Status bar text: rainbow on dark, dark text on light
+        const stat_text_color = if (theme.isDark()) @as(?rl.Color, null) else TEXT_WHITE; // null = use per-stat color
+
+        // Left: TRINITY label
+        rl.DrawTextEx(font_small, "TRINITY", .{ .x = 12, .y = status_y + 5 }, 13, 0.5, stat_text_color orelse HYPER_GREEN);
 
         // All stats aligned to RIGHT, close together
         const spacing: f32 = 75;
@@ -3547,44 +3817,44 @@ pub fn main() !void {
         const seconds = display_time % 60;
         _ = std.fmt.bufPrintZ(&time_buf, "{d:0>2}:{d:0>2}:{d:0>2}", .{ hours, minutes, seconds }) catch {};
         x_pos -= 70;
-        rl.DrawTextEx(font_small, &time_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, HYPER_MAGENTA); // Rainbow: Magenta
+        rl.DrawTextEx(font_small, &time_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_MAGENTA);
 
         // Uptime
         const up_hours = uptime_sec / 3600;
         const up_mins = (uptime_sec % 3600) / 60;
         _ = std.fmt.bufPrintZ(&stat_buf, "UP {d}h{d}m", .{ up_hours, up_mins }) catch {};
         x_pos -= spacing;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, PURPLE); // Rainbow: Purple
+        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse PURPLE);
 
         // Processes
         _ = std.fmt.bufPrintZ(&stat_buf, "PROC {d}", .{processes}) catch {};
         x_pos -= spacing;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, BLUE); // Rainbow: Blue
+        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse BLUE);
 
         // NET
         _ = std.fmt.bufPrintZ(&stat_buf, "NET {d:.1}M", .{net_down + net_up}) catch {};
         x_pos -= spacing;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, HYPER_CYAN); // Rainbow: Cyan
+        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_CYAN);
 
         // DISK
         _ = std.fmt.bufPrintZ(&stat_buf, "DISK {d:.0}G", .{disk_used}) catch {};
         x_pos -= spacing + 10;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, HYPER_GREEN); // Rainbow: Green
+        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_GREEN);
 
         // TEMP
         _ = std.fmt.bufPrintZ(&stat_buf, "{d:.0}C", .{cpu_temp}) catch {};
         x_pos -= spacing - 30;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, HYPER_YELLOW); // Rainbow: Yellow
+        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_YELLOW);
 
         // MEM
         _ = std.fmt.bufPrintZ(&stat_buf, "MEM {d:.1}G", .{mem_used}) catch {};
         x_pos -= spacing + 5;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, ORANGE); // Rainbow: Orange
+        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse ORANGE);
 
         // CPU
         _ = std.fmt.bufPrintZ(&stat_buf, "CPU {d:.0}%", .{cpu_usage}) catch {};
         x_pos -= spacing;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, HYPER_RED); // Rainbow: Red
+        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_RED);
     }
 }
 
