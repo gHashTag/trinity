@@ -316,7 +316,7 @@ Where phi = (1 + sqrt(5)) / 2 ~ 1.618 (the golden ratio). This algebraic identit
 
 </div>
 
-Several physical constants can be closely approximated using this parameterization. See [Constant Approximation Formulas](/docs/math-foundations/formulas) for details and error analysis.
+Several physical constants can be closely approximated using this parameterization. See [Constant Approximation Formulas](/math-foundations/formulas) for details and error analysis.
 
 ### Why Ternary?
 

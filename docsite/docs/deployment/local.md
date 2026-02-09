@@ -129,7 +129,7 @@ Local CPU inference is significantly slower than GPU inference. On an Apple M1 P
 - **With AVX-512 VNNI (x86)**: Up to ~15,000 tokens/second
 - **ARM NEON (Apple Silicon)**: Performance depends on kernel availability
 
-For production-grade throughput, see the [RunPod GPU Deployment](/docs/deployment/runpod) guide.
+For production-grade throughput, see the [RunPod GPU Deployment](/deployment/runpod) guide.
 
 ## Other CLI Commands
 

@@ -24,7 +24,7 @@
 ## What This Means
 
 ### For Users
-- **Token-by-token streaming** -- real-time text generation with <50ms first token target
+- **Token-by-token streaming** -- real-time text generation with &lt;50ms first token target
 - **Cross-modal fusion** -- text, code, vision, voice, data streams fused incrementally
 - **Backpressure handling** -- automatic flow control when consumer is slower than producer
 - **Early termination** -- pipeline stops when confidence threshold (0.85) reached
@@ -36,8 +36,8 @@
 - Chunk timeout: 5s
 - Max chunk size: 64KB
 - Max concurrent streams: 16
-- First token target: <50ms
-- Chunk processing target: <10ms
+- First token target: &lt;50ms
+- Chunk processing target: &lt;10ms
 - Backpressure high watermark: 0.8 (80% buffer)
 - Backpressure low watermark: 0.3 (30% buffer)
 
@@ -157,7 +157,7 @@
 | Cycle 37 (Batch/Distributed) | Cycle 38 (Streaming Pipeline) |
 |-------------------------------|-------------------------------|
 | Full request-response cycle | Token-by-token streaming |
-| Wait for complete result | First token in <50ms |
+| Wait for complete result | First token in &lt;50ms |
 | No flow control | Backpressure with watermarks |
 | One-shot fusion | Incremental cross-modal fusion |
 | Process all data then respond | Stream-as-you-go |
@@ -195,7 +195,7 @@
 - No partial chunk recovery -- if a stage fails mid-chunk, the entire chunk is lost
 
 ### Honest Self-Criticism
-The streaming pipeline describes a complete architecture but the implementation remains skeletal -- there's no actual async channel, no real producer-consumer threading, and no genuine backpressure mechanism. A production system would need io_uring or epoll for async I/O, proper ring buffers for zero-copy chunk passing, and per-stage thread pools for true parallel pipeline execution. The cross-modal fusion is described but not implemented -- real VSA binding of partial results would require maintaining running hypervector accumulators per modality. The early termination logic would need a proper confidence metric based on cosine similarity of accumulated fusion vectors, not a simple threshold check. The latency targets (<50ms first token, <10ms per chunk) are aspirational without actual benchmarking against real I/O operations.
+The streaming pipeline describes a complete architecture but the implementation remains skeletal -- there's no actual async channel, no real producer-consumer threading, and no genuine backpressure mechanism. A production system would need io_uring or epoll for async I/O, proper ring buffers for zero-copy chunk passing, and per-stage thread pools for true parallel pipeline execution. The cross-modal fusion is described but not implemented -- real VSA binding of partial results would require maintaining running hypervector accumulators per modality. The early termination logic would need a proper confidence metric based on cosine similarity of accumulated fusion vectors, not a simple threshold check. The latency targets (&lt;50ms first token, &lt;10ms per chunk) are aspirational without actual benchmarking against real I/O operations.
 
 ---
 

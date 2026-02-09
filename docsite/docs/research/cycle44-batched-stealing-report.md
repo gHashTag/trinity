@@ -35,7 +35,7 @@ Cycle 44 integrated the Batched Work-Stealing mechanism into the TRI CLI, enabli
 
 ### Batched Stealing Architecture
 
-\`\`\`
+```
 +-------------------+     +------------------+     +------------------+
 |  Owner Thread     | --> |  Push/Pop        | --> |  Local Work      |
 |  (LIFO)           |     |  at Bottom       |     |  Execution       |
@@ -52,7 +52,7 @@ Cycle 44 integrated the Batched Work-Stealing mechanism into the TRI CLI, enabli
 |  phi^-1 Batch     |
 |  Size Calculation |
 +-------------------+
-\`\`\`
+```
 
 ### Core Components
 
@@ -67,7 +67,7 @@ Cycle 44 integrated the Batched Work-Stealing mechanism into the TRI CLI, enabli
 
 ## Benchmark Results
 
-\`\`\`
+```
 BATCHED STEALING BENCHMARK (GOLDEN CHAIN CYCLE 44)
 ===================================================
 
@@ -91,7 +91,7 @@ Phase 3: Comparison
   CAS reduction:     82.8%
   Single throughput: 32,000,000 jobs/s
   Batch throughput:  64,000,000 jobs/s
-\`\`\`
+```
 
 ---
 
@@ -99,7 +99,7 @@ Phase 3: Comparison
 
 The optimal batch size uses phi^-1 (Golden Ratio inverse):
 
-\`\`\`zig
+```zig
 pub fn calculateBatchSize(victim_depth: usize) usize {
     if (victim_depth == 0) return 0;
     if (victim_depth == 1) return 1;
@@ -109,7 +109,7 @@ pub fn calculateBatchSize(victim_depth: usize) usize {
 
     return @max(1, @min(optimal, MAX_BATCH_SIZE));
 }
-\`\`\`
+```
 
 | Victim Depth | Batch Size | Ratio |
 |--------------|------------|-------|
@@ -142,14 +142,14 @@ pub fn calculateBatchSize(victim_depth: usize) usize {
 
 ## Needle Check
 
-\`\`\`
+```
 improvement_rate = 1.185
 threshold = phi^-1 = 0.618033...
 
 1.185 > 0.618 OK
 
 VERDICT: KOSCHEI IS IMMORTAL
-\`\`\`
+```
 
 ---
 

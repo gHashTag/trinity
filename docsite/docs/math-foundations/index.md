@@ -86,7 +86,7 @@ This parametric form expresses numerical values as combinations of five quantiti
 | **p** | Power of phi | Golden ratio -- self-similar proportion |
 | **q** | Power of e | Euler's number -- natural growth and decay |
 
-Several physical constants can be closely approximated by this form. The verified approximations are documented on the [Formulas](/docs/math-foundations/formulas) page. Note that with five free parameters, close fits to any target value are statistically expected (see the discussion on significance in the Formulas page).
+Several physical constants can be closely approximated by this form. The verified approximations are documented on the [Formulas](/math-foundations/formulas) page. Note that with five free parameters, close fits to any target value are statistically expected (see the discussion on significance in the Formulas page).
 
 ---
 
@@ -332,5 +332,5 @@ The ternary foundation enables:
 
 ## Next Steps
 
-- [Formulas](/docs/math-foundations/formulas) -- Physical constants approximated via the parametric form
-- [Proofs](/docs/math-foundations/proofs) -- Rigorous mathematical proofs and derivations
+- [Formulas](/math-foundations/formulas) -- Physical constants approximated via the parametric form
+- [Proofs](/math-foundations/proofs) -- Rigorous mathematical proofs and derivations
