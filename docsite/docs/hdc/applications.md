@@ -105,7 +105,7 @@ Feature attribution for classifier decisions using VSA algebra. Explains predict
 ## Learning Paradigms
 
 ### HDC Continual Learning (`hdc_continual_learning.vibee`)
-Incremental class learning with near-zero catastrophic forgetting. New classes are added by creating new prototypes without modifying existing ones. Tested across 10 phases with 20 classes: average forgetting 3.04%, maximum forgetting 12.5% (compared to 50-90% catastrophic forgetting in neural networks). No replay buffer or regularization is needed because prototypes are fully independent. See [HDC Overview](/docs/hdc/) for full benchmark results.
+Incremental class learning with near-zero catastrophic forgetting. New classes are added by creating new prototypes without modifying existing ones. Tested across 10 phases with 20 classes: average forgetting 3.04%, maximum forgetting 12.5% (compared to 50-90% catastrophic forgetting in neural networks). No replay buffer or regularization is needed because prototypes are fully independent. See [HDC Overview](/hdc/) for full benchmark results.
 
 ### HDC Federated Learning (`hdc_federated.vibee`)
 Privacy-preserving distributed classification where multiple nodes train locally on private data and share only prototype hypervectors with a central coordinator. The global model is constructed by bundling prototypes from all nodes. Raw data never leaves the local node, and prototypes are high-dimensional bundled averages from which individual samples cannot be recovered.

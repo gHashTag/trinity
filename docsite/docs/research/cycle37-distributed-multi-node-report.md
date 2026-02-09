@@ -121,7 +121,7 @@
 | Node crash | Heartbeat timeout (30s) | Tasks reassigned, agents respawned |
 | Network partition | Missing heartbeats | Quorum-based: larger partition operates |
 | Split brain | 2+ disconnected groups | Only group with >50% nodes does writes |
-| No quorum | <50% nodes active | Read-only mode, no new writes |
+| No quorum | &lt;50% nodes active | Read-only mode, no new writes |
 
 ### Test Coverage
 

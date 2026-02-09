@@ -190,7 +190,7 @@ Subsequent testing on a RunPod RTX 4090 instance using bitnet.cpp produced coher
 | Platform | CPU-only I2_S kernel (GPU offload not yet available for I2_S) |
 
 :::caution
-These throughput numbers reflect CPU-only inference even on the GPU instance, because the I2_S quantization kernel does not yet support GPU offload. The high-throughput numbers reported on the [GPU Inference Benchmarks](/docs/benchmarks/gpu-inference) page (298K tok/s on RTX 3090) are from the bitnet.cpp benchmarking mode, which measures kernel throughput rather than end-to-end text generation speed.
+These throughput numbers reflect CPU-only inference even on the GPU instance, because the I2_S quantization kernel does not yet support GPU offload. The high-throughput numbers reported on the [GPU Inference Benchmarks](/benchmarks/gpu-inference) page (298K tok/s on RTX 3090) are from the bitnet.cpp benchmarking mode, which measures kernel throughput rather than end-to-end text generation speed.
 :::
 
 ## Conclusion

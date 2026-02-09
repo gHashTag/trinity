@@ -156,10 +156,10 @@ TOTAL:          41/41 passed
 
 | Operation | Time |
 |-----------|------|
-| Wallet generation | <1ms |
-| Message signing | <1ms |
+| Wallet generation | &lt;1ms |
+| Message signing | &lt;1ms |
 | Peer discovery | 5s interval |
-| Job queue push/pop | <1us |
+| Job queue push/pop | &lt;1us |
 | Stats update | 10s interval |
 
 ## Security Features

@@ -28,7 +28,7 @@ graph LR
 
 ## Step 1: Create Random Vectors
 
-Every concept in our system gets its own random [hypervector](/docs/concepts/glossary). Random vectors in high dimensions have a useful property: they are almost always unrelated to each other. Mathematicians call this [quasi-orthogonal](/docs/concepts/glossary).
+Every concept in our system gets its own random [hypervector](/concepts/glossary). Random vectors in high dimensions have a useful property: they are almost always unrelated to each other. Mathematicians call this [quasi-orthogonal](/concepts/glossary).
 
 ```zig
 const vsa = @import("vsa.zig");
@@ -45,7 +45,7 @@ const sim = vsa.cosineSimilarity(&france, &paris);
 // Output: sim ≈ 0.01 (essentially zero — unrelated concepts)
 ```
 
-Each call to `randomVector` takes two arguments: the number of [dimensions](/docs/concepts/glossary) and a seed. The seed ensures reproducible results. With 1000 dimensions, any two random vectors will have near-zero [cosine similarity](/docs/concepts/glossary).
+Each call to `randomVector` takes two arguments: the number of [dimensions](/concepts/glossary) and a seed. The seed ensures reproducible results. With 1000 dimensions, any two random vectors will have near-zero [cosine similarity](/concepts/glossary).
 
 :::tip Why 1000 Dimensions?
 Higher dimensions give cleaner separations between unrelated concepts. At 1000 dimensions, random vectors reliably have similarity below 0.05. At 100 dimensions, collisions become more likely. For production systems, 4000-10000 dimensions are common.
@@ -53,7 +53,7 @@ Higher dimensions give cleaner separations between unrelated concepts. At 1000 d
 
 ## Step 2: Bind Facts
 
-[Binding](/docs/concepts/glossary) links two concepts together. It works like a key-value pair: one vector is the key and the other is the value. The bound result is dissimilar to both inputs.
+[Binding](/concepts/glossary) links two concepts together. It works like a key-value pair: one vector is the key and the other is the value. The bound result is dissimilar to both inputs.
 
 ```zig
 // Create "capital" facts by binding role to city, then country to role-city
@@ -66,7 +66,7 @@ var binding2 = vsa.bind(&germany, &fact2);
 // binding2 now encodes: "Germany → capital → Berlin"
 ```
 
-Binding uses element-wise multiplication of [trits](/docs/concepts/glossary). When you multiply two trits:
+Binding uses element-wise multiplication of [trits](/concepts/glossary). When you multiply two trits:
 - `+1 * +1 = +1`
 - `+1 * -1 = -1`
 - Anything `* 0 = 0`
@@ -75,7 +75,7 @@ The result scrambles both input patterns. That is why the bound vector is dissim
 
 ## Step 3: Bundle into Memory
 
-[Bundling](/docs/concepts/glossary) combines multiple vectors into one. Unlike binding, the result stays similar to all of its inputs. Think of it as superimposing facts on top of each other.
+[Bundling](/concepts/glossary) combines multiple vectors into one. Unlike binding, the result stays similar to all of its inputs. Think of it as superimposing facts on top of each other.
 
 ```zig
 // Combine both facts into a single memory vector
@@ -83,7 +83,7 @@ var memory = vsa.bundle2(&binding1, &binding2);
 // memory holds both facts simultaneously
 ```
 
-Bundling uses a [majority vote](/docs/concepts/glossary) at each position. For two vectors, ties (where the trits differ) are broken randomly. Despite this lossy compression, the signal from each input survives because the vectors are so high-dimensional.
+Bundling uses a [majority vote](/concepts/glossary) at each position. For two vectors, ties (where the trits differ) are broken randomly. Despite this lossy compression, the signal from each input survives because the vectors are so high-dimensional.
 
 :::warning Capacity Limits
 A single memory vector can hold roughly the square root of its dimension count in facts. A 1000-dimensional vector stores around 30 facts reliably. Beyond that, the noise floor rises and retrieval accuracy drops. Increase dimensions for larger knowledge bases.
@@ -91,7 +91,7 @@ A single memory vector can hold roughly the square root of its dimension count i
 
 ## Step 4: Query the Memory
 
-Now for the magic. To ask "What is France's capital?", we construct a query and [unbind](/docs/concepts/glossary) it from memory.
+Now for the magic. To ask "What is France's capital?", we construct a query and [unbind](/concepts/glossary) it from memory.
 
 ```zig
 // Construct query: bind France with capital role
@@ -130,13 +130,13 @@ The entire system has these properties:
 - **No neural network.** Pure vector algebra handles storage and retrieval.
 - **No GPU needed.** Ternary operations are additions and sign flips.
 - **Constant-time retrieval.** Query cost does not grow with the number of stored facts.
-- **Fixed memory footprint.** One vector holds many facts. A 1000-trit vector uses about 200 bytes in [packed mode](/docs/concepts/glossary).
+- **Fixed memory footprint.** One vector holds many facts. A 1000-trit vector uses about 200 bytes in [packed mode](/concepts/glossary).
 
 ## Next Steps
 
 You now understand the core building blocks of Trinity's VSA engine. Here is where to go next:
 
-- [VSA API Reference](/docs/api/vsa) -- full documentation of bind, bundle, permute, and similarity functions
-- [HybridBigInt Storage](/docs/api/hybrid) -- learn about packed and unpacked modes for efficient memory use
-- [Sequence HDC](/docs/api/sequence-hdc) -- encode text as hypervectors using n-grams and permutations
-- [Glossary](/docs/concepts/glossary) -- quick reference for all Trinity terminology
+- [VSA API Reference](/api/vsa) -- full documentation of bind, bundle, permute, and similarity functions
+- [HybridBigInt Storage](/api/hybrid) -- learn about packed and unpacked modes for efficient memory use
+- [Sequence HDC](/api/sequence-hdc) -- encode text as hypervectors using n-grams and permutations
+- [Glossary](/concepts/glossary) -- quick reference for all Trinity terminology

@@ -6,7 +6,7 @@ sidebar_position: 10
 
 When most elements in your vector are zero, storing all of them wastes memory. `SparseVector` stores only the non-zero elements with their positions. For a 10,000-element vector with 90% zeros, this saves 10x memory and makes operations 10x faster.
 
-Trinity uses [ternary vectors](/docs/concepts/glossary) (\{-1, 0, +1\}). Many operations -- masking, gating, thresholding -- produce vectors dominated by zeros. `SparseVector` exploits this by keeping two sorted arrays: indices (where non-zero elements live) and values (what those elements are). All lookups use binary search. All VSA operations use merge-join algorithms that skip zeros entirely.
+Trinity uses [ternary vectors](/concepts/glossary) (\{-1, 0, +1\}). Many operations -- masking, gating, thresholding -- produce vectors dominated by zeros. `SparseVector` exploits this by keeping two sorted arrays: indices (where non-zero elements live) and values (what those elements are). All lookups use binary search. All VSA operations use merge-join algorithms that skip zeros entirely.
 
 **Source:** `src/sparse.zig`
 

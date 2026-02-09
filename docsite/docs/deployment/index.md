@@ -10,11 +10,11 @@ Trinity supports multiple deployment configurations depending on your hardware, 
 
 ### Local Development
 
-Run Trinity on your local machine for development, testing, and small-scale inference. This requires only Zig 0.13.0 and Git. Local deployment works on macOS, Linux, and Windows, and supports both VSA operations and model inference using CPU. See [Local Deployment](/docs/deployment/local) for setup instructions.
+Run Trinity on your local machine for development, testing, and small-scale inference. This requires only Zig 0.13.0 and Git. Local deployment works on macOS, Linux, and Windows, and supports both VSA operations and model inference using CPU. See [Local Deployment](/deployment/local) for setup instructions.
 
 ### GPU Cloud Inference
 
-For high-throughput BitNet inference, deploy on cloud GPU instances via providers like RunPod. This is the recommended approach for production inference workloads, benchmarking, and testing models that require GPU acceleration. Cloud GPUs provide the CUDA or AVX-512 support needed for maximum throughput with bitnet.cpp. See [RunPod GPU Deployment](/docs/deployment/runpod) for a step-by-step guide.
+For high-throughput BitNet inference, deploy on cloud GPU instances via providers like RunPod. This is the recommended approach for production inference workloads, benchmarking, and testing models that require GPU acceleration. Cloud GPUs provide the CUDA or AVX-512 support needed for maximum throughput with bitnet.cpp. See [RunPod GPU Deployment](/deployment/runpod) for a step-by-step guide.
 
 ### Server Mode (HTTP API)
 
