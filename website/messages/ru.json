@@ -200,12 +200,19 @@
       { "value": "3000×", "label": "Энергоэффективность", "desc": "Проекция на FPGA", "theorem": "2" }
     ],
     "comparison": {
+      "headers": ["Платформа", "Память", "Скорость", "Точность", "Энергия", "Теоремы"],
       "rows": [
         { "model": "TRINITY SU(3)", "value": 71, "color": "#00e599" },
         { "model": "BitNet b1.58 (Microsoft)", "value": 15, "color": "#888" },
         { "model": "Groq LPU", "value": 8, "color": "#666" },
         { "model": "NVIDIA H100", "value": 4, "color": "#555" },
         { "model": "OpenAI GPT-4", "value": 1, "color": "#444" }
+      ],
+      "table": [
+        { "platform": "TRINITY", "memory": "20× ✓", "speed": "10× *", "accuracy": "100% ✓", "energy": "3000× *", "theorem": "1-4", "highlight": true },
+        { "platform": "OpenAI GPT-4", "memory": "1×", "speed": "1×", "accuracy": "100%", "energy": "1×", "theorem": "—", "highlight": false },
+        { "platform": "Groq LPU", "memory": "4×", "speed": "2×", "accuracy": "99%", "energy": "100×", "theorem": "—", "highlight": false },
+        { "platform": "BitNet b1.58", "memory": "15×", "speed": "5×", "accuracy": "100%", "energy": "500×", "theorem": "Только 3", "highlight": false }
       ]
     },
     "verifyLink": "Проверить Бенчмарки на GitHub ↗",
@@ -291,6 +298,11 @@
       { "date": "Q3 2026", "title": "SDK для разработчиков", "desc": "Оптимизатор E-Graph и компилятор Coptic-Zig" },
       { "date": "Q1 2027", "title": "ASIC Tape-out", "desc": "Первое производство нативных SU(3) чипов (TSMC 180nm)" }
     ]
+  },
+  "techTree": {
+    "title": "TRINITY <span style=\"color: var(--accent)\">RESEARCH</span> LABORATORY",
+    "sub": "Дерево Развития Технологий",
+    "hint": "Нажмите на узлы для просмотра деталей исследований"
   },
   "product": {
     "title": "<span class=\"grad\">Продукт</span>",
