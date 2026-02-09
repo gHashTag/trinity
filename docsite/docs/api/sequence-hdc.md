@@ -6,7 +6,7 @@ sidebar_position: 8
 
 This module turns text into vectors. Feed it strings like "hello world", and it produces compact numeric vectors that capture the text's pattern. Similar texts produce similar vectors. Use it for language detection, text classification, or semantic search -- without training a neural network.
 
-Under the hood, the module uses [Hyperdimensional Computing](/docs/concepts/glossary) (HDC). It maps characters to high-dimensional [ternary vectors](/docs/concepts/glossary) (\{-1, 0, +1\}), then combines them to represent words, phrases, and documents. The key insight: texts that share character patterns produce vectors that point in similar directions.
+Under the hood, the module uses [Hyperdimensional Computing](/concepts/glossary) (HDC). It maps characters to high-dimensional [ternary vectors](/concepts/glossary) (\{-1, 0, +1\}), then combines them to represent words, phrases, and documents. The key insight: texts that share character patterns produce vectors that point in similar directions.
 
 **Source:** `src/sequence_hdc.zig`
 
@@ -22,7 +22,7 @@ graph LR
   D --> E["Compare via<br/>cosine similarity"]
 ```
 
-1. **Split** the input into overlapping character [n-grams](/docs/concepts/glossary) (e.g., trigrams).
+1. **Split** the input into overlapping character [n-grams](/concepts/glossary) (e.g., trigrams).
 2. **Encode** each n-gram by looking up character vectors and combining them.
 3. **Bundle** all n-gram vectors into a single vector using majority vote.
 4. **Compare** the result to stored vectors using cosine similarity.
@@ -103,7 +103,7 @@ The n-gram size controls how much local context each encoding captures.
 
 ## ItemMemory
 
-Maps symbol IDs (or ASCII characters) to deterministically generated random [hypervectors](/docs/concepts/glossary). Vectors are lazily created on first access and cached in a `HashMap`.
+Maps symbol IDs (or ASCII characters) to deterministically generated random [hypervectors](/concepts/glossary). Vectors are lazily created on first access and cached in a `HashMap`.
 
 Each trit in a generated vector is uniformly random from \{-1, 0, +1\}, seeded by `symbol_id * 2654435761 + seed` using the standard PRNG.
 
@@ -147,7 +147,7 @@ Encodes an entire string as an array of character hypervectors. Returns a newly 
 
 ## NGramEncoder
 
-Encodes character [n-grams](/docs/concepts/glossary) using position-encoded binding. Each character in an n-gram shifts by its position index, then all characters bind together. This preserves order: "abc" and "bac" produce different vectors.
+Encodes character [n-grams](/concepts/glossary) using position-encoded binding. Each character in an n-gram shifts by its position index, then all characters bind together. This preserves order: "abc" and "bac" produce different vectors.
 
 <details>
 <summary>Encoding Formula</summary>

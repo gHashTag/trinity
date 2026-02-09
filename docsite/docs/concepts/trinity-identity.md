@@ -59,7 +59,7 @@ The Trinity Identity connects two independent areas of mathematical optimality:
 
 1. **The golden ratio** is the "most irrational" number -- it has the slowest-converging continued fraction of any irrational number. This extremal property makes phi-based sequences avoid periodic resonances, which is why golden-angle spacing produces optimal packing in phyllotaxis and is used in quasi-Monte Carlo sampling methods.
 
-2. **The number 3** is the optimal integer radix for representing information. The radix economy function r/ln(r) is minimized at r = e = 2.718..., and among positive integers, 3 is the closest to e. See the [optimal radix proof](/docs/math-foundations/proofs) for the full derivation.
+2. **The number 3** is the optimal integer radix for representing information. The radix economy function r/ln(r) is minimized at r = e = 2.718..., and among positive integers, 3 is the closest to e. See the [optimal radix proof](/math-foundations/proofs) for the full derivation.
 
 The constant of optimal proportion, squared and added to its inverse square, yields the constant of optimal computation. This algebraic relationship is the motivating identity for the Trinity project.
 
@@ -85,7 +85,7 @@ where $n$ is an integer, and $k, m, p, q$ are rational exponents. This decomposi
 - $\varphi^p$ — powers of the golden ratio (self-similar proportion)
 - $e^q$ — powers of Euler's number (natural growth/decay)
 
-The [Constant Approximation Formulas](/docs/math-foundations/formulas) page demonstrates this decomposition for physical constants including the fine structure constant ($\frac{1}{\alpha} = 4\pi^3 + \pi^2 + \pi = 137.036...$) and the proton-electron mass ratio ($\frac{m_p}{m_e} = 6\pi^5 = 1836.12...$).
+The [Constant Approximation Formulas](/math-foundations/formulas) page demonstrates this decomposition for physical constants including the fine structure constant ($\frac{1}{\alpha} = 4\pi^3 + \pi^2 + \pi = 137.036...$) and the proton-electron mass ratio ($\frac{m_p}{m_e} = 6\pi^5 = 1836.12...$).
 
 :::caution
 
@@ -136,7 +136,7 @@ test "trinity identity" {
 }
 ```
 
-Run with: `zig test` or see the full verification suite in [Mathematical Proofs](/docs/math-foundations/proofs).
+Run with: `zig test` or see the full verification suite in [Mathematical Proofs](/math-foundations/proofs).
 
 ## References
 
@@ -145,7 +145,7 @@ Run with: `zig test` or see the full verification suite in [Mathematical Proofs]
 
 ## Further Reading
 
-- [Ternary Computing Concepts](/docs/concepts) -- why base-3 is optimal
-- [Balanced Ternary Arithmetic](/docs/concepts/balanced-ternary) -- practical ternary operations
-- [Mathematical Proofs](/docs/math-foundations/proofs) -- all rigorous derivations
-- [Constant Approximation Formulas](/docs/math-foundations/formulas) -- physical constants in parametric form
+- [Ternary Computing Concepts](/concepts) -- why base-3 is optimal
+- [Balanced Ternary Arithmetic](/concepts/balanced-ternary) -- practical ternary operations
+- [Mathematical Proofs](/math-foundations/proofs) -- all rigorous derivations
+- [Constant Approximation Formulas](/math-foundations/formulas) -- physical constants in parametric form

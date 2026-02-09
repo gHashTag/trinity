@@ -206,7 +206,7 @@ All 7 tests passed.
 
 | Operation | Time |
 |-----------|------|
-| Grid init (128x128) | <1ms |
+| Grid init (128x128) | &lt;1ms |
 | Step (scalar) | ~2ms |
 | Step (SIMD) | ~0.5ms |
 | Cursor perturbation | ~0.1ms |

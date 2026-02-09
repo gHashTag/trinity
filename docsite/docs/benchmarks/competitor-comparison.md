@@ -35,7 +35,7 @@ Trinity's CPU inference (35-52 tok/s) is usable for interactive chat. Cloud prov
 | **Trinity BitNet** | **141K-608K** | RTX 4090/L40S | Verified benchmarks |
 | bitnet.cpp (Microsoft) | 298K | RTX 3090 | I2_S kernel |
 
-These are kernel benchmark numbers measuring raw computation speed, not end-to-end text generation. See [GPU Inference Benchmarks](/docs/benchmarks/gpu-inference) for methodology.
+These are kernel benchmark numbers measuring raw computation speed, not end-to-end text generation. See [GPU Inference Benchmarks](/benchmarks/gpu-inference) for methodology.
 
 ---
 
@@ -99,4 +99,4 @@ Trinity is positioned as the **green computing leader** in LLM inference. The te
 - GPT-4/Claude: Estimated from API response times
 - All coherence verified with standard prompts (12/12 coherent responses for Trinity)
 
-See [BitNet Coherence Report](/docs/research/bitnet-report) for detailed test methodology.
+See [BitNet Coherence Report](/research/bitnet-report) for detailed test methodology.

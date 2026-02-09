@@ -498,4 +498,4 @@ VIBEE uses three verification levels:
 ### Project Documentation
 
 7. **VIBEE Formal Specification** -- `docs/research/VIBEE_FORMAL_SPECIFICATION.md`
-8. **Scientific Bibliography** -- [Full paper list](/docs/research/bibliography)
+8. **Scientific Bibliography** -- [Full paper list](/research/bibliography)

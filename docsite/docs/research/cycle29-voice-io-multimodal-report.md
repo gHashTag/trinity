@@ -71,10 +71,10 @@
     Text Output
 
     Cross-Modal Integration:
-    Voice <-> Chat    (STT -> response -> TTS)
-    Voice <-> Code    (STT -> codegen -> result)
-    Voice <-> Vision  (STT -> vision -> TTS description)
-    Voice <-> Tools   (STT -> tool exec -> TTS result)
+    Voice ↔ Chat    (STT -> response -> TTS)
+    Voice ↔ Code    (STT -> codegen -> result)
+    Voice ↔ Vision  (STT -> vision -> TTS description)
+    Voice ↔ Tools   (STT -> tool exec -> TTS result)
     Voice Translation (STT(en) -> translate -> TTS(ru))
 ```
 
@@ -129,7 +129,7 @@
 
 ### Improvements over Cycle 24
 
-- Cross-modal integration: Voice <-> Chat/Code/Vision/Tools (5 new pipelines)
+- Cross-modal integration: Voice ↔ Chat/Code/Vision/Tools (5 new pipelines)
 - Voice translation: EN -> RU pipeline
 - Enhanced VAD with silence rejection
 - MFCC delta + delta-delta features
@@ -157,7 +157,7 @@
 - Full STT + TTS pipeline with cross-modal integration
 - VSA-based phoneme recognition leverages core Trinity architecture
 - 24/24 tests with 0.904 improvement rate
-- 5 cross-modal pipelines (voice<->chat/code/vision/tools + translation)
+- 5 cross-modal pipelines (voice↔chat/code/vision/tools + translation)
 - Multi-language support from day one
 
 ### Weaknesses

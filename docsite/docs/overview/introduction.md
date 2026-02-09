@@ -112,10 +112,10 @@ User Input
 
 ## Learn More
 
-- [Getting Started](../getting-started/installation.md)
-- [VIBEE Specification Language](../vibee/specification-format.md)
-- [Mathematical Foundations](../math-foundations/trinity-identity.md)
-- [API Reference](../api/vsa-operations.md)
+- [Getting Started](../getting-started/installation)
+- [VIBEE Specification Language](../vibee/specification)
+- [Mathematical Foundations](../math-foundations)
+- [API Reference](../api)
 
 ---
 

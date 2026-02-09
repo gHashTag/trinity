@@ -77,7 +77,7 @@ Trinity represents trits in memory using a compact **packed encoding** that stor
 
 This encoding uses 2 bits per trit, achieving an effective density of 1.585 / 2 = 79.3% of the theoretical maximum. While not perfectly optimal (the theoretical minimum is log2(3) = 1.585 bits per trit), the 2-bit encoding enables fast bitwise operations and aligns naturally with byte boundaries.
 
-The [HybridBigInt](/docs/api/hybrid) type in Trinity manages this encoding transparently. It maintains two representations: a **packed** form for memory-efficient storage and an **unpacked** form (an array of individual trit values) for fast computation. Conversions between the two are performed lazily -- only when needed -- and are cached to avoid redundant work.
+The [HybridBigInt](/api/hybrid) type in Trinity manages this encoding transparently. It maintains two representations: a **packed** form for memory-efficient storage and an **unpacked** form (an array of individual trit values) for fast computation. Conversions between the two are performed lazily -- only when needed -- and are cached to avoid redundant work.
 
 With this encoding, a 256-trit vector (a common dimension in Trinity's VSA operations) occupies just 64 bytes in packed form, compared to 256 bytes if each trit were stored in a full byte, or 1024 bytes if stored as 32-bit floats.
 
@@ -97,13 +97,13 @@ With this encoding, a 256-trit vector (a common dimension in Trinity's VSA opera
 
 The balanced ternary representation is the foundation of every subsystem in Trinity:
 
-- **VSA operations** ([bind, unbind, bundle](/docs/api/vsa)) operate element-wise on ternary vectors. Binding uses trit multiplication; unbinding is identical to binding (the operation is its own inverse for non-zero trits).
-- **BitNet inference** ([Firebird](/docs/api/firebird)) quantizes LLM weights to \{-1, 0, +1\}, turning matrix multiplications into accumulations.
-- **The Ternary VM** ([VM](/docs/api/vm)) executes bytecode with a ternary instruction set, operating on ternary stack values.
+- **VSA operations** ([bind, unbind, bundle](/api/vsa)) operate element-wise on ternary vectors. Binding uses trit multiplication; unbinding is identical to binding (the operation is its own inverse for non-zero trits).
+- **BitNet inference** ([Firebird](/api/firebird)) quantizes LLM weights to \{-1, 0, +1\}, turning matrix multiplications into accumulations.
+- **The Ternary VM** ([VM](/api/vm)) executes bytecode with a ternary instruction set, operating on ternary stack values.
 
 ## Further Reading
 
-- [Ternary Computing Concepts](/docs/concepts) -- overview and motivation
-- [The Trinity Identity](/docs/concepts/trinity-identity) -- why the golden ratio connects to base-3
-- [VSA API Reference](/docs/api/vsa) -- ternary vector operations
-- [HybridBigInt API Reference](/docs/api/hybrid) -- packed trit storage
+- [Ternary Computing Concepts](/concepts) -- overview and motivation
+- [The Trinity Identity](/concepts/trinity-identity) -- why the golden ratio connects to base-3
+- [VSA API Reference](/api/vsa) -- ternary vector operations
+- [HybridBigInt API Reference](/api/hybrid) -- packed trit storage

@@ -33,19 +33,19 @@ Ternary \{-1, 0, +1\} weights eliminate the need for multiplication in matrix-ve
 
 ### GPU Inference
 
-BitNet b1.58 models running on consumer and datacenter GPUs achieve throughput measured in hundreds of thousands of tokens per second for small models. Performance varies by GPU type, model size, and batch configuration. See [GPU Inference Benchmarks](/docs/benchmarks/gpu-inference) for detailed numbers.
+BitNet b1.58 models running on consumer and datacenter GPUs achieve throughput measured in hundreds of thousands of tokens per second for small models. Performance varies by GPU type, model size, and batch configuration. See [GPU Inference Benchmarks](/benchmarks/gpu-inference) for detailed numbers.
 
 ### JIT Compilation
 
-Trinity includes a custom JIT compiler with backends for ARM64 (Apple Silicon, Raspberry Pi, etc.) and x86-64 (Intel/AMD). VSA operations such as bind, bundle, dot product, and permute are compiled to native machine code at runtime, with compiled functions cached for reuse. See [JIT Compilation Performance](/docs/benchmarks/jit-performance) for architecture-specific results.
+Trinity includes a custom JIT compiler with backends for ARM64 (Apple Silicon, Raspberry Pi, etc.) and x86-64 (Intel/AMD). VSA operations such as bind, bundle, dot product, and permute are compiled to native machine code at runtime, with compiled functions cached for reuse. See [JIT Compilation Performance](/benchmarks/jit-performance) for architecture-specific results.
 
 ### Memory Efficiency
 
-The framework provides multiple memory representations optimized for different use cases: HybridBigInt with lazy packed/unpacked conversion, bit-packed trit arrays, and sparse COO-format vectors for data with many zeros. A 10,000-dimensional vector that would consume 40KB in float32 fits in roughly 2.5KB using packed ternary encoding. See [Memory Efficiency](/docs/benchmarks/memory-efficiency) for a detailed breakdown.
+The framework provides multiple memory representations optimized for different use cases: HybridBigInt with lazy packed/unpacked conversion, bit-packed trit arrays, and sparse COO-format vectors for data with many zeros. A 10,000-dimensional vector that would consume 40KB in float32 fits in roughly 2.5KB using packed ternary encoding. See [Memory Efficiency](/benchmarks/memory-efficiency) for a detailed breakdown.
 
 ### Competitor Comparison
 
-How does Trinity stack up against Groq, GPT-4, and other LLM providers? Trinity offers 35-52 tok/s on CPU with self-hosted costs of $0.01-0.35/hr, compared to cloud providers charging per-token fees. See [Competitor Comparison](/docs/benchmarks/competitor-comparison) for detailed benchmarks and cost analysis.
+How does Trinity stack up against Groq, GPT-4, and other LLM providers? Trinity offers 35-52 tok/s on CPU with self-hosted costs of $0.01-0.35/hr, compared to cloud providers charging per-token fees. See [Competitor Comparison](/benchmarks/competitor-comparison) for detailed benchmarks and cost analysis.
 
 ## Ternary Arithmetic Advantage
 

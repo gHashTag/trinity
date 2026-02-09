@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Trinity draws on several active research areas spanning machine learning, neuroscience-inspired computing, information theory, and ternary arithmetic. This page provides an overview of the foundational work and key publications behind the framework.
 
-For the complete list of 35+ academic papers with DOI links, see the [Scientific Bibliography](/docs/research/bibliography).
+For the complete list of 35+ academic papers with DOI links, see the [Scientific Bibliography](/research/bibliography).
 
 ## BitNet: 1-bit and 1.58-bit Large Language Models
 
@@ -74,22 +74,22 @@ Trinity uses the golden ratio (phi) as a mathematical constant in its formulas:
 
 - **Livio, M. (2002)** - "The Golden Ratio: The Story of PHI" - *Broadway Books* - ISBN: 978-0767908153
 - **phi = (1 + sqrt(5)) / 2 ~ 1.618** -- The golden ratio appears in optimal search algorithms, Fibonacci hashing, and quasi-random number generation.
-- **Parametric constant approximation: V = n * 3^k * pi^m * phi^p * e^q** -- A parametric form for expressing physical constants in terms of fundamental mathematical constants. See [Constant Approximation Formulas](/docs/math-foundations/formulas) for details and error analysis.
+- **Parametric constant approximation: V = n * 3^k * pi^m * phi^p * e^q** -- A parametric form for expressing physical constants in terms of fundamental mathematical constants. See [Constant Approximation Formulas](/math-foundations/formulas) for details and error analysis.
 
 ## Trinity's Own Findings
 
 ### BitNet Coherence Testing
 
-Testing of Microsoft's BitNet b1.58-2B-4T model across three inference frameworks revealed that CPU-only inference produced incoherent output (likely due to a GGUF tokenizer metadata issue), while GPU-based inference via bitnet.cpp on RunPod RTX 4090 produced coherent text. See the [BitNet b1.58 Coherence Report](/docs/research/bitnet-report) for full methodology and results.
+Testing of Microsoft's BitNet b1.58-2B-4T model across three inference frameworks revealed that CPU-only inference produced incoherent output (likely due to a GGUF tokenizer metadata issue), while GPU-based inference via bitnet.cpp on RunPod RTX 4090 produced coherent text. See the [BitNet b1.58 Coherence Report](/research/bitnet-report) for full methodology and results.
 
 ### Trinity Node FFI Integration
 
-Trinity node now includes fully local BitNet inference via FFI wrapper to official Microsoft bitnet.cpp. Results: 100% coherent text generation (5/5 requests), 13.7 tok/s average on CPU, fully local operation (no cloud API required). This enables Trinity nodes to function as decentralized AI inference endpoints with zero per-token cost. See the [Trinity Node FFI Integration Report](/docs/research/trinity-node-ffi) for technical details and benchmarks.
+Trinity node now includes fully local BitNet inference via FFI wrapper to official Microsoft bitnet.cpp. Results: 100% coherent text generation (5/5 requests), 13.7 tok/s average on CPU, fully local operation (no cloud API required). This enables Trinity nodes to function as decentralized AI inference endpoints with zero per-token cost. See the [Trinity Node FFI Integration Report](/research/trinity-node-ffi) for technical details and benchmarks.
 
 ### HDC Continual Learning
 
-Trinity's HDC implementation was tested for continual learning across 10 phases with 20 classes. Results: 3.04% average forgetting, 12.5% maximum forgetting -- compared to 50-90% catastrophic forgetting typical in neural networks. The independent-prototype architecture eliminates the need for replay buffers or regularization techniques like EWC. See [Hyperdimensional Computing](/docs/hdc/) for details.
+Trinity's HDC implementation was tested for continual learning across 10 phases with 20 classes. Results: 3.04% average forgetting, 12.5% maximum forgetting -- compared to 50-90% catastrophic forgetting typical in neural networks. The independent-prototype architecture eliminates the need for replay buffers or regularization techniques like EWC. See [Hyperdimensional Computing](/hdc/) for details.
 
 ### HDC Multi-Task Learning
 
-Multi-task learning with shared encoder and independent task heads showed interference below 0.05 for all task pairs (formality, topic, sentiment). This validates the theoretical property that independent prototype banks do not interfere with each other. See [HDC Applications](/docs/hdc/applications) for the full module catalog.
+Multi-task learning with shared encoder and independent task heads showed interference below 0.05 for all task pairs (formality, topic, sentiment). This validates the theoretical property that independent prototype banks do not interfere with each other. See [HDC Applications](/hdc/applications) for the full module catalog.

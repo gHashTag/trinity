@@ -75,7 +75,7 @@
   |                     |                                 |
   |  +------------------+-------------------+            |
   |  |         DELIVERY ENGINE              |            |
-  |  |  Local: direct memory pass (<1ms)    |            |
+  |  |  Local: direct memory pass (&lt;1ms)    |            |
   |  |  Remote: cluster RPC (Cycle 37)      |            |
   |  |  Retry with exponential backoff      |            |
   |  +------------------+-------------------+            |
@@ -132,11 +132,11 @@
 
 | Strategy | Description | Latency |
 |----------|-------------|---------|
-| direct | Point-to-point | <1ms (local) |
-| topic_based | Pub/sub via topics | <1ms (local) |
+| direct | Point-to-point | &lt;1ms (local) |
+| topic_based | Pub/sub via topics | &lt;1ms (local) |
 | content_based | Route by payload | ~2ms |
 | load_balanced | Distribute across group | ~1ms |
-| broadcast | All agents in scope | <10ms (64 subs) |
+| broadcast | All agents in scope | &lt;10ms (64 subs) |
 
 ### Topic Patterns
 

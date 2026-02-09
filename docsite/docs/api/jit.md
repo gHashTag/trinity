@@ -4,7 +4,7 @@ sidebar_position: 9
 
 # JIT Compilation API
 
-[VSA](/docs/concepts/glossary) operations run in loops over thousands of vector elements. The JIT compiler replaces these loops with native SIMD instructions, processing 16--32 elements per CPU cycle. Result: **15--260x speedup** on hot paths. You do not need to understand JIT internals -- just create an engine and call the same operations.
+[VSA](/concepts/glossary) operations run in loops over thousands of vector elements. The JIT compiler replaces these loops with native SIMD instructions, processing 16--32 elements per CPU cycle. Result: **15--260x speedup** on hot paths. You do not need to understand JIT internals -- just create an engine and call the same operations.
 
 The JIT system compiles specialized machine code for your exact vector dimension at runtime. The first call for a given dimension compiles the function. Every subsequent call reuses the cached native code.
 
@@ -67,7 +67,7 @@ Frees all compiled functions, executable memory, and caches.
 
 #### `dotProduct(self: *JitVSAEngine, a: *HybridBigInt, b: *HybridBigInt) !i64`
 
-Computes the [dot product](/docs/concepts/glossary) of two hypervectors using JIT-compiled SIMD code. Vectors are automatically unpacked before the operation. The function compiles on first use for the given dimension and caches for reuse.
+Computes the [dot product](/concepts/glossary) of two hypervectors using JIT-compiled SIMD code. Vectors are automatically unpacked before the operation. The function compiles on first use for the given dimension and caches for reuse.
 
 ```zig
 const dot = try engine.dotProduct(&vec_a, &vec_b);
@@ -76,7 +76,7 @@ const dot = try engine.dotProduct(&vec_a, &vec_b);
 
 #### `bind(self: *JitVSAEngine, a: *HybridBigInt, b: *HybridBigInt) !void`
 
-Element-wise ternary multiplication ([binding](/docs/concepts/glossary)). **Modifies `a` in place.** The result vector `a` is marked dirty so the packed representation recomputes on next access.
+Element-wise ternary multiplication ([binding](/concepts/glossary)). **Modifies `a` in place.** The result vector `a` is marked dirty so the packed representation recomputes on next access.
 
 ```zig
 try engine.bind(&vec_a, &vec_b); // vec_a now holds the bound result
@@ -88,7 +88,7 @@ try engine.bind(&vec_a, &vec_b); // vec_a now holds the bound result
 
 #### `bundle(self: *JitVSAEngine, a: *HybridBigInt, b: *HybridBigInt) !void`
 
-Element-wise sum with ternary threshold ([bundling](/docs/concepts/glossary)). **Modifies `a` in place.** For each position: positive sum becomes `+1`, negative sum becomes `-1`, zero stays `0`.
+Element-wise sum with ternary threshold ([bundling](/concepts/glossary)). **Modifies `a` in place.** For each position: positive sum becomes `+1`, negative sum becomes `-1`, zero stays `0`.
 
 ```zig
 try engine.bundle(&vec_a, &vec_b); // vec_a now holds the bundled result

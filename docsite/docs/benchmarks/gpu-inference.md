@@ -19,7 +19,7 @@ BitNet b1.58 models use ternary weights (\{-1, 0, +1\}), enabling highly efficie
 The numbers above are for the BitNet b1.58-2B-4T model (2.4 billion parameters) using the bitnet.cpp inference engine with I2_S quantization. Actual throughput depends on batch size, sequence length, and system configuration.
 
 :::caution
-These throughput figures represent bitnet.cpp kernel benchmark results (measuring raw computation speed), not end-to-end text generation throughput. End-to-end generation speed is substantially lower due to sequential token generation, memory transfers, and tokenizer overhead. See the [BitNet Coherence Report](/docs/research/bitnet-report) for measured end-to-end generation speeds.
+These throughput figures represent bitnet.cpp kernel benchmark results (measuring raw computation speed), not end-to-end text generation throughput. End-to-end generation speed is substantially lower due to sequential token generation, memory transfers, and tokenizer overhead. See the [BitNet Coherence Report](/research/bitnet-report) for measured end-to-end generation speeds.
 :::
 
 ## Model Size Scaling

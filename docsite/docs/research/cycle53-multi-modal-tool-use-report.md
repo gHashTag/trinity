@@ -93,7 +93,7 @@ const result = mmtu.process("execute code to calculate sum and read file");
 
 ### ModalToolBinding (2 tests)
 1. **Init and permissions** — Text: 4 tools, Code: 8 tools, safety gating
-2. **Phi-inverse safety floors** — code < text <= vision < tool hierarchy
+2. **Phi-inverse safety floors** — code &lt; text &lt;= vision &lt; tool hierarchy
 
 ### ToolInvocation (1 test)
 3. **Creation and result** — Init, setToolName, setResult, getResult

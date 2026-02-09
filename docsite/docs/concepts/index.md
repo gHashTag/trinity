@@ -36,7 +36,7 @@ Conventional ternary uses \{0, 1, 2\}, but balanced ternary uses \{-1, 0, +1\}. 
 
 ### Memory Savings in Practice
 
-To make the density advantage concrete, consider a [codebook](/docs/concepts/glossary) of 10,000 concepts. Each concept is a 4000-dimensional vector.
+To make the density advantage concrete, consider a [codebook](/concepts/glossary) of 10,000 concepts. Each concept is a 4000-dimensional vector.
 
 | Format | Bytes per element | Total size |
 |--------|-------------------|------------|
@@ -50,18 +50,18 @@ That is a **100x savings** over float32. The packed ternary format stores the sa
 
 In the context of neural networks and large language models, ternary weights \{-1, 0, +1\} eliminate the need for multiplication entirely. Multiplying by +1 is a no-op, multiplying by -1 is a sign flip, and multiplying by 0 zeros out the value. This reduces matrix-vector products to **pure addition and subtraction**, dramatically lowering power consumption and silicon area compared to floating-point arithmetic.
 
-The [BitNet b1.58](/docs/bitnet) architecture exploits this directly: model weights are quantized to ternary values, achieving memory savings of approximately 20x compared to float32 while maintaining competitive model quality.
+The [BitNet b1.58](/bitnet) architecture exploits this directly: model weights are quantized to ternary values, achieving memory savings of approximately 20x compared to float32 while maintaining competitive model quality.
 
 ## Connection to Trinity
 
-The Trinity framework implements these ideas in a practical computing system. At its core is a [Vector Symbolic Architecture (VSA)](/docs/api/vsa) that performs hyperdimensional computing with ternary vectors. The [HybridBigInt](/docs/api/hybrid) storage format packs trits at 1.58 bits each using an efficient 2-bit encoding. The [Ternary Virtual Machine](/docs/api/vm) executes stack-based bytecode natively in ternary. And the [Firebird engine](/docs/api/firebird) performs LLM inference using ternary BitNet weights.
+The Trinity framework implements these ideas in a practical computing system. At its core is a [Vector Symbolic Architecture (VSA)](/api/vsa) that performs hyperdimensional computing with ternary vectors. The [HybridBigInt](/api/hybrid) storage format packs trits at 1.58 bits each using an efficient 2-bit encoding. The [Ternary Virtual Machine](/api/vm) executes stack-based bytecode natively in ternary. And the [Firebird engine](/api/firebird) performs LLM inference using ternary BitNet weights.
 
-The mathematical justification for all of this traces back to a single identity: the golden ratio squared plus its reciprocal squared equals exactly three. This is the [Trinity Identity](/docs/concepts/trinity-identity), and it connects the golden ratio -- the constant of optimal proportion -- to the number three -- the optimal computing base. It is the theoretical anchor for the entire project.
+The mathematical justification for all of this traces back to a single identity: the golden ratio squared plus its reciprocal squared equals exactly three. This is the [Trinity Identity](/concepts/trinity-identity), and it connects the golden ratio -- the constant of optimal proportion -- to the number three -- the optimal computing base. It is the theoretical anchor for the entire project.
 
 ## Further Reading
 
-- [Balanced Ternary Arithmetic](/docs/concepts/balanced-ternary) -- deep dive into ternary operations and encoding
-- [The Trinity Identity](/docs/concepts/trinity-identity) -- mathematical proof and significance
-- [Constant Approximation Formulas](/docs/math-foundations/formulas) -- physical constants expressed through ternary and the golden ratio
-- [Mathematical Proofs](/docs/math-foundations/proofs) -- rigorous derivations of core results
-- [Glossary](/docs/concepts/glossary) -- quick reference for all Trinity-specific terms
+- [Balanced Ternary Arithmetic](/concepts/balanced-ternary) -- deep dive into ternary operations and encoding
+- [The Trinity Identity](/concepts/trinity-identity) -- mathematical proof and significance
+- [Constant Approximation Formulas](/math-foundations/formulas) -- physical constants expressed through ternary and the golden ratio
+- [Mathematical Proofs](/math-foundations/proofs) -- rigorous derivations of core results
+- [Glossary](/concepts/glossary) -- quick reference for all Trinity-specific terms
