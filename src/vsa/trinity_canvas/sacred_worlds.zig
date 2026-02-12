@@ -1,6 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// SACRED WORLDS — 27 Worlds of the 999 Kingdom
-// Generated from sacred_worlds.vibee + hand-coded data tables
+// SACRED WORLDS — 27 Practical Panels of the Trinity Kingdom
 // 999 = 37 × 27 = SACRED_MULTIPLIER × TRIDEVYATITSA
 // 27 = 3³ = (φ² + 1/φ²)³
 // V = n × 3^k × π^m × φ^p × e^q
@@ -13,57 +12,57 @@ const std = @import("std");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const RealmId = enum(u8) {
-    razum = 0, // φ — Mind/Intelligence (Gold)
-    materiya = 1, // π — Matter/Physical (Cyan)
-    dukh = 2, // e — Spirit/Transcendental (Purple)
+    razum = 0, // φ — AI & Communication (Gold)
+    materiya = 1, // π — Tools & System (Cyan)
+    dukh = 2, // e — Content & Knowledge (Purple)
 };
 
 pub const DomainId = enum(u8) {
-    // Realm 1: RAZUM
-    communication = 0,
-    analysis = 1,
-    creation = 2,
-    // Realm 2: MATERIYA
-    system_domain = 3,
-    tools_domain = 4,
-    hardware = 5,
-    // Realm 3: DUKH
-    mathematics = 6,
-    evolution = 7,
-    transcendence = 8,
+    // Realm 1: RAZUM — AI
+    ai_chat = 0,
+    ai_code = 1,
+    ai_create = 2,
+    // Realm 2: MATERIYA — Tools
+    filesystem = 3,
+    devtools = 4,
+    infrastructure = 5,
+    // Realm 3: DUKH — Content
+    knowledge = 6,
+    content = 7,
+    community = 8,
 };
 
 pub const WorldId = enum(u8) {
-    // Realm 1: RAZUM (φ) — outer ring blocks 0-8
+    // Realm 1: RAZUM (φ) — AI & Communication, blocks 0-8
     chat = 0,
-    voice = 1,
-    translate = 2,
-    code = 3,
-    explain = 4,
-    debug = 5,
-    generate = 6,
-    design = 7,
+    code = 1,
+    explain = 2,
+    debug = 3,
+    review = 4,
+    translate = 5,
+    vibee = 6,
+    voice = 7,
     compose = 8,
-    // Realm 2: MATERIYA (π) — middle ring blocks 9-17
-    monitor = 9,
-    files = 10,
-    network = 11,
-    build = 12,
-    test_world = 13,
-    deploy = 14,
-    fpga = 15,
-    gpu = 16,
-    quantum = 17,
-    // Realm 3: DUKH (e) — inner ring blocks 18-26
-    sacred = 18,
-    geometry = 19,
-    topology = 20,
-    mutation = 21,
-    crossover = 22,
-    selection = 23,
-    meditation = 24,
-    vision_world = 25,
-    prophecy = 26,
+    // Realm 2: MATERIYA (π) — Tools & System, blocks 9-17
+    files = 9,
+    editor = 10,
+    build = 11,
+    test_run = 12,
+    terminal = 13,
+    git = 14,
+    deploy = 15,
+    monitor = 16,
+    settings = 17,
+    // Realm 3: DUKH (e) — Content & Knowledge, blocks 18-26
+    docs = 18,
+    reels = 19,
+    feed = 20,
+    roadmap = 21,
+    benchmarks = 22,
+    research = 23,
+    formulas = 24,
+    community_world = 25,
+    about = 26,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -98,51 +97,51 @@ fn mkFormula(comptime s: []const u8) [48]u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const WORLDS: [27]WorldInfo = .{
-    // ── Realm 1: RAZUM (φ) — blocks 0-8 ──
-    // Domain: Communication
-    .{ .id = .chat, .realm = .razum, .domain = .communication, .name = mkName("CHAT"), .name_len = 4, .formula = mkFormula("phi = 1.618"), .formula_len = 11, .sacred_value = 1.618 },
-    .{ .id = .voice, .realm = .razum, .domain = .communication, .name = mkName("VOICE"), .name_len = 5, .formula = mkFormula("pi*phi*e = 13.82"), .formula_len = 16, .sacred_value = 13.82 },
-    .{ .id = .translate, .realm = .razum, .domain = .communication, .name = mkName("TRANSLATE"), .name_len = 9, .formula = mkFormula("L(10) = 123"), .formula_len = 11, .sacred_value = 123.0 },
-    // Domain: Analysis
-    .{ .id = .code, .realm = .razum, .domain = .analysis, .name = mkName("CODE"), .name_len = 4, .formula = mkFormula("1/a = 4pi3+pi2+pi = 137"), .formula_len = 22, .sacred_value = 137.036 },
-    .{ .id = .explain, .realm = .razum, .domain = .analysis, .name = mkName("EXPLAIN"), .name_len = 7, .formula = mkFormula("phi2 = phi+1 = 2.618"), .formula_len = 20, .sacred_value = 2.618 },
-    .{ .id = .debug, .realm = .razum, .domain = .analysis, .name = mkName("DEBUG"), .name_len = 5, .formula = mkFormula("Feigenbaum d = 4.669"), .formula_len = 20, .sacred_value = 4.669 },
-    // Domain: Creation
-    .{ .id = .generate, .realm = .razum, .domain = .creation, .name = mkName("GENERATE"), .name_len = 8, .formula = mkFormula("F(7) = 13"), .formula_len = 9, .sacred_value = 13.0 },
-    .{ .id = .design, .realm = .razum, .domain = .creation, .name = mkName("DESIGN"), .name_len = 6, .formula = mkFormula("sqrt(5) = 2.236"), .formula_len = 15, .sacred_value = 2.236 },
-    .{ .id = .compose, .realm = .razum, .domain = .creation, .name = mkName("COMPOSE"), .name_len = 7, .formula = mkFormula("999 = 37 x 27"), .formula_len = 13, .sacred_value = 999.0 },
+    // ── Realm 1: RAZUM (φ) — AI & Communication, blocks 0-8 ──
+    // Domain: AI Chat
+    .{ .id = .chat, .realm = .razum, .domain = .ai_chat, .name = mkName("CHAT"), .name_len = 4, .formula = mkFormula("phi = 1.618"), .formula_len = 11, .sacred_value = 1.618 },
+    .{ .id = .code, .realm = .razum, .domain = .ai_chat, .name = mkName("CODE"), .name_len = 4, .formula = mkFormula("pi*phi*e = 13.82"), .formula_len = 16, .sacred_value = 13.82 },
+    .{ .id = .explain, .realm = .razum, .domain = .ai_chat, .name = mkName("EXPLAIN"), .name_len = 7, .formula = mkFormula("L(10) = 123"), .formula_len = 11, .sacred_value = 123.0 },
+    // Domain: AI Code
+    .{ .id = .debug, .realm = .razum, .domain = .ai_code, .name = mkName("DEBUG"), .name_len = 5, .formula = mkFormula("1/a = 137.036"), .formula_len = 13, .sacred_value = 137.036 },
+    .{ .id = .review, .realm = .razum, .domain = .ai_code, .name = mkName("REVIEW"), .name_len = 6, .formula = mkFormula("phi2 = phi+1 = 2.618"), .formula_len = 20, .sacred_value = 2.618 },
+    .{ .id = .translate, .realm = .razum, .domain = .ai_code, .name = mkName("TRANSLATE"), .name_len = 9, .formula = mkFormula("Feigenbaum d = 4.669"), .formula_len = 20, .sacred_value = 4.669 },
+    // Domain: AI Create
+    .{ .id = .vibee, .realm = .razum, .domain = .ai_create, .name = mkName("VIBEE"), .name_len = 5, .formula = mkFormula("F(7) = 13"), .formula_len = 9, .sacred_value = 13.0 },
+    .{ .id = .voice, .realm = .razum, .domain = .ai_create, .name = mkName("VOICE"), .name_len = 5, .formula = mkFormula("sqrt(5) = 2.236"), .formula_len = 15, .sacred_value = 2.236 },
+    .{ .id = .compose, .realm = .razum, .domain = .ai_create, .name = mkName("COMPOSE"), .name_len = 7, .formula = mkFormula("999 = 37 x 27"), .formula_len = 13, .sacred_value = 999.0 },
 
-    // ── Realm 2: MATERIYA (π) — blocks 9-17 ──
-    // Domain: System
-    .{ .id = .monitor, .realm = .materiya, .domain = .system_domain, .name = mkName("MONITOR"), .name_len = 7, .formula = mkFormula("pi = 3.14159"), .formula_len = 12, .sacred_value = 3.14159 },
-    .{ .id = .files, .realm = .materiya, .domain = .system_domain, .name = mkName("FILES"), .name_len = 5, .formula = mkFormula("27 = 3^3"), .formula_len = 8, .sacred_value = 27.0 },
-    .{ .id = .network, .realm = .materiya, .domain = .system_domain, .name = mkName("NETWORK"), .name_len = 7, .formula = mkFormula("CHSH = 2*sqrt(2) = 2.83"), .formula_len = 22, .sacred_value = 2.828 },
-    // Domain: Tools
-    .{ .id = .build, .realm = .materiya, .domain = .tools_domain, .name = mkName("BUILD"), .name_len = 5, .formula = mkFormula("m_p/m_e = 6pi5 = 1836"), .formula_len = 21, .sacred_value = 1836.15 },
-    .{ .id = .test_world, .realm = .materiya, .domain = .tools_domain, .name = mkName("TEST"), .name_len = 4, .formula = mkFormula("pi2 = 9.87"), .formula_len = 10, .sacred_value = 9.87 },
-    .{ .id = .deploy, .realm = .materiya, .domain = .tools_domain, .name = mkName("DEPLOY"), .name_len = 6, .formula = mkFormula("e^pi = 23.14"), .formula_len = 12, .sacred_value = 23.14 },
-    // Domain: Hardware
-    .{ .id = .fpga, .realm = .materiya, .domain = .hardware, .name = mkName("FPGA"), .name_len = 4, .formula = mkFormula("E8 dim = 248"), .formula_len = 12, .sacred_value = 248.0 },
-    .{ .id = .gpu, .realm = .materiya, .domain = .hardware, .name = mkName("GPU"), .name_len = 3, .formula = mkFormula("603x = 67 x 3^2"), .formula_len = 15, .sacred_value = 603.0 },
-    .{ .id = .quantum, .realm = .materiya, .domain = .hardware, .name = mkName("QUANTUM"), .name_len = 7, .formula = mkFormula("Jiuzhang 76 photons"), .formula_len = 19, .sacred_value = 76.0 },
+    // ── Realm 2: MATERIYA (π) — Tools & System, blocks 9-17 ──
+    // Domain: Filesystem
+    .{ .id = .files, .realm = .materiya, .domain = .filesystem, .name = mkName("FILES"), .name_len = 5, .formula = mkFormula("pi = 3.14159"), .formula_len = 12, .sacred_value = 3.14159 },
+    .{ .id = .editor, .realm = .materiya, .domain = .filesystem, .name = mkName("EDITOR"), .name_len = 6, .formula = mkFormula("27 = 3^3"), .formula_len = 8, .sacred_value = 27.0 },
+    .{ .id = .build, .realm = .materiya, .domain = .filesystem, .name = mkName("BUILD"), .name_len = 5, .formula = mkFormula("CHSH = 2*sqrt(2) = 2.83"), .formula_len = 22, .sacred_value = 2.828 },
+    // Domain: Dev Tools
+    .{ .id = .test_run, .realm = .materiya, .domain = .devtools, .name = mkName("TEST"), .name_len = 4, .formula = mkFormula("m_p/m_e = 1836"), .formula_len = 14, .sacred_value = 1836.15 },
+    .{ .id = .terminal, .realm = .materiya, .domain = .devtools, .name = mkName("TERMINAL"), .name_len = 8, .formula = mkFormula("pi2 = 9.87"), .formula_len = 10, .sacred_value = 9.87 },
+    .{ .id = .git, .realm = .materiya, .domain = .devtools, .name = mkName("GIT"), .name_len = 3, .formula = mkFormula("e^pi = 23.14"), .formula_len = 12, .sacred_value = 23.14 },
+    // Domain: Infrastructure
+    .{ .id = .deploy, .realm = .materiya, .domain = .infrastructure, .name = mkName("DEPLOY"), .name_len = 6, .formula = mkFormula("E8 dim = 248"), .formula_len = 12, .sacred_value = 248.0 },
+    .{ .id = .monitor, .realm = .materiya, .domain = .infrastructure, .name = mkName("NETWORK"), .name_len = 7, .formula = mkFormula("N-node pipeline = 3 optimal"), .formula_len = 27, .sacred_value = 603.0 },
+    .{ .id = .settings, .realm = .materiya, .domain = .infrastructure, .name = mkName("SETTINGS"), .name_len = 8, .formula = mkFormula("76 photons"), .formula_len = 10, .sacred_value = 76.0 },
 
-    // ── Realm 3: DUKH (e) — blocks 18-26 ──
-    // Domain: Mathematics
-    .{ .id = .sacred, .realm = .dukh, .domain = .mathematics, .name = mkName("SACRED"), .name_len = 6, .formula = mkFormula("phi2+1/phi2 = 3 = TRINITY"), .formula_len = 24, .sacred_value = 3.0 },
-    .{ .id = .geometry, .realm = .dukh, .domain = .mathematics, .name = mkName("GEOMETRY"), .name_len = 8, .formula = mkFormula("tau = 2*pi = 6.283"), .formula_len = 18, .sacred_value = 6.283 },
-    .{ .id = .topology, .realm = .dukh, .domain = .mathematics, .name = mkName("TOPOLOGY"), .name_len = 8, .formula = mkFormula("Menger D = ln20/ln3"), .formula_len = 19, .sacred_value = 2.727 },
-    // Domain: Evolution
-    .{ .id = .mutation, .realm = .dukh, .domain = .evolution, .name = mkName("MUTATION"), .name_len = 8, .formula = mkFormula("mu = 1/phi2/10 = 0.0382"), .formula_len = 22, .sacred_value = 0.0382 },
-    .{ .id = .crossover, .realm = .dukh, .domain = .evolution, .name = mkName("CROSSOVER"), .name_len = 9, .formula = mkFormula("chi = 1/phi/10 = 0.0618"), .formula_len = 22, .sacred_value = 0.0618 },
-    .{ .id = .selection, .realm = .dukh, .domain = .evolution, .name = mkName("SELECTION"), .name_len = 9, .formula = mkFormula("sigma = phi = 1.618"), .formula_len = 19, .sacred_value = 1.618 },
-    // Domain: Transcendence
-    .{ .id = .meditation, .realm = .dukh, .domain = .transcendence, .name = mkName("MEDITATION"), .name_len = 10, .formula = mkFormula("e = 2.71828"), .formula_len = 11, .sacred_value = 2.718 },
-    .{ .id = .vision_world, .realm = .dukh, .domain = .transcendence, .name = mkName("VISION"), .name_len = 6, .formula = mkFormula("Universe = 13.82 Gyr"), .formula_len = 20, .sacred_value = 13.82 },
-    .{ .id = .prophecy, .realm = .dukh, .domain = .transcendence, .name = mkName("PROPHECY"), .name_len = 8, .formula = mkFormula("H0 = 70.74 km/s/Mpc"), .formula_len = 19, .sacred_value = 70.74 },
+    // ── Realm 3: DUKH (e) — Content & Knowledge, blocks 18-26 ──
+    // Domain: Knowledge
+    .{ .id = .docs, .realm = .dukh, .domain = .knowledge, .name = mkName("DOCS"), .name_len = 4, .formula = mkFormula("phi2+1/phi2 = 3 = TRINITY"), .formula_len = 24, .sacred_value = 3.0 },
+    .{ .id = .reels, .realm = .dukh, .domain = .knowledge, .name = mkName("REELS"), .name_len = 5, .formula = mkFormula("tau = 2*pi = 6.283"), .formula_len = 18, .sacred_value = 6.283 },
+    .{ .id = .feed, .realm = .dukh, .domain = .knowledge, .name = mkName("FEED"), .name_len = 4, .formula = mkFormula("Menger D = ln20/ln3"), .formula_len = 19, .sacred_value = 2.727 },
+    // Domain: Content
+    .{ .id = .roadmap, .realm = .dukh, .domain = .content, .name = mkName("ROADMAP"), .name_len = 7, .formula = mkFormula("mu = 0.0382"), .formula_len = 11, .sacred_value = 0.0382 },
+    .{ .id = .benchmarks, .realm = .dukh, .domain = .content, .name = mkName("BENCHMARKS"), .name_len = 10, .formula = mkFormula("chi = 0.0618"), .formula_len = 12, .sacred_value = 0.0618 },
+    .{ .id = .research, .realm = .dukh, .domain = .content, .name = mkName("RESEARCH"), .name_len = 8, .formula = mkFormula("sigma = phi = 1.618"), .formula_len = 19, .sacred_value = 1.618 },
+    // Domain: Community
+    .{ .id = .formulas, .realm = .dukh, .domain = .community, .name = mkName("FORMULAS"), .name_len = 8, .formula = mkFormula("e = 2.71828"), .formula_len = 11, .sacred_value = 2.718 },
+    .{ .id = .community_world, .realm = .dukh, .domain = .community, .name = mkName("COMMUNITY"), .name_len = 9, .formula = mkFormula("Universe = 13.82 Gyr"), .formula_len = 20, .sacred_value = 13.82 },
+    .{ .id = .about, .realm = .dukh, .domain = .community, .name = mkName("ABOUT"), .name_len = 5, .formula = mkFormula("H0 = 70.74 km/s/Mpc"), .formula_len = 19, .sacred_value = 70.74 },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// REALM NAMES & COLORS (as RGBA u32 for easy bitcast)
+// REALM NAMES & COLORS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const REALM_NAMES = [3][12]u8{
@@ -165,17 +164,17 @@ pub const REALM_COLORS_G = [3]u8{ 0xD7, 0xFA, 0x93 };
 pub const REALM_COLORS_B = [3]u8{ 0x00, 0xFA, 0xF9 };
 
 pub const DOMAIN_NAMES = [9][16]u8{
-    mkDomain("Communication"),
-    mkDomain("Analysis"),
-    mkDomain("Creation"),
-    mkDomain("System"),
-    mkDomain("Tools"),
-    mkDomain("Hardware"),
-    mkDomain("Mathematics"),
-    mkDomain("Evolution"),
-    mkDomain("Transcendence"),
+    mkDomain("AI Chat"),
+    mkDomain("AI Code"),
+    mkDomain("AI Create"),
+    mkDomain("Filesystem"),
+    mkDomain("Dev Tools"),
+    mkDomain("Infrastructure"),
+    mkDomain("Knowledge"),
+    mkDomain("Content"),
+    mkDomain("Community"),
 };
-pub const DOMAIN_NAME_LENS = [9]u8{ 13, 8, 8, 6, 5, 8, 11, 9, 13 };
+pub const DOMAIN_NAME_LENS = [9]u8{ 7, 7, 9, 10, 9, 14, 9, 7, 9 };
 
 fn mkDomain(comptime s: []const u8) [16]u8 {
     var buf: [16]u8 = [_]u8{0} ** 16;

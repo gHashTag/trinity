@@ -14,38 +14,38 @@ pub const WorldDoc = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const WORLD_DOCS: [27]WorldDoc = .{
-    // ── Realm 1: RAZUM (phi) — blocks 0-8 ──
-    .{ .raw = @embedFile("docs_embed/intro.md"), .subtitle = "Trinity Project Overview" },
-    .{ .raw = @embedFile("docs_embed/getting-started/quickstart.md"), .subtitle = "Quick Start Guide" },
-    .{ .raw = @embedFile("docs_embed/concepts/glossary.md"), .subtitle = "Terminology & Glossary" },
-    .{ .raw = @embedFile("docs_embed/api/vsa.md"), .subtitle = "VSA Core API Reference" },
-    .{ .raw = @embedFile("docs_embed/concepts/balanced-ternary.md"), .subtitle = "Balanced Ternary Explained" },
-    .{ .raw = @embedFile("docs_embed/troubleshooting.md"), .subtitle = "Troubleshooting Guide" },
-    .{ .raw = @embedFile("docs_embed/vibee/specification.md"), .subtitle = "VIBEE Specification" },
-    .{ .raw = @embedFile("docs_embed/architecture/overview.md"), .subtitle = "System Architecture" },
-    .{ .raw = @embedFile("docs_embed/vibee/examples.md"), .subtitle = "VIBEE Code Examples" },
+    // ── Realm 1: RAZUM (phi) — AI & Communication, blocks 0-8 ──
+    .{ .raw = @embedFile("docs_embed/intro.md"), .subtitle = "Trinity AI Assistant" },
+    .{ .raw = @embedFile("docs_embed/getting-started/quickstart.md"), .subtitle = "AI Code Generation" },
+    .{ .raw = @embedFile("docs_embed/concepts/glossary.md"), .subtitle = "Code Explainer" },
+    .{ .raw = @embedFile("docs_embed/api/vsa.md"), .subtitle = "Debug Assistant" },
+    .{ .raw = @embedFile("docs_embed/concepts/balanced-ternary.md"), .subtitle = "Code Review" },
+    .{ .raw = @embedFile("docs_embed/troubleshooting.md"), .subtitle = "Multi-Language Translation" },
+    .{ .raw = @embedFile("docs_embed/vibee/specification.md"), .subtitle = "VIBEE Spec to Code" },
+    .{ .raw = @embedFile("docs_embed/architecture/overview.md"), .subtitle = "Voice Input/Output" },
+    .{ .raw = @embedFile("docs_embed/vibee/examples.md"), .subtitle = "Multi-Step Composer" },
 
-    // ── Realm 2: MATERIYA (pi) — blocks 9-17 ──
-    .{ .raw = @embedFile("docs_embed/benchmarks/index.md"), .subtitle = "Performance Benchmarks" },
-    .{ .raw = @embedFile("docs_embed/getting-started/installation.md"), .subtitle = "Installation & Setup" },
-    .{ .raw = @embedFile("docs_embed/deployment/index.md"), .subtitle = "Deployment Overview" },
-    .{ .raw = @embedFile("docs_embed/getting-started/development-setup.md"), .subtitle = "Development Environment" },
-    .{ .raw = @embedFile("docs_embed/benchmarks/competitor-comparison.md"), .subtitle = "Framework Comparison" },
-    .{ .raw = @embedFile("docs_embed/deployment/runpod.md"), .subtitle = "RunPod GPU Deployment" },
-    .{ .raw = @embedFile("docs_embed/vibee/theorems.md"), .subtitle = "VIBEE Theorems" },
-    .{ .raw = @embedFile("docs_embed/benchmarks/gpu-inference.md"), .subtitle = "GPU Inference Benchmarks" },
-    .{ .raw = @embedFile("docs_embed/benchmarks/memory-efficiency.md"), .subtitle = "Memory Efficiency" },
+    // ── Realm 2: MATERIYA (pi) — Tools & System, blocks 9-17 ──
+    .{ .raw = @embedFile("docs_embed/benchmarks/index.md"), .subtitle = "File Browser" },
+    .{ .raw = @embedFile("docs_embed/getting-started/installation.md"), .subtitle = "Code Editor" },
+    .{ .raw = @embedFile("docs_embed/deployment/index.md"), .subtitle = "Build Runner" },
+    .{ .raw = @embedFile("docs_embed/getting-started/development-setup.md"), .subtitle = "Test Runner" },
+    .{ .raw = @embedFile("docs_embed/benchmarks/competitor-comparison.md"), .subtitle = "Terminal Shell" },
+    .{ .raw = @embedFile("docs_embed/deployment/runpod.md"), .subtitle = "Git Version Control" },
+    .{ .raw = @embedFile("docs_embed/vibee/theorems.md"), .subtitle = "Deployment Manager" },
+    .{ .raw = @embedFile("docs_embed/benchmarks/gpu-inference.md"), .subtitle = "Network Admin — Distributed Nodes" },
+    .{ .raw = @embedFile("docs_embed/benchmarks/memory-efficiency.md"), .subtitle = "App Settings" },
 
-    // ── Realm 3: DUKH (e) — blocks 18-26 ──
-    .{ .raw = @embedFile("docs_embed/math-foundations/formulas.md"), .subtitle = "Sacred Formulas" },
-    .{ .raw = @embedFile("docs_embed/concepts/trinity-identity.md"), .subtitle = "Trinity Identity" },
-    .{ .raw = @embedFile("docs_embed/api/hybrid.md"), .subtitle = "HybridBigInt API" },
-    .{ .raw = @embedFile("docs_embed/hdc/applications.md"), .subtitle = "HDC Applications" },
-    .{ .raw = @embedFile("docs_embed/hdc/igla-glove-comparison.md"), .subtitle = "Igla vs GloVe" },
-    .{ .raw = @embedFile("docs_embed/research/bitnet-report.md"), .subtitle = "BitNet Research" },
-    .{ .raw = @embedFile("docs_embed/math-foundations/proofs.md"), .subtitle = "Mathematical Proofs" },
-    .{ .raw = @embedFile("docs_embed/overview/roadmap.md"), .subtitle = "Project Roadmap" },
-    .{ .raw = @embedFile("docs_embed/overview/tech-tree.md"), .subtitle = "Technology Tree" },
+    // ── Realm 3: DUKH (e) — Content & Knowledge, blocks 18-26 ──
+    .{ .raw = @embedFile("docs_embed/math-foundations/formulas.md"), .subtitle = "All Documentation" },
+    .{ .raw = @embedFile("docs_embed/concepts/trinity-identity.md"), .subtitle = "Create Reels" },
+    .{ .raw = @embedFile("docs_embed/api/hybrid.md"), .subtitle = "Content Feed" },
+    .{ .raw = @embedFile("docs_embed/hdc/applications.md"), .subtitle = "Project Roadmap" },
+    .{ .raw = @embedFile("docs_embed/hdc/igla-glove-comparison.md"), .subtitle = "Performance Benchmarks" },
+    .{ .raw = @embedFile("docs_embed/research/bitnet-report.md"), .subtitle = "Research Reports" },
+    .{ .raw = @embedFile("docs_embed/math-foundations/proofs.md"), .subtitle = "Sacred Formulas" },
+    .{ .raw = @embedFile("docs_embed/overview/roadmap.md"), .subtitle = "Community Hub" },
+    .{ .raw = @embedFile("docs_embed/overview/tech-tree.md"), .subtitle = "About Trinity" },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

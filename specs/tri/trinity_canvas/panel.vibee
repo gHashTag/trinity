@@ -100,6 +100,14 @@ types:
       sys_cpu_temp: Float
       sys_update_timer: Float
 
+      # Wave scroll state (Emergent Wave ScrollView v1.0)
+      scroll_wave_phase: Float        # Scroll position as wave phase
+      scroll_wave_velocity: Float     # Scroll velocity (px/sec)
+      scroll_wave_damping: Float      # PHI_INV damping coefficient
+      scroll_wave_time: Float         # Wave animation time
+      scroll_wave_bounce: Float       # Edge bounce amplitude
+      scroll_use_wave: Bool           # Enable wave scroll (false = legacy lerp)
+
 constants:
   MIN_WIDTH: 200.0
   MIN_HEIGHT: 150.0

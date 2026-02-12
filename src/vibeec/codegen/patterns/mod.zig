@@ -32,6 +32,7 @@ pub const ml = @import("ml.zig"); // MLS: 6%
 pub const vsa = @import("vsa.zig"); // TEN: 6%
 pub const dsl = @import("dsl.zig"); // DSL patterns
 pub const chat = @import("chat.zig"); // Chat patterns (fluent responses)
+pub const rl = @import("rl.zig"); // RL: raylib GUI/rendering patterns
 
 // Optimization modules
 pub const registry = @import("registry.zig"); // Hash-based lookup
@@ -48,6 +49,7 @@ pub const Category = enum {
     data,
     ml,
     vsa,
+    rl,
     unknown,
 };
 
@@ -82,6 +84,18 @@ pub fn matchAll(builder: *CodeBuilder, b: *const Behavior) !bool {
     {
         if (chat.isChatBehavior(name)) {
             if (try chat.match(builder, b)) return true;
+        }
+    }
+
+    // RL: raylib GUI patterns — draw_*, render_*, handle_mouse, init_window, with_alpha, etc.
+    // Must be BEFORE lifecycle to catch init_window before init*
+    if (first_char == 'd' or first_char == 'r' or first_char == 'h' or
+        first_char == 'i' or first_char == 's' or first_char == 'e' or
+        first_char == 'c' or first_char == 'm' or first_char == 'l' or
+        first_char == 'u' or first_char == 'g' or first_char == 'w')
+    {
+        if (rl.isRlBehavior(name)) {
+            if (try rl.match(builder, b)) return true;
         }
     }
 
@@ -157,6 +171,11 @@ pub fn matchWithCategory(builder: *CodeBuilder, b: *const Behavior) !MatchResult
         if (try chat.match(builder, b)) return .{ .matched = true, .category = .chat };
     }
 
+    // RL patterns before lifecycle (to catch init_window before init*)
+    if (rl.isRlBehavior(b.name)) {
+        if (try rl.match(builder, b)) return .{ .matched = true, .category = .rl };
+    }
+
     // PAS frequency order
     if (try lifecycle.match(builder, b)) return .{ .matched = true, .category = .lifecycle };
     if (try generic.match(builder, b)) return .{ .matched = true, .category = .generic };
@@ -178,6 +197,7 @@ pub fn getPatternCounts() struct {
     data: u32,
     ml: u32,
     vsa: u32,
+    rl: u32,
     total: u32,
 } {
     return .{
@@ -189,39 +209,107 @@ pub fn getPatternCounts() struct {
         .data = 23, // encode, decode, quantize, dequantize, pack, unpack, compress, serialize, deserialize, transform, convert, normalize, format, parse, token, translate, explain, summarize, extract, split, chunk, fallback, honest, unknown
         .ml = 24, // predict, train, evaluate, learn, adapt, fit, infer, calibrate, accuracy, loss, gradient, backward, forward, weight, evolve, mutate, llm, layer, softmax, relu, gelu, embed, flash, prune, online
         .vsa = 15, // bind, bundle, unbind, similarity, permute, dot, hamming, cosine, distance, random, ones, zeros, sparsity, vector, analogy
-        .total = 186, // 141 + 45 chat patterns
+        .rl = 57, // Drawing(10) + Text(7) + Input(7) + Window(15) + Color(4) + Audio(2) + Cursor(2) + Texture(1) + Composites(9)
+        .total = 243, // 186 + 57 rl patterns
+    };
+}
+
+fn testBehavior(name: []const u8) Behavior {
+    return Behavior{
+        .name = name,
+        .given = "test",
+        .when = "test",
+        .then = "test",
+        .implementation = "",
+        .test_cases = .{},
     };
 }
 
 test "matchAll basic" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
 
-    const b = Behavior{
-        .name = "init",
-        .given = "system",
-        .when = "start",
-        .then = "ready",
-    };
-
+    const b = testBehavior("init");
     const matched = try matchAll(&builder, &b);
     try testing.expect(matched);
 }
 
 test "matchWithCategory" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
 
-    const b = Behavior{
-        .name = "predict",
-        .given = "input",
-        .when = "model ready",
-        .then = "output",
-    };
-
+    const b = testBehavior("predict");
     const result = try matchWithCategory(&builder, &b);
     try testing.expect(result.matched);
     try testing.expectEqual(Category.ml, result.category);
+}
+
+test "matchWithCategory: rl patterns dispatched before lifecycle" {
+    const testing = std.testing;
+
+    // init_window should match rl, NOT lifecycle
+    {
+        var builder = CodeBuilder.init(testing.allocator);
+        defer builder.deinit();
+        const b = testBehavior("init_window");
+        const result = try matchWithCategory(&builder, &b);
+        try testing.expect(result.matched);
+        try testing.expectEqual(Category.rl, result.category);
+    }
+
+    // draw_rect should match rl
+    {
+        var builder = CodeBuilder.init(testing.allocator);
+        defer builder.deinit();
+        const b = testBehavior("draw_rect");
+        const result = try matchWithCategory(&builder, &b);
+        try testing.expect(result.matched);
+        try testing.expectEqual(Category.rl, result.category);
+    }
+
+    // render_panel should match rl
+    {
+        var builder = CodeBuilder.init(testing.allocator);
+        defer builder.deinit();
+        const b = testBehavior("render_panel");
+        const result = try matchWithCategory(&builder, &b);
+        try testing.expect(result.matched);
+        try testing.expectEqual(Category.rl, result.category);
+    }
+
+    // handle_mouse should match rl, NOT generic
+    {
+        var builder = CodeBuilder.init(testing.allocator);
+        defer builder.deinit();
+        const b = testBehavior("handle_mouse");
+        const result = try matchWithCategory(&builder, &b);
+        try testing.expect(result.matched);
+        try testing.expectEqual(Category.rl, result.category);
+    }
+
+    // with_alpha should match rl
+    {
+        var builder = CodeBuilder.init(testing.allocator);
+        defer builder.deinit();
+        const b = testBehavior("with_alpha");
+        const result = try matchWithCategory(&builder, &b);
+        try testing.expect(result.matched);
+        try testing.expectEqual(Category.rl, result.category);
+    }
+}
+
+test "matchAll: rl output contains rl.* calls" {
+    const testing = std.testing;
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
+
+    const b = testBehavior("init_window");
+    const matched = try matchAll(&builder, &b);
+    try testing.expect(matched);
+
+    const output = builder.getOutput();
+    try testing.expect(std.mem.indexOf(u8, output, "rl.InitWindow(") != null);
+    try testing.expect(std.mem.indexOf(u8, output, "rl.SetTargetFPS(") != null);
 }

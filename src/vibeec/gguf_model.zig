@@ -7,6 +7,10 @@ const inference = @import("gguf_inference.zig");
 const transformer = @import("gguf_transformer.zig");
 const simd = @import("simd_matmul.zig");
 const ternary = @import("ternary_weights.zig");
+const q4k = @import("q4k_matmul.zig");
+
+// Re-export tokenizer for use by distributed.zig
+pub const tokenizer = @import("gguf_tokenizer.zig");
 
 pub const FullModel = struct {
     allocator: std.mem.Allocator,
@@ -15,6 +19,10 @@ pub const FullModel = struct {
 
     // Ternary mode flag
     use_ternary: bool = false,
+
+    // Quantized mode — keep weights in Q4_K format (7.1x memory savings)
+    use_quantized: bool = false,
+    quantized_layers: ?[]QuantizedLayerWeights = null,
 
     // Core weights
     token_embedding: []f32,
@@ -69,6 +77,31 @@ pub const FullModel = struct {
         ternary_w_gate: ?[]u8 = null,
         ternary_w_up: ?[]u8 = null,
         ternary_w_down: ?[]u8 = null,
+    };
+
+    /// Quantized layer weights — raw Q4_K/Q6_K bytes, NOT dequantized to f32.
+    /// Norms and biases remain f32 (tiny). Weight matrices stay in GGUF quant format.
+    pub const QuantizedLayerWeights = struct {
+        attn_norm: []f32,
+        ffn_norm: []f32,
+        wq: []const u8,
+        wk: []const u8,
+        wv: []const u8,
+        wo: []const u8,
+        w_gate: []const u8,
+        w_up: []const u8,
+        w_down: []const u8,
+        wq_type: gguf.GGMLType,
+        wk_type: gguf.GGMLType,
+        wv_type: gguf.GGMLType,
+        wo_type: gguf.GGMLType,
+        w_gate_type: gguf.GGMLType,
+        w_up_type: gguf.GGMLType,
+        w_down_type: gguf.GGMLType,
+        // QKV bias (optional — used by Qwen2, not Llama)
+        bq: ?[]f32 = null,
+        bk: ?[]f32 = null,
+        bv: ?[]f32 = null,
     };
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !FullModel {
@@ -423,14 +456,151 @@ pub const FullModel = struct {
         self.buf_scores = try self.allocator.alloc(f32, context_length);
     }
 
+    /// Load partial weights in QUANTIZED form — keeps weight matrices as raw Q4_K/Q6_K bytes.
+    /// Norms, biases, embeddings, and output still dequantized to f32 (tiny or one-time).
+    /// Memory: ~131MB/layer (Q4_K) vs ~932MB/layer (f32) for Qwen2.5-7B.
+    pub fn loadPartialWeightsQuantized(self: *FullModel, start_layer: u32, end_layer: u32, load_embedding: bool, load_output: bool) !void {
+        const num_local_layers = end_layer - start_layer;
+        std.debug.print("Loading partial weights (QUANTIZED): layers {d}..{d} (embedding={}, output={})\n", .{
+            start_layer, end_layer, load_embedding, load_output,
+        });
+
+        // Embeddings (f32 — one-time, first shard only)
+        if (load_embedding) {
+            self.token_embedding = try self.loadTensor("token_embd.weight");
+        } else {
+            self.token_embedding = try self.allocator.alloc(f32, 0);
+        }
+
+        // Output weights (f32 — one-time, last shard only)
+        if (load_output) {
+            self.output_weight = self.loadTensor("output.weight") catch |err| blk: {
+                if (err == error.TensorNotFound) {
+                    if (!load_embedding) {
+                        self.output_weight = try self.loadTensor("token_embd.weight");
+                        break :blk self.output_weight;
+                    }
+                    break :blk self.token_embedding;
+                }
+                return err;
+            };
+            self.output_norm = try self.loadTensor("output_norm.weight");
+        } else {
+            self.output_weight = try self.allocator.alloc(f32, 0);
+            self.output_norm = try self.allocator.alloc(f32, 0);
+        }
+
+        // RoPE (needed by all shards)
+        self.rope = try transformer.RoPE.init(
+            self.allocator,
+            self.config.head_dim,
+            self.config.context_length,
+            self.config.rope_theta,
+        );
+
+        // KV caches
+        self.kv_caches = try self.allocator.alloc(transformer.KVCache, num_local_layers);
+        for (0..num_local_layers) |i| {
+            self.kv_caches[i] = try transformer.KVCache.init(
+                self.allocator,
+                self.config.num_kv_heads,
+                self.config.head_dim,
+                self.config.context_length,
+            );
+        }
+
+        // Allocate empty f32 layers array (unused in quantized mode, but needed for deinit)
+        self.layers = try self.allocator.alloc(LayerWeights, 0);
+
+        // Load quantized layers — weight matrices stay as raw bytes
+        const qlayers = try self.allocator.alloc(QuantizedLayerWeights, num_local_layers);
+        for (0..num_local_layers) |i| {
+            const global_idx = start_layer + i;
+            std.debug.print("  Loading layer {d}/{d} (global {d})...\r", .{ i + 1, num_local_layers, global_idx });
+            var name_buf: [64]u8 = undefined;
+
+            // Norms: f32 (tiny — hidden_size floats = ~14KB for Qwen-7B)
+            const attn_norm = try self.loadTensorFmt(&name_buf, "blk.{d}.attn_norm.weight", .{global_idx});
+            const ffn_norm = try self.loadTensorFmt(&name_buf, "blk.{d}.ffn_norm.weight", .{global_idx});
+
+            // Weight matrices: raw Q4_K/Q6_K bytes
+            const wq_raw = try self.loadTensorRawFmt(&name_buf, "blk.{d}.attn_q.weight", .{global_idx});
+            const wk_raw = try self.loadTensorRawFmt(&name_buf, "blk.{d}.attn_k.weight", .{global_idx});
+            const wv_raw = try self.loadTensorRawFmt(&name_buf, "blk.{d}.attn_v.weight", .{global_idx});
+            const wo_raw = try self.loadTensorRawFmt(&name_buf, "blk.{d}.attn_output.weight", .{global_idx});
+            const w_gate_raw = try self.loadTensorRawFmt(&name_buf, "blk.{d}.ffn_gate.weight", .{global_idx});
+            const w_up_raw = try self.loadTensorRawFmt(&name_buf, "blk.{d}.ffn_up.weight", .{global_idx});
+            const w_down_raw = try self.loadTensorRawFmt(&name_buf, "blk.{d}.ffn_down.weight", .{global_idx});
+
+            // Biases: f32 (optional, tiny)
+            const bq = self.loadTensorFmt(&name_buf, "blk.{d}.attn_q.bias", .{global_idx}) catch null;
+            const bk = self.loadTensorFmt(&name_buf, "blk.{d}.attn_k.bias", .{global_idx}) catch null;
+            const bv = self.loadTensorFmt(&name_buf, "blk.{d}.attn_v.bias", .{global_idx}) catch null;
+
+            qlayers[i] = QuantizedLayerWeights{
+                .attn_norm = attn_norm,
+                .ffn_norm = ffn_norm,
+                .wq = wq_raw.data,
+                .wk = wk_raw.data,
+                .wv = wv_raw.data,
+                .wo = wo_raw.data,
+                .w_gate = w_gate_raw.data,
+                .w_up = w_up_raw.data,
+                .w_down = w_down_raw.data,
+                .wq_type = wq_raw.tensor_type,
+                .wk_type = wk_raw.tensor_type,
+                .wv_type = wv_raw.tensor_type,
+                .wo_type = wo_raw.tensor_type,
+                .w_gate_type = w_gate_raw.tensor_type,
+                .w_up_type = w_up_raw.tensor_type,
+                .w_down_type = w_down_raw.tensor_type,
+                .bq = bq,
+                .bk = bk,
+                .bv = bv,
+            };
+        }
+        self.quantized_layers = qlayers;
+        self.use_quantized = true;
+        std.debug.print("  Loaded {d} layers QUANTIZED (shard {d}..{d})            \n", .{ num_local_layers, start_layer, end_layer });
+
+        // Pre-allocate forward-pass buffers
+        const hidden_size = self.config.hidden_size;
+        const num_heads = self.config.num_heads;
+        const num_kv_heads = self.config.num_kv_heads;
+        const head_dim = self.config.head_dim;
+        const intermediate_size = self.config.intermediate_size;
+        const context_length = self.config.context_length;
+
+        self.buf_hidden = try self.allocator.alloc(f32, hidden_size);
+        self.buf_temp = try self.allocator.alloc(f32, hidden_size);
+        self.buf_normed = try self.allocator.alloc(f32, hidden_size);
+        self.buf_q = try self.allocator.alloc(f32, num_heads * head_dim);
+        self.buf_k = try self.allocator.alloc(f32, num_kv_heads * head_dim);
+        self.buf_v = try self.allocator.alloc(f32, num_kv_heads * head_dim);
+        self.buf_attn_out = try self.allocator.alloc(f32, num_heads * head_dim);
+        self.buf_attn_proj = try self.allocator.alloc(f32, hidden_size);
+        self.buf_ffn_gate = try self.allocator.alloc(f32, intermediate_size);
+        self.buf_ffn_up = try self.allocator.alloc(f32, intermediate_size);
+        self.buf_ffn_out = try self.allocator.alloc(f32, hidden_size);
+        self.buf_scores = try self.allocator.alloc(f32, context_length);
+    }
+
     /// Forward pass for a pipeline shard — processes only local layers.
     /// Caller provides hidden state input, receives processed hidden state output.
     /// Does NOT embed tokens or compute logits — those are handled by coordinator/worker.
     pub fn forwardShard(self: *FullModel, output: []f32, input: []const f32, pos: usize) void {
         @memcpy(output, input);
-        for (0..self.layers.len) |i| {
-            self.forwardLayerOptimized(self.buf_temp, output, i, pos);
-            @memcpy(output, self.buf_temp);
+        if (self.use_quantized) {
+            const qlayers = self.quantized_layers orelse return;
+            for (0..qlayers.len) |i| {
+                self.forwardLayerQuantized(self.buf_temp, output, i, pos);
+                @memcpy(output, self.buf_temp);
+            }
+        } else {
+            for (0..self.layers.len) |i| {
+                self.forwardLayerOptimized(self.buf_temp, output, i, pos);
+                @memcpy(output, self.buf_temp);
+            }
         }
     }
 
@@ -490,7 +660,44 @@ pub const FullModel = struct {
         return self.loadTensor(name);
     }
 
+    /// Load raw quantized tensor bytes without dequantization.
+    /// Returns the raw Q4_K/Q6_K bytes and tensor type.
+    const RawTensor = struct {
+        data: []u8,
+        tensor_type: gguf.GGMLType,
+    };
+
+    fn loadTensorRaw(self: *FullModel, name: []const u8) !RawTensor {
+        const info = self.reader.getTensor(name) orelse return error.TensorNotFound;
+        const data = try self.reader.readTensorData(info);
+        return RawTensor{ .data = data, .tensor_type = info.tensor_type };
+    }
+
+    fn loadTensorRawFmt(self: *FullModel, buf: []u8, comptime fmt: []const u8, args: anytype) !RawTensor {
+        const name = std.fmt.bufPrint(buf, fmt, args) catch return error.NameTooLong;
+        return self.loadTensorRaw(name);
+    }
+
     pub fn deinit(self: *FullModel) void {
+        // Free quantized layer weights
+        if (self.quantized_layers) |qlayers| {
+            for (qlayers) |qlayer| {
+                self.allocator.free(qlayer.attn_norm);
+                self.allocator.free(qlayer.ffn_norm);
+                self.allocator.free(qlayer.wq);
+                self.allocator.free(qlayer.wk);
+                self.allocator.free(qlayer.wv);
+                self.allocator.free(qlayer.wo);
+                self.allocator.free(qlayer.w_gate);
+                self.allocator.free(qlayer.w_up);
+                self.allocator.free(qlayer.w_down);
+                if (qlayer.bq) |bq| self.allocator.free(bq);
+                if (qlayer.bk) |bk| self.allocator.free(bk);
+                if (qlayer.bv) |bv| self.allocator.free(bv);
+            }
+            self.allocator.free(qlayers);
+        }
+
         // Free layer weights
         if (self.layers.len > 0) {
             for (self.layers) |layer| {
@@ -780,6 +987,136 @@ pub const FullModel = struct {
         for (0..hidden_size) |i| {
             output[i] += ffn_out[i];
         }
+    }
+
+    // QUANTIZED forward layer — uses Q4_K/Q6_K weights directly, no f32 dequant.
+    // Same logic as forwardLayerOptimized but dispatches to q4k.quantizedMatVecParallel.
+    pub fn forwardLayerQuantized(self: *FullModel, output: []f32, input: []const f32, layer_idx: usize, pos: usize) void {
+        const qlayers = self.quantized_layers orelse return;
+        const qlayer = qlayers[layer_idx];
+        const hidden_size = self.config.hidden_size;
+        const num_heads = self.config.num_heads;
+        const num_kv_heads = self.config.num_kv_heads;
+        const head_dim = self.config.head_dim;
+        const intermediate_size = self.config.intermediate_size;
+        const rms_eps = self.config.rms_norm_eps;
+
+        // Pre-attention norm (f32 — tiny)
+        inference.rmsNorm(self.buf_normed, input, qlayer.attn_norm, rms_eps);
+
+        // Q, K, V projections — quantized matmul
+        q4k.quantizedMatVecParallel(self.buf_q, qlayer.wq, self.buf_normed, num_heads * head_dim, hidden_size, qlayer.wq_type);
+        q4k.quantizedMatVecParallel(self.buf_k, qlayer.wk, self.buf_normed, num_kv_heads * head_dim, hidden_size, qlayer.wk_type);
+        q4k.quantizedMatVecParallel(self.buf_v, qlayer.wv, self.buf_normed, num_kv_heads * head_dim, hidden_size, qlayer.wv_type);
+
+        // Add QKV bias if present (Qwen2)
+        if (qlayer.bq) |bq| {
+            for (self.buf_q, 0..) |*qv, i| {
+                qv.* += bq[i];
+            }
+        }
+        if (qlayer.bk) |bk| {
+            for (self.buf_k, 0..) |*kv, i| {
+                kv.* += bk[i];
+            }
+        }
+        if (qlayer.bv) |bv| {
+            for (self.buf_v, 0..) |*vv, i| {
+                vv.* += bv[i];
+            }
+        }
+
+        // Apply RoPE
+        for (0..num_heads) |h| {
+            self.rope.apply(self.buf_q[h * head_dim ..][0..head_dim], pos);
+        }
+        for (0..num_kv_heads) |h| {
+            self.rope.apply(self.buf_k[h * head_dim ..][0..head_dim], pos);
+        }
+
+        // Update KV cache
+        self.kv_caches[layer_idx].append(self.buf_k, self.buf_v);
+
+        // Attention
+        const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(head_dim)));
+        const kv_group_size = num_heads / num_kv_heads;
+        const seq_len = self.kv_caches[layer_idx].seq_len;
+
+        for (0..num_heads) |h| {
+            const kv_h = h / kv_group_size;
+            const q_head = self.buf_q[h * head_dim ..][0..head_dim];
+
+            for (0..seq_len) |t| {
+                const k_offset = t * num_kv_heads * head_dim + kv_h * head_dim;
+                const k_vec = self.kv_caches[layer_idx].k_cache[k_offset..][0..head_dim];
+                self.buf_scores[t] = simd.simdDot(q_head, k_vec) * scale;
+            }
+
+            simd.simdSoftmax(self.buf_scores[0..seq_len], self.buf_scores[0..seq_len]);
+
+            const out_head = self.buf_attn_out[h * head_dim ..][0..head_dim];
+            @memset(out_head, 0.0);
+
+            const simd_width = 8;
+            const aligned_dim = head_dim & ~@as(usize, simd_width - 1);
+
+            for (0..seq_len) |t| {
+                const v_offset = t * num_kv_heads * head_dim + kv_h * head_dim;
+                const v_vec = self.kv_caches[layer_idx].v_cache[v_offset..][0..head_dim];
+                const score = self.buf_scores[t];
+                const score_vec: @Vector(8, f32) = @splat(score);
+
+                var i: usize = 0;
+                while (i < aligned_dim) : (i += simd_width) {
+                    const v: @Vector(8, f32) = v_vec[i..][0..simd_width].*;
+                    const o: @Vector(8, f32) = out_head[i..][0..simd_width].*;
+                    out_head[i..][0..simd_width].* = o + score_vec * v;
+                }
+                while (i < head_dim) : (i += 1) {
+                    out_head[i] += score * v_vec[i];
+                }
+            }
+        }
+
+        // Output projection — quantized
+        q4k.quantizedMatVecParallel(self.buf_attn_proj, qlayer.wo, self.buf_attn_out, hidden_size, num_heads * head_dim, qlayer.wo_type);
+
+        // Residual
+        @memcpy(output, input);
+        simd.simdResidualAdd(output, self.buf_attn_proj);
+
+        // Pre-FFN norm
+        inference.rmsNorm(self.buf_normed, output, qlayer.ffn_norm, rms_eps);
+
+        // FFN dimensions
+        const ffn_gate_out = if (self.config.ffn_gate_dim > 0) self.config.ffn_gate_dim else intermediate_size;
+        const ffn_down_out = if (self.config.ffn_down_out_dim > 0) self.config.ffn_down_out_dim else hidden_size;
+
+        // FFN — quantized matmul
+        q4k.quantizedMatVecParallel(self.buf_ffn_gate[0..ffn_gate_out], qlayer.w_gate, self.buf_normed, ffn_gate_out, hidden_size, qlayer.w_gate_type);
+        q4k.quantizedMatVecParallel(self.buf_ffn_up[0..ffn_gate_out], qlayer.w_up, self.buf_normed, ffn_gate_out, hidden_size, qlayer.w_up_type);
+
+        // SwiGLU
+        simd.simdSwiGLU(self.buf_ffn_gate[0..ffn_gate_out], self.buf_ffn_gate[0..ffn_gate_out], self.buf_ffn_up[0..ffn_gate_out]);
+
+        // BitNet expansion
+        if (ffn_gate_out < intermediate_size) {
+            const expand_ratio = intermediate_size / ffn_gate_out;
+            var i: usize = 0;
+            while (i < ffn_gate_out) : (i += 1) {
+                const val = self.buf_ffn_gate[i];
+                var j_idx: usize = 0;
+                while (j_idx < expand_ratio) : (j_idx += 1) {
+                    self.buf_ffn_gate[i * expand_ratio + j_idx] = val;
+                }
+            }
+        }
+
+        // Down projection — quantized
+        q4k.quantizedMatVecParallel(self.buf_ffn_out[0..ffn_down_out], qlayer.w_down, self.buf_ffn_gate, ffn_down_out, intermediate_size, qlayer.w_down_type);
+
+        // Residual
+        simd.simdResidualAdd(output, self.buf_ffn_out);
     }
 
     // OPTIMIZED forward layer - uses pre-allocated buffers (NO ALLOCATIONS!)

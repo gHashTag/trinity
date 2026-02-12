@@ -87,3 +87,8 @@ behaviors:
     given: Mouse x, y
     when: Mouse moved while dragging/resizing
     then: Update panel position/size
+
+  - name: update_wave_scroll
+    given: dt, mouse_wheel, panel index
+    when: Panel has scroll_use_wave enabled
+    then: Apply wave scroll physics (phi-damped, SIMD) instead of legacy lerp scroll
