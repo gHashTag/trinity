@@ -349,9 +349,58 @@
     ]
   },
   "techTree": {
-    "title": "TRINITY <span style=\"color: var(--accent)\">RESEARCH</span> LABORATORY",
+    "title": "TRINITY <span style=\"color: var(--accent)\">研究</span>实验室",
     "sub": "技术发展树",
-    "hint": "点击节点查看研究详情"
+    "hint": "点击节点查看研究详情",
+    "complete": "已完成",
+    "active": "研究进行中",
+    "legend": { "done": "已完成", "progress": "进行中", "locked": "锁定" },
+    "labels": { "description": "描述", "performance": "性能", "progress": "研究进度", "prerequisites": "前置条件", "unlocks": "解锁", "locked": "完成前置条件以解锁此研究" },
+    "stats": { "inProgress": "进行中", "locked": "锁定" },
+    "branches": { "core": "核心", "inference": "推理", "optimization": "优化", "deployment": "部署", "hardware": "硬件", "agents": "代理", "knowledge": "知识", "distributed": "分布式" },
+    "nodes": {
+      "core-001": { "name": "解析器 v2", "description": "支持多语言的高级VIBEE规范解析器", "metrics": "42种语言" },
+      "core-002": { "name": "多语言代码生成", "description": "为Zig、Python、Rust、Verilog等38种语言生成代码", "metrics": "42个目标" },
+      "core-003": { "name": "字节码虚拟机", "description": "基于栈的三进制虚拟机，256个操作码", "metrics": "256个操作码" },
+      "core-004": { "name": "JIT编译", "description": "即时编译以获得原生性能", "metrics": "+1000%速度" },
+      "core-005": { "name": "二进制优化", "description": "高级死代码消除和寄存器分配", "metrics": "-30%大小" },
+      "inf-001": { "name": "GGUF解析器", "description": "解析带量化元数据的GGUF模型文件", "metrics": "所有量化" },
+      "inf-002": { "name": "Transformer", "description": "具有注意力层的完整transformer架构", "metrics": "32层" },
+      "inf-003": { "name": "KV缓存", "description": "高效自回归生成的键值缓存", "metrics": "16倍加速" },
+      "inf-004": { "name": "批处理", "description": "多序列并行批量推理", "metrics": "8倍吞吐量" },
+      "inf-005": { "name": "FlashAttention", "description": "面向长序列的IO感知注意力机制", "metrics": "128K上下文" },
+      "opt-t01": { "name": "三进制量化", "description": "BitNet b1.58三进制权重量化 {-1, 0, +1}", "metrics": "20倍压缩" },
+      "opt-t02": { "name": "三进制矩阵乘法", "description": "针对三进制权重优化的矩阵乘法", "metrics": "10倍加速" },
+      "opt-t03": { "name": "三进制KV缓存", "description": "使用三进制表示的压缩KV缓存", "metrics": "16倍内存" },
+      "opt-pc01": { "name": "前缀缓存", "description": "跨请求复用已计算的前缀", "metrics": "90%命中率" },
+      "opt-cp01": { "name": "分块预填充", "description": "将长提示词处理分割为可管理的块", "metrics": "-50%延迟" },
+      "opt-s02": { "name": "增强推测", "description": "树搜索并行推测验证", "metrics": "4倍生成" },
+      "dep-001": { "name": "容器化", "description": "使用优化镜像的容器化部署", "metrics": "< 500MB" },
+      "dep-002": { "name": "边缘计算", "description": "基于Fly.io基础设施的边缘部署", "metrics": "34个区域" },
+      "dep-003": { "name": "自动扩展", "description": "基于请求负载的自动扩展", "metrics": "0→100 pods" },
+      "dep-004": { "name": "多区域", "description": "具有区域感知路由的全球部署", "metrics": "延迟 < 50ms" },
+      "dep-005": { "name": "零停机", "description": "蓝绿和金丝雀部署策略", "metrics": "99.99%可用性" },
+      "hw-001": { "name": "CUDA后端", "description": "NVIDIA GPU原生CUDA内核", "metrics": "+100倍速度" },
+      "hw-002": { "name": "Metal后端", "description": "Apple M系列芯片Metal着色器", "metrics": "+80倍速度" },
+      "hw-003": { "name": "FPGA综合", "description": "FPGA部署的Verilog生成", "metrics": "1000倍效率" },
+      "hw-004": { "name": "ASIC设计", "description": "定制三进制芯片设计以获得最大效率", "metrics": "10000倍效率" },
+      "hw-005": { "name": "量子电路", "description": "三进制逻辑的实验性量子门", "metrics": "三进制量子位" },
+      "agent-001": { "name": "IGLA核心", "description": "基于指令的生成式学习架构", "metrics": "v1.0稳定" },
+      "agent-002": { "name": "工具引擎", "description": "本地函数调用和工具集成", "metrics": "50+工具" },
+      "agent-003": { "name": "长上下文", "description": "自适应上下文窗口的无限历史", "metrics": "∞ tokens" },
+      "agent-004": { "name": "多代理", "description": "协调者+专家代理编排", "metrics": "8个专家" },
+      "agent-005": { "name": "群体智能", "description": "去中心化涌现代理行为", "metrics": "1K+代理" },
+      "know-001": { "name": "VSA核心", "description": "带绑定/捆绑操作的向量符号架构", "metrics": "10K维度" },
+      "know-002": { "name": "知识图谱", "description": "基于三元组的VSA编码语义网络", "metrics": "1M三元组" },
+      "know-003": { "name": "语义搜索", "description": "超向量余弦相似度搜索", "metrics": "查询<1ms" },
+      "know-004": { "name": "RAG引擎", "description": "基于VSA的检索增强生成", "metrics": "95%准确率" },
+      "know-005": { "name": "本体学习器", "description": "语义关系自动发现", "metrics": "零样本" },
+      "dist-001": { "name": "节点网络", "description": "去中心化节点发现和路由", "metrics": "1000+节点" },
+      "dist-002": { "name": "TVC分片", "description": "三进制向量计算分布式分片", "metrics": "256分片" },
+      "dist-003": { "name": "DePIN网络", "description": "带TRI奖励的去中心化物理基础设施", "metrics": "$TRI挖矿" },
+      "dist-004": { "name": "全球共识", "description": "三进制状态的拜占庭容错共识", "metrics": "1万TPS" },
+      "dist-005": { "name": "圣链", "description": "具有不可变证明的三进制事件金链", "metrics": "零知识" }
+    }
   },
   "product": {
     "title": "产品<span class=\"grad\">路线图</span>",
@@ -433,7 +482,7 @@
   "hlsCompetition": {
     "title": "通用<span class=\"grad\">FPGA编译器</span>",
     "sub": "使用任何编程语言编写代码。编译为硬件。无供应商锁定。",
-    "marketSize": "$23.34B",
+    "marketSize": "$233.4亿",
     "marketGrowth": "2030年FPGA市场（年复合增长率10.8%）",
     "problemTitle": "$50K难题",
     "problemDesc": "如今，要将代码编译到FPGA硬件，企业每年支付$3,000-$50,000购买仅支持C/C++的工具。开发者必须重写一切。我们消除了这一障碍。",
@@ -566,7 +615,7 @@
     ],
     "diagram": {
       "title": "原生三进制架构",
-      "core": "SU(3) CORE",
+      "core": "SU(3)核心",
       "input": "输入流",
       "inference": "推理",
       "daemon": "PAS守护进程"
@@ -761,7 +810,7 @@
     "identity": {
       "title": "黄金恒等式",
       "formula": "φ² + 1/φ² = 3",
-      "desc": "TRINITY = QUTRIT = CODON"
+      "desc": "三位一体 = 量子三进制位 = 密码子"
     },
     "formulas": [
       {
