@@ -112,7 +112,7 @@ export default function HeroSection() {
         style={{ marginBottom: '0', display: 'flex', justifyContent: 'center' }}
       >
         <img 
-          src="/trinity/trinity-logo-with-label.svg" 
+          src={`${import.meta.env.BASE_URL}trinity-logo-with-label.svg`}
           alt="TRINITY - Native Ternary Hardware" 
           style={{ height: 'clamp(144px, 30vw, 384px)', width: 'auto', filter: 'brightness(1.2)' }}
         />
