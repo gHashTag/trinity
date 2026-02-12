@@ -61,6 +61,17 @@ pub fn build(b: *std.Build) void {
     const run_vm_tests = b.addRunArtifact(vm_tests);
     test_step.dependOn(&run_vm_tests.step);
 
+    // VIBEE codegen tests (rl patterns, mod dispatch, registry)
+    const vibeec_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/codegen_tests.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_vibeec_tests = b.addRunArtifact(vibeec_tests);
+    test_step.dependOn(&run_vibeec_tests.step);
+
     // Benchmark executable
     const bench = b.addExecutable(.{
         .name = "trinity-bench",
@@ -311,6 +322,12 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const vibeec_fluent_chat = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/igla_fluent_chat_engine.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Fluent CLI - Local Chat with History Truncation (NO HANG!)
     const fluent_cli = b.addExecutable(.{
         .name = "fluent",
@@ -552,6 +569,15 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vsa/photon_trinity_canvas.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "igla_chat", .module = vibeec_chat },
+                .{ .name = "igla_fluent_chat", .module = vibeec_fluent_chat },
+                .{ .name = "auto_shard", .module = b.createModule(.{
+                    .root_source_file = b.path("src/trinity_node/auto_shard.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+            },
         }),
     });
     trinity_canvas.linkSystemLibrary("raylib");

@@ -7,12 +7,23 @@
 
 const std = @import("std");
 const photon = @import("photon.zig");
+const wave_scroll = @import("wave_scroll.zig"); // Emergent Wave ScrollView v1.0
 const theme = @import("trinity_canvas/theme.zig"); // SINGLE SOURCE OF TRUTH
 const world_docs = @import("trinity_canvas/world_docs.zig");
+const igla_chat = @import("igla_chat");
+const fluent_chat = @import("igla_fluent_chat");
+const auto_shard = @import("auto_shard");
+const world_dots = @import("world_dots.zig");
 const math = std.math;
 const rl = @cImport({
     @cInclude("raylib.h");
 });
+
+// Global chat engines
+var g_chat_engine: igla_chat.IglaLocalChat = igla_chat.IglaLocalChat.init();
+var g_fluent_engine: fluent_chat.FluentChatEngine = undefined;
+var g_fluent_engine_inited: bool = false;
+
 
 // =============================================================================
 // COSMIC CONSTANTS (from theme.zig)
@@ -30,6 +41,45 @@ var g_pixel_size: c_int = 4;
 var g_font_scale: f32 = 1.0;
 // HiDPI scale factor (2.0 on Retina, 1.0 on standard displays)
 var g_dpi_scale: f32 = 1.0;
+// Chat font (Montserrat with Cyrillic) — set in main()
+var g_font_chat: rl.Font = undefined;
+
+// ── Persistent chat state (survives panel close/reopen) ──
+const MAX_CHAT_MSGS = 64;
+const ChatMsgType = enum { user, ai, log };
+var g_chat_messages: [MAX_CHAT_MSGS][256]u8 = undefined;
+var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
+var g_chat_msg_types: [MAX_CHAT_MSGS]ChatMsgType = .{.ai} ** MAX_CHAT_MSGS;
+var g_chat_msg_count: usize = 0;
+var g_chat_input: [256]u8 = undefined;
+var g_chat_input_len: usize = 0;
+var g_backspace_timer: f32 = 0;
+var g_chat_scroll_y: f32 = 0;
+var g_chat_scroll_target: f32 = 0;
+
+fn addGlobalChatMessage(msg: []const u8, msg_type: ChatMsgType) void {
+    if (g_chat_msg_count >= MAX_CHAT_MSGS) {
+        // Shift messages up (drop oldest)
+        for (0..MAX_CHAT_MSGS - 1) |i| {
+            @memcpy(&g_chat_messages[i], &g_chat_messages[i + 1]);
+            g_chat_msg_lens[i] = g_chat_msg_lens[i + 1];
+            g_chat_msg_types[i] = g_chat_msg_types[i + 1];
+        }
+        g_chat_msg_count = MAX_CHAT_MSGS - 1;
+    }
+    const idx = g_chat_msg_count;
+    const copy_len = @min(msg.len, 255);
+    @memcpy(g_chat_messages[idx][0..copy_len], msg[0..copy_len]);
+    g_chat_msg_lens[idx] = copy_len;
+    g_chat_msg_types[idx] = msg_type;
+    g_chat_msg_count += 1;
+}
+
+fn addChatLogMessage(comptime fmt: []const u8, args: anytype) void {
+    var buf: [256]u8 = undefined;
+    const text = std.fmt.bufPrint(&buf, fmt, args) catch "...";
+    addGlobalChatMessage(text, .log);
+}
 
 // =============================================================================
 // HYPER TERMINAL STYLE COLORS (from theme.zig - SINGLE SOURCE OF TRUTH)
@@ -59,6 +109,19 @@ var BORDER_LIGHT: rl.Color = @bitCast(theme.colors.border_light);
 var TEXT_DIM: rl.Color = @bitCast(theme.colors.text_dim);
 var TEXT_HINT: rl.Color = @bitCast(theme.colors.text_hint);
 var CONTENT_TEXT: rl.Color = @bitCast(theme.colors.content_text);
+
+// Chat panel colors (theme-switchable)
+var CHAT_TEXT: rl.Color = @bitCast(theme.colors.chat_text);
+var CHAT_LABEL_USER: rl.Color = @bitCast(theme.colors.chat_label_user);
+var CHAT_LABEL_AI: rl.Color = @bitCast(theme.colors.chat_label_ai);
+var CHAT_BUBBLE_USER: rl.Color = @bitCast(theme.colors.chat_bubble_user);
+var CHAT_BUBBLE_AI: rl.Color = @bitCast(theme.colors.chat_bubble_ai);
+var CHAT_BUBBLE_BORDER: rl.Color = @bitCast(theme.colors.chat_bubble_border);
+var CHAT_INPUT_BG: rl.Color = @bitCast(theme.colors.chat_input_bg);
+var CHAT_INPUT_BORDER: rl.Color = @bitCast(theme.colors.chat_input_border);
+var CHAT_INPUT_TEXT: rl.Color = @bitCast(theme.colors.chat_input_text);
+var SACRED_HEADER_BG: rl.Color = @bitCast(theme.colors.sacred_header_bg);
+var SACRED_HEADER_TEXT: rl.Color = @bitCast(theme.colors.sacred_header_text);
 
 // === ACCENT colors (const — same in dark and light) ===
 const HYPER_MAGENTA: rl.Color = @bitCast(theme.accents.magenta);
@@ -127,6 +190,17 @@ fn reloadThemeAliases() void {
     TEXT_DIM = @bitCast(theme.text_dim);
     TEXT_HINT = @bitCast(theme.text_hint);
     CONTENT_TEXT = @bitCast(theme.content_text);
+    CHAT_TEXT = @bitCast(theme.chat_text);
+    CHAT_LABEL_USER = @bitCast(theme.chat_label_user);
+    CHAT_LABEL_AI = @bitCast(theme.chat_label_ai);
+    CHAT_BUBBLE_USER = @bitCast(theme.chat_bubble_user);
+    CHAT_BUBBLE_AI = @bitCast(theme.chat_bubble_ai);
+    CHAT_BUBBLE_BORDER = @bitCast(theme.chat_bubble_border);
+    CHAT_INPUT_BG = @bitCast(theme.chat_input_bg);
+    CHAT_INPUT_BORDER = @bitCast(theme.chat_input_border);
+    CHAT_INPUT_TEXT = @bitCast(theme.chat_input_text);
+    SACRED_HEADER_BG = @bitCast(theme.sacred_header_bg);
+    SACRED_HEADER_TEXT = @bitCast(theme.sacred_header_text);
 }
 
 // =============================================================================
@@ -688,6 +762,445 @@ const FinderEntry = struct {
     }
 };
 
+// =============================================================================
+// NETWORK ADMIN — Node connection tracking for distributed inference
+// =============================================================================
+
+const NodeStatus = enum {
+    offline,
+    connecting,
+    online,
+    degraded,
+    error_state,
+
+    pub fn label(self: NodeStatus) []const u8 {
+        return switch (self) {
+            .offline => "OFFLINE",
+            .connecting => "CONNECTING",
+            .online => "ONLINE",
+            .degraded => "DEGRADED",
+            .error_state => "ERROR",
+        };
+    }
+};
+
+const NetworkNode = struct {
+    name: [32]u8,
+    name_len: u8,
+    address: [48]u8,
+    address_len: u8,
+    location: [32]u8,
+    location_len: u8,
+    geo_lat: f32, // latitude (-90..90)
+    geo_lon: f32, // longitude (-180..180)
+    status: NodeStatus,
+    layers_start: u8,
+    layers_end: u8,
+    ram_mb: u16,
+    latency_ms: u16,
+    tokens_processed: u32,
+    role: [16]u8,
+    role_len: u8,
+    session_time_ms: u32,
+    is_local: bool,
+
+    pub fn init() NetworkNode {
+        return .{
+            .name = undefined,
+            .name_len = 0,
+            .address = undefined,
+            .address_len = 0,
+            .location = undefined,
+            .location_len = 0,
+            .geo_lat = 0,
+            .geo_lon = 0,
+            .status = .offline,
+            .layers_start = 0,
+            .layers_end = 0,
+            .ram_mb = 0,
+            .latency_ms = 0,
+            .tokens_processed = 0,
+            .role = undefined,
+            .role_len = 0,
+            .session_time_ms = 0,
+            .is_local = true,
+        };
+    }
+};
+
+fn mkNode(name: []const u8, addr: []const u8, role: []const u8, loc: []const u8, glat: f32, glon: f32, status: NodeStatus, l_start: u8, l_end: u8, ram: u16, latency: u16, tokens: u32, session: u32, local: bool) NetworkNode {
+    var n = NetworkNode.init();
+    const nl = @min(name.len, 31);
+    @memcpy(n.name[0..nl], name[0..nl]);
+    n.name_len = @intCast(nl);
+    const al = @min(addr.len, 47);
+    @memcpy(n.address[0..al], addr[0..al]);
+    n.address_len = @intCast(al);
+    const rl2 = @min(role.len, 15);
+    @memcpy(n.role[0..rl2], role[0..rl2]);
+    n.role_len = @intCast(rl2);
+    const ll = @min(loc.len, 31);
+    @memcpy(n.location[0..ll], loc[0..ll]);
+    n.location_len = @intCast(ll);
+    n.geo_lat = glat;
+    n.geo_lon = glon;
+    n.status = status;
+    n.layers_start = l_start;
+    n.layers_end = l_end;
+    n.ram_mb = ram;
+    n.latency_ms = latency;
+    n.tokens_processed = tokens;
+    n.session_time_ms = session;
+    n.is_local = local;
+    return n;
+}
+
+// Mercator projection: geo coords -> pixel position within map rect
+fn geoToMap(lat: f32, lon: f32, map_x: f32, map_y: f32, map_w: f32, map_h: f32) struct { x: f32, y: f32 } {
+    // lon: -180..180 -> 0..map_w
+    const mx = map_x + ((lon + 180.0) / 360.0) * map_w;
+    // lat: 90..-90 -> 0..map_h (simple equirectangular)
+    const my = map_y + ((90.0 - lat) / 180.0) * map_h;
+    return .{ .x = mx, .y = my };
+}
+
+// ── Runtime network state (detected at startup, updated dynamically) ──
+const MAX_NETWORK_NODES = 8;
+var g_network_nodes: [MAX_NETWORK_NODES]NetworkNode = [_]NetworkNode{NetworkNode.init()} ** MAX_NETWORK_NODES;
+var g_network_node_count: usize = 0;
+var g_network_total_layers: u8 = 0;
+var g_network_model_name: [64]u8 = [_]u8{0} ** 64;
+var g_network_model_name_len: usize = 0;
+var g_network_initialized: bool = false;
+var g_network_uptime_ms: u64 = 0;
+var g_network_probe_thread: ?std.Thread = null;
+var g_network_probe_done: bool = false;
+var g_net_scroll_y: f32 = 0;
+var g_net_scroll_target: f32 = 0;
+
+// ── Timezone → Geo mapping (offline, instant, ~country-level accuracy) ──
+const TzGeo = struct { tz: []const u8, lat: f32, lon: f32, city: []const u8 };
+const TZ_MAP = [_]TzGeo{
+    .{ .tz = "Asia/Bangkok", .lat = 13.75, .lon = 100.52, .city = "Bangkok, TH" },
+    .{ .tz = "Asia/Ho_Chi_Minh", .lat = 10.82, .lon = 106.63, .city = "Ho Chi Minh, VN" },
+    .{ .tz = "Asia/Singapore", .lat = 1.35, .lon = 103.82, .city = "Singapore, SG" },
+    .{ .tz = "Asia/Tokyo", .lat = 35.68, .lon = 139.69, .city = "Tokyo, JP" },
+    .{ .tz = "Asia/Shanghai", .lat = 31.23, .lon = 121.47, .city = "Shanghai, CN" },
+    .{ .tz = "Asia/Kolkata", .lat = 28.61, .lon = 77.23, .city = "Delhi, IN" },
+    .{ .tz = "Asia/Dubai", .lat = 25.20, .lon = 55.27, .city = "Dubai, AE" },
+    .{ .tz = "Asia/Seoul", .lat = 37.57, .lon = 126.98, .city = "Seoul, KR" },
+    .{ .tz = "Asia/Taipei", .lat = 25.03, .lon = 121.57, .city = "Taipei, TW" },
+    .{ .tz = "Asia/Jakarta", .lat = -6.21, .lon = 106.85, .city = "Jakarta, ID" },
+    .{ .tz = "Asia/Manila", .lat = 14.60, .lon = 120.98, .city = "Manila, PH" },
+    .{ .tz = "Europe/Moscow", .lat = 55.76, .lon = 37.62, .city = "Moscow, RU" },
+    .{ .tz = "Europe/London", .lat = 51.51, .lon = -0.13, .city = "London, UK" },
+    .{ .tz = "Europe/Berlin", .lat = 52.52, .lon = 13.41, .city = "Berlin, DE" },
+    .{ .tz = "Europe/Paris", .lat = 48.86, .lon = 2.35, .city = "Paris, FR" },
+    .{ .tz = "Europe/Istanbul", .lat = 41.01, .lon = 28.98, .city = "Istanbul, TR" },
+    .{ .tz = "Europe/Kyiv", .lat = 50.45, .lon = 30.52, .city = "Kyiv, UA" },
+    .{ .tz = "Europe/Warsaw", .lat = 52.23, .lon = 21.01, .city = "Warsaw, PL" },
+    .{ .tz = "Europe/Amsterdam", .lat = 52.37, .lon = 4.90, .city = "Amsterdam, NL" },
+    .{ .tz = "Europe/Lisbon", .lat = 38.72, .lon = -9.14, .city = "Lisbon, PT" },
+    .{ .tz = "America/New_York", .lat = 40.71, .lon = -74.01, .city = "New York, US" },
+    .{ .tz = "America/Chicago", .lat = 41.88, .lon = -87.63, .city = "Chicago, US" },
+    .{ .tz = "America/Denver", .lat = 39.74, .lon = -104.99, .city = "Denver, US" },
+    .{ .tz = "America/Los_Angeles", .lat = 34.05, .lon = -118.24, .city = "Los Angeles, US" },
+    .{ .tz = "America/Sao_Paulo", .lat = -23.55, .lon = -46.63, .city = "Sao Paulo, BR" },
+    .{ .tz = "America/Toronto", .lat = 43.65, .lon = -79.38, .city = "Toronto, CA" },
+    .{ .tz = "America/Mexico_City", .lat = 19.43, .lon = -99.13, .city = "Mexico City, MX" },
+    .{ .tz = "America/Argentina/Buenos_Aires", .lat = -34.60, .lon = -58.38, .city = "Buenos Aires, AR" },
+    .{ .tz = "Australia/Sydney", .lat = -33.87, .lon = 151.21, .city = "Sydney, AU" },
+    .{ .tz = "Pacific/Auckland", .lat = -36.85, .lon = 174.76, .city = "Auckland, NZ" },
+    .{ .tz = "Africa/Cairo", .lat = 30.04, .lon = 31.24, .city = "Cairo, EG" },
+    .{ .tz = "Africa/Lagos", .lat = 6.52, .lon = 3.38, .city = "Lagos, NG" },
+    .{ .tz = "Africa/Johannesburg", .lat = -26.20, .lon = 28.04, .city = "Johannesburg, ZA" },
+};
+
+/// Detect local geo coordinates from system timezone (offline, instant).
+/// Reads /etc/localtime symlink on macOS/Linux → extracts TZ name → looks up in TZ_MAP.
+/// Returns null if timezone cannot be determined.
+fn detectTimezoneGeo() ?TzGeo {
+    // macOS: /etc/localtime -> /var/db/timezone/zoneinfo/Asia/Bangkok
+    // Linux: /etc/localtime -> /usr/share/zoneinfo/Asia/Bangkok
+    var link_buf: [256]u8 = undefined;
+    const link = std.fs.cwd().readLink("/etc/localtime", &link_buf) catch return null;
+
+    // Extract timezone part after "zoneinfo/"
+    const marker = "zoneinfo/";
+    const idx = std.mem.indexOf(u8, link, marker) orelse return null;
+    const tz_name = link[idx + marker.len ..];
+    if (tz_name.len == 0) return null;
+
+    // Look up in table
+    for (TZ_MAP) |entry| {
+        if (std.mem.eql(u8, entry.tz, tz_name)) return entry;
+    }
+    return null;
+}
+
+/// Geo result from IP API
+const IpGeoResult = struct {
+    lat: f32,
+    lon: f32,
+    city: [48]u8,
+    city_len: usize,
+};
+
+/// Fetch geo coordinates via ip-api.com (online, city-level accuracy).
+/// Uses curl subprocess with 3-second timeout. Pass null for local public IP.
+/// Works from background thread — uses page_allocator.
+fn fetchIpGeo(ip: ?[]const u8) ?IpGeoResult {
+    const allocator = std.heap.page_allocator;
+
+    // Build URL: ip-api.com/json or ip-api.com/json/{ip}?fields=lat,lon,city,country
+    var url_buf: [128]u8 = undefined;
+    const url = if (ip) |addr|
+        std.fmt.bufPrint(&url_buf, "http://ip-api.com/json/{s}?fields=lat,lon,city,country", .{addr}) catch return null
+    else
+        std.fmt.bufPrint(&url_buf, "http://ip-api.com/json/?fields=lat,lon,city,country", .{}) catch return null;
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "curl", "-s", "-m", "3", url },
+    }) catch return null;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len == 0) return null;
+
+    // Parse JSON: {"lat":7.8804,"lon":98.3923,"city":"Phuket","country":"Thailand"}
+    return parseIpApiJson(result.stdout);
+}
+
+/// Simple JSON field extractor — avoids needing full JSON parser.
+/// Extracts "lat", "lon", "city", "country" from ip-api.com response.
+fn parseIpApiJson(json: []const u8) ?IpGeoResult {
+    const lat = parseJsonFloat(json, "\"lat\":") orelse return null;
+    const lon = parseJsonFloat(json, "\"lon\":") orelse return null;
+
+    var res = IpGeoResult{ .lat = lat, .lon = lon, .city = [_]u8{0} ** 48, .city_len = 0 };
+
+    // Extract city
+    if (extractJsonString(json, "\"city\":\"")) |city| {
+        // Extract country
+        if (extractJsonString(json, "\"country\":\"")) |country| {
+            const cl = @min(city.len, 40);
+            @memcpy(res.city[0..cl], city[0..cl]);
+            res.city_len = cl;
+            // Append ", XX"
+            if (cl + 2 + country.len <= 48) {
+                res.city[cl] = ',';
+                res.city[cl + 1] = ' ';
+                const co = @min(country.len, 48 - cl - 2);
+                @memcpy(res.city[cl + 2 .. cl + 2 + co], country[0..co]);
+                res.city_len = cl + 2 + co;
+            }
+        } else {
+            const cl = @min(city.len, 48);
+            @memcpy(res.city[0..cl], city[0..cl]);
+            res.city_len = cl;
+        }
+    }
+
+    return res;
+}
+
+fn parseJsonFloat(json: []const u8, key: []const u8) ?f32 {
+    const idx = std.mem.indexOf(u8, json, key) orelse return null;
+    const start = idx + key.len;
+    // Find end: comma, }, or whitespace
+    var end = start;
+    while (end < json.len) : (end += 1) {
+        const c = json[end];
+        if (c == ',' or c == '}' or c == ' ' or c == '\n') break;
+    }
+    if (end == start) return null;
+    return std.fmt.parseFloat(f32, json[start..end]) catch return null;
+}
+
+fn extractJsonString(json: []const u8, key: []const u8) ?[]const u8 {
+    const idx = std.mem.indexOf(u8, json, key) orelse return null;
+    const start = idx + key.len;
+    // Find closing quote
+    const end_off = std.mem.indexOfPos(u8, json, start, "\"") orelse return null;
+    return json[start..end_off];
+}
+
+/// Known worker endpoints to probe via TCP
+const ProbeTarget = struct {
+    host: []const u8,
+    port: u16,
+    name: []const u8,
+    role: []const u8,
+    location: []const u8,
+    geo_lat: f32,
+    geo_lon: f32,
+    is_local: bool,
+};
+const PROBE_TARGETS = [_]ProbeTarget{
+    .{ .host = "199.68.196.38", .port = 9335, .name = "VPS Worker", .role = "worker", .location = "Buffalo, US", .geo_lat = 42.89, .geo_lon = -78.88, .is_local = false },
+    .{ .host = "127.0.0.1", .port = 9337, .name = "Local Relay", .role = "relay", .location = "local", .geo_lat = 0, .geo_lon = 0, .is_local = true },
+    .{ .host = "127.0.0.1", .port = 9335, .name = "Local Worker", .role = "worker", .location = "local", .geo_lat = 0, .geo_lon = 0, .is_local = true },
+};
+
+/// Background TCP probe: try connecting to known endpoints + IP geo refinement
+fn probeNetworkNodes() void {
+    // Step 2: Refine local node (index 0) via IP API (city-level accuracy)
+    if (fetchIpGeo(null)) |geo| {
+        g_network_nodes[0].geo_lat = geo.lat;
+        g_network_nodes[0].geo_lon = geo.lon;
+        if (geo.city_len > 0) {
+            const cl = @min(geo.city_len, 31);
+            @memcpy(g_network_nodes[0].location[0..cl], geo.city[0..cl]);
+            g_network_nodes[0].location_len = @intCast(cl);
+        }
+    }
+
+    // Step 3: Probe remote/local endpoints via TCP
+    for (PROBE_TARGETS) |target| {
+        // Try TCP connect with short timeout
+        const addr = std.net.Address.parseIp4(target.host, target.port) catch continue;
+        const sock = std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, 0) catch continue;
+        defer std.posix.close(sock);
+
+        // Set send timeout to 2 seconds as connect timeout proxy
+        const timeout = std.posix.timeval{ .sec = 2, .usec = 0 };
+        std.posix.setsockopt(sock, std.posix.SOL.SOCKET, std.posix.SO.SNDTIMEO, std.mem.asBytes(&timeout)) catch {};
+        std.posix.setsockopt(sock, std.posix.SOL.SOCKET, std.posix.SO.RCVTIMEO, std.mem.asBytes(&timeout)) catch {};
+
+        // Attempt connect
+        std.posix.connect(sock, &addr.any, addr.getOsSockLen()) catch continue;
+
+        // Connection succeeded — node is alive
+        if (g_network_node_count >= MAX_NETWORK_NODES) break;
+        var node = NetworkNode.init();
+        const nl2 = @min(target.name.len, 31);
+        @memcpy(node.name[0..nl2], target.name[0..nl2]);
+        node.name_len = @intCast(nl2);
+
+        var addr_str: [48]u8 = [_]u8{0} ** 48;
+        const al2 = std.fmt.bufPrint(&addr_str, "{s}:{d}", .{ target.host, target.port }) catch continue;
+        @memcpy(node.address[0..al2.len], al2);
+        node.address_len = @intCast(al2.len);
+
+        const rl3 = @min(target.role.len, 15);
+        @memcpy(node.role[0..rl3], target.role[0..rl3]);
+        node.role_len = @intCast(rl3);
+
+        // For remote nodes: use IP API for accurate geo; for local: copy from local node
+        if (!target.is_local) {
+            if (fetchIpGeo(target.host)) |geo| {
+                node.geo_lat = geo.lat;
+                node.geo_lon = geo.lon;
+                if (geo.city_len > 0) {
+                    const cl = @min(geo.city_len, 31);
+                    @memcpy(node.location[0..cl], geo.city[0..cl]);
+                    node.location_len = @intCast(cl);
+                } else {
+                    const ll2 = @min(target.location.len, 31);
+                    @memcpy(node.location[0..ll2], target.location[0..ll2]);
+                    node.location_len = @intCast(ll2);
+                }
+            } else {
+                // Fallback to static coords from probe target
+                node.geo_lat = target.geo_lat;
+                node.geo_lon = target.geo_lon;
+                const ll2 = @min(target.location.len, 31);
+                @memcpy(node.location[0..ll2], target.location[0..ll2]);
+                node.location_len = @intCast(ll2);
+            }
+        } else {
+            // Local node: copy geo from local coordinator (already refined)
+            node.geo_lat = g_network_nodes[0].geo_lat;
+            node.geo_lon = g_network_nodes[0].geo_lon;
+            const ll3 = g_network_nodes[0].location_len;
+            @memcpy(node.location[0..ll3], g_network_nodes[0].location[0..ll3]);
+            node.location_len = ll3;
+        }
+
+        node.status = .online;
+        node.is_local = target.is_local;
+        node.latency_ms = if (target.is_local) 1 else 95;
+
+        g_network_nodes[g_network_node_count] = node;
+        g_network_node_count += 1;
+    }
+    g_network_probe_done = true;
+}
+
+/// Detect local machine and spawn background probe for remote nodes.
+/// Called once when the Network panel is first opened.
+fn initNetworkState() void {
+    if (g_network_initialized) return;
+    g_network_initialized = true;
+
+    // Query real system RAM via auto_shard (sysctl on macOS, /proc/meminfo on Linux)
+    const sys_mem = auto_shard.getSystemMemory() catch auto_shard.SystemMemory{
+        .total_bytes = 0,
+        .available_bytes = 0,
+    };
+    const ram_mb: u16 = @intCast(@min(sys_mem.total_bytes / (1024 * 1024), 65535));
+
+    // Get hostname via POSIX
+    var hostname_buf: [64]u8 = [_]u8{0} ** 64;
+    var hostname_len: usize = 0;
+    if (std.c.gethostname(&hostname_buf, hostname_buf.len) == 0) {
+        for (hostname_buf, 0..) |c, i| {
+            if (c == 0) {
+                hostname_len = i;
+                break;
+            }
+        }
+        if (hostname_len == 0) hostname_len = hostname_buf.len;
+    } else {
+        const fallback = "localhost";
+        @memcpy(hostname_buf[0..fallback.len], fallback);
+        hostname_len = fallback.len;
+    }
+
+    // Create local node entry with real detected values
+    var local_node = NetworkNode.init();
+    const nl = @min(hostname_len, 31);
+    @memcpy(local_node.name[0..nl], hostname_buf[0..nl]);
+    local_node.name_len = @intCast(nl);
+    const addr = "127.0.0.1:9336";
+    @memcpy(local_node.address[0..addr.len], addr);
+    local_node.address_len = @intCast(addr.len);
+    const role = "coordinator";
+    @memcpy(local_node.role[0..role.len], role);
+    local_node.role_len = @intCast(role.len);
+
+    // Step 1: Detect geo from timezone (instant, offline, ~country-level)
+    if (detectTimezoneGeo()) |tz_geo| {
+        local_node.geo_lat = tz_geo.lat;
+        local_node.geo_lon = tz_geo.lon;
+        const cl = @min(tz_geo.city.len, 31);
+        @memcpy(local_node.location[0..cl], tz_geo.city[0..cl]);
+        local_node.location_len = @intCast(cl);
+    } else {
+        const loc = "Unknown";
+        @memcpy(local_node.location[0..loc.len], loc);
+        local_node.location_len = @intCast(loc.len);
+    }
+
+    local_node.status = .online;
+    local_node.ram_mb = ram_mb;
+    local_node.latency_ms = 0;
+    local_node.is_local = true;
+    local_node.layers_start = 0;
+    local_node.layers_end = 0;
+
+    g_network_nodes[0] = local_node;
+    g_network_node_count = 1;
+
+    const no_model = "Scanning network...";
+    @memcpy(g_network_model_name[0..no_model.len], no_model);
+    g_network_model_name_len = no_model.len;
+
+    // Spawn background thread to probe known endpoints + refine geo via IP API
+    g_network_probe_thread = std.Thread.spawn(.{}, probeNetworkNodes, .{}) catch null;
+}
+
 const GlassPanel = struct {
     // Position & size
     x: f32,
@@ -740,9 +1253,9 @@ const GlassPanel = struct {
     voice_wave_phase: f32,
 
     // For chat panel - multi-modal content
-    chat_messages: [8][256]u8,
-    chat_msg_lens: [8]usize,
-    chat_msg_is_user: [8]bool,
+    chat_messages: [32][256]u8,
+    chat_msg_lens: [32]usize,
+    chat_msg_is_user: [32]bool,
     chat_msg_count: usize,
     chat_input: [256]u8,
     chat_input_len: usize,
@@ -791,6 +1304,11 @@ const GlassPanel = struct {
     world_id: u8, // Block index 0-26
     world_anim_phase: f32, // phi-spiral animation
 
+    // Emergent Wave ScrollView v1.0
+    // When enabled, replaces legacy lerp scroll with phi-damped wave physics
+    wave_scroll_enabled: bool,
+    wave_sv: wave_scroll.WaveScrollView,
+
     pub fn init(px: f32, py: f32, pw: f32, ph: f32, ptype: PanelType, title_str: []const u8) GlassPanel {
         var panel = GlassPanel{
             .x = px,
@@ -824,8 +1342,8 @@ const GlassPanel = struct {
             .voice_recording = false,
             .voice_wave_phase = 0,
             .chat_messages = undefined,
-            .chat_msg_lens = .{0} ** 8,
-            .chat_msg_is_user = .{false} ** 8,
+            .chat_msg_lens = .{0} ** 32,
+            .chat_msg_is_user = .{false} ** 32,
             .chat_msg_count = 0,
             .chat_input = undefined,
             .chat_input_len = 0,
@@ -859,6 +1377,8 @@ const GlassPanel = struct {
             .sys_update_timer = 0,
             .world_id = 0,
             .world_anim_phase = 0,
+            .wave_scroll_enabled = false,
+            .wave_sv = wave_scroll.WaveScrollView.init(px, py + 32.0, pw, ph - 32.0),
         };
         @memcpy(panel.title[0..panel.title_len], title_str[0..panel.title_len]);
         panel.title[panel.title_len] = 0;
@@ -978,14 +1498,14 @@ const GlassPanel = struct {
 
     // Add chat message with response ripple
     pub fn addChatMessage(self: *GlassPanel, msg: []const u8, is_user: bool) void {
-        if (self.chat_msg_count >= 8) {
-            // Shift messages up
-            for (0..7) |i| {
+        if (self.chat_msg_count >= 32) {
+            // Shift messages up (drop oldest)
+            for (0..31) |i| {
                 @memcpy(&self.chat_messages[i], &self.chat_messages[i + 1]);
                 self.chat_msg_lens[i] = self.chat_msg_lens[i + 1];
                 self.chat_msg_is_user[i] = self.chat_msg_is_user[i + 1];
             }
-            self.chat_msg_count = 7;
+            self.chat_msg_count = 31;
         }
         const idx = self.chat_msg_count;
         const copy_len = @min(msg.len, 255);
@@ -1214,8 +1734,11 @@ const GlassPanel = struct {
             shadow_color,
         );
 
-        // Main glass background (Hyper style) — sacred_world panels are fully opaque
-        const bg_alpha: u8 = @intFromFloat(self.opacity * if (self.panel_type == .sacred_world) @as(f32, 255) else @as(f32, 230));
+        // Main glass background (Hyper style)
+        // Dark theme: semi-transparent glass effect (230 alpha)
+        // Light theme: fully opaque (255 alpha) — no dark bleed-through
+        const bg_base_alpha: f32 = if (self.panel_type == .sacred_world) 255 else if (theme.isDark()) 230 else 255;
+        const bg_alpha: u8 = @intFromFloat(self.opacity * bg_base_alpha);
         const bg_color = if (self.panel_type == .sacred_world) @as(rl.Color, @bitCast(theme.sacred_world_bg)) else BG_SURFACE;
         rl.DrawRectangleRounded(
             .{ .x = sx, .y = sy, .width = sw, .height = sh },
@@ -1240,6 +1763,17 @@ const GlassPanel = struct {
             withAlpha(@as(rl.Color, @bitCast(theme.border)), border_alpha),
         );
 
+        // Wave scroll: animated cyan border pulse (Emergent Wave ScrollView v1.0)
+        if (self.wave_scroll_enabled) {
+            const wave_border_pulse = @sin(self.wave_sv.wave_time * 2.0) * 0.3 + 0.4;
+            const wb_alpha: u8 = @intFromFloat(@max(0, @min(255.0, wave_border_pulse * 50.0 * self.opacity)));
+            rl.DrawRectangleRoundedLinesEx(
+                .{ .x = sx - 1, .y = sy - 1, .width = sw + 2, .height = sh + 2 },
+                roundness, 32, 1.0,
+                rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = wb_alpha },
+            );
+        }
+
         // === TITLE BAR (Hyper style - no traffic lights) ===
         // Traffic light buttons REMOVED - use Shift+1-8 for panel switching
         // const btn_y = sy + 14;
@@ -1261,7 +1795,7 @@ const GlassPanel = struct {
         // === CONTENT AREA (Multi-Modal) ===
         const content_y = sy + 40;
         const content_h = sh - 50;
-        const content_alpha: u8 = @intFromFloat(self.opacity * 180);
+        const content_alpha: u8 = @intFromFloat(self.opacity * theme.panel_content_alpha);
         const text_color = withAlpha(CONTENT_TEXT, content_alpha);
 
         switch (self.panel_type) {
@@ -1759,7 +2293,7 @@ const GlassPanel = struct {
             },
 
             .sacred_world => {
-                // === SACRED WORLD PANEL — 27 Worlds of 999 Kingdom ===
+                // === SACRED WORLD PANEL — Route by world_id ===
                 const world = sacred_worlds.getWorldByBlock(self.world_id);
                 const realm = sacred_worlds.blockToRealm(self.world_id);
                 const realm_r = sacred_worlds.realmColorR(realm);
@@ -1767,198 +2301,1014 @@ const GlassPanel = struct {
                 const realm_b = sacred_worlds.realmColorB(realm);
                 const rc = rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = content_alpha };
                 const margin: f32 = 20 * g_font_scale;
-                const fs = g_font_scale; // font scale shorthand
+                const fs = g_font_scale;
 
-                // ── Compact header (scaled) ──
+                // ── Common header for all sacred_world panels ──
                 const header_h: f32 = 36 * fs;
+                // Header: fully opaque (never transparent)
+                rl.DrawRectangle(@intFromFloat(sx), @intFromFloat(content_y), @intFromFloat(sw), @intFromFloat(header_h), SACRED_HEADER_BG);
+                rl.DrawCircle(@intFromFloat(sx + 12 * fs), @intFromFloat(content_y + header_h / 2), 4 * fs, rc);
+                rl.DrawLine(@intFromFloat(sx), @intFromFloat(content_y + header_h), @intFromFloat(sx + sw), @intFromFloat(content_y + header_h), rc);
 
-                // Realm header bar — theme-aware bg (dark on dark, light tint on light)
-                // Header bar: solid black on both themes
-                const hdr_bg = rl.Color{ .r = 0x0A, .g = 0x0A, .b = 0x0A, .a = content_alpha };
-                rl.DrawRectangle(@intFromFloat(sx), @intFromFloat(content_y), @intFromFloat(sw), @intFromFloat(header_h), hdr_bg);
-                // Realm color accent dot (left)
-                rl.DrawCircle(@intFromFloat(sx + 12 * fs), @intFromFloat(content_y + header_h / 2), 4 * fs, withAlpha(rc, content_alpha));
-                rl.DrawLine(@intFromFloat(sx), @intFromFloat(content_y + header_h), @intFromFloat(sx + sw), @intFromFloat(content_y + header_h), withAlpha(rc, content_alpha));
-
-                // Realm name (white on black header)
                 const ri = @intFromEnum(realm);
                 const rn_len = sacred_worlds.REALM_NAME_LENS[ri];
                 var realm_buf: [16:0]u8 = undefined;
                 @memcpy(realm_buf[0..rn_len], sacred_worlds.REALM_NAMES[ri][0..rn_len]);
                 realm_buf[rn_len] = 0;
-                // White text on black header (both themes)
-                const hdr_text = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = content_alpha };
-                rl.DrawTextEx(font, &realm_buf, .{ .x = sx + margin + 4, .y = content_y + 10 * fs }, 14 * fs, 0.5, hdr_text);
+                rl.DrawTextEx(font, &realm_buf, .{ .x = sx + margin + 4, .y = content_y + 10 * fs }, 14 * fs, 0.5, SACRED_HEADER_TEXT);
 
-                // Realm symbol (phi/pi/e) — white on black
                 const rs_len = sacred_worlds.REALM_SYMBOL_LENS[ri];
                 var sym_buf: [8:0]u8 = undefined;
                 @memcpy(sym_buf[0..rs_len], sacred_worlds.REALM_SYMBOLS[ri][0..rs_len]);
                 sym_buf[rs_len] = 0;
-                rl.DrawTextEx(font, &sym_buf, .{ .x = sx + sw - margin - 30 * fs, .y = content_y + 10 * fs }, 14 * fs, 0.5, hdr_text);
+                rl.DrawTextEx(font, &sym_buf, .{ .x = sx + sw - margin - 30 * fs, .y = content_y + 10 * fs }, 14 * fs, 0.5, SACRED_HEADER_TEXT);
 
-                // Domain name
-                const di = @intFromEnum(world.domain);
-                const dn_len = sacred_worlds.DOMAIN_NAME_LENS[di];
-                var domain_buf: [20:0]u8 = undefined;
-                @memcpy(domain_buf[0..dn_len], sacred_worlds.DOMAIN_NAMES[di][0..dn_len]);
-                domain_buf[dn_len] = 0;
-                rl.DrawTextEx(font, &domain_buf, .{ .x = sx + margin, .y = content_y + header_h + 14 * fs }, 12 * fs, 0.5, MUTED_GRAY);
+                // Content area below header
+                const body_y = content_y + header_h + 4 * fs;
+                const body_h = content_h - header_h - 4 * fs;
 
-                // World title (large — phi ratio: 24 = ~14 * phi)
-                var title_buf: [28:0]u8 = undefined;
-                @memcpy(title_buf[0..world.name_len], world.name[0..world.name_len]);
-                title_buf[world.name_len] = 0;
-                rl.DrawTextEx(font, &title_buf, .{ .x = sx + margin, .y = content_y + header_h + 34 * fs }, 24 * fs, 1, accentText(rc, content_alpha));
+                // ── ROUTE BY WORLD_ID ──
+                if (self.world_id == 0) {
+                    // ════════════════════════════════════════════
+                    // CHAT PANEL (world_id 0) — Trinity Chat
+                    // Uses GLOBAL chat state (persistent across panel reopen)
+                    // ════════════════════════════════════════════
 
-                // Formula + value (inline right side)
-                var formula_buf: [52:0]u8 = undefined;
-                @memcpy(formula_buf[0..world.formula_len], world.formula[0..world.formula_len]);
-                formula_buf[world.formula_len] = 0;
-                rl.DrawTextEx(font, &formula_buf, .{ .x = sx + margin, .y = content_y + header_h + 69 * fs }, 13 * fs, 0.5, TEXT_WHITE);
+                    // Smooth scroll (global)
+                    const chat_dt = rl.GetFrameTime();
+                    g_chat_scroll_y += (g_chat_scroll_target - g_chat_scroll_y) * @min(1.0, 8.0 * chat_dt);
 
-                var val_buf: [32:0]u8 = undefined;
-                _ = std.fmt.bufPrintZ(&val_buf, "{d:.4}", .{world.sacred_value}) catch {};
-                const pulse_val: f32 = 0.8 + @sin(time * PHI) * 0.2;
-                const val_alpha: u8 = @intFromFloat(@as(f32, @floatFromInt(content_alpha)) * pulse_val);
-                rl.DrawTextEx(font, &val_buf, .{ .x = sx + sw - margin - 120 * fs, .y = content_y + header_h + 62 * fs }, 20 * fs, 1, accentText(rc, val_alpha));
+                    const chat_top = body_y + 8 * fs;
+                    const input_h: f32 = 48 * fs;
+                    const chat_bottom = content_y + content_h - input_h - 8 * fs;
+                    const msg_area_h = chat_bottom - chat_top;
+                    const line_h: f32 = 22 * fs;
+                    const chat_font = g_font_chat;
+                    const msg_font_size: f32 = 17 * fs;
+                    const bubble_pad: f32 = 14 * fs;
+                    const chat_margin: f32 = 70 * fs; // Extra padding for chat messages and input
+                    const max_text_w = sw - chat_margin * 2 - bubble_pad * 2;
+                    // Chat colors: from theme (dark=white-on-dark, light=dark-on-light)
+                    const chat_text_color = withAlpha(CHAT_TEXT, content_alpha);
+                    _ = CHAT_BUBBLE_USER; // reserved for future use
 
-                // Golden spiral (right side, inline with formula area)
-                const spiral_cx = sx + sw - 50 * fs;
-                const spiral_cy = content_y + header_h + 44 * fs;
-                const spiral_points: u32 = 30;
-                var sp: u32 = 0;
-                while (sp < spiral_points) : (sp += 1) {
-                    const n = @as(f32, @floatFromInt(sp));
-                    const angle = n * PHI * std.math.pi + time * 0.5;
-                    const radius_sp = (3.0 + n * 1.0) * fs;
-                    const px = spiral_cx + @cos(angle) * radius_sp;
-                    const py = spiral_cy + @sin(angle) * radius_sp;
-                    const dot_alpha: u8 = @intFromFloat(@max(30, @as(f32, @floatFromInt(content_alpha)) * (1.0 - n / @as(f32, @floatFromInt(spiral_points)))));
-                    rl.DrawCircle(@intFromFloat(px), @intFromFloat(py), 1.5 * fs, rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = dot_alpha });
-                }
+                    // Scissor clip for messages
+                    rl.BeginScissorMode(@intFromFloat(sx), @intFromFloat(chat_top), @intFromFloat(sw), @intFromFloat(@max(1, msg_area_h)));
 
-                // Separator + doc subtitle
-                const sep1_y = content_y + header_h + 94 * fs;
-                rl.DrawLine(@intFromFloat(sx + margin), @intFromFloat(sep1_y), @intFromFloat(sx + sw - margin), @intFromFloat(sep1_y), withAlpha(BORDER_SUBTLE, content_alpha));
+                    // Clamp scroll before rendering
+                    g_chat_scroll_target = @max(0, g_chat_scroll_target);
 
-                // Doc subtitle
-                const doc = world_docs.WORLD_DOCS[self.world_id];
-                var subtitle_buf: [64:0]u8 = undefined;
-                const sub_len = @min(doc.subtitle.len, 63);
-                @memcpy(subtitle_buf[0..sub_len], doc.subtitle[0..sub_len]);
-                subtitle_buf[sub_len] = 0;
-                rl.DrawTextEx(font, &subtitle_buf, .{ .x = sx + margin, .y = sep1_y + 8 * fs }, 13 * fs, 0.5, accentText(rc, content_alpha));
+                    if (g_chat_msg_count == 0) {
+                        // Welcome message
+                        const welcome_y = chat_top + msg_area_h * 0.3;
+                        rl.DrawTextEx(chat_font, "Trinity AI", .{ .x = sx + chat_margin, .y = welcome_y }, 18 * fs, 0.5, withAlpha(HYPER_GREEN, content_alpha));
+                        rl.DrawTextEx(chat_font, "Type a message below to start chatting.", .{ .x = sx + chat_margin, .y = welcome_y + 24 * fs }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, content_alpha));
+                        g_chat_scroll_target = 0;
+                        g_chat_scroll_y = 0;
+                    } else {
+                        // Render messages with simple line-based rendering (no word-wrap byte corruption)
+                        var render_y: f32 = chat_top + 6 * fs - g_chat_scroll_y;
+                        var mi: usize = 0;
+                        while (mi < g_chat_msg_count) : (mi += 1) {
+                            const msg_type = g_chat_msg_types[mi];
+                            const msg_len = g_chat_msg_lens[mi];
+                            const msg_data = g_chat_messages[mi][0..msg_len];
 
-                // Block badge (right of subtitle)
-                var idx_buf: [16:0]u8 = undefined;
-                _ = std.fmt.bufPrintZ(&idx_buf, "Block {d}/27", .{@as(u32, self.world_id) + 1}) catch {};
-                rl.DrawTextEx(font, &idx_buf, .{ .x = sx + sw - margin - 80 * fs, .y = sep1_y + 10 * fs }, 11 * fs, 0.5, withAlpha(TEXT_DIM, content_alpha));
+                            // Log messages: small dimmed text, no label
+                            if (msg_type == .log) {
+                                if (render_y >= chat_top - line_h and render_y <= chat_bottom + line_h) {
+                                    var log_z: [256:0]u8 = undefined;
+                                    @memcpy(log_z[0..msg_len], msg_data);
+                                    log_z[msg_len] = 0;
+                                    const log_font_size: f32 = 13 * fs;
+                                    const log_color = rl.Color{ .r = 120, .g = 120, .b = 140, .a = 180 };
+                                    rl.DrawTextEx(chat_font, &log_z, .{ .x = sx + chat_margin, .y = render_y }, log_font_size, 0.3, log_color);
+                                }
+                                render_y += 18 * fs;
+                                continue;
+                            }
 
-                const sep2_y = sep1_y + 30 * fs;
-                rl.DrawLine(@intFromFloat(sx + margin), @intFromFloat(sep2_y), @intFromFloat(sx + sw - margin), @intFromFloat(sep2_y), withAlpha(BORDER_SUBTLE, content_alpha));
+                            const is_user = msg_type == .user;
 
-                // ── Scrollable documentation text area ──
-                const doc_header_h = header_h + 130 * fs; // total header height
-                const doc_y = content_y + doc_header_h;
-                const doc_h = content_h - doc_header_h - 10;
-                const doc_x = sx + margin;
-                const doc_w = sw - margin * 2;
-                const line_h: f32 = 18 * fs;
-                const font_size: f32 = 13 * fs;
-                const char_w: f32 = 7.0 * fs;
-                const chars_per_line: usize = @max(20, @as(usize, @intFromFloat(doc_w / char_w)));
-
-                // Scissor clip to doc area
-                rl.BeginScissorMode(@intFromFloat(sx), @intFromFloat(doc_y), @intFromFloat(sw), @intFromFloat(@max(1, doc_h)));
-
-                // Iterate lines of the markdown, skip noise, render visible ones
-                var iter = world_docs.LineIterator.init(doc.raw);
-                var render_y: f32 = doc_y - self.scroll_y;
-                var in_frontmatter = false;
-                var line_buf: [256:0]u8 = undefined;
-
-                while (iter.next()) |raw_line| {
-                    // Track frontmatter
-                    const trimmed = blk: {
-                        var ti: usize = 0;
-                        while (ti < raw_line.len and (raw_line[ti] == ' ' or raw_line[ti] == '\t')) : (ti += 1) {}
-                        break :blk raw_line[ti..];
-                    };
-                    if (trimmed.len >= 3 and trimmed[0] == '-' and trimmed[1] == '-' and trimmed[2] == '-') {
-                        in_frontmatter = !in_frontmatter;
-                        continue;
-                    }
-                    if (in_frontmatter) continue;
-                    if (world_docs.isNoiseLine(raw_line)) continue;
-
-                    // Strip heading markers
-                    const heading_stripped = world_docs.stripHeading(raw_line);
-                    const is_heading = (heading_stripped.ptr != raw_line.ptr or heading_stripped.len != raw_line.len);
-
-                    // Strip inline markdown (**bold**, *italic*, `code`, [link](url), |pipes|)
-                    var stripped_buf: [512]u8 = undefined;
-                    const stripped_len = world_docs.stripInline(heading_stripped, &stripped_buf);
-                    const display_line = stripped_buf[0..stripped_len];
-
-                    // Word-wrap: split long lines
-                    var line_start: usize = 0;
-                    while (line_start < display_line.len or line_start == 0) {
-                        const remaining = if (line_start < display_line.len) display_line[line_start..] else "";
-                        const chunk_len = if (remaining.len <= chars_per_line) remaining.len else blk2: {
-                            // Find last space within chars_per_line
-                            var best: usize = chars_per_line;
-                            var si: usize = chars_per_line;
-                            while (si > 0) {
-                                si -= 1;
-                                if (remaining[si] == ' ') {
-                                    best = si;
-                                    break;
+                            // Label — user on right, Trinity on left
+                            if (render_y >= chat_top - line_h and render_y <= chat_bottom + line_h) {
+                                const label_color = if (is_user) withAlpha(CHAT_LABEL_USER, content_alpha) else withAlpha(CHAT_LABEL_AI, content_alpha);
+                                if (is_user) {
+                                    const you_w = rl.MeasureTextEx(chat_font, "You", 16 * fs, 0.5).x;
+                                    rl.DrawTextEx(chat_font, "You", .{ .x = sx + sw - chat_margin - you_w, .y = render_y }, 16 * fs, 0.5, label_color);
+                                } else {
+                                    rl.DrawTextEx(chat_font, "Trinity", .{ .x = sx + chat_margin, .y = render_y }, 16 * fs, 0.5, label_color);
                                 }
                             }
-                            break :blk2 best;
-                        };
+                            render_y += 18 * fs;
 
-                        // Only render if visible (within scissor)
-                        if (render_y >= doc_y - line_h and render_y <= doc_y + doc_h) {
-                            const copy_len = @min(chunk_len, 255);
-                            @memcpy(line_buf[0..copy_len], remaining[0..copy_len]);
-                            line_buf[copy_len] = 0;
+                            // Measure actual text width for bubble sizing
+                            var full_z: [256:0]u8 = undefined;
+                            @memcpy(full_z[0..msg_len], msg_data);
+                            full_z[msg_len] = 0;
+                            const text_size = rl.MeasureTextEx(chat_font, &full_z, msg_font_size, 0.5);
 
-                            const doc_text_color = if (is_heading and line_start == 0)
-                                accentText(rc, content_alpha)
-                            else
-                                withAlpha(CONTENT_TEXT, content_alpha);
-                            const fsize: f32 = if (is_heading and line_start == 0) font_size + 3 else font_size;
-                            rl.DrawTextEx(font, &line_buf, .{ .x = doc_x, .y = render_y }, fsize, 0.5, doc_text_color);
+                            // Bubble alignment: user=right, Trinity=left
+                            const needs_wrap = text_size.x > max_text_w;
+
+                            if (!needs_wrap) {
+                                if (is_user) {
+                                    // User: plain text, right-aligned (no bubble)
+                                    const text_x = sx + sw - chat_margin - text_size.x;
+                                    if (render_y >= chat_top - line_h and render_y <= chat_bottom + line_h) {
+                                        // Fake bold
+                                        rl.DrawTextEx(chat_font, &full_z, .{ .x = text_x, .y = render_y }, msg_font_size, 0.5, chat_text_color);
+                                        rl.DrawTextEx(chat_font, &full_z, .{ .x = text_x + 0.6, .y = render_y }, msg_font_size, 0.5, chat_text_color);
+                                    }
+                                    render_y += line_h + 8 * fs;
+                                } else {
+                                    // Trinity: clean text, no bubble, left-aligned
+                                    if (render_y >= chat_top - line_h and render_y <= chat_bottom + line_h) {
+                                        rl.DrawTextEx(chat_font, &full_z, .{ .x = sx + chat_margin, .y = render_y }, msg_font_size, 0.5, chat_text_color);
+                                        rl.DrawTextEx(chat_font, &full_z, .{ .x = sx + chat_margin + 0.6, .y = render_y }, msg_font_size, 0.5, chat_text_color);
+                                    }
+                                    render_y += line_h + 8 * fs;
+                                }
+                            } else {
+                                // Multi-line: UTF-8-safe word wrap
+                                // First pass: count lines
+                                var n_lines: f32 = 0;
+                                {
+                                    var pos: usize = 0;
+                                    while (pos < msg_data.len) {
+                                        // Find how many bytes fit in max_text_w
+                                        var end = pos;
+                                        var last_space: usize = pos;
+                                        while (end < msg_data.len) {
+                                            // Advance one UTF-8 char
+                                            var next = end + 1;
+                                            while (next < msg_data.len and (msg_data[next] & 0xC0) == 0x80) next += 1;
+                                            // Measure width up to 'next'
+                                            var tmp: [256:0]u8 = undefined;
+                                            const seg_len = @min(next - pos, 255);
+                                            @memcpy(tmp[0..seg_len], msg_data[pos..pos + seg_len]);
+                                            tmp[seg_len] = 0;
+                                            const w = rl.MeasureTextEx(chat_font, &tmp, msg_font_size, 0.5).x;
+                                            if (w > max_text_w and end > pos) break;
+                                            if (msg_data[end] == ' ') last_space = end;
+                                            end = next;
+                                        }
+                                        // Wrap at last space if possible
+                                        if (end < msg_data.len and last_space > pos) end = last_space + 1 else if (end == pos) end = pos + 1;
+                                        n_lines += 1;
+                                        pos = end;
+                                        // Skip leading space on next line
+                                        while (pos < msg_data.len and msg_data[pos] == ' ') pos += 1;
+                                    }
+                                    if (n_lines == 0) n_lines = 1;
+                                }
+
+                                const bubble_h = n_lines * line_h;
+                                const bubble_x = sx + chat_margin;
+
+                                // Second pass: render lines (no bubble for either side)
+                                var text_y = render_y;
+                                var pos2: usize = 0;
+                                var line_buf_chat: [256:0]u8 = undefined;
+                                while (pos2 < msg_data.len) {
+                                    var end2 = pos2;
+                                    var last_sp2: usize = pos2;
+                                    while (end2 < msg_data.len) {
+                                        var next2 = end2 + 1;
+                                        while (next2 < msg_data.len and (msg_data[next2] & 0xC0) == 0x80) next2 += 1;
+                                        var tmp2: [256:0]u8 = undefined;
+                                        const seg_len2 = @min(next2 - pos2, 255);
+                                        @memcpy(tmp2[0..seg_len2], msg_data[pos2..pos2 + seg_len2]);
+                                        tmp2[seg_len2] = 0;
+                                        const w2 = rl.MeasureTextEx(chat_font, &tmp2, msg_font_size, 0.5).x;
+                                        if (w2 > max_text_w and end2 > pos2) break;
+                                        if (msg_data[end2] == ' ') last_sp2 = end2;
+                                        end2 = next2;
+                                    }
+                                    if (end2 < msg_data.len and last_sp2 > pos2) end2 = last_sp2 + 1 else if (end2 == pos2) end2 = pos2 + 1;
+
+                                    if (text_y >= chat_top - line_h and text_y <= chat_bottom + line_h) {
+                                        const ln_len = @min(end2 - pos2, 255);
+                                        @memcpy(line_buf_chat[0..ln_len], msg_data[pos2..pos2 + ln_len]);
+                                        // Trim trailing space
+                                        var tlen = ln_len;
+                                        while (tlen > 0 and line_buf_chat[tlen - 1] == ' ') tlen -= 1;
+                                        line_buf_chat[tlen] = 0;
+                                        // Fake bold: double draw
+                                        rl.DrawTextEx(chat_font, &line_buf_chat, .{ .x = bubble_x + bubble_pad, .y = text_y }, msg_font_size, 0.5, chat_text_color);
+                                        rl.DrawTextEx(chat_font, &line_buf_chat, .{ .x = bubble_x + bubble_pad + 0.6, .y = text_y }, msg_font_size, 0.5, chat_text_color);
+                                    }
+
+                                    text_y += line_h;
+                                    pos2 = end2;
+                                    while (pos2 < msg_data.len and msg_data[pos2] == ' ') pos2 += 1;
+                                }
+
+                                render_y += bubble_h + 8 * fs;
+                            }
                         }
 
+                        // Calculate total content height for scroll clamping
+                        const total_content_h = render_y + g_chat_scroll_y - (chat_top + 6 * fs);
+                        const max_scroll = @max(0, total_content_h - msg_area_h + 20 * fs);
+                        g_chat_scroll_target = @min(g_chat_scroll_target, max_scroll);
+                        g_chat_scroll_y = @min(g_chat_scroll_y, max_scroll + 10 * fs);
+                    }
+
+                    rl.EndScissorMode();
+
+                    // Mouse wheel scroll in chat
+                    {
+                        const cmx = @as(f32, @floatFromInt(rl.GetMouseX()));
+                        const cmy = @as(f32, @floatFromInt(rl.GetMouseY()));
+                        if (cmx >= sx and cmx <= sx + sw and cmy >= chat_top and cmy <= chat_bottom) {
+                            g_chat_scroll_target -= rl.GetMouseWheelMove() * 40.0 * fs;
+                            g_chat_scroll_target = @max(0, g_chat_scroll_target);
+                        }
+                    }
+
+                    // Input area (bottom) — terminal style with separator lines
+                    const input_y = chat_bottom + 4 * fs;
+                    const sep_color = rl.Color{ .r = 100, .g = 100, .b = 110, .a = 120 };
+
+                    // Background fill
+                    rl.DrawRectangle(
+                        @intFromFloat(sx + chat_margin),
+                        @intFromFloat(input_y),
+                        @intFromFloat(sw - chat_margin * 2),
+                        @intFromFloat(input_h),
+                        CHAT_INPUT_BG,
+                    );
+                    // Top separator line
+                    rl.DrawLineEx(
+                        .{ .x = sx + chat_margin, .y = input_y },
+                        .{ .x = sx + sw - chat_margin, .y = input_y },
+                        1.0, sep_color,
+                    );
+                    // Bottom separator line
+                    rl.DrawLineEx(
+                        .{ .x = sx + chat_margin, .y = input_y + input_h },
+                        .{ .x = sx + sw - chat_margin, .y = input_y + input_h },
+                        1.0, sep_color,
+                    );
+
+                    // ">" prompt
+                    const prompt_color = rl.Color{ .r = 150, .g = 150, .b = 160, .a = 220 };
+                    const prompt_y = input_y + 14 * fs;
+                    const prompt_sz: f32 = 17 * fs;
+                    rl.DrawTextEx(chat_font, ">", .{ .x = sx + chat_margin + 6 * fs, .y = prompt_y }, prompt_sz, 0.5, prompt_color);
+
+                    // "↵ send" hint (right side)
+                    const send_sz: f32 = 13 * fs;
+                    const send_color = rl.Color{ .r = 140, .g = 140, .b = 150, .a = 180 };
+                    const send_w = rl.MeasureTextEx(chat_font, "\xe2\x86\xb5 send", send_sz, 0.5).x;
+                    rl.DrawTextEx(chat_font, "\xe2\x86\xb5 send", .{ .x = sx + sw - chat_margin - send_w - 10 * fs, .y = input_y + 16 * fs }, send_sz, 0.5, send_color);
+
+                    if (g_chat_input_len > 0) {
+                        var input_disp: [260:0]u8 = undefined;
+                        const show_input = @min(g_chat_input_len, 255);
+                        @memcpy(input_disp[0..show_input], g_chat_input[0..show_input]);
+                        input_disp[show_input] = 0;
+                        const ix = sx + chat_margin + 22 * fs;
+                        const iy = input_y + 14 * fs;
+                        const isz: f32 = 17 * fs;
+                        rl.DrawTextEx(chat_font, &input_disp, .{ .x = ix, .y = iy }, isz, 0.5, CHAT_INPUT_TEXT);
+                        rl.DrawTextEx(chat_font, &input_disp, .{ .x = ix + 0.5, .y = iy }, isz, 0.5, CHAT_INPUT_TEXT);
+                        // Blinking rectangle cursor after text
+                        if (@mod(@as(u32, @intFromFloat(time * 3)), 2) == 0) {
+                            const text_w = rl.MeasureTextEx(chat_font, &input_disp, isz, 0.5).x;
+                            const cur_x: i32 = @intFromFloat(ix + text_w + 2 * fs);
+                            const cur_y: i32 = @intFromFloat(iy);
+                            const cur_w: i32 = @intFromFloat(2 * fs);
+                            const cur_h: i32 = @intFromFloat(isz);
+                            rl.DrawRectangle(cur_x, cur_y, cur_w, cur_h, CHAT_INPUT_TEXT);
+                        }
+                    } else {
+                        // Empty input: blinking rect cursor after ">"
+                        const ph_x = sx + chat_margin + 22 * fs;
+                        const ph_y = input_y + 14 * fs;
+                        const ph_sz: f32 = 17 * fs;
+                        if (@mod(@as(u32, @intFromFloat(time * 2)), 2) == 0) {
+                            rl.DrawRectangle(@intFromFloat(ph_x), @intFromFloat(ph_y), @intFromFloat(2 * fs), @intFromFloat(ph_sz), CHAT_INPUT_TEXT);
+                        }
+                    }
+
+                    // Status bar below input — real system info
+                    {
+                        const status_y = input_y + input_h + 3 * fs;
+                        const status_sz: f32 = 11 * fs;
+                        const status_color = rl.Color{ .r = 100, .g = 100, .b = 115, .a = 160 };
+                        const fps_val = rl.GetFPS();
+
+                        // Left: FPS + engine stats
+                        var status_buf: [256:0]u8 = undefined;
+                        if (g_fluent_engine_inited) {
+                            const st = g_fluent_engine.getStats();
+                            const sl = std.fmt.bufPrint(status_buf[0..255], "{d}fps | fluent {d:.0}% | {s} | {s} | s:{d:.1}", .{
+                                fps_val,
+                                st.fluent_rate * 100,
+                                st.current_language.getName(),
+                                st.current_topic.getName(),
+                                st.sentiment,
+                            }) catch "...";
+                            status_buf[sl.len] = 0;
+                        } else {
+                            const sl = std.fmt.bufPrint(status_buf[0..255], "{d}fps | trinity v2.0 | ready", .{fps_val}) catch "...";
+                            status_buf[sl.len] = 0;
+                        }
+                        rl.DrawTextEx(chat_font, &status_buf, .{ .x = sx + chat_margin + 4 * fs, .y = status_y }, status_sz, 0.3, status_color);
+
+                        // Right: message count
+                        var count_buf: [64:0]u8 = undefined;
+                        const ct = std.fmt.bufPrint(count_buf[0..63], "{d} msgs", .{g_chat_msg_count}) catch "0";
+                        count_buf[ct.len] = 0;
+                        const count_w = rl.MeasureTextEx(chat_font, &count_buf, status_sz, 0.3).x;
+                        rl.DrawTextEx(chat_font, &count_buf, .{ .x = sx + sw - chat_margin - count_w - 4 * fs, .y = status_y }, status_sz, 0.3, status_color);
+                    }
+                } else if (self.world_id == 18) {
+                    // ════════════════════════════════════════════
+                    // DOCS PANEL (world_id 18) — All 27 docs consolidated
+                    // ════════════════════════════════════════════
+
+                    rl.DrawTextEx(font, "ALL DOCUMENTATION", .{ .x = sx + margin, .y = body_y + 4 * fs }, 18 * fs, 0.5, accentText(rc, content_alpha));
+
+                    const doc_top = body_y + 30 * fs;
+                    const doc_h = body_h - 34 * fs;
+                    const doc_x = sx + margin;
+                    const doc_w = sw - margin * 2;
+                    const line_h: f32 = 18 * fs;
+                    const font_size_doc: f32 = 13 * fs;
+                    const char_w: f32 = 7.0 * fs;
+                    const chars_per_line: usize = @max(20, @as(usize, @intFromFloat(doc_w / char_w)));
+
+                    rl.BeginScissorMode(@intFromFloat(sx), @intFromFloat(doc_top), @intFromFloat(sw), @intFromFloat(@max(1, doc_h)));
+
+                    var render_y: f32 = doc_top - self.scroll_y;
+                    var line_buf: [256:0]u8 = undefined;
+
+                    // Render ALL 27 docs sequentially
+                    var doc_idx: usize = 0;
+                    while (doc_idx < 27) : (doc_idx += 1) {
+                        const doc = world_docs.WORLD_DOCS[doc_idx];
+                        const dworld = sacred_worlds.getWorldByBlock(doc_idx);
+
+                        // Section header: "N. WORLD_NAME — subtitle"
+                        var section_hdr: [80:0]u8 = undefined;
+                        _ = std.fmt.bufPrintZ(&section_hdr, "{d}. {s}", .{ doc_idx + 1, dworld.name[0..dworld.name_len] }) catch {};
+
+                        if (render_y >= doc_top - line_h and render_y <= doc_top + doc_h) {
+                            const drealm = sacred_worlds.blockToRealm(doc_idx);
+                            const sec_color = rl.Color{
+                                .r = sacred_worlds.realmColorR(drealm),
+                                .g = sacred_worlds.realmColorG(drealm),
+                                .b = sacred_worlds.realmColorB(drealm),
+                                .a = content_alpha,
+                            };
+                            rl.DrawTextEx(font, &section_hdr, .{ .x = doc_x, .y = render_y }, font_size_doc + 4, 0.5, accentText(sec_color, content_alpha));
+                        }
+                        render_y += line_h * 1.5;
+
+                        // Subtitle
+                        var sub_buf: [64:0]u8 = undefined;
+                        const slen = @min(doc.subtitle.len, 63);
+                        @memcpy(sub_buf[0..slen], doc.subtitle[0..slen]);
+                        sub_buf[slen] = 0;
+                        if (render_y >= doc_top - line_h and render_y <= doc_top + doc_h) {
+                            rl.DrawTextEx(font, &sub_buf, .{ .x = doc_x, .y = render_y }, font_size_doc - 1, 0.5, withAlpha(MUTED_GRAY, content_alpha));
+                        }
                         render_y += line_h;
-                        if (chunk_len == 0) break;
-                        line_start += chunk_len;
-                        // Skip the space at wrap point
-                        if (line_start < display_line.len and display_line[line_start] == ' ') line_start += 1;
-                        if (remaining.len <= chars_per_line) break;
+
+                        // Doc content (markdown rendered)
+                        var iter = world_docs.LineIterator.init(doc.raw);
+                        var in_fm = false;
+                        while (iter.next()) |raw_line| {
+                            const trimmed = blk: {
+                                var ti: usize = 0;
+                                while (ti < raw_line.len and (raw_line[ti] == ' ' or raw_line[ti] == '\t')) : (ti += 1) {}
+                                break :blk raw_line[ti..];
+                            };
+                            if (trimmed.len >= 3 and trimmed[0] == '-' and trimmed[1] == '-' and trimmed[2] == '-') {
+                                in_fm = !in_fm;
+                                continue;
+                            }
+                            if (in_fm) continue;
+                            if (world_docs.isNoiseLine(raw_line)) continue;
+
+                            const heading_stripped = world_docs.stripHeading(raw_line);
+                            const is_heading = (heading_stripped.ptr != raw_line.ptr or heading_stripped.len != raw_line.len);
+
+                            var stripped_buf: [512]u8 = undefined;
+                            const stripped_len = world_docs.stripInline(heading_stripped, &stripped_buf);
+                            const display_line = stripped_buf[0..stripped_len];
+
+                            var line_start: usize = 0;
+                            while (line_start < display_line.len or line_start == 0) {
+                                const remaining = if (line_start < display_line.len) display_line[line_start..] else "";
+                                const chunk_len = if (remaining.len <= chars_per_line) remaining.len else blk2: {
+                                    var best: usize = chars_per_line;
+                                    var scan: usize = chars_per_line;
+                                    while (scan > 0) {
+                                        scan -= 1;
+                                        if (remaining[scan] == ' ') {
+                                            best = scan;
+                                            break;
+                                        }
+                                    }
+                                    break :blk2 best;
+                                };
+
+                                if (render_y >= doc_top - line_h and render_y <= doc_top + doc_h) {
+                                    const copy_len = @min(chunk_len, 255);
+                                    @memcpy(line_buf[0..copy_len], remaining[0..copy_len]);
+                                    line_buf[copy_len] = 0;
+
+                                    const doc_text_color = if (is_heading and line_start == 0)
+                                        accentText(rc, content_alpha)
+                                    else
+                                        withAlpha(CONTENT_TEXT, content_alpha);
+                                    const fsize: f32 = if (is_heading and line_start == 0) font_size_doc + 3 else font_size_doc;
+                                    rl.DrawTextEx(font, &line_buf, .{ .x = doc_x, .y = render_y }, fsize, 0.5, doc_text_color);
+                                }
+
+                                render_y += line_h;
+                                if (chunk_len == 0) break;
+                                line_start += chunk_len;
+                                if (line_start < display_line.len and display_line[line_start] == ' ') line_start += 1;
+                                if (remaining.len <= chars_per_line) break;
+                            }
+                        }
+                        // Gap between docs
+                        render_y += line_h * 2;
+                    }
+
+                    rl.EndScissorMode();
+
+                    // Scroll indicator
+                    const total_text_h = render_y + self.scroll_y - doc_top;
+                    if (total_text_h > doc_h) {
+                        const scroll_track_x = sx + sw - 6;
+                        const max_scroll_val = total_text_h - doc_h;
+                        const scroll_pct = if (max_scroll_val > 0) self.scroll_y / max_scroll_val else 0;
+                        const thumb_h = @max(20.0, doc_h * (doc_h / total_text_h));
+                        const thumb_y = doc_top + scroll_pct * (doc_h - thumb_h);
+                        rl.DrawRectangleRounded(
+                            .{ .x = scroll_track_x, .y = thumb_y, .width = 4, .height = thumb_h },
+                            1.0, 4,
+                            withAlpha(rc, 60),
+                        );
+                    }
+                } else if (self.world_id == 16) {
+                    // ════════════════════════════════════════════
+                    // NETWORK ADMIN PANEL (world_id 16 = monitor)
+                    // Runtime-detected node data (no static/fake data)
+                    // Ctrl+8 to open
+                    // ════════════════════════════════════════════
+
+                    // Initialize network state on first render (detects local machine)
+                    initNetworkState();
+                    // Update uptime counter
+                    g_network_uptime_ms +|= @intFromFloat(rl.GetFrameTime() * 1000);
+
+                    const pad = margin * 1.5;
+
+                    // Update status when probe finishes
+                    if (g_network_probe_done and std.mem.eql(u8, g_network_model_name[0..g_network_model_name_len], "Scanning network...")) {
+                        if (g_network_node_count > 1) {
+                            const done_msg = "Network detected";
+                            @memcpy(g_network_model_name[0..done_msg.len], done_msg);
+                            g_network_model_name_len = done_msg.len;
+                        } else {
+                            const done_msg = "No peers found";
+                            @memcpy(g_network_model_name[0..done_msg.len], done_msg);
+                            g_network_model_name_len = done_msg.len;
+                        }
+                    }
+
+                    // ── Scrollable content area ──
+                    const net_top = body_y + 4 * fs;
+                    const net_area_h = content_h - (net_top - content_y) - 4 * fs;
+
+                    // Smooth scroll (uses global vars, draw receives const self)
+                    const net_dt = rl.GetFrameTime();
+                    g_net_scroll_y += (g_net_scroll_target - g_net_scroll_y) * @min(1.0, 8.0 * net_dt);
+
+                    // Scissor clip — all content clipped to panel body
+                    rl.BeginScissorMode(@intFromFloat(sx), @intFromFloat(net_top), @intFromFloat(sw), @intFromFloat(@max(1, net_area_h)));
+
+                    var render_y: f32 = net_top + 8 * fs - g_net_scroll_y;
+
+                    // ── HEADER ──
+                    rl.DrawTextEx(font, "NETWORK", .{ .x = sx + pad, .y = render_y }, 22 * fs, 0.5, accentText(rc, content_alpha));
+                    var summary_buf: [64:0]u8 = undefined;
+                    var online_count: usize = 0;
+                    for (0..g_network_node_count) |ni| {
+                        if (g_network_nodes[ni].status == .online) online_count += 1;
+                    }
+                    _ = std.fmt.bufPrintZ(&summary_buf, "{d} nodes | {d} online", .{ g_network_node_count, online_count }) catch {};
+                    rl.DrawTextEx(font, &summary_buf, .{ .x = sx + sw - pad - 160 * fs, .y = render_y + 4 * fs }, 11 * fs, 0.5, withAlpha(HYPER_GREEN, content_alpha));
+                    if (!g_network_probe_done) {
+                        const spin_pulse: u8 = @intFromFloat(120 + @sin(time * 6) * 120);
+                        rl.DrawCircle(@intFromFloat(sx + sw - pad - 170 * fs), @intFromFloat(render_y + 12 * fs), 3 * fs, rl.Color{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = spin_pulse });
+                    } else {
+                        const pulse_a: u8 = @intFromFloat(120 + @sin(time * 4) * 80);
+                        rl.DrawCircle(@intFromFloat(sx + sw - pad - 170 * fs), @intFromFloat(render_y + 12 * fs), 3 * fs, rl.Color{ .r = 0x50, .g = 0xFA, .b = 0x7B, .a = pulse_a });
+                    }
+                    render_y += 32 * fs;
+
+                    // ── 3D GLOBE ──
+                    const globe_size = @min(sw - pad * 2, 420 * fs); // cap size for quality
+                    const globe_r = globe_size / 2.0;
+                    const globe_cx = sx + sw / 2.0;
+                    const globe_cy = render_y + globe_r;
+
+                    // Colors (Aceternity GitHub Globe exact palette)
+                    const GLOBE_BASE = rl.Color{ .r = 0x06, .g = 0x20, .b = 0x56, .a = 0xFF };
+                    const GLOBE_EMISSIVE = rl.Color{ .r = 0x08, .g = 0x28, .b = 0x68, .a = 0xFF };
+                    const GLOBE_DOT_LAND = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xB3 }; // rgba(255,255,255,0.7)
+                    const ATMO_WHITE = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF }; // atmosphereColor: #FFFFFF
+                    const ATMO_BLUE = rl.Color{ .r = 0x38, .g = 0xBD, .b = 0xF8, .a = 0xFF }; // ambientLight: #38bdf8
+
+                    const rot_angle = time * 0.12; // autoRotateSpeed: 0.5
+
+                    // Outer atmosphere glow — wide soft halo (atmosphereAltitude: 0.1)
+                    {
+                        var ai: u32 = 0;
+                        while (ai < 20) : (ai += 1) {
+                            const af = @as(f32, @floatFromInt(ai));
+                            const ar = globe_r + (af + 1.0) * 1.5 * fs;
+                            const falloff = (1.0 - af / 20.0);
+                            const aa: u8 = @intFromFloat(@max(0.0, falloff * falloff * 25.0 * @as(f32, @floatFromInt(content_alpha)) / 255.0));
+                            rl.DrawCircleLinesV(.{ .x = globe_cx, .y = globe_cy }, ar, withAlpha(ATMO_WHITE, aa));
+                        }
+                        // Inner blue tint atmosphere
+                        var bi: u32 = 0;
+                        while (bi < 6) : (bi += 1) {
+                            const bf = @as(f32, @floatFromInt(bi));
+                            const br = globe_r + (bf + 0.5) * 2.0 * fs;
+                            const ba: u8 = @intFromFloat(@max(0.0, (1.0 - bf / 6.0) * 18.0 * @as(f32, @floatFromInt(content_alpha)) / 255.0));
+                            rl.DrawCircleLinesV(.{ .x = globe_cx, .y = globe_cy }, br, withAlpha(ATMO_BLUE, ba));
+                        }
+                    }
+
+                    // Globe sphere: gradient fill (emissive: #062056 center, lighter edges)
+                    rl.DrawCircle(@intFromFloat(globe_cx), @intFromFloat(globe_cy), globe_r, withAlpha(GLOBE_BASE, content_alpha));
+                    // Emissive inner glow (lighter center)
+                    rl.DrawCircle(@intFromFloat(globe_cx - globe_r * 0.15), @intFromFloat(globe_cy - globe_r * 0.15), globe_r * 0.6, withAlpha(GLOBE_EMISSIVE, content_alpha / 5));
+
+                    // Latitude/longitude grid lines on sphere (shininess wireframe effect)
+                    {
+                        const GRID_COLOR = rl.Color{ .r = 0x20, .g = 0x50, .b = 0x80, .a = 0x18 };
+                        // Latitude circles (every 30 deg)
+                        var lat_i: i32 = -60;
+                        while (lat_i <= 60) : (lat_i += 30) {
+                            const lat_r = @as(f32, @floatFromInt(lat_i)) * math.pi / 180.0;
+                            const circle_r = globe_r * @cos(lat_r);
+                            const circle_y_off = globe_cy - globe_r * @sin(lat_r);
+                            // Draw ellipse as line segments
+                            var gi: u32 = 0;
+                            while (gi < 48) : (gi += 1) {
+                                const ga0 = @as(f32, @floatFromInt(gi)) / 48.0 * math.pi * 2.0 + rot_angle;
+                                const ga1 = @as(f32, @floatFromInt(gi + 1)) / 48.0 * math.pi * 2.0 + rot_angle;
+                                const gz0 = @sin(ga0);
+                                const gz1 = @sin(ga1);
+                                if (gz0 < -0.05 and gz1 < -0.05) continue;
+                                const gx0 = globe_cx + @cos(ga0) * circle_r;
+                                const gx1 = globe_cx + @cos(ga1) * circle_r;
+                                const d0: u8 = @intFromFloat(@max(0.0, (gz0 + 0.05) / 1.05 * 0.4) * @as(f32, @floatFromInt(content_alpha)));
+                                rl.DrawLineEx(.{ .x = gx0, .y = circle_y_off }, .{ .x = gx1, .y = circle_y_off }, 0.8, withAlpha(GRID_COLOR, d0));
+                            }
+                        }
+                        // Longitude meridians (every 30 deg)
+                        var lon_i: i32 = 0;
+                        while (lon_i < 180) : (lon_i += 30) {
+                            const lon_r = @as(f32, @floatFromInt(lon_i)) * math.pi / 180.0 + rot_angle;
+                            var gi: u32 = 0;
+                            while (gi < 48) : (gi += 1) {
+                                const la0 = (@as(f32, @floatFromInt(gi)) / 48.0 - 0.5) * math.pi;
+                                const la1 = (@as(f32, @floatFromInt(gi + 1)) / 48.0 - 0.5) * math.pi;
+                                const z0 = @cos(la0) * @sin(lon_r);
+                                const z1 = @cos(la1) * @sin(lon_r);
+                                if (z0 < -0.05 and z1 < -0.05) continue;
+                                const mx0 = globe_cx + @cos(la0) * @cos(lon_r) * globe_r;
+                                const my0 = globe_cy - @sin(la0) * globe_r;
+                                const mx1 = globe_cx + @cos(la1) * @cos(lon_r) * globe_r;
+                                const my1 = globe_cy - @sin(la1) * globe_r;
+                                const d0: u8 = @intFromFloat(@max(0.0, (z0 + 0.05) / 1.05 * 0.4) * @as(f32, @floatFromInt(content_alpha)));
+                                rl.DrawLineEx(.{ .x = mx0, .y = my0 }, .{ .x = mx1, .y = my1 }, 0.8, withAlpha(GRID_COLOR, d0));
+                            }
+                        }
+                    }
+
+                    // Land dots on sphere (pointSize: 4, polygonColor: rgba(255,255,255,0.7))
+                    const dot_base_r: f32 = @max(1.5, globe_r / 80.0);
+                    {
+                        var row: u32 = 0;
+                        while (row < world_dots.ROWS) : (row += 2) {
+                            const lat_rad = (90.0 - @as(f32, @floatFromInt(row)) * 2.0) * math.pi / 180.0;
+                            const cos_lat = @cos(lat_rad);
+                            const sin_lat = @sin(lat_rad);
+                            var col: u32 = 0;
+                            while (col < world_dots.COLS) : (col += 2) {
+                                const lon_rad = (-180.0 + @as(f32, @floatFromInt(col)) * 2.0) * math.pi / 180.0 + rot_angle;
+                                const gx3 = cos_lat * @cos(lon_rad);
+                                const gy3 = sin_lat;
+                                const gz3 = cos_lat * @sin(lon_rad);
+                                if (gz3 < -0.05) continue;
+
+                                const scr_x = globe_cx + gx3 * globe_r;
+                                const scr_y = globe_cy - gy3 * globe_r;
+                                const depth = @max(0.0, gz3 + 0.05) / 1.05;
+
+                                if (world_dots.isLand(row, col)) {
+                                    const da: u8 = @intFromFloat(depth * @as(f32, @floatFromInt(content_alpha)) * 0.75);
+                                    const dr = dot_base_r * (0.7 + depth * 0.6);
+                                    rl.DrawCircle(@intFromFloat(scr_x), @intFromFloat(scr_y), dr, withAlpha(GLOBE_DOT_LAND, da));
+                                }
+                            }
+                        }
+                    }
+
+                    // Rim light (shininess: 0.9)
+                    rl.DrawCircleLinesV(.{ .x = globe_cx, .y = globe_cy }, globe_r, withAlpha(ATMO_WHITE, content_alpha / 8));
+                    rl.DrawCircleLinesV(.{ .x = globe_cx, .y = globe_cy }, globe_r - 0.5, withAlpha(ATMO_BLUE, content_alpha / 6));
+
+                    // ── Arc connections (arcTime: 1000, arcLength: 0.9) ──
+                    if (g_network_node_count > 1) {
+                        const local_nd = g_network_nodes[0];
+                        var ci: usize = 1;
+                        while (ci < g_network_node_count) : (ci += 1) {
+                            const remote_nd = g_network_nodes[ci];
+                            if (remote_nd.is_local) continue;
+
+                            const lat1 = local_nd.geo_lat * math.pi / 180.0;
+                            const lon1 = local_nd.geo_lon * math.pi / 180.0 + rot_angle;
+                            const lat2 = remote_nd.geo_lat * math.pi / 180.0;
+                            const lon2 = remote_nd.geo_lon * math.pi / 180.0 + rot_angle;
+
+                            // Arc colors cycle: #06b6d4, #3b82f6, #6366f1
+                            const arc_colors = [_][3]u8{ .{ 0x06, 0xB6, 0xD4 }, .{ 0x3B, 0x82, 0xF6 }, .{ 0x63, 0x66, 0xF1 } };
+                            const ac = arc_colors[ci % 3];
+
+                            const ARC_SEGS: u32 = 32;
+                            const arc_phase = @mod(time * 1.0 + @as(f32, @floatFromInt(ci)) * 1.5, 1.0); // arcTime: 1000ms
+                            var seg: u32 = 0;
+                            while (seg < ARC_SEGS) : (seg += 1) {
+                                const t0 = @as(f32, @floatFromInt(seg)) / @as(f32, @floatFromInt(ARC_SEGS));
+                                const t1 = @as(f32, @floatFromInt(seg + 1)) / @as(f32, @floatFromInt(ARC_SEGS));
+
+                                const alt0 = 1.0 + 0.12 * @sin(t0 * math.pi);
+                                const alt1 = 1.0 + 0.12 * @sin(t1 * math.pi);
+                                const la0 = lat1 + (lat2 - lat1) * t0;
+                                const lo0 = lon1 + (lon2 - lon1) * t0;
+                                const la1_v = lat1 + (lat2 - lat1) * t1;
+                                const lo1_v = lon1 + (lon2 - lon1) * t1;
+
+                                const px0 = globe_cx + @cos(la0) * @cos(lo0) * globe_r * alt0;
+                                const py0 = globe_cy - @sin(la0) * globe_r * alt0;
+                                const pz0 = @cos(la0) * @sin(lo0);
+                                const px1 = globe_cx + @cos(la1_v) * @cos(lo1_v) * globe_r * alt1;
+                                const py1 = globe_cy - @sin(la1_v) * globe_r * alt1;
+                                const pz1 = @cos(la1_v) * @sin(lo1_v);
+                                if (pz0 < -0.15 and pz1 < -0.15) continue;
+
+                                // arcLength: 0.9 — traveling bright band
+                                const seg_mid = (t0 + t1) / 2.0;
+                                const pulse_d = @abs(seg_mid - arc_phase);
+                                const pulse_b = @max(0.0, 1.0 - pulse_d * 4.0); // wide band
+
+                                const ca: u8 = @intFromFloat(@min(255.0, 30.0 + pulse_b * 220.0));
+                                const thick = 1.5 * fs + pulse_b * 2.0 * fs;
+                                rl.DrawLineEx(.{ .x = px0, .y = py0 }, .{ .x = px1, .y = py1 }, thick, rl.Color{ .r = ac[0], .g = ac[1], .b = ac[2], .a = ca });
+                            }
+                        }
+                    }
+
+                    // ── Node markers (rings: 1, maxRings: 3) ──
+                    for (0..g_network_node_count) |ni| {
+                        const node = g_network_nodes[ni];
+                        const nlat = node.geo_lat * math.pi / 180.0;
+                        const nlon = node.geo_lon * math.pi / 180.0 + rot_angle;
+                        const nz = @cos(nlat) * @sin(nlon);
+                        if (nz < -0.05) continue;
+                        const nx_g = globe_cx + @cos(nlat) * @cos(nlon) * globe_r;
+                        const ny_g = globe_cy - @sin(nlat) * globe_r;
+                        const depth = @max(0.0, nz + 0.05) / 1.05;
+                        const nc: rl.Color = switch (node.status) {
+                            .online => @bitCast(theme.accents.node_online),
+                            .connecting => @bitCast(theme.accents.node_connecting),
+                            .degraded => @bitCast(theme.accents.node_degraded),
+                            .error_state => @bitCast(theme.accents.node_error),
+                            .offline => @bitCast(theme.accents.node_offline),
+                        };
+                        // Expanding rings
+                        var ring: u32 = 0;
+                        while (ring < 3) : (ring += 1) {
+                            const phase = @mod(time * 1.0 + @as(f32, @floatFromInt(ring)) * 0.33 + @as(f32, @floatFromInt(ni)) * 0.7, 1.0);
+                            const rr = 3.0 * fs + phase * 16.0 * fs;
+                            const ra: u8 = @intFromFloat(@max(0.0, (1.0 - phase) * 50.0 * depth));
+                            rl.DrawCircleLinesV(.{ .x = nx_g, .y = ny_g }, rr, withAlpha(nc, ra));
+                        }
+                        const dot_a: u8 = @intFromFloat(depth * @as(f32, @floatFromInt(content_alpha)));
+                        rl.DrawCircle(@intFromFloat(nx_g), @intFromFloat(ny_g), 5.0 * fs, withAlpha(nc, dot_a));
+                        rl.DrawCircle(@intFromFloat(nx_g), @intFromFloat(ny_g), 8.0 * fs, withAlpha(nc, dot_a / 4));
+                        // Label
+                        if (depth > 0.4) {
+                            var loc_buf: [36:0]u8 = undefined;
+                            @memcpy(loc_buf[0..node.location_len], node.location[0..node.location_len]);
+                            loc_buf[node.location_len] = 0;
+                            rl.DrawTextEx(font, &loc_buf, .{ .x = nx_g + 12 * fs, .y = ny_g - 6 * fs }, 10 * fs, 0.5, withAlpha(TEXT_WHITE, dot_a));
+                        }
+                    }
+
+                    render_y += globe_size + 20 * fs;
+
+                    // ── CONNECTED NODES ──
+                    rl.DrawLine(@intFromFloat(sx + pad), @intFromFloat(render_y), @intFromFloat(sx + sw - pad), @intFromFloat(render_y), withAlpha(BORDER_SUBTLE, content_alpha / 3));
+                    render_y += 12 * fs;
+                    rl.DrawTextEx(font, "CONNECTED NODES", .{ .x = sx + pad, .y = render_y }, 12 * fs, 0.5, withAlpha(MUTED_GRAY, content_alpha));
+                    render_y += 20 * fs;
+
+                    for (0..g_network_node_count) |ni| {
+                        const node = g_network_nodes[ni];
+                        const node_color: rl.Color = switch (node.status) {
+                            .online => @bitCast(theme.accents.node_online),
+                            .connecting => @bitCast(theme.accents.node_connecting),
+                            .degraded => @bitCast(theme.accents.node_degraded),
+                            .error_state => @bitCast(theme.accents.node_error),
+                            .offline => @bitCast(theme.accents.node_offline),
+                        };
+
+                        // Card background
+                        rl.DrawRectangleRounded(.{ .x = sx + pad, .y = render_y, .width = sw - pad * 2, .height = 56 * fs }, 0.08, 4, withAlpha(BG_INPUT, content_alpha));
+                        rl.DrawRectangleRoundedLinesEx(.{ .x = sx + pad, .y = render_y, .width = sw - pad * 2, .height = 56 * fs }, 0.08, 4, 1.0, withAlpha(node_color, content_alpha / 3));
+
+                        // Status dot
+                        rl.DrawCircle(@intFromFloat(sx + pad + 14 * fs), @intFromFloat(render_y + 16 * fs), 4 * fs, withAlpha(node_color, content_alpha));
+
+                        // Name + role
+                        var name_buf: [36:0]u8 = undefined;
+                        @memcpy(name_buf[0..node.name_len], node.name[0..node.name_len]);
+                        name_buf[node.name_len] = 0;
+                        rl.DrawTextEx(font, &name_buf, .{ .x = sx + pad + 28 * fs, .y = render_y + 6 * fs }, 12 * fs, 0.5, withAlpha(TEXT_WHITE, content_alpha));
+
+                        var role_buf: [20:0]u8 = undefined;
+                        @memcpy(role_buf[0..node.role_len], node.role[0..node.role_len]);
+                        role_buf[node.role_len] = 0;
+                        rl.DrawTextEx(font, &role_buf, .{ .x = sx + pad + 28 * fs, .y = render_y + 24 * fs }, 10 * fs, 0.5, withAlpha(HYPER_CYAN, content_alpha));
+
+                        // Location
+                        var loc_buf2: [36:0]u8 = undefined;
+                        @memcpy(loc_buf2[0..node.location_len], node.location[0..node.location_len]);
+                        loc_buf2[node.location_len] = 0;
+                        rl.DrawTextEx(font, &loc_buf2, .{ .x = sx + pad + 28 * fs, .y = render_y + 40 * fs }, 9 * fs, 0.5, withAlpha(TEXT_DIM, content_alpha));
+
+                        // Right side: RAM + address
+                        var ram_buf: [16:0]u8 = undefined;
+                        _ = std.fmt.bufPrintZ(&ram_buf, "{d}MB", .{node.ram_mb}) catch {};
+                        rl.DrawTextEx(font, &ram_buf, .{ .x = sx + sw - pad - 70 * fs, .y = render_y + 6 * fs }, 11 * fs, 0.5, withAlpha(TEXT_WHITE, content_alpha));
+
+                        var addr_buf: [52:0]u8 = undefined;
+                        @memcpy(addr_buf[0..node.address_len], node.address[0..node.address_len]);
+                        addr_buf[node.address_len] = 0;
+                        rl.DrawTextEx(font, &addr_buf, .{ .x = sx + sw - pad - 140 * fs, .y = render_y + 24 * fs }, 9 * fs, 0.5, withAlpha(TEXT_DIM, content_alpha));
+
+                        const lr_text: [*:0]const u8 = if (node.is_local) "LOCAL" else "REMOTE";
+                        const lr_c = if (node.is_local) withAlpha(@as(rl.Color, @bitCast(theme.accents.node_local)), content_alpha) else withAlpha(@as(rl.Color, @bitCast(theme.accents.node_remote)), content_alpha);
+                        rl.DrawTextEx(font, lr_text, .{ .x = sx + sw - pad - 50 * fs, .y = render_y + 40 * fs }, 9 * fs, 0.5, lr_c);
+
+                        render_y += 62 * fs;
+                    }
+
+                    // ── JOIN NETWORK ──
+                    render_y += 8 * fs;
+                    rl.DrawLine(@intFromFloat(sx + pad), @intFromFloat(render_y), @intFromFloat(sx + sw - pad), @intFromFloat(render_y), withAlpha(BORDER_SUBTLE, content_alpha / 3));
+                    render_y += 12 * fs;
+                    rl.DrawTextEx(font, "JOIN NETWORK", .{ .x = sx + pad, .y = render_y }, 14 * fs, 0.5, accentText(rc, content_alpha));
+                    render_y += 22 * fs;
+                    rl.DrawTextEx(font, "1. zig build tri", .{ .x = sx + pad, .y = render_y }, 10 * fs, 0.5, withAlpha(TEXT_WHITE, content_alpha));
+                    render_y += 16 * fs;
+                    rl.DrawTextEx(font, "2. ./zig-out/bin/tri node --worker", .{ .x = sx + pad, .y = render_y }, 10 * fs, 0.5, withAlpha(TEXT_WHITE, content_alpha));
+                    render_y += 16 * fs;
+                    rl.DrawTextEx(font, "3. Auto-discover via UDP 9333", .{ .x = sx + pad, .y = render_y }, 10 * fs, 0.5, withAlpha(TEXT_WHITE, content_alpha));
+                    render_y += 24 * fs;
+                    const uptime_s = g_network_uptime_ms / 1000;
+                    var uptime_buf: [32:0]u8 = undefined;
+                    _ = std.fmt.bufPrintZ(&uptime_buf, "uptime: {d}s", .{uptime_s}) catch {};
+                    rl.DrawTextEx(font, &uptime_buf, .{ .x = sx + pad, .y = render_y }, 10 * fs, 0.5, withAlpha(TEXT_DIM, content_alpha));
+                    render_y += 20 * fs;
+
+                    // Scroll bounds clamping
+                    const total_content_ht = render_y + g_net_scroll_y - (net_top + 8 * fs);
+                    const max_scroll_net = @max(0, total_content_ht - net_area_h + 20 * fs);
+                    g_net_scroll_target = @min(g_net_scroll_target, max_scroll_net);
+                    g_net_scroll_target = @max(0, g_net_scroll_target);
+                    g_net_scroll_y = @min(g_net_scroll_y, max_scroll_net + 10 * fs);
+
+                    rl.EndScissorMode();
+
+                    // Mouse wheel scroll
+                    {
+                        const cmx = @as(f32, @floatFromInt(rl.GetMouseX()));
+                        const cmy = @as(f32, @floatFromInt(rl.GetMouseY()));
+                        if (cmx >= sx and cmx <= sx + sw and cmy >= net_top and cmy <= net_top + net_area_h) {
+                            g_net_scroll_target -= rl.GetMouseWheelMove() * 40.0 * fs;
+                            g_net_scroll_target = @max(0, g_net_scroll_target);
+                        }
+                    }
+
+                    // Scrollbar indicator
+                    if (total_content_ht > net_area_h) {
+                        const scroll_track_x = sx + sw - 6;
+                        const scroll_pct = if (max_scroll_net > 0) g_net_scroll_y / max_scroll_net else 0;
+                        const thumb_h = @max(20.0, net_area_h * (net_area_h / total_content_ht));
+                        const thumb_y = net_top + scroll_pct * (net_area_h - thumb_h);
+                        rl.DrawRectangleRounded(.{ .x = scroll_track_x, .y = thumb_y, .width = 4, .height = thumb_h }, 1.0, 4, withAlpha(rc, 60));
+                    }
+                } else {
+                    // ════════════════════════════════════════════
+                    // PLACEHOLDER PANEL — Coming Soon
+                    // ════════════════════════════════════════════
+
+                    const center_x = sx + sw / 2;
+                    const center_y_pos = body_y + body_h * 0.35;
+
+                    // World name (large, centered)
+                    var title_buf: [28:0]u8 = undefined;
+                    @memcpy(title_buf[0..world.name_len], world.name[0..world.name_len]);
+                    title_buf[world.name_len] = 0;
+                    const title_w = @as(f32, @floatFromInt(rl.MeasureText(&title_buf, @intFromFloat(24 * fs))));
+                    rl.DrawTextEx(font, &title_buf, .{ .x = center_x - title_w / 2, .y = center_y_pos }, 24 * fs, 1, accentText(rc, content_alpha));
+
+                    // Subtitle (description)
+                    const doc = world_docs.WORLD_DOCS[self.world_id];
+                    var subtitle_buf: [64:0]u8 = undefined;
+                    const sub_len = @min(doc.subtitle.len, 63);
+                    @memcpy(subtitle_buf[0..sub_len], doc.subtitle[0..sub_len]);
+                    subtitle_buf[sub_len] = 0;
+                    const sub_w = @as(f32, @floatFromInt(rl.MeasureText(&subtitle_buf, @intFromFloat(13 * fs))));
+                    rl.DrawTextEx(font, &subtitle_buf, .{ .x = center_x - sub_w / 2, .y = center_y_pos + 34 * fs }, 13 * fs, 0.5, withAlpha(MUTED_GRAY, content_alpha));
+
+                    // "Coming Soon" badge
+                    const badge_y = center_y_pos + 64 * fs;
+                    const badge_text = "Coming Soon";
+                    const badge_w = @as(f32, @floatFromInt(rl.MeasureText(badge_text, @intFromFloat(12 * fs))));
+                    rl.DrawRectangleRounded(
+                        .{ .x = center_x - badge_w / 2 - 12 * fs, .y = badge_y - 4 * fs, .width = badge_w + 24 * fs, .height = 24 * fs },
+                        0.5, 4,
+                        withAlpha(BORDER_SUBTLE, content_alpha / 2),
+                    );
+                    rl.DrawTextEx(font, badge_text, .{ .x = center_x - badge_w / 2, .y = badge_y }, 12 * fs, 0.5, withAlpha(TEXT_DIM, content_alpha));
+
+                    // Domain name
+                    const di = @intFromEnum(world.domain);
+                    const dn_len = sacred_worlds.DOMAIN_NAME_LENS[di];
+                    var domain_buf: [20:0]u8 = undefined;
+                    @memcpy(domain_buf[0..dn_len], sacred_worlds.DOMAIN_NAMES[di][0..dn_len]);
+                    domain_buf[dn_len] = 0;
+                    const dom_w = @as(f32, @floatFromInt(rl.MeasureText(&domain_buf, @intFromFloat(11 * fs))));
+                    rl.DrawTextEx(font, &domain_buf, .{ .x = center_x - dom_w / 2, .y = center_y_pos + 100 * fs }, 11 * fs, 0.5, withAlpha(TEXT_DIM, content_alpha));
+
+                    // Formula decoration (bottom)
+                    var formula_buf: [52:0]u8 = undefined;
+                    @memcpy(formula_buf[0..world.formula_len], world.formula[0..world.formula_len]);
+                    formula_buf[world.formula_len] = 0;
+                    const formula_w = @as(f32, @floatFromInt(rl.MeasureText(&formula_buf, @intFromFloat(11 * fs))));
+                    rl.DrawTextEx(font, &formula_buf, .{ .x = center_x - formula_w / 2, .y = center_y_pos + 130 * fs }, 11 * fs, 0.5, withAlpha(TEXT_HINT, content_alpha));
+
+                    // Block badge
+                    var idx_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrintZ(&idx_buf, "Block {d}/27", .{@as(u32, self.world_id) + 1}) catch {};
+                    const bidx_w = @as(f32, @floatFromInt(rl.MeasureText(&idx_buf, @intFromFloat(10 * fs))));
+                    rl.DrawTextEx(font, &idx_buf, .{ .x = center_x - bidx_w / 2, .y = center_y_pos + 152 * fs }, 10 * fs, 0.5, withAlpha(TEXT_DIM, content_alpha));
+
+                    // Animated realm-color spiral (decorative)
+                    const spiral_cx = center_x;
+                    const spiral_cy = center_y_pos - 60 * fs;
+                    var sp: u32 = 0;
+                    while (sp < 20) : (sp += 1) {
+                        const n = @as(f32, @floatFromInt(sp));
+                        const angle = n * PHI * std.math.pi + time * 0.3;
+                        const radius_sp = (5.0 + n * 1.5) * fs;
+                        const px = spiral_cx + @cos(angle) * radius_sp;
+                        const py = spiral_cy + @sin(angle) * radius_sp;
+                        const dot_alpha: u8 = @intFromFloat(@max(20, @as(f32, @floatFromInt(content_alpha)) * (1.0 - n / 20.0)));
+                        rl.DrawCircle(@intFromFloat(px), @intFromFloat(py), 2.0 * fs, rl.Color{ .r = realm_r, .g = realm_g, .b = realm_b, .a = dot_alpha });
                     }
                 }
-
-                rl.EndScissorMode();
-
-                // Scroll indicator (thin bar, right side)
-                const total_text_h = render_y + self.scroll_y - doc_y;
-                if (total_text_h > doc_h) {
-                    const scroll_track_x = sx + sw - 6;
-                    const max_scroll_val = total_text_h - doc_h;
-                    const scroll_pct = if (max_scroll_val > 0) self.scroll_y / max_scroll_val else 0;
-                    const thumb_h = @max(20.0, doc_h * (doc_h / total_text_h));
-                    const thumb_y = doc_y + scroll_pct * (doc_h - thumb_h);
-                    rl.DrawRectangleRounded(
-                        .{ .x = scroll_track_x, .y = thumb_y, .width = 4, .height = thumb_h },
-                        1.0, 4,
-                        withAlpha(rc, 60),
-                    );
-                }
             },
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // EMERGENT WAVE SCROLLVIEW v1.0 — Visual Effects on Panel Card
+        // phi^2 + 1/phi^2 = 3 = TRINITY
+        // ═══════════════════════════════════════════════════════════════
+        if (self.wave_scroll_enabled) {
+            const wsv = &self.wave_sv;
+            const wave_content_y = sy + 34; // Below title bar
+            const wave_content_h = sh - 44; // Content area height
+
+            // Velocity-dependent visual intensity: idle=subtle, fast=bright
+            const vel_intensity = @min(1.0, @abs(wsv.state.scroll_velocity) / 1000.0);
+            const idle_base: f32 = 0.15;
+            const visual_intensity = idle_base + (1.0 - idle_base) * vel_intensity;
+
+            // 1. INTERFERENCE GLOW LINES — horizontal wave bands across panel
+            if (wsv.interference_rows > 0) {
+                const row_scale = wave_content_h / @as(f32, @floatFromInt(wsv.interference_rows));
+                for (0..wsv.interference_rows) |row| {
+                    const intensity = wsv.interference[row];
+                    if (intensity > 0.03) {
+                        const iy = wave_content_y + @as(f32, @floatFromInt(row)) * row_scale;
+                        if (iy < sy or iy > sy + sh) continue;
+                        const glow_a = @min(@as(f32, 80.0), intensity * 100.0 * visual_intensity) * self.opacity;
+                        const glow_alpha: u8 = @intFromFloat(@max(0, glow_a));
+                        if (glow_alpha > 2) {
+                            rl.DrawLineEx(
+                                .{ .x = sx + 4, .y = iy },
+                                .{ .x = sx + sw - 4, .y = iy },
+                                1.0,
+                                rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = glow_alpha },
+                            );
+                        }
+                    }
+                }
+            }
+
+            // 2. WAVE VELOCITY INDICATOR — edge glow when scrolling fast
+            const vel = @abs(wsv.state.scroll_velocity);
+            if (vel > 50.0) {
+                const vel_norm = @min(1.0, vel / 2000.0);
+                const edge_alpha: u8 = @intFromFloat(@max(0, vel_norm * 140.0 * self.opacity));
+                if (wsv.state.scroll_velocity > 0) {
+                    for (0..3) |gi| {
+                        const gf = @as(f32, @floatFromInt(gi));
+                        const ga: u8 = edge_alpha / (@as(u8, @intCast(gi)) + 1);
+                        rl.DrawLineEx(
+                            .{ .x = sx + 8, .y = sy + sh - 2 - gf * 2 },
+                            .{ .x = sx + sw - 8, .y = sy + sh - 2 - gf * 2 },
+                            2.0,
+                            rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = ga },
+                        );
+                    }
+                } else {
+                    for (0..3) |gi| {
+                        const gf = @as(f32, @floatFromInt(gi));
+                        const ga: u8 = edge_alpha / (@as(u8, @intCast(gi)) + 1);
+                        rl.DrawLineEx(
+                            .{ .x = sx + 8, .y = sy + 34 + gf * 2 },
+                            .{ .x = sx + sw - 8, .y = sy + 34 + gf * 2 },
+                            2.0,
+                            rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = ga },
+                        );
+                    }
+                }
+            }
+
+            // 3. BOUNCE GLOW — magenta flash on overscroll
+            if (wsv.state.bounce_amplitude > 0.01) {
+                const bounce_a: u8 = @intFromFloat(@min(255.0, wsv.state.bounce_amplitude * 400.0 * self.opacity));
+                const bounce_pulse = @sin(wsv.state.bounce_phase) * 0.5 + 0.5;
+                const bp_alpha: u8 = @intFromFloat(@as(f32, @floatFromInt(bounce_a)) * bounce_pulse);
+                rl.DrawRectangleRoundedLinesEx(
+                    .{ .x = sx + 1, .y = sy + 1, .width = sw - 2, .height = sh - 2 },
+                    roundness, 32, 2.0,
+                    rl.Color{ .r = 0xF8, .g = 0x1C, .b = 0xE5, .a = bp_alpha },
+                );
+            }
+
+            // 4. WAVE SCROLL POSITION INDICATOR
+            const max_scroll_w = @max(1.0, wsv.state.total_content_height - wsv.state.viewport_height);
+            const scroll_pct = @min(1.0, @max(0.0, wsv.state.scroll_phase / max_scroll_w));
+            const indicator_h: f32 = @max(20.0, wave_content_h * (wsv.state.viewport_height / @max(1.0, wsv.state.total_content_height)));
+            const indicator_y = wave_content_y + scroll_pct * (wave_content_h - indicator_h);
+            const wave_pulse = @sin(wsv.wave_time * 3.0) * 0.3 + 0.7;
+            const ind_alpha: u8 = @intFromFloat(@max(0, @min(255.0, wave_pulse * (40.0 + 60.0 * visual_intensity) * self.opacity)));
+            rl.DrawRectangleRounded(
+                .{ .x = sx + sw - 6, .y = indicator_y, .width = 3, .height = indicator_h },
+                0.5, 8,
+                rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = ind_alpha },
+            );
+
+            // 5. EDGE FADE — gradient masking at top/bottom content edges
+            const fade_bg = if (self.panel_type == .sacred_world) @as(rl.Color, @bitCast(theme.sacred_world_bg)) else BG_SURFACE;
+            for (0..6) |fi| {
+                const fade_f = @as(f32, @floatFromInt(6 - fi));
+                const fade_a: u8 = @intFromFloat(@max(0, @min(255.0, self.opacity * fade_f * 40.0)));
+                // Top edge fade
+                rl.DrawLineEx(
+                    .{ .x = sx + 2, .y = sy + 34 + @as(f32, @floatFromInt(fi)) },
+                    .{ .x = sx + sw - 2, .y = sy + 34 + @as(f32, @floatFromInt(fi)) },
+                    1.0,
+                    withAlpha(fade_bg, fade_a),
+                );
+                // Bottom edge fade
+                rl.DrawLineEx(
+                    .{ .x = sx + 2, .y = sy + sh - @as(f32, @floatFromInt(fi)) },
+                    .{ .x = sx + sw - 2, .y = sy + sh - @as(f32, @floatFromInt(fi)) },
+                    1.0,
+                    withAlpha(fade_bg, fade_a),
+                );
+            }
         }
 
         // Resize handle (bottom-right corner)
@@ -2380,28 +3730,60 @@ const PanelSystem = struct {
             for (0..self.count) |i| {
                 const panel = &self.panels[i];
                 if (panel.state == .open and panel.isPointInside(mx, my)) {
-                    // Scroll target (30px per scroll unit) — smooth lerp applied below
-                    panel.scroll_target -= mouse_wheel * 30.0;
-                    // Dynamic max scroll for sacred_world panels (based on doc size)
-                    const max_scroll: f32 = if (panel.panel_type == .sacred_world)
-                        @as(f32, @floatFromInt(world_docs.countVisibleLines(world_docs.WORLD_DOCS[panel.world_id].raw))) * 18.0
-                    else
-                        500.0;
-                    panel.scroll_target = @max(0, @min(panel.scroll_target, max_scroll));
+                    if (panel.wave_scroll_enabled) {
+                        // Emergent Wave ScrollView: apply impulse (phi-damped physics)
+                        panel.wave_sv.applyImpulse(-mouse_wheel);
+                    } else {
+                        // Legacy lerp scroll
+                        panel.scroll_target -= mouse_wheel * 30.0;
+                        // Dynamic max scroll for sacred_world panels
+                        const max_scroll: f32 = if (panel.panel_type == .sacred_world) blk_scroll: {
+                            if (panel.world_id == 0) {
+                                break :blk_scroll 0.0;
+                            } else if (panel.world_id == 18) {
+                                var total: u32 = 0;
+                                var di: usize = 0;
+                                while (di < 27) : (di += 1) {
+                                    total += world_docs.countVisibleLines(world_docs.WORLD_DOCS[di].raw);
+                                    total += 4;
+                                }
+                                break :blk_scroll @as(f32, @floatFromInt(total)) * 18.0 * g_font_scale;
+                            } else {
+                                break :blk_scroll 0.0;
+                            }
+                        } else 500.0;
+                        panel.scroll_target = @max(0, @min(panel.scroll_target, max_scroll));
+                    }
                     break;
                 }
             }
         }
 
-        // Smooth scroll interpolation (lerp toward target)
+        // Scroll update: wave or legacy
         for (0..self.count) |i| {
             const panel = &self.panels[i];
             if (panel.state == .open) {
-                const diff = panel.scroll_target - panel.scroll_y;
-                if (@abs(diff) > 0.5) {
-                    panel.scroll_y += diff * @min(1.0, dt * 12.0); // Smooth factor
+                if (panel.wave_scroll_enabled) {
+                    // Sync viewport bounds after panel move/resize
+                    panel.wave_sv.setViewport(panel.x, panel.y + 32.0, panel.width, panel.height - 32.0);
+                    // Emergent Wave ScrollView: phi-damped SIMD physics
+                    panel.wave_sv.updatePhysics(dt);
+                    // Dirty-flag: skip expensive SIMD when scroll is idle
+                    if (panel.wave_sv.needs_eval) {
+                        panel.wave_sv.updateVisibleRange();
+                        panel.wave_sv.evaluatePacketsSIMD();
+                        panel.wave_sv.computeInterference();
+                    }
+                    // Sync scroll_y for render compatibility (with rubber-band)
+                    panel.scroll_y = panel.wave_sv.getScrollYWithRubber();
                 } else {
-                    panel.scroll_y = panel.scroll_target;
+                    // Legacy smooth scroll interpolation (lerp toward target)
+                    const diff = panel.scroll_target - panel.scroll_y;
+                    if (@abs(diff) > 0.5) {
+                        panel.scroll_y += diff * @min(1.0, dt * 12.0);
+                    } else {
+                        panel.scroll_y = panel.scroll_target;
+                    }
                 }
             }
         }
@@ -3196,6 +4578,8 @@ pub fn main() !void {
     // Base sizes: 48pt (headings), 32pt (body) — on 2x Retina → 96pt, 64pt atlas
     const font_size_large: c_int = @intFromFloat(48.0 * g_dpi_scale);
     const font_size_small: c_int = @intFromFloat(32.0 * g_dpi_scale);
+
+    // UI fonts: Outfit (original, Latin-only, perfect metrics)
     const font = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", font_size_large, null, 0);
     defer rl.UnloadFont(font);
     const font_small = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", font_size_small, null, 0);
@@ -3203,6 +4587,14 @@ pub fn main() !void {
     // Enable bilinear filtering for smooth text at all sizes
     rl.SetTextureFilter(font.texture, rl.TEXTURE_FILTER_BILINEAR);
     rl.SetTextureFilter(font_small.texture, rl.TEXTURE_FILTER_BILINEAR);
+
+    // Chat font: Montserrat (Latin + Cyrillic) at LARGE atlas size for crisp rendering
+    var chat_codepoints: [95 + 256]c_int = undefined;
+    for (0..95) |i| chat_codepoints[i] = @intCast(32 + i); // ASCII 32-126
+    for (0..256) |i| chat_codepoints[95 + i] = @intCast(0x400 + i); // Cyrillic U+0400-U+04FF
+    g_font_chat = rl.LoadFontEx("assets/fonts/SFPro.ttf", font_size_large, &chat_codepoints, chat_codepoints.len);
+    defer rl.UnloadFont(g_font_chat);
+    rl.SetTextureFilter(g_font_chat.texture, rl.TEXTURE_FILTER_BILINEAR);
 
     // Grid (fixed size - will scale to window)
     const grid_w: usize = 320;
@@ -3354,10 +4746,22 @@ pub fn main() !void {
 
         // === INPUT HANDLING ===
 
+        // Detect if chat panel is open (to disable hotkeys while typing)
+        const chat_is_open: bool = blk_chat: {
+            if (panels.active_panel) |idx| {
+                const p = &panels.panels[idx];
+                const is_visible = (p.state == .open or p.state == .opening);
+                if (is_visible and p.panel_type == .chat) break :blk_chat true;
+                if (is_visible and p.panel_type == .sacred_world and p.world_id == 0) break :blk_chat true;
+            }
+            break :blk_chat false;
+        };
+
         // Sacred Worlds keyboard shortcuts:
         // Shift+1-9 = Realm RAZUM (blocks 0-8)
         // Ctrl+1-9  = Realm MATERIYA (blocks 9-17)
         // Cmd+1-9   = Realm DUKH (blocks 18-26)
+        // DISABLED when chat panel is open (so user can type freely)
         const shift_held = rl.IsKeyDown(rl.KEY_LEFT_SHIFT) or rl.IsKeyDown(rl.KEY_RIGHT_SHIFT);
         const ctrl_held = rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL);
         const cmd_held = rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER);
@@ -3369,78 +4773,117 @@ pub fn main() !void {
         // Number keys 1-9
         const key_nums = [9]c_int{ rl.KEY_ONE, rl.KEY_TWO, rl.KEY_THREE, rl.KEY_FOUR, rl.KEY_FIVE, rl.KEY_SIX, rl.KEY_SEVEN, rl.KEY_EIGHT, rl.KEY_NINE };
 
-        // Detect which number key was pressed
-        var pressed_num: ?usize = null;
-        for (key_nums, 0..) |key, idx| {
-            if (rl.IsKeyPressed(key)) {
-                pressed_num = idx;
-                break;
+        // Detect which number key was pressed (ONLY when chat is NOT open)
+        if (!chat_is_open) {
+            var pressed_num: ?usize = null;
+            for (key_nums, 0..) |key, idx| {
+                if (rl.IsKeyPressed(key)) {
+                    pressed_num = idx;
+                    break;
+                }
+            }
+
+            if (pressed_num) |num| {
+                var world_idx: ?usize = null;
+
+                if (shift_held) {
+                    // Shift+1-9 = Realm RAZUM (blocks 0-8)
+                    world_idx = num; // 0-8
+                } else if (ctrl_held) {
+                    // Ctrl+1-9 = Realm MATERIYA (blocks 9-17)
+                    world_idx = 9 + num; // 9-17
+                } else if (cmd_held) {
+                    // Cmd+1-9 = Realm DUKH (blocks 18-26)
+                    world_idx = 18 + num; // 18-26
+                }
+
+                if (world_idx) |wi| {
+                    const world = sacred_worlds.getWorldByBlock(wi);
+                    const title_slice = world.name[0..world.name_len];
+
+                    // Close all other sacred_world panels first (one world at a time)
+                    for (0..panels.count) |pi| {
+                        if (panels.panels[pi].panel_type == .sacred_world) {
+                            panels.panels[pi].state = .closed;
+                            panels.panels[pi].is_focused = false;
+                        }
+                    }
+
+                    // Find a closed slot to reuse, or append if space available
+                    var slot: ?usize = null;
+                    for (0..panels.count) |pi| {
+                        if (panels.panels[pi].state == .closed) {
+                            slot = pi;
+                            break;
+                        }
+                    }
+                    if (slot == null and panels.count < MAX_PANELS) {
+                        slot = panels.count;
+                        panels.count += 1;
+                    }
+                    if (slot) |si| {
+                        panels.panels[si] = GlassPanel.init(
+                            0, 0, screen_w, screen_h,
+                            .sacred_world, title_slice,
+                        );
+                        panels.panels[si].world_id = @intCast(wi);
+                        // Enable Emergent Wave ScrollView for scrollable panels (not chat)
+                        if (wi != 0) {
+                            panels.panels[si].wave_scroll_enabled = true;
+                            if (wi == 18) {
+                                // Docs panel: calculate real content size from all 27 docs
+                                var total_lines: u32 = 0;
+                                var dci: usize = 0;
+                                while (dci < 27) : (dci += 1) {
+                                    total_lines += world_docs.countVisibleLines(world_docs.WORLD_DOCS[dci].raw);
+                                    total_lines += 4;
+                                }
+                                panels.panels[si].wave_sv.setTotalItems(total_lines, 18.0 * g_font_scale);
+                            } else {
+                                // Other worlds: placeholder content
+                                panels.panels[si].wave_sv.setTotalItems(15, 20.0);
+                            }
+                        }
+                        panels.panels[si].open();
+                        panels.panels[si].jarvisFocus();
+                        panels.active_panel = si;
+                    }
+                }
             }
         }
 
-        if (pressed_num) |num| {
-            var world_idx: ?usize = null;
-
-            if (shift_held) {
-                // Shift+1-9 = Realm RAZUM (blocks 0-8)
-                world_idx = num; // 0-8
-            } else if (ctrl_held) {
-                // Ctrl+1-9 = Realm MATERIYA (blocks 9-17)
-                world_idx = 9 + num; // 9-17
-            } else if (cmd_held) {
-                // Cmd+1-9 = Realm DUKH (blocks 18-26)
-                world_idx = 18 + num; // 18-26
-            }
-
-            if (world_idx) |wi| {
-                const world = sacred_worlds.getWorldByBlock(wi);
-                const title_slice = world.name[0..world.name_len];
-
-                // Close all other sacred_world panels first (one world at a time)
-                for (0..panels.count) |pi| {
-                    if (panels.panels[pi].panel_type == .sacred_world) {
-                        panels.panels[pi].state = .closed;
-                        panels.panels[pi].is_focused = false;
-                    }
-                }
-
-                // Find a closed slot to reuse, or append if space available
-                var slot: ?usize = null;
-                for (0..panels.count) |pi| {
-                    if (panels.panels[pi].state == .closed) {
-                        slot = pi;
-                        break;
-                    }
-                }
-                if (slot == null and panels.count < MAX_PANELS) {
-                    slot = panels.count;
-                    panels.count += 1;
-                }
-                if (slot) |si| {
-                    panels.panels[si] = GlassPanel.init(
-                        0, 0, screen_w, screen_h,
-                        .sacred_world, title_slice,
-                    );
-                    panels.panels[si].world_id = @intCast(wi);
-                    panels.panels[si].open();
-                    panels.panels[si].jarvisFocus();
-                    panels.active_panel = si;
-                }
-            }
-        }
-
-        // Keyboard scroll for active sacred_world panel
+        // Keyboard scroll for active sacred_world panel (docs/chat only)
         if (panels.active_panel) |ap_idx| {
             const ap = &panels.panels[ap_idx];
-            if (ap.panel_type == .sacred_world and ap.state == .open) {
-                const max_scroll_kb: f32 = @as(f32, @floatFromInt(world_docs.countVisibleLines(world_docs.WORLD_DOCS[ap.world_id].raw))) * 18.0;
-                if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyDown(rl.KEY_DOWN)) ap.scroll_target += 4.0;
-                if (rl.IsKeyPressed(rl.KEY_UP) or rl.IsKeyDown(rl.KEY_UP)) ap.scroll_target -= 4.0;
-                if (rl.IsKeyPressed(rl.KEY_PAGE_DOWN)) ap.scroll_target += 300;
-                if (rl.IsKeyPressed(rl.KEY_PAGE_UP)) ap.scroll_target -= 300;
-                if (rl.IsKeyPressed(rl.KEY_HOME)) ap.scroll_target = 0;
-                if (rl.IsKeyPressed(rl.KEY_END)) ap.scroll_target = max_scroll_kb;
-                ap.scroll_target = @max(0, @min(ap.scroll_target, max_scroll_kb));
+            if (ap.panel_type == .sacred_world and ap.state == .open and ap.world_id != 0) {
+                // Skip keyboard scroll for chat panel (world_id 0) — keys go to text input
+                const max_scroll_kb: f32 = if (ap.world_id == 18) blk_ks: {
+                    var total: u32 = 0;
+                    var dsi: usize = 0;
+                    while (dsi < 27) : (dsi += 1) {
+                        total += world_docs.countVisibleLines(world_docs.WORLD_DOCS[dsi].raw);
+                        total += 4;
+                    }
+                    break :blk_ks @as(f32, @floatFromInt(total)) * 18.0 * g_font_scale;
+                } else 0.0;
+                if (ap.wave_scroll_enabled) {
+                    // Wave scroll: keyboard impulses
+                    if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyDown(rl.KEY_DOWN)) ap.wave_sv.applyImpulse(0.1);
+                    if (rl.IsKeyPressed(rl.KEY_UP) or rl.IsKeyDown(rl.KEY_UP)) ap.wave_sv.applyImpulse(-0.1);
+                    if (rl.IsKeyPressed(rl.KEY_PAGE_DOWN)) ap.wave_sv.applyImpulse(7.5);
+                    if (rl.IsKeyPressed(rl.KEY_PAGE_UP)) ap.wave_sv.applyImpulse(-7.5);
+                    if (rl.IsKeyPressed(rl.KEY_HOME)) ap.wave_sv.scrollToItem(0);
+                    if (rl.IsKeyPressed(rl.KEY_END)) ap.wave_sv.scrollToItem(ap.wave_sv.total_items -| 1);
+                } else {
+                    // Legacy lerp scroll: keyboard targets
+                    if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyDown(rl.KEY_DOWN)) ap.scroll_target += 4.0;
+                    if (rl.IsKeyPressed(rl.KEY_UP) or rl.IsKeyDown(rl.KEY_UP)) ap.scroll_target -= 4.0;
+                    if (rl.IsKeyPressed(rl.KEY_PAGE_DOWN)) ap.scroll_target += 300;
+                    if (rl.IsKeyPressed(rl.KEY_PAGE_UP)) ap.scroll_target -= 300;
+                    if (rl.IsKeyPressed(rl.KEY_HOME)) ap.scroll_target = 0;
+                    if (rl.IsKeyPressed(rl.KEY_END)) ap.scroll_target = max_scroll_kb;
+                    ap.scroll_target = @max(0, @min(ap.scroll_target, max_scroll_kb));
+                }
             }
         }
 
@@ -3480,61 +4923,145 @@ pub fn main() !void {
         }
 
         // === DIRECT CHAT PANEL INPUT ===
-        // When chat panel is focused, input goes directly to panel (not global input box)
+        // When a chat-capable panel is active and visible, input goes directly to it.
+        // Accepts: .chat panels (legacy) and .sacred_world with world_id == 0 (CHAT)
         const focused_chat_panel: ?*GlassPanel = blk: {
             if (panels.active_panel) |idx| {
-                if (panels.panels[idx].is_focused and panels.panels[idx].panel_type == .chat) {
-                    break :blk &panels.panels[idx];
+                const p = &panels.panels[idx];
+                const is_visible = (p.state == .open or p.state == .opening);
+                if (is_visible and p.panel_type == .chat) {
+                    break :blk p;
+                }
+                if (is_visible and p.panel_type == .sacred_world and p.world_id == 0) {
+                    break :blk p;
                 }
             }
             break :blk null;
         };
 
         if (focused_chat_panel) |chat_panel| {
-            // Skip chat input when Shift is held (for panel switching Shift+N)
-            const shift_held_for_input = rl.IsKeyDown(rl.KEY_LEFT_SHIFT) or rl.IsKeyDown(rl.KEY_RIGHT_SHIFT);
-            if (!shift_held_for_input) {
-                // Text input directly to chat panel
+            _ = chat_panel; // Chat uses global state now
+            // All panel-switching hotkeys are disabled when chat is open (see chat_is_open above)
+            {
+                // Text input: Unicode codepoints → UTF-8 encoded into global buffer
+                // Skip character input when Ctrl/Cmd is held (prevents Ctrl+O etc from interfering)
+                const skip_char_input = (rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL) or
+                    rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER));
                 var char_key = rl.GetCharPressed();
                 while (char_key > 0) {
-                    if (char_key >= 32 and char_key <= 126 and chat_panel.chat_input_len < 250) {
-                        chat_panel.chat_input[chat_panel.chat_input_len] = @intCast(char_key);
-                        chat_panel.chat_input_len += 1;
+                    const cp: u21 = @intCast(char_key);
+                    if (cp >= 32 and !skip_char_input) {
+                        // Encode UTF-8
+                        var utf8_buf: [4]u8 = undefined;
+                        const utf8_len: usize = if (cp < 0x80) blk_u: {
+                            utf8_buf[0] = @intCast(cp);
+                            break :blk_u 1;
+                        } else if (cp < 0x800) blk_u: {
+                            utf8_buf[0] = @intCast(0xC0 | (cp >> 6));
+                            utf8_buf[1] = @intCast(0x80 | (cp & 0x3F));
+                            break :blk_u 2;
+                        } else if (cp < 0x10000) blk_u: {
+                            utf8_buf[0] = @intCast(0xE0 | (cp >> 12));
+                            utf8_buf[1] = @intCast(0x80 | ((cp >> 6) & 0x3F));
+                            utf8_buf[2] = @intCast(0x80 | (cp & 0x3F));
+                            break :blk_u 3;
+                        } else blk_u: {
+                            utf8_buf[0] = @intCast(0xF0 | (cp >> 18));
+                            utf8_buf[1] = @intCast(0x80 | ((cp >> 12) & 0x3F));
+                            utf8_buf[2] = @intCast(0x80 | ((cp >> 6) & 0x3F));
+                            utf8_buf[3] = @intCast(0x80 | (cp & 0x3F));
+                            break :blk_u 4;
+                        };
+                        if (g_chat_input_len + utf8_len < 250) {
+                            @memcpy(g_chat_input[g_chat_input_len..][0..utf8_len], utf8_buf[0..utf8_len]);
+                            g_chat_input_len += utf8_len;
+                            // Typing wave effect
+                            effects.sink(screen_w / 2, screen_h * 0.9);
+                        }
                     }
                     char_key = rl.GetCharPressed();
                 }
             }
 
-            // Backspace
-            if (rl.IsKeyPressed(rl.KEY_BACKSPACE) and chat_panel.chat_input_len > 0) {
-                chat_panel.chat_input_len -= 1;
+            // Backspace — delete UTF-8 characters (with key repeat for hold)
+            {
+                const bs_pressed = rl.IsKeyPressed(rl.KEY_BACKSPACE);
+                const bs_held = rl.IsKeyDown(rl.KEY_BACKSPACE);
+                if (bs_pressed) {
+                    g_backspace_timer = 0.4; // Initial delay before repeat
+                }
+                var do_delete = bs_pressed;
+                if (bs_held and !bs_pressed) {
+                    g_backspace_timer -= rl.GetFrameTime();
+                    if (g_backspace_timer <= 0) {
+                        do_delete = true;
+                        g_backspace_timer = 0.04; // Repeat rate (25 chars/sec)
+                    }
+                }
+                if (!bs_held) g_backspace_timer = 0;
+                if (do_delete and g_chat_input_len > 0) {
+                    var del: usize = 1;
+                    while (del < g_chat_input_len and
+                        (g_chat_input[g_chat_input_len - del] & 0xC0) == 0x80)
+                    {
+                        del += 1;
+                    }
+                    g_chat_input_len -= del;
+                }
+            }
+
+            // Ctrl+O clears the input
+            if ((rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL)) and rl.IsKeyPressed(rl.KEY_O)) {
+                g_chat_input_len = 0;
             }
 
             // Enter sends message
-            if (rl.IsKeyPressed(rl.KEY_ENTER) and chat_panel.chat_input_len > 0) {
-                // Get text from chat panel's input
-                var msg_buf: [256]u8 = undefined;
-                @memcpy(msg_buf[0..chat_panel.chat_input_len], chat_panel.chat_input[0..chat_panel.chat_input_len]);
+            if (rl.IsKeyPressed(rl.KEY_ENTER) and g_chat_input_len > 0) {
+                // Lazy init FluentChatEngine (self-referential struct)
+                if (!g_fluent_engine_inited) {
+                    g_fluent_engine = fluent_chat.FluentChatEngine{
+                        .message_store = fluent_chat.LightMessageStore.init(),
+                        .context = fluent_chat.ConversationContext.init(),
+                        .generator = undefined,
+                        .fluent_enabled = true,
+                        .total_turns = 0,
+                        .fluent_responses = 0,
+                        .high_quality_count = 0,
+                    };
+                    g_fluent_engine.generator = fluent_chat.ResponseGenerator.init(&g_fluent_engine.context);
+                    g_fluent_engine_inited = true;
+                }
 
-                // Add user message
-                chat_panel.addChatMessage(msg_buf[0..chat_panel.chat_input_len], true);
+                // 1. Add user message
+                addGlobalChatMessage(g_chat_input[0..g_chat_input_len], .user);
 
-                // Simulate AI response
-                const responses = [_][]const u8{
-                    "Cosmic patterns detected in your query!",
-                    "Trinity wave processing complete.",
-                    "phi^2 + 1/phi^2 = 3. Your message resonates.",
-                    "Emergence acknowledged. Koschei responds.",
-                    "Wave function collapsed. Answer manifest.",
-                };
-                const resp_idx = @as(usize, @intCast(@mod(@as(i32, @intFromFloat(time * 100)), 5)));
-                chat_panel.addChatMessage(responses[resp_idx], false);
+                // 2. FluentChatEngine response (context-aware with intent/topic/sentiment)
+                const result = g_fluent_engine.respond(g_chat_input[0..g_chat_input_len]);
 
-                // Nova effect at panel center
-                effects.nova(chat_panel.x + chat_panel.width / 2, chat_panel.y + chat_panel.height / 2);
+                // 3. Add AI response text
+                addGlobalChatMessage(result.getText(), .ai);
+
+                // 4. Transparent log with metadata
+                const stats = g_fluent_engine.getStats();
+                const ms = @divFloor(result.execution_time_ns, @as(i64, 1_000_000));
+                addChatLogMessage("{s} | {s} | {s} | q:{d:.0}% | {d}ms | s:{d:.2} | e:{d:.2}", .{
+                    result.intent.getName(),
+                    result.topic.getName(),
+                    result.language.getName(),
+                    result.quality * 100,
+                    ms,
+                    stats.sentiment,
+                    stats.engagement,
+                });
+
+                // Nova effect at screen center
+                effects.nova(screen_w / 2, screen_h / 2);
+
+                // Auto-scroll: set to a large value, renderer will clamp
+                g_chat_scroll_target = 99999.0;
 
                 // Clear input
-                chat_panel.chat_input_len = 0;
+                g_chat_input_len = 0;
             }
         } else {
             // Normal controls (no global input - use Shift+N for panels)
@@ -3717,6 +5244,23 @@ pub fn main() !void {
                     title_slice,
                 );
                 panels.panels[si].world_id = @intCast(block_idx);
+                // Enable Emergent Wave ScrollView for scrollable panels (not chat)
+                if (block_idx != 0) {
+                    panels.panels[si].wave_scroll_enabled = true;
+                    if (block_idx == 18) {
+                        // Docs panel: calculate real content size from all 27 docs
+                        var total_lines: u32 = 0;
+                        var dci: usize = 0;
+                        while (dci < 27) : (dci += 1) {
+                            total_lines += world_docs.countVisibleLines(world_docs.WORLD_DOCS[dci].raw);
+                            total_lines += 4;
+                        }
+                        panels.panels[si].wave_sv.setTotalItems(total_lines, 18.0 * g_font_scale);
+                    } else {
+                        // Other worlds: placeholder content
+                        panels.panels[si].wave_sv.setTotalItems(15, 20.0);
+                    }
+                }
                 panels.panels[si].open();
                 panels.panels[si].jarvisFocus();
                 panels.active_panel = si;
@@ -3749,6 +5293,7 @@ pub fn main() !void {
 
         // Keyboard hint (minimal, top-left)
         rl.DrawTextEx(font_small, "Shift+1-9 RAZUM | Ctrl+1-9 MATERIYA | Cmd+1-9 DUKH | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+
 
         // === SUN/MOON THEME TOGGLE (top-right, 20px from top) ===
         {
