@@ -323,7 +323,7 @@
     ]
   },
   "gtm": {
-    "title": "<span class=\"grad\">Go-to-Market</span>",
+    "title": "<span class=\"grad\">Estrategia de Mercado</span>",
     "phases": [
       { "phase": "Fase 1", "title": "Labs de Investigacion", "desc": "Universidades, labs IA • Pilotos gratis • Casos de estudio" },
       { "phase": "Fase 2", "title": "Startups IA", "desc": "Ahorros en inferencia • Tarjetas FPGA • Deals $10K-50K" },
@@ -349,9 +349,58 @@
     ]
   },
   "techTree": {
-    "title": "TRINITY <span style=\"color: var(--accent)\">RESEARCH</span> LABORATORY",
+    "title": "TRINITY <span style=\"color: var(--accent)\">LABORATORIO</span> DE INVESTIGACI\u00d3N",
     "sub": "Arbol de Desarrollo Tecnologico",
-    "hint": "Haz clic en los nodos para ver detalles de investigacion"
+    "hint": "Haz clic en los nodos para ver detalles de investigacion",
+    "complete": "completado",
+    "active": "INVESTIGACI\u00d3N ACTIVA",
+    "legend": { "done": "Completado", "progress": "En Progreso", "locked": "Bloqueado" },
+    "labels": { "description": "Descripci\u00f3n", "performance": "Rendimiento", "progress": "Progreso de Investigaci\u00f3n", "prerequisites": "Prerrequisitos", "unlocks": "Desbloquea", "locked": "Completa los prerrequisitos para desbloquear esta investigaci\u00f3n" },
+    "stats": { "inProgress": "en progreso", "locked": "bloqueado" },
+    "branches": { "core": "N\u00daCLEO", "inference": "INFERENCIA", "optimization": "OPTIMIZACI\u00d3N", "deployment": "DESPLIEGUE", "hardware": "HARDWARE", "agents": "AGENTES", "knowledge": "CONOCIMIENTO", "distributed": "DISTRIBUIDO" },
+    "nodes": {
+      "core-001": { "name": "Parser v2", "description": "Parser avanzado de especificaciones VIBEE con soporte multiling\u00fce", "metrics": "42 lenguajes" },
+      "core-002": { "name": "Codegen Multiling\u00fce", "description": "Generaci\u00f3n de c\u00f3digo para Zig, Python, Rust, Verilog y 38 m\u00e1s", "metrics": "42 objetivos" },
+      "core-003": { "name": "VM de Bytecode", "description": "M\u00e1quina virtual ternaria basada en pila con 256 opcodes", "metrics": "256 opcodes" },
+      "core-004": { "name": "Compilaci\u00f3n JIT", "description": "Compilaci\u00f3n just-in-time para rendimiento nativo", "metrics": "+1000% velocidad" },
+      "core-005": { "name": "Optimizaci\u00f3n Binaria", "description": "Eliminaci\u00f3n avanzada de c\u00f3digo muerto y asignaci\u00f3n de registros", "metrics": "-30% tama\u00f1o" },
+      "inf-001": { "name": "Parser GGUF", "description": "Parseo de archivos de modelo GGUF con metadatos de cuantizaci\u00f3n", "metrics": "Todas las cuant." },
+      "inf-002": { "name": "Transformer", "description": "Arquitectura transformer completa con capas de atenci\u00f3n", "metrics": "32 capas" },
+      "inf-003": { "name": "Cach\u00e9 KV", "description": "Cach\u00e9 Key-Value para generaci\u00f3n autoregresiva eficiente", "metrics": "16x aceleraci\u00f3n" },
+      "inf-004": { "name": "Procesamiento por Lotes", "description": "Inferencia por lotes en paralelo para m\u00faltiples secuencias", "metrics": "8x rendimiento" },
+      "inf-005": { "name": "FlashAttention", "description": "Mecanismo de atenci\u00f3n IO-aware para secuencias largas", "metrics": "128K contexto" },
+      "opt-t01": { "name": "Cuantizaci\u00f3n Ternaria", "description": "Cuantizaci\u00f3n de pesos ternarios BitNet b1.58 {-1, 0, +1}", "metrics": "20x compresi\u00f3n" },
+      "opt-t02": { "name": "MatMul Ternario", "description": "Multiplicaci\u00f3n de matrices optimizada para pesos ternarios", "metrics": "10x aceleraci\u00f3n" },
+      "opt-t03": { "name": "Cach\u00e9 KV Ternario", "description": "Cach\u00e9 KV comprimido usando representaci\u00f3n ternaria", "metrics": "16x memoria" },
+      "opt-pc01": { "name": "Cach\u00e9 de Prefijos", "description": "Reutilizaci\u00f3n de prefijos computados entre solicitudes", "metrics": "90% tasa de acierto" },
+      "opt-cp01": { "name": "Prefill por Bloques", "description": "Dividir procesamiento de prompts largos en bloques manejables", "metrics": "-50% latencia" },
+      "opt-s02": { "name": "Especulaci\u00f3n Mejorada", "description": "Verificaci\u00f3n especulativa paralela con b\u00fasqueda en \u00e1rbol", "metrics": "4x generaci\u00f3n" },
+      "dep-001": { "name": "Contenedores", "description": "Despliegue en contenedores con im\u00e1genes optimizadas", "metrics": "< 500MB" },
+      "dep-002": { "name": "Servidores Edge", "description": "Despliegue en el borde en infraestructura Fly.io", "metrics": "34 regiones" },
+      "dep-003": { "name": "Auto-Escalado", "description": "Escalado autom\u00e1tico basado en carga de solicitudes", "metrics": "0\u2192100 pods" },
+      "dep-004": { "name": "Multi-Regi\u00f3n", "description": "Despliegue global con enrutamiento por regi\u00f3n", "metrics": "Latencia < 50ms" },
+      "dep-005": { "name": "Cero Tiempo Inactivo", "description": "Estrategias de despliegue blue-green y canary", "metrics": "99,99% disponibilidad" },
+      "hw-001": { "name": "Backend CUDA", "description": "Kernels CUDA nativos para GPUs NVIDIA", "metrics": "+100x velocidad" },
+      "hw-002": { "name": "Backend Metal", "description": "Shaders Apple Metal para chips serie M", "metrics": "+80x velocidad" },
+      "hw-003": { "name": "S\u00edntesis FPGA", "description": "Generaci\u00f3n de Verilog para despliegue FPGA", "metrics": "1000x eficiencia" },
+      "hw-004": { "name": "Dise\u00f1o ASIC", "description": "Dise\u00f1o de chip ternario personalizado para m\u00e1xima eficiencia", "metrics": "10000x eficiencia" },
+      "hw-005": { "name": "Circuito Cu\u00e1ntico", "description": "Puertas cu\u00e1nticas experimentales para l\u00f3gica ternaria", "metrics": "Qubits Ternarios" },
+      "agent-001": { "name": "N\u00facleo IGLA", "description": "Arquitectura de Aprendizaje Generativo basada en Instrucciones", "metrics": "v1.0 estable" },
+      "agent-002": { "name": "Motor de Herramientas", "description": "Llamadas a funciones locales e integraci\u00f3n de herramientas", "metrics": "50+ herramientas" },
+      "agent-003": { "name": "Contexto Largo", "description": "Historial ilimitado con ventanas de contexto adaptativas", "metrics": "\u221e tokens" },
+      "agent-004": { "name": "Multi-Agente", "description": "Orquestaci\u00f3n de coordinador + agentes especialistas", "metrics": "8 especialistas" },
+      "agent-005": { "name": "Inteligencia de Enjambre", "description": "Comportamiento emergente de agentes descentralizados", "metrics": "1K+ agentes" },
+      "know-001": { "name": "N\u00facleo VSA", "description": "Arquitectura Simb\u00f3lica Vectorial con operaciones bind/bundle", "metrics": "10K dims" },
+      "know-002": { "name": "Grafo de Conocimiento", "description": "Redes sem\u00e1nticas basadas en tripletas con codificaci\u00f3n VSA", "metrics": "1M tripletas" },
+      "know-003": { "name": "B\u00fasqueda Sem\u00e1ntica", "description": "B\u00fasqueda por similitud coseno sobre hipervectores", "metrics": "Consulta <1ms" },
+      "know-004": { "name": "Motor RAG", "description": "Generaci\u00f3n Aumentada por Recuperaci\u00f3n con VSA", "metrics": "95% precisi\u00f3n" },
+      "know-005": { "name": "Aprendiz de Ontolog\u00eda", "description": "Descubrimiento autom\u00e1tico de relaciones sem\u00e1nticas", "metrics": "Zero-shot" },
+      "dist-001": { "name": "Red de Nodos", "description": "Descubrimiento y enrutamiento descentralizado de nodos", "metrics": "1000+ nodos" },
+      "dist-002": { "name": "Fragmentaci\u00f3n TVC", "description": "Fragmentos distribuidos de Computaci\u00f3n Vectorial Ternaria", "metrics": "256 fragmentos" },
+      "dist-003": { "name": "Red DePIN", "description": "Infraestructura F\u00edsica Descentralizada con recompensas TRI", "metrics": "Miner\u00eda $TRI" },
+      "dist-004": { "name": "Consenso Global", "description": "Consenso tolerante a fallas bizantinas para estado ternario", "metrics": "10K TPS" },
+      "dist-005": { "name": "Cadena Sagrada", "description": "Cadena dorada de eventos ternarios con prueba inmutable", "metrics": "Conocimiento cero" }
+    }
   },
   "product": {
     "title": "<span class=\"grad\">Hoja de Ruta</span> de Producto",
@@ -433,7 +482,7 @@
   "hlsCompetition": {
     "title": "Compilador <span class=\"grad\">FPGA</span> Universal",
     "sub": "Escribe codigo en CUALQUIER lenguaje de programacion. Compila a hardware. Sin dependencia de proveedor.",
-    "marketSize": "$23.34B",
+    "marketSize": "$23,34 mil M",
     "marketGrowth": "Mercado FPGA 2030 (CAGR 10.8%)",
     "problemTitle": "El Problema de $50K",
     "problemDesc": "Hoy, para compilar codigo a hardware FPGA, las empresas pagan $3,000-$50,000/ano por herramientas que solo soportan C/C++. Los desarrolladores deben reescribir todo. Eliminamos esta barrera.",
@@ -557,7 +606,7 @@
       { "title": "DAEMONS PAS", "desc": "Bomba de energia de informacion" },
       { "title": "TRI-MEMORY", "desc": "Almacenamiento de triadas nativo" }
     ],
-    "softwareStack": "TRINITY NATIVE STACK (CIS V1.0)",
+    "softwareStack": "PILA NATIVA TRINITY (CIS V1.0)",
     "innovationsTitle": "Innovaciones Clave",
     "innovations": [
       "Ejecucion directa de Copto CIS",
@@ -590,7 +639,7 @@
     "success": ["Aceleracion 100×+ demostrada", "20k+ archivos TRI", "Pipeline de $1M+"]
   },
   "vision": {
-    "title": "<span class=\"grad\">Vision</span> 2030",
+    "title": "<span class=\"grad\">Visi\u00f3n</span> 2030",
     "quote": "\"Lo binario fue el siglo XX. Lo ternario es el siglo XXI. La hiper-singularidad es ahora.\"",
     "goalsTitle": "Objetivos 2030",
     "whyNowTitle": "Por Que Invertir Ahora",
@@ -761,7 +810,7 @@
     "identity": {
       "title": "Identidad Aurea",
       "formula": "φ² + 1/φ² = 3",
-      "desc": "TRINITY = QUTRIT = CODON"
+      "desc": "TRINITY = QUTRIT = COD\u00d3N"
     },
     "formulas": [
       {
