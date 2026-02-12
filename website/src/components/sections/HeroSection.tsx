@@ -9,7 +9,7 @@ function AnimatedEquation() {
       className="fade" 
       style={{ 
         fontSize: 'clamp(1.2rem, 5vw, 2rem)', 
-        marginBottom: '2.5rem', 
+        marginBottom: '1rem', 
         fontFamily: 'serif', 
         fontStyle: 'italic',
         position: 'relative',
@@ -99,20 +99,24 @@ export default function HeroSection() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        style={{ color: 'var(--accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '1rem' }}
+        style={{ color: 'var(--accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0' }}
       >
         {t.tag}
       </motion.div>
       
-      <motion.h1 
-        className="fade" 
+      <motion.div
+        className="fade"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        style={{ marginBottom: '1rem' }}
+        style={{ marginBottom: '0', display: 'flex', justifyContent: 'center' }}
       >
-        TRINITY
-      </motion.h1>
+        <img 
+          src="/trinity/trinity-logo-with-label.svg" 
+          alt="TRINITY - Native Ternary Hardware" 
+          style={{ height: 'clamp(144px, 30vw, 384px)', width: 'auto', filter: 'brightness(1.2)' }}
+        />
+      </motion.div>
       
       <AnimatedEquation />
       
