@@ -1417,14 +1417,16 @@ test "isChatBehavior" {
 
 test "chat pattern match" {
     const testing = std.testing;
-    var buffer: [16384]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
 
     const b = Behavior{
         .name = "respondGreeting",
         .given = "greeting",
         .when = "user greets",
         .then = "return greeting",
+        .implementation = "",
+        .test_cases = .{},
     };
 
     const matched = try match(&builder, &b);

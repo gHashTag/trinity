@@ -79,8 +79,17 @@ pub const ZigCodeGen = struct {
             try self.builder.newline();
             try self.builder.writeLine("// Custom imports from .vibee spec");
             for (spec.imports.items) |imp| {
-                // Use module name for @import - build.zig provides modules by name
-                try self.builder.writeFmt("const {s} = @import(\"{s}\");\n", .{ imp.name, imp.name });
+                // Special handling for raylib: emit @cImport instead of @import
+                if (std.mem.eql(u8, imp.name, "raylib")) {
+                    try self.builder.writeLine("const rl = @cImport({");
+                    self.builder.incIndent();
+                    try self.builder.writeLine("@cInclude(\"raylib.h\");");
+                    self.builder.decIndent();
+                    try self.builder.writeLine("});");
+                } else {
+                    // Use module name for @import - build.zig provides modules by name
+                    try self.builder.writeFmt("const {s} = @import(\"{s}\");\n", .{ imp.name, imp.name });
+                }
             }
         }
 
@@ -442,6 +451,16 @@ pub const ZigCodeGen = struct {
         // Try when/then patterns (chat, lifecycle, etc.)
         // Only use if the pattern is safe (doesn't reference undefined types)
         const name = b.name;
+
+        // RL patterns are self-contained (only reference rl.* types and primitives)
+        const patterns_rl = @import("patterns/rl.zig");
+        if (patterns_rl.isRlBehavior(name)) {
+            if (try pattern_matcher.generateFromWhenThenPattern(b)) {
+                try self.builder.newline();
+                return;
+            }
+        }
+
         // Only use pattern system for behaviors where it generates self-contained code
         // (no references to undefined types like ChatTopicReal, InputLanguage)
         const is_safe_pattern = std.mem.eql(u8, name, "detectInputLanguage") or
