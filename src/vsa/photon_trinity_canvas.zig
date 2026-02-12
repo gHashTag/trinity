@@ -2561,8 +2561,8 @@ const GlassPanel = struct {
                     // "↵ send" hint (right side)
                     const send_sz: f32 = 13 * fs;
                     const send_color = rl.Color{ .r = 140, .g = 140, .b = 150, .a = 180 };
-                    const send_w = rl.MeasureTextEx(chat_font, "\xe2\x86\xb5 send", send_sz, 0.5).x;
-                    rl.DrawTextEx(chat_font, "\xe2\x86\xb5 send", .{ .x = sx + sw - chat_margin - send_w - 10 * fs, .y = input_y + 16 * fs }, send_sz, 0.5, send_color);
+                    const send_w = rl.MeasureTextEx(chat_font, "enter to send", send_sz, 0.5).x;
+                    rl.DrawTextEx(chat_font, "enter to send", .{ .x = sx + sw - chat_margin - send_w - 10 * fs, .y = input_y + 16 * fs }, send_sz, 0.5, send_color);
 
                     if (g_chat_input_len > 0) {
                         var input_disp: [260:0]u8 = undefined;
