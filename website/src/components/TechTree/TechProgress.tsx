@@ -1,8 +1,9 @@
-"use client";
 import { motion } from 'framer-motion';
+import { useI18n } from '../../i18n/context';
 import { getCompletionStats, getBranchStats, techBranches } from './techTreeData';
 
 export default function TechProgress() {
+  const { t } = useI18n();
   const stats = getCompletionStats();
 
   return (
@@ -29,7 +30,7 @@ export default function TechProgress() {
               letterSpacing: '0.15em',
               marginBottom: '0.3rem'
             }}>
-              RESEARCH PROGRESS
+              {t.techTree.labels.progress}
             </div>
             <div style={{
               fontSize: '2rem',
@@ -54,12 +55,12 @@ export default function TechProgress() {
             }}>
               {stats.inProgress > 0 && (
                 <span style={{ color: '#FFD700', marginRight: '0.5rem' }}>
-                  🔄 {stats.inProgress} in progress
+                  🔄 {stats.inProgress} {t.techTree.stats.inProgress}
                 </span>
               )}
               {stats.locked > 0 && (
                 <span>
-                  🔒 {stats.locked} locked
+                  🔒 {stats.locked} {t.techTree.stats.locked}
                 </span>
               )}
             </div>
@@ -165,7 +166,7 @@ export default function TechProgress() {
                   color: branch.color,
                   fontWeight: 600
                 }}>
-                  {branch.name}
+                  {t.techTree.branches?.[branch.id] || branch.name}
                 </span>
                 <span style={{
                   fontSize: '0.65rem',
