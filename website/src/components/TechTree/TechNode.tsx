@@ -1,5 +1,6 @@
-"use client";
 import { motion } from 'framer-motion';
+import { memo } from 'react';
+import { useI18n } from '../../i18n/context';
 import type { TechNode as TechNodeType, NodeStatus } from './techTreeData';
 
 interface TechNodeProps {
@@ -9,61 +10,77 @@ interface TechNodeProps {
   onClick: () => void;
 }
 
-const statusConfig: Record<NodeStatus, { glow: string; border: string; bg: string; icon: string }> = {
+const statusConfig: Record<NodeStatus, { icon: string; bg: string }> = {
   done: {
-    glow: '0 0 20px rgba(0, 255, 136, 0.5)',
-    border: '#00FF88',
-    bg: 'rgba(0, 255, 136, 0.15)',
+    bg: '#07140f', // Solid dark green tint
     icon: '✅'
   },
   in_progress: {
-    glow: '0 0 20px rgba(255, 215, 0, 0.5)',
-    border: '#FFD700',
-    bg: 'rgba(255, 215, 0, 0.15)',
+    bg: '#0a1914', // Solid dark slate
     icon: '🔄'
   },
   locked: {
-    glow: 'none',
-    border: 'rgba(255, 255, 255, 0.2)',
-    bg: 'rgba(255, 255, 255, 0.05)',
+    bg: '#050a08', // Solid near-black
     icon: '🔒'
   }
 };
 
-export default function TechNode({ node, branchColor, isSelected, onClick }: TechNodeProps) {
+const TechNode = memo(function TechNode({ node, branchColor, isSelected, onClick }: TechNodeProps) {
+  const { t } = useI18n();
   const config = statusConfig[node.status];
   const isActive = node.status !== 'locked';
+
+  // Localized content
+  const localized = t.techTree.nodes?.[node.id] || {};
+  const name = localized.name || node.name;
+  const metrics = localized.metrics || node.metrics;
 
   return (
     <motion.div
       onClick={isActive ? onClick : undefined}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{
-        opacity: 1,
+        opacity: isActive ? 1 : 0.6,
         scale: isSelected ? 1.1 : 1,
-        boxShadow: isSelected ? `0 0 30px ${branchColor}` : config.glow
+        boxShadow: isSelected 
+          ? `0 0 20px ${branchColor}aa` 
+          : isActive 
+            ? `0 0 10px ${branchColor}22` 
+            : 'none'
       }}
       whileHover={isActive ? { scale: 1.05, boxShadow: `0 0 25px ${branchColor}` } : undefined}
       whileTap={isActive ? { scale: 0.98 } : undefined}
       transition={{ duration: 0.3, type: 'spring', stiffness: 200 }}
       style={{
-        width: '140px',
-        padding: '0.8rem',
-        background: isSelected ? `${branchColor}22` : config.bg,
-        border: `2px solid ${isSelected ? branchColor : config.border}`,
+        width: '130px',
+        height: '130px',
+        padding: '1rem',
+        background: config.bg,
+        border: `2px solid ${isSelected ? branchColor : isActive ? `${branchColor}66` : 'rgba(255, 255, 255, 0.1)'}`,
         borderRadius: '12px',
         cursor: isActive ? 'pointer' : 'not-allowed',
         position: 'relative',
-        opacity: node.status === 'locked' ? 0.5 : 1
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
       }}
     >
       {/* Status indicator */}
       <div style={{
         position: 'absolute',
-        top: '-8px',
-        right: '-8px',
-        fontSize: '1rem',
-        filter: node.status === 'in_progress' ? 'none' : 'none'
+        top: '-10px',
+        right: '-10px',
+        fontSize: '1.1rem',
+        zIndex: 20,
+        filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.5))',
+        background: 'rgba(0,0,0,0.6)',
+        borderRadius: '50%',
+        width: '26px',
+        height: '26px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backdropFilter: 'blur(2px)'
       }}>
         {node.status === 'in_progress' ? (
           <motion.span
@@ -104,10 +121,11 @@ export default function TechNode({ node, branchColor, isSelected, onClick }: Tec
       {/* Node ID */}
       <div style={{
         fontSize: '0.6rem',
-        color: 'rgba(255, 255, 255, 0.4)',
+        color: isActive ? `${branchColor}aa` : 'rgba(255, 255, 255, 0.3)',
         textTransform: 'uppercase',
         letterSpacing: '0.1em',
-        marginBottom: '0.3rem'
+        marginBottom: '0.3rem',
+        fontWeight: 700
       }}>
         {node.id.toUpperCase()}
       </div>
@@ -120,21 +138,22 @@ export default function TechNode({ node, branchColor, isSelected, onClick }: Tec
         marginBottom: '0.3rem',
         lineHeight: 1.2
       }}>
-        {node.name}
+        {name}
       </div>
 
       {/* Metrics badge */}
-      {node.metrics && node.status !== 'locked' && (
+      {metrics && node.status !== 'locked' && (
         <div style={{
           fontSize: '0.65rem',
           color: branchColor,
-          fontWeight: 600,
+          fontWeight: 700,
           background: `${branchColor}22`,
           padding: '0.15rem 0.4rem',
           borderRadius: '4px',
-          display: 'inline-block'
+          display: 'inline-block',
+          border: `1px solid ${branchColor}44`
         }}>
-          {node.metrics}
+          {metrics}
         </div>
       )}
 
@@ -143,11 +162,14 @@ export default function TechNode({ node, branchColor, isSelected, onClick }: Tec
         <div style={{
           fontSize: '0.6rem',
           color: '#FFD700',
-          marginTop: '0.3rem'
+          marginTop: '0.3rem',
+          fontWeight: 600
         }}>
-          {node.progress}% complete
+          {node.progress}% {t.techTree.complete}
         </div>
       )}
     </motion.div>
   );
-}
+});
+
+export default TechNode;

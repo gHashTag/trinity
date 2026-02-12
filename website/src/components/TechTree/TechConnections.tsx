@@ -1,6 +1,5 @@
-"use client";
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { getConnections, getNodeById, techBranches, type Connection } from './techTreeData';
 
 interface TechConnectionsProps {
@@ -12,7 +11,7 @@ interface TechConnectionsProps {
   offsetY: number;
 }
 
-export default function TechConnections({
+const TechConnections = memo(function TechConnections({
   nodeWidth,
   nodeHeight,
   gapX,
@@ -63,14 +62,14 @@ export default function TechConnections({
 
     return (
       <g key={`${conn.from}-${conn.to}-${index}`}>
-        {/* Background glow for active connections */}
+        {/* Simplified background glow for active connections using a thick path instead of blur */}
         {isActive && (
           <motion.path
             d={path}
             fill="none"
             stroke={color}
             strokeWidth="4"
-            strokeOpacity="0.2"
+            strokeOpacity="0.05"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 1, delay: index * 0.1 }}
@@ -82,38 +81,35 @@ export default function TechConnections({
           d={path}
           fill="none"
           stroke={color}
-          strokeWidth="2"
+          strokeWidth="1.5"
           strokeDasharray={isActive ? "none" : "5 5"}
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
           transition={{ duration: 0.8, delay: index * 0.1 }}
         />
 
-        {/* Animated flow particles for active connections */}
-        {isActive && (
-          <motion.circle
+        {/* Animated flow particles - Use efficient radial gradients instead of filters */}
+        {isActive && [0, 1, 2].map((i) => (
+          <circle
+            key={i}
             r="3"
-            fill={color}
-            filter="url(#glow)"
-            initial={{ offsetDistance: '0%' }}
-            animate={{ offsetDistance: '100%' }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: 'linear',
-              delay: index * 0.3
-            }}
-            style={{
-              offsetPath: `path('${path}')`,
-            }}
-          />
-        )}
+            fill={`url(#glowGrad-${conn.from.split('-')[0]})`}
+            style={{ opacity: 0.9 }}
+          >
+            <animateMotion
+              path={path}
+              dur="3s"
+              begin={`${i * 1}s`}
+              repeatCount="indefinite"
+            />
+          </circle>
+        ))}
 
-        {/* Arrow at end */}
+        {/* Indicator at end */}
         <motion.circle
           cx={to.x}
           cy={to.y}
-          r="4"
+          r="3"
           fill={isActive ? color : 'rgba(255, 255, 255, 0.2)'}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -132,20 +128,18 @@ export default function TechConnections({
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        zIndex: 0
+        zIndex: 1
       }}
     >
       <defs>
-        {/* Glow filter */}
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
+        {/* Radial gradients for performant glows per branch color */}
+        {techBranches.map(branch => (
+          <radialGradient key={branch.id} id={`glowGrad-${branch.id}`}>
+            <stop offset="20%" stopColor={branch.color} stopOpacity="1" />
+            <stop offset="100%" stopColor={branch.color} stopOpacity="0" />
+          </radialGradient>
+        ))}
 
-        {/* Gradient for active lines */}
         <linearGradient id="activeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#00FF88" />
           <stop offset="100%" stopColor="#FFD700" />
@@ -155,4 +149,6 @@ export default function TechConnections({
       {connections.map((conn, i) => renderConnection(conn, i))}
     </svg>
   );
-}
+});
+
+export default TechConnections;

@@ -75,8 +75,21 @@ export const techBranches: TechBranch[] = [
         status: 'locked',
         branch: 'core',
         prerequisites: ['core-003', 'hw-001'],
-        unlocks: [],
+        unlocks: ['core-005'],
+        metrics: '+1000% speed',
         x: 3,
+        y: 0
+      },
+      {
+        id: 'core-005',
+        name: 'Binary Optimization',
+        description: 'Advanced dead-code elimination and register allocation',
+        status: 'locked',
+        branch: 'core',
+        prerequisites: ['core-004'],
+        unlocks: [],
+        metrics: '-30% size',
+        x: 4,
         y: 0
       }
     ]
@@ -130,9 +143,21 @@ export const techBranches: TechBranch[] = [
         status: 'done',
         branch: 'inference',
         prerequisites: ['inf-003'],
-        unlocks: ['dep-003', 'agent-001'],
+        unlocks: ['dep-003', 'agent-001', 'inf-005'],
         metrics: '8x throughput',
         x: 3,
+        y: 1
+      },
+      {
+        id: 'inf-005',
+        name: 'FlashAttention',
+        description: 'IO-aware attention mechanism for long sequences',
+        status: 'locked',
+        branch: 'inference',
+        prerequisites: ['inf-004'],
+        unlocks: [],
+        metrics: '128K context',
+        x: 4,
         y: 1
       }
     ]
@@ -187,8 +212,21 @@ export const techBranches: TechBranch[] = [
         progress: 90,
         branch: 'optimization',
         prerequisites: ['opt-t03'],
-        unlocks: ['hw-001'],
+        unlocks: ['hw-001', 'opt-cp01'],
+        metrics: '90% hit rate',
         x: 3,
+        y: 2
+      },
+      {
+        id: 'opt-cp01',
+        name: 'Chunked Prefill',
+        description: 'Split long prompt processing into manageable chunks',
+        status: 'locked',
+        branch: 'optimization',
+        prerequisites: ['opt-pc01'],
+        unlocks: [],
+        metrics: '-50% TTFT',
+        x: 4,
         y: 2
       }
     ]
@@ -242,9 +280,21 @@ export const techBranches: TechBranch[] = [
         status: 'done',
         branch: 'deployment',
         prerequisites: ['dep-003'],
-        unlocks: ['dist-001'],
+        unlocks: ['dist-001', 'dep-005'],
         metrics: '< 50ms latency',
         x: 3,
+        y: 3
+      },
+      {
+        id: 'dep-005',
+        name: 'Zero-Downtime',
+        description: 'Blue-green and canary deployment strategies',
+        status: 'locked',
+        branch: 'deployment',
+        prerequisites: ['dep-004'],
+        unlocks: [],
+        metrics: '99.99% SLA',
+        x: 4,
         y: 3
       }
     ]
@@ -299,9 +349,21 @@ export const techBranches: TechBranch[] = [
         status: 'locked',
         branch: 'hardware',
         prerequisites: ['hw-003'],
-        unlocks: [],
+        unlocks: ['hw-005'],
         metrics: '10000x efficiency',
         x: 3,
+        y: 4
+      },
+      {
+        id: 'hw-005',
+        name: 'Quantum Circuit',
+        description: 'Experimental quantum gates for ternary logic',
+        status: 'locked',
+        branch: 'hardware',
+        prerequisites: ['hw-004'],
+        unlocks: [],
+        metrics: 'Ternary Qubits',
+        x: 4,
         y: 4
       }
     ]
@@ -356,9 +418,21 @@ export const techBranches: TechBranch[] = [
         progress: 75,
         branch: 'agents',
         prerequisites: ['agent-002', 'agent-003'],
-        unlocks: [],
+        unlocks: ['agent-005'],
         metrics: '8 specialists',
         x: 3,
+        y: 5
+      },
+      {
+        id: 'agent-005',
+        name: 'Swarm Intelligence',
+        description: 'Decentralized emergent agent behavior',
+        status: 'locked',
+        branch: 'agents',
+        prerequisites: ['agent-004'],
+        unlocks: [],
+        metrics: '1K+ agents',
+        x: 4,
         y: 5
       }
     ]
@@ -413,9 +487,21 @@ export const techBranches: TechBranch[] = [
         progress: 80,
         branch: 'knowledge',
         prerequisites: ['know-003'],
-        unlocks: [],
+        unlocks: ['know-005'],
         metrics: '95% accuracy',
         x: 3,
+        y: 6
+      },
+      {
+        id: 'know-005',
+        name: 'Ontology Learner',
+        description: 'Automatic discovery of semantic relationships',
+        status: 'locked',
+        branch: 'knowledge',
+        prerequisites: ['know-004'],
+        unlocks: [],
+        metrics: 'Zero-shot',
+        x: 4,
         y: 6
       }
     ]
@@ -470,9 +556,21 @@ export const techBranches: TechBranch[] = [
         status: 'locked',
         branch: 'distributed',
         prerequisites: ['dist-003'],
-        unlocks: [],
+        unlocks: ['dist-005'],
         metrics: '10K TPS',
         x: 3,
+        y: 7
+      },
+      {
+        id: 'dist-005',
+        name: 'Holy Chain',
+        description: 'Golden chain of ternary events with immutable proof',
+        status: 'locked',
+        branch: 'distributed',
+        prerequisites: ['dist-004'],
+        unlocks: [],
+        metrics: 'Zero-knowledge',
+        x: 4,
         y: 7
       }
     ]
