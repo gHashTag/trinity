@@ -274,12 +274,35 @@ Specifications: `specs/tri/telegram_bot/`
 ## Website Deployment
 
 ```
-Canonical URL: https://trinity-site-one.vercel.app
+Canonical URL: https://gHashTag.github.io/trinity/
+Hosting:       GitHub Pages (branch: gh-pages)
 Root:          website/
 Framework:     Vite (React SPA)
+Base path:     /trinity/ (configured in vite.config.ts)
 ```
 
-DO NOT create new Vercel projects. Push to main branch auto-deploys.
+**DEPLOY PROCESS (GitHub Pages):**
+
+```bash
+# 1. Build
+cd website && npx vite build
+
+# 2. Deploy (force push dist to gh-pages branch)
+rm -rf /tmp/gh-pages-deploy
+mkdir /tmp/gh-pages-deploy
+cp -r dist/* /tmp/gh-pages-deploy/
+cd /tmp/gh-pages-deploy
+git init && git checkout -b gh-pages
+git add -A && git commit -m "Deploy: <description>"
+git remote add origin https://github.com/gHashTag/trinity.git
+git push origin gh-pages --force
+```
+
+**IMPORTANT:**
+- НЕ использовать Vercel — сайт на GitHub Pages
+- `npx gh-pages -d dist` НЕ РАБОТАЕТ надёжно — всегда использовать force push
+- После деплоя GitHub Pages обновляется через 1-2 минуты
+- Для проверки: Cmd+Shift+R (хард-рефреш) в браузере
 
 ---
 
