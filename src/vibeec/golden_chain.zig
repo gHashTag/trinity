@@ -30,7 +30,7 @@ pub const CONTENT_DIGEST_LEN = 64;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 96; // v2.4: was 88, +8 for mainnet v1.0 launch quarks (u6 FULL: 64/64)
+pub const MAX_QUARK_RECORDS = 104; // v2.5: was 96, +8 for swarm v1.0 quarks (u7: 72/128)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -196,6 +196,11 @@ pub const ChainMessageType = enum {
     CommunityOnboard, // Community onboarding event
     NodeDiscovery, // Node discovery event
     GovernanceExec, // Governance execution event
+    // v2.5: Immortal Agent Swarm v1.0
+    SwarmOrchestrate, // Swarm orchestration event
+    SwarmFailover, // Swarm failover event
+    SwarmTelemetry, // Swarm telemetry event
+    SwarmReplication, // Swarm replication event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -282,7 +287,7 @@ pub const ProvenanceRecord = struct {
 // v1.2 QUARK TYPE — 16 sub-step micro-operations
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const QuarkType = enum(u6) {
+pub const QuarkType = enum(u7) {
     input_capture, // 0 — Capture raw user input
     goal_classify, // 1 — Classify intent type
     task_decompose, // 2 — Break into subtasks
@@ -355,6 +360,15 @@ pub const QuarkType = enum(u6) {
     community_onboard, // 61 — Community onboarding batch
     public_api, // 62 — Public API gateway record
     mainnet_anchor_v2, // 63 — Mainnet anchor v2 (final u6 slot)
+    // v2.5: Immortal Agent Swarm v1.0 — u7 Upgrade (128 capacity, 72/128 used)
+    swarm_orchestrate, // 64 — Swarm orchestration task distribution
+    swarm_consensus, // 65 — Swarm consensus protocol
+    swarm_replication, // 66 — Swarm state replication
+    swarm_failover, // 67 — Swarm failover trigger
+    swarm_discovery_v2, // 68 — Swarm node discovery v2
+    swarm_self_heal, // 69 — Swarm self-healing checkpoint
+    swarm_telemetry, // 70 — Swarm telemetry report
+    swarm_anchor, // 71 — Swarm anchor record
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -423,6 +437,15 @@ pub const QuarkType = enum(u6) {
             .community_onboard => "COMM_ONBD",
             .public_api => "PUB_API",
             .mainnet_anchor_v2 => "MAINNET_V2",
+            // v2.5: Immortal Agent Swarm v1.0
+            .swarm_orchestrate => "SWARM_ORCH",
+            .swarm_consensus => "SWARM_CONS",
+            .swarm_replication => "SWARM_REPL",
+            .swarm_failover => "SWARM_FAIL",
+            .swarm_discovery_v2 => "SWARM_DISC",
+            .swarm_self_heal => "SWARM_HEAL",
+            .swarm_telemetry => "SWARM_TELE",
+            .swarm_anchor => "SWARM_ANCH",
         };
     }
 
@@ -553,6 +576,23 @@ pub const QuarkType = enum(u6) {
 
     pub fn isPublicAPIQuark(self: QuarkType) bool {
         return self == .public_api;
+    }
+
+    // v2.5: Swarm classifiers
+    pub fn isSwarmOrchQuark(self: QuarkType) bool {
+        return self == .swarm_orchestrate or self == .swarm_anchor;
+    }
+
+    pub fn isSwarmConsensusQuark(self: QuarkType) bool {
+        return self == .swarm_consensus or self == .swarm_replication;
+    }
+
+    pub fn isSwarmFailoverQuark(self: QuarkType) bool {
+        return self == .swarm_failover or self == .swarm_self_heal;
+    }
+
+    pub fn isSwarmTelemetryQuark(self: QuarkType) bool {
+        return self == .swarm_discovery_v2 or self == .swarm_telemetry;
     }
 };
 
@@ -1117,6 +1157,13 @@ pub const PUBLIC_API_RATE_LIMIT: u32 = 1000;
 pub const MAINNET_LAUNCH_VERSION_MAJOR: u8 = 1;
 pub const MAINNET_LAUNCH_VERSION_MINOR: u8 = 0;
 
+// v2.5: Immortal Agent Swarm v1.0 constants
+pub const SWARM_V1_MAX_NODES: u16 = 2048;
+pub const SWARM_SYNC_BATCH: u16 = 64;
+pub const SWARM_FAILOVER_THRESHOLD: f32 = 0.3;
+pub const SWARM_TELEMETRY_INTERVAL_US: i64 = 1_000_000;
+pub const SWARM_REPLICATION_FACTOR: u8 = 3;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1150,15 +1197,48 @@ pub const NodeDiscoveryRecord = struct {
     is_active: bool = false,
 };
 
+// v2.5: Immortal Agent Swarm v1.0 types
+pub const SwarmOrchState = struct {
+    active_tasks: u16 = 0,
+    total_orchestrated: u32 = 0,
+    sync_batch: u16 = SWARM_SYNC_BATCH,
+    last_orch_us: i64 = 0,
+    orch_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const SwarmFailoverConfig = struct {
+    failover_threshold: f32 = SWARM_FAILOVER_THRESHOLD,
+    max_retries: u8 = 3,
+    failover_count: u32 = 0,
+    last_failover_us: i64 = 0,
+    is_failover_active: bool = false,
+};
+
+pub const SwarmTelemetryState = struct {
+    telemetry_interval_us: i64 = SWARM_TELEMETRY_INTERVAL_US,
+    reports_sent: u32 = 0,
+    avg_latency_us: u64 = 0,
+    p99_latency_us: u64 = 0,
+    last_report_us: i64 = 0,
+};
+
+pub const SwarmReplicationRecord = struct {
+    source_hash: [32]u8 = [_]u8{0} ** 32,
+    replica_count: u8 = 0,
+    replication_factor: u8 = SWARM_REPLICATION_FACTOR,
+    replicated_us: i64 = 0,
+    is_synced: bool = false,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.3/v1.4 EXPORT CONSTANTS — on-chain serialization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 8; // v2.4: bumped from 7
+pub const QUARK_EXPORT_VERSION: u16 = 9; // v2.5: bumped from 8
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 50; // v2.4: was 46, +4 for community_nodes(u16)+discovery_count(u16)
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 54; // v2.5: was 50, +4 for swarm_orch_tasks(u16)+swarm_replication_count(u16)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GOLDEN CHAIN AGENT — unified 8-node pipeline
@@ -1232,6 +1312,12 @@ pub const GoldenChainAgent = struct {
     launch_state: LaunchState,
     node_discovery_records: [MAX_NODE_DISCOVERY_RECORDS]NodeDiscoveryRecord,
     node_discovery_count: u16,
+    // v2.5: Immortal Agent Swarm v1.0
+    swarm_orch_state: SwarmOrchState,
+    swarm_failover_config: SwarmFailoverConfig,
+    swarm_telemetry_state: SwarmTelemetryState,
+    swarm_replication_records: [SWARM_REPLICATION_FACTOR]SwarmReplicationRecord,
+    swarm_replication_count: u8,
 
     const Self = @This();
 
@@ -1306,6 +1392,12 @@ pub const GoldenChainAgent = struct {
             .launch_state = .{},
             .node_discovery_records = undefined,
             .node_discovery_count = 0,
+            // v2.5: Swarm v1.0
+            .swarm_orch_state = .{},
+            .swarm_failover_config = .{},
+            .swarm_telemetry_state = .{},
+            .swarm_replication_records = undefined,
+            .swarm_replication_count = 0,
         };
     }
 
@@ -1588,7 +1680,7 @@ pub const GoldenChainAgent = struct {
         self.quark_chain_verified = self.verifyQuarkChain();
         if (self.quark_chain_verified) {
             var qvbuf: [128]u8 = undefined;
-            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/96 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet intact)", .{self.quark_count}) catch "Quarks VERIFIED";
+            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/104 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm intact)", .{self.quark_count}) catch "Quarks VERIFIED";
             self.emitMsg(.TruthVerification, .Deliver, null, qvmsg, 1.0, 0);
         } else {
             self.emitMsg(.TruthVerification, .Deliver, null, "Quark chain: BROKEN", 0.0, 0);
@@ -1927,6 +2019,49 @@ pub const GoldenChainAgent = struct {
                 self.dao_state.proposals_passed,
             }) catch "Governance exec";
             self.emitMsg(.GovernanceExec, .Deliver, null, gemsg, 1.0, 0);
+        }
+
+        // v2.5: Swarm orchestration event
+        {
+            var sobuf: [256]u8 = undefined;
+            const somsg = std.fmt.bufPrint(&sobuf, "SwarmOrchestrate: tasks={d} | total={d} | batch={d}", .{
+                self.swarm_orch_state.active_tasks,
+                self.swarm_orch_state.total_orchestrated,
+                self.swarm_orch_state.sync_batch,
+            }) catch "Swarm orchestrate";
+            self.emitMsg(.SwarmOrchestrate, .Deliver, null, somsg, 1.0, 0);
+        }
+
+        // v2.5: Swarm failover event
+        {
+            var sfbuf: [256]u8 = undefined;
+            const sfmsg = std.fmt.bufPrint(&sfbuf, "SwarmFailover: count={d} | active={} | threshold={d:.2}", .{
+                self.swarm_failover_config.failover_count,
+                self.swarm_failover_config.is_failover_active,
+                self.swarm_failover_config.failover_threshold,
+            }) catch "Swarm failover";
+            self.emitMsg(.SwarmFailover, .Deliver, null, sfmsg, 1.0, 0);
+        }
+
+        // v2.5: Swarm telemetry event
+        {
+            var stbuf: [256]u8 = undefined;
+            const stmsg = std.fmt.bufPrint(&stbuf, "SwarmTelemetry: reports={d} | avg_lat={d}us | p99={d}us", .{
+                self.swarm_telemetry_state.reports_sent,
+                self.swarm_telemetry_state.avg_latency_us,
+                self.swarm_telemetry_state.p99_latency_us,
+            }) catch "Swarm telemetry";
+            self.emitMsg(.SwarmTelemetry, .Deliver, null, stmsg, 1.0, 0);
+        }
+
+        // v2.5: Swarm replication event
+        {
+            var srbuf: [256]u8 = undefined;
+            const srmsg = std.fmt.bufPrint(&srbuf, "SwarmReplication: count={d} | factor={d}", .{
+                self.swarm_replication_count,
+                SWARM_REPLICATION_FACTOR,
+            }) catch "Swarm replication";
+            self.emitMsg(.SwarmReplication, .Deliver, null, srmsg, 1.0, 0);
         }
 
         // Update global wave state
@@ -2290,6 +2425,9 @@ pub const GoldenChainAgent = struct {
         // v2.4: Phase K — Mainnet launch integrity verification
         if (!self.mainnetVerify()) return false;
 
+        // v2.5: Phase L — Swarm activation integrity verification
+        if (!self.swarmVerify()) return false;
+
         return true;
     }
 
@@ -2404,6 +2542,14 @@ pub const GoldenChainAgent = struct {
         @memcpy(buf[pos .. pos + 2], &nd_bytes);
         pos += 2;
 
+        // v2.5: swarm_orch_tasks(2) + swarm_replication_count(2)
+        const sot_bytes: [2]u8 = @bitCast(self.swarm_orch_state.active_tasks);
+        @memcpy(buf[pos .. pos + 2], &sot_bytes);
+        pos += 2;
+        const src_bytes: [2]u8 = @bitCast(@as(u16, self.swarm_replication_count));
+        @memcpy(buf[pos .. pos + 2], &src_bytes);
+        pos += 2;
+
         // Provenance records (158 bytes each)
         var pi: u8 = 0;
         while (pi < self.provenance_count) : (pi += 1) {
@@ -2485,10 +2631,10 @@ pub const GoldenChainAgent = struct {
 
         // Read version (support v1, v2, v3, v4, v5, v6, v7)
         const ver: u16 = @bitCast(buf[pos .. pos + 2][0..2].*);
-        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8) return false;
+        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9) return false;
         pos += 2;
 
-        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else 50;
+        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else 54;
         if (buf.len < header_size) return false;
 
         const prov_count = buf[pos];
@@ -2567,6 +2713,16 @@ pub const GoldenChainAgent = struct {
             community_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
             discovery_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+        }
+
+        // v2.5: read swarm_orch_tasks + swarm_replication_count from v9 header
+        var swarm_orch_tasks_cnt: u16 = 0;
+        var swarm_repl_cnt: u16 = 0;
+        if (ver >= 9) {
+            swarm_orch_tasks_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+            swarm_repl_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
         }
 
@@ -2656,6 +2812,8 @@ pub const GoldenChainAgent = struct {
         self.swarm_state.active_nodes = swarm_nodes_cnt;
         self.community_state.active_nodes = community_nodes_cnt;
         self.node_discovery_count = discovery_cnt;
+        self.swarm_orch_state.active_tasks = swarm_orch_tasks_cnt;
+        self.swarm_replication_count = @intCast(swarm_repl_cnt);
 
         return true;
     }
@@ -3820,6 +3978,56 @@ pub const GoldenChainAgent = struct {
         return true;
     }
 
+    // v2.5: Immortal Agent Swarm v1.0 methods
+
+    /// Orchestrate swarm task distribution.
+    fn orchestrateSwarm(self: *Self) void {
+        self.swarm_orch_state.active_tasks += 1;
+        self.swarm_orch_state.total_orchestrated += 1;
+        self.swarm_orch_state.sync_batch = SWARM_SYNC_BATCH;
+        self.swarm_orch_state.last_orch_us = std.time.microTimestamp();
+        const hash_input = std.mem.asBytes(&self.swarm_orch_state.total_orchestrated);
+        self.swarm_orch_state.orch_hash = std.crypto.hash.sha2.Sha256.hash(hash_input, .{});
+    }
+
+    /// Trigger failover when node health below threshold.
+    fn swarmFailover(self: *Self) void {
+        self.swarm_failover_config.is_failover_active = true;
+        self.swarm_failover_config.failover_count += 1;
+        self.swarm_failover_config.last_failover_us = std.time.microTimestamp();
+    }
+
+    /// Send telemetry report.
+    fn sendTelemetry(self: *Self) void {
+        self.swarm_telemetry_state.reports_sent += 1;
+        self.swarm_telemetry_state.last_report_us = std.time.microTimestamp();
+    }
+
+    /// Replicate state to replica nodes.
+    fn replicateState(self: *Self, source_hash: [32]u8) void {
+        if (self.swarm_replication_count < SWARM_REPLICATION_FACTOR) {
+            self.swarm_replication_records[self.swarm_replication_count] = .{
+                .source_hash = source_hash,
+                .replica_count = self.swarm_replication_count + 1,
+                .replication_factor = SWARM_REPLICATION_FACTOR,
+                .replicated_us = std.time.microTimestamp(),
+                .is_synced = true,
+            };
+            self.swarm_replication_count += 1;
+        }
+    }
+
+    /// Phase L: Swarm activation integrity verification.
+    fn swarmVerify(self: *const Self) bool {
+        // L1: Swarm must have orchestrated at least once
+        if (self.swarm_orch_state.total_orchestrated == 0) return false;
+        // L2: Replication must be active
+        if (self.swarm_replication_count == 0) return false;
+        // L3: Telemetry must be running
+        if (self.swarm_telemetry_state.reports_sent == 0) return false;
+        return true;
+    }
+
     // ── v1.3: Node Quark Summary ──
 
     /// Emit a single summary line for a node's quarks (used in summary verbosity mode).
@@ -3888,7 +4096,10 @@ pub const GoldenChainAgent = struct {
         // Q9: community_genesis (v2.4)
         self.recordQuark(.community_genesis, .GoalParse, "community_genesis", conf, self.quark_count - 1, null);
 
-        // Q10: hash_verify — entangles with work quarks
+        // Q10: swarm_orchestrate (v2.5)
+        self.recordQuark(.swarm_orchestrate, .GoalParse, "swarm_orchestrate", conf, self.quark_count - 1, null);
+
+        // Q11: hash_verify — entangles with work quarks
         const prev_q = if (self.quark_count >= 2) self.quark_count - 2 else 0;
         self.recordQuark(.hash_verify, .GoalParse, "hash_verify", conf, prev_q, self.quark_count - 1);
 
@@ -3932,6 +4143,9 @@ pub const GoldenChainAgent = struct {
 
         // mainnet_launch (v2.4)
         self.recordQuark(.mainnet_launch, .Decompose, "mainnet_launch", conf, self.quark_count - 1, null);
+
+        // swarm_consensus (v2.5)
+        self.recordQuark(.swarm_consensus, .Decompose, "swarm_consensus", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -3977,6 +4191,9 @@ pub const GoldenChainAgent = struct {
 
         // live_governance (v2.4)
         self.recordQuark(.live_governance, .Schedule, "live_governance", conf, self.quark_count - 1, null);
+
+        // swarm_replication (v2.5)
+        self.recordQuark(.swarm_replication, .Schedule, "swarm_replication", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -4025,6 +4242,9 @@ pub const GoldenChainAgent = struct {
         // swarm_activate (v2.4)
         self.recordQuark(.swarm_activate, .Execute, "swarm_activate", conf, self.quark_count - 1, null);
 
+        // swarm_failover (v2.5)
+        self.recordQuark(.swarm_failover, .Execute, "swarm_failover", conf, self.quark_count - 1, null);
+
         // hash_verify — entangles with work quarks + SCHEDULE hash_verify
         const sched_hv = self.lastHashVerifyOfNode(.Schedule);
         self.recordQuark(.hash_verify, .Execute, "hash_verify", conf, self.quark_count - 1, sched_hv);
@@ -4068,6 +4288,9 @@ pub const GoldenChainAgent = struct {
         // node_discovery (v2.4)
         self.recordQuark(.node_discovery, .Monitor, "node_discovery", conf, self.quark_count - 1, null);
 
+        // swarm_discovery_v2 (v2.5)
+        self.recordQuark(.swarm_discovery_v2, .Monitor, "swarm_discovery_v2", conf, self.quark_count - 1, null);
+
         // hash_verify — entangles with work quarks + EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
         self.recordQuark(.hash_verify, .Monitor, "hash_verify", conf, self.quark_count - 1, exec_hv);
@@ -4107,6 +4330,9 @@ pub const GoldenChainAgent = struct {
 
         // community_onboard (v2.4)
         self.recordQuark(.community_onboard, .Adapt, "community_onboard", conf, self.quark_count - 1, null);
+
+        // swarm_self_heal (v2.5)
+        self.recordQuark(.swarm_self_heal, .Adapt, "swarm_self_heal", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quark + MONITOR hash_verify
         const mon_hv = self.lastHashVerifyOfNode(.Monitor);
@@ -4151,6 +4377,9 @@ pub const GoldenChainAgent = struct {
         // public_api (v2.4)
         self.recordQuark(.public_api, .Synthesize, "public_api", conf, self.quark_count - 1, null);
 
+        // swarm_telemetry (v2.5)
+        self.recordQuark(.swarm_telemetry, .Synthesize, "swarm_telemetry", conf, self.quark_count - 1, null);
+
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
         self.recordQuark(.hash_verify, .Synthesize, "hash_verify", conf, self.quark_count - 1, exec_hv);
@@ -4194,6 +4423,9 @@ pub const GoldenChainAgent = struct {
 
         // mainnet_anchor_v2 (v2.4)
         self.recordQuark(.mainnet_anchor_v2, .Deliver, "mainnet_anchor_v2", conf, self.quark_count - 1, null);
+
+        // swarm_anchor (v2.5)
+        self.recordQuark(.swarm_anchor, .Deliver, "swarm_anchor", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -5182,7 +5414,7 @@ test "v1.5 constants correct" {
 // v2.0 IMMORTAL SELF-VERIFYING AGENT TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "QuarkType has 64 variants (u6 FULL)" {
+test "QuarkType has 72 variants (u7, 72/128)" {
     const types = [_]QuarkType{
         .input_capture,         .goal_classify,      .task_decompose,       .dependency_check,
         .schedule_plan,         .route_decision,     .api_call,             .tvc_cross_check,
@@ -5201,10 +5433,12 @@ test "QuarkType has 64 variants (u6 FULL)" {
         .swarm_spawn,           .swarm_health,       .mainnet_genesis,      .governance_anchor,
         .community_genesis,     .mainnet_launch,     .live_governance,      .swarm_activate,
         .node_discovery,        .community_onboard,  .public_api,           .mainnet_anchor_v2,
+        .swarm_orchestrate,     .swarm_consensus,    .swarm_replication,    .swarm_failover,
+        .swarm_discovery_v2,    .swarm_self_heal,    .swarm_telemetry,      .swarm_anchor,
     };
-    try std.testing.expectEqual(@as(usize, 64), types.len);
-    for (0..64) |i| {
-        for (i + 1..64) |j| {
+    try std.testing.expectEqual(@as(usize, 72), types.len);
+    for (0..72) |i| {
+        for (i + 1..72) |j| {
             try std.testing.expect(@intFromEnum(types[i]) != @intFromEnum(types[j]));
         }
     }
@@ -5361,8 +5595,8 @@ test "v2.0 ChainMessageType has 4 new variants" {
     try std.testing.expect(repair != ChainMessageType.StakingEvent);
 }
 
-test "v2.4 QuarkType verification count" {
-    // 61 work quarks + 3 verification quarks = 64 total
+test "v2.5 QuarkType verification count" {
+    // 69 work quarks + 3 verification quarks = 72 total
     var work_count: u8 = 0;
     var verify_count: u8 = 0;
     inline for (std.meta.fields(QuarkType)) |f| {
@@ -5373,9 +5607,9 @@ test "v2.4 QuarkType verification count" {
             work_count += 1;
         }
     }
-    try std.testing.expectEqual(@as(u8, 64), work_count + verify_count);
+    try std.testing.expectEqual(@as(u8, 72), work_count + verify_count);
     try std.testing.expectEqual(@as(u8, 3), verify_count); // hash_verify, gluon_verify, phi_verify
-    try std.testing.expectEqual(@as(u8, 61), work_count);
+    try std.testing.expectEqual(@as(u8, 69), work_count);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -5538,13 +5772,13 @@ test "v2.1 export v5 constants" {
     try std.testing.expectEqual(@as(usize, 38), 34 + 2 + 2);
 }
 
-test "v2.4 96 quarks per query target" {
-    // Distribution: 12+12+12+13+12+11+12+12 = 96
-    const expected = [_]u8{ 12, 12, 12, 13, 12, 11, 12, 12 };
+test "v2.5 104 quarks per query target" {
+    // Distribution: 13+13+13+14+13+12+13+13 = 104
+    const expected = [_]u8{ 13, 13, 13, 14, 13, 12, 13, 13 };
     var total: u16 = 0;
     for (expected) |n| total += n;
-    try std.testing.expectEqual(@as(u16, 96), total);
-    try std.testing.expectEqual(@as(usize, 96), MAX_QUARK_RECORDS);
+    try std.testing.expectEqual(@as(u16, 104), total);
+    try std.testing.expectEqual(@as(usize, 104), MAX_QUARK_RECORDS);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -5628,22 +5862,22 @@ test "v2.2 ChainMessageType has 4 new variants" {
     }
 }
 
-test "v2.4 96 quarks target distribution" {
-    // 12+12+12+13+12+11+12+12 = 96
-    const dist = [_]u8{ 12, 12, 12, 13, 12, 11, 12, 12 };
+test "v2.5 104 quarks target distribution" {
+    // 13+13+13+14+13+12+13+13 = 104
+    const dist = [_]u8{ 13, 13, 13, 14, 13, 12, 13, 13 };
     var sum: u16 = 0;
     for (dist) |d| sum += d;
-    try std.testing.expectEqual(@as(u16, 96), sum);
-    // Each node got exactly +1 from v2.3 distribution (11+11+11+12+11+10+11+11=88)
-    const v23_dist = [_]u8{ 11, 11, 11, 12, 11, 10, 11, 11 };
-    for (dist, v23_dist) |d, v23| {
-        try std.testing.expectEqual(@as(u8, v23 + 1), d);
+    try std.testing.expectEqual(@as(u16, 104), sum);
+    // Each node got exactly +1 from v2.4 distribution (12+12+12+13+12+11+12+12=96)
+    const v24_dist = [_]u8{ 12, 12, 12, 13, 12, 11, 12, 12 };
+    for (dist, v24_dist) |d, v24| {
+        try std.testing.expectEqual(@as(u8, v24 + 1), d);
     }
 }
 
-test "Export v8 header 50 bytes" {
-    try std.testing.expectEqual(@as(usize, 50), QUARK_EXPORT_HEADER_SIZE);
-    try std.testing.expectEqual(@as(u16, 8), QUARK_EXPORT_VERSION);
+test "Export v9 header 54 bytes" {
+    try std.testing.expectEqual(@as(usize, 54), QUARK_EXPORT_HEADER_SIZE);
+    try std.testing.expectEqual(@as(u16, 9), QUARK_EXPORT_VERSION);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -5819,11 +6053,117 @@ test "v2.4 ChainMessageType has 4 new variants" {
     }
 }
 
-test "u6 capacity fully saturated" {
-    // 64 QuarkType variants = 2^6, all slots used
+test "u7 capacity with 72/128 used" {
+    // 72 QuarkType variants in u7 (128 capacity), 56 slots remaining
     var count: u8 = 0;
     inline for (std.meta.fields(QuarkType)) |_| {
         count += 1;
     }
-    try std.testing.expectEqual(@as(u8, 64), count);
+    try std.testing.expectEqual(@as(u8, 72), count);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.5 TESTS — Immortal Agent Swarm v1.0 + u7 Upgrade
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.5 swarm_orchestrate label" {
+    try std.testing.expectEqualStrings("SWARM_ORCH", QuarkType.swarm_orchestrate.getLabel());
+}
+
+test "v2.5 swarm_consensus label" {
+    try std.testing.expectEqualStrings("SWARM_CONS", QuarkType.swarm_consensus.getLabel());
+}
+
+test "v2.5 swarm_replication label" {
+    try std.testing.expectEqualStrings("SWARM_REPL", QuarkType.swarm_replication.getLabel());
+}
+
+test "v2.5 swarm_failover label" {
+    try std.testing.expectEqualStrings("SWARM_FAIL", QuarkType.swarm_failover.getLabel());
+}
+
+test "v2.5 swarm_discovery_v2 label" {
+    try std.testing.expectEqualStrings("SWARM_DISC", QuarkType.swarm_discovery_v2.getLabel());
+}
+
+test "v2.5 swarm_self_heal label" {
+    try std.testing.expectEqualStrings("SWARM_HEAL", QuarkType.swarm_self_heal.getLabel());
+}
+
+test "v2.5 swarm_telemetry label" {
+    try std.testing.expectEqualStrings("SWARM_TELE", QuarkType.swarm_telemetry.getLabel());
+}
+
+test "v2.5 swarm_anchor label" {
+    try std.testing.expectEqualStrings("SWARM_ANCH", QuarkType.swarm_anchor.getLabel());
+}
+
+test "v2.5 isSwarmOrchQuark classifier" {
+    try std.testing.expect(QuarkType.swarm_orchestrate.isSwarmOrchQuark());
+    try std.testing.expect(QuarkType.swarm_anchor.isSwarmOrchQuark());
+    try std.testing.expect(!QuarkType.swarm_consensus.isSwarmOrchQuark());
+}
+
+test "v2.5 isSwarmConsensusQuark classifier" {
+    try std.testing.expect(QuarkType.swarm_consensus.isSwarmConsensusQuark());
+    try std.testing.expect(QuarkType.swarm_replication.isSwarmConsensusQuark());
+    try std.testing.expect(!QuarkType.swarm_failover.isSwarmConsensusQuark());
+}
+
+test "v2.5 isSwarmFailoverQuark classifier" {
+    try std.testing.expect(QuarkType.swarm_failover.isSwarmFailoverQuark());
+    try std.testing.expect(QuarkType.swarm_self_heal.isSwarmFailoverQuark());
+    try std.testing.expect(!QuarkType.swarm_telemetry.isSwarmFailoverQuark());
+}
+
+test "v2.5 isSwarmTelemetryQuark classifier" {
+    try std.testing.expect(QuarkType.swarm_discovery_v2.isSwarmTelemetryQuark());
+    try std.testing.expect(QuarkType.swarm_telemetry.isSwarmTelemetryQuark());
+    try std.testing.expect(!QuarkType.swarm_anchor.isSwarmTelemetryQuark());
+}
+
+test "v2.5 SwarmOrchState defaults" {
+    const s = SwarmOrchState{};
+    try std.testing.expectEqual(@as(u16, 0), s.active_tasks);
+    try std.testing.expectEqual(@as(u32, 0), s.total_orchestrated);
+    try std.testing.expectEqual(SWARM_SYNC_BATCH, s.sync_batch);
+}
+
+test "v2.5 SwarmFailoverConfig defaults" {
+    const s = SwarmFailoverConfig{};
+    try std.testing.expectEqual(SWARM_FAILOVER_THRESHOLD, s.failover_threshold);
+    try std.testing.expectEqual(@as(u8, 3), s.max_retries);
+    try std.testing.expect(!s.is_failover_active);
+}
+
+test "v2.5 SwarmTelemetryState defaults" {
+    const s = SwarmTelemetryState{};
+    try std.testing.expectEqual(SWARM_TELEMETRY_INTERVAL_US, s.telemetry_interval_us);
+    try std.testing.expectEqual(@as(u32, 0), s.reports_sent);
+}
+
+test "v2.5 SwarmReplicationRecord defaults" {
+    const s = SwarmReplicationRecord{};
+    try std.testing.expectEqual(@as(u8, 0), s.replica_count);
+    try std.testing.expectEqual(SWARM_REPLICATION_FACTOR, s.replication_factor);
+    try std.testing.expect(!s.is_synced);
+}
+
+test "v2.5 swarm constants" {
+    try std.testing.expectEqual(@as(u16, 2048), SWARM_V1_MAX_NODES);
+    try std.testing.expectEqual(@as(u16, 64), SWARM_SYNC_BATCH);
+    try std.testing.expectEqual(@as(f32, 0.3), SWARM_FAILOVER_THRESHOLD);
+    try std.testing.expectEqual(@as(i64, 1_000_000), SWARM_TELEMETRY_INTERVAL_US);
+    try std.testing.expectEqual(@as(u8, 3), SWARM_REPLICATION_FACTOR);
+}
+
+test "v2.5 ChainMessageType swarm variants" {
+    // Verify the 4 new swarm message types exist
+    const types = [_]ChainMessageType{
+        .SwarmOrchestrate,
+        .SwarmFailover,
+        .SwarmTelemetry,
+        .SwarmReplication,
+    };
+    try std.testing.expectEqual(@as(usize, 4), types.len);
 }
