@@ -182,6 +182,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-chat-v2.3-report',
         'research/trinity-chat-v2.4-report',
         'research/trinity-hybrid-v2.0-report',
+        'research/trinity-hybrid-v2.1-report',
         // Fix & Infrastructure Reports
         'research/cycle-f16-fix-report',
         'research/gguf_logit_fix_report',
@@ -221,6 +222,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-storage-network-v2.0-report',
         'research/trinity-storage-network-v2.1-report',
         'research/trinity-storage-network-v2.2-report',
+        'research/trinity-storage-network-v2.3-report',
       ],
     },
     'faq',

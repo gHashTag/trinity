@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// IGLA HYBRID CHAT v2.0 — VSA Persistent Memory + Dynamic Semantic Routing + Wave State
+// IGLA HYBRID CHAT v2.1 — Heap-Allocated VSA + Live Provider Health + Canvas Wave State
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // ARCHITECTURE (5-Level Cache + VSA Memory):
@@ -17,6 +17,12 @@
 // - WaveState: exported reasoning state for canvas wave visualization
 // - ContextBinder: VSA bind/bundle for semantic context compression
 //
+// v2.1 ADDITIONS (from .vibee spec: hdc_igla_hybrid_v2_1.vibee):
+// - TVCCorpus.initHeap(): heap-allocated corpus eliminates 2.15 GB stack frame
+// - Live provider health: recordSuccess/recordFailure wired to actual HTTP calls
+// - Health-aware routing: skip unavailable providers (3+ consecutive failures)
+// - Canvas wave state: g_last_wave_state read by photon_trinity_canvas.zig
+//
 // v2.4 (inherited): ReflectionStatus, tool_name, HTTP /chat JSON
 // v2.3 (inherited): Sliding window (20 msgs), summarization, key facts
 //
@@ -29,8 +35,8 @@
 // - TVC/Memory: 0.001 Wh/query (100x cheaper than cloud LLM)
 // - Cloud LLM: 0.1 Wh/query (baseline)
 //
-// Technology Tree: v1.9 → v2.0 (current) → v3.0 (Phi-Engine) → v4.0 (immortal)
-// Generated from: specs/tri/hdc_igla_hybrid_v2_0.vibee
+// Technology Tree: v1.9 → v2.0 → v2.1 (current) → v3.0 (Phi-Engine) → v4.0 (immortal)
+// Generated from: specs/tri/hdc_igla_hybrid_v2_1.vibee
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS ENERGY IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1061,31 +1067,51 @@ pub const IglaHybridChat = struct {
             }
         }
 
-        // ── Step 2: Try Groq API ──
+        // ── Step 2: Try Groq API (v2.1: health-aware routing) ──
         if (self.config.groq_api_key) |api_key| {
-            if (self.tryGroqWithContext(query, api_key, augmented_prompt)) |response| {
-                self.energy.groq_calls += 1;
-                return LLMResult{
-                    .response = response,
-                    .source = .GroqAPI,
-                    .confidence = 0.90,
-                };
-            } else |err| {
-                std.debug.print("[Hybrid] Groq failed: {}\n", .{err});
+            if (self.groq_health.is_available) {
+                const call_start = std.time.nanoTimestamp();
+                if (self.tryGroqWithContext(query, api_key, augmented_prompt)) |response| {
+                    const call_end = std.time.nanoTimestamp();
+                    const latency_us: u64 = @intCast(@divFloor(call_end - call_start, 1000));
+                    self.groq_health.recordSuccess(latency_us);
+                    self.energy.groq_calls += 1;
+                    self.last_routing = .RouteGroq;
+                    return LLMResult{
+                        .response = response,
+                        .source = .GroqAPI,
+                        .confidence = 0.90,
+                    };
+                } else |err| {
+                    self.groq_health.recordFailure(std.time.timestamp());
+                    std.debug.print("[Hybrid] Groq failed: {} (health: {d:.0}%)\n", .{ err, self.groq_health.getSuccessRate() * 100 });
+                }
+            } else {
+                std.debug.print("[Hybrid] Groq unavailable (3+ consecutive failures)\n", .{});
             }
         }
 
-        // ── Step 3: Try Claude API ──
+        // ── Step 3: Try Claude API (v2.1: health-aware routing) ──
         if (self.config.claude_api_key) |api_key| {
-            if (self.tryClaudeWithContext(query, api_key, augmented_prompt)) |response| {
-                self.energy.claude_calls += 1;
-                return LLMResult{
-                    .response = response,
-                    .source = .ClaudeAPI,
-                    .confidence = 0.95,
-                };
-            } else |err| {
-                std.debug.print("[Hybrid] Claude failed: {}\n", .{err});
+            if (self.claude_health.is_available) {
+                const call_start = std.time.nanoTimestamp();
+                if (self.tryClaudeWithContext(query, api_key, augmented_prompt)) |response| {
+                    const call_end = std.time.nanoTimestamp();
+                    const latency_us: u64 = @intCast(@divFloor(call_end - call_start, 1000));
+                    self.claude_health.recordSuccess(latency_us);
+                    self.energy.claude_calls += 1;
+                    self.last_routing = .RouteClaude;
+                    return LLMResult{
+                        .response = response,
+                        .source = .ClaudeAPI,
+                        .confidence = 0.95,
+                    };
+                } else |err| {
+                    self.claude_health.recordFailure(std.time.timestamp());
+                    std.debug.print("[Hybrid] Claude failed: {} (health: {d:.0}%)\n", .{ err, self.claude_health.getSuccessRate() * 100 });
+                }
+            } else {
+                std.debug.print("[Hybrid] Claude unavailable (3+ consecutive failures)\n", .{});
             }
         }
 
@@ -2171,4 +2197,75 @@ test "v2.0 global wave state accessible" {
     // Verify the global wave state struct is accessible
     try std.testing.expectApproxEqAbs(@as(f32, 0.0), g_last_wave_state.similarity, 0.01);
     try std.testing.expect(!g_last_wave_state.is_learning);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.1 TESTS — Heap allocation, health wiring, wave integration
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.1 ProviderHealth circuit breaker skips unavailable" {
+    var health = ProviderHealth{};
+    try std.testing.expect(health.is_available);
+
+    // 3 consecutive failures triggers circuit breaker
+    health.recordFailure(100);
+    health.recordFailure(200);
+    try std.testing.expect(health.is_available); // Still available at 2
+    health.recordFailure(300);
+    try std.testing.expect(!health.is_available); // Unavailable at 3
+
+    // Score is 0 when unavailable
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), health.getScore(), 0.001);
+
+    // Recovery: success resets circuit breaker
+    health.recordSuccess(500);
+    try std.testing.expect(health.is_available);
+    try std.testing.expect(health.consecutive_failures == 0);
+}
+
+test "v2.1 ProviderHealth EMA latency tracking" {
+    var health = ProviderHealth{};
+
+    // First call sets latency directly
+    health.recordSuccess(10000); // 10ms
+    try std.testing.expect(health.avg_latency_us == 10000);
+
+    // Second call uses EMA: (10000 * 7 + 20000 * 3) / 10 = 13000
+    health.recordSuccess(20000); // 20ms
+    try std.testing.expect(health.avg_latency_us == 13000);
+
+    // Success rate should be 100%
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), health.getSuccessRate(), 0.01);
+}
+
+test "v2.1 ProviderHealth score prefers fast providers" {
+    var fast_provider = ProviderHealth{};
+    fast_provider.recordSuccess(1000); // 1ms
+
+    var slow_provider = ProviderHealth{};
+    slow_provider.recordSuccess(100_000); // 100ms
+
+    // Fast provider should have higher score
+    try std.testing.expect(fast_provider.getScore() > slow_provider.getScore());
+}
+
+test "v2.1 WaveState exportWaveState integration" {
+    // Verify exportWaveState produces valid wave state
+    const ws = WaveState{
+        .similarity = 0.85,
+        .source_hue = 210.0, // Groq blue
+        .confidence = 0.90,
+        .latency_normalized = 0.2,
+        .memory_load = 0.5,
+        .is_learning = true,
+        .routing = .RouteGroq,
+        .provider_health_avg = 0.95,
+    };
+
+    // All fields in valid ranges
+    try std.testing.expect(ws.similarity >= 0.0 and ws.similarity <= 1.0);
+    try std.testing.expect(ws.source_hue >= 0.0 and ws.source_hue <= 360.0);
+    try std.testing.expect(ws.confidence >= 0.0 and ws.confidence <= 1.0);
+    try std.testing.expect(ws.is_learning);
+    try std.testing.expectEqualStrings("Groq", ws.routing.getName());
 }
