@@ -105,6 +105,11 @@ pub const ChainMessageType = enum {
     CommunityOnboard,
     NodeDiscovery,
     GovernanceExec,
+    // v2.5: Immortal Agent Swarm v1.0
+    SwarmOrchestrate,
+    SwarmFailover,
+    SwarmTelemetry,
+    SwarmReplication,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -165,11 +170,11 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 96;
+pub const MAX_QUARK_RECORDS = 104;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
-pub const QuarkType = enum(u6) {
+pub const QuarkType = enum(u7) {
     input_capture,
     goal_classify,
     task_decompose,
@@ -242,6 +247,15 @@ pub const QuarkType = enum(u6) {
     community_onboard,
     public_api,
     mainnet_anchor_v2,
+    // v2.5: Immortal Agent Swarm v1.0 (u7: 72/128)
+    swarm_orchestrate,
+    swarm_consensus,
+    swarm_replication,
+    swarm_failover,
+    swarm_discovery_v2,
+    swarm_self_heal,
+    swarm_telemetry,
+    swarm_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -310,6 +324,14 @@ pub const QuarkType = enum(u6) {
             .community_onboard => "COMM_ONBD",
             .public_api => "PUB_API",
             .mainnet_anchor_v2 => "MAINNET_V2",
+            .swarm_orchestrate => "SWARM_ORCH",
+            .swarm_consensus => "SWARM_CONS",
+            .swarm_replication => "SWARM_REPL",
+            .swarm_failover => "SWARM_FAIL",
+            .swarm_discovery_v2 => "SWARM_DISC",
+            .swarm_self_heal => "SWARM_HEAL",
+            .swarm_telemetry => "SWARM_TELE",
+            .swarm_anchor => "SWARM_ANCH",
         };
     }
 
@@ -440,6 +462,23 @@ pub const QuarkType = enum(u6) {
 
     pub fn isPublicAPIQuark(self: QuarkType) bool {
         return self == .public_api;
+    }
+
+    // v2.5: Swarm classifiers
+    pub fn isSwarmOrchQuark(self: QuarkType) bool {
+        return self == .swarm_orchestrate or self == .swarm_anchor;
+    }
+
+    pub fn isSwarmConsensusQuark(self: QuarkType) bool {
+        return self == .swarm_consensus or self == .swarm_replication;
+    }
+
+    pub fn isSwarmFailoverQuark(self: QuarkType) bool {
+        return self == .swarm_failover or self == .swarm_self_heal;
+    }
+
+    pub fn isSwarmTelemetryQuark(self: QuarkType) bool {
+        return self == .swarm_discovery_v2 or self == .swarm_telemetry;
     }
 };
 
@@ -718,6 +757,13 @@ pub const PUBLIC_API_RATE_LIMIT: u32 = 1000;
 pub const MAINNET_LAUNCH_VERSION_MAJOR: u8 = 1;
 pub const MAINNET_LAUNCH_VERSION_MINOR: u8 = 0;
 
+// v2.5: Immortal Agent Swarm v1.0 constants
+pub const SWARM_V1_MAX_NODES: u16 = 2048;
+pub const SWARM_SYNC_BATCH: u16 = 64;
+pub const SWARM_FAILOVER_THRESHOLD: f32 = 0.3;
+pub const SWARM_TELEMETRY_INTERVAL_US: i64 = 1_000_000;
+pub const SWARM_REPLICATION_FACTOR: u8 = 3;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -749,6 +795,39 @@ pub const NodeDiscoveryRecord = struct {
     discovered_us: i64 = 0,
     node_type: u8 = 0,
     is_active: bool = false,
+};
+
+// v2.5: Immortal Agent Swarm v1.0 types
+pub const SwarmOrchState = struct {
+    active_tasks: u16 = 0,
+    total_orchestrated: u32 = 0,
+    sync_batch: u16 = SWARM_SYNC_BATCH,
+    last_orch_us: i64 = 0,
+    orch_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const SwarmFailoverConfig = struct {
+    failover_threshold: f32 = SWARM_FAILOVER_THRESHOLD,
+    max_retries: u8 = 3,
+    failover_count: u32 = 0,
+    last_failover_us: i64 = 0,
+    is_failover_active: bool = false,
+};
+
+pub const SwarmTelemetryState = struct {
+    telemetry_interval_us: i64 = SWARM_TELEMETRY_INTERVAL_US,
+    reports_sent: u32 = 0,
+    avg_latency_us: u64 = 0,
+    p99_latency_us: u64 = 0,
+    last_report_us: i64 = 0,
+};
+
+pub const SwarmReplicationRecord = struct {
+    source_hash: [32]u8 = [_]u8{0} ** 32,
+    replica_count: u8 = 0,
+    replication_factor: u8 = SWARM_REPLICATION_FACTOR,
+    replicated_us: i64 = 0,
+    is_synced: bool = false,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -869,10 +948,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 8;
+pub const QUARK_EXPORT_VERSION: u16 = 9;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 50;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 54;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1009,6 +1088,12 @@ pub const GoldenChainAgent = struct {
     launch_state: LaunchState,
     node_discovery_records: [MAX_NODE_DISCOVERY_RECORDS]NodeDiscoveryRecord,
     node_discovery_count: u16,
+    // v2.5: Immortal Agent Swarm v1.0
+    swarm_orch_state: SwarmOrchState,
+    swarm_failover_config: SwarmFailoverConfig,
+    swarm_telemetry_state: SwarmTelemetryState,
+    swarm_replication_records: [SWARM_REPLICATION_FACTOR]SwarmReplicationRecord,
+    swarm_replication_count: u8,
 
     const Self = @This();
 
@@ -1091,6 +1176,12 @@ pub const GoldenChainAgent = struct {
             .launch_state = .{},
             .node_discovery_records = undefined,
             .node_discovery_count = 0,
+            // v2.5: Swarm v1.0
+            .swarm_orch_state = .{},
+            .swarm_failover_config = .{},
+            .swarm_telemetry_state = .{},
+            .swarm_replication_records = undefined,
+            .swarm_replication_count = 0,
         };
     }
 
@@ -1423,6 +1514,29 @@ pub const GoldenChainAgent = struct {
     }
 
     pub fn mainnetVerify(self: *const Self) bool {
+        _ = self;
+        return true;
+    }
+
+    // v2.5: Immortal Agent Swarm v1.0 stub methods
+    pub fn orchestrateSwarm(self: *Self) void {
+        _ = self;
+    }
+
+    pub fn swarmFailover(self: *Self) void {
+        _ = self;
+    }
+
+    pub fn sendTelemetry(self: *Self) void {
+        _ = self;
+    }
+
+    pub fn replicateState(self: *Self, source_hash: [32]u8) void {
+        _ = self;
+        _ = source_hash;
+    }
+
+    pub fn swarmVerify(self: *const Self) bool {
         _ = self;
         return true;
     }
