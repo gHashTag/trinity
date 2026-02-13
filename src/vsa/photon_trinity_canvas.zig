@@ -125,6 +125,11 @@ const ChatMsgType = enum {
     swarm_failover, // Swarm failover (red-orange)
     swarm_telemetry, // Swarm telemetry (teal)
     swarm_replication, // Swarm replication (sky blue)
+    // v2.6: Swarm Scaling + Live Rewards + DAO Governance
+    swarm_scale, // Swarm scale (gold)
+    reward_distribute, // Reward distribution (amber)
+    dao_governance_live, // DAO governance live (royal blue)
+    node_scaling, // Node scaling (spring green)
 };
 var g_chat_messages: [MAX_CHAT_MSGS][512]u8 = undefined; // v3.0: 512 bytes per msg
 var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
@@ -333,6 +338,10 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
         .swarm_failover => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = alpha }, // Red-orange
         .swarm_telemetry => .{ .r = 0x00, .g = 0x80, .b = 0x80, .a = alpha }, // Teal
         .swarm_replication => .{ .r = 0x87, .g = 0xCE, .b = 0xEB, .a = alpha }, // Sky blue
+        .swarm_scale => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha }, // Gold
+        .reward_distribute => .{ .r = 0xFF, .g = 0xBF, .b = 0x00, .a = alpha }, // Amber
+        .dao_governance_live => .{ .r = 0x41, .g = 0x69, .b = 0xE1, .a = alpha }, // Royal blue
+        .node_scaling => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = alpha }, // Spring green
         .user => .{ .r = 0x70, .g = 0x70, .b = 0x90, .a = alpha },
         .ai => .{ .r = 0x30, .g = 0x80, .b = 0x50, .a = alpha },
         .log => .{ .r = 0x60, .g = 0x60, .b = 0x60, .a = alpha },
@@ -386,6 +395,10 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         .swarm_failover => "SWARM_FAIL",
         .swarm_telemetry => "SWARM_TELE",
         .swarm_replication => "SWARM_REPL",
+        .swarm_scale => "SWARM_SCALE",
+        .reward_distribute => "REWARD_DIST",
+        .dao_governance_live => "DAO_GOV_LV",
+        .node_scaling => "NODE_SCALE",
         .user => "YOU",
         .ai => "AI",
         .log => "LOG",
@@ -394,7 +407,7 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
 
 fn isChainType(msg_type: ChatMsgType) bool {
     return switch (msg_type) {
-        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication => true,
+        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling => true,
         else => false,
     };
 }
@@ -451,6 +464,10 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         .SwarmFailover => .swarm_failover,
         .SwarmTelemetry => .swarm_telemetry,
         .SwarmReplication => .swarm_replication,
+        .SwarmScale => .swarm_scale,
+        .RewardDistribute => .reward_distribute,
+        .DAOGovernanceLive => .dao_governance_live,
+        .NodeScaling => .node_scaling,
     };
 }
 
