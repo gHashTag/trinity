@@ -174,6 +174,26 @@ pub const TVCCorpus = struct {
         return corpus;
     }
 
+    /// Heap-allocate and initialize (v2.1: eliminates 2.15 GB stack frame)
+    /// Returns a pointer to heap-allocated TVCCorpus. Caller must call deinitHeap().
+    pub fn initHeap(allocator: std.mem.Allocator) !*Self {
+        const corpus = try allocator.create(Self);
+        corpus.initInPlace();
+        return corpus;
+    }
+
+    /// Heap-allocate with specific node ID (v2.1)
+    pub fn initHeapWithNodeId(allocator: std.mem.Allocator, node_id: [16]u8) !*Self {
+        const corpus = try initHeap(allocator);
+        corpus.node_id = node_id;
+        return corpus;
+    }
+
+    /// Free heap-allocated corpus (v2.1)
+    pub fn deinitHeap(self: *Self, allocator: std.mem.Allocator) void {
+        allocator.destroy(self);
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     // CORE OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════

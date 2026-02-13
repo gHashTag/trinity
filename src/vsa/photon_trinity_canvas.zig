@@ -5336,12 +5336,36 @@ pub fn main() !void {
             const label_w = rl.MeasureTextEx(chat_font, label, 18 * fs, 1.0).x;
             rl.DrawTextEx(chat_font, label, .{ .x = (sw - label_w) / 2, .y = 12 }, 18 * fs, 1.0, mode_color);
 
-            // Subtle wave border ring (mode-colored)
+            // Subtle wave border ring — v2.1: modulated by g_last_wave_state
             const ring_r = @min(sw, sh) * 0.48;
             const ring_cx = sw / 2;
             const ring_cy = sh / 2;
             const ring_alpha: u8 = @intFromFloat(@max(0, @min(60, @as(f32, @floatFromInt(alpha_u8)) * 0.25)));
-            rl.DrawCircleLines(@intFromFloat(ring_cx), @intFromFloat(ring_cy), ring_r + @sin(time * 2.0) * 3, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ring_alpha });
+
+            // v2.1: Read wave state from hybrid chat engine
+            const ws = igla_hybrid_chat.g_last_wave_state;
+            const ws_hue = if (ws.source_hue > 0.01) ws.source_hue else mode_hue;
+            const ws_rgb = hsvToRgb(ws_hue, 0.7, @max(0.5, ws.provider_health_avg));
+            const ws_pulse = ws.confidence * 0.5 + ws.similarity * 0.5;
+            const ring_color = if (ws.source_hue > 0.01)
+                rl.Color{ .r = ws_rgb[0], .g = ws_rgb[1], .b = ws_rgb[2], .a = ring_alpha }
+            else
+                rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ring_alpha };
+
+            rl.DrawCircleLines(@intFromFloat(ring_cx), @intFromFloat(ring_cy), ring_r + @sin(time * 2.0) * (3 + ws_pulse * 5), ring_color);
+
+            // v2.1: Memory load indicator — inner ring thickness
+            if (ws.memory_load > 0.01) {
+                const mem_r = ring_r * (0.9 + ws.memory_load * 0.08);
+                const mem_alpha: u8 = @intFromFloat(@max(0, @min(40, ws.memory_load * 60)));
+                rl.DrawCircleLines(@intFromFloat(ring_cx), @intFromFloat(ring_cy), mem_r, rl.Color{ .r = 100, .g = 200, .b = 100, .a = mem_alpha });
+            }
+
+            // v2.1: Learning glow — green pulse when saving to TVC
+            if (ws.is_learning) {
+                const learn_alpha: u8 = @intFromFloat(@max(0, @min(80, @sin(time * 6.0) * 40 + 40)));
+                rl.DrawCircleLines(@intFromFloat(ring_cx), @intFromFloat(ring_cy), ring_r * 0.95 + @sin(time * 4.0) * 2, rl.Color{ .r = 0, .g = 255, .b = 100, .a = learn_alpha });
+            }
 
             // === CHAT WAVE FIELD ===
             if (g_wave_mode == .chat) {
