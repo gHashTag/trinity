@@ -1,5 +1,5 @@
 // =============================================================================
-// TRINITY CANVAS v2.0 - LIVE DATA WAVE INTERFACE
+// TRINITY CANVAS v2.1 - MIRROR OF THREE WORLDS
 // No side panels — everything inside canvas as wave patterns
 // Shift+1 Chat | Shift+2 Code | Shift+3 Tools | Shift+4 Settings | Shift+5 Vision | Shift+6 Voice
 // ESC = return to idle (27 petals logo)
@@ -78,6 +78,7 @@ const WaveMode = enum {
     voice, // Fullscreen voice wave field
     finder, // Fullscreen finder wave field
     docs, // Fullscreen docs wave field
+    mirror, // v2.1: Mirror of Three Worlds dashboard
 
     pub fn getLabel(self: WaveMode) [*:0]const u8 {
         return switch (self) {
@@ -90,6 +91,7 @@ const WaveMode = enum {
             .voice => "VOICE",
             .finder => "FINDER",
             .docs => "DOCS",
+            .mirror => "MIRROR",
         };
     }
 
@@ -104,6 +106,7 @@ const WaveMode = enum {
             .voice => 330.0, // Pink
             .finder => 60.0, // Yellow
             .docs => 120.0, // Green-light
+            .mirror => 45.0, // Gold (Trinity)
         };
     }
 };
@@ -118,6 +121,35 @@ var g_finder_is_dir: [FINDER_MAX_ENTRIES]bool = [_]bool{false} ** FINDER_MAX_ENT
 var g_finder_count: usize = 0;
 var g_finder_last_scan: i64 = 0; // timestamp of last scan
 var g_finder_scanned: bool = false;
+
+// v2.1: Mirror live log buffer
+const LIVE_LOG_MAX: usize = 16;
+var g_live_log_text: [LIVE_LOG_MAX][96:0]u8 = undefined;
+var g_live_log_lens: [LIVE_LOG_MAX]usize = [_]usize{0} ** LIVE_LOG_MAX;
+var g_live_log_hues: [LIVE_LOG_MAX]f32 = [_]f32{0} ** LIVE_LOG_MAX;
+var g_live_log_count: usize = 0;
+var g_last_reflection_name: [32:0]u8 = undefined;
+var g_last_reflection_len: usize = 0;
+
+// v2.1: Add entry to live log buffer (ring buffer)
+fn addLiveLog(text: []const u8, source_hue: f32) void {
+    if (g_live_log_count >= LIVE_LOG_MAX) {
+        // Shift entries up (drop oldest)
+        for (0..LIVE_LOG_MAX - 1) |i| {
+            @memcpy(&g_live_log_text[i], &g_live_log_text[i + 1]);
+            g_live_log_lens[i] = g_live_log_lens[i + 1];
+            g_live_log_hues[i] = g_live_log_hues[i + 1];
+        }
+        g_live_log_count = LIVE_LOG_MAX - 1;
+    }
+    const idx = g_live_log_count;
+    const copy_len = @min(text.len, 95);
+    @memcpy(g_live_log_text[idx][0..copy_len], text[0..copy_len]);
+    g_live_log_text[idx][copy_len] = 0;
+    g_live_log_lens[idx] = copy_len;
+    g_live_log_hues[idx] = source_hue;
+    g_live_log_count += 1;
+}
 
 // v2.0: Scan current working directory for finder mode
 fn scanDirectory() void {
@@ -4865,7 +4897,8 @@ pub fn main() !void {
                 if (rl.IsKeyPressed(rl.KEY_SIX)) new_mode = .voice;
                 if (rl.IsKeyPressed(rl.KEY_SEVEN)) new_mode = .finder;
                 if (rl.IsKeyPressed(rl.KEY_EIGHT)) new_mode = .docs;
-                if (rl.IsKeyPressed(rl.KEY_NINE)) new_mode = .idle;
+                if (rl.IsKeyPressed(rl.KEY_NINE)) new_mode = .mirror;
+                if (rl.IsKeyPressed(rl.KEY_ZERO)) new_mode = .idle;
 
                 if (new_mode) |nm| {
                     if (nm != g_wave_mode) {
@@ -5118,6 +5151,17 @@ pub fn main() !void {
                             hr.confidence * 100,
                             hr.latency_us,
                         });
+
+                        // v2.1: Feed live log + store reflection
+                        {
+                            var ll_buf: [96]u8 = undefined;
+                            const ll_text = std.fmt.bufPrint(&ll_buf, "{s}|{s}|{d:.0}%", .{ source_name, reflection_name, hr.confidence * 100 }) catch "";
+                            addLiveLog(ll_text, igla_hybrid_chat.g_last_wave_state.source_hue);
+                            const rn_len = @min(reflection_name.len, 31);
+                            @memcpy(g_last_reflection_name[0..rn_len], reflection_name[0..rn_len]);
+                            g_last_reflection_name[rn_len] = 0;
+                            g_last_reflection_len = rn_len;
+                        }
 
                         // Nova on LEARNED, Sink on Filtered
                         if (hr.reflection.wasLearned()) {
@@ -6060,6 +6104,298 @@ pub fn main() !void {
 
                 // Center line
                 rl.DrawLine(0, @intFromFloat(center_y), @intFromFloat(sw), @intFromFloat(center_y), rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(30, @as(f32, @floatFromInt(alpha_u8)) * 0.12)))) });
+            }
+
+            // === v2.1: MIRROR OF THREE WORLDS ===
+            if (g_wave_mode == .mirror) {
+                const col_w = sw / 3.0;
+                const log_h: f32 = 130 * fs;
+                const content_h = sh - log_h;
+                const line_h: f32 = 20 * fs;
+                const title_sz: f32 = 20 * fs;
+                const label_sz: f32 = 13 * fs;
+                const val_sz: f32 = 14 * fs;
+
+                // Realm colors
+                const razum_color = rl.Color{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha_u8 };
+                const materiya_color = rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = alpha_u8 };
+                const dukh_color = rl.Color{ .r = 0xBD, .g = 0x93, .b = 0xF9, .a = alpha_u8 };
+                const dim_text = withAlpha(MUTED_GRAY, alpha_u8);
+                const bright_text = withAlpha(rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 }, alpha_u8);
+
+                const mws = igla_hybrid_chat.g_last_wave_state;
+
+                // Column separator lines
+                rl.DrawLine(@intFromFloat(col_w), 0, @intFromFloat(col_w), @intFromFloat(content_h), rl.Color{ .r = 80, .g = 80, .b = 100, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3)) });
+                rl.DrawLine(@intFromFloat(col_w * 2), 0, @intFromFloat(col_w * 2), @intFromFloat(content_h), rl.Color{ .r = 80, .g = 80, .b = 100, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3)) });
+                // Log separator
+                rl.DrawLine(0, @intFromFloat(content_h), @intFromFloat(sw), @intFromFloat(content_h), rl.Color{ .r = 80, .g = 80, .b = 100, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.5)) });
+
+                // ── RAZUM COLUMN (left) ──
+                {
+                    const x: f32 = 20 * fs;
+                    var y: f32 = 25 * fs;
+                    rl.DrawTextEx(chat_font, "RAZUM", .{ .x = x, .y = y }, title_sz, 0.5, razum_color);
+                    y += title_sz + 4;
+                    rl.DrawTextEx(chat_font, "Mind / AI / Chat", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    y += line_h + 8;
+
+                    // Routing
+                    rl.DrawTextEx(chat_font, "Routing:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var r_buf: [32:0]u8 = undefined;
+                    const r_name = @tagName(mws.routing);
+                    _ = std.fmt.bufPrint(&r_buf, "{s}", .{r_name}) catch {};
+                    r_buf[@min(31, std.mem.indexOfScalar(u8, &r_buf, 0) orelse 31)] = 0;
+                    rl.DrawTextEx(chat_font, &r_buf, .{ .x = x + 80 * fs, .y = y }, val_sz, 0.5, razum_color);
+                    y += line_h;
+
+                    // Confidence
+                    rl.DrawTextEx(chat_font, "Confidence:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var c_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&c_buf, "{d:.0}%", .{mws.confidence * 100}) catch {};
+                    c_buf[@min(15, std.mem.indexOfScalar(u8, &c_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &c_buf, .{ .x = x + 100 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    // Confidence bar
+                    const bar_w_max = col_w - 50 * fs;
+                    const bar_y = y + line_h;
+                    rl.DrawRectangle(@intFromFloat(x), @intFromFloat(bar_y), @intFromFloat(bar_w_max), 4, rl.Color{ .r = 40, .g = 40, .b = 50, .a = alpha_u8 });
+                    rl.DrawRectangle(@intFromFloat(x), @intFromFloat(bar_y), @intFromFloat(bar_w_max * mws.confidence), 4, razum_color);
+                    y += line_h + 10;
+
+                    // Total queries
+                    rl.DrawTextEx(chat_font, "Queries:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var q_buf: [16:0]u8 = undefined;
+                    const qc = if (g_hybrid_engine != null) g_hybrid_engine.?.total_queries else 0;
+                    _ = std.fmt.bufPrint(&q_buf, "{d}", .{qc}) catch {};
+                    q_buf[@min(15, std.mem.indexOfScalar(u8, &q_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &q_buf, .{ .x = x + 80 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    y += line_h;
+
+                    // Groq health
+                    rl.DrawTextEx(chat_font, "Groq:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    if (g_hybrid_engine != null) {
+                        var gh_buf: [16:0]u8 = undefined;
+                        _ = std.fmt.bufPrint(&gh_buf, "{d:.0}%", .{g_hybrid_engine.?.groq_health.getSuccessRate() * 100}) catch {};
+                        gh_buf[@min(15, std.mem.indexOfScalar(u8, &gh_buf, 0) orelse 15)] = 0;
+                        rl.DrawTextEx(chat_font, &gh_buf, .{ .x = x + 55 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    } else {
+                        rl.DrawTextEx(chat_font, "N/A", .{ .x = x + 55 * fs, .y = y }, val_sz, 0.5, dim_text);
+                    }
+                    y += line_h;
+
+                    // Claude health
+                    rl.DrawTextEx(chat_font, "Claude:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    if (g_hybrid_engine != null) {
+                        var ch_buf: [16:0]u8 = undefined;
+                        _ = std.fmt.bufPrint(&ch_buf, "{d:.0}%", .{g_hybrid_engine.?.claude_health.getSuccessRate() * 100}) catch {};
+                        ch_buf[@min(15, std.mem.indexOfScalar(u8, &ch_buf, 0) orelse 15)] = 0;
+                        rl.DrawTextEx(chat_font, &ch_buf, .{ .x = x + 65 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    } else {
+                        rl.DrawTextEx(chat_font, "N/A", .{ .x = x + 65 * fs, .y = y }, val_sz, 0.5, dim_text);
+                    }
+                    y += line_h;
+
+                    // Last response (truncated)
+                    rl.DrawTextEx(chat_font, "Last:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    y += line_h;
+                    if (g_chat_msg_count > 0) {
+                        const last_idx = g_chat_msg_count - 1;
+                        if (g_chat_msg_types[last_idx] == .ai) {
+                            const trunc_len = @min(g_chat_msg_lens[last_idx], 60);
+                            var last_buf: [64:0]u8 = undefined;
+                            @memcpy(last_buf[0..trunc_len], g_chat_messages[last_idx][0..trunc_len]);
+                            last_buf[trunc_len] = 0;
+                            rl.DrawTextEx(chat_font, &last_buf, .{ .x = x, .y = y }, label_sz, 0.5, withAlpha(rl.Color{ .r = 180, .g = 200, .b = 180, .a = 255 }, alpha_u8));
+                        }
+                    }
+
+                    // Realm glow: left edge
+                    for (0..3) |gi| {
+                        const glx: f32 = @as(f32, @floatFromInt(gi)) * 1.0;
+                        const ga: u8 = @intFromFloat(@max(0, @min(40, @as(f32, @floatFromInt(alpha_u8)) * (0.15 - @as(f32, @floatFromInt(gi)) * 0.04))));
+                        rl.DrawLine(@intFromFloat(glx), 0, @intFromFloat(glx), @intFromFloat(content_h), rl.Color{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = ga });
+                    }
+                }
+
+                // ── MATERIYA COLUMN (center) ──
+                {
+                    const x = col_w + 20 * fs;
+                    var y: f32 = 25 * fs;
+                    rl.DrawTextEx(chat_font, "MATERIYA", .{ .x = x, .y = y }, title_sz, 0.5, materiya_color);
+                    y += title_sz + 4;
+                    rl.DrawTextEx(chat_font, "Matter / System / Files", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    y += line_h + 8;
+
+                    // FPS
+                    rl.DrawTextEx(chat_font, "FPS:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var fps_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&fps_buf, "{d}", .{rl.GetFPS()}) catch {};
+                    fps_buf[@min(15, std.mem.indexOfScalar(u8, &fps_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &fps_buf, .{ .x = x + 45 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    y += line_h;
+
+                    // Engine
+                    rl.DrawTextEx(chat_font, "Engine:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    const eng_str: [*:0]const u8 = if (g_hybrid_engine != null) "IglaHybrid v2.4" else "FluentChat";
+                    rl.DrawTextEx(chat_font, eng_str, .{ .x = x + 65 * fs, .y = y }, val_sz, 0.5, materiya_color);
+                    y += line_h;
+
+                    // Tools
+                    rl.DrawTextEx(chat_font, "Tools:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    const tools_on = g_hybrid_engine != null and g_hybrid_engine.?.config.enable_tools;
+                    const t_str: [*:0]const u8 = if (tools_on) "enabled" else "disabled";
+                    const t_col = if (tools_on) materiya_color else dim_text;
+                    rl.DrawTextEx(chat_font, t_str, .{ .x = x + 55 * fs, .y = y }, val_sz, 0.5, t_col);
+                    y += line_h;
+
+                    // Memory load bar
+                    rl.DrawTextEx(chat_font, "Memory:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var mem_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&mem_buf, "{d:.0}%", .{mws.memory_load * 100}) catch {};
+                    mem_buf[@min(15, std.mem.indexOfScalar(u8, &mem_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &mem_buf, .{ .x = x + 70 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    y += line_h;
+                    const mem_bar_w = col_w - 50 * fs;
+                    rl.DrawRectangle(@intFromFloat(x), @intFromFloat(y), @intFromFloat(mem_bar_w), 4, rl.Color{ .r = 40, .g = 40, .b = 50, .a = alpha_u8 });
+                    rl.DrawRectangle(@intFromFloat(x), @intFromFloat(y), @intFromFloat(mem_bar_w * mws.memory_load), 4, materiya_color);
+                    y += 10;
+
+                    // File count
+                    if (!g_finder_scanned) scanDirectory();
+                    rl.DrawTextEx(chat_font, "Files:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var f_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&f_buf, "{d} entries", .{g_finder_count}) catch {};
+                    f_buf[@min(15, std.mem.indexOfScalar(u8, &f_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &f_buf, .{ .x = x + 55 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    y += line_h;
+
+                    // TVC corpus
+                    rl.DrawTextEx(chat_font, "TVC:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    rl.DrawTextEx(chat_font, "10000 max", .{ .x = x + 45 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    y += line_h;
+
+                    // VSA dim
+                    rl.DrawTextEx(chat_font, "VSA:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    rl.DrawTextEx(chat_font, "1024 dim", .{ .x = x + 45 * fs, .y = y }, val_sz, 0.5, bright_text);
+                }
+
+                // ── DUKH COLUMN (right) ──
+                {
+                    const x = col_w * 2 + 20 * fs;
+                    var y: f32 = 25 * fs;
+                    rl.DrawTextEx(chat_font, "DUKH", .{ .x = x, .y = y }, title_sz, 0.5, dukh_color);
+                    y += title_sz + 4;
+                    rl.DrawTextEx(chat_font, "Spirit / Knowledge", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    y += line_h + 8;
+
+                    // Source hue (color bar)
+                    rl.DrawTextEx(chat_font, "Source hue:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var h_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&h_buf, "{d:.0}", .{mws.source_hue}) catch {};
+                    h_buf[@min(15, std.mem.indexOfScalar(u8, &h_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &h_buf, .{ .x = x + 100 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    y += line_h;
+                    // Color bar showing source hue
+                    const src_rgb = hsvToRgb(mws.source_hue, 0.8, 0.9);
+                    rl.DrawRectangle(@intFromFloat(x), @intFromFloat(y), @intFromFloat(col_w - 50 * fs), 6, rl.Color{ .r = src_rgb[0], .g = src_rgb[1], .b = src_rgb[2], .a = alpha_u8 });
+                    y += 12;
+
+                    // Reflection status
+                    rl.DrawTextEx(chat_font, "Reflection:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    if (g_last_reflection_len > 0) {
+                        rl.DrawTextEx(chat_font, &g_last_reflection_name, .{ .x = x + 100 * fs, .y = y }, val_sz, 0.5, dukh_color);
+                    } else {
+                        rl.DrawTextEx(chat_font, "N/A", .{ .x = x + 100 * fs, .y = y }, val_sz, 0.5, dim_text);
+                    }
+                    y += line_h;
+
+                    // Learning indicator
+                    rl.DrawTextEx(chat_font, "Learning:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    if (mws.is_learning) {
+                        rl.DrawCircle(@intFromFloat(x + 85 * fs), @intFromFloat(y + 7), 5, rl.Color{ .r = 80, .g = 255, .b = 80, .a = alpha_u8 });
+                        rl.DrawTextEx(chat_font, "ACTIVE", .{ .x = x + 95 * fs, .y = y }, val_sz, 0.5, rl.Color{ .r = 80, .g = 255, .b = 80, .a = alpha_u8 });
+                    } else {
+                        rl.DrawCircle(@intFromFloat(x + 85 * fs), @intFromFloat(y + 7), 5, rl.Color{ .r = 80, .g = 80, .b = 80, .a = alpha_u8 });
+                        rl.DrawTextEx(chat_font, "idle", .{ .x = x + 95 * fs, .y = y }, val_sz, 0.5, dim_text);
+                    }
+                    y += line_h;
+
+                    // Provider health bar
+                    rl.DrawTextEx(chat_font, "Health:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var ph_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&ph_buf, "{d:.0}%", .{mws.provider_health_avg * 100}) catch {};
+                    ph_buf[@min(15, std.mem.indexOfScalar(u8, &ph_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &ph_buf, .{ .x = x + 65 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    y += line_h;
+                    const hp_bar_w = col_w - 50 * fs;
+                    rl.DrawRectangle(@intFromFloat(x), @intFromFloat(y), @intFromFloat(hp_bar_w), 4, rl.Color{ .r = 40, .g = 40, .b = 50, .a = alpha_u8 });
+                    rl.DrawRectangle(@intFromFloat(x), @intFromFloat(y), @intFromFloat(hp_bar_w * mws.provider_health_avg), 4, dukh_color);
+                    y += 12;
+
+                    // Similarity
+                    rl.DrawTextEx(chat_font, "Similarity:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var sim_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&sim_buf, "{d:.2}", .{mws.similarity}) catch {};
+                    sim_buf[@min(15, std.mem.indexOfScalar(u8, &sim_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &sim_buf, .{ .x = x + 95 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    y += line_h;
+
+                    // Latency
+                    rl.DrawTextEx(chat_font, "Latency:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var lat_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&lat_buf, "{d:.2}", .{mws.latency_normalized}) catch {};
+                    lat_buf[@min(15, std.mem.indexOfScalar(u8, &lat_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &lat_buf, .{ .x = x + 80 * fs, .y = y }, val_sz, 0.5, bright_text);
+
+                    // Self-reflection pulsing ring
+                    const ref_pulse = @sin(time * 2.5) * 0.3 + 0.7;
+                    const ref_r = 30.0 + ref_pulse * 10.0;
+                    const ref_a: u8 = @intFromFloat(@max(0, @min(60, ref_pulse * @as(f32, @floatFromInt(alpha_u8)) * 0.25)));
+                    rl.DrawCircleLines(@intFromFloat(x + col_w * 0.35), @intFromFloat(content_h * 0.8), ref_r, rl.Color{ .r = 0xBD, .g = 0x93, .b = 0xF9, .a = ref_a });
+                }
+
+                // ── TRINITY RING (center intersection) ──
+                {
+                    const cx = sw / 2;
+                    const cy = content_h * 0.85;
+                    const ring_base = 15.0 + mws.confidence * 10.0;
+                    const ring_pulse = @sin(time * 1.5) * 3.0;
+                    const ra: u8 = @intFromFloat(@max(0, @min(50, @as(f32, @floatFromInt(alpha_u8)) * 0.2)));
+                    // Gold ring
+                    rl.DrawCircleLines(@intFromFloat(cx - 10), @intFromFloat(cy), ring_base + ring_pulse, rl.Color{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = ra });
+                    // Cyan ring
+                    rl.DrawCircleLines(@intFromFloat(cx + 10), @intFromFloat(cy), ring_base + ring_pulse, rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = ra });
+                    // Purple ring
+                    rl.DrawCircleLines(@intFromFloat(cx), @intFromFloat(cy - 12), ring_base + ring_pulse, rl.Color{ .r = 0xBD, .g = 0x93, .b = 0xF9, .a = ra });
+                }
+
+                // ── LIVE LOG STRIP (bottom) ──
+                {
+                    const log_y_start = content_h + 5;
+                    const log_line_h: f32 = 15 * fs;
+                    // Dark background
+                    rl.DrawRectangle(0, @intFromFloat(content_h), @intFromFloat(sw), @intFromFloat(log_h), rl.Color{ .r = 10, .g = 10, .b = 15, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.7)) });
+                    rl.DrawTextEx(chat_font, "LIVE LOG", .{ .x = 10, .y = log_y_start }, label_sz, 0.5, withAlpha(MUTED_GRAY, @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.6))));
+
+                    // Show last N log entries that fit
+                    const max_visible: usize = @min(g_live_log_count, 7);
+                    const start_idx = if (g_live_log_count > max_visible) g_live_log_count - max_visible else 0;
+                    var li: usize = 0;
+                    while (li < max_visible) : (li += 1) {
+                        const idx = start_idx + li;
+                        const ly = log_y_start + 18 * fs + @as(f32, @floatFromInt(li)) * log_line_h;
+                        // Source color dot
+                        const src_hue = g_live_log_hues[idx];
+                        const dot_rgb = hsvToRgb(src_hue, 0.8, 0.9);
+                        rl.DrawCircle(@intFromFloat(@as(f32, 15)), @intFromFloat(ly + 6), 3, rl.Color{ .r = dot_rgb[0], .g = dot_rgb[1], .b = dot_rgb[2], .a = alpha_u8 });
+                        // Log text
+                        rl.DrawTextEx(chat_font, &g_live_log_text[idx], .{ .x = 25, .y = ly }, 12 * fs, 0.5, withAlpha(rl.Color{ .r = 170, .g = 180, .b = 190, .a = 255 }, alpha_u8));
+                    }
+
+                    if (g_live_log_count == 0) {
+                        rl.DrawTextEx(chat_font, "Send a message in Chat (Shift+1) to see logs here", .{ .x = 25, .y = log_y_start + 20 * fs }, 12 * fs, 0.5, dim_text);
+                    }
+                }
             }
         }
 
