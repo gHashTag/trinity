@@ -110,6 +110,11 @@ pub const ChainMessageType = enum {
     SwarmFailover,
     SwarmTelemetry,
     SwarmReplication,
+    // v2.6: Swarm Scaling + Live Rewards + DAO Governance
+    SwarmScale,
+    RewardDistribute,
+    DAOGovernanceLive,
+    NodeScaling,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -170,7 +175,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 104;
+pub const MAX_QUARK_RECORDS = 112;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -256,6 +261,15 @@ pub const QuarkType = enum(u7) {
     swarm_self_heal,
     swarm_telemetry,
     swarm_anchor,
+    // v2.6: Swarm Scaling + Rewards + DAO (u7: 80/128)
+    swarm_scale,
+    reward_distribute,
+    dao_governance_live,
+    swarm_sync_v2,
+    node_scaling,
+    reward_claim_live,
+    dao_quorum,
+    scale_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -332,6 +346,14 @@ pub const QuarkType = enum(u7) {
             .swarm_self_heal => "SWARM_HEAL",
             .swarm_telemetry => "SWARM_TELE",
             .swarm_anchor => "SWARM_ANCH",
+            .swarm_scale => "SWARM_SCALE",
+            .reward_distribute => "REWARD_DIST",
+            .dao_governance_live => "DAO_GOV_LV",
+            .swarm_sync_v2 => "SWARM_SYN2",
+            .node_scaling => "NODE_SCALE",
+            .reward_claim_live => "REWARD_CLM",
+            .dao_quorum => "DAO_QUORUM",
+            .scale_anchor => "SCALE_ANCH",
         };
     }
 
@@ -479,6 +501,23 @@ pub const QuarkType = enum(u7) {
 
     pub fn isSwarmTelemetryQuark(self: QuarkType) bool {
         return self == .swarm_discovery_v2 or self == .swarm_telemetry;
+    }
+
+    // v2.6: Scale + Rewards + DAO classifiers
+    pub fn isSwarmScaleQuark(self: QuarkType) bool {
+        return self == .swarm_scale or self == .scale_anchor;
+    }
+
+    pub fn isRewardDistQuark(self: QuarkType) bool {
+        return self == .reward_distribute or self == .reward_claim_live;
+    }
+
+    pub fn isDAOGovernanceLiveQuark(self: QuarkType) bool {
+        return self == .dao_governance_live or self == .dao_quorum;
+    }
+
+    pub fn isNodeScalingQuark(self: QuarkType) bool {
+        return self == .node_scaling or self == .swarm_sync_v2;
     }
 };
 
@@ -764,6 +803,14 @@ pub const SWARM_FAILOVER_THRESHOLD: f32 = 0.3;
 pub const SWARM_TELEMETRY_INTERVAL_US: i64 = 1_000_000;
 pub const SWARM_REPLICATION_FACTOR: u8 = 3;
 
+// v2.6: Swarm Scaling + Live Rewards + DAO Governance
+pub const SWARM_SCALE_MAX_NODES: u32 = 10_000;
+pub const SWARM_SCALE_TARGET: u16 = 1_000;
+pub const REWARD_DISTRIBUTION_BATCH: u16 = 100;
+pub const REWARD_MAX_CLAIMS_PER_EPOCH: u32 = 10_000;
+pub const DAO_QUORUM_THRESHOLD: f32 = 0.67;
+pub const DAO_MAX_CONCURRENT_PROPOSALS: u8 = 16;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -828,6 +875,38 @@ pub const SwarmReplicationRecord = struct {
     replication_factor: u8 = SWARM_REPLICATION_FACTOR,
     replicated_us: i64 = 0,
     is_synced: bool = false,
+};
+
+// v2.6: Swarm Scaling + Live Rewards + DAO Governance
+pub const SwarmScaleState = struct {
+    target_nodes: u16 = SWARM_SCALE_TARGET,
+    active_nodes: u32 = 0,
+    scale_factor: f32 = 1.0,
+    last_scale_us: i64 = 0,
+    scale_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const RewardDistributionState = struct {
+    total_distributed: u64 = 0,
+    claims_this_epoch: u32 = 0,
+    batch_size: u16 = REWARD_DISTRIBUTION_BATCH,
+    last_distribution_us: i64 = 0,
+    distribution_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const DAOGovernanceLiveState = struct {
+    quorum_threshold: f32 = DAO_QUORUM_THRESHOLD,
+    concurrent_proposals: u8 = 0,
+    governance_epoch: u32 = 0,
+    last_governance_us: i64 = 0,
+    is_governance_live: bool = false,
+};
+
+pub const NodeScalingRecord = struct {
+    node_id: [32]u8 = [_]u8{0} ** 32,
+    scale_timestamp_us: i64 = 0,
+    sync_status: u8 = 0,
+    is_scaled: bool = false,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -948,10 +1027,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 9;
+pub const QUARK_EXPORT_VERSION: u16 = 10;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 54;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 58;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1094,6 +1173,12 @@ pub const GoldenChainAgent = struct {
     swarm_telemetry_state: SwarmTelemetryState,
     swarm_replication_records: [SWARM_REPLICATION_FACTOR]SwarmReplicationRecord,
     swarm_replication_count: u8,
+    // v2.6: Swarm Scaling + Live Rewards + DAO Governance
+    swarm_scale_state: SwarmScaleState,
+    reward_distribution_state: RewardDistributionState,
+    dao_governance_live_state: DAOGovernanceLiveState,
+    node_scaling_records: [DAO_MAX_CONCURRENT_PROPOSALS]NodeScalingRecord,
+    node_scaling_count: u8,
 
     const Self = @This();
 
@@ -1182,6 +1267,12 @@ pub const GoldenChainAgent = struct {
             .swarm_telemetry_state = .{},
             .swarm_replication_records = undefined,
             .swarm_replication_count = 0,
+            // v2.6: Swarm Scaling + Live Rewards + DAO Governance
+            .swarm_scale_state = .{},
+            .reward_distribution_state = .{},
+            .dao_governance_live_state = .{},
+            .node_scaling_records = undefined,
+            .node_scaling_count = 0,
         };
     }
 
@@ -1537,6 +1628,30 @@ pub const GoldenChainAgent = struct {
     }
 
     pub fn swarmVerify(self: *const Self) bool {
+        _ = self;
+        return true;
+    }
+
+    // v2.6: Swarm Scaling + Live Rewards + DAO Governance (stubs)
+
+    pub fn scaleSwarm(self: *Self) void {
+        _ = self;
+    }
+
+    pub fn distributeRewards(self: *Self) void {
+        _ = self;
+    }
+
+    pub fn activateDAOGovernance(self: *Self) void {
+        _ = self;
+    }
+
+    pub fn scaleNode(self: *Self, node_id: [32]u8) void {
+        _ = self;
+        _ = node_id;
+    }
+
+    pub fn scaleVerify(self: *const Self) bool {
         _ = self;
         return true;
     }
