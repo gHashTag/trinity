@@ -7,6 +7,8 @@
 // =============================================================================
 
 const std = @import("std");
+const builtin = @import("builtin");
+const is_emscripten = builtin.os.tag == .emscripten;
 const photon = @import("photon.zig");
 const wave_scroll = @import("wave_scroll.zig"); // Emergent Wave ScrollView v1.0
 const theme = @import("trinity_canvas/theme.zig"); // SINGLE SOURCE OF TRUTH
@@ -14,6 +16,7 @@ const world_docs = @import("trinity_canvas/world_docs.zig");
 const igla_chat = @import("igla_chat");
 const fluent_chat = @import("igla_fluent_chat");
 const igla_hybrid_chat = @import("igla_hybrid_chat");
+const golden_chain = @import("golden_chain");
 const tvc = @import("tvc_corpus");
 const auto_shard = @import("auto_shard");
 const world_dots = @import("world_dots.zig");
@@ -21,6 +24,8 @@ const math = std.math;
 const rl = @cImport({
     @cInclude("raylib.h");
 });
+// Emscripten API for browser yield (emscripten_sleep)
+const emc = if (is_emscripten) @cImport(@cInclude("emscripten/emscripten.h")) else struct {};
 
 // Global chat engines
 var g_chat_engine: igla_chat.IglaLocalChat = igla_chat.IglaLocalChat.init();
@@ -31,8 +36,11 @@ var g_fluent_engine_inited: bool = false;
 var g_hybrid_engine: ?igla_hybrid_chat.IglaHybridChat = null;
 var g_hybrid_corpus: ?*tvc.TVCCorpus = null;
 var g_hybrid_inited: bool = false;
-// GPA for hybrid engine allocations
-var g_hybrid_gpa: std.heap.GeneralPurposeAllocator(.{}) = std.heap.GeneralPurposeAllocator(.{}){};
+// GPA for hybrid engine allocations (page_allocator on WASM)
+var g_hybrid_gpa: if (is_emscripten) u8 else std.heap.GeneralPurposeAllocator(.{}) = if (is_emscripten) 0 else std.heap.GeneralPurposeAllocator(.{}){};
+
+// v3.0: Golden Chain Agent (8-node unified pipeline)
+var g_chain_agent: ?golden_chain.GoldenChainAgent = null;
 
 
 // =============================================================================
@@ -55,9 +63,65 @@ var g_dpi_scale: f32 = 1.0;
 var g_font_chat: rl.Font = undefined;
 
 // ── Persistent chat state (survives panel close/reopen) ──
-const MAX_CHAT_MSGS = 64;
-const ChatMsgType = enum { user, ai, log };
-var g_chat_messages: [MAX_CHAT_MSGS][256]u8 = undefined;
+const MAX_CHAT_MSGS = 128; // v3.0: increased for Golden Chain (8+ msgs per query)
+const ChatMsgType = enum {
+    user,
+    ai,
+    log,
+    // Златая Цепь — 8 chain nodes (Chakra colors)
+    chain_goal_parse, // Red — Муладхара
+    chain_decompose, // Orange — Свадхистана
+    chain_schedule, // Yellow — Манипура
+    chain_execute, // Green — Анахата
+    chain_monitor, // Blue — Вишуддха
+    chain_adapt, // Indigo — Аджна
+    chain_synthesize, // Violet — Сахасрара
+    chain_deliver, // Gold — Единство
+    // Additional feedback types
+    tool_result, // Tool execution
+    routing_info, // Routing decision
+    reflection, // Self-learning event
+    agent_error, // Error
+    // v1.1: Truth & Provenance
+    provenance_step, // Hash chain record (steel blue)
+    truth_verification, // Chain integrity verdict (bright teal)
+    // v1.2: Quark-Gluon
+    quark_step, // Quark sub-step record (light steel blue)
+    gluon_entangle, // Gluon entanglement notification (magenta)
+    // v1.4: DAG + Rewards
+    dag_visualization, // DAG edge/stats summary (cyan)
+    reward_summary, // $TRI reward summary (gold)
+    // v1.5: Collapsible + Shareable + Staking
+    collapse_toggle, // Node collapse/expand event (slate)
+    share_link_generated, // Shareable link created (electric blue)
+    staking_event, // Staking lock/unlock/yield event (emerald)
+    // v2.0: Immortal Self-Verifying Agent
+    self_repair_event, // Self-repair action (warm orange)
+    immortal_persist, // Persistence checkpoint (deep teal)
+    evolution_step, // Evolution generation step (aurora green)
+    chain_health_check, // Chain health assessment (sky blue)
+    // v2.1: Public Launch + Faucet + Canvas
+    faucet_claim, // Faucet $TRI claim event (gold)
+    public_launch, // Public session launch event (bright cyan)
+    canvas_sync, // Canvas browser sync event (violet)
+    faucet_distribution, // Faucet distribution summary (amber)
+    // v2.2: Agent OS + Decentralized Network
+    decentral_sync, // Multi-node sync event (electric purple)
+    node_consensus, // Network consensus vote (lime green)
+    network_health, // Network health report (ocean blue)
+    agent_os_init, // Agent OS lifecycle event (bright coral)
+    // v2.3: Mainnet Genesis + DAO + Swarm
+    mainnet_genesis, // Mainnet genesis event (gold)
+    dao_vote, // DAO governance vote (royal blue)
+    swarm_sync, // Swarm node sync (neon green)
+    token_mint, // $TRI token mint (amber)
+    // v2.4: Mainnet v1.0 Launch
+    mainnet_launch, // Mainnet v1.0 launch (crimson)
+    community_onboard, // Community onboarding (lime)
+    node_discovery, // Node discovery (cyan)
+    governance_exec, // Governance execution (magenta)
+};
+var g_chat_messages: [MAX_CHAT_MSGS][512]u8 = undefined; // v3.0: 512 bytes per msg
 var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
 var g_chat_msg_types: [MAX_CHAT_MSGS]ChatMsgType = .{.ai} ** MAX_CHAT_MSGS;
 var g_chat_msg_count: usize = 0;
@@ -154,6 +218,24 @@ fn addLiveLog(text: []const u8, source_hue: f32) void {
 // v2.0: Scan current working directory for finder mode
 fn scanDirectory() void {
     g_finder_count = 0;
+    if (is_emscripten) {
+        // WASM: static demo file list (no filesystem access)
+        const demo_names = [_][]const u8{
+            "src/", "assets/", "build.zig", "README.md", "specs/",
+            "photon.zig", "trinity_canvas/", "wave_scroll.zig",
+        };
+        const demo_is_dir = [_]bool{ true, true, false, false, true, false, true, false };
+        for (demo_names, 0..) |name, i| {
+            if (i >= FINDER_MAX_ENTRIES) break;
+            const name_len = @min(name.len, 63);
+            @memcpy(g_finder_names[i][0..name_len], name[0..name_len]);
+            g_finder_names[i][name_len] = 0;
+            g_finder_is_dir[i] = demo_is_dir[i];
+            g_finder_count += 1;
+        }
+        g_finder_scanned = true;
+        return;
+    }
     var dir = std.fs.cwd().openDir(".", .{ .iterate = true }) catch return;
     defer dir.close();
     var iter = dir.iterate();
@@ -182,7 +264,7 @@ fn addGlobalChatMessage(msg: []const u8, msg_type: ChatMsgType) void {
         g_chat_msg_count = MAX_CHAT_MSGS - 1;
     }
     const idx = g_chat_msg_count;
-    const copy_len = @min(msg.len, 255);
+    const copy_len = @min(msg.len, 511);
     @memcpy(g_chat_messages[idx][0..copy_len], msg[0..copy_len]);
     g_chat_msg_lens[idx] = copy_len;
     g_chat_msg_types[idx] = msg_type;
@@ -193,6 +275,184 @@ fn addChatLogMessage(comptime fmt: []const u8, args: anytype) void {
     var buf: [256]u8 = undefined;
     const text = std.fmt.bufPrint(&buf, fmt, args) catch "...";
     addGlobalChatMessage(text, .log);
+}
+
+// =============================================================================
+// ЗЛАТАЯ ЦЕПЬ — Chakra Colors + Chain Indicator Renderer
+// =============================================================================
+
+fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
+    return switch (msg_type) {
+        .chain_goal_parse => .{ .r = 0xFF, .g = 0x30, .b = 0x30, .a = alpha }, // Red
+        .chain_decompose => .{ .r = 0xFF, .g = 0x7F, .b = 0x00, .a = alpha }, // Orange
+        .chain_schedule => .{ .r = 0xFF, .g = 0xDD, .b = 0x00, .a = alpha }, // Yellow
+        .chain_execute => .{ .r = 0x00, .g = 0xEE, .b = 0x44, .a = alpha }, // Green
+        .chain_monitor => .{ .r = 0x44, .g = 0x88, .b = 0xFF, .a = alpha }, // Blue
+        .chain_adapt => .{ .r = 0x6B, .g = 0x20, .b = 0xA2, .a = alpha }, // Indigo
+        .chain_synthesize => .{ .r = 0xAB, .g = 0x30, .b = 0xFF, .a = alpha }, // Violet
+        .chain_deliver => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha }, // Gold
+        .tool_result => .{ .r = 0x00, .g = 0x88, .b = 0xFF, .a = alpha }, // Tool blue
+        .routing_info => .{ .r = 0x00, .g = 0xCC, .b = 0xFF, .a = alpha }, // Cyan
+        .reflection => .{ .r = 0x00, .g = 0xFF, .b = 0x88, .a = alpha }, // Learn green
+        .agent_error => .{ .r = 0xFF, .g = 0x44, .b = 0x44, .a = alpha }, // Error red
+        .provenance_step => .{ .r = 0x88, .g = 0x88, .b = 0xAA, .a = alpha }, // Steel blue
+        .truth_verification => .{ .r = 0x00, .g = 0xFF, .b = 0xAA, .a = alpha }, // Bright teal
+        .quark_step => .{ .r = 0x99, .g = 0x99, .b = 0xBB, .a = alpha }, // Light steel blue
+        .gluon_entangle => .{ .r = 0xCC, .g = 0x44, .b = 0xFF, .a = alpha }, // Magenta
+        .dag_visualization => .{ .r = 0x00, .g = 0xDD, .b = 0xCC, .a = alpha }, // Cyan
+        .reward_summary => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha }, // Gold
+        .collapse_toggle => .{ .r = 0x70, .g = 0x80, .b = 0x90, .a = alpha }, // Slate
+        .share_link_generated => .{ .r = 0x00, .g = 0x7B, .b = 0xFF, .a = alpha }, // Electric blue
+        .staking_event => .{ .r = 0x50, .g = 0xC8, .b = 0x78, .a = alpha }, // Emerald
+        .self_repair_event => .{ .r = 0xFF, .g = 0x99, .b = 0x33, .a = alpha }, // Warm orange
+        .immortal_persist => .{ .r = 0x00, .g = 0x99, .b = 0x88, .a = alpha }, // Deep teal
+        .evolution_step => .{ .r = 0x33, .g = 0xFF, .b = 0x77, .a = alpha }, // Aurora green
+        .chain_health_check => .{ .r = 0x55, .g = 0xBB, .b = 0xFF, .a = alpha }, // Sky blue
+        .faucet_claim => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha }, // Gold
+        .public_launch => .{ .r = 0x00, .g = 0xEE, .b = 0xFF, .a = alpha }, // Bright cyan
+        .canvas_sync => .{ .r = 0x88, .g = 0x44, .b = 0xFF, .a = alpha }, // Violet
+        .faucet_distribution => .{ .r = 0xFF, .g = 0xBB, .b = 0x33, .a = alpha }, // Amber
+        .decentral_sync => .{ .r = 0x99, .g = 0x33, .b = 0xFF, .a = alpha }, // Electric purple
+        .node_consensus => .{ .r = 0x77, .g = 0xFF, .b = 0x33, .a = alpha }, // Lime green
+        .network_health => .{ .r = 0x00, .g = 0x77, .b = 0xCC, .a = alpha }, // Ocean blue
+        .agent_os_init => .{ .r = 0xFF, .g = 0x66, .b = 0x55, .a = alpha }, // Bright coral
+        .mainnet_genesis => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha }, // Gold
+        .dao_vote => .{ .r = 0x41, .g = 0x69, .b = 0xE1, .a = alpha }, // Royal blue
+        .swarm_sync => .{ .r = 0x39, .g = 0xFF, .b = 0x14, .a = alpha }, // Neon green
+        .token_mint => .{ .r = 0xFF, .g = 0xBF, .b = 0x00, .a = alpha }, // Amber
+        .mainnet_launch => .{ .r = 0xDC, .g = 0x14, .b = 0x3C, .a = alpha }, // Crimson
+        .community_onboard => .{ .r = 0x32, .g = 0xCD, .b = 0x32, .a = alpha }, // Lime
+        .node_discovery => .{ .r = 0x00, .g = 0xCE, .b = 0xD1, .a = alpha }, // Cyan
+        .governance_exec => .{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = alpha }, // Magenta
+        .user => .{ .r = 0x70, .g = 0x70, .b = 0x90, .a = alpha },
+        .ai => .{ .r = 0x30, .g = 0x80, .b = 0x50, .a = alpha },
+        .log => .{ .r = 0x60, .g = 0x60, .b = 0x60, .a = alpha },
+    };
+}
+
+fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
+    return switch (msg_type) {
+        .chain_goal_parse => "GOAL_PARSE",
+        .chain_decompose => "DECOMPOSE",
+        .chain_schedule => "SCHEDULE",
+        .chain_execute => "EXECUTE",
+        .chain_monitor => "MONITOR",
+        .chain_adapt => "ADAPT",
+        .chain_synthesize => "SYNTHESIZE",
+        .chain_deliver => "DELIVER",
+        .tool_result => "TOOL",
+        .routing_info => "->",
+        .reflection => "LEARNED",
+        .agent_error => "ERROR",
+        .provenance_step => "HASH",
+        .truth_verification => "TRUTH",
+        .quark_step => "QUARK",
+        .gluon_entangle => "GLUON",
+        .dag_visualization => "DAG",
+        .reward_summary => "$TRI",
+        .collapse_toggle => "VIEW",
+        .share_link_generated => "SHARE",
+        .staking_event => "STAKE",
+        .self_repair_event => "REPAIR",
+        .immortal_persist => "PERSIST",
+        .evolution_step => "EVOLVE",
+        .chain_health_check => "HEALTH",
+        .faucet_claim => "FAUCET",
+        .public_launch => "PUBLIC",
+        .canvas_sync => "CANVAS",
+        .faucet_distribution => "FAUCET_D",
+        .decentral_sync => "DSYNC",
+        .node_consensus => "CONSENSUS",
+        .network_health => "NET_HEALTH",
+        .agent_os_init => "AGENT_OS",
+        .mainnet_genesis => "GENESIS",
+        .dao_vote => "DAO",
+        .swarm_sync => "SWARM",
+        .token_mint => "MINT",
+        .mainnet_launch => "LAUNCH",
+        .community_onboard => "COMMUNITY",
+        .node_discovery => "DISCOVER",
+        .governance_exec => "GOV_EXEC",
+        .user => "YOU",
+        .ai => "AI",
+        .log => "LOG",
+    };
+}
+
+fn isChainType(msg_type: ChatMsgType) bool {
+    return switch (msg_type) {
+        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec => true,
+        else => false,
+    };
+}
+
+/// Convert GoldenChain message to canvas ChatMsgType
+fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType {
+    return switch (chain_msg.msg_type) {
+        .User => .user,
+        .ChainStep => if (chain_msg.node) |node| switch (node) {
+            .GoalParse => .chain_goal_parse,
+            .Decompose => .chain_decompose,
+            .Schedule => .chain_schedule,
+            .Execute => .chain_execute,
+            .Monitor => .chain_monitor,
+            .Adapt => .chain_adapt,
+            .Synthesize => .chain_synthesize,
+            .Deliver => .chain_deliver,
+        } else .ai,
+        .ToolResult => .tool_result,
+        .RoutingInfo => .routing_info,
+        .Reflection => .reflection,
+        .AgentState => .log,
+        .Error => .agent_error,
+        .ProvenanceStep => .provenance_step,
+        .TruthVerification => .truth_verification,
+        .QuarkStep => .quark_step,
+        .GluonEntangle => .gluon_entangle,
+        .DAGVisualization => .dag_visualization,
+        .RewardSummary => .reward_summary,
+        .CollapseToggle => .collapse_toggle,
+        .ShareLinkGenerated => .share_link_generated,
+        .StakingEvent => .staking_event,
+        .SelfRepairEvent => .self_repair_event,
+        .ImmortalPersist => .immortal_persist,
+        .EvolutionStep => .evolution_step,
+        .ChainHealthCheck => .chain_health_check,
+        .FaucetClaim => .faucet_claim,
+        .PublicLaunch => .public_launch,
+        .CanvasSync => .canvas_sync,
+        .FaucetDistribution => .faucet_distribution,
+        .DecentralSync => .decentral_sync,
+        .NodeConsensus => .node_consensus,
+        .NetworkHealth => .network_health,
+        .AgentOSInit => .agent_os_init,
+        .MainnetGenesis => .mainnet_genesis,
+        .DAOVote => .dao_vote,
+        .SwarmSync => .swarm_sync,
+        .TokenMint => .token_mint,
+        .MainnetLaunch => .mainnet_launch,
+        .CommunityOnboard => .community_onboard,
+        .NodeDiscovery => .node_discovery,
+        .GovernanceExec => .governance_exec,
+    };
+}
+
+/// Draw a pulsing Chakra-colored circle indicator (sound wave dot)
+fn drawChainIndicator(x: f32, y: f32, msg_type: ChatMsgType, time: f32, fs: f32) void {
+    const color = getChainMsgColor(msg_type, 200);
+    const radius = 5.0 * fs;
+    const pulse: f32 = @sin(time * 4.0) * 0.3 + 0.7;
+
+    // Outer glow
+    const glow_alpha: u8 = @intFromFloat(@max(0, @min(255, 50.0 * pulse)));
+    rl.DrawCircle(@intFromFloat(x), @intFromFloat(y), radius * 1.5, rl.Color{ .r = color.r, .g = color.g, .b = color.b, .a = glow_alpha });
+
+    // Inner solid circle
+    rl.DrawCircle(@intFromFloat(x), @intFromFloat(y), radius, color);
+
+    // Center bright dot
+    const center_alpha: u8 = @intFromFloat(@max(0, @min(255, 150.0 * pulse)));
+    rl.DrawCircle(@intFromFloat(x), @intFromFloat(y), radius * 0.35, rl.Color{ .r = 255, .g = 255, .b = 255, .a = center_alpha });
 }
 
 // =============================================================================
@@ -987,7 +1247,7 @@ var g_network_model_name: [64]u8 = [_]u8{0} ** 64;
 var g_network_model_name_len: usize = 0;
 var g_network_initialized: bool = false;
 var g_network_uptime_ms: u64 = 0;
-var g_network_probe_thread: ?std.Thread = null;
+var g_network_probe_thread: if (is_emscripten) ?u8 else ?std.Thread = null;
 var g_network_probe_done: bool = false;
 var g_net_scroll_y: f32 = 0;
 var g_net_scroll_target: f32 = 0;
@@ -1034,6 +1294,7 @@ const TZ_MAP = [_]TzGeo{
 /// Reads /etc/localtime symlink on macOS/Linux → extracts TZ name → looks up in TZ_MAP.
 /// Returns null if timezone cannot be determined.
 fn detectTimezoneGeo() ?TzGeo {
+    if (is_emscripten) return null;
     // macOS: /etc/localtime -> /var/db/timezone/zoneinfo/Asia/Bangkok
     // Linux: /etc/localtime -> /usr/share/zoneinfo/Asia/Bangkok
     var link_buf: [256]u8 = undefined;
@@ -1064,6 +1325,7 @@ const IpGeoResult = struct {
 /// Uses curl subprocess with 3-second timeout. Pass null for local public IP.
 /// Works from background thread — uses page_allocator.
 fn fetchIpGeo(ip: ?[]const u8) ?IpGeoResult {
+    if (is_emscripten) return null; // No subprocess in WASM
     const allocator = std.heap.page_allocator;
 
     // Build URL: ip-api.com/json or ip-api.com/json/{ip}?fields=lat,lon,city,country
@@ -1159,6 +1421,10 @@ const PROBE_TARGETS = [_]ProbeTarget{
 
 /// Background TCP probe: try connecting to known endpoints + IP geo refinement
 fn probeNetworkNodes() void {
+    if (is_emscripten) {
+        g_network_probe_done = true;
+        return; // No sockets in WASM
+    }
     // Step 2: Refine local node (index 0) via IP API (city-level accuracy)
     if (fetchIpGeo(null)) |geo| {
         g_network_nodes[0].geo_lat = geo.lat;
@@ -1255,10 +1521,14 @@ fn initNetworkState() void {
     };
     const ram_mb: u16 = @intCast(@min(sys_mem.total_bytes / (1024 * 1024), 65535));
 
-    // Get hostname via POSIX
+    // Get hostname
     var hostname_buf: [64]u8 = [_]u8{0} ** 64;
     var hostname_len: usize = 0;
-    if (std.c.gethostname(&hostname_buf, hostname_buf.len) == 0) {
+    if (is_emscripten) {
+        const wasm_name = "Browser";
+        @memcpy(hostname_buf[0..wasm_name.len], wasm_name);
+        hostname_len = wasm_name.len;
+    } else if (std.c.gethostname(&hostname_buf, hostname_buf.len) == 0) {
         for (hostname_buf, 0..) |c, i| {
             if (c == 0) {
                 hostname_len = i;
@@ -1307,12 +1577,17 @@ fn initNetworkState() void {
     g_network_nodes[0] = local_node;
     g_network_node_count = 1;
 
-    const no_model = "Scanning network...";
+    const no_model = if (is_emscripten) "WASM Browser Node" else "Scanning network...";
     @memcpy(g_network_model_name[0..no_model.len], no_model);
     g_network_model_name_len = no_model.len;
 
-    // Spawn background thread to probe known endpoints + refine geo via IP API
-    g_network_probe_thread = std.Thread.spawn(.{}, probeNetworkNodes, .{}) catch null;
+    if (is_emscripten) {
+        // No background threads in WASM — mark probe as done immediately
+        g_network_probe_done = true;
+    } else {
+        // Spawn background thread to probe known endpoints + refine geo via IP API
+        g_network_probe_thread = std.Thread.spawn(.{}, probeNetworkNodes, .{}) catch null;
+    }
 }
 
 const GlassPanel = struct {
@@ -3473,6 +3748,29 @@ const GlassPanel = struct {
         self.finder_entry_count = 0;
         self.finder_animation = 0;
 
+        if (is_emscripten) {
+            // WASM: show demo entries (no real filesystem)
+            const demo = [_]struct { name: []const u8, is_dir: bool }{
+                .{ .name = "src/", .is_dir = true },
+                .{ .name = "build.zig", .is_dir = false },
+                .{ .name = "assets/", .is_dir = true },
+                .{ .name = "README.md", .is_dir = false },
+            };
+            for (demo, 0..) |d, i| {
+                if (i >= 64) break;
+                const nl = @min(d.name.len, 127);
+                @memcpy(self.finder_entries[i].name[0..nl], d.name[0..nl]);
+                self.finder_entries[i].name_len = nl;
+                self.finder_entries[i].is_dir = d.is_dir;
+                self.finder_entries[i].file_type = if (d.is_dir) .folder else FileType.fromName(d.name);
+                const fi = @as(f32, @floatFromInt(i));
+                self.finder_entries[i].orbit_angle = fi * 0.618033988 * TAU;
+                self.finder_entries[i].orbit_radius = 60 + fi * 8;
+                self.finder_entry_count += 1;
+            }
+            return;
+        }
+
         // Open directory using std.fs
         const dir = std.fs.cwd().openDir(path, .{ .iterate = true }) catch {
             // If can't open, add error entry
@@ -4659,17 +4957,48 @@ const InputBuffer = struct {
 };
 
 // =============================================================================
+// FRAME STATE — promoted from main() locals for emscripten_set_main_loop compat
+// Same names as the old locals so the 1720-line loop body needs zero changes
+// =============================================================================
+var frame_grid: photon.PhotonGrid = undefined;
+var frame_clusters: ClusterSystem = undefined;
+var frame_spirals: SpiralSystem = undefined;
+var frame_tools: ToolSystem = undefined;
+var frame_effects: EffectSystem = undefined;
+var frame_goal: AutonomousGoal = undefined;
+var frame_panels: PanelSystem = undefined;
+var frame_time: f32 = 0;
+var frame_mode: TrinityMode = .idle;
+var frame_cursor_hue: f32 = 120;
+var frame_logo_anim: LogoAnimation = undefined;
+var frame_loading_complete: bool = false;
+var frame_formula_particles: [MAX_FORMULA_PARTICLES]FormulaParticle = undefined;
+var frame_font: rl.Font = undefined;
+var frame_font_small: rl.Font = undefined;
+var frame_allocator: std.mem.Allocator = undefined;
+var g_should_quit: bool = false;
+
+// =============================================================================
 // MAIN TRINITY CANVAS
 // =============================================================================
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    // GPA uses mmap internals not available in WASM; use page_allocator for emscripten
+    var gpa: if (is_emscripten) u8 else std.heap.GeneralPurposeAllocator(.{}) =
+        if (is_emscripten) 0 else std.heap.GeneralPurposeAllocator(.{}){};
+    defer if (!is_emscripten) {
+        _ = gpa.deinit();
+    };
+    const allocator = if (is_emscripten) std.heap.page_allocator else gpa.allocator();
+    frame_allocator = allocator;
 
     // Raylib init - RESIZABLE WINDOW (responsive!)
-    // High DPI + MSAA + TRANSPARENT background (see desktop through)
-    rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE | rl.FLAG_VSYNC_HINT | rl.FLAG_MSAA_4X_HINT | rl.FLAG_WINDOW_HIGHDPI | rl.FLAG_WINDOW_TRANSPARENT | rl.FLAG_WINDOW_MAXIMIZED);
+    if (is_emscripten) {
+        rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE | rl.FLAG_VSYNC_HINT | rl.FLAG_MSAA_4X_HINT);
+    } else {
+        // High DPI + MSAA + TRANSPARENT background (see desktop through)
+        rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE | rl.FLAG_VSYNC_HINT | rl.FLAG_MSAA_4X_HINT | rl.FLAG_WINDOW_HIGHDPI | rl.FLAG_WINDOW_TRANSPARENT | rl.FLAG_WINDOW_MAXIMIZED);
+    }
     rl.InitWindow(1280, 800, "TRINITY v1.7 | Shift+1-7 = Panels | phi^2 + 1/phi^2 = 3");
     defer rl.CloseWindow();
 
@@ -4677,7 +5006,7 @@ pub fn main() !void {
     rl.SetExitKey(0);
 
     // Set minimum window size for responsive design
-    rl.SetWindowMinSize(800, 600);
+    if (!is_emscripten) rl.SetWindowMinSize(800, 600);
 
     g_width = rl.GetScreenWidth();
     g_height = rl.GetScreenHeight();
@@ -4694,13 +5023,13 @@ pub fn main() !void {
     const font_size_small: c_int = @intFromFloat(32.0 * g_dpi_scale);
 
     // UI fonts: Outfit (original, Latin-only, perfect metrics)
-    const font = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", font_size_large, null, 0);
-    defer rl.UnloadFont(font);
-    const font_small = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", font_size_small, null, 0);
-    defer rl.UnloadFont(font_small);
+    frame_font = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", font_size_large, null, 0);
+    defer rl.UnloadFont(frame_font);
+    frame_font_small = rl.LoadFontEx("assets/fonts/Outfit-Regular.ttf", font_size_small, null, 0);
+    defer rl.UnloadFont(frame_font_small);
     // Enable bilinear filtering for smooth text at all sizes
-    rl.SetTextureFilter(font.texture, rl.TEXTURE_FILTER_BILINEAR);
-    rl.SetTextureFilter(font_small.texture, rl.TEXTURE_FILTER_BILINEAR);
+    rl.SetTextureFilter(frame_font.texture, rl.TEXTURE_FILTER_BILINEAR);
+    rl.SetTextureFilter(frame_font_small.texture, rl.TEXTURE_FILTER_BILINEAR);
 
     // Chat font: Montserrat (Latin + Cyrillic) at LARGE atlas size for crisp rendering
     var chat_codepoints: [95 + 256]c_int = undefined;
@@ -4714,34 +5043,38 @@ pub fn main() !void {
     const grid_w: usize = 320;
     const grid_h: usize = 200;
 
-    var grid = try photon.PhotonGrid.init(allocator, grid_w, grid_h);
-    defer grid.deinit();
+    frame_grid = try photon.PhotonGrid.init(allocator, grid_w, grid_h);
+    defer frame_grid.deinit();
 
     // Systems
-    var clusters = ClusterSystem.init();
-    var spirals = SpiralSystem.init();
-    var tools = ToolSystem.init();
-    var effects = EffectSystem.init();
-    var goal = AutonomousGoal.init();
-    var panels = PanelSystem.init();
+    frame_clusters = ClusterSystem.init();
+    frame_spirals = SpiralSystem.init();
+    frame_tools = ToolSystem.init();
+    frame_effects = EffectSystem.init();
+    frame_goal = AutonomousGoal.init();
+    frame_panels = PanelSystem.init();
 
-    // State
-    var time: f32 = 0;
-    var mode: TrinityMode = .idle; // Start in idle mode - fullscreen canvas
-    var cursor_hue: f32 = 120;
+    // State (file-scope globals)
+    frame_time = 0;
+    frame_mode = .idle;
+    frame_cursor_hue = 120;
 
-    rl.InitAudioDevice();
-    defer rl.CloseAudioDevice();
+    if (!is_emscripten) {
+        rl.InitAudioDevice();
+    }
+    defer if (!is_emscripten) {
+        rl.CloseAudioDevice();
+    };
 
     rl.SetTargetFPS(60);
     // Show cursor for window resizing
     rl.ShowCursor();
     // Focus window for keyboard input
-    rl.SetWindowFocused();
+    if (!is_emscripten) rl.SetWindowFocused();
 
     // Initialize logo animation
-    var logo_anim = LogoAnimation.init(@floatFromInt(g_width), @floatFromInt(g_height));
-    var loading_complete = false;
+    frame_logo_anim = LogoAnimation.init(@floatFromInt(g_width), @floatFromInt(g_height));
+    frame_loading_complete = false;
 
     // Sacred formula particles — Fibonacci spiral orbit
     const formula_texts = [42][]const u8{
@@ -4784,7 +5117,7 @@ pub fn main() !void {
         "Phi to phi power", "Tower of threes",
         "Pythagoras' constant",
     };
-    var formula_particles: [MAX_FORMULA_PARTICLES]FormulaParticle = undefined;
+    // formula_particles is file-scope global (frame_formula_particles)
     // Golden angle = 2*pi/phi^2 ~ 137.508 degrees — Fibonacci spiral
     const golden_angle: f32 = 2.0 * std.math.pi / (1.618 * 1.618);
     const min_radius: f32 = 240.0; // avoid overlapping the logo
@@ -4796,7 +5129,7 @@ pub fn main() !void {
         const layer = fi / 9; // 0..4 layers of ~9
         const direction: f32 = if (layer % 2 == 0) 1.0 else -1.0;
         const speed: f32 = direction * (0.03 - n * 0.0003);
-        formula_particles[fi] = FormulaParticle.init(
+        frame_formula_particles[fi] = FormulaParticle.init(
             formula_texts[fi],
             formula_descs[fi],
             angle, radius, speed,
@@ -4804,13 +5137,31 @@ pub fn main() !void {
     }
 
     // Main loop
-    while (!rl.WindowShouldClose()) {
-        const dt = rl.GetFrameTime();
-        time += dt;
+    if (is_emscripten) {
+        emc.emscripten_set_main_loop(updateDrawFrame, 0, true);
+    } else {
+        while (!rl.WindowShouldClose() and !g_should_quit) {
+            updateDrawFrame();
+        }
+    }
+}
 
-        // Cmd+Q to quit (replaces ESC)
-        if ((rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER)) and rl.IsKeyPressed(rl.KEY_Q)) {
-            break;
+fn updateDrawFrame() callconv(.c) void {
+        // === BeginDrawing FIRST — ensures we always see something ===
+        rl.BeginDrawing();
+        defer rl.EndDrawing();
+        rl.ClearBackground(rl.Color{ .r = 10, .g = 10, .b = 30, .a = 255 });
+
+        // DEBUG: always draw a visible marker so we know the callback fires
+        rl.DrawText("TRINITY WASM OK", 20, 20, 30, rl.Color{ .r = 0, .g = 255, .b = 0, .a = 255 });
+
+        const dt = rl.GetFrameTime();
+        frame_time += dt;
+
+        // Cmd+Q to quit (desktop only, not in WASM)
+        if (!is_emscripten and (rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER)) and rl.IsKeyPressed(rl.KEY_Q)) {
+            g_should_quit = true;
+            return;
         }
 
         // Cmd+D = toggle dark/light theme
@@ -4842,8 +5193,8 @@ pub fn main() !void {
         g_font_scale = @max(0.75, @min(2.0, @as(f32, @floatFromInt(g_width)) / 1280.0));
 
         // Calculate pixel size to COVER full window (no gaps at edges)
-        const grid_w_c: c_int = @intCast(grid.width);
-        const grid_h_c: c_int = @intCast(grid.height);
+        const grid_w_c: c_int = @intCast(frame_grid.width);
+        const grid_h_c: c_int = @intCast(frame_grid.height);
         const px_w = @divTrunc(g_width + grid_w_c - 1, grid_w_c); // ceil division
         const px_h = @divTrunc(g_height + grid_h_c - 1, grid_h_c);
         g_pixel_size = @max(1, @max(px_w, px_h));
@@ -4853,17 +5204,17 @@ pub fn main() !void {
         const mx = @as(f32, @floatFromInt(mouse_x));
         const my = @as(f32, @floatFromInt(mouse_y));
 
-        const gx = @as(usize, @intCast(@max(0, @min(@as(c_int, @intCast(grid.width - 1)), @divTrunc(mouse_x, g_pixel_size)))));
-        const gy = @as(usize, @intCast(@max(0, @min(@as(c_int, @intCast(grid.height - 1)), @divTrunc(mouse_y, g_pixel_size)))));
+        const gx = @as(usize, @intCast(@max(0, @min(@as(c_int, @intCast(frame_grid.width - 1)), @divTrunc(mouse_x, g_pixel_size)))));
+        const gy = @as(usize, @intCast(@max(0, @min(@as(c_int, @intCast(frame_grid.height - 1)), @divTrunc(mouse_y, g_pixel_size)))));
 
-        cursor_hue = @mod(cursor_hue + dt * 30.0, 360.0);
+        frame_cursor_hue = @mod(frame_cursor_hue + dt * 30.0, 360.0);
 
         // === INPUT HANDLING ===
 
         // Detect if chat is active (wave mode or legacy panel)
         const chat_is_open: bool = if (g_wave_mode == .chat) true else blk_chat: {
-            if (panels.active_panel) |idx| {
-                const p = &panels.panels[idx];
+            if (frame_panels.active_panel) |idx| {
+                const p = &frame_panels.panels[idx];
                 const is_visible = (p.state == .open or p.state == .opening);
                 if (is_visible and p.panel_type == .chat) break :blk_chat true;
                 if (is_visible and p.panel_type == .sacred_world and p.world_id == 0) break :blk_chat true;
@@ -4906,13 +5257,13 @@ pub fn main() !void {
                         g_wave_mode = nm;
                         g_wave_transition = 0; // Start transition animation
                         // Wave burst on mode change
-                        effects.nova(screen_w / 2, screen_h / 2);
+                        frame_effects.nova(screen_w / 2, screen_h / 2);
                         // Perturb grid with mode's hue
                         const mode_hue = nm.getHue();
                         const freq_shift = mode_hue / 360.0 * TAU;
-                        for (0..@min(grid.height, 5)) |wy| {
-                            for (0..grid.width) |wx| {
-                                grid.getMut(wx, wy).amplitude += @sin(freq_shift + @as(f32, @floatFromInt(wx)) * 0.3) * 0.2;
+                        for (0..@min(frame_grid.height, 5)) |wy| {
+                            for (0..frame_grid.width) |wx| {
+                                frame_grid.getMut(wx, wy).amplitude += @sin(freq_shift + @as(f32, @floatFromInt(wx)) * 0.3) * 0.2;
                             }
                         }
                     }
@@ -4921,8 +5272,8 @@ pub fn main() !void {
         }
 
         // Keyboard scroll for active sacred_world panel (docs/chat only)
-        if (panels.active_panel) |ap_idx| {
-            const ap = &panels.panels[ap_idx];
+        if (frame_panels.active_panel) |ap_idx| {
+            const ap = &frame_panels.panels[ap_idx];
             if (ap.panel_type == .sacred_world and ap.state == .open and ap.world_id != 0) {
                 // Skip keyboard scroll for chat panel (world_id 0) — keys go to text input
                 const max_scroll_kb: f32 = if (ap.world_id == 18) blk_ks: {
@@ -4961,13 +5312,13 @@ pub fn main() !void {
                 g_wave_mode_prev = g_wave_mode;
                 g_wave_mode = .idle;
                 g_wave_transition = 0;
-                effects.sink(screen_w / 2, screen_h / 2);
+                frame_effects.sink(screen_w / 2, screen_h / 2);
             }
-            panels.unfocusAll();
+            frame_panels.unfocusAll();
             // Close all sacred world panels
-            for (0..panels.count) |pi| {
-                if (panels.panels[pi].panel_type == .sacred_world) {
-                    panels.panels[pi].close();
+            for (0..frame_panels.count) |pi| {
+                if (frame_panels.panels[pi].panel_type == .sacred_world) {
+                    frame_panels.panels[pi].close();
                 }
             }
         }
@@ -4975,8 +5326,8 @@ pub fn main() !void {
         // Click outside any panel = close all panels (return to logo menu)
         if (rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT) and !shift_held and !ctrl_held and !cmd_held) {
             var clicked_on_panel = false;
-            for (0..panels.count) |pi| {
-                const p = &panels.panels[pi];
+            for (0..frame_panels.count) |pi| {
+                const p = &frame_panels.panels[pi];
                 if (p.state == .open or p.state == .opening) {
                     if (mx >= p.x and mx <= p.x + p.width and my >= p.y and my <= p.y + p.height) {
                         clicked_on_panel = true;
@@ -4985,14 +5336,14 @@ pub fn main() !void {
                 }
             }
             // Also check if click is on the logo (don't close if clicking logo)
-            const on_logo = logo_anim.hovered_block >= 0;
+            const on_logo = frame_logo_anim.hovered_block >= 0;
             if (!clicked_on_panel and !on_logo) {
                 // Close all panels — return to main logo menu
-                for (0..panels.count) |pi| {
-                    panels.panels[pi].close();
-                    panels.panels[pi].is_focused = false;
+                for (0..frame_panels.count) |pi| {
+                    frame_panels.panels[pi].close();
+                    frame_panels.panels[pi].is_focused = false;
                 }
-                panels.unfocusAll();
+                frame_panels.unfocusAll();
             }
         }
 
@@ -5000,8 +5351,8 @@ pub fn main() !void {
         // Routes keyboard to chat when g_wave_mode == .chat or legacy panel
         const wave_chat_active = g_wave_mode == .chat;
         const focused_chat_panel: ?*GlassPanel = if (wave_chat_active) null else blk: {
-            if (panels.active_panel) |idx| {
-                const p = &panels.panels[idx];
+            if (frame_panels.active_panel) |idx| {
+                const p = &frame_panels.panels[idx];
                 const is_visible = (p.state == .open or p.state == .opening);
                 if (is_visible and p.panel_type == .chat) {
                     break :blk p;
@@ -5050,7 +5401,7 @@ pub fn main() !void {
                             @memcpy(g_chat_input[g_chat_input_len..][0..utf8_len], utf8_buf[0..utf8_len]);
                             g_chat_input_len += utf8_len;
                             // Typing wave effect
-                            effects.sink(screen_w / 2, screen_h * 0.9);
+                            frame_effects.sink(screen_w / 2, screen_h * 0.9);
                         }
                     }
                     char_key = rl.GetCharPressed();
@@ -5093,7 +5444,7 @@ pub fn main() !void {
             if (rl.IsKeyPressed(rl.KEY_ENTER) and g_chat_input_len > 0) {
                 // Lazy init IglaHybridChat (v2.4: 4-level cache with self-reflection)
                 if (!g_hybrid_inited) {
-                    const alloc = g_hybrid_gpa.allocator();
+                    const alloc = if (is_emscripten) std.heap.page_allocator else g_hybrid_gpa.allocator();
 
                     // Create TVC corpus on heap
                     g_hybrid_corpus = alloc.create(tvc.TVCCorpus) catch null;
@@ -5103,9 +5454,11 @@ pub fn main() !void {
 
                     // Create hybrid chat with env API keys
                     var hconfig = igla_hybrid_chat.HybridConfig{};
-                    hconfig.groq_api_key = std.posix.getenv("GROQ_API_KEY");
-                    hconfig.claude_api_key = std.posix.getenv("ANTHROPIC_API_KEY");
-                    hconfig.openai_api_key = std.posix.getenv("OPENAI_API_KEY");
+                    if (!is_emscripten) {
+                        hconfig.groq_api_key = std.posix.getenv("GROQ_API_KEY");
+                        hconfig.claude_api_key = std.posix.getenv("ANTHROPIC_API_KEY");
+                        hconfig.openai_api_key = std.posix.getenv("OPENAI_API_KEY");
+                    }
                     hconfig.enable_context = true;
                     hconfig.system_prompt = "You are Trinity, a helpful AI. Be concise.";
 
@@ -5134,57 +5487,45 @@ pub fn main() !void {
                 // 1. Add user message
                 addGlobalChatMessage(g_chat_input[0..g_chat_input_len], .user);
 
-                // 2. Try IglaHybridChat (4-level cache: Tools → Symbolic → TVC → LLM)
+                // 2. v3.0: Golden Chain — 8-node pipeline via GoldenChainAgent
                 if (g_hybrid_engine != null) {
-                    if (g_hybrid_engine.?.respond(g_chat_input[0..g_chat_input_len])) |hr| {
-                        // 3. Add AI response
-                        addGlobalChatMessage(hr.response, .ai);
+                    // Init chain agent on first use (lazy)
+                    if (g_chain_agent == null) {
+                        g_chain_agent = golden_chain.GoldenChainAgent.init(&g_hybrid_engine.?);
+                    }
 
-                        // 4. v2.4 metadata log: source + tool + reflection + confidence + latency
-                        const source_name = @tagName(hr.source);
-                        const reflection_name = hr.reflection.getName();
-                        const tool_str = hr.tool_name orelse "-";
-                        addChatLogMessage("{s} | tool:{s} | {s} | conf:{d:.0}% | {d}us", .{
-                            source_name,
-                            tool_str,
-                            reflection_name,
-                            hr.confidence * 100,
-                            hr.latency_us,
-                        });
+                    if (g_chain_agent) |*agent| {
+                        agent.processInput(g_chat_input[0..g_chat_input_len]);
 
-                        // v2.1: Feed live log + store reflection
+                        // Copy all chain messages to canvas chat
+                        for (agent.getMessages()) |*chain_msg| {
+                            const canvas_type = chainMsgToCanvasType(chain_msg);
+                            addGlobalChatMessage(chain_msg.getContent(), canvas_type);
+                        }
+
+                        // Feed live log with final chain state
                         {
+                            const cs = golden_chain.g_chain_state;
                             var ll_buf: [96]u8 = undefined;
-                            const ll_text = std.fmt.bufPrint(&ll_buf, "{s}|{s}|{d:.0}%", .{ source_name, reflection_name, hr.confidence * 100 }) catch "";
+                            const ll_text = std.fmt.bufPrint(&ll_buf, "CHAIN|{d:.0}%|{d}us", .{ cs.total_confidence * 100, cs.total_latency_us }) catch "";
                             addLiveLog(ll_text, igla_hybrid_chat.g_last_wave_state.source_hue);
-                            const rn_len = @min(reflection_name.len, 31);
-                            @memcpy(g_last_reflection_name[0..rn_len], reflection_name[0..rn_len]);
-                            g_last_reflection_name[rn_len] = 0;
-                            g_last_reflection_len = rn_len;
+
+                            // Update reflection name from chain
+                            const rname = "GoldenChain";
+                            @memcpy(g_last_reflection_name[0..rname.len], rname);
+                            g_last_reflection_name[rname.len] = 0;
+                            g_last_reflection_len = rname.len;
                         }
 
-                        // Nova on LEARNED, Sink on Filtered
-                        if (hr.reflection.wasLearned()) {
-                            effects.nova(screen_w / 2, screen_h / 2);
-                        } else {
-                            effects.nova(screen_w / 2, screen_h / 2);
+                        frame_effects.nova(screen_w / 2, screen_h / 2);
+                    } else {
+                        // Fallback: direct hybrid (shouldn't reach here)
+                        if (g_hybrid_engine.?.respond(g_chat_input[0..g_chat_input_len])) |hr| {
+                            addGlobalChatMessage(hr.response, .ai);
+                        } else |_| {
+                            addGlobalChatMessage("Error: no response", .agent_error);
                         }
-                    } else |_| {
-                        // Hybrid failed — fall back to FluentChatEngine
-                        const result = g_fluent_engine.respond(g_chat_input[0..g_chat_input_len]);
-                        addGlobalChatMessage(result.getText(), .ai);
-                        const stats = g_fluent_engine.getStats();
-                        const ms = @divFloor(result.execution_time_ns, @as(i64, 1_000_000));
-                        addChatLogMessage("{s} | {s} | {s} | q:{d:.0}% | {d}ms | s:{d:.2} | e:{d:.2}", .{
-                            result.intent.getName(),
-                            result.topic.getName(),
-                            result.language.getName(),
-                            result.quality * 100,
-                            ms,
-                            stats.sentiment,
-                            stats.engagement,
-                        });
-                        effects.nova(screen_w / 2, screen_h / 2);
+                        frame_effects.nova(screen_w / 2, screen_h / 2);
                     }
                 } else {
                     // No hybrid engine — use FluentChatEngine
@@ -5201,7 +5542,7 @@ pub fn main() !void {
                         stats.sentiment,
                         stats.engagement,
                     });
-                    effects.nova(screen_w / 2, screen_h / 2);
+                    frame_effects.nova(screen_w / 2, screen_h / 2);
                 }
 
                 // Auto-scroll: set to a large value, renderer will clamp
@@ -5217,129 +5558,128 @@ pub fn main() !void {
             if (rl.IsKeyPressed(rl.KEY_T)) {
                 const center_x = @as(f32, @floatFromInt(g_width)) / 2.0;
                 const center_y = @as(f32, @floatFromInt(g_height)) / 2.0;
-                tools.spawn(center_x, center_y, "inference");
-                tools.setStatus("inference", .running);
-                mode = .tools;
+                frame_tools.spawn(center_x, center_y, "inference");
+                frame_tools.setStatus("inference", .running);
+                frame_mode = .tools;
             }
 
             // V = Vision (inject image perturbation - demo)
             if (rl.IsKeyPressed(rl.KEY_V)) {
                 // Simulate image loading as grid perturbation
-                for (0..grid.height) |y| {
-                    for (0..grid.width) |x| {
-                        const px = @as(f32, @floatFromInt(x)) / @as(f32, @floatFromInt(grid.width));
-                        const py = @as(f32, @floatFromInt(y)) / @as(f32, @floatFromInt(grid.height));
+                for (0..frame_grid.height) |y| {
+                    for (0..frame_grid.width) |x| {
+                        const px = @as(f32, @floatFromInt(x)) / @as(f32, @floatFromInt(frame_grid.width));
+                        const py = @as(f32, @floatFromInt(y)) / @as(f32, @floatFromInt(frame_grid.height));
                         const pattern = @sin(px * TAU * 4.0) * @cos(py * TAU * 4.0);
-                        grid.getMut(x, y).amplitude += pattern * 0.3;
+                        frame_grid.getMut(x, y).amplitude += pattern * 0.3;
                     }
                 }
-                clusters.spawn(mx, my, "VISION INPUT", false);
-                mode = .vision;
+                frame_clusters.spawn(mx, my, "VISION INPUT", false);
+                frame_mode = .vision;
             }
 
             // A = Voice/Audio mode (frequency modulation)
             if (rl.IsKeyPressed(rl.KEY_A)) {
                 // Simulate voice as frequency modulation
-                const freq_mod = @sin(time * 10.0) * 0.5;
-                for (grid.photons[0..grid.width]) |*p| {
+                const freq_mod = @sin(frame_time * 10.0) * 0.5;
+                for (frame_grid.photons[0..frame_grid.width]) |*p| {
                     p.frequency += freq_mod;
                 }
-                clusters.spawn(mx, my, "VOICE INPUT", false);
-                mode = .voice;
+                frame_clusters.spawn(mx, my, "VOICE INPUT", false);
+                frame_mode = .voice;
             }
 
             // N = Nova effect (success)
             if (rl.IsKeyPressed(rl.KEY_N)) {
-                effects.nova(mx, my);
+                frame_effects.nova(mx, my);
             }
 
             // S = Sink effect (failure)
             if (rl.IsKeyPressed(rl.KEY_S)) {
-                effects.sink(mx, my);
+                frame_effects.sink(mx, my);
             }
 
             // R = Reset
             if (rl.IsKeyPressed(rl.KEY_R)) {
-                for (grid.photons) |*p| {
+                for (frame_grid.photons) |*p| {
                     p.amplitude = 0;
                     p.interference = 0;
                 }
                 const center_x = @as(f32, @floatFromInt(g_width)) / 2.0;
                 const center_y = @as(f32, @floatFromInt(g_height)) / 2.0;
-                clusters.spawn(center_x, center_y, "REBIRTH", false);
-                mode = .idle;
+                frame_clusters.spawn(center_x, center_y, "REBIRTH", false);
+                frame_mode = .idle;
             }
 
             // Mouse interactions
             if (rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT)) {
-                if (gx < grid.width and gy < grid.height) {
-                    grid.setCursor(@floatFromInt(gx), @floatFromInt(gy), 1.0);
+                if (gx < frame_grid.width and gy < frame_grid.height) {
+                    frame_grid.setCursor(@floatFromInt(gx), @floatFromInt(gy), 1.0);
                 }
             }
 
             if (rl.IsMouseButtonDown(rl.MOUSE_BUTTON_RIGHT)) {
-                if (gx < grid.width and gy < grid.height) {
-                    grid.getMut(gx, gy).amplitude = -1.0;
+                if (gx < frame_grid.width and gy < frame_grid.height) {
+                    frame_grid.getMut(gx, gy).amplitude = -1.0;
                 }
             }
         }
 
         // === UPDATE ===
-        grid.stepSIMD();
-        clusters.update(dt);
-        spirals.update(dt);
-        tools.update(dt);
-        effects.update(dt);
-        goal.update(&grid, dt);
+        frame_grid.stepSIMD();
+        frame_clusters.update(dt);
+        frame_spirals.update(dt);
+        frame_tools.update(dt);
+        frame_effects.update(dt);
+        frame_goal.update(&frame_grid, dt);
 
         // Update panels with mouse state
         const mouse_pressed = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT);
         const mouse_down_state = rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT);
         const mouse_released = rl.IsMouseButtonReleased(rl.MOUSE_BUTTON_LEFT);
         const mouse_wheel = rl.GetMouseWheelMove();
-        panels.update(dt, time, mx, my, mouse_pressed, mouse_down_state, mouse_released, mouse_wheel);
+        frame_panels.update(dt, frame_time, mx, my, mouse_pressed, mouse_down_state, mouse_released, mouse_wheel);
 
         // Check autonomous goal completion
-        if (goal.progress >= 1.0 and mode == .autonomous) {
-            effects.nova(goal.x, goal.y);
-            clusters.spawn(goal.x, goal.y, "GOAL ACHIEVED", false);
-            mode = .idle;
+        if (frame_goal.progress >= 1.0 and frame_mode == .autonomous) {
+            frame_effects.nova(frame_goal.x, frame_goal.y);
+            frame_clusters.spawn(frame_goal.x, frame_goal.y, "GOAL ACHIEVED", false);
+            frame_mode = .idle;
         }
 
         // === RENDER ===
-        rl.BeginDrawing();
-        defer rl.EndDrawing();
+        // (BeginDrawing/EndDrawing moved to top of updateDrawFrame)
 
-        // Theme-aware background with transparency
-        rl.ClearBackground(@as(rl.Color, @bitCast(theme.clear_bg)));
+        // Theme-aware background (second clear overrides debug text above — keep for now)
+        // rl.ClearBackground(@as(rl.Color, @bitCast(theme.clear_bg)));
 
         // === LOGO LOADING ANIMATION (Apple-style luxury welcome) ===
-        if (!loading_complete) {
+        if (!frame_loading_complete) {
             // Update logo animation
-            logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
-            logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
-            logo_anim.update(dt);
+            frame_logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
+            frame_logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
+            frame_logo_anim.update(dt);
 
             // Draw logo animation
-            logo_anim.draw();
+            frame_logo_anim.draw();
 
             // Check if animation complete
-            if (logo_anim.is_complete) {
-                loading_complete = true;
+            if (frame_logo_anim.is_complete) {
+                frame_loading_complete = true;
             }
 
-            continue; // Skip main canvas rendering during loading
+            return; // Skip main canvas rendering during loading
         }
 
         // Grid
-        drawImmersiveGrid(&grid, time);
+        drawImmersiveGrid(&frame_grid, frame_time);
 
         // Systems
-        clusters.draw(time);
-        spirals.draw();
-        tools.draw(time);
-        effects.draw();
-        goal.draw(time);
+        frame_clusters.draw(frame_time);
+        frame_spirals.draw();
+        frame_tools.draw(frame_time);
+        frame_effects.draw();
+        frame_goal.draw(frame_time);
 
         // === v1.9: Wave Mode Transition ===
         g_wave_transition = @min(1.0, g_wave_transition + dt * 3.0); // 0.33s transition
@@ -5347,36 +5687,36 @@ pub fn main() !void {
         // === IDLE MODE: Logo + Formula Particles ===
         if (g_wave_mode == .idle) {
             // Static logo in center (realm-colored, stays after loading)
-            logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
-            logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
-            logo_anim.applyMouse(mx, my, dt, mouse_pressed);
-            logo_anim.draw();
+            frame_logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
+            frame_logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
+            frame_logo_anim.applyMouse(mx, my, dt, mouse_pressed);
+            frame_logo_anim.draw();
 
             // Sacred formula particles — Fibonacci spiral orbit
             {
                 const fcx = @as(f32, @floatFromInt(g_width)) / 2;
                 const fcy = @as(f32, @floatFromInt(g_height)) / 2;
                 const formula_click = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT);
-                for (&formula_particles) |*fp| {
-                    fp.update(dt, time, mx, my, formula_click, fcx, fcy);
-                    fp.draw(time, fcx, fcy, font_small);
+                for (&frame_formula_particles) |*fp| {
+                    fp.update(dt, frame_time, mx, my, formula_click, fcx, fcy);
+                    fp.draw(frame_time, fcx, fcy, frame_font_small);
                 }
             }
 
             // Handle logo block click — switch to wave mode
-            if (logo_anim.clicked_block >= 0) {
-                const block_idx = @as(usize, @intCast(logo_anim.clicked_block));
+            if (frame_logo_anim.clicked_block >= 0) {
+                const block_idx = @as(usize, @intCast(frame_logo_anim.clicked_block));
                 // Block 0 = Chat, Block 18 = Docs, others = tools
                 const new_wm: WaveMode = if (block_idx == 0) .chat else if (block_idx == 18) .docs else .tools;
                 g_wave_mode_prev = g_wave_mode;
                 g_wave_mode = new_wm;
                 g_wave_transition = 0;
-                effects.nova(screen_w / 2, screen_h / 2);
+                frame_effects.nova(screen_w / 2, screen_h / 2);
             }
 
             // Hover tooltip: show world name + realm color
-            if (logo_anim.hovered_block >= 0) {
-                const hi = @as(usize, @intCast(logo_anim.hovered_block));
+            if (frame_logo_anim.hovered_block >= 0) {
+                const hi = @as(usize, @intCast(frame_logo_anim.hovered_block));
                 const world = sacred_worlds.getWorldByBlock(hi);
                 const tw: f32 = @as(f32, @floatFromInt(world.name_len)) * 9.0 + 30;
                 const tx = mx + 15;
@@ -5388,7 +5728,7 @@ pub fn main() !void {
                 var tooltip_buf: [28:0]u8 = undefined;
                 @memcpy(tooltip_buf[0..world.name_len], world.name[0..world.name_len]);
                 tooltip_buf[world.name_len] = 0;
-                rl.DrawTextEx(font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, tt_text);
+                rl.DrawTextEx(frame_font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, tt_text);
             }
         }
 
@@ -5424,7 +5764,7 @@ pub fn main() !void {
             else
                 rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ring_alpha };
 
-            rl.DrawCircleLines(@intFromFloat(ring_cx), @intFromFloat(ring_cy), ring_r + @sin(time * 2.0) * (3 + ws_pulse * 5), ring_color);
+            rl.DrawCircleLines(@intFromFloat(ring_cx), @intFromFloat(ring_cy), ring_r + @sin(frame_time * 2.0) * (3 + ws_pulse * 5), ring_color);
 
             // v2.1: Memory load indicator — inner ring thickness
             if (ws.memory_load > 0.01) {
@@ -5435,8 +5775,8 @@ pub fn main() !void {
 
             // v2.1: Learning glow — green pulse when saving to TVC
             if (ws.is_learning) {
-                const learn_alpha: u8 = @intFromFloat(@max(0, @min(80, @sin(time * 6.0) * 40 + 40)));
-                rl.DrawCircleLines(@intFromFloat(ring_cx), @intFromFloat(ring_cy), ring_r * 0.95 + @sin(time * 4.0) * 2, rl.Color{ .r = 0, .g = 255, .b = 100, .a = learn_alpha });
+                const learn_alpha: u8 = @intFromFloat(@max(0, @min(80, @sin(frame_time * 6.0) * 40 + 40)));
+                rl.DrawCircleLines(@intFromFloat(ring_cx), @intFromFloat(ring_cy), ring_r * 0.95 + @sin(frame_time * 4.0) * 2, rl.Color{ .r = 0, .g = 255, .b = 100, .a = learn_alpha });
             }
 
             // === CHAT WAVE FIELD ===
@@ -5478,13 +5818,39 @@ pub fn main() !void {
                         // Log messages
                         if (msg_type == .log) {
                             if (render_y >= chat_top - line_h and render_y <= chat_bottom + line_h) {
-                                var log_z: [256:0]u8 = undefined;
-                                @memcpy(log_z[0..msg_len], msg_data);
-                                log_z[msg_len] = 0;
+                                var log_z: [512:0]u8 = undefined;
+                                const log_copy = @min(msg_len, 511);
+                                @memcpy(log_z[0..log_copy], msg_data[0..log_copy]);
+                                log_z[log_copy] = 0;
                                 const log_color = rl.Color{ .r = 120, .g = 120, .b = 140, .a = 180 };
                                 rl.DrawTextEx(chat_font, &log_z, .{ .x = chat_margin, .y = render_y }, 13 * fs, 0.3, log_color);
                             }
                             render_y += 18 * fs;
+                            continue;
+                        }
+
+                        // v3.0: Golden Chain messages — colored indicator + label + text
+                        if (isChainType(msg_type)) {
+                            if (render_y >= chat_top - line_h * 2 and render_y <= chat_bottom + line_h) {
+                                // Draw pulsing Chakra indicator circle
+                                drawChainIndicator(chat_margin - 14 * fs, render_y + 8 * fs, msg_type, frame_time, fs);
+
+                                // Draw chain label
+                                const chain_label = getChainMsgLabel(msg_type);
+                                const chain_color = getChainMsgColor(msg_type, alpha_u8);
+                                rl.DrawTextEx(chat_font, chain_label, .{ .x = chat_margin, .y = render_y }, 12 * fs, 0.3, chain_color);
+
+                                // Draw message content below label
+                                if (msg_len > 0) {
+                                    var chain_z: [512:0]u8 = undefined;
+                                    const chain_copy = @min(msg_len, 511);
+                                    @memcpy(chain_z[0..chain_copy], msg_data[0..chain_copy]);
+                                    chain_z[chain_copy] = 0;
+                                    const chain_text_col = rl.Color{ .r = chain_color.r, .g = chain_color.g, .b = chain_color.b, .a = @min(alpha_u8, 200) };
+                                    rl.DrawTextEx(chat_font, &chain_z, .{ .x = chat_margin + 8 * fs, .y = render_y + 15 * fs }, 14 * fs, 0.3, chain_text_col);
+                                }
+                            }
+                            render_y += 34 * fs; // label line + content line + spacing
                             continue;
                         }
 
@@ -5503,9 +5869,10 @@ pub fn main() !void {
                         render_y += 18 * fs;
 
                         // Measure text
-                        var full_z: [256:0]u8 = undefined;
-                        @memcpy(full_z[0..msg_len], msg_data);
-                        full_z[msg_len] = 0;
+                        var full_z: [512:0]u8 = undefined;
+                        const full_copy = @min(msg_len, 511);
+                        @memcpy(full_z[0..full_copy], msg_data[0..full_copy]);
+                        full_z[full_copy] = 0;
                         const text_size = rl.MeasureTextEx(chat_font, &full_z, msg_font_size, 0.5);
                         const needs_wrap = text_size.x > max_text_w;
 
@@ -5648,7 +6015,7 @@ pub fn main() !void {
                     rl.DrawTextEx(chat_font, &input_disp, .{ .x = ix, .y = iy }, isz, 0.5, CHAT_INPUT_TEXT);
                     rl.DrawTextEx(chat_font, &input_disp, .{ .x = ix + 0.5, .y = iy }, isz, 0.5, CHAT_INPUT_TEXT);
                     // Blinking cursor
-                    if (@mod(@as(u32, @intFromFloat(time * 3)), 2) == 0) {
+                    if (@mod(@as(u32, @intFromFloat(frame_time * 3)), 2) == 0) {
                         const text_w = rl.MeasureTextEx(chat_font, &input_disp, isz, 0.5).x;
                         rl.DrawRectangle(@intFromFloat(ix + text_w + 2 * fs), @intFromFloat(iy), @intFromFloat(2 * fs), @intFromFloat(isz), CHAT_INPUT_TEXT);
                     }
@@ -5657,7 +6024,7 @@ pub fn main() !void {
                     const ph_x = chat_margin + 22 * fs;
                     const ph_y = input_y + 14 * fs;
                     const ph_sz: f32 = 17 * fs;
-                    if (@mod(@as(u32, @intFromFloat(time * 2)), 2) == 0) {
+                    if (@mod(@as(u32, @intFromFloat(frame_time * 2)), 2) == 0) {
                         rl.DrawRectangle(@intFromFloat(ph_x), @intFromFloat(ph_y), @intFromFloat(2 * fs), @intFromFloat(ph_sz), CHAT_INPUT_TEXT);
                     }
                 }
@@ -5767,7 +6134,7 @@ pub fn main() !void {
                 var yi: usize = 0;
                 while (yi < live_lines.len) : (yi += 1) {
                     const y_pos = 50 * fs + @as(f32, @floatFromInt(yi)) * line_h;
-                    const wave_x = @sin(time * 1.5 + @as(f32, @floatFromInt(yi)) * 0.4) * 3;
+                    const wave_x = @sin(frame_time * 1.5 + @as(f32, @floatFromInt(yi)) * 0.4) * 3;
                     const line_color = if (yi == 0 or yi == 6 or yi == 15) code_green else if (yi < 6) code_dim else code_gray;
                     rl.DrawTextEx(chat_font, live_lines[yi], .{ .x = margin + wave_x, .y = y_pos }, code_font_sz, 0.5, line_color);
                     // Line number
@@ -5779,7 +6146,7 @@ pub fn main() !void {
 
                 // Animated wave rings behind
                 for (0..3) |ri| {
-                    const r = 200.0 + @as(f32, @floatFromInt(ri)) * 80.0 + @sin(time * 1.2 + @as(f32, @floatFromInt(ri)) * 1.0) * 15;
+                    const r = 200.0 + @as(f32, @floatFromInt(ri)) * 80.0 + @sin(frame_time * 1.2 + @as(f32, @floatFromInt(ri)) * 1.0) * 15;
                     const ra: u8 = @intFromFloat(@max(0, @min(30, @as(f32, @floatFromInt(alpha_u8)) * 0.12)));
                     rl.DrawCircleLines(@intFromFloat(sw / 2), @intFromFloat(sh / 2), r, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ra });
                 }
@@ -5812,10 +6179,10 @@ pub fn main() !void {
 
                 // Tool items in circle
                 for (0..tool_count) |ti| {
-                    const angle = @as(f32, @floatFromInt(ti)) * (std.math.pi * 2.0 / @as(f32, @floatFromInt(tool_count))) - std.math.pi / 2.0 + time * 0.1;
+                    const angle = @as(f32, @floatFromInt(ti)) * (std.math.pi * 2.0 / @as(f32, @floatFromInt(tool_count))) - std.math.pi / 2.0 + frame_time * 0.1;
                     const tx = center_x + @cos(angle) * orbit_r;
                     const ty = center_y + @sin(angle) * orbit_r;
-                    const pulse = @sin(time * 3.0 + @as(f32, @floatFromInt(ti)) * 1.2) * 0.3 + 0.7;
+                    const pulse = @sin(frame_time * 3.0 + @as(f32, @floatFromInt(ti)) * 1.2) * 0.3 + 0.7;
                     const tool_alpha: u8 = @intFromFloat(@max(60, @min(255, pulse * @as(f32, @floatFromInt(alpha_u8)))));
 
                     // Status dot: green if enabled, gray if disabled
@@ -5917,7 +6284,7 @@ pub fn main() !void {
                 var si: usize = 0;
                 while (si < keys.len) : (si += 1) {
                     const y_pos = 80 * fs + @as(f32, @floatFromInt(si)) * line_h;
-                    const wave_x = @sin(time * 1.0 + @as(f32, @floatFromInt(si)) * 0.5) * 2;
+                    const wave_x = @sin(frame_time * 1.0 + @as(f32, @floatFromInt(si)) * 0.5) * 2;
                     rl.DrawTextEx(chat_font, keys[si], .{ .x = margin + wave_x, .y = y_pos }, 15 * fs, 0.5, key_color);
                     // v2.0: Color booleans green/gray
                     const vc = if (si >= 4 and si <= 6) active_color else val_color;
@@ -5926,7 +6293,7 @@ pub fn main() !void {
 
                 // Concentric config rings
                 for (0..4) |ri| {
-                    const r = 100.0 + @as(f32, @floatFromInt(ri)) * 60.0 + @sin(time * 0.8 + @as(f32, @floatFromInt(ri))) * 8;
+                    const r = 100.0 + @as(f32, @floatFromInt(ri)) * 60.0 + @sin(frame_time * 0.8 + @as(f32, @floatFromInt(ri))) * 8;
                     rl.DrawCircleLines(@intFromFloat(sw * 0.7), @intFromFloat(sh * 0.55), r, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(25, @as(f32, @floatFromInt(alpha_u8)) * 0.1)))) });
                 }
             }
@@ -5946,7 +6313,7 @@ pub fn main() !void {
                     const y_pos = 75 * fs + @as(f32, @floatFromInt(wi)) * line_h;
                     if (y_pos > sh - 40) break;
 
-                    const wave_x = @sin(time * 0.8 + @as(f32, @floatFromInt(wi)) * 0.3) * 3;
+                    const wave_x = @sin(frame_time * 0.8 + @as(f32, @floatFromInt(wi)) * 0.3) * 3;
                     const realm = sacred_worlds.blockToRealm(wi);
                     const rc = rl.Color{
                         .r = sacred_worlds.realmColorR(realm),
@@ -6003,7 +6370,7 @@ pub fn main() !void {
                 while (fi < g_finder_count) : (fi += 1) {
                     const y_pos = 85 * fs + @as(f32, @floatFromInt(fi)) * line_h;
                     if (y_pos > sh - 40) break;
-                    const wave_x = @sin(time * 1.2 + @as(f32, @floatFromInt(fi)) * 0.35) * 2;
+                    const wave_x = @sin(frame_time * 1.2 + @as(f32, @floatFromInt(fi)) * 0.35) * 2;
                     const ic = if (g_finder_is_dir[fi]) dir_color else file_color;
                     // Dir indicator
                     if (g_finder_is_dir[fi]) {
@@ -6020,7 +6387,7 @@ pub fn main() !void {
 
                 // Spiral decoration
                 for (0..20) |si| {
-                    const angle = @as(f32, @floatFromInt(si)) * 0.5 + time * 0.3;
+                    const angle = @as(f32, @floatFromInt(si)) * 0.5 + frame_time * 0.3;
                     const r = 30.0 + @as(f32, @floatFromInt(si)) * 8.0;
                     const sx = sw * 0.75 + @cos(angle) * r;
                     const sy = sh * 0.5 + @sin(angle) * r;
@@ -6036,7 +6403,7 @@ pub fn main() !void {
                 // Expanding concentric rings
                 for (0..8) |ri| {
                     const base_r = 40.0 + @as(f32, @floatFromInt(ri)) * 35.0;
-                    const r = base_r + @sin(time * 2.0 + @as(f32, @floatFromInt(ri)) * 0.8) * 10;
+                    const r = base_r + @sin(frame_time * 2.0 + @as(f32, @floatFromInt(ri)) * 0.8) * 10;
                     const ra: u8 = @intFromFloat(@max(0, @min(80, @as(f32, @floatFromInt(alpha_u8)) * (0.35 - @as(f32, @floatFromInt(ri)) * 0.04))));
                     rl.DrawCircleLines(@intFromFloat(center_x), @intFromFloat(center_y), r, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ra });
                 }
@@ -6078,7 +6445,7 @@ pub fn main() !void {
                 // Audio waveform bars
                 for (0..wave_count) |wi| {
                     const fi_f = @as(f32, @floatFromInt(wi));
-                    const amp = @sin(time * (2.0 + hue_freq) + fi_f * 0.3) * @sin(time * 1.7 + fi_f * 0.15) * 60 * fs * conf_amp;
+                    const amp = @sin(frame_time * (2.0 + hue_freq) + fi_f * 0.3) * @sin(frame_time * 1.7 + fi_f * 0.15) * 60 * fs * conf_amp;
                     const bar_x = fi_f * bar_w + bar_w * 0.1;
                     const bar_h = @abs(amp) + 4;
                     const base_intensity = @abs(amp) * 3 + 40;
@@ -6348,7 +6715,7 @@ pub fn main() !void {
                     rl.DrawTextEx(chat_font, &lat_buf, .{ .x = x + 80 * fs, .y = y }, val_sz, 0.5, bright_text);
 
                     // Self-reflection pulsing ring
-                    const ref_pulse = @sin(time * 2.5) * 0.3 + 0.7;
+                    const ref_pulse = @sin(frame_time * 2.5) * 0.3 + 0.7;
                     const ref_r = 30.0 + ref_pulse * 10.0;
                     const ref_a: u8 = @intFromFloat(@max(0, @min(60, ref_pulse * @as(f32, @floatFromInt(alpha_u8)) * 0.25)));
                     rl.DrawCircleLines(@intFromFloat(x + col_w * 0.35), @intFromFloat(content_h * 0.8), ref_r, rl.Color{ .r = 0xBD, .g = 0x93, .b = 0xF9, .a = ref_a });
@@ -6359,7 +6726,7 @@ pub fn main() !void {
                     const cx = sw / 2;
                     const cy = content_h * 0.85;
                     const ring_base = 15.0 + mws.confidence * 10.0;
-                    const ring_pulse = @sin(time * 1.5) * 3.0;
+                    const ring_pulse = @sin(frame_time * 1.5) * 3.0;
                     const ra: u8 = @intFromFloat(@max(0, @min(50, @as(f32, @floatFromInt(alpha_u8)) * 0.2)));
                     // Gold ring
                     rl.DrawCircleLines(@intFromFloat(cx - 10), @intFromFloat(cy), ring_base + ring_pulse, rl.Color{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = ra });
@@ -6401,14 +6768,14 @@ pub fn main() !void {
 
         // Legacy panels (hidden when wave mode active, kept for backward compat)
         if (g_wave_mode == .idle) {
-            panels.draw(time, font);
+            frame_panels.draw(frame_time, frame_font);
         }
 
         // Keyboard hint (minimal, top-left)
         if (g_wave_mode == .idle) {
-            rl.DrawTextEx(font_small, "Shift+1 Chat | 2 Code | 3 Tools | 4 Settings | 5 Vision | 6 Voice | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+            rl.DrawTextEx(frame_font_small, "Shift+1 Chat | 2 Code | 3 Tools | 4 Settings | 5 Vision | 6 Voice | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
         } else {
-            rl.DrawTextEx(font_small, "ESC = back | Shift+1-6 switch mode", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 140));
+            rl.DrawTextEx(frame_font_small, "ESC = back | Shift+1-6 switch mode", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 140));
         }
 
 
@@ -6447,16 +6814,16 @@ pub fn main() !void {
         rl.DrawLine(0, @intFromFloat(status_y), g_width, @intFromFloat(status_y), BORDER_SUBTLE);
 
         // Get system stats (simulated with realistic values)
-        const cpu_usage: f32 = 15.0 + @sin(time * 0.5) * 10;
-        const mem_used: f32 = 8.2 + @sin(time * 0.3) * 0.5;
+        const cpu_usage: f32 = 15.0 + @sin(frame_time * 0.5) * 10;
+        const mem_used: f32 = 8.2 + @sin(frame_time * 0.3) * 0.5;
         _ = @as(f32, 16.0); // mem_total (unused in rainbow mode)
-        const cpu_temp: f32 = 42.0 + @sin(time * 0.7) * 5;
+        const cpu_temp: f32 = 42.0 + @sin(frame_time * 0.7) * 5;
         const disk_used: f32 = 256.0;
         _ = @as(f32, 512.0); // disk_total (unused in rainbow mode)
-        const net_down: f32 = 1.2 + @abs(@sin(time * 0.8)) * 2;
-        const net_up: f32 = 0.3 + @abs(@sin(time * 0.6)) * 0.5;
+        const net_down: f32 = 1.2 + @abs(@sin(frame_time * 0.8)) * 2;
+        const net_up: f32 = 0.3 + @abs(@sin(frame_time * 0.6)) * 0.5;
         const processes: u32 = 234;
-        const uptime_sec: u32 = @intFromFloat(time);
+        const uptime_sec: u32 = @intFromFloat(frame_time);
 
         var stat_buf: [64:0]u8 = undefined;
         const sw = @as(f32, @floatFromInt(g_width));
@@ -6465,7 +6832,7 @@ pub fn main() !void {
         const stat_text_color = if (theme.isDark()) @as(?rl.Color, null) else TEXT_WHITE; // null = use per-stat color
 
         // Left: TRINITY label
-        rl.DrawTextEx(font_small, "TRINITY", .{ .x = 12, .y = status_y + 5 }, 13, 0.5, stat_text_color orelse HYPER_GREEN);
+        rl.DrawTextEx(frame_font_small, "TRINITY", .{ .x = 12, .y = status_y + 5 }, 13, 0.5, stat_text_color orelse HYPER_GREEN);
 
         // All stats aligned to RIGHT, close together
         const spacing: f32 = 75;
@@ -6473,52 +6840,51 @@ pub fn main() !void {
 
         // Time (rightmost)
         var time_buf: [16:0]u8 = undefined;
-        const display_time = @mod(@as(u32, @intFromFloat(time)), 86400);
+        const display_time = @mod(@as(u32, @intFromFloat(frame_time)), 86400);
         const hours = display_time / 3600;
         const minutes = (display_time % 3600) / 60;
         const seconds = display_time % 60;
         _ = std.fmt.bufPrintZ(&time_buf, "{d:0>2}:{d:0>2}:{d:0>2}", .{ hours, minutes, seconds }) catch {};
         x_pos -= 70;
-        rl.DrawTextEx(font_small, &time_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_MAGENTA);
+        rl.DrawTextEx(frame_font_small, &time_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_MAGENTA);
 
         // Uptime
         const up_hours = uptime_sec / 3600;
         const up_mins = (uptime_sec % 3600) / 60;
         _ = std.fmt.bufPrintZ(&stat_buf, "UP {d}h{d}m", .{ up_hours, up_mins }) catch {};
         x_pos -= spacing;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse PURPLE);
+        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse PURPLE);
 
         // Processes
         _ = std.fmt.bufPrintZ(&stat_buf, "PROC {d}", .{processes}) catch {};
         x_pos -= spacing;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse BLUE);
+        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse BLUE);
 
         // NET
         _ = std.fmt.bufPrintZ(&stat_buf, "NET {d:.1}M", .{net_down + net_up}) catch {};
         x_pos -= spacing;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_CYAN);
+        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_CYAN);
 
         // DISK
         _ = std.fmt.bufPrintZ(&stat_buf, "DISK {d:.0}G", .{disk_used}) catch {};
         x_pos -= spacing + 10;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_GREEN);
+        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_GREEN);
 
         // TEMP
         _ = std.fmt.bufPrintZ(&stat_buf, "{d:.0}C", .{cpu_temp}) catch {};
         x_pos -= spacing - 30;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_YELLOW);
+        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_YELLOW);
 
         // MEM
         _ = std.fmt.bufPrintZ(&stat_buf, "MEM {d:.1}G", .{mem_used}) catch {};
         x_pos -= spacing + 5;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse ORANGE);
+        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse ORANGE);
 
         // CPU
         _ = std.fmt.bufPrintZ(&stat_buf, "CPU {d:.0}%", .{cpu_usage}) catch {};
         x_pos -= spacing;
-        rl.DrawTextEx(font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_RED);
-    }
-}
+        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_RED);
+} // end updateDrawFrame
 
 // Custom input box with font
 fn drawInputBox(input: *const InputBuffer, font: rl.Font, time: f32) void {
