@@ -10,6 +10,7 @@
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
+const chat_server = @import("chat_server.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -144,13 +145,16 @@ pub fn runConvertCommand(args: []const []const u8) void {
 // SERVE COMMAND
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub fn runServeCommand(args: []const []const u8) void {
+pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
     var model_path: ?[]const u8 = null;
     var port: u16 = 8080;
+    var chat_mode = false;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "--model") and i + 1 < args.len) {
+        if (std.mem.eql(u8, args[i], "--chat")) {
+            chat_mode = true;
+        } else if (std.mem.eql(u8, args[i], "--model") and i + 1 < args.len) {
             i += 1;
             model_path = args[i];
         } else if (std.mem.eql(u8, args[i], "--port") and i + 1 < args.len) {
@@ -163,6 +167,18 @@ pub fn runServeCommand(args: []const []const u8) void {
         }
     }
 
+    // v2.3: Chat server mode (no model required)
+    if (chat_mode) {
+        std.debug.print("{s}Trinity Chat Server v2.3{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("  Port: {d}\n", .{port});
+        std.debug.print("  Mode: Hybrid Chat (Tools + Symbolic + TVC + LLM)\n", .{});
+        std.debug.print("\n{s}Starting chat server...{s}\n\n", .{ CYAN, RESET });
+        chat_server.runChatServer(allocator, port) catch |err| {
+            std.debug.print("{s}Server error: {}{s}\n", .{ RED, err, RESET });
+        };
+        return;
+    }
+
     std.debug.print("{s}HTTP API Server{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Port: {d}\n", .{port});
 
@@ -172,8 +188,9 @@ pub fn runServeCommand(args: []const []const u8) void {
         std.debug.print("\n{s}Note: Full HTTP server requires vibee:{s}\n", .{ GRAY, RESET });
         std.debug.print("  zig build vibee -- serve --model {s} --port {d}\n", .{ mp, port });
     } else {
-        std.debug.print("{s}Error: --model is required{s}\n", .{ RED, RESET });
-        std.debug.print("\nUsage: tri serve --model <path.gguf> [--port N]\n", .{});
+        std.debug.print("{s}Usage:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri serve --chat [--port N]           # Chat server (v2.3)\n", .{});
+        std.debug.print("  tri serve --model <path.gguf> [--port N]  # GGUF model server\n", .{});
     }
 }
 

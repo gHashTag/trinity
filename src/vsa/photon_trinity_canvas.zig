@@ -1,7 +1,8 @@
 // =============================================================================
-// TRINITY CANVAS v2.0 - HYPER TERMINAL STYLE (MODULAR)
-// Colors imported from theme.zig - SINGLE SOURCE OF TRUTH
-// Shift+1-8 = Panel Focus (Chat, Code, Tools, Settings, Vision, Voice, Finder, System)
+// TRINITY CANVAS v1.9 - EMERGENT WAVE INTERFACE
+// No side panels — everything inside canvas as wave patterns
+// Shift+1 Chat | Shift+2 Code | Shift+3 Tools | Shift+4 Settings | Shift+5 Vision | Shift+6 Voice
+// ESC = return to idle (27 petals logo)
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // =============================================================================
 
@@ -12,6 +13,8 @@ const theme = @import("trinity_canvas/theme.zig"); // SINGLE SOURCE OF TRUTH
 const world_docs = @import("trinity_canvas/world_docs.zig");
 const igla_chat = @import("igla_chat");
 const fluent_chat = @import("igla_fluent_chat");
+const igla_hybrid_chat = @import("igla_hybrid_chat");
+const tvc = @import("tvc_corpus");
 const auto_shard = @import("auto_shard");
 const world_dots = @import("world_dots.zig");
 const math = std.math;
@@ -23,6 +26,13 @@ const rl = @cImport({
 var g_chat_engine: igla_chat.IglaLocalChat = igla_chat.IglaLocalChat.init();
 var g_fluent_engine: fluent_chat.FluentChatEngine = undefined;
 var g_fluent_engine_inited: bool = false;
+
+// v2.4: Hybrid chat engine (4-level cache: Tools → Symbolic → TVC → LLM)
+var g_hybrid_engine: ?igla_hybrid_chat.IglaHybridChat = null;
+var g_hybrid_corpus: ?*tvc.TVCCorpus = null;
+var g_hybrid_inited: bool = false;
+// GPA for hybrid engine allocations
+var g_hybrid_gpa: std.heap.GeneralPurposeAllocator(.{}) = std.heap.GeneralPurposeAllocator(.{}){};
 
 
 // =============================================================================
@@ -56,6 +66,50 @@ var g_chat_input_len: usize = 0;
 var g_backspace_timer: f32 = 0;
 var g_chat_scroll_y: f32 = 0;
 var g_chat_scroll_target: f32 = 0;
+
+// ── v1.9: Emergent Wave Mode (replaces panel system) ──
+const WaveMode = enum {
+    idle, // 27 petals logo — main menu
+    chat, // Fullscreen chat wave field
+    code, // Fullscreen code editor wave field
+    tools, // Fullscreen tools wave field
+    settings, // Fullscreen settings wave field
+    vision, // Fullscreen vision wave field
+    voice, // Fullscreen voice wave field
+    finder, // Fullscreen finder wave field
+    docs, // Fullscreen docs wave field
+
+    pub fn getLabel(self: WaveMode) [*:0]const u8 {
+        return switch (self) {
+            .idle => "TRINITY",
+            .chat => "CHAT",
+            .code => "CODE",
+            .tools => "TOOLS",
+            .settings => "SETTINGS",
+            .vision => "VISION",
+            .voice => "VOICE",
+            .finder => "FINDER",
+            .docs => "DOCS",
+        };
+    }
+
+    pub fn getHue(self: WaveMode) f32 {
+        return switch (self) {
+            .idle => 45.0, // Gold
+            .chat => 150.0, // Green
+            .code => 210.0, // Blue
+            .tools => 30.0, // Orange
+            .settings => 270.0, // Purple
+            .vision => 180.0, // Cyan
+            .voice => 330.0, // Pink
+            .finder => 60.0, // Yellow
+            .docs => 120.0, // Green-light
+        };
+    }
+};
+var g_wave_mode: WaveMode = .idle;
+var g_wave_transition: f32 = 0; // 0..1 animation progress
+var g_wave_mode_prev: WaveMode = .idle;
 
 fn addGlobalChatMessage(msg: []const u8, msg_type: ChatMsgType) void {
     if (g_chat_msg_count >= MAX_CHAT_MSGS) {
@@ -4746,8 +4800,8 @@ pub fn main() !void {
 
         // === INPUT HANDLING ===
 
-        // Detect if chat panel is open (to disable hotkeys while typing)
-        const chat_is_open: bool = blk_chat: {
+        // Detect if chat is active (wave mode or legacy panel)
+        const chat_is_open: bool = if (g_wave_mode == .chat) true else blk_chat: {
             if (panels.active_panel) |idx| {
                 const p = &panels.panels[idx];
                 const is_visible = (p.state == .open or p.state == .opening);
@@ -4770,83 +4824,36 @@ pub fn main() !void {
         const screen_w = @as(f32, @floatFromInt(g_width));
         const screen_h = @as(f32, @floatFromInt(g_height));
 
-        // Number keys 1-9
-        const key_nums = [9]c_int{ rl.KEY_ONE, rl.KEY_TWO, rl.KEY_THREE, rl.KEY_FOUR, rl.KEY_FIVE, rl.KEY_SIX, rl.KEY_SEVEN, rl.KEY_EIGHT, rl.KEY_NINE };
-
-        // Detect which number key was pressed (ONLY when chat is NOT open)
+        // v1.9: Shift+1-6 = Wave Mode Switch (no panels)
+        // Chat mode also allows Shift+keys for wave mode switch
         if (!chat_is_open) {
-            var pressed_num: ?usize = null;
-            for (key_nums, 0..) |key, idx| {
-                if (rl.IsKeyPressed(key)) {
-                    pressed_num = idx;
-                    break;
-                }
-            }
+            if (shift_held) {
+                var new_mode: ?WaveMode = null;
+                if (rl.IsKeyPressed(rl.KEY_ONE)) new_mode = .chat;
+                if (rl.IsKeyPressed(rl.KEY_TWO)) new_mode = .code;
+                if (rl.IsKeyPressed(rl.KEY_THREE)) new_mode = .tools;
+                if (rl.IsKeyPressed(rl.KEY_FOUR)) new_mode = .settings;
+                if (rl.IsKeyPressed(rl.KEY_FIVE)) new_mode = .vision;
+                if (rl.IsKeyPressed(rl.KEY_SIX)) new_mode = .voice;
+                if (rl.IsKeyPressed(rl.KEY_SEVEN)) new_mode = .finder;
+                if (rl.IsKeyPressed(rl.KEY_EIGHT)) new_mode = .docs;
+                if (rl.IsKeyPressed(rl.KEY_NINE)) new_mode = .idle;
 
-            if (pressed_num) |num| {
-                var world_idx: ?usize = null;
-
-                if (shift_held) {
-                    // Shift+1-9 = Realm RAZUM (blocks 0-8)
-                    world_idx = num; // 0-8
-                } else if (ctrl_held) {
-                    // Ctrl+1-9 = Realm MATERIYA (blocks 9-17)
-                    world_idx = 9 + num; // 9-17
-                } else if (cmd_held) {
-                    // Cmd+1-9 = Realm DUKH (blocks 18-26)
-                    world_idx = 18 + num; // 18-26
-                }
-
-                if (world_idx) |wi| {
-                    const world = sacred_worlds.getWorldByBlock(wi);
-                    const title_slice = world.name[0..world.name_len];
-
-                    // Close all other sacred_world panels first (one world at a time)
-                    for (0..panels.count) |pi| {
-                        if (panels.panels[pi].panel_type == .sacred_world) {
-                            panels.panels[pi].state = .closed;
-                            panels.panels[pi].is_focused = false;
-                        }
-                    }
-
-                    // Find a closed slot to reuse, or append if space available
-                    var slot: ?usize = null;
-                    for (0..panels.count) |pi| {
-                        if (panels.panels[pi].state == .closed) {
-                            slot = pi;
-                            break;
-                        }
-                    }
-                    if (slot == null and panels.count < MAX_PANELS) {
-                        slot = panels.count;
-                        panels.count += 1;
-                    }
-                    if (slot) |si| {
-                        panels.panels[si] = GlassPanel.init(
-                            0, 0, screen_w, screen_h,
-                            .sacred_world, title_slice,
-                        );
-                        panels.panels[si].world_id = @intCast(wi);
-                        // Enable Emergent Wave ScrollView for scrollable panels (not chat)
-                        if (wi != 0) {
-                            panels.panels[si].wave_scroll_enabled = true;
-                            if (wi == 18) {
-                                // Docs panel: calculate real content size from all 27 docs
-                                var total_lines: u32 = 0;
-                                var dci: usize = 0;
-                                while (dci < 27) : (dci += 1) {
-                                    total_lines += world_docs.countVisibleLines(world_docs.WORLD_DOCS[dci].raw);
-                                    total_lines += 4;
-                                }
-                                panels.panels[si].wave_sv.setTotalItems(total_lines, 18.0 * g_font_scale);
-                            } else {
-                                // Other worlds: placeholder content
-                                panels.panels[si].wave_sv.setTotalItems(15, 20.0);
+                if (new_mode) |nm| {
+                    if (nm != g_wave_mode) {
+                        g_wave_mode_prev = g_wave_mode;
+                        g_wave_mode = nm;
+                        g_wave_transition = 0; // Start transition animation
+                        // Wave burst on mode change
+                        effects.nova(screen_w / 2, screen_h / 2);
+                        // Perturb grid with mode's hue
+                        const mode_hue = nm.getHue();
+                        const freq_shift = mode_hue / 360.0 * TAU;
+                        for (0..@min(grid.height, 5)) |wy| {
+                            for (0..grid.width) |wx| {
+                                grid.getMut(wx, wy).amplitude += @sin(freq_shift + @as(f32, @floatFromInt(wx)) * 0.3) * 0.2;
                             }
                         }
-                        panels.panels[si].open();
-                        panels.panels[si].jarvisFocus();
-                        panels.active_panel = si;
                     }
                 }
             }
@@ -4887,8 +4894,14 @@ pub fn main() !void {
             }
         }
 
-        // ESC unfocuses all panels
+        // ESC = return to idle (27 petals logo)
         if (rl.IsKeyPressed(rl.KEY_ESCAPE)) {
+            if (g_wave_mode != .idle) {
+                g_wave_mode_prev = g_wave_mode;
+                g_wave_mode = .idle;
+                g_wave_transition = 0;
+                effects.sink(screen_w / 2, screen_h / 2);
+            }
             panels.unfocusAll();
             // Close all sacred world panels
             for (0..panels.count) |pi| {
@@ -4922,10 +4935,10 @@ pub fn main() !void {
             }
         }
 
-        // === DIRECT CHAT PANEL INPUT ===
-        // When a chat-capable panel is active and visible, input goes directly to it.
-        // Accepts: .chat panels (legacy) and .sacred_world with world_id == 0 (CHAT)
-        const focused_chat_panel: ?*GlassPanel = blk: {
+        // === CHAT INPUT (v1.9: wave mode or legacy panel) ===
+        // Routes keyboard to chat when g_wave_mode == .chat or legacy panel
+        const wave_chat_active = g_wave_mode == .chat;
+        const focused_chat_panel: ?*GlassPanel = if (wave_chat_active) null else blk: {
             if (panels.active_panel) |idx| {
                 const p = &panels.panels[idx];
                 const is_visible = (p.state == .open or p.state == .opening);
@@ -4939,8 +4952,8 @@ pub fn main() !void {
             break :blk null;
         };
 
-        if (focused_chat_panel) |chat_panel| {
-            _ = chat_panel; // Chat uses global state now
+        if (wave_chat_active or focused_chat_panel != null) {
+            if (focused_chat_panel) |chat_panel| { _ = chat_panel; } // legacy compat
             // All panel-switching hotkeys are disabled when chat is open (see chat_is_open above)
             {
                 // Text input: Unicode codepoints → UTF-8 encoded into global buffer
@@ -5017,45 +5030,107 @@ pub fn main() !void {
 
             // Enter sends message
             if (rl.IsKeyPressed(rl.KEY_ENTER) and g_chat_input_len > 0) {
-                // Lazy init FluentChatEngine (self-referential struct)
-                if (!g_fluent_engine_inited) {
-                    g_fluent_engine = fluent_chat.FluentChatEngine{
-                        .message_store = fluent_chat.LightMessageStore.init(),
-                        .context = fluent_chat.ConversationContext.init(),
-                        .generator = undefined,
-                        .fluent_enabled = true,
-                        .total_turns = 0,
-                        .fluent_responses = 0,
-                        .high_quality_count = 0,
-                    };
-                    g_fluent_engine.generator = fluent_chat.ResponseGenerator.init(&g_fluent_engine.context);
-                    g_fluent_engine_inited = true;
+                // Lazy init IglaHybridChat (v2.4: 4-level cache with self-reflection)
+                if (!g_hybrid_inited) {
+                    const alloc = g_hybrid_gpa.allocator();
+
+                    // Create TVC corpus on heap
+                    g_hybrid_corpus = alloc.create(tvc.TVCCorpus) catch null;
+                    if (g_hybrid_corpus) |c| {
+                        c.* = tvc.TVCCorpus.init();
+                    }
+
+                    // Create hybrid chat with env API keys
+                    var hconfig = igla_hybrid_chat.HybridConfig{};
+                    hconfig.groq_api_key = std.posix.getenv("GROQ_API_KEY");
+                    hconfig.claude_api_key = std.posix.getenv("ANTHROPIC_API_KEY");
+                    hconfig.openai_api_key = std.posix.getenv("OPENAI_API_KEY");
+                    hconfig.enable_context = true;
+                    hconfig.system_prompt = "You are Trinity, a helpful AI. Be concise.";
+
+                    g_hybrid_engine = igla_hybrid_chat.IglaHybridChat.initWithConfig(alloc, null, hconfig) catch null;
+                    if (g_hybrid_engine != null and g_hybrid_corpus != null) {
+                        g_hybrid_engine.?.corpus = g_hybrid_corpus;
+                    }
+                    g_hybrid_inited = true;
+
+                    // Also init FluentChatEngine as fallback
+                    if (!g_fluent_engine_inited) {
+                        g_fluent_engine = fluent_chat.FluentChatEngine{
+                            .message_store = fluent_chat.LightMessageStore.init(),
+                            .context = fluent_chat.ConversationContext.init(),
+                            .generator = undefined,
+                            .fluent_enabled = true,
+                            .total_turns = 0,
+                            .fluent_responses = 0,
+                            .high_quality_count = 0,
+                        };
+                        g_fluent_engine.generator = fluent_chat.ResponseGenerator.init(&g_fluent_engine.context);
+                        g_fluent_engine_inited = true;
+                    }
                 }
 
                 // 1. Add user message
                 addGlobalChatMessage(g_chat_input[0..g_chat_input_len], .user);
 
-                // 2. FluentChatEngine response (context-aware with intent/topic/sentiment)
-                const result = g_fluent_engine.respond(g_chat_input[0..g_chat_input_len]);
+                // 2. Try IglaHybridChat (4-level cache: Tools → Symbolic → TVC → LLM)
+                if (g_hybrid_engine != null) {
+                    if (g_hybrid_engine.?.respond(g_chat_input[0..g_chat_input_len])) |hr| {
+                        // 3. Add AI response
+                        addGlobalChatMessage(hr.response, .ai);
 
-                // 3. Add AI response text
-                addGlobalChatMessage(result.getText(), .ai);
+                        // 4. v2.4 metadata log: source + tool + reflection + confidence + latency
+                        const source_name = @tagName(hr.source);
+                        const reflection_name = hr.reflection.getName();
+                        const tool_str = hr.tool_name orelse "-";
+                        addChatLogMessage("{s} | tool:{s} | {s} | conf:{d:.0}% | {d}us", .{
+                            source_name,
+                            tool_str,
+                            reflection_name,
+                            hr.confidence * 100,
+                            hr.latency_us,
+                        });
 
-                // 4. Transparent log with metadata
-                const stats = g_fluent_engine.getStats();
-                const ms = @divFloor(result.execution_time_ns, @as(i64, 1_000_000));
-                addChatLogMessage("{s} | {s} | {s} | q:{d:.0}% | {d}ms | s:{d:.2} | e:{d:.2}", .{
-                    result.intent.getName(),
-                    result.topic.getName(),
-                    result.language.getName(),
-                    result.quality * 100,
-                    ms,
-                    stats.sentiment,
-                    stats.engagement,
-                });
-
-                // Nova effect at screen center
-                effects.nova(screen_w / 2, screen_h / 2);
+                        // Nova on LEARNED, Sink on Filtered
+                        if (hr.reflection.wasLearned()) {
+                            effects.nova(screen_w / 2, screen_h / 2);
+                        } else {
+                            effects.nova(screen_w / 2, screen_h / 2);
+                        }
+                    } else |_| {
+                        // Hybrid failed — fall back to FluentChatEngine
+                        const result = g_fluent_engine.respond(g_chat_input[0..g_chat_input_len]);
+                        addGlobalChatMessage(result.getText(), .ai);
+                        const stats = g_fluent_engine.getStats();
+                        const ms = @divFloor(result.execution_time_ns, @as(i64, 1_000_000));
+                        addChatLogMessage("{s} | {s} | {s} | q:{d:.0}% | {d}ms | s:{d:.2} | e:{d:.2}", .{
+                            result.intent.getName(),
+                            result.topic.getName(),
+                            result.language.getName(),
+                            result.quality * 100,
+                            ms,
+                            stats.sentiment,
+                            stats.engagement,
+                        });
+                        effects.nova(screen_w / 2, screen_h / 2);
+                    }
+                } else {
+                    // No hybrid engine — use FluentChatEngine
+                    const result = g_fluent_engine.respond(g_chat_input[0..g_chat_input_len]);
+                    addGlobalChatMessage(result.getText(), .ai);
+                    const stats = g_fluent_engine.getStats();
+                    const ms = @divFloor(result.execution_time_ns, @as(i64, 1_000_000));
+                    addChatLogMessage("{s} | {s} | {s} | q:{d:.0}% | {d}ms | s:{d:.2} | e:{d:.2}", .{
+                        result.intent.getName(),
+                        result.topic.getName(),
+                        result.language.getName(),
+                        result.quality * 100,
+                        ms,
+                        stats.sentiment,
+                        stats.engagement,
+                    });
+                    effects.nova(screen_w / 2, screen_h / 2);
+                }
 
                 // Auto-scroll: set to a large value, renderer will clamp
                 g_chat_scroll_target = 99999.0;
@@ -5194,105 +5269,362 @@ pub fn main() !void {
         effects.draw();
         goal.draw(time);
 
-        // Static logo in center (realm-colored, stays after loading)
-        logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
-        logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
-        logo_anim.applyMouse(mx, my, dt, mouse_pressed);
-        logo_anim.draw();
+        // === v1.9: Wave Mode Transition ===
+        g_wave_transition = @min(1.0, g_wave_transition + dt * 3.0); // 0.33s transition
 
-        // === SACRED FORMULA PARTICLES — Fibonacci spiral orbit ===
-        {
-            const fcx = @as(f32, @floatFromInt(g_width)) / 2;
-            const fcy = @as(f32, @floatFromInt(g_height)) / 2;
-            const formula_click = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT);
-            for (&formula_particles) |*fp| {
-                fp.update(dt, time, mx, my, formula_click, fcx, fcy);
-                fp.draw(time, fcx, fcy, font_small);
+        // === IDLE MODE: Logo + Formula Particles ===
+        if (g_wave_mode == .idle) {
+            // Static logo in center (realm-colored, stays after loading)
+            logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
+            logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
+            logo_anim.applyMouse(mx, my, dt, mouse_pressed);
+            logo_anim.draw();
+
+            // Sacred formula particles — Fibonacci spiral orbit
+            {
+                const fcx = @as(f32, @floatFromInt(g_width)) / 2;
+                const fcy = @as(f32, @floatFromInt(g_height)) / 2;
+                const formula_click = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT);
+                for (&formula_particles) |*fp| {
+                    fp.update(dt, time, mx, my, formula_click, fcx, fcy);
+                    fp.draw(time, fcx, fcy, font_small);
+                }
+            }
+
+            // Handle logo block click — switch to wave mode
+            if (logo_anim.clicked_block >= 0) {
+                const block_idx = @as(usize, @intCast(logo_anim.clicked_block));
+                // Block 0 = Chat, Block 18 = Docs, others = tools
+                const new_wm: WaveMode = if (block_idx == 0) .chat else if (block_idx == 18) .docs else .tools;
+                g_wave_mode_prev = g_wave_mode;
+                g_wave_mode = new_wm;
+                g_wave_transition = 0;
+                effects.nova(screen_w / 2, screen_h / 2);
+            }
+
+            // Hover tooltip: show world name + realm color
+            if (logo_anim.hovered_block >= 0) {
+                const hi = @as(usize, @intCast(logo_anim.hovered_block));
+                const world = sacred_worlds.getWorldByBlock(hi);
+                const tw: f32 = @as(f32, @floatFromInt(world.name_len)) * 9.0 + 30;
+                const tx = mx + 15;
+                const ty = my - 28;
+                const tt_bg: rl.Color = @bitCast(theme.tooltip_bg);
+                const tt_text: rl.Color = @bitCast(theme.tooltip_text);
+                rl.DrawRectangleRounded(.{ .x = tx, .y = ty, .width = tw, .height = 24 }, 0.3, 8, tt_bg);
+                rl.DrawCircle(@intFromFloat(tx + 10), @intFromFloat(ty + 12), 4, tt_text);
+                var tooltip_buf: [28:0]u8 = undefined;
+                @memcpy(tooltip_buf[0..world.name_len], world.name[0..world.name_len]);
+                tooltip_buf[world.name_len] = 0;
+                rl.DrawTextEx(font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, tt_text);
             }
         }
 
-        // Handle logo block click — open sacred world panel
-        if (logo_anim.clicked_block >= 0) {
-            const block_idx = @as(usize, @intCast(logo_anim.clicked_block));
-            const world = sacred_worlds.getWorldByBlock(block_idx);
+        // === WAVE MODE RENDERERS (fullscreen, no panels) ===
+        if (g_wave_mode != .idle) {
+            const fs = g_font_scale;
+            const chat_font = g_font_chat;
+            const sw = @as(f32, @floatFromInt(g_width));
+            const sh = @as(f32, @floatFromInt(g_height));
+            const alpha_u8: u8 = @intFromFloat(@min(255, g_wave_transition * 255));
+            const mode_hue = g_wave_mode.getHue();
+            const mode_rgb = hsvToRgb(mode_hue, 0.7, 1.0);
+            const mode_color = rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = alpha_u8 };
 
-            // Close all other sacred_world panels (one at a time)
-            for (0..panels.count) |pi| {
-                if (panels.panels[pi].panel_type == .sacred_world) {
-                    panels.panels[pi].state = .closed;
-                    panels.panels[pi].is_focused = false;
-                }
-            }
+            // Mode label (top-center)
+            const label = g_wave_mode.getLabel();
+            const label_w = rl.MeasureTextEx(chat_font, label, 18 * fs, 1.0).x;
+            rl.DrawTextEx(chat_font, label, .{ .x = (sw - label_w) / 2, .y = 12 }, 18 * fs, 1.0, mode_color);
 
-            // Find a closed slot to reuse, or append if space available
-            var slot: ?usize = null;
-            for (0..panels.count) |pi| {
-                if (panels.panels[pi].state == .closed) {
-                    slot = pi;
-                    break;
-                }
-            }
-            if (slot == null and panels.count < MAX_PANELS) {
-                slot = panels.count;
-                panels.count += 1;
-            }
-            if (slot) |si| {
-                const title_slice = world.name[0..world.name_len];
-                panels.panels[si] = GlassPanel.init(
-                    0, 0, screen_w, screen_h,
-                    .sacred_world,
-                    title_slice,
-                );
-                panels.panels[si].world_id = @intCast(block_idx);
-                // Enable Emergent Wave ScrollView for scrollable panels (not chat)
-                if (block_idx != 0) {
-                    panels.panels[si].wave_scroll_enabled = true;
-                    if (block_idx == 18) {
-                        // Docs panel: calculate real content size from all 27 docs
-                        var total_lines: u32 = 0;
-                        var dci: usize = 0;
-                        while (dci < 27) : (dci += 1) {
-                            total_lines += world_docs.countVisibleLines(world_docs.WORLD_DOCS[dci].raw);
-                            total_lines += 4;
+            // Subtle wave border ring (mode-colored)
+            const ring_r = @min(sw, sh) * 0.48;
+            const ring_cx = sw / 2;
+            const ring_cy = sh / 2;
+            const ring_alpha: u8 = @intFromFloat(@max(0, @min(60, @as(f32, @floatFromInt(alpha_u8)) * 0.25)));
+            rl.DrawCircleLines(@intFromFloat(ring_cx), @intFromFloat(ring_cy), ring_r + @sin(time * 2.0) * 3, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ring_alpha });
+
+            // === CHAT WAVE FIELD ===
+            if (g_wave_mode == .chat) {
+                // Fullscreen chat — same logic as sacred_world chat panel but without GlassPanel frame
+                const chat_dt = rl.GetFrameTime();
+                g_chat_scroll_y += (g_chat_scroll_target - g_chat_scroll_y) * @min(1.0, 8.0 * chat_dt);
+
+                const chat_margin: f32 = 70 * fs;
+                const chat_top: f32 = 40 * fs;
+                const input_h: f32 = 48 * fs;
+                const chat_bottom: f32 = sh - input_h - 40 * fs;
+                const msg_area_h = chat_bottom - chat_top;
+                const line_h: f32 = 22 * fs;
+                const msg_font_size: f32 = 17 * fs;
+                const bubble_pad: f32 = 14 * fs;
+                const max_text_w = sw - chat_margin * 2 - bubble_pad * 2;
+                const chat_text_color = withAlpha(CHAT_TEXT, alpha_u8);
+
+                // Scissor clip for messages
+                rl.BeginScissorMode(0, @intFromFloat(chat_top), @intFromFloat(sw), @intFromFloat(@max(1, msg_area_h)));
+
+                g_chat_scroll_target = @max(0, g_chat_scroll_target);
+
+                if (g_chat_msg_count == 0) {
+                    const welcome_y = chat_top + msg_area_h * 0.3;
+                    rl.DrawTextEx(chat_font, "Trinity AI", .{ .x = chat_margin, .y = welcome_y }, 18 * fs, 0.5, withAlpha(HYPER_GREEN, alpha_u8));
+                    rl.DrawTextEx(chat_font, "Type a message below to start chatting.", .{ .x = chat_margin, .y = welcome_y + 24 * fs }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+                    g_chat_scroll_target = 0;
+                    g_chat_scroll_y = 0;
+                } else {
+                    var render_y: f32 = chat_top + 6 * fs - g_chat_scroll_y;
+                    var mi: usize = 0;
+                    while (mi < g_chat_msg_count) : (mi += 1) {
+                        const msg_type = g_chat_msg_types[mi];
+                        const msg_len = g_chat_msg_lens[mi];
+                        const msg_data = g_chat_messages[mi][0..msg_len];
+
+                        // Log messages
+                        if (msg_type == .log) {
+                            if (render_y >= chat_top - line_h and render_y <= chat_bottom + line_h) {
+                                var log_z: [256:0]u8 = undefined;
+                                @memcpy(log_z[0..msg_len], msg_data);
+                                log_z[msg_len] = 0;
+                                const log_color = rl.Color{ .r = 120, .g = 120, .b = 140, .a = 180 };
+                                rl.DrawTextEx(chat_font, &log_z, .{ .x = chat_margin, .y = render_y }, 13 * fs, 0.3, log_color);
+                            }
+                            render_y += 18 * fs;
+                            continue;
                         }
-                        panels.panels[si].wave_sv.setTotalItems(total_lines, 18.0 * g_font_scale);
-                    } else {
-                        // Other worlds: placeholder content
-                        panels.panels[si].wave_sv.setTotalItems(15, 20.0);
+
+                        const is_user = msg_type == .user;
+
+                        // Label
+                        if (render_y >= chat_top - line_h and render_y <= chat_bottom + line_h) {
+                            const label_color = if (is_user) withAlpha(CHAT_LABEL_USER, alpha_u8) else withAlpha(CHAT_LABEL_AI, alpha_u8);
+                            if (is_user) {
+                                const you_w = rl.MeasureTextEx(chat_font, "You", 16 * fs, 0.5).x;
+                                rl.DrawTextEx(chat_font, "You", .{ .x = sw - chat_margin - you_w, .y = render_y }, 16 * fs, 0.5, label_color);
+                            } else {
+                                rl.DrawTextEx(chat_font, "Trinity", .{ .x = chat_margin, .y = render_y }, 16 * fs, 0.5, label_color);
+                            }
+                        }
+                        render_y += 18 * fs;
+
+                        // Measure text
+                        var full_z: [256:0]u8 = undefined;
+                        @memcpy(full_z[0..msg_len], msg_data);
+                        full_z[msg_len] = 0;
+                        const text_size = rl.MeasureTextEx(chat_font, &full_z, msg_font_size, 0.5);
+                        const needs_wrap = text_size.x > max_text_w;
+
+                        if (!needs_wrap) {
+                            if (is_user) {
+                                const text_x = sw - chat_margin - text_size.x;
+                                if (render_y >= chat_top - line_h and render_y <= chat_bottom + line_h) {
+                                    rl.DrawTextEx(chat_font, &full_z, .{ .x = text_x, .y = render_y }, msg_font_size, 0.5, chat_text_color);
+                                    rl.DrawTextEx(chat_font, &full_z, .{ .x = text_x + 0.6, .y = render_y }, msg_font_size, 0.5, chat_text_color);
+                                }
+                                render_y += line_h + 8 * fs;
+                            } else {
+                                if (render_y >= chat_top - line_h and render_y <= chat_bottom + line_h) {
+                                    rl.DrawTextEx(chat_font, &full_z, .{ .x = chat_margin, .y = render_y }, msg_font_size, 0.5, chat_text_color);
+                                    rl.DrawTextEx(chat_font, &full_z, .{ .x = chat_margin + 0.6, .y = render_y }, msg_font_size, 0.5, chat_text_color);
+                                }
+                                render_y += line_h + 8 * fs;
+                            }
+                        } else {
+                            // Multi-line word wrap
+                            var n_lines: f32 = 0;
+                            {
+                                var pos: usize = 0;
+                                while (pos < msg_data.len) {
+                                    var end = pos;
+                                    var last_space: usize = pos;
+                                    while (end < msg_data.len) {
+                                        var next = end + 1;
+                                        while (next < msg_data.len and (msg_data[next] & 0xC0) == 0x80) next += 1;
+                                        var tmp: [256:0]u8 = undefined;
+                                        const seg_len = @min(next - pos, 255);
+                                        @memcpy(tmp[0..seg_len], msg_data[pos..pos + seg_len]);
+                                        tmp[seg_len] = 0;
+                                        const w = rl.MeasureTextEx(chat_font, &tmp, msg_font_size, 0.5).x;
+                                        if (w > max_text_w and end > pos) break;
+                                        if (msg_data[end] == ' ') last_space = end;
+                                        end = next;
+                                    }
+                                    if (end < msg_data.len and last_space > pos) end = last_space + 1 else if (end == pos) end = pos + 1;
+                                    n_lines += 1;
+                                    pos = end;
+                                    while (pos < msg_data.len and msg_data[pos] == ' ') pos += 1;
+                                }
+                                if (n_lines == 0) n_lines = 1;
+                            }
+
+                            const bubble_h = n_lines * line_h;
+                            const bubble_x = chat_margin;
+
+                            var text_y = render_y;
+                            var pos2: usize = 0;
+                            var line_buf_chat: [256:0]u8 = undefined;
+                            while (pos2 < msg_data.len) {
+                                var end2 = pos2;
+                                var last_sp2: usize = pos2;
+                                while (end2 < msg_data.len) {
+                                    var next2 = end2 + 1;
+                                    while (next2 < msg_data.len and (msg_data[next2] & 0xC0) == 0x80) next2 += 1;
+                                    var tmp2: [256:0]u8 = undefined;
+                                    const seg_len2 = @min(next2 - pos2, 255);
+                                    @memcpy(tmp2[0..seg_len2], msg_data[pos2..pos2 + seg_len2]);
+                                    tmp2[seg_len2] = 0;
+                                    const w2 = rl.MeasureTextEx(chat_font, &tmp2, msg_font_size, 0.5).x;
+                                    if (w2 > max_text_w and end2 > pos2) break;
+                                    if (msg_data[end2] == ' ') last_sp2 = end2;
+                                    end2 = next2;
+                                }
+                                if (end2 < msg_data.len and last_sp2 > pos2) end2 = last_sp2 + 1 else if (end2 == pos2) end2 = pos2 + 1;
+
+                                if (text_y >= chat_top - line_h and text_y <= chat_bottom + line_h) {
+                                    const ln_len = @min(end2 - pos2, 255);
+                                    @memcpy(line_buf_chat[0..ln_len], msg_data[pos2..pos2 + ln_len]);
+                                    var tlen = ln_len;
+                                    while (tlen > 0 and line_buf_chat[tlen - 1] == ' ') tlen -= 1;
+                                    line_buf_chat[tlen] = 0;
+                                    rl.DrawTextEx(chat_font, &line_buf_chat, .{ .x = bubble_x + bubble_pad, .y = text_y }, msg_font_size, 0.5, chat_text_color);
+                                    rl.DrawTextEx(chat_font, &line_buf_chat, .{ .x = bubble_x + bubble_pad + 0.6, .y = text_y }, msg_font_size, 0.5, chat_text_color);
+                                }
+
+                                text_y += line_h;
+                                pos2 = end2;
+                                while (pos2 < msg_data.len and msg_data[pos2] == ' ') pos2 += 1;
+                            }
+
+                            render_y += bubble_h + 8 * fs;
+                        }
+                    }
+
+                    // Scroll clamping
+                    const total_content_h = render_y + g_chat_scroll_y - (chat_top + 6 * fs);
+                    const max_scroll = @max(0, total_content_h - msg_area_h + 20 * fs);
+                    g_chat_scroll_target = @min(g_chat_scroll_target, max_scroll);
+                    g_chat_scroll_y = @min(g_chat_scroll_y, max_scroll + 10 * fs);
+                }
+
+                rl.EndScissorMode();
+
+                // Mouse wheel scroll
+                {
+                    const cmy = @as(f32, @floatFromInt(rl.GetMouseY()));
+                    if (cmy >= chat_top and cmy <= chat_bottom) {
+                        g_chat_scroll_target -= rl.GetMouseWheelMove() * 40.0 * fs;
+                        g_chat_scroll_target = @max(0, g_chat_scroll_target);
                     }
                 }
-                panels.panels[si].open();
-                panels.panels[si].jarvisFocus();
-                panels.active_panel = si;
+
+                // Input area (bottom)
+                const input_y = chat_bottom + 4 * fs;
+                const sep_color = rl.Color{ .r = 100, .g = 100, .b = 110, .a = 120 };
+
+                rl.DrawRectangle(
+                    @intFromFloat(chat_margin),
+                    @intFromFloat(input_y),
+                    @intFromFloat(sw - chat_margin * 2),
+                    @intFromFloat(input_h),
+                    CHAT_INPUT_BG,
+                );
+                rl.DrawLineEx(.{ .x = chat_margin, .y = input_y }, .{ .x = sw - chat_margin, .y = input_y }, 1.0, sep_color);
+                rl.DrawLineEx(.{ .x = chat_margin, .y = input_y + input_h }, .{ .x = sw - chat_margin, .y = input_y + input_h }, 1.0, sep_color);
+
+                const prompt_y = input_y + 14 * fs;
+                const prompt_sz: f32 = 17 * fs;
+                const prompt_color = rl.Color{ .r = 150, .g = 150, .b = 160, .a = 220 };
+                rl.DrawTextEx(chat_font, ">", .{ .x = chat_margin + 6 * fs, .y = prompt_y }, prompt_sz, 0.5, prompt_color);
+
+                // "enter to send" hint
+                const send_sz: f32 = 13 * fs;
+                const send_color = rl.Color{ .r = 140, .g = 140, .b = 150, .a = 180 };
+                const send_w = rl.MeasureTextEx(chat_font, "enter to send", send_sz, 0.5).x;
+                rl.DrawTextEx(chat_font, "enter to send", .{ .x = sw - chat_margin - send_w - 10 * fs, .y = input_y + 16 * fs }, send_sz, 0.5, send_color);
+
+                if (g_chat_input_len > 0) {
+                    var input_disp: [260:0]u8 = undefined;
+                    const show_input = @min(g_chat_input_len, 255);
+                    @memcpy(input_disp[0..show_input], g_chat_input[0..show_input]);
+                    input_disp[show_input] = 0;
+                    const ix = chat_margin + 22 * fs;
+                    const iy = input_y + 14 * fs;
+                    const isz: f32 = 17 * fs;
+                    rl.DrawTextEx(chat_font, &input_disp, .{ .x = ix, .y = iy }, isz, 0.5, CHAT_INPUT_TEXT);
+                    rl.DrawTextEx(chat_font, &input_disp, .{ .x = ix + 0.5, .y = iy }, isz, 0.5, CHAT_INPUT_TEXT);
+                    // Blinking cursor
+                    if (@mod(@as(u32, @intFromFloat(time * 3)), 2) == 0) {
+                        const text_w = rl.MeasureTextEx(chat_font, &input_disp, isz, 0.5).x;
+                        rl.DrawRectangle(@intFromFloat(ix + text_w + 2 * fs), @intFromFloat(iy), @intFromFloat(2 * fs), @intFromFloat(isz), CHAT_INPUT_TEXT);
+                    }
+                } else {
+                    // Empty: blinking cursor
+                    const ph_x = chat_margin + 22 * fs;
+                    const ph_y = input_y + 14 * fs;
+                    const ph_sz: f32 = 17 * fs;
+                    if (@mod(@as(u32, @intFromFloat(time * 2)), 2) == 0) {
+                        rl.DrawRectangle(@intFromFloat(ph_x), @intFromFloat(ph_y), @intFromFloat(2 * fs), @intFromFloat(ph_sz), CHAT_INPUT_TEXT);
+                    }
+                }
+
+                // Status bar
+                {
+                    const wstatus_y = input_y + input_h + 3 * fs;
+                    const status_sz: f32 = 11 * fs;
+                    const status_color = rl.Color{ .r = 100, .g = 100, .b = 115, .a = 160 };
+                    const fps_val = rl.GetFPS();
+                    var wstatus_buf: [256:0]u8 = undefined;
+                    if (g_fluent_engine_inited) {
+                        const st = g_fluent_engine.getStats();
+                        const sl = std.fmt.bufPrint(wstatus_buf[0..255], "{d}fps | fluent {d:.0}% | {s} | {s} | s:{d:.1}", .{
+                            fps_val, st.fluent_rate * 100, st.current_language.getName(), st.current_topic.getName(), st.sentiment,
+                        }) catch "...";
+                        wstatus_buf[sl.len] = 0;
+                    } else {
+                        const sl = std.fmt.bufPrint(wstatus_buf[0..255], "{d}fps | trinity v1.9 | ready", .{fps_val}) catch "...";
+                        wstatus_buf[sl.len] = 0;
+                    }
+                    rl.DrawTextEx(chat_font, &wstatus_buf, .{ .x = chat_margin + 4 * fs, .y = wstatus_y }, status_sz, 0.3, status_color);
+                    var count_buf: [64:0]u8 = undefined;
+                    const ct = std.fmt.bufPrint(count_buf[0..63], "{d} msgs", .{g_chat_msg_count}) catch "0";
+                    count_buf[ct.len] = 0;
+                    const count_w = rl.MeasureTextEx(chat_font, &count_buf, status_sz, 0.3).x;
+                    rl.DrawTextEx(chat_font, &count_buf, .{ .x = sw - chat_margin - count_w - 4 * fs, .y = wstatus_y }, status_sz, 0.3, status_color);
+                }
+            }
+
+            // === CODE / TOOLS / SETTINGS / VISION / VOICE / FINDER / DOCS ===
+            if (g_wave_mode == .code or g_wave_mode == .tools or g_wave_mode == .settings or
+                g_wave_mode == .vision or g_wave_mode == .voice or g_wave_mode == .finder or g_wave_mode == .docs)
+            {
+                // Placeholder: centered mode name with wave animation
+                const center_y = sh / 2;
+                const mode_label = g_wave_mode.getLabel();
+                const lw = rl.MeasureTextEx(chat_font, mode_label, 32 * fs, 1.0).x;
+                const wave_offset = @sin(time * 2.0) * 5;
+                rl.DrawTextEx(chat_font, mode_label, .{ .x = (sw - lw) / 2, .y = center_y - 20 + wave_offset }, 32 * fs, 1.0, mode_color);
+                rl.DrawTextEx(chat_font, "Coming soon...", .{ .x = (sw - 120) / 2, .y = center_y + 30 + wave_offset }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+
+                // Animated wave rings
+                const n_rings: usize = 5;
+                for (0..n_rings) |ri| {
+                    const r = 60.0 + @as(f32, @floatFromInt(ri)) * 40.0 + @sin(time * 1.5 + @as(f32, @floatFromInt(ri)) * 0.7) * 10;
+                    const ra: u8 = @intFromFloat(@max(0, @min(80, @as(f32, @floatFromInt(alpha_u8)) * (0.3 - @as(f32, @floatFromInt(ri)) * 0.05))));
+                    rl.DrawCircleLines(@intFromFloat(sw / 2), @intFromFloat(center_y), r, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ra });
+                }
             }
         }
 
-        // Hover tooltip: show world name + realm color
-        if (logo_anim.hovered_block >= 0) {
-            const hi = @as(usize, @intCast(logo_anim.hovered_block));
-            const world = sacred_worlds.getWorldByBlock(hi);
-
-            // Tooltip: adapts to theme (white bg/black text on dark, dark bg/white text on light)
-            const tw: f32 = @as(f32, @floatFromInt(world.name_len)) * 9.0 + 30;
-            const tx = mx + 15;
-            const ty = my - 28;
-            const tt_bg: rl.Color = @bitCast(theme.tooltip_bg);
-            const tt_text: rl.Color = @bitCast(theme.tooltip_text);
-            rl.DrawRectangleRounded(.{ .x = tx, .y = ty, .width = tw, .height = 24 }, 0.3, 8, tt_bg);
-
-            // Dot + world name
-            rl.DrawCircle(@intFromFloat(tx + 10), @intFromFloat(ty + 12), 4, tt_text);
-            var tooltip_buf: [28:0]u8 = undefined;
-            @memcpy(tooltip_buf[0..world.name_len], world.name[0..world.name_len]);
-            tooltip_buf[world.name_len] = 0;
-            rl.DrawTextEx(font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, tt_text);
+        // Legacy panels (hidden when wave mode active, kept for backward compat)
+        if (g_wave_mode == .idle) {
+            panels.draw(time, font);
         }
 
-        // Glass panels (on top of everything except UI)
-        panels.draw(time, font);
-
         // Keyboard hint (minimal, top-left)
-        rl.DrawTextEx(font_small, "Shift+1-9 RAZUM | Ctrl+1-9 MATERIYA | Cmd+1-9 DUKH | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+        if (g_wave_mode == .idle) {
+            rl.DrawTextEx(font_small, "Shift+1 Chat | 2 Code | 3 Tools | 4 Settings | 5 Vision | 6 Voice | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+        } else {
+            rl.DrawTextEx(font_small, "ESC = back | Shift+1-6 switch mode", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 140));
+        }
 
 
         // === SUN/MOON THEME TOGGLE (top-right, 20px from top) ===

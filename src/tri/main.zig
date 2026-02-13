@@ -68,7 +68,7 @@ pub fn main() !void {
         .reason => utils.runSWECommand(&state, .Reason, cmd_args),
         .gen => commands.runGenCommand(allocator, cmd_args),
         .convert => commands.runConvertCommand(cmd_args),
-        .serve => commands.runServeCommand(cmd_args),
+        .serve => commands.runServeCommand(allocator, cmd_args),
         .bench => commands.runBenchCommand(allocator),
         .evolve => commands.runEvolveCommand(cmd_args),
         // Git commands

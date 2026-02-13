@@ -595,7 +595,7 @@ pub const TextCorpus = struct {
 
     /// Pack 5 trits into 1 byte (3^5 = 243 < 256)
     /// Trit mapping: -1 → 0, 0 → 1, +1 → 2
-    fn packTrits5(trits: [5]Trit) u8 {
+    pub fn packTrits5(trits: [5]Trit) u8 {
         var result: u8 = 0;
         var multiplier: u8 = 1;
         for (trits) |t| {
@@ -607,7 +607,7 @@ pub const TextCorpus = struct {
     }
 
     /// Unpack 1 byte into 5 trits
-    fn unpackTrits5(byte_val: u8) [5]Trit {
+    pub fn unpackTrits5(byte_val: u8) [5]Trit {
         var trits: [5]Trit = undefined;
         var val = byte_val;
         for (0..5) |i| {
@@ -762,11 +762,11 @@ pub const TextCorpus = struct {
 
     const RLE_ESCAPE: u8 = 0xFF;
     const RLE_MIN_RUN: usize = 3;
-    const MAX_RLE_BUFFER: usize = 1024;
+    pub const MAX_RLE_BUFFER: usize = 1024;
 
     /// RLE encode a byte sequence
     /// Returns number of bytes written to output, or null if RLE is larger
-    fn rleEncode(input: []const u8, output: []u8) ?usize {
+    pub fn rleEncode(input: []const u8, output: []u8) ?usize {
         if (input.len == 0) return 0;
 
         var out_pos: usize = 0;
@@ -813,7 +813,7 @@ pub const TextCorpus = struct {
     }
 
     /// RLE decode a byte sequence
-    fn rleDecode(input: []const u8, output: []u8) ?usize {
+    pub fn rleDecode(input: []const u8, output: []u8) ?usize {
         var out_pos: usize = 0;
         var i: usize = 0;
 
@@ -1029,11 +1029,11 @@ pub const TextCorpus = struct {
     // DICTIONARY COMPRESSION (TCV3 format)
     // ═══════════════════════════════════════════════════════════════════════════════
 
-    const MAX_DICT_SIZE: usize = 128;
-    const MAX_PACKED_VALUES: usize = 243; // 3^5 possible packed byte values
+    pub const MAX_DICT_SIZE: usize = 128;
+    pub const MAX_PACKED_VALUES: usize = 243; // 3^5 possible packed byte values
 
     /// Build frequency table of packed bytes across corpus
-    fn buildFrequencyTable(self: *TextCorpus, freq: *[MAX_PACKED_VALUES]u32) void {
+    pub fn buildFrequencyTable(self: *TextCorpus, freq: *[MAX_PACKED_VALUES]u32) void {
         @memset(freq, 0);
 
         for (0..self.count) |i| {
@@ -1058,7 +1058,7 @@ pub const TextCorpus = struct {
     }
 
     /// Build dictionary from frequency table (top N most frequent)
-    fn buildDictionary(freq: *const [MAX_PACKED_VALUES]u32, dict: *[MAX_DICT_SIZE]u8, dict_size: *u8) void {
+    pub fn buildDictionary(freq: *const [MAX_PACKED_VALUES]u32, dict: *[MAX_DICT_SIZE]u8, dict_size: *u8) void {
         // Create sorted indices by frequency
         var indices: [MAX_PACKED_VALUES]u8 = undefined;
         for (0..MAX_PACKED_VALUES) |i| {
@@ -1089,7 +1089,7 @@ pub const TextCorpus = struct {
     }
 
     /// Create reverse lookup table for encoding
-    fn buildReverseLookup(dict: *const [MAX_DICT_SIZE]u8, dict_size: u8, lookup: *[MAX_PACKED_VALUES]u8) void {
+    pub fn buildReverseLookup(dict: *const [MAX_DICT_SIZE]u8, dict_size: u8, lookup: *[MAX_PACKED_VALUES]u8) void {
         // Initialize all to 0xFF (not in dictionary)
         @memset(lookup, 0xFF);
 
@@ -1100,7 +1100,7 @@ pub const TextCorpus = struct {
     }
 
     /// Encode packed bytes using dictionary
-    fn dictEncode(input: []const u8, output: []u8, lookup: *const [MAX_PACKED_VALUES]u8, dict_size: u8) ?usize {
+    pub fn dictEncode(input: []const u8, output: []u8, lookup: *const [MAX_PACKED_VALUES]u8, dict_size: u8) ?usize {
         var out_pos: usize = 0;
 
         for (input) |b| {
@@ -1123,7 +1123,7 @@ pub const TextCorpus = struct {
     }
 
     /// Decode dictionary-encoded bytes
-    fn dictDecode(input: []const u8, output: []u8, dict: *const [MAX_DICT_SIZE]u8, dict_size: u8) ?usize {
+    pub fn dictDecode(input: []const u8, output: []u8, dict: *const [MAX_DICT_SIZE]u8, dict_size: u8) ?usize {
         var out_pos: usize = 0;
         var i: usize = 0;
 
@@ -1351,8 +1351,8 @@ pub const TextCorpus = struct {
     // HUFFMAN COMPRESSION (TCV4 format)
     // ═══════════════════════════════════════════════════════════════════════════════
 
-    const MAX_CODE_LEN: u8 = 16;
-    const MAX_HUFFMAN_BUFFER: usize = 2048;
+    pub const MAX_CODE_LEN: u8 = 16;
+    pub const MAX_HUFFMAN_BUFFER: usize = 2048;
 
     /// Huffman node for tree building
     const HuffmanNode = struct {
@@ -1363,13 +1363,13 @@ pub const TextCorpus = struct {
     };
 
     /// Huffman code entry
-    const HuffmanCode = struct {
+    pub const HuffmanCode = struct {
         code: u32, // The bit pattern
         len: u8, // Number of bits
     };
 
     /// Build Huffman tree from frequencies, return code lengths
-    fn buildHuffmanTree(freq: *const [MAX_PACKED_VALUES]u32, code_lens: *[MAX_PACKED_VALUES]u8) void {
+    pub fn buildHuffmanTree(freq: *const [MAX_PACKED_VALUES]u32, code_lens: *[MAX_PACKED_VALUES]u8) void {
         // Simple approach: use code length based on frequency ranking
         // More frequent symbols get shorter codes
 
@@ -1419,7 +1419,7 @@ pub const TextCorpus = struct {
     }
 
     /// Generate canonical Huffman codes from code lengths
-    fn generateCanonicalCodes(code_lens: *const [MAX_PACKED_VALUES]u8, codes: *[MAX_PACKED_VALUES]HuffmanCode) void {
+    pub fn generateCanonicalCodes(code_lens: *const [MAX_PACKED_VALUES]u8, codes: *[MAX_PACKED_VALUES]HuffmanCode) void {
         // Count symbols at each length
         var bl_count: [MAX_CODE_LEN + 1]u16 = undefined;
         @memset(&bl_count, 0);
@@ -1537,7 +1537,7 @@ pub const TextCorpus = struct {
     };
 
     /// Huffman encode packed bytes
-    fn huffmanEncode(input: []const u8, output: []u8, codes: *const [MAX_PACKED_VALUES]HuffmanCode) ?struct { bytes: usize, bits: u32 } {
+    pub fn huffmanEncode(input: []const u8, output: []u8, codes: *const [MAX_PACKED_VALUES]HuffmanCode) ?struct { bytes: usize, bits: u32 } {
         var writer = BitWriter.init(output);
 
         for (input) |b| {
@@ -1550,7 +1550,7 @@ pub const TextCorpus = struct {
     }
 
     /// Huffman decode to packed bytes
-    fn huffmanDecode(input: []const u8, total_bits: u32, output: []u8, code_lens: *const [MAX_PACKED_VALUES]u8, codes: *const [MAX_PACKED_VALUES]HuffmanCode) ?usize {
+    pub fn huffmanDecode(input: []const u8, total_bits: u32, output: []u8, code_lens: *const [MAX_PACKED_VALUES]u8, codes: *const [MAX_PACKED_VALUES]HuffmanCode) ?usize {
         var reader = BitReader.init(input);
         var out_pos: usize = 0;
         var bits_read: u32 = 0;
@@ -1825,7 +1825,7 @@ pub const TextCorpus = struct {
     const ARITH_QUARTER: u64 = ARITH_FULL_RANGE >> 2;
 
     /// Cumulative frequency table for arithmetic coding
-    const CumulativeFreq = struct {
+    pub const CumulativeFreq = struct {
         cumulative: [MAX_PACKED_VALUES + 1]u32, // cumulative[i] = sum of freq[0..i]
         total: u32,
 
@@ -2043,7 +2043,7 @@ pub const TextCorpus = struct {
     };
 
     /// Arithmetic encode packed bytes
-    fn arithmeticEncode(input: []const u8, output: []u8, cf: *const CumulativeFreq) ?struct { bytes: usize, bits: u32 } {
+    pub fn arithmeticEncode(input: []const u8, output: []u8, cf: *const CumulativeFreq) ?struct { bytes: usize, bits: u32 } {
         var encoder = ArithEncoder.init(output);
 
         for (input) |b| {
@@ -2056,7 +2056,7 @@ pub const TextCorpus = struct {
     }
 
     /// Arithmetic decode to packed bytes
-    fn arithmeticDecode(input: []const u8, output: []u8, symbol_count: usize, cf: *const CumulativeFreq) ?usize {
+    pub fn arithmeticDecode(input: []const u8, output: []u8, symbol_count: usize, cf: *const CumulativeFreq) ?usize {
         if (symbol_count == 0) return 0;
         if (symbol_count > output.len) return null;
 
