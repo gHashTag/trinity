@@ -244,6 +244,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-agent-os-v1-0-report',
         'research/trinity-mainnet-genesis-report',
         'research/trinity-mainnet-v1-0-report',
+        'research/trinity-golden-chain-v2-5-u7-report',
       ],
     },
     'faq',
