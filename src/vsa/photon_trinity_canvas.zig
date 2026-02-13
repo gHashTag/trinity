@@ -5616,25 +5616,282 @@ pub fn main() !void {
                 }
             }
 
-            // === CODE / TOOLS / SETTINGS / VISION / VOICE / FINDER / DOCS ===
-            if (g_wave_mode == .code or g_wave_mode == .tools or g_wave_mode == .settings or
-                g_wave_mode == .vision or g_wave_mode == .voice or g_wave_mode == .finder or g_wave_mode == .docs)
-            {
-                // Placeholder: centered mode name with wave animation
-                const center_y = sh / 2;
-                const mode_label = g_wave_mode.getLabel();
-                const lw = rl.MeasureTextEx(chat_font, mode_label, 32 * fs, 1.0).x;
-                const wave_offset = @sin(time * 2.0) * 5;
-                rl.DrawTextEx(chat_font, mode_label, .{ .x = (sw - lw) / 2, .y = center_y - 20 + wave_offset }, 32 * fs, 1.0, mode_color);
-                rl.DrawTextEx(chat_font, "Coming soon...", .{ .x = (sw - 120) / 2, .y = center_y + 30 + wave_offset }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+            // === CODE WAVE FIELD === (system info as scrolling code lines)
+            if (g_wave_mode == .code) {
+                const margin: f32 = 60 * fs;
+                const line_h: f32 = 22 * fs;
+                const code_font_sz: f32 = 16 * fs;
+                const code_dim = withAlpha(rl.Color{ .r = 100, .g = 200, .b = 255, .a = 255 }, alpha_u8);
+                const code_green = withAlpha(rl.Color{ .r = 80, .g = 255, .b = 120, .a = 255 }, alpha_u8);
+                const code_gray = withAlpha(MUTED_GRAY, alpha_u8);
 
-                // Animated wave rings
-                const n_rings: usize = 5;
-                for (0..n_rings) |ri| {
-                    const r = 60.0 + @as(f32, @floatFromInt(ri)) * 40.0 + @sin(time * 1.5 + @as(f32, @floatFromInt(ri)) * 0.7) * 10;
-                    const ra: u8 = @intFromFloat(@max(0, @min(80, @as(f32, @floatFromInt(alpha_u8)) * (0.3 - @as(f32, @floatFromInt(ri)) * 0.05))));
-                    rl.DrawCircleLines(@intFromFloat(sw / 2), @intFromFloat(center_y), r, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ra });
+                const lines = [_][*:0]const u8{
+                    "// ═══ TRINITY SYSTEM INFO ═══",
+                    "const platform = \"Apple M1 Pro\";",
+                    "const renderer = \"Metal 4.1\";",
+                    "const zig_version = \"0.15.x\";",
+                    "const canvas_version = \"v1.9\";",
+                    "const hybrid_chat = \"IglaHybridChat v2.1\";",
+                    "const cache_levels = 5; // Tools>Symbolic>Memory>TVC>LLM",
+                    "const vsa_dimensions = 1024;",
+                    "const tvc_max_entries = 10000;",
+                    "const memory_max = 256;",
+                    "const providers = .{ \"Groq\", \"Claude\", \"Local\" };",
+                    "// ═══ WAVE STATE ═══",
+                    "const wave_routing = \"Symbolic\";",
+                    "const wave_confidence = 0.95;",
+                    "const wave_learning = false;",
+                    "// φ^2 + 1/φ^2 = 3 = TRINITY",
+                };
+
+                var yi: usize = 0;
+                while (yi < lines.len) : (yi += 1) {
+                    const y_pos = 50 * fs + @as(f32, @floatFromInt(yi)) * line_h;
+                    const wave_x = @sin(time * 1.5 + @as(f32, @floatFromInt(yi)) * 0.4) * 3;
+                    const line_color = if (yi == 0 or yi == 11 or yi == 15) code_green else if (yi < 11) code_dim else code_gray;
+                    rl.DrawTextEx(chat_font, lines[yi], .{ .x = margin + wave_x, .y = y_pos }, code_font_sz, 0.5, line_color);
+                    // Line number
+                    var num_buf: [8:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&num_buf, "{d:>3}", .{yi + 1}) catch {};
+                    num_buf[3] = 0;
+                    rl.DrawTextEx(chat_font, &num_buf, .{ .x = margin - 40 * fs, .y = y_pos }, code_font_sz, 0.5, withAlpha(MUTED_GRAY, @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(alpha_u8)) * 0.4))))));
                 }
+
+                // Animated wave rings behind
+                for (0..3) |ri| {
+                    const r = 200.0 + @as(f32, @floatFromInt(ri)) * 80.0 + @sin(time * 1.2 + @as(f32, @floatFromInt(ri)) * 1.0) * 15;
+                    const ra: u8 = @intFromFloat(@max(0, @min(30, @as(f32, @floatFromInt(alpha_u8)) * 0.12)));
+                    rl.DrawCircleLines(@intFromFloat(sw / 2), @intFromFloat(sh / 2), r, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ra });
+                }
+            }
+
+            // === TOOLS WAVE FIELD === (tool status wheel)
+            if (g_wave_mode == .tools) {
+                const center_x = sw / 2;
+                const center_y = sh / 2;
+                const tool_names = [_][*:0]const u8{ "time", "date", "system", "file_read", "file_list", "zig_build", "zig_test" };
+                const tool_count = tool_names.len;
+                const orbit_r: f32 = @min(sw, sh) * 0.25;
+
+                // Title
+                rl.DrawTextEx(chat_font, "AVAILABLE TOOLS", .{ .x = center_x - 80, .y = 40 * fs }, 18 * fs, 0.5, mode_color);
+
+                // Tool items in circle
+                for (0..tool_count) |ti| {
+                    const angle = @as(f32, @floatFromInt(ti)) * (std.math.pi * 2.0 / @as(f32, @floatFromInt(tool_count))) - std.math.pi / 2.0 + time * 0.1;
+                    const tx = center_x + @cos(angle) * orbit_r;
+                    const ty = center_y + @sin(angle) * orbit_r;
+                    const pulse = @sin(time * 3.0 + @as(f32, @floatFromInt(ti)) * 1.2) * 0.3 + 0.7;
+                    const tool_alpha: u8 = @intFromFloat(@max(60, @min(255, pulse * @as(f32, @floatFromInt(alpha_u8)))));
+
+                    // Green status dot
+                    rl.DrawCircle(@intFromFloat(tx - 12), @intFromFloat(ty + 2), 4, rl.Color{ .r = 80, .g = 255, .b = 80, .a = tool_alpha });
+                    // Tool name
+                    rl.DrawTextEx(chat_font, tool_names[ti], .{ .x = tx - 4, .y = ty - 6 }, 15 * fs, 0.5, withAlpha(mode_color, tool_alpha));
+
+                    // Connecting line to center
+                    rl.DrawLine(@intFromFloat(center_x), @intFromFloat(center_y), @intFromFloat(tx), @intFromFloat(ty), rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(30, pulse * 40)))) });
+                }
+
+                // Center dot
+                rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), 6, mode_color);
+            }
+
+            // === SETTINGS WAVE FIELD === (config key-value pairs)
+            if (g_wave_mode == .settings) {
+                const margin: f32 = 80 * fs;
+                const line_h: f32 = 26 * fs;
+                const key_color = withAlpha(mode_color, alpha_u8);
+                const val_color = withAlpha(rl.Color{ .r = 200, .g = 200, .b = 220, .a = 255 }, alpha_u8);
+
+                rl.DrawTextEx(chat_font, "CONFIGURATION", .{ .x = margin, .y = 40 * fs }, 20 * fs, 0.5, key_color);
+
+                const keys = [_][*:0]const u8{
+                    "symbolic_threshold",
+                    "tvc_similarity",
+                    "max_tokens",
+                    "temperature",
+                    "enable_reflection",
+                    "enable_context",
+                    "memory_max_entries",
+                    "groq_model",
+                    "claude_model",
+                    "GROQ_API_KEY",
+                    "ANTHROPIC_API_KEY",
+                    "wave_export",
+                };
+                const vals = [_][*:0]const u8{
+                    "0.30",
+                    "0.55",
+                    "32",
+                    "0.70",
+                    "true",
+                    "true",
+                    "256",
+                    "llama-3.3-70b-versatile",
+                    "claude-3-5-sonnet",
+                    "****",
+                    "****",
+                    "enabled",
+                };
+
+                var si: usize = 0;
+                while (si < keys.len) : (si += 1) {
+                    const y_pos = 80 * fs + @as(f32, @floatFromInt(si)) * line_h;
+                    const wave_x = @sin(time * 1.0 + @as(f32, @floatFromInt(si)) * 0.5) * 2;
+                    rl.DrawTextEx(chat_font, keys[si], .{ .x = margin + wave_x, .y = y_pos }, 15 * fs, 0.5, key_color);
+                    rl.DrawTextEx(chat_font, vals[si], .{ .x = margin + 280 * fs + wave_x, .y = y_pos }, 15 * fs, 0.5, val_color);
+                }
+
+                // Concentric config rings
+                for (0..4) |ri| {
+                    const r = 100.0 + @as(f32, @floatFromInt(ri)) * 60.0 + @sin(time * 0.8 + @as(f32, @floatFromInt(ri))) * 8;
+                    rl.DrawCircleLines(@intFromFloat(sw * 0.7), @intFromFloat(sh * 0.55), r, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(25, @as(f32, @floatFromInt(alpha_u8)) * 0.1)))) });
+                }
+            }
+
+            // === DOCS WAVE FIELD === (sacred worlds encyclopedia)
+            if (g_wave_mode == .docs) {
+                const margin: f32 = 60 * fs;
+                const line_h: f32 = 28 * fs;
+                const title_color = withAlpha(mode_color, alpha_u8);
+
+                rl.DrawTextEx(chat_font, "SACRED WORLDS ENCYCLOPEDIA", .{ .x = margin, .y = 35 * fs }, 18 * fs, 0.5, title_color);
+
+                // Display sacred worlds (19 blocks from logo)
+                const max_worlds: usize = 19;
+                var wi: usize = 0;
+                while (wi < max_worlds) : (wi += 1) {
+                    const y_pos = 75 * fs + @as(f32, @floatFromInt(wi)) * line_h;
+                    if (y_pos > sh - 40) break;
+
+                    const wave_x = @sin(time * 0.8 + @as(f32, @floatFromInt(wi)) * 0.3) * 3;
+                    const realm = sacred_worlds.blockToRealm(wi);
+                    const rc = rl.Color{
+                        .r = sacred_worlds.realmColorR(realm),
+                        .g = sacred_worlds.realmColorG(realm),
+                        .b = sacred_worlds.realmColorB(realm),
+                        .a = alpha_u8,
+                    };
+
+                    // Realm color dot
+                    rl.DrawCircle(@intFromFloat(margin + wave_x), @intFromFloat(y_pos + 7), 5, rc);
+
+                    // World name
+                    const world = sacred_worlds.getWorldByBlock(wi);
+                    var wname_buf: [32:0]u8 = undefined;
+                    const wname: []const u8 = &world.name;
+                    const wname_len = std.mem.indexOfScalar(u8, wname, 0) orelse wname.len;
+                    @memcpy(wname_buf[0..wname_len], wname[0..wname_len]);
+                    wname_buf[wname_len] = 0;
+                    rl.DrawTextEx(chat_font, &wname_buf, .{ .x = margin + 18 + wave_x, .y = y_pos }, 15 * fs, 0.5, withAlpha(rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 }, alpha_u8));
+
+                    // Realm name
+                    const realm_idx = @intFromEnum(realm);
+                    const rn_len = sacred_worlds.REALM_NAME_LENS[realm_idx];
+                    var rbuf: [64:0]u8 = undefined;
+                    @memcpy(rbuf[0..rn_len], sacred_worlds.REALM_NAMES[realm_idx][0..rn_len]);
+                    rbuf[rn_len] = 0;
+                    rl.DrawTextEx(chat_font, &rbuf, .{ .x = margin + 260 * fs + wave_x, .y = y_pos }, 13 * fs, 0.5, rc);
+                }
+            }
+
+            // === FINDER WAVE FIELD === (directory listing)
+            if (g_wave_mode == .finder) {
+                const margin: f32 = 60 * fs;
+                const line_h: f32 = 22 * fs;
+                const dir_color = withAlpha(mode_color, alpha_u8);
+                const file_color = withAlpha(rl.Color{ .r = 180, .g = 200, .b = 220, .a = 255 }, alpha_u8);
+
+                rl.DrawTextEx(chat_font, "FILE EXPLORER", .{ .x = margin, .y = 35 * fs }, 18 * fs, 0.5, dir_color);
+                rl.DrawTextEx(chat_font, "/Users/playra/trinity/", .{ .x = margin, .y = 60 * fs }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+
+                const items = [_][*:0]const u8{
+                    "src/",
+                    "  vsa/",
+                    "    photon_trinity_canvas.zig",
+                    "  vibeec/",
+                    "    igla_hybrid_chat.zig",
+                    "    anthropic_client.zig",
+                    "    openai_client.zig",
+                    "  tvc/",
+                    "    tvc_corpus.zig",
+                    "  firebird/",
+                    "specs/",
+                    "  tri/",
+                    "    hdc_igla_hybrid_v2_1.vibee",
+                    "    trinity_canvas_v1_9.vibee",
+                    "docsite/",
+                    "website/",
+                    "build.zig",
+                    "CLAUDE.md",
+                };
+                const is_dir = [_]bool{ true, true, false, true, false, false, false, true, false, true, true, true, false, false, true, true, false, false };
+
+                var fi: usize = 0;
+                while (fi < items.len) : (fi += 1) {
+                    const y_pos = 85 * fs + @as(f32, @floatFromInt(fi)) * line_h;
+                    if (y_pos > sh - 40) break;
+                    const wave_x = @sin(time * 1.2 + @as(f32, @floatFromInt(fi)) * 0.35) * 2;
+                    const ic = if (is_dir[fi]) dir_color else file_color;
+                    rl.DrawTextEx(chat_font, items[fi], .{ .x = margin + wave_x, .y = y_pos }, 14 * fs, 0.5, ic);
+                }
+
+                // Spiral decoration
+                for (0..20) |si| {
+                    const angle = @as(f32, @floatFromInt(si)) * 0.5 + time * 0.3;
+                    const r = 30.0 + @as(f32, @floatFromInt(si)) * 8.0;
+                    const sx = sw * 0.75 + @cos(angle) * r;
+                    const sy = sh * 0.5 + @sin(angle) * r;
+                    rl.DrawCircle(@intFromFloat(sx), @intFromFloat(sy), 2, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(60, @as(f32, @floatFromInt(alpha_u8)) * 0.2)))) });
+                }
+            }
+
+            // === VISION WAVE FIELD === (image drop zone)
+            if (g_wave_mode == .vision) {
+                const center_x = sw / 2;
+                const center_y = sh / 2;
+
+                // Expanding concentric rings
+                for (0..8) |ri| {
+                    const base_r = 40.0 + @as(f32, @floatFromInt(ri)) * 35.0;
+                    const r = base_r + @sin(time * 2.0 + @as(f32, @floatFromInt(ri)) * 0.8) * 10;
+                    const ra: u8 = @intFromFloat(@max(0, @min(80, @as(f32, @floatFromInt(alpha_u8)) * (0.35 - @as(f32, @floatFromInt(ri)) * 0.04))));
+                    rl.DrawCircleLines(@intFromFloat(center_x), @intFromFloat(center_y), r, rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = ra });
+                }
+
+                // Center icon (eye)
+                rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), 12, mode_color);
+                rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), 6, rl.Color{ .r = 20, .g = 20, .b = 30, .a = alpha_u8 });
+
+                // Status text
+                rl.DrawTextEx(chat_font, "VISION", .{ .x = center_x - 30, .y = center_y - 60 }, 20 * fs, 0.5, mode_color);
+                rl.DrawTextEx(chat_font, "Drop image path in chat to analyze", .{ .x = center_x - 140, .y = center_y + 40 }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+                rl.DrawTextEx(chat_font, "Supports: PNG, JPG, WEBP", .{ .x = center_x - 100, .y = center_y + 65 }, 12 * fs, 0.5, withAlpha(MUTED_GRAY, @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(alpha_u8)) * 0.5))))));
+            }
+
+            // === VOICE WAVE FIELD === (audio waveform oscillation)
+            if (g_wave_mode == .voice) {
+                const center_y = sh / 2;
+                const wave_count: usize = 64;
+                const bar_w = sw / @as(f32, @floatFromInt(wave_count));
+
+                // Audio waveform bars
+                for (0..wave_count) |wi| {
+                    const fi_f = @as(f32, @floatFromInt(wi));
+                    const amp = @sin(time * 3.0 + fi_f * 0.3) * @sin(time * 1.7 + fi_f * 0.15) * 60 * fs;
+                    const bar_x = fi_f * bar_w + bar_w * 0.1;
+                    const bar_h = @abs(amp) + 4;
+                    const intensity: u8 = @intFromFloat(@max(40, @min(255, @abs(amp) * 3 + 40)));
+                    rl.DrawRectangle(@intFromFloat(bar_x), @intFromFloat(center_y - bar_h / 2), @intFromFloat(@max(1, bar_w * 0.7)), @intFromFloat(@max(1, bar_h)), rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(intensity)) * @as(f32, @floatFromInt(alpha_u8)) / 255.0)))) });
+                }
+
+                // Status
+                rl.DrawTextEx(chat_font, "VOICE", .{ .x = sw / 2 - 25, .y = 40 * fs }, 20 * fs, 0.5, mode_color);
+                rl.DrawTextEx(chat_font, "Microphone: standby", .{ .x = sw / 2 - 75, .y = sh - 60 * fs }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+
+                // Center line
+                rl.DrawLine(0, @intFromFloat(center_y), @intFromFloat(sw), @intFromFloat(center_y), rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(30, @as(f32, @floatFromInt(alpha_u8)) * 0.12)))) });
             }
         }
 

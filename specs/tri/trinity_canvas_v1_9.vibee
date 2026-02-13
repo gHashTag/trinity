@@ -1,0 +1,81 @@
+name: trinity_canvas_v1_9
+version: "1.9.0"
+language: zig
+module: photon_trinity_canvas
+
+# Trinity Canvas v1.9 — Immersive Single-Canvas Interface
+# All interaction happens INSIDE the canvas as emergent wave patterns.
+# No side panels, no separate windows.
+#
+# WaveMode: idle (27 petals) | chat | code | tools | settings | vision | voice | finder | docs
+# Shift+1-8 switches mode, ESC returns to idle
+#
+# Technology Tree:
+#   v1.6 (Panel-based UI)
+#   → v1.9 (Immersive wave canvas) ← CURRENT
+#   → v2.0 (Hyper terminal full IDE)
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS ENERGY IMMORTAL
+
+types:
+  WaveMode:
+    description: "Canvas operating mode — each mode renders fullscreen inside canvas"
+    variants:
+      - idle         # 27 petals logo, main menu
+      - chat         # Fullscreen chat with AI (IglaHybridChat)
+      - code         # System info display with code-like aesthetic
+      - tools        # Tool status wheel
+      - settings     # Configuration display
+      - vision       # Image analysis placeholder
+      - voice        # Audio waveform visualization
+      - finder       # Directory file listing
+      - docs         # Sacred worlds encyclopedia
+
+behaviors:
+  - name: render_code_mode
+    given: "g_wave_mode == .code"
+    when: "Canvas render loop"
+    then: "Display system info as scrolling code lines: Zig version, build status, file counts, VSA stats, test results. Wave animation on each line."
+
+  - name: render_tools_mode
+    given: "g_wave_mode == .tools"
+    when: "Canvas render loop"
+    then: "Display tool list as radial items: time, date, system_info, file_read, zig_build, zig_test. Each tool has status dot (green=available). Wave rings pulse around tools."
+
+  - name: render_settings_mode
+    given: "g_wave_mode == .settings"
+    when: "Canvas render loop"
+    then: "Display config key-value pairs: API keys (masked), thresholds, model names, cache sizes. Concentric rings for categories."
+
+  - name: render_docs_mode
+    given: "g_wave_mode == .docs"
+    when: "Canvas render loop"
+    then: "Display sacred worlds list from 27 realms. Each realm with name, color dot, description. Scrollable."
+
+  - name: render_finder_mode
+    given: "g_wave_mode == .finder"
+    when: "Canvas render loop"
+    then: "List files in current directory as spiral text. File type indicators. Wave pulse on hover."
+
+  - name: render_vision_mode
+    given: "g_wave_mode == .vision"
+    when: "Canvas render loop"
+    then: "Show image drop zone with expanding concentric rings. Status: waiting for image path."
+
+  - name: render_voice_mode
+    given: "g_wave_mode == .voice"
+    when: "Canvas render loop"
+    then: "Show audio waveform oscillation animation. Status: microphone not connected. Wave frequency mapped to mode hue."
+
+# Architecture:
+#
+# [ESC] ──→ IDLE (27 petals logo + sacred formula particles)
+#              │
+#   Shift+1 ──→ CHAT   (full AI chat, IglaHybridChat v2.1)
+#   Shift+2 ──→ CODE   (system info as code lines)
+#   Shift+3 ──→ TOOLS  (tool status wheel)
+#   Shift+4 ──→ SETTINGS (config display)
+#   Shift+5 ──→ VISION (image drop zone)
+#   Shift+6 ──→ VOICE  (audio waveform)
+#   Shift+7 ──→ FINDER (directory listing)
+#   Shift+8 ──→ DOCS   (sacred worlds)
