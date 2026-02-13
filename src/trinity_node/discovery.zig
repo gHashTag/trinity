@@ -175,6 +175,10 @@ pub const DiscoveryService = struct {
     receive_thread: ?std.Thread,
     allocator: std.mem.Allocator,
 
+    // v1.5: Optional storage announce data (sent alongside PeerAnnounce)
+    storage_announce_data: ?[protocol.StorageAnnounce.SIZE]u8 = null,
+    storage_announce_callback: ?*const fn (protocol.StorageAnnounce, ?std.net.Address) void = null,
+
     pub fn init(allocator: std.mem.Allocator, node_id: protocol.NodeId, public_key: [32]u8, listen_port: u16) !*DiscoveryService {
         const self = try allocator.create(DiscoveryService);
 
@@ -208,6 +212,8 @@ pub const DiscoveryService = struct {
             .broadcast_thread = null,
             .receive_thread = null,
             .allocator = allocator,
+            .storage_announce_data = null,
+            .storage_announce_callback = null,
         };
 
         return self;
@@ -255,7 +261,7 @@ pub const DiscoveryService = struct {
         }
     }
 
-    /// Receive loop - listens for peer announcements
+    /// Receive loop - listens for peer announcements and storage announcements
     fn receiveLoop(self: *DiscoveryService) void {
         var buf: [1024]u8 = undefined;
 
@@ -268,13 +274,19 @@ pub const DiscoveryService = struct {
                 break;
             };
 
+            const addr = std.net.Address{ .any = src_addr };
+
             if (len >= 106) {
-                self.handleAnnounce(buf[0..len], std.net.Address{ .any = src_addr }) catch {};
+                // PeerAnnounce (106 bytes)
+                self.handleAnnounce(buf[0..len], addr) catch {};
+            } else if (len == protocol.StorageAnnounce.SIZE) {
+                // v1.5: StorageAnnounce (60 bytes)
+                self.handleStorageAnnounce(buf[0..len], addr) catch {};
             }
         }
     }
 
-    /// Broadcast our peer announcement
+    /// Broadcast our peer announcement (and storage announcement if configured)
     fn broadcastAnnounce(self: *DiscoveryService) !void {
         const announce = protocol.PeerAnnounce{
             .node_id = self.node_id,
@@ -289,6 +301,11 @@ pub const DiscoveryService = struct {
         // Broadcast to local network
         const broadcast_addr = std.net.Address.initIp4(.{ 255, 255, 255, 255 }, DISCOVERY_PORT);
         _ = std.posix.sendto(self.socket, &bytes, 0, &broadcast_addr.any, broadcast_addr.getOsSockLen()) catch {};
+
+        // v1.5: Also broadcast StorageAnnounce if storage info is set
+        if (self.storage_announce_data) |sa_data| {
+            _ = std.posix.sendto(self.socket, &sa_data, 0, &broadcast_addr.any, broadcast_addr.getOsSockLen()) catch {};
+        }
     }
 
     /// Handle incoming peer announcement
@@ -310,6 +327,36 @@ pub const DiscoveryService = struct {
         };
 
         self.peers.addOrUpdate(peer);
+    }
+
+    /// v1.5: Handle incoming storage announcement
+    fn handleStorageAnnounce(self: *DiscoveryService, data: []const u8, src_addr: std.net.Address) !void {
+        const announce = try protocol.StorageAnnounce.deserialize(data);
+
+        // Ignore our own announcements
+        if (std.mem.eql(u8, &announce.node_id, &self.node_id)) return;
+
+        // Dispatch to callback if set
+        if (self.storage_announce_callback) |cb| {
+            cb(announce, src_addr);
+        }
+    }
+
+    /// v1.5: Set storage info for auto-discovery broadcasts
+    pub fn setStorageInfo(self: *DiscoveryService, available_bytes: u64, total_bytes: u64, shard_count: u32) void {
+        const announce = protocol.StorageAnnounce{
+            .node_id = self.node_id,
+            .available_bytes = available_bytes,
+            .total_bytes = total_bytes,
+            .shard_count = shard_count,
+            .timestamp = std.time.timestamp(),
+        };
+        self.storage_announce_data = announce.serialize();
+    }
+
+    /// v1.5: Set callback for incoming StorageAnnounce packets
+    pub fn setStorageAnnounceCallback(self: *DiscoveryService, cb: *const fn (protocol.StorageAnnounce, ?std.net.Address) void) void {
+        self.storage_announce_callback = cb;
     }
 
     /// Get number of known peers
@@ -349,6 +396,29 @@ test "peer list operations" {
     const found = list.getPeer(peer.node_id);
     try std.testing.expect(found != null);
     try std.testing.expectEqual(peer.listen_port, found.?.listen_port);
+}
+
+test "storage announce serialize roundtrip via discovery" {
+    // Test that setStorageInfo produces valid serialized data
+    // We can't test the full UDP loop in unit tests, but we can verify
+    // the StorageAnnounce serialize/deserialize roundtrip through the field
+    const node_id = [_]u8{0xAA} ** 32;
+    const announce = protocol.StorageAnnounce{
+        .node_id = node_id,
+        .available_bytes = 1024 * 1024 * 1024,
+        .total_bytes = 10 * 1024 * 1024 * 1024,
+        .shard_count = 42,
+        .timestamp = std.time.timestamp(),
+    };
+
+    const serialized = announce.serialize();
+    const parsed = try protocol.StorageAnnounce.deserialize(&serialized);
+
+    try std.testing.expectEqualSlices(u8, &node_id, &parsed.node_id);
+    try std.testing.expectEqual(announce.available_bytes, parsed.available_bytes);
+    try std.testing.expectEqual(announce.total_bytes, parsed.total_bytes);
+    try std.testing.expectEqual(announce.shard_count, parsed.shard_count);
+    try std.testing.expectEqual(announce.timestamp, parsed.timestamp);
 }
 
 test "peer alive check" {

@@ -122,10 +122,10 @@ pub const AnthropicClient = struct {
 
     /// Build vision request with image content
     fn buildVisionRequestJson(self: *Self, prompt: []const u8, image_base64: []const u8) ![]u8 {
-        var buffer = std.ArrayList(u8).init(self.allocator);
-        errdefer buffer.deinit();
+        var buffer: std.ArrayListUnmanaged(u8) = .{};
+        errdefer buffer.deinit(self.allocator);
 
-        const writer = buffer.writer();
+        const writer = buffer.writer(self.allocator);
 
         // Anthropic vision format:
         // {"model":"...", "max_tokens":..., "messages":[{"role":"user","content":[
@@ -149,7 +149,7 @@ pub const AnthropicClient = struct {
         try self.writeEscaped(writer, prompt);
         try writer.writeAll("\"}]}]}");
 
-        return buffer.toOwnedSlice();
+        return buffer.toOwnedSlice(self.allocator);
     }
 
     /// Chat with optional system prompt (Anthropic-specific: system is separate field)
@@ -178,10 +178,10 @@ pub const AnthropicClient = struct {
 
     /// Build Anthropic Messages API request JSON
     fn buildRequestJson(self: *Self, system_prompt: ?[]const u8, user_message: []const u8) ![]u8 {
-        var buffer = std.ArrayList(u8).init(self.allocator);
-        errdefer buffer.deinit();
+        var buffer: std.ArrayListUnmanaged(u8) = .{};
+        errdefer buffer.deinit(self.allocator);
 
-        const writer = buffer.writer();
+        const writer = buffer.writer(self.allocator);
 
         // Start JSON object
         try writer.writeAll("{\"model\":\"");
@@ -201,7 +201,7 @@ pub const AnthropicClient = struct {
         try self.writeEscaped(writer, user_message);
         try writer.writeAll("\"}]}");
 
-        return buffer.toOwnedSlice();
+        return buffer.toOwnedSlice(self.allocator);
     }
 
     /// Make HTTP request with Anthropic headers

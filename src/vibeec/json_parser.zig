@@ -31,8 +31,8 @@ pub const JsonValue = union(JsonType) {
     bool: bool,
     number: f64,
     string: []const u8,
-    array: std.ArrayList(JsonValue),
-    object: std.StringHashMap(JsonValue),
+    array: std.ArrayListUnmanaged(JsonValue),
+    object: std.StringHashMapUnmanaged(JsonValue),
 
     pub fn deinit(self: *JsonValue, allocator: Allocator) void {
         switch (self.*) {
@@ -40,7 +40,7 @@ pub const JsonValue = union(JsonType) {
                 for (arr.items) |*item| {
                     item.deinit(allocator);
                 }
-                arr.deinit();
+                arr.deinit(allocator);
             },
             .object => |*obj| {
                 var it = obj.iterator();
@@ -48,7 +48,7 @@ pub const JsonValue = union(JsonType) {
                     var val = entry.value_ptr.*;
                     val.deinit(allocator);
                 }
-                obj.deinit();
+                obj.deinit(allocator);
             },
             else => {},
         }
@@ -82,7 +82,7 @@ pub const JsonValue = union(JsonType) {
         };
     }
 
-    pub fn getObject(self: JsonValue) ?std.StringHashMap(JsonValue) {
+    pub fn getObject(self: JsonValue) ?std.StringHashMapUnmanaged(JsonValue) {
         return switch (self) {
             .object => |obj| obj,
             else => null,
@@ -240,8 +240,8 @@ pub const JsonParser = struct {
         if (self.input[self.pos] != '[') return JsonError.UnexpectedToken;
         self.pos += 1;
 
-        var arr = std.ArrayList(JsonValue).init(self.allocator);
-        errdefer arr.deinit();
+        var arr: std.ArrayListUnmanaged(JsonValue) = .{};
+        errdefer arr.deinit(self.allocator);
 
         self.skipWhitespace();
 
@@ -252,7 +252,7 @@ pub const JsonParser = struct {
 
         while (true) {
             const value = try self.parseValue();
-            try arr.append(value);
+            try arr.append(self.allocator, value);
 
             self.skipWhitespace();
 
@@ -272,8 +272,8 @@ pub const JsonParser = struct {
         if (self.input[self.pos] != '{') return JsonError.UnexpectedToken;
         self.pos += 1;
 
-        var obj = std.StringHashMap(JsonValue).init(self.allocator);
-        errdefer obj.deinit();
+        var obj: std.StringHashMapUnmanaged(JsonValue) = .{};
+        errdefer obj.deinit(self.allocator);
 
         self.skipWhitespace();
 
@@ -298,7 +298,7 @@ pub const JsonParser = struct {
 
             // Parse value
             const value = try self.parseValue();
-            try obj.put(key, value);
+            try obj.put(self.allocator, key, value);
 
             self.skipWhitespace();
 

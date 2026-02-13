@@ -87,6 +87,21 @@ pub fn build(b: *std.Build) void {
     const bench_step = b.step("bench", "Run benchmarks");
     bench_step.dependOn(&run_bench.step);
 
+    // Compression Benchmark executable
+    const bench_compress = b.addExecutable(.{
+        .name = "bench-compress",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/bench_compression.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(bench_compress);
+
+    const run_bench_compress = b.addRunArtifact(bench_compress);
+    const bench_compress_step = b.step("bench-compress", "Run compression benchmarks (TCV1-TCV5 vs gzip)");
+    bench_compress_step.dependOn(&run_bench_compress.step);
+
     // Examples
     const example_memory = b.addExecutable(.{
         .name = "example-memory",
@@ -264,6 +279,446 @@ pub fn build(b: *std.Build) void {
     const run_depin_tests = b.addRunArtifact(depin_tests);
     test_step.dependOn(&run_depin_tests.step);
 
+    // Trinity Node - File Encoder tests
+    const file_encoder_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/file_encoder.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_file_encoder_tests = b.addRunArtifact(file_encoder_tests);
+    test_step.dependOn(&run_file_encoder_tests.step);
+
+    // Trinity Node - Protocol tests
+    const protocol_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/protocol.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_protocol_tests = b.addRunArtifact(protocol_tests);
+    test_step.dependOn(&run_protocol_tests.step);
+
+    // Trinity Node - Storage tests
+    const storage_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/storage.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_storage_tests = b.addRunArtifact(storage_tests);
+    test_step.dependOn(&run_storage_tests.step);
+
+    // Trinity Node - Shard Manager tests
+    const shard_manager_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/shard_manager.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_shard_manager_tests = b.addRunArtifact(shard_manager_tests);
+    test_step.dependOn(&run_shard_manager_tests.step);
+
+    // Trinity Node - Storage Discovery tests
+    const storage_discovery_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/storage_discovery.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_storage_discovery_tests = b.addRunArtifact(storage_discovery_tests);
+    test_step.dependOn(&run_storage_discovery_tests.step);
+
+    // Trinity Node - Remote Storage tests (v1.3)
+    const remote_storage_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/remote_storage.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_remote_storage_tests = b.addRunArtifact(remote_storage_tests);
+    test_step.dependOn(&run_remote_storage_tests.step);
+
+    // Trinity Node - Crypto tests
+    const crypto_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/crypto.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_crypto_tests = b.addRunArtifact(crypto_tests);
+    test_step.dependOn(&run_crypto_tests.step);
+
+    // Trinity Node - Galois Field GF(2^8) tests (v1.4)
+    const galois_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/galois.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_galois_tests = b.addRunArtifact(galois_tests);
+    test_step.dependOn(&run_galois_tests.step);
+
+    // Trinity Node - Reed-Solomon erasure coding tests (v1.4)
+    const reed_solomon_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/reed_solomon.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_reed_solomon_tests = b.addRunArtifact(reed_solomon_tests);
+    test_step.dependOn(&run_reed_solomon_tests.step);
+
+    // Trinity Node - Connection Pool tests (v1.4)
+    const connection_pool_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/connection_pool.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_connection_pool_tests = b.addRunArtifact(connection_pool_tests);
+    test_step.dependOn(&run_connection_pool_tests.step);
+
+    // Trinity Node - Manifest DHT tests (v1.4)
+    const manifest_dht_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/manifest_dht.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_manifest_dht_tests = b.addRunArtifact(manifest_dht_tests);
+    test_step.dependOn(&run_manifest_dht_tests.step);
+
+    // Trinity Node - Integration tests: 10+ node simulation (v1.4 + v1.5)
+    const integration_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/integration_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_integration_tests = b.addRunArtifact(integration_tests);
+    test_step.dependOn(&run_integration_tests.step);
+
+    // Trinity Node - Proof-of-Storage tests (v1.5)
+    const pos_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/proof_of_storage.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_pos_tests = b.addRunArtifact(pos_tests);
+    test_step.dependOn(&run_pos_tests.step);
+
+    // Trinity Node - Shard Rebalancer tests (v1.5)
+    const rebalancer_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/shard_rebalancer.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_rebalancer_tests = b.addRunArtifact(rebalancer_tests);
+    test_step.dependOn(&run_rebalancer_tests.step);
+
+    // Trinity Node - Bandwidth Aggregator tests (v1.5)
+    const bw_agg_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/bandwidth_aggregator.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_bw_agg_tests = b.addRunArtifact(bw_agg_tests);
+    test_step.dependOn(&run_bw_agg_tests.step);
+
+    // Trinity Node - Shard Scrubber tests (v1.6)
+    const scrubber_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/shard_scrubber.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_scrubber_tests = b.addRunArtifact(scrubber_tests);
+    test_step.dependOn(&run_scrubber_tests.step);
+
+    // Trinity Node - Node Reputation tests (v1.6)
+    const reputation_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/node_reputation.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_reputation_tests = b.addRunArtifact(reputation_tests);
+    test_step.dependOn(&run_reputation_tests.step);
+
+    // Trinity Node - Graceful Shutdown tests (v1.6)
+    const shutdown_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/graceful_shutdown.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_shutdown_tests = b.addRunArtifact(shutdown_tests);
+    test_step.dependOn(&run_shutdown_tests.step);
+
+    // Trinity Node - Network Stats tests (v1.6)
+    const netstats_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/network_stats.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_netstats_tests = b.addRunArtifact(netstats_tests);
+    test_step.dependOn(&run_netstats_tests.step);
+
+    // Trinity Node - Auto-Repair tests (v1.7)
+    const auto_repair_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/auto_repair.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_auto_repair_tests = b.addRunArtifact(auto_repair_tests);
+    test_step.dependOn(&run_auto_repair_tests.step);
+
+    // Trinity Node - Incentive Slashing tests (v1.7)
+    const slashing_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/incentive_slashing.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_slashing_tests = b.addRunArtifact(slashing_tests);
+    test_step.dependOn(&run_slashing_tests.step);
+
+    // Trinity Node - Prometheus Metrics tests (v1.7)
+    const prometheus_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/prometheus_metrics.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_prometheus_tests = b.addRunArtifact(prometheus_tests);
+    test_step.dependOn(&run_prometheus_tests.step);
+
+    // Trinity Node - Repair Rate Limiter tests (v1.8)
+    const rate_limiter_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/repair_rate_limiter.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_rate_limiter_tests = b.addRunArtifact(rate_limiter_tests);
+    test_step.dependOn(&run_rate_limiter_tests.step);
+
+    // Trinity Node - Token Staking tests (v1.8)
+    const token_staking_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/token_staking.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_token_staking_tests = b.addRunArtifact(token_staking_tests);
+    test_step.dependOn(&run_token_staking_tests.step);
+
+    // Trinity Node - Peer Latency tests (v1.8)
+    const peer_latency_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/peer_latency.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_peer_latency_tests = b.addRunArtifact(peer_latency_tests);
+    test_step.dependOn(&run_peer_latency_tests.step);
+
+    // Trinity Node - RS Repair tests (v1.8)
+    const rs_repair_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/rs_repair.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_rs_repair_tests = b.addRunArtifact(rs_repair_tests);
+    test_step.dependOn(&run_rs_repair_tests.step);
+
+    // Trinity Node - Metrics HTTP tests (v1.8)
+    const metrics_http_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/metrics_http.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_metrics_http_tests = b.addRunArtifact(metrics_http_tests);
+    test_step.dependOn(&run_metrics_http_tests.step);
+
+    // Trinity Node - Erasure-Coded Repair tests (v1.9)
+    const erasure_repair_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/erasure_repair.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_erasure_repair_tests = b.addRunArtifact(erasure_repair_tests);
+    test_step.dependOn(&run_erasure_repair_tests.step);
+
+    // Trinity Node - Reputation Consensus tests (v1.9)
+    const reputation_consensus_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/reputation_consensus.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_reputation_consensus_tests = b.addRunArtifact(reputation_consensus_tests);
+    test_step.dependOn(&run_reputation_consensus_tests.step);
+
+    // Trinity Node - Stake Delegation tests (v1.9)
+    const stake_delegation_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/stake_delegation.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_stake_delegation_tests = b.addRunArtifact(stake_delegation_tests);
+    test_step.dependOn(&run_stake_delegation_tests.step);
+
+    // Trinity Node - Region Topology tests (v2.0)
+    const region_topology_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/region_topology.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_region_topology_tests = b.addRunArtifact(region_topology_tests);
+    test_step.dependOn(&run_region_topology_tests.step);
+
+    // Trinity Node - Slashing Escrow tests (v2.0)
+    const slashing_escrow_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/slashing_escrow.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_slashing_escrow_tests = b.addRunArtifact(slashing_escrow_tests);
+    test_step.dependOn(&run_slashing_escrow_tests.step);
+
+    // Trinity Node - Prometheus HTTP Endpoint tests (v2.0)
+    const prometheus_http_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/prometheus_http.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_prometheus_http_tests = b.addRunArtifact(prometheus_http_tests);
+    test_step.dependOn(&run_prometheus_http_tests.step);
+
+    // Trinity Node - VSA Shard Encoder tests (v2.0)
+    const vsa_shard_encoder_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/vsa_shard_encoder.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_vsa_shard_encoder_tests = b.addRunArtifact(vsa_shard_encoder_tests);
+    test_step.dependOn(&run_vsa_shard_encoder_tests.step);
+
+    // Trinity Node - Semantic Index tests (v2.0)
+    const semantic_index_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/semantic_index.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_semantic_index_tests = b.addRunArtifact(semantic_index_tests);
+    test_step.dependOn(&run_semantic_index_tests.step);
+
+    // Trinity Node - Cross-Shard Transactions tests (v2.1)
+    const cross_shard_tx_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/cross_shard_tx.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_cross_shard_tx_tests = b.addRunArtifact(cross_shard_tx_tests);
+    test_step.dependOn(&run_cross_shard_tx_tests.step);
+
+    // Trinity Node - VSA Shard Locks tests (v2.1)
+    const vsa_shard_locks_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/vsa_shard_locks.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_vsa_shard_locks_tests = b.addRunArtifact(vsa_shard_locks_tests);
+    test_step.dependOn(&run_vsa_shard_locks_tests.step);
+
+    // Trinity Node - Region-Aware Router tests (v2.1)
+    const region_router_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/region_router.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_region_router_tests = b.addRunArtifact(region_router_tests);
+    test_step.dependOn(&run_region_router_tests.step);
+
+    // Trinity Node - Dynamic Erasure Coding tests (v2.2)
+    const dynamic_erasure_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/dynamic_erasure.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_dynamic_erasure_tests = b.addRunArtifact(dynamic_erasure_tests);
+    test_step.dependOn(&run_dynamic_erasure_tests.step);
+
+    // Trinity Node - Saga Coordinator tests (v2.3)
+    const saga_coordinator_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/saga_coordinator.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_saga_coordinator_tests = b.addRunArtifact(saga_coordinator_tests);
+    test_step.dependOn(&run_saga_coordinator_tests.step);
+
     // B2T CLI
     const b2t = b.addExecutable(.{
         .name = "b2t",
@@ -328,6 +783,22 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // VSA module for TRI (moved up: needed by tvc_corpus_mod and fluent CLI)
+    const vsa_tri = b.createModule(.{
+        .root_source_file = b.path("src/vsa.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // TVC Corpus module for TRI (moved up: needed by fluent CLI and hybrid chat)
+    const tvc_corpus_mod = b.createModule(.{
+        .root_source_file = b.path("src/tvc/tvc_corpus.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+
     // Fluent CLI - Local Chat with History Truncation (NO HANG!)
     const fluent_cli = b.addExecutable(.{
         .name = "fluent",
@@ -337,6 +808,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "igla_chat", .module = vibeec_chat },
+                .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
             },
         }),
     });
@@ -378,21 +850,6 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    // VSA module for TRI
-    const vsa_tri = b.createModule(.{
-        .root_source_file = b.path("src/vsa.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    // TVC Corpus module for TRI (distributed learning)
-    const tvc_corpus_mod = b.createModule(.{
-        .root_source_file = b.path("src/tvc/tvc_corpus.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "vsa", .module = vsa_tri },
-        },
-    });
     // TVC Distributed module for TRI (file-based sharing)
     const tvc_distributed_mod = b.createModule(.{
         .root_source_file = b.path("src/tvc/tvc_distributed.zig"),
@@ -409,6 +866,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "igla_chat", .module = vibeec_chat },
+            .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
         },
     });
     // IGLA TVC Chat module (fluent chat + TVC integration)
@@ -572,6 +1030,8 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "igla_chat", .module = vibeec_chat },
                 .{ .name = "igla_fluent_chat", .module = vibeec_fluent_chat },
+                .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
+                .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
                 .{ .name = "auto_shard", .module = b.createModule(.{
                     .root_source_file = b.path("src/trinity_node/auto_shard.zig"),
                     .target = target,
@@ -587,7 +1047,7 @@ pub fn build(b: *std.Build) void {
     if (b.args) |args| {
         run_trinity_canvas.addArgs(args);
     }
-    const trinity_canvas_step = b.step("trinity-canvas", "Run Trinity Cosmic Canvas (v0.4)");
+    const trinity_canvas_step = b.step("trinity-canvas", "Run Trinity Cosmic Canvas (v1.9 Emergent Wave)");
     trinity_canvas_step.dependOn(&run_trinity_canvas.step);
 
     // Keyboard Debug Test - minimal keyboard input test

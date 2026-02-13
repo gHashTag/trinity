@@ -220,6 +220,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-storage-network-v1.9-report',
         'research/trinity-storage-network-v2.0-report',
         'research/trinity-storage-network-v2.1-report',
+        'research/trinity-storage-network-v2.2-report',
       ],
     },
     'faq',

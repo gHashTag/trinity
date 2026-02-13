@@ -1,0 +1,120 @@
+name: storage_network_v1_5
+version: "1.5.0"
+language: zig
+module: storage_network_v1_5
+
+# Trinity Storage Network v1.5 — Proof-of-Storage, Shard Rebalancing, Bandwidth Aggregation, Auto-Discovery
+# Build on v1.4 (Reed-Solomon, connection pooling, manifest DHT, 12-node test)
+# V = n × 3^k × π^m × φ^p × e^q
+# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+types:
+  StorageChallenge:
+    fields:
+      challenge_id: Hash
+      challenger_id: Hash
+      target_node_id: Hash
+      shard_hash: Hash
+      byte_offset: Int
+      byte_length: Int
+      timestamp: Int
+
+  StorageProof:
+    fields:
+      challenge_id: Hash
+      prover_id: Hash
+      proof_hash: Hash
+      timestamp: Int
+
+  ProofOfStorageEngine:
+    fields:
+      pending_challenges: Map<Hash, StorageChallenge>
+      failed_challenges: Map<Hash, Int>
+      challenge_interval_secs: Int
+      max_failures: Int
+      last_challenge_time: Int
+      challenges_issued: Int
+      challenges_passed: Int
+      challenges_failed: Int
+
+  ShardLocationEntry:
+    fields:
+      node_ids: List<Hash>
+
+  UnderReplicatedShard:
+    fields:
+      shard_hash: Hash
+      current_replicas: Int
+      holder_node_ids: List<Hash>
+
+  ShardRebalancer:
+    fields:
+      shard_locations: Map<Hash, ShardLocationEntry>
+      target_replication: Int
+      rebalance_interval_secs: Int
+      last_rebalance_time: Int
+      shards_rebalanced: Int
+      rebalance_rounds: Int
+
+  BandwidthReport:
+    fields:
+      node_id: Hash
+      bytes_uploaded: Int
+      bytes_downloaded: Int
+      shards_hosted: Int
+      period_start: Int
+      period_end: Int
+
+  BandwidthSummary:
+    fields:
+      total_upload: Int
+      total_download: Int
+      node_count: Int
+      timestamp: Int
+
+  BandwidthAggregator:
+    fields:
+      reports: Map<Hash, BandwidthReport>
+      aggregation_interval_secs: Int
+      last_aggregation_time: Int
+
+behaviors:
+  - name: pos_issue_challenge
+    given: Storage peer registry and a list of stored shard hashes
+    when: Challenge interval timer fires
+    then: Select random peer and shard, send StorageChallenge with random byte range
+
+  - name: pos_respond_to_challenge
+    given: Incoming StorageChallenge and local storage provider
+    when: Challenge received from a peer
+    then: Read byte range from stored shard, compute SHA256, send StorageProof
+
+  - name: pos_verify_proof
+    given: StorageProof and original StorageChallenge
+    when: Proof received from challenged peer
+    then: Compare proof_hash with expected hash, flag unreliable on mismatch
+
+  - name: rebalance_detect_underreplicated
+    given: Shard location map and target replication factor
+    when: Rebalance interval fires or peer goes offline
+    then: Identify shards with replica count below target
+
+  - name: rebalance_redistribute
+    given: Under-replicated shard hash and available peers
+    when: Under-replicated shard detected
+    then: Retrieve shard from existing replica, distribute to new peers
+
+  - name: bandwidth_report_local
+    given: Local RewardTracker stats
+    when: Aggregation interval fires
+    then: Broadcast BandwidthReport to coordinator peers
+
+  - name: bandwidth_aggregate
+    given: Collection of BandwidthReports from all peers
+    when: Reports received from network
+    then: Compute global metrics total throughput and per-node contribution
+
+  - name: discovery_announce_storage
+    given: Storage capacity info and UDP socket
+    when: Discovery broadcast interval fires
+    then: Send StorageAnnounce as UDP broadcast to LAN 255.255.255.255
