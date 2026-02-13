@@ -13,6 +13,7 @@ const colors = @import("tri_colors.zig");
 const trinity_swe = @import("trinity_swe");
 const igla_hybrid_chat = @import("igla_hybrid_chat");
 const igla_coder = @import("igla_coder");
+const tvc = @import("tvc_corpus");
 const streaming = @import("streaming.zig");
 const multilingual = @import("multilingual.zig");
 
@@ -178,10 +179,16 @@ pub const CLIState = struct {
     running: bool,
     stream_enabled: bool,
 
+    // TVC Corpus for self-learning (heap-allocated, ~26MB)
+    tvc_corpus: ?*tvc.TVCCorpus,
+
     const Self = @This();
 
     /// Default model path for auto-detection
     const DEFAULT_MODEL_PATH = "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+
+    /// Default TVC corpus save path
+    const TVC_CORPUS_PATH = "trinity_chat.tvc";
 
     pub fn init(allocator: std.mem.Allocator) !Self {
         // Auto-detect model path
@@ -190,22 +197,62 @@ pub const CLIState = struct {
             break :blk DEFAULT_MODEL_PATH;
         };
 
+        // Heap-allocate TVC corpus for self-learning (~26MB, must be on heap)
+        const corpus = try allocator.create(tvc.TVCCorpus);
+        corpus.initInPlace();
+        // Try loading existing corpus from disk (load into heap-allocated struct)
+        corpus.loadInto(TVC_CORPUS_PATH) catch {};
+
+        // Read API keys from environment
+        const groq_key = std.process.getEnvVarOwned(allocator, "GROQ_API_KEY") catch null;
+        const claude_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch null;
+        const openai_key = std.process.getEnvVarOwned(allocator, "OPENAI_API_KEY") catch null;
+
+        // Build hybrid config with TVC + multi-provider + multi-modal (v2.1)
+        const config = igla_hybrid_chat.HybridConfig{
+            .tvc_corpus_path = TVC_CORPUS_PATH,
+            .groq_api_key = groq_key,
+            .claude_api_key = claude_key,
+            .openai_api_key = openai_key,
+        };
+
+        // Initialize hybrid chat with TVC corpus
+        var chat = try igla_hybrid_chat.IglaHybridChat.initWithConfig(allocator, model_path, config);
+        chat.corpus = corpus;
+
         return Self{
             .allocator = allocator,
             .agent = try trinity_swe.TrinitySWEAgent.init(allocator),
-            .chat_agent = try igla_hybrid_chat.IglaHybridChat.init(allocator, model_path),
+            .chat_agent = chat,
             .coder = igla_coder.IglaLocalCoder.init(allocator),
             .mode = .Explain,
             .language = .Zig,
             .verbose = true,
             .running = true,
             .stream_enabled = false,
+            .tvc_corpus = corpus,
         };
     }
 
     pub fn deinit(self: *Self) void {
-        self.agent.deinit();
+        // Save TVC corpus to disk before exit
+        if (self.tvc_corpus) |corpus| {
+            corpus.save(TVC_CORPUS_PATH) catch {};
+            self.allocator.destroy(corpus);
+            self.tvc_corpus = null;
+        }
+        // Free API key strings (allocated by getEnvVarOwned)
+        if (self.chat_agent.config.groq_api_key) |key| {
+            self.allocator.free(key);
+        }
+        if (self.chat_agent.config.claude_api_key) |key| {
+            self.allocator.free(key);
+        }
+        if (self.chat_agent.config.openai_api_key) |key| {
+            self.allocator.free(key);
+        }
         self.chat_agent.deinit();
+        self.agent.deinit();
     }
 };
 
@@ -228,7 +275,8 @@ pub fn printHelp() void {
     std.debug.print("  tri <command> [args...]     Run specific command\n\n", .{});
 
     std.debug.print("{s}COMMANDS:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}chat{s} [--stream] <msg>       Interactive chat (--stream for typing effect)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}chat{s} [--stream] [--image <path>] [--voice <path>] <msg>\n", .{ GREEN, RESET });
+    std.debug.print("         Interactive chat (v2.1: vision + voice + tools)\n", .{});
     std.debug.print("  {s}code{s} [--stream] <prompt>    Generate code (--stream for typing effect)\n", .{ GREEN, RESET });
     std.debug.print("  {s}gen{s} <spec.vibee>            Compile VIBEE spec to Zig/Verilog\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
@@ -689,17 +737,48 @@ pub fn printREPLHelp() void {
 }
 
 pub fn printStats(state: *CLIState) void {
-    const stats = state.agent.getStats();
+    const swe_stats = state.agent.getStats();
+    const chat_stats = state.chat_agent.getStats();
+
     std.debug.print("\n{s}═══ Statistics ═══{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  Requests: {d}\n", .{stats.total_requests});
-    std.debug.print("  Total Time: {d}μs ({d:.2}ms)\n", .{ stats.total_time_us, @as(f64, @floatFromInt(stats.total_time_us)) / 1000.0 });
-    if (stats.total_time_us > 0) {
-        const ops_per_sec = @as(f64, @floatFromInt(stats.total_requests)) / (@as(f64, @floatFromInt(stats.total_time_us)) / 1_000_000.0);
+    std.debug.print("  SWE Requests: {d}\n", .{swe_stats.total_requests});
+    std.debug.print("  SWE Time: {d}μs ({d:.2}ms)\n", .{ swe_stats.total_time_us, @as(f64, @floatFromInt(swe_stats.total_time_us)) / 1000.0 });
+    if (swe_stats.total_time_us > 0) {
+        const ops_per_sec = @as(f64, @floatFromInt(swe_stats.total_requests)) / (@as(f64, @floatFromInt(swe_stats.total_time_us)) / 1_000_000.0);
         std.debug.print("  Speed: {s}{d:.1} ops/s{s}\n", .{ GREEN, ops_per_sec, RESET });
     }
-    std.debug.print("  Vocabulary: 50000 words\n", .{});
-    std.debug.print("  Mode: 100%% LOCAL\n", .{});
-    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+
+    std.debug.print("\n{s}═══ Chat v2.3 (Context + Multi-Modal + Tools) ═══{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Total Queries: {d}\n", .{chat_stats.total_queries});
+    std.debug.print("  Symbolic Hits: {d} ({d:.1}%%)\n", .{ chat_stats.symbolic_hits, chat_stats.symbolic_hit_rate * 100.0 });
+    std.debug.print("  Tool Hits: {d}\n", .{chat_stats.tool_hits});
+    if (chat_stats.tvc_enabled) {
+        std.debug.print("  {s}TVC Cache:{s} ON (corpus: {d} entries)\n", .{ GREEN, RESET, chat_stats.tvc_corpus_size });
+        std.debug.print("  TVC Hits: {d} ({d:.1}%%)\n", .{ chat_stats.tvc_hits, chat_stats.tvc_hit_rate * 100.0 });
+    } else {
+        std.debug.print("  TVC Cache: OFF\n", .{});
+    }
+    std.debug.print("  Cache Hit Rate: {s}{d:.1}%%{s}\n", .{ GREEN, chat_stats.cache_hit_rate * 100.0, RESET });
+    std.debug.print("  LLM Calls: {d} (local: {d}, groq: {d}, claude: {d})\n", .{
+        chat_stats.llm_calls,
+        chat_stats.llm_calls -| (chat_stats.groq_calls + chat_stats.claude_calls),
+        chat_stats.groq_calls,
+        chat_stats.claude_calls,
+    });
+    std.debug.print("  Vision Calls: {d}\n", .{chat_stats.vision_calls});
+    std.debug.print("  Whisper STT: {d}\n", .{chat_stats.whisper_calls});
+    std.debug.print("  {s}Energy Saved: {d:.4} Wh{s}\n", .{ GREEN, chat_stats.energy_saved_wh, RESET });
+    std.debug.print("  LLM Loaded: {s}\n", .{if (chat_stats.llm_loaded) "Yes" else "No"});
+
+    // v2.3: Context stats
+    std.debug.print("\n{s}═══ Context (v2.3) ═══{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Context: {s}\n", .{if (chat_stats.context_enabled) "ON" else "OFF"});
+    std.debug.print("  Total Messages: {d}\n", .{chat_stats.context_total_messages});
+    std.debug.print("  Window Messages: {d}/20\n", .{chat_stats.context_window_messages});
+    std.debug.print("  Summarized: {d}\n", .{chat_stats.context_summarized_messages});
+    std.debug.print("  Key Facts: {d}\n", .{chat_stats.context_key_facts});
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS ENERGY IMMORTAL{s}\n\n", .{ GOLDEN, RESET });
 }
 
 pub fn processInput(state: *CLIState, input: []const u8) void {
@@ -946,14 +1025,28 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
 
 pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
     if (args.len > 0) {
-        // Check for --stream flag
+        // Parse flags: --stream, --image <path>, --voice <path>
         var stream_mode = state.stream_enabled;
+        var image_path: ?[]const u8 = null;
+        var voice_path: ?[]const u8 = null;
         var filtered_args: [64][]const u8 = undefined;
         var filtered_len: usize = 0;
 
-        for (args) |arg| {
+        var i: usize = 0;
+        while (i < args.len) : (i += 1) {
+            const arg = args[i];
             if (std.mem.eql(u8, arg, "--stream") or std.mem.eql(u8, arg, "-s")) {
                 stream_mode = true;
+            } else if (std.mem.eql(u8, arg, "--image") or std.mem.eql(u8, arg, "-i")) {
+                if (i + 1 < args.len) {
+                    i += 1;
+                    image_path = args[i];
+                }
+            } else if (std.mem.eql(u8, arg, "--voice") or std.mem.eql(u8, arg, "-V")) {
+                if (i + 1 < args.len) {
+                    i += 1;
+                    voice_path = args[i];
+                }
             } else if (filtered_len < filtered_args.len) {
                 filtered_args[filtered_len] = arg;
                 filtered_len += 1;
@@ -963,8 +1056,8 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
         // Build message from filtered args
         var msg_buf: [4096]u8 = undefined;
         var pos: usize = 0;
-        for (filtered_args[0..filtered_len], 0..) |arg, i| {
-            if (i > 0 and pos < msg_buf.len) {
+        for (filtered_args[0..filtered_len], 0..) |arg, idx| {
+            if (idx > 0 and pos < msg_buf.len) {
                 msg_buf[pos] = ' ';
                 pos += 1;
             }
@@ -974,17 +1067,35 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
         }
         const msg = msg_buf[0..pos];
 
-        // Use hybrid chat (symbolic + LLM fallback)
-        if (state.chat_agent.respond(msg)) |chat_response| {
-            if (stream_mode) {
-                var stream = streaming.createFastStreaming();
-                stream.streamText(chat_response.response);
-                stream.streamChar('\n');
-            } else {
+        // Route by modality (v2.1)
+        if (voice_path) |vp| {
+            // Voice mode: Whisper STT → chat
+            if (state.chat_agent.respondWithAudio(vp)) |chat_response| {
                 std.debug.print("{s}{s}{s}\n", .{ WHITE, chat_response.response, RESET });
+            } else |err| {
+                std.debug.print("{s}Voice error: {}{s}\n", .{ RED, err, RESET });
             }
-        } else |err| {
-            std.debug.print("{s}Chat error: {}{s}\n", .{ RED, err, RESET });
+        } else if (image_path) |ip| {
+            // Vision mode: image → Claude/GPT-4o
+            const query = if (msg.len > 0) msg else "Describe this image in detail.";
+            if (state.chat_agent.respondWithImage(query, ip)) |chat_response| {
+                std.debug.print("{s}{s}{s}\n", .{ WHITE, chat_response.response, RESET });
+            } else |err| {
+                std.debug.print("{s}Vision error: {}{s}\n", .{ RED, err, RESET });
+            }
+        } else {
+            // Normal text chat (v2.0 flow with v2.1 tool detection)
+            if (state.chat_agent.respond(msg)) |chat_response| {
+                if (stream_mode) {
+                    var stream = streaming.createFastStreaming();
+                    stream.streamText(chat_response.response);
+                    stream.streamChar('\n');
+                } else {
+                    std.debug.print("{s}{s}{s}\n", .{ WHITE, chat_response.response, RESET });
+                }
+            } else |err| {
+                std.debug.print("{s}Chat error: {}{s}\n", .{ RED, err, RESET });
+            }
         }
     } else {
         // Interactive chat mode

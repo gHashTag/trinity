@@ -152,6 +152,21 @@ pub const TVCCorpus = struct {
         return corpus;
     }
 
+    /// Initialize in-place (for heap-allocated corpus, avoids ~26MB stack frame)
+    pub fn initInPlace(self: *Self) void {
+        self.count = 0;
+        self.memory_vector = HybridBigInt.zero();
+        self.version = 1;
+        self.next_entry_id = 1;
+        self.total_queries = 0;
+        self.total_hits = 0;
+        self.total_stores = 0;
+
+        // Generate random node ID
+        var prng = std.Random.DefaultPrng.init(@bitCast(std.time.timestamp()));
+        prng.fill(&self.node_id);
+    }
+
     /// Initialize with specific node ID
     pub fn initWithNodeId(node_id: [16]u8) Self {
         var corpus = init();
@@ -508,6 +523,132 @@ pub const TVCCorpus = struct {
         corpus.version = version;
 
         return corpus;
+    }
+
+    /// Load corpus from file into existing (heap-allocated) struct.
+    /// Avoids stack overflow from ~26MB Self return value.
+    pub fn loadInto(self: *Self, path: []const u8) !void {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        // Header
+        var magic: [4]u8 = undefined;
+        _ = try file.readAll(&magic);
+        if (!std.mem.eql(u8, &magic, &TVC_MAGIC)) {
+            return error.InvalidMagic;
+        }
+
+        var buf4: [4]u8 = undefined;
+        var buf8: [8]u8 = undefined;
+        var buf2: [2]u8 = undefined;
+
+        _ = try file.readAll(&buf4);
+        const version = std.mem.readInt(u32, &buf4, .little);
+        if (version != TVC_VERSION) {
+            return error.UnsupportedVersion;
+        }
+
+        _ = try file.readAll(&buf4);
+        const count = std.mem.readInt(u32, &buf4, .little);
+        if (count > TVC_MAX_ENTRIES) {
+            return error.CorpusTooLarge;
+        }
+
+        _ = try file.readAll(&buf4);
+        const mem_vec_len = std.mem.readInt(u32, &buf4, .little);
+
+        _ = try file.readAll(&self.node_id);
+
+        _ = try file.readAll(&buf8);
+        self.next_entry_id = std.mem.readInt(u64, &buf8, .little);
+
+        _ = try file.readAll(&buf8);
+        self.total_queries = std.mem.readInt(u64, &buf8, .little);
+
+        _ = try file.readAll(&buf8);
+        self.total_hits = std.mem.readInt(u64, &buf8, .little);
+
+        _ = try file.readAll(&buf8);
+        self.total_stores = std.mem.readInt(u64, &buf8, .little);
+
+        // Memory vector
+        self.memory_vector = HybridBigInt.zero();
+        self.memory_vector.mode = .unpacked_mode;
+        self.memory_vector.trit_len = mem_vec_len;
+        for (0..mem_vec_len) |i| {
+            var byte: [1]u8 = undefined;
+            _ = try file.readAll(&byte);
+            self.memory_vector.unpacked_cache[i] = @bitCast(byte[0]);
+        }
+
+        // Entries
+        for (0..count) |i| {
+            var entry = &self.entries[i];
+
+            _ = try file.readAll(&buf8);
+            entry.entry_id = std.mem.readInt(u64, &buf8, .little);
+
+            _ = try file.readAll(&buf8);
+            entry.timestamp = std.mem.readInt(i64, &buf8, .little);
+
+            _ = try file.readAll(&buf4);
+            entry.usage_count = std.mem.readInt(u32, &buf4, .little);
+
+            var avg_sim_bytes: [4]u8 = undefined;
+            _ = try file.readAll(&avg_sim_bytes);
+            entry.avg_similarity = @bitCast(avg_sim_bytes);
+
+            _ = try file.readAll(&entry.source_node);
+
+            // Query vector
+            _ = try file.readAll(&buf4);
+            const q_len = std.mem.readInt(u32, &buf4, .little);
+            entry.query_vec = HybridBigInt.zero();
+            entry.query_vec.mode = .unpacked_mode;
+            entry.query_vec.trit_len = q_len;
+            for (0..q_len) |j| {
+                var byte: [1]u8 = undefined;
+                _ = try file.readAll(&byte);
+                entry.query_vec.unpacked_cache[j] = @bitCast(byte[0]);
+            }
+
+            // Response vector
+            _ = try file.readAll(&buf4);
+            const r_len = std.mem.readInt(u32, &buf4, .little);
+            entry.response_vec = HybridBigInt.zero();
+            entry.response_vec.mode = .unpacked_mode;
+            entry.response_vec.trit_len = r_len;
+            for (0..r_len) |j| {
+                var byte: [1]u8 = undefined;
+                _ = try file.readAll(&byte);
+                entry.response_vec.unpacked_cache[j] = @bitCast(byte[0]);
+            }
+
+            // Bound vector
+            _ = try file.readAll(&buf4);
+            const b_len = std.mem.readInt(u32, &buf4, .little);
+            entry.bound_vec = HybridBigInt.zero();
+            entry.bound_vec.mode = .unpacked_mode;
+            entry.bound_vec.trit_len = b_len;
+            for (0..b_len) |j| {
+                var byte: [1]u8 = undefined;
+                _ = try file.readAll(&byte);
+                entry.bound_vec.unpacked_cache[j] = @bitCast(byte[0]);
+            }
+
+            // Query text
+            _ = try file.readAll(&buf2);
+            entry.query_len = std.mem.readInt(u16, &buf2, .little);
+            _ = try file.readAll(entry.query_text[0..entry.query_len]);
+
+            // Response text
+            _ = try file.readAll(&buf2);
+            entry.response_len = std.mem.readInt(u16, &buf2, .little);
+            _ = try file.readAll(entry.response_text[0..entry.response_len]);
+        }
+
+        self.count = count;
+        self.version = version;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

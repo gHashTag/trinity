@@ -22,6 +22,8 @@ pub const REWARD_EVOLUTION_GEN: u128 = 1_000_000_000_000_000; // 0.001 TRI per g
 pub const REWARD_NAVIGATION_STEP: u128 = 100_000_000_000_000; // 0.0001 TRI per step
 pub const REWARD_CONVERSION: u128 = 10_000_000_000_000_000; // 0.01 TRI per conversion
 pub const REWARD_BENCHMARK: u128 = 5_000_000_000_000_000; // 0.005 TRI per benchmark
+pub const REWARD_STORAGE_SHARD_HOUR: u128 = 50_000_000_000_000; // 0.00005 TRI per shard per hour
+pub const REWARD_STORAGE_RETRIEVAL: u128 = 500_000_000_000_000; // 0.0005 TRI per retrieval
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WALLET
@@ -136,6 +138,8 @@ pub const DePINNode = struct {
             .navigation => REWARD_NAVIGATION_STEP,
             .conversion => REWARD_CONVERSION,
             .benchmark => REWARD_BENCHMARK,
+            .storage_hosting => REWARD_STORAGE_SHARD_HOUR,
+            .storage_retrieval => REWARD_STORAGE_RETRIEVAL,
         };
 
         self.wallet.addReward(reward);
@@ -158,6 +162,8 @@ pub const OperationType = enum {
     navigation,
     conversion,
     benchmark,
+    storage_hosting,
+    storage_retrieval,
 };
 
 pub const NodeStats = struct {

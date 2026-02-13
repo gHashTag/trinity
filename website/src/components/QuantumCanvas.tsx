@@ -10,7 +10,8 @@ export type VizMode =
   | 'consciousness' | 'trinity' | 'multiverse' | 'encryption' | 'supremacy' | 'tsp'
   | 'neuromorphic' | 'spintronic' | 'transcendence' | 'living' | 'quantum-life' | 'quantum-agents'
   | 'matryoshka' | 'zhar-ptitsa' | 'bogatyri' | 'qec' | 'obfuscation' | 'secure'
-  | 'beings' | 'pas' | 'quantum-biology' | 'llm-architecture' | 'cinema4d' | 'universal-translator';
+  | 'beings' | 'pas' | 'quantum-biology' | 'llm-architecture' | 'cinema4d' | 'universal-translator'
+  | 'chat-wave';
 
 interface Particle {
   x: number; y: number;
@@ -90,7 +91,8 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
         'matryoshka': 20, 'zhar-ptitsa': 40, 'bogatyri': 240,
         'qec': 190, 'obfuscation': 260, 'secure': 170,
         'beings': 310, 'pas': 130, 'quantum-biology': 140,
-        'llm-architecture': 230, 'cinema4d': 350
+        'llm-architecture': 230, 'cinema4d': 350,
+        'chat-wave': 45
       };
       return hues[m] || 160;
     }
@@ -452,6 +454,33 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
           ctx.fillStyle = grad;
           ctx.fillRect(0, 0, w, h);
         }
+      } else if (mode === 'chat-wave') {
+        // Wave rings from chat messages
+        const rings = (window as unknown as Record<string, unknown>).__trinityWaveRings as Array<{ x: number; y: number; time: number; hue: number }> | undefined;
+        if (rings) {
+          const now = Date.now();
+          for (let i = rings.length - 1; i >= 0; i--) {
+            const ring = rings[i];
+            const age = (now - ring.time) / 1000;
+            if (age > 4) { rings.splice(i, 1); continue; }
+            const alpha = 1 - age / 4;
+            const radius = age * 150;
+            // Double ring effect
+            for (const offset of [0, 15]) {
+              ctx.beginPath();
+              ctx.arc(ring.x, ring.y, radius + offset, 0, TAU);
+              ctx.strokeStyle = `hsla(${ring.hue}, 80%, 60%, ${alpha * 0.3})`;
+              ctx.lineWidth = 2 - age * 0.4;
+              ctx.stroke();
+            }
+          }
+        }
+        // Gentle ambient glow at center
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 300);
+        grad.addColorStop(0, `hsla(45, 100%, 50%, ${0.03 + Math.sin(t) * 0.01})`);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
       }
     }
 
@@ -595,6 +624,15 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
           const gridY = Math.floor(p.y / 50) * 50 + 25;
           p.vx += (gridX - p.x) * 0.05 + Math.sin(t + gridX * 0.1) * 0.5;
           p.vy += (gridY - p.y) * 0.05 + Math.cos(t + gridY * 0.1) * 0.5;
+          break;
+
+        case 'chat-wave':
+          // Gentle orbital drift — slow, calming particles
+          p.vx += Math.sin(t * 0.3 + i * 0.5) * 0.15 * dt * 10;
+          p.vy += Math.cos(t * 0.3 + i * 0.7) * 0.15 * dt * 10;
+          // Very gentle attraction toward center
+          p.vx += dx * 0.0002;
+          p.vy += dy * 0.0002;
           break;
 
         default:

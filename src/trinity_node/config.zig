@@ -17,6 +17,9 @@ pub const DEFAULT_CONFIG_DIR = ".trinity";
 pub const DEFAULT_WALLET_FILE = "wallet.enc";
 pub const DEFAULT_CONFIG_FILE = "config.json";
 pub const DEFAULT_MODEL_DIR = "models";
+pub const DEFAULT_STORAGE_DIR = "storage";
+pub const DEFAULT_SHARDS_DIR = "storage/shards";
+pub const DEFAULT_MANIFESTS_DIR = "storage/manifests";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONFIGURATION
@@ -90,6 +93,27 @@ pub const Config = struct {
         return std.fmt.allocPrint(allocator, "{s}/{s}", .{ config_dir, DEFAULT_MODEL_DIR });
     }
 
+    /// Get storage directory path (~/.trinity/storage)
+    pub fn getStorageDir(allocator: std.mem.Allocator) ![]u8 {
+        const config_dir = try getConfigDir(allocator);
+        defer allocator.free(config_dir);
+        return std.fmt.allocPrint(allocator, "{s}/{s}", .{ config_dir, DEFAULT_STORAGE_DIR });
+    }
+
+    /// Get shards directory path (~/.trinity/storage/shards)
+    pub fn getShardsDir(allocator: std.mem.Allocator) ![]u8 {
+        const config_dir = try getConfigDir(allocator);
+        defer allocator.free(config_dir);
+        return std.fmt.allocPrint(allocator, "{s}/{s}", .{ config_dir, DEFAULT_SHARDS_DIR });
+    }
+
+    /// Get manifests directory path (~/.trinity/storage/manifests)
+    pub fn getManifestsDir(allocator: std.mem.Allocator) ![]u8 {
+        const config_dir = try getConfigDir(allocator);
+        defer allocator.free(config_dir);
+        return std.fmt.allocPrint(allocator, "{s}/{s}", .{ config_dir, DEFAULT_MANIFESTS_DIR });
+    }
+
     /// Load config from file
     pub fn load(allocator: std.mem.Allocator) !Config {
         const path = try getConfigPath(allocator);
@@ -143,6 +167,17 @@ pub const Config = struct {
         const model_dir = try getModelDir(allocator);
         defer allocator.free(model_dir);
         std.fs.cwd().makePath(model_dir) catch {};
+    }
+
+    /// Ensure storage directories exist (~/.trinity/storage/shards, ~/.trinity/storage/manifests)
+    pub fn ensureStorageDirectories(allocator: std.mem.Allocator) !void {
+        const shards_dir = try getShardsDir(allocator);
+        defer allocator.free(shards_dir);
+        std.fs.cwd().makePath(shards_dir) catch {};
+
+        const manifests_dir = try getManifestsDir(allocator);
+        defer allocator.free(manifests_dir);
+        std.fs.cwd().makePath(manifests_dir) catch {};
     }
 };
 
