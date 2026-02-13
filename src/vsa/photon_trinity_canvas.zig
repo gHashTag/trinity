@@ -1,5 +1,5 @@
 // =============================================================================
-// TRINITY CANVAS v1.9 - EMERGENT WAVE INTERFACE
+// TRINITY CANVAS v2.0 - LIVE DATA WAVE INTERFACE
 // No side panels — everything inside canvas as wave patterns
 // Shift+1 Chat | Shift+2 Code | Shift+3 Tools | Shift+4 Settings | Shift+5 Vision | Shift+6 Voice
 // ESC = return to idle (27 petals logo)
@@ -110,6 +110,34 @@ const WaveMode = enum {
 var g_wave_mode: WaveMode = .idle;
 var g_wave_transition: f32 = 0; // 0..1 animation progress
 var g_wave_mode_prev: WaveMode = .idle;
+
+// v2.0: Finder mode — real directory listing cache
+const FINDER_MAX_ENTRIES: usize = 32;
+var g_finder_names: [FINDER_MAX_ENTRIES][64:0]u8 = undefined;
+var g_finder_is_dir: [FINDER_MAX_ENTRIES]bool = [_]bool{false} ** FINDER_MAX_ENTRIES;
+var g_finder_count: usize = 0;
+var g_finder_last_scan: i64 = 0; // timestamp of last scan
+var g_finder_scanned: bool = false;
+
+// v2.0: Scan current working directory for finder mode
+fn scanDirectory() void {
+    g_finder_count = 0;
+    var dir = std.fs.cwd().openDir(".", .{ .iterate = true }) catch return;
+    defer dir.close();
+    var iter = dir.iterate();
+    while (g_finder_count < FINDER_MAX_ENTRIES) {
+        const entry = iter.next() catch break;
+        if (entry == null) break;
+        const e = entry.?;
+        const name_len = @min(e.name.len, 63);
+        @memcpy(g_finder_names[g_finder_count][0..name_len], e.name[0..name_len]);
+        g_finder_names[g_finder_count][name_len] = 0;
+        g_finder_is_dir[g_finder_count] = (e.kind == .directory);
+        g_finder_count += 1;
+    }
+    g_finder_scanned = true;
+    g_finder_last_scan = std.time.timestamp();
+}
 
 fn addGlobalChatMessage(msg: []const u8, msg_type: ChatMsgType) void {
     if (g_chat_msg_count >= MAX_CHAT_MSGS) {
@@ -5625,31 +5653,79 @@ pub fn main() !void {
                 const code_green = withAlpha(rl.Color{ .r = 80, .g = 255, .b = 120, .a = 255 }, alpha_u8);
                 const code_gray = withAlpha(MUTED_GRAY, alpha_u8);
 
-                const lines = [_][*:0]const u8{
-                    "// ═══ TRINITY SYSTEM INFO ═══",
-                    "const platform = \"Apple M1 Pro\";",
-                    "const renderer = \"Metal 4.1\";",
-                    "const zig_version = \"0.15.x\";",
-                    "const canvas_version = \"v1.9\";",
-                    "const hybrid_chat = \"IglaHybridChat v2.1\";",
-                    "const cache_levels = 5; // Tools>Symbolic>Memory>TVC>LLM",
-                    "const vsa_dimensions = 1024;",
-                    "const tvc_max_entries = 10000;",
-                    "const memory_max = 256;",
-                    "const providers = .{ \"Groq\", \"Claude\", \"Local\" };",
-                    "// ═══ WAVE STATE ═══",
-                    "const wave_routing = \"Symbolic\";",
-                    "const wave_confidence = 0.95;",
-                    "const wave_learning = false;",
-                    "// φ^2 + 1/φ^2 = 3 = TRINITY",
+                // v2.0: LIVE system data formatted as Zig code
+                const cws = igla_hybrid_chat.g_last_wave_state;
+                const fps_val = rl.GetFPS();
+                const ts = std.time.timestamp();
+
+                var buf0: [64:0]u8 = undefined;
+                var buf1: [64:0]u8 = undefined;
+                var buf2: [64:0]u8 = undefined;
+                var buf3: [64:0]u8 = undefined;
+                var buf4: [64:0]u8 = undefined;
+                var buf5: [64:0]u8 = undefined;
+                var buf6: [64:0]u8 = undefined;
+                var buf7: [64:0]u8 = undefined;
+                var buf8: [64:0]u8 = undefined;
+                var buf9: [64:0]u8 = undefined;
+
+                _ = std.fmt.bufPrint(&buf0, "const fps = {d};", .{fps_val}) catch {};
+                buf0[@min(63, std.mem.indexOfScalar(u8, &buf0, 0) orelse 63)] = 0;
+                _ = std.fmt.bufPrint(&buf1, "const uptime_s = {d};", .{ts}) catch {};
+                buf1[@min(63, std.mem.indexOfScalar(u8, &buf1, 0) orelse 63)] = 0;
+
+                const engine_str = if (g_hybrid_engine != null) "IglaHybridChat v2.4" else "FluentChat";
+                _ = std.fmt.bufPrint(&buf2, "const engine = \"{s}\";", .{engine_str}) catch {};
+                buf2[@min(63, std.mem.indexOfScalar(u8, &buf2, 0) orelse 63)] = 0;
+
+                const queries = if (g_hybrid_engine != null) g_hybrid_engine.?.total_queries else 0;
+                _ = std.fmt.bufPrint(&buf3, "const total_queries = {d};", .{queries}) catch {};
+                buf3[@min(63, std.mem.indexOfScalar(u8, &buf3, 0) orelse 63)] = 0;
+
+                const routing_name = @tagName(cws.routing);
+                _ = std.fmt.bufPrint(&buf4, "const routing = .{s};", .{routing_name}) catch {};
+                buf4[@min(63, std.mem.indexOfScalar(u8, &buf4, 0) orelse 63)] = 0;
+
+                _ = std.fmt.bufPrint(&buf5, "const confidence = {d:.2};", .{cws.confidence}) catch {};
+                buf5[@min(63, std.mem.indexOfScalar(u8, &buf5, 0) orelse 63)] = 0;
+
+                _ = std.fmt.bufPrint(&buf6, "const is_learning = {s};", .{if (cws.is_learning) "true" else "false"}) catch {};
+                buf6[@min(63, std.mem.indexOfScalar(u8, &buf6, 0) orelse 63)] = 0;
+
+                _ = std.fmt.bufPrint(&buf7, "const memory_load = {d:.2};", .{cws.memory_load}) catch {};
+                buf7[@min(63, std.mem.indexOfScalar(u8, &buf7, 0) orelse 63)] = 0;
+
+                _ = std.fmt.bufPrint(&buf8, "const provider_health = {d:.2};", .{cws.provider_health_avg}) catch {};
+                buf8[@min(63, std.mem.indexOfScalar(u8, &buf8, 0) orelse 63)] = 0;
+
+                _ = std.fmt.bufPrint(&buf9, "const source_hue = {d:.0};", .{cws.source_hue}) catch {};
+                buf9[@min(63, std.mem.indexOfScalar(u8, &buf9, 0) orelse 63)] = 0;
+
+                const live_lines = [_][*:0]const u8{
+                    "// === TRINITY SYSTEM v2.0 (LIVE) ===",
+                    &buf0,
+                    &buf1,
+                    "const canvas = \"v2.0\";",
+                    &buf2,
+                    &buf3,
+                    "// === WAVE STATE (LIVE) ===",
+                    &buf4,
+                    &buf5,
+                    &buf6,
+                    &buf7,
+                    &buf8,
+                    &buf9,
+                    "const vsa_dim = 1024;",
+                    "const tvc_max = 10000;",
+                    "// phi^2 + 1/phi^2 = 3 = TRINITY",
                 };
 
                 var yi: usize = 0;
-                while (yi < lines.len) : (yi += 1) {
+                while (yi < live_lines.len) : (yi += 1) {
                     const y_pos = 50 * fs + @as(f32, @floatFromInt(yi)) * line_h;
                     const wave_x = @sin(time * 1.5 + @as(f32, @floatFromInt(yi)) * 0.4) * 3;
-                    const line_color = if (yi == 0 or yi == 11 or yi == 15) code_green else if (yi < 11) code_dim else code_gray;
-                    rl.DrawTextEx(chat_font, lines[yi], .{ .x = margin + wave_x, .y = y_pos }, code_font_sz, 0.5, line_color);
+                    const line_color = if (yi == 0 or yi == 6 or yi == 15) code_green else if (yi < 6) code_dim else code_gray;
+                    rl.DrawTextEx(chat_font, live_lines[yi], .{ .x = margin + wave_x, .y = y_pos }, code_font_sz, 0.5, line_color);
                     // Line number
                     var num_buf: [8:0]u8 = undefined;
                     _ = std.fmt.bufPrint(&num_buf, "{d:>3}", .{yi + 1}) catch {};
@@ -5665,7 +5741,7 @@ pub fn main() !void {
                 }
             }
 
-            // === TOOLS WAVE FIELD === (tool status wheel)
+            // === TOOLS WAVE FIELD === (tool status wheel with LIVE data)
             if (g_wave_mode == .tools) {
                 const center_x = sw / 2;
                 const center_y = sh / 2;
@@ -5673,8 +5749,22 @@ pub fn main() !void {
                 const tool_count = tool_names.len;
                 const orbit_r: f32 = @min(sw, sh) * 0.25;
 
-                // Title
-                rl.DrawTextEx(chat_font, "AVAILABLE TOOLS", .{ .x = center_x - 80, .y = 40 * fs }, 18 * fs, 0.5, mode_color);
+                // v2.0: Live tool status
+                const tools_enabled = if (g_hybrid_engine != null) g_hybrid_engine.?.config.enable_tools else false;
+                const tws = igla_hybrid_chat.g_last_wave_state;
+
+                // Title with live status
+                if (tools_enabled) {
+                    rl.DrawTextEx(chat_font, "TOOLS: ACTIVE", .{ .x = center_x - 65, .y = 40 * fs }, 18 * fs, 0.5, mode_color);
+                } else {
+                    rl.DrawTextEx(chat_font, "TOOLS: OFFLINE", .{ .x = center_x - 65, .y = 40 * fs }, 18 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+                }
+
+                // v2.0: Show last routing as subtitle
+                var route_buf: [48:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&route_buf, "Last route: {s}", .{@tagName(tws.routing)}) catch {};
+                route_buf[@min(47, std.mem.indexOfScalar(u8, &route_buf, 0) orelse 47)] = 0;
+                rl.DrawTextEx(chat_font, &route_buf, .{ .x = center_x - 55, .y = 62 * fs }, 13 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
 
                 // Tool items in circle
                 for (0..tool_count) |ti| {
@@ -5684,27 +5774,34 @@ pub fn main() !void {
                     const pulse = @sin(time * 3.0 + @as(f32, @floatFromInt(ti)) * 1.2) * 0.3 + 0.7;
                     const tool_alpha: u8 = @intFromFloat(@max(60, @min(255, pulse * @as(f32, @floatFromInt(alpha_u8)))));
 
-                    // Green status dot
-                    rl.DrawCircle(@intFromFloat(tx - 12), @intFromFloat(ty + 2), 4, rl.Color{ .r = 80, .g = 255, .b = 80, .a = tool_alpha });
+                    // Status dot: green if enabled, gray if disabled
+                    const dot_color = if (tools_enabled) rl.Color{ .r = 80, .g = 255, .b = 80, .a = tool_alpha } else rl.Color{ .r = 120, .g = 120, .b = 120, .a = tool_alpha };
+                    rl.DrawCircle(@intFromFloat(tx - 12), @intFromFloat(ty + 2), 4, dot_color);
                     // Tool name
                     rl.DrawTextEx(chat_font, tool_names[ti], .{ .x = tx - 4, .y = ty - 6 }, 15 * fs, 0.5, withAlpha(mode_color, tool_alpha));
 
-                    // Connecting line to center
+                    // Connecting line
                     rl.DrawLine(@intFromFloat(center_x), @intFromFloat(center_y), @intFromFloat(tx), @intFromFloat(ty), rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(30, pulse * 40)))) });
                 }
 
-                // Center dot
-                rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), 6, mode_color);
+                // v2.0: Center shows total queries
+                rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), 18, withAlpha(mode_color, @as(u8, @intFromFloat(@max(20, @as(f32, @floatFromInt(alpha_u8)) * 0.3)))));
+                var q_buf: [16:0]u8 = undefined;
+                const qcount = if (g_hybrid_engine != null) g_hybrid_engine.?.total_queries else 0;
+                _ = std.fmt.bufPrint(&q_buf, "{d}", .{qcount}) catch {};
+                q_buf[@min(15, std.mem.indexOfScalar(u8, &q_buf, 0) orelse 15)] = 0;
+                rl.DrawTextEx(chat_font, &q_buf, .{ .x = center_x - 8, .y = center_y - 7 }, 14 * fs, 0.5, mode_color);
             }
 
-            // === SETTINGS WAVE FIELD === (config key-value pairs)
+            // === SETTINGS WAVE FIELD === (LIVE config from HybridConfig)
             if (g_wave_mode == .settings) {
                 const margin: f32 = 80 * fs;
                 const line_h: f32 = 26 * fs;
                 const key_color = withAlpha(mode_color, alpha_u8);
                 const val_color = withAlpha(rl.Color{ .r = 200, .g = 200, .b = 220, .a = 255 }, alpha_u8);
+                const active_color = withAlpha(rl.Color{ .r = 80, .g = 255, .b = 120, .a = 255 }, alpha_u8);
 
-                rl.DrawTextEx(chat_font, "CONFIGURATION", .{ .x = margin, .y = 40 * fs }, 20 * fs, 0.5, key_color);
+                rl.DrawTextEx(chat_font, "CONFIGURATION (LIVE)", .{ .x = margin, .y = 40 * fs }, 20 * fs, 0.5, key_color);
 
                 const keys = [_][*:0]const u8{
                     "symbolic_threshold",
@@ -5713,26 +5810,64 @@ pub fn main() !void {
                     "temperature",
                     "enable_reflection",
                     "enable_context",
-                    "memory_max_entries",
+                    "enable_tools",
                     "groq_model",
                     "claude_model",
                     "GROQ_API_KEY",
                     "ANTHROPIC_API_KEY",
-                    "wave_export",
+                    "total_queries",
                 };
+
+                // v2.0: Read LIVE values from HybridConfig
+                var vb0: [32:0]u8 = undefined;
+                var vb1: [32:0]u8 = undefined;
+                var vb2: [32:0]u8 = undefined;
+                var vb3: [32:0]u8 = undefined;
+                var vb11: [32:0]u8 = undefined;
+                if (g_hybrid_engine != null) {
+                    const cfg = g_hybrid_engine.?.config;
+                    _ = std.fmt.bufPrint(&vb0, "{d:.2}", .{cfg.symbolic_confidence_threshold}) catch {};
+                    vb0[@min(31, std.mem.indexOfScalar(u8, &vb0, 0) orelse 31)] = 0;
+                    _ = std.fmt.bufPrint(&vb1, "{d:.2}", .{cfg.tvc_similarity_threshold}) catch {};
+                    vb1[@min(31, std.mem.indexOfScalar(u8, &vb1, 0) orelse 31)] = 0;
+                    _ = std.fmt.bufPrint(&vb2, "{d}", .{cfg.max_tokens}) catch {};
+                    vb2[@min(31, std.mem.indexOfScalar(u8, &vb2, 0) orelse 31)] = 0;
+                    _ = std.fmt.bufPrint(&vb3, "{d:.2}", .{cfg.temperature}) catch {};
+                    vb3[@min(31, std.mem.indexOfScalar(u8, &vb3, 0) orelse 31)] = 0;
+                    _ = std.fmt.bufPrint(&vb11, "{d}", .{g_hybrid_engine.?.total_queries}) catch {};
+                    vb11[@min(31, std.mem.indexOfScalar(u8, &vb11, 0) orelse 31)] = 0;
+                } else {
+                    @memcpy(vb0[0..4], "0.30");
+                    vb0[4] = 0;
+                    @memcpy(vb1[0..4], "0.55");
+                    vb1[4] = 0;
+                    @memcpy(vb2[0..2], "32");
+                    vb2[2] = 0;
+                    @memcpy(vb3[0..4], "0.70");
+                    vb3[4] = 0;
+                    @memcpy(vb11[0..1], "0");
+                    vb11[1] = 0;
+                }
+
+                const refl_str: [*:0]const u8 = if (g_hybrid_engine != null and g_hybrid_engine.?.config.enable_reflection) "true" else "false";
+                const ctx_str: [*:0]const u8 = if (g_hybrid_engine != null and g_hybrid_engine.?.config.enable_context) "true" else "false";
+                const tools_str: [*:0]const u8 = if (g_hybrid_engine != null and g_hybrid_engine.?.config.enable_tools) "true" else "false";
+                const groq_key_str: [*:0]const u8 = if (g_hybrid_engine != null and g_hybrid_engine.?.config.groq_api_key != null) "****" else "not set";
+                const claude_key_str: [*:0]const u8 = if (g_hybrid_engine != null and g_hybrid_engine.?.config.claude_api_key != null) "****" else "not set";
+
                 const vals = [_][*:0]const u8{
-                    "0.30",
-                    "0.55",
-                    "32",
-                    "0.70",
-                    "true",
-                    "true",
-                    "256",
+                    &vb0,
+                    &vb1,
+                    &vb2,
+                    &vb3,
+                    refl_str,
+                    ctx_str,
+                    tools_str,
                     "llama-3.3-70b-versatile",
-                    "claude-3-5-sonnet",
-                    "****",
-                    "****",
-                    "enabled",
+                    "claude-sonnet-4-20250514",
+                    groq_key_str,
+                    claude_key_str,
+                    &vb11,
                 };
 
                 var si: usize = 0;
@@ -5740,7 +5875,9 @@ pub fn main() !void {
                     const y_pos = 80 * fs + @as(f32, @floatFromInt(si)) * line_h;
                     const wave_x = @sin(time * 1.0 + @as(f32, @floatFromInt(si)) * 0.5) * 2;
                     rl.DrawTextEx(chat_font, keys[si], .{ .x = margin + wave_x, .y = y_pos }, 15 * fs, 0.5, key_color);
-                    rl.DrawTextEx(chat_font, vals[si], .{ .x = margin + 280 * fs + wave_x, .y = y_pos }, 15 * fs, 0.5, val_color);
+                    // v2.0: Color booleans green/gray
+                    const vc = if (si >= 4 and si <= 6) active_color else val_color;
+                    rl.DrawTextEx(chat_font, vals[si], .{ .x = margin + 280 * fs + wave_x, .y = y_pos }, 15 * fs, 0.5, vc);
                 }
 
                 // Concentric config rings
@@ -5750,16 +5887,16 @@ pub fn main() !void {
                 }
             }
 
-            // === DOCS WAVE FIELD === (sacred worlds encyclopedia)
+            // === DOCS WAVE FIELD === (all 27 sacred worlds)
             if (g_wave_mode == .docs) {
                 const margin: f32 = 60 * fs;
                 const line_h: f32 = 28 * fs;
                 const title_color = withAlpha(mode_color, alpha_u8);
 
-                rl.DrawTextEx(chat_font, "SACRED WORLDS ENCYCLOPEDIA", .{ .x = margin, .y = 35 * fs }, 18 * fs, 0.5, title_color);
+                rl.DrawTextEx(chat_font, "SACRED WORLDS (27)", .{ .x = margin, .y = 35 * fs }, 18 * fs, 0.5, title_color);
 
-                // Display sacred worlds (19 blocks from logo)
-                const max_worlds: usize = 19;
+                // v2.0: Display all 27 sacred worlds
+                const max_worlds: usize = 27;
                 var wi: usize = 0;
                 while (wi < max_worlds) : (wi += 1) {
                     const y_pos = 75 * fs + @as(f32, @floatFromInt(wi)) * line_h;
@@ -5796,45 +5933,45 @@ pub fn main() !void {
                 }
             }
 
-            // === FINDER WAVE FIELD === (directory listing)
+            // === FINDER WAVE FIELD === (LIVE directory listing via std.fs)
             if (g_wave_mode == .finder) {
                 const margin: f32 = 60 * fs;
                 const line_h: f32 = 22 * fs;
                 const dir_color = withAlpha(mode_color, alpha_u8);
                 const file_color = withAlpha(rl.Color{ .r = 180, .g = 200, .b = 220, .a = 255 }, alpha_u8);
 
-                rl.DrawTextEx(chat_font, "FILE EXPLORER", .{ .x = margin, .y = 35 * fs }, 18 * fs, 0.5, dir_color);
-                rl.DrawTextEx(chat_font, "/Users/playra/trinity/", .{ .x = margin, .y = 60 * fs }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+                // v2.0: Scan real directory (every 2 seconds)
+                const now_ts = std.time.timestamp();
+                if (!g_finder_scanned or (now_ts - g_finder_last_scan) > 2) {
+                    scanDirectory();
+                }
 
-                const items = [_][*:0]const u8{
-                    "src/",
-                    "  vsa/",
-                    "    photon_trinity_canvas.zig",
-                    "  vibeec/",
-                    "    igla_hybrid_chat.zig",
-                    "    anthropic_client.zig",
-                    "    openai_client.zig",
-                    "  tvc/",
-                    "    tvc_corpus.zig",
-                    "  firebird/",
-                    "specs/",
-                    "  tri/",
-                    "    hdc_igla_hybrid_v2_1.vibee",
-                    "    trinity_canvas_v1_9.vibee",
-                    "docsite/",
-                    "website/",
-                    "build.zig",
-                    "CLAUDE.md",
-                };
-                const is_dir = [_]bool{ true, true, false, true, false, false, false, true, false, true, true, true, false, false, true, true, false, false };
+                rl.DrawTextEx(chat_font, "FILE EXPLORER (LIVE)", .{ .x = margin, .y = 35 * fs }, 18 * fs, 0.5, dir_color);
 
+                // v2.0: Show file count
+                var count_buf: [48:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&count_buf, "cwd: {d} entries", .{g_finder_count}) catch {};
+                count_buf[@min(47, std.mem.indexOfScalar(u8, &count_buf, 0) orelse 47)] = 0;
+                rl.DrawTextEx(chat_font, &count_buf, .{ .x = margin, .y = 60 * fs }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+
+                // v2.0: Display REAL files from g_finder_names
                 var fi: usize = 0;
-                while (fi < items.len) : (fi += 1) {
+                while (fi < g_finder_count) : (fi += 1) {
                     const y_pos = 85 * fs + @as(f32, @floatFromInt(fi)) * line_h;
                     if (y_pos > sh - 40) break;
                     const wave_x = @sin(time * 1.2 + @as(f32, @floatFromInt(fi)) * 0.35) * 2;
-                    const ic = if (is_dir[fi]) dir_color else file_color;
-                    rl.DrawTextEx(chat_font, items[fi], .{ .x = margin + wave_x, .y = y_pos }, 14 * fs, 0.5, ic);
+                    const ic = if (g_finder_is_dir[fi]) dir_color else file_color;
+                    // Dir indicator
+                    if (g_finder_is_dir[fi]) {
+                        var dir_buf: [68:0]u8 = undefined;
+                        const nlen = std.mem.indexOfScalar(u8, &g_finder_names[fi], 0) orelse 63;
+                        @memcpy(dir_buf[0..nlen], g_finder_names[fi][0..nlen]);
+                        dir_buf[nlen] = '/';
+                        dir_buf[nlen + 1] = 0;
+                        rl.DrawTextEx(chat_font, &dir_buf, .{ .x = margin + wave_x, .y = y_pos }, 14 * fs, 0.5, ic);
+                    } else {
+                        rl.DrawTextEx(chat_font, &g_finder_names[fi], .{ .x = margin + wave_x, .y = y_pos }, 14 * fs, 0.5, ic);
+                    }
                 }
 
                 // Spiral decoration
@@ -5847,7 +5984,7 @@ pub fn main() !void {
                 }
             }
 
-            // === VISION WAVE FIELD === (image drop zone)
+            // === VISION WAVE FIELD === (LIVE API status + instructions)
             if (g_wave_mode == .vision) {
                 const center_x = sw / 2;
                 const center_y = sh / 2;
@@ -5864,31 +6001,62 @@ pub fn main() !void {
                 rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), 12, mode_color);
                 rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), 6, rl.Color{ .r = 20, .g = 20, .b = 30, .a = alpha_u8 });
 
-                // Status text
-                rl.DrawTextEx(chat_font, "VISION", .{ .x = center_x - 30, .y = center_y - 60 }, 20 * fs, 0.5, mode_color);
-                rl.DrawTextEx(chat_font, "Drop image path in chat to analyze", .{ .x = center_x - 140, .y = center_y + 40 }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
-                rl.DrawTextEx(chat_font, "Supports: PNG, JPG, WEBP", .{ .x = center_x - 100, .y = center_y + 65 }, 12 * fs, 0.5, withAlpha(MUTED_GRAY, @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(alpha_u8)) * 0.5))))));
+                // v2.0: LIVE API status
+                rl.DrawTextEx(chat_font, "VISION", .{ .x = center_x - 30, .y = center_y - 80 }, 20 * fs, 0.5, mode_color);
+
+                // Check Claude API key availability
+                const has_claude = g_hybrid_engine != null and g_hybrid_engine.?.config.claude_api_key != null;
+                if (has_claude) {
+                    rl.DrawCircle(@intFromFloat(center_x - 90), @intFromFloat(center_y + 42), 4, rl.Color{ .r = 80, .g = 255, .b = 80, .a = alpha_u8 });
+                    rl.DrawTextEx(chat_font, "Claude Vision API: ready", .{ .x = center_x - 80, .y = center_y + 35 }, 14 * fs, 0.5, withAlpha(rl.Color{ .r = 80, .g = 255, .b = 120, .a = 255 }, alpha_u8));
+                } else {
+                    rl.DrawCircle(@intFromFloat(center_x - 90), @intFromFloat(center_y + 42), 4, rl.Color{ .r = 255, .g = 120, .b = 80, .a = alpha_u8 });
+                    rl.DrawTextEx(chat_font, "Claude Vision API: no key", .{ .x = center_x - 80, .y = center_y + 35 }, 14 * fs, 0.5, withAlpha(rl.Color{ .r = 255, .g = 120, .b = 80, .a = 255 }, alpha_u8));
+                }
+
+                rl.DrawTextEx(chat_font, "In chat: type 'vision: /path/to/image'", .{ .x = center_x - 150, .y = center_y + 65 }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+                rl.DrawTextEx(chat_font, "Supports: PNG, JPG, WEBP, GIF", .{ .x = center_x - 120, .y = center_y + 88 }, 12 * fs, 0.5, withAlpha(MUTED_GRAY, @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(alpha_u8)) * 0.5))))));
+                rl.DrawTextEx(chat_font, "respondWithImage() -> Claude/GPT-4o", .{ .x = center_x - 145, .y = center_y + 108 }, 12 * fs, 0.5, withAlpha(MUTED_GRAY, @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(alpha_u8)) * 0.4))))));
             }
 
-            // === VOICE WAVE FIELD === (audio waveform oscillation)
+            // === VOICE WAVE FIELD === (wave state modulated waveform)
             if (g_wave_mode == .voice) {
                 const center_y = sh / 2;
                 const wave_count: usize = 64;
                 const bar_w = sw / @as(f32, @floatFromInt(wave_count));
 
+                // v2.0: Modulate waveform with LIVE wave state
+                const vws = igla_hybrid_chat.g_last_wave_state;
+                const conf_amp = @max(0.3, vws.confidence); // Amplitude from confidence
+                const hue_freq = vws.source_hue / 360.0 * 2.0 + 1.5; // Frequency from source hue
+                const health_bright = @max(0.4, vws.provider_health_avg); // Brightness from health
+
                 // Audio waveform bars
                 for (0..wave_count) |wi| {
                     const fi_f = @as(f32, @floatFromInt(wi));
-                    const amp = @sin(time * 3.0 + fi_f * 0.3) * @sin(time * 1.7 + fi_f * 0.15) * 60 * fs;
+                    const amp = @sin(time * (2.0 + hue_freq) + fi_f * 0.3) * @sin(time * 1.7 + fi_f * 0.15) * 60 * fs * conf_amp;
                     const bar_x = fi_f * bar_w + bar_w * 0.1;
                     const bar_h = @abs(amp) + 4;
-                    const intensity: u8 = @intFromFloat(@max(40, @min(255, @abs(amp) * 3 + 40)));
-                    rl.DrawRectangle(@intFromFloat(bar_x), @intFromFloat(center_y - bar_h / 2), @intFromFloat(@max(1, bar_w * 0.7)), @intFromFloat(@max(1, bar_h)), rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(intensity)) * @as(f32, @floatFromInt(alpha_u8)) / 255.0)))) });
+                    const base_intensity = @abs(amp) * 3 + 40;
+                    const intensity: u8 = @intFromFloat(@max(40, @min(255, base_intensity * health_bright)));
+
+                    // v2.0: Green glow when learning
+                    const bar_color = if (vws.is_learning) rl.Color{ .r = 40, .g = 255, .b = 80, .a = @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(intensity)) * @as(f32, @floatFromInt(alpha_u8)) / 255.0)))) } else rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(intensity)) * @as(f32, @floatFromInt(alpha_u8)) / 255.0)))) };
+                    rl.DrawRectangle(@intFromFloat(bar_x), @intFromFloat(center_y - bar_h / 2), @intFromFloat(@max(1, bar_w * 0.7)), @intFromFloat(@max(1, bar_h)), bar_color);
                 }
 
-                // Status
+                // Status with live data
                 rl.DrawTextEx(chat_font, "VOICE", .{ .x = sw / 2 - 25, .y = 40 * fs }, 20 * fs, 0.5, mode_color);
-                rl.DrawTextEx(chat_font, "Microphone: standby", .{ .x = sw / 2 - 75, .y = sh - 60 * fs }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+
+                // v2.0: Show whisper model from config
+                const whisper_str: [*:0]const u8 = if (g_hybrid_engine != null) "Whisper: whisper-1 (standby)" else "Whisper: not configured";
+                rl.DrawTextEx(chat_font, whisper_str, .{ .x = sw / 2 - 100, .y = sh - 80 * fs }, 14 * fs, 0.5, withAlpha(MUTED_GRAY, alpha_u8));
+
+                // v2.0: Show live wave state values
+                var voice_info: [64:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&voice_info, "conf:{d:.0}% health:{d:.0}% route:{s}", .{ vws.confidence * 100, vws.provider_health_avg * 100, @tagName(vws.routing) }) catch {};
+                voice_info[@min(63, std.mem.indexOfScalar(u8, &voice_info, 0) orelse 63)] = 0;
+                rl.DrawTextEx(chat_font, &voice_info, .{ .x = sw / 2 - 130, .y = sh - 55 * fs }, 12 * fs, 0.5, withAlpha(MUTED_GRAY, @as(u8, @intFromFloat(@max(0, @min(255, @as(f32, @floatFromInt(alpha_u8)) * 0.5))))));
 
                 // Center line
                 rl.DrawLine(0, @intFromFloat(center_y), @intFromFloat(sw), @intFromFloat(center_y), rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = @as(u8, @intFromFloat(@max(0, @min(30, @as(f32, @floatFromInt(alpha_u8)) * 0.12)))) });
