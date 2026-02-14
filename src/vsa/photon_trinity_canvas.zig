@@ -135,6 +135,11 @@ const ChatMsgType = enum {
     gossip_broadcast, // Gossip broadcast (coral)
     dht_lookup, // DHT lookup (dodger blue)
     community_sync, // Community sync (medium orchid)
+    // v2.8: DAO Full Governance v1.0
+    dao_delegate, // DAO delegation (gold)
+    timelock_vote, // Time-locked voting (crimson)
+    proposal_exec, // Proposal execution (sea green)
+    yield_farming, // Yield farming (dark orange)
 };
 var g_chat_messages: [MAX_CHAT_MSGS][512]u8 = undefined; // v3.0: 512 bytes per msg
 var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
@@ -352,6 +357,11 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
         .gossip_broadcast => .{ .r = 0xFF, .g = 0x7F, .b = 0x50, .a = alpha }, // Coral
         .dht_lookup => .{ .r = 0x1E, .g = 0x90, .b = 0xFF, .a = alpha }, // Dodger blue
         .community_sync => .{ .r = 0xBA, .g = 0x55, .b = 0xD3, .a = alpha }, // Medium orchid
+        // v2.8: DAO Full Governance v1.0
+        .dao_delegate => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha }, // Gold
+        .timelock_vote => .{ .r = 0xDC, .g = 0x14, .b = 0x3C, .a = alpha }, // Crimson
+        .proposal_exec => .{ .r = 0x2E, .g = 0x8B, .b = 0x57, .a = alpha }, // Sea green
+        .yield_farming => .{ .r = 0xFF, .g = 0x8C, .b = 0x00, .a = alpha }, // Dark orange
         .user => .{ .r = 0x70, .g = 0x70, .b = 0x90, .a = alpha },
         .ai => .{ .r = 0x30, .g = 0x80, .b = 0x50, .a = alpha },
         .log => .{ .r = 0x60, .g = 0x60, .b = 0x60, .a = alpha },
@@ -414,6 +424,11 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         .gossip_broadcast => "GOSSIP_BC",
         .dht_lookup => "DHT_LOOKUP",
         .community_sync => "COMM_SYNC",
+        // v2.8: DAO Full Governance v1.0
+        .dao_delegate => "DAO_DELEG",
+        .timelock_vote => "TIMELVOTE",
+        .proposal_exec => "PROP_EXEC",
+        .yield_farming => "YIELD_FRM",
         .user => "YOU",
         .ai => "AI",
         .log => "LOG",
@@ -422,7 +437,7 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
 
 fn isChainType(msg_type: ChatMsgType) bool {
     return switch (msg_type) {
-        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync => true,
+        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming => true,
         else => false,
     };
 }
@@ -488,6 +503,11 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         .GossipBroadcast => .gossip_broadcast,
         .DHTLookup => .dht_lookup,
         .CommunitySyncEvent => .community_sync,
+        // v2.8: DAO Full Governance v1.0
+        .DAODelegation => .dao_delegate,
+        .TimelockVote => .timelock_vote,
+        .ProposalExecution => .proposal_exec,
+        .YieldFarmingEvent => .yield_farming,
     };
 }
 
