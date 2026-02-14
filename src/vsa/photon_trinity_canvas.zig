@@ -150,6 +150,11 @@ const ChatMsgType = enum {
     tri_staking, // $TRI staking (lime green)
     reward_distribute, // Reward distribution (hot pink)
     staking_validate, // Staking validation (steel blue)
+    // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+    swarm_100k, // Swarm 100k (orange)
+    gossip_shard, // Gossip shard (dark turquoise)
+    dht_sync, // DHT hierarchical (medium purple)
+    community_50k, // Community 50k (spring green)
 };
 var g_chat_messages: [MAX_CHAT_MSGS][512]u8 = undefined; // v3.0: 512 bytes per msg
 var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
@@ -382,6 +387,11 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
         .tri_staking => .{ .r = 0x32, .g = 0xCD, .b = 0x32, .a = alpha }, // Lime green
         .reward_distribute => .{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = alpha }, // Hot pink
         .staking_validate => .{ .r = 0x46, .g = 0x82, .b = 0xB4, .a = alpha }, // Steel blue
+        // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+        .swarm_100k => .{ .r = 0xFF, .g = 0xA5, .b = 0x00, .a = alpha }, // Orange
+        .gossip_shard => .{ .r = 0x00, .g = 0xCE, .b = 0xD1, .a = alpha }, // Dark turquoise
+        .dht_sync => .{ .r = 0x93, .g = 0x70, .b = 0xDB, .a = alpha }, // Medium purple
+        .community_50k => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = alpha }, // Spring green
         .user => .{ .r = 0x70, .g = 0x70, .b = 0x90, .a = alpha },
         .ai => .{ .r = 0x30, .g = 0x80, .b = 0x50, .a = alpha },
         .log => .{ .r = 0x60, .g = 0x60, .b = 0x60, .a = alpha },
@@ -459,6 +469,11 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         .tri_staking => "TRI_STAK",
         .reward_distribute => "RWD_DIST",
         .staking_validate => "STK_VLDR",
+        // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+        .swarm_100k => "SWM_100K",
+        .gossip_shard => "GSP_SHRD",
+        .dht_sync => "DHT_SYNC",
+        .community_50k => "COM_50K",
         .user => "YOU",
         .ai => "AI",
         .log => "LOG",
@@ -467,7 +482,7 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
 
 fn isChainType(msg_type: ChatMsgType) bool {
     return switch (msg_type) {
-        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute, .staking_validate => true,
+        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute, .staking_validate, .swarm_100k, .gossip_shard, .dht_sync, .community_50k => true,
         else => false,
     };
 }
@@ -548,6 +563,11 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         .TRIStaking => .tri_staking,
         .RewardDistribution => .reward_distribute,
         .StakingValidation => .staking_validate,
+        // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+        .Swarm100kScale => .swarm_100k,
+        .GossipShardEvent => .gossip_shard,
+        .DHTHierarchicalSync => .dht_sync,
+        .Community50kOnboard => .community_50k,
     };
 }
 

@@ -30,7 +30,7 @@ pub const CONTENT_DIGEST_LEN = 64;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 144; // v2.10: was 136, +8 for DAO full governance + staking quarks (u7: 112/128)
+pub const MAX_QUARK_RECORDS = 152; // v2.11: was 144, +8 for Swarm 100k + Community 50k quarks (u7: 120/128)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -226,6 +226,11 @@ pub const ChainMessageType = enum {
     TRIStaking, // $TRI staking event
     RewardDistribution, // Reward distribution event
     StakingValidation, // Staking validation event
+    // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+    Swarm100kScale, // Swarm 100k scaling event
+    GossipShardEvent, // Gossip shard propagation event
+    DHTHierarchicalSync, // DHT hierarchical sync event
+    Community50kOnboard, // Community 50k onboarding event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -442,6 +447,16 @@ pub const QuarkType = enum(u7) {
     dao_treasury, // 110 — DAO treasury management
     staking_anchor, // 111 — Staking anchor record
 
+    // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT) (u7: 120/128)
+    swarm_100k, // 112 — Swarm 100k scaling
+    gossip_shard, // 113 — Gossip shard propagation
+    dht_hierarchical, // 114 — DHT hierarchical sync
+    community_50k, // 115 — Community 50k onboarding
+    swarm_health_v2, // 116 — Swarm health monitoring v2
+    gossip_repair, // 117 — Gossip shard repair
+    dht_aggregate, // 118 — DHT aggregation
+    swarm_anchor_v2, // 119 — Swarm anchor record v2
+
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
             .input_capture => "INPUT_CAP",
@@ -563,6 +578,15 @@ pub const QuarkType = enum(u7) {
             .yield_optimizer => "YLD_OPTM",
             .dao_treasury => "DAO_TRSY",
             .staking_anchor => "STK_ANCH",
+            // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+            .swarm_100k => "SWM_100K",
+            .gossip_shard => "GSP_SHRD",
+            .dht_hierarchical => "DHT_HIER",
+            .community_50k => "COM_50K",
+            .swarm_health_v2 => "SWM_HLTH",
+            .gossip_repair => "GSP_REPR",
+            .dht_aggregate => "DHT_AGGR",
+            .swarm_anchor_v2 => "SWM_ANC2",
         };
     }
 
@@ -795,6 +819,23 @@ pub const QuarkType = enum(u7) {
 
     pub fn isStakingValidatorQuark(self: QuarkType) bool {
         return self == .staking_validator or self == .governance_quorum;
+    }
+
+    // v2.11: Swarm 100k + Community 50k classifiers
+    pub fn isSwarm100kQuark(self: QuarkType) bool {
+        return self == .swarm_100k or self == .swarm_anchor_v2;
+    }
+
+    pub fn isGossipShardQuark(self: QuarkType) bool {
+        return self == .gossip_shard or self == .gossip_repair;
+    }
+
+    pub fn isDHTHierarchicalQuark(self: QuarkType) bool {
+        return self == .dht_hierarchical or self == .dht_aggregate;
+    }
+
+    pub fn isCommunity50kQuark(self: QuarkType) bool {
+        return self == .community_50k or self == .swarm_health_v2;
     }
 };
 
@@ -1406,6 +1447,14 @@ pub const STAKING_REWARD_RATE_BPS: u16 = 500;
 pub const STAKING_EPOCH_DURATION_US: i64 = 86_400_000_000;
 pub const STAKING_MAX_VALIDATORS: u16 = 1_000;
 
+// v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT) constants
+pub const SWARM_100K_MAX_NODES: u32 = 100_000;
+pub const COMMUNITY_50K_MAX_NODES: u32 = 50_000;
+pub const GOSSIP_SHARD_COUNT: u16 = 256;
+pub const DHT_HIERARCHY_DEPTH: u8 = 4;
+pub const GOSSIP_REPAIR_INTERVAL_US: i64 = 5_000_000;
+pub const DHT_REBALANCE_THRESHOLD: u16 = 1_000;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1635,15 +1684,48 @@ pub const StakingValidatorState = struct {
     validator_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT) types
+pub const Swarm100kState = struct {
+    active_nodes: u32 = 0,
+    max_capacity: u32 = 0,
+    shard_count: u16 = 0,
+    last_scale_us: i64 = 0,
+    swarm_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const GossipShardState = struct {
+    total_shards: u16 = 0,
+    messages_propagated: u64 = 0,
+    shard_repairs: u32 = 0,
+    last_gossip_us: i64 = 0,
+    gossip_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const DHTHierarchicalState = struct {
+    hierarchy_depth: u8 = 0,
+    total_lookups: u64 = 0,
+    rebalance_count: u32 = 0,
+    last_lookup_us: i64 = 0,
+    dht_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const Community50kState = struct {
+    community_nodes: u32 = 0,
+    onboarded_total: u64 = 0,
+    active_communities: u16 = 0,
+    last_onboard_us: i64 = 0,
+    community_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.3/v1.4 EXPORT CONSTANTS — on-chain serialization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 14; // v2.10: bumped from 13
+pub const QUARK_EXPORT_VERSION: u16 = 15; // v2.11: bumped from 14
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 74; // v2.10: was 70, +4 for passed_proposals(u16)+active_stakers(u16)
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 78; // v2.11: was 74, +4 for active_nodes(u16)+community_nodes(u16)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GOLDEN CHAIN AGENT — unified 8-node pipeline
@@ -1753,6 +1835,12 @@ pub const GoldenChainAgent = struct {
     reward_distribution_state: RewardDistributionState,
     staking_validator_state: StakingValidatorState,
     dao_full_governance_active: bool,
+    // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+    swarm_100k_state: Swarm100kState,
+    gossip_shard_state: GossipShardState,
+    dht_hierarchical_state: DHTHierarchicalState,
+    community_50k_state: Community50kState,
+    swarm_100k_active: bool,
 
     const Self = @This();
 
@@ -1863,6 +1951,12 @@ pub const GoldenChainAgent = struct {
             .reward_distribution_state = .{},
             .staking_validator_state = .{},
             .dao_full_governance_active = false,
+            // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+            .swarm_100k_state = .{},
+            .gossip_shard_state = .{},
+            .dht_hierarchical_state = .{},
+            .community_50k_state = .{},
+            .swarm_100k_active = false,
         };
     }
 
@@ -2145,7 +2239,7 @@ pub const GoldenChainAgent = struct {
         self.quark_chain_verified = self.verifyQuarkChain();
         if (self.quark_chain_verified) {
             var qvbuf: [128]u8 = undefined;
-            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/144 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking intact)", .{self.quark_count}) catch "Quarks VERIFIED";
+            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/152 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k intact)", .{self.quark_count}) catch "Quarks VERIFIED";
             self.emitMsg(.TruthVerification, .Deliver, null, qvmsg, 1.0, 0);
         } else {
             self.emitMsg(.TruthVerification, .Deliver, null, "Quark chain: BROKEN", 0.0, 0);
@@ -2737,6 +2831,43 @@ pub const GoldenChainAgent = struct {
             }) catch "Staking validation";
             self.emitMsg(.StakingValidation, .Deliver, null, svmsg, 1.0, 0);
         }
+        // v2.11: Swarm 100k + Community 50k
+        {
+            self.initSwarm100k();
+            var s100buf: [256]u8 = undefined;
+            const s100msg = std.fmt.bufPrint(&s100buf, "Swarm100kScale: nodes={d} | capacity={d}", .{
+                self.swarm_100k_state.active_nodes,
+                self.swarm_100k_state.max_capacity,
+            }) catch "Swarm 100k scale";
+            self.emitMsg(.Swarm100kScale, .Deliver, null, s100msg, 1.0, 0);
+        }
+        {
+            self.shardGossip();
+            var gsbuf: [256]u8 = undefined;
+            const gsmsg = std.fmt.bufPrint(&gsbuf, "GossipShardEvent: shards={d} | propagated={d}", .{
+                self.gossip_shard_state.total_shards,
+                self.gossip_shard_state.messages_propagated,
+            }) catch "Gossip shard";
+            self.emitMsg(.GossipShardEvent, .Deliver, null, gsmsg, 1.0, 0);
+        }
+        {
+            self.syncDHTHierarchical();
+            var dhtbuf: [256]u8 = undefined;
+            const dhtmsg = std.fmt.bufPrint(&dhtbuf, "DHTHierarchicalSync: depth={d} | lookups={d}", .{
+                self.dht_hierarchical_state.hierarchy_depth,
+                self.dht_hierarchical_state.total_lookups,
+            }) catch "DHT sync";
+            self.emitMsg(.DHTHierarchicalSync, .Deliver, null, dhtmsg, 1.0, 0);
+        }
+        {
+            self.onboardCommunity50k();
+            var c50buf: [256]u8 = undefined;
+            const c50msg = std.fmt.bufPrint(&c50buf, "Community50kOnboard: nodes={d} | communities={d}", .{
+                self.community_50k_state.community_nodes,
+                self.community_50k_state.active_communities,
+            }) catch "Community 50k onboard";
+            self.emitMsg(.Community50kOnboard, .Deliver, null, c50msg, 1.0, 0);
+        }
 
         // Update global wave state
         igla_hybrid.g_last_wave_state = .{
@@ -3117,6 +3248,9 @@ pub const GoldenChainAgent = struct {
         // Phase Q: DAO Full Governance + $TRI Staking integrity (v2.10)
         if (!self.daoFullGovernanceVerify()) return false;
 
+        // Phase R: Swarm 100k + Community 50k integrity (v2.11)
+        if (!self.swarm100kVerify()) return false;
+
         return true;
     }
 
@@ -3276,6 +3410,13 @@ pub const GoldenChainAgent = struct {
         const astk_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.tri_staking_state.active_stakers, std.math.maxInt(u16)))));
         @memcpy(buf[pos .. pos + 2], &astk_bytes);
         pos += 2;
+        // v2.11: active_nodes(2) + community_nodes(2)
+        const anod_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.swarm_100k_state.active_nodes, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &anod_bytes);
+        pos += 2;
+        const cnod_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.community_50k_state.community_nodes, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &cnod_bytes);
+        pos += 2;
 
         // Provenance records (158 bytes each)
         var pi: u8 = 0;
@@ -3358,10 +3499,10 @@ pub const GoldenChainAgent = struct {
 
         // Read version (support v1, v2, v3, v4, v5, v6, v7)
         const ver: u16 = @bitCast(buf[pos .. pos + 2][0..2].*);
-        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14) return false;
+        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15) return false;
         pos += 2;
 
-        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else 74;
+        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else 78;
         if (buf.len < header_size) return false;
 
         const prov_count = buf[pos];
@@ -3500,6 +3641,15 @@ pub const GoldenChainAgent = struct {
             active_stakers_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
         }
+        // v2.11: read active_nodes + community_nodes from v15 header
+        var swarm_active_nodes_cnt: u16 = 0;
+        var community_nodes_cnt: u16 = 0;
+        if (ver >= 15) {
+            swarm_active_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+            community_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+        }
 
         // Validate sizes
         if (prov_count > MAX_PROVENANCE_RECORDS or qcount > MAX_QUARK_RECORDS) return false;
@@ -3604,6 +3754,9 @@ pub const GoldenChainAgent = struct {
         // v2.10: restore DAO governance + staking fields
         self.dao_full_governance_state.passed_proposals = passed_proposals_cnt;
         self.tri_staking_state.active_stakers = active_stakers_cnt;
+        // v2.11: restore swarm + community fields
+        self.swarm_100k_state.active_nodes = swarm_active_nodes_cnt;
+        self.community_50k_state.community_nodes = community_nodes_cnt;
 
         return true;
     }
@@ -5095,6 +5248,69 @@ pub const GoldenChainAgent = struct {
         return true;
     }
 
+    // ── v2.11: Swarm 100k + Community 50k methods ──
+
+    fn initSwarm100k(self: *Self) void {
+        self.swarm_100k_state.active_nodes += 1;
+        self.swarm_100k_state.max_capacity = SWARM_100K_MAX_NODES;
+        self.swarm_100k_state.shard_count = GOSSIP_SHARD_COUNT;
+        const now = std.time.microTimestamp();
+        self.swarm_100k_state.last_scale_us = now;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("swarm_100k_v2.11");
+        hasher.update(std.mem.asBytes(&self.swarm_100k_state.active_nodes));
+        hasher.update(std.mem.asBytes(&now));
+        hasher.final(&self.swarm_100k_state.swarm_hash);
+        self.swarm_100k_active = true;
+    }
+
+    fn shardGossip(self: *Self) void {
+        self.gossip_shard_state.total_shards = GOSSIP_SHARD_COUNT;
+        self.gossip_shard_state.messages_propagated += 1;
+        const now = std.time.microTimestamp();
+        self.gossip_shard_state.last_gossip_us = now;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("gossip_shard_v2.11");
+        hasher.update(std.mem.asBytes(&self.gossip_shard_state.messages_propagated));
+        hasher.update(std.mem.asBytes(&now));
+        hasher.final(&self.gossip_shard_state.gossip_hash);
+    }
+
+    fn syncDHTHierarchical(self: *Self) void {
+        self.dht_hierarchical_state.hierarchy_depth = DHT_HIERARCHY_DEPTH;
+        self.dht_hierarchical_state.total_lookups += 1;
+        const now = std.time.microTimestamp();
+        self.dht_hierarchical_state.last_lookup_us = now;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("dht_hierarchical_v2.11");
+        hasher.update(std.mem.asBytes(&self.dht_hierarchical_state.total_lookups));
+        hasher.update(std.mem.asBytes(&now));
+        hasher.final(&self.dht_hierarchical_state.dht_hash);
+    }
+
+    fn onboardCommunity50k(self: *Self) void {
+        self.community_50k_state.community_nodes += 1;
+        self.community_50k_state.onboarded_total += 1;
+        self.community_50k_state.active_communities += 1;
+        const now = std.time.microTimestamp();
+        self.community_50k_state.last_onboard_us = now;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("community_50k_v2.11");
+        hasher.update(std.mem.asBytes(&self.community_50k_state.community_nodes));
+        hasher.update(std.mem.asBytes(&now));
+        hasher.final(&self.community_50k_state.community_hash);
+    }
+
+    fn swarm100kVerify(self: *const Self) bool {
+        // R1: Swarm must have active nodes
+        if (self.swarm_100k_state.active_nodes == 0) return false;
+        // R2: Gossip must have propagated messages
+        if (self.gossip_shard_state.messages_propagated == 0) return false;
+        // R3: Community must have onboarded nodes
+        if (self.community_50k_state.community_nodes == 0) return false;
+        return true;
+    }
+
     // ── v1.3: Node Quark Summary ──
 
     /// Emit a single summary line for a node's quarks (used in summary verbosity mode).
@@ -5178,8 +5394,10 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.cross_chain_bridge, .GoalParse, "cross_chain_bridge", conf, self.quark_count - 1, null);
         // Q15: dao_full_governance (v2.10)
         self.recordQuark(.dao_full_governance, .GoalParse, "dao_full_governance", conf, self.quark_count - 1, null);
+        // Q16: swarm_100k (v2.11)
+        self.recordQuark(.swarm_100k, .GoalParse, "swarm_100k", conf, self.quark_count - 1, null);
 
-        // Q16: hash_verify — entangles with work quarks
+        // Q17: hash_verify — entangles with work quarks
         const prev_q = if (self.quark_count >= 2) self.quark_count - 2 else 0;
         self.recordQuark(.hash_verify, .GoalParse, "hash_verify", conf, prev_q, self.quark_count - 1);
 
@@ -5239,6 +5457,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.atomic_swap, .Decompose, "atomic_swap", conf, self.quark_count - 1, null);
         // tri_staking (v2.10)
         self.recordQuark(.tri_staking, .Decompose, "tri_staking", conf, self.quark_count - 1, null);
+        // gossip_shard (v2.11)
+        self.recordQuark(.gossip_shard, .Decompose, "gossip_shard", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -5300,6 +5520,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.state_replicate, .Schedule, "state_replicate", conf, self.quark_count - 1, null);
         // reward_distribution (v2.10)
         self.recordQuark(.reward_distribution, .Schedule, "reward_distribution", conf, self.quark_count - 1, null);
+        // dht_hierarchical (v2.11)
+        self.recordQuark(.dht_hierarchical, .Schedule, "dht_hierarchical", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -5363,6 +5585,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.multi_chain_sync, .Execute, "multi_chain_sync", conf, self.quark_count - 1, null);
         // governance_quorum (v2.10)
         self.recordQuark(.governance_quorum, .Execute, "governance_quorum", conf, self.quark_count - 1, null);
+        // community_50k (v2.11)
+        self.recordQuark(.community_50k, .Execute, "community_50k", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + SCHEDULE hash_verify
         const sched_hv = self.lastHashVerifyOfNode(.Schedule);
@@ -5422,6 +5646,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.bridge_verify, .Monitor, "bridge_verify", conf, self.quark_count - 1, null);
         // staking_validator (v2.10)
         self.recordQuark(.staking_validator, .Monitor, "staking_validator", conf, self.quark_count - 1, null);
+        // swarm_health_v2 (v2.11)
+        self.recordQuark(.swarm_health_v2, .Monitor, "swarm_health_v2", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -5478,6 +5704,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.swap_finalize, .Adapt, "swap_finalize", conf, self.quark_count - 1, null);
         // yield_optimizer (v2.10)
         self.recordQuark(.yield_optimizer, .Adapt, "yield_optimizer", conf, self.quark_count - 1, null);
+        // gossip_repair (v2.11)
+        self.recordQuark(.gossip_repair, .Adapt, "gossip_repair", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quark + MONITOR hash_verify
         const mon_hv = self.lastHashVerifyOfNode(.Monitor);
@@ -5537,6 +5765,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.chain_interop, .Synthesize, "chain_interop", conf, self.quark_count - 1, null);
         // dao_treasury (v2.10)
         self.recordQuark(.dao_treasury, .Synthesize, "dao_treasury", conf, self.quark_count - 1, null);
+        // dht_aggregate (v2.11)
+        self.recordQuark(.dht_aggregate, .Synthesize, "dht_aggregate", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -5597,6 +5827,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.bridge_anchor, .Deliver, "bridge_anchor", conf, self.quark_count - 1, null);
         // staking_anchor (v2.10)
         self.recordQuark(.staking_anchor, .Deliver, "staking_anchor", conf, self.quark_count - 1, null);
+        // swarm_anchor_v2 (v2.11)
+        self.recordQuark(.swarm_anchor_v2, .Deliver, "swarm_anchor_v2", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -6585,7 +6817,7 @@ test "v1.5 constants correct" {
 // v2.0 IMMORTAL SELF-VERIFYING AGENT TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "QuarkType has 112 variants (u7, 112/128)" {
+test "QuarkType has 120 variants (u7, 120/128)" {
     const types = [_]QuarkType{
         .input_capture,         .goal_classify,      .task_decompose,       .dependency_check,
         .schedule_plan,         .route_decision,     .api_call,             .tvc_cross_check,
@@ -6620,10 +6852,13 @@ test "QuarkType has 112 variants (u7, 112/128)" {
         // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
         .dao_full_governance,   .tri_staking,        .reward_distribution,  .governance_quorum,
         .staking_validator,     .yield_optimizer,    .dao_treasury,         .staking_anchor,
+        // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+        .swarm_100k,            .gossip_shard,       .dht_hierarchical,     .community_50k,
+        .swarm_health_v2,       .gossip_repair,      .dht_aggregate,        .swarm_anchor_v2,
     };
-    try std.testing.expectEqual(@as(usize, 112), types.len);
-    for (0..112) |i| {
-        for (i + 1..112) |j| {
+    try std.testing.expectEqual(@as(usize, 120), types.len);
+    for (0..120) |i| {
+        for (i + 1..120) |j| {
             try std.testing.expect(@intFromEnum(types[i]) != @intFromEnum(types[j]));
         }
     }
@@ -6957,13 +7192,13 @@ test "v2.1 export v5 constants" {
     try std.testing.expectEqual(@as(usize, 38), 34 + 2 + 2);
 }
 
-test "v2.10 144 quarks per query target" {
-    // Distribution: 18+18+18+19+18+17+18+18 = 144
-    const expected = [_]u8{ 18, 18, 18, 19, 18, 17, 18, 18 };
+test "v2.11 152 quarks per query target" {
+    // Distribution: 19+19+19+20+19+18+19+19 = 152
+    const expected = [_]u8{ 19, 19, 19, 20, 19, 18, 19, 19 };
     var total: u16 = 0;
     for (expected) |n| total += n;
-    try std.testing.expectEqual(@as(u16, 144), total);
-    try std.testing.expectEqual(@as(usize, 144), MAX_QUARK_RECORDS);
+    try std.testing.expectEqual(@as(u16, 152), total);
+    try std.testing.expectEqual(@as(usize, 152), MAX_QUARK_RECORDS);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -7047,22 +7282,22 @@ test "v2.2 ChainMessageType has 4 new variants" {
     }
 }
 
-test "v2.10 144 quarks target distribution" {
-    // 18+18+18+19+18+17+18+18 = 144
-    const dist = [_]u8{ 18, 18, 18, 19, 18, 17, 18, 18 };
+test "v2.11 152 quarks target distribution" {
+    // 19+19+19+20+19+18+19+19 = 152
+    const dist = [_]u8{ 19, 19, 19, 20, 19, 18, 19, 19 };
     var sum: u16 = 0;
     for (dist) |d| sum += d;
-    try std.testing.expectEqual(@as(u16, 144), sum);
-    // Each node got exactly +1 from v2.9 distribution (17+17+17+18+17+16+17+17=136)
-    const v29_dist = [_]u8{ 17, 17, 17, 18, 17, 16, 17, 17 };
-    for (dist, v29_dist) |d, v29| {
-        try std.testing.expectEqual(@as(u8, v29 + 1), d);
+    try std.testing.expectEqual(@as(u16, 152), sum);
+    // Each node got exactly +1 from v2.10 distribution (18+18+18+19+18+17+18+18=144)
+    const v210_dist = [_]u8{ 18, 18, 18, 19, 18, 17, 18, 18 };
+    for (dist, v210_dist) |d, v210| {
+        try std.testing.expectEqual(@as(u8, v210 + 1), d);
     }
 }
 
-test "Export v14 header 74 bytes" {
-    try std.testing.expectEqual(@as(usize, 74), QUARK_EXPORT_HEADER_SIZE);
-    try std.testing.expectEqual(@as(u16, 14), QUARK_EXPORT_VERSION);
+test "Export v15 header 78 bytes" {
+    try std.testing.expectEqual(@as(usize, 78), QUARK_EXPORT_HEADER_SIZE);
+    try std.testing.expectEqual(@as(u16, 15), QUARK_EXPORT_VERSION);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -7238,13 +7473,13 @@ test "v2.4 ChainMessageType has 4 new variants" {
     }
 }
 
-test "u7 capacity with 112/128 used" {
-    // 112 QuarkType variants in u7 (128 capacity), 16 slots remaining
+test "u7 capacity with 120/128 used" {
+    // 120 QuarkType variants in u7 (128 capacity), 8 slots remaining
     var count: u8 = 0;
     inline for (std.meta.fields(QuarkType)) |_| {
         count += 1;
     }
-    try std.testing.expectEqual(@as(u8, 112), count);
+    try std.testing.expectEqual(@as(u8, 120), count);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -7965,4 +8200,133 @@ test "v2.10 constants" {
     try std.testing.expectEqual(@as(u16, 500), STAKING_REWARD_RATE_BPS);
     try std.testing.expectEqual(@as(i64, 86_400_000_000), STAKING_EPOCH_DURATION_US);
     try std.testing.expectEqual(@as(u16, 1_000), STAKING_MAX_VALIDATORS);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.11 TESTS — Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.11 QuarkType label swarm_100k" {
+    try std.testing.expectEqualStrings("SWM_100K", QuarkType.swarm_100k.getLabel());
+}
+
+test "v2.11 QuarkType label gossip_shard" {
+    try std.testing.expectEqualStrings("GSP_SHRD", QuarkType.gossip_shard.getLabel());
+}
+
+test "v2.11 QuarkType label dht_hierarchical" {
+    try std.testing.expectEqualStrings("DHT_HIER", QuarkType.dht_hierarchical.getLabel());
+}
+
+test "v2.11 QuarkType label community_50k" {
+    try std.testing.expectEqualStrings("COM_50K", QuarkType.community_50k.getLabel());
+}
+
+test "v2.11 QuarkType label swarm_health_v2" {
+    try std.testing.expectEqualStrings("SWM_HLTH", QuarkType.swarm_health_v2.getLabel());
+}
+
+test "v2.11 QuarkType label gossip_repair" {
+    try std.testing.expectEqualStrings("GSP_REPR", QuarkType.gossip_repair.getLabel());
+}
+
+test "v2.11 QuarkType label dht_aggregate" {
+    try std.testing.expectEqualStrings("DHT_AGGR", QuarkType.dht_aggregate.getLabel());
+}
+
+test "v2.11 QuarkType label swarm_anchor_v2" {
+    try std.testing.expectEqualStrings("SWM_ANC2", QuarkType.swarm_anchor_v2.getLabel());
+}
+
+test "v2.11 isSwarm100kQuark classifier" {
+    try std.testing.expect(QuarkType.swarm_100k.isSwarm100kQuark());
+    try std.testing.expect(QuarkType.swarm_anchor_v2.isSwarm100kQuark());
+    try std.testing.expect(!QuarkType.gossip_shard.isSwarm100kQuark());
+}
+
+test "v2.11 isGossipShardQuark classifier" {
+    try std.testing.expect(QuarkType.gossip_shard.isGossipShardQuark());
+    try std.testing.expect(QuarkType.gossip_repair.isGossipShardQuark());
+    try std.testing.expect(!QuarkType.dht_hierarchical.isGossipShardQuark());
+}
+
+test "v2.11 isDHTHierarchicalQuark classifier" {
+    try std.testing.expect(QuarkType.dht_hierarchical.isDHTHierarchicalQuark());
+    try std.testing.expect(QuarkType.dht_aggregate.isDHTHierarchicalQuark());
+    try std.testing.expect(!QuarkType.community_50k.isDHTHierarchicalQuark());
+}
+
+test "v2.11 isCommunity50kQuark classifier" {
+    try std.testing.expect(QuarkType.community_50k.isCommunity50kQuark());
+    try std.testing.expect(QuarkType.swarm_health_v2.isCommunity50kQuark());
+    try std.testing.expect(!QuarkType.swarm_100k.isCommunity50kQuark());
+}
+
+test "v2.11 Swarm100kState defaults" {
+    const state = Swarm100kState{};
+    try std.testing.expectEqual(@as(u32, 0), state.active_nodes);
+    try std.testing.expectEqual(@as(u32, 0), state.max_capacity);
+    try std.testing.expectEqual(@as(u16, 0), state.shard_count);
+}
+
+test "v2.11 GossipShardState defaults" {
+    const state = GossipShardState{};
+    try std.testing.expectEqual(@as(u16, 0), state.total_shards);
+    try std.testing.expectEqual(@as(u64, 0), state.messages_propagated);
+    try std.testing.expectEqual(@as(u32, 0), state.shard_repairs);
+}
+
+test "v2.11 DHTHierarchicalState defaults" {
+    const state = DHTHierarchicalState{};
+    try std.testing.expectEqual(@as(u8, 0), state.hierarchy_depth);
+    try std.testing.expectEqual(@as(u64, 0), state.total_lookups);
+    try std.testing.expectEqual(@as(u32, 0), state.rebalance_count);
+}
+
+test "v2.11 Community50kState defaults" {
+    const state = Community50kState{};
+    try std.testing.expectEqual(@as(u32, 0), state.community_nodes);
+    try std.testing.expectEqual(@as(u64, 0), state.onboarded_total);
+    try std.testing.expectEqual(@as(u16, 0), state.active_communities);
+}
+
+test "v2.11 Phase R pass" {
+    var agent = GoldenChainAgent.init(.full);
+    agent.swarm_100k_state.active_nodes = 1;
+    agent.gossip_shard_state.messages_propagated = 1;
+    agent.community_50k_state.community_nodes = 1;
+    try std.testing.expect(agent.swarm100kVerify());
+}
+
+test "v2.11 Phase R fail" {
+    var agent = GoldenChainAgent.init(.full);
+    // All zero — should fail
+    try std.testing.expect(!agent.swarm100kVerify());
+}
+
+test "v2.11 Phase R fail partial — no community" {
+    var agent = GoldenChainAgent.init(.full);
+    agent.swarm_100k_state.active_nodes = 1;
+    agent.gossip_shard_state.messages_propagated = 1;
+    // community_nodes == 0
+    try std.testing.expect(!agent.swarm100kVerify());
+}
+
+test "v2.11 ChainMessageType Swarm+Community variants" {
+    const variants = [_]ChainMessageType{
+        .Swarm100kScale,
+        .GossipShardEvent,
+        .DHTHierarchicalSync,
+        .Community50kOnboard,
+    };
+    try std.testing.expectEqual(@as(usize, 4), variants.len);
+}
+
+test "v2.11 constants" {
+    try std.testing.expectEqual(@as(u32, 100_000), SWARM_100K_MAX_NODES);
+    try std.testing.expectEqual(@as(u32, 50_000), COMMUNITY_50K_MAX_NODES);
+    try std.testing.expectEqual(@as(u16, 256), GOSSIP_SHARD_COUNT);
+    try std.testing.expectEqual(@as(u8, 4), DHT_HIERARCHY_DEPTH);
+    try std.testing.expectEqual(@as(i64, 5_000_000), GOSSIP_REPAIR_INTERVAL_US);
+    try std.testing.expectEqual(@as(u16, 1_000), DHT_REBALANCE_THRESHOLD);
 }
