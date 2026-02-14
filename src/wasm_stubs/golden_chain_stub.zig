@@ -135,6 +135,11 @@ pub const ChainMessageType = enum {
     TRIStaking,
     RewardDistribution,
     StakingValidation,
+    // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+    Swarm100kScale,
+    GossipShardEvent,
+    DHTHierarchicalSync,
+    Community50kOnboard,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -195,7 +200,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 144;
+pub const MAX_QUARK_RECORDS = 152;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -328,6 +333,16 @@ pub const QuarkType = enum(u7) {
     dao_treasury,
     staking_anchor,
 
+    // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT) (u7: 120/128)
+    swarm_100k,
+    gossip_shard,
+    dht_hierarchical,
+    community_50k,
+    swarm_health_v2,
+    gossip_repair,
+    dht_aggregate,
+    swarm_anchor_v2,
+
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
             .input_capture => "INPUT_CAP",
@@ -446,6 +461,15 @@ pub const QuarkType = enum(u7) {
             .yield_optimizer => "YLD_OPTM",
             .dao_treasury => "DAO_TRSY",
             .staking_anchor => "STK_ANCH",
+            // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+            .swarm_100k => "SWM_100K",
+            .gossip_shard => "GSP_SHRD",
+            .dht_hierarchical => "DHT_HIER",
+            .community_50k => "COM_50K",
+            .swarm_health_v2 => "SWM_HLTH",
+            .gossip_repair => "GSP_REPR",
+            .dht_aggregate => "DHT_AGGR",
+            .swarm_anchor_v2 => "SWM_ANC2",
         };
     }
 
@@ -677,6 +701,23 @@ pub const QuarkType = enum(u7) {
 
     pub fn isStakingValidatorQuark(self: QuarkType) bool {
         return self == .staking_validator or self == .governance_quorum;
+    }
+
+    // v2.11: Swarm 100k + Community 50k classifiers
+    pub fn isSwarm100kQuark(self: QuarkType) bool {
+        return self == .swarm_100k or self == .swarm_anchor_v2;
+    }
+
+    pub fn isGossipShardQuark(self: QuarkType) bool {
+        return self == .gossip_shard or self == .gossip_repair;
+    }
+
+    pub fn isDHTHierarchicalQuark(self: QuarkType) bool {
+        return self == .dht_hierarchical or self == .dht_aggregate;
+    }
+
+    pub fn isCommunity50kQuark(self: QuarkType) bool {
+        return self == .community_50k or self == .swarm_health_v2;
     }
 };
 
@@ -1002,6 +1043,14 @@ pub const STAKING_REWARD_RATE_BPS: u16 = 500;
 pub const STAKING_EPOCH_DURATION_US: i64 = 86_400_000_000;
 pub const STAKING_MAX_VALIDATORS: u16 = 1_000;
 
+// v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT) constants
+pub const SWARM_100K_MAX_NODES: u32 = 100_000;
+pub const COMMUNITY_50K_MAX_NODES: u32 = 50_000;
+pub const GOSSIP_SHARD_COUNT: u16 = 256;
+pub const DHT_HIERARCHY_DEPTH: u8 = 4;
+pub const GOSSIP_REPAIR_INTERVAL_US: i64 = 5_000_000;
+pub const DHT_REBALANCE_THRESHOLD: u16 = 1_000;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1231,6 +1280,39 @@ pub const StakingValidatorState = struct {
     validator_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT) types
+pub const Swarm100kState = struct {
+    active_nodes: u32 = 0,
+    max_capacity: u32 = 0,
+    shard_count: u16 = 0,
+    last_scale_us: i64 = 0,
+    swarm_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const GossipShardState = struct {
+    total_shards: u16 = 0,
+    messages_propagated: u64 = 0,
+    shard_repairs: u32 = 0,
+    last_gossip_us: i64 = 0,
+    gossip_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const DHTHierarchicalState = struct {
+    hierarchy_depth: u8 = 0,
+    total_lookups: u64 = 0,
+    rebalance_count: u32 = 0,
+    last_lookup_us: i64 = 0,
+    dht_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const Community50kState = struct {
+    community_nodes: u32 = 0,
+    onboarded_total: u64 = 0,
+    active_communities: u16 = 0,
+    last_onboard_us: i64 = 0,
+    community_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1349,10 +1431,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 14;
+pub const QUARK_EXPORT_VERSION: u16 = 15;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 74;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 78;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1525,6 +1607,12 @@ pub const GoldenChainAgent = struct {
     reward_distribution_state: RewardDistributionState,
     staking_validator_state: StakingValidatorState,
     dao_full_governance_active: bool,
+    // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+    swarm_100k_state: Swarm100kState,
+    gossip_shard_state: GossipShardState,
+    dht_hierarchical_state: DHTHierarchicalState,
+    community_50k_state: Community50kState,
+    swarm_100k_active: bool,
 
     const Self = @This();
 
@@ -1643,6 +1731,12 @@ pub const GoldenChainAgent = struct {
             .reward_distribution_state = .{},
             .staking_validator_state = .{},
             .dao_full_governance_active = false,
+            // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
+            .swarm_100k_state = .{},
+            .gossip_shard_state = .{},
+            .dht_hierarchical_state = .{},
+            .community_50k_state = .{},
+            .swarm_100k_active = false,
         };
     }
 
@@ -2142,6 +2236,37 @@ pub const GoldenChainAgent = struct {
         if (self.dao_full_governance_state.passed_proposals == 0) return false;
         if (self.tri_staking_state.active_stakers == 0) return false;
         if (self.reward_distribution_state.distribution_count == 0) return false;
+        return true;
+    }
+
+    // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT) stubs
+    pub fn initSwarm100k(self: *Self) void {
+        self.swarm_100k_state.active_nodes += 1;
+        self.swarm_100k_state.max_capacity = SWARM_100K_MAX_NODES;
+        self.swarm_100k_state.shard_count = GOSSIP_SHARD_COUNT;
+        self.swarm_100k_active = true;
+    }
+
+    pub fn shardGossip(self: *Self) void {
+        self.gossip_shard_state.total_shards = GOSSIP_SHARD_COUNT;
+        self.gossip_shard_state.messages_propagated += 1;
+    }
+
+    pub fn syncDHTHierarchical(self: *Self) void {
+        self.dht_hierarchical_state.hierarchy_depth = DHT_HIERARCHY_DEPTH;
+        self.dht_hierarchical_state.total_lookups += 1;
+    }
+
+    pub fn onboardCommunity50k(self: *Self) void {
+        self.community_50k_state.community_nodes += 1;
+        self.community_50k_state.onboarded_total += 1;
+        self.community_50k_state.active_communities += 1;
+    }
+
+    pub fn swarm100kVerify(self: *const Self) bool {
+        if (self.swarm_100k_state.active_nodes == 0) return false;
+        if (self.gossip_shard_state.messages_propagated == 0) return false;
+        if (self.community_50k_state.community_nodes == 0) return false;
         return true;
     }
 };
