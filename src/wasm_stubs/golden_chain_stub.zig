@@ -155,6 +155,11 @@ pub const ChainMessageType = enum {
     ShardLoadUpdate,
     AdaptiveDHTEvent,
     GossipReshardEvent,
+    // v2.15: Swarm 1M + Community 500k
+    SwarmMillionEvent,
+    CommunityNodeUpdate,
+    HierarchicalGossipEvent,
+    GeographicShardEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -215,7 +220,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 176;
+pub const MAX_QUARK_RECORDS = 184;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -384,6 +389,15 @@ pub const QuarkType = enum(u8) {
     shard_rebalance,
     gossip_reshard,
     shard_anchor,
+    // v2.15: Swarm 1M + Community 500k
+    swarm_million,
+    hierarchical_gossip,
+    community_node,
+    massive_scale,
+    multi_layer_dht,
+    geographic_shard,
+    swarm_consensus,
+    community_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -539,6 +553,15 @@ pub const QuarkType = enum(u8) {
             .shard_rebalance => "SHRD_RBL",
             .gossip_reshard => "GSP_RSHD",
             .shard_anchor => "SHRD_ACH",
+            // v2.15: Swarm 1M + Community 500k
+            .swarm_million => "SWM_1M",
+            .hierarchical_gossip => "HIR_GSP",
+            .community_node => "COM_NOD",
+            .massive_scale => "MAS_SCL",
+            .multi_layer_dht => "ML_DHT",
+            .geographic_shard => "GEO_SHD",
+            .swarm_consensus => "SWM_CON",
+            .community_anchor => "COM_ACH",
         };
     }
 
@@ -838,6 +861,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isDHTAdaptQuark(self: QuarkType) bool {
         return self == .dht_adapt or self == .gossip_reshard;
+    }
+
+    // v2.15: Swarm 1M + Community 500k classifiers
+    pub fn isSwarmMillionQuark(self: QuarkType) bool {
+        return self == .swarm_million or self == .community_anchor;
+    }
+
+    pub fn isHierarchicalGossipQuark(self: QuarkType) bool {
+        return self == .hierarchical_gossip or self == .community_node;
+    }
+
+    pub fn isMassiveScaleQuark(self: QuarkType) bool {
+        return self == .massive_scale or self == .geographic_shard;
+    }
+
+    pub fn isMultiLayerDHTQuark(self: QuarkType) bool {
+        return self == .multi_layer_dht or self == .swarm_consensus;
     }
 };
 
@@ -1194,6 +1234,14 @@ pub const DHT_MAX_DEPTH: u16 = 32;
 pub const DHT_REBALANCE_INTERVAL_US: i64 = 300_000_000;
 pub const GOSSIP_RESHARD_TIMEOUT_US: i64 = 120_000_000;
 pub const MAX_ACTIVE_SHARDS: u16 = 4_096;
+
+// v2.15: Swarm 1M + Community 500k constants
+pub const SWARM_TARGET_NODES: u32 = 1_000_000;
+pub const COMMUNITY_TARGET_NODES: u32 = 500_000;
+pub const HIERARCHICAL_GOSSIP_LAYERS: u16 = 8;
+pub const GEOGRAPHIC_SHARD_REGIONS: u16 = 256;
+pub const SWARM_CONSENSUS_TIMEOUT_US: i64 = 60_000_000;
+pub const COMMUNITY_HEARTBEAT_INTERVAL_US: i64 = 30_000_000;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -1556,6 +1604,39 @@ pub const GossipReshardState = struct {
     reshard_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.15: Swarm 1M + Community 500k types
+pub const SwarmMillionState = struct {
+    target_nodes: u32 = 0,
+    active_nodes: u32 = 0,
+    layers: u16 = 0,
+    last_swarm_us: i64 = 0,
+    swarm_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const CommunityNodeState = struct {
+    community_nodes: u32 = 0,
+    heartbeats: u64 = 0,
+    joined: u32 = 0,
+    last_heartbeat_us: i64 = 0,
+    community_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const HierarchicalGossipState = struct {
+    gossip_layers: u16 = 0,
+    messages_propagated: u64 = 0,
+    layer_hops: u32 = 0,
+    last_gossip_us: i64 = 0,
+    gossip_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const GeographicShardState = struct {
+    regions: u16 = 0,
+    geo_shards: u32 = 0,
+    rebalances: u32 = 0,
+    last_geo_us: i64 = 0,
+    geo_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1674,10 +1755,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 18;
+pub const QUARK_EXPORT_VERSION: u16 = 19;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 90;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 94;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1874,6 +1955,12 @@ pub const GoldenChainAgent = struct {
     adaptive_dht_state: AdaptiveDHTState,
     gossip_reshard_state: GossipReshardState,
     dynamic_shard_active: bool,
+    // v2.15: Swarm 1M + Community 500k
+    swarm_million_state: SwarmMillionState,
+    community_node_state: CommunityNodeState,
+    hierarchical_gossip_state: HierarchicalGossipState,
+    geographic_shard_state: GeographicShardState,
+    swarm_million_active: bool,
 
     const Self = @This();
 
@@ -2016,6 +2103,12 @@ pub const GoldenChainAgent = struct {
             .adaptive_dht_state = .{},
             .gossip_reshard_state = .{},
             .dynamic_shard_active = false,
+            // v2.15: Swarm 1M + Community 500k
+            .swarm_million_state = .{},
+            .community_node_state = .{},
+            .hierarchical_gossip_state = .{},
+            .geographic_shard_state = .{},
+            .swarm_million_active = false,
         };
     }
 
@@ -2637,6 +2730,39 @@ pub const GoldenChainAgent = struct {
         if (self.dynamic_shard_state.shards_split == 0) return false;
         if (self.adaptive_dht_state.dht_rebalances == 0) return false;
         if (self.gossip_reshard_state.reshards_completed == 0) return false;
+        return true;
+    }
+
+    // v2.15: Swarm 1M + Community 500k stub methods
+    pub fn initSwarmMillion(self: *Self) void {
+        self.swarm_million_state.active_nodes += 1;
+        self.swarm_million_state.layers += 1;
+        self.swarm_million_state.target_nodes = SWARM_TARGET_NODES;
+        self.swarm_million_active = true;
+    }
+
+    pub fn joinCommunityNode(self: *Self) void {
+        self.community_node_state.community_nodes += 1;
+        self.community_node_state.joined += 1;
+        self.community_node_state.heartbeats += 1;
+    }
+
+    pub fn propagateHierarchicalGossip(self: *Self) void {
+        self.hierarchical_gossip_state.messages_propagated += 1;
+        self.hierarchical_gossip_state.layer_hops += 1;
+        self.hierarchical_gossip_state.gossip_layers = HIERARCHICAL_GOSSIP_LAYERS;
+    }
+
+    pub fn rebalanceGeographicShard(self: *Self) void {
+        self.geographic_shard_state.geo_shards += 1;
+        self.geographic_shard_state.rebalances += 1;
+        self.geographic_shard_state.regions = GEOGRAPHIC_SHARD_REGIONS;
+    }
+
+    pub fn swarmMillionVerify(self: *const Self) bool {
+        if (self.swarm_million_state.active_nodes == 0) return false;
+        if (self.community_node_state.community_nodes == 0) return false;
+        if (self.hierarchical_gossip_state.messages_propagated == 0) return false;
         return true;
     }
 };
