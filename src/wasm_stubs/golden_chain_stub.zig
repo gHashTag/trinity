@@ -145,6 +145,11 @@ pub const ChainMessageType = enum {
     ZKProofGenerated,
     PrivacyTransfer,
     CrossChainSyncEvent,
+    // v2.13: Layer-2 Rollup v1.0
+    L2RollupSubmission,
+    OptimisticVerification,
+    StateChannelUpdate,
+    BatchCompressionEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -205,11 +210,11 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 160;
+pub const MAX_QUARK_RECORDS = 168;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
-pub const QuarkType = enum(u7) {
+pub const QuarkType = enum(u8) {
     input_capture,
     goal_classify,
     task_decompose,
@@ -356,6 +361,15 @@ pub const QuarkType = enum(u7) {
     proof_aggregate,
     privacy_anchor,
     zk_anchor,
+    // v2.13: Layer-2 Rollup v1.0 (u8: 136/256 used)
+    l2_rollup,
+    optimistic_verify,
+    state_channel,
+    batch_compress,
+    rollup_verify,
+    channel_finalize,
+    batch_anchor,
+    l2_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -493,6 +507,15 @@ pub const QuarkType = enum(u7) {
             .proof_aggregate => "PRF_AGGR",
             .privacy_anchor => "PRV_ANCH",
             .zk_anchor => "ZK_ANCH",
+            // v2.13: Layer-2 Rollup v1.0
+            .l2_rollup => "L2_ROLL",
+            .optimistic_verify => "OPT_VRFY",
+            .state_channel => "ST_CHAN",
+            .batch_compress => "BCH_COMP",
+            .rollup_verify => "ROLL_VRF",
+            .channel_finalize => "CHN_FIN",
+            .batch_anchor => "BCH_ANCH",
+            .l2_anchor => "L2_ANCH",
         };
     }
 
@@ -758,6 +781,23 @@ pub const QuarkType = enum(u7) {
 
     pub fn isCrossChainSyncQuark(self: QuarkType) bool {
         return self == .cross_chain_sync or self == .zk_verify;
+    }
+
+    // v2.13: Layer-2 Rollup v1.0 classifiers
+    pub fn isL2RollupQuark(self: QuarkType) bool {
+        return self == .l2_rollup or self == .l2_anchor;
+    }
+
+    pub fn isOptimisticVerifyQuark(self: QuarkType) bool {
+        return self == .optimistic_verify or self == .rollup_verify;
+    }
+
+    pub fn isStateChannelQuark(self: QuarkType) bool {
+        return self == .state_channel or self == .channel_finalize;
+    }
+
+    pub fn isBatchCompressQuark(self: QuarkType) bool {
+        return self == .batch_compress or self == .batch_anchor;
     }
 };
 
@@ -1099,6 +1139,14 @@ pub const CROSS_CHAIN_SYNC_INTERVAL_US: i64 = 30_000_000;
 pub const ZK_MAX_PROOF_BATCH: u16 = 64;
 pub const ZK_BRIDGE_MAX_PENDING: u16 = 512;
 
+// v2.13: Layer-2 Rollup v1.0 constants
+pub const L2_ROLLUP_BATCH_SIZE: u32 = 1_000;
+pub const L2_ROLLUP_TIMEOUT_US: i64 = 60_000_000;
+pub const STATE_CHANNEL_MAX_PARTICIPANTS: u16 = 256;
+pub const BATCH_COMPRESS_RATIO: u16 = 10;
+pub const OPTIMISTIC_CHALLENGE_PERIOD_US: i64 = 86_400_000_000;
+pub const L2_MAX_PENDING_BATCHES: u16 = 128;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1394,6 +1442,39 @@ pub const CrossChainSyncState = struct {
     sync_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.13: Layer-2 Rollup v1.0 types
+pub const L2RollupState = struct {
+    batches_submitted: u64 = 0,
+    transactions_rolled: u64 = 0,
+    pending_batches: u32 = 0,
+    last_rollup_us: i64 = 0,
+    rollup_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const OptimisticVerifyState = struct {
+    challenges_submitted: u64 = 0,
+    challenges_resolved: u64 = 0,
+    fraud_proofs: u32 = 0,
+    last_challenge_us: i64 = 0,
+    verify_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const StateChannelState = struct {
+    channels_opened: u32 = 0,
+    channels_finalized: u32 = 0,
+    active_participants: u16 = 0,
+    last_channel_us: i64 = 0,
+    channel_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const BatchCompressState = struct {
+    batches_compressed: u64 = 0,
+    compression_ratio: u16 = 0,
+    total_saved_bytes: u64 = 0,
+    last_compress_us: i64 = 0,
+    compress_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1512,10 +1593,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 16;
+pub const QUARK_EXPORT_VERSION: u16 = 17;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 82;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 86;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1700,6 +1781,12 @@ pub const GoldenChainAgent = struct {
     privacy_transfer_state: PrivacyTransferState,
     cross_chain_sync_state: CrossChainSyncState,
     zk_bridge_active: bool,
+    // v2.13: Layer-2 Rollup v1.0
+    l2_rollup_state: L2RollupState,
+    optimistic_verify_state: OptimisticVerifyState,
+    state_channel_state: StateChannelState,
+    batch_compress_state: BatchCompressState,
+    l2_rollup_active: bool,
 
     const Self = @This();
 
@@ -1830,6 +1917,12 @@ pub const GoldenChainAgent = struct {
             .privacy_transfer_state = .{},
             .cross_chain_sync_state = .{},
             .zk_bridge_active = false,
+            // v2.13: Layer-2 Rollup v1.0
+            .l2_rollup_state = .{},
+            .optimistic_verify_state = .{},
+            .state_channel_state = .{},
+            .batch_compress_state = .{},
+            .l2_rollup_active = false,
         };
     }
 
@@ -2390,6 +2483,36 @@ pub const GoldenChainAgent = struct {
         if (self.zk_bridge_state.active_bridges == 0) return false;
         if (self.zk_proof_state.proofs_verified == 0) return false;
         if (self.privacy_transfer_state.transfers_completed == 0) return false;
+        return true;
+    }
+
+    // v2.13: Layer-2 Rollup v1.0 stub methods
+    pub fn initL2Rollup(self: *Self) void {
+        self.l2_rollup_state.batches_submitted += 1;
+        self.l2_rollup_state.transactions_rolled += L2_ROLLUP_BATCH_SIZE;
+        self.l2_rollup_active = true;
+    }
+
+    pub fn submitOptimisticVerify(self: *Self) void {
+        self.optimistic_verify_state.challenges_submitted += 1;
+        self.optimistic_verify_state.challenges_resolved += 1;
+    }
+
+    pub fn openStateChannel(self: *Self) void {
+        self.state_channel_state.channels_opened += 1;
+        self.state_channel_state.active_participants += 2;
+    }
+
+    pub fn compressBatch(self: *Self) void {
+        self.batch_compress_state.batches_compressed += 1;
+        self.batch_compress_state.compression_ratio = BATCH_COMPRESS_RATIO;
+        self.batch_compress_state.total_saved_bytes += 4096;
+    }
+
+    pub fn l2RollupVerify(self: *const Self) bool {
+        if (self.l2_rollup_state.batches_submitted == 0) return false;
+        if (self.optimistic_verify_state.challenges_resolved == 0) return false;
+        if (self.state_channel_state.channels_opened == 0) return false;
         return true;
     }
 };
