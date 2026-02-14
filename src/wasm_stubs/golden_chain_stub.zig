@@ -150,6 +150,11 @@ pub const ChainMessageType = enum {
     OptimisticVerification,
     StateChannelUpdate,
     BatchCompressionEvent,
+    // v2.14: Dynamic Shard Rebalancing v1.0
+    DynamicShardEvent,
+    ShardLoadUpdate,
+    AdaptiveDHTEvent,
+    GossipReshardEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -210,7 +215,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 168;
+pub const MAX_QUARK_RECORDS = 176;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -370,6 +375,15 @@ pub const QuarkType = enum(u8) {
     channel_finalize,
     batch_anchor,
     l2_anchor,
+    // v2.14: Dynamic Shard Rebalancing v1.0 (u8: 144/256 used)
+    dynamic_shard,
+    shard_split,
+    shard_merge,
+    load_balance,
+    dht_adapt,
+    shard_rebalance,
+    gossip_reshard,
+    shard_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -516,6 +530,15 @@ pub const QuarkType = enum(u8) {
             .channel_finalize => "CHN_FIN",
             .batch_anchor => "BCH_ANCH",
             .l2_anchor => "L2_ANCH",
+            // v2.14: Dynamic Shard Rebalancing v1.0
+            .dynamic_shard => "DYN_SHRD",
+            .shard_split => "SHRD_SPL",
+            .shard_merge => "SHRD_MRG",
+            .load_balance => "LOAD_BAL",
+            .dht_adapt => "DHT_ADPT",
+            .shard_rebalance => "SHRD_RBL",
+            .gossip_reshard => "GSP_RSHD",
+            .shard_anchor => "SHRD_ACH",
         };
     }
 
@@ -798,6 +821,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isBatchCompressQuark(self: QuarkType) bool {
         return self == .batch_compress or self == .batch_anchor;
+    }
+
+    // v2.14: Dynamic Shard Rebalancing classifiers
+    pub fn isDynamicShardQuark(self: QuarkType) bool {
+        return self == .dynamic_shard or self == .shard_anchor;
+    }
+
+    pub fn isShardSplitMergeQuark(self: QuarkType) bool {
+        return self == .shard_split or self == .shard_merge;
+    }
+
+    pub fn isLoadBalanceQuark(self: QuarkType) bool {
+        return self == .load_balance or self == .shard_rebalance;
+    }
+
+    pub fn isDHTAdaptQuark(self: QuarkType) bool {
+        return self == .dht_adapt or self == .gossip_reshard;
     }
 };
 
@@ -1147,6 +1187,14 @@ pub const BATCH_COMPRESS_RATIO: u16 = 10;
 pub const OPTIMISTIC_CHALLENGE_PERIOD_US: i64 = 86_400_000_000;
 pub const L2_MAX_PENDING_BATCHES: u16 = 128;
 
+// v2.14: Dynamic Shard Rebalancing v1.0 constants
+pub const SHARD_SPLIT_THRESHOLD: u32 = 10_000;
+pub const SHARD_MERGE_THRESHOLD: u32 = 100;
+pub const DHT_MAX_DEPTH: u16 = 32;
+pub const DHT_REBALANCE_INTERVAL_US: i64 = 300_000_000;
+pub const GOSSIP_RESHARD_TIMEOUT_US: i64 = 120_000_000;
+pub const MAX_ACTIVE_SHARDS: u16 = 4_096;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1475,6 +1523,39 @@ pub const BatchCompressState = struct {
     compress_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.14: Dynamic Shard Rebalancing v1.0 types
+pub const DynamicShardState = struct {
+    shards_active: u32 = 0,
+    shards_split: u32 = 0,
+    shards_merged: u32 = 0,
+    last_rebalance_us: i64 = 0,
+    shard_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const ShardLoadState = struct {
+    load_factor: u32 = 0,
+    hot_spots_detected: u32 = 0,
+    cold_spots_detected: u32 = 0,
+    last_load_check_us: i64 = 0,
+    load_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const AdaptiveDHTState = struct {
+    dht_depth: u16 = 0,
+    dht_nodes: u32 = 0,
+    dht_rebalances: u32 = 0,
+    last_dht_adapt_us: i64 = 0,
+    dht_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const GossipReshardState = struct {
+    reshards_completed: u32 = 0,
+    gossip_rounds: u64 = 0,
+    active_shards: u16 = 0,
+    last_reshard_us: i64 = 0,
+    reshard_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1593,10 +1674,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 17;
+pub const QUARK_EXPORT_VERSION: u16 = 18;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 86;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 90;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1787,6 +1868,12 @@ pub const GoldenChainAgent = struct {
     state_channel_state: StateChannelState,
     batch_compress_state: BatchCompressState,
     l2_rollup_active: bool,
+    // v2.14: Dynamic Shard Rebalancing v1.0
+    dynamic_shard_state: DynamicShardState,
+    shard_load_state: ShardLoadState,
+    adaptive_dht_state: AdaptiveDHTState,
+    gossip_reshard_state: GossipReshardState,
+    dynamic_shard_active: bool,
 
     const Self = @This();
 
@@ -1923,6 +2010,12 @@ pub const GoldenChainAgent = struct {
             .state_channel_state = .{},
             .batch_compress_state = .{},
             .l2_rollup_active = false,
+            // v2.14: Dynamic Shard Rebalancing v1.0
+            .dynamic_shard_state = .{},
+            .shard_load_state = .{},
+            .adaptive_dht_state = .{},
+            .gossip_reshard_state = .{},
+            .dynamic_shard_active = false,
         };
     }
 
@@ -2513,6 +2606,37 @@ pub const GoldenChainAgent = struct {
         if (self.l2_rollup_state.batches_submitted == 0) return false;
         if (self.optimistic_verify_state.challenges_resolved == 0) return false;
         if (self.state_channel_state.channels_opened == 0) return false;
+        return true;
+    }
+
+    // v2.14: Dynamic Shard Rebalancing v1.0 stubs
+    pub fn initDynamicShard(self: *Self) void {
+        self.dynamic_shard_state.shards_active += 1;
+        self.dynamic_shard_state.shards_split += 1;
+        self.dynamic_shard_active = true;
+    }
+
+    pub fn splitShard(self: *Self) void {
+        self.shard_load_state.hot_spots_detected += 1;
+        self.shard_load_state.load_factor += SHARD_SPLIT_THRESHOLD;
+    }
+
+    pub fn mergeShard(self: *Self) void {
+        self.shard_load_state.cold_spots_detected += 1;
+        self.dynamic_shard_state.shards_merged += 1;
+    }
+
+    pub fn adaptDHT(self: *Self) void {
+        self.adaptive_dht_state.dht_rebalances += 1;
+        self.adaptive_dht_state.dht_nodes += 1;
+        self.gossip_reshard_state.reshards_completed += 1;
+        self.gossip_reshard_state.gossip_rounds += 1;
+    }
+
+    pub fn dynamicShardVerify(self: *const Self) bool {
+        if (self.dynamic_shard_state.shards_split == 0) return false;
+        if (self.adaptive_dht_state.dht_rebalances == 0) return false;
+        if (self.gossip_reshard_state.reshards_completed == 0) return false;
         return true;
     }
 };

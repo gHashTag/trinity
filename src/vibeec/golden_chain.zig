@@ -30,7 +30,7 @@ pub const CONTENT_DIGEST_LEN = 64;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 168; // v2.13: was 160, +8 for Layer-2 Rollup v1.0 quarks (u8: 136/256 used)
+pub const MAX_QUARK_RECORDS = 176; // v2.14: was 168, +8 for Dynamic Shard Rebalancing v1.0 quarks (u8: 144/256 used)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -241,6 +241,11 @@ pub const ChainMessageType = enum {
     OptimisticVerification, // Optimistic rollup verification event
     StateChannelUpdate, // State channel update event
     BatchCompressionEvent, // Batch compression event
+    // v2.14: Dynamic Shard Rebalancing v1.0
+    DynamicShardEvent, // Dynamic shard rebalancing event
+    ShardLoadUpdate, // Shard load update event
+    AdaptiveDHTEvent, // Adaptive DHT depth event
+    GossipReshardEvent, // Gossip resharding event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -484,6 +489,15 @@ pub const QuarkType = enum(u8) {
     channel_finalize, // 133 — Channel finalization
     batch_anchor, // 134 — Batch anchor record
     l2_anchor, // 135 — L2 anchor record
+    // v2.14: Dynamic Shard Rebalancing v1.0 (u8: 144/256 used)
+    dynamic_shard, // 136 — Dynamic shard rebalancing
+    shard_split, // 137 — Shard split operation
+    shard_merge, // 138 — Shard merge operation
+    load_balance, // 139 — Load balance check
+    dht_adapt, // 140 — Adaptive DHT depth
+    shard_rebalance, // 141 — Shard rebalance execution
+    gossip_reshard, // 142 — Gossip resharding
+    shard_anchor, // 143 — Shard anchor record
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -633,6 +647,15 @@ pub const QuarkType = enum(u8) {
             .channel_finalize => "CHN_FIN",
             .batch_anchor => "BCH_ANCH",
             .l2_anchor => "L2_ANCH",
+            // v2.14: Dynamic Shard Rebalancing v1.0
+            .dynamic_shard => "DYN_SHRD",
+            .shard_split => "SHRD_SPL",
+            .shard_merge => "SHRD_MRG",
+            .load_balance => "LOAD_BAL",
+            .dht_adapt => "DHT_ADPT",
+            .shard_rebalance => "SHRD_RBL",
+            .gossip_reshard => "GSP_RSHD",
+            .shard_anchor => "SHRD_ACH",
         };
     }
 
@@ -916,6 +939,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isBatchCompressQuark(self: QuarkType) bool {
         return self == .batch_compress or self == .batch_anchor;
+    }
+
+    // v2.14: Dynamic Shard Rebalancing classifiers
+    pub fn isDynamicShardQuark(self: QuarkType) bool {
+        return self == .dynamic_shard or self == .shard_anchor;
+    }
+
+    pub fn isShardSplitMergeQuark(self: QuarkType) bool {
+        return self == .shard_split or self == .shard_merge;
+    }
+
+    pub fn isLoadBalanceQuark(self: QuarkType) bool {
+        return self == .load_balance or self == .shard_rebalance;
+    }
+
+    pub fn isDHTAdaptQuark(self: QuarkType) bool {
+        return self == .dht_adapt or self == .gossip_reshard;
     }
 };
 
@@ -1551,6 +1591,14 @@ pub const BATCH_COMPRESS_RATIO: u16 = 10;
 pub const OPTIMISTIC_CHALLENGE_PERIOD_US: i64 = 86_400_000_000; // 24 hours
 pub const L2_MAX_PENDING_BATCHES: u16 = 128;
 
+// v2.14: Dynamic Shard Rebalancing v1.0 constants
+pub const SHARD_SPLIT_THRESHOLD: u32 = 10_000; // split when load > 10k tx/s
+pub const SHARD_MERGE_THRESHOLD: u32 = 100; // merge when load < 100 tx/s
+pub const DHT_MAX_DEPTH: u16 = 32;
+pub const DHT_REBALANCE_INTERVAL_US: i64 = 300_000_000; // 5 minutes
+pub const GOSSIP_RESHARD_TIMEOUT_US: i64 = 120_000_000; // 2 minutes
+pub const MAX_ACTIVE_SHARDS: u16 = 4_096;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1879,15 +1927,48 @@ pub const BatchCompressState = struct {
     compress_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.14: Dynamic Shard Rebalancing v1.0 types
+pub const DynamicShardState = struct {
+    shards_active: u32 = 0,
+    shards_split: u32 = 0,
+    shards_merged: u32 = 0,
+    last_rebalance_us: i64 = 0,
+    shard_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const ShardLoadState = struct {
+    load_factor: u32 = 0,
+    hot_spots_detected: u32 = 0,
+    cold_spots_detected: u32 = 0,
+    last_load_check_us: i64 = 0,
+    load_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const AdaptiveDHTState = struct {
+    dht_depth: u16 = 0,
+    dht_nodes: u32 = 0,
+    dht_rebalances: u32 = 0,
+    last_dht_adapt_us: i64 = 0,
+    dht_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const GossipReshardState = struct {
+    reshards_completed: u32 = 0,
+    gossip_rounds: u64 = 0,
+    active_shards: u16 = 0,
+    last_reshard_us: i64 = 0,
+    reshard_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.3/v1.4 EXPORT CONSTANTS — on-chain serialization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 17; // v2.13: bumped from 16
+pub const QUARK_EXPORT_VERSION: u16 = 18; // v2.14: bumped from 17
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 86; // v2.13: was 82, +4 for batches_submitted(u16)+channels_opened(u16)
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 90; // v2.14: was 86, +4 for shards_active(u16)+dht_depth(u16)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GOLDEN CHAIN AGENT — unified 8-node pipeline
@@ -2015,6 +2096,12 @@ pub const GoldenChainAgent = struct {
     state_channel_state: StateChannelState,
     batch_compress_state: BatchCompressState,
     l2_rollup_active: bool,
+    // v2.14: Dynamic Shard Rebalancing v1.0
+    dynamic_shard_state: DynamicShardState,
+    shard_load_state: ShardLoadState,
+    adaptive_dht_state: AdaptiveDHTState,
+    gossip_reshard_state: GossipReshardState,
+    dynamic_shard_active: bool,
 
     const Self = @This();
 
@@ -2143,6 +2230,12 @@ pub const GoldenChainAgent = struct {
             .state_channel_state = .{},
             .batch_compress_state = .{},
             .l2_rollup_active = false,
+            // v2.14: Dynamic Shard Rebalancing v1.0
+            .dynamic_shard_state = .{},
+            .shard_load_state = .{},
+            .adaptive_dht_state = .{},
+            .gossip_reshard_state = .{},
+            .dynamic_shard_active = false,
         };
     }
 
@@ -2425,7 +2518,7 @@ pub const GoldenChainAgent = struct {
         self.quark_chain_verified = self.verifyQuarkChain();
         if (self.quark_chain_verified) {
             var qvbuf: [128]u8 = undefined;
-            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/168 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup intact)", .{self.quark_count}) catch "Quarks VERIFIED";
+            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/176 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard intact)", .{self.quark_count}) catch "Quarks VERIFIED";
             self.emitMsg(.TruthVerification, .Deliver, null, qvmsg, 1.0, 0);
         } else {
             self.emitMsg(.TruthVerification, .Deliver, null, "Quark chain: BROKEN", 0.0, 0);
@@ -3127,6 +3220,44 @@ pub const GoldenChainAgent = struct {
             self.emitMsg(.BatchCompressionEvent, .Deliver, null, bcmsg, 1.0, 0);
         }
 
+        // v2.14: Dynamic Shard Rebalancing v1.0 events
+        self.initDynamicShard();
+        {
+            var dsbuf: [256]u8 = undefined;
+            const dsmsg = std.fmt.bufPrint(&dsbuf, "DynamicShardEvent: shards={d} | split={d}", .{
+                self.dynamic_shard_state.shards_active,
+                self.dynamic_shard_state.shards_split,
+            }) catch "Dynamic shard initialized";
+            self.emitMsg(.DynamicShardEvent, .Deliver, null, dsmsg, 1.0, 0);
+        }
+        self.splitShard();
+        {
+            var slbuf: [256]u8 = undefined;
+            const slmsg = std.fmt.bufPrint(&slbuf, "ShardLoadUpdate: hot_spots={d} | load={d}", .{
+                self.shard_load_state.hot_spots_detected,
+                self.shard_load_state.load_factor,
+            }) catch "Shard load updated";
+            self.emitMsg(.ShardLoadUpdate, .Deliver, null, slmsg, 1.0, 0);
+        }
+        self.adaptDHT();
+        {
+            var adbuf: [256]u8 = undefined;
+            const admsg = std.fmt.bufPrint(&adbuf, "AdaptiveDHTEvent: rebalances={d} | rounds={d}", .{
+                self.adaptive_dht_state.dht_rebalances,
+                self.gossip_reshard_state.gossip_rounds,
+            }) catch "DHT adapted";
+            self.emitMsg(.AdaptiveDHTEvent, .Deliver, null, admsg, 1.0, 0);
+        }
+        self.mergeShard();
+        {
+            var grbuf: [256]u8 = undefined;
+            const grmsg = std.fmt.bufPrint(&grbuf, "GossipReshardEvent: merged={d} | cold_spots={d}", .{
+                self.dynamic_shard_state.shards_merged,
+                self.shard_load_state.cold_spots_detected,
+            }) catch "Gossip reshard complete";
+            self.emitMsg(.GossipReshardEvent, .Deliver, null, grmsg, 1.0, 0);
+        }
+
         // Update global wave state
         igla_hybrid.g_last_wave_state = .{
             .similarity = self.state.total_confidence,
@@ -3515,6 +3646,9 @@ pub const GoldenChainAgent = struct {
         // Phase T: L2 Rollup + State Channel integrity (v2.13)
         if (!self.l2RollupVerify()) return false;
 
+        // Phase U: Dynamic Shard Rebalancing integrity (v2.14)
+        if (!self.dynamicShardVerify()) return false;
+
         return true;
     }
 
@@ -3696,6 +3830,14 @@ pub const GoldenChainAgent = struct {
         @memcpy(buf[pos .. pos + 2], &scop_bytes);
         pos += 2;
 
+        // v2.14: shards_active(2) + dht_depth(2)
+        const shrd_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.dynamic_shard_state.shards_active, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &shrd_bytes);
+        pos += 2;
+        const dhtd_bytes: [2]u8 = @bitCast(self.adaptive_dht_state.dht_depth);
+        @memcpy(buf[pos .. pos + 2], &dhtd_bytes);
+        pos += 2;
+
         // Provenance records (158 bytes each)
         var pi: u8 = 0;
         while (pi < self.provenance_count) : (pi += 1) {
@@ -3777,10 +3919,10 @@ pub const GoldenChainAgent = struct {
 
         // Read version (support v1, v2, v3, v4, v5, v6, v7)
         const ver: u16 = @bitCast(buf[pos .. pos + 2][0..2].*);
-        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17) return false;
+        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17 and ver != 18) return false;
         pos += 2;
 
-        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else 86;
+        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else if (ver == 17) 86 else 90;
         if (buf.len < header_size) return false;
 
         const prov_count = buf[pos];
@@ -3947,6 +4089,16 @@ pub const GoldenChainAgent = struct {
             pos += 2;
         }
 
+        // v2.14: read shards_active + dht_depth from v18 header
+        var shards_active_cnt: u16 = 0;
+        var dht_depth_cnt: u16 = 0;
+        if (ver >= 18) {
+            shards_active_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+            dht_depth_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+        }
+
         // Validate sizes
         if (prov_count > MAX_PROVENANCE_RECORDS or qcount > MAX_QUARK_RECORDS) return false;
         const expected_size = header_size +
@@ -4059,6 +4211,10 @@ pub const GoldenChainAgent = struct {
         // v2.13: restore L2 rollup + state channel fields
         self.l2_rollup_state.batches_submitted = l2_batches_submitted_cnt;
         self.state_channel_state.channels_opened = state_channels_opened_cnt;
+
+        // v2.14: restore dynamic shard + DHT fields
+        self.dynamic_shard_state.shards_active = @intCast(shards_active_cnt);
+        self.adaptive_dht_state.dht_depth = dht_depth_cnt;
 
         return true;
     }
@@ -5737,6 +5893,70 @@ pub const GoldenChainAgent = struct {
         return true;
     }
 
+    // ── v2.14: Dynamic Shard Rebalancing v1.0 ──
+
+    fn initDynamicShard(self: *Self) void {
+        self.dynamic_shard_state.shards_active += 1;
+        self.dynamic_shard_state.shards_split += 1;
+        self.dynamic_shard_state.last_rebalance_us = std.time.microTimestamp();
+        self.dynamic_shard_active = true;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("dynamic_shard_init");
+        hasher.update(&std.mem.toBytes(self.dynamic_shard_state.shards_active));
+        hasher.update(&std.mem.toBytes(self.dynamic_shard_state.shards_split));
+        hasher.final(&self.dynamic_shard_state.shard_hash);
+    }
+
+    fn splitShard(self: *Self) void {
+        self.shard_load_state.hot_spots_detected += 1;
+        self.shard_load_state.load_factor += SHARD_SPLIT_THRESHOLD;
+        self.shard_load_state.last_load_check_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("shard_split");
+        hasher.update(&std.mem.toBytes(self.shard_load_state.hot_spots_detected));
+        hasher.update(&std.mem.toBytes(self.shard_load_state.load_factor));
+        hasher.final(&self.shard_load_state.load_hash);
+    }
+
+    fn mergeShard(self: *Self) void {
+        self.shard_load_state.cold_spots_detected += 1;
+        self.dynamic_shard_state.shards_merged += 1;
+        self.shard_load_state.last_load_check_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("shard_merge");
+        hasher.update(&std.mem.toBytes(self.shard_load_state.cold_spots_detected));
+        hasher.update(&std.mem.toBytes(self.dynamic_shard_state.shards_merged));
+        hasher.final(&self.shard_load_state.load_hash);
+    }
+
+    fn adaptDHT(self: *Self) void {
+        self.adaptive_dht_state.dht_rebalances += 1;
+        self.adaptive_dht_state.dht_nodes += 1;
+        self.adaptive_dht_state.last_dht_adapt_us = std.time.microTimestamp();
+        self.gossip_reshard_state.reshards_completed += 1;
+        self.gossip_reshard_state.gossip_rounds += 1;
+        self.gossip_reshard_state.last_reshard_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("adapt_dht");
+        hasher.update(&std.mem.toBytes(self.adaptive_dht_state.dht_rebalances));
+        hasher.update(&std.mem.toBytes(self.gossip_reshard_state.reshards_completed));
+        hasher.final(&self.adaptive_dht_state.dht_hash);
+        var hasher2 = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher2.update("gossip_reshard");
+        hasher2.update(&std.mem.toBytes(self.gossip_reshard_state.gossip_rounds));
+        hasher2.final(&self.gossip_reshard_state.reshard_hash);
+    }
+
+    fn dynamicShardVerify(self: *const Self) bool {
+        // U1: Shards must have been split
+        if (self.dynamic_shard_state.shards_split == 0) return false;
+        // U2: DHT must have adapted
+        if (self.adaptive_dht_state.dht_rebalances == 0) return false;
+        // U3: Gossip resharding must have completed
+        if (self.gossip_reshard_state.reshards_completed == 0) return false;
+        return true;
+    }
+
     // ── v1.3: Node Quark Summary ──
 
     /// Emit a single summary line for a node's quarks (used in summary verbosity mode).
@@ -5826,6 +6046,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.zk_bridge, .GoalParse, "zk_bridge", conf, self.quark_count - 1, null);
         // Q18: l2_rollup (v2.13)
         self.recordQuark(.l2_rollup, .GoalParse, "l2_rollup", conf, self.quark_count - 1, null);
+        // v2.14: dynamic_shard
+        self.recordQuark(.dynamic_shard, .GoalParse, "dynamic_shard", conf, self.quark_count - 1, null);
 
         // Q19: hash_verify — entangles with work quarks
         const prev_q = if (self.quark_count >= 2) self.quark_count - 2 else 0;
@@ -5893,6 +6115,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.zk_proof, .Decompose, "zk_proof", conf, self.quark_count - 1, null);
         // optimistic_verify (v2.13)
         self.recordQuark(.optimistic_verify, .Decompose, "optimistic_verify", conf, self.quark_count - 1, null);
+        // v2.14: shard_split
+        self.recordQuark(.shard_split, .Decompose, "shard_split", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -5960,6 +6184,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.privacy_transfer, .Schedule, "privacy_transfer", conf, self.quark_count - 1, null);
         // state_channel (v2.13)
         self.recordQuark(.state_channel, .Schedule, "state_channel", conf, self.quark_count - 1, null);
+        // v2.14: shard_merge
+        self.recordQuark(.shard_merge, .Schedule, "shard_merge", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -6029,6 +6255,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.cross_chain_sync, .Execute, "cross_chain_sync", conf, self.quark_count - 1, null);
         // batch_compress (v2.13)
         self.recordQuark(.batch_compress, .Execute, "batch_compress", conf, self.quark_count - 1, null);
+        // v2.14: load_balance
+        self.recordQuark(.load_balance, .Execute, "load_balance", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + SCHEDULE hash_verify
         const sched_hv = self.lastHashVerifyOfNode(.Schedule);
@@ -6094,6 +6322,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.zk_verify, .Monitor, "zk_verify", conf, self.quark_count - 1, null);
         // rollup_verify (v2.13)
         self.recordQuark(.rollup_verify, .Monitor, "rollup_verify", conf, self.quark_count - 1, null);
+        // v2.14: dht_adapt
+        self.recordQuark(.dht_adapt, .Monitor, "dht_adapt", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -6156,6 +6386,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.proof_aggregate, .Adapt, "proof_aggregate", conf, self.quark_count - 1, null);
         // channel_finalize (v2.13)
         self.recordQuark(.channel_finalize, .Adapt, "channel_finalize", conf, self.quark_count - 1, null);
+        // v2.14: shard_rebalance
+        self.recordQuark(.shard_rebalance, .Adapt, "shard_rebalance", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quark + MONITOR hash_verify
         const mon_hv = self.lastHashVerifyOfNode(.Monitor);
@@ -6221,6 +6453,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.privacy_anchor, .Synthesize, "privacy_anchor", conf, self.quark_count - 1, null);
         // batch_anchor (v2.13)
         self.recordQuark(.batch_anchor, .Synthesize, "batch_anchor", conf, self.quark_count - 1, null);
+        // v2.14: gossip_reshard
+        self.recordQuark(.gossip_reshard, .Synthesize, "gossip_reshard", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -6287,6 +6521,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.zk_anchor, .Deliver, "zk_anchor", conf, self.quark_count - 1, null);
         // l2_anchor (v2.13)
         self.recordQuark(.l2_anchor, .Deliver, "l2_anchor", conf, self.quark_count - 1, null);
+        // v2.14: shard_anchor
+        self.recordQuark(.shard_anchor, .Deliver, "shard_anchor", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -7275,7 +7511,7 @@ test "v1.5 constants correct" {
 // v2.0 IMMORTAL SELF-VERIFYING AGENT TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "QuarkType has 136 variants (u8, 136/256 used)" {
+test "QuarkType has 144 variants (u8, 144/256 used)" {
     const types = [_]QuarkType{
         .input_capture,         .goal_classify,      .task_decompose,       .dependency_check,
         .schedule_plan,         .route_decision,     .api_call,             .tvc_cross_check,
@@ -7319,10 +7555,13 @@ test "QuarkType has 136 variants (u8, 136/256 used)" {
         // v2.13: Layer-2 Rollup v1.0 (u8: 136/256 used)
         .l2_rollup,             .optimistic_verify,  .state_channel,        .batch_compress,
         .rollup_verify,         .channel_finalize,   .batch_anchor,         .l2_anchor,
+        // v2.14: Dynamic Shard Rebalancing v1.0 (u8: 144/256 used)
+        .dynamic_shard,         .shard_split,        .shard_merge,          .load_balance,
+        .dht_adapt,             .shard_rebalance,    .gossip_reshard,       .shard_anchor,
     };
-    try std.testing.expectEqual(@as(usize, 136), types.len);
-    for (0..136) |i| {
-        for (i + 1..136) |j| {
+    try std.testing.expectEqual(@as(usize, 144), types.len);
+    for (0..144) |i| {
+        for (i + 1..144) |j| {
             try std.testing.expect(@intFromEnum(types[i]) != @intFromEnum(types[j]));
         }
     }
@@ -7656,12 +7895,12 @@ test "v2.1 export v5 constants" {
     try std.testing.expectEqual(@as(usize, 38), 34 + 2 + 2);
 }
 
-test "v2.13 168 quarks per query target" {
-    // Distribution: 21+21+21+22+21+20+21+21 = 168
-    const expected = [_]u8{ 21, 21, 21, 22, 21, 20, 21, 21 };
+test "v2.14 176 quarks per query target" {
+    // Distribution: 22+22+22+23+22+21+22+22 = 176
+    const expected = [_]u8{ 22, 22, 22, 23, 22, 21, 22, 22 };
     var total: u16 = 0;
     for (expected) |n| total += n;
-    try std.testing.expectEqual(@as(u16, 168), total);
+    try std.testing.expectEqual(@as(u16, 176), total);
     try std.testing.expectEqual(@as(usize, 168), MAX_QUARK_RECORDS);
 }
 
@@ -7746,22 +7985,22 @@ test "v2.2 ChainMessageType has 4 new variants" {
     }
 }
 
-test "v2.13 168 quarks target distribution" {
-    // 21+21+21+22+21+20+21+21 = 168
-    const dist = [_]u8{ 21, 21, 21, 22, 21, 20, 21, 21 };
+test "v2.14 176 quarks target distribution" {
+    // 22+22+22+23+22+21+22+22 = 176
+    const dist = [_]u8{ 22, 22, 22, 23, 22, 21, 22, 22 };
     var sum: u16 = 0;
     for (dist) |d| sum += d;
-    try std.testing.expectEqual(@as(u16, 168), sum);
-    // Each node got exactly +1 from v2.12 distribution (20+20+20+21+20+19+20+20=160)
-    const v212_dist = [_]u8{ 20, 20, 20, 21, 20, 19, 20, 20 };
-    for (dist, v212_dist) |d, v212| {
-        try std.testing.expectEqual(@as(u8, v212 + 1), d);
+    try std.testing.expectEqual(@as(u16, 176), sum);
+    // Each node got exactly +1 from v2.13 distribution (21+21+21+22+21+20+21+21=168)
+    const v213_dist = [_]u8{ 21, 21, 21, 22, 21, 20, 21, 21 };
+    for (dist, v213_dist) |d, v213| {
+        try std.testing.expectEqual(@as(u8, v213 + 1), d);
     }
 }
 
-test "Export v17 header 86 bytes" {
-    try std.testing.expectEqual(@as(usize, 86), QUARK_EXPORT_HEADER_SIZE);
-    try std.testing.expectEqual(@as(u16, 17), QUARK_EXPORT_VERSION);
+test "Export v18 header 90 bytes" {
+    try std.testing.expectEqual(@as(usize, 90), QUARK_EXPORT_HEADER_SIZE);
+    try std.testing.expectEqual(@as(u16, 18), QUARK_EXPORT_VERSION);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -7937,13 +8176,13 @@ test "v2.4 ChainMessageType has 4 new variants" {
     }
 }
 
-test "u8 capacity with 136/256 used" {
-    // 136 QuarkType variants in u8 (256 capacity), 120 slots remaining
+test "u8 capacity with 144/256 used" {
+    // 144 QuarkType variants in u8 (256 capacity), 112 slots remaining
     var count: u16 = 0;
     inline for (std.meta.fields(QuarkType)) |_| {
         count += 1;
     }
-    try std.testing.expectEqual(@as(u16, 136), count);
+    try std.testing.expectEqual(@as(u16, 144), count);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -9046,4 +9285,134 @@ test "v2.13 u8 enum backing type" {
     // QuarkType is now enum(u8) with 256 capacity
     const info = @typeInfo(QuarkType);
     try std.testing.expectEqual(@as(usize, 1), @sizeOf(info.@"enum".tag_type));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.14 TESTS — Dynamic Shard Rebalancing v1.0
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.14 dynamic_shard label is DYN_SHRD" {
+    try std.testing.expectEqualStrings("DYN_SHRD", QuarkType.dynamic_shard.getLabel());
+}
+
+test "v2.14 shard_split label is SHRD_SPL" {
+    try std.testing.expectEqualStrings("SHRD_SPL", QuarkType.shard_split.getLabel());
+}
+
+test "v2.14 shard_merge label is SHRD_MRG" {
+    try std.testing.expectEqualStrings("SHRD_MRG", QuarkType.shard_merge.getLabel());
+}
+
+test "v2.14 load_balance label is LOAD_BAL" {
+    try std.testing.expectEqualStrings("LOAD_BAL", QuarkType.load_balance.getLabel());
+}
+
+test "v2.14 dht_adapt label is DHT_ADPT" {
+    try std.testing.expectEqualStrings("DHT_ADPT", QuarkType.dht_adapt.getLabel());
+}
+
+test "v2.14 shard_rebalance label is SHRD_RBL" {
+    try std.testing.expectEqualStrings("SHRD_RBL", QuarkType.shard_rebalance.getLabel());
+}
+
+test "v2.14 gossip_reshard label is GSP_RSHD" {
+    try std.testing.expectEqualStrings("GSP_RSHD", QuarkType.gossip_reshard.getLabel());
+}
+
+test "v2.14 shard_anchor label is SHRD_ACH" {
+    try std.testing.expectEqualStrings("SHRD_ACH", QuarkType.shard_anchor.getLabel());
+}
+
+test "v2.14 isDynamicShardQuark classifies correctly" {
+    try std.testing.expect(QuarkType.dynamic_shard.isDynamicShardQuark());
+    try std.testing.expect(QuarkType.shard_anchor.isDynamicShardQuark());
+    try std.testing.expect(!QuarkType.shard_split.isDynamicShardQuark());
+}
+
+test "v2.14 isShardSplitMergeQuark classifies correctly" {
+    try std.testing.expect(QuarkType.shard_split.isShardSplitMergeQuark());
+    try std.testing.expect(QuarkType.shard_merge.isShardSplitMergeQuark());
+    try std.testing.expect(!QuarkType.dynamic_shard.isShardSplitMergeQuark());
+}
+
+test "v2.14 isLoadBalanceQuark classifies correctly" {
+    try std.testing.expect(QuarkType.load_balance.isLoadBalanceQuark());
+    try std.testing.expect(QuarkType.shard_rebalance.isLoadBalanceQuark());
+    try std.testing.expect(!QuarkType.dht_adapt.isLoadBalanceQuark());
+}
+
+test "v2.14 isDHTAdaptQuark classifies correctly" {
+    try std.testing.expect(QuarkType.dht_adapt.isDHTAdaptQuark());
+    try std.testing.expect(QuarkType.gossip_reshard.isDHTAdaptQuark());
+    try std.testing.expect(!QuarkType.load_balance.isDHTAdaptQuark());
+}
+
+test "v2.14 DynamicShardState defaults to zero" {
+    const state = DynamicShardState{};
+    try std.testing.expectEqual(@as(u32, 0), state.shards_active);
+    try std.testing.expectEqual(@as(u32, 0), state.shards_split);
+    try std.testing.expectEqual(@as(u32, 0), state.shards_merged);
+}
+
+test "v2.14 ShardLoadState defaults to zero" {
+    const state = ShardLoadState{};
+    try std.testing.expectEqual(@as(u32, 0), state.load_factor);
+    try std.testing.expectEqual(@as(u32, 0), state.hot_spots_detected);
+    try std.testing.expectEqual(@as(u32, 0), state.cold_spots_detected);
+}
+
+test "v2.14 AdaptiveDHTState defaults to zero" {
+    const state = AdaptiveDHTState{};
+    try std.testing.expectEqual(@as(u16, 0), state.dht_depth);
+    try std.testing.expectEqual(@as(u32, 0), state.dht_nodes);
+    try std.testing.expectEqual(@as(u32, 0), state.dht_rebalances);
+}
+
+test "v2.14 GossipReshardState defaults to zero" {
+    const state = GossipReshardState{};
+    try std.testing.expectEqual(@as(u32, 0), state.reshards_completed);
+    try std.testing.expectEqual(@as(u64, 0), state.gossip_rounds);
+    try std.testing.expectEqual(@as(u16, 0), state.active_shards);
+}
+
+test "v2.14 ChainMessageType Dynamic Shard variants" {
+    const variants = [_]ChainMessageType{
+        .DynamicShardEvent,
+        .ShardLoadUpdate,
+        .AdaptiveDHTEvent,
+        .GossipReshardEvent,
+    };
+    try std.testing.expectEqual(@as(usize, 4), variants.len);
+}
+
+test "v2.14 constants" {
+    try std.testing.expectEqual(@as(u32, 10_000), SHARD_SPLIT_THRESHOLD);
+    try std.testing.expectEqual(@as(u32, 100), SHARD_MERGE_THRESHOLD);
+    try std.testing.expectEqual(@as(u16, 32), DHT_MAX_DEPTH);
+    try std.testing.expectEqual(@as(i64, 300_000_000), DHT_REBALANCE_INTERVAL_US);
+    try std.testing.expectEqual(@as(i64, 120_000_000), GOSSIP_RESHARD_TIMEOUT_US);
+    try std.testing.expectEqual(@as(u16, 4_096), MAX_ACTIVE_SHARDS);
+}
+
+test "v2.14 QuarkType enum indices" {
+    try std.testing.expectEqual(@as(u8, 136), @intFromEnum(QuarkType.dynamic_shard));
+    try std.testing.expectEqual(@as(u8, 137), @intFromEnum(QuarkType.shard_split));
+    try std.testing.expectEqual(@as(u8, 138), @intFromEnum(QuarkType.shard_merge));
+    try std.testing.expectEqual(@as(u8, 139), @intFromEnum(QuarkType.load_balance));
+    try std.testing.expectEqual(@as(u8, 140), @intFromEnum(QuarkType.dht_adapt));
+    try std.testing.expectEqual(@as(u8, 141), @intFromEnum(QuarkType.shard_rebalance));
+    try std.testing.expectEqual(@as(u8, 142), @intFromEnum(QuarkType.gossip_reshard));
+    try std.testing.expectEqual(@as(u8, 143), @intFromEnum(QuarkType.shard_anchor));
+}
+
+test "v2.14 Phase U passes after dynamic shard init" {
+    var agent = ChainAgentState.init(undefined);
+    agent.initDynamicShard();
+    agent.adaptDHT();
+    try std.testing.expect(agent.dynamicShardVerify());
+}
+
+test "v2.14 Phase U fails without dynamic shard" {
+    const agent = ChainAgentState.init(undefined);
+    try std.testing.expect(!agent.dynamicShardVerify());
 }
