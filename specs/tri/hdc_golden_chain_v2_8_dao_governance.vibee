@@ -1,0 +1,144 @@
+name: hdc_golden_chain_v2_8_dao_governance
+version: "2.8.0"
+language: zig
+module: golden_chain
+
+# Golden Chain v2.8 — DAO Full Governance v1.0 + Delegation + Time-locked Voting + Yield Farming
+# Agent: #17 Harper | Cycle: 64
+
+constants:
+  MAX_QUARK_RECORDS: 128
+  QUARK_EXPORT_VERSION: 12
+  QUARK_EXPORT_HEADER_SIZE: 66
+  DAO_DELEGATION_MAX_DEPTH: 5
+  DAO_TIMELOCK_MIN_US: 86400000000
+  DAO_PROPOSAL_MAX_ACTIVE: 32
+  DAO_YIELD_RATE_BPS: 500
+  DAO_QUORUM_THRESHOLD_V2: 67
+  DAO_MIN_VOTES_FOR_QUORUM: 1000
+
+types:
+  QuarkType:
+    enum: u7
+    new_variants:
+      - dao_delegate: 88          # GoalParse
+      - timelock_vote: 89         # Decompose
+      - proposal_exec: 90         # Schedule
+      - yield_farming: 91         # Execute
+      - dao_quorum_v2: 92         # Monitor
+      - delegation_chain: 93      # Adapt
+      - governance_sync: 94       # Synthesize
+      - dao_anchor: 95            # Deliver
+
+  ChainMessageType:
+    new_variants:
+      - DAODelegation
+      - TimelockVote
+      - ProposalExecution
+      - YieldFarmingEvent
+
+  DAODelegationState:
+    fields:
+      delegation_depth: u8
+      active_delegations: u32
+      total_delegated_power: u64
+      last_delegation_us: i64
+      delegation_hash: "[32]u8"
+
+  TimelockVotingState:
+    fields:
+      timelock_duration_us: i64
+      active_proposals: u8
+      votes_cast: u32
+      last_vote_us: i64
+      voting_hash: "[32]u8"
+
+  ProposalExecutionState:
+    fields:
+      proposals_executed: u32
+      proposals_pending: u8
+      execution_success_rate: u16
+      last_execution_us: i64
+      execution_hash: "[32]u8"
+
+  YieldFarmingState:
+    fields:
+      total_staked: u64
+      yield_distributed: u64
+      farming_epochs: u32
+      last_yield_us: i64
+      yield_hash: "[32]u8"
+
+behaviors:
+  - name: delegateVotingPower
+    given: Agent with dao_delegation_state
+    when: Delegation triggered
+    then: Increments active_delegations, computes delegation_hash
+
+  - name: castTimelockVote
+    given: Agent with timelock_voting_state
+    when: Time-locked vote cast
+    then: Increments votes_cast, updates voting_hash
+
+  - name: executeProposal
+    given: Agent with proposal_execution_state
+    when: Proposal execution triggered
+    then: Increments proposals_executed, computes execution_hash
+
+  - name: distributeYield
+    given: Agent with yield_farming_state
+    when: Yield distribution triggered
+    then: Increments farming_epochs, updates yield_hash
+
+  - name: daoGovernanceVerify
+    given: Agent with DAO governance state
+    when: Phase O verification
+    then: O1 delegations active, O2 votes >= quorum, O3 proposals executed
+
+verification:
+  phase_O:
+    - O1: dao_delegation_state.active_delegations > 0
+    - O2: timelock_voting_state.votes_cast >= DAO_MIN_VOTES_FOR_QUORUM
+    - O3: proposal_execution_state.proposals_executed > 0
+
+export:
+  version: 12
+  header_size: 66
+  new_bytes: "+4 from v11: dao_delegations(u16) + proposals_executed(u16)"
+  backward_compatible: "v1-v12"
+
+quark_distribution:
+  GoalParse: 16      # +dao_delegate
+  Decompose: 16      # +timelock_vote
+  Schedule: 16       # +proposal_exec
+  Execute: 17        # +yield_farming
+  Monitor: 16        # +dao_quorum_v2
+  Adapt: 15          # +delegation_chain
+  Synthesize: 16     # +governance_sync
+  Deliver: 16        # +dao_anchor
+  total: 128
+
+tests:
+  - test_u7_quark_type_96_variants
+  - test_dao_delegate_label
+  - test_timelock_vote_label
+  - test_proposal_exec_label
+  - test_yield_farming_label
+  - test_dao_quorum_v2_label
+  - test_delegation_chain_label
+  - test_governance_sync_label
+  - test_dao_anchor_label
+  - test_is_dao_delegate_quark
+  - test_is_timelock_quark
+  - test_is_proposal_exec_quark
+  - test_is_yield_farming_quark
+  - test_dao_delegation_state_defaults
+  - test_timelock_voting_state_defaults
+  - test_proposal_execution_state_defaults
+  - test_yield_farming_state_defaults
+  - test_phase_O_pass
+  - test_phase_O_fail
+  - test_export_v12
+  - test_128_quark_distribution
+  - test_chain_message_type_v28
+  - test_v28_constants

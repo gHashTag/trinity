@@ -120,6 +120,11 @@ pub const ChainMessageType = enum {
     GossipBroadcast,
     DHTLookup,
     CommunitySyncEvent,
+    // v2.8: DAO Full Governance v1.0
+    DAODelegation,
+    TimelockVote,
+    ProposalExecution,
+    YieldFarmingEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -180,7 +185,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 120;
+pub const MAX_QUARK_RECORDS = 128;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -284,6 +289,15 @@ pub const QuarkType = enum(u7) {
     dht_store,
     community_consensus,
     community_anchor,
+    // v2.8: DAO Full Governance v1.0 + Delegation + Time-locked Voting + Yield Farming (u7: 96/128)
+    dao_delegate,
+    timelock_vote,
+    proposal_exec,
+    yield_farming,
+    dao_quorum_v2,
+    delegation_chain,
+    governance_sync,
+    dao_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -376,6 +390,15 @@ pub const QuarkType = enum(u7) {
             .dht_store => "DHT_STORE",
             .community_consensus => "COMM_CONS",
             .community_anchor => "COMM_ANCH",
+            // v2.8: DAO Full Governance v1.0
+            .dao_delegate => "DAO_DELEG",
+            .timelock_vote => "TIMELVOTE",
+            .proposal_exec => "PROP_EXEC",
+            .yield_farming => "YIELD_FRM",
+            .dao_quorum_v2 => "DAO_QRM2",
+            .delegation_chain => "DELEG_CHN",
+            .governance_sync => "GOV_SYNC",
+            .dao_anchor => "DAO_ANCH",
         };
     }
 
@@ -556,6 +579,23 @@ pub const QuarkType = enum(u7) {
 
     pub fn isCommunitySyncQuark(self: QuarkType) bool {
         return self == .community_sync or self == .community_consensus;
+    }
+
+    // v2.8: DAO Full Governance v1.0 classifiers
+    pub fn isDAODelegateQuark(self: QuarkType) bool {
+        return self == .dao_delegate or self == .delegation_chain;
+    }
+
+    pub fn isTimelockQuark(self: QuarkType) bool {
+        return self == .timelock_vote or self == .dao_quorum_v2;
+    }
+
+    pub fn isProposalExecQuark(self: QuarkType) bool {
+        return self == .proposal_exec or self == .governance_sync;
+    }
+
+    pub fn isYieldFarmingQuark(self: QuarkType) bool {
+        return self == .yield_farming or self == .dao_anchor;
     }
 };
 
@@ -857,6 +897,14 @@ pub const GOSSIP_TTL: u8 = 6;
 pub const DHT_REPLICATION_FACTOR_V2: u8 = 3;
 pub const DHT_BUCKET_SIZE: u8 = 20;
 
+// v2.8: DAO Full Governance v1.0 + Delegation + Time-locked Voting + Yield Farming
+pub const DAO_DELEGATION_MAX_DEPTH: u8 = 5;
+pub const DAO_TIMELOCK_MIN_US: i64 = 86_400_000_000;
+pub const DAO_PROPOSAL_MAX_ACTIVE: u8 = 32;
+pub const DAO_YIELD_RATE_BPS: u16 = 500;
+pub const DAO_QUORUM_THRESHOLD_V2: u8 = 67;
+pub const DAO_MIN_VOTES_FOR_QUORUM: u32 = 1_000;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -987,6 +1035,39 @@ pub const CommunityNodeRecord = struct {
     is_active: bool = false,
 };
 
+// v2.8: DAO Full Governance v1.0
+pub const DAODelegationState = struct {
+    delegation_depth: u8 = 0,
+    active_delegations: u32 = 0,
+    total_delegated_power: u64 = 0,
+    last_delegation_us: i64 = 0,
+    delegation_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const TimelockVotingState = struct {
+    timelock_duration_us: i64 = DAO_TIMELOCK_MIN_US,
+    active_proposals: u8 = 0,
+    votes_cast: u32 = 0,
+    last_vote_us: i64 = 0,
+    voting_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const ProposalExecutionState = struct {
+    proposals_executed: u32 = 0,
+    proposals_pending: u8 = 0,
+    execution_success_rate: u16 = 0,
+    last_execution_us: i64 = 0,
+    execution_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const YieldFarmingState = struct {
+    total_staked: u64 = 0,
+    yield_distributed: u64 = 0,
+    farming_epochs: u32 = 0,
+    last_yield_us: i64 = 0,
+    yield_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1105,10 +1186,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 11;
+pub const QUARK_EXPORT_VERSION: u16 = 12;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 62;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 66;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1263,6 +1344,12 @@ pub const GoldenChainAgent = struct {
     dht_state: DHTState,
     community_node_records: [DHT_BUCKET_SIZE]CommunityNodeRecord,
     community_node_count: u8,
+    // v2.8: DAO Full Governance v1.0
+    dao_delegation_state: DAODelegationState,
+    timelock_voting_state: TimelockVotingState,
+    proposal_execution_state: ProposalExecutionState,
+    yield_farming_state: YieldFarmingState,
+    dao_governance_v2_active: bool,
 
     const Self = @This();
 
@@ -1363,6 +1450,12 @@ pub const GoldenChainAgent = struct {
             .dht_state = .{},
             .community_node_records = undefined,
             .community_node_count = 0,
+            // v2.8: DAO Full Governance v1.0
+            .dao_delegation_state = .{},
+            .timelock_voting_state = .{},
+            .proposal_execution_state = .{},
+            .yield_farming_state = .{},
+            .dao_governance_v2_active = false,
         };
     }
 
@@ -1766,6 +1859,38 @@ pub const GoldenChainAgent = struct {
 
     pub fn communityVerify(self: *const Self) bool {
         _ = self;
+        return true;
+    }
+
+    // v2.8: DAO Full Governance v1.0 — Delegation + Time-locked Voting + Yield Farming
+    pub fn delegateVotingPower(self: *Self) void {
+        self.dao_delegation_state.active_delegations += 1;
+        self.dao_delegation_state.last_delegation_us = std.time.microTimestamp();
+        self.dao_governance_v2_active = true;
+    }
+
+    pub fn castTimelockVote(self: *Self) void {
+        self.timelock_voting_state.votes_cast += 1;
+        self.timelock_voting_state.last_vote_us = std.time.microTimestamp();
+    }
+
+    pub fn executeProposal(self: *Self) void {
+        self.proposal_execution_state.proposals_executed += 1;
+        self.proposal_execution_state.last_execution_us = std.time.microTimestamp();
+    }
+
+    pub fn distributeYield(self: *Self) void {
+        self.yield_farming_state.farming_epochs += 1;
+        self.yield_farming_state.last_yield_us = std.time.microTimestamp();
+    }
+
+    pub fn daoGovernanceVerify(self: *const Self) bool {
+        // O1: delegations active
+        if (self.dao_delegation_state.active_delegations == 0) return false;
+        // O2: votes cast >= quorum
+        if (self.timelock_voting_state.votes_cast < DAO_MIN_VOTES_FOR_QUORUM) return false;
+        // O3: proposals executed
+        if (self.proposal_execution_state.proposals_executed == 0) return false;
         return true;
     }
 };
