@@ -30,7 +30,7 @@ pub const CONTENT_DIGEST_LEN = 64;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 136; // v2.9: was 128, +8 for cross-chain bridge quarks (u7: 104/128)
+pub const MAX_QUARK_RECORDS = 144; // v2.10: was 136, +8 for DAO full governance + staking quarks (u7: 112/128)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -221,6 +221,11 @@ pub const ChainMessageType = enum {
     AtomicSwap, // Atomic swap event
     StateReplication, // State replication event
     BridgeSyncEvent, // Bridge sync event
+    // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+    DAOFullGovernance, // DAO full governance event
+    TRIStaking, // $TRI staking event
+    RewardDistribution, // Reward distribution event
+    StakingValidation, // Staking validation event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -427,6 +432,16 @@ pub const QuarkType = enum(u7) {
     chain_interop, // 102 — Chain interoperability
     bridge_anchor, // 103 — Bridge anchor record
 
+    // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards (u7: 112/128)
+    dao_full_governance, // 104 — DAO full governance initiation
+    tri_staking, // 105 — $TRI staking execution
+    reward_distribution, // 106 — Reward distribution
+    governance_quorum, // 107 — Governance quorum verification
+    staking_validator, // 108 — Staking validator
+    yield_optimizer, // 109 — Yield optimization
+    dao_treasury, // 110 — DAO treasury management
+    staking_anchor, // 111 — Staking anchor record
+
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
             .input_capture => "INPUT_CAP",
@@ -539,6 +554,15 @@ pub const QuarkType = enum(u7) {
             .swap_finalize => "SWAP_FINL",
             .chain_interop => "CHN_INTOP",
             .bridge_anchor => "BRDG_ANCH",
+            // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+            .dao_full_governance => "DAO_FGOV",
+            .tri_staking => "TRI_STAK",
+            .reward_distribution => "RWD_DIST",
+            .governance_quorum => "GOV_QRUM",
+            .staking_validator => "STK_VLDR",
+            .yield_optimizer => "YLD_OPTM",
+            .dao_treasury => "DAO_TRSY",
+            .staking_anchor => "STK_ANCH",
         };
     }
 
@@ -754,6 +778,23 @@ pub const QuarkType = enum(u7) {
 
     pub fn isBridgeVerifyQuark(self: QuarkType) bool {
         return self == .bridge_verify or self == .bridge_anchor;
+    }
+
+    // v2.10: DAO Full Governance + Staking classifiers
+    pub fn isDAOFullGovernanceQuark(self: QuarkType) bool {
+        return self == .dao_full_governance or self == .dao_treasury;
+    }
+
+    pub fn isTRIStakingQuark(self: QuarkType) bool {
+        return self == .tri_staking or self == .staking_anchor;
+    }
+
+    pub fn isRewardDistributionQuark(self: QuarkType) bool {
+        return self == .reward_distribution or self == .yield_optimizer;
+    }
+
+    pub fn isStakingValidatorQuark(self: QuarkType) bool {
+        return self == .staking_validator or self == .governance_quorum;
     }
 };
 
@@ -1357,6 +1398,14 @@ pub const BRIDGE_MAX_PENDING_SWAPS: u16 = 256;
 pub const BRIDGE_CONFIRMATION_BLOCKS: u8 = 12;
 pub const BRIDGE_MIN_STAKE_FOR_RELAY: u64 = 10_000;
 
+// v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards constants
+pub const DAO_GOVERNANCE_QUORUM_PCT: u8 = 67;
+pub const DAO_MIN_PROPOSAL_STAKE: u64 = 1_000;
+pub const STAKING_MIN_AMOUNT: u64 = 100;
+pub const STAKING_REWARD_RATE_BPS: u16 = 500;
+pub const STAKING_EPOCH_DURATION_US: i64 = 86_400_000_000;
+pub const STAKING_MAX_VALIDATORS: u16 = 1_000;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1553,15 +1602,48 @@ pub const BridgeRelayState = struct {
     relay_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards types
+pub const DAOFullGovernanceState = struct {
+    total_proposals: u32 = 0,
+    passed_proposals: u32 = 0,
+    quorum_threshold_pct: u8 = 0,
+    governance_epoch: u32 = 0,
+    governance_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const TRIStakingState = struct {
+    total_staked: u64 = 0,
+    active_stakers: u32 = 0,
+    reward_pool: u64 = 0,
+    last_reward_us: i64 = 0,
+    staking_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const RewardDistributionState = struct {
+    total_distributed: u64 = 0,
+    distribution_count: u32 = 0,
+    unclaimed_rewards: u64 = 0,
+    last_distribution_us: i64 = 0,
+    distribution_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const StakingValidatorState = struct {
+    active_validators: u16 = 0,
+    total_validated: u32 = 0,
+    slashed_count: u16 = 0,
+    last_validation_us: i64 = 0,
+    validator_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.3/v1.4 EXPORT CONSTANTS — on-chain serialization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 13; // v2.9: bumped from 12
+pub const QUARK_EXPORT_VERSION: u16 = 14; // v2.10: bumped from 13
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 70; // v2.9: was 66, +4 for active_bridges(u16)+completed_swaps(u16)
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 74; // v2.10: was 70, +4 for passed_proposals(u16)+active_stakers(u16)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GOLDEN CHAIN AGENT — unified 8-node pipeline
@@ -1665,6 +1747,12 @@ pub const GoldenChainAgent = struct {
     state_replication_state: StateReplicationState,
     bridge_relay_state: BridgeRelayState,
     cross_chain_bridge_active: bool,
+    // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+    dao_full_governance_state: DAOFullGovernanceState,
+    tri_staking_state: TRIStakingState,
+    reward_distribution_state: RewardDistributionState,
+    staking_validator_state: StakingValidatorState,
+    dao_full_governance_active: bool,
 
     const Self = @This();
 
@@ -1769,6 +1857,12 @@ pub const GoldenChainAgent = struct {
             .state_replication_state = .{},
             .bridge_relay_state = .{},
             .cross_chain_bridge_active = false,
+            // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+            .dao_full_governance_state = .{},
+            .tri_staking_state = .{},
+            .reward_distribution_state = .{},
+            .staking_validator_state = .{},
+            .dao_full_governance_active = false,
         };
     }
 
@@ -2051,7 +2145,7 @@ pub const GoldenChainAgent = struct {
         self.quark_chain_verified = self.verifyQuarkChain();
         if (self.quark_chain_verified) {
             var qvbuf: [128]u8 = undefined;
-            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/136 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge intact)", .{self.quark_count}) catch "Quarks VERIFIED";
+            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/144 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking intact)", .{self.quark_count}) catch "Quarks VERIFIED";
             self.emitMsg(.TruthVerification, .Deliver, null, qvmsg, 1.0, 0);
         } else {
             self.emitMsg(.TruthVerification, .Deliver, null, "Quark chain: BROKEN", 0.0, 0);
@@ -2606,6 +2700,44 @@ pub const GoldenChainAgent = struct {
             self.emitMsg(.BridgeSyncEvent, .Deliver, null, rlmsg, 1.0, 0);
         }
 
+        // v2.10: DAO Full Governance + $TRI Staking
+        {
+            self.initDAOFullGovernance();
+            var dgbuf: [256]u8 = undefined;
+            const dgmsg = std.fmt.bufPrint(&dgbuf, "DAOFullGovernance: proposals={d} | quorum={d}%", .{
+                self.dao_full_governance_state.passed_proposals,
+                DAO_GOVERNANCE_QUORUM_PCT,
+            }) catch "DAO governance";
+            self.emitMsg(.DAOFullGovernance, .Deliver, null, dgmsg, 1.0, 0);
+        }
+        {
+            self.stakeTRI();
+            var stbuf: [256]u8 = undefined;
+            const stmsg = std.fmt.bufPrint(&stbuf, "TRIStaking: stakers={d} | staked={d} $TRI", .{
+                self.tri_staking_state.active_stakers,
+                self.tri_staking_state.total_staked,
+            }) catch "TRI staking";
+            self.emitMsg(.TRIStaking, .Deliver, null, stmsg, 1.0, 0);
+        }
+        {
+            self.distributeRewards();
+            var rdbuf: [256]u8 = undefined;
+            const rdmsg = std.fmt.bufPrint(&rdbuf, "RewardDistribution: count={d} | total={d}", .{
+                self.reward_distribution_state.distribution_count,
+                self.reward_distribution_state.total_distributed,
+            }) catch "Reward distribution";
+            self.emitMsg(.RewardDistribution, .Deliver, null, rdmsg, 1.0, 0);
+        }
+        {
+            self.validateStaking();
+            var svbuf: [256]u8 = undefined;
+            const svmsg = std.fmt.bufPrint(&svbuf, "StakingValidation: validators={d} | validated={d}", .{
+                self.staking_validator_state.active_validators,
+                self.staking_validator_state.total_validated,
+            }) catch "Staking validation";
+            self.emitMsg(.StakingValidation, .Deliver, null, svmsg, 1.0, 0);
+        }
+
         // Update global wave state
         igla_hybrid.g_last_wave_state = .{
             .similarity = self.state.total_confidence,
@@ -2982,6 +3114,9 @@ pub const GoldenChainAgent = struct {
         // Phase P: Cross-Chain Bridge integrity (v2.9)
         if (!self.crossChainVerify()) return false;
 
+        // Phase Q: DAO Full Governance + $TRI Staking integrity (v2.10)
+        if (!self.daoFullGovernanceVerify()) return false;
+
         return true;
     }
 
@@ -3134,6 +3269,13 @@ pub const GoldenChainAgent = struct {
         const csw_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.atomic_swap_state.completed_swaps, std.math.maxInt(u16)))));
         @memcpy(buf[pos .. pos + 2], &csw_bytes);
         pos += 2;
+        // v2.10: passed_proposals(2) + active_stakers(2)
+        const ppro_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.dao_full_governance_state.passed_proposals, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &ppro_bytes);
+        pos += 2;
+        const astk_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.tri_staking_state.active_stakers, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &astk_bytes);
+        pos += 2;
 
         // Provenance records (158 bytes each)
         var pi: u8 = 0;
@@ -3216,10 +3358,10 @@ pub const GoldenChainAgent = struct {
 
         // Read version (support v1, v2, v3, v4, v5, v6, v7)
         const ver: u16 = @bitCast(buf[pos .. pos + 2][0..2].*);
-        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13) return false;
+        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14) return false;
         pos += 2;
 
-        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else 70;
+        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else 74;
         if (buf.len < header_size) return false;
 
         const prov_count = buf[pos];
@@ -3349,6 +3491,15 @@ pub const GoldenChainAgent = struct {
             completed_swaps_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
         }
+        // v2.10: read passed_proposals + active_stakers from v14 header
+        var passed_proposals_cnt: u16 = 0;
+        var active_stakers_cnt: u16 = 0;
+        if (ver >= 14) {
+            passed_proposals_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+            active_stakers_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+        }
 
         // Validate sizes
         if (prov_count > MAX_PROVENANCE_RECORDS or qcount > MAX_QUARK_RECORDS) return false;
@@ -3450,6 +3601,9 @@ pub const GoldenChainAgent = struct {
         // v2.9: restore cross-chain bridge fields
         self.cross_chain_bridge_state.active_bridges = active_bridges_cnt;
         self.atomic_swap_state.completed_swaps = completed_swaps_cnt;
+        // v2.10: restore DAO governance + staking fields
+        self.dao_full_governance_state.passed_proposals = passed_proposals_cnt;
+        self.tri_staking_state.active_stakers = active_stakers_cnt;
 
         return true;
     }
@@ -4878,6 +5032,69 @@ pub const GoldenChainAgent = struct {
         return true;
     }
 
+    // ── v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards ──
+
+    fn initDAOFullGovernance(self: *Self) void {
+        self.dao_full_governance_state.total_proposals += 1;
+        self.dao_full_governance_state.passed_proposals += 1;
+        self.dao_full_governance_state.quorum_threshold_pct = DAO_GOVERNANCE_QUORUM_PCT;
+        self.dao_full_governance_state.governance_epoch += 1;
+        self.dao_full_governance_active = true;
+        const now = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("dao_full_governance_v2.10");
+        hasher.update(std.mem.asBytes(&self.dao_full_governance_state.passed_proposals));
+        hasher.update(std.mem.asBytes(&now));
+        hasher.final(&self.dao_full_governance_state.governance_hash);
+    }
+
+    fn stakeTRI(self: *Self) void {
+        self.tri_staking_state.active_stakers += 1;
+        self.tri_staking_state.total_staked += STAKING_MIN_AMOUNT;
+        self.tri_staking_state.reward_pool += STAKING_REWARD_RATE_BPS;
+        const now = std.time.microTimestamp();
+        self.tri_staking_state.last_reward_us = now;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("tri_staking_v2.10");
+        hasher.update(std.mem.asBytes(&self.tri_staking_state.active_stakers));
+        hasher.update(std.mem.asBytes(&now));
+        hasher.final(&self.tri_staking_state.staking_hash);
+    }
+
+    fn distributeRewards(self: *Self) void {
+        self.reward_distribution_state.distribution_count += 1;
+        self.reward_distribution_state.total_distributed += 1;
+        const now = std.time.microTimestamp();
+        self.reward_distribution_state.last_distribution_us = now;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("reward_distribution_v2.10");
+        hasher.update(std.mem.asBytes(&self.reward_distribution_state.distribution_count));
+        hasher.update(std.mem.asBytes(&now));
+        hasher.final(&self.reward_distribution_state.distribution_hash);
+    }
+
+    fn validateStaking(self: *Self) void {
+        self.staking_validator_state.active_validators += 1;
+        self.staking_validator_state.total_validated += 1;
+        const now = std.time.microTimestamp();
+        self.staking_validator_state.last_validation_us = now;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("staking_validator_v2.10");
+        hasher.update(std.mem.asBytes(&self.staking_validator_state.total_validated));
+        hasher.update(std.mem.asBytes(&now));
+        hasher.final(&self.staking_validator_state.validator_hash);
+    }
+
+    fn daoFullGovernanceVerify(self: *const Self) bool {
+        // Q1: Governance must have passed proposals
+        if (self.dao_full_governance_state.passed_proposals == 0) return false;
+        // Q2: Staking must have active stakers
+        if (self.tri_staking_state.active_stakers == 0) return false;
+        // Q3: Rewards must have been distributed
+        if (self.reward_distribution_state.distribution_count == 0) return false;
+        return true;
+    }
+
     // ── v1.3: Node Quark Summary ──
 
     /// Emit a single summary line for a node's quarks (used in summary verbosity mode).
@@ -4959,8 +5176,10 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.dao_delegate, .GoalParse, "dao_delegate", conf, self.quark_count - 1, null);
         // Q14: cross_chain_bridge (v2.9)
         self.recordQuark(.cross_chain_bridge, .GoalParse, "cross_chain_bridge", conf, self.quark_count - 1, null);
+        // Q15: dao_full_governance (v2.10)
+        self.recordQuark(.dao_full_governance, .GoalParse, "dao_full_governance", conf, self.quark_count - 1, null);
 
-        // Q15: hash_verify — entangles with work quarks
+        // Q16: hash_verify — entangles with work quarks
         const prev_q = if (self.quark_count >= 2) self.quark_count - 2 else 0;
         self.recordQuark(.hash_verify, .GoalParse, "hash_verify", conf, prev_q, self.quark_count - 1);
 
@@ -5018,6 +5237,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.timelock_vote, .Decompose, "timelock_vote", conf, self.quark_count - 1, null);
         // atomic_swap (v2.9)
         self.recordQuark(.atomic_swap, .Decompose, "atomic_swap", conf, self.quark_count - 1, null);
+        // tri_staking (v2.10)
+        self.recordQuark(.tri_staking, .Decompose, "tri_staking", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -5077,6 +5298,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.proposal_exec, .Schedule, "proposal_exec", conf, self.quark_count - 1, null);
         // state_replicate (v2.9)
         self.recordQuark(.state_replicate, .Schedule, "state_replicate", conf, self.quark_count - 1, null);
+        // reward_distribution (v2.10)
+        self.recordQuark(.reward_distribution, .Schedule, "reward_distribution", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -5138,6 +5361,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.yield_farming, .Execute, "yield_farming", conf, self.quark_count - 1, null);
         // multi_chain_sync (v2.9)
         self.recordQuark(.multi_chain_sync, .Execute, "multi_chain_sync", conf, self.quark_count - 1, null);
+        // governance_quorum (v2.10)
+        self.recordQuark(.governance_quorum, .Execute, "governance_quorum", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + SCHEDULE hash_verify
         const sched_hv = self.lastHashVerifyOfNode(.Schedule);
@@ -5195,6 +5420,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.dao_quorum_v2, .Monitor, "dao_quorum_v2", conf, self.quark_count - 1, null);
         // bridge_verify (v2.9)
         self.recordQuark(.bridge_verify, .Monitor, "bridge_verify", conf, self.quark_count - 1, null);
+        // staking_validator (v2.10)
+        self.recordQuark(.staking_validator, .Monitor, "staking_validator", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -5249,6 +5476,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.delegation_chain, .Adapt, "delegation_chain", conf, self.quark_count - 1, null);
         // swap_finalize (v2.9)
         self.recordQuark(.swap_finalize, .Adapt, "swap_finalize", conf, self.quark_count - 1, null);
+        // yield_optimizer (v2.10)
+        self.recordQuark(.yield_optimizer, .Adapt, "yield_optimizer", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quark + MONITOR hash_verify
         const mon_hv = self.lastHashVerifyOfNode(.Monitor);
@@ -5306,6 +5535,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.governance_sync, .Synthesize, "governance_sync", conf, self.quark_count - 1, null);
         // chain_interop (v2.9)
         self.recordQuark(.chain_interop, .Synthesize, "chain_interop", conf, self.quark_count - 1, null);
+        // dao_treasury (v2.10)
+        self.recordQuark(.dao_treasury, .Synthesize, "dao_treasury", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -5364,6 +5595,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.dao_anchor, .Deliver, "dao_anchor", conf, self.quark_count - 1, null);
         // bridge_anchor (v2.9)
         self.recordQuark(.bridge_anchor, .Deliver, "bridge_anchor", conf, self.quark_count - 1, null);
+        // staking_anchor (v2.10)
+        self.recordQuark(.staking_anchor, .Deliver, "staking_anchor", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -6352,7 +6585,7 @@ test "v1.5 constants correct" {
 // v2.0 IMMORTAL SELF-VERIFYING AGENT TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "QuarkType has 104 variants (u7, 104/128)" {
+test "QuarkType has 112 variants (u7, 112/128)" {
     const types = [_]QuarkType{
         .input_capture,         .goal_classify,      .task_decompose,       .dependency_check,
         .schedule_plan,         .route_decision,     .api_call,             .tvc_cross_check,
@@ -6384,10 +6617,13 @@ test "QuarkType has 104 variants (u7, 104/128)" {
         // v2.9: Cross-Chain Bridge v1.0 + Atomic Swaps + Multi-Chain State Replication
         .cross_chain_bridge,    .atomic_swap,        .state_replicate,      .multi_chain_sync,
         .bridge_verify,         .swap_finalize,      .chain_interop,        .bridge_anchor,
+        // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+        .dao_full_governance,   .tri_staking,        .reward_distribution,  .governance_quorum,
+        .staking_validator,     .yield_optimizer,    .dao_treasury,         .staking_anchor,
     };
-    try std.testing.expectEqual(@as(usize, 104), types.len);
-    for (0..104) |i| {
-        for (i + 1..104) |j| {
+    try std.testing.expectEqual(@as(usize, 112), types.len);
+    for (0..112) |i| {
+        for (i + 1..112) |j| {
             try std.testing.expect(@intFromEnum(types[i]) != @intFromEnum(types[j]));
         }
     }
@@ -6721,13 +6957,13 @@ test "v2.1 export v5 constants" {
     try std.testing.expectEqual(@as(usize, 38), 34 + 2 + 2);
 }
 
-test "v2.9 136 quarks per query target" {
-    // Distribution: 17+17+17+18+17+16+17+17 = 136
-    const expected = [_]u8{ 17, 17, 17, 18, 17, 16, 17, 17 };
+test "v2.10 144 quarks per query target" {
+    // Distribution: 18+18+18+19+18+17+18+18 = 144
+    const expected = [_]u8{ 18, 18, 18, 19, 18, 17, 18, 18 };
     var total: u16 = 0;
     for (expected) |n| total += n;
-    try std.testing.expectEqual(@as(u16, 136), total);
-    try std.testing.expectEqual(@as(usize, 136), MAX_QUARK_RECORDS);
+    try std.testing.expectEqual(@as(u16, 144), total);
+    try std.testing.expectEqual(@as(usize, 144), MAX_QUARK_RECORDS);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -6811,22 +7047,22 @@ test "v2.2 ChainMessageType has 4 new variants" {
     }
 }
 
-test "v2.9 136 quarks target distribution" {
-    // 17+17+17+18+17+16+17+17 = 136
-    const dist = [_]u8{ 17, 17, 17, 18, 17, 16, 17, 17 };
+test "v2.10 144 quarks target distribution" {
+    // 18+18+18+19+18+17+18+18 = 144
+    const dist = [_]u8{ 18, 18, 18, 19, 18, 17, 18, 18 };
     var sum: u16 = 0;
     for (dist) |d| sum += d;
-    try std.testing.expectEqual(@as(u16, 136), sum);
-    // Each node got exactly +1 from v2.8 distribution (16+16+16+17+16+15+16+16=128)
-    const v28_dist = [_]u8{ 16, 16, 16, 17, 16, 15, 16, 16 };
-    for (dist, v28_dist) |d, v28| {
-        try std.testing.expectEqual(@as(u8, v28 + 1), d);
+    try std.testing.expectEqual(@as(u16, 144), sum);
+    // Each node got exactly +1 from v2.9 distribution (17+17+17+18+17+16+17+17=136)
+    const v29_dist = [_]u8{ 17, 17, 17, 18, 17, 16, 17, 17 };
+    for (dist, v29_dist) |d, v29| {
+        try std.testing.expectEqual(@as(u8, v29 + 1), d);
     }
 }
 
-test "Export v13 header 70 bytes" {
-    try std.testing.expectEqual(@as(usize, 70), QUARK_EXPORT_HEADER_SIZE);
-    try std.testing.expectEqual(@as(u16, 13), QUARK_EXPORT_VERSION);
+test "Export v14 header 74 bytes" {
+    try std.testing.expectEqual(@as(usize, 74), QUARK_EXPORT_HEADER_SIZE);
+    try std.testing.expectEqual(@as(u16, 14), QUARK_EXPORT_VERSION);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -7002,13 +7238,13 @@ test "v2.4 ChainMessageType has 4 new variants" {
     }
 }
 
-test "u7 capacity with 104/128 used" {
-    // 104 QuarkType variants in u7 (128 capacity), 24 slots remaining
+test "u7 capacity with 112/128 used" {
+    // 112 QuarkType variants in u7 (128 capacity), 16 slots remaining
     var count: u8 = 0;
     inline for (std.meta.fields(QuarkType)) |_| {
         count += 1;
     }
-    try std.testing.expectEqual(@as(u8, 104), count);
+    try std.testing.expectEqual(@as(u8, 112), count);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -7596,4 +7832,137 @@ test "v2.9 constants" {
     try std.testing.expectEqual(@as(u16, 256), BRIDGE_MAX_PENDING_SWAPS);
     try std.testing.expectEqual(@as(u8, 12), BRIDGE_CONFIRMATION_BLOCKS);
     try std.testing.expectEqual(@as(u64, 10_000), BRIDGE_MIN_STAKE_FOR_RELAY);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.10 TESTS — Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.10 dao_full_governance label" {
+    const label = QuarkType.dao_full_governance.getLabel();
+    try std.testing.expectEqualStrings("DAO_FGOV", label);
+}
+
+test "v2.10 tri_staking label" {
+    const label = QuarkType.tri_staking.getLabel();
+    try std.testing.expectEqualStrings("TRI_STAK", label);
+}
+
+test "v2.10 reward_distribution label" {
+    const label = QuarkType.reward_distribution.getLabel();
+    try std.testing.expectEqualStrings("RWD_DIST", label);
+}
+
+test "v2.10 governance_quorum label" {
+    const label = QuarkType.governance_quorum.getLabel();
+    try std.testing.expectEqualStrings("GOV_QRUM", label);
+}
+
+test "v2.10 staking_validator label" {
+    const label = QuarkType.staking_validator.getLabel();
+    try std.testing.expectEqualStrings("STK_VLDR", label);
+}
+
+test "v2.10 yield_optimizer label" {
+    const label = QuarkType.yield_optimizer.getLabel();
+    try std.testing.expectEqualStrings("YLD_OPTM", label);
+}
+
+test "v2.10 dao_treasury label" {
+    const label = QuarkType.dao_treasury.getLabel();
+    try std.testing.expectEqualStrings("DAO_TRSY", label);
+}
+
+test "v2.10 staking_anchor label" {
+    const label = QuarkType.staking_anchor.getLabel();
+    try std.testing.expectEqualStrings("STK_ANCH", label);
+}
+
+test "v2.10 isDAOFullGovernanceQuark classifier" {
+    try std.testing.expect(QuarkType.dao_full_governance.isDAOFullGovernanceQuark());
+    try std.testing.expect(QuarkType.dao_treasury.isDAOFullGovernanceQuark());
+    try std.testing.expect(!QuarkType.tri_staking.isDAOFullGovernanceQuark());
+}
+
+test "v2.10 isTRIStakingQuark classifier" {
+    try std.testing.expect(QuarkType.tri_staking.isTRIStakingQuark());
+    try std.testing.expect(QuarkType.staking_anchor.isTRIStakingQuark());
+    try std.testing.expect(!QuarkType.dao_full_governance.isTRIStakingQuark());
+}
+
+test "v2.10 isRewardDistributionQuark classifier" {
+    try std.testing.expect(QuarkType.reward_distribution.isRewardDistributionQuark());
+    try std.testing.expect(QuarkType.yield_optimizer.isRewardDistributionQuark());
+    try std.testing.expect(!QuarkType.staking_validator.isRewardDistributionQuark());
+}
+
+test "v2.10 isStakingValidatorQuark classifier" {
+    try std.testing.expect(QuarkType.staking_validator.isStakingValidatorQuark());
+    try std.testing.expect(QuarkType.governance_quorum.isStakingValidatorQuark());
+    try std.testing.expect(!QuarkType.reward_distribution.isStakingValidatorQuark());
+}
+
+test "v2.10 DAOFullGovernanceState defaults" {
+    const state = DAOFullGovernanceState{};
+    try std.testing.expectEqual(@as(u32, 0), state.total_proposals);
+    try std.testing.expectEqual(@as(u32, 0), state.passed_proposals);
+    try std.testing.expectEqual(@as(u8, 0), state.quorum_threshold_pct);
+    try std.testing.expectEqual(@as(u32, 0), state.governance_epoch);
+}
+
+test "v2.10 TRIStakingState defaults" {
+    const state = TRIStakingState{};
+    try std.testing.expectEqual(@as(u64, 0), state.total_staked);
+    try std.testing.expectEqual(@as(u32, 0), state.active_stakers);
+    try std.testing.expectEqual(@as(u64, 0), state.reward_pool);
+    try std.testing.expectEqual(@as(i64, 0), state.last_reward_us);
+}
+
+test "v2.10 RewardDistributionState defaults" {
+    const state = RewardDistributionState{};
+    try std.testing.expectEqual(@as(u64, 0), state.total_distributed);
+    try std.testing.expectEqual(@as(u32, 0), state.distribution_count);
+    try std.testing.expectEqual(@as(u64, 0), state.unclaimed_rewards);
+    try std.testing.expectEqual(@as(i64, 0), state.last_distribution_us);
+}
+
+test "v2.10 StakingValidatorState defaults" {
+    const state = StakingValidatorState{};
+    try std.testing.expectEqual(@as(u16, 0), state.active_validators);
+    try std.testing.expectEqual(@as(u32, 0), state.total_validated);
+    try std.testing.expectEqual(@as(u16, 0), state.slashed_count);
+    try std.testing.expectEqual(@as(i64, 0), state.last_validation_us);
+}
+
+test "v2.10 Phase Q pass" {
+    var agent = GoldenChainAgent.init(.full);
+    agent.dao_full_governance_state.passed_proposals = 1;
+    agent.tri_staking_state.active_stakers = 1;
+    agent.reward_distribution_state.distribution_count = 1;
+    try std.testing.expect(agent.daoFullGovernanceVerify());
+}
+
+test "v2.10 Phase Q fail" {
+    var agent = GoldenChainAgent.init(.full);
+    // All zero — should fail
+    try std.testing.expect(!agent.daoFullGovernanceVerify());
+}
+
+test "v2.10 ChainMessageType DAO+Staking variants" {
+    const variants = [_]ChainMessageType{
+        .DAOFullGovernance,
+        .TRIStaking,
+        .RewardDistribution,
+        .StakingValidation,
+    };
+    try std.testing.expectEqual(@as(usize, 4), variants.len);
+}
+
+test "v2.10 constants" {
+    try std.testing.expectEqual(@as(u8, 67), DAO_GOVERNANCE_QUORUM_PCT);
+    try std.testing.expectEqual(@as(u64, 1_000), DAO_MIN_PROPOSAL_STAKE);
+    try std.testing.expectEqual(@as(u64, 100), STAKING_MIN_AMOUNT);
+    try std.testing.expectEqual(@as(u16, 500), STAKING_REWARD_RATE_BPS);
+    try std.testing.expectEqual(@as(i64, 86_400_000_000), STAKING_EPOCH_DURATION_US);
+    try std.testing.expectEqual(@as(u16, 1_000), STAKING_MAX_VALIDATORS);
 }

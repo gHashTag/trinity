@@ -130,6 +130,11 @@ pub const ChainMessageType = enum {
     AtomicSwap,
     StateReplication,
     BridgeSyncEvent,
+    // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+    DAOFullGovernance,
+    TRIStaking,
+    RewardDistribution,
+    StakingValidation,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -190,7 +195,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 136;
+pub const MAX_QUARK_RECORDS = 144;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -313,6 +318,16 @@ pub const QuarkType = enum(u7) {
     chain_interop,
     bridge_anchor,
 
+    // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards (u7: 112/128)
+    dao_full_governance,
+    tri_staking,
+    reward_distribution,
+    governance_quorum,
+    staking_validator,
+    yield_optimizer,
+    dao_treasury,
+    staking_anchor,
+
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
             .input_capture => "INPUT_CAP",
@@ -422,6 +437,15 @@ pub const QuarkType = enum(u7) {
             .swap_finalize => "SWAP_FINL",
             .chain_interop => "CHN_INTOP",
             .bridge_anchor => "BRDG_ANCH",
+            // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+            .dao_full_governance => "DAO_FGOV",
+            .tri_staking => "TRI_STAK",
+            .reward_distribution => "RWD_DIST",
+            .governance_quorum => "GOV_QRUM",
+            .staking_validator => "STK_VLDR",
+            .yield_optimizer => "YLD_OPTM",
+            .dao_treasury => "DAO_TRSY",
+            .staking_anchor => "STK_ANCH",
         };
     }
 
@@ -636,6 +660,23 @@ pub const QuarkType = enum(u7) {
 
     pub fn isBridgeVerifyQuark(self: QuarkType) bool {
         return self == .bridge_verify or self == .bridge_anchor;
+    }
+
+    // v2.10: DAO Full Governance + Staking classifiers
+    pub fn isDAOFullGovernanceQuark(self: QuarkType) bool {
+        return self == .dao_full_governance or self == .dao_treasury;
+    }
+
+    pub fn isTRIStakingQuark(self: QuarkType) bool {
+        return self == .tri_staking or self == .staking_anchor;
+    }
+
+    pub fn isRewardDistributionQuark(self: QuarkType) bool {
+        return self == .reward_distribution or self == .yield_optimizer;
+    }
+
+    pub fn isStakingValidatorQuark(self: QuarkType) bool {
+        return self == .staking_validator or self == .governance_quorum;
     }
 };
 
@@ -953,6 +994,14 @@ pub const BRIDGE_MAX_PENDING_SWAPS: u16 = 256;
 pub const BRIDGE_CONFIRMATION_BLOCKS: u8 = 12;
 pub const BRIDGE_MIN_STAKE_FOR_RELAY: u64 = 10_000;
 
+// v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards constants
+pub const DAO_GOVERNANCE_QUORUM_PCT: u8 = 67;
+pub const DAO_MIN_PROPOSAL_STAKE: u64 = 1_000;
+pub const STAKING_MIN_AMOUNT: u64 = 100;
+pub const STAKING_REWARD_RATE_BPS: u16 = 500;
+pub const STAKING_EPOCH_DURATION_US: i64 = 86_400_000_000;
+pub const STAKING_MAX_VALIDATORS: u16 = 1_000;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1149,6 +1198,39 @@ pub const BridgeRelayState = struct {
     relay_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards types
+pub const DAOFullGovernanceState = struct {
+    total_proposals: u32 = 0,
+    passed_proposals: u32 = 0,
+    quorum_threshold_pct: u8 = 0,
+    governance_epoch: u32 = 0,
+    governance_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const TRIStakingState = struct {
+    total_staked: u64 = 0,
+    active_stakers: u32 = 0,
+    reward_pool: u64 = 0,
+    last_reward_us: i64 = 0,
+    staking_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const RewardDistributionState = struct {
+    total_distributed: u64 = 0,
+    distribution_count: u32 = 0,
+    unclaimed_rewards: u64 = 0,
+    last_distribution_us: i64 = 0,
+    distribution_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const StakingValidatorState = struct {
+    active_validators: u16 = 0,
+    total_validated: u32 = 0,
+    slashed_count: u16 = 0,
+    last_validation_us: i64 = 0,
+    validator_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1267,10 +1349,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 13;
+pub const QUARK_EXPORT_VERSION: u16 = 14;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 70;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 74;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1437,6 +1519,12 @@ pub const GoldenChainAgent = struct {
     state_replication_state: StateReplicationState,
     bridge_relay_state: BridgeRelayState,
     cross_chain_bridge_active: bool,
+    // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+    dao_full_governance_state: DAOFullGovernanceState,
+    tri_staking_state: TRIStakingState,
+    reward_distribution_state: RewardDistributionState,
+    staking_validator_state: StakingValidatorState,
+    dao_full_governance_active: bool,
 
     const Self = @This();
 
@@ -1549,6 +1637,12 @@ pub const GoldenChainAgent = struct {
             .state_replication_state = .{},
             .bridge_relay_state = .{},
             .cross_chain_bridge_active = false,
+            // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+            .dao_full_governance_state = .{},
+            .tri_staking_state = .{},
+            .reward_distribution_state = .{},
+            .staking_validator_state = .{},
+            .dao_full_governance_active = false,
         };
     }
 
@@ -2016,6 +2110,38 @@ pub const GoldenChainAgent = struct {
         if (self.atomic_swap_state.completed_swaps == 0) return false;
         // P3: states replicated
         if (self.state_replication_state.replicated_states == 0) return false;
+        return true;
+    }
+
+    // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards stubs
+    pub fn initDAOFullGovernance(self: *Self) void {
+        self.dao_full_governance_state.total_proposals += 1;
+        self.dao_full_governance_state.passed_proposals += 1;
+        self.dao_full_governance_state.quorum_threshold_pct = DAO_GOVERNANCE_QUORUM_PCT;
+        self.dao_full_governance_state.governance_epoch += 1;
+        self.dao_full_governance_active = true;
+    }
+
+    pub fn stakeTRI(self: *Self) void {
+        self.tri_staking_state.active_stakers += 1;
+        self.tri_staking_state.total_staked += STAKING_MIN_AMOUNT;
+        self.tri_staking_state.reward_pool += STAKING_REWARD_RATE_BPS;
+    }
+
+    pub fn distributeRewards(self: *Self) void {
+        self.reward_distribution_state.distribution_count += 1;
+        self.reward_distribution_state.total_distributed += 1;
+    }
+
+    pub fn validateStaking(self: *Self) void {
+        self.staking_validator_state.active_validators += 1;
+        self.staking_validator_state.total_validated += 1;
+    }
+
+    pub fn daoFullGovernanceVerify(self: *const Self) bool {
+        if (self.dao_full_governance_state.passed_proposals == 0) return false;
+        if (self.tri_staking_state.active_stakers == 0) return false;
+        if (self.reward_distribution_state.distribution_count == 0) return false;
         return true;
     }
 };
