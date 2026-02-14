@@ -140,6 +140,11 @@ const ChatMsgType = enum {
     timelock_vote, // Time-locked voting (crimson)
     proposal_exec, // Proposal execution (sea green)
     yield_farming, // Yield farming (dark orange)
+    // v2.9: Cross-Chain Bridge v1.0
+    cross_chain_bridge, // Cross-chain bridge (deep sky blue)
+    atomic_swap, // Atomic swap (orange red)
+    state_replicate, // State replication (medium sea green)
+    bridge_sync, // Bridge sync (royal blue)
 };
 var g_chat_messages: [MAX_CHAT_MSGS][512]u8 = undefined; // v3.0: 512 bytes per msg
 var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
@@ -362,6 +367,11 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
         .timelock_vote => .{ .r = 0xDC, .g = 0x14, .b = 0x3C, .a = alpha }, // Crimson
         .proposal_exec => .{ .r = 0x2E, .g = 0x8B, .b = 0x57, .a = alpha }, // Sea green
         .yield_farming => .{ .r = 0xFF, .g = 0x8C, .b = 0x00, .a = alpha }, // Dark orange
+        // v2.9: Cross-Chain Bridge v1.0
+        .cross_chain_bridge => .{ .r = 0x00, .g = 0xBF, .b = 0xFF, .a = alpha }, // Deep sky blue
+        .atomic_swap => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = alpha }, // Orange red
+        .state_replicate => .{ .r = 0x3C, .g = 0xB3, .b = 0x71, .a = alpha }, // Medium sea green
+        .bridge_sync => .{ .r = 0x41, .g = 0x69, .b = 0xE1, .a = alpha }, // Royal blue
         .user => .{ .r = 0x70, .g = 0x70, .b = 0x90, .a = alpha },
         .ai => .{ .r = 0x30, .g = 0x80, .b = 0x50, .a = alpha },
         .log => .{ .r = 0x60, .g = 0x60, .b = 0x60, .a = alpha },
@@ -429,6 +439,11 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         .timelock_vote => "TIMELVOTE",
         .proposal_exec => "PROP_EXEC",
         .yield_farming => "YIELD_FRM",
+        // v2.9: Cross-Chain Bridge v1.0
+        .cross_chain_bridge => "XCH_BRDG",
+        .atomic_swap => "ATOM_SWAP",
+        .state_replicate => "ST_REPLIC",
+        .bridge_sync => "BRDG_SYNC",
         .user => "YOU",
         .ai => "AI",
         .log => "LOG",
@@ -437,7 +452,7 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
 
 fn isChainType(msg_type: ChatMsgType) bool {
     return switch (msg_type) {
-        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming => true,
+        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync => true,
         else => false,
     };
 }
@@ -508,6 +523,11 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         .TimelockVote => .timelock_vote,
         .ProposalExecution => .proposal_exec,
         .YieldFarmingEvent => .yield_farming,
+        // v2.9: Cross-Chain Bridge v1.0
+        .CrossChainBridge => .cross_chain_bridge,
+        .AtomicSwap => .atomic_swap,
+        .StateReplication => .state_replicate,
+        .BridgeSyncEvent => .bridge_sync,
     };
 }
 

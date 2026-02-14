@@ -125,6 +125,11 @@ pub const ChainMessageType = enum {
     TimelockVote,
     ProposalExecution,
     YieldFarmingEvent,
+    // v2.9: Cross-Chain Bridge v1.0
+    CrossChainBridge,
+    AtomicSwap,
+    StateReplication,
+    BridgeSyncEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -185,7 +190,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 128;
+pub const MAX_QUARK_RECORDS = 136;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -298,6 +303,15 @@ pub const QuarkType = enum(u7) {
     delegation_chain,
     governance_sync,
     dao_anchor,
+    // v2.9: Cross-Chain Bridge v1.0 + Atomic Swaps + Multi-Chain State Replication (u7: 104/128)
+    cross_chain_bridge,
+    atomic_swap,
+    state_replicate,
+    multi_chain_sync,
+    bridge_verify,
+    swap_finalize,
+    chain_interop,
+    bridge_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -399,6 +413,15 @@ pub const QuarkType = enum(u7) {
             .delegation_chain => "DELEG_CHN",
             .governance_sync => "GOV_SYNC",
             .dao_anchor => "DAO_ANCH",
+            // v2.9: Cross-Chain Bridge v1.0
+            .cross_chain_bridge => "XCH_BRDG",
+            .atomic_swap => "ATOM_SWAP",
+            .state_replicate => "ST_REPLIC",
+            .multi_chain_sync => "MCHAIN_SY",
+            .bridge_verify => "BRDG_VRFY",
+            .swap_finalize => "SWAP_FINL",
+            .chain_interop => "CHN_INTOP",
+            .bridge_anchor => "BRDG_ANCH",
         };
     }
 
@@ -596,6 +619,23 @@ pub const QuarkType = enum(u7) {
 
     pub fn isYieldFarmingQuark(self: QuarkType) bool {
         return self == .yield_farming or self == .dao_anchor;
+    }
+
+    // v2.9: Cross-Chain Bridge v1.0 classifiers
+    pub fn isCrossChainBridgeQuark(self: QuarkType) bool {
+        return self == .cross_chain_bridge or self == .chain_interop;
+    }
+
+    pub fn isAtomicSwapQuark(self: QuarkType) bool {
+        return self == .atomic_swap or self == .swap_finalize;
+    }
+
+    pub fn isStateReplicateQuark(self: QuarkType) bool {
+        return self == .state_replicate or self == .multi_chain_sync;
+    }
+
+    pub fn isBridgeVerifyQuark(self: QuarkType) bool {
+        return self == .bridge_verify or self == .bridge_anchor;
     }
 };
 
@@ -905,6 +945,14 @@ pub const DAO_YIELD_RATE_BPS: u16 = 500;
 pub const DAO_QUORUM_THRESHOLD_V2: u8 = 67;
 pub const DAO_MIN_VOTES_FOR_QUORUM: u32 = 1_000;
 
+// v2.9: Cross-Chain Bridge v1.0 constants
+pub const BRIDGE_MAX_CHAINS: u8 = 16;
+pub const BRIDGE_SWAP_TIMEOUT_US: i64 = 3_600_000_000;
+pub const BRIDGE_REPLICATION_FACTOR: u8 = 3;
+pub const BRIDGE_MAX_PENDING_SWAPS: u16 = 256;
+pub const BRIDGE_CONFIRMATION_BLOCKS: u8 = 12;
+pub const BRIDGE_MIN_STAKE_FOR_RELAY: u64 = 10_000;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1068,6 +1116,39 @@ pub const YieldFarmingState = struct {
     yield_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.9: Cross-Chain Bridge v1.0 types
+pub const CrossChainBridgeState = struct {
+    supported_chains: u8 = 0,
+    active_bridges: u32 = 0,
+    total_bridged: u64 = 0,
+    last_bridge_us: i64 = 0,
+    bridge_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const AtomicSwapState = struct {
+    pending_swaps: u16 = 0,
+    completed_swaps: u32 = 0,
+    failed_swaps: u16 = 0,
+    last_swap_us: i64 = 0,
+    swap_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const StateReplicationState = struct {
+    replicated_states: u32 = 0,
+    replication_lag_us: i64 = 0,
+    chains_synced: u8 = 0,
+    last_replication_us: i64 = 0,
+    replication_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const BridgeRelayState = struct {
+    relay_nodes: u16 = 0,
+    relay_stake: u64 = 0,
+    messages_relayed: u32 = 0,
+    last_relay_us: i64 = 0,
+    relay_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1186,10 +1267,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 12;
+pub const QUARK_EXPORT_VERSION: u16 = 13;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 66;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 70;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1350,6 +1431,12 @@ pub const GoldenChainAgent = struct {
     proposal_execution_state: ProposalExecutionState,
     yield_farming_state: YieldFarmingState,
     dao_governance_v2_active: bool,
+    // v2.9: Cross-Chain Bridge v1.0
+    cross_chain_bridge_state: CrossChainBridgeState,
+    atomic_swap_state: AtomicSwapState,
+    state_replication_state: StateReplicationState,
+    bridge_relay_state: BridgeRelayState,
+    cross_chain_bridge_active: bool,
 
     const Self = @This();
 
@@ -1456,6 +1543,12 @@ pub const GoldenChainAgent = struct {
             .proposal_execution_state = .{},
             .yield_farming_state = .{},
             .dao_governance_v2_active = false,
+            // v2.9: Cross-Chain Bridge v1.0
+            .cross_chain_bridge_state = .{},
+            .atomic_swap_state = .{},
+            .state_replication_state = .{},
+            .bridge_relay_state = .{},
+            .cross_chain_bridge_active = false,
         };
     }
 
@@ -1891,6 +1984,38 @@ pub const GoldenChainAgent = struct {
         if (self.timelock_voting_state.votes_cast < DAO_MIN_VOTES_FOR_QUORUM) return false;
         // O3: proposals executed
         if (self.proposal_execution_state.proposals_executed == 0) return false;
+        return true;
+    }
+
+    // v2.9: Cross-Chain Bridge v1.0 — Atomic Swaps + Multi-Chain State Replication
+    pub fn initCrossChainBridge(self: *Self) void {
+        self.cross_chain_bridge_state.active_bridges += 1;
+        self.cross_chain_bridge_state.last_bridge_us = std.time.microTimestamp();
+        self.cross_chain_bridge_active = true;
+    }
+
+    pub fn executeAtomicSwap(self: *Self) void {
+        self.atomic_swap_state.completed_swaps += 1;
+        self.atomic_swap_state.last_swap_us = std.time.microTimestamp();
+    }
+
+    pub fn replicateState(self: *Self) void {
+        self.state_replication_state.replicated_states += 1;
+        self.state_replication_state.last_replication_us = std.time.microTimestamp();
+    }
+
+    pub fn relayBridgeMessage(self: *Self) void {
+        self.bridge_relay_state.messages_relayed += 1;
+        self.bridge_relay_state.last_relay_us = std.time.microTimestamp();
+    }
+
+    pub fn crossChainVerify(self: *const Self) bool {
+        // P1: bridges active
+        if (self.cross_chain_bridge_state.active_bridges == 0) return false;
+        // P2: swaps completed
+        if (self.atomic_swap_state.completed_swaps == 0) return false;
+        // P3: states replicated
+        if (self.state_replication_state.replicated_states == 0) return false;
         return true;
     }
 };
