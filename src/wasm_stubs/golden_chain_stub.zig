@@ -140,6 +140,11 @@ pub const ChainMessageType = enum {
     GossipShardEvent,
     DHTHierarchicalSync,
     Community50kOnboard,
+    // v2.12: Zero-Knowledge Bridge v1.0 (ZK-Proof Verification + Privacy Transfers)
+    ZKBridgeVerification,
+    ZKProofGenerated,
+    PrivacyTransfer,
+    CrossChainSyncEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -200,7 +205,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 152;
+pub const MAX_QUARK_RECORDS = 160;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -342,6 +347,15 @@ pub const QuarkType = enum(u7) {
     gossip_repair,
     dht_aggregate,
     swarm_anchor_v2,
+    // v2.12: Zero-Knowledge Bridge v1.0 (ZK-Proof Verification + Privacy Transfers) (u7: 128/128 FULL)
+    zk_bridge,
+    zk_proof,
+    privacy_transfer,
+    cross_chain_sync,
+    zk_verify,
+    proof_aggregate,
+    privacy_anchor,
+    zk_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -470,6 +484,15 @@ pub const QuarkType = enum(u7) {
             .gossip_repair => "GSP_REPR",
             .dht_aggregate => "DHT_AGGR",
             .swarm_anchor_v2 => "SWM_ANC2",
+            // v2.12: Zero-Knowledge Bridge v1.0 (ZK-Proof Verification + Privacy Transfers)
+            .zk_bridge => "ZK_BRDG",
+            .zk_proof => "ZK_PROOF",
+            .privacy_transfer => "PRV_XFER",
+            .cross_chain_sync => "XCH_SYNC",
+            .zk_verify => "ZK_VRFY",
+            .proof_aggregate => "PRF_AGGR",
+            .privacy_anchor => "PRV_ANCH",
+            .zk_anchor => "ZK_ANCH",
         };
     }
 
@@ -718,6 +741,23 @@ pub const QuarkType = enum(u7) {
 
     pub fn isCommunity50kQuark(self: QuarkType) bool {
         return self == .community_50k or self == .swarm_health_v2;
+    }
+
+    // v2.12: Zero-Knowledge Bridge v1.0 classifiers
+    pub fn isZKBridgeQuark(self: QuarkType) bool {
+        return self == .zk_bridge or self == .zk_anchor;
+    }
+
+    pub fn isZKProofQuark(self: QuarkType) bool {
+        return self == .zk_proof or self == .proof_aggregate;
+    }
+
+    pub fn isPrivacyTransferQuark(self: QuarkType) bool {
+        return self == .privacy_transfer or self == .privacy_anchor;
+    }
+
+    pub fn isCrossChainSyncQuark(self: QuarkType) bool {
+        return self == .cross_chain_sync or self == .zk_verify;
     }
 };
 
@@ -1051,6 +1091,14 @@ pub const DHT_HIERARCHY_DEPTH: u8 = 4;
 pub const GOSSIP_REPAIR_INTERVAL_US: i64 = 5_000_000;
 pub const DHT_REBALANCE_THRESHOLD: u16 = 1_000;
 
+// v2.12: Zero-Knowledge Bridge v1.0 constants
+pub const ZK_PROOF_SIZE_BYTES: u32 = 256;
+pub const ZK_VERIFICATION_TIMEOUT_US: i64 = 10_000_000;
+pub const PRIVACY_TRANSFER_MIN_AMOUNT: u64 = 1;
+pub const CROSS_CHAIN_SYNC_INTERVAL_US: i64 = 30_000_000;
+pub const ZK_MAX_PROOF_BATCH: u16 = 64;
+pub const ZK_BRIDGE_MAX_PENDING: u16 = 512;
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -1313,6 +1361,39 @@ pub const Community50kState = struct {
     community_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.12: Zero-Knowledge Bridge v1.0 types
+pub const ZKBridgeState = struct {
+    active_bridges: u32 = 0,
+    verified_proofs: u64 = 0,
+    pending_transfers: u32 = 0,
+    last_verify_us: i64 = 0,
+    zk_bridge_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const ZKProofState = struct {
+    proofs_generated: u64 = 0,
+    proofs_verified: u64 = 0,
+    proof_batch_count: u32 = 0,
+    last_proof_us: i64 = 0,
+    zk_proof_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const PrivacyTransferState = struct {
+    transfers_completed: u64 = 0,
+    total_volume: u64 = 0,
+    privacy_level: u8 = 0,
+    last_transfer_us: i64 = 0,
+    privacy_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const CrossChainSyncState = struct {
+    synced_chains: u16 = 0,
+    sync_operations: u64 = 0,
+    last_sync_us: i64 = 0,
+    sync_failures: u32 = 0,
+    sync_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1431,10 +1512,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 15;
+pub const QUARK_EXPORT_VERSION: u16 = 16;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 78;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 82;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1613,6 +1694,12 @@ pub const GoldenChainAgent = struct {
     dht_hierarchical_state: DHTHierarchicalState,
     community_50k_state: Community50kState,
     swarm_100k_active: bool,
+    // v2.12: Zero-Knowledge Bridge v1.0 (ZK-Proof Verification + Privacy Transfers)
+    zk_bridge_state: ZKBridgeState,
+    zk_proof_state: ZKProofState,
+    privacy_transfer_state: PrivacyTransferState,
+    cross_chain_sync_state: CrossChainSyncState,
+    zk_bridge_active: bool,
 
     const Self = @This();
 
@@ -1737,6 +1824,12 @@ pub const GoldenChainAgent = struct {
             .dht_hierarchical_state = .{},
             .community_50k_state = .{},
             .swarm_100k_active = false,
+            // v2.12: Zero-Knowledge Bridge v1.0 (ZK-Proof Verification + Privacy Transfers)
+            .zk_bridge_state = .{},
+            .zk_proof_state = .{},
+            .privacy_transfer_state = .{},
+            .cross_chain_sync_state = .{},
+            .zk_bridge_active = false,
         };
     }
 
@@ -2267,6 +2360,36 @@ pub const GoldenChainAgent = struct {
         if (self.swarm_100k_state.active_nodes == 0) return false;
         if (self.gossip_shard_state.messages_propagated == 0) return false;
         if (self.community_50k_state.community_nodes == 0) return false;
+        return true;
+    }
+
+    // v2.12: Zero-Knowledge Bridge v1.0 stub methods
+    pub fn initZKBridge(self: *Self) void {
+        self.zk_bridge_state.active_bridges += 1;
+        self.zk_bridge_active = true;
+    }
+
+    pub fn generateZKProof(self: *Self) void {
+        self.zk_proof_state.proofs_generated += 1;
+        self.zk_proof_state.proofs_verified += 1;
+        self.zk_proof_state.proof_batch_count += 1;
+    }
+
+    pub fn executePrivacyTransfer(self: *Self) void {
+        self.privacy_transfer_state.transfers_completed += 1;
+        self.privacy_transfer_state.total_volume += PRIVACY_TRANSFER_MIN_AMOUNT;
+        self.privacy_transfer_state.privacy_level = 1;
+    }
+
+    pub fn syncCrossChain(self: *Self) void {
+        self.cross_chain_sync_state.synced_chains += 1;
+        self.cross_chain_sync_state.sync_operations += 1;
+    }
+
+    pub fn zkBridgeVerify(self: *const Self) bool {
+        if (self.zk_bridge_state.active_bridges == 0) return false;
+        if (self.zk_proof_state.proofs_verified == 0) return false;
+        if (self.privacy_transfer_state.transfers_completed == 0) return false;
         return true;
     }
 };
