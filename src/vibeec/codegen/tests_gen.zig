@@ -2900,6 +2900,101 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("    std.fs.cwd().deleteDir(cp[0..cl]) catch {};");
             try self.builder.writeLine("}");
 
+        // ═══════════════════════════════════════════════════════════════════
+        // PROOF OF STORAGE TESTS (PoS1-PoS4): Challenge-Response proofs
+        // Challenge → Respond → Verify → Slash on failure.
+        // ═══════════════════════════════════════════════════════════════════
+
+        } else if (std.mem.eql(u8, name, "posChallengeCrypto")) {
+            // PoS1: Create challenge, verify byte range validity
+            try self.builder.writeLine("// PoS1: Challenge Creation — valid byte range within shard bounds");
+            try self.builder.writeLine("var engine = ProofOfStorageEngine.init(3);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Create 64-byte shard data");
+            try self.builder.writeLine("var shard: [64]u8 = undefined;");
+            try self.builder.writeLine("var i: usize = 0;");
+            try self.builder.writeLine("while (i < 64) : (i += 1) shard[i] = @intCast(i & 0xFF);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Create challenge: offset=0, length=32 (within bounds)");
+            try self.builder.writeLine("const c = try engine.createChallenge(&shard, 0, 32);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: byte range is valid (offset + length <= shard_size)");
+            try self.builder.writeLine("try std.testing.expect(c.byte_offset + c.byte_length <= 64);");
+            try self.builder.writeLine("try std.testing.expect(c.byte_length == 32);");
+            try self.builder.writeLine("try std.testing.expect(engine.challenges_issued == 1);");
+
+        } else if (std.mem.eql(u8, name, "posResponseVerify")) {
+            // PoS2: Honest response passes verification
+            try self.builder.writeLine("// PoS2: Honest Response — proof hash matches expected");
+            try self.builder.writeLine("var engine = ProofOfStorageEngine.init(3);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("var shard: [64]u8 = undefined;");
+            try self.builder.writeLine("var i: usize = 0;");
+            try self.builder.writeLine("while (i < 64) : (i += 1) shard[i] = @intCast(i & 0xFF);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Create challenge and honest response");
+            try self.builder.writeLine("const c = try engine.createChallenge(&shard, 8, 16);");
+            try self.builder.writeLine("const proof = ProofOfStorageEngine.respond(&shard, c);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: honest response passes verification");
+            try self.builder.writeLine("const ok = engine.verify(&shard, c, proof, 0);");
+            try self.builder.writeLine("try std.testing.expect(ok);");
+            try self.builder.writeLine("try std.testing.expect(engine.challenges_passed == 1);");
+            try self.builder.writeLine("try std.testing.expect(engine.challenges_failed == 0);");
+
+        } else if (std.mem.eql(u8, name, "posTamperedFails")) {
+            // PoS3: Tampered data fails verification
+            try self.builder.writeLine("// PoS3: Tampered Response — verification must fail");
+            try self.builder.writeLine("var engine = ProofOfStorageEngine.init(3);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("var shard: [64]u8 = undefined;");
+            try self.builder.writeLine("var i: usize = 0;");
+            try self.builder.writeLine("while (i < 64) : (i += 1) shard[i] = @intCast(i & 0xFF);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Create challenge");
+            try self.builder.writeLine("const c = try engine.createChallenge(&shard, 0, 32);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Tamper shard data before responding (flip a bit)");
+            try self.builder.writeLine("var tampered = shard;");
+            try self.builder.writeLine("tampered[10] ^= 0xFF;");
+            try self.builder.writeLine("const bad_proof = ProofOfStorageEngine.respond(&tampered, c);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: tampered response fails verification (against original shard)");
+            try self.builder.writeLine("const ok = engine.verify(&shard, c, bad_proof, 1);");
+            try self.builder.writeLine("try std.testing.expect(!ok);");
+            try self.builder.writeLine("try std.testing.expect(engine.challenges_failed == 1);");
+            try self.builder.writeLine("try std.testing.expect(engine.getFailureCount(1) == 1);");
+
+        } else if (std.mem.eql(u8, name, "posSlashDeactivation")) {
+            // PoS4: Max failures triggers deactivation (slashing)
+            try self.builder.writeLine("// PoS4: Slash Deactivation — 3 failures = node deactivated");
+            try self.builder.writeLine("var engine = ProofOfStorageEngine.init(3);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("var shard: [64]u8 = undefined;");
+            try self.builder.writeLine("var i: usize = 0;");
+            try self.builder.writeLine("while (i < 64) : (i += 1) shard[i] = @intCast(i & 0xFF);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Create tampered shard");
+            try self.builder.writeLine("var tampered = shard;");
+            try self.builder.writeLine("tampered[5] ^= 0xFF;");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Fail node 2 three times (max_failures = 3)");
+            try self.builder.writeLine("var f: u8 = 0;");
+            try self.builder.writeLine("while (f < 3) : (f += 1) {");
+            try self.builder.writeLine("    const c = try engine.createChallenge(&shard, 0, 32);");
+            try self.builder.writeLine("    const bad = ProofOfStorageEngine.respond(&tampered, c);");
+            try self.builder.writeLine("    _ = engine.verify(&shard, c, bad, 2);");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: node 2 is deactivated after 3 failures");
+            try self.builder.writeLine("try std.testing.expect(engine.isDeactivated(2));");
+            try self.builder.writeLine("try std.testing.expect(engine.getFailureCount(2) == 3);");
+            try self.builder.writeLine("try std.testing.expect(engine.challenges_failed == 3);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Node 0 and 1 should NOT be deactivated");
+            try self.builder.writeLine("try std.testing.expect(!engine.isDeactivated(0));");
+            try self.builder.writeLine("try std.testing.expect(!engine.isDeactivated(1));");
+
         } else {
             // Generate real test assertions: verify function exists and is callable
             const mem = std.mem;

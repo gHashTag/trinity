@@ -1398,4 +1398,20 @@ pub fn build(b: *std.Build) void {
     const discovery_step = b.step("test-discovery", "Test peer discovery and self-healing recovery");
     discovery_step.dependOn(&run_discovery_tests.step);
     test_step.dependOn(&run_discovery_tests.step);
+
+    // Generated Proof-of-Storage tests (PoS challenge-response verification)
+    const gen_pos_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/pos.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_pos_tests = b.addRunArtifact(gen_pos_tests);
+    const gen_pos_step = b.step("test-pos", "Test Proof-of-Storage challenge-response verification");
+    gen_pos_step.dependOn(&run_gen_pos_tests.step);
+    test_step.dependOn(&run_gen_pos_tests.step);
 }
