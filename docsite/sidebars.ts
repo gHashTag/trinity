@@ -260,6 +260,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-18-recovery-report',
         'research/trinity-golden-chain-v2-19-transformer-block-report',
         'research/trinity-golden-chain-v2-20-forward-engine-report',
+        'research/trinity-golden-chain-v2-21-streaming-swarm-report',
       ],
     },
     'faq',
