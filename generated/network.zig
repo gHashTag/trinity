@@ -175,20 +175,16 @@ pub const ShardNetwork = struct {
     pub fn receiveOne(self: *const ShardNetwork, server: *std.net.Server) !void {
         const conn = try server.accept();
         defer conn.stream.close();
-        // Read 64-byte hex hash
         var hash_buf: [64]u8 = undefined;
         const hn = try conn.stream.readAtLeast(&hash_buf, 64);
         if (hn != 64) return error.ProtocolError;
-        // Read 4-byte data length (LE u32)
         var len_buf: [4]u8 = undefined;
         const ln = try conn.stream.readAtLeast(&len_buf, 4);
         if (ln != 4) return error.ProtocolError;
         const data_len = std.mem.readInt(u32, &len_buf, .little);
-        // Read data payload
         var data_buf: [8192]u8 = undefined;
         const dn = try conn.stream.readAtLeast(data_buf[0..data_len], data_len);
         if (dn != data_len) return error.ProtocolError;
-        // Write to shards directory
         var pbuf: [350]u8 = undefined;
         const spath = std.fmt.bufPrint(&pbuf, "{s}/shards/{s}.shard", .{ self.rootPath(), hash_buf }) catch unreachable;
         const file = try std.fs.createFileAbsolute(spath, .{});
@@ -201,7 +197,6 @@ pub const ShardNetwork = struct {
         const addr = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, peer_port);
         const stream = try std.net.tcpConnectToAddress(addr);
         defer stream.close();
-        // Wire protocol: [64 hash][4 len LE][data]
         stream.writeAll(hex) catch return error.SendFailed;
         var len_buf: [4]u8 = undefined;
         std.mem.writeInt(u32, &len_buf, @intCast(data.len), .little);
