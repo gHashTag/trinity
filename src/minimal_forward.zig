@@ -4289,3 +4289,269 @@ test "large corpus trigram perplexity" {
     try std.testing.expect(!std.math.isNan(tri_test_ppl));
     try std.testing.expect(!std.math.isInf(tri_test_ppl));
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 28: 500 offsets role quality on large corpus (v2.41)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "500 offsets role quality on large corpus" {
+    const dim = 1024;
+
+    // Build counts on full large corpus
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    // --- 50-offset roles (baseline, same as v2.40) ---
+    var offsets_50: [50]usize = undefined;
+    for (0..50) |i| {
+        offsets_50[i] = i * (large_corpus.len - 10) / 50;
+    }
+    var roles_50 = computeMultiRoles(large_corpus, dim, &offsets_50, 8);
+
+    // --- 500-offset roles (v2.41) ---
+    var offsets_500: [500]usize = undefined;
+    for (0..500) |i| {
+        offsets_500[i] = i * (large_corpus.len - 10) / 500;
+    }
+    var roles_500 = computeMultiRoles(large_corpus, dim, &offsets_500, 8);
+
+    // Measure role similarity (how much does 500 differ from 50?)
+    var role_sim_sum: f64 = 0;
+    for (0..8) |r| {
+        const sim = roles_500[r].similarity(&roles_50[r]);
+        role_sim_sum += sim;
+    }
+    const avg_role_sim = role_sim_sum / 8.0;
+
+    // === Train/eval split ===
+    const train_end = large_corpus.len * 80 / 100;
+
+    // --- Eval loss with 500 offsets ---
+    var loss_500_sum: f64 = 0;
+    var loss_500_count: usize = 0;
+    var loss_50_sum: f64 = 0;
+    var loss_50_count: usize = 0;
+
+    for (0..50) |i| {
+        const s = train_end + i * (large_corpus.len - train_end - 10) / 50;
+        if (s + 8 >= large_corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev_char = large_corpus[s + 6];
+        const last_char = large_corpus[s + 7];
+
+        var output_500 = forwardPassTrigramHybrid(&ctx, &roles_500, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim_500 = output_500.similarity(&target);
+        loss_500_sum += 1.0 - (sim_500 + 1.0) / 2.0;
+        loss_500_count += 1;
+
+        var output_50 = forwardPassTrigramHybrid(&ctx, &roles_50, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim_50 = output_50.similarity(&target);
+        loss_50_sum += 1.0 - (sim_50 + 1.0) / 2.0;
+        loss_50_count += 1;
+    }
+
+    const eval_loss_500 = loss_500_sum / @as(f64, @floatFromInt(loss_500_count));
+    const eval_loss_50 = loss_50_sum / @as(f64, @floatFromInt(loss_50_count));
+
+    // --- Train loss with 500 offsets ---
+    var train_loss_500_sum: f64 = 0;
+    var train_loss_500_count: usize = 0;
+    var train_loss_50_sum: f64 = 0;
+    var train_loss_50_count: usize = 0;
+
+    for (0..50) |i| {
+        const s = i * train_end / 50;
+        if (s + 8 >= large_corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev_char = large_corpus[s + 6];
+        const last_char = large_corpus[s + 7];
+
+        var output_500 = forwardPassTrigramHybrid(&ctx, &roles_500, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim_500 = output_500.similarity(&target);
+        train_loss_500_sum += 1.0 - (sim_500 + 1.0) / 2.0;
+        train_loss_500_count += 1;
+
+        var output_50 = forwardPassTrigramHybrid(&ctx, &roles_50, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim_50 = output_50.similarity(&target);
+        train_loss_50_sum += 1.0 - (sim_50 + 1.0) / 2.0;
+        train_loss_50_count += 1;
+    }
+
+    const train_loss_500 = train_loss_500_sum / @as(f64, @floatFromInt(train_loss_500_count));
+    const train_loss_50 = train_loss_50_sum / @as(f64, @floatFromInt(train_loss_50_count));
+
+    const random_baseline = 1.0 - 1.0 / 95.0;
+
+    // --- Generation with 500 offsets ---
+    var gen_buf: [80]u8 = undefined;
+    const prompt = "to be or ";
+    var init_ctx: [8]Hypervector = undefined;
+    for (0..8) |i| {
+        init_ctx[i] = charToHV(dim, prompt[i]);
+    }
+    const gen_len = generateWithTrigramSampled(
+        &init_ctx, &roles_500, dim,
+        prompt[6], prompt[7],
+        &bi_counts, &tri_counts,
+        &gen_buf, 80, 0.8, 8, 54321,
+    );
+
+    // Count unique chars in generation
+    var char_seen = [_]bool{false} ** 256;
+    var unique_count: usize = 0;
+    for (gen_buf[0..gen_len]) |c| {
+        if (!char_seen[c]) {
+            char_seen[c] = true;
+            unique_count += 1;
+        }
+    }
+
+    std.debug.print("\n=== 500 OFFSETS ROLE QUALITY (v2.41) ===\n", .{});
+    std.debug.print("Corpus: {d} chars (large Shakespeare)\n", .{large_corpus.len});
+    std.debug.print("Offsets: 500 vs 50 (10x more training positions)\n", .{});
+    std.debug.print("\nRole similarity (500 vs 50):   {d:.4}\n", .{avg_role_sim});
+    std.debug.print("\n--- Eval Loss ---\n", .{});
+    std.debug.print("500 offsets eval loss:         {d:.4}\n", .{eval_loss_500});
+    std.debug.print("50 offsets eval loss:          {d:.4}\n", .{eval_loss_50});
+    std.debug.print("Random baseline:               {d:.4}\n", .{random_baseline});
+    std.debug.print("500 vs random:                 {d:.1}% below random\n", .{(1.0 - eval_loss_500 / random_baseline) * 100.0});
+    std.debug.print("50 vs random:                  {d:.1}% below random\n", .{(1.0 - eval_loss_50 / random_baseline) * 100.0});
+    std.debug.print("\n--- Train Loss ---\n", .{});
+    std.debug.print("500 offsets train loss:        {d:.4}\n", .{train_loss_500});
+    std.debug.print("50 offsets train loss:         {d:.4}\n", .{train_loss_50});
+    std.debug.print("\n--- Generation (500 offsets, T=0.8, K=8) ---\n", .{});
+    std.debug.print("Prompt: \"{s}\"\n", .{prompt});
+    std.debug.print("Generated: \"{s}\"\n", .{gen_buf[0..gen_len]});
+    std.debug.print("Unique chars: {d}\n", .{unique_count});
+    std.debug.print("============================================\n", .{});
+
+    // Structural assertions
+    try std.testing.expect(eval_loss_500 < random_baseline);
+    try std.testing.expect(eval_loss_50 < random_baseline);
+    try std.testing.expect(train_loss_500 < random_baseline);
+    try std.testing.expect(gen_len > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 29: 500 offsets perplexity comparison (v2.41)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "500 offsets perplexity comparison" {
+    const dim = 1024;
+
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    const train_end = large_corpus.len * 80 / 100;
+
+    // --- 50-offset roles ---
+    var offsets_50: [50]usize = undefined;
+    for (0..50) |i| {
+        offsets_50[i] = i * (large_corpus.len - 10) / 50;
+    }
+    var roles_50 = computeMultiRoles(large_corpus, dim, &offsets_50, 8);
+
+    // --- 500-offset roles ---
+    var offsets_500: [500]usize = undefined;
+    for (0..500) |i| {
+        offsets_500[i] = i * (large_corpus.len - 10) / 500;
+    }
+    var roles_500 = computeMultiRoles(large_corpus, dim, &offsets_500, 8);
+
+    // === Test PPL (500 offsets) ===
+    var test_log_500: f64 = 0;
+    var test_valid_500: usize = 0;
+    var test_log_50: f64 = 0;
+    var test_valid_50: usize = 0;
+
+    for (0..20) |i| {
+        const s = train_end + i * (large_corpus.len - train_end - 10) / 20;
+        if (s + 8 >= large_corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev_char = large_corpus[s + 6];
+        const last_char = large_corpus[s + 7];
+
+        var output_500 = forwardPassTrigramHybrid(&ctx, &roles_500, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim_500 = output_500.similarity(&target);
+        const prob_500 = @max((sim_500 + 1.0) / 2.0, 1e-10);
+        test_log_500 += @log(prob_500);
+        test_valid_500 += 1;
+
+        var output_50 = forwardPassTrigramHybrid(&ctx, &roles_50, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim_50 = output_50.similarity(&target);
+        const prob_50 = @max((sim_50 + 1.0) / 2.0, 1e-10);
+        test_log_50 += @log(prob_50);
+        test_valid_50 += 1;
+    }
+
+    const test_ppl_500 = @exp(-test_log_500 / @as(f64, @floatFromInt(test_valid_500)));
+    const test_ppl_50 = @exp(-test_log_50 / @as(f64, @floatFromInt(test_valid_50)));
+
+    // === Train PPL (500 offsets) ===
+    var train_log_500: f64 = 0;
+    var train_valid_500: usize = 0;
+    var train_log_50: f64 = 0;
+    var train_valid_50: usize = 0;
+
+    for (0..20) |i| {
+        const s = i * train_end / 20;
+        if (s + 8 >= large_corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev_char = large_corpus[s + 6];
+        const last_char = large_corpus[s + 7];
+
+        var output_500 = forwardPassTrigramHybrid(&ctx, &roles_500, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim_500 = output_500.similarity(&target);
+        const prob_500 = @max((sim_500 + 1.0) / 2.0, 1e-10);
+        train_log_500 += @log(prob_500);
+        train_valid_500 += 1;
+
+        var output_50 = forwardPassTrigramHybrid(&ctx, &roles_50, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim_50 = output_50.similarity(&target);
+        const prob_50 = @max((sim_50 + 1.0) / 2.0, 1e-10);
+        train_log_50 += @log(prob_50);
+        train_valid_50 += 1;
+    }
+
+    const train_ppl_500 = @exp(-train_log_500 / @as(f64, @floatFromInt(train_valid_500)));
+    const train_ppl_50 = @exp(-train_log_50 / @as(f64, @floatFromInt(train_valid_50)));
+
+    std.debug.print("\n=== 500 OFFSETS PERPLEXITY (v2.41) ===\n", .{});
+    std.debug.print("500 offsets train PPL:         {d:.2}\n", .{train_ppl_500});
+    std.debug.print("500 offsets test PPL:          {d:.2}\n", .{test_ppl_500});
+    std.debug.print("500 offsets overfit gap:       {d:.2}\n", .{test_ppl_500 - train_ppl_500});
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("50 offsets train PPL:          {d:.2}\n", .{train_ppl_50});
+    std.debug.print("50 offsets test PPL:           {d:.2}\n", .{test_ppl_50});
+    std.debug.print("50 offsets overfit gap:        {d:.2}\n", .{test_ppl_50 - train_ppl_50});
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("v2.40 large (50 offsets):      train=1.87, test=1.84\n", .{});
+    std.debug.print("v2.39 small trigram:           train=1.5, test=1.6\n", .{});
+    std.debug.print("Random baseline:               95.0\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(test_ppl_500 > 0.0);
+    try std.testing.expect(!std.math.isNan(test_ppl_500));
+    try std.testing.expect(!std.math.isInf(test_ppl_500));
+    try std.testing.expect(test_ppl_50 > 0.0);
+    try std.testing.expect(!std.math.isNan(test_ppl_50));
+    try std.testing.expect(!std.math.isInf(test_ppl_50));
+}
