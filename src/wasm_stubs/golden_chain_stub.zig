@@ -175,6 +175,11 @@ pub const ChainMessageType = enum {
     SplitBrainUpdate,
     AutoHealEvent,
     PartitionToleranceEvent,
+    // v2.19: Swarm 10M + Community 5M
+    Swarm10MEvent,
+    Community5MUpdate,
+    EarningBoostEvent,
+    MassiveGossipEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -235,7 +240,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 208;
+pub const MAX_QUARK_RECORDS = 216;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -440,6 +445,15 @@ pub const QuarkType = enum(u8) {
     brain_merge,
     heal_verify,
     partition_anchor,
+    // v2.19: Swarm 10M + Community 5M (u8: 184/256 used)
+    swarm_10m,
+    community_5m,
+    earning_boost,
+    massive_gossip,
+    node_discovery_10m,
+    earning_rate,
+    swarm_consensus_10m,
+    earning_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -630,6 +644,15 @@ pub const QuarkType = enum(u8) {
             .brain_merge => "BRN_MRG",
             .heal_verify => "HEL_VRF",
             .partition_anchor => "PRT_ACH",
+            // v2.19: Swarm 10M + Community 5M labels
+            .swarm_10m => "SWM_10M",
+            .community_5m => "COM_5M",
+            .earning_boost => "ERN_BST",
+            .massive_gossip => "MAS_GSP",
+            .node_discovery_10m => "NOD_10M",
+            .earning_rate => "ERN_RTE",
+            .swarm_consensus_10m => "SWM_CON",
+            .earning_anchor => "ERN_ACH",
         };
     }
 
@@ -997,6 +1020,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isPartitionToleranceQuark(self: QuarkType) bool {
         return self == .partition_sync or self == .recovery_quorum;
+    }
+
+    // v2.19: Swarm 10M + Community 5M classifiers
+    pub fn isSwarm10MQuark(self: QuarkType) bool {
+        return self == .swarm_10m or self == .earning_anchor;
+    }
+
+    pub fn isCommunity5MQuark(self: QuarkType) bool {
+        return self == .community_5m or self == .node_discovery_10m;
+    }
+
+    pub fn isEarningBoostQuark(self: QuarkType) bool {
+        return self == .earning_boost or self == .earning_rate;
+    }
+
+    pub fn isMassiveGossipQuark(self: QuarkType) bool {
+        return self == .massive_gossip or self == .swarm_consensus_10m;
     }
 };
 
@@ -1384,6 +1424,14 @@ pub const AUTO_HEAL_INTERVAL_US: i64 = 5_000_000;
 pub const PARTITION_SYNC_BATCH_SIZE: u32 = 512;
 pub const RECOVERY_QUORUM_PERCENT: u16 = 67;
 pub const BRAIN_MERGE_TIMEOUT_US: i64 = 20_000_000;
+
+// v2.19: Swarm 10M + Community 5M constants
+pub const SWARM_10M_TARGET: u32 = 10_000_000;
+pub const COMMUNITY_5M_TARGET: u32 = 5_000_000;
+pub const EARNING_RATE_UTRI_PER_HOUR: u32 = 20_000;
+pub const MASSIVE_GOSSIP_FANOUT: u16 = 64;
+pub const NODE_DISCOVERY_10M_INTERVAL_US: i64 = 1_000_000;
+pub const EARNING_DISTRIBUTION_INTERVAL_US: i64 = 3_600_000_000;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -1878,6 +1926,39 @@ pub const PartitionToleranceState = struct {
     tolerance_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.19: Swarm 10M + Community 5M types
+pub const Swarm10MState = struct {
+    swarm_nodes: u32 = 0,
+    target_nodes: u32 = 0,
+    nodes_online: u32 = 0,
+    last_swarm_us: i64 = 0,
+    swarm_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const Community5MState = struct {
+    community_nodes: u32 = 0,
+    target_community: u32 = 0,
+    onboarded: u32 = 0,
+    last_community_us: i64 = 0,
+    community_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EarningBoostState = struct {
+    earning_total_utri: u64 = 0,
+    earning_rate: u32 = 0,
+    distributions: u32 = 0,
+    last_earning_us: i64 = 0,
+    earning_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const MassiveGossipState = struct {
+    gossip_rounds: u32 = 0,
+    fanout: u16 = 0,
+    nodes_reached: u32 = 0,
+    last_gossip_us: i64 = 0,
+    gossip_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1996,10 +2077,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 22;
+pub const QUARK_EXPORT_VERSION: u16 = 23;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 106;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 110;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -2220,6 +2301,12 @@ pub const GoldenChainAgent = struct {
     auto_heal_state: AutoHealState,
     partition_tolerance_state: PartitionToleranceState,
     partition_recovery_active: bool,
+    // v2.19: Swarm 10M + Community 5M fields
+    swarm_10m_state: Swarm10MState,
+    community_5m_state: Community5MState,
+    earning_boost_state: EarningBoostState,
+    massive_gossip_state: MassiveGossipState,
+    swarm_10m_active: bool,
 
     const Self = @This();
 
@@ -2385,6 +2472,12 @@ pub const GoldenChainAgent = struct {
             .auto_heal_state = .{},
             .partition_tolerance_state = .{},
             .partition_recovery_active = false,
+            // v2.19: Swarm 10M + Community 5M defaults
+            .swarm_10m_state = .{},
+            .community_5m_state = .{},
+            .earning_boost_state = .{},
+            .massive_gossip_state = .{},
+            .swarm_10m_active = false,
         };
     }
 
@@ -3143,6 +3236,39 @@ pub const GoldenChainAgent = struct {
         if (self.partition_detect_state.partitions_detected == 0) return false;
         if (self.split_brain_state.split_events == 0) return false;
         if (self.auto_heal_state.heal_attempts == 0) return false;
+        return true;
+    }
+
+    // v2.19: Swarm 10M + Community 5M stub methods
+    pub fn scaleSwarm10M(self: *Self) void {
+        self.swarm_10m_state.swarm_nodes += 1;
+        self.swarm_10m_state.target_nodes = SWARM_10M_TARGET;
+        self.swarm_10m_state.nodes_online += 1;
+        self.swarm_10m_active = true;
+    }
+
+    pub fn onboardCommunity5M(self: *Self) void {
+        self.community_5m_state.community_nodes += 1;
+        self.community_5m_state.target_community = COMMUNITY_5M_TARGET;
+        self.community_5m_state.onboarded += 1;
+    }
+
+    pub fn boostEarning(self: *Self) void {
+        self.earning_boost_state.earning_total_utri += EARNING_RATE_UTRI_PER_HOUR;
+        self.earning_boost_state.earning_rate = EARNING_RATE_UTRI_PER_HOUR;
+        self.earning_boost_state.distributions += 1;
+    }
+
+    pub fn propagateMassiveGossip(self: *Self) void {
+        self.massive_gossip_state.gossip_rounds += 1;
+        self.massive_gossip_state.fanout = MASSIVE_GOSSIP_FANOUT;
+        self.massive_gossip_state.nodes_reached += MASSIVE_GOSSIP_FANOUT;
+    }
+
+    pub fn swarm10MVerify(self: *const Self) bool {
+        if (self.swarm_10m_state.swarm_nodes == 0) return false;
+        if (self.community_5m_state.community_nodes == 0) return false;
+        if (self.earning_boost_state.earning_total_utri == 0) return false;
         return true;
     }
 };
