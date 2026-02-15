@@ -28,6 +28,7 @@ pub const ZigCodeGen = struct {
     builder: CodeBuilder,
     shard_mgr_emitted: bool,
     network_emitted: bool,
+    erasure_emitted: bool,
 
     const Self = @This();
 
@@ -37,6 +38,7 @@ pub const ZigCodeGen = struct {
             .builder = CodeBuilder.init(allocator),
             .shard_mgr_emitted = false,
             .network_emitted = false,
+            .erasure_emitted = false,
         };
     }
 
@@ -2012,6 +2014,170 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("return true; // Real logic is in ShardNetwork struct methods");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // REED-SOLOMON ERASURE CODING: GF(2^8) fault tolerance
+        // Generates ReedSolomon struct with Vandermonde encode/decode.
+        // Primitive polynomial: x^8 + x^4 + x^3 + x^2 + 1 (0x11D).
+        // Any k of n shards can reconstruct via Gaussian elimination.
+        // ═══════════════════════════════════════════════════════════════════
+
+        if (std_mem.startsWith(u8, b.name, "erasure")) {
+            if (!self.erasure_emitted) {
+                self.erasure_emitted = true;
+                try self.builder.writeLine("");
+                try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+                try self.builder.writeLine("// REED-SOLOMON ERASURE CODING — GF(2^8) Fault Tolerance");
+                try self.builder.writeLine("// Primitive polynomial: x^8 + x^4 + x^3 + x^2 + 1 (0x11D)");
+                try self.builder.writeLine("// Vandermonde matrix encoding, Gaussian elimination decoding.");
+                try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+                try self.builder.writeLine("");
+                try self.builder.writeLine("pub const ReedSolomon = struct {");
+                try self.builder.writeLine("    data_shards: u8,");
+                try self.builder.writeLine("    total_shards: u8,");
+                try self.builder.writeLine("");
+                try self.builder.writeLine("    pub fn init(k: u8, m: u8) ReedSolomon {");
+                try self.builder.writeLine("        return .{ .data_shards = k, .total_shards = k + m };");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // gfMul — Russian peasant multiplication over GF(2^8)
+                try self.builder.writeLine("    /// GF(2^8) multiply via Russian peasant algorithm");
+                try self.builder.writeLine("    pub fn gfMul(a_in: u8, b_in: u8) u8 {");
+                try self.builder.writeLine("        if (a_in == 0 or b_in == 0) return 0;");
+                try self.builder.writeLine("        var a: u16 = a_in;");
+                try self.builder.writeLine("        var b: u8 = b_in;");
+                try self.builder.writeLine("        var p: u8 = 0;");
+                try self.builder.writeLine("        var i: u8 = 0;");
+                try self.builder.writeLine("        while (i < 8) : (i += 1) {");
+                try self.builder.writeLine("            if (b & 1 != 0) p ^= @intCast(a & 0xFF);");
+                try self.builder.writeLine("            a <<= 1;");
+                try self.builder.writeLine("            if (a & 0x100 != 0) a ^= 0x11D;");
+                try self.builder.writeLine("            b >>= 1;");
+                try self.builder.writeLine("        }");
+                try self.builder.writeLine("        return p;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // gfPow — exponentiation via repeated squaring
+                try self.builder.writeLine("    /// GF(2^8) exponentiation via repeated squaring");
+                try self.builder.writeLine("    pub fn gfPow(base: u8, exp: u8) u8 {");
+                try self.builder.writeLine("        if (exp == 0) return 1;");
+                try self.builder.writeLine("        if (base == 0) return 0;");
+                try self.builder.writeLine("        var result: u8 = 1;");
+                try self.builder.writeLine("        var b: u8 = base;");
+                try self.builder.writeLine("        var e: u8 = exp;");
+                try self.builder.writeLine("        while (e > 0) {");
+                try self.builder.writeLine("            if (e & 1 != 0) result = gfMul(result, b);");
+                try self.builder.writeLine("            b = gfMul(b, b);");
+                try self.builder.writeLine("            e >>= 1;");
+                try self.builder.writeLine("        }");
+                try self.builder.writeLine("        return result;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // gfInv — multiplicative inverse via Fermat's little theorem
+                try self.builder.writeLine("    /// GF(2^8) inverse: a^(-1) = a^254 (Fermat's little theorem)");
+                try self.builder.writeLine("    pub fn gfInv(a: u8) u8 {");
+                try self.builder.writeLine("        if (a == 0) return 0;");
+                try self.builder.writeLine("        return gfPow(a, 254);");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // encodeByte — encode one byte position across k → n shards
+                try self.builder.writeLine("    /// Encode one byte position: k input bytes → n coded bytes (Vandermonde)");
+                try self.builder.writeLine("    pub fn encodeByte(self: *const ReedSolomon, input: []const u8, output: []u8) void {");
+                try self.builder.writeLine("        var i: u8 = 0;");
+                try self.builder.writeLine("        while (i < self.total_shards) : (i += 1) {");
+                try self.builder.writeLine("            var val: u8 = 0;");
+                try self.builder.writeLine("            var j: u8 = 0;");
+                try self.builder.writeLine("            while (j < self.data_shards) : (j += 1) {");
+                try self.builder.writeLine("                const coeff = gfPow(i + 1, j);");
+                try self.builder.writeLine("                val ^= gfMul(coeff, input[j]);");
+                try self.builder.writeLine("            }");
+                try self.builder.writeLine("            output[i] = val;");
+                try self.builder.writeLine("        }");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // decodeByte — Gaussian elimination to recover k bytes from any k of n
+                try self.builder.writeLine("    /// Decode one byte position: any k of n coded bytes → k original bytes");
+                try self.builder.writeLine("    /// avail = k available bytes, indices = their shard indices (0-based)");
+                try self.builder.writeLine("    pub fn decodeByte(self: *const ReedSolomon, avail: []const u8, indices: []const u8, output: []u8) !void {");
+                try self.builder.writeLine("        const k = self.data_shards;");
+                try self.builder.writeLine("        // Build Vandermonde submatrix + identity augmentation");
+                try self.builder.writeLine("        var mat: [8][8]u8 = undefined;");
+                try self.builder.writeLine("        var aug: [8][8]u8 = undefined;");
+                try self.builder.writeLine("        var r: usize = 0;");
+                try self.builder.writeLine("        while (r < k) : (r += 1) {");
+                try self.builder.writeLine("            var c: usize = 0;");
+                try self.builder.writeLine("            while (c < k) : (c += 1) {");
+                try self.builder.writeLine("                mat[r][c] = gfPow(indices[r] + 1, @intCast(c));");
+                try self.builder.writeLine("                aug[r][c] = if (r == c) 1 else 0;");
+                try self.builder.writeLine("            }");
+                try self.builder.writeLine("        }");
+                try self.builder.writeLine("        // Gaussian elimination (full pivot)");
+                try self.builder.writeLine("        var col: usize = 0;");
+                try self.builder.writeLine("        while (col < k) : (col += 1) {");
+                try self.builder.writeLine("            if (mat[col][col] == 0) {");
+                try self.builder.writeLine("                var sr: usize = col + 1;");
+                try self.builder.writeLine("                while (sr < k) : (sr += 1) {");
+                try self.builder.writeLine("                    if (mat[sr][col] != 0) {");
+                try self.builder.writeLine("                        var sc: usize = 0;");
+                try self.builder.writeLine("                        while (sc < k) : (sc += 1) {");
+                try self.builder.writeLine("                            const tmp1 = mat[col][sc];");
+                try self.builder.writeLine("                            mat[col][sc] = mat[sr][sc];");
+                try self.builder.writeLine("                            mat[sr][sc] = tmp1;");
+                try self.builder.writeLine("                            const tmp2 = aug[col][sc];");
+                try self.builder.writeLine("                            aug[col][sc] = aug[sr][sc];");
+                try self.builder.writeLine("                            aug[sr][sc] = tmp2;");
+                try self.builder.writeLine("                        }");
+                try self.builder.writeLine("                        break;");
+                try self.builder.writeLine("                    }");
+                try self.builder.writeLine("                }");
+                try self.builder.writeLine("            }");
+                try self.builder.writeLine("            // Scale pivot row");
+                try self.builder.writeLine("            const piv_inv = gfInv(mat[col][col]);");
+                try self.builder.writeLine("            var sc2: usize = 0;");
+                try self.builder.writeLine("            while (sc2 < k) : (sc2 += 1) {");
+                try self.builder.writeLine("                mat[col][sc2] = gfMul(mat[col][sc2], piv_inv);");
+                try self.builder.writeLine("                aug[col][sc2] = gfMul(aug[col][sc2], piv_inv);");
+                try self.builder.writeLine("            }");
+                try self.builder.writeLine("            // Eliminate column in other rows");
+                try self.builder.writeLine("            var er: usize = 0;");
+                try self.builder.writeLine("            while (er < k) : (er += 1) {");
+                try self.builder.writeLine("                if (er == col) { er += 0; } else {"); // no-op to keep structure
+                try self.builder.writeLine("                    const factor = mat[er][col];");
+                try self.builder.writeLine("                    if (factor != 0) {");
+                try self.builder.writeLine("                        var ec: usize = 0;");
+                try self.builder.writeLine("                        while (ec < k) : (ec += 1) {");
+                try self.builder.writeLine("                            mat[er][ec] ^= gfMul(factor, mat[col][ec]);");
+                try self.builder.writeLine("                            aug[er][ec] ^= gfMul(factor, aug[col][ec]);");
+                try self.builder.writeLine("                        }");
+                try self.builder.writeLine("                    }");
+                try self.builder.writeLine("                }");
+                try self.builder.writeLine("            }");
+                try self.builder.writeLine("        }");
+                try self.builder.writeLine("        // Multiply inverse × available data");
+                try self.builder.writeLine("        var oi: usize = 0;");
+                try self.builder.writeLine("        while (oi < k) : (oi += 1) {");
+                try self.builder.writeLine("            var val: u8 = 0;");
+                try self.builder.writeLine("            var oj: usize = 0;");
+                try self.builder.writeLine("            while (oj < k) : (oj += 1) {");
+                try self.builder.writeLine("                val ^= gfMul(aug[oi][oj], avail[oj]);");
+                try self.builder.writeLine("            }");
+                try self.builder.writeLine("            output[oi] = val;");
+                try self.builder.writeLine("        }");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("};");
+                try self.builder.writeLine("");
+            }
+            // Emit marker function for each behavior
+            try self.builder.writeFmt("/// {s}\n", .{b.given});
+            try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+            try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+            try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
+            self.builder.incIndent();
+            try self.builder.writeLine("return true; // Real logic is in ReedSolomon struct methods");
             self.builder.decIndent();
             try self.builder.writeLine("}");
             return true;
