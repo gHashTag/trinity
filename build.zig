@@ -1350,4 +1350,20 @@ pub fn build(b: *std.Build) void {
     const erasure_step = b.step("test-erasure", "Test Reed-Solomon erasure coding");
     erasure_step.dependOn(&run_erasure_tests.step);
     test_step.dependOn(&run_erasure_tests.step);
+
+    // Generated pipeline tests (from specs/storage/pipeline.vibee)
+    const pipeline_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/pipeline.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_pipeline_tests = b.addRunArtifact(pipeline_tests);
+    const pipeline_step = b.step("test-pipeline", "Test RS integration pipeline (end-to-end)");
+    pipeline_step.dependOn(&run_pipeline_tests.step);
+    test_step.dependOn(&run_pipeline_tests.step);
 }

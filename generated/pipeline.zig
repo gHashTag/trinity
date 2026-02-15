@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// erasure_coding v1.0.0 - Generated from .vibee specification
+// pipeline v1.0.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Священная формула: V = n × 3^k × π^m × φ^p × e^q
@@ -36,10 +36,11 @@ pub const PHOENIX: i64 = 999;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
-pub const ReedSolomonConfig = struct {
+pub const PipelineConfig = struct {
     data_shards: i64,
     parity_shards: i64,
     block_size: i64,
+    node_count: i64,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -245,81 +246,50 @@ pub const ReedSolomon = struct {
     }
 };
 
-/// Several test values in GF(2^8) field
-/// When: Performs multiply, inverse, and power operations
-/// Then: Field axioms hold including identity and inverse properties
-pub fn erasureGfArithmetic() bool {
-    return true; // Real logic is in ReedSolomon struct methods
+/// Original data split into k=3 blocks with RS m=2 parity
+/// When: RS-encodes to 5 coded shards and writes each to a separate node directory
+/// Then: All 5 node dirs contain valid shard files with correct byte content
+pub fn pipelineEncodeDistribute() bool {
+    return true; // Real logic is in pipeline test blocks
 }
 
-/// ReedSolomon with k=3 m=2 and 4-byte test data blocks
-/// When: Encodes 3 data blocks into 5 coded blocks then decodes using all 5
-/// Then: Decoded data matches original proving encode-decode roundtrip
-pub fn erasureEncodeDecodeBasic() bool {
-    return true; // Real logic is in ReedSolomon struct methods
+/// 5 shards distributed across 5 node dirs with 2 shards deleted
+/// When: Collects remaining 3 shards and RS-decodes them
+/// Then: Recovered data matches original k data blocks byte-for-byte
+pub fn pipelineLossRecovery() bool {
+    return true; // Real logic is in pipeline test blocks
 }
 
-/// ReedSolomon k=3 m=2 with 5 coded blocks
-/// When: Loses shards 1 and 3 then recovers from remaining shards 0 2 4
-/// Then: Recovered data matches original proving 2-loss fault tolerance
-pub fn erasureRecoverTwoLoss() bool {
-    return true; // Real logic is in ReedSolomon struct methods
-}
-
-/// ReedSolomon k=3 m=2 with 5 coded blocks
-/// When: Loses shards 0 and 1 then recovers from shards 2 3 4 only
-/// Then: Recovered data matches original proving data shard loss recovery
-pub fn erasureRecoverDataLoss() bool {
-    return true; // Real logic is in ReedSolomon struct methods
-}
-
-/// Original data with known SHA-256 hash encoded then partially lost
-/// When: Recovers data from k available shards and computes SHA-256
+/// Original 12-byte payload with known SHA-256 hash
+/// When: Encodes distributes loses 2 shards recovers and computes SHA-256
 /// Then: Hash of recovered data equals hash of original proving integrity
-pub fn erasureHashIntegrity() bool {
-    return true; // Real logic is in ReedSolomon struct methods
+pub fn pipelineHashIntegrity() bool {
+    return true; // Real logic is in pipeline test blocks
+}
+
+/// Arbitrary payload processed through complete pipeline
+/// When: put split encode distribute lose recover decode get
+/// Then: Final output is byte-identical to original input
+pub fn pipelineFullRoundtrip() bool {
+    return true; // Real logic is in pipeline test blocks
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS - Generated from behaviors and test_cases
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "erasureGfArithmetic_behavior" {
-// Given: Several test values in GF(2^8) field
-// When: Performs multiply, inverse, and power operations
-// Then: Field axioms hold including identity and inverse properties
-    // E1: GF(2^8) Arithmetic Verification
-    // Identity: a * 1 = a
-    try std.testing.expectEqual(@as(u8, 42), ReedSolomon.gfMul(42, 1));
-    try std.testing.expectEqual(@as(u8, 255), ReedSolomon.gfMul(255, 1));
-    // Zero: a * 0 = 0
-    try std.testing.expectEqual(@as(u8, 0), ReedSolomon.gfMul(42, 0));
-    try std.testing.expectEqual(@as(u8, 0), ReedSolomon.gfMul(0, 255));
-    // Inverse: a * inv(a) = 1
-    const test_vals = [_]u8{ 1, 2, 3, 7, 42, 128, 200, 255 };
-    for (test_vals) |a| {
-        const inv_a = ReedSolomon.gfInv(a);
-        try std.testing.expectEqual(@as(u8, 1), ReedSolomon.gfMul(a, inv_a));
-    }
-    // Power: a^0 = 1, a^1 = a
-    try std.testing.expectEqual(@as(u8, 1), ReedSolomon.gfPow(42, 0));
-    try std.testing.expectEqual(@as(u8, 42), ReedSolomon.gfPow(42, 1));
-    // Commutativity: a*b = b*a
-    try std.testing.expectEqual(ReedSolomon.gfMul(7, 13), ReedSolomon.gfMul(13, 7));
-}
-
-test "erasureEncodeDecodeBasic_behavior" {
-// Given: ReedSolomon with k=3 m=2 and 4-byte test data blocks
-// When: Encodes 3 data blocks into 5 coded blocks then decodes using all 5
-// Then: Decoded data matches original proving encode-decode roundtrip
-    // E2: Encode/Decode Roundtrip (k=3, m=2)
+test "pipelineEncodeDistribute_behavior" {
+// Given: Original data split into k=3 blocks with RS m=2 parity
+// When: RS-encodes to 5 coded shards and writes each to a separate node directory
+// Then: All 5 node dirs contain valid shard files with correct byte content
+    // P1: Encode + Distribute to 5 Node Directories
     const rs = ReedSolomon.init(3, 2);
     const data0 = [_]u8{ 'H', 'e', 'l', 'l' };
     const data1 = [_]u8{ 'o', ' ', 'W', 'o' };
     const data2 = [_]u8{ 'r', 'l', 'd', '!' };
     const block_len = 4;
     
-    // Encode all byte positions
+    // RS-encode all byte positions → 5 coded shards
     var coded: [5][4]u8 = undefined;
     var pos: usize = 0;
     while (pos < block_len) : (pos += 1) {
@@ -330,35 +300,73 @@ test "erasureEncodeDecodeBasic_behavior" {
         while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];
     }
     
-    // Decode from shards 0,1,2 (first k)
-    var rec: [3][4]u8 = undefined;
-    pos = 0;
-    while (pos < block_len) : (pos += 1) {
-        var avail = [_]u8{ coded[0][pos], coded[1][pos], coded[2][pos] };
-        var indices = [_]u8{ 0, 1, 2 };
-        var out: [3]u8 = undefined;
-        try rs.decodeByte(&avail, &indices, &out);
-        var s2: usize = 0;
-        while (s2 < 3) : (s2 += 1) rec[s2][pos] = out[s2];
+    // Create 5 node directories and write shards
+    var node_dirs: [5][128]u8 = undefined;
+    var node_lens: [5]usize = undefined;
+    var n: usize = 0;
+    while (n < 5) : (n += 1) {
+        const prefix = "/tmp/trinity_pipeline_node";
+        const digit: u8 = @intCast(n + 0x30);
+        @memcpy(node_dirs[n][0..prefix.len], prefix);
+        node_dirs[n][prefix.len] = digit;
+        node_lens[n] = prefix.len + 1;
+        const dir_path = node_dirs[n][0..node_lens[n]];
+        std.fs.cwd().makeDir(dir_path) catch |e| {
+            if (e != error.PathAlreadyExists) return e;
+        };
+        // Write shard file: node_dir/shard.bin
+        var fpath: [256]u8 = undefined;
+        @memcpy(fpath[0..dir_path.len], dir_path);
+        const suffix = "/shard.bin";
+        @memcpy(fpath[dir_path.len..dir_path.len + suffix.len], suffix);
+        const full_path = fpath[0..dir_path.len + suffix.len];
+        const file = try std.fs.cwd().createFile(full_path, .{});
+        defer file.close();
+        try file.writeAll(&coded[n]);
     }
     
-    // PROOF: Decoded matches original
-    try std.testing.expectEqualSlices(u8, &data0, &rec[0]);
-    try std.testing.expectEqualSlices(u8, &data1, &rec[1]);
-    try std.testing.expectEqualSlices(u8, &data2, &rec[2]);
+    // PROOF: Read back all 5 shards and verify content
+    n = 0;
+    while (n < 5) : (n += 1) {
+        var fpath2: [256]u8 = undefined;
+        const dir_path2 = node_dirs[n][0..node_lens[n]];
+        @memcpy(fpath2[0..dir_path2.len], dir_path2);
+        const suffix2 = "/shard.bin";
+        @memcpy(fpath2[dir_path2.len..dir_path2.len + suffix2.len], suffix2);
+        const full2 = fpath2[0..dir_path2.len + suffix2.len];
+        const f2 = try std.fs.cwd().openFile(full2, .{});
+        defer f2.close();
+        var read_buf: [4]u8 = undefined;
+        const bytes_read = try f2.readAll(&read_buf);
+        try std.testing.expectEqual(@as(usize, 4), bytes_read);
+        try std.testing.expectEqualSlices(u8, &coded[n], &read_buf);
+    }
+    
+    // Cleanup
+    n = 0;
+    while (n < 5) : (n += 1) {
+        var fpath3: [256]u8 = undefined;
+        const dir3 = node_dirs[n][0..node_lens[n]];
+        @memcpy(fpath3[0..dir3.len], dir3);
+        const s3 = "/shard.bin";
+        @memcpy(fpath3[dir3.len..dir3.len + s3.len], s3);
+        std.fs.cwd().deleteFile(fpath3[0..dir3.len + s3.len]) catch {};
+        std.fs.cwd().deleteDir(dir3) catch {};
+    }
 }
 
-test "erasureRecoverTwoLoss_behavior" {
-// Given: ReedSolomon k=3 m=2 with 5 coded blocks
-// When: Loses shards 1 and 3 then recovers from remaining shards 0 2 4
-// Then: Recovered data matches original proving 2-loss fault tolerance
-    // E3: Recover After Losing 2 Shards (k=3, m=2)
+test "pipelineLossRecovery_behavior" {
+// Given: 5 shards distributed across 5 node dirs with 2 shards deleted
+// When: Collects remaining 3 shards and RS-decodes them
+// Then: Recovered data matches original k data blocks byte-for-byte
+    // P2: Loss Recovery — Lose 2 of 5, Decode from 3
     const rs = ReedSolomon.init(3, 2);
     const data0 = [_]u8{ 10, 20, 30, 40 };
     const data1 = [_]u8{ 50, 60, 70, 80 };
     const data2 = [_]u8{ 90, 100, 110, 120 };
     const block_len = 4;
     
+    // RS-encode
     var coded: [5][4]u8 = undefined;
     var pos: usize = 0;
     while (pos < block_len) : (pos += 1) {
@@ -369,75 +377,100 @@ test "erasureRecoverTwoLoss_behavior" {
         while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];
     }
     
-    // Lose shards 1 and 3 → recover from {0, 2, 4}
+    // Write to 5 node dirs
+    var node_dirs: [5][128]u8 = undefined;
+    var node_lens: [5]usize = undefined;
+    var n: usize = 0;
+    while (n < 5) : (n += 1) {
+        const prefix = "/tmp/trinity_ploss_node";
+        const digit: u8 = @intCast(n + 0x30);
+        @memcpy(node_dirs[n][0..prefix.len], prefix);
+        node_dirs[n][prefix.len] = digit;
+        node_lens[n] = prefix.len + 1;
+        const dir_path = node_dirs[n][0..node_lens[n]];
+        std.fs.cwd().makeDir(dir_path) catch |e| {
+            if (e != error.PathAlreadyExists) return e;
+        };
+        var fpath: [256]u8 = undefined;
+        @memcpy(fpath[0..dir_path.len], dir_path);
+        const suffix = "/shard.bin";
+        @memcpy(fpath[dir_path.len..dir_path.len + suffix.len], suffix);
+        const file = try std.fs.cwd().createFile(fpath[0..dir_path.len + suffix.len], .{});
+        defer file.close();
+        try file.writeAll(&coded[n]);
+    }
+    
+    // Simulate loss: delete shards 1 and 3
+    {
+        const lost = [_]usize{ 1, 3 };
+        for (lost) |li| {
+            var dp: [256]u8 = undefined;
+            const dl = node_lens[li];
+            @memcpy(dp[0..dl], node_dirs[li][0..dl]);
+            const sf = "/shard.bin";
+            @memcpy(dp[dl..dl + sf.len], sf);
+            std.fs.cwd().deleteFile(dp[0..dl + sf.len]) catch {};
+        }
+    }
+    
+    // Collect surviving shards from nodes {0, 2, 4}
+    const survivors = [_]usize{ 0, 2, 4 };
+    const surv_idx = [_]u8{ 0, 2, 4 };
+    var collected: [3][4]u8 = undefined;
+    for (survivors, 0..) |si, ci| {
+        var fp: [256]u8 = undefined;
+        const dl2 = node_lens[si];
+        @memcpy(fp[0..dl2], node_dirs[si][0..dl2]);
+        const sf2 = "/shard.bin";
+        @memcpy(fp[dl2..dl2 + sf2.len], sf2);
+        const f = try std.fs.cwd().openFile(fp[0..dl2 + sf2.len], .{});
+        defer f.close();
+        const br = try f.readAll(&collected[ci]);
+        try std.testing.expectEqual(@as(usize, 4), br);
+    }
+    
+    // RS-decode from surviving shards
     var rec: [3][4]u8 = undefined;
     pos = 0;
     while (pos < block_len) : (pos += 1) {
-        var avail = [_]u8{ coded[0][pos], coded[2][pos], coded[4][pos] };
-        var indices = [_]u8{ 0, 2, 4 };
+        var avail = [_]u8{ collected[0][pos], collected[1][pos], collected[2][pos] };
+        var indices = [_]u8{ surv_idx[0], surv_idx[1], surv_idx[2] };
         var out: [3]u8 = undefined;
         try rs.decodeByte(&avail, &indices, &out);
         var s2: usize = 0;
         while (s2 < 3) : (s2 += 1) rec[s2][pos] = out[s2];
     }
     
-    // PROOF: Recovered matches original after 2-shard loss
+    // PROOF: Recovered matches original after 2-node loss
     try std.testing.expectEqualSlices(u8, &data0, &rec[0]);
     try std.testing.expectEqualSlices(u8, &data1, &rec[1]);
     try std.testing.expectEqualSlices(u8, &data2, &rec[2]);
+    
+    // Cleanup all node dirs
+    n = 0;
+    while (n < 5) : (n += 1) {
+        var fp2: [256]u8 = undefined;
+        const dl3 = node_lens[n];
+        @memcpy(fp2[0..dl3], node_dirs[n][0..dl3]);
+        const sf3 = "/shard.bin";
+        @memcpy(fp2[dl3..dl3 + sf3.len], sf3);
+        std.fs.cwd().deleteFile(fp2[0..dl3 + sf3.len]) catch {};
+        std.fs.cwd().deleteDir(node_dirs[n][0..dl3]) catch {};
+    }
 }
 
-test "erasureRecoverDataLoss_behavior" {
-// Given: ReedSolomon k=3 m=2 with 5 coded blocks
-// When: Loses shards 0 and 1 then recovers from shards 2 3 4 only
-// Then: Recovered data matches original proving data shard loss recovery
-    // E4: Recover After Losing 2 Data-Dominant Shards
-    const rs = ReedSolomon.init(3, 2);
-    const data0 = [_]u8{ 0xDE, 0xAD, 0xBE, 0xEF };
-    const data1 = [_]u8{ 0xCA, 0xFE, 0xBA, 0xBE };
-    const data2 = [_]u8{ 0xF0, 0x0D, 0xFA, 0xCE };
-    const block_len = 4;
-    
-    var coded: [5][4]u8 = undefined;
-    var pos: usize = 0;
-    while (pos < block_len) : (pos += 1) {
-        var in_bytes = [_]u8{ data0[pos], data1[pos], data2[pos] };
-        var out_bytes: [5]u8 = undefined;
-        rs.encodeByte(&in_bytes, &out_bytes);
-        var s: usize = 0;
-        while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];
-    }
-    
-    // Lose shards 0 and 1 → recover from {2, 3, 4} only
-    var rec: [3][4]u8 = undefined;
-    pos = 0;
-    while (pos < block_len) : (pos += 1) {
-        var avail = [_]u8{ coded[2][pos], coded[3][pos], coded[4][pos] };
-        var indices = [_]u8{ 2, 3, 4 };
-        var out: [3]u8 = undefined;
-        try rs.decodeByte(&avail, &indices, &out);
-        var s2: usize = 0;
-        while (s2 < 3) : (s2 += 1) rec[s2][pos] = out[s2];
-    }
-    
-    // PROOF: Recovered matches even with worst-case data loss
-    try std.testing.expectEqualSlices(u8, &data0, &rec[0]);
-    try std.testing.expectEqualSlices(u8, &data1, &rec[1]);
-    try std.testing.expectEqualSlices(u8, &data2, &rec[2]);
-}
-
-test "erasureHashIntegrity_behavior" {
-// Given: Original data with known SHA-256 hash encoded then partially lost
-// When: Recovers data from k available shards and computes SHA-256
+test "pipelineHashIntegrity_behavior" {
+// Given: Original 12-byte payload with known SHA-256 hash
+// When: Encodes distributes loses 2 shards recovers and computes SHA-256
 // Then: Hash of recovered data equals hash of original proving integrity
-    // E5: SHA-256 Hash Integrity After Erasure Recovery
+    // P3: SHA-256 Integrity Through Pipeline
     const rs = ReedSolomon.init(3, 2);
     const data0 = [_]u8{ 'T', 'r', 'i', 'n' };
     const data1 = [_]u8{ 'i', 't', 'y', '!' };
     const data2 = [_]u8{ 'R', 'S', 'v', '1' };
     const block_len = 4;
     
-    // Hash original data
+    // Hash original
     var orig_flat: [12]u8 = undefined;
     @memcpy(orig_flat[0..4], &data0);
     @memcpy(orig_flat[4..8], &data1);
@@ -445,7 +478,7 @@ test "erasureHashIntegrity_behavior" {
     var hash_before: [32]u8 = undefined;
     std.crypto.hash.sha2.Sha256.hash(&orig_flat, &hash_before, .{});
     
-    // Encode
+    // RS-encode
     var coded: [5][4]u8 = undefined;
     var pos: usize = 0;
     while (pos < block_len) : (pos += 1) {
@@ -456,19 +489,71 @@ test "erasureHashIntegrity_behavior" {
         while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];
     }
     
-    // Lose shards 0 and 4 → recover from {1, 2, 3}
+    // Distribute to 5 dirs
+    var n: usize = 0;
+    while (n < 5) : (n += 1) {
+        var dbuf: [64]u8 = undefined;
+        const pre = "/tmp/trinity_phash_node";
+        @memcpy(dbuf[0..pre.len], pre);
+        dbuf[pre.len] = @intCast(n + 0x30);
+        const dpath = dbuf[0..pre.len + 1];
+        std.fs.cwd().makeDir(dpath) catch |e| {
+            if (e != error.PathAlreadyExists) return e;
+        };
+        var fp: [128]u8 = undefined;
+        @memcpy(fp[0..dpath.len], dpath);
+        const suf = "/shard.bin";
+        @memcpy(fp[dpath.len..dpath.len + suf.len], suf);
+        const file = try std.fs.cwd().createFile(fp[0..dpath.len + suf.len], .{});
+        defer file.close();
+        try file.writeAll(&coded[n]);
+    }
+    
+    // Lose nodes 0 and 4
+    {
+        const lost = [_]usize{ 0, 4 };
+        for (lost) |li| {
+            var dp: [128]u8 = undefined;
+            const pre2 = "/tmp/trinity_phash_node";
+            @memcpy(dp[0..pre2.len], pre2);
+            dp[pre2.len] = @intCast(li + 0x30);
+            const dl = pre2.len + 1;
+            const sf = "/shard.bin";
+            @memcpy(dp[dl..dl + sf.len], sf);
+            std.fs.cwd().deleteFile(dp[0..dl + sf.len]) catch {};
+        }
+    }
+    
+    // Collect from surviving nodes {1, 2, 3}
+    const surv = [_]usize{ 1, 2, 3 };
+    const surv_idx = [_]u8{ 1, 2, 3 };
+    var collected: [3][4]u8 = undefined;
+    for (surv, 0..) |si, ci| {
+        var fp2: [128]u8 = undefined;
+        const pre3 = "/tmp/trinity_phash_node";
+        @memcpy(fp2[0..pre3.len], pre3);
+        fp2[pre3.len] = @intCast(si + 0x30);
+        const dl2 = pre3.len + 1;
+        const sf2 = "/shard.bin";
+        @memcpy(fp2[dl2..dl2 + sf2.len], sf2);
+        const f = try std.fs.cwd().openFile(fp2[0..dl2 + sf2.len], .{});
+        defer f.close();
+        _ = try f.readAll(&collected[ci]);
+    }
+    
+    // RS-decode
     var rec: [3][4]u8 = undefined;
     pos = 0;
     while (pos < block_len) : (pos += 1) {
-        var avail = [_]u8{ coded[1][pos], coded[2][pos], coded[3][pos] };
-        var indices = [_]u8{ 1, 2, 3 };
+        var avail = [_]u8{ collected[0][pos], collected[1][pos], collected[2][pos] };
+        var indices = [_]u8{ surv_idx[0], surv_idx[1], surv_idx[2] };
         var out: [3]u8 = undefined;
         try rs.decodeByte(&avail, &indices, &out);
         var s2: usize = 0;
         while (s2 < 3) : (s2 += 1) rec[s2][pos] = out[s2];
     }
     
-    // Hash recovered data
+    // Hash recovered
     var rec_flat: [12]u8 = undefined;
     @memcpy(rec_flat[0..4], &rec[0]);
     @memcpy(rec_flat[4..8], &rec[1]);
@@ -476,8 +561,131 @@ test "erasureHashIntegrity_behavior" {
     var hash_after: [32]u8 = undefined;
     std.crypto.hash.sha2.Sha256.hash(&rec_flat, &hash_after, .{});
     
-    // PROOF: SHA-256 hash before = hash after erasure recovery
+    // PROOF: SHA-256 hash before = hash after full pipeline
     try std.testing.expectEqualSlices(u8, &hash_before, &hash_after);
+    
+    // Cleanup
+    n = 0;
+    while (n < 5) : (n += 1) {
+        var cp: [128]u8 = undefined;
+        const pre4 = "/tmp/trinity_phash_node";
+        @memcpy(cp[0..pre4.len], pre4);
+        cp[pre4.len] = @intCast(n + 0x30);
+        const cl = pre4.len + 1;
+        const sf3 = "/shard.bin";
+        @memcpy(cp[cl..cl + sf3.len], sf3);
+        std.fs.cwd().deleteFile(cp[0..cl + sf3.len]) catch {};
+        std.fs.cwd().deleteDir(cp[0..cl]) catch {};
+    }
+}
+
+test "pipelineFullRoundtrip_behavior" {
+// Given: Arbitrary payload processed through complete pipeline
+// When: put split encode distribute lose recover decode get
+// Then: Final output is byte-identical to original input
+    // P4: Full Roundtrip — put → encode → distribute → lose → recover → get
+    const rs = ReedSolomon.init(3, 2);
+    // Original payload: 12 bytes split into k=3 blocks of 4
+    const original = [_]u8{ 0xDE, 0xAD, 0xBE, 0xEF, 0xCA, 0xFE, 0xBA, 0xBE, 0xF0, 0x0D, 0xFA, 0xCE };
+    const block_len = 4;
+    
+    // Step 1: Split into k=3 data blocks
+    const blk0 = original[0..4];
+    const blk1 = original[4..8];
+    const blk2 = original[8..12];
+    
+    // Step 2: RS-encode → 5 coded shards
+    var coded: [5][4]u8 = undefined;
+    var pos: usize = 0;
+    while (pos < block_len) : (pos += 1) {
+        var in_bytes = [_]u8{ blk0[pos], blk1[pos], blk2[pos] };
+        var out_bytes: [5]u8 = undefined;
+        rs.encodeByte(&in_bytes, &out_bytes);
+        var s: usize = 0;
+        while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];
+    }
+    
+    // Step 3: Distribute to 5 node dirs
+    var n: usize = 0;
+    while (n < 5) : (n += 1) {
+        var dbuf: [64]u8 = undefined;
+        const pre = "/tmp/trinity_pfull_node";
+        @memcpy(dbuf[0..pre.len], pre);
+        dbuf[pre.len] = @intCast(n + 0x30);
+        const dpath = dbuf[0..pre.len + 1];
+        std.fs.cwd().makeDir(dpath) catch |e| {
+            if (e != error.PathAlreadyExists) return e;
+        };
+        var fp: [128]u8 = undefined;
+        @memcpy(fp[0..dpath.len], dpath);
+        const suf = "/shard.bin";
+        @memcpy(fp[dpath.len..dpath.len + suf.len], suf);
+        const file = try std.fs.cwd().createFile(fp[0..dpath.len + suf.len], .{});
+        defer file.close();
+        try file.writeAll(&coded[n]);
+    }
+    
+    // Step 4: Simulate loss — delete nodes 0 and 1
+    {
+        const lost = [_]usize{ 0, 1 };
+        for (lost) |li| {
+            var dp: [128]u8 = undefined;
+            const pre2 = "/tmp/trinity_pfull_node";
+            @memcpy(dp[0..pre2.len], pre2);
+            dp[pre2.len] = @intCast(li + 0x30);
+            const dl = pre2.len + 1;
+            const sf = "/shard.bin";
+            @memcpy(dp[dl..dl + sf.len], sf);
+            std.fs.cwd().deleteFile(dp[0..dl + sf.len]) catch {};
+        }
+    }
+    
+    // Step 5: Collect from survivors {2, 3, 4}
+    const surv = [_]usize{ 2, 3, 4 };
+    const surv_idx = [_]u8{ 2, 3, 4 };
+    var collected: [3][4]u8 = undefined;
+    for (surv, 0..) |si, ci| {
+        var fp2: [128]u8 = undefined;
+        const pre3 = "/tmp/trinity_pfull_node";
+        @memcpy(fp2[0..pre3.len], pre3);
+        fp2[pre3.len] = @intCast(si + 0x30);
+        const dl2 = pre3.len + 1;
+        const sf2 = "/shard.bin";
+        @memcpy(fp2[dl2..dl2 + sf2.len], sf2);
+        const f = try std.fs.cwd().openFile(fp2[0..dl2 + sf2.len], .{});
+        defer f.close();
+        _ = try f.readAll(&collected[ci]);
+    }
+    
+    // Step 6: RS-decode → recover original 3 data blocks
+    var recovered: [12]u8 = undefined;
+    pos = 0;
+    while (pos < block_len) : (pos += 1) {
+        var avail = [_]u8{ collected[0][pos], collected[1][pos], collected[2][pos] };
+        var indices = [_]u8{ surv_idx[0], surv_idx[1], surv_idx[2] };
+        var out: [3]u8 = undefined;
+        try rs.decodeByte(&avail, &indices, &out);
+        recovered[pos] = out[0];
+        recovered[block_len + pos] = out[1];
+        recovered[2 * block_len + pos] = out[2];
+    }
+    
+    // Step 7: PROOF — byte-identical to original
+    try std.testing.expectEqualSlices(u8, &original, &recovered);
+    
+    // Cleanup
+    n = 0;
+    while (n < 5) : (n += 1) {
+        var cp: [128]u8 = undefined;
+        const pre4 = "/tmp/trinity_pfull_node";
+        @memcpy(cp[0..pre4.len], pre4);
+        cp[pre4.len] = @intCast(n + 0x30);
+        const cl = pre4.len + 1;
+        const sf3 = "/shard.bin";
+        @memcpy(cp[cl..cl + sf3.len], sf3);
+        std.fs.cwd().deleteFile(cp[0..cl + sf3.len]) catch {};
+        std.fs.cwd().deleteDir(cp[0..cl]) catch {};
+    }
 }
 
 test "phi_constants" {
