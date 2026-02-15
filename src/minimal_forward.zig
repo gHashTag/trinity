@@ -6799,3 +6799,531 @@ test "word trigram perplexity comparison" {
     // But it must still beat random baseline
     try std.testing.expect(tri_eval_ppl < @as(f64, @floatFromInt(wtm.vocab_size)) * 0.5);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LARGE CORPUS TRIGRAM MODEL (v2.47)
+// 25K+ chars Shakespeare corpus loaded via @embedFile
+// Larger vocabulary (512), more tokens (8192), bigger trigram hash (8192 slots)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const LARGE_MAX_WORDS: usize = 512;
+const LARGE_MAX_TOKENS: usize = 8192;
+const LARGE_TRI_HASH_SIZE: usize = 8192;
+const LARGE_TRI_MAX_NEXTS: usize = 48;
+
+const LargeTrigramSlot = struct {
+    prev2: u16,
+    prev1: u16,
+    valid: bool,
+    nexts: [LARGE_TRI_MAX_NEXTS]u16,
+    counts: [LARGE_TRI_MAX_NEXTS]u16,
+    num_nexts: u8,
+    total_count: u16,
+};
+
+const LargeTrigramModel = struct {
+    vocab: [LARGE_MAX_WORDS][MAX_WORD_LEN]u8,
+    vocab_lens: [LARGE_MAX_WORDS]u8,
+    vocab_size: usize,
+    tokens: [LARGE_MAX_TOKENS]u16,
+    token_count: usize,
+
+    // Flat bigram array: 512*512*2 = 512KB (fits in test stack)
+    bigram_counts: [LARGE_MAX_WORDS][LARGE_MAX_WORDS]u16,
+
+    // Sparse trigram hash table
+    tri_slots: [LARGE_TRI_HASH_SIZE]LargeTrigramSlot,
+    tri_used: usize,
+
+    fn init() LargeTrigramModel {
+        var self: LargeTrigramModel = undefined;
+        self.vocab_size = 0;
+        self.token_count = 0;
+        self.tri_used = 0;
+        for (0..LARGE_MAX_WORDS) |i| {
+            self.vocab_lens[i] = 0;
+            for (0..LARGE_MAX_WORDS) |j| {
+                self.bigram_counts[i][j] = 0;
+            }
+        }
+        for (0..LARGE_TRI_HASH_SIZE) |i| {
+            self.tri_slots[i].valid = false;
+            self.tri_slots[i].num_nexts = 0;
+            self.tri_slots[i].total_count = 0;
+        }
+        return self;
+    }
+
+    fn getOrAddWord(self: *LargeTrigramModel, word: []const u8) u16 {
+        if (word.len == 0 or word.len > MAX_WORD_LEN) return 0;
+        for (0..self.vocab_size) |i| {
+            const len = self.vocab_lens[i];
+            if (len == word.len) {
+                var match = true;
+                for (0..len) |j| {
+                    if (self.vocab[i][j] != word[j]) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return @intCast(i);
+            }
+        }
+        if (self.vocab_size >= LARGE_MAX_WORDS) return 0; // cap vocabulary
+        const idx = self.vocab_size;
+        for (0..word.len) |j| {
+            self.vocab[idx][j] = word[j];
+        }
+        self.vocab_lens[idx] = @intCast(word.len);
+        self.vocab_size += 1;
+        return @intCast(idx);
+    }
+
+    fn getWord(self: *const LargeTrigramModel, idx: u16) []const u8 {
+        if (idx >= self.vocab_size) return "";
+        const len = self.vocab_lens[idx];
+        return self.vocab[idx][0..len];
+    }
+
+    fn tokenize(self: *LargeTrigramModel, corpus: []const u8) void {
+        var i: usize = 0;
+        while (i < corpus.len and self.token_count < LARGE_MAX_TOKENS) {
+            while (i < corpus.len and (corpus[i] == ' ' or corpus[i] == '\n')) : (i += 1) {}
+            if (i >= corpus.len) break;
+            const start = i;
+            while (i < corpus.len and corpus[i] != ' ' and corpus[i] != '\n') : (i += 1) {}
+            const word = corpus[start..i];
+            if (word.len > 0 and word.len <= MAX_WORD_LEN) {
+                const idx = self.getOrAddWord(word);
+                self.tokens[self.token_count] = idx;
+                self.token_count += 1;
+            }
+        }
+    }
+
+    fn buildBigrams(self: *LargeTrigramModel) void {
+        if (self.token_count < 2) return;
+        for (0..self.token_count - 1) |i| {
+            const prev = self.tokens[i];
+            const next = self.tokens[i + 1];
+            if (self.bigram_counts[prev][next] < 65535) {
+                self.bigram_counts[prev][next] += 1;
+            }
+        }
+    }
+
+    fn triHash(prev2: u16, prev1: u16) usize {
+        const key: u32 = @as(u32, prev2) * 257 + @as(u32, prev1);
+        return @intCast((key ^ (key >> 11) ^ (key >> 22)) % LARGE_TRI_HASH_SIZE);
+    }
+
+    fn getOrCreateSlot(self: *LargeTrigramModel, prev2: u16, prev1: u16) ?*LargeTrigramSlot {
+        var h = triHash(prev2, prev1);
+        var probes: usize = 0;
+        while (probes < LARGE_TRI_HASH_SIZE) : (probes += 1) {
+            const slot = &self.tri_slots[h];
+            if (!slot.valid) {
+                slot.valid = true;
+                slot.prev2 = prev2;
+                slot.prev1 = prev1;
+                slot.num_nexts = 0;
+                slot.total_count = 0;
+                self.tri_used += 1;
+                return slot;
+            }
+            if (slot.prev2 == prev2 and slot.prev1 == prev1) return slot;
+            h = (h + 1) % LARGE_TRI_HASH_SIZE;
+        }
+        return null;
+    }
+
+    fn findSlot(self: *const LargeTrigramModel, prev2: u16, prev1: u16) ?*const LargeTrigramSlot {
+        var h = triHash(prev2, prev1);
+        var probes: usize = 0;
+        while (probes < LARGE_TRI_HASH_SIZE) : (probes += 1) {
+            const slot = &self.tri_slots[h];
+            if (!slot.valid) return null;
+            if (slot.prev2 == prev2 and slot.prev1 == prev1) return slot;
+            h = (h + 1) % LARGE_TRI_HASH_SIZE;
+        }
+        return null;
+    }
+
+    fn buildTrigrams(self: *LargeTrigramModel) void {
+        if (self.token_count < 3) return;
+        for (0..self.token_count - 2) |i| {
+            const p2 = self.tokens[i];
+            const p1 = self.tokens[i + 1];
+            const nx = self.tokens[i + 2];
+            if (self.getOrCreateSlot(p2, p1)) |slot| {
+                var found = false;
+                for (0..slot.num_nexts) |k| {
+                    if (slot.nexts[k] == nx) {
+                        if (slot.counts[k] < 65535) slot.counts[k] += 1;
+                        slot.total_count +|= 1;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found and slot.num_nexts < LARGE_TRI_MAX_NEXTS) {
+                    slot.nexts[slot.num_nexts] = nx;
+                    slot.counts[slot.num_nexts] = 1;
+                    slot.num_nexts += 1;
+                    slot.total_count +|= 1;
+                }
+            }
+        }
+    }
+
+    fn wordTrigramProb(self: *const LargeTrigramModel, prev2: u16, prev1: u16, next_idx: u16) f64 {
+        const vs: f64 = @floatFromInt(self.vocab_size);
+        if (self.findSlot(prev2, prev1)) |slot| {
+            if (slot.total_count > 0) {
+                var count: f64 = 0;
+                for (0..slot.num_nexts) |k| {
+                    if (slot.nexts[k] == next_idx) {
+                        count = @floatFromInt(slot.counts[k]);
+                        break;
+                    }
+                }
+                const total: f64 = @floatFromInt(slot.total_count);
+                return (count + 0.1) / (total + 0.1 * vs);
+            }
+        }
+        // Bigram fallback
+        var bi_total: u32 = 0;
+        for (0..self.vocab_size) |j| {
+            bi_total += self.bigram_counts[prev1][j];
+        }
+        if (bi_total > 0) {
+            const count: f64 = @floatFromInt(self.bigram_counts[prev1][next_idx]);
+            const total: f64 = @floatFromInt(bi_total);
+            return (count + 0.1) / (total + 0.1 * vs);
+        }
+        return 1.0 / vs;
+    }
+
+    fn sampleNextWord(self: *const LargeTrigramModel, prev2: u16, prev1: u16, temperature: f64, seed: u64) u16 {
+        var probs: [LARGE_MAX_WORDS]f64 = undefined;
+        const vs: f64 = @floatFromInt(self.vocab_size);
+
+        var use_trigram = false;
+        if (self.findSlot(prev2, prev1)) |slot| {
+            if (slot.total_count > 0) {
+                use_trigram = true;
+                const total: f64 = @floatFromInt(slot.total_count);
+                const smooth = 0.1 * vs;
+                for (0..self.vocab_size) |j| {
+                    probs[j] = 0.1 / (total + smooth);
+                }
+                for (0..slot.num_nexts) |k| {
+                    const idx = slot.nexts[k];
+                    const count: f64 = @floatFromInt(slot.counts[k]);
+                    probs[idx] = (count + 0.1) / (total + smooth);
+                }
+            }
+        }
+
+        if (!use_trigram) {
+            var bi_total: u32 = 0;
+            for (0..self.vocab_size) |j| {
+                bi_total += self.bigram_counts[prev1][j];
+            }
+            if (bi_total > 0) {
+                const total: f64 = @floatFromInt(bi_total);
+                const smooth = 0.1 * vs;
+                for (0..self.vocab_size) |j| {
+                    const count: f64 = @floatFromInt(self.bigram_counts[prev1][j]);
+                    probs[j] = (count + 0.1) / (total + smooth);
+                }
+            } else {
+                return @intCast(seed % self.vocab_size);
+            }
+        }
+
+        // Temperature + softmax
+        var max_logp: f64 = -1e10;
+        for (0..self.vocab_size) |j| {
+            const logp = @log(@max(probs[j], 1e-20));
+            probs[j] = logp;
+            if (logp > max_logp) max_logp = logp;
+        }
+        var sum: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            probs[j] = @exp((probs[j] - max_logp) / @max(temperature, 0.01));
+            sum += probs[j];
+        }
+        for (0..self.vocab_size) |j| {
+            probs[j] /= sum;
+        }
+
+        var rng = seed;
+        rng ^= rng >> 12;
+        rng ^= rng << 25;
+        rng ^= rng >> 27;
+        const r: f64 = @as(f64, @floatFromInt(rng % 1000000)) / 1000000.0;
+
+        var cumulative: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            cumulative += probs[j];
+            if (r < cumulative) return @intCast(j);
+        }
+        return 0;
+    }
+
+    fn wordTrigramLoss(self: *const LargeTrigramModel, prev2: u16, prev1: u16, next_idx: u16) f64 {
+        const p = self.wordTrigramProb(prev2, prev1, next_idx);
+        return -@log(@max(p, 1e-20));
+    }
+};
+
+const extended_corpus = @embedFile("shakespeare_extended.txt");
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 40: Large corpus trigram statistics + generation (v2.47)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "large corpus trigram statistics and generation" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+
+    // Count trigram coverage
+    var trigram_slots_used: usize = 0;
+    var total_trigram_obs: usize = 0;
+    for (0..LARGE_TRI_HASH_SIZE) |i| {
+        if (ltm.tri_slots[i].valid) {
+            trigram_slots_used += 1;
+            total_trigram_obs += ltm.tri_slots[i].total_count;
+        }
+    }
+
+    // Avg observations per context
+    const avg_obs: f64 = if (trigram_slots_used > 0) @as(f64, @floatFromInt(total_trigram_obs)) / @as(f64, @floatFromInt(trigram_slots_used)) else 0;
+
+    // === Loss on eval split ===
+    const train_end = ltm.token_count * 80 / 100;
+    const random_ce = @log(@as(f64, @floatFromInt(ltm.vocab_size)));
+
+    // Trigram eval CE
+    var tri_eval_sum: f64 = 0;
+    var tri_eval_count: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 2) continue;
+        tri_eval_sum += ltm.wordTrigramLoss(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i]);
+        tri_eval_count += 1;
+    }
+    const tri_eval_ce = tri_eval_sum / @as(f64, @floatFromInt(tri_eval_count));
+
+    // Trigram train CE
+    var tri_train_sum: f64 = 0;
+    var tri_train_count: usize = 0;
+    for (2..train_end) |i| {
+        tri_train_sum += ltm.wordTrigramLoss(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i]);
+        tri_train_count += 1;
+    }
+    const tri_train_ce = tri_train_sum / @as(f64, @floatFromInt(tri_train_count));
+
+    // Bigram eval CE (for comparison)
+    var bi_eval_sum: f64 = 0;
+    var bi_eval_count: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 1) continue;
+        const p1 = ltm.tokens[i - 1];
+        const nx = ltm.tokens[i];
+        var bi_total: u32 = 0;
+        for (0..ltm.vocab_size) |j| {
+            bi_total += ltm.bigram_counts[p1][j];
+        }
+        if (bi_total > 0) {
+            const count: f64 = @floatFromInt(ltm.bigram_counts[p1][nx]);
+            const total: f64 = @floatFromInt(bi_total);
+            const vs: f64 = @floatFromInt(ltm.vocab_size);
+            bi_eval_sum += -@log(@max((count + 0.1) / (total + 0.1 * vs), 1e-20));
+        } else {
+            bi_eval_sum += random_ce;
+        }
+        bi_eval_count += 1;
+    }
+    const bi_eval_ce = bi_eval_sum / @as(f64, @floatFromInt(bi_eval_count));
+
+    // Trigram eval hit rate
+    var tri_hits: usize = 0;
+    var tri_checks: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 2) continue;
+        if (ltm.findSlot(ltm.tokens[i - 2], ltm.tokens[i - 1])) |_| {
+            tri_hits += 1;
+        }
+        tri_checks += 1;
+    }
+
+    // === Generation ===
+    var start_to: u16 = 0;
+    var start_be: u16 = 0;
+    for (0..ltm.vocab_size) |i| {
+        const w = ltm.getWord(@intCast(i));
+        if (w.len == 2 and w[0] == 't' and w[1] == 'o') start_to = @intCast(i);
+        if (w.len == 2 and w[0] == 'b' and w[1] == 'e') start_be = @intCast(i);
+    }
+
+    // T=0.8
+    var gen1: [512]u8 = undefined;
+    var g1: usize = 0;
+    var p2: u16 = start_to;
+    var p1: u16 = start_be;
+    for (0..30) |step| {
+        const next = ltm.sampleNextWord(p2, p1, 0.8, 12345 + step);
+        const word = ltm.getWord(next);
+        if (g1 + word.len + 1 < gen1.len) {
+            if (g1 > 0) { gen1[g1] = ' '; g1 += 1; }
+            for (word) |c| { gen1[g1] = c; g1 += 1; }
+        }
+        p2 = p1;
+        p1 = next;
+    }
+
+    // T=0.5
+    var gen2: [512]u8 = undefined;
+    var g2: usize = 0;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..30) |step| {
+        const next = ltm.sampleNextWord(p2, p1, 0.5, 54321 + step);
+        const word = ltm.getWord(next);
+        if (g2 + word.len + 1 < gen2.len) {
+            if (g2 > 0) { gen2[g2] = ' '; g2 += 1; }
+            for (word) |c| { gen2[g2] = c; g2 += 1; }
+        }
+        p2 = p1;
+        p1 = next;
+    }
+
+    // T=0.3
+    var gen3: [512]u8 = undefined;
+    var g3: usize = 0;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..30) |step| {
+        const next = ltm.sampleNextWord(p2, p1, 0.3, 99999 + step);
+        const word = ltm.getWord(next);
+        if (g3 + word.len + 1 < gen3.len) {
+            if (g3 > 0) { gen3[g3] = ' '; g3 += 1; }
+            for (word) |c| { gen3[g3] = c; g3 += 1; }
+        }
+        p2 = p1;
+        p1 = next;
+    }
+
+    std.debug.print("\n=== LARGE CORPUS TRIGRAM (v2.47) ===\n", .{});
+    std.debug.print("Corpus: {d} chars → {d} tokens, {d} unique words\n", .{ extended_corpus.len, ltm.token_count, ltm.vocab_size });
+    std.debug.print("Trigram slots: {d}/{d} ({d:.1}% load)\n", .{ trigram_slots_used, LARGE_TRI_HASH_SIZE, @as(f64, @floatFromInt(trigram_slots_used)) / @as(f64, @floatFromInt(LARGE_TRI_HASH_SIZE)) * 100.0 });
+    std.debug.print("Total trigram observations: {d}\n", .{total_trigram_obs});
+    std.debug.print("Avg observations per context: {d:.2}\n", .{avg_obs});
+    std.debug.print("Eval trigram hit rate: {d}/{d} ({d:.1}%)\n", .{ tri_hits, tri_checks, @as(f64, @floatFromInt(tri_hits)) / @as(f64, @floatFromInt(@max(tri_checks, 1))) * 100.0 });
+    std.debug.print("\n--- Loss (CE nats) ---\n", .{});
+    std.debug.print("Trigram eval CE:  {d:.4} ({d:.1}% below random)\n", .{ tri_eval_ce, (1.0 - tri_eval_ce / random_ce) * 100.0 });
+    std.debug.print("Trigram train CE: {d:.4} ({d:.1}% below random)\n", .{ tri_train_ce, (1.0 - tri_train_ce / random_ce) * 100.0 });
+    std.debug.print("Bigram eval CE:   {d:.4} ({d:.1}% below random)\n", .{ bi_eval_ce, (1.0 - bi_eval_ce / random_ce) * 100.0 });
+    std.debug.print("Random CE:        {d:.4} (ln({d}))\n", .{ random_ce, ltm.vocab_size });
+    std.debug.print("\n--- Generation (start: \"to be\") ---\n", .{});
+    std.debug.print("T=0.8: \"{s}\"\n", .{gen1[0..g1]});
+    std.debug.print("T=0.5: \"{s}\"\n", .{gen2[0..g2]});
+    std.debug.print("T=0.3: \"{s}\"\n", .{gen3[0..g3]});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(ltm.vocab_size > 256); // larger vocab
+    try std.testing.expect(ltm.token_count > 3000); // many more tokens
+    try std.testing.expect(trigram_slots_used > 1000); // good coverage
+    try std.testing.expect(avg_obs > 1.0); // more data per context
+    try std.testing.expect(tri_eval_ce < random_ce);
+    try std.testing.expect(g1 > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 41: Large corpus word trigram perplexity (v2.47)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "large corpus word trigram perplexity comparison" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+
+    const train_end = ltm.token_count * 80 / 100;
+
+    // Trigram train PPL
+    var tri_train_log: f64 = 0;
+    var tri_train_n: usize = 0;
+    for (2..train_end) |i| {
+        const prob = ltm.wordTrigramProb(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i]);
+        tri_train_log += @log(@max(prob, 1e-20));
+        tri_train_n += 1;
+    }
+    const tri_train_ppl = @exp(-tri_train_log / @as(f64, @floatFromInt(tri_train_n)));
+
+    // Trigram eval PPL
+    var tri_eval_log: f64 = 0;
+    var tri_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 2) continue;
+        const prob = ltm.wordTrigramProb(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i]);
+        tri_eval_log += @log(@max(prob, 1e-20));
+        tri_eval_n += 1;
+    }
+    const tri_eval_ppl = @exp(-tri_eval_log / @as(f64, @floatFromInt(tri_eval_n)));
+
+    // Bigram eval PPL
+    var bi_eval_log: f64 = 0;
+    var bi_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 1) continue;
+        const p1 = ltm.tokens[i - 1];
+        const nx = ltm.tokens[i];
+        var bi_total: u32 = 0;
+        for (0..ltm.vocab_size) |j| {
+            bi_total += ltm.bigram_counts[p1][j];
+        }
+        if (bi_total > 0) {
+            const count: f64 = @floatFromInt(ltm.bigram_counts[p1][nx]);
+            const total: f64 = @floatFromInt(bi_total);
+            const vs: f64 = @floatFromInt(ltm.vocab_size);
+            bi_eval_log += @log(@max((count + 0.1) / (total + 0.1 * vs), 1e-20));
+        } else {
+            bi_eval_log += -@log(@as(f64, @floatFromInt(ltm.vocab_size)));
+        }
+        bi_eval_n += 1;
+    }
+    const bi_eval_ppl = @exp(-bi_eval_log / @as(f64, @floatFromInt(bi_eval_n)));
+
+    // Previous small-corpus PPL for comparison
+    var wtm_small = WordTrigramModel.init();
+    wtm_small.tokenize(large_corpus);
+    wtm_small.buildBigrams();
+    wtm_small.buildTrigrams();
+    const small_train_end = wtm_small.token_count * 80 / 100;
+    var small_eval_log: f64 = 0;
+    var small_eval_n: usize = 0;
+    for (small_train_end..wtm_small.token_count) |i| {
+        if (i < 2) continue;
+        const prob = wtm_small.wordTrigramProb(wtm_small.tokens[i - 2], wtm_small.tokens[i - 1], wtm_small.tokens[i]);
+        small_eval_log += @log(@max(prob, 1e-20));
+        small_eval_n += 1;
+    }
+    const small_eval_ppl = @exp(-small_eval_log / @as(f64, @floatFromInt(small_eval_n)));
+
+    std.debug.print("\n=== LARGE CORPUS TRIGRAM PERPLEXITY (v2.47) ===\n", .{});
+    std.debug.print("Large corpus ({d} tokens, {d} vocab):\n", .{ ltm.token_count, ltm.vocab_size });
+    std.debug.print("  Trigram: train={d:.2} eval={d:.2} gap={d:.2}\n", .{ tri_train_ppl, tri_eval_ppl, tri_eval_ppl - tri_train_ppl });
+    std.debug.print("  Bigram eval: {d:.2}\n", .{bi_eval_ppl});
+    std.debug.print("Small corpus ({d} tokens, {d} vocab):\n", .{ wtm_small.token_count, wtm_small.vocab_size });
+    std.debug.print("  Trigram eval: {d:.2}\n", .{small_eval_ppl});
+    std.debug.print("Improvement: {d:.1}% lower eval PPL (large vs small trigram)\n", .{ (1.0 - tri_eval_ppl / small_eval_ppl) * 100.0 });
+    std.debug.print("Random baseline: {d:.1}\n", .{@as(f64, @floatFromInt(ltm.vocab_size))});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(tri_train_ppl > 0.0);
+    try std.testing.expect(tri_eval_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(tri_eval_ppl));
+    try std.testing.expect(!std.math.isInf(tri_eval_ppl));
+    try std.testing.expect(tri_eval_ppl < @as(f64, @floatFromInt(ltm.vocab_size)));
+}
