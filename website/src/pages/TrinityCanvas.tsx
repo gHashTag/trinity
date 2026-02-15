@@ -1,15 +1,15 @@
 /**
- * TrinityCanvas v2.6 — Self-Reflecting Mirror of Three Worlds
+ * TrinityCanvas v2.7 — Storage Network Dashboard + Self-Reflecting Mirror
  *
  * All interaction happens INSIDE the canvas as emergent wave patterns.
  * No side panels, no layer bars, no separate windows — only waves.
  *
- * v2.6 upgrades:
- *   RAZUM          — Multi-turn chat history (last 5 msgs) + self-reflection wave
- *   MATERIYA       — Inline file preview before navigation + preview/open controls
- *   DUKH           — Vision drop zone + Voice record button + combined output
- *   Self-reflection — Route/energy/confidence analysis after every Mirror chat
- *   All prior v2.5 — Editor compile, Finder backend, Mirror dashboard
+ * v2.7 upgrades:
+ *   RAZUM          — Storage Routing + Self-healing alerts (node offline, rebalance, corruption)
+ *   MATERIYA       — Peer Health Grid + Shard Distribution gauge + RS Config (k/m/tolerance)
+ *   DUKH           — Recovery Stats + Network Transfer (UP/DOWN) + PoS Proof Rate bar
+ *   All widgets    — Collapsible sections, mock data with live drift, ready for real backend
+ *   All prior v2.6 — Multi-turn chat, self-reflection, file preview, vision/voice
  *
  * Layers (switch via 1-9, Cmd+K, or petal click):
  *   1 — Petals  (27-petal main menu)
@@ -30,7 +30,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import QuantumCanvas from '../components/QuantumCanvas';
 import type { VizMode } from '../components/QuantumCanvas';
 import ChatMessage from '../components/chat/ChatMessage';
-import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchFileList, compileCode, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type FileEntry } from '../services/chatApi';
+import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type FileEntry, type StorageMetrics } from '../services/chatApi';
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -489,6 +489,10 @@ export default function TrinityCanvas() {
   // Self-reflection state (v2.6)
   const [selfReflection, setSelfReflection] = useState<string | null>(null);
 
+  // Storage Network metrics (v2.7)
+  const [storageMetrics, setStorageMetrics] = useState<StorageMetrics | null>(null);
+  const [storageCollapsed, setStorageCollapsed] = useState<Record<string, boolean>>({});
+
   // UI
   const [showLayerHint, setShowLayerHint] = useState(true);
 
@@ -882,8 +886,12 @@ export default function TrinityCanvas() {
   const refreshMirror = useCallback(async () => {
     setMirrorLoading(true);
     try {
-      const status = await fetchMirrorStatus();
+      const [status, storage] = await Promise.all([
+        fetchMirrorStatus(),
+        fetchStorageMetrics(),
+      ]);
       setMirrorStatus(status);
+      setStorageMetrics(storage);
       // Merge new log entries (deduplicate by timestamp)
       if (status.logs && status.logs.length > 0) {
         setMirrorLogs(prev => {
@@ -1559,7 +1567,7 @@ export default function TrinityCanvas() {
         </div>
       )}
 
-      {/* ═══ MIRROR OF THREE WORLDS (Зеркало Трёх Миров) v2.6 ═══ */}
+      {/* ═══ MIRROR OF THREE WORLDS (Зеркало Трёх Миров) v2.7 — Storage Network Dashboard ═══ */}
       {layer === 'tools' && (() => {
         const srcColor = (src: string) =>
           src === 'Symbolic' ? '#ffd700' : src === 'TVCCorpus' ? '#00ccff' :
@@ -1576,13 +1584,37 @@ export default function TrinityCanvas() {
         const fmtLat = (us: number) => us < 1000 ? `${us}us` : us < 1_000_000 ? `${(us / 1000).toFixed(1)}ms` : `${(us / 1_000_000).toFixed(2)}s`;
         const fmtTs = (ts: number) => { const d = new Date(ts * 1000); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`; };
         const inputStyle: React.CSSProperties = { width: '100%', padding: '6px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 11, fontFamily: MONO, outline: 'none' };
+        // Storage helpers (v2.7)
+        const fmtBytes = (b: number) => {
+          if (b >= 1_073_741_824) return `${(b / 1_073_741_824).toFixed(1)} GB`;
+          if (b >= 1_048_576) return `${(b / 1_048_576).toFixed(1)} MB`;
+          if (b >= 1024) return `${(b / 1024).toFixed(1)} KB`;
+          return `${b} B`;
+        };
+        const storagePercent = storageMetrics
+          ? (storageMetrics.total_bytes_used / (storageMetrics.total_bytes_used + storageMetrics.total_bytes_available) * 100)
+          : 0;
+        const posPassRate = storageMetrics && storageMetrics.pos_challenges_issued > 0
+          ? (storageMetrics.pos_challenges_passed / storageMetrics.pos_challenges_issued * 100)
+          : 0;
+        const toggleStorageSection = (key: string) =>
+          setStorageCollapsed(prev => ({ ...prev, [key]: !prev[key] }));
+        const sectionHeader = (key: string, label: string, color: string) => (
+          <div onClick={() => toggleStorageSection(key)}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', padding: '2px 0' }}>
+            <span style={{ color, fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>{label}</span>
+            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>
+              {storageCollapsed[key] ? '+' : '-'}
+            </span>
+          </div>
+        );
         return (
         <div style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 28 }}>
           <div style={{ width: '96%', maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 0', height: 'calc(100vh - 50px)', overflow: 'hidden' }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, letterSpacing: 2, fontFamily: FONT }}>ЗЕРКАЛО ТРЁХ МИРОВ v2.6</div>
+                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, letterSpacing: 2, fontFamily: FONT }}>ЗЕРКАЛО ТРЁХ МИРОВ v2.7</div>
                 {mirrorStatus?.uptime_s != null && (
                   <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontFamily: MONO }}>uptime {fmtUptime(mirrorStatus.uptime_s)}</span>
                 )}
@@ -1598,6 +1630,11 @@ export default function TrinityCanvas() {
                 <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9, fontFamily: MONO }}>
                   {mirrorStatus?.status === 'ok' ? (mirrorStatus.razum ? 'LIVE' : 'INIT') : 'OFFLINE'}
                 </span>
+                {storageMetrics && (
+                  <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontFamily: MONO }}>
+                    | {storageMetrics.nodes_alive} nodes | {storageMetrics.total_shards} shards
+                  </span>
+                )}
               </div>
             </div>
 
@@ -1669,6 +1706,41 @@ export default function TrinityCanvas() {
                   </div>
                 )}
 
+                {/* ── Storage Routing + Self-healing (v2.7) ── */}
+                {storageMetrics && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                    {sectionHeader('routing', 'STORAGE ROUTING', '#ffd700')}
+                    {!storageCollapsed['routing'] && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                          <span style={{ color: '#ffd700' }}>Rep x{storageMetrics.target_replication}</span>
+                          <span style={{ color: storageMetrics.nodes_alive === storageMetrics.node_count ? '#00e599' : '#ffd700' }}>
+                            Nodes:{storageMetrics.nodes_alive}/{storageMetrics.node_count}
+                          </span>
+                          <span style={{ color: 'rgba(255,215,0,0.5)' }}>
+                            Avg:{storageMetrics.reputation_avg.toFixed(2)}
+                          </span>
+                        </div>
+                        {storageMetrics.scrub_corruptions > 0 && (
+                          <div style={{ fontSize: 7, fontFamily: MONO, color: '#ff8800', padding: '1px 3px' }}>
+                            Self-heal: {storageMetrics.scrub_corruptions} corruption(s), {storageMetrics.recoveries_successful} recovered
+                          </div>
+                        )}
+                        {storageMetrics.shards_rebalanced > 0 && (
+                          <div style={{ fontSize: 7, fontFamily: MONO, color: '#00e599', padding: '1px 3px' }}>
+                            Rebalancer: {storageMetrics.shards_rebalanced} shards across {storageMetrics.nodes_alive} nodes
+                          </div>
+                        )}
+                        {storageMetrics.nodes_dead > 0 && (
+                          <div style={{ fontSize: 7, fontFamily: MONO, color: '#ff4444', padding: '1px 3px' }}>
+                            Alert: {storageMetrics.nodes_dead} node(s) offline
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Live log */}
                 <div style={{ minHeight: 30, maxHeight: 60, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <div style={{ color: 'rgba(255,255,255,0.12)', fontSize: 7, fontFamily: MONO, letterSpacing: 1, position: 'sticky', top: 0, background: 'rgba(0,0,0,0.4)', padding: '1px 0' }}>LIVE LOG</div>
@@ -1733,6 +1805,66 @@ export default function TrinityCanvas() {
                     <span style={{ color: mirrorStatus.materiya.tvc_corpus_size > 0 ? '#00ccff' : 'rgba(0,200,255,0.3)' }}>Corpus:{mirrorStatus.materiya.tvc_corpus_size}</span>
                     <span style={{ color: mirrorStatus.materiya.cache_hit_rate > 0 ? '#00ccff' : 'rgba(0,200,255,0.3)' }}>Cache:{(mirrorStatus.materiya.cache_hit_rate * 100).toFixed(0)}%</span>
                     <span style={{ color: 'rgba(0,200,255,0.3)' }}>{activeFileIndex.length} files{backendFiles ? ' (live)' : ''}</span>
+                  </div>
+                )}
+
+                {/* ── Storage Network: Peers + Shards + RS (v2.7) ── */}
+                {storageMetrics && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '4px 0', borderTop: '1px solid rgba(0,200,255,0.1)' }}>
+                    {sectionHeader('peers', 'PEER HEALTH', '#00ccff')}
+                    {!storageCollapsed['peers'] && (
+                      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: 2, flex: 1 }}>
+                          {Array.from({ length: storageMetrics.node_count }, (_, i) => (
+                            <div key={i} style={{
+                              width: 8, height: 8, borderRadius: 2,
+                              background: i < storageMetrics.nodes_alive ? '#00e599' : '#ff4444',
+                              opacity: i < storageMetrics.nodes_alive ? 0.8 : 0.5,
+                            }} />
+                          ))}
+                        </div>
+                        <span style={{ color: '#00ccff', fontSize: 8, fontFamily: MONO }}>
+                          {storageMetrics.nodes_alive}/{storageMetrics.node_count}
+                        </span>
+                      </div>
+                    )}
+
+                    {sectionHeader('shards', 'SHARD DISTRIBUTION', '#00ccff')}
+                    {!storageCollapsed['shards'] && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <div style={{ display: 'flex', gap: 6, fontSize: 8, fontFamily: MONO }}>
+                          <span style={{ color: '#00ccff' }}>Shards:{storageMetrics.total_shards}</span>
+                          <span style={{ color: 'rgba(0,200,255,0.6)' }}>Tracked:{storageMetrics.shards_tracked}</span>
+                          <span style={{ color: 'rgba(0,200,255,0.4)' }}>Rebal:{storageMetrics.shards_rebalanced}</span>
+                        </div>
+                        <div style={{ position: 'relative', height: 6, borderRadius: 3, background: 'rgba(0,200,255,0.1)', overflow: 'hidden' }}>
+                          <motion.div
+                            animate={{ width: `${storagePercent}%` }}
+                            transition={{ duration: 0.5 }}
+                            style={{
+                              height: '100%', borderRadius: 3,
+                              background: storagePercent > 80 ? '#ff4444' : storagePercent > 60 ? '#ffd700' : '#00e599',
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 7, fontFamily: MONO }}>
+                          <span style={{ color: 'rgba(0,200,255,0.5)' }}>{fmtBytes(storageMetrics.total_bytes_used)} used</span>
+                          <span style={{ color: 'rgba(0,200,255,0.3)' }}>{fmtBytes(storageMetrics.total_bytes_available)} avail</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {sectionHeader('rs', 'RS CONFIG', '#00ccff')}
+                    {!storageCollapsed['rs'] && (
+                      <div style={{ display: 'flex', gap: 6, fontSize: 8, fontFamily: MONO }}>
+                        <span style={{ color: '#00ccff' }}>k={storageMetrics.rs_data_shards}</span>
+                        <span style={{ color: 'rgba(0,200,255,0.6)' }}>m={storageMetrics.rs_parity_shards}</span>
+                        <span style={{ color: 'rgba(0,200,255,0.4)' }}>
+                          Tol: {storageMetrics.rs_parity_shards}/{storageMetrics.rs_data_shards + storageMetrics.rs_parity_shards}
+                        </span>
+                        <span style={{ color: '#00e599' }}>Rep x{storageMetrics.target_replication}</span>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1827,6 +1959,74 @@ export default function TrinityCanvas() {
                         <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 7, fontFamily: MONO }}>{p.name} ({p.calls})</div>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* ── Storage Network: Recovery + Transfer + PoS (v2.7) ── */}
+                {storageMetrics && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '4px 0', borderTop: '1px solid rgba(170,100,255,0.1)' }}>
+                    {sectionHeader('recovery', 'RECOVERY', '#aa66ff')}
+                    {!storageCollapsed['recovery'] && (
+                      <div style={{ display: 'flex', gap: 6, fontSize: 8, fontFamily: MONO }}>
+                        <span style={{ color: storageMetrics.scrub_corruptions > 0 ? '#ff4444' : '#00e599' }}>
+                          Scrubs:{storageMetrics.scrub_total}
+                        </span>
+                        <span style={{ color: storageMetrics.scrub_corruptions > 0 ? '#ff4444' : 'rgba(170,100,255,0.4)' }}>
+                          Corrupt:{storageMetrics.scrub_corruptions}
+                        </span>
+                        <span style={{ color: '#00e599' }}>
+                          Rec:{storageMetrics.recoveries_successful} ({fmtBytes(storageMetrics.bytes_recovered)})
+                        </span>
+                      </div>
+                    )}
+
+                    {sectionHeader('bandwidth', 'NETWORK TRANSFER', '#aa66ff')}
+                    {!storageCollapsed['bandwidth'] && (
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        {[
+                          { label: 'UP', value: storageMetrics.total_upload, color: '#00ff88' },
+                          { label: 'DOWN', value: storageMetrics.total_download, color: '#00ccff' },
+                        ].map(t => (
+                          <div key={t.label} style={{ flex: 1, textAlign: 'center', background: 'rgba(170,100,255,0.04)', backdropFilter: 'blur(8px)', padding: '3px', borderRadius: 6, border: '1px solid rgba(170,100,255,0.08)' }}>
+                            <div style={{ color: t.color, fontSize: 11, fontFamily: MONO, fontWeight: 700 }}>
+                              {fmtBytes(t.value)}
+                            </div>
+                            <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 7, fontFamily: MONO }}>{t.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {sectionHeader('pos', 'PoS PROOF RATE', '#aa66ff')}
+                    {!storageCollapsed['pos'] && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <div style={{ position: 'relative', flex: 1, height: 6, borderRadius: 3, background: 'rgba(170,100,255,0.1)', overflow: 'hidden' }}>
+                            <motion.div
+                              animate={{ width: `${posPassRate}%` }}
+                              transition={{ duration: 0.5 }}
+                              style={{
+                                height: '100%', borderRadius: 3,
+                                background: posPassRate > 95 ? '#00e599' : posPassRate > 80 ? '#ffd700' : '#ff4444',
+                              }}
+                            />
+                          </div>
+                          <span style={{
+                            color: posPassRate > 95 ? '#00e599' : posPassRate > 80 ? '#ffd700' : '#ff4444',
+                            fontSize: 9, fontFamily: MONO, fontWeight: 700,
+                          }}>
+                            {posPassRate.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, fontSize: 7, fontFamily: MONO }}>
+                          <span style={{ color: 'rgba(170,100,255,0.5)' }}>Issued:{storageMetrics.pos_challenges_issued}</span>
+                          <span style={{ color: '#00e599' }}>Pass:{storageMetrics.pos_challenges_passed}</span>
+                          <span style={{ color: storageMetrics.pos_challenges_failed > 0 ? '#ff4444' : 'rgba(170,100,255,0.3)' }}>
+                            Fail:{storageMetrics.pos_challenges_failed}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
