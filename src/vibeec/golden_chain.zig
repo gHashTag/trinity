@@ -30,7 +30,7 @@ pub const CONTENT_DIGEST_LEN = 64;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 288; // v2.28: was 280, +8 for Swarm 10M + u8 FULL (u8: 256/256 FULL)
+pub const MAX_QUARK_RECORDS = 296; // v2.29: was 288, +8 for Swarm 1B + u16 upgrade (u16: 264/65536)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -316,6 +316,11 @@ pub const ChainMessageType = enum {
     Community5MUpdate, // Community 5M growth event
     EarningUltimateEvent, // $TRI earning ultimate event
     NodeDiscovery10MEvent, // Node discovery 10M event
+    // v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode
+    Swarm1BEvent, // Swarm 1B scaling event
+    Community500MUpdate, // Community 500M growth event
+    EarningGodModeEvent, // $TRI earning god mode event
+    NodeDiscovery1BEvent, // Node discovery 1B event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -402,7 +407,7 @@ pub const ProvenanceRecord = struct {
 // v1.2 QUARK TYPE — 16 sub-step micro-operations
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const QuarkType = enum(u8) {
+pub const QuarkType = enum(u16) {
     input_capture, // 0 — Capture raw user input
     goal_classify, // 1 — Classify intent type
     task_decompose, // 2 — Break into subtasks
@@ -696,6 +701,15 @@ pub const QuarkType = enum(u8) {
     swarm_failover_10m, // 253 — Swarm failover 10M record
     dao_governance_10m, // 254 — DAO governance 10M record
     swarm_anchor_10m, // 255 — Swarm anchor 10M record (u8 FULL)
+    // v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode (u16: 264/65536)
+    swarm_1b, // 256 — Swarm 1B scaling record (FIRST u16 variant!)
+    community_500m, // 257 — Community 500M growth record
+    earning_god_mode, // 258 — $TRI earning god mode record
+    node_discovery_1b, // 259 — Node discovery 1B record
+    swarm_health_1b, // 260 — Swarm health 1B record
+    swarm_failover_1b, // 261 — Swarm failover 1B record
+    dao_governance_1b, // 262 — DAO governance 1B record
+    swarm_anchor_1b, // 263 — Swarm anchor 1B record
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -978,6 +992,15 @@ pub const QuarkType = enum(u8) {
             .swarm_failover_10m => "SWF_10M",
             .dao_governance_10m => "DAO_10M",
             .swarm_anchor_10m => "SWA_10M",
+            // v2.29: u16 Upgrade labels
+            .swarm_1b => "SWM_1B",
+            .community_500m => "COM_500M",
+            .earning_god_mode => "ERN_GOD",
+            .node_discovery_1b => "NOD_1B",
+            .swarm_health_1b => "SWH_1B",
+            .swarm_failover_1b => "SWF_1B",
+            .dao_governance_1b => "DAO_1B",
+            .swarm_anchor_1b => "SWA_1B",
         };
     }
 
@@ -1513,6 +1536,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isNodeDiscovery10MQuark(self: QuarkType) bool {
         return self == .node_discovery_10m or self == .swarm_failover_10m;
+    }
+
+    // v2.29: u16 Upgrade classifiers — Swarm 1B + Community 500M + God Mode
+    pub fn isSwarm1BQuark(self: QuarkType) bool {
+        return self == .swarm_1b or self == .swarm_anchor_1b;
+    }
+
+    pub fn isCommunity500MQuark(self: QuarkType) bool {
+        return self == .community_500m or self == .dao_governance_1b;
+    }
+
+    pub fn isEarningGodModeQuark(self: QuarkType) bool {
+        return self == .earning_god_mode or self == .swarm_failover_1b;
+    }
+
+    pub fn isNodeDiscovery1BQuark(self: QuarkType) bool {
+        return self == .node_discovery_1b or self == .swarm_health_1b;
     }
 };
 
@@ -2260,6 +2300,14 @@ pub const EARNING_ULTIMATE_UTRI_PER_HOUR: u64 = 100_000; // 0.1 $TRI/hour = 100,
 pub const NODE_DISCOVERY_INTERVAL_US: i64 = 5_000_000; // 5 second node discovery
 pub const SWARM_HEALTH_CHECK_INTERVAL_US: i64 = 10_000_000; // 10 second health check
 pub const MAX_SWARM_CHANNELS: u32 = 1_000_000; // 1M swarm channels
+
+// v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode constants
+pub const SWARM_1B_TARGET: u64 = 1_000_000_000; // 1B swarm nodes target
+pub const COMMUNITY_500M_TARGET: u64 = 500_000_000; // 500M community users target
+pub const EARNING_GOD_MODE_UTRI_PER_HOUR: u64 = 500_000; // 0.5 $TRI/hour = 500,000 uTRI/hour
+pub const NODE_DISCOVERY_1B_INTERVAL_US: i64 = 3_000_000; // 3 second node discovery (faster for 1B)
+pub const SWARM_1B_HEALTH_CHECK_INTERVAL_US: i64 = 5_000_000; // 5 second health check (faster for 1B)
+pub const MAX_GOD_MODE_CHANNELS: u32 = 10_000_000; // 10M god mode channels
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -3084,15 +3132,48 @@ pub const NodeDiscovery10MState = struct {
     discovery_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode types
+pub const Swarm1BState = struct {
+    swarm_1b_events: u64 = 0,
+    nodes_active_1b: u64 = 0,
+    nodes_discovered_1b: u64 = 0,
+    last_swarm_1b_us: i64 = 0,
+    swarm_1b_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const Community500MState = struct {
+    community_500m_events: u64 = 0,
+    members_active_500m: u64 = 0,
+    monthly_contributors_500m: u64 = 0,
+    last_community_500m_us: i64 = 0,
+    community_500m_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EarningGodModeState = struct {
+    god_mode_events: u64 = 0,
+    total_earned_god_utri: u64 = 0,
+    earning_rate_god_utri: u64 = 0,
+    last_god_mode_us: i64 = 0,
+    god_mode_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const NodeDiscovery1BState = struct {
+    discovery_1b_events: u64 = 0,
+    nodes_registered_1b: u64 = 0,
+    nodes_healthy_1b: u64 = 0,
+    last_discovery_1b_us: i64 = 0,
+    discovery_1b_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.3/v1.4 EXPORT CONSTANTS — on-chain serialization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 32; // v2.28: bumped from 31
+pub const QUARK_EXPORT_VERSION: u16 = 33; // v2.29: bumped from 32 (u16 upgrade)
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 146; // v2.28: was 142, +4 for swarm_10m_events(u16)+community_5m_events(u16)
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 150; // v2.29: was 146, +4 for swarm_1b_events(u16)+community_500m_events(u16)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GOLDEN CHAIN AGENT — unified 8-node pipeline
@@ -3310,6 +3391,12 @@ pub const GoldenChainAgent = struct {
         earning_ultimate_state: EarningUltimateState,
         node_discovery_10m_state: NodeDiscovery10MState,
         swarm_10m_active: bool,
+        // v2.29: u16 Upgrade fields — Swarm 1B + Community 500M + God Mode
+        swarm_1b_state: Swarm1BState,
+        community_500m_state: Community500MState,
+        earning_god_mode_state: EarningGodModeState,
+        node_discovery_1b_state: NodeDiscovery1BState,
+        swarm_1b_active: bool,
 
     const Self = @This();
 
@@ -3526,6 +3613,12 @@ pub const GoldenChainAgent = struct {
             .earning_ultimate_state = .{},
             .node_discovery_10m_state = .{},
             .swarm_10m_active = false,
+            // v2.29: u16 Upgrade defaults
+            .swarm_1b_state = .{},
+            .community_500m_state = .{},
+            .earning_god_mode_state = .{},
+            .node_discovery_1b_state = .{},
+            .swarm_1b_active = false,
         };
     }
 
@@ -3808,7 +3901,7 @@ pub const GoldenChainAgent = struct {
         self.quark_chain_verified = self.verifyQuarkChain();
         if (self.quark_chain_verified) {
             var qvbuf: [256]u8 = undefined;
-            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/288 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect+swarm_10m+zk_rollup_v2+cross_shard_tx_v1+formal_verify_v1+swarm_100m+global_dominance+ouroboros_evolve+tri_to_ten+tri_to_hundred+swarm_10m_full intact)", .{self.quark_count}) catch "Quarks VERIFIED";
+            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/296 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect+swarm_10m+zk_rollup_v2+cross_shard_tx_v1+formal_verify_v1+swarm_100m+global_dominance+ouroboros_evolve+tri_to_ten+tri_to_hundred+swarm_10m_full+swarm_1b_u16 intact)", .{self.quark_count}) catch "Quarks VERIFIED";
             self.emitMsg(.TruthVerification, .Deliver, null, qvmsg, 1.0, 0);
         } else {
             self.emitMsg(.TruthVerification, .Deliver, null, "Quark chain: BROKEN", 0.0, 0);
@@ -5090,6 +5183,45 @@ pub const GoldenChainAgent = struct {
         }
         self.swarm_10m_active = true;
 
+        // v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode
+        self.scaleSwarm1B();
+        {
+            var s1bbuf: [128]u8 = undefined;
+            const s1bmsg = std.fmt.bufPrint(&s1bbuf, "Swarm 1B: {d} active, {d} discovered", .{
+                self.swarm_1b_state.nodes_active_1b,
+                self.swarm_1b_state.nodes_discovered_1b,
+            }) catch "Swarm 1B active";
+            self.emitMsg(.Swarm1BEvent, .Deliver, null, s1bmsg, 1.0, 0);
+        }
+        self.growCommunity500M();
+        {
+            var c500buf: [128]u8 = undefined;
+            const c500msg = std.fmt.bufPrint(&c500buf, "Community 500M: {d} members, {d} contributors", .{
+                self.community_500m_state.members_active_500m,
+                self.community_500m_state.monthly_contributors_500m,
+            }) catch "Community 500M active";
+            self.emitMsg(.Community500MUpdate, .Deliver, null, c500msg, 1.0, 0);
+        }
+        self.boostEarningGodMode();
+        {
+            var egmbuf: [128]u8 = undefined;
+            const egmmsg = std.fmt.bufPrint(&egmbuf, "Earning God Mode: {d} uTRI total, {d} uTRI/hour", .{
+                self.earning_god_mode_state.total_earned_god_utri,
+                self.earning_god_mode_state.earning_rate_god_utri,
+            }) catch "Earning God Mode active";
+            self.emitMsg(.EarningGodModeEvent, .Deliver, null, egmmsg, 1.0, 0);
+        }
+        self.discoverNodes1B();
+        {
+            var nd1bbuf: [128]u8 = undefined;
+            const nd1bmsg = std.fmt.bufPrint(&nd1bbuf, "Node Discovery 1B: {d} registered, {d} healthy", .{
+                self.node_discovery_1b_state.nodes_registered_1b,
+                self.node_discovery_1b_state.nodes_healthy_1b,
+            }) catch "Node discovery 1B active";
+            self.emitMsg(.NodeDiscovery1BEvent, .Deliver, null, nd1bmsg, 1.0, 0);
+        }
+        self.swarm_1b_active = true;
+
         // Update global wave state
         igla_hybrid.g_last_wave_state = .{
             .similarity = self.state.total_confidence,
@@ -5523,6 +5655,9 @@ pub const GoldenChainAgent = struct {
         // Phase AI: Swarm 10M + u8 FULL integrity (v2.28)
         if (!self.swarm10MVerify()) return false;
 
+        // Phase AJ: u16 Upgrade + Swarm 1B + God Mode integrity (v2.29)
+        if (!self.swarm1BVerify()) return false;
+
         return true;
     }
 
@@ -5823,6 +5958,13 @@ pub const GoldenChainAgent = struct {
         const cm5m_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.community_5m_state.community_events, std.math.maxInt(u16)))));
         @memcpy(buf[pos .. pos + 2], &cm5m_bytes);
         pos += 2;
+        // v2.29: swarm_1b_events(2) + community_500m_events(2)
+        const sw1b_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.swarm_1b_state.swarm_1b_events, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &sw1b_bytes);
+        pos += 2;
+        const c500m_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.community_500m_state.community_500m_events, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &c500m_bytes);
+        pos += 2;
 
         // Provenance records (158 bytes each)
         var pi: u8 = 0;
@@ -5905,10 +6047,10 @@ pub const GoldenChainAgent = struct {
 
         // Read version (support v1, v2, v3, v4, v5, v6, v7)
         const ver: u16 = @bitCast(buf[pos .. pos + 2][0..2].*);
-        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17 and ver != 18 and ver != 19 and ver != 20 and ver != 21 and ver != 22 and ver != 23 and ver != 24 and ver != 25 and ver != 26 and ver != 27 and ver != 28 and ver != 29 and ver != 30 and ver != 31 and ver != 32) return false;
+        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17 and ver != 18 and ver != 19 and ver != 20 and ver != 21 and ver != 22 and ver != 23 and ver != 24 and ver != 25 and ver != 26 and ver != 27 and ver != 28 and ver != 29 and ver != 30 and ver != 31 and ver != 32 and ver != 33) return false;
         pos += 2;
 
-        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else if (ver == 17) 86 else if (ver == 18) 90 else if (ver == 19) 94 else if (ver == 20) 98 else if (ver == 21) 102 else if (ver == 22) 106 else if (ver == 23) 110 else if (ver == 24) 114 else if (ver == 25) 118 else if (ver == 26) 122 else if (ver == 27) 126 else if (ver == 28) 130 else if (ver == 29) 134 else if (ver == 30) 138 else if (ver == 31) 142 else 146;
+        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else if (ver == 17) 86 else if (ver == 18) 90 else if (ver == 19) 94 else if (ver == 20) 98 else if (ver == 21) 102 else if (ver == 22) 106 else if (ver == 23) 110 else if (ver == 24) 114 else if (ver == 25) 118 else if (ver == 26) 122 else if (ver == 27) 126 else if (ver == 28) 130 else if (ver == 29) 134 else if (ver == 30) 138 else if (ver == 31) 142 else if (ver == 32) 146 else 150;
         if (buf.len < header_size) return false;
 
         const prov_count = buf[pos];
@@ -6225,6 +6367,16 @@ pub const GoldenChainAgent = struct {
             pos += 2;
         }
 
+        // v2.29: swarm_1b_events + community_500m_events
+        var swarm_1b_events_cnt: u16 = 0;
+        var community_500m_events_cnt: u16 = 0;
+        if (ver >= 33) {
+            swarm_1b_events_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+            community_500m_events_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+        }
+
         // Validate sizes
         if (prov_count > MAX_PROVENANCE_RECORDS or qcount > MAX_QUARK_RECORDS) return false;
         const expected_size = header_size +
@@ -6397,6 +6549,10 @@ pub const GoldenChainAgent = struct {
         // v2.28: restore Swarm 10M fields
         self.swarm_10m_state.swarm_events = @intCast(swarm_10m_events_cnt);
         self.community_5m_state.community_events = @intCast(community_5m_events_cnt);
+
+        // v2.29: restore Swarm 1B + Community 500M fields
+        self.swarm_1b_state.swarm_1b_events = @intCast(swarm_1b_events_cnt);
+        self.community_500m_state.community_500m_events = @intCast(community_500m_events_cnt);
 
         return true;
     }
@@ -9031,6 +9187,62 @@ pub const GoldenChainAgent = struct {
         return true;
     }
 
+    // v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode methods
+    fn scaleSwarm1B(self: *Self) void {
+        self.swarm_1b_state.swarm_1b_events += 1;
+        self.swarm_1b_state.nodes_active_1b +|= 1;
+        self.swarm_1b_state.nodes_discovered_1b +|= 1;
+        self.swarm_1b_state.last_swarm_1b_us = std.time.microTimestamp();
+        var h = std.crypto.hash.sha2.Sha256.init(.{});
+        h.update("swarm_1b_v2.29");
+        h.update(std.mem.asBytes(&self.swarm_1b_state.swarm_1b_events));
+        h.final(&self.swarm_1b_state.swarm_1b_hash);
+        self.swarm_1b_active = true;
+    }
+
+    fn growCommunity500M(self: *Self) void {
+        self.community_500m_state.community_500m_events += 1;
+        self.community_500m_state.members_active_500m +|= 1;
+        self.community_500m_state.monthly_contributors_500m +|= 1;
+        self.community_500m_state.last_community_500m_us = std.time.microTimestamp();
+        var h = std.crypto.hash.sha2.Sha256.init(.{});
+        h.update("community_500m_v2.29");
+        h.update(std.mem.asBytes(&self.community_500m_state.community_500m_events));
+        h.final(&self.community_500m_state.community_500m_hash);
+    }
+
+    fn boostEarningGodMode(self: *Self) void {
+        self.earning_god_mode_state.god_mode_events += 1;
+        self.earning_god_mode_state.earning_rate_god_utri = EARNING_GOD_MODE_UTRI_PER_HOUR;
+        self.earning_god_mode_state.total_earned_god_utri +|= EARNING_GOD_MODE_UTRI_PER_HOUR;
+        self.earning_god_mode_state.last_god_mode_us = std.time.microTimestamp();
+        var h = std.crypto.hash.sha2.Sha256.init(.{});
+        h.update("earning_god_mode_v2.29");
+        h.update(std.mem.asBytes(&self.earning_god_mode_state.god_mode_events));
+        h.final(&self.earning_god_mode_state.god_mode_hash);
+    }
+
+    fn discoverNodes1B(self: *Self) void {
+        self.node_discovery_1b_state.discovery_1b_events += 1;
+        self.node_discovery_1b_state.nodes_registered_1b +|= 1;
+        self.node_discovery_1b_state.nodes_healthy_1b +|= 1;
+        self.node_discovery_1b_state.last_discovery_1b_us = std.time.microTimestamp();
+        var h = std.crypto.hash.sha2.Sha256.init(.{});
+        h.update("node_discovery_1b_v2.29");
+        h.update(std.mem.asBytes(&self.node_discovery_1b_state.discovery_1b_events));
+        h.final(&self.node_discovery_1b_state.discovery_1b_hash);
+    }
+
+    fn swarm1BVerify(self: *const Self) bool {
+        // AJ1: Swarm 1B events must exist
+        if (self.swarm_1b_state.swarm_1b_events == 0) return false;
+        // AJ2: Community 500M events must exist
+        if (self.community_500m_state.community_500m_events == 0) return false;
+        // AJ3: God mode events must exist
+        if (self.earning_god_mode_state.god_mode_events == 0) return false;
+        return true;
+    }
+
     // ── v1.3: Node Quark Summary ──
 
     /// Emit a single summary line for a node's quarks (used in summary verbosity mode).
@@ -9148,6 +9360,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.tri_to_ten, .GoalParse, "tri_to_ten", conf, self.quark_count - 1, null);
         self.recordQuark(.tri_to_hundred, .GoalParse, "tri_to_hundred", conf, self.quark_count - 1, null);
         self.recordQuark(.swarm_10m, .GoalParse, "swarm_10m", conf, self.quark_count - 1, null);
+        self.recordQuark(.swarm_1b, .GoalParse, "swarm_1b", conf, self.quark_count - 1, null);
 
         // Q19: hash_verify — entangles with work quarks
         const prev_q = if (self.quark_count >= 2) self.quark_count - 2 else 0;
@@ -9242,6 +9455,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.mass_adoption, .Decompose, "mass_adoption", conf, self.quark_count - 1, null);
         self.recordQuark(.universal_adoption, .Decompose, "universal_adoption", conf, self.quark_count - 1, null);
         self.recordQuark(.community_5m, .Decompose, "community_5m", conf, self.quark_count - 1, null);
+        self.recordQuark(.community_500m, .Decompose, "community_500m", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -9336,6 +9550,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.exchange_listing, .Schedule, "exchange_listing", conf, self.quark_count - 1, null);
         self.recordQuark(.exchange_v2, .Schedule, "exchange_v2", conf, self.quark_count - 1, null);
         self.recordQuark(.earning_ultimate, .Schedule, "earning_ultimate", conf, self.quark_count - 1, null);
+        self.recordQuark(.earning_god_mode, .Schedule, "earning_god_mode", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -9432,6 +9647,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.universal_wallet, .Execute, "universal_wallet", conf, self.quark_count - 1, null);
         self.recordQuark(.global_wallet, .Execute, "global_wallet", conf, self.quark_count - 1, null);
         self.recordQuark(.node_discovery_10m, .Execute, "node_discovery_10m", conf, self.quark_count - 1, null);
+        self.recordQuark(.node_discovery_1b, .Execute, "node_discovery_1b", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + SCHEDULE hash_verify
         const sched_hv = self.lastHashVerifyOfNode(.Schedule);
@@ -9524,6 +9740,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.adoption_health, .Monitor, "adoption_health", conf, self.quark_count - 1, null);
         self.recordQuark(.adoption_10b, .Monitor, "adoption_10b", conf, self.quark_count - 1, null);
         self.recordQuark(.swarm_health_10m, .Monitor, "swarm_health_10m", conf, self.quark_count - 1, null);
+        self.recordQuark(.swarm_health_1b, .Monitor, "swarm_health_1b", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -9613,6 +9830,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.exchange_distribute, .Adapt, "exchange_distribute", conf, self.quark_count - 1, null);
         self.recordQuark(.exchange_scale, .Adapt, "exchange_scale", conf, self.quark_count - 1, null);
         self.recordQuark(.swarm_failover_10m, .Adapt, "swarm_failover_10m", conf, self.quark_count - 1, null);
+        self.recordQuark(.swarm_failover_1b, .Adapt, "swarm_failover_1b", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quark + MONITOR hash_verify
         const mon_hv = self.lastHashVerifyOfNode(.Monitor);
@@ -9705,6 +9923,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.wallet_govern, .Synthesize, "wallet_govern", conf, self.quark_count - 1, null);
         self.recordQuark(.wallet_universal, .Synthesize, "wallet_universal", conf, self.quark_count - 1, null);
         self.recordQuark(.dao_governance_10m, .Synthesize, "dao_governance_10m", conf, self.quark_count - 1, null);
+        self.recordQuark(.dao_governance_1b, .Synthesize, "dao_governance_1b", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -9798,6 +10017,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.mass_adoption_anchor, .Deliver, "mass_adoption_anchor", conf, self.quark_count - 1, null);
         self.recordQuark(.beyond_anchor, .Deliver, "beyond_anchor", conf, self.quark_count - 1, null);
         self.recordQuark(.swarm_anchor_10m, .Deliver, "swarm_anchor_10m", conf, self.quark_count - 1, null);
+        self.recordQuark(.swarm_anchor_1b, .Deliver, "swarm_anchor_1b", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -9819,8 +10039,8 @@ test "ChainNode colors and labels" {
     try std.testing.expectEqual(@as(f32, 0.0), node.getHue());
     try std.testing.expectEqualStrings("GOAL_PARSE", node.getLabel());
     const rgb = node.getRGB();
-    try std.testing.expectEqual(@as(u8, 0xFF), rgb.r);
-    try std.testing.expectEqual(@as(u8, 0x00), rgb.g);
+    try std.testing.expectEqual(@as(u16,0xFF), rgb.r);
+    try std.testing.expectEqual(@as(u16,0x00), rgb.g);
 }
 
 test "ChainNode Deliver is Gold" {
@@ -9828,8 +10048,8 @@ test "ChainNode Deliver is Gold" {
     try std.testing.expectEqual(@as(f32, 45.0), node.getHue());
     try std.testing.expectEqualStrings("DELIVER", node.getLabel());
     const rgb = node.getRGB();
-    try std.testing.expectEqual(@as(u8, 0xFF), rgb.r);
-    try std.testing.expectEqual(@as(u8, 0xD7), rgb.g);
+    try std.testing.expectEqual(@as(u16,0xFF), rgb.r);
+    try std.testing.expectEqual(@as(u16,0xD7), rgb.g);
 }
 
 test "ChainState init and lifecycle" {
@@ -10067,8 +10287,8 @@ test "QuarkType verification classification" {
             try std.testing.expect(qt.isWorkQuark());
         }
     }
-    try std.testing.expectEqual(@as(u8, 26), work_count);
-    try std.testing.expectEqual(@as(u8, 3), verify_count);
+    try std.testing.expectEqual(@as(u16,26), work_count);
+    try std.testing.expectEqual(@as(u16,3), verify_count);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -10146,9 +10366,9 @@ test "searchQuarks by type" {
 
     var results: [MAX_QUARK_RECORDS]u8 = undefined;
     const count = agent.searchQuarks(.{ .filter_type = .vsa_bind }, &results);
-    try std.testing.expectEqual(@as(u8, 2), count);
-    try std.testing.expectEqual(@as(u8, 0), results[0]);
-    try std.testing.expectEqual(@as(u8, 2), results[1]);
+    try std.testing.expectEqual(@as(u16,2), count);
+    try std.testing.expectEqual(@as(u16,0), results[0]);
+    try std.testing.expectEqual(@as(u16,2), results[1]);
 }
 
 test "searchQuarks by node" {
@@ -10160,7 +10380,7 @@ test "searchQuarks by node" {
 
     var results: [MAX_QUARK_RECORDS]u8 = undefined;
     const count = agent.searchQuarks(.{ .filter_node = .Execute }, &results);
-    try std.testing.expectEqual(@as(u8, 2), count);
+    try std.testing.expectEqual(@as(u16,2), count);
 }
 
 test "searchQuarks by confidence range" {
@@ -10173,7 +10393,7 @@ test "searchQuarks by confidence range" {
 
     var results: [MAX_QUARK_RECORDS]u8 = undefined;
     const count = agent.searchQuarks(.{ .min_confidence = 0.7, .max_confidence = 0.9 }, &results);
-    try std.testing.expectEqual(@as(u8, 2), count); // 0.75 and 0.85
+    try std.testing.expectEqual(@as(u16,2), count); // 0.75 and 0.85
 }
 
 test "searchQuarks verification_only" {
@@ -10186,9 +10406,9 @@ test "searchQuarks verification_only" {
 
     var results: [MAX_QUARK_RECORDS]u8 = undefined;
     const count = agent.searchQuarks(.{ .verification_only = true }, &results);
-    try std.testing.expectEqual(@as(u8, 2), count);
-    try std.testing.expectEqual(@as(u8, 1), results[0]); // hash_verify
-    try std.testing.expectEqual(@as(u8, 2), results[1]); // gluon_verify
+    try std.testing.expectEqual(@as(u16,2), count);
+    try std.testing.expectEqual(@as(u16,1), results[0]); // hash_verify
+    try std.testing.expectEqual(@as(u16,2), results[1]); // gluon_verify
 }
 
 test "serializeQuarkChain roundtrip" {
@@ -10245,8 +10465,8 @@ test "serializeQuarkChain roundtrip" {
     try std.testing.expect(ok);
 
     // Verify restored state
-    try std.testing.expectEqual(@as(u8, 1), agent2.provenance_count);
-    try std.testing.expectEqual(@as(u8, 1), agent2.quark_count);
+    try std.testing.expectEqual(@as(u16,1), agent2.provenance_count);
+    try std.testing.expectEqual(@as(u16,1), agent2.quark_count);
     try std.testing.expect(agent2.chain_verified);
     try std.testing.expect(agent2.quark_chain_verified);
     try std.testing.expectEqual(@as(f32, 0.95), agent2.provenance[0].confidence);
@@ -10431,12 +10651,12 @@ test "getDAGEdges returns correct edges" {
     var edges: [MAX_DAG_EDGES]DAGEdge = undefined;
     const count = agent.getDAGEdges(&edges);
     try std.testing.expectEqual(@as(u16, 3), count);
-    try std.testing.expectEqual(@as(u8, 1), edges[0].from);
-    try std.testing.expectEqual(@as(u8, 0), edges[0].to);
-    try std.testing.expectEqual(@as(u8, 2), edges[1].from);
-    try std.testing.expectEqual(@as(u8, 0), edges[1].to);
-    try std.testing.expectEqual(@as(u8, 2), edges[2].from);
-    try std.testing.expectEqual(@as(u8, 1), edges[2].to);
+    try std.testing.expectEqual(@as(u16,1), edges[0].from);
+    try std.testing.expectEqual(@as(u16,0), edges[0].to);
+    try std.testing.expectEqual(@as(u16,2), edges[1].from);
+    try std.testing.expectEqual(@as(u16,0), edges[1].to);
+    try std.testing.expectEqual(@as(u16,2), edges[2].from);
+    try std.testing.expectEqual(@as(u16,1), edges[2].to);
 }
 
 test "getDAGStats computes correctly" {
@@ -10456,10 +10676,10 @@ test "getDAGStats computes correctly" {
 
     const stats = agent.getDAGStats();
     try std.testing.expectEqual(@as(u16, 4), stats.edge_count); // 0+1+2+1
-    try std.testing.expectEqual(@as(u8, 2), stats.max_fan_out); // quark[2] has 2
-    try std.testing.expectEqual(@as(u8, 3), stats.node_quark_counts[0]); // GoalParse has 3
-    try std.testing.expectEqual(@as(u8, 1), stats.node_quark_counts[3]); // Execute has 1
-    try std.testing.expectEqual(@as(u8, 3), stats.max_width); // GoalParse has 3
+    try std.testing.expectEqual(@as(u16,2), stats.max_fan_out); // quark[2] has 2
+    try std.testing.expectEqual(@as(u16,3), stats.node_quark_counts[0]); // GoalParse has 3
+    try std.testing.expectEqual(@as(u16,1), stats.node_quark_counts[3]); // Execute has 1
+    try std.testing.expectEqual(@as(u16,3), stats.max_width); // GoalParse has 3
 }
 
 test "calculateSessionReward verified high confidence" {
@@ -10574,8 +10794,8 @@ test "serializeQuarkChain v2 roundtrip with reward" {
     const ok = agent2.deserializeQuarkChain(serialized);
     try std.testing.expect(ok);
     try std.testing.expectEqual(@as(u64, 5000), agent2.total_reward_utri);
-    try std.testing.expectEqual(@as(u8, 1), agent2.provenance_count);
-    try std.testing.expectEqual(@as(u8, 1), agent2.quark_count);
+    try std.testing.expectEqual(@as(u16,1), agent2.provenance_count);
+    try std.testing.expectEqual(@as(u16,1), agent2.quark_count);
     try std.testing.expect(agent2.chain_verified);
 }
 
@@ -10697,7 +10917,7 @@ test "CollapsedNodeSummary correct structure" {
         .is_collapsed = true,
     };
     try std.testing.expectEqual(ChainNode.GoalParse, summary.node);
-    try std.testing.expectEqual(@as(u8, 7), summary.quark_count);
+    try std.testing.expectEqual(@as(u16,7), summary.quark_count);
     try std.testing.expect(summary.is_collapsed);
 }
 
@@ -10727,7 +10947,7 @@ test "StakingConfig defaults" {
     try std.testing.expectEqual(@as(i64, 86_400_000_000), cfg.lock_duration_us);
     try std.testing.expectEqual(@as(u64, 100), cfg.min_stake_utri);
     try std.testing.expect(!cfg.auto_restake);
-    try std.testing.expectEqual(@as(u8, 8), cfg.max_active_stakes);
+    try std.testing.expectEqual(@as(u16,8), cfg.max_active_stakes);
 }
 
 test "StakingRecord basic structure" {
@@ -10741,7 +10961,7 @@ test "StakingRecord basic structure" {
     };
     try std.testing.expectEqual(@as(u64, 1000), rec.amount_utri);
     try std.testing.expect(rec.is_active);
-    try std.testing.expectEqual(@as(u8, 0xAB), rec.chain_fingerprint[0]);
+    try std.testing.expectEqual(@as(u16,0xAB), rec.chain_fingerprint[0]);
 }
 
 test "StakingResult structure" {
@@ -10754,7 +10974,7 @@ test "StakingResult structure" {
     };
     try std.testing.expectEqual(@as(u64, 500), result.staked_utri);
     try std.testing.expectEqual(@as(u64, 1), result.yield_utri);
-    try std.testing.expectEqual(@as(u8, 2), result.active_stakes);
+    try std.testing.expectEqual(@as(u16,2), result.active_stakes);
 }
 
 test "Phase F stakingVerify passes with empty staking" {
@@ -10875,10 +11095,13 @@ test "QuarkType has 216 variants (u8, 216/256 used)" {
         // v2.28: Swarm 10M + u8 FULL (u8: 256/256 FULL)
         .swarm_10m,             .community_5m,       .earning_ultimate,     .node_discovery_10m,
         .swarm_health_10m,      .swarm_failover_10m, .dao_governance_10m,   .swarm_anchor_10m,
+        // v2.29: u16 Upgrade — first u16 variants (256-263)
+        .swarm_1b,              .community_500m,     .earning_god_mode,     .node_discovery_1b,
+        .swarm_health_1b,       .swarm_failover_1b,  .dao_governance_1b,    .swarm_anchor_1b,
     };
-    try std.testing.expectEqual(@as(usize, 256), types.len);
-    for (0..256) |i| {
-        for (i + 1..256) |j| {
+    try std.testing.expectEqual(@as(usize, 264), types.len);
+    for (0..264) |i| {
+        for (i + 1..264) |j| {
             try std.testing.expect(@intFromEnum(types[i]) != @intFromEnum(types[j]));
         }
     }
@@ -10959,7 +11182,7 @@ test "RepairRecord structure" {
         .confidence_after = 0.9,
         .timestamp_us = 1234567890,
     };
-    try std.testing.expectEqual(@as(u8, 5), rec.broken_index);
+    try std.testing.expectEqual(@as(u16,5), rec.broken_index);
     try std.testing.expectEqual(SelfRepairType.hash_recompute, rec.repair_type);
     try std.testing.expect(rec.confidence_after > rec.confidence_before);
 }
@@ -11002,8 +11225,8 @@ test "ChainHealthReport structure" {
         .broken = 1,
         .health_score = 0.95,
     };
-    try std.testing.expectEqual(@as(u8, 80), report.total);
-    try std.testing.expectEqual(@as(u8, 76), report.healthy);
+    try std.testing.expectEqual(@as(u16,80), report.total);
+    try std.testing.expectEqual(@as(u16,76), report.healthy);
     try std.testing.expect(report.health_score > 0.9);
     try std.testing.expectEqual(report.total, report.healthy + report.repaired + report.broken);
 }
@@ -11047,9 +11270,9 @@ test "v2.6 QuarkType verification count" {
             work_count += 1;
         }
     }
-    try std.testing.expectEqual(@as(u8, 80), work_count + verify_count);
-    try std.testing.expectEqual(@as(u8, 3), verify_count); // hash_verify, gluon_verify, phi_verify
-    try std.testing.expectEqual(@as(u8, 69), work_count);
+    try std.testing.expectEqual(@as(u16,80), work_count + verify_count);
+    try std.testing.expectEqual(@as(u16,3), verify_count); // hash_verify, gluon_verify, phi_verify
+    try std.testing.expectEqual(@as(u16,69), work_count);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -11130,8 +11353,8 @@ test "PublicCanvasState structure" {
         .wasm_ready = true,
         .native_ready = true,
     };
-    try std.testing.expectEqual(@as(u8, 1), cs.canvas_version_major);
-    try std.testing.expectEqual(@as(u8, 0), cs.canvas_version_minor);
+    try std.testing.expectEqual(@as(u16,1), cs.canvas_version_major);
+    try std.testing.expectEqual(@as(u16,0), cs.canvas_version_minor);
     try std.testing.expect(cs.is_public);
     try std.testing.expect(cs.wasm_ready);
     try std.testing.expect(cs.native_ready);
@@ -11159,8 +11382,8 @@ test "v2.1 constants correct" {
     try std.testing.expectEqual(@as(u64, 10_000), FAUCET_DAILY_LIMIT_UTRI);
     try std.testing.expectEqual(@as(i64, 86_400_000_000), PUBLIC_SESSION_TTL_US);
     try std.testing.expectEqual(@as(usize, 256), MAX_PUBLIC_SESSIONS);
-    try std.testing.expectEqual(@as(u8, 1), CANVAS_VERSION_MAJOR);
-    try std.testing.expectEqual(@as(u8, 0), CANVAS_VERSION_MINOR);
+    try std.testing.expectEqual(@as(u16,1), CANVAS_VERSION_MAJOR);
+    try std.testing.expectEqual(@as(u16,0), CANVAS_VERSION_MINOR);
 }
 
 test "v2.1 ChainMessageType has 4 new variants" {
@@ -11285,10 +11508,10 @@ test "AgentOSState initial" {
 }
 
 test "v2.2 constants correct" {
-    try std.testing.expectEqual(@as(u8, 67), CONSENSUS_QUORUM_PERCENT);
+    try std.testing.expectEqual(@as(u16,67), CONSENSUS_QUORUM_PERCENT);
     try std.testing.expectEqual(@as(i64, 10_000_000), NODE_SYNC_INTERVAL_US);
-    try std.testing.expectEqual(@as(u8, 1), AGENT_OS_VERSION_MAJOR);
-    try std.testing.expectEqual(@as(u8, 0), AGENT_OS_VERSION_MINOR);
+    try std.testing.expectEqual(@as(u16,1), AGENT_OS_VERSION_MAJOR);
+    try std.testing.expectEqual(@as(u16,0), AGENT_OS_VERSION_MINOR);
     try std.testing.expectEqual(@as(usize, 256), MAX_NETWORK_NODES);
     try std.testing.expectEqual(@as(u64, 1_000), STAKING_MAINNET_MIN_UTRI);
 }
@@ -11311,7 +11534,7 @@ test "v2.18 208 quarks target distribution" {
     // Each node got exactly +1 from v2.17 distribution (25+25+25+26+25+24+25+25=200)
     const v217_dist = [_]u8{ 25, 25, 25, 26, 25, 24, 25, 25 };
     for (dist, v217_dist) |d, v217| {
-        try std.testing.expectEqual(@as(u8, v217 + 1), d);
+        try std.testing.expectEqual(@as(u16,v217 + 1), d);
     }
 }
 
@@ -11382,10 +11605,10 @@ test "SwarmState initial" {
 }
 
 test "v2.3 constants correct" {
-    try std.testing.expectEqual(@as(u8, 67), DAO_VOTE_QUORUM_PERCENT);
+    try std.testing.expectEqual(@as(u16,67), DAO_VOTE_QUORUM_PERCENT);
     try std.testing.expectEqual(@as(usize, 512), MAX_SWARM_NODES);
-    try std.testing.expectEqual(@as(u8, 2), MAINNET_GENESIS_VERSION_MAJOR);
-    try std.testing.expectEqual(@as(u8, 3), MAINNET_GENESIS_VERSION_MINOR);
+    try std.testing.expectEqual(@as(u16,2), MAINNET_GENESIS_VERSION_MAJOR);
+    try std.testing.expectEqual(@as(u16,3), MAINNET_GENESIS_VERSION_MINOR);
     try std.testing.expectEqual(@as(u64, 1_000_000_000_000), MAX_TOKEN_SUPPLY_UTRI);
     try std.testing.expectEqual(@as(u64, 10_000), TOKEN_MINT_BATCH_UTRI);
     try std.testing.expectEqual(@as(usize, 64), MAX_DAO_PROPOSALS);
@@ -11472,7 +11695,7 @@ test "LaunchState initial" {
 test "NodeDiscoveryRecord defaults" {
     const ndr = NodeDiscoveryRecord{};
     try std.testing.expect(!ndr.is_active);
-    try std.testing.expectEqual(@as(u8, 0), ndr.node_type);
+    try std.testing.expectEqual(@as(u16,0), ndr.node_type);
 }
 
 test "v2.4 constants correct" {
@@ -11480,8 +11703,8 @@ test "v2.4 constants correct" {
     try std.testing.expectEqual(@as(u16, 64), MAX_NODE_DISCOVERY_RECORDS);
     try std.testing.expectEqual(@as(u16, 32), COMMUNITY_ONBOARD_BATCH);
     try std.testing.expectEqual(@as(u32, 1000), PUBLIC_API_RATE_LIMIT);
-    try std.testing.expectEqual(@as(u8, 1), MAINNET_LAUNCH_VERSION_MAJOR);
-    try std.testing.expectEqual(@as(u8, 0), MAINNET_LAUNCH_VERSION_MINOR);
+    try std.testing.expectEqual(@as(u16,1), MAINNET_LAUNCH_VERSION_MAJOR);
+    try std.testing.expectEqual(@as(u16,0), MAINNET_LAUNCH_VERSION_MINOR);
 }
 
 test "v2.4 ChainMessageType has 4 new variants" {
@@ -11572,7 +11795,7 @@ test "v2.5 SwarmOrchState defaults" {
 test "v2.5 SwarmFailoverConfig defaults" {
     const s = SwarmFailoverConfig{};
     try std.testing.expectEqual(SWARM_FAILOVER_THRESHOLD, s.failover_threshold);
-    try std.testing.expectEqual(@as(u8, 3), s.max_retries);
+    try std.testing.expectEqual(@as(u16,3), s.max_retries);
     try std.testing.expect(!s.is_failover_active);
 }
 
@@ -11584,7 +11807,7 @@ test "v2.5 SwarmTelemetryState defaults" {
 
 test "v2.5 SwarmReplicationRecord defaults" {
     const s = SwarmReplicationRecord{};
-    try std.testing.expectEqual(@as(u8, 0), s.replica_count);
+    try std.testing.expectEqual(@as(u16,0), s.replica_count);
     try std.testing.expectEqual(SWARM_REPLICATION_FACTOR, s.replication_factor);
     try std.testing.expect(!s.is_synced);
 }
@@ -11594,7 +11817,7 @@ test "v2.5 swarm constants" {
     try std.testing.expectEqual(@as(u16, 64), SWARM_SYNC_BATCH);
     try std.testing.expectEqual(@as(f32, 0.3), SWARM_FAILOVER_THRESHOLD);
     try std.testing.expectEqual(@as(i64, 1_000_000), SWARM_TELEMETRY_INTERVAL_US);
-    try std.testing.expectEqual(@as(u8, 3), SWARM_REPLICATION_FACTOR);
+    try std.testing.expectEqual(@as(u16,3), SWARM_REPLICATION_FACTOR);
 }
 
 test "v2.5 ChainMessageType swarm variants" {
@@ -11685,14 +11908,14 @@ test "v2.6 RewardDistributionState defaults" {
 test "v2.6 DAOGovernanceLiveState defaults" {
     const s = DAOGovernanceLiveState{};
     try std.testing.expectEqual(@as(f32, DAO_QUORUM_THRESHOLD), s.quorum_threshold);
-    try std.testing.expectEqual(@as(u8, 0), s.concurrent_proposals);
+    try std.testing.expectEqual(@as(u16,0), s.concurrent_proposals);
     try std.testing.expect(!s.is_governance_live);
 }
 
 test "v2.6 NodeScalingRecord defaults" {
     const s = NodeScalingRecord{};
     try std.testing.expectEqual(@as(i64, 0), s.scale_timestamp_us);
-    try std.testing.expectEqual(@as(u8, 0), s.sync_status);
+    try std.testing.expectEqual(@as(u16,0), s.sync_status);
     try std.testing.expect(!s.is_scaled);
 }
 
@@ -11712,7 +11935,7 @@ test "v2.6 constants" {
     try std.testing.expectEqual(@as(u16, 100), REWARD_DISTRIBUTION_BATCH);
     try std.testing.expectEqual(@as(u32, 10_000), REWARD_MAX_CLAIMS_PER_EPOCH);
     try std.testing.expectEqual(@as(f32, 0.67), DAO_QUORUM_THRESHOLD);
-    try std.testing.expectEqual(@as(u8, 16), DAO_MAX_CONCURRENT_PROPOSALS);
+    try std.testing.expectEqual(@as(u16,16), DAO_MAX_CONCURRENT_PROPOSALS);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -11784,22 +12007,22 @@ test "v2.7 CommunityNodeState27 defaults" {
 
 test "v2.7 GossipProtocolState defaults" {
     const state = GossipProtocolState{};
-    try std.testing.expectEqual(@as(u8, GOSSIP_FANOUT), state.fanout);
-    try std.testing.expectEqual(@as(u8, GOSSIP_TTL), state.ttl);
+    try std.testing.expectEqual(@as(u16,GOSSIP_FANOUT), state.fanout);
+    try std.testing.expectEqual(@as(u16,GOSSIP_TTL), state.ttl);
     try std.testing.expectEqual(@as(u64, 0), state.messages_sent);
 }
 
 test "v2.7 DHTState defaults" {
     const state = DHTState{};
-    try std.testing.expectEqual(@as(u8, DHT_REPLICATION_FACTOR_V2), state.replication_factor);
-    try std.testing.expectEqual(@as(u8, DHT_BUCKET_SIZE), state.bucket_size);
+    try std.testing.expectEqual(@as(u16,DHT_REPLICATION_FACTOR_V2), state.replication_factor);
+    try std.testing.expectEqual(@as(u16,DHT_BUCKET_SIZE), state.bucket_size);
     try std.testing.expectEqual(@as(u32, 0), state.lookups_completed);
 }
 
 test "v2.7 CommunityNodeRecord defaults" {
     const rec = CommunityNodeRecord{};
     try std.testing.expectEqual(@as(i64, 0), rec.join_timestamp_us);
-    try std.testing.expectEqual(@as(u8, 0), rec.gossip_status);
+    try std.testing.expectEqual(@as(u16,0), rec.gossip_status);
     try std.testing.expect(!rec.is_active);
 }
 
@@ -11831,10 +12054,10 @@ test "v2.7 ChainMessageType community variants" {
 test "v2.7 constants" {
     try std.testing.expectEqual(@as(u32, 50_000), COMMUNITY_MAX_NODES);
     try std.testing.expectEqual(@as(u16, 10_000), COMMUNITY_TARGET_NODES);
-    try std.testing.expectEqual(@as(u8, 8), GOSSIP_FANOUT);
-    try std.testing.expectEqual(@as(u8, 6), GOSSIP_TTL);
-    try std.testing.expectEqual(@as(u8, 3), DHT_REPLICATION_FACTOR_V2);
-    try std.testing.expectEqual(@as(u8, 20), DHT_BUCKET_SIZE);
+    try std.testing.expectEqual(@as(u16,8), GOSSIP_FANOUT);
+    try std.testing.expectEqual(@as(u16,6), GOSSIP_TTL);
+    try std.testing.expectEqual(@as(u16,3), DHT_REPLICATION_FACTOR_V2);
+    try std.testing.expectEqual(@as(u16,20), DHT_BUCKET_SIZE);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -11899,7 +12122,7 @@ test "v2.8 isYieldFarmingQuark classifier" {
 
 test "v2.8 DAODelegationState defaults" {
     const state = DAODelegationState{};
-    try std.testing.expectEqual(@as(u8, 0), state.delegation_depth);
+    try std.testing.expectEqual(@as(u16,0), state.delegation_depth);
     try std.testing.expectEqual(@as(u32, 0), state.active_delegations);
     try std.testing.expectEqual(@as(u64, 0), state.total_delegated_power);
     try std.testing.expectEqual(@as(i64, 0), state.last_delegation_us);
@@ -11908,7 +12131,7 @@ test "v2.8 DAODelegationState defaults" {
 test "v2.8 TimelockVotingState defaults" {
     const state = TimelockVotingState{};
     try std.testing.expectEqual(DAO_TIMELOCK_MIN_US, state.timelock_duration_us);
-    try std.testing.expectEqual(@as(u8, 0), state.active_proposals);
+    try std.testing.expectEqual(@as(u16,0), state.active_proposals);
     try std.testing.expectEqual(@as(u32, 0), state.votes_cast);
     try std.testing.expectEqual(@as(i64, 0), state.last_vote_us);
 }
@@ -11916,7 +12139,7 @@ test "v2.8 TimelockVotingState defaults" {
 test "v2.8 ProposalExecutionState defaults" {
     const state = ProposalExecutionState{};
     try std.testing.expectEqual(@as(u32, 0), state.proposals_executed);
-    try std.testing.expectEqual(@as(u8, 0), state.proposals_pending);
+    try std.testing.expectEqual(@as(u16,0), state.proposals_pending);
     try std.testing.expectEqual(@as(u16, 0), state.execution_success_rate);
     try std.testing.expectEqual(@as(i64, 0), state.last_execution_us);
 }
@@ -11955,11 +12178,11 @@ test "v2.8 ChainMessageType dao variants" {
 }
 
 test "v2.8 constants" {
-    try std.testing.expectEqual(@as(u8, 5), DAO_DELEGATION_MAX_DEPTH);
+    try std.testing.expectEqual(@as(u16,5), DAO_DELEGATION_MAX_DEPTH);
     try std.testing.expectEqual(@as(i64, 86_400_000_000), DAO_TIMELOCK_MIN_US);
-    try std.testing.expectEqual(@as(u8, 32), DAO_PROPOSAL_MAX_ACTIVE);
+    try std.testing.expectEqual(@as(u16,32), DAO_PROPOSAL_MAX_ACTIVE);
     try std.testing.expectEqual(@as(u16, 500), DAO_YIELD_RATE_BPS);
-    try std.testing.expectEqual(@as(u8, 67), DAO_QUORUM_THRESHOLD_V2);
+    try std.testing.expectEqual(@as(u16,67), DAO_QUORUM_THRESHOLD_V2);
     try std.testing.expectEqual(@as(u32, 1_000), DAO_MIN_VOTES_FOR_QUORUM);
 }
 
@@ -12025,7 +12248,7 @@ test "v2.9 isBridgeVerifyQuark classifier" {
 
 test "v2.9 CrossChainBridgeState defaults" {
     const state = CrossChainBridgeState{};
-    try std.testing.expectEqual(@as(u8, 0), state.supported_chains);
+    try std.testing.expectEqual(@as(u16,0), state.supported_chains);
     try std.testing.expectEqual(@as(u32, 0), state.active_bridges);
     try std.testing.expectEqual(@as(u64, 0), state.total_bridged);
     try std.testing.expectEqual(@as(i64, 0), state.last_bridge_us);
@@ -12043,7 +12266,7 @@ test "v2.9 StateReplicationState defaults" {
     const state = StateReplicationState{};
     try std.testing.expectEqual(@as(u32, 0), state.replicated_states);
     try std.testing.expectEqual(@as(i64, 0), state.replication_lag_us);
-    try std.testing.expectEqual(@as(u8, 0), state.chains_synced);
+    try std.testing.expectEqual(@as(u16,0), state.chains_synced);
     try std.testing.expectEqual(@as(i64, 0), state.last_replication_us);
 }
 
@@ -12081,11 +12304,11 @@ test "v2.9 ChainMessageType bridge variants" {
 }
 
 test "v2.9 constants" {
-    try std.testing.expectEqual(@as(u8, 16), BRIDGE_MAX_CHAINS);
+    try std.testing.expectEqual(@as(u16,16), BRIDGE_MAX_CHAINS);
     try std.testing.expectEqual(@as(i64, 3_600_000_000), BRIDGE_SWAP_TIMEOUT_US);
-    try std.testing.expectEqual(@as(u8, 3), BRIDGE_REPLICATION_FACTOR);
+    try std.testing.expectEqual(@as(u16,3), BRIDGE_REPLICATION_FACTOR);
     try std.testing.expectEqual(@as(u16, 256), BRIDGE_MAX_PENDING_SWAPS);
-    try std.testing.expectEqual(@as(u8, 12), BRIDGE_CONFIRMATION_BLOCKS);
+    try std.testing.expectEqual(@as(u16,12), BRIDGE_CONFIRMATION_BLOCKS);
     try std.testing.expectEqual(@as(u64, 10_000), BRIDGE_MIN_STAKE_FOR_RELAY);
 }
 
@@ -12161,7 +12384,7 @@ test "v2.10 DAOFullGovernanceState defaults" {
     const state = DAOFullGovernanceState{};
     try std.testing.expectEqual(@as(u32, 0), state.total_proposals);
     try std.testing.expectEqual(@as(u32, 0), state.passed_proposals);
-    try std.testing.expectEqual(@as(u8, 0), state.quorum_threshold_pct);
+    try std.testing.expectEqual(@as(u16,0), state.quorum_threshold_pct);
     try std.testing.expectEqual(@as(u32, 0), state.governance_epoch);
 }
 
@@ -12214,7 +12437,7 @@ test "v2.10 ChainMessageType DAO+Staking variants" {
 }
 
 test "v2.10 constants" {
-    try std.testing.expectEqual(@as(u8, 67), DAO_GOVERNANCE_QUORUM_PCT);
+    try std.testing.expectEqual(@as(u16,67), DAO_GOVERNANCE_QUORUM_PCT);
     try std.testing.expectEqual(@as(u64, 1_000), DAO_MIN_PROPOSAL_STAKE);
     try std.testing.expectEqual(@as(u64, 100), STAKING_MIN_AMOUNT);
     try std.testing.expectEqual(@as(u16, 500), STAKING_REWARD_RATE_BPS);
@@ -12298,7 +12521,7 @@ test "v2.11 GossipShardState defaults" {
 
 test "v2.11 DHTHierarchicalState defaults" {
     const state = DHTHierarchicalState{};
-    try std.testing.expectEqual(@as(u8, 0), state.hierarchy_depth);
+    try std.testing.expectEqual(@as(u16,0), state.hierarchy_depth);
     try std.testing.expectEqual(@as(u64, 0), state.total_lookups);
     try std.testing.expectEqual(@as(u32, 0), state.rebalance_count);
 }
@@ -12346,7 +12569,7 @@ test "v2.11 constants" {
     try std.testing.expectEqual(@as(u32, 100_000), SWARM_100K_MAX_NODES);
     try std.testing.expectEqual(@as(u32, 50_000), COMMUNITY_50K_MAX_NODES);
     try std.testing.expectEqual(@as(u16, 256), GOSSIP_SHARD_COUNT);
-    try std.testing.expectEqual(@as(u8, 4), DHT_HIERARCHY_DEPTH);
+    try std.testing.expectEqual(@as(u16,4), DHT_HIERARCHY_DEPTH);
     try std.testing.expectEqual(@as(i64, 5_000_000), GOSSIP_REPAIR_INTERVAL_US);
     try std.testing.expectEqual(@as(u16, 1_000), DHT_REBALANCE_THRESHOLD);
 }
@@ -12429,7 +12652,7 @@ test "v2.12 PrivacyTransferState defaults" {
     const state = PrivacyTransferState{};
     try std.testing.expectEqual(@as(u64, 0), state.transfers_completed);
     try std.testing.expectEqual(@as(u64, 0), state.total_volume);
-    try std.testing.expectEqual(@as(u8, 0), state.privacy_level);
+    try std.testing.expectEqual(@as(u16,0), state.privacy_level);
 }
 
 test "v2.12 CrossChainSyncState defaults" {
@@ -12588,14 +12811,14 @@ test "v2.13 constants" {
 }
 
 test "v2.13 QuarkType enum indices" {
-    try std.testing.expectEqual(@as(u8, 128), @intFromEnum(QuarkType.l2_rollup));
-    try std.testing.expectEqual(@as(u8, 129), @intFromEnum(QuarkType.optimistic_verify));
-    try std.testing.expectEqual(@as(u8, 130), @intFromEnum(QuarkType.state_channel));
-    try std.testing.expectEqual(@as(u8, 131), @intFromEnum(QuarkType.batch_compress));
-    try std.testing.expectEqual(@as(u8, 132), @intFromEnum(QuarkType.rollup_verify));
-    try std.testing.expectEqual(@as(u8, 133), @intFromEnum(QuarkType.channel_finalize));
-    try std.testing.expectEqual(@as(u8, 134), @intFromEnum(QuarkType.batch_anchor));
-    try std.testing.expectEqual(@as(u8, 135), @intFromEnum(QuarkType.l2_anchor));
+    try std.testing.expectEqual(@as(u16,128), @intFromEnum(QuarkType.l2_rollup));
+    try std.testing.expectEqual(@as(u16,129), @intFromEnum(QuarkType.optimistic_verify));
+    try std.testing.expectEqual(@as(u16,130), @intFromEnum(QuarkType.state_channel));
+    try std.testing.expectEqual(@as(u16,131), @intFromEnum(QuarkType.batch_compress));
+    try std.testing.expectEqual(@as(u16,132), @intFromEnum(QuarkType.rollup_verify));
+    try std.testing.expectEqual(@as(u16,133), @intFromEnum(QuarkType.channel_finalize));
+    try std.testing.expectEqual(@as(u16,134), @intFromEnum(QuarkType.batch_anchor));
+    try std.testing.expectEqual(@as(u16,135), @intFromEnum(QuarkType.l2_anchor));
 }
 
 test "v2.13 u8 enum backing type" {
@@ -12712,14 +12935,14 @@ test "v2.14 constants" {
 }
 
 test "v2.14 QuarkType enum indices" {
-    try std.testing.expectEqual(@as(u8, 136), @intFromEnum(QuarkType.dynamic_shard));
-    try std.testing.expectEqual(@as(u8, 137), @intFromEnum(QuarkType.shard_split));
-    try std.testing.expectEqual(@as(u8, 138), @intFromEnum(QuarkType.shard_merge));
-    try std.testing.expectEqual(@as(u8, 139), @intFromEnum(QuarkType.load_balance));
-    try std.testing.expectEqual(@as(u8, 140), @intFromEnum(QuarkType.dht_adapt));
-    try std.testing.expectEqual(@as(u8, 141), @intFromEnum(QuarkType.shard_rebalance));
-    try std.testing.expectEqual(@as(u8, 142), @intFromEnum(QuarkType.gossip_reshard));
-    try std.testing.expectEqual(@as(u8, 143), @intFromEnum(QuarkType.shard_anchor));
+    try std.testing.expectEqual(@as(u16,136), @intFromEnum(QuarkType.dynamic_shard));
+    try std.testing.expectEqual(@as(u16,137), @intFromEnum(QuarkType.shard_split));
+    try std.testing.expectEqual(@as(u16,138), @intFromEnum(QuarkType.shard_merge));
+    try std.testing.expectEqual(@as(u16,139), @intFromEnum(QuarkType.load_balance));
+    try std.testing.expectEqual(@as(u16,140), @intFromEnum(QuarkType.dht_adapt));
+    try std.testing.expectEqual(@as(u16,141), @intFromEnum(QuarkType.shard_rebalance));
+    try std.testing.expectEqual(@as(u16,142), @intFromEnum(QuarkType.gossip_reshard));
+    try std.testing.expectEqual(@as(u16,143), @intFromEnum(QuarkType.shard_anchor));
 }
 
 test "v2.14 Phase U passes after dynamic shard init" {
@@ -12870,14 +13093,14 @@ test "v2.15 constants are correct" {
 }
 
 test "v2.15 QuarkType indices 144-151" {
-    try std.testing.expectEqual(@as(u8, 144), @intFromEnum(QuarkType.swarm_million));
-    try std.testing.expectEqual(@as(u8, 145), @intFromEnum(QuarkType.hierarchical_gossip));
-    try std.testing.expectEqual(@as(u8, 146), @intFromEnum(QuarkType.community_node));
-    try std.testing.expectEqual(@as(u8, 147), @intFromEnum(QuarkType.massive_scale));
-    try std.testing.expectEqual(@as(u8, 148), @intFromEnum(QuarkType.multi_layer_dht));
-    try std.testing.expectEqual(@as(u8, 149), @intFromEnum(QuarkType.geographic_shard));
-    try std.testing.expectEqual(@as(u8, 150), @intFromEnum(QuarkType.swarm_consensus));
-    try std.testing.expectEqual(@as(u8, 151), @intFromEnum(QuarkType.community_anchor));
+    try std.testing.expectEqual(@as(u16,144), @intFromEnum(QuarkType.swarm_million));
+    try std.testing.expectEqual(@as(u16,145), @intFromEnum(QuarkType.hierarchical_gossip));
+    try std.testing.expectEqual(@as(u16,146), @intFromEnum(QuarkType.community_node));
+    try std.testing.expectEqual(@as(u16,147), @intFromEnum(QuarkType.massive_scale));
+    try std.testing.expectEqual(@as(u16,148), @intFromEnum(QuarkType.multi_layer_dht));
+    try std.testing.expectEqual(@as(u16,149), @intFromEnum(QuarkType.geographic_shard));
+    try std.testing.expectEqual(@as(u16,150), @intFromEnum(QuarkType.swarm_consensus));
+    try std.testing.expectEqual(@as(u16,151), @intFromEnum(QuarkType.community_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13017,14 +13240,14 @@ test "v2.16 constants are correct" {
 }
 
 test "v2.16 QuarkType indices 152-159" {
-    try std.testing.expectEqual(@as(u8, 152), @intFromEnum(QuarkType.zk_snark_proof));
-    try std.testing.expectEqual(@as(u8, 153), @intFromEnum(QuarkType.recursive_proof));
-    try std.testing.expectEqual(@as(u8, 154), @intFromEnum(QuarkType.proof_composition));
-    try std.testing.expectEqual(@as(u8, 155), @intFromEnum(QuarkType.l2_scaling));
-    try std.testing.expectEqual(@as(u8, 156), @intFromEnum(QuarkType.rollup_batch));
-    try std.testing.expectEqual(@as(u8, 157), @intFromEnum(QuarkType.proof_verification));
-    try std.testing.expectEqual(@as(u8, 158), @intFromEnum(QuarkType.zk_commitment));
-    try std.testing.expectEqual(@as(u8, 159), @intFromEnum(QuarkType.rollup_anchor));
+    try std.testing.expectEqual(@as(u16,152), @intFromEnum(QuarkType.zk_snark_proof));
+    try std.testing.expectEqual(@as(u16,153), @intFromEnum(QuarkType.recursive_proof));
+    try std.testing.expectEqual(@as(u16,154), @intFromEnum(QuarkType.proof_composition));
+    try std.testing.expectEqual(@as(u16,155), @intFromEnum(QuarkType.l2_scaling));
+    try std.testing.expectEqual(@as(u16,156), @intFromEnum(QuarkType.rollup_batch));
+    try std.testing.expectEqual(@as(u16,157), @intFromEnum(QuarkType.proof_verification));
+    try std.testing.expectEqual(@as(u16,158), @intFromEnum(QuarkType.zk_commitment));
+    try std.testing.expectEqual(@as(u16,159), @intFromEnum(QuarkType.rollup_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13167,14 +13390,14 @@ test "v2.17 constants are correct" {
 }
 
 test "v2.17 QuarkType indices 160-167" {
-    try std.testing.expectEqual(@as(u8, 160), @intFromEnum(QuarkType.cross_shard_tx));
-    try std.testing.expectEqual(@as(u8, 161), @intFromEnum(QuarkType.atomic_2pc));
-    try std.testing.expectEqual(@as(u8, 162), @intFromEnum(QuarkType.shard_fee));
-    try std.testing.expectEqual(@as(u8, 163), @intFromEnum(QuarkType.tx_coordinator));
-    try std.testing.expectEqual(@as(u8, 164), @intFromEnum(QuarkType.shard_route));
-    try std.testing.expectEqual(@as(u8, 165), @intFromEnum(QuarkType.fee_distributor));
-    try std.testing.expectEqual(@as(u8, 166), @intFromEnum(QuarkType.tx_finalize));
-    try std.testing.expectEqual(@as(u8, 167), @intFromEnum(QuarkType.cross_shard_anchor));
+    try std.testing.expectEqual(@as(u16,160), @intFromEnum(QuarkType.cross_shard_tx));
+    try std.testing.expectEqual(@as(u16,161), @intFromEnum(QuarkType.atomic_2pc));
+    try std.testing.expectEqual(@as(u16,162), @intFromEnum(QuarkType.shard_fee));
+    try std.testing.expectEqual(@as(u16,163), @intFromEnum(QuarkType.tx_coordinator));
+    try std.testing.expectEqual(@as(u16,164), @intFromEnum(QuarkType.shard_route));
+    try std.testing.expectEqual(@as(u16,165), @intFromEnum(QuarkType.fee_distributor));
+    try std.testing.expectEqual(@as(u16,166), @intFromEnum(QuarkType.tx_finalize));
+    try std.testing.expectEqual(@as(u16,167), @intFromEnum(QuarkType.cross_shard_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13310,14 +13533,14 @@ test "v2.18 toleratePartition sets RECOVERY_QUORUM_PERCENT" {
 }
 
 test "v2.18 u8 enum capacity 176/256" {
-    try std.testing.expectEqual(@as(u8, 168), @intFromEnum(QuarkType.partition_detect));
-    try std.testing.expectEqual(@as(u8, 169), @intFromEnum(QuarkType.split_brain));
-    try std.testing.expectEqual(@as(u8, 170), @intFromEnum(QuarkType.auto_heal));
-    try std.testing.expectEqual(@as(u8, 171), @intFromEnum(QuarkType.partition_sync));
-    try std.testing.expectEqual(@as(u8, 172), @intFromEnum(QuarkType.recovery_quorum));
-    try std.testing.expectEqual(@as(u8, 173), @intFromEnum(QuarkType.brain_merge));
-    try std.testing.expectEqual(@as(u8, 174), @intFromEnum(QuarkType.heal_verify));
-    try std.testing.expectEqual(@as(u8, 175), @intFromEnum(QuarkType.partition_anchor));
+    try std.testing.expectEqual(@as(u16,168), @intFromEnum(QuarkType.partition_detect));
+    try std.testing.expectEqual(@as(u16,169), @intFromEnum(QuarkType.split_brain));
+    try std.testing.expectEqual(@as(u16,170), @intFromEnum(QuarkType.auto_heal));
+    try std.testing.expectEqual(@as(u16,171), @intFromEnum(QuarkType.partition_sync));
+    try std.testing.expectEqual(@as(u16,172), @intFromEnum(QuarkType.recovery_quorum));
+    try std.testing.expectEqual(@as(u16,173), @intFromEnum(QuarkType.brain_merge));
+    try std.testing.expectEqual(@as(u16,174), @intFromEnum(QuarkType.heal_verify));
+    try std.testing.expectEqual(@as(u16,175), @intFromEnum(QuarkType.partition_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13455,14 +13678,14 @@ test "v2.19 boostEarning uses EARNING_RATE_UTRI_PER_HOUR" {
 }
 
 test "v2.19 u8 enum capacity 184/256" {
-    try std.testing.expectEqual(@as(u8, 176), @intFromEnum(QuarkType.swarm_10m));
-    try std.testing.expectEqual(@as(u8, 177), @intFromEnum(QuarkType.community_5m));
-    try std.testing.expectEqual(@as(u8, 178), @intFromEnum(QuarkType.earning_boost));
-    try std.testing.expectEqual(@as(u8, 179), @intFromEnum(QuarkType.massive_gossip));
-    try std.testing.expectEqual(@as(u8, 180), @intFromEnum(QuarkType.node_discovery_10m));
-    try std.testing.expectEqual(@as(u8, 181), @intFromEnum(QuarkType.earning_rate));
-    try std.testing.expectEqual(@as(u8, 182), @intFromEnum(QuarkType.swarm_consensus_10m));
-    try std.testing.expectEqual(@as(u8, 183), @intFromEnum(QuarkType.earning_anchor));
+    try std.testing.expectEqual(@as(u16,176), @intFromEnum(QuarkType.swarm_10m));
+    try std.testing.expectEqual(@as(u16,177), @intFromEnum(QuarkType.community_5m));
+    try std.testing.expectEqual(@as(u16,178), @intFromEnum(QuarkType.earning_boost));
+    try std.testing.expectEqual(@as(u16,179), @intFromEnum(QuarkType.massive_gossip));
+    try std.testing.expectEqual(@as(u16,180), @intFromEnum(QuarkType.node_discovery_10m));
+    try std.testing.expectEqual(@as(u16,181), @intFromEnum(QuarkType.earning_rate));
+    try std.testing.expectEqual(@as(u16,182), @intFromEnum(QuarkType.swarm_consensus_10m));
+    try std.testing.expectEqual(@as(u16,183), @intFromEnum(QuarkType.earning_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13600,14 +13823,14 @@ test "v2.20 collectL2Fee uses L2_FEE_UTRI_PER_TX" {
 }
 
 test "v2.20 u8 enum capacity 192/256" {
-    try std.testing.expectEqual(@as(u8, 184), @intFromEnum(QuarkType.zk_rollup_v2));
-    try std.testing.expectEqual(@as(u8, 185), @intFromEnum(QuarkType.snark_generate));
-    try std.testing.expectEqual(@as(u8, 186), @intFromEnum(QuarkType.recursive_compose));
-    try std.testing.expectEqual(@as(u8, 187), @intFromEnum(QuarkType.l2_fee_collect));
-    try std.testing.expectEqual(@as(u8, 188), @intFromEnum(QuarkType.proof_aggregate));
-    try std.testing.expectEqual(@as(u8, 189), @intFromEnum(QuarkType.rollup_verify_v2));
-    try std.testing.expectEqual(@as(u8, 190), @intFromEnum(QuarkType.snark_anchor));
-    try std.testing.expectEqual(@as(u8, 191), @intFromEnum(QuarkType.l2_rollup_anchor));
+    try std.testing.expectEqual(@as(u16,184), @intFromEnum(QuarkType.zk_rollup_v2));
+    try std.testing.expectEqual(@as(u16,185), @intFromEnum(QuarkType.snark_generate));
+    try std.testing.expectEqual(@as(u16,186), @intFromEnum(QuarkType.recursive_compose));
+    try std.testing.expectEqual(@as(u16,187), @intFromEnum(QuarkType.l2_fee_collect));
+    try std.testing.expectEqual(@as(u16,188), @intFromEnum(QuarkType.proof_aggregate));
+    try std.testing.expectEqual(@as(u16,189), @intFromEnum(QuarkType.rollup_verify_v2));
+    try std.testing.expectEqual(@as(u16,190), @intFromEnum(QuarkType.snark_anchor));
+    try std.testing.expectEqual(@as(u16,191), @intFromEnum(QuarkType.l2_rollup_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13737,14 +13960,14 @@ test "v2.21 collectShardFee uses SHARD_FEE_UTRI_PER_TX" {
 }
 
 test "v2.21 u8 enum capacity 200/256" {
-    try std.testing.expectEqual(@as(u8, 192), @intFromEnum(QuarkType.cross_shard_tx));
-    try std.testing.expectEqual(@as(u8, 193), @intFromEnum(QuarkType.atomic_2pc));
-    try std.testing.expectEqual(@as(u8, 194), @intFromEnum(QuarkType.shard_fee));
-    try std.testing.expectEqual(@as(u8, 195), @intFromEnum(QuarkType.inter_shard_sync));
-    try std.testing.expectEqual(@as(u8, 196), @intFromEnum(QuarkType.shard_coordinator));
-    try std.testing.expectEqual(@as(u8, 197), @intFromEnum(QuarkType.tx_finality));
-    try std.testing.expectEqual(@as(u8, 198), @intFromEnum(QuarkType.shard_rebalance));
-    try std.testing.expectEqual(@as(u8, 199), @intFromEnum(QuarkType.cross_shard_anchor));
+    try std.testing.expectEqual(@as(u16,192), @intFromEnum(QuarkType.cross_shard_tx));
+    try std.testing.expectEqual(@as(u16,193), @intFromEnum(QuarkType.atomic_2pc));
+    try std.testing.expectEqual(@as(u16,194), @intFromEnum(QuarkType.shard_fee));
+    try std.testing.expectEqual(@as(u16,195), @intFromEnum(QuarkType.inter_shard_sync));
+    try std.testing.expectEqual(@as(u16,196), @intFromEnum(QuarkType.shard_coordinator));
+    try std.testing.expectEqual(@as(u16,197), @intFromEnum(QuarkType.tx_finality));
+    try std.testing.expectEqual(@as(u16,198), @intFromEnum(QuarkType.shard_rebalance));
+    try std.testing.expectEqual(@as(u16,199), @intFromEnum(QuarkType.cross_shard_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13892,14 +14115,14 @@ test "v2.23 248 quarks per query target" {
 }
 
 test "v2.23 u8 enum capacity 216/256" {
-    try std.testing.expectEqual(@as(u8, 208), @intFromEnum(QuarkType.swarm_100m));
-    try std.testing.expectEqual(@as(u8, 209), @intFromEnum(QuarkType.community_50m));
-    try std.testing.expectEqual(@as(u8, 210), @intFromEnum(QuarkType.earning_moonshot));
-    try std.testing.expectEqual(@as(u8, 211), @intFromEnum(QuarkType.gossip_v3));
-    try std.testing.expectEqual(@as(u8, 212), @intFromEnum(QuarkType.swarm_health_100m));
-    try std.testing.expectEqual(@as(u8, 213), @intFromEnum(QuarkType.earning_distribute));
-    try std.testing.expectEqual(@as(u8, 214), @intFromEnum(QuarkType.community_govern));
-    try std.testing.expectEqual(@as(u8, 215), @intFromEnum(QuarkType.swarm_100m_anchor));
+    try std.testing.expectEqual(@as(u16,208), @intFromEnum(QuarkType.swarm_100m));
+    try std.testing.expectEqual(@as(u16,209), @intFromEnum(QuarkType.community_50m));
+    try std.testing.expectEqual(@as(u16,210), @intFromEnum(QuarkType.earning_moonshot));
+    try std.testing.expectEqual(@as(u16,211), @intFromEnum(QuarkType.gossip_v3));
+    try std.testing.expectEqual(@as(u16,212), @intFromEnum(QuarkType.swarm_health_100m));
+    try std.testing.expectEqual(@as(u16,213), @intFromEnum(QuarkType.earning_distribute));
+    try std.testing.expectEqual(@as(u16,214), @intFromEnum(QuarkType.community_govern));
+    try std.testing.expectEqual(@as(u16,215), @intFromEnum(QuarkType.swarm_100m_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -14177,14 +14400,14 @@ test "v2.24 256 quarks per query target" {
 }
 
 test "v2.24 u8 enum capacity 224/256" {
-    try std.testing.expectEqual(@as(u8, 216), @intFromEnum(QuarkType.global_dominance));
-    try std.testing.expectEqual(@as(u8, 217), @intFromEnum(QuarkType.world_adoption));
-    try std.testing.expectEqual(@as(u8, 218), @intFromEnum(QuarkType.tri_to_one));
-    try std.testing.expectEqual(@as(u8, 219), @intFromEnum(QuarkType.ecosystem_complete));
-    try std.testing.expectEqual(@as(u8, 220), @intFromEnum(QuarkType.dominance_health));
-    try std.testing.expectEqual(@as(u8, 221), @intFromEnum(QuarkType.adoption_distribute));
-    try std.testing.expectEqual(@as(u8, 222), @intFromEnum(QuarkType.ecosystem_govern));
-    try std.testing.expectEqual(@as(u8, 223), @intFromEnum(QuarkType.global_dominance_anchor));
+    try std.testing.expectEqual(@as(u16,216), @intFromEnum(QuarkType.global_dominance));
+    try std.testing.expectEqual(@as(u16,217), @intFromEnum(QuarkType.world_adoption));
+    try std.testing.expectEqual(@as(u16,218), @intFromEnum(QuarkType.tri_to_one));
+    try std.testing.expectEqual(@as(u16,219), @intFromEnum(QuarkType.ecosystem_complete));
+    try std.testing.expectEqual(@as(u16,220), @intFromEnum(QuarkType.dominance_health));
+    try std.testing.expectEqual(@as(u16,221), @intFromEnum(QuarkType.adoption_distribute));
+    try std.testing.expectEqual(@as(u16,222), @intFromEnum(QuarkType.ecosystem_govern));
+    try std.testing.expectEqual(@as(u16,223), @intFromEnum(QuarkType.global_dominance_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -14331,14 +14554,14 @@ test "v2.25 264 quarks per query target" {
 }
 
 test "v2.25 u8 enum capacity 232/256" {
-    try std.testing.expectEqual(@as(u8, 224), @intFromEnum(QuarkType.ouroboros_evolve));
-    try std.testing.expectEqual(@as(u8, 225), @intFromEnum(QuarkType.infinite_scale));
-    try std.testing.expectEqual(@as(u8, 226), @intFromEnum(QuarkType.universal_reserve));
-    try std.testing.expectEqual(@as(u8, 227), @intFromEnum(QuarkType.eternal_uptime));
-    try std.testing.expectEqual(@as(u8, 228), @intFromEnum(QuarkType.ouroboros_health));
-    try std.testing.expectEqual(@as(u8, 229), @intFromEnum(QuarkType.reserve_distribute));
-    try std.testing.expectEqual(@as(u8, 230), @intFromEnum(QuarkType.eternal_govern));
-    try std.testing.expectEqual(@as(u8, 231), @intFromEnum(QuarkType.eternal_anchor));
+    try std.testing.expectEqual(@as(u16,224), @intFromEnum(QuarkType.ouroboros_evolve));
+    try std.testing.expectEqual(@as(u16,225), @intFromEnum(QuarkType.infinite_scale));
+    try std.testing.expectEqual(@as(u16,226), @intFromEnum(QuarkType.universal_reserve));
+    try std.testing.expectEqual(@as(u16,227), @intFromEnum(QuarkType.eternal_uptime));
+    try std.testing.expectEqual(@as(u16,228), @intFromEnum(QuarkType.ouroboros_health));
+    try std.testing.expectEqual(@as(u16,229), @intFromEnum(QuarkType.reserve_distribute));
+    try std.testing.expectEqual(@as(u16,230), @intFromEnum(QuarkType.eternal_govern));
+    try std.testing.expectEqual(@as(u16,231), @intFromEnum(QuarkType.eternal_anchor));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -14483,14 +14706,14 @@ test "v2.26 272 quarks per query target" {
 }
 
 test "v2.26 u8 enum capacity 240/256" {
-    try std.testing.expectEqual(@as(u8, 232), @intFromEnum(QuarkType.tri_to_ten));
-    try std.testing.expectEqual(@as(u8, 233), @intFromEnum(QuarkType.mass_adoption));
-    try std.testing.expectEqual(@as(u8, 234), @intFromEnum(QuarkType.exchange_listing));
-    try std.testing.expectEqual(@as(u8, 235), @intFromEnum(QuarkType.universal_wallet));
-    try std.testing.expectEqual(@as(u8, 236), @intFromEnum(QuarkType.adoption_health));
-    try std.testing.expectEqual(@as(u8, 237), @intFromEnum(QuarkType.exchange_distribute));
-    try std.testing.expectEqual(@as(u8, 238), @intFromEnum(QuarkType.wallet_govern));
-    try std.testing.expectEqual(@as(u8, 239), @intFromEnum(QuarkType.mass_adoption_anchor));
+    try std.testing.expectEqual(@as(u16,232), @intFromEnum(QuarkType.tri_to_ten));
+    try std.testing.expectEqual(@as(u16,233), @intFromEnum(QuarkType.mass_adoption));
+    try std.testing.expectEqual(@as(u16,234), @intFromEnum(QuarkType.exchange_listing));
+    try std.testing.expectEqual(@as(u16,235), @intFromEnum(QuarkType.universal_wallet));
+    try std.testing.expectEqual(@as(u16,236), @intFromEnum(QuarkType.adoption_health));
+    try std.testing.expectEqual(@as(u16,237), @intFromEnum(QuarkType.exchange_distribute));
+    try std.testing.expectEqual(@as(u16,238), @intFromEnum(QuarkType.wallet_govern));
+    try std.testing.expectEqual(@as(u16,239), @intFromEnum(QuarkType.mass_adoption_anchor));
 }
 
 // ── v2.27 Tests: Trinity Beyond v1.0 + $TRI to $100 ──
@@ -14616,14 +14839,14 @@ test "v2.27 280 quarks per query target" {
 }
 
 test "v2.27 u8 enum capacity 248/256" {
-    try std.testing.expectEqual(@as(u8, 240), @intFromEnum(QuarkType.tri_to_hundred));
-    try std.testing.expectEqual(@as(u8, 241), @intFromEnum(QuarkType.universal_adoption));
-    try std.testing.expectEqual(@as(u8, 242), @intFromEnum(QuarkType.exchange_v2));
-    try std.testing.expectEqual(@as(u8, 243), @intFromEnum(QuarkType.global_wallet));
-    try std.testing.expectEqual(@as(u8, 244), @intFromEnum(QuarkType.adoption_10b));
-    try std.testing.expectEqual(@as(u8, 245), @intFromEnum(QuarkType.exchange_scale));
-    try std.testing.expectEqual(@as(u8, 246), @intFromEnum(QuarkType.wallet_universal));
-    try std.testing.expectEqual(@as(u8, 247), @intFromEnum(QuarkType.beyond_anchor));
+    try std.testing.expectEqual(@as(u16,240), @intFromEnum(QuarkType.tri_to_hundred));
+    try std.testing.expectEqual(@as(u16,241), @intFromEnum(QuarkType.universal_adoption));
+    try std.testing.expectEqual(@as(u16,242), @intFromEnum(QuarkType.exchange_v2));
+    try std.testing.expectEqual(@as(u16,243), @intFromEnum(QuarkType.global_wallet));
+    try std.testing.expectEqual(@as(u16,244), @intFromEnum(QuarkType.adoption_10b));
+    try std.testing.expectEqual(@as(u16,245), @intFromEnum(QuarkType.exchange_scale));
+    try std.testing.expectEqual(@as(u16,246), @intFromEnum(QuarkType.wallet_universal));
+    try std.testing.expectEqual(@as(u16,247), @intFromEnum(QuarkType.beyond_anchor));
 }
 
 // ── v2.28 Tests: Swarm 10M + Community 5M + u8 FULL ──
@@ -14749,12 +14972,134 @@ test "v2.28 288 quarks per query target" {
 }
 
 test "v2.28 u8 enum FULL 256/256" {
-    try std.testing.expectEqual(@as(u8, 248), @intFromEnum(QuarkType.swarm_10m));
-    try std.testing.expectEqual(@as(u8, 249), @intFromEnum(QuarkType.community_5m));
-    try std.testing.expectEqual(@as(u8, 250), @intFromEnum(QuarkType.earning_ultimate));
-    try std.testing.expectEqual(@as(u8, 251), @intFromEnum(QuarkType.node_discovery_10m));
-    try std.testing.expectEqual(@as(u8, 252), @intFromEnum(QuarkType.swarm_health_10m));
-    try std.testing.expectEqual(@as(u8, 253), @intFromEnum(QuarkType.swarm_failover_10m));
-    try std.testing.expectEqual(@as(u8, 254), @intFromEnum(QuarkType.dao_governance_10m));
-    try std.testing.expectEqual(@as(u8, 255), @intFromEnum(QuarkType.swarm_anchor_10m));
+    try std.testing.expectEqual(@as(u16, 248), @intFromEnum(QuarkType.swarm_10m));
+    try std.testing.expectEqual(@as(u16, 249), @intFromEnum(QuarkType.community_5m));
+    try std.testing.expectEqual(@as(u16, 250), @intFromEnum(QuarkType.earning_ultimate));
+    try std.testing.expectEqual(@as(u16, 251), @intFromEnum(QuarkType.node_discovery_10m));
+    try std.testing.expectEqual(@as(u16, 252), @intFromEnum(QuarkType.swarm_health_10m));
+    try std.testing.expectEqual(@as(u16, 253), @intFromEnum(QuarkType.swarm_failover_10m));
+    try std.testing.expectEqual(@as(u16, 254), @intFromEnum(QuarkType.dao_governance_10m));
+    try std.testing.expectEqual(@as(u16, 255), @intFromEnum(QuarkType.swarm_anchor_10m));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.29 swarm_1b label is SWM_1B" {
+    try std.testing.expectEqualStrings("SWM_1B", QuarkType.swarm_1b.getLabel());
+}
+test "v2.29 community_500m label is COM_500M" {
+    try std.testing.expectEqualStrings("COM_500M", QuarkType.community_500m.getLabel());
+}
+test "v2.29 earning_god_mode label is ERN_GOD" {
+    try std.testing.expectEqualStrings("ERN_GOD", QuarkType.earning_god_mode.getLabel());
+}
+test "v2.29 node_discovery_1b label is NOD_1B" {
+    try std.testing.expectEqualStrings("NOD_1B", QuarkType.node_discovery_1b.getLabel());
+}
+test "v2.29 swarm_health_1b label is SWH_1B" {
+    try std.testing.expectEqualStrings("SWH_1B", QuarkType.swarm_health_1b.getLabel());
+}
+test "v2.29 swarm_failover_1b label is SWF_1B" {
+    try std.testing.expectEqualStrings("SWF_1B", QuarkType.swarm_failover_1b.getLabel());
+}
+test "v2.29 dao_governance_1b label is DAO_1B" {
+    try std.testing.expectEqualStrings("DAO_1B", QuarkType.dao_governance_1b.getLabel());
+}
+test "v2.29 swarm_anchor_1b label is SWA_1B" {
+    try std.testing.expectEqualStrings("SWA_1B", QuarkType.swarm_anchor_1b.getLabel());
+}
+test "v2.29 isSwarm1BQuark classifier" {
+    try std.testing.expect(QuarkType.swarm_1b.isSwarm1BQuark());
+    try std.testing.expect(QuarkType.swarm_anchor_1b.isSwarm1BQuark());
+    try std.testing.expect(!QuarkType.community_500m.isSwarm1BQuark());
+}
+test "v2.29 isCommunity500MQuark classifier" {
+    try std.testing.expect(QuarkType.community_500m.isCommunity500MQuark());
+    try std.testing.expect(QuarkType.dao_governance_1b.isCommunity500MQuark());
+    try std.testing.expect(!QuarkType.swarm_1b.isCommunity500MQuark());
+}
+test "v2.29 isEarningGodModeQuark classifier" {
+    try std.testing.expect(QuarkType.earning_god_mode.isEarningGodModeQuark());
+    try std.testing.expect(QuarkType.swarm_failover_1b.isEarningGodModeQuark());
+    try std.testing.expect(!QuarkType.swarm_1b.isEarningGodModeQuark());
+}
+test "v2.29 isNodeDiscovery1BQuark classifier" {
+    try std.testing.expect(QuarkType.node_discovery_1b.isNodeDiscovery1BQuark());
+    try std.testing.expect(QuarkType.swarm_health_1b.isNodeDiscovery1BQuark());
+    try std.testing.expect(!QuarkType.swarm_1b.isNodeDiscovery1BQuark());
+}
+test "v2.29 Swarm1BState defaults" {
+    const s = Swarm1BState{};
+    try std.testing.expectEqual(@as(u64, 0), s.swarm_1b_events);
+    try std.testing.expectEqual(@as(u64, 0), s.nodes_active_1b);
+}
+test "v2.29 Community500MState defaults" {
+    const s = Community500MState{};
+    try std.testing.expectEqual(@as(u64, 0), s.community_500m_events);
+    try std.testing.expectEqual(@as(u64, 0), s.members_active_500m);
+}
+test "v2.29 EarningGodModeState defaults" {
+    const s = EarningGodModeState{};
+    try std.testing.expectEqual(@as(u64, 0), s.god_mode_events);
+    try std.testing.expectEqual(@as(u64, 0), s.total_earned_god_utri);
+}
+test "v2.29 NodeDiscovery1BState defaults" {
+    const s = NodeDiscovery1BState{};
+    try std.testing.expectEqual(@as(u64, 0), s.discovery_1b_events);
+    try std.testing.expectEqual(@as(u64, 0), s.nodes_registered_1b);
+}
+test "v2.29 Phase AJ passes after swarm_1b + community_500m + god_mode" {
+    var hybrid = try igla_hybrid.IglaHybridChat.init(std.testing.allocator, null, null);
+    defer hybrid.deinit();
+    var agent = GoldenChainAgent.init(&hybrid);
+    agent.swarm_1b_state.swarm_1b_events = 1;
+    agent.community_500m_state.community_500m_events = 1;
+    agent.earning_god_mode_state.god_mode_events = 1;
+    try std.testing.expect(agent.swarm1BVerify());
+}
+test "v2.29 Phase AJ fails without swarm_1b" {
+    var hybrid = try igla_hybrid.IglaHybridChat.init(std.testing.allocator, null, null);
+    defer hybrid.deinit();
+    var agent = GoldenChainAgent.init(&hybrid);
+    agent.community_500m_state.community_500m_events = 1;
+    agent.earning_god_mode_state.god_mode_events = 1;
+    try std.testing.expect(!agent.swarm1BVerify());
+}
+test "v2.29 Phase AJ fails without community_500m" {
+    var hybrid = try igla_hybrid.IglaHybridChat.init(std.testing.allocator, null, null);
+    defer hybrid.deinit();
+    var agent = GoldenChainAgent.init(&hybrid);
+    agent.swarm_1b_state.swarm_1b_events = 1;
+    agent.earning_god_mode_state.god_mode_events = 1;
+    try std.testing.expect(!agent.swarm1BVerify());
+}
+test "v2.29 scaleSwarm1B increments swarm_1b_events" {
+    var hybrid = try igla_hybrid.IglaHybridChat.init(std.testing.allocator, null, null);
+    defer hybrid.deinit();
+    var agent = GoldenChainAgent.init(&hybrid);
+    try std.testing.expectEqual(@as(u64, 0), agent.swarm_1b_state.swarm_1b_events);
+    agent.scaleSwarm1B();
+    try std.testing.expectEqual(@as(u64, 1), agent.swarm_1b_state.swarm_1b_events);
+}
+test "v2.29 boostEarningGodMode uses EARNING_GOD_MODE_UTRI_PER_HOUR" {
+    var hybrid = try igla_hybrid.IglaHybridChat.init(std.testing.allocator, null, null);
+    defer hybrid.deinit();
+    var agent = GoldenChainAgent.init(&hybrid);
+    agent.boostEarningGodMode();
+    try std.testing.expectEqual(EARNING_GOD_MODE_UTRI_PER_HOUR, agent.earning_god_mode_state.earning_rate_god_utri);
+}
+test "v2.29 296 quarks per query target" {
+    try std.testing.expectEqual(@as(usize, 296), GoldenChainAgent.MAX_QUARK_RECORDS);
+}
+test "v2.29 u16 enum capacity 264/65536" {
+    try std.testing.expectEqual(@as(u16, 256), @intFromEnum(QuarkType.swarm_1b));
+    try std.testing.expectEqual(@as(u16, 257), @intFromEnum(QuarkType.community_500m));
+    try std.testing.expectEqual(@as(u16, 258), @intFromEnum(QuarkType.earning_god_mode));
+    try std.testing.expectEqual(@as(u16, 259), @intFromEnum(QuarkType.node_discovery_1b));
+    try std.testing.expectEqual(@as(u16, 260), @intFromEnum(QuarkType.swarm_health_1b));
+    try std.testing.expectEqual(@as(u16, 261), @intFromEnum(QuarkType.swarm_failover_1b));
+    try std.testing.expectEqual(@as(u16, 262), @intFromEnum(QuarkType.dao_governance_1b));
+    try std.testing.expectEqual(@as(u16, 263), @intFromEnum(QuarkType.swarm_anchor_1b));
 }
