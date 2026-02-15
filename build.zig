@@ -1286,4 +1286,20 @@ pub fn build(b: *std.Build) void {
     const storage_init_step = b.step("test-storage-init", "Test Storage Init (disk shards + VSA fingerprints)");
     storage_init_step.dependOn(&run_storage_init.step);
     test_step.dependOn(&run_storage_init.step);
+
+    // Generated Shard Manager — Cohesive Storage API + Manifest + Splitting (Cycle 61)
+    const gen_shard_mgr_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/manager.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_shard_mgr = b.addRunArtifact(gen_shard_mgr_tests);
+    const gen_shard_mgr_step = b.step("test-shard-manager-gen", "Test Generated Shard Manager (manifest + splitting + search)");
+    gen_shard_mgr_step.dependOn(&run_gen_shard_mgr.step);
+    test_step.dependOn(&run_gen_shard_mgr.step);
 }
