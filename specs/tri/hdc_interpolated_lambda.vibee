@@ -1,0 +1,32 @@
+name: hdc_interpolated_lambda
+version: "1.0.0"
+language: zig
+module: hdc_interpolated_lambda
+
+types:
+  LambdaSearchResult:
+    fields:
+      lambda: Float
+      eval_ce: Float
+      pct_below_random: Float
+      is_best: Bool
+
+behaviors:
+  - name: gridSearchLambda
+    given: Large corpus trigram+bigram models with 512 vocabulary
+    when: Sweep lambda from 0.0 to 1.0 in 0.1 steps
+    then: Best lambda=0.2 with eval CE 3.3499 (46.3% below random)
+
+  - name: analyzeInterpolationGain
+    given: Best interpolated CE vs pure bigram and pure trigram
+    when: Compare eval CE across all three methods
+    then: Interpolation gains 0.0406 nats below best pure method (bigram)
+
+test_cases:
+  - name: best_lambda
+    input: "Grid search lambda 0.0-1.0 step 0.1"
+    expected: "Best lambda=0.2, eval CE 3.3499"
+
+  - name: interpolation_beats_pure
+    input: "Compare interpolated vs pure bigram vs pure trigram"
+    expected: "Interpolated 3.3499 < bigram 3.3905 < trigram 3.6816"

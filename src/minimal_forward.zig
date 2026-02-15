@@ -7075,6 +7075,98 @@ const LargeTrigramModel = struct {
         const p = self.wordTrigramProb(prev2, prev1, next_idx);
         return -@log(@max(p, 1e-20));
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // INTERPOLATED METHODS (v2.48) — λ·P_tri + (1-λ)·P_bi
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// Bigram-only probability P(next | prev1) with Laplace smoothing
+    fn wordBigramProb(self: *const LargeTrigramModel, prev1: u16, next_idx: u16) f64 {
+        const vs: f64 = @floatFromInt(self.vocab_size);
+        var bi_total: u32 = 0;
+        for (0..self.vocab_size) |j| {
+            bi_total += self.bigram_counts[prev1][j];
+        }
+        if (bi_total > 0) {
+            const count: f64 = @floatFromInt(self.bigram_counts[prev1][next_idx]);
+            const total: f64 = @floatFromInt(bi_total);
+            return (count + 0.1) / (total + 0.1 * vs);
+        }
+        return 1.0 / vs;
+    }
+
+    /// Trigram-only probability (no bigram fallback)
+    fn pureTrigramProb(self: *const LargeTrigramModel, prev2: u16, prev1: u16, next_idx: u16) f64 {
+        const vs: f64 = @floatFromInt(self.vocab_size);
+        if (self.findSlot(prev2, prev1)) |slot| {
+            if (slot.total_count > 0) {
+                var count: f64 = 0;
+                for (0..slot.num_nexts) |k| {
+                    if (slot.nexts[k] == next_idx) {
+                        count = @floatFromInt(slot.counts[k]);
+                        break;
+                    }
+                }
+                const total: f64 = @floatFromInt(slot.total_count);
+                return (count + 0.1) / (total + 0.1 * vs);
+            }
+        }
+        // No trigram data: return uniform (not bigram fallback)
+        return 1.0 / vs;
+    }
+
+    /// Interpolated probability: λ·P_tri(next|prev2,prev1) + (1-λ)·P_bi(next|prev1)
+    fn interpolatedProb(self: *const LargeTrigramModel, prev2: u16, prev1: u16, next_idx: u16, lambda: f64) f64 {
+        const p_tri = self.pureTrigramProb(prev2, prev1, next_idx);
+        const p_bi = self.wordBigramProb(prev1, next_idx);
+        return lambda * p_tri + (1.0 - lambda) * p_bi;
+    }
+
+    /// Interpolated loss: -log(interpolatedProb)
+    fn interpolatedLoss(self: *const LargeTrigramModel, prev2: u16, prev1: u16, next_idx: u16, lambda: f64) f64 {
+        const p = self.interpolatedProb(prev2, prev1, next_idx, lambda);
+        return -@log(@max(p, 1e-20));
+    }
+
+    /// Sample with interpolated distribution
+    fn interpolatedSample(self: *const LargeTrigramModel, prev2: u16, prev1: u16, lambda: f64, temperature: f64, seed: u64) u16 {
+        var probs: [LARGE_MAX_WORDS]f64 = undefined;
+
+        // Build interpolated distribution for all words
+        for (0..self.vocab_size) |j| {
+            const j16: u16 = @intCast(j);
+            probs[j] = self.interpolatedProb(prev2, prev1, j16, lambda);
+        }
+
+        // Temperature in log-space
+        var max_logp: f64 = -1e10;
+        for (0..self.vocab_size) |j| {
+            const logp = @log(@max(probs[j], 1e-20));
+            probs[j] = logp;
+            if (logp > max_logp) max_logp = logp;
+        }
+        var sum: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            probs[j] = @exp((probs[j] - max_logp) / @max(temperature, 0.01));
+            sum += probs[j];
+        }
+        for (0..self.vocab_size) |j| {
+            probs[j] /= sum;
+        }
+
+        var rng = seed;
+        rng ^= rng >> 12;
+        rng ^= rng << 25;
+        rng ^= rng >> 27;
+        const r: f64 = @as(f64, @floatFromInt(rng % 1000000)) / 1000000.0;
+
+        var cumulative: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            cumulative += probs[j];
+            if (r < cumulative) return @intCast(j);
+        }
+        return 0;
+    }
 };
 
 const extended_corpus = @embedFile("shakespeare_extended.txt");
@@ -7326,4 +7418,220 @@ test "large corpus word trigram perplexity comparison" {
     try std.testing.expect(!std.math.isNan(tri_eval_ppl));
     try std.testing.expect(!std.math.isInf(tri_eval_ppl));
     try std.testing.expect(tri_eval_ppl < @as(f64, @floatFromInt(ltm.vocab_size)));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 42: Interpolated λ grid search (v2.48)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "interpolated lambda grid search" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+
+    const train_end = ltm.token_count * 80 / 100;
+    const random_ce = @log(@as(f64, @floatFromInt(ltm.vocab_size)));
+
+    // Grid search over λ values: 0.0, 0.1, 0.2, ..., 1.0
+    const lambdas = [_]f64{ 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 };
+    var best_lambda: f64 = 0;
+    var best_eval_ce: f64 = 1e10;
+
+    std.debug.print("\n=== INTERPOLATED λ GRID SEARCH (v2.48) ===\n", .{});
+    std.debug.print("Corpus: {d} tokens, {d} vocab\n", .{ ltm.token_count, ltm.vocab_size });
+    std.debug.print("\n  λ     | Eval CE   | %<random | Train CE  | %<random\n", .{});
+    std.debug.print("  ------|-----------|----------|-----------|--------\n", .{});
+
+    for (lambdas) |lam| {
+        // Eval CE
+        var eval_sum: f64 = 0;
+        var eval_n: usize = 0;
+        for (train_end..ltm.token_count) |i| {
+            if (i < 2) continue;
+            eval_sum += ltm.interpolatedLoss(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], lam);
+            eval_n += 1;
+        }
+        const eval_ce = eval_sum / @as(f64, @floatFromInt(eval_n));
+
+        // Train CE
+        var train_sum: f64 = 0;
+        var train_n: usize = 0;
+        for (2..train_end) |i| {
+            train_sum += ltm.interpolatedLoss(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], lam);
+            train_n += 1;
+        }
+        const train_ce = train_sum / @as(f64, @floatFromInt(train_n));
+
+        std.debug.print("  {d:.1}   | {d:.4}   | {d:.1}%   | {d:.4}   | {d:.1}%\n", .{
+            lam, eval_ce, (1.0 - eval_ce / random_ce) * 100.0,
+            train_ce, (1.0 - train_ce / random_ce) * 100.0,
+        });
+
+        if (eval_ce < best_eval_ce) {
+            best_eval_ce = eval_ce;
+            best_lambda = lam;
+        }
+    }
+
+    // Also compute pure bigram and pure trigram for comparison
+    var bi_eval_sum: f64 = 0;
+    var bi_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 1) continue;
+        bi_eval_sum += -@log(@max(ltm.wordBigramProb(ltm.tokens[i - 1], ltm.tokens[i]), 1e-20));
+        bi_eval_n += 1;
+    }
+    const bi_eval_ce = bi_eval_sum / @as(f64, @floatFromInt(bi_eval_n));
+
+    var tri_eval_sum: f64 = 0;
+    var tri_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 2) continue;
+        tri_eval_sum += -@log(@max(ltm.pureTrigramProb(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i]), 1e-20));
+        tri_eval_n += 1;
+    }
+    const tri_eval_ce = tri_eval_sum / @as(f64, @floatFromInt(tri_eval_n));
+
+    std.debug.print("\n--- Best λ: {d:.1} (eval CE: {d:.4}, {d:.1}% below random) ---\n", .{
+        best_lambda, best_eval_ce, (1.0 - best_eval_ce / random_ce) * 100.0,
+    });
+    std.debug.print("Pure bigram eval CE:  {d:.4} ({d:.1}% below random)\n", .{ bi_eval_ce, (1.0 - bi_eval_ce / random_ce) * 100.0 });
+    std.debug.print("Pure trigram eval CE: {d:.4} ({d:.1}% below random)\n", .{ tri_eval_ce, (1.0 - tri_eval_ce / random_ce) * 100.0 });
+    std.debug.print("Interpolation gain:   {d:.4} nats below best pure method\n", .{ @min(bi_eval_ce, tri_eval_ce) - best_eval_ce });
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(best_eval_ce < random_ce);
+    try std.testing.expect(best_eval_ce <= bi_eval_ce + 0.01); // interpolated should beat or match bigram
+    try std.testing.expect(best_lambda >= 0.0 and best_lambda <= 1.0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 43: Interpolated PPL + generation (v2.48)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "interpolated perplexity and generation" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+
+    const train_end = ltm.token_count * 80 / 100;
+
+    // Use λ=0.3 as a reasonable default (bigram-heavy for sparse trigram)
+    const lambda: f64 = 0.3;
+
+    // Interpolated train PPL
+    var interp_train_log: f64 = 0;
+    var interp_train_n: usize = 0;
+    for (2..train_end) |i| {
+        const prob = ltm.interpolatedProb(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], lambda);
+        interp_train_log += @log(@max(prob, 1e-20));
+        interp_train_n += 1;
+    }
+    const interp_train_ppl = @exp(-interp_train_log / @as(f64, @floatFromInt(interp_train_n)));
+
+    // Interpolated eval PPL
+    var interp_eval_log: f64 = 0;
+    var interp_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 2) continue;
+        const prob = ltm.interpolatedProb(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], lambda);
+        interp_eval_log += @log(@max(prob, 1e-20));
+        interp_eval_n += 1;
+    }
+    const interp_eval_ppl = @exp(-interp_eval_log / @as(f64, @floatFromInt(interp_eval_n)));
+
+    // Pure bigram eval PPL
+    var bi_eval_log: f64 = 0;
+    var bi_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 1) continue;
+        bi_eval_log += @log(@max(ltm.wordBigramProb(ltm.tokens[i - 1], ltm.tokens[i]), 1e-20));
+        bi_eval_n += 1;
+    }
+    const bi_eval_ppl = @exp(-bi_eval_log / @as(f64, @floatFromInt(bi_eval_n)));
+
+    // Pure trigram eval PPL (with bigram fallback — old method)
+    var tri_eval_log: f64 = 0;
+    var tri_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 2) continue;
+        tri_eval_log += @log(@max(ltm.wordTrigramProb(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i]), 1e-20));
+        tri_eval_n += 1;
+    }
+    const tri_eval_ppl = @exp(-tri_eval_log / @as(f64, @floatFromInt(tri_eval_n)));
+
+    // === Generation ===
+    var start_to: u16 = 0;
+    var start_be: u16 = 0;
+    for (0..ltm.vocab_size) |i| {
+        const w = ltm.getWord(@intCast(i));
+        if (w.len == 2 and w[0] == 't' and w[1] == 'o') start_to = @intCast(i);
+        if (w.len == 2 and w[0] == 'b' and w[1] == 'e') start_be = @intCast(i);
+    }
+
+    // T=0.8 interpolated
+    var gen1: [512]u8 = undefined;
+    var g1: usize = 0;
+    var p2: u16 = start_to;
+    var p1: u16 = start_be;
+    for (0..30) |step| {
+        const next = ltm.interpolatedSample(p2, p1, lambda, 0.8, 12345 + step);
+        const word = ltm.getWord(next);
+        if (g1 + word.len + 1 < gen1.len) {
+            if (g1 > 0) { gen1[g1] = ' '; g1 += 1; }
+            for (word) |c| { gen1[g1] = c; g1 += 1; }
+        }
+        p2 = p1;
+        p1 = next;
+    }
+
+    // T=0.5 interpolated
+    var gen2: [512]u8 = undefined;
+    var g2: usize = 0;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..30) |step| {
+        const next = ltm.interpolatedSample(p2, p1, lambda, 0.5, 54321 + step);
+        const word = ltm.getWord(next);
+        if (g2 + word.len + 1 < gen2.len) {
+            if (g2 > 0) { gen2[g2] = ' '; g2 += 1; }
+            for (word) |c| { gen2[g2] = c; g2 += 1; }
+        }
+        p2 = p1;
+        p1 = next;
+    }
+
+    // T=0.3 interpolated
+    var gen3: [512]u8 = undefined;
+    var g3: usize = 0;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..30) |step| {
+        const next = ltm.interpolatedSample(p2, p1, lambda, 0.3, 99999 + step);
+        const word = ltm.getWord(next);
+        if (g3 + word.len + 1 < gen3.len) {
+            if (g3 > 0) { gen3[g3] = ' '; g3 += 1; }
+            for (word) |c| { gen3[g3] = c; g3 += 1; }
+        }
+        p2 = p1;
+        p1 = next;
+    }
+
+    std.debug.print("\n=== INTERPOLATED PPL + GENERATION (v2.48, λ={d:.1}) ===\n", .{lambda});
+    std.debug.print("Interpolated: train={d:.2} eval={d:.2} gap={d:.2}\n", .{ interp_train_ppl, interp_eval_ppl, interp_eval_ppl - interp_train_ppl });
+    std.debug.print("Pure bigram eval:    {d:.2}\n", .{bi_eval_ppl});
+    std.debug.print("Pure trigram eval:   {d:.2}\n", .{tri_eval_ppl});
+    std.debug.print("Interp improvement:  {d:.1}% below bigram\n", .{ (1.0 - interp_eval_ppl / bi_eval_ppl) * 100.0 });
+    std.debug.print("\n--- Generation (interpolated, start: \"to be\") ---\n", .{});
+    std.debug.print("T=0.8: \"{s}\"\n", .{gen1[0..g1]});
+    std.debug.print("T=0.5: \"{s}\"\n", .{gen2[0..g2]});
+    std.debug.print("T=0.3: \"{s}\"\n", .{gen3[0..g3]});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(interp_train_ppl > 0.0);
+    try std.testing.expect(interp_eval_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(interp_eval_ppl));
+    try std.testing.expect(!std.math.isInf(interp_eval_ppl));
+    try std.testing.expect(interp_eval_ppl < @as(f64, @floatFromInt(ltm.vocab_size)));
+    try std.testing.expect(g1 > 0);
 }
