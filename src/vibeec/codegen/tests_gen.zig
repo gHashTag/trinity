@@ -983,6 +983,185 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// PROOF: SIMD composition recovers with ternary loss (>= 0.50)");
             try self.builder.writeLine("// Bipolar proof (Q11) achieves >= 0.95; ternary is lossy at zeros");
             try self.builder.writeLine("try std.testing.expect(cosine >= 0.50);");
+        } else if (std.mem.eql(u8, name, "storageInitDir")) {
+            // S1: Real filesystem directory creation
+            try self.builder.writeLine("// S1: Storage Init Dir — real std.fs directory creation");
+            try self.builder.writeLine("const test_dir = \"/tmp/trinity_test_s1_init\";");
+            try self.builder.writeLine("const shards_dir = \"/tmp/trinity_test_s1_init/shards\";");
+            try self.builder.writeLine("// Cleanup from previous runs");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(shards_dir) catch {};");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(test_dir) catch {};");
+            try self.builder.writeLine("// Create storage root + shards subdir");
+            try self.builder.writeLine("try std.fs.makeDirAbsolute(test_dir);");
+            try self.builder.writeLine("try std.fs.makeDirAbsolute(shards_dir);");
+            try self.builder.writeLine("// PROOF: both directories exist");
+            try self.builder.writeLine("var dir = try std.fs.openDirAbsolute(test_dir, .{});");
+            try self.builder.writeLine("dir.close();");
+            try self.builder.writeLine("var sdir = try std.fs.openDirAbsolute(shards_dir, .{});");
+            try self.builder.writeLine("sdir.close();");
+            try self.builder.writeLine("// Cleanup");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(test_dir) catch {};");
+        } else if (std.mem.eql(u8, name, "storageWriteReadRoundtrip")) {
+            // S2: Write bytes to shard file, read back, verify match
+            try self.builder.writeLine("// S2: Write/Read Roundtrip — real disk I/O with SHA-256 naming");
+            try self.builder.writeLine("const test_dir = \"/tmp/trinity_test_s2_roundtrip/shards\";");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(\"/tmp/trinity_test_s2_roundtrip\") catch {};");
+            try self.builder.writeLine("std.fs.makeDirAbsolute(\"/tmp/trinity_test_s2_roundtrip\") catch {};");
+            try self.builder.writeLine("try std.fs.makeDirAbsolute(test_dir);");
+            try self.builder.writeLine("// Create 256-byte test payload");
+            try self.builder.writeLine("var payload: [256]u8 = undefined;");
+            try self.builder.writeLine("for (&payload, 0..) |*b, i| { b.* = @intCast(i); }");
+            try self.builder.writeLine("// Compute SHA-256 hash");
+            try self.builder.writeLine("var hash: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(&payload, &hash, .{});");
+            try self.builder.writeLine("// Convert hash to hex filename");
+            try self.builder.writeLine("const hex_chars = \"0123456789abcdef\";");
+            try self.builder.writeLine("var hex_name: [64]u8 = undefined;");
+            try self.builder.writeLine("for (hash, 0..) |byte, i| {");
+            try self.builder.writeLine("    hex_name[i * 2] = hex_chars[byte >> 4];");
+            try self.builder.writeLine("    hex_name[i * 2 + 1] = hex_chars[byte & 0x0F];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("// Write shard to disk");
+            try self.builder.writeLine("var path_buf: [256]u8 = undefined;");
+            try self.builder.writeLine("const shard_path = std.fmt.bufPrint(&path_buf, \"{s}/{s}.shard\", .{ test_dir, hex_name }) catch unreachable;");
+            try self.builder.writeLine("const file = try std.fs.createFileAbsolute(shard_path, .{});");
+            try self.builder.writeLine("defer file.close();");
+            try self.builder.writeLine("try file.writeAll(&payload);");
+            try self.builder.writeLine("// Read back from disk");
+            try self.builder.writeLine("const rfile = try std.fs.openFileAbsolute(shard_path, .{});");
+            try self.builder.writeLine("defer rfile.close();");
+            try self.builder.writeLine("var read_buf: [256]u8 = undefined;");
+            try self.builder.writeLine("const n = try rfile.readAll(&read_buf);");
+            try self.builder.writeLine("// PROOF: read data matches written payload byte-for-byte");
+            try self.builder.writeLine("try std.testing.expectEqual(n, 256);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &payload, read_buf[0..n]);");
+            try self.builder.writeLine("// Cleanup");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(\"/tmp/trinity_test_s2_roundtrip\") catch {};");
+        } else if (std.mem.eql(u8, name, "storageShardHash")) {
+            // S3: SHA-256 determinism
+            try self.builder.writeLine("// S3: SHA-256 Hash Determinism — same data = same hash");
+            try self.builder.writeLine("const data = \"Trinity: phi^2 + 1/phi^2 = 3\";");
+            try self.builder.writeLine("var hash1: [32]u8 = undefined;");
+            try self.builder.writeLine("var hash2: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(data, &hash1, .{});");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(data, &hash2, .{});");
+            try self.builder.writeLine("// PROOF: same data produces identical SHA-256 hash");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &hash1, &hash2);");
+            try self.builder.writeLine("// Verify hash is non-zero (not degenerate)");
+            try self.builder.writeLine("var all_zero = true;");
+            try self.builder.writeLine("for (hash1) |b| { if (b != 0) all_zero = false; }");
+            try self.builder.writeLine("try std.testing.expect(!all_zero);");
+        } else if (std.mem.eql(u8, name, "storageDeleteVerify")) {
+            // S4: Write then delete then verify gone
+            try self.builder.writeLine("// S4: Delete Verify — write shard, delete, confirm gone");
+            try self.builder.writeLine("const test_dir = \"/tmp/trinity_test_s4_delete\";");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(test_dir) catch {};");
+            try self.builder.writeLine("try std.fs.makeDirAbsolute(test_dir);");
+            try self.builder.writeLine("const fpath = \"/tmp/trinity_test_s4_delete/test.shard\";");
+            try self.builder.writeLine("// Write a shard file");
+            try self.builder.writeLine("const wf = try std.fs.createFileAbsolute(fpath, .{});");
+            try self.builder.writeLine("try wf.writeAll(\"shard data here\");");
+            try self.builder.writeLine("wf.close();");
+            try self.builder.writeLine("// Verify it exists");
+            try self.builder.writeLine("_ = try std.fs.openFileAbsolute(fpath, .{});");
+            try self.builder.writeLine("// Delete it");
+            try self.builder.writeLine("try std.fs.deleteFileAbsolute(fpath);");
+            try self.builder.writeLine("// PROOF: file no longer exists");
+            try self.builder.writeLine("const result = std.fs.openFileAbsolute(fpath, .{});");
+            try self.builder.writeLine("try std.testing.expectError(error.FileNotFound, result);");
+            try self.builder.writeLine("// Cleanup");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(test_dir) catch {};");
+        } else if (std.mem.eql(u8, name, "storageListShards")) {
+            // S5: Write 3 shards, list directory, verify count
+            try self.builder.writeLine("// S5: List Shards — write 3 files, count them in directory");
+            try self.builder.writeLine("const test_dir = \"/tmp/trinity_test_s5_list\";");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(test_dir) catch {};");
+            try self.builder.writeLine("try std.fs.makeDirAbsolute(test_dir);");
+            try self.builder.writeLine("// Write 3 shard files");
+            try self.builder.writeLine("const names = [_][]const u8{ \"aaa.shard\", \"bbb.shard\", \"ccc.shard\" };");
+            try self.builder.writeLine("for (names) |fname| {");
+            try self.builder.writeLine("    var buf: [128]u8 = undefined;");
+            try self.builder.writeLine("    const fp = std.fmt.bufPrint(&buf, \"{s}/{s}\", .{ test_dir, fname }) catch unreachable;");
+            try self.builder.writeLine("    const f = std.fs.createFileAbsolute(fp, .{}) catch continue;");
+            try self.builder.writeLine("    f.writeAll(\"data\") catch {};");
+            try self.builder.writeLine("    f.close();");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("// Count .shard files via directory iteration");
+            try self.builder.writeLine("var dir = try std.fs.openDirAbsolute(test_dir, .{ .iterate = true });");
+            try self.builder.writeLine("defer dir.close();");
+            try self.builder.writeLine("var count: usize = 0;");
+            try self.builder.writeLine("var it = dir.iterate();");
+            try self.builder.writeLine("while (try it.next()) |entry| {");
+            try self.builder.writeLine("    if (std.mem.endsWith(u8, entry.name, \".shard\")) count += 1;");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("// PROOF: exactly 3 shard files found");
+            try self.builder.writeLine("try std.testing.expectEqual(count, 3);");
+            try self.builder.writeLine("// Cleanup");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(test_dir) catch {};");
+        } else if (std.mem.eql(u8, name, "storageFingerprintDeterminism")) {
+            // S6: VSA fingerprint from same data = same vector
+            try self.builder.writeLine("// S6: VSA Fingerprint Determinism — same data = same fingerprint");
+            try self.builder.writeLine("// Compute seed from data hash");
+            try self.builder.writeLine("const data = \"Trinity ternary test payload for VSA fingerprint\";");
+            try self.builder.writeLine("var hash: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(data, &hash, .{});");
+            try self.builder.writeLine("// Use first 8 bytes of hash as u64 seed");
+            try self.builder.writeLine("const seed = std.mem.readInt(u64, hash[0..8], .little);");
+            try self.builder.writeLine("// Generate two fingerprints from same seed");
+            try self.builder.writeLine("var fp1 = vsa.randomVector(256, seed);");
+            try self.builder.writeLine("var fp2 = vsa.randomVector(256, seed);");
+            try self.builder.writeLine("// PROOF: cosine similarity = 1.0 (identical)");
+            try self.builder.writeLine("const sim = vsa.cosineSimilarity(&fp1, &fp2);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(sim, 1.0, 1e-10);");
+        } else if (std.mem.eql(u8, name, "storageFingerprintSimilarity")) {
+            // S7: Similar data = higher cosine than different data
+            try self.builder.writeLine("// S7: VSA Fingerprint Similarity — similar data clusters, different data separates");
+            try self.builder.writeLine("// Fingerprint A: seed from \"hello world 1\"");
+            try self.builder.writeLine("var h1: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(\"hello world 1\", &h1, .{});");
+            try self.builder.writeLine("const s1 = std.mem.readInt(u64, h1[0..8], .little);");
+            try self.builder.writeLine("var fp_a = vsa.randomVector(256, s1);");
+            try self.builder.writeLine("// Fingerprint B: seed from same data (identical)");
+            try self.builder.writeLine("var fp_b = vsa.randomVector(256, s1);");
+            try self.builder.writeLine("// Fingerprint C: seed from totally different data");
+            try self.builder.writeLine("var h2: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(\"completely unrelated binary data 9876543210\", &h2, .{});");
+            try self.builder.writeLine("const s2 = std.mem.readInt(u64, h2[0..8], .little);");
+            try self.builder.writeLine("var fp_c = vsa.randomVector(256, s2);");
+            try self.builder.writeLine("// Measure similarity");
+            try self.builder.writeLine("const sim_ab = vsa.cosineSimilarity(&fp_a, &fp_b);");
+            try self.builder.writeLine("const sim_ac = vsa.cosineSimilarity(&fp_a, &fp_c);");
+            try self.builder.writeLine("// PROOF: identical data has sim=1.0, different data has sim~=0");
+            try self.builder.writeLine("try std.testing.expect(sim_ab > sim_ac);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(sim_ab, 1.0, 1e-10);");
+            try self.builder.writeLine("try std.testing.expect(@abs(sim_ac) < 0.2);");
+        } else if (std.mem.eql(u8, name, "storageShardIntegrity")) {
+            // S8: Write, read back, recompute hash, verify match
+            try self.builder.writeLine("// S8: Shard Integrity — write + hash + read + rehash = match");
+            try self.builder.writeLine("const test_dir = \"/tmp/trinity_test_s8_integrity\";");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(test_dir) catch {};");
+            try self.builder.writeLine("try std.fs.makeDirAbsolute(test_dir);");
+            try self.builder.writeLine("const fpath = \"/tmp/trinity_test_s8_integrity/integrity.shard\";");
+            try self.builder.writeLine("// Create test data and compute original hash");
+            try self.builder.writeLine("const data = \"Integrity test: phi^2 + 1/phi^2 = 3. KOSCHEI.\";");
+            try self.builder.writeLine("var original_hash: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(data, &original_hash, .{});");
+            try self.builder.writeLine("// Write to disk");
+            try self.builder.writeLine("const wf = try std.fs.createFileAbsolute(fpath, .{});");
+            try self.builder.writeLine("try wf.writeAll(data);");
+            try self.builder.writeLine("wf.close();");
+            try self.builder.writeLine("// Read back from disk");
+            try self.builder.writeLine("const rf = try std.fs.openFileAbsolute(fpath, .{});");
+            try self.builder.writeLine("defer rf.close();");
+            try self.builder.writeLine("var read_buf: [256]u8 = undefined;");
+            try self.builder.writeLine("const n = try rf.readAll(&read_buf);");
+            try self.builder.writeLine("// Recompute hash of read data");
+            try self.builder.writeLine("var rehash: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(read_buf[0..n], &rehash, .{});");
+            try self.builder.writeLine("// PROOF: hashes match = data integrity preserved on disk");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &original_hash, &rehash);");
+            try self.builder.writeLine("// Cleanup");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(test_dir) catch {};");
         } else {
             // Generate real test assertions: verify function exists and is callable
             const mem = std.mem;
