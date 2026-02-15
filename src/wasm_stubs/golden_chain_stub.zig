@@ -185,6 +185,11 @@ pub const ChainMessageType = enum {
     SnarkGenerateUpdate,
     RecursiveComposeEvent,
     L2FeeCollectEvent,
+    // v2.21: Cross-Shard Transactions v1.0
+    CrossShardTxEvent,
+    Atomic2PCUpdate,
+    ShardFeeEvent,
+    InterShardSyncEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -245,7 +250,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 224;
+pub const MAX_QUARK_RECORDS = 232; // v2.21: was 224, +8 for Cross-Shard Transactions v1.0
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -468,6 +473,15 @@ pub const QuarkType = enum(u8) {
     rollup_verify_v2,
     snark_anchor,
     l2_rollup_anchor,
+    // v2.21: Cross-Shard Transactions v1.0
+    cross_shard_tx,
+    atomic_2pc,
+    shard_fee,
+    inter_shard_sync,
+    shard_coordinator,
+    tx_finality,
+    shard_rebalance,
+    cross_shard_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -676,6 +690,15 @@ pub const QuarkType = enum(u8) {
             .rollup_verify_v2 => "RLP_VR2",
             .snark_anchor => "SNK_ACH",
             .l2_rollup_anchor => "L2_ACH",
+            // v2.21: Cross-Shard Transactions v1.0
+            .cross_shard_tx => "XSH_TX",
+            .atomic_2pc => "ATM_2PC",
+            .shard_fee => "SHD_FEE",
+            .inter_shard_sync => "ISH_SYN",
+            .shard_coordinator => "SHD_CRD",
+            .tx_finality => "TX_FNL",
+            .shard_rebalance => "SHD_RBL",
+            .cross_shard_anchor => "XSH_ACH",
         };
     }
 
@@ -1077,6 +1100,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isL2FeeQuark(self: QuarkType) bool {
         return self == .l2_fee_collect or self == .rollup_verify_v2;
+    }
+
+    // v2.21: Cross-Shard Transactions v1.0 classifiers
+    pub fn isCrossShardTxQuark(self: QuarkType) bool {
+        return self == .cross_shard_tx or self == .cross_shard_anchor;
+    }
+
+    pub fn isAtomic2PCQuark(self: QuarkType) bool {
+        return self == .atomic_2pc or self == .tx_finality;
+    }
+
+    pub fn isShardFeeQuark(self: QuarkType) bool {
+        return self == .shard_fee or self == .shard_coordinator;
+    }
+
+    pub fn isInterShardSyncQuark(self: QuarkType) bool {
+        return self == .inter_shard_sync or self == .shard_rebalance;
     }
 };
 
@@ -1480,6 +1520,13 @@ pub const L2_FEE_UTRI_PER_TX: u32 = 100;
 pub const L2_BATCH_SIZE_V2: u32 = 10_000;
 pub const SNARK_VERIFICATION_TIMEOUT_US: i64 = 5_000_000;
 pub const PROOF_AGGREGATION_MAX: u16 = 512;
+// v2.21: Cross-Shard Transactions v1.0 constants
+pub const CROSS_SHARD_TX_TIMEOUT_US: i64 = 10_000_000;
+pub const ATOMIC_2PC_MAX_SHARDS: u16 = 100;
+pub const SHARD_FEE_UTRI_PER_TX: u32 = 1_000;
+pub const INTER_SHARD_SYNC_INTERVAL_US: i64 = 2_000_000;
+pub const CROSS_SHARD_BATCH_SIZE: u32 = 5_000;
+pub const MAX_CONCURRENT_CROSS_SHARD: u16 = 256;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2040,6 +2087,39 @@ pub const L2FeeState = struct {
     fee_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.21: Cross-Shard Transactions v1.0 types
+pub const CrossShardTxState = struct {
+    cross_shard_txs: u32 = 0,
+    atomic_commits: u32 = 0,
+    shards_involved: u16 = 0,
+    last_cross_shard_us: i64 = 0,
+    cross_shard_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const Atomic2PCState = struct {
+    prepare_count: u32 = 0,
+    commit_count: u32 = 0,
+    abort_count: u32 = 0,
+    last_2pc_us: i64 = 0,
+    twopc_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const ShardFeeState = struct {
+    shard_fees_utri: u64 = 0,
+    fee_rate_utri: u32 = 0,
+    fee_distributions: u32 = 0,
+    last_fee_us: i64 = 0,
+    shard_fee_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const InterShardSyncState = struct {
+    sync_rounds: u32 = 0,
+    shards_synced: u16 = 0,
+    sync_conflicts: u32 = 0,
+    last_sync_us: i64 = 0,
+    sync_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2158,10 +2238,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 24;
+pub const QUARK_EXPORT_VERSION: u16 = 25; // v2.21: bumped from 24
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 114;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 118; // v2.21: was 114, +4 for cross_shard_txs(u16)+shard_fees(u16)
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -2394,6 +2474,12 @@ pub const GoldenChainAgent = struct {
     recursive_compose_state: RecursiveComposeState,
     l2_fee_state: L2FeeState,
     zk_rollup_v2_active: bool,
+    // v2.21: Cross-Shard Transactions v1.0
+    cross_shard_tx_state: CrossShardTxState,
+    atomic_2pc_state: Atomic2PCState,
+    shard_fee_state: ShardFeeState,
+    inter_shard_sync_state: InterShardSyncState,
+    cross_shard_active: bool,
 
     const Self = @This();
 
@@ -2571,6 +2657,12 @@ pub const GoldenChainAgent = struct {
             .recursive_compose_state = .{},
             .l2_fee_state = .{},
             .zk_rollup_v2_active = false,
+            // v2.21: Cross-Shard Transactions v1.0
+            .cross_shard_tx_state = .{},
+            .atomic_2pc_state = .{},
+            .shard_fee_state = .{},
+            .inter_shard_sync_state = .{},
+            .cross_shard_active = false,
         };
     }
 
@@ -3395,6 +3487,37 @@ pub const GoldenChainAgent = struct {
         if (self.snark_generate_state.proofs_generated == 0) return false;
         if (self.recursive_compose_state.compositions == 0) return false;
         if (self.l2_fee_state.fees_collected == 0) return false;
+        return true;
+    }
+
+    // v2.21: Cross-Shard Transactions v1.0 stub methods
+    pub fn executeCrossShardTx(self: *Self) void {
+        self.cross_shard_tx_state.cross_shard_txs += 1;
+        self.cross_shard_tx_state.atomic_commits += 1;
+        self.cross_shard_tx_state.shards_involved = ATOMIC_2PC_MAX_SHARDS;
+        self.cross_shard_active = true;
+    }
+
+    pub fn runAtomic2PC(self: *Self) void {
+        self.atomic_2pc_state.prepare_count += 1;
+        self.atomic_2pc_state.commit_count += 1;
+    }
+
+    pub fn collectShardFee(self: *Self) void {
+        self.shard_fee_state.shard_fees_utri += SHARD_FEE_UTRI_PER_TX;
+        self.shard_fee_state.fee_rate_utri = SHARD_FEE_UTRI_PER_TX;
+        self.shard_fee_state.fee_distributions += 1;
+    }
+
+    pub fn syncInterShard(self: *Self) void {
+        self.inter_shard_sync_state.sync_rounds += 1;
+        self.inter_shard_sync_state.shards_synced = ATOMIC_2PC_MAX_SHARDS;
+    }
+
+    pub fn crossShardTxVerify(self: *const Self) bool {
+        if (self.cross_shard_tx_state.cross_shard_txs == 0) return false;
+        if (self.atomic_2pc_state.commit_count == 0) return false;
+        if (self.shard_fee_state.shard_fees_utri == 0) return false;
         return true;
     }
 };
