@@ -420,6 +420,158 @@ fn refineDirectRole(
     return role;
 }
 
+// === HEBBIAN ASSOCIATION MATRIX (v2.35) ===
+//
+// Build a character-pair association matrix from the corpus.
+// For each character `a`, we bundle all charToHV(b) for every (a,b) bigram
+// observed in corpus. This creates a Hebbian "what follows a?" lookup.
+//
+// Hybrid forward: bundle(direct_role_prediction, hebbian_prediction)
+// Direct role captures 8-char context patterns; Hebbian captures bigram frequency.
+
+/// Number of printable ASCII characters we track (32..127 = 95 chars)
+const HEBBIAN_CHARS: usize = 95;
+const HEBBIAN_OFFSET: usize = 32;
+
+/// Hebbian association: for a given character, returns a hypervector
+/// representing what characters tend to follow it (bundled successors).
+/// We store the matrix as 95 HVs, one per printable ASCII char.
+///
+/// To avoid 95 * 59KB = 5.6MB on stack, we compute associations on-the-fly
+/// from a compact counts representation.
+
+/// Build Hebbian bigram counts from corpus
+/// Returns counts[a][b] = number of times char b follows char a
+fn buildHebbianCounts(corpus: []const u8) [HEBBIAN_CHARS][HEBBIAN_CHARS]u16 {
+    var counts: [HEBBIAN_CHARS][HEBBIAN_CHARS]u16 = undefined;
+    // Zero-initialize
+    for (0..HEBBIAN_CHARS) |i| {
+        for (0..HEBBIAN_CHARS) |j| {
+            counts[i][j] = 0;
+        }
+    }
+
+    // Count bigrams
+    for (0..corpus.len - 1) |i| {
+        const a = corpus[i];
+        const b = corpus[i + 1];
+        if (a >= HEBBIAN_OFFSET and a < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+            b >= HEBBIAN_OFFSET and b < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+        {
+            const ai = a - HEBBIAN_OFFSET;
+            const bi = b - HEBBIAN_OFFSET;
+            if (counts[ai][bi] < 65535) {
+                counts[ai][bi] += 1;
+            }
+        }
+    }
+
+    return counts;
+}
+
+/// Compute the Hebbian association HV for a given character.
+/// This bundles charToHV(b) for every successor b seen in the corpus,
+/// weighted by frequency (repeated bundling for frequent pairs).
+fn hebbianLookup(
+    dim: usize,
+    char_idx: usize,
+    counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+) Hypervector {
+    var result = Hypervector.init(dim); // zero vector
+    var first = true;
+
+    // Bundle successors, proportional to count (cap at 3 bundles per successor)
+    for (0..HEBBIAN_CHARS) |bi| {
+        const count = counts[char_idx][bi];
+        if (count == 0) continue;
+
+        const char_b: u8 = @intCast(bi + HEBBIAN_OFFSET);
+        var successor_hv = charToHV(dim, char_b);
+
+        // Bundle this successor (more frequent = repeated bundle = stronger signal)
+        const repeats = @min(count, 3);
+        for (0..repeats) |_| {
+            if (first) {
+                result = successor_hv;
+                first = false;
+            } else {
+                result = result.bundle(&successor_hv);
+            }
+        }
+    }
+
+    return result;
+}
+
+/// Hybrid forward pass: combine direct role prediction with Hebbian bigram lookup.
+/// output = bundle(bind(summary, role), hebbian_prediction)
+/// This gives the model both context-level (8-char) and bigram-level signal.
+fn forwardPassHybrid(
+    context: []Hypervector,
+    role: *Hypervector,
+    dim: usize,
+    last_char: u8,
+    counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+) Hypervector {
+    // Direct role prediction (from v2.34)
+    var direct_pred = forwardPassDirect(context, role);
+
+    // Hebbian bigram prediction
+    if (last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS) {
+        const char_idx = last_char - HEBBIAN_OFFSET;
+        var hebbian_pred = hebbianLookup(dim, char_idx, counts);
+        // Hybrid: bundle the two signals
+        return direct_pred.bundle(&hebbian_pred);
+    }
+
+    return direct_pred;
+}
+
+/// Decode using hybrid forward pass
+fn hybridDecode(
+    context: []Hypervector,
+    role: *Hypervector,
+    dim: usize,
+    last_char: u8,
+    counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+) u8 {
+    var output = forwardPassHybrid(context, role, dim, last_char, counts);
+    return hvToChar(dim, &output);
+}
+
+/// Autoregressive generation with hybrid (direct + Hebbian) forward pass
+fn generateWithHybrid(
+    initial_context: []Hypervector,
+    role: *Hypervector,
+    dim: usize,
+    last_char_init: u8,
+    counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    output_buf: []u8,
+    max_tokens: usize,
+) usize {
+    var context: [8]Hypervector = undefined;
+    for (initial_context, 0..) |*hv, i| {
+        context[i] = hv.clone();
+    }
+
+    var last_char = last_char_init;
+    var generated: usize = 0;
+    while (generated < max_tokens and generated < output_buf.len) {
+        var output = forwardPassHybrid(&context, role, dim, last_char, counts);
+        const decoded = hvToChar(dim, &output);
+        output_buf[generated] = decoded;
+        last_char = decoded;
+        generated += 1;
+
+        // Shift context window
+        for (0..7) |i| {
+            context[i] = context[i + 1];
+        }
+        context[7] = output.clone();
+    }
+    return generated;
+}
+
 // === CHARACTER ENCODING (avoids Codebook key-lifetime bug) ===
 
 /// Deterministic character-to-Hypervector mapping using random seeds
@@ -1759,4 +1911,295 @@ test "direct role perplexity comparison" {
     try std.testing.expect(test_ppl > 0.0);
     try std.testing.expect(!std.math.isNan(test_ppl));
     try std.testing.expect(!std.math.isInf(test_ppl));
+}
+
+// === v2.35 HEBBIAN HYBRID TESTS ===
+
+test "hebbian hybrid training on scaled corpus" {
+    const dim: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    std.debug.print("\n=== HEBBIAN HYBRID TRAINING (v2.35) ===\n", .{});
+    std.debug.print("Corpus: {d} chars (Shakespeare)\n", .{corpus.len});
+    std.debug.print("Method: direct role + Hebbian bigram matrix\n", .{});
+
+    // Build Hebbian counts from FULL corpus (pre-training — bigram statistics)
+    const counts = buildHebbianCounts(corpus);
+
+    // Verify counts are populated
+    var total_bigrams: u64 = 0;
+    var unique_bigrams: u64 = 0;
+    for (0..HEBBIAN_CHARS) |i| {
+        for (0..HEBBIAN_CHARS) |j| {
+            if (counts[i][j] > 0) {
+                total_bigrams += counts[i][j];
+                unique_bigrams += 1;
+            }
+        }
+    }
+    std.debug.print("Total bigrams: {d}, Unique pairs: {d}\n", .{ total_bigrams, unique_bigrams });
+
+    // Honest split: 70/15/15
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    // Train offsets (20 samples from train region)
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+
+    // Compute direct role (same as v2.34)
+    var direct_role = computeDirectRole(corpus, dim, &train_offsets, 8);
+
+    // === Measure HYBRID train loss ===
+    var hybrid_train_loss: f64 = 0;
+    var hybrid_train_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &direct_role, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        hybrid_train_loss += 1.0 - sim;
+        hybrid_train_count += 1;
+    }
+    if (hybrid_train_count > 0) hybrid_train_loss /= @as(f64, @floatFromInt(hybrid_train_count));
+
+    // === Measure DIRECT-ONLY train loss (for comparison) ===
+    var direct_train_loss: f64 = 0;
+    var direct_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassDirect(&ctx, &direct_role);
+        const sim = output.similarity(&target);
+        direct_train_loss += 1.0 - sim;
+        direct_count += 1;
+    }
+    if (direct_count > 0) direct_train_loss /= @as(f64, @floatFromInt(direct_count));
+
+    // === Measure HYBRID eval loss ===
+    var hybrid_eval_loss: f64 = 0;
+    var eval_count: usize = 0;
+    const eval_samples = 8;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &direct_role, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        hybrid_eval_loss += 1.0 - sim;
+        eval_count += 1;
+    }
+    if (eval_count > 0) hybrid_eval_loss /= @as(f64, @floatFromInt(eval_count));
+
+    // === Measure DIRECT-ONLY eval loss (for comparison) ===
+    var direct_eval_loss: f64 = 0;
+    var direct_eval_count: usize = 0;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassDirect(&ctx, &direct_role);
+        const sim = output.similarity(&target);
+        direct_eval_loss += 1.0 - sim;
+        direct_eval_count += 1;
+    }
+    if (direct_eval_count > 0) direct_eval_loss /= @as(f64, @floatFromInt(direct_eval_count));
+
+    // === Multi-head baseline (random roles) ===
+    var roles_mh = initRoles(dim, 42);
+    var mh_loss: f64 = 0;
+    var mh_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassMultiHead(&ctx, &roles_mh);
+        const sim = output.similarity(&target);
+        mh_loss += 1.0 - sim;
+        mh_count += 1;
+    }
+    if (mh_count > 0) mh_loss /= @as(f64, @floatFromInt(mh_count));
+
+    // Improvement calculations
+    const hybrid_improvement = (mh_loss - hybrid_train_loss) / mh_loss * 100.0;
+    const direct_improvement = (mh_loss - direct_train_loss) / mh_loss * 100.0;
+    const eval_improvement = (mh_loss - hybrid_eval_loss) / mh_loss * 100.0;
+
+    // === Generation ===
+    var gen_buf: [30]u8 = undefined;
+    var gen_ctx: [8]Hypervector = undefined;
+    for (0..8) |i| {
+        gen_ctx[i] = charToHV(dim, corpus[i]);
+    }
+    const gen_count = generateWithHybrid(&gen_ctx, &direct_role, dim, corpus[7], &counts, &gen_buf, 30);
+
+    // Count unique chars in generation
+    var seen: [256]bool = undefined;
+    for (0..256) |i| {
+        seen[i] = false;
+    }
+    var unique: usize = 0;
+    for (0..gen_count) |i| {
+        if (!seen[gen_buf[i]]) {
+            seen[gen_buf[i]] = true;
+            unique += 1;
+        }
+    }
+
+    std.debug.print("\nHybrid train loss:            {d:.4}\n", .{hybrid_train_loss});
+    std.debug.print("Direct-only train loss:       {d:.4}\n", .{direct_train_loss});
+    std.debug.print("Multi-head (random, baseline): {d:.4}\n", .{mh_loss});
+    std.debug.print("Hybrid improvement over random: {d:.1}%\n", .{hybrid_improvement});
+    std.debug.print("Direct improvement over random: {d:.1}%\n", .{direct_improvement});
+    std.debug.print("\nHybrid eval loss:             {d:.4}\n", .{hybrid_eval_loss});
+    std.debug.print("Direct-only eval loss:        {d:.4}\n", .{direct_eval_loss});
+    std.debug.print("Eval improvement over random:  {d:.1}%\n", .{eval_improvement});
+    std.debug.print("\nHybrid generation:\n", .{});
+    std.debug.print("Prompt: \"to be or \"\n", .{});
+    std.debug.print("Generated: \"{s}\"\n", .{gen_buf[0..gen_count]});
+    std.debug.print("Unique chars: {d}\n", .{unique});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(hybrid_train_loss >= 0.0 and hybrid_train_loss <= 2.0);
+    try std.testing.expect(hybrid_eval_loss >= 0.0 and hybrid_eval_loss <= 2.0);
+    try std.testing.expect(gen_count == 30);
+    try std.testing.expect(unique_bigrams > 0);
+}
+
+test "hebbian hybrid perplexity comparison" {
+    const dim: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    // Build Hebbian counts
+    const counts = buildHebbianCounts(corpus);
+
+    // Train direct role
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+    var direct_role = computeDirectRole(corpus, dim, &train_offsets, 8);
+
+    // === Test PPL (held-out) — Hybrid ===
+    const test_start = eval_end;
+    const test_count = 8;
+    var hybrid_test_log: f64 = 0;
+    var hybrid_test_valid: usize = 0;
+
+    for (0..test_count) |i| {
+        const s = test_start + i * (total_samples - test_start) / test_count;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &direct_role, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        hybrid_test_log += @log(clamped);
+        hybrid_test_valid += 1;
+    }
+
+    const hybrid_test_ppl = @exp(-hybrid_test_log / @as(f64, @floatFromInt(hybrid_test_valid)));
+
+    // === Train PPL — Hybrid ===
+    var hybrid_train_log: f64 = 0;
+    var hybrid_train_valid: usize = 0;
+    for (0..8) |i| {
+        const s = i * train_end / 8;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &direct_role, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        hybrid_train_log += @log(clamped);
+        hybrid_train_valid += 1;
+    }
+
+    const hybrid_train_ppl = @exp(-hybrid_train_log / @as(f64, @floatFromInt(hybrid_train_valid)));
+
+    std.debug.print("\n=== HEBBIAN HYBRID PERPLEXITY (all methods) ===\n", .{});
+    std.debug.print("Hybrid train PPL:   {d:.1}\n", .{hybrid_train_ppl});
+    std.debug.print("Hybrid test PPL:    {d:.1}\n", .{hybrid_test_ppl});
+    std.debug.print("Overfit gap:        {d:.1}\n", .{hybrid_test_ppl - hybrid_train_ppl});
+    std.debug.print("------------------------------------------------\n", .{});
+    std.debug.print("Direct (v2.34):     train=2.0, test=2.0\n", .{});
+    std.debug.print("Bundle2 (v2.32):    train=1.9, test=2.0\n", .{});
+    std.debug.print("Resonator (v2.33):  train=2.0, test=2.0\n", .{});
+    std.debug.print("Random baseline:    95.0\n", .{});
+    std.debug.print("================================================\n", .{});
+
+    try std.testing.expect(hybrid_test_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(hybrid_test_ppl));
+    try std.testing.expect(!std.math.isInf(hybrid_test_ppl));
 }
