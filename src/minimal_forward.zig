@@ -690,6 +690,151 @@ fn generateWithTrigramSampled(
     return generated;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// WEIGHTED HYBRID BLENDING (v2.42)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Weighted blend of 3 hypervectors: result[i] = sign(w_a*a[i] + w_b*b[i] + w_c*c[i])
+/// Returns a ternary HV where each trit is the weighted majority vote.
+fn weightedBlend3(
+    a: *Hypervector,
+    b: *Hypervector,
+    c: *Hypervector,
+    w_a: f64,
+    w_b: f64,
+    w_c: f64,
+    dim: usize,
+) Hypervector {
+    var result = Hypervector.init(dim);
+    const threshold: f64 = 0.1; // deadzone → zero trit
+    for (0..dim) |i| {
+        const ta: f64 = @floatFromInt(a.get(i));
+        const tb: f64 = @floatFromInt(b.get(i));
+        const tc: f64 = @floatFromInt(c.get(i));
+        const weighted = w_a * ta + w_b * tb + w_c * tc;
+        if (weighted > threshold) {
+            result.set(i, 1);
+        } else if (weighted < -threshold) {
+            result.set(i, -1);
+        }
+        // else stays 0
+    }
+    return result;
+}
+
+/// Weighted blend of 2 hypervectors (for bigram-only fallback)
+fn weightedBlend2(
+    a: *Hypervector,
+    b: *Hypervector,
+    w_a: f64,
+    w_b: f64,
+    dim: usize,
+) Hypervector {
+    var result = Hypervector.init(dim);
+    const threshold: f64 = 0.1;
+    for (0..dim) |i| {
+        const ta: f64 = @floatFromInt(a.get(i));
+        const tb: f64 = @floatFromInt(b.get(i));
+        const weighted = w_a * ta + w_b * tb;
+        if (weighted > threshold) {
+            result.set(i, 1);
+        } else if (weighted < -threshold) {
+            result.set(i, -1);
+        }
+    }
+    return result;
+}
+
+/// Forward pass with weighted alpha blending instead of equal-weight bundling.
+/// alpha_role: weight for multi-role prediction
+/// alpha_tri: weight for trigram Hebbian
+/// alpha_bi: weight for bigram Hebbian
+fn forwardPassWeightedHybrid(
+    context: []Hypervector,
+    roles: *[8]Hypervector,
+    dim: usize,
+    prev_char: u8,
+    last_char: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+    alpha_role: f64,
+    alpha_tri: f64,
+    alpha_bi: f64,
+) Hypervector {
+    var multi_pred = forwardPassMultiRole(context, roles);
+
+    // Try trigram path
+    if (prev_char >= HEBBIAN_OFFSET and prev_char < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+        last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+    {
+        const prev_idx = prev_char - HEBBIAN_OFFSET;
+        const last_idx = last_char - HEBBIAN_OFFSET;
+        const key = prev_idx * HEBBIAN_CHARS + last_idx;
+
+        var tri_total: u32 = 0;
+        for (0..HEBBIAN_CHARS) |ci| {
+            tri_total += tri_counts[key][ci];
+        }
+
+        if (tri_total > 0) {
+            var tri_pred = trigramLookup(dim, prev_idx, last_idx, tri_counts);
+            var bi_pred = hebbianLookup(dim, last_idx, bi_counts);
+            return weightedBlend3(&multi_pred, &tri_pred, &bi_pred, alpha_role, alpha_tri, alpha_bi, dim);
+        }
+    }
+
+    // Fallback to bigram only (role + bigram weighted)
+    if (last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS) {
+        const char_idx = last_char - HEBBIAN_OFFSET;
+        var hebbian_pred = hebbianLookup(dim, char_idx, bi_counts);
+        return weightedBlend2(&multi_pred, &hebbian_pred, alpha_role, alpha_bi + alpha_tri, dim);
+    }
+
+    return multi_pred;
+}
+
+/// Generation with weighted hybrid forward pass
+fn generateWithWeightedHybrid(
+    initial_context: []Hypervector,
+    roles: *[8]Hypervector,
+    dim: usize,
+    prev_char_init: u8,
+    last_char_init: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+    alpha_role: f64,
+    alpha_tri: f64,
+    alpha_bi: f64,
+    output_buf: []u8,
+    max_tokens: usize,
+    temperature: f64,
+    top_k: usize,
+    base_seed: u64,
+) usize {
+    var context: [8]Hypervector = undefined;
+    for (initial_context, 0..) |*hv, i| {
+        context[i] = hv.clone();
+    }
+
+    var prev_char = prev_char_init;
+    var last_char = last_char_init;
+    var generated: usize = 0;
+    while (generated < max_tokens and generated < output_buf.len) {
+        var output = forwardPassWeightedHybrid(&context, roles, dim, prev_char, last_char, bi_counts, tri_counts, alpha_role, alpha_tri, alpha_bi);
+        const decoded = hvToCharSampled(dim, &output, temperature, top_k, base_seed + generated);
+        output_buf[generated] = decoded;
+        prev_char = last_char;
+        last_char = decoded;
+        generated += 1;
+
+        for (0..7) |i| {
+            context[i] = context[i + 1];
+        }
+        context[7] = charToHV(dim, decoded);
+    }
+    return generated;
+}
+
 /// Decode using hybrid forward pass
 fn hybridDecode(
     context: []Hypervector,
@@ -4554,4 +4699,313 @@ test "500 offsets perplexity comparison" {
     try std.testing.expect(test_ppl_50 > 0.0);
     try std.testing.expect(!std.math.isNan(test_ppl_50));
     try std.testing.expect(!std.math.isInf(test_ppl_50));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 30: Weighted hybrid alpha grid search (v2.42)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "weighted hybrid alpha grid search" {
+    const dim = 1024;
+
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    const train_end = large_corpus.len * 80 / 100;
+
+    // Use 50 offsets for roles (500 was shown equivalent)
+    var offsets_50: [50]usize = undefined;
+    for (0..50) |i| {
+        offsets_50[i] = i * (large_corpus.len - 10) / 50;
+    }
+    var roles = computeMultiRoles(large_corpus, dim, &offsets_50, 8);
+
+    // Grid search over alpha values
+    // Test: (role, tri, bi) combinations
+    const alphas = [_][3]f64{
+        .{ 0.33, 0.33, 0.34 }, // equal weight (baseline)
+        .{ 0.10, 0.60, 0.30 }, // trigram-heavy
+        .{ 0.05, 0.70, 0.25 }, // trigram-dominant
+        .{ 0.00, 0.75, 0.25 }, // no role (pure Hebbian)
+        .{ 0.00, 1.00, 0.00 }, // pure trigram
+        .{ 0.00, 0.00, 1.00 }, // pure bigram
+        .{ 0.20, 0.50, 0.30 }, // moderate role
+        .{ 0.50, 0.25, 0.25 }, // role-heavy
+    };
+    const alpha_names = [_][]const u8{
+        "equal(0.33/0.33/0.34)",
+        "tri-heavy(0.10/0.60/0.30)",
+        "tri-dom(0.05/0.70/0.25)",
+        "no-role(0.00/0.75/0.25)",
+        "pure-tri(0.00/1.00/0.00)",
+        "pure-bi(0.00/0.00/1.00)",
+        "mod-role(0.20/0.50/0.30)",
+        "role-heavy(0.50/0.25/0.25)",
+    };
+
+    const random_baseline = 1.0 - 1.0 / 95.0;
+
+    var best_eval: f64 = 999.0;
+    var best_idx: usize = 0;
+    var best_train: f64 = 999.0;
+
+    // Also measure the original equal-weight bundling (forwardPassTrigramHybrid)
+    var orig_eval_sum: f64 = 0;
+    var orig_eval_count: usize = 0;
+    var orig_train_sum: f64 = 0;
+    var orig_train_count: usize = 0;
+
+    for (0..50) |i| {
+        const eval_s = train_end + i * (large_corpus.len - train_end - 10) / 50;
+        if (eval_s + 8 >= large_corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[eval_s + j]); }
+        var target = charToHV(dim, large_corpus[eval_s + 8]);
+        const prev = large_corpus[eval_s + 6];
+        const last = large_corpus[eval_s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        orig_eval_sum += 1.0 - (sim + 1.0) / 2.0;
+        orig_eval_count += 1;
+    }
+    for (0..50) |i| {
+        const train_s = i * train_end / 50;
+        if (train_s + 8 >= large_corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[train_s + j]); }
+        var target = charToHV(dim, large_corpus[train_s + 8]);
+        const prev = large_corpus[train_s + 6];
+        const last = large_corpus[train_s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        orig_train_sum += 1.0 - (sim + 1.0) / 2.0;
+        orig_train_count += 1;
+    }
+    const orig_eval = orig_eval_sum / @as(f64, @floatFromInt(orig_eval_count));
+    const orig_train = orig_train_sum / @as(f64, @floatFromInt(orig_train_count));
+
+    std.debug.print("\n=== WEIGHTED HYBRID ALPHA GRID SEARCH (v2.42) ===\n", .{});
+    std.debug.print("Corpus: {d} chars, dim={d}\n", .{ large_corpus.len, dim });
+    std.debug.print("\nOriginal bundling (equal vote):\n", .{});
+    std.debug.print("  Train loss: {d:.4} ({d:.1}% below random)\n", .{ orig_train, (1.0 - orig_train / random_baseline) * 100.0 });
+    std.debug.print("  Eval loss:  {d:.4} ({d:.1}% below random)\n", .{ orig_eval, (1.0 - orig_eval / random_baseline) * 100.0 });
+    std.debug.print("\nWeighted alpha search (role/tri/bi):\n", .{});
+
+    for (alphas, 0..) |alpha, ai| {
+        var eval_sum: f64 = 0;
+        var eval_count: usize = 0;
+        var train_sum: f64 = 0;
+        var train_count: usize = 0;
+
+        // Eval loss
+        for (0..50) |i| {
+            const s = train_end + i * (large_corpus.len - train_end - 10) / 50;
+            if (s + 8 >= large_corpus.len) continue;
+            var ctx: [8]Hypervector = undefined;
+            for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+            var target = charToHV(dim, large_corpus[s + 8]);
+            const prev = large_corpus[s + 6];
+            const last = large_corpus[s + 7];
+            var output = forwardPassWeightedHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts, alpha[0], alpha[1], alpha[2]);
+            const sim = output.similarity(&target);
+            eval_sum += 1.0 - (sim + 1.0) / 2.0;
+            eval_count += 1;
+        }
+
+        // Train loss
+        for (0..50) |i| {
+            const s = i * train_end / 50;
+            if (s + 8 >= large_corpus.len) continue;
+            var ctx: [8]Hypervector = undefined;
+            for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+            var target = charToHV(dim, large_corpus[s + 8]);
+            const prev = large_corpus[s + 6];
+            const last = large_corpus[s + 7];
+            var output = forwardPassWeightedHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts, alpha[0], alpha[1], alpha[2]);
+            const sim = output.similarity(&target);
+            train_sum += 1.0 - (sim + 1.0) / 2.0;
+            train_count += 1;
+        }
+
+        const eval_loss = eval_sum / @as(f64, @floatFromInt(eval_count));
+        const train_loss = train_sum / @as(f64, @floatFromInt(train_count));
+
+        std.debug.print("  {s}: train={d:.4} eval={d:.4} ({d:.1}% below)\n", .{ alpha_names[ai], train_loss, eval_loss, (1.0 - eval_loss / random_baseline) * 100.0 });
+
+        if (eval_loss < best_eval) {
+            best_eval = eval_loss;
+            best_train = train_loss;
+            best_idx = ai;
+        }
+    }
+
+    std.debug.print("\nBest: {s}\n", .{alpha_names[best_idx]});
+    std.debug.print("  Train: {d:.4} ({d:.1}% below random)\n", .{ best_train, (1.0 - best_train / random_baseline) * 100.0 });
+    std.debug.print("  Eval:  {d:.4} ({d:.1}% below random)\n", .{ best_eval, (1.0 - best_eval / random_baseline) * 100.0 });
+
+    // --- Generation with best alpha ---
+    const best_alpha = alphas[best_idx];
+    var gen_buf: [80]u8 = undefined;
+    const prompt = "to be or ";
+    var init_ctx: [8]Hypervector = undefined;
+    for (0..8) |i| { init_ctx[i] = charToHV(dim, prompt[i]); }
+    const gen_len = generateWithWeightedHybrid(
+        &init_ctx, &roles, dim, prompt[6], prompt[7],
+        &bi_counts, &tri_counts,
+        best_alpha[0], best_alpha[1], best_alpha[2],
+        &gen_buf, 80, 0.8, 8, 98765,
+    );
+
+    var char_seen = [_]bool{false} ** 256;
+    var unique_count: usize = 0;
+    for (gen_buf[0..gen_len]) |c| {
+        if (!char_seen[c]) { char_seen[c] = true; unique_count += 1; }
+    }
+
+    std.debug.print("\nGeneration (best alpha, T=0.8, K=8):\n", .{});
+    std.debug.print("  Prompt: \"{s}\"\n", .{prompt});
+    std.debug.print("  Generated: \"{s}\"\n", .{gen_buf[0..gen_len]});
+    std.debug.print("  Unique chars: {d}\n", .{unique_count});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(best_eval < random_baseline);
+    try std.testing.expect(best_train < random_baseline);
+    try std.testing.expect(gen_len > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 31: Weighted hybrid perplexity (v2.42)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "weighted hybrid perplexity comparison" {
+    const dim = 1024;
+
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    const train_end = large_corpus.len * 80 / 100;
+
+    var offsets_50: [50]usize = undefined;
+    for (0..50) |i| {
+        offsets_50[i] = i * (large_corpus.len - 10) / 50;
+    }
+    var roles = computeMultiRoles(large_corpus, dim, &offsets_50, 8);
+
+    // Test multiple alpha configs for PPL
+    const configs = [_][3]f64{
+        .{ 0.33, 0.33, 0.34 }, // equal
+        .{ 0.00, 0.75, 0.25 }, // no role
+        .{ 0.05, 0.70, 0.25 }, // trigram dominant
+        .{ 0.10, 0.60, 0.30 }, // trigram heavy
+    };
+    const config_names = [_][]const u8{
+        "equal(0.33/0.33/0.34)",
+        "no-role(0.00/0.75/0.25)",
+        "tri-dom(0.05/0.70/0.25)",
+        "tri-heavy(0.10/0.60/0.30)",
+    };
+
+    // Also compute original bundling PPL
+    var orig_test_log: f64 = 0;
+    var orig_test_valid: usize = 0;
+    var orig_train_log: f64 = 0;
+    var orig_train_valid: usize = 0;
+
+    for (0..20) |i| {
+        const s = train_end + i * (large_corpus.len - train_end - 10) / 20;
+        if (s + 8 >= large_corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        const prob = @max((sim + 1.0) / 2.0, 1e-10);
+        orig_test_log += @log(prob);
+        orig_test_valid += 1;
+    }
+    for (0..20) |i| {
+        const s = i * train_end / 20;
+        if (s + 8 >= large_corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        const prob = @max((sim + 1.0) / 2.0, 1e-10);
+        orig_train_log += @log(prob);
+        orig_train_valid += 1;
+    }
+
+    const orig_test_ppl = @exp(-orig_test_log / @as(f64, @floatFromInt(orig_test_valid)));
+    const orig_train_ppl = @exp(-orig_train_log / @as(f64, @floatFromInt(orig_train_valid)));
+
+    std.debug.print("\n=== WEIGHTED HYBRID PERPLEXITY (v2.42) ===\n", .{});
+    std.debug.print("Original bundling:  train={d:.2} test={d:.2} gap={d:.2}\n", .{ orig_train_ppl, orig_test_ppl, orig_test_ppl - orig_train_ppl });
+
+    var best_test_ppl: f64 = 999.0;
+    var best_config_idx: usize = 0;
+    var best_train_ppl_val: f64 = 999.0;
+
+    for (configs, 0..) |cfg, ci| {
+        var test_log: f64 = 0;
+        var test_valid: usize = 0;
+        var train_log: f64 = 0;
+        var train_valid: usize = 0;
+
+        for (0..20) |i| {
+            const s = train_end + i * (large_corpus.len - train_end - 10) / 20;
+            if (s + 8 >= large_corpus.len) continue;
+            var ctx: [8]Hypervector = undefined;
+            for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+            var target = charToHV(dim, large_corpus[s + 8]);
+            const prev = large_corpus[s + 6];
+            const last = large_corpus[s + 7];
+            var output = forwardPassWeightedHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts, cfg[0], cfg[1], cfg[2]);
+            const sim = output.similarity(&target);
+            const prob = @max((sim + 1.0) / 2.0, 1e-10);
+            test_log += @log(prob);
+            test_valid += 1;
+        }
+
+        for (0..20) |i| {
+            const s = i * train_end / 20;
+            if (s + 8 >= large_corpus.len) continue;
+            var ctx: [8]Hypervector = undefined;
+            for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+            var target = charToHV(dim, large_corpus[s + 8]);
+            const prev = large_corpus[s + 6];
+            const last = large_corpus[s + 7];
+            var output = forwardPassWeightedHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts, cfg[0], cfg[1], cfg[2]);
+            const sim = output.similarity(&target);
+            const prob = @max((sim + 1.0) / 2.0, 1e-10);
+            train_log += @log(prob);
+            train_valid += 1;
+        }
+
+        const test_ppl = @exp(-test_log / @as(f64, @floatFromInt(test_valid)));
+        const train_ppl = @exp(-train_log / @as(f64, @floatFromInt(train_valid)));
+
+        std.debug.print("{s}: train={d:.2} test={d:.2} gap={d:.2}\n", .{ config_names[ci], train_ppl, test_ppl, test_ppl - train_ppl });
+
+        if (test_ppl < best_test_ppl) {
+            best_test_ppl = test_ppl;
+            best_train_ppl_val = train_ppl;
+            best_config_idx = ci;
+        }
+    }
+
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("Best config: {s}\n", .{config_names[best_config_idx]});
+    std.debug.print("  Train PPL: {d:.2}, Test PPL: {d:.2}\n", .{ best_train_ppl_val, best_test_ppl });
+    std.debug.print("v2.41 (500 offsets):           train=1.80, test=1.93\n", .{});
+    std.debug.print("v2.40 (50 offsets):            train=1.87, test=1.84\n", .{});
+    std.debug.print("v2.39 small trigram:           train=1.5, test=1.6\n", .{});
+    std.debug.print("Random baseline:               95.0\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(best_test_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(best_test_ppl));
+    try std.testing.expect(!std.math.isInf(best_test_ppl));
 }
