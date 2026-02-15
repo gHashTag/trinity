@@ -1366,4 +1366,20 @@ pub fn build(b: *std.Build) void {
     const pipeline_step = b.step("test-pipeline", "Test RS integration pipeline (end-to-end)");
     pipeline_step.dependOn(&run_pipeline_tests.step);
     test_step.dependOn(&run_pipeline_tests.step);
+
+    // Generated network pipeline tests (from specs/storage/netpipeline.vibee)
+    const netpipeline_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/netpipeline.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_netpipeline_tests = b.addRunArtifact(netpipeline_tests);
+    const netpipeline_step = b.step("test-network-pipeline", "Test TCP fault-tolerant pipeline (RS + network)");
+    netpipeline_step.dependOn(&run_netpipeline_tests.step);
+    test_step.dependOn(&run_netpipeline_tests.step);
 }
