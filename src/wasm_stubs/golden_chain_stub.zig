@@ -215,6 +215,11 @@ pub const ChainMessageType = enum {
             MassAdoptionUpdate,
             ExchangeListingEvent,
             UniversalWalletEvent,
+            // v2.27: Trinity Beyond v1.0
+            TriToHundredEvent,
+            UniversalAdoptionUpdate,
+            ExchangeV2Event,
+            GlobalWalletEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -275,7 +280,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 272; // v2.26: was 264, +8 for $TRI to $10 + Mass Adoption
+pub const MAX_QUARK_RECORDS = 280; // v2.27: was 272, +8 for Trinity Beyond v1.0
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -555,6 +560,15 @@ pub const QuarkType = enum(u8) {
             exchange_distribute, // 237
             wallet_govern, // 238
             mass_adoption_anchor, // 239
+            // v2.27: Trinity Beyond v1.0 (u8: 248/256 used)
+            tri_to_hundred, // 240
+            universal_adoption, // 241
+            exchange_v2, // 242
+            global_wallet, // 243
+            adoption_10b, // 244
+            exchange_scale, // 245
+            wallet_universal, // 246
+            beyond_anchor, // 247
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -817,6 +831,15 @@ pub const QuarkType = enum(u8) {
                     .exchange_distribute => "EXC_DST",
                     .wallet_govern => "WLT_GOV",
                     .mass_adoption_anchor => "MAS_ACH",
+                    // v2.27
+                    .tri_to_hundred => "TRI_HND",
+                    .universal_adoption => "UNI_ADP",
+                    .exchange_v2 => "EXC_V2",
+                    .global_wallet => "GLB_WLT",
+                    .adoption_10b => "ADP_10B",
+                    .exchange_scale => "EXC_SCL",
+                    .wallet_universal => "WLT_UNI",
+                    .beyond_anchor => "BYD_ACH",
         };
     }
 
@@ -1318,6 +1341,23 @@ pub const QuarkType = enum(u8) {
             pub fn isUniversalWalletQuark(self: QuarkType) bool {
                 return self == .universal_wallet or self == .wallet_govern;
             }
+
+            // v2.27 classifiers
+            pub fn isTriToHundredQuark(self: QuarkType) bool {
+                return self == .tri_to_hundred or self == .beyond_anchor;
+            }
+
+            pub fn isUniversalAdoptionQuark(self: QuarkType) bool {
+                return self == .universal_adoption or self == .adoption_10b;
+            }
+
+            pub fn isExchangeV2Quark(self: QuarkType) bool {
+                return self == .exchange_v2 or self == .exchange_scale;
+            }
+
+            pub fn isGlobalWalletQuark(self: QuarkType) bool {
+                return self == .global_wallet or self == .wallet_universal;
+            }
 };
 
 pub const QuarkRecord = struct {
@@ -1765,6 +1805,13 @@ pub const MAX_ETERNAL_NODES: u32 = 1_000_000_000; // 1B eternal nodes
             pub const UNIVERSAL_WALLET_TARGET: u64 = 500_000_000;
             pub const EXCHANGE_VOLUME_INTERVAL_US: i64 = 30_000_000;
             pub const MAX_ADOPTION_CHANNELS: u32 = 10_000;
+            // v2.27 constants
+            pub const TRI_PRICE_TARGET_100_UTRI: u64 = 100_000_000;
+            pub const UNIVERSAL_ADOPTION_TARGET: u64 = 10_000_000_000;
+            pub const GLOBAL_EXCHANGE_TARGET: u16 = 200;
+            pub const GLOBAL_WALLET_TARGET: u64 = 5_000_000_000;
+            pub const GLOBAL_EXCHANGE_VOLUME_INTERVAL_US: i64 = 15_000_000;
+            pub const MAX_BEYOND_CHANNELS: u32 = 100_000;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2523,6 +2570,39 @@ pub const EternalUptimeState = struct {
                 wallet_hash: [32]u8 = [_]u8{0} ** 32,
             };
 
+            // v2.27 types
+            pub const TriToHundredState = struct {
+                tri_hundred_transactions: u64 = 0,
+                price_utri: u64 = 0,
+                market_cap_utri: u64 = 0,
+                last_price_us: i64 = 0,
+                price_hash: [32]u8 = [_]u8{0} ** 32,
+            };
+
+            pub const UniversalAdoptionState = struct {
+                adoption_events: u64 = 0,
+                total_users_10b: u64 = 0,
+                monthly_active_1b: u64 = 0,
+                last_adoption_us: i64 = 0,
+                adoption_hash: [32]u8 = [_]u8{0} ** 32,
+            };
+
+            pub const ExchangeV2State = struct {
+                listing_events: u64 = 0,
+                exchanges_active: u32 = 0,
+                volume_utri: u64 = 0,
+                last_listing_us: i64 = 0,
+                listing_hash: [32]u8 = [_]u8{0} ** 32,
+            };
+
+            pub const GlobalWalletState = struct {
+                wallet_events: u64 = 0,
+                wallets_created: u64 = 0,
+                active_wallets: u64 = 0,
+                last_wallet_us: i64 = 0,
+                wallet_hash: [32]u8 = [_]u8{0} ** 32,
+            };
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2641,10 +2721,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 30; // v2.26: bumped from 29
+pub const QUARK_EXPORT_VERSION: u16 = 31; // v2.27: bumped from 30
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 138; // v2.26: was 134, +4 for tri_to_ten
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 142; // v2.27: was 138, +4 for trinity_beyond
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -2913,6 +2993,12 @@ pub const GoldenChainAgent = struct {
                 exchange_listing_state: ExchangeListingState,
                 universal_wallet_state: UniversalWalletState,
                 tri_to_ten_active: bool,
+                // v2.27 fields
+                tri_to_hundred_state: TriToHundredState,
+                universal_adoption_state: UniversalAdoptionState,
+                exchange_v2_state: ExchangeV2State,
+                global_wallet_state: GlobalWalletState,
+                trinity_beyond_active: bool,
 
     const Self = @This();
 
@@ -3126,6 +3212,12 @@ pub const GoldenChainAgent = struct {
                     .exchange_listing_state = .{},
                     .universal_wallet_state = .{},
                     .tri_to_ten_active = false,
+                    // v2.27
+                    .tri_to_hundred_state = .{},
+                    .universal_adoption_state = .{},
+                    .exchange_v2_state = .{},
+                    .global_wallet_state = .{},
+                    .trinity_beyond_active = false,
         };
     }
 
@@ -4140,6 +4232,39 @@ pub const GoldenChainAgent = struct {
                 if (self.tri_to_ten_state.tri_ten_transactions == 0) return false;
                 if (self.mass_adoption_state.adoption_events == 0) return false;
                 if (self.exchange_listing_state.listing_events == 0) return false;
+                return true;
+            }
+
+            // v2.27 methods (stubs)
+            pub fn driveTriToHundred(self: *GoldenChainAgent) void {
+                self.tri_to_hundred_state.tri_hundred_transactions += 1;
+                self.tri_to_hundred_state.price_utri += 1000;
+                self.tri_to_hundred_state.market_cap_utri = self.tri_to_hundred_state.price_utri * UNIVERSAL_ADOPTION_TARGET;
+            }
+
+            pub fn growUniversalAdoption(self: *GoldenChainAgent) void {
+                self.universal_adoption_state.adoption_events += 1;
+                self.universal_adoption_state.total_users_10b += 10000;
+                self.universal_adoption_state.monthly_active_1b += 5000;
+            }
+
+            pub fn listExchangesV2(self: *GoldenChainAgent) void {
+                self.exchange_v2_state.listing_events += 1;
+                if (self.exchange_v2_state.exchanges_active < GLOBAL_EXCHANGE_TARGET)
+                    self.exchange_v2_state.exchanges_active += 1;
+                self.exchange_v2_state.volume_utri += 10_000_000;
+            }
+
+            pub fn deployGlobalWallet(self: *GoldenChainAgent) void {
+                self.global_wallet_state.wallet_events += 1;
+                self.global_wallet_state.wallets_created += 100000;
+                self.global_wallet_state.active_wallets += 50000;
+            }
+
+            pub fn trinityBeyondVerify(self: *const GoldenChainAgent) bool {
+                if (self.tri_to_hundred_state.tri_hundred_transactions == 0) return false;
+                if (self.universal_adoption_state.adoption_events == 0) return false;
+                if (self.exchange_v2_state.listing_events == 0) return false;
                 return true;
             }
 };
