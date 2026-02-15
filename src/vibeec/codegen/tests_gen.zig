@@ -3105,6 +3105,125 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(d0[0] <= d1[0]);");
             try self.builder.writeLine("try std.testing.expect(d1[0] <= d2[0]);");
 
+        // ═══════════════════════════════════════════════════════════════════
+        // LIVE SWARM TESTS (S1-S4)
+        // ═══════════════════════════════════════════════════════════════════
+        } else if (std.mem.eql(u8, name, "swarmBootstrapJoin")) {
+            // S1: Node joins via seed peers, transitions to active
+            try self.builder.writeLine("// S1: Bootstrap Join — node contacts seeds, joins swarm, becomes active");
+            try self.builder.writeLine("const self_id: [32]u8 = [_]u8{0x42} ** 32;");
+            try self.builder.writeLine("var engine = SwarmEngine.init(self_id, 9334);");
+            try self.builder.writeLine("try std.testing.expect(engine.self_state == .joining);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Create 3 seed peers");
+            try self.builder.writeLine("var seeds: [3]SeedPeer = undefined;");
+            try self.builder.writeLine("for (0..3) |i| {");
+            try self.builder.writeLine("    seeds[i].addr_buf = [_]u8{0} ** 64;");
+            try self.builder.writeLine("    seeds[i].addr_buf[0] = @intCast(i + 1);");
+            try self.builder.writeLine("    seeds[i].addr_len = 10;");
+            try self.builder.writeLine("    seeds[i].port = @intCast(9334 + i);");
+            try self.builder.writeLine("    seeds[i].alive = true;");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: bootstrap adds seeds and transitions to active");
+            try self.builder.writeLine("const added = engine.bootstrap(&seeds);");
+            try self.builder.writeLine("try std.testing.expect(added == 3);");
+            try self.builder.writeLine("try std.testing.expect(engine.node_count == 3);");
+            try self.builder.writeLine("try std.testing.expect(engine.self_state == .active);");
+
+        } else if (std.mem.eql(u8, name, "swarmPingPong")) {
+            // S2: Heartbeat detects alive/dead nodes
+            try self.builder.writeLine("// S2: Ping/Pong — heartbeat detects dead nodes after timeout");
+            try self.builder.writeLine("const self_id: [32]u8 = [_]u8{0x42} ** 32;");
+            try self.builder.writeLine("var engine = SwarmEngine.init(self_id, 9334);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Add 3 seed peers via bootstrap");
+            try self.builder.writeLine("var seeds: [3]SeedPeer = undefined;");
+            try self.builder.writeLine("for (0..3) |i| {");
+            try self.builder.writeLine("    seeds[i].addr_buf = [_]u8{0} ** 64;");
+            try self.builder.writeLine("    seeds[i].addr_buf[0] = @intCast(i + 1);");
+            try self.builder.writeLine("    seeds[i].addr_len = 10;");
+            try self.builder.writeLine("    seeds[i].port = @intCast(9334 + i);");
+            try self.builder.writeLine("    seeds[i].alive = true;");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("_ = engine.bootstrap(&seeds);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Send pings from nodes 0 and 1 at time=1000");
+            try self.builder.writeLine("_ = engine.receivePing(engine.nodes[0].node_id, 1000, 15);");
+            try self.builder.writeLine("_ = engine.receivePing(engine.nodes[1].node_id, 1000, 22);");
+            try self.builder.writeLine("// Node 2 gets ping at time=1000 too");
+            try self.builder.writeLine("_ = engine.receivePing(engine.nodes[2].node_id, 1000, 30);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// At time=32000 (>30s timeout), node 2 stops pinging, nodes 0,1 still alive");
+            try self.builder.writeLine("_ = engine.receivePing(engine.nodes[0].node_id, 25000, 14);");
+            try self.builder.writeLine("_ = engine.receivePing(engine.nodes[1].node_id, 25000, 20);");
+            try self.builder.writeLine("// Node 2 last_ping stays at 1000");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: checkTimeouts at 32000 marks node 2 dead");
+            try self.builder.writeLine("const dead = engine.checkTimeouts(32000);");
+            try self.builder.writeLine("try std.testing.expect(dead == 1);");
+            try self.builder.writeLine("try std.testing.expect(engine.nodes[2].state == .dead);");
+            try self.builder.writeLine("try std.testing.expect(engine.nodes[0].state == .active);");
+            try self.builder.writeLine("try std.testing.expect(engine.nodes[1].state == .active);");
+
+        } else if (std.mem.eql(u8, name, "swarmNodeLifecycle")) {
+            // S3: joining → active → leaving state transitions
+            try self.builder.writeLine("// S3: Node Lifecycle — joining → active → leaving");
+            try self.builder.writeLine("const self_id: [32]u8 = [_]u8{0xAA} ** 32;");
+            try self.builder.writeLine("var engine = SwarmEngine.init(self_id, 9334);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: starts in joining state");
+            try self.builder.writeLine("try std.testing.expect(engine.self_state == .joining);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Bootstrap → active");
+            try self.builder.writeLine("var seeds: [1]SeedPeer = undefined;");
+            try self.builder.writeLine("seeds[0].addr_buf = [_]u8{0} ** 64;");
+            try self.builder.writeLine("seeds[0].addr_buf[0] = 0xFF;");
+            try self.builder.writeLine("seeds[0].addr_len = 8;");
+            try self.builder.writeLine("seeds[0].port = 9334;");
+            try self.builder.writeLine("seeds[0].alive = true;");
+            try self.builder.writeLine("_ = engine.bootstrap(&seeds);");
+            try self.builder.writeLine("try std.testing.expect(engine.self_state == .active);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Graceful leave → leaving");
+            try self.builder.writeLine("engine.initiateLeave();");
+            try self.builder.writeLine("try std.testing.expect(engine.self_state == .leaving);");
+
+        } else if (std.mem.eql(u8, name, "swarmHealthAggregate")) {
+            // S4: Aggregate health report from N nodes
+            try self.builder.writeLine("// S4: Health Aggregate — correct totals from 5 nodes");
+            try self.builder.writeLine("const self_id: [32]u8 = [_]u8{0} ** 32;");
+            try self.builder.writeLine("var engine = SwarmEngine.init(self_id, 9334);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Add 5 nodes with known shard counts");
+            try self.builder.writeLine("var seeds: [5]SeedPeer = undefined;");
+            try self.builder.writeLine("for (0..5) |i| {");
+            try self.builder.writeLine("    seeds[i].addr_buf = [_]u8{0} ** 64;");
+            try self.builder.writeLine("    seeds[i].addr_buf[0] = @intCast(i + 10);");
+            try self.builder.writeLine("    seeds[i].addr_len = 12;");
+            try self.builder.writeLine("    seeds[i].port = @intCast(9334 + i);");
+            try self.builder.writeLine("    seeds[i].alive = true;");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("_ = engine.bootstrap(&seeds);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Set shard counts and capacities");
+            try self.builder.writeLine("for (0..5) |i| {");
+            try self.builder.writeLine("    engine.nodes[i].shards_stored = @intCast((i + 1) * 100);");
+            try self.builder.writeLine("    engine.nodes[i].capacity_mb = @intCast((i + 1) * 1024);");
+            try self.builder.writeLine("    engine.nodes[i].latency_ms = @intCast(10 + i * 5);");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: health report totals are correct");
+            try self.builder.writeLine("const report = engine.healthReport();");
+            try self.builder.writeLine("try std.testing.expect(report.total_nodes == 5);");
+            try self.builder.writeLine("try std.testing.expect(report.nodes_active == 5);");
+            try self.builder.writeLine("// total_shards = 100+200+300+400+500 = 1500");
+            try self.builder.writeLine("try std.testing.expect(report.total_shards == 1500);");
+            try self.builder.writeLine("// total_capacity = 1024+2048+3072+4096+5120 = 15360");
+            try self.builder.writeLine("try std.testing.expect(report.total_capacity_mb == 15360);");
+            try self.builder.writeLine("// avg_latency = (10+15+20+25+30)/5 = 20");
+            try self.builder.writeLine("try std.testing.expect(report.avg_latency_ms == 20);");
+
         } else {
             // Generate real test assertions: verify function exists and is callable
             const mem = std.mem;

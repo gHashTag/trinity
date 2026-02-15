@@ -32,6 +32,7 @@ pub const ZigCodeGen = struct {
     discovery_emitted: bool,
     pos_emitted: bool,
     dht_emitted: bool,
+    swarm_emitted: bool,
 
     const Self = @This();
 
@@ -45,6 +46,7 @@ pub const ZigCodeGen = struct {
             .discovery_emitted = false,
             .pos_emitted = false,
             .dht_emitted = false,
+            .swarm_emitted = false,
         };
     }
 
@@ -675,6 +677,173 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("        }");
         try self.builder.writeLine("        result.count = n;");
         try self.builder.writeLine("        return result;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+    }
+
+    /// Emit Live Swarm struct (bootstrap + node lifecycle + ping/pong)
+    fn emitSwarmStruct(self: *Self) !void {
+        if (self.swarm_emitted) return;
+        self.swarm_emitted = true;
+        try self.builder.writeLine("");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("// LIVE SWARM — Multi-Host Bootstrap + Node Lifecycle + Ping/Pong");
+        try self.builder.writeLine("// Seed peers → DHT join → announce capacity → heartbeat → serve.");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const NodeState = enum(u8) {");
+        try self.builder.writeLine("    joining = 0,");
+        try self.builder.writeLine("    active = 1,");
+        try self.builder.writeLine("    leaving = 2,");
+        try self.builder.writeLine("    dead = 3,");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const SeedPeer = struct {");
+        try self.builder.writeLine("    addr_buf: [64]u8,");
+        try self.builder.writeLine("    addr_len: u8,");
+        try self.builder.writeLine("    port: u16,");
+        try self.builder.writeLine("    alive: bool,");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const SwarmNodeInfo = struct {");
+        try self.builder.writeLine("    node_id: [32]u8,");
+        try self.builder.writeLine("    port: u16,");
+        try self.builder.writeLine("    state: NodeState,");
+        try self.builder.writeLine("    shards_stored: u32,");
+        try self.builder.writeLine("    capacity_mb: u32,");
+        try self.builder.writeLine("    last_ping: i64,");
+        try self.builder.writeLine("    latency_ms: u16,");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const SwarmEngine = struct {");
+        try self.builder.writeLine("    const MAX_NODES = 64;");
+        try self.builder.writeLine("    const PING_INTERVAL_MS: i64 = 5000;");
+        try self.builder.writeLine("    const PEER_TIMEOUT_MS: i64 = 30000;");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    self_id: [32]u8,");
+        try self.builder.writeLine("    self_port: u16,");
+        try self.builder.writeLine("    self_state: NodeState,");
+        try self.builder.writeLine("    nodes: [MAX_NODES]SwarmNodeInfo,");
+        try self.builder.writeLine("    node_count: u16,");
+        try self.builder.writeLine("    total_shards: u32,");
+        try self.builder.writeLine("    total_capacity_mb: u32,");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn init(self_id: [32]u8, port: u16) SwarmEngine {");
+        try self.builder.writeLine("        var engine: SwarmEngine = undefined;");
+        try self.builder.writeLine("        engine.self_id = self_id;");
+        try self.builder.writeLine("        engine.self_port = port;");
+        try self.builder.writeLine("        engine.self_state = .joining;");
+        try self.builder.writeLine("        engine.node_count = 0;");
+        try self.builder.writeLine("        engine.total_shards = 0;");
+        try self.builder.writeLine("        engine.total_capacity_mb = 0;");
+        try self.builder.writeLine("        return engine;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Bootstrap: contact seed peers, add them to node list");
+        try self.builder.writeLine("    pub fn bootstrap(self: *SwarmEngine, seeds: []const SeedPeer) u16 {");
+        try self.builder.writeLine("        var added: u16 = 0;");
+        try self.builder.writeLine("        for (seeds) |seed| {");
+        try self.builder.writeLine("            if (!seed.alive) continue;");
+        try self.builder.writeLine("            if (self.node_count >= MAX_NODES) break;");
+        try self.builder.writeLine("            var info: SwarmNodeInfo = undefined;");
+        try self.builder.writeLine("            // Derive node_id from seed addr (in real impl, exchanged via handshake)");
+        try self.builder.writeLine("            const Sha256 = std.crypto.hash.sha2.Sha256;");
+        try self.builder.writeLine("            Sha256.hash(seed.addr_buf[0..seed.addr_len], &info.node_id, .{});");
+        try self.builder.writeLine("            info.port = seed.port;");
+        try self.builder.writeLine("            info.state = .active;");
+        try self.builder.writeLine("            info.shards_stored = 0;");
+        try self.builder.writeLine("            info.capacity_mb = 0;");
+        try self.builder.writeLine("            info.last_ping = 0;");
+        try self.builder.writeLine("            info.latency_ms = 0;");
+        try self.builder.writeLine("            self.nodes[self.node_count] = info;");
+        try self.builder.writeLine("            self.node_count += 1;");
+        try self.builder.writeLine("            added += 1;");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        if (added > 0) self.self_state = .active;");
+        try self.builder.writeLine("        return added;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Process ping from a node (update last_ping timestamp)");
+        try self.builder.writeLine("    pub fn receivePing(self: *SwarmEngine, node_id: [32]u8, timestamp: i64, latency: u16) bool {");
+        try self.builder.writeLine("        for (0..self.node_count) |i| {");
+        try self.builder.writeLine("            if (std.mem.eql(u8, &self.nodes[i].node_id, &node_id)) {");
+        try self.builder.writeLine("                self.nodes[i].last_ping = timestamp;");
+        try self.builder.writeLine("                self.nodes[i].latency_ms = latency;");
+        try self.builder.writeLine("                if (self.nodes[i].state == .dead) self.nodes[i].state = .active;");
+        try self.builder.writeLine("                return true;");
+        try self.builder.writeLine("            }");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        return false;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Check for timed-out nodes and mark them dead");
+        try self.builder.writeLine("    pub fn checkTimeouts(self: *SwarmEngine, now: i64) u16 {");
+        try self.builder.writeLine("        var dead_count: u16 = 0;");
+        try self.builder.writeLine("        for (0..self.node_count) |i| {");
+        try self.builder.writeLine("            if (self.nodes[i].state == .active and");
+        try self.builder.writeLine("                self.nodes[i].last_ping > 0 and");
+        try self.builder.writeLine("                (now - self.nodes[i].last_ping) > PEER_TIMEOUT_MS)");
+        try self.builder.writeLine("            {");
+        try self.builder.writeLine("                self.nodes[i].state = .dead;");
+        try self.builder.writeLine("                dead_count += 1;");
+        try self.builder.writeLine("            }");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        return dead_count;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Initiate graceful leave");
+        try self.builder.writeLine("    pub fn initiateLeave(self: *SwarmEngine) void {");
+        try self.builder.writeLine("        self.self_state = .leaving;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Count nodes by state");
+        try self.builder.writeLine("    pub fn countByState(self: *const SwarmEngine, state: NodeState) u16 {");
+        try self.builder.writeLine("        var count: u16 = 0;");
+        try self.builder.writeLine("        for (0..self.node_count) |i| {");
+        try self.builder.writeLine("            if (self.nodes[i].state == state) count += 1;");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        return count;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Aggregate health report");
+        try self.builder.writeLine("    pub const HealthReport = struct {");
+        try self.builder.writeLine("        total_nodes: u16,");
+        try self.builder.writeLine("        nodes_active: u16,");
+        try self.builder.writeLine("        nodes_joining: u16,");
+        try self.builder.writeLine("        nodes_leaving: u16,");
+        try self.builder.writeLine("        nodes_dead: u16,");
+        try self.builder.writeLine("        total_shards: u32,");
+        try self.builder.writeLine("        total_capacity_mb: u32,");
+        try self.builder.writeLine("        avg_latency_ms: u16,");
+        try self.builder.writeLine("    };");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn healthReport(self: *const SwarmEngine) HealthReport {");
+        try self.builder.writeLine("        var report: HealthReport = .{");
+        try self.builder.writeLine("            .total_nodes = self.node_count,");
+        try self.builder.writeLine("            .nodes_active = 0, .nodes_joining = 0,");
+        try self.builder.writeLine("            .nodes_leaving = 0, .nodes_dead = 0,");
+        try self.builder.writeLine("            .total_shards = 0, .total_capacity_mb = 0,");
+        try self.builder.writeLine("            .avg_latency_ms = 0,");
+        try self.builder.writeLine("        };");
+        try self.builder.writeLine("        var lat_sum: u32 = 0;");
+        try self.builder.writeLine("        var lat_count: u16 = 0;");
+        try self.builder.writeLine("        for (0..self.node_count) |i| {");
+        try self.builder.writeLine("            switch (self.nodes[i].state) {");
+        try self.builder.writeLine("                .active => report.nodes_active += 1,");
+        try self.builder.writeLine("                .joining => report.nodes_joining += 1,");
+        try self.builder.writeLine("                .leaving => report.nodes_leaving += 1,");
+        try self.builder.writeLine("                .dead => report.nodes_dead += 1,");
+        try self.builder.writeLine("            }");
+        try self.builder.writeLine("            report.total_shards += self.nodes[i].shards_stored;");
+        try self.builder.writeLine("            report.total_capacity_mb += self.nodes[i].capacity_mb;");
+        try self.builder.writeLine("            if (self.nodes[i].latency_ms > 0) {");
+        try self.builder.writeLine("                lat_sum += self.nodes[i].latency_ms;");
+        try self.builder.writeLine("                lat_count += 1;");
+        try self.builder.writeLine("            }");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        if (lat_count > 0) report.avg_latency_ms = @intCast(lat_sum / lat_count);");
+        try self.builder.writeLine("        return report;");
         try self.builder.writeLine("    }");
         try self.builder.writeLine("};");
         try self.builder.writeLine("");
@@ -2657,6 +2826,23 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("return true; // Real logic is in DHT test blocks");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // LIVE SWARM BEHAVIORS: bootstrap + node lifecycle + ping/pong
+        // ═══════════════════════════════════════════════════════════════════
+        if (std_mem.startsWith(u8, b.name, "swarm")) {
+            try self.emitSwarmStruct();
+            // Emit marker function for each swarm behavior
+            try self.builder.writeFmt("/// {s}\n", .{b.given});
+            try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+            try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+            try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
+            self.builder.incIndent();
+            try self.builder.writeLine("return true; // Real logic is in swarm test blocks");
             self.builder.decIndent();
             try self.builder.writeLine("}");
             return true;

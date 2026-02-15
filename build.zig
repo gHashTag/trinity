@@ -1430,4 +1430,20 @@ pub fn build(b: *std.Build) void {
     const gen_dht_step = b.step("test-dht", "Test Kademlia DHT XOR routing and store/find");
     gen_dht_step.dependOn(&run_gen_dht_tests.step);
     test_step.dependOn(&run_gen_dht_tests.step);
+
+    // Generated Live Swarm tests (bootstrap + node lifecycle + ping/pong)
+    const gen_swarm_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/swarm.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_swarm_tests = b.addRunArtifact(gen_swarm_tests);
+    const gen_swarm_step = b.step("test-swarm", "Test Live Swarm bootstrap and node lifecycle");
+    gen_swarm_step.dependOn(&run_gen_swarm_tests.step);
+    test_step.dependOn(&run_gen_swarm_tests.step);
 }

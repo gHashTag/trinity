@@ -1,0 +1,84 @@
+name: swarm
+version: "1.0.0"
+language: zig
+module: swarm
+
+imports:
+  - name: vsa
+    path: "src/vsa.zig"
+
+description: |
+  Live Swarm v1.0 — Multi-Host Bootstrap + Node Lifecycle + DHT Integration
+
+  === PURPOSE ===
+  Coordinates a live multi-host swarm of storage nodes.
+  Bootstrap protocol: new node contacts seed peers, joins DHT routing table,
+  announces storage capacity, begins accepting shard challenges.
+
+  === COMPONENTS ===
+  SwarmNode       — single node identity + state machine (joining → active → leaving)
+  BootstrapConfig — seed peers + network parameters (ports, timeouts, regions)
+  SwarmHealth     — aggregate swarm metrics (nodes, shards, bandwidth, uptime)
+  PingPong        — heartbeat protocol for liveness detection
+
+  === PROTOCOL ===
+  1. Node starts with BootstrapConfig (seed peers list)
+  2. UDP ping to seed peers → receive peer list
+  3. Join DHT routing table (addPeer with XOR bucket placement)
+  4. Announce storage capacity + shard inventory
+  5. Periodic ping/pong heartbeat (5s interval, 30s timeout)
+  6. PoS challenges accepted from any peer
+  7. Graceful leave: redistribute shards before exit
+
+  === PROOFS ===
+  S1: swarmBootstrapJoin      — node joins via seed peer, gets added to DHT
+  S2: swarmPingPong           — heartbeat detects alive/dead nodes
+  S3: swarmNodeLifecycle      — joining → active → leaving state transitions
+  S4: swarmHealthAggregate    — aggregate metrics from N nodes are correct
+
+types:
+  SwarmNode:
+    fields:
+      node_port: Int
+      state: Int
+      peers_known: Int
+      shards_stored: Int
+
+  BootstrapConfig:
+    fields:
+      seed_count: Int
+      discovery_port: Int
+      job_port: Int
+      ping_interval_ms: Int
+      peer_timeout_ms: Int
+
+  SwarmHealth:
+    fields:
+      total_nodes: Int
+      nodes_active: Int
+      nodes_joining: Int
+      nodes_leaving: Int
+      total_shards: Int
+      total_capacity_mb: Int
+      avg_latency_ms: Int
+
+behaviors:
+  - name: swarmBootstrapJoin
+    given: SwarmNode with 3 seed peers in BootstrapConfig
+    when: Node sends bootstrap ping and receives peer list from seed
+    then: Node is added to DHT routing table, state transitions to active
+
+  - name: swarmPingPong
+    given: Swarm with 5 active nodes, ping interval 5s
+    when: Node 3 stops responding for 30s (timeout exceeded)
+    then: Node 3 marked dead, removed from active peers, swarm health updated
+
+  - name: swarmNodeLifecycle
+    given: Fresh SwarmNode in joining state
+    when: Node completes bootstrap, serves shards, then initiates graceful leave
+    then: State transitions joining → active → leaving, shard count correct at each stage
+
+  - name: swarmHealthAggregate
+    given: Swarm of 5 nodes with known shard counts and capacities
+    when: Aggregate health report computed
+    then: total_nodes=5, total_shards=sum(per_node), avg_latency computed correctly
