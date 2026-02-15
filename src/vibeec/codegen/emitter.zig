@@ -27,6 +27,7 @@ pub const ZigCodeGen = struct {
     allocator: Allocator,
     builder: CodeBuilder,
     shard_mgr_emitted: bool,
+    network_emitted: bool,
 
     const Self = @This();
 
@@ -35,6 +36,7 @@ pub const ZigCodeGen = struct {
             .allocator = allocator,
             .builder = CodeBuilder.init(allocator),
             .shard_mgr_emitted = false,
+            .network_emitted = false,
         };
     }
 
@@ -1884,6 +1886,132 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("return true; // Real logic is in ShardManager struct methods");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // SHARD NETWORK: TCP transfer between nodes
+        // Generates ShardNetwork struct with sendShard/receiveOne/listen.
+        // Wire protocol: [64 hash][4 len LE][data bytes].
+        // ═══════════════════════════════════════════════════════════════════
+
+        if (std_mem.startsWith(u8, b.name, "network")) {
+            if (!self.network_emitted) {
+                self.network_emitted = true;
+                try self.builder.writeLine("");
+                try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+                try self.builder.writeLine("// SHARD NETWORK — TCP Transfer Protocol (generated from .vibee)");
+                try self.builder.writeLine("// Wire protocol: [64 bytes hex hash][4 bytes data len LE u32][data]");
+                try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+                try self.builder.writeLine("");
+                try self.builder.writeLine("pub const ShardNetwork = struct {");
+                try self.builder.writeLine("    root_buf: [256]u8,");
+                try self.builder.writeLine("    root_len: usize,");
+                try self.builder.writeLine("    port: u16,");
+                try self.builder.writeLine("");
+                try self.builder.writeLine("    const hex_chars = \"0123456789abcdef\";");
+                try self.builder.writeLine("");
+                // init method
+                try self.builder.writeLine("    /// Create network node with storage directories");
+                try self.builder.writeLine("    pub fn init(root: []const u8, port: u16) !ShardNetwork {");
+                try self.builder.writeLine("        var node = ShardNetwork{");
+                try self.builder.writeLine("            .root_buf = undefined,");
+                try self.builder.writeLine("            .root_len = root.len,");
+                try self.builder.writeLine("            .port = port,");
+                try self.builder.writeLine("        };");
+                try self.builder.writeLine("        @memcpy(node.root_buf[0..root.len], root);");
+                try self.builder.writeLine("        std.fs.makeDirAbsolute(root) catch |e| switch (e) {");
+                try self.builder.writeLine("            error.PathAlreadyExists => {},");
+                try self.builder.writeLine("            else => return e,");
+                try self.builder.writeLine("        };");
+                try self.builder.writeLine("        var sbuf: [280]u8 = undefined;");
+                try self.builder.writeLine("        const sdir = std.fmt.bufPrint(&sbuf, \"{s}/shards\", .{root}) catch unreachable;");
+                try self.builder.writeLine("        std.fs.makeDirAbsolute(sdir) catch |e| switch (e) {");
+                try self.builder.writeLine("            error.PathAlreadyExists => {},");
+                try self.builder.writeLine("            else => return e,");
+                try self.builder.writeLine("        };");
+                try self.builder.writeLine("        return node;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // rootPath helper
+                try self.builder.writeLine("    fn rootPath(self: *const ShardNetwork) []const u8 {");
+                try self.builder.writeLine("        return self.root_buf[0..self.root_len];");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // hashToHex helper
+                try self.builder.writeLine("    fn hashToHex(hash: [32]u8) [64]u8 {");
+                try self.builder.writeLine("        var result: [64]u8 = undefined;");
+                try self.builder.writeLine("        for (hash, 0..) |byte, i| {");
+                try self.builder.writeLine("            result[i * 2] = hex_chars[byte >> 4];");
+                try self.builder.writeLine("            result[i * 2 + 1] = hex_chars[byte & 0x0F];");
+                try self.builder.writeLine("        }");
+                try self.builder.writeLine("        return result;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // listen method
+                try self.builder.writeLine("    /// Bind TCP listener on port (use port 0 for OS-assigned)");
+                try self.builder.writeLine("    pub fn listen(self: *const ShardNetwork) !std.net.Server {");
+                try self.builder.writeLine("        const addr = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, self.port);");
+                try self.builder.writeLine("        return addr.listen(.{ .reuse_address = true });");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // receiveOne method
+                try self.builder.writeLine("    /// Accept one connection, read protocol, store shard to disk");
+                try self.builder.writeLine("    pub fn receiveOne(self: *const ShardNetwork, server: *std.net.Server) !void {");
+                try self.builder.writeLine("        const conn = try server.accept();");
+                try self.builder.writeLine("        defer conn.stream.close();");
+                try self.builder.writeLine("        // Read 64-byte hex hash");
+                try self.builder.writeLine("        var hash_buf: [64]u8 = undefined;");
+                try self.builder.writeLine("        const hn = try conn.stream.readAtLeast(&hash_buf, 64);");
+                try self.builder.writeLine("        if (hn != 64) return error.ProtocolError;");
+                try self.builder.writeLine("        // Read 4-byte data length (LE u32)");
+                try self.builder.writeLine("        var len_buf: [4]u8 = undefined;");
+                try self.builder.writeLine("        const ln = try conn.stream.readAtLeast(&len_buf, 4);");
+                try self.builder.writeLine("        if (ln != 4) return error.ProtocolError;");
+                try self.builder.writeLine("        const data_len = std.mem.readInt(u32, &len_buf, .little);");
+                try self.builder.writeLine("        // Read data payload");
+                try self.builder.writeLine("        var data_buf: [8192]u8 = undefined;");
+                try self.builder.writeLine("        const dn = try conn.stream.readAtLeast(data_buf[0..data_len], data_len);");
+                try self.builder.writeLine("        if (dn != data_len) return error.ProtocolError;");
+                try self.builder.writeLine("        // Write to shards directory");
+                try self.builder.writeLine("        var pbuf: [350]u8 = undefined;");
+                try self.builder.writeLine("        const spath = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ self.rootPath(), hash_buf }) catch unreachable;");
+                try self.builder.writeLine("        const file = try std.fs.createFileAbsolute(spath, .{});");
+                try self.builder.writeLine("        defer file.close();");
+                try self.builder.writeLine("        try file.writeAll(data_buf[0..dn]);");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // sendShard method
+                try self.builder.writeLine("    /// Connect to peer and send shard via TCP wire protocol");
+                try self.builder.writeLine("    pub fn sendShard(_: *const ShardNetwork, peer_port: u16, hex: *const [64]u8, data: []const u8) !void {");
+                try self.builder.writeLine("        const addr = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, peer_port);");
+                try self.builder.writeLine("        const stream = try std.net.tcpConnectToAddress(addr);");
+                try self.builder.writeLine("        defer stream.close();");
+                try self.builder.writeLine("        // Wire protocol: [64 hash][4 len LE][data]");
+                try self.builder.writeLine("        stream.writeAll(hex) catch return error.SendFailed;");
+                try self.builder.writeLine("        var len_buf: [4]u8 = undefined;");
+                try self.builder.writeLine("        std.mem.writeInt(u32, &len_buf, @intCast(data.len), .little);");
+                try self.builder.writeLine("        stream.writeAll(&len_buf) catch return error.SendFailed;");
+                try self.builder.writeLine("        stream.writeAll(data) catch return error.SendFailed;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // cleanup method
+                try self.builder.writeLine("    /// Remove all storage (for testing)");
+                try self.builder.writeLine("    pub fn cleanup(self: *const ShardNetwork) void {");
+                try self.builder.writeLine("        std.fs.deleteTreeAbsolute(self.rootPath()) catch {};");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("};");
+                try self.builder.writeLine("");
+            }
+            // Emit marker function for the individual behavior
+            try self.builder.writeFmt("/// {s}\n", .{b.given});
+            try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+            try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+            try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
+            self.builder.incIndent();
+            try self.builder.writeLine("return true; // Real logic is in ShardNetwork struct methods");
             self.builder.decIndent();
             try self.builder.writeLine("}");
             return true;
