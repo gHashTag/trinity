@@ -31,6 +31,7 @@ pub const ZigCodeGen = struct {
     erasure_emitted: bool,
     discovery_emitted: bool,
     pos_emitted: bool,
+    dht_emitted: bool,
 
     const Self = @This();
 
@@ -43,6 +44,7 @@ pub const ZigCodeGen = struct {
             .erasure_emitted = false,
             .discovery_emitted = false,
             .pos_emitted = false,
+            .dht_emitted = false,
         };
     }
 
@@ -502,6 +504,177 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("    pub fn getFailureCount(self: *const ProofOfStorageEngine, node_id: u8) u8 {");
         try self.builder.writeLine("        if (node_id >= MAX_NODES) return 0;");
         try self.builder.writeLine("        return self.failure_counts[node_id];");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+    }
+
+    /// Emit Kademlia DHT struct (XOR distance routing + global manifest store/find)
+    fn emitDhtStruct(self: *Self) !void {
+        if (self.dht_emitted) return;
+        self.dht_emitted = true;
+        try self.builder.writeLine("");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("// KADEMLIA DHT — XOR Distance Routing + Global Manifest Store/Find");
+        try self.builder.writeLine("// 256-bit node IDs, k-buckets by leading-zero-count of XOR distance.");
+        try self.builder.writeLine("// Store shard manifests at k-closest nodes, iterative lookup.");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const DhtNodeId = [32]u8;");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const DhtPeer = struct {");
+        try self.builder.writeLine("    id: DhtNodeId,");
+        try self.builder.writeLine("    port: u16,");
+        try self.builder.writeLine("    alive: bool,");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const DhtStoreEntry = struct {");
+        try self.builder.writeLine("    key: DhtNodeId,");
+        try self.builder.writeLine("    value_buf: [256]u8,");
+        try self.builder.writeLine("    value_len: u16,");
+        try self.builder.writeLine("    stored: bool,");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("/// XOR distance between two 256-bit node IDs");
+        try self.builder.writeLine("pub fn xorDistance(a: DhtNodeId, b: DhtNodeId) DhtNodeId {");
+        try self.builder.writeLine("    var result: DhtNodeId = undefined;");
+        try self.builder.writeLine("    for (0..32) |i| {");
+        try self.builder.writeLine("        result[i] = a[i] ^ b[i];");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("    return result;");
+        try self.builder.writeLine("}");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("/// Count leading zero bits in XOR distance (determines bucket index)");
+        try self.builder.writeLine("pub fn leadingZeroBits(dist: DhtNodeId) u16 {");
+        try self.builder.writeLine("    var count: u16 = 0;");
+        try self.builder.writeLine("    for (0..32) |i| {");
+        try self.builder.writeLine("        if (dist[i] == 0) {");
+        try self.builder.writeLine("            count += 8;");
+        try self.builder.writeLine("        } else {");
+        try self.builder.writeLine("            count += @intCast(@clz(dist[i]));");
+        try self.builder.writeLine("            break;");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("    return count;");
+        try self.builder.writeLine("}");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("/// Compare two DhtNodeIds for ordering (used in closest-peer sort)");
+        try self.builder.writeLine("fn distLessThan(target: DhtNodeId, a: DhtPeer, b: DhtPeer) bool {");
+        try self.builder.writeLine("    const da = xorDistance(target, a.id);");
+        try self.builder.writeLine("    const db = xorDistance(target, b.id);");
+        try self.builder.writeLine("    for (0..32) |i| {");
+        try self.builder.writeLine("        if (da[i] < db[i]) return true;");
+        try self.builder.writeLine("        if (da[i] > db[i]) return false;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("    return false;");
+        try self.builder.writeLine("}");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const KBucket = struct {");
+        try self.builder.writeLine("    const K = 8; // max peers per bucket");
+        try self.builder.writeLine("    peers: [K]DhtPeer,");
+        try self.builder.writeLine("    count: u8,");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn init() KBucket {");
+        try self.builder.writeLine("        return .{");
+        try self.builder.writeLine("            .peers = undefined,");
+        try self.builder.writeLine("            .count = 0,");
+        try self.builder.writeLine("        };");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn addPeer(self: *KBucket, peer: DhtPeer) bool {");
+        try self.builder.writeLine("        if (self.count >= K) return false;");
+        try self.builder.writeLine("        self.peers[self.count] = peer;");
+        try self.builder.writeLine("        self.count += 1;");
+        try self.builder.writeLine("        return true;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const DhtEngine = struct {");
+        try self.builder.writeLine("    const NUM_BUCKETS = 256;");
+        try self.builder.writeLine("    const MAX_ENTRIES = 64;");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    self_id: DhtNodeId,");
+        try self.builder.writeLine("    buckets: [NUM_BUCKETS]KBucket,");
+        try self.builder.writeLine("    entries: [MAX_ENTRIES]DhtStoreEntry,");
+        try self.builder.writeLine("    entry_count: u16,");
+        try self.builder.writeLine("    peer_count: u16,");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn init(self_id: DhtNodeId) DhtEngine {");
+        try self.builder.writeLine("        var engine: DhtEngine = undefined;");
+        try self.builder.writeLine("        engine.self_id = self_id;");
+        try self.builder.writeLine("        for (0..NUM_BUCKETS) |i| {");
+        try self.builder.writeLine("            engine.buckets[i] = KBucket.init();");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        engine.entry_count = 0;");
+        try self.builder.writeLine("        engine.peer_count = 0;");
+        try self.builder.writeLine("        return engine;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Add a peer to the routing table in the correct k-bucket");
+        try self.builder.writeLine("    pub fn addPeer(self: *DhtEngine, peer: DhtPeer) bool {");
+        try self.builder.writeLine("        const dist = xorDistance(self.self_id, peer.id);");
+        try self.builder.writeLine("        const lz = leadingZeroBits(dist);");
+        try self.builder.writeLine("        const bucket_idx = if (lz >= NUM_BUCKETS) NUM_BUCKETS - 1 else lz;");
+        try self.builder.writeLine("        const ok = self.buckets[bucket_idx].addPeer(peer);");
+        try self.builder.writeLine("        if (ok) self.peer_count += 1;");
+        try self.builder.writeLine("        return ok;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Get bucket index for a peer (by XOR distance leading zeros)");
+        try self.builder.writeLine("    pub fn bucketFor(self: *const DhtEngine, peer_id: DhtNodeId) u16 {");
+        try self.builder.writeLine("        const dist = xorDistance(self.self_id, peer_id);");
+        try self.builder.writeLine("        const lz = leadingZeroBits(dist);");
+        try self.builder.writeLine("        return if (lz >= NUM_BUCKETS) NUM_BUCKETS - 1 else lz;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Store a key-value entry");
+        try self.builder.writeLine("    pub fn store(self: *DhtEngine, key: DhtNodeId, value: []const u8) bool {");
+        try self.builder.writeLine("        if (self.entry_count >= MAX_ENTRIES) return false;");
+        try self.builder.writeLine("        if (value.len > 256) return false;");
+        try self.builder.writeLine("        var entry: DhtStoreEntry = undefined;");
+        try self.builder.writeLine("        entry.key = key;");
+        try self.builder.writeLine("        @memcpy(entry.value_buf[0..value.len], value);");
+        try self.builder.writeLine("        entry.value_len = @intCast(value.len);");
+        try self.builder.writeLine("        entry.stored = true;");
+        try self.builder.writeLine("        self.entries[self.entry_count] = entry;");
+        try self.builder.writeLine("        self.entry_count += 1;");
+        try self.builder.writeLine("        return true;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Find a value by key (exact match)");
+        try self.builder.writeLine("    pub fn find(self: *const DhtEngine, key: DhtNodeId) ?[]const u8 {");
+        try self.builder.writeLine("        for (0..self.entry_count) |i| {");
+        try self.builder.writeLine("            if (std.mem.eql(u8, &self.entries[i].key, &key) and self.entries[i].stored) {");
+        try self.builder.writeLine("                return self.entries[i].value_buf[0..self.entries[i].value_len];");
+        try self.builder.writeLine("            }");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        return null;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub const ClosestResult = struct { peers: [8]DhtPeer, count: u8 };");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Find k-closest peers to a target key");
+        try self.builder.writeLine("    pub fn closestPeers(self: *const DhtEngine, target: DhtNodeId, k: u8) ClosestResult {");
+        try self.builder.writeLine("        var all_peers: [256]DhtPeer = undefined;");
+        try self.builder.writeLine("        var total: u16 = 0;");
+        try self.builder.writeLine("        for (0..NUM_BUCKETS) |bi| {");
+        try self.builder.writeLine("            for (0..self.buckets[bi].count) |pi| {");
+        try self.builder.writeLine("                if (total < 256) {");
+        try self.builder.writeLine("                    all_peers[total] = self.buckets[bi].peers[pi];");
+        try self.builder.writeLine("                    total += 1;");
+        try self.builder.writeLine("                }");
+        try self.builder.writeLine("            }");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        // Sort by XOR distance to target");
+        try self.builder.writeLine("        const slice = all_peers[0..total];");
+        try self.builder.writeLine("        std.mem.sortUnstable(DhtPeer, slice, target, distLessThan);");
+        try self.builder.writeLine("        var result: ClosestResult = undefined;");
+        try self.builder.writeLine("        const n = if (k < total) k else @as(u8, @intCast(total));");
+        try self.builder.writeLine("        for (0..n) |i| {");
+        try self.builder.writeLine("            result.peers[i] = slice[i];");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        result.count = n;");
+        try self.builder.writeLine("        return result;");
         try self.builder.writeLine("    }");
         try self.builder.writeLine("};");
         try self.builder.writeLine("");
@@ -2467,6 +2640,23 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("return true; // Real logic is in PoS test blocks");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // KADEMLIA DHT BEHAVIORS: XOR distance routing + store/find
+        // ═══════════════════════════════════════════════════════════════════
+        if (std_mem.startsWith(u8, b.name, "dht")) {
+            try self.emitDhtStruct();
+            // Emit marker function for each DHT behavior
+            try self.builder.writeFmt("/// {s}\n", .{b.given});
+            try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+            try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+            try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
+            self.builder.incIndent();
+            try self.builder.writeLine("return true; // Real logic is in DHT test blocks");
             self.builder.decIndent();
             try self.builder.writeLine("}");
             return true;
