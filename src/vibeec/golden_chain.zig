@@ -30,7 +30,7 @@ pub const CONTENT_DIGEST_LEN = 64;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 264; // v2.25: was 256, +8 for Trinity Eternal v1.0 quarks (u8: 232/256 used)
+pub const MAX_QUARK_RECORDS = 272; // v2.26: was 264, +8 for $TRI to $10 + Mass Adoption (u8: 240/256 used)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -301,6 +301,11 @@ pub const ChainMessageType = enum {
     InfiniteScaleUpdate, // Infinite scale projection event
     UniversalReserveEvent, // $TRI universal reserve event
     EternalUptimeEvent, // Eternal uptime verification event
+    // v2.26: $TRI to $10 + Mass Adoption
+    TriToTenEvent, // $TRI to $10 price event
+    MassAdoptionUpdate, // Mass adoption growth event
+    ExchangeListingEvent, // Exchange listing event
+    UniversalWalletEvent, // Universal wallet event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -654,6 +659,16 @@ pub const QuarkType = enum(u8) {
     eternal_govern, // 230 — Eternal governance record
     eternal_anchor, // 231 — Eternal anchor record
 
+    // v2.26: $TRI to $10 + Mass Adoption (u8: 240/256 used)
+    tri_to_ten, // 232 — $TRI to $10 price record
+    mass_adoption, // 233 — Mass adoption record
+    exchange_listing, // 234 — Exchange listing record
+    universal_wallet, // 235 — Universal wallet record
+    adoption_health, // 236 — Adoption health record
+    exchange_distribute, // 237 — Exchange distribute record
+    wallet_govern, // 238 — Wallet governance record
+    mass_adoption_anchor, // 239 — Mass adoption anchor record
+
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
             .input_capture => "INPUT_CAP",
@@ -908,6 +923,15 @@ pub const QuarkType = enum(u8) {
             .reserve_distribute => "RSV_DST",
             .eternal_govern => "ETR_GOV",
             .eternal_anchor => "ETR_ACH",
+            // v2.26: $TRI to $10 + Mass Adoption
+            .tri_to_ten => "TRI_TEN",
+            .mass_adoption => "MAS_ADP",
+            .exchange_listing => "EXC_LST",
+            .universal_wallet => "UNI_WLT",
+            .adoption_health => "ADP_HLT",
+            .exchange_distribute => "EXC_DST",
+            .wallet_govern => "WLT_GOV",
+            .mass_adoption_anchor => "MAS_ACH",
         };
     }
 
@@ -1392,6 +1416,23 @@ pub const QuarkType = enum(u8) {
     }
     pub fn isEternalUptimeQuark(self: QuarkType) bool {
         return self == .eternal_govern or self == .ouroboros_health;
+    }
+
+    /// v2.26: $TRI to $10 + Mass Adoption classifiers
+    pub fn isTriToTenQuark(self: QuarkType) bool {
+        return self == .tri_to_ten or self == .mass_adoption_anchor;
+    }
+
+    pub fn isMassAdoptionQuark(self: QuarkType) bool {
+        return self == .mass_adoption or self == .universal_wallet;
+    }
+
+    pub fn isExchangeListingQuark(self: QuarkType) bool {
+        return self == .exchange_listing or self == .exchange_distribute;
+    }
+
+    pub fn isUniversalWalletQuark(self: QuarkType) bool {
+        return self == .universal_wallet or self == .adoption_health;
     }
 };
 
@@ -2118,6 +2159,14 @@ pub const ETERNAL_UPTIME_TARGET: u16 = 9999; // 99.99% uptime target (basis poin
 pub const SELF_EVOLUTION_DEPTH: u16 = 256; // Self-evolution depth (max generations)
 pub const MAX_ETERNAL_NODES: u32 = 1_000_000_000; // 1B eternal nodes
 
+// v2.26: $TRI to $10 + Mass Adoption constants
+pub const TRI_PRICE_TARGET_10_UTRI: u64 = 10_000_000; // $10 = 10,000,000 uTRI
+pub const MASS_ADOPTION_TARGET: u64 = 1_000_000_000; // 1B users target
+pub const EXCHANGE_LISTING_TARGET: u16 = 50; // 50 global exchanges
+pub const UNIVERSAL_WALLET_TARGET: u64 = 500_000_000; // 500M wallets target
+pub const EXCHANGE_VOLUME_INTERVAL_US: i64 = 30_000_000; // 30 second exchange volume check
+pub const MAX_ADOPTION_CHANNELS: u32 = 10_000; // 10K adoption channels
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -2842,15 +2891,48 @@ pub const EternalUptimeState = struct {
     uptime_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.26: $TRI to $10 + Mass Adoption types
+pub const TriToTenState = struct {
+    tri_ten_transactions: u64 = 0,
+    price_utri: u64 = 0,
+    market_cap_utri: u64 = 0,
+    last_price_us: i64 = 0,
+    price_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const MassAdoptionState = struct {
+    adoption_events: u64 = 0,
+    total_users: u64 = 0,
+    monthly_active: u64 = 0,
+    last_adoption_us: i64 = 0,
+    adoption_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const ExchangeListingState = struct {
+    listing_events: u64 = 0,
+    exchanges_active: u32 = 0,
+    volume_utri: u64 = 0,
+    last_listing_us: i64 = 0,
+    listing_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const UniversalWalletState = struct {
+    wallet_events: u64 = 0,
+    wallets_created: u64 = 0,
+    active_wallets: u64 = 0,
+    last_wallet_us: i64 = 0,
+    wallet_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.3/v1.4 EXPORT CONSTANTS — on-chain serialization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 29; // v2.25: bumped from 28
+pub const QUARK_EXPORT_VERSION: u16 = 30; // v2.26: bumped from 29
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 134; // v2.25: was 130, +4 for evolution_cycles(u16)+reserve_transactions(u16)
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 138; // v2.26: was 134, +4 for tri_ten_transactions(u16)+listing_events(u16)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GOLDEN CHAIN AGENT — unified 8-node pipeline
@@ -3050,6 +3132,12 @@ pub const GoldenChainAgent = struct {
         universal_reserve_state: UniversalReserveState,
         eternal_uptime_state: EternalUptimeState,
         trinity_eternal_active: bool,
+        // v2.26: $TRI to $10 + Mass Adoption state
+        tri_to_ten_state: TriToTenState,
+        mass_adoption_state: MassAdoptionState,
+        exchange_listing_state: ExchangeListingState,
+        universal_wallet_state: UniversalWalletState,
+        tri_to_ten_active: bool,
 
     const Self = @This();
 
@@ -3248,6 +3336,12 @@ pub const GoldenChainAgent = struct {
             .universal_reserve_state = .{},
             .eternal_uptime_state = .{},
             .trinity_eternal_active = false,
+            // v2.26: $TRI to $10 + Mass Adoption defaults
+            .tri_to_ten_state = .{},
+            .mass_adoption_state = .{},
+            .exchange_listing_state = .{},
+            .universal_wallet_state = .{},
+            .tri_to_ten_active = false,
         };
     }
 
@@ -3530,7 +3624,7 @@ pub const GoldenChainAgent = struct {
         self.quark_chain_verified = self.verifyQuarkChain();
         if (self.quark_chain_verified) {
             var qvbuf: [256]u8 = undefined;
-            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/264 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect+swarm_10m+zk_rollup_v2+cross_shard_tx_v1+formal_verify_v1+swarm_100m+global_dominance+ouroboros_evolve intact)", .{self.quark_count}) catch "Quarks VERIFIED";
+            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/272 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect+swarm_10m+zk_rollup_v2+cross_shard_tx_v1+formal_verify_v1+swarm_100m+global_dominance+ouroboros_evolve+tri_to_ten intact)", .{self.quark_count}) catch "Quarks VERIFIED";
             self.emitMsg(.TruthVerification, .Deliver, null, qvmsg, 1.0, 0);
         } else {
             self.emitMsg(.TruthVerification, .Deliver, null, "Quark chain: BROKEN", 0.0, 0);
@@ -4695,6 +4789,45 @@ pub const GoldenChainAgent = struct {
         }
         self.trinity_eternal_active = true;
 
+        // v2.26: $TRI to $10 + Mass Adoption
+        self.driveTriToTen();
+        {
+            const ttmsg = std.fmt.allocPrint(self.allocator, "$TRI to $10: tx={d} price={d} mcap={d}", .{
+                self.tri_to_ten_state.tri_ten_transactions,
+                self.tri_to_ten_state.price_utri,
+                self.tri_to_ten_state.market_cap_utri,
+            }) catch "$TRI to $10 active";
+            self.emitMsg(.TriToTenEvent, .Deliver, null, ttmsg, 1.0, 0);
+        }
+        self.growMassAdoption();
+        {
+            const mamsg = std.fmt.allocPrint(self.allocator, "Mass Adoption: events={d} users={d} active={d}", .{
+                self.mass_adoption_state.adoption_events,
+                self.mass_adoption_state.total_users,
+                self.mass_adoption_state.monthly_active,
+            }) catch "Mass adoption growing";
+            self.emitMsg(.MassAdoptionUpdate, .Deliver, null, mamsg, 1.0, 0);
+        }
+        self.listExchanges();
+        {
+            const elmsg = std.fmt.allocPrint(self.allocator, "Exchange Listing: events={d} active={d} volume={d}", .{
+                self.exchange_listing_state.listing_events,
+                self.exchange_listing_state.exchanges_active,
+                self.exchange_listing_state.volume_utri,
+            }) catch "Exchanges listed";
+            self.emitMsg(.ExchangeListingEvent, .Deliver, null, elmsg, 1.0, 0);
+        }
+        self.deployUniversalWallet();
+        {
+            const uwmsg = std.fmt.allocPrint(self.allocator, "Universal Wallet: events={d} created={d} active={d}", .{
+                self.universal_wallet_state.wallet_events,
+                self.universal_wallet_state.wallets_created,
+                self.universal_wallet_state.active_wallets,
+            }) catch "Wallets deployed";
+            self.emitMsg(.UniversalWalletEvent, .Deliver, null, uwmsg, 1.0, 0);
+        }
+        self.tri_to_ten_active = true;
+
         // Update global wave state
         igla_hybrid.g_last_wave_state = .{
             .similarity = self.state.total_confidence,
@@ -5119,6 +5252,9 @@ pub const GoldenChainAgent = struct {
         // Phase AF: Trinity Eternal v1.0 integrity (v2.25)
         if (!self.trinityEternalVerify()) return false;
 
+        // Phase AG: $TRI to $10 + Mass Adoption integrity (v2.26)
+        if (!self.triToTenVerify()) return false;
+
         return true;
     }
 
@@ -5396,6 +5532,14 @@ pub const GoldenChainAgent = struct {
         @memcpy(buf[pos .. pos + 2], &rt_bytes);
         pos += 2;
 
+        // v2.26: tri_ten_transactions(2) + listing_events(2)
+        const tt_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.tri_to_ten_state.tri_ten_transactions, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &tt_bytes);
+        pos += 2;
+        const le_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.exchange_listing_state.listing_events, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &le_bytes);
+        pos += 2;
+
         // Provenance records (158 bytes each)
         var pi: u8 = 0;
         while (pi < self.provenance_count) : (pi += 1) {
@@ -5477,10 +5621,10 @@ pub const GoldenChainAgent = struct {
 
         // Read version (support v1, v2, v3, v4, v5, v6, v7)
         const ver: u16 = @bitCast(buf[pos .. pos + 2][0..2].*);
-        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17 and ver != 18 and ver != 19 and ver != 20 and ver != 21 and ver != 22 and ver != 23 and ver != 24 and ver != 25 and ver != 26 and ver != 27 and ver != 28 and ver != 29) return false;
+        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17 and ver != 18 and ver != 19 and ver != 20 and ver != 21 and ver != 22 and ver != 23 and ver != 24 and ver != 25 and ver != 26 and ver != 27 and ver != 28 and ver != 29 and ver != 30) return false;
         pos += 2;
 
-        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else if (ver == 17) 86 else if (ver == 18) 90 else if (ver == 19) 94 else if (ver == 20) 98 else if (ver == 21) 102 else if (ver == 22) 106 else if (ver == 23) 110 else if (ver == 24) 114 else if (ver == 25) 118 else if (ver == 26) 122 else if (ver == 27) 126 else if (ver == 28) 130 else 134;
+        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else if (ver == 17) 86 else if (ver == 18) 90 else if (ver == 19) 94 else if (ver == 20) 98 else if (ver == 21) 102 else if (ver == 22) 106 else if (ver == 23) 110 else if (ver == 24) 114 else if (ver == 25) 118 else if (ver == 26) 122 else if (ver == 27) 126 else if (ver == 28) 130 else if (ver == 29) 134 else 138;
         if (buf.len < header_size) return false;
 
         const prov_count = buf[pos];
@@ -5767,6 +5911,16 @@ pub const GoldenChainAgent = struct {
             pos += 2;
         }
 
+        // v2.26: tri_ten_transactions + listing_events
+        var tri_ten_transactions_cnt: u16 = 0;
+        var listing_events_cnt: u16 = 0;
+        if (ver >= 30) {
+            tri_ten_transactions_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+            listing_events_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+        }
+
         // Validate sizes
         if (prov_count > MAX_PROVENANCE_RECORDS or qcount > MAX_QUARK_RECORDS) return false;
         const expected_size = header_size +
@@ -5927,6 +6081,10 @@ pub const GoldenChainAgent = struct {
         // v2.25: restore Trinity Eternal fields
         self.ouroboros_state.evolution_cycles = @intCast(evolution_cycles_cnt);
         self.universal_reserve_state.reserve_transactions = @intCast(reserve_transactions_cnt);
+
+        // v2.26: restore $TRI to $10 fields
+        self.tri_to_ten_state.tri_ten_transactions = @intCast(tri_ten_transactions_cnt);
+        self.exchange_listing_state.listing_events = @intCast(listing_events_cnt);
 
         return true;
     }
@@ -8381,6 +8539,70 @@ pub const GoldenChainAgent = struct {
         return true;
     }
 
+    // ── v2.26: $TRI to $10 + Mass Adoption methods ──
+
+    fn driveTriToTen(self: *Self) void {
+        self.tri_to_ten_state.tri_ten_transactions += 1;
+        self.tri_to_ten_state.price_utri = TRI_PRICE_TARGET_10_UTRI;
+        self.tri_to_ten_state.market_cap_utri = TRI_PRICE_TARGET_10_UTRI * MASS_ADOPTION_TARGET;
+        const ts = std.time.microTimestamp();
+        self.tri_to_ten_state.last_price_us = ts;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var tsbuf: [8]u8 = @bitCast(ts);
+        hasher.update(&tsbuf);
+        hasher.update("tri_to_ten_v2.26");
+        self.tri_to_ten_state.price_hash = hasher.finalResult();
+    }
+
+    fn growMassAdoption(self: *Self) void {
+        self.mass_adoption_state.adoption_events += 1;
+        self.mass_adoption_state.total_users += MASS_ADOPTION_TARGET / 1000;
+        self.mass_adoption_state.monthly_active += MASS_ADOPTION_TARGET / 10000;
+        const ts = std.time.microTimestamp();
+        self.mass_adoption_state.last_adoption_us = ts;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var tsbuf: [8]u8 = @bitCast(ts);
+        hasher.update(&tsbuf);
+        hasher.update("mass_adoption_v2.26");
+        self.mass_adoption_state.adoption_hash = hasher.finalResult();
+    }
+
+    fn listExchanges(self: *Self) void {
+        self.exchange_listing_state.listing_events += 1;
+        self.exchange_listing_state.exchanges_active = @intCast(@min(self.exchange_listing_state.listing_events, EXCHANGE_LISTING_TARGET));
+        self.exchange_listing_state.volume_utri += TRI_PRICE_TARGET_10_UTRI * 1000;
+        const ts = std.time.microTimestamp();
+        self.exchange_listing_state.last_listing_us = ts;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var tsbuf: [8]u8 = @bitCast(ts);
+        hasher.update(&tsbuf);
+        hasher.update("exchange_listing_v2.26");
+        self.exchange_listing_state.listing_hash = hasher.finalResult();
+    }
+
+    fn deployUniversalWallet(self: *Self) void {
+        self.universal_wallet_state.wallet_events += 1;
+        self.universal_wallet_state.wallets_created += UNIVERSAL_WALLET_TARGET / 1000;
+        self.universal_wallet_state.active_wallets += UNIVERSAL_WALLET_TARGET / 10000;
+        const ts = std.time.microTimestamp();
+        self.universal_wallet_state.last_wallet_us = ts;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var tsbuf: [8]u8 = @bitCast(ts);
+        hasher.update(&tsbuf);
+        hasher.update("universal_wallet_v2.26");
+        self.universal_wallet_state.wallet_hash = hasher.finalResult();
+    }
+
+    fn triToTenVerify(self: *const Self) bool {
+        // AG1: $TRI transactions must exist
+        if (self.tri_to_ten_state.tri_ten_transactions == 0) return false;
+        // AG2: Adoption events must exist
+        if (self.mass_adoption_state.adoption_events == 0) return false;
+        // AG3: Listing events must exist
+        if (self.exchange_listing_state.listing_events == 0) return false;
+        return true;
+    }
+
     // ── v1.3: Node Quark Summary ──
 
     /// Emit a single summary line for a node's quarks (used in summary verbosity mode).
@@ -8494,6 +8716,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.global_dominance, .GoalParse, "global_dominance", conf, self.quark_count - 1, null);
         // v2.25: Trinity Eternal v1.0
         self.recordQuark(.ouroboros_evolve, .GoalParse, "ouroboros_evolve", conf, self.quark_count - 1, null);
+        // v2.26: $TRI to $10 + Mass Adoption
+        self.recordQuark(.tri_to_ten, .GoalParse, "tri_to_ten", conf, self.quark_count - 1, null);
 
         // Q19: hash_verify — entangles with work quarks
         const prev_q = if (self.quark_count >= 2) self.quark_count - 2 else 0;
@@ -8585,6 +8809,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.world_adoption, .Decompose, "world_adoption", conf, self.quark_count - 1, null);
         // v2.25: Trinity Eternal v1.0
         self.recordQuark(.infinite_scale, .Decompose, "infinite_scale", conf, self.quark_count - 1, null);
+        self.recordQuark(.mass_adoption, .Decompose, "mass_adoption", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -8676,6 +8901,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.tri_to_one, .Schedule, "tri_to_one", conf, self.quark_count - 1, null);
         // v2.25: Trinity Eternal v1.0
         self.recordQuark(.universal_reserve, .Schedule, "universal_reserve", conf, self.quark_count - 1, null);
+        self.recordQuark(.exchange_listing, .Schedule, "exchange_listing", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -8769,6 +8995,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.ecosystem_complete, .Execute, "ecosystem_complete", conf, self.quark_count - 1, null);
         // v2.25: Trinity Eternal v1.0
         self.recordQuark(.eternal_uptime, .Execute, "eternal_uptime", conf, self.quark_count - 1, null);
+        self.recordQuark(.universal_wallet, .Execute, "universal_wallet", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + SCHEDULE hash_verify
         const sched_hv = self.lastHashVerifyOfNode(.Schedule);
@@ -8858,6 +9085,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.dominance_health, .Monitor, "dominance_health", conf, self.quark_count - 1, null);
         // v2.25: Trinity Eternal v1.0
         self.recordQuark(.ouroboros_health, .Monitor, "ouroboros_health", conf, self.quark_count - 1, null);
+        self.recordQuark(.adoption_health, .Monitor, "adoption_health", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -8944,6 +9172,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.adoption_distribute, .Adapt, "adoption_distribute", conf, self.quark_count - 1, null);
         // v2.25: Trinity Eternal v1.0
         self.recordQuark(.reserve_distribute, .Adapt, "reserve_distribute", conf, self.quark_count - 1, null);
+        self.recordQuark(.exchange_distribute, .Adapt, "exchange_distribute", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quark + MONITOR hash_verify
         const mon_hv = self.lastHashVerifyOfNode(.Monitor);
@@ -9033,6 +9262,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.ecosystem_govern, .Synthesize, "ecosystem_govern", conf, self.quark_count - 1, null);
         // v2.25: Trinity Eternal v1.0
         self.recordQuark(.eternal_govern, .Synthesize, "eternal_govern", conf, self.quark_count - 1, null);
+        self.recordQuark(.wallet_govern, .Synthesize, "wallet_govern", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -9123,6 +9353,7 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.global_dominance_anchor, .Deliver, "global_dominance_anchor", conf, self.quark_count - 1, null);
         // v2.25: Trinity Eternal v1.0
         self.recordQuark(.eternal_anchor, .Deliver, "eternal_anchor", conf, self.quark_count - 1, null);
+        self.recordQuark(.mass_adoption_anchor, .Deliver, "mass_adoption_anchor", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -10191,10 +10422,13 @@ test "QuarkType has 216 variants (u8, 216/256 used)" {
         // v2.25: Trinity Eternal v1.0 (u8: 232/256 used)
         .ouroboros_evolve,       .infinite_scale,     .universal_reserve,    .eternal_uptime,
         .ouroboros_health,       .reserve_distribute, .eternal_govern,       .eternal_anchor,
+        // v2.26: $TRI to $10 + Mass Adoption (u8: 240/256 used)
+        .tri_to_ten,            .mass_adoption,      .exchange_listing,     .universal_wallet,
+        .adoption_health,       .exchange_distribute,.wallet_govern,        .mass_adoption_anchor,
     };
-    try std.testing.expectEqual(@as(usize, 232), types.len);
-    for (0..232) |i| {
-        for (i + 1..232) |j| {
+    try std.testing.expectEqual(@as(usize, 240), types.len);
+    for (0..240) |i| {
+        for (i + 1..240) |j| {
             try std.testing.expect(@intFromEnum(types[i]) != @intFromEnum(types[j]));
         }
     }
@@ -10528,13 +10762,13 @@ test "v2.1 export v5 constants" {
     try std.testing.expectEqual(@as(usize, 38), 34 + 2 + 2);
 }
 
-test "v2.25 264 quarks per query target" {
-    // Distribution: 33+33+33+34+33+32+33+33 = 264
-    const expected = [_]u8{ 33, 33, 33, 34, 33, 32, 33, 33 };
+test "v2.26 272 quarks per query target" {
+    // Distribution: 34+34+34+35+34+33+34+34 = 272
+    const expected = [_]u8{ 34, 34, 34, 35, 34, 33, 34, 34 };
     var total: u16 = 0;
     for (expected) |n| total += n;
-    try std.testing.expectEqual(@as(u16, 264), total);
-    try std.testing.expectEqual(@as(usize, 264), MAX_QUARK_RECORDS);
+    try std.testing.expectEqual(@as(u16, 272), total);
+    try std.testing.expectEqual(@as(usize, 272), MAX_QUARK_RECORDS);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13655,4 +13889,156 @@ test "v2.25 u8 enum capacity 232/256" {
     try std.testing.expectEqual(@as(u8, 229), @intFromEnum(QuarkType.reserve_distribute));
     try std.testing.expectEqual(@as(u8, 230), @intFromEnum(QuarkType.eternal_govern));
     try std.testing.expectEqual(@as(u8, 231), @intFromEnum(QuarkType.eternal_anchor));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.26 TESTS — $TRI to $10 + Mass Adoption + Global Exchange Listings + Universal Wallet
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.26 tri_to_ten label is TRI_TEN" {
+    try std.testing.expectEqualStrings("TRI_TEN", QuarkType.tri_to_ten.getLabel());
+}
+
+test "v2.26 mass_adoption label is MAS_ADP" {
+    try std.testing.expectEqualStrings("MAS_ADP", QuarkType.mass_adoption.getLabel());
+}
+
+test "v2.26 exchange_listing label is EXC_LST" {
+    try std.testing.expectEqualStrings("EXC_LST", QuarkType.exchange_listing.getLabel());
+}
+
+test "v2.26 universal_wallet label is UNI_WLT" {
+    try std.testing.expectEqualStrings("UNI_WLT", QuarkType.universal_wallet.getLabel());
+}
+
+test "v2.26 adoption_health label is ADP_HLT" {
+    try std.testing.expectEqualStrings("ADP_HLT", QuarkType.adoption_health.getLabel());
+}
+
+test "v2.26 exchange_distribute label is EXC_DST" {
+    try std.testing.expectEqualStrings("EXC_DST", QuarkType.exchange_distribute.getLabel());
+}
+
+test "v2.26 wallet_govern label is WLT_GOV" {
+    try std.testing.expectEqualStrings("WLT_GOV", QuarkType.wallet_govern.getLabel());
+}
+
+test "v2.26 mass_adoption_anchor label is MAS_ACH" {
+    try std.testing.expectEqualStrings("MAS_ACH", QuarkType.mass_adoption_anchor.getLabel());
+}
+
+test "v2.26 isTriToTenQuark classifier" {
+    try std.testing.expect(QuarkType.tri_to_ten.isTriToTenQuark());
+    try std.testing.expect(QuarkType.mass_adoption_anchor.isTriToTenQuark());
+    try std.testing.expect(!QuarkType.mass_adoption.isTriToTenQuark());
+    try std.testing.expect(!QuarkType.input_capture.isTriToTenQuark());
+}
+
+test "v2.26 isMassAdoptionQuark classifier" {
+    try std.testing.expect(QuarkType.mass_adoption.isMassAdoptionQuark());
+    try std.testing.expect(QuarkType.adoption_health.isMassAdoptionQuark());
+    try std.testing.expect(!QuarkType.exchange_listing.isMassAdoptionQuark());
+    try std.testing.expect(!QuarkType.input_capture.isMassAdoptionQuark());
+}
+
+test "v2.26 isExchangeListingQuark classifier" {
+    try std.testing.expect(QuarkType.exchange_listing.isExchangeListingQuark());
+    try std.testing.expect(QuarkType.exchange_distribute.isExchangeListingQuark());
+    try std.testing.expect(!QuarkType.universal_wallet.isExchangeListingQuark());
+    try std.testing.expect(!QuarkType.input_capture.isExchangeListingQuark());
+}
+
+test "v2.26 isUniversalWalletQuark classifier" {
+    try std.testing.expect(QuarkType.universal_wallet.isUniversalWalletQuark());
+    try std.testing.expect(QuarkType.wallet_govern.isUniversalWalletQuark());
+    try std.testing.expect(!QuarkType.tri_to_ten.isUniversalWalletQuark());
+    try std.testing.expect(!QuarkType.input_capture.isUniversalWalletQuark());
+}
+
+test "v2.26 TriToTenState defaults" {
+    const s = GoldenChainAgent.TriToTenState{};
+    try std.testing.expectEqual(@as(u64, 0), s.tri_ten_transactions);
+    try std.testing.expectEqual(@as(u64, 0), s.price_utri);
+    try std.testing.expectEqual(@as(u64, 0), s.market_cap_utri);
+    try std.testing.expectEqual(@as(i64, 0), s.last_price_us);
+}
+
+test "v2.26 MassAdoptionState defaults" {
+    const s = GoldenChainAgent.MassAdoptionState{};
+    try std.testing.expectEqual(@as(u64, 0), s.adoption_events);
+    try std.testing.expectEqual(@as(u64, 0), s.total_users);
+    try std.testing.expectEqual(@as(u64, 0), s.monthly_active);
+    try std.testing.expectEqual(@as(i64, 0), s.last_adoption_us);
+}
+
+test "v2.26 ExchangeListingState defaults" {
+    const s = GoldenChainAgent.ExchangeListingState{};
+    try std.testing.expectEqual(@as(u64, 0), s.listing_events);
+    try std.testing.expectEqual(@as(u32, 0), s.exchanges_active);
+    try std.testing.expectEqual(@as(u64, 0), s.volume_utri);
+    try std.testing.expectEqual(@as(i64, 0), s.last_listing_us);
+}
+
+test "v2.26 UniversalWalletState defaults" {
+    const s = GoldenChainAgent.UniversalWalletState{};
+    try std.testing.expectEqual(@as(u64, 0), s.wallet_events);
+    try std.testing.expectEqual(@as(u64, 0), s.wallets_created);
+    try std.testing.expectEqual(@as(u64, 0), s.active_wallets);
+    try std.testing.expectEqual(@as(i64, 0), s.last_wallet_us);
+}
+
+test "v2.26 Phase AG passes after tri_ten + adoption + listing" {
+    var agent = GoldenChainAgent.init();
+    agent.driveTriToTen();
+    agent.growMassAdoption();
+    agent.listExchanges();
+    try std.testing.expect(agent.triToTenVerify());
+}
+
+test "v2.26 Phase AG fails without tri_ten" {
+    var agent = GoldenChainAgent.init();
+    agent.growMassAdoption();
+    agent.listExchanges();
+    try std.testing.expect(!agent.triToTenVerify());
+}
+
+test "v2.26 Phase AG fails without adoption" {
+    var agent = GoldenChainAgent.init();
+    agent.driveTriToTen();
+    agent.listExchanges();
+    try std.testing.expect(!agent.triToTenVerify());
+}
+
+test "v2.26 driveTriToTen increments tri_ten_transactions" {
+    var agent = GoldenChainAgent.init();
+    try std.testing.expectEqual(@as(u64, 0), agent.tri_to_ten_state.tri_ten_transactions);
+    agent.driveTriToTen();
+    try std.testing.expectEqual(@as(u64, 1), agent.tri_to_ten_state.tri_ten_transactions);
+    try std.testing.expect(agent.tri_to_ten_state.price_utri > 0);
+}
+
+test "v2.26 listExchanges uses EXCHANGE_LISTING_TARGET" {
+    var agent = GoldenChainAgent.init();
+    agent.listExchanges();
+    try std.testing.expectEqual(@as(u32, 1), agent.exchange_listing_state.exchanges_active);
+    try std.testing.expect(agent.exchange_listing_state.exchanges_active <= GoldenChainAgent.EXCHANGE_LISTING_TARGET);
+}
+
+test "v2.26 272 quarks per query target" {
+    // Distribution: 34+34+34+35+34+33+34+34 = 272
+    const expected = [_]u8{ 34, 34, 34, 35, 34, 33, 34, 34 };
+    var total: u16 = 0;
+    for (expected) |n| total += n;
+    try std.testing.expectEqual(@as(u16, 272), total);
+}
+
+test "v2.26 u8 enum capacity 240/256" {
+    try std.testing.expectEqual(@as(u8, 232), @intFromEnum(QuarkType.tri_to_ten));
+    try std.testing.expectEqual(@as(u8, 233), @intFromEnum(QuarkType.mass_adoption));
+    try std.testing.expectEqual(@as(u8, 234), @intFromEnum(QuarkType.exchange_listing));
+    try std.testing.expectEqual(@as(u8, 235), @intFromEnum(QuarkType.universal_wallet));
+    try std.testing.expectEqual(@as(u8, 236), @intFromEnum(QuarkType.adoption_health));
+    try std.testing.expectEqual(@as(u8, 237), @intFromEnum(QuarkType.exchange_distribute));
+    try std.testing.expectEqual(@as(u8, 238), @intFromEnum(QuarkType.wallet_govern));
+    try std.testing.expectEqual(@as(u8, 239), @intFromEnum(QuarkType.mass_adoption_anchor));
 }
