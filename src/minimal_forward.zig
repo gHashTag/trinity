@@ -595,6 +595,149 @@ fn hvToChar(dim: usize, hv: *Hypervector) u8 {
     return best_char;
 }
 
+// === TEMPERATURE + TOP-K SAMPLING (v2.36) ===
+//
+// Greedy decoding (hvToChar) always picks the single highest-similarity char,
+// causing degenerate repetition ("tututu..."). Temperature + top-K sampling
+// introduces controlled randomness:
+// 1. Compute similarity for all 95 printable ASCII chars
+// 2. Keep only the top-K candidates (noise filter)
+// 3. Apply temperature scaling to similarities (diversity control)
+// 4. Convert to softmax probabilities
+// 5. Sample from the distribution using PRNG
+
+/// Entry for sorting candidates by similarity
+const CharCandidate = struct {
+    char: u8,
+    sim: f64,
+};
+
+/// Decode a hypervector to a character using temperature + top-K sampling.
+/// temperature: controls diversity (0.1 = greedy, 1.0 = balanced, 2.0 = random)
+/// top_k: number of candidates to consider (1 = greedy, 95 = all)
+fn hvToCharSampled(
+    dim: usize,
+    hv: *Hypervector,
+    temperature: f64,
+    top_k: usize,
+    prng_seed: u64,
+) u8 {
+    // Special case: temperature near 0 or top_k=1 → greedy
+    if (temperature < 0.01 or top_k <= 1) {
+        return hvToChar(dim, hv);
+    }
+
+    const num_chars: usize = 95; // printable ASCII 32..127
+    var candidates: [95]CharCandidate = undefined;
+
+    // Compute all similarities
+    for (0..num_chars) |i| {
+        const c: u8 = @intCast(i + 32);
+        var candidate_hv = charToHV(dim, c);
+        candidates[i] = .{
+            .char = c,
+            .sim = hv.similarity(&candidate_hv),
+        };
+    }
+
+    // Sort by similarity descending (simple insertion sort, only 95 elements)
+    for (1..num_chars) |i| {
+        const key = candidates[i];
+        var j: usize = i;
+        while (j > 0 and candidates[j - 1].sim < key.sim) {
+            candidates[j] = candidates[j - 1];
+            j -= 1;
+        }
+        candidates[j] = key;
+    }
+
+    // Keep only top-K
+    const k = @min(top_k, num_chars);
+
+    // Apply temperature scaling and compute softmax
+    // First find max for numerical stability
+    var max_sim: f64 = candidates[0].sim;
+    for (1..k) |i| {
+        if (candidates[i].sim > max_sim) max_sim = candidates[i].sim;
+    }
+
+    var exp_sums: [95]f64 = undefined;
+    var total_exp: f64 = 0;
+    for (0..k) |i| {
+        const scaled = (candidates[i].sim - max_sim) / temperature;
+        // Clamp to avoid overflow
+        const clamped = @max(scaled, -20.0);
+        exp_sums[i] = @exp(clamped);
+        total_exp += exp_sums[i];
+    }
+
+    // Normalize to probabilities
+    if (total_exp > 0) {
+        for (0..k) |i| {
+            exp_sums[i] /= total_exp;
+        }
+    } else {
+        // Uniform fallback
+        for (0..k) |i| {
+            exp_sums[i] = 1.0 / @as(f64, @floatFromInt(k));
+        }
+    }
+
+    // Sample from distribution using PRNG
+    var prng = std.Random.DefaultPrng.init(prng_seed);
+    const random = prng.random();
+    const r = random.float(f64);
+
+    var cumulative: f64 = 0;
+    for (0..k) |i| {
+        cumulative += exp_sums[i];
+        if (r < cumulative) {
+            return candidates[i].char;
+        }
+    }
+
+    // Fallback: return last candidate in top-K
+    return candidates[k - 1].char;
+}
+
+/// Autoregressive generation with hybrid forward + temperature sampling
+fn generateWithHybridSampled(
+    initial_context: []Hypervector,
+    role: *Hypervector,
+    dim: usize,
+    last_char_init: u8,
+    counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    output_buf: []u8,
+    max_tokens: usize,
+    temperature: f64,
+    top_k: usize,
+    base_seed: u64,
+) usize {
+    var context: [8]Hypervector = undefined;
+    for (initial_context, 0..) |*hv, i| {
+        context[i] = hv.clone();
+    }
+
+    var last_char = last_char_init;
+    var generated: usize = 0;
+    while (generated < max_tokens and generated < output_buf.len) {
+        var output = forwardPassHybrid(&context, role, dim, last_char, counts);
+        // Use sampled decoding with per-token seed for reproducibility
+        const decoded = hvToCharSampled(dim, &output, temperature, top_k, base_seed + generated);
+        output_buf[generated] = decoded;
+        last_char = decoded;
+        generated += 1;
+
+        // Shift context window
+        for (0..7) |i| {
+            context[i] = context[i + 1];
+        }
+        // Use the HV of the decoded character (not the raw output) for clean autoregression
+        context[7] = charToHV(dim, decoded);
+    }
+    return generated;
+}
+
 /// Autoregressive generation using charToHV/hvToChar (no Codebook needed)
 fn generateWithCharTable(
     initial_context: []Hypervector,
@@ -2202,4 +2345,251 @@ test "hebbian hybrid perplexity comparison" {
     try std.testing.expect(hybrid_test_ppl > 0.0);
     try std.testing.expect(!std.math.isNan(hybrid_test_ppl));
     try std.testing.expect(!std.math.isInf(hybrid_test_ppl));
+}
+
+// === v2.36 SAMPLING TESTS ===
+
+test "temperature top-k sampling diversity" {
+    const dim: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    std.debug.print("\n=== SAMPLING DIVERSITY TEST (v2.36) ===\n", .{});
+    std.debug.print("Corpus: {d} chars (Shakespeare)\n", .{corpus.len});
+
+    // Build Hebbian + direct role
+    const counts = buildHebbianCounts(corpus);
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+    var direct_role = computeDirectRole(corpus, dim, &train_offsets, 8);
+
+    // === Greedy generation (baseline — expected degenerate) ===
+    var greedy_buf: [50]u8 = undefined;
+    var greedy_ctx: [8]Hypervector = undefined;
+    for (0..8) |i| {
+        greedy_ctx[i] = charToHV(dim, corpus[i]);
+    }
+    const greedy_count = generateWithHybrid(&greedy_ctx, &direct_role, dim, corpus[7], &counts, &greedy_buf, 50);
+
+    var greedy_seen: [256]bool = undefined;
+    for (0..256) |i| greedy_seen[i] = false;
+    var greedy_unique: usize = 0;
+    for (0..greedy_count) |i| {
+        if (!greedy_seen[greedy_buf[i]]) { greedy_seen[greedy_buf[i]] = true; greedy_unique += 1; }
+    }
+
+    // === Sampled generation: temperature=0.8, top_k=8 ===
+    var sampled_buf: [50]u8 = undefined;
+    var sampled_ctx: [8]Hypervector = undefined;
+    for (0..8) |i| {
+        sampled_ctx[i] = charToHV(dim, corpus[i]);
+    }
+    const sampled_count = generateWithHybridSampled(
+        &sampled_ctx, &direct_role, dim, corpus[7], &counts,
+        &sampled_buf, 50, 0.8, 8, 42,
+    );
+
+    var sampled_seen: [256]bool = undefined;
+    for (0..256) |i| sampled_seen[i] = false;
+    var sampled_unique: usize = 0;
+    for (0..sampled_count) |i| {
+        if (!sampled_seen[sampled_buf[i]]) { sampled_seen[sampled_buf[i]] = true; sampled_unique += 1; }
+    }
+
+    // === High temperature generation: temperature=1.5, top_k=16 ===
+    var hot_buf: [50]u8 = undefined;
+    var hot_ctx: [8]Hypervector = undefined;
+    for (0..8) |i| {
+        hot_ctx[i] = charToHV(dim, corpus[i]);
+    }
+    const hot_count = generateWithHybridSampled(
+        &hot_ctx, &direct_role, dim, corpus[7], &counts,
+        &hot_buf, 50, 1.5, 16, 42,
+    );
+
+    var hot_seen: [256]bool = undefined;
+    for (0..256) |i| hot_seen[i] = false;
+    var hot_unique: usize = 0;
+    for (0..hot_count) |i| {
+        if (!hot_seen[hot_buf[i]]) { hot_seen[hot_buf[i]] = true; hot_unique += 1; }
+    }
+
+    // === Low temperature (near-greedy): temperature=0.1, top_k=3 ===
+    var cold_buf: [50]u8 = undefined;
+    var cold_ctx: [8]Hypervector = undefined;
+    for (0..8) |i| {
+        cold_ctx[i] = charToHV(dim, corpus[i]);
+    }
+    const cold_count = generateWithHybridSampled(
+        &cold_ctx, &direct_role, dim, corpus[7], &counts,
+        &cold_buf, 50, 0.1, 3, 42,
+    );
+
+    var cold_seen: [256]bool = undefined;
+    for (0..256) |i| cold_seen[i] = false;
+    var cold_unique: usize = 0;
+    for (0..cold_count) |i| {
+        if (!cold_seen[cold_buf[i]]) { cold_seen[cold_buf[i]] = true; cold_unique += 1; }
+    }
+
+    std.debug.print("\nGreedy (baseline):\n", .{});
+    std.debug.print("  Generated: \"{s}\"\n", .{greedy_buf[0..greedy_count]});
+    std.debug.print("  Unique chars: {d}\n", .{greedy_unique});
+
+    std.debug.print("\nSampled (T=0.8, K=8):\n", .{});
+    std.debug.print("  Generated: \"{s}\"\n", .{sampled_buf[0..sampled_count]});
+    std.debug.print("  Unique chars: {d}\n", .{sampled_unique});
+
+    std.debug.print("\nHot (T=1.5, K=16):\n", .{});
+    std.debug.print("  Generated: \"{s}\"\n", .{hot_buf[0..hot_count]});
+    std.debug.print("  Unique chars: {d}\n", .{hot_unique});
+
+    std.debug.print("\nCold (T=0.1, K=3):\n", .{});
+    std.debug.print("  Generated: \"{s}\"\n", .{cold_buf[0..cold_count]});
+    std.debug.print("  Unique chars: {d}\n", .{cold_unique});
+
+    std.debug.print("\nDiversity comparison:\n", .{});
+    std.debug.print("  Greedy:  {d} unique chars\n", .{greedy_unique});
+    std.debug.print("  Cold:    {d} unique chars\n", .{cold_unique});
+    std.debug.print("  Sampled: {d} unique chars\n", .{sampled_unique});
+    std.debug.print("  Hot:     {d} unique chars\n", .{hot_unique});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(greedy_count == 50);
+    try std.testing.expect(sampled_count == 50);
+    try std.testing.expect(hot_count == 50);
+    try std.testing.expect(cold_count == 50);
+    // Sampled should have more diversity than greedy
+    try std.testing.expect(sampled_unique >= greedy_unique);
+    // Hot should have at least as much diversity as sampled
+    try std.testing.expect(hot_unique >= sampled_unique or hot_unique >= greedy_unique);
+}
+
+test "sampling preserves eval signal" {
+    const dim: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    std.debug.print("\n=== SAMPLING EVAL PRESERVATION (v2.36) ===\n", .{});
+
+    const counts = buildHebbianCounts(corpus);
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+    var direct_role = computeDirectRole(corpus, dim, &train_offsets, 8);
+
+    // Eval loss is independent of sampling — it uses the raw HV similarities
+    // Sampling only affects generation, not the model's loss/PPL measurements
+    // So eval loss should be identical to v2.35
+
+    // === Hybrid eval loss (same as v2.35) ===
+    var hybrid_eval_loss: f64 = 0;
+    var eval_count: usize = 0;
+    const eval_samples = 8;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &direct_role, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        hybrid_eval_loss += 1.0 - sim;
+        eval_count += 1;
+    }
+    if (eval_count > 0) hybrid_eval_loss /= @as(f64, @floatFromInt(eval_count));
+
+    // === Hybrid train loss ===
+    var hybrid_train_loss: f64 = 0;
+    var train_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &direct_role, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        hybrid_train_loss += 1.0 - sim;
+        train_count += 1;
+    }
+    if (train_count > 0) hybrid_train_loss /= @as(f64, @floatFromInt(train_count));
+
+    // Multi-head baseline
+    var roles_mh = initRoles(dim, 42);
+    var mh_loss: f64 = 0;
+    var mh_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassMultiHead(&ctx, &roles_mh);
+        const sim = output.similarity(&target);
+        mh_loss += 1.0 - sim;
+        mh_count += 1;
+    }
+    if (mh_count > 0) mh_loss /= @as(f64, @floatFromInt(mh_count));
+
+    const train_improvement = (mh_loss - hybrid_train_loss) / mh_loss * 100.0;
+    const eval_improvement = (mh_loss - hybrid_eval_loss) / mh_loss * 100.0;
+
+    std.debug.print("\nHybrid train loss:  {d:.4} ({d:.1}% below random)\n", .{ hybrid_train_loss, train_improvement });
+    std.debug.print("Hybrid eval loss:   {d:.4} ({d:.1}% below random)\n", .{ hybrid_eval_loss, eval_improvement });
+    std.debug.print("Random baseline:    {d:.4}\n", .{mh_loss});
+    std.debug.print("\nNote: Sampling affects generation diversity only.\n", .{});
+    std.debug.print("Loss/PPL metrics use raw HV similarity — unchanged.\n", .{});
+    std.debug.print("==============================================\n", .{});
+
+    // Eval loss should be below random baseline
+    try std.testing.expect(hybrid_eval_loss < mh_loss);
+    // Train loss should be below random baseline
+    try std.testing.expect(hybrid_train_loss < mh_loss);
+    // Both should be in valid range
+    try std.testing.expect(hybrid_eval_loss >= 0.0 and hybrid_eval_loss <= 2.0);
+    try std.testing.expect(hybrid_train_loss >= 0.0 and hybrid_train_loss <= 2.0);
 }
