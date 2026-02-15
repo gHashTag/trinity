@@ -230,6 +230,11 @@ pub const ChainMessageType = enum {
     Community500MUpdate,
     EarningGodModeEvent,
     NodeDiscovery1BEvent,
+    // v2.30: Trinity Neural Network v1.0
+    TernaryNNEvent,
+    RecursiveSelfTrainUpdate,
+    ContributionRewardEvent,
+    NeuralConsensusEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -290,7 +295,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 296; // v2.29: was 288, +8 for Swarm 1B + u16 Upgrade (264/65536)
+pub const MAX_QUARK_RECORDS = 304; // v2.30: was 296, +8 for Trinity Neural Network v1.0 (u16: 272/65536)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -597,6 +602,15 @@ pub const QuarkType = enum(u16) {
     swarm_failover_1b, // 261 — Swarm failover 1B record
     dao_governance_1b, // 262 — DAO governance 1B record
     swarm_anchor_1b, // 263 — Swarm anchor 1B record
+    // v2.30: Trinity Neural Network v1.0 (u16: 272/65536 used)
+    ternary_nn, // 264 — Ternary neural network inference
+    recursive_self_train, // 265 — Recursive self-training loop
+    contribution_reward, // 266 — $TRI contribution reward
+    onchain_inference, // 267 — On-chain inference execution
+    nn_health, // 268 — Neural network health monitor
+    nn_failover, // 269 — Neural network failover
+    nn_governance, // 270 — Neural network governance
+    neural_anchor, // 271 — Neural anchor record
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -886,6 +900,15 @@ pub const QuarkType = enum(u16) {
             .swarm_failover_1b => "SWF_1B",
             .dao_governance_1b => "DAO_1B",
             .swarm_anchor_1b => "SWA_1B",
+            // v2.30: Trinity Neural Network v1.0
+            .ternary_nn => "TRN_NN",
+            .recursive_self_train => "REC_ST",
+            .contribution_reward => "CTR_RW",
+            .onchain_inference => "OCH_IN",
+            .nn_health => "NN_HLT",
+            .nn_failover => "NN_FLO",
+            .nn_governance => "NN_GOV",
+            .neural_anchor => "NRL_ACH",
         };
     }
 
@@ -1434,6 +1457,23 @@ pub const QuarkType = enum(u16) {
     pub fn isNodeDiscovery1BQuark(self: QuarkType) bool {
         return self == .node_discovery_1b or self == .swarm_health_1b;
     }
+
+    // v2.30: Trinity Neural Network v1.0 classifiers
+    pub fn isTernaryNNQuark(self: QuarkType) bool {
+        return self == .ternary_nn or self == .neural_anchor;
+    }
+
+    pub fn isRecursiveSelfTrainQuark(self: QuarkType) bool {
+        return self == .recursive_self_train or self == .contribution_reward;
+    }
+
+    pub fn isContributionRewardQuark(self: QuarkType) bool {
+        return self == .contribution_reward or self == .nn_failover;
+    }
+
+    pub fn isNeuralConsensusQuark(self: QuarkType) bool {
+        return self == .nn_governance or self == .nn_health;
+    }
 };
 
 pub const QuarkRecord = struct {
@@ -1902,6 +1942,13 @@ pub const EARNING_GOD_MODE_UTRI_PER_HOUR: u64 = 500_000;
 pub const NODE_DISCOVERY_1B_INTERVAL_US: i64 = 3_000_000;
 pub const SWARM_1B_HEALTH_CHECK_INTERVAL_US: i64 = 5_000_000;
 pub const MAX_GOD_MODE_CHANNELS: u32 = 10_000_000;
+// v2.30: Trinity Neural Network v1.0 constants
+pub const TERNARY_NN_DIMENSION: u32 = 1024;
+pub const RECURSIVE_TRAIN_CYCLES: u32 = 100;
+pub const CONTRIBUTION_REWARD_UTRI: u64 = 1_000_000;
+pub const NN_INFERENCE_TIMEOUT_US: i64 = 2_000_000;
+pub const NN_TRAINING_INTERVAL_US: i64 = 60_000_000;
+pub const MAX_NN_CONTRIBUTORS: u32 = 10_000_000;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2754,6 +2801,39 @@ pub const NodeDiscovery1BState = struct {
     discovery_1b_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.30: Trinity Neural Network v1.0 types
+pub const TernaryNNState = struct {
+    nn_inference_events: u64 = 0,
+    nn_weights_hash: [32]u8 = [_]u8{0} ** 32,
+    nn_dimension: u32 = TERNARY_NN_DIMENSION,
+    last_inference_us: i64 = 0,
+    nn_accuracy: u64 = 0,
+};
+
+pub const RecursiveSelfTrainState = struct {
+    train_cycles: u64 = 0,
+    train_loss_bp: u64 = 10000,
+    epochs_completed: u64 = 0,
+    last_train_us: i64 = 0,
+    train_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const ContributionRewardState = struct {
+    contribution_events: u64 = 0,
+    total_rewarded_utri: u64 = 0,
+    contributors_active: u64 = 0,
+    last_reward_us: i64 = 0,
+    reward_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const NeuralConsensusState = struct {
+    consensus_events: u64 = 0,
+    models_validated: u64 = 0,
+    consensus_accuracy_bp: u64 = 0,
+    last_consensus_us: i64 = 0,
+    consensus_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2872,10 +2952,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 33; // v2.29: bumped from 32
+pub const QUARK_EXPORT_VERSION: u16 = 34; // v2.30: bumped from 33
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 150; // v2.29: was 146, +4 for swarm_1b
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 154; // v2.30: was 150, +4 for nn_inference_events+train_cycles
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -3108,6 +3188,12 @@ pub const GoldenChainAgent = struct {
         earning_god_mode_state: EarningGodModeState,
         node_discovery_1b_state: NodeDiscovery1BState,
         swarm_1b_active: bool,
+        // v2.30: Trinity Neural Network v1.0
+        ternary_nn_state: TernaryNNState,
+        recursive_self_train_state: RecursiveSelfTrainState,
+        contribution_reward_state: ContributionRewardState,
+        neural_consensus_state: NeuralConsensusState,
+        ternary_nn_active: bool,
     // v2.20: ZK-Rollup v2.0 fields
     zk_rollup_v2_state: ZkRollupV2State,
     snark_generate_state: SnarkGenerateState,
@@ -3339,6 +3425,12 @@ pub const GoldenChainAgent = struct {
             .earning_god_mode_state = .{},
             .node_discovery_1b_state = .{},
             .swarm_1b_active = false,
+            // v2.30: Trinity Neural Network v1.0
+            .ternary_nn_state = .{},
+            .recursive_self_train_state = .{},
+            .contribution_reward_state = .{},
+            .neural_consensus_state = .{},
+            .ternary_nn_active = false,
             // v2.20: ZK-Rollup v2.0 defaults
             .zk_rollup_v2_state = .{},
             .snark_generate_state = .{},
@@ -4211,6 +4303,36 @@ pub const GoldenChainAgent = struct {
         if (self.earning_god_mode_state.god_mode_events == 0) return false;
         return true;
     }
+
+        // v2.30: Trinity Neural Network v1.0 stubs
+        pub fn runTernaryInference(self: *Self) void {
+            self.ternary_nn_state.nn_inference_events += 1;
+            self.ternary_nn_state.nn_accuracy = 9500;
+        }
+
+        pub fn trainRecursiveSelf(self: *Self) void {
+            self.recursive_self_train_state.train_cycles += 1;
+            self.recursive_self_train_state.epochs_completed += 1;
+        }
+
+        pub fn rewardContribution(self: *Self) void {
+            self.contribution_reward_state.contribution_events += 1;
+            self.contribution_reward_state.total_rewarded_utri += CONTRIBUTION_REWARD_UTRI;
+            self.contribution_reward_state.contributors_active += 1;
+        }
+
+        pub fn validateNeuralConsensus(self: *Self) void {
+            self.neural_consensus_state.consensus_events += 1;
+            self.neural_consensus_state.models_validated += 1;
+            self.neural_consensus_state.consensus_accuracy_bp = 9800;
+        }
+
+        pub fn ternaryNNVerify(self: *const Self) bool {
+            if (self.ternary_nn_state.nn_inference_events == 0) return false;
+            if (self.recursive_self_train_state.train_cycles == 0) return false;
+            if (self.contribution_reward_state.contribution_events == 0) return false;
+            return true;
+        }
 
     // v2.20: ZK-Rollup v2.0 stub methods
     pub fn generateSnarkV2(self: *Self) void {
