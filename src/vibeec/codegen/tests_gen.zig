@@ -1489,6 +1489,256 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("var fp3 = ShardManager.fingerprint(\"totally different binary content 9876\");");
             try self.builder.writeLine("const sim2 = vsa.cosineSimilarity(&fp1, &fp3);");
             try self.builder.writeLine("try std.testing.expect(@abs(sim2) < 0.2);");
+
+        // ═══════════════════════════════════════════════════════════════════
+        // NETWORK TRANSFER TESTS (N1-N5): Real TCP shard transfer proofs
+        // Uses std.net.Server/tcpConnectToAddress + std.Thread for P2P.
+        // Each test creates two ShardNetwork nodes in separate temp dirs.
+        // ═══════════════════════════════════════════════════════════════════
+
+        } else if (std.mem.eql(u8, name, "networkSendReceiveRoundtrip")) {
+            // N1: Basic TCP roundtrip — send 1 shard, verify byte-match
+            try self.builder.writeLine("// N1: TCP Send/Receive Roundtrip");
+            try self.builder.writeLine("const tmp_a = \"/tmp/trinity_net_n1_a\";");
+            try self.builder.writeLine("const tmp_b = \"/tmp/trinity_net_n1_b\";");
+            try self.builder.writeLine("var nodeA = try ShardNetwork.init(tmp_a, 0);");
+            try self.builder.writeLine("defer nodeA.cleanup();");
+            try self.builder.writeLine("var nodeB = try ShardNetwork.init(tmp_b, 0);");
+            try self.builder.writeLine("defer nodeB.cleanup();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Prepare test payload and hash");
+            try self.builder.writeLine("const payload = \"Hello Trinity Network Transfer v1\";");
+            try self.builder.writeLine("var hash: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(payload, &hash, .{});");
+            try self.builder.writeLine("var hex = ShardNetwork.hashToHex(hash);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Start nodeB listener (port 0 = OS-assigned)");
+            try self.builder.writeLine("var server = try nodeB.listen();");
+            try self.builder.writeLine("defer server.deinit();");
+            try self.builder.writeLine("const bound_port = server.listen_address.getPort();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Spawn receiver thread");
+            try self.builder.writeLine("const RecvCtx = struct {");
+            try self.builder.writeLine("    node: *const ShardNetwork,");
+            try self.builder.writeLine("    srv: *std.net.Server,");
+            try self.builder.writeLine("    fn run(ctx: *const @This()) void {");
+            try self.builder.writeLine("        ctx.node.receiveOne(ctx.srv) catch {};");
+            try self.builder.writeLine("    }");
+            try self.builder.writeLine("};");
+            try self.builder.writeLine("var recv_ctx = RecvCtx{ .node = &nodeB, .srv = &server };");
+            try self.builder.writeLine("const t = try std.Thread.spawn(.{}, RecvCtx.run, .{&recv_ctx});");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Small delay to let listener start accepting");
+            try self.builder.writeLine("std.Thread.sleep(10 * std.time.ns_per_ms);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Send from nodeA");
+            try self.builder.writeLine("try nodeA.sendShard(bound_port, &hex, payload);");
+            try self.builder.writeLine("t.join();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: Read received shard from nodeB and verify");
+            try self.builder.writeLine("var pbuf: [350]u8 = undefined;");
+            try self.builder.writeLine("const spath = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ tmp_b, hex }) catch unreachable;");
+            try self.builder.writeLine("const rf = try std.fs.openFileAbsolute(spath, .{});");
+            try self.builder.writeLine("defer rf.close();");
+            try self.builder.writeLine("var rbuf: [1024]u8 = undefined;");
+            try self.builder.writeLine("const n = try rf.readAll(&rbuf);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, payload, rbuf[0..n]);");
+
+        } else if (std.mem.eql(u8, name, "networkMultiShardTransfer")) {
+            // N2: Send 3 shards sequentially, verify all arrive
+            try self.builder.writeLine("// N2: Multi-Shard Sequential Transfer");
+            try self.builder.writeLine("const tmp_a = \"/tmp/trinity_net_n2_a\";");
+            try self.builder.writeLine("const tmp_b = \"/tmp/trinity_net_n2_b\";");
+            try self.builder.writeLine("var nodeA = try ShardNetwork.init(tmp_a, 0);");
+            try self.builder.writeLine("defer nodeA.cleanup();");
+            try self.builder.writeLine("var nodeB = try ShardNetwork.init(tmp_b, 0);");
+            try self.builder.writeLine("defer nodeB.cleanup();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("const payloads = [_][]const u8{ \"shard_one_data\", \"shard_two_data\", \"shard_three_data\" };");
+            try self.builder.writeLine("var hashes: [3][64]u8 = undefined;");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Compute hashes for all 3 payloads");
+            try self.builder.writeLine("for (payloads, 0..) |pl, idx| {");
+            try self.builder.writeLine("    var h: [32]u8 = undefined;");
+            try self.builder.writeLine("    std.crypto.hash.sha2.Sha256.hash(pl, &h, .{});");
+            try self.builder.writeLine("    hashes[idx] = ShardNetwork.hashToHex(h);");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// For each shard: listen, spawn receiver, send, join");
+            try self.builder.writeLine("for (payloads, 0..) |pl, idx| {");
+            try self.builder.writeLine("    var server = try nodeB.listen();");
+            try self.builder.writeLine("    defer server.deinit();");
+            try self.builder.writeLine("    const bp = server.listen_address.getPort();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("    const RecvCtx = struct {");
+            try self.builder.writeLine("        node: *const ShardNetwork,");
+            try self.builder.writeLine("        srv: *std.net.Server,");
+            try self.builder.writeLine("        fn run(ctx: *const @This()) void {");
+            try self.builder.writeLine("            ctx.node.receiveOne(ctx.srv) catch {};");
+            try self.builder.writeLine("        }");
+            try self.builder.writeLine("    };");
+            try self.builder.writeLine("    var recv_ctx = RecvCtx{ .node = &nodeB, .srv = &server };");
+            try self.builder.writeLine("    const t = try std.Thread.spawn(.{}, RecvCtx.run, .{&recv_ctx});");
+            try self.builder.writeLine("    std.Thread.sleep(10 * std.time.ns_per_ms);");
+            try self.builder.writeLine("    try nodeA.sendShard(bp, &hashes[idx], pl);");
+            try self.builder.writeLine("    t.join();");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: Verify all 3 shards arrived at nodeB");
+            try self.builder.writeLine("for (payloads, 0..) |expected, idx| {");
+            try self.builder.writeLine("    var pbuf: [350]u8 = undefined;");
+            try self.builder.writeLine("    const sp = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ tmp_b, hashes[idx] }) catch unreachable;");
+            try self.builder.writeLine("    const rf = try std.fs.openFileAbsolute(sp, .{});");
+            try self.builder.writeLine("    defer rf.close();");
+            try self.builder.writeLine("    var dbuf: [256]u8 = undefined;");
+            try self.builder.writeLine("    const n = try rf.readAll(&dbuf);");
+            try self.builder.writeLine("    try std.testing.expectEqualSlices(u8, expected, dbuf[0..n]);");
+            try self.builder.writeLine("}");
+
+        } else if (std.mem.eql(u8, name, "networkLargePayload")) {
+            // N3: Transfer 4KB payload, verify integrity
+            try self.builder.writeLine("// N3: Large Payload (4096 bytes) TCP Transfer");
+            try self.builder.writeLine("const tmp_a = \"/tmp/trinity_net_n3_a\";");
+            try self.builder.writeLine("const tmp_b = \"/tmp/trinity_net_n3_b\";");
+            try self.builder.writeLine("var nodeA = try ShardNetwork.init(tmp_a, 0);");
+            try self.builder.writeLine("defer nodeA.cleanup();");
+            try self.builder.writeLine("var nodeB = try ShardNetwork.init(tmp_b, 0);");
+            try self.builder.writeLine("defer nodeB.cleanup();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Create 4096-byte payload with pattern");
+            try self.builder.writeLine("var big_data: [4096]u8 = undefined;");
+            try self.builder.writeLine("for (&big_data, 0..) |*b, i| b.* = @intCast(i % 251);");
+            try self.builder.writeLine("var hash: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(&big_data, &hash, .{});");
+            try self.builder.writeLine("var hex = ShardNetwork.hashToHex(hash);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("var server = try nodeB.listen();");
+            try self.builder.writeLine("defer server.deinit();");
+            try self.builder.writeLine("const bp = server.listen_address.getPort();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("const RecvCtx = struct {");
+            try self.builder.writeLine("    node: *const ShardNetwork,");
+            try self.builder.writeLine("    srv: *std.net.Server,");
+            try self.builder.writeLine("    fn run(ctx: *const @This()) void {");
+            try self.builder.writeLine("        ctx.node.receiveOne(ctx.srv) catch {};");
+            try self.builder.writeLine("    }");
+            try self.builder.writeLine("};");
+            try self.builder.writeLine("var recv_ctx = RecvCtx{ .node = &nodeB, .srv = &server };");
+            try self.builder.writeLine("const t = try std.Thread.spawn(.{}, RecvCtx.run, .{&recv_ctx});");
+            try self.builder.writeLine("std.Thread.sleep(10 * std.time.ns_per_ms);");
+            try self.builder.writeLine("try nodeA.sendShard(bp, &hex, &big_data);");
+            try self.builder.writeLine("t.join();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: Read 4096 bytes from nodeB, verify all match");
+            try self.builder.writeLine("var pbuf: [350]u8 = undefined;");
+            try self.builder.writeLine("const spath = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ tmp_b, hex }) catch unreachable;");
+            try self.builder.writeLine("const rf = try std.fs.openFileAbsolute(spath, .{});");
+            try self.builder.writeLine("defer rf.close();");
+            try self.builder.writeLine("var rbuf: [4096]u8 = undefined;");
+            try self.builder.writeLine("const n = try rf.readAll(&rbuf);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(usize, 4096), n);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &big_data, rbuf[0..n]);");
+
+        } else if (std.mem.eql(u8, name, "networkFingerprintPreserved")) {
+            // N4: VSA fingerprint cosine 1.0 after TCP transfer
+            try self.builder.writeLine("// N4: VSA Fingerprint Preserved After TCP Transfer");
+            try self.builder.writeLine("const tmp_a = \"/tmp/trinity_net_n4_a\";");
+            try self.builder.writeLine("const tmp_b = \"/tmp/trinity_net_n4_b\";");
+            try self.builder.writeLine("var nodeA = try ShardNetwork.init(tmp_a, 0);");
+            try self.builder.writeLine("defer nodeA.cleanup();");
+            try self.builder.writeLine("var nodeB = try ShardNetwork.init(tmp_b, 0);");
+            try self.builder.writeLine("defer nodeB.cleanup();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("const payload = \"fingerprint_test_data_for_vsa_proof\";");
+            try self.builder.writeLine("var hash: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(payload, &hash, .{});");
+            try self.builder.writeLine("var hex = ShardNetwork.hashToHex(hash);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Compute VSA fingerprint on original data");
+            try self.builder.writeLine("const seed_orig = std.mem.readInt(u64, hash[0..8], .little);");
+            try self.builder.writeLine("var fp_orig = vsa.randomVector(256, seed_orig);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Transfer via TCP");
+            try self.builder.writeLine("var server = try nodeB.listen();");
+            try self.builder.writeLine("defer server.deinit();");
+            try self.builder.writeLine("const bp = server.listen_address.getPort();");
+            try self.builder.writeLine("const RecvCtx = struct {");
+            try self.builder.writeLine("    node: *const ShardNetwork,");
+            try self.builder.writeLine("    srv: *std.net.Server,");
+            try self.builder.writeLine("    fn run(ctx: *const @This()) void {");
+            try self.builder.writeLine("        ctx.node.receiveOne(ctx.srv) catch {};");
+            try self.builder.writeLine("    }");
+            try self.builder.writeLine("};");
+            try self.builder.writeLine("var recv_ctx = RecvCtx{ .node = &nodeB, .srv = &server };");
+            try self.builder.writeLine("const t = try std.Thread.spawn(.{}, RecvCtx.run, .{&recv_ctx});");
+            try self.builder.writeLine("std.Thread.sleep(10 * std.time.ns_per_ms);");
+            try self.builder.writeLine("try nodeA.sendShard(bp, &hex, payload);");
+            try self.builder.writeLine("t.join();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Read received data from nodeB");
+            try self.builder.writeLine("var pbuf: [350]u8 = undefined;");
+            try self.builder.writeLine("const spath = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ tmp_b, hex }) catch unreachable;");
+            try self.builder.writeLine("const rf = try std.fs.openFileAbsolute(spath, .{});");
+            try self.builder.writeLine("defer rf.close();");
+            try self.builder.writeLine("var rbuf: [1024]u8 = undefined;");
+            try self.builder.writeLine("const rn = try rf.readAll(&rbuf);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Compute VSA fingerprint on received data");
+            try self.builder.writeLine("var rhash: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(rbuf[0..rn], &rhash, .{});");
+            try self.builder.writeLine("const seed_recv = std.mem.readInt(u64, rhash[0..8], .little);");
+            try self.builder.writeLine("var fp_recv = vsa.randomVector(256, seed_recv);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: Cosine similarity = 1.0 (identical fingerprints)");
+            try self.builder.writeLine("const sim = vsa.cosineSimilarity(&fp_orig, &fp_recv);");
+            try self.builder.writeLine("try std.testing.expect(sim > 0.99);");
+
+        } else if (std.mem.eql(u8, name, "networkHashIntegrity")) {
+            // N5: SHA-256 hash matches after TCP transfer
+            try self.builder.writeLine("// N5: SHA-256 Hash Integrity After TCP Transfer");
+            try self.builder.writeLine("const tmp_a = \"/tmp/trinity_net_n5_a\";");
+            try self.builder.writeLine("const tmp_b = \"/tmp/trinity_net_n5_b\";");
+            try self.builder.writeLine("var nodeA = try ShardNetwork.init(tmp_a, 0);");
+            try self.builder.writeLine("defer nodeA.cleanup();");
+            try self.builder.writeLine("var nodeB = try ShardNetwork.init(tmp_b, 0);");
+            try self.builder.writeLine("defer nodeB.cleanup();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("const payload = \"integrity_check_sha256_over_tcp_transfer\";");
+            try self.builder.writeLine("var hash_before: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(payload, &hash_before, .{});");
+            try self.builder.writeLine("var hex = ShardNetwork.hashToHex(hash_before);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Transfer via TCP");
+            try self.builder.writeLine("var server = try nodeB.listen();");
+            try self.builder.writeLine("defer server.deinit();");
+            try self.builder.writeLine("const bp = server.listen_address.getPort();");
+            try self.builder.writeLine("const RecvCtx = struct {");
+            try self.builder.writeLine("    node: *const ShardNetwork,");
+            try self.builder.writeLine("    srv: *std.net.Server,");
+            try self.builder.writeLine("    fn run(ctx: *const @This()) void {");
+            try self.builder.writeLine("        ctx.node.receiveOne(ctx.srv) catch {};");
+            try self.builder.writeLine("    }");
+            try self.builder.writeLine("};");
+            try self.builder.writeLine("var recv_ctx = RecvCtx{ .node = &nodeB, .srv = &server };");
+            try self.builder.writeLine("const t = try std.Thread.spawn(.{}, RecvCtx.run, .{&recv_ctx});");
+            try self.builder.writeLine("std.Thread.sleep(10 * std.time.ns_per_ms);");
+            try self.builder.writeLine("try nodeA.sendShard(bp, &hex, payload);");
+            try self.builder.writeLine("t.join();");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Read received data and compute SHA-256");
+            try self.builder.writeLine("var pbuf: [350]u8 = undefined;");
+            try self.builder.writeLine("const spath = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ tmp_b, hex }) catch unreachable;");
+            try self.builder.writeLine("const rf = try std.fs.openFileAbsolute(spath, .{});");
+            try self.builder.writeLine("defer rf.close();");
+            try self.builder.writeLine("var rbuf: [1024]u8 = undefined;");
+            try self.builder.writeLine("const rn = try rf.readAll(&rbuf);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("var hash_after: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(rbuf[0..rn], &hash_after, .{});");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: SHA-256 hash before send = hash after receive");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &hash_before, &hash_after);");
+
         } else {
             // Generate real test assertions: verify function exists and is callable
             const mem = std.mem;
