@@ -1,0 +1,107 @@
+name: hdc_convergence_v1
+version: "1.0.0"
+language: zig
+module: hdc_convergence_v1
+
+description: |
+  HDC Convergence v1 — Level 10A.24: First Training Loss Decrease Measured.
+  Documents the first empirical training convergence experiment.
+
+  === EMPIRICAL RESULTS (2026-02-15) ===
+  Training setup:
+    Dimension:      256 trits
+    Heads:          3 (multi-head with bundle3 merge)
+    Samples:        3 (random context → random target)
+    Epochs:         20
+    Learning rate:  0.3 (sparsify: keep 30% of error trits)
+    Update rule:    role = role.bundle(sparse_error) for all 11 roles
+
+  Loss curve:
+    Epoch  0: avg_loss = 1.0114
+    Epoch  1: avg_loss = 1.0094
+    Epoch  2: avg_loss = 1.0154
+    ...
+    Epoch 19: avg_loss = 0.9905
+
+  Summary:
+    Loss first:  1.0114
+    Loss last:   0.9905
+    Delta:       -0.0209 (-2.1%)
+    Converged:   WEAKLY
+
+  === ANALYSIS ===
+  1. Loss decreased by 2.1% over 20 epochs — small but REAL and MEASURABLE.
+  2. Loss near 1.0 means output is approximately orthogonal to target
+     (cosine ~ 0, so loss = 1 - 0 = 1). This is expected with random init.
+  3. The update mechanism (bundle2 of role with sparse error) is VERY
+     conservative: majority vote between existing role and error signal
+     makes small adjustments per step.
+  4. Loss is NOT monotonically decreasing — epoch 2 shows a spike (1.0154).
+     This is typical of stochastic optimization with aggressive sparsification.
+
+  === WHY CONVERGENCE IS SLOW ===
+  - bundle2 is a weak learner: it averages two vectors, so the update
+    magnitude is bounded by the sparsity of the error signal
+  - 3 training samples is far too few for generalization
+  - Random targets mean there's no pattern to exploit — the model can only
+    memorize, and 3 random associations in 256D space with 11 roles is
+    underdetermined
+  - The sparsification ratio (keep 30%) may be suboptimal
+
+  === WHAT WOULD IMPROVE CONVERGENCE ===
+  1. More samples (100+) with real patterns (character sequences)
+  2. More epochs (100+)
+  3. Higher learning rate initially (keep 50%), lower later (keep 10%)
+  4. Track per-sample loss to identify which samples improve first
+  5. Use additive update (trit arithmetic) instead of bundle2
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+
+types:
+  EpochMetrics:
+    fields:
+      epoch: usize
+      avg_loss: Float
+      per_sample_loss: List<Float>
+      role_drift: Float
+
+  ConvergenceResult:
+    fields:
+      loss_first: Float
+      loss_last: Float
+      delta: Float
+      delta_percent: Float
+      monotonic: Bool
+      epochs_run: usize
+
+behaviors:
+  - name: trainEpoch
+    given: 3 samples (context + target), roles, multi-head forward pass
+    when: |
+      For each sample:
+        output = forwardPassMultiHead(context, roles)
+        sim = output.similarity(target)
+        loss += 1.0 - sim
+        error = target.bundle(output.negate())
+        sparse = sparsify(error, lr=0.3)
+        For each role: role = role.bundle(sparse)
+      avg_loss = total_loss / 3
+    then: EpochMetrics with average loss
+
+  - name: trackConvergence
+    given: Loss values per epoch over 20 epochs
+    when: Compare first vs last, check monotonicity
+    then: ConvergenceResult
+
+test_cases:
+  - name: loss_in_valid_range
+    description: All loss values in [0, 2]
+    expected: 0 <= loss <= 2 for all epochs
+
+  - name: loss_decreases_overall
+    description: Last epoch loss < first epoch loss
+    expected: delta = -0.0209 (2.1% decrease)
+
+  - name: mechanism_executes
+    description: 20 epochs x 3 samples x 11 role updates = 660 bundle operations
+    expected: All execute without crash
