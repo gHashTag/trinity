@@ -33,6 +33,7 @@ pub const ZigCodeGen = struct {
     pos_emitted: bool,
     dht_emitted: bool,
     swarm_emitted: bool,
+    rewards_emitted: bool,
 
     const Self = @This();
 
@@ -47,6 +48,7 @@ pub const ZigCodeGen = struct {
             .pos_emitted = false,
             .dht_emitted = false,
             .swarm_emitted = false,
+            .rewards_emitted = false,
         };
     }
 
@@ -844,6 +846,141 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("        }");
         try self.builder.writeLine("        if (lat_count > 0) report.avg_latency_ms = @intCast(lat_sum / lat_count);");
         try self.builder.writeLine("        return report;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+    }
+
+    /// Emit RewardEngine struct ($TRI mint/slash on PoS results)
+    fn emitRewardsStruct(self: *Self) !void {
+        if (self.rewards_emitted) return;
+        self.rewards_emitted = true;
+        try self.builder.writeLine("");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("// LIVE REWARDS — $TRI Token Mint/Slash on PoS Challenge Results");
+        try self.builder.writeLine("// Pass challenge → mint reward. Fail challenge → slash stake.");
+        try self.builder.writeLine("// Min stake required to participate. Epoch summary aggregation.");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const TRI_DECIMALS: u8 = 18;");
+        try self.builder.writeLine("pub const TRI_SYMBOL = \"$TRI\";");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const RewardConfig = struct {");
+        try self.builder.writeLine("    base_reward_wei: u64,       // reward per challenge pass (1e15 = 0.001 TRI)");
+        try self.builder.writeLine("    slash_rate_pct: u8,         // slash % per failure (1 = 1%)");
+        try self.builder.writeLine("    corruption_slash_pct: u8,   // slash % for corruption (5 = 5%)");
+        try self.builder.writeLine("    min_stake_wei: u64,         // min stake to participate (100 TRI)");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const DEFAULT_REWARD_CONFIG = RewardConfig{");
+        try self.builder.writeLine("    .base_reward_wei = 1_000_000_000_000_000, // 0.001 TRI");
+        try self.builder.writeLine("    .slash_rate_pct = 1,");
+        try self.builder.writeLine("    .corruption_slash_pct = 5,");
+        try self.builder.writeLine("    .min_stake_wei = 100_000_000_000_000_000_000, // 100 TRI");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const NodeRewardBalance = struct {");
+        try self.builder.writeLine("    balance_wei: u64,");
+        try self.builder.writeLine("    total_earned_wei: u64,");
+        try self.builder.writeLine("    total_slashed_wei: u64,");
+        try self.builder.writeLine("    challenges_passed: u32,");
+        try self.builder.writeLine("    challenges_failed: u32,");
+        try self.builder.writeLine("    is_active: bool,");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const EpochSummary = struct {");
+        try self.builder.writeLine("    total_minted_wei: u64,");
+        try self.builder.writeLine("    total_slashed_wei: u64,");
+        try self.builder.writeLine("    active_earners: u16,");
+        try self.builder.writeLine("    epoch_challenges: u32,");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const RewardEngine = struct {");
+        try self.builder.writeLine("    const MAX_NODES = 64;");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    config: RewardConfig,");
+        try self.builder.writeLine("    balances: [MAX_NODES]NodeRewardBalance,");
+        try self.builder.writeLine("    node_count: u16,");
+        try self.builder.writeLine("    total_minted: u64,");
+        try self.builder.writeLine("    total_slashed: u64,");
+        try self.builder.writeLine("    total_challenges: u32,");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn init(config: RewardConfig) RewardEngine {");
+        try self.builder.writeLine("        var engine: RewardEngine = undefined;");
+        try self.builder.writeLine("        engine.config = config;");
+        try self.builder.writeLine("        engine.node_count = 0;");
+        try self.builder.writeLine("        engine.total_minted = 0;");
+        try self.builder.writeLine("        engine.total_slashed = 0;");
+        try self.builder.writeLine("        engine.total_challenges = 0;");
+        try self.builder.writeLine("        return engine;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Register a node with initial stake");
+        try self.builder.writeLine("    pub fn registerNode(self: *RewardEngine, stake_wei: u64) u16 {");
+        try self.builder.writeLine("        if (self.node_count >= MAX_NODES) return MAX_NODES;");
+        try self.builder.writeLine("        const id = self.node_count;");
+        try self.builder.writeLine("        self.balances[id] = .{");
+        try self.builder.writeLine("            .balance_wei = stake_wei,");
+        try self.builder.writeLine("            .total_earned_wei = 0,");
+        try self.builder.writeLine("            .total_slashed_wei = 0,");
+        try self.builder.writeLine("            .challenges_passed = 0,");
+        try self.builder.writeLine("            .challenges_failed = 0,");
+        try self.builder.writeLine("            .is_active = stake_wei >= self.config.min_stake_wei,");
+        try self.builder.writeLine("        };");
+        try self.builder.writeLine("        self.node_count += 1;");
+        try self.builder.writeLine("        return id;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Mint reward for passing PoS challenge");
+        try self.builder.writeLine("    pub fn mintReward(self: *RewardEngine, node_id: u16) bool {");
+        try self.builder.writeLine("        if (node_id >= self.node_count) return false;");
+        try self.builder.writeLine("        if (!self.balances[node_id].is_active) return false;");
+        try self.builder.writeLine("        if (self.balances[node_id].balance_wei < self.config.min_stake_wei) {");
+        try self.builder.writeLine("            self.balances[node_id].is_active = false;");
+        try self.builder.writeLine("            return false;");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        self.balances[node_id].balance_wei += self.config.base_reward_wei;");
+        try self.builder.writeLine("        self.balances[node_id].total_earned_wei += self.config.base_reward_wei;");
+        try self.builder.writeLine("        self.balances[node_id].challenges_passed += 1;");
+        try self.builder.writeLine("        self.total_minted += self.config.base_reward_wei;");
+        try self.builder.writeLine("        self.total_challenges += 1;");
+        try self.builder.writeLine("        return true;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Slash node for failing PoS challenge");
+        try self.builder.writeLine("    pub fn slashNode(self: *RewardEngine, node_id: u16) u64 {");
+        try self.builder.writeLine("        if (node_id >= self.node_count) return 0;");
+        try self.builder.writeLine("        const slash_amount = self.balances[node_id].balance_wei * self.config.slash_rate_pct / 100;");
+        try self.builder.writeLine("        self.balances[node_id].balance_wei -= slash_amount;");
+        try self.builder.writeLine("        self.balances[node_id].total_slashed_wei += slash_amount;");
+        try self.builder.writeLine("        self.balances[node_id].challenges_failed += 1;");
+        try self.builder.writeLine("        self.total_slashed += slash_amount;");
+        try self.builder.writeLine("        self.total_challenges += 1;");
+        try self.builder.writeLine("        // Deactivate if below min stake");
+        try self.builder.writeLine("        if (self.balances[node_id].balance_wei < self.config.min_stake_wei) {");
+        try self.builder.writeLine("            self.balances[node_id].is_active = false;");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        return slash_amount;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Get balance for a node");
+        try self.builder.writeLine("    pub fn getBalance(self: *const RewardEngine, node_id: u16) u64 {");
+        try self.builder.writeLine("        if (node_id >= self.node_count) return 0;");
+        try self.builder.writeLine("        return self.balances[node_id].balance_wei;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Compute epoch summary");
+        try self.builder.writeLine("    pub fn epochSummary(self: *const RewardEngine) EpochSummary {");
+        try self.builder.writeLine("        var active: u16 = 0;");
+        try self.builder.writeLine("        for (0..self.node_count) |i| {");
+        try self.builder.writeLine("            if (self.balances[i].is_active) active += 1;");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        return .{");
+        try self.builder.writeLine("            .total_minted_wei = self.total_minted,");
+        try self.builder.writeLine("            .total_slashed_wei = self.total_slashed,");
+        try self.builder.writeLine("            .active_earners = active,");
+        try self.builder.writeLine("            .epoch_challenges = self.total_challenges,");
+        try self.builder.writeLine("        };");
         try self.builder.writeLine("    }");
         try self.builder.writeLine("};");
         try self.builder.writeLine("");
@@ -2843,6 +2980,23 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("return true; // Real logic is in swarm test blocks");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // LIVE REWARDS BEHAVIORS: $TRI mint/slash on PoS results
+        // ═══════════════════════════════════════════════════════════════════
+        if (std_mem.startsWith(u8, b.name, "rewards")) {
+            try self.emitRewardsStruct();
+            // Emit marker function for each rewards behavior
+            try self.builder.writeFmt("/// {s}\n", .{b.given});
+            try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+            try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+            try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
+            self.builder.incIndent();
+            try self.builder.writeLine("return true; // Real logic is in rewards test blocks");
             self.builder.decIndent();
             try self.builder.writeLine("}");
             return true;

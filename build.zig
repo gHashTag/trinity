@@ -1446,4 +1446,20 @@ pub fn build(b: *std.Build) void {
     const gen_swarm_step = b.step("test-swarm", "Test Live Swarm bootstrap and node lifecycle");
     gen_swarm_step.dependOn(&run_gen_swarm_tests.step);
     test_step.dependOn(&run_gen_swarm_tests.step);
+
+    // Generated Live Rewards tests ($TRI mint/slash on PoS results)
+    const gen_rewards_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/rewards.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_rewards_tests = b.addRunArtifact(gen_rewards_tests);
+    const gen_rewards_step = b.step("test-rewards", "Test $TRI live rewards mint/slash economics");
+    gen_rewards_step.dependOn(&run_gen_rewards_tests.step);
+    test_step.dependOn(&run_gen_rewards_tests.step);
 }
