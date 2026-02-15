@@ -195,6 +195,11 @@ pub const ChainMessageType = enum {
     PropertyTestUpdate,
     InvariantCheckEvent,
     ProofGenerateEvent,
+        // v2.23: Swarm 100M + Community 50M
+        Swarm100MEvent,
+        Community50MUpdate,
+        EarningMoonshotEvent,
+        GossipV3Event,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -255,7 +260,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 240; // v2.22: was 232, +8 for Formal Verification v1.0
+pub const MAX_QUARK_RECORDS = 248; // v2.23: was 240, +8 for Swarm 100M + Community 50M
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -497,6 +502,16 @@ pub const QuarkType = enum(u8) {
         spec_validate, // 206 — Spec validate record
         formal_anchor, // 207 — Formal anchor record
 
+        // v2.23: Swarm 100M + Community 50M (u8: 216/256 used)
+        swarm_100m, // 208 — Swarm 100M record
+        community_50m, // 209 — Community 50M record
+        earning_moonshot, // 210 — Earning moonshot record
+        gossip_v3, // 211 — Gossip v3 record
+        swarm_health_100m, // 212 — Swarm health 100M record
+        earning_distribute, // 213 — Earning distribute record
+        community_govern, // 214 — Community govern record
+        swarm_100m_anchor, // 215 — Swarm 100M anchor record
+
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
             .input_capture => "INPUT_CAP",
@@ -722,6 +737,15 @@ pub const QuarkType = enum(u8) {
             .model_check => "MDL_CHK",
             .spec_validate => "SPC_VLD",
             .formal_anchor => "FRM_ACH",
+                // v2.23: Swarm 100M + Community 50M labels
+                .swarm_100m => "SWM_100M",
+                .community_50m => "COM_50M",
+                .earning_moonshot => "ERN_MSH",
+                .gossip_v3 => "GSP_V3",
+                .swarm_health_100m => "SWM_HLT",
+                .earning_distribute => "ERN_DST",
+                .community_govern => "COM_GOV",
+                .swarm_100m_anchor => "SWM_ACH",
         };
     }
 
@@ -1158,6 +1182,23 @@ pub const QuarkType = enum(u8) {
     pub fn isProofGenerateQuark(self: QuarkType) bool {
         return self == .proof_generate or self == .spec_validate;
     }
+
+        // v2.23: Swarm 100M + Community 50M classifiers
+        pub fn isSwarm100MQuark(self: QuarkType) bool {
+            return self == .swarm_100m or self == .swarm_100m_anchor;
+        }
+
+        pub fn isCommunity50MQuark(self: QuarkType) bool {
+            return self == .community_50m or self == .community_govern;
+        }
+
+        pub fn isEarningMoonshotQuark(self: QuarkType) bool {
+            return self == .earning_moonshot or self == .earning_distribute;
+        }
+
+        pub fn isGossipV3Quark(self: QuarkType) bool {
+            return self == .gossip_v3 or self == .swarm_health_100m;
+        }
 };
 
 pub const QuarkRecord = struct {
@@ -1574,6 +1615,14 @@ pub const PROOF_GENERATION_TIMEOUT_US: i64 = 30_000_000;
 pub const MODEL_CHECK_MAX_STATES: u32 = 1_000_000;
 pub const THEOREM_PROOF_DEPTH: u16 = 64;
 pub const FORMAL_SPEC_VERSION: u16 = 1;
+
+// v2.23: Swarm 100M + Community 50M constants
+pub const SWARM_100M_TARGET: u64 = 100_000_000;
+pub const COMMUNITY_50M_TARGET: u64 = 50_000_000;
+pub const EARNING_BOOST_UTRI_PER_HOUR: u64 = 50_000;
+pub const GOSSIP_V3_FANOUT: u16 = 128;
+pub const SWARM_100M_SYNC_INTERVAL_US: i64 = 500_000;
+pub const MAX_EARNING_NODES: u32 = 100_000_000;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2200,6 +2249,39 @@ pub const ProofGenerateState = struct {
     proof_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.23: Swarm 100M + Community 50M types
+pub const Swarm100MState = struct {
+    swarm_nodes: u64 = 0,
+    active_nodes: u64 = 0,
+    gossip_rounds: u32 = 0,
+    last_swarm_us: i64 = 0,
+    swarm_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const Community50MState = struct {
+    community_members: u64 = 0,
+    active_members: u64 = 0,
+    onboarding_rate: u32 = 0,
+    last_community_us: i64 = 0,
+    community_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EarningMoonshotState = struct {
+    earning_nodes: u64 = 0,
+    total_earned_utri: u64 = 0,
+    earning_rate_utri: u64 = 0,
+    last_earning_us: i64 = 0,
+    earning_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const GossipV3State = struct {
+    gossip_messages: u64 = 0,
+    fanout: u16 = 0,
+    propagation_rounds: u32 = 0,
+    last_gossip_us: i64 = 0,
+    gossip_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2318,10 +2400,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 26; // v2.22: bumped from 25
+pub const QUARK_EXPORT_VERSION: u16 = 27; // v2.23: bumped from 26
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 122; // v2.22: was 118, +4 for formal_verify
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 126; // v2.23: was 122, +4 for swarm_100m
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -2566,6 +2648,12 @@ pub const GoldenChainAgent = struct {
     invariant_check_state: InvariantCheckState,
     proof_generate_state: ProofGenerateState,
     formal_verify_active: bool,
+        // v2.23: Swarm 100M + Community 50M
+        swarm_100m_state: Swarm100MState,
+        community_50m_state: Community50MState,
+        earning_moonshot_state: EarningMoonshotState,
+        gossip_v3_state: GossipV3State,
+        swarm_100m_active: bool,
 
     const Self = @This();
 
@@ -2755,6 +2843,12 @@ pub const GoldenChainAgent = struct {
             .invariant_check_state = .{},
             .proof_generate_state = .{},
             .formal_verify_active = false,
+                // v2.23: Swarm 100M + Community 50M
+                .swarm_100m_state = .{},
+                .community_50m_state = .{},
+                .earning_moonshot_state = .{},
+                .gossip_v3_state = .{},
+                .swarm_100m_active = false,
         };
     }
 
@@ -3643,4 +3737,36 @@ pub const GoldenChainAgent = struct {
         if (self.invariant_check_state.checks_performed == 0) return false;
         return true;
     }
+
+        // v2.23: Swarm 100M + Community 50M methods
+        fn scaleSwarm100M(self: *Self) void {
+            self.swarm_100m_state.swarm_nodes += 1;
+            self.swarm_100m_state.active_nodes += 1;
+            self.swarm_100m_state.gossip_rounds += 1;
+        }
+
+        fn growCommunity50M(self: *Self) void {
+            self.community_50m_state.community_members += 1;
+            self.community_50m_state.active_members += 1;
+            self.community_50m_state.onboarding_rate += 1;
+        }
+
+        fn boostEarning(self: *Self) void {
+            self.earning_moonshot_state.earning_nodes += 1;
+            self.earning_moonshot_state.total_earned_utri += EARNING_BOOST_UTRI_PER_HOUR;
+            self.earning_moonshot_state.earning_rate_utri = EARNING_BOOST_UTRI_PER_HOUR;
+        }
+
+        fn propagateGossipV3(self: *Self) void {
+            self.gossip_v3_state.gossip_messages += 1;
+            self.gossip_v3_state.fanout = GOSSIP_V3_FANOUT;
+            self.gossip_v3_state.propagation_rounds += 1;
+        }
+
+        fn swarm100MVerify(self: *const Self) bool {
+            if (self.swarm_100m_state.swarm_nodes == 0) return false;
+            if (self.community_50m_state.community_members == 0) return false;
+            if (self.earning_moonshot_state.earning_nodes == 0) return false;
+            return true;
+        }
 };
