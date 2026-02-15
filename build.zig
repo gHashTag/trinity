@@ -1382,4 +1382,20 @@ pub fn build(b: *std.Build) void {
     const netpipeline_step = b.step("test-network-pipeline", "Test TCP fault-tolerant pipeline (RS + network)");
     netpipeline_step.dependOn(&run_netpipeline_tests.step);
     test_step.dependOn(&run_netpipeline_tests.step);
+
+    // Generated discovery tests (from specs/storage/discovery.vibee)
+    const discovery_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/discovery.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_discovery_tests = b.addRunArtifact(discovery_tests);
+    const discovery_step = b.step("test-discovery", "Test peer discovery and self-healing recovery");
+    discovery_step.dependOn(&run_discovery_tests.step);
+    test_step.dependOn(&run_discovery_tests.step);
 }

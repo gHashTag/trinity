@@ -29,6 +29,7 @@ pub const ZigCodeGen = struct {
     shard_mgr_emitted: bool,
     network_emitted: bool,
     erasure_emitted: bool,
+    discovery_emitted: bool,
 
     const Self = @This();
 
@@ -39,6 +40,7 @@ pub const ZigCodeGen = struct {
             .shard_mgr_emitted = false,
             .network_emitted = false,
             .erasure_emitted = false,
+            .discovery_emitted = false,
         };
     }
 
@@ -272,6 +274,128 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("            }");
         try self.builder.writeLine("            output[oi] = val;");
         try self.builder.writeLine("        }");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+    }
+
+    /// Emit PeerRegistry + ShardManifest structs (shared by discovery modules)
+    fn emitDiscoveryStructs(self: *Self) !void {
+        if (self.discovery_emitted) return;
+        self.discovery_emitted = true;
+        try self.builder.writeLine("");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("// PEER DISCOVERY + SELF-HEALING — Dynamic Swarm Recovery");
+        try self.builder.writeLine("// PeerRegistry: in-memory peer table with alive/dead status.");
+        try self.builder.writeLine("// ShardManifest: maps data groups → (shard_index, peer_id) pairs.");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const PeerRegistry = struct {");
+        try self.builder.writeLine("    const MAX_PEERS = 8;");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    ports: [MAX_PEERS]u16,");
+        try self.builder.writeLine("    alive: [MAX_PEERS]bool,");
+        try self.builder.writeLine("    shard_counts: [MAX_PEERS]u16,");
+        try self.builder.writeLine("    count: u8,");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn init() PeerRegistry {");
+        try self.builder.writeLine("        return .{");
+        try self.builder.writeLine("            .ports = [_]u16{0} ** MAX_PEERS,");
+        try self.builder.writeLine("            .alive = [_]bool{false} ** MAX_PEERS,");
+        try self.builder.writeLine("            .shard_counts = [_]u16{0} ** MAX_PEERS,");
+        try self.builder.writeLine("            .count = 0,");
+        try self.builder.writeLine("        };");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Register a new peer, returns peer_id (index)");
+        try self.builder.writeLine("    pub fn registerPeer(self: *PeerRegistry, port: u16) !u8 {");
+        try self.builder.writeLine("        if (self.count >= MAX_PEERS) return error.RegistryFull;");
+        try self.builder.writeLine("        const id = self.count;");
+        try self.builder.writeLine("        self.ports[id] = port;");
+        try self.builder.writeLine("        self.alive[id] = true;");
+        try self.builder.writeLine("        self.shard_counts[id] = 0;");
+        try self.builder.writeLine("        self.count += 1;");
+        try self.builder.writeLine("        return id;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Mark a peer as dead (failed)");
+        try self.builder.writeLine("    pub fn markDead(self: *PeerRegistry, peer_id: u8) void {");
+        try self.builder.writeLine("        if (peer_id < self.count) self.alive[peer_id] = false;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Check if peer is alive");
+        try self.builder.writeLine("    pub fn isAlive(self: *const PeerRegistry, peer_id: u8) bool {");
+        try self.builder.writeLine("        if (peer_id >= self.count) return false;");
+        try self.builder.writeLine("        return self.alive[peer_id];");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Count alive peers");
+        try self.builder.writeLine("    pub fn alivePeers(self: *const PeerRegistry) u8 {");
+        try self.builder.writeLine("        var c: u8 = 0;");
+        try self.builder.writeLine("        var i: u8 = 0;");
+        try self.builder.writeLine("        while (i < self.count) : (i += 1) {");
+        try self.builder.writeLine("            if (self.alive[i]) c += 1;");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        return c;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Get port for a peer");
+        try self.builder.writeLine("    pub fn getPort(self: *const PeerRegistry, peer_id: u8) u16 {");
+        try self.builder.writeLine("        return self.ports[peer_id];");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Increment shard count for a peer");
+        try self.builder.writeLine("    pub fn incShards(self: *PeerRegistry, peer_id: u8) void {");
+        try self.builder.writeLine("        if (peer_id < self.count) self.shard_counts[peer_id] += 1;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const ShardManifest = struct {");
+        try self.builder.writeLine("    const MAX_GROUPS = 16;");
+        try self.builder.writeLine("    const MAX_ENTRIES = 8;");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Each entry: (shard_index, peer_id)");
+        try self.builder.writeLine("    shard_idx: [MAX_GROUPS][MAX_ENTRIES]u8,");
+        try self.builder.writeLine("    peer_ids: [MAX_GROUPS][MAX_ENTRIES]u8,");
+        try self.builder.writeLine("    entry_counts: [MAX_GROUPS]u8,");
+        try self.builder.writeLine("    group_count: u8,");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn init() ShardManifest {");
+        try self.builder.writeLine("        return .{");
+        try self.builder.writeLine("            .shard_idx = [_][MAX_ENTRIES]u8{[_]u8{0} ** MAX_ENTRIES} ** MAX_GROUPS,");
+        try self.builder.writeLine("            .peer_ids = [_][MAX_ENTRIES]u8{[_]u8{0} ** MAX_ENTRIES} ** MAX_GROUPS,");
+        try self.builder.writeLine("            .entry_counts = [_]u8{0} ** MAX_GROUPS,");
+        try self.builder.writeLine("            .group_count = 0,");
+        try self.builder.writeLine("        };");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Record that shard_index of data group is held by peer_id");
+        try self.builder.writeLine("    pub fn recordShard(self: *ShardManifest, group: u8, shard_index: u8, peer_id: u8) void {");
+        try self.builder.writeLine("        if (group >= MAX_GROUPS) return;");
+        try self.builder.writeLine("        const ec = self.entry_counts[group];");
+        try self.builder.writeLine("        if (ec >= MAX_ENTRIES) return;");
+        try self.builder.writeLine("        self.shard_idx[group][ec] = shard_index;");
+        try self.builder.writeLine("        self.peer_ids[group][ec] = peer_id;");
+        try self.builder.writeLine("        self.entry_counts[group] = ec + 1;");
+        try self.builder.writeLine("        if (group >= self.group_count) self.group_count = group + 1;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Query surviving shards for a group: returns count of alive entries");
+        try self.builder.writeLine("    /// Writes surviving shard indices to out_shard_idx and peer ids to out_peer_ids");
+        try self.builder.writeLine("    pub fn survivorsForGroup(self: *const ShardManifest, group: u8, registry: *const PeerRegistry, out_shard_idx: []u8, out_peer_ids: []u8) u8 {");
+        try self.builder.writeLine("        if (group >= MAX_GROUPS) return 0;");
+        try self.builder.writeLine("        var sc: u8 = 0;");
+        try self.builder.writeLine("        var i: u8 = 0;");
+        try self.builder.writeLine("        while (i < self.entry_counts[group]) : (i += 1) {");
+        try self.builder.writeLine("            if (registry.isAlive(self.peer_ids[group][i])) {");
+        try self.builder.writeLine("                if (sc < out_shard_idx.len) {");
+        try self.builder.writeLine("                    out_shard_idx[sc] = self.shard_idx[group][i];");
+        try self.builder.writeLine("                    out_peer_ids[sc] = self.peer_ids[group][i];");
+        try self.builder.writeLine("                    sc += 1;");
+        try self.builder.writeLine("                }");
+        try self.builder.writeLine("            }");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        return sc;");
         try self.builder.writeLine("    }");
         try self.builder.writeLine("};");
         try self.builder.writeLine("");
@@ -2170,6 +2294,26 @@ pub const ZigCodeGen = struct {
         // Reuses ReedSolomon struct + generates pipeline marker functions.
         // Real pipeline logic lives in generated test blocks.
         // ═══════════════════════════════════════════════════════════════════
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PEER DISCOVERY + SELF-HEALING: dynamic swarm recovery
+        // PeerRegistry + ShardManifest + RS for auto-recovery after failures.
+        // ═══════════════════════════════════════════════════════════════════
+
+        if (std_mem.startsWith(u8, b.name, "discovery")) {
+            try self.emitDiscoveryStructs();
+            try self.emitReedSolomonStruct();
+            // Emit marker function for each discovery behavior
+            try self.builder.writeFmt("/// {s}\n", .{b.given});
+            try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+            try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+            try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
+            self.builder.incIndent();
+            try self.builder.writeLine("return true; // Real logic is in discovery test blocks");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
 
         // ═══════════════════════════════════════════════════════════════════
         // NETWORK PIPELINE: TCP fault-tolerant distributed storage
