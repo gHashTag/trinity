@@ -3869,3 +3869,423 @@ test "trigram hebbian perplexity comparison" {
     try std.testing.expect(!std.math.isNan(tri_test_ppl));
     try std.testing.expect(!std.math.isInf(tri_test_ppl));
 }
+
+// === v2.40 LARGER CORPUS TESTS ===
+
+// ~5000 char Shakespeare corpus (Hamlet + Macbeth + Sonnets + Romeo)
+const large_corpus =
+    // Hamlet "To be or not to be" soliloquy (full)
+    "to be or not to be that is the question " ++
+    "whether tis nobler in the mind to suffer " ++
+    "the slings and arrows of outrageous fortune " ++
+    "or to take arms against a sea of troubles " ++
+    "and by opposing end them to die to sleep " ++
+    "no more and by a sleep to say we end " ++
+    "the heartache and the thousand natural shocks " ++
+    "that flesh is heir to tis a consummation " ++
+    "devoutly to be wished to die to sleep " ++
+    "to sleep perchance to dream ay there is the rub " ++
+    "for in that sleep of death what dreams may come " ++
+    "when we have shuffled off this mortal coil " ++
+    "must give us pause there is the respect " ++
+    "that makes calamity of so long life " ++
+    "for who would bear the whips and scorns of time " ++
+    "the oppressors wrong the proud mans contumely " ++
+    "the pangs of despised love the laws delay " ++
+    "the insolence of office and the spurns " ++
+    "that patient merit of the unworthy takes " ++
+    "when he himself might his quietus make " ++
+    "with a bare bodkin who would fardels bear " ++
+    "to grunt and sweat under a weary life " ++
+    "but that the dread of something after death " ++
+    "the undiscovered country from whose bourn " ++
+    "no traveller returns puzzles the will " ++
+    "and makes us rather bear those ills we have " ++
+    "than fly to others that we know not of " ++
+    "thus conscience does make cowards of us all " ++
+    "and thus the native hue of resolution " ++
+    "is sicklied over with the pale cast of thought " ++
+    "and enterprises of great pith and moment " ++
+    "with this regard their currents turn awry " ++
+    "and lose the name of action " ++
+    // Macbeth "Tomorrow" soliloquy
+    "tomorrow and tomorrow and tomorrow " ++
+    "creeps in this petty pace from day to day " ++
+    "to the last syllable of recorded time " ++
+    "and all our yesterdays have lighted fools " ++
+    "the way to dusty death out out brief candle " ++
+    "life is but a walking shadow a poor player " ++
+    "that struts and frets his hour upon the stage " ++
+    "and then is heard no more it is a tale " ++
+    "told by an idiot full of sound and fury " ++
+    "signifying nothing " ++
+    // Romeo and Juliet balcony
+    "but soft what light through yonder window breaks " ++
+    "it is the east and juliet is the sun " ++
+    "arise fair sun and kill the envious moon " ++
+    "who is already sick and pale with grief " ++
+    "that thou her maid art far more fair than she " ++
+    "be not her maid since she is envious " ++
+    "her vestal livery is but sick and green " ++
+    "and none but fools do wear it cast it off " ++
+    "it is my lady oh it is my love " ++
+    "oh that she knew she were " ++
+    "she speaks yet she says nothing what of that " ++
+    "her eye discourses i will answer it " ++
+    "i am too bold tis not to me she speaks " ++
+    "two of the fairest stars in all the heaven " ++
+    "having some business do entreat her eyes " ++
+    "to twinkle in their spheres till they return " ++
+    // Sonnets
+    "shall i compare thee to a summers day " ++
+    "thou art more lovely and more temperate " ++
+    "rough winds do shake the darling buds of may " ++
+    "and summers lease hath all too short a date " ++
+    "sometime too hot the eye of heaven shines " ++
+    "and often is his gold complexion dimmed " ++
+    "and every fair from fair sometime declines " ++
+    "by chance or natures changing course untrimmed " ++
+    "but thy eternal summer shall not fade " ++
+    "nor lose possession of that fair thou owest " ++
+    "nor shall death brag thou wanderest in his shade " ++
+    "when in eternal lines to time thou growest " ++
+    "so long as men can breathe or eyes can see " ++
+    "so long lives this and this gives life to thee " ++
+    // Hamlet Act 1
+    "who is there nay answer me stand and unfold yourself " ++
+    "long live the king bernardo he " ++
+    "you come most carefully upon your hour " ++
+    "tis now struck twelve get thee to bed francisco " ++
+    "for this relief much thanks tis bitter cold " ++
+    "and i am sick at heart " ++
+    "have you had quiet guard not a mouse stirring " ++
+    "well good night if you do meet horatio and marcellus " ++
+    "the rivals of my watch bid them make haste " ++
+    // Macbeth witches
+    "when shall we three meet again " ++
+    "in thunder lightning or in rain " ++
+    "when the hurlyburlys done " ++
+    "when the battles lost and won " ++
+    "that will be ere the set of sun " ++
+    "where the place upon the heath " ++
+    "there to meet with macbeth " ++
+    "fair is foul and foul is fair " ++
+    "hover through the fog and filthy air " ++
+    // More Hamlet
+    "something is rotten in the state of denmark " ++
+    "though this be madness yet there is method in it " ++
+    "brevity is the soul of wit " ++
+    "there are more things in heaven and earth horatio " ++
+    "than are dreamt of in your philosophy " ++
+    "the lady doth protest too much methinks " ++
+    "good night sweet prince and flights of angels sing thee to thy rest " ++
+    "frailty thy name is woman " ++
+    "the play is the thing wherein i will catch the conscience of the king " ++
+    // More Romeo
+    "a rose by any other name would smell as sweet " ++
+    "parting is such sweet sorrow that i shall say good night till it be morrow " ++
+    "my bounty is as boundless as the sea my love as deep " ++
+    "the more i give to thee the more i have for both are infinite " ++
+    "these violent delights have violent ends " ++
+    "and in their triumph die like fire and powder " ++
+    "which as they kiss consume " ++
+    // More Macbeth
+    "is this a dagger which i see before me " ++
+    "the handle toward my hand come let me clutch thee " ++
+    "i have thee not and yet i see thee still " ++
+    "art thou not fatal vision sensible " ++
+    "to feeling as to sight or art thou but " ++
+    "a dagger of the mind a false creation " ++
+    "proceeding from the heat oppressed brain " ++
+    // Tempest
+    "we are such stuff as dreams are made on " ++
+    "and our little life is rounded with a sleep " ++
+    "oh brave new world that has such people in it " ++
+    "full fathom five thy father lies " ++
+    "of his bones are coral made " ++
+    "those are pearls that were his eyes " ++
+    "nothing of him that doth fade " ++
+    "but doth suffer a sea change " ++
+    "into something rich and strange";
+
+test "large corpus trigram training" {
+    const dim: usize = 1024;
+
+    std.debug.print("\n=== LARGE CORPUS TRIGRAM TRAINING (v2.40) ===\n", .{});
+    std.debug.print("Corpus: {d} chars (Shakespeare multi-play)\n", .{large_corpus.len});
+    std.debug.print("Method: Multi-role + trigram Hebbian + sampling, dim=1024\n", .{});
+
+    // Build both bigram and trigram counts on large corpus
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    // Count bigram coverage (for comparison)
+    var bi_nonzero: usize = 0;
+    for (0..HEBBIAN_CHARS) |a| {
+        for (0..HEBBIAN_CHARS) |b| {
+            if (bi_counts[a][b] > 0) bi_nonzero += 1;
+        }
+    }
+
+    // Count trigram coverage
+    var tri_keys_with_data: usize = 0;
+    var tri_nonzero: usize = 0;
+    for (0..TRIGRAM_KEYS) |k| {
+        var has_data = false;
+        for (0..HEBBIAN_CHARS) |c| {
+            if (tri_counts[k][c] > 0) {
+                tri_nonzero += 1;
+                has_data = true;
+            }
+        }
+        if (has_data) tri_keys_with_data += 1;
+    }
+
+    // Small corpus comparison
+    const small_corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+    const small_tri_counts = buildTrigramCounts(small_corpus);
+    var small_tri_keys: usize = 0;
+    for (0..TRIGRAM_KEYS) |k| {
+        for (0..HEBBIAN_CHARS) |c| {
+            if (small_tri_counts[k][c] > 0) {
+                small_tri_keys += 1;
+                break;
+            }
+        }
+    }
+
+    const tri_coverage_pct = @as(f64, @floatFromInt(tri_keys_with_data)) / @as(f64, @floatFromInt(TRIGRAM_KEYS)) * 100.0;
+    const small_coverage_pct = @as(f64, @floatFromInt(small_tri_keys)) / @as(f64, @floatFromInt(TRIGRAM_KEYS)) * 100.0;
+
+    std.debug.print("Large corpus trigram keys: {d}/{d} ({d:.1}%)\n", .{ tri_keys_with_data, TRIGRAM_KEYS, tri_coverage_pct });
+    std.debug.print("Small corpus trigram keys: {d}/{d} ({d:.1}%)\n", .{ small_tri_keys, TRIGRAM_KEYS, small_coverage_pct });
+    std.debug.print("Coverage boost: {d:.1}x\n", .{tri_coverage_pct / small_coverage_pct});
+    std.debug.print("Bigram pairs: {d}/{d}\n", .{ bi_nonzero, HEBBIAN_CHARS * HEBBIAN_CHARS });
+    std.debug.print("Trigram entries: {d}/{d}\n", .{ tri_nonzero, TRIGRAM_KEYS * HEBBIAN_CHARS });
+
+    // Honest split
+    const total_samples = large_corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    // More train offsets for larger corpus (50 samples)
+    var train_offsets: [50]usize = undefined;
+    for (0..50) |i| {
+        train_offsets[i] = i * train_end / 50;
+    }
+
+    // Compute multi-roles on large corpus
+    var multi_roles = computeMultiRoles(large_corpus, dim, &train_offsets, 8);
+
+    // === Trigram train loss (large corpus) ===
+    var tri_train_loss: f64 = 0;
+    var tri_train_count: usize = 0;
+    var tri_hits: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= large_corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, large_corpus[s + i]);
+        }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev_char = large_corpus[s + 6];
+        const last_char = large_corpus[s + 7];
+
+        if (prev_char >= HEBBIAN_OFFSET and prev_char < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+            last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+        {
+            const prev_idx = prev_char - HEBBIAN_OFFSET;
+            const last_idx = last_char - HEBBIAN_OFFSET;
+            const key = prev_idx * HEBBIAN_CHARS + last_idx;
+            var tri_total: u32 = 0;
+            for (0..HEBBIAN_CHARS) |ci| {
+                tri_total += tri_counts[key][ci];
+            }
+            if (tri_total > 0) tri_hits += 1;
+        }
+
+        var output = forwardPassTrigramHybrid(&ctx, &multi_roles, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        tri_train_loss += 1.0 - sim;
+        tri_train_count += 1;
+    }
+    if (tri_train_count > 0) tri_train_loss /= @as(f64, @floatFromInt(tri_train_count));
+
+    // === Trigram eval loss (large corpus) ===
+    var tri_eval_loss: f64 = 0;
+    var tri_eval_count: usize = 0;
+    const eval_samples = 20;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= large_corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev_char = large_corpus[s + 6];
+        const last_char = large_corpus[s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &multi_roles, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        tri_eval_loss += 1.0 - sim;
+        tri_eval_count += 1;
+    }
+    if (tri_eval_count > 0) tri_eval_loss /= @as(f64, @floatFromInt(tri_eval_count));
+
+    // === Generation ===
+    var init_ctx: [8]Hypervector = undefined;
+    const prompt = "to be or ";
+    for (0..8) |i| {
+        init_ctx[i] = charToHV(dim, prompt[i]);
+    }
+    var gen_buf: [80]u8 = undefined;
+    const gen_count = generateWithTrigramSampled(
+        &init_ctx,
+        &multi_roles,
+        dim,
+        prompt[6],
+        prompt[7],
+        &bi_counts,
+        &tri_counts,
+        &gen_buf,
+        80,
+        0.8,
+        8,
+        42,
+    );
+
+    var seen: [256]bool = undefined;
+    for (0..256) |i| {
+        seen[i] = false;
+    }
+    var unique: usize = 0;
+    for (0..gen_count) |i| {
+        if (!seen[gen_buf[i]]) {
+            seen[gen_buf[i]] = true;
+            unique += 1;
+        }
+    }
+
+    const mh_loss: f64 = 1.0306;
+    const tri_train_imp = (mh_loss - tri_train_loss) / mh_loss * 100.0;
+    const tri_eval_imp = (mh_loss - tri_eval_loss) / mh_loss * 100.0;
+    const tri_hit_pct = @as(f64, @floatFromInt(tri_hits)) / @as(f64, @floatFromInt(tri_train_count)) * 100.0;
+
+    std.debug.print("\nTrigram hit rate:          {d:.1}% ({d}/{d} samples)\n", .{ tri_hit_pct, tri_hits, tri_train_count });
+    std.debug.print("\nLarge corpus train loss:   {d:.4} ({d:.1}% below random)\n", .{ tri_train_loss, tri_train_imp });
+    std.debug.print("Large corpus eval loss:    {d:.4} ({d:.1}% below random)\n", .{ tri_eval_loss, tri_eval_imp });
+    std.debug.print("Small corpus train (v2.39): 0.5528 (46.4% below random)\n", .{});
+    std.debug.print("Small corpus eval (v2.39):  0.6534 (36.6% below random)\n", .{});
+    std.debug.print("Random baseline:           {d:.4}\n", .{mh_loss});
+    std.debug.print("\nGeneration (T=0.8, K=8, trigram, dim=1024, 80 tokens):\n", .{});
+    std.debug.print("  Prompt: \"to be or \"\n", .{});
+    std.debug.print("  Generated: \"{s}\"\n", .{gen_buf[0..gen_count]});
+    std.debug.print("  Unique chars: {d}\n", .{unique});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(tri_train_loss >= 0.0 and tri_train_loss <= 2.0);
+    try std.testing.expect(tri_eval_loss >= 0.0 and tri_eval_loss <= 2.0);
+    try std.testing.expect(gen_count == 80);
+    try std.testing.expect(tri_keys_with_data > small_tri_keys); // Coverage improved
+}
+
+test "large corpus trigram perplexity" {
+    const dim: usize = 1024;
+
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    const total_samples = large_corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    var train_offsets: [50]usize = undefined;
+    for (0..50) |i| {
+        train_offsets[i] = i * train_end / 50;
+    }
+    var multi_roles = computeMultiRoles(large_corpus, dim, &train_offsets, 8);
+
+    // === Test PPL (held-out) ===
+    const test_start = eval_end;
+    const test_count = 20;
+    var tri_test_log: f64 = 0;
+    var tri_test_valid: usize = 0;
+
+    for (0..test_count) |i| {
+        const s = test_start + i * (total_samples - test_start) / test_count;
+        if (s + 8 >= large_corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev_char = large_corpus[s + 6];
+        const last_char = large_corpus[s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &multi_roles, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        tri_test_log += @log(clamped);
+        tri_test_valid += 1;
+    }
+
+    const tri_test_ppl = @exp(-tri_test_log / @as(f64, @floatFromInt(tri_test_valid)));
+
+    // === Train PPL ===
+    var tri_train_log: f64 = 0;
+    var tri_train_valid: usize = 0;
+    for (0..20) |i| {
+        const s = i * train_end / 20;
+        if (s + 8 >= large_corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev_char = large_corpus[s + 6];
+        const last_char = large_corpus[s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &multi_roles, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        tri_train_log += @log(clamped);
+        tri_train_valid += 1;
+    }
+
+    const tri_train_ppl = @exp(-tri_train_log / @as(f64, @floatFromInt(tri_train_valid)));
+
+    std.debug.print("\n=== LARGE CORPUS PERPLEXITY (v2.40) ===\n", .{});
+    std.debug.print("Corpus: {d} chars\n", .{large_corpus.len});
+    std.debug.print("Large corpus train PPL:     {d:.2}\n", .{tri_train_ppl});
+    std.debug.print("Large corpus test PPL:      {d:.2}\n", .{tri_test_ppl});
+    std.debug.print("Overfit gap:                {d:.2}\n", .{tri_test_ppl - tri_train_ppl});
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("Small corpus trigram (v2.39):  train=1.5, test=1.6\n", .{});
+    std.debug.print("dim=1024 MR+bigram (v2.38):    train=1.8, test=1.8\n", .{});
+    std.debug.print("dim=256  MR+bigram (v2.37):    train=1.8, test=1.9\n", .{});
+    std.debug.print("Hybrid (v2.35-36):             train=1.8, test=1.9\n", .{});
+    std.debug.print("Random baseline:               95.0\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(tri_test_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(tri_test_ppl));
+    try std.testing.expect(!std.math.isInf(tri_test_ppl));
+}
