@@ -1,0 +1,286 @@
+name: hdc_execution_live
+version: "1.0.0"
+language: zig
+module: hdc_execution_live
+
+description: |
+  HDC Execution Live — Level 10A Ultimate: Real Corpus Ingestion + Live Forward.
+  Bridges the spec-to-execution gap by wiring real text ingestion directly
+  to vsa.zig primitives with corpus management, batch processing, and
+  incremental KV-cache warming across multi-pass training.
+
+  === REAL CORPUS INGESTION PIPELINE ===
+  This module handles the complete data path from raw text files to
+  trained hypervector representations:
+
+  1. CORPUS LOADER
+     Source options:
+       a. Inline constant (Shakespeare 10KB, zero dependencies)
+       b. File path (WikiText-2 at 100KB, WikiText-103 at 1MB+)
+       c. Stdin stream (piped text, unlimited size)
+     Processing:
+       read_bytes → validate_utf8 → strip_control_chars → normalize_whitespace
+     Output: clean Unicode text string
+
+  2. TOKENIZER (Character-Level)
+     Strategy: each Unicode codepoint = one token
+     Why char-level:
+       - No BPE/SentencePiece dependency
+       - Codebook grows dynamically (sdk.Codebook.encode auto-creates)
+       - Multilingual by default (any script supported)
+       - Vocab typically 60-200 chars for natural text
+     Process:
+       For each char c in text:
+         hv = codebook.encode(&[_]u8{c})    // sdk.Codebook.encode
+         // Auto-creates HV if first occurrence (Wyhash-seeded random)
+         // Returns cached HV if seen before
+     Memory: vocab_size * 52 bytes (packed D=256) ≈ 3-10 KB
+
+  3. SAMPLE CREATOR (Sliding Windows)
+     Context size: 8 tokens (configurable 4-32)
+     For each position i >= context_size in token stream:
+       context = tokens[i-ctx .. i-1]
+       target = tokens[i]
+       yield TrainSample(context, target, i)
+     Total samples ≈ corpus_length - context_size
+     Example: 10KB text → ~9,992 samples
+
+  4. CORPUS SPLITTER
+     Split ratios: 80% train / 10% eval / 10% test
+     Method: sequential split (no shuffle for reproducibility)
+     10KB corpus: 7,994 train / 999 eval / 999 test
+
+  5. BATCH ASSEMBLER
+     Batch size: 32 (configurable, odd preferred for clean majority)
+     Batches per epoch: ceil(train_size / batch_size) = 250 batches
+     Batch processing:
+       For each sample in batch:
+         error_hv = forwardAndComputeError(sample)
+       batch_error = bundleN(errors)  // majority vote across batch
+       updateRoles(batch_error)       // single update per batch
+
+  === FORWARD PASS ON REAL TOKENS (LIVE vsa.zig) ===
+  Input: context = ["T", "o", " ", "b", "e", " ", "o", "r"]
+  Target: " " (next character)
+
+  Step 1 — Embed (8 tokens):
+    T_hv = codebook.encode("T")     → HybridBigInt (D=256, 52 bytes packed)
+    o_hv = codebook.encode("o")     → HybridBigInt
+    ...
+    r_hv = codebook.encode("r")     → HybridBigInt
+    Total: 8 * codebook.encode = 8 * ~500 ns = 4,000 ns
+
+  Step 2 — Position encode:
+    T_pos = vsa.permute(&T_hv, 0)   → HybridBigInt (shifted 0)
+    o_pos = vsa.permute(&o_hv, 1)   → HybridBigInt (shifted 1)
+    ...
+    r_pos = vsa.permute(&r_hv, 7)   → HybridBigInt (shifted 7)
+    Total: 8 * vsa.permute = 8 * 2,138 ns = 17,104 ns
+
+  Step 3 — Attention (H=3 heads, greedy top-1):
+    For h in 0..3:
+      For q in 0..8:
+        Q = vsa.bind(&pos[q], &role_Q[h])          // 2,063 ns
+        best_score = -2.0
+        For k in 0..q+1:
+          K = vsa.bind(&pos[k], &role_K[h])         // 2,063 ns
+          score = vsa.cosineSimilarity(&Q, &K)       // 190 ns
+        V = vsa.bind(&pos[best_k], &role_V[h])      // 2,063 ns
+    Total attention: 3 * 8 * avg(4.5) * (2063+190) + 3*8*2063*2 = ~343,000 ns
+
+  Step 4 — Merge + Residual + FFN:
+    merge = vsa.bundle3(h0, h1, h2)                  // 2,332 ns
+    residual1 = vsa.bundle2(pos[7], merge)            // 2,332 ns
+    hidden = vsa.bind(residual1, ff1)                 // 2,063 ns
+    relu: for i in 0..256: if hidden.getTrit(i) < 0: setTrit(i, 0)  // ~500 ns
+    output = vsa.bind(hidden, ff2)                    // 2,063 ns
+    residual2 = vsa.bundle2(residual1, output)        // 2,332 ns
+    Total: ~11,622 ns
+
+  Step 5 — Decode:
+    predicted = codebook.decode(&residual2)            // vocab * 190 ns
+    For vocab=70: 70 * 190 = 13,300 ns
+
+  TOTAL per sample (ctx=8, H=3, L=1, vocab=70):
+    embed(4us) + pos(17us) + attn(343us) + merge/ffn(12us) + decode(13us)
+    = ~389 us/sample
+
+  === TRAINING UPDATE (PER SAMPLE) ===
+    target_hv = codebook.encode(target)               // 500 ns
+    neg = residual2.negate()                           // ~200 ns (element-wise)
+    error = vsa.bind(&target_hv, &neg)                // 2,063 ns
+    sparsify: for i: if rand() > 0.1: error.setTrit(i, 0)  // ~500 ns
+    update 11 roles: 11 * vsa.bundle2(role, error)    // 11 * 2,332 = 25,652 ns
+    Total update: ~28,915 ns ≈ 29 us
+
+  TOTAL per training sample: ~418 us (forward 389 + update 29)
+  Throughput: ~2,392 samples/sec
+  10 epochs * 7,994 samples = 79,940 total steps
+  Total training time: 79,940 * 418 us = ~33.4 seconds
+
+  === INCREMENTAL KV-CACHE (LIVE) ===
+  After training, for streaming inference:
+    First 8 tokens: full forward (389 us)
+    Each subsequent token: incremental forward with cached K,V
+    Incremental cost (ctx=8 cached, H=3):
+      embed + pos: 2,638 ns
+      Q: 3 * 2,063 = 6,189 ns
+      K*n + cosine*n: 3 * 8 * (2063+190) = 54,072 ns
+      V + bundle: 3 * (2063+2332) = 13,185 ns
+      merge+resid+ffn: 11,622 ns
+      decode: 13,300 ns
+      TOTAL: ~101,006 ns ≈ 0.10 ms
+    Throughput: ~9,900 tokens/sec (incremental, ctx=8)
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  CorpusSource:
+    enum:
+      - inline_shakespeare
+      - file_path
+      - stdin_stream
+
+  CorpusConfig:
+    fields:
+      source: CorpusSource
+      file_path: String
+      max_chars: usize
+      context_size: usize
+      train_ratio: Float
+      eval_ratio: Float
+      test_ratio: Float
+
+  CleanedCorpus:
+    fields:
+      text: String
+      char_count: u64
+      unique_chars: usize
+      encoding: String
+
+  TokenizedCorpus:
+    fields:
+      tokens: List<String>
+      vocab: List<String>
+      vocab_size: usize
+      token_count: u64
+
+  SampleBatch:
+    fields:
+      samples: List<TrainSample>
+      batch_id: usize
+      batch_size: usize
+
+  IngestStats:
+    fields:
+      chars_read: u64
+      chars_cleaned: u64
+      tokens_created: u64
+      vocab_size: usize
+      samples_created: u64
+      train_samples: u64
+      eval_samples: u64
+      test_samples: u64
+      ingest_time_ms: u64
+
+  LiveForwardTrace:
+    fields:
+      input_text: String
+      input_tokens: List<String>
+      embed_latency_ns: u64
+      position_latency_ns: u64
+      attention_latency_ns: u64
+      ffn_latency_ns: u64
+      decode_latency_ns: u64
+      total_latency_ns: u64
+      predicted_char: String
+      actual_char: String
+      confidence: Float
+      correct: Bool
+
+  TrainingProgress:
+    fields:
+      epoch: usize
+      batch: usize
+      samples_processed: u64
+      current_loss: Float
+      running_avg_loss: Float
+      accuracy_last_100: Float
+      elapsed_ms: u64
+      eta_ms: u64
+
+  HDCExecutionLive:
+    fields:
+      allocator: Allocator
+      config: CorpusConfig
+      codebook: Codebook
+      roles: E2ERoles
+      kv_cache: KVCacheState
+      ingest_stats: IngestStats
+
+behaviors:
+  - name: initLive
+    given: CorpusConfig with source, context_size, splits
+    when: Creates Codebook(allocator, 256), initializes roles, allocates cache
+    then: Live execution engine ready for corpus ingestion
+
+  - name: loadCorpus
+    given: CorpusSource (inline, file, or stdin)
+    when: Reads text, validates UTF-8, strips control chars, normalizes whitespace
+    then: Returns CleanedCorpus ready for tokenization
+
+  - name: loadInlineShakespeare
+    given: Compile-time embedded Shakespeare text (10KB)
+    when: Returns text as const []u8 with no runtime IO
+    then: Zero-dependency corpus available for training
+
+  - name: tokenizeCorpus
+    given: CleanedCorpus text
+    when: Iterates codepoints, calls codebook.encode for each unique char
+    then: Returns TokenizedCorpus with vocab auto-populated
+
+  - name: createSamples
+    given: TokenizedCorpus and context_size
+    when: Sliding window creates (context[0..n-1], target[n]) pairs
+    then: Returns sample list partitioned into train/eval/test
+
+  - name: assembleBatches
+    given: Training samples and batch_size
+    when: Groups samples into fixed-size batches (last batch may be smaller)
+    then: Returns list of SampleBatch for epoch processing
+
+  - name: forwardLive
+    given: Context tokens (real strings) and current roles
+    when: Calls codebook.encode, vsa.permute, vsa.bind, vsa.cosineSimilarity, vsa.bundle, codebook.decode
+    then: Returns LiveForwardTrace with prediction, confidence, per-stage latency
+
+  - name: trainBatchLive
+    given: SampleBatch and current roles
+    when: Forward each sample, compute errors, bundle errors (majority), update roles once
+    then: Returns batch loss and updated roles
+
+  - name: trainEpochLive
+    given: All training batches and current roles
+    when: Process batches sequentially, accumulate loss, report progress
+    then: Returns epoch loss and TrainingProgress
+
+  - name: evaluateLive
+    given: Eval/test samples and current roles (no updates)
+    when: Forward each sample, compute loss, perplexity, accuracy
+    then: Returns eval metrics for loss curve tracking
+
+  - name: ingestAndTrain
+    given: CorpusConfig and training parameters
+    when: load → tokenize → sample → batch → train loop with eval + early stop
+    then: Returns trained roles, loss curve, IngestStats
+
+  - name: streamFromTrained
+    given: Trained roles, seed text, max_tokens
+    when: Encode seed → incremental forward (KV-cache) → decode → yield → repeat
+    then: Returns generated text with per-token metrics
+
+  - name: profileExecution
+    given: Single forward pass on known input
+    when: Timestamps each vsa.zig call (bind, cosine, bundle, permute, encode, decode)
+    then: Returns per-operation latency matching benchmark data
