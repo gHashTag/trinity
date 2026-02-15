@@ -220,6 +220,11 @@ pub const ChainMessageType = enum {
             UniversalAdoptionUpdate,
             ExchangeV2Event,
             GlobalWalletEvent,
+            // v2.28: Swarm 10M + Community 5M
+            Swarm10MEvent,
+            Community5MUpdate,
+            EarningUltimateEvent,
+            NodeDiscovery10MEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -280,7 +285,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 280; // v2.27: was 272, +8 for Trinity Beyond v1.0
+pub const MAX_QUARK_RECORDS = 288; // v2.28: was 280, +8 for Swarm 10M + u8 FULL (256/256)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -569,6 +574,15 @@ pub const QuarkType = enum(u8) {
             exchange_scale, // 245
             wallet_universal, // 246
             beyond_anchor, // 247
+            // v2.28: Swarm 10M + u8 FULL (u8: 256/256 FULL)
+            swarm_10m, // 248
+            community_5m, // 249
+            earning_ultimate, // 250
+            node_discovery_10m, // 251
+            swarm_health_10m, // 252
+            swarm_failover_10m, // 253
+            dao_governance_10m, // 254
+            swarm_anchor_10m, // 255
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -840,6 +854,15 @@ pub const QuarkType = enum(u8) {
                     .exchange_scale => "EXC_SCL",
                     .wallet_universal => "WLT_UNI",
                     .beyond_anchor => "BYD_ACH",
+                    // v2.28
+                    .swarm_10m => "SWM_10M",
+                    .community_5m => "COM_5M",
+                    .earning_ultimate => "ERN_ULT",
+                    .node_discovery_10m => "NOD_10M",
+                    .swarm_health_10m => "SWH_10M",
+                    .swarm_failover_10m => "SWF_10M",
+                    .dao_governance_10m => "DAO_10M",
+                    .swarm_anchor_10m => "SWA_10M",
         };
     }
 
@@ -1358,6 +1381,23 @@ pub const QuarkType = enum(u8) {
             pub fn isGlobalWalletQuark(self: QuarkType) bool {
                 return self == .global_wallet or self == .wallet_universal;
             }
+
+            // v2.28 classifiers
+            pub fn isSwarm10MQuark(self: QuarkType) bool {
+                return self == .swarm_10m or self == .swarm_anchor_10m;
+            }
+
+            pub fn isCommunity5MQuark(self: QuarkType) bool {
+                return self == .community_5m or self == .dao_governance_10m;
+            }
+
+            pub fn isEarningUltimateQuark(self: QuarkType) bool {
+                return self == .earning_ultimate or self == .swarm_health_10m;
+            }
+
+            pub fn isNodeDiscovery10MQuark(self: QuarkType) bool {
+                return self == .node_discovery_10m or self == .swarm_failover_10m;
+            }
 };
 
 pub const QuarkRecord = struct {
@@ -1812,6 +1852,13 @@ pub const MAX_ETERNAL_NODES: u32 = 1_000_000_000; // 1B eternal nodes
             pub const GLOBAL_WALLET_TARGET: u64 = 5_000_000_000;
             pub const GLOBAL_EXCHANGE_VOLUME_INTERVAL_US: i64 = 15_000_000;
             pub const MAX_BEYOND_CHANNELS: u32 = 100_000;
+            // v2.28 constants
+            pub const SWARM_10M_TARGET: u64 = 10_000_000;
+            pub const COMMUNITY_5M_TARGET: u64 = 5_000_000;
+            pub const EARNING_ULTIMATE_UTRI_PER_HOUR: u64 = 100_000;
+            pub const NODE_DISCOVERY_INTERVAL_US: i64 = 5_000_000;
+            pub const SWARM_HEALTH_CHECK_INTERVAL_US: i64 = 10_000_000;
+            pub const MAX_SWARM_CHANNELS: u32 = 1_000_000;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2603,6 +2650,39 @@ pub const EternalUptimeState = struct {
                 wallet_hash: [32]u8 = [_]u8{0} ** 32,
             };
 
+            // v2.28 types
+            pub const Swarm10MState = struct {
+                swarm_events: u64 = 0,
+                nodes_active: u64 = 0,
+                nodes_discovered: u64 = 0,
+                last_swarm_us: i64 = 0,
+                swarm_hash: [32]u8 = [_]u8{0} ** 32,
+            };
+
+            pub const Community5MState = struct {
+                community_events: u64 = 0,
+                members_active: u64 = 0,
+                monthly_contributors: u64 = 0,
+                last_community_us: i64 = 0,
+                community_hash: [32]u8 = [_]u8{0} ** 32,
+            };
+
+            pub const EarningUltimateState = struct {
+                earning_events: u64 = 0,
+                total_earned_utri: u64 = 0,
+                earning_rate_utri: u64 = 0,
+                last_earning_us: i64 = 0,
+                earning_hash: [32]u8 = [_]u8{0} ** 32,
+            };
+
+            pub const NodeDiscovery10MState = struct {
+                discovery_events: u64 = 0,
+                nodes_registered: u64 = 0,
+                nodes_healthy: u64 = 0,
+                last_discovery_us: i64 = 0,
+                discovery_hash: [32]u8 = [_]u8{0} ** 32,
+            };
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2721,10 +2801,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 31; // v2.27: bumped from 30
+pub const QUARK_EXPORT_VERSION: u16 = 32; // v2.28: bumped from 31
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 142; // v2.27: was 138, +4 for trinity_beyond
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 146; // v2.28: was 142, +4 for swarm_10m
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -2999,6 +3079,12 @@ pub const GoldenChainAgent = struct {
                 exchange_v2_state: ExchangeV2State,
                 global_wallet_state: GlobalWalletState,
                 trinity_beyond_active: bool,
+                // v2.28 fields
+                swarm_10m_state: Swarm10MState,
+                community_5m_state: Community5MState,
+                earning_ultimate_state: EarningUltimateState,
+                node_discovery_10m_state: NodeDiscovery10MState,
+                swarm_10m_active: bool,
 
     const Self = @This();
 
@@ -3218,6 +3304,12 @@ pub const GoldenChainAgent = struct {
                     .exchange_v2_state = .{},
                     .global_wallet_state = .{},
                     .trinity_beyond_active = false,
+                    // v2.28
+                    .swarm_10m_state = .{},
+                    .community_5m_state = .{},
+                    .earning_ultimate_state = .{},
+                    .node_discovery_10m_state = .{},
+                    .swarm_10m_active = false,
         };
     }
 
@@ -4265,6 +4357,38 @@ pub const GoldenChainAgent = struct {
                 if (self.tri_to_hundred_state.tri_hundred_transactions == 0) return false;
                 if (self.universal_adoption_state.adoption_events == 0) return false;
                 if (self.exchange_v2_state.listing_events == 0) return false;
+                return true;
+            }
+
+            // v2.28 methods (stubs)
+            pub fn scaleSwarm10M(self: *GoldenChainAgent) void {
+                self.swarm_10m_state.swarm_events += 1;
+                self.swarm_10m_state.nodes_active += 10000;
+                self.swarm_10m_state.nodes_discovered += 15000;
+            }
+
+            pub fn growCommunity5M(self: *GoldenChainAgent) void {
+                self.community_5m_state.community_events += 1;
+                self.community_5m_state.members_active += 5000;
+                self.community_5m_state.monthly_contributors += 2500;
+            }
+
+            pub fn boostEarningUltimate(self: *GoldenChainAgent) void {
+                self.earning_ultimate_state.earning_events += 1;
+                self.earning_ultimate_state.earning_rate_utri = EARNING_ULTIMATE_UTRI_PER_HOUR;
+                self.earning_ultimate_state.total_earned_utri += EARNING_ULTIMATE_UTRI_PER_HOUR;
+            }
+
+            pub fn discoverNodes10M(self: *GoldenChainAgent) void {
+                self.node_discovery_10m_state.discovery_events += 1;
+                self.node_discovery_10m_state.nodes_registered += 10000;
+                self.node_discovery_10m_state.nodes_healthy += 9500;
+            }
+
+            pub fn swarm10MVerify(self: *const GoldenChainAgent) bool {
+                if (self.swarm_10m_state.swarm_events == 0) return false;
+                if (self.community_5m_state.community_events == 0) return false;
+                if (self.earning_ultimate_state.earning_events == 0) return false;
                 return true;
             }
 };
