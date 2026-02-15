@@ -1,0 +1,23 @@
+name: coherent_hybrid
+version: "1.0.0"
+language: zig
+module: coherent_hybrid
+
+types:
+  GenerationQuality:
+    fields:
+      unique_chars: Int
+      prompt: String
+      generated_text: String
+      alpha_config: String
+
+behaviors:
+  - name: generateWithOptimalAlpha
+    given: Best alpha config from grid search, large corpus, T=0.8 K=8
+    when: Generate 80 tokens with weighted hybrid forward pass
+    then: Generation sample showing effect of optimal weighting
+
+  - name: comparePPLConfigs
+    given: Multiple alpha configurations evaluated for perplexity
+    when: Compute train and test PPL for each config
+    then: PPL comparison showing weighted blend improvement over bundling
