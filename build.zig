@@ -1414,4 +1414,20 @@ pub fn build(b: *std.Build) void {
     const gen_pos_step = b.step("test-pos", "Test Proof-of-Storage challenge-response verification");
     gen_pos_step.dependOn(&run_gen_pos_tests.step);
     test_step.dependOn(&run_gen_pos_tests.step);
+
+    // Generated Kademlia DHT tests (XOR distance routing + store/find)
+    const gen_dht_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/dht.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_dht_tests = b.addRunArtifact(gen_dht_tests);
+    const gen_dht_step = b.step("test-dht", "Test Kademlia DHT XOR routing and store/find");
+    gen_dht_step.dependOn(&run_gen_dht_tests.step);
+    test_step.dependOn(&run_gen_dht_tests.step);
 }
