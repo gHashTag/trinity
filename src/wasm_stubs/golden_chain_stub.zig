@@ -240,6 +240,11 @@ pub const ChainMessageType = enum {
     UniversalReserveV2Update,
     GlobalDominanceV2Event,
     EternalGovernanceV2Event,
+    // v2.32: Trinity Beyond v1.0
+    TrinityBeyondEvent,
+    InfiniteScaleUpdate,
+    MultiVerseDominanceEvent,
+    EternalEvolutionEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -300,7 +305,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 312; // v2.31: was 304, +8 for $TRI to $1000 + Eternal Dominance (u16: 280/65536)
+pub const MAX_QUARK_RECORDS = 320; // v2.32: was 312, +8 for Trinity Beyond v1.0 (u16: 288/65536)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -625,6 +630,15 @@ pub const QuarkType = enum(u16) {
     humanity_community, // 277
     eternal_consensus, // 278
     dominance_anchor, // 279
+    // v2.32: Trinity Beyond v1.0 (u16: 288/65536 used)
+    trinity_beyond, // 280
+    infinite_scale_v2, // 281
+    tri_infinite_value, // 282
+    multiverse_dominance, // 283
+    eternal_evolution, // 284
+    beyond_consensus, // 285
+    infinite_governance, // 286
+    beyond_anchor, // 287
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -932,6 +946,15 @@ pub const QuarkType = enum(u16) {
             .humanity_community => "HMN_COM",
             .eternal_consensus => "ETR_CON",
             .dominance_anchor => "DOM_ACH",
+            // v2.32: Trinity Beyond v1.0
+            .trinity_beyond => "TRN_BYD",
+            .infinite_scale_v2 => "INF_SCL",
+            .tri_infinite_value => "TRI_INF",
+            .multiverse_dominance => "MLT_DOM",
+            .eternal_evolution => "ETR_EVO",
+            .beyond_consensus => "BYD_CON",
+            .infinite_governance => "INF_GOV",
+            .beyond_anchor => "BYD_ACH",
         };
     }
 
@@ -1514,6 +1537,23 @@ pub const QuarkType = enum(u16) {
     pub fn isEternalGovernanceV2Quark(self: QuarkType) bool {
         return self == .eternal_governance_v2 or self == .humanity_community;
     }
+
+    // v2.32: Trinity Beyond v1.0 classifiers
+    pub fn isTrinityBeyondQuark(self: QuarkType) bool {
+        return self == .trinity_beyond or self == .beyond_anchor;
+    }
+
+    pub fn isInfiniteScaleV2Quark(self: QuarkType) bool {
+        return self == .infinite_scale_v2 or self == .tri_infinite_value;
+    }
+
+    pub fn isMultiVerseDominanceQuark(self: QuarkType) bool {
+        return self == .multiverse_dominance or self == .beyond_consensus;
+    }
+
+    pub fn isEternalEvolutionQuark(self: QuarkType) bool {
+        return self == .eternal_evolution or self == .infinite_governance;
+    }
 };
 
 pub const QuarkRecord = struct {
@@ -1996,6 +2036,13 @@ pub const GLOBAL_EXCHANGE_LISTINGS: u32 = 500;
 pub const ETERNAL_GOVERNANCE_INTERVAL_US: i64 = 30_000_000;
 pub const MAX_RESERVE_PARTICIPANTS: u32 = 100_000_000;
 pub const DOMINANCE_THRESHOLD_BP: u64 = 9900;
+// v2.32: Trinity Beyond v1.0 constants
+pub const BEYOND_SCALE_FACTOR: u64 = 1_000_000_000_000;
+pub const INFINITE_NODES_TARGET: u64 = 10_000_000_000;
+pub const MULTIVERSE_DIMENSIONS: u32 = 1_000;
+pub const ETERNAL_EVOLUTION_INTERVAL_US: i64 = 15_000_000;
+pub const MAX_UNIVERSES: u32 = 1_000_000;
+pub const BEYOND_DOMINANCE_THRESHOLD_BP: u64 = 9999;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2914,6 +2961,39 @@ pub const EternalGovernanceV2State = struct {
     governance_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.32: Trinity Beyond v1.0 types
+pub const TrinityBeyondState = struct {
+    beyond_events: u64 = 0,
+    beyond_scale: u64 = 0,
+    beyond_dimensions: u64 = 0,
+    last_beyond_us: i64 = 0,
+    beyond_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const InfiniteScaleV2State = struct {
+    scale_events: u64 = 0,
+    scale_factor: u64 = 0,
+    nodes_infinite: u64 = 0,
+    last_scale_us: i64 = 0,
+    scale_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const MultiVerseDominanceState = struct {
+    multiverse_events: u64 = 0,
+    universes_dominated: u64 = 0,
+    dominance_factor_bp: u64 = 0,
+    last_multiverse_us: i64 = 0,
+    multiverse_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EternalEvolutionState = struct {
+    evolution_events: u64 = 0,
+    evolution_cycles: u64 = 0,
+    evolution_accuracy_bp: u64 = 0,
+    last_evolution_us: i64 = 0,
+    evolution_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -3032,10 +3112,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 35; // v2.31: bumped from 34
-pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
+pub const QUARK_EXPORT_VERSION: u16 = 36; // v2.32: bumped from 35 (Trinity Beyond v1.0)
+pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 162;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 158; // v2.31: was 154, +4 for $TRI to $1000 + Eternal Dominance
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 162; // v2.32: was 158, +4 for beyond_events(u16)+scale_events(u16)
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -3280,6 +3360,12 @@ pub const GoldenChainAgent = struct {
         global_dominance_v2_state: GlobalDominanceV2State,
         eternal_governance_v2_state: EternalGovernanceV2State,
         tri_to_1000_active: bool,
+        // v2.32: Trinity Beyond v1.0
+        trinity_beyond_state: TrinityBeyondState,
+        infinite_scale_v2_state: InfiniteScaleV2State,
+        multiverse_dominance_state: MultiVerseDominanceState,
+        eternal_evolution_state: EternalEvolutionState,
+        trinity_beyond_active: bool,
     // v2.20: ZK-Rollup v2.0 fields
     zk_rollup_v2_state: ZkRollupV2State,
     snark_generate_state: SnarkGenerateState,
@@ -3523,6 +3609,12 @@ pub const GoldenChainAgent = struct {
             .global_dominance_v2_state = .{},
             .eternal_governance_v2_state = .{},
             .tri_to_1000_active = false,
+            // v2.32: Trinity Beyond v1.0
+            .trinity_beyond_state = .{},
+            .infinite_scale_v2_state = .{},
+            .multiverse_dominance_state = .{},
+            .eternal_evolution_state = .{},
+            .trinity_beyond_active = false,
             // v2.20: ZK-Rollup v2.0 defaults
             .zk_rollup_v2_state = .{},
             .snark_generate_state = .{},
@@ -4452,6 +4544,39 @@ pub const GoldenChainAgent = struct {
             if (self.tri_to_1000_state.tri_1000_events == 0) return false;
             if (self.universal_reserve_v2_state.reserve_events == 0) return false;
             if (self.global_dominance_v2_state.dominance_events == 0) return false;
+            return true;
+        }
+
+        // v2.32: Trinity Beyond v1.0 stubs
+        fn scaleTrinityBeyond(self: *Self) void {
+            self.trinity_beyond_state.beyond_events += 1;
+            self.trinity_beyond_state.beyond_scale = BEYOND_SCALE_FACTOR;
+            self.trinity_beyond_state.beyond_dimensions = MULTIVERSE_DIMENSIONS;
+            self.trinity_beyond_active = true;
+        }
+
+        fn expandInfiniteScaleV2(self: *Self) void {
+            self.infinite_scale_v2_state.scale_events += 1;
+            self.infinite_scale_v2_state.scale_factor = BEYOND_SCALE_FACTOR;
+            self.infinite_scale_v2_state.nodes_infinite = INFINITE_NODES_TARGET;
+        }
+
+        fn dominateMultiVerse(self: *Self) void {
+            self.multiverse_dominance_state.multiverse_events += 1;
+            self.multiverse_dominance_state.universes_dominated = MAX_UNIVERSES;
+            self.multiverse_dominance_state.dominance_factor_bp = BEYOND_DOMINANCE_THRESHOLD_BP;
+        }
+
+        fn evolveEternal(self: *Self) void {
+            self.eternal_evolution_state.evolution_events += 1;
+            self.eternal_evolution_state.evolution_cycles += 1;
+            self.eternal_evolution_state.evolution_accuracy_bp = 9900;
+        }
+
+        fn trinityBeyondVerify(self: *const Self) bool {
+            if (self.trinity_beyond_state.beyond_events == 0) return false;
+            if (self.infinite_scale_v2_state.scale_events == 0) return false;
+            if (self.multiverse_dominance_state.multiverse_events == 0) return false;
             return true;
         }
 
