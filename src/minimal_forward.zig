@@ -1174,6 +1174,180 @@ fn rawTrigramLoss(
     return -@log(@max(prob, 1e-20));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// WORD-LEVEL STATISTICS (v2.45) — Tokenize corpus, build word bigram model
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const MAX_WORDS: usize = 256; // max unique words in vocabulary
+const MAX_TOKENS: usize = 1024; // max tokens in corpus
+const MAX_WORD_LEN: usize = 24; // max length of a single word
+
+/// A simple fixed-size word vocabulary and tokenized corpus
+const WordCorpus = struct {
+    // Vocabulary: each word stored as a fixed-length buffer
+    vocab: [MAX_WORDS][MAX_WORD_LEN]u8,
+    vocab_lens: [MAX_WORDS]u8,
+    vocab_size: usize,
+
+    // Tokenized corpus as word indices
+    tokens: [MAX_TOKENS]u16,
+    token_count: usize,
+
+    // Word bigram counts: counts[prev_word][next_word]
+    bigram_counts: [MAX_WORDS][MAX_WORDS]u16,
+
+    fn init() WordCorpus {
+        var self: WordCorpus = undefined;
+        self.vocab_size = 0;
+        self.token_count = 0;
+        for (0..MAX_WORDS) |i| {
+            self.vocab_lens[i] = 0;
+            for (0..MAX_WORDS) |j| {
+                self.bigram_counts[i][j] = 0;
+            }
+        }
+        return self;
+    }
+
+    /// Find or add a word to vocabulary. Returns word index.
+    fn getOrAddWord(self: *WordCorpus, word: []const u8) u16 {
+        if (word.len == 0 or word.len > MAX_WORD_LEN) return 0;
+
+        // Linear search (corpus is small)
+        for (0..self.vocab_size) |i| {
+            const len = self.vocab_lens[i];
+            if (len == word.len) {
+                var match = true;
+                for (0..len) |j| {
+                    if (self.vocab[i][j] != word[j]) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return @intCast(i);
+            }
+        }
+
+        // Add new word
+        if (self.vocab_size >= MAX_WORDS) return 0;
+        const idx = self.vocab_size;
+        for (0..word.len) |j| {
+            self.vocab[idx][j] = word[j];
+        }
+        self.vocab_lens[idx] = @intCast(word.len);
+        self.vocab_size += 1;
+        return @intCast(idx);
+    }
+
+    /// Get word string from index
+    fn getWord(self: *const WordCorpus, idx: u16) []const u8 {
+        if (idx >= self.vocab_size) return "";
+        const len = self.vocab_lens[idx];
+        return self.vocab[idx][0..len];
+    }
+
+    /// Tokenize a corpus into word indices (split on spaces)
+    fn tokenize(self: *WordCorpus, corpus: []const u8) void {
+        var i: usize = 0;
+        while (i < corpus.len and self.token_count < MAX_TOKENS) {
+            // Skip spaces
+            while (i < corpus.len and corpus[i] == ' ') : (i += 1) {}
+            if (i >= corpus.len) break;
+
+            // Find word end
+            const start = i;
+            while (i < corpus.len and corpus[i] != ' ') : (i += 1) {}
+            const word = corpus[start..i];
+            if (word.len > 0 and word.len <= MAX_WORD_LEN) {
+                const idx = self.getOrAddWord(word);
+                self.tokens[self.token_count] = idx;
+                self.token_count += 1;
+            }
+        }
+    }
+
+    /// Build word bigram counts from tokenized corpus
+    fn buildBigrams(self: *WordCorpus) void {
+        if (self.token_count < 2) return;
+        for (0..self.token_count - 1) |i| {
+            const prev = self.tokens[i];
+            const next = self.tokens[i + 1];
+            if (self.bigram_counts[prev][next] < 65535) {
+                self.bigram_counts[prev][next] += 1;
+            }
+        }
+    }
+
+    /// Get P(next_word | prev_word) with Laplace smoothing
+    fn wordBigramProb(self: *const WordCorpus, prev_idx: u16, next_idx: u16) f64 {
+        if (prev_idx >= self.vocab_size or next_idx >= self.vocab_size) {
+            return 1.0 / @as(f64, @floatFromInt(self.vocab_size));
+        }
+        var total: u32 = 0;
+        for (0..self.vocab_size) |j| {
+            total += self.bigram_counts[prev_idx][j];
+        }
+        if (total == 0) return 1.0 / @as(f64, @floatFromInt(self.vocab_size));
+        const count: f64 = @floatFromInt(self.bigram_counts[prev_idx][next_idx]);
+        const total_f: f64 = @floatFromInt(total);
+        const vs: f64 = @floatFromInt(self.vocab_size);
+        return (count + 0.1) / (total_f + 0.1 * vs);
+    }
+
+    /// Sample next word given previous word
+    fn sampleNextWord(self: *const WordCorpus, prev_idx: u16, temperature: f64, seed: u64) u16 {
+        var probs: [MAX_WORDS]f64 = undefined;
+        var total: u32 = 0;
+
+        for (0..self.vocab_size) |j| {
+            total += self.bigram_counts[prev_idx][j];
+        }
+
+        if (total == 0) {
+            // Uniform over vocabulary
+            return @intCast(seed % self.vocab_size);
+        }
+
+        const total_f: f64 = @floatFromInt(total);
+        const vs: f64 = @floatFromInt(self.vocab_size);
+        const smooth = 0.1 * vs;
+
+        // Build distribution with temperature
+        var max_logp: f64 = -1e10;
+        for (0..self.vocab_size) |j| {
+            const count: f64 = @floatFromInt(self.bigram_counts[prev_idx][j]);
+            const p = (count + 0.1) / (total_f + smooth);
+            const logp = @log(@max(p, 1e-20));
+            probs[j] = logp;
+            if (logp > max_logp) max_logp = logp;
+        }
+
+        // Apply temperature and softmax
+        var sum: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            probs[j] = @exp((probs[j] - max_logp) / @max(temperature, 0.01));
+            sum += probs[j];
+        }
+        for (0..self.vocab_size) |j| {
+            probs[j] /= sum;
+        }
+
+        // Sample
+        var rng = seed;
+        rng ^= rng >> 12;
+        rng ^= rng << 25;
+        rng ^= rng >> 27;
+        const r: f64 = @as(f64, @floatFromInt(rng % 1000000)) / 1000000.0;
+
+        var cumulative: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            cumulative += probs[j];
+            if (r < cumulative) return @intCast(j);
+        }
+        return 0;
+    }
+};
+
 /// Decode using hybrid forward pass
 fn hybridDecode(
     context: []Hypervector,
@@ -5819,4 +5993,215 @@ test "raw frequency perplexity" {
     try std.testing.expect(raw_test_ppl < @as(f64, @floatFromInt(HEBBIAN_CHARS)));
     try std.testing.expect(!std.math.isNan(raw_test_ppl));
     try std.testing.expect(!std.math.isInf(raw_test_ppl));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 36: Word-level tokenization and bigram statistics (v2.45)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "word-level tokenization and bigram statistics" {
+    var wc = WordCorpus.init();
+    wc.tokenize(large_corpus);
+    wc.buildBigrams();
+
+    const train_end = wc.token_count * 80 / 100;
+
+    // === Word-level train loss (CE nats) ===
+    var train_ce_sum: f64 = 0;
+    var train_ce_count: usize = 0;
+    for (1..train_end) |i| {
+        const prev = wc.tokens[i - 1];
+        const curr = wc.tokens[i];
+        const prob = wc.wordBigramProb(prev, curr);
+        train_ce_sum += -@log(@max(prob, 1e-20));
+        train_ce_count += 1;
+    }
+
+    // === Word-level eval loss (CE nats) ===
+    var eval_ce_sum: f64 = 0;
+    var eval_ce_count: usize = 0;
+    for (train_end..wc.token_count) |i| {
+        if (i == 0) continue;
+        const prev = wc.tokens[i - 1];
+        const curr = wc.tokens[i];
+        const prob = wc.wordBigramProb(prev, curr);
+        eval_ce_sum += -@log(@max(prob, 1e-20));
+        eval_ce_count += 1;
+    }
+
+    const train_ce = train_ce_sum / @as(f64, @floatFromInt(train_ce_count));
+    const eval_ce = eval_ce_sum / @as(f64, @floatFromInt(eval_ce_count));
+    const random_ce = @log(@as(f64, @floatFromInt(wc.vocab_size))); // ln(vocab_size)
+
+    // === Count bigram coverage ===
+    var bigram_nonzero: usize = 0;
+    const total_possible = wc.vocab_size * wc.vocab_size;
+    for (0..wc.vocab_size) |i| {
+        for (0..wc.vocab_size) |j| {
+            if (wc.bigram_counts[i][j] > 0) bigram_nonzero += 1;
+        }
+    }
+
+    // === Generation at multiple temperatures ===
+    var gen_buf1: [256]u8 = undefined;
+    var gen_buf2: [256]u8 = undefined;
+    var gen_buf3: [256]u8 = undefined;
+
+    // Find "to" in vocabulary
+    var start_word: u16 = 0;
+    for (0..wc.vocab_size) |i| {
+        const w = wc.getWord(@intCast(i));
+        if (w.len == 2 and w[0] == 't' and w[1] == 'o') {
+            start_word = @intCast(i);
+            break;
+        }
+    }
+
+    // Generate at T=0.8
+    var gen1_len: usize = 0;
+    var prev_word = start_word;
+    for (0..30) |step| {
+        const next = wc.sampleNextWord(prev_word, 0.8, 44444 + step);
+        const word = wc.getWord(next);
+        if (gen1_len + word.len + 1 < gen_buf1.len) {
+            if (gen1_len > 0) {
+                gen_buf1[gen1_len] = ' ';
+                gen1_len += 1;
+            }
+            for (word) |c| {
+                gen_buf1[gen1_len] = c;
+                gen1_len += 1;
+            }
+        }
+        prev_word = next;
+    }
+
+    // Generate at T=0.5
+    var gen2_len: usize = 0;
+    prev_word = start_word;
+    for (0..30) |step| {
+        const next = wc.sampleNextWord(prev_word, 0.5, 55555 + step);
+        const word = wc.getWord(next);
+        if (gen2_len + word.len + 1 < gen_buf2.len) {
+            if (gen2_len > 0) {
+                gen_buf2[gen2_len] = ' ';
+                gen2_len += 1;
+            }
+            for (word) |c| {
+                gen_buf2[gen2_len] = c;
+                gen2_len += 1;
+            }
+        }
+        prev_word = next;
+    }
+
+    // Generate at T=0.3
+    var gen3_len: usize = 0;
+    prev_word = start_word;
+    for (0..30) |step| {
+        const next = wc.sampleNextWord(prev_word, 0.3, 66666 + step);
+        const word = wc.getWord(next);
+        if (gen3_len + word.len + 1 < gen_buf3.len) {
+            if (gen3_len > 0) {
+                gen_buf3[gen3_len] = ' ';
+                gen3_len += 1;
+            }
+            for (word) |c| {
+                gen_buf3[gen3_len] = c;
+                gen3_len += 1;
+            }
+        }
+        prev_word = next;
+    }
+
+    std.debug.print("\n=== WORD-LEVEL STATISTICS (v2.45) ===\n", .{});
+    std.debug.print("Corpus: {d} chars → {d} tokens, {d} unique words\n", .{ large_corpus.len, wc.token_count, wc.vocab_size });
+    std.debug.print("Word bigram coverage: {d}/{d} ({d:.1}%)\n", .{ bigram_nonzero, total_possible, @as(f64, @floatFromInt(bigram_nonzero)) / @as(f64, @floatFromInt(total_possible)) * 100.0 });
+    std.debug.print("\n--- Word-Level Loss (CE nats) ---\n", .{});
+    std.debug.print("Train CE:     {d:.4} ({d:.1}% below random)\n", .{ train_ce, (1.0 - train_ce / random_ce) * 100.0 });
+    std.debug.print("Eval CE:      {d:.4} ({d:.1}% below random)\n", .{ eval_ce, (1.0 - eval_ce / random_ce) * 100.0 });
+    std.debug.print("Random CE:    {d:.4} (ln({d}))\n", .{ random_ce, wc.vocab_size });
+    std.debug.print("\n--- Generation (word bigram) ---\n", .{});
+    std.debug.print("Start: \"to\"\n", .{});
+    std.debug.print("T=0.8: \"{s}\"\n", .{gen_buf1[0..gen1_len]});
+    std.debug.print("T=0.5: \"{s}\"\n", .{gen_buf2[0..gen2_len]});
+    std.debug.print("T=0.3: \"{s}\"\n", .{gen_buf3[0..gen3_len]});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(wc.vocab_size > 0);
+    try std.testing.expect(wc.token_count > 0);
+    try std.testing.expect(train_ce < random_ce);
+    try std.testing.expect(gen1_len > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 37: Word-level perplexity comparison (v2.45)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "word-level perplexity comparison" {
+    var wc = WordCorpus.init();
+    wc.tokenize(large_corpus);
+    wc.buildBigrams();
+
+    const train_end = wc.token_count * 80 / 100;
+
+    // === Word-level train PPL ===
+    var train_log_sum: f64 = 0;
+    var train_count: usize = 0;
+    for (1..train_end) |i| {
+        const prev = wc.tokens[i - 1];
+        const curr = wc.tokens[i];
+        const prob = wc.wordBigramProb(prev, curr);
+        train_log_sum += @log(@max(prob, 1e-20));
+        train_count += 1;
+    }
+
+    // === Word-level eval PPL ===
+    var eval_log_sum: f64 = 0;
+    var eval_count: usize = 0;
+    for (train_end..wc.token_count) |i| {
+        if (i == 0) continue;
+        const prev = wc.tokens[i - 1];
+        const curr = wc.tokens[i];
+        const prob = wc.wordBigramProb(prev, curr);
+        eval_log_sum += @log(@max(prob, 1e-20));
+        eval_count += 1;
+    }
+
+    const train_ppl = @exp(-train_log_sum / @as(f64, @floatFromInt(train_count)));
+    const eval_ppl = @exp(-eval_log_sum / @as(f64, @floatFromInt(eval_count)));
+
+    // === Also compute char-level raw freq PPL for comparison ===
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+    const char_train_end = large_corpus.len * 80 / 100;
+
+    var char_eval_log: f64 = 0;
+    var char_eval_valid: usize = 0;
+    for (0..40) |i| {
+        const s = char_train_end + i * (large_corpus.len - char_train_end - 10) / 40;
+        if (s + 8 >= large_corpus.len) continue;
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        const target = large_corpus[s + 8];
+        const prob = rawTrigramProb(prev, last, target, &bi_counts, &tri_counts);
+        char_eval_log += @log(@max(prob, 1e-20));
+        char_eval_valid += 1;
+    }
+    const char_eval_ppl = @exp(-char_eval_log / @as(f64, @floatFromInt(char_eval_valid)));
+
+    std.debug.print("\n=== WORD-LEVEL PERPLEXITY (v2.45) ===\n", .{});
+    std.debug.print("Vocabulary: {d} unique words, {d} tokens\n", .{ wc.vocab_size, wc.token_count });
+    std.debug.print("Word bigram train PPL:     {d:.2}\n", .{train_ppl});
+    std.debug.print("Word bigram eval PPL:      {d:.2}\n", .{eval_ppl});
+    std.debug.print("Word bigram overfit gap:   {d:.2}\n", .{eval_ppl - train_ppl});
+    std.debug.print("Random word baseline:      {d:.1}\n", .{@as(f64, @floatFromInt(wc.vocab_size))});
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("Char-level raw freq (v2.44): eval PPL={d:.2}\n", .{char_eval_ppl});
+    std.debug.print("Char random baseline:        95.0\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(train_ppl > 0.0);
+    try std.testing.expect(eval_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(train_ppl));
+    try std.testing.expect(!std.math.isInf(eval_ppl));
+    try std.testing.expect(eval_ppl < @as(f64, @floatFromInt(wc.vocab_size)));
 }
