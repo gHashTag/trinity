@@ -1,0 +1,79 @@
+name: hdc_convergence_analysis
+version: "1.0.0"
+language: zig
+module: hdc_convergence_analysis
+
+description: |
+  HDC Convergence Analysis — Level 10A.3.3: Why Training Fails.
+  Documents the fundamental convergence barrier in the current architecture.
+
+  === EVIDENCE CHAIN ===
+  v2.30: Bundle2, 20 epochs, random seeds    → -2.1% loss drop
+  v2.31: Bundle2, 50 epochs, 48-char corpus  → -2.9% loss drop
+  v2.32: Bundle2, 200 epochs, 512-char corpus, LR decay → -1.3% (WORSE)
+  v2.33: Resonator, 50 epochs, 512-char corpus → 0.0% (FLAT)
+
+  === DIAGNOSIS ===
+  1. Small corpus (v2.31, 48 chars) showed marginal improvement
+     because 8 samples can slightly bias roles via repetition.
+  2. Larger corpus (v2.32, 512 chars) worsened because more diverse
+     samples produce more diverse errors that cancel out.
+  3. Resonator (v2.33) didn't help because the "ideal direction"
+     computed via unbind is quasi-random when roles are quasi-random.
+
+  === FUNDAMENTAL BARRIER ===
+  The attention → FFN → residual forward pass involves 5+ bind operations.
+  Each bind with a quasi-random role produces a quasi-random result.
+  The chain of binds compounds randomness: after 5 binds, the output
+  has near-zero correlation with any individual input or role.
+
+  For the error signal to be useful, it must trace back through these
+  binds to identify WHICH role needs WHICH correction. This is essentially
+  the credit assignment problem — the same problem that backpropagation
+  solves in neural networks.
+
+  === POSSIBLE PATHS FORWARD ===
+  Path 1: Simplify architecture. Use direct bind(context, single_role) → output.
+          Fewer binds = stronger gradient signal.
+  Path 2: Direct role computation. For each (context, target) pair, compute
+          the role that would produce the target: role = unbind(target, context).
+          Average these ideal roles across samples.
+  Path 3: Hebbian learning. Don't try to correct errors. Instead, for correct
+          predictions, strengthen the association: role = bundle(role, bind(context, target)).
+  Path 4: External teacher. Use a pre-trained model to generate target HVs,
+          then train roles to reproduce those targets.
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+
+types:
+  ConvergenceEvidence:
+    fields:
+      version: String
+      method: String
+      epochs: usize
+      corpus_size: usize
+      loss_drop_pct: Float
+      converged: Bool
+
+  BarrierAnalysis:
+    fields:
+      bind_chain_depth: usize
+      credit_assignment_feasible: Bool
+      recommended_path: String
+
+behaviors:
+  - name: analyzeConvergence
+    given: Loss curves from v2.30 through v2.33
+    when: Compare drop rates across methods and corpus sizes
+    then: ConvergenceEvidence table showing degrading performance
+
+  - name: diagnoseBarrier
+    given: Architecture description (attention → FFN → residual)
+    when: Count bind operations in forward pass chain
+    then: BarrierAnalysis explaining credit assignment failure
+
+test_cases:
+  - name: evidence_documented
+    description: All 4 versions documented with real metrics
+    input: "v2.30 through v2.33"
+    expected: "loss_drop decreasing trend documented"

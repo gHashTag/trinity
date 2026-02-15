@@ -128,6 +128,121 @@ fn generateAutoregressive(
     return generated;
 }
 
+// === RESONATOR-STYLE TRAINING (v2.33) ===
+// Replaces bundle2(role, error) which dilutes signal via majority vote.
+// Uses bind-based targeted correction: compute what each FF role SHOULD be
+// to produce the target, then iteratively blend current roles toward ideal.
+
+/// Resonator training step: for a single (context, target) pair,
+/// iteratively refine the FF roles (roles[9] and roles[10]) to reduce error.
+/// Returns the final loss (1 - similarity) for this sample.
+fn resonatorTrainStep(
+    context: []Hypervector,
+    target: *Hypervector,
+    roles: *[11]Hypervector,
+    dim: usize,
+    lr: f64,
+    prng_seed: u64,
+) f64 {
+    // Step 1: Forward pass to get current output
+    var output = forwardPassMultiHead(context, roles);
+    const initial_sim = output.similarity(target);
+    var best_loss: f64 = 1.0 - initial_sim;
+
+    // Step 2: Resonator iterations (3-5 cycles of unbind→correct→recheck)
+    const max_iters: usize = 5;
+    for (0..max_iters) |iter| {
+        // Compute positioned vectors (same as forwardPassMultiHead)
+        var positioned: [8]Hypervector = undefined;
+        for (context, 0..) |*hv, i| {
+            positioned[i] = hv.permute(i);
+        }
+
+        // The forward pass produces: output = bundle(bind(bind(merged, FF1), FF2), last_pos)
+        // To correct FF2: ideal_ff2_output = unbind(target, last_positioned)
+        // Then: ideal_after_ff2 = unbind(ideal_ff2_output, FF1_output)
+        // This gives us the direction FF2 should push toward.
+
+        // Compute what the merged attention output is (before FFN)
+        var head0 = singleHeadAttention(&positioned, &roles[0], &roles[1], &roles[2]);
+        var head1 = singleHeadAttention(&positioned, &roles[3], &roles[4], &roles[5]);
+        var head2 = singleHeadAttention(&positioned, &roles[6], &roles[7], &roles[8]);
+        var merged = head0.bundle3(&head1, &head2);
+
+        // What FF roles should produce: drive output toward target
+        // target ≈ bundle(ffn_out, last_pos), so ffn_out ≈ target (approximately)
+
+        // Compute ideal FF2 role: if ffn_out = bind(bind(merged, FF1), FF2)
+        // and we want ffn_out ≈ target
+        // then ideal = unbind(target, bind(merged, FF1))
+        var merged_ff1 = merged.bind(&roles[9]);
+        var ideal_ff2_direction = target.unbind(&merged_ff1);
+
+        // Compute ideal FF1 role similarly: bind(merged, FF1) should produce
+        // something that when bound with FF2 gives target
+        // ideal_ff1_input = unbind(target, FF2), ideal_ff1 = unbind(ideal_ff1_input, merged)
+        var ideal_ff1_input = target.unbind(&roles[10]);
+        var ideal_ff1_direction = ideal_ff1_input.unbind(&merged);
+
+        // Resonator correction: blend current role toward ideal direction
+        // Using bind-based correction: correction = bind(ideal, inverse(current))
+        // Then apply sparsified correction
+        var ff2_correction = ideal_ff2_direction.unbind(&roles[10]);
+        var ff1_correction = ideal_ff1_direction.unbind(&roles[9]);
+
+        // Sparsify corrections
+        var prng = std.Random.DefaultPrng.init(prng_seed + iter * 100);
+        const random = prng.random();
+
+        var sparse_ff2 = ff2_correction.clone();
+        var sparse_ff1 = ff1_correction.clone();
+        for (0..dim) |idx| {
+            if (random.float(f64) > lr) {
+                sparse_ff2.set(idx, 0);
+            }
+            if (random.float(f64) > lr) {
+                sparse_ff1.set(idx, 0);
+            }
+        }
+
+        // Apply: role_new = bind(role_old, sparse_correction)
+        // This is multiplicative, not additive — preserves more signal
+        roles[10] = roles[10].bind(&sparse_ff2);
+        roles[9] = roles[9].bind(&sparse_ff1);
+
+        // Also update attention V roles (roles[2], [5], [8]) with smaller corrections
+        // The attention roles are harder to correct, so use smaller lr
+        var target_clone = target.clone();
+        var neg_out = output.negate();
+        var attn_error = target_clone.bundle(&neg_out);
+        var sparse_attn = attn_error.clone();
+        for (0..dim) |idx| {
+            if (random.float(f64) > lr * 0.3) {
+                sparse_attn.set(idx, 0);
+            }
+        }
+        // Only update V roles (2, 5, 8) — Q and K should stay stable
+        roles[2] = roles[2].bind(&sparse_attn);
+        roles[5] = roles[5].bind(&sparse_attn);
+        roles[8] = roles[8].bind(&sparse_attn);
+
+        // Re-check: did we improve?
+        var new_output = forwardPassMultiHead(context, roles);
+        const new_sim = new_output.similarity(target);
+        const new_loss = 1.0 - new_sim;
+
+        if (new_loss < best_loss) {
+            best_loss = new_loss;
+            output = new_output;
+        }
+
+        // Early stop if similarity is already good
+        if (new_sim > 0.5) break;
+    }
+
+    return best_loss;
+}
+
 // === CHARACTER ENCODING (avoids Codebook key-lifetime bug) ===
 
 /// Deterministic character-to-Hypervector mapping using random seeds
@@ -955,4 +1070,253 @@ test "honest perplexity on held-out test data" {
     // Test PPL should be > train PPL (honest = not overfit)
     // (We don't require this to pass since it depends on convergence,
     //  but we log it for the report)
+}
+
+test "resonator training on scaled corpus" {
+    const dim: usize = 256;
+    const num_epochs: usize = 50; // fewer epochs needed — resonator converges faster
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    // 12 train offsets, 6 eval, 6 test
+    const train_sample_count = 12;
+    var train_offsets: [12]usize = undefined;
+    for (0..train_sample_count) |i| {
+        train_offsets[i] = i * train_end / train_sample_count;
+    }
+
+    const eval_sample_count = 6;
+    const eval_region_size = eval_end - train_end;
+    var eval_offsets: [6]usize = undefined;
+    for (0..eval_sample_count) |i| {
+        eval_offsets[i] = train_end + i * eval_region_size / eval_sample_count;
+    }
+
+    var roles = initRoles(dim, 42);
+
+    var loss_epoch0: f64 = 0;
+    var loss_final: f64 = 0;
+    var eval_loss_best: f64 = 999.0;
+
+    std.debug.print("\n=== RESONATOR TRAINING ({d} epochs, corpus={d} chars) ===\n", .{ num_epochs, corpus.len });
+    std.debug.print("Method: bind-based resonator (replaces bundle2)\n", .{});
+
+    for (0..num_epochs) |epoch| {
+        // LR decay
+        var lr: f64 = 0.25;
+        for (0..epoch) |_| lr *= 0.98;
+        if (lr < 0.05) lr = 0.05;
+
+        var epoch_loss: f64 = 0;
+        var samples_used: usize = 0;
+
+        for (train_offsets) |s| {
+            if (s + 8 >= corpus.len) continue;
+
+            var ctx: [8]Hypervector = undefined;
+            for (0..8) |i| {
+                ctx[i] = charToHV(dim, corpus[s + i]);
+            }
+            var target = charToHV(dim, corpus[s + 8]);
+
+            // Use resonator training step instead of bundle2
+            const sample_loss = resonatorTrainStep(
+                &ctx,
+                &target,
+                &roles,
+                dim,
+                lr,
+                epoch * train_sample_count + s + 40000,
+            );
+            epoch_loss += sample_loss;
+            samples_used += 1;
+        }
+
+        if (samples_used > 0) {
+            epoch_loss /= @as(f64, @floatFromInt(samples_used));
+        }
+        if (epoch == 0) loss_epoch0 = epoch_loss;
+        if (epoch == num_epochs - 1) loss_final = epoch_loss;
+
+        // Eval loss every 10 epochs
+        if (epoch % 10 == 0 or epoch == num_epochs - 1) {
+            var el: f64 = 0;
+            var eval_used: usize = 0;
+            for (eval_offsets) |s| {
+                if (s + 8 >= corpus.len) continue;
+                var ctx: [8]Hypervector = undefined;
+                for (0..8) |i| {
+                    ctx[i] = charToHV(dim, corpus[s + i]);
+                }
+                var target = charToHV(dim, corpus[s + 8]);
+                var output = forwardPassMultiHead(&ctx, &roles);
+                const sim = output.similarity(&target);
+                el += 1.0 - sim;
+                eval_used += 1;
+            }
+            if (eval_used > 0) el /= @as(f64, @floatFromInt(eval_used));
+            if (el < eval_loss_best) eval_loss_best = el;
+
+            std.debug.print("  Epoch {d:3}: train_loss={d:.4} eval_loss={d:.4} lr={d:.4}\n", .{ epoch, epoch_loss, el, lr });
+        }
+    }
+
+    const loss_drop_pct = if (loss_epoch0 > 0) (loss_epoch0 - loss_final) / loss_epoch0 * 100.0 else 0;
+    std.debug.print("  Train loss epoch 0:   {d:.4}\n", .{loss_epoch0});
+    std.debug.print("  Train loss epoch {d}: {d:.4}\n", .{ num_epochs - 1, loss_final });
+    std.debug.print("  Resonator drop:       {d:.1}%\n", .{loss_drop_pct});
+    std.debug.print("  Best eval loss:       {d:.4}\n", .{eval_loss_best});
+
+    // Generate 30 tokens after resonator training
+    var seed_context: [8]Hypervector = undefined;
+    const seed_text = "to be or";
+    for (seed_text, 0..) |c, i| {
+        seed_context[i] = charToHV(dim, c);
+    }
+
+    var gen_buf: [30]u8 = undefined;
+    const gen_count = generateWithCharTable(&seed_context, &roles, dim, &gen_buf, 30);
+
+    var seen = [_]bool{false} ** 256;
+    var unique: usize = 0;
+    for (gen_buf[0..gen_count]) |c| {
+        if (!seen[c]) {
+            seen[c] = true;
+            unique += 1;
+        }
+    }
+
+    std.debug.print("\n  Resonator generation:\n", .{});
+    std.debug.print("  Prompt: \"{s}\"\n", .{seed_text});
+    std.debug.print("  Generated: \"{s}\"\n", .{gen_buf[0..gen_count]});
+    std.debug.print("  Unique chars: {d}\n", .{unique});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(loss_epoch0 >= 0.0 and loss_epoch0 <= 2.0);
+    try std.testing.expect(loss_final >= 0.0 and loss_final <= 2.0);
+    try std.testing.expect(gen_count == 30);
+}
+
+test "resonator perplexity comparison" {
+    const dim: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    // Train with resonator for 50 epochs
+    var roles = initRoles(dim, 42);
+
+    for (0..50) |epoch| {
+        var lr: f64 = 0.25;
+        for (0..epoch) |_| lr *= 0.98;
+        if (lr < 0.05) lr = 0.05;
+
+        for (0..12) |i| {
+            const s = i * train_end / 12;
+            if (s + 8 >= corpus.len) continue;
+
+            var ctx: [8]Hypervector = undefined;
+            for (0..8) |j| {
+                ctx[j] = charToHV(dim, corpus[s + j]);
+            }
+            var target = charToHV(dim, corpus[s + 8]);
+
+            _ = resonatorTrainStep(&ctx, &target, &roles, dim, lr, epoch * 12 + i + 50000);
+        }
+    }
+
+    // Measure PPL on test region (held-out)
+    const test_start = eval_end;
+    const test_count = 8;
+    var test_sum_log: f64 = 0;
+    var test_valid: usize = 0;
+
+    for (0..test_count) |i| {
+        const s = test_start + i * (total_samples - test_start) / test_count;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassMultiHead(&ctx, &roles);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        test_sum_log += @log(clamped);
+        test_valid += 1;
+    }
+
+    const test_ppl = @exp(-test_sum_log / @as(f64, @floatFromInt(test_valid)));
+
+    // Train PPL for comparison
+    var train_sum_log: f64 = 0;
+    var train_valid: usize = 0;
+    for (0..8) |i| {
+        const s = i * train_end / 8;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassMultiHead(&ctx, &roles);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        train_sum_log += @log(clamped);
+        train_valid += 1;
+    }
+
+    const train_ppl = @exp(-train_sum_log / @as(f64, @floatFromInt(train_valid)));
+
+    std.debug.print("\n=== RESONATOR vs BUNDLE2 PERPLEXITY ===\n", .{});
+    std.debug.print("Resonator train PPL:  {d:.1}\n", .{train_ppl});
+    std.debug.print("Resonator test PPL:   {d:.1}\n", .{test_ppl});
+    std.debug.print("Overfit gap:          {d:.1}\n", .{test_ppl - train_ppl});
+    std.debug.print("Bundle2 baseline:     train=1.9, test=2.0 (v2.32)\n", .{});
+    std.debug.print("Random baseline:      95.0\n", .{});
+    std.debug.print("========================================\n", .{});
+
+    try std.testing.expect(test_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(test_ppl));
+    try std.testing.expect(!std.math.isInf(test_ppl));
 }
