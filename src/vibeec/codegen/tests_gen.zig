@@ -3224,6 +3224,104 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// avg_latency = (10+15+20+25+30)/5 = 20");
             try self.builder.writeLine("try std.testing.expect(report.avg_latency_ms == 20);");
 
+        // ═══════════════════════════════════════════════════════════════════
+        // LIVE REWARDS TESTS (R1-R4)
+        // ═══════════════════════════════════════════════════════════════════
+        } else if (std.mem.eql(u8, name, "rewardsMintOnPass")) {
+            // R1: Passing PoS challenge mints reward
+            try self.builder.writeLine("// R1: Mint on Pass — reward minted to node balance");
+            try self.builder.writeLine("var engine = RewardEngine.init(.{");
+            try self.builder.writeLine("    .base_reward_wei = 1000, // simplified for testing");
+            try self.builder.writeLine("    .slash_rate_pct = 1,");
+            try self.builder.writeLine("    .corruption_slash_pct = 5,");
+            try self.builder.writeLine("    .min_stake_wei = 10000,");
+            try self.builder.writeLine("});");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Register node with 50000 stake (above min)");
+            try self.builder.writeLine("const node_id = engine.registerNode(50000);");
+            try self.builder.writeLine("try std.testing.expect(node_id == 0);");
+            try self.builder.writeLine("try std.testing.expect(engine.balances[0].is_active);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: minting reward increases balance");
+            try self.builder.writeLine("const initial = engine.getBalance(0);");
+            try self.builder.writeLine("const ok = engine.mintReward(0);");
+            try self.builder.writeLine("try std.testing.expect(ok);");
+            try self.builder.writeLine("try std.testing.expect(engine.getBalance(0) == initial + 1000);");
+            try self.builder.writeLine("try std.testing.expect(engine.balances[0].total_earned_wei == 1000);");
+            try self.builder.writeLine("try std.testing.expect(engine.balances[0].challenges_passed == 1);");
+            try self.builder.writeLine("try std.testing.expect(engine.total_minted == 1000);");
+
+        } else if (std.mem.eql(u8, name, "rewardsSlashOnFail")) {
+            // R2: Failing PoS challenge slashes node stake
+            try self.builder.writeLine("// R2: Slash on Fail — 1% of balance slashed");
+            try self.builder.writeLine("var engine = RewardEngine.init(.{");
+            try self.builder.writeLine("    .base_reward_wei = 1000,");
+            try self.builder.writeLine("    .slash_rate_pct = 10, // 10% for easy math");
+            try self.builder.writeLine("    .corruption_slash_pct = 5,");
+            try self.builder.writeLine("    .min_stake_wei = 10000,");
+            try self.builder.writeLine("});");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Register node with 100000 stake");
+            try self.builder.writeLine("_ = engine.registerNode(100000);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: slashing removes 10% of balance");
+            try self.builder.writeLine("const slashed = engine.slashNode(0);");
+            try self.builder.writeLine("try std.testing.expect(slashed == 10000); // 100000 * 10 / 100");
+            try self.builder.writeLine("try std.testing.expect(engine.getBalance(0) == 90000);");
+            try self.builder.writeLine("try std.testing.expect(engine.balances[0].total_slashed_wei == 10000);");
+            try self.builder.writeLine("try std.testing.expect(engine.balances[0].challenges_failed == 1);");
+            try self.builder.writeLine("try std.testing.expect(engine.total_slashed == 10000);");
+
+        } else if (std.mem.eql(u8, name, "rewardsMinStakeEnforced")) {
+            // R3: Node below min stake cannot earn
+            try self.builder.writeLine("// R3: Min Stake Enforced — below min stake = no rewards");
+            try self.builder.writeLine("var engine = RewardEngine.init(.{");
+            try self.builder.writeLine("    .base_reward_wei = 1000,");
+            try self.builder.writeLine("    .slash_rate_pct = 1,");
+            try self.builder.writeLine("    .corruption_slash_pct = 5,");
+            try self.builder.writeLine("    .min_stake_wei = 10000,");
+            try self.builder.writeLine("});");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Register node with 5000 stake (below min 10000)");
+            try self.builder.writeLine("_ = engine.registerNode(5000);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: node is NOT active, cannot earn");
+            try self.builder.writeLine("try std.testing.expect(!engine.balances[0].is_active);");
+            try self.builder.writeLine("const ok = engine.mintReward(0);");
+            try self.builder.writeLine("try std.testing.expect(!ok);");
+            try self.builder.writeLine("try std.testing.expect(engine.getBalance(0) == 5000); // unchanged");
+            try self.builder.writeLine("try std.testing.expect(engine.total_minted == 0);");
+
+        } else if (std.mem.eql(u8, name, "rewardsEpochSummary")) {
+            // R4: Epoch summary matches sum of operations
+            try self.builder.writeLine("// R4: Epoch Summary — totals match individual ops");
+            try self.builder.writeLine("var engine = RewardEngine.init(.{");
+            try self.builder.writeLine("    .base_reward_wei = 100,");
+            try self.builder.writeLine("    .slash_rate_pct = 10,");
+            try self.builder.writeLine("    .corruption_slash_pct = 5,");
+            try self.builder.writeLine("    .min_stake_wei = 1000,");
+            try self.builder.writeLine("});");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Register 3 nodes");
+            try self.builder.writeLine("_ = engine.registerNode(50000); // node 0: active");
+            try self.builder.writeLine("_ = engine.registerNode(50000); // node 1: active");
+            try self.builder.writeLine("_ = engine.registerNode(500);   // node 2: below min, inactive");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// 5 passes for node 0, 3 passes + 2 fails for node 1");
+            try self.builder.writeLine("var i: u8 = 0;");
+            try self.builder.writeLine("while (i < 5) : (i += 1) _ = engine.mintReward(0);");
+            try self.builder.writeLine("i = 0;");
+            try self.builder.writeLine("while (i < 3) : (i += 1) _ = engine.mintReward(1);");
+            try self.builder.writeLine("_ = engine.slashNode(1);");
+            try self.builder.writeLine("_ = engine.slashNode(1);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: epoch summary matches");
+            try self.builder.writeLine("const summary = engine.epochSummary();");
+            try self.builder.writeLine("try std.testing.expect(summary.total_minted_wei == 800); // 8 * 100");
+            try self.builder.writeLine("try std.testing.expect(summary.epoch_challenges == 10); // 5+3+2");
+            try self.builder.writeLine("try std.testing.expect(summary.active_earners == 2); // nodes 0,1 active");
+            try self.builder.writeLine("try std.testing.expect(summary.total_slashed_wei > 0);");
+
         } else {
             // Generate real test assertions: verify function exists and is callable
             const mem = std.mem;
