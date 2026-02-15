@@ -273,6 +273,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-27-wiring-report',
         'research/trinity-golden-chain-v2-28-minimal-demo-report',
         'research/trinity-golden-chain-v2-29-first-forward-report',
+        'research/trinity-golden-chain-v2-30-multihead-autoreg-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
       ],
