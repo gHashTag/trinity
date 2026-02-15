@@ -1,0 +1,32 @@
+name: fluent_large_corpus
+version: "1.0.0"
+language: zig
+module: fluent_large_corpus
+
+types:
+  LargeGenSample:
+    fields:
+      temperature: Float
+      text: String
+      vocab_diversity: Int
+      degeneration: Bool
+
+behaviors:
+  - name: generateFromLargeCorpus
+    given: Large corpus word trigram with 512 vocabulary
+    when: Generate 30 words at T=0.8, T=0.5, T=0.3
+    then: T=0.8 diverse Shakespeare vocab, T=0.5/0.3 degenerate (sparsity still present)
+
+  - name: compareLargeVsSmall
+    given: Generation from 25K corpus vs 5K corpus at same temperature
+    when: Compare vocabulary diversity and phrase quality
+    then: Larger corpus gives broader vocabulary but low-temp degeneration persists
+
+test_cases:
+  - name: large_gen_t08
+    input: "T=0.8, start 'to be', 30 words"
+    expected: "Diverse Shakespeare vocabulary from 512-word space"
+
+  - name: degeneration_persists
+    input: "T=0.3, start 'to be', 30 words"
+    expected: "Degeneration returns: 'to' attractor dominates despite larger corpus"
