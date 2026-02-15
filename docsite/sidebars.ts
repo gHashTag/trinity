@@ -267,6 +267,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-22-real-execution-report',
         'research/trinity-golden-chain-v2-23-e2e-live-report',
         'research/trinity-golden-chain-v2-24-execution-apocalypse-report',
+        'research/trinity-golden-chain-v2-25-singularity-report',
       ],
     },
     'faq',
