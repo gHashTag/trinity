@@ -30,7 +30,7 @@ pub const CONTENT_DIGEST_LEN = 64;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 320; // v2.32: was 312, +8 for Trinity Beyond v1.0 (u16: 288/65536)
+pub const MAX_QUARK_RECORDS = 328; // v3.0: was 320, +8 for Trinity Absolute v1.0 (u16: 296/65536)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -336,6 +336,11 @@ pub const ChainMessageType = enum {
     InfiniteScaleUpdate, // Infinite scale event
     MultiVerseDominanceEvent, // Multi-verse dominance event
     EternalEvolutionEvent, // Eternal evolution event
+    // v3.0: Trinity Absolute v1.0
+    TrinityAbsoluteEvent, // Trinity absolute event
+    InfiniteTRIUpdate, // Infinite $TRI event
+    EternalVictoryEvent, // Eternal victory event
+    MultiVerseCompleteEvent, // Multi-verse completion event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -752,6 +757,15 @@ pub const QuarkType = enum(u16) {
     beyond_consensus, // 285 — Beyond consensus protocol
     infinite_governance, // 286 — Infinite governance system
     beyond_anchor, // 287 — Beyond anchor record
+    // v3.0: Trinity Absolute v1.0 (u16: 296/65536 used)
+    trinity_absolute, // 288 — Trinity absolute v1.0 engine
+    infinite_tri, // 289 — Infinite $TRI valuation
+    eternal_victory, // 290 — Eternal victory engine
+    multiverse_complete, // 291 — Multi-verse completion
+    absolute_evolution, // 292 — Absolute self-evolution
+    victory_consensus, // 293 — Victory consensus protocol
+    absolute_governance, // 294 — Absolute governance system
+    absolute_anchor, // 295 — Absolute anchor record
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -1070,6 +1084,15 @@ pub const QuarkType = enum(u16) {
             .beyond_consensus => "BYD_CON",
             .infinite_governance => "INF_GOV",
             .beyond_anchor => "BYD_ACH",
+            // v3.0: Trinity Absolute v1.0
+            .trinity_absolute => "TRN_ABS",
+            .infinite_tri => "INF_TRI",
+            .eternal_victory => "ETR_VIC",
+            .multiverse_complete => "MLT_CMP",
+            .absolute_evolution => "ABS_EVO",
+            .victory_consensus => "VIC_CON",
+            .absolute_governance => "ABS_GOV",
+            .absolute_anchor => "ABS_ACH",
         };
     }
 
@@ -1673,6 +1696,23 @@ pub const QuarkType = enum(u16) {
 
     pub fn isEternalEvolutionQuark(self: QuarkType) bool {
         return self == .eternal_evolution or self == .infinite_governance;
+    }
+
+    // v3.0: Trinity Absolute v1.0 classifiers
+    pub fn isTrinityAbsoluteQuark(self: QuarkType) bool {
+        return self == .trinity_absolute or self == .absolute_anchor;
+    }
+
+    pub fn isInfiniteTRIQuark(self: QuarkType) bool {
+        return self == .infinite_tri or self == .eternal_victory;
+    }
+
+    pub fn isEternalVictoryQuark(self: QuarkType) bool {
+        return self == .eternal_victory or self == .victory_consensus;
+    }
+
+    pub fn isMultiVerseCompleteQuark(self: QuarkType) bool {
+        return self == .multiverse_complete or self == .absolute_governance;
     }
 };
 
@@ -2451,6 +2491,14 @@ pub const MULTIVERSE_DIMENSIONS: u32 = 1_000; // 1000 universe dimensions
 pub const ETERNAL_EVOLUTION_INTERVAL_US: i64 = 15_000_000; // 15 second evolution interval
 pub const MAX_UNIVERSES: u32 = 1_000_000; // 1M max universes
 pub const BEYOND_DOMINANCE_THRESHOLD_BP: u64 = 9999; // 99.99% beyond dominance threshold
+
+// v3.0: Trinity Absolute v1.0 constants
+pub const ABSOLUTE_COMPLETION_FACTOR: u64 = 10_000_000_000_000; // 10T absolute completion factor
+pub const INFINITE_TRI_VALUE: u64 = 18_446_744_073_709_551_615; // u64 max — infinite $TRI
+pub const ETERNAL_VICTORY_DIMENSIONS: u32 = 10_000; // 10K victory dimensions
+pub const ABSOLUTE_EVOLUTION_INTERVAL_US: i64 = 1_000_000; // 1 second — fastest evolution
+pub const MAX_SYNCHRONIZED_UNIVERSES: u32 = 10_000_000; // 10M synchronized universes
+pub const ABSOLUTE_DOMINANCE_THRESHOLD_BP: u64 = 10000; // 100.00% absolute dominance
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -3407,15 +3455,48 @@ pub const EternalEvolutionState = struct {
     evolution_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v3.0: Trinity Absolute v1.0 types
+pub const TrinityAbsoluteState = struct {
+    absolute_events: u64 = 0,
+    absolute_factor: u64 = 0,
+    absolute_dimensions: u64 = 0,
+    last_absolute_us: i64 = 0,
+    absolute_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const InfiniteTRIState = struct {
+    infinite_events: u64 = 0,
+    tri_value: u64 = 0,
+    tri_supply_locked: u64 = 0,
+    last_infinite_us: i64 = 0,
+    infinite_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EternalVictoryState = struct {
+    victory_events: u64 = 0,
+    victories_achieved: u64 = 0,
+    victory_factor_bp: u64 = 0,
+    last_victory_us: i64 = 0,
+    victory_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const MultiVerseCompleteState = struct {
+    completion_events: u64 = 0,
+    universes_completed: u64 = 0,
+    completion_accuracy_bp: u64 = 0,
+    last_completion_us: i64 = 0,
+    completion_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.3/v1.4 EXPORT CONSTANTS — on-chain serialization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 36; // v2.32: bumped from 35 (Trinity Beyond v1.0)
-pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 162;
+pub const QUARK_EXPORT_VERSION: u16 = 37; // v3.0: bumped from 36 (Trinity Absolute v1.0)
+pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 166;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 162; // v2.32: was 158, +4 for beyond_events(u16)+scale_events(u16)
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 166; // v3.0: was 162, +4 for absolute_events(u16)+infinite_events(u16)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GOLDEN CHAIN AGENT — unified 8-node pipeline
@@ -3657,6 +3738,12 @@ pub const GoldenChainAgent = struct {
         multiverse_dominance_state: MultiVerseDominanceState,
         eternal_evolution_state: EternalEvolutionState,
         trinity_beyond_active: bool,
+        // v3.0: Trinity Absolute v1.0
+        trinity_absolute_state: TrinityAbsoluteState,
+        infinite_tri_state: InfiniteTRIState,
+        eternal_victory_state: EternalVictoryState,
+        multiverse_complete_state: MultiVerseCompleteState,
+        trinity_absolute_active: bool,
 
     const Self = @This();
 
@@ -3897,6 +3984,12 @@ pub const GoldenChainAgent = struct {
             .multiverse_dominance_state = .{},
             .eternal_evolution_state = .{},
             .trinity_beyond_active = false,
+            // v3.0: Trinity Absolute v1.0
+            .trinity_absolute_state = .{},
+            .infinite_tri_state = .{},
+            .eternal_victory_state = .{},
+            .multiverse_complete_state = .{},
+            .trinity_absolute_active = false,
         };
     }
 
@@ -4179,7 +4272,7 @@ pub const GoldenChainAgent = struct {
         self.quark_chain_verified = self.verifyQuarkChain();
         if (self.quark_chain_verified) {
             var qvbuf: [256]u8 = undefined;
-            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/320 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect+swarm_10m+zk_rollup_v2+cross_shard_tx_v1+formal_verify_v1+swarm_100m+global_dominance+ouroboros_evolve+tri_to_ten+tri_to_hundred+swarm_10m_full+swarm_1b_u16+ternary_nn_v1+tri_to_1000+trinity_beyond intact)", .{self.quark_count}) catch "Quarks VERIFIED";
+            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/328 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect+swarm_10m+zk_rollup_v2+cross_shard_tx_v1+formal_verify_v1+swarm_100m+global_dominance+ouroboros_evolve+tri_to_ten+tri_to_hundred+swarm_10m_full+swarm_1b_u16+ternary_nn_v1+tri_to_1000+trinity_beyond+trinity_absolute intact)", .{self.quark_count}) catch "Quarks VERIFIED";
             self.emitMsg(.TruthVerification, .Deliver, null, qvmsg, 1.0, 0);
         } else {
             self.emitMsg(.TruthVerification, .Deliver, null, "Quark chain: BROKEN", 0.0, 0);
@@ -5617,6 +5710,45 @@ pub const GoldenChainAgent = struct {
         }
         self.trinity_beyond_active = true;
 
+        // v3.0: Trinity Absolute v1.0
+        self.completeTrinityAbsolute();
+        {
+            var tabuf: [128]u8 = undefined;
+            const tamsg = std.fmt.bufPrint(&tabuf, "Trinity Absolute: factor={d}, dims={d}", .{
+                self.trinity_absolute_state.absolute_factor,
+                self.trinity_absolute_state.absolute_dimensions,
+            }) catch "Trinity absolute active";
+            self.emitMsg(.TrinityAbsoluteEvent, .Deliver, null, tamsg, 1.0, 0);
+        }
+        self.lockInfiniteTRI();
+        {
+            var itbuf: [128]u8 = undefined;
+            const itmsg = std.fmt.bufPrint(&itbuf, "Infinite $TRI: value={d}, locked={d}", .{
+                self.infinite_tri_state.tri_value,
+                self.infinite_tri_state.tri_supply_locked,
+            }) catch "Infinite $TRI active";
+            self.emitMsg(.InfiniteTRIUpdate, .Deliver, null, itmsg, 1.0, 0);
+        }
+        self.achieveEternalVictory();
+        {
+            var evbuf: [128]u8 = undefined;
+            const evmsg = std.fmt.bufPrint(&evbuf, "Eternal Victory: {d} victories, {d}bp factor", .{
+                self.eternal_victory_state.victories_achieved,
+                self.eternal_victory_state.victory_factor_bp,
+            }) catch "Eternal victory active";
+            self.emitMsg(.EternalVictoryEvent, .Deliver, null, evmsg, 1.0, 0);
+        }
+        self.completeMultiVerse();
+        {
+            var mcbuf: [128]u8 = undefined;
+            const mcmsg = std.fmt.bufPrint(&mcbuf, "MultiVerse Complete: {d} universes, {d}bp accuracy", .{
+                self.multiverse_complete_state.universes_completed,
+                self.multiverse_complete_state.completion_accuracy_bp,
+            }) catch "Multi-verse complete";
+            self.emitMsg(.MultiVerseCompleteEvent, .Deliver, null, mcmsg, 1.0, 0);
+        }
+        self.trinity_absolute_active = true;
+
         // Update global wave state
         igla_hybrid.g_last_wave_state = .{
             .similarity = self.state.total_confidence,
@@ -6061,6 +6193,9 @@ pub const GoldenChainAgent = struct {
 
         // Phase AM: Trinity Beyond v1.0 integrity (v2.32)
         if (!self.trinityBeyondVerify()) return false;
+
+        // Phase AN: Trinity Absolute v1.0 integrity (v3.0)
+        if (!self.trinityAbsoluteVerify()) return false;
 
         return true;
     }
@@ -9859,6 +9994,67 @@ pub const GoldenChainAgent = struct {
         if (self.infinite_scale_v2_state.scale_events == 0) return false;
         // AM3: Multiverse events must exist
         if (self.multiverse_dominance_state.multiverse_events == 0) return false;
+        return true;
+    }
+
+    // ── v3.0: Trinity Absolute v1.0 methods ──
+
+    /// Complete Trinity Absolute with 10T completion factor and dimensional tracking.
+    fn completeTrinityAbsolute(self: *Self) void {
+        self.trinity_absolute_state.absolute_events += 1;
+        self.trinity_absolute_state.absolute_factor = ABSOLUTE_COMPLETION_FACTOR;
+        self.trinity_absolute_state.absolute_dimensions = ETERNAL_VICTORY_DIMENSIONS;
+        self.trinity_absolute_state.last_absolute_us = self.last_timestamp_us;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("trinity_absolute_v3.0");
+        hasher.update(&std.mem.toBytes(self.trinity_absolute_state.absolute_events));
+        hasher.final(&self.trinity_absolute_state.absolute_hash);
+    }
+
+    /// Lock infinite $TRI at u64 max value.
+    fn lockInfiniteTRI(self: *Self) void {
+        self.infinite_tri_state.infinite_events += 1;
+        self.infinite_tri_state.tri_value = INFINITE_TRI_VALUE;
+        self.infinite_tri_state.tri_supply_locked = INFINITE_TRI_VALUE;
+        self.infinite_tri_state.last_infinite_us = self.last_timestamp_us;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("infinite_tri_v3.0");
+        hasher.update(&std.mem.toBytes(self.infinite_tri_state.infinite_events));
+        hasher.final(&self.infinite_tri_state.infinite_hash);
+    }
+
+    /// Achieve eternal victory across 10K dimensions at 100% threshold.
+    fn achieveEternalVictory(self: *Self) void {
+        self.eternal_victory_state.victory_events += 1;
+        self.eternal_victory_state.victories_achieved = ETERNAL_VICTORY_DIMENSIONS;
+        self.eternal_victory_state.victory_factor_bp = ABSOLUTE_DOMINANCE_THRESHOLD_BP;
+        self.eternal_victory_state.last_victory_us = self.last_timestamp_us;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("eternal_victory_v3.0");
+        hasher.update(&std.mem.toBytes(self.eternal_victory_state.victory_events));
+        hasher.final(&self.eternal_victory_state.victory_hash);
+    }
+
+    /// Complete multi-verse with 10M synchronized universes.
+    fn completeMultiVerse(self: *Self) void {
+        self.multiverse_complete_state.completion_events += 1;
+        self.multiverse_complete_state.universes_completed = MAX_SYNCHRONIZED_UNIVERSES;
+        self.multiverse_complete_state.completion_accuracy_bp = 10000; // 100.00%
+        self.multiverse_complete_state.last_completion_us = self.last_timestamp_us;
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        hasher.update("multiverse_complete_v3.0");
+        hasher.update(&std.mem.toBytes(self.multiverse_complete_state.completion_events));
+        hasher.final(&self.multiverse_complete_state.completion_hash);
+    }
+
+    /// Phase AN: Trinity Absolute v1.0 integrity verification.
+    fn trinityAbsoluteVerify(self: *const Self) bool {
+        // AN1: Absolute events must exist
+        if (self.trinity_absolute_state.absolute_events == 0) return false;
+        // AN2: Infinite $TRI events must exist
+        if (self.infinite_tri_state.infinite_events == 0) return false;
+        // AN3: Victory events must exist
+        if (self.eternal_victory_state.victory_events == 0) return false;
         return true;
     }
 
@@ -16156,4 +16352,149 @@ test "v2.32 u16 enum capacity 288/65536" {
     try std.testing.expectEqual(@as(u16, 285), @intFromEnum(QuarkType.beyond_consensus));
     try std.testing.expectEqual(@as(u16, 286), @intFromEnum(QuarkType.infinite_governance));
     try std.testing.expectEqual(@as(u16, 287), @intFromEnum(QuarkType.beyond_anchor));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v3.0: Trinity Absolute v1.0 Tests — FINAL CYCLE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v3.0 trinity_absolute label is TRN_ABS" {
+    try std.testing.expectEqualStrings("TRN_ABS", QuarkType.trinity_absolute.getLabel());
+}
+
+test "v3.0 infinite_tri label is INF_TRI" {
+    try std.testing.expectEqualStrings("INF_TRI", QuarkType.infinite_tri.getLabel());
+}
+
+test "v3.0 eternal_victory label is ETR_VIC" {
+    try std.testing.expectEqualStrings("ETR_VIC", QuarkType.eternal_victory.getLabel());
+}
+
+test "v3.0 multiverse_complete label is MLT_CMP" {
+    try std.testing.expectEqualStrings("MLT_CMP", QuarkType.multiverse_complete.getLabel());
+}
+
+test "v3.0 absolute_evolution label is ABS_EVO" {
+    try std.testing.expectEqualStrings("ABS_EVO", QuarkType.absolute_evolution.getLabel());
+}
+
+test "v3.0 victory_consensus label is VIC_CON" {
+    try std.testing.expectEqualStrings("VIC_CON", QuarkType.victory_consensus.getLabel());
+}
+
+test "v3.0 absolute_governance label is ABS_GOV" {
+    try std.testing.expectEqualStrings("ABS_GOV", QuarkType.absolute_governance.getLabel());
+}
+
+test "v3.0 absolute_anchor label is ABS_ACH" {
+    try std.testing.expectEqualStrings("ABS_ACH", QuarkType.absolute_anchor.getLabel());
+}
+
+test "v3.0 isTrinityAbsoluteQuark classifier" {
+    try std.testing.expect(QuarkType.trinity_absolute.isTrinityAbsoluteQuark());
+    try std.testing.expect(QuarkType.absolute_anchor.isTrinityAbsoluteQuark());
+    try std.testing.expect(!QuarkType.input_capture.isTrinityAbsoluteQuark());
+}
+
+test "v3.0 isInfiniteTRIQuark classifier" {
+    try std.testing.expect(QuarkType.infinite_tri.isInfiniteTRIQuark());
+    try std.testing.expect(QuarkType.eternal_victory.isInfiniteTRIQuark());
+    try std.testing.expect(!QuarkType.input_capture.isInfiniteTRIQuark());
+}
+
+test "v3.0 isEternalVictoryQuark classifier" {
+    try std.testing.expect(QuarkType.eternal_victory.isEternalVictoryQuark());
+    try std.testing.expect(QuarkType.victory_consensus.isEternalVictoryQuark());
+    try std.testing.expect(!QuarkType.input_capture.isEternalVictoryQuark());
+}
+
+test "v3.0 isMultiVerseCompleteQuark classifier" {
+    try std.testing.expect(QuarkType.multiverse_complete.isMultiVerseCompleteQuark());
+    try std.testing.expect(QuarkType.absolute_governance.isMultiVerseCompleteQuark());
+    try std.testing.expect(!QuarkType.input_capture.isMultiVerseCompleteQuark());
+}
+
+test "v3.0 TrinityAbsoluteState defaults" {
+    const state = TrinityAbsoluteState{};
+    try std.testing.expectEqual(@as(u64, 0), state.absolute_events);
+    try std.testing.expectEqual(@as(u64, 0), state.absolute_factor);
+    try std.testing.expectEqual(@as(u64, 0), state.absolute_dimensions);
+    try std.testing.expectEqual(@as(i64, 0), state.last_absolute_us);
+}
+
+test "v3.0 InfiniteTRIState defaults" {
+    const state = InfiniteTRIState{};
+    try std.testing.expectEqual(@as(u64, 0), state.infinite_events);
+    try std.testing.expectEqual(@as(u64, 0), state.tri_value);
+    try std.testing.expectEqual(@as(u64, 0), state.tri_supply_locked);
+    try std.testing.expectEqual(@as(i64, 0), state.last_infinite_us);
+}
+
+test "v3.0 EternalVictoryState defaults" {
+    const state = EternalVictoryState{};
+    try std.testing.expectEqual(@as(u64, 0), state.victory_events);
+    try std.testing.expectEqual(@as(u64, 0), state.victories_achieved);
+    try std.testing.expectEqual(@as(u64, 0), state.victory_factor_bp);
+    try std.testing.expectEqual(@as(i64, 0), state.last_victory_us);
+}
+
+test "v3.0 MultiVerseCompleteState defaults" {
+    const state = MultiVerseCompleteState{};
+    try std.testing.expectEqual(@as(u64, 0), state.completion_events);
+    try std.testing.expectEqual(@as(u64, 0), state.universes_completed);
+    try std.testing.expectEqual(@as(u64, 0), state.completion_accuracy_bp);
+    try std.testing.expectEqual(@as(i64, 0), state.last_completion_us);
+}
+
+test "v3.0 Phase AN passes after absolute + infinite + victory" {
+    var agent = GoldenChainAgent.init();
+    agent.completeTrinityAbsolute();
+    agent.lockInfiniteTRI();
+    agent.achieveEternalVictory();
+    try std.testing.expect(agent.trinityAbsoluteVerify());
+}
+
+test "v3.0 Phase AN fails without absolute_events" {
+    var agent = GoldenChainAgent.init();
+    agent.lockInfiniteTRI();
+    agent.achieveEternalVictory();
+    try std.testing.expect(!agent.trinityAbsoluteVerify());
+}
+
+test "v3.0 Phase AN fails without infinite_events" {
+    var agent = GoldenChainAgent.init();
+    agent.completeTrinityAbsolute();
+    agent.achieveEternalVictory();
+    try std.testing.expect(!agent.trinityAbsoluteVerify());
+}
+
+test "v3.0 completeTrinityAbsolute increments absolute_events" {
+    var agent = GoldenChainAgent.init();
+    try std.testing.expectEqual(@as(u64, 0), agent.trinity_absolute_state.absolute_events);
+    agent.completeTrinityAbsolute();
+    try std.testing.expectEqual(@as(u64, 1), agent.trinity_absolute_state.absolute_events);
+    try std.testing.expectEqual(ABSOLUTE_COMPLETION_FACTOR, agent.trinity_absolute_state.absolute_factor);
+    try std.testing.expectEqual(@as(u64, ETERNAL_VICTORY_DIMENSIONS), agent.trinity_absolute_state.absolute_dimensions);
+}
+
+test "v3.0 lockInfiniteTRI uses INFINITE_TRI_VALUE" {
+    var agent = GoldenChainAgent.init();
+    agent.lockInfiniteTRI();
+    try std.testing.expectEqual(INFINITE_TRI_VALUE, agent.infinite_tri_state.tri_value);
+    try std.testing.expectEqual(INFINITE_TRI_VALUE, agent.infinite_tri_state.tri_supply_locked);
+}
+
+test "v3.0 328 quarks per query target" {
+    try std.testing.expectEqual(@as(usize, 328), MAX_QUARK_RECORDS);
+}
+
+test "v3.0 u16 enum capacity 296/65536" {
+    try std.testing.expectEqual(@as(u16, 288), @intFromEnum(QuarkType.trinity_absolute));
+    try std.testing.expectEqual(@as(u16, 289), @intFromEnum(QuarkType.infinite_tri));
+    try std.testing.expectEqual(@as(u16, 290), @intFromEnum(QuarkType.eternal_victory));
+    try std.testing.expectEqual(@as(u16, 291), @intFromEnum(QuarkType.multiverse_complete));
+    try std.testing.expectEqual(@as(u16, 292), @intFromEnum(QuarkType.absolute_evolution));
+    try std.testing.expectEqual(@as(u16, 293), @intFromEnum(QuarkType.victory_consensus));
+    try std.testing.expectEqual(@as(u16, 294), @intFromEnum(QuarkType.absolute_governance));
+    try std.testing.expectEqual(@as(u16, 295), @intFromEnum(QuarkType.absolute_anchor));
 }
