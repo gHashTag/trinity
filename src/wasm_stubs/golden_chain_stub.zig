@@ -160,6 +160,11 @@ pub const ChainMessageType = enum {
     CommunityNodeUpdate,
     HierarchicalGossipEvent,
     GeographicShardEvent,
+    // v2.16: ZK-Rollup v2.0
+    ZkSnarkProofEvent,
+    RecursiveProofUpdate,
+    L2ScalingEvent,
+    RollupBatchEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -220,7 +225,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 184;
+pub const MAX_QUARK_RECORDS = 192;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -398,6 +403,15 @@ pub const QuarkType = enum(u8) {
     geographic_shard,
     swarm_consensus,
     community_anchor,
+    // v2.16: ZK-Rollup v2.0 (u8: 160/256 used)
+    zk_snark_proof,
+    recursive_proof,
+    proof_composition,
+    l2_scaling,
+    rollup_batch,
+    proof_verification,
+    zk_commitment,
+    rollup_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -562,6 +576,15 @@ pub const QuarkType = enum(u8) {
             .geographic_shard => "GEO_SHD",
             .swarm_consensus => "SWM_CON",
             .community_anchor => "COM_ACH",
+            // v2.16: ZK-Rollup v2.0
+            .zk_snark_proof => "ZK_PRF",
+            .recursive_proof => "REC_PRF",
+            .proof_composition => "PRF_CMP",
+            .l2_scaling => "L2_SCL",
+            .rollup_batch => "RLP_BAT",
+            .proof_verification => "PRF_VRF",
+            .zk_commitment => "ZK_CMT",
+            .rollup_anchor => "RLP_ACH",
         };
     }
 
@@ -878,6 +901,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isMultiLayerDHTQuark(self: QuarkType) bool {
         return self == .multi_layer_dht or self == .swarm_consensus;
+    }
+
+    // v2.16: ZK-Rollup v2.0 classifiers
+    pub fn isZkSnarkQuark(self: QuarkType) bool {
+        return self == .zk_snark_proof or self == .rollup_anchor;
+    }
+
+    pub fn isRecursiveProofQuark(self: QuarkType) bool {
+        return self == .recursive_proof or self == .proof_composition;
+    }
+
+    pub fn isL2ScalingQuark(self: QuarkType) bool {
+        return self == .l2_scaling or self == .rollup_batch;
+    }
+
+    pub fn isZkCommitmentQuark(self: QuarkType) bool {
+        return self == .zk_commitment or self == .proof_verification;
     }
 };
 
@@ -1242,6 +1282,14 @@ pub const HIERARCHICAL_GOSSIP_LAYERS: u16 = 8;
 pub const GEOGRAPHIC_SHARD_REGIONS: u16 = 256;
 pub const SWARM_CONSENSUS_TIMEOUT_US: i64 = 60_000_000;
 pub const COMMUNITY_HEARTBEAT_INTERVAL_US: i64 = 30_000_000;
+
+// v2.16: ZK-Rollup v2.0 constants
+pub const ZK_PROOF_SIZE_BYTES: u32 = 288;
+pub const RECURSIVE_PROOF_DEPTH: u16 = 16;
+pub const L2_BATCH_SIZE: u32 = 1_000;
+pub const ROLLUP_COMMITMENT_INTERVAL_US: i64 = 10_000_000;
+pub const ZK_VERIFICATION_TIMEOUT_US: i64 = 5_000_000;
+pub const MAX_PROOFS_PER_BATCH: u16 = 256;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -1637,6 +1685,39 @@ pub const GeographicShardState = struct {
     geo_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.16: ZK-Rollup v2.0 types
+pub const ZkSnarkProofState = struct {
+    proof_count: u32 = 0,
+    verified_proofs: u32 = 0,
+    proof_size: u16 = 0,
+    last_proof_us: i64 = 0,
+    proof_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const RecursiveProofState = struct {
+    recursive_depth: u16 = 0,
+    compositions: u32 = 0,
+    composed: u32 = 0,
+    last_compose_us: i64 = 0,
+    compose_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const L2ScalingState = struct {
+    l2_batches: u32 = 0,
+    transactions_rolled: u64 = 0,
+    batch_size: u32 = 0,
+    last_batch_us: i64 = 0,
+    batch_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const RollupBatchState = struct {
+    commitments: u32 = 0,
+    anchored: u32 = 0,
+    proofs_per_batch: u16 = 0,
+    last_anchor_us: i64 = 0,
+    anchor_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1755,10 +1836,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 19;
+pub const QUARK_EXPORT_VERSION: u16 = 20;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 94;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 98;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -1961,6 +2042,12 @@ pub const GoldenChainAgent = struct {
     hierarchical_gossip_state: HierarchicalGossipState,
     geographic_shard_state: GeographicShardState,
     swarm_million_active: bool,
+    // v2.16: ZK-Rollup v2.0
+    zk_snark_proof_state: ZkSnarkProofState,
+    recursive_proof_state: RecursiveProofState,
+    l2_scaling_state: L2ScalingState,
+    rollup_batch_state: RollupBatchState,
+    zk_rollup_active: bool,
 
     const Self = @This();
 
@@ -2109,6 +2196,12 @@ pub const GoldenChainAgent = struct {
             .hierarchical_gossip_state = .{},
             .geographic_shard_state = .{},
             .swarm_million_active = false,
+            // v2.16: ZK-Rollup v2.0
+            .zk_snark_proof_state = .{},
+            .recursive_proof_state = .{},
+            .l2_scaling_state = .{},
+            .rollup_batch_state = .{},
+            .zk_rollup_active = false,
         };
     }
 
@@ -2763,6 +2856,39 @@ pub const GoldenChainAgent = struct {
         if (self.swarm_million_state.active_nodes == 0) return false;
         if (self.community_node_state.community_nodes == 0) return false;
         if (self.hierarchical_gossip_state.messages_propagated == 0) return false;
+        return true;
+    }
+
+    // v2.16: ZK-Rollup v2.0 stub methods
+    pub fn generateZkSnarkProof(self: *Self) void {
+        self.zk_snark_proof_state.proof_count += 1;
+        self.zk_snark_proof_state.verified_proofs += 1;
+        self.zk_snark_proof_state.proof_size = ZK_PROOF_SIZE_BYTES;
+        self.zk_rollup_active = true;
+    }
+
+    pub fn composeRecursiveProof(self: *Self) void {
+        self.recursive_proof_state.compositions += 1;
+        self.recursive_proof_state.composed += 1;
+        self.recursive_proof_state.recursive_depth = RECURSIVE_PROOF_DEPTH;
+    }
+
+    pub fn scaleL2Rollup(self: *Self) void {
+        self.l2_scaling_state.l2_batches += 1;
+        self.l2_scaling_state.transactions_rolled += L2_BATCH_SIZE;
+        self.l2_scaling_state.batch_size = L2_BATCH_SIZE;
+    }
+
+    pub fn batchRollupTransactions(self: *Self) void {
+        self.rollup_batch_state.commitments += 1;
+        self.rollup_batch_state.anchored += 1;
+        self.rollup_batch_state.proofs_per_batch = MAX_PROOFS_PER_BATCH;
+    }
+
+    pub fn zkRollupVerify(self: *const Self) bool {
+        if (self.zk_snark_proof_state.proof_count == 0) return false;
+        if (self.recursive_proof_state.compositions == 0) return false;
+        if (self.l2_scaling_state.l2_batches == 0) return false;
         return true;
     }
 };

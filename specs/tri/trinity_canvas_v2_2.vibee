@@ -1,0 +1,147 @@
+name: trinity_canvas_v2_2
+version: "2.2.0"
+language: typescript
+module: trinity_canvas
+
+description: |
+  Trinity Canvas v2.2 — Immersive Single Interface
+  Canvas IS the OS. No side panels. No separate windows.
+  All UI emerges from wave patterns inside the canvas.
+  phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+# =============================================================================
+# TRINITY CANVAS v2.2 — EMERGENT WAVE INTERFACE
+# Everything lives INSIDE the canvas as wave patterns.
+# No layer bar, no side panels — only waves.
+# =============================================================================
+
+types:
+  CanvasLayer:
+    description: "9 canvas layers as wave states"
+    values:
+      - petals
+      - chat
+      - editor
+      - finder
+      - vision
+      - voice
+      - tools
+      - settings
+      - viz
+
+  WaveTransition:
+    description: "Smooth wave transition between layers"
+    fields:
+      from_layer: CanvasLayer
+      to_layer: CanvasLayer
+      progress: Float
+      active: Bool
+
+  CommandBar:
+    description: "Universal command input — appears on Cmd+K or /"
+    fields:
+      visible: Bool
+      query: String
+      results: List<CommandResult>
+      selected_index: Int
+
+  CommandResult:
+    description: "Command palette result item"
+    fields:
+      id: String
+      label: String
+      icon: String
+      action: String
+      layer: Option<CanvasLayer>
+      vizMode: Option<String>
+
+  WaveModeIndicator:
+    description: "Emergent wave indicator replacing layer bar"
+    fields:
+      current_layer: CanvasLayer
+      opacity: Float
+      wave_phase: Float
+
+  FinderLayout:
+    description: "Finder with overlay preview instead of side panel"
+    fields:
+      preview_visible: Bool
+      preview_file: Option<String>
+      preview_overlay: Bool
+
+constants:
+  PHI: 1.618033988749895
+  PHI_INV: 0.618033988749895
+  TRINITY_CONSTANT: 3.0
+  TRANSITION_DURATION_MS: 400
+  COMMAND_BAR_KEY: "k"
+  MAX_COMMAND_RESULTS: 9
+
+behaviors:
+  - name: switch_layer_with_wave
+    given: User presses key 1-9 or clicks petal
+    when: Layer transition requested
+    then: |
+      Start wave transition animation (400ms).
+      Old layer fades out with expanding wave ring.
+      New layer fades in from center.
+      QuantumCanvas mode morphs smoothly.
+
+  - name: open_command_bar
+    given: User presses Cmd+K or /
+    when: Not in text input
+    then: |
+      Show floating command bar at center of canvas.
+      Fuzzy search across all layers, petals, viz modes.
+      Enter selects, ESC closes.
+      Results show as wave-emerging cards.
+
+  - name: wave_mode_indicator
+    given: Current layer state
+    when: Layer is not petals
+    then: |
+      Show subtle wave text indicator at top center.
+      Current layer name pulses with wave phase.
+      No buttons, no bar — just emergent text.
+      Fades after 3 seconds, reappears on hover.
+
+  - name: finder_overlay_preview
+    given: User clicks file in Finder
+    when: File selected for preview
+    then: |
+      Show file content as full-width overlay inside canvas.
+      No side panel. Glass morphism card centered.
+      Close with ESC or clicking outside.
+
+  - name: layer_wave_transition
+    given: Layer A -> Layer B
+    when: Transition active
+    then: |
+      Phase 1 (0-50%): Current content opacity -> 0, wave ring expands
+      Phase 2 (50-100%): New content opacity -> 1, wave ring contracts
+      QuantumCanvas mode interpolates between viz modes
+
+  - name: emergent_layer_switcher
+    given: Mouse at top edge of screen
+    when: Layer != petals
+    then: |
+      Reveal minimal layer indicator dots (9 dots).
+      Current layer dot glows with layer hue.
+      Click dot to switch. Auto-hide after 2s.
+
+  - name: keyboard_shortcuts
+    given: Keyboard input
+    when: Not in text field
+    then: |
+      1-9: Switch layer with wave transition
+      ESC: Return to Petals
+      Cmd+K: Open command bar
+      /: Open command bar (vim-style)
+
+  - name: settings_as_wave_cards
+    given: Settings layer active
+    when: Rendering settings
+    then: |
+      Settings cards emerge from center with staggered wave animation.
+      Each card has subtle floating animation.
+      No static list — living wave cards.

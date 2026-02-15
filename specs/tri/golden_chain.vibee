@@ -1,0 +1,132 @@
+name: golden_chain
+version: "1.0.0"
+language: zig
+module: golden_chain
+
+description: |
+  Златая Цепь (Golden Chain) — Unified 8-Node Agent Pipeline.
+  Combines all 13+ agent systems into ONE unified pipeline.
+  Each node is a Chakra-colored chain link visualized in the canvas.
+  Backend: Hybrid — local Zig (VSA/TVC/Tools) + Claude API (LLM).
+  phi^2 + 1/phi^2 = 3 = TRINITY
+
+types:
+  ChainNode:
+    description: "8 pipeline steps mapped to Chakra colors"
+    variants:
+      - GoalParse     # Red — Муладхара — Parse input into structured goal
+      - Decompose     # Orange — Свадхистана — Break into subtasks
+      - Schedule      # Yellow — Манипура — Plan execution order
+      - Execute       # Green — Анахата — Run tools, call API
+      - Monitor       # Blue — Вишуддха — Check quality, confidence
+      - Adapt         # Indigo — Аджна — Correct if quality low
+      - Synthesize    # Violet — Сахасрара — Merge results
+      - Deliver       # Gold — Единство — Final answer
+
+  ChakraColor:
+    description: "7 Chakra colors + Gold for unity"
+    variants:
+      - Red:      "#FF0000"  # Hue 0
+      - Orange:   "#FF7F00"  # Hue 30
+      - Yellow:   "#FFFF00"  # Hue 60
+      - Green:    "#00FF00"  # Hue 120
+      - Blue:     "#4444FF"  # Hue 240
+      - Indigo:   "#4B0082"  # Hue 270
+      - Violet:   "#8B00FF"  # Hue 280
+      - Gold:     "#FFD700"  # Hue 45
+
+  ChainMessageType:
+    description: "Extended message classification"
+    variants:
+      - User        # User input
+      - ChainStep   # Pipeline node output
+      - ToolResult  # Tool execution result
+      - RoutingInfo # Routing decision info
+      - Reflection  # Self-learning event
+      - AgentState  # State change
+      - Error       # Error message
+
+  GoalType:
+    description: "Detected intent from user input"
+    variants:
+      - CodeGen   # build, create, make, write, implement
+      - BugFix    # fix, bug, error, broken, crash
+      - Explain   # explain, what, how, why, describe
+      - Refactor  # refactor, clean, improve, optimize
+      - Search    # find, search, where, locate
+      - Test      # test, verify, check, validate
+      - Chat      # greeting, question, conversation
+      - Tool      # time, date, file, build
+
+  ChainMessage:
+    fields:
+      msg_type: ChainMessageType
+      node: Option<ChainNode>
+      source: Option<HybridSource>
+      content: String
+      confidence: Float
+      latency_us: Int
+
+  ChainState:
+    fields:
+      current_node: ChainNode
+      node_progress: List<Float>
+      node_active: List<Bool>
+      node_complete: List<Bool>
+      total_confidence: Float
+      total_latency_us: Int
+      is_running: Bool
+
+  GoldenChainAgent:
+    fields:
+      hybrid_chat: HybridChatRef
+      messages: List<ChainMessage>
+      state: ChainState
+      goal_type: GoalType
+      subtask_count: Int
+      min_quality: Float
+
+behaviors:
+  - name: process_input
+    given: User types a message and presses Enter
+    when: GoldenChainAgent receives the input string
+    then: |
+      Runs 8-node pipeline sequentially:
+      1. GOAL_PARSE: Detect GoalType from input patterns
+      2. DECOMPOSE: Split compound goals by "and"/"и" separators
+      3. SCHEDULE: Determine execution order (sequential for now)
+      4. EXECUTE: Call IglaHybridChat.respond() — routes through
+         Tools -> Symbolic -> TVC -> LLM cascade
+      5. MONITOR: Check confidence, latency, source
+      6. ADAPT: If confidence < min_quality, retry with different provider
+      7. SYNTHESIZE: Merge subtask results
+      8. DELIVER: Format final answer, update g_last_wave_state
+      Each node emits one or more ChainMessages to canvas.
+
+  - name: chain_msg_to_canvas
+    given: A ChainMessage from the pipeline
+    when: Canvas needs to render the message
+    then: |
+      Convert ChainMessageType + ChainNode to ChatMsgType:
+      - ChainStep+GoalParse -> chain_goal_parse (Red indicator)
+      - ChainStep+Execute -> chain_execute (Green indicator)
+      - ToolResult -> tool_result (Blue indicator)
+      - Reflection -> reflection (Learn green indicator)
+      - Error -> agent_error (Red indicator)
+
+  - name: render_chain_message
+    given: A chain-type ChatMsgType in the chat display
+    when: drawChatPanel renders messages
+    then: |
+      Draw pulsing Chakra-colored circle (drawChainIndicator)
+      + node label (GOAL_PARSE, EXECUTE, etc.)
+      + content text on next line with indent
+      Each message on its own line.
+
+  - name: adapt_on_low_quality
+    given: Monitor reports confidence below min_quality (0.7)
+    when: Adapt node runs
+    then: |
+      Re-call hybrid_chat.respond() for a second attempt.
+      If new confidence > old, replace execute_response.
+      Otherwise keep best result.

@@ -719,6 +719,39 @@ pub fn build(b: *std.Build) void {
     const run_saga_coordinator_tests = b.addRunArtifact(saga_coordinator_tests);
     test_step.dependOn(&run_saga_coordinator_tests.step);
 
+    // Trinity Node - Transaction WAL tests (v2.4)
+    const transaction_wal_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/transaction_wal.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_transaction_wal_tests = b.addRunArtifact(transaction_wal_tests);
+    test_step.dependOn(&run_transaction_wal_tests.step);
+
+    // Trinity Node - Parallel Saga tests (v2.5)
+    const parallel_saga_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/parallel_saga.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_parallel_saga_tests = b.addRunArtifact(parallel_saga_tests);
+    test_step.dependOn(&run_parallel_saga_tests.step);
+
+    // Trinity Node - WAL Disk Persistence tests (v2.6)
+    const wal_disk_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_node/wal_disk.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_wal_disk_tests = b.addRunArtifact(wal_disk_tests);
+    test_step.dependOn(&run_wal_disk_tests.step);
+
     // B2T CLI
     const b2t = b.addExecutable(.{
         .name = "b2t",
@@ -867,6 +900,15 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "igla_chat", .module = vibeec_chat },
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
+        },
+    });
+    // Golden Chain Agent (8-node unified pipeline)
+    const golden_chain_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/golden_chain.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
         },
     });
     // IGLA TVC Chat module (fluent chat + TVC integration)
@@ -1031,6 +1073,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "igla_chat", .module = vibeec_chat },
                 .{ .name = "igla_fluent_chat", .module = vibeec_fluent_chat },
                 .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
+                .{ .name = "golden_chain", .module = golden_chain_mod },
                 .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
                 .{ .name = "auto_shard", .module = b.createModule(.{
                     .root_source_file = b.path("src/trinity_node/auto_shard.zig"),
@@ -1050,21 +1093,124 @@ pub fn build(b: *std.Build) void {
     const trinity_canvas_step = b.step("trinity-canvas", "Run Trinity Cosmic Canvas (v1.9 Emergent Wave)");
     trinity_canvas_step.dependOn(&run_trinity_canvas.step);
 
-    // Keyboard Debug Test - minimal keyboard input test
-    const keyboard_test = b.addExecutable(.{
-        .name = "keyboard-test",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa/keyboard_test.zig"),
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Trinity Canvas WASM — compiles the same canvas for browsers via Emscripten
+    // Build: zig build trinity-canvas-wasm -Dtarget=wasm32-emscripten
+    // Output: zig-out/web/ (trinity-canvas.html, .js, .wasm, .data)
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+        // WASM stub modules (replace system-dependent chat/network/fs)
+        const wasm_igla_chat = b.createModule(.{
+            .root_source_file = b.path("src/wasm_stubs/igla_chat_stub.zig"),
             .target = target,
             .optimize = optimize,
-        }),
-    });
-    keyboard_test.linkSystemLibrary("raylib");
-    b.installArtifact(keyboard_test);
+        });
+        const wasm_fluent_chat = b.createModule(.{
+            .root_source_file = b.path("src/wasm_stubs/igla_fluent_chat_stub.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        const wasm_tvc_corpus = b.createModule(.{
+            .root_source_file = b.path("src/wasm_stubs/tvc_corpus_stub.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        const wasm_auto_shard = b.createModule(.{
+            .root_source_file = b.path("src/wasm_stubs/auto_shard_stub.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        const wasm_hybrid_chat = b.createModule(.{
+            .root_source_file = b.path("src/wasm_stubs/igla_hybrid_chat_stub.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "igla_chat", .module = wasm_igla_chat },
+                .{ .name = "tvc_corpus", .module = wasm_tvc_corpus },
+            },
+        });
+        const wasm_golden_chain = b.createModule(.{
+            .root_source_file = b.path("src/wasm_stubs/golden_chain_stub.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "igla_hybrid_chat", .module = wasm_hybrid_chat },
+            },
+        });
 
-    const run_keyboard_test = b.addRunArtifact(keyboard_test);
-    const keyboard_test_step = b.step("keyboard-test", "Run Keyboard Debug Test");
-    keyboard_test_step.dependOn(&run_keyboard_test.step);
+        const wasm_root = b.createModule(.{
+            // ONE SOURCE OF TRUTH: same file as native build, with is_emscripten gates
+            .root_source_file = b.path("src/vsa/photon_trinity_canvas.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .imports = &.{
+                .{ .name = "igla_chat", .module = wasm_igla_chat },
+                .{ .name = "igla_fluent_chat", .module = wasm_fluent_chat },
+                .{ .name = "igla_hybrid_chat", .module = wasm_hybrid_chat },
+                .{ .name = "golden_chain", .module = wasm_golden_chain },
+                .{ .name = "tvc_corpus", .module = wasm_tvc_corpus },
+                .{ .name = "auto_shard", .module = wasm_auto_shard },
+            },
+        });
+
+        const wasm_step = b.step("trinity-canvas-wasm", "Build Trinity Canvas for Web (WASM via Emscripten)");
+
+        if (target.query.os_tag == .emscripten) {
+            // ── Emscripten WASM build (raylib-zig emsdk helpers) ──
+            const raylib_zig = @import("raylib");
+
+            // Get raylib C library compiled for emscripten
+            const raylib_dep = b.dependency("raylib", .{
+                .target = target,
+                .optimize = optimize,
+            });
+            const raylib_artifact = raylib_dep.artifact("raylib");
+
+            // Link raylib C library and add its include path for @cImport("raylib.h")
+            wasm_root.linkLibrary(raylib_artifact);
+            wasm_root.addIncludePath(raylib_dep.path("src"));
+
+            const wasm = b.addLibrary(.{
+                .name = "trinity-canvas",
+                .root_module = wasm_root,
+                .linkage = .static,
+            });
+
+            const install_dir: std.Build.InstallDir = .{ .custom = "web" };
+            const emcc_flags = raylib_zig.emsdk.emccDefaultFlags(b.allocator, .{
+                .optimize = optimize,
+                .asyncify = true,
+            });
+            var emcc_settings = raylib_zig.emsdk.emccDefaultSettings(b.allocator, .{
+                .optimize = optimize,
+            });
+            // Trinity Canvas needs ~256MB for grid + fonts + particles
+            emcc_settings.put("ALLOW_MEMORY_GROWTH", "1") catch unreachable;
+            emcc_settings.put("INITIAL_MEMORY", "268435456") catch unreachable; // 256MB
+
+            const emcc_link = raylib_zig.emsdk.emccStep(b, raylib_artifact, wasm, .{
+                .optimize = optimize,
+                .flags = emcc_flags,
+                .settings = emcc_settings,
+                .shell_file_path = b.path("src/wasm_stubs/shell.html"),
+                .install_dir = install_dir,
+                .embed_paths = &.{.{ .src_path = b.pathFromRoot("assets/fonts"), .virtual_path = "assets/fonts" }},
+            });
+
+            wasm_step.dependOn(emcc_link);
+        } else {
+            // ── Native build (for compilation check without emsdk) ──
+            const wasm_canvas = b.addExecutable(.{
+                .name = "trinity-canvas-wasm-check",
+                .root_module = wasm_root,
+            });
+            wasm_canvas.linkSystemLibrary("raylib");
+            wasm_canvas.linkLibC();
+            b.installArtifact(wasm_canvas);
+            wasm_step.dependOn(b.getInstallStep());
+        }
+    }
 
     // Photon Terminal v1.0 - TERNARY EMERGENT TUI
     // Not a grid of cells — a living wave field in your terminal.
