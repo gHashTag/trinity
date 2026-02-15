@@ -1926,6 +1926,165 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &hash_before, &hash_after);");
 
         // ═══════════════════════════════════════════════════════════════════
+        // DISCOVERY TESTS (D1-D4): Peer Discovery + Self-Healing proofs
+        // PeerRegistry + ShardManifest + RS auto-recovery after failures.
+        // ═══════════════════════════════════════════════════════════════════
+
+        } else if (std.mem.eql(u8, name, "discoveryPeerRegistration")) {
+            // D1: Register 5 peers, verify alive count and ports
+            try self.builder.writeLine("// D1: Peer Registration — Register 5 Peers, Verify Status");
+            try self.builder.writeLine("var registry = PeerRegistry.init();");
+            try self.builder.writeLine("const ports = [_]u16{ 8001, 8002, 8003, 8004, 8005 };");
+            try self.builder.writeLine("var ids: [5]u8 = undefined;");
+            try self.builder.writeLine("var i: usize = 0;");
+            try self.builder.writeLine("while (i < 5) : (i += 1) {");
+            try self.builder.writeLine("    ids[i] = try registry.registerPeer(ports[i]);");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: 5 alive peers registered");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 5), registry.alivePeers());");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 5), registry.count);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: each peer has correct port and is alive");
+            try self.builder.writeLine("i = 0;");
+            try self.builder.writeLine("while (i < 5) : (i += 1) {");
+            try self.builder.writeLine("    try std.testing.expectEqual(ports[i], registry.getPort(ids[i]));");
+            try self.builder.writeLine("    try std.testing.expect(registry.isAlive(ids[i]));");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: non-existent peer is not alive");
+            try self.builder.writeLine("try std.testing.expect(!registry.isAlive(7));");
+
+        } else if (std.mem.eql(u8, name, "discoveryFailureDetection")) {
+            // D2: Mark 2 dead, verify alive/dead status
+            try self.builder.writeLine("// D2: Failure Detection — Mark 2 Dead, Verify Status");
+            try self.builder.writeLine("var registry = PeerRegistry.init();");
+            try self.builder.writeLine("var i: usize = 0;");
+            try self.builder.writeLine("while (i < 5) : (i += 1) {");
+            try self.builder.writeLine("    _ = try registry.registerPeer(@intCast(9000 + i));");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 5), registry.alivePeers());");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Kill peers 1 and 3");
+            try self.builder.writeLine("registry.markDead(1);");
+            try self.builder.writeLine("registry.markDead(3);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: 3 alive, 2 dead");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 3), registry.alivePeers());");
+            try self.builder.writeLine("try std.testing.expect(registry.isAlive(0));");
+            try self.builder.writeLine("try std.testing.expect(!registry.isAlive(1));");
+            try self.builder.writeLine("try std.testing.expect(registry.isAlive(2));");
+            try self.builder.writeLine("try std.testing.expect(!registry.isAlive(3));");
+            try self.builder.writeLine("try std.testing.expect(registry.isAlive(4));");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: total count unchanged (dead peers still counted)");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 5), registry.count);");
+
+        } else if (std.mem.eql(u8, name, "discoveryManifestSurvivorQuery")) {
+            // D3: Manifest tracks 5 shards, 2 peers die, query returns 3 survivors
+            try self.builder.writeLine("// D3: Manifest Survivor Query — 5 Shards, 2 Dead, 3 Survivors");
+            try self.builder.writeLine("var registry = PeerRegistry.init();");
+            try self.builder.writeLine("var i: usize = 0;");
+            try self.builder.writeLine("while (i < 5) : (i += 1) {");
+            try self.builder.writeLine("    _ = try registry.registerPeer(@intCast(7000 + i));");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Record shards for data group 0: shard i → peer i");
+            try self.builder.writeLine("var manifest = ShardManifest.init();");
+            try self.builder.writeLine("i = 0;");
+            try self.builder.writeLine("while (i < 5) : (i += 1) {");
+            try self.builder.writeLine("    manifest.recordShard(0, @intCast(i), @intCast(i));");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Kill peers 1 and 3");
+            try self.builder.writeLine("registry.markDead(1);");
+            try self.builder.writeLine("registry.markDead(3);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Query survivors");
+            try self.builder.writeLine("var surv_shard: [8]u8 = undefined;");
+            try self.builder.writeLine("var surv_peer: [8]u8 = undefined;");
+            try self.builder.writeLine("const surv_count = manifest.survivorsForGroup(0, &registry, &surv_shard, &surv_peer);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: exactly 3 survivors");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 3), surv_count);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: survivors are shards {0, 2, 4} from peers {0, 2, 4}");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 0), surv_shard[0]);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 2), surv_shard[1]);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 4), surv_shard[2]);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 0), surv_peer[0]);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 2), surv_peer[1]);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 4), surv_peer[2]);");
+
+        } else if (std.mem.eql(u8, name, "discoverySelfHealingRecovery")) {
+            // D4: Full self-healing: register → encode → distribute → manifest → fail → query → RS decode
+            try self.builder.writeLine("// D4: Self-Healing Recovery — Full Auto-Recovery Flow");
+            try self.builder.writeLine("const rs = ReedSolomon.init(3, 2);");
+            try self.builder.writeLine("const data0 = [_]u8{ 0xDE, 0xAD, 0xBE, 0xEF };");
+            try self.builder.writeLine("const data1 = [_]u8{ 0xCA, 0xFE, 0xBA, 0xBE };");
+            try self.builder.writeLine("const data2 = [_]u8{ 0xF0, 0x0D, 0xFA, 0xCE };");
+            try self.builder.writeLine("const block_len = 4;");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Step 1: RS-encode");
+            try self.builder.writeLine("var coded: [5][4]u8 = undefined;");
+            try self.builder.writeLine("var pos: usize = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var in_bytes = [_]u8{ data0[pos], data1[pos], data2[pos] };");
+            try self.builder.writeLine("    var out_bytes: [5]u8 = undefined;");
+            try self.builder.writeLine("    rs.encodeByte(&in_bytes, &out_bytes);");
+            try self.builder.writeLine("    var s: usize = 0;");
+            try self.builder.writeLine("    while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Step 2: Register 5 peers and record shard locations in manifest");
+            try self.builder.writeLine("var registry = PeerRegistry.init();");
+            try self.builder.writeLine("var manifest = ShardManifest.init();");
+            try self.builder.writeLine("var n: usize = 0;");
+            try self.builder.writeLine("while (n < 5) : (n += 1) {");
+            try self.builder.writeLine("    const pid = try registry.registerPeer(@intCast(6000 + n));");
+            try self.builder.writeLine("    manifest.recordShard(0, @intCast(n), pid);");
+            try self.builder.writeLine("    registry.incShards(pid);");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Step 3: Simulate failure — peers 0 and 1 go down");
+            try self.builder.writeLine("registry.markDead(0);");
+            try self.builder.writeLine("registry.markDead(1);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 3), registry.alivePeers());");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Step 4: Self-healing — query manifest for survivors");
+            try self.builder.writeLine("var surv_shard: [8]u8 = undefined;");
+            try self.builder.writeLine("var surv_peer: [8]u8 = undefined;");
+            try self.builder.writeLine("const surv_count = manifest.survivorsForGroup(0, &registry, &surv_shard, &surv_peer);");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 3), surv_count);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Step 5: Collect coded shards from surviving peers (using shard indices)");
+            try self.builder.writeLine("var collected: [3][4]u8 = undefined;");
+            try self.builder.writeLine("var collect_idx: [3]u8 = undefined;");
+            try self.builder.writeLine("var ci: usize = 0;");
+            try self.builder.writeLine("while (ci < surv_count) : (ci += 1) {");
+            try self.builder.writeLine("    const sidx = surv_shard[ci];");
+            try self.builder.writeLine("    @memcpy(&collected[ci], &coded[sidx]);");
+            try self.builder.writeLine("    collect_idx[ci] = sidx;");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Step 6: RS-decode from surviving shards");
+            try self.builder.writeLine("var rec: [3][4]u8 = undefined;");
+            try self.builder.writeLine("pos = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var avail = [_]u8{ collected[0][pos], collected[1][pos], collected[2][pos] };");
+            try self.builder.writeLine("    var indices = [_]u8{ collect_idx[0], collect_idx[1], collect_idx[2] };");
+            try self.builder.writeLine("    var out: [3]u8 = undefined;");
+            try self.builder.writeLine("    try rs.decodeByte(&avail, &indices, &out);");
+            try self.builder.writeLine("    var s2: usize = 0;");
+            try self.builder.writeLine("    while (s2 < 3) : (s2 += 1) rec[s2][pos] = out[s2];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: Self-healing recovered original data byte-for-byte");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data0, &rec[0]);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data1, &rec[1]);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data2, &rec[2]);");
+
+        // ═══════════════════════════════════════════════════════════════════
         // NETWORK PIPELINE TESTS (NP1-NP4): TCP fault-tolerant proofs
         // RS encode → TCP send to receiver threads → lose nodes → decode.
         // Uses std.Thread + std.net for concurrent node simulation.
