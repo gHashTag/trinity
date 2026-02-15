@@ -84,16 +84,20 @@ export default function ChatMessage({ role, content, source, confidence, latency
               </span>
             )}
             {learned === true && (
-              <span style={{
-                fontSize: 10, padding: '2px 6px', borderRadius: 4,
-                background: 'rgba(0,229,153,0.15)',
-                color: '#00e599',
-                border: '1px solid rgba(0,229,153,0.3)',
-                fontFamily: 'monospace', letterSpacing: 0.5,
-                textShadow: '0 0 6px rgba(0,229,153,0.4)',
-              }}>
+              <motion.span
+                animate={{ boxShadow: ['0 0 4px rgba(0,229,153,0.2)', '0 0 12px rgba(0,229,153,0.5)', '0 0 4px rgba(0,229,153,0.2)'] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                style={{
+                  fontSize: 10, padding: '2px 6px', borderRadius: 4,
+                  background: 'rgba(0,229,153,0.15)',
+                  color: '#00e599',
+                  border: '1px solid rgba(0,229,153,0.3)',
+                  fontFamily: 'monospace', letterSpacing: 0.5,
+                  textShadow: '0 0 6px rgba(0,229,153,0.4)',
+                  display: 'inline-block',
+                }}>
                 LEARNED
-              </span>
+              </motion.span>
             )}
             {reflection && reflection !== 'NotApplicable' && reflection !== 'Saved' && reflection !== 'Disabled' && (
               <span style={{

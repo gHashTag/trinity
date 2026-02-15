@@ -1,0 +1,186 @@
+name: trinity_canvas_v2_3
+version: "2.3.0"
+language: typescript
+module: trinity_canvas
+
+description: |
+  Trinity Canvas v2.3 — Mirror of Three Worlds (Зеркало Трёх Миров)
+  Functional dashboard with real metrics, live logs, query path visualization.
+  Three columns: RAZUM (Mind/φ), MATERIYA (Matter/π), DUKH (Spirit/e).
+  Real-time polling from /health endpoint every 2 seconds.
+  Log ring buffer (20 entries) on backend, accumulated to 50 on frontend.
+  phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+# =============================================================================
+# TRINITY CANVAS v2.3 — MIRROR OF THREE WORLDS
+# Transparent analysis of all pipeline instruments.
+# Coordinated interaction tool for user, agent, and system.
+# Live logs + query path + real metrics — no empty design.
+# =============================================================================
+
+types:
+  CanvasLayer:
+    description: "9 canvas layers as wave states"
+    values:
+      - petals
+      - chat
+      - editor
+      - finder
+      - vision
+      - voice
+      - tools     # renamed display: ЗЕРКАЛО (Mirror of Three Worlds)
+      - settings
+      - viz
+
+  MirrorRazum:
+    description: "RAZUM (Mind) — VSA engine intelligence metrics"
+    fields:
+      symbolic_hits: Int
+      symbolic_hit_rate: Float
+      memory_entries: Int
+      memory_hit_rate: Float
+      memory_evictions: Int
+      llm_loaded: Bool
+      last_routing: String
+
+  MirrorMateriya:
+    description: "MATERIYA (Matter) — TVC corpus physical storage metrics"
+    fields:
+      tvc_enabled: Bool
+      tvc_corpus_size: Int
+      tvc_hits: Int
+      tvc_hit_rate: Float
+      cache_hit_rate: Float
+
+  MirrorDukh:
+    description: "DUKH (Spirit) — Chat pipeline energy and provider metrics"
+    fields:
+      total_queries: Int
+      energy_saved_wh: Float
+      groq_calls: Int
+      claude_calls: Int
+      tool_hits: Int
+      vision_calls: Int
+      whisper_calls: Int
+      groq_success_rate: Float
+      claude_success_rate: Float
+      context_enabled: Bool
+      context_messages: Int
+      context_key_facts: Int
+
+  MirrorLogEntry:
+    description: "Single query log entry from ring buffer"
+    fields:
+      ts: Int               # unix timestamp
+      src: String            # Symbolic|TVCCorpus|GroqAPI|ClaudeAPI|Tool|LocalLLM|Error
+      q: String              # query preview (max 64 chars)
+      conf: Float            # confidence 0.0-1.0
+      lat: Int               # latency in microseconds
+      learned: Option<Bool>  # true if saved to TVC
+
+  MirrorStatus:
+    description: "Combined health response with three world sections + logs"
+    fields:
+      status: String
+      uptime_s: Option<Int>
+      razum: Option<MirrorRazum>
+      materiya: Option<MirrorMateriya>
+      dukh: Option<MirrorDukh>
+      logs: Option<List<MirrorLogEntry>>
+
+constants:
+  PHI: 1.618033988749895
+  PI: 3.141592653589793
+  E: 2.718281828459045
+  TRINITY_CONSTANT: 3.0
+  MIRROR_POLL_INTERVAL_MS: 2000
+  HEALTH_TIMEOUT_MS: 3000
+  LOG_RING_SIZE: 20
+  LOG_FRONTEND_MAX: 50
+
+behaviors:
+  - name: mirror_auto_poll
+    given: User switches to Mirror layer (key 7)
+    when: Layer becomes 'tools' (display: ЗЕРКАЛО)
+    then: |
+      Immediately fetch /health endpoint.
+      Parse JSON into MirrorStatus with razum/materiya/dukh + logs.
+      Start polling every 2 seconds.
+      Merge new log entries by timestamp deduplication.
+      Accumulate up to 50 log entries on frontend.
+      Auto-scroll log panel to bottom.
+      Stop polling when layer changes.
+
+  - name: mirror_three_columns
+    given: MirrorStatus data available
+    when: Rendering Mirror layer
+    then: |
+      Display three glass-morphism columns with metrics + logs:
+        RAZUM (gold, left)
+          — Grid: hit rate, hits, memory, evictions, LLM status
+          — Query path visualization: Symbolic → TVC → LLM (active step highlighted)
+          — Live log: symbolic/memory hits only
+        MATERIYA (cyan, center)
+          — Grid: TVC status, corpus size, hits, rates
+          — Energy pipeline: cost per query at each level
+          — Live log: TVC hits + learned entries
+        DUKH (purple, right)
+          — Grid: queries, energy, providers, context
+          — Provider health: Groq/Claude success rate with color
+          — Live log: all entries with source icon + latency
+      Each column has sacred constant subtitle (φ, π, e).
+      Metrics highlight active values vs zero values.
+
+  - name: log_ring_buffer
+    given: Chat request processed by backend
+    when: Response sent to client
+    then: |
+      Record LogEntry to ring buffer (size 20):
+        timestamp, source name, query preview (64 chars),
+        confidence, latency_us, learned flag.
+      Ring buffer overwrites oldest entry when full.
+
+  - name: query_path_visualization
+    given: RAZUM column has last_routing data
+    when: Rendering query path
+    then: |
+      Show: ⚡ Symbolic → 💎 TVC → 🧠 LLM
+      Active step highlighted (opacity 1.0), inactive dimmed (0.3).
+      Based on last_routing: RouteSymbolic/RouteTVC/RouteMemory/RouteGroq/etc.
+      Show "Last: {routing}" label below.
+
+  - name: energy_pipeline_display
+    given: MATERIYA column rendering
+    when: Rendering energy pipeline
+    then: |
+      Show cost hierarchy:
+        Symbolic: 0.1 mWh/query
+        TVC Cache: 1 mWh/query
+        Local LLM: 50 mWh/query
+        Cloud API: 100 mWh/query
+
+  - name: provider_health_display
+    given: DUKH column has provider data
+    when: Rendering provider health
+    then: |
+      Show Groq and Claude success rates as large percentage numbers.
+      Color: green (>80%), yellow (>50%), red (<50%).
+      Show call count below each.
+
+  - name: mirror_offline_state
+    given: Backend unreachable
+    when: fetchMirrorStatus returns status='offline'
+    then: |
+      Show "Start backend: zig build tri -- serve --chat --port 8080".
+      Connection indicator shows red dot + OFFLINE label.
+      Continue polling (backend may come online).
+
+  - name: health_endpoint_detailed
+    given: Chat engine initialized in backend
+    when: GET /health received
+    then: |
+      Return JSON with:
+        status, uptime_s, razum, materiya, dukh sections,
+        logs array (ring buffer contents oldest-to-newest).
+      Uses ArrayList for flexible JSON building.
+      Backward-compatible: always includes "status":"ok".
