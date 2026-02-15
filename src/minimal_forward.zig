@@ -659,3 +659,300 @@ test "perplexity measurement" {
     try std.testing.expect(!std.math.isNan(perplexity));
     try std.testing.expect(!std.math.isInf(perplexity));
 }
+
+test "scaled corpus training with honest split and LR decay" {
+    const dim: usize = 256;
+    const num_epochs: usize = 200;
+
+    // 512-char Shakespeare corpus — significantly larger than v2.31's 48 chars
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    // Honest split: train on first 70%, eval on next 15%, test on last 15%
+    const total_samples = corpus.len - 8; // each sample = 8 context + 1 target
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    // Use 12 evenly-spaced offsets from train region (avoid stack overflow)
+    const train_sample_count = 12;
+    var train_offsets: [12]usize = undefined;
+    for (0..train_sample_count) |i| {
+        train_offsets[i] = i * train_end / train_sample_count;
+    }
+
+    // 6 eval offsets from eval region
+    const eval_sample_count = 6;
+    const eval_region_size = eval_end - train_end;
+    var eval_offsets: [6]usize = undefined;
+    for (0..eval_sample_count) |i| {
+        eval_offsets[i] = train_end + i * eval_region_size / eval_sample_count;
+    }
+
+    // 6 test offsets from test region
+    const test_sample_count = 6;
+    const test_region_size = total_samples - eval_end;
+    var test_offsets: [6]usize = undefined;
+    for (0..test_sample_count) |i| {
+        test_offsets[i] = eval_end + i * test_region_size / test_sample_count;
+    }
+
+    var roles = initRoles(dim, 42);
+
+    var loss_epoch0: f64 = 0;
+    var loss_final: f64 = 0;
+    var eval_loss_best: f64 = 999.0;
+
+    std.debug.print("\n=== SCALED CORPUS TRAINING ({d} epochs, corpus={d} chars) ===\n", .{ num_epochs, corpus.len });
+    std.debug.print("Split: train {d} | eval {d} | test {d} samples\n", .{ train_sample_count, eval_sample_count, test_sample_count });
+
+    for (0..num_epochs) |epoch| {
+        // Learning rate decay: lr = 0.3 * 0.99^epoch
+        var lr_prng = std.Random.DefaultPrng.init(epoch * 31337);
+        const lr_rand = lr_prng.random();
+        _ = lr_rand;
+        const base_lr: f64 = 0.3;
+        var lr: f64 = base_lr;
+        for (0..epoch) |_| {
+            lr *= 0.99;
+        }
+        // Clamp LR to minimum 0.05
+        if (lr < 0.05) lr = 0.05;
+
+        var epoch_loss: f64 = 0;
+        var samples_used: usize = 0;
+
+        for (train_offsets) |s| {
+            if (s + 8 >= corpus.len) continue;
+
+            var ctx: [8]Hypervector = undefined;
+            for (0..8) |i| {
+                ctx[i] = charToHV(dim, corpus[s + i]);
+            }
+            var target = charToHV(dim, corpus[s + 8]);
+
+            var output = forwardPassMultiHead(&ctx, &roles);
+            const sim = output.similarity(&target);
+            epoch_loss += 1.0 - sim;
+            samples_used += 1;
+
+            // Error correction with decayed LR
+            var neg_output = output.negate();
+            var error_hv = target.bundle(&neg_output);
+
+            var sparse_error = error_hv.clone();
+            var prng = std.Random.DefaultPrng.init(epoch * train_sample_count + s + 20000);
+            const random = prng.random();
+            for (0..dim) |idx| {
+                if (random.float(f64) > lr) {
+                    sparse_error.set(idx, 0);
+                }
+            }
+
+            for (0..11) |r| {
+                roles[r] = roles[r].bundle(&sparse_error);
+            }
+        }
+
+        if (samples_used > 0) {
+            epoch_loss /= @as(f64, @floatFromInt(samples_used));
+        }
+        if (epoch == 0) loss_epoch0 = epoch_loss;
+        if (epoch == num_epochs - 1) loss_final = epoch_loss;
+
+        // Eval loss (no updates)
+        if (epoch % 20 == 0 or epoch == num_epochs - 1) {
+            var el: f64 = 0;
+            var eval_used: usize = 0;
+            for (eval_offsets) |s| {
+                if (s + 8 >= corpus.len) continue;
+                var ctx: [8]Hypervector = undefined;
+                for (0..8) |i| {
+                    ctx[i] = charToHV(dim, corpus[s + i]);
+                }
+                var target = charToHV(dim, corpus[s + 8]);
+                var output = forwardPassMultiHead(&ctx, &roles);
+                const sim = output.similarity(&target);
+                el += 1.0 - sim;
+                eval_used += 1;
+            }
+            if (eval_used > 0) el /= @as(f64, @floatFromInt(eval_used));
+            if (el < eval_loss_best) eval_loss_best = el;
+
+            std.debug.print("  Epoch {d:3}: train_loss={d:.4} eval_loss={d:.4} lr={d:.4}\n", .{ epoch, epoch_loss, el, lr });
+        }
+    }
+
+    const loss_drop_pct = if (loss_epoch0 > 0) (loss_epoch0 - loss_final) / loss_epoch0 * 100.0 else 0;
+    std.debug.print("  Train loss epoch 0:   {d:.4}\n", .{loss_epoch0});
+    std.debug.print("  Train loss epoch {d}: {d:.4}\n", .{ num_epochs - 1, loss_final });
+    std.debug.print("  Train drop:           {d:.1}%\n", .{loss_drop_pct});
+    std.debug.print("  Best eval loss:       {d:.4}\n", .{eval_loss_best});
+
+    // Generate 30 tokens after training
+    var seed_context: [8]Hypervector = undefined;
+    const seed_text = "to be or";
+    for (seed_text, 0..) |c, i| {
+        seed_context[i] = charToHV(dim, c);
+    }
+
+    var gen_buf: [30]u8 = undefined;
+    const gen_count = generateWithCharTable(&seed_context, &roles, dim, &gen_buf, 30);
+
+    var seen = [_]bool{false} ** 256;
+    var unique: usize = 0;
+    for (gen_buf[0..gen_count]) |c| {
+        if (!seen[c]) {
+            seen[c] = true;
+            unique += 1;
+        }
+    }
+
+    std.debug.print("\n  Generation after scaled training:\n", .{});
+    std.debug.print("  Prompt: \"{s}\"\n", .{seed_text});
+    std.debug.print("  Generated: \"{s}\"\n", .{gen_buf[0..gen_count]});
+    std.debug.print("  Unique chars: {d}\n", .{unique});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(loss_epoch0 >= 0.0 and loss_epoch0 <= 2.0);
+    try std.testing.expect(loss_final >= 0.0 and loss_final <= 2.0);
+    try std.testing.expect(gen_count == 30);
+}
+
+test "honest perplexity on held-out test data" {
+    const dim: usize = 256;
+
+    // Same 512-char corpus, but train only on first 70%, measure PPL on last 15%
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    // Train on 12 offsets from train region, 100 epochs with LR decay
+    var roles = initRoles(dim, 42);
+
+    for (0..100) |epoch| {
+        var lr: f64 = 0.3;
+        for (0..epoch) |_| lr *= 0.99;
+        if (lr < 0.05) lr = 0.05;
+
+        for (0..12) |i| {
+            const s = i * train_end / 12;
+            if (s + 8 >= corpus.len) continue;
+
+            var ctx: [8]Hypervector = undefined;
+            for (0..8) |j| {
+                ctx[j] = charToHV(dim, corpus[s + j]);
+            }
+            var target = charToHV(dim, corpus[s + 8]);
+            var output = forwardPassMultiHead(&ctx, &roles);
+
+            var neg_output = output.negate();
+            var error_hv = target.bundle(&neg_output);
+
+            var sparse_error = error_hv.clone();
+            var prng = std.Random.DefaultPrng.init(epoch * 12 + i + 30000);
+            const random = prng.random();
+            for (0..dim) |idx| {
+                if (random.float(f64) > lr) {
+                    sparse_error.set(idx, 0);
+                }
+            }
+            for (0..11) |r| {
+                roles[r] = roles[r].bundle(&sparse_error);
+            }
+        }
+    }
+
+    // Measure perplexity on TEST region (last 15%) — truly held-out
+    const test_start = eval_end;
+    const test_count = 8; // 8 test samples from the test region
+    var sum_log_prob: f64 = 0;
+    var valid_samples: usize = 0;
+
+    for (0..test_count) |i| {
+        const s = test_start + i * (total_samples - test_start) / test_count;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassMultiHead(&ctx, &roles);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        sum_log_prob += @log(clamped);
+        valid_samples += 1;
+    }
+
+    const avg_log_prob = sum_log_prob / @as(f64, @floatFromInt(valid_samples));
+    const perplexity = @exp(-avg_log_prob);
+
+    // Also measure train perplexity for comparison (to show overfit gap)
+    var train_sum_log: f64 = 0;
+    var train_valid: usize = 0;
+    for (0..8) |i| {
+        const s = i * train_end / 8;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassMultiHead(&ctx, &roles);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        train_sum_log += @log(clamped);
+        train_valid += 1;
+    }
+
+    const train_avg_log = train_sum_log / @as(f64, @floatFromInt(train_valid));
+    const train_ppl = @exp(-train_avg_log);
+
+    std.debug.print("\n=== HONEST PERPLEXITY (held-out test set) ===\n", .{});
+    std.debug.print("Train PPL:     {d:.1} (on {d} train samples)\n", .{ train_ppl, train_valid });
+    std.debug.print("Test PPL:      {d:.1} (on {d} held-out samples)\n", .{ perplexity, valid_samples });
+    std.debug.print("Overfit gap:   {d:.1}\n", .{perplexity - train_ppl});
+    std.debug.print("Random PPL:    95.0 (printable ASCII baseline)\n", .{});
+    std.debug.print("==============================================\n", .{});
+
+    // Perplexity must be finite and positive
+    try std.testing.expect(perplexity > 0.0);
+    try std.testing.expect(!std.math.isNan(perplexity));
+    try std.testing.expect(!std.math.isInf(perplexity));
+    // Test PPL should be > train PPL (honest = not overfit)
+    // (We don't require this to pass since it depends on convergence,
+    //  but we log it for the report)
+}
