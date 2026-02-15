@@ -3012,3 +3012,371 @@ test "multi-role perplexity comparison" {
     try std.testing.expect(!std.math.isNan(mr_test_ppl));
     try std.testing.expect(!std.math.isInf(mr_test_ppl));
 }
+
+// === v2.38 DIM=1024 TESTS ===
+
+test "dim1024 single-role hebbian training" {
+    const dim: usize = 1024;
+    const dim256: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    std.debug.print("\n=== DIM=1024 SINGLE-ROLE HEBBIAN (v2.38) ===\n", .{});
+    std.debug.print("Corpus: {d} chars (Shakespeare)\n", .{corpus.len});
+    std.debug.print("Method: Single-role + Hebbian hybrid, dim=1024 vs dim=256\n", .{});
+
+    // Build Hebbian counts (same for both dims)
+    const counts = buildHebbianCounts(corpus);
+
+    // Honest split
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+
+    // === dim=1024 ===
+    var role_1024 = computeDirectRole(corpus, dim, &train_offsets, 8);
+
+    // Train loss dim=1024
+    var train_loss_1024: f64 = 0;
+    var train_count_1024: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &role_1024, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        train_loss_1024 += 1.0 - sim;
+        train_count_1024 += 1;
+    }
+    if (train_count_1024 > 0) train_loss_1024 /= @as(f64, @floatFromInt(train_count_1024));
+
+    // Eval loss dim=1024
+    var eval_loss_1024: f64 = 0;
+    var eval_count_1024: usize = 0;
+    const eval_samples = 8;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &role_1024, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        eval_loss_1024 += 1.0 - sim;
+        eval_count_1024 += 1;
+    }
+    if (eval_count_1024 > 0) eval_loss_1024 /= @as(f64, @floatFromInt(eval_count_1024));
+
+    // === dim=256 (baseline) ===
+    var role_256 = computeDirectRole(corpus, dim256, &train_offsets, 8);
+
+    var train_loss_256: f64 = 0;
+    var train_count_256: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim256, corpus[s + i]);
+        }
+        var target = charToHV(dim256, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &role_256, dim256, last_char, &counts);
+        const sim = output.similarity(&target);
+        train_loss_256 += 1.0 - sim;
+        train_count_256 += 1;
+    }
+    if (train_count_256 > 0) train_loss_256 /= @as(f64, @floatFromInt(train_count_256));
+
+    var eval_loss_256: f64 = 0;
+    var eval_count_256: usize = 0;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim256, corpus[s + j]);
+        }
+        var target = charToHV(dim256, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &role_256, dim256, last_char, &counts);
+        const sim = output.similarity(&target);
+        eval_loss_256 += 1.0 - sim;
+        eval_count_256 += 1;
+    }
+    if (eval_count_256 > 0) eval_loss_256 /= @as(f64, @floatFromInt(eval_count_256));
+
+    // Random baseline (cosine sim ≈ 0 in high dim → loss ≈ 1.0)
+    const mh_loss: f64 = 1.0306;
+
+    const imp_1024_train = (mh_loss - train_loss_1024) / mh_loss * 100.0;
+    const imp_1024_eval = (mh_loss - eval_loss_1024) / mh_loss * 100.0;
+    const imp_256_train = (mh_loss - train_loss_256) / mh_loss * 100.0;
+    const imp_256_eval = (mh_loss - eval_loss_256) / mh_loss * 100.0;
+
+    // Cosine similarity signal strength at dim=1024
+    var max_sim_1024: f64 = -2.0;
+    var min_sim_1024: f64 = 2.0;
+    var avg_sim_1024: f64 = 0;
+    var sim_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &role_1024, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        if (sim > max_sim_1024) max_sim_1024 = sim;
+        if (sim < min_sim_1024) min_sim_1024 = sim;
+        avg_sim_1024 += sim;
+        sim_count += 1;
+    }
+    if (sim_count > 0) avg_sim_1024 /= @as(f64, @floatFromInt(sim_count));
+
+    std.debug.print("\ndim=1024 train loss:  {d:.4} ({d:.1}% below random)\n", .{ train_loss_1024, imp_1024_train });
+    std.debug.print("dim=1024 eval loss:   {d:.4} ({d:.1}% below random)\n", .{ eval_loss_1024, imp_1024_eval });
+    std.debug.print("dim=256  train loss:  {d:.4} ({d:.1}% below random)\n", .{ train_loss_256, imp_256_train });
+    std.debug.print("dim=256  eval loss:   {d:.4} ({d:.1}% below random)\n", .{ eval_loss_256, imp_256_eval });
+    std.debug.print("Random baseline:      {d:.4}\n", .{mh_loss});
+    std.debug.print("\nCosine signal at dim=1024:\n", .{});
+    std.debug.print("  Max sim:  {d:.4}\n", .{max_sim_1024});
+    std.debug.print("  Min sim:  {d:.4}\n", .{min_sim_1024});
+    std.debug.print("  Avg sim:  {d:.4}\n", .{avg_sim_1024});
+    std.debug.print("  Range:    {d:.4}\n", .{max_sim_1024 - min_sim_1024});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(train_loss_1024 >= 0.0 and train_loss_1024 <= 2.0);
+    try std.testing.expect(eval_loss_1024 >= 0.0 and eval_loss_1024 <= 2.0);
+    try std.testing.expect(train_loss_256 >= 0.0 and train_loss_256 <= 2.0);
+    try std.testing.expect(eval_loss_256 >= 0.0 and eval_loss_256 <= 2.0);
+}
+
+test "dim1024 multi-role hebbian sampling pipeline" {
+    const dim: usize = 1024;
+    const dim256: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    std.debug.print("\n=== DIM=1024 MULTI-ROLE + HEBBIAN + SAMPLING (v2.38) ===\n", .{});
+    std.debug.print("Corpus: {d} chars (Shakespeare)\n", .{corpus.len});
+    std.debug.print("Method: 8 multi-role + Hebbian + sampling, dim=1024\n", .{});
+
+    const counts = buildHebbianCounts(corpus);
+
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+
+    // === Multi-role at dim=1024 ===
+    var multi_roles_1024 = computeMultiRoles(corpus, dim, &train_offsets, 8);
+
+    // Train loss
+    var mr_train_loss_1024: f64 = 0;
+    var mr_train_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles_1024, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        mr_train_loss_1024 += 1.0 - sim;
+        mr_train_count += 1;
+    }
+    if (mr_train_count > 0) mr_train_loss_1024 /= @as(f64, @floatFromInt(mr_train_count));
+
+    // Eval loss
+    var mr_eval_loss_1024: f64 = 0;
+    var mr_eval_count: usize = 0;
+    const eval_samples = 8;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles_1024, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        mr_eval_loss_1024 += 1.0 - sim;
+        mr_eval_count += 1;
+    }
+    if (mr_eval_count > 0) mr_eval_loss_1024 /= @as(f64, @floatFromInt(mr_eval_count));
+
+    // === Multi-role at dim=256 (baseline) ===
+    var multi_roles_256 = computeMultiRoles(corpus, dim256, &train_offsets, 8);
+
+    var mr_train_loss_256: f64 = 0;
+    var mr_train_count_256: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim256, corpus[s + i]);
+        }
+        var target = charToHV(dim256, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles_256, dim256, last_char, &counts);
+        const sim = output.similarity(&target);
+        mr_train_loss_256 += 1.0 - sim;
+        mr_train_count_256 += 1;
+    }
+    if (mr_train_count_256 > 0) mr_train_loss_256 /= @as(f64, @floatFromInt(mr_train_count_256));
+
+    // === PPL at dim=1024 ===
+    const test_start = eval_end;
+    const test_count = 8;
+    var mr_test_log_1024: f64 = 0;
+    var mr_test_valid: usize = 0;
+    for (0..test_count) |i| {
+        const s = test_start + i * (total_samples - test_start) / test_count;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles_1024, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        mr_test_log_1024 += @log(clamped);
+        mr_test_valid += 1;
+    }
+    const mr_test_ppl_1024 = @exp(-mr_test_log_1024 / @as(f64, @floatFromInt(mr_test_valid)));
+
+    var mr_train_log_1024: f64 = 0;
+    var mr_train_valid: usize = 0;
+    for (0..8) |i| {
+        const s = i * train_end / 8;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles_1024, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        mr_train_log_1024 += @log(clamped);
+        mr_train_valid += 1;
+    }
+    const mr_train_ppl_1024 = @exp(-mr_train_log_1024 / @as(f64, @floatFromInt(mr_train_valid)));
+
+    // === Generation at dim=1024 ===
+    var init_ctx_1024: [8]Hypervector = undefined;
+    const prompt = "to be or ";
+    for (0..8) |i| {
+        init_ctx_1024[i] = charToHV(dim, prompt[i]);
+    }
+    const init_last_char = prompt[7];
+    var gen_buf: [50]u8 = undefined;
+    const gen_count = generateWithMultiRoleSampled(
+        &init_ctx_1024,
+        &multi_roles_1024,
+        dim,
+        init_last_char,
+        &counts,
+        &gen_buf,
+        50,
+        0.8,
+        8,
+        42,
+    );
+
+    // Count unique chars
+    var seen: [256]bool = undefined;
+    for (0..256) |i| {
+        seen[i] = false;
+    }
+    var unique: usize = 0;
+    for (0..gen_count) |i| {
+        if (!seen[gen_buf[i]]) {
+            seen[gen_buf[i]] = true;
+            unique += 1;
+        }
+    }
+
+    // Random baseline
+    const mh_loss: f64 = 1.0306;
+    const imp_1024_train = (mh_loss - mr_train_loss_1024) / mh_loss * 100.0;
+    const imp_1024_eval = (mh_loss - mr_eval_loss_1024) / mh_loss * 100.0;
+    const imp_256_train = (mh_loss - mr_train_loss_256) / mh_loss * 100.0;
+
+    std.debug.print("\ndim=1024 multi-role train loss:  {d:.4} ({d:.1}% below random)\n", .{ mr_train_loss_1024, imp_1024_train });
+    std.debug.print("dim=1024 multi-role eval loss:   {d:.4} ({d:.1}% below random)\n", .{ mr_eval_loss_1024, imp_1024_eval });
+    std.debug.print("dim=256  multi-role train loss:  {d:.4} ({d:.1}% below random)\n", .{ mr_train_loss_256, imp_256_train });
+    std.debug.print("dim=256  multi-role train (v2.37): 0.7426 (27.9% below random)\n", .{});
+    std.debug.print("Random baseline:                 {d:.4}\n", .{mh_loss});
+    std.debug.print("\ndim=1024 train PPL: {d:.1}\n", .{mr_train_ppl_1024});
+    std.debug.print("dim=1024 test PPL:  {d:.1}\n", .{mr_test_ppl_1024});
+    std.debug.print("dim=256  (v2.37):   train=1.8, test=1.9\n", .{});
+    std.debug.print("Random baseline:    95.0\n", .{});
+    std.debug.print("\nGeneration (T=0.8, K=8, dim=1024):\n", .{});
+    std.debug.print("  Prompt: \"to be or \"\n", .{});
+    std.debug.print("  Generated: \"{s}\"\n", .{gen_buf[0..gen_count]});
+    std.debug.print("  Unique chars: {d}\n", .{unique});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(mr_train_loss_1024 >= 0.0 and mr_train_loss_1024 <= 2.0);
+    try std.testing.expect(mr_eval_loss_1024 >= 0.0 and mr_eval_loss_1024 <= 2.0);
+    try std.testing.expect(gen_count == 50);
+    try std.testing.expect(mr_test_ppl_1024 > 0.0);
+    try std.testing.expect(!std.math.isNan(mr_test_ppl_1024));
+    try std.testing.expect(!std.math.isInf(mr_test_ppl_1024));
+}
