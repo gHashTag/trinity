@@ -225,6 +225,11 @@ pub const ChainMessageType = enum {
             Community5MUpdate,
             EarningUltimateEvent,
             NodeDiscovery10MEvent,
+    // v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode
+    Swarm1BEvent,
+    Community500MUpdate,
+    EarningGodModeEvent,
+    NodeDiscovery1BEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -285,11 +290,11 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 288; // v2.28: was 280, +8 for Swarm 10M + u8 FULL (256/256)
+pub const MAX_QUARK_RECORDS = 296; // v2.29: was 288, +8 for Swarm 1B + u16 Upgrade (264/65536)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
-pub const QuarkType = enum(u8) {
+pub const QuarkType = enum(u16) {
     input_capture,
     goal_classify,
     task_decompose,
@@ -583,6 +588,15 @@ pub const QuarkType = enum(u8) {
             swarm_failover_10m, // 253
             dao_governance_10m, // 254
             swarm_anchor_10m, // 255
+    // v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode (u16: 264/65536)
+    swarm_1b, // 256 — Swarm 1B scaling record (FIRST u16 variant!)
+    community_500m, // 257 — Community 500M growth record
+    earning_god_mode, // 258 — $TRI earning god mode record
+    node_discovery_1b, // 259 — Node discovery 1B record
+    swarm_health_1b, // 260 — Swarm health 1B record
+    swarm_failover_1b, // 261 — Swarm failover 1B record
+    dao_governance_1b, // 262 — DAO governance 1B record
+    swarm_anchor_1b, // 263 — Swarm anchor 1B record
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -863,6 +877,15 @@ pub const QuarkType = enum(u8) {
                     .swarm_failover_10m => "SWF_10M",
                     .dao_governance_10m => "DAO_10M",
                     .swarm_anchor_10m => "SWA_10M",
+            // v2.29: u16 Upgrade labels
+            .swarm_1b => "SWM_1B",
+            .community_500m => "COM_500M",
+            .earning_god_mode => "ERN_GOD",
+            .node_discovery_1b => "NOD_1B",
+            .swarm_health_1b => "SWH_1B",
+            .swarm_failover_1b => "SWF_1B",
+            .dao_governance_1b => "DAO_1B",
+            .swarm_anchor_1b => "SWA_1B",
         };
     }
 
@@ -1398,6 +1421,19 @@ pub const QuarkType = enum(u8) {
             pub fn isNodeDiscovery10MQuark(self: QuarkType) bool {
                 return self == .node_discovery_10m or self == .swarm_failover_10m;
             }
+    // v2.29: u16 Upgrade classifiers
+    pub fn isSwarm1BQuark(self: QuarkType) bool {
+        return self == .swarm_1b or self == .swarm_anchor_1b;
+    }
+    pub fn isCommunity500MQuark(self: QuarkType) bool {
+        return self == .community_500m or self == .dao_governance_1b;
+    }
+    pub fn isEarningGodModeQuark(self: QuarkType) bool {
+        return self == .earning_god_mode or self == .swarm_failover_1b;
+    }
+    pub fn isNodeDiscovery1BQuark(self: QuarkType) bool {
+        return self == .node_discovery_1b or self == .swarm_health_1b;
+    }
 };
 
 pub const QuarkRecord = struct {
@@ -1859,6 +1895,13 @@ pub const MAX_ETERNAL_NODES: u32 = 1_000_000_000; // 1B eternal nodes
             pub const NODE_DISCOVERY_INTERVAL_US: i64 = 5_000_000;
             pub const SWARM_HEALTH_CHECK_INTERVAL_US: i64 = 10_000_000;
             pub const MAX_SWARM_CHANNELS: u32 = 1_000_000;
+// v2.29: u16 Upgrade constants
+pub const SWARM_1B_TARGET: u64 = 1_000_000_000;
+pub const COMMUNITY_500M_TARGET: u64 = 500_000_000;
+pub const EARNING_GOD_MODE_UTRI_PER_HOUR: u64 = 500_000;
+pub const NODE_DISCOVERY_1B_INTERVAL_US: i64 = 3_000_000;
+pub const SWARM_1B_HEALTH_CHECK_INTERVAL_US: i64 = 5_000_000;
+pub const MAX_GOD_MODE_CHANNELS: u32 = 10_000_000;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2682,6 +2725,34 @@ pub const EternalUptimeState = struct {
                 last_discovery_us: i64 = 0,
                 discovery_hash: [32]u8 = [_]u8{0} ** 32,
             };
+pub const Swarm1BState = struct {
+    swarm_1b_events: u64 = 0,
+    nodes_active_1b: u64 = 0,
+    nodes_discovered_1b: u64 = 0,
+    last_swarm_1b_us: i64 = 0,
+    swarm_1b_hash: [32]u8 = [_]u8{0} ** 32,
+};
+pub const Community500MState = struct {
+    community_500m_events: u64 = 0,
+    members_active_500m: u64 = 0,
+    monthly_contributors_500m: u64 = 0,
+    last_community_500m_us: i64 = 0,
+    community_500m_hash: [32]u8 = [_]u8{0} ** 32,
+};
+pub const EarningGodModeState = struct {
+    god_mode_events: u64 = 0,
+    total_earned_god_utri: u64 = 0,
+    earning_rate_god_utri: u64 = 0,
+    last_god_mode_us: i64 = 0,
+    god_mode_hash: [32]u8 = [_]u8{0} ** 32,
+};
+pub const NodeDiscovery1BState = struct {
+    discovery_1b_events: u64 = 0,
+    nodes_registered_1b: u64 = 0,
+    nodes_healthy_1b: u64 = 0,
+    last_discovery_1b_us: i64 = 0,
+    discovery_1b_hash: [32]u8 = [_]u8{0} ** 32,
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
@@ -2801,10 +2872,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 32; // v2.28: bumped from 31
+pub const QUARK_EXPORT_VERSION: u16 = 33; // v2.29: bumped from 32
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 146; // v2.28: was 142, +4 for swarm_10m
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 150; // v2.29: was 146, +4 for swarm_1b
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -3031,6 +3102,12 @@ pub const GoldenChainAgent = struct {
     earning_boost_state: EarningBoostState,
     massive_gossip_state: MassiveGossipState,
     swarm_10m_active: bool,
+        // v2.29: u16 Upgrade fields
+        swarm_1b_state: Swarm1BState,
+        community_500m_state: Community500MState,
+        earning_god_mode_state: EarningGodModeState,
+        node_discovery_1b_state: NodeDiscovery1BState,
+        swarm_1b_active: bool,
     // v2.20: ZK-Rollup v2.0 fields
     zk_rollup_v2_state: ZkRollupV2State,
     snark_generate_state: SnarkGenerateState,
@@ -3256,6 +3333,12 @@ pub const GoldenChainAgent = struct {
             .earning_boost_state = .{},
             .massive_gossip_state = .{},
             .swarm_10m_active = false,
+            // v2.29: u16 Upgrade defaults
+            .swarm_1b_state = .{},
+            .community_500m_state = .{},
+            .earning_god_mode_state = .{},
+            .node_discovery_1b_state = .{},
+            .swarm_1b_active = false,
             // v2.20: ZK-Rollup v2.0 defaults
             .zk_rollup_v2_state = .{},
             .snark_generate_state = .{},
@@ -4101,6 +4184,31 @@ pub const GoldenChainAgent = struct {
         if (self.swarm_10m_state.swarm_nodes == 0) return false;
         if (self.community_5m_state.community_nodes == 0) return false;
         if (self.earning_boost_state.earning_total_utri == 0) return false;
+        return true;
+    }
+    // v2.29: u16 Upgrade stub methods
+    pub fn scaleSwarm1B(self: *Self) void {
+        self.swarm_1b_state.swarm_1b_events += 1;
+        self.swarm_1b_state.nodes_active_1b +|= 1;
+        self.swarm_1b_active = true;
+    }
+    pub fn growCommunity500M(self: *Self) void {
+        self.community_500m_state.community_500m_events += 1;
+        self.community_500m_state.members_active_500m +|= 1;
+    }
+    pub fn boostEarningGodMode(self: *Self) void {
+        self.earning_god_mode_state.god_mode_events += 1;
+        self.earning_god_mode_state.earning_rate_god_utri = EARNING_GOD_MODE_UTRI_PER_HOUR;
+        self.earning_god_mode_state.total_earned_god_utri +|= EARNING_GOD_MODE_UTRI_PER_HOUR;
+    }
+    pub fn discoverNodes1B(self: *Self) void {
+        self.node_discovery_1b_state.discovery_1b_events += 1;
+        self.node_discovery_1b_state.nodes_registered_1b +|= 1;
+    }
+    pub fn swarm1BVerify(self: *const Self) bool {
+        if (self.swarm_1b_state.swarm_1b_events == 0) return false;
+        if (self.community_500m_state.community_500m_events == 0) return false;
+        if (self.earning_god_mode_state.god_mode_events == 0) return false;
         return true;
     }
 
