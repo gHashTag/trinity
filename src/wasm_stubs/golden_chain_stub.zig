@@ -170,6 +170,11 @@ pub const ChainMessageType = enum {
     Atomic2pcUpdate,
     ShardFeeEvent,
     TxCoordinatorEvent,
+    // v2.18: Network Partition Recovery v1.0
+    PartitionDetectEvent,
+    SplitBrainUpdate,
+    AutoHealEvent,
+    PartitionToleranceEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -230,7 +235,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 200;
+pub const MAX_QUARK_RECORDS = 208;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -426,6 +431,15 @@ pub const QuarkType = enum(u8) {
     fee_distributor,
     tx_finalize,
     cross_shard_anchor,
+    // v2.18: Network Partition Recovery v1.0 (u8: 176/256 used)
+    partition_detect,
+    split_brain,
+    auto_heal,
+    partition_sync,
+    recovery_quorum,
+    brain_merge,
+    heal_verify,
+    partition_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -608,6 +622,14 @@ pub const QuarkType = enum(u8) {
             .fee_distributor => "FEE_DST",
             .tx_finalize => "TX_FNL",
             .cross_shard_anchor => "XSH_ACH",
+            .partition_detect => "PRT_DET",
+            .split_brain => "SPL_BRN",
+            .auto_heal => "AUT_HEL",
+            .partition_sync => "PRT_SYN",
+            .recovery_quorum => "RCV_QRM",
+            .brain_merge => "BRN_MRG",
+            .heal_verify => "HEL_VRF",
+            .partition_anchor => "PRT_ACH",
         };
     }
 
@@ -958,6 +980,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isTxCoordinatorQuark(self: QuarkType) bool {
         return self == .tx_coordinator or self == .shard_route;
+    }
+
+    // v2.18: Network Partition Recovery v1.0 classifiers
+    pub fn isPartitionDetectQuark(self: QuarkType) bool {
+        return self == .partition_detect or self == .partition_anchor;
+    }
+
+    pub fn isSplitBrainQuark(self: QuarkType) bool {
+        return self == .split_brain or self == .brain_merge;
+    }
+
+    pub fn isAutoHealQuark(self: QuarkType) bool {
+        return self == .auto_heal or self == .heal_verify;
+    }
+
+    pub fn isPartitionToleranceQuark(self: QuarkType) bool {
+        return self == .partition_sync or self == .recovery_quorum;
     }
 };
 
@@ -1338,6 +1377,13 @@ pub const SHARD_FEE_PER_TX_UTRI: u32 = 1_000;
 pub const TX_COORDINATOR_MAX_SHARDS: u16 = 256;
 pub const SHARD_ROUTE_CACHE_SIZE: u32 = 1_024;
 pub const FEE_DISTRIBUTION_INTERVAL_US: i64 = 60_000_000;
+// v2.18: Network Partition Recovery v1.0 constants
+pub const PARTITION_DETECT_TIMEOUT_US: i64 = 15_000_000;
+pub const SPLIT_BRAIN_THRESHOLD: u16 = 3;
+pub const AUTO_HEAL_INTERVAL_US: i64 = 5_000_000;
+pub const PARTITION_SYNC_BATCH_SIZE: u32 = 512;
+pub const RECOVERY_QUORUM_PERCENT: u16 = 67;
+pub const BRAIN_MERGE_TIMEOUT_US: i64 = 20_000_000;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -1799,6 +1845,39 @@ pub const TxCoordinatorState = struct {
     coord_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.18: Network Partition Recovery v1.0 types
+pub const PartitionDetectState = struct {
+    partitions_detected: u32 = 0,
+    active_partitions: u16 = 0,
+    healed_partitions: u32 = 0,
+    last_detect_us: i64 = 0,
+    detect_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const SplitBrainState = struct {
+    split_events: u32 = 0,
+    brain_count: u16 = 0,
+    resolved_splits: u32 = 0,
+    last_split_us: i64 = 0,
+    split_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const AutoHealState = struct {
+    heal_attempts: u32 = 0,
+    successful_heals: u32 = 0,
+    heal_latency_us: i64 = 0,
+    last_heal_us: i64 = 0,
+    heal_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const PartitionToleranceState = struct {
+    tolerance_level: u16 = 0,
+    sync_operations: u32 = 0,
+    merged_partitions: u32 = 0,
+    last_tolerance_us: i64 = 0,
+    tolerance_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1917,10 +1996,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 21;
+pub const QUARK_EXPORT_VERSION: u16 = 22;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 102;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 106;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -2135,6 +2214,12 @@ pub const GoldenChainAgent = struct {
     shard_fee_state: ShardFeeState,
     tx_coordinator_state: TxCoordinatorState,
     cross_shard_active: bool,
+    // v2.18: Network Partition Recovery v1.0
+    partition_detect_state: PartitionDetectState,
+    split_brain_state: SplitBrainState,
+    auto_heal_state: AutoHealState,
+    partition_tolerance_state: PartitionToleranceState,
+    partition_recovery_active: bool,
 
     const Self = @This();
 
@@ -2295,6 +2380,11 @@ pub const GoldenChainAgent = struct {
             .shard_fee_state = .{},
             .tx_coordinator_state = .{},
             .cross_shard_active = false,
+            .partition_detect_state = .{},
+            .split_brain_state = .{},
+            .auto_heal_state = .{},
+            .partition_tolerance_state = .{},
+            .partition_recovery_active = false,
         };
     }
 
@@ -3017,6 +3107,42 @@ pub const GoldenChainAgent = struct {
         if (self.cross_shard_tx_state.cross_shard_txs == 0) return false;
         if (self.atomic_2pc_state.commit_count == 0) return false;
         if (self.shard_fee_state.fees_collected == 0) return false;
+        return true;
+    }
+
+    // v2.18: Network Partition Recovery v1.0 stub methods
+    pub fn detectPartition(self: *Self) void {
+        self.partition_detect_state.partitions_detected += 1;
+        self.partition_detect_state.active_partitions = SPLIT_BRAIN_THRESHOLD;
+        self.partition_detect_state.healed_partitions += 1;
+        self.partition_recovery_active = true;
+    }
+
+    pub fn detectSplitBrain(self: *Self) void {
+        self.split_brain_state.split_events += 1;
+        self.split_brain_state.brain_count = SPLIT_BRAIN_THRESHOLD;
+        self.split_brain_state.resolved_splits += 1;
+        self.partition_recovery_active = true;
+    }
+
+    pub fn autoHealPartition(self: *Self) void {
+        self.auto_heal_state.heal_attempts += 1;
+        self.auto_heal_state.successful_heals += 1;
+        self.auto_heal_state.heal_latency_us = AUTO_HEAL_INTERVAL_US;
+        self.partition_recovery_active = true;
+    }
+
+    pub fn toleratePartition(self: *Self) void {
+        self.partition_tolerance_state.tolerance_level = RECOVERY_QUORUM_PERCENT;
+        self.partition_tolerance_state.sync_operations += 1;
+        self.partition_tolerance_state.merged_partitions += 1;
+        self.partition_recovery_active = true;
+    }
+
+    pub fn partitionRecoveryVerify(self: *const Self) bool {
+        if (self.partition_detect_state.partitions_detected == 0) return false;
+        if (self.split_brain_state.split_events == 0) return false;
+        if (self.auto_heal_state.heal_attempts == 0) return false;
         return true;
     }
 };
