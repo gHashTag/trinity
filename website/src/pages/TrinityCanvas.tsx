@@ -1614,7 +1614,7 @@ export default function TrinityCanvas() {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, letterSpacing: 2, fontFamily: FONT }}>ЗЕРКАЛО ТРЁХ МИРОВ v2.7</div>
+                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, letterSpacing: 2, fontFamily: FONT }}>ЗЕРКАЛО ТРЁХ МИРОВ v2.8</div>
                 {mirrorStatus?.uptime_s != null && (
                   <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontFamily: MONO }}>uptime {fmtUptime(mirrorStatus.uptime_s)}</span>
                 )}
@@ -1736,6 +1736,35 @@ export default function TrinityCanvas() {
                             Alert: {storageMetrics.nodes_dead} node(s) offline
                           </div>
                         )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── DHT Kademlia Routing (v2.8) ── */}
+                {storageMetrics && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                    {sectionHeader('dht', 'DHT KADEMLIA', '#ffd700')}
+                    {!storageCollapsed['dht'] && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                          <span style={{ color: '#ffd700' }}>Peers:{storageMetrics.dht_peers}</span>
+                          <span style={{ color: '#00e599' }}>Buckets:{storageMetrics.dht_buckets_used}/256</span>
+                          <span style={{ color: 'rgba(255,215,0,0.5)' }}>Entries:{storageMetrics.dht_entries_stored}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                          <span style={{ color: '#ffd700' }}>Lookups:{storageMetrics.dht_lookups}</span>
+                          <span style={{ color: storageMetrics.dht_lookup_avg_hops < 4 ? '#00e599' : '#ff8800' }}>
+                            Avg hops:{storageMetrics.dht_lookup_avg_hops.toFixed(1)}
+                          </span>
+                        </div>
+                        {/* XOR routing health bar */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.4)' }}>XOR:</span>
+                          <div style={{ flex: 1, height: 3, background: 'rgba(255,215,0,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+                            <div style={{ width: `${Math.min(100, (storageMetrics.dht_buckets_used / 256) * 100 * 8)}%`, height: '100%', background: 'linear-gradient(90deg, #ffd700, #00e599)', borderRadius: 2 }} />
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>

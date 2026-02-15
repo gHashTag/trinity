@@ -144,6 +144,12 @@ export interface StorageMetrics {
   reputation_avg: number;
   reputation_min: number;
   reputation_max: number;
+  // DHT (Kademlia)
+  dht_peers: number;
+  dht_buckets_used: number;
+  dht_entries_stored: number;
+  dht_lookups: number;
+  dht_lookup_avg_hops: number;
   // Timestamp
   generated_at: number;
 }
@@ -175,6 +181,11 @@ function generateMockStorageMetrics(): StorageMetrics {
     reputation_avg: 0.847 + drift * 0.1,
     reputation_min: 0.312,
     reputation_max: 0.998,
+    dht_peers: 8 + Math.floor(Math.random() * 4),
+    dht_buckets_used: 12 + Math.floor(Math.random() * 5),
+    dht_entries_stored: 347 + Math.floor(Math.random() * 20),
+    dht_lookups: 2841 + Math.floor(now / 10) % 50,
+    dht_lookup_avg_hops: 3.2 + drift,
     generated_at: now,
   };
 }

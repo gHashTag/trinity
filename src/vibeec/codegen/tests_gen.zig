@@ -2995,6 +2995,116 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(!engine.isDeactivated(0));");
             try self.builder.writeLine("try std.testing.expect(!engine.isDeactivated(1));");
 
+        // ═══════════════════════════════════════════════════════════════════
+        // KADEMLIA DHT TESTS (D1-D4)
+        // ═══════════════════════════════════════════════════════════════════
+        } else if (std.mem.eql(u8, name, "dhtXorDistance")) {
+            // D1: XOR metric is valid (symmetric, identity, triangle inequality)
+            try self.builder.writeLine("// D1: XOR Distance — symmetric, identity, valid metric");
+            try self.builder.writeLine("var id_a: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("var id_b: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("id_a[0] = 0xAB;");
+            try self.builder.writeLine("id_a[1] = 0xCD;");
+            try self.builder.writeLine("id_b[0] = 0x12;");
+            try self.builder.writeLine("id_b[1] = 0x34;");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: dist(A,B) == dist(B,A) — symmetry");
+            try self.builder.writeLine("const d_ab = xorDistance(id_a, id_b);");
+            try self.builder.writeLine("const d_ba = xorDistance(id_b, id_a);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &d_ab, &d_ba);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: dist(A,A) == 0 — identity");
+            try self.builder.writeLine("const d_aa = xorDistance(id_a, id_a);");
+            try self.builder.writeLine("const zero: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &d_aa, &zero);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: XOR values are correct");
+            try self.builder.writeLine("try std.testing.expect(d_ab[0] == (0xAB ^ 0x12));");
+            try self.builder.writeLine("try std.testing.expect(d_ab[1] == (0xCD ^ 0x34));");
+
+        } else if (std.mem.eql(u8, name, "dhtBucketRouting")) {
+            // D2: Correct bucket selection by distance prefix
+            try self.builder.writeLine("// D2: Bucket Routing — peers land in correct bucket by leading zeros");
+            try self.builder.writeLine("var self_id: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("self_id[0] = 0x80; // 10000000...");
+            try self.builder.writeLine("var engine = DhtEngine.init(self_id);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Peer with XOR distance starting with 0xFF (0 leading zeros)");
+            try self.builder.writeLine("var peer1_id: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("peer1_id[0] = 0x7F; // XOR with 0x80 = 0xFF → 0 leading zeros");
+            try self.builder.writeLine("const b1 = engine.bucketFor(peer1_id);");
+            try self.builder.writeLine("try std.testing.expect(b1 == 0);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Peer with XOR distance starting with 0x01 (7 leading zeros)");
+            try self.builder.writeLine("var peer2_id: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("peer2_id[0] = 0x81; // XOR with 0x80 = 0x01 → 7 leading zeros");
+            try self.builder.writeLine("const b2 = engine.bucketFor(peer2_id);");
+            try self.builder.writeLine("try std.testing.expect(b2 == 7);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Add peers and verify they were added");
+            try self.builder.writeLine("const added1 = engine.addPeer(.{ .id = peer1_id, .port = 3001, .alive = true });");
+            try self.builder.writeLine("const added2 = engine.addPeer(.{ .id = peer2_id, .port = 3002, .alive = true });");
+            try self.builder.writeLine("try std.testing.expect(added1);");
+            try self.builder.writeLine("try std.testing.expect(added2);");
+            try self.builder.writeLine("try std.testing.expect(engine.peer_count == 2);");
+
+        } else if (std.mem.eql(u8, name, "dhtStoreFind")) {
+            // D3: Store value, find returns exact value
+            try self.builder.writeLine("// D3: Store/Find — store at key, find returns byte-identical value");
+            try self.builder.writeLine("var self_id: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("self_id[0] = 0x42;");
+            try self.builder.writeLine("var engine = DhtEngine.init(self_id);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Store a manifest value under a key");
+            try self.builder.writeLine("var key: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("key[0] = 0xDE;");
+            try self.builder.writeLine("key[1] = 0xAD;");
+            try self.builder.writeLine("const manifest = \"shard:abc123:replica:3\";");
+            try self.builder.writeLine("const stored = engine.store(key, manifest);");
+            try self.builder.writeLine("try std.testing.expect(stored);");
+            try self.builder.writeLine("try std.testing.expect(engine.entry_count == 1);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: find returns exact stored value");
+            try self.builder.writeLine("const found = engine.find(key);");
+            try self.builder.writeLine("try std.testing.expect(found != null);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, manifest, found.?);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: unknown key returns null");
+            try self.builder.writeLine("var unknown: DhtNodeId = [_]u8{0xFF} ** 32;");
+            try self.builder.writeLine("_ = &unknown;");
+            try self.builder.writeLine("const not_found = engine.find(unknown);");
+            try self.builder.writeLine("try std.testing.expect(not_found == null);");
+
+        } else if (std.mem.eql(u8, name, "dhtClosestPeers")) {
+            // D4: k-closest lookup returns nearest by XOR metric
+            try self.builder.writeLine("// D4: Closest Peers — k=3 returns 3 nearest by XOR distance");
+            try self.builder.writeLine("const self_id: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("var engine = DhtEngine.init(self_id);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Add 5 peers at different distances");
+            try self.builder.writeLine("var ids: [5]DhtNodeId = undefined;");
+            try self.builder.writeLine("for (0..5) |i| {");
+            try self.builder.writeLine("    ids[i] = [_]u8{0} ** 32;");
+            try self.builder.writeLine("    ids[i][0] = @intCast((i + 1) * 0x20); // 0x20, 0x40, 0x60, 0x80, 0xA0");
+            try self.builder.writeLine("    _ = engine.addPeer(.{ .id = ids[i], .port = @intCast(3000 + i), .alive = true });");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("try std.testing.expect(engine.peer_count == 5);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Query k=3 closest to target (self_id is all zeros, so closest = smallest first byte)");
+            try self.builder.writeLine("var target: DhtNodeId = [_]u8{0} ** 32;");
+            try self.builder.writeLine("target[0] = 0x10;");
+            try self.builder.writeLine("const result = engine.closestPeers(target, 3);");
+            try self.builder.writeLine("try std.testing.expect(result.count == 3);");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: returned peers are sorted by XOR distance");
+            try self.builder.writeLine("// Closest to 0x10: 0x20 (dist=0x30), 0x40 (dist=0x50), 0x60 (dist=0x70)");
+            try self.builder.writeLine("const d0 = xorDistance(target, result.peers[0].id);");
+            try self.builder.writeLine("const d1 = xorDistance(target, result.peers[1].id);");
+            try self.builder.writeLine("const d2 = xorDistance(target, result.peers[2].id);");
+            try self.builder.writeLine("// Each successive peer should be farther or equal");
+            try self.builder.writeLine("try std.testing.expect(d0[0] <= d1[0]);");
+            try self.builder.writeLine("try std.testing.expect(d1[0] <= d2[0]);");
+
         } else {
             // Generate real test assertions: verify function exists and is callable
             const mem = std.mem;
