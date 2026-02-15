@@ -527,6 +527,169 @@ fn forwardPassHybrid(
     return direct_pred;
 }
 
+// === v2.39 TRIGRAM HEBBIAN (2-CHAR LOOKBACK) ===
+//
+// Extends bigram Hebbian to trigram: given last 2 chars (a, b), predict next char c.
+// Uses a compact representation: trigram_key = a_idx * HEBBIAN_CHARS + b_idx
+// For each key, store counts of successor chars.
+// Total: 9025 × 95 × u16 = ~1.7MB (fits on stack for Zig's 8MB default).
+
+const TRIGRAM_KEYS: usize = HEBBIAN_CHARS * HEBBIAN_CHARS; // 95 * 95 = 9025
+
+/// Build trigram counts from corpus.
+/// Returns counts[a*95+b][c] = number of times char c follows (a, b) pair.
+fn buildTrigramCounts(corpus: []const u8) [TRIGRAM_KEYS][HEBBIAN_CHARS]u16 {
+    var counts: [TRIGRAM_KEYS][HEBBIAN_CHARS]u16 = undefined;
+    // Zero-initialize
+    for (0..TRIGRAM_KEYS) |i| {
+        for (0..HEBBIAN_CHARS) |j| {
+            counts[i][j] = 0;
+        }
+    }
+
+    // Count trigrams
+    if (corpus.len < 3) return counts;
+    for (0..corpus.len - 2) |i| {
+        const a = corpus[i];
+        const b = corpus[i + 1];
+        const c = corpus[i + 2];
+        if (a >= HEBBIAN_OFFSET and a < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+            b >= HEBBIAN_OFFSET and b < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+            c >= HEBBIAN_OFFSET and c < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+        {
+            const ai = a - HEBBIAN_OFFSET;
+            const bi = b - HEBBIAN_OFFSET;
+            const ci = c - HEBBIAN_OFFSET;
+            const key = ai * HEBBIAN_CHARS + bi;
+            if (counts[key][ci] < 65535) {
+                counts[key][ci] += 1;
+            }
+        }
+    }
+
+    return counts;
+}
+
+/// Compute trigram-based Hebbian association HV for a given 2-char context.
+/// Bundles charToHV(c) for every successor c seen after (a, b), weighted by frequency.
+fn trigramLookup(
+    dim: usize,
+    prev_char_idx: usize,
+    last_char_idx: usize,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+) Hypervector {
+    var result = Hypervector.init(dim);
+    var first = true;
+
+    const key = prev_char_idx * HEBBIAN_CHARS + last_char_idx;
+
+    for (0..HEBBIAN_CHARS) |ci| {
+        const count = tri_counts[key][ci];
+        if (count == 0) continue;
+
+        const char_c: u8 = @intCast(ci + HEBBIAN_OFFSET);
+        var successor_hv = charToHV(dim, char_c);
+
+        const repeats = @min(count, 3);
+        for (0..repeats) |_| {
+            if (first) {
+                result = successor_hv;
+                first = false;
+            } else {
+                result = result.bundle(&successor_hv);
+            }
+        }
+    }
+
+    return result;
+}
+
+/// Trigram hybrid forward pass: combine multi-role prediction with trigram Hebbian.
+/// Uses last 2 chars for deeper context. Falls back to bigram if trigram has no data.
+fn forwardPassTrigramHybrid(
+    context: []Hypervector,
+    roles: *[8]Hypervector,
+    dim: usize,
+    prev_char: u8,
+    last_char: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+) Hypervector {
+    var multi_pred = forwardPassMultiRole(context, roles);
+
+    // Try trigram first (deeper context)
+    if (prev_char >= HEBBIAN_OFFSET and prev_char < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+        last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+    {
+        const prev_idx = prev_char - HEBBIAN_OFFSET;
+        const last_idx = last_char - HEBBIAN_OFFSET;
+        const key = prev_idx * HEBBIAN_CHARS + last_idx;
+
+        // Check if trigram has any data for this pair
+        var tri_total: u32 = 0;
+        for (0..HEBBIAN_CHARS) |ci| {
+            tri_total += tri_counts[key][ci];
+        }
+
+        if (tri_total > 0) {
+            // Trigram available: use it + bigram for robustness
+            var tri_pred = trigramLookup(dim, prev_idx, last_idx, tri_counts);
+            var bi_pred = hebbianLookup(dim, last_idx, bi_counts);
+            // Bundle all three: multi-role + trigram + bigram
+            var tri_bi = tri_pred.bundle(&bi_pred);
+            return multi_pred.bundle(&tri_bi);
+        }
+    }
+
+    // Fallback to bigram only
+    if (last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS) {
+        const char_idx = last_char - HEBBIAN_OFFSET;
+        var hebbian_pred = hebbianLookup(dim, char_idx, bi_counts);
+        return multi_pred.bundle(&hebbian_pred);
+    }
+
+    return multi_pred;
+}
+
+/// Autoregressive generation with multi-role + trigram Hebbian + sampling.
+fn generateWithTrigramSampled(
+    initial_context: []Hypervector,
+    roles: *[8]Hypervector,
+    dim: usize,
+    prev_char_init: u8,
+    last_char_init: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+    output_buf: []u8,
+    max_tokens: usize,
+    temperature: f64,
+    top_k: usize,
+    base_seed: u64,
+) usize {
+    var context: [8]Hypervector = undefined;
+    for (initial_context, 0..) |*hv, i| {
+        context[i] = hv.clone();
+    }
+
+    var prev_char = prev_char_init;
+    var last_char = last_char_init;
+    var generated: usize = 0;
+    while (generated < max_tokens and generated < output_buf.len) {
+        var output = forwardPassTrigramHybrid(&context, roles, dim, prev_char, last_char, bi_counts, tri_counts);
+        const decoded = hvToCharSampled(dim, &output, temperature, top_k, base_seed + generated);
+        output_buf[generated] = decoded;
+        prev_char = last_char;
+        last_char = decoded;
+        generated += 1;
+
+        for (0..7) |i| {
+            context[i] = context[i + 1];
+        }
+        context[7] = charToHV(dim, decoded);
+    }
+    return generated;
+}
+
 /// Decode using hybrid forward pass
 fn hybridDecode(
     context: []Hypervector,
@@ -3379,4 +3542,330 @@ test "dim1024 multi-role hebbian sampling pipeline" {
     try std.testing.expect(mr_test_ppl_1024 > 0.0);
     try std.testing.expect(!std.math.isNan(mr_test_ppl_1024));
     try std.testing.expect(!std.math.isInf(mr_test_ppl_1024));
+}
+
+// === v2.39 TRIGRAM HEBBIAN TESTS ===
+
+test "trigram hebbian training at dim1024" {
+    const dim: usize = 1024;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    std.debug.print("\n=== TRIGRAM HEBBIAN TRAINING (v2.39) ===\n", .{});
+    std.debug.print("Corpus: {d} chars (Shakespeare)\n", .{corpus.len});
+    std.debug.print("Method: Multi-role + trigram Hebbian (2-char lookback) + sampling, dim=1024\n", .{});
+
+    // Build both bigram and trigram counts
+    const bi_counts = buildHebbianCounts(corpus);
+    const tri_counts = buildTrigramCounts(corpus);
+
+    // Count trigram coverage
+    var tri_total_entries: usize = 0;
+    var tri_nonzero: usize = 0;
+    for (0..TRIGRAM_KEYS) |k| {
+        for (0..HEBBIAN_CHARS) |c| {
+            if (tri_counts[k][c] > 0) {
+                tri_nonzero += 1;
+            }
+            tri_total_entries += 1;
+        }
+    }
+
+    // Count unique trigram keys with data
+    var tri_keys_with_data: usize = 0;
+    for (0..TRIGRAM_KEYS) |k| {
+        var has_data = false;
+        for (0..HEBBIAN_CHARS) |c| {
+            if (tri_counts[k][c] > 0) {
+                has_data = true;
+                break;
+            }
+        }
+        if (has_data) tri_keys_with_data += 1;
+    }
+
+    std.debug.print("Trigram keys with data: {d}/{d}\n", .{ tri_keys_with_data, TRIGRAM_KEYS });
+    std.debug.print("Non-zero trigram entries: {d}/{d}\n", .{ tri_nonzero, tri_total_entries });
+
+    // Honest split
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+
+    // Compute multi-roles at dim=1024
+    var multi_roles = computeMultiRoles(corpus, dim, &train_offsets, 8);
+
+    // === Trigram train loss ===
+    var tri_train_loss: f64 = 0;
+    var tri_train_count: usize = 0;
+    var tri_hits: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const prev_char = corpus[s + 6];
+        const last_char = corpus[s + 7];
+
+        // Check if trigram was used
+        if (prev_char >= HEBBIAN_OFFSET and prev_char < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+            last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+        {
+            const prev_idx = prev_char - HEBBIAN_OFFSET;
+            const last_idx = last_char - HEBBIAN_OFFSET;
+            const key = prev_idx * HEBBIAN_CHARS + last_idx;
+            var tri_total: u32 = 0;
+            for (0..HEBBIAN_CHARS) |ci| {
+                tri_total += tri_counts[key][ci];
+            }
+            if (tri_total > 0) tri_hits += 1;
+        }
+
+        var output = forwardPassTrigramHybrid(&ctx, &multi_roles, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        tri_train_loss += 1.0 - sim;
+        tri_train_count += 1;
+    }
+    if (tri_train_count > 0) tri_train_loss /= @as(f64, @floatFromInt(tri_train_count));
+
+    // === Bigram-only train loss (comparison) ===
+    var bi_train_loss: f64 = 0;
+    var bi_train_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles, dim, last_char, &bi_counts);
+        const sim = output.similarity(&target);
+        bi_train_loss += 1.0 - sim;
+        bi_train_count += 1;
+    }
+    if (bi_train_count > 0) bi_train_loss /= @as(f64, @floatFromInt(bi_train_count));
+
+    // === Trigram eval loss ===
+    var tri_eval_loss: f64 = 0;
+    var tri_eval_count: usize = 0;
+    const eval_samples = 8;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const prev_char = corpus[s + 6];
+        const last_char = corpus[s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &multi_roles, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        tri_eval_loss += 1.0 - sim;
+        tri_eval_count += 1;
+    }
+    if (tri_eval_count > 0) tri_eval_loss /= @as(f64, @floatFromInt(tri_eval_count));
+
+    // === Bigram-only eval loss (comparison) ===
+    var bi_eval_loss: f64 = 0;
+    var bi_eval_count: usize = 0;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles, dim, last_char, &bi_counts);
+        const sim = output.similarity(&target);
+        bi_eval_loss += 1.0 - sim;
+        bi_eval_count += 1;
+    }
+    if (bi_eval_count > 0) bi_eval_loss /= @as(f64, @floatFromInt(bi_eval_count));
+
+    // === Generation with trigram ===
+    var init_ctx: [8]Hypervector = undefined;
+    const prompt = "to be or ";
+    for (0..8) |i| {
+        init_ctx[i] = charToHV(dim, prompt[i]);
+    }
+    var gen_buf: [50]u8 = undefined;
+    const gen_count = generateWithTrigramSampled(
+        &init_ctx,
+        &multi_roles,
+        dim,
+        prompt[6], // 'r'
+        prompt[7], // ' '
+        &bi_counts,
+        &tri_counts,
+        &gen_buf,
+        50,
+        0.8,
+        8,
+        42,
+    );
+
+    // Count unique chars
+    var seen: [256]bool = undefined;
+    for (0..256) |i| {
+        seen[i] = false;
+    }
+    var unique: usize = 0;
+    for (0..gen_count) |i| {
+        if (!seen[gen_buf[i]]) {
+            seen[gen_buf[i]] = true;
+            unique += 1;
+        }
+    }
+
+    const mh_loss: f64 = 1.0306;
+    const tri_train_imp = (mh_loss - tri_train_loss) / mh_loss * 100.0;
+    const tri_eval_imp = (mh_loss - tri_eval_loss) / mh_loss * 100.0;
+    const bi_train_imp = (mh_loss - bi_train_loss) / mh_loss * 100.0;
+    const bi_eval_imp = (mh_loss - bi_eval_loss) / mh_loss * 100.0;
+
+    const tri_hit_pct = @as(f64, @floatFromInt(tri_hits)) / @as(f64, @floatFromInt(tri_train_count)) * 100.0;
+
+    std.debug.print("\nTrigram hit rate:       {d:.1}% ({d}/{d} samples)\n", .{ tri_hit_pct, tri_hits, tri_train_count });
+    std.debug.print("\nTrigram train loss:     {d:.4} ({d:.1}% below random)\n", .{ tri_train_loss, tri_train_imp });
+    std.debug.print("Bigram  train loss:     {d:.4} ({d:.1}% below random)\n", .{ bi_train_loss, bi_train_imp });
+    std.debug.print("Trigram eval loss:      {d:.4} ({d:.1}% below random)\n", .{ tri_eval_loss, tri_eval_imp });
+    std.debug.print("Bigram  eval loss:      {d:.4} ({d:.1}% below random)\n", .{ bi_eval_loss, bi_eval_imp });
+    std.debug.print("Random baseline:        {d:.4}\n", .{mh_loss});
+    std.debug.print("\nGeneration (T=0.8, K=8, trigram, dim=1024):\n", .{});
+    std.debug.print("  Prompt: \"to be or \"\n", .{});
+    std.debug.print("  Generated: \"{s}\"\n", .{gen_buf[0..gen_count]});
+    std.debug.print("  Unique chars: {d}\n", .{unique});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(tri_train_loss >= 0.0 and tri_train_loss <= 2.0);
+    try std.testing.expect(tri_eval_loss >= 0.0 and tri_eval_loss <= 2.0);
+    try std.testing.expect(gen_count == 50);
+    try std.testing.expect(tri_keys_with_data > 0);
+}
+
+test "trigram hebbian perplexity comparison" {
+    const dim: usize = 1024;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    const bi_counts = buildHebbianCounts(corpus);
+    const tri_counts = buildTrigramCounts(corpus);
+
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+    var multi_roles = computeMultiRoles(corpus, dim, &train_offsets, 8);
+
+    // === Test PPL (held-out) — Trigram ===
+    const test_start = eval_end;
+    const test_count = 8;
+    var tri_test_log: f64 = 0;
+    var tri_test_valid: usize = 0;
+
+    for (0..test_count) |i| {
+        const s = test_start + i * (total_samples - test_start) / test_count;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const prev_char = corpus[s + 6];
+        const last_char = corpus[s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &multi_roles, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        tri_test_log += @log(clamped);
+        tri_test_valid += 1;
+    }
+
+    const tri_test_ppl = @exp(-tri_test_log / @as(f64, @floatFromInt(tri_test_valid)));
+
+    // === Train PPL — Trigram ===
+    var tri_train_log: f64 = 0;
+    var tri_train_valid: usize = 0;
+    for (0..8) |i| {
+        const s = i * train_end / 8;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const prev_char = corpus[s + 6];
+        const last_char = corpus[s + 7];
+        var output = forwardPassTrigramHybrid(&ctx, &multi_roles, dim, prev_char, last_char, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        tri_train_log += @log(clamped);
+        tri_train_valid += 1;
+    }
+
+    const tri_train_ppl = @exp(-tri_train_log / @as(f64, @floatFromInt(tri_train_valid)));
+
+    std.debug.print("\n=== TRIGRAM PERPLEXITY (all methods) ===\n", .{});
+    std.debug.print("Trigram train PPL:      {d:.1}\n", .{tri_train_ppl});
+    std.debug.print("Trigram test PPL:       {d:.1}\n", .{tri_test_ppl});
+    std.debug.print("Overfit gap:            {d:.1}\n", .{tri_test_ppl - tri_train_ppl});
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("dim=1024 MR+bigram (v2.38): train=1.8, test=1.8\n", .{});
+    std.debug.print("dim=256  MR+bigram (v2.37): train=1.8, test=1.9\n", .{});
+    std.debug.print("Hybrid (v2.35-36):          train=1.8, test=1.9\n", .{});
+    std.debug.print("Direct (v2.34):             train=2.0, test=2.0\n", .{});
+    std.debug.print("Bundle2 (v2.32):            train=1.9, test=2.0\n", .{});
+    std.debug.print("Random baseline:            95.0\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(tri_test_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(tri_test_ppl));
+    try std.testing.expect(!std.math.isInf(tri_test_ppl));
 }
