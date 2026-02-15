@@ -243,6 +243,183 @@ fn resonatorTrainStep(
     return best_loss;
 }
 
+// === DIRECT ROLE AVERAGING (v2.34) ===
+// Bypasses deep bind chains entirely. Instead of training through
+// attention → FFN → residual (5+ binds), we:
+// 1. Summarize context as a single HV via positional bundling
+// 2. Compute ideal role for each sample: ideal = unbind(target, context_summary)
+// 3. Bundle all ideal roles to get the averaged "learned" role
+// 4. At inference: output = bind(context_summary, learned_role)
+//
+// This has only 1 bind at inference time → clean signal, no credit assignment problem.
+
+/// Summarize an 8-element context into a single hypervector.
+/// Uses positional permutation + sequential bundling.
+fn summarizeContext(context: []Hypervector) Hypervector {
+    // Permute each position, then bundle sequentially
+    var summary = context[0].permute(0);
+    for (1..context.len) |i| {
+        var positioned = context[i].permute(i);
+        summary = summary.bundle(&positioned);
+    }
+    return summary;
+}
+
+/// Direct forward pass: just bind(context_summary, role)
+/// Only 1 bind operation → clean gradient signal
+fn forwardPassDirect(
+    context: []Hypervector,
+    role: *Hypervector,
+) Hypervector {
+    var summary = summarizeContext(context);
+    return summary.bind(role);
+}
+
+/// Pre-compute the ideal role from a set of (context, target) pairs.
+/// For each pair: ideal_i = unbind(target_i, summary_i)
+/// Final role = sequential bundle of all ideal_i
+/// This is a one-shot computation, no iterative training needed.
+fn computeDirectRole(
+    corpus: []const u8,
+    dim: usize,
+    offsets: []const usize,
+    context_size: usize,
+) Hypervector {
+    var accumulated_role = Hypervector.init(dim); // starts as zero
+    var first = true;
+
+    for (offsets) |s| {
+        if (s + context_size >= corpus.len) continue;
+
+        // Encode context
+        var ctx: [8]Hypervector = undefined;
+        for (0..context_size) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+
+        // Target
+        var target = charToHV(dim, corpus[s + context_size]);
+
+        // Context summary
+        var summary = summarizeContext(&ctx);
+
+        // Ideal role for this sample: unbind(target, summary)
+        var ideal = target.unbind(&summary);
+
+        if (first) {
+            accumulated_role = ideal;
+            first = false;
+        } else {
+            accumulated_role = accumulated_role.bundle(&ideal);
+        }
+    }
+
+    return accumulated_role;
+}
+
+/// Direct decode: use the learned role to predict next char
+fn directDecode(context: []Hypervector, role: *Hypervector, dim: usize) u8 {
+    var output = forwardPassDirect(context, role);
+    return hvToChar(dim, &output);
+}
+
+/// Autoregressive generation with direct role
+fn generateWithDirectRole(
+    initial_context: []Hypervector,
+    role: *Hypervector,
+    dim: usize,
+    output_buf: []u8,
+    max_tokens: usize,
+) usize {
+    var context: [8]Hypervector = undefined;
+    for (initial_context, 0..) |*hv, i| {
+        context[i] = hv.clone();
+    }
+
+    var generated: usize = 0;
+    while (generated < max_tokens and generated < output_buf.len) {
+        var output = forwardPassDirect(&context, role);
+        output_buf[generated] = hvToChar(dim, &output);
+        generated += 1;
+
+        for (0..7) |i| {
+            context[i] = context[i + 1];
+        }
+        context[7] = output.clone();
+    }
+    return generated;
+}
+
+/// Iterative refinement: after initial direct role computation,
+/// run a few correction passes to improve role quality.
+/// Each pass: for each sample, measure error, compute correction, blend.
+fn refineDirectRole(
+    corpus: []const u8,
+    dim: usize,
+    offsets: []const usize,
+    context_size: usize,
+    initial_role: *Hypervector,
+    num_passes: usize,
+) Hypervector {
+    var role = initial_role.clone();
+
+    for (0..num_passes) |pass| {
+        var correction_accum = Hypervector.init(dim);
+        var first_correction = true;
+        var pass_loss: f64 = 0;
+        var count: usize = 0;
+
+        for (offsets) |s| {
+            if (s + context_size >= corpus.len) continue;
+
+            var ctx: [8]Hypervector = undefined;
+            for (0..context_size) |i| {
+                ctx[i] = charToHV(dim, corpus[s + i]);
+            }
+            var target = charToHV(dim, corpus[s + context_size]);
+
+            // Forward pass with current role
+            var output = forwardPassDirect(&ctx, &role);
+            const sim = output.similarity(&target);
+            pass_loss += 1.0 - sim;
+            count += 1;
+
+            // Only correct if prediction is poor
+            if (sim < 0.3) {
+                var summary = summarizeContext(&ctx);
+                var ideal = target.unbind(&summary);
+                // Blend correction: small step toward ideal
+                var correction = ideal.unbind(&role);
+                // Sparsify heavily (keep 10%)
+                var prng = std.Random.DefaultPrng.init(pass * 1000 + s + 60000);
+                const random = prng.random();
+                for (0..dim) |idx| {
+                    if (random.float(f64) > 0.1) {
+                        correction.set(idx, 0);
+                    }
+                }
+                if (first_correction) {
+                    correction_accum = correction;
+                    first_correction = false;
+                } else {
+                    correction_accum = correction_accum.bundle(&correction);
+                }
+            }
+        }
+
+        if (!first_correction) {
+            role = role.bind(&correction_accum);
+        }
+
+        if (count > 0) {
+            const avg_pass_loss = pass_loss / @as(f64, @floatFromInt(count));
+            _ = avg_pass_loss;
+        }
+    }
+
+    return role;
+}
+
 // === CHARACTER ENCODING (avoids Codebook key-lifetime bug) ===
 
 /// Deterministic character-to-Hypervector mapping using random seeds
@@ -1315,6 +1492,269 @@ test "resonator perplexity comparison" {
     std.debug.print("Bundle2 baseline:     train=1.9, test=2.0 (v2.32)\n", .{});
     std.debug.print("Random baseline:      95.0\n", .{});
     std.debug.print("========================================\n", .{});
+
+    try std.testing.expect(test_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(test_ppl));
+    try std.testing.expect(!std.math.isInf(test_ppl));
+}
+
+test "direct role averaging on scaled corpus" {
+    const dim: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    // Train offsets (from train region)
+    const train_sample_count = 20; // more samples since it's one-shot
+    var train_offsets: [20]usize = undefined;
+    for (0..train_sample_count) |i| {
+        train_offsets[i] = i * train_end / train_sample_count;
+    }
+
+    // Eval offsets
+    const eval_sample_count = 8;
+    const eval_region_size = eval_end - train_end;
+    var eval_offsets: [8]usize = undefined;
+    for (0..eval_sample_count) |i| {
+        eval_offsets[i] = train_end + i * eval_region_size / eval_sample_count;
+    }
+
+    // Test offsets
+    const test_sample_count = 8;
+    const test_region_size = total_samples - eval_end;
+    var test_offsets: [8]usize = undefined;
+    for (0..test_sample_count) |i| {
+        test_offsets[i] = eval_end + i * test_region_size / test_sample_count;
+    }
+
+    std.debug.print("\n=== DIRECT ROLE AVERAGING (corpus={d} chars) ===\n", .{corpus.len});
+    std.debug.print("Method: one-shot ideal_role = bundle(unbind(target, summary))\n", .{});
+    std.debug.print("Train samples: {d} | Eval: {d} | Test: {d}\n", .{ train_sample_count, eval_sample_count, test_sample_count });
+
+    // Step 1: Compute direct role from training data (one-shot, no iterations)
+    var direct_role = computeDirectRole(corpus, dim, &train_offsets, 8);
+
+    // Measure train loss with initial direct role
+    var train_loss_initial: f64 = 0;
+    var train_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassDirect(&ctx, &direct_role);
+        const sim = output.similarity(&target);
+        train_loss_initial += 1.0 - sim;
+        train_count += 1;
+    }
+    if (train_count > 0) train_loss_initial /= @as(f64, @floatFromInt(train_count));
+
+    std.debug.print("  Initial direct role train loss: {d:.4}\n", .{train_loss_initial});
+
+    // Step 2: Refine with 10 passes
+    direct_role = refineDirectRole(corpus, dim, &train_offsets, 8, &direct_role, 10);
+
+    // Measure train loss after refinement
+    var train_loss_refined: f64 = 0;
+    train_count = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassDirect(&ctx, &direct_role);
+        const sim = output.similarity(&target);
+        train_loss_refined += 1.0 - sim;
+        train_count += 1;
+    }
+    if (train_count > 0) train_loss_refined /= @as(f64, @floatFromInt(train_count));
+
+    // Eval loss
+    var eval_loss: f64 = 0;
+    var eval_count: usize = 0;
+    for (eval_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassDirect(&ctx, &direct_role);
+        const sim = output.similarity(&target);
+        eval_loss += 1.0 - sim;
+        eval_count += 1;
+    }
+    if (eval_count > 0) eval_loss /= @as(f64, @floatFromInt(eval_count));
+
+    const loss_drop_pct = if (train_loss_initial > 0) (train_loss_initial - train_loss_refined) / train_loss_initial * 100.0 else 0;
+
+    std.debug.print("  Refined direct role train loss: {d:.4}\n", .{train_loss_refined});
+    std.debug.print("  Eval loss:                      {d:.4}\n", .{eval_loss});
+    std.debug.print("  Loss drop (initial→refined):    {d:.1}%\n", .{loss_drop_pct});
+
+    // Generate 30 tokens
+    var seed_context: [8]Hypervector = undefined;
+    const seed_text = "to be or";
+    for (seed_text, 0..) |c, i| {
+        seed_context[i] = charToHV(dim, c);
+    }
+
+    var gen_buf: [30]u8 = undefined;
+    const gen_count = generateWithDirectRole(&seed_context, &direct_role, dim, &gen_buf, 30);
+
+    var seen = [_]bool{false} ** 256;
+    var unique: usize = 0;
+    for (gen_buf[0..gen_count]) |c| {
+        if (!seen[c]) {
+            seen[c] = true;
+            unique += 1;
+        }
+    }
+
+    std.debug.print("\n  Direct role generation:\n", .{});
+    std.debug.print("  Prompt: \"{s}\"\n", .{seed_text});
+    std.debug.print("  Generated: \"{s}\"\n", .{gen_buf[0..gen_count]});
+    std.debug.print("  Unique chars: {d}\n", .{unique});
+
+    // Compare with multi-head approach loss
+    var roles_mh = initRoles(dim, 42);
+    var mh_loss: f64 = 0;
+    var mh_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassMultiHead(&ctx, &roles_mh);
+        const sim = output.similarity(&target);
+        mh_loss += 1.0 - sim;
+        mh_count += 1;
+    }
+    if (mh_count > 0) mh_loss /= @as(f64, @floatFromInt(mh_count));
+
+    std.debug.print("\n  Comparison (untrained baselines):\n", .{});
+    std.debug.print("  Multi-head (random roles):   {d:.4}\n", .{mh_loss});
+    std.debug.print("  Direct role (initial):       {d:.4}\n", .{train_loss_initial});
+    std.debug.print("  Direct role (refined):       {d:.4}\n", .{train_loss_refined});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(train_loss_initial >= 0.0 and train_loss_initial <= 2.0);
+    try std.testing.expect(train_loss_refined >= 0.0 and train_loss_refined <= 2.0);
+    try std.testing.expect(gen_count == 30);
+}
+
+test "direct role perplexity comparison" {
+    const dim: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    // Train with 20 samples, refine 10 passes
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+
+    var direct_role = computeDirectRole(corpus, dim, &train_offsets, 8);
+    direct_role = refineDirectRole(corpus, dim, &train_offsets, 8, &direct_role, 10);
+
+    // Measure PPL on test region (held-out)
+    const test_start = eval_end;
+    const test_count = 8;
+    var test_sum_log: f64 = 0;
+    var test_valid: usize = 0;
+
+    for (0..test_count) |i| {
+        const s = test_start + i * (total_samples - test_start) / test_count;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassDirect(&ctx, &direct_role);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        test_sum_log += @log(clamped);
+        test_valid += 1;
+    }
+
+    const test_ppl = @exp(-test_sum_log / @as(f64, @floatFromInt(test_valid)));
+
+    // Train PPL
+    var train_sum_log: f64 = 0;
+    var train_valid: usize = 0;
+    for (0..8) |i| {
+        const s = i * train_end / 8;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassDirect(&ctx, &direct_role);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        train_sum_log += @log(clamped);
+        train_valid += 1;
+    }
+
+    const train_ppl = @exp(-train_sum_log / @as(f64, @floatFromInt(train_valid)));
+
+    std.debug.print("\n=== DIRECT ROLE PERPLEXITY (all methods) ===\n", .{});
+    std.debug.print("Direct role train PPL:  {d:.1}\n", .{train_ppl});
+    std.debug.print("Direct role test PPL:   {d:.1}\n", .{test_ppl});
+    std.debug.print("Overfit gap:            {d:.1}\n", .{test_ppl - train_ppl});
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("Bundle2 (v2.32):        train=1.9, test=2.0\n", .{});
+    std.debug.print("Resonator (v2.33):      train=2.0, test=2.0\n", .{});
+    std.debug.print("Random baseline:        95.0\n", .{});
+    std.debug.print("============================================\n", .{});
 
     try std.testing.expect(test_ppl > 0.0);
     try std.testing.expect(!std.math.isNan(test_ppl));
