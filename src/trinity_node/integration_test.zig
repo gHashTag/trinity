@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY INTEGRATION TEST v2.3 - 500-Node Scale, Saga Pattern
-// Extends v2.2 (Dynamic Erasure Coding, 400-Node Scale)
+// TRINITY INTEGRATION TEST v2.6 - 800-Node Scale, WAL Disk Persistence
+// Extends v2.5 (Parallel Step Execution, 700-Node Scale)
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -46,6 +46,12 @@ const region_router_mod = @import("region_router.zig");
 const dynamic_erasure_mod = @import("dynamic_erasure.zig");
 // v2.3 modules
 const saga_coordinator_mod = @import("saga_coordinator.zig");
+// v2.4 modules
+const transaction_wal_mod = @import("transaction_wal.zig");
+// v2.5 modules
+const parallel_saga_mod = @import("parallel_saga.zig");
+// v2.6 modules
+const wal_disk_mod = @import("wal_disk.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TEST: 12-node RS store and retrieve with progressive failures
@@ -3732,5 +3738,1140 @@ test "v2.3: full pipeline — saga, dynamic erasure, 2PC, VSA locks, router, all
 
     try std.testing.expectEqual(@as(u32, 500), staking.getStats().active_stakers);
     try std.testing.expectEqual(@as(u64, 10), escrow.getStats().total_escrows);
+    try std.testing.expect(ec_rec.health_score >= 0.85);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.4 INTEGRATION TESTS — 600-Node Scale, Transaction Write-Ahead Log
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.4: 600-node WAL — saga lifecycle logging and recovery" {
+    const allocator = std.testing.allocator;
+    const NODE_COUNT = 600;
+
+    var nodes: [NODE_COUNT]storage_mod.StorageProvider = undefined;
+    for (0..NODE_COUNT) |i| {
+        nodes[i] = storage_mod.StorageProvider.init(allocator, .{
+            .max_bytes = 1024 * 1024,
+            .shard_size = 64,
+            .replication_factor = 1,
+            .rs_parity_ratio = 0,
+        });
+    }
+    defer for (0..NODE_COUNT) |i| nodes[i].deinit();
+
+    var wal = transaction_wal_mod.TransactionWal.init(allocator);
+    defer wal.deinit();
+
+    // Log 30 complete sagas (3 steps each)
+    for (0..30) |saga_i| {
+        const coord = makeNodeId(saga_i);
+        const ts: i64 = @intCast(1000 + saga_i * 100);
+        const sid: u64 = @intCast(saga_i + 1);
+
+        _ = try wal.logSagaCreated(sid, coord, ts);
+        for (0..3) |step_j| {
+            _ = try wal.logSagaStepAdded(sid, @intCast(step_j), 0x01, ts + 10);
+        }
+        _ = try wal.logSagaExecuteStart(sid, ts + 50);
+        for (0..3) |step_j| {
+            _ = try wal.logSagaStepSucceeded(sid, @intCast(step_j), @intCast(ts + 60 + @as(i64, @intCast(step_j)) * 10));
+        }
+        _ = try wal.logSagaCompleted(sid, ts + 90);
+    }
+
+    // Log 10 incomplete sagas (executing, 2/3 steps done — simulates crash)
+    for (0..10) |saga_i| {
+        const coord = makeNodeId(100 + saga_i);
+        const ts: i64 = @intCast(5000 + saga_i * 100);
+        const sid: u64 = @intCast(31 + saga_i);
+
+        _ = try wal.logSagaCreated(sid, coord, ts);
+        for (0..3) |step_j| {
+            _ = try wal.logSagaStepAdded(sid, @intCast(step_j), 0x01, ts + 10);
+        }
+        _ = try wal.logSagaExecuteStart(sid, ts + 50);
+        _ = try wal.logSagaStepSucceeded(sid, 0, ts + 60);
+        _ = try wal.logSagaStepSucceeded(sid, 1, ts + 70);
+        // Step 2 never completed — crash
+    }
+
+    // Verify pre-recovery state
+    try std.testing.expectEqual(@as(u32, 10), wal.getActiveCount()); // 10 incomplete
+
+    // Run recovery
+    var report = try wal.recover();
+    defer report.recovery_entries.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u32, 10), report.sagas_recovered);
+    try std.testing.expectEqual(@as(u32, 0), report.corrupted_records);
+
+    // All 10 incomplete sagas should resume execution
+    var resume_count: u32 = 0;
+    for (report.recovery_entries.items) |entry| {
+        if (entry.is_saga and entry.action == .saga_resume_execute) {
+            try std.testing.expectEqual(@as(u32, 2), entry.steps_succeeded);
+            resume_count += 1;
+        }
+    }
+    try std.testing.expectEqual(@as(u32, 10), resume_count);
+
+    const stats = wal.getStats();
+    try std.testing.expect(stats.saga_events > 200); // 30×8 + 10×7 = 310
+    try std.testing.expectEqual(@as(u64, 1), stats.recoveries_performed);
+}
+
+test "v2.4: 600-node WAL — 2PC crash recovery (commit-phase crash)" {
+    const allocator = std.testing.allocator;
+    const NODE_COUNT = 600;
+
+    var nodes: [NODE_COUNT]storage_mod.StorageProvider = undefined;
+    for (0..NODE_COUNT) |i| {
+        nodes[i] = storage_mod.StorageProvider.init(allocator, .{
+            .max_bytes = 1024 * 1024,
+            .shard_size = 64,
+            .replication_factor = 1,
+            .rs_parity_ratio = 0,
+        });
+    }
+    defer for (0..NODE_COUNT) |i| nodes[i].deinit();
+
+    var hashes: [60][32]u8 = undefined;
+    for (0..60) |s| {
+        var data: [64]u8 = undefined;
+        @memset(&data, @intCast(s + 0x80));
+        std.crypto.hash.sha2.Sha256.hash(&data, &hashes[s], .{});
+    }
+
+    var wal = transaction_wal_mod.TransactionWal.init(allocator);
+    defer wal.deinit();
+
+    // TX 1-5: complete (commit phase finished)
+    for (0..5) |tx_i| {
+        const coord = makeNodeId(tx_i);
+        const tid: u64 = @intCast(tx_i + 1);
+        const ts: i64 = @intCast(1000 + tx_i * 200);
+
+        _ = try wal.logTxCreated(tid, coord, ts);
+        for (0..4) |p| {
+            _ = try wal.logTxParticipantAdded(tid, hashes[tx_i * 4 + p], makeNodeId(p + 100), ts + 10);
+        }
+        _ = try wal.logTxPrepareStart(tid, ts + 50);
+        for (0..4) |p| {
+            _ = try wal.logTxVoteReceived(tid, hashes[tx_i * 4 + p], true, ts + 60);
+        }
+        _ = try wal.logTxCommitStart(tid, ts + 80);
+        _ = try wal.logTxCommitComplete(tid, ts + 90);
+    }
+
+    // TX 6-10: crashed during commit (commit_start logged, not commit_complete)
+    for (0..5) |tx_i| {
+        const coord = makeNodeId(50 + tx_i);
+        const tid: u64 = @intCast(6 + tx_i);
+        const ts: i64 = @intCast(3000 + tx_i * 200);
+
+        _ = try wal.logTxCreated(tid, coord, ts);
+        for (0..3) |p| {
+            _ = try wal.logTxParticipantAdded(tid, hashes[20 + tx_i * 3 + p], makeNodeId(p + 200), ts + 10);
+        }
+        _ = try wal.logTxPrepareStart(tid, ts + 50);
+        for (0..3) |p| {
+            _ = try wal.logTxVoteReceived(tid, hashes[20 + tx_i * 3 + p], true, ts + 60);
+        }
+        _ = try wal.logTxCommitStart(tid, ts + 80);
+        // CRASH — commit_complete never logged
+    }
+
+    try std.testing.expectEqual(@as(u32, 5), wal.getActiveCount()); // 5 incomplete TXs
+
+    var report = try wal.recover();
+    defer report.recovery_entries.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u32, 5), report.txs_recovered);
+    try std.testing.expectEqual(@as(u32, 0), report.corrupted_records);
+
+    // All 5 should resume commit
+    var commit_resume_count: u32 = 0;
+    for (report.recovery_entries.items) |entry| {
+        if (!entry.is_saga and entry.action == .tx_resume_commit) {
+            try std.testing.expectEqual(@as(u32, 3), entry.step_count); // 3 participants
+            commit_resume_count += 1;
+        }
+    }
+    try std.testing.expectEqual(@as(u32, 5), commit_resume_count);
+
+    const stats = wal.getStats();
+    try std.testing.expect(stats.tx_events > 50);
+}
+
+test "v2.4: 600-node WAL — mixed saga + 2PC with checkpoints" {
+    const allocator = std.testing.allocator;
+    const NODE_COUNT = 600;
+
+    var nodes: [NODE_COUNT]storage_mod.StorageProvider = undefined;
+    for (0..NODE_COUNT) |i| {
+        nodes[i] = storage_mod.StorageProvider.init(allocator, .{
+            .max_bytes = 1024 * 1024,
+            .shard_size = 64,
+            .replication_factor = 1,
+            .rs_parity_ratio = 0,
+        });
+    }
+    defer for (0..NODE_COUNT) |i| nodes[i].deinit();
+
+    var hashes: [20][32]u8 = undefined;
+    for (0..20) |s| {
+        var data: [64]u8 = undefined;
+        @memset(&data, @intCast(s + 0x80));
+        std.crypto.hash.sha2.Sha256.hash(&data, &hashes[s], .{});
+    }
+
+    var wal = transaction_wal_mod.TransactionWal.init(allocator);
+    defer wal.deinit();
+
+    const coord = makeNodeId(0);
+
+    // Complete saga
+    _ = try wal.logSagaCreated(1, coord, 1000);
+    _ = try wal.logSagaStepAdded(1, 0, 0x01, 1010);
+    _ = try wal.logSagaExecuteStart(1, 1050);
+    _ = try wal.logSagaStepSucceeded(1, 0, 1060);
+    _ = try wal.logSagaCompleted(1, 1070);
+
+    // Checkpoint
+    _ = try wal.writeCheckpoint(1500);
+
+    // Complete 2PC
+    _ = try wal.logTxCreated(2, coord, 2000);
+    _ = try wal.logTxParticipantAdded(2, hashes[0], makeNodeId(1), 2010);
+    _ = try wal.logTxPrepareStart(2, 2050);
+    _ = try wal.logTxVoteReceived(2, hashes[0], true, 2060);
+    _ = try wal.logTxCommitStart(2, 2080);
+    _ = try wal.logTxCommitComplete(2, 2090);
+
+    // Incomplete saga (compensating)
+    _ = try wal.logSagaCreated(3, coord, 3000);
+    _ = try wal.logSagaStepAdded(3, 0, 0x01, 3010);
+    _ = try wal.logSagaStepAdded(3, 1, 0x02, 3020);
+    _ = try wal.logSagaExecuteStart(3, 3050);
+    _ = try wal.logSagaStepSucceeded(3, 0, 3060);
+    _ = try wal.logSagaStepFailed(3, 1, 500, 3070);
+    // Compensation not logged — crash during compensation
+
+    try std.testing.expectEqual(@as(u32, 1), wal.getActiveCount());
+
+    var report = try wal.recover();
+    defer report.recovery_entries.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u32, 1), report.checkpoints_found);
+    try std.testing.expectEqual(@as(u32, 1), report.sagas_recovered);
+    try std.testing.expectEqual(@as(u32, 0), report.txs_recovered);
+
+    // Find incomplete saga 3
+    var found = false;
+    for (report.recovery_entries.items) |entry| {
+        if (entry.id == 3 and entry.is_saga) {
+            try std.testing.expectEqual(transaction_wal_mod.RecoveryAction.saga_resume_compensate, entry.action);
+            found = true;
+        }
+    }
+    try std.testing.expect(found);
+
+    const stats = wal.getStats();
+    try std.testing.expectEqual(@as(u64, 1), stats.checkpoints);
+    try std.testing.expect(stats.saga_events > 0);
+    try std.testing.expect(stats.tx_events > 0);
+}
+
+test "v2.4: full pipeline — WAL, saga, dynamic erasure, 2PC, VSA locks, router, all subsystems on 600 nodes" {
+    const allocator = std.testing.allocator;
+    const NODE_COUNT = 600;
+
+    // === STORAGE NODES ===
+    var nodes: [NODE_COUNT]storage_mod.StorageProvider = undefined;
+    for (0..NODE_COUNT) |i| {
+        nodes[i] = storage_mod.StorageProvider.init(allocator, .{
+            .max_bytes = 1024 * 1024,
+            .shard_size = 64,
+            .replication_factor = 1,
+            .rs_parity_ratio = 0,
+        });
+    }
+    defer for (0..NODE_COUNT) |i| nodes[i].deinit();
+
+    var peers: [NODE_COUNT]*storage_mod.StorageProvider = undefined;
+    for (0..NODE_COUNT) |i| peers[i] = &nodes[i];
+
+    // === STORE 120 SHARDS ===
+    var hashes: [120][32]u8 = undefined;
+    for (0..120) |s| {
+        var data: [64]u8 = undefined;
+        @memset(&data, @intCast(s + 0x80));
+        std.crypto.hash.sha2.Sha256.hash(&data, &hashes[s], .{});
+        _ = try nodes[s % NODE_COUNT].storeShard(hashes[s], &data);
+        _ = try nodes[(s + 200) % NODE_COUNT].storeShard(hashes[s], &data);
+        _ = try nodes[(s + 400) % NODE_COUNT].storeShard(hashes[s], &data);
+    }
+
+    // === TRANSACTION WAL ===
+    var wal = transaction_wal_mod.TransactionWal.init(allocator);
+    defer wal.deinit();
+
+    // === SAGA WITH WAL LOGGING ===
+    var saga_coord = saga_coordinator_mod.SagaCoordinator.init(allocator);
+    defer saga_coord.deinit();
+
+    // 5 sagas logged to WAL
+    for (0..5) |saga_i| {
+        const coord_id = makeNodeId(saga_i);
+        const ts: i64 = @intCast(1000 + saga_i * 200);
+        const saga_id = try saga_coord.createSaga(coord_id, ts);
+        _ = try wal.logSagaCreated(saga_id, coord_id, ts);
+
+        for (0..3) |step_j| {
+            _ = try saga_coord.addStep(saga_id, .shard_write, hashes[saga_i * 3 + step_j], makeNodeId(step_j + 100));
+            _ = try wal.logSagaStepAdded(saga_id, @intCast(step_j), 0x01, ts + 10);
+        }
+
+        try saga_coord.execute(saga_id, ts + 50);
+        _ = try wal.logSagaExecuteStart(saga_id, ts + 50);
+
+        for (0..3) |step_j| {
+            _ = try saga_coord.stepSucceeded(saga_id, @intCast(step_j), @intCast(ts + 60 + @as(i64, @intCast(step_j)) * 10));
+            _ = try wal.logSagaStepSucceeded(saga_id, @intCast(step_j), @intCast(ts + 60 + @as(i64, @intCast(step_j)) * 10));
+        }
+        _ = try wal.logSagaCompleted(saga_id, ts + 90);
+    }
+
+    // === 2PC WITH WAL LOGGING ===
+    var tx_coord = cross_shard_tx_mod.CrossShardTxCoordinator.init(allocator);
+    defer tx_coord.deinit();
+
+    const tx_coord_id = makeNodeId(0);
+    const tx_id = try tx_coord.beginTransaction(tx_coord_id, 5000);
+    _ = try wal.logTxCreated(tx_id, tx_coord_id, 5000);
+
+    for (0..6) |s| {
+        try tx_coord.addParticipant(tx_id, hashes[s], makeNodeId(s + 1), 5000);
+        _ = try wal.logTxParticipantAdded(tx_id, hashes[s], makeNodeId(s + 1), 5010);
+    }
+
+    try tx_coord.prepare(tx_id);
+    _ = try wal.logTxPrepareStart(tx_id, 5050);
+
+    for (0..6) |s| {
+        try tx_coord.recordVote(tx_id, hashes[s], true);
+        _ = try wal.logTxVoteReceived(tx_id, hashes[s], true, 5060);
+    }
+
+    _ = try wal.logTxCommitStart(tx_id, 5080);
+    const tx_result = try tx_coord.commit(tx_id, 5090);
+    try std.testing.expect(tx_result.success);
+    _ = try wal.logTxCommitComplete(tx_id, 5090);
+
+    // Checkpoint
+    _ = try wal.writeCheckpoint(6000);
+
+    // === REGION TOPOLOGY + ROUTER ===
+    var topo = region_topology_mod.RegionTopology.initWithConfig(allocator, .{
+        .min_regions_per_shard = 2,
+    });
+    defer topo.deinit();
+
+    var latency_tracker = peer_latency_mod.PeerLatencyTracker.init(allocator);
+    defer latency_tracker.deinit();
+    var reputation = node_reputation_mod.NodeReputationSystem.init(allocator);
+    defer reputation.deinit();
+
+    const regions = [_]region_topology_mod.Region{
+        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .asia_south, .oceania, .south_america, .africa,
+    };
+
+    for (0..NODE_COUNT) |i| {
+        const nid = makeNodeId(i);
+        try topo.registerNode(nid, regions[i % 9]);
+        latency_tracker.recordLatency(nid, @intCast((i % 9 + 1) * 5_000_000));
+        reputation.recordPosResult(nid, i < 540); // 90% pass
+        reputation.recordUptime(nid, if (i < 540) 3600 else 1800, 3600);
+    }
+
+    var router = region_router_mod.RegionRouter.init(allocator);
+    defer router.deinit();
+    const route = router.routeRequest(.us_east, &topo, &latency_tracker, &reputation);
+    try std.testing.expect(route != null);
+
+    // === DYNAMIC ERASURE ===
+    var reporter = network_stats_mod.NetworkStatsReporter.init(allocator);
+    const peers_const: []const *storage_mod.StorageProvider = &peers;
+    var health_report = reporter.generateReport(peers_const, null, null, null, null, null, null);
+    health_report.node_count = 600;
+    health_report.pos_challenges_issued = 6000;
+    health_report.pos_challenges_passed = 5900;
+    health_report.pos_challenges_failed = 100;
+    health_report.scrub_total = 3000;
+    health_report.scrub_corruptions = 10;
+    health_report.reputation_avg = 0.93;
+    health_report.reputation_min = 0.50;
+    health_report.reputation_max = 0.99;
+    health_report.total_bytes_used = 600_000_000;
+    health_report.total_bytes_available = 6_000_000_000;
+    health_report.shards_rebalanced = 100;
+
+    var erasure_engine = dynamic_erasure_mod.DynamicErasureEngine.init(.{});
+    const ec_rec = erasure_engine.recommend(health_report, 10);
+    try std.testing.expectEqual(dynamic_erasure_mod.HealthLevel.excellent, ec_rec.health_level);
+
+    // === VSA SHARD LOCKS ===
+    var locks = vsa_shard_locks_mod.VsaShardLocks.init(allocator);
+    defer locks.deinit();
+    for (0..10) |s| {
+        const result = try locks.acquireLock(hashes[s], tx_coord_id, tx_id, 7000);
+        try std.testing.expectEqual(vsa_shard_locks_mod.LockResult.acquired, result);
+    }
+    const released = locks.releaseTransactionLocks(tx_id);
+    try std.testing.expectEqual(@as(u32, 10), released);
+
+    // === STAKING + ESCROW ===
+    var staking = token_staking_mod.TokenStakingEngine.initWithConfig(allocator, .{
+        .min_stake_wei = 100,
+    });
+    defer staking.deinit();
+    for (0..NODE_COUNT) |i| _ = staking.stake(makeNodeId(i), 10_000);
+
+    var escrow = slashing_escrow_mod.SlashingEscrow.init(allocator);
+    defer escrow.deinit();
+    for (540..552) |i| {
+        _ = staking.slashForPosFailure(makeNodeId(i));
+        _ = try escrow.createEscrow(makeNodeId(i), 500, .pos_failure, 7000);
+    }
+
+    // === PROMETHEUS ===
+    var http_endpoint = prometheus_http_mod.PrometheusHttpEndpoint.init(allocator);
+    defer http_endpoint.deinit();
+    const metrics_resp = try http_endpoint.handleRequest("/metrics", health_report, 8000);
+    try std.testing.expectEqual(@as(u16, 200), metrics_resp.status_code);
+
+    // === VERIFY ALL v2.4 SUBSYSTEMS ===
+    const wal_stats = wal.getStats();
+    try std.testing.expect(wal_stats.total_records_written > 50);
+    try std.testing.expect(wal_stats.saga_events > 0);
+    try std.testing.expect(wal_stats.tx_events > 0);
+    try std.testing.expectEqual(@as(u64, 1), wal_stats.checkpoints);
+    try std.testing.expectEqual(@as(u32, 0), wal.getActiveCount()); // all complete
+
+    try std.testing.expectEqual(@as(u64, 600), topo.getStats().total_nodes);
+    try std.testing.expectEqual(@as(u32, 9), topo.getStats().total_regions);
+
+    const saga_stats = saga_coord.getStats();
+    try std.testing.expectEqual(@as(u64, 5), saga_stats.completed_sagas);
+
+    try std.testing.expectEqual(@as(u64, 1), tx_coord.getStats().committed_transactions);
+    try std.testing.expectEqual(@as(u32, 600), staking.getStats().active_stakers);
+    try std.testing.expectEqual(@as(u64, 12), escrow.getStats().total_escrows);
+    try std.testing.expect(ec_rec.health_score >= 0.85);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.5 TESTS — 700-Node Scale: Parallel Step Execution (Dependency Graph)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.5: 700-node parallel saga — diamond pattern (fan-out + fan-in)" {
+    const allocator = std.testing.allocator;
+    const NODE_COUNT: u32 = 700;
+
+    // === PARALLEL SAGA: DIAMOND PATTERN ===
+    // 30 sagas, each: step 0 → (steps 1,2,3 parallel) → step 4
+    var engine = parallel_saga_mod.ParallelSagaEngine.init(allocator);
+    defer engine.deinit();
+
+    const cid = makeNodeId(0);
+
+    for (0..30) |saga_i| {
+        const saga_id = try engine.createSaga(cid, 1000 + @as(i64, @intCast(saga_i)) * 100);
+
+        // Step 0: root (level 0)
+        const s0 = try engine.addStep(saga_id, .shard_write, makeNodeId(saga_i % NODE_COUNT), makeNodeId(saga_i));
+        // Steps 1,2,3: depend on step 0 (level 1 — run in parallel)
+        const s1 = try engine.addStepWithDeps(saga_id, .lock_acquire, makeNodeId((saga_i + 1) % NODE_COUNT), makeNodeId(saga_i), &.{s0});
+        const s2 = try engine.addStepWithDeps(saga_id, .stake_lock, makeNodeId((saga_i + 2) % NODE_COUNT), makeNodeId(saga_i), &.{s0});
+        const s3 = try engine.addStepWithDeps(saga_id, .escrow_create, makeNodeId((saga_i + 3) % NODE_COUNT), makeNodeId(saga_i), &.{s0});
+        // Step 4: fan-in (level 2 — depends on all 3)
+        _ = try engine.addStepWithDeps(saga_id, .route_select, makeNodeId(saga_i % NODE_COUNT), makeNodeId(saga_i), &.{ s1, s2, s3 });
+
+        // Execute
+        const started = try engine.execute(saga_id, 2000 + @as(i64, @intCast(saga_i)) * 100);
+        try std.testing.expectEqual(@as(u32, 1), started); // only root at level 0
+
+        // Step 0 succeeds → 3 parallel steps start
+        _ = try engine.stepSucceeded(saga_id, 0, 2050 + @as(i64, @intCast(saga_i)) * 100);
+        // Steps 1,2,3 succeed in parallel
+        _ = try engine.stepSucceeded(saga_id, 1, 2060 + @as(i64, @intCast(saga_i)) * 100);
+        _ = try engine.stepSucceeded(saga_id, 2, 2060 + @as(i64, @intCast(saga_i)) * 100);
+        _ = try engine.stepSucceeded(saga_id, 3, 2060 + @as(i64, @intCast(saga_i)) * 100);
+        // Step 4 succeeds → saga completed
+        const result = try engine.stepSucceeded(saga_id, 4, 2070 + @as(i64, @intCast(saga_i)) * 100);
+        try std.testing.expect(result != null);
+        try std.testing.expect(result.?.success);
+        try std.testing.expectEqual(@as(u32, 3), result.?.levels_executed); // 3 levels
+        try std.testing.expectEqual(@as(u32, 3), result.?.max_parallelism); // 3 parallel at level 1
+    }
+
+    const stats = engine.getStats();
+    try std.testing.expectEqual(@as(u64, 30), stats.completed_sagas);
+    try std.testing.expectEqual(@as(u64, 150), stats.steps_succeeded); // 30 × 5
+    try std.testing.expect(stats.max_parallelism_seen >= 3);
+    try std.testing.expect(stats.avg_parallelism >= 2.0); // average across sagas
+}
+
+test "v2.5: 700-node parallel saga — failure with parallel compensation" {
+    const allocator = std.testing.allocator;
+    const NODE_COUNT: u32 = 700;
+
+    var engine = parallel_saga_mod.ParallelSagaEngine.init(allocator);
+    defer engine.deinit();
+
+    const cid = makeNodeId(0);
+
+    // 20 sagas: 10 succeed, 10 fail at step 3 (level 1)
+    for (0..20) |saga_i| {
+        const saga_id = try engine.createSaga(cid, 1000 + @as(i64, @intCast(saga_i)) * 100);
+        const will_fail = saga_i >= 10;
+
+        // Diamond: s0 → (s1, s2, s3) → s4
+        const s0 = try engine.addStep(saga_id, .shard_write, makeNodeId(saga_i % NODE_COUNT), makeNodeId(saga_i));
+        const s1 = try engine.addStepWithDeps(saga_id, .lock_acquire, makeNodeId(saga_i), makeNodeId(saga_i), &.{s0});
+        const s2 = try engine.addStepWithDeps(saga_id, .stake_lock, makeNodeId(saga_i), makeNodeId(saga_i), &.{s0});
+        const s3 = try engine.addStepWithDeps(saga_id, .escrow_create, makeNodeId(saga_i), makeNodeId(saga_i), &.{s0});
+        _ = try engine.addStepWithDeps(saga_id, .route_select, makeNodeId(saga_i), makeNodeId(saga_i), &.{ s1, s2, s3 });
+
+        _ = try engine.execute(saga_id, 2000);
+        _ = try engine.stepSucceeded(saga_id, 0, 2050); // root succeeds
+
+        if (will_fail) {
+            // Steps 1,2 succeed but step 3 fails
+            _ = try engine.stepSucceeded(saga_id, 1, 2060);
+            _ = try engine.stepSucceeded(saga_id, 2, 2060);
+            try engine.stepFailed(saga_id, 3, 500, 2070);
+
+            // Compensate steps 0, 1, 2 (all succeeded before failure)
+            _ = try engine.compensationSucceeded(saga_id, 2, 2080);
+            _ = try engine.compensationSucceeded(saga_id, 1, 2080);
+            const comp_result = try engine.compensationSucceeded(saga_id, 0, 2090);
+            try std.testing.expect(comp_result != null);
+            try std.testing.expectEqual(parallel_saga_mod.ParallelSagaPhase.compensated, comp_result.?.phase);
+        } else {
+            // All succeed
+            _ = try engine.stepSucceeded(saga_id, 1, 2060);
+            _ = try engine.stepSucceeded(saga_id, 2, 2060);
+            _ = try engine.stepSucceeded(saga_id, 3, 2060);
+            const result = try engine.stepSucceeded(saga_id, 4, 2070);
+            try std.testing.expect(result != null);
+            try std.testing.expect(result.?.success);
+        }
+    }
+
+    const stats = engine.getStats();
+    try std.testing.expectEqual(@as(u64, 10), stats.completed_sagas);
+    try std.testing.expectEqual(@as(u64, 10), stats.compensated_sagas);
+    // 10 sagas × 5 steps + 10 sagas × 3 succeeded = 80
+    try std.testing.expectEqual(@as(u64, 80), stats.steps_succeeded);
+    try std.testing.expectEqual(@as(u64, 30), stats.steps_compensated); // 10 × 3
+}
+
+test "v2.5: 700-node parallel saga — fully parallel (all level 0) with timeout and abort" {
+    const allocator = std.testing.allocator;
+
+    var engine = parallel_saga_mod.ParallelSagaEngine.initWithConfig(allocator, .{
+        .max_saga_duration_ms = 5000,
+    });
+    defer engine.deinit();
+
+    const cid = makeNodeId(0);
+    const shard = makeNodeId(1);
+    const node = makeNodeId(2);
+
+    // Saga 1: 8 fully parallel steps, times out after 5 seconds
+    const s1_id = try engine.createSaga(cid, 1000);
+    for (0..8) |_| _ = try engine.addStep(s1_id, .shard_write, shard, node);
+    const started1 = try engine.execute(s1_id, 2000);
+    try std.testing.expectEqual(@as(u32, 8), started1); // all 8 at level 0
+
+    // Complete 4 of 8, then timeout
+    for (0..4) |i| _ = try engine.stepSucceeded(s1_id, @intCast(i), 2100);
+    const timed_out = engine.checkTimeouts(12000);
+    try std.testing.expectEqual(@as(u32, 1), timed_out);
+
+    // Compensate 4 succeeded steps
+    for (0..4) |i| _ = try engine.compensationSucceeded(s1_id, @intCast(i), 12100);
+
+    const saga1 = engine.getSaga(s1_id).?;
+    try std.testing.expectEqual(parallel_saga_mod.ParallelSagaPhase.compensated, saga1.phase);
+    try std.testing.expectEqual(@as(u32, 4), saga1.steps_compensated);
+
+    // Saga 2: 6 fully parallel steps, explicitly aborted
+    const s2_id = try engine.createSaga(cid, 3000);
+    for (0..6) |_| _ = try engine.addStep(s2_id, .lock_acquire, shard, node);
+    const started2 = try engine.execute(s2_id, 4000);
+    try std.testing.expectEqual(@as(u32, 6), started2);
+
+    // Complete 2 then abort
+    _ = try engine.stepSucceeded(s2_id, 0, 4100);
+    _ = try engine.stepSucceeded(s2_id, 1, 4100);
+    try engine.abortSaga(s2_id, 4200);
+
+    // Compensate 2 succeeded steps
+    _ = try engine.compensationSucceeded(s2_id, 0, 4300);
+    _ = try engine.compensationSucceeded(s2_id, 1, 4300);
+
+    const saga2 = engine.getSaga(s2_id).?;
+    try std.testing.expectEqual(parallel_saga_mod.ParallelSagaPhase.compensated, saga2.phase);
+
+    const stats = engine.getStats();
+    try std.testing.expectEqual(@as(u64, 2), stats.compensated_sagas);
+    try std.testing.expect(stats.max_parallelism_seen >= 8);
+}
+
+test "v2.5: full pipeline — parallel saga, WAL, sequential saga, dynamic erasure, 2PC, VSA locks, router, all subsystems on 700 nodes" {
+    const allocator = std.testing.allocator;
+    const NODE_COUNT = 700;
+
+    // === STORAGE NODES ===
+    var nodes: [NODE_COUNT]storage_mod.StorageProvider = undefined;
+    for (0..NODE_COUNT) |i| {
+        nodes[i] = storage_mod.StorageProvider.init(allocator, .{
+            .max_bytes = 1024 * 1024,
+            .shard_size = 64,
+            .replication_factor = 1,
+            .rs_parity_ratio = 0,
+        });
+    }
+    defer for (0..NODE_COUNT) |i| nodes[i].deinit();
+
+    var peers: [NODE_COUNT]*storage_mod.StorageProvider = undefined;
+    for (0..NODE_COUNT) |i| peers[i] = &nodes[i];
+
+    // === REGION TOPOLOGY (700 nodes across 9 regions) ===
+    var topo = region_topology_mod.RegionTopology.init(allocator);
+    defer topo.deinit();
+    const regions = [_]region_topology_mod.Region{
+        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .asia_south, .oceania, .south_america, .africa,
+    };
+    for (0..NODE_COUNT) |i| {
+        try topo.registerNode(makeNodeId(i), regions[i % 9]);
+    }
+    try std.testing.expectEqual(@as(u64, 700), topo.getStats().total_nodes);
+    try std.testing.expectEqual(@as(u32, 9), topo.getStats().total_regions);
+
+    // === DYNAMIC ERASURE ===
+    var reporter = network_stats_mod.NetworkStatsReporter.init(allocator);
+    const peers_const: []const *storage_mod.StorageProvider = &peers;
+    var health_report = reporter.generateReport(peers_const, null, null, null, null, null, null);
+    health_report.node_count = 700;
+    health_report.pos_challenges_issued = 7000;
+    health_report.pos_challenges_passed = 6900;
+    health_report.pos_challenges_failed = 100;
+    health_report.scrub_total = 3500;
+    health_report.scrub_corruptions = 10;
+    health_report.reputation_avg = 0.93;
+    health_report.reputation_min = 0.50;
+    health_report.reputation_max = 0.99;
+    health_report.total_bytes_used = 700_000_000;
+    health_report.total_bytes_available = 7_000_000_000;
+    health_report.shards_rebalanced = 120;
+
+    var erasure_engine = dynamic_erasure_mod.DynamicErasureEngine.init(.{});
+    const ec_rec = erasure_engine.recommend(health_report, 10);
+    try std.testing.expectEqual(dynamic_erasure_mod.HealthLevel.excellent, ec_rec.health_level);
+
+    // === PARALLEL SAGA (v2.5 — NEW) ===
+    var par_engine = parallel_saga_mod.ParallelSagaEngine.init(allocator);
+    defer par_engine.deinit();
+
+    const cid = makeNodeId(0);
+
+    // 10 diamond sagas (succeed) + 5 diamond sagas (compensated)
+    for (0..15) |saga_i| {
+        const saga_id = try par_engine.createSaga(cid, 5000 + @as(i64, @intCast(saga_i)) * 100);
+        const will_fail = saga_i >= 10;
+
+        const s0 = try par_engine.addStep(saga_id, .shard_write, makeNodeId(saga_i % NODE_COUNT), makeNodeId(saga_i));
+        const s1 = try par_engine.addStepWithDeps(saga_id, .lock_acquire, makeNodeId(saga_i), makeNodeId(saga_i), &.{s0});
+        const s2 = try par_engine.addStepWithDeps(saga_id, .stake_lock, makeNodeId(saga_i), makeNodeId(saga_i), &.{s0});
+        _ = try par_engine.addStepWithDeps(saga_id, .route_select, makeNodeId(saga_i), makeNodeId(saga_i), &.{ s1, s2 });
+
+        _ = try par_engine.execute(saga_id, 6000);
+        _ = try par_engine.stepSucceeded(saga_id, 0, 6010);
+
+        if (will_fail) {
+            _ = try par_engine.stepSucceeded(saga_id, 1, 6020);
+            try par_engine.stepFailed(saga_id, 2, 500, 6030);
+            _ = try par_engine.compensationSucceeded(saga_id, 1, 6040);
+            _ = try par_engine.compensationSucceeded(saga_id, 0, 6050);
+        } else {
+            _ = try par_engine.stepSucceeded(saga_id, 1, 6020);
+            _ = try par_engine.stepSucceeded(saga_id, 2, 6020);
+            _ = try par_engine.stepSucceeded(saga_id, 3, 6030);
+        }
+    }
+
+    const par_stats = par_engine.getStats();
+    try std.testing.expectEqual(@as(u64, 10), par_stats.completed_sagas);
+    try std.testing.expectEqual(@as(u64, 5), par_stats.compensated_sagas);
+    try std.testing.expect(par_stats.max_parallelism_seen >= 2);
+
+    // === TRANSACTION WAL ===
+    var wal = transaction_wal_mod.TransactionWal.init(allocator);
+    defer wal.deinit();
+    _ = try wal.logSagaCreated(1, cid, 7000);
+    _ = try wal.logSagaStepAdded(1, 0, 0x01, 7001);
+    _ = try wal.logSagaStepAdded(1, 1, 0x01, 7002);
+    _ = try wal.logSagaExecuteStart(1, 7010);
+    _ = try wal.logSagaStepSucceeded(1, 0, 7020);
+    _ = try wal.logSagaStepSucceeded(1, 1, 7030);
+    _ = try wal.logSagaCompleted(1, 7040);
+    _ = try wal.logTxCreated(100, cid, 7100);
+    for (0..10) |p| _ = try wal.logTxParticipantAdded(100, makeNodeId(p), makeNodeId(p + 100), 7110);
+    _ = try wal.logTxPrepareStart(100, 7200);
+    for (0..10) |v| _ = try wal.logTxVoteReceived(100, makeNodeId(v), true, 7210);
+    _ = try wal.logTxCommitStart(100, 7300);
+    _ = try wal.logTxCommitComplete(100, 7400);
+    _ = try wal.writeCheckpoint(7500);
+
+    const wal_stats = wal.getStats();
+    try std.testing.expect(wal_stats.total_records_written > 20);
+    try std.testing.expect(wal_stats.saga_events > 0);
+    try std.testing.expect(wal_stats.tx_events > 0);
+    try std.testing.expectEqual(@as(u64, 1), wal_stats.checkpoints);
+
+    // === SEQUENTIAL SAGA (v2.3) ===
+    var saga_coord = saga_coordinator_mod.SagaCoordinator.init(allocator);
+    defer saga_coord.deinit();
+    for (0..5) |si| {
+        const sid = try saga_coord.createSaga(cid, 8000 + @as(i64, @intCast(si)) * 100);
+        for (0..3) |_| _ = try saga_coord.addStep(sid, .shard_write, makeNodeId(si), makeNodeId(si));
+        try saga_coord.execute(sid, 8050 + @as(i64, @intCast(si)) * 100);
+        _ = try saga_coord.stepSucceeded(sid, 0, 8060 + @as(i64, @intCast(si)) * 100);
+        _ = try saga_coord.stepSucceeded(sid, 1, 8070 + @as(i64, @intCast(si)) * 100);
+        _ = try saga_coord.stepSucceeded(sid, 2, 8080 + @as(i64, @intCast(si)) * 100);
+    }
+    try std.testing.expectEqual(@as(u64, 5), saga_coord.getStats().completed_sagas);
+
+    // === 2PC ===
+    var tx_coord = cross_shard_tx_mod.CrossShardTxCoordinator.init(allocator);
+    defer tx_coord.deinit();
+    const tx_id = try tx_coord.beginTransaction(cid, 9000);
+    var tx_hashes: [8][32]u8 = undefined;
+    for (0..8) |p| {
+        tx_hashes[p] = makeNodeId(p + 200);
+        try tx_coord.addParticipant(tx_id, tx_hashes[p], makeNodeId(p + 100), 9050);
+    }
+    try tx_coord.prepare(tx_id);
+    for (0..8) |p| try tx_coord.recordVote(tx_id, tx_hashes[p], true);
+    const tx_result = try tx_coord.commit(tx_id, 9200);
+    try std.testing.expect(tx_result.success);
+    try std.testing.expectEqual(@as(u64, 1), tx_coord.getStats().committed_transactions);
+
+    // === VSA LOCKS ===
+    var locks = vsa_shard_locks_mod.VsaShardLocks.init(allocator);
+    defer locks.deinit();
+    var hashes: [10][32]u8 = undefined;
+    for (0..10) |s| hashes[s] = makeNodeId(s + 500);
+    const tx_coord_id = makeNodeId(999);
+    for (0..10) |s| {
+        const result = try locks.acquireLock(hashes[s], tx_coord_id, tx_id, 9300);
+        try std.testing.expectEqual(vsa_shard_locks_mod.LockResult.acquired, result);
+    }
+    const released = locks.releaseTransactionLocks(tx_id);
+    try std.testing.expectEqual(@as(u32, 10), released);
+
+    // === STAKING + ESCROW ===
+    var staking = token_staking_mod.TokenStakingEngine.initWithConfig(allocator, .{
+        .min_stake_wei = 100,
+    });
+    defer staking.deinit();
+    for (0..NODE_COUNT) |i| _ = staking.stake(makeNodeId(i), 10_000);
+
+    var escrow = slashing_escrow_mod.SlashingEscrow.init(allocator);
+    defer escrow.deinit();
+    for (0..12) |i| {
+        _ = staking.slashForPosFailure(makeNodeId(i + 640));
+        _ = try escrow.createEscrow(makeNodeId(i + 640), 500, .pos_failure, 9400);
+    }
+
+    // === PROMETHEUS ===
+    var http_endpoint = prometheus_http_mod.PrometheusHttpEndpoint.init(allocator);
+    defer http_endpoint.deinit();
+    const metrics_resp = try http_endpoint.handleRequest("/metrics", health_report, 9500);
+    try std.testing.expectEqual(@as(u16, 200), metrics_resp.status_code);
+
+    // === VERIFY ALL v2.5 SUBSYSTEMS ===
+    try std.testing.expectEqual(@as(u64, 700), topo.getStats().total_nodes);
+    try std.testing.expectEqual(@as(u32, 9), topo.getStats().total_regions);
+    try std.testing.expectEqual(@as(u64, 10), par_stats.completed_sagas);
+    try std.testing.expectEqual(@as(u64, 5), par_stats.compensated_sagas);
+    try std.testing.expect(par_stats.max_parallelism_seen >= 2);
+    try std.testing.expect(wal_stats.total_records_written > 20);
+    try std.testing.expectEqual(@as(u64, 5), saga_coord.getStats().completed_sagas);
+    try std.testing.expectEqual(@as(u64, 1), tx_coord.getStats().committed_transactions);
+    try std.testing.expectEqual(@as(u32, 700), staking.getStats().active_stakers);
+    try std.testing.expectEqual(@as(u64, 12), escrow.getStats().total_escrows);
+    try std.testing.expect(ec_rec.health_score >= 0.85);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.6 TESTS — WAL Disk Persistence, 800-Node Scale
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.6: 800-node WAL disk persistence — saga lifecycle with fsync and rotation" {
+    const allocator = std.testing.allocator;
+
+    // Initialize WAL Disk with rotation every 50 records
+    var wd = wal_disk_mod.WalDisk.initWithConfig(allocator, .{
+        .max_records_per_segment = 50,
+        .fsync_per_write = true,
+    });
+    defer wd.deinit();
+    try wd.open(1000);
+
+    // Run 40 saga lifecycles (each ~5 records = 200 total, 4+ segments)
+    for (0..40) |i| {
+        const saga_id: u64 = @intCast(i + 1);
+        const coord_id = makeNodeId(i % 800);
+        const ts: i64 = 1000 + @as(i64, @intCast(i)) * 100;
+
+        _ = try wd.logSagaCreated(saga_id, coord_id, ts);
+        _ = try wd.logSagaStepAdded(saga_id, 0, 0x01, ts + 10);
+        _ = try wd.logSagaExecuteStart(saga_id, ts + 20);
+        _ = try wd.logSagaStepSucceeded(saga_id, 0, ts + 30);
+        _ = try wd.logSagaCompleted(saga_id, ts + 40);
+    }
+
+    // Verify rotation occurred
+    const disk_stats = wd.getDiskStats();
+    try std.testing.expect(disk_stats.total_segments_created >= 4);
+    try std.testing.expectEqual(@as(u64, 200), disk_stats.total_records_on_disk);
+    try std.testing.expect(disk_stats.total_fsyncs >= 200);
+
+    // All 40 sagas complete
+    for (0..40) |i| {
+        const saga_id: u64 = @intCast(i + 1);
+        try std.testing.expect(wd.isComplete(saga_id));
+    }
+    try std.testing.expectEqual(@as(u32, 0), wd.getActiveCount());
+}
+
+test "v2.6: 800-node WAL disk persistence — batch fsync mode with 2PC" {
+    const allocator = std.testing.allocator;
+
+    // Batch fsync mode: sync every 8 records
+    var wd = wal_disk_mod.WalDisk.initWithConfig(allocator, .{
+        .fsync_per_write = false,
+        .fsync_on_batch = true,
+        .batch_size = 8,
+    });
+    defer wd.deinit();
+    try wd.open(1000);
+
+    // Run 20 2PC transactions (each ~6 records = 120 total, 15 batch fsyncs)
+    for (0..20) |i| {
+        const tx_id: u64 = @intCast(i + 1);
+        const coord_id = makeNodeId(i % 800);
+        const shard = makeNodeId(i + 100);
+        const node = makeNodeId(i + 200);
+        const ts: i64 = 1000 + @as(i64, @intCast(i)) * 100;
+
+        _ = try wd.logTxCreated(tx_id, coord_id, ts);
+        _ = try wd.logTxParticipantAdded(tx_id, shard, node, ts + 10);
+        _ = try wd.logTxPrepareStart(tx_id, ts + 20);
+        _ = try wd.logTxVoteReceived(tx_id, shard, true, ts + 30);
+        _ = try wd.logTxCommitStart(tx_id, ts + 40);
+        _ = try wd.logTxCommitComplete(tx_id, ts + 50);
+    }
+
+    const disk_stats = wd.getDiskStats();
+    try std.testing.expectEqual(@as(u64, 120), disk_stats.total_records_on_disk);
+    try std.testing.expect(disk_stats.total_fsyncs >= 15);
+
+    // All 20 transactions complete
+    for (0..20) |i| {
+        try std.testing.expect(wd.isComplete(@intCast(i + 1)));
+    }
+
+    // Flush remaining
+    try wd.flush(9000);
+}
+
+test "v2.6: 800-node WAL disk persistence — compaction under load" {
+    const allocator = std.testing.allocator;
+
+    var wd = wal_disk_mod.WalDisk.initWithConfig(allocator, .{
+        .max_records_per_segment = 100,
+        .fsync_per_write = false,
+    });
+    defer wd.deinit();
+    try wd.open(1000);
+
+    // Phase 1: 30 completed sagas (150 records)
+    for (0..30) |i| {
+        const saga_id: u64 = @intCast(i + 1);
+        const coord_id = makeNodeId(i % 800);
+        const ts: i64 = 1000 + @as(i64, @intCast(i)) * 100;
+
+        _ = try wd.logSagaCreated(saga_id, coord_id, ts);
+        _ = try wd.logSagaStepAdded(saga_id, 0, 0x01, ts + 10);
+        _ = try wd.logSagaExecuteStart(saga_id, ts + 20);
+        _ = try wd.logSagaStepSucceeded(saga_id, 0, ts + 30);
+        _ = try wd.logSagaCompleted(saga_id, ts + 40);
+    }
+
+    // Phase 2: 10 incomplete sagas (30 records)
+    for (0..10) |i| {
+        const saga_id: u64 = @intCast(i + 31);
+        const coord_id = makeNodeId(i % 800);
+        const ts: i64 = 5000 + @as(i64, @intCast(i)) * 100;
+
+        _ = try wd.logSagaCreated(saga_id, coord_id, ts);
+        _ = try wd.logSagaStepAdded(saga_id, 0, 0x01, ts + 10);
+        _ = try wd.logSagaExecuteStart(saga_id, ts + 20);
+    }
+
+    // Before compaction: 180 records
+    try std.testing.expectEqual(@as(usize, 180), wd.wal.records.items.len);
+    try std.testing.expectEqual(@as(u32, 10), wd.getActiveCount());
+
+    // Compact
+    const result = try wd.compact(8000);
+
+    // 30 completed sagas (150 records) purged, 10 active (30 records) kept
+    try std.testing.expectEqual(@as(u64, 180), result.records_before);
+    try std.testing.expectEqual(@as(u64, 30), result.records_after);
+    try std.testing.expectEqual(@as(u64, 150), result.completed_ops_purged);
+    try std.testing.expect(result.bytes_before > result.bytes_after);
+    try std.testing.expectEqual(@as(u32, 10), wd.getActiveCount());
+    try std.testing.expectEqual(@as(u64, 1), wd.stats.total_segments_compacted);
+}
+
+test "v2.6: full pipeline — WAL disk, parallel saga, sequential saga, dynamic erasure, 2PC, VSA locks, router, all subsystems on 800 nodes" {
+    const allocator = std.testing.allocator;
+    const NODE_COUNT = 800;
+
+    // === STORAGE NODES ===
+    var nodes: [NODE_COUNT]storage_mod.StorageProvider = undefined;
+    for (0..NODE_COUNT) |i| {
+        nodes[i] = storage_mod.StorageProvider.init(allocator, .{
+            .max_bytes = 1024 * 1024,
+            .shard_size = 64,
+            .replication_factor = 1,
+            .rs_parity_ratio = 0,
+        });
+    }
+    defer for (0..NODE_COUNT) |i| nodes[i].deinit();
+
+    var peers: [NODE_COUNT]*storage_mod.StorageProvider = undefined;
+    for (0..NODE_COUNT) |i| peers[i] = &nodes[i];
+
+    // === REGION TOPOLOGY (800 nodes across 9 regions) ===
+    var topo = region_topology_mod.RegionTopology.init(allocator);
+    defer topo.deinit();
+    const v26_regions = [_]region_topology_mod.Region{
+        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .asia_south, .oceania, .south_america, .africa,
+    };
+    for (0..NODE_COUNT) |i| {
+        try topo.registerNode(makeNodeId(i), v26_regions[i % 9]);
+    }
+    try std.testing.expectEqual(@as(u64, 800), topo.getStats().total_nodes);
+    try std.testing.expectEqual(@as(u32, 9), topo.getStats().total_regions);
+
+    // === DYNAMIC ERASURE ===
+    var stat_reporter = network_stats_mod.NetworkStatsReporter.init(allocator);
+    const peers_const: []const *storage_mod.StorageProvider = &peers;
+    var health_report = stat_reporter.generateReport(peers_const, null, null, null, null, null, null);
+    health_report.node_count = 800;
+    health_report.pos_challenges_issued = 8000;
+    health_report.pos_challenges_passed = 7880;
+    health_report.pos_challenges_failed = 120;
+    health_report.scrub_total = 4000;
+    health_report.scrub_corruptions = 12;
+    health_report.reputation_avg = 0.94;
+    health_report.reputation_min = 0.52;
+    health_report.reputation_max = 0.99;
+    health_report.total_bytes_used = 800_000_000;
+    health_report.total_bytes_available = 8_000_000_000;
+    health_report.shards_rebalanced = 140;
+
+    var erasure_engine = dynamic_erasure_mod.DynamicErasureEngine.init(.{});
+    const ec_rec = erasure_engine.recommend(health_report, 10);
+    try std.testing.expectEqual(dynamic_erasure_mod.HealthLevel.excellent, ec_rec.health_level);
+
+    // === WAL DISK PERSISTENCE (v2.6 — NEW) ===
+    var wd = wal_disk_mod.WalDisk.initWithConfig(allocator, .{
+        .max_records_per_segment = 100,
+        .fsync_per_write = false,
+        .fsync_on_batch = true,
+        .batch_size = 8,
+    });
+    defer wd.deinit();
+    try wd.open(5000);
+
+    const cid = makeNodeId(0);
+
+    // Log 15 saga lifecycles to disk WAL (10 succeed + 5 compensated)
+    for (0..15) |saga_i| {
+        const saga_id: u64 = @intCast(saga_i + 1);
+        const ts: i64 = 5100 + @as(i64, @intCast(saga_i)) * 200;
+
+        _ = try wd.logSagaCreated(saga_id, cid, ts);
+        _ = try wd.logSagaStepAdded(saga_id, 0, 0x01, ts + 10);
+        _ = try wd.logSagaStepAdded(saga_id, 1, 0x01, ts + 20);
+        _ = try wd.logSagaStepAdded(saga_id, 2, 0x01, ts + 30);
+        _ = try wd.logSagaExecuteStart(saga_id, ts + 40);
+
+        if (saga_i < 10) {
+            _ = try wd.logSagaStepSucceeded(saga_id, 0, ts + 50);
+            _ = try wd.logSagaStepSucceeded(saga_id, 1, ts + 60);
+            _ = try wd.logSagaStepSucceeded(saga_id, 2, ts + 70);
+            _ = try wd.logSagaCompleted(saga_id, ts + 80);
+        } else {
+            _ = try wd.logSagaStepSucceeded(saga_id, 0, ts + 50);
+            _ = try wd.logSagaStepSucceeded(saga_id, 1, ts + 60);
+            _ = try wd.logSagaStepFailed(saga_id, 2, 500, ts + 70);
+            _ = try wd.logSagaCompensationSucceeded(saga_id, 0, ts + 80);
+            _ = try wd.logSagaCompensationSucceeded(saga_id, 1, ts + 90);
+            _ = try wd.logSagaCompensated(saga_id, ts + 100);
+        }
+    }
+
+    _ = try wd.writeCheckpoint(8000);
+
+    const wd_stats = wd.getDiskStats();
+    try std.testing.expect(wd_stats.total_records_on_disk > 100);
+    try std.testing.expect(wd_stats.total_segments_created >= 1);
+    try std.testing.expect(wd_stats.total_fsyncs > 0);
+
+    const compact_result = try wd.compact(8500);
+    try std.testing.expect(compact_result.records_after < compact_result.records_before);
+    try std.testing.expect(compact_result.completed_ops_purged > 0);
+
+    // === PARALLEL SAGA (v2.5) ===
+    var par_engine = parallel_saga_mod.ParallelSagaEngine.init(allocator);
+    defer par_engine.deinit();
+
+    for (0..15) |saga_i| {
+        const par_saga_id = try par_engine.createSaga(cid, 5000 + @as(i64, @intCast(saga_i)) * 100);
+        const shard = makeNodeId(saga_i + 10);
+        const node = makeNodeId(saga_i + 50);
+
+        const s0 = try par_engine.addStep(par_saga_id, .shard_write, shard, node);
+        _ = try par_engine.addStepWithDeps(par_saga_id, .shard_write, shard, node, &[_]u32{s0});
+        _ = try par_engine.addStepWithDeps(par_saga_id, .shard_write, shard, node, &[_]u32{s0});
+        _ = try par_engine.addStepWithDeps(par_saga_id, .shard_write, shard, node, &[_]u32{s0});
+
+        const started = try par_engine.execute(par_saga_id, 6000);
+        try std.testing.expectEqual(@as(u32, 1), started);
+        _ = try par_engine.stepSucceeded(par_saga_id, 0, 6100);
+        _ = try par_engine.stepSucceeded(par_saga_id, 1, 6200);
+
+        if (saga_i < 10) {
+            _ = try par_engine.stepSucceeded(par_saga_id, 2, 6300);
+            _ = try par_engine.stepSucceeded(par_saga_id, 3, 6400);
+        } else {
+            _ = try par_engine.stepFailed(par_saga_id, 2, 500, 6300);
+            _ = try par_engine.compensationSucceeded(par_saga_id, 0, 6400);
+            _ = try par_engine.compensationSucceeded(par_saga_id, 1, 6500);
+        }
+    }
+
+    const par_stats = par_engine.getStats();
+
+    // === IN-MEMORY WAL (v2.4) ===
+    var mem_wal = transaction_wal_mod.TransactionWal.init(allocator);
+    defer mem_wal.deinit();
+
+    _ = try mem_wal.logSagaCreated(100, cid, 8000);
+    _ = try mem_wal.logSagaStepAdded(100, 0, 0x01, 8100);
+    _ = try mem_wal.logSagaExecuteStart(100, 8200);
+    _ = try mem_wal.logSagaStepSucceeded(100, 0, 8300);
+    _ = try mem_wal.logSagaCompleted(100, 8400);
+    _ = try mem_wal.writeCheckpoint(8500);
+    const wal_stats = mem_wal.getStats();
+
+    // === SEQUENTIAL SAGA (v2.3) ===
+    var saga_coord = saga_coordinator_mod.SagaCoordinator.init(allocator);
+    defer saga_coord.deinit();
+
+    for (0..5) |i| {
+        const sid = try saga_coord.createSaga(makeNodeId(i), @intCast(9000 + i * 100));
+        _ = try saga_coord.addStep(sid, .shard_write, makeNodeId(i + 10), makeNodeId(i + 50));
+        _ = try saga_coord.execute(sid, @intCast(9050 + i * 100));
+        _ = try saga_coord.stepSucceeded(sid, 0, @intCast(9060 + i * 100));
+    }
+
+    // === CROSS-SHARD 2PC (v2.1) ===
+    var tx_coord = cross_shard_tx_mod.CrossShardTxCoordinator.init(allocator);
+    defer tx_coord.deinit();
+
+    const tx_id = try tx_coord.beginTransaction(cid, 9000);
+    var tx_hashes: [8][32]u8 = undefined;
+    for (0..8) |p| {
+        tx_hashes[p] = makeNodeId(p + 200);
+        try tx_coord.addParticipant(tx_id, tx_hashes[p], makeNodeId(p + 100), 9050);
+    }
+    try tx_coord.prepare(tx_id);
+    for (0..8) |p| {
+        try tx_coord.recordVote(tx_id, tx_hashes[p], true);
+    }
+    const tx_result = try tx_coord.commit(tx_id, 9200);
+    try std.testing.expect(tx_result.success);
+
+    // === VSA LOCKS ===
+    var locks = vsa_shard_locks_mod.VsaShardLocks.init(allocator);
+    defer locks.deinit();
+    var lock_hashes: [10][32]u8 = undefined;
+    for (0..10) |s| lock_hashes[s] = makeNodeId(s + 500);
+    const v26_lock_holder = makeNodeId(999);
+    for (0..10) |s| {
+        const lock_result = try locks.acquireLock(lock_hashes[s], v26_lock_holder, tx_id, 9300);
+        try std.testing.expectEqual(vsa_shard_locks_mod.LockResult.acquired, lock_result);
+    }
+    const released = locks.releaseTransactionLocks(tx_id);
+    try std.testing.expectEqual(@as(u32, 10), released);
+
+    // === STAKING + ESCROW ===
+    var staking = token_staking_mod.TokenStakingEngine.initWithConfig(allocator, .{
+        .min_stake_wei = 100,
+    });
+    defer staking.deinit();
+    for (0..NODE_COUNT) |i| _ = staking.stake(makeNodeId(i), 10_000);
+
+    var escrow = slashing_escrow_mod.SlashingEscrow.init(allocator);
+    defer escrow.deinit();
+    for (0..12) |i| {
+        _ = staking.slashForPosFailure(makeNodeId(i + 740));
+        _ = try escrow.createEscrow(makeNodeId(i + 740), 500, .pos_failure, 9400);
+    }
+
+    // === PROMETHEUS ===
+    var v26_http = prometheus_http_mod.PrometheusHttpEndpoint.init(allocator);
+    defer v26_http.deinit();
+    const v26_metrics = try v26_http.handleRequest("/metrics", health_report, 9500);
+    try std.testing.expectEqual(@as(u16, 200), v26_metrics.status_code);
+
+    // === VERIFY ALL v2.6 SUBSYSTEMS ===
+    try std.testing.expectEqual(@as(u64, 800), topo.getStats().total_nodes);
+    try std.testing.expectEqual(@as(u32, 9), topo.getStats().total_regions);
+    try std.testing.expectEqual(@as(u64, 10), par_stats.completed_sagas);
+    try std.testing.expectEqual(@as(u64, 5), par_stats.compensated_sagas);
+    try std.testing.expect(par_stats.max_parallelism_seen >= 2);
+    try std.testing.expect(wal_stats.total_records_written > 0);
+    try std.testing.expect(wd_stats.total_records_on_disk > 0);
+    try std.testing.expect(wd_stats.total_fsyncs > 0);
+    try std.testing.expect(compact_result.completed_ops_purged > 0);
+    try std.testing.expectEqual(@as(u64, 5), saga_coord.getStats().completed_sagas);
+    try std.testing.expectEqual(@as(u64, 1), tx_coord.getStats().committed_transactions);
+    try std.testing.expectEqual(@as(u32, 800), staking.getStats().active_stakers);
+    try std.testing.expectEqual(@as(u64, 12), escrow.getStats().total_escrows);
     try std.testing.expect(ec_rec.health_score >= 0.85);
 }

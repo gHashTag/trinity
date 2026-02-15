@@ -7,12 +7,13 @@ import QuantumLab from './pages/QuantumLab.tsx'
 import Playground from './pages/Playground.tsx'
 import CosmicChat from './pages/CosmicChat.tsx'
 import TrinityCanvas from './pages/TrinityCanvas.tsx'
+import TrinityCanvasWasm from './components/TrinityCanvasWasm.tsx'
 import { I18nProvider } from './i18n/context.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/trinity">
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/canvas" element={<TrinityCanvas />} />
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/lab" element={<QuantumLab />} />
           <Route path="/play" element={<Playground />} />
           <Route path="/chat" element={<CosmicChat />} />
+          <Route path="/wasm" element={<TrinityCanvasWasm />} />
           <Route path="/viz/*" element={<Navigate to="/quantum" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

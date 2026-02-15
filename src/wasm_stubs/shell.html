@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>TRINITY Canvas</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0a; overflow: hidden; }
+    canvas.emscripten {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      outline: none;
+      cursor: default;
+    }
+    #status { position: fixed; bottom: 8px; left: 8px; color: #444; font: 11px monospace; z-index: 10; }
+    #spinner { display: none; }
+  </style>
+</head>
+<body>
+  <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+  <div id="status">Loading WASM...</div>
+  <div id="spinner"></div>
+  <script>
+    var Module = {
+      canvas: document.getElementById('canvas'),
+      setStatus: function(text) {
+        var s = document.getElementById('status');
+        if (s) s.innerText = text || '';
+      },
+      monitorRunDependencies: function(left) {
+        if (left === 0) {
+          var s = document.getElementById('status');
+          if (s) s.style.display = 'none';
+        }
+      }
+    };
+  </script>
+  {{{ SCRIPT }}}
+</body>
+</html>

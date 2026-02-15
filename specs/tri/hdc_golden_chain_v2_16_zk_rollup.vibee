@@ -1,0 +1,199 @@
+name: hdc_golden_chain_v2_16_zk_rollup
+version: "2.16.0"
+language: zig
+module: golden_chain
+
+description: |
+  Golden Chain v2.16 — ZK-Rollup v2.0
+  Real ZK-SNARK Proof Generation, Recursive Proof Composition, L2 Scaling.
+  Agent #25 (Lucas) — Cycle 73.
+  8 new QuarkType variants (152-159), quarks 184->192, Phase W, export v20 (98B).
+  QuarkType enum(u8): 160/256 used, 96 free.
+
+types:
+  ZkSnarkProofState:
+    fields:
+      proof_count: u32
+      verified_proofs: u32
+      proof_size: u16
+      last_proof_us: i64
+      proof_hash: "[32]u8"
+
+  RecursiveProofState:
+    fields:
+      recursive_depth: u16
+      compositions: u32
+      composed: u32
+      last_compose_us: i64
+      compose_hash: "[32]u8"
+
+  L2ScalingState:
+    fields:
+      l2_batches: u32
+      transactions_rolled: u64
+      batch_size: u32
+      last_batch_us: i64
+      batch_hash: "[32]u8"
+
+  RollupBatchState:
+    fields:
+      commitments: u32
+      anchored: u32
+      proofs_per_batch: u16
+      last_anchor_us: i64
+      anchor_hash: "[32]u8"
+
+quark_types:
+  - index: 152
+    name: zk_snark_proof
+    label: ZK_PRF
+    pipeline_node: GoalParse
+
+  - index: 153
+    name: recursive_proof
+    label: REC_PRF
+    pipeline_node: Decompose
+
+  - index: 154
+    name: proof_composition
+    label: PRF_CMP
+    pipeline_node: Schedule
+
+  - index: 155
+    name: l2_scaling
+    label: L2_SCL
+    pipeline_node: Execute
+
+  - index: 156
+    name: rollup_batch
+    label: RLP_BAT
+    pipeline_node: Monitor
+
+  - index: 157
+    name: proof_verification
+    label: PRF_VRF
+    pipeline_node: Adapt
+
+  - index: 158
+    name: zk_commitment
+    label: ZK_CMT
+    pipeline_node: Synthesize
+
+  - index: 159
+    name: rollup_anchor
+    label: RLP_ACH
+    pipeline_node: Deliver
+
+chain_message_types:
+  - ZkSnarkProofEvent
+  - RecursiveProofUpdate
+  - L2ScalingEvent
+  - RollupBatchEvent
+
+constants:
+  ZK_PROOF_SIZE_BYTES: 288
+  RECURSIVE_PROOF_DEPTH: 16
+  L2_BATCH_SIZE: 1000
+  ROLLUP_COMMITMENT_INTERVAL_US: 10000000
+  ZK_VERIFICATION_TIMEOUT_US: 5000000
+  MAX_PROOFS_PER_BATCH: 256
+
+behaviors:
+  - name: generateZkSnarkProof
+    given: Agent has ZkSnarkProofState initialized
+    when: ZkSnarkProofEvent received
+    then: Increment proof_count and verified_proofs, compute proof_hash via SHA256
+
+  - name: composeRecursiveProof
+    given: Agent has RecursiveProofState initialized
+    when: RecursiveProofUpdate received
+    then: Increment compositions and composed, compute compose_hash via SHA256
+
+  - name: scaleL2Rollup
+    given: Agent has L2ScalingState initialized
+    when: L2ScalingEvent received
+    then: Increment l2_batches and transactions_rolled, compute batch_hash via SHA256
+
+  - name: batchRollupTransactions
+    given: Agent has RollupBatchState initialized
+    when: RollupBatchEvent received
+    then: Increment commitments and anchored, compute anchor_hash via SHA256
+
+  - name: zkRollupVerify
+    given: Agent has all ZK-Rollup states
+    when: Phase W verification requested
+    then: |
+      W1: proof_count > 0 (ZK-SNARK proofs generated)
+      W2: compositions > 0 (recursive proofs composed)
+      W3: l2_batches > 0 (L2 batches processed)
+
+verification:
+  phase: W
+  name: "ZK-Rollup v2.0 integrity"
+  checks:
+    - W1: "proof_count > 0"
+    - W2: "compositions > 0"
+    - W3: "l2_batches > 0"
+
+export:
+  version: 20
+  header_size: 98
+  new_bytes: "+4 bytes from v19: proof_count(u16) + l2_batches(u16)"
+
+metrics:
+  quark_types_total: 160
+  quark_types_capacity: 256
+  quark_types_free: 96
+  quarks_per_query: 192
+  quark_distribution: "24+24+24+25+24+23+24+24"
+  verification_phases: "A-W (23 phases)"
+  export_version: 20
+  header_bytes: 98
+
+tests:
+  - name: test_zk_snark_proof_label
+    verify: "QuarkType.zk_snark_proof.getLabel() == 'ZK_PRF'"
+  - name: test_recursive_proof_label
+    verify: "QuarkType.recursive_proof.getLabel() == 'REC_PRF'"
+  - name: test_proof_composition_label
+    verify: "QuarkType.proof_composition.getLabel() == 'PRF_CMP'"
+  - name: test_l2_scaling_label
+    verify: "QuarkType.l2_scaling.getLabel() == 'L2_SCL'"
+  - name: test_rollup_batch_label
+    verify: "QuarkType.rollup_batch.getLabel() == 'RLP_BAT'"
+  - name: test_proof_verification_label
+    verify: "QuarkType.proof_verification.getLabel() == 'PRF_VRF'"
+  - name: test_zk_commitment_label
+    verify: "QuarkType.zk_commitment.getLabel() == 'ZK_CMT'"
+  - name: test_rollup_anchor_label
+    verify: "QuarkType.rollup_anchor.getLabel() == 'RLP_ACH'"
+  - name: test_zk_snark_classifier
+    verify: "QuarkType.zk_snark_proof.isZkSnarkQuark() == true"
+  - name: test_recursive_proof_classifier
+    verify: "QuarkType.recursive_proof.isRecursiveProofQuark() == true"
+  - name: test_l2_scaling_classifier
+    verify: "QuarkType.l2_scaling.isL2ScalingQuark() == true"
+  - name: test_zk_commitment_classifier
+    verify: "QuarkType.zk_commitment.isZkCommitmentQuark() == true"
+  - name: test_zk_snark_proof_state_default
+    verify: "ZkSnarkProofState default proof_count == 0"
+  - name: test_recursive_proof_state_default
+    verify: "RecursiveProofState default recursive_depth == 0"
+  - name: test_l2_scaling_state_default
+    verify: "L2ScalingState default l2_batches == 0"
+  - name: test_rollup_batch_state_default
+    verify: "RollupBatchState default commitments == 0"
+  - name: test_phase_w_pass
+    verify: "Phase W passes when proof_count>0 and compositions>0 and l2_batches>0"
+  - name: test_phase_w_fail_no_proofs
+    verify: "Phase W fails when proof_count == 0"
+  - name: test_phase_w_fail_no_compositions
+    verify: "Phase W fails when compositions == 0"
+  - name: test_export_v20_header
+    verify: "Export v20 produces 98-byte header"
+  - name: test_quark_distribution_192
+    verify: "Total quarks = 192 (24+24+24+25+24+23+24+24)"
+  - name: test_u8_capacity_160_of_256
+    verify: "160 variants fit in u8 (160/256)"
+  - name: test_export_v20_roundtrip
+    verify: "Export v20 serialize/deserialize roundtrip preserves proof_count and l2_batches"

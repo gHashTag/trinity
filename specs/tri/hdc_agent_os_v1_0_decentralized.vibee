@@ -1,0 +1,177 @@
+name: hdc_agent_os_v1_0_decentralized
+version: "1.0.0"
+language: zig
+module: golden_chain
+
+description: |
+  Agent OS v1.0: Full Decentralized Immortal Network + Multi-Node Golden Chain Sync + $TRI Staking Mainnet.
+  Builds on v2.1 (72 quarks, 40 QuarkTypes u6, Phase H faucet, export v5).
+  Adds 8 new QuarkType variants (48 total), 80 quarks per query (+1 per node),
+  multi-node sync engine, network consensus, Agent OS lifecycle,
+  Phase I verification (network consensus integrity), export v6 (42-byte header).
+  Decentralized-first: every agent node syncs state, stakes mainnet, self-repairs across network.
+
+constants:
+  MAX_NETWORK_NODES: 256             # Max nodes in decentralized network
+  NODE_SYNC_INTERVAL_US: 10000000    # 10 second sync interval
+  NODE_HEARTBEAT_US: 5000000         # 5 second heartbeat
+  CONSENSUS_QUORUM_PERCENT: 67       # 2/3 quorum for consensus
+  NETWORK_TTL_US: 604800000000       # 7 day network TTL
+  MAX_NODE_SYNC_RECORDS: 128         # Max sync records tracked
+  STAKING_MAINNET_MIN_UTRI: 1000     # Min mainnet stake
+  AGENT_OS_VERSION_MAJOR: 1          # Agent OS 1.0
+  AGENT_OS_VERSION_MINOR: 0
+  QUARK_EXPORT_VERSION: 6
+  QUARK_EXPORT_HEADER_SIZE: 42
+
+types:
+  # 8 new QuarkType variants (indices 40-47, u6 capacity)
+  QuarkType_v2_2:
+    description: "Add 8 decentralization quarks (48 total)."
+    variants:
+      decentral_sync: 40             # Multi-node sync checkpoint
+      node_consensus: 41             # Consensus vote record
+      network_health: 42             # Network health metric
+      staking_mainnet: 43            # Mainnet staking record
+      agent_os_init: 44              # Agent OS lifecycle init
+      immortal_network: 45           # Network immortality checkpoint
+      viral_propagate: 46            # Network viral propagation
+      energy_network: 47             # Network energy tracking
+
+  # 4 new ChainMessageType variants
+  ChainMessageType_v2_2:
+    variants:
+      DecentralSync: "Multi-node synchronization event"
+      NodeConsensus: "Network consensus vote event"
+      NetworkHealth: "Network health report event"
+      AgentOSInit: "Agent OS lifecycle event"
+
+  NodeConfig:
+    description: "Configuration for a network node"
+    fields:
+      node_id_hash: "[32]u8"         # SHA256 of node identifier
+      sync_interval_us: i64          # default 10s
+      heartbeat_us: i64              # default 5s
+      is_active: bool                # node online
+      stake_utri: u64                # node's mainnet stake
+
+  NodeSyncRecord:
+    description: "Single node sync event"
+    fields:
+      sync_index: u16
+      source_node_hash: "[32]u8"     # Source node
+      target_node_hash: "[32]u8"     # Target node
+      quark_count_synced: u8         # Quarks transferred
+      timestamp_us: i64
+      latency_us: u64               # Sync round-trip time
+      success: bool
+
+  NetworkState:
+    description: "Aggregated decentralized network state"
+    fields:
+      active_nodes: u16
+      total_nodes: u16
+      sync_count: u32
+      consensus_round: u32
+      last_consensus_us: i64
+      network_health_score: f32      # 0.0 - 1.0
+      total_staked_utri: u64
+      network_uptime_us: i64
+
+  AgentOSState:
+    description: "Agent OS v1.0 lifecycle state"
+    fields:
+      os_version_major: u8
+      os_version_minor: u8
+      is_initialized: bool
+      boot_count: u32
+      last_boot_us: i64
+      total_queries_processed: u32
+      network_mode: bool             # true = decentralized
+      immortal_mode: bool            # true = persistent across restarts
+
+behaviors:
+  - name: syncNode
+    given: A GoldenChainAgent with network config
+    when: syncNode(target_node_hash) is called
+    then: Creates NodeSyncRecord, transfers quark state, returns success/fail
+
+  - name: getNetworkState
+    given: A GoldenChainAgent with sync records
+    when: getNetworkState() is called
+    then: Returns NetworkState with active nodes, consensus, health score
+
+  - name: initAgentOS
+    given: A GoldenChainAgent
+    when: initAgentOS() is called
+    then: Sets AgentOSState to v1.0, network_mode=true, immortal_mode=true
+
+  - name: runConsensus
+    given: A GoldenChainAgent with multiple nodes synced
+    when: runConsensus() is called
+    then: Increments consensus_round, computes network health, returns quorum bool
+
+  - name: stakeMainnet
+    given: A GoldenChainAgent with sufficient $TRI
+    when: stakeMainnet(amount_utri) is called
+    then: Locks amount in mainnet staking, returns success if above minimum
+
+  - name: networkVerify
+    given: A GoldenChainAgent with network state
+    when: networkVerify() (Phase I) is called
+    then: I1 consensus quorum met, I2 no stale nodes beyond TTL
+
+tests:
+  - name: QuarkType has 48 variants (u6)
+    assert: All 48 QuarkType variants accessible and distinct
+
+  - name: v2.2 QuarkType labels unique
+    assert: All 8 new labels unique across all 48 labels
+
+  - name: isDecentralQuark classification
+    assert: decentral_sync and node_consensus return true
+
+  - name: isNetworkQuark classification
+    assert: network_health, immortal_network, energy_network return true
+
+  - name: isAgentOSQuark classification
+    assert: agent_os_init returns true
+
+  - name: isMainnetQuark classification
+    assert: staking_mainnet and viral_propagate return true
+
+  - name: NodeConfig defaults
+    assert: Default values match constants
+
+  - name: NetworkState structure
+    assert: All fields accessible and correctly typed
+
+  - name: AgentOSState initial
+    assert: v1.0, network_mode=true, immortal_mode=true
+
+  - name: Phase I networkVerify passes
+    assert: Passes with valid network state
+
+  - name: Phase I fails with no consensus
+    assert: Fails when consensus_round=0 and nodes > 1
+
+  - name: serializeQuarkChain v6 roundtrip
+    assert: Serialize+deserialize preserves network state in 42-byte header
+
+  - name: 80 quarks per query
+    assert: Full pipeline emits exactly 80 quarks (10 per node avg)
+
+  - name: v2.2 QuarkType verification count
+    assert: 45 work quarks + 3 verification quarks = 48 total
+
+  - name: v2.2 constants correct
+    assert: CONSENSUS_QUORUM=67, NODE_SYNC_INTERVAL=10s, AGENT_OS_VERSION=1.0
+
+  - name: Export v6 header 42 bytes
+    assert: QUARK_EXPORT_HEADER_SIZE=42, QUARK_EXPORT_VERSION=6
+
+  - name: v2.2 ChainMessageType has 4 new variants
+    assert: DecentralSync, NodeConsensus, NetworkHealth, AgentOSInit all distinct
+
+  - name: 80 quarks target distribution
+    assert: 10+10+10+11+10+9+10+10 = 80
