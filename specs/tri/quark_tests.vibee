@@ -1,16 +1,20 @@
 name: quark_tests
-version: "1.0.0"
+version: "2.0.0"
 language: zig
 module: quark_tests
 
+imports:
+  - name: vsa
+    path: "src/vsa.zig"
+
 description: |
-  Quark Test Framework — Real VSA Proof Suite v1.0
+  Quark Test Framework — Real VSA Proof Suite v2.0 (SIMD-Wired)
 
   === PURPOSE ===
   End-to-end mathematical proofs for VSA (Vector Symbolic Architecture) operations.
   Each "quark" is an atomic, provable property of the ternary hypervector algebra.
 
-  === PROOFS REQUIRED ===
+  === SELF-CONTAINED PROOFS (Q1-Q12) ===
   Q1: Bind Self-Inverse     — unbind(bind(A, B), B) ~= A  (cosine >= 0.95)
   Q2: Bind Commutativity    — bind(A, B) == bind(B, A)    (exact for ternary multiply)
   Q3: Bundle Majority       — bundle3(A, A, B) more similar to A than to B
@@ -24,14 +28,17 @@ description: |
   Q11: Composition Chain    — unbind(bind(permute(A, k), B), B) ~= permute(A, k)
   Q12: Codebook Roundtrip   — encode then decode recovers original symbol
 
-  === IMPLEMENTATION ===
-  All operations use the generated Trit type (i8: -1, 0, +1).
-  bind = element-wise multiply (self-inverse in ternary)
-  bundle = majority vote
-  permute = cyclic shift
-  cosine = dot product / (norm_a * norm_b)
+  === SIMD-WIRED PROOFS (Q13-Q18) ===
+  Q13: SIMD Bind Self-Inverse   — vsa.bind + vsa.unbind + vsa.cosineSimilarity (NEON)
+  Q14: SIMD Bundle Majority     — vsa.bundle3 + vsa.cosineSimilarity (NEON)
+  Q15: SIMD Permute Cycle       — vsa.permute + vsa.inversePermute + vsa.hammingDistance
+  Q16: SIMD Similarity Identity — vsa.cosineSimilarity(A, A) == 1.0 via HybridBigInt
+  Q17: SIMD Orthogonality       — vsa.randomVector + vsa.cosineSimilarity ~= 0.0
+  Q18: SIMD Composition Chain   — vsa.permute + vsa.bind + vsa.unbind chain
 
-  No external imports needed — fully self-contained proofs.
+  === IMPLEMENTATION ===
+  Q1-Q12: Self-contained proofs using i8 arrays (pure math).
+  Q13-Q18: SIMD-wired proofs via @import("vsa") HybridBigInt (ARM64 NEON).
 
   Trinity Identity: phi^2 + 1/phi^2 = 3
   Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
@@ -110,3 +117,33 @@ behaviors:
     given: A set of 8 random symbol hypervectors as codebook entries
     when: Encodes symbol 3 via codebook then decodes by finding max cosine similarity
     then: Decoded index equals 3 proving codebook encode-decode roundtrip works
+
+  - name: quarkSIMDBindSelfInverse
+    given: Two random HybridBigInt vectors A and B via vsa.randomVector
+    when: Calls vsa.bind then vsa.unbind and measures vsa.cosineSimilarity with A
+    then: Cosine similarity >= 0.55 proving SIMD bind works with ternary loss at zero trits
+
+  - name: quarkSIMDBundleMajority
+    given: Two random HybridBigInt vectors A and B via vsa.randomVector
+    when: Calls vsa.bundle3 with A A B then measures vsa.cosineSimilarity to A vs B
+    then: Bundle is more similar to A than to B via SIMD majority vote
+
+  - name: quarkSIMDPermuteCycle
+    given: Random HybridBigInt vector A via vsa.randomVector and shift k
+    when: Calls vsa.permute then vsa.inversePermute and checks vsa.hammingDistance
+    then: Hamming distance equals 0 proving SIMD permute is perfectly invertible
+
+  - name: quarkSIMDSimilarityIdentity
+    given: Random HybridBigInt vector A via vsa.randomVector
+    when: Calls vsa.cosineSimilarity with A and A
+    then: Cosine similarity equals exactly 1.0 via SIMD dot product
+
+  - name: quarkSIMDOrthogonality
+    given: Two independently random HybridBigInt vectors via vsa.randomVector
+    when: Calls vsa.cosineSimilarity between them
+    then: Cosine similarity near 0.0 within 0.15 via SIMD computation
+
+  - name: quarkSIMDCompositionChain
+    given: Two random HybridBigInt vectors A and B via vsa.randomVector and shift k
+    when: Calls vsa.unbind of vsa.bind of vsa.permute A k with B and compares to vsa.permute A k
+    then: Cosine similarity >= 0.50 proving SIMD composition works with ternary loss

@@ -921,6 +921,68 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expectEqual(best_idx, target_sym);");
             try self.builder.writeLine("// And best similarity should be 1.0 (exact match)");
             try self.builder.writeLine("try std.testing.expectApproxEqAbs(best_sim, 1.0, 1e-10);");
+        } else if (std.mem.eql(u8, name, "quarkSIMDBindSelfInverse")) {
+            // Q13: SIMD-wired bind self-inverse via real vsa module
+            // Note: vsa.randomVector produces ternary {-1,0,+1} — zero trits make bind lossy
+            // bind(a,0)=0, unbind(0,b)=0≠a. With ~33% zeros, expect cosine ~0.67
+            try self.builder.writeLine("// Q13: SIMD Bind Self-Inverse — vsa.bind + vsa.unbind + vsa.cosineSimilarity");
+            try self.builder.writeLine("// Ternary vectors: zero trits cause ~33% info loss (bind(a,0)=0)");
+            try self.builder.writeLine("var a = vsa.randomVector(256, 314159);");
+            try self.builder.writeLine("var b = vsa.randomVector(256, 271828);");
+            try self.builder.writeLine("var bound = vsa.bind(&a, &b);");
+            try self.builder.writeLine("var recovered = vsa.unbind(&bound, &b);");
+            try self.builder.writeLine("const cosine = vsa.cosineSimilarity(&recovered, &a);");
+            try self.builder.writeLine("// PROOF: SIMD bind recovers with ternary loss (cosine >= 0.55)");
+            try self.builder.writeLine("// Bipolar proof (Q1) achieves >= 0.95; ternary is inherently lossy at zeros");
+            try self.builder.writeLine("try std.testing.expect(cosine >= 0.55);");
+        } else if (std.mem.eql(u8, name, "quarkSIMDBundleMajority")) {
+            // Q14: SIMD-wired bundle majority via real vsa module
+            try self.builder.writeLine("// Q14: SIMD Bundle Majority — vsa.bundle3 + vsa.cosineSimilarity");
+            try self.builder.writeLine("var a = vsa.randomVector(256, 577215);");
+            try self.builder.writeLine("var b = vsa.randomVector(256, 693147);");
+            try self.builder.writeLine("var bundled = vsa.bundle3(&a, &a, &b);");
+            try self.builder.writeLine("const sim_a = vsa.cosineSimilarity(&bundled, &a);");
+            try self.builder.writeLine("const sim_b = vsa.cosineSimilarity(&bundled, &b);");
+            try self.builder.writeLine("// PROOF: bundle3(A,A,B) is more similar to A than to B");
+            try self.builder.writeLine("try std.testing.expect(sim_a > sim_b);");
+        } else if (std.mem.eql(u8, name, "quarkSIMDPermuteCycle")) {
+            // Q15: SIMD-wired permute cycle via real vsa module
+            try self.builder.writeLine("// Q15: SIMD Permute Cycle — vsa.permute + vsa.inversePermute");
+            try self.builder.writeLine("var a = vsa.randomVector(256, 235711);");
+            try self.builder.writeLine("var permuted = vsa.permute(&a, 37);");
+            try self.builder.writeLine("var restored = vsa.inversePermute(&permuted, 37);");
+            try self.builder.writeLine("const dist = vsa.hammingDistance(&restored, &a);");
+            try self.builder.writeLine("// PROOF: permute + inversePermute = identity (distance 0)");
+            try self.builder.writeLine("try std.testing.expectEqual(dist, 0);");
+        } else if (std.mem.eql(u8, name, "quarkSIMDSimilarityIdentity")) {
+            // Q16: SIMD-wired similarity identity via real vsa module
+            try self.builder.writeLine("// Q16: SIMD Similarity Identity — vsa.cosineSimilarity(A, A) == 1.0");
+            try self.builder.writeLine("var a = vsa.randomVector(256, 112358);");
+            try self.builder.writeLine("const cosine = vsa.cosineSimilarity(&a, &a);");
+            try self.builder.writeLine("// PROOF: self-similarity is exactly 1.0");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(cosine, 1.0, 1e-10);");
+        } else if (std.mem.eql(u8, name, "quarkSIMDOrthogonality")) {
+            // Q17: SIMD-wired orthogonality via real vsa module
+            try self.builder.writeLine("// Q17: SIMD Orthogonality — random HVs via vsa.randomVector");
+            try self.builder.writeLine("var a = vsa.randomVector(1024, 999983);");
+            try self.builder.writeLine("var b = vsa.randomVector(1024, 999979);");
+            try self.builder.writeLine("const cosine = vsa.cosineSimilarity(&a, &b);");
+            try self.builder.writeLine("// PROOF: random SIMD vectors are quasi-orthogonal");
+            try self.builder.writeLine("try std.testing.expect(@abs(cosine) < 0.15);");
+        } else if (std.mem.eql(u8, name, "quarkSIMDCompositionChain")) {
+            // Q18: SIMD-wired composition chain via real vsa module
+            // Ternary lossy bind: ~33% zeros cause info loss at zero positions
+            try self.builder.writeLine("// Q18: SIMD Composition Chain — permute + bind + unbind");
+            try self.builder.writeLine("// Ternary vectors: zero trits cause ~33% info loss in bind");
+            try self.builder.writeLine("var a = vsa.randomVector(256, 314271);");
+            try self.builder.writeLine("var b = vsa.randomVector(256, 828459);");
+            try self.builder.writeLine("var perm_a = vsa.permute(&a, 23);");
+            try self.builder.writeLine("var bound = vsa.bind(&perm_a, &b);");
+            try self.builder.writeLine("var recovered = vsa.unbind(&bound, &b);");
+            try self.builder.writeLine("const cosine = vsa.cosineSimilarity(&recovered, &perm_a);");
+            try self.builder.writeLine("// PROOF: SIMD composition recovers with ternary loss (>= 0.50)");
+            try self.builder.writeLine("// Bipolar proof (Q11) achieves >= 0.95; ternary is lossy at zeros");
+            try self.builder.writeLine("try std.testing.expect(cosine >= 0.50);");
         } else {
             // Generate real test assertions: verify function exists and is callable
             const mem = std.mem;

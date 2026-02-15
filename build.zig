@@ -1253,4 +1253,37 @@ pub fn build(b: *std.Build) void {
     const run_vsa_imported = b.addRunArtifact(vsa_imported_tests);
     const vsa_imported_step = b.step("test-vsa-imported", "Test VSA Imported System (real @import)");
     vsa_imported_step.dependOn(&run_vsa_imported.step);
+
+    // Quark Tests — VSA Ternary Logic Proofs (Cycle 58-59)
+    // Self-contained proofs: bind inverse, bundle majority, permute cycle, etc.
+    const quark_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/quark_tests.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_quark_tests = b.addRunArtifact(quark_tests);
+    const quark_step = b.step("test-quark", "Test VSA Quark Proofs (18 ternary algebra proofs)");
+    quark_step.dependOn(&run_quark_tests.step);
+    test_step.dependOn(&run_quark_tests.step);
+
+    // Storage Init — Basic Disk Shards + VSA Fingerprints (Cycle 59)
+    const storage_init_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/init.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_storage_init = b.addRunArtifact(storage_init_tests);
+    const storage_init_step = b.step("test-storage-init", "Test Storage Init (disk shards + VSA fingerprints)");
+    storage_init_step.dependOn(&run_storage_init.step);
+    test_step.dependOn(&run_storage_init.step);
 }
