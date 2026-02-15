@@ -279,6 +279,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-33-resonator-report',
         'research/trinity-golden-chain-v2-34-direct-role-report',
         'research/trinity-golden-chain-v2-35-hebbian-hybrid-report',
+        'research/trinity-golden-chain-v2-36-sampling-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
