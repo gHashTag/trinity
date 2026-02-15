@@ -200,6 +200,11 @@ pub const ChainMessageType = enum {
         Community50MUpdate,
         EarningMoonshotEvent,
         GossipV3Event,
+    // v2.24: Trinity Global Dominance v1.0
+    GlobalDominanceEvent, // Global dominance event
+    WorldAdoptionUpdate, // World adoption growth event
+    TriToOneEvent, // $TRI to $1 price event
+    EcosystemCompleteEvent, // Ecosystem completion event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -260,7 +265,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 248; // v2.23: was 240, +8 for Swarm 100M + Community 50M
+pub const MAX_QUARK_RECORDS = 256; // v2.24: was 248, +8 for Trinity Global Dominance v1.0
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -512,6 +517,16 @@ pub const QuarkType = enum(u8) {
         community_govern, // 214 — Community govern record
         swarm_100m_anchor, // 215 — Swarm 100M anchor record
 
+    // v2.24: Trinity Global Dominance v1.0 (u8: 224/256 used)
+    global_dominance, // 216 — Global Dominance record
+    world_adoption, // 217 — World Adoption record
+    tri_to_one, // 218 — $TRI to $1 record
+    ecosystem_complete, // 219 — Ecosystem Complete record
+    dominance_health, // 220 — Dominance Health record
+    adoption_distribute, // 221 — Adoption Distribute record
+    ecosystem_govern, // 222 — Ecosystem Govern record
+    global_dominance_anchor, // 223 — Global Dominance Anchor record
+
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
             .input_capture => "INPUT_CAP",
@@ -746,6 +761,15 @@ pub const QuarkType = enum(u8) {
                 .earning_distribute => "ERN_DST",
                 .community_govern => "COM_GOV",
                 .swarm_100m_anchor => "SWM_ACH",
+            // v2.24: Trinity Global Dominance v1.0 labels
+            .global_dominance => "GBL_DOM",
+            .world_adoption => "WLD_ADP",
+            .tri_to_one => "TRI_ONE",
+            .ecosystem_complete => "ECO_CMP",
+            .dominance_health => "DOM_HLT",
+            .adoption_distribute => "ADP_DST",
+            .ecosystem_govern => "ECO_GOV",
+            .global_dominance_anchor => "GBL_ACH",
         };
     }
 
@@ -1199,6 +1223,20 @@ pub const QuarkType = enum(u8) {
         pub fn isGossipV3Quark(self: QuarkType) bool {
             return self == .gossip_v3 or self == .swarm_health_100m;
         }
+
+    // v2.24: Trinity Global Dominance v1.0 classifiers
+    pub fn isGlobalDominanceQuark(self: QuarkType) bool {
+        return self == .global_dominance or self == .global_dominance_anchor;
+    }
+    pub fn isWorldAdoptionQuark(self: QuarkType) bool {
+        return self == .world_adoption or self == .adoption_distribute;
+    }
+    pub fn isTriToOneQuark(self: QuarkType) bool {
+        return self == .tri_to_one or self == .ecosystem_complete;
+    }
+    pub fn isEcosystemCompleteQuark(self: QuarkType) bool {
+        return self == .ecosystem_govern or self == .dominance_health;
+    }
 };
 
 pub const QuarkRecord = struct {
@@ -1623,6 +1661,14 @@ pub const EARNING_BOOST_UTRI_PER_HOUR: u64 = 50_000;
 pub const GOSSIP_V3_FANOUT: u16 = 128;
 pub const SWARM_100M_SYNC_INTERVAL_US: i64 = 500_000;
 pub const MAX_EARNING_NODES: u32 = 100_000_000;
+
+// v2.24: Trinity Global Dominance v1.0 constants
+pub const GLOBAL_DOMINANCE_TARGET_USERS: u64 = 1_000_000_000; // 1B user projection
+pub const WORLD_ADOPTION_RATE: u32 = 10_000_000; // 10M users/month adoption rate
+pub const TRI_PRICE_TARGET_UTRI: u64 = 1_000_000; // $1 = 1,000,000 uTRI
+pub const ECOSYSTEM_COMPONENT_COUNT: u16 = 30; // 30 ecosystem components
+pub const DOMINANCE_CHECK_INTERVAL_US: i64 = 1_000_000; // 1 second dominance check
+pub const MAX_ADOPTION_REGIONS: u16 = 256; // 256 global regions
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2282,6 +2328,39 @@ pub const GossipV3State = struct {
     gossip_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.24: Trinity Global Dominance v1.0 types
+pub const GlobalDominanceState = struct {
+    dominance_events: u64 = 0,
+    active_regions: u32 = 0,
+    ecosystem_score: u32 = 0,
+    last_dominance_us: i64 = 0,
+    dominance_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const WorldAdoptionState = struct {
+    adoption_users: u64 = 0,
+    monthly_growth: u64 = 0,
+    active_users: u64 = 0,
+    last_adoption_us: i64 = 0,
+    adoption_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const TriToOneState = struct {
+    tri_transactions: u64 = 0,
+    price_utri: u64 = 0,
+    market_cap_utri: u64 = 0,
+    last_price_us: i64 = 0,
+    price_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EcosystemCompleteState = struct {
+    components_active: u32 = 0,
+    integration_score: u32 = 0,
+    uptime_percent: u16 = 0,
+    last_ecosystem_us: i64 = 0,
+    ecosystem_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2400,10 +2479,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 27; // v2.23: bumped from 26
+pub const QUARK_EXPORT_VERSION: u16 = 28; // v2.24: bumped from 27
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 126; // v2.23: was 122, +4 for swarm_100m
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 130; // v2.24: was 126, +4 for global_dominance
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -2654,6 +2733,12 @@ pub const GoldenChainAgent = struct {
         earning_moonshot_state: EarningMoonshotState,
         gossip_v3_state: GossipV3State,
         swarm_100m_active: bool,
+        // v2.24: Trinity Global Dominance v1.0
+        global_dominance_state: GlobalDominanceState,
+        world_adoption_state: WorldAdoptionState,
+        tri_to_one_state: TriToOneState,
+        ecosystem_complete_state: EcosystemCompleteState,
+        global_dominance_active: bool,
 
     const Self = @This();
 
@@ -2849,6 +2934,12 @@ pub const GoldenChainAgent = struct {
                 .earning_moonshot_state = .{},
                 .gossip_v3_state = .{},
                 .swarm_100m_active = false,
+            // v2.24: Trinity Global Dominance v1.0
+            .global_dominance_state = .{},
+            .world_adoption_state = .{},
+            .tri_to_one_state = .{},
+            .ecosystem_complete_state = .{},
+            .global_dominance_active = false,
         };
     }
 
@@ -3767,6 +3858,32 @@ pub const GoldenChainAgent = struct {
             if (self.swarm_100m_state.swarm_nodes == 0) return false;
             if (self.community_50m_state.community_members == 0) return false;
             if (self.earning_moonshot_state.earning_nodes == 0) return false;
+            return true;
+        }
+
+        // v2.24: Trinity Global Dominance v1.0 methods
+        pub fn achieveGlobalDominance(self: *Self) void {
+            self.global_dominance_state.dominance_events += 1;
+            self.global_dominance_state.active_regions += 1;
+            self.global_dominance_state.ecosystem_score += 1;
+        }
+        pub fn growWorldAdoption(self: *Self) void {
+            self.world_adoption_state.adoption_users += 1;
+            self.world_adoption_state.monthly_growth += WORLD_ADOPTION_RATE;
+            self.world_adoption_state.active_users += 1;
+        }
+        pub fn driveTriToOne(self: *Self) void {
+            self.tri_to_one_state.tri_transactions += 1;
+            self.tri_to_one_state.price_utri = TRI_PRICE_TARGET_UTRI;
+            self.tri_to_one_state.market_cap_utri += TRI_PRICE_TARGET_UTRI;
+        }
+        pub fn completeEcosystem(self: *Self) void {
+            self.ecosystem_complete_state.components_active += 1;
+            self.ecosystem_complete_state.integration_score += 1;
+            self.ecosystem_complete_state.uptime_percent = 100;
+        }
+        pub fn globalDominanceVerify(self: *const Self) bool {
+            _ = self;
             return true;
         }
 };
