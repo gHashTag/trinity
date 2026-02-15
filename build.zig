@@ -1318,4 +1318,20 @@ pub fn build(b: *std.Build) void {
     const shard_mgr_api_step = b.step("test-shard-mgr-api", "Test ShardManager API (real struct methods)");
     shard_mgr_api_step.dependOn(&run_shard_mgr_api.step);
     test_step.dependOn(&run_shard_mgr_api.step);
+
+    // Generated network transfer tests (from specs/storage/network.vibee)
+    const network_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/network.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_network_tests = b.addRunArtifact(network_tests);
+    const network_step = b.step("test-network-transfer", "Test TCP shard transfer between nodes");
+    network_step.dependOn(&run_network_tests.step);
+    test_step.dependOn(&run_network_tests.step);
 }
