@@ -200,6 +200,11 @@ const ChatMsgType = enum {
     snark_generate, // SNARK generation (hot pink #FF69B4)
     recursive_compose, // Recursive composition (royal blue #4169E1)
     l2_fee_collect, // L2 fee collection (gold #FFD700)
+    // v2.21: Cross-Shard Transactions v1.0
+    cross_shard_tx_v2, // Cross-shard tx v2 (cyan #00FFFF)
+    atomic_2pc_v2, // Atomic 2PC v2 (magenta #FF00FF)
+    shard_fee_v2, // Shard fee v2 (orange red #FF4500)
+    inter_shard_sync_v2, // Inter-shard sync v2 (spring green #00FF7F)
 };
 var g_chat_messages: [MAX_CHAT_MSGS][512]u8 = undefined; // v3.0: 512 bytes per msg
 var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
@@ -481,6 +486,11 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
         .snark_generate => .{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = alpha }, // Hot Pink
         .recursive_compose => .{ .r = 0x41, .g = 0x69, .b = 0xE1, .a = alpha }, // Royal Blue
         .l2_fee_collect => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha }, // Gold
+        // v2.21: Cross-Shard Transactions v1.0
+        .cross_shard_tx_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0xFF, .a = alpha }, // Cyan
+        .atomic_2pc_v2 => .{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = alpha }, // Magenta
+        .shard_fee_v2 => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = alpha }, // Orange Red
+        .inter_shard_sync_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = alpha }, // Spring Green
         .user => .{ .r = 0x70, .g = 0x70, .b = 0x90, .a = alpha },
         .ai => .{ .r = 0x30, .g = 0x80, .b = 0x50, .a = alpha },
         .log => .{ .r = 0x60, .g = 0x60, .b = 0x60, .a = alpha },
@@ -591,6 +601,21 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         .split_brain => "SPL_BRN",
         .auto_heal => "AUT_HEL",
         .partition_tolerance => "PRT_TOL",
+        // v2.19
+        .swarm_10m => "SWM_10M",
+        .community_5m => "COM_5M",
+        .earning_boost => "ERN_BST",
+        .massive_gossip => "MAS_GSP",
+        // v2.20
+        .zk_rollup_v2 => "ZKR_V2",
+        .snark_generate => "SNK_GEN",
+        .recursive_compose => "REC_CMP",
+        .l2_fee_collect => "L2_FEE",
+        // v2.21
+        .cross_shard_tx_v2 => "XSH_V2",
+        .atomic_2pc_v2 => "2PC_V2",
+        .shard_fee_v2 => "SHF_V2",
+        .inter_shard_sync_v2 => "ISS_V2",
         .user => "YOU",
         .ai => "AI",
         .log => "LOG",
@@ -599,7 +624,7 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
 
 fn isChainType(msg_type: ChatMsgType) bool {
     return switch (msg_type) {
-        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute, .staking_validate, .swarm_100k, .gossip_shard, .dht_sync, .community_50k, .zk_bridge, .zk_proof, .privacy_transfer, .cross_chain_sync_v2, .l2_rollup, .optimistic_verify, .state_channel, .batch_compress, .dynamic_shard, .shard_split, .shard_merge, .dht_adapt, .swarm_million, .community_node, .hierarchical_gossip, .geographic_shard, .zk_snark_proof, .recursive_proof, .l2_scaling, .rollup_batch, .cross_shard_tx, .atomic_2pc, .shard_fee, .tx_coordinator, .partition_detect, .split_brain, .auto_heal, .partition_tolerance, .swarm_10m, .community_5m, .earning_boost, .massive_gossip, .zk_rollup_v2, .snark_generate, .recursive_compose, .l2_fee_collect => true,
+        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute, .staking_validate, .swarm_100k, .gossip_shard, .dht_sync, .community_50k, .zk_bridge, .zk_proof, .privacy_transfer, .cross_chain_sync_v2, .l2_rollup, .optimistic_verify, .state_channel, .batch_compress, .dynamic_shard, .shard_split, .shard_merge, .dht_adapt, .swarm_million, .community_node, .hierarchical_gossip, .geographic_shard, .zk_snark_proof, .recursive_proof, .l2_scaling, .rollup_batch, .cross_shard_tx, .atomic_2pc, .shard_fee, .tx_coordinator, .partition_detect, .split_brain, .auto_heal, .partition_tolerance, .swarm_10m, .community_5m, .earning_boost, .massive_gossip, .zk_rollup_v2, .snark_generate, .recursive_compose, .l2_fee_collect, .cross_shard_tx_v2, .atomic_2pc_v2, .shard_fee_v2, .inter_shard_sync_v2 => true,
         else => false,
     };
 }
@@ -729,6 +754,11 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         .SnarkGenerateUpdate => .snark_generate,
         .RecursiveComposeEvent => .recursive_compose,
         .L2FeeCollectEvent => .l2_fee_collect,
+        // v2.21: Cross-Shard Transactions v1.0
+        .CrossShardTxEvent => .cross_shard_tx_v2,
+        .Atomic2PCUpdate => .atomic_2pc_v2,
+        .ShardFeeEvent => .shard_fee_v2,
+        .InterShardSyncEvent => .inter_shard_sync_v2,
     };
 }
 
