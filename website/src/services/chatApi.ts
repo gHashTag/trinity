@@ -158,6 +158,13 @@ export interface StorageMetrics {
   swarm_regions: number;
   swarm_avg_latency_ms: number;
   swarm_bootstrap_ok: boolean;
+  // Rewards ($TRI Economics)
+  tri_total_minted: number;
+  tri_total_slashed: number;
+  tri_active_earners: number;
+  tri_epoch_challenges: number;
+  tri_avg_balance: number;
+  tri_reward_rate: number;
   // Timestamp
   generated_at: number;
 }
@@ -201,6 +208,12 @@ function generateMockStorageMetrics(): StorageMetrics {
     swarm_regions: 3 + Math.floor(Math.random() * 2),
     swarm_avg_latency_ms: 45 + Math.floor(Math.random() * 30),
     swarm_bootstrap_ok: true,
+    tri_total_minted: 47.832 + drift * 0.5,
+    tri_total_slashed: 1.247 + Math.random() * 0.01,
+    tri_active_earners: 9 + Math.floor(Math.random() * 3),
+    tri_epoch_challenges: 15820 + Math.floor(now / 10) % 100,
+    tri_avg_balance: 142.5 + drift * 2,
+    tri_reward_rate: 0.001,
     generated_at: now,
   };
 }

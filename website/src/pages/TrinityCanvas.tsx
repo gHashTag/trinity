@@ -1614,7 +1614,7 @@ export default function TrinityCanvas() {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, letterSpacing: 2, fontFamily: FONT }}>ЗЕРКАЛО ТРЁХ МИРОВ v2.9</div>
+                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, letterSpacing: 2, fontFamily: FONT }}>ЗЕРКАЛО ТРЁХ МИРОВ v2.10</div>
                 {mirrorStatus?.uptime_s != null && (
                   <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontFamily: MONO }}>uptime {fmtUptime(mirrorStatus.uptime_s)}</span>
                 )}
@@ -1892,6 +1892,41 @@ export default function TrinityCanvas() {
                           Tol: {storageMetrics.rs_parity_shards}/{storageMetrics.rs_data_shards + storageMetrics.rs_parity_shards}
                         </span>
                         <span style={{ color: '#00e599' }}>Rep x{storageMetrics.target_replication}</span>
+                      </div>
+                    )}
+
+                    {/* ── $TRI Earnings (v2.10) ── */}
+                    {sectionHeader('tri', '$TRI EARNINGS', '#00ccff')}
+                    {!storageCollapsed['tri'] && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <div style={{ display: 'flex', gap: 3 }}>
+                          {[
+                            { label: 'MINTED', val: storageMetrics.tri_total_minted.toFixed(3), color: '#00e599' },
+                            { label: 'SLASHED', val: storageMetrics.tri_total_slashed.toFixed(3), color: '#ff4444' },
+                          ].map(t => (
+                            <div key={t.label} style={{ flex: 1, textAlign: 'center', background: 'rgba(0,200,255,0.04)', padding: '3px', borderRadius: 4, border: '1px solid rgba(0,200,255,0.08)' }}>
+                              <div style={{ color: t.color, fontSize: 10, fontFamily: MONO, fontWeight: 700 }}>
+                                {t.val}
+                              </div>
+                              <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 6, fontFamily: MONO }}>{t.label} $TRI</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                          <span style={{ color: '#00ccff' }}>Earners:{storageMetrics.tri_active_earners}</span>
+                          <span style={{ color: 'rgba(0,200,255,0.5)' }}>Avg:{storageMetrics.tri_avg_balance.toFixed(1)} $TRI</span>
+                          <span style={{ color: 'rgba(0,200,255,0.3)' }}>Rate:{storageMetrics.tri_reward_rate}/ch</span>
+                        </div>
+                        {/* Mint/slash ratio bar */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(0,200,255,0.4)' }}>M/S:</span>
+                          <div style={{ flex: 1, height: 3, background: 'rgba(255,68,68,0.2)', borderRadius: 2, overflow: 'hidden' }}>
+                            <div style={{
+                              width: `${(storageMetrics.tri_total_minted / (storageMetrics.tri_total_minted + storageMetrics.tri_total_slashed) * 100)}%`,
+                              height: '100%', background: '#00e599', borderRadius: 2
+                            }} />
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
