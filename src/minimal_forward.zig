@@ -947,6 +947,233 @@ fn generateWithPureTrigram(
     return generated;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// RAW FREQUENCY DECODING (v2.44) — Bypass VSA, sample directly from count tables
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Compute raw probability P(target | prev, last) from trigram counts.
+/// Returns the probability (0.0 to 1.0) of the target character.
+/// Falls back to bigram P(target | last) if no trigram data.
+/// Falls back to uniform 1/95 if no bigram data either.
+fn rawTrigramProb(
+    prev_char: u8,
+    last_char: u8,
+    target_char: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+) f64 {
+    const uniform = 1.0 / @as(f64, @floatFromInt(HEBBIAN_CHARS));
+
+    if (target_char < HEBBIAN_OFFSET or target_char >= HEBBIAN_OFFSET + HEBBIAN_CHARS) return uniform;
+    const target_idx = target_char - HEBBIAN_OFFSET;
+
+    // Try trigram
+    if (prev_char >= HEBBIAN_OFFSET and prev_char < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+        last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+    {
+        const prev_idx = prev_char - HEBBIAN_OFFSET;
+        const last_idx = last_char - HEBBIAN_OFFSET;
+        const key = prev_idx * HEBBIAN_CHARS + last_idx;
+
+        var tri_total: u32 = 0;
+        for (0..HEBBIAN_CHARS) |ci| {
+            tri_total += tri_counts[key][ci];
+        }
+
+        if (tri_total > 0) {
+            const count: f64 = @floatFromInt(tri_counts[key][target_idx]);
+            const total: f64 = @floatFromInt(tri_total);
+            // Laplace smoothing: (count + 0.01) / (total + 0.01 * 95)
+            return (count + 0.01) / (total + 0.01 * @as(f64, @floatFromInt(HEBBIAN_CHARS)));
+        }
+    }
+
+    // Fallback to bigram
+    if (last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS) {
+        const last_idx = last_char - HEBBIAN_OFFSET;
+        var bi_total: u32 = 0;
+        for (0..HEBBIAN_CHARS) |ci| {
+            bi_total += bi_counts[last_idx][ci];
+        }
+        if (bi_total > 0) {
+            const count: f64 = @floatFromInt(bi_counts[last_idx][target_idx]);
+            const total: f64 = @floatFromInt(bi_total);
+            return (count + 0.01) / (total + 0.01 * @as(f64, @floatFromInt(HEBBIAN_CHARS)));
+        }
+    }
+
+    return uniform;
+}
+
+/// Sample a character directly from raw trigram/bigram count distribution.
+/// Uses temperature scaling and top-k filtering on raw probabilities.
+fn rawTrigramSample(
+    prev_char: u8,
+    last_char: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+    temperature: f64,
+    top_k: usize,
+    seed: u64,
+) u8 {
+    // Build probability distribution
+    var probs: [HEBBIAN_CHARS]f64 = undefined;
+    var has_trigram = false;
+
+    // Try trigram distribution
+    if (prev_char >= HEBBIAN_OFFSET and prev_char < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+        last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+    {
+        const prev_idx = prev_char - HEBBIAN_OFFSET;
+        const last_idx = last_char - HEBBIAN_OFFSET;
+        const key = prev_idx * HEBBIAN_CHARS + last_idx;
+
+        var tri_total: u32 = 0;
+        for (0..HEBBIAN_CHARS) |ci| {
+            tri_total += tri_counts[key][ci];
+        }
+
+        if (tri_total > 0) {
+            has_trigram = true;
+            const total_f: f64 = @floatFromInt(tri_total);
+            const smooth = 0.01 * @as(f64, @floatFromInt(HEBBIAN_CHARS));
+            for (0..HEBBIAN_CHARS) |ci| {
+                const count: f64 = @floatFromInt(tri_counts[key][ci]);
+                probs[ci] = (count + 0.01) / (total_f + smooth);
+            }
+        }
+    }
+
+    // Fallback to bigram
+    if (!has_trigram) {
+        if (last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS) {
+            const last_idx = last_char - HEBBIAN_OFFSET;
+            var bi_total: u32 = 0;
+            for (0..HEBBIAN_CHARS) |ci| {
+                bi_total += bi_counts[last_idx][ci];
+            }
+            if (bi_total > 0) {
+                const total_f: f64 = @floatFromInt(bi_total);
+                const smooth = 0.01 * @as(f64, @floatFromInt(HEBBIAN_CHARS));
+                for (0..HEBBIAN_CHARS) |ci| {
+                    const count: f64 = @floatFromInt(bi_counts[last_idx][ci]);
+                    probs[ci] = (count + 0.01) / (total_f + smooth);
+                }
+            } else {
+                // Uniform
+                for (0..HEBBIAN_CHARS) |ci| {
+                    probs[ci] = 1.0 / @as(f64, @floatFromInt(HEBBIAN_CHARS));
+                }
+            }
+        } else {
+            for (0..HEBBIAN_CHARS) |ci| {
+                probs[ci] = 1.0 / @as(f64, @floatFromInt(HEBBIAN_CHARS));
+            }
+        }
+    }
+
+    // Apply temperature
+    if (temperature > 0.0 and temperature != 1.0) {
+        var max_logp: f64 = -1e10;
+        for (0..HEBBIAN_CHARS) |ci| {
+            const logp = @log(@max(probs[ci], 1e-20));
+            if (logp > max_logp) max_logp = logp;
+            probs[ci] = logp;
+        }
+        for (0..HEBBIAN_CHARS) |ci| {
+            probs[ci] = @exp((probs[ci] - max_logp) / temperature);
+        }
+    }
+
+    // Top-k filtering
+    if (top_k > 0 and top_k < HEBBIAN_CHARS) {
+        // Find top-k threshold
+        var sorted_vals: [HEBBIAN_CHARS]f64 = undefined;
+        for (0..HEBBIAN_CHARS) |ci| {
+            sorted_vals[ci] = probs[ci];
+        }
+        // Simple partial sort: find k-th largest
+        for (0..top_k) |k| {
+            var max_idx: usize = k;
+            for (k + 1..HEBBIAN_CHARS) |ci| {
+                if (sorted_vals[ci] > sorted_vals[max_idx]) max_idx = ci;
+            }
+            const tmp = sorted_vals[k];
+            sorted_vals[k] = sorted_vals[max_idx];
+            sorted_vals[max_idx] = tmp;
+        }
+        const threshold = sorted_vals[top_k - 1];
+        for (0..HEBBIAN_CHARS) |ci| {
+            if (probs[ci] < threshold) probs[ci] = 0.0;
+        }
+    }
+
+    // Normalize
+    var total: f64 = 0;
+    for (0..HEBBIAN_CHARS) |ci| {
+        total += probs[ci];
+    }
+    if (total > 0) {
+        for (0..HEBBIAN_CHARS) |ci| {
+            probs[ci] /= total;
+        }
+    }
+
+    // Sample using seed-based RNG
+    var rng_state = seed;
+    rng_state ^= rng_state >> 12;
+    rng_state ^= rng_state << 25;
+    rng_state ^= rng_state >> 27;
+    const rand_val: f64 = @as(f64, @floatFromInt(rng_state % 1000000)) / 1000000.0;
+
+    var cumulative: f64 = 0;
+    for (0..HEBBIAN_CHARS) |ci| {
+        cumulative += probs[ci];
+        if (rand_val < cumulative) {
+            return @intCast(ci + HEBBIAN_OFFSET);
+        }
+    }
+    return @intCast(HEBBIAN_OFFSET); // fallback: space
+}
+
+/// Generate text using raw frequency sampling (no VSA at all)
+fn generateWithRawFreq(
+    prev_char_init: u8,
+    last_char_init: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+    output_buf: []u8,
+    max_tokens: usize,
+    temperature: f64,
+    top_k: usize,
+    base_seed: u64,
+) usize {
+    var prev_char = prev_char_init;
+    var last_char = last_char_init;
+    var generated: usize = 0;
+    while (generated < max_tokens and generated < output_buf.len) {
+        const decoded = rawTrigramSample(prev_char, last_char, bi_counts, tri_counts, temperature, top_k, base_seed + generated);
+        output_buf[generated] = decoded;
+        prev_char = last_char;
+        last_char = decoded;
+        generated += 1;
+    }
+    return generated;
+}
+
+/// Compute raw frequency loss: -log(P(target | prev, last))
+/// This is the true cross-entropy loss without VSA encoding overhead.
+fn rawTrigramLoss(
+    prev_char: u8,
+    last_char: u8,
+    target_char: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+) f64 {
+    const prob = rawTrigramProb(prev_char, last_char, target_char, bi_counts, tri_counts);
+    return -@log(@max(prob, 1e-20));
+}
+
 /// Decode using hybrid forward pass
 fn hybridDecode(
     context: []Hypervector,
@@ -5365,4 +5592,231 @@ test "pure trigram perplexity" {
     try std.testing.expect(pure_test_ppl > 0.0);
     try std.testing.expect(!std.math.isNan(pure_test_ppl));
     try std.testing.expect(!std.math.isInf(pure_test_ppl));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 34: Raw frequency decoding loss comparison (v2.44)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "raw frequency decoding loss comparison" {
+    const dim = 1024;
+
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    const train_end = large_corpus.len * 80 / 100;
+
+    // === Raw frequency loss (no VSA at all) ===
+    var raw_eval_sum: f64 = 0;
+    var raw_eval_count: usize = 0;
+    var raw_train_sum: f64 = 0;
+    var raw_train_count: usize = 0;
+
+    // === VSA pure trigram loss (for comparison) ===
+    var vsa_eval_sum: f64 = 0;
+    var vsa_eval_count: usize = 0;
+    var vsa_train_sum: f64 = 0;
+    var vsa_train_count: usize = 0;
+
+    // Eval
+    for (0..50) |i| {
+        const s = train_end + i * (large_corpus.len - train_end - 10) / 50;
+        if (s + 8 >= large_corpus.len) continue;
+
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        const target_char = large_corpus[s + 8];
+
+        // Raw frequency loss
+        const raw_loss = rawTrigramLoss(prev, last, target_char, &bi_counts, &tri_counts);
+        raw_eval_sum += raw_loss;
+        raw_eval_count += 1;
+
+        // VSA pure trigram loss (for comparison)
+        var target = charToHV(dim, target_char);
+        var pure_out = forwardPassPureTrigram(dim, prev, last, &bi_counts, &tri_counts);
+        const sim = pure_out.similarity(&target);
+        vsa_eval_sum += 1.0 - (sim + 1.0) / 2.0;
+        vsa_eval_count += 1;
+    }
+
+    // Train
+    for (0..50) |i| {
+        const s = i * train_end / 50;
+        if (s + 8 >= large_corpus.len) continue;
+
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        const target_char = large_corpus[s + 8];
+
+        const raw_loss = rawTrigramLoss(prev, last, target_char, &bi_counts, &tri_counts);
+        raw_train_sum += raw_loss;
+        raw_train_count += 1;
+
+        var target = charToHV(dim, target_char);
+        var pure_out = forwardPassPureTrigram(dim, prev, last, &bi_counts, &tri_counts);
+        const sim = pure_out.similarity(&target);
+        vsa_train_sum += 1.0 - (sim + 1.0) / 2.0;
+        vsa_train_count += 1;
+    }
+
+    const raw_eval = raw_eval_sum / @as(f64, @floatFromInt(raw_eval_count));
+    const raw_train = raw_train_sum / @as(f64, @floatFromInt(raw_train_count));
+    const vsa_eval = vsa_eval_sum / @as(f64, @floatFromInt(vsa_eval_count));
+    const vsa_train = vsa_train_sum / @as(f64, @floatFromInt(vsa_train_count));
+
+    // Raw loss is cross-entropy (nats), convert to comparable metric
+    const random_ce = @log(@as(f64, @floatFromInt(HEBBIAN_CHARS))); // ln(95) ≈ 4.55
+    const vsa_random = 1.0 - 1.0 / 95.0; // ≈ 0.9895
+
+    // --- Generation comparison ---
+    const prompt = "to be or ";
+    var gen_raw: [120]u8 = undefined;
+    const gen_raw_len = generateWithRawFreq(
+        prompt[6], prompt[7],
+        &bi_counts, &tri_counts,
+        &gen_raw, 120, 0.8, 10, 77777,
+    );
+    var gen_raw_low: [120]u8 = undefined;
+    const gen_raw_low_len = generateWithRawFreq(
+        prompt[6], prompt[7],
+        &bi_counts, &tri_counts,
+        &gen_raw_low, 120, 0.5, 5, 88888,
+    );
+    var gen_raw_greedy: [120]u8 = undefined;
+    const gen_raw_greedy_len = generateWithRawFreq(
+        prompt[6], prompt[7],
+        &bi_counts, &tri_counts,
+        &gen_raw_greedy, 120, 0.3, 3, 99999,
+    );
+
+    // Count unique chars
+    var seen1 = [_]bool{false} ** 256;
+    var unique1: usize = 0;
+    for (gen_raw[0..gen_raw_len]) |c| {
+        if (!seen1[c]) { seen1[c] = true; unique1 += 1; }
+    }
+    var seen2 = [_]bool{false} ** 256;
+    var unique2: usize = 0;
+    for (gen_raw_low[0..gen_raw_low_len]) |c| {
+        if (!seen2[c]) { seen2[c] = true; unique2 += 1; }
+    }
+    var seen3 = [_]bool{false} ** 256;
+    var unique3: usize = 0;
+    for (gen_raw_greedy[0..gen_raw_greedy_len]) |c| {
+        if (!seen3[c]) { seen3[c] = true; unique3 += 1; }
+    }
+
+    std.debug.print("\n=== RAW FREQUENCY DECODING (v2.44) ===\n", .{});
+    std.debug.print("Corpus: {d} chars\n", .{large_corpus.len});
+    std.debug.print("\n--- Loss Comparison ---\n", .{});
+    std.debug.print("Raw freq eval (CE nats):   {d:.4} ({d:.1}% below random)\n", .{ raw_eval, (1.0 - raw_eval / random_ce) * 100.0 });
+    std.debug.print("Raw freq train (CE nats):  {d:.4} ({d:.1}% below random)\n", .{ raw_train, (1.0 - raw_train / random_ce) * 100.0 });
+    std.debug.print("Random CE baseline:        {d:.4} (ln(95))\n", .{random_ce});
+    std.debug.print("\nVSA pure trigram eval:     {d:.4} ({d:.1}% below random)\n", .{ vsa_eval, (1.0 - vsa_eval / vsa_random) * 100.0 });
+    std.debug.print("VSA pure trigram train:    {d:.4} ({d:.1}% below random)\n", .{ vsa_train, (1.0 - vsa_train / vsa_random) * 100.0 });
+    std.debug.print("VSA random baseline:       {d:.4}\n", .{vsa_random});
+    std.debug.print("\n--- Generation (raw freq) ---\n", .{});
+    std.debug.print("Prompt: \"{s}\"\n", .{prompt});
+    std.debug.print("T=0.8,K=10: \"{s}\" ({d} unique)\n", .{ gen_raw[0..gen_raw_len], unique1 });
+    std.debug.print("T=0.5,K=5:  \"{s}\" ({d} unique)\n", .{ gen_raw_low[0..gen_raw_low_len], unique2 });
+    std.debug.print("T=0.3,K=3:  \"{s}\" ({d} unique)\n", .{ gen_raw_greedy[0..gen_raw_greedy_len], unique3 });
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(raw_eval < random_ce);
+    try std.testing.expect(raw_train < random_ce);
+    try std.testing.expect(gen_raw_len > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 35: Raw frequency perplexity (v2.44)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "raw frequency perplexity" {
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    const train_end = large_corpus.len * 80 / 100;
+
+    // === Raw frequency test PPL ===
+    var raw_test_log: f64 = 0;
+    var raw_test_valid: usize = 0;
+
+    for (0..40) |i| {
+        const s = train_end + i * (large_corpus.len - train_end - 10) / 40;
+        if (s + 8 >= large_corpus.len) continue;
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        const target = large_corpus[s + 8];
+        const prob = rawTrigramProb(prev, last, target, &bi_counts, &tri_counts);
+        raw_test_log += @log(@max(prob, 1e-20));
+        raw_test_valid += 1;
+    }
+
+    // === Raw frequency train PPL ===
+    var raw_train_log: f64 = 0;
+    var raw_train_valid: usize = 0;
+
+    for (0..40) |i| {
+        const s = i * train_end / 40;
+        if (s + 8 >= large_corpus.len) continue;
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        const target = large_corpus[s + 8];
+        const prob = rawTrigramProb(prev, last, target, &bi_counts, &tri_counts);
+        raw_train_log += @log(@max(prob, 1e-20));
+        raw_train_valid += 1;
+    }
+
+    const raw_test_ppl = @exp(-raw_test_log / @as(f64, @floatFromInt(raw_test_valid)));
+    const raw_train_ppl = @exp(-raw_train_log / @as(f64, @floatFromInt(raw_train_valid)));
+
+    // === Also compute VSA pure trigram PPL with same samples ===
+    const dim = 1024;
+    var vsa_test_log: f64 = 0;
+    var vsa_test_valid: usize = 0;
+    var vsa_train_log: f64 = 0;
+    var vsa_train_valid: usize = 0;
+
+    for (0..40) |i| {
+        const s = train_end + i * (large_corpus.len - train_end - 10) / 40;
+        if (s + 8 >= large_corpus.len) continue;
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        var target = charToHV(dim, large_corpus[s + 8]);
+        var output = forwardPassPureTrigram(dim, prev, last, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        const prob = @max((sim + 1.0) / 2.0, 1e-10);
+        vsa_test_log += @log(prob);
+        vsa_test_valid += 1;
+    }
+    for (0..40) |i| {
+        const s = i * train_end / 40;
+        if (s + 8 >= large_corpus.len) continue;
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        var target = charToHV(dim, large_corpus[s + 8]);
+        var output = forwardPassPureTrigram(dim, prev, last, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        const prob = @max((sim + 1.0) / 2.0, 1e-10);
+        vsa_train_log += @log(prob);
+        vsa_train_valid += 1;
+    }
+
+    const vsa_test_ppl = @exp(-vsa_test_log / @as(f64, @floatFromInt(vsa_test_valid)));
+    const vsa_train_ppl = @exp(-vsa_train_log / @as(f64, @floatFromInt(vsa_train_valid)));
+
+    std.debug.print("\n=== RAW FREQUENCY PERPLEXITY (v2.44) ===\n", .{});
+    std.debug.print("Raw freq:          train={d:.2} test={d:.2} gap={d:.2}\n", .{ raw_train_ppl, raw_test_ppl, raw_test_ppl - raw_train_ppl });
+    std.debug.print("VSA pure trigram:  train={d:.2} test={d:.2} gap={d:.2}\n", .{ vsa_train_ppl, vsa_test_ppl, vsa_test_ppl - vsa_train_ppl });
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("v2.43 pure trigram (20 samples): train=1.76, test=1.87\n", .{});
+    std.debug.print("v2.42 original bundle:           train=1.82, test=1.94\n", .{});
+    std.debug.print("v2.39 small trigram:             train=1.5, test=1.6\n", .{});
+    std.debug.print("Random baseline (raw):           {d:.1}\n", .{@as(f64, @floatFromInt(HEBBIAN_CHARS))});
+    std.debug.print("Random baseline (VSA):           95.0\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(raw_test_ppl > 0.0);
+    try std.testing.expect(raw_test_ppl < @as(f64, @floatFromInt(HEBBIAN_CHARS)));
+    try std.testing.expect(!std.math.isNan(raw_test_ppl));
+    try std.testing.expect(!std.math.isInf(raw_test_ppl));
 }
