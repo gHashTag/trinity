@@ -255,6 +255,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-13-u8-l2-report',
         'research/trinity-golden-chain-v2-14-shard-report',
         'research/trinity-golden-chain-v2-15-swarm-report',
+        'research/trinity-golden-chain-v2-16-zk-rollup-report',
       ],
     },
     'faq',
