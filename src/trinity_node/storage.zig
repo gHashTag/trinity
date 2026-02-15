@@ -704,6 +704,18 @@ pub const StorageProvider = struct {
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// Generate a unique test directory path to avoid race conditions between
+/// parallel test binaries that all include storage.zig via transitive imports.
+fn uniqueTestDir(comptime prefix: []const u8) [prefix.len + 16]u8 {
+    var buf: [prefix.len + 16]u8 = undefined;
+    @memcpy(buf[0..prefix.len], prefix);
+    var random_bytes: [8]u8 = undefined;
+    std.crypto.random.bytes(&random_bytes);
+    const hex = std.fmt.bytesToHex(random_bytes, .lower);
+    @memcpy(buf[prefix.len..], &hex);
+    return buf;
+}
+
 test "storage provider store and retrieve" {
     const allocator = std.testing.allocator;
     var sp = StorageProvider.init(allocator, .{ .max_bytes = 1024 * 1024 });
@@ -901,7 +913,8 @@ test "reward tracker calculation" {
 
 test "disk persistence - store and recover" {
     const allocator = std.testing.allocator;
-    const test_dir = "/tmp/trinity_test_v11_store_recover";
+    const test_dir_buf = uniqueTestDir("/tmp/trinity_st_sr_");
+    const test_dir: []const u8 = &test_dir_buf;
 
     // Clean up from any previous run
     std.fs.cwd().deleteTree(test_dir) catch {};
@@ -950,7 +963,8 @@ test "disk persistence - store and recover" {
 
 test "lazy disk loading" {
     const allocator = std.testing.allocator;
-    const test_dir = "/tmp/trinity_test_v11_lazy_load";
+    const test_dir_buf = uniqueTestDir("/tmp/trinity_lazy_");
+    const test_dir: []const u8 = &test_dir_buf;
 
     std.fs.cwd().deleteTree(test_dir) catch {};
     try std.fs.cwd().makePath(test_dir);
@@ -1008,9 +1022,12 @@ test "lazy disk loading" {
 
 test "manifest persist and load" {
     const allocator = std.testing.allocator;
-    const test_dir = "/tmp/trinity_test_v11_manifest";
-    const shards_dir = "/tmp/trinity_test_v11_manifest/shards";
-    const manifests_dir = "/tmp/trinity_test_v11_manifest/manifests";
+    const test_dir_buf = uniqueTestDir("/tmp/trinity_mani_");
+    const test_dir: []const u8 = &test_dir_buf;
+    const shards_dir = try std.fmt.allocPrint(allocator, "{s}/shards", .{test_dir});
+    defer allocator.free(shards_dir);
+    const manifests_dir = try std.fmt.allocPrint(allocator, "{s}/manifests", .{test_dir});
+    defer allocator.free(manifests_dir);
 
     std.fs.cwd().deleteTree(test_dir) catch {};
     try std.fs.cwd().makePath(shards_dir);
@@ -1065,7 +1082,8 @@ test "manifest persist and load" {
 
 test "loadFromDisk recovery with multiple shards" {
     const allocator = std.testing.allocator;
-    const test_dir = "/tmp/trinity_test_v11_recovery";
+    const test_dir_buf = uniqueTestDir("/tmp/trinity_recv_");
+    const test_dir: []const u8 = &test_dir_buf;
 
     std.fs.cwd().deleteTree(test_dir) catch {};
     try std.fs.cwd().makePath(test_dir);
@@ -1122,7 +1140,8 @@ test "loadFromDisk recovery with multiple shards" {
 
 test "LRU eviction triggers when over limit" {
     const allocator = std.testing.allocator;
-    const test_dir = "/tmp/trinity_test_v12_lru_trigger";
+    const test_dir_buf = uniqueTestDir("/tmp/trinity_lru1_");
+    const test_dir: []const u8 = &test_dir_buf;
 
     std.fs.cwd().deleteTree(test_dir) catch {};
     try std.fs.cwd().makePath(test_dir);
@@ -1166,7 +1185,8 @@ test "LRU eviction triggers when over limit" {
 
 test "LRU evicts oldest accessed shard" {
     const allocator = std.testing.allocator;
-    const test_dir = "/tmp/trinity_test_v12_lru_oldest";
+    const test_dir_buf = uniqueTestDir("/tmp/trinity_lru2_");
+    const test_dir: []const u8 = &test_dir_buf;
 
     std.fs.cwd().deleteTree(test_dir) catch {};
     try std.fs.cwd().makePath(test_dir);
@@ -1207,7 +1227,8 @@ test "LRU evicts oldest accessed shard" {
 
 test "evicted shard still retrievable from disk" {
     const allocator = std.testing.allocator;
-    const test_dir = "/tmp/trinity_test_v12_lru_disk_retrieve";
+    const test_dir_buf = uniqueTestDir("/tmp/trinity_lru3_");
+    const test_dir: []const u8 = &test_dir_buf;
 
     std.fs.cwd().deleteTree(test_dir) catch {};
     try std.fs.cwd().makePath(test_dir);
@@ -1279,7 +1300,8 @@ test "LRU eviction skipped without disk storage" {
 
 test "pinned shard not evicted by LRU" {
     const allocator = std.testing.allocator;
-    const test_dir = "/tmp/trinity_test_v13_pin_evict";
+    const test_dir_buf = uniqueTestDir("/tmp/trinity_pin1_");
+    const test_dir: []const u8 = &test_dir_buf;
 
     std.fs.cwd().deleteTree(test_dir) catch {};
     try std.fs.cwd().makePath(test_dir);
@@ -1323,7 +1345,8 @@ test "pinned shard not evicted by LRU" {
 
 test "unpin allows eviction" {
     const allocator = std.testing.allocator;
-    const test_dir = "/tmp/trinity_test_v13_unpin";
+    const test_dir_buf = uniqueTestDir("/tmp/trinity_pin2_");
+    const test_dir: []const u8 = &test_dir_buf;
 
     std.fs.cwd().deleteTree(test_dir) catch {};
     try std.fs.cwd().makePath(test_dir);
