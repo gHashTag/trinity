@@ -150,6 +150,14 @@ export interface StorageMetrics {
   dht_entries_stored: number;
   dht_lookups: number;
   dht_lookup_avg_hops: number;
+  // Swarm (Live Multi-Host)
+  swarm_nodes_active: number;
+  swarm_nodes_joining: number;
+  swarm_nodes_leaving: number;
+  swarm_nodes_dead: number;
+  swarm_regions: number;
+  swarm_avg_latency_ms: number;
+  swarm_bootstrap_ok: boolean;
   // Timestamp
   generated_at: number;
 }
@@ -186,6 +194,13 @@ function generateMockStorageMetrics(): StorageMetrics {
     dht_entries_stored: 347 + Math.floor(Math.random() * 20),
     dht_lookups: 2841 + Math.floor(now / 10) % 50,
     dht_lookup_avg_hops: 3.2 + drift,
+    swarm_nodes_active: 4 + (Math.random() > 0.8 ? 1 : 0),
+    swarm_nodes_joining: Math.random() > 0.7 ? 1 : 0,
+    swarm_nodes_leaving: 0,
+    swarm_nodes_dead: Math.random() > 0.9 ? 1 : 0,
+    swarm_regions: 3 + Math.floor(Math.random() * 2),
+    swarm_avg_latency_ms: 45 + Math.floor(Math.random() * 30),
+    swarm_bootstrap_ok: true,
     generated_at: now,
   };
 }
