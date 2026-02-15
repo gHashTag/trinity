@@ -258,6 +258,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-16-zk-rollup-report',
         'research/trinity-golden-chain-v2-17-cross-shard-report',
         'research/trinity-golden-chain-v2-18-neuro-symbolic-report',
+        'research/trinity-golden-chain-v2-19-transformer-block-report',
       ],
     },
     'faq',
