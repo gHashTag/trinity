@@ -1397,6 +1397,98 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expectApproxEqAbs(sim1, 1.0, 1e-10);");
             try self.builder.writeLine("try std.testing.expect(sim1 > sim2);");
             try self.builder.writeLine("try std.testing.expect(sim1 > sim3);");
+        } else if (std.mem.eql(u8, name, "shardMgrInitDirs")) {
+            // R1: ShardManager.init creates directories
+            try self.builder.writeLine("// R1: ShardManager.init — creates root + shards subdir");
+            try self.builder.writeLine("const root = \"/tmp/trinity_test_r1_mgr_init\";");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(root) catch {};");
+            try self.builder.writeLine("var mgr = try ShardManager.init(root);");
+            try self.builder.writeLine("// PROOF: directories exist");
+            try self.builder.writeLine("var dir = try std.fs.openDirAbsolute(root, .{});");
+            try self.builder.writeLine("dir.close();");
+            try self.builder.writeLine("var sdir = try std.fs.openDirAbsolute(\"/tmp/trinity_test_r1_mgr_init/shards\", .{});");
+            try self.builder.writeLine("sdir.close();");
+            try self.builder.writeLine("mgr.cleanup();");
+        } else if (std.mem.eql(u8, name, "shardMgrPutGetRoundtrip")) {
+            // R2: put → get roundtrip
+            try self.builder.writeLine("// R2: ShardManager put → get roundtrip");
+            try self.builder.writeLine("const root = \"/tmp/trinity_test_r2_putget\";");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(root) catch {};");
+            try self.builder.writeLine("var mgr = try ShardManager.init(root);");
+            try self.builder.writeLine("// Create test payload");
+            try self.builder.writeLine("var payload: [256]u8 = undefined;");
+            try self.builder.writeLine("for (&payload, 0..) |*b, i| { b.* = @intCast(i); }");
+            try self.builder.writeLine("// PUT");
+            try self.builder.writeLine("var hex = try mgr.put(&payload);");
+            try self.builder.writeLine("// GET");
+            try self.builder.writeLine("var rbuf: [256]u8 = undefined;");
+            try self.builder.writeLine("const n = try mgr.get(&hex, &rbuf);");
+            try self.builder.writeLine("// PROOF: roundtrip matches byte-for-byte");
+            try self.builder.writeLine("try std.testing.expectEqual(n, 256);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &payload, rbuf[0..n]);");
+            try self.builder.writeLine("mgr.cleanup();");
+        } else if (std.mem.eql(u8, name, "shardMgrDeleteExists")) {
+            // R3: put → delete → exists false
+            try self.builder.writeLine("// R3: ShardManager delete + exists");
+            try self.builder.writeLine("const root = \"/tmp/trinity_test_r3_delete\";");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(root) catch {};");
+            try self.builder.writeLine("var mgr = try ShardManager.init(root);");
+            try self.builder.writeLine("// Put a shard");
+            try self.builder.writeLine("var hex = try mgr.put(\"test shard data for delete proof\");");
+            try self.builder.writeLine("// Verify exists");
+            try self.builder.writeLine("try std.testing.expect(mgr.exists(&hex));");
+            try self.builder.writeLine("// Delete");
+            try self.builder.writeLine("try mgr.delete(&hex);");
+            try self.builder.writeLine("// PROOF: no longer exists");
+            try self.builder.writeLine("try std.testing.expect(!mgr.exists(&hex));");
+            try self.builder.writeLine("mgr.cleanup();");
+        } else if (std.mem.eql(u8, name, "shardMgrCountAfterPuts")) {
+            // R4: put 3 → count 3
+            try self.builder.writeLine("// R4: ShardManager count after 3 puts");
+            try self.builder.writeLine("const root = \"/tmp/trinity_test_r4_count\";");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(root) catch {};");
+            try self.builder.writeLine("var mgr = try ShardManager.init(root);");
+            try self.builder.writeLine("_ = try mgr.put(\"alpha data\");");
+            try self.builder.writeLine("_ = try mgr.put(\"beta data\");");
+            try self.builder.writeLine("_ = try mgr.put(\"gamma data\");");
+            try self.builder.writeLine("// PROOF: count returns 3");
+            try self.builder.writeLine("const c = try mgr.count();");
+            try self.builder.writeLine("try std.testing.expectEqual(c, 3);");
+            try self.builder.writeLine("mgr.cleanup();");
+        } else if (std.mem.eql(u8, name, "shardMgrManifestPersist")) {
+            // R5: saveManifest → read file → verify shard_count
+            try self.builder.writeLine("// R5: ShardManager manifest persistence");
+            try self.builder.writeLine("const root = \"/tmp/trinity_test_r5_manifest\";");
+            try self.builder.writeLine("std.fs.deleteTreeAbsolute(root) catch {};");
+            try self.builder.writeLine("var mgr = try ShardManager.init(root);");
+            try self.builder.writeLine("_ = try mgr.put(\"manifest test one\");");
+            try self.builder.writeLine("_ = try mgr.put(\"manifest test two\");");
+            try self.builder.writeLine("// Save manifest");
+            try self.builder.writeLine("try mgr.saveManifest();");
+            try self.builder.writeLine("// Read manifest.json back");
+            try self.builder.writeLine("const mf = try std.fs.openFileAbsolute(\"/tmp/trinity_test_r5_manifest/manifest.json\", .{});");
+            try self.builder.writeLine("defer mf.close();");
+            try self.builder.writeLine("var mbuf: [512]u8 = undefined;");
+            try self.builder.writeLine("const mn = try mf.readAll(&mbuf);");
+            try self.builder.writeLine("const content = mbuf[0..mn];");
+            try self.builder.writeLine("// PROOF: manifest contains shard_count:2");
+            try self.builder.writeLine("try std.testing.expect(std.mem.indexOf(u8, content, \"shard_count\") != null);");
+            try self.builder.writeLine("const needle = \"\\\"shard_count\\\":\";");
+            try self.builder.writeLine("const pos = std.mem.indexOf(u8, content, needle).?;");
+            try self.builder.writeLine("try std.testing.expectEqual(content[pos + needle.len], '2');");
+            try self.builder.writeLine("mgr.cleanup();");
+        } else if (std.mem.eql(u8, name, "shardMgrFingerprintMatch")) {
+            // R6: fingerprint determinism via struct method
+            try self.builder.writeLine("// R6: ShardManager fingerprint determinism");
+            try self.builder.writeLine("var fp1 = ShardManager.fingerprint(\"identical content for fingerprint\");");
+            try self.builder.writeLine("var fp2 = ShardManager.fingerprint(\"identical content for fingerprint\");");
+            try self.builder.writeLine("const sim = vsa.cosineSimilarity(&fp1, &fp2);");
+            try self.builder.writeLine("// PROOF: same data → cosine = 1.0");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(sim, 1.0, 1e-10);");
+            try self.builder.writeLine("// Different data → low similarity");
+            try self.builder.writeLine("var fp3 = ShardManager.fingerprint(\"totally different binary content 9876\");");
+            try self.builder.writeLine("const sim2 = vsa.cosineSimilarity(&fp1, &fp3);");
+            try self.builder.writeLine("try std.testing.expect(@abs(sim2) < 0.2);");
         } else {
             // Generate real test assertions: verify function exists and is callable
             const mem = std.mem;

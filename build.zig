@@ -1302,4 +1302,20 @@ pub fn build(b: *std.Build) void {
     const gen_shard_mgr_step = b.step("test-shard-manager-gen", "Test Generated Shard Manager (manifest + splitting + search)");
     gen_shard_mgr_step.dependOn(&run_gen_shard_mgr.step);
     test_step.dependOn(&run_gen_shard_mgr.step);
+
+    // ShardManager API — Reusable Struct with Real Methods (Cycle 62)
+    const shard_mgr_api_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/shard_manager.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_shard_mgr_api = b.addRunArtifact(shard_mgr_api_tests);
+    const shard_mgr_api_step = b.step("test-shard-mgr-api", "Test ShardManager API (real struct methods)");
+    shard_mgr_api_step.dependOn(&run_shard_mgr_api.step);
+    test_step.dependOn(&run_shard_mgr_api.step);
 }
