@@ -6835,6 +6835,10 @@ const LargeTrigramModel = struct {
     tri_slots: [LARGE_TRI_HASH_SIZE]LargeTrigramSlot,
     tri_used: usize,
 
+    // Kneser-Ney continuation counts (v2.50)
+    continuation_count: [LARGE_MAX_WORDS]u16,
+    total_continuations: u32,
+
     fn init() LargeTrigramModel {
         var self: LargeTrigramModel = undefined;
         self.vocab_size = 0;
@@ -6851,6 +6855,10 @@ const LargeTrigramModel = struct {
             self.tri_slots[i].num_nexts = 0;
             self.tri_slots[i].total_count = 0;
         }
+        for (0..LARGE_MAX_WORDS) |i| {
+            self.continuation_count[i] = 0;
+        }
+        self.total_continuations = 0;
         return self;
     }
 
@@ -7301,6 +7309,201 @@ const LargeTrigramModel = struct {
         }
         return false;
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // v2.50: Kneser-Ney Smoothing
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// Build Kneser-Ney continuation counts from bigram data.
+    /// continuation_count[w] = number of unique w' such that c(w', w) > 0
+    /// (how many distinct left contexts does w appear in?)
+    /// Also computes total_continuations = sum of all continuation_count[w]
+    fn buildContinuationCounts(self: *LargeTrigramModel) void {
+        // continuation_count[w] = |{w': bigram_counts[w'][w] > 0}|
+        for (0..LARGE_MAX_WORDS) |w| {
+            var count: u16 = 0;
+            for (0..self.vocab_size) |wprime| {
+                if (self.bigram_counts[wprime][w] > 0) {
+                    count += 1;
+                }
+            }
+            self.continuation_count[w] = count;
+        }
+        // total_continuations = sum of all continuation_count
+        var total: u32 = 0;
+        for (0..self.vocab_size) |w| {
+            total += self.continuation_count[w];
+        }
+        self.total_continuations = total;
+    }
+
+    /// Kneser-Ney bigram probability
+    /// P_KN(w|w1) = max(c(w1,w) - D, 0) / c(w1) + lambda(w1) * P_cont(w)
+    /// where P_cont(w) = continuation_count[w] / total_continuations
+    /// and lambda(w1) = D * |{w: c(w1,w) > 0}| / c(w1)
+    fn knBigramProb(self: *const LargeTrigramModel, prev1: u16, next_idx: u16, discount: f64) f64 {
+        // Total count for context w1
+        var total: u32 = 0;
+        var unique_next: u32 = 0; // |{w: c(w1,w) > 0}|
+        for (0..self.vocab_size) |j| {
+            const c = self.bigram_counts[prev1][j];
+            total += c;
+            if (c > 0) unique_next += 1;
+        }
+
+        if (total == 0) {
+            // Unseen context — return uniform
+            return 1.0 / @as(f64, @floatFromInt(self.vocab_size));
+        }
+
+        const c_w1_w: f64 = @floatFromInt(self.bigram_counts[prev1][next_idx]);
+        const total_f: f64 = @floatFromInt(total);
+        const d = discount;
+
+        // Discounted probability
+        const p_discount = @max(c_w1_w - d, 0.0) / total_f;
+
+        // Lambda (normalizing backoff weight)
+        const lambda = d * @as(f64, @floatFromInt(unique_next)) / total_f;
+
+        // Continuation probability P_cont(w)
+        const p_cont = if (self.total_continuations > 0)
+            @as(f64, @floatFromInt(self.continuation_count[next_idx])) / @as(f64, @floatFromInt(self.total_continuations))
+        else
+            1.0 / @as(f64, @floatFromInt(self.vocab_size));
+
+        return p_discount + lambda * p_cont;
+    }
+
+    /// Kneser-Ney trigram probability with bigram KN backoff
+    /// P_KN(w|w2,w1) = max(c(w2,w1,w) - D, 0) / c(w2,w1) + lambda(w2,w1) * P_KN_bi(w|w1)
+    fn knTrigramProb(self: *const LargeTrigramModel, prev2: u16, prev1: u16, next_idx: u16, discount: f64) f64 {
+        if (self.findSlot(prev2, prev1)) |slot| {
+            const total_f: f64 = @floatFromInt(slot.total_count);
+            if (total_f == 0) return self.knBigramProb(prev1, next_idx, discount);
+
+            // Find count for next_idx in this slot
+            var c_tri: f64 = 0;
+            for (0..slot.num_nexts) |k| {
+                if (slot.nexts[k] == next_idx) {
+                    c_tri = @floatFromInt(slot.counts[k]);
+                    break;
+                }
+            }
+
+            // Discounted probability
+            const p_discount = @max(c_tri - discount, 0.0) / total_f;
+
+            // Lambda: D * unique_nexts / total
+            const lambda = discount * @as(f64, @floatFromInt(slot.num_nexts)) / total_f;
+
+            // Backoff to KN bigram
+            return p_discount + lambda * self.knBigramProb(prev1, next_idx, discount);
+        } else {
+            // Unseen trigram context — full backoff to KN bigram
+            return self.knBigramProb(prev1, next_idx, discount);
+        }
+    }
+
+    /// Interpolated Kneser-Ney: λ·P_KN_tri + (1-λ)·P_KN_bi
+    fn knInterpolatedProb(self: *const LargeTrigramModel, prev2: u16, prev1: u16, next_idx: u16, lambda: f64, discount: f64) f64 {
+        const p_tri = self.knTrigramProb(prev2, prev1, next_idx, discount);
+        const p_bi = self.knBigramProb(prev1, next_idx, discount);
+        return lambda * p_tri + (1.0 - lambda) * p_bi;
+    }
+
+    /// Kneser-Ney loss
+    fn knLoss(self: *const LargeTrigramModel, prev2: u16, prev1: u16, next_idx: u16, lambda: f64, discount: f64) f64 {
+        return -@log(@max(self.knInterpolatedProb(prev2, prev1, next_idx, lambda, discount), 1e-20));
+    }
+
+    /// Sample with Kneser-Ney interpolated distribution + penalty + blocking
+    fn knPenaltySample(
+        self: *const LargeTrigramModel,
+        prev2: u16,
+        prev1: u16,
+        lambda: f64,
+        discount: f64,
+        temperature: f64,
+        seed: u64,
+        history: []const u16,
+        history_len: usize,
+        penalty_alpha: f64,
+        block_ngram: bool,
+    ) u16 {
+        var probs: [LARGE_MAX_WORDS]f64 = undefined;
+
+        // Build KN interpolated distribution
+        for (0..self.vocab_size) |j| {
+            const j16: u16 = @intCast(j);
+            probs[j] = self.knInterpolatedProb(prev2, prev1, j16, lambda, discount);
+        }
+
+        // Apply repetition penalty
+        if (penalty_alpha > 1.0) {
+            for (0..self.vocab_size) |j| {
+                var count: usize = 0;
+                const j16: u16 = @intCast(j);
+                for (0..history_len) |h| {
+                    if (history[h] == j16) count += 1;
+                }
+                if (count > 0) {
+                    var penalty: f64 = 1.0;
+                    for (0..count) |_| penalty *= penalty_alpha;
+                    probs[j] /= penalty;
+                }
+            }
+        }
+
+        // N-gram blocking
+        if (block_ngram and history_len >= 3) {
+            for (0..self.vocab_size) |j| {
+                const j16: u16 = @intCast(j);
+                var h: usize = 0;
+                while (h + 2 < history_len) : (h += 1) {
+                    if (history[h] == prev2 and history[h + 1] == prev1 and history[h + 2] == j16) {
+                        probs[j] = 0;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Temperature + softmax + sample
+        var max_logp: f64 = -1e10;
+        for (0..self.vocab_size) |j| {
+            if (probs[j] <= 0) {
+                probs[j] = -1e10;
+            } else {
+                probs[j] = @log(probs[j]);
+            }
+            if (probs[j] > max_logp) max_logp = probs[j];
+        }
+        var sum: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            probs[j] = @exp((probs[j] - max_logp) / @max(temperature, 0.01));
+            sum += probs[j];
+        }
+        if (sum > 0) {
+            for (0..self.vocab_size) |j| probs[j] /= sum;
+        } else {
+            for (0..self.vocab_size) |j| probs[j] = 1.0 / @as(f64, @floatFromInt(self.vocab_size));
+        }
+
+        var rng = seed;
+        rng ^= rng >> 12;
+        rng ^= rng << 25;
+        rng ^= rng >> 27;
+        const r: f64 = @as(f64, @floatFromInt(rng % 1000000)) / 1000000.0;
+
+        var cumul: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            cumul += probs[j];
+            if (r < cumul) return @intCast(j);
+        }
+        return 0;
+    }
+
 };
 
 const extended_corpus = @embedFile("shakespeare_extended.txt");
@@ -8005,4 +8208,220 @@ test "penalty alpha sweep and diversity metrics" {
     try std.testing.expect(base_eval_ce < random_ce);
     try std.testing.expect(base_eval_ppl > 0.0);
     try std.testing.expect(best_unique > 3); // penalty should create at least some diversity
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 46: Kneser-Ney discount sweep + PPL comparison (v2.50)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "kneser-ney discount sweep and ppl comparison" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+    ltm.buildContinuationCounts();
+
+    const train_end = ltm.token_count * 80 / 100;
+    const random_ce = @log(@as(f64, @floatFromInt(ltm.vocab_size)));
+
+    // Report continuation stats
+    var max_cont: u16 = 0;
+    var sum_cont: u32 = 0;
+    var zero_cont: usize = 0;
+    for (0..ltm.vocab_size) |w| {
+        sum_cont += ltm.continuation_count[w];
+        if (ltm.continuation_count[w] > max_cont) max_cont = ltm.continuation_count[w];
+        if (ltm.continuation_count[w] == 0) zero_cont += 1;
+    }
+    const avg_cont: f64 = @as(f64, @floatFromInt(sum_cont)) / @as(f64, @floatFromInt(ltm.vocab_size));
+
+    std.debug.print("\n=== KNESER-NEY SMOOTHING (v2.50) ===\n", .{});
+    std.debug.print("Corpus: {d} tokens, {d} vocab\n", .{ ltm.token_count, ltm.vocab_size });
+    std.debug.print("Continuation counts: total={d}, avg={d:.2}, max={d}, zero={d}\n", .{ sum_cont, avg_cont, max_cont, zero_cont });
+
+    // Baseline: Laplace interpolated (from v2.48)
+    var laplace_eval_sum: f64 = 0;
+    var laplace_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 2) continue;
+        laplace_eval_sum += ltm.interpolatedLoss(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], 0.2);
+        laplace_eval_n += 1;
+    }
+    const laplace_eval_ce = laplace_eval_sum / @as(f64, @floatFromInt(laplace_eval_n));
+    const laplace_eval_ppl = @exp(laplace_eval_ce);
+
+    // Sweep discount D and lambda for KN
+    const discounts = [_]f64{ 0.25, 0.5, 0.75, 0.9 };
+    const lambdas = [_]f64{ 0.1, 0.2, 0.3, 0.5, 0.7, 1.0 };
+
+    var best_d: f64 = 0.75;
+    var best_l: f64 = 0.3;
+    var best_kn_eval_ce: f64 = 1e10;
+
+    std.debug.print("\n  D    | λ    | Eval CE   | %<random | PPL\n", .{});
+    std.debug.print("  -----|------|-----------|----------|--------\n", .{});
+
+    for (discounts) |d| {
+        for (lambdas) |lam| {
+            var eval_sum: f64 = 0;
+            var eval_n: usize = 0;
+            for (train_end..ltm.token_count) |i| {
+                if (i < 2) continue;
+                eval_sum += ltm.knLoss(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], lam, d);
+                eval_n += 1;
+            }
+            const eval_ce = eval_sum / @as(f64, @floatFromInt(eval_n));
+            const ppl = @exp(eval_ce);
+
+            // Only print a subset to keep output manageable
+            if (lam == 0.3 or (d == 0.75)) {
+                std.debug.print("  {d:.2} | {d:.1}  | {d:.4}   | {d:.1}%   | {d:.2}\n", .{
+                    d, lam, eval_ce, (1.0 - eval_ce / random_ce) * 100.0, ppl,
+                });
+            }
+
+            if (eval_ce < best_kn_eval_ce) {
+                best_kn_eval_ce = eval_ce;
+                best_d = d;
+                best_l = lam;
+            }
+        }
+    }
+
+    const best_kn_ppl = @exp(best_kn_eval_ce);
+
+    // Also compute KN train CE at best params
+    var kn_train_sum: f64 = 0;
+    var kn_train_n: usize = 0;
+    for (2..train_end) |i| {
+        kn_train_sum += ltm.knLoss(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], best_l, best_d);
+        kn_train_n += 1;
+    }
+    const kn_train_ce = kn_train_sum / @as(f64, @floatFromInt(kn_train_n));
+    const kn_train_ppl = @exp(kn_train_ce);
+
+    std.debug.print("\n--- Best KN: D={d:.2}, λ={d:.1} ---\n", .{ best_d, best_l });
+    std.debug.print("KN eval CE:      {d:.4} ({d:.1}% below random), PPL {d:.2}\n", .{ best_kn_eval_ce, (1.0 - best_kn_eval_ce / random_ce) * 100.0, best_kn_ppl });
+    std.debug.print("KN train CE:     {d:.4} ({d:.1}% below random), PPL {d:.2}\n", .{ kn_train_ce, (1.0 - kn_train_ce / random_ce) * 100.0, kn_train_ppl });
+    std.debug.print("KN overfit gap:  {d:.2}\n", .{kn_train_ppl - best_kn_ppl});
+    std.debug.print("Laplace eval CE: {d:.4} ({d:.1}% below random), PPL {d:.2}\n", .{ laplace_eval_ce, (1.0 - laplace_eval_ce / random_ce) * 100.0, laplace_eval_ppl });
+    std.debug.print("KN improvement:  {d:.1}% PPL reduction vs Laplace interpolated\n", .{ (1.0 - best_kn_ppl / laplace_eval_ppl) * 100.0 });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(best_kn_eval_ce < random_ce);
+    try std.testing.expect(best_kn_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(best_kn_ppl));
+    try std.testing.expect(!std.math.isInf(best_kn_ppl));
+    try std.testing.expect(best_kn_ppl < @as(f64, @floatFromInt(ltm.vocab_size)));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 47: Kneser-Ney generation with penalty (v2.50)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "kneser-ney generation with penalty" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+    ltm.buildContinuationCounts();
+
+    const lambda: f64 = 0.3;
+    const discount: f64 = 0.75;
+
+    // Find "to" and "be" indices
+    var start_to: u16 = 0;
+    var start_be: u16 = 0;
+    for (0..ltm.vocab_size) |i| {
+        const w = ltm.getWord(@intCast(i));
+        if (w.len == 2 and w[0] == 't' and w[1] == 'o') start_to = @intCast(i);
+        if (w.len == 2 and w[0] == 'b' and w[1] == 'e') start_be = @intCast(i);
+    }
+
+    const GEN_LEN = 30;
+
+    // KN + penalty + block at T=0.3
+    var gen_kn_t03: [512]u8 = undefined;
+    var gk3: usize = 0;
+    var hist_kn3: [GEN_LEN + 2]u16 = undefined;
+    hist_kn3[0] = start_to;
+    hist_kn3[1] = start_be;
+    var hk3_len: usize = 2;
+    var p2: u16 = start_to;
+    var p1: u16 = start_be;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.knPenaltySample(p2, p1, lambda, discount, 0.3, 99999 + step, &hist_kn3, hk3_len, 1.5, true);
+        const word = ltm.getWord(next);
+        if (gk3 + word.len + 1 < gen_kn_t03.len) {
+            if (gk3 > 0) { gen_kn_t03[gk3] = ' '; gk3 += 1; }
+            for (word) |c| { gen_kn_t03[gk3] = c; gk3 += 1; }
+        }
+        hist_kn3[hk3_len] = next;
+        hk3_len += 1;
+        p2 = p1;
+        p1 = next;
+    }
+    const kn_t03_unique = LargeTrigramModel.countUnique(&hist_kn3, hk3_len);
+
+    // KN + penalty + block at T=0.8
+    var gen_kn_t08: [512]u8 = undefined;
+    var gk8: usize = 0;
+    var hist_kn8: [GEN_LEN + 2]u16 = undefined;
+    hist_kn8[0] = start_to;
+    hist_kn8[1] = start_be;
+    var hk8_len: usize = 2;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.knPenaltySample(p2, p1, lambda, discount, 0.8, 12345 + step, &hist_kn8, hk8_len, 1.2, true);
+        const word = ltm.getWord(next);
+        if (gk8 + word.len + 1 < gen_kn_t08.len) {
+            if (gk8 > 0) { gen_kn_t08[gk8] = ' '; gk8 += 1; }
+            for (word) |c| { gen_kn_t08[gk8] = c; gk8 += 1; }
+        }
+        hist_kn8[hk8_len] = next;
+        hk8_len += 1;
+        p2 = p1;
+        p1 = next;
+    }
+    const kn_t08_unique = LargeTrigramModel.countUnique(&hist_kn8, hk8_len);
+
+    // Laplace interpolated + penalty at T=0.3 for comparison
+    var gen_lap_t03: [512]u8 = undefined;
+    var gl3: usize = 0;
+    var hist_lap3: [GEN_LEN + 2]u16 = undefined;
+    hist_lap3[0] = start_to;
+    hist_lap3[1] = start_be;
+    var hl3_len: usize = 2;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.penaltySample(p2, p1, 0.2, 0.3, 99999 + step, &hist_lap3, hl3_len, 1.5, true);
+        const word = ltm.getWord(next);
+        if (gl3 + word.len + 1 < gen_lap_t03.len) {
+            if (gl3 > 0) { gen_lap_t03[gl3] = ' '; gl3 += 1; }
+            for (word) |c| { gen_lap_t03[gl3] = c; gl3 += 1; }
+        }
+        hist_lap3[hl3_len] = next;
+        hl3_len += 1;
+        p2 = p1;
+        p1 = next;
+    }
+    const lap_t03_unique = LargeTrigramModel.countUnique(&hist_lap3, hl3_len);
+
+    std.debug.print("\n=== KNESER-NEY GENERATION (v2.50, D={d:.2}, λ={d:.1}) ===\n", .{ discount, lambda });
+    std.debug.print("\n--- T=0.3 (α=1.5, block=true) ---\n", .{});
+    std.debug.print("KN:      \"{s}\"\n", .{gen_kn_t03[0..gk3]});
+    std.debug.print("  unique: {d}/{d}\n", .{ kn_t03_unique, hk3_len });
+    std.debug.print("Laplace: \"{s}\"\n", .{gen_lap_t03[0..gl3]});
+    std.debug.print("  unique: {d}/{d}\n", .{ lap_t03_unique, hl3_len });
+    std.debug.print("\n--- T=0.8 (α=1.2, block=true) ---\n", .{});
+    std.debug.print("KN:      \"{s}\"\n", .{gen_kn_t08[0..gk8]});
+    std.debug.print("  unique: {d}/{d}\n", .{ kn_t08_unique, hk8_len });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(gk3 > 0);
+    try std.testing.expect(gk8 > 0);
+    try std.testing.expect(kn_t03_unique > 5); // KN should produce diverse output with penalty
+    try std.testing.expect(kn_t08_unique > 10);
 }
