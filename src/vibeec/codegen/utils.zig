@@ -161,6 +161,21 @@ pub fn mapType(type_name: []const u8) []const u8 {
     if (std.mem.eql(u8, type_name, "Void")) return "void";
     if (std.mem.eql(u8, type_name, "Error")) return "anyerror";
 
+    // Pointer type Ptr<T> -> *T (use opaque pointer for generated code)
+    if (std.mem.startsWith(u8, type_name, "Ptr<")) {
+        return "*anyopaque";
+    }
+
+    // Allocator -> std.mem.Allocator
+    if (std.mem.eql(u8, type_name, "Allocator")) {
+        return "std.mem.Allocator";
+    }
+
+    // Codebook -> opaque VSA codebook type
+    if (std.mem.eql(u8, type_name, "Codebook")) {
+        return "*anyopaque";
+    }
+
     // Generic types Option<T> -> ?T
     if (std.mem.startsWith(u8, type_name, "Option<")) {
         return "?[]const u8";
@@ -174,6 +189,11 @@ pub fn mapType(type_name: []const u8) []const u8 {
     // Plain List type -> slice
     if (std.mem.eql(u8, type_name, "List")) {
         return "[]const u8";
+    }
+
+    // Generic types HashMap<K,V> -> std.AutoHashMap
+    if (std.mem.startsWith(u8, type_name, "HashMap<")) {
+        return "std.AutoHashMap(usize, *anyopaque)";
     }
 
     // Generic types Map<K,V> -> std.StringHashMap
