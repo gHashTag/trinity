@@ -289,6 +289,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-43-pure-trigram-report',
         'research/trinity-golden-chain-v2-44-raw-freq-report',
         'research/trinity-golden-chain-v2-45-word-level-report',
+        'research/trinity-golden-chain-v2-46-word-trigram-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
