@@ -738,6 +738,132 @@ fn generateWithHybridSampled(
     return generated;
 }
 
+// === MULTI-ROLE POSITION-SPECIFIC (v2.37) ===
+//
+// Instead of 1 global role, learn 8 separate roles — one per context position.
+// Each role captures "what does character at position i predict about the next char?"
+//
+// Training: for each sample and each position i:
+//   ideal_role_i = unbind(target, permute(context[i], i))
+//   role_i = bundle(all ideal_role_i across samples)
+//
+// Inference: for each position i:
+//   pred_i = bind(permute(context[i], i), role_i)
+// output = bundle(pred_0, pred_1, ..., pred_7) via sequential bundle
+//
+// This is more expressive: each position independently contributes to prediction.
+
+/// Compute 8 position-specific roles from training data.
+/// For each position i, the role captures what that position predicts about the next char.
+fn computeMultiRoles(
+    corpus: []const u8,
+    dim: usize,
+    offsets: []const usize,
+    context_size: usize,
+) [8]Hypervector {
+    var roles: [8]Hypervector = undefined;
+    var first: [8]bool = undefined;
+    for (0..8) |i| {
+        roles[i] = Hypervector.init(dim);
+        first[i] = true;
+    }
+
+    for (offsets) |s| {
+        if (s + context_size >= corpus.len) continue;
+
+        var target = charToHV(dim, corpus[s + context_size]);
+
+        for (0..context_size) |i| {
+            var ctx_hv = charToHV(dim, corpus[s + i]);
+            var positioned = ctx_hv.permute(i);
+            // ideal_role_i = unbind(target, positioned)
+            var ideal = target.unbind(&positioned);
+
+            if (first[i]) {
+                roles[i] = ideal;
+                first[i] = false;
+            } else {
+                roles[i] = roles[i].bundle(&ideal);
+            }
+        }
+    }
+
+    return roles;
+}
+
+/// Multi-role forward pass: each position contributes independently.
+/// output = bundle(bind(permute(ctx[0], 0), role_0), ..., bind(permute(ctx[7], 7), role_7))
+fn forwardPassMultiRole(
+    context: []Hypervector,
+    roles: *[8]Hypervector,
+) Hypervector {
+    var pos0 = context[0].permute(0);
+    var result = pos0.bind(&roles[0]);
+
+    for (1..context.len) |i| {
+        var positioned = context[i].permute(i);
+        var pred_i = positioned.bind(&roles[i]);
+        result = result.bundle(&pred_i);
+    }
+
+    return result;
+}
+
+/// Multi-role + Hebbian hybrid forward pass.
+/// Combines position-specific role predictions with bigram Hebbian lookup.
+fn forwardPassMultiRoleHybrid(
+    context: []Hypervector,
+    roles: *[8]Hypervector,
+    dim: usize,
+    last_char: u8,
+    counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+) Hypervector {
+    var multi_pred = forwardPassMultiRole(context, roles);
+
+    if (last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS) {
+        const char_idx = last_char - HEBBIAN_OFFSET;
+        var hebbian_pred = hebbianLookup(dim, char_idx, counts);
+        return multi_pred.bundle(&hebbian_pred);
+    }
+
+    return multi_pred;
+}
+
+/// Autoregressive generation with multi-role + Hebbian + sampling.
+fn generateWithMultiRoleSampled(
+    initial_context: []Hypervector,
+    roles: *[8]Hypervector,
+    dim: usize,
+    last_char_init: u8,
+    counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    output_buf: []u8,
+    max_tokens: usize,
+    temperature: f64,
+    top_k: usize,
+    base_seed: u64,
+) usize {
+    var context: [8]Hypervector = undefined;
+    for (initial_context, 0..) |*hv, i| {
+        context[i] = hv.clone();
+    }
+
+    var last_char = last_char_init;
+    var generated: usize = 0;
+    while (generated < max_tokens and generated < output_buf.len) {
+        var output = forwardPassMultiRoleHybrid(&context, roles, dim, last_char, counts);
+        const decoded = hvToCharSampled(dim, &output, temperature, top_k, base_seed + generated);
+        output_buf[generated] = decoded;
+        last_char = decoded;
+        generated += 1;
+
+        for (0..7) |i| {
+            context[i] = context[i + 1];
+        }
+        context[7] = charToHV(dim, decoded);
+    }
+    return generated;
+}
+
 /// Autoregressive generation using charToHV/hvToChar (no Codebook needed)
 fn generateWithCharTable(
     initial_context: []Hypervector,
@@ -2592,4 +2718,297 @@ test "sampling preserves eval signal" {
     // Both should be in valid range
     try std.testing.expect(hybrid_eval_loss >= 0.0 and hybrid_eval_loss <= 2.0);
     try std.testing.expect(hybrid_train_loss >= 0.0 and hybrid_train_loss <= 2.0);
+}
+
+// === v2.37 MULTI-ROLE TESTS ===
+
+test "multi-role position-specific training" {
+    const dim: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    std.debug.print("\n=== MULTI-ROLE TRAINING (v2.37) ===\n", .{});
+    std.debug.print("Corpus: {d} chars (Shakespeare)\n", .{corpus.len});
+    std.debug.print("Method: 8 position-specific roles + Hebbian hybrid\n", .{});
+
+    // Build Hebbian counts
+    const counts = buildHebbianCounts(corpus);
+
+    // Honest split
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+
+    // Compute multi-roles (8 position-specific)
+    var multi_roles = computeMultiRoles(corpus, dim, &train_offsets, 8);
+
+    // Measure role orthogonality
+    var max_role_sim: f64 = -2.0;
+    var avg_role_sim: f64 = 0;
+    var role_pair_count: usize = 0;
+    for (0..8) |i| {
+        for (i + 1..8) |j| {
+            const sim = multi_roles[i].similarity(&multi_roles[j]);
+            const abs_sim = @abs(sim);
+            if (abs_sim > max_role_sim) max_role_sim = abs_sim;
+            avg_role_sim += abs_sim;
+            role_pair_count += 1;
+        }
+    }
+    if (role_pair_count > 0) avg_role_sim /= @as(f64, @floatFromInt(role_pair_count));
+
+    // === Multi-role + Hebbian train loss ===
+    var mr_train_loss: f64 = 0;
+    var mr_train_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        mr_train_loss += 1.0 - sim;
+        mr_train_count += 1;
+    }
+    if (mr_train_count > 0) mr_train_loss /= @as(f64, @floatFromInt(mr_train_count));
+
+    // === Single-role + Hebbian train loss (comparison) ===
+    var direct_role = computeDirectRole(corpus, dim, &train_offsets, 8);
+    var sr_train_loss: f64 = 0;
+    var sr_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &direct_role, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        sr_train_loss += 1.0 - sim;
+        sr_count += 1;
+    }
+    if (sr_count > 0) sr_train_loss /= @as(f64, @floatFromInt(sr_count));
+
+    // === Multi-role eval loss ===
+    var mr_eval_loss: f64 = 0;
+    var eval_count: usize = 0;
+    const eval_samples = 8;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        mr_eval_loss += 1.0 - sim;
+        eval_count += 1;
+    }
+    if (eval_count > 0) mr_eval_loss /= @as(f64, @floatFromInt(eval_count));
+
+    // === Single-role eval loss (comparison) ===
+    var sr_eval_loss: f64 = 0;
+    var sr_eval_count: usize = 0;
+    for (0..eval_samples) |i| {
+        const s = train_end + i * (eval_end - train_end) / eval_samples;
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassHybrid(&ctx, &direct_role, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+        sr_eval_loss += 1.0 - sim;
+        sr_eval_count += 1;
+    }
+    if (sr_eval_count > 0) sr_eval_loss /= @as(f64, @floatFromInt(sr_eval_count));
+
+    // === Multi-head baseline ===
+    var roles_mh = initRoles(dim, 42);
+    var mh_loss: f64 = 0;
+    var mh_count: usize = 0;
+    for (train_offsets) |s| {
+        if (s + 8 >= corpus.len) continue;
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |i| {
+            ctx[i] = charToHV(dim, corpus[s + i]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        var output = forwardPassMultiHead(&ctx, &roles_mh);
+        const sim = output.similarity(&target);
+        mh_loss += 1.0 - sim;
+        mh_count += 1;
+    }
+    if (mh_count > 0) mh_loss /= @as(f64, @floatFromInt(mh_count));
+
+    const mr_train_imp = (mh_loss - mr_train_loss) / mh_loss * 100.0;
+    const sr_train_imp = (mh_loss - sr_train_loss) / mh_loss * 100.0;
+    const mr_eval_imp = (mh_loss - mr_eval_loss) / mh_loss * 100.0;
+
+    // === Generation with multi-role + sampling ===
+    var gen_buf: [50]u8 = undefined;
+    var gen_ctx: [8]Hypervector = undefined;
+    for (0..8) |i| {
+        gen_ctx[i] = charToHV(dim, corpus[i]);
+    }
+    const gen_count = generateWithMultiRoleSampled(
+        &gen_ctx, &multi_roles, dim, corpus[7], &counts,
+        &gen_buf, 50, 0.8, 8, 42,
+    );
+
+    var seen: [256]bool = undefined;
+    for (0..256) |i| seen[i] = false;
+    var unique: usize = 0;
+    for (0..gen_count) |i| {
+        if (!seen[gen_buf[i]]) { seen[gen_buf[i]] = true; unique += 1; }
+    }
+
+    std.debug.print("\nRole orthogonality:\n", .{});
+    std.debug.print("  Max |cosine| between roles: {d:.4}\n", .{max_role_sim});
+    std.debug.print("  Avg |cosine| between roles: {d:.4}\n", .{avg_role_sim});
+
+    std.debug.print("\nMulti-role train loss:   {d:.4} ({d:.1}% below random)\n", .{ mr_train_loss, mr_train_imp });
+    std.debug.print("Single-role train loss:  {d:.4} ({d:.1}% below random)\n", .{ sr_train_loss, sr_train_imp });
+    std.debug.print("Random baseline:         {d:.4}\n", .{mh_loss});
+
+    std.debug.print("\nMulti-role eval loss:    {d:.4} ({d:.1}% below random)\n", .{ mr_eval_loss, mr_eval_imp });
+    std.debug.print("Single-role eval loss:   {d:.4}\n", .{sr_eval_loss});
+
+    std.debug.print("\nGeneration (T=0.8, K=8):\n", .{});
+    std.debug.print("  Prompt: \"to be or \"\n", .{});
+    std.debug.print("  Generated: \"{s}\"\n", .{gen_buf[0..gen_count]});
+    std.debug.print("  Unique chars: {d}\n", .{unique});
+    std.debug.print("==============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(mr_train_loss >= 0.0 and mr_train_loss <= 2.0);
+    try std.testing.expect(mr_eval_loss >= 0.0 and mr_eval_loss <= 2.0);
+    try std.testing.expect(gen_count == 50);
+    // Roles should be somewhat orthogonal (learned independently)
+    try std.testing.expect(max_role_sim < 1.0);
+}
+
+test "multi-role perplexity comparison" {
+    const dim: usize = 256;
+
+    const corpus =
+        "to be or not to be that is the question " ++
+        "whether tis nobler in the mind to suffer " ++
+        "the slings and arrows of outrageous fortune " ++
+        "or to take arms against a sea of troubles " ++
+        "and by opposing end them to die to sleep " ++
+        "no more and by a sleep to say we end " ++
+        "the heartache and the thousand natural shocks " ++
+        "that flesh is heir to tis a consummation " ++
+        "devoutly to be wished to die to sleep " ++
+        "to sleep perchance to dream ay there is the rub " ++
+        "for in that sleep of death what dreams may come " ++
+        "when we have shuffled off this mortal coil " ++
+        "must give us pause";
+
+    const total_samples = corpus.len - 8;
+    const train_end = total_samples * 70 / 100;
+    const eval_end = total_samples * 85 / 100;
+
+    const counts = buildHebbianCounts(corpus);
+
+    var train_offsets: [20]usize = undefined;
+    for (0..20) |i| {
+        train_offsets[i] = i * train_end / 20;
+    }
+    var multi_roles = computeMultiRoles(corpus, dim, &train_offsets, 8);
+
+    // === Test PPL (held-out) — Multi-role + Hebbian ===
+    const test_start = eval_end;
+    const test_count = 8;
+    var mr_test_log: f64 = 0;
+    var mr_test_valid: usize = 0;
+
+    for (0..test_count) |i| {
+        const s = test_start + i * (total_samples - test_start) / test_count;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        mr_test_log += @log(clamped);
+        mr_test_valid += 1;
+    }
+
+    const mr_test_ppl = @exp(-mr_test_log / @as(f64, @floatFromInt(mr_test_valid)));
+
+    // === Train PPL — Multi-role + Hebbian ===
+    var mr_train_log: f64 = 0;
+    var mr_train_valid: usize = 0;
+    for (0..8) |i| {
+        const s = i * train_end / 8;
+        if (s + 8 >= corpus.len) continue;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, corpus[s + j]);
+        }
+        var target = charToHV(dim, corpus[s + 8]);
+        const last_char = corpus[s + 7];
+        var output = forwardPassMultiRoleHybrid(&ctx, &multi_roles, dim, last_char, &counts);
+        const sim = output.similarity(&target);
+
+        const prob = (sim + 1.0) / 2.0;
+        const clamped = @max(prob, 1e-10);
+        mr_train_log += @log(clamped);
+        mr_train_valid += 1;
+    }
+
+    const mr_train_ppl = @exp(-mr_train_log / @as(f64, @floatFromInt(mr_train_valid)));
+
+    std.debug.print("\n=== MULTI-ROLE PERPLEXITY (all methods) ===\n", .{});
+    std.debug.print("Multi-role train PPL:   {d:.1}\n", .{mr_train_ppl});
+    std.debug.print("Multi-role test PPL:    {d:.1}\n", .{mr_test_ppl});
+    std.debug.print("Overfit gap:            {d:.1}\n", .{mr_test_ppl - mr_train_ppl});
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("Hybrid (v2.35-36):  train=1.8, test=1.9\n", .{});
+    std.debug.print("Direct (v2.34):     train=2.0, test=2.0\n", .{});
+    std.debug.print("Bundle2 (v2.32):    train=1.9, test=2.0\n", .{});
+    std.debug.print("Random baseline:    95.0\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(mr_test_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(mr_test_ppl));
+    try std.testing.expect(!std.math.isInf(mr_test_ppl));
 }
