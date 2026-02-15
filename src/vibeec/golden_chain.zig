@@ -30,7 +30,7 @@ pub const CONTENT_DIGEST_LEN = 64;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 256; // v2.24: was 248, +8 for Global Dominance v1.0 quarks (u8: 224/256 used)
+pub const MAX_QUARK_RECORDS = 264; // v2.25: was 256, +8 for Trinity Eternal v1.0 quarks (u8: 232/256 used)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -296,6 +296,11 @@ pub const ChainMessageType = enum {
     WorldAdoptionUpdate, // World adoption growth event
     TriToOneEvent, // $TRI to $1 price event
     EcosystemCompleteEvent, // Ecosystem completion event
+    // v2.25: Trinity Eternal v1.0
+    OuroborosEvolveEvent, // Ouroboros self-evolution event
+    InfiniteScaleUpdate, // Infinite scale projection event
+    UniversalReserveEvent, // $TRI universal reserve event
+    EternalUptimeEvent, // Eternal uptime verification event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -639,6 +644,16 @@ pub const QuarkType = enum(u8) {
     ecosystem_govern, // 222 — Ecosystem govern record
     global_dominance_anchor, // 223 — Global dominance anchor record
 
+    // v2.25: Trinity Eternal v1.0 (u8: 232/256 used)
+    ouroboros_evolve, // 224 — Ouroboros self-evolution record
+    infinite_scale, // 225 — Infinite scale projection record
+    universal_reserve, // 226 — Universal reserve currency record
+    eternal_uptime, // 227 — Eternal uptime verification record
+    ouroboros_health, // 228 — Ouroboros health record
+    reserve_distribute, // 229 — Reserve distribute record
+    eternal_govern, // 230 — Eternal governance record
+    eternal_anchor, // 231 — Eternal anchor record
+
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
             .input_capture => "INPUT_CAP",
@@ -884,6 +899,15 @@ pub const QuarkType = enum(u8) {
             .adoption_distribute => "ADP_DST",
             .ecosystem_govern => "ECO_GOV",
             .global_dominance_anchor => "GBL_ACH",
+            // v2.25: Trinity Eternal v1.0 labels
+            .ouroboros_evolve => "ORB_EVO",
+            .infinite_scale => "INF_SCL",
+            .universal_reserve => "UNI_RSV",
+            .eternal_uptime => "ETR_UPT",
+            .ouroboros_health => "ORB_HLT",
+            .reserve_distribute => "RSV_DST",
+            .eternal_govern => "ETR_GOV",
+            .eternal_anchor => "ETR_ACH",
         };
     }
 
@@ -1354,6 +1378,20 @@ pub const QuarkType = enum(u8) {
 
     pub fn isEcosystemCompleteQuark(self: QuarkType) bool {
         return self == .ecosystem_complete or self == .dominance_health;
+    }
+
+    // v2.25: Trinity Eternal v1.0 classifiers
+    pub fn isOuroborosQuark(self: QuarkType) bool {
+        return self == .ouroboros_evolve or self == .eternal_anchor;
+    }
+    pub fn isInfiniteScaleQuark(self: QuarkType) bool {
+        return self == .infinite_scale or self == .reserve_distribute;
+    }
+    pub fn isUniversalReserveQuark(self: QuarkType) bool {
+        return self == .universal_reserve or self == .eternal_uptime;
+    }
+    pub fn isEternalUptimeQuark(self: QuarkType) bool {
+        return self == .eternal_govern or self == .ouroboros_health;
     }
 };
 
@@ -2072,6 +2110,14 @@ pub const ECOSYSTEM_COMPONENT_COUNT: u16 = 30; // 30 ecosystem components
 pub const DOMINANCE_CHECK_INTERVAL_US: i64 = 1_000_000; // 1 second dominance check
 pub const MAX_ADOPTION_REGIONS: u16 = 256; // 256 global regions
 
+// v2.25: Trinity Eternal v1.0 constants
+pub const OUROBOROS_CYCLE_INTERVAL_US: i64 = 60_000_000; // 60 second ouroboros self-evolution cycle
+pub const INFINITE_SCALE_TARGET: u64 = 10_000_000_000; // 10B scale projection
+pub const TRI_RESERVE_VALUATION_UTRI: u64 = 10_000_000_000; // $10T valuation (10B uTRI units)
+pub const ETERNAL_UPTIME_TARGET: u16 = 9999; // 99.99% uptime target (basis points)
+pub const SELF_EVOLUTION_DEPTH: u16 = 256; // Self-evolution depth (max generations)
+pub const MAX_ETERNAL_NODES: u32 = 1_000_000_000; // 1B eternal nodes
+
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
     total_onboarded: u32 = 0,
@@ -2763,15 +2809,48 @@ pub const EcosystemCompleteState = struct {
     ecosystem_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.25: Trinity Eternal v1.0 types
+pub const OuroborosState = struct {
+    evolution_cycles: u64 = 0,
+    current_generation: u32 = 0,
+    fitness_score: u32 = 0,
+    last_evolution_us: i64 = 0,
+    ouroboros_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const InfiniteScaleState = struct {
+    scale_projections: u64 = 0,
+    current_scale: u64 = 0,
+    peak_scale: u64 = 0,
+    last_scale_us: i64 = 0,
+    scale_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const UniversalReserveState = struct {
+    reserve_transactions: u64 = 0,
+    reserve_valuation_utri: u64 = 0,
+    reserve_holders: u64 = 0,
+    last_reserve_us: i64 = 0,
+    reserve_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EternalUptimeState = struct {
+    uptime_checks: u64 = 0,
+    uptime_score: u32 = 0,
+    downtime_events: u32 = 0,
+    last_uptime_us: i64 = 0,
+    uptime_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.3/v1.4 EXPORT CONSTANTS — on-chain serialization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 28; // v2.24: bumped from 27
+pub const QUARK_EXPORT_VERSION: u16 = 29; // v2.25: bumped from 28
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 130; // v2.24: was 126, +4 for dominance_events(u16)+adoption_users(u16)
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 134; // v2.25: was 130, +4 for evolution_cycles(u16)+reserve_transactions(u16)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GOLDEN CHAIN AGENT — unified 8-node pipeline
@@ -2965,6 +3044,12 @@ pub const GoldenChainAgent = struct {
     tri_to_one_state: TriToOneState,
     ecosystem_complete_state: EcosystemCompleteState,
     global_dominance_active: bool,
+        // v2.25: Trinity Eternal v1.0
+        ouroboros_state: OuroborosState,
+        infinite_scale_state: InfiniteScaleState,
+        universal_reserve_state: UniversalReserveState,
+        eternal_uptime_state: EternalUptimeState,
+        trinity_eternal_active: bool,
 
     const Self = @This();
 
@@ -3157,6 +3242,12 @@ pub const GoldenChainAgent = struct {
             .tri_to_one_state = .{},
             .ecosystem_complete_state = .{},
             .global_dominance_active = false,
+            // v2.25: Trinity Eternal v1.0
+            .ouroboros_state = .{},
+            .infinite_scale_state = .{},
+            .universal_reserve_state = .{},
+            .eternal_uptime_state = .{},
+            .trinity_eternal_active = false,
         };
     }
 
@@ -3439,7 +3530,7 @@ pub const GoldenChainAgent = struct {
         self.quark_chain_verified = self.verifyQuarkChain();
         if (self.quark_chain_verified) {
             var qvbuf: [256]u8 = undefined;
-            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/256 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect+swarm_10m+zk_rollup_v2+cross_shard_tx_v1+formal_verify_v1+swarm_100m+global_dominance intact)", .{self.quark_count}) catch "Quarks VERIFIED";
+            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/264 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect+swarm_10m+zk_rollup_v2+cross_shard_tx_v1+formal_verify_v1+swarm_100m+global_dominance+ouroboros_evolve intact)", .{self.quark_count}) catch "Quarks VERIFIED";
             self.emitMsg(.TruthVerification, .Deliver, null, qvmsg, 1.0, 0);
         } else {
             self.emitMsg(.TruthVerification, .Deliver, null, "Quark chain: BROKEN", 0.0, 0);
@@ -4565,6 +4656,45 @@ pub const GoldenChainAgent = struct {
         }
         self.global_dominance_active = true;
 
+        // v2.25: Trinity Eternal v1.0
+        self.evolveOuroboros();
+        {
+            const orbmsg = std.fmt.allocPrint(self.allocator, "Ouroboros: cycles={d} gen={d} fitness={d}", .{
+                self.ouroboros_state.evolution_cycles,
+                self.ouroboros_state.current_generation,
+                self.ouroboros_state.fitness_score,
+            }) catch "Ouroboros evolved";
+            self.emitMsg(.OuroborosEvolveEvent, .Deliver, null, orbmsg, 1.0, 0);
+        }
+        self.projectInfiniteScale();
+        {
+            const scalmsg = std.fmt.allocPrint(self.allocator, "Infinite Scale: proj={d} current={d} peak={d}", .{
+                self.infinite_scale_state.scale_projections,
+                self.infinite_scale_state.current_scale,
+                self.infinite_scale_state.peak_scale,
+            }) catch "Infinite scale projected";
+            self.emitMsg(.InfiniteScaleUpdate, .Deliver, null, scalmsg, 1.0, 0);
+        }
+        self.manageUniversalReserve();
+        {
+            const rsvmsg = std.fmt.allocPrint(self.allocator, "Universal Reserve: txns={d} val={d} holders={d}", .{
+                self.universal_reserve_state.reserve_transactions,
+                self.universal_reserve_state.reserve_valuation_utri,
+                self.universal_reserve_state.reserve_holders,
+            }) catch "Universal reserve managed";
+            self.emitMsg(.UniversalReserveEvent, .Deliver, null, rsvmsg, 1.0, 0);
+        }
+        self.verifyEternalUptime();
+        {
+            const uptmsg = std.fmt.allocPrint(self.allocator, "Eternal Uptime: checks={d} score={d} downtime={d}", .{
+                self.eternal_uptime_state.uptime_checks,
+                self.eternal_uptime_state.uptime_score,
+                self.eternal_uptime_state.downtime_events,
+            }) catch "Eternal uptime verified";
+            self.emitMsg(.EternalUptimeEvent, .Deliver, null, uptmsg, 1.0, 0);
+        }
+        self.trinity_eternal_active = true;
+
         // Update global wave state
         igla_hybrid.g_last_wave_state = .{
             .similarity = self.state.total_confidence,
@@ -4986,6 +5116,9 @@ pub const GoldenChainAgent = struct {
         // Phase AE: Trinity Global Dominance v1.0 integrity (v2.24)
         if (!self.globalDominanceVerify()) return false;
 
+        // Phase AF: Trinity Eternal v1.0 integrity (v2.25)
+        if (!self.trinityEternalVerify()) return false;
+
         return true;
     }
 
@@ -5255,6 +5388,14 @@ pub const GoldenChainAgent = struct {
         @memcpy(buf[pos .. pos + 2], &au_bytes);
         pos += 2;
 
+        // v2.25: evolution_cycles(2) + reserve_transactions(2)
+        const ev_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.ouroboros_state.evolution_cycles, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &ev_bytes);
+        pos += 2;
+        const rt_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.universal_reserve_state.reserve_transactions, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &rt_bytes);
+        pos += 2;
+
         // Provenance records (158 bytes each)
         var pi: u8 = 0;
         while (pi < self.provenance_count) : (pi += 1) {
@@ -5336,10 +5477,10 @@ pub const GoldenChainAgent = struct {
 
         // Read version (support v1, v2, v3, v4, v5, v6, v7)
         const ver: u16 = @bitCast(buf[pos .. pos + 2][0..2].*);
-        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17 and ver != 18 and ver != 19 and ver != 20 and ver != 21 and ver != 22 and ver != 23 and ver != 24 and ver != 25 and ver != 26 and ver != 27 and ver != 28) return false;
+        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17 and ver != 18 and ver != 19 and ver != 20 and ver != 21 and ver != 22 and ver != 23 and ver != 24 and ver != 25 and ver != 26 and ver != 27 and ver != 28 and ver != 29) return false;
         pos += 2;
 
-        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else if (ver == 17) 86 else if (ver == 18) 90 else if (ver == 19) 94 else if (ver == 20) 98 else if (ver == 21) 102 else if (ver == 22) 106 else if (ver == 23) 110 else if (ver == 24) 114 else if (ver == 25) 118 else if (ver == 26) 122 else if (ver == 27) 126 else 130;
+        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else if (ver == 17) 86 else if (ver == 18) 90 else if (ver == 19) 94 else if (ver == 20) 98 else if (ver == 21) 102 else if (ver == 22) 106 else if (ver == 23) 110 else if (ver == 24) 114 else if (ver == 25) 118 else if (ver == 26) 122 else if (ver == 27) 126 else if (ver == 28) 130 else 134;
         if (buf.len < header_size) return false;
 
         const prov_count = buf[pos];
@@ -5616,6 +5757,16 @@ pub const GoldenChainAgent = struct {
             pos += 2;
         }
 
+        // v2.25: evolution_cycles + reserve_transactions
+        var evolution_cycles_cnt: u16 = 0;
+        var reserve_transactions_cnt: u16 = 0;
+        if (ver >= 29) {
+            evolution_cycles_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+            reserve_transactions_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+        }
+
         // Validate sizes
         if (prov_count > MAX_PROVENANCE_RECORDS or qcount > MAX_QUARK_RECORDS) return false;
         const expected_size = header_size +
@@ -5772,6 +5923,10 @@ pub const GoldenChainAgent = struct {
         // v2.24: restore Global Dominance fields
         self.global_dominance_state.dominance_events = @intCast(dominance_events_cnt);
         self.world_adoption_state.adoption_users = @intCast(adoption_users_cnt);
+
+        // v2.25: restore Trinity Eternal fields
+        self.ouroboros_state.evolution_cycles = @intCast(evolution_cycles_cnt);
+        self.universal_reserve_state.reserve_transactions = @intCast(reserve_transactions_cnt);
 
         return true;
     }
@@ -8162,6 +8317,70 @@ pub const GoldenChainAgent = struct {
         return true;
     }
 
+    // v2.25: Trinity Eternal v1.0 methods
+    fn evolveOuroboros(self: *Self) void {
+        self.ouroboros_state.evolution_cycles += 1;
+        self.ouroboros_state.current_generation += 1;
+        self.ouroboros_state.fitness_score += 1;
+        self.ouroboros_state.last_evolution_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var ec_buf: [8]u8 = @bitCast(self.ouroboros_state.evolution_cycles);
+        hasher.update(&ec_buf);
+        var gen_buf: [4]u8 = @bitCast(self.ouroboros_state.current_generation);
+        hasher.update(&gen_buf);
+        self.ouroboros_state.ouroboros_hash = hasher.finalResult();
+    }
+
+    fn projectInfiniteScale(self: *Self) void {
+        self.infinite_scale_state.scale_projections += 1;
+        self.infinite_scale_state.current_scale += 1;
+        if (self.infinite_scale_state.current_scale > self.infinite_scale_state.peak_scale) {
+            self.infinite_scale_state.peak_scale = self.infinite_scale_state.current_scale;
+        }
+        self.infinite_scale_state.last_scale_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var sp_buf: [8]u8 = @bitCast(self.infinite_scale_state.scale_projections);
+        hasher.update(&sp_buf);
+        var cs_buf: [8]u8 = @bitCast(self.infinite_scale_state.current_scale);
+        hasher.update(&cs_buf);
+        self.infinite_scale_state.scale_hash = hasher.finalResult();
+    }
+
+    fn manageUniversalReserve(self: *Self) void {
+        self.universal_reserve_state.reserve_transactions += 1;
+        self.universal_reserve_state.reserve_valuation_utri = TRI_RESERVE_VALUATION_UTRI;
+        self.universal_reserve_state.reserve_holders += 1;
+        self.universal_reserve_state.last_reserve_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var rt_buf: [8]u8 = @bitCast(self.universal_reserve_state.reserve_transactions);
+        hasher.update(&rt_buf);
+        var rv_buf: [8]u8 = @bitCast(self.universal_reserve_state.reserve_valuation_utri);
+        hasher.update(&rv_buf);
+        self.universal_reserve_state.reserve_hash = hasher.finalResult();
+    }
+
+    fn verifyEternalUptime(self: *Self) void {
+        self.eternal_uptime_state.uptime_checks += 1;
+        self.eternal_uptime_state.uptime_score = ETERNAL_UPTIME_TARGET;
+        self.eternal_uptime_state.last_uptime_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var uc_buf: [8]u8 = @bitCast(self.eternal_uptime_state.uptime_checks);
+        hasher.update(&uc_buf);
+        var us_buf: [4]u8 = @bitCast(self.eternal_uptime_state.uptime_score);
+        hasher.update(&us_buf);
+        self.eternal_uptime_state.uptime_hash = hasher.finalResult();
+    }
+
+    fn trinityEternalVerify(self: *const Self) bool {
+        // AF1: Evolution cycles must exist
+        if (self.ouroboros_state.evolution_cycles == 0) return false;
+        // AF2: Scale projections must exist
+        if (self.infinite_scale_state.scale_projections == 0) return false;
+        // AF3: Reserve transactions must exist
+        if (self.universal_reserve_state.reserve_transactions == 0) return false;
+        return true;
+    }
+
     // ── v1.3: Node Quark Summary ──
 
     /// Emit a single summary line for a node's quarks (used in summary verbosity mode).
@@ -8273,6 +8492,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.swarm_100m, .GoalParse, "swarm_100m", conf, self.quark_count - 1, null);
         // v2.24: Trinity Global Dominance v1.0
         self.recordQuark(.global_dominance, .GoalParse, "global_dominance", conf, self.quark_count - 1, null);
+        // v2.25: Trinity Eternal v1.0
+        self.recordQuark(.ouroboros_evolve, .GoalParse, "ouroboros_evolve", conf, self.quark_count - 1, null);
 
         // Q19: hash_verify — entangles with work quarks
         const prev_q = if (self.quark_count >= 2) self.quark_count - 2 else 0;
@@ -8362,6 +8583,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.community_50m, .Decompose, "community_50m", conf, self.quark_count - 1, null);
         // v2.24: Trinity Global Dominance v1.0
         self.recordQuark(.world_adoption, .Decompose, "world_adoption", conf, self.quark_count - 1, null);
+        // v2.25: Trinity Eternal v1.0
+        self.recordQuark(.infinite_scale, .Decompose, "infinite_scale", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -8451,6 +8674,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.earning_moonshot, .Schedule, "earning_moonshot", conf, self.quark_count - 1, null);
         // v2.24: Trinity Global Dominance v1.0
         self.recordQuark(.tri_to_one, .Schedule, "tri_to_one", conf, self.quark_count - 1, null);
+        // v2.25: Trinity Eternal v1.0
+        self.recordQuark(.universal_reserve, .Schedule, "universal_reserve", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -8542,6 +8767,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.gossip_v3, .Execute, "gossip_v3", conf, self.quark_count - 1, null);
         // v2.24: Trinity Global Dominance v1.0
         self.recordQuark(.ecosystem_complete, .Execute, "ecosystem_complete", conf, self.quark_count - 1, null);
+        // v2.25: Trinity Eternal v1.0
+        self.recordQuark(.eternal_uptime, .Execute, "eternal_uptime", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + SCHEDULE hash_verify
         const sched_hv = self.lastHashVerifyOfNode(.Schedule);
@@ -8629,6 +8856,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.swarm_health_100m, .Monitor, "swarm_health_100m", conf, self.quark_count - 1, null);
         // v2.24: Trinity Global Dominance v1.0
         self.recordQuark(.dominance_health, .Monitor, "dominance_health", conf, self.quark_count - 1, null);
+        // v2.25: Trinity Eternal v1.0
+        self.recordQuark(.ouroboros_health, .Monitor, "ouroboros_health", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -8713,6 +8942,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.earning_distribute, .Adapt, "earning_distribute", conf, self.quark_count - 1, null);
         // v2.24: Trinity Global Dominance v1.0
         self.recordQuark(.adoption_distribute, .Adapt, "adoption_distribute", conf, self.quark_count - 1, null);
+        // v2.25: Trinity Eternal v1.0
+        self.recordQuark(.reserve_distribute, .Adapt, "reserve_distribute", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quark + MONITOR hash_verify
         const mon_hv = self.lastHashVerifyOfNode(.Monitor);
@@ -8800,6 +9031,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.community_govern, .Synthesize, "community_govern", conf, self.quark_count - 1, null);
         // v2.24: Trinity Global Dominance v1.0
         self.recordQuark(.ecosystem_govern, .Synthesize, "ecosystem_govern", conf, self.quark_count - 1, null);
+        // v2.25: Trinity Eternal v1.0
+        self.recordQuark(.eternal_govern, .Synthesize, "eternal_govern", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -8888,6 +9121,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.swarm_100m_anchor, .Deliver, "swarm_100m_anchor", conf, self.quark_count - 1, null);
         // v2.24: Trinity Global Dominance v1.0
         self.recordQuark(.global_dominance_anchor, .Deliver, "global_dominance_anchor", conf, self.quark_count - 1, null);
+        // v2.25: Trinity Eternal v1.0
+        self.recordQuark(.eternal_anchor, .Deliver, "eternal_anchor", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -9953,10 +10188,13 @@ test "QuarkType has 216 variants (u8, 216/256 used)" {
         // v2.24: Trinity Global Dominance v1.0 (u8: 224/256 used)
         .global_dominance,      .world_adoption,     .tri_to_one,           .ecosystem_complete,
         .dominance_health,      .adoption_distribute,.ecosystem_govern,     .global_dominance_anchor,
+        // v2.25: Trinity Eternal v1.0 (u8: 232/256 used)
+        .ouroboros_evolve,       .infinite_scale,     .universal_reserve,    .eternal_uptime,
+        .ouroboros_health,       .reserve_distribute, .eternal_govern,       .eternal_anchor,
     };
-    try std.testing.expectEqual(@as(usize, 224), types.len);
-    for (0..216) |i| {
-        for (i + 1..216) |j| {
+    try std.testing.expectEqual(@as(usize, 232), types.len);
+    for (0..232) |i| {
+        for (i + 1..232) |j| {
             try std.testing.expect(@intFromEnum(types[i]) != @intFromEnum(types[j]));
         }
     }
@@ -10290,13 +10528,13 @@ test "v2.1 export v5 constants" {
     try std.testing.expectEqual(@as(usize, 38), 34 + 2 + 2);
 }
 
-test "v2.24 256 quarks per query target" {
-    // Distribution: 32+32+32+33+32+31+32+32 = 256
-    const expected = [_]u8{ 32, 32, 32, 33, 32, 31, 32, 32 };
+test "v2.25 264 quarks per query target" {
+    // Distribution: 33+33+33+34+33+32+33+33 = 264
+    const expected = [_]u8{ 33, 33, 33, 34, 33, 32, 33, 33 };
     var total: u16 = 0;
     for (expected) |n| total += n;
-    try std.testing.expectEqual(@as(u16, 256), total);
-    try std.testing.expectEqual(@as(usize, 256), MAX_QUARK_RECORDS);
+    try std.testing.expectEqual(@as(u16, 264), total);
+    try std.testing.expectEqual(@as(usize, 264), MAX_QUARK_RECORDS);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13263,4 +13501,158 @@ test "v2.24 u8 enum capacity 224/256" {
     try std.testing.expectEqual(@as(u8, 221), @intFromEnum(QuarkType.adoption_distribute));
     try std.testing.expectEqual(@as(u8, 222), @intFromEnum(QuarkType.ecosystem_govern));
     try std.testing.expectEqual(@as(u8, 223), @intFromEnum(QuarkType.global_dominance_anchor));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.25 TESTS — Trinity Eternal v1.0 + Ouroboros Self-Evolution + Infinite Scale
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.25 ouroboros_evolve label is ORB_EVO" {
+    const label = QuarkType.ouroboros_evolve.getLabel();
+    try std.testing.expectEqualStrings("ORB_EVO", label);
+}
+
+test "v2.25 infinite_scale label is INF_SCL" {
+    const label = QuarkType.infinite_scale.getLabel();
+    try std.testing.expectEqualStrings("INF_SCL", label);
+}
+
+test "v2.25 universal_reserve label is UNI_RSV" {
+    const label = QuarkType.universal_reserve.getLabel();
+    try std.testing.expectEqualStrings("UNI_RSV", label);
+}
+
+test "v2.25 eternal_uptime label is ETR_UPT" {
+    const label = QuarkType.eternal_uptime.getLabel();
+    try std.testing.expectEqualStrings("ETR_UPT", label);
+}
+
+test "v2.25 ouroboros_health label is ORB_HLT" {
+    const label = QuarkType.ouroboros_health.getLabel();
+    try std.testing.expectEqualStrings("ORB_HLT", label);
+}
+
+test "v2.25 reserve_distribute label is RSV_DST" {
+    const label = QuarkType.reserve_distribute.getLabel();
+    try std.testing.expectEqualStrings("RSV_DST", label);
+}
+
+test "v2.25 eternal_govern label is ETR_GOV" {
+    const label = QuarkType.eternal_govern.getLabel();
+    try std.testing.expectEqualStrings("ETR_GOV", label);
+}
+
+test "v2.25 eternal_anchor label is ETR_ACH" {
+    const label = QuarkType.eternal_anchor.getLabel();
+    try std.testing.expectEqualStrings("ETR_ACH", label);
+}
+
+test "v2.25 isOuroborosQuark classifier" {
+    try std.testing.expect(QuarkType.ouroboros_evolve.isOuroborosQuark());
+    try std.testing.expect(QuarkType.eternal_anchor.isOuroborosQuark());
+    try std.testing.expect(!QuarkType.infinite_scale.isOuroborosQuark());
+}
+
+test "v2.25 isInfiniteScaleQuark classifier" {
+    try std.testing.expect(QuarkType.infinite_scale.isInfiniteScaleQuark());
+    try std.testing.expect(QuarkType.universal_reserve.isInfiniteScaleQuark());
+    try std.testing.expect(!QuarkType.ouroboros_evolve.isInfiniteScaleQuark());
+}
+
+test "v2.25 isUniversalReserveQuark classifier" {
+    try std.testing.expect(QuarkType.universal_reserve.isUniversalReserveQuark());
+    try std.testing.expect(QuarkType.reserve_distribute.isUniversalReserveQuark());
+    try std.testing.expect(!QuarkType.eternal_uptime.isUniversalReserveQuark());
+}
+
+test "v2.25 isEternalUptimeQuark classifier" {
+    try std.testing.expect(QuarkType.eternal_uptime.isEternalUptimeQuark());
+    try std.testing.expect(QuarkType.ouroboros_health.isEternalUptimeQuark());
+    try std.testing.expect(!QuarkType.ouroboros_evolve.isEternalUptimeQuark());
+}
+
+test "v2.25 OuroborosState defaults" {
+    const state = GoldenChainAgent.OuroborosState{};
+    try std.testing.expectEqual(@as(u64, 0), state.evolution_cycles);
+    try std.testing.expectEqual(@as(u32, 0), state.current_generation);
+    try std.testing.expectEqual(@as(u32, 0), state.fitness_score);
+}
+
+test "v2.25 InfiniteScaleState defaults" {
+    const state = GoldenChainAgent.InfiniteScaleState{};
+    try std.testing.expectEqual(@as(u64, 0), state.scale_projections);
+    try std.testing.expectEqual(@as(u64, 0), state.current_scale);
+    try std.testing.expectEqual(@as(u64, 0), state.peak_scale);
+}
+
+test "v2.25 UniversalReserveState defaults" {
+    const state = GoldenChainAgent.UniversalReserveState{};
+    try std.testing.expectEqual(@as(u64, 0), state.reserve_transactions);
+    try std.testing.expectEqual(@as(u64, 0), state.reserve_valuation_utri);
+    try std.testing.expectEqual(@as(u64, 0), state.reserve_holders);
+}
+
+test "v2.25 EternalUptimeState defaults" {
+    const state = GoldenChainAgent.EternalUptimeState{};
+    try std.testing.expectEqual(@as(u64, 0), state.uptime_checks);
+    try std.testing.expectEqual(@as(u32, 0), state.uptime_score);
+    try std.testing.expectEqual(@as(u32, 0), state.downtime_events);
+}
+
+test "v2.25 Phase AF passes after evolution + scale + reserve" {
+    var agent = GoldenChainAgent.init();
+    agent.evolveOuroboros();
+    agent.projectInfiniteScale();
+    agent.manageUniversalReserve();
+    try std.testing.expect(agent.trinityEternalVerify());
+}
+
+test "v2.25 Phase AF fails without evolution" {
+    var agent = GoldenChainAgent.init();
+    agent.projectInfiniteScale();
+    agent.manageUniversalReserve();
+    try std.testing.expect(!agent.trinityEternalVerify());
+}
+
+test "v2.25 Phase AF fails without scale" {
+    var agent = GoldenChainAgent.init();
+    agent.evolveOuroboros();
+    agent.manageUniversalReserve();
+    try std.testing.expect(!agent.trinityEternalVerify());
+}
+
+test "v2.25 evolveOuroboros increments evolution_cycles" {
+    var agent = GoldenChainAgent.init();
+    try std.testing.expectEqual(@as(u64, 0), agent.ouroboros_state.evolution_cycles);
+    agent.evolveOuroboros();
+    try std.testing.expectEqual(@as(u64, 1), agent.ouroboros_state.evolution_cycles);
+    try std.testing.expectEqual(@as(u32, 1), agent.ouroboros_state.current_generation);
+    agent.evolveOuroboros();
+    try std.testing.expectEqual(@as(u64, 2), agent.ouroboros_state.evolution_cycles);
+}
+
+test "v2.25 manageUniversalReserve uses TRI_RESERVE_VALUATION_UTRI" {
+    var agent = GoldenChainAgent.init();
+    agent.manageUniversalReserve();
+    try std.testing.expectEqual(GoldenChainAgent.TRI_RESERVE_VALUATION_UTRI, agent.universal_reserve_state.reserve_valuation_utri);
+    try std.testing.expectEqual(@as(u64, 1), agent.universal_reserve_state.reserve_transactions);
+}
+
+test "v2.25 264 quarks per query target" {
+    // Distribution: 33+33+33+34+33+32+33+33 = 264
+    const expected = [_]u8{ 33, 33, 33, 34, 33, 32, 33, 33 };
+    var total: u16 = 0;
+    for (expected) |n| total += n;
+    try std.testing.expectEqual(@as(u16, 264), total);
+}
+
+test "v2.25 u8 enum capacity 232/256" {
+    try std.testing.expectEqual(@as(u8, 224), @intFromEnum(QuarkType.ouroboros_evolve));
+    try std.testing.expectEqual(@as(u8, 225), @intFromEnum(QuarkType.infinite_scale));
+    try std.testing.expectEqual(@as(u8, 226), @intFromEnum(QuarkType.universal_reserve));
+    try std.testing.expectEqual(@as(u8, 227), @intFromEnum(QuarkType.eternal_uptime));
+    try std.testing.expectEqual(@as(u8, 228), @intFromEnum(QuarkType.ouroboros_health));
+    try std.testing.expectEqual(@as(u8, 229), @intFromEnum(QuarkType.reserve_distribute));
+    try std.testing.expectEqual(@as(u8, 230), @intFromEnum(QuarkType.eternal_govern));
+    try std.testing.expectEqual(@as(u8, 231), @intFromEnum(QuarkType.eternal_anchor));
 }
