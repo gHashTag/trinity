@@ -30,7 +30,7 @@ pub const CONTENT_DIGEST_LEN = 64;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 208; // v2.18: was 200, +8 for Network Partition Recovery v1.0 quarks (u8: 176/256 used)
+pub const MAX_QUARK_RECORDS = 216; // v2.19: was 208, +8 for Swarm 10M + Community 5M quarks (u8: 184/256 used)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -266,6 +266,11 @@ pub const ChainMessageType = enum {
     SplitBrainUpdate, // Split-brain detection/resolution event
     AutoHealEvent, // Automatic healing event
     PartitionToleranceEvent, // Partition tolerance sync event
+    // v2.19: Swarm 10M + Community 5M
+    Swarm10MEvent, // Swarm 10M node scaling event
+    Community5MUpdate, // Community 5M onboarding event
+    EarningBoostEvent, // $TRI earning boost event
+    MassiveGossipEvent, // Massive gossip propagation event
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -554,6 +559,15 @@ pub const QuarkType = enum(u8) {
     brain_merge, // 173 — Brain merge record
     heal_verify, // 174 — Heal verification record
     partition_anchor, // 175 — Partition anchor record
+    // v2.19: Swarm 10M + Community 5M (u8: 184/256 used)
+    swarm_10m, // 176 — Swarm 10M scaling record
+    community_5m, // 177 — Community 5M onboarding record
+    earning_boost, // 178 — $TRI earning boost record
+    massive_gossip, // 179 — Massive gossip propagation record
+    node_discovery_10m, // 180 — Node discovery 10M record
+    earning_rate, // 181 — Earning rate record
+    swarm_consensus_10m, // 182 — Swarm consensus 10M record
+    earning_anchor, // 183 — Earning anchor record
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -747,6 +761,14 @@ pub const QuarkType = enum(u8) {
             .brain_merge => "BRN_MRG",
             .heal_verify => "HEL_VRF",
             .partition_anchor => "PRT_ACH",
+            .swarm_10m => "SWM_10M",
+            .community_5m => "COM_5M",
+            .earning_boost => "ERN_BST",
+            .massive_gossip => "MAS_GSP",
+            .node_discovery_10m => "NOD_10M",
+            .earning_rate => "ERN_RTE",
+            .swarm_consensus_10m => "SWM_CON",
+            .earning_anchor => "ERN_ACH",
         };
     }
 
@@ -1115,6 +1137,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isPartitionToleranceQuark(self: QuarkType) bool {
         return self == .partition_sync or self == .recovery_quorum;
+    }
+
+    // v2.19: Swarm 10M + Community 5M classifiers
+    pub fn isSwarm10MQuark(self: QuarkType) bool {
+        return self == .swarm_10m or self == .earning_anchor;
+    }
+
+    pub fn isCommunity5MQuark(self: QuarkType) bool {
+        return self == .community_5m or self == .swarm_consensus_10m;
+    }
+
+    pub fn isEarningBoostQuark(self: QuarkType) bool {
+        return self == .earning_boost or self == .earning_rate;
+    }
+
+    pub fn isMassiveGossipQuark(self: QuarkType) bool {
+        return self == .massive_gossip or self == .node_discovery_10m;
     }
 };
 
@@ -1788,6 +1827,13 @@ pub const AUTO_HEAL_INTERVAL_US: i64 = 5_000_000; // 5 seconds
 pub const PARTITION_SYNC_BATCH_SIZE: u32 = 512; // records per sync batch
 pub const RECOVERY_QUORUM_PERCENT: u16 = 67; // 67% quorum for recovery
 pub const BRAIN_MERGE_TIMEOUT_US: i64 = 20_000_000; // 20 seconds
+// v2.19: Swarm 10M + Community 5M constants
+pub const SWARM_10M_TARGET: u32 = 10_000_000; // 10M swarm nodes
+pub const COMMUNITY_5M_TARGET: u32 = 5_000_000; // 5M community nodes
+pub const EARNING_RATE_UTRI_PER_HOUR: u32 = 20_000; // 0.02 $TRI/hour (20,000 uTRI)
+pub const MASSIVE_GOSSIP_FANOUT: u16 = 64; // gossip fanout for 10M scale
+pub const NODE_DISCOVERY_10M_INTERVAL_US: i64 = 1_000_000; // 1 second
+pub const EARNING_DISTRIBUTION_INTERVAL_US: i64 = 3_600_000_000; // 1 hour
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2282,15 +2328,48 @@ pub const PartitionToleranceState = struct {
     tolerance_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.19: Swarm 10M + Community 5M types
+pub const Swarm10MState = struct {
+    swarm_nodes: u32 = 0,
+    target_nodes: u32 = 0,
+    nodes_online: u32 = 0,
+    last_swarm_us: i64 = 0,
+    swarm_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const Community5MState = struct {
+    community_nodes: u32 = 0,
+    target_community: u32 = 0,
+    onboarded: u32 = 0,
+    last_community_us: i64 = 0,
+    community_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EarningBoostState = struct {
+    earning_total_utri: u64 = 0,
+    earning_rate: u32 = 0,
+    distributions: u32 = 0,
+    last_earning_us: i64 = 0,
+    earning_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const MassiveGossipState = struct {
+    gossip_rounds: u32 = 0,
+    fanout: u16 = 0,
+    nodes_reached: u32 = 0,
+    last_gossip_us: i64 = 0,
+    gossip_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.3/v1.4 EXPORT CONSTANTS — on-chain serialization
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 22; // v2.18: bumped from 21
+pub const QUARK_EXPORT_VERSION: u16 = 23; // v2.19: bumped from 22
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 106; // v2.18: was 102, +4 for partitions_detected(u16)+heal_attempts(u16)
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 110; // v2.19: was 106, +4 for swarm_10m_nodes(u16)+earning_total(u16)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GOLDEN CHAIN AGENT — unified 8-node pipeline
@@ -2448,6 +2527,12 @@ pub const GoldenChainAgent = struct {
     auto_heal_state: AutoHealState,
     partition_tolerance_state: PartitionToleranceState,
     partition_recovery_active: bool,
+    // v2.19: Swarm 10M + Community 5M
+    swarm_10m_state: Swarm10MState,
+    community_5m_state: Community5MState,
+    earning_boost_state: EarningBoostState,
+    massive_gossip_state: MassiveGossipState,
+    swarm_10m_active: bool,
 
     const Self = @This();
 
@@ -2605,6 +2690,11 @@ pub const GoldenChainAgent = struct {
             .auto_heal_state = .{},
             .partition_tolerance_state = .{},
             .partition_recovery_active = false,
+            .swarm_10m_state = .{},
+            .community_5m_state = .{},
+            .earning_boost_state = .{},
+            .massive_gossip_state = .{},
+            .swarm_10m_active = false,
         };
     }
 
@@ -2887,7 +2977,7 @@ pub const GoldenChainAgent = struct {
         self.quark_chain_verified = self.verifyQuarkChain();
         if (self.quark_chain_verified) {
             var qvbuf: [256]u8 = undefined;
-            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/208 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect intact)", .{self.quark_count}) catch "Quarks VERIFIED";
+            const qvmsg = std.fmt.bufPrint(&qvbuf, "Quark chain: VERIFIED ({d}/216 quarks, DAG+phi+xchain+phiQ+staking+immortal+faucet+network+dao+mainnet+swarm+scale+community+governance+bridge+dao_staking+swarm_100k+zk_bridge+l2_rollup+dynamic_shard+swarm_million+zk_snark_proof+cross_shard_tx+partition_detect+swarm_10m intact)", .{self.quark_count}) catch "Quarks VERIFIED";
             self.emitMsg(.TruthVerification, .Deliver, null, qvmsg, 1.0, 0);
         } else {
             self.emitMsg(.TruthVerification, .Deliver, null, "Quark chain: BROKEN", 0.0, 0);
@@ -3775,6 +3865,43 @@ pub const GoldenChainAgent = struct {
             }) catch "Partition tolerance active";
             self.emitMsg(.PartitionToleranceEvent, .Deliver, null, ptmsg, 1.0, 0);
         }
+        // v2.19: Swarm 10M + Community 5M
+        self.scaleSwarm10M();
+        {
+            var s10buf: [256]u8 = undefined;
+            const s10msg = std.fmt.bufPrint(&s10buf, "Swarm10MEvent: nodes={d} | target={d}", .{
+                self.swarm_10m_state.swarm_nodes,
+                self.swarm_10m_state.target_nodes,
+            }) catch "Swarm 10M scaled";
+            self.emitMsg(.Swarm10MEvent, .Deliver, null, s10msg, 1.0, 0);
+        }
+        self.onboardCommunity5M();
+        {
+            var c5buf: [256]u8 = undefined;
+            const c5msg = std.fmt.bufPrint(&c5buf, "Community5MUpdate: nodes={d} | onboarded={d}", .{
+                self.community_5m_state.community_nodes,
+                self.community_5m_state.onboarded,
+            }) catch "Community 5M onboarded";
+            self.emitMsg(.Community5MUpdate, .Deliver, null, c5msg, 1.0, 0);
+        }
+        self.boostEarning();
+        {
+            var ebbuf: [256]u8 = undefined;
+            const ebmsg = std.fmt.bufPrint(&ebbuf, "EarningBoostEvent: total={d} | rate={d}", .{
+                self.earning_boost_state.earning_total_utri,
+                self.earning_boost_state.earning_rate,
+            }) catch "Earning boosted";
+            self.emitMsg(.EarningBoostEvent, .Deliver, null, ebmsg, 1.0, 0);
+        }
+        self.propagateMassiveGossip();
+        {
+            var mgbuf: [256]u8 = undefined;
+            const mgmsg = std.fmt.bufPrint(&mgbuf, "MassiveGossipEvent: rounds={d} | reached={d}", .{
+                self.massive_gossip_state.gossip_rounds,
+                self.massive_gossip_state.nodes_reached,
+            }) catch "Massive gossip propagated";
+            self.emitMsg(.MassiveGossipEvent, .Deliver, null, mgmsg, 1.0, 0);
+        }
 
         // Update global wave state
         igla_hybrid.g_last_wave_state = .{
@@ -4179,6 +4306,9 @@ pub const GoldenChainAgent = struct {
         // Phase Y: Network Partition Recovery v1.0 integrity (v2.18)
         if (!self.partitionRecoveryVerify()) return false;
 
+        // Phase Z: Swarm 10M + Community 5M integrity (v2.19)
+        if (!self.swarm10MVerify()) return false;
+
         return true;
     }
 
@@ -4400,6 +4530,14 @@ pub const GoldenChainAgent = struct {
         @memcpy(buf[pos .. pos + 2], &ha_bytes);
         pos += 2;
 
+        // v2.19: swarm_10m_nodes(2) + earning_total_utri(2)
+        const s10m_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.swarm_10m_state.swarm_nodes, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &s10m_bytes);
+        pos += 2;
+        const et_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.earning_boost_state.earning_total_utri, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &et_bytes);
+        pos += 2;
+
         // Provenance records (158 bytes each)
         var pi: u8 = 0;
         while (pi < self.provenance_count) : (pi += 1) {
@@ -4481,10 +4619,10 @@ pub const GoldenChainAgent = struct {
 
         // Read version (support v1, v2, v3, v4, v5, v6, v7)
         const ver: u16 = @bitCast(buf[pos .. pos + 2][0..2].*);
-        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17 and ver != 18 and ver != 19 and ver != 20 and ver != 21 and ver != 22) return false;
+        if (ver != 1 and ver != 2 and ver != 3 and ver != 4 and ver != 5 and ver != 6 and ver != 7 and ver != 8 and ver != 9 and ver != 10 and ver != 11 and ver != 12 and ver != 13 and ver != 14 and ver != 15 and ver != 16 and ver != 17 and ver != 18 and ver != 19 and ver != 20 and ver != 21 and ver != 22 and ver != 23) return false;
         pos += 2;
 
-        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else if (ver == 17) 86 else if (ver == 18) 90 else if (ver == 19) 94 else if (ver == 20) 98 else if (ver == 21) 102 else 106;
+        const header_size: usize = if (ver == 1) 10 else if (ver == 2) 18 else if (ver == 3) 26 else if (ver == 4) 34 else if (ver == 5) 38 else if (ver == 6) 42 else if (ver == 7) 46 else if (ver == 8) 50 else if (ver == 9) 54 else if (ver == 10) 58 else if (ver == 11) 62 else if (ver == 12) 66 else if (ver == 13) 70 else if (ver == 14) 74 else if (ver == 15) 78 else if (ver == 16) 82 else if (ver == 17) 86 else if (ver == 18) 90 else if (ver == 19) 94 else if (ver == 20) 98 else if (ver == 21) 102 else if (ver == 22) 106 else 110;
         if (buf.len < header_size) return false;
 
         const prov_count = buf[pos];
@@ -4701,6 +4839,16 @@ pub const GoldenChainAgent = struct {
             pos += 2;
         }
 
+        // v2.19: swarm_10m_nodes + earning_total_utri
+        var swarm_10m_nodes_cnt: u16 = 0;
+        var earning_total_utri_cnt: u16 = 0;
+        if (ver >= 23) {
+            swarm_10m_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+            earning_total_utri_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            pos += 2;
+        }
+
         // Validate sizes
         if (prov_count > MAX_PROVENANCE_RECORDS or qcount > MAX_QUARK_RECORDS) return false;
         const expected_size = header_size +
@@ -4833,6 +4981,10 @@ pub const GoldenChainAgent = struct {
         // v2.18: restore Network Partition Recovery fields
         self.partition_detect_state.partitions_detected = @intCast(partitions_detected_cnt);
         self.auto_heal_state.heal_attempts = @intCast(heal_attempts_cnt);
+
+        // v2.19: restore Swarm 10M + Community 5M fields
+        self.swarm_10m_state.swarm_nodes = @intCast(swarm_10m_nodes_cnt);
+        self.earning_boost_state.earning_total_utri = @intCast(earning_total_utri_cnt);
 
         return true;
     }
@@ -6836,6 +6988,74 @@ pub const GoldenChainAgent = struct {
         return true;
     }
 
+    // ── v2.19: Swarm 10M + Community 5M methods ──
+
+    fn scaleSwarm10M(self: *Self) void {
+        self.swarm_10m_state.swarm_nodes += 1;
+        self.swarm_10m_state.target_nodes = SWARM_10M_TARGET;
+        self.swarm_10m_state.nodes_online += 1;
+        self.swarm_10m_state.last_swarm_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var sw_buf: [4]u8 = @bitCast(self.swarm_10m_state.swarm_nodes);
+        hasher.update(&sw_buf);
+        var on_buf: [4]u8 = @bitCast(self.swarm_10m_state.nodes_online);
+        hasher.update(&on_buf);
+        self.swarm_10m_state.swarm_hash = hasher.finalResult();
+        self.swarm_10m_active = true;
+    }
+
+    fn onboardCommunity5M(self: *Self) void {
+        self.community_5m_state.community_nodes += 1;
+        self.community_5m_state.target_community = COMMUNITY_5M_TARGET;
+        self.community_5m_state.onboarded += 1;
+        self.community_5m_state.last_community_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var cm_buf: [4]u8 = @bitCast(self.community_5m_state.community_nodes);
+        hasher.update(&cm_buf);
+        var ob_buf: [4]u8 = @bitCast(self.community_5m_state.onboarded);
+        hasher.update(&ob_buf);
+        self.community_5m_state.community_hash = hasher.finalResult();
+        self.swarm_10m_active = true;
+    }
+
+    fn boostEarning(self: *Self) void {
+        self.earning_boost_state.earning_total_utri += EARNING_RATE_UTRI_PER_HOUR;
+        self.earning_boost_state.earning_rate = EARNING_RATE_UTRI_PER_HOUR;
+        self.earning_boost_state.distributions += 1;
+        self.earning_boost_state.last_earning_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var et_buf: [8]u8 = @bitCast(self.earning_boost_state.earning_total_utri);
+        hasher.update(&et_buf);
+        var ds_buf: [4]u8 = @bitCast(self.earning_boost_state.distributions);
+        hasher.update(&ds_buf);
+        self.earning_boost_state.earning_hash = hasher.finalResult();
+        self.swarm_10m_active = true;
+    }
+
+    fn propagateMassiveGossip(self: *Self) void {
+        self.massive_gossip_state.gossip_rounds += 1;
+        self.massive_gossip_state.fanout = MASSIVE_GOSSIP_FANOUT;
+        self.massive_gossip_state.nodes_reached += MASSIVE_GOSSIP_FANOUT;
+        self.massive_gossip_state.last_gossip_us = std.time.microTimestamp();
+        var hasher = std.crypto.hash.sha2.Sha256.init(.{});
+        var gr_buf: [4]u8 = @bitCast(self.massive_gossip_state.gossip_rounds);
+        hasher.update(&gr_buf);
+        var nr_buf: [4]u8 = @bitCast(self.massive_gossip_state.nodes_reached);
+        hasher.update(&nr_buf);
+        self.massive_gossip_state.gossip_hash = hasher.finalResult();
+        self.swarm_10m_active = true;
+    }
+
+    fn swarm10MVerify(self: *const Self) bool {
+        // Z1: Swarm nodes must be active
+        if (self.swarm_10m_state.swarm_nodes == 0) return false;
+        // Z2: Community nodes must be onboarded
+        if (self.community_5m_state.community_nodes == 0) return false;
+        // Z3: $TRI earnings must be distributed
+        if (self.earning_boost_state.earning_total_utri == 0) return false;
+        return true;
+    }
+
     // ── v1.3: Node Quark Summary ──
 
     /// Emit a single summary line for a node's quarks (used in summary verbosity mode).
@@ -6935,6 +7155,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.cross_shard_tx, .GoalParse, "cross_shard_tx", conf, self.quark_count - 1, null);
         // v2.18: partition_detect
         self.recordQuark(.partition_detect, .GoalParse, "partition_detect", conf, self.quark_count - 1, null);
+        // v2.19: swarm_10m
+        self.recordQuark(.swarm_10m, .GoalParse, "swarm_10m", conf, self.quark_count - 1, null);
 
         // Q19: hash_verify — entangles with work quarks
         const prev_q = if (self.quark_count >= 2) self.quark_count - 2 else 0;
@@ -7012,6 +7234,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.atomic_2pc, .Decompose, "atomic_2pc", conf, self.quark_count - 1, null);
         // v2.18: split_brain
         self.recordQuark(.split_brain, .Decompose, "split_brain", conf, self.quark_count - 1, null);
+        // v2.19: community_5m
+        self.recordQuark(.community_5m, .Decompose, "community_5m", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -7089,6 +7313,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.shard_fee, .Schedule, "shard_fee", conf, self.quark_count - 1, null);
         // v2.18: auto_heal
         self.recordQuark(.auto_heal, .Schedule, "auto_heal", conf, self.quark_count - 1, null);
+        // v2.19: earning_boost
+        self.recordQuark(.earning_boost, .Schedule, "earning_boost", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to GOAL_PARSE hash_verify
         const gp_hv = self.lastHashVerifyOfNode(.GoalParse);
@@ -7168,6 +7394,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.tx_coordinator, .Execute, "tx_coordinator", conf, self.quark_count - 1, null);
         // v2.18: partition_sync
         self.recordQuark(.partition_sync, .Execute, "partition_sync", conf, self.quark_count - 1, null);
+        // v2.19: massive_gossip
+        self.recordQuark(.massive_gossip, .Execute, "massive_gossip", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + SCHEDULE hash_verify
         const sched_hv = self.lastHashVerifyOfNode(.Schedule);
@@ -7243,6 +7471,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.shard_route, .Monitor, "shard_route", conf, self.quark_count - 1, null);
         // v2.18: recovery_quorum
         self.recordQuark(.recovery_quorum, .Monitor, "recovery_quorum", conf, self.quark_count - 1, null);
+        // v2.19: node_discovery_10m
+        self.recordQuark(.node_discovery_10m, .Monitor, "node_discovery_10m", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quarks + EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -7315,6 +7545,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.fee_distributor, .Adapt, "fee_distributor", conf, self.quark_count - 1, null);
         // v2.18: brain_merge
         self.recordQuark(.brain_merge, .Adapt, "brain_merge", conf, self.quark_count - 1, null);
+        // v2.19: earning_rate
+        self.recordQuark(.earning_rate, .Adapt, "earning_rate", conf, self.quark_count - 1, null);
 
         // hash_verify — entangles with work quark + MONITOR hash_verify
         const mon_hv = self.lastHashVerifyOfNode(.Monitor);
@@ -7390,6 +7622,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.tx_finalize, .Synthesize, "tx_finalize", conf, self.quark_count - 1, null);
         // v2.18: heal_verify
         self.recordQuark(.heal_verify, .Synthesize, "heal_verify", conf, self.quark_count - 1, null);
+        // v2.19: swarm_consensus_10m
+        self.recordQuark(.swarm_consensus_10m, .Synthesize, "swarm_consensus_10m", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -7466,6 +7700,8 @@ pub const GoldenChainAgent = struct {
         self.recordQuark(.cross_shard_anchor, .Deliver, "cross_shard_anchor", conf, self.quark_count - 1, null);
         // v2.18: partition_anchor
         self.recordQuark(.partition_anchor, .Deliver, "partition_anchor", conf, self.quark_count - 1, null);
+        // v2.19: earning_anchor
+        self.recordQuark(.earning_anchor, .Deliver, "earning_anchor", conf, self.quark_count - 1, null);
 
         // hash_verify — skip-link to EXECUTE hash_verify
         const exec_hv = self.lastHashVerifyOfNode(.Execute);
@@ -8454,7 +8690,7 @@ test "v1.5 constants correct" {
 // v2.0 IMMORTAL SELF-VERIFYING AGENT TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "QuarkType has 176 variants (u8, 176/256 used)" {
+test "QuarkType has 184 variants (u8, 184/256 used)" {
     const types = [_]QuarkType{
         .input_capture,         .goal_classify,      .task_decompose,       .dependency_check,
         .schedule_plan,         .route_decision,     .api_call,             .tvc_cross_check,
@@ -8513,10 +8749,13 @@ test "QuarkType has 176 variants (u8, 176/256 used)" {
         // v2.18: Network Partition Recovery v1.0 (u8: 176/256 used)
         .partition_detect,      .split_brain,        .auto_heal,            .partition_sync,
         .recovery_quorum,       .brain_merge,        .heal_verify,          .partition_anchor,
+        // v2.19: Swarm 10M + Community 5M (u8: 184/256 used)
+        .swarm_10m,             .community_5m,       .earning_boost,        .massive_gossip,
+        .node_discovery_10m,    .earning_rate,       .swarm_consensus_10m,  .earning_anchor,
     };
-    try std.testing.expectEqual(@as(usize, 176), types.len);
-    for (0..176) |i| {
-        for (i + 1..168) |j| {
+    try std.testing.expectEqual(@as(usize, 184), types.len);
+    for (0..184) |i| {
+        for (i + 1..184) |j| {
             try std.testing.expect(@intFromEnum(types[i]) != @intFromEnum(types[j]));
         }
     }
@@ -8850,13 +9089,13 @@ test "v2.1 export v5 constants" {
     try std.testing.expectEqual(@as(usize, 38), 34 + 2 + 2);
 }
 
-test "v2.18 208 quarks per query target" {
-    // Distribution: 26+26+26+27+26+25+26+26 = 208
-    const expected = [_]u8{ 26, 26, 26, 27, 26, 25, 26, 26 };
+test "v2.19 216 quarks per query target" {
+    // Distribution: 27+27+27+28+27+26+27+27 = 216
+    const expected = [_]u8{ 27, 27, 27, 28, 27, 26, 27, 27 };
     var total: u16 = 0;
     for (expected) |n| total += n;
-    try std.testing.expectEqual(@as(u16, 208), total);
-    try std.testing.expectEqual(@as(usize, 208), MAX_QUARK_RECORDS);
+    try std.testing.expectEqual(@as(u16, 216), total);
+    try std.testing.expectEqual(@as(usize, 216), MAX_QUARK_RECORDS);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -9131,13 +9370,13 @@ test "v2.4 ChainMessageType has 4 new variants" {
     }
 }
 
-test "u8 capacity with 176/256 used" {
-    // 176 QuarkType variants in u8 (256 capacity), 80 slots remaining
+test "u8 capacity with 184/256 used" {
+    // 184 QuarkType variants in u8 (256 capacity), 72 slots remaining
     var count: u16 = 0;
     inline for (std.meta.fields(QuarkType)) |_| {
         count += 1;
     }
-    try std.testing.expectEqual(@as(u16, 176), count);
+    try std.testing.expectEqual(@as(u16, 184), count);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -10956,4 +11195,149 @@ test "v2.18 u8 enum capacity 176/256" {
     try std.testing.expectEqual(@as(u8, 173), @intFromEnum(QuarkType.brain_merge));
     try std.testing.expectEqual(@as(u8, 174), @intFromEnum(QuarkType.heal_verify));
     try std.testing.expectEqual(@as(u8, 175), @intFromEnum(QuarkType.partition_anchor));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2.19 TESTS — Swarm 10M + Community 5M + $TRI Earning Boost
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "v2.19 swarm_10m label is SWM_10M" {
+    try std.testing.expectEqualStrings("SWM_10M", QuarkType.swarm_10m.getLabel());
+}
+
+test "v2.19 community_5m label is COM_5M" {
+    try std.testing.expectEqualStrings("COM_5M", QuarkType.community_5m.getLabel());
+}
+
+test "v2.19 earning_boost label is ERN_BST" {
+    try std.testing.expectEqualStrings("ERN_BST", QuarkType.earning_boost.getLabel());
+}
+
+test "v2.19 massive_gossip label is MAS_GSP" {
+    try std.testing.expectEqualStrings("MAS_GSP", QuarkType.massive_gossip.getLabel());
+}
+
+test "v2.19 node_discovery_10m label is NOD_10M" {
+    try std.testing.expectEqualStrings("NOD_10M", QuarkType.node_discovery_10m.getLabel());
+}
+
+test "v2.19 earning_rate label is ERN_RTE" {
+    try std.testing.expectEqualStrings("ERN_RTE", QuarkType.earning_rate.getLabel());
+}
+
+test "v2.19 swarm_consensus_10m label is SWM_CON" {
+    try std.testing.expectEqualStrings("SWM_CON", QuarkType.swarm_consensus_10m.getLabel());
+}
+
+test "v2.19 earning_anchor label is ERN_ACH" {
+    try std.testing.expectEqualStrings("ERN_ACH", QuarkType.earning_anchor.getLabel());
+}
+
+test "v2.19 isSwarm10MQuark classifier" {
+    try std.testing.expect(QuarkType.swarm_10m.isSwarm10MQuark());
+    try std.testing.expect(QuarkType.earning_anchor.isSwarm10MQuark());
+    try std.testing.expect(!QuarkType.community_5m.isSwarm10MQuark());
+}
+
+test "v2.19 isCommunity5MQuark classifier" {
+    try std.testing.expect(QuarkType.community_5m.isCommunity5MQuark());
+    try std.testing.expect(QuarkType.node_discovery_10m.isCommunity5MQuark());
+    try std.testing.expect(!QuarkType.swarm_10m.isCommunity5MQuark());
+}
+
+test "v2.19 isEarningBoostQuark classifier" {
+    try std.testing.expect(QuarkType.earning_boost.isEarningBoostQuark());
+    try std.testing.expect(QuarkType.earning_rate.isEarningBoostQuark());
+    try std.testing.expect(!QuarkType.massive_gossip.isEarningBoostQuark());
+}
+
+test "v2.19 isMassiveGossipQuark classifier" {
+    try std.testing.expect(QuarkType.massive_gossip.isMassiveGossipQuark());
+    try std.testing.expect(QuarkType.swarm_consensus_10m.isMassiveGossipQuark());
+    try std.testing.expect(!QuarkType.earning_boost.isMassiveGossipQuark());
+}
+
+test "v2.19 Swarm10MState defaults" {
+    const s = Swarm10MState{};
+    try std.testing.expectEqual(@as(u32, 0), s.swarm_nodes);
+    try std.testing.expectEqual(@as(u32, 0), s.target_nodes);
+    try std.testing.expectEqual(@as(u32, 0), s.nodes_online);
+    try std.testing.expectEqual(@as(i64, 0), s.last_swarm_us);
+}
+
+test "v2.19 Community5MState defaults" {
+    const s = Community5MState{};
+    try std.testing.expectEqual(@as(u32, 0), s.community_nodes);
+    try std.testing.expectEqual(@as(u32, 0), s.target_community);
+    try std.testing.expectEqual(@as(u32, 0), s.onboarded);
+    try std.testing.expectEqual(@as(i64, 0), s.last_community_us);
+}
+
+test "v2.19 EarningBoostState defaults" {
+    const s = EarningBoostState{};
+    try std.testing.expectEqual(@as(u64, 0), s.earning_total_utri);
+    try std.testing.expectEqual(@as(u32, 0), s.earning_rate);
+    try std.testing.expectEqual(@as(u32, 0), s.distributions);
+    try std.testing.expectEqual(@as(i64, 0), s.last_earning_us);
+}
+
+test "v2.19 MassiveGossipState defaults" {
+    const s = MassiveGossipState{};
+    try std.testing.expectEqual(@as(u32, 0), s.gossip_rounds);
+    try std.testing.expectEqual(@as(u16, 0), s.fanout);
+    try std.testing.expectEqual(@as(u32, 0), s.nodes_reached);
+    try std.testing.expectEqual(@as(i64, 0), s.last_gossip_us);
+}
+
+test "v2.19 Phase Z passes after swarm + community + earning" {
+    var agent = GoldenChainAgent.init("test-v219-z-pass");
+    agent.scaleSwarm10M();
+    agent.onboardCommunity5M();
+    agent.boostEarning();
+    try std.testing.expect(agent.swarm10MVerify());
+    try std.testing.expect(agent.swarm_10m_active);
+}
+
+test "v2.19 Phase Z fails without swarm nodes" {
+    var agent = GoldenChainAgent.init("test-v219-z-fail-swarm");
+    agent.onboardCommunity5M();
+    agent.boostEarning();
+    // swarm_nodes == 0
+    try std.testing.expect(!agent.swarm10MVerify());
+}
+
+test "v2.19 Phase Z fails without community nodes" {
+    var agent = GoldenChainAgent.init("test-v219-z-fail-comm");
+    agent.scaleSwarm10M();
+    agent.boostEarning();
+    // community_nodes == 0
+    try std.testing.expect(!agent.swarm10MVerify());
+}
+
+test "v2.19 scaleSwarm10M sets SWARM_10M_TARGET" {
+    var agent = GoldenChainAgent.init("test-v219-scale");
+    agent.scaleSwarm10M();
+    try std.testing.expectEqual(@as(u32, 1), agent.swarm_10m_state.swarm_nodes);
+    try std.testing.expectEqual(SWARM_10M_TARGET, agent.swarm_10m_state.target_nodes);
+    try std.testing.expectEqual(@as(u32, 1), agent.swarm_10m_state.nodes_online);
+    try std.testing.expect(agent.swarm_10m_active);
+}
+
+test "v2.19 boostEarning uses EARNING_RATE_UTRI_PER_HOUR" {
+    var agent = GoldenChainAgent.init("test-v219-earn");
+    agent.boostEarning();
+    try std.testing.expectEqual(@as(u64, EARNING_RATE_UTRI_PER_HOUR), agent.earning_boost_state.earning_total_utri);
+    try std.testing.expectEqual(EARNING_RATE_UTRI_PER_HOUR, agent.earning_boost_state.earning_rate);
+    try std.testing.expectEqual(@as(u32, 1), agent.earning_boost_state.distributions);
+}
+
+test "v2.19 u8 enum capacity 184/256" {
+    try std.testing.expectEqual(@as(u8, 176), @intFromEnum(QuarkType.swarm_10m));
+    try std.testing.expectEqual(@as(u8, 177), @intFromEnum(QuarkType.community_5m));
+    try std.testing.expectEqual(@as(u8, 178), @intFromEnum(QuarkType.earning_boost));
+    try std.testing.expectEqual(@as(u8, 179), @intFromEnum(QuarkType.massive_gossip));
+    try std.testing.expectEqual(@as(u8, 180), @intFromEnum(QuarkType.node_discovery_10m));
+    try std.testing.expectEqual(@as(u8, 181), @intFromEnum(QuarkType.earning_rate));
+    try std.testing.expectEqual(@as(u8, 182), @intFromEnum(QuarkType.swarm_consensus_10m));
+    try std.testing.expectEqual(@as(u8, 183), @intFromEnum(QuarkType.earning_anchor));
 }
