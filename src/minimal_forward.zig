@@ -835,6 +835,118 @@ fn generateWithWeightedHybrid(
     return generated;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// PURE TRIGRAM (v2.43) — No roles, no attention, just n-gram frequency lookup
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Pure trigram forward pass: trigram lookup with bigram fallback, NO role vectors.
+/// This is the cleanest prediction: just character frequency statistics.
+fn forwardPassPureTrigram(
+    dim: usize,
+    prev_char: u8,
+    last_char: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+) Hypervector {
+    // Try trigram first
+    if (prev_char >= HEBBIAN_OFFSET and prev_char < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+        last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+    {
+        const prev_idx = prev_char - HEBBIAN_OFFSET;
+        const last_idx = last_char - HEBBIAN_OFFSET;
+        const key = prev_idx * HEBBIAN_CHARS + last_idx;
+
+        var tri_total: u32 = 0;
+        for (0..HEBBIAN_CHARS) |ci| {
+            tri_total += tri_counts[key][ci];
+        }
+
+        if (tri_total > 0) {
+            // Pure trigram: no role blending, just trigram lookup
+            return trigramLookup(dim, prev_idx, last_idx, tri_counts);
+        }
+
+        // Trigram has no data for this pair → fall back to bigram
+        return hebbianLookup(dim, last_idx, bi_counts);
+    }
+
+    // Last char out of range → bigram only
+    if (last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS) {
+        const char_idx = last_char - HEBBIAN_OFFSET;
+        return hebbianLookup(dim, char_idx, bi_counts);
+    }
+
+    // Nothing available → zero vector
+    return Hypervector.init(dim);
+}
+
+/// Pure trigram + bigram blend: weighted combination of just the two Hebbian signals.
+/// alpha_tri: trigram weight, alpha_bi: bigram weight (should sum to ~1.0)
+fn forwardPassPureTrigramBlend(
+    dim: usize,
+    prev_char: u8,
+    last_char: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+    alpha_tri: f64,
+    alpha_bi: f64,
+) Hypervector {
+    if (prev_char >= HEBBIAN_OFFSET and prev_char < HEBBIAN_OFFSET + HEBBIAN_CHARS and
+        last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS)
+    {
+        const prev_idx = prev_char - HEBBIAN_OFFSET;
+        const last_idx = last_char - HEBBIAN_OFFSET;
+        const key = prev_idx * HEBBIAN_CHARS + last_idx;
+
+        var tri_total: u32 = 0;
+        for (0..HEBBIAN_CHARS) |ci| {
+            tri_total += tri_counts[key][ci];
+        }
+
+        if (tri_total > 0) {
+            var tri_pred = trigramLookup(dim, prev_idx, last_idx, tri_counts);
+            var bi_pred = hebbianLookup(dim, last_idx, bi_counts);
+            return weightedBlend2(&tri_pred, &bi_pred, alpha_tri, alpha_bi, dim);
+        }
+
+        return hebbianLookup(dim, last_idx, bi_counts);
+    }
+
+    if (last_char >= HEBBIAN_OFFSET and last_char < HEBBIAN_OFFSET + HEBBIAN_CHARS) {
+        const char_idx = last_char - HEBBIAN_OFFSET;
+        return hebbianLookup(dim, char_idx, bi_counts);
+    }
+
+    return Hypervector.init(dim);
+}
+
+/// Generation with pure trigram (no roles needed)
+fn generateWithPureTrigram(
+    dim: usize,
+    prev_char_init: u8,
+    last_char_init: u8,
+    bi_counts: *const [HEBBIAN_CHARS][HEBBIAN_CHARS]u16,
+    tri_counts: *const [TRIGRAM_KEYS][HEBBIAN_CHARS]u16,
+    output_buf: []u8,
+    max_tokens: usize,
+    temperature: f64,
+    top_k: usize,
+    base_seed: u64,
+) usize {
+    var prev_char = prev_char_init;
+    var last_char = last_char_init;
+    var generated: usize = 0;
+    while (generated < max_tokens and generated < output_buf.len) {
+        var output = forwardPassPureTrigram(dim, prev_char, last_char, bi_counts, tri_counts);
+        const decoded = hvToCharSampled(dim, &output, temperature, top_k, base_seed + generated);
+        output_buf[generated] = decoded;
+        prev_char = last_char;
+        last_char = decoded;
+        generated += 1;
+    }
+    return generated;
+}
+
 /// Decode using hybrid forward pass
 fn hybridDecode(
     context: []Hypervector,
@@ -5008,4 +5120,249 @@ test "weighted hybrid perplexity comparison" {
     try std.testing.expect(best_test_ppl > 0.0);
     try std.testing.expect(!std.math.isNan(best_test_ppl));
     try std.testing.expect(!std.math.isInf(best_test_ppl));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 32: Pure trigram loss comparison (v2.43)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "pure trigram loss comparison" {
+    const dim = 1024;
+
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    const train_end = large_corpus.len * 80 / 100;
+    const random_baseline = 1.0 - 1.0 / 95.0;
+
+    // === Pure trigram (no roles at all) ===
+    var pure_eval_sum: f64 = 0;
+    var pure_eval_count: usize = 0;
+    var pure_train_sum: f64 = 0;
+    var pure_train_count: usize = 0;
+
+    // === Pure trigram + bigram blend (0.75/0.25) ===
+    var blend_eval_sum: f64 = 0;
+    var blend_eval_count: usize = 0;
+    var blend_train_sum: f64 = 0;
+    var blend_train_count: usize = 0;
+
+    // === Original bundled (for comparison) ===
+    var offsets_50: [50]usize = undefined;
+    for (0..50) |i| {
+        offsets_50[i] = i * (large_corpus.len - 10) / 50;
+    }
+    var roles = computeMultiRoles(large_corpus, dim, &offsets_50, 8);
+
+    var orig_eval_sum: f64 = 0;
+    var orig_eval_count: usize = 0;
+    var orig_train_sum: f64 = 0;
+    var orig_train_count: usize = 0;
+
+    // Eval
+    for (0..50) |i| {
+        const s = train_end + i * (large_corpus.len - train_end - 10) / 50;
+        if (s + 8 >= large_corpus.len) continue;
+
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+
+        // Pure trigram
+        var pure_out = forwardPassPureTrigram(dim, prev, last, &bi_counts, &tri_counts);
+        const pure_sim = pure_out.similarity(&target);
+        pure_eval_sum += 1.0 - (pure_sim + 1.0) / 2.0;
+        pure_eval_count += 1;
+
+        // Pure blend (0.75 tri, 0.25 bi)
+        var blend_out = forwardPassPureTrigramBlend(dim, prev, last, &bi_counts, &tri_counts, 0.75, 0.25);
+        const blend_sim = blend_out.similarity(&target);
+        blend_eval_sum += 1.0 - (blend_sim + 1.0) / 2.0;
+        blend_eval_count += 1;
+
+        // Original bundled
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+        var orig_out = forwardPassTrigramHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts);
+        const orig_sim = orig_out.similarity(&target);
+        orig_eval_sum += 1.0 - (orig_sim + 1.0) / 2.0;
+        orig_eval_count += 1;
+    }
+
+    // Train
+    for (0..50) |i| {
+        const s = i * train_end / 50;
+        if (s + 8 >= large_corpus.len) continue;
+
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+
+        var pure_out = forwardPassPureTrigram(dim, prev, last, &bi_counts, &tri_counts);
+        const pure_sim = pure_out.similarity(&target);
+        pure_train_sum += 1.0 - (pure_sim + 1.0) / 2.0;
+        pure_train_count += 1;
+
+        var blend_out = forwardPassPureTrigramBlend(dim, prev, last, &bi_counts, &tri_counts, 0.75, 0.25);
+        const blend_sim = blend_out.similarity(&target);
+        blend_train_sum += 1.0 - (blend_sim + 1.0) / 2.0;
+        blend_train_count += 1;
+
+        var ctx: [8]Hypervector = undefined;
+        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+        var orig_out = forwardPassTrigramHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts);
+        const orig_sim = orig_out.similarity(&target);
+        orig_train_sum += 1.0 - (orig_sim + 1.0) / 2.0;
+        orig_train_count += 1;
+    }
+
+    const pure_eval = pure_eval_sum / @as(f64, @floatFromInt(pure_eval_count));
+    const pure_train = pure_train_sum / @as(f64, @floatFromInt(pure_train_count));
+    const blend_eval = blend_eval_sum / @as(f64, @floatFromInt(blend_eval_count));
+    const blend_train = blend_train_sum / @as(f64, @floatFromInt(blend_train_count));
+    const orig_eval = orig_eval_sum / @as(f64, @floatFromInt(orig_eval_count));
+    const orig_train = orig_train_sum / @as(f64, @floatFromInt(orig_train_count));
+
+    // --- Generation comparison ---
+    const prompt = "to be or ";
+    var gen_pure: [80]u8 = undefined;
+    const gen_pure_len = generateWithPureTrigram(
+        dim, prompt[6], prompt[7],
+        &bi_counts, &tri_counts,
+        &gen_pure, 80, 0.8, 8, 11111,
+    );
+    var gen_blend: [80]u8 = undefined;
+    const gen_blend_len = generateWithPureTrigram(
+        dim, prompt[6], prompt[7],
+        &bi_counts, &tri_counts,
+        &gen_blend, 80, 0.6, 5, 22222,
+    );
+
+    // Count unique chars
+    var seen_pure = [_]bool{false} ** 256;
+    var unique_pure: usize = 0;
+    for (gen_pure[0..gen_pure_len]) |c| {
+        if (!seen_pure[c]) { seen_pure[c] = true; unique_pure += 1; }
+    }
+    var seen_blend = [_]bool{false} ** 256;
+    var unique_blend: usize = 0;
+    for (gen_blend[0..gen_blend_len]) |c| {
+        if (!seen_blend[c]) { seen_blend[c] = true; unique_blend += 1; }
+    }
+
+    std.debug.print("\n=== PURE TRIGRAM LOSS COMPARISON (v2.43) ===\n", .{});
+    std.debug.print("Corpus: {d} chars, dim={d}\n", .{ large_corpus.len, dim });
+    std.debug.print("\n--- Eval Loss ---\n", .{});
+    std.debug.print("Pure trigram:        {d:.4} ({d:.1}% below random)\n", .{ pure_eval, (1.0 - pure_eval / random_baseline) * 100.0 });
+    std.debug.print("Pure tri+bi blend:   {d:.4} ({d:.1}% below random)\n", .{ blend_eval, (1.0 - blend_eval / random_baseline) * 100.0 });
+    std.debug.print("Original bundled:    {d:.4} ({d:.1}% below random)\n", .{ orig_eval, (1.0 - orig_eval / random_baseline) * 100.0 });
+    std.debug.print("Random baseline:     {d:.4}\n", .{random_baseline});
+    std.debug.print("\n--- Train Loss ---\n", .{});
+    std.debug.print("Pure trigram:        {d:.4} ({d:.1}% below random)\n", .{ pure_train, (1.0 - pure_train / random_baseline) * 100.0 });
+    std.debug.print("Pure tri+bi blend:   {d:.4} ({d:.1}% below random)\n", .{ blend_train, (1.0 - blend_train / random_baseline) * 100.0 });
+    std.debug.print("Original bundled:    {d:.4} ({d:.1}% below random)\n", .{ orig_train, (1.0 - orig_train / random_baseline) * 100.0 });
+    std.debug.print("\n--- Generation (T=0.8, K=8) ---\n", .{});
+    std.debug.print("Prompt: \"{s}\"\n", .{prompt});
+    std.debug.print("Pure (T=0.8,K=8): \"{s}\" ({d} unique)\n", .{ gen_pure[0..gen_pure_len], unique_pure });
+    std.debug.print("Pure (T=0.6,K=5): \"{s}\" ({d} unique)\n", .{ gen_blend[0..gen_blend_len], unique_blend });
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(pure_eval < random_baseline);
+    try std.testing.expect(pure_train < random_baseline);
+    try std.testing.expect(gen_pure_len > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 33: Pure trigram perplexity (v2.43)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "pure trigram perplexity" {
+    const dim = 1024;
+
+    const bi_counts = buildHebbianCounts(large_corpus);
+    const tri_counts = buildTrigramCounts(large_corpus);
+
+    const train_end = large_corpus.len * 80 / 100;
+
+    // === Pure trigram test PPL ===
+    var pure_test_log: f64 = 0;
+    var pure_test_valid: usize = 0;
+
+    for (0..20) |i| {
+        const s = train_end + i * (large_corpus.len - train_end - 10) / 20;
+        if (s + 8 >= large_corpus.len) continue;
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        var output = forwardPassPureTrigram(dim, prev, last, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        const prob = @max((sim + 1.0) / 2.0, 1e-10);
+        pure_test_log += @log(prob);
+        pure_test_valid += 1;
+    }
+
+    // === Pure trigram train PPL ===
+    var pure_train_log: f64 = 0;
+    var pure_train_valid: usize = 0;
+
+    for (0..20) |i| {
+        const s = i * train_end / 20;
+        if (s + 8 >= large_corpus.len) continue;
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        var output = forwardPassPureTrigram(dim, prev, last, &bi_counts, &tri_counts);
+        const sim = output.similarity(&target);
+        const prob = @max((sim + 1.0) / 2.0, 1e-10);
+        pure_train_log += @log(prob);
+        pure_train_valid += 1;
+    }
+
+    // === Pure blend (0.75/0.25) PPL ===
+    var blend_test_log: f64 = 0;
+    var blend_test_valid: usize = 0;
+    var blend_train_log: f64 = 0;
+    var blend_train_valid: usize = 0;
+
+    for (0..20) |i| {
+        const s = train_end + i * (large_corpus.len - train_end - 10) / 20;
+        if (s + 8 >= large_corpus.len) continue;
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        var output = forwardPassPureTrigramBlend(dim, prev, last, &bi_counts, &tri_counts, 0.75, 0.25);
+        const sim = output.similarity(&target);
+        const prob = @max((sim + 1.0) / 2.0, 1e-10);
+        blend_test_log += @log(prob);
+        blend_test_valid += 1;
+    }
+    for (0..20) |i| {
+        const s = i * train_end / 20;
+        if (s + 8 >= large_corpus.len) continue;
+        var target = charToHV(dim, large_corpus[s + 8]);
+        const prev = large_corpus[s + 6];
+        const last = large_corpus[s + 7];
+        var output = forwardPassPureTrigramBlend(dim, prev, last, &bi_counts, &tri_counts, 0.75, 0.25);
+        const sim = output.similarity(&target);
+        const prob = @max((sim + 1.0) / 2.0, 1e-10);
+        blend_train_log += @log(prob);
+        blend_train_valid += 1;
+    }
+
+    const pure_test_ppl = @exp(-pure_test_log / @as(f64, @floatFromInt(pure_test_valid)));
+    const pure_train_ppl = @exp(-pure_train_log / @as(f64, @floatFromInt(pure_train_valid)));
+    const blend_test_ppl = @exp(-blend_test_log / @as(f64, @floatFromInt(blend_test_valid)));
+    const blend_train_ppl = @exp(-blend_train_log / @as(f64, @floatFromInt(blend_train_valid)));
+
+    std.debug.print("\n=== PURE TRIGRAM PERPLEXITY (v2.43) ===\n", .{});
+    std.debug.print("Pure trigram:      train={d:.2} test={d:.2} gap={d:.2}\n", .{ pure_train_ppl, pure_test_ppl, pure_test_ppl - pure_train_ppl });
+    std.debug.print("Pure tri+bi blend: train={d:.2} test={d:.2} gap={d:.2}\n", .{ blend_train_ppl, blend_test_ppl, blend_test_ppl - blend_train_ppl });
+    std.debug.print("--------------------------------------------\n", .{});
+    std.debug.print("v2.42 weighted best (no-role):  train=1.77, test=1.90\n", .{});
+    std.debug.print("v2.42 original bundle:          train=1.82, test=1.94\n", .{});
+    std.debug.print("v2.39 small trigram:            train=1.5, test=1.6\n", .{});
+    std.debug.print("Random baseline:                95.0\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(pure_test_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(pure_test_ppl));
+    try std.testing.expect(!std.math.isInf(pure_test_ppl));
 }
