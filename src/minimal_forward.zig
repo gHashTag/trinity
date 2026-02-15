@@ -7167,6 +7167,140 @@ const LargeTrigramModel = struct {
         }
         return 0;
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // v2.49: Repetition Penalty + N-gram Blocking
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const PENALTY_MAX_HISTORY: usize = 64;
+    const PENALTY_NGRAM_ORDER: usize = 3; // block repeated trigrams
+
+    /// Sample with interpolated distribution + repetition penalty + n-gram blocking
+    /// penalty_alpha: multiplicative penalty per repeat (e.g., 1.2 = reduce by 1.2x per occurrence)
+    /// block_ngram: if true, zero out probability of any word that would create a repeated n-gram
+    fn penaltySample(
+        self: *const LargeTrigramModel,
+        prev2: u16,
+        prev1: u16,
+        lambda: f64,
+        temperature: f64,
+        seed: u64,
+        history: []const u16,
+        history_len: usize,
+        penalty_alpha: f64,
+        block_ngram: bool,
+    ) u16 {
+        var probs: [LARGE_MAX_WORDS]f64 = undefined;
+
+        // Build interpolated distribution
+        for (0..self.vocab_size) |j| {
+            const j16: u16 = @intCast(j);
+            probs[j] = self.interpolatedProb(prev2, prev1, j16, lambda);
+        }
+
+        // Apply repetition penalty: divide probability by alpha^count(word_in_history)
+        if (penalty_alpha > 1.0) {
+            for (0..self.vocab_size) |j| {
+                var count: usize = 0;
+                const j16: u16 = @intCast(j);
+                for (0..history_len) |h| {
+                    if (history[h] == j16) count += 1;
+                }
+                if (count > 0) {
+                    // Apply penalty: P(w) /= alpha^count
+                    var penalty: f64 = 1.0;
+                    for (0..count) |_| {
+                        penalty *= penalty_alpha;
+                    }
+                    probs[j] /= penalty;
+                }
+            }
+        }
+
+        // N-gram blocking: zero out words that would create a repeated trigram
+        if (block_ngram and history_len >= 2) {
+            for (0..self.vocab_size) |j| {
+                const j16: u16 = @intCast(j);
+                // Would (prev2, prev1, j16) repeat a trigram from history?
+                if (history_len >= 3) {
+                    var h: usize = 0;
+                    while (h + 2 < history_len) : (h += 1) {
+                        if (history[h] == prev2 and history[h + 1] == prev1 and history[h + 2] == j16) {
+                            probs[j] = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Temperature in log-space
+        var max_logp: f64 = -1e10;
+        for (0..self.vocab_size) |j| {
+            if (probs[j] <= 0) {
+                probs[j] = -1e10;
+            } else {
+                probs[j] = @log(probs[j]);
+            }
+            if (probs[j] > max_logp) max_logp = probs[j];
+        }
+        var sum: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            probs[j] = @exp((probs[j] - max_logp) / @max(temperature, 0.01));
+            sum += probs[j];
+        }
+        if (sum > 0) {
+            for (0..self.vocab_size) |j| {
+                probs[j] /= sum;
+            }
+        } else {
+            // All blocked — fall back to uniform
+            for (0..self.vocab_size) |j| {
+                probs[j] = 1.0 / @as(f64, @floatFromInt(self.vocab_size));
+            }
+        }
+
+        var rng = seed;
+        rng ^= rng >> 12;
+        rng ^= rng << 25;
+        rng ^= rng >> 27;
+        const r: f64 = @as(f64, @floatFromInt(rng % 1000000)) / 1000000.0;
+
+        var cumul: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            cumul += probs[j];
+            if (r < cumul) return @intCast(j);
+        }
+        return 0;
+    }
+
+    /// Count unique words in a token sequence
+    fn countUnique(tokens: []const u16, len: usize) usize {
+        var seen: [LARGE_MAX_WORDS]bool = [_]bool{false} ** LARGE_MAX_WORDS;
+        var count: usize = 0;
+        for (0..len) |i| {
+            if (!seen[tokens[i]]) {
+                seen[tokens[i]] = true;
+                count += 1;
+            }
+        }
+        return count;
+    }
+
+    /// Check if any trigram repeats in a token sequence
+    fn hasRepeatedTrigram(tokens: []const u16, len: usize) bool {
+        if (len < 6) return false; // need at least 2 trigrams
+        var i: usize = 0;
+        while (i + 2 < len) : (i += 1) {
+            var j: usize = i + 1;
+            while (j + 2 < len) : (j += 1) {
+                if (tokens[i] == tokens[j] and tokens[i + 1] == tokens[j + 1] and tokens[i + 2] == tokens[j + 2]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 };
 
 const extended_corpus = @embedFile("shakespeare_extended.txt");
@@ -7634,4 +7768,241 @@ test "interpolated perplexity and generation" {
     try std.testing.expect(!std.math.isInf(interp_eval_ppl));
     try std.testing.expect(interp_eval_ppl < @as(f64, @floatFromInt(ltm.vocab_size)));
     try std.testing.expect(g1 > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 44: Repetition penalty + n-gram blocking generation comparison (v2.49)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "repetition penalty and ngram blocking generation" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+
+    const lambda: f64 = 0.2; // best from v2.48
+
+    // Find "to" and "be" indices
+    var start_to: u16 = 0;
+    var start_be: u16 = 0;
+    for (0..ltm.vocab_size) |i| {
+        const w = ltm.getWord(@intCast(i));
+        if (w.len == 2 and w[0] == 't' and w[1] == 'o') start_to = @intCast(i);
+        if (w.len == 2 and w[0] == 'b' and w[1] == 'e') start_be = @intCast(i);
+    }
+
+    // Helper: generate with given settings into buffer
+    const GEN_LEN = 30;
+
+    // === No penalty (baseline, same as v2.48) ===
+    var gen_base: [512]u8 = undefined;
+    var gb: usize = 0;
+    var hist_base: [GEN_LEN + 2]u16 = undefined;
+    hist_base[0] = start_to;
+    hist_base[1] = start_be;
+    var hb_len: usize = 2;
+    var p2: u16 = start_to;
+    var p1: u16 = start_be;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.interpolatedSample(p2, p1, lambda, 0.3, 99999 + step);
+        const word = ltm.getWord(next);
+        if (gb + word.len + 1 < gen_base.len) {
+            if (gb > 0) { gen_base[gb] = ' '; gb += 1; }
+            for (word) |c| { gen_base[gb] = c; gb += 1; }
+        }
+        hist_base[hb_len] = next;
+        hb_len += 1;
+        p2 = p1;
+        p1 = next;
+    }
+    const base_unique = LargeTrigramModel.countUnique(&hist_base, hb_len);
+    const base_repeats = LargeTrigramModel.hasRepeatedTrigram(&hist_base, hb_len);
+
+    // === Penalty only (alpha=1.2, no blocking) ===
+    var gen_pen: [512]u8 = undefined;
+    var gp: usize = 0;
+    var hist_pen: [GEN_LEN + 2]u16 = undefined;
+    hist_pen[0] = start_to;
+    hist_pen[1] = start_be;
+    var hp_len: usize = 2;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.penaltySample(p2, p1, lambda, 0.3, 99999 + step, &hist_pen, hp_len, 1.2, false);
+        const word = ltm.getWord(next);
+        if (gp + word.len + 1 < gen_pen.len) {
+            if (gp > 0) { gen_pen[gp] = ' '; gp += 1; }
+            for (word) |c| { gen_pen[gp] = c; gp += 1; }
+        }
+        hist_pen[hp_len] = next;
+        hp_len += 1;
+        p2 = p1;
+        p1 = next;
+    }
+    const pen_unique = LargeTrigramModel.countUnique(&hist_pen, hp_len);
+    const pen_repeats = LargeTrigramModel.hasRepeatedTrigram(&hist_pen, hp_len);
+
+    // === Penalty + n-gram blocking (alpha=1.2, block=true) ===
+    var gen_block: [512]u8 = undefined;
+    var gbl: usize = 0;
+    var hist_block: [GEN_LEN + 2]u16 = undefined;
+    hist_block[0] = start_to;
+    hist_block[1] = start_be;
+    var hbl_len: usize = 2;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.penaltySample(p2, p1, lambda, 0.3, 99999 + step, &hist_block, hbl_len, 1.2, true);
+        const word = ltm.getWord(next);
+        if (gbl + word.len + 1 < gen_block.len) {
+            if (gbl > 0) { gen_block[gbl] = ' '; gbl += 1; }
+            for (word) |c| { gen_block[gbl] = c; gbl += 1; }
+        }
+        hist_block[hbl_len] = next;
+        hbl_len += 1;
+        p2 = p1;
+        p1 = next;
+    }
+    const block_unique = LargeTrigramModel.countUnique(&hist_block, hbl_len);
+    const block_repeats = LargeTrigramModel.hasRepeatedTrigram(&hist_block, hbl_len);
+
+    // === Also generate at T=0.8 with penalty+blocking for diversity comparison ===
+    var gen_t08: [512]u8 = undefined;
+    var g08: usize = 0;
+    var hist_t08: [GEN_LEN + 2]u16 = undefined;
+    hist_t08[0] = start_to;
+    hist_t08[1] = start_be;
+    var h08_len: usize = 2;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.penaltySample(p2, p1, lambda, 0.8, 12345 + step, &hist_t08, h08_len, 1.2, true);
+        const word = ltm.getWord(next);
+        if (g08 + word.len + 1 < gen_t08.len) {
+            if (g08 > 0) { gen_t08[g08] = ' '; g08 += 1; }
+            for (word) |c| { gen_t08[g08] = c; g08 += 1; }
+        }
+        hist_t08[h08_len] = next;
+        h08_len += 1;
+        p2 = p1;
+        p1 = next;
+    }
+    const t08_unique = LargeTrigramModel.countUnique(&hist_t08, h08_len);
+    const t08_repeats = LargeTrigramModel.hasRepeatedTrigram(&hist_t08, h08_len);
+
+    std.debug.print("\n=== REPETITION PENALTY + N-GRAM BLOCKING (v2.49) ===\n", .{});
+    std.debug.print("Corpus: {d} tokens, {d} vocab, λ={d:.1}\n", .{ ltm.token_count, ltm.vocab_size, lambda });
+    std.debug.print("\n--- T=0.3 Comparison (start: \"to be\", 30 words) ---\n", .{});
+    std.debug.print("Baseline (no penalty):     \"{s}\"\n", .{gen_base[0..gb]});
+    std.debug.print("  unique: {d}/{d}, repeated trigrams: {}\n", .{ base_unique, hb_len, base_repeats });
+    std.debug.print("Penalty (α=1.2):           \"{s}\"\n", .{gen_pen[0..gp]});
+    std.debug.print("  unique: {d}/{d}, repeated trigrams: {}\n", .{ pen_unique, hp_len, pen_repeats });
+    std.debug.print("Penalty+Block (α=1.2):     \"{s}\"\n", .{gen_block[0..gbl]});
+    std.debug.print("  unique: {d}/{d}, repeated trigrams: {}\n", .{ block_unique, hbl_len, block_repeats });
+
+    std.debug.print("\n--- T=0.8 Penalty+Block ---\n", .{});
+    std.debug.print("T=0.8 (α=1.2, block=true): \"{s}\"\n", .{gen_t08[0..g08]});
+    std.debug.print("  unique: {d}/{d}, repeated trigrams: {}\n", .{ t08_unique, h08_len, t08_repeats });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    // Penalty+block should have more unique words than baseline at T=0.3
+    try std.testing.expect(block_unique >= base_unique);
+    // N-gram blocking should prevent repeated trigrams
+    try std.testing.expect(!block_repeats);
+    // Generated text should be non-empty
+    try std.testing.expect(gbl > 0);
+    try std.testing.expect(g08 > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 45: Penalty alpha sweep + PPL impact (v2.49)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "penalty alpha sweep and diversity metrics" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+
+    const lambda: f64 = 0.2;
+    const train_end = ltm.token_count * 80 / 100;
+    const random_ce = @log(@as(f64, @floatFromInt(ltm.vocab_size)));
+
+    // Find "to" and "be" indices
+    var start_to: u16 = 0;
+    var start_be: u16 = 0;
+    for (0..ltm.vocab_size) |i| {
+        const w = ltm.getWord(@intCast(i));
+        if (w.len == 2 and w[0] == 't' and w[1] == 'o') start_to = @intCast(i);
+        if (w.len == 2 and w[0] == 'b' and w[1] == 'e') start_be = @intCast(i);
+    }
+
+    // Interpolated eval CE (baseline, no penalty — PPL reference)
+    var base_eval_sum: f64 = 0;
+    var base_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 2) continue;
+        base_eval_sum += ltm.interpolatedLoss(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], lambda);
+        base_eval_n += 1;
+    }
+    const base_eval_ce = base_eval_sum / @as(f64, @floatFromInt(base_eval_n));
+    const base_eval_ppl = @exp(base_eval_ce);
+
+    std.debug.print("\n=== PENALTY ALPHA SWEEP (v2.49) ===\n", .{});
+    std.debug.print("Interpolated baseline (λ={d:.1}): eval CE {d:.4} ({d:.1}% below random), PPL {d:.2}\n", .{
+        lambda, base_eval_ce, (1.0 - base_eval_ce / random_ce) * 100.0, base_eval_ppl,
+    });
+
+    // Sweep alpha values and measure generation diversity at T=0.3
+    const alphas = [_]f64{ 1.0, 1.1, 1.2, 1.5, 2.0, 3.0 };
+    std.debug.print("\n  α    | Unique/32 | RepTri | T=0.3 sample (first 80 chars)\n", .{});
+    std.debug.print("  -----|-----------|--------|-------------------------------\n", .{});
+
+    var best_alpha: f64 = 1.0;
+    var best_unique: usize = 0;
+
+    for (alphas) |alpha| {
+        const GEN_LEN = 30;
+        var hist: [GEN_LEN + 2]u16 = undefined;
+        hist[0] = start_to;
+        hist[1] = start_be;
+        var h_len: usize = 2;
+        var gen: [512]u8 = undefined;
+        var g: usize = 0;
+        var p2: u16 = start_to;
+        var p1: u16 = start_be;
+        for (0..GEN_LEN) |step| {
+            const next = ltm.penaltySample(p2, p1, lambda, 0.3, 99999 + step, &hist, h_len, alpha, true);
+            const word = ltm.getWord(next);
+            if (g + word.len + 1 < gen.len) {
+                if (g > 0) { gen[g] = ' '; g += 1; }
+                for (word) |c| { gen[g] = c; g += 1; }
+            }
+            hist[h_len] = next;
+            h_len += 1;
+            p2 = p1;
+            p1 = next;
+        }
+        const unique = LargeTrigramModel.countUnique(&hist, h_len);
+        const rep_tri = LargeTrigramModel.hasRepeatedTrigram(&hist, h_len);
+
+        const display_len = @min(g, 80);
+        std.debug.print("  {d:.1}  | {d:>4}/{d:<4} | {:<5} | \"{s}\"\n", .{
+            alpha, unique, h_len, rep_tri, gen[0..display_len],
+        });
+
+        if (unique > best_unique) {
+            best_unique = unique;
+            best_alpha = alpha;
+        }
+    }
+
+    std.debug.print("\nBest α for diversity: {d:.1} ({d} unique words in 32 tokens)\n", .{ best_alpha, best_unique });
+    std.debug.print("Note: PPL is measured on model probabilities (no penalty applied to eval)\n", .{});
+    std.debug.print("Penalty affects GENERATION only, not model quality metrics.\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(base_eval_ce < random_ce);
+    try std.testing.expect(base_eval_ppl > 0.0);
+    try std.testing.expect(best_unique > 3); // penalty should create at least some diversity
 }
