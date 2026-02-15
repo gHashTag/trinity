@@ -215,6 +215,11 @@ const ChatMsgType = enum {
     community_50m_v2,
     earning_moonshot_v2,
     gossip_v3_v2,
+    // v2.24: Trinity Global Dominance v1.0
+    global_dominance_v2,
+    world_adoption_v2,
+    tri_to_one_v2,
+    ecosystem_complete_v2,
 };
 var g_chat_messages: [MAX_CHAT_MSGS][512]u8 = undefined; // v3.0: 512 bytes per msg
 var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
@@ -511,6 +516,11 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
         .community_50m_v2 => .{ .r = 0xFF, .g = 0x14, .b = 0x93, .a = alpha }, // Deep Pink
         .earning_moonshot_v2 => .{ .r = 0x32, .g = 0xCD, .b = 0x32, .a = alpha }, // Lime Green
         .gossip_v3_v2 => .{ .r = 0xFF, .g = 0xA5, .b = 0x00, .a = alpha }, // Orange
+        // v2.24: Trinity Global Dominance v1.0 colors
+        .global_dominance_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha }, // Gold
+        .world_adoption_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = alpha }, // Spring Green
+        .tri_to_one_v2 => .{ .r = 0x94, .g = 0x00, .b = 0xD3, .a = alpha }, // Dark Violet
+        .ecosystem_complete_v2 => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = alpha }, // Orange Red
         .user => .{ .r = 0x70, .g = 0x70, .b = 0x90, .a = alpha },
         .ai => .{ .r = 0x30, .g = 0x80, .b = 0x50, .a = alpha },
         .log => .{ .r = 0x60, .g = 0x60, .b = 0x60, .a = alpha },
@@ -646,6 +656,11 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         .community_50m_v2 => "COM_50M",
         .earning_moonshot_v2 => "ERN_MSH",
         .gossip_v3_v2 => "GSP_V3",
+        // v2.24: Trinity Global Dominance v1.0
+        .global_dominance_v2 => "GLB_DOM",
+        .world_adoption_v2 => "WLD_ADP",
+        .tri_to_one_v2 => "TRI_$1",
+        .ecosystem_complete_v2 => "ECO_CMP",
         .user => "YOU",
         .ai => "AI",
         .log => "LOG",
@@ -654,7 +669,7 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
 
 fn isChainType(msg_type: ChatMsgType) bool {
     return switch (msg_type) {
-        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute, .staking_validate, .swarm_100k, .gossip_shard, .dht_sync, .community_50k, .zk_bridge, .zk_proof, .privacy_transfer, .cross_chain_sync_v2, .l2_rollup, .optimistic_verify, .state_channel, .batch_compress, .dynamic_shard, .shard_split, .shard_merge, .dht_adapt, .swarm_million, .community_node, .hierarchical_gossip, .geographic_shard, .zk_snark_proof, .recursive_proof, .l2_scaling, .rollup_batch, .cross_shard_tx, .atomic_2pc, .shard_fee, .tx_coordinator, .partition_detect, .split_brain, .auto_heal, .partition_tolerance, .swarm_10m, .community_5m, .earning_boost, .massive_gossip, .zk_rollup_v2, .snark_generate, .recursive_compose, .l2_fee_collect, .cross_shard_tx_v2, .atomic_2pc_v2, .shard_fee_v2, .inter_shard_sync_v2, .formal_verify_v2, .property_test_v2, .invariant_check_v2, .proof_generate_v2, .swarm_100m_v2, .community_50m_v2, .earning_moonshot_v2, .gossip_v3_v2 => true,
+        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute, .staking_validate, .swarm_100k, .gossip_shard, .dht_sync, .community_50k, .zk_bridge, .zk_proof, .privacy_transfer, .cross_chain_sync_v2, .l2_rollup, .optimistic_verify, .state_channel, .batch_compress, .dynamic_shard, .shard_split, .shard_merge, .dht_adapt, .swarm_million, .community_node, .hierarchical_gossip, .geographic_shard, .zk_snark_proof, .recursive_proof, .l2_scaling, .rollup_batch, .cross_shard_tx, .atomic_2pc, .shard_fee, .tx_coordinator, .partition_detect, .split_brain, .auto_heal, .partition_tolerance, .swarm_10m, .community_5m, .earning_boost, .massive_gossip, .zk_rollup_v2, .snark_generate, .recursive_compose, .l2_fee_collect, .cross_shard_tx_v2, .atomic_2pc_v2, .shard_fee_v2, .inter_shard_sync_v2, .formal_verify_v2, .property_test_v2, .invariant_check_v2, .proof_generate_v2, .swarm_100m_v2, .community_50m_v2, .earning_moonshot_v2, .gossip_v3_v2, .global_dominance_v2, .world_adoption_v2, .tri_to_one_v2, .ecosystem_complete_v2 => true,
         else => false,
     };
 }
@@ -799,6 +814,11 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         .Community50MUpdate => .community_50m_v2,
         .EarningMoonshotEvent => .earning_moonshot_v2,
         .GossipV3Event => .gossip_v3_v2,
+        // v2.24: Trinity Global Dominance v1.0
+        .GlobalDominanceEvent => .global_dominance_v2,
+        .WorldAdoptionUpdate => .world_adoption_v2,
+        .TriToOneEvent => .tri_to_one_v2,
+        .EcosystemCompleteEvent => .ecosystem_complete_v2,
     };
 }
 
