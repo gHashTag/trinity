@@ -1614,7 +1614,7 @@ export default function TrinityCanvas() {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, letterSpacing: 2, fontFamily: FONT }}>ЗЕРКАЛО ТРЁХ МИРОВ v2.8</div>
+                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, letterSpacing: 2, fontFamily: FONT }}>ЗЕРКАЛО ТРЁХ МИРОВ v2.9</div>
                 {mirrorStatus?.uptime_s != null && (
                   <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontFamily: MONO }}>uptime {fmtUptime(mirrorStatus.uptime_s)}</span>
                 )}
@@ -2053,6 +2053,37 @@ export default function TrinityCanvas() {
                           <span style={{ color: storageMetrics.pos_challenges_failed > 0 ? '#ff4444' : 'rgba(170,100,255,0.3)' }}>
                             Fail:{storageMetrics.pos_challenges_failed}
                           </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Swarm Live (v2.9) ── */}
+                    {sectionHeader('swarm', 'SWARM LIVE', '#aa66ff')}
+                    {!storageCollapsed['swarm'] && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                          <span style={{ color: storageMetrics.swarm_bootstrap_ok ? '#00e599' : '#ff4444' }}>
+                            {storageMetrics.swarm_bootstrap_ok ? '●' : '○'} Bootstrap
+                          </span>
+                          <span style={{ color: '#aa66ff' }}>
+                            Regions:{storageMetrics.swarm_regions}
+                          </span>
+                          <span style={{ color: storageMetrics.swarm_avg_latency_ms < 60 ? '#00e599' : '#ffd700' }}>
+                            Lat:{storageMetrics.swarm_avg_latency_ms}ms
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 3 }}>
+                          {[
+                            { label: 'ACTIVE', val: storageMetrics.swarm_nodes_active, color: '#00e599' },
+                            { label: 'JOIN', val: storageMetrics.swarm_nodes_joining, color: '#ffd700' },
+                            { label: 'LEAVE', val: storageMetrics.swarm_nodes_leaving, color: '#ff8800' },
+                            { label: 'DEAD', val: storageMetrics.swarm_nodes_dead, color: '#ff4444' },
+                          ].map(s => (
+                            <div key={s.label} style={{ flex: 1, textAlign: 'center', background: 'rgba(170,100,255,0.04)', padding: '2px', borderRadius: 4, border: `1px solid ${s.val > 0 ? s.color : 'rgba(170,100,255,0.06)'}22` }}>
+                              <div style={{ color: s.val > 0 ? s.color : 'rgba(170,100,255,0.2)', fontSize: 10, fontFamily: MONO, fontWeight: 700 }}>{s.val}</div>
+                              <div style={{ color: 'rgba(255,255,255,0.15)', fontSize: 6, fontFamily: MONO }}>{s.label}</div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
