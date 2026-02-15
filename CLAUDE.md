@@ -211,6 +211,7 @@ EXIT_SIGNAL = (
     critical_assessment_written AND
     tech_tree_options_proposed AND
     achievement_documented AND
+    dashboard_widget_updated AND
     committed
 )
 ```
@@ -268,6 +269,45 @@ ONLY: ReplyKeyboardMarkup (buttons at bottom of screen)
 ```
 
 Specifications: `specs/tri/telegram_bot/`
+
+---
+
+## Dashboard & Visual Rules
+
+### Canvas Mirror Widget Mandate
+
+**EVERY new module MUST have a corresponding Canvas Mirror widget.**
+
+When implementing a new subsystem or feature:
+
+| Step | Action |
+|------|--------|
+| 1 | Identify which Mirror column it belongs to (RAZUM/MATERIYA/DUKH) |
+| 2 | Add TypeScript interface in `website/src/services/chatApi.ts` |
+| 3 | Add fetch function with mock fallback in `chatApi.ts` |
+| 4 | Add widget to the appropriate column in `TrinityCanvas.tsx` Mirror section |
+| 5 | Widget MUST use `glassStyle()` and column color scheme |
+| 6 | Widget MUST be collapsible (toggle expand/collapse) |
+
+Without a visual dashboard widget, a module is **NOT considered complete**.
+
+### Column Assignment Guide
+
+| Column | Color | Realm | Widget Types |
+|--------|-------|-------|-------------|
+| RAZUM (Gold) | `#ffd700` | Mind | Routing, intelligence, logs, decisions |
+| MATERIYA (Cyan) | `#00ccff` | Matter | Infrastructure, storage, data, files |
+| DUKH (Purple) | `#aa66ff` | Spirit | Actions, tools, proofs, transfers, health |
+
+### Style Rules
+
+```
+Font:       FONT (Outfit) for labels, MONO (JetBrains Mono) for values
+Sizes:      12px headers, 8-9px metrics, 7px sublabels
+Opacity:    active values at 1.0, inactive at 0.3
+Borders:    column-colored with 0.1-0.4 alpha
+Animations: framer-motion for entry, gauge bars
+```
 
 ---
 
