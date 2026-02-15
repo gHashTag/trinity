@@ -26,6 +26,7 @@ const Allocator = std.mem.Allocator;
 pub const ZigCodeGen = struct {
     allocator: Allocator,
     builder: CodeBuilder,
+    shard_mgr_emitted: bool,
 
     const Self = @This();
 
@@ -33,6 +34,7 @@ pub const ZigCodeGen = struct {
         return Self{
             .allocator = allocator,
             .builder = CodeBuilder.init(allocator),
+            .shard_mgr_emitted = false,
         };
     }
 
@@ -1709,6 +1711,179 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("pub fn realTokenTypeVector(type_seed: u64) vsa.HybridBigInt {");
             self.builder.incIndent();
             try self.builder.writeLine("return vsa.randomVector(1024, type_seed);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // SHARD MANAGER: Real ShardManager struct with working methods
+        // Generates a complete struct with init/put/get/delete/count/save
+        // methods using std.fs I/O and std.crypto.hash.sha2.Sha256.
+        // The struct is emitted once; behaviors become marker functions.
+        // ═══════════════════════════════════════════════════════════════════
+
+        if (std_mem.startsWith(u8, b.name, "shardMgr")) {
+            // Emit the full ShardManager struct once (on first shardMgr behavior)
+            if (!self.shard_mgr_emitted) {
+                self.shard_mgr_emitted = true;
+                try self.builder.writeLine("");
+                try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+                try self.builder.writeLine("// SHARD MANAGER — Real Reusable Struct (generated from .vibee)");
+                try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+                try self.builder.writeLine("");
+                try self.builder.writeLine("pub const ShardManager = struct {");
+                try self.builder.writeLine("    root_buf: [256]u8,");
+                try self.builder.writeLine("    root_len: usize,");
+                try self.builder.writeLine("    shard_count: usize,");
+                try self.builder.writeLine("    total_bytes: usize,");
+                try self.builder.writeLine("");
+                try self.builder.writeLine("    const hex_chars = \"0123456789abcdef\";");
+                try self.builder.writeLine("");
+                // init method
+                try self.builder.writeLine("    /// Create storage directories and return initialized manager");
+                try self.builder.writeLine("    pub fn init(root: []const u8) !ShardManager {");
+                try self.builder.writeLine("        var mgr = ShardManager{");
+                try self.builder.writeLine("            .root_buf = undefined,");
+                try self.builder.writeLine("            .root_len = root.len,");
+                try self.builder.writeLine("            .shard_count = 0,");
+                try self.builder.writeLine("            .total_bytes = 0,");
+                try self.builder.writeLine("        };");
+                try self.builder.writeLine("        @memcpy(mgr.root_buf[0..root.len], root);");
+                try self.builder.writeLine("        // Create root directory");
+                try self.builder.writeLine("        std.fs.makeDirAbsolute(root) catch |e| switch (e) {");
+                try self.builder.writeLine("            error.PathAlreadyExists => {},");
+                try self.builder.writeLine("            else => return e,");
+                try self.builder.writeLine("        };");
+                try self.builder.writeLine("        // Create shards subdirectory");
+                try self.builder.writeLine("        var sbuf: [280]u8 = undefined;");
+                try self.builder.writeLine("        const sdir = std.fmt.bufPrint(&sbuf, \"{s}/shards\", .{root}) catch unreachable;");
+                try self.builder.writeLine("        std.fs.makeDirAbsolute(sdir) catch |e| switch (e) {");
+                try self.builder.writeLine("            error.PathAlreadyExists => {},");
+                try self.builder.writeLine("            else => return e,");
+                try self.builder.writeLine("        };");
+                try self.builder.writeLine("        return mgr;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // rootPath helper
+                try self.builder.writeLine("    fn rootPath(self: *const ShardManager) []const u8 {");
+                try self.builder.writeLine("        return self.root_buf[0..self.root_len];");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // hashToHex helper
+                try self.builder.writeLine("    fn hashToHex(hash: [32]u8) [64]u8 {");
+                try self.builder.writeLine("        var result: [64]u8 = undefined;");
+                try self.builder.writeLine("        for (hash, 0..) |byte, i| {");
+                try self.builder.writeLine("            result[i * 2] = hex_chars[byte >> 4];");
+                try self.builder.writeLine("            result[i * 2 + 1] = hex_chars[byte & 0x0F];");
+                try self.builder.writeLine("        }");
+                try self.builder.writeLine("        return result;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // put method
+                try self.builder.writeLine("    /// Write data to shard file, return SHA-256 hex hash");
+                try self.builder.writeLine("    pub fn put(self: *ShardManager, data: []const u8) ![64]u8 {");
+                try self.builder.writeLine("        var hash: [32]u8 = undefined;");
+                try self.builder.writeLine("        std.crypto.hash.sha2.Sha256.hash(data, &hash, .{});");
+                try self.builder.writeLine("        const hex = hashToHex(hash);");
+                try self.builder.writeLine("        var pbuf: [350]u8 = undefined;");
+                try self.builder.writeLine("        const spath = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ self.rootPath(), hex }) catch unreachable;");
+                try self.builder.writeLine("        const file = try std.fs.createFileAbsolute(spath, .{});");
+                try self.builder.writeLine("        defer file.close();");
+                try self.builder.writeLine("        try file.writeAll(data);");
+                try self.builder.writeLine("        self.shard_count += 1;");
+                try self.builder.writeLine("        self.total_bytes += data.len;");
+                try self.builder.writeLine("        return hex;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // get method
+                try self.builder.writeLine("    /// Read shard data by hex hash, returns bytes read into buf");
+                try self.builder.writeLine("    pub fn get(self: *const ShardManager, hex: *const [64]u8, buf: []u8) !usize {");
+                try self.builder.writeLine("        var pbuf: [350]u8 = undefined;");
+                try self.builder.writeLine("        const spath = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ self.rootPath(), hex.* }) catch unreachable;");
+                try self.builder.writeLine("        const file = try std.fs.openFileAbsolute(spath, .{});");
+                try self.builder.writeLine("        defer file.close();");
+                try self.builder.writeLine("        return try file.readAll(buf);");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // delete method
+                try self.builder.writeLine("    /// Delete shard file by hex hash");
+                try self.builder.writeLine("    pub fn delete(self: *ShardManager, hex: *const [64]u8) !void {");
+                try self.builder.writeLine("        var pbuf: [350]u8 = undefined;");
+                try self.builder.writeLine("        const spath = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ self.rootPath(), hex.* }) catch unreachable;");
+                try self.builder.writeLine("        try std.fs.deleteFileAbsolute(spath);");
+                try self.builder.writeLine("        if (self.shard_count > 0) self.shard_count -= 1;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // exists method
+                try self.builder.writeLine("    /// Check if shard exists on disk");
+                try self.builder.writeLine("    pub fn exists(self: *const ShardManager, hex: *const [64]u8) bool {");
+                try self.builder.writeLine("        var pbuf: [350]u8 = undefined;");
+                try self.builder.writeLine("        const spath = std.fmt.bufPrint(&pbuf, \"{s}/shards/{s}.shard\", .{ self.rootPath(), hex.* }) catch unreachable;");
+                try self.builder.writeLine("        const file = std.fs.openFileAbsolute(spath, .{}) catch return false;");
+                try self.builder.writeLine("        file.close();");
+                try self.builder.writeLine("        return true;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // count method
+                try self.builder.writeLine("    /// Count .shard files in shards directory");
+                try self.builder.writeLine("    pub fn count(self: *const ShardManager) !usize {");
+                try self.builder.writeLine("        var sbuf: [280]u8 = undefined;");
+                try self.builder.writeLine("        const sdir = std.fmt.bufPrint(&sbuf, \"{s}/shards\", .{self.rootPath()}) catch unreachable;");
+                try self.builder.writeLine("        var dir = try std.fs.openDirAbsolute(sdir, .{ .iterate = true });");
+                try self.builder.writeLine("        defer dir.close();");
+                try self.builder.writeLine("        var n: usize = 0;");
+                try self.builder.writeLine("        var it = dir.iterate();");
+                try self.builder.writeLine("        while (try it.next()) |entry| {");
+                try self.builder.writeLine("            if (std.mem.endsWith(u8, entry.name, \".shard\")) n += 1;");
+                try self.builder.writeLine("        }");
+                try self.builder.writeLine("        return n;");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // saveManifest method
+                try self.builder.writeLine("    /// Write manifest.json with current shard count");
+                try self.builder.writeLine("    pub fn saveManifest(self: *const ShardManager) !void {");
+                try self.builder.writeLine("        var mbuf: [280]u8 = undefined;");
+                try self.builder.writeLine("        const mpath = std.fmt.bufPrint(&mbuf, \"{s}/manifest.json\", .{self.rootPath()}) catch unreachable;");
+                try self.builder.writeLine("        const file = try std.fs.createFileAbsolute(mpath, .{});");
+                try self.builder.writeLine("        defer file.close();");
+                try self.builder.writeLine("        // Write JSON manually to avoid format string brace escaping");
+                try self.builder.writeLine("        var jbuf: [512]u8 = undefined;");
+                try self.builder.writeLine("        var jstream = std.io.fixedBufferStream(&jbuf);");
+                try self.builder.writeLine("        const jw = jstream.writer();");
+                try self.builder.writeLine("        jw.writeAll(\"{\\\"version\\\":\\\"1.0.0\\\",\\\"shard_count\\\":\") catch unreachable;");
+                try self.builder.writeLine("        jw.print(\"{d}\", .{self.shard_count}) catch unreachable;");
+                try self.builder.writeLine("        jw.writeAll(\",\\\"total_bytes\\\":\") catch unreachable;");
+                try self.builder.writeLine("        jw.print(\"{d}\", .{self.total_bytes}) catch unreachable;");
+                try self.builder.writeLine("        jw.writeAll(\"}\") catch unreachable;");
+                try self.builder.writeLine("        const json = jstream.getWritten();");
+                try self.builder.writeLine("        try file.writeAll(json);");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // fingerprint method
+                try self.builder.writeLine("    /// Compute VSA fingerprint from data bytes (SHA-256 seed → randomVector)");
+                try self.builder.writeLine("    pub fn fingerprint(data: []const u8) vsa.HybridBigInt {");
+                try self.builder.writeLine("        var hash: [32]u8 = undefined;");
+                try self.builder.writeLine("        std.crypto.hash.sha2.Sha256.hash(data, &hash, .{});");
+                try self.builder.writeLine("        const seed = std.mem.readInt(u64, hash[0..8], .little);");
+                try self.builder.writeLine("        return vsa.randomVector(256, seed);");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("");
+                // cleanup method
+                try self.builder.writeLine("    /// Remove all storage (for testing)");
+                try self.builder.writeLine("    pub fn cleanup(self: *const ShardManager) void {");
+                try self.builder.writeLine("        std.fs.deleteTreeAbsolute(self.rootPath()) catch {};");
+                try self.builder.writeLine("    }");
+                try self.builder.writeLine("};");
+                try self.builder.writeLine("");
+            }
+            // Emit marker function for the individual behavior
+            try self.builder.writeFmt("/// {s}\n", .{b.given});
+            try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+            try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+            try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
+            self.builder.incIndent();
+            try self.builder.writeLine("return true; // Real logic is in ShardManager struct methods");
             self.builder.decIndent();
             try self.builder.writeLine("}");
             return true;
