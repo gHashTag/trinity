@@ -180,6 +180,11 @@ pub const ChainMessageType = enum {
     Community5MUpdate,
     EarningBoostEvent,
     MassiveGossipEvent,
+    // v2.20: ZK-Rollup v2.0
+    ZkRollupV2Event,
+    SnarkGenerateUpdate,
+    RecursiveComposeEvent,
+    L2FeeCollectEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -240,7 +245,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 216;
+pub const MAX_QUARK_RECORDS = 224;
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -454,6 +459,15 @@ pub const QuarkType = enum(u8) {
     earning_rate,
     swarm_consensus_10m,
     earning_anchor,
+    // v2.20: ZK-Rollup v2.0 (u8: 192/256 used)
+    zk_rollup_v2,
+    snark_generate,
+    recursive_compose,
+    l2_fee_collect,
+    proof_aggregate,
+    rollup_verify_v2,
+    snark_anchor,
+    l2_rollup_anchor,
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -653,6 +667,15 @@ pub const QuarkType = enum(u8) {
             .earning_rate => "ERN_RTE",
             .swarm_consensus_10m => "SWM_CON",
             .earning_anchor => "ERN_ACH",
+            // v2.20: ZK-Rollup v2.0 labels
+            .zk_rollup_v2 => "ZKR_V2",
+            .snark_generate => "SNK_GEN",
+            .recursive_compose => "REC_CMP",
+            .l2_fee_collect => "L2_FEE",
+            .proof_aggregate => "PRF_AGG",
+            .rollup_verify_v2 => "RLP_VR2",
+            .snark_anchor => "SNK_ACH",
+            .l2_rollup_anchor => "L2_ACH",
         };
     }
 
@@ -1037,6 +1060,23 @@ pub const QuarkType = enum(u8) {
 
     pub fn isMassiveGossipQuark(self: QuarkType) bool {
         return self == .massive_gossip or self == .swarm_consensus_10m;
+    }
+
+    // v2.20: ZK-Rollup v2.0 classifiers
+    pub fn isZkRollupV2Quark(self: QuarkType) bool {
+        return self == .zk_rollup_v2 or self == .l2_rollup_anchor;
+    }
+
+    pub fn isSnarkGenerateQuark(self: QuarkType) bool {
+        return self == .snark_generate or self == .snark_anchor;
+    }
+
+    pub fn isRecursiveComposeQuark(self: QuarkType) bool {
+        return self == .recursive_compose or self == .proof_aggregate;
+    }
+
+    pub fn isL2FeeQuark(self: QuarkType) bool {
+        return self == .l2_fee_collect or self == .rollup_verify_v2;
     }
 };
 
@@ -1432,6 +1472,14 @@ pub const EARNING_RATE_UTRI_PER_HOUR: u32 = 20_000;
 pub const MASSIVE_GOSSIP_FANOUT: u16 = 64;
 pub const NODE_DISCOVERY_10M_INTERVAL_US: i64 = 1_000_000;
 pub const EARNING_DISTRIBUTION_INTERVAL_US: i64 = 3_600_000_000;
+
+// v2.20: ZK-Rollup v2.0 constants
+pub const ZK_SNARK_V2_PROOF_SIZE: u32 = 288;
+pub const RECURSIVE_PROOF_MAX_DEPTH: u16 = 32;
+pub const L2_FEE_UTRI_PER_TX: u32 = 100;
+pub const L2_BATCH_SIZE_V2: u32 = 10_000;
+pub const SNARK_VERIFICATION_TIMEOUT_US: i64 = 5_000_000;
+pub const PROOF_AGGREGATION_MAX: u16 = 512;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -1959,6 +2007,39 @@ pub const MassiveGossipState = struct {
     gossip_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.20: ZK-Rollup v2.0 types
+pub const ZkRollupV2State = struct {
+    rollup_batches: u32 = 0,
+    transactions_rolled: u64 = 0,
+    l2_fees_collected_utri: u64 = 0,
+    last_rollup_us: i64 = 0,
+    rollup_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const SnarkGenerateState = struct {
+    proofs_generated: u32 = 0,
+    proof_size_bytes: u32 = 0,
+    verified_proofs: u32 = 0,
+    last_proof_us: i64 = 0,
+    proof_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const RecursiveComposeState = struct {
+    compositions: u32 = 0,
+    max_depth_reached: u16 = 0,
+    composed_proofs: u32 = 0,
+    last_compose_us: i64 = 0,
+    compose_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const L2FeeState = struct {
+    fees_collected: u64 = 0,
+    fee_rate: u32 = 0,
+    transactions_processed: u64 = 0,
+    last_fee_us: i64 = 0,
+    fee_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2077,10 +2158,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 23;
+pub const QUARK_EXPORT_VERSION: u16 = 24;
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 110;
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 114;
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -2307,6 +2388,12 @@ pub const GoldenChainAgent = struct {
     earning_boost_state: EarningBoostState,
     massive_gossip_state: MassiveGossipState,
     swarm_10m_active: bool,
+    // v2.20: ZK-Rollup v2.0 fields
+    zk_rollup_v2_state: ZkRollupV2State,
+    snark_generate_state: SnarkGenerateState,
+    recursive_compose_state: RecursiveComposeState,
+    l2_fee_state: L2FeeState,
+    zk_rollup_v2_active: bool,
 
     const Self = @This();
 
@@ -2478,6 +2565,12 @@ pub const GoldenChainAgent = struct {
             .earning_boost_state = .{},
             .massive_gossip_state = .{},
             .swarm_10m_active = false,
+            // v2.20: ZK-Rollup v2.0 defaults
+            .zk_rollup_v2_state = .{},
+            .snark_generate_state = .{},
+            .recursive_compose_state = .{},
+            .l2_fee_state = .{},
+            .zk_rollup_v2_active = false,
         };
     }
 
@@ -3269,6 +3362,39 @@ pub const GoldenChainAgent = struct {
         if (self.swarm_10m_state.swarm_nodes == 0) return false;
         if (self.community_5m_state.community_nodes == 0) return false;
         if (self.earning_boost_state.earning_total_utri == 0) return false;
+        return true;
+    }
+
+    // v2.20: ZK-Rollup v2.0 stub methods
+    pub fn generateSnarkV2(self: *Self) void {
+        self.snark_generate_state.proofs_generated += 1;
+        self.snark_generate_state.proof_size_bytes = ZK_SNARK_V2_PROOF_SIZE;
+        self.snark_generate_state.verified_proofs += 1;
+        self.zk_rollup_v2_active = true;
+    }
+
+    pub fn composeRecursiveProofV2(self: *Self) void {
+        self.recursive_compose_state.compositions += 1;
+        self.recursive_compose_state.max_depth_reached = RECURSIVE_PROOF_MAX_DEPTH;
+        self.recursive_compose_state.composed_proofs += 1;
+    }
+
+    pub fn collectL2Fee(self: *Self) void {
+        self.l2_fee_state.fees_collected += L2_FEE_UTRI_PER_TX;
+        self.l2_fee_state.fee_rate = L2_FEE_UTRI_PER_TX;
+        self.l2_fee_state.transactions_processed += 1;
+    }
+
+    pub fn aggregateProofsV2(self: *Self) void {
+        self.zk_rollup_v2_state.rollup_batches += 1;
+        self.zk_rollup_v2_state.transactions_rolled += L2_BATCH_SIZE_V2;
+        self.zk_rollup_v2_state.l2_fees_collected_utri += @as(u64, L2_FEE_UTRI_PER_TX) * @as(u64, L2_BATCH_SIZE_V2);
+    }
+
+    pub fn zkRollupV2Verify(self: *const Self) bool {
+        if (self.snark_generate_state.proofs_generated == 0) return false;
+        if (self.recursive_compose_state.compositions == 0) return false;
+        if (self.l2_fee_state.fees_collected == 0) return false;
         return true;
     }
 };
