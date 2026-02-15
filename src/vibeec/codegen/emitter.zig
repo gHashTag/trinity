@@ -30,6 +30,7 @@ pub const ZigCodeGen = struct {
     network_emitted: bool,
     erasure_emitted: bool,
     discovery_emitted: bool,
+    pos_emitted: bool,
 
     const Self = @This();
 
@@ -41,6 +42,7 @@ pub const ZigCodeGen = struct {
             .network_emitted = false,
             .erasure_emitted = false,
             .discovery_emitted = false,
+            .pos_emitted = false,
         };
     }
 
@@ -396,6 +398,110 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("            }");
         try self.builder.writeLine("        }");
         try self.builder.writeLine("        return sc;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+    }
+
+    /// Emit ProofOfStorageEngine struct (challenge-response PoS verification)
+    fn emitProofOfStorageStruct(self: *Self) !void {
+        if (self.pos_emitted) return;
+        self.pos_emitted = true;
+        try self.builder.writeLine("");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("// PROOF OF STORAGE — Cryptographic Challenge-Response Verification");
+        try self.builder.writeLine("// Challenger picks random byte range, node proves possession via SHA-256.");
+        try self.builder.writeLine("// Failures tracked per-node; exceeding max_failures → deactivation.");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const PosChallenge = struct {");
+        try self.builder.writeLine("    challenge_id: [32]u8,");
+        try self.builder.writeLine("    shard_hash: [32]u8,");
+        try self.builder.writeLine("    byte_offset: u32,");
+        try self.builder.writeLine("    byte_length: u32,");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const PosProof = struct {");
+        try self.builder.writeLine("    challenge_id: [32]u8,");
+        try self.builder.writeLine("    proof_hash: [32]u8,");
+        try self.builder.writeLine("};");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("pub const ProofOfStorageEngine = struct {");
+        try self.builder.writeLine("    const MAX_NODES = 16;");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    failure_counts: [MAX_NODES]u8,");
+        try self.builder.writeLine("    max_failures: u8,");
+        try self.builder.writeLine("    deactivated: [MAX_NODES]bool,");
+        try self.builder.writeLine("    challenges_issued: u32,");
+        try self.builder.writeLine("    challenges_passed: u32,");
+        try self.builder.writeLine("    challenges_failed: u32,");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn init(max_failures: u8) ProofOfStorageEngine {");
+        try self.builder.writeLine("        return .{");
+        try self.builder.writeLine("            .failure_counts = [_]u8{0} ** MAX_NODES,");
+        try self.builder.writeLine("            .max_failures = max_failures,");
+        try self.builder.writeLine("            .deactivated = [_]bool{false} ** MAX_NODES,");
+        try self.builder.writeLine("            .challenges_issued = 0,");
+        try self.builder.writeLine("            .challenges_passed = 0,");
+        try self.builder.writeLine("            .challenges_failed = 0,");
+        try self.builder.writeLine("        };");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Create a challenge for a shard: pick byte range [offset..offset+length]");
+        try self.builder.writeLine("    pub fn createChallenge(self: *ProofOfStorageEngine, shard_data: []const u8, offset: u32, length: u32) !PosChallenge {");
+        try self.builder.writeLine("        if (offset + length > shard_data.len) return error.ByteRangeOutOfBounds;");
+        try self.builder.writeLine("        self.challenges_issued += 1;");
+        try self.builder.writeLine("        const Sha256 = std.crypto.hash.sha2.Sha256;");
+        try self.builder.writeLine("        var cid: [32]u8 = undefined;");
+        try self.builder.writeLine("        Sha256.hash(shard_data, &cid, .{});");
+        try self.builder.writeLine("        var shash: [32]u8 = undefined;");
+        try self.builder.writeLine("        Sha256.hash(shard_data, &shash, .{});");
+        try self.builder.writeLine("        return PosChallenge{");
+        try self.builder.writeLine("            .challenge_id = cid,");
+        try self.builder.writeLine("            .shard_hash = shash,");
+        try self.builder.writeLine("            .byte_offset = offset,");
+        try self.builder.writeLine("            .byte_length = length,");
+        try self.builder.writeLine("        };");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Respond to a challenge: compute SHA-256 of shard[offset..offset+length]");
+        try self.builder.writeLine("    pub fn respond(shard_data: []const u8, challenge: PosChallenge) PosProof {");
+        try self.builder.writeLine("        const Sha256 = std.crypto.hash.sha2.Sha256;");
+        try self.builder.writeLine("        const slice = shard_data[challenge.byte_offset..challenge.byte_offset + challenge.byte_length];");
+        try self.builder.writeLine("        var h: [32]u8 = undefined;");
+        try self.builder.writeLine("        Sha256.hash(slice, &h, .{});");
+        try self.builder.writeLine("        return PosProof{ .challenge_id = challenge.challenge_id, .proof_hash = h };");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    /// Verify a proof: recompute hash of byte range, compare to proof_hash");
+        try self.builder.writeLine("    pub fn verify(self: *ProofOfStorageEngine, shard_data: []const u8, challenge: PosChallenge, proof: PosProof, node_id: u8) bool {");
+        try self.builder.writeLine("        const Sha256 = std.crypto.hash.sha2.Sha256;");
+        try self.builder.writeLine("        const slice = shard_data[challenge.byte_offset..challenge.byte_offset + challenge.byte_length];");
+        try self.builder.writeLine("        var expected: [32]u8 = undefined;");
+        try self.builder.writeLine("        Sha256.hash(slice, &expected, .{});");
+        try self.builder.writeLine("        const ok = std.mem.eql(u8, &expected, &proof.proof_hash);");
+        try self.builder.writeLine("        if (ok) {");
+        try self.builder.writeLine("            self.challenges_passed += 1;");
+        try self.builder.writeLine("        } else {");
+        try self.builder.writeLine("            self.challenges_failed += 1;");
+        try self.builder.writeLine("            if (node_id < MAX_NODES) {");
+        try self.builder.writeLine("                self.failure_counts[node_id] += 1;");
+        try self.builder.writeLine("                if (self.failure_counts[node_id] >= self.max_failures) {");
+        try self.builder.writeLine("                    self.deactivated[node_id] = true;");
+        try self.builder.writeLine("                }");
+        try self.builder.writeLine("            }");
+        try self.builder.writeLine("        }");
+        try self.builder.writeLine("        return ok;");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn isDeactivated(self: *const ProofOfStorageEngine, node_id: u8) bool {");
+        try self.builder.writeLine("        if (node_id >= MAX_NODES) return true;");
+        try self.builder.writeLine("        return self.deactivated[node_id];");
+        try self.builder.writeLine("    }");
+        try self.builder.writeLine("");
+        try self.builder.writeLine("    pub fn getFailureCount(self: *const ProofOfStorageEngine, node_id: u8) u8 {");
+        try self.builder.writeLine("        if (node_id >= MAX_NODES) return 0;");
+        try self.builder.writeLine("        return self.failure_counts[node_id];");
         try self.builder.writeLine("    }");
         try self.builder.writeLine("};");
         try self.builder.writeLine("");
@@ -2344,6 +2450,23 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("return true; // Real logic is in pipeline test blocks");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PROOF OF STORAGE BEHAVIORS: challenge-response PoS verification
+        // ═══════════════════════════════════════════════════════════════════
+        if (std_mem.startsWith(u8, b.name, "pos")) {
+            try self.emitProofOfStorageStruct();
+            // Emit marker function for each PoS behavior
+            try self.builder.writeFmt("/// {s}\n", .{b.given});
+            try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+            try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+            try self.builder.writeFmt("pub fn {s}() bool {{\n", .{b.name});
+            self.builder.incIndent();
+            try self.builder.writeLine("return true; // Real logic is in PoS test blocks");
             self.builder.decIndent();
             try self.builder.writeLine("}");
             return true;
