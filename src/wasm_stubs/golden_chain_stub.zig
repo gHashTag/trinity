@@ -205,6 +205,11 @@ pub const ChainMessageType = enum {
     WorldAdoptionUpdate, // World adoption growth event
     TriToOneEvent, // $TRI to $1 price event
     EcosystemCompleteEvent, // Ecosystem completion event
+    // v2.25: Trinity Eternal v1.0
+    OuroborosEvolveEvent,
+    InfiniteScaleUpdate,
+    UniversalReserveEvent,
+    EternalUptimeEvent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -265,7 +270,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 256; // v2.24: was 248, +8 for Trinity Global Dominance v1.0
+pub const MAX_QUARK_RECORDS = 264; // v2.25: was 256, +8 for Trinity Eternal v1.0
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -527,6 +532,16 @@ pub const QuarkType = enum(u8) {
     ecosystem_govern, // 222 — Ecosystem Govern record
     global_dominance_anchor, // 223 — Global Dominance Anchor record
 
+    // v2.25: Trinity Eternal v1.0 (u8: 232/256 used)
+    ouroboros_evolve, // 224 — Ouroboros self-evolution record
+    infinite_scale, // 225 — Infinite scale projection record
+    universal_reserve, // 226 — Universal reserve record
+    eternal_uptime, // 227 — Eternal uptime record
+    ouroboros_health, // 228 — Ouroboros health record
+    reserve_distribute, // 229 — Reserve distribution record
+    eternal_govern, // 230 — Eternal governance record
+    eternal_anchor, // 231 — Eternal anchor record
+
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
             .input_capture => "INPUT_CAP",
@@ -770,6 +785,15 @@ pub const QuarkType = enum(u8) {
             .adoption_distribute => "ADP_DST",
             .ecosystem_govern => "ECO_GOV",
             .global_dominance_anchor => "GBL_ACH",
+            // v2.25: Trinity Eternal v1.0
+            .ouroboros_evolve => "ORB_EVO",
+            .infinite_scale => "INF_SCL",
+            .universal_reserve => "UNI_RSV",
+            .eternal_uptime => "ETR_UPT",
+            .ouroboros_health => "ORB_HLT",
+            .reserve_distribute => "RSV_DST",
+            .eternal_govern => "ETR_GOV",
+            .eternal_anchor => "ETR_ACH",
         };
     }
 
@@ -1237,6 +1261,23 @@ pub const QuarkType = enum(u8) {
     pub fn isEcosystemCompleteQuark(self: QuarkType) bool {
         return self == .ecosystem_govern or self == .dominance_health;
     }
+
+    /// v2.25: Trinity Eternal v1.0 classifiers
+    pub fn isOuroborosQuark(self: QuarkType) bool {
+        return self == .ouroboros_evolve or self == .eternal_anchor;
+    }
+
+    pub fn isInfiniteScaleQuark(self: QuarkType) bool {
+        return self == .infinite_scale or self == .universal_reserve;
+    }
+
+    pub fn isUniversalReserveQuark(self: QuarkType) bool {
+        return self == .universal_reserve or self == .reserve_distribute;
+    }
+
+    pub fn isEternalUptimeQuark(self: QuarkType) bool {
+        return self == .eternal_uptime or self == .ouroboros_health;
+    }
 };
 
 pub const QuarkRecord = struct {
@@ -1669,6 +1710,14 @@ pub const TRI_PRICE_TARGET_UTRI: u64 = 1_000_000; // $1 = 1,000,000 uTRI
 pub const ECOSYSTEM_COMPONENT_COUNT: u16 = 30; // 30 ecosystem components
 pub const DOMINANCE_CHECK_INTERVAL_US: i64 = 1_000_000; // 1 second dominance check
 pub const MAX_ADOPTION_REGIONS: u16 = 256; // 256 global regions
+
+// v2.25: Trinity Eternal v1.0 constants
+pub const OUROBOROS_CYCLE_INTERVAL_US: i64 = 60_000_000; // 60 second ouroboros self-evolution cycle
+pub const INFINITE_SCALE_TARGET: u64 = 10_000_000_000; // 10B scale projection
+pub const TRI_RESERVE_VALUATION_UTRI: u64 = 10_000_000_000; // $10T valuation (10B uTRI units)
+pub const ETERNAL_UPTIME_TARGET: u16 = 9999; // 99.99% uptime target (basis points)
+pub const SELF_EVOLUTION_DEPTH: u16 = 256; // Self-evolution depth (max generations)
+pub const MAX_ETERNAL_NODES: u32 = 1_000_000_000; // 1B eternal nodes
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2361,6 +2410,39 @@ pub const EcosystemCompleteState = struct {
     ecosystem_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.25: Trinity Eternal v1.0 types
+pub const OuroborosState = struct {
+    evolution_cycles: u64 = 0,
+    current_generation: u32 = 0,
+    fitness_score: u32 = 0,
+    last_evolution_us: i64 = 0,
+    ouroboros_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const InfiniteScaleState = struct {
+    scale_projections: u64 = 0,
+    current_scale: u64 = 0,
+    peak_scale: u64 = 0,
+    last_scale_us: i64 = 0,
+    scale_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const UniversalReserveState = struct {
+    reserve_transactions: u64 = 0,
+    reserve_valuation_utri: u64 = 0,
+    reserve_holders: u64 = 0,
+    last_reserve_us: i64 = 0,
+    reserve_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EternalUptimeState = struct {
+    uptime_checks: u64 = 0,
+    uptime_score: u32 = 0,
+    downtime_events: u32 = 0,
+    last_uptime_us: i64 = 0,
+    uptime_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2479,10 +2561,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 28; // v2.24: bumped from 27
+pub const QUARK_EXPORT_VERSION: u16 = 29; // v2.25: bumped from 28
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 130; // v2.24: was 126, +4 for global_dominance
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 134; // v2.25: was 130, +4 for trinity_eternal
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -2739,6 +2821,12 @@ pub const GoldenChainAgent = struct {
         tri_to_one_state: TriToOneState,
         ecosystem_complete_state: EcosystemCompleteState,
         global_dominance_active: bool,
+        // v2.25: Trinity Eternal v1.0 state
+        ouroboros_state: OuroborosState,
+        infinite_scale_state: InfiniteScaleState,
+        universal_reserve_state: UniversalReserveState,
+        eternal_uptime_state: EternalUptimeState,
+        trinity_eternal_active: bool,
 
     const Self = @This();
 
@@ -2940,6 +3028,12 @@ pub const GoldenChainAgent = struct {
             .tri_to_one_state = .{},
             .ecosystem_complete_state = .{},
             .global_dominance_active = false,
+            // v2.25: Trinity Eternal v1.0 defaults
+            .ouroboros_state = .{},
+            .infinite_scale_state = .{},
+            .universal_reserve_state = .{},
+            .eternal_uptime_state = .{},
+            .trinity_eternal_active = false,
         };
     }
 
@@ -3884,6 +3978,43 @@ pub const GoldenChainAgent = struct {
         }
         pub fn globalDominanceVerify(self: *const Self) bool {
             _ = self;
+            return true;
+        }
+
+        // v2.25: Trinity Eternal v1.0 stub methods
+        pub fn evolveOuroboros(self: *Self) void {
+            self.ouroboros_state.evolution_cycles += 1;
+            self.ouroboros_state.current_generation += 1;
+            self.ouroboros_state.fitness_score = @intCast(@min(self.ouroboros_state.current_generation * 10, 10000));
+        }
+
+        pub fn projectInfiniteScale(self: *Self) void {
+            self.infinite_scale_state.scale_projections += 1;
+            self.infinite_scale_state.current_scale += INFINITE_SCALE_TARGET / 1000;
+            if (self.infinite_scale_state.current_scale > self.infinite_scale_state.peak_scale) {
+                self.infinite_scale_state.peak_scale = self.infinite_scale_state.current_scale;
+            }
+        }
+
+        pub fn manageUniversalReserve(self: *Self) void {
+            self.universal_reserve_state.reserve_transactions += 1;
+            self.universal_reserve_state.reserve_valuation_utri = TRI_RESERVE_VALUATION_UTRI;
+            self.universal_reserve_state.reserve_holders += 1;
+        }
+
+        pub fn verifyEternalUptime(self: *Self) void {
+            self.eternal_uptime_state.uptime_checks += 1;
+            self.eternal_uptime_state.uptime_score = ETERNAL_UPTIME_TARGET;
+        }
+
+        pub fn trinityEternalVerify(self: *const Self) bool {
+            // Phase AF: Trinity Eternal v1.0 integrity
+            // AF1: Evolution cycles must exist
+            if (self.ouroboros_state.evolution_cycles == 0) return false;
+            // AF2: Scale projections must exist
+            if (self.infinite_scale_state.scale_projections == 0) return false;
+            // AF3: Reserve transactions must exist
+            if (self.universal_reserve_state.reserve_transactions == 0) return false;
             return true;
         }
 };
