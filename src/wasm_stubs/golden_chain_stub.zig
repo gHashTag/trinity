@@ -235,6 +235,11 @@ pub const ChainMessageType = enum {
     RecursiveSelfTrainUpdate,
     ContributionRewardEvent,
     NeuralConsensusEvent,
+    // v2.31: $TRI to $1000 + Eternal Dominance
+    TRITo1000Event,
+    UniversalReserveV2Update,
+    GlobalDominanceV2Event,
+    EternalGovernanceV2Event,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -295,7 +300,7 @@ pub const ProvenanceRecord = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE = 32;
-pub const MAX_QUARK_RECORDS = 304; // v2.30: was 296, +8 for Trinity Neural Network v1.0 (u16: 272/65536)
+pub const MAX_QUARK_RECORDS = 312; // v2.31: was 304, +8 for $TRI to $1000 + Eternal Dominance (u16: 280/65536)
 pub const MAX_ENTANGLE_REFS = 2;
 pub const QUARK_CONTENT_DIGEST_LEN = 48;
 
@@ -611,6 +616,15 @@ pub const QuarkType = enum(u16) {
     nn_failover, // 269 — Neural network failover
     nn_governance, // 270 — Neural network governance
     neural_anchor, // 271 — Neural anchor record
+    // v2.31: $TRI to $1000 + Eternal Dominance (u16: 280/65536 used)
+    tri_to_1000, // 272
+    universal_reserve_v2, // 273
+    global_dominance_v2, // 274
+    eternal_governance_v2, // 275
+    infinite_swarm, // 276
+    humanity_community, // 277
+    eternal_consensus, // 278
+    dominance_anchor, // 279
 
     pub fn getLabel(self: QuarkType) []const u8 {
         return switch (self) {
@@ -909,6 +923,15 @@ pub const QuarkType = enum(u16) {
             .nn_failover => "NN_FLO",
             .nn_governance => "NN_GOV",
             .neural_anchor => "NRL_ACH",
+            // v2.31: $TRI to $1000 + Eternal Dominance
+            .tri_to_1000 => "TRI_1K",
+            .universal_reserve_v2 => "UNI_RSV",
+            .global_dominance_v2 => "GLB_DOM",
+            .eternal_governance_v2 => "ETR_GOV",
+            .infinite_swarm => "INF_SWM",
+            .humanity_community => "HMN_COM",
+            .eternal_consensus => "ETR_CON",
+            .dominance_anchor => "DOM_ACH",
         };
     }
 
@@ -1474,6 +1497,23 @@ pub const QuarkType = enum(u16) {
     pub fn isNeuralConsensusQuark(self: QuarkType) bool {
         return self == .nn_governance or self == .nn_health;
     }
+
+    // v2.31: $TRI to $1000 + Eternal Dominance classifiers
+    pub fn isTRITo1000Quark(self: QuarkType) bool {
+        return self == .tri_to_1000 or self == .dominance_anchor;
+    }
+
+    pub fn isUniversalReserveV2Quark(self: QuarkType) bool {
+        return self == .universal_reserve_v2 or self == .eternal_consensus;
+    }
+
+    pub fn isGlobalDominanceV2Quark(self: QuarkType) bool {
+        return self == .global_dominance_v2 or self == .infinite_swarm;
+    }
+
+    pub fn isEternalGovernanceV2Quark(self: QuarkType) bool {
+        return self == .eternal_governance_v2 or self == .humanity_community;
+    }
 };
 
 pub const QuarkRecord = struct {
@@ -1949,6 +1989,13 @@ pub const CONTRIBUTION_REWARD_UTRI: u64 = 1_000_000;
 pub const NN_INFERENCE_TIMEOUT_US: i64 = 2_000_000;
 pub const NN_TRAINING_INTERVAL_US: i64 = 60_000_000;
 pub const MAX_NN_CONTRIBUTORS: u32 = 10_000_000;
+// v2.31: $TRI to $1000 + Eternal Dominance constants
+pub const TRI_TARGET_PRICE_USD: u64 = 1_000;
+pub const UNIVERSAL_RESERVE_CAP_UTRI: u64 = 100_000_000_000_000;
+pub const GLOBAL_EXCHANGE_LISTINGS: u32 = 500;
+pub const ETERNAL_GOVERNANCE_INTERVAL_US: i64 = 30_000_000;
+pub const MAX_RESERVE_PARTICIPANTS: u32 = 100_000_000;
+pub const DOMINANCE_THRESHOLD_BP: u64 = 9900;
 
 pub const CommunityState = struct {
     active_nodes: u16 = 0,
@@ -2834,6 +2881,39 @@ pub const NeuralConsensusState = struct {
     consensus_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
+// v2.31: $TRI to $1000 + Eternal Dominance types
+pub const TRITo1000State = struct {
+    tri_1000_events: u64 = 0,
+    tri_price_usd: u64 = 0,
+    market_cap_utri: u64 = 0,
+    last_price_us: i64 = 0,
+    price_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const UniversalReserveV2State = struct {
+    reserve_events: u64 = 0,
+    reserve_balance_utri: u64 = 0,
+    reserve_participants: u64 = 0,
+    last_reserve_us: i64 = 0,
+    reserve_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const GlobalDominanceV2State = struct {
+    dominance_events: u64 = 0,
+    dominance_score_bp: u64 = 0,
+    exchanges_listed: u64 = 0,
+    last_dominance_us: i64 = 0,
+    dominance_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
+pub const EternalGovernanceV2State = struct {
+    governance_events: u64 = 0,
+    proposals_passed: u64 = 0,
+    governance_accuracy_bp: u64 = 0,
+    last_governance_us: i64 = 0,
+    governance_hash: [32]u8 = [_]u8{0} ** 32,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // v1.4 DAG + $TRI REWARD TYPES (WASM stubs)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2952,10 +3032,10 @@ pub const QuarkSearchQuery = struct {
 };
 
 pub const QUARK_EXPORT_MAGIC = [4]u8{ 'Q', 'G', 'C', '1' };
-pub const QUARK_EXPORT_VERSION: u16 = 34; // v2.30: bumped from 33
+pub const QUARK_EXPORT_VERSION: u16 = 35; // v2.31: bumped from 34
 pub const PROVENANCE_RECORD_EXPORT_SIZE: usize = 158;
 pub const QUARK_RECORD_EXPORT_SIZE: usize = 131;
-pub const QUARK_EXPORT_HEADER_SIZE: usize = 154; // v2.30: was 150, +4 for nn_inference_events+train_cycles
+pub const QUARK_EXPORT_HEADER_SIZE: usize = 158; // v2.31: was 154, +4 for $TRI to $1000 + Eternal Dominance
 
 pub const MAX_MSG_CONTENT = 512;
 
@@ -3194,6 +3274,12 @@ pub const GoldenChainAgent = struct {
         contribution_reward_state: ContributionRewardState,
         neural_consensus_state: NeuralConsensusState,
         ternary_nn_active: bool,
+        // v2.31: $TRI to $1000 + Eternal Dominance
+        tri_to_1000_state: TRITo1000State,
+        universal_reserve_v2_state: UniversalReserveV2State,
+        global_dominance_v2_state: GlobalDominanceV2State,
+        eternal_governance_v2_state: EternalGovernanceV2State,
+        tri_to_1000_active: bool,
     // v2.20: ZK-Rollup v2.0 fields
     zk_rollup_v2_state: ZkRollupV2State,
     snark_generate_state: SnarkGenerateState,
@@ -3431,6 +3517,12 @@ pub const GoldenChainAgent = struct {
             .contribution_reward_state = .{},
             .neural_consensus_state = .{},
             .ternary_nn_active = false,
+            // v2.31: $TRI to $1000 + Eternal Dominance
+            .tri_to_1000_state = .{},
+            .universal_reserve_v2_state = .{},
+            .global_dominance_v2_state = .{},
+            .eternal_governance_v2_state = .{},
+            .tri_to_1000_active = false,
             // v2.20: ZK-Rollup v2.0 defaults
             .zk_rollup_v2_state = .{},
             .snark_generate_state = .{},
@@ -4331,6 +4423,35 @@ pub const GoldenChainAgent = struct {
             if (self.ternary_nn_state.nn_inference_events == 0) return false;
             if (self.recursive_self_train_state.train_cycles == 0) return false;
             if (self.contribution_reward_state.contribution_events == 0) return false;
+            return true;
+        }
+
+        // v2.31: $TRI to $1000 + Eternal Dominance stubs
+        fn scaleTRITo1000(self: *Self) void {
+            self.tri_to_1000_state.tri_1000_events += 1;
+            self.tri_to_1000_state.tri_price_usd = TRI_TARGET_PRICE_USD;
+            self.tri_to_1000_active = true;
+        }
+
+        fn activateUniversalReserve(self: *Self) void {
+            self.universal_reserve_v2_state.reserve_events += 1;
+            self.universal_reserve_v2_state.reserve_balance_utri += UNIVERSAL_RESERVE_CAP_UTRI;
+        }
+
+        fn expandGlobalDominance(self: *Self) void {
+            self.global_dominance_v2_state.dominance_events += 1;
+            self.global_dominance_v2_state.dominance_score_bp = DOMINANCE_THRESHOLD_BP;
+        }
+
+        fn governEternal(self: *Self) void {
+            self.eternal_governance_v2_state.governance_events += 1;
+            self.eternal_governance_v2_state.proposals_passed += 1;
+        }
+
+        fn triTo1000Verify(self: *const Self) bool {
+            if (self.tri_to_1000_state.tri_1000_events == 0) return false;
+            if (self.universal_reserve_v2_state.reserve_events == 0) return false;
+            if (self.global_dominance_v2_state.dominance_events == 0) return false;
             return true;
         }
 
