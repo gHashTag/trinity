@@ -1739,6 +1739,192 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// PROOF: SHA-256 hash before send = hash after receive");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &hash_before, &hash_after);");
 
+        // ═══════════════════════════════════════════════════════════════════
+        // ERASURE CODING TESTS (E1-E5): Reed-Solomon GF(2^8) proofs
+        // ReedSolomon struct with Vandermonde encode + Gaussian decode.
+        // ═══════════════════════════════════════════════════════════════════
+
+        } else if (std.mem.eql(u8, name, "erasureGfArithmetic")) {
+            // E1: GF(2^8) field axioms
+            try self.builder.writeLine("// E1: GF(2^8) Arithmetic Verification");
+            try self.builder.writeLine("// Identity: a * 1 = a");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 42), ReedSolomon.gfMul(42, 1));");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 255), ReedSolomon.gfMul(255, 1));");
+            try self.builder.writeLine("// Zero: a * 0 = 0");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 0), ReedSolomon.gfMul(42, 0));");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 0), ReedSolomon.gfMul(0, 255));");
+            try self.builder.writeLine("// Inverse: a * inv(a) = 1");
+            try self.builder.writeLine("const test_vals = [_]u8{ 1, 2, 3, 7, 42, 128, 200, 255 };");
+            try self.builder.writeLine("for (test_vals) |a| {");
+            try self.builder.writeLine("    const inv_a = ReedSolomon.gfInv(a);");
+            try self.builder.writeLine("    try std.testing.expectEqual(@as(u8, 1), ReedSolomon.gfMul(a, inv_a));");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("// Power: a^0 = 1, a^1 = a");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 1), ReedSolomon.gfPow(42, 0));");
+            try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 42), ReedSolomon.gfPow(42, 1));");
+            try self.builder.writeLine("// Commutativity: a*b = b*a");
+            try self.builder.writeLine("try std.testing.expectEqual(ReedSolomon.gfMul(7, 13), ReedSolomon.gfMul(13, 7));");
+
+        } else if (std.mem.eql(u8, name, "erasureEncodeDecodeBasic")) {
+            // E2: Encode k=3,m=2 → decode from first k shards → exact match
+            try self.builder.writeLine("// E2: Encode/Decode Roundtrip (k=3, m=2)");
+            try self.builder.writeLine("const rs = ReedSolomon.init(3, 2);");
+            try self.builder.writeLine("const data0 = [_]u8{ 'H', 'e', 'l', 'l' };");
+            try self.builder.writeLine("const data1 = [_]u8{ 'o', ' ', 'W', 'o' };");
+            try self.builder.writeLine("const data2 = [_]u8{ 'r', 'l', 'd', '!' };");
+            try self.builder.writeLine("const block_len = 4;");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Encode all byte positions");
+            try self.builder.writeLine("var coded: [5][4]u8 = undefined;");
+            try self.builder.writeLine("var pos: usize = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var in_bytes = [_]u8{ data0[pos], data1[pos], data2[pos] };");
+            try self.builder.writeLine("    var out_bytes: [5]u8 = undefined;");
+            try self.builder.writeLine("    rs.encodeByte(&in_bytes, &out_bytes);");
+            try self.builder.writeLine("    var s: usize = 0;");
+            try self.builder.writeLine("    while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Decode from shards 0,1,2 (first k)");
+            try self.builder.writeLine("var rec: [3][4]u8 = undefined;");
+            try self.builder.writeLine("pos = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var avail = [_]u8{ coded[0][pos], coded[1][pos], coded[2][pos] };");
+            try self.builder.writeLine("    var indices = [_]u8{ 0, 1, 2 };");
+            try self.builder.writeLine("    var out: [3]u8 = undefined;");
+            try self.builder.writeLine("    try rs.decodeByte(&avail, &indices, &out);");
+            try self.builder.writeLine("    var s2: usize = 0;");
+            try self.builder.writeLine("    while (s2 < 3) : (s2 += 1) rec[s2][pos] = out[s2];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: Decoded matches original");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data0, &rec[0]);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data1, &rec[1]);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data2, &rec[2]);");
+
+        } else if (std.mem.eql(u8, name, "erasureRecoverTwoLoss")) {
+            // E3: Lose shards 1 and 3, recover from {0, 2, 4}
+            try self.builder.writeLine("// E3: Recover After Losing 2 Shards (k=3, m=2)");
+            try self.builder.writeLine("const rs = ReedSolomon.init(3, 2);");
+            try self.builder.writeLine("const data0 = [_]u8{ 10, 20, 30, 40 };");
+            try self.builder.writeLine("const data1 = [_]u8{ 50, 60, 70, 80 };");
+            try self.builder.writeLine("const data2 = [_]u8{ 90, 100, 110, 120 };");
+            try self.builder.writeLine("const block_len = 4;");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("var coded: [5][4]u8 = undefined;");
+            try self.builder.writeLine("var pos: usize = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var in_bytes = [_]u8{ data0[pos], data1[pos], data2[pos] };");
+            try self.builder.writeLine("    var out_bytes: [5]u8 = undefined;");
+            try self.builder.writeLine("    rs.encodeByte(&in_bytes, &out_bytes);");
+            try self.builder.writeLine("    var s: usize = 0;");
+            try self.builder.writeLine("    while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Lose shards 1 and 3 → recover from {0, 2, 4}");
+            try self.builder.writeLine("var rec: [3][4]u8 = undefined;");
+            try self.builder.writeLine("pos = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var avail = [_]u8{ coded[0][pos], coded[2][pos], coded[4][pos] };");
+            try self.builder.writeLine("    var indices = [_]u8{ 0, 2, 4 };");
+            try self.builder.writeLine("    var out: [3]u8 = undefined;");
+            try self.builder.writeLine("    try rs.decodeByte(&avail, &indices, &out);");
+            try self.builder.writeLine("    var s2: usize = 0;");
+            try self.builder.writeLine("    while (s2 < 3) : (s2 += 1) rec[s2][pos] = out[s2];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: Recovered matches original after 2-shard loss");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data0, &rec[0]);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data1, &rec[1]);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data2, &rec[2]);");
+
+        } else if (std.mem.eql(u8, name, "erasureRecoverDataLoss")) {
+            // E4: Lose shards 0 and 1 → recover from {2, 3, 4}
+            try self.builder.writeLine("// E4: Recover After Losing 2 Data-Dominant Shards");
+            try self.builder.writeLine("const rs = ReedSolomon.init(3, 2);");
+            try self.builder.writeLine("const data0 = [_]u8{ 0xDE, 0xAD, 0xBE, 0xEF };");
+            try self.builder.writeLine("const data1 = [_]u8{ 0xCA, 0xFE, 0xBA, 0xBE };");
+            try self.builder.writeLine("const data2 = [_]u8{ 0xF0, 0x0D, 0xFA, 0xCE };");
+            try self.builder.writeLine("const block_len = 4;");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("var coded: [5][4]u8 = undefined;");
+            try self.builder.writeLine("var pos: usize = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var in_bytes = [_]u8{ data0[pos], data1[pos], data2[pos] };");
+            try self.builder.writeLine("    var out_bytes: [5]u8 = undefined;");
+            try self.builder.writeLine("    rs.encodeByte(&in_bytes, &out_bytes);");
+            try self.builder.writeLine("    var s: usize = 0;");
+            try self.builder.writeLine("    while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Lose shards 0 and 1 → recover from {2, 3, 4} only");
+            try self.builder.writeLine("var rec: [3][4]u8 = undefined;");
+            try self.builder.writeLine("pos = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var avail = [_]u8{ coded[2][pos], coded[3][pos], coded[4][pos] };");
+            try self.builder.writeLine("    var indices = [_]u8{ 2, 3, 4 };");
+            try self.builder.writeLine("    var out: [3]u8 = undefined;");
+            try self.builder.writeLine("    try rs.decodeByte(&avail, &indices, &out);");
+            try self.builder.writeLine("    var s2: usize = 0;");
+            try self.builder.writeLine("    while (s2 < 3) : (s2 += 1) rec[s2][pos] = out[s2];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: Recovered matches even with worst-case data loss");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data0, &rec[0]);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data1, &rec[1]);");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data2, &rec[2]);");
+
+        } else if (std.mem.eql(u8, name, "erasureHashIntegrity")) {
+            // E5: SHA-256 integrity after encode/decode cycle
+            try self.builder.writeLine("// E5: SHA-256 Hash Integrity After Erasure Recovery");
+            try self.builder.writeLine("const rs = ReedSolomon.init(3, 2);");
+            try self.builder.writeLine("const data0 = [_]u8{ 'T', 'r', 'i', 'n' };");
+            try self.builder.writeLine("const data1 = [_]u8{ 'i', 't', 'y', '!' };");
+            try self.builder.writeLine("const data2 = [_]u8{ 'R', 'S', 'v', '1' };");
+            try self.builder.writeLine("const block_len = 4;");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Hash original data");
+            try self.builder.writeLine("var orig_flat: [12]u8 = undefined;");
+            try self.builder.writeLine("@memcpy(orig_flat[0..4], &data0);");
+            try self.builder.writeLine("@memcpy(orig_flat[4..8], &data1);");
+            try self.builder.writeLine("@memcpy(orig_flat[8..12], &data2);");
+            try self.builder.writeLine("var hash_before: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(&orig_flat, &hash_before, .{});");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Encode");
+            try self.builder.writeLine("var coded: [5][4]u8 = undefined;");
+            try self.builder.writeLine("var pos: usize = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var in_bytes = [_]u8{ data0[pos], data1[pos], data2[pos] };");
+            try self.builder.writeLine("    var out_bytes: [5]u8 = undefined;");
+            try self.builder.writeLine("    rs.encodeByte(&in_bytes, &out_bytes);");
+            try self.builder.writeLine("    var s: usize = 0;");
+            try self.builder.writeLine("    while (s < 5) : (s += 1) coded[s][pos] = out_bytes[s];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Lose shards 0 and 4 → recover from {1, 2, 3}");
+            try self.builder.writeLine("var rec: [3][4]u8 = undefined;");
+            try self.builder.writeLine("pos = 0;");
+            try self.builder.writeLine("while (pos < block_len) : (pos += 1) {");
+            try self.builder.writeLine("    var avail = [_]u8{ coded[1][pos], coded[2][pos], coded[3][pos] };");
+            try self.builder.writeLine("    var indices = [_]u8{ 1, 2, 3 };");
+            try self.builder.writeLine("    var out: [3]u8 = undefined;");
+            try self.builder.writeLine("    try rs.decodeByte(&avail, &indices, &out);");
+            try self.builder.writeLine("    var s2: usize = 0;");
+            try self.builder.writeLine("    while (s2 < 3) : (s2 += 1) rec[s2][pos] = out[s2];");
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// Hash recovered data");
+            try self.builder.writeLine("var rec_flat: [12]u8 = undefined;");
+            try self.builder.writeLine("@memcpy(rec_flat[0..4], &rec[0]);");
+            try self.builder.writeLine("@memcpy(rec_flat[4..8], &rec[1]);");
+            try self.builder.writeLine("@memcpy(rec_flat[8..12], &rec[2]);");
+            try self.builder.writeLine("var hash_after: [32]u8 = undefined;");
+            try self.builder.writeLine("std.crypto.hash.sha2.Sha256.hash(&rec_flat, &hash_after, .{});");
+            try self.builder.writeLine("");
+            try self.builder.writeLine("// PROOF: SHA-256 hash before = hash after erasure recovery");
+            try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &hash_before, &hash_after);");
+
         } else {
             // Generate real test assertions: verify function exists and is callable
             const mem = std.mem;
