@@ -263,6 +263,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-20-forward-engine-report',
         'research/trinity-golden-chain-v2-21-streaming-swarm-report',
         'research/trinity-golden-chain-v2-22-real-execution-report',
+        'research/trinity-golden-chain-v2-23-e2e-live-report',
       ],
     },
     'faq',
