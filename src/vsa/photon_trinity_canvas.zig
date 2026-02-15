@@ -238,6 +238,11 @@ const ChatMsgType = enum {
             universal_adoption_v2,
             exchange_v2_v2,
             global_wallet_v2,
+            // v2.28: Swarm 10M + u8 FULL
+            swarm_10m_v2,
+            community_5m_v2,
+            earning_ultimate_v2,
+            node_discovery_10m_v2,
 };
 var g_chat_messages: [MAX_CHAT_MSGS][512]u8 = undefined; // v3.0: 512 bytes per msg
 var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
@@ -554,6 +559,11 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
                     .universal_adoption_v2 => .{ .r = 0x00, .g = 0xFA, .b = 0x9A, .a = 255 },
                     .exchange_v2_v2 => .{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = 255 },
                     .global_wallet_v2 => .{ .r = 0x48, .g = 0xD1, .b = 0xCC, .a = 255 },
+                    // v2.28
+                    .swarm_10m_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = 255 },
+                    .community_5m_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 },
+                    .earning_ultimate_v2 => .{ .r = 0x7F, .g = 0xFF, .b = 0x00, .a = 255 },
+                    .node_discovery_10m_v2 => .{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = 255 },
         .user => .{ .r = 0x70, .g = 0x70, .b = 0x90, .a = alpha },
         .ai => .{ .r = 0x30, .g = 0x80, .b = 0x50, .a = alpha },
         .log => .{ .r = 0x60, .g = 0x60, .b = 0x60, .a = alpha },
@@ -709,6 +719,11 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
                     .universal_adoption_v2 => "UNI_ADOPT",
                     .exchange_v2_v2 => "EXC_V2",
                     .global_wallet_v2 => "GLB_WALLET",
+                    // v2.28
+                    .swarm_10m_v2 => "SWM_10M",
+                    .community_5m_v2 => "COM_5M",
+                    .earning_ultimate_v2 => "ERN_ULT",
+                    .node_discovery_10m_v2 => "NOD_10M",
         .user => "YOU",
         .ai => "AI",
         .log => "LOG",
@@ -717,7 +732,7 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
 
 fn isChainType(msg_type: ChatMsgType) bool {
     return switch (msg_type) {
-        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute, .staking_validate, .swarm_100k, .gossip_shard, .dht_sync, .community_50k, .zk_bridge, .zk_proof, .privacy_transfer, .cross_chain_sync_v2, .l2_rollup, .optimistic_verify, .state_channel, .batch_compress, .dynamic_shard, .shard_split, .shard_merge, .dht_adapt, .swarm_million, .community_node, .hierarchical_gossip, .geographic_shard, .zk_snark_proof, .recursive_proof, .l2_scaling, .rollup_batch, .cross_shard_tx, .atomic_2pc, .shard_fee, .tx_coordinator, .partition_detect, .split_brain, .auto_heal, .partition_tolerance, .swarm_10m, .community_5m, .earning_boost, .massive_gossip, .zk_rollup_v2, .snark_generate, .recursive_compose, .l2_fee_collect, .cross_shard_tx_v2, .atomic_2pc_v2, .shard_fee_v2, .inter_shard_sync_v2, .formal_verify_v2, .property_test_v2, .invariant_check_v2, .proof_generate_v2, .swarm_100m_v2, .community_50m_v2, .earning_moonshot_v2, .gossip_v3_v2, .global_dominance_v2, .world_adoption_v2, .tri_to_one_v2, .ecosystem_complete_v2, .ouroboros_evolve_v2, .infinite_scale_v2, .universal_reserve_v2, .eternal_uptime_v2, .tri_to_ten_v2, .mass_adoption_v2, .exchange_listing_v2, .universal_wallet_v2, .tri_to_hundred_v2, .universal_adoption_v2, .exchange_v2_v2, .global_wallet_v2 => true,
+        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute, .staking_validate, .swarm_100k, .gossip_shard, .dht_sync, .community_50k, .zk_bridge, .zk_proof, .privacy_transfer, .cross_chain_sync_v2, .l2_rollup, .optimistic_verify, .state_channel, .batch_compress, .dynamic_shard, .shard_split, .shard_merge, .dht_adapt, .swarm_million, .community_node, .hierarchical_gossip, .geographic_shard, .zk_snark_proof, .recursive_proof, .l2_scaling, .rollup_batch, .cross_shard_tx, .atomic_2pc, .shard_fee, .tx_coordinator, .partition_detect, .split_brain, .auto_heal, .partition_tolerance, .swarm_10m, .community_5m, .earning_boost, .massive_gossip, .zk_rollup_v2, .snark_generate, .recursive_compose, .l2_fee_collect, .cross_shard_tx_v2, .atomic_2pc_v2, .shard_fee_v2, .inter_shard_sync_v2, .formal_verify_v2, .property_test_v2, .invariant_check_v2, .proof_generate_v2, .swarm_100m_v2, .community_50m_v2, .earning_moonshot_v2, .gossip_v3_v2, .global_dominance_v2, .world_adoption_v2, .tri_to_one_v2, .ecosystem_complete_v2, .ouroboros_evolve_v2, .infinite_scale_v2, .universal_reserve_v2, .eternal_uptime_v2, .tri_to_ten_v2, .mass_adoption_v2, .exchange_listing_v2, .universal_wallet_v2, .tri_to_hundred_v2, .universal_adoption_v2, .exchange_v2_v2, .global_wallet_v2, .swarm_10m_v2, .community_5m_v2, .earning_ultimate_v2, .node_discovery_10m_v2 => true,
         else => false,
     };
 }
@@ -882,6 +897,11 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
                     .UniversalAdoptionUpdate => .universal_adoption_v2,
                     .ExchangeV2Event => .exchange_v2_v2,
                     .GlobalWalletEvent => .global_wallet_v2,
+                    // v2.28
+                    .Swarm10MEvent => .swarm_10m_v2,
+                    .Community5MUpdate => .community_5m_v2,
+                    .EarningUltimateEvent => .earning_ultimate_v2,
+                    .NodeDiscovery10MEvent => .node_discovery_10m_v2,
     };
 }
 
