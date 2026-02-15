@@ -1,0 +1,108 @@
+name: storage_init
+version: "1.0.0"
+language: zig
+module: storage_init
+
+imports:
+  - name: vsa
+    path: "src/vsa.zig"
+
+description: |
+  Storage Init v1.0 — Basic Disk Shards + VSA Fingerprints
+
+  === PURPOSE ===
+  Real disk-backed shard storage with VSA content fingerprinting.
+  Each shard is a fixed-size block stored on disk with a SHA-256 hash key
+  and a VSA hypervector fingerprint for content-addressable similarity search.
+
+  === OPERATIONS ===
+  1. initStorage    — create storage directory, write manifest
+  2. writeShard     — write bytes to disk shard, compute SHA-256 hash + VSA fingerprint
+  3. readShard      — read shard from disk by hash key
+  4. deleteShard    — remove shard file from disk
+  5. listShards     — enumerate all shard files in storage directory
+  6. shardExists    — check if shard file exists on disk
+  7. computeFingerprint — compute VSA fingerprint from shard data bytes
+  8. findSimilar    — find shards with similar VSA fingerprints (cosine search)
+
+  === DISK LAYOUT ===
+  storage_root/
+    manifest.json   — shard index (hash -> metadata)
+    shards/
+      <hex_hash>.shard  — raw shard data (64KB default)
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  ShardConfig:
+    fields:
+      storage_root: String
+      shard_size: Int
+      max_shards: Int
+
+  ShardMeta:
+    fields:
+      hash_hex: String
+      size_bytes: Int
+      fingerprint_seed: Int
+      created_at: Int
+
+  ShardWriteResult:
+    fields:
+      hash_hex: String
+      size_bytes: Int
+      success: Bool
+
+  ShardReadResult:
+    fields:
+      data: String
+      size_bytes: Int
+      found: Bool
+
+  SimilarityResult:
+    fields:
+      hash_hex: String
+      similarity: Float
+      rank: Int
+
+behaviors:
+  - name: initStorage
+    given: A storage root path and shard config
+    when: Creates the storage directory and shards subdirectory and writes initial manifest
+    then: Storage directory exists with empty manifest file ready for shard operations
+
+  - name: writeShard
+    given: Raw byte data and a storage root path
+    when: Computes SHA-256 hash of data and writes to shards directory as hex_hash.shard file
+    then: Shard file exists on disk and manifest is updated with shard metadata
+
+  - name: readShard
+    given: A SHA-256 hash hex string and storage root path
+    when: Reads the shard file from shards directory by constructing path from hash
+    then: Returns raw byte data if shard exists or error if not found
+
+  - name: deleteShard
+    given: A SHA-256 hash hex string and storage root path
+    when: Removes the shard file from disk and updates manifest
+    then: Shard file no longer exists and manifest entry is removed
+
+  - name: listShards
+    given: A storage root path
+    when: Enumerates all .shard files in the shards subdirectory
+    then: Returns list of hash hex strings for all stored shards
+
+  - name: shardExists
+    given: A SHA-256 hash hex string and storage root path
+    when: Checks if the shard file exists on disk
+    then: Returns true if file exists false otherwise
+
+  - name: computeFingerprint
+    given: Raw byte data from a shard
+    when: Encodes bytes into a VSA hypervector using trit mapping and bind operations
+    then: Returns a deterministic VSA fingerprint vector for the shard content
+
+  - name: findSimilar
+    given: A query VSA fingerprint and list of stored shard fingerprints
+    when: Computes cosine similarity between query and each stored fingerprint
+    then: Returns top-k most similar shards ranked by cosine similarity score
