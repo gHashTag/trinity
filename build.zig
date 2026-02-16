@@ -182,6 +182,24 @@ pub fn build(b: *std.Build) void {
     const search_step = b.step("search", "Run trinity-search (semantic search CLI)");
     search_step.dependOn(&run_search.step);
 
+    // trinity-query CLI — Knowledge Graph Query (Level 11.24)
+    const trinity_query = b.addExecutable(.{
+        .name = "trinity-query",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/query_cli.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(trinity_query);
+
+    const run_query = b.addRunArtifact(trinity_query);
+    if (b.args) |args| {
+        run_query.addArgs(args);
+    }
+    const query_step = b.step("query", "Run trinity-query (KG query CLI)");
+    query_step.dependOn(&run_query.step);
+
     // Benchmark executable
     const bench = b.addExecutable(.{
         .name = "trinity-bench",
