@@ -95,6 +95,8 @@ const sidebars: SidebarsConfig = {
         'api/sequence-hdc',
         'api/jit',
         'api/sparse',
+        'api/c-api',
+        'api/python-sdk',
       ],
     },
     {
@@ -295,6 +297,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-49-penalty-report',
         'research/trinity-golden-chain-v2-50-kneser-ney-report',
         'research/trinity-golden-chain-v2-51-4gram-report',
+        'research/trinity-golden-chain-v2-52-held-out-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
@@ -307,6 +310,8 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-32-beyond-report',
         'research/trinity-golden-chain-v3-0-absolute-report',
         'research/trinity-golden-chain-mainnet-ready-report',
+        // SDK Reports
+        'research/libtrinity-vsa-v0.2.0-report',
       ],
     },
     'faq',
