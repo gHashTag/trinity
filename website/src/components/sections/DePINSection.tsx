@@ -170,6 +170,70 @@ export default function DePINSection() {
         </motion.div>
       </div>
 
+      {/* Staking Tiers */}
+      <motion.div
+        style={{
+          ...glassStyle,
+          maxWidth: '900px',
+          margin: '0 auto 4rem',
+          padding: 'clamp(1rem, 4vw, 2rem)',
+          overflow: 'hidden',
+        }}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <h3 style={{
+          fontSize: 'clamp(1rem, 3vw, 1.3rem)',
+          fontWeight: 600,
+          color: 'var(--text)',
+          marginBottom: '0.5rem',
+          textAlign: 'center'
+        }}>
+          Stake-Based API Tiers
+        </h3>
+        <p style={{ fontSize: '0.8rem', color: 'var(--muted)', textAlign: 'center', marginBottom: '1.5rem' }}>
+          Your wallet = your API key. Stake $TRI to unlock higher limits.
+        </p>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'clamp(0.75rem, 2vw, 0.9rem)' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.15)' }}>
+                {['Tier', 'Staked $TRI', 'Rate Limit', 'Multiplier'].map(h => (
+                  <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'left', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.1em' }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { tier: 'Free', stake: '0', limit: '10/min', mult: '1.0x', color: 'var(--muted)' },
+                { tier: 'Staker', stake: '100+', limit: '60/min', mult: '1.5x', color: '#00ccff' },
+                { tier: 'Power', stake: '1,000+', limit: '300/min', mult: '2.0x', color: '#ffd700' },
+                { tier: 'Whale', stake: '10,000+', limit: 'Unlimited', mult: '3.0x', color: '#aa66ff' },
+              ].map((row, i) => (
+                <motion.tr
+                  key={row.tier}
+                  style={{ borderBottom: i < 3 ? '1px solid rgba(255, 255, 255, 0.05)' : 'none' }}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.08, duration: 0.4 }}
+                  viewport={{ once: true }}
+                >
+                  <td style={{ padding: '0.75rem 1rem', color: row.color, fontWeight: 600 }}>{row.tier}</td>
+                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text)', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85em' }}>{row.stake}</td>
+                  <td style={{ padding: '0.75rem 1rem', color: 'var(--text)', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85em' }}>{row.limit}</td>
+                  <td style={{ padding: '0.75rem 1rem', color: row.color, fontWeight: 600, fontFamily: 'JetBrains Mono, monospace' }}>{row.mult}</td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
+
       {/* Rewards Table */}
       <motion.div
         style={{
