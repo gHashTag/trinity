@@ -1,0 +1,53 @@
+name: unified_multi_domain_fusion
+version: "1.0.0"
+language: zig
+module: unified_multi_domain_fusion
+description: "Level 11.20 — Unified Multi-Domain Fusion Engine. Fuses 7 entity categories (People, Companies, Cities, Countries, Continents, Products, Languages) into a single 36-entity space with 7 relation types. Tests 4-hop chains (person→company→city→country→continent), 3-hop divergent chains (person→company→product AND city), and 4-hop cross-domain chains (person→company→city→country→language). All relations split into 2 sub-memories of 3 pairs. Total 18/18 (100%)."
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 36
+  NUM_CATEGORIES: 7
+  PAIRS_PER_SUBMEM: 3
+
+types:
+  FusionQuery:
+    fields:
+      chain_depth: Int
+      domains_crossed: Int
+      result: String
+      correct: Bool
+      description: "A multi-domain fusion query crossing multiple entity categories."
+
+behaviors:
+  - name: fourHopContinent
+    given: 36 entities across 7 categories. works_at, hq_in, city_in split 3+3. continent_mem bundled 6 pairs.
+    when: For each person, chain works_at → hq_in → city_in → continent_of
+    then: 6/6 (100%) — Alice→TechCo→SanFran→USA→NorthAmerica, Bob→BioLab→Boston→USA2→NorthAmerica, Charlie→FinServ→London→UK→Europe, Diana→AutoMfg→Munich→Germany→Europe, Eve→MediaInc→Tokyo→Japan→Asia, Frank→EnergyX→Sydney→Australia→Oceania
+
+  - name: threeHopDivergent
+    given: Same unified entity space with works_at, makes, hq_in relations.
+    when: For each person, chain works_at → (makes AND hq_in) to get both product and city
+    then: 6/6 (100%) — each person resolves to correct product AND correct city via shared company hop
+
+  - name: fourHopLanguage
+    given: Same unified entity space with works_at, hq_in, city_in, language_of relations.
+    when: For each person, chain works_at → hq_in → city_in → language_of
+    then: 6/6 (100%) — 4-hop cross-domain chain resolves correct language for each person
+
+test_cases:
+  - name: test_4hop_continent_6_6
+    input: "Run 6 four-hop person→company→city→country→continent chains"
+    expected: "6/6 (100%)"
+
+  - name: test_divergent_6_6
+    input: "Run 6 three-hop divergent person→company→(product+city) chains"
+    expected: "6/6 (100%)"
+
+  - name: test_4hop_language_6_6
+    input: "Run 6 four-hop person→company→city→country→language chains"
+    expected: "6/6 (100%)"
+
+  - name: test_total_18_18
+    input: "Total unified multi-domain fusion accuracy"
+    expected: "18/18 (100%)"
