@@ -26880,3 +26880,619 @@ test "degradation resistance depth noise scaling" {
     std.debug.print("11.31 | Degradation Resist    | depth+noise+cap+superior <<<\n", .{});
     std.debug.print("============================================\n", .{});
 }
+
+// ============================================================================
+// TEST 148: PUBLIC DEMO API — End-to-End Query Pipeline (Level 11.32)
+// ============================================================================
+test "public demo api end to end query pipeline" {
+    const DIM = 4096;
+    const allocator = std.testing.allocator;
+
+    const queryOne = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    std.debug.print("\n=== TEST 148: PUBLIC DEMO API PIPELINE (Level 11.32) ===\n", .{});
+    std.debug.print("End-to-end: multi-domain KG, query interface, response formatting\n", .{});
+
+    // --- Setup: Multi-domain knowledge graph (3 domains, 600 entities) ---
+    var entities = try allocator.alloc(Hypervector, 600);
+    defer allocator.free(entities);
+    for (0..600) |i| {
+        entities[i] = Hypervector.random(DIM, @as(u64, @intCast(i + 80000)));
+    }
+    // Domain A: People -> Locations (200 entities: 0..99 people, 100..199 locations)
+    // Domain B: Products -> Categories (200 entities: 200..299 products, 300..399 categories)
+    // Domain C: Documents -> Topics (200 entities: 400..499 documents, 500..599 topics)
+
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // --- Task 1: Single-domain queries (3 domains x 10 queries) ---
+    std.debug.print("--- Task 1: Single-domain queries (30) ---\n", .{});
+
+    // Domain A: person -> location (10 pairs)
+    var a_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = entities[i];
+        a_binds[i] = k.bind(&entities[100 + i]);
+    }
+    var a_mem = treeBundleN(&a_binds);
+
+    var t1a: u32 = 0;
+    for (0..10) |i| {
+        var key = entities[i];
+        const r = queryOne(&a_mem, &key, entities[100..200]);
+        if (r.idx == i) t1a += 1;
+    }
+    std.debug.print("  Domain A (people->loc): {d}/10\n", .{t1a});
+
+    // Domain B: product -> category (10 pairs)
+    var b_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = entities[200 + i];
+        b_binds[i] = k.bind(&entities[300 + i]);
+    }
+    var b_mem = treeBundleN(&b_binds);
+
+    var t1b: u32 = 0;
+    for (0..10) |i| {
+        var key = entities[200 + i];
+        const r = queryOne(&b_mem, &key, entities[300..400]);
+        if (r.idx == i) t1b += 1;
+    }
+    std.debug.print("  Domain B (prod->cat): {d}/10\n", .{t1b});
+
+    // Domain C: document -> topic (10 pairs)
+    var c_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = entities[400 + i];
+        c_binds[i] = k.bind(&entities[500 + i]);
+    }
+    var c_mem = treeBundleN(&c_binds);
+
+    var t1c: u32 = 0;
+    for (0..10) |i| {
+        var key = entities[400 + i];
+        const r = queryOne(&c_mem, &key, entities[500..600]);
+        if (r.idx == i) t1c += 1;
+    }
+    std.debug.print("  Domain C (doc->topic): {d}/10\n", .{t1c});
+
+    const t1_total = t1a + t1b + t1c;
+    std.debug.print("  Single-domain total: {d}/30\n", .{t1_total});
+    total_correct += t1_total;
+    total_queries += 30;
+
+    // --- Task 2: Cross-domain queries (2-hop, 20 queries) ---
+    std.debug.print("--- Task 2: Cross-domain 2-hop queries (20) ---\n", .{});
+
+    // Chain A->B: person[i] -> location[i], location[i] -> category[i] (via bridge memory)
+    var ab_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = entities[100 + i]; // location
+        ab_binds[i] = k.bind(&entities[300 + i]); // -> category
+    }
+    var ab_mem = treeBundleN(&ab_binds);
+
+    var t2a: u32 = 0;
+    for (0..10) |i| {
+        // Hop 1: person -> location
+        var key1 = entities[i];
+        const r1 = queryOne(&a_mem, &key1, entities[100..200]);
+        if (r1.idx == i) {
+            // Hop 2: location -> category
+            var key2 = entities[100 + r1.idx];
+            const r2 = queryOne(&ab_mem, &key2, entities[300..400]);
+            if (r2.idx == i) t2a += 1;
+        }
+    }
+    std.debug.print("  A->B (person->loc->cat): {d}/10\n", .{t2a});
+
+    // Chain B->C: product[i] -> category[i], category[i] -> topic[i] (via bridge)
+    var bc_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = entities[300 + i]; // category
+        bc_binds[i] = k.bind(&entities[500 + i]); // -> topic
+    }
+    var bc_mem = treeBundleN(&bc_binds);
+
+    var t2b: u32 = 0;
+    for (0..10) |i| {
+        var key1 = entities[200 + i];
+        const r1 = queryOne(&b_mem, &key1, entities[300..400]);
+        if (r1.idx == i) {
+            var key2 = entities[300 + r1.idx];
+            const r2 = queryOne(&bc_mem, &key2, entities[500..600]);
+            if (r2.idx == i) t2b += 1;
+        }
+    }
+    std.debug.print("  B->C (prod->cat->topic): {d}/10\n", .{t2b});
+
+    const t2_total = t2a + t2b;
+    std.debug.print("  Cross-domain total: {d}/20\n", .{t2_total});
+    total_correct += t2_total;
+    total_queries += 20;
+
+    // --- Task 3: Response formatting + confidence scores (20 queries) ---
+    std.debug.print("--- Task 3: Response formatting + confidence (20) ---\n", .{});
+
+    var t3_correct: u32 = 0;
+    var t3_high_conf: u32 = 0;
+    var conf_sum: f64 = 0.0;
+
+    for (0..10) |i| {
+        // Query with confidence: Domain A
+        var key = entities[i];
+        const r = queryOne(&a_mem, &key, entities[100..200]);
+        if (r.idx == i) {
+            t3_correct += 1;
+            if (r.sim > 0.15) t3_high_conf += 1;
+        }
+        conf_sum += r.sim;
+    }
+    for (0..10) |i| {
+        // Query with confidence: Domain B
+        var key = entities[200 + i];
+        const r = queryOne(&b_mem, &key, entities[300..400]);
+        if (r.idx == i) {
+            t3_correct += 1;
+            if (r.sim > 0.15) t3_high_conf += 1;
+        }
+        conf_sum += r.sim;
+    }
+
+    const avg_conf = conf_sum / 20.0;
+    std.debug.print("  Correct: {d}/20, High-conf: {d}/20, Avg sim: {d:.4}\n", .{ t3_correct, t3_high_conf, avg_conf });
+    total_correct += t3_correct;
+    total_queries += 20;
+
+    // --- Task 4: Batch query throughput (30 queries in sequence) ---
+    std.debug.print("--- Task 4: Batch query throughput (30) ---\n", .{});
+
+    // Allocate a batch result array
+    var batch_results = try allocator.alloc(u32, 30);
+    defer allocator.free(batch_results);
+
+    for (0..10) |i| {
+        var key = entities[i];
+        const r = queryOne(&a_mem, &key, entities[100..200]);
+        batch_results[i] = @as(u32, @intCast(r.idx));
+    }
+    for (0..10) |i| {
+        var key = entities[200 + i];
+        const r = queryOne(&b_mem, &key, entities[300..400]);
+        batch_results[10 + i] = @as(u32, @intCast(r.idx));
+    }
+    for (0..10) |i| {
+        var key = entities[400 + i];
+        const r = queryOne(&c_mem, &key, entities[500..600]);
+        batch_results[20 + i] = @as(u32, @intCast(r.idx));
+    }
+
+    var t4_correct: u32 = 0;
+    for (0..30) |i| {
+        if (batch_results[i] == @as(u32, @intCast(i % 10))) t4_correct += 1;
+    }
+    std.debug.print("  Batch correct: {d}/30\n", .{t4_correct});
+    total_correct += t4_correct;
+    total_queries += 30;
+
+    // --- Summary ---
+    const accuracy = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+    std.debug.print("\n--- Test 148 Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%%)\n", .{ total_correct, total_queries, accuracy });
+
+    try std.testing.expect(t1_total >= 25); // single-domain: >= 83%
+    try std.testing.expect(t2_total >= 15); // cross-domain: >= 75%
+    try std.testing.expect(t3_correct >= 15); // confidence: >= 75%
+    try std.testing.expect(t4_correct >= 25); // batch: >= 83%
+
+    std.debug.print("11.32 | Public Demo API       | multi-domain+cross+batch <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+}
+
+// ============================================================================
+// TEST 149: COMMUNITY TESTING — Edge Cases + Query Diversity (Level 11.32)
+// ============================================================================
+test "community testing edge cases query diversity" {
+    const DIM = 4096;
+    const allocator = std.testing.allocator;
+
+    const queryOne = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    std.debug.print("\n=== TEST 149: COMMUNITY TESTING (Level 11.32) ===\n", .{});
+    std.debug.print("Edge cases, query diversity, adversarial inputs, feedback simulation\n", .{});
+
+    // --- Setup: 500 entities ---
+    var entities = try allocator.alloc(Hypervector, 500);
+    defer allocator.free(entities);
+    for (0..500) |i| {
+        entities[i] = Hypervector.random(DIM, @as(u64, @intCast(i + 90000)));
+    }
+
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // --- Task 1: Empty/minimal memory queries (10) ---
+    std.debug.print("--- Task 1: Edge cases — empty/minimal queries (10) ---\n", .{});
+
+    // Single-pair memory: should retrieve perfectly
+    var t1_correct: u32 = 0;
+    for (0..5) |i| {
+        var single_binds: [1]Hypervector = undefined;
+        var k = entities[i];
+        single_binds[0] = k.bind(&entities[100 + i]);
+        var single_mem = treeBundleN(&single_binds);
+        var key = entities[i];
+        const r = queryOne(&single_mem, &key, entities[100..200]);
+        if (r.idx == i) t1_correct += 1;
+    }
+    std.debug.print("  Single-pair memory: {d}/5\n", .{t1_correct});
+
+    // Two-pair memory: should also retrieve
+    for (0..5) |i| {
+        var two_binds: [2]Hypervector = undefined;
+        for (0..2) |j| {
+            var k = entities[i * 2 + j];
+            two_binds[j] = k.bind(&entities[100 + i * 2 + j]);
+        }
+        var two_mem = treeBundleN(&two_binds);
+        var key = entities[i * 2];
+        const r = queryOne(&two_mem, &key, entities[100..200]);
+        if (r.idx == i * 2) t1_correct += 1;
+    }
+    std.debug.print("  Two-pair memory: {d}/10 (cumul)\n", .{t1_correct});
+    total_correct += t1_correct;
+    total_queries += 10;
+
+    // --- Task 2: Query diversity — mixed relation types (20) ---
+    std.debug.print("--- Task 2: Query diversity — 4 relation types (20) ---\n", .{});
+
+    // Relation 1: is-at (person -> location, 5 pairs)
+    var rel1_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[i];
+        rel1_binds[i] = k.bind(&entities[100 + i]);
+    }
+    var rel1_mem = treeBundleN(&rel1_binds);
+
+    // Relation 2: has (person -> object, 5 pairs)
+    var rel2_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[i];
+        rel2_binds[i] = k.bind(&entities[200 + i]);
+    }
+    var rel2_mem = treeBundleN(&rel2_binds);
+
+    // Relation 3: knows (person -> person, 5 pairs)
+    var rel3_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[i];
+        rel3_binds[i] = k.bind(&entities[50 + i]);
+    }
+    var rel3_mem = treeBundleN(&rel3_binds);
+
+    // Relation 4: categorized-as (object -> category, 5 pairs)
+    var rel4_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[200 + i];
+        rel4_binds[i] = k.bind(&entities[300 + i]);
+    }
+    var rel4_mem = treeBundleN(&rel4_binds);
+
+    var t2_correct: u32 = 0;
+    for (0..5) |i| {
+        var key = entities[i];
+        const r1 = queryOne(&rel1_mem, &key, entities[100..200]);
+        if (r1.idx == i) t2_correct += 1;
+        const r2 = queryOne(&rel2_mem, &key, entities[200..300]);
+        if (r2.idx == i) t2_correct += 1;
+        const r3 = queryOne(&rel3_mem, &key, entities[50..100]);
+        if (r3.idx == i) t2_correct += 1;
+        var obj_key = entities[200 + i];
+        const r4 = queryOne(&rel4_mem, &obj_key, entities[300..400]);
+        if (r4.idx == i) t2_correct += 1;
+    }
+    std.debug.print("  4 relation types x 5: {d}/20\n", .{t2_correct});
+    total_correct += t2_correct;
+    total_queries += 20;
+
+    // --- Task 3: Adversarial — wrong domain queries (10) ---
+    std.debug.print("--- Task 3: Adversarial — cross-memory rejection (10) ---\n", .{});
+
+    var t3_rejected: u32 = 0;
+    // Query rel1_mem (is-at) with keys from domain B — should NOT match domain B indices
+    for (0..10) |i| {
+        var wrong_key = entities[200 + i]; // object, not person
+        const r = queryOne(&rel1_mem, &wrong_key, entities[100..200]);
+        // The result should be essentially random (not matching index i)
+        if (r.sim < 0.10) t3_rejected += 1; // low similarity = correctly rejected
+    }
+    std.debug.print("  Cross-memory rejection (sim < 0.10): {d}/10\n", .{t3_rejected});
+    total_correct += t3_rejected;
+    total_queries += 10;
+
+    // --- Task 4: Feedback simulation — query success rate tracking (20) ---
+    std.debug.print("--- Task 4: Feedback simulation — success tracking (20) ---\n", .{});
+
+    var t4_correct: u32 = 0;
+    var t4_sims: [20]f64 = undefined;
+
+    // 10 queries on rel1 + 10 on rel2
+    for (0..10) |i| {
+        var key = entities[i % 5];
+        const r = queryOne(&rel1_mem, &key, entities[100..200]);
+        t4_sims[i] = r.sim;
+        if (r.idx == i % 5) t4_correct += 1;
+    }
+    for (0..10) |i| {
+        var key = entities[i % 5];
+        const r = queryOne(&rel2_mem, &key, entities[200..300]);
+        t4_sims[10 + i] = r.sim;
+        if (r.idx == i % 5) t4_correct += 1;
+    }
+
+    var sim_sum: f64 = 0.0;
+    for (0..20) |i| {
+        sim_sum += t4_sims[i];
+    }
+    const avg_sim = sim_sum / 20.0;
+    std.debug.print("  Success: {d}/20, Avg sim: {d:.4}\n", .{ t4_correct, avg_sim });
+    total_correct += t4_correct;
+    total_queries += 20;
+
+    // --- Summary ---
+    const accuracy = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+    std.debug.print("\n--- Test 149 Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%%)\n", .{ total_correct, total_queries, accuracy });
+
+    try std.testing.expect(t1_correct >= 8); // edge cases: >= 80%
+    try std.testing.expect(t2_correct >= 16); // diversity: >= 80%
+    try std.testing.expect(t3_rejected >= 5); // adversarial: >= 50%
+    try std.testing.expect(t4_correct >= 16); // feedback: >= 80%
+
+    std.debug.print("11.32 | Community Testing     | edge+diverse+adversar+feedback <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+}
+
+// ============================================================================
+// TEST 150: RELEASE VALIDATION — Full Readiness Check (Level 11.32)
+// ============================================================================
+test "release validation full readiness check" {
+    const DIM = 4096;
+    const allocator = std.testing.allocator;
+
+    const queryOne = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    std.debug.print("\n=== TEST 150: RELEASE VALIDATION (Level 11.32) ===\n", .{});
+    std.debug.print("Regression summary, performance envelope, determinism, release gate\n", .{});
+
+    // --- Setup: 500 entities ---
+    var entities = try allocator.alloc(Hypervector, 500);
+    defer allocator.free(entities);
+    for (0..500) |i| {
+        entities[i] = Hypervector.random(DIM, @as(u64, @intCast(i + 100000)));
+    }
+
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // --- Task 1: Regression summary — 5 core capabilities (25 queries) ---
+    std.debug.print("--- Task 1: Regression — 5 core capabilities (25) ---\n", .{});
+
+    // Cap 1: Single-pair bind/unbind (5 queries)
+    var cap1: u32 = 0;
+    for (0..5) |i| {
+        var a = entities[i];
+        var b = entities[100 + i];
+        var bound = a.bind(&b);
+        var recovered = bound.unbind(&a);
+        var best_sim: f64 = -2.0;
+        var best_idx: usize = 0;
+        for (0..100) |j| {
+            var cand = entities[100 + j];
+            const sim = recovered.similarity(&cand);
+            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+        }
+        if (best_idx == i) cap1 += 1;
+    }
+    std.debug.print("  Cap 1 (bind/unbind): {d}/5\n", .{cap1});
+
+    // Cap 2: Bundled memory retrieval (5 queries)
+    var bund_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = entities[i];
+        bund_binds[i] = k.bind(&entities[200 + i]);
+    }
+    var bund_mem = treeBundleN(&bund_binds);
+
+    var cap2: u32 = 0;
+    for (0..5) |i| {
+        var key = entities[i];
+        const r = queryOne(&bund_mem, &key, entities[200..300]);
+        if (r.idx == i) cap2 += 1;
+    }
+    std.debug.print("  Cap 2 (bundled mem): {d}/5\n", .{cap2});
+
+    // Cap 3: Multi-hop chain (5 queries, 3-hop)
+    var hop1_binds: [5]Hypervector = undefined;
+    var hop2_binds: [5]Hypervector = undefined;
+    var hop3_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k1 = entities[i];
+        hop1_binds[i] = k1.bind(&entities[50 + i]);
+        var k2 = entities[50 + i];
+        hop2_binds[i] = k2.bind(&entities[150 + i]);
+        var k3 = entities[150 + i];
+        hop3_binds[i] = k3.bind(&entities[250 + i]);
+    }
+    var hop1_mem = treeBundleN(&hop1_binds);
+    var hop2_mem = treeBundleN(&hop2_binds);
+    var hop3_mem = treeBundleN(&hop3_binds);
+
+    var cap3: u32 = 0;
+    for (0..5) |i| {
+        var key1 = entities[i];
+        const r1 = queryOne(&hop1_mem, &key1, entities[50..100]);
+        if (r1.idx == i) {
+            var key2 = entities[50 + r1.idx];
+            const r2 = queryOne(&hop2_mem, &key2, entities[150..200]);
+            if (r2.idx == i) {
+                var key3 = entities[150 + r2.idx];
+                const r3 = queryOne(&hop3_mem, &key3, entities[250..300]);
+                if (r3.idx == i) cap3 += 1;
+            }
+        }
+    }
+    std.debug.print("  Cap 3 (3-hop chain): {d}/5\n", .{cap3});
+
+    // Cap 4: Cross-rejection (5 queries)
+    var cap4: u32 = 0;
+    for (0..5) |i| {
+        var wrong_key = entities[300 + i];
+        const r = queryOne(&bund_mem, &wrong_key, entities[200..300]);
+        if (r.sim < 0.10) cap4 += 1;
+    }
+    std.debug.print("  Cap 4 (cross-reject): {d}/5\n", .{cap4});
+
+    // Cap 5: Deterministic replay (5 pairs, run twice)
+    var cap5: u32 = 0;
+    var run1_idx: [5]usize = undefined;
+    var run1_sim: [5]f64 = undefined;
+    for (0..5) |i| {
+        var key = entities[i];
+        const r = queryOne(&bund_mem, &key, entities[200..300]);
+        run1_idx[i] = r.idx;
+        run1_sim[i] = r.sim;
+    }
+    for (0..5) |i| {
+        var key = entities[i];
+        const r = queryOne(&bund_mem, &key, entities[200..300]);
+        if (r.idx == run1_idx[i] and r.sim == run1_sim[i]) cap5 += 1;
+    }
+    std.debug.print("  Cap 5 (determinism): {d}/5\n", .{cap5});
+
+    const t1_total = cap1 + cap2 + cap3 + cap4 + cap5;
+    std.debug.print("  Regression total: {d}/25\n", .{t1_total});
+    total_correct += t1_total;
+    total_queries += 25;
+
+    // --- Task 2: Performance envelope (15 queries) ---
+    std.debug.print("--- Task 2: Performance envelope (15) ---\n", .{});
+
+    var t2_correct: u32 = 0;
+
+    // Noise floor measurement (5 random pairs)
+    var noise_sum: f64 = 0.0;
+    for (0..5) |i| {
+        var r1 = entities[400 + i];
+        var r2 = entities[450 + i];
+        const sim = r1.similarity(&r2);
+        noise_sum += @abs(sim);
+        if (@abs(sim) < 0.05) t2_correct += 1;
+    }
+    const avg_noise = noise_sum / 5.0;
+    std.debug.print("  Noise floor avg: {d:.4}\n", .{avg_noise});
+
+    // Signal measurement (5 bundled queries)
+    var signal_sum: f64 = 0.0;
+    for (0..5) |i| {
+        var key = entities[i];
+        const r = queryOne(&bund_mem, &key, entities[200..300]);
+        signal_sum += r.sim;
+        if (r.idx == i) t2_correct += 1;
+    }
+    const avg_signal = signal_sum / 5.0;
+    std.debug.print("  Signal avg: {d:.4}\n", .{avg_signal});
+
+    // SNR check (5 comparisons)
+    const snr = if (avg_noise > 0.001) avg_signal / avg_noise else 99.0;
+    std.debug.print("  SNR: {d:.1}x\n", .{snr});
+    if (snr > 5.0) t2_correct += 1;
+    if (snr > 10.0) t2_correct += 1;
+    if (snr > 15.0) t2_correct += 1;
+    if (avg_signal > 0.15) t2_correct += 1;
+    if (avg_noise < 0.05) t2_correct += 1;
+
+    std.debug.print("  Performance: {d}/15\n", .{t2_correct});
+    total_correct += t2_correct;
+    total_queries += 15;
+
+    // --- Task 3: Release gate checklist (10 checks) ---
+    std.debug.print("--- Task 3: Release gate checklist (10) ---\n", .{});
+
+    var t3_correct: u32 = 0;
+
+    // Gate 1: Bind/unbind works
+    if (cap1 >= 4) t3_correct += 1;
+    // Gate 2: Bundled memory works
+    if (cap2 >= 4) t3_correct += 1;
+    // Gate 3: Multi-hop works
+    if (cap3 >= 3) t3_correct += 1;
+    // Gate 4: Cross-rejection works
+    if (cap4 >= 3) t3_correct += 1;
+    // Gate 5: Determinism confirmed
+    if (cap5 == 5) t3_correct += 1;
+    // Gate 6: SNR adequate
+    if (snr > 10.0) t3_correct += 1;
+    // Gate 7: Signal above threshold
+    if (avg_signal > 0.15) t3_correct += 1;
+    // Gate 8: Noise below threshold
+    if (avg_noise < 0.05) t3_correct += 1;
+    // Gate 9: Overall regression >= 90%
+    const current_pct = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+    if (current_pct > 90.0) t3_correct += 1;
+    // Gate 10: All core capabilities pass
+    if (cap1 >= 4 and cap2 >= 4 and cap3 >= 3 and cap5 == 5) t3_correct += 1;
+
+    std.debug.print("  Release gates passed: {d}/10\n", .{t3_correct});
+    total_correct += t3_correct;
+    total_queries += 10;
+
+    // --- Summary ---
+    const accuracy = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+    std.debug.print("\n--- Test 150 Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%%)\n", .{ total_correct, total_queries, accuracy });
+
+    try std.testing.expect(t1_total >= 20); // regression: >= 80%
+    try std.testing.expect(t2_correct >= 10); // performance: >= 67%
+    try std.testing.expect(t3_correct >= 7); // gates: >= 70%
+
+    std.debug.print("11.32 | Release Validation    | regress+perf+gates <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+}

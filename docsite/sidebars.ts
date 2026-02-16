@@ -342,6 +342,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-level11-hybrid-bipolar-ternary-report',
         'research/trinity-level11-large-scale-kg-report',
         'research/trinity-level11-planning-sota-report',
+        'research/trinity-level11-release-prep-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
