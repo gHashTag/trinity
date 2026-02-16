@@ -136,7 +136,9 @@ export default function DePINSection() {
           <div style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 700, color: '#00ccff', marginBottom: '0.5rem', fontFamily: 'JetBrains Mono, monospace' }}>
             Launching Soon
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'rgba(0, 204, 255, 0.6)' }}>Sepolia testnet</div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(0, 204, 255, 0.6)' }}>
+            <a href="https://sepolia.etherscan.io/address/0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(0, 204, 255, 0.8)', textDecoration: 'underline' }}>Sepolia testnet</a>
+          </div>
         </motion.div>
 
         {/* Total $TRI Earned */}
