@@ -6821,6 +6821,21 @@ const LargeTrigramSlot = struct {
     total_count: u16,
 };
 
+// v2.51: 4-gram slot (keyed on prev3, prev2, prev1)
+const LARGE_4GRAM_HASH_SIZE: usize = 16384;
+const LARGE_4GRAM_MAX_NEXTS: usize = 32;
+
+const Large4gramSlot = struct {
+    prev3: u16,
+    prev2: u16,
+    prev1: u16,
+    valid: bool,
+    nexts: [LARGE_4GRAM_MAX_NEXTS]u16,
+    counts: [LARGE_4GRAM_MAX_NEXTS]u16,
+    num_nexts: u8,
+    total_count: u16,
+};
+
 const LargeTrigramModel = struct {
     vocab: [LARGE_MAX_WORDS][MAX_WORD_LEN]u8,
     vocab_lens: [LARGE_MAX_WORDS]u8,
@@ -6838,6 +6853,10 @@ const LargeTrigramModel = struct {
     // Kneser-Ney continuation counts (v2.50)
     continuation_count: [LARGE_MAX_WORDS]u16,
     total_continuations: u32,
+
+    // 4-gram sparse hash table (v2.51)
+    fourgram_slots: [LARGE_4GRAM_HASH_SIZE]Large4gramSlot,
+    fourgram_used: usize,
 
     fn init() LargeTrigramModel {
         var self: LargeTrigramModel = undefined;
@@ -6859,6 +6878,12 @@ const LargeTrigramModel = struct {
             self.continuation_count[i] = 0;
         }
         self.total_continuations = 0;
+        for (0..LARGE_4GRAM_HASH_SIZE) |i| {
+            self.fourgram_slots[i].valid = false;
+            self.fourgram_slots[i].num_nexts = 0;
+            self.fourgram_slots[i].total_count = 0;
+        }
+        self.fourgram_used = 0;
         return self;
     }
 
@@ -7504,6 +7529,200 @@ const LargeTrigramModel = struct {
         return 0;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // v2.51: 4-gram Extension with KN Backoff
+    // ═══════════════════════════════════════════════════════════════════════
+
+    fn fourgramHash(prev3: u16, prev2: u16, prev1: u16) usize {
+        const key: u64 = @as(u64, prev3) * 65537 + @as(u64, prev2) * 257 + @as(u64, prev1);
+        return @intCast((key ^ (key >> 13) ^ (key >> 26)) % LARGE_4GRAM_HASH_SIZE);
+    }
+
+    fn getOrCreate4gramSlot(self: *LargeTrigramModel, prev3: u16, prev2: u16, prev1: u16) ?*Large4gramSlot {
+        var h = fourgramHash(prev3, prev2, prev1);
+        var probes: usize = 0;
+        while (probes < LARGE_4GRAM_HASH_SIZE) : (probes += 1) {
+            const slot = &self.fourgram_slots[h];
+            if (!slot.valid) {
+                slot.valid = true;
+                slot.prev3 = prev3;
+                slot.prev2 = prev2;
+                slot.prev1 = prev1;
+                slot.num_nexts = 0;
+                slot.total_count = 0;
+                self.fourgram_used += 1;
+                return slot;
+            }
+            if (slot.prev3 == prev3 and slot.prev2 == prev2 and slot.prev1 == prev1) return slot;
+            h = (h + 1) % LARGE_4GRAM_HASH_SIZE;
+        }
+        return null;
+    }
+
+    fn find4gramSlot(self: *const LargeTrigramModel, prev3: u16, prev2: u16, prev1: u16) ?*const Large4gramSlot {
+        var h = fourgramHash(prev3, prev2, prev1);
+        var probes: usize = 0;
+        while (probes < LARGE_4GRAM_HASH_SIZE) : (probes += 1) {
+            const slot = &self.fourgram_slots[h];
+            if (!slot.valid) return null;
+            if (slot.prev3 == prev3 and slot.prev2 == prev2 and slot.prev1 == prev1) return slot;
+            h = (h + 1) % LARGE_4GRAM_HASH_SIZE;
+        }
+        return null;
+    }
+
+    fn build4grams(self: *LargeTrigramModel) void {
+        if (self.token_count < 4) return;
+        for (0..self.token_count - 3) |i| {
+            const p3 = self.tokens[i];
+            const p2 = self.tokens[i + 1];
+            const p1 = self.tokens[i + 2];
+            const nx = self.tokens[i + 3];
+            if (self.getOrCreate4gramSlot(p3, p2, p1)) |slot| {
+                // Check if nx already exists
+                var found = false;
+                for (0..slot.num_nexts) |k| {
+                    if (slot.nexts[k] == nx) {
+                        if (slot.counts[k] < 65535) slot.counts[k] += 1;
+                        slot.total_count += 1;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found and slot.num_nexts < LARGE_4GRAM_MAX_NEXTS) {
+                    slot.nexts[slot.num_nexts] = nx;
+                    slot.counts[slot.num_nexts] = 1;
+                    slot.num_nexts += 1;
+                    slot.total_count += 1;
+                }
+            }
+        }
+    }
+
+    /// KN 4-gram probability with trigram KN backoff
+    fn kn4gramProb(self: *const LargeTrigramModel, prev3: u16, prev2: u16, prev1: u16, next_idx: u16, discount: f64) f64 {
+        if (self.find4gramSlot(prev3, prev2, prev1)) |slot| {
+            const total_f: f64 = @floatFromInt(slot.total_count);
+            if (total_f == 0) return self.knTrigramProb(prev2, prev1, next_idx, discount);
+
+            // Find count for next_idx
+            var c_4g: f64 = 0;
+            for (0..slot.num_nexts) |k| {
+                if (slot.nexts[k] == next_idx) {
+                    c_4g = @floatFromInt(slot.counts[k]);
+                    break;
+                }
+            }
+
+            // Discounted probability + backoff to KN trigram
+            const p_discount = @max(c_4g - discount, 0.0) / total_f;
+            const lambda = discount * @as(f64, @floatFromInt(slot.num_nexts)) / total_f;
+            return p_discount + lambda * self.knTrigramProb(prev2, prev1, next_idx, discount);
+        } else {
+            // Unseen 4-gram context — full backoff to KN trigram
+            return self.knTrigramProb(prev2, prev1, next_idx, discount);
+        }
+    }
+
+    /// Interpolated 4-gram KN: λ·P_KN_4g + (1-λ)·P_KN_tri
+    fn kn4gramInterpolatedProb(self: *const LargeTrigramModel, prev3: u16, prev2: u16, prev1: u16, next_idx: u16, lambda: f64, discount: f64) f64 {
+        const p_4g = self.kn4gramProb(prev3, prev2, prev1, next_idx, discount);
+        const p_tri = self.knTrigramProb(prev2, prev1, next_idx, discount);
+        return lambda * p_4g + (1.0 - lambda) * p_tri;
+    }
+
+    /// 4-gram KN loss
+    fn kn4gramLoss(self: *const LargeTrigramModel, prev3: u16, prev2: u16, prev1: u16, next_idx: u16, lambda: f64, discount: f64) f64 {
+        return -@log(@max(self.kn4gramInterpolatedProb(prev3, prev2, prev1, next_idx, lambda, discount), 1e-20));
+    }
+
+    /// Sample with 4-gram KN + penalty + blocking
+    fn kn4gramPenaltySample(
+        self: *const LargeTrigramModel,
+        prev3: u16,
+        prev2: u16,
+        prev1: u16,
+        lambda: f64,
+        discount: f64,
+        temperature: f64,
+        seed: u64,
+        history: []const u16,
+        history_len: usize,
+        penalty_alpha: f64,
+        block_ngram: bool,
+    ) u16 {
+        var probs: [LARGE_MAX_WORDS]f64 = undefined;
+
+        // Build 4-gram KN interpolated distribution
+        for (0..self.vocab_size) |j| {
+            const j16: u16 = @intCast(j);
+            probs[j] = self.kn4gramInterpolatedProb(prev3, prev2, prev1, j16, lambda, discount);
+        }
+
+        // Repetition penalty
+        if (penalty_alpha > 1.0) {
+            for (0..self.vocab_size) |j| {
+                var count: usize = 0;
+                const j16: u16 = @intCast(j);
+                for (0..history_len) |h| {
+                    if (history[h] == j16) count += 1;
+                }
+                if (count > 0) {
+                    var penalty: f64 = 1.0;
+                    for (0..count) |_| penalty *= penalty_alpha;
+                    probs[j] /= penalty;
+                }
+            }
+        }
+
+        // N-gram blocking (block repeated 4-grams)
+        if (block_ngram and history_len >= 3) {
+            for (0..self.vocab_size) |j| {
+                const j16: u16 = @intCast(j);
+                var h: usize = 0;
+                while (h + 3 < history_len) : (h += 1) {
+                    if (history[h] == prev3 and history[h + 1] == prev2 and history[h + 2] == prev1 and history[h + 3] == j16) {
+                        probs[j] = 0;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Temperature + softmax + sample
+        var max_logp: f64 = -1e10;
+        for (0..self.vocab_size) |j| {
+            if (probs[j] <= 0) {
+                probs[j] = -1e10;
+            } else {
+                probs[j] = @log(probs[j]);
+            }
+            if (probs[j] > max_logp) max_logp = probs[j];
+        }
+        var sum: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            probs[j] = @exp((probs[j] - max_logp) / @max(temperature, 0.01));
+            sum += probs[j];
+        }
+        if (sum > 0) {
+            for (0..self.vocab_size) |j| probs[j] /= sum;
+        } else {
+            for (0..self.vocab_size) |j| probs[j] = 1.0 / @as(f64, @floatFromInt(self.vocab_size));
+        }
+
+        var rng = seed;
+        rng ^= rng >> 12;
+        rng ^= rng << 25;
+        rng ^= rng >> 27;
+        const r: f64 = @as(f64, @floatFromInt(rng % 1000000)) / 1000000.0;
+
+        var cumul4: f64 = 0;
+        for (0..self.vocab_size) |j| {
+            cumul4 += probs[j];
+            if (r < cumul4) return @intCast(j);
+        }
+        return 0;
+    }
 };
 
 const extended_corpus = @embedFile("shakespeare_extended.txt");
@@ -8424,4 +8643,241 @@ test "kneser-ney generation with penalty" {
     try std.testing.expect(gk8 > 0);
     try std.testing.expect(kn_t03_unique > 5); // KN should produce diverse output with penalty
     try std.testing.expect(kn_t08_unique > 10);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 48: 4-gram KN statistics + PPL comparison (v2.51)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "4-gram kneser-ney statistics and ppl" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+    ltm.buildContinuationCounts();
+    ltm.build4grams();
+
+    const train_end = ltm.token_count * 80 / 100;
+    const random_ce = @log(@as(f64, @floatFromInt(ltm.vocab_size)));
+
+    // Count 4-gram statistics
+    var fourgram_slots_used: usize = 0;
+    var total_4gram_obs: usize = 0;
+    for (0..LARGE_4GRAM_HASH_SIZE) |i| {
+        if (ltm.fourgram_slots[i].valid) {
+            fourgram_slots_used += 1;
+            total_4gram_obs += ltm.fourgram_slots[i].total_count;
+        }
+    }
+    const avg_4gram_obs: f64 = if (fourgram_slots_used > 0) @as(f64, @floatFromInt(total_4gram_obs)) / @as(f64, @floatFromInt(fourgram_slots_used)) else 0;
+
+    // 4-gram eval hit rate
+    var fg_hits: usize = 0;
+    var fg_checks: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 3) continue;
+        if (ltm.find4gramSlot(ltm.tokens[i - 3], ltm.tokens[i - 2], ltm.tokens[i - 1])) |_| {
+            fg_hits += 1;
+        }
+        fg_checks += 1;
+    }
+
+    // KN trigram baseline (best from v2.50: D=0.25, λ=1.0)
+    var tri_eval_sum: f64 = 0;
+    var tri_eval_n: usize = 0;
+    for (train_end..ltm.token_count) |i| {
+        if (i < 2) continue;
+        tri_eval_sum += -@log(@max(ltm.knTrigramProb(ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], 0.25), 1e-20));
+        tri_eval_n += 1;
+    }
+    const tri_kn_eval_ce = tri_eval_sum / @as(f64, @floatFromInt(tri_eval_n));
+    const tri_kn_eval_ppl = @exp(tri_kn_eval_ce);
+
+    // Sweep D and λ for 4-gram KN
+    const discounts = [_]f64{ 0.25, 0.5, 0.75 };
+    const lambdas = [_]f64{ 0.3, 0.5, 0.7, 1.0 };
+
+    var best_d: f64 = 0.25;
+    var best_l: f64 = 1.0;
+    var best_4g_eval_ce: f64 = 1e10;
+
+    std.debug.print("\n=== 4-GRAM KN STATISTICS + PPL (v2.51) ===\n", .{});
+    std.debug.print("Corpus: {d} tokens, {d} vocab\n", .{ ltm.token_count, ltm.vocab_size });
+    std.debug.print("4-gram slots: {d}/{d} ({d:.1}% load)\n", .{ fourgram_slots_used, LARGE_4GRAM_HASH_SIZE, @as(f64, @floatFromInt(fourgram_slots_used)) / @as(f64, @floatFromInt(LARGE_4GRAM_HASH_SIZE)) * 100.0 });
+    std.debug.print("Total 4-gram observations: {d}\n", .{total_4gram_obs});
+    std.debug.print("Avg observations per 4-gram context: {d:.2}\n", .{avg_4gram_obs});
+    std.debug.print("4-gram eval hit rate: {d}/{d} ({d:.1}%)\n", .{ fg_hits, fg_checks, @as(f64, @floatFromInt(fg_hits)) / @as(f64, @floatFromInt(@max(fg_checks, 1))) * 100.0 });
+    std.debug.print("KN trigram baseline: eval CE {d:.4}, PPL {d:.2}\n", .{ tri_kn_eval_ce, tri_kn_eval_ppl });
+
+    std.debug.print("\n  D    | λ    | Eval CE   | %<random | PPL\n", .{});
+    std.debug.print("  -----|------|-----------|----------|--------\n", .{});
+
+    for (discounts) |d| {
+        for (lambdas) |lam| {
+            var eval_sum: f64 = 0;
+            var eval_n: usize = 0;
+            for (train_end..ltm.token_count) |i| {
+                if (i < 3) continue;
+                eval_sum += ltm.kn4gramLoss(ltm.tokens[i - 3], ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], lam, d);
+                eval_n += 1;
+            }
+            const eval_ce = eval_sum / @as(f64, @floatFromInt(eval_n));
+            const ppl = @exp(eval_ce);
+
+            std.debug.print("  {d:.2} | {d:.1}  | {d:.4}   | {d:.1}%   | {d:.2}\n", .{
+                d, lam, eval_ce, (1.0 - eval_ce / random_ce) * 100.0, ppl,
+            });
+
+            if (eval_ce < best_4g_eval_ce) {
+                best_4g_eval_ce = eval_ce;
+                best_d = d;
+                best_l = lam;
+            }
+        }
+    }
+
+    const best_4g_ppl = @exp(best_4g_eval_ce);
+
+    // Also compute train at best params
+    var fg_train_sum: f64 = 0;
+    var fg_train_n: usize = 0;
+    for (3..train_end) |i| {
+        fg_train_sum += ltm.kn4gramLoss(ltm.tokens[i - 3], ltm.tokens[i - 2], ltm.tokens[i - 1], ltm.tokens[i], best_l, best_d);
+        fg_train_n += 1;
+    }
+    const fg_train_ce = fg_train_sum / @as(f64, @floatFromInt(fg_train_n));
+    const fg_train_ppl = @exp(fg_train_ce);
+
+    std.debug.print("\n--- Best 4-gram KN: D={d:.2}, λ={d:.1} ---\n", .{ best_d, best_l });
+    std.debug.print("4-gram eval CE:  {d:.4} ({d:.1}% below random), PPL {d:.2}\n", .{ best_4g_eval_ce, (1.0 - best_4g_eval_ce / random_ce) * 100.0, best_4g_ppl });
+    std.debug.print("4-gram train CE: {d:.4} ({d:.1}% below random), PPL {d:.2}\n", .{ fg_train_ce, (1.0 - fg_train_ce / random_ce) * 100.0, fg_train_ppl });
+    std.debug.print("4-gram overfit gap: {d:.2}\n", .{best_4g_ppl - fg_train_ppl});
+    std.debug.print("Trigram KN eval PPL: {d:.2}\n", .{tri_kn_eval_ppl});
+    std.debug.print("4-gram improvement: {d:.1}% PPL reduction vs trigram KN\n", .{ (1.0 - best_4g_ppl / tri_kn_eval_ppl) * 100.0 });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(fourgram_slots_used > 0);
+    try std.testing.expect(best_4g_eval_ce < random_ce);
+    try std.testing.expect(best_4g_ppl > 0.0);
+    try std.testing.expect(!std.math.isNan(best_4g_ppl));
+    try std.testing.expect(!std.math.isInf(best_4g_ppl));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 49: 4-gram generation with penalty (v2.51)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "4-gram kneser-ney generation with penalty" {
+    var ltm = LargeTrigramModel.init();
+    ltm.tokenize(extended_corpus);
+    ltm.buildBigrams();
+    ltm.buildTrigrams();
+    ltm.buildContinuationCounts();
+    ltm.build4grams();
+
+    const lambda: f64 = 0.7;
+    const discount: f64 = 0.25;
+
+    // Find "to", "be", "or" indices
+    var start_to: u16 = 0;
+    var start_be: u16 = 0;
+    var start_or: u16 = 0;
+    for (0..ltm.vocab_size) |i| {
+        const w = ltm.getWord(@intCast(i));
+        if (w.len == 2 and w[0] == 't' and w[1] == 'o') start_to = @intCast(i);
+        if (w.len == 2 and w[0] == 'b' and w[1] == 'e') start_be = @intCast(i);
+        if (w.len == 2 and w[0] == 'o' and w[1] == 'r') start_or = @intCast(i);
+    }
+
+    const GEN_LEN = 30;
+
+    // 4-gram KN + penalty at T=0.3
+    var gen_4g_t03: [512]u8 = undefined;
+    var g3: usize = 0;
+    var hist_4g3: [GEN_LEN + 3]u16 = undefined;
+    hist_4g3[0] = start_to;
+    hist_4g3[1] = start_be;
+    hist_4g3[2] = start_or;
+    var h3_len: usize = 3;
+    var p3: u16 = start_to;
+    var p2: u16 = start_be;
+    var p1: u16 = start_or;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.kn4gramPenaltySample(p3, p2, p1, lambda, discount, 0.3, 99999 + step, &hist_4g3, h3_len, 1.5, true);
+        const word = ltm.getWord(next);
+        if (g3 + word.len + 1 < gen_4g_t03.len) {
+            if (g3 > 0) { gen_4g_t03[g3] = ' '; g3 += 1; }
+            for (word) |c| { gen_4g_t03[g3] = c; g3 += 1; }
+        }
+        hist_4g3[h3_len] = next;
+        h3_len += 1;
+        p3 = p2;
+        p2 = p1;
+        p1 = next;
+    }
+    const fg_t03_unique = LargeTrigramModel.countUnique(&hist_4g3, h3_len);
+
+    // 4-gram KN + penalty at T=0.8
+    var gen_4g_t08: [512]u8 = undefined;
+    var g8: usize = 0;
+    var hist_4g8: [GEN_LEN + 3]u16 = undefined;
+    hist_4g8[0] = start_to;
+    hist_4g8[1] = start_be;
+    hist_4g8[2] = start_or;
+    var h8_len: usize = 3;
+    p3 = start_to;
+    p2 = start_be;
+    p1 = start_or;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.kn4gramPenaltySample(p3, p2, p1, lambda, discount, 0.8, 12345 + step, &hist_4g8, h8_len, 1.2, true);
+        const word = ltm.getWord(next);
+        if (g8 + word.len + 1 < gen_4g_t08.len) {
+            if (g8 > 0) { gen_4g_t08[g8] = ' '; g8 += 1; }
+            for (word) |c| { gen_4g_t08[g8] = c; g8 += 1; }
+        }
+        hist_4g8[h8_len] = next;
+        h8_len += 1;
+        p3 = p2;
+        p2 = p1;
+        p1 = next;
+    }
+    const fg_t08_unique = LargeTrigramModel.countUnique(&hist_4g8, h8_len);
+
+    // Trigram KN for comparison at T=0.3
+    var gen_tri_t03: [512]u8 = undefined;
+    var gt3: usize = 0;
+    var hist_tri3: [GEN_LEN + 2]u16 = undefined;
+    hist_tri3[0] = start_to;
+    hist_tri3[1] = start_be;
+    var ht3_len: usize = 2;
+    p2 = start_to;
+    p1 = start_be;
+    for (0..GEN_LEN) |step| {
+        const next = ltm.knPenaltySample(p2, p1, 1.0, 0.25, 0.3, 99999 + step, &hist_tri3, ht3_len, 1.5, true);
+        const word = ltm.getWord(next);
+        if (gt3 + word.len + 1 < gen_tri_t03.len) {
+            if (gt3 > 0) { gen_tri_t03[gt3] = ' '; gt3 += 1; }
+            for (word) |c| { gen_tri_t03[gt3] = c; gt3 += 1; }
+        }
+        hist_tri3[ht3_len] = next;
+        ht3_len += 1;
+        p2 = p1;
+        p1 = next;
+    }
+    const tri_t03_unique = LargeTrigramModel.countUnique(&hist_tri3, ht3_len);
+
+    std.debug.print("\n=== 4-GRAM KN GENERATION (v2.51, D={d:.2}, λ={d:.1}) ===\n", .{ discount, lambda });
+    std.debug.print("\n--- T=0.3 (α=1.5, block=true) ---\n", .{});
+    std.debug.print("4-gram KN: \"{s}\"\n", .{gen_4g_t03[0..g3]});
+    std.debug.print("  unique: {d}/{d}\n", .{ fg_t03_unique, h3_len });
+    std.debug.print("Trigram KN: \"{s}\"\n", .{gen_tri_t03[0..gt3]});
+    std.debug.print("  unique: {d}/{d}\n", .{ tri_t03_unique, ht3_len });
+    std.debug.print("\n--- T=0.8 (α=1.2, block=true) ---\n", .{});
+    std.debug.print("4-gram KN: \"{s}\"\n", .{gen_4g_t08[0..g8]});
+    std.debug.print("  unique: {d}/{d}\n", .{ fg_t08_unique, h8_len });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(g3 > 0);
+    try std.testing.expect(g8 > 0);
+    try std.testing.expect(fg_t03_unique > 5);
 }
