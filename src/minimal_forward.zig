@@ -10897,3 +10897,396 @@ test "few-shot interpretable attribution" {
     // Attribution to correct concept should be higher than to wrong concepts
     // (may not hold perfectly with bundle noise, so check the classification is right)
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 64: Hard Few-Shot — Overlapping Class Features (Level 11.4)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "hard few-shot overlapping classes" {
+    const DIM = 1024;
+    const NUM_FEATURES = 8;
+    const NUM_CLASSES = 5;
+    const NUM_TEST = 8; // more test items for statistics
+
+    // Shared feature vectors (bipolar building blocks)
+    var features: [NUM_FEATURES]Hypervector = undefined;
+    for (0..NUM_FEATURES) |i| {
+        features[i] = bipolarRandom(DIM, 0x1A00 + @as(u64, @intCast(i)));
+    }
+
+    // Classes defined by 3 features each — WITH OVERLAP
+    // Class 0 (cat-like):    features 0, 1, 2
+    // Class 1 (dog-like):    features 0, 1, 3    ← shares 0,1 with class 0!
+    // Class 2 (bird-like):   features 2, 4, 5    ← shares 2 with class 0
+    // Class 3 (fish-like):   features 4, 5, 6    ← shares 4,5 with class 2!
+    // Class 4 (insect-like): features 6, 7, 3    ← shares 6 with class 3, 3 with class 1
+    const class_features = [5][3]usize{
+        .{ 0, 1, 2 }, // cat
+        .{ 0, 1, 3 }, // dog — 2/3 overlap with cat
+        .{ 2, 4, 5 }, // bird — 1/3 overlap with cat
+        .{ 4, 5, 6 }, // fish — 2/3 overlap with bird
+        .{ 6, 7, 3 }, // insect — 1/3 overlap with fish, 1/3 with dog
+    };
+    const class_labels = [_][]const u8{ "cat", "dog", "bird", "fish", "insect" };
+
+    // Build class concept vectors: bundle of 3 feature vectors
+    var class_concepts: [NUM_CLASSES]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        var f0 = features[class_features[c][0]];
+        var f1 = features[class_features[c][1]];
+        class_concepts[c] = f0.bundle(&f1);
+        var f2 = features[class_features[c][2]];
+        class_concepts[c] = class_concepts[c].bundle(&f2);
+    }
+
+    // Show inter-class similarity (reveals overlap)
+    std.debug.print("\n=== HARD FEW-SHOT: OVERLAPPING CLASSES (Level 11.4) ===\n", .{});
+    std.debug.print("Dimension: {}, Features: {}, Classes: {}\n", .{ DIM, NUM_FEATURES, NUM_CLASSES });
+    std.debug.print("\n--- Class Concept Similarity Matrix ---\n", .{});
+    std.debug.print("         ", .{});
+    for (0..NUM_CLASSES) |c| {
+        std.debug.print("{s:>8}", .{class_labels[c]});
+    }
+    std.debug.print("\n", .{});
+    for (0..NUM_CLASSES) |i| {
+        std.debug.print("{s:>8} ", .{class_labels[i]});
+        for (0..NUM_CLASSES) |j| {
+            const sim = class_concepts[i].similarity(&class_concepts[j]);
+            std.debug.print("{d:>7.3} ", .{sim});
+        }
+        std.debug.print("\n", .{});
+    }
+
+    // Generate examples: bundle(class_concept, noise1, noise2, noise3)
+    // 4 components in the bundle → class signal is ~25% of the vector
+    const MAX_SHOTS = 20;
+    const NOISE_COUNT = 3; // number of noise vectors bundled with concept
+    var train_examples: [NUM_CLASSES][MAX_SHOTS]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        for (0..MAX_SHOTS) |s| {
+            train_examples[c][s] = class_concepts[c];
+            for (0..NOISE_COUNT) |n| {
+                const seed = 0x2A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(s)) * 10 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                train_examples[c][s] = train_examples[c][s].bundle(&noise);
+            }
+        }
+    }
+
+    // Generate test examples (same structure, different noise)
+    var test_examples: [NUM_CLASSES][NUM_TEST]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        for (0..NUM_TEST) |t| {
+            test_examples[c][t] = class_concepts[c];
+            for (0..NOISE_COUNT) |n| {
+                const seed = 0x3A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(t)) * 10 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                test_examples[c][t] = test_examples[c][t].bundle(&noise);
+            }
+        }
+    }
+
+    // Test at different shot counts
+    const shot_counts = [_]usize{ 1, 3, 5, 10, 20 };
+    var shot_results: [5]f64 = undefined;
+
+    for (0..shot_counts.len) |si| {
+        const k = shot_counts[si];
+
+        // Build prototypes
+        var prototypes: [NUM_CLASSES]Hypervector = undefined;
+        for (0..NUM_CLASSES) |c| {
+            prototypes[c] = train_examples[c][0];
+            for (1..k) |s| {
+                prototypes[c] = prototypes[c].bundle(&train_examples[c][s]);
+            }
+        }
+
+        // Classify
+        var correct: usize = 0;
+        var total: usize = 0;
+        for (0..NUM_CLASSES) |c| {
+            for (0..NUM_TEST) |t| {
+                var best_class: usize = 0;
+                var best_sim: f64 = -2.0;
+                for (0..NUM_CLASSES) |p| {
+                    const sim = test_examples[c][t].similarity(&prototypes[p]);
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_class = p;
+                    }
+                }
+                if (best_class == c) correct += 1;
+                total += 1;
+            }
+        }
+        const acc = @as(f64, @floatFromInt(correct)) / @as(f64, @floatFromInt(total));
+        shot_results[si] = acc;
+        std.debug.print("\n--- {}-Shot (hard) ---\n", .{k});
+        std.debug.print("  Accuracy: {}/{} ({d:.1}%)\n", .{ correct, total, acc * 100 });
+    }
+
+    // Print accuracy curve
+    std.debug.print("\n--- Hard Accuracy Curve ---\n", .{});
+    for (0..shot_counts.len) |si| {
+        std.debug.print("  {}-shot: {d:.1}%\n", .{ shot_counts[si], shot_results[si] * 100 });
+    }
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(shot_results[0] > 0.25); // 1-shot: better than random (20%)
+    try std.testing.expect(shot_results[4] >= shot_results[0]); // more shots helps
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 65: Noise-Scaling Difficulty Curve (Level 11.4)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "noise scaling difficulty curve" {
+    const DIM = 1024;
+    const NUM_FEATURES = 8;
+    const NUM_CLASSES = 5;
+    const SHOTS = 5;
+    const NUM_TEST = 8;
+
+    // Same feature/class structure as Test 64
+    var features: [NUM_FEATURES]Hypervector = undefined;
+    for (0..NUM_FEATURES) |i| {
+        features[i] = bipolarRandom(DIM, 0x4A00 + @as(u64, @intCast(i)));
+    }
+    const class_features = [5][3]usize{
+        .{ 0, 1, 2 },
+        .{ 0, 1, 3 },
+        .{ 2, 4, 5 },
+        .{ 4, 5, 6 },
+        .{ 6, 7, 3 },
+    };
+    var class_concepts: [NUM_CLASSES]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        var f0 = features[class_features[c][0]];
+        var f1 = features[class_features[c][1]];
+        class_concepts[c] = f0.bundle(&f1);
+        var f2 = features[class_features[c][2]];
+        class_concepts[c] = class_concepts[c].bundle(&f2);
+    }
+
+    std.debug.print("\n=== NOISE-SCALING DIFFICULTY (Level 11.4) ===\n", .{});
+    std.debug.print("Dimension: {}, Classes: {}, Shots: {}\n", .{ DIM, NUM_CLASSES, SHOTS });
+
+    // Vary noise count from 0 (easy) to 6 (very hard)
+    const noise_levels = [_]usize{ 0, 1, 2, 3, 4, 5, 6 };
+    var noise_results: [7]f64 = undefined;
+
+    for (0..noise_levels.len) |ni| {
+        const noise_count = noise_levels[ni];
+
+        // Build training examples
+        var prototypes: [NUM_CLASSES]Hypervector = undefined;
+        for (0..NUM_CLASSES) |c| {
+            // First example
+            var ex = class_concepts[c];
+            for (0..noise_count) |n| {
+                const seed = 0x5A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                ex = ex.bundle(&noise);
+            }
+            prototypes[c] = ex;
+            // Remaining shots
+            for (1..SHOTS) |s| {
+                var ex2 = class_concepts[c];
+                for (0..noise_count) |n| {
+                    const seed = 0x5A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(s)) * 10 + @as(u64, @intCast(n));
+                    var noise = bipolarRandom(DIM, seed);
+                    ex2 = ex2.bundle(&noise);
+                }
+                prototypes[c] = prototypes[c].bundle(&ex2);
+            }
+        }
+
+        // Classify test examples
+        var correct: usize = 0;
+        var total: usize = 0;
+        for (0..NUM_CLASSES) |c| {
+            for (0..NUM_TEST) |t| {
+                var test_item = class_concepts[c];
+                for (0..noise_count) |n| {
+                    const seed = 0x6A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(t)) * 10 + @as(u64, @intCast(n));
+                    var noise = bipolarRandom(DIM, seed);
+                    test_item = test_item.bundle(&noise);
+                }
+
+                var best_class: usize = 0;
+                var best_sim: f64 = -2.0;
+                for (0..NUM_CLASSES) |p| {
+                    const sim = test_item.similarity(&prototypes[p]);
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_class = p;
+                    }
+                }
+                if (best_class == c) correct += 1;
+                total += 1;
+            }
+        }
+
+        const acc = @as(f64, @floatFromInt(correct)) / @as(f64, @floatFromInt(total));
+        noise_results[ni] = acc;
+    }
+
+    // Print difficulty curve
+    std.debug.print("\n--- Difficulty Curve (5-shot, varying noise) ---\n", .{});
+    std.debug.print("  Noise components | Accuracy\n", .{});
+    for (0..noise_levels.len) |ni| {
+        std.debug.print("  {} noise           | {d:.1}%\n", .{ noise_levels[ni], noise_results[ni] * 100 });
+    }
+
+    // Signal-to-noise analysis
+    std.debug.print("\n--- Signal Fraction ---\n", .{});
+    for (0..noise_levels.len) |ni| {
+        const n = noise_levels[ni];
+        const signal_frac = 1.0 / @as(f64, @floatFromInt(n + 1));
+        std.debug.print("  {} noise: signal fraction = {d:.1}% of vector\n", .{ n, signal_frac * 100 });
+    }
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(noise_results[0] > 0.8); // 0 noise: should be high
+    try std.testing.expect(noise_results[0] >= noise_results[6]); // more noise = harder
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 66: Confusion Matrix at Hard Setting (Level 11.4)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "confusion matrix hard few-shot" {
+    const DIM = 1024;
+    const NUM_FEATURES = 8;
+    const NUM_CLASSES = 5;
+    const SHOTS = 10;
+    const NUM_TEST = 10;
+    const NOISE_COUNT = 3;
+
+    // Same feature/class structure
+    var features: [NUM_FEATURES]Hypervector = undefined;
+    for (0..NUM_FEATURES) |i| {
+        features[i] = bipolarRandom(DIM, 0x7A00 + @as(u64, @intCast(i)));
+    }
+    const class_features = [5][3]usize{
+        .{ 0, 1, 2 },
+        .{ 0, 1, 3 },
+        .{ 2, 4, 5 },
+        .{ 4, 5, 6 },
+        .{ 6, 7, 3 },
+    };
+    const class_labels = [_][]const u8{ "cat", "dog", "bird", "fish", "insect" };
+
+    var class_concepts: [NUM_CLASSES]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        var f0 = features[class_features[c][0]];
+        var f1 = features[class_features[c][1]];
+        class_concepts[c] = f0.bundle(&f1);
+        var f2 = features[class_features[c][2]];
+        class_concepts[c] = class_concepts[c].bundle(&f2);
+    }
+
+    // Build prototypes (10-shot with 3 noise components)
+    var prototypes: [NUM_CLASSES]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        var ex0 = class_concepts[c];
+        for (0..NOISE_COUNT) |n| {
+            const seed = 0x8A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(n));
+            var noise = bipolarRandom(DIM, seed);
+            ex0 = ex0.bundle(&noise);
+        }
+        prototypes[c] = ex0;
+        for (1..SHOTS) |s| {
+            var ex = class_concepts[c];
+            for (0..NOISE_COUNT) |n| {
+                const seed = 0x8A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(s)) * 10 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                ex = ex.bundle(&noise);
+            }
+            prototypes[c] = prototypes[c].bundle(&ex);
+        }
+    }
+
+    // Build confusion matrix
+    var confusion: [NUM_CLASSES][NUM_CLASSES]usize = [_][NUM_CLASSES]usize{[_]usize{0} ** NUM_CLASSES} ** NUM_CLASSES;
+    var total_correct: usize = 0;
+    var total_count: usize = 0;
+
+    for (0..NUM_CLASSES) |c| {
+        for (0..NUM_TEST) |t| {
+            var test_item = class_concepts[c];
+            for (0..NOISE_COUNT) |n| {
+                const seed = 0x9A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(t)) * 10 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                test_item = test_item.bundle(&noise);
+            }
+
+            var best_class: usize = 0;
+            var best_sim: f64 = -2.0;
+            for (0..NUM_CLASSES) |p| {
+                const sim = test_item.similarity(&prototypes[p]);
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_class = p;
+                }
+            }
+            confusion[c][best_class] += 1;
+            if (best_class == c) total_correct += 1;
+            total_count += 1;
+        }
+    }
+
+    const total_acc = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_count));
+
+    std.debug.print("\n=== CONFUSION MATRIX — HARD FEW-SHOT (Level 11.4) ===\n", .{});
+    std.debug.print("10-shot, 3 noise components, 10 test per class\n\n", .{});
+
+    // Print confusion matrix
+    std.debug.print("Predicted →\n", .{});
+    std.debug.print("True ↓   ", .{});
+    for (0..NUM_CLASSES) |c| {
+        std.debug.print("{s:>8}", .{class_labels[c]});
+    }
+    std.debug.print("  | Recall\n", .{});
+    std.debug.print("---------", .{});
+    for (0..NUM_CLASSES) |_| {
+        std.debug.print("--------", .{});
+    }
+    std.debug.print("--+-------\n", .{});
+
+    for (0..NUM_CLASSES) |i| {
+        std.debug.print("{s:>8} ", .{class_labels[i]});
+        var row_total: usize = 0;
+        for (0..NUM_CLASSES) |j| {
+            std.debug.print("{:>8}", .{confusion[i][j]});
+            row_total += confusion[i][j];
+        }
+        const recall = if (row_total > 0) @as(f64, @floatFromInt(confusion[i][i])) / @as(f64, @floatFromInt(row_total)) else 0.0;
+        std.debug.print("  | {d:.0}%\n", .{recall * 100});
+    }
+
+    // Per-class precision
+    std.debug.print("Prec.    ", .{});
+    for (0..NUM_CLASSES) |j| {
+        var col_total: usize = 0;
+        for (0..NUM_CLASSES) |i| {
+            col_total += confusion[i][j];
+        }
+        const prec = if (col_total > 0) @as(f64, @floatFromInt(confusion[j][j])) / @as(f64, @floatFromInt(col_total)) else 0.0;
+        std.debug.print("{d:>7.0}%", .{prec * 100});
+    }
+    std.debug.print("\n", .{});
+
+    // Overlap analysis
+    std.debug.print("\n--- Overlap Analysis ---\n", .{});
+    std.debug.print("cat-dog share features 0,1 (2/3): confusion = {}\n", .{confusion[0][1] + confusion[1][0]});
+    std.debug.print("bird-fish share features 4,5 (2/3): confusion = {}\n", .{confusion[2][3] + confusion[3][2]});
+    std.debug.print("cat-bird share feature 2 (1/3): confusion = {}\n", .{confusion[0][2] + confusion[2][0]});
+
+    std.debug.print("\nOverall accuracy: {}/{} ({d:.1}%)\n", .{ total_correct, total_count, total_acc * 100 });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(total_acc > 0.3); // better than random (20%)
+}
