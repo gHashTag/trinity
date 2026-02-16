@@ -338,6 +338,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-level11-interactive-cli-report',
         'research/trinity-level11-repl-mode-report',
         'research/trinity-level11-pure-agi-report',
+        'research/trinity-level11-analogies-benchmark-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
