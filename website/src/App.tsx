@@ -11,6 +11,7 @@ const TheoremsSection = lazy(() => import('./components/sections/TheoremsSection
 const SolutionSection = lazy(() => import('./components/sections/SolutionSection'))
 const BenchmarksSection = lazy(() => import('./components/sections/BenchmarksSection'))
 const CalculatorSection = lazy(() => import('./components/sections/CalculatorSection'))
+const DePINSection = lazy(() => import('./components/sections/DePINSection'))
 const TechTree = lazy(() => import('./components/TechTree/TechTree'))
 const TeamSection = lazy(() => import('./components/sections/TeamSection'))
 const InvestSection = lazy(() => import('./components/sections/InvestSection'))
@@ -45,8 +46,11 @@ export default function App() {
         
         {/* 5. CALCULATOR - ROI with GPU/mining options */}
         <CalculatorSection />
-        
-        {/* 6. TECH TREE - Research laboratory */}
+
+        {/* 6. DePIN - Earn $TRI by running a node */}
+        <DePINSection />
+
+        {/* 7. TECH TREE - Research laboratory */}
         <TechTree />
         
         {/* 7. TEAM - Trust builder (3 members max) */}
