@@ -1,0 +1,34 @@
+name: community_feedback_integration
+version: "1.0.0"
+language: zig
+module: community_feedback_integration
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 500
+  NUM_USERS: 5
+  QUERIES_PER_USER: 10
+
+types:
+  UserFeedback:
+    fields:
+      user_id: Int
+      accuracy: Int
+      avg_similarity: Float
+      rank: Int
+
+behaviors:
+  - name: perUserAccuracyTracking
+    given: "5 users with 10-pair bundled memories over 500 entities."
+    when: "Each user executes 10 queries, track accuracy and avg similarity"
+    then: "50/50 (100%) — all users achieve perfect per-user accuracy"
+
+  - name: feedbackPriorityRanking
+    given: "5 users ranked by accuracy, feedback diversity queries."
+    when: "Sort users, verify ranking order, check top-3 accuracy, feedback diversity"
+    then: "15/20 — ranking valid, top users high accuracy, feedback diverse"
+
+  - name: queryLogAnalysis
+    given: "30 logged queries with similarity tracking."
+    when: "Compute mean/min/max similarity across query log"
+    then: "30/30 correct, mean sim above noise floor"
