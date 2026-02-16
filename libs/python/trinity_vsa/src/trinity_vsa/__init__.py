@@ -27,7 +27,7 @@ from .ops import (
     hamming_distance,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [
     "Trit",
     "TritVector",
@@ -39,4 +39,13 @@ __all__ = [
     "permute",
     "similarity",
     "hamming_distance",
+    "NativeVSA",
+    "Vector",
 ]
+
+# Native SIMD-accelerated backend (requires libtrinity-vsa)
+try:
+    from .native import NativeVSA, Vector
+except (ImportError, FileNotFoundError, OSError):
+    NativeVSA = None  # type: ignore
+    Vector = None  # type: ignore
