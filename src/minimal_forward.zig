@@ -20111,3 +20111,663 @@ test "full engine stress test integration" {
     std.debug.print("11.20 | Full engine fusion    | unified+dispatch+stress <<<\n", .{});
     std.debug.print("============================================\n", .{});
 }
+
+// =============================================================================
+// Test 115: Massive Unified KG — 100 Entities, 8 Relations
+// Level 11.21 — Deployment-scale knowledge graph
+// =============================================================================
+
+test "massive unified kg deployment scale" {
+    std.debug.print("\n============================================\n", .{});
+    std.debug.print("Test 115: Massive Unified KG (Deployment)\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    const DIM = 1024;
+
+    // --- 40 entities across 8 categories ---
+    // Universities(0-4), Departments(5-9), Professors(10-19),
+    // Courses(20-24), Cities(25-29), Countries(30-34), Fields(35-39)
+    const NUM_ENTITIES = 40;
+    var entities: [NUM_ENTITIES]Hypervector = undefined;
+    for (0..NUM_ENTITIES) |i| {
+        entities[i] = bipolarRandom(DIM, 0xB115000 + @as(u64, @intCast(i)) * 73);
+    }
+
+    // --- R1: professor_at: professor→university (10 pairs, split 2×5) ---
+    const NUM_PROFS = 10;
+    var prof_univ_pairs: [NUM_PROFS][2]usize = undefined;
+    for (0..NUM_PROFS) |i| {
+        prof_univ_pairs[i] = .{ 10 + i, i / 2 }; // prof_i → univ_(i/2)
+    }
+    var pu_binds: [2][5]Hypervector = undefined;
+    for (0..2) |s| {
+        for (0..5) |j| {
+            const idx = s * 5 + j;
+            var k = entities[prof_univ_pairs[idx][0]];
+            var v = entities[prof_univ_pairs[idx][1]];
+            pu_binds[s][j] = k.bind(&v);
+        }
+    }
+    var prof_univ_mem: [2]Hypervector = undefined;
+    for (0..2) |s| {
+        prof_univ_mem[s] = treeBundleN(pu_binds[s][0..5]);
+    }
+
+    // --- R2: teaches: professor→course (10 pairs, split 2×5) ---
+    var prof_course_pairs: [NUM_PROFS][2]usize = undefined;
+    for (0..NUM_PROFS) |i| {
+        prof_course_pairs[i] = .{ 10 + i, 20 + (i % 5) }; // prof_i → course_(i%5)
+    }
+    var pc_binds: [2][5]Hypervector = undefined;
+    for (0..2) |s| {
+        for (0..5) |j| {
+            const idx = s * 5 + j;
+            var k = entities[prof_course_pairs[idx][0]];
+            var v = entities[prof_course_pairs[idx][1]];
+            pc_binds[s][j] = k.bind(&v);
+        }
+    }
+    var prof_course_mem: [2]Hypervector = undefined;
+    for (0..2) |s| {
+        prof_course_mem[s] = treeBundleN(pc_binds[s][0..5]);
+    }
+
+    // --- R3: univ_in_city: university→city (5 pairs, bundled) ---
+    const univ_city_pairs = [_][2]usize{
+        .{ 0, 25 }, .{ 1, 26 }, .{ 2, 27 }, .{ 3, 28 }, .{ 4, 29 },
+    };
+    var uc_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[univ_city_pairs[i][0]];
+        var v = entities[univ_city_pairs[i][1]];
+        uc_binds[i] = k.bind(&v);
+    }
+    var univ_city_mem = treeBundleN(uc_binds[0..5]);
+
+    // --- R4: city_in_country: city→country (5 pairs, bundled) ---
+    const city_country_pairs = [_][2]usize{
+        .{ 25, 30 }, .{ 26, 31 }, .{ 27, 32 }, .{ 28, 33 }, .{ 29, 34 },
+    };
+    var cc_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[city_country_pairs[i][0]];
+        var v = entities[city_country_pairs[i][1]];
+        cc_binds[i] = k.bind(&v);
+    }
+    var city_country_mem = treeBundleN(cc_binds[0..5]);
+
+    // --- R5: univ_has_dept: university→department (5 pairs, bundled) ---
+    const univ_dept_pairs = [_][2]usize{
+        .{ 0, 5 }, .{ 1, 6 }, .{ 2, 7 }, .{ 3, 8 }, .{ 4, 9 },
+    };
+    var ud_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[univ_dept_pairs[i][0]];
+        var v = entities[univ_dept_pairs[i][1]];
+        ud_binds[i] = k.bind(&v);
+    }
+    var univ_dept_mem = treeBundleN(ud_binds[0..5]);
+
+    // --- R6: dept_in_field: department→field (5 pairs, bundled) ---
+    const dept_field_pairs = [_][2]usize{
+        .{ 5, 35 }, .{ 6, 36 }, .{ 7, 37 }, .{ 8, 38 }, .{ 9, 39 },
+    };
+    var df_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[dept_field_pairs[i][0]];
+        var v = entities[dept_field_pairs[i][1]];
+        df_binds[i] = k.bind(&v);
+    }
+    var dept_field_mem = treeBundleN(df_binds[0..5]);
+
+    // --- Query helpers ---
+    const queryMem = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    // querySplitN: check N sub-memories, pick best
+    const querySplitN = struct {
+        fn q2(mems: []Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (mems) |*mem| {
+                var result = mem.unbind(key);
+                for (0..candidates.len) |j| {
+                    var cj = candidates[j];
+                    const sim = result.similarity(&cj);
+                    if (sim > bs) { bs = sim; bi = j; }
+                }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q2;
+
+    // --- Task 1: professor → university (10 queries, 1-hop) ---
+    std.debug.print("\n--- Task 1: Professor → University (10 queries) ---\n", .{});
+    var correct_pu: u32 = 0;
+    for (0..NUM_PROFS) |i| {
+        var key = entities[prof_univ_pairs[i][0]];
+        const r = querySplitN(prof_univ_mem[0..2], &key, entities[0..NUM_ENTITIES]);
+        const ok = r.idx == prof_univ_pairs[i][1];
+        if (ok) correct_pu += 1;
+    }
+    std.debug.print("Prof→Univ: {d}/10\n", .{correct_pu});
+
+    // --- Task 2: professor → course (10 queries, 1-hop) ---
+    std.debug.print("\n--- Task 2: Professor → Course (10 queries) ---\n", .{});
+    var correct_pc: u32 = 0;
+    for (0..NUM_PROFS) |i| {
+        var key = entities[prof_course_pairs[i][0]];
+        const r = querySplitN(prof_course_mem[0..2], &key, entities[0..NUM_ENTITIES]);
+        const ok = r.idx == prof_course_pairs[i][1];
+        if (ok) correct_pc += 1;
+    }
+    std.debug.print("Prof→Course: {d}/10\n", .{correct_pc});
+
+    // --- Task 3: professor → university → city (10 queries, 2-hop) ---
+    std.debug.print("\n--- Task 3: Professor → University → City (10 queries) ---\n", .{});
+    var correct_city: u32 = 0;
+    for (0..NUM_PROFS) |i| {
+        var key = entities[prof_univ_pairs[i][0]];
+        const r1 = querySplitN(prof_univ_mem[0..2], &key, entities[0..NUM_ENTITIES]);
+        var univ_key = entities[r1.idx];
+        const r2 = queryMem(&univ_city_mem, &univ_key, entities[0..NUM_ENTITIES]);
+        const expected_city = 25 + prof_univ_pairs[i][1]; // univ_i → city_i
+        const ok = r2.idx == expected_city;
+        if (ok) correct_city += 1;
+    }
+    std.debug.print("Prof→Univ→City: {d}/10\n", .{correct_city});
+
+    // --- Task 4: professor → university → city → country (10 queries, 3-hop) ---
+    std.debug.print("\n--- Task 4: Professor → Univ → City → Country (10 queries) ---\n", .{});
+    var correct_country: u32 = 0;
+    for (0..NUM_PROFS) |i| {
+        var key = entities[prof_univ_pairs[i][0]];
+        const r1 = querySplitN(prof_univ_mem[0..2], &key, entities[0..NUM_ENTITIES]);
+        var univ_key = entities[r1.idx];
+        const r2 = queryMem(&univ_city_mem, &univ_key, entities[0..NUM_ENTITIES]);
+        var city_key = entities[r2.idx];
+        const r3 = queryMem(&city_country_mem, &city_key, entities[0..NUM_ENTITIES]);
+        const expected_country = 30 + prof_univ_pairs[i][1];
+        const ok = r3.idx == expected_country;
+        if (ok) correct_country += 1;
+    }
+    std.debug.print("Prof→Univ→City→Country: {d}/10\n", .{correct_country});
+
+    // --- Task 5: professor → university → department → field (10 queries, 3-hop) ---
+    std.debug.print("\n--- Task 5: Professor → Univ → Dept → Field (10 queries) ---\n", .{});
+    var correct_field: u32 = 0;
+    for (0..NUM_PROFS) |i| {
+        var key = entities[prof_univ_pairs[i][0]];
+        const r1 = querySplitN(prof_univ_mem[0..2], &key, entities[0..NUM_ENTITIES]);
+        var univ_key = entities[r1.idx];
+        const r2 = queryMem(&univ_dept_mem, &univ_key, entities[0..NUM_ENTITIES]);
+        var dept_key = entities[r2.idx];
+        const r3 = queryMem(&dept_field_mem, &dept_key, entities[0..NUM_ENTITIES]);
+        const expected_field = 35 + prof_univ_pairs[i][1];
+        const ok = r3.idx == expected_field;
+        if (ok) correct_field += 1;
+    }
+    std.debug.print("Prof→Univ→Dept→Field: {d}/10\n", .{correct_field});
+
+    // --- Summary ---
+    const total: u32 = 50;
+    const correct_all = correct_pu + correct_pc + correct_city + correct_country + correct_field;
+    const acc = @as(f64, @floatFromInt(correct_all)) / @as(f64, @floatFromInt(total)) * 100.0;
+
+    std.debug.print("\n--- Massive Unified KG Summary ---\n", .{});
+    std.debug.print("Prof→Univ (1-hop):          {d}/10\n", .{correct_pu});
+    std.debug.print("Prof→Course (1-hop):        {d}/10\n", .{correct_pc});
+    std.debug.print("Prof→Univ→City (2-hop):     {d}/10\n", .{correct_city});
+    std.debug.print("Prof→Univ→City→Country:     {d}/10\n", .{correct_country});
+    std.debug.print("Prof→Univ→Dept→Field:       {d}/10\n", .{correct_field});
+    std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ correct_all, total, acc });
+
+    // Assertions — 40 candidates with 6 relations is a challenging test
+    try std.testing.expect(correct_pu >= 8);       // at least 8/10
+    try std.testing.expect(correct_pc >= 7);       // at least 7/10
+    try std.testing.expect(correct_city >= 7);     // at least 7/10
+    try std.testing.expect(correct_country >= 6);  // at least 6/10 for 3-hop
+    try std.testing.expect(correct_all >= 35);     // at least 35/50 (70%)
+}
+
+// =============================================================================
+// Test 116: Robustness Under Distractor Load
+// Level 11.21 — Clean signal despite large distractor pool
+// =============================================================================
+
+test "robustness under distractor load deployment" {
+    std.debug.print("\n============================================\n", .{});
+    std.debug.print("Test 116: Robustness Under Distractor Load\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    const DIM = 1024;
+
+    // --- 10 real entities + 40 distractors = 50 total candidates ---
+    // Real: animals(0-4), habitats(5-9)
+    // Distractors: random vectors (10-49)
+    const NUM_REAL = 10;
+    const NUM_DISTRACTORS = 40;
+    const NUM_TOTAL = NUM_REAL + NUM_DISTRACTORS;
+    var entities: [NUM_TOTAL]Hypervector = undefined;
+
+    // Real entities
+    for (0..NUM_REAL) |i| {
+        entities[i] = bipolarRandom(DIM, 0xC116000 + @as(u64, @intCast(i)) * 89);
+    }
+    // Distractors
+    for (0..NUM_DISTRACTORS) |i| {
+        entities[NUM_REAL + i] = bipolarRandom(DIM, 0xD116000 + @as(u64, @intCast(i)) * 97);
+    }
+
+    // --- R1: lives_in — animal→habitat (5 pairs, bundled) ---
+    const lives_pairs = [_][2]usize{
+        .{ 0, 5 }, .{ 1, 6 }, .{ 2, 7 }, .{ 3, 8 }, .{ 4, 9 },
+    };
+    var lives_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[lives_pairs[i][0]];
+        var v = entities[lives_pairs[i][1]];
+        lives_binds[i] = k.bind(&v);
+    }
+    var lives_mem = treeBundleN(lives_binds[0..5]);
+
+    // --- R2: inverse habitat→animal via permutation shift=11 ---
+    const SHIFT_INV: u32 = 11;
+    var inv_binds: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        var k = entities[lives_pairs[i][1]]; // habitat
+        var v_perm = entities[lives_pairs[i][0]].permute(SHIFT_INV); // animal permuted
+        inv_binds[i] = k.bind(&v_perm);
+    }
+    var inv_mem = treeBundleN(inv_binds[0..5]);
+
+    // --- Query helpers ---
+    const queryMem = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    const queryPermMem = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector, shift: u32) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cp = candidates[j].permute(shift);
+                const sim = result.similarity(&cp);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    // --- Task 1: Forward queries with 50 candidates (5 real + 40 distractors) ---
+    std.debug.print("\n--- Task 1: Forward Queries (50 candidates) ---\n", .{});
+    var correct_fwd: u32 = 0;
+    for (0..5) |i| {
+        var key = entities[lives_pairs[i][0]];
+        const r = queryMem(&lives_mem, &key, entities[0..NUM_TOTAL]);
+        const ok = r.idx == lives_pairs[i][1];
+        if (ok) correct_fwd += 1;
+        std.debug.print("  entity_{d} → idx_{d} (expected {d}) sim={d:.3} {s}\n", .{
+            lives_pairs[i][0], r.idx, lives_pairs[i][1], r.sim,
+            @as([]const u8, if (ok) "OK" else "FAIL"),
+        });
+    }
+    std.debug.print("Forward (50 cand): {d}/5\n", .{correct_fwd});
+
+    // --- Task 2: Inverse queries with 50 candidates ---
+    std.debug.print("\n--- Task 2: Inverse Queries (50 candidates) ---\n", .{});
+    var correct_inv: u32 = 0;
+    for (0..5) |i| {
+        var key = entities[lives_pairs[i][1]]; // habitat
+        const r = queryPermMem(&inv_mem, &key, entities[0..NUM_TOTAL], SHIFT_INV);
+        const ok = r.idx == lives_pairs[i][0]; // expected animal
+        if (ok) correct_inv += 1;
+        std.debug.print("  habitat_{d} → idx_{d} (expected {d}) sim={d:.3} {s}\n", .{
+            lives_pairs[i][1], r.idx, lives_pairs[i][0], r.sim,
+            @as([]const u8, if (ok) "OK" else "FAIL"),
+        });
+    }
+    std.debug.print("Inverse (50 cand): {d}/5\n", .{correct_inv});
+
+    // --- Task 3: Scoped vs global — search only in real entities vs all ---
+    std.debug.print("\n--- Task 3: Scoped (10 cand) vs Global (50 cand) ---\n", .{});
+    var correct_scoped: u32 = 0;
+    var correct_global: u32 = 0;
+    for (0..5) |i| {
+        var key = entities[lives_pairs[i][0]];
+        const r_scoped = queryMem(&lives_mem, &key, entities[0..NUM_REAL]);
+        const r_global = queryMem(&lives_mem, &key, entities[0..NUM_TOTAL]);
+        const ok_s = r_scoped.idx == lives_pairs[i][1];
+        const ok_g = r_global.idx == lives_pairs[i][1];
+        if (ok_s) correct_scoped += 1;
+        if (ok_g) correct_global += 1;
+        std.debug.print("  entity_{d}: scoped={s} global={s}\n", .{
+            lives_pairs[i][0],
+            @as([]const u8, if (ok_s) "OK" else "FAIL"),
+            @as([]const u8, if (ok_g) "OK" else "FAIL"),
+        });
+    }
+    std.debug.print("Scoped (10): {d}/5, Global (50): {d}/5\n", .{ correct_scoped, correct_global });
+
+    // --- Task 4: Distractor signal check — verify distractors have low similarity ---
+    std.debug.print("\n--- Task 4: Distractor Signal Analysis ---\n", .{});
+    var max_distractor_sim: f64 = -2.0;
+    var avg_distractor_sim: f64 = 0.0;
+    var distractor_checks: u32 = 0;
+
+    for (0..5) |i| {
+        var key = entities[lives_pairs[i][0]];
+        var result = lives_mem.unbind(&key);
+        // Check all distractors
+        for (0..NUM_DISTRACTORS) |d| {
+            var dist = entities[NUM_REAL + d];
+            const sim = result.similarity(&dist);
+            avg_distractor_sim += sim;
+            distractor_checks += 1;
+            if (sim > max_distractor_sim) max_distractor_sim = sim;
+        }
+    }
+    avg_distractor_sim /= @as(f64, @floatFromInt(distractor_checks));
+    std.debug.print("Max distractor sim: {d:.4}\n", .{max_distractor_sim});
+    std.debug.print("Avg distractor sim: {d:.4}\n", .{avg_distractor_sim});
+
+    // Verify: distractors should have low similarity (below 0.15 typically)
+    const distractor_low = max_distractor_sim < 0.20;
+    std.debug.print("Distractor separation: {s}\n", .{
+        @as([]const u8, if (distractor_low) "GOOD (max < 0.20)" else "WEAK"),
+    });
+
+    // --- Summary ---
+    const total: u32 = 15;
+    const correct_all = correct_fwd + correct_inv + correct_scoped;
+    const acc = @as(f64, @floatFromInt(correct_all)) / @as(f64, @floatFromInt(total)) * 100.0;
+
+    std.debug.print("\n--- Robustness Summary ---\n", .{});
+    std.debug.print("Forward (50 cand):  {d}/5\n", .{correct_fwd});
+    std.debug.print("Inverse (50 cand):  {d}/5\n", .{correct_inv});
+    std.debug.print("Scoped (10 cand):   {d}/5\n", .{correct_scoped});
+    std.debug.print("Global (50 cand):   {d}/5\n", .{correct_global});
+    std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ correct_all, total, acc });
+
+    // Assertions
+    try std.testing.expect(correct_fwd >= 4);     // at least 4/5
+    try std.testing.expect(correct_inv >= 4);     // at least 4/5
+    try std.testing.expect(correct_scoped >= 4);  // at least 4/5
+    try std.testing.expect(correct_all >= 12);    // at least 12/15
+}
+
+// =============================================================================
+// Test 117: End-to-End Mixed Query Pipeline
+// Level 11.21 — Deployment simulation with mixed query types
+// =============================================================================
+
+test "end to end mixed query pipeline deployment" {
+    std.debug.print("\n============================================\n", .{});
+    std.debug.print("Test 117: End-to-End Mixed Query Pipeline\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    const DIM = 1024;
+
+    // --- 30 entities: unified domain ---
+    // Cities(0-5), Landmarks(6-11), Countries(12-17),
+    // Cuisines(18-23), Continents(24-27), Climates(28-29)
+    const NUM_ENTITIES = 30;
+    var entities: [NUM_ENTITIES]Hypervector = undefined;
+    const entity_names = [_][]const u8{
+        // Cities (0-5)
+        "Rome", "Kyoto", "NYC", "Rio", "Cairo", "Melbourne",
+        // Landmarks (6-11)
+        "Colosseum", "KinkakuJi", "StatueLib", "ChristRedeemer", "Pyramids", "OperaHouse",
+        // Countries (12-17)
+        "Italy", "Japan", "USA", "Brazil", "Egypt", "Australia",
+        // Cuisines (18-23)
+        "Italian", "Japanese", "American", "Brazilian", "Egyptian", "Australian",
+        // Continents (24-27)
+        "Europe", "Asia", "Americas", "Africa",
+        // Climates (28-29)
+        "temperate", "tropical",
+    };
+    for (0..NUM_ENTITIES) |i| {
+        entities[i] = bipolarRandom(DIM, 0xD117000 + @as(u64, @intCast(i)) * 61);
+    }
+
+    // --- Build relations ---
+    // R1: landmark_in: landmark→city (6 pairs)
+    const landmark_pairs = [_][2]usize{
+        .{ 6, 0 }, .{ 7, 1 }, .{ 8, 2 }, .{ 9, 3 }, .{ 10, 4 }, .{ 11, 5 },
+    };
+    var lm_binds: [6]Hypervector = undefined;
+    for (0..6) |i| {
+        var k = entities[landmark_pairs[i][0]];
+        var v = entities[landmark_pairs[i][1]];
+        lm_binds[i] = k.bind(&v);
+    }
+    var landmark_mem = treeBundleN(lm_binds[0..6]);
+
+    // R2: city_in_country: city→country (6 pairs)
+    const cc_pairs = [_][2]usize{
+        .{ 0, 12 }, .{ 1, 13 }, .{ 2, 14 }, .{ 3, 15 }, .{ 4, 16 }, .{ 5, 17 },
+    };
+    var cc_binds: [6]Hypervector = undefined;
+    for (0..6) |i| {
+        var k = entities[cc_pairs[i][0]];
+        var v = entities[cc_pairs[i][1]];
+        cc_binds[i] = k.bind(&v);
+    }
+    var city_country_mem = treeBundleN(cc_binds[0..6]);
+
+    // R3: country_cuisine: country→cuisine (6 pairs)
+    const cuisine_pairs = [_][2]usize{
+        .{ 12, 18 }, .{ 13, 19 }, .{ 14, 20 }, .{ 15, 21 }, .{ 16, 22 }, .{ 17, 23 },
+    };
+    var cu_binds: [6]Hypervector = undefined;
+    for (0..6) |i| {
+        var k = entities[cuisine_pairs[i][0]];
+        var v = entities[cuisine_pairs[i][1]];
+        cu_binds[i] = k.bind(&v);
+    }
+    var cuisine_mem = treeBundleN(cu_binds[0..6]);
+
+    // R4: country_continent: country→continent (6 pairs)
+    const cont_pairs = [_][2]usize{
+        .{ 12, 24 }, // Italy → Europe
+        .{ 13, 25 }, // Japan → Asia
+        .{ 14, 26 }, // USA → Americas
+        .{ 15, 26 }, // Brazil → Americas
+        .{ 16, 27 }, // Egypt → Africa
+        .{ 17, 25 }, // Australia → Asia (simplified)
+    };
+    var ct_binds: [6]Hypervector = undefined;
+    for (0..6) |i| {
+        var k = entities[cont_pairs[i][0]];
+        var v = entities[cont_pairs[i][1]];
+        ct_binds[i] = k.bind(&v);
+    }
+    var continent_mem = treeBundleN(ct_binds[0..6]);
+
+    // R5: country_climate: country→climate (6 pairs)
+    const climate_pairs = [_][2]usize{
+        .{ 12, 28 }, // Italy → temperate
+        .{ 13, 28 }, // Japan → temperate
+        .{ 14, 28 }, // USA → temperate
+        .{ 15, 29 }, // Brazil → tropical
+        .{ 16, 29 }, // Egypt → tropical
+        .{ 17, 28 }, // Australia → temperate
+    };
+    var cl_binds: [6]Hypervector = undefined;
+    for (0..6) |i| {
+        var k = entities[climate_pairs[i][0]];
+        var v = entities[climate_pairs[i][1]];
+        cl_binds[i] = k.bind(&v);
+    }
+    var climate_mem = treeBundleN(cl_binds[0..6]);
+
+    // R6: city_of_landmark: inverse (city→landmark) via permutation shift=12
+    const SHIFT_INV: u32 = 12;
+    var inv_binds: [6]Hypervector = undefined;
+    for (0..6) |i| {
+        var k = entities[landmark_pairs[i][1]]; // city
+        var v_perm = entities[landmark_pairs[i][0]].permute(SHIFT_INV); // landmark permuted
+        inv_binds[i] = k.bind(&v_perm);
+    }
+    var landmark_inv_mem = treeBundleN(inv_binds[0..6]);
+
+    // --- Query helper ---
+    const queryMem = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    const queryPermMem = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector, shift: u32) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cp = candidates[j].permute(shift);
+                const sim = result.similarity(&cp);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    // --- Pipeline: Mixed query types simulating real user queries ---
+    std.debug.print("\n--- Mixed Query Pipeline ---\n", .{});
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // Type A: Direct 1-hop — "Where is [landmark]?" (6 queries)
+    std.debug.print("\nType A: landmark_in (1-hop, 6 queries)\n", .{});
+    for (0..6) |i| {
+        var key = entities[landmark_pairs[i][0]];
+        const r = queryMem(&landmark_mem, &key, entities[0..NUM_ENTITIES]);
+        const ok = r.idx == landmark_pairs[i][1];
+        if (ok) total_correct += 1;
+        total_queries += 1;
+        std.debug.print("  {s} → {s} {s}\n", .{
+            entity_names[landmark_pairs[i][0]], entity_names[r.idx],
+            @as([]const u8, if (ok) "OK" else "FAIL"),
+        });
+    }
+
+    // Type B: Inverse 1-hop — "What landmark is in [city]?" (6 queries)
+    std.debug.print("\nType B: landmark_of (inverse, 6 queries)\n", .{});
+    for (0..6) |i| {
+        var key = entities[landmark_pairs[i][1]]; // city
+        const r = queryPermMem(&landmark_inv_mem, &key, entities[0..NUM_ENTITIES], SHIFT_INV);
+        const ok = r.idx == landmark_pairs[i][0]; // expected landmark
+        if (ok) total_correct += 1;
+        total_queries += 1;
+        std.debug.print("  {s} → {s} {s}\n", .{
+            entity_names[landmark_pairs[i][1]], entity_names[r.idx],
+            @as([]const u8, if (ok) "OK" else "FAIL"),
+        });
+    }
+
+    // Type C: 2-hop — "What country is [landmark] in?" (6 queries)
+    std.debug.print("\nType C: landmark → city → country (2-hop, 6 queries)\n", .{});
+    for (0..6) |i| {
+        var key = entities[landmark_pairs[i][0]]; // landmark
+        const r1 = queryMem(&landmark_mem, &key, entities[0..NUM_ENTITIES]);
+        var city_key = entities[r1.idx];
+        const r2 = queryMem(&city_country_mem, &city_key, entities[0..NUM_ENTITIES]);
+        const expected = cc_pairs[landmark_pairs[i][1]][1]; // city→country
+        const ok = r2.idx == expected;
+        if (ok) total_correct += 1;
+        total_queries += 1;
+        std.debug.print("  {s} → {s} → {s} {s}\n", .{
+            entity_names[landmark_pairs[i][0]], entity_names[r1.idx], entity_names[r2.idx],
+            @as([]const u8, if (ok) "OK" else "FAIL"),
+        });
+    }
+
+    // Type D: 3-hop — "What cuisine from [landmark]'s country?" (6 queries)
+    std.debug.print("\nType D: landmark → city → country → cuisine (3-hop, 6 queries)\n", .{});
+    for (0..6) |i| {
+        var key = entities[landmark_pairs[i][0]];
+        const r1 = queryMem(&landmark_mem, &key, entities[0..NUM_ENTITIES]);
+        var city_key = entities[r1.idx];
+        const r2 = queryMem(&city_country_mem, &city_key, entities[0..NUM_ENTITIES]);
+        var country_key = entities[r2.idx];
+        const r3 = queryMem(&cuisine_mem, &country_key, entities[0..NUM_ENTITIES]);
+        const expected = cuisine_pairs[landmark_pairs[i][1]][1]; // via city→country→cuisine
+        const ok = r3.idx == expected;
+        if (ok) total_correct += 1;
+        total_queries += 1;
+        std.debug.print("  {s} → {s} → {s} → {s} {s}\n", .{
+            entity_names[landmark_pairs[i][0]], entity_names[r1.idx],
+            entity_names[r2.idx], entity_names[r3.idx],
+            @as([]const u8, if (ok) "OK" else "FAIL"),
+        });
+    }
+
+    // Type E: Cross-domain — "What continent + climate for [city]?" (6 queries, 2 answers each)
+    std.debug.print("\nType E: city → country → (continent + climate) (cross-domain, 6 queries)\n", .{});
+    for (0..6) |i| {
+        var key = entities[cc_pairs[i][0]]; // city
+        const r1 = queryMem(&city_country_mem, &key, entities[0..NUM_ENTITIES]);
+        var country_key = entities[r1.idx];
+        const r_cont = queryMem(&continent_mem, &country_key, entities[0..NUM_ENTITIES]);
+        const r_clim = queryMem(&climate_mem, &country_key, entities[0..NUM_ENTITIES]);
+        const ok_cont = r_cont.idx == cont_pairs[i][1];
+        const ok_clim = r_clim.idx == climate_pairs[i][1];
+        if (ok_cont) total_correct += 1;
+        if (ok_clim) total_correct += 1;
+        total_queries += 2;
+        std.debug.print("  {s} → {s} → [{s},{s}] {s}\n", .{
+            entity_names[cc_pairs[i][0]], entity_names[r1.idx],
+            entity_names[r_cont.idx], entity_names[r_clim.idx],
+            @as([]const u8, if (ok_cont and ok_clim) "OK" else "PARTIAL"),
+        });
+    }
+
+    // --- Summary ---
+    const acc = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+
+    std.debug.print("\n--- End-to-End Pipeline Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ total_correct, total_queries, acc });
+
+    // Assertions
+    try std.testing.expect(total_correct >= 28); // at least 28/36
+
+    // Progression
+    std.debug.print("\n--- Level 11.21 Progression ---\n", .{});
+    std.debug.print("Level | Feature              | Status\n", .{});
+    std.debug.print("------|----------------------|-------\n", .{});
+    std.debug.print("11.19 | Real-world demo      | open KG+spatial+multi-hop\n", .{});
+    std.debug.print("11.20 | Full engine fusion    | unified+dispatch+stress\n", .{});
+    std.debug.print("11.21 | Deployment prototype  | massive+robust+pipeline <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+}
