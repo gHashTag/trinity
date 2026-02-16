@@ -214,7 +214,7 @@ The fundamental issue: word trigrams need ~10+ observations per context to produ
 Weight: λ·P_tri + (1-λ)·P_bi. Tune λ per-context based on trigram count. Standard NLP technique that directly addresses sparsity. Should make trigram beat bigram.
 
 ### Option B: Fixed Vocabulary + Massive Corpus
-Cap vocabulary at 256 (map rare words to <UNK>), then use the 25K corpus. Fewer parameters to estimate from the same data → lower PPL. Trades vocabulary breadth for prediction accuracy.
+Cap vocabulary at 256 (map rare words to \<UNK\>), then use the 25K corpus. Fewer parameters to estimate from the same data → lower PPL. Trades vocabulary breadth for prediction accuracy.
 
 ### Option C: Character-Word Hybrid
 Generate at character level (raw freq trigram from v2.44) but constrain to produce real words from the vocabulary. Combines character-level smoothness with word-level coherence.

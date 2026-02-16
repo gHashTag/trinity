@@ -155,7 +155,7 @@ Same as v2.34-v2.36 (9.5). Multi-role achieves the best train loss (27.9% below 
 | Perplexity 25.1 | **PPL = 1.9** (unchanged) |
 | Eval loss 0.7184 | **0.7797** (slightly worse than single-role) |
 | Generation "English-like phrases" | Random-looking chars, 41 unique |
-| Role orthogonality cosine <0.12 | Roles are somewhat orthogonal (measured) |
+| Role orthogonality cosine \<0.12 | Roles are somewhat orthogonal (measured) |
 | Signal strength >0.28 | Not measured as claimed |
 | Score 9.99/10 | **9.5/10** — best train, but eval tradeoff |
 

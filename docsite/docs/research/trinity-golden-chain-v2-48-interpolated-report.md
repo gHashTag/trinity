@@ -7,7 +7,7 @@
 
 ## Summary
 
-v2.48 implements Option A from v2.47: Jelinek-Mercer interpolation combining trigram and bigram probabilities. The interpolated model computes P_interp(w|w2,w1) = λ·P_tri(w|w2,w1) + (1-λ)·P_bi(w|w1), where P_tri uses pure trigram counts (uniform for unseen contexts) and P_bi uses bigram counts with Laplace smoothing. A grid search over λ ∈ {0.0, 0.1, ..., 1.0} finds the optimal weighting.
+v2.48 implements Option A from v2.47: Jelinek-Mercer interpolation combining trigram and bigram probabilities. The interpolated model computes P\_interp(w|w2,w1) = λ·P\_tri(w|w2,w1) + (1-λ)·P\_bi(w|w1), where P\_tri uses pure trigram counts (uniform for unseen contexts) and P\_bi uses bigram counts with Laplace smoothing. A grid search over λ ∈ \{0.0, 0.1, ..., 1.0\} finds the optimal weighting.
 
 1. **Best λ = 0.2** — 80% bigram, 20% trigram (bigram-heavy due to sparse trigram data)
 2. **Eval CE 3.3499 nats (46.3% below random)** — beats both pure bigram (3.3905) and pure trigram (3.6816)

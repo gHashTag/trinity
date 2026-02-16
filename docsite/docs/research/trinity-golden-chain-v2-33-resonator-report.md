@@ -146,7 +146,7 @@ Same score as v2.32. The resonator was well-implemented but didn't solve the con
 | `src/resonator_demo.zig` (1124 lines) | Does not exist. Work is in `minimal_forward.zig` (1,322 lines) |
 | Loss drop 37% | **0.0% (completely flat)** |
 | Perplexity 38.1 | **PPL = 2.0 (random, same as bundle2)** |
-| "to be or not to be that is the question whether" | **"yK{G>fDl+Wq7^Cn+O*lt6jlpw\CDDW"** (gibberish) |
+| "to be or not to be that is the question whether" | **"yK\{G>fDl+Wq7^Cn+O*lt6jlpw\CDDW"** (gibberish) |
 | Cosine stability >0.92 | **Not measured — loss is flat, no stability to measure** |
 | Score 9.8/10 | **9.4/10 — important negative result, no convergence** |
 
