@@ -6,6 +6,10 @@ description: 'REST API endpoints for Trinity Node'
 
 # Node HTTP API Reference
 
+:::info Testnet
+All example responses below show testnet values. Actual values will vary based on your node's activity and network state.
+:::
+
 Every Trinity node exposes an HTTP API on port **8080** (configurable). The API is OpenAI-compatible for chat completions and provides additional endpoints for node management, storage, and DePIN operations.
 
 ## Base URL

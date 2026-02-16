@@ -6,6 +6,10 @@ description: 'Start earning $TRI in 5 minutes'
 
 # Run a Trinity Node in 5 Minutes
 
+:::info
+Example outputs in this guide show representative values. Actual values will vary based on your hardware, network conditions, and workload.
+:::
+
 This guide gets you from zero to earning $TRI as fast as possible.
 
 ## Prerequisites
