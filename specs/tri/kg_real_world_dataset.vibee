@@ -1,0 +1,74 @@
+name: kg_real_world_dataset
+version: "1.0.0"
+language: zig
+module: kg_real_world_dataset
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KG REAL WORLD DATASET - Level 11.36 Dataset Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+# 145 real-world facts across 3 domains: geography, science, history.
+# Used by igla_knowledge_graph_chat for KG population.
+#
+# Domain breakdown:
+#   Geography: 80 facts (20 countries x 4 relations)
+#   Science:   25 facts (20 elements x symbol/atomic + 5 compounds)
+#   History:   15 facts (15 events x year/location)
+#   Compounds: 5 facts (chemistry formulas)
+#   Total:     145 facts, 13 relation types
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  GEOGRAPHY_FACTS: 80
+  SCIENCE_FACTS: 25
+  HISTORY_FACTS: 15
+  COMPOUND_FACTS: 5
+  TOTAL_FACTS: 145
+
+types:
+  FactEntry:
+    fields:
+      subject: String
+      relation: String
+      object: String
+
+  DatasetDomain:
+    fields:
+      name: String
+      fact_count: Int
+
+behaviors:
+  # Load geography facts: 20 countries with 4 relations each
+  - name: loadGeography
+    given: 20 countries (France, Germany, Japan, China, etc.)
+    when: Load 4 relations per country (capital_of, language_of, continent_of, currency_of)
+    then: 80 geography facts loaded
+
+  # Load science facts: elements and compounds
+  - name: loadScience
+    given: 20 chemical elements (hydrogen, helium, carbon, etc.)
+    when: Load 2 relations per element (symbol_of, atomic_number_of) + 5 compound formulas
+    then: 25 science facts loaded
+
+  # Load history facts: historical events
+  - name: loadHistory
+    given: 15 historical events
+    when: Load 2 relations per event (year_of, location_of)
+    then: 15 history facts loaded
+
+  # Get all facts as a flat list
+  - name: getAllFacts
+    given: Fully loaded dataset
+    when: Iterate all domains and collect facts
+    then: Returns List<FactEntry> with 145 entries
+
+  # Get facts by domain
+  - name: getFactsByDomain
+    given: Domain name (geography, science, history)
+    when: Filter facts by domain
+    then: Returns List<FactEntry> for the specified domain
+
+  # Get dataset statistics
+  - name: getDatasetStats
+    given: Loaded dataset
+    when: Count unique subjects, relations, objects
+    then: Returns list of DatasetDomain with per-domain counts

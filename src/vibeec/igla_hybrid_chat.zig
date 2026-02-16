@@ -46,6 +46,7 @@ const model_mod = @import("gguf_model.zig");
 const tokenizer_mod = @import("gguf_tokenizer.zig");
 const inference = @import("gguf_inference.zig");
 const tvc = @import("tvc_corpus");
+const kg = @import("igla_kg");
 const openai_client = @import("openai_client.zig");
 const anthropic_client = @import("anthropic_client.zig");
 const long_context = @import("igla_long_context_engine.zig");
@@ -155,8 +156,12 @@ pub const EnergyMetrics = struct {
     vision_calls: u64 = 0,
     whisper_calls: u64 = 0,
 
+    // v2.5 fields (Level 1.25 KG)
+    kg_hits: u64 = 0,
+
     // Energy cost estimates (Watt-hours per query)
     const SYMBOLIC_ENERGY_WH: f64 = 0.0001; // Pattern match: ~0.1 mWh
+    const KG_ENERGY_WH: f64 = 0.0008; // VSA KG bind/unbind: ~0.8 mWh
     const TOOL_ENERGY_WH: f64 = 0.0005; // Tool execution: ~0.5 mWh
     const TVC_ENERGY_WH: f64 = 0.001; // VSA cosine search: ~1 mWh
     const LOCAL_LLM_ENERGY_WH: f64 = 0.05; // Local GGUF inference: ~50 mWh
@@ -168,11 +173,19 @@ pub const EnergyMetrics = struct {
         // Energy saved = cache hits * (cloud_cost - actual_cost)
         const symbolic_saved = @as(f64, @floatFromInt(self.symbolic_hits)) *
             (CLOUD_LLM_ENERGY_WH - SYMBOLIC_ENERGY_WH);
+        const kg_saved = @as(f64, @floatFromInt(self.kg_hits)) *
+            (CLOUD_LLM_ENERGY_WH - KG_ENERGY_WH);
         const tvc_saved = @as(f64, @floatFromInt(self.tvc_hits)) *
             (CLOUD_LLM_ENERGY_WH - TVC_ENERGY_WH);
         const tool_saved = @as(f64, @floatFromInt(self.tool_hits)) *
             (CLOUD_LLM_ENERGY_WH - TOOL_ENERGY_WH);
-        return symbolic_saved + tvc_saved + tool_saved;
+        return symbolic_saved + kg_saved + tvc_saved + tool_saved;
+    }
+
+    pub fn getKGHitRate(self: *const EnergyMetrics) f64 {
+        if (self.total_queries == 0) return 0.0;
+        return @as(f64, @floatFromInt(self.kg_hits)) /
+            @as(f64, @floatFromInt(self.total_queries));
     }
 
     pub fn getSymbolicHitRate(self: *const EnergyMetrics) f64 {
@@ -211,6 +224,7 @@ pub const HybridResponse = struct {
 
     pub const Source = enum {
         Symbolic, // From pattern matcher (instant, 0 energy)
+        KnowledgeGraph, // v2.5: From VSA Knowledge Graph (fast, 0.8 mWh)
         TVCCorpus, // From TVC cached response (fast, minimal energy)
         Tool, // v2.1: From tool execution (fast, minimal energy)
         Vision, // v2.1: From cloud vision API (image analysis)
@@ -226,7 +240,7 @@ pub const HybridResponse = struct {
 
     /// Check if response came from cache (fast path, minimal energy)
     pub fn isCached(self: HybridResponse) bool {
-        return self.source == .Symbolic or self.source == .TVCCorpus or self.source == .Tool;
+        return self.source == .Symbolic or self.source == .KnowledgeGraph or self.source == .TVCCorpus or self.source == .Tool;
     }
 };
 
@@ -298,6 +312,7 @@ pub const ReflectionStatus = enum {
 
 pub const RoutingDecision = enum {
     RouteSymbolic, // High similarity to known patterns
+    RouteKG, // v2.5: VSA Knowledge Graph hit (bind/unbind)
     RouteTVC, // Medium similarity → TVC corpus lookup
     RouteMemory, // Hit in VSA persistent memory
     RouteLocalLLM, // Low similarity + local model available
@@ -308,6 +323,7 @@ pub const RoutingDecision = enum {
     pub fn getName(self: RoutingDecision) []const u8 {
         return switch (self) {
             .RouteSymbolic => "Symbolic",
+            .RouteKG => "KG",
             .RouteTVC => "TVC",
             .RouteMemory => "Memory",
             .RouteLocalLLM => "LocalLLM",
@@ -320,6 +336,7 @@ pub const RoutingDecision = enum {
     pub fn getSourceHue(self: RoutingDecision) f32 {
         return switch (self) {
             .RouteSymbolic => 60.0, // Yellow
+            .RouteKG => 45.0, // Orange (KG facts)
             .RouteTVC => 120.0, // Green
             .RouteMemory => 90.0, // Yellow-Green
             .RouteLocalLLM => 180.0, // Cyan
@@ -583,6 +600,9 @@ pub const IglaHybridChat = struct {
     // v2.0: VSA persistent memory
     memory: VSAMemoryManager,
 
+    // v2.5: VSA Knowledge Graph (Level 1.25)
+    knowledge_graph: ?kg.ChatKnowledgeGraph,
+
     // v2.0: Provider health tracking
     groq_health: ProviderHealth,
     claude_health: ProviderHealth,
@@ -611,6 +631,8 @@ pub const IglaHybridChat = struct {
             .energy = EnergyMetrics{},
             // v2.0
             .memory = VSAMemoryManager.init(),
+            // v2.5: KG lazy-initialized on first query
+            .knowledge_graph = null,
             .groq_health = ProviderHealth{},
             .claude_health = ProviderHealth{},
             .last_routing = .RouteSymbolic,
@@ -632,6 +654,10 @@ pub const IglaHybridChat = struct {
     }
 
     pub fn deinit(self: *Self) void {
+        // v2.5: Cleanup KG
+        if (self.knowledge_graph) |*kgraph| {
+            kgraph.deinit();
+        }
         if (self.tokenizer) |t| {
             t.deinit();
             self.allocator.destroy(t);
@@ -644,6 +670,18 @@ pub const IglaHybridChat = struct {
             self.allocator.free(p);
         }
         // Note: corpus is NOT owned - caller manages lifecycle
+    }
+
+    /// v2.5: Lazy-initialize Knowledge Graph on first query
+    fn ensureKG(self: *Self) void {
+        if (self.knowledge_graph != null) return;
+        var kgraph = kg.ChatKnowledgeGraph.init(self.allocator);
+        kgraph.loadDataset() catch {
+            std.debug.print("[Hybrid] KG dataset load failed\n", .{});
+            return;
+        };
+        self.knowledge_graph = kgraph;
+        std.debug.print("[Hybrid] KG loaded: {d} facts\n", .{kgraph.getStats().num_facts});
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -710,6 +748,38 @@ pub const IglaHybridChat = struct {
                 .confidence = symbolic_result.confidence,
                 .latency_us = elapsed,
             };
+        }
+
+        // ══════ LEVEL 1.25: VSA Knowledge Graph (v2.5) ══════
+        {
+            self.ensureKG();
+            if (self.knowledge_graph) |*kgraph| {
+                const kg_maybe = kgraph.queryNaturalLanguage(query) catch null;
+                if (kg_maybe) |kg_result| {
+                    self.energy.kg_hits += 1;
+                    self.last_routing = .RouteKG;
+                    const elapsed = @as(u64, @intCast(std.time.microTimestamp() - start));
+
+                    // Return the object value from KG
+                    var kg_buf: [512]u8 = undefined;
+                    const kg_response = std.fmt.bufPrint(&kg_buf, "{s}", .{kg_result.answer}) catch "KG result";
+
+                    if (self.config.enable_context) {
+                        self.context.addMessage(.Assistant, kg_response);
+                    }
+
+                    self.exportWaveState(.RouteKG, @floatCast(kg_result.similarity), 0.95, elapsed, false);
+
+                    return HybridResponse{
+                        .response = kg_response,
+                        .source = .KnowledgeGraph,
+                        .language = local_chat.detectLanguage(query),
+                        .confidence = 0.95,
+                        .latency_us = elapsed,
+                        .tvc_similarity = kg_result.similarity,
+                    };
+                }
+            }
         }
 
         // ══════ LEVEL 1.5: VSA Persistent Memory (v2.0) ══════
@@ -882,6 +952,10 @@ pub const IglaHybridChat = struct {
         groq_success_rate: f64,
         claude_success_rate: f64,
         last_routing: []const u8,
+        // v2.5 KG fields
+        kg_hits: u64,
+        kg_hit_rate: f64,
+        kg_facts_loaded: usize,
     };
 
     pub fn getStats(self: *const Self) Stats {
@@ -918,6 +992,10 @@ pub const IglaHybridChat = struct {
             .groq_success_rate = self.groq_health.getSuccessRate(),
             .claude_success_rate = self.claude_health.getSuccessRate(),
             .last_routing = self.last_routing.getName(),
+            // v2.5 KG
+            .kg_hits = self.energy.kg_hits,
+            .kg_hit_rate = self.energy.getKGHitRate(),
+            .kg_facts_loaded = if (self.knowledge_graph) |kgraph| kgraph.getStats().num_facts else 0,
         };
     }
 

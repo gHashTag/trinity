@@ -669,6 +669,9 @@ pub const ChatServer = struct {
                     "\"memory_entries\":{d}," ++
                     "\"memory_hit_rate\":{d:.4}," ++
                     "\"memory_evictions\":{d}," ++
+                    "\"kg_hits\":{d}," ++
+                    "\"kg_hit_rate\":{d:.4}," ++
+                    "\"kg_facts_loaded\":{d}," ++
                     "\"llm_loaded\":{s}," ++
                     "\"last_routing\":\"{s}\"",
                     .{
@@ -677,6 +680,9 @@ pub const ChatServer = struct {
                         stats.memory_entries,
                         stats.memory_hit_rate,
                         stats.memory_evictions,
+                        stats.kg_hits,
+                        stats.kg_hit_rate,
+                        stats.kg_facts_loaded,
                         if (stats.llm_loaded) "true" else "false",
                         stats.last_routing,
                     },
