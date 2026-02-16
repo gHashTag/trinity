@@ -22,6 +22,14 @@ pub const DEFAULT_SHARDS_DIR = "storage/shards";
 pub const DEFAULT_MANIFESTS_DIR = "storage/manifests";
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// BLOCKCHAIN CONFIG (Sepolia Testnet)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const TRI_TOKEN_ADDRESS = "0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469";
+pub const CHAIN_ID: u64 = 11155111; // Sepolia
+pub const SEPOLIA_RPC_URL = "https://ethereum-sepolia-rpc.publicnode.com";
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
