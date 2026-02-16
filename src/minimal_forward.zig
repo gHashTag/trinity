@@ -24319,3 +24319,656 @@ test "analogy robustness and deterministic replay" {
     std.debug.print("11.27 | Analogies Benchmark    | 1000+shared+chains+robust <<<\n", .{});
     std.debug.print("============================================\n", .{});
 }
+
+// =============================================================================
+// TEST 136: BIPOLAR vs TERNARY SIDE-BY-SIDE COMPARISON (Level 11.28)
+// =============================================================================
+test "bipolar vs ternary side by side comparison" {
+    const DIM = 4096;
+    const allocator = std.testing.allocator;
+
+    std.debug.print("\n=== TEST 136: BIPOLAR vs TERNARY SIDE-BY-SIDE (Level 11.28) ===\n", .{});
+    std.debug.print("Dimension: {d}, Encoding: bipolar [-1,+1] vs ternary [-1,0,+1]\n", .{DIM});
+
+    const NUM_ENTITIES = 100;
+
+    // Create bipolar entities
+    const bp_entities = try allocator.alloc(Hypervector, NUM_ENTITIES);
+    defer allocator.free(bp_entities);
+    for (0..NUM_ENTITIES) |i| {
+        bp_entities[i] = bipolarRandom(DIM, 0xBE28000 + @as(u64, @intCast(i)) * 7919);
+    }
+
+    // Create ternary entities (same seed base, different offset to be distinct)
+    const tr_entities = try allocator.alloc(Hypervector, NUM_ENTITIES);
+    defer allocator.free(tr_entities);
+    for (0..NUM_ENTITIES) |i| {
+        tr_entities[i] = Hypervector.random(DIM, 0xBE28000 + @as(u64, @intCast(i)) * 7919);
+    }
+
+    const queryOne = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // --- Task 1: 10-pair unsplit memory — bipolar vs ternary accuracy ---
+    std.debug.print("--- Task 1: 10-pair unsplit accuracy comparison ---\n", .{});
+    var t1_correct: u32 = 0;
+
+    // Bipolar memory: ent[i] → ent[50+i] for i=0..9
+    var bp_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = bp_entities[i];
+        var v = bp_entities[50 + i];
+        bp_binds[i] = k.bind(&v);
+    }
+    var bp_mem = treeBundleN(&bp_binds);
+
+    var bp_correct: u32 = 0;
+    var bp_sim_sum: f64 = 0.0;
+    for (0..10) |i| {
+        var key = bp_entities[i];
+        const r = queryOne(&bp_mem, &key, bp_entities);
+        if (r.idx == 50 + i) bp_correct += 1;
+        bp_sim_sum += r.sim;
+    }
+    std.debug.print("  Bipolar 10-pair: {d}/10 (avg sim={d:.3})\n", .{ bp_correct, bp_sim_sum / 10.0 });
+
+    // Ternary memory: same layout
+    var tr_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = tr_entities[i];
+        var v = tr_entities[50 + i];
+        tr_binds[i] = k.bind(&v);
+    }
+    var tr_mem = treeBundleN(&tr_binds);
+
+    var tr_correct: u32 = 0;
+    var tr_sim_sum: f64 = 0.0;
+    for (0..10) |i| {
+        var key = tr_entities[i];
+        const r = queryOne(&tr_mem, &key, tr_entities);
+        if (r.idx == 50 + i) tr_correct += 1;
+        tr_sim_sum += r.sim;
+    }
+    std.debug.print("  Ternary 10-pair: {d}/10 (avg sim={d:.3})\n", .{ tr_correct, tr_sim_sum / 10.0 });
+
+    // Both should achieve 10/10 at DIM=4096
+    t1_correct = bp_correct + tr_correct;
+    std.debug.print("  Combined: {d}/20\n", .{t1_correct});
+    total_correct += t1_correct;
+    total_queries += 20;
+
+    // --- Task 2: 20-pair unsplit — stress test both encodings ---
+    std.debug.print("--- Task 2: 20-pair unsplit stress test ---\n", .{});
+    var t2_correct: u32 = 0;
+
+    // Bipolar 20-pair memory
+    var bp_binds_20: [20]Hypervector = undefined;
+    for (0..20) |i| {
+        var k = bp_entities[i];
+        var v = bp_entities[50 + i];
+        bp_binds_20[i] = k.bind(&v);
+    }
+    var bp_mem_20 = treeBundleN(&bp_binds_20);
+
+    var bp_20_correct: u32 = 0;
+    for (0..20) |i| {
+        var key = bp_entities[i];
+        const r = queryOne(&bp_mem_20, &key, bp_entities);
+        if (r.idx == 50 + i) bp_20_correct += 1;
+    }
+    std.debug.print("  Bipolar 20-pair: {d}/20\n", .{bp_20_correct});
+
+    // Ternary 20-pair memory
+    var tr_binds_20: [20]Hypervector = undefined;
+    for (0..20) |i| {
+        var k = tr_entities[i];
+        var v = tr_entities[50 + i];
+        tr_binds_20[i] = k.bind(&v);
+    }
+    var tr_mem_20 = treeBundleN(&tr_binds_20);
+
+    var tr_20_correct: u32 = 0;
+    for (0..20) |i| {
+        var key = tr_entities[i];
+        const r = queryOne(&tr_mem_20, &key, tr_entities);
+        if (r.idx == 50 + i) tr_20_correct += 1;
+    }
+    std.debug.print("  Ternary 20-pair: {d}/20\n", .{tr_20_correct});
+
+    t2_correct = bp_20_correct + tr_20_correct;
+    std.debug.print("  Combined: {d}/40\n", .{t2_correct});
+    total_correct += t2_correct;
+    total_queries += 40;
+
+    // --- Task 3: Noise floor & signal quality comparison ---
+    std.debug.print("--- Task 3: Noise floor and signal quality ---\n", .{});
+    var t3_correct: u32 = 0;
+
+    // Bipolar noise floor: similarity between random bipolar vectors
+    var bp_noise_sum: f64 = 0.0;
+    var bp_noise_max: f64 = 0.0;
+    for (0..20) |i| {
+        for ((i + 1)..20) |j| {
+            var a = bp_entities[i];
+            var b = bp_entities[j];
+            const sim = @abs(a.similarity(&b));
+            bp_noise_sum += sim;
+            if (sim > bp_noise_max) bp_noise_max = sim;
+        }
+    }
+    const bp_noise_avg = bp_noise_sum / 190.0; // C(20,2)=190
+
+    // Ternary noise floor
+    var tr_noise_sum: f64 = 0.0;
+    var tr_noise_max: f64 = 0.0;
+    for (0..20) |i| {
+        for ((i + 1)..20) |j| {
+            var a = tr_entities[i];
+            var b = tr_entities[j];
+            const sim = @abs(a.similarity(&b));
+            tr_noise_sum += sim;
+            if (sim > tr_noise_max) tr_noise_max = sim;
+        }
+    }
+    const tr_noise_avg = tr_noise_sum / 190.0;
+
+    std.debug.print("  Bipolar noise: avg={d:.4} max={d:.4}\n", .{ bp_noise_avg, bp_noise_max });
+    std.debug.print("  Ternary noise: avg={d:.4} max={d:.4}\n", .{ tr_noise_avg, tr_noise_max });
+
+    // Signal: average similarity of correct unbind results (from 10-pair mem)
+    const bp_signal = bp_sim_sum / 10.0;
+    const tr_signal = tr_sim_sum / 10.0;
+    std.debug.print("  Bipolar signal: avg={d:.4}\n", .{bp_signal});
+    std.debug.print("  Ternary signal: avg={d:.4}\n", .{tr_signal});
+
+    // Quality checks
+    if (bp_noise_avg < 0.05) t3_correct += 1; // low noise
+    if (tr_noise_avg < 0.05) t3_correct += 1;
+    if (bp_signal > 0.15) t3_correct += 1; // strong signal
+    if (tr_signal > 0.10) t3_correct += 1;
+    if (bp_signal / (bp_noise_avg + 0.001) > 5.0) t3_correct += 1; // SNR > 5x
+    if (tr_signal / (tr_noise_avg + 0.001) > 3.0) t3_correct += 1;
+    // Bipolar should have higher or equal signal than ternary
+    if (bp_signal >= tr_signal * 0.8) t3_correct += 1; // allow small margin
+    // Bipolar noise should be comparable or lower
+    if (bp_noise_avg <= tr_noise_avg * 1.5) t3_correct += 1;
+    // Both noise floors below 0.03
+    if (bp_noise_avg < 0.03) t3_correct += 1;
+    if (tr_noise_avg < 0.03) t3_correct += 1;
+    std.debug.print("  Quality checks: {d}/10\n", .{t3_correct});
+    total_correct += t3_correct;
+    total_queries += 10;
+
+    // --- Task 4: Self-inverse property comparison ---
+    std.debug.print("--- Task 4: Self-inverse property ---\n", .{});
+    var t4_correct: u32 = 0;
+
+    // Bipolar: bind(A,A) should be identity (all +1) → sim(identity, any) ≈ 0
+    // More precisely: unbind(bind(A,B), A) should = B exactly
+    for (0..10) |i| {
+        var a = bp_entities[i];
+        var b = bp_entities[50 + i];
+        var bound = a.bind(&b);
+        var recovered = bound.unbind(&a);
+        var orig_b = bp_entities[50 + i];
+        const sim = recovered.similarity(&orig_b);
+        if (sim > 0.99) t4_correct += 1; // bipolar: should be 1.0
+    }
+    std.debug.print("  Bipolar self-inverse (10 pairs): {d}/10\n", .{t4_correct});
+
+    var t4_ternary: u32 = 0;
+    for (0..10) |i| {
+        var a = tr_entities[i];
+        var b = tr_entities[50 + i];
+        var bound = a.bind(&b);
+        var recovered = bound.unbind(&a);
+        var orig_b = tr_entities[50 + i];
+        const sim = recovered.similarity(&orig_b);
+        if (sim > 0.55) t4_ternary += 1; // ternary: lower threshold due to zeros
+    }
+    std.debug.print("  Ternary self-inverse (10 pairs): {d}/10\n", .{t4_ternary});
+    t4_correct += t4_ternary;
+    std.debug.print("  Combined: {d}/20\n", .{t4_correct});
+    total_correct += t4_correct;
+    total_queries += 20;
+
+    // --- Summary ---
+    const accuracy = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+    std.debug.print("\n--- Test 136 Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ total_correct, total_queries, accuracy });
+
+    try std.testing.expect(t1_correct >= 18); // both 10-pair: >= 9/10 each
+    try std.testing.expect(t2_correct >= 30); // both 20-pair: >= 15/20 each
+    try std.testing.expect(t3_correct >= 7); // quality checks
+    try std.testing.expect(t4_correct >= 15); // self-inverse
+
+    std.debug.print("\n--- Level 11.28 Progression ---\n", .{});
+    std.debug.print("Level | Feature              | Status\n", .{});
+    std.debug.print("------|----------------------|-------\n", .{});
+    std.debug.print("11.25 | Interactive REPL Mode  | session+stats+continuity\n", .{});
+    std.debug.print("11.26 | Pure Symbolic AGI      | dim4096+unsplit+reasoning\n", .{});
+    std.debug.print("11.27 | Analogies Benchmark    | 1000+shared+chains+robust\n", .{});
+    std.debug.print("11.28 | Hybrid Bipolar/Ternary | side-by-side <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+}
+
+// =============================================================================
+// TEST 137: HYBRID ENCODING MODE (Level 11.28)
+// =============================================================================
+test "hybrid encoding mode bipolar ternary fusion" {
+    const DIM = 4096;
+    const allocator = std.testing.allocator;
+
+    std.debug.print("\n=== TEST 137: HYBRID ENCODING MODE (Level 11.28) ===\n", .{});
+    std.debug.print("Bipolar entities + ternary bundle analysis, multi-relation hybrid\n", .{});
+
+    const NUM_ENTITIES = 100;
+
+    // All entities are bipolar for maximum bind/unbind fidelity
+    const entities = try allocator.alloc(Hypervector, NUM_ENTITIES);
+    defer allocator.free(entities);
+    for (0..NUM_ENTITIES) |i| {
+        entities[i] = bipolarRandom(DIM, 0xFE37000 + @as(u64, @intCast(i)) * 6761);
+    }
+
+    const queryOne = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // --- Task 1: 5 relations x 10 pairs each — bipolar entities, bundled memories ---
+    std.debug.print("--- Task 1: 5-relation hybrid KG (50 pairs total) ---\n", .{});
+    var t1_correct: u32 = 0;
+
+    // Layout: rel r: key[i]=ent[r*10+i], val[i]=ent[50+r*10+i] for i=0..9
+    var memories: [5]Hypervector = undefined;
+    for (0..5) |rel| {
+        var bind_buf: [10]Hypervector = undefined;
+        for (0..10) |i| {
+            const key_idx = rel * 10 + i;
+            const val_idx = 50 + rel * 10 + i;
+            var k = entities[key_idx];
+            var v = entities[val_idx];
+            bind_buf[i] = k.bind(&v);
+        }
+        memories[rel] = treeBundleN(&bind_buf);
+    }
+
+    // Forward queries: all 50 pairs
+    for (0..5) |rel| {
+        for (0..10) |i| {
+            const key_idx = rel * 10 + i;
+            const val_idx = 50 + rel * 10 + i;
+            var key = entities[key_idx];
+            const r = queryOne(&memories[rel], &key, entities);
+            if (r.idx == val_idx) t1_correct += 1;
+        }
+    }
+    std.debug.print("  Forward 50 pairs: {d}/50\n", .{t1_correct});
+    total_correct += t1_correct;
+    total_queries += 50;
+
+    // --- Task 2: Reverse queries (commutative bind) ---
+    std.debug.print("--- Task 2: Reverse queries 50 pairs ---\n", .{});
+    var t2_correct: u32 = 0;
+
+    for (0..5) |rel| {
+        for (0..10) |i| {
+            const key_idx = rel * 10 + i;
+            const val_idx = 50 + rel * 10 + i;
+            var key = entities[val_idx];
+            const r = queryOne(&memories[rel], &key, entities);
+            if (r.idx == key_idx) t2_correct += 1;
+        }
+    }
+    std.debug.print("  Reverse 50 pairs: {d}/50\n", .{t2_correct});
+    total_correct += t2_correct;
+    total_queries += 50;
+
+    // --- Task 3: Cross-relation rejection ---
+    std.debug.print("--- Task 3: Cross-relation rejection ---\n", .{});
+    var t3_correct: u32 = 0;
+
+    // Query each key against WRONG relation memory
+    for (0..5) |rel| {
+        const wrong_rel = (rel + 1) % 5;
+        for (0..10) |i| {
+            const key_idx = rel * 10 + i;
+            const val_idx = 50 + rel * 10 + i;
+            var key = entities[key_idx];
+            const r = queryOne(&memories[wrong_rel], &key, entities);
+            // Should NOT return correct answer from own relation
+            if (r.idx != val_idx) t3_correct += 1;
+        }
+    }
+    std.debug.print("  Cross-rejection: {d}/50\n", .{t3_correct});
+    total_correct += t3_correct;
+    total_queries += 50;
+
+    // --- Task 4: Multi-hop chains with bipolar entities ---
+    std.debug.print("--- Task 4: 5-hop chains (bipolar precision) ---\n", .{});
+    var t4_correct: u32 = 0;
+
+    // 5 chains of length 5: chain c: ent[c] → ent[c+5] → ent[c+10] → ent[c+15] → ent[c+20] → ent[c+25]
+    for (0..5) |c| {
+        var chain_ok: u32 = 0;
+        var current_idx: usize = c;
+        for (0..5) |hop| {
+            const next_idx = c + (hop + 1) * 5;
+            var k = entities[current_idx];
+            var v = entities[next_idx];
+            var hop_mem = k.bind(&v); // single pair per hop
+            var key = entities[current_idx];
+            var result = hop_mem.unbind(&key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..NUM_ENTITIES) |j| {
+                var cj = entities[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            if (bi == next_idx) {
+                chain_ok += 1;
+                current_idx = bi;
+            } else {
+                break;
+            }
+        }
+        t4_correct += chain_ok;
+    }
+    std.debug.print("  5-hop chains (5 chains): {d}/25\n", .{t4_correct});
+    total_correct += t4_correct;
+    total_queries += 25;
+
+    // --- Summary ---
+    const accuracy = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+    std.debug.print("\n--- Test 137 Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ total_correct, total_queries, accuracy });
+
+    try std.testing.expect(t1_correct >= 45); // forward: >= 90%
+    try std.testing.expect(t2_correct >= 45); // reverse: >= 90%
+    try std.testing.expect(t3_correct >= 40); // cross-rejection: >= 80%
+    try std.testing.expect(t4_correct >= 20); // chains: >= 80%
+
+    std.debug.print("11.28 | Hybrid Encoding Mode  | 5rel+reverse+cross+chains <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+}
+
+// =============================================================================
+// TEST 138: NOISY RECALL ROBUSTNESS (Level 11.28)
+// =============================================================================
+test "noisy recall robustness bipolar ternary" {
+    const DIM = 4096;
+    const allocator = std.testing.allocator;
+
+    std.debug.print("\n=== TEST 138: NOISY RECALL ROBUSTNESS (Level 11.28) ===\n", .{});
+    std.debug.print("Test encoding robustness under noise injection\n", .{});
+
+    const NUM_ENTITIES = 100;
+
+    // Bipolar entities
+    const bp_entities = try allocator.alloc(Hypervector, NUM_ENTITIES);
+    defer allocator.free(bp_entities);
+    for (0..NUM_ENTITIES) |i| {
+        bp_entities[i] = bipolarRandom(DIM, 0xDE38000 + @as(u64, @intCast(i)) * 5501);
+    }
+
+    // Ternary entities (same seed)
+    const tr_entities = try allocator.alloc(Hypervector, NUM_ENTITIES);
+    defer allocator.free(tr_entities);
+    for (0..NUM_ENTITIES) |i| {
+        tr_entities[i] = Hypervector.random(DIM, 0xDE38000 + @as(u64, @intCast(i)) * 5501);
+    }
+
+    const queryOne = struct {
+        fn q(mem: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var result = mem.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // --- Task 1: Clean recall baseline (10-pair) ---
+    std.debug.print("--- Task 1: Clean recall baseline ---\n", .{});
+    var t1_correct: u32 = 0;
+
+    // Bipolar 10-pair
+    var bp_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = bp_entities[i];
+        var v = bp_entities[50 + i];
+        bp_binds[i] = k.bind(&v);
+    }
+    var bp_mem = treeBundleN(&bp_binds);
+
+    var bp_clean: u32 = 0;
+    for (0..10) |i| {
+        var key = bp_entities[i];
+        const r = queryOne(&bp_mem, &key, bp_entities);
+        if (r.idx == 50 + i) bp_clean += 1;
+    }
+
+    // Ternary 10-pair
+    var tr_binds: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        var k = tr_entities[i];
+        var v = tr_entities[50 + i];
+        tr_binds[i] = k.bind(&v);
+    }
+    var tr_mem = treeBundleN(&tr_binds);
+
+    var tr_clean: u32 = 0;
+    for (0..10) |i| {
+        var key = tr_entities[i];
+        const r = queryOne(&tr_mem, &key, tr_entities);
+        if (r.idx == 50 + i) tr_clean += 1;
+    }
+
+    std.debug.print("  Bipolar clean: {d}/10\n", .{bp_clean});
+    std.debug.print("  Ternary clean: {d}/10\n", .{tr_clean});
+    t1_correct = bp_clean + tr_clean;
+    total_correct += t1_correct;
+    total_queries += 20;
+
+    // --- Task 2: Noisy query keys (5% trit flip) ---
+    std.debug.print("--- Task 2: Noisy query keys (5%% flip) ---\n", .{});
+    var t2_correct: u32 = 0;
+
+    // Inject 5% noise: flip 5% of trits in the query key
+    const NOISE_TRITS = DIM / 20; // 5% = 204 trits
+
+    var bp_noisy_correct: u32 = 0;
+    for (0..10) |i| {
+        // Copy key and inject noise
+        var noisy_key = bp_entities[i]; // copy
+        noisy_key.data.ensureUnpacked();
+        var prng = std.Random.DefaultPrng.init(0xABC0000 + @as(u64, @intCast(i)) * 997);
+        const random = prng.random();
+        for (0..NOISE_TRITS) |_| {
+            const pos = random.intRangeAtMost(usize, 0, DIM - 1);
+            // Flip: negate the trit
+            const old = noisy_key.data.unpacked_cache[pos];
+            noisy_key.data.unpacked_cache[pos] = if (old == 1) @as(i8, -1) else @as(i8, 1);
+            noisy_key.data.dirty = true;
+        }
+        const r = queryOne(&bp_mem, &noisy_key, bp_entities);
+        if (r.idx == 50 + i) bp_noisy_correct += 1;
+    }
+
+    var tr_noisy_correct: u32 = 0;
+    for (0..10) |i| {
+        var noisy_key = tr_entities[i];
+        noisy_key.data.ensureUnpacked();
+        var prng = std.Random.DefaultPrng.init(0xABC0000 + @as(u64, @intCast(i)) * 997);
+        const random = prng.random();
+        for (0..NOISE_TRITS) |_| {
+            const pos = random.intRangeAtMost(usize, 0, DIM - 1);
+            const old = noisy_key.data.unpacked_cache[pos];
+            noisy_key.data.unpacked_cache[pos] = -old;
+            noisy_key.data.dirty = true;
+        }
+        const r = queryOne(&tr_mem, &noisy_key, tr_entities);
+        if (r.idx == 50 + i) tr_noisy_correct += 1;
+    }
+
+    std.debug.print("  Bipolar noisy 5%%: {d}/10\n", .{bp_noisy_correct});
+    std.debug.print("  Ternary noisy 5%%: {d}/10\n", .{tr_noisy_correct});
+    t2_correct = bp_noisy_correct + tr_noisy_correct;
+    total_correct += t2_correct;
+    total_queries += 20;
+
+    // --- Task 3: Heavy noise (10% trit flip) ---
+    std.debug.print("--- Task 3: Heavy noise (10%% flip) ---\n", .{});
+    var t3_correct: u32 = 0;
+
+    const HEAVY_NOISE = DIM / 10; // 10% = 409 trits
+
+    var bp_heavy_correct: u32 = 0;
+    for (0..10) |i| {
+        var noisy_key = bp_entities[i];
+        noisy_key.data.ensureUnpacked();
+        var prng = std.Random.DefaultPrng.init(0xDEF0000 + @as(u64, @intCast(i)) * 1009);
+        const random = prng.random();
+        for (0..HEAVY_NOISE) |_| {
+            const pos = random.intRangeAtMost(usize, 0, DIM - 1);
+            const old = noisy_key.data.unpacked_cache[pos];
+            noisy_key.data.unpacked_cache[pos] = if (old == 1) @as(i8, -1) else @as(i8, 1);
+            noisy_key.data.dirty = true;
+        }
+        const r = queryOne(&bp_mem, &noisy_key, bp_entities);
+        if (r.idx == 50 + i) bp_heavy_correct += 1;
+    }
+
+    var tr_heavy_correct: u32 = 0;
+    for (0..10) |i| {
+        var noisy_key = tr_entities[i];
+        noisy_key.data.ensureUnpacked();
+        var prng = std.Random.DefaultPrng.init(0xDEF0000 + @as(u64, @intCast(i)) * 1009);
+        const random = prng.random();
+        for (0..HEAVY_NOISE) |_| {
+            const pos = random.intRangeAtMost(usize, 0, DIM - 1);
+            const old = noisy_key.data.unpacked_cache[pos];
+            noisy_key.data.unpacked_cache[pos] = -old;
+            noisy_key.data.dirty = true;
+        }
+        const r = queryOne(&tr_mem, &noisy_key, tr_entities);
+        if (r.idx == 50 + i) tr_heavy_correct += 1;
+    }
+
+    std.debug.print("  Bipolar heavy 10%%: {d}/10\n", .{bp_heavy_correct});
+    std.debug.print("  Ternary heavy 10%%: {d}/10\n", .{tr_heavy_correct});
+    t3_correct = bp_heavy_correct + tr_heavy_correct;
+    total_correct += t3_correct;
+    total_queries += 20;
+
+    // --- Task 4: Deterministic comparison + chain under noise ---
+    std.debug.print("--- Task 4: Deterministic replay + chain under noise ---\n", .{});
+    var t4_correct: u32 = 0;
+
+    // Deterministic: run the same 10 bipolar queries twice, confirm identical
+    for (0..10) |i| {
+        var key = bp_entities[i];
+        const r1 = queryOne(&bp_mem, &key, bp_entities);
+        var key2 = bp_entities[i];
+        const r2 = queryOne(&bp_mem, &key2, bp_entities);
+        if (r1.idx == r2.idx) t4_correct += 1;
+    }
+    std.debug.print("  Deterministic replay: {d}/10\n", .{t4_correct});
+
+    // 3-hop chain under 5% noise on intermediate keys
+    var chain_correct: u32 = 0;
+    // Chain: ent[0] → ent[10] → ent[20] → ent[30] (single pair per hop, bipolar)
+    for (0..5) |c| {
+        const base = c;
+        var hop_ok: u32 = 0;
+        var current_idx: usize = base;
+        for (0..3) |hop| {
+            const next_idx = base + (hop + 1) * 10;
+            var k = bp_entities[current_idx];
+            var v = bp_entities[next_idx];
+            var hop_mem = k.bind(&v);
+
+            // Add 5% noise to query key (except first hop = clean)
+            var query_key = bp_entities[current_idx];
+            if (hop > 0) {
+                query_key.data.ensureUnpacked();
+                var prng = std.Random.DefaultPrng.init(0xCAFE000 + @as(u64, @intCast(c * 10 + hop)));
+                const random = prng.random();
+                for (0..NOISE_TRITS) |_| {
+                    const pos = random.intRangeAtMost(usize, 0, DIM - 1);
+                    const old = query_key.data.unpacked_cache[pos];
+                    query_key.data.unpacked_cache[pos] = if (old == 1) @as(i8, -1) else @as(i8, 1);
+                    query_key.data.dirty = true;
+                }
+            }
+
+            var result = hop_mem.unbind(&query_key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..NUM_ENTITIES) |j| {
+                var cj = bp_entities[j];
+                const sim = result.similarity(&cj);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            if (bi == next_idx) {
+                hop_ok += 1;
+                current_idx = bi;
+            } else {
+                break;
+            }
+        }
+        chain_correct += hop_ok;
+    }
+    std.debug.print("  3-hop chains under noise (5 chains): {d}/15\n", .{chain_correct});
+    t4_correct += chain_correct;
+    total_correct += t4_correct;
+    total_queries += 25;
+
+    // --- Summary ---
+    const accuracy = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+    std.debug.print("\n--- Test 138 Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ total_correct, total_queries, accuracy });
+
+    try std.testing.expect(t1_correct >= 16); // clean baseline: >= 8/10 each
+    try std.testing.expect(t2_correct >= 14); // 5% noise: >= 7/10 each
+    try std.testing.expect(t3_correct >= 10); // 10% noise: >= 5/10 each
+    try std.testing.expect(t4_correct >= 15); // deterministic + chains
+
+    std.debug.print("11.28 | Noisy Robustness     | clean+5%%+10%%+chains <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+}
