@@ -77,7 +77,7 @@ Each byte (0-255) is converted to 6 balanced ternary trits {-1, 0, +1}:
 
 ### Trit Packing
 
-5 balanced trits pack into 1 byte (3^5 = 243 <= 255):
+5 balanced trits pack into 1 byte (3^5 = 243 &lt;= 255):
 - Mathematical 5x compression for trit data
 - Lossless, deterministic, O(n) time
 

@@ -31,7 +31,7 @@ v1.9 treated all nodes as equal regardless of location. v2.0 introduces **geo-aw
 - **Inter-region latency matrix**: Real-world approximate latencies between all region pairs
 - **Placement decisions**: Selects `min_regions_per_shard` nearest regions within `max_write_latency_ms`
 - **Local read preference**: Reads served from local region when within latency threshold (50ms default)
-- **Latency zones**: Classification into local (0), near <100ms (1), far >100ms (2)
+- **Latency zones**: Classification into local (0), near &lt;100ms (1), far &gt;100ms (2)
 - **Concentration limits**: Max replicas per region prevents data over-concentration
 
 ```

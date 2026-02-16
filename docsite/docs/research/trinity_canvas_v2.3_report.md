@@ -60,7 +60,7 @@ RAZUM column displays the 3-level cascade:
 ```
 ⚡ Symbolic → 💎 TVC → 🧠 LLM
 ```
-Active step is highlighted (full opacity), inactive steps are dimmed. Shows "Last: {routing}" label based on `last_routing` field.
+Active step is highlighted (full opacity), inactive steps are dimmed. Shows "Last: \{routing\}" label based on `last_routing` field.
 
 ### 5. Energy Pipeline Display
 
@@ -75,7 +75,7 @@ MATERIYA column shows the energy cost hierarchy:
 ### 6. Provider Health Display
 
 DUKH column shows Groq and Claude success rates as large percentage numbers with color coding:
-- Green (>80%), Yellow (>50%), Red (<50%)
+- Green (&gt;80%), Yellow (&gt;50%), Red (&lt;50%)
 - Call count shown below each provider
 
 ### 7. Polling Changed to 2s
@@ -100,10 +100,10 @@ Mirror of Three Worlds v2.3
 │   └── sendHealth() — ArrayList JSON builder
 │       ├── status: "ok"
 │       ├── uptime_s: seconds since start
-│       ├── razum: {symbolic_hits, hit_rate, memory, llm, routing}
-│       ├── materiya: {tvc_enabled, corpus_size, hits, rates}
-│       ├── dukh: {queries, energy, providers, context}
-│       └── logs: [{ts, src, q, conf, lat, learned?}, ...]
+│       ├── razum: \{symbolic_hits, hit_rate, memory, llm, routing\}
+│       ├── materiya: \{tvc_enabled, corpus_size, hits, rates\}
+│       ├── dukh: \{queries, energy, providers, context\}
+│       └── logs: [\{ts, src, q, conf, lat, learned?\}, ...]
 ├── Frontend API: chatApi.ts
 │   ├── MirrorLogEntry interface
 │   ├── MirrorStatus (with uptime_s + logs[])

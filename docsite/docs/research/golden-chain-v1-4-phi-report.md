@@ -125,7 +125,7 @@ Response Output
 
 | Sub-check | Method | Pass Condition |
 |-----------|--------|---------------|
-| E1 | Map bytes to phi-space (byte/256 * PHI), fractional part into 3 buckets (<0.382, <0.618, >=0.618) | All 3 buckets populated |
+| E1 | Map bytes to phi-space (byte/256 * PHI), fractional part into 3 buckets (&lt;0.382, &lt;0.618, &gt;=0.618) | All 3 buckets populated |
 | E2 | XOR hashes, check positions 0..15 against LUCAS_SEQUENCE modular residue | >= 8 of 16 positions non-zero |
 | E3 | Byte pairs as u16 angles, check consecutive diffs in golden angle range [16806, 33190] | >= 1 pair in range |
 

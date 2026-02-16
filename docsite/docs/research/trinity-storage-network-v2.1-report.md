@@ -79,7 +79,7 @@ v2.0 had topology awareness but no intelligent routing. v2.1 adds **composite-sc
 - **Composite score**: `0.4 × latency + 0.4 × reputation + 0.2 × locality`
 - **Latency score**: Inverse of EMA latency (fast nodes score higher)
 - **Reputation score**: Directly from NodeReputationSystem (PoS + uptime + bandwidth)
-- **Locality score**: 1.0 (local), 0.5 (near <100ms), 0.1 (far >100ms)
+- **Locality score**: 1.0 (local), 0.5 (near &lt;100ms), 0.1 (far &gt;100ms)
 - **Minimum reputation filter**: Nodes below threshold excluded from routing
 - **Transaction routing**: Select best node per target region for multi-region 2PC
 

@@ -22,7 +22,7 @@
       "purpose": "any"
     },
     {
-      "src": "/trinity/vite.svg",
+      "src": "/trinity/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

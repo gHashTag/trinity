@@ -50,7 +50,7 @@ Instead of immediately navigating to Finder when clicking a file, MATERIYA now s
 - **Open** → Navigate to Finder with file selected
 - **×** → Close preview, return to results
 
-The preview is fetched via the chat API (`read file {path}`) from the backend.
+The preview is fetched via the chat API (`read file \{path\}`) from the backend.
 
 **Why:** Users can scan file contents without leaving Mirror. The Finder navigation is still available but now it's a conscious choice, not the only option.
 
@@ -185,7 +185,7 @@ Self-reflection is a **frontier AI capability**. Most systems return answers wit
 ## Tech Tree Options
 
 ### Option A: Backend Self-Reflection API
-Add `/reflect` endpoint that runs actual model introspection: "Why did you route this query to {source}? What alternative routes were considered? What would improve confidence?" Real AI self-analysis, not just metadata display.
+Add `/reflect` endpoint that runs actual model introspection: "Why did you route this query to \{source\}? What alternative routes were considered? What would improve confidence?" Real AI self-analysis, not just metadata display.
 
 ### Option B: Persistent Mirror State
 Save chat history, file previews, and tool outputs across layer switches. When you return to Mirror, your conversation continues. Use localStorage or sessionStorage. Enables long debugging sessions.

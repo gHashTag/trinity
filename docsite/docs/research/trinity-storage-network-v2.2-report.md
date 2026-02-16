@@ -37,11 +37,11 @@ health_score = 0.30 × PoS_health
 
 | Factor | Weight | Source | Healthy | Degraded |
 |--------|--------|--------|---------|----------|
-| PoS Failure Rate | 30% | challenges_failed / challenges_issued | <5% | ≥15% |
-| Corruption Rate | 25% | scrub_corruptions / scrub_total | <1% | ≥5% |
-| Avg Reputation | 25% | NodeReputationSystem average | >0.80 | <0.60 |
-| Churn Rate | 10% | shards_rebalanced / node_count | <1.0/node | ≥5.0/node |
-| Storage Utilization | 10% | bytes_used / bytes_available | <90% | ≥95% |
+| PoS Failure Rate | 30% | challenges_failed / challenges_issued | &lt;5% | ≥15% |
+| Corruption Rate | 25% | scrub_corruptions / scrub_total | &lt;1% | ≥5% |
+| Avg Reputation | 25% | NodeReputationSystem average | &gt;0.80 | &lt;0.60 |
+| Churn Rate | 10% | shards_rebalanced / node_count | &lt;1.0/node | ≥5.0/node |
+| Storage Utilization | 10% | bytes_used / bytes_available | &lt;90% | ≥95% |
 
 #### Health Classification
 
@@ -50,7 +50,7 @@ health_score = 0.30 × PoS_health
 | Excellent | ≥0.85 | 75% of baseline | RS(8,3) |
 | Good | ≥0.65 | 100% (baseline) | RS(8,4) |
 | Degraded | ≥0.40 | 150% of baseline | RS(8,6) |
-| Critical | <0.40 | Maximum (200%) | RS(8,8) |
+| Critical | &lt;0.40 | Maximum (200%) | RS(8,8) |
 
 #### Special Overrides
 
@@ -67,7 +67,7 @@ Each recommendation includes a diagnostic reason:
 | `default_healthy` | All metrics green |
 | `pos_failure_elevated` | PoS failure rate ≥5% |
 | `corruption_detected` | Scrub corruption rate ≥1% |
-| `reputation_low` | Average reputation <0.80 |
+| `reputation_low` | Average reputation &lt;0.80 |
 | `storage_pressure` | Storage utilization ≥90% |
 | `churn_detected` | Rebalance rate ≥1.0/node |
 | `node_count_low` | Fewer than 3 nodes |
@@ -93,7 +93,7 @@ Adaptive EC Flow:
     → Weighted composite: 0.30×PoS + 0.25×corruption + 0.25×rep + 0.10×churn + 0.10×storage
 
   health_score → classifyHealth()
-    → excellent (≥0.85) | good (≥0.65) | degraded (≥0.40) | critical (<0.40)
+    → excellent (≥0.85) | good (≥0.65) | degraded (≥0.40) | critical (&lt;0.40)
 
   health_level + metrics → computeParityRatio()
     → Storage pressure override: min ratio (0.25)
