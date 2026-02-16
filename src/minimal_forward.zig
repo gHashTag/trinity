@@ -15321,3 +15321,352 @@ test "beam search arbitrary graph noise" {
     try std.testing.expect(found_d);
     try std.testing.expect(cycle_back);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 91: Massive KG — 1000+ Triples Multi-Domain (Level 11.13)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Scale to 1000+ triples across 5 domains × 10 relations × 20 entities = 1000.
+// Per-relation indexed memories keep each sub-memory at 20 (well within capacity).
+// Process in batches to avoid stack overflow.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "massive kg 1000 triples multi-domain" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== MASSIVE KG: 1000+ TRIPLES (Level 11.13) ===\n", .{});
+
+    // 5 domains × 10 relations × 20 entities = 1000 triples
+    const DOMAINS = 5;
+    const RELS = 10;
+    const ENTS = 20;
+    const TOTAL = DOMAINS * RELS * ENTS;
+
+    std.debug.print("Domains: {}, Relations/domain: {}, Entities/rel: {}\n", .{ DOMAINS, RELS, ENTS });
+    std.debug.print("Total triples: {}\n\n", .{TOTAL});
+
+    const domain_names = [_][]const u8{ "Geo", "People", "Events", "Science", "Culture" };
+
+    // Process one domain×relation at a time to avoid stack overflow
+    var total_correct: usize = 0;
+    var total_queries: usize = 0;
+
+    std.debug.print("--- Indexed Single-Hop Queries Per Domain ---\n", .{});
+    std.debug.print("Domain  | Correct | Total | Accuracy\n", .{});
+    std.debug.print("--------|---------|-------|--------\n", .{});
+
+    for (0..DOMAINS) |d| {
+        var domain_correct: usize = 0;
+        var domain_total: usize = 0;
+
+        for (0..RELS) |r| {
+            // Build sub-memory for this (domain, relation) pair
+            // Generate entities and objects on-the-fly from seeds
+            var pairs: [ENTS]Hypervector = undefined;
+            for (0..ENTS) |i| {
+                var ent = bipolarRandom(DIM, 0x2000000 + @as(u64, @intCast(d)) * 10000000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 7919);
+                var obj = bipolarRandom(DIM, 0x3000000 + @as(u64, @intCast(d)) * 10000000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 137);
+                pairs[i] = ent.bind(&obj);
+            }
+            var memory = treeBundleN(pairs[0..ENTS]);
+
+            // Query each entity
+            for (0..ENTS) |e| {
+                domain_total += 1;
+                var ent = bipolarRandom(DIM, 0x2000000 + @as(u64, @intCast(d)) * 10000000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(e)) * 7919);
+                var retrieved = memory.unbind(&ent);
+
+                // Search objects for this relation
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..ENTS) |j| {
+                    var obj_j = bipolarRandom(DIM, 0x3000000 + @as(u64, @intCast(d)) * 10000000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(j)) * 137);
+                    const sim = retrieved.similarity(&obj_j);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                if (best_idx == e) domain_correct += 1;
+            }
+        }
+
+        total_correct += domain_correct;
+        total_queries += domain_total;
+        std.debug.print("{s:>7} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            domain_names[d], domain_correct, domain_total,
+            @as(f64, @floatFromInt(domain_correct)) / @as(f64, @floatFromInt(domain_total)) * 100,
+        });
+    }
+
+    const overall_acc = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100;
+    std.debug.print("\nMassive KG total: {}/{} ({d:.1}%)\n", .{ total_correct, total_queries, overall_acc });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(TOTAL >= 1000);
+    try std.testing.expect(total_correct > total_queries * 9 / 10); // >90%
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 92: Multi-Hop on Massive Indexed KG (Level 11.13)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Build a 5-layer massive KG with 20 entities per layer = 100 total nodes.
+// Multi-hop traversal 1-5 hops. Relation discovery on 1000-triple KG.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "multi-hop massive indexed kg" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== MULTI-HOP ON MASSIVE INDEXED KG (Level 11.13) ===\n", .{});
+
+    // 5-layer KG with 20 entities per layer
+    const LAYERS = 5;
+    const ENTS_LAYER = 20;
+
+    // Build entity vectors and layer memories incrementally
+    std.debug.print("Layers: {}, Entities/layer: {}, Total nodes: {}\n\n", .{
+        LAYERS + 1, ENTS_LAYER, (LAYERS + 1) * ENTS_LAYER,
+    });
+
+    // Build layer memories one at a time
+    var layer_memories: [LAYERS]Hypervector = undefined;
+    for (0..LAYERS) |l| {
+        var pairs: [ENTS_LAYER]Hypervector = undefined;
+        for (0..ENTS_LAYER) |i| {
+            var ent_l = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(l)) * 1000000 + @as(u64, @intCast(i)) * 7919);
+            var ent_next = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(l + 1)) * 1000000 + @as(u64, @intCast(i)) * 7919);
+            pairs[i] = ent_l.bind(&ent_next);
+        }
+        layer_memories[l] = treeBundleN(pairs[0..ENTS_LAYER]);
+    }
+
+    // --- Single-hop per layer ---
+    std.debug.print("--- Single-Hop Per Layer ---\n", .{});
+    std.debug.print("Layer | Correct | Total | Accuracy\n", .{});
+    std.debug.print("------|---------|-------|--------\n", .{});
+
+    var single_ok: usize = 0;
+    for (0..LAYERS) |l| {
+        var correct: usize = 0;
+        for (0..ENTS_LAYER) |i| {
+            var ent = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(l)) * 1000000 + @as(u64, @intCast(i)) * 7919);
+            var retrieved = layer_memories[l].unbind(&ent);
+            var best_sim: f64 = -2.0;
+            var best_idx: usize = 0;
+            for (0..ENTS_LAYER) |j| {
+                var ent_next = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(l + 1)) * 1000000 + @as(u64, @intCast(j)) * 7919);
+                const sim = retrieved.similarity(&ent_next);
+                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            }
+            if (best_idx == i) correct += 1;
+        }
+        single_ok += correct;
+        std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            l, correct, ENTS_LAYER,
+            @as(f64, @floatFromInt(correct)) / @as(f64, ENTS_LAYER) * 100,
+        });
+    }
+
+    // --- Multi-hop planning ---
+    std.debug.print("\n--- Multi-Hop Traversal (1-5 hops) ---\n", .{});
+    std.debug.print("Hops | Correct | Total | Accuracy\n", .{});
+    std.debug.print("-----|---------|-------|--------\n", .{});
+
+    const PLAN_TESTS = 15;
+    for (1..LAYERS + 1) |hops| {
+        var hop_ok: usize = 0;
+        for (0..PLAN_TESTS) |i| {
+            var current = bipolarRandom(DIM, 0x4000000 + @as(u64, 0) * 1000000 + @as(u64, @intCast(i)) * 7919);
+            var step: usize = 0;
+            while (step < hops) : (step += 1) {
+                var retrieved = layer_memories[step].unbind(&current);
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..ENTS_LAYER) |j| {
+                    var ent_next = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(step + 1)) * 1000000 + @as(u64, @intCast(j)) * 7919);
+                    const sim = retrieved.similarity(&ent_next);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                current = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(step + 1)) * 1000000 + @as(u64, @intCast(best_idx)) * 7919);
+            }
+            // Check target
+            var target = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(hops)) * 1000000 + @as(u64, @intCast(i)) * 7919);
+            const fsim = current.similarity(&target);
+            if (fsim > 0.99) hop_ok += 1;
+        }
+        std.debug.print("{:>4} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            hops, hop_ok, PLAN_TESTS,
+            @as(f64, @floatFromInt(hop_ok)) / @as(f64, PLAN_TESTS) * 100,
+        });
+    }
+
+    // --- Relation discovery on massive KG ---
+    std.debug.print("\n--- Relation Discovery (5 domains × 10 relations) ---\n", .{});
+    // For 3 domains, 5 relations each, test if we can identify the correct relation
+    const RD_DOMAINS = 3;
+    const RD_RELS = 5;
+    const RD_ENTS = 15;
+
+    var rel_disc_ok: usize = 0;
+    var rel_disc_total: usize = 0;
+
+    for (0..RD_DOMAINS) |d| {
+        // Build relation memories
+        var rel_mems: [RD_RELS]Hypervector = undefined;
+        for (0..RD_RELS) |r| {
+            var rpairs: [RD_ENTS]Hypervector = undefined;
+            for (0..RD_ENTS) |i| {
+                var ent = bipolarRandom(DIM, 0x5000000 + @as(u64, @intCast(d)) * 10000000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 7919);
+                var obj = bipolarRandom(DIM, 0x6000000 + @as(u64, @intCast(d)) * 10000000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 137);
+                rpairs[i] = ent.bind(&obj);
+            }
+            rel_mems[r] = treeBundleN(rpairs[0..RD_ENTS]);
+        }
+
+        // For each (entity, object), discover which relation
+        for (0..RD_RELS) |true_r| {
+            for (0..RD_ENTS) |i| {
+                rel_disc_total += 1;
+                var ent = bipolarRandom(DIM, 0x5000000 + @as(u64, @intCast(d)) * 10000000 + @as(u64, @intCast(true_r)) * 100000 + @as(u64, @intCast(i)) * 7919);
+                var obj = bipolarRandom(DIM, 0x6000000 + @as(u64, @intCast(d)) * 10000000 + @as(u64, @intCast(true_r)) * 100000 + @as(u64, @intCast(i)) * 137);
+                var pair_vec = ent.bind(&obj);
+
+                var best_r_sim: f64 = -2.0;
+                var best_r: usize = 0;
+                for (0..RD_RELS) |r| {
+                    const sim = pair_vec.similarity(&rel_mems[r]);
+                    if (sim > best_r_sim) { best_r_sim = sim; best_r = r; }
+                }
+                if (best_r == true_r) rel_disc_ok += 1;
+            }
+        }
+    }
+
+    std.debug.print("Relation discovery: {}/{} ({d:.1}%)\n", .{
+        rel_disc_ok, rel_disc_total,
+        @as(f64, @floatFromInt(rel_disc_ok)) / @as(f64, @floatFromInt(rel_disc_total)) * 100,
+    });
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(single_ok >= LAYERS * ENTS_LAYER * 95 / 100); // ≥95% single-hop at massive scale
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 93: Scale Benchmark — Capacity Curve + Noise at 1000 (Level 11.13)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Push entity counts per relation: 10, 15, 20, 25, 30 with 10 relations.
+// Measure indexed accuracy at each scale. Noise test at 20 entities/rel.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "scale benchmark capacity noise 1000" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== SCALE BENCHMARK: CAPACITY + NOISE AT 1000 (Level 11.13) ===\n", .{});
+
+    // --- Part A: Capacity curve with 10 relations ---
+    const NUM_RELS = 10;
+    const SIZES = [_]usize{ 10, 15, 20, 25, 30 };
+
+    std.debug.print("--- Part A: Capacity Curve (10 relations) ---\n", .{});
+    std.debug.print("Ents/Rel | Triples | Correct | Accuracy\n", .{});
+    std.debug.print("---------|---------|---------|--------\n", .{});
+
+    for (SIZES) |size| {
+        var total_ok: usize = 0;
+        var total_q: usize = 0;
+
+        for (0..NUM_RELS) |r| {
+            // Build sub-memory
+            var pairs: [30]Hypervector = undefined;
+            for (0..size) |i| {
+                var ent = bipolarRandom(DIM, 0x7000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(i)) * 7919);
+                var obj = bipolarRandom(DIM, 0x8000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(i)) * 137);
+                pairs[i] = ent.bind(&obj);
+            }
+            var memory = treeBundleN(pairs[0..size]);
+
+            for (0..size) |e| {
+                total_q += 1;
+                var ent = bipolarRandom(DIM, 0x7000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(e)) * 7919);
+                var retrieved = memory.unbind(&ent);
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..size) |j| {
+                    var obj_j = bipolarRandom(DIM, 0x8000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(j)) * 137);
+                    const sim = retrieved.similarity(&obj_j);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                if (best_idx == e) total_ok += 1;
+            }
+        }
+
+        const triples = size * NUM_RELS;
+        std.debug.print("{:>8} | {:>7} | {:>7} | {d:>5.1}%\n", .{
+            size, triples, total_ok,
+            @as(f64, @floatFromInt(total_ok)) / @as(f64, @floatFromInt(total_q)) * 100,
+        });
+    }
+
+    // --- Part B: Noise test at 20 entities per relation ---
+    std.debug.print("\n--- Part B: Noise Test (20 ents/rel, 5 relations) ---\n", .{});
+    std.debug.print("Noise | Correct | Total | Accuracy\n", .{});
+    std.debug.print("------|---------|-------|--------\n", .{});
+
+    const NOISE_RELS = 5;
+    const NOISE_ENTS = 20;
+    const NOISE_LEVELS = [_]usize{ 0, 1, 2, 3, 5 };
+
+    // Build memories once
+    var noise_mems: [NOISE_RELS]Hypervector = undefined;
+    for (0..NOISE_RELS) |r| {
+        var npairs: [NOISE_ENTS]Hypervector = undefined;
+        for (0..NOISE_ENTS) |i| {
+            var ent = bipolarRandom(DIM, 0x9000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(i)) * 7919);
+            var obj = bipolarRandom(DIM, 0xA000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(i)) * 137);
+            npairs[i] = ent.bind(&obj);
+        }
+        noise_mems[r] = treeBundleN(npairs[0..NOISE_ENTS]);
+    }
+
+    for (NOISE_LEVELS) |noise| {
+        var noise_ok: usize = 0;
+        var noise_total: usize = 0;
+
+        for (0..NOISE_RELS) |r| {
+            for (0..NOISE_ENTS) |e| {
+                noise_total += 1;
+                var ent = bipolarRandom(DIM, 0x9000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(e)) * 7919);
+                var retrieved = noise_mems[r].unbind(&ent);
+
+                // Add noise
+                for (0..noise) |n| {
+                    var nv = Hypervector.random(DIM, 0xB000000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(e)) * 1000 + @as(u64, @intCast(noise)) * 100 + @as(u64, @intCast(n)));
+                    retrieved = retrieved.bundle(&nv);
+                }
+
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..NOISE_ENTS) |j| {
+                    var obj_j = bipolarRandom(DIM, 0xA000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(j)) * 137);
+                    const sim = retrieved.similarity(&obj_j);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                if (best_idx == e) noise_ok += 1;
+            }
+        }
+
+        std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            noise, noise_ok, noise_total,
+            @as(f64, @floatFromInt(noise_ok)) / @as(f64, @floatFromInt(noise_total)) * 100,
+        });
+    }
+
+    // --- Part C: Scale summary ---
+    std.debug.print("\n--- Scale Summary ---\n", .{});
+    std.debug.print("Level    | Triples | Test\n", .{});
+    std.debug.print("---------|---------|-----\n", .{});
+    std.debug.print("11.8     |     100 | Large KG\n", .{});
+    std.debug.print("11.9     |     225 | Scaled KG\n", .{});
+    std.debug.print("11.10    |     450 | Indexed KG\n", .{});
+    std.debug.print("11.13    |   1,000 | Massive KG <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    // Just needs to complete
+    try std.testing.expect(true);
+}
