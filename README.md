@@ -5,198 +5,240 @@
 <h1 align="center">Trinity Network</h1>
 
 <p align="center">
-  <strong>Decentralized AI Inference</strong><br>
+  <strong>Decentralized Ternary AI Inference</strong><br>
   Run LLMs on your CPU. Earn $TRI tokens. No GPU required.
 </p>
 
 <p align="center">
-  <a href="#-why-trinity">Why Trinity</a> •
-  <a href="#-igla---local-ai-agent">IGLA Agent</a> •
-  <a href="#-trinity-cli">CLI</a> •
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#-libraries">Libraries</a> •
-  <a href="#-tokenomics">Tokenomics</a> •
-  <a href="#-roadmap">Roadmap</a>
+  <a href="#-quick-start">Quick Start</a> &bull;
+  <a href="#-docker-node">Docker Node</a> &bull;
+  <a href="#-tri-token">$TRI Token</a> &bull;
+  <a href="#-architecture">Architecture</a> &bull;
+  <a href="#-cli">CLI</a> &bull;
+  <a href="#-documentation">Docs</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Languages-29-blue" alt="29 Languages">
-  <img src="https://img.shields.io/badge/IGLA-Local_Agent-purple" alt="IGLA Local Agent">
-  <img src="https://img.shields.io/badge/Multilingual-RU_EN_ZH-brightgreen" alt="Multilingual">
-  <img src="https://img.shields.io/badge/Token-$TRI-green" alt="$TRI Token">
-  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License">
-  <img src="https://img.shields.io/badge/CPU-Inference-orange" alt="CPU Inference">
+  <a href="https://github.com/gHashTag/trinity/actions"><img src="https://img.shields.io/github/actions/workflow/status/gHashTag/trinity/docker-node.yml?label=Docker%20Build&style=flat-square" alt="Docker Build"></a>
+  <a href="https://ghcr.io/ghashtag/trinity-node"><img src="https://img.shields.io/badge/GHCR-trinity--node-blue?style=flat-square&logo=docker" alt="GHCR"></a>
+  <a href="https://sepolia.etherscan.io/address/0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469"><img src="https://img.shields.io/badge/$TRI-Sepolia-green?style=flat-square&logo=ethereum" alt="$TRI Sepolia"></a>
+  <img src="https://img.shields.io/badge/Zig-0.15.x-F7A41D?style=flat-square&logo=zig" alt="Zig 0.15.x">
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="MIT License">
 </p>
 
 ---
 
-## 📐 Mathematical Foundation
+## What is Trinity?
 
-**Why Ternary? The Mathematics of Optimal Information Density**
+Trinity is a **DePIN (Decentralized Physical Infrastructure Network)** for ternary AI inference. It uses balanced ternary arithmetic {-1, 0, +1} to run LLM inference on ordinary CPUs -- no GPU required.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│              TERNARY INFORMATION DENSITY                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   Binary (0, 1):    log₂(2) = 1.00 bits per digit               │
-│   Ternary (-1,0,+1): log₂(3) = 1.58 bits per digit              │
-│                                                                 │
-│   Improvement: +58.5% information density!                      │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│              OPTIMAL RADIX THEOREM                              │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   For fixed "budget" B, information is maximized at radix e.    │
-│   Nearest integer to e ≈ 2.718 is 3 (ternary).                  │
-│                                                                 │
-│   Radix Economy (lower is better):                              │
-│   • Binary (2):  2.885                                          │
-│   • Ternary (3): 2.731 ← OPTIMAL among integers!                │
-│   • Quaternary:  3.000                                          │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│              TRINITY IDENTITY                                   │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   φ = (1 + √5) / 2 = 1.618... (Golden Ratio)                    │
-│                                                                 │
-│   φ² + 1/φ² = 3 = TRINITY                                       │
-│                                                                 │
-│   This is NOT a coincidence - ternary is mathematically         │
-│   optimal, and the golden ratio encodes this truth.             │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+**Why ternary?**
 
-### Business Impact of Ternary Mathematics
+| | Float32 (traditional) | Ternary (Trinity) | Savings |
+|---|---|---|---|
+| Memory per weight | 32 bits | 1.58 bits | **20x** |
+| Compute | Multiply + Add | Add only | **10x** |
+| 70B model RAM | 280 GB | 14 GB | **20x** |
 
-| Resource | Float32 | Ternary | Savings |
-|----------|---------|---------|---------|
-| **Memory** | 32 bits/weight | 1.58 bits/weight | **20x** |
-| **Compute** | Multiply + Add | Add only | **10x** |
-| **Energy** | 100% | 10% | **10x** |
-| **Cloud Cost** | $1.00 | $0.05-0.10 | **10-20x** |
-
-**Result:** LLM inference on CPU instead of GPU. No NVIDIA dependency.
+The mathematical foundation: **radix 3 is the optimal integer radix** (closest to *e* = 2.718). The golden ratio encodes this: **phi^2 + 1/phi^2 = 3** (Trinity Identity).
 
 ---
 
-## 📊 Verified Benchmarks
+## Quick Start
 
-**Tested on RunPod GPU infrastructure (February 2026)**
-
-| GPU | Tokens/sec | TFLOPS | Noise Robustness |
-|-----|------------|--------|------------------|
-| **RTX 3090** | 298,052 | 23.31 | 70% @ 30% noise |
-| **A100 80GB** | 274,000+ | 19.5+ | 70% @ 30% noise |
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│              BENCHMARK VERIFICATION                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   Platform: RunPod GPU Pods                                     │
-│   Test: Ternary inference simulation                            │
-│   Batch: 32 | Seq: 512 | Hidden: 4096                           │
-│                                                                 │
-│   RTX 3090 Results:                                             │
-│   • 298K tokens/second                                          │
-│   • 54.97 ms/batch latency                                      │
-│   • 23.31 TFLOPS (FP32 matmul)                                  │
-│   • 70% accuracy retention at 30% noise                         │
-│                                                                 │
-│   Cost: ~$0.15 total for full benchmark suite                   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🚀 Why Trinity?
-
-**The Problem:** AI inference requires expensive GPUs. NVIDIA controls 90%+ of the market. Cloud GPU costs $2-4/hour.
-
-**Our Solution:** Ternary weights {-1, 0, +1} eliminate multiplications, enabling **CPU-only inference**.
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    TRINITY ADVANTAGE                            │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   Traditional LLM          Trinity Network                      │
-│   ───────────────          ───────────────                      │
-│   32 bits/weight    →      1.58 bits/weight                     │
-│   70B = 280 GB RAM  →      70B = 14 GB RAM                      │
-│   Requires GPU      →      ANY CPU works                        │
-│   Float multiply    →      Just add/subtract                    │
-│                                                                 │
-│   Weights W ∈ {-1, 0, +1}:                                      │
-│   • Multiply by -1 → negate (free)                              │
-│   • Multiply by  0 → skip (free)                                │
-│   • Multiply by +1 → nothing (free)                             │
-│                                                                 │
-│   Result: 20x memory savings, 10x faster on CPU                 │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🤖 IGLA - Local AI Agent
-
-**100% Local AI Agent - No cloud, no API keys required**
-
-IGLA (Intelligent Global Learning Agent) provides fully local AI capabilities:
-
-| Component | Description | Performance |
-|-----------|-------------|-------------|
-| **igla_local_chat** | 60+ conversation patterns (RU/EN/ZH) | 0-13 μs response |
-| **igla_local_coder** | 30+ code generation templates | Real Zig code output |
-| **igla_hybrid_chat** | Symbolic + LLM fallback | Best of both worlds |
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│              IGLA HYBRID ARCHITECTURE                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   User Query → Pattern Matcher (microseconds)                   │
-│                      │                                          │
-│            ┌────────┴────────┐                                  │
-│            │                 │                                  │
-│       MATCH FOUND       NO MATCH                                │
-│            │                 │                                  │
-│            ▼                 ▼                                  │
-│   Fast Symbolic        LLM Fallback                             │
-│   Response             (TinyLlama/Groq)                         │
-│                                                                 │
-│   Result: Speed when possible, fluency when needed              │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Performance Benchmarks:**
-- Trinity Node IGLA: **1955 ops/s** (M1 Pro)
-- Local Chat: **1696 ops/s** (100% coherent)
-- Batch Processing: **1495 ops/s** (2.7x speedup)
-
----
-
-## 💻 TRI - Unified CLI
-
-**Single command for all Trinity features:**
+### Docker (recommended)
 
 ```bash
-# Build and run TRI (recommended)
+docker pull ghcr.io/ghashtag/trinity-node:latest
+
+docker run -d --name trinity-node \
+  -p 8080:8080 -p 9090:9090 -p 9333:9333/udp -p 9334:9334 \
+  -v ~/.trinity:/data \
+  ghcr.io/ghashtag/trinity-node:latest
+```
+
+Check health:
+
+```bash
+curl http://localhost:8080/health
+# {"status":"ok","model":"loaded"}
+```
+
+### Build from source
+
+```bash
+git clone https://github.com/gHashTag/trinity.git
+cd trinity
+zig build              # Build all targets
+zig build tri          # Build the unified TRI CLI
+zig build test         # Run all tests
+```
+
+Requires **Zig 0.15.x**.
+
+---
+
+## Docker Node
+
+The Trinity node Docker image is published to GitHub Container Registry on every push to `main`.
+
+| | |
+|---|---|
+| **Image** | `ghcr.io/ghashtag/trinity-node:latest` |
+| **Platforms** | linux/amd64, linux/arm64 |
+| **Base** | Alpine 3.19 |
+| **Size** | ~15 MB |
+| **Dockerfile** | [`deploy/Dockerfile.node`](deploy/Dockerfile.node) |
+
+### Ports
+
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 8080 | TCP | HTTP API (REST, OpenAI-compatible) |
+| 9090 | TCP | Prometheus metrics |
+| 9333 | UDP | Peer discovery |
+| 9334 | TCP | Job distribution |
+
+### Data volume
+
+Mount `-v ~/.trinity:/data` to persist wallet, shards, and config across restarts.
+
+### Stop / Restart
+
+```bash
+docker stop trinity-node     # Stop
+docker start trinity-node    # Restart (keeps data)
+docker rm trinity-node       # Remove container (data persists in ~/.trinity)
+```
+
+---
+
+## $TRI Token
+
+$TRI is deployed on **Ethereum Sepolia testnet**. Mainnet deployment is planned.
+
+| Property | Value |
+|----------|-------|
+| **Token** | $TRI (Trinity Token) |
+| **Contract** | [`0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469`](https://sepolia.etherscan.io/address/0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469) |
+| **Network** | Ethereum Sepolia |
+| **Total Supply** | 10,460,353,203 (3^21) |
+| **Decimals** | 18 |
+| **Standard** | ERC-20 + ERC-20Permit |
+
+### Allocation
+
+| Category | % | Amount | Purpose |
+|----------|---|--------|---------|
+| **Node Rewards** | 40% | 4,184,141,281 | Emitted to operators for useful work |
+| **Founder** | 20% | 2,092,070,640 | Core team, 12-month cliff + 48-month vesting |
+| **Community** | 20% | 2,092,070,640 | Grants, bounties, ecosystem growth |
+| **Treasury** | 10% | 1,046,035,320 | Protocol development |
+| **Liquidity** | 10% | 1,046,035,320 | DEX pools, available at TGE |
+
+### Staking Tiers
+
+Your staked $TRI determines your API tier. No API keys -- your wallet is your identity.
+
+| Tier | Staked $TRI | Rate Limit | Reward Multiplier |
+|------|------------|------------|-------------------|
+| **Free** | 0 | 10 req/min | 1.0x |
+| **Staker** | 100+ | 60 req/min | 1.5x |
+| **Power** | 1,000+ | 300 req/min | 2.0x |
+| **Whale** | 10,000+ | Unlimited | 3.0x |
+
+Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https://gHashTag.github.io/trinity/docs/depin/tokenomics) for full details.
+
+---
+
+## Architecture
+
+### Core VSA System
+
+| Module | Purpose |
+|--------|---------|
+| `src/vsa.zig` | Vector Symbolic Architecture: bind, unbind, bundle, similarity |
+| `src/vm.zig` | Ternary Virtual Machine (stack-based bytecode) |
+| `src/hybrid.zig` | HybridBigInt: packed 1.58 bits/trit with unpacked cache |
+| `src/packed_trit.zig` | Bit-packed ternary encoding |
+| `src/sdk.zig` | High-level API (Hypervector, Codebook) |
+
+### DePIN Node
+
+| Module | Purpose |
+|--------|---------|
+| `src/firebird/depin.zig` | DePIN reward engine, Proof-of-Useful-Work |
+| `src/trinity_node/http_api.zig` | REST API with stake-based tiers |
+| `src/trinity_node/token_staking.zig` | Staking engine, slashing |
+| `src/trinity_node/config.zig` | Network config, contract addresses |
+
+### Firebird LLM Engine
+
+| Module | Purpose |
+|--------|---------|
+| `src/firebird/cli.zig` | LLM command-line interface |
+| `src/firebird/b2t_integration.zig` | BitNet-to-Ternary conversion |
+| `src/firebird/wasm_parser.zig` | WebAssembly module loading |
+
+### VIBEE Compiler
+
+| Module | Purpose |
+|--------|---------|
+| `src/vibeec/vibee_parser.zig` | Parse .vibee specifications |
+| `src/vibeec/zig_codegen.zig` | Generate Zig code from specs |
+| `src/vibeec/verilog_codegen.zig` | Generate Verilog for FPGA |
+
+---
+
+## HTTP API
+
+The node exposes an OpenAI-compatible API on port 8080.
+
+```bash
+# Chat completion
+curl -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "X-Wallet: 0xYOUR_WALLET" \
+  -d '{"model":"trinity-llm","messages":[{"role":"user","content":"Hello"}]}'
+
+# Node stats
+curl http://localhost:8080/v1/node/stats
+
+# Storage
+curl -X POST http://localhost:8080/v1/storage/put \
+  -H "Content-Type: application/octet-stream" \
+  --data-binary @myfile.bin
+
+# Prometheus metrics
+curl http://localhost:9090/metrics
+```
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| GET | `/` | Server info and metrics |
+| POST | `/v1/chat/completions` | Chat completion (OpenAI-compatible) |
+| GET | `/v1/node/stats` | Node statistics and earnings |
+| GET | `/v1/node/tier` | Current wallet tier info |
+| POST | `/v1/node/claim` | Claim pending $TRI rewards |
+| POST | `/v1/storage/put` | Store a data shard |
+| GET | `/v1/storage/get/:hash` | Retrieve a data shard |
+| GET | `/v1/storage/status` | Storage layer status |
+| GET | `/metrics` | Prometheus metrics (port 9090) |
+
+See [API Reference](https://gHashTag.github.io/trinity/docs/depin/api) for full documentation.
+
+---
+
+## TRI CLI
+
+Single command for all Trinity features:
+
+```bash
 zig build tri
 
-# Or use the binary directly
-zig build
-./zig-out/bin/tri
-
 # Available commands
-tri                    # Interactive REPL (default)
+tri                    # Interactive REPL
 tri code fibonacci     # Generate code
 tri chat "hello"       # Chat
 tri explain <file>     # Explain code
@@ -205,538 +247,102 @@ tri test <file>        # Generate tests
 tri help               # Full help
 ```
 
-**TRI Commands:**
-
-| Command | Description |
-|---------|-------------|
-| `tri` | Interactive REPL (default) |
-| `tri code <prompt>` | Generate code |
-| `tri chat <message>` | Chat |
-| `tri fix <file>` | Detect and fix bugs |
-| `tri explain <prompt>` | Explain code/concept |
-| `tri test <file>` | Generate tests |
-| `tri doc <file>` | Generate documentation |
-| `tri reason <prompt>` | Chain-of-thought reasoning |
-| `tri help` | Full help |
-
-**REPL Commands:** `/chat`, `/code`, `/fix`, `/explain`, `/test`, `/doc`, `/reason`, `/zig`, `/python`, `/quit`
-
-**Multilingual:** Russian, English, Chinese - auto-detected.
-
-```bash
-# Examples
-tri code "quicksort algorithm"
-tri chat "привет, как дела?"
-tri explain "what is VSA?"
-```
+Multilingual: Russian, English, Chinese -- auto-detected.
 
 ---
 
-## 🔌 Multi-Provider Integration
+## DePIN Reward System
 
-Trinity supports multiple AI providers with automatic fallback:
+Nodes earn $TRI through **Proof-of-Useful-Work** -- every rewarded computation produces a real, verifiable result.
 
-| Provider | Model | Speed | Cost |
-|----------|-------|-------|------|
-| **Local** | TinyLlama 1.1B GGUF | 100% offline | FREE |
-| **Groq** | Llama-3.1-8b-instant | 276 tok/s | FREE tier |
-| **Claude** | Claude API | Full capability | API pricing |
+| Operation | Rate | Description |
+|-----------|------|-------------|
+| VSA Evolution | 0.001 TRI/generation | Evolving hypervector populations |
+| Navigation | 0.0001 TRI/step | Navigating semantic vector spaces |
+| WASM Conversion | 0.01 TRI/conversion | Compiling WASM to ternary bytecode |
+| Benchmark | 0.005 TRI/run | Running reproducible benchmarks |
+| Storage Hosting | 0.00005 TRI/shard/hour | Hosting data shards |
+| Storage Retrieval | 0.0005 TRI/retrieval | Serving requested data |
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│              MULTI-PROVIDER ROUTING                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   1. Try IGLA symbolic patterns (fastest, free)                 │
-│   2. Fallback to local GGUF model (offline capable)             │
-│   3. Route to Groq for complex queries (fast, free tier)        │
-│   4. Use Claude for highest quality (API key required)          │
-│                                                                 │
-│   Result: Optimal cost/quality balance per query                │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+Bonus multipliers: fitness > 0.9 grants +50%, similarity > 0.8 grants +100%, staking 100+ TRI grants 1.5x on all earnings.
 
 ---
 
-## ⚡ Quick Start
-
-### Trinity ONA UI (v1.0.1) - Instant Install
-
-**100% Local AI Coding Assistant - 287KB binary, 6.5M ops/s, NO cloud!**
-
-<table>
-<tr>
-<td align="center"><b>macOS (Apple Silicon)</b></td>
-<td align="center"><b>macOS (Intel)</b></td>
-<td align="center"><b>Linux</b></td>
-<td align="center"><b>Windows</b></td>
-</tr>
-<tr>
-<td align="center">
-<a href="https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_macos_arm64">
-<img src="https://img.shields.io/badge/Download-287KB-28C840?style=for-the-badge" alt="macOS ARM64">
-</a>
-</td>
-<td align="center">
-<a href="https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_macos_x64">
-<img src="https://img.shields.io/badge/Download-293KB-28C840?style=for-the-badge" alt="macOS x64">
-</a>
-</td>
-<td align="center">
-<a href="https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_linux_x64">
-<img src="https://img.shields.io/badge/Download-2.3MB-FCC624?style=for-the-badge" alt="Linux">
-</a>
-</td>
-<td align="center">
-<a href="https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_windows_x64.exe">
-<img src="https://img.shields.io/badge/Download-559KB-0078D6?style=for-the-badge" alt="Windows">
-</a>
-</td>
-</tr>
-</table>
-
-**VS Code Extension (13KB):**
-```bash
-# Download and install
-curl -LO https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity-swe-1.0.1.vsix
-code --install-extension trinity-swe-1.0.1.vsix
-```
-
-**One-line install (macOS/Linux):**
-```bash
-curl -LO https://github.com/gHashTag/trinity/releases/download/v1.0.1/trinity_ona_ui_macos_arm64 && chmod +x trinity_ona_ui_macos_arm64 && ./trinity_ona_ui_macos_arm64
-```
-
----
-
-### For Node Operators (Earn $TRI)
-
-Run LLM inference on your CPU and earn $TRI tokens for every request processed.
-
-#### 1. Check Requirements
-
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| **CPU** | 4 cores, 2.0 GHz | 8+ cores, AVX2 support |
-| **RAM** | 8 GB | 16+ GB |
-| **Storage** | 10 GB SSD | 50+ GB SSD |
-| **Network** | 10 Mbps | 100+ Mbps |
-| **OS** | Windows 10, macOS 12, Ubuntu 20.04 | Latest versions |
-
-#### 2. Download Trinity Node
-
-<table>
-<tr>
-<td align="center"><b>Windows</b></td>
-<td align="center"><b>macOS</b></td>
-<td align="center"><b>Linux</b></td>
-</tr>
-<tr>
-<td align="center">
-<a href="https://github.com/gHashTag/trinity/releases/latest">
-<img src="https://img.shields.io/badge/Download-Windows-0078D6?style=for-the-badge&logo=windows" alt="Windows">
-</a>
-</td>
-<td align="center">
-<a href="https://github.com/gHashTag/trinity/releases/latest">
-<img src="https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge&logo=apple" alt="macOS">
-</a>
-</td>
-<td align="center">
-<a href="https://github.com/gHashTag/trinity/releases/latest">
-<img src="https://img.shields.io/badge/Download-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux">
-</a>
-</td>
-</tr>
-<tr>
-<td align="center"><code>TrinityNode-x.x.x.exe</code></td>
-<td align="center"><code>TrinityNode-x.x.x.dmg</code></td>
-<td align="center"><code>TrinityNode-x.x.x.AppImage</code></td>
-</tr>
-</table>
-
-**CLI Installation (Linux/macOS):**
-```bash
-curl -sSL https://trinity.network/install.sh | bash
-```
-
-#### 3. Install & Configure
-
-**Desktop App:**
-1. Run the installer for your OS
-2. Launch Trinity Node from Applications/Start Menu
-3. Create or import a wallet (your $TRI receiving address)
-4. Set resource limits (CPU %, RAM, active hours)
-
-**CLI:**
-```bash
-# Initialize with your wallet address
-trinity-node init --wallet <YOUR_WALLET_ADDRESS>
-
-# Or create a new wallet
-trinity-node init --create-wallet
-```
-
-#### 4. Start the Node
-
-**Desktop App:** Click the **Start** button on the dashboard.
-
-**CLI:**
-```bash
-trinity-node start
-```
-
-The node will:
-- Connect to Trinity Network
-- Download the BitNet-7B model (~2.1 GB, first run only)
-- Begin accepting inference jobs
-
-#### 5. Verify Connectivity
-
-**Desktop App:** Check the status indicator shows 🟢 **ONLINE**
-
-**CLI:**
-```bash
-trinity-node status
-```
-
-Expected output:
-```
-Trinity Node v1.0.0
-Status:     ONLINE
-Node ID:    trinity_abc123...
-Uptime:     2h 15m
-Model:      BitNet-7B (loaded)
-Jobs:       142 completed
-Earnings:   12.45 $TRI (today)
-```
-
-#### 6. Start Earning $TRI
-
-Once online, your node automatically:
-- Receives inference jobs from the network
-- Processes requests using your CPU
-- Earns $TRI proportional to tokens processed
-
-**Reward Rate:** ~0.9 $TRI per 1M tokens processed (90% to node operators)
-
-**Bonus Multipliers:**
-- Uptime >99%: +10%
-- Low latency: +5%
-- High throughput: +5%
-
-**Check Earnings:**
-```bash
-trinity-node earnings
-
-# Output:
-# Today:     12.45 $TRI
-# This Week: 87.32 $TRI
-# Total:     1,234.56 $TRI
-# Pending:   45.00 $TRI (settles in ~24h)
-```
-
-**Withdraw:**
-```bash
-trinity-node withdraw --to <EXTERNAL_WALLET> --amount 100
-```
-
----
-
-#### How Earning Works
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    $TRI EARNING FLOW                            │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  1. API User pays $TRI for inference                           │
-│           │                                                     │
-│           ▼                                                     │
-│  2. Scheduler assigns job to your node                          │
-│           │                                                     │
-│           ▼                                                     │
-│  3. Your CPU processes the request                              │
-│           │                                                     │
-│           ▼                                                     │
-│  4. Result verified, contribution recorded                      │
-│           │                                                     │
-│           ▼                                                     │
-│  5. $TRI credited to your wallet                               │
-│                                                                 │
-│  Fee Split:                                                     │
-│  ├── 90% → Node Operator (you)                                 │
-│  ├── 8%  → Protocol Treasury                                   │
-│  └── 2%  → Burned (deflationary)                               │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-#### Staking for Priority (Optional)
-
-Stake $TRI to receive more jobs and higher rewards:
-
-| Tier | Stake | Job Priority | Staking APY |
-|------|-------|--------------|-------------|
-| Bronze | 10,000 $TRI | Standard | 8% |
-| Silver | 100,000 $TRI | +20% | 12% |
-| Gold | 1,000,000 $TRI | +50% | 16% |
-| Platinum | 10,000,000 $TRI | +100% | 20% |
-
----
-
-#### Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Node won't connect | Check firewall, enable UPnP, or forward port 9000 |
-| Low earnings | Increase CPU limit, ensure stable connection |
-| Model download fails | Check disk space (need 10+ GB free) |
-| High CPU usage | Reduce CPU limit in Settings |
-
-**Need help?** Join [Discord](https://discord.gg/trinity) or open an [issue](https://github.com/gHashTag/trinity/issues).
-
----
-
-#### Advanced: Run as Service
-
-**Linux (systemd):**
-```bash
-sudo trinity-node service install
-sudo systemctl enable trinity-node
-sudo systemctl start trinity-node
-```
-
-**macOS (launchd):**
-```bash
-trinity-node service install
-# Auto-starts on login
-```
-
-**Windows (Service):**
-```powershell
-trinity-node service install
-# Runs as Windows Service
-```
-
-**Docker:**
-```bash
-docker run -d \
-  --name trinity-node \
-  --restart unless-stopped \
-  -v trinity-data:/data \
-  -e WALLET_ADDRESS=<YOUR_ADDRESS> \
-  trinitynetwork/node:latest
-```
-
-[📄 Full Node Documentation →](docs/business/TRINITY_NODE_SPEC.md)
-
----
-
-### For Developers (Use API)
-
-```bash
-# OpenAI-compatible API
-curl https://api.trinity.network/v1/chat/completions \
-  -H "Authorization: Bearer $TRI_API_KEY" \
-  -d '{"model": "bitnet-70b", "messages": [{"role": "user", "content": "Hello"}]}'
-```
-
-### For Library Users
-
-```bash
-# Python
-pip install trinity-vsa
-
-# Rust
-cargo add trinity-vsa
-
-# npm
-npm install trinity-vsa
-```
-
----
-
-## 📦 Libraries
-
-**29 programming languages** with unified API:
-
-| Category | Languages |
-|----------|-----------|
-| **Systems** | C, Rust, Zig, Nim, D, Ada, Fortran |
-| **JVM** | Java, Kotlin, Scala, Clojure |
-| **Functional** | Haskell, OCaml, F#, Elixir, Erlang |
-| **Scientific** | Python, Julia, R, MATLAB, Mathematica |
-| **Web/Mobile** | TypeScript, Go, Swift, Dart, PHP, Ruby |
-| **Scripting** | Lua, Perl |
-
-### Core API
-
-```python
-from trinity_vsa import TritVector, bind, similarity
-
-# Create concept vectors
-apple = TritVector.random(10000)
-red = TritVector.random(10000)
-
-# Bind: create association
-red_apple = bind(apple, red)
-
-# Query: measure similarity
-print(similarity(red_apple, apple))  # ~0.0 (orthogonal after bind)
-```
-
-[📚 Full Library Documentation →](libs/README.md)
-
----
-
-## 💰 Tokenomics
-
-### $TRI Token
-
-| Metric | Value |
-|--------|-------|
-| **Total Supply** | 10,460,353,203 (3²¹ Phoenix Number) |
-| **Token** | $TRI |
-| **Network** | Ethereum + Trinity L2 |
-| **Launch Price** | $0.0287 |
-| **FDV** | $300,000,000 |
-
-> **Sacred Mathematics:** 3²¹ = φ² + 1/φ² = 3 = TRINITY
-
-### Seed Round
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  SEED ROUND: $3,000,000 for 1% equity                           │
-│  VALUATION:  $300,000,000                                       │
-│  FOUNDER:    99% ownership post-seed                            │
-│  FUTURE:     Pricing TBD based on network growth                │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Distribution
-
-```
-Node Rewards     ████████████████████  40%  4.18B $TRI
-Founder          ████████              20%  2.09B $TRI
-Treasury (DAO)   ██████                15%  1.57B $TRI
-Public Sale      ██████                15%  1.57B $TRI
-Ecosystem        ████                  10%  1.05B $TRI
-─────────────────────────────────────────────────────
-TOTAL: 3²¹ = 10,460,353,203 $TRI (Phoenix Number)
-```
-
-### Utility
-
-- 💳 **Pay** for inference API calls
-- 💰 **Earn** for compute contribution (90% of fees to nodes)
-- 🗳️ **Vote** on governance proposals
-- 📈 **Stake** for priority access (8-20% APY)
-
-[📄 Full Tokenomics →](docs/business/TOKENOMICS.md)
-
----
-
-## 🗺️ Roadmap
-
-```
-2025     ✅ Trinity VSA libraries (29 languages)
-         ✅ C library with AVX2 SIMD
-         ✅ VIBEE compiler (42 language targets)
-         ✅ Firebird anti-detect browser engine
-
-Feb 2026 ✅ IGLA Local Agent (100% offline AI)
-         ✅ Trinity CLI v1.1.2 (multilingual chat + code)
-         ✅ GGUF model integration (TinyLlama support)
-         ✅ Multi-provider system (Groq, Claude, Local)
-         ✅ Hybrid symbolic + LLM architecture
-         ✅ 1955 ops/s local performance
-
-Current  □  Trinity Node public alpha
-         □  $TRI token launch
-         □  Mainnet beta
-         □  10,000+ node network
-
-Future   □  BitNet 70B model support
-         □  Mobile apps (iOS/Android)
-         □  DAO governance
-         □  Enterprise partnerships
-```
-
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 trinity/
-├── libs/               # 29-language VSA libraries
-├── src/                # Core source code
-│   ├── vsa.zig         # Vector Symbolic Architecture
-│   ├── vm.zig          # Ternary Virtual Machine
-│   ├── hybrid.zig      # HybridBigInt (1.58 bits/trit)
-│   ├── vibeec/         # VIBEE compiler + IGLA
-│   │   ├── igla_local_chat.zig    # 60+ chat patterns
-│   │   ├── igla_local_coder.zig   # 30+ code templates
-│   │   ├── igla_hybrid_chat.zig   # Symbolic + LLM
-│   │   ├── igla_hybrid_codegen.zig # Multi-provider code
-│   │   ├── trinity_cli.zig        # CLI interface
-│   │   ├── gguf_reader.zig        # GGUF model loader
-│   │   ├── gguf_inference.zig     # Local inference
-│   │   └── http_server.zig        # HTTP API
-│   ├── firebird/       # Anti-detect browser engine
-│   └── phi-engine/     # Quantum-inspired engine
-├── specs/              # .vibee specifications (105 files)
-├── docs/               # Documentation (170+ files)
-│   └── business/       # Business model, tokenomics
-├── docsite/            # Documentation website
-├── fpga-network/       # FPGA acceleration
-└── examples/           # Usage examples
+├── src/                    # Core Zig source
+│   ├── vsa.zig             # Vector Symbolic Architecture
+│   ├── vm.zig              # Ternary Virtual Machine
+│   ├── hybrid.zig          # HybridBigInt (1.58 bits/trit)
+│   ├── trinity_node/       # DePIN node (HTTP API, staking, config)
+│   ├── firebird/           # LLM engine + DePIN rewards
+│   ├── vibeec/             # VIBEE compiler + IGLA agent
+│   ├── b2t/                # BitNet inference
+│   ├── phi-engine/         # Quantum-inspired computation
+│   └── tvc/                # Ternary Vector Computing
+├── deploy/                 # Docker configs
+│   └── Dockerfile.node     # Multi-stage Alpine build
+├── contracts/              # Solidity (TrinityToken.sol)
+├── specs/                  # .vibee specifications
+├── docsite/                # Documentation site (Docusaurus)
+├── website/                # Landing page (Vite + React)
+├── libs/                   # Multi-language VSA libraries
+└── build.zig               # Build system
 ```
 
 ---
 
-## 🔗 Links
+## Documentation
 
-| Resource | Link |
-|----------|------|
-| **GitHub** | [github.com/gHashTag/trinity](https://github.com/gHashTag/trinity) |
-| **Documentation** | [docs/](docs/) |
-| **Business Model** | [docs/business/BUSINESS_MODEL.md](docs/business/BUSINESS_MODEL.md) |
-| **Tokenomics** | [docs/business/TOKENOMICS.md](docs/business/TOKENOMICS.md) |
-| **Brand Guidelines** | [docs/business/BRANDING.md](docs/business/BRANDING.md) |
+| Resource | URL |
+|----------|-----|
+| **DePIN Overview** | [gHashTag.github.io/trinity/docs/depin](https://gHashTag.github.io/trinity/docs/depin) |
+| **Quick Start** | [gHashTag.github.io/trinity/docs/depin/quickstart](https://gHashTag.github.io/trinity/docs/depin/quickstart) |
+| **Tokenomics** | [gHashTag.github.io/trinity/docs/depin/tokenomics](https://gHashTag.github.io/trinity/docs/depin/tokenomics) |
+| **API Reference** | [gHashTag.github.io/trinity/docs/depin/api](https://gHashTag.github.io/trinity/docs/depin/api) |
+| **Architecture** | [gHashTag.github.io/trinity/docs/depin/architecture](https://gHashTag.github.io/trinity/docs/depin/architecture) |
+| **Rewards** | [gHashTag.github.io/trinity/docs/depin/rewards](https://gHashTag.github.io/trinity/docs/depin/rewards) |
+| **Research** | [gHashTag.github.io/trinity/docs/research](https://gHashTag.github.io/trinity/docs/research) |
+| **Website** | [gHashTag.github.io/trinity](https://gHashTag.github.io/trinity) |
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+## Build Commands
 
 ```bash
-# Clone
-git clone https://github.com/gHashTag/trinity.git
-
-# Build
-cd trinity && zig build
-
-# Test
-zig test src/vsa.zig
+zig build                    # Build all targets
+zig build tri                # Unified TRI CLI
+zig build test               # Run ALL tests
+zig build bench              # Run benchmarks
+zig build release            # Cross-platform release builds
+zig build vibee              # VIBEE Compiler CLI
+zig build firebird           # Firebird LLM CLI
+zig fmt src/                 # Format code
 ```
 
 ---
 
-## 📜 License
+## Contributing
 
-MIT License - see [LICENSE](LICENSE)
+```bash
+git clone https://github.com/gHashTag/trinity.git
+cd trinity
+zig build test               # Run all tests before submitting PRs
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+## License
+
+MIT -- see [LICENSE](LICENSE)
 
 ---
 
 <p align="center">
-  <strong>Trinity Network</strong><br>
-  <em>Decentralized AI Inference</em><br><br>
-  <code>Trinity = 3 = Ternary = {-1, 0, +1}</code><br>
-  <code>φ² + 1/φ² = 3</code>
+  <code>phi^2 + 1/phi^2 = 3 = Trinity</code><br>
+  <code>3^21 = 10,460,353,203 $TRI</code>
 </p>
