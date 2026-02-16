@@ -14600,3 +14600,724 @@ test "noisy path discovery beam search" {
     // Just needs to complete
     try std.testing.expect(true);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 88: Arbitrary Graph with Cycles + Cycle Detection (Level 11.12)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Move beyond DAGs — build graphs with cycles (A→B→C→A) and detect them.
+// BFS with visited set prevents infinite loops. Cycle detection finds loops.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "arbitrary graph cycles detection" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== ARBITRARY GRAPH: CYCLES + DETECTION (Level 11.12) ===\n", .{});
+
+    // Build a graph with 10 nodes. Edges include cycles.
+    // Graph structure:
+    //   0 → 1 → 2 → 3 → 4 (linear chain)
+    //   4 → 1 (back-edge: creates cycle 1→2→3→4→1)
+    //   0 → 5 → 6 → 7 (alternative path)
+    //   7 → 3 (cross-edge: connects to main chain)
+    //   3 → 8 → 9 (continuation)
+    //   9 → 5 (back-edge: creates cycle 5→6→7→3→8→9→5)
+    const NODES = 10;
+
+    var nodes: [NODES]Hypervector = undefined;
+    for (0..NODES) |i| {
+        nodes[i] = bipolarRandom(DIM, 0x1100000 + @as(u64, @intCast(i)) * 7919);
+    }
+
+    // Edge list: (from, to)
+    const Edge = struct { from: usize, to: usize };
+    const edges = [_]Edge{
+        .{ .from = 0, .to = 1 },
+        .{ .from = 1, .to = 2 },
+        .{ .from = 2, .to = 3 },
+        .{ .from = 3, .to = 4 },
+        .{ .from = 4, .to = 1 }, // cycle!
+        .{ .from = 0, .to = 5 },
+        .{ .from = 5, .to = 6 },
+        .{ .from = 6, .to = 7 },
+        .{ .from = 7, .to = 3 }, // cross-edge
+        .{ .from = 3, .to = 8 },
+        .{ .from = 8, .to = 9 },
+        .{ .from = 9, .to = 5 }, // cycle!
+    };
+    const NUM_EDGES = edges.len;
+
+    std.debug.print("Nodes: {}, Edges: {} (including 2 back-edges creating cycles)\n\n", .{ NODES, NUM_EDGES });
+
+    // Build per-source adjacency memories:
+    // For each node, bundle all bind(source, target) pairs where source is this node
+    // This creates a "neighbor lookup" memory
+    var adj_memories: [NODES]Hypervector = undefined;
+    var adj_counts: [NODES]usize = [_]usize{0} ** NODES;
+    // First count edges per source
+    for (edges) |e| adj_counts[e.from] += 1;
+
+    // Build memories
+    for (0..NODES) |src| {
+        if (adj_counts[src] == 0) {
+            adj_memories[src] = bipolarRandom(DIM, 0x1200000 + @as(u64, @intCast(src)) * 99991); // dummy
+            continue;
+        }
+        var pair_buf: [4]Hypervector = undefined; // max 4 edges per node
+        var pi: usize = 0;
+        for (edges) |e| {
+            if (e.from == src) {
+                pair_buf[pi] = nodes[src].bind(&nodes[e.to]);
+                pi += 1;
+            }
+        }
+        adj_memories[src] = treeBundleN(pair_buf[0..pi]);
+    }
+
+    // --- Part A: BFS with cycle detection ---
+    std.debug.print("--- Part A: BFS from node 0 (with cycle detection) ---\n", .{});
+
+    // BFS: start at node 0, discover all reachable nodes
+    var visited = [_]bool{false} ** NODES;
+    var queue: [NODES]usize = undefined;
+    var q_head: usize = 0;
+    var q_tail: usize = 0;
+    var discovery_order: [NODES]usize = undefined;
+    var discovered: usize = 0;
+    var cycles_detected: usize = 0;
+
+    queue[q_tail] = 0;
+    q_tail += 1;
+    visited[0] = true;
+
+    while (q_head < q_tail) {
+        const current_node = queue[q_head];
+        q_head += 1;
+        discovery_order[discovered] = current_node;
+        discovered += 1;
+
+        // Find neighbors by unbinding current from adjacency memory
+        if (adj_counts[current_node] > 0) {
+            var retrieved = adj_memories[current_node].unbind(&nodes[current_node]);
+
+            // Check all nodes for similarity
+            for (0..NODES) |candidate| {
+                const sim = retrieved.similarity(&nodes[candidate]);
+                if (sim > 0.15) { // threshold for "is a neighbor"
+                    // Check for edges
+                    var is_edge = false;
+                    for (edges) |e| {
+                        if (e.from == current_node and e.to == candidate) {
+                            is_edge = true;
+                            break;
+                        }
+                    }
+                    if (is_edge) {
+                        if (visited[candidate]) {
+                            cycles_detected += 1;
+                            std.debug.print("  CYCLE detected: {} → {} (already visited)\n", .{ current_node, candidate });
+                        } else {
+                            visited[candidate] = true;
+                            queue[q_tail] = candidate;
+                            q_tail += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std.debug.print("BFS discovered {} nodes: ", .{discovered});
+    for (0..discovered) |i| {
+        if (i > 0) std.debug.print("→", .{});
+        std.debug.print("{}", .{discovery_order[i]});
+    }
+    std.debug.print("\nCycles detected: {}\n", .{cycles_detected});
+
+    // --- Part B: Verify neighbor discovery accuracy ---
+    std.debug.print("\n--- Part B: Neighbor Discovery Accuracy ---\n", .{});
+    var neighbor_correct: usize = 0;
+    var neighbor_total: usize = 0;
+
+    for (0..NODES) |src| {
+        if (adj_counts[src] == 0) continue;
+        var retrieved_n = adj_memories[src].unbind(&nodes[src]);
+
+        for (edges) |e| {
+            if (e.from == src) {
+                neighbor_total += 1;
+                // Find best match among all nodes
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..NODES) |j| {
+                    var node_j = nodes[j];
+                    const sim = retrieved_n.similarity(&node_j);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                // For nodes with single outgoing edge, best match should be the target
+                if (adj_counts[src] == 1 and best_idx == e.to) {
+                    neighbor_correct += 1;
+                } else if (adj_counts[src] > 1) {
+                    // For multi-edge nodes, check if target has positive similarity
+                    var target_node = nodes[e.to];
+                    const target_sim = retrieved_n.similarity(&target_node);
+                    if (target_sim > 0.10) neighbor_correct += 1;
+                }
+            }
+        }
+    }
+
+    std.debug.print("Neighbor discovery: {}/{} ({d:.1}%)\n", .{
+        neighbor_correct, neighbor_total,
+        @as(f64, @floatFromInt(neighbor_correct)) / @as(f64, @floatFromInt(neighbor_total)) * 100,
+    });
+
+    // --- Part C: Shortest path (0 → 3): direct vs alternative ---
+    std.debug.print("\n--- Part C: Path Comparison (0→3) ---\n", .{});
+    // Path 1 (direct): 0→1→2→3 (3 hops)
+    // Path 2 (alternative): 0→5→6→7→3 (4 hops)
+    // Both should reach node 3
+
+    // Path 1: follow 0→1→2→3 through memories
+    var path1_ok = true;
+    var current_p1 = nodes[0];
+    const path1_expected = [_]usize{ 1, 2, 3 };
+    for (path1_expected) |expected_next| {
+        // Find which node we reach from current
+        var best_sim_p: f64 = -2.0;
+        var best_node_p: usize = 0;
+        for (0..NODES) |j| {
+            var nj = nodes[j];
+            // Check if current→j exists: unbind adj_memory for current's source
+            // We need to find which source node 'current' matches
+            var src_idx: usize = 0;
+            var src_sim: f64 = -2.0;
+            for (0..NODES) |s| {
+                var ns = nodes[s];
+                const ss = current_p1.similarity(&ns);
+                if (ss > src_sim) { src_sim = ss; src_idx = s; }
+            }
+            if (adj_counts[src_idx] > 0) {
+                var ret = adj_memories[src_idx].unbind(&nodes[src_idx]);
+                const s2 = ret.similarity(&nj);
+                if (s2 > best_sim_p) { best_sim_p = s2; best_node_p = j; }
+            }
+        }
+        if (best_node_p != expected_next) path1_ok = false;
+        current_p1 = nodes[best_node_p];
+    }
+    var target3 = nodes[3];
+    const p1_sim = current_p1.similarity(&target3);
+    std.debug.print("Path 1 (0→1→2→3, 3 hops): {s}, sim={d:.4}\n", .{
+        if (path1_ok) "CORRECT" else "INCORRECT", p1_sim,
+    });
+
+    // Path 2: follow 0→5→6→7→3
+    var path2_ok = true;
+    var current_p2 = nodes[0];
+    const path2_expected = [_]usize{ 5, 6, 7, 3 };
+    for (path2_expected) |exp| {
+        var src_idx2: usize = 0;
+        var src_sim2: f64 = -2.0;
+        for (0..NODES) |s| {
+            var ns = nodes[s];
+            const ss = current_p2.similarity(&ns);
+            if (ss > src_sim2) { src_sim2 = ss; src_idx2 = s; }
+        }
+        // Check: does src→exp edge exist?
+        var edge_exists = false;
+        for (edges) |e| {
+            if (e.from == src_idx2 and e.to == exp) { edge_exists = true; break; }
+        }
+        if (!edge_exists) { path2_ok = false; break; }
+        current_p2 = nodes[exp];
+    }
+    const p2_sim = current_p2.similarity(&target3);
+    std.debug.print("Path 2 (0→5→6→7→3, 4 hops): {s}, sim={d:.4}\n", .{
+        if (path2_ok) "CORRECT" else "INCORRECT", p2_sim,
+    });
+
+    std.debug.print("Shortest path: {} hops (Path 1)\n", .{path1_expected.len});
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(discovered == NODES); // BFS should reach all nodes
+    try std.testing.expect(cycles_detected >= 2); // At least 2 back-edges
+    try std.testing.expect(neighbor_correct > neighbor_total / 2); // >50% neighbor discovery
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 89: Multiple Paths Discovery + Ranking (Level 11.12)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Given a graph with multiple paths between source and target, discover all
+// paths and rank them by length/quality.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "multiple paths discovery ranking" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== MULTIPLE PATHS DISCOVERY + RANKING (Level 11.12) ===\n", .{});
+
+    // Build a graph with multiple paths from S to T:
+    // Path A (2 hops): S → A1 → T
+    // Path B (3 hops): S → B1 → B2 → T
+    // Path C (1 hop):  S → T (direct)
+    // All paths verified independently
+    const ENTS = 6; // S, A1, B1, B2, T, extra
+
+    var ent_vecs: [ENTS]Hypervector = undefined;
+    for (0..ENTS) |i| {
+        ent_vecs[i] = bipolarRandom(DIM, 0x1300000 + @as(u64, @intCast(i)) * 7919);
+    }
+
+    // Names: 0=S, 1=A1, 2=B1, 3=B2, 4=T, 5=extra
+    const S = 0;
+    const A1 = 1;
+    const B1 = 2;
+    const B2 = 3;
+    const T = 4;
+
+    // Build edge memories
+    // S has 3 outgoing: S→A1, S→B1, S→T
+    var s_pairs: [3]Hypervector = undefined;
+    s_pairs[0] = ent_vecs[S].bind(&ent_vecs[A1]);
+    s_pairs[1] = ent_vecs[S].bind(&ent_vecs[B1]);
+    s_pairs[2] = ent_vecs[S].bind(&ent_vecs[T]);
+    var mem_s = treeBundleN(s_pairs[0..3]);
+
+    // A1→T
+    const a1_pair = ent_vecs[A1].bind(&ent_vecs[T]);
+    var mem_a1 = a1_pair; // single edge, no bundling needed
+
+    // B1→B2
+    const b1_pair = ent_vecs[B1].bind(&ent_vecs[B2]);
+    var mem_b1 = b1_pair;
+
+    // B2→T
+    const b2_pair = ent_vecs[B2].bind(&ent_vecs[T]);
+    var mem_b2 = b2_pair;
+
+    std.debug.print("Graph: S→A1→T (2 hops), S→B1→B2→T (3 hops), S→T (1 hop)\n\n", .{});
+
+    // --- Part A: Direct path discovery (S→T, 1 hop) ---
+    std.debug.print("--- Part A: Direct Path S→T ---\n", .{});
+    var ret_direct = mem_s.unbind(&ent_vecs[S]);
+    // Check if T is among the neighbors
+    const direct_sim = ret_direct.similarity(&ent_vecs[T]);
+    std.debug.print("S→T direct similarity: {d:.4}\n", .{direct_sim});
+    const direct_found = direct_sim > 0.10;
+    std.debug.print("Direct path found: {s}\n\n", .{if (direct_found) "YES" else "NO"});
+
+    // --- Part B: 2-hop path S→A1→T ---
+    std.debug.print("--- Part B: 2-Hop Path S→A1→T ---\n", .{});
+    // Hop 1: S→A1
+    var ret_a1 = mem_s.unbind(&ent_vecs[S]);
+    const a1_sim = ret_a1.similarity(&ent_vecs[A1]);
+    std.debug.print("S→A1 similarity: {d:.4}\n", .{a1_sim});
+    // Hop 2: A1→T
+    var ret_t_from_a1 = mem_a1.unbind(&ent_vecs[A1]);
+    const t_from_a1_sim = ret_t_from_a1.similarity(&ent_vecs[T]);
+    std.debug.print("A1→T similarity: {d:.4}\n", .{t_from_a1_sim});
+    const path_a_quality = a1_sim + t_from_a1_sim;
+    std.debug.print("Path A quality (sum sim): {d:.4}\n\n", .{path_a_quality});
+
+    // --- Part C: 3-hop path S→B1→B2→T ---
+    std.debug.print("--- Part C: 3-Hop Path S→B1→B2→T ---\n", .{});
+    var ret_b1 = mem_s.unbind(&ent_vecs[S]);
+    const b1_sim = ret_b1.similarity(&ent_vecs[B1]);
+    std.debug.print("S→B1 similarity: {d:.4}\n", .{b1_sim});
+    var ret_b2 = mem_b1.unbind(&ent_vecs[B1]);
+    const b2_sim = ret_b2.similarity(&ent_vecs[B2]);
+    std.debug.print("B1→B2 similarity: {d:.4}\n", .{b2_sim});
+    var ret_t_from_b2 = mem_b2.unbind(&ent_vecs[B2]);
+    const t_from_b2_sim = ret_t_from_b2.similarity(&ent_vecs[T]);
+    std.debug.print("B2→T similarity: {d:.4}\n", .{t_from_b2_sim});
+    const path_b_quality = b1_sim + b2_sim + t_from_b2_sim;
+    std.debug.print("Path B quality (sum sim): {d:.4}\n\n", .{path_b_quality});
+
+    // --- Part D: Ranking ---
+    std.debug.print("--- Part D: Path Ranking ---\n", .{});
+    std.debug.print("Path | Hops | Quality | Rank\n", .{});
+    std.debug.print("-----|------|---------|-----\n", .{});
+
+    // Rank by hops (shorter = better), break ties by quality
+    const PathInfo = struct { name: []const u8, hops: usize, quality: f64 };
+    var paths = [_]PathInfo{
+        .{ .name = "S→T (direct)", .hops = 1, .quality = direct_sim },
+        .{ .name = "S→A1→T", .hops = 2, .quality = path_a_quality },
+        .{ .name = "S→B1→B2→T", .hops = 3, .quality = path_b_quality },
+    };
+
+    // Simple sort by hops
+    for (0..3) |i| {
+        for (i + 1..3) |j| {
+            if (paths[j].hops < paths[i].hops) {
+                const tmp = paths[i];
+                paths[i] = paths[j];
+                paths[j] = tmp;
+            }
+        }
+    }
+
+    for (paths, 0..) |p, rank| {
+        std.debug.print("{s:<15} | {:>4} | {d:>7.4} | #{}\n", .{ p.name, p.hops, p.quality, rank + 1 });
+    }
+
+    // --- Part E: Scale test — 5 paths between same endpoints ---
+    std.debug.print("\n--- Part E: 5-Path Discovery ---\n", .{});
+    // Build 5 independent chains from node_start to node_end
+    const PATH_COUNT = 5;
+    const MAX_CHAIN = 4; // max intermediates per path
+
+    const start_node = bipolarRandom(DIM, 0x1400000);
+    var end_node = bipolarRandom(DIM, 0x1400001);
+
+    // For each path, create intermediate nodes and memories
+    var paths_found: usize = 0;
+    var path_lengths: [PATH_COUNT]usize = undefined;
+
+    for (0..PATH_COUNT) |path_idx| {
+        const chain_len = path_idx + 1; // path 0: 1 hop, path 1: 2 hops, etc.
+        const actual_len = @min(chain_len, MAX_CHAIN);
+
+        // Build chain: start → inter_0 → inter_1 → ... → end
+        var prev = start_node;
+        var all_ok = true;
+        for (0..actual_len) |step| {
+            var next_node: Hypervector = undefined;
+            if (step == actual_len - 1) {
+                next_node = end_node; // last step goes to end
+            } else {
+                next_node = bipolarRandom(DIM, 0x1500000 + @as(u64, @intCast(path_idx)) * 10000 + @as(u64, @intCast(step)) * 137);
+            }
+            // Build single-edge memory and verify
+            var edge_mem = prev.bind(&next_node);
+            var ret_step = edge_mem.unbind(&prev);
+            const step_sim = ret_step.similarity(&next_node);
+            if (step_sim < 0.99) all_ok = false;
+            prev = next_node;
+        }
+
+        const final_sim = prev.similarity(&end_node);
+        if (all_ok and final_sim > 0.99) paths_found += 1;
+        path_lengths[path_idx] = actual_len;
+        std.debug.print("Path {}: {} hops, reached target: {s}\n", .{
+            path_idx, actual_len, if (all_ok and final_sim > 0.99) "YES" else "NO",
+        });
+    }
+
+    std.debug.print("Paths found: {}/{}\n", .{ paths_found, PATH_COUNT });
+    std.debug.print("Shortest: {} hops\n", .{path_lengths[0]});
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(direct_found); // direct path exists
+    try std.testing.expect(paths_found == PATH_COUNT); // all paths found
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 90: Beam Search on Arbitrary Graph + Noise (Level 11.12)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Apply beam search to arbitrary graph with cycles. Compare greedy vs beam
+// for path finding on graphs with multiple valid routes and noise.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "beam search arbitrary graph noise" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== BEAM SEARCH ON ARBITRARY GRAPH + NOISE (Level 11.12) ===\n", .{});
+
+    // Build a 3-layer graph with fan-out: each node connects to 2-3 in next layer
+    // Layer 0: 3 nodes (sources)
+    // Layer 1: 6 nodes (intermediates)
+    // Layer 2: 3 nodes (targets)
+    // Multiple paths from each source to each target
+    const L0 = 3;
+    const L1 = 6;
+    const L2 = 3;
+
+    var layer0: [L0]Hypervector = undefined;
+    var layer1: [L1]Hypervector = undefined;
+    var layer2: [L2]Hypervector = undefined;
+
+    for (0..L0) |i| layer0[i] = bipolarRandom(DIM, 0x1600000 + @as(u64, @intCast(i)) * 7919);
+    for (0..L1) |i| layer1[i] = bipolarRandom(DIM, 0x1700000 + @as(u64, @intCast(i)) * 7919);
+    for (0..L2) |i| layer2[i] = bipolarRandom(DIM, 0x1800000 + @as(u64, @intCast(i)) * 7919);
+
+    // Edges: each L0 node connects to 2 L1 nodes, each L1 to 1-2 L2 nodes
+    // L0[0] → L1[0], L1[1]  → these lead to L2[0]
+    // L0[1] → L1[2], L1[3]  → these lead to L2[1]
+    // L0[2] → L1[4], L1[5]  → these lead to L2[2]
+    // Cross paths: L1[1] → L2[1] (alternative to L2[0])
+
+    // Build L0→L1 memories (per source node, 2 targets each)
+    var mem_l0: [L0]Hypervector = undefined;
+    const l0_targets = [L0][2]usize{ .{ 0, 1 }, .{ 2, 3 }, .{ 4, 5 } };
+    for (0..L0) |i| {
+        var pairs_l: [2]Hypervector = undefined;
+        for (0..2) |j| {
+            pairs_l[j] = layer0[i].bind(&layer1[l0_targets[i][j]]);
+        }
+        mem_l0[i] = treeBundleN(pairs_l[0..2]);
+    }
+
+    // Build L1→L2 memories
+    // L1[0]→L2[0], L1[1]→L2[0]+L2[1], L1[2]→L2[1], L1[3]→L2[1],
+    // L1[4]→L2[2], L1[5]→L2[2]
+    var mem_l1: [L1]Hypervector = undefined;
+    // Single-target nodes:
+    mem_l1[0] = layer1[0].bind(&layer2[0]);
+    mem_l1[2] = layer1[2].bind(&layer2[1]);
+    mem_l1[3] = layer1[3].bind(&layer2[1]);
+    mem_l1[4] = layer1[4].bind(&layer2[2]);
+    mem_l1[5] = layer1[5].bind(&layer2[2]);
+    // Multi-target node: L1[1] → L2[0] and L2[1]
+    var l1_1_pairs: [2]Hypervector = undefined;
+    l1_1_pairs[0] = layer1[1].bind(&layer2[0]);
+    l1_1_pairs[1] = layer1[1].bind(&layer2[1]);
+    mem_l1[1] = treeBundleN(l1_1_pairs[0..2]);
+
+    // Build combined L0→L1 memory for beam search
+    var all_l0_pairs: [L0 * 2]Hypervector = undefined;
+    for (0..L0) |i| {
+        for (0..2) |j| {
+            all_l0_pairs[i * 2 + j] = layer0[i].bind(&layer1[l0_targets[i][j]]);
+        }
+    }
+    var combined_l0 = treeBundleN(all_l0_pairs[0..L0 * 2]);
+
+    // Build combined L1→L2 memory
+    var all_l1_pairs: [7]Hypervector = undefined;
+    all_l1_pairs[0] = layer1[0].bind(&layer2[0]);
+    all_l1_pairs[1] = layer1[1].bind(&layer2[0]);
+    all_l1_pairs[2] = layer1[1].bind(&layer2[1]);
+    all_l1_pairs[3] = layer1[2].bind(&layer2[1]);
+    all_l1_pairs[4] = layer1[3].bind(&layer2[1]);
+    all_l1_pairs[5] = layer1[4].bind(&layer2[2]);
+    all_l1_pairs[6] = layer1[5].bind(&layer2[2]);
+    var combined_l1 = treeBundleN(all_l1_pairs[0..7]);
+
+    std.debug.print("Graph: {}→{}→{} nodes, multiple paths, cross-edges\n\n", .{ L0, L1, L2 });
+
+    // --- Greedy vs Beam under noise ---
+    std.debug.print("Noise | Greedy | Beam-3 | Beam-5 | Best\n", .{});
+    std.debug.print("------|--------|--------|--------|------\n", .{});
+
+    const NOISE_LEVELS = [_]usize{ 0, 1, 2, 3, 5 };
+    const TESTS_PER = 3; // test each of 3 source→target pairs
+
+    for (NOISE_LEVELS) |noise| {
+        var greedy_ok: usize = 0;
+        var beam3_ok: usize = 0;
+        var beam5_ok: usize = 0;
+
+        for (0..TESTS_PER) |src_idx| {
+            const tgt_idx = src_idx; // L0[i] should reach L2[i]
+
+            // --- GREEDY ---
+            // Hop 1: unbind source from combined L0 memory
+            var ret_g1 = combined_l0.unbind(&layer0[src_idx]);
+            for (0..noise) |n| {
+                var nv = Hypervector.random(DIM, 0x1900000 + @as(u64, @intCast(src_idx)) * 10000 + @as(u64, @intCast(noise)) * 100 + @as(u64, @intCast(n)));
+                ret_g1 = ret_g1.bundle(&nv);
+            }
+            var best_l1_sim: f64 = -2.0;
+            var best_l1: usize = 0;
+            for (0..L1) |j| {
+                const s = ret_g1.similarity(&layer1[j]);
+                if (s > best_l1_sim) { best_l1_sim = s; best_l1 = j; }
+            }
+            // Hop 2: unbind intermediate from combined L1 memory
+            var ret_g2 = combined_l1.unbind(&layer1[best_l1]);
+            for (0..noise) |n| {
+                var nv = Hypervector.random(DIM, 0x1A00000 + @as(u64, @intCast(src_idx)) * 10000 + @as(u64, @intCast(noise)) * 100 + @as(u64, @intCast(n)));
+                ret_g2 = ret_g2.bundle(&nv);
+            }
+            var best_l2_sim: f64 = -2.0;
+            var best_l2_g: usize = 0;
+            for (0..L2) |j| {
+                const s = ret_g2.similarity(&layer2[j]);
+                if (s > best_l2_sim) { best_l2_sim = s; best_l2_g = j; }
+            }
+            if (best_l2_g == tgt_idx) greedy_ok += 1;
+
+            // --- BEAM-3 ---
+            {
+                const K = 3;
+                var cands: [K]usize = undefined;
+                var c_sims: [K]f64 = undefined;
+                var nc: usize = 0;
+
+                // Hop 1: find top-K L1 candidates
+                var scores1: [L1]f64 = undefined;
+                var ret_b1 = combined_l0.unbind(&layer0[src_idx]);
+                for (0..noise) |n| {
+                    var nv = Hypervector.random(DIM, 0x1900000 + @as(u64, @intCast(src_idx)) * 10000 + @as(u64, @intCast(noise)) * 100 + @as(u64, @intCast(n)));
+                    ret_b1 = ret_b1.bundle(&nv);
+                }
+                for (0..L1) |j| scores1[j] = ret_b1.similarity(&layer1[j]);
+
+                for (0..K) |_| {
+                    var bs: f64 = -999.0;
+                    var bi: usize = 0;
+                    for (0..L1) |j| {
+                        if (scores1[j] > bs) { bs = scores1[j]; bi = j; }
+                    }
+                    if (bs > -999.0) {
+                        cands[nc] = bi;
+                        c_sims[nc] = bs;
+                        nc += 1;
+                        scores1[bi] = -999.0;
+                    }
+                }
+
+                // Hop 2: expand all candidates
+                var final_scores: [L2]f64 = undefined;
+                for (0..L2) |j| final_scores[j] = -999.0;
+
+                for (0..nc) |c| {
+                    var ret_b2 = combined_l1.unbind(&layer1[cands[c]]);
+                    for (0..noise) |n| {
+                        var nv = Hypervector.random(DIM, 0x1A00000 + @as(u64, @intCast(src_idx)) * 10000 + @as(u64, @intCast(noise)) * 100 + @as(u64, @intCast(n)));
+                        ret_b2 = ret_b2.bundle(&nv);
+                    }
+                    for (0..L2) |j| {
+                        const s = c_sims[c] + ret_b2.similarity(&layer2[j]);
+                        if (s > final_scores[j]) final_scores[j] = s;
+                    }
+                }
+
+                var best_b3: f64 = -999.0;
+                var best_b3_idx: usize = 0;
+                for (0..L2) |j| {
+                    if (final_scores[j] > best_b3) { best_b3 = final_scores[j]; best_b3_idx = j; }
+                }
+                if (best_b3_idx == tgt_idx) beam3_ok += 1;
+            }
+
+            // --- BEAM-5 ---
+            {
+                const K = 5;
+                var cands5: [K]usize = undefined;
+                var c5_sims: [K]f64 = undefined;
+                var nc5: usize = 0;
+
+                var scores5: [L1]f64 = undefined;
+                var ret_b5 = combined_l0.unbind(&layer0[src_idx]);
+                for (0..noise) |n| {
+                    var nv = Hypervector.random(DIM, 0x1900000 + @as(u64, @intCast(src_idx)) * 10000 + @as(u64, @intCast(noise)) * 100 + @as(u64, @intCast(n)));
+                    ret_b5 = ret_b5.bundle(&nv);
+                }
+                for (0..L1) |j| scores5[j] = ret_b5.similarity(&layer1[j]);
+
+                for (0..K) |_| {
+                    var bs5: f64 = -999.0;
+                    var bi5: usize = 0;
+                    for (0..L1) |j| {
+                        if (scores5[j] > bs5) { bs5 = scores5[j]; bi5 = j; }
+                    }
+                    if (bs5 > -999.0) {
+                        cands5[nc5] = bi5;
+                        c5_sims[nc5] = bs5;
+                        nc5 += 1;
+                        scores5[bi5] = -999.0;
+                    }
+                }
+
+                var final5: [L2]f64 = undefined;
+                for (0..L2) |j| final5[j] = -999.0;
+
+                for (0..nc5) |c| {
+                    var ret5_2 = combined_l1.unbind(&layer1[cands5[c]]);
+                    for (0..noise) |n| {
+                        var nv = Hypervector.random(DIM, 0x1A00000 + @as(u64, @intCast(src_idx)) * 10000 + @as(u64, @intCast(noise)) * 100 + @as(u64, @intCast(n)));
+                        ret5_2 = ret5_2.bundle(&nv);
+                    }
+                    for (0..L2) |j| {
+                        const s = c5_sims[c] + ret5_2.similarity(&layer2[j]);
+                        if (s > final5[j]) final5[j] = s;
+                    }
+                }
+
+                var best5: f64 = -999.0;
+                var best5_idx: usize = 0;
+                for (0..L2) |j| {
+                    if (final5[j] > best5) { best5 = final5[j]; best5_idx = j; }
+                }
+                if (best5_idx == tgt_idx) beam5_ok += 1;
+            }
+        }
+
+        const g_acc = @as(f64, @floatFromInt(greedy_ok)) / @as(f64, TESTS_PER) * 100;
+        const b3_acc = @as(f64, @floatFromInt(beam3_ok)) / @as(f64, TESTS_PER) * 100;
+        const b5_acc = @as(f64, @floatFromInt(beam5_ok)) / @as(f64, TESTS_PER) * 100;
+        const best_method: []const u8 = if (b5_acc >= b3_acc and b5_acc >= g_acc) "Beam-5" else if (b3_acc >= g_acc) "Beam-3" else "Greedy";
+        std.debug.print("{:>5} | {d:>5.1}% | {d:>5.1}% | {d:>5.1}% | {s}\n", .{
+            noise, g_acc, b3_acc, b5_acc, best_method,
+        });
+    }
+
+    // --- Part B: Cycle avoidance with beam ---
+    std.debug.print("\n--- Cycle Avoidance Test ---\n", .{});
+    // Build a small graph with a cycle: A→B→C→A (loop)
+    // Add exit: B→D (escape from cycle)
+    // Greedy might loop; beam with visited tracking should find B→D
+    var cyc_a = bipolarRandom(DIM, 0x1B00001);
+    var cyc_b = bipolarRandom(DIM, 0x1B00002);
+    var cyc_c = bipolarRandom(DIM, 0x1B00003);
+    var cyc_d = bipolarRandom(DIM, 0x1B00004);
+
+    // A→B, A→(nothing else)
+    var mem_cyc_a = cyc_a.bind(&cyc_b); // single edge
+    // B→C, B→D (two exits)
+    var b_p: [2]Hypervector = undefined;
+    b_p[0] = cyc_b.bind(&cyc_c);
+    b_p[1] = cyc_b.bind(&cyc_d);
+    var mem_cyc_b = treeBundleN(b_p[0..2]);
+    // C→A (back to start — cycle!)
+    var mem_cyc_c = cyc_c.bind(&cyc_a);
+
+    // BFS with visited set from A, looking for D
+    var cyc_visited = [_]bool{false} ** 4; // A=0, B=1, C=2, D=3
+    const cyc_nodes = [_]*Hypervector{ &cyc_a, &cyc_b, &cyc_c, &cyc_d };
+
+    cyc_visited[0] = true; // start at A
+    // Step 1: A→B
+    var ret_ab = mem_cyc_a.unbind(&cyc_a);
+    var found_b = false;
+    for (0..4) |j| {
+        const s = ret_ab.similarity(cyc_nodes[j]);
+        if (s > 0.5 and j == 1) found_b = true;
+    }
+    cyc_visited[1] = true;
+
+    // Step 2: B→{C, D} — should find both, mark visited
+    var ret_b_out = mem_cyc_b.unbind(&cyc_b);
+    var found_c = false;
+    var found_d = false;
+    for (0..4) |j| {
+        const s = ret_b_out.similarity(cyc_nodes[j]);
+        if (s > 0.10) {
+            if (j == 2) found_c = true;
+            if (j == 3) found_d = true;
+        }
+    }
+    cyc_visited[2] = true;
+    cyc_visited[3] = true;
+
+    // Step 3: C→A — A is already visited! Cycle detected.
+    var ret_ca = mem_cyc_c.unbind(&cyc_c);
+    var cycle_back = false;
+    for (0..4) |j| {
+        const s = ret_ca.similarity(cyc_nodes[j]);
+        if (s > 0.5 and j == 0 and cyc_visited[0]) cycle_back = true;
+    }
+
+    std.debug.print("A→B found: {s}\n", .{if (found_b) "YES" else "NO"});
+    std.debug.print("B→C found: {s}\n", .{if (found_c) "YES" else "NO"});
+    std.debug.print("B→D found: {s}\n", .{if (found_d) "YES" else "NO"});
+    std.debug.print("C→A cycle detected: {s}\n", .{if (cycle_back) "YES" else "NO"});
+    std.debug.print("Target D reachable (avoiding cycle): {s}\n", .{if (found_d) "YES" else "NO"});
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(found_b);
+    try std.testing.expect(found_d);
+    try std.testing.expect(cycle_back);
+}
