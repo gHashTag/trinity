@@ -277,9 +277,9 @@ pub const ChainMessageType = enum {
     RecursiveComposeEvent, // Recursive proof composition event
     L2FeeCollectEvent, // L2 fee collection event
     // v2.21: Cross-Shard Transactions v1.0
-    CrossShardTxEvent, // Cross-shard transaction event
+    CrossShardTxEventV2, // Cross-shard transaction event
     Atomic2PCUpdate, // Atomic 2PC coordination event
-    ShardFeeEvent, // Shard fee collection event
+    ShardFeeEventV2, // Shard fee collection event
     InterShardSyncEvent, // Inter-shard synchronization event
     // v2.22: Formal Verification v1.0
     FormalVerifyEvent, // Formal verification event
@@ -312,8 +312,8 @@ pub const ChainMessageType = enum {
     ExchangeV2Event, // Exchange v2 listing event
     GlobalWalletEvent, // Global wallet event
     // v2.28: Swarm 10M + Community 5M
-    Swarm10MEvent, // Swarm 10M scaling event
-    Community5MUpdate, // Community 5M growth event
+    Swarm10MEventV2, // Swarm 10M scaling event
+    Community5MUpdateV2, // Community 5M growth event
     EarningUltimateEvent, // $TRI earning ultimate event
     NodeDiscovery10MEvent, // Node discovery 10M event
     // v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode
@@ -333,7 +333,7 @@ pub const ChainMessageType = enum {
     EternalGovernanceV2Event, // Eternal governance v2 event
     // v2.32: Trinity Beyond v1.0
     TrinityBeyondEvent, // Trinity beyond event
-    InfiniteScaleUpdate, // Infinite scale event
+    InfiniteScaleUpdateV2, // Infinite scale event
     MultiVerseDominanceEvent, // Multi-verse dominance event
     EternalEvolutionEvent, // Eternal evolution event
     // v3.0: Trinity Absolute v1.0
@@ -596,12 +596,12 @@ pub const QuarkType = enum(u16) {
     // v2.15: Swarm 1M + Community 500k (u8: 152/256 used)
     swarm_million, // 144 — Swarm 1M node initialization
     hierarchical_gossip, // 145 — Hierarchical gossip propagation
-    community_node, // 146 — Community node join/heartbeat
+    community_node_v2, // 146 — Community node join/heartbeat
     massive_scale, // 147 — Massive scale orchestration
     multi_layer_dht, // 148 — Multi-layer DHT routing
     geographic_shard, // 149 — Geographic shard rebalancing
-    swarm_consensus, // 150 — Swarm consensus protocol
-    community_anchor, // 151 — Community anchor record
+    swarm_consensus_v2, // 150 — Swarm consensus protocol
+    community_anchor_v2, // 151 — Community anchor record
     // v2.16: ZK-Rollup v2.0 (u8: 160/256 used)
     zk_snark_proof, // 152 — ZK-SNARK proof generation
     recursive_proof, // 153 — Recursive proof composition
@@ -643,19 +643,19 @@ pub const QuarkType = enum(u16) {
     snark_generate, // 185 — SNARK proof generation record
     recursive_compose, // 186 — Recursive proof composition record
     l2_fee_collect, // 187 — L2 fee collection record
-    proof_aggregate, // 188 — Proof aggregation record
+    proof_aggregate_v2, // 188 — Proof aggregation record
     rollup_verify_v2, // 189 — Rollup verification v2 record
     snark_anchor, // 190 — SNARK anchor record
     l2_rollup_anchor, // 191 — L2 rollup anchor record
     // v2.21: Cross-Shard Transactions v1.0 (u8: 200/256 used)
-    cross_shard_tx, // 192 — Cross-shard transaction record
-    atomic_2pc, // 193 — Atomic 2PC coordination record
-    shard_fee, // 194 — Shard fee collection record
+    cross_shard_tx_v2, // 192 — Cross-shard transaction record
+    atomic_2pc_v2, // 193 — Atomic 2PC coordination record
+    shard_fee_v2, // 194 — Shard fee collection record
     inter_shard_sync, // 195 — Inter-shard synchronization record
     shard_coordinator, // 196 — Shard coordinator record
     tx_finality, // 197 — Transaction finality record
-    shard_rebalance, // 198 — Shard rebalance record
-    cross_shard_anchor, // 199 — Cross-shard anchor record
+    shard_rebalance_v2, // 198 — Shard rebalance record
+    cross_shard_anchor_v2, // 199 — Cross-shard anchor record
     // v2.22: Formal Verification v1.0 (u8: 208/256 used)
     formal_verify, // 200 — Formal verification record
     property_test, // 201 — Property test record
@@ -713,10 +713,10 @@ pub const QuarkType = enum(u16) {
     wallet_universal, // 246 — Universal wallet governance record
     beyond_anchor, // 247 — Beyond anchor record
     // v2.28: Swarm 10M + Community 5M + u8 FULL (u8: 256/256 FULL)
-    swarm_10m, // 248 — Swarm 10M scaling record
-    community_5m, // 249 — Community 5M growth record
+    swarm_10m_v2, // 248 — Swarm 10M scaling record
+    community_5m_v2, // 249 — Community 5M growth record
     earning_ultimate, // 250 — $TRI earning ultimate record
-    node_discovery_10m, // 251 — Node discovery 10M record
+    node_discovery_10m_v2, // 251 — Node discovery 10M record
     swarm_health_10m, // 252 — Swarm health 10M record
     swarm_failover_10m, // 253 — Swarm failover 10M record
     dao_governance_10m, // 254 — DAO governance 10M record
@@ -756,7 +756,7 @@ pub const QuarkType = enum(u16) {
     eternal_evolution, // 284 — Eternal self-evolution loop
     beyond_consensus, // 285 — Beyond consensus protocol
     infinite_governance, // 286 — Infinite governance system
-    beyond_anchor, // 287 — Beyond anchor record
+    beyond_anchor_v2, // 287 — Beyond anchor record
     // v3.0: Trinity Absolute v1.0 (u16: 296/65536 used)
     trinity_absolute, // 288 — Trinity absolute v1.0 engine
     infinite_tri, // 289 — Infinite $TRI valuation
@@ -927,12 +927,12 @@ pub const QuarkType = enum(u16) {
             // v2.15: Swarm 1M + Community 500k
             .swarm_million => "SWM_1M",
             .hierarchical_gossip => "HIR_GSP",
-            .community_node => "COM_NOD",
+            .community_node_v2 => "COM_NOD",
             .massive_scale => "MAS_SCL",
             .multi_layer_dht => "ML_DHT",
             .geographic_shard => "GEO_SHD",
-            .swarm_consensus => "SWM_CON",
-            .community_anchor => "COM_ACH",
+            .swarm_consensus_v2 => "SWM_CON",
+            .community_anchor_v2 => "COM_ACH",
             // v2.16: ZK-Rollup v2.0
             .zk_snark_proof => "ZK_PRF",
             .recursive_proof => "REC_PRF",
@@ -972,19 +972,19 @@ pub const QuarkType = enum(u16) {
             .snark_generate => "SNK_GEN",
             .recursive_compose => "REC_CMP",
             .l2_fee_collect => "L2_FEE",
-            .proof_aggregate => "PRF_AGG",
+            .proof_aggregate_v2 => "PRF_AGG",
             .rollup_verify_v2 => "RLP_VR2",
             .snark_anchor => "SNK_ACH",
             .l2_rollup_anchor => "L2_ACH",
             // v2.21: Cross-Shard Transactions v1.0
-            .cross_shard_tx => "XSH_TX",
-            .atomic_2pc => "ATM_2PC",
-            .shard_fee => "SHD_FEE",
+            .cross_shard_tx_v2 => "XSH_TX",
+            .atomic_2pc_v2 => "ATM_2PC",
+            .shard_fee_v2 => "SHD_FEE",
             .inter_shard_sync => "ISH_SYN",
             .shard_coordinator => "SHD_CRD",
             .tx_finality => "TX_FNL",
-            .shard_rebalance => "SHD_RBL",
-            .cross_shard_anchor => "XSH_ACH",
+            .shard_rebalance_v2 => "SHD_RBL",
+            .cross_shard_anchor_v2 => "XSH_ACH",
             // v2.22: Formal Verification v1.0
             .formal_verify => "FRM_VRF",
             .property_test => "PRP_TST",
@@ -1040,10 +1040,10 @@ pub const QuarkType = enum(u16) {
             .wallet_universal => "WLT_UNI",
             .beyond_anchor => "BYD_ACH",
             // v2.28
-            .swarm_10m => "SWM_10M",
-            .community_5m => "COM_5M",
+            .swarm_10m_v2 => "SWM_10M",
+            .community_5m_v2 => "COM_5M",
             .earning_ultimate => "ERN_ULT",
-            .node_discovery_10m => "NOD_10M",
+            .node_discovery_10m_v2 => "NOD_10M",
             .swarm_health_10m => "SWH_10M",
             .swarm_failover_10m => "SWF_10M",
             .dao_governance_10m => "DAO_10M",
@@ -1083,7 +1083,7 @@ pub const QuarkType = enum(u16) {
             .eternal_evolution => "ETR_EVO",
             .beyond_consensus => "BYD_CON",
             .infinite_governance => "INF_GOV",
-            .beyond_anchor => "BYD_ACH",
+            .beyond_anchor_v2 => "BYD_ACH",
             // v3.0: Trinity Absolute v1.0
             .trinity_absolute => "TRN_ABS",
             .infinite_tri => "INF_TRI",
@@ -1490,7 +1490,7 @@ pub const QuarkType = enum(u16) {
     }
 
     pub fn isRecursiveComposeQuark(self: QuarkType) bool {
-        return self == .recursive_compose or self == .proof_aggregate;
+        return self == .recursive_compose or self == .proof_aggregate_v2;
     }
 
     pub fn isL2FeeQuark(self: QuarkType) bool {
@@ -1498,20 +1498,20 @@ pub const QuarkType = enum(u16) {
     }
 
     // v2.21: Cross-Shard Transactions v1.0 classifiers
-    pub fn isCrossShardTxQuark(self: QuarkType) bool {
-        return self == .cross_shard_tx or self == .cross_shard_anchor;
+    pub fn isCrossShardTxQuarkV2(self: QuarkType) bool {
+        return self == .cross_shard_tx_v2 or self == .cross_shard_anchor_v2;
     }
 
     pub fn isAtomic2PCQuark(self: QuarkType) bool {
-        return self == .atomic_2pc or self == .tx_finality;
+        return self == .atomic_2pc_v2 or self == .tx_finality;
     }
 
-    pub fn isShardFeeQuark(self: QuarkType) bool {
-        return self == .shard_fee or self == .shard_coordinator;
+    pub fn isShardFeeQuarkV2(self: QuarkType) bool {
+        return self == .shard_fee_v2 or self == .shard_coordinator;
     }
 
     pub fn isInterShardSyncQuark(self: QuarkType) bool {
-        return self == .inter_shard_sync or self == .shard_rebalance;
+        return self == .inter_shard_sync or self == .shard_rebalance_v2;
     }
 
     // v2.22: Formal Verification v1.0 classifiers
@@ -1614,12 +1614,12 @@ pub const QuarkType = enum(u16) {
     }
 
     // v2.28 classifiers
-    pub fn isSwarm10MQuark(self: QuarkType) bool {
-        return self == .swarm_10m or self == .swarm_anchor_10m;
+    pub fn isSwarm10MQuarkV2(self: QuarkType) bool {
+        return self == .swarm_10m_v2 or self == .swarm_anchor_10m;
     }
 
-    pub fn isCommunity5MQuark(self: QuarkType) bool {
-        return self == .community_5m or self == .dao_governance_10m;
+    pub fn isCommunity5MQuarkV2(self: QuarkType) bool {
+        return self == .community_5m_v2 or self == .dao_governance_10m;
     }
 
     pub fn isEarningUltimateQuark(self: QuarkType) bool {
@@ -1627,7 +1627,7 @@ pub const QuarkType = enum(u16) {
     }
 
     pub fn isNodeDiscovery10MQuark(self: QuarkType) bool {
-        return self == .node_discovery_10m or self == .swarm_failover_10m;
+        return self == .node_discovery_10m_v2 or self == .swarm_failover_10m;
     }
 
     // v2.29: u16 Upgrade classifiers — Swarm 1B + Community 500M + God Mode
@@ -1683,7 +1683,7 @@ pub const QuarkType = enum(u16) {
 
     // v2.32: Trinity Beyond v1.0 classifiers
     pub fn isTrinityBeyondQuark(self: QuarkType) bool {
-        return self == .trinity_beyond or self == .beyond_anchor;
+        return self == .trinity_beyond or self == .beyond_anchor_v2;
     }
 
     pub fn isInfiniteScaleV2Quark(self: QuarkType) bool {
@@ -2358,18 +2358,18 @@ pub const MAX_ACTIVE_SHARDS: u16 = 4_096;
 
 // v2.15: Swarm 1M + Community 500k constants
 pub const SWARM_TARGET_NODES: u32 = 1_000_000;
-pub const COMMUNITY_TARGET_NODES: u32 = 500_000;
+pub const COMMUNITY_TARGET_NODES_V2: u32 = 500_000;
 pub const HIERARCHICAL_GOSSIP_LAYERS: u16 = 8;
 pub const GEOGRAPHIC_SHARD_REGIONS: u16 = 256;
 pub const SWARM_CONSENSUS_TIMEOUT_US: i64 = 60_000_000;
 pub const COMMUNITY_HEARTBEAT_INTERVAL_US: i64 = 30_000_000;
 
 // v2.16: ZK-Rollup v2.0 constants
-pub const ZK_PROOF_SIZE_BYTES: u32 = 288;
+pub const ZK_PROOF_SIZE_BYTES_V2: u32 = 288;
 pub const RECURSIVE_PROOF_DEPTH: u16 = 16;
 pub const L2_BATCH_SIZE: u32 = 1_000;
 pub const ROLLUP_COMMITMENT_INTERVAL_US: i64 = 10_000_000;
-pub const ZK_VERIFICATION_TIMEOUT_US: i64 = 5_000_000;
+pub const ZK_VERIFICATION_TIMEOUT_US_V2: i64 = 5_000_000;
 pub const MAX_PROOFS_PER_BATCH: u16 = 256;
 
 // v2.17: Cross-Shard Transactions v1.0 constants
@@ -2402,7 +2402,7 @@ pub const L2_BATCH_SIZE_V2: u32 = 10_000; // 10k transactions per batch
 pub const SNARK_VERIFICATION_TIMEOUT_US: i64 = 5_000_000; // 5 seconds
 pub const PROOF_AGGREGATION_MAX: u16 = 512; // Max proofs per aggregation
 // v2.21: Cross-Shard Transactions v1.0 constants
-pub const CROSS_SHARD_TX_TIMEOUT_US: i64 = 10_000_000; // 10 seconds per cross-shard tx
+pub const CROSS_SHARD_TX_TIMEOUT_US_V2: i64 = 10_000_000; // 10 seconds per cross-shard tx
 pub const ATOMIC_2PC_MAX_SHARDS: u16 = 100; // Max shards in one 2PC
 pub const SHARD_FEE_UTRI_PER_TX: u32 = 1_000; // 0.001 $TRI per cross-shard tx (1000 uTRI)
 pub const INTER_SHARD_SYNC_INTERVAL_US: i64 = 2_000_000; // 2 seconds sync interval
@@ -2454,8 +2454,8 @@ pub const GLOBAL_WALLET_TARGET: u64 = 5_000_000_000; // 5B wallets target
 pub const GLOBAL_EXCHANGE_VOLUME_INTERVAL_US: i64 = 15_000_000; // 15 second exchange volume check
 pub const MAX_BEYOND_CHANNELS: u32 = 100_000; // 100K beyond channels
 // v2.28 constants
-pub const SWARM_10M_TARGET: u64 = 10_000_000; // 10M swarm nodes target
-pub const COMMUNITY_5M_TARGET: u64 = 5_000_000; // 5M community users target
+pub const SWARM_10M_TARGET_V2: u64 = 10_000_000; // 10M swarm nodes target
+pub const COMMUNITY_5M_TARGET_V2: u64 = 5_000_000; // 5M community users target
 pub const EARNING_ULTIMATE_UTRI_PER_HOUR: u64 = 100_000; // 0.1 $TRI/hour = 100,000 uTRI/hour
 pub const NODE_DISCOVERY_INTERVAL_US: i64 = 5_000_000; // 5 second node discovery
 pub const SWARM_HEALTH_CHECK_INTERVAL_US: i64 = 10_000_000; // 10 second health check
@@ -2713,7 +2713,7 @@ pub const TRIStakingState = struct {
     staking_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
-pub const RewardDistributionState = struct {
+pub const RewardDistributionStateV2 = struct {
     total_distributed: u64 = 0,
     distribution_count: u32 = 0,
     unclaimed_rewards: u64 = 0,
@@ -3060,7 +3060,7 @@ pub const L2FeeState = struct {
 };
 
 // v2.21: Cross-Shard Transactions v1.0 types
-pub const CrossShardTxState = struct {
+pub const CrossShardTxStateV2 = struct {
     cross_shard_txs: u32 = 0,
     atomic_commits: u32 = 0,
     shards_involved: u16 = 0,
@@ -3076,7 +3076,7 @@ pub const Atomic2PCState = struct {
     twopc_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
-pub const ShardFeeState = struct {
+pub const ShardFeeStateV2 = struct {
     shard_fees_utri: u64 = 0,
     fee_rate_utri: u32 = 0,
     fee_distributions: u32 = 0,
@@ -3291,7 +3291,7 @@ pub const GlobalWalletState = struct {
 };
 
 // v2.28 types
-pub const Swarm10MState = struct {
+pub const Swarm10MStateV2 = struct {
     swarm_events: u64 = 0,
     nodes_active: u64 = 0,
     nodes_discovered: u64 = 0,
@@ -3299,7 +3299,7 @@ pub const Swarm10MState = struct {
     swarm_hash: [32]u8 = [_]u8{0} ** 32,
 };
 
-pub const Community5MState = struct {
+pub const Community5MStateV2 = struct {
     community_events: u64 = 0,
     members_active: u64 = 0,
     monthly_contributors: u64 = 0,
@@ -3603,7 +3603,7 @@ pub const GoldenChainAgent = struct {
     // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
     dao_full_governance_state: DAOFullGovernanceState,
     tri_staking_state: TRIStakingState,
-    reward_distribution_state: RewardDistributionState,
+    reward_distribution_state_v2: RewardDistributionStateV2,
     staking_validator_state: StakingValidatorState,
     dao_full_governance_active: bool,
     // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
@@ -3632,7 +3632,7 @@ pub const GoldenChainAgent = struct {
     dynamic_shard_active: bool,
     // v2.15: Swarm 1M + Community 500k
     swarm_million_state: SwarmMillionState,
-    community_node_state: CommunityNodeState,
+    community_node_state_v2: CommunityNodeState,
     hierarchical_gossip_state: HierarchicalGossipState,
     geographic_shard_state: GeographicShardState,
     swarm_million_active: bool,
@@ -3667,11 +3667,11 @@ pub const GoldenChainAgent = struct {
     l2_fee_state: L2FeeState,
     zk_rollup_v2_active: bool,
     // v2.21: Cross-Shard Transactions v1.0
-    cross_shard_tx_state: CrossShardTxState,
-    atomic_2pc_state: Atomic2PCState,
-    shard_fee_state: ShardFeeState,
+    cross_shard_tx_state_v2: CrossShardTxStateV2,
+    atomic_2pc_state_v2: Atomic2PCState,
+    shard_fee_state_v2: ShardFeeStateV2,
     inter_shard_sync_state: InterShardSyncState,
-    cross_shard_active: bool,
+    cross_shard_active_v2: bool,
     // v2.22: Formal Verification v1.0
     formal_verify_state: FormalVerifyState,
     property_test_state: PropertyTestState,
@@ -3709,11 +3709,11 @@ pub const GoldenChainAgent = struct {
         global_wallet_state: GlobalWalletState,
         trinity_beyond_active: bool,
         // v2.28 fields
-        swarm_10m_state: Swarm10MState,
-        community_5m_state: Community5MState,
+        swarm_10m_state_v2: Swarm10MStateV2,
+        community_5m_state_v2: Community5MStateV2,
         earning_ultimate_state: EarningUltimateState,
         node_discovery_10m_state: NodeDiscovery10MState,
-        swarm_10m_active: bool,
+        swarm_10m_active_v2: bool,
         // v2.29: u16 Upgrade fields — Swarm 1B + Community 500M + God Mode
         swarm_1b_state: Swarm1BState,
         community_500m_state: Community500MState,
@@ -3737,7 +3737,7 @@ pub const GoldenChainAgent = struct {
         infinite_scale_v2_state: InfiniteScaleV2State,
         multiverse_dominance_state: MultiVerseDominanceState,
         eternal_evolution_state: EternalEvolutionState,
-        trinity_beyond_active: bool,
+        trinity_beyond_active_v2: bool,
         // v3.0: Trinity Absolute v1.0
         trinity_absolute_state: TrinityAbsoluteState,
         infinite_tri_state: InfiniteTRIState,
@@ -3851,7 +3851,7 @@ pub const GoldenChainAgent = struct {
             // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
             .dao_full_governance_state = .{},
             .tri_staking_state = .{},
-            .reward_distribution_state = .{},
+            .reward_distribution_state_v2 = .{},
             .staking_validator_state = .{},
             .dao_full_governance_active = false,
             // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
@@ -3880,7 +3880,7 @@ pub const GoldenChainAgent = struct {
             .dynamic_shard_active = false,
             // v2.15: Swarm 1M + Community 500k
             .swarm_million_state = .{},
-            .community_node_state = .{},
+            .community_node_state_v2 = .{},
             .hierarchical_gossip_state = .{},
             .geographic_shard_state = .{},
             .swarm_million_active = false,
@@ -3913,11 +3913,11 @@ pub const GoldenChainAgent = struct {
             .l2_fee_state = .{},
             .zk_rollup_v2_active = false,
             // v2.21: Cross-Shard Transactions v1.0
-            .cross_shard_tx_state = .{},
-            .atomic_2pc_state = .{},
-            .shard_fee_state = .{},
+            .cross_shard_tx_state_v2 = .{},
+            .atomic_2pc_state_v2 = .{},
+            .shard_fee_state_v2 = .{},
             .inter_shard_sync_state = .{},
-            .cross_shard_active = false,
+            .cross_shard_active_v2 = false,
             // v2.22: Formal Verification v1.0
             .formal_verify_state = .{},
             .property_test_state = .{},
@@ -3955,11 +3955,11 @@ pub const GoldenChainAgent = struct {
             .global_wallet_state = .{},
             .trinity_beyond_active = false,
             // v2.28
-            .swarm_10m_state = .{},
-            .community_5m_state = .{},
+            .swarm_10m_state_v2 = .{},
+            .community_5m_state_v2 = .{},
             .earning_ultimate_state = .{},
             .node_discovery_10m_state = .{},
-            .swarm_10m_active = false,
+            .swarm_10m_active_v2 = false,
             // v2.29: u16 Upgrade defaults
             .swarm_1b_state = .{},
             .community_500m_state = .{},
@@ -3983,7 +3983,7 @@ pub const GoldenChainAgent = struct {
             .infinite_scale_v2_state = .{},
             .multiverse_dominance_state = .{},
             .eternal_evolution_state = .{},
-            .trinity_beyond_active = false,
+            .trinity_beyond_active_v2 = false,
             // v3.0: Trinity Absolute v1.0
             .trinity_absolute_state = .{},
             .infinite_tri_state = .{},
@@ -4694,7 +4694,8 @@ pub const GoldenChainAgent = struct {
 
         // v2.6: Node scaling event
         {
-            const node_id = std.crypto.hash.sha2.Sha256.hash(&[_]u8{ 'n', 'o', 'd', 'e' }, .{});
+            var node_id: [32]u8 = undefined;
+            std.crypto.hash.sha2.Sha256.hash(&[_]u8{ 'n', 'o', 'd', 'e' }, &node_id, .{});
             self.scaleNode(node_id);
             var nsbuf: [256]u8 = undefined;
             const nsmsg = std.fmt.bufPrint(&nsbuf, "NodeScaling: count={d} | max={d}", .{
@@ -4742,8 +4743,9 @@ pub const GoldenChainAgent = struct {
 
         // v2.7: Community sync event
         {
-            const node_id = std.crypto.hash.sha2.Sha256.hash(&[_]u8{ 'c', 'o', 'm', 'm' }, .{});
-            self.registerCommunityNode(node_id);
+            var node_id_comm: [32]u8 = undefined;
+            std.crypto.hash.sha2.Sha256.hash(&[_]u8{ 'c', 'o', 'm', 'm' }, &node_id_comm, .{});
+            self.registerCommunityNode(node_id_comm);
             var csbuf: [256]u8 = undefined;
             const csmsg = std.fmt.bufPrint(&csbuf, "CommunitySyncEvent: count={d} | max={d}", .{
                 self.community_node_count,
@@ -4772,7 +4774,7 @@ pub const GoldenChainAgent = struct {
             self.emitMsg(.TimelockVote, .Deliver, null, tvmsg, 1.0, 0);
         }
         {
-            self.executeProposal();
+            self.executeProposalV2();
             var pebuf: [256]u8 = undefined;
             const pemsg = std.fmt.bufPrint(&pebuf, "ProposalExecution: executed={d} | max_active={d}", .{
                 self.proposal_execution_state.proposals_executed,
@@ -4809,7 +4811,7 @@ pub const GoldenChainAgent = struct {
             self.emitMsg(.AtomicSwap, .Deliver, null, swmsg, 1.0, 0);
         }
         {
-            self.replicateState();
+            self.replicateStateV2();
             var srbuf: [256]u8 = undefined;
             const srmsg = std.fmt.bufPrint(&srbuf, "StateReplication: replicated={d} | replication_factor={d}", .{
                 self.state_replication_state.replicated_states,
@@ -4847,11 +4849,11 @@ pub const GoldenChainAgent = struct {
             self.emitMsg(.TRIStaking, .Deliver, null, stmsg, 1.0, 0);
         }
         {
-            self.distributeRewards();
+            self.distributeRewardsV2();
             var rdbuf: [256]u8 = undefined;
             const rdmsg = std.fmt.bufPrint(&rdbuf, "RewardDistribution: count={d} | total={d}", .{
-                self.reward_distribution_state.distribution_count,
-                self.reward_distribution_state.total_distributed,
+                self.reward_distribution_state_v2.distribution_count,
+                self.reward_distribution_state_v2.total_distributed,
             }) catch "Reward distribution";
             self.emitMsg(.RewardDistribution, .Deliver, null, rdmsg, 1.0, 0);
         }
@@ -5025,8 +5027,8 @@ pub const GoldenChainAgent = struct {
         {
             var cnbuf: [256]u8 = undefined;
             const cnmsg = std.fmt.bufPrint(&cnbuf, "CommunityNodeUpdate: nodes={d} | joined={d}", .{
-                self.community_node_state.community_nodes,
-                self.community_node_state.joined,
+                self.community_node_state_v2.community_nodes,
+                self.community_node_state_v2.joined,
             }) catch "Community node joined";
             self.emitMsg(.CommunityNodeUpdate, .Deliver, null, cnmsg, 1.0, 0);
         }
@@ -5235,34 +5237,34 @@ pub const GoldenChainAgent = struct {
             self.emitMsg(.L2FeeCollectEvent, .Deliver, null, apmsg, 1.0, 0);
         }
         // v2.21: Cross-Shard Transactions v1.0
-        self.executeCrossShardTx();
+        self.executeCrossShardTxV2();
         {
             var csbuf: [256]u8 = undefined;
             const csmsg = std.fmt.bufPrint(&csbuf, "CrossShardTxEvent: txs={d} | commits={d} | shards={d}", .{
-                self.cross_shard_tx_state.cross_shard_txs,
-                self.cross_shard_tx_state.atomic_commits,
-                self.cross_shard_tx_state.shards_involved,
+                self.cross_shard_tx_state_v2.cross_shard_txs,
+                self.cross_shard_tx_state_v2.atomic_commits,
+                self.cross_shard_tx_state_v2.shards_involved,
             }) catch "Cross-shard tx executed";
-            self.emitMsg(.CrossShardTxEvent, .Deliver, null, csmsg, 1.0, 0);
+            self.emitMsg(.CrossShardTxEventV2, .Deliver, null, csmsg, 1.0, 0);
         }
         self.runAtomic2PC();
         {
             var pcbuf: [256]u8 = undefined;
             const pcmsg = std.fmt.bufPrint(&pcbuf, "Atomic2PCUpdate: prepare={d} | commit={d} | abort={d}", .{
-                self.atomic_2pc_state.prepare_count,
-                self.atomic_2pc_state.commit_count,
-                self.atomic_2pc_state.abort_count,
+                self.atomic_2pc_state_v2.prepare_count,
+                self.atomic_2pc_state_v2.commit_count,
+                self.atomic_2pc_state_v2.abort_count,
             }) catch "2PC completed";
             self.emitMsg(.Atomic2PCUpdate, .Deliver, null, pcmsg, 1.0, 0);
         }
-        self.collectShardFee();
+        self.collectShardFeeV2();
         {
             var sfbuf: [256]u8 = undefined;
             const sfmsg = std.fmt.bufPrint(&sfbuf, "ShardFeeEvent: fees={d} uTRI | distributions={d}", .{
-                self.shard_fee_state.shard_fees_utri,
-                self.shard_fee_state.fee_distributions,
+                self.shard_fee_state_v2.shard_fees_utri,
+                self.shard_fee_state_v2.fee_distributions,
             }) catch "Shard fee collected";
-            self.emitMsg(.ShardFeeEvent, .Deliver, null, sfmsg, 1.0, 0);
+            self.emitMsg(.ShardFeeEventV2, .Deliver, null, sfmsg, 1.0, 0);
         }
         self.syncInterShard();
         {
@@ -5337,7 +5339,7 @@ pub const GoldenChainAgent = struct {
             }) catch "Community 50M grown";
             self.emitMsg(.Community50MUpdate, .Deliver, null, commsg, 1.0, 0);
         }
-        self.boostEarning();
+        self.boostEarningV2();
         {
             var ernbuf: [256]u8 = undefined;
             const ernmsg = std.fmt.bufPrint(&ernbuf, "EarningMoonshotEvent: earning_nodes={d} | total_utri={d} | rate_utri={d}", .{
@@ -5362,7 +5364,8 @@ pub const GoldenChainAgent = struct {
         // v2.24: Trinity Global Dominance v1.0
         self.achieveGlobalDominance();
         {
-            const dommsg = std.fmt.allocPrint(self.allocator, "Global Dominance: events={d} regions={d} score={d}", .{
+            var dombuf: [256]u8 = undefined;
+            const dommsg = std.fmt.bufPrint(&dombuf, "Global Dominance: events={d} regions={d} score={d}", .{
                 self.global_dominance_state.dominance_events,
                 self.global_dominance_state.active_regions,
                 self.global_dominance_state.ecosystem_score,
@@ -5371,7 +5374,8 @@ pub const GoldenChainAgent = struct {
         }
         self.growWorldAdoption();
         {
-            const adpmsg = std.fmt.allocPrint(self.allocator, "World Adoption: users={d} monthly={d} active={d}", .{
+            var adpbuf: [256]u8 = undefined;
+            const adpmsg = std.fmt.bufPrint(&adpbuf, "World Adoption: users={d} monthly={d} active={d}", .{
                 self.world_adoption_state.adoption_users,
                 self.world_adoption_state.monthly_growth,
                 self.world_adoption_state.active_users,
@@ -5380,7 +5384,8 @@ pub const GoldenChainAgent = struct {
         }
         self.driveTriToOne();
         {
-            const trimsg = std.fmt.allocPrint(self.allocator, "$TRI to $1: txns={d} price={d} mcap={d}", .{
+            var tribuf: [256]u8 = undefined;
+            const trimsg = std.fmt.bufPrint(&tribuf, "$TRI to $1: txns={d} price={d} mcap={d}", .{
                 self.tri_to_one_state.tri_transactions,
                 self.tri_to_one_state.price_utri,
                 self.tri_to_one_state.market_cap_utri,
@@ -5389,7 +5394,8 @@ pub const GoldenChainAgent = struct {
         }
         self.completeEcosystem();
         {
-            const ecomsg = std.fmt.allocPrint(self.allocator, "Ecosystem Complete: active={d} score={d} uptime={d}", .{
+            var ecobuf: [256]u8 = undefined;
+            const ecomsg = std.fmt.bufPrint(&ecobuf, "Ecosystem Complete: active={d} score={d} uptime={d}", .{
                 self.ecosystem_complete_state.components_active,
                 self.ecosystem_complete_state.integration_score,
                 self.ecosystem_complete_state.uptime_percent,
@@ -5401,7 +5407,8 @@ pub const GoldenChainAgent = struct {
         // v2.25: Trinity Eternal v1.0
         self.evolveOuroboros();
         {
-            const orbmsg = std.fmt.allocPrint(self.allocator, "Ouroboros: cycles={d} gen={d} fitness={d}", .{
+            var orbbuf: [256]u8 = undefined;
+            const orbmsg = std.fmt.bufPrint(&orbbuf, "Ouroboros: cycles={d} gen={d} fitness={d}", .{
                 self.ouroboros_state.evolution_cycles,
                 self.ouroboros_state.current_generation,
                 self.ouroboros_state.fitness_score,
@@ -5410,7 +5417,8 @@ pub const GoldenChainAgent = struct {
         }
         self.projectInfiniteScale();
         {
-            const scalmsg = std.fmt.allocPrint(self.allocator, "Infinite Scale: proj={d} current={d} peak={d}", .{
+            var scalbuf: [256]u8 = undefined;
+            const scalmsg = std.fmt.bufPrint(&scalbuf, "Infinite Scale: proj={d} current={d} peak={d}", .{
                 self.infinite_scale_state.scale_projections,
                 self.infinite_scale_state.current_scale,
                 self.infinite_scale_state.peak_scale,
@@ -5419,7 +5427,8 @@ pub const GoldenChainAgent = struct {
         }
         self.manageUniversalReserve();
         {
-            const rsvmsg = std.fmt.allocPrint(self.allocator, "Universal Reserve: txns={d} val={d} holders={d}", .{
+            var rsvbuf: [256]u8 = undefined;
+            const rsvmsg = std.fmt.bufPrint(&rsvbuf, "Universal Reserve: txns={d} val={d} holders={d}", .{
                 self.universal_reserve_state.reserve_transactions,
                 self.universal_reserve_state.reserve_valuation_utri,
                 self.universal_reserve_state.reserve_holders,
@@ -5428,7 +5437,8 @@ pub const GoldenChainAgent = struct {
         }
         self.verifyEternalUptime();
         {
-            const uptmsg = std.fmt.allocPrint(self.allocator, "Eternal Uptime: checks={d} score={d} downtime={d}", .{
+            var uptbuf: [256]u8 = undefined;
+            const uptmsg = std.fmt.bufPrint(&uptbuf, "Eternal Uptime: checks={d} score={d} downtime={d}", .{
                 self.eternal_uptime_state.uptime_checks,
                 self.eternal_uptime_state.uptime_score,
                 self.eternal_uptime_state.downtime_events,
@@ -5440,7 +5450,8 @@ pub const GoldenChainAgent = struct {
         // v2.26: $TRI to $10 + Mass Adoption
         self.driveTriToTen();
         {
-            const ttmsg = std.fmt.allocPrint(self.allocator, "$TRI to $10: tx={d} price={d} mcap={d}", .{
+            var ttbuf: [256]u8 = undefined;
+            const ttmsg = std.fmt.bufPrint(&ttbuf, "$TRI to $10: tx={d} price={d} mcap={d}", .{
                 self.tri_to_ten_state.tri_ten_transactions,
                 self.tri_to_ten_state.price_utri,
                 self.tri_to_ten_state.market_cap_utri,
@@ -5449,7 +5460,8 @@ pub const GoldenChainAgent = struct {
         }
         self.growMassAdoption();
         {
-            const mamsg = std.fmt.allocPrint(self.allocator, "Mass Adoption: events={d} users={d} active={d}", .{
+            var mabuf: [256]u8 = undefined;
+            const mamsg = std.fmt.bufPrint(&mabuf, "Mass Adoption: events={d} users={d} active={d}", .{
                 self.mass_adoption_state.adoption_events,
                 self.mass_adoption_state.total_users,
                 self.mass_adoption_state.monthly_active,
@@ -5458,7 +5470,8 @@ pub const GoldenChainAgent = struct {
         }
         self.listExchanges();
         {
-            const elmsg = std.fmt.allocPrint(self.allocator, "Exchange Listing: events={d} active={d} volume={d}", .{
+            var elbuf: [256]u8 = undefined;
+            const elmsg = std.fmt.bufPrint(&elbuf, "Exchange Listing: events={d} active={d} volume={d}", .{
                 self.exchange_listing_state.listing_events,
                 self.exchange_listing_state.exchanges_active,
                 self.exchange_listing_state.volume_utri,
@@ -5467,7 +5480,8 @@ pub const GoldenChainAgent = struct {
         }
         self.deployUniversalWallet();
         {
-            const uwmsg = std.fmt.allocPrint(self.allocator, "Universal Wallet: events={d} created={d} active={d}", .{
+            var uwbuf: [256]u8 = undefined;
+            const uwmsg = std.fmt.bufPrint(&uwbuf, "Universal Wallet: events={d} created={d} active={d}", .{
                 self.universal_wallet_state.wallet_events,
                 self.universal_wallet_state.wallets_created,
                 self.universal_wallet_state.active_wallets,
@@ -5479,7 +5493,8 @@ pub const GoldenChainAgent = struct {
         // v2.27: Trinity Beyond v1.0 deliver
         self.driveTriToHundred();
         {
-            const thmsg = std.fmt.allocPrint(self.allocator, "$TRI to $100: txns={d} price={d} market_cap={d}", .{
+            var thbuf: [256]u8 = undefined;
+            const thmsg = std.fmt.bufPrint(&thbuf, "$TRI to $100: txns={d} price={d} market_cap={d}", .{
                 self.tri_to_hundred_state.tri_hundred_transactions,
                 self.tri_to_hundred_state.price_utri,
                 self.tri_to_hundred_state.market_cap_utri,
@@ -5488,7 +5503,8 @@ pub const GoldenChainAgent = struct {
         }
         self.growUniversalAdoption();
         {
-            const uamsg = std.fmt.allocPrint(self.allocator, "Universal Adoption: events={d} users={d} active={d}", .{
+            var uabuf: [256]u8 = undefined;
+            const uamsg = std.fmt.bufPrint(&uabuf, "Universal Adoption: events={d} users={d} active={d}", .{
                 self.universal_adoption_state.adoption_events,
                 self.universal_adoption_state.total_users_10b,
                 self.universal_adoption_state.monthly_active_1b,
@@ -5497,7 +5513,8 @@ pub const GoldenChainAgent = struct {
         }
         self.listExchangesV2();
         {
-            const e2msg = std.fmt.allocPrint(self.allocator, "Exchange V2: events={d} active={d} volume={d}", .{
+            var e2buf: [256]u8 = undefined;
+            const e2msg = std.fmt.bufPrint(&e2buf, "Exchange V2: events={d} active={d} volume={d}", .{
                 self.exchange_v2_state.listing_events,
                 self.exchange_v2_state.exchanges_active,
                 self.exchange_v2_state.volume_utri,
@@ -5506,7 +5523,8 @@ pub const GoldenChainAgent = struct {
         }
         self.deployGlobalWallet();
         {
-            const gwmsg = std.fmt.allocPrint(self.allocator, "Global Wallet: events={d} created={d} active={d}", .{
+            var gwbuf: [256]u8 = undefined;
+            const gwmsg = std.fmt.bufPrint(&gwbuf, "Global Wallet: events={d} created={d} active={d}", .{
                 self.global_wallet_state.wallet_events,
                 self.global_wallet_state.wallets_created,
                 self.global_wallet_state.active_wallets,
@@ -5516,23 +5534,23 @@ pub const GoldenChainAgent = struct {
         self.trinity_beyond_active = true;
 
         // v2.28: Swarm 10M + Community 5M + $TRI Earning Ultimate
-        self.scaleSwarm10M();
+        self.scaleSwarm10MV2();
         {
             var smbuf: [128]u8 = undefined;
             const smmsg = std.fmt.bufPrint(&smbuf, "Swarm 10M: {d} nodes active, {d} discovered", .{
-                self.swarm_10m_state.nodes_active,
-                self.swarm_10m_state.nodes_discovered,
+                self.swarm_10m_state_v2.nodes_active,
+                self.swarm_10m_state_v2.nodes_discovered,
             }) catch "Swarm 10M active";
-            self.emitMsg(.Swarm10MEvent, .Deliver, null, smmsg, 1.0, 0);
+            self.emitMsg(.Swarm10MEventV2, .Deliver, null, smmsg, 1.0, 0);
         }
         self.growCommunity5M();
         {
             var cmbuf: [128]u8 = undefined;
             const cmmsg = std.fmt.bufPrint(&cmbuf, "Community 5M: {d} members, {d} contributors", .{
-                self.community_5m_state.members_active,
-                self.community_5m_state.monthly_contributors,
+                self.community_5m_state_v2.members_active,
+                self.community_5m_state_v2.monthly_contributors,
             }) catch "Community 5M active";
-            self.emitMsg(.Community5MUpdate, .Deliver, null, cmmsg, 1.0, 0);
+            self.emitMsg(.Community5MUpdateV2, .Deliver, null, cmmsg, 1.0, 0);
         }
         self.boostEarningUltimate();
         {
@@ -5552,7 +5570,7 @@ pub const GoldenChainAgent = struct {
             }) catch "Node discovery active";
             self.emitMsg(.NodeDiscovery10MEvent, .Deliver, null, ndmsg, 1.0, 0);
         }
-        self.swarm_10m_active = true;
+        self.swarm_10m_active_v2 = true;
 
         // v2.29: u16 Upgrade — Swarm 1B + Community 500M + God Mode
         self.scaleSwarm1B();
@@ -5688,7 +5706,7 @@ pub const GoldenChainAgent = struct {
                 self.infinite_scale_v2_state.nodes_infinite,
                 self.infinite_scale_v2_state.scale_factor,
             }) catch "Infinite scale active";
-            self.emitMsg(.InfiniteScaleUpdate, .Deliver, null, ismsg, 1.0, 0);
+            self.emitMsg(.InfiniteScaleUpdateV2, .Deliver, null, ismsg, 1.0, 0);
         }
         self.dominateMultiVerse();
         {
@@ -5708,7 +5726,7 @@ pub const GoldenChainAgent = struct {
             }) catch "Eternal evolution active";
             self.emitMsg(.EternalEvolutionEvent, .Deliver, null, eemsg, 1.0, 0);
         }
-        self.trinity_beyond_active = true;
+        self.trinity_beyond_active_v2 = true;
 
         // v3.0: Trinity Absolute v1.0
         self.completeTrinityAbsolute();
@@ -6123,7 +6141,7 @@ pub const GoldenChainAgent = struct {
         if (!self.daoGovernanceVerify()) return false;
 
         // Phase P: Cross-Chain Bridge integrity (v2.9)
-        if (!self.crossChainVerify()) return false;
+        if (!self.crossChainVerifyV2()) return false;
 
         // Phase Q: DAO Full Governance + $TRI Staking integrity (v2.10)
         if (!self.daoFullGovernanceVerify()) return false;
@@ -6159,7 +6177,7 @@ pub const GoldenChainAgent = struct {
         if (!self.zkRollupV2Verify()) return false;
 
         // Phase AB: Cross-Shard Transactions v1.0 integrity (v2.21)
-        if (!self.crossShardTxVerify()) return false;
+        if (!self.crossShardTxVerifyV2()) return false;
 
         // Phase AC: Formal Verification v1.0 integrity (v2.22)
         if (!self.formalVerificationVerify()) return false;
@@ -6180,7 +6198,7 @@ pub const GoldenChainAgent = struct {
         if (!self.trinityBeyondVerify()) return false;
 
         // Phase AI: Swarm 10M + u8 FULL integrity (v2.28)
-        if (!self.swarm10MVerify()) return false;
+        if (!self.swarm10MVerifyV2()) return false;
 
         // Phase AJ: u16 Upgrade + Swarm 1B + God Mode integrity (v2.29)
         if (!self.swarm1BVerify()) return false;
@@ -6192,7 +6210,7 @@ pub const GoldenChainAgent = struct {
         if (!self.triTo1000Verify()) return false;
 
         // Phase AM: Trinity Beyond v1.0 integrity (v2.32)
-        if (!self.trinityBeyondVerify()) return false;
+        if (!self.trinityBeyondVerifyV2()) return false;
 
         // Phase AN: Trinity Absolute v1.0 integrity (v3.0)
         if (!self.trinityAbsoluteVerify()) return false;
@@ -6387,11 +6405,11 @@ pub const GoldenChainAgent = struct {
         pos += 2;
 
         // v2.15: active_nodes(2) + community_nodes(2)
-        const anod_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.swarm_million_state.active_nodes, std.math.maxInt(u16)))));
-        @memcpy(buf[pos .. pos + 2], &anod_bytes);
+        const anod_bytes_v2: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.swarm_million_state.active_nodes, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &anod_bytes_v2);
         pos += 2;
-        const cnod_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.community_node_state.community_nodes, std.math.maxInt(u16)))));
-        @memcpy(buf[pos .. pos + 2], &cnod_bytes);
+        const cnod_bytes_v2: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.community_node_state_v2.community_nodes, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &cnod_bytes_v2);
         pos += 2;
 
         // v2.16: proof_count(2) + l2_batches(2)
@@ -6403,11 +6421,11 @@ pub const GoldenChainAgent = struct {
         pos += 2;
 
         // v2.17: cross_shard_txs(2) + fees_collected(2)
-        const cst_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.cross_shard_tx_state.cross_shard_txs, std.math.maxInt(u16)))));
-        @memcpy(buf[pos .. pos + 2], &cst_bytes);
+        const cst_bytes_v17: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.cross_shard_tx_state.cross_shard_txs, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &cst_bytes_v17);
         pos += 2;
-        const fc_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.shard_fee_state.fees_collected, std.math.maxInt(u16)))));
-        @memcpy(buf[pos .. pos + 2], &fc_bytes);
+        const fc_bytes_v17: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.shard_fee_state.fees_collected, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &fc_bytes_v17);
         pos += 2;
 
         // v2.18: partitions_detected(2) + heal_attempts(2)
@@ -6430,15 +6448,15 @@ pub const GoldenChainAgent = struct {
         const pg_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.snark_generate_state.proofs_generated, std.math.maxInt(u16)))));
         @memcpy(buf[pos .. pos + 2], &pg_bytes);
         pos += 2;
-        const fc_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.l2_fee_state.fees_collected, std.math.maxInt(u16)))));
-        @memcpy(buf[pos .. pos + 2], &fc_bytes);
+        const fc_bytes_v20: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.l2_fee_state.fees_collected, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &fc_bytes_v20);
         pos += 2;
 
         // v2.21: cross_shard_txs(2) + shard_fees(2)
-        const cst_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.cross_shard_tx_state.cross_shard_txs, std.math.maxInt(u16)))));
-        @memcpy(buf[pos .. pos + 2], &cst_bytes);
+        const cst_bytes_v21: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.cross_shard_tx_state_v2.cross_shard_txs, std.math.maxInt(u16)))));
+        @memcpy(buf[pos .. pos + 2], &cst_bytes_v21);
         pos += 2;
-        const sf_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.shard_fee_state.shard_fees_utri, std.math.maxInt(u16)))));
+        const sf_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.shard_fee_state_v2.shard_fees_utri, std.math.maxInt(u16)))));
         @memcpy(buf[pos .. pos + 2], &sf_bytes);
         pos += 2;
 
@@ -6491,10 +6509,10 @@ pub const GoldenChainAgent = struct {
         pos += 2;
 
         // v2.28: swarm_10m_events(2) + community_5m_events(2)
-        const sw10m_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.swarm_10m_state.swarm_events, std.math.maxInt(u16)))));
+        const sw10m_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.swarm_10m_state_v2.swarm_events, std.math.maxInt(u16)))));
         @memcpy(buf[pos .. pos + 2], &sw10m_bytes);
         pos += 2;
-        const cm5m_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.community_5m_state.community_events, std.math.maxInt(u16)))));
+        const cm5m_bytes: [2]u8 = @bitCast(@as(u16, @intCast(@min(self.community_5m_state_v2.community_events, std.math.maxInt(u16)))));
         @memcpy(buf[pos .. pos + 2], &cm5m_bytes);
         pos += 2;
         // v2.29: swarm_1b_events(2) + community_500m_events(2)
@@ -6744,11 +6762,11 @@ pub const GoldenChainAgent = struct {
         }
         // v2.11: read active_nodes + community_nodes from v15 header
         var swarm_active_nodes_cnt: u16 = 0;
-        var community_nodes_cnt: u16 = 0;
+        var community_nodes_cnt_v11: u16 = 0;
         if (ver >= 15) {
             swarm_active_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
-            community_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            community_nodes_cnt_v11 = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
         }
         // v2.12: read verified_proofs + transfers_completed from v16 header
@@ -6782,11 +6800,11 @@ pub const GoldenChainAgent = struct {
 
         // v2.15: active_nodes + community_nodes
         var active_nodes_cnt: u16 = 0;
-        var community_nodes_cnt: u16 = 0;
+        var community_nodes_cnt_v15: u16 = 0;
         if (ver >= 19) {
             active_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
-            community_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            community_nodes_cnt_v15 = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
         }
 
@@ -6832,19 +6850,19 @@ pub const GoldenChainAgent = struct {
 
         // v2.20: proofs_generated + fees_collected
         var proofs_generated_cnt: u16 = 0;
-        var fees_collected_cnt: u16 = 0;
+        var fees_collected_cnt_v20: u16 = 0;
         if (ver >= 24) {
             proofs_generated_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
-            fees_collected_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            fees_collected_cnt_v20 = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
         }
 
         // v2.21: cross_shard_txs + shard_fees
-        var cross_shard_txs_cnt: u16 = 0;
+        var cross_shard_txs_cnt_v21: u16 = 0;
         var shard_fees_cnt: u16 = 0;
         if (ver >= 25) {
-            cross_shard_txs_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            cross_shard_txs_cnt_v21 = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
             shard_fees_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
@@ -6861,10 +6879,10 @@ pub const GoldenChainAgent = struct {
         }
 
         // v2.23: swarm_nodes + earning_nodes
-        var swarm_nodes_cnt: u16 = 0;
+        var swarm_nodes_cnt_v23: u16 = 0;
         var earning_nodes_cnt: u16 = 0;
         if (ver >= 27) {
-            swarm_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
+            swarm_nodes_cnt_v23 = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
             earning_nodes_cnt = @bitCast(buf[pos .. pos + 2][0..2].*);
             pos += 2;
@@ -7055,7 +7073,7 @@ pub const GoldenChainAgent = struct {
         self.tri_staking_state.active_stakers = active_stakers_cnt;
         // v2.11: restore swarm + community fields
         self.swarm_100k_state.active_nodes = swarm_active_nodes_cnt;
-        self.community_50k_state.community_nodes = community_nodes_cnt;
+        self.community_50k_state.community_nodes = community_nodes_cnt_v11;
         // v2.12: restore ZK bridge + privacy transfer fields
         self.zk_proof_state.proofs_verified = zk_verified_proofs_cnt;
         self.privacy_transfer_state.transfers_completed = privacy_transfers_cnt;
@@ -7069,7 +7087,7 @@ pub const GoldenChainAgent = struct {
 
         // v2.15: restore swarm + community fields
         self.swarm_million_state.active_nodes = @intCast(active_nodes_cnt);
-        self.community_node_state.community_nodes = @intCast(community_nodes_cnt);
+        self.community_node_state_v2.community_nodes = @intCast(community_nodes_cnt_v15);
 
         // v2.16: restore ZK-Rollup fields
         self.zk_snark_proof_state.proof_count = @intCast(proof_count_cnt);
@@ -7089,18 +7107,18 @@ pub const GoldenChainAgent = struct {
 
         // v2.20: restore ZK-Rollup v2.0 fields
         self.snark_generate_state.proofs_generated = @intCast(proofs_generated_cnt);
-        self.l2_fee_state.fees_collected = @intCast(fees_collected_cnt);
+        self.l2_fee_state.fees_collected = @intCast(fees_collected_cnt_v20);
 
         // v2.21: restore Cross-Shard Transactions v1.0 fields
-        self.cross_shard_tx_state.cross_shard_txs = @intCast(cross_shard_txs_cnt);
-        self.shard_fee_state.shard_fees_utri = @intCast(shard_fees_cnt);
+        self.cross_shard_tx_state_v2.cross_shard_txs = @intCast(cross_shard_txs_cnt_v21);
+        self.shard_fee_state_v2.shard_fees_utri = @intCast(shard_fees_cnt);
 
         // v2.22: restore Formal Verification v1.0 fields
         self.formal_verify_state.verifications = @intCast(verifications_cnt);
         self.property_test_state.tests_passed = @intCast(tests_passed_cnt);
 
         // v2.23: restore Swarm 100M + Community 50M fields
-        self.swarm_100m_state.swarm_nodes = @intCast(swarm_nodes_cnt);
+        self.swarm_100m_state.swarm_nodes = @intCast(swarm_nodes_cnt_v23);
         self.earning_moonshot_state.earning_nodes = @intCast(earning_nodes_cnt);
 
         // v2.24: restore Global Dominance fields
@@ -7120,8 +7138,8 @@ pub const GoldenChainAgent = struct {
         self.exchange_v2_state.listing_events = @intCast(exchange_v2_events_cnt);
 
         // v2.28: restore Swarm 10M fields
-        self.swarm_10m_state.swarm_events = @intCast(swarm_10m_events_cnt);
-        self.community_5m_state.community_events = @intCast(community_5m_events_cnt);
+        self.swarm_10m_state_v2.swarm_events = @intCast(swarm_10m_events_cnt);
+        self.community_5m_state_v2.community_events = @intCast(community_5m_events_cnt);
 
         // v2.29: restore Swarm 1B + Community 500M fields
         self.swarm_1b_state.swarm_1b_events = @intCast(swarm_1b_events_cnt);
@@ -8307,7 +8325,9 @@ pub const GoldenChainAgent = struct {
         self.swarm_orch_state.sync_batch = SWARM_SYNC_BATCH;
         self.swarm_orch_state.last_orch_us = std.time.microTimestamp();
         const hash_input = std.mem.asBytes(&self.swarm_orch_state.total_orchestrated);
-        self.swarm_orch_state.orch_hash = std.crypto.hash.sha2.Sha256.hash(hash_input, .{});
+        var orch_hash_buf: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(hash_input, &orch_hash_buf, .{});
+        self.swarm_orch_state.orch_hash = orch_hash_buf;
     }
 
     /// Trigger failover when node health below threshold.
@@ -8355,7 +8375,9 @@ pub const GoldenChainAgent = struct {
         self.swarm_scale_state.active_nodes += 1;
         self.swarm_scale_state.last_scale_us = std.time.microTimestamp();
         const hash_input = std.mem.asBytes(&self.swarm_scale_state.active_nodes);
-        self.swarm_scale_state.scale_hash = std.crypto.hash.sha2.Sha256.hash(hash_input, .{});
+        var scale_hash_buf: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(hash_input, &scale_hash_buf, .{});
+        self.swarm_scale_state.scale_hash = scale_hash_buf;
     }
 
     /// Distribute rewards in batch, increment claims.
@@ -8364,7 +8386,9 @@ pub const GoldenChainAgent = struct {
         self.reward_distribution_state.claims_this_epoch += 1;
         self.reward_distribution_state.last_distribution_us = std.time.microTimestamp();
         const hash_input = std.mem.asBytes(&self.reward_distribution_state.total_distributed);
-        self.reward_distribution_state.distribution_hash = std.crypto.hash.sha2.Sha256.hash(hash_input, .{});
+        var dist_hash_buf: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(hash_input, &dist_hash_buf, .{});
+        self.reward_distribution_state.distribution_hash = dist_hash_buf;
     }
 
     /// Activate live DAO governance, increment epoch.
@@ -8406,7 +8430,9 @@ pub const GoldenChainAgent = struct {
         self.community_node_state.gossip_rounds += 1;
         self.community_node_state.last_gossip_us = std.time.microTimestamp();
         const hash_input = std.mem.asBytes(&self.community_node_state.active_nodes);
-        self.community_node_state.community_hash = std.crypto.hash.sha2.Sha256.hash(hash_input, .{});
+        var comm_hash_buf: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(hash_input, &comm_hash_buf, .{});
+        self.community_node_state.community_hash = comm_hash_buf;
     }
 
     /// Broadcast gossip message to fanout peers.
@@ -8420,7 +8446,9 @@ pub const GoldenChainAgent = struct {
         self.dht_state.lookups_completed += 1;
         self.dht_state.stored_keys += 1;
         const hash_input = std.mem.asBytes(&self.dht_state.lookups_completed);
-        self.dht_state.dht_hash = std.crypto.hash.sha2.Sha256.hash(hash_input, .{});
+        var dht_hash_buf: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(hash_input, &dht_hash_buf, .{});
+        self.dht_state.dht_hash = dht_hash_buf;
     }
 
     /// Register a community node.
@@ -8473,7 +8501,7 @@ pub const GoldenChainAgent = struct {
     }
 
     /// Execute proposal: increment proposals executed, compute execution hash.
-    fn executeProposal(self: *Self) void {
+    fn executeProposalV2(self: *Self) void {
         self.proposal_execution_state.proposals_executed += 1;
         self.proposal_execution_state.last_execution_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
@@ -8530,7 +8558,7 @@ pub const GoldenChainAgent = struct {
         hasher.final(&self.atomic_swap_state.swap_hash);
     }
 
-    fn replicateState(self: *Self) void {
+    fn replicateStateV2(self: *Self) void {
         self.state_replication_state.replicated_states += 1;
         const now = std.time.microTimestamp();
         self.state_replication_state.last_replication_us = now;
@@ -8552,7 +8580,7 @@ pub const GoldenChainAgent = struct {
         hasher.final(&self.bridge_relay_state.relay_hash);
     }
 
-    fn crossChainVerify(self: *const Self) bool {
+    fn crossChainVerifyV2(self: *const Self) bool {
         // P1: Bridges must be active
         if (self.cross_chain_bridge_state.active_bridges == 0) return false;
         // P2: Swaps must have completed
@@ -8591,16 +8619,16 @@ pub const GoldenChainAgent = struct {
         hasher.final(&self.tri_staking_state.staking_hash);
     }
 
-    fn distributeRewards(self: *Self) void {
-        self.reward_distribution_state.distribution_count += 1;
-        self.reward_distribution_state.total_distributed += 1;
+    fn distributeRewardsV2(self: *Self) void {
+        self.reward_distribution_state_v2.distribution_count += 1;
+        self.reward_distribution_state_v2.total_distributed += 1;
         const now = std.time.microTimestamp();
-        self.reward_distribution_state.last_distribution_us = now;
+        self.reward_distribution_state_v2.last_distribution_us = now;
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("reward_distribution_v2.10");
-        hasher.update(std.mem.asBytes(&self.reward_distribution_state.distribution_count));
+        hasher.update(std.mem.asBytes(&self.reward_distribution_state_v2.distribution_count));
         hasher.update(std.mem.asBytes(&now));
-        hasher.final(&self.reward_distribution_state.distribution_hash);
+        hasher.final(&self.reward_distribution_state_v2.distribution_hash);
     }
 
     fn validateStaking(self: *Self) void {
@@ -8621,7 +8649,7 @@ pub const GoldenChainAgent = struct {
         // Q2: Staking must have active stakers
         if (self.tri_staking_state.active_stakers == 0) return false;
         // Q3: Rewards must have been distributed
-        if (self.reward_distribution_state.distribution_count == 0) return false;
+        if (self.reward_distribution_state_v2.distribution_count == 0) return false;
         return true;
     }
 
@@ -8892,15 +8920,15 @@ pub const GoldenChainAgent = struct {
     }
 
     fn joinCommunityNode(self: *Self) void {
-        self.community_node_state.community_nodes += 1;
-        self.community_node_state.joined += 1;
-        self.community_node_state.heartbeats += 1;
-        self.community_node_state.last_heartbeat_us = std.time.microTimestamp();
+        self.community_node_state_v2.community_nodes += 1;
+        self.community_node_state_v2.joined += 1;
+        self.community_node_state_v2.heartbeats += 1;
+        self.community_node_state_v2.last_heartbeat_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("community_node_join");
-        hasher.update(&std.mem.toBytes(self.community_node_state.community_nodes));
-        hasher.update(&std.mem.toBytes(self.community_node_state.joined));
-        hasher.final(&self.community_node_state.community_hash);
+        hasher.update(&std.mem.toBytes(self.community_node_state_v2.community_nodes));
+        hasher.update(&std.mem.toBytes(self.community_node_state_v2.joined));
+        hasher.final(&self.community_node_state_v2.community_hash);
     }
 
     fn propagateHierarchicalGossip(self: *Self) void {
@@ -8931,7 +8959,7 @@ pub const GoldenChainAgent = struct {
         // V1: Swarm must have active nodes
         if (self.swarm_million_state.active_nodes == 0) return false;
         // V2: Community must have nodes
-        if (self.community_node_state.community_nodes == 0) return false;
+        if (self.community_node_state_v2.community_nodes == 0) return false;
         // V3: Hierarchical gossip must have propagated
         if (self.hierarchical_gossip_state.messages_propagated == 0) return false;
         return true;
@@ -8942,7 +8970,7 @@ pub const GoldenChainAgent = struct {
     fn generateZkSnarkProof(self: *Self) void {
         self.zk_snark_proof_state.proof_count += 1;
         self.zk_snark_proof_state.verified_proofs += 1;
-        self.zk_snark_proof_state.proof_size = ZK_PROOF_SIZE_BYTES;
+        self.zk_snark_proof_state.proof_size = ZK_PROOF_SIZE_BYTES_V2;
         self.zk_snark_proof_state.last_proof_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         var proof_buf: [4]u8 = @bitCast(self.zk_snark_proof_state.proof_count);
@@ -9272,43 +9300,43 @@ pub const GoldenChainAgent = struct {
 
     // ── v2.21: Cross-Shard Transactions v1.0 methods ──
 
-    fn executeCrossShardTx(self: *Self) void {
-        self.cross_shard_tx_state.cross_shard_txs += 1;
-        self.cross_shard_tx_state.atomic_commits += 1;
-        self.cross_shard_tx_state.shards_involved = ATOMIC_2PC_MAX_SHARDS;
-        self.cross_shard_tx_state.last_cross_shard_us = std.time.microTimestamp();
+    fn executeCrossShardTxV2(self: *Self) void {
+        self.cross_shard_tx_state_v2.cross_shard_txs += 1;
+        self.cross_shard_tx_state_v2.atomic_commits += 1;
+        self.cross_shard_tx_state_v2.shards_involved = ATOMIC_2PC_MAX_SHARDS;
+        self.cross_shard_tx_state_v2.last_cross_shard_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
-        var tx_buf: [4]u8 = @bitCast(self.cross_shard_tx_state.cross_shard_txs);
+        var tx_buf: [4]u8 = @bitCast(self.cross_shard_tx_state_v2.cross_shard_txs);
         hasher.update(&tx_buf);
-        var ac_buf: [4]u8 = @bitCast(self.cross_shard_tx_state.atomic_commits);
+        var ac_buf: [4]u8 = @bitCast(self.cross_shard_tx_state_v2.atomic_commits);
         hasher.update(&ac_buf);
-        self.cross_shard_tx_state.cross_shard_hash = hasher.finalResult();
-        self.cross_shard_active = true;
+        self.cross_shard_tx_state_v2.cross_shard_hash = hasher.finalResult();
+        self.cross_shard_active_v2 = true;
     }
 
     fn runAtomic2PC(self: *Self) void {
-        self.atomic_2pc_state.prepare_count += 1;
-        self.atomic_2pc_state.commit_count += 1;
-        self.atomic_2pc_state.last_2pc_us = std.time.microTimestamp();
+        self.atomic_2pc_state_v2.prepare_count += 1;
+        self.atomic_2pc_state_v2.commit_count += 1;
+        self.atomic_2pc_state_v2.last_2pc_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
-        var pc_buf: [4]u8 = @bitCast(self.atomic_2pc_state.prepare_count);
+        var pc_buf: [4]u8 = @bitCast(self.atomic_2pc_state_v2.prepare_count);
         hasher.update(&pc_buf);
-        var cc_buf: [4]u8 = @bitCast(self.atomic_2pc_state.commit_count);
+        var cc_buf: [4]u8 = @bitCast(self.atomic_2pc_state_v2.commit_count);
         hasher.update(&cc_buf);
-        self.atomic_2pc_state.twopc_hash = hasher.finalResult();
+        self.atomic_2pc_state_v2.twopc_hash = hasher.finalResult();
     }
 
-    fn collectShardFee(self: *Self) void {
-        self.shard_fee_state.shard_fees_utri += SHARD_FEE_UTRI_PER_TX;
-        self.shard_fee_state.fee_rate_utri = SHARD_FEE_UTRI_PER_TX;
-        self.shard_fee_state.fee_distributions += 1;
-        self.shard_fee_state.last_fee_us = std.time.microTimestamp();
+    fn collectShardFeeV2(self: *Self) void {
+        self.shard_fee_state_v2.shard_fees_utri += SHARD_FEE_UTRI_PER_TX;
+        self.shard_fee_state_v2.fee_rate_utri = SHARD_FEE_UTRI_PER_TX;
+        self.shard_fee_state_v2.fee_distributions += 1;
+        self.shard_fee_state_v2.last_fee_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
-        var fee_buf: [8]u8 = @bitCast(self.shard_fee_state.shard_fees_utri);
+        var fee_buf: [8]u8 = @bitCast(self.shard_fee_state_v2.shard_fees_utri);
         hasher.update(&fee_buf);
-        var fd_buf: [4]u8 = @bitCast(self.shard_fee_state.fee_distributions);
+        var fd_buf: [4]u8 = @bitCast(self.shard_fee_state_v2.fee_distributions);
         hasher.update(&fd_buf);
-        self.shard_fee_state.shard_fee_hash = hasher.finalResult();
+        self.shard_fee_state_v2.shard_fee_hash = hasher.finalResult();
     }
 
     fn syncInterShard(self: *Self) void {
@@ -9323,13 +9351,13 @@ pub const GoldenChainAgent = struct {
         self.inter_shard_sync_state.sync_hash = hasher.finalResult();
     }
 
-    fn crossShardTxVerify(self: *const Self) bool {
+    fn crossShardTxVerifyV2(self: *const Self) bool {
         // AB1: Cross-shard transactions must exist
-        if (self.cross_shard_tx_state.cross_shard_txs == 0) return false;
+        if (self.cross_shard_tx_state_v2.cross_shard_txs == 0) return false;
         // AB2: 2PC commits must succeed
-        if (self.atomic_2pc_state.commit_count == 0) return false;
+        if (self.atomic_2pc_state_v2.commit_count == 0) return false;
         // AB3: Shard fees must be collected
-        if (self.shard_fee_state.shard_fees_utri == 0) return false;
+        if (self.shard_fee_state_v2.shard_fees_utri == 0) return false;
         return true;
     }
 
@@ -9424,7 +9452,7 @@ pub const GoldenChainAgent = struct {
         self.community_50m_state.community_hash = hasher.finalResult();
     }
 
-    fn boostEarning(self: *Self) void {
+    fn boostEarningV2(self: *Self) void {
         self.earning_moonshot_state.earning_nodes += 1;
         self.earning_moonshot_state.total_earned_utri += EARNING_BOOST_UTRI_PER_HOUR;
         self.earning_moonshot_state.earning_rate_utri = EARNING_BOOST_UTRI_PER_HOUR;
@@ -9714,33 +9742,33 @@ pub const GoldenChainAgent = struct {
 
     // ── v2.28: Swarm 10M + Community 5M + $TRI Earning Ultimate Methods ──
 
-    fn scaleSwarm10M(self: *Self) void {
-        self.swarm_10m_state.swarm_events += 1;
-        self.swarm_10m_state.nodes_active += 10000;
-        self.swarm_10m_state.nodes_discovered += 15000;
-        self.swarm_10m_state.last_swarm_us = self.current_time_us;
+    fn scaleSwarm10MV2(self: *Self) void {
+        self.swarm_10m_state_v2.swarm_events += 1;
+        self.swarm_10m_state_v2.nodes_active += 10000;
+        self.swarm_10m_state_v2.nodes_discovered += 15000;
+        self.swarm_10m_state_v2.last_swarm_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("swarm_10m");
-        hasher.update(std.mem.asBytes(&self.swarm_10m_state.swarm_events));
-        hasher.final(&self.swarm_10m_state.swarm_hash);
+        hasher.update(std.mem.asBytes(&self.swarm_10m_state_v2.swarm_events));
+        hasher.final(&self.swarm_10m_state_v2.swarm_hash);
     }
 
     fn growCommunity5M(self: *Self) void {
-        self.community_5m_state.community_events += 1;
-        self.community_5m_state.members_active += 5000;
-        self.community_5m_state.monthly_contributors += 2500;
-        self.community_5m_state.last_community_us = self.current_time_us;
+        self.community_5m_state_v2.community_events += 1;
+        self.community_5m_state_v2.members_active += 5000;
+        self.community_5m_state_v2.monthly_contributors += 2500;
+        self.community_5m_state_v2.last_community_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("community_5m");
-        hasher.update(std.mem.asBytes(&self.community_5m_state.community_events));
-        hasher.final(&self.community_5m_state.community_hash);
+        hasher.update(std.mem.asBytes(&self.community_5m_state_v2.community_events));
+        hasher.final(&self.community_5m_state_v2.community_hash);
     }
 
     fn boostEarningUltimate(self: *Self) void {
         self.earning_ultimate_state.earning_events += 1;
         self.earning_ultimate_state.earning_rate_utri = EARNING_ULTIMATE_UTRI_PER_HOUR;
         self.earning_ultimate_state.total_earned_utri += EARNING_ULTIMATE_UTRI_PER_HOUR;
-        self.earning_ultimate_state.last_earning_us = self.current_time_us;
+        self.earning_ultimate_state.last_earning_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("earning_ultimate");
         hasher.update(std.mem.asBytes(&self.earning_ultimate_state.earning_events));
@@ -9751,18 +9779,18 @@ pub const GoldenChainAgent = struct {
         self.node_discovery_10m_state.discovery_events += 1;
         self.node_discovery_10m_state.nodes_registered += 10000;
         self.node_discovery_10m_state.nodes_healthy += 9500;
-        self.node_discovery_10m_state.last_discovery_us = self.current_time_us;
+        self.node_discovery_10m_state.last_discovery_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("node_discovery_10m");
         hasher.update(std.mem.asBytes(&self.node_discovery_10m_state.discovery_events));
         hasher.final(&self.node_discovery_10m_state.discovery_hash);
     }
 
-    fn swarm10MVerify(self: *const Self) bool {
+    fn swarm10MVerifyV2(self: *const Self) bool {
         // AI1: Swarm events must exist
-        if (self.swarm_10m_state.swarm_events == 0) return false;
+        if (self.swarm_10m_state_v2.swarm_events == 0) return false;
         // AI2: Community events must exist
-        if (self.community_5m_state.community_events == 0) return false;
+        if (self.community_5m_state_v2.community_events == 0) return false;
         // AI3: Earning events must exist
         if (self.earning_ultimate_state.earning_events == 0) return false;
         return true;
@@ -9892,7 +9920,7 @@ pub const GoldenChainAgent = struct {
         self.tri_to_1000_state.tri_1000_events += 1;
         self.tri_to_1000_state.tri_price_usd = TRI_TARGET_PRICE_USD;
         self.tri_to_1000_state.market_cap_utri = UNIVERSAL_RESERVE_CAP_UTRI;
-        self.tri_to_1000_state.last_price_us = self.last_timestamp_us;
+        self.tri_to_1000_state.last_price_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("tri_to_1000_v2.31");
         hasher.update(&std.mem.toBytes(self.tri_to_1000_state.tri_1000_events));
@@ -9905,7 +9933,7 @@ pub const GoldenChainAgent = struct {
         self.universal_reserve_v2_state.reserve_events += 1;
         self.universal_reserve_v2_state.reserve_balance_utri += UNIVERSAL_RESERVE_CAP_UTRI;
         self.universal_reserve_v2_state.reserve_participants += 1;
-        self.universal_reserve_v2_state.last_reserve_us = self.last_timestamp_us;
+        self.universal_reserve_v2_state.last_reserve_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("universal_reserve_v2.31");
         hasher.update(&std.mem.toBytes(self.universal_reserve_v2_state.reserve_events));
@@ -9917,7 +9945,7 @@ pub const GoldenChainAgent = struct {
         self.global_dominance_v2_state.dominance_events += 1;
         self.global_dominance_v2_state.dominance_score_bp = DOMINANCE_THRESHOLD_BP;
         self.global_dominance_v2_state.exchanges_listed = GLOBAL_EXCHANGE_LISTINGS;
-        self.global_dominance_v2_state.last_dominance_us = self.last_timestamp_us;
+        self.global_dominance_v2_state.last_dominance_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("global_dominance_v2.31");
         hasher.update(&std.mem.toBytes(self.global_dominance_v2_state.dominance_events));
@@ -9929,7 +9957,7 @@ pub const GoldenChainAgent = struct {
         self.eternal_governance_v2_state.governance_events += 1;
         self.eternal_governance_v2_state.proposals_passed += 1;
         self.eternal_governance_v2_state.governance_accuracy_bp = 9800; // 98.00%
-        self.eternal_governance_v2_state.last_governance_us = self.last_timestamp_us;
+        self.eternal_governance_v2_state.last_governance_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("eternal_governance_v2.31");
         hasher.update(&std.mem.toBytes(self.eternal_governance_v2_state.governance_events));
@@ -9943,7 +9971,7 @@ pub const GoldenChainAgent = struct {
         self.trinity_beyond_state.beyond_events += 1;
         self.trinity_beyond_state.beyond_scale = BEYOND_SCALE_FACTOR;
         self.trinity_beyond_state.beyond_dimensions = MULTIVERSE_DIMENSIONS;
-        self.trinity_beyond_state.last_beyond_us = self.last_timestamp_us;
+        self.trinity_beyond_state.last_beyond_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("trinity_beyond_v2.32");
         hasher.update(&std.mem.toBytes(self.trinity_beyond_state.beyond_events));
@@ -9955,7 +9983,7 @@ pub const GoldenChainAgent = struct {
         self.infinite_scale_v2_state.scale_events += 1;
         self.infinite_scale_v2_state.scale_factor = BEYOND_SCALE_FACTOR;
         self.infinite_scale_v2_state.nodes_infinite = INFINITE_NODES_TARGET;
-        self.infinite_scale_v2_state.last_scale_us = self.last_timestamp_us;
+        self.infinite_scale_v2_state.last_scale_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("infinite_scale_v2.32");
         hasher.update(&std.mem.toBytes(self.infinite_scale_v2_state.scale_events));
@@ -9967,7 +9995,7 @@ pub const GoldenChainAgent = struct {
         self.multiverse_dominance_state.multiverse_events += 1;
         self.multiverse_dominance_state.universes_dominated = MAX_UNIVERSES;
         self.multiverse_dominance_state.dominance_factor_bp = BEYOND_DOMINANCE_THRESHOLD_BP;
-        self.multiverse_dominance_state.last_multiverse_us = self.last_timestamp_us;
+        self.multiverse_dominance_state.last_multiverse_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("multiverse_dominance_v2.32");
         hasher.update(&std.mem.toBytes(self.multiverse_dominance_state.multiverse_events));
@@ -9979,7 +10007,7 @@ pub const GoldenChainAgent = struct {
         self.eternal_evolution_state.evolution_events += 1;
         self.eternal_evolution_state.evolution_cycles += 1;
         self.eternal_evolution_state.evolution_accuracy_bp = 9900; // 99.00%
-        self.eternal_evolution_state.last_evolution_us = self.last_timestamp_us;
+        self.eternal_evolution_state.last_evolution_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("eternal_evolution_v2.32");
         hasher.update(&std.mem.toBytes(self.eternal_evolution_state.evolution_events));
@@ -9987,7 +10015,7 @@ pub const GoldenChainAgent = struct {
     }
 
     /// Phase AM: Trinity Beyond v1.0 integrity verification.
-    fn trinityBeyondVerify(self: *const Self) bool {
+    fn trinityBeyondVerifyV2(self: *const Self) bool {
         // AM1: Beyond events must exist
         if (self.trinity_beyond_state.beyond_events == 0) return false;
         // AM2: Scale events must exist
@@ -10004,7 +10032,7 @@ pub const GoldenChainAgent = struct {
         self.trinity_absolute_state.absolute_events += 1;
         self.trinity_absolute_state.absolute_factor = ABSOLUTE_COMPLETION_FACTOR;
         self.trinity_absolute_state.absolute_dimensions = ETERNAL_VICTORY_DIMENSIONS;
-        self.trinity_absolute_state.last_absolute_us = self.last_timestamp_us;
+        self.trinity_absolute_state.last_absolute_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("trinity_absolute_v3.0");
         hasher.update(&std.mem.toBytes(self.trinity_absolute_state.absolute_events));
@@ -10016,7 +10044,7 @@ pub const GoldenChainAgent = struct {
         self.infinite_tri_state.infinite_events += 1;
         self.infinite_tri_state.tri_value = INFINITE_TRI_VALUE;
         self.infinite_tri_state.tri_supply_locked = INFINITE_TRI_VALUE;
-        self.infinite_tri_state.last_infinite_us = self.last_timestamp_us;
+        self.infinite_tri_state.last_infinite_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("infinite_tri_v3.0");
         hasher.update(&std.mem.toBytes(self.infinite_tri_state.infinite_events));
@@ -10028,7 +10056,7 @@ pub const GoldenChainAgent = struct {
         self.eternal_victory_state.victory_events += 1;
         self.eternal_victory_state.victories_achieved = ETERNAL_VICTORY_DIMENSIONS;
         self.eternal_victory_state.victory_factor_bp = ABSOLUTE_DOMINANCE_THRESHOLD_BP;
-        self.eternal_victory_state.last_victory_us = self.last_timestamp_us;
+        self.eternal_victory_state.last_victory_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("eternal_victory_v3.0");
         hasher.update(&std.mem.toBytes(self.eternal_victory_state.victory_events));
@@ -10040,7 +10068,7 @@ pub const GoldenChainAgent = struct {
         self.multiverse_complete_state.completion_events += 1;
         self.multiverse_complete_state.universes_completed = MAX_SYNCHRONIZED_UNIVERSES;
         self.multiverse_complete_state.completion_accuracy_bp = 10000; // 100.00%
-        self.multiverse_complete_state.last_completion_us = self.last_timestamp_us;
+        self.multiverse_complete_state.last_completion_us = std.time.microTimestamp();
         var hasher = std.crypto.hash.sha2.Sha256.init(.{});
         hasher.update("multiverse_complete_v3.0");
         hasher.update(&std.mem.toBytes(self.multiverse_complete_state.completion_events));
@@ -13126,13 +13154,13 @@ test "v2.9 Phase P pass" {
     agent.cross_chain_bridge_state.active_bridges = 3;
     agent.atomic_swap_state.completed_swaps = 10;
     agent.state_replication_state.replicated_states = 5;
-    try std.testing.expect(agent.crossChainVerify());
+    try std.testing.expect(agent.crossChainVerifyV2());
 }
 
 test "v2.9 Phase P fail" {
     var agent = GoldenChainAgent.init(undefined);
     // P1 fails: no bridges active
-    try std.testing.expect(!agent.crossChainVerify());
+    try std.testing.expect(!agent.crossChainVerifyV2());
 }
 
 test "v2.9 ChainMessageType bridge variants" {
@@ -13239,7 +13267,7 @@ test "v2.10 TRIStakingState defaults" {
 }
 
 test "v2.10 RewardDistributionState defaults" {
-    const state = RewardDistributionState{};
+    const state = RewardDistributionStateV2{};
     try std.testing.expectEqual(@as(u64, 0), state.total_distributed);
     try std.testing.expectEqual(@as(u32, 0), state.distribution_count);
     try std.testing.expectEqual(@as(u64, 0), state.unclaimed_rewards);
@@ -13258,7 +13286,7 @@ test "v2.10 Phase Q pass" {
     var agent = GoldenChainAgent.init(.full);
     agent.dao_full_governance_state.passed_proposals = 1;
     agent.tri_staking_state.active_stakers = 1;
-    agent.reward_distribution_state.distribution_count = 1;
+    agent.reward_distribution_state_v2.distribution_count = 1;
     try std.testing.expect(agent.daoFullGovernanceVerify());
 }
 
@@ -13788,14 +13816,14 @@ test "v2.14 QuarkType enum indices" {
 }
 
 test "v2.14 Phase U passes after dynamic shard init" {
-    var agent = ChainAgentState.init(undefined);
+    var agent = GoldenChainAgent.init(undefined);
     agent.initDynamicShard();
     agent.adaptDHT();
     try std.testing.expect(agent.dynamicShardVerify());
 }
 
 test "v2.14 Phase U fails without dynamic shard" {
-    const agent = ChainAgentState.init(undefined);
+    const agent = GoldenChainAgent.init(undefined);
     try std.testing.expect(!agent.dynamicShardVerify());
 }
 
@@ -13888,7 +13916,7 @@ test "v2.15 GeographicShardState defaults" {
 }
 
 test "v2.15 Phase V passes after swarm init + community join + gossip" {
-    var agent = ChainAgentState.init(undefined);
+    var agent = GoldenChainAgent.init(undefined);
     agent.initSwarmMillion();
     agent.joinCommunityNode();
     agent.propagateHierarchicalGossip();
@@ -13896,12 +13924,12 @@ test "v2.15 Phase V passes after swarm init + community join + gossip" {
 }
 
 test "v2.15 Phase V fails without swarm init" {
-    const agent = ChainAgentState.init(undefined);
+    const agent = GoldenChainAgent.init(undefined);
     try std.testing.expect(!agent.swarmMillionVerify());
 }
 
 test "v2.15 initSwarmMillion sets active_nodes and layers" {
-    var agent = ChainAgentState.init(undefined);
+    var agent = GoldenChainAgent.init(undefined);
     agent.initSwarmMillion();
     try std.testing.expectEqual(@as(u32, 1), agent.swarm_million_state.active_nodes);
     try std.testing.expectEqual(@as(u16, 1), agent.swarm_million_state.layers);
@@ -13910,11 +13938,11 @@ test "v2.15 initSwarmMillion sets active_nodes and layers" {
 }
 
 test "v2.15 joinCommunityNode increments community_nodes" {
-    var agent = ChainAgentState.init(undefined);
+    var agent = GoldenChainAgent.init(undefined);
     agent.joinCommunityNode();
-    try std.testing.expectEqual(@as(u32, 1), agent.community_node_state.community_nodes);
-    try std.testing.expectEqual(@as(u32, 1), agent.community_node_state.joined);
-    try std.testing.expectEqual(@as(u64, 1), agent.community_node_state.heartbeats);
+    try std.testing.expectEqual(@as(u32, 1), agent.community_node_state_v2.community_nodes);
+    try std.testing.expectEqual(@as(u32, 1), agent.community_node_state_v2.joined);
+    try std.testing.expectEqual(@as(u64, 1), agent.community_node_state_v2.heartbeats);
 }
 
 test "v2.16 export version is 20" {
@@ -13927,7 +13955,7 @@ test "v2.16 export header size is 98" {
 
 test "v2.15 constants are correct" {
     try std.testing.expectEqual(@as(u32, 1_000_000), SWARM_TARGET_NODES);
-    try std.testing.expectEqual(@as(u32, 500_000), COMMUNITY_TARGET_NODES);
+    try std.testing.expectEqual(@as(u32, 500_000), COMMUNITY_TARGET_NODES_V2);
     try std.testing.expectEqual(@as(u16, 8), HIERARCHICAL_GOSSIP_LAYERS);
     try std.testing.expectEqual(@as(u16, 256), GEOGRAPHIC_SHARD_REGIONS);
     try std.testing.expectEqual(@as(i64, 60_000_000), SWARM_CONSENSUS_TIMEOUT_US);
@@ -14060,7 +14088,7 @@ test "v2.16 generateZkSnarkProof sets proof_count and proof_size" {
     agent.generateZkSnarkProof();
     try std.testing.expectEqual(@as(u32, 1), agent.zk_snark_proof_state.proof_count);
     try std.testing.expectEqual(@as(u32, 1), agent.zk_snark_proof_state.verified_proofs);
-    try std.testing.expectEqual(ZK_PROOF_SIZE_BYTES, agent.zk_snark_proof_state.proof_size);
+    try std.testing.expectEqual(ZK_PROOF_SIZE_BYTES_V2, agent.zk_snark_proof_state.proof_size);
     try std.testing.expect(agent.zk_rollup_active);
 }
 
@@ -14073,11 +14101,11 @@ test "v2.16 composeRecursiveProof increments compositions" {
 }
 
 test "v2.16 constants are correct" {
-    try std.testing.expectEqual(@as(u32, 288), ZK_PROOF_SIZE_BYTES);
+    try std.testing.expectEqual(@as(u32, 288), ZK_PROOF_SIZE_BYTES_V2);
     try std.testing.expectEqual(@as(u16, 16), RECURSIVE_PROOF_DEPTH);
     try std.testing.expectEqual(@as(u32, 1_000), L2_BATCH_SIZE);
     try std.testing.expectEqual(@as(i64, 10_000_000), ROLLUP_COMMITMENT_INTERVAL_US);
-    try std.testing.expectEqual(@as(i64, 5_000_000), ZK_VERIFICATION_TIMEOUT_US);
+    try std.testing.expectEqual(@as(i64, 5_000_000), ZK_VERIFICATION_TIMEOUT_US_V2);
     try std.testing.expectEqual(@as(u16, 256), MAX_PROOFS_PER_BATCH);
 }
 
@@ -14736,7 +14764,7 @@ test "v2.21 isInterShardSyncQuark classifier" {
 }
 
 test "v2.21 CrossShardTxState defaults" {
-    const state = CrossShardTxState{};
+    const state = CrossShardTxStateV2{};
     try std.testing.expectEqual(@as(u32, 0), state.cross_shard_txs);
     try std.testing.expectEqual(@as(u32, 0), state.atomic_commits);
     try std.testing.expectEqual(@as(u16, 0), state.shards_involved);
@@ -14750,7 +14778,7 @@ test "v2.21 Atomic2PCState defaults" {
 }
 
 test "v2.21 ShardFeeState defaults" {
-    const state = ShardFeeState{};
+    const state = ShardFeeStateV2{};
     try std.testing.expectEqual(@as(u64, 0), state.shard_fees_utri);
     try std.testing.expectEqual(@as(u32, 0), state.fee_rate_utri);
     try std.testing.expectEqual(@as(u32, 0), state.fee_distributions);
@@ -14765,51 +14793,51 @@ test "v2.21 InterShardSyncState defaults" {
 
 test "v2.21 Phase AB passes after cross-shard + 2pc + fee" {
     var agent = GoldenChainAgent.init();
-    agent.executeCrossShardTx();
+    agent.executeCrossShardTxV2();
     agent.runAtomic2PC();
-    agent.collectShardFee();
-    try std.testing.expect(agent.crossShardTxVerify());
+    agent.collectShardFeeV2();
+    try std.testing.expect(agent.crossShardTxVerifyV2());
 }
 
 test "v2.21 Phase AB fails without cross-shard txs" {
     var agent = GoldenChainAgent.init();
     agent.runAtomic2PC();
-    agent.collectShardFee();
-    try std.testing.expect(!agent.crossShardTxVerify());
+    agent.collectShardFeeV2();
+    try std.testing.expect(!agent.crossShardTxVerifyV2());
 }
 
 test "v2.21 Phase AB fails without 2pc commits" {
     var agent = GoldenChainAgent.init();
-    agent.executeCrossShardTx();
-    agent.collectShardFee();
-    try std.testing.expect(!agent.crossShardTxVerify());
+    agent.executeCrossShardTxV2();
+    agent.collectShardFeeV2();
+    try std.testing.expect(!agent.crossShardTxVerifyV2());
 }
 
 test "v2.21 executeCrossShardTx increments txs" {
     var agent = GoldenChainAgent.init();
-    agent.executeCrossShardTx();
-    try std.testing.expectEqual(@as(u32, 1), agent.cross_shard_tx_state.cross_shard_txs);
-    try std.testing.expectEqual(@as(u32, 1), agent.cross_shard_tx_state.atomic_commits);
-    try std.testing.expectEqual(ATOMIC_2PC_MAX_SHARDS, agent.cross_shard_tx_state.shards_involved);
-    try std.testing.expect(agent.cross_shard_active);
+    agent.executeCrossShardTxV2();
+    try std.testing.expectEqual(@as(u32, 1), agent.cross_shard_tx_state_v2.cross_shard_txs);
+    try std.testing.expectEqual(@as(u32, 1), agent.cross_shard_tx_state_v2.atomic_commits);
+    try std.testing.expectEqual(ATOMIC_2PC_MAX_SHARDS, agent.cross_shard_tx_state_v2.shards_involved);
+    try std.testing.expect(agent.cross_shard_active_v2);
 }
 
 test "v2.21 collectShardFee uses SHARD_FEE_UTRI_PER_TX" {
     var agent = GoldenChainAgent.init();
-    agent.collectShardFee();
-    try std.testing.expectEqual(@as(u64, SHARD_FEE_UTRI_PER_TX), agent.shard_fee_state.shard_fees_utri);
-    try std.testing.expectEqual(SHARD_FEE_UTRI_PER_TX, agent.shard_fee_state.fee_rate_utri);
+    agent.collectShardFeeV2();
+    try std.testing.expectEqual(@as(u64, SHARD_FEE_UTRI_PER_TX), agent.shard_fee_state_v2.shard_fees_utri);
+    try std.testing.expectEqual(SHARD_FEE_UTRI_PER_TX, agent.shard_fee_state_v2.fee_rate_utri);
 }
 
 test "v2.21 u8 enum capacity 200/256" {
-    try std.testing.expectEqual(@as(u16,192), @intFromEnum(QuarkType.cross_shard_tx));
-    try std.testing.expectEqual(@as(u16,193), @intFromEnum(QuarkType.atomic_2pc));
-    try std.testing.expectEqual(@as(u16,194), @intFromEnum(QuarkType.shard_fee));
+    try std.testing.expectEqual(@as(u16,192), @intFromEnum(QuarkType.cross_shard_tx_v2));
+    try std.testing.expectEqual(@as(u16,193), @intFromEnum(QuarkType.atomic_2pc_v2));
+    try std.testing.expectEqual(@as(u16,194), @intFromEnum(QuarkType.shard_fee_v2));
     try std.testing.expectEqual(@as(u16,195), @intFromEnum(QuarkType.inter_shard_sync));
     try std.testing.expectEqual(@as(u16,196), @intFromEnum(QuarkType.shard_coordinator));
     try std.testing.expectEqual(@as(u16,197), @intFromEnum(QuarkType.tx_finality));
-    try std.testing.expectEqual(@as(u16,198), @intFromEnum(QuarkType.shard_rebalance));
-    try std.testing.expectEqual(@as(u16,199), @intFromEnum(QuarkType.cross_shard_anchor));
+    try std.testing.expectEqual(@as(u16,198), @intFromEnum(QuarkType.shard_rebalance_v2));
+    try std.testing.expectEqual(@as(u16,199), @intFromEnum(QuarkType.cross_shard_anchor_v2));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -14905,7 +14933,6 @@ test "v2.22 ProofGenerateState defaults" {
 }
 
 test "v2.22 Phase AC passes after verify + test + check" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     agent.runFormalVerification();
@@ -14915,14 +14942,12 @@ test "v2.22 Phase AC passes after verify + test + check" {
 }
 
 test "v2.22 Phase AC fails without verifications" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     try std.testing.expect(!agent.formalVerificationVerify());
 }
 
 test "v2.22 Phase AC fails without tests" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     agent.runFormalVerification();
@@ -14930,7 +14955,6 @@ test "v2.22 Phase AC fails without tests" {
 }
 
 test "v2.22 runFormalVerification increments verifications" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     try std.testing.expectEqual(@as(u32, 0), agent.formal_verify_state.verifications);
@@ -14940,7 +14964,6 @@ test "v2.22 runFormalVerification increments verifications" {
 }
 
 test "v2.22 executePropertyTest uses PROPERTY_TEST_ITERATIONS" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     agent.executePropertyTest();
@@ -15060,24 +15083,21 @@ test "v2.23 GossipV3State defaults" {
 }
 
 test "v2.23 Phase AD passes after swarm + community + earning" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     agent.scaleSwarm100M();
     agent.growCommunity50M();
-    agent.boostEarning();
+    agent.boostEarningV2();
     try std.testing.expect(agent.swarm100MVerify());
 }
 
 test "v2.23 Phase AD fails without swarm" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     try std.testing.expect(!agent.swarm100MVerify());
 }
 
 test "v2.23 Phase AD fails without community" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     agent.scaleSwarm100M();
@@ -15085,7 +15105,6 @@ test "v2.23 Phase AD fails without community" {
 }
 
 test "v2.23 scaleSwarm100M increments swarm_nodes" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     try std.testing.expectEqual(@as(u64, 0), agent.swarm_100m_state.swarm_nodes);
@@ -15094,10 +15113,9 @@ test "v2.23 scaleSwarm100M increments swarm_nodes" {
 }
 
 test "v2.23 boostEarning uses EARNING_BOOST_UTRI_PER_HOUR" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
-    agent.boostEarning();
+    agent.boostEarningV2();
     try std.testing.expectEqual(@as(u64, 1), agent.earning_moonshot_state.earning_nodes);
     try std.testing.expectEqual(EARNING_BOOST_UTRI_PER_HOUR, agent.earning_moonshot_state.total_earned_utri);
 }
@@ -15191,7 +15209,6 @@ test "v2.24 EcosystemCompleteState defaults" {
 }
 
 test "v2.24 Phase AE passes after dominance + adoption + tri" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     agent.achieveGlobalDominance();
@@ -15201,14 +15218,12 @@ test "v2.24 Phase AE passes after dominance + adoption + tri" {
 }
 
 test "v2.24 Phase AE fails without dominance" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     try std.testing.expect(!agent.globalDominanceVerify());
 }
 
 test "v2.24 Phase AE fails without adoption" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     agent.achieveGlobalDominance();
@@ -15216,7 +15231,6 @@ test "v2.24 Phase AE fails without adoption" {
 }
 
 test "v2.24 achieveGlobalDominance increments dominance_events" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     try std.testing.expectEqual(@as(u64, 0), agent.global_dominance_state.dominance_events);
@@ -15225,7 +15239,6 @@ test "v2.24 achieveGlobalDominance increments dominance_events" {
 }
 
 test "v2.24 driveTriToOne uses TRI_PRICE_TARGET_UTRI" {
-    const igla_hybrid = @import("igla_hybrid_chat.zig");
     var hybrid = igla_hybrid.IglaHybridChat.init();
     var agent = GoldenChainAgent.init(&hybrid);
     agent.driveTriToOne();
@@ -15750,14 +15763,14 @@ test "v2.28 isNodeDiscovery10MQuark classifier" {
 }
 
 test "v2.28 Swarm10MState defaults" {
-    const state = Swarm10MState{};
+    const state = Swarm10MStateV2{};
     try std.testing.expectEqual(@as(u64, 0), state.swarm_events);
     try std.testing.expectEqual(@as(u64, 0), state.nodes_active);
     try std.testing.expectEqual(@as(u64, 0), state.nodes_discovered);
 }
 
 test "v2.28 Community5MState defaults" {
-    const state = Community5MState{};
+    const state = Community5MStateV2{};
     try std.testing.expectEqual(@as(u64, 0), state.community_events);
     try std.testing.expectEqual(@as(u64, 0), state.members_active);
     try std.testing.expectEqual(@as(u64, 0), state.monthly_contributors);
@@ -15779,45 +15792,45 @@ test "v2.28 NodeDiscovery10MState defaults" {
 
 test "v2.28 Phase AI passes after swarm + community + earning" {
     var agent = GoldenChainAgent.init();
-    agent.swarm_10m_state.swarm_events = 1;
-    agent.community_5m_state.community_events = 1;
+    agent.swarm_10m_state_v2.swarm_events = 1;
+    agent.community_5m_state_v2.community_events = 1;
     agent.earning_ultimate_state.earning_events = 1;
-    try std.testing.expect(agent.swarm10MVerify());
+    try std.testing.expect(agent.swarm10MVerifyV2());
 }
 
 test "v2.28 Phase AI fails without swarm" {
     var agent = GoldenChainAgent.init();
-    agent.community_5m_state.community_events = 1;
+    agent.community_5m_state_v2.community_events = 1;
     agent.earning_ultimate_state.earning_events = 1;
-    try std.testing.expect(!agent.swarm10MVerify());
+    try std.testing.expect(!agent.swarm10MVerifyV2());
 }
 
 test "v2.28 Phase AI fails without community" {
     var agent = GoldenChainAgent.init();
-    agent.swarm_10m_state.swarm_events = 1;
+    agent.swarm_10m_state_v2.swarm_events = 1;
     agent.earning_ultimate_state.earning_events = 1;
-    try std.testing.expect(!agent.swarm10MVerify());
+    try std.testing.expect(!agent.swarm10MVerifyV2());
 }
 
 test "v2.28 scaleSwarm10M increments swarm_events" {
     var agent = GoldenChainAgent.init();
-    agent.scaleSwarm10M();
-    try std.testing.expect(agent.swarm_10m_state.swarm_events > 0);
+    agent.scaleSwarm10MV2();
+    try std.testing.expect(agent.swarm_10m_state_v2.swarm_events > 0);
 }
 
 test "v2.28 boostEarningUltimate uses EARNING_ULTIMATE_UTRI_PER_HOUR" {
     try std.testing.expectEqual(@as(u64, 100_000), GoldenChainAgent.EARNING_ULTIMATE_UTRI_PER_HOUR);
 }
 
-test "v2.28 288 quarks per query target" {
+test "v2.28 288 quarks per query target v2" {
     try std.testing.expectEqual(@as(usize, 312), GoldenChainAgent.MAX_QUARK_RECORDS);
 }
 
 test "v2.28 u8 enum FULL 256/256" {
-    try std.testing.expectEqual(@as(u16, 248), @intFromEnum(QuarkType.swarm_10m));
-    try std.testing.expectEqual(@as(u16, 249), @intFromEnum(QuarkType.community_5m));
+    try std.testing.expectEqual(@as(u16, 248), @intFromEnum(QuarkType.swarm_10m_v2));
+    try std.testing.expectEqual(@as(u16, 249), @intFromEnum(QuarkType.community_5m_v2));
     try std.testing.expectEqual(@as(u16, 250), @intFromEnum(QuarkType.earning_ultimate));
-    try std.testing.expectEqual(@as(u16, 251), @intFromEnum(QuarkType.node_discovery_10m));
+    try std.testing.expectEqual(@as(u16, 251), @intFromEnum(QuarkType.node_discovery_10m_v2));
     try std.testing.expectEqual(@as(u16, 252), @intFromEnum(QuarkType.swarm_health_10m));
     try std.testing.expectEqual(@as(u16, 253), @intFromEnum(QuarkType.swarm_failover_10m));
     try std.testing.expectEqual(@as(u16, 254), @intFromEnum(QuarkType.dao_governance_10m));
@@ -16242,12 +16255,12 @@ test "v2.32 infinite_governance label is INF_GOV" {
 }
 
 test "v2.32 beyond_anchor label is BYD_ACH" {
-    try std.testing.expectEqualStrings("BYD_ACH", QuarkType.beyond_anchor.getLabel());
+    try std.testing.expectEqualStrings("BYD_ACH", QuarkType.beyond_anchor_v2.getLabel());
 }
 
 test "v2.32 isTrinityBeyondQuark classifier" {
     try std.testing.expect(QuarkType.trinity_beyond.isTrinityBeyondQuark());
-    try std.testing.expect(QuarkType.beyond_anchor.isTrinityBeyondQuark());
+    try std.testing.expect(QuarkType.beyond_anchor_v2.isTrinityBeyondQuark());
     try std.testing.expect(!QuarkType.input_capture.isTrinityBeyondQuark());
 }
 
@@ -16306,21 +16319,21 @@ test "v2.32 Phase AM passes after beyond + scale + multiverse" {
     agent.scaleTrinityBeyond();
     agent.expandInfiniteScaleV2();
     agent.dominateMultiVerse();
-    try std.testing.expect(agent.trinityBeyondVerify());
+    try std.testing.expect(agent.trinityBeyondVerifyV2());
 }
 
 test "v2.32 Phase AM fails without beyond_events" {
     var agent = GoldenChainAgent.init();
     agent.expandInfiniteScaleV2();
     agent.dominateMultiVerse();
-    try std.testing.expect(!agent.trinityBeyondVerify());
+    try std.testing.expect(!agent.trinityBeyondVerifyV2());
 }
 
 test "v2.32 Phase AM fails without scale_events" {
     var agent = GoldenChainAgent.init();
     agent.scaleTrinityBeyond();
     agent.dominateMultiVerse();
-    try std.testing.expect(!agent.trinityBeyondVerify());
+    try std.testing.expect(!agent.trinityBeyondVerifyV2());
 }
 
 test "v2.32 scaleTrinityBeyond increments beyond_events" {
@@ -16351,7 +16364,7 @@ test "v2.32 u16 enum capacity 288/65536" {
     try std.testing.expectEqual(@as(u16, 284), @intFromEnum(QuarkType.eternal_evolution));
     try std.testing.expectEqual(@as(u16, 285), @intFromEnum(QuarkType.beyond_consensus));
     try std.testing.expectEqual(@as(u16, 286), @intFromEnum(QuarkType.infinite_governance));
-    try std.testing.expectEqual(@as(u16, 287), @intFromEnum(QuarkType.beyond_anchor));
+    try std.testing.expectEqual(@as(u16, 287), @intFromEnum(QuarkType.beyond_anchor_v2));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
