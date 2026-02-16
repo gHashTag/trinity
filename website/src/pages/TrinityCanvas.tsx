@@ -937,7 +937,7 @@ export default function TrinityCanvas() {
       } else {
         // Generate local reflection based on routing
         const route = res.source || 'Unknown';
-        const energy = route.includes('Symbolic') ? '0.1mWh' : route.includes('TVC') ? '1mWh' : route.includes('Local') ? '50mWh' : '100mWh';
+        const energy = route.includes('Symbolic') ? '0.1mWh' : route.includes('KnowledgeGraph') ? '0.8mWh' : route.includes('TVC') ? '1mWh' : route.includes('Local') ? '50mWh' : '100mWh';
         setSelfReflection(`Route: ${route} | Energy: ${energy} | Confidence: ${(res.confidence * 100).toFixed(0)}% | ${res.learned ? 'Learned for next time' : 'Not cached'}`);
       }
       setTimeout(refreshMirror, 500);
@@ -1701,6 +1701,7 @@ export default function TrinityCanvas() {
                   <div style={{ display: 'flex', gap: 6, fontSize: 8, fontFamily: MONO, flexWrap: 'wrap' }}>
                     <span style={{ color: mirrorStatus.razum.symbolic_hits > 0 ? '#ffd700' : 'rgba(255,215,0,0.3)' }}>Hits:{mirrorStatus.razum.symbolic_hits}</span>
                     <span style={{ color: mirrorStatus.razum.symbolic_hit_rate > 0 ? '#ffd700' : 'rgba(255,215,0,0.3)' }}>Rate:{(mirrorStatus.razum.symbolic_hit_rate * 100).toFixed(0)}%</span>
+                    <span style={{ color: (mirrorStatus.razum.kg_hits || 0) > 0 ? '#ff8800' : 'rgba(255,136,0,0.3)' }}>KG:{mirrorStatus.razum.kg_hits || 0}/{mirrorStatus.razum.kg_facts_loaded || 0}</span>
                     <span style={{ color: mirrorStatus.razum.memory_entries > 0 ? '#ffd700' : 'rgba(255,215,0,0.3)' }}>Mem:{mirrorStatus.razum.memory_entries}/256</span>
                     <span style={{ color: mirrorStatus.razum.llm_loaded ? '#00e599' : 'rgba(255,215,0,0.3)' }}>LLM:{mirrorStatus.razum.llm_loaded ? 'ON' : 'OFF'}</span>
                   </div>
@@ -1935,8 +1936,8 @@ export default function TrinityCanvas() {
                 {/* Energy pipeline */}
                 <div style={{ display: 'flex', gap: 4, fontSize: 7, fontFamily: MONO }}>
                   {[
-                    { l: 'Sym', c: '0.1mWh', clr: '#ffd700' }, { l: 'TVC', c: '1mWh', clr: '#00ccff' },
-                    { l: 'LLM', c: '50mWh', clr: '#ff8800' }, { l: 'Cloud', c: '100mWh', clr: '#aa66ff' },
+                    { l: 'Sym', c: '0.1mWh', clr: '#ffd700' }, { l: 'KG', c: '0.8mWh', clr: '#ff8800' }, { l: 'TVC', c: '1mWh', clr: '#00ccff' },
+                    { l: 'LLM', c: '50mWh', clr: '#ff6600' }, { l: 'Cloud', c: '100mWh', clr: '#aa66ff' },
                   ].map(p => <span key={p.l} style={{ color: p.clr }}>{p.l}:{p.c}</span>)}
                 </div>
 

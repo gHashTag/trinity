@@ -960,6 +960,13 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // IGLA Knowledge Graph module (self-contained VSA KG for chat routing)
+    const igla_kg_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/igla_knowledge_graph.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Fluent CLI - Local Chat with History Truncation (NO HANG!)
     const fluent_cli = b.addExecutable(.{
         .name = "fluent",
@@ -1020,7 +1027,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
         },
     });
-    // IGLA Hybrid Chat module (symbolic + LLM fallback)
+    // IGLA Hybrid Chat module (symbolic + LLM fallback + KG)
     const vibeec_hybrid_chat = b.createModule(.{
         .root_source_file = b.path("src/vibeec/igla_hybrid_chat.zig"),
         .target = target,
@@ -1028,6 +1035,7 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "igla_chat", .module = vibeec_chat },
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
+            .{ .name = "igla_kg", .module = igla_kg_mod },
         },
     });
     // Golden Chain Agent (8-node unified pipeline)
@@ -1248,6 +1256,11 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
         });
+        const wasm_igla_kg = b.createModule(.{
+            .root_source_file = b.path("src/wasm_stubs/igla_knowledge_graph_stub.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
         const wasm_hybrid_chat = b.createModule(.{
             .root_source_file = b.path("src/wasm_stubs/igla_hybrid_chat_stub.zig"),
             .target = target,
@@ -1255,6 +1268,7 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "igla_chat", .module = wasm_igla_chat },
                 .{ .name = "tvc_corpus", .module = wasm_tvc_corpus },
+                .{ .name = "igla_kg", .module = wasm_igla_kg },
             },
         });
         const wasm_golden_chain = b.createModule(.{

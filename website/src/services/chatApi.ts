@@ -55,6 +55,9 @@ export interface MirrorRazum {
   memory_entries: number;
   memory_hit_rate: number;
   memory_evictions: number;
+  kg_hits: number;
+  kg_hit_rate: number;
+  kg_facts_loaded: number;
   llm_loaded: boolean;
   last_routing: string;
 }
