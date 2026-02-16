@@ -26,6 +26,7 @@ http://localhost:8080
 | `GET` | `/health` | Health check |
 | `POST` | `/v1/chat/completions` | Chat completion (OpenAI-compatible) |
 | `GET` | `/v1/node/stats` | Node statistics and earnings |
+| `GET` | `/v1/node/tier` | Current wallet tier info |
 | `POST` | `/v1/node/claim` | Claim pending $TRI rewards |
 | `POST` | `/v1/storage/put` | Store a data shard |
 | `GET` | `/v1/storage/get/:hash` | Retrieve a data shard |
@@ -235,6 +236,41 @@ curl http://localhost:8080/v1/node/stats
 
 ---
 
+## GET /v1/node/tier
+
+Returns the current tier information for the requesting wallet, based on staked $TRI amount.
+
+**Request:**
+
+```bash
+curl -H "X-Wallet: 0x1a2b3c4d5e6f7890abcdef1234567890abcdef12" \
+  http://localhost:8080/v1/node/tier
+```
+
+**Response:**
+
+```json
+{
+  "wallet": "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12",
+  "tier": "staker",
+  "rate_limit": 60,
+  "reward_multiplier": 1.5,
+  "requests_remaining": 45,
+  "unlimited": false
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `wallet` | string | Wallet address (or `"anonymous"`) |
+| `tier` | string | `"free"`, `"staker"`, `"power"`, or `"whale"` |
+| `rate_limit` | number | Max requests per minute for this tier |
+| `reward_multiplier` | number | Earnings multiplier for this tier |
+| `requests_remaining` | number | Requests left in current rate window |
+| `unlimited` | boolean | `true` if tier has no rate limit (whale) |
+
+---
+
 ## POST /v1/node/claim
 
 Claims all pending $TRI rewards and moves them to the wallet balance.
@@ -432,31 +468,58 @@ All errors return JSON with an `error` field.
 
 ---
 
-## Rate Limits
+## Stake-Based Access Control
 
-| Endpoint | Limit | Window |
-|----------|-------|--------|
-| `/v1/chat/completions` | 60 requests | per minute |
-| `/v1/storage/put` | 100 requests | per minute |
-| `/v1/storage/get/:hash` | 300 requests | per minute |
-| `/v1/node/claim` | 1 request | per minute |
-| All other endpoints | 120 requests | per minute |
+Trinity uses **stake-based identity** -- your wallet address is your API key, and your staked $TRI amount determines your tier.
 
-Rate limits are applied per IP address. Exceeding the limit returns HTTP 429.
+### How It Works
 
----
+1. Include your wallet address in the `X-Wallet` HTTP header
+2. The node looks up your staked $TRI amount via the TokenStakingEngine
+3. Your tier is determined by how much $TRI you have staked
+4. Rate limits and endpoint access are enforced per tier
 
-## Authentication (Future)
+### Tiers
 
-:::info Coming Soon
-API key authentication is planned for a future release. Currently, the API is unauthenticated and should only be exposed on trusted networks.
-:::
+| Tier | Staked $TRI | Rate Limit | Reward Multiplier | Access |
+|------|------------|------------|-------------------|--------|
+| **Free** | 0 (no stake) | 10 req/min | 1.0x | /health, /node/status, /metrics, /rewards/rates, /node/tier |
+| **Staker** | 100+ TRI | 60 req/min | 1.5x | All endpoints |
+| **Power** | 1,000+ TRI | 300 req/min | 2.0x | All endpoints + priority jobs |
+| **Whale** | 10,000+ TRI | Unlimited | 3.0x | All endpoints + dedicated worker pool |
 
-When authentication is enabled, include the API key in the `Authorization` header:
+### Example Request with Wallet
 
 ```bash
-curl -H "Authorization: Bearer tri_your_api_key_here" \
-  http://localhost:8080/v1/chat/completions
+curl -H "X-Wallet: 0x1a2b3c4d5e6f7890abcdef1234567890abcdef12" \
+  http://localhost:8080/v1/node/stats
+```
+
+Without the `X-Wallet` header, requests are treated as Free tier.
+
+### Rate Limit Response (HTTP 429)
+
+When a rate limit is exceeded:
+
+```json
+{
+  "error": "rate_limit_exceeded",
+  "tier": "free",
+  "limit": 10,
+  "window_seconds": 60
+}
+```
+
+### Tier-Gated Response (HTTP 403)
+
+When a Free tier wallet accesses a restricted endpoint:
+
+```json
+{
+  "error": "tier_required",
+  "message": "This endpoint requires staking. Stake 100+ TRI to access.",
+  "min_stake": "100 TRI"
+}
 ```
 
 ## Next Steps

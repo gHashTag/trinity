@@ -26,6 +26,12 @@ pub const REWARD_BENCHMARK: u128 = 5_000_000_000_000_000; // 0.005 TRI per bench
 pub const REWARD_STORAGE_SHARD_HOUR: u128 = 50_000_000_000_000; // 0.00005 TRI per shard per hour
 pub const REWARD_STORAGE_RETRIEVAL: u128 = 500_000_000_000_000; // 0.0005 TRI per retrieval
 
+// Tier-based reward multipliers (stake-based monetization)
+pub const TIER_MULTIPLIER_FREE: f64 = 1.0;
+pub const TIER_MULTIPLIER_STAKER: f64 = 1.5; // 100+ TRI staked
+pub const TIER_MULTIPLIER_POWER: f64 = 2.0; // 1,000+ TRI staked
+pub const TIER_MULTIPLIER_WHALE: f64 = 3.0; // 10,000+ TRI staked
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // WALLET
 // ═══════════════════════════════════════════════════════════════════════════════

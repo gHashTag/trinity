@@ -600,6 +600,10 @@ pub fn main() !void {
         http_api_server = http_api_mod.HttpApiServer.initWithConfig(allocator, .{
             .port = args.http_api_port,
         });
+        // Wire staking engine for tier-based access control (v2.2)
+        if (staking_engine != null) {
+            http_api_server.?.staking_engine = &staking_engine.?;
+        }
         std.debug.print("HTTP REST API enabled (port: {d})\n", .{args.http_api_port});
     }
     defer if (http_api_server != null) http_api_server.?.deinit();
