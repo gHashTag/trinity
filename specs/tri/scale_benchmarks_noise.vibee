@@ -1,0 +1,40 @@
+name: scale_benchmarks_noise
+version: "1.0.0"
+language: zig
+module: scale_benchmarks_noise
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 1000
+  NOISE_5_PERCENT: 204
+  NOISE_10_PERCENT: 409
+
+types:
+  BenchmarkMetrics:
+    fields:
+      noise_avg: Float
+      noise_max: Float
+      signal_avg: Float
+      signal_min: Float
+      snr: Float
+
+behaviors:
+  - name: noiseFloorAt1000Scale
+    given: "1000 bipolar entities at DIM=4096. 50 random pairs for noise, 10-pair memory for signal."
+    when: "Measure noise floor, signal strength, SNR, and accuracy"
+    then: "15/15 — noise 0.013, signal 0.275, SNR 19.5x, 10/10 accuracy + 5 quality checks"
+
+  - name: fivePercentNoiseRecall
+    given: "Same 10-pair memory, query keys corrupted by 5%% (204 trits flipped)."
+    when: "Query all 10 pairs with noisy keys against 1000 candidates"
+    then: "10/10 (100%) — DIM=4096 absorbs 5%% noise at 1000-entity scale"
+
+  - name: tenPercentNoiseRecall
+    given: "Same memory, query keys corrupted by 10%% (409 trits flipped)."
+    when: "Query all 10 pairs with heavily noisy keys against 1000 candidates"
+    then: "10/10 (100%) — even 10%% noise insufficient to break retrieval"
+
+  - name: deterministicReplayAndMilestones
+    given: "10 deterministic replay queries + 5 scale milestone checks."
+    when: "Verify bit-identical results and milestone thresholds"
+    then: "15/15 — replay 10/10, entities >= 1000, noise < 0.02, SNR > 10, quality + noise passed"
