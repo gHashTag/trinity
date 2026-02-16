@@ -92,9 +92,22 @@ Values from [`src/trinity_node/token_staking.zig`](https://github.com/gHashTag/t
 | Corruption Slash Rate | **5%** per corruption event | `token_staking.zig:21` |
 | Min Reputation for Staking | **0.2** (20%) | `token_staking.zig:23` |
 
+### Staking Tiers (API Access)
+
+Staked $TRI determines your API tier. Higher stakes unlock higher rate limits, reward multipliers, and full endpoint access. Defined in [`src/trinity_node/http_api.zig`](https://github.com/gHashTag/trinity/blob/main/src/trinity_node/http_api.zig).
+
+| Tier | Staked $TRI | Rate Limit | Reward Multiplier | API Access |
+|------|------------|------------|-------------------|------------|
+| **Free** | 0 | 10 req/min | 1.0x | /health, /node/status, /metrics, /rewards/rates, /node/tier |
+| **Staker** | 100+ TRI | 60 req/min | 1.5x | All endpoints |
+| **Power** | 1,000+ TRI | 300 req/min | 2.0x | All endpoints + priority jobs |
+| **Whale** | 10,000+ TRI | Unlimited | 3.0x | All endpoints + dedicated worker pool |
+
+Identity is wallet-based: include your wallet address via the `X-Wallet` HTTP header. No API keys required -- your staked amount is your subscription.
+
 ### Staking Mechanics
 
-- **Minimum stake**: 100 TRI to activate the 1.5x earnings multiplier
+- **Minimum stake**: 100 TRI to activate the Staker tier (1.5x earnings multiplier)
 - **Reputation requirement**: Nodes must maintain a reputation score above 0.2 to remain staked
 - **Slashing**: PoS failures lose 1% of stake; data corruption loses 5% of stake
 - **Compounding**: Rewards can be re-staked to increase the staking balance
