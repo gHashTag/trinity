@@ -49,12 +49,12 @@ Similarity is measured using cosine similarity between the navigation result and
 
 | Staked Amount | Multiplier | Effect |
 |--------------|------------|--------|
-| 100,000+ TRI | 1.5x | All earnings multiplied by 1.5 |
-| \< 100,000 TRI | 1.0x | Standard rates |
+| 100+ TRI | 1.5x | All earnings multiplied by 1.5 |
+| \< 100 TRI | 1.0x | Standard rates |
 
-The staking multiplier applies globally to all operation types. It stacks multiplicatively with fitness and similarity bonuses.
+The minimum stake is **100 TRI** (defined in `token_staking.zig`). The multiplier applies globally to all operation types. It stacks multiplicatively with fitness and similarity bonuses.
 
-**Example:** A node with 100K+ TRI staked running VSA evolution with fitness 0.95 earns:
+**Example:** A node with 100+ TRI staked running VSA evolution with fitness 0.95 earns:
 
 ```
 0.001 TRI (base) + 0.0005 TRI (50% fitness bonus) = 0.0015 TRI
@@ -93,7 +93,7 @@ A dedicated node running high-throughput workloads with quality bonuses.
 
 ### Scenario 3: Staked Power Operator
 
-Same as Active Operator but with 100K+ TRI staked (1.5x multiplier on all earnings).
+Same as Active Operator but with 100+ TRI staked (1.5x multiplier on all earnings).
 
 | | Without Staking | With Staking (1.5x) |
 |---|----------------|---------------------|

@@ -45,6 +45,10 @@ pie title $TRI Token Allocation
 
 ## Vesting Schedules
 
+:::note Smart Contract Only
+Vesting is implemented in `TrinityToken.sol` on-chain. The node software (`depin.zig`) does not enforce vesting -- it is handled at the contract level.
+:::
+
 | Category | Cliff | Vesting Period | Schedule |
 |----------|-------|---------------|----------|
 | Founder | 12 months | 48 months | Linear monthly after cliff |
@@ -52,18 +56,6 @@ pie title $TRI Token Allocation
 | Treasury | 6 months | 24 months | Linear monthly after cliff |
 | Liquidity | None | Immediate | Available at TGE for DEX pools |
 | Node Rewards | None | Ongoing | Emitted per-operation, no cap per period |
-
-### Founder Vesting Example
-
-The founder allocation of 2,092,070,640 TRI vests as follows:
-
-| Month | Cumulative Unlocked | Percentage |
-|-------|-------------------|------------|
-| 0-12 | 0 | 0% |
-| 13 | 58,113,073 | 2.78% |
-| 24 | 697,356,880 | 33.33% |
-| 36 | 1,394,713,760 | 66.67% |
-| 48 | 2,092,070,640 | 100% |
 
 ## Node Reward Emissions
 
@@ -85,23 +77,34 @@ Emission rates are governed by network activity. As the pool diminishes, per-ope
 
 Staking $TRI provides two benefits:
 
-1. **Earnings multiplier** -- stake 100,000+ TRI for a 1.5x multiplier on all node earnings
-2. **Governance power** -- staked tokens grant voting rights on protocol parameters
+1. **Earnings multiplier** -- stake 100+ TRI for a 1.5x multiplier on all node earnings
+2. **Governance power** -- staked tokens grant voting rights on protocol parameters (planned)
 
-### Staking Tiers
+### Staking Parameters
 
-| Tier | Minimum Stake | Multiplier | Governance Weight |
-|------|--------------|------------|-------------------|
-| Standard | 0 TRI | 1.0x | None |
-| Operator | 100,000 TRI | 1.5x | 1x voting power |
-| Validator | 1,000,000 TRI | 1.5x | 10x voting power |
+Values from [`src/trinity_node/token_staking.zig`](https://github.com/gHashTag/trinity/blob/main/src/trinity_node/token_staking.zig):
+
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| Minimum Stake | **100 TRI** | `token_staking.zig:17` |
+| Earnings Multiplier | **1.5x** (when staked) | `depin.zig` |
+| PoS Failure Slash Rate | **1%** per failure | `token_staking.zig:19` |
+| Corruption Slash Rate | **5%** per corruption event | `token_staking.zig:21` |
+| Min Reputation for Staking | **0.2** (20%) | `token_staking.zig:23` |
 
 ### Staking Mechanics
 
-- **Lock period**: 7 days minimum
-- **Unstaking**: 7-day cooldown period before tokens are released
-- **Slashing**: Nodes that submit fraudulent proofs lose up to 10% of their stake
-- **Compounding**: Rewards can be auto-staked to increase the staking balance
+- **Minimum stake**: 100 TRI to activate the 1.5x earnings multiplier
+- **Reputation requirement**: Nodes must maintain a reputation score above 0.2 to remain staked
+- **Slashing**: PoS failures lose 1% of stake; data corruption loses 5% of stake
+- **Compounding**: Rewards can be re-staked to increase the staking balance
+
+:::note Planned Features
+The following features are designed but not yet implemented in the node software:
+- **Lock period**: 7 days minimum (planned)
+- **Unstaking cooldown**: 7-day cooldown period (planned)
+- **Governance tiers**: Tiered voting power based on stake amount (planned)
+:::
 
 ## Contract Address
 
@@ -126,8 +129,9 @@ $TRI holders with staked tokens can vote on:
 | Benchmark reward rate | 0.005 TRI | 0.0005 -- 0.05 TRI |
 | Storage Hosting rate | 0.00005 TRI | 0.000005 -- 0.0005 TRI |
 | Storage Retrieval rate | 0.0005 TRI | 0.00005 -- 0.005 TRI |
-| Staking minimum | 100,000 TRI | 10,000 -- 1,000,000 TRI |
-| Slashing percentage | 10% | 1% -- 25% |
+| Staking minimum | 100 TRI | 10 -- 10,000 TRI |
+| PoS failure slash rate | 1% | 0.1% -- 10% |
+| Corruption slash rate | 5% | 1% -- 25% |
 
 Governance proposals require a quorum of 5% of staked supply and a simple majority to pass.
 

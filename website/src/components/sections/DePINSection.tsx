@@ -83,11 +83,17 @@ const glassStyle: React.CSSProperties = {
 export default function DePINSection() {
   const [hoursPerDay, setHoursPerDay] = useState(8)
 
-  // Earnings calculation
-  // base_rate: average across all operation types weighted by frequency
-  const baseRate = 0.85 // $TRI per hour (blended average across all operations)
-  const bonusMultiplier = 1.2 // Early adopter bonus
-  const monthlyEarnings = baseRate * hoursPerDay * 30 * bonusMultiplier
+  // Earnings calculation — based on real reward rates from depin.zig
+  // Estimated operations per hour for an active node:
+  //   10 VSA evolutions × 0.001 = 0.01 TRI
+  //   100 nav steps × 0.0001    = 0.01 TRI
+  //   1 WASM conversion × 0.01  = 0.01 TRI
+  //   2 benchmarks × 0.005      = 0.01 TRI
+  //   50 shards × 0.00005       = 0.0025 TRI
+  //   5 retrievals × 0.0005     = 0.0025 TRI
+  // Total: ~0.045 TRI/hour
+  const baseRate = 0.045 // $TRI per hour (estimated from depin.zig reward rates)
+  const monthlyEarnings = baseRate * hoursPerDay * 30
 
   return (
     <Section id="depin">
@@ -125,10 +131,12 @@ export default function DePINSection() {
           viewport={{ once: true }}
         >
           <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
-            Active Nodes
+            Testnet Nodes
           </div>
-          <AnimatedCounter target={1247} color="#00ccff" delay={0} />
-          <div style={{ fontSize: '0.8rem', color: 'rgba(0, 204, 255, 0.6)' }}>worldwide</div>
+          <div style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 700, color: '#00ccff', marginBottom: '0.5rem', fontFamily: 'JetBrains Mono, monospace' }}>
+            Launching Soon
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'rgba(0, 204, 255, 0.6)' }}>Sepolia testnet</div>
         </motion.div>
 
         {/* Total $TRI Earned */}
@@ -140,10 +148,10 @@ export default function DePINSection() {
           viewport={{ once: true }}
         >
           <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
-            Total $TRI Earned
+            Total Supply
           </div>
-          <AnimatedCounter target={2847392} color="#ffd700" delay={200} />
-          <div style={{ fontSize: '0.8rem', color: 'rgba(255, 215, 0, 0.6)' }}>by node operators</div>
+          <AnimatedCounter target={10460353203} color="#ffd700" delay={200} />
+          <div style={{ fontSize: '0.8rem', color: 'rgba(255, 215, 0, 0.6)' }}>$TRI (3^21)</div>
         </motion.div>
 
         {/* Storage Hosted */}
@@ -155,10 +163,10 @@ export default function DePINSection() {
           viewport={{ once: true }}
         >
           <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
-            Storage Hosted
+            Min Stake
           </div>
-          <AnimatedCounter target={12.4} suffix=" TB" decimals={1} color="#00ccff" delay={400} />
-          <div style={{ fontSize: '0.8rem', color: 'rgba(0, 204, 255, 0.6)' }}>distributed storage</div>
+          <AnimatedCounter target={100} suffix=" TRI" color="#00ccff" delay={400} />
+          <div style={{ fontSize: '0.8rem', color: 'rgba(0, 204, 255, 0.6)' }}>for 1.5x earnings boost</div>
         </motion.div>
       </div>
 
@@ -310,7 +318,7 @@ export default function DePINSection() {
             {monthlyEarnings.toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: '0.5em', color: 'rgba(255, 215, 0, 0.7)' }}>$TRI</span>
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-            {hoursPerDay}h/day x 30 days x {bonusMultiplier}x early adopter bonus
+            {hoursPerDay}h/day x 30 days x 0.045 TRI/hr (est. from depin.zig rates)
           </div>
         </div>
 
@@ -329,7 +337,7 @@ export default function DePINSection() {
           }}>
             <div style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Daily</div>
             <div style={{ fontSize: '1.1rem', color: '#00ccff', fontWeight: 600, fontFamily: 'JetBrains Mono, monospace' }}>
-              {(baseRate * hoursPerDay * bonusMultiplier).toLocaleString(undefined, { maximumFractionDigits: 1 })}
+              {(baseRate * hoursPerDay).toLocaleString(undefined, { maximumFractionDigits: 1 })}
             </div>
             <div style={{ fontSize: '0.7rem', color: 'rgba(0, 204, 255, 0.5)' }}>$TRI</div>
           </div>
