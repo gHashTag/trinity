@@ -11723,3 +11723,352 @@ test "tree bundling confusion matrix hard" {
     try std.testing.expect(tree_acc > 0.25); // better than random
     try std.testing.expect(flat_acc > 0.25); // better than random
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 70: 1000+ Shared-Relation Analogies Benchmark (Level 11.6)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "1000+ shared-relation analogies benchmark" {
+    const DIM = 1024;
+    // Each relation R is a bipolar random vector. B_i = bind(R, A_i).
+    // Extracting: R' = bind(B_j, A_j) = R (exact for bipolar self-inverse).
+    // 10 relations × 12 pairs × (5 exemplar counts + 5 noise levels) = 1200 queries
+    const NUM_RELATIONS = 10;
+    const PAIRS_PER_REL = 12;
+
+    // Phase 1: Clean analogies — vary exemplar count
+    const exemplar_counts = [_]usize{ 1, 3, 5, 9, 11 };
+    var correct_by_exemplar: [5]usize = [_]usize{0} ** 5;
+    var queries_by_exemplar: [5]usize = [_]usize{0} ** 5;
+
+    // Phase 2: Noisy analogies — noise added to extracted relation
+    const noise_levels = [_]usize{ 0, 1, 2, 3, 5 };
+    var correct_by_noise: [5]usize = [_]usize{0} ** 5;
+    var queries_by_noise: [5]usize = [_]usize{0} ** 5;
+
+    var total_correct: usize = 0;
+    var total_queries: usize = 0;
+    var per_rel_correct: [NUM_RELATIONS]usize = [_]usize{0} ** NUM_RELATIONS;
+
+    std.debug.print("\n=== 1000+ SHARED-RELATION ANALOGIES (Level 11.6) ===\n", .{});
+    std.debug.print("Relations: {}, Pairs/rel: {}, Dim: {}\n", .{ NUM_RELATIONS, PAIRS_PER_REL, DIM });
+
+    for (0..NUM_RELATIONS) |r| {
+        // Create shared relation vector for this relation
+        var relation = bipolarRandom(DIM, 0xF000 + @as(u64, @intCast(r)) * 9973);
+
+        // Create A words, B = bind(R, A)
+        var a_words: [PAIRS_PER_REL]Hypervector = undefined;
+        var b_words: [PAIRS_PER_REL]Hypervector = undefined;
+        for (0..PAIRS_PER_REL) |i| {
+            a_words[i] = bipolarRandom(DIM, 0xA000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 6271);
+            b_words[i] = relation.bind(&a_words[i]);
+        }
+
+        // Phase 1: Clean analogies
+        for (exemplar_counts, 0..) |num_exemplars, ex_idx| {
+            for (0..PAIRS_PER_REL) |q| {
+                var rel_vectors: [11]Hypervector = undefined;
+                var rel_count: usize = 0;
+                for (0..PAIRS_PER_REL) |p| {
+                    if (p == q) continue;
+                    if (rel_count >= num_exemplars) break;
+                    // R' = bind(B_p, A_p) = bind(bind(R,A_p), A_p) = R (bipolar exact)
+                    rel_vectors[rel_count] = b_words[p].bind(&a_words[p]);
+                    rel_count += 1;
+                }
+
+                var rel_proto: Hypervector = undefined;
+                if (rel_count == 1) {
+                    rel_proto = rel_vectors[0];
+                } else {
+                    rel_proto = treeBundleN(rel_vectors[0..rel_count]);
+                }
+
+                var predicted = rel_proto.bind(&a_words[q]);
+
+                var best_idx: usize = 0;
+                var best_sim: f64 = -2.0;
+                for (0..PAIRS_PER_REL) |p| {
+                    const sim = predicted.similarity(&b_words[p]);
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = p;
+                    }
+                }
+
+                if (best_idx == q) {
+                    total_correct += 1;
+                    correct_by_exemplar[ex_idx] += 1;
+                    if (ex_idx == exemplar_counts.len - 1) per_rel_correct[r] += 1;
+                }
+                total_queries += 1;
+                queries_by_exemplar[ex_idx] += 1;
+            }
+        }
+
+        // Phase 2: Noisy analogies — 1 exemplar with progressive noise
+        for (noise_levels, 0..) |noise_count, n_idx| {
+            for (0..PAIRS_PER_REL) |q| {
+                const exemplar = if (q == 0) @as(usize, 1) else @as(usize, 0);
+                var extracted_rel = b_words[exemplar].bind(&a_words[exemplar]);
+
+                // Add noise: progressive bundle with random vectors
+                for (0..noise_count) |n| {
+                    const seed = 0xE000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(q)) * 100 + @as(u64, @intCast(n));
+                    var noise = bipolarRandom(DIM, seed);
+                    extracted_rel = extracted_rel.bundle(&noise);
+                }
+
+                var predicted = extracted_rel.bind(&a_words[q]);
+
+                var best_idx: usize = 0;
+                var best_sim: f64 = -2.0;
+                for (0..PAIRS_PER_REL) |p| {
+                    const sim = predicted.similarity(&b_words[p]);
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = p;
+                    }
+                }
+
+                if (best_idx == q) {
+                    total_correct += 1;
+                    correct_by_noise[n_idx] += 1;
+                }
+                total_queries += 1;
+                queries_by_noise[n_idx] += 1;
+            }
+        }
+    }
+
+    // Print results
+    std.debug.print("\n--- Phase 1: Clean Analogies by Exemplar Count ---\n", .{});
+    std.debug.print("Exemplars | Correct | Total | Accuracy\n", .{});
+    std.debug.print("----------|---------|-------|--------\n", .{});
+    for (exemplar_counts, 0..) |ne, idx| {
+        const acc = @as(f64, @floatFromInt(correct_by_exemplar[idx])) / @as(f64, @floatFromInt(queries_by_exemplar[idx]));
+        std.debug.print("    {:>5} | {:>7} | {:>5} | {d:.1}%\n", .{ ne, correct_by_exemplar[idx], queries_by_exemplar[idx], acc * 100 });
+    }
+
+    std.debug.print("\n--- Phase 2: Noisy Analogies (1-exemplar + noise) ---\n", .{});
+    std.debug.print("Noise | Correct | Total | Accuracy\n", .{});
+    std.debug.print("------|---------|-------|--------\n", .{});
+    for (noise_levels, 0..) |nl, idx| {
+        const acc = @as(f64, @floatFromInt(correct_by_noise[idx])) / @as(f64, @floatFromInt(queries_by_noise[idx]));
+        std.debug.print("    {:>1} | {:>7} | {:>5} | {d:.1}%\n", .{ nl, correct_by_noise[idx], queries_by_noise[idx], acc * 100 });
+    }
+
+    std.debug.print("\n--- Per-Relation Accuracy (11-exemplar, clean) ---\n", .{});
+    for (0..NUM_RELATIONS) |r| {
+        const per_acc = @as(f64, @floatFromInt(per_rel_correct[r])) / @as(f64, PAIRS_PER_REL);
+        std.debug.print("  Relation {:>2}: {}/{} ({d:.1}%)\n", .{ r, per_rel_correct[r], PAIRS_PER_REL, per_acc * 100 });
+    }
+
+    const overall_acc = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries));
+    std.debug.print("\nTotal: {}/{} ({d:.1}%)\n", .{ total_correct, total_queries, overall_acc * 100 });
+    std.debug.print("Total analogy queries: {} (>=1000: {})\n", .{ total_queries, total_queries >= 1000 });
+    std.debug.print("============================================\n", .{});
+
+    // Must have >=1000 queries
+    try std.testing.expect(total_queries >= 1000);
+    // Clean 1-exemplar bipolar should be 100% (exact self-inverse)
+    const clean_1ex_acc = @as(f64, @floatFromInt(correct_by_exemplar[0])) / @as(f64, @floatFromInt(queries_by_exemplar[0]));
+    try std.testing.expect(clean_1ex_acc > 0.95);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 71: Multi-Exemplar Relation Extraction — Tree vs Flat (Level 11.6)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "multi-exemplar relation extraction tree vs flat" {
+    const DIM = 1024;
+    const NUM_PAIRS = 20;
+    const NUM_TEST = 5; // hold out last 5 for testing
+
+    // One shared relation: B_i = bind(R, A_i)
+    var relation = bipolarRandom(DIM, 0xC000);
+    var a_words: [NUM_PAIRS]Hypervector = undefined;
+    var b_words: [NUM_PAIRS]Hypervector = undefined;
+    for (0..NUM_PAIRS) |i| {
+        a_words[i] = bipolarRandom(DIM, 0xC100 + @as(u64, @intCast(i)) * 3571);
+        b_words[i] = relation.bind(&a_words[i]);
+    }
+
+    // Each extracted relation gets 3 noise components (simulating noisy observations)
+    const NOISE_PER_REL = 3;
+
+    std.debug.print("\n=== MULTI-EXEMPLAR NOISY RELATION: TREE vs FLAT (Level 11.6) ===\n", .{});
+    std.debug.print("Pairs: {}, Test: {}, Dim: {}, Noise/rel: {}\n", .{ NUM_PAIRS, NUM_TEST, DIM, NOISE_PER_REL });
+
+    std.debug.print("\nExemplars | Tree Acc | Flat Acc | Tree R-sim | Flat R-sim\n", .{});
+    std.debug.print("----------|----------|----------|------------|----------\n", .{});
+
+    const test_start = NUM_PAIRS - NUM_TEST;
+
+    var tree_mono = true;
+    var flat_mono = true;
+    var prev_tree_acc: f64 = -1;
+    var prev_flat_acc: f64 = -1;
+
+    const exemplar_set = [_]usize{ 1, 2, 3, 5, 7, 10, 15 };
+    for (exemplar_set) |num_ex| {
+        // Extract noisy relation vectors
+        var rel_vecs: [15]Hypervector = undefined;
+        for (0..num_ex) |i| {
+            rel_vecs[i] = b_words[i].bind(&a_words[i]); // = R exact
+            // Add noise
+            for (0..NOISE_PER_REL) |n| {
+                const seed = 0xCC00 + @as(u64, @intCast(i)) * 100 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                rel_vecs[i] = rel_vecs[i].bundle(&noise);
+            }
+        }
+
+        // Tree-bundled noisy relation
+        var tree_rel: Hypervector = undefined;
+        if (num_ex == 1) {
+            tree_rel = rel_vecs[0];
+        } else {
+            var tree_copy: [15]Hypervector = undefined;
+            for (0..num_ex) |i| tree_copy[i] = rel_vecs[i];
+            tree_rel = treeBundleN(tree_copy[0..num_ex]);
+        }
+
+        // Flat-bundled noisy relation
+        var flat_rel = rel_vecs[0];
+        for (1..num_ex) |i| {
+            flat_rel = flat_rel.bundle(&rel_vecs[i]);
+        }
+
+        // Similarity to true relation
+        const tree_r_sim = tree_rel.similarity(&relation);
+        const flat_r_sim = flat_rel.similarity(&relation);
+
+        // Test on held-out pairs
+        var tree_correct: usize = 0;
+        var flat_correct: usize = 0;
+
+        for (test_start..NUM_PAIRS) |t| {
+            var tree_pred = tree_rel.bind(&a_words[t]);
+            var flat_pred = flat_rel.bind(&a_words[t]);
+
+            var tree_best: usize = 0;
+            var flat_best: usize = 0;
+            var t_best_sim: f64 = -2.0;
+            var f_best_sim: f64 = -2.0;
+
+            for (0..NUM_PAIRS) |p| {
+                const t_sim = tree_pred.similarity(&b_words[p]);
+                const f_sim = flat_pred.similarity(&b_words[p]);
+                if (t_sim > t_best_sim) { t_best_sim = t_sim; tree_best = p; }
+                if (f_sim > f_best_sim) { f_best_sim = f_sim; flat_best = p; }
+            }
+
+            if (tree_best == t) tree_correct += 1;
+            if (flat_best == t) flat_correct += 1;
+        }
+
+        const tree_acc = @as(f64, @floatFromInt(tree_correct)) / @as(f64, NUM_TEST);
+        const flat_acc = @as(f64, @floatFromInt(flat_correct)) / @as(f64, NUM_TEST);
+
+        if (prev_tree_acc >= 0 and tree_acc < prev_tree_acc - 0.01) tree_mono = false;
+        if (prev_flat_acc >= 0 and flat_acc < prev_flat_acc - 0.01) flat_mono = false;
+        prev_tree_acc = tree_acc;
+        prev_flat_acc = flat_acc;
+
+        std.debug.print("    {:>5} | {d:>7.1}% | {d:>7.1}% | {d:>9.4} | {d:>8.4}\n", .{ num_ex, tree_acc * 100, flat_acc * 100, tree_r_sim, flat_r_sim });
+    }
+
+    std.debug.print("\nTree monotonic: {}\n", .{tree_mono});
+    std.debug.print("Flat monotonic: {}\n", .{flat_mono});
+    std.debug.print("============================================\n", .{});
+
+    // Tree should work well at 15 exemplars
+    try std.testing.expect(prev_tree_acc > 0.5);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 72: Multi-Step Relation Chains (Level 11.6)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "multi-step relation chains analogies" {
+    const DIM = 1024;
+
+    // Process chains one at a time to avoid stack overflow.
+    // For each chain: 5 entities (4 hops max).
+    // Test across 50 chains total (processed in batches of 5).
+    const CHAINS_PER_BATCH = 5;
+    const NUM_BATCHES = 10;
+    const MAX_HOPS = 4;
+    const ENTITIES_PER_CHAIN = MAX_HOPS + 1; // 5 entities per chain
+
+    std.debug.print("\n=== MULTI-STEP RELATION CHAINS (Level 11.6) ===\n", .{});
+    std.debug.print("Total chains: {}, Max hops: {}, Dim: {}\n", .{ CHAINS_PER_BATCH * NUM_BATCHES, MAX_HOPS, DIM });
+
+    std.debug.print("\n  Hops | Correct | Total | Accuracy | Avg Sim\n", .{});
+    std.debug.print("  -----|---------|-------|----------|--------\n", .{});
+
+    var total_correct: usize = 0;
+    var total_queries: usize = 0;
+    var hop_correct_all: [MAX_HOPS]usize = [_]usize{0} ** MAX_HOPS;
+    var hop_sim_all: [MAX_HOPS]f64 = [_]f64{0} ** MAX_HOPS;
+    var hop_queries: [MAX_HOPS]usize = [_]usize{0} ** MAX_HOPS;
+
+    for (0..NUM_BATCHES) |batch| {
+        // Create entities for this batch
+        var entities: [CHAINS_PER_BATCH * ENTITIES_PER_CHAIN]Hypervector = undefined;
+        for (0..CHAINS_PER_BATCH * ENTITIES_PER_CHAIN) |i| {
+            const seed = 0xD000 + @as(u64, @intCast(batch)) * 50000 + @as(u64, @intCast(i)) * 8191;
+            entities[i] = bipolarRandom(DIM, seed);
+        }
+
+        for (1..MAX_HOPS + 1) |num_hops| {
+            for (0..CHAINS_PER_BATCH) |chain| {
+                const chain_base = chain * ENTITIES_PER_CHAIN;
+
+                // Composite relation: bind(R_0, R_1, ..., R_{num_hops-1})
+                var composite = entities[chain_base + 1].bind(&entities[chain_base]);
+                for (1..num_hops) |h| {
+                    var hop_rel = entities[chain_base + h + 1].bind(&entities[chain_base + h]);
+                    composite = composite.bind(&hop_rel);
+                }
+
+                // Apply composite to start → should reach entity[num_hops]
+                var predicted = composite.bind(&entities[chain_base]);
+                const target_idx = chain_base + num_hops;
+
+                // Find closest among batch entities
+                var best_idx: usize = 0;
+                var best_sim: f64 = -2.0;
+                for (0..CHAINS_PER_BATCH * ENTITIES_PER_CHAIN) |e| {
+                    const sim = predicted.similarity(&entities[e]);
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = e;
+                    }
+                }
+
+                const target_sim = predicted.similarity(&entities[target_idx]);
+                hop_sim_all[num_hops - 1] += target_sim;
+                hop_queries[num_hops - 1] += 1;
+
+                if (best_idx == target_idx) {
+                    hop_correct_all[num_hops - 1] += 1;
+                    total_correct += 1;
+                }
+                total_queries += 1;
+            }
+        }
+    }
+
+    for (0..MAX_HOPS) |h| {
+        const hop_acc = @as(f64, @floatFromInt(hop_correct_all[h])) / @as(f64, @floatFromInt(hop_queries[h]));
+        const avg_sim = hop_sim_all[h] / @as(f64, @floatFromInt(hop_queries[h]));
+        std.debug.print("  {:>4} | {:>7} | {:>5} | {d:>7.1}% | {d:.4}\n", .{ h + 1, hop_correct_all[h], hop_queries[h], hop_acc * 100, avg_sim });
+    }
+
+    const overall_acc = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries));
+    std.debug.print("\nOverall: {}/{} ({d:.1}%)\n", .{ total_correct, total_queries, overall_acc * 100 });
+    std.debug.print("============================================\n", .{});
+
+    // Bipolar chains should be exact (self-inverse)
+    try std.testing.expect(overall_acc > 0.9); // very high for bipolar
+}
