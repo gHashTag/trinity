@@ -1,0 +1,39 @@
+name: multi_hop_1000_scale
+version: "1.0.0"
+language: zig
+module: multi_hop_1000_scale
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 1000
+  CHAIN_LENGTH: 5
+  NUM_CHAINS: 10
+
+types:
+  ChainResult:
+    fields:
+      chain_id: Int
+      hops_completed: Int
+      total_hops: Int
+      cross_domain: Bool
+
+behaviors:
+  - name: fiveHopChainsAtScale
+    given: "1000 entities, 10 chains of 5 hops each with single-pair memories."
+    when: "Walk each chain searching entire 1000-entity pool at every hop"
+    then: "50/50 (100%) — all hops resolve correctly despite 1000 candidates"
+
+  - name: crossDomainTwoHopChains
+    given: "10 cross-domain 2-hop chains linking different 100-entity domains."
+    when: "Execute each 2-hop chain, searching 1000 candidates per hop"
+    then: "20/20 (100%) — cross-domain chains resolve perfectly"
+
+  - name: bundledMemoryFullPool
+    given: "10-pair bundled memories queried against full 1000-entity candidate pool."
+    when: "Query 20 pairs across 2 domain memories"
+    then: "20/20 (100%) — bundled memory signal survives 1000-candidate search"
+
+  - name: parallelMultiRelation
+    given: "Single entity participating in 5 different relations simultaneously."
+    when: "Query each relation memory independently"
+    then: "10/10 (100%) — parallel relations resolve independently at scale"
