@@ -11,12 +11,19 @@ Complete API documentation for Trinity modules.
 
 | Module | Description |
 |--------|-------------|
-| [VSA](/api/vsa) | Vector Symbolic Architecture |
+| [VSA](/api/vsa) | Vector Symbolic Architecture (Zig) |
 | [VM](/api/vm) | Ternary Virtual Machine |
 | [Hybrid](/api/hybrid) | HybridBigInt storage |
 | [Firebird](/api/firebird) | LLM inference engine |
 | [VIBEE](/api/vibee) | Specification compiler |
 | [Plugin](/api/plugin) | Extension system |
+
+## SDK Bindings
+
+| Module | Description |
+|--------|-------------|
+| [C API (libtrinity-vsa)](/api/c-api) | 22-function C library — SIMD-accelerated, 70 KB |
+| [Python SDK](/api/python-sdk) | ctypes binding — NativeVSA + Vector classes |
 
 ## Quick Reference
 

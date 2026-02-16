@@ -1,9 +1,14 @@
 /**
  * @file trinity_vsa.h
- * @brief Trinity VSA - Vector Symbolic Architecture with Balanced Ternary
- * 
- * High-performance library for hyperdimensional computing.
- * 
+ * @brief Trinity VSA — Vector Symbolic Architecture with Balanced Ternary
+ *
+ * High-performance hyperdimensional computing library.
+ * Backed by Zig core with SIMD acceleration (ARM NEON / x86 SSE).
+ *
+ * Vectors are opaque handles. Create with trinity_vsa_vector_*(),
+ * free with trinity_vsa_vector_free(). All functions are null-safe.
+ *
+ * @version 0.2.0
  * @author Dmitrii Vasilev
  * @license MIT
  */
@@ -13,91 +18,78 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* ============================================================================
- * Types
+ * Opaque Vector Handle
  * ============================================================================ */
 
 /**
- * @brief Balanced ternary digit
+ * @brief Opaque handle to a ternary hypervector.
+ *
+ * Internally a heap-allocated HybridBigInt with SIMD-accelerated operations.
+ * Each trit is {-1, 0, +1}. Max dimension: 59,049 (3^10).
  */
-typedef enum {
-    TRIT_NEG = -1,
-    TRIT_ZERO = 0,
-    TRIT_POS = 1
-} trit_t;
-
-/**
- * @brief Dense trit vector
- */
-typedef struct {
-    int8_t* data;
-    size_t dim;
-    bool owned;  /* Whether data should be freed */
-} trit_vector_t;
-
-/**
- * @brief Packed trit vector (2 bits per trit)
- */
-typedef struct {
-    uint64_t* pos;  /* Positive bits */
-    uint64_t* neg;  /* Negative bits */
-    size_t dim;
-    size_t num_words;
-} packed_trit_vec_t;
+typedef void* trinity_vsa_vector_t;
 
 /* ============================================================================
- * Vector Creation/Destruction
+ * Library Info
+ * ============================================================================ */
+
+/**
+ * @brief Get library version string
+ * @return Null-terminated version string (e.g. "0.2.0")
+ */
+const char* trinity_vsa_version(void);
+
+/**
+ * @brief Get maximum supported vector dimension
+ * @return 59049 (3^10)
+ */
+size_t trinity_vsa_max_dim(void);
+
+/* ============================================================================
+ * Vector Creation / Destruction
  * ============================================================================ */
 
 /**
  * @brief Create zero vector
- * @param dim Vector dimension
- * @return New vector (must be freed with trit_vector_free)
+ * @param dim Vector dimension (max 59049)
+ * @return New vector handle, or NULL on failure. Must be freed.
  */
-trit_vector_t* trit_vector_zeros(size_t dim);
+trinity_vsa_vector_t trinity_vsa_vector_zeros(size_t dim);
 
 /**
  * @brief Create random hypervector
- * @param dim Vector dimension
- * @param seed Random seed (0 for random)
- * @return New vector
+ * @param dim Vector dimension (max 59049)
+ * @param seed Random seed (deterministic: same seed = same vector)
+ * @return New vector handle, or NULL on failure. Must be freed.
  */
-trit_vector_t* trit_vector_random(size_t dim, uint64_t seed);
+trinity_vsa_vector_t trinity_vsa_vector_random(size_t dim, uint64_t seed);
 
 /**
- * @brief Create vector from array
- * @param data Array of int8 values
- * @param dim Array length
- * @return New vector (copies data)
+ * @brief Create vector from array of int8 values
+ * @param data Array of int8 values (clamped to {-1, 0, +1})
+ * @param dim Array length (max 59049)
+ * @return New vector handle (copies data), or NULL on failure. Must be freed.
  */
-trit_vector_t* trit_vector_from_array(const int8_t* data, size_t dim);
+trinity_vsa_vector_t trinity_vsa_from_array(const int8_t* data, size_t dim);
 
 /**
- * @brief Create vector wrapping existing array (no copy)
- * @param data Array of int8 values
- * @param dim Array length
- * @return New vector (does not own data)
+ * @brief Clone a vector (deep copy)
+ * @param v Source vector handle (may be NULL)
+ * @return New vector handle, or NULL on failure. Must be freed.
  */
-trit_vector_t* trit_vector_wrap(int8_t* data, size_t dim);
+trinity_vsa_vector_t trinity_vsa_vector_clone(trinity_vsa_vector_t v);
 
 /**
- * @brief Free vector
- * @param v Vector to free
+ * @brief Free a vector handle
+ * @param v Vector to free (NULL-safe, no-op on NULL)
  */
-void trit_vector_free(trit_vector_t* v);
-
-/**
- * @brief Clone vector
- * @param v Vector to clone
- * @return New vector
- */
-trit_vector_t* trit_vector_clone(const trit_vector_t* v);
+void trinity_vsa_vector_free(trinity_vsa_vector_t v);
 
 /* ============================================================================
  * VSA Operations
@@ -105,123 +97,159 @@ trit_vector_t* trit_vector_clone(const trit_vector_t* v);
 
 /**
  * @brief Bind two vectors (element-wise multiplication)
+ *
+ * Creates associations: bind(country, capital) represents "country→capital".
+ * Self-inverse: bind(a, a) = all +1 for non-zero trits.
+ * Unbind: bind(bind(a,b), b) = a.
+ *
  * @param a First vector
  * @param b Second vector
- * @return Bound vector (new allocation)
+ * @return Bound vector (new handle), or NULL on failure. Must be freed.
  */
-trit_vector_t* trit_bind(const trit_vector_t* a, const trit_vector_t* b);
+trinity_vsa_vector_t trinity_vsa_bind(trinity_vsa_vector_t a, trinity_vsa_vector_t b);
 
 /**
- * @brief Bind in-place: result = a * b
- * @param result Output vector (must be pre-allocated)
+ * @brief Unbind (inverse of bind — same as bind for balanced ternary)
+ * @param a Bound vector
+ * @param b Key vector
+ * @return Unbound vector (new handle), or NULL on failure. Must be freed.
+ */
+trinity_vsa_vector_t trinity_vsa_unbind(trinity_vsa_vector_t a, trinity_vsa_vector_t b);
+
+/**
+ * @brief Bundle 2 vectors (majority voting)
+ *
+ * Creates superposition: bundle(cat, dog) is similar to both.
+ *
  * @param a First vector
  * @param b Second vector
+ * @return Bundled vector (new handle), or NULL on failure. Must be freed.
  */
-void trit_bind_inplace(trit_vector_t* result, const trit_vector_t* a, const trit_vector_t* b);
+trinity_vsa_vector_t trinity_vsa_bundle2(trinity_vsa_vector_t a, trinity_vsa_vector_t b);
 
 /**
- * @brief Unbind (same as bind for balanced ternary)
+ * @brief Bundle 3 vectors (true majority voting)
+ * @param a First vector
+ * @param b Second vector
+ * @param c Third vector
+ * @return Bundled vector (new handle), or NULL on failure. Must be freed.
  */
-#define trit_unbind trit_bind
+trinity_vsa_vector_t trinity_vsa_bundle3(trinity_vsa_vector_t a, trinity_vsa_vector_t b, trinity_vsa_vector_t c);
 
 /**
- * @brief Bundle multiple vectors (majority voting)
- * @param vectors Array of vector pointers
- * @param count Number of vectors
- * @return Bundled vector
- */
-trit_vector_t* trit_bundle(const trit_vector_t** vectors, size_t count);
-
-/**
- * @brief Permute vector (circular shift)
+ * @brief Permute vector (cyclic shift)
+ *
+ * Used for sequence encoding: permute(word_vec, position).
+ *
  * @param v Vector to permute
- * @param shift Shift amount (positive = right)
- * @return Permuted vector
+ * @param k Shift amount (positions to shift right)
+ * @return Permuted vector (new handle), or NULL on failure. Must be freed.
  */
-trit_vector_t* trit_permute(const trit_vector_t* v, int32_t shift);
-
-/**
- * @brief Cosine similarity
- * @param a First vector
- * @param b Second vector
- * @return Similarity in [-1.0, 1.0]
- */
-double trit_similarity(const trit_vector_t* a, const trit_vector_t* b);
-
-/**
- * @brief Dot product
- * @param a First vector
- * @param b Second vector
- * @return Sum of element-wise products
- */
-int64_t trit_dot(const trit_vector_t* a, const trit_vector_t* b);
-
-/**
- * @brief Hamming distance
- * @param a First vector
- * @param b Second vector
- * @return Number of differing positions
- */
-size_t trit_hamming_distance(const trit_vector_t* a, const trit_vector_t* b);
+trinity_vsa_vector_t trinity_vsa_permute(trinity_vsa_vector_t v, size_t k);
 
 /* ============================================================================
- * Packed Operations (SIMD-optimized)
+ * Similarity Measures
  * ============================================================================ */
 
 /**
- * @brief Create packed vector from dense
+ * @brief Cosine similarity between two vectors
+ * @param a First vector
+ * @param b Second vector
+ * @return Similarity in [-1.0, 1.0], or 0.0 on error
  */
-packed_trit_vec_t* packed_from_trit_vector(const trit_vector_t* v);
+double trinity_vsa_cosine_similarity(trinity_vsa_vector_t a, trinity_vsa_vector_t b);
 
 /**
- * @brief Convert packed to dense
+ * @brief Hamming distance (number of differing trits)
+ * @param a First vector
+ * @param b Second vector
+ * @return Number of positions where trits differ, or 0 on error
  */
-trit_vector_t* packed_to_trit_vector(const packed_trit_vec_t* p);
+size_t trinity_vsa_hamming_distance(trinity_vsa_vector_t a, trinity_vsa_vector_t b);
 
 /**
- * @brief Free packed vector
+ * @brief Dot product (sum of element-wise products)
+ * @param a First vector
+ * @param b Second vector
+ * @return Scalar dot product, or 0 on error
  */
-void packed_free(packed_trit_vec_t* p);
-
-/**
- * @brief Fast packed bind
- */
-packed_trit_vec_t* packed_bind(const packed_trit_vec_t* a, const packed_trit_vec_t* b);
-
-/**
- * @brief Fast packed dot product
- */
-int64_t packed_dot(const packed_trit_vec_t* a, const packed_trit_vec_t* b);
+int64_t trinity_vsa_dot_product(trinity_vsa_vector_t a, trinity_vsa_vector_t b);
 
 /* ============================================================================
- * Utility Functions
+ * Text Encoding (Semantic Search)
  * ============================================================================ */
 
 /**
- * @brief Get number of non-zero elements
+ * @brief Encode text string to hypervector
+ *
+ * Uses position-based character binding for semantic search.
+ * Same text always produces the same vector. Similar texts produce similar vectors.
+ *
+ * @param text UTF-8 text string (not necessarily null-terminated)
+ * @param len Length of text in bytes
+ * @return Text vector (new handle), or NULL on failure. Must be freed.
  */
-size_t trit_vector_nnz(const trit_vector_t* v);
+trinity_vsa_vector_t trinity_vsa_encode_text(const char* text, size_t len);
 
 /**
- * @brief Get sparsity ratio (fraction of zeros)
+ * @brief Decode hypervector back to text
+ *
+ * Probes each position against character codebook.
+ *
+ * @param v Vector to decode
+ * @param buf Output buffer for decoded text
+ * @param buf_len Maximum bytes to write
+ * @return Number of characters actually decoded
  */
-double trit_vector_sparsity(const trit_vector_t* v);
+size_t trinity_vsa_decode_text(trinity_vsa_vector_t v, char* buf, size_t buf_len);
 
 /**
- * @brief Negate vector in-place
+ * @brief Encode text to hypervector using word-level bag-of-words
+ *
+ * Splits text into words, encodes each independently, bundles via majority vote.
+ * Better for search: texts sharing words have high similarity regardless of order.
+ *
+ * @param text UTF-8 text string (not necessarily null-terminated)
+ * @param len Length of text in bytes
+ * @return Text vector (new handle), or NULL on failure. Must be freed.
  */
-void trit_vector_negate(trit_vector_t* v);
+trinity_vsa_vector_t trinity_vsa_encode_text_words(const char* text, size_t len);
+
+/* ============================================================================
+ * Vector Access
+ * ============================================================================ */
 
 /**
- * @brief Check if SIMD is available
+ * @brief Get vector dimension (number of trits)
+ * @param v Vector handle (NULL returns 0)
+ * @return Number of trits in vector
  */
-bool trinity_has_avx2(void);
-bool trinity_has_avx512(void);
+size_t trinity_vsa_get_dim(trinity_vsa_vector_t v);
 
 /**
- * @brief Get library version
+ * @brief Get trit value at index
+ * @param v Vector handle
+ * @param index Trit position (0-based)
+ * @return Trit value: -1, 0, or +1 (0 on out-of-bounds or NULL)
  */
-const char* trinity_version(void);
+int8_t trinity_vsa_get_trit(trinity_vsa_vector_t v, size_t index);
+
+/**
+ * @brief Set trit value at index
+ * @param v Vector handle
+ * @param index Trit position (0-based)
+ * @param value Trit value (clamped to {-1, 0, +1})
+ */
+void trinity_vsa_set_trit(trinity_vsa_vector_t v, size_t index, int8_t value);
+
+/**
+ * @brief Copy trit data to output array
+ * @param v Vector handle
+ * @param out Output array of int8
+ * @param max_len Maximum elements to copy
+ * @return Number of trits actually copied
+ */
+size_t trinity_vsa_to_array(trinity_vsa_vector_t v, int8_t* out, size_t max_len);
 
 #ifdef __cplusplus
 }

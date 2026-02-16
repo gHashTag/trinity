@@ -443,6 +443,95 @@ pub fn textRoundtrip(text: []const u8, buffer: []u8) []u8 {
     return decodeText(&encoded, text.len, buffer);
 }
 
+/// Encode a single word to a hypervector using hash-based seed
+/// The entire word maps to one deterministic random vector (no positional encoding)
+pub fn encodeWord(word: []const u8) HybridBigInt {
+    if (word.len == 0) return HybridBigInt.zero();
+
+    // Hash the word bytes to produce a single seed
+    var hash: u64 = 0x517cc1b727220a95; // FNV offset basis
+    for (word) |c| {
+        // Lowercase for case-insensitive matching
+        const lower: u64 = if (c >= 'A' and c <= 'Z') c + 32 else c;
+        hash ^= lower;
+        hash *%= 0x100000001b3; // FNV prime
+    }
+    return randomVector(TEXT_VECTOR_DIM, hash);
+}
+
+/// Encode text to hypervector using word-level bag-of-words
+/// Splits on whitespace/punctuation, encodes each word independently, bundles all.
+/// Uses element-wise majority vote (proper VSA bundling), not arithmetic addition.
+/// This gives good search quality: texts sharing words have high similarity.
+pub fn encodeTextWords(text: []const u8) HybridBigInt {
+    if (text.len == 0) return HybridBigInt.zero();
+
+    // Accumulate element-wise sums in i16 to avoid overflow
+    var sums: [tvc_hybrid.MAX_TRITS]i16 = @splat(0);
+    var word_count: usize = 0;
+    var word_start: usize = 0;
+    var in_word: bool = false;
+    var max_dim: usize = 0;
+
+    for (text, 0..) |c, i| {
+        const is_alpha = (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '0' and c <= '9');
+        if (is_alpha) {
+            if (!in_word) {
+                word_start = i;
+                in_word = true;
+            }
+        } else {
+            if (in_word) {
+                const word = text[word_start..i];
+                if (word.len >= 2) {
+                    var wv = encodeWord(word);
+                    wv.ensureUnpacked();
+                    max_dim = @max(max_dim, wv.trit_len);
+                    for (0..wv.trit_len) |j| {
+                        sums[j] += wv.unpacked_cache[j];
+                    }
+                    word_count += 1;
+                }
+                in_word = false;
+            }
+        }
+    }
+    // Handle last word
+    if (in_word) {
+        const word = text[word_start..text.len];
+        if (word.len >= 2) {
+            var wv = encodeWord(word);
+            wv.ensureUnpacked();
+            max_dim = @max(max_dim, wv.trit_len);
+            for (0..wv.trit_len) |j| {
+                sums[j] += wv.unpacked_cache[j];
+            }
+            word_count += 1;
+        }
+    }
+
+    // If no multi-char words found, fall back to character encoding
+    if (word_count == 0) return encodeText(text);
+
+    // Threshold: positive sum → +1, negative → -1, zero → 0
+    var result = HybridBigInt.zero();
+    result.mode = .unpacked_mode;
+    result.dirty = true;
+    result.trit_len = max_dim;
+
+    for (0..max_dim) |j| {
+        if (sums[j] > 0) {
+            result.unpacked_cache[j] = 1;
+        } else if (sums[j] < 0) {
+            result.unpacked_cache[j] = -1;
+        } else {
+            result.unpacked_cache[j] = 0;
+        }
+    }
+
+    return result;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SEMANTIC SIMILARITY SEARCH
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -10251,6 +10340,27 @@ test "textsAreSimilar threshold" {
 
     // Very different texts should fail high threshold
     try std.testing.expect(!textsAreSimilar("abc", "xyz", 0.9));
+}
+
+test "encodeTextWords word-level similarity" {
+    // Same words should produce identical vectors
+    var v1 = encodeTextWords("machine learning");
+    var v2 = encodeTextWords("machine learning");
+    const sim_same = cosineSimilarity(&v1, &v2);
+    std.debug.print("\n  same text sim: {d:.4}\n", .{sim_same});
+    try std.testing.expect(sim_same > 0.99);
+
+    // Shared word "learning" should give moderate similarity
+    var v3 = encodeTextWords("learning algorithms");
+    const sim_shared = cosineSimilarity(&v1, &v3);
+    std.debug.print("  shared word sim: {d:.4}\n", .{sim_shared});
+    try std.testing.expect(sim_shared > 0.2);
+
+    // No shared words → near zero
+    var v4 = encodeTextWords("database query optimization");
+    const sim_diff = cosineSimilarity(&v1, &v4);
+    std.debug.print("  different words sim: {d:.4}\n", .{sim_diff});
+    try std.testing.expect(sim_diff < sim_shared);
 }
 
 test "TextCorpus add and find" {

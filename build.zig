@@ -26,6 +26,87 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(lib);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // libtrinity-vsa — C API shared/static library
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const c_api_mod = b.createModule(.{
+        .root_source_file = b.path("src/c_api.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
+    });
+
+    // Shared library (.so / .dylib / .dll)
+    const libvsa_shared = b.addLibrary(.{
+        .name = "trinity-vsa",
+        .linkage = .dynamic,
+        .root_module = c_api_mod,
+    });
+    libvsa_shared.linkLibC();
+    const install_shared = b.addInstallArtifact(libvsa_shared, .{});
+
+    // Static library (.a / .lib)
+    const libvsa_static = b.addLibrary(.{
+        .name = "trinity-vsa-static",
+        .linkage = .static,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/c_api.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    libvsa_static.linkLibC();
+    const install_static = b.addInstallArtifact(libvsa_static, .{});
+
+    // Install C header
+    const install_header = b.addInstallHeaderFile(
+        b.path("libs/c/libtrinityvsa/include/trinity_vsa.h"),
+        "trinity_vsa.h",
+    );
+
+    // Convenience step: zig build libvsa
+    const libvsa_step = b.step("libvsa", "Build libtrinity-vsa (C API shared + static + header)");
+    libvsa_step.dependOn(&install_shared.step);
+    libvsa_step.dependOn(&install_static.step);
+    libvsa_step.dependOn(&install_header.step);
+
+    // Cross-platform libvsa release builds
+    const libvsa_release_step = b.step("release-libvsa", "Build libtrinity-vsa for all platforms");
+
+    const libvsa_targets: []const std.Target.Query = &.{
+        .{ .cpu_arch = .x86_64, .os_tag = .linux },
+        .{ .cpu_arch = .aarch64, .os_tag = .linux },
+        .{ .cpu_arch = .x86_64, .os_tag = .macos },
+        .{ .cpu_arch = .aarch64, .os_tag = .macos },
+    };
+
+    for (libvsa_targets) |t| {
+        const release_target = b.resolveTargetQuery(t);
+        const release_lib = b.addLibrary(.{
+            .name = "trinity-vsa",
+            .linkage = .static,
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/c_api.zig"),
+                .target = release_target,
+                .optimize = .ReleaseFast,
+                .link_libc = true,
+            }),
+        });
+
+        const target_output = b.addInstallArtifact(release_lib, .{
+            .dest_dir = .{
+                .override = .{
+                    .custom = b.fmt("release-libvsa/{s}-{s}", .{
+                        @tagName(t.cpu_arch.?),
+                        @tagName(t.os_tag.?),
+                    }),
+                },
+            },
+        });
+
+        libvsa_release_step.dependOn(&target_output.step);
+    }
+
     // Tests
     const main_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -61,6 +142,17 @@ pub fn build(b: *std.Build) void {
     const run_vm_tests = b.addRunArtifact(vm_tests);
     test_step.dependOn(&run_vm_tests.step);
 
+    // C API tests (libtrinity-vsa)
+    const c_api_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/c_api.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_c_api_tests = b.addRunArtifact(c_api_tests);
+    test_step.dependOn(&run_c_api_tests.step);
+
     // VIBEE codegen tests (rl patterns, mod dispatch, registry)
     const vibeec_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -71,6 +163,24 @@ pub fn build(b: *std.Build) void {
     });
     const run_vibeec_tests = b.addRunArtifact(vibeec_tests);
     test_step.dependOn(&run_vibeec_tests.step);
+
+    // trinity-search CLI — Semantic search over text files
+    const trinity_search = b.addExecutable(.{
+        .name = "trinity-search",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/trinity_search.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(trinity_search);
+
+    const run_search = b.addRunArtifact(trinity_search);
+    if (b.args) |args| {
+        run_search.addArgs(args);
+    }
+    const search_step = b.step("search", "Run trinity-search (semantic search CLI)");
+    search_step.dependOn(&run_search.step);
 
     // Benchmark executable
     const bench = b.addExecutable(.{
