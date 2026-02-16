@@ -127,7 +127,7 @@ $TRI is currently deployed on Ethereum Sepolia testnet. Mainnet deployment is pl
 
 | Network | Address |
 |---------|---------|
-| Sepolia Testnet | `0x...` (TBD -- deployment pending) |
+| Sepolia Testnet | [`0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469`](https://sepolia.etherscan.io/address/0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469) |
 | Ethereum Mainnet | Not yet deployed |
 
 ## Governance
