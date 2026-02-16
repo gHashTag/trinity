@@ -328,6 +328,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-level11-weighted-edges-report',
         'research/trinity-level11-massive-weighted-report',
         'research/trinity-level11-sota-benchmarks-report',
+        'research/trinity-level11-neuro-symbolic-bench-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
