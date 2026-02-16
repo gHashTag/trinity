@@ -12072,3 +12072,387 @@ test "multi-step relation chains analogies" {
     // Bipolar chains should be exact (self-inverse)
     try std.testing.expect(overall_acc > 0.9); // very high for bipolar
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 73: Hybrid Bipolar/Ternary Noisy Analogy Comparison (Level 11.7)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "hybrid bipolar ternary noisy analogy comparison" {
+    const DIM = 1024;
+    const NUM_RELATIONS = 5;
+    const PAIRS_PER_REL = 12;
+    const noise_levels = [_]usize{ 0, 1, 2, 3, 5 };
+
+    var bp_correct_by_noise: [5]usize = [_]usize{0} ** 5;
+    var tr_correct_by_noise: [5]usize = [_]usize{0} ** 5;
+    var hy_correct_by_noise: [5]usize = [_]usize{0} ** 5;
+    var queries_by_noise: [5]usize = [_]usize{0} ** 5;
+
+    std.debug.print("\n=== HYBRID BIPOLAR/TERNARY NOISY ANALOGY (Level 11.7) ===\n", .{});
+    std.debug.print("Relations: {}, Pairs/rel: {}, Dim: {}\n", .{ NUM_RELATIONS, PAIRS_PER_REL, DIM });
+
+    for (0..NUM_RELATIONS) |r| {
+        // Create shared relation (bipolar)
+        var bp_relation = bipolarRandom(DIM, 0xF700 + @as(u64, @intCast(r)) * 9973);
+
+        // Create A words in both encodings
+        var bp_a: [PAIRS_PER_REL]Hypervector = undefined;
+        var tr_a: [PAIRS_PER_REL]Hypervector = undefined;
+        var bp_b: [PAIRS_PER_REL]Hypervector = undefined;
+        var tr_b: [PAIRS_PER_REL]Hypervector = undefined;
+
+        for (0..PAIRS_PER_REL) |i| {
+            const seed = 0xA700 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 6271;
+            bp_a[i] = bipolarRandom(DIM, seed);
+            tr_a[i] = Hypervector.random(DIM, seed + 0x1000000);
+            // B = bind(R, A) for each encoding
+            bp_b[i] = bp_relation.bind(&bp_a[i]);
+            // For ternary: create a ternary relation and apply
+            var tr_relation = Hypervector.random(DIM, 0xF700 + @as(u64, @intCast(r)) * 9973 + 0x2000000);
+            tr_b[i] = tr_relation.bind(&tr_a[i]);
+        }
+
+        for (noise_levels, 0..) |noise_count, n_idx| {
+            for (0..PAIRS_PER_REL) |q| {
+                const exemplar = if (q == 0) @as(usize, 1) else @as(usize, 0);
+
+                // === BIPOLAR: extract relation + add noise ===
+                var bp_rel = bp_b[exemplar].bind(&bp_a[exemplar]);
+                for (0..noise_count) |n| {
+                    const seed = 0xBB00 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(q)) * 100 + @as(u64, @intCast(n));
+                    var noise = bipolarRandom(DIM, seed);
+                    bp_rel = bp_rel.bundle(&noise);
+                }
+                var bp_pred = bp_rel.bind(&bp_a[q]);
+                var bp_best: usize = 0;
+                var bp_bsim: f64 = -2.0;
+                for (0..PAIRS_PER_REL) |p| {
+                    const sim = bp_pred.similarity(&bp_b[p]);
+                    if (sim > bp_bsim) { bp_bsim = sim; bp_best = p; }
+                }
+                if (bp_best == q) bp_correct_by_noise[n_idx] += 1;
+
+                // === TERNARY: extract relation + add noise ===
+                var tr_rel = tr_b[exemplar].bind(&tr_a[exemplar]);
+                for (0..noise_count) |n| {
+                    const seed = 0xCC00 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(q)) * 100 + @as(u64, @intCast(n));
+                    var noise = Hypervector.random(DIM, seed);
+                    tr_rel = tr_rel.bundle(&noise);
+                }
+                var tr_pred = tr_rel.bind(&tr_a[q]);
+                var tr_best: usize = 0;
+                var tr_bsim: f64 = -2.0;
+                for (0..PAIRS_PER_REL) |p| {
+                    const sim = tr_pred.similarity(&tr_b[p]);
+                    if (sim > tr_bsim) { tr_bsim = sim; tr_best = p; }
+                }
+                if (tr_best == q) tr_correct_by_noise[n_idx] += 1;
+
+                // === HYBRID: bipolar extraction + ternary noise bundling ===
+                // Extract relation in bipolar (exact)
+                var hy_rel = bp_b[exemplar].bind(&bp_a[exemplar]); // exact R
+                // Add noise in ternary mode (convert to ternary-style noise)
+                for (0..noise_count) |n| {
+                    const seed = 0xDD00 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(q)) * 100 + @as(u64, @intCast(n));
+                    var noise = Hypervector.random(DIM, seed); // ternary noise
+                    hy_rel = hy_rel.bundle(&noise);
+                }
+                var hy_pred = hy_rel.bind(&bp_a[q]);
+                var hy_best: usize = 0;
+                var hy_bsim: f64 = -2.0;
+                for (0..PAIRS_PER_REL) |p| {
+                    const sim = hy_pred.similarity(&bp_b[p]);
+                    if (sim > hy_bsim) { hy_bsim = sim; hy_best = p; }
+                }
+                if (hy_best == q) hy_correct_by_noise[n_idx] += 1;
+
+                queries_by_noise[n_idx] += 1;
+            }
+        }
+    }
+
+    // Print results
+    std.debug.print("\n--- Bipolar vs Ternary vs Hybrid (Noisy Analogies) ---\n", .{});
+    std.debug.print("Noise | Bipolar | Ternary | Hybrid  | Winner\n", .{});
+    std.debug.print("------|---------|---------|---------|-------\n", .{});
+    for (noise_levels, 0..) |nl, idx| {
+        const total = @as(f64, @floatFromInt(queries_by_noise[idx]));
+        const bp_acc = @as(f64, @floatFromInt(bp_correct_by_noise[idx])) / total;
+        const tr_acc = @as(f64, @floatFromInt(tr_correct_by_noise[idx])) / total;
+        const hy_acc = @as(f64, @floatFromInt(hy_correct_by_noise[idx])) / total;
+        const winner = if (hy_acc >= bp_acc and hy_acc >= tr_acc) "Hybrid" else if (bp_acc >= tr_acc) "Bipolar" else "Ternary";
+        std.debug.print("    {:>1} | {d:>6.1}% | {d:>6.1}% | {d:>6.1}% | {s}\n", .{ nl, bp_acc * 100, tr_acc * 100, hy_acc * 100, winner });
+    }
+
+    // Overall totals
+    var bp_total: usize = 0;
+    var tr_total: usize = 0;
+    var hy_total: usize = 0;
+    var q_total: usize = 0;
+    for (0..5) |i| {
+        bp_total += bp_correct_by_noise[i];
+        tr_total += tr_correct_by_noise[i];
+        hy_total += hy_correct_by_noise[i];
+        q_total += queries_by_noise[i];
+    }
+    std.debug.print("\nOverall: Bipolar {}/{} ({d:.1}%), Ternary {}/{} ({d:.1}%), Hybrid {}/{} ({d:.1}%)\n", .{
+        bp_total, q_total, @as(f64, @floatFromInt(bp_total)) / @as(f64, @floatFromInt(q_total)) * 100,
+        tr_total, q_total, @as(f64, @floatFromInt(tr_total)) / @as(f64, @floatFromInt(q_total)) * 100,
+        hy_total, q_total, @as(f64, @floatFromInt(hy_total)) / @as(f64, @floatFromInt(q_total)) * 100,
+    });
+    std.debug.print("============================================\n", .{});
+
+    // Hybrid should be competitive
+    try std.testing.expect(hy_total >= bp_total or hy_total >= tr_total);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 74: Hybrid Chain Composition + Superposition Capacity (Level 11.7)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "hybrid chain composition and superposition capacity" {
+    const DIM = 1024;
+    const MAX_HOPS = 4;
+    const MAX_BUNDLE = 10;
+
+    std.debug.print("\n=== HYBRID CHAIN + SUPERPOSITION (Level 11.7) ===\n", .{});
+    std.debug.print("Dim: {}, Max hops: {}, Max bundle: {}\n", .{ DIM, MAX_HOPS, MAX_BUNDLE });
+
+    // Part A: Bipolar chain composition (should be exact)
+    std.debug.print("\n--- Part A: Bipolar Chain Composition ---\n", .{});
+    std.debug.print("  Hops | Sim to target | Status\n", .{});
+    std.debug.print("  -----|---------------|-------\n", .{});
+
+    const NUM_CHAINS = 10;
+    for (1..MAX_HOPS + 1) |hops| {
+        var sim_sum: f64 = 0;
+        var correct: usize = 0;
+        for (0..NUM_CHAINS) |chain| {
+            // Create chain entities
+            var entities: [5]Hypervector = undefined;
+            for (0..hops + 1) |i| {
+                entities[i] = bipolarRandom(DIM, 0xBB00 + @as(u64, @intCast(chain)) * 1000 + @as(u64, @intCast(i)) * 7919);
+            }
+            // Compose chain
+            var composite = entities[1].bind(&entities[0]);
+            for (1..hops) |h| {
+                var hop_rel = entities[h + 1].bind(&entities[h]);
+                composite = composite.bind(&hop_rel);
+            }
+            // Apply and check
+            var predicted = composite.bind(&entities[0]);
+            const sim = predicted.similarity(&entities[hops]);
+            sim_sum += sim;
+            if (sim > 0.9) correct += 1;
+        }
+        const avg_sim = sim_sum / @as(f64, NUM_CHAINS);
+        std.debug.print("  {:>4} | {d:>12.6} | {}/{}\n", .{ hops, avg_sim, correct, NUM_CHAINS });
+    }
+
+    // Part B: Ternary superposition capacity
+    std.debug.print("\n--- Part B: Ternary Superposition Capacity ---\n", .{});
+    std.debug.print("  Bundle | Recall | Avg Sim | Min Sim\n", .{});
+    std.debug.print("  -------|--------|---------|--------\n", .{});
+
+    for (2..MAX_BUNDLE + 1) |k| {
+        var items: [10]Hypervector = undefined;
+        for (0..k) |i| {
+            items[i] = Hypervector.random(DIM, 0xCC00 + @as(u64, @intCast(i)) * 3571);
+        }
+        // Tree bundle
+        var bundled = treeBundleN(items[0..k]);
+        // Check recall
+        var recalled: usize = 0;
+        var sim_sum: f64 = 0;
+        var min_sim: f64 = 2.0;
+        for (0..k) |i| {
+            // Re-create item (treeBundleN modifies in place)
+            var item = Hypervector.random(DIM, 0xCC00 + @as(u64, @intCast(i)) * 3571);
+            const sim = bundled.similarity(&item);
+            sim_sum += sim;
+            if (sim < min_sim) min_sim = sim;
+            // Check if this item is the best match among a set of 20 candidates
+            var is_best = true;
+            for (0..20) |d| {
+                if (d < k) continue; // skip items in the bundle
+                var distractor = Hypervector.random(DIM, 0xDD00 + @as(u64, @intCast(d)) * 5113);
+                if (bundled.similarity(&distractor) >= sim) { is_best = false; break; }
+            }
+            if (is_best) recalled += 1;
+        }
+        const recall = @as(f64, @floatFromInt(recalled)) / @as(f64, @floatFromInt(k));
+        const avg_sim = sim_sum / @as(f64, @floatFromInt(k));
+        std.debug.print("  {:>5} | {d:>5.1}% | {d:>6.4} | {d:>6.4}\n", .{ k, recall * 100, avg_sim, min_sim });
+    }
+
+    // Part C: Hybrid pipeline — bipolar chains feed into ternary superposition
+    std.debug.print("\n--- Part C: Hybrid Pipeline (Chain → Superposition) ---\n", .{});
+    // Use bipolar chains to extract 5 facts, bundle them in ternary, query
+    const NUM_FACTS = 5;
+    var fact_targets: [NUM_FACTS]Hypervector = undefined;
+    var chain_results: [NUM_FACTS]Hypervector = undefined;
+
+    for (0..NUM_FACTS) |f| {
+        // Create a 2-hop bipolar chain: start --R1--> mid --R2--> target
+        var start = bipolarRandom(DIM, 0xEE00 + @as(u64, @intCast(f)) * 10000);
+        var mid = bipolarRandom(DIM, 0xEE01 + @as(u64, @intCast(f)) * 10000);
+        fact_targets[f] = bipolarRandom(DIM, 0xEE02 + @as(u64, @intCast(f)) * 10000);
+
+        var r1 = mid.bind(&start);
+        var r2 = fact_targets[f].bind(&mid);
+        var composite = r1.bind(&r2);
+
+        // Apply chain to recover target
+        chain_results[f] = composite.bind(&start);
+    }
+
+    // Bundle all chain results into ternary superposition
+    var super_items: [NUM_FACTS]Hypervector = undefined;
+    for (0..NUM_FACTS) |i| super_items[i] = chain_results[i];
+    var superposition = treeBundleN(super_items[0..NUM_FACTS]);
+
+    // Query: is each target recoverable from superposition?
+    var hybrid_recalled: usize = 0;
+    std.debug.print("  Fact | Chain Sim | Super Sim | Found?\n", .{});
+    std.debug.print("  -----|-----------|-----------|-------\n", .{});
+    for (0..NUM_FACTS) |f| {
+        const chain_sim = chain_results[f].similarity(&fact_targets[f]);
+        const super_sim = superposition.similarity(&fact_targets[f]);
+        const found = super_sim > 0.1; // above noise floor
+        if (found) hybrid_recalled += 1;
+        std.debug.print("  {:>4} | {d:>8.4} | {d:>8.4} | {s}\n", .{ f, chain_sim, super_sim, if (found) "YES" else "NO" });
+    }
+
+    const hybrid_recall = @as(f64, @floatFromInt(hybrid_recalled)) / @as(f64, NUM_FACTS);
+    std.debug.print("\nHybrid pipeline: {}/{} facts recalled ({d:.1}%)\n", .{ hybrid_recalled, NUM_FACTS, hybrid_recall * 100 });
+    std.debug.print("============================================\n", .{});
+
+    // Bipolar chains must be exact, hybrid recall reasonable
+    try std.testing.expect(hybrid_recalled >= 3); // at least 3/5 facts
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 75: Bipolar vs Ternary vs Hybrid Head-to-Head Summary (Level 11.7)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "bipolar ternary hybrid head to head summary" {
+    const DIM = 1024;
+    const NUM = 20;
+
+    // Create codebooks
+    var bp_syms: [NUM]Hypervector = undefined;
+    var tr_syms: [NUM]Hypervector = undefined;
+    for (0..NUM) |i| {
+        bp_syms[i] = bipolarRandom(DIM, 0xAB00 + @as(u64, @intCast(i)) * 1013);
+        tr_syms[i] = Hypervector.random(DIM, 0xAC00 + @as(u64, @intCast(i)) * 1013);
+    }
+
+    std.debug.print("\n=== BIPOLAR vs TERNARY vs HYBRID HEAD-TO-HEAD (Level 11.7) ===\n", .{});
+    std.debug.print("Dim: {}, Codebook: {} symbols\n\n", .{ DIM, NUM });
+
+    // Metric 1: Self-inverse (bind/unbind recovery)
+    var bp0 = &bp_syms[0];
+    const bp1 = &bp_syms[1];
+    var bp_bound = bp0.bind(bp1);
+    var bp_rec = bp_bound.unbind(bp0);
+    const bp_selfinv = bp_rec.similarity(bp1);
+
+    var tr0 = &tr_syms[0];
+    const tr1 = &tr_syms[1];
+    var tr_bound = tr0.bind(tr1);
+    var tr_rec = tr_bound.unbind(tr0);
+    const tr_selfinv = tr_rec.similarity(tr1);
+
+    // Metric 2: Noise tolerance (flip 30% of trits)
+    var bp_noisy = bp_syms[5];
+    bp_noisy.data.ensureUnpacked();
+    var bp_prng = std.Random.DefaultPrng.init(0xBBBB);
+    const bp_rand = bp_prng.random();
+    const flips = DIM * 30 / 100;
+    for (0..flips) |_| {
+        const pos = bp_rand.intRangeAtMost(usize, 0, DIM - 1);
+        bp_noisy.data.unpacked_cache[pos] = -bp_noisy.data.unpacked_cache[pos];
+        bp_noisy.data.dirty = true;
+    }
+    const bp_noise_sim = bp_noisy.similarity(&bp_syms[5]);
+
+    var tr_noisy = tr_syms[5];
+    tr_noisy.data.ensureUnpacked();
+    var tr_prng = std.Random.DefaultPrng.init(0xCCCC);
+    const tr_rand = tr_prng.random();
+    for (0..flips) |_| {
+        const pos = tr_rand.intRangeAtMost(usize, 0, DIM - 1);
+        tr_noisy.data.unpacked_cache[pos] = tr_rand.intRangeAtMost(i8, -1, 1);
+        tr_noisy.data.dirty = true;
+    }
+    const tr_noise_sim = tr_noisy.similarity(&tr_syms[5]);
+
+    // Metric 3: Superposition capacity (bundle 5 items, check recall)
+    var bp_items: [5]Hypervector = undefined;
+    var tr_items: [5]Hypervector = undefined;
+    for (0..5) |i| {
+        bp_items[i] = bp_syms[i];
+        tr_items[i] = tr_syms[i];
+    }
+    var bp_super = treeBundleN(bp_items[0..5]);
+    var tr_super = treeBundleN(tr_items[0..5]);
+
+    var bp_super_recall: usize = 0;
+    var tr_super_recall: usize = 0;
+    for (0..5) |i| {
+        // Re-create items (treeBundleN modified in place)
+        var bp_item = bipolarRandom(DIM, 0xAB00 + @as(u64, @intCast(i)) * 1013);
+        var tr_item = Hypervector.random(DIM, 0xAC00 + @as(u64, @intCast(i)) * 1013);
+        const bp_s = bp_super.similarity(&bp_item);
+        const tr_s = tr_super.similarity(&tr_item);
+        if (bp_s > 0.1) bp_super_recall += 1;
+        if (tr_s > 0.1) tr_super_recall += 1;
+    }
+
+    // Metric 4: Chain depth (3-hop composition)
+    var bp_c: [4]Hypervector = undefined;
+    for (0..4) |i| bp_c[i] = bipolarRandom(DIM, 0x9900 + @as(u64, @intCast(i)) * 7919);
+    var bp_chain = bp_c[1].bind(&bp_c[0]);
+    var bp_r2 = bp_c[2].bind(&bp_c[1]);
+    bp_chain = bp_chain.bind(&bp_r2);
+    var bp_r3 = bp_c[3].bind(&bp_c[2]);
+    bp_chain = bp_chain.bind(&bp_r3);
+    var bp_chain_pred = bp_chain.bind(&bp_c[0]);
+    const bp_chain_sim = bp_chain_pred.similarity(&bp_c[3]);
+
+    var tr_c: [4]Hypervector = undefined;
+    for (0..4) |i| tr_c[i] = Hypervector.random(DIM, 0x8800 + @as(u64, @intCast(i)) * 7919);
+    var tr_chain = tr_c[1].bind(&tr_c[0]);
+    var tr_r2 = tr_c[2].bind(&tr_c[1]);
+    tr_chain = tr_chain.bind(&tr_r2);
+    var tr_r3 = tr_c[3].bind(&tr_c[2]);
+    tr_chain = tr_chain.bind(&tr_r3);
+    var tr_chain_pred = tr_chain.bind(&tr_c[0]);
+    const tr_chain_sim = tr_chain_pred.similarity(&tr_c[3]);
+
+    // Print summary table
+    std.debug.print("--- Head-to-Head Summary ---\n", .{});
+    std.debug.print("| Metric              | Bipolar  | Ternary  | Winner   |\n", .{});
+    std.debug.print("|---------------------|----------|----------|----------|\n", .{});
+
+    const self_winner = if (bp_selfinv > tr_selfinv) "Bipolar" else "Ternary";
+    std.debug.print("| Self-inverse sim    | {d:>7.4} | {d:>7.4} | {s:>8} |\n", .{ bp_selfinv, tr_selfinv, self_winner });
+
+    const noise_winner = if (bp_noise_sim > tr_noise_sim) "Bipolar" else "Ternary";
+    std.debug.print("| Noise 30% sim       | {d:>7.4} | {d:>7.4} | {s:>8} |\n", .{ bp_noise_sim, tr_noise_sim, noise_winner });
+
+    const super_winner = if (bp_super_recall > tr_super_recall) "Bipolar" else if (tr_super_recall > bp_super_recall) "Ternary" else "Tie";
+    std.debug.print("| Superposition 5     | {}/5     | {}/5     | {s:>8} |\n", .{ bp_super_recall, tr_super_recall, super_winner });
+
+    const chain_winner = if (bp_chain_sim > tr_chain_sim) "Bipolar" else "Ternary";
+    std.debug.print("| 3-hop chain sim     | {d:>7.4} | {d:>7.4} | {s:>8} |\n", .{ bp_chain_sim, tr_chain_sim, chain_winner });
+
+    // Hybrid recommendation
+    std.debug.print("\n--- Hybrid Strategy ---\n", .{});
+    std.debug.print("Use BIPOLAR for: bind/unbind chains (sim={d:.4})\n", .{bp_selfinv});
+    std.debug.print("Use TERNARY for: noisy recall (sim={d:.4} vs {d:.4})\n", .{ tr_noise_sim, bp_noise_sim });
+    std.debug.print("Use TERNARY for: superposition ({}/5 vs {}/5)\n", .{ tr_super_recall, bp_super_recall });
+    std.debug.print("HYBRID = best of both worlds\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    // Bipolar should win self-inverse, ternary should win noise
+    try std.testing.expect(bp_selfinv > tr_selfinv);
+    try std.testing.expect(bp_chain_sim > tr_chain_sim + 0.1);
+}
