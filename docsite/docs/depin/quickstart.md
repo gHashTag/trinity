@@ -30,7 +30,13 @@ You need **one** of the following:
 
 ## Option A: Docker (Recommended)
 
-### 1. Pull and Run
+### 1. Pull the Image
+
+```bash
+docker pull ghcr.io/ghashtag/trinity-node:latest
+```
+
+### 2. Run
 
 ```bash
 docker run -d --name trinity-node \
@@ -50,7 +56,7 @@ docker run -d --name trinity-node \
 
 The `-v ~/.trinity:/data` flag persists your node data (wallet, shards, logs) across container restarts.
 
-### 2. Check Logs
+### 3. Check Logs
 
 ```bash
 docker logs -f trinity-node
@@ -69,7 +75,7 @@ You should see:
 [TRINITY] Ready to earn $TRI
 ```
 
-### 3. Stop / Restart
+### 4. Stop / Restart
 
 ```bash
 docker stop trinity-node    # Stop
