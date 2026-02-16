@@ -320,6 +320,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-level11-shared-relation-analogies-report',
         'research/trinity-level11-hybrid-bipolar-ternary-report',
         'research/trinity-level11-large-kg-report',
+        'research/trinity-level11-planning-kg-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
