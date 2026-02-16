@@ -239,7 +239,7 @@ EXECUTION LAYER (v2.21 - THIS RELEASE):
 - No trained model exists yet
 - Swarm numbers (43k tokens/sec) are calculated, not measured
 - KV-cache memory savings are theoretical — no cache invalidation tested
-- Generated Zig scaffolds have known type-mapping limitations (Ptr<T>, List<T>)
+- Generated Zig scaffolds have known type-mapping limitations (Ptr\<T\>, List\<T\>)
 - 1 pre-existing test failure still not addressed
 - Risk of "specification debt" — 12 Level 10A specs without a single end-to-end test
 
