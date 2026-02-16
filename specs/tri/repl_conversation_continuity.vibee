@@ -1,0 +1,49 @@
+name: repl_conversation_continuity
+version: "1.0.0"
+language: zig
+module: repl_conversation_continuity
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 30
+  NUM_RELATIONS: 5
+  SIM_THRESHOLD: 0.1
+  SIM_MIN_EXPECTED: 0.2
+  SIM_MAX_EXPECTED: 1.0
+  SIM_SPREAD_MAX: 0.8
+
+types:
+  WorkflowStep:
+    fields:
+      entity: String
+      relation: String
+      result: String
+      similarity: Float
+    description: "A single step in a multi-step REPL workflow."
+
+  ConversationWorkflow:
+    fields:
+      steps: List<WorkflowStep>
+      all_correct: Bool
+    description: "A multi-step conversation workflow where each result feeds the next query."
+
+behaviors:
+  - name: followUpWorkflows
+    given: 5 city entities, each queried for capital_of then result queried for language_of.
+    when: Use result of first query (country) as input to second query (language)
+    then: 10/10 (100%) — Paris→France→French, Tokyo→Japan→Japanese, etc.
+
+  - name: crossDomainExploration
+    given: 5 landmarks, each chained through 3 hops (landmark→city→country→cuisine).
+    when: Execute 3-hop chain using each intermediate result as next query input
+    then: 15/15 (100%) — Eiffel→Paris→France→Croissant, Fuji→Tokyo→Japan→Sushi, etc.
+
+  - name: bidirectionalVerification
+    given: 5 city-country pairs in capital_of relation.
+    when: Query city→country (forward), then country→city (backward via commutative bind)
+    then: 10/10 (100%) — bidirectional queries both resolve correctly
+
+  - name: similarityConsistencyAcrossWorkflows
+    given: All 25 direct query pairs across 5 relations.
+    when: Check similarity > 0.10 for all, verify min > 0.20, max < 1.0, spread < 0.8
+    then: 28/28 (100%) — min 0.266, max 0.871, spread 0.605
