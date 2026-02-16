@@ -1,0 +1,68 @@
+name: kg_priority_multihop
+version: "1.0.0"
+language: zig
+module: kg_priority_multihop
+description: "Level 11.15 — Priority multi-hop traversal on massive weighted KG with 5 layers, weight-aware chain composition, and strong/normal weight correlation"
+
+constants:
+  DIM: 1024
+  LAYERS: 5
+
+types:
+  PriorityMultiHopResult:
+    fields:
+      hops: Int
+      correct: Int
+      total: Int
+      accuracy: Float
+      layer_sim: Float
+      description: "Multi-hop traversal result on weighted KG. Tests chain composition from 1 to 4 hops across 5 entity layers with weight-aware priority routing. Strong layers yield higher similarity than normal layers."
+
+behaviors:
+  - name: singleHopWeighted
+    given: 5 layers of entities with inter-layer relation memories, each layer assigned a weight class (strong or normal)
+    when: For each layer transition, unbind source entity from the weight-aware relation memory and match against next layer codebook
+    then: 100% accuracy per layer — strong layers achieve avg layer_sim >= 0.35, normal layers achieve avg layer_sim >= 0.21
+
+  - name: multiHopChain
+    given: Entity chains spanning 1 to 4 hops across 5 weighted layers
+    when: Compose relations sequentially (unbind at each hop) to traverse from source in layer 0 to target in layer N, using weight-aware memories at each step
+    then: 1-hop 100%, 2-hop 100%, 3-hop 100%, 4-hop 100% — weighted indexed memories preserve full accuracy through all chain depths
+
+  - name: weightCorrelation
+    given: Multi-hop paths traversing both strong and normal weighted layers
+    when: Measure average cosine similarity for paths through strong-weighted layers vs normal-weighted layers
+    then: Strong layer avg_sim >= 0.35, normal layer avg_sim >= 0.21 — strong weight class consistently produces higher similarity signal at every hop depth
+
+test_cases:
+  - name: test_single_hop_100_percent_per_layer
+    input: "Query all entities through each of 4 layer transitions"
+    expected: "100% accuracy per layer transition, all entities correctly resolved"
+
+  - name: test_strong_layer_sim_higher
+    input: "Measure avg layer_sim for strong-weighted layer transitions"
+    expected: "avg layer_sim >= 0.35 for strong layers"
+
+  - name: test_normal_layer_sim
+    input: "Measure avg layer_sim for normal-weighted layer transitions"
+    expected: "avg layer_sim >= 0.21 for normal layers"
+
+  - name: test_2_hop_chain_100
+    input: "Traverse entities from layer 0 to layer 2 via 2-hop composition"
+    expected: "Accuracy = 100%, all entities correctly resolved"
+
+  - name: test_3_hop_chain_100
+    input: "Traverse entities from layer 0 to layer 3 via 3-hop composition"
+    expected: "Accuracy = 100%, all entities correctly resolved"
+
+  - name: test_4_hop_chain_100
+    input: "Traverse entities from layer 0 to layer 4 via 4-hop composition"
+    expected: "Accuracy = 100%, all entities correctly resolved"
+
+  - name: test_weight_correlation_ordering
+    input: "Compare avg_sim between strong and normal layers across all hop depths"
+    expected: "strong avg (0.35) > normal avg (0.21) — consistent at every hop depth"
+
+  - name: test_all_hops_perfect
+    input: "Verify accuracy for hops 1, 2, 3, 4"
+    expected: "All hop depths achieve 100% accuracy with weighted indexed memories"
