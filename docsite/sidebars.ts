@@ -330,6 +330,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-level11-sota-benchmarks-report',
         'research/trinity-level11-neuro-symbolic-bench-report',
         'research/trinity-level11-full-planning-report',
+        'research/trinity-level11-real-world-demo-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
