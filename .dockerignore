@@ -1,0 +1,28 @@
+# Heavy directories not needed for Zig build
+node_modules/
+vibee-client/
+bitnet-cpp/
+docsite/
+website/
+contracts/
+.git/
+libs/
+extension/
+tools/
+trinity_search/
+
+# Build artifacts
+zig-cache/
+zig-out/
+.zig-cache/
+dist/
+out/
+
+# Misc
+*.md
+*.pyc
+__pycache__/
+.env
+.devcontainer/
+.github/
+.ralph/
