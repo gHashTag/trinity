@@ -2,7 +2,7 @@
 # Decentralized Inference Network Node
 # phi^2 + 1/phi^2 = 3 | Trinity Identity
 
-ARG ZIG_VERSION=0.15.0-dev
+ARG ZIG_VERSION=0.15.2
 ARG TARGETARCH=amd64
 
 # Stage 1: Build
@@ -15,15 +15,16 @@ ARG TARGETARCH
 RUN apk add --no-cache curl xz tar
 
 # Download Zig for the target architecture
+# Stable releases: /download/VERSION/zig-ARCH-linux-VERSION.tar.xz
 RUN case "${TARGETARCH}" in \
     amd64) ZIG_ARCH="x86_64" ;; \
     arm64) ZIG_ARCH="aarch64" ;; \
     *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
     esac && \
-    curl -L "https://ziglang.org/builds/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz" -o zig.tar.xz && \
+    curl -fL "https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz" -o zig.tar.xz && \
     tar -xf zig.tar.xz -C /opt && \
     rm zig.tar.xz && \
-    ln -s /opt/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}/zig /usr/local/bin/zig
+    ln -s /opt/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}/zig /usr/local/bin/zig
 
 WORKDIR /build
 
@@ -32,8 +33,11 @@ COPY build.zig build.zig.zon ./
 COPY src/ ./src/
 COPY specs/ ./specs/
 
-# Build trinity-node binary with ReleaseFast optimization
-RUN zig build -Doptimize=ReleaseFast
+# Build all installable artifacts — GUI targets may fail (no raylib), but trinity-node will succeed.
+# We only need the trinity-node binary.
+RUN zig build -Doptimize=ReleaseFast 2>&1 || true && \
+    test -f zig-out/bin/trinity-node && \
+    echo "trinity-node binary built successfully"
 
 # Stage 2: Runtime
 FROM alpine:3.19 AS runtime
