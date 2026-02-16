@@ -334,6 +334,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-level11-full-engine-fusion-report',
         'research/trinity-level11-deployment-prototype-report',
         'research/trinity-level11-user-testing-report',
+        'research/trinity-level11-massive-kg-cli-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
