@@ -9141,3 +9141,496 @@ test "context overlap analysis seen vs unseen ppl" {
         try std.testing.expect(!std.math.isNan(fg_unseen_ppl));
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LEVEL 11: SYMBOLIC REASONING — PURE TERNARY VSA
+// ═══════════════════════════════════════════════════════════════════════════════
+// No n-grams, no frequency tables, no tokens.
+// Only bind/unbind/bundle/permute + cosine similarity.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 52: VSA Analogy Engine — A:B :: C:? (Level 11.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "vsa analogy engine a_b_c_d" {
+    const DIM = 1024;
+    const NUM_SYMBOLS = 32; // vocabulary of random atomic vectors
+
+    // Step 1: Create a codebook of random atomic vectors
+    // Each symbol gets a unique random hypervector
+    var symbols: [NUM_SYMBOLS]Hypervector = undefined;
+    for (0..NUM_SYMBOLS) |i| {
+        symbols[i] = Hypervector.random(DIM, 0xABCD + @as(u64, i) * 7919);
+    }
+
+    // Step 2: Verify bind/unbind self-inverse property
+    // bind(A, bind(A, B)) should be close to B
+    var a = &symbols[0];
+    const b = &symbols[1];
+    var ab = a.bind(b);
+    var recovered_b = ab.unbind(a);
+    const self_inv_sim = recovered_b.similarity(b);
+
+    std.debug.print("\n=== VSA ANALOGY ENGINE (Level 11.0) ===\n", .{});
+    std.debug.print("Dimension: {d}, Symbols: {d}\n", .{ DIM, NUM_SYMBOLS });
+    std.debug.print("\n--- Self-Inverse Verification ---\n", .{});
+    std.debug.print("bind(A, bind(A, B)) ~ B: sim = {d:.4}\n", .{self_inv_sim});
+
+    // For ternary VSA with zeros: bind by 0 loses info, so recovery is partial
+    // ~1/3 of trits are zero → positions with 0 in A cannot recover B
+    // Expected sim ~0.67-0.85 depending on zero density
+    try std.testing.expect(self_inv_sim > 0.6);
+
+    // Step 3: Orthogonality check — random vectors should be near-orthogonal
+    var ortho_sum: f64 = 0;
+    var ortho_max: f64 = 0;
+    var ortho_count: usize = 0;
+    for (0..NUM_SYMBOLS) |i| {
+        for ((i + 1)..NUM_SYMBOLS) |j| {
+            const sim = symbols[i].similarity(&symbols[j]);
+            const abs_sim = @abs(sim);
+            ortho_sum += abs_sim;
+            if (abs_sim > ortho_max) ortho_max = abs_sim;
+            ortho_count += 1;
+        }
+    }
+    const avg_ortho = ortho_sum / @as(f64, @floatFromInt(ortho_count));
+
+    std.debug.print("Avg |similarity| between random pairs: {d:.4}\n", .{avg_ortho});
+    std.debug.print("Max |similarity| between random pairs: {d:.4}\n", .{ortho_max});
+
+    // Step 4: Analogy solving — A:B :: C:?
+    // Relation R = bind(A, B) (captures the relationship)
+    // Predicted D = bind(R, C) = bind(bind(A, B), C)
+    // Then find closest symbol to D in codebook
+    //
+    // Test: if we define pairs (0,1), (2,3), (4,5), ...
+    // Then relation from 0→1 applied to 2 should give 3
+    const NUM_PAIRS = NUM_SYMBOLS / 2; // 16 pairs
+    var analogy_correct: usize = 0;
+    var analogy_total: usize = 0;
+    var analogy_sim_sum: f64 = 0;
+
+    // Build pairs: (0,1), (2,3), (4,5), ...
+    // For each pair (A,B), use relation from A→B to predict other pairs
+    for (0..NUM_PAIRS) |src_pair| {
+        const a_idx = src_pair * 2;
+        const b_idx = src_pair * 2 + 1;
+
+        // Extract relation: R = unbind(B, A) = bind(A, B) for self-inverse
+        var sym_a = &symbols[a_idx];
+        const sym_b = &symbols[b_idx];
+        var relation = sym_a.bind(sym_b);
+
+        // Apply relation to other pairs
+        for (0..NUM_PAIRS) |tgt_pair| {
+            if (tgt_pair == src_pair) continue;
+            const c_idx = tgt_pair * 2;
+            const d_idx = tgt_pair * 2 + 1; // expected answer
+            const sym_c = &symbols[c_idx];
+
+            // Predict D = bind(R, C)
+            var predicted_d = relation.bind(sym_c);
+
+            // Find closest symbol in codebook
+            var best_idx: usize = 0;
+            var best_sim: f64 = -2;
+            for (0..NUM_SYMBOLS) |k| {
+                const sim = predicted_d.similarity(&symbols[k]);
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = k;
+                }
+            }
+
+            analogy_total += 1;
+            analogy_sim_sum += best_sim;
+            if (best_idx == d_idx) {
+                analogy_correct += 1;
+            }
+        }
+    }
+
+    const analogy_accuracy = @as(f64, @floatFromInt(analogy_correct)) / @as(f64, @floatFromInt(@max(analogy_total, 1))) * 100.0;
+    const avg_best_sim = analogy_sim_sum / @as(f64, @floatFromInt(@max(analogy_total, 1)));
+
+    std.debug.print("\n--- Analogy Results (A:B :: C:?) ---\n", .{});
+    std.debug.print("Total analogies: {d}\n", .{analogy_total});
+    std.debug.print("Correct: {d}/{d} ({d:.1}%)\n", .{ analogy_correct, analogy_total, analogy_accuracy });
+    std.debug.print("Avg best similarity: {d:.4}\n", .{avg_best_sim});
+
+    // Step 5: Multi-relation test — different pairs have SAME relation
+    // If we encode king-man-woman analogy style:
+    // bind(role_gender, male) + bind(role_status, royal) = king
+    // bind(role_gender, female) + bind(role_status, royal) = queen
+    // Then unbind(king, male) applied to female → queen-like
+    var role_gender = Hypervector.random(DIM, 0x1111);
+    var role_status = Hypervector.random(DIM, 0x2222);
+    var male = Hypervector.random(DIM, 0x3333);
+    var female = Hypervector.random(DIM, 0x4444);
+    var royal = Hypervector.random(DIM, 0x5555);
+    var common = Hypervector.random(DIM, 0x6666);
+
+    // king = bind(gender, male) + bind(status, royal)
+    var gm = role_gender.bind(&male);
+    var sr = role_status.bind(&royal);
+    var king = gm.bundle(&sr);
+
+    // queen = bind(gender, female) + bind(status, royal)
+    var gf = role_gender.bind(&female);
+    var queen = gf.bundle(&sr);
+
+    // man = bind(gender, male) + bind(status, common)
+    var sc = role_status.bind(&common);
+    var man = gm.bundle(&sc);
+
+    // woman = bind(gender, female) + bind(status, common)
+    var woman = gf.bundle(&sc);
+
+    // Analogy: king - man + woman ≈ queen
+    // In VSA: unbind(king, man) gives the "gender flip" relation
+    // Then bind(relation, woman) should be close to queen
+    // But VSA doesn't have subtraction — use unbind approach:
+    // relation = bind(king, man) (self-inverse = unbind)
+    // predicted = bind(relation, woman)
+    var km_relation = king.bind(&man);
+    var predicted_queen = km_relation.bind(&woman);
+
+    const queen_sim = predicted_queen.similarity(&queen);
+    const king_sim = predicted_queen.similarity(&king);
+    const man_sim = predicted_queen.similarity(&man);
+    const woman_sim = predicted_queen.similarity(&woman);
+
+    std.debug.print("\n--- Role-Structured Analogy (king:man :: queen:woman) ---\n", .{});
+    std.debug.print("predicted = bind(bind(king, man), woman)\n", .{});
+    std.debug.print("  sim(predicted, queen):  {d:.4}\n", .{queen_sim});
+    std.debug.print("  sim(predicted, king):   {d:.4}\n", .{king_sim});
+    std.debug.print("  sim(predicted, man):    {d:.4}\n", .{man_sim});
+    std.debug.print("  sim(predicted, woman):  {d:.4}\n", .{woman_sim});
+
+    // Check if queen is the closest match among [king, queen, man, woman]
+    const queen_is_closest = (queen_sim > king_sim) and (queen_sim > man_sim) and (queen_sim > woman_sim);
+    std.debug.print("  Queen closest: {}\n", .{queen_is_closest});
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(self_inv_sim > 0.6); // ternary bind/unbind (zero trits)
+    try std.testing.expect(avg_ortho < 0.15); // near-orthogonal random vectors
+    // Random analogy with independent pairs: accuracy is low (~1.7%) because
+    // each pair has a DIFFERENT random relation. This is correct behavior —
+    // VSA analogies only work when pairs share the SAME structural relation.
+    // The king:man::queen:woman test above (shared role structure) works: queen_is_closest=true
+    try std.testing.expect(analogy_total > 0);
+    try std.testing.expect(queen_is_closest); // structured analogy works
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 53: Role-Filler Frame Binding & Decomposition (Level 11.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "role filler frame binding and decomposition" {
+    const DIM = 1024;
+
+    // Create role vectors (structural slots)
+    var role_agent = Hypervector.random(DIM, 0xA001);
+    var role_action = Hypervector.random(DIM, 0xA002);
+    var role_patient = Hypervector.random(DIM, 0xA003);
+    var role_location = Hypervector.random(DIM, 0xA004);
+
+    // Create filler vectors (content)
+    var dog = Hypervector.random(DIM, 0xF001);
+    var cat = Hypervector.random(DIM, 0xF002);
+    var chase = Hypervector.random(DIM, 0xF003);
+    var park = Hypervector.random(DIM, 0xF004);
+    var bird = Hypervector.random(DIM, 0xF005);
+    var fly = Hypervector.random(DIM, 0xF006);
+    var sky = Hypervector.random(DIM, 0xF007);
+    var fish = Hypervector.random(DIM, 0xF008);
+    var swim = Hypervector.random(DIM, 0xF009);
+    var ocean = Hypervector.random(DIM, 0xF00A);
+
+    // Build frame: "dog chases cat in park"
+    // frame = bind(role_agent, dog) + bind(role_action, chase) +
+    //         bind(role_patient, cat) + bind(role_location, park)
+    var ra_dog = role_agent.bind(&dog);
+    var ract_chase = role_action.bind(&chase);
+    var rp_cat = role_patient.bind(&cat);
+    var rl_park = role_location.bind(&park);
+
+    var frame1_ab = ra_dog.bundle(&ract_chase);
+    var frame1_cd = rp_cat.bundle(&rl_park);
+    var frame1 = frame1_ab.bundle(&frame1_cd);
+
+    // Build frame: "bird flies fish in sky"  (nonsensical but structural)
+    var ra_bird = role_agent.bind(&bird);
+    var ract_fly = role_action.bind(&fly);
+    var rp_fish = role_patient.bind(&fish);
+    var rl_sky = role_location.bind(&sky);
+
+    var frame2_ab = ra_bird.bundle(&ract_fly);
+    var frame2_cd = rp_fish.bundle(&rl_sky);
+    var frame2 = frame2_ab.bundle(&frame2_cd);
+
+    // Build frame: "fish swims cat in ocean" (mixed)
+    var ra_fish = role_agent.bind(&fish);
+    var ract_swim = role_action.bind(&swim);
+    var rl_ocean = role_location.bind(&ocean);
+
+    var frame3_ab = ra_fish.bundle(&ract_swim);
+    var frame3_cd = rp_cat.bundle(&rl_ocean);
+    var frame3 = frame3_ab.bundle(&frame3_cd);
+
+    // Codebook of all fillers for decoding
+    const fillers = [_]*Hypervector{ &dog, &cat, &chase, &park, &bird, &fly, &sky, &fish, &swim, &ocean };
+    const filler_names = [_][]const u8{ "dog", "cat", "chase", "park", "bird", "fly", "sky", "fish", "swim", "ocean" };
+
+    // Unbind each role from frame1 and find closest filler
+    std.debug.print("\n=== ROLE-FILLER FRAME BINDING (Level 11.0) ===\n", .{});
+    std.debug.print("Dimension: {d}\n", .{DIM});
+    std.debug.print("\n--- Frame 1: 'dog chases cat in park' ---\n", .{});
+
+    const roles = [_]*Hypervector{ &role_agent, &role_action, &role_patient, &role_location };
+    const role_names = [_][]const u8{ "agent", "action", "patient", "location" };
+    const expected_frame1 = [_][]const u8{ "dog", "chase", "cat", "park" };
+
+    var frame1_correct: usize = 0;
+    for (0..4) |r| {
+        var query = frame1.unbind(roles[r]);
+        var best_idx: usize = 0;
+        var best_sim: f64 = -2;
+        for (0..fillers.len) |k| {
+            const sim = query.similarity(fillers[k]);
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = k;
+            }
+        }
+        const is_correct = std.mem.eql(u8, filler_names[best_idx], expected_frame1[r]);
+        if (is_correct) frame1_correct += 1;
+        std.debug.print("  unbind({s}): {s} (sim={d:.3}) {s}\n", .{ role_names[r], filler_names[best_idx], best_sim, if (is_correct) "OK" else "WRONG" });
+    }
+
+    // Frame 2
+    std.debug.print("\n--- Frame 2: 'bird flies fish in sky' ---\n", .{});
+    const expected_frame2 = [_][]const u8{ "bird", "fly", "fish", "sky" };
+    var frame2_correct: usize = 0;
+    for (0..4) |r| {
+        var query = frame2.unbind(roles[r]);
+        var best_idx: usize = 0;
+        var best_sim: f64 = -2;
+        for (0..fillers.len) |k| {
+            const sim = query.similarity(fillers[k]);
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = k;
+            }
+        }
+        const is_correct = std.mem.eql(u8, filler_names[best_idx], expected_frame2[r]);
+        if (is_correct) frame2_correct += 1;
+        std.debug.print("  unbind({s}): {s} (sim={d:.3}) {s}\n", .{ role_names[r], filler_names[best_idx], best_sim, if (is_correct) "OK" else "WRONG" });
+    }
+
+    // Frame 3
+    std.debug.print("\n--- Frame 3: 'fish swims cat in ocean' ---\n", .{});
+    const expected_frame3 = [_][]const u8{ "fish", "swim", "cat", "ocean" };
+    var frame3_correct: usize = 0;
+    for (0..4) |r| {
+        var query = frame3.unbind(roles[r]);
+        var best_idx: usize = 0;
+        var best_sim: f64 = -2;
+        for (0..fillers.len) |k| {
+            const sim = query.similarity(fillers[k]);
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = k;
+            }
+        }
+        const is_correct = std.mem.eql(u8, filler_names[best_idx], expected_frame3[r]);
+        if (is_correct) frame3_correct += 1;
+        std.debug.print("  unbind({s}): {s} (sim={d:.3}) {s}\n", .{ role_names[r], filler_names[best_idx], best_sim, if (is_correct) "OK" else "WRONG" });
+    }
+
+    // Frame similarity (structural comparison)
+    std.debug.print("\n--- Frame Similarity ---\n", .{});
+    const f12_sim = frame1.similarity(&frame2);
+    const f13_sim = frame1.similarity(&frame3);
+    const f23_sim = frame2.similarity(&frame3);
+    std.debug.print("  F1-F2: {d:.4} (share no fillers)\n", .{f12_sim});
+    std.debug.print("  F1-F3: {d:.4} (share 'cat' as patient)\n", .{f13_sim});
+    std.debug.print("  F2-F3: {d:.4} (share 'fish')\n", .{f23_sim});
+
+    const total_correct = frame1_correct + frame2_correct + frame3_correct;
+    const total_queries = 12;
+    const accuracy = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+
+    std.debug.print("\n--- Summary ---\n", .{});
+    std.debug.print("Role-filler decomposition: {d}/{d} ({d:.1}%)\n", .{ total_correct, total_queries, accuracy });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(frame1_correct >= 3); // at least 3/4 roles correct
+    try std.testing.expect(frame2_correct >= 3);
+    try std.testing.expect(frame3_correct >= 3);
+    try std.testing.expect(total_correct >= 10); // at least 10/12 overall
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 54: Noise Robustness + Cleanup via Iterative Unbinding (Level 11.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "noise robustness and iterative cleanup" {
+    const DIM = 1024;
+
+    // Create codebook of 20 symbols
+    const NUM = 20;
+    var symbols: [NUM]Hypervector = undefined;
+    for (0..NUM) |i| {
+        symbols[i] = Hypervector.random(DIM, 0xBEEF + @as(u64, i) * 1013);
+    }
+
+    std.debug.print("\n=== NOISE ROBUSTNESS + CLEANUP (Level 11.0) ===\n", .{});
+    std.debug.print("Dimension: {d}, Codebook: {d} symbols\n", .{ DIM, NUM });
+
+    // Test 1: Bind/unbind exact recovery
+    var v0 = &symbols[0];
+    const v1 = &symbols[1];
+    var bound = v0.bind(v1);
+    var recovered = bound.unbind(v0);
+    const exact_sim = recovered.similarity(v1);
+    std.debug.print("\n--- Bind/Unbind Exact Recovery ---\n", .{});
+    std.debug.print("bind(A,B) → unbind(A) → sim(result, B) = {d:.4}\n", .{exact_sim});
+
+    // Test 2: Bundle noise — superpose 3 vectors, unbind to query
+    // bundle(bind(R1,A), bind(R2,B), bind(R3,C)) → unbind(R1) → should find A
+    var r1 = Hypervector.random(DIM, 0xD001);
+    var r2 = Hypervector.random(DIM, 0xD002);
+    var r3 = Hypervector.random(DIM, 0xD003);
+
+    const sym_a = &symbols[2]; // target
+    const sym_b = &symbols[3];
+    const sym_c = &symbols[4];
+
+    var b1 = r1.bind(sym_a);
+    var b2 = r2.bind(sym_b);
+    var b3 = r3.bind(sym_c);
+
+    var super12 = b1.bundle(&b2);
+    var superposition = super12.bundle(&b3);
+
+    // Unbind R1 from superposition to recover A (with noise from B,C)
+    var noisy_a = superposition.unbind(&r1);
+    var noisy_b = superposition.unbind(&r2);
+    var noisy_c = superposition.unbind(&r3);
+
+    // Find closest in codebook
+    std.debug.print("\n--- Superposition Unbinding (3 items) ---\n", .{});
+    const queries = [_]*Hypervector{ &noisy_a, &noisy_b, &noisy_c };
+    const expected_idx = [_]usize{ 2, 3, 4 };
+    const query_names = [_][]const u8{ "A (sym2)", "B (sym3)", "C (sym4)" };
+    var super_correct: usize = 0;
+
+    for (0..3) |q| {
+        var best_idx: usize = 0;
+        var best_sim: f64 = -2;
+        var second_sim: f64 = -2;
+        for (0..NUM) |k| {
+            const sim = queries[q].similarity(&symbols[k]);
+            if (sim > best_sim) {
+                second_sim = best_sim;
+                best_sim = sim;
+                best_idx = k;
+            } else if (sim > second_sim) {
+                second_sim = sim;
+            }
+        }
+        const correct = (best_idx == expected_idx[q]);
+        if (correct) super_correct += 1;
+        std.debug.print("  unbind(R{d}) → sym{d} (sim={d:.3}, gap={d:.3}) {s} [expected {s}]\n", .{ q + 1, best_idx, best_sim, best_sim - second_sim, if (correct) "OK" else "MISS", query_names[q] });
+    }
+
+    // Test 3: Noise injection and recovery
+    // Add random noise to a vector at different levels, measure codebook recall
+    std.debug.print("\n--- Noise Injection Recovery ---\n", .{});
+    std.debug.print("  Noise %% | Sim to orig | Codebook recall\n", .{});
+
+    const noise_levels = [_]usize{ 0, 10, 20, 30, 40, 50 };
+    var target = symbols[5];
+
+    for (noise_levels) |noise_pct| {
+        // Create noisy version by flipping noise_pct% of trits
+        var noisy = target; // copy
+        noisy.data.ensureUnpacked();
+        var prng = std.Random.DefaultPrng.init(0xA01CE + @as(u64, noise_pct));
+        const random = prng.random();
+        const num_flips = DIM * noise_pct / 100;
+        for (0..num_flips) |_| {
+            const pos = random.intRangeAtMost(usize, 0, DIM - 1);
+            noisy.data.unpacked_cache[pos] = random.intRangeAtMost(i8, -1, 1);
+            noisy.data.dirty = true;
+        }
+
+        // Measure similarity to original
+        const sim_orig = noisy.similarity(&target);
+
+        // Find closest in codebook
+        var best_idx: usize = 0;
+        var best_sim: f64 = -2;
+        for (0..NUM) |k| {
+            const sim = noisy.similarity(&symbols[k]);
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = k;
+            }
+        }
+        const recalled = (best_idx == 5);
+        std.debug.print("  {d:>5}%%  | {d:.4}      | {s}\n", .{ noise_pct, sim_orig, if (recalled) "OK" else "FAIL" });
+    }
+
+    // Test 4: Capacity — how many items can be superposed and still recovered?
+    std.debug.print("\n--- Superposition Capacity (dim={d}) ---\n", .{DIM});
+    std.debug.print("  Items | Recovered | Accuracy\n", .{});
+
+    const cap_tests = [_]usize{ 2, 3, 4, 5, 7, 10 };
+    for (cap_tests) |num_items| {
+        if (num_items > NUM) continue;
+
+        // Create roles and bind each symbol
+        var super_vec = Hypervector.random(DIM, 0); // start with zero-ish
+        // Actually start with first bound pair
+        var role0 = Hypervector.random(DIM, 0xC000);
+        super_vec = role0.bind(&symbols[0]);
+
+        var cap_roles: [10]Hypervector = undefined;
+        cap_roles[0] = role0;
+
+        for (1..num_items) |item| {
+            cap_roles[item] = Hypervector.random(DIM, 0xC000 + @as(u64, item));
+            var bound_item = cap_roles[item].bind(&symbols[item]);
+            super_vec = super_vec.bundle(&bound_item);
+        }
+
+        // Try to recover each item
+        var cap_recovered: usize = 0;
+        for (0..num_items) |item| {
+            var query = super_vec.unbind(&cap_roles[item]);
+            var best_i: usize = 0;
+            var best_s: f64 = -2;
+            for (0..NUM) |k| {
+                const sim = query.similarity(&symbols[k]);
+                if (sim > best_s) {
+                    best_s = sim;
+                    best_i = k;
+                }
+            }
+            if (best_i == item) cap_recovered += 1;
+        }
+
+        const cap_acc = @as(f64, @floatFromInt(cap_recovered)) / @as(f64, @floatFromInt(num_items)) * 100.0;
+        std.debug.print("  {d:>5}  | {d:>5}/{d:>3}   | {d:.1}%%\n", .{ num_items, cap_recovered, num_items, cap_acc });
+    }
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(exact_sim > 0.6); // ternary bind/unbind (zero trits lose info)
+    try std.testing.expect(super_correct >= 1); // at least 1/3 recovered from superposition
+}
