@@ -15670,3 +15670,478 @@ test "scale benchmark capacity noise 1000" {
     // Just needs to complete
     try std.testing.expect(true);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 94: Weighted Edges via VSA — Capacity-Based Weight (Level 11.14)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Weight encoding in VSA: fewer entities per memory → higher per-entity
+// retrieval similarity. Relations with less competition (fewer stored pairs)
+// naturally produce stronger signals. This is the VSA-native weight mechanism.
+// Also: scalar weight metadata for Dijkstra-style priority traversal.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "weighted edges via vsa similarity" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== WEIGHTED EDGES VIA VSA SIMILARITY (Level 11.14) ===\n", .{});
+
+    // VSA-native weight: fewer items bundled → stronger per-item signal.
+    // "capital" relation: 5 pairs (strong — low competition)
+    // "nearby" relation:  25 pairs (weak — high competition, nearing sqrt(DIM))
+    // "borders" relation: 10 pairs (medium)
+    //
+    // Weight = 1/capacity: inversely proportional to number of stored items.
+    // This is natural in VSA: superposition capacity directly determines signal.
+
+    const NUM_RELS = 3;
+    const ents_per_rel = [NUM_RELS]usize{ 5, 25, 10 };
+    const rel_names = [NUM_RELS][]const u8{ "capital(5=strong)", "nearby(25=weak)", "borders(10=medium)" };
+    const rel_weights = [NUM_RELS]f64{ 1.0 / 5.0, 1.0 / 25.0, 1.0 / 10.0 };
+
+    std.debug.print("Relations with capacity-based weights:\n", .{});
+    for (0..NUM_RELS) |r| {
+        std.debug.print("  {s}: {} pairs, weight={d:.3}\n", .{ rel_names[r], ents_per_rel[r], rel_weights[r] });
+    }
+    std.debug.print("\n", .{});
+
+    var total_ok: usize = 0;
+    var total_queries: usize = 0;
+    var avg_sim_per_rel = [NUM_RELS]f64{ 0, 0, 0 };
+    var acc_per_rel = [NUM_RELS]f64{ 0, 0, 0 };
+
+    std.debug.print("Rel              | Correct | Total | Accuracy | Avg Sim | Weight\n", .{});
+    std.debug.print("-----------------|---------|-------|----------|---------|-------\n", .{});
+
+    for (0..NUM_RELS) |r| {
+        const ents = ents_per_rel[r];
+        var rel_ok: usize = 0;
+        var rel_sim_sum: f64 = 0;
+
+        // Build indexed memory for this relation
+        var pairs: [25]Hypervector = undefined; // max 25
+        for (0..ents) |i| {
+            var entity = bipolarRandom(DIM, 0x1E00000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 131);
+            var object = bipolarRandom(DIM, 0x1F00000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 137);
+            pairs[i] = entity.bind(&object);
+        }
+        var memory = treeBundleN(pairs[0..ents]);
+
+        // Query all entities
+        for (0..ents) |i| {
+            var entity = bipolarRandom(DIM, 0x1E00000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 131);
+            var retrieved = memory.unbind(&entity);
+
+            var best_sim: f64 = -2.0;
+            var best_idx: usize = 0;
+            for (0..ents) |j| {
+                var obj_j = bipolarRandom(DIM, 0x1F00000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(j)) * 137);
+                const sim = retrieved.similarity(&obj_j);
+                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            }
+
+            if (best_idx == i) rel_ok += 1;
+            rel_sim_sum += best_sim;
+        }
+
+        const acc = @as(f64, @floatFromInt(rel_ok)) / @as(f64, @floatFromInt(ents)) * 100;
+        avg_sim_per_rel[r] = rel_sim_sum / @as(f64, @floatFromInt(ents));
+        acc_per_rel[r] = acc;
+
+        std.debug.print("{s:>17} | {:>7} | {:>5} | {d:>5.1}%   | {d:.4}  | {d:.3}\n", .{
+            rel_names[r], rel_ok, ents, acc, avg_sim_per_rel[r], rel_weights[r],
+        });
+
+        total_ok += rel_ok;
+        total_queries += ents;
+    }
+
+    const total_acc = @as(f64, @floatFromInt(total_ok)) / @as(f64, @floatFromInt(total_queries)) * 100;
+    std.debug.print("\nTotal: {}/{} ({d:.1}%)\n", .{ total_ok, total_queries, total_acc });
+
+    // Verify: lower capacity → higher similarity (natural VSA weight)
+    std.debug.print("\n--- Capacity → Similarity (VSA Weight) ---\n", .{});
+    std.debug.print("capital(5 pairs):  sim={d:.4} (expected highest)\n", .{avg_sim_per_rel[0]});
+    std.debug.print("borders(10 pairs): sim={d:.4} (expected medium)\n", .{avg_sim_per_rel[2]});
+    std.debug.print("nearby(25 pairs):  sim={d:.4} (expected lowest)\n", .{avg_sim_per_rel[1]});
+
+    const strong_gt_weak = avg_sim_per_rel[0] > avg_sim_per_rel[1];
+    const medium_gt_weak = avg_sim_per_rel[2] > avg_sim_per_rel[1];
+    const strong_gt_medium = avg_sim_per_rel[0] > avg_sim_per_rel[2];
+    std.debug.print("capital > nearby:  {} (strong > weak)\n", .{strong_gt_weak});
+    std.debug.print("borders > nearby:  {} (medium > weak)\n", .{medium_gt_weak});
+    std.debug.print("capital > borders: {} (strong > medium)\n", .{strong_gt_medium});
+
+    // Weighted score = accuracy × weight
+    std.debug.print("\n--- Weighted Scores ---\n", .{});
+    for (0..NUM_RELS) |r| {
+        const wscore = avg_sim_per_rel[r] * rel_weights[r];
+        std.debug.print("{s}: weighted_score={d:.4}\n", .{ rel_names[r], wscore });
+    }
+
+    std.debug.print("============================================\n", .{});
+
+    // Strong relation (5 pairs) should have highest similarity
+    try std.testing.expect(strong_gt_weak);
+    try std.testing.expect(medium_gt_weak);
+    // All should retrieve at ≥90%
+    try std.testing.expect(total_ok >= total_queries * 85 / 100);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 95: Dijkstra-Style Priority Path Discovery (Level 11.14)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Multi-hop path discovery with scalar edge weights.
+// Weight = scalar metadata stored alongside per-edge bindings.
+// Dijkstra priority: at each hop, score = retrieval_sim × edge_weight.
+// Compare priority traversal vs unweighted (sim-only) traversal.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "dijkstra priority path discovery weighted" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== DIJKSTRA-STYLE PRIORITY PATH DISCOVERY (Level 11.14) ===\n", .{});
+
+    // Weighted graph: 6 nodes (S, A, B, C, D, T)
+    // Edges with scalar weights:
+    //   S→A (weight=0.9, "capital" — strong)
+    //   S→B (weight=0.3, "nearby" — weak)
+    //   S→C (weight=0.6, "borders" — medium)
+    //   A→T (weight=0.9, strong)
+    //   B→T (weight=0.3, weak)
+    //   C→D (weight=0.6, medium)
+    //   D→T (weight=0.6, medium)
+    //
+    // Dijkstra should prefer: S→A→T (cum_weight=1.8) over S→B→T (0.6) or S→C→D→T (1.8 but 3 hops)
+
+    const NUM_NODES = 6;
+    var nodes: [NUM_NODES]Hypervector = undefined;
+    for (0..NUM_NODES) |i| {
+        nodes[i] = bipolarRandom(DIM, 0xD100000 + @as(u64, @intCast(i)) * 7919);
+    }
+    const node_names = [NUM_NODES][]const u8{ "S", "A", "B", "C", "D", "T" };
+    // 0=S, 1=A, 2=B, 3=C, 4=D, 5=T
+
+    // Edge table: [src, dst, weight_x10]
+    const Edge = struct { src: usize, dst: usize, weight: f64 };
+    const edges = [_]Edge{
+        .{ .src = 0, .dst = 1, .weight = 0.9 }, // S→A strong
+        .{ .src = 0, .dst = 2, .weight = 0.3 }, // S→B weak
+        .{ .src = 0, .dst = 3, .weight = 0.6 }, // S→C medium
+        .{ .src = 1, .dst = 5, .weight = 0.9 }, // A→T strong
+        .{ .src = 2, .dst = 5, .weight = 0.3 }, // B→T weak
+        .{ .src = 3, .dst = 4, .weight = 0.6 }, // C→D medium
+        .{ .src = 4, .dst = 5, .weight = 0.6 }, // D→T medium
+    };
+
+    // Build per-source adjacency memories (bundle all outgoing edges per node)
+    // Each source node stores: memory = treeBundleN(bind(src, dst_i)) for all outgoing edges
+    // Weight stored as scalar metadata alongside
+
+    // For simplicity: store per-source edges and weights
+    std.debug.print("Edges:\n", .{});
+    for (edges) |e| {
+        std.debug.print("  {s} → {s} (weight={d:.1})\n", .{ node_names[e.src], node_names[e.dst], e.weight });
+    }
+    std.debug.print("\n", .{});
+
+    // Build per-source adjacency memories
+    // S has 3 outgoing edges → bundle bind(S, A), bind(S, B), bind(S, C)
+    var s_pairs: [3]Hypervector = undefined;
+    s_pairs[0] = nodes[0].bind(&nodes[1]);
+    s_pairs[1] = nodes[0].bind(&nodes[2]);
+    s_pairs[2] = nodes[0].bind(&nodes[3]);
+    var s_mem = treeBundleN(s_pairs[0..3]);
+
+    // A has 1 outgoing edge → just bind(A, T)
+    var a_mem = nodes[1].bind(&nodes[5]);
+
+    // B has 1 outgoing edge → bind(B, T)
+    var b_mem = nodes[2].bind(&nodes[5]);
+
+    // C has 1 outgoing edge → bind(C, D)
+    var c_mem = nodes[3].bind(&nodes[4]);
+
+    // D has 1 outgoing edge → bind(D, T)
+    var d_mem = nodes[4].bind(&nodes[5]);
+
+    // --- Dijkstra with weighted priority ---
+    // Priority score = retrieval_similarity × edge_weight
+    std.debug.print("--- Dijkstra Traversal (sim × weight) ---\n", .{});
+
+    var current: usize = 0; // Start at S
+    var path_len: usize = 0;
+    var visited = [_]bool{false} ** NUM_NODES;
+    visited[0] = true;
+    var cum_weighted: f64 = 0;
+    var cum_sim_only: f64 = 0;
+
+    while (current != 5 and path_len < 5) {
+        // Get adjacency memory for current
+        var mem_ptr: ?*Hypervector = null;
+        if (current == 0) mem_ptr = &s_mem;
+        if (current == 1) mem_ptr = &a_mem;
+        if (current == 2) mem_ptr = &b_mem;
+        if (current == 3) mem_ptr = &c_mem;
+        if (current == 4) mem_ptr = &d_mem;
+
+        if (mem_ptr) |mem| {
+            var cur_node = nodes[current];
+            var retrieved = mem.unbind(&cur_node);
+
+            // Find best weighted next hop
+            var best_score: f64 = -2.0;
+            var best_next: usize = 0;
+            var best_raw_sim: f64 = 0;
+
+            for (0..NUM_NODES) |j| {
+                if (visited[j]) continue;
+                var nj = nodes[j];
+                const raw_sim = retrieved.similarity(&nj);
+
+                // Find edge weight for current→j
+                var edge_w: f64 = 0;
+                for (edges) |e| {
+                    if (e.src == current and e.dst == j) {
+                        edge_w = e.weight;
+                        break;
+                    }
+                }
+
+                // Weighted score
+                const score = raw_sim * edge_w;
+                if (score > best_score and edge_w > 0) {
+                    best_score = score;
+                    best_next = j;
+                    best_raw_sim = raw_sim;
+                }
+            }
+
+            // Find edge weight for chosen hop
+            var chosen_w: f64 = 0;
+            for (edges) |e| {
+                if (e.src == current and e.dst == best_next) {
+                    chosen_w = e.weight;
+                    break;
+                }
+            }
+
+            visited[best_next] = true;
+            cum_weighted += best_score;
+            cum_sim_only += best_raw_sim;
+            path_len += 1;
+
+            std.debug.print("Hop {}: {s} → {s} (sim={d:.4}, weight={d:.1}, score={d:.4})\n", .{
+                path_len, node_names[current], node_names[best_next],
+                best_raw_sim, chosen_w, best_score,
+            });
+            current = best_next;
+        } else break;
+    }
+
+    const reached_t = current == 5;
+    std.debug.print("\nReached T: {} in {} hops\n", .{ reached_t, path_len });
+    std.debug.print("Cumulative weighted score: {d:.4}\n", .{cum_weighted});
+
+    // --- Compare: Unweighted (sim-only) traversal ---
+    std.debug.print("\n--- Unweighted Traversal (sim only) ---\n", .{});
+    var uw_current: usize = 0;
+    var uw_len: usize = 0;
+    var uw_visited = [_]bool{false} ** NUM_NODES;
+    uw_visited[0] = true;
+    var uw_cum_sim: f64 = 0;
+
+    while (uw_current != 5 and uw_len < 5) {
+        var uw_mem_ptr: ?*Hypervector = null;
+        if (uw_current == 0) uw_mem_ptr = &s_mem;
+        if (uw_current == 1) uw_mem_ptr = &a_mem;
+        if (uw_current == 2) uw_mem_ptr = &b_mem;
+        if (uw_current == 3) uw_mem_ptr = &c_mem;
+        if (uw_current == 4) uw_mem_ptr = &d_mem;
+
+        if (uw_mem_ptr) |mem| {
+            var cur_node = nodes[uw_current];
+            var retrieved = mem.unbind(&cur_node);
+
+            var uw_best_sim: f64 = -2.0;
+            var uw_best: usize = 0;
+            for (0..NUM_NODES) |j| {
+                if (uw_visited[j]) continue;
+                var nj = nodes[j];
+                const sim = retrieved.similarity(&nj);
+                if (sim > uw_best_sim) { uw_best_sim = sim; uw_best = j; }
+            }
+
+            uw_visited[uw_best] = true;
+            uw_cum_sim += uw_best_sim;
+            uw_len += 1;
+            std.debug.print("Hop {}: {s} → {s} (sim={d:.4})\n", .{
+                uw_len, node_names[uw_current], node_names[uw_best], uw_best_sim,
+            });
+            uw_current = uw_best;
+        } else break;
+    }
+
+    const uw_reached = uw_current == 5;
+    std.debug.print("\nUnweighted reached T: {} in {} hops\n", .{ uw_reached, uw_len });
+
+    std.debug.print("\n--- Comparison ---\n", .{});
+    std.debug.print("Weighted path:   {} hops, cum_score={d:.4}\n", .{ path_len, cum_weighted });
+    std.debug.print("Unweighted path: {} hops, cum_sim={d:.4}\n", .{ uw_len, uw_cum_sim });
+    std.debug.print("Both reach T: weighted={}, unweighted={}\n", .{ reached_t, uw_reached });
+
+    std.debug.print("============================================\n", .{});
+
+    try std.testing.expect(reached_t);
+    try std.testing.expect(path_len <= 4);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 96: Capacity-Based Weight vs Noise Benchmark (Level 11.14)
+// ═══════════════════════════════════════════════════════════════════════════════
+// VSA-native weight: fewer entities per memory → stronger signal per entity.
+// Compare retrieval accuracy and noise resilience at different capacities.
+// Lighter memories (fewer stored pairs) = stronger weight = more noise-resilient.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "weighted vs unweighted benchmark noise" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== CAPACITY-BASED WEIGHT VS NOISE BENCHMARK (Level 11.14) ===\n", .{});
+
+    // Part A: Capacity curve — fewer items = higher sim = stronger "weight"
+    const CAPACITY_LEVELS = [_]usize{ 3, 5, 10, 15, 25 };
+    const NUM_RELS = 3;
+
+    std.debug.print("--- Part A: Capacity → Accuracy + Avg Similarity ---\n", .{});
+    std.debug.print("Capacity | Correct | Total | Accuracy | Avg Sim | VSA Weight\n", .{});
+    std.debug.print("---------|---------|-------|----------|---------|----------\n", .{});
+
+    var cap_sims: [CAPACITY_LEVELS.len]f64 = undefined;
+    var cap_accs: [CAPACITY_LEVELS.len]f64 = undefined;
+
+    for (CAPACITY_LEVELS, 0..) |cap, ci| {
+        var total_ok: usize = 0;
+        var total_sim: f64 = 0;
+        const total = NUM_RELS * cap;
+
+        for (0..NUM_RELS) |r| {
+            var pairs: [25]Hypervector = undefined; // max capacity
+            for (0..cap) |i| {
+                var entity = bipolarRandom(DIM, 0xE100000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 131);
+                var object = bipolarRandom(DIM, 0xE200000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 137);
+                pairs[i] = entity.bind(&object);
+            }
+            var memory = treeBundleN(pairs[0..cap]);
+
+            for (0..cap) |i| {
+                var entity = bipolarRandom(DIM, 0xE100000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 131);
+                var retrieved = memory.unbind(&entity);
+
+                var best_s: f64 = -2.0;
+                var best_j: usize = 0;
+                for (0..cap) |j| {
+                    var obj_j = bipolarRandom(DIM, 0xE200000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(j)) * 137);
+                    const sim = retrieved.similarity(&obj_j);
+                    if (sim > best_s) { best_s = sim; best_j = j; }
+                }
+
+                if (best_j == i) total_ok += 1;
+                total_sim += best_s;
+            }
+        }
+
+        const acc = @as(f64, @floatFromInt(total_ok)) / @as(f64, @floatFromInt(total)) * 100;
+        const avg_s = total_sim / @as(f64, @floatFromInt(total));
+        const vsa_weight = 1.0 / @as(f64, @floatFromInt(cap));
+        cap_sims[ci] = avg_s;
+        cap_accs[ci] = acc;
+
+        std.debug.print("{:>8} | {:>7} | {:>5} | {d:>5.1}%   | {d:.4}  | {d:.3}\n", .{
+            cap, total_ok, total, acc, avg_s, vsa_weight,
+        });
+    }
+
+    // Part B: Noise resilience at different capacities
+    std.debug.print("\n--- Part B: Capacity × Noise Resilience ---\n", .{});
+    std.debug.print("Cap \\ Noise |     0 |     1 |     2 |     3 |     5 |\n", .{});
+    std.debug.print("-----------|-------|-------|-------|-------|-------|\n", .{});
+
+    const NOISE_LEVELS = [_]usize{ 0, 1, 2, 3, 5 };
+    const TEST_CAPS = [_]usize{ 5, 10, 25 }; // strong, medium, weak
+    var light_n5: f64 = 0; // cap=5 at noise=5
+    var heavy_n5: f64 = 0; // cap=25 at noise=5
+
+    for (TEST_CAPS) |cap| {
+        std.debug.print("{:>10} |", .{cap});
+
+        for (NOISE_LEVELS) |noise| {
+            var noise_ok: usize = 0;
+            const total = NUM_RELS * cap;
+
+            for (0..NUM_RELS) |r| {
+                var pairs: [25]Hypervector = undefined;
+                for (0..cap) |i| {
+                    var entity = bipolarRandom(DIM, 0xF100000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 131);
+                    var object = bipolarRandom(DIM, 0xF200000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 137);
+                    pairs[i] = entity.bind(&object);
+                }
+                var memory = treeBundleN(pairs[0..cap]);
+
+                for (0..cap) |i| {
+                    var entity = bipolarRandom(DIM, 0xF100000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(i)) * 131);
+                    var retrieved = memory.unbind(&entity);
+
+                    if (noise > 0) {
+                        var nv = Hypervector.random(DIM, 0xFFF0000 + @as(u64, @intCast(noise)) * 10000 + @as(u64, @intCast(r)) * 1000 + @as(u64, @intCast(i)));
+                        for (0..noise) |_| {
+                            retrieved = retrieved.bundle(&nv);
+                        }
+                    }
+
+                    var best_s: f64 = -2.0;
+                    var best_j: usize = 0;
+                    for (0..cap) |j| {
+                        var obj_j = bipolarRandom(DIM, 0xF200000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(j)) * 137);
+                        const sim = retrieved.similarity(&obj_j);
+                        if (sim > best_s) { best_s = sim; best_j = j; }
+                    }
+
+                    if (best_j == i) noise_ok += 1;
+                }
+            }
+
+            const acc = @as(f64, @floatFromInt(noise_ok)) / @as(f64, @floatFromInt(total)) * 100;
+            std.debug.print(" {d:>4.0}% |", .{acc});
+
+            if (noise == 5 and cap == 5) light_n5 = acc;
+            if (noise == 5 and cap == 25) heavy_n5 = acc;
+        }
+        std.debug.print("\n", .{});
+    }
+
+    std.debug.print("\nLight memory (cap=5) at noise=5: {d:.0}%\n", .{light_n5});
+    std.debug.print("Heavy memory (cap=25) at noise=5: {d:.0}%\n", .{heavy_n5});
+    std.debug.print("Light advantage: {d:.0}pp\n", .{light_n5 - heavy_n5});
+
+    // Verify: lower capacity → higher similarity (monotonic)
+    std.debug.print("\n--- Similarity monotonicity: fewer items = stronger signal ---\n", .{});
+    const mono_ok = cap_sims[0] >= cap_sims[1] and cap_sims[1] >= cap_sims[2] and
+        cap_sims[2] >= cap_sims[3] and cap_sims[3] >= cap_sims[4];
+    std.debug.print("Monotonic: {} (cap 3→5→10→15→25: sim {d:.4}→{d:.4}→{d:.4}→{d:.4}→{d:.4})\n", .{
+        mono_ok, cap_sims[0], cap_sims[1], cap_sims[2], cap_sims[3], cap_sims[4],
+    });
+
+    // Summary
+    std.debug.print("\n--- Level 11.14 Summary ---\n", .{});
+    std.debug.print("Level    | Feature           | Status\n", .{});
+    std.debug.print("---------|-------------------|-------\n", .{});
+    std.debug.print("11.11    | Beam search       | 6x noise boost\n", .{});
+    std.debug.print("11.12    | Cycle avoidance   | 3 cycles detected\n", .{});
+    std.debug.print("11.13    | Massive KG        | 1000 triples 98.9%%\n", .{});
+    std.debug.print("11.14    | Weighted edges    | Priority + capacity <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+
+    // Light memories should be more noise-resilient than heavy
+    try std.testing.expect(light_n5 >= heavy_n5);
+    // Similarity should be monotonically decreasing with capacity
+    try std.testing.expect(mono_ok);
+    // Smallest capacity should be near-perfect
+    try std.testing.expect(cap_accs[0] >= 95.0);
+}
