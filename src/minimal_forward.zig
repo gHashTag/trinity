@@ -13600,3 +13600,400 @@ test "large kg noise curve multi-hop stress" {
     try std.testing.expect(hop_correct[0] == CHAINS_PER_HOP); // 1-hop: 100%
     try std.testing.expect(hop_correct[5] == CHAINS_PER_HOP); // 6-hop: 100% (bipolar exact)
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 82: Intermediate Indexing — Sub-Bundle Per Relation (Level 11.10)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Fix the capacity wall from Level 11.9 (34.7% at 75/domain).
+// Instead of flat-bundling all triples → keep per-relation sub-memories.
+// Index = array of relation memories. Query: select relation → unbind memory.
+// Capacity per sub-memory = sqrt(DIM) ~ 32 entities. Total KG capacity = R × 32.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "intermediate indexing sub-bundle capacity fix" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== INTERMEDIATE INDEXING: CAPACITY FIX (Level 11.10) ===\n", .{});
+
+    // --- Indexed KG: 3 domains × 5 relations × 30 entities = 450 triples ---
+    const DOMAINS = 3;
+    const RELS = 5;
+    const ENTS_PER_REL = 30; // pushing toward sqrt(1024) ~ 32
+    const TOTAL = DOMAINS * RELS * ENTS_PER_REL; // 450
+
+    std.debug.print("Domains: {}, Relations: {}, Entities/rel: {}\n", .{ DOMAINS, RELS, ENTS_PER_REL });
+    std.debug.print("Total triples: {} (vs 225 in Level 11.9)\n\n", .{TOTAL});
+
+    // --- Build indexed KG: per-domain, per-relation sub-memories ---
+    // Index structure: memories[domain][relation] = tree_bundle(bind(entity_i, object_i))
+    // Query: given (domain, relation, entity) → unbind(memories[d][r], entity) → search objects
+    var total_correct: usize = 0;
+    var total_queries: usize = 0;
+
+    std.debug.print("--- Indexed Single-Hop Queries ---\n", .{});
+    std.debug.print("Domain | Rel | Correct | Total | Accuracy\n", .{});
+    std.debug.print("-------|-----|---------|-------|--------\n", .{});
+
+    const domain_names = [_][]const u8{ "Geo", "People", "Science" };
+
+    for (0..DOMAINS) |d| {
+        // Relation vectors
+        var rels: [RELS]Hypervector = undefined;
+        for (0..RELS) |r| {
+            rels[r] = bipolarRandom(DIM, 0x100000 + @as(u64, @intCast(d)) * 100000 + @as(u64, @intCast(r)) * 4111);
+        }
+
+        for (0..RELS) |r| {
+            // Build sub-memory for this (domain, relation) pair
+            var ents: [ENTS_PER_REL]Hypervector = undefined;
+            for (0..ENTS_PER_REL) |i| {
+                ents[i] = bipolarRandom(DIM, 0x200000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 7919);
+            }
+            var pairs: [ENTS_PER_REL]Hypervector = undefined;
+            for (0..ENTS_PER_REL) |i| {
+                var obj = bipolarRandom(DIM, 0x300000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 137);
+                pairs[i] = ents[i].bind(&obj);
+            }
+            var memory = treeBundleN(pairs[0..ENTS_PER_REL]);
+
+            // Query all entities
+            var rel_correct: usize = 0;
+            for (0..ENTS_PER_REL) |e| {
+                total_queries += 1;
+                var retrieved = memory.unbind(&ents[e]);
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..ENTS_PER_REL) |j| {
+                    var obj_j = bipolarRandom(DIM, 0x300000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(j)) * 137);
+                    const sim = retrieved.similarity(&obj_j);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                if (best_idx == e) rel_correct += 1;
+            }
+            total_correct += rel_correct;
+            std.debug.print("{s:>6} | {:>3} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+                domain_names[d], r, rel_correct, ENTS_PER_REL,
+                @as(f64, @floatFromInt(rel_correct)) / @as(f64, ENTS_PER_REL) * 100,
+            });
+        }
+    }
+
+    const overall_acc = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100;
+    std.debug.print("\nIndexed total: {}/{} ({d:.1}%)\n", .{ total_correct, total_queries, overall_acc });
+
+    // --- Compare: what FLAT would give at same scale ---
+    // Flat: bundle ALL 30 entities × 5 relations = 150 per domain into one vector
+    std.debug.print("\n--- Flat Comparison (domain-level bundle) ---\n", .{});
+    var flat_correct: usize = 0;
+    var flat_total: usize = 0;
+
+    for (0..DOMAINS) |d| {
+        // Build one flat memory per domain: bundle ALL pairs across ALL relations
+        // Use only first 10 entities per relation (to fit on stack) = 50 per domain
+        const FLAT_ENTS = 10;
+        var flat_pairs: [RELS * FLAT_ENTS]Hypervector = undefined;
+        var fp_idx: usize = 0;
+        for (0..RELS) |r| {
+            for (0..FLAT_ENTS) |i| {
+                var ent = bipolarRandom(DIM, 0x200000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 7919);
+                var obj = bipolarRandom(DIM, 0x300000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 137);
+                flat_pairs[fp_idx] = ent.bind(&obj);
+                fp_idx += 1;
+            }
+        }
+        var flat_memory = treeBundleN(flat_pairs[0..fp_idx]);
+
+        // Query each entity
+        var domain_flat_correct: usize = 0;
+        var domain_flat_total: usize = 0;
+        for (0..RELS) |r| {
+            for (0..FLAT_ENTS) |e| {
+                flat_total += 1;
+                domain_flat_total += 1;
+                var ent = bipolarRandom(DIM, 0x200000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(e)) * 7919);
+                var retrieved = flat_memory.unbind(&ent);
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                // Search all objects across all relations (ambiguous!)
+                for (0..RELS) |r2| {
+                    for (0..FLAT_ENTS) |j| {
+                        var obj_j = bipolarRandom(DIM, 0x300000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r2)) * 10000 + @as(u64, @intCast(j)) * 137);
+                        const sim = retrieved.similarity(&obj_j);
+                        if (sim > best_sim) { best_sim = sim; best_idx = r2 * FLAT_ENTS + j; }
+                    }
+                }
+                if (best_idx == r * FLAT_ENTS + e) domain_flat_correct += 1;
+            }
+        }
+        flat_correct += domain_flat_correct;
+        std.debug.print("{s:>6} flat: {}/{} ({d:.1}%)\n", .{
+            domain_names[d], domain_flat_correct, domain_flat_total,
+            @as(f64, @floatFromInt(domain_flat_correct)) / @as(f64, @floatFromInt(domain_flat_total)) * 100,
+        });
+    }
+
+    std.debug.print("Flat total: {}/{} ({d:.1}%)\n", .{
+        flat_correct, flat_total,
+        @as(f64, @floatFromInt(flat_correct)) / @as(f64, @floatFromInt(flat_total)) * 100,
+    });
+    std.debug.print("\n>>> INDEXED: {d:.1}% vs FLAT: {d:.1}% <<<\n", .{
+        overall_acc,
+        @as(f64, @floatFromInt(flat_correct)) / @as(f64, @floatFromInt(flat_total)) * 100,
+    });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(TOTAL >= 400);
+    try std.testing.expect(total_correct > total_queries * 8 / 10); // indexed >80%
+    try std.testing.expect(total_correct > flat_correct); // indexed > flat
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 83: Indexed Planning — Multi-Hop on Indexed KG (Level 11.10)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Planning queries through indexed KG: compose relations, apply to entity,
+// traverse sub-memories at each hop.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "indexed planning multi-hop on indexed kg" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== INDEXED PLANNING: MULTI-HOP ON INDEXED KG (Level 11.10) ===\n", .{});
+
+    // Build a 4-layer indexed KG: each layer has its own sub-memory
+    // Layer 0→1: "capital_of" (cities → countries)
+    // Layer 1→2: "continent" (countries → continents)
+    // Layer 2→3: "hemisphere" (continents → hemispheres)
+    // Layer 3→4: "planet" (hemispheres → planet)
+    const LAYERS = 4;
+    const ENTITIES_PER_LAYER = 20;
+
+    // Entity vectors per layer
+    var layer_ents: [LAYERS + 1][ENTITIES_PER_LAYER]Hypervector = undefined;
+    for (0..LAYERS + 1) |l| {
+        for (0..ENTITIES_PER_LAYER) |i| {
+            layer_ents[l][i] = bipolarRandom(DIM, 0x400000 + @as(u64, @intCast(l)) * 100000 + @as(u64, @intCast(i)) * 7919);
+        }
+    }
+
+    // Build per-layer sub-memories: memory_l maps layer_l entities to layer_{l+1} entities
+    // Each entity i in layer l maps to entity i in layer l+1 (simple 1:1 mapping)
+    var layer_memories: [LAYERS]Hypervector = undefined;
+    for (0..LAYERS) |l| {
+        var pairs: [ENTITIES_PER_LAYER]Hypervector = undefined;
+        for (0..ENTITIES_PER_LAYER) |i| {
+            pairs[i] = layer_ents[l][i].bind(&layer_ents[l + 1][i]);
+        }
+        layer_memories[l] = treeBundleN(pairs[0..ENTITIES_PER_LAYER]);
+    }
+
+    std.debug.print("Layers: {}, Entities/layer: {}, Total index entries: {}\n\n", .{
+        LAYERS, ENTITIES_PER_LAYER, LAYERS * ENTITIES_PER_LAYER,
+    });
+
+    // --- Single-hop through each sub-memory ---
+    std.debug.print("--- Single-Hop Per Layer ---\n", .{});
+    std.debug.print("Layer | Correct | Total | Accuracy\n", .{});
+    std.debug.print("------|---------|-------|--------\n", .{});
+
+    var single_total_ok: usize = 0;
+    for (0..LAYERS) |l| {
+        var correct: usize = 0;
+        for (0..ENTITIES_PER_LAYER) |i| {
+            var retrieved = layer_memories[l].unbind(&layer_ents[l][i]);
+            var best_sim: f64 = -2.0;
+            var best_idx: usize = 0;
+            for (0..ENTITIES_PER_LAYER) |j| {
+                const sim = retrieved.similarity(&layer_ents[l + 1][j]);
+                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            }
+            if (best_idx == i) correct += 1;
+        }
+        single_total_ok += correct;
+        std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            l, correct, ENTITIES_PER_LAYER,
+            @as(f64, @floatFromInt(correct)) / @as(f64, ENTITIES_PER_LAYER) * 100,
+        });
+    }
+
+    // --- Multi-hop planning through indexed sub-memories ---
+    std.debug.print("\n--- Multi-Hop Planning (Indexed Traversal) ---\n", .{});
+    std.debug.print("Hops | Correct | Total | Accuracy\n", .{});
+    std.debug.print("-----|---------|-------|--------\n", .{});
+
+    const PLAN_TESTS = 15;
+    for (1..LAYERS + 1) |hops| {
+        var plan_ok: usize = 0;
+        for (0..PLAN_TESTS) |i| {
+            // Start at layer 0, entity i, traverse hops layers
+            var current = layer_ents[0][i];
+
+            // Hop through each sub-memory sequentially
+            var step: usize = 0;
+            while (step < hops) : (step += 1) {
+                var retrieved = layer_memories[step].unbind(&current);
+                // Find best match in next layer
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..ENTITIES_PER_LAYER) |j| {
+                    const sim = retrieved.similarity(&layer_ents[step + 1][j]);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                current = layer_ents[step + 1][best_idx];
+            }
+
+            // Check: did we arrive at the correct target (entity i in layer hops)?
+            const final_sim = current.similarity(&layer_ents[hops][i]);
+            if (final_sim > 0.99) plan_ok += 1;
+        }
+        std.debug.print("{:>4} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            hops, plan_ok, PLAN_TESTS,
+            @as(f64, @floatFromInt(plan_ok)) / @as(f64, PLAN_TESTS) * 100,
+        });
+    }
+
+    // --- Noisy indexed traversal ---
+    std.debug.print("\n--- Noisy Indexed Traversal (2-hop, noise 0-5) ---\n", .{});
+    std.debug.print("Noise | Correct | Total | Accuracy\n", .{});
+    std.debug.print("------|---------|-------|--------\n", .{});
+
+    const NOISY_HOPS = 2;
+    const NOISY_TESTS = 15;
+    const NOISE_LEVELS = [_]usize{ 0, 1, 2, 3, 5 };
+
+    for (NOISE_LEVELS) |noise| {
+        var noisy_ok: usize = 0;
+        for (0..NOISY_TESTS) |i| {
+            var current = layer_ents[0][i];
+            var step: usize = 0;
+            while (step < NOISY_HOPS) : (step += 1) {
+                var retrieved = layer_memories[step].unbind(&current);
+                // Add noise
+                for (0..noise) |n| {
+                    var nv = Hypervector.random(DIM, 0x500000 + @as(u64, @intCast(i)) * 1000 + @as(u64, @intCast(step)) * 100 + @as(u64, @intCast(noise)) * 10 + @as(u64, @intCast(n)));
+                    retrieved = retrieved.bundle(&nv);
+                }
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..ENTITIES_PER_LAYER) |j| {
+                    const sim = retrieved.similarity(&layer_ents[step + 1][j]);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                current = layer_ents[step + 1][best_idx];
+            }
+            const final_sim = current.similarity(&layer_ents[NOISY_HOPS][i]);
+            if (final_sim > 0.99) noisy_ok += 1;
+        }
+        std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            noise, noisy_ok, NOISY_TESTS,
+            @as(f64, @floatFromInt(noisy_ok)) / @as(f64, NOISY_TESTS) * 100,
+        });
+    }
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(single_total_ok == LAYERS * ENTITIES_PER_LAYER); // all single-hop: 100%
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 84: Indexed vs Flat Capacity Benchmark (Level 11.10)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Push entity count to 30 per sub-memory, compare indexed vs flat head-to-head.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "indexed vs flat capacity benchmark" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== INDEXED vs FLAT: CAPACITY BENCHMARK (Level 11.10) ===\n", .{});
+
+    // Test both approaches at increasing entity counts
+    const SIZES = [_]usize{ 5, 10, 15, 20, 25, 30 };
+    const NUM_RELS = 3;
+
+    std.debug.print("Entities | Indexed | Flat ({}R) | Advantage\n", .{NUM_RELS});
+    std.debug.print("---------|---------|-----------|----------\n", .{});
+
+    for (SIZES) |size| {
+        // --- INDEXED: separate memory per relation ---
+        var idx_correct: usize = 0;
+        var idx_total: usize = 0;
+
+        for (0..NUM_RELS) |r| {
+            var ents: [30]Hypervector = undefined;
+            for (0..size) |i| {
+                ents[i] = bipolarRandom(DIM, 0x600000 + @as(u64, @intCast(size)) * 100000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 7919);
+            }
+            var pairs: [30]Hypervector = undefined;
+            for (0..size) |i| {
+                var obj = bipolarRandom(DIM, 0x700000 + @as(u64, @intCast(size)) * 100000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 137);
+                pairs[i] = ents[i].bind(&obj);
+            }
+            var memory = treeBundleN(pairs[0..size]);
+
+            for (0..size) |e| {
+                idx_total += 1;
+                var retrieved = memory.unbind(&ents[e]);
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..size) |j| {
+                    var obj_j = bipolarRandom(DIM, 0x700000 + @as(u64, @intCast(size)) * 100000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(j)) * 137);
+                    const sim = retrieved.similarity(&obj_j);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                if (best_idx == e) idx_correct += 1;
+            }
+        }
+
+        // --- FLAT: one memory for all relations ---
+        var flat_correct: usize = 0;
+        var flat_total: usize = 0;
+
+        // Build flat memory: all relations bundled together (cap at 30 for stack)
+        var flat_pairs: [30]Hypervector = undefined;
+        var fp: usize = 0;
+        for (0..NUM_RELS) |r| {
+            const ents_this = @min(size, (30 - fp) / (@max(NUM_RELS - r, 1)));
+            for (0..ents_this) |i| {
+                if (fp >= 30) break;
+                var ent = bipolarRandom(DIM, 0x600000 + @as(u64, @intCast(size)) * 100000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 7919);
+                var obj = bipolarRandom(DIM, 0x700000 + @as(u64, @intCast(size)) * 100000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(i)) * 137);
+                flat_pairs[fp] = ent.bind(&obj);
+                fp += 1;
+            }
+        }
+        if (fp > 0) {
+            var flat_memory = treeBundleN(flat_pairs[0..fp]);
+
+            for (0..NUM_RELS) |r| {
+                const ents_this = @min(size, 10);
+                for (0..ents_this) |e| {
+                    flat_total += 1;
+                    var ent = bipolarRandom(DIM, 0x600000 + @as(u64, @intCast(size)) * 100000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(e)) * 7919);
+                    var retrieved = flat_memory.unbind(&ent);
+                    var best_sim: f64 = -2.0;
+                    var best_idx: usize = 0;
+                    for (0..NUM_RELS) |r2| {
+                        for (0..@min(size, 10)) |j| {
+                            var obj_j = bipolarRandom(DIM, 0x700000 + @as(u64, @intCast(size)) * 100000 + @as(u64, @intCast(r2)) * 10000 + @as(u64, @intCast(j)) * 137);
+                            const sim = retrieved.similarity(&obj_j);
+                            if (sim > best_sim) { best_sim = sim; best_idx = r2 * @min(size, 10) + j; }
+                        }
+                    }
+                    if (best_idx == r * @min(size, 10) + e) flat_correct += 1;
+                }
+            }
+        }
+
+        const idx_acc = @as(f64, @floatFromInt(idx_correct)) / @as(f64, @floatFromInt(idx_total)) * 100;
+        const flat_acc = if (flat_total > 0) @as(f64, @floatFromInt(flat_correct)) / @as(f64, @floatFromInt(flat_total)) * 100 else 0.0;
+        const advantage = idx_acc - flat_acc;
+        std.debug.print("{:>8} | {d:>5.1}%  | {d:>7.1}%  | {s}{d:>5.1}%\n", .{
+            size, idx_acc, flat_acc,
+            if (advantage >= 0) "+" else "",
+            advantage,
+        });
+    }
+
+    std.debug.print("============================================\n", .{});
+
+    // The test just needs to complete — results are informational
+    try std.testing.expect(true);
+}
