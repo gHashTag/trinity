@@ -62,6 +62,18 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'DePIN Network',
+      items: [
+        'depin/index',
+        'depin/quickstart',
+        'depin/rewards',
+        'depin/tokenomics',
+        'depin/api',
+        'depin/architecture',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Benchmarks',
       items: [
         'benchmarks/index',
@@ -307,6 +319,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-level11-tree-bundling-report',
         'research/trinity-level11-shared-relation-analogies-report',
         'research/trinity-level11-hybrid-bipolar-ternary-report',
+        'research/trinity-level11-large-kg-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
