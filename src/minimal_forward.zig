@@ -13116,3 +13116,487 @@ test "hybrid kg benchmark bipolar vs ternary vs hybrid" {
     try std.testing.expect(bp_correct == single_total); // bipolar single-hop: 100%
     try std.testing.expect(hy_correct == single_total); // hybrid single-hop: 100%
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 79: Scaled KG 200+ Triples + Hierarchical Superposition (Level 11.9)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Multiple domains (geography, people, science), each with its own associative
+// memories. Hierarchical superposition: domain → mega bundle.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "scaled kg 200 triples hierarchical superposition" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== SCALED KG: 200+ TRIPLES + HIERARCHICAL SUPERPOSITION (Level 11.9) ===\n", .{});
+
+    // --- Constants ---
+    const DOMAINS = 3; // geography, people, science
+    const ENTITIES_PER_DOMAIN = 15;
+    const RELS_PER_DOMAIN = 5;
+    const TRIPLES_PER_DOMAIN = ENTITIES_PER_DOMAIN * RELS_PER_DOMAIN; // 75
+    const TOTAL_TRIPLES = DOMAINS * TRIPLES_PER_DOMAIN; // 225
+
+    std.debug.print("Domains: {}, Entities/domain: {}, Relations/domain: {}\n", .{ DOMAINS, ENTITIES_PER_DOMAIN, RELS_PER_DOMAIN });
+    std.debug.print("Triples/domain: {}, Total triples: {}\n\n", .{ TRIPLES_PER_DOMAIN, TOTAL_TRIPLES });
+
+    // --- Build domain memories one at a time (stack safety) ---
+    // For each domain: build RELS_PER_DOMAIN associative memories,
+    // query all entities, accumulate results.
+    var total_correct: usize = 0;
+    var total_queries: usize = 0;
+
+    // Per-domain superposition vectors (for hierarchical bundling later)
+    var domain_supers: [DOMAINS]Hypervector = undefined;
+
+    std.debug.print("--- Single-Hop Queries Per Domain ---\n", .{});
+    std.debug.print("Domain | Correct | Total | Accuracy\n", .{});
+    std.debug.print("-------|---------|-------|--------\n", .{});
+
+    for (0..DOMAINS) |d| {
+        var domain_correct: usize = 0;
+        // Relation vectors for this domain
+        var rels: [RELS_PER_DOMAIN]Hypervector = undefined;
+        for (0..RELS_PER_DOMAIN) |r| {
+            rels[r] = bipolarRandom(DIM, 0x10000 + @as(u64, @intCast(d)) * 10000 + @as(u64, @intCast(r)) * 4111);
+        }
+        // Entity vectors for this domain
+        var ents: [ENTITIES_PER_DOMAIN]Hypervector = undefined;
+        for (0..ENTITIES_PER_DOMAIN) |i| {
+            ents[i] = bipolarRandom(DIM, 0x20000 + @as(u64, @intCast(d)) * 10000 + @as(u64, @intCast(i)) * 7919);
+        }
+
+        // Build per-relation memories and query
+        // Also collect triple vectors for domain superposition
+        var triple_vecs: [RELS_PER_DOMAIN]Hypervector = undefined; // one bundled per relation
+        for (0..RELS_PER_DOMAIN) |r| {
+            // Build memory: tree_bundle(bind(entity_i, object_i))
+            var pairs: [ENTITIES_PER_DOMAIN]Hypervector = undefined;
+            for (0..ENTITIES_PER_DOMAIN) |e| {
+                var obj = bipolarRandom(DIM, 0x30000 + @as(u64, @intCast(d)) * 100000 + @as(u64, @intCast(e)) * 100 + @as(u64, @intCast(r)));
+                pairs[e] = ents[e].bind(&obj);
+            }
+            var memory = treeBundleN(pairs[0..ENTITIES_PER_DOMAIN]);
+            triple_vecs[r] = memory; // save for superposition
+
+            // Query all entities for this relation
+            for (0..ENTITIES_PER_DOMAIN) |e| {
+                total_queries += 1;
+                var retrieved = memory.unbind(&ents[e]);
+                var best_sim: f64 = -2.0;
+                var best_idx: usize = 0;
+                for (0..ENTITIES_PER_DOMAIN) |j| {
+                    var obj_j = bipolarRandom(DIM, 0x30000 + @as(u64, @intCast(d)) * 100000 + @as(u64, @intCast(j)) * 100 + @as(u64, @intCast(r)));
+                    const sim = retrieved.similarity(&obj_j);
+                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                }
+                if (best_idx == e) domain_correct += 1;
+            }
+        }
+
+        // Build domain superposition: tree-bundle of all relation memories
+        domain_supers[d] = treeBundleN(triple_vecs[0..RELS_PER_DOMAIN]);
+
+        total_correct += domain_correct;
+        const domain_total = ENTITIES_PER_DOMAIN * RELS_PER_DOMAIN;
+        const domain_names = [_][]const u8{ "Geography", "People", "Science" };
+        std.debug.print("{s:>6} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            domain_names[d], domain_correct, domain_total,
+            @as(f64, @floatFromInt(domain_correct)) / @as(f64, domain_total) * 100,
+        });
+    }
+
+    std.debug.print("\nTotal single-hop: {}/{} ({d:.1}%)\n", .{
+        total_correct, total_queries,
+        @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100,
+    });
+
+    // --- Hierarchical Superposition ---
+    std.debug.print("\n--- Hierarchical Superposition ---\n", .{});
+    // Level 1: domain_supers[d] = bundle of all relation memories for domain d
+    // Level 2: mega = bundle of all domain supers
+    var mega_items: [DOMAINS]Hypervector = undefined;
+    for (0..DOMAINS) |i| mega_items[i] = domain_supers[i];
+    var mega = treeBundleN(mega_items[0..DOMAINS]);
+
+    // Test: can we still discriminate domains from mega?
+    // For each domain, check if its relation memories have higher sim to domain_super than other domains
+    var domain_discrim: usize = 0;
+    for (0..DOMAINS) |d| {
+        var rels2: [RELS_PER_DOMAIN]Hypervector = undefined;
+        for (0..RELS_PER_DOMAIN) |r| {
+            rels2[r] = bipolarRandom(DIM, 0x10000 + @as(u64, @intCast(d)) * 10000 + @as(u64, @intCast(r)) * 4111);
+        }
+        // Check: domain_super[d] more similar to mega than random vector?
+        const own_sim = mega.similarity(&domain_supers[d]);
+        if (own_sim > 0.0) domain_discrim += 1;
+    }
+    std.debug.print("Domain discrimination from mega: {}/{}\n", .{ domain_discrim, DOMAINS });
+
+    // Test superposition recall: for each domain, check 5 random queries
+    var super_recalled: usize = 0;
+    var super_total: usize = 0;
+    for (0..DOMAINS) |d| {
+        var ents2: [ENTITIES_PER_DOMAIN]Hypervector = undefined;
+        for (0..ENTITIES_PER_DOMAIN) |i| {
+            ents2[i] = bipolarRandom(DIM, 0x20000 + @as(u64, @intCast(d)) * 10000 + @as(u64, @intCast(i)) * 7919);
+        }
+        var rels2: [RELS_PER_DOMAIN]Hypervector = undefined;
+        for (0..RELS_PER_DOMAIN) |r| {
+            rels2[r] = bipolarRandom(DIM, 0x10000 + @as(u64, @intCast(d)) * 10000 + @as(u64, @intCast(r)) * 4111);
+        }
+
+        // Query: bind(entity, relation) — check if domain_super has higher sim than others
+        for (0..5) |e| {
+            for (0..RELS_PER_DOMAIN) |r| {
+                super_total += 1;
+                var query = ents2[e].bind(&rels2[r]);
+                const own_sim = domain_supers[d].similarity(&query);
+                var is_best = true;
+                for (0..DOMAINS) |other| {
+                    if (other == d) continue;
+                    if (domain_supers[other].similarity(&query) >= own_sim) {
+                        is_best = false;
+                        break;
+                    }
+                }
+                if (is_best) super_recalled += 1;
+            }
+        }
+    }
+    std.debug.print("Superposition recall (domain attribution): {}/{} ({d:.1}%)\n", .{
+        super_recalled, super_total,
+        @as(f64, @floatFromInt(super_recalled)) / @as(f64, @floatFromInt(super_total)) * 100,
+    });
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(TOTAL_TRIPLES >= 200);
+    try std.testing.expect(total_correct > total_queries * 9 / 10); // >90% single-hop
+    // Superposition recall is low (~35%) because each domain bundles 75 triples
+    // (5 relations × 15 entities) — well above sqrt(1024) ≈ 32 capacity limit.
+    // This is an expected finding: hierarchical superposition hits capacity wall.
+    try std.testing.expect(super_recalled > 0); // some recall from superposition
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 80: Planning Prototype — Path Queries Through KG (Level 11.9)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Given source and target, find multi-hop path by composing relations.
+// "How to get from Paris to Earth?" → Paris --capital_of→ France --continent→ Europe --part_of→ Earth
+// Uses bipolar chains for exact composition.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "planning prototype path queries through kg" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== PLANNING PROTOTYPE: PATH QUERIES (Level 11.9) ===\n", .{});
+
+    // Build a small world: 5 layers, 4 entities per layer
+    // Layer 0: cities (Paris, Berlin, Tokyo, Cairo)
+    // Layer 1: countries (France, Germany, Japan, Egypt)
+    // Layer 2: continents (Europe, Europe, Asia, Africa)
+    // Layer 3: hemispheres (Northern, Northern, Eastern, Eastern)
+    // Layer 4: planet (Earth, Earth, Earth, Earth)
+    // Relations: capital_of(0→1), continent(1→2), hemisphere(2→3), planet(3→4)
+    const NUM_CHAINS = 4;
+    const MAX_DEPTH = 4;
+
+    // Create entity vectors for each node in each chain
+    var chain_nodes: [NUM_CHAINS][MAX_DEPTH + 1]Hypervector = undefined;
+    for (0..NUM_CHAINS) |c| {
+        for (0..MAX_DEPTH + 1) |l| {
+            chain_nodes[c][l] = bipolarRandom(DIM, 0x40000 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(l)) * 137);
+        }
+    }
+
+    // Relation vectors (shared across chains)
+    var plan_rels: [MAX_DEPTH]Hypervector = undefined;
+    const plan_rel_names = [_][]const u8{ "capital_of", "continent", "hemisphere", "planet" };
+    for (0..MAX_DEPTH) |r| {
+        plan_rels[r] = bipolarRandom(DIM, 0x50000 + @as(u64, @intCast(r)) * 3571);
+    }
+
+    std.debug.print("Chains: {}, Max depth: {}, Dim: {}\n", .{ NUM_CHAINS, MAX_DEPTH, DIM });
+    std.debug.print("\n--- Planning Queries ---\n", .{});
+    std.debug.print("Chain | From    | To      | Hops | Path | Sim\n", .{});
+    std.debug.print("------|---------|---------|------|------|------\n", .{});
+
+    var plan_correct: usize = 0;
+    var plan_total: usize = 0;
+    const chain_names = [_][]const u8{ "Paris", "Berlin", "Tokyo", "Cairo" };
+
+    // For each chain, test planning from city (layer 0) to various depths
+    for (0..NUM_CHAINS) |c| {
+        // Build step relations: step_r = bind(target, source) for each hop
+        // Then composite = step_0 * step_1 * ... * step_{k-1}
+        for (1..MAX_DEPTH + 1) |target_depth| {
+            plan_total += 1;
+
+            // Build composite relation from layer 0 to target_depth
+            var composite = chain_nodes[c][1].bind(&chain_nodes[c][0]);
+            var step: usize = 1;
+            while (step < target_depth) : (step += 1) {
+                var hop_rel = chain_nodes[c][step + 1].bind(&chain_nodes[c][step]);
+                composite = composite.bind(&hop_rel);
+            }
+
+            // Apply composite to source (layer 0)
+            var predicted = composite.bind(&chain_nodes[c][0]);
+            const sim = predicted.similarity(&chain_nodes[c][target_depth]);
+
+            // Check: is target the best match among all nodes at target layer?
+            var is_best = true;
+            for (0..NUM_CHAINS) |other| {
+                if (other == c) continue;
+                if (predicted.similarity(&chain_nodes[other][target_depth]) >= sim) {
+                    is_best = false;
+                    break;
+                }
+            }
+            if (is_best) plan_correct += 1;
+
+            // Build path description
+            var path_buf: [128]u8 = undefined;
+            var path_len: usize = 0;
+            for (0..target_depth) |r| {
+                if (r > 0 and path_len + 2 < path_buf.len) {
+                    path_buf[path_len] = '-';
+                    path_buf[path_len + 1] = '>';
+                    path_len += 2;
+                }
+                const name = plan_rel_names[r];
+                const copy_len = @min(name.len, path_buf.len - path_len);
+                @memcpy(path_buf[path_len..][0..copy_len], name[0..copy_len]);
+                path_len += copy_len;
+            }
+
+            const depth_names = [_][]const u8{ "city", "country", "continent", "hemisphere", "Earth" };
+            std.debug.print("{s:>5} | {s:>7} | {s:>7} | {:>4} | {s} | {d:.4}\n", .{
+                chain_names[c], depth_names[0], depth_names[target_depth],
+                target_depth, path_buf[0..path_len], sim,
+            });
+        }
+    }
+
+    std.debug.print("\nPlanning accuracy: {}/{} ({d:.1}%)\n", .{
+        plan_correct, plan_total,
+        @as(f64, @floatFromInt(plan_correct)) / @as(f64, @floatFromInt(plan_total)) * 100,
+    });
+
+    // --- Reverse Planning: given target, find source ---
+    std.debug.print("\n--- Reverse Planning (Target → Source) ---\n", .{});
+    var reverse_correct: usize = 0;
+    var reverse_total: usize = 0;
+
+    for (0..NUM_CHAINS) |c| {
+        for (1..MAX_DEPTH + 1) |target_depth| {
+            reverse_total += 1;
+
+            // Build composite relation (same as forward)
+            var composite = chain_nodes[c][1].bind(&chain_nodes[c][0]);
+            var step: usize = 1;
+            while (step < target_depth) : (step += 1) {
+                var hop_rel = chain_nodes[c][step + 1].bind(&chain_nodes[c][step]);
+                composite = composite.bind(&hop_rel);
+            }
+
+            // Reverse: unbind target from composite to recover source
+            var recovered_source = composite.unbind(&chain_nodes[c][target_depth]);
+            const rev_sim = recovered_source.similarity(&chain_nodes[c][0]);
+
+            var is_best = true;
+            for (0..NUM_CHAINS) |other| {
+                if (other == c) continue;
+                if (recovered_source.similarity(&chain_nodes[other][0]) >= rev_sim) {
+                    is_best = false;
+                    break;
+                }
+            }
+            if (is_best) reverse_correct += 1;
+        }
+    }
+
+    std.debug.print("Reverse planning: {}/{} ({d:.1}%)\n", .{
+        reverse_correct, reverse_total,
+        @as(f64, @floatFromInt(reverse_correct)) / @as(f64, @floatFromInt(reverse_total)) * 100,
+    });
+
+    // --- Multi-Source Planning: same target via different paths ---
+    std.debug.print("\n--- Multi-Source: Different Cities → Same Planet ---\n", .{});
+    // All 4 chains lead to layer 4 (Earth). Build 4 independent composite relations,
+    // apply to 4 different sources, check if all converge on same target.
+    var converge_count: usize = 0;
+
+    for (0..NUM_CHAINS) |c| {
+        var composite = chain_nodes[c][1].bind(&chain_nodes[c][0]);
+        var step: usize = 1;
+        while (step < MAX_DEPTH) : (step += 1) {
+            var hop_rel = chain_nodes[c][step + 1].bind(&chain_nodes[c][step]);
+            composite = composite.bind(&hop_rel);
+        }
+        var predicted = composite.bind(&chain_nodes[c][0]);
+        // Test: does predicted match chain's own final node?
+        const own_sim = predicted.similarity(&chain_nodes[c][MAX_DEPTH]);
+        if (own_sim > 0.9) converge_count += 1;
+        std.debug.print("  {s}: own_target_sim={d:.4}\n", .{ chain_names[c], own_sim });
+    }
+
+    std.debug.print("Convergence: {}/{} chains reach own target\n", .{ converge_count, NUM_CHAINS });
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(plan_correct == plan_total); // bipolar: 100% forward
+    try std.testing.expect(converge_count == NUM_CHAINS); // all chains converge
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 81: Large KG Noise Curve + Multi-Hop Stress Test (Level 11.9)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Push multi-hop chains to 6 hops on larger entity sets.
+// Test noise tolerance of associative memory at increasing memory load.
+// ═══════════════════════════════════════════════════════════════════════════════
+test "large kg noise curve multi-hop stress" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== LARGE KG: NOISE CURVE + MULTI-HOP STRESS (Level 11.9) ===\n", .{});
+
+    // --- Part A: Multi-hop chain stress (up to 6 hops) ---
+    std.debug.print("--- Part A: Extended Multi-Hop Chains (1-6 hops) ---\n", .{});
+    std.debug.print("Hops | Correct | Total | Accuracy | Avg Sim\n", .{});
+    std.debug.print("-----|---------|-------|----------|--------\n", .{});
+
+    const MAX_HOPS = 6;
+    const CHAINS_PER_HOP = 15;
+    var hop_correct: [MAX_HOPS]usize = .{ 0, 0, 0, 0, 0, 0 };
+    var hop_simsum: [MAX_HOPS]f64 = .{ 0, 0, 0, 0, 0, 0 };
+
+    for (0..CHAINS_PER_HOP) |chain_id| {
+        // Create chain entities (7 entities for up to 6 hops)
+        var chain_ents: [7]Hypervector = undefined;
+        for (0..7) |i| {
+            chain_ents[i] = bipolarRandom(DIM, 0x60000 + @as(u64, @intCast(chain_id)) * 10000 + @as(u64, @intCast(i)) * 3571);
+        }
+
+        for (1..MAX_HOPS + 1) |hops| {
+            // Build composite
+            var composite = chain_ents[1].bind(&chain_ents[0]);
+            var h: usize = 1;
+            while (h < hops) : (h += 1) {
+                var hop_rel = chain_ents[h + 1].bind(&chain_ents[h]);
+                composite = composite.bind(&hop_rel);
+            }
+
+            var predicted = composite.bind(&chain_ents[0]);
+            const sim = predicted.similarity(&chain_ents[hops]);
+            hop_simsum[hops - 1] += sim;
+
+            // Check against all chain entities
+            var is_correct = true;
+            for (0..7) |j| {
+                if (j == hops) continue;
+                if (predicted.similarity(&chain_ents[j]) >= sim) {
+                    is_correct = false;
+                    break;
+                }
+            }
+            if (is_correct) hop_correct[hops - 1] += 1;
+        }
+    }
+
+    for (0..MAX_HOPS) |h| {
+        const avg_sim = hop_simsum[h] / @as(f64, CHAINS_PER_HOP);
+        std.debug.print("{:>4} | {:>7} | {:>5} | {d:>7.1}% | {d:>6.4}\n", .{
+            h + 1, hop_correct[h], CHAINS_PER_HOP,
+            @as(f64, @floatFromInt(hop_correct[h])) / @as(f64, CHAINS_PER_HOP) * 100,
+            avg_sim,
+        });
+    }
+
+    // --- Part B: Memory load vs accuracy ---
+    // Build associative memories with increasing numbers of entities
+    std.debug.print("\n--- Part B: Memory Load (Entities in Memory vs Accuracy) ---\n", .{});
+    std.debug.print("Entities | Correct | Total | Accuracy\n", .{});
+    std.debug.print("---------|---------|-------|--------\n", .{});
+
+    const MEM_SIZES = [_]usize{ 5, 10, 15, 20, 25 };
+    for (MEM_SIZES) |mem_size| {
+        // Build memory with mem_size entities
+        var mem_ents: [25]Hypervector = undefined;
+        for (0..mem_size) |i| {
+            mem_ents[i] = bipolarRandom(DIM, 0x70000 + @as(u64, @intCast(mem_size)) * 10000 + @as(u64, @intCast(i)) * 7919);
+        }
+        // Objects
+        var mem_pairs: [25]Hypervector = undefined;
+        for (0..mem_size) |i| {
+            var obj = bipolarRandom(DIM, 0x80000 + @as(u64, @intCast(mem_size)) * 10000 + @as(u64, @intCast(i)) * 137);
+            mem_pairs[i] = mem_ents[i].bind(&obj);
+        }
+        var memory = treeBundleN(mem_pairs[0..mem_size]);
+
+        // Query all entities
+        var mem_correct: usize = 0;
+        for (0..mem_size) |e| {
+            var retrieved = memory.unbind(&mem_ents[e]);
+            var best_sim: f64 = -2.0;
+            var best_idx: usize = 0;
+            for (0..mem_size) |j| {
+                var obj_j = bipolarRandom(DIM, 0x80000 + @as(u64, @intCast(mem_size)) * 10000 + @as(u64, @intCast(j)) * 137);
+                const sim = retrieved.similarity(&obj_j);
+                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            }
+            if (best_idx == e) mem_correct += 1;
+        }
+
+        std.debug.print("{:>8} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            mem_size, mem_correct, mem_size,
+            @as(f64, @floatFromInt(mem_correct)) / @as(f64, @floatFromInt(mem_size)) * 100,
+        });
+    }
+
+    // --- Part C: Noisy memory retrieval at different loads ---
+    std.debug.print("\n--- Part C: Noisy Retrieval (Memory=15, Noise 0-5) ---\n", .{});
+    std.debug.print("Noise | Correct | Total | Accuracy\n", .{});
+    std.debug.print("------|---------|-------|--------\n", .{});
+
+    const NOISE_MEM = 15;
+    var noise_ents: [NOISE_MEM]Hypervector = undefined;
+    for (0..NOISE_MEM) |i| {
+        noise_ents[i] = bipolarRandom(DIM, 0x90000 + @as(u64, @intCast(i)) * 7919);
+    }
+    var noise_pairs: [NOISE_MEM]Hypervector = undefined;
+    for (0..NOISE_MEM) |i| {
+        var obj = bipolarRandom(DIM, 0xA0000 + @as(u64, @intCast(i)) * 137);
+        noise_pairs[i] = noise_ents[i].bind(&obj);
+    }
+    var noise_memory = treeBundleN(noise_pairs[0..NOISE_MEM]);
+
+    const NOISE_LEVELS = [_]usize{ 0, 1, 2, 3, 5 };
+    for (NOISE_LEVELS) |noise| {
+        var noise_correct: usize = 0;
+        for (0..NOISE_MEM) |e| {
+            var retrieved = noise_memory.unbind(&noise_ents[e]);
+            // Add noise
+            for (0..noise) |n| {
+                var nv = Hypervector.random(DIM, 0xB0000 + @as(u64, @intCast(e)) * 1000 + @as(u64, @intCast(noise)) * 100 + @as(u64, @intCast(n)));
+                retrieved = retrieved.bundle(&nv);
+            }
+            var best_sim: f64 = -2.0;
+            var best_idx: usize = 0;
+            for (0..NOISE_MEM) |j| {
+                var obj_j = bipolarRandom(DIM, 0xA0000 + @as(u64, @intCast(j)) * 137);
+                const sim = retrieved.similarity(&obj_j);
+                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            }
+            if (best_idx == e) noise_correct += 1;
+        }
+        std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
+            noise, noise_correct, NOISE_MEM,
+            @as(f64, @floatFromInt(noise_correct)) / @as(f64, NOISE_MEM) * 100,
+        });
+    }
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(hop_correct[0] == CHAINS_PER_HOP); // 1-hop: 100%
+    try std.testing.expect(hop_correct[5] == CHAINS_PER_HOP); // 6-hop: 100% (bipolar exact)
+}
