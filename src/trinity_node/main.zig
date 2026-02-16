@@ -65,6 +65,8 @@ const slashing_escrow_mod = @import("slashing_escrow.zig");
 const prometheus_http_mod = @import("prometheus_http.zig");
 const vsa_shard_encoder_mod = @import("vsa_shard_encoder.zig");
 const semantic_index_mod = @import("semantic_index.zig");
+// v2.1: HTTP REST API
+const http_api_mod = @import("http_api.zig");
 
 const Args = struct {
     headless: bool = false,
@@ -113,6 +115,9 @@ const Args = struct {
     enable_prometheus_http: bool = false,
     enable_semantic: bool = false,
     prometheus_http_port: u16 = 9090,
+    // v2.1: HTTP REST API
+    enable_http_api: bool = false,
+    http_api_port: u16 = 8080,
     help: bool = false,
 };
 
@@ -229,6 +234,11 @@ fn parseArgs() Args {
         } else if (std.mem.startsWith(u8, arg, "--prometheus-http-port=")) {
             args.prometheus_http_port = std.fmt.parseInt(u16, arg[22..], 10) catch 9090;
             args.storage = true;
+        } else if (std.mem.eql(u8, arg, "--http-api")) {
+            args.enable_http_api = true;
+        } else if (std.mem.startsWith(u8, arg, "--http-api-port=")) {
+            args.http_api_port = std.fmt.parseInt(u16, arg[16..], 10) catch 8080;
+            args.enable_http_api = true;
         }
     }
 
@@ -286,6 +296,8 @@ fn printHelp() void {
         \\  --prometheus-http       Enable Prometheus /metrics HTTP endpoint (v2.0)
         \\  --semantic              Enable VSA semantic content indexing (v2.0)
         \\  --prometheus-http-port=PORT  Prometheus HTTP port (default: 9090) (v2.0)
+        \\  --http-api              Enable HTTP REST API server (v2.1)
+        \\  --http-api-port=PORT    HTTP API port (default: 8080) (v2.1)
         \\
         \\EXAMPLES:
         \\  trinity-node                          # Start with GUI
@@ -581,6 +593,16 @@ pub fn main() !void {
         std.debug.print("Prometheus HTTP endpoint enabled (port: {d})\n", .{args.prometheus_http_port});
     }
     defer if (prometheus_http_endpoint != null) prometheus_http_endpoint.?.deinit();
+
+    // v2.1: HTTP REST API Server
+    var http_api_server: ?http_api_mod.HttpApiServer = null;
+    if (args.enable_http_api) {
+        http_api_server = http_api_mod.HttpApiServer.initWithConfig(allocator, .{
+            .port = args.http_api_port,
+        });
+        std.debug.print("HTTP REST API enabled (port: {d})\n", .{args.http_api_port});
+    }
+    defer if (http_api_server != null) http_api_server.?.deinit();
 
     // v2.0: VSA Shard Encoder + Semantic Index
     var vsa_encoder: ?vsa_shard_encoder_mod.VsaShardEncoder = null;
@@ -1065,6 +1087,9 @@ test "args parsing" {
     try std.testing.expect(!args.enable_prometheus_http);
     try std.testing.expect(!args.enable_semantic);
     try std.testing.expectEqual(@as(u16, 9090), args.prometheus_http_port);
+    // v2.1 fields
+    try std.testing.expect(!args.enable_http_api);
+    try std.testing.expectEqual(@as(u16, 8080), args.http_api_port);
 }
 
 test "HKDF key derivation is deterministic" {
