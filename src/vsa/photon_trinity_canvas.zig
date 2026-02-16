@@ -148,7 +148,7 @@ const ChatMsgType = enum {
     // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
     dao_full_governance, // DAO full governance (gold)
     tri_staking, // $TRI staking (lime green)
-    reward_distribute, // Reward distribution (hot pink)
+    reward_distribute_v2, // Reward distribution v2 (hot pink)
     staking_validate, // Staking validation (steel blue)
     // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
     swarm_100k, // Swarm 100k (orange)
@@ -172,7 +172,7 @@ const ChatMsgType = enum {
     dht_adapt, // DHT adapt (steel blue)
     // v2.15: Swarm 1M + Community 500k
     swarm_million, // Swarm million (orange red)
-    community_node, // Community node (medium purple)
+    community_node_v2, // Community node v2 (medium purple)
     hierarchical_gossip, // Hierarchical gossip (dark cyan)
     geographic_shard, // Geographic shard (indian red)
     // v2.16: ZK-Rollup v2.0
@@ -291,6 +291,7 @@ const WaveMode = enum {
     finder, // Fullscreen finder wave field
     docs, // Fullscreen docs wave field
     mirror, // v2.1: Mirror of Three Worlds dashboard
+    depin, // v2.4: DePIN Node control panel
 
     pub fn getLabel(self: WaveMode) [*:0]const u8 {
         return switch (self) {
@@ -304,6 +305,7 @@ const WaveMode = enum {
             .finder => "FINDER",
             .docs => "DOCS",
             .mirror => "MIRROR",
+            .depin => "DEPIN",
         };
     }
 
@@ -319,12 +321,24 @@ const WaveMode = enum {
             .finder => 60.0, // Yellow
             .docs => 120.0, // Green-light
             .mirror => 45.0, // Gold (Trinity)
+            .depin => 90.0, // Green-yellow (earning)
         };
     }
 };
 var g_wave_mode: WaveMode = .idle;
 var g_wave_transition: f32 = 0; // 0..1 animation progress
 var g_wave_mode_prev: WaveMode = .idle;
+
+// v2.4: DePIN Node state
+var g_depin_running: bool = false;
+var g_depin_docker_ok: bool = false;
+var g_depin_earned_tri: f64 = 0.0;
+var g_depin_pending_tri: f64 = 0.0;
+var g_depin_operations: u64 = 0;
+var g_depin_uptime_hours: f32 = 0.0;
+var g_depin_shards: u64 = 0;
+var g_depin_peers: u32 = 0;
+var g_depin_poll_timer: f32 = 0.0;
 
 // v2.0: Finder mode — real directory listing cache
 const FINDER_MAX_ENTRIES: usize = 32;
@@ -498,7 +512,7 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
         // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
         .dao_full_governance => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha }, // Gold
         .tri_staking => .{ .r = 0x32, .g = 0xCD, .b = 0x32, .a = alpha }, // Lime green
-        .reward_distribute => .{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = alpha }, // Hot pink
+        .reward_distribute_v2 => .{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = alpha }, // Hot pink
         .staking_validate => .{ .r = 0x46, .g = 0x82, .b = 0xB4, .a = alpha }, // Steel blue
         // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
         .swarm_100k => .{ .r = 0xFF, .g = 0xA5, .b = 0x00, .a = alpha }, // Orange
@@ -522,7 +536,7 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
         .dht_adapt => .{ .r = 0x46, .g = 0x82, .b = 0xB4, .a = alpha }, // Steel Blue
         // v2.15: Swarm 1M + Community 500k
         .swarm_million => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = alpha }, // Orange Red
-        .community_node => .{ .r = 0x93, .g = 0x70, .b = 0xDB, .a = alpha }, // Medium Purple
+        .community_node_v2 => .{ .r = 0x93, .g = 0x70, .b = 0xDB, .a = alpha }, // Medium Purple
         .hierarchical_gossip => .{ .r = 0x00, .g = 0x8B, .b = 0x8B, .a = alpha }, // Dark Cyan
         .geographic_shard => .{ .r = 0xCD, .g = 0x5C, .b = 0x5C, .a = alpha }, // Indian Red
         // v2.16: ZK-Rollup v2.0
@@ -689,7 +703,7 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
         .dao_full_governance => "DAO_FGOV",
         .tri_staking => "TRI_STAK",
-        .reward_distribute => "RWD_DIST",
+        .reward_distribute_v2 => "RWD_DIST2",
         .staking_validate => "STK_VLDR",
         // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
         .swarm_100k => "SWM_100K",
@@ -708,7 +722,7 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         .batch_compress => "BCH_COMP",
         // v2.15: Swarm 1M + Community 500k
         .swarm_million => "SWM_1M",
-        .community_node => "COM_NOD",
+        .community_node_v2 => "COM_ND2",
         .hierarchical_gossip => "HIR_GSP",
         .geographic_shard => "GEO_SHD",
         // v2.16: ZK-Rollup v2.0
@@ -800,12 +814,13 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         .user => "YOU",
         .ai => "AI",
         .log => "LOG",
+        else => "CHAIN",
     };
 }
 
 fn isChainType(msg_type: ChatMsgType) bool {
     return switch (msg_type) {
-        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute, .staking_validate, .swarm_100k, .gossip_shard, .dht_sync, .community_50k, .zk_bridge, .zk_proof, .privacy_transfer, .cross_chain_sync_v2, .l2_rollup, .optimistic_verify, .state_channel, .batch_compress, .dynamic_shard, .shard_split, .shard_merge, .dht_adapt, .swarm_million, .community_node, .hierarchical_gossip, .geographic_shard, .zk_snark_proof, .recursive_proof, .l2_scaling, .rollup_batch, .cross_shard_tx, .atomic_2pc, .shard_fee, .tx_coordinator, .partition_detect, .split_brain, .auto_heal, .partition_tolerance, .swarm_10m, .community_5m, .earning_boost, .massive_gossip, .zk_rollup_v2, .snark_generate, .recursive_compose, .l2_fee_collect, .cross_shard_tx_v2, .atomic_2pc_v2, .shard_fee_v2, .inter_shard_sync_v2, .formal_verify_v2, .property_test_v2, .invariant_check_v2, .proof_generate_v2, .swarm_100m_v2, .community_50m_v2, .earning_moonshot_v2, .gossip_v3_v2, .global_dominance_v2, .world_adoption_v2, .tri_to_one_v2, .ecosystem_complete_v2, .ouroboros_evolve_v2, .infinite_scale_v2, .universal_reserve_v2, .eternal_uptime_v2, .tri_to_ten_v2, .mass_adoption_v2, .exchange_listing_v2, .universal_wallet_v2, .tri_to_hundred_v2, .universal_adoption_v2, .exchange_v2_v2, .global_wallet_v2, .swarm_10m_v2, .community_5m_v2, .earning_ultimate_v2, .node_discovery_10m_v2, .swarm_1b_v2, .community_500m_v2, .earning_god_mode_v2, .node_discovery_1b_v2, .ternary_nn_v2, .recursive_self_train_v2, .contribution_reward_v2, .neural_consensus_v2, .tri_to_1000_v2, .universal_reserve_v2_v2, .global_dominance_v2_v2, .eternal_governance_v2_v2, .trinity_beyond_v2, .infinite_scale_v2_v2, .multiverse_dominance_v2, .eternal_evolution_v2, .trinity_absolute_v3, .infinite_tri_v3, .eternal_victory_v3, .multiverse_complete_v3 => true,
+        .chain_goal_parse, .chain_decompose, .chain_schedule, .chain_execute, .chain_monitor, .chain_adapt, .chain_synthesize, .chain_deliver, .tool_result, .routing_info, .reflection, .agent_error, .provenance_step, .truth_verification, .quark_step, .gluon_entangle, .dag_visualization, .reward_summary, .collapse_toggle, .share_link_generated, .staking_event, .self_repair_event, .immortal_persist, .evolution_step, .chain_health_check, .faucet_claim, .public_launch, .canvas_sync, .faucet_distribution, .decentral_sync, .node_consensus, .network_health, .agent_os_init, .mainnet_genesis, .dao_vote, .swarm_sync, .token_mint, .mainnet_launch, .community_onboard, .node_discovery, .governance_exec, .swarm_orchestrate, .swarm_failover, .swarm_telemetry, .swarm_replication, .swarm_scale, .reward_distribute, .dao_governance_live, .node_scaling, .community_node, .gossip_broadcast, .dht_lookup, .community_sync, .dao_delegate, .timelock_vote, .proposal_exec, .yield_farming, .cross_chain_bridge, .atomic_swap, .state_replicate, .bridge_sync, .dao_full_governance, .tri_staking, .reward_distribute_v2, .staking_validate, .swarm_100k, .gossip_shard, .dht_sync, .community_50k, .zk_bridge, .zk_proof, .privacy_transfer, .cross_chain_sync_v2, .l2_rollup, .optimistic_verify, .state_channel, .batch_compress, .dynamic_shard, .shard_split, .shard_merge, .dht_adapt, .swarm_million, .community_node_v2, .hierarchical_gossip, .geographic_shard, .zk_snark_proof, .recursive_proof, .l2_scaling, .rollup_batch, .cross_shard_tx, .atomic_2pc, .shard_fee, .tx_coordinator, .partition_detect, .split_brain, .auto_heal, .partition_tolerance, .swarm_10m, .community_5m, .earning_boost, .massive_gossip, .zk_rollup_v2, .snark_generate, .recursive_compose, .l2_fee_collect, .cross_shard_tx_v2, .atomic_2pc_v2, .shard_fee_v2, .inter_shard_sync_v2, .formal_verify_v2, .property_test_v2, .invariant_check_v2, .proof_generate_v2, .swarm_100m_v2, .community_50m_v2, .earning_moonshot_v2, .gossip_v3_v2, .global_dominance_v2, .world_adoption_v2, .tri_to_one_v2, .ecosystem_complete_v2, .ouroboros_evolve_v2, .infinite_scale_v2, .universal_reserve_v2, .eternal_uptime_v2, .tri_to_ten_v2, .mass_adoption_v2, .exchange_listing_v2, .universal_wallet_v2, .tri_to_hundred_v2, .universal_adoption_v2, .exchange_v2_v2, .global_wallet_v2, .swarm_10m_v2, .community_5m_v2, .earning_ultimate_v2, .node_discovery_10m_v2, .swarm_1b_v2, .community_500m_v2, .earning_god_mode_v2, .node_discovery_1b_v2, .ternary_nn_v2, .recursive_self_train_v2, .contribution_reward_v2, .neural_consensus_v2, .tri_to_1000_v2, .universal_reserve_v2_v2, .global_dominance_v2_v2, .eternal_governance_v2_v2, .trinity_beyond_v2, .infinite_scale_v2_v2, .multiverse_dominance_v2, .eternal_evolution_v2, .trinity_absolute_v3, .infinite_tri_v3, .eternal_victory_v3, .multiverse_complete_v3 => true,
         else => false,
     };
 }
@@ -884,7 +899,7 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         // v2.10: Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
         .DAOFullGovernance => .dao_full_governance,
         .TRIStaking => .tri_staking,
-        .RewardDistribution => .reward_distribute,
+        .RewardDistribution => .reward_distribute_v2,
         .StakingValidation => .staking_validate,
         // v2.11: Swarm 100k + Community 50k (Sharded Gossip + Hierarchical DHT)
         .Swarm100kScale => .swarm_100k,
@@ -908,7 +923,7 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         .GossipReshardEvent => .shard_merge,
         // v2.15: Swarm 1M + Community 500k
         .SwarmMillionEvent => .swarm_million,
-        .CommunityNodeUpdate => .community_node,
+        .CommunityNodeUpdate => .community_node_v2,
         .HierarchicalGossipEvent => .hierarchical_gossip,
         .GeographicShardEvent => .geographic_shard,
         // v2.16: ZK-Rollup v2.0
@@ -936,9 +951,9 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         .RecursiveComposeEvent => .recursive_compose,
         .L2FeeCollectEvent => .l2_fee_collect,
         // v2.21: Cross-Shard Transactions v1.0
-        .CrossShardTxEvent => .cross_shard_tx_v2,
+        .CrossShardTxEventV2 => .cross_shard_tx_v2,
         .Atomic2PCUpdate => .atomic_2pc_v2,
-        .ShardFeeEvent => .shard_fee_v2,
+        .ShardFeeEventV2 => .shard_fee_v2,
         .InterShardSyncEvent => .inter_shard_sync_v2,
         // v2.22: Formal Verification v1.0
         .FormalVerifyEvent => .formal_verify_v2,
@@ -971,8 +986,8 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
                     .ExchangeV2Event => .exchange_v2_v2,
                     .GlobalWalletEvent => .global_wallet_v2,
                     // v2.28
-                    .Swarm10MEvent => .swarm_10m_v2,
-                    .Community5MUpdate => .community_5m_v2,
+                    .Swarm10MEventV2 => .swarm_10m_v2,
+                    .Community5MUpdateV2 => .community_5m_v2,
                     .EarningUltimateEvent => .earning_ultimate_v2,
                     .NodeDiscovery10MEvent => .node_discovery_10m_v2,
                     .Swarm1BEvent => .swarm_1b_v2,
@@ -990,7 +1005,7 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
             .EternalGovernanceV2Event => .eternal_governance_v2_v2,
             // v2.32: Trinity Beyond v1.0
             .TrinityBeyondEvent => .trinity_beyond_v2,
-            .InfiniteScaleUpdate => .infinite_scale_v2_v2,
+            .InfiniteScaleUpdateV2 => .infinite_scale_v2_v2,
             .MultiVerseDominanceEvent => .multiverse_dominance_v2,
             .EternalEvolutionEvent => .eternal_evolution_v2,
             // v3.0: Trinity Absolute v1.0
@@ -1966,6 +1981,157 @@ fn extractJsonString(json: []const u8, key: []const u8) ?[]const u8 {
     return json[start..end_off];
 }
 
+// ── v2.4: DePIN Node Management ──────────────────────────────────────────
+
+/// Check if Docker is installed by running `docker --version`.
+fn depinCheckDocker() bool {
+    if (is_emscripten) return false;
+    const allocator = std.heap.page_allocator;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "docker", "--version" },
+    }) catch return false;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    return result.stdout.len > 0;
+}
+
+/// Check if trinity-node container is running.
+fn depinCheckRunning() bool {
+    if (is_emscripten) return false;
+    const allocator = std.heap.page_allocator;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "docker", "ps", "-q", "--filter", "name=trinity-node" },
+    }) catch return false;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    // Non-empty output means container is running
+    for (result.stdout) |c| {
+        if (c != ' ' and c != '\n' and c != '\r') return true;
+    }
+    return false;
+}
+
+/// Start the trinity-node Docker container.
+fn depinStartNode() void {
+    if (is_emscripten) return;
+    if (!g_depin_docker_ok) return;
+    const allocator = std.heap.page_allocator;
+    // Remove any stopped container with the same name first (ignore errors)
+    if (std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "docker", "rm", "-f", "trinity-node" },
+    })) |rm_ok| {
+        allocator.free(rm_ok.stdout);
+        allocator.free(rm_ok.stderr);
+    } else |_| {}
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{
+            "docker", "run", "-d", "--name", "trinity-node",
+            "-p", "8080:8080", "-p", "9090:9090",
+            "-p", "9333:9333/udp", "-p", "9334:9334",
+            "-v", "~/.trinity:/data",
+            "ghcr.io/ghashtag/trinity-node:latest",
+        },
+    }) catch return;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    g_depin_running = result.stdout.len > 0;
+}
+
+/// Stop and remove the trinity-node Docker container.
+fn depinStopNode() void {
+    if (is_emscripten) return;
+    const allocator = std.heap.page_allocator;
+    if (std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "docker", "stop", "trinity-node" },
+    })) |stop_ok| {
+        allocator.free(stop_ok.stdout);
+        allocator.free(stop_ok.stderr);
+    } else |_| {}
+    if (std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "docker", "rm", "trinity-node" },
+    })) |rm_ok| {
+        allocator.free(rm_ok.stdout);
+        allocator.free(rm_ok.stderr);
+    } else |_| {}
+    g_depin_running = false;
+    g_depin_earned_tri = 0;
+    g_depin_pending_tri = 0;
+    g_depin_operations = 0;
+    g_depin_uptime_hours = 0;
+    g_depin_shards = 0;
+    g_depin_peers = 0;
+}
+
+/// Poll node stats from HTTP API via curl.
+fn depinPollStats() void {
+    if (is_emscripten) return;
+    const allocator = std.heap.page_allocator;
+
+    // GET /v1/node/stats → {"operations":N,"earned_tri":F,"pending_tri":F}
+    const stats = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "curl", "-s", "-m", "3", "http://localhost:8080/v1/node/stats" },
+    }) catch return;
+    defer allocator.free(stats.stdout);
+    defer allocator.free(stats.stderr);
+
+    if (stats.stdout.len > 0) {
+        if (parseJsonFloat(stats.stdout, "\"earned_tri\":")) |v| g_depin_earned_tri = @floatCast(v);
+        if (parseJsonFloat(stats.stdout, "\"pending_tri\":")) |v| g_depin_pending_tri = @floatCast(v);
+        if (parseJsonFloat(stats.stdout, "\"operations\":")) |v| g_depin_operations = @intFromFloat(@max(0, @as(f64, @floatCast(v))));
+    }
+
+    // GET /node/status → {"status":"earning","uptime_hours":F,"peers":N}
+    const status = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "curl", "-s", "-m", "3", "http://localhost:8080/node/status" },
+    }) catch return;
+    defer allocator.free(status.stdout);
+    defer allocator.free(status.stderr);
+
+    if (status.stdout.len > 0) {
+        if (parseJsonFloat(status.stdout, "\"uptime_hours\":")) |v| g_depin_uptime_hours = v;
+        if (parseJsonFloat(status.stdout, "\"peers\":")) |v| g_depin_peers = @intFromFloat(@max(0, @as(f64, @floatCast(v))));
+    }
+
+    // GET /storage/stats → {"shards_hosted":N,...}
+    const storage = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "curl", "-s", "-m", "3", "http://localhost:8080/storage/stats" },
+    }) catch return;
+    defer allocator.free(storage.stdout);
+    defer allocator.free(storage.stderr);
+
+    if (storage.stdout.len > 0) {
+        if (parseJsonFloat(storage.stdout, "\"shards_hosted\":")) |v| g_depin_shards = @intFromFloat(@max(0, @as(f64, @floatCast(v))));
+    }
+}
+
+/// Claim pending $TRI rewards.
+fn depinClaimRewards() void {
+    if (is_emscripten) return;
+    const allocator = std.heap.page_allocator;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "curl", "-s", "-m", "3", "-X", "POST", "http://localhost:8080/v1/node/claim" },
+    }) catch return;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len > 0) {
+        if (parseJsonFloat(result.stdout, "\"claimed_tri\":")) |v| {
+            g_depin_earned_tri += @floatCast(v);
+            g_depin_pending_tri = 0;
+        }
+    }
+}
+
 /// Known worker endpoints to probe via TCP
 const ProbeTarget = struct {
     host: []const u8,
@@ -2152,6 +2318,10 @@ fn initNetworkState() void {
         // Spawn background thread to probe known endpoints + refine geo via IP API
         g_network_probe_thread = std.Thread.spawn(.{}, probeNetworkNodes, .{}) catch null;
     }
+
+    // v2.4: DePIN Docker detection on startup
+    g_depin_docker_ok = depinCheckDocker();
+    g_depin_running = if (g_depin_docker_ok) depinCheckRunning() else false;
 }
 
 const GlassPanel = struct {
@@ -5814,6 +5984,7 @@ fn updateDrawFrame() callconv(.c) void {
                 if (rl.IsKeyPressed(rl.KEY_EIGHT)) new_mode = .docs;
                 if (rl.IsKeyPressed(rl.KEY_NINE)) new_mode = .mirror;
                 if (rl.IsKeyPressed(rl.KEY_ZERO)) new_mode = .idle;
+                if (rl.IsKeyPressed(rl.KEY_D)) new_mode = .depin;
 
                 if (new_mode) |nm| {
                     if (nm != g_wave_mode) {
@@ -6244,6 +6415,16 @@ fn updateDrawFrame() callconv(.c) void {
         frame_tools.draw(frame_time);
         frame_effects.draw();
         frame_goal.draw(frame_time);
+
+        // === v2.4: DePIN Node Polling ===
+        if (g_wave_mode == .depin or g_depin_running) {
+            g_depin_poll_timer += dt;
+            if (g_depin_poll_timer >= 10.0) {
+                g_depin_poll_timer = 0;
+                g_depin_running = depinCheckRunning();
+                if (g_depin_running) depinPollStats();
+            }
+        }
 
         // === v1.9: Wave Mode Transition ===
         g_wave_transition = @min(1.0, g_wave_transition + dt * 3.0); // 0.33s transition
@@ -7328,6 +7509,189 @@ fn updateDrawFrame() callconv(.c) void {
                     }
                 }
             }
+
+            // === DePIN NODE WAVE FIELD === (v2.4: Docker node management)
+            if (g_wave_mode == .depin) {
+                const margin: f32 = 40 * fs;
+                const line_h: f32 = 28 * fs;
+                const title_sz: f32 = 28 * fs;
+                const subtitle_sz: f32 = 16 * fs;
+                const label_sz: f32 = 14 * fs;
+                const val_sz: f32 = 16 * fs;
+                const col_w = (sw - margin * 3) / 2;
+
+                const depin_green = rl.Color{ .r = 0x50, .g = 0xFA, .b = 0x50, .a = alpha_u8 };
+                const depin_yellow = rl.Color{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha_u8 };
+                const depin_red = rl.Color{ .r = 0xFF, .g = 0x55, .b = 0x55, .a = alpha_u8 };
+                const dim_text = withAlpha(MUTED_GRAY, alpha_u8);
+                const bright_text = withAlpha(rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 }, alpha_u8);
+
+                var y: f32 = 30 * fs;
+
+                // Title
+                rl.DrawTextEx(chat_font, "TRINITY DePIN NODE", .{ .x = margin, .y = y }, title_sz, 0.5, mode_color);
+                y += title_sz + 4;
+                rl.DrawTextEx(chat_font, "Earn $TRI for VSA compute & storage", .{ .x = margin, .y = y }, subtitle_sz, 0.5, dim_text);
+                y += line_h + 10;
+
+                // Status indicator
+                {
+                    const status_color = if (g_depin_running) depin_green else if (g_depin_docker_ok) depin_yellow else depin_red;
+                    const status_text: [*:0]const u8 = if (g_depin_running) "RUNNING" else if (g_depin_docker_ok) "STOPPED" else "NO DOCKER";
+
+                    // Pulsing status dot
+                    const pulse = if (g_depin_running) @sin(frame_time * 3.0) * 0.3 + 0.7 else 0.5;
+                    const dot_a: u8 = @intFromFloat(@max(60, @min(255, pulse * @as(f32, @floatFromInt(alpha_u8)))));
+                    rl.DrawCircle(@intFromFloat(margin + 8), @intFromFloat(y + 10), 6, rl.Color{ .r = status_color.r, .g = status_color.g, .b = status_color.b, .a = dot_a });
+
+                    rl.DrawTextEx(chat_font, "Status:", .{ .x = margin + 22, .y = y }, label_sz, 0.5, dim_text);
+                    rl.DrawTextEx(chat_font, status_text, .{ .x = margin + 80 * fs, .y = y }, val_sz, 0.5, status_color);
+                    y += line_h;
+
+                    // Uptime bar (if running)
+                    if (g_depin_running) {
+                        const bar_w = col_w;
+                        const bar_fill = @min(1.0, g_depin_uptime_hours / 24.0); // Scale to 24h
+                        rl.DrawRectangle(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(bar_w), 6, rl.Color{ .r = 40, .g = 40, .b = 50, .a = alpha_u8 });
+                        rl.DrawRectangle(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(bar_w * bar_fill), 6, depin_green);
+                        y += 14;
+                    }
+                }
+
+                y += 10;
+
+                // Separator
+                rl.DrawLine(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(sw - margin), @intFromFloat(y), rl.Color{ .r = 80, .g = 80, .b = 100, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3)) });
+                y += 15;
+
+                // Two columns: EARNINGS | INFRASTRUCTURE
+                const col1_x = margin;
+                const col2_x = margin + col_w + margin;
+                var y1 = y;
+                var y2 = y;
+
+                // Column 1: EARNINGS
+                rl.DrawTextEx(chat_font, "EARNINGS", .{ .x = col1_x, .y = y1 }, subtitle_sz, 0.5, depin_yellow);
+                y1 += subtitle_sz + 8;
+
+                // Earned
+                rl.DrawTextEx(chat_font, "Earned:", .{ .x = col1_x, .y = y1 }, label_sz, 0.5, dim_text);
+                var earned_buf: [24:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&earned_buf, "{d:.6} TRI", .{g_depin_earned_tri}) catch {};
+                earned_buf[@min(23, std.mem.indexOfScalar(u8, &earned_buf, 0) orelse 23)] = 0;
+                rl.DrawTextEx(chat_font, &earned_buf, .{ .x = col1_x + 80 * fs, .y = y1 }, val_sz, 0.5, depin_yellow);
+                y1 += line_h;
+
+                // Pending
+                rl.DrawTextEx(chat_font, "Pending:", .{ .x = col1_x, .y = y1 }, label_sz, 0.5, dim_text);
+                var pending_buf: [24:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&pending_buf, "{d:.6} TRI", .{g_depin_pending_tri}) catch {};
+                pending_buf[@min(23, std.mem.indexOfScalar(u8, &pending_buf, 0) orelse 23)] = 0;
+                rl.DrawTextEx(chat_font, &pending_buf, .{ .x = col1_x + 80 * fs, .y = y1 }, val_sz, 0.5, bright_text);
+                y1 += line_h;
+
+                // Operations
+                rl.DrawTextEx(chat_font, "Ops:", .{ .x = col1_x, .y = y1 }, label_sz, 0.5, dim_text);
+                var ops_buf: [16:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&ops_buf, "{d}", .{g_depin_operations}) catch {};
+                ops_buf[@min(15, std.mem.indexOfScalar(u8, &ops_buf, 0) orelse 15)] = 0;
+                rl.DrawTextEx(chat_font, &ops_buf, .{ .x = col1_x + 80 * fs, .y = y1 }, val_sz, 0.5, bright_text);
+                y1 += line_h;
+
+                // Column 2: INFRASTRUCTURE
+                rl.DrawTextEx(chat_font, "INFRASTRUCTURE", .{ .x = col2_x, .y = y2 }, subtitle_sz, 0.5, withAlpha(rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = 255 }, alpha_u8));
+                y2 += subtitle_sz + 8;
+
+                // Peers
+                rl.DrawTextEx(chat_font, "Peers:", .{ .x = col2_x, .y = y2 }, label_sz, 0.5, dim_text);
+                var peers_buf: [16:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&peers_buf, "{d}", .{g_depin_peers}) catch {};
+                peers_buf[@min(15, std.mem.indexOfScalar(u8, &peers_buf, 0) orelse 15)] = 0;
+                rl.DrawTextEx(chat_font, &peers_buf, .{ .x = col2_x + 100 * fs, .y = y2 }, val_sz, 0.5, bright_text);
+                y2 += line_h;
+
+                // Shards
+                rl.DrawTextEx(chat_font, "Shards:", .{ .x = col2_x, .y = y2 }, label_sz, 0.5, dim_text);
+                var shards_buf: [16:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&shards_buf, "{d}", .{g_depin_shards}) catch {};
+                shards_buf[@min(15, std.mem.indexOfScalar(u8, &shards_buf, 0) orelse 15)] = 0;
+                rl.DrawTextEx(chat_font, &shards_buf, .{ .x = col2_x + 100 * fs, .y = y2 }, val_sz, 0.5, bright_text);
+                y2 += line_h;
+
+                // Uptime
+                rl.DrawTextEx(chat_font, "Uptime:", .{ .x = col2_x, .y = y2 }, label_sz, 0.5, dim_text);
+                var uptime_buf: [16:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&uptime_buf, "{d:.1}h", .{g_depin_uptime_hours}) catch {};
+                uptime_buf[@min(15, std.mem.indexOfScalar(u8, &uptime_buf, 0) orelse 15)] = 0;
+                rl.DrawTextEx(chat_font, &uptime_buf, .{ .x = col2_x + 100 * fs, .y = y2 }, val_sz, 0.5, bright_text);
+                y2 += line_h;
+
+                // Buttons area
+                const btn_y = @max(y1, y2) + 20;
+                const btn_w: f32 = 180;
+                const btn_h: f32 = 40;
+                const btn_gap: f32 = 20;
+                const btn_x_start = margin;
+
+                // Start/Stop button
+                {
+                    const btn_rect = rl.Rectangle{ .x = btn_x_start, .y = btn_y, .width = btn_w, .height = btn_h };
+                    const btn_label: [*:0]const u8 = if (g_depin_running) "Stop Node" else "Start Node";
+
+                    // Draw button manually (no raygui dependency)
+                    const btn_color = if (g_depin_running) depin_red else depin_green;
+                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
+                    const btn_bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15);
+                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = btn_color.r, .g = btn_color.g, .b = btn_color.b, .a = btn_bg_a });
+                    rl.DrawRectangleLinesEx(btn_rect, 1, btn_color);
+                    rl.DrawTextEx(chat_font, btn_label, .{ .x = btn_x_start + 30, .y = btn_y + 10 }, val_sz, 0.5, btn_color);
+
+                    if (hover and mouse_pressed) {
+                        if (g_depin_running) depinStopNode() else depinStartNode();
+                    }
+                }
+
+                // Claim Rewards button
+                {
+                    const btn2_x = btn_x_start + btn_w + btn_gap;
+                    const btn_rect = rl.Rectangle{ .x = btn2_x, .y = btn_y, .width = btn_w, .height = btn_h };
+                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
+                    const btn_bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15);
+                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = depin_yellow.r, .g = depin_yellow.g, .b = depin_yellow.b, .a = btn_bg_a });
+                    rl.DrawRectangleLinesEx(btn_rect, 1, depin_yellow);
+                    rl.DrawTextEx(chat_font, "Claim Rewards", .{ .x = btn2_x + 20, .y = btn_y + 10 }, val_sz, 0.5, depin_yellow);
+
+                    if (hover and mouse_pressed and g_depin_running) {
+                        depinClaimRewards();
+                    }
+                }
+
+                // Dashboard button
+                {
+                    const btn3_x = btn_x_start + (btn_w + btn_gap) * 2;
+                    const btn_rect = rl.Rectangle{ .x = btn3_x, .y = btn_y, .width = btn_w, .height = btn_h };
+                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
+                    const dash_color = withAlpha(rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = 255 }, alpha_u8);
+                    const btn_bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15);
+                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = btn_bg_a });
+                    rl.DrawRectangleLinesEx(btn_rect, 1, dash_color);
+                    rl.DrawTextEx(chat_font, "Dashboard", .{ .x = btn3_x + 40, .y = btn_y + 10 }, val_sz, 0.5, dash_color);
+
+                    if (hover and mouse_pressed) {
+                        rl.OpenURL("https://gHashTag.github.io/trinity/docs/depin");
+                    }
+                }
+
+                // Footer: contract address
+                const footer_y = btn_y + btn_h + 30;
+                rl.DrawTextEx(chat_font, "Contract: 0xef368e29...F9f469  \xc2\xb7  Sepolia Testnet", .{ .x = margin, .y = footer_y }, 13 * fs, 0.5, dim_text);
+
+                // Docker not found warning
+                if (!g_depin_docker_ok) {
+                    const warn_y = footer_y + line_h;
+                    rl.DrawTextEx(chat_font, "Docker not found. Install at docker.com to run a node.", .{ .x = margin, .y = warn_y }, label_sz, 0.5, depin_red);
+                }
+            }
         }
 
         // Legacy panels (hidden when wave mode active, kept for backward compat)
@@ -7337,7 +7701,7 @@ fn updateDrawFrame() callconv(.c) void {
 
         // Keyboard hint (minimal, top-left)
         if (g_wave_mode == .idle) {
-            rl.DrawTextEx(frame_font_small, "Shift+1 Chat | 2 Code | 3 Tools | 4 Settings | 5 Vision | 6 Voice | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+            rl.DrawTextEx(frame_font_small, "Shift+1 Chat | 2 Code | 3 Tools | 4 Settings | D DePIN | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
         } else {
             rl.DrawTextEx(frame_font_small, "ESC = back | Shift+1-6 switch mode", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 140));
         }
