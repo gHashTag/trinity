@@ -88,7 +88,7 @@ High-quality work earns more:
 
 - **Fitness bonus** -- evolution fitness > 0.9 grants **+50%** rewards
 - **Similarity bonus** -- navigation similarity > 0.8 grants **+100%** rewards
-- **Staking bonus** -- staking 100,000+ TRI grants **1.5x** multiplier on all earnings
+- **Staking bonus** -- staking 100+ TRI grants **1.5x** multiplier on all earnings
 
 ### Built on Ternary Math
 

@@ -13,7 +13,8 @@ const vsa = @import("vsa.zig");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TRI_DECIMALS: u8 = 18;
-pub const TRI_TOTAL_SUPPLY: u128 = 100_000_000 * std.math.pow(u128, 10, TRI_DECIMALS);
+pub const TRI_PHOENIX_NUMBER: u128 = 10_460_353_203; // 3^21 — matches TrinityToken.sol
+pub const TRI_TOTAL_SUPPLY: u128 = TRI_PHOENIX_NUMBER * std.math.pow(u128, 10, TRI_DECIMALS);
 pub const TRI_SYMBOL = "$TRI";
 pub const TRI_NAME = "Trinity Token";
 
