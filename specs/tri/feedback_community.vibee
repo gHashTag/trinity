@@ -1,0 +1,75 @@
+name: feedback_community
+version: "1.0.0"
+language: zig
+module: feedback_community
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FEEDBACK COMMUNITY - Level 11.37 Release Gates Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+# Validates feedback collection routing and community release gates.
+# Simulates user feedback classification via VSA similarity and verifies
+# 15 mandatory community release gates for public open access readiness.
+#
+# Test 165: Feedback collection + release gates (25 queries)
+#   - 10 feedback routing queries (positive/negative classification)
+#   - 15 community release gates (production readiness checks)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DIM: 4096
+  SIM_THRESHOLD: 0.08
+  FEEDBACK_POSITIVE_THRESHOLD: 0.5
+  TOTAL_RELEASE_GATES: 15
+
+types:
+  FeedbackResult:
+    fields:
+      query: String
+      sentiment: String
+      similarity: Float
+      correctly_routed: Bool
+
+  ReleaseGate:
+    fields:
+      gate_id: Int
+      name: String
+      passed: Bool
+      value: String
+
+  CommunityReadiness:
+    fields:
+      feedback_correct: Int
+      feedback_total: Int
+      gates_passed: Int
+      gates_total: Int
+      release_approved: Bool
+
+behaviors:
+  # Feedback routing simulation via VSA similarity
+  - name: feedbackRouting
+    given: 10 feedback phrases (6 positive, 4 negative) encoded as VSA vectors
+    when: Compute cosine similarity of each feedback against positive/negative prototypes
+    then: 10/10 -- all feedback correctly classified as positive or negative
+
+  # Community release gates (15 production readiness checks)
+  - name: communityReleaseGates
+    given: Full KG system with 64+ facts across 8+ relations at DIM=4096
+    when: Verify 15 mandatory gates (accuracy, determinism, isolation, capacity, etc.)
+    then: 15/15 -- all gates pass for community release approval
+
+  # Gate definitions:
+  # 1. Forward accuracy >= 70%
+  # 2. Cross-rejection accuracy >= 70%
+  # 3. Per-relation isolation verified
+  # 4. Determinism (same query → same result)
+  # 5. Multi-domain support (4+ domains)
+  # 6. Multi-relation support (8+ relations)
+  # 7. Fact count >= 50
+  # 8. DIM = 4096 (production dimension)
+  # 9. Similarity threshold functional
+  # 10. No cross-domain contamination
+  # 11. Unknown entity rejection works
+  # 12. High-volume stability (24+ queries)
+  # 13. Capacity sufficient (last-fact retrievable)
+  # 14. Graceful degradation verified
+  # 15. Overall accuracy >= 80%
