@@ -11290,3 +11290,436 @@ test "confusion matrix hard few-shot" {
     // Assertions
     try std.testing.expect(total_acc > 0.3); // better than random (20%)
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TREE BUNDLING HELPER (Level 11.5)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Tree-structured bundling: pair items, then pair pairs, etc.
+/// All items get equal weight in the final vector.
+/// For odd count, the last item carries forward to the next level.
+/// Works IN-PLACE on the input slice to avoid stack overflow.
+fn treeBundleN(items: []Hypervector) Hypervector {
+    if (items.len == 0) unreachable;
+    if (items.len == 1) return items[0];
+    if (items.len == 2) return items[0].bundle(&items[1]);
+
+    // Work in-place: pair items[0..n] → write results into items[0..n/2+1]
+    var count = items.len;
+    while (count > 1) {
+        var write: usize = 0;
+        var read: usize = 0;
+        while (read + 1 < count) : (read += 2) {
+            items[write] = items[read].bundle(&items[read + 1]);
+            write += 1;
+        }
+        // Carry forward odd item
+        if (read < count) {
+            items[write] = items[read];
+            write += 1;
+        }
+        count = write;
+    }
+
+    return items[0];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 67: Tree vs Flat Bundling — Hard Benchmark (Level 11.5)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "tree vs flat bundling hard benchmark" {
+    const DIM = 1024;
+    const NUM_FEATURES = 8;
+    const NUM_CLASSES = 5;
+    const NUM_TEST = 8;
+    const NOISE_COUNT = 3;
+    const MAX_SHOTS = 20;
+
+    // Same overlapping feature structure as Level 11.4
+    var features: [NUM_FEATURES]Hypervector = undefined;
+    for (0..NUM_FEATURES) |i| {
+        features[i] = bipolarRandom(DIM, 0x1A00 + @as(u64, @intCast(i)));
+    }
+    const class_features = [5][3]usize{
+        .{ 0, 1, 2 }, // cat
+        .{ 0, 1, 3 }, // dog
+        .{ 2, 4, 5 }, // bird
+        .{ 4, 5, 6 }, // fish
+        .{ 6, 7, 3 }, // insect
+    };
+
+    var class_concepts: [NUM_CLASSES]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        var f0 = features[class_features[c][0]];
+        var f1 = features[class_features[c][1]];
+        class_concepts[c] = f0.bundle(&f1);
+        var f2 = features[class_features[c][2]];
+        class_concepts[c] = class_concepts[c].bundle(&f2);
+    }
+
+    // Generate training and test examples (same seeds as Test 64 for comparability)
+    var train_examples: [NUM_CLASSES][MAX_SHOTS]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        for (0..MAX_SHOTS) |s| {
+            train_examples[c][s] = class_concepts[c];
+            for (0..NOISE_COUNT) |n| {
+                const seed = 0x2A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(s)) * 10 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                train_examples[c][s] = train_examples[c][s].bundle(&noise);
+            }
+        }
+    }
+
+    var test_examples: [NUM_CLASSES][NUM_TEST]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        for (0..NUM_TEST) |t| {
+            test_examples[c][t] = class_concepts[c];
+            for (0..NOISE_COUNT) |n| {
+                const seed = 0x3A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(t)) * 10 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                test_examples[c][t] = test_examples[c][t].bundle(&noise);
+            }
+        }
+    }
+
+    std.debug.print("\n=== TREE vs FLAT BUNDLING (Level 11.5) ===\n", .{});
+    std.debug.print("Dimension: {}, Classes: {}, Noise: {}\n", .{ DIM, NUM_CLASSES, NOISE_COUNT });
+
+    const shot_counts = [_]usize{ 1, 3, 5, 10, 20 };
+    var flat_results: [5]f64 = undefined;
+    var tree_results: [5]f64 = undefined;
+
+    for (0..shot_counts.len) |si| {
+        const k = shot_counts[si];
+
+        // --- Flat bundling (progressive) ---
+        var flat_protos: [NUM_CLASSES]Hypervector = undefined;
+        for (0..NUM_CLASSES) |c| {
+            flat_protos[c] = train_examples[c][0];
+            for (1..k) |s| {
+                flat_protos[c] = flat_protos[c].bundle(&train_examples[c][s]);
+            }
+        }
+
+        var flat_correct: usize = 0;
+        var flat_total: usize = 0;
+        for (0..NUM_CLASSES) |c| {
+            for (0..NUM_TEST) |t| {
+                var best_class: usize = 0;
+                var best_sim: f64 = -2.0;
+                for (0..NUM_CLASSES) |p| {
+                    const sim = test_examples[c][t].similarity(&flat_protos[p]);
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_class = p;
+                    }
+                }
+                if (best_class == c) flat_correct += 1;
+                flat_total += 1;
+            }
+        }
+        flat_results[si] = @as(f64, @floatFromInt(flat_correct)) / @as(f64, @floatFromInt(flat_total));
+
+        // --- Tree bundling (hierarchical) ---
+        var tree_protos: [NUM_CLASSES]Hypervector = undefined;
+        for (0..NUM_CLASSES) |c| {
+            var slice: [MAX_SHOTS]Hypervector = undefined;
+            for (0..k) |s| {
+                slice[s] = train_examples[c][s];
+            }
+            tree_protos[c] = treeBundleN(slice[0..k]);
+        }
+
+        var tree_correct: usize = 0;
+        var tree_total: usize = 0;
+        for (0..NUM_CLASSES) |c| {
+            for (0..NUM_TEST) |t| {
+                var best_class: usize = 0;
+                var best_sim: f64 = -2.0;
+                for (0..NUM_CLASSES) |p| {
+                    const sim = test_examples[c][t].similarity(&tree_protos[p]);
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_class = p;
+                    }
+                }
+                if (best_class == c) tree_correct += 1;
+                tree_total += 1;
+            }
+        }
+        tree_results[si] = @as(f64, @floatFromInt(tree_correct)) / @as(f64, @floatFromInt(tree_total));
+    }
+
+    // Print comparison
+    std.debug.print("\n--- Accuracy Comparison ---\n", .{});
+    std.debug.print("  Shots | Flat    | Tree    | Winner\n", .{});
+    std.debug.print("  ------|---------|---------|-------\n", .{});
+    for (0..shot_counts.len) |si| {
+        const winner = if (tree_results[si] > flat_results[si]) "Tree" else if (flat_results[si] > tree_results[si]) "Flat" else "Tie";
+        std.debug.print("  {:>5} | {d:>5.1}%  | {d:>5.1}%  | {s}\n", .{
+            shot_counts[si],
+            flat_results[si] * 100,
+            tree_results[si] * 100,
+            winner,
+        });
+    }
+
+    // Check monotonicity of tree results
+    var tree_monotonic = true;
+    for (1..shot_counts.len) |si| {
+        if (tree_results[si] < tree_results[si - 1] - 0.05) { // allow 5% noise
+            tree_monotonic = false;
+        }
+    }
+    var flat_monotonic = true;
+    for (1..shot_counts.len) |si| {
+        if (flat_results[si] < flat_results[si - 1] - 0.05) {
+            flat_monotonic = false;
+        }
+    }
+    std.debug.print("\nFlat monotonic: {}\n", .{flat_monotonic});
+    std.debug.print("Tree monotonic: {}\n", .{tree_monotonic});
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(tree_results[4] > 0.25); // 20-shot tree: better than random
+    try std.testing.expect(flat_results[0] > 0.2); // 1-shot: better than random
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 68: Prototype Weight Analysis — Tree vs Flat (Level 11.5)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "prototype weight analysis tree vs flat" {
+    const DIM = 1024;
+    const NUM_ITEMS = 8;
+
+    // Create 8 bipolar vectors
+    var items: [NUM_ITEMS]Hypervector = undefined;
+    for (0..NUM_ITEMS) |i| {
+        items[i] = bipolarRandom(DIM, 0xEE00 + @as(u64, @intCast(i)));
+    }
+
+    // Flat bundling: progressive
+    var flat_proto = items[0];
+    for (1..NUM_ITEMS) |i| {
+        flat_proto = flat_proto.bundle(&items[i]);
+    }
+
+    // Tree bundling
+    var tree_items: [NUM_ITEMS]Hypervector = undefined;
+    for (0..NUM_ITEMS) |i| {
+        tree_items[i] = items[i];
+    }
+    var tree_proto = treeBundleN(tree_items[0..NUM_ITEMS]);
+
+    std.debug.print("\n=== PROTOTYPE WEIGHT ANALYSIS (Level 11.5) ===\n", .{});
+    std.debug.print("Items: {}, Dim: {}\n", .{ NUM_ITEMS, DIM });
+
+    // Measure each item's contribution (similarity to prototype)
+    std.debug.print("\n--- Per-Item Similarity to Prototype ---\n", .{});
+    std.debug.print("  Item | Flat sim  | Tree sim  | Flat/Tree\n", .{});
+    std.debug.print("  -----|-----------|-----------|----------\n", .{});
+
+    var flat_total_sim: f64 = 0;
+    var flat_min_sim: f64 = 2.0;
+    var flat_max_sim: f64 = -2.0;
+    var tree_total_sim: f64 = 0;
+    var tree_min_sim: f64 = 2.0;
+    var tree_max_sim: f64 = -2.0;
+
+    for (0..NUM_ITEMS) |i| {
+        const flat_sim = items[i].similarity(&flat_proto);
+        const tree_sim = items[i].similarity(&tree_proto);
+        flat_total_sim += flat_sim;
+        tree_total_sim += tree_sim;
+        if (flat_sim < flat_min_sim) flat_min_sim = flat_sim;
+        if (flat_sim > flat_max_sim) flat_max_sim = flat_sim;
+        if (tree_sim < tree_min_sim) tree_min_sim = tree_sim;
+        if (tree_sim > tree_max_sim) tree_max_sim = tree_sim;
+        const ratio = if (@abs(tree_sim) > 0.001) flat_sim / tree_sim else 0.0;
+        std.debug.print("  {:>4} | {d:>8.4}  | {d:>8.4}  | {d:>7.2}x\n", .{ i, flat_sim, tree_sim, ratio });
+    }
+
+    const flat_avg = flat_total_sim / @as(f64, @floatFromInt(NUM_ITEMS));
+    const tree_avg = tree_total_sim / @as(f64, @floatFromInt(NUM_ITEMS));
+    const flat_range = flat_max_sim - flat_min_sim;
+    const tree_range = tree_max_sim - tree_min_sim;
+
+    std.debug.print("\n--- Summary ---\n", .{});
+    std.debug.print("Flat: avg={d:.4}, min={d:.4}, max={d:.4}, range={d:.4}\n", .{ flat_avg, flat_min_sim, flat_max_sim, flat_range });
+    std.debug.print("Tree: avg={d:.4}, min={d:.4}, max={d:.4}, range={d:.4}\n", .{ tree_avg, tree_min_sim, tree_max_sim, tree_range });
+    std.debug.print("Tree range/Flat range: {d:.2}x\n", .{if (flat_range > 0.001) tree_range / flat_range else 0.0});
+    std.debug.print("============================================\n", .{});
+
+    // Assertions: tree should have more uniform weights (smaller range)
+    try std.testing.expect(tree_range <= flat_range + 0.05); // tree at least as uniform (with tolerance)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 69: Tree Bundling Confusion Matrix — Hard Setting (Level 11.5)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "tree bundling confusion matrix hard" {
+    const DIM = 1024;
+    const NUM_FEATURES = 8;
+    const NUM_CLASSES = 5;
+    const SHOTS = 10;
+    const NUM_TEST = 10;
+    const NOISE_COUNT = 3;
+
+    var features: [NUM_FEATURES]Hypervector = undefined;
+    for (0..NUM_FEATURES) |i| {
+        features[i] = bipolarRandom(DIM, 0x7A00 + @as(u64, @intCast(i)));
+    }
+    const class_features = [5][3]usize{
+        .{ 0, 1, 2 },
+        .{ 0, 1, 3 },
+        .{ 2, 4, 5 },
+        .{ 4, 5, 6 },
+        .{ 6, 7, 3 },
+    };
+    const class_labels = [_][]const u8{ "cat", "dog", "bird", "fish", "insect" };
+
+    var class_concepts: [NUM_CLASSES]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        var f0 = features[class_features[c][0]];
+        var f1 = features[class_features[c][1]];
+        class_concepts[c] = f0.bundle(&f1);
+        var f2 = features[class_features[c][2]];
+        class_concepts[c] = class_concepts[c].bundle(&f2);
+    }
+
+    // Build tree-bundled prototypes (same seeds as Test 66 for comparability)
+    var tree_protos: [NUM_CLASSES]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        var examples: [10]Hypervector = undefined; // SHOTS=10
+        for (0..SHOTS) |s| {
+            examples[s] = class_concepts[c];
+            for (0..NOISE_COUNT) |n| {
+                const seed = 0x8A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(s)) * 10 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                examples[s] = examples[s].bundle(&noise);
+            }
+        }
+        tree_protos[c] = treeBundleN(examples[0..SHOTS]);
+    }
+
+    // Also build flat prototypes for comparison (same seeds)
+    var flat_protos: [NUM_CLASSES]Hypervector = undefined;
+    for (0..NUM_CLASSES) |c| {
+        var ex0 = class_concepts[c];
+        for (0..NOISE_COUNT) |n| {
+            const seed = 0x8A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(n));
+            var noise = bipolarRandom(DIM, seed);
+            ex0 = ex0.bundle(&noise);
+        }
+        flat_protos[c] = ex0;
+        for (1..SHOTS) |s| {
+            var ex = class_concepts[c];
+            for (0..NOISE_COUNT) |n| {
+                const seed = 0x8A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(s)) * 10 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                ex = ex.bundle(&noise);
+            }
+            flat_protos[c] = flat_protos[c].bundle(&ex);
+        }
+    }
+
+    // Generate test items (same seeds as Test 66)
+    // Build confusion matrices for both
+    var tree_confusion: [NUM_CLASSES][NUM_CLASSES]usize = [_][NUM_CLASSES]usize{[_]usize{0} ** NUM_CLASSES} ** NUM_CLASSES;
+    var flat_confusion: [NUM_CLASSES][NUM_CLASSES]usize = [_][NUM_CLASSES]usize{[_]usize{0} ** NUM_CLASSES} ** NUM_CLASSES;
+    var tree_correct: usize = 0;
+    var flat_correct: usize = 0;
+    var total_count: usize = 0;
+
+    for (0..NUM_CLASSES) |c| {
+        for (0..NUM_TEST) |t| {
+            var test_item = class_concepts[c];
+            for (0..NOISE_COUNT) |n| {
+                const seed = 0x9A00 + @as(u64, @intCast(c)) * 1000 + @as(u64, @intCast(t)) * 10 + @as(u64, @intCast(n));
+                var noise = bipolarRandom(DIM, seed);
+                test_item = test_item.bundle(&noise);
+            }
+
+            // Tree classification
+            var tree_best: usize = 0;
+            var tree_best_sim: f64 = -2.0;
+            for (0..NUM_CLASSES) |p| {
+                const sim = test_item.similarity(&tree_protos[p]);
+                if (sim > tree_best_sim) {
+                    tree_best_sim = sim;
+                    tree_best = p;
+                }
+            }
+            tree_confusion[c][tree_best] += 1;
+            if (tree_best == c) tree_correct += 1;
+
+            // Flat classification
+            var flat_best: usize = 0;
+            var flat_best_sim: f64 = -2.0;
+            for (0..NUM_CLASSES) |p| {
+                const sim = test_item.similarity(&flat_protos[p]);
+                if (sim > flat_best_sim) {
+                    flat_best_sim = sim;
+                    flat_best = p;
+                }
+            }
+            flat_confusion[c][flat_best] += 1;
+            if (flat_best == c) flat_correct += 1;
+
+            total_count += 1;
+        }
+    }
+
+    const tree_acc = @as(f64, @floatFromInt(tree_correct)) / @as(f64, @floatFromInt(total_count));
+    const flat_acc = @as(f64, @floatFromInt(flat_correct)) / @as(f64, @floatFromInt(total_count));
+
+    std.debug.print("\n=== TREE BUNDLING CONFUSION MATRIX (Level 11.5) ===\n", .{});
+    std.debug.print("10-shot, 3 noise, Tree vs Flat\n\n", .{});
+
+    // Print tree confusion matrix
+    std.debug.print("--- Tree Bundling ---\n", .{});
+    std.debug.print("True ↓   ", .{});
+    for (0..NUM_CLASSES) |c| {
+        std.debug.print("{s:>8}", .{class_labels[c]});
+    }
+    std.debug.print("  | Recall\n", .{});
+    for (0..NUM_CLASSES) |i| {
+        std.debug.print("{s:>8} ", .{class_labels[i]});
+        var row_total: usize = 0;
+        for (0..NUM_CLASSES) |j| {
+            std.debug.print("{:>8}", .{tree_confusion[i][j]});
+            row_total += tree_confusion[i][j];
+        }
+        const recall = @as(f64, @floatFromInt(tree_confusion[i][i])) / @as(f64, @floatFromInt(row_total));
+        std.debug.print("  | {d:.0}%\n", .{recall * 100});
+    }
+
+    // Print flat confusion matrix
+    std.debug.print("\n--- Flat Bundling ---\n", .{});
+    std.debug.print("True ↓   ", .{});
+    for (0..NUM_CLASSES) |c| {
+        std.debug.print("{s:>8}", .{class_labels[c]});
+    }
+    std.debug.print("  | Recall\n", .{});
+    for (0..NUM_CLASSES) |i| {
+        std.debug.print("{s:>8} ", .{class_labels[i]});
+        var row_total: usize = 0;
+        for (0..NUM_CLASSES) |j| {
+            std.debug.print("{:>8}", .{flat_confusion[i][j]});
+            row_total += flat_confusion[i][j];
+        }
+        const recall = @as(f64, @floatFromInt(flat_confusion[i][i])) / @as(f64, @floatFromInt(row_total));
+        std.debug.print("  | {d:.0}%\n", .{recall * 100});
+    }
+
+    std.debug.print("\nTree overall: {}/{} ({d:.1}%)\n", .{ tree_correct, total_count, tree_acc * 100 });
+    std.debug.print("Flat overall: {}/{} ({d:.1}%)\n", .{ flat_correct, total_count, flat_acc * 100 });
+    const winner = if (tree_acc > flat_acc) "Tree" else if (flat_acc > tree_acc) "Flat" else "Tie";
+    std.debug.print("Winner: {s}\n", .{winner});
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(tree_acc > 0.25); // better than random
+    try std.testing.expect(flat_acc > 0.25); // better than random
+}
