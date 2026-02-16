@@ -1,0 +1,37 @@
+name: kg_arbitrary_beam_search
+version: "1.0.0"
+language: zig
+module: kg_arbitrary_beam_search
+description: "Level 11.12 — Beam search on arbitrary graph with noise and cycle avoidance"
+
+constants:
+  DIM: 1024
+  L0: 3
+  L1: 6
+  L2: 3
+
+types:
+  ArbitraryBeamResult:
+    fields:
+      noise: Int
+      greedy_acc: Float
+      beam3_acc: Float
+      beam5_acc: Float
+      best: String
+      description: "Beam search results on arbitrary graph with fan-out and cross-edges under noise."
+
+behaviors:
+  - name: cleanArbitraryTraversal
+    given: 3->6->3 arbitrary graph with cross-edges, noise=0
+    when: traverse with greedy/beam
+    then: all 100%
+
+  - name: noisyArbitraryTraversal
+    given: same graph with noise=1-5
+    when: compare greedy vs beam
+    then: results vary due to small sample size (3 pairs) — noise compounds differently on arbitrary graphs
+
+  - name: cycleAvoidance
+    given: small graph A->B->C->A (cycle) with exit B->D
+    when: BFS with visited set
+    then: cycle C->A detected, target D reachable via B->D, avoids infinite loop
