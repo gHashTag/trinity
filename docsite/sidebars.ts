@@ -305,6 +305,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-level11-few-shot-classifier-report',
         'research/trinity-level11-hard-few-shot-report',
         'research/trinity-level11-tree-bundling-report',
+        'research/trinity-level11-shared-relation-analogies-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
