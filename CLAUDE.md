@@ -240,11 +240,12 @@ When completing significant milestones, AUTOMATICALLY document them:
 # 2. Update sidebars.ts
 # Add entry to appropriate category
 
-# 3. Build & deploy
+# 3. Build docsite
 cd docsite && npm run build
-USE_SSH=true npm run deploy
 
-# 4. Commit & push
+# 4. Deploy BOTH website + docsite together (see "Deployment" section below)
+
+# 5. Commit & push
 git add docsite/
 git commit -m "docs: Add <milestone> report"
 git push
@@ -311,38 +312,74 @@ Animations: framer-motion for entry, gauge bars
 
 ---
 
-## Website Deployment
+## Deployment (GitHub Pages)
+
+**CRITICAL: Website and Docsite share ONE gh-pages branch. ALWAYS deploy BOTH together.**
 
 ```
-Canonical URL: https://gHashTag.github.io/trinity/
-Hosting:       GitHub Pages (branch: gh-pages)
-Root:          website/
-Framework:     Vite (React SPA)
-Base path:     /trinity/ (configured in vite.config.ts)
+gh-pages branch structure:
+├── index.html          ← website (Vite React SPA)
+├── assets/             ← website assets
+├── docs/               ← docsite (Docusaurus)
+│   ├── index.html      ← docs landing page
+│   ├── api/
+│   ├── research/
+│   └── assets/
+└── ...
 ```
 
-**DEPLOY PROCESS (GitHub Pages):**
+| Site | URL | Source | Framework | baseUrl |
+|------|-----|--------|-----------|---------|
+| Website | `gHashTag.github.io/trinity/` | `website/` | Vite (React SPA) | `/trinity/` |
+| Docsite | `gHashTag.github.io/trinity/docs/` | `docsite/` | Docusaurus 3.x | `/trinity/docs/` |
+
+### Deploy Process (ALWAYS use this)
 
 ```bash
-# 1. Build
+# 1. Build website
 cd website && npx vite build
 
-# 2. Deploy (force push dist to gh-pages branch)
+# 2. Build docsite
+cd docsite && npm run build
+
+# 3. Assemble gh-pages: website root + docsite in docs/
 rm -rf /tmp/gh-pages-deploy
 mkdir /tmp/gh-pages-deploy
-cp -r dist/* /tmp/gh-pages-deploy/
+cp -r website/dist/* /tmp/gh-pages-deploy/
+mkdir -p /tmp/gh-pages-deploy/docs
+cp -r docsite/build/* /tmp/gh-pages-deploy/docs/
+
+# 4. Force push to gh-pages
 cd /tmp/gh-pages-deploy
 git init && git checkout -b gh-pages
 git add -A && git commit -m "Deploy: <description>"
-git remote add origin https://github.com/gHashTag/trinity.git
+git remote add origin git@github.com:gHashTag/trinity.git
 git push origin gh-pages --force
 ```
 
+### Docsite Configuration Rules
+
+| Setting | Value | NEVER change |
+|---------|-------|-------------|
+| `baseUrl` | `'/trinity/docs/'` | Changing breaks all asset paths |
+| `routeBasePath` | `'/'` | Docs at root of `/trinity/docs/` |
+| `src/pages/index.tsx` | **MUST NOT EXIST** | Conflicts with docs `slug: /` → "Duplicate routes" → site breaks |
+
+### FORBIDDEN deploy methods
+
+| Method | Why forbidden |
+|--------|--------------|
+| `USE_SSH=true npm run deploy` | `docusaurus deploy` force-pushes ONLY docsite to gh-pages, **deleting website** |
+| `npx gh-pages -d dist` | Unreliable, often fails silently |
+| Deploying website alone without docsite | **Deletes docs/** from gh-pages |
+| Deploying docsite alone without website | **Deletes website** from gh-pages |
+
 **IMPORTANT:**
 - НЕ использовать Vercel — сайт на GitHub Pages
-- `npx gh-pages -d dist` НЕ РАБОТАЕТ надёжно — всегда использовать force push
+- НИКОГДА не деплоить website или docsite по отдельности — ТОЛЬКО вместе
 - После деплоя GitHub Pages обновляется через 1-2 минуты
 - Для проверки: Cmd+Shift+R (хард-рефреш) в браузере
+- MDX файлы: экранировать `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` вне блоков кода
 
 ---
 
