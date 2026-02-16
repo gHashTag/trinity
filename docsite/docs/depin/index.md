@@ -98,6 +98,15 @@ Trinity's mathematical foundation -- balanced ternary \{-1, 0, +1\} -- delivers 
 
 No registration required. Download the node software, start it, and begin earning. The network uses UDP-based peer discovery -- your node finds peers automatically.
 
+## Live Infrastructure
+
+| Component | Status |
+|-----------|--------|
+| **$TRI Token** | [`0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469`](https://sepolia.etherscan.io/address/0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469) on Sepolia |
+| **Docker Image** | `ghcr.io/ghashtag/trinity-node:latest` |
+| **HTTP API** | Port 8080 (OpenAI-compatible) |
+| **Prometheus** | Port 9090 |
+
 ## Next Steps
 
 - [Quick Start](./quickstart.md) -- run a node in 5 minutes
