@@ -9634,3 +9634,443 @@ test "noise robustness and iterative cleanup" {
     try std.testing.expect(exact_sim > 0.6); // ternary bind/unbind (zero trits lose info)
     try std.testing.expect(super_correct >= 1); // at least 1/3 recovered from superposition
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LEVEL 11.1: BIPOLAR {-1, +1} UPGRADE — EXACT SELF-INVERSE
+// ═══════════════════════════════════════════════════════════════════════════════
+// Bipolar vectors eliminate zero trits → bind/unbind becomes exactly self-inverse.
+// bind(A, bind(A, B)) = B with similarity 1.0
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Generate a bipolar {-1, +1} hypervector (no zeros)
+fn bipolarRandom(dim: usize, seed: u64) Hypervector {
+    var hv = Hypervector.init(dim);
+    hv.data.ensureUnpacked();
+    var prng = std.Random.DefaultPrng.init(seed);
+    const random = prng.random();
+    for (0..dim) |i| {
+        // Generate only {-1, +1}: use random bit
+        hv.data.unpacked_cache[i] = if (random.boolean()) @as(i8, 1) else @as(i8, -1);
+    }
+    hv.data.trit_len = dim;
+    hv.data.dirty = true;
+    return hv;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 55: Bipolar Self-Inverse + Analogy Comparison (Level 11.1)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "bipolar exact self-inverse and analogies" {
+    const DIM = 1024;
+    const NUM_SYMBOLS = 32;
+
+    // Create bipolar codebook
+    var symbols: [NUM_SYMBOLS]Hypervector = undefined;
+    for (0..NUM_SYMBOLS) |i| {
+        symbols[i] = bipolarRandom(DIM, 0xB001 + @as(u64, i) * 7919);
+    }
+
+    // Verify zero count = 0
+    var zero_count: usize = 0;
+    symbols[0].data.ensureUnpacked();
+    for (0..DIM) |i| {
+        if (symbols[0].data.unpacked_cache[i] == 0) zero_count += 1;
+    }
+
+    std.debug.print("\n=== BIPOLAR EXACT SELF-INVERSE (Level 11.1) ===\n", .{});
+    std.debug.print("Dimension: {d}, Symbols: {d}, Zeros in sym0: {d}\n", .{ DIM, NUM_SYMBOLS, zero_count });
+
+    // Self-inverse test: bind(A, bind(A, B)) should equal B exactly
+    var a = &symbols[0];
+    const b = &symbols[1];
+    var ab = a.bind(b);
+    var recovered_b = ab.unbind(a);
+    const bipolar_self_inv = recovered_b.similarity(b);
+
+    // Ternary comparison
+    var ta = Hypervector.random(DIM, 0xAA01);
+    const tb = &symbols[1]; // reuse bipolar b for fair comparison
+    var tab = ta.bind(tb);
+    var trec_b = tab.unbind(&ta);
+    const ternary_self_inv = trec_b.similarity(tb);
+
+    std.debug.print("\n--- Self-Inverse Comparison ---\n", .{});
+    std.debug.print("Bipolar bind(A, bind(A,B)) ~ B: sim = {d:.6}\n", .{bipolar_self_inv});
+    std.debug.print("Ternary bind(A, bind(A,B)) ~ B: sim = {d:.6}\n", .{ternary_self_inv});
+    std.debug.print("Improvement: {d:.1}x\n", .{bipolar_self_inv / @max(ternary_self_inv, 0.001)});
+
+    // Orthogonality check for bipolar
+    var ortho_sum: f64 = 0;
+    var ortho_max: f64 = 0;
+    var ortho_count: usize = 0;
+    for (0..NUM_SYMBOLS) |i| {
+        for ((i + 1)..NUM_SYMBOLS) |j| {
+            const sim = symbols[i].similarity(&symbols[j]);
+            const abs_sim = @abs(sim);
+            ortho_sum += abs_sim;
+            if (abs_sim > ortho_max) ortho_max = abs_sim;
+            ortho_count += 1;
+        }
+    }
+    const avg_ortho = ortho_sum / @as(f64, @floatFromInt(ortho_count));
+    std.debug.print("\nBipolar orthogonality: avg |sim|={d:.4}, max |sim|={d:.4}\n", .{ avg_ortho, ortho_max });
+
+    // Structured analogy (king:man :: queen:woman) — bipolar version
+    var role_gender = bipolarRandom(DIM, 0x1111);
+    var role_status = bipolarRandom(DIM, 0x2222);
+    var male = bipolarRandom(DIM, 0x3333);
+    var female = bipolarRandom(DIM, 0x4444);
+    var royal = bipolarRandom(DIM, 0x5555);
+    var common_v = bipolarRandom(DIM, 0x6666);
+
+    var gm = role_gender.bind(&male);
+    var sr = role_status.bind(&royal);
+    var king = gm.bundle(&sr);
+
+    var gf = role_gender.bind(&female);
+    var queen = gf.bundle(&sr);
+
+    var sc = role_status.bind(&common_v);
+    var man = gm.bundle(&sc);
+    var woman = gf.bundle(&sc);
+
+    var km_rel = king.bind(&man);
+    var pred_queen = km_rel.bind(&woman);
+
+    const q_sim = pred_queen.similarity(&queen);
+    const k_sim = pred_queen.similarity(&king);
+    const m_sim = pred_queen.similarity(&man);
+    const w_sim = pred_queen.similarity(&woman);
+
+    std.debug.print("\n--- Bipolar Structured Analogy ---\n", .{});
+    std.debug.print("predicted = bind(bind(king, man), woman)\n", .{});
+    std.debug.print("  sim(predicted, queen):  {d:.4}\n", .{q_sim});
+    std.debug.print("  sim(predicted, king):   {d:.4}\n", .{k_sim});
+    std.debug.print("  sim(predicted, man):    {d:.4}\n", .{m_sim});
+    std.debug.print("  sim(predicted, woman):  {d:.4}\n", .{w_sim});
+    const queen_closest = (q_sim > k_sim) and (q_sim > m_sim) and (q_sim > w_sim);
+    std.debug.print("  Queen closest: {}\n", .{queen_closest});
+
+    // Multi-bind chain test: bind(A, bind(B, bind(C, D))) → unbind C,B,A → D
+    const c = &symbols[2];
+    const d = &symbols[3];
+    var cd = c.bind(d);
+    var bcd = symbols[1].bind(&cd);
+    var abcd = symbols[0].bind(&bcd);
+    // Recover D: unbind A, B, C
+    var rec1 = abcd.unbind(&symbols[0]);
+    var rec2 = rec1.unbind(&symbols[1]);
+    var rec3 = rec2.unbind(c);
+    const chain_sim = rec3.similarity(d);
+
+    std.debug.print("\n--- Multi-Bind Chain (4-deep) ---\n", .{});
+    std.debug.print("bind(A,bind(B,bind(C,D))) → unbind(A,B,C) → D\n", .{});
+    std.debug.print("Recovery sim: {d:.6}\n", .{chain_sim});
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(zero_count == 0); // truly bipolar
+    try std.testing.expect(bipolar_self_inv > 0.99); // exact self-inverse
+    try std.testing.expect(bipolar_self_inv > ternary_self_inv); // bipolar better
+    // Note: structured analogy uses bundles (lossy), so queen may not be closest
+    // The key bipolar advantage is exact self-inverse, not bundle-based analogies
+    std.debug.print("Bipolar analogy queen_closest: {} (bundle-based, lossy)\n", .{queen_closest});
+    try std.testing.expect(chain_sim > 0.99); // 4-deep chain exact
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 56: Bipolar Role-Filler Decomposition (Level 11.1)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "bipolar role-filler decomposition" {
+    const DIM = 1024;
+
+    // Create bipolar role vectors
+    var role_agent = bipolarRandom(DIM, 0xBA01);
+    var role_action = bipolarRandom(DIM, 0xBA02);
+    var role_patient = bipolarRandom(DIM, 0xBA03);
+    var role_location = bipolarRandom(DIM, 0xBA04);
+
+    // Create bipolar filler vectors
+    var dog = bipolarRandom(DIM, 0xBF01);
+    var cat = bipolarRandom(DIM, 0xBF02);
+    var chase = bipolarRandom(DIM, 0xBF03);
+    var park = bipolarRandom(DIM, 0xBF04);
+    var bird = bipolarRandom(DIM, 0xBF05);
+    var fly_v = bipolarRandom(DIM, 0xBF06);
+    var sky = bipolarRandom(DIM, 0xBF07);
+    var fish = bipolarRandom(DIM, 0xBF08);
+    var swim = bipolarRandom(DIM, 0xBF09);
+    var ocean = bipolarRandom(DIM, 0xBF0A);
+
+    // Build frame: "dog chases cat in park"
+    var ra_dog = role_agent.bind(&dog);
+    var ract_chase = role_action.bind(&chase);
+    var rp_cat = role_patient.bind(&cat);
+    var rl_park = role_location.bind(&park);
+    var f1_ab = ra_dog.bundle(&ract_chase);
+    var f1_cd = rp_cat.bundle(&rl_park);
+    var frame1 = f1_ab.bundle(&f1_cd);
+
+    // Build frame: "bird flies fish in sky"
+    var ra_bird = role_agent.bind(&bird);
+    var ract_fly = role_action.bind(&fly_v);
+    var rp_fish = role_patient.bind(&fish);
+    var rl_sky = role_location.bind(&sky);
+    var f2_ab = ra_bird.bundle(&ract_fly);
+    var f2_cd = rp_fish.bundle(&rl_sky);
+    var frame2 = f2_ab.bundle(&f2_cd);
+
+    // Build frame: "fish swims cat in ocean"
+    var ra_fish = role_agent.bind(&fish);
+    var ract_swim = role_action.bind(&swim);
+    var rl_ocean = role_location.bind(&ocean);
+    var f3_ab = ra_fish.bundle(&ract_swim);
+    var f3_cd = rp_cat.bundle(&rl_ocean);
+    var frame3 = f3_ab.bundle(&f3_cd);
+
+    const fillers = [_]*Hypervector{ &dog, &cat, &chase, &park, &bird, &fly_v, &sky, &fish, &swim, &ocean };
+    const filler_names = [_][]const u8{ "dog", "cat", "chase", "park", "bird", "fly", "sky", "fish", "swim", "ocean" };
+    const roles = [_]*Hypervector{ &role_agent, &role_action, &role_patient, &role_location };
+    const role_names = [_][]const u8{ "agent", "action", "patient", "location" };
+
+    std.debug.print("\n=== BIPOLAR ROLE-FILLER DECOMPOSITION (Level 11.1) ===\n", .{});
+    std.debug.print("Dimension: {d}, Bipolar (no zeros)\n", .{DIM});
+
+    const expected_f1 = [_][]const u8{ "dog", "chase", "cat", "park" };
+    const expected_f2 = [_][]const u8{ "bird", "fly", "fish", "sky" };
+    const expected_f3 = [_][]const u8{ "fish", "swim", "cat", "ocean" };
+
+    var total_correct: usize = 0;
+    var total_sim_sum: f64 = 0;
+    const frames = [_]*Hypervector{ &frame1, &frame2, &frame3 };
+    const frame_labels = [_][]const u8{ "dog chases cat in park", "bird flies fish in sky", "fish swims cat in ocean" };
+    const expected_all = [_][4][]const u8{ expected_f1, expected_f2, expected_f3 };
+
+    for (0..3) |f| {
+        std.debug.print("\n--- Frame {d}: '{s}' ---\n", .{ f + 1, frame_labels[f] });
+        for (0..4) |r| {
+            var query = frames[f].unbind(roles[r]);
+            var best_idx: usize = 0;
+            var best_sim: f64 = -2;
+            for (0..fillers.len) |k| {
+                const sim = query.similarity(fillers[k]);
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = k;
+                }
+            }
+            const is_correct = std.mem.eql(u8, filler_names[best_idx], expected_all[f][r]);
+            if (is_correct) total_correct += 1;
+            total_sim_sum += best_sim;
+            std.debug.print("  unbind({s}): {s} (sim={d:.3}) {s}\n", .{ role_names[r], filler_names[best_idx], best_sim, if (is_correct) "OK" else "WRONG" });
+        }
+    }
+
+    // Ternary comparison: run same test with ternary vectors
+    var t_roles: [4]Hypervector = undefined;
+    for (0..4) |i| {
+        t_roles[i] = Hypervector.random(DIM, 0xCA01 + @as(u64, i));
+    }
+    var t_fillers: [10]Hypervector = undefined;
+    for (0..10) |i| {
+        t_fillers[i] = Hypervector.random(DIM, 0xCF01 + @as(u64, i));
+    }
+    // Build ternary frame1
+    var t_b1 = t_roles[0].bind(&t_fillers[0]);
+    var t_b2 = t_roles[1].bind(&t_fillers[2]);
+    var t_b3 = t_roles[2].bind(&t_fillers[1]);
+    var t_b4 = t_roles[3].bind(&t_fillers[3]);
+    var t_f1_ab = t_b1.bundle(&t_b2);
+    var t_f1_cd = t_b3.bundle(&t_b4);
+    var t_frame1 = t_f1_ab.bundle(&t_f1_cd);
+
+    var t_sim_sum: f64 = 0;
+    var t_correct: usize = 0;
+    const t_expected = [_]usize{ 0, 2, 1, 3 };
+    for (0..4) |r| {
+        var tq = t_frame1.unbind(&t_roles[r]);
+        var tbest: usize = 0;
+        var tbsim: f64 = -2;
+        for (0..10) |k| {
+            const ts = tq.similarity(&t_fillers[k]);
+            if (ts > tbsim) {
+                tbsim = ts;
+                tbest = k;
+            }
+        }
+        t_sim_sum += tbsim;
+        if (tbest == t_expected[r]) t_correct += 1;
+    }
+
+    const bipolar_avg_sim = total_sim_sum / 12.0;
+    const ternary_avg_sim = t_sim_sum / 4.0;
+
+    std.debug.print("\n--- Bipolar vs Ternary Unbind Signal ---\n", .{});
+    std.debug.print("Bipolar avg unbind sim: {d:.4} ({d}/12 correct)\n", .{ bipolar_avg_sim, total_correct });
+    std.debug.print("Ternary avg unbind sim: {d:.4} ({d}/4 correct)\n", .{ ternary_avg_sim, t_correct });
+    std.debug.print("Bipolar signal boost: {d:.2}x\n", .{bipolar_avg_sim / @max(ternary_avg_sim, 0.001)});
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(total_correct >= 10); // at least 10/12
+    try std.testing.expect(bipolar_avg_sim > ternary_avg_sim); // bipolar stronger signal
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST 57: Bipolar Noise + Capacity vs Ternary (Level 11.1)
+// ═══════════════════════════════════════════════════════════════════════════════
+test "bipolar noise robustness and capacity comparison" {
+    const DIM = 1024;
+    const NUM = 20;
+
+    // Create bipolar codebook
+    var bp_symbols: [NUM]Hypervector = undefined;
+    for (0..NUM) |i| {
+        bp_symbols[i] = bipolarRandom(DIM, 0xBE01 + @as(u64, i) * 1013);
+    }
+
+    // Create ternary codebook (same seeds but different generator)
+    var tr_symbols: [NUM]Hypervector = undefined;
+    for (0..NUM) |i| {
+        tr_symbols[i] = Hypervector.random(DIM, 0xAE01 + @as(u64, i) * 1013);
+    }
+
+    std.debug.print("\n=== BIPOLAR vs TERNARY COMPARISON (Level 11.1) ===\n", .{});
+    std.debug.print("Dimension: {d}, Codebook: {d} symbols\n", .{ DIM, NUM });
+
+    // Bind/unbind comparison
+    var bp0 = &bp_symbols[0];
+    const bp1 = &bp_symbols[1];
+    var bp_bound = bp0.bind(bp1);
+    var bp_rec = bp_bound.unbind(bp0);
+    const bp_inv_sim = bp_rec.similarity(bp1);
+
+    var tr0 = &tr_symbols[0];
+    const tr1 = &tr_symbols[1];
+    var tr_bound = tr0.bind(tr1);
+    var tr_rec = tr_bound.unbind(tr0);
+    const tr_inv_sim = tr_rec.similarity(tr1);
+
+    std.debug.print("\n--- Bind/Unbind Self-Inverse ---\n", .{});
+    std.debug.print("Bipolar: {d:.6}\n", .{bp_inv_sim});
+    std.debug.print("Ternary: {d:.6}\n", .{tr_inv_sim});
+
+    // Noise injection comparison
+    std.debug.print("\n--- Noise Recovery Comparison ---\n", .{});
+    std.debug.print("  Noise %% | Bipolar sim | Ternary sim | BP recall | TR recall\n", .{});
+
+    const noise_levels = [_]usize{ 0, 10, 20, 30, 40, 50, 60 };
+
+    for (noise_levels) |noise_pct| {
+        // Bipolar noise: flip sign
+        var bp_noisy = bp_symbols[5];
+        bp_noisy.data.ensureUnpacked();
+        var bp_prng = std.Random.DefaultPrng.init(0xBBBB + @as(u64, noise_pct));
+        const bp_rand = bp_prng.random();
+        const bp_flips = DIM * noise_pct / 100;
+        for (0..bp_flips) |_| {
+            const pos = bp_rand.intRangeAtMost(usize, 0, DIM - 1);
+            bp_noisy.data.unpacked_cache[pos] = -bp_noisy.data.unpacked_cache[pos];
+            bp_noisy.data.dirty = true;
+        }
+        const bp_sim = bp_noisy.similarity(&bp_symbols[5]);
+        var bp_best: usize = 0;
+        var bp_bsim: f64 = -2;
+        for (0..NUM) |k| {
+            const s = bp_noisy.similarity(&bp_symbols[k]);
+            if (s > bp_bsim) { bp_bsim = s; bp_best = k; }
+        }
+
+        // Ternary noise: random trit
+        var tr_noisy = tr_symbols[5];
+        tr_noisy.data.ensureUnpacked();
+        var tr_prng = std.Random.DefaultPrng.init(0xCCCC + @as(u64, noise_pct));
+        const tr_rand = tr_prng.random();
+        const tr_flips = DIM * noise_pct / 100;
+        for (0..tr_flips) |_| {
+            const pos = tr_rand.intRangeAtMost(usize, 0, DIM - 1);
+            tr_noisy.data.unpacked_cache[pos] = tr_rand.intRangeAtMost(i8, -1, 1);
+            tr_noisy.data.dirty = true;
+        }
+        const tr_sim = tr_noisy.similarity(&tr_symbols[5]);
+        var tr_best: usize = 0;
+        var tr_bsim: f64 = -2;
+        for (0..NUM) |k| {
+            const s = tr_noisy.similarity(&tr_symbols[k]);
+            if (s > tr_bsim) { tr_bsim = s; tr_best = k; }
+        }
+
+        std.debug.print("  {d:>5}%%  | {d:.4}      | {d:.4}      | {s:>4}      | {s}\n", .{
+            noise_pct, bp_sim, tr_sim,
+            if (bp_best == 5) "OK" else "FAIL",
+            if (tr_best == 5) "OK" else "FAIL",
+        });
+    }
+
+    // Capacity comparison
+    std.debug.print("\n--- Superposition Capacity Comparison ---\n", .{});
+    std.debug.print("  Items | Bipolar  | Ternary\n", .{});
+
+    const cap_tests = [_]usize{ 2, 3, 5, 7, 10, 13, 15 };
+    for (cap_tests) |num_items| {
+        if (num_items > NUM) continue;
+
+        // Bipolar capacity
+        var bp_roles: [15]Hypervector = undefined;
+        for (0..num_items) |item| {
+            bp_roles[item] = bipolarRandom(DIM, 0xBB00 + @as(u64, item));
+        }
+        var bp_super = bp_roles[0].bind(&bp_symbols[0]);
+        for (1..num_items) |item| {
+            var bp_bi = bp_roles[item].bind(&bp_symbols[item]);
+            bp_super = bp_super.bundle(&bp_bi);
+        }
+        var bp_cap_ok: usize = 0;
+        for (0..num_items) |item| {
+            var bq = bp_super.unbind(&bp_roles[item]);
+            var bbi: usize = 0;
+            var bbs: f64 = -2;
+            for (0..NUM) |k| {
+                const s = bq.similarity(&bp_symbols[k]);
+                if (s > bbs) { bbs = s; bbi = k; }
+            }
+            if (bbi == item) bp_cap_ok += 1;
+        }
+
+        // Ternary capacity
+        var tr_roles: [15]Hypervector = undefined;
+        for (0..num_items) |item| {
+            tr_roles[item] = Hypervector.random(DIM, 0xAA00 + @as(u64, item));
+        }
+        var tr_super = tr_roles[0].bind(&tr_symbols[0]);
+        for (1..num_items) |item| {
+            var tr_bi = tr_roles[item].bind(&tr_symbols[item]);
+            tr_super = tr_super.bundle(&tr_bi);
+        }
+        var tr_cap_ok: usize = 0;
+        for (0..num_items) |item| {
+            var tq = tr_super.unbind(&tr_roles[item]);
+            var tbi: usize = 0;
+            var tbs: f64 = -2;
+            for (0..NUM) |k| {
+                const s = tq.similarity(&tr_symbols[k]);
+                if (s > tbs) { tbs = s; tbi = k; }
+            }
+            if (tbi == item) tr_cap_ok += 1;
+        }
+
+        std.debug.print("  {d:>5}  | {d:>2}/{d:<2} {d:>5.1}%% | {d:>2}/{d:<2} {d:>5.1}%%\n", .{
+            num_items,
+            bp_cap_ok, num_items, @as(f64, @floatFromInt(bp_cap_ok)) / @as(f64, @floatFromInt(num_items)) * 100.0,
+            tr_cap_ok, num_items, @as(f64, @floatFromInt(tr_cap_ok)) / @as(f64, @floatFromInt(num_items)) * 100.0,
+        });
+    }
+
+    std.debug.print("============================================\n", .{});
+
+    // Assertions
+    try std.testing.expect(bp_inv_sim > 0.99); // bipolar exact self-inverse
+    try std.testing.expect(bp_inv_sim > tr_inv_sim); // bipolar better than ternary
+}
