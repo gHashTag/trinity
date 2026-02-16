@@ -9,7 +9,7 @@
 //   zig build query -- --info                       # Show KG info
 //   zig build query -- --chain "Eiffel" "landmark_in" "city_country"  # Multi-hop
 //
-// Level 11.24 — Interactive CLI Binary for Trinity Symbolic Reasoning
+// Level 11.25 — Interactive REPL Mode for Trinity Symbolic Reasoning
 
 const std = @import("std");
 const vsa = @import("vsa.zig");
@@ -171,7 +171,7 @@ pub fn main() !void {
         std.process.exit(1);
     }
 
-    // Handle flags
+    // Handle info-only flags (no KG needed)
     if (std.mem.eql(u8, args[1], "--info")) {
         printInfo();
         return;
@@ -184,6 +184,8 @@ pub fn main() !void {
         printRelations();
         return;
     }
+
+    const is_repl = std.mem.eql(u8, args[1], "--repl");
 
     // ═══════════════════════════════════════════════════════════════════════
     // Build Knowledge Graph
@@ -222,7 +224,15 @@ pub fn main() !void {
     print("KG ready.\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Process query
+    // REPL Mode — continuous interactive session
+    // ═══════════════════════════════════════════════════════════════════════
+    if (is_repl) {
+        runRepl(&entities, &mem_a, &mem_b);
+        return;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Single query mode
     // ═══════════════════════════════════════════════════════════════════════
 
     if (std.mem.eql(u8, args[1], "--chain") and args.len >= 4) {
@@ -324,8 +334,8 @@ fn printInfo() void {
     print("Entities:   {d} (6 categories)\n", .{NUM_ENTITIES});
     print("Relations:  {d} (split 2-way memories)\n", .{NUM_RELATIONS});
     print("Categories: Cities, Countries, Landmarks, Foods, Languages, Climates\n", .{});
-    print("Level 11.24 -- Interactive CLI Binary\n", .{});
-    print("Golden Chain #134\n", .{});
+    print("Level 11.25 -- Interactive REPL Mode\n", .{});
+    print("Golden Chain #135\n", .{});
 }
 
 fn printEntities() void {
@@ -344,13 +354,222 @@ fn printEntities() void {
 fn printRelations() void {
     print("Relations ({d}):\n", .{NUM_RELATIONS});
     const descriptions = [NUM_RELATIONS][]const u8{
-        "city → country",
-        "landmark → city",
-        "food → country",
-        "language → country",
-        "climate → country",
+        "city -> country",
+        "landmark -> city",
+        "food -> country",
+        "language -> country",
+        "climate -> country",
     };
     for (relation_names, 0..) |rn, i| {
         print("  {s}: {s}\n", .{ rn, descriptions[i] });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REPL — Interactive Read-Eval-Print Loop
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn executeQuery(
+    ent_name: []const u8,
+    rel_name: []const u8,
+    entities: *[NUM_ENTITIES]HybridBigInt,
+    mem_a: *[NUM_RELATIONS]HybridBigInt,
+    mem_b: *[NUM_RELATIONS]HybridBigInt,
+) void {
+    const ent_idx = findEntity(ent_name) orelse {
+        print("Unknown entity: \"{s}\". Use 'list' to see entities.\n", .{ent_name});
+        return;
+    };
+    const rel_idx = findRelation(rel_name) orelse {
+        print("Unknown relation: \"{s}\". Use 'relations' to see relations.\n", .{rel_name});
+        return;
+    };
+
+    var key = entities[ent_idx];
+    var res_a = hvUnbind(&mem_a[rel_idx], &key);
+    var res_b = hvUnbind(&mem_b[rel_idx], &key);
+
+    var best_idx: usize = 0;
+    var best_sim: f64 = -2.0;
+    for (0..NUM_ENTITIES) |j| {
+        var cj = entities[j];
+        const sim_a = hvSimilarity(&res_a, &cj);
+        const sim_b = hvSimilarity(&res_b, &cj);
+        const sim = @max(sim_a, sim_b);
+        if (sim > best_sim) { best_sim = sim; best_idx = j; }
+    }
+
+    print("{s}({s}) = {s} (sim={d:.3})\n", .{ rel_name, entity_names[ent_idx], entity_names[best_idx], best_sim });
+}
+
+fn executeChain(
+    tokens: [][]const u8,
+    entities: *[NUM_ENTITIES]HybridBigInt,
+    mem_a: *[NUM_RELATIONS]HybridBigInt,
+    mem_b: *[NUM_RELATIONS]HybridBigInt,
+) void {
+    if (tokens.len < 3) {
+        print("Usage: chain <entity> <rel1> [rel2] ...\n", .{});
+        return;
+    }
+    const start_name = tokens[1];
+    const start_idx = findEntity(start_name) orelse {
+        print("Unknown entity: \"{s}\"\n", .{start_name});
+        return;
+    };
+
+    print("{s}", .{entity_names[start_idx]});
+    var current_idx = start_idx;
+
+    for (tokens[2..]) |rel_name| {
+        const rel_idx = findRelation(rel_name) orelse {
+            print("\nUnknown relation: \"{s}\"\n", .{rel_name});
+            return;
+        };
+
+        var key = entities[current_idx];
+        var res_a = hvUnbind(&mem_a[rel_idx], &key);
+        var res_b = hvUnbind(&mem_b[rel_idx], &key);
+
+        var best_idx: usize = 0;
+        var best_sim: f64 = -2.0;
+        for (0..NUM_ENTITIES) |j| {
+            var cj = entities[j];
+            const sim_a = hvSimilarity(&res_a, &cj);
+            const sim_b = hvSimilarity(&res_b, &cj);
+            const sim = @max(sim_a, sim_b);
+            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+        }
+
+        print(" --[{s}]--> {s}", .{ relation_names[rel_idx], entity_names[best_idx] });
+        current_idx = best_idx;
+    }
+    print("\n", .{});
+}
+
+fn runRepl(
+    entities: *[NUM_ENTITIES]HybridBigInt,
+    mem_a: *[NUM_RELATIONS]HybridBigInt,
+    mem_b: *[NUM_RELATIONS]HybridBigInt,
+) void {
+    print("Trinity REPL v1.0.0 -- Interactive Symbolic Query Session\n", .{});
+    print("Commands: <entity> <relation> | chain <entity> <rel1> <rel2> ...\n", .{});
+    print("          list | relations | info | help | quit\n", .{});
+    print("─────────────────────────────────────────────────\n\n", .{});
+
+    const stdin_file = std.fs.File.stdin();
+    var buf: [4096]u8 = undefined;
+    var query_count: u32 = 0;
+
+    while (true) {
+        print("trinity> ", .{});
+
+        // Read line
+        var line_len: usize = 0;
+        while (line_len < buf.len - 1) {
+            const read_result = stdin_file.read(buf[line_len .. line_len + 1]) catch break;
+            if (read_result == 0) {
+                // EOF
+                print("\nSession ended. {d} queries executed.\n", .{query_count});
+                return;
+            }
+            if (buf[line_len] == '\n') break;
+            line_len += 1;
+        }
+
+        if (line_len == 0) continue;
+
+        const line = buf[0..line_len];
+
+        // Trim whitespace
+        var start: usize = 0;
+        while (start < line.len and line[start] == ' ') start += 1;
+        var end = line.len;
+        while (end > start and line[end - 1] == ' ') end -= 1;
+        if (start >= end) continue;
+
+        const trimmed = line[start..end];
+
+        // Parse into tokens (split by spaces)
+        var tokens: [10][]const u8 = undefined;
+        var token_count: usize = 0;
+        var ti: usize = 0;
+        var in_token = false;
+        var token_start: usize = 0;
+
+        while (ti < trimmed.len) : (ti += 1) {
+            if (trimmed[ti] == ' ') {
+                if (in_token) {
+                    if (token_count < 10) {
+                        tokens[token_count] = trimmed[token_start..ti];
+                        token_count += 1;
+                    }
+                    in_token = false;
+                }
+            } else {
+                if (!in_token) {
+                    token_start = ti;
+                    in_token = true;
+                }
+            }
+        }
+        if (in_token and token_count < 10) {
+            tokens[token_count] = trimmed[token_start..ti];
+            token_count += 1;
+        }
+
+        if (token_count == 0) continue;
+
+        const cmd = tokens[0];
+
+        // Built-in commands
+        if (std.mem.eql(u8, cmd, "quit") or std.mem.eql(u8, cmd, "exit") or std.mem.eql(u8, cmd, "q")) {
+            print("Session ended. {d} queries executed.\n", .{query_count});
+            return;
+        }
+        if (std.mem.eql(u8, cmd, "help") or std.mem.eql(u8, cmd, "h") or std.mem.eql(u8, cmd, "?")) {
+            print("Commands:\n", .{});
+            print("  <entity> <relation>              Direct query\n", .{});
+            print("  chain <entity> <rel1> [rel2] ... Multi-hop chain\n", .{});
+            print("  list                             Show entities\n", .{});
+            print("  relations                        Show relations\n", .{});
+            print("  info                             Show KG info\n", .{});
+            print("  quit                             Exit REPL\n", .{});
+            continue;
+        }
+        if (std.mem.eql(u8, cmd, "list") or std.mem.eql(u8, cmd, "ls")) {
+            printEntities();
+            continue;
+        }
+        if (std.mem.eql(u8, cmd, "relations") or std.mem.eql(u8, cmd, "rels")) {
+            printRelations();
+            continue;
+        }
+        if (std.mem.eql(u8, cmd, "info")) {
+            printInfo();
+            continue;
+        }
+
+        // Chain query
+        if (std.mem.eql(u8, cmd, "chain")) {
+            executeChain(tokens[0..token_count], entities, mem_a, mem_b);
+            query_count += 1;
+            continue;
+        }
+
+        // Direct query: <entity> <relation>
+        if (token_count >= 2) {
+            executeQuery(tokens[0], tokens[1], entities, mem_a, mem_b);
+            query_count += 1;
+            continue;
+        }
+
+        // Single token — try to show info about entity
+        if (findEntity(cmd)) |_| {
+            print("Entity found: {s}. Specify a relation: {s} <relation>\n", .{ cmd, cmd });
+            print("Available relations: capital_of, landmark_in, cuisine_of, language_of, climate_of\n", .{});
+        } else {
+            print("Unknown command: \"{s}\". Type 'help' for usage.\n", .{cmd});
+        }
     }
 }

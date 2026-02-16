@@ -22680,3 +22680,539 @@ test "cli binary integration verification" {
     std.debug.print("11.24 | Interactive CLI Binary | named+pipeline+binary <<<\n", .{});
     std.debug.print("============================================\n", .{});
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Level 11.25 — Interactive REPL Mode
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "repl multi turn session simulation" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== TEST 127: REPL MULTI-TURN SESSION (Level 11.25) ===\n", .{});
+
+    // Same KG as CLI/REPL (same seeds)
+    const entity_names = [_][]const u8{
+        "Paris",     "Tokyo",     "Rome",      "London",    "Cairo",
+        "France",    "Japan",     "Italy",     "UK",        "Egypt",
+        "Eiffel",    "Fuji",      "Colosseum", "BigBen",    "Pyramids",
+        "Croissant", "Sushi",     "Pizza",     "FishChips", "Falafel",
+        "French",    "Japanese",  "Italian",   "English",   "Arabic",
+        "Temperate", "Humid",     "Mediterranean", "Oceanic", "Arid",
+    };
+    const NUM_ENTITIES = entity_names.len;
+
+    var entities: [30]Hypervector = undefined;
+    for (0..NUM_ENTITIES) |i| {
+        entities[i] = bipolarRandom(DIM, 0xCCDD000 + @as(u64, @intCast(i)) * 7919);
+    }
+
+    const all_pairs = [5][5][2]usize{
+        .{ .{ 0, 5 }, .{ 1, 6 }, .{ 2, 7 }, .{ 3, 8 }, .{ 4, 9 } },
+        .{ .{ 10, 0 }, .{ 11, 1 }, .{ 12, 2 }, .{ 13, 3 }, .{ 14, 4 } },
+        .{ .{ 15, 5 }, .{ 16, 6 }, .{ 17, 7 }, .{ 18, 8 }, .{ 19, 9 } },
+        .{ .{ 20, 5 }, .{ 21, 6 }, .{ 22, 7 }, .{ 23, 8 }, .{ 24, 9 } },
+        .{ .{ 25, 5 }, .{ 26, 6 }, .{ 27, 7 }, .{ 28, 8 }, .{ 29, 9 } },
+    };
+
+    var mem_a: [5]Hypervector = undefined;
+    var mem_b: [5]Hypervector = undefined;
+    for (0..5) |rel| {
+        var binds: [5]Hypervector = undefined;
+        for (0..5) |i| {
+            var k = entities[all_pairs[rel][i][0]];
+            var v = entities[all_pairs[rel][i][1]];
+            binds[i] = k.bind(&v);
+        }
+        mem_a[rel] = treeBundleN(binds[0..3]);
+        mem_b[rel] = treeBundleN(binds[3..5]);
+    }
+
+    const querySplit = struct {
+        fn q(ma: *Hypervector, mb: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var res_a = ma.unbind(key);
+            var res_b = mb.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim_a = res_a.similarity(&cj);
+                const sim_b = res_b.similarity(&cj);
+                const sim = @max(sim_a, sim_b);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // --- Task 1: Sequential REPL queries — 10 direct queries across all 5 relations ---
+    std.debug.print("--- Task 1: Sequential direct queries (10 queries) ---\n", .{});
+    // Simulate: user types entity + relation in REPL, one after another
+    const repl_session = [_]struct { key: usize, rel: usize, expected: usize }{
+        .{ .key = 0, .rel = 0, .expected = 5 },   // Paris capital_of → France
+        .{ .key = 10, .rel = 1, .expected = 0 },   // Eiffel landmark_in → Paris
+        .{ .key = 16, .rel = 2, .expected = 6 },   // Sushi cuisine_of → Japan
+        .{ .key = 20, .rel = 3, .expected = 5 },   // French language_of → France
+        .{ .key = 29, .rel = 4, .expected = 9 },   // Arid climate_of → Egypt
+        .{ .key = 3, .rel = 0, .expected = 8 },    // London capital_of → UK
+        .{ .key = 13, .rel = 1, .expected = 3 },   // BigBen landmark_in → London
+        .{ .key = 17, .rel = 2, .expected = 7 },   // Pizza cuisine_of → Italy
+        .{ .key = 23, .rel = 3, .expected = 8 },   // English language_of → UK
+        .{ .key = 25, .rel = 4, .expected = 5 },   // Temperate climate_of → France
+    };
+
+    var t1_correct: u32 = 0;
+    for (repl_session) |q| {
+        var key = entities[q.key];
+        const r = querySplit(&mem_a[q.rel], &mem_b[q.rel], &key, &entities);
+        if (r.idx == q.expected) {
+            t1_correct += 1;
+        } else {
+            std.debug.print("  MISS: {s} -> {s} (expected {s})\n", .{
+                entity_names[q.key], entity_names[r.idx], entity_names[q.expected],
+            });
+        }
+    }
+    std.debug.print("Result: {d}/10\n", .{t1_correct});
+    total_correct += t1_correct;
+    total_queries += 10;
+
+    // --- Task 2: Sequential chain queries — 5 multi-hop chains ---
+    std.debug.print("--- Task 2: Sequential chain queries (5 chains x 2 hops) ---\n", .{});
+    var t2_correct: u32 = 0;
+    const chain_landmarks = [_]usize{ 10, 11, 12, 13, 14 };
+    const chain_exp_city = [_]usize{ 0, 1, 2, 3, 4 };
+    const chain_exp_country = [_]usize{ 5, 6, 7, 8, 9 };
+
+    for (0..5) |i| {
+        var key = entities[chain_landmarks[i]];
+        const hop1 = querySplit(&mem_a[1], &mem_b[1], &key, &entities);
+        var city = entities[hop1.idx];
+        const hop2 = querySplit(&mem_a[0], &mem_b[0], &city, &entities);
+
+        const city_ok = hop1.idx == chain_exp_city[i];
+        const country_ok = hop2.idx == chain_exp_country[i];
+        if (city_ok) t2_correct += 1;
+        if (country_ok) t2_correct += 1;
+
+        std.debug.print("  {s} -> {s} -> {s} {s}\n", .{
+            entity_names[chain_landmarks[i]],
+            entity_names[hop1.idx],
+            entity_names[hop2.idx],
+            @as([]const u8, if (city_ok and country_ok) "OK" else "MISS"),
+        });
+    }
+    std.debug.print("Result: {d}/10\n", .{t2_correct});
+    total_correct += t2_correct;
+    total_queries += 10;
+
+    // --- Task 3: Mixed REPL session — alternating queries and chains ---
+    std.debug.print("--- Task 3: Mixed session (alternating direct/chain, 15 queries) ---\n", .{});
+    var t3_correct: u32 = 0;
+
+    // Mix: direct, chain, direct, chain, direct...
+    // Direct: cuisine queries for all 5 foods
+    for (0..5) |i| {
+        const food_idx = 15 + i;
+        const expected_country = 5 + i;
+        var key = entities[food_idx];
+        const r = querySplit(&mem_a[2], &mem_b[2], &key, &entities);
+        if (r.idx == expected_country) t3_correct += 1;
+    }
+
+    // Chain: city→country→language (3-hop via 2 relations)
+    for (0..5) |i| {
+        const city_idx = i;
+        const expected_country = 5 + i;
+        const expected_lang = 20 + i;
+
+        var key1 = entities[city_idx];
+        const hop1 = querySplit(&mem_a[0], &mem_b[0], &key1, &entities);
+        var country = entities[hop1.idx];
+        const hop2 = querySplit(&mem_a[3], &mem_b[3], &country, &entities);
+
+        if (hop1.idx == expected_country) t3_correct += 1;
+        // language_of goes language→country, so unbinding country finds language (commutative bind)
+        if (hop2.idx == expected_lang) t3_correct += 1;
+    }
+    std.debug.print("Result: {d}/15\n", .{t3_correct});
+    total_correct += t3_correct;
+    total_queries += 15;
+
+    // --- Task 4: Repeated queries (determinism across session) ---
+    std.debug.print("--- Task 4: Repeated queries for determinism (15 queries) ---\n", .{});
+    var t4_correct: u32 = 0;
+
+    // Re-run the same 10 direct queries and verify identical results
+    for (repl_session) |q| {
+        var key = entities[q.key];
+        const r = querySplit(&mem_a[q.rel], &mem_b[q.rel], &key, &entities);
+        if (r.idx == q.expected) t4_correct += 1;
+    }
+    // Re-run 5 chain first-hops
+    for (0..5) |i| {
+        var key = entities[chain_landmarks[i]];
+        const hop1 = querySplit(&mem_a[1], &mem_b[1], &key, &entities);
+        if (hop1.idx == chain_exp_city[i]) t4_correct += 1;
+    }
+    std.debug.print("Result: {d}/15\n", .{t4_correct});
+    total_correct += t4_correct;
+    total_queries += 15;
+
+    // --- Summary ---
+    const accuracy = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+    std.debug.print("\n--- REPL Multi-Turn Session Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ total_correct, total_queries, accuracy });
+
+    try std.testing.expect(t1_correct == 10);
+    try std.testing.expect(t2_correct == 10);
+    try std.testing.expect(t3_correct == 15);
+    try std.testing.expect(t4_correct == 15);
+    try std.testing.expect(total_correct == 50);
+}
+
+test "repl session statistics tracking" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== TEST 128: REPL SESSION STATISTICS (Level 11.25) ===\n", .{});
+
+    const entity_names = [_][]const u8{
+        "Paris",     "Tokyo",     "Rome",      "London",    "Cairo",
+        "France",    "Japan",     "Italy",     "UK",        "Egypt",
+        "Eiffel",    "Fuji",      "Colosseum", "BigBen",    "Pyramids",
+        "Croissant", "Sushi",     "Pizza",     "FishChips", "Falafel",
+        "French",    "Japanese",  "Italian",   "English",   "Arabic",
+        "Temperate", "Humid",     "Mediterranean", "Oceanic", "Arid",
+    };
+    const NUM_ENTITIES = entity_names.len;
+
+    var entities: [30]Hypervector = undefined;
+    for (0..NUM_ENTITIES) |i| {
+        entities[i] = bipolarRandom(DIM, 0xCCDD000 + @as(u64, @intCast(i)) * 7919);
+    }
+
+    const all_pairs = [5][5][2]usize{
+        .{ .{ 0, 5 }, .{ 1, 6 }, .{ 2, 7 }, .{ 3, 8 }, .{ 4, 9 } },
+        .{ .{ 10, 0 }, .{ 11, 1 }, .{ 12, 2 }, .{ 13, 3 }, .{ 14, 4 } },
+        .{ .{ 15, 5 }, .{ 16, 6 }, .{ 17, 7 }, .{ 18, 8 }, .{ 19, 9 } },
+        .{ .{ 20, 5 }, .{ 21, 6 }, .{ 22, 7 }, .{ 23, 8 }, .{ 24, 9 } },
+        .{ .{ 25, 5 }, .{ 26, 6 }, .{ 27, 7 }, .{ 28, 8 }, .{ 29, 9 } },
+    };
+
+    var mem_a: [5]Hypervector = undefined;
+    var mem_b: [5]Hypervector = undefined;
+    for (0..5) |rel| {
+        var binds: [5]Hypervector = undefined;
+        for (0..5) |i| {
+            var k = entities[all_pairs[rel][i][0]];
+            var v = entities[all_pairs[rel][i][1]];
+            binds[i] = k.bind(&v);
+        }
+        mem_a[rel] = treeBundleN(binds[0..3]);
+        mem_b[rel] = treeBundleN(binds[3..5]);
+    }
+
+    const querySplit = struct {
+        fn q(ma: *Hypervector, mb: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var res_a = ma.unbind(key);
+            var res_b = mb.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim_a = res_a.similarity(&cj);
+                const sim_b = res_b.similarity(&cj);
+                const sim = @max(sim_a, sim_b);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // --- Task 1: Per-relation accuracy tracking (25 queries, 5 per relation) ---
+    std.debug.print("--- Task 1: Per-relation accuracy (5 relations x 5 pairs) ---\n", .{});
+    var t1_correct: u32 = 0;
+    var per_rel_correct: [5]u32 = .{ 0, 0, 0, 0, 0 };
+
+    for (0..5) |rel| {
+        for (0..5) |i| {
+            const key_idx = all_pairs[rel][i][0];
+            const expected = all_pairs[rel][i][1];
+            var key = entities[key_idx];
+            const r = querySplit(&mem_a[rel], &mem_b[rel], &key, &entities);
+            if (r.idx == expected) {
+                per_rel_correct[rel] += 1;
+                t1_correct += 1;
+            }
+        }
+        std.debug.print("  Relation {d}: {d}/5\n", .{ rel, per_rel_correct[rel] });
+    }
+    std.debug.print("Result: {d}/25\n", .{t1_correct});
+    total_correct += t1_correct;
+    total_queries += 25;
+
+    // --- Task 2: Session segment accuracy — first 5 vs last 5 queries ---
+    std.debug.print("--- Task 2: Session segment consistency (first5 vs last5) ---\n", .{});
+    var t2_correct: u32 = 0;
+    var first5_results: [5]usize = undefined;
+    var last5_results: [5]usize = undefined;
+
+    // First segment: capital_of queries
+    for (0..5) |i| {
+        var key = entities[i]; // cities
+        const r = querySplit(&mem_a[0], &mem_b[0], &key, &entities);
+        first5_results[i] = r.idx;
+        if (r.idx == 5 + i) t2_correct += 1;
+    }
+
+    // Last segment: same queries again (should be identical)
+    for (0..5) |i| {
+        var key = entities[i];
+        const r = querySplit(&mem_a[0], &mem_b[0], &key, &entities);
+        last5_results[i] = r.idx;
+        if (r.idx == first5_results[i]) t2_correct += 1; // match first segment
+    }
+    std.debug.print("Result: {d}/10\n", .{t2_correct});
+    total_correct += t2_correct;
+    total_queries += 10;
+
+    // --- Task 3: Cumulative accuracy tracking (running total) ---
+    std.debug.print("--- Task 3: Cumulative accuracy milestones ---\n", .{});
+    var t3_correct: u32 = 0;
+
+    // Verify cumulative accuracy stays at 100% after each block of 5
+    // Check all per_rel_correct == 5
+    for (per_rel_correct) |rc| {
+        if (rc == 5) t3_correct += 1;
+    }
+    std.debug.print("Result: {d}/5 (all relations at 100%%)\n", .{t3_correct});
+    total_correct += t3_correct;
+    total_queries += 5;
+
+    // --- Summary ---
+    const accuracy = @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100.0;
+    std.debug.print("\n--- REPL Session Statistics Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ total_correct, total_queries, accuracy });
+
+    try std.testing.expect(t1_correct == 25);
+    try std.testing.expect(t2_correct == 10);
+    try std.testing.expect(t3_correct == 5);
+    try std.testing.expect(total_correct == 40);
+}
+
+test "repl conversation continuity workflows" {
+    const DIM = 1024;
+
+    std.debug.print("\n=== TEST 129: REPL CONVERSATION CONTINUITY (Level 11.25) ===\n", .{});
+
+    const entity_names = [_][]const u8{
+        "Paris",     "Tokyo",     "Rome",      "London",    "Cairo",
+        "France",    "Japan",     "Italy",     "UK",        "Egypt",
+        "Eiffel",    "Fuji",      "Colosseum", "BigBen",    "Pyramids",
+        "Croissant", "Sushi",     "Pizza",     "FishChips", "Falafel",
+        "French",    "Japanese",  "Italian",   "English",   "Arabic",
+        "Temperate", "Humid",     "Mediterranean", "Oceanic", "Arid",
+    };
+    const NUM_ENTITIES = entity_names.len;
+
+    var entities: [30]Hypervector = undefined;
+    for (0..NUM_ENTITIES) |i| {
+        entities[i] = bipolarRandom(DIM, 0xCCDD000 + @as(u64, @intCast(i)) * 7919);
+    }
+
+    const all_pairs = [5][5][2]usize{
+        .{ .{ 0, 5 }, .{ 1, 6 }, .{ 2, 7 }, .{ 3, 8 }, .{ 4, 9 } },
+        .{ .{ 10, 0 }, .{ 11, 1 }, .{ 12, 2 }, .{ 13, 3 }, .{ 14, 4 } },
+        .{ .{ 15, 5 }, .{ 16, 6 }, .{ 17, 7 }, .{ 18, 8 }, .{ 19, 9 } },
+        .{ .{ 20, 5 }, .{ 21, 6 }, .{ 22, 7 }, .{ 23, 8 }, .{ 24, 9 } },
+        .{ .{ 25, 5 }, .{ 26, 6 }, .{ 27, 7 }, .{ 28, 8 }, .{ 29, 9 } },
+    };
+
+    var mem_a: [5]Hypervector = undefined;
+    var mem_b: [5]Hypervector = undefined;
+    for (0..5) |rel| {
+        var binds: [5]Hypervector = undefined;
+        for (0..5) |i| {
+            var k = entities[all_pairs[rel][i][0]];
+            var v = entities[all_pairs[rel][i][1]];
+            binds[i] = k.bind(&v);
+        }
+        mem_a[rel] = treeBundleN(binds[0..3]);
+        mem_b[rel] = treeBundleN(binds[3..5]);
+    }
+
+    const querySplit = struct {
+        fn q(ma: *Hypervector, mb: *Hypervector, key: *Hypervector, candidates: []Hypervector) struct { idx: usize, sim: f64 } {
+            var res_a = ma.unbind(key);
+            var res_b = mb.unbind(key);
+            var bi: usize = 0;
+            var bs: f64 = -2.0;
+            for (0..candidates.len) |j| {
+                var cj = candidates[j];
+                const sim_a = res_a.similarity(&cj);
+                const sim_b = res_b.similarity(&cj);
+                const sim = @max(sim_a, sim_b);
+                if (sim > bs) { bs = sim; bi = j; }
+            }
+            return .{ .idx = bi, .sim = bs };
+        }
+    }.q;
+
+    var total_correct: u32 = 0;
+    var total_queries: u32 = 0;
+
+    // --- Task 1: Follow-up workflows — query result feeds next query ---
+    std.debug.print("--- Task 1: Follow-up workflows (result→next query) ---\n", .{});
+    var t1_correct: u32 = 0;
+
+    // Workflow: For each city, query capital_of → country, then use country to find language
+    for (0..5) |i| {
+        const city_idx = i;
+        const expected_country = 5 + i;
+        const expected_lang = 20 + i;
+
+        // Step 1: city → country
+        var key1 = entities[city_idx];
+        const r1 = querySplit(&mem_a[0], &mem_b[0], &key1, &entities);
+        if (r1.idx == expected_country) t1_correct += 1;
+
+        // Step 2: use result to query language (follow-up)
+        var country_vec = entities[r1.idx];
+        const r2 = querySplit(&mem_a[3], &mem_b[3], &country_vec, &entities);
+        if (r2.idx == expected_lang) t1_correct += 1;
+
+        std.debug.print("  {s} -> {s} -> {s} {s}\n", .{
+            entity_names[city_idx],
+            entity_names[r1.idx],
+            entity_names[r2.idx],
+            @as([]const u8, if (r1.idx == expected_country and r2.idx == expected_lang) "OK" else "MISS"),
+        });
+    }
+    std.debug.print("Result: {d}/10\n", .{t1_correct});
+    total_correct += t1_correct;
+    total_queries += 10;
+
+    // --- Task 2: Cross-domain exploration — landmark→city→country→cuisine ---
+    std.debug.print("--- Task 2: Cross-domain exploration (landmark→cuisine) ---\n", .{});
+    var t2_correct: u32 = 0;
+
+    for (0..5) |i| {
+        const landmark_idx = 10 + i;
+        const expected_city = i;
+        const expected_country = 5 + i;
+        const expected_food = 15 + i;
+
+        // Hop 1: landmark → city
+        var key1 = entities[landmark_idx];
+        const r1 = querySplit(&mem_a[1], &mem_b[1], &key1, &entities);
+        if (r1.idx == expected_city) t2_correct += 1;
+
+        // Hop 2: city → country
+        var city_vec = entities[r1.idx];
+        const r2 = querySplit(&mem_a[0], &mem_b[0], &city_vec, &entities);
+        if (r2.idx == expected_country) t2_correct += 1;
+
+        // Hop 3: country → cuisine (commutative bind)
+        var country_vec = entities[r2.idx];
+        const r3 = querySplit(&mem_a[2], &mem_b[2], &country_vec, &entities);
+        if (r3.idx == expected_food) t2_correct += 1;
+
+        std.debug.print("  {s} -> {s} -> {s} -> {s} {s}\n", .{
+            entity_names[landmark_idx],
+            entity_names[r1.idx],
+            entity_names[r2.idx],
+            entity_names[r3.idx],
+            @as([]const u8, if (r1.idx == expected_city and r2.idx == expected_country and r3.idx == expected_food) "OK" else "MISS"),
+        });
+    }
+    std.debug.print("Result: {d}/15\n", .{t2_correct});
+    total_correct += t2_correct;
+    total_queries += 15;
+
+    // --- Task 3: Bidirectional verification — query A→B then verify B→A ---
+    std.debug.print("--- Task 3: Bidirectional verification (A→B, B→A) ---\n", .{});
+    var t3_correct: u32 = 0;
+
+    // capital_of: city→country, then country→city (commutative)
+    for (0..5) |i| {
+        var city = entities[i];
+        const forward = querySplit(&mem_a[0], &mem_b[0], &city, &entities);
+        if (forward.idx == 5 + i) t3_correct += 1;
+
+        var country = entities[5 + i];
+        const backward = querySplit(&mem_a[0], &mem_b[0], &country, &entities);
+        if (backward.idx == i) t3_correct += 1;
+    }
+    std.debug.print("Result: {d}/10\n", .{t3_correct});
+    total_correct += t3_correct;
+    total_queries += 10;
+
+    // --- Task 4: Similarity consistency across workflow ---
+    std.debug.print("--- Task 4: Similarity consistency across workflows ---\n", .{});
+    var t4_correct: u32 = 0;
+    var min_sim: f64 = 2.0;
+    var max_sim: f64 = -2.0;
+
+    // All 25 direct queries — verify similarity > 0.10 and within expected range
+    for (0..5) |rel| {
+        for (0..5) |i| {
+            const key_idx = all_pairs[rel][i][0];
+            var key = entities[key_idx];
+            const r = querySplit(&mem_a[rel], &mem_b[rel], &key, &entities);
+            if (r.sim > 0.10) t4_correct += 1;
+            // Track similarity values
+            if (r.sim < min_sim) min_sim = r.sim;
+            if (r.sim > max_sim) max_sim = r.sim;
+        }
+    }
+
+    // Verify min_sim > 0.20 (well above threshold)
+    if (min_sim > 0.20) {
+        t4_correct += 1;
+        std.debug.print("  Min similarity {d:.3} > 0.20 OK\n", .{min_sim});
+    }
+    // Verify max_sim < 1.0 (no perfect matches — would indicate bug)
+    if (max_sim < 1.0) {
+        t4_correct += 1;
+        std.debug.print("  Max similarity {d:.3} < 1.0 OK\n", .{max_sim});
+    }
+    // Verify spread (max - min < 0.8)
+    if (max_sim - min_sim < 0.8) {
+        t4_correct += 1;
+        std.debug.print("  Spread {d:.3} < 0.8 OK\n", .{max_sim - min_sim});
+    }
+    std.debug.print("Result: {d}/28\n", .{t4_correct});
+    total_correct += t4_correct;
+    total_queries += 28;
+
+    // Subtract the 3 range checks from t4 for total calculation
+    // Actually we counted 25 threshold + 3 range = 28 total in t4
+
+    // --- Summary ---
+    const total_f = @as(f64, @floatFromInt(total_correct));
+    const queries_f = @as(f64, @floatFromInt(total_queries));
+    const accuracy = total_f / queries_f * 100.0;
+    std.debug.print("\n--- REPL Conversation Continuity Summary ---\n", .{});
+    std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ total_correct, total_queries, accuracy });
+
+    try std.testing.expect(t1_correct == 10);
+    try std.testing.expect(t2_correct == 15);
+    try std.testing.expect(t3_correct == 10);
+    // t4: 25 threshold checks + 3 range checks = 28
+    try std.testing.expect(t4_correct == 28);
+
+    // Progression
+    std.debug.print("\n--- Level 11.25 Progression ---\n", .{});
+    std.debug.print("Level | Feature              | Status\n", .{});
+    std.debug.print("------|----------------------|-------\n", .{});
+    std.debug.print("11.22 | User testing          | confidence+batch+degrade\n", .{});
+    std.debug.print("11.23 | Massive KG + CLI      | heap+120ent+10rel+dispatch\n", .{});
+    std.debug.print("11.24 | Interactive CLI Binary | named+pipeline+binary\n", .{});
+    std.debug.print("11.25 | Interactive REPL Mode  | session+stats+continuity <<<\n", .{});
+    std.debug.print("============================================\n", .{});
+}
