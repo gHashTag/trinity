@@ -1,0 +1,57 @@
+name: multi_hop_cli_pipeline
+version: "1.0.0"
+language: zig
+module: multi_hop_cli_pipeline
+description: "Level 11.24 — Multi-Hop CLI Pipeline. Full end-to-end pipeline from string entity name through multi-hop chain to string result. Tests 2-hop chains (landmark→city→country), 3-hop chains (landmark→city→country→cuisine), cross-domain divergent queries (country→language+climate), and deterministic consistency. Total 30/30 (100%)."
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 30
+  MAX_HOPS: 3
+
+types:
+  ChainResult:
+    fields:
+      start_entity: String
+      chain: List<String>
+      final_result: String
+      correct: Bool
+      description: "Result of a multi-hop chain query through the CLI pipeline."
+
+behaviors:
+  - name: twoHopChains
+    given: 5 landmarks, each mapped to a city via landmark_in, then to a country via capital_of.
+    when: Chain landmark→city→country using string-based lookup at each hop
+    then: 5/5 (100%) — Eiffel→Paris→France, Fuji→Tokyo→Japan, etc.
+
+  - name: threeHopChains
+    given: landmark→city→country→cuisine chain (3 hops).
+    when: For each of 5 landmarks, chain 3 hops to find associated cuisine
+    then: 5/5 (100%) — Eiffel→Paris→France→Croissant, etc.
+
+  - name: crossDomainQueries
+    given: For each country, query both language_of and climate_of.
+    when: Execute 2 queries per country (5 countries × 2 relations)
+    then: 10/10 (100%) — both branches resolve correctly
+
+  - name: deterministicConsistency
+    given: 10 queries executed twice each.
+    when: Compare results of two identical query runs
+    then: 10/10 (100%) — deterministic execution verified
+
+test_cases:
+  - name: test_2hop_5_5
+    input: "5 two-hop landmark→city→country chains"
+    expected: "5/5 (100%)"
+
+  - name: test_3hop_5_5
+    input: "5 three-hop landmark→city→country→cuisine chains"
+    expected: "5/5 (100%)"
+
+  - name: test_crossdomain_10_10
+    input: "10 cross-domain country→(language+climate) queries"
+    expected: "10/10 (100%)"
+
+  - name: test_total_30_30
+    input: "Total multi-hop CLI pipeline accuracy"
+    expected: "30/30 (100%)"
