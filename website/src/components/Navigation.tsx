@@ -2,7 +2,7 @@ import { useState, useEffect, memo } from 'react'
 import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
-const sectionIds = ['hero', 'problem', 'solution', 'whynow', 'calculator', 'traction', 'market', 'gtm', 'competition', 'roadmap', 'team', 'ecosystem', 'invest']
+const sectionIds = ['hero', 'theorems', 'solution', 'benchmarks', 'calculator', 'depin', 'tech-tree', 'team', 'science', 'invest']
 
 export default memo(function Navigation() {
   const { t } = useI18n()
