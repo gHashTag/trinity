@@ -300,6 +300,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-52-held-out-report',
         // Level 11: Symbolic Reasoning
         'research/trinity-level11-symbolic-reasoning-report',
+        'research/trinity-level11-bipolar-upgrade-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
