@@ -16,12 +16,13 @@
 | ID | Name | Branch | Complexity | Gain |
 |----|------|--------|------------|------|
 
-|SYM-005|**TRI SOTA MVP**|**symbolic**|**5/5**|**Decentralized Knowledge Collector Live**|
 |DEV-002|KG-INSIGHT (JSON)|development|3/5|Local triple inspection suite|
 |DEV-003|SWARM-WATCH (DHT)|development|4/5|Live DHT & economy monitor|
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**SYM-005**|**TRI SOTA MVP**|**symbolic**|**Full pipeline: extractTriples -> KG DHT -> TRI rewards, PoK, 7 tests, 268B wire, 125x energy**|
 |----|------|--------|------|
 |**SYM-003**|**Decentralized KG Sync + $TRI Rewards**|**symbolic**|**KgTripleDHT Kademlia XOR routing k=3, 268-byte wire format, ProofOfKnowledge, KgRewardCalculator 0.0002 TRI/triple, 12 tests**|
 |----|------|--------|------|
@@ -75,14 +76,14 @@
 |Hardware|0|3|0%|
 |**Math**|**5**|**5**|**100%**|
 |Development|1|3|33%|
-|Symbolic|4|5|80%|
+|**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
-|**Total**|**29**|**44**|**66%**|
+|**Total**|**30**|**44**|**68%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **SYM-005** TRI SOTA MVP — decentralized knowledge collector live, final symbolic milestone
-2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002
-3. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
+1. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002/003/004/005
+2. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
+3. **DEV-003** SWARM-WATCH — live DHT and economy monitor, pairs with SYM-003
 
 ---
 φ² + 1/φ² = 3 | TRINITY
