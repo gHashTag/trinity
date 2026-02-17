@@ -9,7 +9,6 @@
 | ID | Name | Branch | Progress | Gain |
 |----|------|--------|----------|------|
 |OPT-PC01|Prefix Caching|optimization|2/5|99% prefill reduction for cached prompts|
-|DEV-001|TRI-TRACE (Symbolic)|development|2/5|Real-time reasoning path trace|
 
 ## 🚀 Available Nodes
 | ID | Name | Branch | Complexity | Gain |
@@ -25,6 +24,7 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**DEV-001**|**TRI-TRACE Symbolic Trace**|**development**|**Tracer struct, 9 OpKinds, VectorMeta, 4 tests, global singleton, build.zig wired**|
 |**SYM-001**|**SOTA Tech Report Pivot**|**symbolic**|**10/10 metrics validated, report demo, 3 vibee specs**|
 |**OPT-001**|**SIMD Vectorization**|**optimization**|**bundle3/vectorNorm/countNonZero SIMD, bundleN accumulator, 3-16x speedups**|
 |**MATH-003**|**VSA Benchmarks vs Competitors**|**math**|**7-section benchmark suite: throughput, bundleN, memory (20x vs f32), recall curves, convergence, proof timing, comparison table**|
@@ -67,14 +67,14 @@
 |Optimization|11|14|79%|
 |Hardware|0|3|0%|
 |**Math**|**4**|**5**|**80%**|
-|Development|0|3|0%|
+|Development|1|3|33%|
 |Symbolic|1|5|20%|
-|**Total**|**22+1ip**|**43**|**51%→53%**|
+|**Total**|**23+1ip**|**43**|**53%→56%**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **SYM-002** LLM Triples Extractor — priority for Cycle 40, builds KG collector
-2. **DEV-001** TRI-TRACE — improves project observability, priority for Cycle 40
-3. **MATH-005** Large-Scale Analogies — completes Math branch (80%→30% memory reduction), bundleN from OPT-001 enables this
+2. **MATH-005** Large-Scale Analogies — completes Math branch (80%→100%), bundleN from OPT-001 enables this
+3. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002
 
 ---
 φ² + 1/φ² = 3 | TRINITY
