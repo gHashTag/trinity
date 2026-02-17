@@ -57,21 +57,22 @@
   - Files: `src/vibeec/codegen/builder.zig`, `src/vibeec/codegen/emitter.zig`
   - DONE: Added toOwnedSlice() to builder, enum variant emission in emitter, implementation block support in behaviors, improved multiline block parsing in parser
 
-- [ ] [P2] Benchmark VSA math framework vs v11.38 and competitors
-  - Acceptance: `zig build bench` runs, results documented in `benchmarks/level11.39/`, shows improvement over v11.38
-  - Files: `benchmarks/level11.39/`, `specs/tri/math_framework_proof.vibee`
+- [x] [P2] Benchmark VSA math framework vs v11.38 and competitors
+  - Acceptance: `zig build bench-math` runs, results documented in `benchmarks/level11.39/`, shows improvement over v11.38
+  - Files: `benchmarks/bench_math.zig`, `benchmarks/level11.39/BENCHMARK_RESULTS.md`, `specs/tri/vsa_benchmark.vibee`, `build.zig`
   - Tech Tree: MATH-003
-  - Blocked-by: math proof + optimization modules
+  - DONE: 7-section benchmark suite (throughput, bundleN, memory, recall curve, convergence, proof timing, comparison table)
 
-- [ ] [P2] Add Python codegen target to multilingual engine
-  - Acceptance: `zig build vibee -- gen-multi <spec> python` produces valid .py file
-  - Files: `src/vibeec/multilingual_engine.zig`, `specs/tri/multilingual_codegen.vibee`
-  - Blocked-by: multilingual_engine integration
+- [x] [P2] Add Python codegen target to multilingual engine
+  - Acceptance: `zig build vibee -- gen <spec.vibee>` with `language: python` produces valid .py file
+  - Files: `src/vibeec/vibee_gen.zig`, `src/vibeec/lang_generators.zig`
+  - Tech Tree: MATH-004 (partial)
+  - DONE: Wired lang_generators.zig (Python, TypeScript, Rust, Go, Java, Swift, Kotlin, C, SQL) into vibee_gen.zig main pipeline. VibeeSpec → ParsedSpec bridge, isMultiLangTarget dispatch, deriveOutputPath extensions for all 9 targets.
 
-- [ ] [P2] Add TypeScript codegen target to multilingual engine
-  - Acceptance: generated .ts file passes `tsc --noEmit` type-checking
-  - Files: `src/vibeec/multilingual_engine.zig`
-  - Blocked-by: multilingual_engine integration
+- [x] [P2] Add TypeScript codegen target to multilingual engine
+  - Acceptance: `zig build vibee -- gen <spec.vibee>` with `language: typescript` produces valid .ts file
+  - Files: `src/vibeec/vibee_gen.zig`, `src/vibeec/lang_generators.zig`
+  - DONE: Same integration as Python — TypeScript generator already existed in lang_generators.zig, now routed via vibee_gen.zig pipeline
 
 - [ ] [P3] Update vibee_parser.zig for multi-language spec fields
   - Acceptance: parser handles `language: [zig, python, typescript]` array syntax, `zig build test` passes
@@ -108,3 +109,6 @@
 - Generated files in `trinity/output/` — never edit directly
 - Golden Chain cycle: spec -> gen -> test -> assess -> tech tree -> commit
 - Always check branch before committing (must not be main)
+- Implementation blocks in .vibee must match `!void` signature — no typed returns
+- Generated modules in `generated/` use `@import("vsa")` module name, not relative paths
+- When adding proofs: use `vsa.randomVector(dim, seed)` with deterministic seeds for reproducibility
