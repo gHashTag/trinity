@@ -16,16 +16,19 @@
 |INF-003|KV Cache Optimization|inference|3/5|+50% inference speed|
 |INF-004|Batch Processing|inference|4/5|+300% throughput|
 |DEP-003|Auto-Scaling|deployment|3/5|Handle traffic spikes|
-|OPT-001|SIMD Vectorization|optimization|4/5|+400% matrix ops|
 |OPT-002|Memory Pool Allocator|optimization|3/5|-30% memory usage|
 |OPT-004|Flash Attention|optimization|5/5|+200% attention speed|
 |OPT-005|Quantization Engine|optimization|4/5|Support Q4, Q5, Q6 formats|
 |OPT-CP01|Chunked Prefill|optimization|3/5|-50% TTFT latency|
 |**MATH-005**|**Large-Scale Analogies (1000+)**|**math**|**4/5**|**Scalable analogy reasoning with VSA**|
+|HW-001|GPU Backend (CUDA)|hardware|5/5|+1000% throughput|
+|HW-002|Metal Backend (Apple)|hardware|4/5|Native Apple GPU acceleration|
+|SYM-001|SOTA Tech Report Pivot|symbolic|2/5|Structured SOTA tech from chat + agent integration|
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**OPT-001**|**SIMD Vectorization**|**optimization**|**bundle3/vectorNorm/countNonZero SIMD, bundleN accumulator, 3-16x speedups**|
 |**MATH-003**|**VSA Benchmarks vs Competitors**|**math**|**7-section benchmark suite: throughput, bundleN, memory (20x vs f32), recall curves, convergence, proof timing, comparison table**|
 |**MATH-004**|**Multilingual Math Codegen**|**math**|**10 VSA proofs in 5 languages (Zig, Python, TypeScript, Rust, Go) from single spec. 9 generators wired, array syntax [zig, python, ts]**|
 |**MATH-001**|**VSA Math Proofs v2**|**math**|**12 proofs: bind inverse, commutativity, associativity, self-identity, bundle convergence, orthogonality, permute cycle, similarity bounds, trinity identity, bundle2, permute inverse, info density**|
@@ -55,8 +58,6 @@
 |INF-005|Speculative Decoding v2|inference|INF-003 ❌, INF-004 ❌|
 |OPT-003|Weight Streaming|optimization|OPT-002 ❌|
 |DEP-004|Multi-Region Replication|deployment|DEP-003 ❌|
-|HW-001|GPU Backend (CUDA)|hardware|OPT-001 ❌|
-|HW-002|Metal Backend (Apple)|hardware|OPT-001 ❌|
 |HW-003|FPGA Acceleration|hardware|HW-001 ❌|
 
 ## 📊 Branch Progress
@@ -65,14 +66,17 @@
 |Core|3|4|75%|
 |Inference|2|5|40%|
 |Deployment|2|4|50%|
-|Optimization|10|14|71%|
+|Optimization|11|14|79%|
 |Hardware|0|3|0%|
 |**Math**|**4**|**5**|**80%**|
-|**Total**|**21+1ip**|**35**|**60%→63%**|
+|Symbolic|0|1|0%|
+|**Total**|**21+1ip**|**36**|**58%→61%**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **OPT-001** SIMD Vectorization — unlocks 3 nodes (OPT-004, HW-001, HW-002), highest unlock count
 2. **MATH-005** Large-Scale Analogies — completes Math branch (80%→100%), unlocked by MATH-003
+|HW-001|GPU Backend (CUDA)|hardware|5/5|+1000% throughput|
+|HW-002|Metal Backend (Apple)|hardware|4/5|Native Apple GPU acceleration|
 3. **INF-003** KV Cache Optimization — +50% inference speed, unlocks INF-005
 
 ---
