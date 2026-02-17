@@ -506,6 +506,9 @@ export default function TrinityCanvas() {
   // UI
   const [showLayerHint, setShowLayerHint] = useState(true);
 
+  // Debug logs toggle — hidden by default for clean non-debug UX
+  const [debugLogs, setDebugLogs] = useState(false);
+
   // ─── Command bar filtered results ─────────────────────────────────────────
 
   const cmdResults = useMemo(() => {
@@ -1645,6 +1648,10 @@ export default function TrinityCanvas() {
                     | {storageMetrics.nodes_alive} nodes | {storageMetrics.total_shards} shards
                   </span>
                 )}
+                <button onClick={() => setDebugLogs(d => !d)}
+                  style={{ padding: '2px 6px', borderRadius: 4, background: debugLogs ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${debugLogs ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)'}`, color: debugLogs ? '#ffd700' : 'rgba(255,255,255,0.25)', cursor: 'pointer', fontSize: 8, fontFamily: MONO, letterSpacing: 1 }}>
+                  {debugLogs ? 'LOGS ON' : 'LOGS'}
+                </button>
               </div>
             </div>
 
@@ -1781,7 +1788,8 @@ export default function TrinityCanvas() {
                   </div>
                 )}
 
-                {/* Live log */}
+                {/* Live log — hidden unless debugLogs enabled */}
+                {debugLogs && (
                 <div style={{ minHeight: 30, maxHeight: 60, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <div style={{ color: 'rgba(255,255,255,0.12)', fontSize: 7, fontFamily: MONO, letterSpacing: 1, position: 'sticky', top: 0, background: 'rgba(0,0,0,0.4)', padding: '1px 0' }}>LIVE LOG</div>
                   {mirrorLogs.filter(l => l.src === 'Symbolic' || l.src === 'TVCCorpus').length === 0 ? (
@@ -1792,6 +1800,7 @@ export default function TrinityCanvas() {
                     </div>
                   ))}
                 </div>
+                )}
               </motion.div>
 
               {/* ═══ MATERIYA (Matter) — Finder + Preview + Corpus (v2.6) ═══ */}
@@ -1951,7 +1960,8 @@ export default function TrinityCanvas() {
                   ].map(p => <span key={p.l} style={{ color: p.clr }}>{p.l}:{p.c}</span>)}
                 </div>
 
-                {/* Corpus live log */}
+                {/* Corpus live log — hidden unless debugLogs enabled */}
+                {debugLogs && (
                 <div style={{ maxHeight: 60, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <div style={{ color: 'rgba(255,255,255,0.12)', fontSize: 7, fontFamily: MONO, letterSpacing: 1, position: 'sticky', top: 0, background: 'rgba(0,0,0,0.4)', padding: '1px 0' }}>CORPUS LOG</div>
                   {mirrorLogs.filter(l => l.learned || l.src === 'TVCCorpus').length === 0 ? (
@@ -1962,6 +1972,7 @@ export default function TrinityCanvas() {
                     </div>
                   ))}
                 </div>
+                )}
               </motion.div>
 
               {/* ═══ DUKH (Spirit) — Tools + Vision + Voice + Logs (v2.6) ═══ */}
@@ -2146,7 +2157,8 @@ export default function TrinityCanvas() {
                   </div>
                 )}
 
-                {/* All-events live log */}
+                {/* All-events live log — hidden unless debugLogs enabled */}
+                {debugLogs && (
                 <div ref={mirrorLogRef} style={{ flex: 1, minHeight: 30, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <div style={{ color: 'rgba(255,255,255,0.12)', fontSize: 7, fontFamily: MONO, letterSpacing: 1, position: 'sticky', top: 0, background: 'rgba(0,0,0,0.4)', padding: '1px 0' }}>ALL EVENTS</div>
                   {mirrorLogs.length === 0 ? (
@@ -2157,6 +2169,7 @@ export default function TrinityCanvas() {
                     </div>
                   ))}
                 </div>
+                )}
               </motion.div>
             </div>
 
