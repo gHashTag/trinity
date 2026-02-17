@@ -1475,6 +1475,22 @@ pub fn build(b: *std.Build) void {
     vsa_bundle_opt_step.dependOn(&run_vsa_bundle_opt.step);
     test_step.dependOn(&run_vsa_bundle_opt.step);
 
+    // VSA Large-Scale Analogies (MATH-005: 1000+ vector analogy reasoning)
+    const vsa_large_analogies_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/vsa_large_scale_analogies.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_vsa_large_analogies = b.addRunArtifact(vsa_large_analogies_tests);
+    const vsa_large_analogies_step = b.step("test-large-analogies", "Test VSA Large-Scale Analogies (MATH-005: 1000+ vectors)");
+    vsa_large_analogies_step.dependOn(&run_vsa_large_analogies.step);
+    test_step.dependOn(&run_vsa_large_analogies.step);
+
     // VSA Math Benchmark executable (MATH-003)
     // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence
     const bundle_opt_mod = b.createModule(.{
