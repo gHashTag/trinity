@@ -274,6 +274,22 @@ pub fn build(b: *std.Build) void {
     examples_step.dependOn(&run_sequence.step);
     examples_step.dependOn(&run_vm_example.step);
 
+    // SOTA Tech Report Demo (SYM-001)
+    const sota_report = b.addExecutable(.{
+        .name = "sota-report",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sota_report_demo.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
+        }),
+    });
+    b.installArtifact(sota_report);
+
+    const run_sota = b.addRunArtifact(sota_report);
+    const sota_step = b.step("sota-report", "Run SOTA Tech Report validation");
+    sota_step.dependOn(&run_sota.step);
+
     // Firebird CLI
     const firebird = b.addExecutable(.{
         .name = "firebird",

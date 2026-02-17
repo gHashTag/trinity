@@ -16,6 +16,25 @@
 
 ---
 
+## Infrastructure: Diagnostic & Debugging Quarks (Development Suite)
+
+- [ ] [P1] TRI-TRACE: Symbolic Reasoning Trace Mode
+  - Acceptance: `zig build run -- --trace` shows full bind/unbind/sim-search path for every IGLA query.
+  - Files: `src/igla/trace.zig`, `src/vsa/core.zig` (instrumentation)
+  - Tech Tree: DEV-001
+
+- [ ] [P2] KG-INSIGHT: Local Knowledge Graph Inspector
+  - Acceptance: CLI command `zig build query -- --inspect <vector_id>` returns human-readable triples associated with the node.
+  - Files: `src/query_cli.zig`, `src/vsa/storage.zig`
+  - Tech Tree: DEV-002
+
+- [ ] [P2] SWARM-WATCH: Real-time DHT & $TRI Rewards Monitor
+  - Acceptance: Dashboard (TMUX pane or CLI) showing real-time sync events and reward payouts.
+  - Files: `src/swarm/monitor.zig`, `src/economy/rewards.zig`
+  - Tech Tree: DEV-003
+
+---
+
 ## Current Sprint — VSA Mathematical Framework (Level 11.39)
 
 > **Goal:** Mathematical framework for VSA — proofs + optimizations for bind/unbind/bundle, multilingual code gen.
@@ -95,10 +114,55 @@
 
 ---
 
-- [ ] [P1] Cycle 39: SOTA Tech Report Pivot (structured from chat + agent integration)
-  - Acceptance: `sota_tech_report.vibee` created, `src/sota_report_demo.zig` implemented, empirical benchmarks pass, research report live in docsite.
-  - Files: `specs/sym/sota_tech_report.vibee`, `specs/sym/agent_task_integration.vibee`, `specs/sym/project_summary.vibee`, `src/sota_report_demo.zig`, `benchmarks/level11.39/sota_report_empirical.log`, `docsite/docs/research/trinity-golden-chain-level11-cycle39-sota-report-pivot.md`
+- [x] [P1] Cycle 39: SOTA Tech Report Pivot (structured from chat + agent integration)
+  - DONE: `sota_tech_report.vibee` created, `src/sota_report_demo.zig` implemented, empirical benchmarks pass, research report live in docsite.
   - Tech Tree: SYM-001 (Level 11.39 milestone)
+  - DONE: 3 vibee specs (sym/), sota_report_demo.zig (10/10 metrics pass), research report, empirical log.
+
+---
+
+## Current Sprint — Golden Chain Cycle 41: Full Multilingual Codegen (Level 11.41)
+
+> **Goal:** Full local fluent multilingual code gen.
+> **Enforced:** 9-link Golden Chain flow. No direct .zig edits for spec-governed logic.
+> **Verification:** Toxic Verdict + Empirical Benchmarks with proofs.
+
+- [ ] [P1] Link 1: Tri Decompose — "full local fluent multilingual code gen"
+- [ ] [P1] Link 2: Tri Plan — Tech Tree strategy update (Level 11.41)
+- [ ] [P1] Link 3: Tri Spec Create — `.vibee` source of truth updates
+- [ ] [P1] Link 4: Tri Gen — Generate Zig/TS/Python code from specs
+- [ ] [P1] Link 5: Tri Test — E2E validation of generated targets
+- [ ] [P1] Link 6: Tri Bench — Performance benchmarking vs Cycle 40 (with proof logs)
+- [ ] [P1] Link 7: Tri Verdict — **TOXIC VERDICT MANDATE**
+- [ ] [P1] Link 8: Tri Git — Multi-agent commit and push
+- [ ] [P1] Link 9: Tri Loop Decision — Needle check for Level 11.41 achievement
+
+---
+
+## Current Sprint — TRI SOTA: Decentralized Knowledge Collector (Level 11.40)
+
+> **Goal:** LLM response -> auto-triples -> KG -> reusable symbolic reasoning.
+> **Tech Tree:** SYM branch (SYM-002..005), transition to Symbolic AGI maturity.
+> **Golden Chain:** Level 11.39 → 11.40 transition. Cycle 40: Decentralized Knowledge Collector Roadmap.
+
+- [ ] [P1] Stage 1: LLM → Triples Extractor
+  - Acceptance: `igla_hybrid_chat.zig` implements auto-extraction, 90% accuracy on sample set.
+  - Files: `src/igla_hybrid_chat.zig`, `src/vibeec/triples_parser.zig`
+  - Tech Tree: SYM-002
+
+- [ ] [P1] Stage 2: Decentralized KG Sync + $TRI Rewards
+  - Acceptance: KG shard sync in swarm (Kademlia DHT) works, $TRI proof-of-contribution live.
+  - Files: `src/swarm/kg_sync.zig`, `src/economy/rewards.zig`
+  - Tech Tree: SYM-003
+
+- [ ] [P1] Stage 3: IGLA + KG Full Pipeline + Query CLI
+  - Acceptance: Pipeline: Question -> LLM -> KG -> Reuse. `zig build query --` implements reasoning trace.
+  - Files: `src/igla_hybrid_chat.zig`, `src/query_cli.zig`
+  - Tech Tree: SYM-004
+
+- [ ] [P2] Stage 4: MVP Release + $TRI Staking
+  - Acceptance: Public demo live (web + CLI), $TRI staking for contributors enabled.
+  - Tech Tree: SYM-005
 
 ---
 
