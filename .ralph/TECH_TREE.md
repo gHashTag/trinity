@@ -25,6 +25,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**NEXUS-004**|**Symbolic AI Migration**|**nexus**|**29 files migrated to trinity-nexus/symb/src/, 15650 lines, KG pipeline (SYM-001-005) + TVC subsystem (20 files), 15 pub exports**|
+|----|------|--------|------|
 |**NEXUS-003**|**VIBEE Compiler Migration**|**nexus**|**38 files migrated to trinity-nexus/lang/src/, 28186 lines, 15 pub exports, codegen/ module with 20 files, 100% self-contained imports**|
 |----|------|--------|------|
 |**OPT-PC01**|**Prefix Caching**|**optimization**|**99% prefill reduction, 19 tests, scheduler integration (3 fixes), TTFT/throughput benchmarks, LRU/LFU/FIFO eviction, block sharing**|
@@ -89,13 +91,13 @@
 |Development|1|3|33%|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
-|Nexus|3|10|30%|
-|**Total**|**34**|**54**|**63%**|
+|Nexus|4|10|40%|
+|**Total**|**35**|**54**|**65%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **NEXUS-004** Migrate Symbolic AI to trinity-nexus/symb/ (unblocked by NEXUS-003)
-2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with completed Symbolic branch
-3. **DEV-003** SWARM-WATCH — live DHT and economy monitor, pairs with SYM-003
+1. **NEXUS-005** Migrate Canvas UI to trinity-nexus/canvas/ (next P1 nexus task)
+2. **NEXUS-006** Create network module (DHT + P2P) in trinity-nexus/network/
+3. **DEV-002** KG-INSIGHT — local triple inspection
 
 ---
 φ² + 1/φ² = 3 | TRINITY
