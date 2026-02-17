@@ -9,12 +9,12 @@
 | ID | Name | Branch | Progress | Gain |
 |----|------|--------|----------|------|
 |OPT-PC01|Prefix Caching|optimization|2/5|99% prefill reduction for cached prompts|
+|**MATH-003**|**VSA Benchmarks vs Competitors**|**math**|**4/5**|**Quantified advantage vs float32: throughput, memory, recall, convergence**|
+|**MATH-004**|**Multilingual Math Codegen**|**math**|**3/5**|**Pipeline wired: 9 language targets via vibee_gen.zig → lang_generators.zig**|
 
 ## 🚀 Available Nodes
 | ID | Name | Branch | Complexity | Gain |
 |----|------|--------|------------|------|
-|MATH-003|VSA Benchmarks vs Competitors|math|3/5|Quantified advantage vs float32|
-|MATH-004|Multilingual Math Codegen|math|3/5|Math proofs in Python/Rust/Go|
 |INF-003|KV Cache Optimization|inference|3/5|+50% inference speed|
 |INF-004|Batch Processing|inference|4/5|+300% throughput|
 |DEP-003|Auto-Scaling|deployment|3/5|Handle traffic spikes|
@@ -27,8 +27,9 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
-|**MATH-001**|**VSA Math Proofs**|**math**|**10 proofs: bind/unbind inverse, commutativity, associativity, bundle convergence, orthogonality**|
+|**MATH-001**|**VSA Math Proofs v2**|**math**|**12 proofs: bind inverse, commutativity, associativity, self-identity, bundle convergence, orthogonality, permute cycle, similarity bounds, trinity identity, bundle2, permute inverse, info density**|
 |**MATH-002**|**Bundle N Optimization**|**math**|**O(N*D) accumulator, bundleN API, 6 tests**|
+|**CORE-002b**|**Multilingual Codegen Fix**|**core**|**Fixed type errors in generated multilingual engine, enum variant support in codegen**|
 |CORE-001|VIBEE Parser v2|core|+20% spec parsing speed|
 |CORE-002|Multi-Language Codegen|core|+42 target languages|
 |CORE-003|Bytecode VM|core|+500% execution speed vs interpreter|
@@ -56,7 +57,7 @@
 |HW-001|GPU Backend (CUDA)|hardware|OPT-001 ❌|
 |HW-002|Metal Backend (Apple)|hardware|OPT-001 ❌|
 |HW-003|FPGA Acceleration|hardware|HW-001 ❌|
-|MATH-005|Large-Scale Analogies (1000+)|math|MATH-003 ❌|
+|MATH-005|Large-Scale Analogies (1000+)|math|MATH-003 🔄|
 
 ## 📊 Branch Progress
 | Branch | Done | Total | % |
@@ -66,13 +67,13 @@
 |Deployment|2|4|50%|
 |Optimization|10|14|71%|
 |Hardware|0|3|0%|
-|**Math**|**2**|**5**|**40%**|
-|**Total**|**19+1ip**|**35**|**54%**|
+|**Math**|**2+2ip**|**5**|**40%→80%**|
+|**Total**|**19+3ip**|**35**|**54%→63%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **MATH-003** VSA Benchmarks vs Competitors — quantify advantage over float32, unlock MATH-005
-2. **OPT-001** SIMD Vectorization — unlocks 3 nodes (OPT-004, HW-001, HW-002)
-3. **MATH-004** Multilingual Math Codegen — extend proofs to Python/Rust/Go targets
+1. **OPT-001** SIMD Vectorization — unlocks 3 nodes (OPT-004, HW-001, HW-002), highest unlock count
+2. **MATH-004** Multilingual Math Codegen — extend proofs to Python/Rust/Go targets
+3. **INF-003** KV Cache Optimization — +50% inference speed, unlocks INF-005
 
 ---
 φ² + 1/φ² = 3 | TRINITY
