@@ -102,9 +102,9 @@ pub fn serializeTriple(
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Compute deterministic 32-byte hash for a triple (used as DHT key)
-/// Uses FNV-1a spread across 32 bytes for XOR-distance compatibility
+/// Uses Wyhash spread across 32 bytes for XOR-distance compatibility
 pub fn tripleHash(subject: []const u8, predicate: []const u8, object: []const u8) [32]u8 {
-    var hasher = std.hash.Fnv1a_64.init();
+    var hasher = std.hash.Wyhash.init(0);
     hasher.update(subject);
     hasher.update("|");
     hasher.update(predicate);
@@ -113,7 +113,7 @@ pub fn tripleHash(subject: []const u8, predicate: []const u8, object: []const u8
     const h1 = hasher.final();
 
     // Second hash with different seed for more bits
-    var hasher2 = std.hash.Fnv1a_64.init();
+    var hasher2 = std.hash.Wyhash.init(1);
     hasher2.update(object);
     hasher2.update("~");
     hasher2.update(subject);
@@ -122,7 +122,7 @@ pub fn tripleHash(subject: []const u8, predicate: []const u8, object: []const u8
     const h2 = hasher2.final();
 
     // Third hash
-    var hasher3 = std.hash.Fnv1a_64.init();
+    var hasher3 = std.hash.Wyhash.init(2);
     hasher3.update(predicate);
     hasher3.update("#");
     hasher3.update(object);
@@ -131,7 +131,7 @@ pub fn tripleHash(subject: []const u8, predicate: []const u8, object: []const u8
     const h3 = hasher3.final();
 
     // Fourth hash
-    var hasher4 = std.hash.Fnv1a_64.init();
+    var hasher4 = std.hash.Wyhash.init(3);
     hasher4.update(subject);
     hasher4.update(predicate);
     hasher4.update(object);
@@ -358,23 +358,23 @@ pub fn createChallenge(
     triple_hash: [32]u8,
 ) ProofOfKnowledge {
     // Generate challenge ID from inputs
-    var hasher = std.hash.Fnv1a_64.init();
+    var hasher = std.hash.Wyhash.init(10);
     hasher.update(&challenger_id);
     hasher.update(&target_id);
     hasher.update(&triple_hash);
     const h1 = hasher.final();
 
-    var hasher2 = std.hash.Fnv1a_64.init();
+    var hasher2 = std.hash.Wyhash.init(11);
     hasher2.update(&triple_hash);
     hasher2.update(&challenger_id);
     const h2 = hasher2.final();
 
-    var hasher3 = std.hash.Fnv1a_64.init();
+    var hasher3 = std.hash.Wyhash.init(12);
     hasher3.update(&target_id);
     hasher3.update(&triple_hash);
     const h3 = hasher3.final();
 
-    var hasher4 = std.hash.Fnv1a_64.init();
+    var hasher4 = std.hash.Wyhash.init(13);
     hasher4.update(&challenger_id);
     hasher4.update(&target_id);
     const h4 = hasher4.final();
