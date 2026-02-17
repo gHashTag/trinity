@@ -185,7 +185,7 @@ test "bundleN_function_api — convenience function works" {
         v.* = vsa.randomVector(dim, 555 + i);
     }
 
-    var bundled = bundleN(&vectors, dim);
+    const bundled = bundleN(&vectors, dim);
 
     // Should produce a valid vector
     try std.testing.expectEqual(dim, bundled.trit_len);
@@ -197,7 +197,7 @@ test "bundleN_empty — zero count produces zero vector" {
     var acc = BundleAccumulator.init(dim);
     try std.testing.expectEqual(@as(usize, 0), acc.count);
 
-    var result = acc.finalize();
+    const result = acc.finalize();
     // All zeros
     for (0..dim) |i| {
         try std.testing.expectEqual(@as(i8, 0), result.unpacked_cache[i]);
@@ -210,7 +210,7 @@ test "bundleN_single — single vector returns itself" {
 
     var acc = BundleAccumulator.init(dim);
     acc.accumulate(&v);
-    var result = acc.finalize();
+    const result = acc.finalize();
 
     // Single vector bundle should be identical to input
     for (0..dim) |i| {
