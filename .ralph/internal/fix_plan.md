@@ -179,10 +179,11 @@
 > **Tech Tree:** SYM branch (SYM-002..005), transition to Symbolic AGI maturity.
 > **Golden Chain:** Level 11.39 → 11.40 transition. Cycle 40: Decentralized Knowledge Collector Roadmap.
 
-- [ ] [P1] Stage 1: LLM → Triples Extractor
+- [x] [P1] Stage 1: LLM → Triples Extractor
   - Acceptance: `igla_hybrid_chat.zig` implements auto-extraction, 90% accuracy on sample set.
   - Files: `src/igla_hybrid_chat.zig`, `src/vibeec/triples_parser.zig`
   - Tech Tree: SYM-002
+  - DONE: triples_parser.zig (6 SVO patterns, zero-alloc, confidence scoring, 11 tests pass, build.zig wired)
 
 - [ ] [P1] Stage 2: Decentralized KG Sync + $TRI Rewards
   - Acceptance: KG shard sync in swarm (Kademlia DHT) works, $TRI proof-of-contribution live.
