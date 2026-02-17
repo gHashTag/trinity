@@ -25,6 +25,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**NEXUS-006**|**Network Module Migration**|**nexus**|**60 files migrated to trinity-nexus/network/src/, 37534 lines, P2P/DHT/sharding/consensus/repair/crypto/monitoring, 52 pub exports, 96.2% self-contained, 8 deferred**|
+|----|------|--------|------|
 |**NEXUS-005**|**Canvas UI Migration**|**nexus**|**26 files migrated to trinity-nexus/canvas/src/, 20948 lines, Photon engine (6 files), Trinity Canvas subsystem (10 files), UI framework (6 files), Node GUI (2 files, ui→node_ui rename), 16 pub exports, 5 deferred**|
 |----|------|--------|------|
 |**NEXUS-004**|**Symbolic AI Migration**|**nexus**|**29 files migrated to trinity-nexus/symb/src/, 15650 lines, KG pipeline (SYM-001-005) + TVC subsystem (20 files), 15 pub exports**|
@@ -93,12 +95,12 @@
 |Development|1|3|33%|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
-|Nexus|5|10|50%|
-|**Total**|**36**|**54**|**67%**|
+|Nexus|6|10|60%|
+|**Total**|**37**|**54**|**69%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **NEXUS-006** Create network module (DHT + P2P) in trinity-nexus/network/
-2. **NEXUS-007** Create tools module in trinity-nexus/tools/
+1. **NEXUS-007** Create tools module in trinity-nexus/tools/
+2. **NEXUS-008** Wire Zig workspace and configure internal dependencies
 3. **DEV-002** KG-INSIGHT — local triple inspection
 
 ---
