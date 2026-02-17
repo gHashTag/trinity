@@ -1,0 +1,7 @@
+.{
+    .name = .trinity_tools,
+    .version = "0.1.0",
+    .dependencies = .{},
+    .paths = .{""},
+    .fingerprint = 0x29d57da07db5901f,
+}
