@@ -179,6 +179,38 @@
 
 ---
 
+## Current Sprint — Trinity Canvas: Ralph Monitor Integration (Level 11.42)
+
+> **Goal:** Visual autonomous dev loop control via 27-petal Trinity Canvas UI
+> **Tech Tree:** VIS-001 (Canvas visualization integration)
+> **Golden Chain:** Level 11.41 → 11.42 transition. Cycle 42: Canvas Monitor Panel.
+
+- [ ] [P1] RALPH-CANVAS-001: Add Ralph Monitor panel to Trinity Canvas
+  - Acceptance: Shift+9 or petal click opens Ralph Monitor panel showing: loop_count, calls/hour, status, active task from fix_plan.md, live ⚡ stream from live.log. Panel persists across mode switches.
+  - Files: `src/vsa/photon_trinity_canvas.zig` (WaveMode.ralph, renderRalphPanel, pollRalphStatus, parseLiveLog, live log buffer)
+  - Tech Tree: VIS-001
+  - Blocked-by: (none)
+
+- [ ] [P2] RALPH-CANVAS-002: Bind Ralph Monitor to Block 2 petal in idle logo
+  - Acceptance: Click on Block 2 (lower-left petal) toggles Ralph Monitor panel. Visual feedback: petal highlight on hover, pulse when Ralph active.
+  - Files: `src/vsa/photon_trinity_canvas.zig` (LogoAnimation.applyMouse integration, petal 2 click handler)
+  - Tech Tree: VIS-001
+  - Blocked-by: RALPH-CANVAS-001
+
+- [ ] [P2] RALPH-CANVAS-003: Add Ralph control buttons (Start/Stop/Restart)
+  - Acceptance: Panel has START/STOP/RESTART buttons. START runs `ralph --monitor`, STOP sends SIGTERM, RESTART does stop+start. Status updates live.
+  - Files: `src/vsa/photon_trinity_canvas.zig` (ralphControl function, process spawning via std.process.Child)
+  - Tech Tree: VIS-001
+  - Blocked-by: RALPH-CANVAS-001
+
+- [ ] [P3] RALPH-CANVAS-004: Color-coded circuit breaker visualization
+  - Acceptance: Circuit breaker states (normal/degraded/circuit_open) shown with colors: green/yellow/red. Alert banner when circuit is open.
+  - Files: `src/vsa/photon_trinity_canvas.zig` (parseCircuitBreakerState, circuitBreakerColor)
+  - Tech Tree: VIS-001
+  - Blocked-by: RALPH-CANVAS-001
+
+---
+
 ## Blocked
 
 (none)

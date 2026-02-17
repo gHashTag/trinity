@@ -279,3 +279,38 @@ export async function compileCode(code: string, language: string): Promise<Compi
     return { success: false, language, output: 'Backend offline. Start: zig build tri -- serve --chat --port 8080', errors: ['connection_failed'] };
   }
 }
+
+// ─── v2.8: Ralph Autonomous Monitor API ──────────────────────────────────────
+
+export interface RalphLoopStatus {
+  status: string;
+  loop?: number;
+  total_calls?: number;
+  cycle?: string;
+  goal?: string;
+  last_action?: string;
+  timestamp?: number;
+}
+
+export interface RalphCBStatus {
+  state: string;
+  failure_count: number;
+  last_failure_time?: number;
+  threshold: number;
+}
+
+export interface RalphStatus {
+  loop: RalphLoopStatus;
+  circuit_breaker: RalphCBStatus;
+  logs: string[];
+}
+
+export async function fetchRalphStatus(): Promise<RalphStatus | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/ralph-status`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}

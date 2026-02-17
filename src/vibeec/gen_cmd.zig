@@ -2,6 +2,7 @@ const std = @import("std");
 const vibee_parser = @import("vibee_parser.zig");
 const zig_codegen = @import("zig_codegen.zig");
 const verilog_codegen = @import("verilog_codegen.zig");
+const lang_generators = @import("lang_generators.zig");
 const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
 
@@ -156,6 +157,24 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
 
     const ext = if (std.mem.eql(u8, language, "verilog") or std.mem.eql(u8, language, "varlog"))
         "v"
+    else if (std.mem.eql(u8, language, "python"))
+        "py"
+    else if (std.mem.eql(u8, language, "typescript"))
+        "ts"
+    else if (std.mem.eql(u8, language, "rust"))
+        "rs"
+    else if (std.mem.eql(u8, language, "go"))
+        "go"
+    else if (std.mem.eql(u8, language, "java"))
+        "java"
+    else if (std.mem.eql(u8, language, "swift"))
+        "swift"
+    else if (std.mem.eql(u8, language, "kotlin"))
+        "kt"
+    else if (std.mem.eql(u8, language, "c"))
+        "h"
+    else if (std.mem.eql(u8, language, "sql"))
+        "sql"
     else
         "zig";
 
@@ -191,11 +210,67 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
         const output = try verilog_codegen.generateVerilog(allocator, &spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
+    } else if (isMultiLangTarget(spec.language)) {
+        const output = try generateMultiLang(allocator, &spec);
+        defer allocator.free(output);
+        try out_file.writeAll(output);
     } else {
         var codegen = zig_codegen.ZigCodeGen.init(allocator);
-        // defer codegen.deinit();
         const output = try codegen.generate(&spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
     }
+}
+
+fn isMultiLangTarget(language: []const u8) bool {
+    const targets = [_][]const u8{
+        "python", "typescript", "rust",   "go",
+        "java",   "swift",      "kotlin", "c",
+        "sql",
+    };
+    for (targets) |t| {
+        if (std.mem.eql(u8, language, t)) return true;
+    }
+    return false;
+}
+
+fn generateMultiLang(allocator: std.mem.Allocator, spec: *vibee_parser.VibeeSpec) ![]const u8 {
+    var types_buf = try allocator.alloc(lang_generators.TypeDef, spec.types.items.len);
+    defer allocator.free(types_buf);
+
+    var fields_bufs = try allocator.alloc([]const lang_generators.Field, spec.types.items.len);
+    defer {
+        for (fields_bufs) |fb| allocator.free(fb);
+        allocator.free(fields_bufs);
+    }
+
+    for (spec.types.items, 0..) |t, i| {
+        var fields = try allocator.alloc(lang_generators.Field, t.fields.items.len);
+        for (t.fields.items, 0..) |f, j| {
+            fields[j] = .{ .name = f.name, .type_name = f.type_name };
+        }
+        fields_bufs[i] = fields;
+        types_buf[i] = .{ .name = t.name, .fields = fields };
+    }
+
+    var behaviors_buf = try allocator.alloc(lang_generators.Behavior, spec.behaviors.items.len);
+    defer allocator.free(behaviors_buf);
+
+    for (spec.behaviors.items, 0..) |b, i| {
+        behaviors_buf[i] = .{
+            .name = b.name,
+            .given = b.given,
+            .when = b.when,
+            .then = b.then,
+        };
+    }
+
+    const parsed = lang_generators.ParsedSpec{
+        .name = spec.name,
+        .version = spec.version,
+        .types = types_buf,
+        .behaviors = behaviors_buf,
+    };
+
+    return lang_generators.generateForLanguage(allocator, parsed, spec.language);
 }
