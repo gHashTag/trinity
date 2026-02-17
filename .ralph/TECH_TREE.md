@@ -9,25 +9,23 @@
 | ID | Name | Branch | Progress | Gain |
 |----|------|--------|----------|------|
 |OPT-PC01|Prefix Caching|optimization|2/5|99% prefill reduction for cached prompts|
+|DEV-001|TRI-TRACE (Symbolic)|development|2/5|Real-time reasoning path trace|
 
 ## 🚀 Available Nodes
 | ID | Name | Branch | Complexity | Gain |
 |----|------|--------|------------|------|
-|INF-003|KV Cache Optimization|inference|3/5|+50% inference speed|
-|INF-004|Batch Processing|inference|4/5|+300% throughput|
-|DEP-003|Auto-Scaling|deployment|3/5|Handle traffic spikes|
-|OPT-002|Memory Pool Allocator|optimization|3/5|-30% memory usage|
-|OPT-004|Flash Attention|optimization|5/5|+200% attention speed|
-|OPT-005|Quantization Engine|optimization|4/5|Support Q4, Q5, Q6 formats|
-|OPT-CP01|Chunked Prefill|optimization|3/5|-50% TTFT latency|
 |**MATH-005**|**Large-Scale Analogies (1000+)**|**math**|**4/5**|**Scalable analogy reasoning with VSA**|
-|HW-001|GPU Backend (CUDA)|hardware|5/5|+1000% throughput|
-|HW-002|Metal Backend (Apple)|hardware|4/5|Native Apple GPU acceleration|
-|SYM-001|SOTA Tech Report Pivot|symbolic|2/5|Structured SOTA tech from chat + agent integration|
+|SYM-002|LLM Triples Extractor|symbolic|3/5|Auto-extraction from LLM response|
+|SYM-003|Decentralized KG Sync|symbolic|4/5|Kademlia DHT + $TRI rewards|
+|SYM-004|IGLA + KG Full Pipeline|symbolic|3/5|Reuse symbolic knowledge in chat|
+|SYM-005|**TRI SOTA MVP**|**symbolic**|**5/5**|**Decentralized Knowledge Collector Live**|
+|DEV-002|KG-INSIGHT (JSON)|development|3/5|Local triple inspection suite|
+|DEV-003|SWARM-WATCH (DHT)|development|4/5|Live DHT & economy monitor|
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**SYM-001**|**SOTA Tech Report Pivot**|**symbolic**|**10/10 metrics validated, report demo, 3 vibee specs**|
 |**OPT-001**|**SIMD Vectorization**|**optimization**|**bundle3/vectorNorm/countNonZero SIMD, bundleN accumulator, 3-16x speedups**|
 |**MATH-003**|**VSA Benchmarks vs Competitors**|**math**|**7-section benchmark suite: throughput, bundleN, memory (20x vs f32), recall curves, convergence, proof timing, comparison table**|
 |**MATH-004**|**Multilingual Math Codegen**|**math**|**10 VSA proofs in 5 languages (Zig, Python, TypeScript, Rust, Go) from single spec. 9 generators wired, array syntax [zig, python, ts]**|
@@ -69,15 +67,14 @@
 |Optimization|11|14|79%|
 |Hardware|0|3|0%|
 |**Math**|**4**|**5**|**80%**|
-|Symbolic|0|1|0%|
-|**Total**|**21+1ip**|**36**|**58%→61%**|
+|Development|0|3|0%|
+|Symbolic|1|5|20%|
+|**Total**|**22+1ip**|**43**|**51%→53%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **OPT-001** SIMD Vectorization — unlocks 3 nodes (OPT-004, HW-001, HW-002), highest unlock count
-2. **MATH-005** Large-Scale Analogies — completes Math branch (80%→100%), unlocked by MATH-003
-|HW-001|GPU Backend (CUDA)|hardware|5/5|+1000% throughput|
-|HW-002|Metal Backend (Apple)|hardware|4/5|Native Apple GPU acceleration|
-3. **INF-003** KV Cache Optimization — +50% inference speed, unlocks INF-005
+1. **SYM-002** LLM Triples Extractor — priority for Cycle 40, builds KG collector
+2. **DEV-001** TRI-TRACE — improves project observability, priority for Cycle 40
+3. **MATH-005** Large-Scale Analogies — completes Math branch (80%→30% memory reduction), bundleN from OPT-001 enables this
 
 ---
 φ² + 1/φ² = 3 | TRINITY
