@@ -16,9 +16,78 @@
 
 ---
 
+## 🏛️ CRITICAL PRIORITY: Trinity Nexus Migration (Level 12.0)
+
+> **STATUS:** HIGHEST PRIORITY — Complete architecture refactoring before any new features
+> **Goal:** Modular ecosystem with Ternary VM + VIBEE Compiler + Symbolic AI + Decentralization
+> **Tech Tree:** NEXUS-001 (Monolithic → Modular transition)
+> **Golden Chain:** Level 11.42 → 12.0 transition. Cycle 0: Trinity Nexus Foundation.
+
+- [ ] [P1] NEXUS-001: Create Trinity Nexus repository structure
+  - Acceptance: `trinity-nexus/` created with modular layout (core/, lang/, symb/, network/, canvas/, tools/, docs/, .trinity/). Each module has zig.mod, tests/ directory, and src/ folder. Workspace config `.trinity/workspace.toml` wired.
+  - Files: `trinity-nexus/` (all directories), `.trinity/workspace.toml`, `trinity-nexus/build.nexus.zig`
+  - Tech Tree: NEXUS-001
+  - Blocked-by: (none)
+
+- [ ] [P1] NEXUS-002: Migrate core VM from trinity/src/vsa/ to trinity-nexus/core/
+  - Acceptance: All VM code (vm.zig, mem.zig, tryte.zig, isa.zig, builder.zig) moved to `trinity-nexus/core/src/`. `trinity-core` package created with zig.mod, @import paths updated, tests pass.
+  - Files: `trinity-nexus/core/src/` (5 files), `trinity-nexus/core/zig.mod`, `trinity-nexus/core/tests/`
+  - Tech Tree: NEXUS-002
+  - Blocked-by: NEXUS-001
+
+- [ ] [P1] NEXUS-003: Migrate VIBEE compiler to trinity-nexus/lang/
+  - Acceptance: All lang code (parser.zig, ast.zig, codegen.zig, multilang.zig) moved to `trinity-nexus/lang/src/`. `trinity-lang` package created with zig.mod, @trinity/core dependency wired, all tests pass.
+  - Files: `trinity-nexus/lang/src/` (parser, ast, codegen, multilang), `trinity-nexus/lang/zig.mod`, `trinity-nexus/lang/tests/`
+  - Tech Tree: NEXUS-003
+  - Blocked-by: NEXUS-001
+
+- [ ] [P1] NEXUS-004: Migrate Symbolic AI to trinity-nexus/symb/
+  - Acceptance: All symb code (triples.zig, reason.zig, vsa.zig, hybrid.zig, tvc.zig) moved to `trinity-nexus/symb/src/`. `trinity-symb` package created, @trinity/core and @trinity/lang dependencies wired, tests pass.
+  - Files: `trinity-nexus/symb/src/` (6 files), `trinity-nexus/symb/zig.mod`, `trinity-nexus/symb/tests/`
+  - Tech Tree: NEXUS-004
+  - Blocked-by: NEXUS-001, NEXUS-002, NEXUS-003
+
+- [ ] [P1] NEXUS-005: Migrate Canvas UI to trinity-nexus/canvas/
+  - Acceptance: All canvas code (photon.zig, photon_trinity_canvas.zig, panels.zig, ralph.zig, theme.zig) moved to `trinity-nexus/canvas/src/`. `trinity-canvas` package created, @trinity/core dependency wired, 27-petal animation tests pass.
+  - Files: `trinity-nexus/canvas/src/` (5 files), `trinity-nexus/canvas/zig.mod`, `trinity-nexus/canvas/assets/`, `trinity-nexus/canvas/tests/`
+  - Tech Tree: NEXUS-005
+  - Blocked-by: NEXUS-001
+
+- [ ] [P1] NEXUS-006: Create network module (DHT + P2P) in trinity-nexus/network/
+  - Acceptance: Network module created with dht.zig, p2p.zig, consensus.zig, sync.zig. `trinity-network` package with zig.mod, @trinity/core (mem) and @trinity/symb (triples) dependencies, tests pass.
+  - Files: `trinity-nexus/network/src/` (4 files), `trinity-nexus/network/zig.mod`, `trinity-nexus/network/tests/`
+  - Tech Tree: NEXUS-006
+  - Blocked-by: NEXUS-001
+
+- [ ] [P1] NEXUS-007: Create tools module (CLI + DevTools) in trinity-nexus/tools/
+  - Acceptance: Tools module created with build.zig, deploy.zig, bench.zig, format.zig, scripts/. `trinity-tools` package with zig.mod, workspace build script `build.nexus.zig`, all tool tests pass.
+  - Files: `trinity-nexus/tools/src/` (5 files), `trinity-nexus/tools/zig.mod`, `trinity-nexus/tools/scripts/`, `trinity-nexus/build.nexus.zig`
+  - Tech Tree: NEXUS-007
+  - Blocked-by: NEXUS-001
+
+- [ ] [P1] NEXUS-008: Wire Zig workspace and configure internal dependencies
+  - Acceptance: `.trinity/workspace.toml` configured with all 6 members (core, lang, symb, network, canvas, tools). Each zig.mod wired to internal dependencies (@trinity/core, @trinity/lang, @trinity/symb). `zig build --workspace` compiles all modules.
+  - Files: `.trinity/workspace.toml` (6 workspace members), all zig.mod files
+  - Tech Tree: NEXUS-008
+  - Blocked-by: NEXUS-001, NEXUS-002, NEXUS-003, NEXUS-004, NEXUS-005, NEXUS-006, NEXUS-007
+
+- [ ] [P1] NEXUS-009: Configure user + openclaw in workspace for internal collab
+  - Acceptance: `.trinity/workspace.toml` includes openclaw workspace at `/Users/playra/openclaw`. Ralph and clawd agents can build/test all modules. CI/CD config works with user + openclaw in workspace.
+  - Files: `.trinity/workspace.toml`, `.trinity/config.toml`, `trinity-nexus/.github/workflows/`
+  - Tech Tree: NEXUS-009
+  - Blocked-by: NEXUS-008
+
+- [ ] [P2] NEXUS-010: Write Trinity Nexus Architecture documentation
+  - Acceptance: `docs/ARCHITECTURE.md` created with full module diagram, dependency graph, Zig workspace config guide. README.md updated with Nexus overview.
+  - Files: `docs/ARCHITECTURE.md`, `docs/README.md`, `docs/module-diagrams/`
+  - Tech Tree: NEXUS-010
+  - Blocked-by: NEXUS-008
+
+---
+
 ## 🔥 CRITICAL PRIORITY: Ralph Monitor Integration (Level 11.42)
 
-> **STATUS:** TOP PRIORITY NOW — All other work paused until complete
+> **STATUS:** SECONDARY PRIORITY — Resume after Nexus migration
 > **Goal:** Visual autonomous dev loop control via 27-petal Trinity Canvas UI
 > **Tech Tree:** VIS-001 (Canvas visualization integration)
 > **Golden Chain:** Level 11.41 → 11.42 transition. Cycle 42: Canvas Monitor Panel.
@@ -185,10 +254,11 @@
   - Tech Tree: SYM-002
   - DONE: triples_parser.zig (6 SVO patterns, zero-alloc, confidence scoring, 11 tests pass, build.zig wired)
 
-- [ ] [P1] Stage 2: Decentralized KG Sync + $TRI Rewards
+- [x] [P1] Stage 2: Decentralized KG Sync + $TRI Rewards
   - Acceptance: KG shard sync in swarm (Kademlia DHT) works, $TRI proof-of-contribution live.
   - Files: `src/swarm/kg_sync.zig`, `src/economy/rewards.zig`
   - Tech Tree: SYM-003
+  - DONE: KgTripleDHT (Kademlia XOR, k=3), 268B wire format, ProofOfKnowledge, KgRewardCalculator 0.0002 TRI/triple, 12 tests
 
 - [x] [P1] Stage 3: IGLA + KG Full Pipeline + Query CLI
   - Acceptance: Pipeline: Question -> LLM -> KG -> Reuse. `zig build query --` implements reasoning trace.
