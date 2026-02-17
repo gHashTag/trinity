@@ -16,7 +16,6 @@
 | ID | Name | Branch | Complexity | Gain |
 |----|------|--------|------------|------|
 
-|SYM-002|LLM Triples Extractor|symbolic|3/5|Auto-extraction from LLM response|
 |SYM-003|Decentralized KG Sync|symbolic|4/5|Kademlia DHT + $TRI rewards|
 |SYM-004|IGLA + KG Full Pipeline|symbolic|3/5|Reuse symbolic knowledge in chat|
 |SYM-005|**TRI SOTA MVP**|**symbolic**|**5/5**|**Decentralized Knowledge Collector Live**|
@@ -25,6 +24,8 @@
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**SYM-002**|**LLM Triples Extractor**|**symbolic**|**6 SVO patterns, zero-alloc, confidence scoring, 11 tests, build.zig wired**|
 |----|------|--------|------|
 |**VIS-001**|**Ralph Canvas Monitor**|**visualization**|**Fullscreen Ralph panel: WaveMode.ralph, Shift+9, Block 2 petal click, START/STOP/RESTART buttons, tri-state circuit breaker (green/yellow/red), alert banners, live log display**|
 |----|------|--------|------|
@@ -72,14 +73,14 @@
 |Hardware|0|3|0%|
 |**Math**|**5**|**5**|**100%**|
 |Development|1|3|33%|
-|Symbolic|1|5|20%|
+|Symbolic|2|5|40%|
 |Visualization|1|1|100%|
-|**Total**|**26**|**44**|**59%→57%**|
+|**Total**|**27**|**44**|**61%→57%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **SYM-002** LLM Triples Extractor — priority for Cycle 40, builds KG collector
-2. **VIS-001** Ralph Canvas Monitor — complete native file reading + petal click binding
-3. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002
+1. **SYM-004** IGLA + KG Full Pipeline — priority for Cycle 40, builds KG collector
+2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002
+3. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
 
 ---
 φ² + 1/φ² = 3 | TRINITY
