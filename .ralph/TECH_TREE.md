@@ -75,10 +75,10 @@
 |Development|1|3|33%|
 |Symbolic|2|5|40%|
 |Visualization|1|1|100%|
-|**Total**|**27**|**44**|**61%→57%**|
+|**Total**|**27**|**44**|**61%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **SYM-004** IGLA + KG Full Pipeline — priority for Cycle 40, builds KG collector
+1. **SYM-004** IGLA + KG Full Pipeline — wire triples into hybrid chat pipeline, builds KG collector
 2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002
 3. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
 
