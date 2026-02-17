@@ -232,9 +232,14 @@ pub const ChatKnowledgeGraph = struct {
     /// Add a fact triple: (subject, relation, object)
     /// Stores bind(subject, object) bundled into per-relation memory
     pub fn addFact(self: *Self, subject: []const u8, relation: []const u8, object: []const u8) !void {
-        const subj_hv = try self.entity_codebook.encode(subject);
+        // Encode all symbols first (may cause HashMap resize), then fetch pointers
+        _ = try self.entity_codebook.encode(subject);
         _ = try self.relation_codebook.encode(relation);
-        const obj_hv = try self.entity_codebook.encode(object);
+        _ = try self.entity_codebook.encode(object);
+
+        // Now all entries exist — safe to get pointers (no more resizes)
+        const subj_hv = self.entity_codebook.entries.getPtr(subject).?;
+        const obj_hv = self.entity_codebook.entries.getPtr(object).?;
 
         // Create pair = bind(subject, object)
         var pair_hv = try subj_hv.bind(obj_hv, self.allocator);
@@ -303,7 +308,8 @@ pub const ChatKnowledgeGraph = struct {
 
     /// Natural language query parser + router
     pub fn queryNaturalLanguage(self: *Self, query: []const u8) !?KGQueryResult {
-        const parsed = parseQuery(query) orelse return null;
+        var nl_lower_buf: [512]u8 = undefined;
+        const parsed = parseQueryBuf(query, &nl_lower_buf) orelse return null;
 
         // Try direct single-hop first
         if (try self.queryTriple(parsed.subject, parsed.relation)) |result| {
@@ -355,8 +361,15 @@ fn toLowerBuf(input: []const u8, buf: []u8) []const u8 {
 }
 
 fn parseQuery(query: []const u8) ?ParsedQuery {
+    // WARNING: returned subject slice points into local stack buffer.
+    // Only safe if result is consumed before buffer goes out of scope.
+    // Prefer parseQueryBuf() which uses caller-owned buffer.
     var lower_buf: [512]u8 = undefined;
-    const lower = toLowerBuf(query, &lower_buf);
+    return parseQueryBuf(query, &lower_buf);
+}
+
+fn parseQueryBuf(query: []const u8, lower_buf: *[512]u8) ?ParsedQuery {
+    const lower = toLowerBuf(query, lower_buf);
 
     // All entities extracted from lowercase buffer to match dataset keys
     // "capital of X"
