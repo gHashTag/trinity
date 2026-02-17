@@ -1538,6 +1538,28 @@ pub fn build(b: *std.Build) void {
     kg_sync_step.dependOn(&run_kg_sync.step);
     test_step.dependOn(&run_kg_sync.step);
 
+    // SYM-005 TRI SOTA MVP Demo (Decentralized Knowledge Collector)
+    const kg_sync_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/kg_sync.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const sym_005_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/sym_005_demo.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "triples_parser", .module = triples_parser_mod },
+                .{ .name = "kg_sync", .module = kg_sync_mod },
+            },
+        }),
+    });
+    const run_sym_005 = b.addRunArtifact(sym_005_tests);
+    const sym_005_step = b.step("test-sym-005", "Test SYM-005 TRI SOTA MVP (full symbolic pipeline)");
+    sym_005_step.dependOn(&run_sym_005.step);
+    test_step.dependOn(&run_sym_005.step);
+
     // VSA Math Benchmark executable (MATH-003)
     // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence
     const bundle_opt_mod = b.createModule(.{
