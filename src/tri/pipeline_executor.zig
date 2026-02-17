@@ -561,8 +561,9 @@ test "PipelineExecutor with TVC" {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var corpus = TVCCorpus.init();
-    var gate = TVCGate.init(&corpus);
+    const corpus = try TVCCorpus.initHeap(allocator);
+    defer corpus.deinitHeap(allocator);
+    var gate = TVCGate.init(corpus);
 
     var executor = PipelineExecutor.initWithTVC(allocator, 1, "test task", &corpus, &gate);
     defer executor.deinit();

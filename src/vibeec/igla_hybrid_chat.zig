@@ -256,6 +256,7 @@ pub const ChatTool = enum {
     FileList,
     ZigBuild,
     ZigTest,
+    Math,
 
     pub fn getName(self: ChatTool) []const u8 {
         return switch (self) {
@@ -266,6 +267,7 @@ pub const ChatTool = enum {
             .FileList => "file_list",
             .ZigBuild => "zig_build",
             .ZigTest => "zig_test",
+            .Math => "math",
         };
     }
 
@@ -610,6 +612,20 @@ pub const IglaHybridChat = struct {
     // v2.0: Last routing decision (for wave state)
     last_routing: RoutingDecision,
 
+    // v2.6: Query log ring buffer for diagnostics
+    query_log: [64]QueryLogEntry = undefined,
+    query_log_count: u16 = 0,
+    query_log_idx: u16 = 0,
+    error_fallbacks: u64 = 0,
+
+    pub const QueryLogEntry = struct {
+        query: [256]u8 = undefined,
+        query_len: u16 = 0,
+        source: HybridResponse.Source = .Error,
+        confidence: f32 = 0,
+        latency_us: u64 = 0,
+    };
+
     const Self = @This();
 
     /// Initialize hybrid chat (LLM loaded lazily on first fallback)
@@ -684,6 +700,24 @@ pub const IglaHybridChat = struct {
         std.debug.print("[Hybrid] KG loaded: {d} facts\n", .{kgraph.getStats().num_facts});
     }
 
+    // v2.6: Log query to ring buffer for diagnostics
+    fn logQuery(self: *Self, query: []const u8, source: HybridResponse.Source, confidence: f32, latency_us: u64) void {
+        const idx = self.query_log_idx;
+        const qlen: u16 = @intCast(@min(query.len, 256));
+        @memcpy(self.query_log[idx].query[0..qlen], query[0..qlen]);
+        self.query_log[idx].query_len = qlen;
+        self.query_log[idx].source = source;
+        self.query_log[idx].confidence = confidence;
+        self.query_log[idx].latency_us = latency_us;
+        self.query_log_idx = (self.query_log_idx + 1) % 64;
+        if (self.query_log_count < 64) self.query_log_count += 1;
+    }
+
+    /// Get recent query log entries (newest first)
+    pub fn getQueryLog(self: *const Self) []const QueryLogEntry {
+        return self.query_log[0..self.query_log_count];
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     // MAIN RESPOND — 3-Level Cache
     // ═══════════════════════════════════════════════════════════════════════════
@@ -712,6 +746,7 @@ pub const IglaHybridChat = struct {
                     self.context.addMessage(.Assistant, tool_response);
                 }
 
+                self.logQuery(query, .Tool, 1.0, elapsed);
                 return HybridResponse{
                     .response = tool_response,
                     .source = .Tool,
@@ -836,11 +871,18 @@ pub const IglaHybridChat = struct {
         self.llm_calls += 1;
         const llm_result = self.llmCascade(query) catch {
             const elapsed = @as(u64, @intCast(std.time.microTimestamp() - start));
+            self.error_fallbacks += 1;
+            const lang = local_chat.detectLanguage(query);
+            const fallback_msg = if (lang == .Russian)
+                "Без LLM-провайдера могу: математику (2+2, 5*3), время, дату, столицы стран (столица Франции?), приветствия. Настройте GROQ_API_KEY или ANTHROPIC_API_KEY для полных ответов."
+            else
+                "Without LLM I can do: math (2+2, 5*3), time, date, capitals (capital of France?), greetings. Set GROQ_API_KEY or ANTHROPIC_API_KEY for full answers.";
+            self.logQuery(query, .Error, 0.5, elapsed);
             return HybridResponse{
-                .response = symbolic_result.response,
+                .response = fallback_msg,
                 .source = .Error,
-                .language = symbolic_result.language,
-                .confidence = symbolic_result.confidence * 0.3,
+                .language = lang,
+                .confidence = 0.5,
                 .latency_us = elapsed,
             };
         };
@@ -1344,13 +1386,234 @@ pub const IglaHybridChat = struct {
             std.mem.indexOf(u8, q, "run test") != null)
             return .ZigTest;
 
+        // Math patterns: digits with arithmetic operators
+        if (std.mem.indexOf(u8, q, "calculate") != null or
+            std.mem.indexOf(u8, q, "compute") != null or
+            std.mem.indexOf(u8, q, "evaluate") != null)
+            return .Math;
+        // Russian math keywords
+        if (q.len >= 12 and std.mem.indexOf(u8, q, "\xd0\xbf\xd0\xbe\xd1\x81\xd1\x87\xd0\xb8\xd1\x82\xd0\xb0\xd0\xb9") != null) // посчитай
+            return .Math;
+        if (q.len >= 14 and std.mem.indexOf(u8, q, "\xd1\x81\xd0\xba\xd0\xbe\xd0\xbb\xd1\x8c\xd0\xba\xd0\xbe") != null) // сколько
+            return .Math;
+        // Expression detection: digit + operator + digit
+        if (containsMathExpression(q))
+            return .Math;
+
         return null;
     }
 
+    /// Check if string contains a math expression (digit operator digit)
+    fn containsMathExpression(q: []const u8) bool {
+        // Need at least "N+N" = 3 chars
+        if (q.len < 3) return false;
+        var has_digit = false;
+        var has_op = false;
+        var digit_before_op = false;
+        var digit_after_op = false;
+        for (q) |c| {
+            if (c >= '0' and c <= '9') {
+                has_digit = true;
+                if (has_op) digit_after_op = true;
+            }
+            if (c == '+' or c == '*' or c == '/' or c == '^') {
+                if (has_digit) digit_before_op = true;
+                has_op = true;
+            }
+            // '-' is tricky (could be negative), only count after a digit
+            if (c == '-' and has_digit) {
+                digit_before_op = true;
+                has_op = true;
+            }
+        }
+        return digit_before_op and digit_after_op;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // v2.6: MATH EXPRESSION EVALUATOR
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Static buffer for math result string
+    var math_result_buf: [256]u8 = undefined;
+
+    /// Extract math expression from query text
+    fn extractMathExpr(query: []const u8) []const u8 {
+        var lower: [256]u8 = undefined;
+        const qlen = @min(query.len, lower.len);
+        for (query[0..qlen], 0..) |c, i| {
+            lower[i] = std.ascii.toLower(c);
+        }
+        const q = lower[0..qlen];
+
+        // Strip common prefixes
+        const prefixes = [_][]const u8{
+            "what is ", "what's ", "calculate ", "compute ", "evaluate ", "solve ",
+            "how much is ", "result of ",
+        };
+        for (prefixes) |prefix| {
+            if (q.len > prefix.len and std.mem.startsWith(u8, q, prefix)) {
+                return query[prefix.len..];
+            }
+        }
+        return query;
+    }
+
+    /// Parse and evaluate a simple math expression
+    /// Supports: +, -, *, /, ^, parentheses, integers and decimals
+    fn evaluateMath(query: []const u8) []const u8 {
+        const expr = extractMathExpr(query);
+
+        // Tokenize and evaluate
+        var parser = MathParser{ .input = expr, .pos = 0 };
+        const result = parser.parseExpr() catch |err| {
+            const msg: []const u8 = switch (err) {
+                error.DivisionByZero => "Error: division by zero",
+                error.InvalidExpression => "Error: invalid math expression",
+                error.Overflow => "Error: number overflow",
+            };
+            const len = @min(msg.len, math_result_buf.len);
+            @memcpy(math_result_buf[0..len], msg[0..len]);
+            return math_result_buf[0..len];
+        };
+
+        // Format: "expression = result"
+        var fbs = std.io.fixedBufferStream(&math_result_buf);
+        const writer = fbs.writer();
+
+        // Write trimmed expression
+        var trimmed = expr;
+        while (trimmed.len > 0 and trimmed[0] == ' ') trimmed = trimmed[1..];
+        while (trimmed.len > 0 and trimmed[trimmed.len - 1] == ' ') trimmed = trimmed[0 .. trimmed.len - 1];
+
+        writer.writeAll(trimmed) catch {};
+        writer.writeAll(" = ") catch {};
+
+        // Format result
+        if (result == @trunc(result) and @abs(result) < 1e15) {
+            writer.print("{d}", .{@as(i64, @intFromFloat(result))}) catch {};
+        } else {
+            writer.print("{d:.6}", .{result}) catch {};
+        }
+
+        return fbs.getWritten();
+    }
+
+    const MathError = error{ DivisionByZero, InvalidExpression, Overflow };
+
+    const MathParser = struct {
+        input: []const u8,
+        pos: usize,
+
+        fn peek(self: *MathParser) ?u8 {
+            self.skipSpaces();
+            if (self.pos >= self.input.len) return null;
+            return self.input[self.pos];
+        }
+
+        fn advance(self: *MathParser) void {
+            if (self.pos < self.input.len) self.pos += 1;
+        }
+
+        fn skipSpaces(self: *MathParser) void {
+            while (self.pos < self.input.len and self.input[self.pos] == ' ') {
+                self.pos += 1;
+            }
+        }
+
+        fn parseExpr(self: *MathParser) MathError!f64 {
+            var result = try self.parseTerm();
+            while (true) {
+                const c = self.peek() orelse break;
+                if (c == '+') {
+                    self.advance();
+                    result += try self.parseTerm();
+                } else if (c == '-') {
+                    self.advance();
+                    result -= try self.parseTerm();
+                } else break;
+            }
+            return result;
+        }
+
+        fn parseTerm(self: *MathParser) MathError!f64 {
+            var result = try self.parsePower();
+            while (true) {
+                const c = self.peek() orelse break;
+                if (c == '*') {
+                    self.advance();
+                    result *= try self.parsePower();
+                } else if (c == '/') {
+                    self.advance();
+                    const divisor = try self.parsePower();
+                    if (divisor == 0) return error.DivisionByZero;
+                    result /= divisor;
+                } else break;
+            }
+            return result;
+        }
+
+        fn parsePower(self: *MathParser) MathError!f64 {
+            const base = try self.parseAtom();
+            const c = self.peek() orelse return base;
+            if (c == '^') {
+                self.advance();
+                const exp = try self.parsePower(); // right-associative
+                return std.math.pow(f64, base, exp);
+            }
+            return base;
+        }
+
+        fn parseAtom(self: *MathParser) MathError!f64 {
+            self.skipSpaces();
+            if (self.pos >= self.input.len) return error.InvalidExpression;
+
+            // Unary minus
+            if (self.input[self.pos] == '-') {
+                self.advance();
+                return -(try self.parseAtom());
+            }
+
+            // Parentheses
+            if (self.input[self.pos] == '(') {
+                self.advance();
+                const result = try self.parseExpr();
+                self.skipSpaces();
+                if (self.pos < self.input.len and self.input[self.pos] == ')') {
+                    self.advance();
+                }
+                return result;
+            }
+
+            // Number
+            return self.parseNumber();
+        }
+
+        fn parseNumber(self: *MathParser) MathError!f64 {
+            self.skipSpaces();
+            const start = self.pos;
+            var has_dot = false;
+
+            while (self.pos < self.input.len) {
+                const c = self.input[self.pos];
+                if (c >= '0' and c <= '9') {
+                    self.pos += 1;
+                } else if (c == '.' and !has_dot) {
+                    has_dot = true;
+                    self.pos += 1;
+                } else break;
+            }
+
+            if (self.pos == start) return error.InvalidExpression;
+
+            const num_str = self.input[start..self.pos];
+            return std.fmt.parseFloat(f64, num_str) catch return error.InvalidExpression;
+        }
+    };
+
     /// Execute a detected tool and return result string
     fn executeTool(tool: ChatTool, query: []const u8) []const u8 {
-        _ = query;
         return switch (tool) {
+            .Math => evaluateMath(query),
             .Time => blk: {
                 const ts = std.time.timestamp();
                 const secs_in_day: i64 = @mod(ts, 86400);
@@ -1851,7 +2114,7 @@ test "wouldUseSymbolic" {
 test "hybrid init with TVC corpus" {
     const allocator = std.testing.allocator;
     const corpus = try allocator.create(tvc.TVCCorpus);
-    corpus.* = tvc.TVCCorpus.init();
+    corpus.initInPlace();
     defer allocator.destroy(corpus);
 
     var chat = try IglaHybridChat.initWithCorpus(allocator, null, corpus);
@@ -1870,7 +2133,7 @@ test "hybrid init with TVC corpus" {
 test "TVC self-learning flow" {
     const allocator = std.testing.allocator;
     const corpus = try allocator.create(tvc.TVCCorpus);
-    corpus.* = tvc.TVCCorpus.init();
+    corpus.initInPlace();
     defer allocator.destroy(corpus);
 
     // Pre-populate corpus with a cached response

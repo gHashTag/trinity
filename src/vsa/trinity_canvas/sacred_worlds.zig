@@ -122,7 +122,7 @@ pub const WORLDS: [27]WorldInfo = .{
     .{ .id = .git, .realm = .materiya, .domain = .devtools, .name = mkName("GIT"), .name_len = 3, .formula = mkFormula("e^pi = 23.14"), .formula_len = 12, .sacred_value = 23.14 },
     // Domain: Infrastructure
     .{ .id = .deploy, .realm = .materiya, .domain = .infrastructure, .name = mkName("DEPLOY"), .name_len = 6, .formula = mkFormula("E8 dim = 248"), .formula_len = 12, .sacred_value = 248.0 },
-    .{ .id = .monitor, .realm = .materiya, .domain = .infrastructure, .name = mkName("NETWORK"), .name_len = 7, .formula = mkFormula("N-node pipeline = 3 optimal"), .formula_len = 27, .sacred_value = 603.0 },
+    .{ .id = .monitor, .realm = .materiya, .domain = .infrastructure, .name = mkName("DePIN NODE"), .name_len = 10, .formula = mkFormula("phi2+1/phi2 = 3 = $TRI"), .formula_len = 22, .sacred_value = 3.0 },
     .{ .id = .settings, .realm = .materiya, .domain = .infrastructure, .name = mkName("SETTINGS"), .name_len = 8, .formula = mkFormula("76 photons"), .formula_len = 10, .sacred_value = 76.0 },
 
     // ── Realm 3: DUKH (e) — Content & Knowledge, blocks 18-26 ──
