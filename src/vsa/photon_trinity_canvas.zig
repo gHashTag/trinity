@@ -378,6 +378,30 @@ var g_ralph_log_count: usize = 0;
 var g_ralph_update_timer: f32 = 0;
 var g_ralph_running: bool = false;
 
+// v2.9: Circuit breaker tri-state (RALPH-CANVAS-004)
+const CircuitBreakerState = enum {
+    closed, // Normal operation (green)
+    degraded, // Warning state (yellow)
+    cb_open, // Circuit open, halted (red)
+
+    pub fn getColor(self: CircuitBreakerState, a: u8) rl.Color {
+        return switch (self) {
+            .closed => rl.Color{ .r = 0x00, .g = 0xCC, .b = 0x66, .a = a },
+            .degraded => rl.Color{ .r = 0xFF, .g = 0xCC, .b = 0x00, .a = a },
+            .cb_open => rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = a },
+        };
+    }
+
+    pub fn getLabel(self: CircuitBreakerState) [*:0]const u8 {
+        return switch (self) {
+            .closed => "CLOSED",
+            .degraded => "DEGRADED",
+            .cb_open => "OPEN",
+        };
+    }
+};
+var g_ralph_cb_state: CircuitBreakerState = .closed;
+
 // v2.1: Add entry to live log buffer (ring buffer)
 fn addLiveLog(text: []const u8, source_hue: f32) void {
     if (g_live_log_count >= LIVE_LOG_MAX) {
@@ -7913,6 +7937,21 @@ fn updateDrawFrame() callconv(.c) void {
             rl.DrawLine(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(sw - margin), @intFromFloat(y), rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3)) });
             y += 15;
 
+            // v2.9: Alert banner when circuit breaker is OPEN (RALPH-CANVAS-004)
+            if (g_ralph_cb_state == .cb_open) {
+                const alert_h: f32 = 32 * fs;
+                const alert_pulse: u8 = @intFromFloat(@max(120, @min(220, @sin(frame_time * 4.0) * 50 + 170)));
+                rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alert_pulse)) * 0.15)) });
+                rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = alert_pulse });
+                rl.DrawTextEx(chat_font, "CIRCUIT BREAKER OPEN: Ralph halted due to no-progress loops", .{ .x = margin + 16, .y = y + 8 * fs }, val_sz, 0.5, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = alert_pulse });
+                y += alert_h + 10;
+            } else if (g_ralph_cb_state == .degraded) {
+                const alert_h: f32 = 28 * fs;
+                rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0xCC, .b = 0x00, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.1)) });
+                rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0xCC, .b = 0x00, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.5)) });
+                rl.DrawTextEx(chat_font, "WARNING: Circuit breaker degraded, monitoring closely", .{ .x = margin + 16, .y = y + 6 * fs }, val_sz, 0.5, rl.Color{ .r = 0xFF, .g = 0xCC, .b = 0x00, .a = alpha_u8 });
+                y += alert_h + 10;
+            }
             // Metric cards row
             const card_w = (sw - margin * 5) / 4;
             const card_h: f32 = 80 * fs;
@@ -7941,24 +7980,32 @@ fn updateDrawFrame() callconv(.c) void {
                 rl.DrawTextEx(chat_font, &buf, .{ .x = cx + 12, .y = y + 30 * fs }, 24 * fs, 0.5, bright_text);
             }
 
-            // Card 3: Health Status
+            // Card 3: Health Status (tri-state: OPTIMAL / DEGRADED / CIRCUIT OPEN)
             {
                 const cx = margin * 3 + card_w * 2;
-                const h_color = if (g_ralph_status.is_healthy) ralph_green else ralph_red;
+                const h_color = g_ralph_cb_state.getColor(alpha_u8);
                 rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
                 rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, h_color);
                 rl.DrawTextEx(chat_font, "HEALTH", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
-                rl.DrawTextEx(chat_font, if (g_ralph_status.is_healthy) "OPTIMAL" else "CIRCUIT OPEN", .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, h_color);
+                const h_label: [*:0]const u8 = switch (g_ralph_cb_state) {
+                    .closed => "OPTIMAL",
+                    .degraded => "DEGRADED",
+                    .cb_open => "CIRCUIT OPEN",
+                };
+                rl.DrawTextEx(chat_font, h_label, .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, h_color);
             }
 
-            // Card 4: Circuit Breaker
+            // Card 4: Circuit Breaker (tri-state with pulsing indicator)
             {
                 const cx = margin * 4 + card_w * 3;
-                const cb_color = if (g_ralph_status.is_healthy) ralph_green else ralph_red;
+                const cb_color = g_ralph_cb_state.getColor(alpha_u8);
                 rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
                 rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, cb_color);
                 rl.DrawTextEx(chat_font, "BREAKER", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
-                rl.DrawTextEx(chat_font, if (g_ralph_status.is_healthy) "CLOSED" else "OPEN", .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, cb_color);
+                // Pulsing dot indicator
+                const cb_pulse_a: u8 = if (g_ralph_cb_state == .cb_open) @intFromFloat(@max(80, @min(255, @sin(frame_time * 5.0) * 90 + 165))) else alpha_u8;
+                rl.DrawCircle(@intFromFloat(cx + card_w - 20), @intFromFloat(y + 20), 6, g_ralph_cb_state.getColor(cb_pulse_a));
+                rl.DrawTextEx(chat_font, g_ralph_cb_state.getLabel(), .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, cb_color);
             }
 
             y += card_h + 20;
@@ -7990,6 +8037,7 @@ fn updateDrawFrame() callconv(.c) void {
                     if (hover and mouse_pressed and !g_ralph_running) {
                         g_ralph_running = true;
                         g_ralph_status.is_healthy = true;
+                        g_ralph_cb_state = .closed;
                     }
                 }
 
@@ -8005,6 +8053,7 @@ fn updateDrawFrame() callconv(.c) void {
                     rl.DrawTextEx(chat_font, "STOP", .{ .x = btn2_x + 55, .y = y + 9 }, val_sz, 0.5, btn_color);
                     if (hover and mouse_pressed and g_ralph_running) {
                         g_ralph_running = false;
+                        g_ralph_cb_state = .cb_open;
                     }
                 }
 
@@ -8023,6 +8072,7 @@ fn updateDrawFrame() callconv(.c) void {
                         g_ralph_status.total_calls = 0;
                         g_ralph_running = true;
                         g_ralph_status.is_healthy = true;
+                        g_ralph_cb_state = .closed;
                     }
                 }
             }
