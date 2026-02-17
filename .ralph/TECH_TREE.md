@@ -22,6 +22,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**NEXUS-010**|**Architecture Documentation**|**nexus**|**docs/ARCHITECTURE.md (267 lines): module map, ASCII dep graph, build guide, 6 module details, workspace config, math foundation, migration history NEXUS-001 through NEXUS-010**|
+|----|------|--------|------|
 |**NEXUS-009**|**Workspace Collaboration**|**nexus**|**4 files: workspace.toml extended with [external] openclaw + [agents] ralph/clawd + [ci], config.toml (73 lines agent config), nexus-build.yml CI (matrix 6 modules), spec**|
 |----|------|--------|------|
 |**MGEN-001**|**FLUENT-PYTHON**|**multilingual**|**Idiomatic Python: dataclasses, type hints, snake_case**|
@@ -104,14 +106,13 @@
 |Development|1|3|33%|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
-|Nexus|9|10|90%|
+|**Nexus**|**10**|**10**|**100%**|
 |Multilingual|3|3|100%|
-|**Total**|**40**|**54**|**74%**|
+|**Total**|**41**|**54**|**76%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **NEXUS-010** Trinity Nexus Architecture documentation
-2. **DEV-002** KG-INSIGHT — local triple inspection
-3. **MGEN-001** FLUENT-PYTHON — idiomatic Python code generation
+1. **DEV-002** KG-INSIGHT — local triple inspection
+2. **DEV-003** SWARM-WATCH — live DHT & economy monitor
 
 ---
 φ² + 1/φ² = 3 | TRINITY
