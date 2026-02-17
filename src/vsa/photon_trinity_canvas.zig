@@ -1478,7 +1478,13 @@ const LogoAnimation = struct {
         const outline_color: rl.Color = @bitCast(theme.logo_outline);
 
         for (self.blocks, 0..) |block, idx| {
-            const fill_color = if (self.hovered_block >= 0 and idx == @as(usize, @intCast(self.hovered_block))) highlight_color else petal_color;
+            // v2.9: Block 2 pulses cyan when Ralph is active (healthy + loop > 0)
+            const is_ralph_active = g_ralph_status.loop > 0 and g_ralph_status.is_healthy;
+            const ralph_petal_glow = if (idx == 2 and is_ralph_active)
+                rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @intFromFloat(@max(40, @min(120, @sin(frame_time * 3.0) * 40 + 80))) }
+            else
+                petal_color;
+            const fill_color = if (self.hovered_block >= 0 and idx == @as(usize, @intCast(self.hovered_block))) highlight_color else ralph_petal_glow;
             var verts: [5]rl.Vector2 = undefined;
             const cnt = block.count;
 
@@ -6578,8 +6584,8 @@ fn updateDrawFrame() callconv(.c) void {
         // Handle logo block click — switch to wave mode
         if (frame_logo_anim.clicked_block >= 0) {
             const block_idx = @as(usize, @intCast(frame_logo_anim.clicked_block));
-            // Block 0 = Chat, Block 16 = DePIN, Block 18 = Docs, others = tools
-            const new_wm: WaveMode = if (block_idx == 0) .chat else if (block_idx == 16) .depin else if (block_idx == 18) .docs else .tools;
+            // Block 0 = Chat, Block 2 = Ralph, Block 16 = DePIN, Block 18 = Docs, others = tools
+            const new_wm: WaveMode = if (block_idx == 0) .chat else if (block_idx == 2) .ralph else if (block_idx == 16) .depin else if (block_idx == 18) .docs else .tools;
             g_wave_mode_prev = g_wave_mode;
             g_wave_mode = new_wm;
             g_wave_transition = 0;
