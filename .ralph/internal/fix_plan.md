@@ -82,10 +82,24 @@
 
 ---
 
+- [x] [P1] Generate multilingual VSA proof files (MATH-004 completion)
+  - Acceptance: VSA proofs generated in Python, TypeScript, Rust, Go from single spec
+  - Files: `specs/tri/vsa_proofs_multilingual.vibee`, `generated/vsa_math_proofs.{py,ts,rs,go}`
+  - Tech Tree: MATH-004
+  - DONE: 10 proofs per language, full VSA ops (bind/unbind/bundle/similarity/permute), self-contained runners
+
+- [x] [P2] Write achievement documentation for MATH-003 and MATH-004
+  - Acceptance: Reports in docsite/docs/research/, sidebars updated
+  - Files: `docsite/docs/research/trinity-vsa-benchmark-suite-report.md`, `docsite/docs/research/trinity-multilingual-math-codegen-report.md`, `docsite/sidebars.ts`
+  - DONE: Both reports created with Key Metrics, Technical Details, Conclusion sections. Sidebars updated.
+
+---
+
 ## Backlog
 
-- [ ] [P2] Add Rust codegen target
-- [ ] [P2] Add Go codegen target
+- [ ] [P1] OPT-001: SIMD Vectorization — unlocks HW-001, HW-002, OPT-004 (highest ROI)
+- [ ] [P1] MATH-005: Large-Scale Analogies (1000+ vectors) — completes Math branch
+- [ ] [P2] INF-003: KV Cache Optimization — +50% inference speed
 - [ ] [P3] Dashboard widget for multilingual codegen status (MATERIYA column)
 - [ ] [P3] E2E test: spec -> generate all targets -> validate each output
 - [ ] [P3] Benchmark: codegen performance across targets

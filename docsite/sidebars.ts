@@ -366,6 +366,9 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-mainnet-ready-report',
         // SDK Reports
         'research/libtrinity-vsa-v0.2.0-report',
+        // Math Framework (Level 11.39)
+        'research/trinity-vsa-benchmark-suite-report',
+        'research/trinity-multilingual-math-codegen-report',
       ],
     },
     'faq',

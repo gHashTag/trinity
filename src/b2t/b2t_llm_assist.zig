@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T LLM-Assisted Decompilation
 // Интеграция LLM для улучшения качества декомпиляции
 // V = n × 3^k × π^m × φ^p × e^q
@@ -398,3 +399,4 @@ test "semantic context init and deinit" {
 
     try std.testing.expectEqual(@as(usize, 0), ctx.data_flow.items.len);
 }
+// φ² + 1/φ² = 3 | TRINITY

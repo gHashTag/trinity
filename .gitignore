@@ -150,4 +150,4 @@ debug_test.zig
 
 # Old build files
 build_zig13_old.zig
-tri
+/tri

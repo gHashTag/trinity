@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // Tekum - Balanced Ternary Tapered Precision Real Arithmetic
 // Based on arXiv:2512.10964 (Hunhold, 2025)
 // V = n × 3^k × π^m × φ^p × e^q
@@ -769,3 +770,4 @@ test "Tekum27 infinity arithmetic" {
 
     _ = neg_inf;
 }
+// φ² + 1/φ² = 3 | TRINITY

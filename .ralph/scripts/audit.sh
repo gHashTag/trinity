@@ -35,7 +35,7 @@ fi
 
 # 3. Check for Binary Names (Anti-pattern detection)
 echo "Checking for build system anti-patterns..."
-if grep -r "./bin/vibee" .ralph > /dev/null 2>&1; then
+if grep -r "./bin/vibee" .ralph | grep -v "audit.sh" > /dev/null 2>&1; then
     echo -e "  ${RED}FAIL${NC} Found reference to deprecated ./bin/vibee in .ralph/"
     FAILED=1
 fi
