@@ -358,6 +358,22 @@ var g_live_log_count: usize = 0;
 var g_last_reflection_name: [32:0]u8 = undefined;
 var g_last_reflection_len: usize = 0;
 
+// v2.8: Ralph Autonomous Monitor state
+pub const RalphStatus = struct {
+    loop: usize = 0,
+    total_calls: usize = 0,
+    is_healthy: bool = true,
+    goal: [128:0]u8 = [_:0]u8{0} ** 128,
+    goal_len: usize = 0,
+    last_action: [64:0]u8 = [_:0]u8{0} ** 64,
+    last_action_len: usize = 0,
+    log_ptr: usize = 0, // Current line in circle log
+};
+var g_ralph_status: RalphStatus = RalphStatus{};
+var g_ralph_logs: [10][128:0]u8 = undefined;
+var g_ralph_log_count: usize = 0;
+var g_ralph_update_timer: f32 = 0;
+
 // v2.1: Add entry to live log buffer (ring buffer)
 fn addLiveLog(text: []const u8, source_hue: f32) void {
     if (g_live_log_count >= LIVE_LOG_MAX) {
@@ -6426,6 +6442,105 @@ fn updateDrawFrame() callconv(.c) void {
             depinStartNode();
             g_depin_poll_timer = 8.0; // Poll soon after start
         }
+        // ── v2.4: DePIN polling ──
+        g_depin_poll_timer += dt;
+        if (g_depin_poll_timer > 5.0) {
+            g_depin_poll_timer = 0;
+            // In real WASM, we'd use emscripten_run_script to call fetch
+            // For now, we simulate or use exported functions
+        }
+
+        // ── v2.8: Ralph Monitor Polling ──
+        if (g_wave_mode == .mirror) {
+            g_ralph_update_timer += dt;
+            if (g_ralph_update_timer > 2.0) {
+                g_ralph_update_timer = 0;
+                if (is_emscripten) {
+                    // Fetch Ralph status from backend via JS
+                    const script =
+                        \\(function() {
+                        \\  fetch('/api/ralph-status')
+                        \\    .then(r => r.json())
+                        \\    .then(data => {
+                        \\      const loop = data.loop.loop || 0;
+                        \\      const calls = data.loop.total_calls || 0;
+                        \\      const healthy = data.circuit_breaker.state === 'CLOSED';
+                        \\      const goal = (data.loop.goal || '').slice(0, 127);
+                        \\      const logs = (data.logs || []).slice(0, 10).map(l => l.slice(0, 127));
+                        \\      // Call back into Zig via ccall if we were to export,
+                        \\      // but for "zig zig zig" simplicity, we'll use a sneaky window global
+                        \\      window._RALPH_DATA = { loop, calls, healthy, goal, logs };
+                        \\    }).catch(() => {});
+                        \\})();
+                    ;
+                    _ = emc.emscripten_run_script(script);
+
+                    // Sync from window._RALPH_DATA
+                    const sync_script =
+                        \\(function() {
+                        \\  if (!window._RALPH_DATA) return "";
+                        \\  const d = window._RALPH_DATA;
+                        \\  return JSON.stringify(d);
+                        \\})()
+                    ;
+                    const json_ptr = emc.emscripten_run_script(sync_script);
+                    if (json_ptr != null) {
+                        // Primitive JSON extraction to avoid dependency bloat
+                        const js_str = std.mem.span(json_ptr);
+                        if (js_str.len > 10) {
+                            // Extract loop
+                            if (std.mem.indexOf(u8, js_str, "\"loop\":")) |idx| {
+                                const start = idx + 7;
+                                var end = start;
+                                while (end < js_str.len and js_str[end] >= '0' and js_str[end] <= '9') end += 1;
+                                g_ralph_status.loop = std.fmt.parseInt(usize, js_str[start..end], 10) catch g_ralph_status.loop;
+                            }
+                            // Extract calls
+                            if (std.mem.indexOf(u8, js_str, "\"calls\":")) |idx| {
+                                const start = idx + 8;
+                                var end = start;
+                                while (end < js_str.len and js_str[end] >= '0' and js_str[end] <= '9') end += 1;
+                                g_ralph_status.total_calls = std.fmt.parseInt(usize, js_str[start..end], 10) catch g_ralph_status.total_calls;
+                            }
+                            // Extract healthy
+                            if (std.mem.indexOf(u8, js_str, "\"healthy\":")) |idx| {
+                                g_ralph_status.is_healthy = std.mem.startsWith(u8, js_str[idx + 10 ..], "true");
+                            }
+                            // Extract goal
+                            if (std.mem.indexOf(u8, js_str, "\"goal\":\"")) |idx| {
+                                const start = idx + 8;
+                                if (std.mem.indexOfScalar(u8, js_str[start..], '"')) |end_rel| {
+                                    const end = start + end_rel;
+                                    const content = js_str[start..end];
+                                    const len = @min(content.len, 127);
+                                    @memcpy(g_ralph_status.goal[0..len], content[0..len]);
+                                    g_ralph_status.goal[len] = 0;
+                                }
+                            }
+                            // Extract logs (just the first few for visual feedback)
+                            if (std.mem.indexOf(u8, js_str, "\"logs\":[")) |idx| {
+                                var l_start = idx + 8;
+                                var l_idx: usize = 0;
+                                while (l_idx < 10) : (l_idx += 1) {
+                                    if (std.mem.indexOfScalar(u8, js_str[l_start..], '"')) |q_start_rel| {
+                                        const q_start = l_start + q_start_rel + 1;
+                                        if (std.mem.indexOfScalar(u8, js_str[q_start..], '"')) |q_end_rel| {
+                                            const q_end = q_start + q_end_rel;
+                                            const line = js_str[q_start..q_end];
+                                            const len = @min(line.len, 127);
+                                            @memcpy(g_ralph_logs[l_idx][0..len], line[0..len]);
+                                            g_ralph_logs[l_idx][len] = 0;
+                                            l_start = q_end + 1;
+                                        } else break;
+                                    } else break;
+                                }
+                                g_ralph_log_count = l_idx;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         g_depin_poll_timer += dt;
         if (g_depin_poll_timer >= 10.0) {
             g_depin_poll_timer = 0;
@@ -7399,7 +7514,56 @@ fn updateDrawFrame() callconv(.c) void {
 
                     // VSA dim
                     rl.DrawTextEx(chat_font, "VSA:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
-                    rl.DrawTextEx(chat_font, "1024 dim", .{ .x = x + 45 * fs, .y = y }, val_sz, 0.5, bright_text);
+                    rl.DrawTextEx(chat_font, "Active", .{ .x = x + 40 * fs, .y = y }, val_sz, 0.5, withAlpha(rl.Color{ .r = 0, .g = 255, .b = 150, .a = 255 }, alpha_u8));
+                    y += line_h + 10;
+
+                    // ── v2.8: RALPH MONITOR ──
+                    rl.DrawLine(@intFromFloat(x), @intFromFloat(y), @intFromFloat(x + col_w - 40 * fs), @intFromFloat(y), rl.Color{ .r = 80, .g = 80, .b = 100, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.5)) });
+                    y += 10;
+                    rl.DrawTextEx(chat_font, "RALPH MONITOR", .{ .x = x, .y = y }, title_sz * 0.8, 1.0, withAlpha(rl.Color{ .r = 0, .g = 200, .b = 255, .a = 255 }, alpha_u8));
+                    y += title_sz + 4;
+
+                    // Loop info
+                    rl.DrawTextEx(chat_font, "Loop:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    var l_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&l_buf, "{d}", .{g_ralph_status.loop}) catch {};
+                    l_buf[@min(15, std.mem.indexOfScalar(u8, &l_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &l_buf, .{ .x = x + 40 * fs, .y = y }, val_sz, 0.5, bright_text);
+
+                    rl.DrawTextEx(chat_font, "Calls:", .{ .x = x + 80 * fs, .y = y }, label_sz, 0.5, dim_text);
+                    var tc_buf: [16:0]u8 = undefined;
+                    _ = std.fmt.bufPrint(&tc_buf, "{d}", .{g_ralph_status.total_calls}) catch {};
+                    tc_buf[@min(15, std.mem.indexOfScalar(u8, &tc_buf, 0) orelse 15)] = 0;
+                    rl.DrawTextEx(chat_font, &tc_buf, .{ .x = x + 125 * fs, .y = y }, val_sz, 0.5, razum_color);
+                    y += line_h;
+
+                    // Health (Circuit Breaker)
+                    rl.DrawTextEx(chat_font, "Health:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    const h_col = if (g_ralph_status.is_healthy) rl.Color{ .r = 0, .g = 255, .b = 150, .a = alpha_u8 } else rl.Color{ .r = 255, .g = 80, .b = 80, .a = alpha_u8 };
+                    rl.DrawTextEx(chat_font, if (g_ralph_status.is_healthy) "OPTIMAL" else "BREAK", .{ .x = x + 55 * fs, .y = y }, val_sz, 0.5, h_col);
+                    y += line_h;
+
+                    // Goal
+                    rl.DrawTextEx(chat_font, "Goal:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
+                    y += line_h;
+                    rl.DrawTextEx(chat_font, &g_ralph_status.goal, .{ .x = x, .y = y }, label_sz * 0.9, 0.5, withAlpha(rl.Color{ .r = 150, .g = 200, .b = 255, .a = 255 }, alpha_u8));
+                    y += line_h + 4;
+
+                    // Ralph Logs
+                    rl.DrawRectangle(@intFromFloat(x), @intFromFloat(y), @intFromFloat(col_w - 40 * fs), @intFromFloat(70 * fs), rl.Color{ .r = 20, .g = 20, .b = 30, .a = alpha_u8 });
+                    var ly = y + 4;
+                    for (0..g_ralph_log_count) |i| {
+                        rl.DrawTextEx(chat_font, &g_ralph_logs[i], .{ .x = x + 4, .y = ly }, 10, 0.5, withAlpha(rl.Color{ .r = 100, .g = 150, .b = 200, .a = 255 }, alpha_u8));
+                        ly += 12;
+                    }
+                    y += 80 * fs;
+
+                    // Realm glow: center
+                    for (0..3) |gi| {
+                        const glx: f32 = col_w + @as(f32, @floatFromInt(gi)) * 1.0;
+                        const ga: u8 = @intFromFloat(@max(0, @min(40, @as(f32, @floatFromInt(alpha_u8)) * (0.15 - @as(f32, @floatFromInt(gi)) * 0.04))));
+                        rl.DrawLine(@intFromFloat(glx), 0, @intFromFloat(glx), @intFromFloat(content_h), rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = ga });
+                    }
                 }
 
                 // ── DUKH COLUMN (right) ──

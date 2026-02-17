@@ -499,6 +499,11 @@ export default function TrinityCanvas() {
   // Self-reflection state (v2.6)
   const [selfReflection, setSelfReflection] = useState<string | null>(null);
 
+  // Ralph Autonomous Monitor state (v2.8)
+  const [ralphStatus, setRalphStatus] = useState<import('../services/chatApi').RalphStatus | null>(null);
+  const [ralphLogs, setRalphLogs] = useState<string[]>([]);
+  const ralphLogRef = useRef<HTMLDivElement>(null);
+
   // Storage Network metrics (v2.7)
   const [storageMetrics, setStorageMetrics] = useState<StorageMetrics | null>(null);
   const [storageCollapsed, setStorageCollapsed] = useState<Record<string, boolean>>({});
@@ -529,6 +534,22 @@ export default function TrinityCanvas() {
     const interval = setInterval(check, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  // ─── Ralph Status Polling (v2.8) ─────────────────────────────────────────
+
+  useEffect(() => {
+    if (layer !== 'tools') return;
+    const fetchRalph = async () => {
+      const status = await import('../services/chatApi').then(api => api.fetchRalphStatus());
+      if (status) {
+        setRalphStatus(status);
+        setRalphLogs(status.logs);
+      }
+    };
+    fetchRalph();
+    const interval = setInterval(fetchRalph, 2000);
+    return () => clearInterval(interval);
+  }, [layer]);
 
   // ─── Formula particles animation (Fibonacci spiral orbit) ───────────────
 
