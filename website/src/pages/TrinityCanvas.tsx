@@ -26,10 +26,12 @@
  */
 
 // Web Speech API type declarations
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SpeechRecognitionAny = any;
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: SpeechRecognitionAny;
+    webkitSpeechRecognition: SpeechRecognitionAny;
   }
 }
 
@@ -414,7 +416,7 @@ export default function TrinityCanvas() {
 
   // Emergent dot nav state
   const [dotsVisible, setDotsVisible] = useState(false);
-  const dotsTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const dotsTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Chat state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -467,7 +469,7 @@ export default function TrinityCanvas() {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const voiceRafRef = useRef<number>(0);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionAny | null>(null);
 
   // Mirror of Three Worlds state
   const [mirrorStatus, setMirrorStatus] = useState<MirrorStatus | null>(null);
@@ -492,7 +494,7 @@ export default function TrinityCanvas() {
   const [mVisionResult, setMVisionResult] = useState('');
   const [mVoiceActive, setMVoiceActive] = useState(false);
   const [mVoiceText, setMVoiceText] = useState('');
-  const mVoiceRecRef = useRef<SpeechRecognition | null>(null);
+  const mVoiceRecRef = useRef<SpeechRecognitionAny | null>(null);
 
   // Self-reflection state (v2.6)
   const [selfReflection, setSelfReflection] = useState<string | null>(null);
@@ -858,7 +860,7 @@ export default function TrinityCanvas() {
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
         recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'ru-RU';
-        recognition.onresult = (event: Event & { resultIndex: number; results: SpeechRecognitionResultList }) => {
+        recognition.onresult = (event: Event & { resultIndex: number; results: any }) => {
           let transcript = '';
           for (let i = event.resultIndex; i < event.results.length; i++) transcript += event.results[i][0].transcript;
           setVoiceTranscript(transcript);
@@ -1018,7 +1020,7 @@ export default function TrinityCanvas() {
     if (!SR) { setMVoiceText('Speech API not supported'); return; }
     const rec = new SR();
     rec.continuous = false; rec.interimResults = false; rec.lang = 'en-US';
-    rec.onresult = (ev: Event & { results: SpeechRecognitionResultList }) => {
+    rec.onresult = (ev: Event & { results: any }) => {
       const text = ev.results[0][0].transcript;
       setMVoiceText(text);
       // Auto-send voice transcript as chat
