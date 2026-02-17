@@ -7,7 +7,7 @@ description: >
   RALPH-CANVAS-001: Ralph Monitor Panel for Trinity Canvas.
   Adds dedicated WaveMode.ralph fullscreen panel to the 27-petal Canvas UI.
   Shows loop_count, calls_per_hour, health status, active task, live log stream.
-  Activated via Shift+9 keyboard shortcut.
+  Activated via Shift+9 keyboard shortcut or Block 2 petal click in idle logo.
   Tech Tree: VIS-001 (Canvas visualization integration).
 
 constants:
@@ -62,6 +62,17 @@ behaviors:
     when: Scan for first unchecked P1 line
     then: Extract task description as active_task string
 
+
+  - name: handlePetalClick
+    given: Idle mode and Block 2 petal clicked
+    when: Logo click handler dispatches block_idx 2
+    then: Transition to WaveMode.ralph with nova effect
+
+  - name: renderPetalHighlight
+    given: Idle mode and Block 2 petal hovered
+    when: hovered_block equals 2
+    then: Petal outline glows cyan with pulse when Ralph is active
+
 test_cases:
   - input: Shift+9 pressed
     expected: WaveMode transitions to .ralph panel renders
@@ -71,3 +82,7 @@ test_cases:
     expected: Green indicator displayed
   - input: circuit_breaker_state contains OPEN
     expected: Red indicator with alert banner
+  - input: Block 2 petal clicked in idle mode
+    expected: WaveMode transitions to .ralph
+  - input: Block 2 petal hovered while Ralph active
+    expected: Cyan glow pulse on petal outline

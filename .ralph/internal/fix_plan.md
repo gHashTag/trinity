@@ -23,7 +23,7 @@
 > **Tech Tree:** VIS-001 (Canvas visualization integration)
 > **Golden Chain:** Level 11.41 → 11.42 transition. Cycle 42: Canvas Monitor Panel.
 
-- [ ] [P1] RALPH-CANVAS-001: Add Ralph Monitor panel to Trinity Canvas
+- [x] [P1] RALPH-CANVAS-001: Add Ralph Monitor panel to Trinity Canvas
   - Acceptance: Shift+9 or petal click opens Ralph Monitor panel showing: loop_count, calls/hour, status, active task from fix_plan.md, live ⚡ stream from live.log. Panel persists across mode switches.
   - Files: `src/vsa/photon_trinity_canvas.zig` (WaveMode.ralph, renderRalphPanel, pollRalphStatus, parseLiveLog, live log buffer)
   - Tech Tree: VIS-001
@@ -218,7 +218,7 @@
 > **Tech Tree:** VIS-001 (Canvas visualization integration)
 > **Golden Chain:** Level 11.41 → 11.42 transition. Cycle 42: Canvas Monitor Panel.
 
-- [ ] [P1] RALPH-CANVAS-001: Add Ralph Monitor panel to Trinity Canvas
+- [x] [P1] RALPH-CANVAS-001: Add Ralph Monitor panel to Trinity Canvas
   - Acceptance: Shift+9 or petal click opens Ralph Monitor panel showing: loop_count, calls/hour, status, active task from fix_plan.md, live ⚡ stream from live.log. Panel persists across mode switches.
   - Files: `src/vsa/photon_trinity_canvas.zig` (WaveMode.ralph, renderRalphPanel, pollRalphStatus, parseLiveLog, live log buffer)
   - Tech Tree: VIS-001

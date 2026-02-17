@@ -10,6 +10,8 @@
 |----|------|--------|----------|------|
 |OPT-PC01|Prefix Caching|optimization|2/5|99% prefill reduction for cached prompts|
 
+|VIS-001|Ralph Canvas Monitor|visualization|3/5 (75%)|Dedicated fullscreen Ralph panel in Trinity Canvas|
+
 ## 🚀 Available Nodes
 | ID | Name | Branch | Complexity | Gain |
 |----|------|--------|------------|------|
@@ -69,11 +71,12 @@
 |**Math**|**5**|**5**|**100%**|
 |Development|1|3|33%|
 |Symbolic|1|5|20%|
-|**Total**|**24+1ip**|**43**|**56%→56%**|
+|Visualization|0+1ip|1|50%|
+|**Total**|**24+2ip**|**44**|**55%→57%**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **SYM-002** LLM Triples Extractor — priority for Cycle 40, builds KG collector
-2. **MATH-005** Large-Scale Analogies — completes Math branch (80%→100%), bundleN from OPT-001 enables this
+2. **VIS-001** Ralph Canvas Monitor — complete native file reading + petal click binding
 3. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002
 
 ---
