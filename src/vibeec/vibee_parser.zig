@@ -20,6 +20,7 @@ pub const VibeeSpec = struct {
     name: []const u8,
     version: []const u8,
     language: []const u8, // Target language: zig, verilog, python, etc.
+    languages: ArrayList([]const u8), // Multi-language targets: [zig, python, typescript]
     author: []const u8,
     license: []const u8,
     targets: ArrayList([]const u8),
@@ -45,6 +46,7 @@ pub const VibeeSpec = struct {
             .name = "",
             .version = "",
             .language = "zig", // Default to Zig
+            .languages = .{}, // Empty = single language mode
             .author = "",
             .license = "",
             .targets = .{},
@@ -71,6 +73,7 @@ pub const VibeeSpec = struct {
         for (self.types.items) |*t| {
             t.fields.deinit(self.allocator);
             t.constraints.deinit(self.allocator);
+            t.enum_variants.deinit(self.allocator);
         }
         for (self.behaviors.items) |*b| {
             b.test_cases.deinit(self.allocator);
@@ -89,6 +92,7 @@ pub const VibeeSpec = struct {
         }
 
         // Освобождаем основные списки
+        self.languages.deinit(self.allocator);
         self.targets.deinit(self.allocator);
         self.imports.deinit(self.allocator);
         self.constants.deinit(self.allocator);
@@ -127,6 +131,7 @@ pub const TypeDef = struct {
     constraints: ArrayList([]const u8),
     generic: ?[]const u8,
     description: []const u8,
+    enum_variants: ArrayList([]const u8),
 
     pub fn init(allocator: Allocator) TypeDef {
         _ = allocator;
@@ -137,6 +142,7 @@ pub const TypeDef = struct {
             .constraints = .{},
             .generic = null,
             .description = "",
+            .enum_variants = .{},
         };
     }
 };
@@ -348,8 +354,18 @@ pub const VibeeParser = struct {
                 self.skipToNextLine();
             } else if (std.mem.eql(u8, key, "language")) {
                 self.skipInlineWhitespace();
-                spec.language = self.readValue();
-                self.skipToNextLine();
+                // Check for array syntax: [zig, python, typescript]
+                if (self.pos < self.source.len and self.source[self.pos] == '[') {
+                    try self.parseLanguageArray(&spec.languages);
+                    // Set primary language to first item for backward compat
+                    if (spec.languages.items.len > 0) {
+                        spec.language = spec.languages.items[0];
+                    }
+                    self.skipToNextLine();
+                } else {
+                    spec.language = self.readValue();
+                    self.skipToNextLine();
+                }
             } else if (std.mem.eql(u8, key, "author")) {
                 self.skipInlineWhitespace();
                 spec.author = self.readQuotedValue();
@@ -485,6 +501,41 @@ pub const VibeeParser = struct {
             return value;
         }
         return self.readValue();
+    }
+
+    /// Parse language array syntax: [zig, python, typescript]
+    fn parseLanguageArray(self: *Self, languages: *ArrayList([]const u8)) !void {
+        if (self.pos >= self.source.len or self.source[self.pos] != '[') return;
+        self.pos += 1; // skip '['
+
+        while (self.pos < self.source.len) {
+            self.skipInlineWhitespace();
+            if (self.pos >= self.source.len) break;
+
+            // Check for end of array
+            if (self.source[self.pos] == ']') {
+                self.pos += 1; // skip ']'
+                break;
+            }
+
+            // Skip comma separator
+            if (self.source[self.pos] == ',') {
+                self.pos += 1;
+                continue;
+            }
+
+            // Read language name
+            const start = self.pos;
+            while (self.pos < self.source.len) {
+                const c = self.source[self.pos];
+                if (c == ',' or c == ']' or c == ' ' or c == '\t' or c == '\n' or c == '\r') break;
+                self.pos += 1;
+            }
+            const lang = std.mem.trim(u8, self.source[start..self.pos], " \t");
+            if (lang.len > 0) {
+                try languages.append(self.allocator, lang);
+            }
+        }
     }
 
     fn parseTargets(self: *Self, targets: *ArrayList([]const u8)) !void {
@@ -753,6 +804,9 @@ pub const VibeeParser = struct {
                 } else if (std.mem.eql(u8, field_key, "fields")) {
                     self.skipToNextLine();
                     try self.parseFields(&typedef.fields);
+                } else if (std.mem.eql(u8, field_key, "enum")) {
+                    self.skipToNextLine();
+                    try self.parseEnum(&typedef.enum_variants);
                 } else if (std.mem.eql(u8, field_key, "constraints")) {
                     self.skipToNextLine();
                     try self.parseConstraints(&typedef.constraints);
@@ -1188,6 +1242,31 @@ pub const VibeeParser = struct {
                 .type_name = field_type,
             });
             self.skipToNextLine();
+        }
+    }
+
+    fn parseEnum(self: *Self, enum_variants: *ArrayList([]const u8)) !void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 6) break;
+            self.pos += indent;
+
+            // Check for list item "-"
+            if (self.source[self.pos] == '-') {
+                self.pos += 1;
+                self.skipInlineWhitespace();
+                const variant = self.readValue();
+                if (variant.len > 0) {
+                    try enum_variants.append(self.allocator, variant);
+                }
+                self.skipToNextLine();
+            } else {
+                self.pos -= indent;
+                break;
+            }
         }
     }
 
@@ -1789,11 +1868,26 @@ pub const VibeeParser = struct {
         const start = self.pos;
         const base_indent = self.countIndent();
 
-        // Read all lines with greater indent
+        // Read all lines with greater or equal indent
         while (self.pos < self.source.len) {
             const line_start = self.pos;
+
+            // Check for empty line (just newline) - part of block or skip?
+            // If we are at newline, it's an empty line. countIndent returns 0.
+            // But empty lines should be allowed in the block.
+            var is_empty = false;
+            var p = self.pos;
+            while (p < self.source.len and self.source[p] == ' ') : (p += 1) {}
+            if (p < self.source.len and self.source[p] == '\n') is_empty = true;
+
+            if (is_empty) {
+                self.skipToNextLine();
+                continue;
+            }
+
             const indent = self.countIndent();
-            if (indent <= base_indent and self.pos > start) {
+            // If indent is LESS than base_indent, we hit the end of the block
+            if (indent < base_indent and self.pos > start) {
                 // End of block - return to line start
                 return self.source[start..line_start];
             }
@@ -1947,4 +2041,43 @@ test "parse pas_predictions" {
     try std.testing.expectEqualStrings("O(n)", pred.current);
     try std.testing.expectEqualStrings("O(log n)", pred.predicted);
     try std.testing.expect(pred.confidence > 0.9);
+}
+
+test "parse multi-language array syntax" {
+    const source =
+        \\name: multilang_spec
+        \\version: "2.0"
+        \\language: [zig, python, typescript]
+        \\
+    ;
+
+    var parser = VibeeParser.init(std.testing.allocator, source);
+    var spec = try parser.parse();
+    defer spec.deinit();
+
+    try std.testing.expectEqualStrings("multilang_spec", spec.name);
+    // Primary language should be first item
+    try std.testing.expectEqualStrings("zig", spec.language);
+    // Languages array should contain all targets
+    try std.testing.expectEqual(@as(usize, 3), spec.languages.items.len);
+    try std.testing.expectEqualStrings("zig", spec.languages.items[0]);
+    try std.testing.expectEqualStrings("python", spec.languages.items[1]);
+    try std.testing.expectEqualStrings("typescript", spec.languages.items[2]);
+}
+
+test "parse single language backward compat" {
+    const source =
+        \\name: single_lang
+        \\version: "1.0"
+        \\language: python
+        \\
+    ;
+
+    var parser = VibeeParser.init(std.testing.allocator, source);
+    var spec = try parser.parse();
+    defer spec.deinit();
+
+    try std.testing.expectEqualStrings("python", spec.language);
+    // languages array should be empty for single-language specs
+    try std.testing.expectEqual(@as(usize, 0), spec.languages.items.len);
 }

@@ -74,9 +74,11 @@
   - Files: `src/vibeec/vibee_gen.zig`, `src/vibeec/lang_generators.zig`
   - DONE: Same integration as Python — TypeScript generator already existed in lang_generators.zig, now routed via vibee_gen.zig pipeline
 
-- [ ] [P3] Update vibee_parser.zig for multi-language spec fields
+- [x] [P3] Update vibee_parser.zig for multi-language spec fields
   - Acceptance: parser handles `language: [zig, python, typescript]` array syntax, `zig build test` passes
-  - Files: `src/vibeec/vibee_parser.zig`
+  - Files: `src/vibeec/vibee_parser.zig`, `src/vibeec/vibee_gen.zig`
+  - Tech Tree: MATH-004 (advance)
+  - DONE: Added `languages` ArrayList field to VibeeSpec, `parseLanguageArray()` parser, multi-target generation in vibee_gen.zig, 2 new tests (array syntax + backward compat)
 
 ---
 

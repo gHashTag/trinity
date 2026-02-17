@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T CLI - Binary-to-Ternary Converter
 // Command line interface for converting binaries to ternary code
 // V = n × 3^k × π^m × φ^p × e^q
@@ -348,3 +349,5 @@ test "cli help" {
     // Just verify it compiles
     printBanner();
 }
+
+// φ² + 1/φ² = 3 | TRINITY

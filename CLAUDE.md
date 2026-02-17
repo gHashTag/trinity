@@ -393,22 +393,53 @@ git push origin gh-pages --force
 
 ---
 
-## Ralph Autonomous Development
+## Ralph Autonomous Development (MANDATORY)
 
-Ralph enables continuous autonomous development cycles for Claude Code.
+**ALL development MUST go through Ralph.** This saves time by enforcing quality gates, tech tree navigation, memory consultation, and structured workflows automatically.
+
+### Why Ralph-Only
+
+| Without Ralph | With Ralph |
+|--------------|-----------|
+| Manual quality checks | Automated gates (build + test + format) |
+| Forget to update tech tree | Tree updated every cycle |
+| Repeat past mistakes | REGRESSION_PATTERNS.md consulted |
+| No structured progress | fix_plan.md + TECH_TREE.md tracking |
+| Commits to main | Feature branches enforced |
 
 ### Configuration
 
 ```
 .ralph/
-├── PROMPT.md      # Main prompt for autonomous work
-├── AGENT.md       # Agent configuration (build/test/run)
-├── fix_plan.md    # Fix plan tracking
-├── specs/         # Specifications
-├── examples/      # Examples
-├── logs/          # Execution logs
-└── docs/generated/
-.ralphrc           # Ralph settings
+├── PROMPT.md              # Autonomous work instructions
+├── AGENT.md               # Build/test/run commands
+├── RULES.md               # Universal development guardrails (16 sections)
+├── TECH_TREE.md            # Tech tree navigation (35 nodes, 6 branches)
+├── fix_plan.md             # Current sprint tasks with acceptance criteria
+├── SUCCESS_HISTORY.md      # Working patterns + commit hashes
+├── REGRESSION_PATTERNS.md  # Anti-patterns + root causes
+├── specs/                  # Ralph-specific specs
+├── examples/               # Workflow examples
+├── logs/                   # Execution logs
+└── docs/generated/         # Auto-generated docs
+.ralphrc                    # Runtime settings (tools, timeouts, gates)
+```
+
+### How to Use
+
+```bash
+# 1. Add task to .ralph/fix_plan.md (with acceptance criteria)
+# 2. Start Ralph
+ralph --monitor
+
+# Ralph will:
+#   - Read TECH_TREE.md, fix_plan.md, SUCCESS_HISTORY.md, REGRESSION_PATTERNS.md
+#   - Pick highest-priority task
+#   - Create ralph/<task-slug> branch
+#   - Implement via Golden Chain cycle (spec → gen → test → assess → tree → commit)
+#   - Run quality gates (build + test + format)
+#   - Update tech tree and memory files
+#   - Loop until EXIT_SIGNAL = true
 ```
 
 ### Commands
@@ -416,23 +447,23 @@ Ralph enables continuous autonomous development cycles for Claude Code.
 ```bash
 ralph --monitor          # Start with live monitoring dashboard
 ralph --help             # Show options
-ralph-enable             # Enable Ralph in project (interactive)
+ralph-enable             # Enable Ralph in project
 ralph-import prd.md      # Convert PRD to Ralph tasks
-ralph-migrate            # Migrate to .ralph/ structure
 ```
-
-### Usage
-
-1. Edit `.ralph/PROMPT.md` with requirements
-2. Run `ralph --monitor`
-3. Ralph will loop Claude Code until task completion
 
 ### Safeguards
 
 - Rate limiting: 100 calls/hour (configurable)
-- Circuit breaker for error detection
-- Intelligent exit detection (completion + explicit confirmation)
-- Session continuity across iterations
+- Circuit breaker: 3 no-progress loops → cooldown
+- Branch safety: never commits to main
+- Quality gates: build + test + format before every commit
+- Memory: consults SUCCESS_HISTORY and REGRESSION_PATTERNS every loop
+- Dual-condition exit: heuristic indicators + explicit EXIT_SIGNAL
+
+### Current Task (via Ralph)
+
+**VSA Mathematical Framework** — proofs + optimizations for bind/unbind/bundle, multilingual code gen.
+See `.ralph/fix_plan.md` and `.ralph/TECH_TREE.md` for details.
 
 Repository: https://github.com/frankbria/ralph-claude-code
 

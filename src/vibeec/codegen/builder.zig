@@ -65,4 +65,9 @@ pub const CodeBuilder = struct {
     pub fn getOutput(self: *Self) []const u8 {
         return self.buffer.items;
     }
+
+    pub fn toOwnedSlice(self: *Self) ![]u8 {
+        const result = try self.buffer.toOwnedSlice(self.allocator);
+        return result;
+    }
 };
