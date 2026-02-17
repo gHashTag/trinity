@@ -1448,6 +1448,35 @@ pub fn build(b: *std.Build) void {
     vsa_bundle_opt_step.dependOn(&run_vsa_bundle_opt.step);
     test_step.dependOn(&run_vsa_bundle_opt.step);
 
+    // VSA Math Benchmark executable (MATH-003)
+    // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence
+    const bundle_opt_mod = b.createModule(.{
+        .root_source_file = b.path("generated/vsa_bundle_opt.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
+        .imports = &.{
+            .{ .name = "vsa", .module = vsa_mod },
+        },
+    });
+
+    const bench_math = b.addExecutable(.{
+        .name = "bench-math",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/bench_math.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+                .{ .name = "bundle_opt", .module = bundle_opt_mod },
+            },
+        }),
+    });
+    b.installArtifact(bench_math);
+
+    const run_bench_math = b.addRunArtifact(bench_math);
+    const bench_math_step = b.step("bench-math", "Run VSA math benchmarks (MATH-003: ternary vs float32)");
+    bench_math_step.dependOn(&run_bench_math.step);
+
     // Storage Init — Basic Disk Shards + VSA Fingerprints (Cycle 59)
     const storage_init_tests = b.addTest(.{
         .root_module = b.createModule(.{
