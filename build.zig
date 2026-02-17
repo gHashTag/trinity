@@ -1414,6 +1414,40 @@ pub fn build(b: *std.Build) void {
     quark_step.dependOn(&run_quark_tests.step);
     test_step.dependOn(&run_quark_tests.step);
 
+    // VSA Math Proofs — Mathematical Framework (MATH-001)
+    // bind/unbind inverse, commutativity, associativity, bundle convergence,
+    // orthogonality, permute cycles, similarity bounds, trinity identity
+    const vsa_math_proofs_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/vsa_math_proofs.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_vsa_math_proofs = b.addRunArtifact(vsa_math_proofs_tests);
+    const vsa_math_proofs_step = b.step("test-math-proofs", "Test VSA Math Proofs (bind/unbind/bundle invariances)");
+    vsa_math_proofs_step.dependOn(&run_vsa_math_proofs.step);
+    test_step.dependOn(&run_vsa_math_proofs.step);
+
+    // VSA Bundle-N Optimization — Accumulator-based N-way bundling (MATH-002)
+    const vsa_bundle_opt_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/vsa_bundle_opt.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_vsa_bundle_opt = b.addRunArtifact(vsa_bundle_opt_tests);
+    const vsa_bundle_opt_step = b.step("test-bundle-opt", "Test VSA Bundle-N Optimization (accumulator majority vote)");
+    vsa_bundle_opt_step.dependOn(&run_vsa_bundle_opt.step);
+    test_step.dependOn(&run_vsa_bundle_opt.step);
+
     // Storage Init — Basic Disk Shards + VSA Fingerprints (Cycle 59)
     const storage_init_tests = b.addTest(.{
         .root_module = b.createModule(.{
