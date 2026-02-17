@@ -16,24 +16,24 @@ Every fresh context window starts here. Know the codebase:
 
 | Module | Path | Purpose |
 |--------|------|---------|
-| VSA Core | `src/vsa.zig` | bind, unbind, bundle, similarity, permute |
-| Ternary VM | `src/vm.zig` | Stack-based bytecode execution |
-| HybridBigInt | `src/hybrid.zig` | Packed (1.58 bits/trit) <-> unpacked cache |
-| Packed Trit | `src/packed_trit.zig` | Bit-packed ternary encoding |
-| SDK | `src/sdk.zig` | High-level API (Hypervector, Codebook) |
-| VIBEE Compiler | `src/vibeec/` | Parse .vibee specs, generate Zig/Verilog/Python |
-| Firebird LLM | `src/firebird/` | BitNet-to-Ternary, GGUF, WASM extensions |
-| Trinity Node | `src/trinity_node/` | DePIN: shards, DHT, erasure coding, rewards |
-| TVC | `src/tvc/` | Ternary Vector Computing, corpus search |
-| Specifications | `specs/tri/*.vibee` | Source of truth for all generated code |
+| VSA Core | `src/vsa.zig` | [GENERATED] bind, unbind, bundle, similarity, permute |
+| Ternary VM | `src/vm.zig` | [GENERATED] Stack-based bytecode execution |
+| HybridBigInt | `src/hybrid.zig` | [GENERATED] Packed (1.58 bits/trit) <-> unpacked cache |
+| Packed Trit | `src/packed_trit.zig` | [GENERATED] Bit-packed ternary encoding |
+| SDK | `src/sdk.zig` | [GENERATED] High-level API (Hypervector, Codebook) |
+| VIBEE Compiler | `src/vibeec/` | [GENERATED] Parse .vibee specs, generate Zig/Verilog/Python |
+| Firebird LLM | `src/firebird/` | [GENERATED] BitNet-to-Ternary, GGUF, WASM extensions |
+| Trinity Node | `src/trinity_node/` | [GENERATED] DePIN: shards, DHT, erasure coding, rewards |
+| TVC | `src/tvc/` | [GENERATED] Ternary Vector Computing, corpus search |
+| Specifications | `specs/tri/*.vibee` | Source of truth for ALL code (MANDATORY) |
 | Generated Code | `trinity/output/` | Auto-generated from .vibee (NEVER edit) |
 
 ---
 
 ## Non-Negotiable Core
 
-1. **Source of Truth**: `specs/tri/*.vibee` always governs generated code.
-2. **Safety**: Never edit `trinity/output/` manually.
+1. **Source of Truth**: `specs/tri/*.vibee` governs ALL code. Manual Zig creation is forbidden.
+2. **Safety**: Never edit `src/*.zig` or `trinity/output/*.zig` manually.
 3. **Branching**: Never commit to `main`. Use `ralph/<task-slug>`.
 4. **Validation**: `.ralph/gate.sh` must pass before any commit.
 5. **Parallel Work**: Use Git Worktree for concurrent tasks (see RULES.md §17).
@@ -61,11 +61,11 @@ Every cycle MUST follow these 9 links in order. No skipped links.
 1.  **TRI DECOMPOSE**: Break down the objective (e.g., "full local fluent multilingual code gen") into atomic "Quarks" (tasks).
 2.  **TRI PLAN**: Strategy update. Select Tech Tree nodes, define ROI, and plan implementation blocks.
 3.  **TRI SPEC CREATE**: Create/update `.vibee` files. This is the **Single Source of Truth**.
-4.  **TRI GEN**: `zig build vibee -- gen <spec>`. Never write `.zig` logic that should be in a spec.
+4.  **TRI GEN**: `zig build vibee -- gen <spec>`. ALL `.zig` files MUST be generated. No manual logic in `src/`.
 5.  **TRI TEST**: E2E testing. Verify generated code against specs. Gate: `zig build test`.
 6.  **TRI BENCH**: Performance benchmarking vs previous versions. Provide detailed proofs/logs.
 7.  **TRI VERDICT**: **TOXIC VERDICT ENFORCED**. Brutally honest assessment of the results. "Prod = 100%" or "Failure = Absolute".
-8.  **TRI GIT**: `git add`, `git commit -m "Level 11 Cycle 41: ..."` (follow convention), `git push`.
+8.  **TRI GIT**: `git add`, `git commit -m "Level 11 Cycle 41: ..."` (follow convention), `git push`. **Telegram report is sent automatically via post-commit hook.**
 9.  **TRI LOOP**: Loop decision (Needle check). Did we achieve the objective? Decide on next cycle.
 
 ---
@@ -264,6 +264,26 @@ EXIT_SIGNAL: false | true
 RECOMMENDATION: <one line — what to do next>
 ---END_RALPH_STATUS---
 ```
+
+---
+
+## Telegram Notifications (Automatic)
+
+All pipeline events are automatically reported to Telegram via OpenClaw. No manual action required.
+
+| Event | When | Script |
+|-------|------|--------|
+| Gate Pass | After `gate.sh` succeeds | `report.sh gate_pass` |
+| Gate Fail | When any gate fails | `report.sh gate_fail <gate_name>` |
+| Commit | After every git commit | Post-commit hook |
+| Circuit Breaker Open | When CB trips | `report.sh circuit_open` |
+| Circuit Breaker Close | When CB resets | `report.sh circuit_close` |
+| Loop Start/End | At loop boundaries | `report.sh loop_start/loop_end` |
+| Verdict | After Toxic Verdict | `report.sh verdict` |
+| Status | After RALPH_STATUS block | `report.sh status` |
+
+**Configuration:** See `.ralphrc` for `RALPH_REPORT_ENABLED`, `RALPH_TELEGRAM_CHAT_ID`.
+**Disable:** Set `RALPH_REPORT_ENABLED=false` in `.ralphrc`.
 
 ---
 

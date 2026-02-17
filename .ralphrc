@@ -44,3 +44,8 @@ AUTO_RESTART=true
 # ── File safety ─────────────────────────────────────────────────
 FORBIDDEN_PATHS="trinity/output/,generated/"
 PROTECTED_FILES="build.zig,build.zig.zon"
+
+# ── Telegram Reporting (via OpenClaw) ─────────────────────────────
+RALPH_REPORT_ENABLED=true
+RALPH_TELEGRAM_CHAT_ID="144022504"
+OPENCLAW_BIN="node /Users/playra/openclaw/openclaw.mjs"
