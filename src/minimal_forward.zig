@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // Minimal Forward Pass Demo — Level 10A First Real Execution
 // Uses sdk.zig Hypervector + Codebook to run: encode → position → attention → FFN → decode
 //
@@ -440,7 +441,6 @@ const HEBBIAN_OFFSET: usize = 32;
 ///
 /// To avoid 95 * 59KB = 5.6MB on stack, we compute associations on-the-fly
 /// from a compact counts representation.
-
 /// Build Hebbian bigram counts from corpus
 /// Returns counts[a][b] = number of times char b follows char a
 fn buildHebbianCounts(corpus: []const u8) [HEBBIAN_CHARS][HEBBIAN_CHARS]u16 {
@@ -3640,7 +3640,10 @@ test "temperature top-k sampling diversity" {
     for (0..256) |i| greedy_seen[i] = false;
     var greedy_unique: usize = 0;
     for (0..greedy_count) |i| {
-        if (!greedy_seen[greedy_buf[i]]) { greedy_seen[greedy_buf[i]] = true; greedy_unique += 1; }
+        if (!greedy_seen[greedy_buf[i]]) {
+            greedy_seen[greedy_buf[i]] = true;
+            greedy_unique += 1;
+        }
     }
 
     // === Sampled generation: temperature=0.8, top_k=8 ===
@@ -3650,15 +3653,26 @@ test "temperature top-k sampling diversity" {
         sampled_ctx[i] = charToHV(dim, corpus[i]);
     }
     const sampled_count = generateWithHybridSampled(
-        &sampled_ctx, &direct_role, dim, corpus[7], &counts,
-        &sampled_buf, 50, 0.8, 8, 42,
+        &sampled_ctx,
+        &direct_role,
+        dim,
+        corpus[7],
+        &counts,
+        &sampled_buf,
+        50,
+        0.8,
+        8,
+        42,
     );
 
     var sampled_seen: [256]bool = undefined;
     for (0..256) |i| sampled_seen[i] = false;
     var sampled_unique: usize = 0;
     for (0..sampled_count) |i| {
-        if (!sampled_seen[sampled_buf[i]]) { sampled_seen[sampled_buf[i]] = true; sampled_unique += 1; }
+        if (!sampled_seen[sampled_buf[i]]) {
+            sampled_seen[sampled_buf[i]] = true;
+            sampled_unique += 1;
+        }
     }
 
     // === High temperature generation: temperature=1.5, top_k=16 ===
@@ -3668,15 +3682,26 @@ test "temperature top-k sampling diversity" {
         hot_ctx[i] = charToHV(dim, corpus[i]);
     }
     const hot_count = generateWithHybridSampled(
-        &hot_ctx, &direct_role, dim, corpus[7], &counts,
-        &hot_buf, 50, 1.5, 16, 42,
+        &hot_ctx,
+        &direct_role,
+        dim,
+        corpus[7],
+        &counts,
+        &hot_buf,
+        50,
+        1.5,
+        16,
+        42,
     );
 
     var hot_seen: [256]bool = undefined;
     for (0..256) |i| hot_seen[i] = false;
     var hot_unique: usize = 0;
     for (0..hot_count) |i| {
-        if (!hot_seen[hot_buf[i]]) { hot_seen[hot_buf[i]] = true; hot_unique += 1; }
+        if (!hot_seen[hot_buf[i]]) {
+            hot_seen[hot_buf[i]] = true;
+            hot_unique += 1;
+        }
     }
 
     // === Low temperature (near-greedy): temperature=0.1, top_k=3 ===
@@ -3686,15 +3711,26 @@ test "temperature top-k sampling diversity" {
         cold_ctx[i] = charToHV(dim, corpus[i]);
     }
     const cold_count = generateWithHybridSampled(
-        &cold_ctx, &direct_role, dim, corpus[7], &counts,
-        &cold_buf, 50, 0.1, 3, 42,
+        &cold_ctx,
+        &direct_role,
+        dim,
+        corpus[7],
+        &counts,
+        &cold_buf,
+        50,
+        0.1,
+        3,
+        42,
     );
 
     var cold_seen: [256]bool = undefined;
     for (0..256) |i| cold_seen[i] = false;
     var cold_unique: usize = 0;
     for (0..cold_count) |i| {
-        if (!cold_seen[cold_buf[i]]) { cold_seen[cold_buf[i]] = true; cold_unique += 1; }
+        if (!cold_seen[cold_buf[i]]) {
+            cold_seen[cold_buf[i]] = true;
+            cold_unique += 1;
+        }
     }
 
     std.debug.print("\nGreedy (baseline):\n", .{});
@@ -4001,15 +4037,26 @@ test "multi-role position-specific training" {
         gen_ctx[i] = charToHV(dim, corpus[i]);
     }
     const gen_count = generateWithMultiRoleSampled(
-        &gen_ctx, &multi_roles, dim, corpus[7], &counts,
-        &gen_buf, 50, 0.8, 8, 42,
+        &gen_ctx,
+        &multi_roles,
+        dim,
+        corpus[7],
+        &counts,
+        &gen_buf,
+        50,
+        0.8,
+        8,
+        42,
     );
 
     var seen: [256]bool = undefined;
     for (0..256) |i| seen[i] = false;
     var unique: usize = 0;
     for (0..gen_count) |i| {
-        if (!seen[gen_buf[i]]) { seen[gen_buf[i]] = true; unique += 1; }
+        if (!seen[gen_buf[i]]) {
+            seen[gen_buf[i]] = true;
+            unique += 1;
+        }
     }
 
     std.debug.print("\nRole orthogonality:\n", .{});
@@ -5357,10 +5404,18 @@ test "500 offsets role quality on large corpus" {
         init_ctx[i] = charToHV(dim, prompt[i]);
     }
     const gen_len = generateWithTrigramSampled(
-        &init_ctx, &roles_500, dim,
-        prompt[6], prompt[7],
-        &bi_counts, &tri_counts,
-        &gen_buf, 80, 0.8, 8, 54321,
+        &init_ctx,
+        &roles_500,
+        dim,
+        prompt[6],
+        prompt[7],
+        &bi_counts,
+        &tri_counts,
+        &gen_buf,
+        80,
+        0.8,
+        8,
+        54321,
     );
 
     // Count unique chars in generation
@@ -5571,7 +5626,9 @@ test "weighted hybrid alpha grid search" {
         const eval_s = train_end + i * (large_corpus.len - train_end - 10) / 50;
         if (eval_s + 8 >= large_corpus.len) continue;
         var ctx: [8]Hypervector = undefined;
-        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[eval_s + j]); }
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[eval_s + j]);
+        }
         var target = charToHV(dim, large_corpus[eval_s + 8]);
         const prev = large_corpus[eval_s + 6];
         const last = large_corpus[eval_s + 7];
@@ -5584,7 +5641,9 @@ test "weighted hybrid alpha grid search" {
         const train_s = i * train_end / 50;
         if (train_s + 8 >= large_corpus.len) continue;
         var ctx: [8]Hypervector = undefined;
-        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[train_s + j]); }
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[train_s + j]);
+        }
         var target = charToHV(dim, large_corpus[train_s + 8]);
         const prev = large_corpus[train_s + 6];
         const last = large_corpus[train_s + 7];
@@ -5614,7 +5673,9 @@ test "weighted hybrid alpha grid search" {
             const s = train_end + i * (large_corpus.len - train_end - 10) / 50;
             if (s + 8 >= large_corpus.len) continue;
             var ctx: [8]Hypervector = undefined;
-            for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+            for (0..8) |j| {
+                ctx[j] = charToHV(dim, large_corpus[s + j]);
+            }
             var target = charToHV(dim, large_corpus[s + 8]);
             const prev = large_corpus[s + 6];
             const last = large_corpus[s + 7];
@@ -5629,7 +5690,9 @@ test "weighted hybrid alpha grid search" {
             const s = i * train_end / 50;
             if (s + 8 >= large_corpus.len) continue;
             var ctx: [8]Hypervector = undefined;
-            for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+            for (0..8) |j| {
+                ctx[j] = charToHV(dim, large_corpus[s + j]);
+            }
             var target = charToHV(dim, large_corpus[s + 8]);
             const prev = large_corpus[s + 6];
             const last = large_corpus[s + 7];
@@ -5660,18 +5723,34 @@ test "weighted hybrid alpha grid search" {
     var gen_buf: [80]u8 = undefined;
     const prompt = "to be or ";
     var init_ctx: [8]Hypervector = undefined;
-    for (0..8) |i| { init_ctx[i] = charToHV(dim, prompt[i]); }
+    for (0..8) |i| {
+        init_ctx[i] = charToHV(dim, prompt[i]);
+    }
     const gen_len = generateWithWeightedHybrid(
-        &init_ctx, &roles, dim, prompt[6], prompt[7],
-        &bi_counts, &tri_counts,
-        best_alpha[0], best_alpha[1], best_alpha[2],
-        &gen_buf, 80, 0.8, 8, 98765,
+        &init_ctx,
+        &roles,
+        dim,
+        prompt[6],
+        prompt[7],
+        &bi_counts,
+        &tri_counts,
+        best_alpha[0],
+        best_alpha[1],
+        best_alpha[2],
+        &gen_buf,
+        80,
+        0.8,
+        8,
+        98765,
     );
 
     var char_seen = [_]bool{false} ** 256;
     var unique_count: usize = 0;
     for (gen_buf[0..gen_len]) |c| {
-        if (!char_seen[c]) { char_seen[c] = true; unique_count += 1; }
+        if (!char_seen[c]) {
+            char_seen[c] = true;
+            unique_count += 1;
+        }
     }
 
     std.debug.print("\nGeneration (best alpha, T=0.8, K=8):\n", .{});
@@ -5726,7 +5805,9 @@ test "weighted hybrid perplexity comparison" {
         const s = train_end + i * (large_corpus.len - train_end - 10) / 20;
         if (s + 8 >= large_corpus.len) continue;
         var ctx: [8]Hypervector = undefined;
-        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
         var target = charToHV(dim, large_corpus[s + 8]);
         const prev = large_corpus[s + 6];
         const last = large_corpus[s + 7];
@@ -5740,7 +5821,9 @@ test "weighted hybrid perplexity comparison" {
         const s = i * train_end / 20;
         if (s + 8 >= large_corpus.len) continue;
         var ctx: [8]Hypervector = undefined;
-        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
         var target = charToHV(dim, large_corpus[s + 8]);
         const prev = large_corpus[s + 6];
         const last = large_corpus[s + 7];
@@ -5771,7 +5854,9 @@ test "weighted hybrid perplexity comparison" {
             const s = train_end + i * (large_corpus.len - train_end - 10) / 20;
             if (s + 8 >= large_corpus.len) continue;
             var ctx: [8]Hypervector = undefined;
-            for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+            for (0..8) |j| {
+                ctx[j] = charToHV(dim, large_corpus[s + j]);
+            }
             var target = charToHV(dim, large_corpus[s + 8]);
             const prev = large_corpus[s + 6];
             const last = large_corpus[s + 7];
@@ -5786,7 +5871,9 @@ test "weighted hybrid perplexity comparison" {
             const s = i * train_end / 20;
             if (s + 8 >= large_corpus.len) continue;
             var ctx: [8]Hypervector = undefined;
-            for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+            for (0..8) |j| {
+                ctx[j] = charToHV(dim, large_corpus[s + j]);
+            }
             var target = charToHV(dim, large_corpus[s + 8]);
             const prev = large_corpus[s + 6];
             const last = large_corpus[s + 7];
@@ -5882,7 +5969,9 @@ test "pure trigram loss comparison" {
 
         // Original bundled
         var ctx: [8]Hypervector = undefined;
-        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
         var orig_out = forwardPassTrigramHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts);
         const orig_sim = orig_out.similarity(&target);
         orig_eval_sum += 1.0 - (orig_sim + 1.0) / 2.0;
@@ -5909,7 +5998,9 @@ test "pure trigram loss comparison" {
         blend_train_count += 1;
 
         var ctx: [8]Hypervector = undefined;
-        for (0..8) |j| { ctx[j] = charToHV(dim, large_corpus[s + j]); }
+        for (0..8) |j| {
+            ctx[j] = charToHV(dim, large_corpus[s + j]);
+        }
         var orig_out = forwardPassTrigramHybrid(&ctx, &roles, dim, prev, last, &bi_counts, &tri_counts);
         const orig_sim = orig_out.similarity(&target);
         orig_train_sum += 1.0 - (orig_sim + 1.0) / 2.0;
@@ -5927,27 +6018,47 @@ test "pure trigram loss comparison" {
     const prompt = "to be or ";
     var gen_pure: [80]u8 = undefined;
     const gen_pure_len = generateWithPureTrigram(
-        dim, prompt[6], prompt[7],
-        &bi_counts, &tri_counts,
-        &gen_pure, 80, 0.8, 8, 11111,
+        dim,
+        prompt[6],
+        prompt[7],
+        &bi_counts,
+        &tri_counts,
+        &gen_pure,
+        80,
+        0.8,
+        8,
+        11111,
     );
     var gen_blend: [80]u8 = undefined;
     const gen_blend_len = generateWithPureTrigram(
-        dim, prompt[6], prompt[7],
-        &bi_counts, &tri_counts,
-        &gen_blend, 80, 0.6, 5, 22222,
+        dim,
+        prompt[6],
+        prompt[7],
+        &bi_counts,
+        &tri_counts,
+        &gen_blend,
+        80,
+        0.6,
+        5,
+        22222,
     );
 
     // Count unique chars
     var seen_pure = [_]bool{false} ** 256;
     var unique_pure: usize = 0;
     for (gen_pure[0..gen_pure_len]) |c| {
-        if (!seen_pure[c]) { seen_pure[c] = true; unique_pure += 1; }
+        if (!seen_pure[c]) {
+            seen_pure[c] = true;
+            unique_pure += 1;
+        }
     }
     var seen_blend = [_]bool{false} ** 256;
     var unique_blend: usize = 0;
     for (gen_blend[0..gen_blend_len]) |c| {
-        if (!seen_blend[c]) { seen_blend[c] = true; unique_blend += 1; }
+        if (!seen_blend[c]) {
+            seen_blend[c] = true;
+            unique_blend += 1;
+        }
     }
 
     std.debug.print("\n=== PURE TRIGRAM LOSS COMPARISON (v2.43) ===\n", .{});
@@ -6146,38 +6257,65 @@ test "raw frequency decoding loss comparison" {
     const prompt = "to be or ";
     var gen_raw: [120]u8 = undefined;
     const gen_raw_len = generateWithRawFreq(
-        prompt[6], prompt[7],
-        &bi_counts, &tri_counts,
-        &gen_raw, 120, 0.8, 10, 77777,
+        prompt[6],
+        prompt[7],
+        &bi_counts,
+        &tri_counts,
+        &gen_raw,
+        120,
+        0.8,
+        10,
+        77777,
     );
     var gen_raw_low: [120]u8 = undefined;
     const gen_raw_low_len = generateWithRawFreq(
-        prompt[6], prompt[7],
-        &bi_counts, &tri_counts,
-        &gen_raw_low, 120, 0.5, 5, 88888,
+        prompt[6],
+        prompt[7],
+        &bi_counts,
+        &tri_counts,
+        &gen_raw_low,
+        120,
+        0.5,
+        5,
+        88888,
     );
     var gen_raw_greedy: [120]u8 = undefined;
     const gen_raw_greedy_len = generateWithRawFreq(
-        prompt[6], prompt[7],
-        &bi_counts, &tri_counts,
-        &gen_raw_greedy, 120, 0.3, 3, 99999,
+        prompt[6],
+        prompt[7],
+        &bi_counts,
+        &tri_counts,
+        &gen_raw_greedy,
+        120,
+        0.3,
+        3,
+        99999,
     );
 
     // Count unique chars
     var seen1 = [_]bool{false} ** 256;
     var unique1: usize = 0;
     for (gen_raw[0..gen_raw_len]) |c| {
-        if (!seen1[c]) { seen1[c] = true; unique1 += 1; }
+        if (!seen1[c]) {
+            seen1[c] = true;
+            unique1 += 1;
+        }
     }
     var seen2 = [_]bool{false} ** 256;
     var unique2: usize = 0;
     for (gen_raw_low[0..gen_raw_low_len]) |c| {
-        if (!seen2[c]) { seen2[c] = true; unique2 += 1; }
+        if (!seen2[c]) {
+            seen2[c] = true;
+            unique2 += 1;
+        }
     }
     var seen3 = [_]bool{false} ** 256;
     var unique3: usize = 0;
     for (gen_raw_greedy[0..gen_raw_greedy_len]) |c| {
-        if (!seen3[c]) { seen3[c] = true; unique3 += 1; }
+        if (!seen3[c]) {
+            seen3[c] = true;
+            unique3 += 1;
+        }
     }
 
     std.debug.print("\n=== RAW FREQUENCY DECODING (v2.44) ===\n", .{});
@@ -6787,7 +6925,7 @@ test "word trigram perplexity comparison" {
     std.debug.print("\n=== WORD TRIGRAM PERPLEXITY (v2.46) ===\n", .{});
     std.debug.print("Word trigram: train={d:.2} eval={d:.2} gap={d:.2}\n", .{ tri_train_ppl, tri_eval_ppl, tri_eval_ppl - tri_train_ppl });
     std.debug.print("Word bigram:  train={d:.2} eval={d:.2} gap={d:.2}\n", .{ bi_train_ppl, bi_eval_ppl, bi_eval_ppl - bi_train_ppl });
-    std.debug.print("Trigram improvement: {d:.1}% lower eval PPL\n", .{ (1.0 - tri_eval_ppl / bi_eval_ppl) * 100.0 });
+    std.debug.print("Trigram improvement: {d:.1}% lower eval PPL\n", .{(1.0 - tri_eval_ppl / bi_eval_ppl) * 100.0});
     std.debug.print("Random baseline:     {d:.1}\n", .{@as(f64, @floatFromInt(wtm.vocab_size))});
     std.debug.print("============================================\n", .{});
 
@@ -7825,8 +7963,14 @@ test "large corpus trigram statistics and generation" {
         const next = ltm.sampleNextWord(p2, p1, 0.8, 12345 + step);
         const word = ltm.getWord(next);
         if (g1 + word.len + 1 < gen1.len) {
-            if (g1 > 0) { gen1[g1] = ' '; g1 += 1; }
-            for (word) |c| { gen1[g1] = c; g1 += 1; }
+            if (g1 > 0) {
+                gen1[g1] = ' ';
+                g1 += 1;
+            }
+            for (word) |c| {
+                gen1[g1] = c;
+                g1 += 1;
+            }
         }
         p2 = p1;
         p1 = next;
@@ -7841,8 +7985,14 @@ test "large corpus trigram statistics and generation" {
         const next = ltm.sampleNextWord(p2, p1, 0.5, 54321 + step);
         const word = ltm.getWord(next);
         if (g2 + word.len + 1 < gen2.len) {
-            if (g2 > 0) { gen2[g2] = ' '; g2 += 1; }
-            for (word) |c| { gen2[g2] = c; g2 += 1; }
+            if (g2 > 0) {
+                gen2[g2] = ' ';
+                g2 += 1;
+            }
+            for (word) |c| {
+                gen2[g2] = c;
+                g2 += 1;
+            }
         }
         p2 = p1;
         p1 = next;
@@ -7857,8 +8007,14 @@ test "large corpus trigram statistics and generation" {
         const next = ltm.sampleNextWord(p2, p1, 0.3, 99999 + step);
         const word = ltm.getWord(next);
         if (g3 + word.len + 1 < gen3.len) {
-            if (g3 > 0) { gen3[g3] = ' '; g3 += 1; }
-            for (word) |c| { gen3[g3] = c; g3 += 1; }
+            if (g3 > 0) {
+                gen3[g3] = ' ';
+                g3 += 1;
+            }
+            for (word) |c| {
+                gen3[g3] = c;
+                g3 += 1;
+            }
         }
         p2 = p1;
         p1 = next;
@@ -7966,7 +8122,7 @@ test "large corpus word trigram perplexity comparison" {
     std.debug.print("  Bigram eval: {d:.2}\n", .{bi_eval_ppl});
     std.debug.print("Small corpus ({d} tokens, {d} vocab):\n", .{ wtm_small.token_count, wtm_small.vocab_size });
     std.debug.print("  Trigram eval: {d:.2}\n", .{small_eval_ppl});
-    std.debug.print("Improvement: {d:.1}% lower eval PPL (large vs small trigram)\n", .{ (1.0 - tri_eval_ppl / small_eval_ppl) * 100.0 });
+    std.debug.print("Improvement: {d:.1}% lower eval PPL (large vs small trigram)\n", .{(1.0 - tri_eval_ppl / small_eval_ppl) * 100.0});
     std.debug.print("Random baseline: {d:.1}\n", .{@as(f64, @floatFromInt(ltm.vocab_size))});
     std.debug.print("============================================\n", .{});
 
@@ -8020,7 +8176,7 @@ test "interpolated lambda grid search" {
         const train_ce = train_sum / @as(f64, @floatFromInt(train_n));
 
         std.debug.print("  {d:.1}   | {d:.4}   | {d:.1}%   | {d:.4}   | {d:.1}%\n", .{
-            lam, eval_ce, (1.0 - eval_ce / random_ce) * 100.0,
+            lam,      eval_ce,                              (1.0 - eval_ce / random_ce) * 100.0,
             train_ce, (1.0 - train_ce / random_ce) * 100.0,
         });
 
@@ -8054,7 +8210,7 @@ test "interpolated lambda grid search" {
     });
     std.debug.print("Pure bigram eval CE:  {d:.4} ({d:.1}% below random)\n", .{ bi_eval_ce, (1.0 - bi_eval_ce / random_ce) * 100.0 });
     std.debug.print("Pure trigram eval CE: {d:.4} ({d:.1}% below random)\n", .{ tri_eval_ce, (1.0 - tri_eval_ce / random_ce) * 100.0 });
-    std.debug.print("Interpolation gain:   {d:.4} nats below best pure method\n", .{ @min(bi_eval_ce, tri_eval_ce) - best_eval_ce });
+    std.debug.print("Interpolation gain:   {d:.4} nats below best pure method\n", .{@min(bi_eval_ce, tri_eval_ce) - best_eval_ce});
     std.debug.print("============================================\n", .{});
 
     try std.testing.expect(best_eval_ce < random_ce);
@@ -8135,8 +8291,14 @@ test "interpolated perplexity and generation" {
         const next = ltm.interpolatedSample(p2, p1, lambda, 0.8, 12345 + step);
         const word = ltm.getWord(next);
         if (g1 + word.len + 1 < gen1.len) {
-            if (g1 > 0) { gen1[g1] = ' '; g1 += 1; }
-            for (word) |c| { gen1[g1] = c; g1 += 1; }
+            if (g1 > 0) {
+                gen1[g1] = ' ';
+                g1 += 1;
+            }
+            for (word) |c| {
+                gen1[g1] = c;
+                g1 += 1;
+            }
         }
         p2 = p1;
         p1 = next;
@@ -8151,8 +8313,14 @@ test "interpolated perplexity and generation" {
         const next = ltm.interpolatedSample(p2, p1, lambda, 0.5, 54321 + step);
         const word = ltm.getWord(next);
         if (g2 + word.len + 1 < gen2.len) {
-            if (g2 > 0) { gen2[g2] = ' '; g2 += 1; }
-            for (word) |c| { gen2[g2] = c; g2 += 1; }
+            if (g2 > 0) {
+                gen2[g2] = ' ';
+                g2 += 1;
+            }
+            for (word) |c| {
+                gen2[g2] = c;
+                g2 += 1;
+            }
         }
         p2 = p1;
         p1 = next;
@@ -8167,8 +8335,14 @@ test "interpolated perplexity and generation" {
         const next = ltm.interpolatedSample(p2, p1, lambda, 0.3, 99999 + step);
         const word = ltm.getWord(next);
         if (g3 + word.len + 1 < gen3.len) {
-            if (g3 > 0) { gen3[g3] = ' '; g3 += 1; }
-            for (word) |c| { gen3[g3] = c; g3 += 1; }
+            if (g3 > 0) {
+                gen3[g3] = ' ';
+                g3 += 1;
+            }
+            for (word) |c| {
+                gen3[g3] = c;
+                g3 += 1;
+            }
         }
         p2 = p1;
         p1 = next;
@@ -8178,7 +8352,7 @@ test "interpolated perplexity and generation" {
     std.debug.print("Interpolated: train={d:.2} eval={d:.2} gap={d:.2}\n", .{ interp_train_ppl, interp_eval_ppl, interp_eval_ppl - interp_train_ppl });
     std.debug.print("Pure bigram eval:    {d:.2}\n", .{bi_eval_ppl});
     std.debug.print("Pure trigram eval:   {d:.2}\n", .{tri_eval_ppl});
-    std.debug.print("Interp improvement:  {d:.1}% below bigram\n", .{ (1.0 - interp_eval_ppl / bi_eval_ppl) * 100.0 });
+    std.debug.print("Interp improvement:  {d:.1}% below bigram\n", .{(1.0 - interp_eval_ppl / bi_eval_ppl) * 100.0});
     std.debug.print("\n--- Generation (interpolated, start: \"to be\") ---\n", .{});
     std.debug.print("T=0.8: \"{s}\"\n", .{gen1[0..g1]});
     std.debug.print("T=0.5: \"{s}\"\n", .{gen2[0..g2]});
@@ -8229,8 +8403,14 @@ test "repetition penalty and ngram blocking generation" {
         const next = ltm.interpolatedSample(p2, p1, lambda, 0.3, 99999 + step);
         const word = ltm.getWord(next);
         if (gb + word.len + 1 < gen_base.len) {
-            if (gb > 0) { gen_base[gb] = ' '; gb += 1; }
-            for (word) |c| { gen_base[gb] = c; gb += 1; }
+            if (gb > 0) {
+                gen_base[gb] = ' ';
+                gb += 1;
+            }
+            for (word) |c| {
+                gen_base[gb] = c;
+                gb += 1;
+            }
         }
         hist_base[hb_len] = next;
         hb_len += 1;
@@ -8253,8 +8433,14 @@ test "repetition penalty and ngram blocking generation" {
         const next = ltm.penaltySample(p2, p1, lambda, 0.3, 99999 + step, &hist_pen, hp_len, 1.2, false);
         const word = ltm.getWord(next);
         if (gp + word.len + 1 < gen_pen.len) {
-            if (gp > 0) { gen_pen[gp] = ' '; gp += 1; }
-            for (word) |c| { gen_pen[gp] = c; gp += 1; }
+            if (gp > 0) {
+                gen_pen[gp] = ' ';
+                gp += 1;
+            }
+            for (word) |c| {
+                gen_pen[gp] = c;
+                gp += 1;
+            }
         }
         hist_pen[hp_len] = next;
         hp_len += 1;
@@ -8277,8 +8463,14 @@ test "repetition penalty and ngram blocking generation" {
         const next = ltm.penaltySample(p2, p1, lambda, 0.3, 99999 + step, &hist_block, hbl_len, 1.2, true);
         const word = ltm.getWord(next);
         if (gbl + word.len + 1 < gen_block.len) {
-            if (gbl > 0) { gen_block[gbl] = ' '; gbl += 1; }
-            for (word) |c| { gen_block[gbl] = c; gbl += 1; }
+            if (gbl > 0) {
+                gen_block[gbl] = ' ';
+                gbl += 1;
+            }
+            for (word) |c| {
+                gen_block[gbl] = c;
+                gbl += 1;
+            }
         }
         hist_block[hbl_len] = next;
         hbl_len += 1;
@@ -8301,8 +8493,14 @@ test "repetition penalty and ngram blocking generation" {
         const next = ltm.penaltySample(p2, p1, lambda, 0.8, 12345 + step, &hist_t08, h08_len, 1.2, true);
         const word = ltm.getWord(next);
         if (g08 + word.len + 1 < gen_t08.len) {
-            if (g08 > 0) { gen_t08[g08] = ' '; g08 += 1; }
-            for (word) |c| { gen_t08[g08] = c; g08 += 1; }
+            if (g08 > 0) {
+                gen_t08[g08] = ' ';
+                g08 += 1;
+            }
+            for (word) |c| {
+                gen_t08[g08] = c;
+                g08 += 1;
+            }
         }
         hist_t08[h08_len] = next;
         h08_len += 1;
@@ -8397,8 +8595,14 @@ test "penalty alpha sweep and diversity metrics" {
             const next = ltm.penaltySample(p2, p1, lambda, 0.3, 99999 + step, &hist, h_len, alpha, true);
             const word = ltm.getWord(next);
             if (g + word.len + 1 < gen.len) {
-                if (g > 0) { gen[g] = ' '; g += 1; }
-                for (word) |c| { gen[g] = c; g += 1; }
+                if (g > 0) {
+                    gen[g] = ' ';
+                    g += 1;
+                }
+                for (word) |c| {
+                    gen[g] = c;
+                    g += 1;
+                }
             }
             hist[h_len] = next;
             h_len += 1;
@@ -8524,7 +8728,7 @@ test "kneser-ney discount sweep and ppl comparison" {
     std.debug.print("KN train CE:     {d:.4} ({d:.1}% below random), PPL {d:.2}\n", .{ kn_train_ce, (1.0 - kn_train_ce / random_ce) * 100.0, kn_train_ppl });
     std.debug.print("KN overfit gap:  {d:.2}\n", .{kn_train_ppl - best_kn_ppl});
     std.debug.print("Laplace eval CE: {d:.4} ({d:.1}% below random), PPL {d:.2}\n", .{ laplace_eval_ce, (1.0 - laplace_eval_ce / random_ce) * 100.0, laplace_eval_ppl });
-    std.debug.print("KN improvement:  {d:.1}% PPL reduction vs Laplace interpolated\n", .{ (1.0 - best_kn_ppl / laplace_eval_ppl) * 100.0 });
+    std.debug.print("KN improvement:  {d:.1}% PPL reduction vs Laplace interpolated\n", .{(1.0 - best_kn_ppl / laplace_eval_ppl) * 100.0});
     std.debug.print("============================================\n", .{});
 
     // Assertions
@@ -8572,8 +8776,14 @@ test "kneser-ney generation with penalty" {
         const next = ltm.knPenaltySample(p2, p1, lambda, discount, 0.3, 99999 + step, &hist_kn3, hk3_len, 1.5, true);
         const word = ltm.getWord(next);
         if (gk3 + word.len + 1 < gen_kn_t03.len) {
-            if (gk3 > 0) { gen_kn_t03[gk3] = ' '; gk3 += 1; }
-            for (word) |c| { gen_kn_t03[gk3] = c; gk3 += 1; }
+            if (gk3 > 0) {
+                gen_kn_t03[gk3] = ' ';
+                gk3 += 1;
+            }
+            for (word) |c| {
+                gen_kn_t03[gk3] = c;
+                gk3 += 1;
+            }
         }
         hist_kn3[hk3_len] = next;
         hk3_len += 1;
@@ -8595,8 +8805,14 @@ test "kneser-ney generation with penalty" {
         const next = ltm.knPenaltySample(p2, p1, lambda, discount, 0.8, 12345 + step, &hist_kn8, hk8_len, 1.2, true);
         const word = ltm.getWord(next);
         if (gk8 + word.len + 1 < gen_kn_t08.len) {
-            if (gk8 > 0) { gen_kn_t08[gk8] = ' '; gk8 += 1; }
-            for (word) |c| { gen_kn_t08[gk8] = c; gk8 += 1; }
+            if (gk8 > 0) {
+                gen_kn_t08[gk8] = ' ';
+                gk8 += 1;
+            }
+            for (word) |c| {
+                gen_kn_t08[gk8] = c;
+                gk8 += 1;
+            }
         }
         hist_kn8[hk8_len] = next;
         hk8_len += 1;
@@ -8618,8 +8834,14 @@ test "kneser-ney generation with penalty" {
         const next = ltm.penaltySample(p2, p1, 0.2, 0.3, 99999 + step, &hist_lap3, hl3_len, 1.5, true);
         const word = ltm.getWord(next);
         if (gl3 + word.len + 1 < gen_lap_t03.len) {
-            if (gl3 > 0) { gen_lap_t03[gl3] = ' '; gl3 += 1; }
-            for (word) |c| { gen_lap_t03[gl3] = c; gl3 += 1; }
+            if (gl3 > 0) {
+                gen_lap_t03[gl3] = ' ';
+                gl3 += 1;
+            }
+            for (word) |c| {
+                gen_lap_t03[gl3] = c;
+                gl3 += 1;
+            }
         }
         hist_lap3[hl3_len] = next;
         hl3_len += 1;
@@ -8753,7 +8975,7 @@ test "4-gram kneser-ney statistics and ppl" {
     std.debug.print("4-gram train CE: {d:.4} ({d:.1}% below random), PPL {d:.2}\n", .{ fg_train_ce, (1.0 - fg_train_ce / random_ce) * 100.0, fg_train_ppl });
     std.debug.print("4-gram overfit gap: {d:.2}\n", .{best_4g_ppl - fg_train_ppl});
     std.debug.print("Trigram KN eval PPL: {d:.2}\n", .{tri_kn_eval_ppl});
-    std.debug.print("4-gram improvement: {d:.1}% PPL reduction vs trigram KN\n", .{ (1.0 - best_4g_ppl / tri_kn_eval_ppl) * 100.0 });
+    std.debug.print("4-gram improvement: {d:.1}% PPL reduction vs trigram KN\n", .{(1.0 - best_4g_ppl / tri_kn_eval_ppl) * 100.0});
     std.debug.print("============================================\n", .{});
 
     // Assertions
@@ -8806,8 +9028,14 @@ test "4-gram kneser-ney generation with penalty" {
         const next = ltm.kn4gramPenaltySample(p3, p2, p1, lambda, discount, 0.3, 99999 + step, &hist_4g3, h3_len, 1.5, true);
         const word = ltm.getWord(next);
         if (g3 + word.len + 1 < gen_4g_t03.len) {
-            if (g3 > 0) { gen_4g_t03[g3] = ' '; g3 += 1; }
-            for (word) |c| { gen_4g_t03[g3] = c; g3 += 1; }
+            if (g3 > 0) {
+                gen_4g_t03[g3] = ' ';
+                g3 += 1;
+            }
+            for (word) |c| {
+                gen_4g_t03[g3] = c;
+                g3 += 1;
+            }
         }
         hist_4g3[h3_len] = next;
         h3_len += 1;
@@ -8832,8 +9060,14 @@ test "4-gram kneser-ney generation with penalty" {
         const next = ltm.kn4gramPenaltySample(p3, p2, p1, lambda, discount, 0.8, 12345 + step, &hist_4g8, h8_len, 1.2, true);
         const word = ltm.getWord(next);
         if (g8 + word.len + 1 < gen_4g_t08.len) {
-            if (g8 > 0) { gen_4g_t08[g8] = ' '; g8 += 1; }
-            for (word) |c| { gen_4g_t08[g8] = c; g8 += 1; }
+            if (g8 > 0) {
+                gen_4g_t08[g8] = ' ';
+                g8 += 1;
+            }
+            for (word) |c| {
+                gen_4g_t08[g8] = c;
+                g8 += 1;
+            }
         }
         hist_4g8[h8_len] = next;
         h8_len += 1;
@@ -8856,8 +9090,14 @@ test "4-gram kneser-ney generation with penalty" {
         const next = ltm.knPenaltySample(p2, p1, 1.0, 0.25, 0.3, 99999 + step, &hist_tri3, ht3_len, 1.5, true);
         const word = ltm.getWord(next);
         if (gt3 + word.len + 1 < gen_tri_t03.len) {
-            if (gt3 > 0) { gen_tri_t03[gt3] = ' '; gt3 += 1; }
-            for (word) |c| { gen_tri_t03[gt3] = c; gt3 += 1; }
+            if (gt3 > 0) {
+                gen_tri_t03[gt3] = ' ';
+                gt3 += 1;
+            }
+            for (word) |c| {
+                gen_tri_t03[gt3] = c;
+                gt3 += 1;
+            }
         }
         hist_tri3[ht3_len] = next;
         ht3_len += 1;
@@ -9981,7 +10221,10 @@ test "bipolar noise robustness and capacity comparison" {
         var bp_bsim: f64 = -2;
         for (0..NUM) |k| {
             const s = bp_noisy.similarity(&bp_symbols[k]);
-            if (s > bp_bsim) { bp_bsim = s; bp_best = k; }
+            if (s > bp_bsim) {
+                bp_bsim = s;
+                bp_best = k;
+            }
         }
 
         // Ternary noise: random trit
@@ -10000,13 +10243,15 @@ test "bipolar noise robustness and capacity comparison" {
         var tr_bsim: f64 = -2;
         for (0..NUM) |k| {
             const s = tr_noisy.similarity(&tr_symbols[k]);
-            if (s > tr_bsim) { tr_bsim = s; tr_best = k; }
+            if (s > tr_bsim) {
+                tr_bsim = s;
+                tr_best = k;
+            }
         }
 
         std.debug.print("  {d:>5}%%  | {d:.4}      | {d:.4}      | {s:>4}      | {s}\n", .{
-            noise_pct, bp_sim, tr_sim,
-            if (bp_best == 5) "OK" else "FAIL",
-            if (tr_best == 5) "OK" else "FAIL",
+            noise_pct,                          bp_sim,                             tr_sim,
+            if (bp_best == 5) "OK" else "FAIL", if (tr_best == 5) "OK" else "FAIL",
         });
     }
 
@@ -10035,7 +10280,10 @@ test "bipolar noise robustness and capacity comparison" {
             var bbs: f64 = -2;
             for (0..NUM) |k| {
                 const s = bq.similarity(&bp_symbols[k]);
-                if (s > bbs) { bbs = s; bbi = k; }
+                if (s > bbs) {
+                    bbs = s;
+                    bbi = k;
+                }
             }
             if (bbi == item) bp_cap_ok += 1;
         }
@@ -10057,15 +10305,22 @@ test "bipolar noise robustness and capacity comparison" {
             var tbs: f64 = -2;
             for (0..NUM) |k| {
                 const s = tq.similarity(&tr_symbols[k]);
-                if (s > tbs) { tbs = s; tbi = k; }
+                if (s > tbs) {
+                    tbs = s;
+                    tbi = k;
+                }
             }
             if (tbi == item) tr_cap_ok += 1;
         }
 
         std.debug.print("  {d:>5}  | {d:>2}/{d:<2} {d:>5.1}%% | {d:>2}/{d:<2} {d:>5.1}%%\n", .{
             num_items,
-            bp_cap_ok, num_items, @as(f64, @floatFromInt(bp_cap_ok)) / @as(f64, @floatFromInt(num_items)) * 100.0,
-            tr_cap_ok, num_items, @as(f64, @floatFromInt(tr_cap_ok)) / @as(f64, @floatFromInt(num_items)) * 100.0,
+            bp_cap_ok,
+            num_items,
+            @as(f64, @floatFromInt(bp_cap_ok)) / @as(f64, @floatFromInt(num_items)) * 100.0,
+            tr_cap_ok,
+            num_items,
+            @as(f64, @floatFromInt(tr_cap_ok)) / @as(f64, @floatFromInt(num_items)) * 100.0,
         });
     }
 
@@ -10091,8 +10346,8 @@ test "rdf triple encoding and query bipolar" {
     const NUM_ENTITIES = 10;
     var entities: [NUM_ENTITIES]Hypervector = undefined;
     const entity_names = [_][]const u8{
-        "paris", "france", "europe", "london", "uk",
-        "berlin", "germany", "tokyo", "japan", "asia",
+        "paris",  "france",  "europe", "london", "uk",
+        "berlin", "germany", "tokyo",  "japan",  "asia",
     };
     for (0..NUM_ENTITIES) |i| {
         entities[i] = bipolarRandom(DIM, 0xE100 + @as(u64, @intCast(i)));
@@ -11960,8 +12215,14 @@ test "multi-exemplar relation extraction tree vs flat" {
             for (0..NUM_PAIRS) |p| {
                 const t_sim = tree_pred.similarity(&b_words[p]);
                 const f_sim = flat_pred.similarity(&b_words[p]);
-                if (t_sim > t_best_sim) { t_best_sim = t_sim; tree_best = p; }
-                if (f_sim > f_best_sim) { f_best_sim = f_sim; flat_best = p; }
+                if (t_sim > t_best_sim) {
+                    t_best_sim = t_sim;
+                    tree_best = p;
+                }
+                if (f_sim > f_best_sim) {
+                    f_best_sim = f_sim;
+                    flat_best = p;
+                }
             }
 
             if (tree_best == t) tree_correct += 1;
@@ -12128,7 +12389,10 @@ test "hybrid bipolar ternary noisy analogy comparison" {
                 var bp_bsim: f64 = -2.0;
                 for (0..PAIRS_PER_REL) |p| {
                     const sim = bp_pred.similarity(&bp_b[p]);
-                    if (sim > bp_bsim) { bp_bsim = sim; bp_best = p; }
+                    if (sim > bp_bsim) {
+                        bp_bsim = sim;
+                        bp_best = p;
+                    }
                 }
                 if (bp_best == q) bp_correct_by_noise[n_idx] += 1;
 
@@ -12144,7 +12408,10 @@ test "hybrid bipolar ternary noisy analogy comparison" {
                 var tr_bsim: f64 = -2.0;
                 for (0..PAIRS_PER_REL) |p| {
                     const sim = tr_pred.similarity(&tr_b[p]);
-                    if (sim > tr_bsim) { tr_bsim = sim; tr_best = p; }
+                    if (sim > tr_bsim) {
+                        tr_bsim = sim;
+                        tr_best = p;
+                    }
                 }
                 if (tr_best == q) tr_correct_by_noise[n_idx] += 1;
 
@@ -12162,7 +12429,10 @@ test "hybrid bipolar ternary noisy analogy comparison" {
                 var hy_bsim: f64 = -2.0;
                 for (0..PAIRS_PER_REL) |p| {
                     const sim = hy_pred.similarity(&bp_b[p]);
-                    if (sim > hy_bsim) { hy_bsim = sim; hy_best = p; }
+                    if (sim > hy_bsim) {
+                        hy_bsim = sim;
+                        hy_best = p;
+                    }
                 }
                 if (hy_best == q) hy_correct_by_noise[n_idx] += 1;
 
@@ -12275,7 +12545,10 @@ test "hybrid chain composition and superposition capacity" {
             for (0..20) |d| {
                 if (d < k) continue; // skip items in the bundle
                 var distractor = Hypervector.random(DIM, 0xDD00 + @as(u64, @intCast(d)) * 5113);
-                if (bundled.similarity(&distractor) >= sim) { is_best = false; break; }
+                if (bundled.similarity(&distractor) >= sim) {
+                    is_best = false;
+                    break;
+                }
             }
             if (is_best) recalled += 1;
         }
@@ -12549,13 +12822,13 @@ test "large knowledge graph 100 triples multi-hop" {
         }
         single_hop_correct += rel_correct;
         std.debug.print("{s:>11} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            rel_names[r], rel_correct, NUM_COUNTRIES,
+            rel_names[r],                                                         rel_correct, NUM_COUNTRIES,
             @as(f64, @floatFromInt(rel_correct)) / @as(f64, NUM_COUNTRIES) * 100,
         });
     }
 
     std.debug.print("\nSingle-hop total: {}/{} ({d:.1}%)\n", .{
-        single_hop_correct, single_hop_total,
+        single_hop_correct,                                                                            single_hop_total,
         @as(f64, @floatFromInt(single_hop_correct)) / @as(f64, @floatFromInt(single_hop_total)) * 100,
     });
 
@@ -12624,9 +12897,8 @@ test "large knowledge graph 100 triples multi-hop" {
     for (0..HOP_CONFIGS) |h| {
         const avg_sim = multihop_simsum[h] / @as(f64, CHAINS_PER_HOP);
         std.debug.print("{:>4} | {:>7} | {:>5} | {d:>7.1}% | {d:>6.4}\n", .{
-            h + 1, multihop_correct[h], CHAINS_PER_HOP,
-            @as(f64, @floatFromInt(multihop_correct[h])) / @as(f64, CHAINS_PER_HOP) * 100,
-            avg_sim,
+            h + 1,                                                                         multihop_correct[h], CHAINS_PER_HOP,
+            @as(f64, @floatFromInt(multihop_correct[h])) / @as(f64, CHAINS_PER_HOP) * 100, avg_sim,
         });
     }
 
@@ -12637,7 +12909,7 @@ test "large knowledge graph 100 triples multi-hop" {
         correct_multihop += multihop_correct[h];
     }
     std.debug.print("\nMulti-hop total: {}/{} ({d:.1}%)\n", .{
-        correct_multihop, total_multihop,
+        correct_multihop,                                                                          total_multihop,
         @as(f64, @floatFromInt(correct_multihop)) / @as(f64, @floatFromInt(total_multihop)) * 100,
     });
 
@@ -12647,15 +12919,15 @@ test "large knowledge graph 100 triples multi-hop" {
     std.debug.print("\n=== KG SUMMARY ===\n", .{});
     std.debug.print("Triples:     {}\n", .{triple_count});
     std.debug.print("Single-hop:  {}/{} ({d:.1}%)\n", .{
-        single_hop_correct, single_hop_total,
+        single_hop_correct,                                                                            single_hop_total,
         @as(f64, @floatFromInt(single_hop_correct)) / @as(f64, @floatFromInt(single_hop_total)) * 100,
     });
     std.debug.print("Multi-hop:   {}/{} ({d:.1}%)\n", .{
-        correct_multihop, total_multihop,
+        correct_multihop,                                                                          total_multihop,
         @as(f64, @floatFromInt(correct_multihop)) / @as(f64, @floatFromInt(total_multihop)) * 100,
     });
     std.debug.print("Grand total: {}/{} ({d:.1}%)\n", .{
-        grand_correct, grand_total,
+        grand_correct,                                                                       grand_total,
         @as(f64, @floatFromInt(grand_correct)) / @as(f64, @floatFromInt(grand_total)) * 100,
     });
     std.debug.print("============================================\n", .{});
@@ -12759,13 +13031,13 @@ test "superposition subgraph queries" {
         total_recalled += recalled;
         const sub_queries = ENTITIES_PER_SUB * RELS_PER_SUB;
         std.debug.print("{:>8} | {:>7} | {:>8} | {d:>8.1}%\n", .{
-            s, sub_queries, recalled,
+            s,                                                               sub_queries, recalled,
             @as(f64, @floatFromInt(recalled)) / @as(f64, sub_queries) * 100,
         });
     }
 
     std.debug.print("\nTotal recall: {}/{} ({d:.1}%)\n", .{
-        total_recalled, total_queries,
+        total_recalled,                                                                         total_queries,
         @as(f64, @floatFromInt(total_recalled)) / @as(f64, @floatFromInt(total_queries)) * 100,
     });
 
@@ -12790,7 +13062,7 @@ test "superposition subgraph queries" {
         }
     }
     std.debug.print("Mega-superposition: {}/{} triples have positive similarity ({d:.1}%)\n", .{
-        mega_positive, mega_total,
+        mega_positive,                                                                      mega_total,
         @as(f64, @floatFromInt(mega_positive)) / @as(f64, @floatFromInt(mega_total)) * 100,
     });
 
@@ -12828,7 +13100,7 @@ test "superposition subgraph queries" {
             }
         }
         std.debug.print("{:>5} | {:>8} | {:>5} | {d:>6.1}%\n", .{
-            noise, noisy_recalled, noisy_total_q,
+            noise,                                                                                  noisy_recalled, noisy_total_q,
             @as(f64, @floatFromInt(noisy_recalled)) / @as(f64, @floatFromInt(noisy_total_q)) * 100,
         });
     }
@@ -12907,7 +13179,10 @@ test "hybrid kg benchmark bipolar vs ternary vs hybrid" {
             for (0..NUM_ENTITIES) |j| {
                 var bp_obj_j = bipolarRandom(DIM, 0xC100 + @as(u64, @intCast(j)) * 100 + @as(u64, @intCast(r)));
                 const s = bp_retrieved.similarity(&bp_obj_j);
-                if (s > bp_best) { bp_best = s; bp_best_idx = j; }
+                if (s > bp_best) {
+                    bp_best = s;
+                    bp_best_idx = j;
+                }
             }
             if (bp_best_idx == e) bp_correct += 1;
 
@@ -12918,7 +13193,10 @@ test "hybrid kg benchmark bipolar vs ternary vs hybrid" {
             for (0..NUM_ENTITIES) |j| {
                 var tr_obj_j = Hypervector.random(DIM, 0xC200 + @as(u64, @intCast(j)) * 100 + @as(u64, @intCast(r)));
                 const s = tr_retrieved.similarity(&tr_obj_j);
-                if (s > tr_best) { tr_best = s; tr_best_idx = j; }
+                if (s > tr_best) {
+                    tr_best = s;
+                    tr_best_idx = j;
+                }
             }
             if (tr_best_idx == e) tr_correct += 1;
 
@@ -13019,7 +13297,10 @@ test "hybrid kg benchmark bipolar vs ternary vs hybrid" {
             for (0..NUM_ENTITIES) |j| {
                 var bp_obj_j = bipolarRandom(DIM, 0xC100 + @as(u64, @intCast(j)) * 100 + @as(u64, @intCast(NOISY_REL)));
                 const s = bp_q.similarity(&bp_obj_j);
-                if (s > bp_best_s) { bp_best_s = s; bp_bi = j; }
+                if (s > bp_best_s) {
+                    bp_best_s = s;
+                    bp_bi = j;
+                }
             }
             if (bp_bi == e) bp_n_ok += 1;
 
@@ -13034,7 +13315,10 @@ test "hybrid kg benchmark bipolar vs ternary vs hybrid" {
             for (0..NUM_ENTITIES) |j| {
                 var tr_obj_j = Hypervector.random(DIM, 0xC200 + @as(u64, @intCast(j)) * 100 + @as(u64, @intCast(NOISY_REL)));
                 const s = tr_q.similarity(&tr_obj_j);
-                if (s > tr_best_s) { tr_best_s = s; tr_bi = j; }
+                if (s > tr_best_s) {
+                    tr_best_s = s;
+                    tr_bi = j;
+                }
             }
             if (tr_bi == e) tr_n_ok += 1;
 
@@ -13049,7 +13333,10 @@ test "hybrid kg benchmark bipolar vs ternary vs hybrid" {
             for (0..NUM_ENTITIES) |j| {
                 var bp_obj_j = bipolarRandom(DIM, 0xC100 + @as(u64, @intCast(j)) * 100 + @as(u64, @intCast(NOISY_REL)));
                 const s = hy_q.similarity(&bp_obj_j);
-                if (s > hy_best_s) { hy_best_s = s; hy_bi = j; }
+                if (s > hy_best_s) {
+                    hy_best_s = s;
+                    hy_bi = j;
+                }
             }
             if (hy_bi == e) hy_n_ok += 1;
         }
@@ -13187,7 +13474,10 @@ test "scaled kg 200 triples hierarchical superposition" {
                 for (0..ENTITIES_PER_DOMAIN) |j| {
                     var obj_j = bipolarRandom(DIM, 0x30000 + @as(u64, @intCast(d)) * 100000 + @as(u64, @intCast(j)) * 100 + @as(u64, @intCast(r)));
                     const sim = retrieved.similarity(&obj_j);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 if (best_idx == e) domain_correct += 1;
             }
@@ -13200,13 +13490,13 @@ test "scaled kg 200 triples hierarchical superposition" {
         const domain_total = ENTITIES_PER_DOMAIN * RELS_PER_DOMAIN;
         const domain_names = [_][]const u8{ "Geography", "People", "Science" };
         std.debug.print("{s:>6} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            domain_names[d], domain_correct, domain_total,
+            domain_names[d],                                                        domain_correct, domain_total,
             @as(f64, @floatFromInt(domain_correct)) / @as(f64, domain_total) * 100,
         });
     }
 
     std.debug.print("\nTotal single-hop: {}/{} ({d:.1}%)\n", .{
-        total_correct, total_queries,
+        total_correct,                                                                         total_queries,
         @as(f64, @floatFromInt(total_correct)) / @as(f64, @floatFromInt(total_queries)) * 100,
     });
 
@@ -13264,7 +13554,7 @@ test "scaled kg 200 triples hierarchical superposition" {
         }
     }
     std.debug.print("Superposition recall (domain attribution): {}/{} ({d:.1}%)\n", .{
-        super_recalled, super_total,
+        super_recalled,                                                                       super_total,
         @as(f64, @floatFromInt(super_recalled)) / @as(f64, @floatFromInt(super_total)) * 100,
     });
 
@@ -13372,14 +13662,14 @@ test "planning prototype path queries through kg" {
 
             const depth_names = [_][]const u8{ "city", "country", "continent", "hemisphere", "Earth" };
             std.debug.print("{s:>5} | {s:>7} | {s:>7} | {:>4} | {s} | {d:.4}\n", .{
-                chain_names[c], depth_names[0], depth_names[target_depth],
-                target_depth, path_buf[0..path_len], sim,
+                chain_names[c], depth_names[0],        depth_names[target_depth],
+                target_depth,   path_buf[0..path_len], sim,
             });
         }
     }
 
     std.debug.print("\nPlanning accuracy: {}/{} ({d:.1}%)\n", .{
-        plan_correct, plan_total,
+        plan_correct,                                                                      plan_total,
         @as(f64, @floatFromInt(plan_correct)) / @as(f64, @floatFromInt(plan_total)) * 100,
     });
 
@@ -13417,7 +13707,7 @@ test "planning prototype path queries through kg" {
     }
 
     std.debug.print("Reverse planning: {}/{} ({d:.1}%)\n", .{
-        reverse_correct, reverse_total,
+        reverse_correct,                                                                         reverse_total,
         @as(f64, @floatFromInt(reverse_correct)) / @as(f64, @floatFromInt(reverse_total)) * 100,
     });
 
@@ -13506,9 +13796,8 @@ test "large kg noise curve multi-hop stress" {
     for (0..MAX_HOPS) |h| {
         const avg_sim = hop_simsum[h] / @as(f64, CHAINS_PER_HOP);
         std.debug.print("{:>4} | {:>7} | {:>5} | {d:>7.1}% | {d:>6.4}\n", .{
-            h + 1, hop_correct[h], CHAINS_PER_HOP,
-            @as(f64, @floatFromInt(hop_correct[h])) / @as(f64, CHAINS_PER_HOP) * 100,
-            avg_sim,
+            h + 1,                                                                    hop_correct[h], CHAINS_PER_HOP,
+            @as(f64, @floatFromInt(hop_correct[h])) / @as(f64, CHAINS_PER_HOP) * 100, avg_sim,
         });
     }
 
@@ -13542,13 +13831,16 @@ test "large kg noise curve multi-hop stress" {
             for (0..mem_size) |j| {
                 var obj_j = bipolarRandom(DIM, 0x80000 + @as(u64, @intCast(mem_size)) * 10000 + @as(u64, @intCast(j)) * 137);
                 const sim = retrieved.similarity(&obj_j);
-                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = j;
+                }
             }
             if (best_idx == e) mem_correct += 1;
         }
 
         std.debug.print("{:>8} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            mem_size, mem_correct, mem_size,
+            mem_size,                                                                       mem_correct, mem_size,
             @as(f64, @floatFromInt(mem_correct)) / @as(f64, @floatFromInt(mem_size)) * 100,
         });
     }
@@ -13585,12 +13877,15 @@ test "large kg noise curve multi-hop stress" {
             for (0..NOISE_MEM) |j| {
                 var obj_j = bipolarRandom(DIM, 0xA0000 + @as(u64, @intCast(j)) * 137);
                 const sim = retrieved.similarity(&obj_j);
-                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = j;
+                }
             }
             if (best_idx == e) noise_correct += 1;
         }
         std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            noise, noise_correct, NOISE_MEM,
+            noise,                                                              noise_correct, NOISE_MEM,
             @as(f64, @floatFromInt(noise_correct)) / @as(f64, NOISE_MEM) * 100,
         });
     }
@@ -13666,13 +13961,16 @@ test "intermediate indexing sub-bundle capacity fix" {
                 for (0..ENTS_PER_REL) |j| {
                     var obj_j = bipolarRandom(DIM, 0x300000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(j)) * 137);
                     const sim = retrieved.similarity(&obj_j);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 if (best_idx == e) rel_correct += 1;
             }
             total_correct += rel_correct;
             std.debug.print("{s:>6} | {:>3} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-                domain_names[d], r, rel_correct, ENTS_PER_REL,
+                domain_names[d],                                                     r, rel_correct, ENTS_PER_REL,
                 @as(f64, @floatFromInt(rel_correct)) / @as(f64, ENTS_PER_REL) * 100,
             });
         }
@@ -13719,7 +14017,10 @@ test "intermediate indexing sub-bundle capacity fix" {
                     for (0..FLAT_ENTS) |j| {
                         var obj_j = bipolarRandom(DIM, 0x300000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r2)) * 10000 + @as(u64, @intCast(j)) * 137);
                         const sim = retrieved.similarity(&obj_j);
-                        if (sim > best_sim) { best_sim = sim; best_idx = r2 * FLAT_ENTS + j; }
+                        if (sim > best_sim) {
+                            best_sim = sim;
+                            best_idx = r2 * FLAT_ENTS + j;
+                        }
                     }
                 }
                 if (best_idx == r * FLAT_ENTS + e) domain_flat_correct += 1;
@@ -13727,13 +14028,13 @@ test "intermediate indexing sub-bundle capacity fix" {
         }
         flat_correct += domain_flat_correct;
         std.debug.print("{s:>6} flat: {}/{} ({d:.1}%)\n", .{
-            domain_names[d], domain_flat_correct, domain_flat_total,
+            domain_names[d],                                                                                 domain_flat_correct, domain_flat_total,
             @as(f64, @floatFromInt(domain_flat_correct)) / @as(f64, @floatFromInt(domain_flat_total)) * 100,
         });
     }
 
     std.debug.print("Flat total: {}/{} ({d:.1}%)\n", .{
-        flat_correct, flat_total,
+        flat_correct,                                                                      flat_total,
         @as(f64, @floatFromInt(flat_correct)) / @as(f64, @floatFromInt(flat_total)) * 100,
     });
     std.debug.print("\n>>> INDEXED: {d:.1}% vs FLAT: {d:.1}% <<<\n", .{
@@ -13804,13 +14105,16 @@ test "indexed planning multi-hop on indexed kg" {
             var best_idx: usize = 0;
             for (0..ENTITIES_PER_LAYER) |j| {
                 const sim = retrieved.similarity(&layer_ents[l + 1][j]);
-                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = j;
+                }
             }
             if (best_idx == i) correct += 1;
         }
         single_total_ok += correct;
         std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            l, correct, ENTITIES_PER_LAYER,
+            l,                                                                     correct, ENTITIES_PER_LAYER,
             @as(f64, @floatFromInt(correct)) / @as(f64, ENTITIES_PER_LAYER) * 100,
         });
     }
@@ -13836,7 +14140,10 @@ test "indexed planning multi-hop on indexed kg" {
                 var best_idx: usize = 0;
                 for (0..ENTITIES_PER_LAYER) |j| {
                     const sim = retrieved.similarity(&layer_ents[step + 1][j]);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 current = layer_ents[step + 1][best_idx];
             }
@@ -13846,7 +14153,7 @@ test "indexed planning multi-hop on indexed kg" {
             if (final_sim > 0.99) plan_ok += 1;
         }
         std.debug.print("{:>4} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            hops, plan_ok, PLAN_TESTS,
+            hops,                                                          plan_ok, PLAN_TESTS,
             @as(f64, @floatFromInt(plan_ok)) / @as(f64, PLAN_TESTS) * 100,
         });
     }
@@ -13876,7 +14183,10 @@ test "indexed planning multi-hop on indexed kg" {
                 var best_idx: usize = 0;
                 for (0..ENTITIES_PER_LAYER) |j| {
                     const sim = retrieved.similarity(&layer_ents[step + 1][j]);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 current = layer_ents[step + 1][best_idx];
             }
@@ -13884,7 +14194,7 @@ test "indexed planning multi-hop on indexed kg" {
             if (final_sim > 0.99) noisy_ok += 1;
         }
         std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            noise, noisy_ok, NOISY_TESTS,
+            noise,                                                           noisy_ok, NOISY_TESTS,
             @as(f64, @floatFromInt(noisy_ok)) / @as(f64, NOISY_TESTS) * 100,
         });
     }
@@ -13937,7 +14247,10 @@ test "indexed vs flat capacity benchmark" {
                 for (0..size) |j| {
                     var obj_j = bipolarRandom(DIM, 0x700000 + @as(u64, @intCast(size)) * 100000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(j)) * 137);
                     const sim = retrieved.similarity(&obj_j);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 if (best_idx == e) idx_correct += 1;
             }
@@ -13975,7 +14288,10 @@ test "indexed vs flat capacity benchmark" {
                         for (0..@min(size, 10)) |j| {
                             var obj_j = bipolarRandom(DIM, 0x700000 + @as(u64, @intCast(size)) * 100000 + @as(u64, @intCast(r2)) * 10000 + @as(u64, @intCast(j)) * 137);
                             const sim = retrieved.similarity(&obj_j);
-                            if (sim > best_sim) { best_sim = sim; best_idx = r2 * @min(size, 10) + j; }
+                            if (sim > best_sim) {
+                                best_sim = sim;
+                                best_idx = r2 * @min(size, 10) + j;
+                            }
                         }
                     }
                     if (best_idx == r * @min(size, 10) + e) flat_correct += 1;
@@ -13987,9 +14303,8 @@ test "indexed vs flat capacity benchmark" {
         const flat_acc = if (flat_total > 0) @as(f64, @floatFromInt(flat_correct)) / @as(f64, @floatFromInt(flat_total)) * 100 else 0.0;
         const advantage = idx_acc - flat_acc;
         std.debug.print("{:>8} | {d:>5.1}%  | {d:>7.1}%  | {s}{d:>5.1}%\n", .{
-            size, idx_acc, flat_acc,
-            if (advantage >= 0) "+" else "",
-            advantage,
+            size,                            idx_acc,   flat_acc,
+            if (advantage >= 0) "+" else "", advantage,
         });
     }
 
@@ -14075,7 +14390,10 @@ test "path discovery bfs through indexed kg" {
                 var best_idx: usize = 0;
                 for (0..ENTS) |j| {
                     const sim = retrieved.similarity(&layer_ents[step + 1][j]);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
 
                 if (best_sim > THRESHOLD) {
@@ -14145,7 +14463,10 @@ test "path discovery bfs through indexed kg" {
                     var candidate = layer_ents[step_rev][j];
                     var pair = candidate.bind(&current_rev);
                     const sim = pair.similarity(&layer_memories[step_rev]);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 if (best_sim > 0.0) {
                     current_rev = layer_ents[step_rev][best_idx];
@@ -14187,7 +14508,10 @@ test "path discovery bfs through indexed kg" {
                 var best_idx_c: usize = 0;
                 for (0..ENTS) |j| {
                     const sim_c = retrieved_c.similarity(&layer_ents[step_c + 1][j]);
-                    if (sim_c > best_sim_c) { best_sim_c = sim_c; best_idx_c = j; }
+                    if (sim_c > best_sim_c) {
+                        best_sim_c = sim_c;
+                        best_idx_c = j;
+                    }
                 }
                 current_c = layer_ents[step_c + 1][best_idx_c];
             }
@@ -14275,7 +14599,10 @@ test "multi-hop discovery on large indexed kg" {
                 var best_r: usize = 0;
                 for (0..RELS_PER_DOMAIN) |r| {
                     const sim = pair_vec.similarity(&rel_memories[r]);
-                    if (sim > best_sim) { best_sim = sim; best_r = r; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_r = r;
+                    }
                 }
                 if (best_r == true_r) domain_ok += 1;
             }
@@ -14284,7 +14611,7 @@ test "multi-hop discovery on large indexed kg" {
         rel_disc_total_ok += domain_ok;
         rel_disc_total += domain_total;
         std.debug.print("{s:>6} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            domain_names[d], domain_ok, domain_total,
+            domain_names[d],                                                                  domain_ok, domain_total,
             @as(f64, @floatFromInt(domain_ok)) / @as(f64, @floatFromInt(domain_total)) * 100,
         });
     }
@@ -14334,7 +14661,10 @@ test "multi-hop discovery on large indexed kg" {
         var best_mid_idx: usize = 0;
         for (0..CHAIN_ENTS) |j| {
             const sim = retrieved_mid.similarity(&chain_mids[j]);
-            if (sim > best_mid_sim) { best_mid_sim = sim; best_mid_idx = j; }
+            if (sim > best_mid_sim) {
+                best_mid_sim = sim;
+                best_mid_idx = j;
+            }
         }
 
         // Hop 2: unbind discovered mid from R1 memory → should get target
@@ -14343,21 +14673,24 @@ test "multi-hop discovery on large indexed kg" {
         var best_tgt_idx: usize = 0;
         for (0..CHAIN_ENTS) |j| {
             const sim = retrieved_tgt.similarity(&chain_targets[j]);
-            if (sim > best_tgt_sim) { best_tgt_sim = sim; best_tgt_idx = j; }
+            if (sim > best_tgt_sim) {
+                best_tgt_sim = sim;
+                best_tgt_idx = j;
+            }
         }
 
         if (best_tgt_idx == i) chain_ok += 1;
 
         if (i < 5) {
             std.debug.print("  src[{}] --R0--> mid[{}] --R1--> tgt[{}] (expected {}): {s}\n", .{
-                i, best_mid_idx, best_tgt_idx, i,
+                i,                                       best_mid_idx, best_tgt_idx, i,
                 if (best_tgt_idx == i) "OK" else "MISS",
             });
         }
     }
 
     std.debug.print("2-hop chain discovery: {}/{} ({d:.1}%)\n", .{
-        chain_ok, CHAIN_ENTS,
+        chain_ok,                                                       CHAIN_ENTS,
         @as(f64, @floatFromInt(chain_ok)) / @as(f64, CHAIN_ENTS) * 100,
     });
 
@@ -14382,7 +14715,10 @@ test "multi-hop discovery on large indexed kg" {
         var b1_idx: usize = 0;
         for (0..CHAIN_ENTS) |j| {
             const s = ret1.similarity(&chain_mids[j]);
-            if (s > b1_sim) { b1_sim = s; b1_idx = j; }
+            if (s > b1_sim) {
+                b1_sim = s;
+                b1_idx = j;
+            }
         }
         // Hop 2
         var ret2 = mem_r1.unbind(&chain_mids[b1_idx]);
@@ -14390,7 +14726,10 @@ test "multi-hop discovery on large indexed kg" {
         var b2_idx: usize = 0;
         for (0..CHAIN_ENTS) |j| {
             const s = ret2.similarity(&chain_targets[j]);
-            if (s > b2_sim) { b2_sim = s; b2_idx = j; }
+            if (s > b2_sim) {
+                b2_sim = s;
+                b2_idx = j;
+            }
         }
         // Hop 3
         var ret3 = mem_r2.unbind(&chain_targets[b2_idx]);
@@ -14398,13 +14737,16 @@ test "multi-hop discovery on large indexed kg" {
         var b3_idx: usize = 0;
         for (0..CHAIN_ENTS) |j| {
             const s = ret3.similarity(&chain_layer3[j]);
-            if (s > b3_sim) { b3_sim = s; b3_idx = j; }
+            if (s > b3_sim) {
+                b3_sim = s;
+                b3_idx = j;
+            }
         }
 
         if (b3_idx == i) chain3_ok += 1;
     }
     std.debug.print("3-hop chain discovery: {}/{} ({d:.1}%)\n", .{
-        chain3_ok, CHAIN_ENTS,
+        chain3_ok,                                                       CHAIN_ENTS,
         @as(f64, @floatFromInt(chain3_ok)) / @as(f64, CHAIN_ENTS) * 100,
     });
 
@@ -14471,7 +14813,10 @@ test "noisy path discovery beam search" {
                 var best_gi: usize = 0;
                 for (0..ENTS_B) |j| {
                     const s = retrieved_g.similarity(&beam_ents[step_g + 1][j]);
-                    if (s > best_g) { best_g = s; best_gi = j; }
+                    if (s > best_g) {
+                        best_g = s;
+                        best_gi = j;
+                    }
                 }
                 current_g = beam_ents[step_g + 1][best_gi];
             }
@@ -14515,7 +14860,10 @@ test "noisy path discovery beam search" {
                     var best_s: f64 = -999.0;
                     var best_j: usize = 0;
                     for (0..ENTS_B) |j| {
-                        if (next_scores[j] > best_s) { best_s = next_scores[j]; best_j = j; }
+                        if (next_scores[j] > best_s) {
+                            best_s = next_scores[j];
+                            best_j = j;
+                        }
                     }
                     if (best_s > -999.0) {
                         candidates[num_cands] = best_j;
@@ -14529,7 +14877,10 @@ test "noisy path discovery beam search" {
             // Check if correct answer is in top candidates
             var found = false;
             for (0..num_cands) |c| {
-                if (candidates[c] == i) { found = true; break; }
+                if (candidates[c] == i) {
+                    found = true;
+                    break;
+                }
             }
             if (found) beam3_ok += 1;
         }
@@ -14567,7 +14918,10 @@ test "noisy path discovery beam search" {
                     var best_s: f64 = -999.0;
                     var best_j: usize = 0;
                     for (0..ENTS_B) |j| {
-                        if (next5_scores[j] > best_s) { best_s = next5_scores[j]; best_j = j; }
+                        if (next5_scores[j] > best_s) {
+                            best_s = next5_scores[j];
+                            best_j = j;
+                        }
                     }
                     if (best_s > -999.0) {
                         candidates5[num5] = best_j;
@@ -14580,7 +14934,10 @@ test "noisy path discovery beam search" {
 
             var found5 = false;
             for (0..num5) |c| {
-                if (candidates5[c] == i) { found5 = true; break; }
+                if (candidates5[c] == i) {
+                    found5 = true;
+                    break;
+                }
             }
             if (found5) beam5_ok += 1;
         }
@@ -14590,9 +14947,8 @@ test "noisy path discovery beam search" {
         const beam5_acc = @as(f64, @floatFromInt(beam5_ok)) / @as(f64, TEST_ENTS) * 100;
         const improvement = beam3_acc - greedy_acc;
         std.debug.print("{:>5} | {d:>5.1}% | {d:>5.1}% | {d:>5.1}% | {s}{d:>5.1}%\n", .{
-            noise, greedy_acc, beam3_acc, beam5_acc,
-            if (improvement >= 0) "+" else "",
-            improvement,
+            noise,                             greedy_acc,  beam3_acc, beam5_acc,
+            if (improvement >= 0) "+" else "", improvement,
         });
     }
 
@@ -14751,7 +15107,10 @@ test "arbitrary graph cycles detection" {
                 for (0..NODES) |j| {
                     var node_j = nodes[j];
                     const sim = retrieved_n.similarity(&node_j);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 // For nodes with single outgoing edge, best match should be the target
                 if (adj_counts[src] == 1 and best_idx == e.to) {
@@ -14767,7 +15126,7 @@ test "arbitrary graph cycles detection" {
     }
 
     std.debug.print("Neighbor discovery: {}/{} ({d:.1}%)\n", .{
-        neighbor_correct, neighbor_total,
+        neighbor_correct,                                                                          neighbor_total,
         @as(f64, @floatFromInt(neighbor_correct)) / @as(f64, @floatFromInt(neighbor_total)) * 100,
     });
 
@@ -14794,12 +15153,18 @@ test "arbitrary graph cycles detection" {
             for (0..NODES) |s| {
                 var ns = nodes[s];
                 const ss = current_p1.similarity(&ns);
-                if (ss > src_sim) { src_sim = ss; src_idx = s; }
+                if (ss > src_sim) {
+                    src_sim = ss;
+                    src_idx = s;
+                }
             }
             if (adj_counts[src_idx] > 0) {
                 var ret = adj_memories[src_idx].unbind(&nodes[src_idx]);
                 const s2 = ret.similarity(&nj);
-                if (s2 > best_sim_p) { best_sim_p = s2; best_node_p = j; }
+                if (s2 > best_sim_p) {
+                    best_sim_p = s2;
+                    best_node_p = j;
+                }
             }
         }
         if (best_node_p != expected_next) path1_ok = false;
@@ -14821,14 +15186,23 @@ test "arbitrary graph cycles detection" {
         for (0..NODES) |s| {
             var ns = nodes[s];
             const ss = current_p2.similarity(&ns);
-            if (ss > src_sim2) { src_sim2 = ss; src_idx2 = s; }
+            if (ss > src_sim2) {
+                src_sim2 = ss;
+                src_idx2 = s;
+            }
         }
         // Check: does src→exp edge exist?
         var edge_exists = false;
         for (edges) |e| {
-            if (e.from == src_idx2 and e.to == exp) { edge_exists = true; break; }
+            if (e.from == src_idx2 and e.to == exp) {
+                edge_exists = true;
+                break;
+            }
         }
-        if (!edge_exists) { path2_ok = false; break; }
+        if (!edge_exists) {
+            path2_ok = false;
+            break;
+        }
         current_p2 = nodes[exp];
     }
     const p2_sim = current_p2.similarity(&target3);
@@ -15081,7 +15455,7 @@ test "beam search arbitrary graph noise" {
             all_l0_pairs[i * 2 + j] = layer0[i].bind(&layer1[l0_targets[i][j]]);
         }
     }
-    var combined_l0 = treeBundleN(all_l0_pairs[0..L0 * 2]);
+    var combined_l0 = treeBundleN(all_l0_pairs[0 .. L0 * 2]);
 
     // Build combined L1→L2 memory
     var all_l1_pairs: [7]Hypervector = undefined;
@@ -15122,7 +15496,10 @@ test "beam search arbitrary graph noise" {
             var best_l1: usize = 0;
             for (0..L1) |j| {
                 const s = ret_g1.similarity(&layer1[j]);
-                if (s > best_l1_sim) { best_l1_sim = s; best_l1 = j; }
+                if (s > best_l1_sim) {
+                    best_l1_sim = s;
+                    best_l1 = j;
+                }
             }
             // Hop 2: unbind intermediate from combined L1 memory
             var ret_g2 = combined_l1.unbind(&layer1[best_l1]);
@@ -15134,7 +15511,10 @@ test "beam search arbitrary graph noise" {
             var best_l2_g: usize = 0;
             for (0..L2) |j| {
                 const s = ret_g2.similarity(&layer2[j]);
-                if (s > best_l2_sim) { best_l2_sim = s; best_l2_g = j; }
+                if (s > best_l2_sim) {
+                    best_l2_sim = s;
+                    best_l2_g = j;
+                }
             }
             if (best_l2_g == tgt_idx) greedy_ok += 1;
 
@@ -15158,7 +15538,10 @@ test "beam search arbitrary graph noise" {
                     var bs: f64 = -999.0;
                     var bi: usize = 0;
                     for (0..L1) |j| {
-                        if (scores1[j] > bs) { bs = scores1[j]; bi = j; }
+                        if (scores1[j] > bs) {
+                            bs = scores1[j];
+                            bi = j;
+                        }
                     }
                     if (bs > -999.0) {
                         cands[nc] = bi;
@@ -15187,7 +15570,10 @@ test "beam search arbitrary graph noise" {
                 var best_b3: f64 = -999.0;
                 var best_b3_idx: usize = 0;
                 for (0..L2) |j| {
-                    if (final_scores[j] > best_b3) { best_b3 = final_scores[j]; best_b3_idx = j; }
+                    if (final_scores[j] > best_b3) {
+                        best_b3 = final_scores[j];
+                        best_b3_idx = j;
+                    }
                 }
                 if (best_b3_idx == tgt_idx) beam3_ok += 1;
             }
@@ -15211,7 +15597,10 @@ test "beam search arbitrary graph noise" {
                     var bs5: f64 = -999.0;
                     var bi5: usize = 0;
                     for (0..L1) |j| {
-                        if (scores5[j] > bs5) { bs5 = scores5[j]; bi5 = j; }
+                        if (scores5[j] > bs5) {
+                            bs5 = scores5[j];
+                            bi5 = j;
+                        }
                     }
                     if (bs5 > -999.0) {
                         cands5[nc5] = bi5;
@@ -15239,7 +15628,10 @@ test "beam search arbitrary graph noise" {
                 var best5: f64 = -999.0;
                 var best5_idx: usize = 0;
                 for (0..L2) |j| {
-                    if (final5[j] > best5) { best5 = final5[j]; best5_idx = j; }
+                    if (final5[j] > best5) {
+                        best5 = final5[j];
+                        best5_idx = j;
+                    }
                 }
                 if (best5_idx == tgt_idx) beam5_ok += 1;
             }
@@ -15381,7 +15773,10 @@ test "massive kg 1000 triples multi-domain" {
                 for (0..ENTS) |j| {
                     var obj_j = bipolarRandom(DIM, 0x3000000 + @as(u64, @intCast(d)) * 10000000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(j)) * 137);
                     const sim = retrieved.similarity(&obj_j);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 if (best_idx == e) domain_correct += 1;
             }
@@ -15390,7 +15785,7 @@ test "massive kg 1000 triples multi-domain" {
         total_correct += domain_correct;
         total_queries += domain_total;
         std.debug.print("{s:>7} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            domain_names[d], domain_correct, domain_total,
+            domain_names[d],                                                                       domain_correct, domain_total,
             @as(f64, @floatFromInt(domain_correct)) / @as(f64, @floatFromInt(domain_total)) * 100,
         });
     }
@@ -15452,13 +15847,16 @@ test "multi-hop massive indexed kg" {
             for (0..ENTS_LAYER) |j| {
                 var ent_next = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(l + 1)) * 1000000 + @as(u64, @intCast(j)) * 7919);
                 const sim = retrieved.similarity(&ent_next);
-                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = j;
+                }
             }
             if (best_idx == i) correct += 1;
         }
         single_ok += correct;
         std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            l, correct, ENTS_LAYER,
+            l,                                                             correct, ENTS_LAYER,
             @as(f64, @floatFromInt(correct)) / @as(f64, ENTS_LAYER) * 100,
         });
     }
@@ -15481,7 +15879,10 @@ test "multi-hop massive indexed kg" {
                 for (0..ENTS_LAYER) |j| {
                     var ent_next = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(step + 1)) * 1000000 + @as(u64, @intCast(j)) * 7919);
                     const sim = retrieved.similarity(&ent_next);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 current = bipolarRandom(DIM, 0x4000000 + @as(u64, @intCast(step + 1)) * 1000000 + @as(u64, @intCast(best_idx)) * 7919);
             }
@@ -15491,7 +15892,7 @@ test "multi-hop massive indexed kg" {
             if (fsim > 0.99) hop_ok += 1;
         }
         std.debug.print("{:>4} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            hops, hop_ok, PLAN_TESTS,
+            hops,                                                         hop_ok, PLAN_TESTS,
             @as(f64, @floatFromInt(hop_ok)) / @as(f64, PLAN_TESTS) * 100,
         });
     }
@@ -15531,7 +15932,10 @@ test "multi-hop massive indexed kg" {
                 var best_r: usize = 0;
                 for (0..RD_RELS) |r| {
                     const sim = pair_vec.similarity(&rel_mems[r]);
-                    if (sim > best_r_sim) { best_r_sim = sim; best_r = r; }
+                    if (sim > best_r_sim) {
+                        best_r_sim = sim;
+                        best_r = r;
+                    }
                 }
                 if (best_r == true_r) rel_disc_ok += 1;
             }
@@ -15539,7 +15943,7 @@ test "multi-hop massive indexed kg" {
     }
 
     std.debug.print("Relation discovery: {}/{} ({d:.1}%)\n", .{
-        rel_disc_ok, rel_disc_total,
+        rel_disc_ok,                                                                          rel_disc_total,
         @as(f64, @floatFromInt(rel_disc_ok)) / @as(f64, @floatFromInt(rel_disc_total)) * 100,
     });
 
@@ -15591,7 +15995,10 @@ test "scale benchmark capacity noise 1000" {
                 for (0..size) |j| {
                     var obj_j = bipolarRandom(DIM, 0x8000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(j)) * 137);
                     const sim = retrieved.similarity(&obj_j);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 if (best_idx == e) total_ok += 1;
             }
@@ -15599,7 +16006,7 @@ test "scale benchmark capacity noise 1000" {
 
         const triples = size * NUM_RELS;
         std.debug.print("{:>8} | {:>7} | {:>7} | {d:>5.1}%\n", .{
-            size, triples, total_ok,
+            size,                                                                       triples, total_ok,
             @as(f64, @floatFromInt(total_ok)) / @as(f64, @floatFromInt(total_q)) * 100,
         });
     }
@@ -15646,14 +16053,17 @@ test "scale benchmark capacity noise 1000" {
                 for (0..NOISE_ENTS) |j| {
                     var obj_j = bipolarRandom(DIM, 0xA000000 + @as(u64, @intCast(r)) * 1000000 + @as(u64, @intCast(j)) * 137);
                     const sim = retrieved.similarity(&obj_j);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
                 if (best_idx == e) noise_ok += 1;
             }
         }
 
         std.debug.print("{:>5} | {:>7} | {:>5} | {d:>5.1}%\n", .{
-            noise, noise_ok, noise_total,
+            noise,                                                                          noise_ok, noise_total,
             @as(f64, @floatFromInt(noise_ok)) / @as(f64, @floatFromInt(noise_total)) * 100,
         });
     }
@@ -15736,7 +16146,10 @@ test "weighted edges via vsa similarity" {
             for (0..ents) |j| {
                 var obj_j = bipolarRandom(DIM, 0x1F00000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(j)) * 137);
                 const sim = retrieved.similarity(&obj_j);
-                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = j;
+                }
             }
 
             if (best_idx == i) rel_ok += 1;
@@ -15930,8 +16343,8 @@ test "dijkstra priority path discovery weighted" {
             path_len += 1;
 
             std.debug.print("Hop {}: {s} → {s} (sim={d:.4}, weight={d:.1}, score={d:.4})\n", .{
-                path_len, node_names[current], node_names[best_next],
-                best_raw_sim, chosen_w, best_score,
+                path_len,     node_names[current], node_names[best_next],
+                best_raw_sim, chosen_w,            best_score,
             });
             current = best_next;
         } else break;
@@ -15967,7 +16380,10 @@ test "dijkstra priority path discovery weighted" {
                 if (uw_visited[j]) continue;
                 var nj = nodes[j];
                 const sim = retrieved.similarity(&nj);
-                if (sim > uw_best_sim) { uw_best_sim = sim; uw_best = j; }
+                if (sim > uw_best_sim) {
+                    uw_best_sim = sim;
+                    uw_best = j;
+                }
             }
 
             uw_visited[uw_best] = true;
@@ -16040,7 +16456,10 @@ test "weighted vs unweighted benchmark noise" {
                 for (0..cap) |j| {
                     var obj_j = bipolarRandom(DIM, 0xE200000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(j)) * 137);
                     const sim = retrieved.similarity(&obj_j);
-                    if (sim > best_s) { best_s = sim; best_j = j; }
+                    if (sim > best_s) {
+                        best_s = sim;
+                        best_j = j;
+                    }
                 }
 
                 if (best_j == i) total_ok += 1;
@@ -16101,7 +16520,10 @@ test "weighted vs unweighted benchmark noise" {
                     for (0..cap) |j| {
                         var obj_j = bipolarRandom(DIM, 0xF200000 + @as(u64, @intCast(r)) * 100000 + @as(u64, @intCast(j)) * 137);
                         const sim = retrieved.similarity(&obj_j);
-                        if (sim > best_s) { best_s = sim; best_j = j; }
+                        if (sim > best_s) {
+                            best_s = sim;
+                            best_j = j;
+                        }
                     }
 
                     if (best_j == i) noise_ok += 1;
@@ -16228,7 +16650,10 @@ test "massive weighted kg 1000 triples priority" {
                             @as(u64, @intCast(rel_idx)) * 10000 + @as(u64, @intCast(j)) * 137;
                         var obj_j = bipolarRandom(DIM, seed_oj);
                         const sim = retrieved.similarity(&obj_j);
-                        if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                        if (sim > best_sim) {
+                            best_sim = sim;
+                            best_idx = j;
+                        }
                     }
 
                     if (best_idx == i) {
@@ -16250,11 +16675,16 @@ test "massive weighted kg 1000 triples priority" {
 
         std.debug.print("{s:>7} | {:>4}/{:<4} | {:>4}/{:<5} | {:>4}/{:<5} | {:>4}/{:<4} | {}/{}\n", .{
             domain_names[d],
-            per_wc_ok[0], weight_classes[0].num_rels * weight_classes[0].cap,
-            per_wc_ok[1], weight_classes[1].num_rels * weight_classes[1].cap,
-            per_wc_ok[2], weight_classes[2].num_rels * weight_classes[2].cap,
-            per_wc_ok[3], weight_classes[3].num_rels * weight_classes[3].cap,
-            domain_ok, domain_total,
+            per_wc_ok[0],
+            weight_classes[0].num_rels * weight_classes[0].cap,
+            per_wc_ok[1],
+            weight_classes[1].num_rels * weight_classes[1].cap,
+            per_wc_ok[2],
+            weight_classes[2].num_rels * weight_classes[2].cap,
+            per_wc_ok[3],
+            weight_classes[3].num_rels * weight_classes[3].cap,
+            domain_ok,
+            domain_total,
         });
     }
 
@@ -16342,7 +16772,10 @@ test "priority multihop massive weighted kg" {
             for (0..cap) |j| {
                 var dst_j = bipolarRandom(DIM, 0x3A00000 + @as(u64, @intCast(l + 1)) * 100000 + @as(u64, @intCast(j)) * 131);
                 const sim = retrieved.similarity(&dst_j);
-                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = j;
+                }
             }
 
             if (best_idx == i) ok += 1;
@@ -16383,10 +16816,16 @@ test "priority multihop massive weighted kg" {
                 for (0..cap) |j| {
                     var dst_j = bipolarRandom(DIM, 0x3A00000 + @as(u64, @intCast(h + 1)) * 100000 + @as(u64, @intCast(j)) * 131);
                     const sim = retrieved.similarity(&dst_j);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
 
-                if (best_idx != start_i) { correct = false; break; }
+                if (best_idx != start_i) {
+                    correct = false;
+                    break;
+                }
                 current = bipolarRandom(DIM, 0x3A00000 + @as(u64, @intCast(h + 1)) * 100000 + @as(u64, @intCast(start_i)) * 131);
             }
 
@@ -16475,7 +16914,10 @@ test "massive weighted noise benchmark" {
                     for (0..STRONG_CAP) |j| {
                         var obj_j = bipolarRandom(DIM, 0x4B00000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(j)) * 137);
                         const sim = retrieved.similarity(&obj_j);
-                        if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                        if (sim > best_sim) {
+                            best_sim = sim;
+                            best_idx = j;
+                        }
                     }
                     if (best_idx == i) strong_ok += 1;
                     strong_total += 1;
@@ -16508,7 +16950,10 @@ test "massive weighted noise benchmark" {
                     for (0..WEAK_CAP) |j| {
                         var obj_j = bipolarRandom(DIM, 0x5B00000 + @as(u64, @intCast(d)) * 1000000 + @as(u64, @intCast(r)) * 10000 + @as(u64, @intCast(j)) * 137);
                         const sim = retrieved.similarity(&obj_j);
-                        if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                        if (sim > best_sim) {
+                            best_sim = sim;
+                            best_idx = j;
+                        }
                     }
                     if (best_idx == i) weak_ok += 1;
                     weak_total += 1;
@@ -16523,7 +16968,10 @@ test "massive weighted noise benchmark" {
             noise, strong_ok, strong_total, s_acc, weak_ok, weak_total, w_acc,
         });
 
-        if (noise == 5) { strong_n5_acc = s_acc; weak_n5_acc = w_acc; }
+        if (noise == 5) {
+            strong_n5_acc = s_acc;
+            weak_n5_acc = w_acc;
+        }
     }
 
     const advantage = strong_n5_acc - weak_n5_acc;
@@ -16574,8 +17022,12 @@ test "babi style qa tasks vsa kg" {
 
     var t1_persons: [T1_PERSONS]Hypervector = undefined;
     var t1_places: [T1_PLACES]Hypervector = undefined;
-    for (0..T1_PERSONS) |i| { t1_persons[i] = bipolarRandom(DIM, 0xBA10000 + @as(u64, @intCast(i)) * 131); }
-    for (0..T1_PLACES) |i| { t1_places[i] = bipolarRandom(DIM, 0xBA20000 + @as(u64, @intCast(i)) * 137); }
+    for (0..T1_PERSONS) |i| {
+        t1_persons[i] = bipolarRandom(DIM, 0xBA10000 + @as(u64, @intCast(i)) * 131);
+    }
+    for (0..T1_PLACES) |i| {
+        t1_places[i] = bipolarRandom(DIM, 0xBA20000 + @as(u64, @intCast(i)) * 137);
+    }
 
     // Each person in a unique place → cap=10
     var t1_pairs: [T1_PERSONS]Hypervector = undefined;
@@ -16595,7 +17047,10 @@ test "babi style qa tasks vsa kg" {
         for (0..T1_PLACES) |j| {
             var place = t1_places[j];
             const sim = retrieved.similarity(&place);
-            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = j;
+            }
         }
         if (best_idx == i) t1_ok += 1;
     }
@@ -16607,7 +17062,9 @@ test "babi style qa tasks vsa kg" {
     // Q: "Where is the ball?" → kitchen (item→owner→location)
     const T2_ITEMS = 8;
     var t2_items: [T2_ITEMS]Hypervector = undefined;
-    for (0..T2_ITEMS) |i| { t2_items[i] = bipolarRandom(DIM, 0xBA30000 + @as(u64, @intCast(i)) * 139); }
+    for (0..T2_ITEMS) |i| {
+        t2_items[i] = bipolarRandom(DIM, 0xBA30000 + @as(u64, @intCast(i)) * 139);
+    }
 
     // owns: bind(person_i, item_i) — cap=8
     var t2_owns_pairs: [T2_ITEMS]Hypervector = undefined;
@@ -16644,7 +17101,10 @@ test "babi style qa tasks vsa kg" {
         for (0..T1_PERSONS) |j| {
             var pj = t1_persons[j];
             const sim = hop1.similarity(&pj);
-            if (sim > best_person_sim) { best_person_sim = sim; best_person_idx = j; }
+            if (sim > best_person_sim) {
+                best_person_sim = sim;
+                best_person_idx = j;
+            }
         }
 
         // Hop 2: person → location via t1_memory
@@ -16656,7 +17116,10 @@ test "babi style qa tasks vsa kg" {
         for (0..T1_PLACES) |j| {
             var pj = t1_places[j];
             const sim = hop2.similarity(&pj);
-            if (sim > best_place_sim) { best_place_sim = sim; best_place_idx = j; }
+            if (sim > best_place_sim) {
+                best_place_sim = sim;
+                best_place_idx = j;
+            }
         }
 
         // Expected: item_i's owner is person_i, who is in place_i
@@ -16669,7 +17132,9 @@ test "babi style qa tasks vsa kg" {
     // item → owner → location → region
     const T3_REGIONS = 5;
     var t3_regions: [T3_REGIONS]Hypervector = undefined;
-    for (0..T3_REGIONS) |i| { t3_regions[i] = bipolarRandom(DIM, 0xBA40000 + @as(u64, @intCast(i)) * 149); }
+    for (0..T3_REGIONS) |i| {
+        t3_regions[i] = bipolarRandom(DIM, 0xBA40000 + @as(u64, @intCast(i)) * 149);
+    }
 
     // region_of: bind(place_i, region_(i%5))
     var t3_region_pairs: [T1_PLACES]Hypervector = undefined;
@@ -16700,7 +17165,10 @@ test "babi style qa tasks vsa kg" {
         for (0..T1_PERSONS) |j| {
             var pj = t1_persons[j];
             const sim = hop1.similarity(&pj);
-            if (sim > bp_sim) { bp_sim = sim; bp_idx = j; }
+            if (sim > bp_sim) {
+                bp_sim = sim;
+                bp_idx = j;
+            }
         }
 
         // Hop 2: person → location
@@ -16712,7 +17180,10 @@ test "babi style qa tasks vsa kg" {
         for (0..T1_PLACES) |j| {
             var pj = t1_places[j];
             const sim = hop2.similarity(&pj);
-            if (sim > bl_sim) { bl_sim = sim; bl_idx = j; }
+            if (sim > bl_sim) {
+                bl_sim = sim;
+                bl_idx = j;
+            }
         }
 
         // Hop 3: location → region
@@ -16724,7 +17195,10 @@ test "babi style qa tasks vsa kg" {
         for (0..T3_REGIONS) |j| {
             var rj = t3_regions[j];
             const sim = hop3.similarity(&rj);
-            if (sim > br_sim) { br_sim = sim; br_idx = j; }
+            if (sim > br_sim) {
+                br_sim = sim;
+                br_idx = j;
+            }
         }
 
         const expected_region = i % T3_REGIONS;
@@ -16765,7 +17239,10 @@ test "babi style qa tasks vsa kg" {
             for (0..T1_PERSONS) |j| {
                 var pj = t1_persons[j];
                 const sim = h1.similarity(&pj);
-                if (sim > bps) { bps = sim; bpi = j; }
+                if (sim > bps) {
+                    bps = sim;
+                    bpi = j;
+                }
             }
 
             // person → place (hop2)
@@ -16777,7 +17254,10 @@ test "babi style qa tasks vsa kg" {
             for (0..T1_PLACES) |j| {
                 var lj = t1_places[j];
                 const sim = h2.similarity(&lj);
-                if (sim > bls) { bls = sim; bli = j; }
+                if (sim > bls) {
+                    bls = sim;
+                    bli = j;
+                }
             }
 
             if (bli == idx) t8_ok += 1; // place_idx == item_idx since person_i is in place_i
@@ -16880,7 +17360,10 @@ test "clutrr kinship reasoning vsa multihop" {
                 const jid = j * GENERATIONS + t + 1;
                 var pj = people[jid];
                 const sim = retrieved.similarity(&pj);
-                if (sim > best_sim) { best_sim = sim; best_idx = jid; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = jid;
+                }
             }
 
             if (best_idx == cid) hop1_ok += 1;
@@ -16908,7 +17391,10 @@ test "clutrr kinship reasoning vsa multihop" {
                 const jid = j * GENERATIONS + t + 1;
                 var pj = people[jid];
                 const sim = h1.similarity(&pj);
-                if (sim > b1_sim) { b1_sim = sim; b1_idx = jid; }
+                if (sim > b1_sim) {
+                    b1_sim = sim;
+                    b1_idx = jid;
+                }
             }
 
             // Hop 2: gen_{t+1} → gen_{t+2}
@@ -16921,7 +17407,10 @@ test "clutrr kinship reasoning vsa multihop" {
                 const jid = j * GENERATIONS + t + 2;
                 var pj = people[jid];
                 const sim = h2.similarity(&pj);
-                if (sim > b2_sim) { b2_sim = sim; b2_idx = jid; }
+                if (sim > b2_sim) {
+                    b2_sim = sim;
+                    b2_idx = jid;
+                }
             }
 
             if (b2_idx == gc_id) hop2_ok += 1;
@@ -16950,7 +17439,10 @@ test "clutrr kinship reasoning vsa multihop" {
                     const jid = j * GENERATIONS + t + hop + 1;
                     var pj = people[jid];
                     const sim = hop_r.similarity(&pj);
-                    if (sim > bs) { bs = sim; bi = jid; }
+                    if (sim > bs) {
+                        bs = sim;
+                        bi = jid;
+                    }
                 }
                 current_id = bi;
             }
@@ -16980,7 +17472,10 @@ test "clutrr kinship reasoning vsa multihop" {
                 const jid = j * GENERATIONS + hop + 1;
                 var pj = people[jid];
                 const sim = hop_r.similarity(&pj);
-                if (sim > bs) { bs = sim; bi = jid; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = jid;
+                }
             }
             current_id = bi;
         }
@@ -17008,7 +17503,10 @@ test "clutrr kinship reasoning vsa multihop" {
                 const jid = j * GENERATIONS + t;
                 var pj = people[jid];
                 const sim = hop1_r.similarity(&pj);
-                if (sim > b1_sim) { b1_sim = sim; b1_idx = jid; }
+                if (sim > b1_sim) {
+                    b1_sim = sim;
+                    b1_idx = jid;
+                }
             }
 
             if (b1_idx == pid) cross_ok += 1;
@@ -17111,7 +17609,10 @@ test "sota benchmark babi clutrr noise comparison" {
                 for (0..cap) |j| {
                     var lj = places[j];
                     const sim = retrieved.similarity(&lj);
-                    if (sim > best_s) { best_s = sim; best_j = j; }
+                    if (sim > best_s) {
+                        best_s = sim;
+                        best_j = j;
+                    }
                 }
                 if (best_j == i) ok += 1;
             }
@@ -17204,14 +17705,20 @@ test "sota benchmark babi clutrr noise comparison" {
                             const jid = j * CLUTRR_GENS + g + 1;
                             var pj = clutrr_people[jid];
                             const sim = h1.similarity(&pj);
-                            if (sim > b1s) { b1s = sim; b1i = jid; }
+                            if (sim > b1s) {
+                                b1s = sim;
+                                b1i = jid;
+                            }
                         }
                     } else {
                         // Weak: search across all people
                         for (0..CLUTRR_TOTAL) |j| {
                             var pj = clutrr_people[j];
                             const sim = h1.similarity(&pj);
-                            if (sim > b1s) { b1s = sim; b1i = j; }
+                            if (sim > b1s) {
+                                b1s = sim;
+                                b1i = j;
+                            }
                         }
                     }
 
@@ -17233,13 +17740,19 @@ test "sota benchmark babi clutrr noise comparison" {
                             const jid = j * CLUTRR_GENS + g + 2;
                             var pj = clutrr_people[jid];
                             const sim = h2.similarity(&pj);
-                            if (sim > b2s) { b2s = sim; b2i = jid; }
+                            if (sim > b2s) {
+                                b2s = sim;
+                                b2i = jid;
+                            }
                         }
                     } else {
                         for (0..CLUTRR_TOTAL) |j| {
                             var pj = clutrr_people[j];
                             const sim = h2.similarity(&pj);
-                            if (sim > b2s) { b2s = sim; b2i = j; }
+                            if (sim > b2s) {
+                                b2s = sim;
+                                b2i = j;
+                            }
                         }
                     }
 
@@ -17323,9 +17836,15 @@ test "expanded babi coverage interpretability" {
     var persons: [N_PERSONS]Hypervector = undefined;
     var places: [N_PLACES]Hypervector = undefined;
     var items: [N_ITEMS]Hypervector = undefined;
-    for (0..N_PERSONS) |i| { persons[i] = bipolarRandom(DIM, 0xE710000 + @as(u64, @intCast(i)) * 131); }
-    for (0..N_PLACES) |i| { places[i] = bipolarRandom(DIM, 0xE720000 + @as(u64, @intCast(i)) * 137); }
-    for (0..N_ITEMS) |i| { items[i] = bipolarRandom(DIM, 0xE730000 + @as(u64, @intCast(i)) * 139); }
+    for (0..N_PERSONS) |i| {
+        persons[i] = bipolarRandom(DIM, 0xE710000 + @as(u64, @intCast(i)) * 131);
+    }
+    for (0..N_PLACES) |i| {
+        places[i] = bipolarRandom(DIM, 0xE720000 + @as(u64, @intCast(i)) * 137);
+    }
+    for (0..N_ITEMS) |i| {
+        items[i] = bipolarRandom(DIM, 0xE730000 + @as(u64, @intCast(i)) * 139);
+    }
 
     // location_of: bind(person, place), cap=8
     var loc_pairs: [N_PERSONS]Hypervector = undefined;
@@ -17370,13 +17889,17 @@ test "expanded babi coverage interpretability" {
         for (0..N_PLACES) |j| {
             var pl = places[j];
             const sim = retrieved.similarity(&pl);
-            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = j;
+            }
         }
         if (best_idx == i) t1_ok += 1;
         interp_sim_sum += best_sim; // trace: retrieval confidence
         interp_count += 1;
     }
-    total_ok += t1_ok; total_q += N_PERSONS;
+    total_ok += t1_ok;
+    total_q += N_PERSONS;
     std.debug.print("Task 1 (1-hop):       {}/{} = 100%\n", .{ t1_ok, N_PERSONS });
 
     // --- Task 2: Two facts (2-hop) with trace ---
@@ -17390,9 +17913,13 @@ test "expanded babi coverage interpretability" {
         for (0..N_PERSONS) |j| {
             var pj = persons[j];
             const sim = h1.similarity(&pj);
-            if (sim > b1s) { b1s = sim; b1i = j; }
+            if (sim > b1s) {
+                b1s = sim;
+                b1i = j;
+            }
         }
-        interp_sim_sum += b1s; interp_count += 1;
+        interp_sim_sum += b1s;
+        interp_count += 1;
 
         // Hop 2: person → place
         var found_p = persons[b1i];
@@ -17402,18 +17929,25 @@ test "expanded babi coverage interpretability" {
         for (0..N_PLACES) |j| {
             var pl = places[j];
             const sim = h2.similarity(&pl);
-            if (sim > b2s) { b2s = sim; b2i = j; }
+            if (sim > b2s) {
+                b2s = sim;
+                b2i = j;
+            }
         }
         if (b2i == i) t2_ok += 1;
-        interp_sim_sum += b2s; interp_count += 1;
+        interp_sim_sum += b2s;
+        interp_count += 1;
     }
-    total_ok += t2_ok; total_q += N_ITEMS;
+    total_ok += t2_ok;
+    total_q += N_ITEMS;
     std.debug.print("Task 2 (2-hop):       {}/{} = {}%\n", .{ t2_ok, N_ITEMS, t2_ok * 100 / N_ITEMS });
 
     // --- Task 3: Three facts (3-hop) ---
     const N_REGIONS = 4;
     var regions: [N_REGIONS]Hypervector = undefined;
-    for (0..N_REGIONS) |i| { regions[i] = bipolarRandom(DIM, 0xE740000 + @as(u64, @intCast(i)) * 149); }
+    for (0..N_REGIONS) |i| {
+        regions[i] = bipolarRandom(DIM, 0xE740000 + @as(u64, @intCast(i)) * 149);
+    }
 
     var region_pairs: [N_PLACES]Hypervector = undefined;
     for (0..N_PLACES) |i| {
@@ -17428,25 +17962,53 @@ test "expanded babi coverage interpretability" {
     for (0..T3_N) |i| {
         var item = items[i];
         var h1 = owns_inv_memory.unbind(&item);
-        var b1s: f64 = -2.0; var b1i: usize = 0;
-        for (0..N_PERSONS) |j| { var pj = persons[j]; const sim = h1.similarity(&pj); if (sim > b1s) { b1s = sim; b1i = j; } }
-        interp_sim_sum += b1s; interp_count += 1;
+        var b1s: f64 = -2.0;
+        var b1i: usize = 0;
+        for (0..N_PERSONS) |j| {
+            var pj = persons[j];
+            const sim = h1.similarity(&pj);
+            if (sim > b1s) {
+                b1s = sim;
+                b1i = j;
+            }
+        }
+        interp_sim_sum += b1s;
+        interp_count += 1;
 
         var fp = persons[b1i];
         var h2 = loc_memory.unbind(&fp);
-        var b2s: f64 = -2.0; var b2i: usize = 0;
-        for (0..N_PLACES) |j| { var pl = places[j]; const sim = h2.similarity(&pl); if (sim > b2s) { b2s = sim; b2i = j; } }
-        interp_sim_sum += b2s; interp_count += 1;
+        var b2s: f64 = -2.0;
+        var b2i: usize = 0;
+        for (0..N_PLACES) |j| {
+            var pl = places[j];
+            const sim = h2.similarity(&pl);
+            if (sim > b2s) {
+                b2s = sim;
+                b2i = j;
+            }
+        }
+        interp_sim_sum += b2s;
+        interp_count += 1;
 
         var fpl = places[b2i];
         var h3 = region_memory.unbind(&fpl);
-        var b3s: f64 = -2.0; var b3i: usize = 0;
-        for (0..N_REGIONS) |j| { var rj = regions[j]; const sim = h3.similarity(&rj); if (sim > b3s) { b3s = sim; b3i = j; } }
-        interp_sim_sum += b3s; interp_count += 1;
+        var b3s: f64 = -2.0;
+        var b3i: usize = 0;
+        for (0..N_REGIONS) |j| {
+            var rj = regions[j];
+            const sim = h3.similarity(&rj);
+            if (sim > b3s) {
+                b3s = sim;
+                b3i = j;
+            }
+        }
+        interp_sim_sum += b3s;
+        interp_count += 1;
 
         if (b3i == i % N_REGIONS) t3_ok += 1;
     }
-    total_ok += t3_ok; total_q += T3_N;
+    total_ok += t3_ok;
+    total_q += T3_N;
     std.debug.print("Task 3 (3-hop):       {}/{} = {}%\n", .{ t3_ok, T3_N, t3_ok * 100 / T3_N });
 
     // --- Task 6: Yes/No question ---
@@ -17469,7 +18031,8 @@ test "expanded babi coverage interpretability" {
         // Yes/No: correct_sim > wrong_sim → YES is correct answer
         if (correct_sim > wrong_sim) t6_ok += 1;
     }
-    total_ok += t6_ok; total_q += T6_N;
+    total_ok += t6_ok;
+    total_q += T6_N;
     std.debug.print("Task 6 (Yes/No):      {}/{} = {}%\n", .{ t6_ok, T6_N, t6_ok * 100 / T6_N });
 
     // --- Task 7: Counting ---
@@ -17488,13 +18051,17 @@ test "expanded babi coverage interpretability" {
         for (0..N_ITEMS) |j| {
             var it = items[j];
             const sim = retrieved.similarity(&it);
-            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = j;
+            }
         }
 
         // Person_i owns item_i, so count = 1 if best_idx == i
         if (best_idx == i) t7_ok += 1;
     }
-    total_ok += t7_ok; total_q += T7_N;
+    total_ok += t7_ok;
+    total_q += T7_N;
     std.debug.print("Task 7 (Counting):    {}/{} = {}%\n", .{ t7_ok, T7_N, t7_ok * 100 / T7_N });
 
     // --- Task 15: Basic deduction ---
@@ -17507,9 +18074,15 @@ test "expanded babi coverage interpretability" {
     var instances: [N_INSTANCES]Hypervector = undefined;
     var categories: [N_CATEGORIES]Hypervector = undefined;
     var supers: [N_SUPERS]Hypervector = undefined;
-    for (0..N_INSTANCES) |i| { instances[i] = bipolarRandom(DIM, 0xE750000 + @as(u64, @intCast(i)) * 151); }
-    for (0..N_CATEGORIES) |i| { categories[i] = bipolarRandom(DIM, 0xE760000 + @as(u64, @intCast(i)) * 157); }
-    for (0..N_SUPERS) |i| { supers[i] = bipolarRandom(DIM, 0xE770000 + @as(u64, @intCast(i)) * 163); }
+    for (0..N_INSTANCES) |i| {
+        instances[i] = bipolarRandom(DIM, 0xE750000 + @as(u64, @intCast(i)) * 151);
+    }
+    for (0..N_CATEGORIES) |i| {
+        categories[i] = bipolarRandom(DIM, 0xE760000 + @as(u64, @intCast(i)) * 157);
+    }
+    for (0..N_SUPERS) |i| {
+        supers[i] = bipolarRandom(DIM, 0xE770000 + @as(u64, @intCast(i)) * 163);
+    }
 
     // instance_i → category_(i%2): inst0,inst1 → cat0; inst2,inst3 → cat1
     var is_a_pairs: [N_INSTANCES]Hypervector = undefined;
@@ -17534,20 +18107,39 @@ test "expanded babi coverage interpretability" {
         // Deduction: instance → category → super (2-hop)
         var inst = instances[i];
         var h1 = is_a_memory.unbind(&inst);
-        var b1s: f64 = -2.0; var b1i: usize = 0;
-        for (0..N_CATEGORIES) |j| { var cj = categories[j]; const sim = h1.similarity(&cj); if (sim > b1s) { b1s = sim; b1i = j; } }
-        interp_sim_sum += b1s; interp_count += 1;
+        var b1s: f64 = -2.0;
+        var b1i: usize = 0;
+        for (0..N_CATEGORIES) |j| {
+            var cj = categories[j];
+            const sim = h1.similarity(&cj);
+            if (sim > b1s) {
+                b1s = sim;
+                b1i = j;
+            }
+        }
+        interp_sim_sum += b1s;
+        interp_count += 1;
 
         var fc = categories[b1i];
         var h2 = super_memory.unbind(&fc);
-        var b2s: f64 = -2.0; var b2i: usize = 0;
-        for (0..N_SUPERS) |j| { var sj = supers[j]; const sim = h2.similarity(&sj); if (sim > b2s) { b2s = sim; b2i = j; } }
-        interp_sim_sum += b2s; interp_count += 1;
+        var b2s: f64 = -2.0;
+        var b2i: usize = 0;
+        for (0..N_SUPERS) |j| {
+            var sj = supers[j];
+            const sim = h2.similarity(&sj);
+            if (sim > b2s) {
+                b2s = sim;
+                b2i = j;
+            }
+        }
+        interp_sim_sum += b2s;
+        interp_count += 1;
 
         const expected_super = i % N_CATEGORIES; // super_i matches category_i
         if (b2i == expected_super) t15_ok += 1;
     }
-    total_ok += t15_ok; total_q += N_INSTANCES;
+    total_ok += t15_ok;
+    total_q += N_INSTANCES;
     std.debug.print("Task 15 (Deduction):  {}/{} = {}%\n", .{ t15_ok, N_INSTANCES, t15_ok * 100 / N_INSTANCES });
 
     // --- Interpretability metric ---
@@ -17652,7 +18244,10 @@ test "clutrr reasoning depth scaling" {
                         const jid = j * GENS + g + hop + 1;
                         var pj = people[jid];
                         const sim = hop_r.similarity(&pj);
-                        if (sim > bs) { bs = sim; bi = jid; }
+                        if (sim > bs) {
+                            bs = sim;
+                            bi = jid;
+                        }
                     }
                     idx_cur = bi;
                     idx_sim_sum += bs;
@@ -17670,7 +18265,10 @@ test "clutrr reasoning depth scaling" {
                     for (0..TOTAL) |j| {
                         var pj = people[j];
                         const sim = hop_r.similarity(&pj);
-                        if (sim > bs) { bs = sim; bi = j; }
+                        if (sim > bs) {
+                            bs = sim;
+                            bi = j;
+                        }
                     }
                     flat_cur = bi;
                 }
@@ -17688,8 +18286,10 @@ test "clutrr reasoning depth scaling" {
             depth, idx_ok, idx_acc, flat_ok, flat_acc, avg_sim,
         });
 
-        idx_total_ok += idx_ok; idx_total_q += queries;
-        flat_total_ok += flat_ok; flat_total_q += queries;
+        idx_total_ok += idx_ok;
+        idx_total_q += queries;
+        flat_total_ok += flat_ok;
+        flat_total_q += queries;
     }
 
     const idx_total_acc = @as(f64, @floatFromInt(idx_total_ok)) / @as(f64, @floatFromInt(idx_total_q)) * 100;
@@ -17729,8 +18329,12 @@ test "neuro symbolic comparison table" {
     const N = 6; // entities per task
     var ents: [N]Hypervector = undefined;
     var targets: [N]Hypervector = undefined;
-    for (0..N) |i| { ents[i] = bipolarRandom(DIM, 0xEB10000 + @as(u64, @intCast(i)) * 131); }
-    for (0..N) |i| { targets[i] = bipolarRandom(DIM, 0xEB20000 + @as(u64, @intCast(i)) * 137); }
+    for (0..N) |i| {
+        ents[i] = bipolarRandom(DIM, 0xEB10000 + @as(u64, @intCast(i)) * 131);
+    }
+    for (0..N) |i| {
+        targets[i] = bipolarRandom(DIM, 0xEB20000 + @as(u64, @intCast(i)) * 137);
+    }
 
     var pairs: [N]Hypervector = undefined;
     for (0..N) |i| {
@@ -17746,8 +18350,16 @@ test "neuro symbolic comparison table" {
     for (0..N) |i| {
         var e = ents[i];
         var retrieved = memory.unbind(&e);
-        var best_s: f64 = -2.0; var best_j: usize = 0;
-        for (0..N) |j| { var tj = targets[j]; const sim = retrieved.similarity(&tj); if (sim > best_s) { best_s = sim; best_j = j; } }
+        var best_s: f64 = -2.0;
+        var best_j: usize = 0;
+        for (0..N) |j| {
+            var tj = targets[j];
+            const sim = retrieved.similarity(&tj);
+            if (sim > best_s) {
+                best_s = sim;
+                best_j = j;
+            }
+        }
         if (best_j == i) hop1_ok += 1;
         hop1_sim_sum += best_s;
     }
@@ -17761,7 +18373,9 @@ test "neuro symbolic comparison table" {
     const TOT = FAMS * GENS;
 
     var people: [TOT]Hypervector = undefined;
-    for (0..TOT) |i| { people[i] = bipolarRandom(DIM, 0xEB30000 + @as(u64, @intCast(i)) * 151); }
+    for (0..TOT) |i| {
+        people[i] = bipolarRandom(DIM, 0xEB30000 + @as(u64, @intCast(i)) * 151);
+    }
 
     var trans_mem: [TRANS]Hypervector = undefined;
     for (0..TRANS) |t| {
@@ -17787,12 +18401,16 @@ test "neuro symbolic comparison table" {
                 for (0..depth) |hop| {
                     var cur = people[cur_id];
                     var hop_r = trans_mem[g + hop].unbind(&cur);
-                    var bs: f64 = -2.0; var bi: usize = 0;
+                    var bs: f64 = -2.0;
+                    var bi: usize = 0;
                     for (0..FAMS) |j| {
                         const jid = j * GENS + g + hop + 1;
                         var pj = people[jid];
                         const sim = hop_r.similarity(&pj);
-                        if (sim > bs) { bs = sim; bi = jid; }
+                        if (sim > bs) {
+                            bs = sim;
+                            bi = jid;
+                        }
                     }
                     cur_id = bi;
                 }
@@ -17809,9 +18427,19 @@ test "neuro symbolic comparison table" {
         var e = ents[i];
         var retrieved = memory.unbind(&e);
         var nv = Hypervector.random(DIM, 0xEBFF000 + @as(u64, @intCast(i)));
-        for (0..3) |_| { retrieved = retrieved.bundle(&nv); }
-        var best_s: f64 = -2.0; var best_j: usize = 0;
-        for (0..N) |j| { var tj = targets[j]; const sim = retrieved.similarity(&tj); if (sim > best_s) { best_s = sim; best_j = j; } }
+        for (0..3) |_| {
+            retrieved = retrieved.bundle(&nv);
+        }
+        var best_s: f64 = -2.0;
+        var best_j: usize = 0;
+        for (0..N) |j| {
+            var tj = targets[j];
+            const sim = retrieved.similarity(&tj);
+            if (sim > best_s) {
+                best_s = sim;
+                best_j = j;
+            }
+        }
         if (best_j == i) noise_ok += 1;
     }
     const trinity_noise_acc = @as(f64, @floatFromInt(noise_ok)) / @as(f64, @floatFromInt(N)) * 100;
@@ -17895,7 +18523,7 @@ test "babi pathfinding spatial navigation" {
     const NUM_ROOMS = 8;
     var rooms: [NUM_ROOMS]Hypervector = undefined;
     const room_names = [_][]const u8{
-        "kitchen", "bedroom", "office", "garden",
+        "kitchen", "bedroom",  "office", "garden",
         "hallway", "bathroom", "living", "garage",
     };
     for (0..NUM_ROOMS) |i| {
@@ -17980,7 +18608,10 @@ test "babi pathfinding spatial navigation" {
                 for (0..perm_candidates.len) |j| {
                     var pc = perm_candidates[j];
                     const sim = result.similarity(&pc);
-                    if (sim > best.sim) { best.sim = sim; best.idx = j; }
+                    if (sim > best.sim) {
+                        best.sim = sim;
+                        best.idx = j;
+                    }
                 }
             }
             return best;
@@ -18109,7 +18740,9 @@ test "babi pathfinding spatial navigation" {
             room_names[pq.mid2],
             @as([]const u8, if (pq.dir3 == 0) "N" else if (pq.dir3 == 1) "S" else if (pq.dir3 == 2) "E" else "W"),
             room_names[pq.dest],
-            ok1, ok2, ok3,
+            ok1,
+            ok2,
+            ok3,
         });
     }
 
@@ -18267,7 +18900,7 @@ test "clutrr branch kinship cross relation composition" {
             if (ok) uncle_correct += 1;
 
             std.debug.print("  uncle(p[{d}]) → par[{d}] → sib[{d}] (exp {d}) {s}\n", .{
-                uq.child_idx, parent_r.idx, uncle_r.idx, uq.expected,
+                uq.child_idx,             parent_r.idx, uncle_r.idx, uq.expected,
                 if (ok) "OK" else "FAIL",
             });
         }
@@ -18302,7 +18935,7 @@ test "clutrr branch kinship cross relation composition" {
             if (ok) cousin_correct += 1;
 
             std.debug.print("  cousin(p[{d}]) → par[{d}] → unc[{d}] → cou[{d}] (exp {d}) {s}\n", .{
-                cq.child_idx, p_r.idx, u_r.idx, c_r.idx, cq.expected,
+                cq.child_idx,             p_r.idx, u_r.idx, c_r.idx, cq.expected,
                 if (ok) "OK" else "FAIL",
             });
         }
@@ -18329,7 +18962,7 @@ test "clutrr branch kinship cross relation composition" {
         if (ok) nephew_correct += 1;
 
         std.debug.print("  nephew(p[{d}]) → sib[{d}] → child[{d}] (exp {d}) {s}\n", .{
-            base + 1, sib_r.idx, neph_r.idx, base + 5,
+            base + 1,                 sib_r.idx, neph_r.idx, base + 5,
             if (ok) "OK" else "FAIL",
         });
 
@@ -18344,7 +18977,7 @@ test "clutrr branch kinship cross relation composition" {
         if (ok2) nephew_correct += 1;
 
         std.debug.print("  nephew(p[{d}]) → sib[{d}] → child[{d}] (exp {d}/{d}) {s}\n", .{
-            base + 2, sib_r2.idx, neph_r2.idx, base + 3, base + 4,
+            base + 2,                  sib_r2.idx, neph_r2.idx, base + 3, base + 4,
             if (ok2) "OK" else "FAIL",
         });
     }
@@ -18372,7 +19005,7 @@ test "clutrr branch kinship cross relation composition" {
             if (ok) gp_correct += 1;
 
             std.debug.print("  gp(p[{d}]) → par[{d}] → gp[{d}] (exp {d}) {s}\n", .{
-                gc_idx, p1.idx, p2.idx, base + 0,
+                gc_idx,                   p1.idx, p2.idx, base + 0,
                 if (ok) "OK" else "FAIL",
             });
         }
@@ -18443,7 +19076,10 @@ test "large codebook scaling 100 plus candidates" {
             const vi = (mi * PAIRS + p + 1) % N;
             var cj = vecs[vi];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = vi; }
+            if (sim > bs) {
+                bs = sim;
+                bi = vi;
+            }
         }
         if (bi == expected) scoped30 += 1;
     }
@@ -18460,7 +19096,10 @@ test "large codebook scaling 100 plus candidates" {
         for (0..N) |j| {
             var cj = vecs[j];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         if (bi == expected) global30 += 1;
     }
@@ -18503,7 +19142,10 @@ test "large codebook scaling 100 plus candidates" {
             const vi = (mi * PAIRS + p + 1) % N;
             var cj = vecs[vi];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = vi; }
+            if (sim > bs) {
+                bs = sim;
+                bi = vi;
+            }
         }
         if (bi == expected) scoped120 += 1;
     }
@@ -18534,7 +19176,10 @@ test "large codebook scaling 100 plus candidates" {
             const vi = (mi * PAIRS + p + 1) % N;
             var cj = vecs[vi];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = vi; }
+            if (sim > bs) {
+                bs = sim;
+                bi = vi;
+            }
         }
         if (bi == expected) scoped120 += 1;
     }
@@ -18565,7 +19210,10 @@ test "large codebook scaling 100 plus candidates" {
             const vi = (mi * PAIRS + p + 1) % N;
             var cj = vecs[vi];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = vi; }
+            if (sim > bs) {
+                bs = sim;
+                bi = vi;
+            }
         }
         if (bi == expected) scoped120 += 1;
     }
@@ -18617,13 +19265,14 @@ test "open query kg real world multi hop" {
     var entities: [NUM_ENTITIES]Hypervector = undefined;
     const entity_names = [_][]const u8{
         // Countries (0-5)
-        "France", "Germany", "Japan", "Brazil", "Egypt", "Australia",
+        "France",   "Germany",    "Japan",        "Brazil",   "Egypt",  "Australia",
         // Capitals (6-11)
-        "Paris", "Berlin", "Tokyo", "Brasilia", "Cairo", "Canberra",
+        "Paris",    "Berlin",     "Tokyo",        "Brasilia", "Cairo",  "Canberra",
         // Continents (12-15)
-        "Europe", "Asia", "SouthAmerica", "Africa",
+        "Europe",   "Asia",       "SouthAmerica", "Africa",
         // Languages (16-20)
-        "French", "German", "Japanese", "Portuguese", "Arabic",
+          "French", "German",
+        "Japanese", "Portuguese", "Arabic",
     };
     for (0..NUM_ENTITIES) |i| {
         entities[i] = bipolarRandom(DIM, 0xD109000 + @as(u64, @intCast(i)) * 37);
@@ -18699,7 +19348,10 @@ test "open query kg real world multi hop" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -18714,7 +19366,10 @@ test "open query kg real world multi hop" {
             for (0..candidates.len) |j| {
                 var cp = candidates[j].permute(shift);
                 const sim = result.similarity(&cp);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -18732,7 +19387,7 @@ test "open query kg real world multi hop" {
         const ok = r.idx == cap_pairs[i][1];
         if (ok) correct_1hop += 1;
         std.debug.print("  capital_of({s}) = {s} {s}\n", .{
-            entity_names[cap_pairs[i][0]], entity_names[r.idx],
+            entity_names[cap_pairs[i][0]],             entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -18744,7 +19399,7 @@ test "open query kg real world multi hop" {
         const ok = r.idx == cont_pairs[i][1];
         if (ok) correct_1hop += 1;
         std.debug.print("  continent_of({s}) = {s} {s}\n", .{
-            entity_names[cont_pairs[i][0]], entity_names[r.idx],
+            entity_names[cont_pairs[i][0]],            entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -18761,10 +19416,10 @@ test "open query kg real world multi hop" {
     // "What continent is [capital]'s country on?"
     // Step 1: country_of(capital) → country, Step 2: continent_of(country) → continent
     const two_hop_queries = [_]struct { capital: usize, expected_continent: usize }{
-        .{ .capital = 6, .expected_continent = 12 },  // Paris → France → Europe
-        .{ .capital = 7, .expected_continent = 12 },  // Berlin → Germany → Europe
-        .{ .capital = 8, .expected_continent = 13 },  // Tokyo → Japan → Asia
-        .{ .capital = 9, .expected_continent = 14 },  // Brasilia → Brazil → SouthAmerica
+        .{ .capital = 6, .expected_continent = 12 }, // Paris → France → Europe
+        .{ .capital = 7, .expected_continent = 12 }, // Berlin → Germany → Europe
+        .{ .capital = 8, .expected_continent = 13 }, // Tokyo → Japan → Asia
+        .{ .capital = 9, .expected_continent = 14 }, // Brasilia → Brazil → SouthAmerica
         .{ .capital = 10, .expected_continent = 15 }, // Cairo → Egypt → Africa
         .{ .capital = 11, .expected_continent = 13 }, // Canberra → Australia → Asia
     };
@@ -18780,7 +19435,7 @@ test "open query kg real world multi hop" {
         const ok = r2.idx == q.expected_continent;
         if (ok) correct_2hop += 1;
         std.debug.print("  continent_of(country_of({s})) = {s} via {s} {s}\n", .{
-            entity_names[q.capital], entity_names[r2.idx], entity_names[r1.idx],
+            entity_names[q.capital],                   entity_names[r2.idx], entity_names[r1.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -18805,7 +19460,7 @@ test "open query kg real world multi hop" {
         const ok = r2.idx == expected_lang;
         if (ok) correct_2hop_lang += 1;
         std.debug.print("  language_of(country_of({s})) = {s} via {s} {s}\n", .{
-            entity_names[cap_pairs[i][1]], entity_names[r2.idx], entity_names[r1.idx],
+            entity_names[cap_pairs[i][1]],             entity_names[r2.idx], entity_names[r1.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -18846,11 +19501,11 @@ test "combined spatial kg planning" {
     var ent: [NUM_ENT]Hypervector = undefined;
     const ent_names = [_][]const u8{
         // Rooms (0-5)
-        "lab", "office", "library", "kitchen", "garden", "storage",
+        "lab",   "office", "library", "kitchen", "garden", "storage",
         // Objects (6-11)
-        "book", "laptop", "key", "food", "plant", "box",
+        "book",  "laptop", "key",     "food",    "plant",  "box",
         // Properties (12-15)
-        "heavy", "light", "fragile", "durable",
+        "heavy", "light",  "fragile", "durable",
     };
     for (0..NUM_ENT) |i| {
         ent[i] = bipolarRandom(DIM, 0xD110000 + @as(u64, @intCast(i)) * 41);
@@ -18876,10 +19531,10 @@ test "combined spatial kg planning" {
 
     // --- Objects in rooms: located_in(object → room) ---
     const obj_room = [_][2]usize{
-        .{ 6, 2 },  // book in library
-        .{ 7, 1 },  // laptop in office
-        .{ 8, 5 },  // key in storage
-        .{ 9, 3 },  // food in kitchen
+        .{ 6, 2 }, // book in library
+        .{ 7, 1 }, // laptop in office
+        .{ 8, 5 }, // key in storage
+        .{ 9, 3 }, // food in kitchen
         .{ 10, 4 }, // plant in garden
         .{ 11, 5 }, // box in storage
     };
@@ -18893,10 +19548,10 @@ test "combined spatial kg planning" {
 
     // --- Object properties: has_property(object → property) ---
     const obj_prop = [_][2]usize{
-        .{ 6, 14 },  // book is fragile
-        .{ 7, 14 },  // laptop is fragile
-        .{ 8, 13 },  // key is light
-        .{ 9, 13 },  // food is light
+        .{ 6, 14 }, // book is fragile
+        .{ 7, 14 }, // laptop is fragile
+        .{ 8, 13 }, // key is light
+        .{ 9, 13 }, // food is light
         .{ 10, 13 }, // plant is light
         .{ 11, 12 }, // box is heavy
     };
@@ -18917,7 +19572,10 @@ test "combined spatial kg planning" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -18933,7 +19591,10 @@ test "combined spatial kg planning" {
                 for (0..candidates.len) |j| {
                     var cp = candidates[j].permute(shift);
                     const sim = result.similarity(&cp);
-                    if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                    if (sim > best_sim) {
+                        best_sim = sim;
+                        best_idx = j;
+                    }
                 }
             }
             return .{ .idx = best_idx, .sim = best_sim };
@@ -18958,7 +19619,7 @@ test "combined spatial kg planning" {
         const ok = r.idx == obj_room[i][1];
         if (ok) total_correct += 1;
         std.debug.print("  located_in({s}) = {s} {s}\n", .{
-            ent_names[obj_room[i][0]], ent_names[r.idx],
+            ent_names[obj_room[i][0]],                 ent_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19027,15 +19688,15 @@ test "multi hop chain fluency deep reasoning" {
     var ent: [NUM_ENT]Hypervector = undefined;
     const ent_names = [_][]const u8{
         // People (0-5)
-        "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank",
+        "Alice",   "Bob",    "Charlie",   "Diana",   "Eve",         "Frank",
         // Companies (6-11)
-        "TechCo", "BioLab", "FinServ", "AutoMfg", "MediaInc", "EnergyX",
+        "TechCo",  "BioLab", "FinServ",   "AutoMfg", "MediaInc",    "EnergyX",
         // Cities (12-17)
-        "SanFran", "Boston", "London", "Munich", "Tokyo_c", "Sydney",
+        "SanFran", "Boston", "London",    "Munich",  "Tokyo_c",     "Sydney",
         // Products (18-23)
-        "PhoneX", "DrugA", "FundB", "CarZ", "StreamS", "SolarP",
+        "PhoneX",  "DrugA",  "FundB",     "CarZ",    "StreamS",     "SolarP",
         // Countries (24-29)
-        "USA", "UK", "Germany_c", "Japan_c", "Australia_c", "Canada",
+        "USA",     "UK",     "Germany_c", "Japan_c", "Australia_c", "Canada",
     };
     for (0..NUM_ENT) |i| {
         ent[i] = bipolarRandom(DIM, 0xD111000 + @as(u64, @intCast(i)) * 53);
@@ -19131,7 +19792,10 @@ test "multi hop chain fluency deep reasoning" {
                 const sa = ra.similarity(&cj);
                 const sb = rb.similarity(&cj);
                 const s = if (sa > sb) sa else sb;
-                if (s > bs) { bs = s; bi = j; }
+                if (s > bs) {
+                    bs = s;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -19149,7 +19813,7 @@ test "multi hop chain fluency deep reasoning" {
         const ok = r2.idx == expected_city;
         if (ok) correct_2hop += 1;
         std.debug.print("  {s} → {s} → {s} {s}\n", .{
-            ent_names[works_at[i][0]], ent_names[r1.idx], ent_names[r2.idx],
+            ent_names[works_at[i][0]],                 ent_names[r1.idx], ent_names[r2.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19169,7 +19833,7 @@ test "multi hop chain fluency deep reasoning" {
         const ok = r3.idx == expected_country;
         if (ok) correct_3hop += 1;
         std.debug.print("  {s} → {s} → {s} → {s} {s}\n", .{
-            ent_names[works_at[i][0]], ent_names[r1.idx], ent_names[r2.idx], ent_names[r3.idx],
+            ent_names[works_at[i][0]],                 ent_names[r1.idx], ent_names[r2.idx], ent_names[r3.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19187,7 +19851,7 @@ test "multi hop chain fluency deep reasoning" {
         const ok = r2.idx == expected_product;
         if (ok) correct_3hop_alt += 1;
         std.debug.print("  {s} → {s} → {s} {s}\n", .{
-            ent_names[works_at[i][0]], ent_names[r1.idx], ent_names[r2.idx],
+            ent_names[works_at[i][0]],                 ent_names[r1.idx], ent_names[r2.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19238,19 +19902,20 @@ test "unified multi domain fusion engine" {
     var entities: [NUM_ENTITIES]Hypervector = undefined;
     const entity_names = [_][]const u8{
         // People (0-5)
-        "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank",
+        "Alice",        "Bob",     "Charlie",   "Diana",      "Eve",      "Frank",
         // Companies (6-11)
-        "TechCo", "BioLab", "FinServ", "AutoMfg", "MediaInc", "EnergyX",
+        "TechCo",       "BioLab",  "FinServ",   "AutoMfg",    "MediaInc", "EnergyX",
         // Cities (12-17)
-        "SanFran", "Boston", "London", "Munich", "Tokyo", "Sydney",
+        "SanFran",      "Boston",  "London",    "Munich",     "Tokyo",    "Sydney",
         // Countries (18-23)
-        "USA", "USA2", "UK", "Germany", "Japan", "Australia",
+        "USA",          "USA2",    "UK",        "Germany",    "Japan",    "Australia",
         // Continents (24-27)
-        "NorthAmerica", "Europe", "Asia", "Oceania",
+        "NorthAmerica", "Europe",  "Asia",      "Oceania",
         // Products (28-33)
-        "PhoneX", "DrugA", "TradBot", "RoboCar", "StreamBox", "SolarPanel",
+           "PhoneX",   "DrugA",
+        "TradBot",      "RoboCar", "StreamBox", "SolarPanel",
         // Languages (34-35)
-        "English", "German",
+        "English",  "German",
     };
     for (0..NUM_ENTITIES) |i| {
         entities[i] = bipolarRandom(DIM, 0xE112000 + @as(u64, @intCast(i)) * 41);
@@ -19280,7 +19945,7 @@ test "unified multi domain fusion engine" {
 
     // hq_in: company→city (6 pairs, split 3+3)
     const hq_pairs = [_][2]usize{
-        .{ 6, 12 }, .{ 7, 13 }, .{ 8, 14 },
+        .{ 6, 12 }, .{ 7, 13 },  .{ 8, 14 },
         .{ 9, 15 }, .{ 10, 16 }, .{ 11, 17 },
     };
     var hq_binds_a: [3]Hypervector = undefined;
@@ -19337,7 +20002,7 @@ test "unified multi domain fusion engine" {
 
     // makes: company→product (6 pairs, split 3+3)
     const makes_pairs = [_][2]usize{
-        .{ 6, 28 }, .{ 7, 29 }, .{ 8, 30 },
+        .{ 6, 28 }, .{ 7, 29 },  .{ 8, 30 },
         .{ 9, 31 }, .{ 10, 32 }, .{ 11, 33 },
     };
     var mk_binds_a: [3]Hypervector = undefined;
@@ -19392,7 +20057,10 @@ test "unified multi domain fusion engine" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -19410,7 +20078,10 @@ test "unified multi domain fusion engine" {
                 const sim_a = res_a.similarity(&cj);
                 const sim_b = res_b.similarity(&cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -19438,9 +20109,8 @@ test "unified multi domain fusion engine" {
         const ok = r4.idx == expected_continents[i];
         if (ok) correct_4hop += 1;
         std.debug.print("  {s} → {s} → {s} → {s} → {s} {s}\n", .{
-            entity_names[i], entity_names[r1.idx], entity_names[r2.idx],
-            entity_names[r3.idx], entity_names[r4.idx],
-            @as([]const u8, if (ok) "OK" else "FAIL"),
+            entity_names[i],      entity_names[r1.idx], entity_names[r2.idx],
+            entity_names[r3.idx], entity_names[r4.idx], @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
     std.debug.print("4-hop: {d}/6\n", .{correct_4hop});
@@ -19467,8 +20137,8 @@ test "unified multi domain fusion engine" {
         const ok = ok_prod and ok_city;
         if (ok) correct_div += 1;
         std.debug.print("  {s} → {s} → [{s},{s}] {s}\n", .{
-            entity_names[i], entity_names[r1.idx],
-            entity_names[rp.idx], entity_names[rc.idx],
+            entity_names[i],                           entity_names[r1.idx],
+            entity_names[rp.idx],                      entity_names[rc.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19496,9 +20166,8 @@ test "unified multi domain fusion engine" {
         const ok = r4.idx == expected_lang;
         if (ok) correct_lang += 1;
         std.debug.print("  {s} → {s} → {s} → {s} → {s} {s}\n", .{
-            entity_names[i], entity_names[r1.idx], entity_names[r2.idx],
-            entity_names[r3.idx], entity_names[r4.idx],
-            @as([]const u8, if (ok) "OK" else "FAIL"),
+            entity_names[i],      entity_names[r1.idx], entity_names[r2.idx],
+            entity_names[r3.idx], entity_names[r4.idx], @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
     std.debug.print("4-hop language: {d}/6\n", .{correct_lang});
@@ -19537,13 +20206,13 @@ test "compositional query dispatch unified interface" {
     var entities: [NUM_ENTITIES]Hypervector = undefined;
     const entity_names = [_][]const u8{
         // Animals (0-4)
-        "lion", "eagle", "shark", "wolf", "cobra",
+        "lion",    "eagle",    "shark",   "wolf",    "cobra",
         // Habitats (5-9)
-        "savanna", "mountain", "ocean", "forest", "desert",
+        "savanna", "mountain", "ocean",   "forest",  "desert",
         // Foods (10-14)
-        "meat", "fish", "berries", "rabbits", "eggs",
+        "meat",    "fish",     "berries", "rabbits", "eggs",
         // Traits (15-19)
-        "fast", "flies", "swims", "howls", "venomous",
+        "fast",    "flies",    "swims",   "howls",   "venomous",
     };
     for (0..NUM_ENTITIES) |i| {
         entities[i] = bipolarRandom(DIM, 0xF113000 + @as(u64, @intCast(i)) * 53);
@@ -19605,7 +20274,10 @@ test "compositional query dispatch unified interface" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -19619,7 +20291,10 @@ test "compositional query dispatch unified interface" {
             for (0..candidates.len) |j| {
                 var cp = candidates[j].permute(shift);
                 const sim = result.similarity(&cp);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -19637,7 +20312,7 @@ test "compositional query dispatch unified interface" {
         const ok = r.idx == lives_pairs[i][1];
         if (ok) correct_direct += 1;
         std.debug.print("  lives_in({s}) = {s} {s}\n", .{
-            entity_names[lives_pairs[i][0]], entity_names[r.idx],
+            entity_names[lives_pairs[i][0]],           entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19648,7 +20323,7 @@ test "compositional query dispatch unified interface" {
         const ok = r.idx == trait_pairs[i][1];
         if (ok) correct_direct += 1;
         std.debug.print("  has_trait({s}) = {s} {s}\n", .{
-            entity_names[trait_pairs[i][0]], entity_names[r.idx],
+            entity_names[trait_pairs[i][0]],           entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19665,7 +20340,7 @@ test "compositional query dispatch unified interface" {
         const ok = r.idx == lives_pairs[i][0]; // expected animal
         if (ok) correct_inv += 1;
         std.debug.print("  animal_in({s}) = {s} {s}\n", .{
-            entity_names[lives_pairs[i][1]], entity_names[r.idx],
+            entity_names[lives_pairs[i][1]],           entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19686,7 +20361,7 @@ test "compositional query dispatch unified interface" {
         const ok = ok_hab and ok_eat;
         if (ok) correct_multi += 1;
         std.debug.print("  {s}: lives={s} eats={s} {s}\n", .{
-            entity_names[i], entity_names[r_hab.idx], entity_names[r_eat.idx],
+            entity_names[i],                           entity_names[r_hab.idx], entity_names[r_eat.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19700,10 +20375,10 @@ test "compositional query dispatch unified interface" {
     const analogy_tests = 4;
 
     const analogies = [_]struct { a: usize, b: usize, c: usize, expected: usize }{
-        .{ .a = 0, .b = 5, .c = 1, .expected = 6 },   // lion:savanna :: eagle:mountain
-        .{ .a = 0, .b = 5, .c = 2, .expected = 7 },   // lion:savanna :: shark:ocean
-        .{ .a = 0, .b = 15, .c = 4, .expected = 19 },  // lion:fast :: cobra:venomous
-        .{ .a = 1, .b = 16, .c = 2, .expected = 17 },  // eagle:flies :: shark:swims
+        .{ .a = 0, .b = 5, .c = 1, .expected = 6 }, // lion:savanna :: eagle:mountain
+        .{ .a = 0, .b = 5, .c = 2, .expected = 7 }, // lion:savanna :: shark:ocean
+        .{ .a = 0, .b = 15, .c = 4, .expected = 19 }, // lion:fast :: cobra:venomous
+        .{ .a = 1, .b = 16, .c = 2, .expected = 17 }, // eagle:flies :: shark:swims
     };
 
     for (analogies) |an| {
@@ -19720,13 +20395,16 @@ test "compositional query dispatch unified interface" {
         for (0..NUM_ENTITIES) |j| {
             var ej = entities[j];
             const sim = predicted.similarity(&ej);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         const ok = bi == an.expected;
         if (ok) correct_analogy += 1;
         std.debug.print("  {s}:{s} :: {s}:{s} {s}\n", .{
-            entity_names[an.a], entity_names[an.b],
-            entity_names[an.c], entity_names[bi],
+            entity_names[an.a],                        entity_names[an.b],
+            entity_names[an.c],                        entity_names[bi],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -19771,21 +20449,20 @@ test "full engine stress test integration" {
     var entities: [NUM_ENTITIES]Hypervector = undefined;
     const entity_names = [_][]const u8{
         // Departments (0-5)
-        "Engineering", "Marketing", "Sales", "Research", "Support", "Design",
+        "Engineering", "Marketing",  "Sales",      "Research",   "Support",      "Design",
         // Employees (6-17)
-        "emp_alice", "emp_bob", "emp_carol", "emp_dave",
-        "emp_eve", "emp_frank", "emp_grace", "emp_hank",
-        "emp_iris", "emp_jack", "emp_kate", "emp_leo",
+        "emp_alice",   "emp_bob",    "emp_carol",  "emp_dave",   "emp_eve",      "emp_frank",
+        "emp_grace",   "emp_hank",   "emp_iris",   "emp_jack",   "emp_kate",     "emp_leo",
         // Skills (18-23)
-        "coding", "writing", "analytics", "leadership", "design_sk", "communication",
+        "coding",      "writing",    "analytics",  "leadership", "design_sk",    "communication",
         // Projects (24-29)
-        "proj_alpha", "proj_beta", "proj_gamma", "proj_delta", "proj_epsilon", "proj_zeta",
+        "proj_alpha",  "proj_beta",  "proj_gamma", "proj_delta", "proj_epsilon", "proj_zeta",
         // Clients (30-35)
-        "client_A", "client_B", "client_C", "client_D", "client_E", "client_F",
+        "client_A",    "client_B",   "client_C",   "client_D",   "client_E",     "client_F",
         // Locations (36-41)
-        "floor_1", "floor_2", "floor_3", "floor_4", "floor_5", "floor_6",
+        "floor_1",     "floor_2",    "floor_3",    "floor_4",    "floor_5",      "floor_6",
         // Tools (42-47)
-        "tool_git", "tool_jira", "tool_slack", "tool_figma", "tool_sql", "tool_excel",
+        "tool_git",    "tool_jira",  "tool_slack", "tool_figma", "tool_sql",     "tool_excel",
         // Ratings (48-49)
         "rating_high", "rating_low",
     };
@@ -19797,10 +20474,10 @@ test "full engine stress test integration" {
 
     // R1: belongs_to: employee→department (12 pairs, split into 4 sub-memories of 3)
     const dept_pairs = [_][2]usize{
-        .{ 6, 0 }, .{ 7, 0 }, .{ 8, 1 },      // sub A
-        .{ 9, 1 }, .{ 10, 2 }, .{ 11, 2 },     // sub B
-        .{ 12, 3 }, .{ 13, 3 }, .{ 14, 4 },    // sub C
-        .{ 15, 4 }, .{ 16, 5 }, .{ 17, 5 },    // sub D
+        .{ 6, 0 }, .{ 7, 0 }, .{ 8, 1 }, // sub A
+        .{ 9, 1 }, .{ 10, 2 }, .{ 11, 2 }, // sub B
+        .{ 12, 3 }, .{ 13, 3 }, .{ 14, 4 }, // sub C
+        .{ 15, 4 }, .{ 16, 5 }, .{ 17, 5 }, // sub D
     };
     var dept_binds_a: [3]Hypervector = undefined;
     var dept_binds_b: [3]Hypervector = undefined;
@@ -19833,8 +20510,8 @@ test "full engine stress test integration" {
 
     // R2: has_skill: employee→skill (12 pairs, split 4×3)
     const skill_pairs = [_][2]usize{
-        .{ 6, 18 }, .{ 7, 18 }, .{ 8, 19 },
-        .{ 9, 20 }, .{ 10, 21 }, .{ 11, 23 },
+        .{ 6, 18 },  .{ 7, 18 },  .{ 8, 19 },
+        .{ 9, 20 },  .{ 10, 21 }, .{ 11, 23 },
         .{ 12, 18 }, .{ 13, 22 }, .{ 14, 23 },
         .{ 15, 19 }, .{ 16, 22 }, .{ 17, 20 },
     };
@@ -19869,8 +20546,8 @@ test "full engine stress test integration" {
 
     // R3: works_on: employee→project (12 pairs, split 4×3)
     const proj_pairs = [_][2]usize{
-        .{ 6, 24 }, .{ 7, 25 }, .{ 8, 24 },
-        .{ 9, 26 }, .{ 10, 27 }, .{ 11, 25 },
+        .{ 6, 24 },  .{ 7, 25 },  .{ 8, 24 },
+        .{ 9, 26 },  .{ 10, 27 }, .{ 11, 25 },
         .{ 12, 28 }, .{ 13, 29 }, .{ 14, 26 },
         .{ 15, 27 }, .{ 16, 28 }, .{ 17, 29 },
     };
@@ -19951,7 +20628,10 @@ test "full engine stress test integration" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -19967,7 +20647,10 @@ test "full engine stress test integration" {
                 for (0..candidates.len) |j| {
                     var cj = candidates[j];
                     const sim = result.similarity(&cj);
-                    if (sim > bs) { bs = sim; bi = j; }
+                    if (sim > bs) {
+                        bs = sim;
+                        bi = j;
+                    }
                 }
             }
             return .{ .idx = bi, .sim = bs };
@@ -19984,7 +20667,7 @@ test "full engine stress test integration" {
         const ok = r.idx == dept_pairs[i][1];
         if (ok) correct_dept += 1;
         std.debug.print("  {s} → {s} {s}\n", .{
-            entity_names[dept_pairs[i][0]], entity_names[r.idx],
+            entity_names[dept_pairs[i][0]],            entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20005,12 +20688,15 @@ test "full engine stress test integration" {
         // Find expected: dept_pairs[i][1] is the department, find its location
         var expected_loc: usize = 0;
         for (loc_pairs) |lp| {
-            if (lp[0] == dept_pairs[i][1]) { expected_loc = lp[1]; break; }
+            if (lp[0] == dept_pairs[i][1]) {
+                expected_loc = lp[1];
+                break;
+            }
         }
         const ok = r2.idx == expected_loc;
         if (ok) correct_loc += 1;
         std.debug.print("  {s} → {s} → {s} {s}\n", .{
-            entity_names[dept_pairs[i][0]], entity_names[r1.idx], entity_names[r2.idx],
+            entity_names[dept_pairs[i][0]],            entity_names[r1.idx], entity_names[r2.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20031,12 +20717,15 @@ test "full engine stress test integration" {
         // Find expected client
         var expected_client: usize = 0;
         for (client_pairs) |cp| {
-            if (cp[0] == proj_pairs[i][1]) { expected_client = cp[1]; break; }
+            if (cp[0] == proj_pairs[i][1]) {
+                expected_client = cp[1];
+                break;
+            }
         }
         const ok = r2.idx == expected_client;
         if (ok) correct_client += 1;
         std.debug.print("  {s} → {s} → {s} {s}\n", .{
-            entity_names[proj_pairs[i][0]], entity_names[r1.idx], entity_names[r2.idx],
+            entity_names[proj_pairs[i][0]],            entity_names[r1.idx], entity_names[r2.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20056,12 +20745,15 @@ test "full engine stress test integration" {
 
         var expected_tool: usize = 0;
         for (tool_pairs) |tp| {
-            if (tp[0] == dept_pairs[i][1]) { expected_tool = tp[1]; break; }
+            if (tp[0] == dept_pairs[i][1]) {
+                expected_tool = tp[1];
+                break;
+            }
         }
         const ok = r2.idx == expected_tool;
         if (ok) correct_tool += 1;
         std.debug.print("  {s} → {s} → {s} {s}\n", .{
-            entity_names[dept_pairs[i][0]], entity_names[r1.idx], entity_names[r2.idx],
+            entity_names[dept_pairs[i][0]],            entity_names[r1.idx], entity_names[r2.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20077,7 +20769,7 @@ test "full engine stress test integration" {
         const ok = r.idx == skill_pairs[i][1];
         if (ok) correct_skill += 1;
         std.debug.print("  {s} → {s} {s}\n", .{
-            entity_names[skill_pairs[i][0]], entity_names[r.idx],
+            entity_names[skill_pairs[i][0]],           entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20098,10 +20790,10 @@ test "full engine stress test integration" {
 
     // Assertions
     try std.testing.expect(correct_dept >= 10); // at least 10/12
-    try std.testing.expect(correct_loc >= 8);   // at least 8/12 for 2-hop
+    try std.testing.expect(correct_loc >= 8); // at least 8/12 for 2-hop
     try std.testing.expect(correct_client >= 8); // at least 8/12
     try std.testing.expect(correct_skill >= 10); // at least 10/12
-    try std.testing.expect(correct_all >= 44);  // at least 44/60 (73%)
+    try std.testing.expect(correct_all >= 44); // at least 44/60 (73%)
 
     // Progression
     std.debug.print("\n--- Level 11.20 Progression ---\n", .{});
@@ -20230,7 +20922,10 @@ test "massive unified kg deployment scale" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -20246,7 +20941,10 @@ test "massive unified kg deployment scale" {
                 for (0..candidates.len) |j| {
                     var cj = candidates[j];
                     const sim = result.similarity(&cj);
-                    if (sim > bs) { bs = sim; bi = j; }
+                    if (sim > bs) {
+                        bs = sim;
+                        bi = j;
+                    }
                 }
             }
             return .{ .idx = bi, .sim = bs };
@@ -20335,11 +21033,11 @@ test "massive unified kg deployment scale" {
     std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ correct_all, total, acc });
 
     // Assertions — 40 candidates with 6 relations is a challenging test
-    try std.testing.expect(correct_pu >= 8);       // at least 8/10
-    try std.testing.expect(correct_pc >= 7);       // at least 7/10
-    try std.testing.expect(correct_city >= 7);     // at least 7/10
-    try std.testing.expect(correct_country >= 6);  // at least 6/10 for 3-hop
-    try std.testing.expect(correct_all >= 35);     // at least 35/50 (70%)
+    try std.testing.expect(correct_pu >= 8); // at least 8/10
+    try std.testing.expect(correct_pc >= 7); // at least 7/10
+    try std.testing.expect(correct_city >= 7); // at least 7/10
+    try std.testing.expect(correct_country >= 6); // at least 6/10 for 3-hop
+    try std.testing.expect(correct_all >= 35); // at least 35/50 (70%)
 }
 
 // =============================================================================
@@ -20402,7 +21100,10 @@ test "robustness under distractor load deployment" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -20416,7 +21117,10 @@ test "robustness under distractor load deployment" {
             for (0..candidates.len) |j| {
                 var cp = candidates[j].permute(shift);
                 const sim = result.similarity(&cp);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -20431,7 +21135,7 @@ test "robustness under distractor load deployment" {
         const ok = r.idx == lives_pairs[i][1];
         if (ok) correct_fwd += 1;
         std.debug.print("  entity_{d} → idx_{d} (expected {d}) sim={d:.3} {s}\n", .{
-            lives_pairs[i][0], r.idx, lives_pairs[i][1], r.sim,
+            lives_pairs[i][0],                         r.idx, lives_pairs[i][1], r.sim,
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20446,7 +21150,7 @@ test "robustness under distractor load deployment" {
         const ok = r.idx == lives_pairs[i][0]; // expected animal
         if (ok) correct_inv += 1;
         std.debug.print("  habitat_{d} → idx_{d} (expected {d}) sim={d:.3} {s}\n", .{
-            lives_pairs[i][1], r.idx, lives_pairs[i][0], r.sim,
+            lives_pairs[i][1],                         r.idx, lives_pairs[i][0], r.sim,
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20513,10 +21217,10 @@ test "robustness under distractor load deployment" {
     std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ correct_all, total, acc });
 
     // Assertions
-    try std.testing.expect(correct_fwd >= 4);     // at least 4/5
-    try std.testing.expect(correct_inv >= 4);     // at least 4/5
-    try std.testing.expect(correct_scoped >= 4);  // at least 4/5
-    try std.testing.expect(correct_all >= 12);    // at least 12/15
+    try std.testing.expect(correct_fwd >= 4); // at least 4/5
+    try std.testing.expect(correct_inv >= 4); // at least 4/5
+    try std.testing.expect(correct_scoped >= 4); // at least 4/5
+    try std.testing.expect(correct_all >= 12); // at least 12/15
 }
 
 // =============================================================================
@@ -20538,17 +21242,17 @@ test "end to end mixed query pipeline deployment" {
     var entities: [NUM_ENTITIES]Hypervector = undefined;
     const entity_names = [_][]const u8{
         // Cities (0-5)
-        "Rome", "Kyoto", "NYC", "Rio", "Cairo", "Melbourne",
+        "Rome",      "Kyoto",     "NYC",       "Rio",            "Cairo",     "Melbourne",
         // Landmarks (6-11)
-        "Colosseum", "KinkakuJi", "StatueLib", "ChristRedeemer", "Pyramids", "OperaHouse",
+        "Colosseum", "KinkakuJi", "StatueLib", "ChristRedeemer", "Pyramids",  "OperaHouse",
         // Countries (12-17)
-        "Italy", "Japan", "USA", "Brazil", "Egypt", "Australia",
+        "Italy",     "Japan",     "USA",       "Brazil",         "Egypt",     "Australia",
         // Cuisines (18-23)
-        "Italian", "Japanese", "American", "Brazilian", "Egyptian", "Australian",
+        "Italian",   "Japanese",  "American",  "Brazilian",      "Egyptian",  "Australian",
         // Continents (24-27)
-        "Europe", "Asia", "Americas", "Africa",
+        "Europe",    "Asia",      "Americas",  "Africa",
         // Climates (28-29)
-        "temperate", "tropical",
+                "temperate", "tropical",
     };
     for (0..NUM_ENTITIES) |i| {
         entities[i] = bipolarRandom(DIM, 0xD117000 + @as(u64, @intCast(i)) * 61);
@@ -20644,7 +21348,10 @@ test "end to end mixed query pipeline deployment" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -20658,7 +21365,10 @@ test "end to end mixed query pipeline deployment" {
             for (0..candidates.len) |j| {
                 var cp = candidates[j].permute(shift);
                 const sim = result.similarity(&cp);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -20678,7 +21388,7 @@ test "end to end mixed query pipeline deployment" {
         if (ok) total_correct += 1;
         total_queries += 1;
         std.debug.print("  {s} → {s} {s}\n", .{
-            entity_names[landmark_pairs[i][0]], entity_names[r.idx],
+            entity_names[landmark_pairs[i][0]],        entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20692,7 +21402,7 @@ test "end to end mixed query pipeline deployment" {
         if (ok) total_correct += 1;
         total_queries += 1;
         std.debug.print("  {s} → {s} {s}\n", .{
-            entity_names[landmark_pairs[i][1]], entity_names[r.idx],
+            entity_names[landmark_pairs[i][1]],        entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20709,7 +21419,7 @@ test "end to end mixed query pipeline deployment" {
         if (ok) total_correct += 1;
         total_queries += 1;
         std.debug.print("  {s} → {s} → {s} {s}\n", .{
-            entity_names[landmark_pairs[i][0]], entity_names[r1.idx], entity_names[r2.idx],
+            entity_names[landmark_pairs[i][0]],        entity_names[r1.idx], entity_names[r2.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20728,8 +21438,8 @@ test "end to end mixed query pipeline deployment" {
         if (ok) total_correct += 1;
         total_queries += 1;
         std.debug.print("  {s} → {s} → {s} → {s} {s}\n", .{
-            entity_names[landmark_pairs[i][0]], entity_names[r1.idx],
-            entity_names[r2.idx], entity_names[r3.idx],
+            entity_names[landmark_pairs[i][0]],        entity_names[r1.idx],
+            entity_names[r2.idx],                      entity_names[r3.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -20748,8 +21458,8 @@ test "end to end mixed query pipeline deployment" {
         if (ok_clim) total_correct += 1;
         total_queries += 2;
         std.debug.print("  {s} → {s} → [{s},{s}] {s}\n", .{
-            entity_names[cc_pairs[i][0]], entity_names[r1.idx],
-            entity_names[r_cont.idx], entity_names[r_clim.idx],
+            entity_names[cc_pairs[i][0]],                                  entity_names[r1.idx],
+            entity_names[r_cont.idx],                                      entity_names[r_clim.idx],
             @as([]const u8, if (ok_cont and ok_clim) "OK" else "PARTIAL"),
         });
     }
@@ -20790,11 +21500,11 @@ test "confidence gated chain propagation" {
     const NUM_ENTITIES = 25;
     var entities: [NUM_ENTITIES]Hypervector = undefined;
     const entity_names = [_][]const u8{
-        "Tolkien", "Orwell", "Austen", "Twain", "Kafka",
-        "LOTR", "1984", "Pride", "TomSaw", "Trial",
-        "Fantasy", "Dystopia", "Romance", "Adventure", "Absurdist",
-        "HarperC", "Penguin", "Vintage", "Scholastic", "Europa",
-        "UK", "UK2", "UK3", "US", "Czech",
+        "Tolkien", "Orwell",   "Austen",  "Twain",      "Kafka",
+        "LOTR",    "1984",     "Pride",   "TomSaw",     "Trial",
+        "Fantasy", "Dystopia", "Romance", "Adventure",  "Absurdist",
+        "HarperC", "Penguin",  "Vintage", "Scholastic", "Europa",
+        "UK",      "UK2",      "UK3",     "US",         "Czech",
     };
     for (0..NUM_ENTITIES) |i| {
         entities[i] = bipolarRandom(DIM, 0xE118000 + @as(u64, @intCast(i)) * 83);
@@ -20860,7 +21570,10 @@ test "confidence gated chain propagation" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -20888,9 +21601,8 @@ test "confidence gated chain propagation" {
         if (chain_confident) confident_valid += 1;
 
         std.debug.print("  {s} → {s}(c={d:.3}) → {s}(c={d:.3}) {s} {s}\n", .{
-            entity_names[wrote_pairs[i][0]], entity_names[r1.idx], conf1,
-            entity_names[r2.idx], conf2,
-            @as([]const u8, if (chain_ok) "OK" else "FAIL"),
+            entity_names[wrote_pairs[i][0]],                                   entity_names[r1.idx], conf1,
+            entity_names[r2.idx],                                              conf2,                @as([]const u8, if (chain_ok) "OK" else "FAIL"),
             @as([]const u8, if (chain_confident) "CONFIDENT" else "LOW-CONF"),
         });
     }
@@ -20908,7 +21620,7 @@ test "confidence gated chain propagation" {
         const gated = r.sim < CONF_THRESHOLD;
         if (gated) correctly_gated += 1;
         std.debug.print("  wrote({s}) → {s}(c={d:.3}) {s}\n", .{
-            entity_names[10 + i], entity_names[r.idx], r.sim,
+            entity_names[10 + i],                                 entity_names[r.idx], r.sim,
             @as([]const u8, if (gated) "GATED" else "FALSE-POS"),
         });
     }
@@ -20929,9 +21641,8 @@ test "confidence gated chain propagation" {
             const is_correct = r.idx == wrote_pairs[i][1];
             if (is_valid and is_correct) correct_routed += 1;
             std.debug.print("  [{d}] {s} → {s}(c={d:.3}) valid={s} {s}\n", .{
-                i, entity_names[wrote_pairs[i][0]], entity_names[r.idx], r.sim,
-                @as([]const u8, if (is_valid) "Y" else "N"),
-                @as([]const u8, if (is_correct) "OK" else "FAIL"),
+                i,                                           entity_names[wrote_pairs[i][0]],                   entity_names[r.idx], r.sim,
+                @as([]const u8, if (is_valid) "Y" else "N"), @as([]const u8, if (is_correct) "OK" else "FAIL"),
             });
         } else {
             // Invalid: publisher as key (not in wrote relation)
@@ -20940,7 +21651,7 @@ test "confidence gated chain propagation" {
             const is_gated = r.sim < CONF_THRESHOLD;
             if (is_gated) correct_routed += 1;
             std.debug.print("  [{d}] {s} → {s}(c={d:.3}) gated={s}\n", .{
-                i, entity_names[15 + (i - 5)], entity_names[r.idx], r.sim,
+                i,                                           entity_names[15 + (i - 5)], entity_names[r.idx], r.sim,
                 @as([]const u8, if (is_gated) "Y" else "N"),
             });
         }
@@ -20959,10 +21670,10 @@ test "confidence gated chain propagation" {
     std.debug.print("Total: {d}/{d} ({d:.0}%)\n", .{ correct_all, total, acc });
 
     // Assertions
-    try std.testing.expect(correct_valid >= 4);      // at least 4/5
-    try std.testing.expect(correctly_gated >= 3);    // at least 3/5 gated
-    try std.testing.expect(correct_routed >= 7);     // at least 7/10
-    try std.testing.expect(correct_all >= 14);       // at least 14/20
+    try std.testing.expect(correct_valid >= 4); // at least 4/5
+    try std.testing.expect(correctly_gated >= 3); // at least 3/5 gated
+    try std.testing.expect(correct_routed >= 7); // at least 7/10
+    try std.testing.expect(correct_all >= 14); // at least 14/20
 }
 
 // =============================================================================
@@ -20982,10 +21693,10 @@ test "multi query batch processing diverse" {
     const NUM_ENTITIES = 24;
     var entities: [NUM_ENTITIES]Hypervector = undefined;
     const entity_names = [_][]const u8{
-        "Bach", "Miles", "Hendrix", "Coltrane", "Mozart", "Chopin",
-        "organ", "trumpet", "guitar", "saxophone", "piano", "piano2",
-        "baroque", "jazz", "rock", "jazz2", "classical", "romantic",
-        "church", "club", "stadium", "lounge", "hall", "salon",
+        "Bach",    "Miles",   "Hendrix", "Coltrane",  "Mozart",    "Chopin",
+        "organ",   "trumpet", "guitar",  "saxophone", "piano",     "piano2",
+        "baroque", "jazz",    "rock",    "jazz2",     "classical", "romantic",
+        "church",  "club",    "stadium", "lounge",    "hall",      "salon",
     };
     for (0..NUM_ENTITIES) |i| {
         entities[i] = bipolarRandom(DIM, 0xF119000 + @as(u64, @intCast(i)) * 71);
@@ -21037,7 +21748,10 @@ test "multi query batch processing diverse" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -21057,7 +21771,7 @@ test "multi query batch processing diverse" {
         if (ok) total_correct += 1;
         total_queries += 1;
         std.debug.print("  {s} plays {s} {s}\n", .{
-            entity_names[plays_pairs[i][0]], entity_names[r.idx],
+            entity_names[plays_pairs[i][0]],           entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -21071,7 +21785,7 @@ test "multi query batch processing diverse" {
         if (ok) total_correct += 1;
         total_queries += 1;
         std.debug.print("  {s} style {s} {s}\n", .{
-            entity_names[style_pairs[i][0]], entity_names[r.idx],
+            entity_names[style_pairs[i][0]],           entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -21085,7 +21799,7 @@ test "multi query batch processing diverse" {
         if (ok) total_correct += 1;
         total_queries += 1;
         std.debug.print("  {s} at {s} {s}\n", .{
-            entity_names[venue_pairs[i][0]], entity_names[r.idx],
+            entity_names[venue_pairs[i][0]],           entity_names[r.idx],
             @as([]const u8, if (ok) "OK" else "FAIL"),
         });
     }
@@ -21104,7 +21818,7 @@ test "multi query batch processing diverse" {
         if (all_ok) total_correct += 1;
         total_queries += 1;
         std.debug.print("  {s}: [{s},{s},{s}] {s}\n", .{
-            entity_names[i], entity_names[rp.idx], entity_names[rs.idx], entity_names[rv.idx],
+            entity_names[i],                                  entity_names[rp.idx], entity_names[rs.idx], entity_names[rv.idx],
             @as([]const u8, if (all_ok) "OK" else "PARTIAL"),
         });
     }
@@ -21123,7 +21837,7 @@ test "multi query batch processing diverse" {
         total_correct += 1; // determinism always passes
         total_queries += 1;
         std.debug.print("  {s}: run1={s} run2={s} {s}\n", .{
-            entity_names[plays_pairs[i][0]], entity_names[r1.idx], entity_names[r2.idx],
+            entity_names[plays_pairs[i][0]],                             entity_names[r1.idx], entity_names[r2.idx],
             @as([]const u8, if (same) "CONSISTENT" else "INCONSISTENT"),
         });
     }
@@ -21137,7 +21851,7 @@ test "multi query batch processing diverse" {
 
     // Assertions
     try std.testing.expect(total_correct >= 24); // at least 24/30
-    try std.testing.expect(consistent == 6);     // must be fully deterministic
+    try std.testing.expect(consistent == 6); // must be fully deterministic
 }
 
 // =============================================================================
@@ -21170,7 +21884,10 @@ test "graceful degradation capacity pressure" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -21271,7 +21988,10 @@ test "graceful degradation capacity pressure" {
             const sim_a = res_a.similarity(&cj);
             const sim_b = res_b.similarity(&cj);
             const sim = @max(sim_a, sim_b);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         if (bi == NUM_KEYS + i) split_correct += 1;
     }
@@ -21313,7 +22033,7 @@ test "graceful degradation capacity pressure" {
     // Assertions
     try std.testing.expect(acc_per_level[0] == 100.0); // 1 pair always works
     try std.testing.expect(acc_per_level[2] == 100.0); // 3 pairs should work
-    try std.testing.expect(acc_per_level[4] >= 80.0);  // 5 pairs should be ≥80%
+    try std.testing.expect(acc_per_level[4] >= 80.0); // 5 pairs should be ≥80%
     try std.testing.expect(split_correct >= flat_correct); // split never worse
 
     // Progression
@@ -21538,7 +22258,10 @@ test "heap allocated massive kg 120 entities 12 relations" {
                 for (0..candidates.len) |j| {
                     var cj = candidates[j];
                     const sim = result.similarity(&cj);
-                    if (sim > bs) { bs = sim; bi = j; }
+                    if (sim > bs) {
+                        bs = sim;
+                        bi = j;
+                    }
                 }
             }
             return .{ .idx = bi, .sim = bs };
@@ -21787,7 +22510,10 @@ test "cli style query dispatch routing" {
                 const sim_a = res_a.similarity(&cj);
                 const sim_b = res_b.similarity(&cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -21969,7 +22695,10 @@ test "massive batch integration 100 entities 10 relations" {
                 const sim_a = res_a.similarity(&cj);
                 const sim_b = res_b.similarity(&cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -22101,12 +22830,12 @@ test "named entity registry string lookup" {
 
     // Entity names — 30 entities across 6 categories
     const entity_names = [_][]const u8{
-        "Paris",     "Tokyo",     "Rome",      "London",    "Cairo",
-        "France",    "Japan",     "Italy",     "UK",        "Egypt",
-        "Eiffel",    "Fuji",      "Colosseum", "BigBen",    "Pyramids",
-        "Croissant", "Sushi",     "Pizza",     "FishChips", "Falafel",
-        "French",    "Japanese",  "Italian",   "English",   "Arabic",
-        "Temperate", "Humid",     "Mediterranean", "Oceanic", "Arid",
+        "Paris",     "Tokyo",    "Rome",          "London",    "Cairo",
+        "France",    "Japan",    "Italy",         "UK",        "Egypt",
+        "Eiffel",    "Fuji",     "Colosseum",     "BigBen",    "Pyramids",
+        "Croissant", "Sushi",    "Pizza",         "FishChips", "Falafel",
+        "French",    "Japanese", "Italian",       "English",   "Arabic",
+        "Temperate", "Humid",    "Mediterranean", "Oceanic",   "Arid",
     };
     const NUM_ENTITIES = entity_names.len;
 
@@ -22181,7 +22910,10 @@ test "named entity registry string lookup" {
                 const sim_a = res_a.similarity(&cj);
                 const sim_b = res_b.similarity(&cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -22287,12 +23019,12 @@ test "multi hop cli pipeline string to string" {
 
     // Same KG as Test 124 (same seeds = same vectors = deterministic)
     const entity_names = [_][]const u8{
-        "Paris",     "Tokyo",     "Rome",      "London",    "Cairo",
-        "France",    "Japan",     "Italy",     "UK",        "Egypt",
-        "Eiffel",    "Fuji",      "Colosseum", "BigBen",    "Pyramids",
-        "Croissant", "Sushi",     "Pizza",     "FishChips", "Falafel",
-        "French",    "Japanese",  "Italian",   "English",   "Arabic",
-        "Temperate", "Humid",     "Mediterranean", "Oceanic", "Arid",
+        "Paris",     "Tokyo",    "Rome",          "London",    "Cairo",
+        "France",    "Japan",    "Italy",         "UK",        "Egypt",
+        "Eiffel",    "Fuji",     "Colosseum",     "BigBen",    "Pyramids",
+        "Croissant", "Sushi",    "Pizza",         "FishChips", "Falafel",
+        "French",    "Japanese", "Italian",       "English",   "Arabic",
+        "Temperate", "Humid",    "Mediterranean", "Oceanic",   "Arid",
     };
     const NUM_ENTITIES = entity_names.len;
 
@@ -22354,7 +23086,10 @@ test "multi hop cli pipeline string to string" {
                 const sim_a = res_a.similarity(&cj);
                 const sim_b = res_b.similarity(&cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -22389,7 +23124,7 @@ test "multi hop cli pipeline string to string" {
 
         if (hop2.idx == exp_idx) t1_correct += 1;
         std.debug.print("  {s} --[{s}]--> {s} --[{s}]--> {s} {s}\n", .{
-            ct.start, ct.r1, entity_names[hop1.idx], ct.r2, entity_names[hop2.idx],
+            ct.start,                                                   ct.r1, entity_names[hop1.idx], ct.r2, entity_names[hop2.idx],
             @as([]const u8, if (hop2.idx == exp_idx) "OK" else "MISS"),
         });
     }
@@ -22512,12 +23247,12 @@ test "cli binary integration verification" {
 
     // Same KG as CLI binary (same seeds)
     const entity_names = [_][]const u8{
-        "Paris",     "Tokyo",     "Rome",      "London",    "Cairo",
-        "France",    "Japan",     "Italy",     "UK",        "Egypt",
-        "Eiffel",    "Fuji",      "Colosseum", "BigBen",    "Pyramids",
-        "Croissant", "Sushi",     "Pizza",     "FishChips", "Falafel",
-        "French",    "Japanese",  "Italian",   "English",   "Arabic",
-        "Temperate", "Humid",     "Mediterranean", "Oceanic", "Arid",
+        "Paris",     "Tokyo",    "Rome",          "London",    "Cairo",
+        "France",    "Japan",    "Italy",         "UK",        "Egypt",
+        "Eiffel",    "Fuji",     "Colosseum",     "BigBen",    "Pyramids",
+        "Croissant", "Sushi",    "Pizza",         "FishChips", "Falafel",
+        "French",    "Japanese", "Italian",       "English",   "Arabic",
+        "Temperate", "Humid",    "Mediterranean", "Oceanic",   "Arid",
     };
     const NUM_ENTITIES = entity_names.len;
 
@@ -22558,7 +23293,10 @@ test "cli binary integration verification" {
                 const sim_a = res_a.similarity(&cj);
                 const sim_b = res_b.similarity(&cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -22693,12 +23431,12 @@ test "repl multi turn session simulation" {
 
     // Same KG as CLI/REPL (same seeds)
     const entity_names = [_][]const u8{
-        "Paris",     "Tokyo",     "Rome",      "London",    "Cairo",
-        "France",    "Japan",     "Italy",     "UK",        "Egypt",
-        "Eiffel",    "Fuji",      "Colosseum", "BigBen",    "Pyramids",
-        "Croissant", "Sushi",     "Pizza",     "FishChips", "Falafel",
-        "French",    "Japanese",  "Italian",   "English",   "Arabic",
-        "Temperate", "Humid",     "Mediterranean", "Oceanic", "Arid",
+        "Paris",     "Tokyo",    "Rome",          "London",    "Cairo",
+        "France",    "Japan",    "Italy",         "UK",        "Egypt",
+        "Eiffel",    "Fuji",     "Colosseum",     "BigBen",    "Pyramids",
+        "Croissant", "Sushi",    "Pizza",         "FishChips", "Falafel",
+        "French",    "Japanese", "Italian",       "English",   "Arabic",
+        "Temperate", "Humid",    "Mediterranean", "Oceanic",   "Arid",
     };
     const NUM_ENTITIES = entity_names.len;
 
@@ -22739,7 +23477,10 @@ test "repl multi turn session simulation" {
                 const sim_a = res_a.similarity(&cj);
                 const sim_b = res_b.similarity(&cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -22752,16 +23493,16 @@ test "repl multi turn session simulation" {
     std.debug.print("--- Task 1: Sequential direct queries (10 queries) ---\n", .{});
     // Simulate: user types entity + relation in REPL, one after another
     const repl_session = [_]struct { key: usize, rel: usize, expected: usize }{
-        .{ .key = 0, .rel = 0, .expected = 5 },   // Paris capital_of → France
-        .{ .key = 10, .rel = 1, .expected = 0 },   // Eiffel landmark_in → Paris
-        .{ .key = 16, .rel = 2, .expected = 6 },   // Sushi cuisine_of → Japan
-        .{ .key = 20, .rel = 3, .expected = 5 },   // French language_of → France
-        .{ .key = 29, .rel = 4, .expected = 9 },   // Arid climate_of → Egypt
-        .{ .key = 3, .rel = 0, .expected = 8 },    // London capital_of → UK
-        .{ .key = 13, .rel = 1, .expected = 3 },   // BigBen landmark_in → London
-        .{ .key = 17, .rel = 2, .expected = 7 },   // Pizza cuisine_of → Italy
-        .{ .key = 23, .rel = 3, .expected = 8 },   // English language_of → UK
-        .{ .key = 25, .rel = 4, .expected = 5 },   // Temperate climate_of → France
+        .{ .key = 0, .rel = 0, .expected = 5 }, // Paris capital_of → France
+        .{ .key = 10, .rel = 1, .expected = 0 }, // Eiffel landmark_in → Paris
+        .{ .key = 16, .rel = 2, .expected = 6 }, // Sushi cuisine_of → Japan
+        .{ .key = 20, .rel = 3, .expected = 5 }, // French language_of → France
+        .{ .key = 29, .rel = 4, .expected = 9 }, // Arid climate_of → Egypt
+        .{ .key = 3, .rel = 0, .expected = 8 }, // London capital_of → UK
+        .{ .key = 13, .rel = 1, .expected = 3 }, // BigBen landmark_in → London
+        .{ .key = 17, .rel = 2, .expected = 7 }, // Pizza cuisine_of → Italy
+        .{ .key = 23, .rel = 3, .expected = 8 }, // English language_of → UK
+        .{ .key = 25, .rel = 4, .expected = 5 }, // Temperate climate_of → France
     };
 
     var t1_correct: u32 = 0;
@@ -22880,12 +23621,12 @@ test "repl session statistics tracking" {
     std.debug.print("\n=== TEST 128: REPL SESSION STATISTICS (Level 11.25) ===\n", .{});
 
     const entity_names = [_][]const u8{
-        "Paris",     "Tokyo",     "Rome",      "London",    "Cairo",
-        "France",    "Japan",     "Italy",     "UK",        "Egypt",
-        "Eiffel",    "Fuji",      "Colosseum", "BigBen",    "Pyramids",
-        "Croissant", "Sushi",     "Pizza",     "FishChips", "Falafel",
-        "French",    "Japanese",  "Italian",   "English",   "Arabic",
-        "Temperate", "Humid",     "Mediterranean", "Oceanic", "Arid",
+        "Paris",     "Tokyo",    "Rome",          "London",    "Cairo",
+        "France",    "Japan",    "Italy",         "UK",        "Egypt",
+        "Eiffel",    "Fuji",     "Colosseum",     "BigBen",    "Pyramids",
+        "Croissant", "Sushi",    "Pizza",         "FishChips", "Falafel",
+        "French",    "Japanese", "Italian",       "English",   "Arabic",
+        "Temperate", "Humid",    "Mediterranean", "Oceanic",   "Arid",
     };
     const NUM_ENTITIES = entity_names.len;
 
@@ -22926,7 +23667,10 @@ test "repl session statistics tracking" {
                 const sim_a = res_a.similarity(&cj);
                 const sim_b = res_b.similarity(&cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -23012,12 +23756,12 @@ test "repl conversation continuity workflows" {
     std.debug.print("\n=== TEST 129: REPL CONVERSATION CONTINUITY (Level 11.25) ===\n", .{});
 
     const entity_names = [_][]const u8{
-        "Paris",     "Tokyo",     "Rome",      "London",    "Cairo",
-        "France",    "Japan",     "Italy",     "UK",        "Egypt",
-        "Eiffel",    "Fuji",      "Colosseum", "BigBen",    "Pyramids",
-        "Croissant", "Sushi",     "Pizza",     "FishChips", "Falafel",
-        "French",    "Japanese",  "Italian",   "English",   "Arabic",
-        "Temperate", "Humid",     "Mediterranean", "Oceanic", "Arid",
+        "Paris",     "Tokyo",    "Rome",          "London",    "Cairo",
+        "France",    "Japan",    "Italy",         "UK",        "Egypt",
+        "Eiffel",    "Fuji",     "Colosseum",     "BigBen",    "Pyramids",
+        "Croissant", "Sushi",    "Pizza",         "FishChips", "Falafel",
+        "French",    "Japanese", "Italian",       "English",   "Arabic",
+        "Temperate", "Humid",    "Mediterranean", "Oceanic",   "Arid",
     };
     const NUM_ENTITIES = entity_names.len;
 
@@ -23058,7 +23802,10 @@ test "repl conversation continuity workflows" {
                 const sim_a = res_a.similarity(&cj);
                 const sim_b = res_b.similarity(&cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -23251,7 +23998,10 @@ test "dim 4096 scaling pure capacity" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -23383,7 +24133,10 @@ test "dim 4096 scaling pure capacity" {
         for (0..100) |j| {
             var cj = ent_1k[j];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         if (bi == 60 + i) correct_1k += 1;
     }
@@ -23439,7 +24192,10 @@ test "advanced bundling unsplit memories" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -23570,7 +24326,10 @@ test "pure symbolic reasoning tasks" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -23688,7 +24447,10 @@ test "pure symbolic reasoning tasks" {
             for (0..NUM_ENTITIES) |j| {
                 var cj = entities[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             if (bi == 21 + hop) {
                 chain_ok += 1;
@@ -23714,7 +24476,10 @@ test "pure symbolic reasoning tasks" {
             for (0..NUM_ENTITIES) |j| {
                 var cj = entities[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             if (bi == 21 + hop) {
                 chain_ok += 1;
@@ -23768,9 +24533,12 @@ test "pure symbolic reasoning tasks" {
 
         std.debug.print("  ent[{d}]: relA→ent[{d}]{s} relB→ent[{d}]{s} relC→ent[{d}]{s}\n", .{
             40 + i,
-            ra.idx, @as([]const u8, if (ra.idx == 45 + i) " OK" else " MISS"),
-            rb.idx, @as([]const u8, if (rb.idx == 50 + i) " OK" else " MISS"),
-            rc.idx, @as([]const u8, if (rc.idx == 55 + i) " OK" else " MISS"),
+            ra.idx,
+            @as([]const u8, if (ra.idx == 45 + i) " OK" else " MISS"),
+            rb.idx,
+            @as([]const u8, if (rb.idx == 50 + i) " OK" else " MISS"),
+            rc.idx,
+            @as([]const u8, if (rc.idx == 55 + i) " OK" else " MISS"),
         });
     }
     std.debug.print("Result: {d}/15\n", .{t3_correct});
@@ -23826,7 +24594,10 @@ test "large scale shared relation analogies" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -23983,7 +24754,10 @@ test "multi step analogy chains benchmark" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -24162,7 +24936,10 @@ test "analogy robustness and deterministic replay" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -24246,11 +25023,26 @@ test "analogy robustness and deterministic replay" {
     std.debug.print("  Above 0.10: {d}/100\n", .{above_thresh});
 
     // 5 quality checks, each worth 5 points
-    if (avg_sim > 0.15) { t2_correct += 5; std.debug.print("  Avg > 0.15: OK\n", .{}); }
-    if (sim_min > 0.05) { t2_correct += 5; std.debug.print("  Min > 0.05: OK\n", .{}); }
-    if (sim_max < 1.0) { t2_correct += 5; std.debug.print("  Max < 1.0: OK\n", .{}); }
-    if (above_thresh >= 95) { t2_correct += 5; std.debug.print("  >= 95/100 above threshold: OK\n", .{}); }
-    if (sim_max - sim_min < 0.8) { t2_correct += 5; std.debug.print("  Spread < 0.8: OK\n", .{}); }
+    if (avg_sim > 0.15) {
+        t2_correct += 5;
+        std.debug.print("  Avg > 0.15: OK\n", .{});
+    }
+    if (sim_min > 0.05) {
+        t2_correct += 5;
+        std.debug.print("  Min > 0.05: OK\n", .{});
+    }
+    if (sim_max < 1.0) {
+        t2_correct += 5;
+        std.debug.print("  Max < 1.0: OK\n", .{});
+    }
+    if (above_thresh >= 95) {
+        t2_correct += 5;
+        std.debug.print("  >= 95/100 above threshold: OK\n", .{});
+    }
+    if (sim_max - sim_min < 0.8) {
+        t2_correct += 5;
+        std.debug.print("  Spread < 0.8: OK\n", .{});
+    }
 
     std.debug.print("Result: {d}/25\n", .{t2_correct});
     total_correct += t2_correct;
@@ -24355,7 +25147,10 @@ test "bipolar vs ternary side by side comparison" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -24594,7 +25389,10 @@ test "hybrid encoding mode bipolar ternary fusion" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -24692,7 +25490,10 @@ test "hybrid encoding mode bipolar ternary fusion" {
             for (0..NUM_ENTITIES) |j| {
                 var cj = entities[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             if (bi == next_idx) {
                 chain_ok += 1;
@@ -24755,7 +25556,10 @@ test "noisy recall robustness bipolar ternary" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -24944,7 +25748,10 @@ test "noisy recall robustness bipolar ternary" {
             for (0..NUM_ENTITIES) |j| {
                 var cj = bp_entities[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             if (bi == next_idx) {
                 hop_ok += 1;
@@ -25000,7 +25807,10 @@ test "large scale kg 1000 triples multi domain" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -25234,7 +26044,10 @@ test "multi hop reasoning 1000 entity scale" {
             for (0..NUM_ENTITIES) |j| {
                 var cj = entities[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             if (bi == next_idx) {
                 chain_ok += 1;
@@ -25275,7 +26088,10 @@ test "multi hop reasoning 1000 entity scale" {
         for (0..NUM_ENTITIES) |j| {
             var cj = entities[j];
             const sim = res1.similarity(&cj);
-            if (sim > bs1) { bs1 = sim; bi1 = j; }
+            if (sim > bs1) {
+                bs1 = sim;
+                bi1 = j;
+            }
         }
         if (bi1 == b) {
             t2_correct += 1;
@@ -25292,7 +26108,10 @@ test "multi hop reasoning 1000 entity scale" {
             for (0..NUM_ENTITIES) |j| {
                 var cj = entities[j];
                 const sim = res2.similarity(&cj);
-                if (sim > bs2) { bs2 = sim; bi2 = j; }
+                if (sim > bs2) {
+                    bs2 = sim;
+                    bi2 = j;
+                }
             }
             if (bi2 == c) t2_correct += 1;
         }
@@ -25313,7 +26132,10 @@ test "multi hop reasoning 1000 entity scale" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -25376,7 +26198,10 @@ test "multi hop reasoning 1000 entity scale" {
         for (0..NUM_ENTITIES) |j| {
             var cj = entities[j];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         if (bi == target_vals[r]) t4_correct += 1;
     }
@@ -25398,7 +26223,10 @@ test "multi hop reasoning 1000 entity scale" {
         for (0..NUM_ENTITIES) |j| {
             var cj = entities[j];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         if (bi == target_vals_2[r]) t4_correct += 1;
     }
@@ -25445,7 +26273,10 @@ test "scale benchmarks noise robustness 1000 entities" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -25619,7 +26450,10 @@ test "babi style planning tasks sota" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -25740,7 +26574,10 @@ test "babi style planning tasks sota" {
             for (0..100) |j| { // search locations only
                 var cj = entities[100 + j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             const expected = start + hop + 1;
             if (bi == expected) {
@@ -25762,7 +26599,10 @@ test "babi style planning tasks sota" {
             for (0..100) |j| {
                 var cj = entities[100 + j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             const expected = start + hop + 1;
             if (bi == expected) {
@@ -25821,7 +26661,10 @@ test "clutrr style kinship reasoning sota" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -26015,7 +26858,10 @@ test "deep planning compositional queries sota" {
         for (0..NUM_ENTITIES) |j| {
             var cj = entities[j];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         if (bi == hop + 1) {
             t1_correct += 1;
@@ -26053,7 +26899,10 @@ test "deep planning compositional queries sota" {
         for (0..NUM_ENTITIES) |j| {
             var cj = entities[j];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         if (bi == constraint_vals[c]) t2_correct += 1;
     }
@@ -26067,7 +26916,10 @@ test "deep planning compositional queries sota" {
         for (0..NUM_ENTITIES) |j| {
             var cj = entities[j];
             const sim = result.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         if (bi == 50) t2_correct += 1;
     }
@@ -26088,7 +26940,10 @@ test "deep planning compositional queries sota" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -26125,7 +26980,10 @@ test "deep planning compositional queries sota" {
             for (0..pool_size) |j| {
                 var cj = entities[target_start + j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             if (bi == i) t3_correct += 1;
         }
@@ -26220,7 +27078,10 @@ test "standardized neuro symbolic benchmark suite" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -26330,7 +27191,10 @@ test "standardized neuro symbolic benchmark suite" {
         for (0..100) |j| {
             var cj = entities[j];
             const sim = recipient_approx.similarity(&cj);
-            if (sim > bs) { bs = sim; bi = j; }
+            if (sim > bs) {
+                bs = sim;
+                bi = j;
+            }
         }
         if (bi == 20 + i) t4_sub += 1;
     }
@@ -26514,7 +27378,10 @@ test "interpretability exactness advantage" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -26546,7 +27413,10 @@ test "interpretability exactness advantage" {
             for (0..NUM_ENTITIES) |j| {
                 var cj = entities[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             trace_sims[hop] = bs;
             if (bi == base + hop + 1) {
@@ -26741,7 +27611,10 @@ test "degradation resistance depth noise scaling" {
             for (0..NUM_ENTITIES) |j| {
                 var cj = entities[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             if (bi == hop + 1) {
                 chain_correct += 1;
@@ -26777,7 +27650,10 @@ test "degradation resistance depth noise scaling" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -26897,7 +27773,10 @@ test "public demo api end to end query pipeline" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -27118,7 +27997,10 @@ test "community testing edge cases query diversity" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -27294,7 +28176,10 @@ test "release validation full readiness check" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -27328,7 +28213,10 @@ test "release validation full readiness check" {
         for (0..100) |j| {
             var cand = entities[100 + j];
             const sim = recovered.similarity(&cand);
-            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = j;
+            }
         }
         if (best_idx == i) cap1 += 1;
     }
@@ -27513,7 +28401,10 @@ test "public open access multi user simulation" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -27670,7 +28561,10 @@ test "community integration shared kg multi write" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -27876,7 +28770,10 @@ test "deployment monitoring stability metrics" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -28056,7 +28953,10 @@ test "community feedback processing user analytics" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -28225,7 +29125,10 @@ test "symbolic evolution kg expansion versioning" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -28392,7 +29295,10 @@ test "final optimization capacity maturity gates" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -28576,7 +29482,10 @@ test "igla trinity fusion hybrid query pipeline" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -28735,7 +29644,10 @@ test "trinity canvas kg graph visualization" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -28923,7 +29835,10 @@ test "final maturity sota comprehensive validation" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -28956,7 +29871,10 @@ test "final maturity sota comprehensive validation" {
         for (0..50) |j| {
             var cj = entities[100 + j];
             const sim = recovered.similarity(&cj);
-            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = j;
+            }
         }
         if (best_idx == i) cap_a += 1;
     }
@@ -29144,7 +30062,10 @@ test "kg triple encoding single hop query" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -29234,7 +30155,10 @@ test "kg multi hop chain query" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -29324,7 +30248,10 @@ test "real world hybrid routing full pipeline" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -29474,7 +30401,10 @@ test "community release public access stability" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -29586,7 +30516,10 @@ test "community testing readiness validation" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -29696,7 +30629,10 @@ test "feedback collection release gates" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -29845,7 +30781,10 @@ test "feedback integration community input processing" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -29996,7 +30935,10 @@ test "symbolic agi evolution reasoning growth" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -30193,7 +31135,10 @@ test "final deployment preparation readiness" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -30355,7 +31300,10 @@ test "final deployment release stability" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -30495,7 +31443,10 @@ test "symbolic agi release validation" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -30653,7 +31604,10 @@ test "community governance readiness" {
             for (0..candidates.len) |j| {
                 var cj = candidates[j];
                 const sim = result.similarity(&cj);
-                if (sim > bs) { bs = sim; bi = j; }
+                if (sim > bs) {
+                    bs = sim;
+                    bi = j;
+                }
             }
             return .{ .idx = bi, .sim = bs };
         }
@@ -31360,10 +32314,26 @@ test "debug logs toggle conditional visibility" {
     var logs_hidden: [DIM]i8 = undefined;
 
     for (0..DIM) |i| {
-        debug_on[i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
-        debug_off[i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
-        logs_visible[i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
-        logs_hidden[i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
+        debug_on[i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+            0 => @as(i8, -1),
+            1 => 0,
+            else => 1,
+        };
+        debug_off[i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+            0 => @as(i8, -1),
+            1 => 0,
+            else => 1,
+        };
+        logs_visible[i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+            0 => @as(i8, -1),
+            1 => 0,
+            else => 1,
+        };
+        logs_hidden[i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+            0 => @as(i8, -1),
+            1 => 0,
+            else => 1,
+        };
     }
 
     // Bind: debug_on -> logs_visible, debug_off -> logs_hidden
@@ -31423,7 +32393,11 @@ test "debug logs toggle conditional visibility" {
     var section_hvs: [3][DIM]i8 = undefined;
     for (0..3) |s| {
         for (0..DIM) |i| {
-            section_hvs[s][i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
+            section_hvs[s][i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+                0 => @as(i8, -1),
+                1 => 0,
+                else => 1,
+            };
         }
     }
 
@@ -31542,9 +32516,9 @@ test "usability non debug clean view verification" {
     // --- Sub-test 1: UI element visibility matrix ---
     // Encode UI components as hypervectors
     const components = [_][]const u8{
-        "chat_input", "chat_messages", "petal_menu", "editor",
-        "live_log", "corpus_log", "all_events", "self_reflection",
-        "query_path", "metrics_row", "energy_pipeline", "tool_buttons",
+        "chat_input", "chat_messages", "petal_menu",      "editor",
+        "live_log",   "corpus_log",    "all_events",      "self_reflection",
+        "query_path", "metrics_row",   "energy_pipeline", "tool_buttons",
     };
 
     // Components visible in non-debug mode (user-facing)
@@ -31557,7 +32531,11 @@ test "usability non debug clean view verification" {
     var component_hvs: [12][DIM]i8 = undefined;
     for (0..12) |c| {
         for (0..DIM) |i| {
-            component_hvs[c][i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
+            component_hvs[c][i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+                0 => @as(i8, -1),
+                1 => 0,
+                else => 1,
+            };
         }
     }
 
@@ -31565,8 +32543,16 @@ test "usability non debug clean view verification" {
     var visible_hv: [DIM]i8 = undefined;
     var hidden_hv: [DIM]i8 = undefined;
     for (0..DIM) |i| {
-        visible_hv[i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
-        hidden_hv[i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
+        visible_hv[i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+            0 => @as(i8, -1),
+            1 => 0,
+            else => 1,
+        };
+        hidden_hv[i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+            0 => @as(i8, -1),
+            1 => 0,
+            else => 1,
+        };
     }
 
     var t1_correct: u32 = 0;
@@ -31706,8 +32692,16 @@ test "fluent toggle debug flag rescue recovery" {
     var on_hv: [DIM]i8 = undefined;
     var off_hv: [DIM]i8 = undefined;
     for (0..DIM) |i| {
-        on_hv[i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
-        off_hv[i] = switch (rand.intRangeAtMost(u8, 0, 2)) { 0 => @as(i8, -1), 1 => 0, else => 1 };
+        on_hv[i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+            0 => @as(i8, -1),
+            1 => 0,
+            else => 1,
+        };
+        off_hv[i] = switch (rand.intRangeAtMost(u8, 0, 2)) {
+            0 => @as(i8, -1),
+            1 => 0,
+            else => 1,
+        };
         toggle_state_hv[i] = off_hv[i]; // start in OFF state
     }
 
@@ -31817,3 +32811,5 @@ test "fluent toggle debug flag rescue recovery" {
     std.debug.print("L11.40 | Fluent Toggle Rescue & Recovery | {d}/{d} <<<\n", .{ total_correct, total_queries });
     std.debug.print("============================================\n", .{});
 }
+
+// φ² + 1/φ² = 3 | TRINITY

@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // TVC VSA - Vector Symbolic Architecture for Balanced Ternary
 // Hyperdimensional computing operations: bind, bundle, similarity
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
@@ -6516,25 +6517,25 @@ pub const TextCorpus = struct {
     pub const ModalityRouter = struct {
         // Code indicators
         const CODE_KEYWORDS = [_][]const u8{
-            "function", "class", "def ", "fn ", "const ", "var ", "import",
-            "return", "if ", "for ", "while", "struct", "enum", "pub fn",
+            "function", "class", "def ", "fn ",   "const ", "var ", "import",
+            "return",   "if ",   "for ", "while", "struct", "enum", "pub fn",
         };
 
         // Tool indicators
         const TOOL_KEYWORDS = [_][]const u8{
-            "run ", "execute", "search", "fetch", "calculate", "shell",
-            "read file", "write file", "open", "find ", "grep",
+            "run ",      "execute",    "search", "fetch", "calculate", "shell",
+            "read file", "write file", "open",   "find ", "grep",
         };
 
         // Voice indicators
         const VOICE_KEYWORDS = [_][]const u8{
-            "say ", "speak", "listen", "audio", "record", "voice",
+            "say ",      "speak",   "listen",     "audio", "record", "voice",
             "pronounce", "dictate", "transcribe",
         };
 
         // Vision indicators
         const VISION_KEYWORDS = [_][]const u8{
-            "image", "picture", "photo", "screenshot", "look at",
+            "image",          "picture",       "photo",           "screenshot", "look at",
             "describe image", "analyze image", "what do you see",
         };
 
@@ -8367,7 +8368,7 @@ pub const TextCorpus = struct {
             // Simple keyword-based tool detection
             for (0..input_text.len) |i| {
                 if (i + 4 <= input_text.len) {
-                    const window = input_text[i..i + 4];
+                    const window = input_text[i .. i + 4];
                     if (std.mem.eql(u8, window, "calc") or std.mem.eql(u8, window, "math") or std.mem.eql(u8, window, "sum ")) {
                         needs_calc = true;
                     }
@@ -12976,3 +12977,5 @@ pub fn runBenchmarks() void {
 pub fn main() !void {
     runBenchmarks();
 }
+
+// φ² + 1/φ² = 3 | TRINITY

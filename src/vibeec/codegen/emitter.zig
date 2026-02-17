@@ -998,7 +998,7 @@ pub const ZigCodeGen = struct {
         var test_gen = TestGenerator.init(&self.builder, self.allocator);
         try test_gen.writeTests(spec.behaviors.items);
 
-        return self.builder.getOutput();
+        return self.builder.toOwnedSlice();
     }
 
     fn writeHeader(self: *Self, spec: *const VibeeSpec) !void {
@@ -1105,6 +1105,15 @@ pub const ZigCodeGen = struct {
 
             if (t.base) |base| {
                 try self.builder.writeFmt("pub const {s} = {s};\n", .{ t.name, base });
+            } else if (t.enum_variants.items.len > 0) {
+                try self.builder.writeFmt("pub const {s} = enum {{\n", .{t.name});
+                self.builder.incIndent();
+                for (t.enum_variants.items) |variant| {
+                    try self.builder.writeIndent();
+                    try self.builder.writeFmt("{s},\n", .{variant});
+                }
+                self.builder.decIndent();
+                try self.builder.writeLine("};");
             } else {
                 try self.builder.writeFmt("pub const {s} = struct {{\n", .{t.name});
                 self.builder.incIndent();
@@ -1432,8 +1441,13 @@ pub const ZigCodeGen = struct {
         try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
         self.builder.incIndent();
 
-        // Generate real body from behavior semantics
-        try self.generateRealBody(b);
+        // Check for manual implementation in spec
+        if (b.implementation.len > 0) {
+            try self.builder.writeLine(b.implementation);
+        } else {
+            // Generate auto-body from behavior semantics
+            try self.generateRealBody(b);
+        }
 
         self.builder.decIndent();
         try self.builder.writeLine("}");
