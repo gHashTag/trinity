@@ -1,7 +1,11 @@
 .{
     .name = .trinity_lang,
     .version = "0.1.0",
-    .dependencies = .{},
+    .dependencies = .{
+        .trinity_core = .{
+            .path = "../core",
+        },
+    },
     .paths = .{""},
     .fingerprint = 0x1224f29fa87b851f,
 }
