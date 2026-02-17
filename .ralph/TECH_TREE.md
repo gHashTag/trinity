@@ -16,13 +16,14 @@
 | ID | Name | Branch | Complexity | Gain |
 |----|------|--------|------------|------|
 
-|SYM-003|Decentralized KG Sync|symbolic|4/5|Kademlia DHT + $TRI rewards|
 |SYM-005|**TRI SOTA MVP**|**symbolic**|**5/5**|**Decentralized Knowledge Collector Live**|
 |DEV-002|KG-INSIGHT (JSON)|development|3/5|Local triple inspection suite|
 |DEV-003|SWARM-WATCH (DHT)|development|4/5|Live DHT & economy monitor|
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**SYM-003**|**Decentralized KG Sync + $TRI Rewards**|**symbolic**|**KgTripleDHT Kademlia XOR routing k=3, 268-byte wire format, ProofOfKnowledge, KgRewardCalculator 0.0002 TRI/triple, 12 tests**|
 |----|------|--------|------|
 |**SYM-004**|**IGLA + KG Full Pipeline**|**symbolic**|**extractTriples wired into respond(), confidence 0.6 filter, addFact KG storage, CLI compiles**|
 |----|------|--------|------|
@@ -74,12 +75,12 @@
 |Hardware|0|3|0%|
 |**Math**|**5**|**5**|**100%**|
 |Development|1|3|33%|
-|Symbolic|3|5|60%|
+|Symbolic|4|5|80%|
 |Visualization|1|1|100%|
-|**Total**|**28**|**44**|**64%**|
+|**Total**|**29**|**44**|**66%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **SYM-003** Decentralized KG Sync — wire triples into hybrid chat pipeline, builds KG collector
+1. **SYM-005** TRI SOTA MVP — decentralized knowledge collector live, final symbolic milestone
 2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002
 3. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
 
