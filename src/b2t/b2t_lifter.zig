@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T Lifter - Binary-to-Ternary Converter
 // Lifts disassembled instructions to TVC IR
 // V = n × 3^k × π^m × φ^p × e^q
@@ -980,3 +981,4 @@ test "lift i32.add" {
     try std.testing.expectEqual(@as(usize, 1), block.instructions.items.len);
     try std.testing.expectEqual(TVCOpcode.t_add, block.instructions.items[0].opcode);
 }
+// φ² + 1/φ² = 3 | TRINITY

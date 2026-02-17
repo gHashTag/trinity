@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T Optimizer - Binary-to-Ternary Optimization Pass
 // Converts binary arithmetic to native ternary operations
 // V = n × 3^k × π^m × φ^p × e^q
@@ -175,3 +176,4 @@ test "optimizer converts all arithmetic ops" {
     try std.testing.expectEqual(b2t_lifter.TVCOpcode.t_tmul, insts[2].opcode);
     try std.testing.expectEqual(b2t_lifter.TVCOpcode.t_tdiv, insts[3].opcode);
 }
+// φ² + 1/φ² = 3 | TRINITY

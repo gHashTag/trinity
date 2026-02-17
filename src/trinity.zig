@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // Trinity - Ternary Vector Symbolic Architecture
 // High-performance hyperdimensional computing library
 //
@@ -79,9 +80,11 @@ pub const PHI_SQUARED = science.PHI_SQUARED;
 pub const GOLDEN_IDENTITY = science.GOLDEN_IDENTITY;
 
 // Version
-pub const version = "0.2.0";
+pub const version = "0.11.0";
 
 test {
     // Run all tests from submodules
     std.testing.refAllDecls(@This());
 }
+
+// φ² + 1/φ² = 3 | TRINITY
