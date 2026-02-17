@@ -1,0 +1,73 @@
+name: ralph_canvas_monitor
+version: "1.0.0"
+language: zig
+module: ralph_canvas_monitor
+
+description: >
+  RALPH-CANVAS-001: Ralph Monitor Panel for Trinity Canvas.
+  Adds dedicated WaveMode.ralph fullscreen panel to the 27-petal Canvas UI.
+  Shows loop_count, calls_per_hour, health status, active task, live log stream.
+  Activated via Shift+9 keyboard shortcut.
+  Tech Tree: VIS-001 (Canvas visualization integration).
+
+constants:
+  RALPH_POLL_INTERVAL: 2.0
+  RALPH_LOG_LINES: 20
+  RALPH_LOG_LINE_LEN: 256
+  RALPH_PANEL_PADDING: 20
+  RALPH_HEADER_HEIGHT: 60
+  RALPH_METRIC_ROW_HEIGHT: 28
+  RALPH_LOG_ROW_HEIGHT: 18
+  RALPH_HUE: 200.0
+
+types:
+  RalphPanelState:
+    fields:
+      loop_count: Int
+      total_calls: Int
+      calls_per_hour: Float
+      is_healthy: Bool
+      active_task: String
+      circuit_breaker: String
+      last_poll_time: Float
+
+  CircuitBreakerState:
+    fields:
+      state: String
+      consecutive_no_progress: Int
+
+behaviors:
+  - name: renderRalphPanel
+    given: WaveMode is .ralph and RalphPanelState is populated
+    when: Frame render cycle executes
+    then: Fullscreen panel draws header, 4 metric cards, active task box, live log area
+
+  - name: pollRalphStatus
+    given: Timer exceeds RALPH_POLL_INTERVAL seconds
+    when: Native mode reads .ralph/internal/ files
+    then: RalphPanelState updated with fresh data
+
+  - name: parseLiveLog
+    given: .ralph/logs/live.log exists and has new content
+    when: Poll cycle reads tail of live.log
+    then: Last RALPH_LOG_LINES stored in ring buffer for display
+
+  - name: parseCircuitBreakerState
+    given: .ralph/internal/.circuit_breaker_state file content
+    when: JSON parsed for state field
+    then: Returns CLOSED green or DEGRADED yellow or OPEN red
+
+  - name: parseActiveTask
+    given: .ralph/internal/fix_plan.md content
+    when: Scan for first unchecked P1 line
+    then: Extract task description as active_task string
+
+test_cases:
+  - input: Shift+9 pressed
+    expected: WaveMode transitions to .ralph panel renders
+  - input: Poll timer expires
+    expected: Ralph state files read metrics updated
+  - input: circuit_breaker_state contains CLOSED
+    expected: Green indicator displayed
+  - input: circuit_breaker_state contains OPEN
+    expected: Red indicator with alert banner
