@@ -54,18 +54,29 @@ The current priority is **Performance Parity and Ternary Efficiency**.
 
 ---
 
-## Workflow (Golden Chain)
+## High-Fidelity Workflow (Golden Chain — 9 Links)
 
-1. **Plan**: Edit/create spec in `specs/tri/`.
-2. **Generate**: `zig build vibee -- gen <spec>`.
-3. **Verify**: Run `.ralph/gate.sh`.
-4. **Record**: Update `.ralph/SUCCESS_HISTORY.md` or `.ralph/REGRESSION_PATTERNS.md`.
-5. **Report**: Propose 3 Tech Tree options for the next iteration.
-   ```
-   Commit: $(git rev-parse HEAD) (Branch: $(git branch --show-current))
-   ```
-4. **After failure analysis** — immediately add entry to `REGRESSION_PATTERNS.md`
-5. **Never ignore history** — repeating a documented anti-pattern is unacceptable
+Every cycle MUST follow these 9 links in order. No skipped links.
+
+1.  **TRI DECOMPOSE**: Break down the objective (e.g., "full local fluent multilingual code gen") into atomic "Quarks" (tasks).
+2.  **TRI PLAN**: Strategy update. Select Tech Tree nodes, define ROI, and plan implementation blocks.
+3.  **TRI SPEC CREATE**: Create/update `.vibee` files. This is the **Single Source of Truth**.
+4.  **TRI GEN**: `zig build vibee -- gen <spec>`. Never write `.zig` logic that should be in a spec.
+5.  **TRI TEST**: E2E testing. Verify generated code against specs. Gate: `zig build test`.
+6.  **TRI BENCH**: Performance benchmarking vs previous versions. Provide detailed proofs/logs.
+7.  **TRI VERDICT**: **TOXIC VERDICT ENFORCED**. Brutally honest assessment of the results. "Prod = 100%" or "Failure = Absolute".
+8.  **TRI GIT**: `git add`, `git commit -m "Level 11 Cycle 41: ..."` (follow convention), `git push`.
+9.  **TRI LOOP**: Loop decision (Needle check). Did we achieve the objective? Decide on next cycle.
+
+---
+
+## Toxic Verdict Mandate
+
+A "Toxic Verdict" is a brutally honest, quark-level assessment of the work done.
+- **Formatting**: Header `### Link 7: Tri Verdict (TOXIC)`.
+- **Tone**: Professional but uncompromising. Identify every flaw.
+- **Metric**: Numerical score (e.g., 10/10) and binary status (Prod/Fail).
+- **Required**: No task is complete without a Toxic Verdict.
 
 ---
 

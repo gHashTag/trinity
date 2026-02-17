@@ -12,7 +12,7 @@ CLAUDE_TIMEOUT_MINUTES=30
 CLAUDE_OUTPUT_FORMAT="json"
 
 # ── Tool permissions ────────────────────────────────────────────
-ALLOWED_TOOLS="Write,Read,Edit,MultiEdit,Flatten,Glob,Grep,Task,Bash(*)"
+ALLOWED_TOOLS="*"
 
 # ── Branch safety ───────────────────────────────────────────────
 BRANCH_POLICY="feature-only"
@@ -38,7 +38,8 @@ TASK_FILE=".ralph/internal/fix_plan.md"
 CB_NO_PROGRESS_THRESHOLD=3
 CB_SAME_ERROR_THRESHOLD=5
 CB_OUTPUT_DECLINE_THRESHOLD=70
-CB_COOLDOWN_MINUTES=30
+CB_COOLDOWN_MINUTES=5
+AUTO_RESTART=true
 
 # ── File safety ─────────────────────────────────────────────────
 FORBIDDEN_PATHS="trinity/output/,generated/"
