@@ -1,0 +1,56 @@
+name: symbolic_agi_evolution
+version: "1.0.0"
+language: zig
+module: symbolic_agi_evolution
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SYMBOLIC AGI EVOLUTION - Level 11.38 Growth Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+# Reasoning growth: incremental KG expansion (4→8 facts/relation), cross-domain
+# inference isolation, and multi-hop chain evolution (2-hop via bridge memories).
+#
+# Test 167: Symbolic AGI evolution reasoning growth (40 queries)
+#   - 20 incremental expansion (8 phase1 + 4 old-survive + 8 new facts)
+#   - 10 cross-domain inference (5 isolation + 5 correct-memory accuracy)
+#   - 10 multi-hop chain evolution (5 two-hop chains + 5 reverse lookups)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DIM: 4096
+  RELATIONS: 2
+  INITIAL_FACTS: 4
+  GROWN_FACTS: 8
+  BRIDGE_CHAINS: 5
+
+types:
+  ExpansionResult:
+    fields:
+      phase: String
+      relation: String
+      facts: Int
+      accuracy: Float
+
+  ChainResult:
+    fields:
+      hop1_correct: Bool
+      hop2_correct: Bool
+      full_chain: Bool
+
+behaviors:
+  # Incremental KG expansion: grow relations from 4 to 8 facts
+  - name: incrementalExpansion
+    given: 2 relations each with 4 initial facts, then grown to 8 facts each
+    when: Query phase1 (8), verify old survive growth (4), verify new facts (8)
+    then: 20/20 -- all facts work before and after expansion
+
+  # Cross-domain inference isolation
+  - name: crossDomainInference
+    given: 2 separate per-relation memories with distinct fact sets
+    when: 5 cross-memory queries (should NOT match) + 5 correct-memory queries (should match)
+    then: 10/10 -- perfect isolation + perfect accuracy
+
+  # Multi-hop chain evolution via bridge memories
+  - name: multiHopChainEvolution
+    given: Domain A memory + bridge memory + domain B memory forming 2-hop chains
+    when: 5 two-hop chain queries + 5 reverse single-hop lookups
+    then: 10/10 -- all chains resolve correctly
