@@ -16,11 +16,12 @@
 | ID | Name | Branch | Complexity | Gain |
 |----|------|--------|------------|------|
 
-|DEV-002|KG-INSIGHT (JSON)|development|3/5|Local triple inspection suite|
 |DEV-003|SWARM-WATCH (DHT)|development|4/5|Live DHT & economy monitor|
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**DEV-002**|**KG-INSIGHT**|**development**|**kg_cli.zig v2.0: 4 commands (triples/inspect/export/find), case-insensitive entity search, JSON export, kg_insight.vibee spec**|
 |----|------|--------|------|
 |**NEXUS-010**|**Architecture Documentation**|**nexus**|**docs/ARCHITECTURE.md (267 lines): module map, ASCII dep graph, build guide, 6 module details, workspace config, math foundation, migration history NEXUS-001 through NEXUS-010**|
 |----|------|--------|------|
@@ -103,16 +104,16 @@
 |Optimization|12|14|86%|
 |Hardware|0|3|0%|
 |**Math**|**5**|**5**|**100%**|
-|Development|1|3|33%|
+|Development|2|3|67%|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
 |Multilingual|3|3|100%|
-|**Total**|**41**|**54**|**76%**|
+|**Total**|**42**|**54**|**78%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **DEV-002** KG-INSIGHT — local triple inspection
-2. **DEV-003** SWARM-WATCH — live DHT & economy monitor
+1. **DEV-003** SWARM-WATCH — local triple inspection
+2. **INF-003** KV Cache Optimization — live DHT & economy monitor
 
 ---
 φ² + 1/φ² = 3 | TRINITY
