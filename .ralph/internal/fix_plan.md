@@ -18,10 +18,11 @@
 
 ## Infrastructure: Diagnostic & Debugging Quarks (Development Suite)
 
-- [ ] [P1] TRI-TRACE: Symbolic Reasoning Trace Mode
+- [x] [P1] TRI-TRACE: Symbolic Reasoning Trace Mode
   - Acceptance: `zig build run -- --trace` shows full bind/unbind/sim-search path for every IGLA query.
   - Files: `src/igla/trace.zig`, `src/vsa/core.zig` (instrumentation)
   - Tech Tree: DEV-001
+  - DONE: Tracer struct (256-entry ring buffer), 9 OpKinds, VectorMeta, TraceEntry, global singleton, recordBinary/recordScalar/printTrace, 4 tests pass, build.zig wired
 
 - [ ] [P2] KG-INSIGHT: Local Knowledge Graph Inspector
   - Acceptance: CLI command `zig build query -- --inspect <vector_id>` returns human-readable triples associated with the node.

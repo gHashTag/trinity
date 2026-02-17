@@ -164,6 +164,17 @@ pub fn build(b: *std.Build) void {
     const run_vibeec_tests = b.addRunArtifact(vibeec_tests);
     test_step.dependOn(&run_vibeec_tests.step);
 
+    // TRI-TRACE tests (DEV-001)
+    const trace_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/igla/trace.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_trace_tests = b.addRunArtifact(trace_tests);
+    test_step.dependOn(&run_trace_tests.step);
+
     // trinity-search CLI — Semantic search over text files
     const trinity_search = b.addExecutable(.{
         .name = "trinity-search",
