@@ -1525,6 +1525,19 @@ pub fn build(b: *std.Build) void {
     kg_pipeline_step.dependOn(&run_kg_pipeline.step);
     test_step.dependOn(&run_kg_pipeline.step);
 
+    // KG Sync DHT (SYM-003: Decentralized KG Sync + $TRI Rewards)
+    const kg_sync_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/kg_sync.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_kg_sync = b.addRunArtifact(kg_sync_tests);
+    const kg_sync_step = b.step("test-kg-sync", "Test KG Sync DHT (SYM-003: Kademlia DHT + $TRI rewards)");
+    kg_sync_step.dependOn(&run_kg_sync.step);
+    test_step.dependOn(&run_kg_sync.step);
+
     // VSA Math Benchmark executable (MATH-003)
     // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence
     const bundle_opt_mod = b.createModule(.{
