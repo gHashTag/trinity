@@ -86,11 +86,12 @@
   - Blocked-by: NEXUS-008
   - DONE: 4 files: workspace.toml extended with openclaw + agents + CI, config.toml (73 lines), nexus-build.yml (matrix 6 modules), spec
 
-- [ ] [P2] NEXUS-010: Write Trinity Nexus Architecture documentation
+- [x] [P2] NEXUS-010: Write Trinity Nexus Architecture documentation
   - Acceptance: `docs/ARCHITECTURE.md` created with full module diagram, dependency graph, Zig workspace config guide. README.md updated with Nexus overview.
   - Files: `docs/ARCHITECTURE.md`, `docs/README.md`, `docs/module-diagrams/`
   - Tech Tree: NEXUS-010
   - Blocked-by: NEXUS-008
+  - DONE: docs/ARCHITECTURE.md (267 lines), module map, ASCII dep graph, build guide, module details, workspace config, math foundation, migration history. Nexus branch 10/10 100%.
 
 ---
 
