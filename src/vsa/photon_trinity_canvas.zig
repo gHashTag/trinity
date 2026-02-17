@@ -291,6 +291,7 @@ const WaveMode = enum {
     docs, // Fullscreen docs wave field
     mirror, // v2.1: Mirror of Three Worlds dashboard
     depin, // v2.4: DePIN Node control panel
+    ralph, // v2.9: Ralph Autonomous Monitor panel
 
     pub fn getLabel(self: WaveMode) [*:0]const u8 {
         return switch (self) {
@@ -305,6 +306,7 @@ const WaveMode = enum {
             .docs => "DOCS",
             .mirror => "MIRROR",
             .depin => "DEPIN",
+            .ralph => "RALPH",
         };
     }
 
@@ -321,6 +323,7 @@ const WaveMode = enum {
             .docs => 120.0, // Green-light
             .mirror => 45.0, // Gold (Trinity)
             .depin => 90.0, // Green-yellow (earning)
+            .ralph => 200.0, // Cyan-blue (autonomous)
         };
     }
 };
@@ -5997,9 +6000,10 @@ fn updateDrawFrame() callconv(.c) void {
             if (rl.IsKeyPressed(rl.KEY_SIX)) new_mode = .voice;
             if (rl.IsKeyPressed(rl.KEY_SEVEN)) new_mode = .finder;
             if (rl.IsKeyPressed(rl.KEY_EIGHT)) new_mode = .docs;
-            if (rl.IsKeyPressed(rl.KEY_NINE)) new_mode = .mirror;
+            if (rl.IsKeyPressed(rl.KEY_NINE)) new_mode = .ralph;
             if (rl.IsKeyPressed(rl.KEY_ZERO)) new_mode = .idle;
             if (rl.IsKeyPressed(rl.KEY_D)) new_mode = .depin;
+            if (rl.IsKeyPressed(rl.KEY_M)) new_mode = .mirror;
 
             if (new_mode) |nm| {
                 if (nm != g_wave_mode) {
@@ -6451,7 +6455,7 @@ fn updateDrawFrame() callconv(.c) void {
         }
 
         // ── v2.8: Ralph Monitor Polling ──
-        if (g_wave_mode == .mirror) {
+        if (g_wave_mode == .mirror or g_wave_mode == .ralph) {
             g_ralph_update_timer += dt;
             if (g_ralph_update_timer > 2.0) {
                 g_ralph_update_timer = 0;
@@ -6611,8 +6615,8 @@ fn updateDrawFrame() callconv(.c) void {
         const mode_rgb = hsvToRgb(mode_hue, 0.7, 1.0);
         const mode_color = rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = alpha_u8 };
 
-        // DePIN mode: skip all other wave renderers, draw only DePIN panel
-        if (g_wave_mode != .depin) {
+        // DePIN/Ralph mode: skip all other wave renderers, draw dedicated panel
+        if (g_wave_mode != .depin and g_wave_mode != .ralph) {
 
             // Mode label (top-center)
             const label = g_wave_mode.getLabel();
@@ -7684,7 +7688,7 @@ fn updateDrawFrame() callconv(.c) void {
                     }
                 }
             }
-        } // end: if (g_wave_mode != .depin) — skip other renderers in DePIN mode
+        } // end: if (g_wave_mode != .depin and g_wave_mode != .ralph) — skip other renderers in DePIN mode
 
         // === DePIN NODE WAVE FIELD === (v2.4: Docker node management)
         if (g_wave_mode == .depin) {
@@ -7869,6 +7873,120 @@ fn updateDrawFrame() callconv(.c) void {
                 const warn_y = footer_y + line_h;
                 rl.DrawTextEx(chat_font, "Docker not found. Install at docker.com to run a node.", .{ .x = margin, .y = warn_y }, label_sz, 0.5, depin_red);
             }
+        }
+
+        // === RALPH AUTONOMOUS MONITOR === (v2.9: Dedicated fullscreen panel)
+        if (g_wave_mode == .ralph) {
+            // Opaque dark background
+            rl.DrawRectangle(0, 0, @intFromFloat(sw), @intFromFloat(sh), rl.Color{ .r = 5, .g = 8, .b = 18, .a = 255 });
+            const margin: f32 = 40 * fs;
+            const line_h: f32 = 28 * fs;
+            const title_sz: f32 = 28 * fs;
+            const subtitle_sz: f32 = 16 * fs;
+            const label_sz: f32 = 14 * fs;
+            const val_sz: f32 = 16 * fs;
+
+            const ralph_cyan = rl.Color{ .r = 0x00, .g = 0xCC, .b = 0xFF, .a = alpha_u8 };
+            const ralph_green = rl.Color{ .r = 0x00, .g = 0xCC, .b = 0x66, .a = alpha_u8 };
+            const ralph_red = rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = alpha_u8 };
+            const dim_text = withAlpha(MUTED_GRAY, alpha_u8);
+            const bright_text = withAlpha(rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 }, alpha_u8);
+
+            var y: f32 = 30 * fs;
+
+            // Title with pulsing dot
+            const pulse_a: u8 = @intFromFloat(@max(100, @min(255, @sin(frame_time * 3.0) * 80 + 175)));
+            rl.DrawCircle(@intFromFloat(margin + 10), @intFromFloat(y + 16), 6, rl.Color{ .r = 0x00, .g = 0xCC, .b = 0xFF, .a = pulse_a });
+            rl.DrawTextEx(chat_font, "RALPH AUTONOMOUS MONITOR", .{ .x = margin + 24, .y = y }, title_sz, 0.5, ralph_cyan);
+            y += title_sz + 4;
+            rl.DrawTextEx(chat_font, "Real-time dev loop telemetry", .{ .x = margin + 24, .y = y }, subtitle_sz, 0.5, dim_text);
+            y += line_h + 10;
+
+            // Separator
+            rl.DrawLine(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(sw - margin), @intFromFloat(y), rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3)) });
+            y += 15;
+
+            // Metric cards row
+            const card_w = (sw - margin * 5) / 4;
+            const card_h: f32 = 80 * fs;
+
+            // Card 1: Loop Count
+            {
+                const cx = margin;
+                rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
+                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, ralph_cyan);
+                rl.DrawTextEx(chat_font, "LOOP", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
+                var buf: [16:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&buf, "{d}", .{g_ralph_status.loop}) catch {};
+                buf[@min(15, std.mem.indexOfScalar(u8, &buf, 0) orelse 15)] = 0;
+                rl.DrawTextEx(chat_font, &buf, .{ .x = cx + 12, .y = y + 30 * fs }, 24 * fs, 0.5, bright_text);
+            }
+
+            // Card 2: Total Calls
+            {
+                const cx = margin * 2 + card_w;
+                rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
+                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, ralph_cyan);
+                rl.DrawTextEx(chat_font, "CALLS", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
+                var buf: [16:0]u8 = undefined;
+                _ = std.fmt.bufPrint(&buf, "{d}", .{g_ralph_status.total_calls}) catch {};
+                buf[@min(15, std.mem.indexOfScalar(u8, &buf, 0) orelse 15)] = 0;
+                rl.DrawTextEx(chat_font, &buf, .{ .x = cx + 12, .y = y + 30 * fs }, 24 * fs, 0.5, bright_text);
+            }
+
+            // Card 3: Health Status
+            {
+                const cx = margin * 3 + card_w * 2;
+                const h_color = if (g_ralph_status.is_healthy) ralph_green else ralph_red;
+                rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
+                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, h_color);
+                rl.DrawTextEx(chat_font, "HEALTH", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
+                rl.DrawTextEx(chat_font, if (g_ralph_status.is_healthy) "OPTIMAL" else "CIRCUIT OPEN", .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, h_color);
+            }
+
+            // Card 4: Circuit Breaker
+            {
+                const cx = margin * 4 + card_w * 3;
+                const cb_color = if (g_ralph_status.is_healthy) ralph_green else ralph_red;
+                rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
+                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, cb_color);
+                rl.DrawTextEx(chat_font, "BREAKER", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
+                rl.DrawTextEx(chat_font, if (g_ralph_status.is_healthy) "CLOSED" else "OPEN", .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, cb_color);
+            }
+
+            y += card_h + 20;
+
+            // Active Task section
+            rl.DrawTextEx(chat_font, "ACTIVE TASK", .{ .x = margin, .y = y }, subtitle_sz, 0.5, ralph_cyan);
+            y += subtitle_sz + 8;
+            rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = 50 * fs }, 0.08, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
+            rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = 50 * fs }, 0.08, 8, rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.2)) });
+            rl.DrawTextEx(chat_font, &g_ralph_status.goal, .{ .x = margin + 16, .y = y + 16 }, val_sz, 0.5, bright_text);
+            y += 50 * fs + 20;
+
+            // Live Log section
+            rl.DrawTextEx(chat_font, "LIVE LOG", .{ .x = margin, .y = y }, subtitle_sz, 0.5, ralph_cyan);
+            y += subtitle_sz + 8;
+            const log_h = sh - y - 40 * fs;
+            rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = log_h }, 0.05, 8, rl.Color{ .r = 8, .g = 12, .b = 24, .a = alpha_u8 });
+            rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = log_h }, 0.05, 8, rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15)) });
+
+            // Render log lines
+            var ly = y + 8;
+            const log_line_h: f32 = 18 * fs;
+            if (g_ralph_log_count > 0) {
+                for (0..g_ralph_log_count) |i| {
+                    if (ly + log_line_h > y + log_h - 8) break;
+                    const log_color = withAlpha(rl.Color{ .r = 100, .g = 180, .b = 220, .a = 255 }, alpha_u8);
+                    rl.DrawTextEx(chat_font, &g_ralph_logs[i], .{ .x = margin + 12, .y = ly }, 12 * fs, 0.5, log_color);
+                    ly += log_line_h;
+                }
+            } else {
+                rl.DrawTextEx(chat_font, "Waiting for Ralph activity...", .{ .x = margin + 12, .y = ly }, 12 * fs, 0.5, dim_text);
+            }
+
+            // Keyboard hint at bottom
+            rl.DrawTextEx(chat_font, "Shift+9: Toggle  |  Shift+0: Home  |  Shift+M: Mirror", .{ .x = margin, .y = sh - 28 * fs }, 11 * fs, 0.5, dim_text);
         }
     }
 
