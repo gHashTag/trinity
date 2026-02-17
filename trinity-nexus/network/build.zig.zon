@@ -1,7 +1,14 @@
 .{
     .name = .trinity_network,
     .version = "0.1.0",
-    .dependencies = .{},
+    .dependencies = .{
+        .trinity_core = .{
+            .path = "../core",
+        },
+        .trinity_symb = .{
+            .path = "../symb",
+        },
+    },
     .paths = .{""},
     .fingerprint = 0xe122e519be6d11ca,
 }
