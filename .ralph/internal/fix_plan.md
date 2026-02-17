@@ -30,11 +30,12 @@
   - Blocked-by: (none)
   - DONE: 6 modules (core/lang/symb/network/canvas/tools), workspace.toml, build.nexus.zig, all pass
 
-- [ ] [P1] NEXUS-002: Migrate core VM from trinity/src/vsa/ to trinity-nexus/core/
+- [x] [P1] NEXUS-002: Migrate core VM from trinity/src/vsa/ to trinity-nexus/core/
   - Acceptance: All VM code (vm.zig, mem.zig, tryte.zig, isa.zig, builder.zig) moved to `trinity-nexus/core/src/`. `trinity-core` package created with zig.mod, @import paths updated, tests pass.
   - Files: `trinity-nexus/core/src/` (5 files), `trinity-nexus/core/zig.mod`, `trinity-nexus/core/tests/`
   - Tech Tree: NEXUS-002
   - Blocked-by: NEXUS-001
+  - DONE: 39 files to trinity-nexus/core/src/, sdk.zig import fixed, all tests pass, JIT 17.74x
 
 - [ ] [P1] NEXUS-003: Migrate VIBEE compiler to trinity-nexus/lang/
   - Acceptance: All lang code (parser.zig, ast.zig, codegen.zig, multilang.zig) moved to `trinity-nexus/lang/src/`. `trinity-lang` package created with zig.mod, @trinity/core dependency wired, all tests pass.
