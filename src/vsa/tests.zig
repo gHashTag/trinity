@@ -117,3 +117,47 @@ test "UnifiedAutonomousSystem process text request" {
     try std.testing.expect(resp.success);
     try std.testing.expect(resp.getOutput().len > 0);
 }
+
+test "SIMD bundle3 correctness" {
+    var a = vsa.randomVector(100, 55555);
+    var b = vsa.randomVector(100, 66666);
+    var c = vsa.randomVector(100, 77777);
+    var bundled = vsa.bundle3(&a, &b, &c);
+    // bundle3 result should be similar to all 3 inputs
+    const sim_a = vsa.cosineSimilarity(&bundled, &a);
+    const sim_b = vsa.cosineSimilarity(&bundled, &b);
+    const sim_c = vsa.cosineSimilarity(&bundled, &c);
+    try std.testing.expect(sim_a > 0.2);
+    try std.testing.expect(sim_b > 0.2);
+    try std.testing.expect(sim_c > 0.2);
+}
+
+test "SIMD vectorNorm correctness" {
+    var v = vsa.randomVector(100, 88888);
+    const norm = vsa.vectorNorm(&v);
+    // Norm of random ternary vector ~= sqrt(non_zero_count)
+    try std.testing.expect(norm > 0);
+    try std.testing.expect(norm <= 10.1); // sqrt(100) = 10
+}
+
+test "SIMD countNonZero correctness" {
+    var v = vsa.randomVector(100, 99999);
+    const count = vsa.countNonZero(&v);
+    // Random ternary: ~2/3 should be non-zero
+    try std.testing.expect(count > 40);
+    try std.testing.expect(count <= 100);
+}
+
+test "SIMD bundleN 5 vectors" {
+    var a = vsa.randomVector(100, 10001);
+    var b = vsa.randomVector(100, 10002);
+    var c = vsa.randomVector(100, 10003);
+    var d = vsa.randomVector(100, 10004);
+    var e = vsa.randomVector(100, 10005);
+    var vecs = [_]*HybridBigInt{ &a, &b, &c, &d, &e };
+    var bundled = vsa.bundleN(&vecs);
+    // bundleN result should be similar to each input
+    const sim_a = vsa.cosineSimilarity(&bundled, &a);
+    try std.testing.expect(sim_a > 0.1);
+    try std.testing.expect(bundled.trit_len == 100);
+}

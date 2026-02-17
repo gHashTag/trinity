@@ -29,6 +29,8 @@ pub const hammingDistance = core.hammingDistance;
 pub const hammingSimilarity = core.hammingSimilarity;
 pub const dotSimilarity = core.dotSimilarity;
 pub const vectorNorm = core.vectorNorm;
+pub const bundleN = core.bundleN;
+pub const countNonZero = core.countNonZero;
 pub const encodeSequence = core.encodeSequence;
 pub const probeSequence = core.probeSequence;
 
