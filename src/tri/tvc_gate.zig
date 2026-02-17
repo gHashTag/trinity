@@ -278,8 +278,9 @@ pub const TVCGateStats = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "TVCGate basic hit/miss" {
-    var corpus = TVCCorpus.init();
-    var gate = TVCGate.init(&corpus);
+    const corpus = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus.deinitHeap(std.testing.allocator);
+    var gate = TVCGate.init(corpus);
 
     // Initially should miss
     const result1 = gate.execute("What is VSA?");
@@ -294,8 +295,9 @@ test "TVCGate basic hit/miss" {
 }
 
 test "TVCGate statistics" {
-    var corpus = TVCCorpus.init();
-    var gate = TVCGate.init(&corpus);
+    const corpus = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus.deinitHeap(std.testing.allocator);
+    var gate = TVCGate.init(corpus);
 
     // Execute some queries
     _ = gate.execute("Query 1");
@@ -310,8 +312,9 @@ test "TVCGate statistics" {
 }
 
 test "TVCGate as link" {
-    var corpus = TVCCorpus.init();
-    var gate = TVCGate.init(&corpus);
+    const corpus = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus.deinitHeap(std.testing.allocator);
+    var gate = TVCGate.init(corpus);
 
     const metrics = try gate.executeAsLink("Test query");
     try std.testing.expect(metrics.improvement_rate == 0.0); // Miss

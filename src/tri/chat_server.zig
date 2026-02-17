@@ -92,7 +92,7 @@ pub const ChatServer = struct {
 
         // Create TVC corpus
         const corpus = try self.allocator.create(tvc.TVCCorpus);
-        corpus.* = tvc.TVCCorpus.init();
+        corpus.initInPlace();
         self.corpus = corpus;
 
         // Create hybrid chat engine with env API keys
@@ -195,6 +195,8 @@ pub const ChatServer = struct {
             } else {
                 try self.sendMethodNotAllowed(connection);
             }
+        } else if (std.mem.startsWith(u8, path, "/diagnostic")) {
+            try self.handleDiagnostic(connection);
         } else if (std.mem.startsWith(u8, path, "/api/files")) {
             try self.handleFileList(connection);
         } else if (std.mem.startsWith(u8, path, "/api/compile")) {
@@ -797,6 +799,64 @@ pub const ChatServer = struct {
         try json.appendSlice(self.allocator, "]");
 
         try json.appendSlice(self.allocator, "}");
+
+        try self.sendJsonResponse(connection, json.items);
+    }
+
+    fn handleDiagnostic(self: *Self, connection: *std.net.Server.Connection) !void {
+        var json: std.ArrayListUnmanaged(u8) = .{};
+        defer json.deinit(self.allocator);
+
+        try json.appendSlice(self.allocator, "{\"routing_stats\":{");
+
+        if (self.chat_engine) |engine| {
+            const energy = engine.energy;
+            try json.writer(self.allocator).print(
+                "\"tool_hits\":{d},\"symbolic_hits\":{d},\"kg_hits\":{d},\"tvc_hits\":{d},\"llm_calls\":{d},\"error_fallbacks\":{d},\"total_queries\":{d}",
+                .{ energy.tool_hits, energy.symbolic_hits, energy.kg_hits, energy.tvc_hits, engine.llm_calls, engine.error_fallbacks, energy.total_queries },
+            );
+        } else {
+            try json.appendSlice(self.allocator, "\"total_queries\":0");
+        }
+
+        try json.appendSlice(self.allocator, "},\"llm_status\":{");
+
+        if (self.chat_engine) |engine| {
+            try json.writer(self.allocator).print(
+                "\"groq_key\":{s},\"claude_key\":{s},\"local_model\":{s}",
+                .{
+                    if (engine.config.groq_api_key != null) "true" else "false",
+                    if (engine.config.claude_api_key != null) "true" else "false",
+                    if (engine.model_path != null) "true" else "false",
+                },
+            );
+        } else {
+            try json.appendSlice(self.allocator, "\"groq_key\":false,\"claude_key\":false,\"local_model\":false");
+        }
+
+        try json.appendSlice(self.allocator, "},\"capabilities\":[\"math\",\"time\",\"date\",\"greetings_ru\",\"greetings_en\",\"kg_geography\",\"kg_science\",\"kg_history\"]");
+
+        // Recent query log
+        try json.appendSlice(self.allocator, ",\"recent_queries\":[");
+        if (self.chat_engine) |engine| {
+            const log = engine.getQueryLog();
+            const count = @min(log.len, 10);
+            for (0..count) |i| {
+                const idx = if (log.len > count) log.len - count + i else i;
+                const entry = log[idx];
+                if (entry.query_len == 0) continue;
+                if (i > 0) try json.appendSlice(self.allocator, ",");
+                try json.appendSlice(self.allocator, "{\"q\":\"");
+                const qlen = @min(entry.query_len, 64);
+                try json.appendSlice(self.allocator, entry.query[0..qlen]);
+                try json.writer(self.allocator).print("\",\"src\":\"{s}\",\"conf\":{d:.2},\"lat\":{d}}}", .{
+                    @tagName(entry.source),
+                    entry.confidence,
+                    entry.latency_us,
+                });
+            }
+        }
+        try json.appendSlice(self.allocator, "]}");
 
         try self.sendJsonResponse(connection, json.items);
     }

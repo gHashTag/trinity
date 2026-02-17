@@ -260,7 +260,8 @@ pub fn demoTVCChat() !void {
     std.debug.print("{s}              IGLA TVC CHAT DEMO{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
 
-    var corpus = TVCCorpus.init();
+    var corpus: TVCCorpus = undefined;
+    corpus.initInPlace();
     var chat = IglaTVCChat.initWithTVC(&corpus);
 
     // First query - TVC miss, pattern match
@@ -298,8 +299,9 @@ test "IglaTVCChat without TVC" {
 }
 
 test "IglaTVCChat with TVC" {
-    var corpus = TVCCorpus.init();
-    var chat = IglaTVCChat.initWithTVC(&corpus);
+    const corpus = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus.deinitHeap(std.testing.allocator);
+    var chat = IglaTVCChat.initWithTVC(corpus);
 
     // First query - miss
     const r1 = chat.respond("Hello there!");
@@ -312,8 +314,9 @@ test "IglaTVCChat with TVC" {
 }
 
 test "IglaTVCChat statistics" {
-    var corpus = TVCCorpus.init();
-    var chat = IglaTVCChat.initWithTVC(&corpus);
+    const corpus = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus.deinitHeap(std.testing.allocator);
+    var chat = IglaTVCChat.initWithTVC(corpus);
 
     _ = chat.respond("Test query 1");
     _ = chat.respond("Test query 1"); // Should hit TVC

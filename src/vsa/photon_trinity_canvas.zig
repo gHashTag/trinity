@@ -42,7 +42,6 @@ var g_hybrid_gpa: if (is_emscripten) u8 else std.heap.GeneralPurposeAllocator(.{
 // v3.0: Golden Chain Agent (8-node unified pipeline)
 var g_chain_agent: ?golden_chain.GoldenChainAgent = null;
 
-
 // =============================================================================
 // COSMIC CONSTANTS (from theme.zig)
 // =============================================================================
@@ -221,53 +220,53 @@ const ChatMsgType = enum {
     tri_to_one_v2,
     ecosystem_complete_v2,
 
-            // v2.25: Trinity Eternal v1.0
-            ouroboros_evolve_v2,
-            infinite_scale_v2,
-            universal_reserve_v2,
-            eternal_uptime_v2,
+    // v2.25: Trinity Eternal v1.0
+    ouroboros_evolve_v2,
+    infinite_scale_v2,
+    universal_reserve_v2,
+    eternal_uptime_v2,
 
-            // v2.26: $TRI to $10
-            tri_to_ten_v2,
-            mass_adoption_v2,
-            exchange_listing_v2,
-            universal_wallet_v2,
+    // v2.26: $TRI to $10
+    tri_to_ten_v2,
+    mass_adoption_v2,
+    exchange_listing_v2,
+    universal_wallet_v2,
 
-            // v2.27: Trinity Beyond v1.0
-            tri_to_hundred_v2,
-            universal_adoption_v2,
-            exchange_v2_v2,
-            global_wallet_v2,
-            // v2.28: Swarm 10M + u8 FULL
-            swarm_10m_v2,
-            community_5m_v2,
-            earning_ultimate_v2,
-            node_discovery_10m_v2,
-            // v2.29: u16 Upgrade canvas types
-            swarm_1b_v2,
-            community_500m_v2,
-            earning_god_mode_v2,
-            node_discovery_1b_v2,
-            // v2.30: Trinity Neural Network v1.0
-            ternary_nn_v2,
-            recursive_self_train_v2,
-            contribution_reward_v2,
-            neural_consensus_v2,
-            // v2.31: $TRI to $1000 + Eternal Dominance
-            tri_to_1000_v2,
-            universal_reserve_v2_v2,
-            global_dominance_v2_v2,
-            eternal_governance_v2_v2,
-            // v2.32: Trinity Beyond v1.0
-            trinity_beyond_v2,
-            infinite_scale_v2_v2,
-            multiverse_dominance_v2,
-            eternal_evolution_v2,
-            // v3.0: Trinity Absolute v1.0
-            trinity_absolute_v3,
-            infinite_tri_v3,
-            eternal_victory_v3,
-            multiverse_complete_v3,
+    // v2.27: Trinity Beyond v1.0
+    tri_to_hundred_v2,
+    universal_adoption_v2,
+    exchange_v2_v2,
+    global_wallet_v2,
+    // v2.28: Swarm 10M + u8 FULL
+    swarm_10m_v2,
+    community_5m_v2,
+    earning_ultimate_v2,
+    node_discovery_10m_v2,
+    // v2.29: u16 Upgrade canvas types
+    swarm_1b_v2,
+    community_500m_v2,
+    earning_god_mode_v2,
+    node_discovery_1b_v2,
+    // v2.30: Trinity Neural Network v1.0
+    ternary_nn_v2,
+    recursive_self_train_v2,
+    contribution_reward_v2,
+    neural_consensus_v2,
+    // v2.31: $TRI to $1000 + Eternal Dominance
+    tri_to_1000_v2,
+    universal_reserve_v2_v2,
+    global_dominance_v2_v2,
+    eternal_governance_v2_v2,
+    // v2.32: Trinity Beyond v1.0
+    trinity_beyond_v2,
+    infinite_scale_v2_v2,
+    multiverse_dominance_v2,
+    eternal_evolution_v2,
+    // v3.0: Trinity Absolute v1.0
+    trinity_absolute_v3,
+    infinite_tri_v3,
+    eternal_victory_v3,
+    multiverse_complete_v3,
 };
 var g_chat_messages: [MAX_CHAT_MSGS][512]u8 = undefined; // v3.0: 512 bytes per msg
 var g_chat_msg_lens: [MAX_CHAT_MSGS]usize = .{0} ** MAX_CHAT_MSGS;
@@ -339,6 +338,8 @@ var g_depin_uptime_hours: f32 = 0.0;
 var g_depin_shards: u64 = 0;
 var g_depin_peers: u32 = 0;
 var g_depin_poll_timer: f32 = 0.0;
+var g_depin_auto_started: bool = false;
+// Docker commands use /bin/sh -c to inherit user PATH
 
 // v2.0: Finder mode — real directory listing cache
 const FINDER_MAX_ENTRIES: usize = 32;
@@ -383,7 +384,7 @@ fn scanDirectory() void {
     if (is_emscripten) {
         // WASM: static demo file list (no filesystem access)
         const demo_names = [_][]const u8{
-            "src/", "assets/", "build.zig", "README.md", "specs/",
+            "src/",       "assets/",         "build.zig",       "README.md", "specs/",
             "photon.zig", "trinity_canvas/", "wave_scroll.zig",
         };
         const demo_is_dir = [_]bool{ true, true, false, false, true, false, true, false };
@@ -583,51 +584,51 @@ fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
         .world_adoption_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = alpha }, // Spring Green
         .tri_to_one_v2 => .{ .r = 0x94, .g = 0x00, .b = 0xD3, .a = alpha }, // Dark Violet
         .ecosystem_complete_v2 => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = alpha }, // Orange Red
-                // v2.25: Trinity Eternal v1.0
-                .ouroboros_evolve_v2 => .{ .r = 0, .g = 255, .b = 127, .a = 255 }, // spring green
-                .infinite_scale_v2 => .{ .r = 138, .g = 43, .b = 226, .a = 255 }, // blue violet
-                .universal_reserve_v2 => .{ .r = 255, .g = 215, .b = 0, .a = 255 }, // gold
-                .eternal_uptime_v2 => .{ .r = 0, .g = 191, .b = 255, .a = 255 }, // deep sky blue
-                    // v2.26
-                    .tri_to_ten_v2 => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = 255 },
-                    .mass_adoption_v2 => .{ .r = 0x00, .g = 0xBF, .b = 0xFF, .a = 255 },
-                    .exchange_listing_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 },
-                    .universal_wallet_v2 => .{ .r = 0x7B, .g = 0x68, .b = 0xEE, .a = 255 },
-                    // v2.27
-                    .tri_to_hundred_v2 => .{ .r = 0xDC, .g = 0x14, .b = 0x3C, .a = 255 },
-                    .universal_adoption_v2 => .{ .r = 0x00, .g = 0xFA, .b = 0x9A, .a = 255 },
-                    .exchange_v2_v2 => .{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = 255 },
-                    .global_wallet_v2 => .{ .r = 0x48, .g = 0xD1, .b = 0xCC, .a = 255 },
-                    // v2.28
-                    .swarm_10m_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = 255 },
-                    .community_5m_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 },
-                    .earning_ultimate_v2 => .{ .r = 0x7F, .g = 0xFF, .b = 0x00, .a = 255 },
-                    .node_discovery_10m_v2 => .{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = 255 },
-                    // v2.29: u16 Upgrade colors
-                    .swarm_1b_v2 => .{ .r = 0x00, .g = 0xBF, .b = 0xFF, .a = 255 }, // deep sky blue
-                    .community_500m_v2 => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = 255 }, // orange red
-                    .earning_god_mode_v2 => .{ .r = 0xAD, .g = 0xFF, .b = 0x2F, .a = 255 }, // green yellow
-                    .node_discovery_1b_v2 => .{ .r = 0xDA, .g = 0x70, .b = 0xD6, .a = 255 }, // orchid
-            // v2.30: Trinity Neural Network v1.0
-            .ternary_nn_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = 255 }, // spring green
-            .recursive_self_train_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 }, // gold
-            .contribution_reward_v2 => .{ .r = 0x7F, .g = 0xFF, .b = 0x00, .a = 255 }, // chartreuse
-            .neural_consensus_v2 => .{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = 255 }, // magenta
-            // v2.31: $TRI to $1000 + Eternal Dominance
-            .tri_to_1000_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 }, // gold
-            .universal_reserve_v2_v2 => .{ .r = 0x00, .g = 0xBF, .b = 0xFF, .a = 255 }, // deep sky blue
-            .global_dominance_v2_v2 => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = 255 }, // orange red
-            .eternal_governance_v2_v2 => .{ .r = 0x9A, .g = 0xCD, .b = 0x32, .a = 255 }, // yellow green
-            // v2.32: Trinity Beyond v1.0
-            .trinity_beyond_v2 => .{ .r = 0xE0, .g = 0x00, .b = 0xFF, .a = 255 }, // electric purple
-            .infinite_scale_v2_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0xCC, .a = 255 }, // aqua green
-            .multiverse_dominance_v2 => .{ .r = 0xFF, .g = 0x00, .b = 0x80, .a = 255 }, // hot pink
-            .eternal_evolution_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x00, .a = 255 }, // lime green
-            // v3.0: Trinity Absolute v1.0
-            .trinity_absolute_v3 => .{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 255 }, // pure white (absolute)
-            .infinite_tri_v3 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 }, // gold (infinite $TRI)
-            .eternal_victory_v3 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = 255 }, // spring green (victory)
-            .multiverse_complete_v3 => .{ .r = 0xDA, .g = 0x70, .b = 0xD6, .a = 255 }, // orchid (complete)
+        // v2.25: Trinity Eternal v1.0
+        .ouroboros_evolve_v2 => .{ .r = 0, .g = 255, .b = 127, .a = 255 }, // spring green
+        .infinite_scale_v2 => .{ .r = 138, .g = 43, .b = 226, .a = 255 }, // blue violet
+        .universal_reserve_v2 => .{ .r = 255, .g = 215, .b = 0, .a = 255 }, // gold
+        .eternal_uptime_v2 => .{ .r = 0, .g = 191, .b = 255, .a = 255 }, // deep sky blue
+        // v2.26
+        .tri_to_ten_v2 => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = 255 },
+        .mass_adoption_v2 => .{ .r = 0x00, .g = 0xBF, .b = 0xFF, .a = 255 },
+        .exchange_listing_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 },
+        .universal_wallet_v2 => .{ .r = 0x7B, .g = 0x68, .b = 0xEE, .a = 255 },
+        // v2.27
+        .tri_to_hundred_v2 => .{ .r = 0xDC, .g = 0x14, .b = 0x3C, .a = 255 },
+        .universal_adoption_v2 => .{ .r = 0x00, .g = 0xFA, .b = 0x9A, .a = 255 },
+        .exchange_v2_v2 => .{ .r = 0xFF, .g = 0x69, .b = 0xB4, .a = 255 },
+        .global_wallet_v2 => .{ .r = 0x48, .g = 0xD1, .b = 0xCC, .a = 255 },
+        // v2.28
+        .swarm_10m_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = 255 },
+        .community_5m_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 },
+        .earning_ultimate_v2 => .{ .r = 0x7F, .g = 0xFF, .b = 0x00, .a = 255 },
+        .node_discovery_10m_v2 => .{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = 255 },
+        // v2.29: u16 Upgrade colors
+        .swarm_1b_v2 => .{ .r = 0x00, .g = 0xBF, .b = 0xFF, .a = 255 }, // deep sky blue
+        .community_500m_v2 => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = 255 }, // orange red
+        .earning_god_mode_v2 => .{ .r = 0xAD, .g = 0xFF, .b = 0x2F, .a = 255 }, // green yellow
+        .node_discovery_1b_v2 => .{ .r = 0xDA, .g = 0x70, .b = 0xD6, .a = 255 }, // orchid
+        // v2.30: Trinity Neural Network v1.0
+        .ternary_nn_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = 255 }, // spring green
+        .recursive_self_train_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 }, // gold
+        .contribution_reward_v2 => .{ .r = 0x7F, .g = 0xFF, .b = 0x00, .a = 255 }, // chartreuse
+        .neural_consensus_v2 => .{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = 255 }, // magenta
+        // v2.31: $TRI to $1000 + Eternal Dominance
+        .tri_to_1000_v2 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 }, // gold
+        .universal_reserve_v2_v2 => .{ .r = 0x00, .g = 0xBF, .b = 0xFF, .a = 255 }, // deep sky blue
+        .global_dominance_v2_v2 => .{ .r = 0xFF, .g = 0x45, .b = 0x00, .a = 255 }, // orange red
+        .eternal_governance_v2_v2 => .{ .r = 0x9A, .g = 0xCD, .b = 0x32, .a = 255 }, // yellow green
+        // v2.32: Trinity Beyond v1.0
+        .trinity_beyond_v2 => .{ .r = 0xE0, .g = 0x00, .b = 0xFF, .a = 255 }, // electric purple
+        .infinite_scale_v2_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0xCC, .a = 255 }, // aqua green
+        .multiverse_dominance_v2 => .{ .r = 0xFF, .g = 0x00, .b = 0x80, .a = 255 }, // hot pink
+        .eternal_evolution_v2 => .{ .r = 0x00, .g = 0xFF, .b = 0x00, .a = 255 }, // lime green
+        // v3.0: Trinity Absolute v1.0
+        .trinity_absolute_v3 => .{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 255 }, // pure white (absolute)
+        .infinite_tri_v3 => .{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = 255 }, // gold (infinite $TRI)
+        .eternal_victory_v3 => .{ .r = 0x00, .g = 0xFF, .b = 0x7F, .a = 255 }, // spring green (victory)
+        .multiverse_complete_v3 => .{ .r = 0xDA, .g = 0x70, .b = 0xD6, .a = 255 }, // orchid (complete)
         .user => .{ .r = 0x70, .g = 0x70, .b = 0x90, .a = alpha },
         .ai => .{ .r = 0x30, .g = 0x80, .b = 0x50, .a = alpha },
         .log => .{ .r = 0x60, .g = 0x60, .b = 0x60, .a = alpha },
@@ -768,49 +769,49 @@ fn getChainMsgLabel(msg_type: ChatMsgType) [*:0]const u8 {
         .world_adoption_v2 => "WLD_ADP",
         .tri_to_one_v2 => "TRI_$1",
         .ecosystem_complete_v2 => "ECO_CMP",
-                // v2.25: Trinity Eternal v1.0
-                .ouroboros_evolve_v2 => "ORB_EVO",
-                .infinite_scale_v2 => "INF_SCL",
-                .universal_reserve_v2 => "UNI_RSV",
-                .eternal_uptime_v2 => "ETR_UPT",
-                    // v2.26
-                    .tri_to_ten_v2 => "$TRI→$10",
-                    .mass_adoption_v2 => "MASS_ADP",
-                    .exchange_listing_v2 => "EXC_LIST",
-                    .universal_wallet_v2 => "UNI_WALLET",
-                    // v2.27
-                    .tri_to_hundred_v2 => "$TRI→$100",
-                    .universal_adoption_v2 => "UNI_ADOPT",
-                    .exchange_v2_v2 => "EXC_V2",
-                    .global_wallet_v2 => "GLB_WALLET",
-                    // v2.28
-                    .swarm_10m_v2 => "SWM_10M",
-                    .community_5m_v2 => "COM_5M",
-                    .earning_ultimate_v2 => "ERN_ULT",
-                    .node_discovery_10m_v2 => "NOD_10M",
-                    .swarm_1b_v2 => "SWM_1B",
-                    .community_500m_v2 => "COM_500M",
-                    .earning_god_mode_v2 => "ERN_GOD",
-                    .node_discovery_1b_v2 => "NOD_1B",
-            // v2.30: Trinity Neural Network v1.0
-            .ternary_nn_v2 => "TRN_NN",
-            .recursive_self_train_v2 => "REC_ST",
-            .contribution_reward_v2 => "CTR_RW",
-            .neural_consensus_v2 => "NRL_CON",
-            .tri_to_1000_v2 => "TRI_1K",
-            .universal_reserve_v2_v2 => "UNI_RSV",
-            .global_dominance_v2_v2 => "GLB_DOM",
-            .eternal_governance_v2_v2 => "ETR_GOV",
-            // v2.32: Trinity Beyond v1.0
-            .trinity_beyond_v2 => "TRN_BYD",
-            .infinite_scale_v2_v2 => "INF_SCL",
-            .multiverse_dominance_v2 => "MLT_DOM",
-            .eternal_evolution_v2 => "ETR_EVO",
-            // v3.0: Trinity Absolute v1.0
-            .trinity_absolute_v3 => "TRN_ABS",
-            .infinite_tri_v3 => "INF_TRI",
-            .eternal_victory_v3 => "ETR_VIC",
-            .multiverse_complete_v3 => "MLT_CMP",
+        // v2.25: Trinity Eternal v1.0
+        .ouroboros_evolve_v2 => "ORB_EVO",
+        .infinite_scale_v2 => "INF_SCL",
+        .universal_reserve_v2 => "UNI_RSV",
+        .eternal_uptime_v2 => "ETR_UPT",
+        // v2.26
+        .tri_to_ten_v2 => "$TRI→$10",
+        .mass_adoption_v2 => "MASS_ADP",
+        .exchange_listing_v2 => "EXC_LIST",
+        .universal_wallet_v2 => "UNI_WALLET",
+        // v2.27
+        .tri_to_hundred_v2 => "$TRI→$100",
+        .universal_adoption_v2 => "UNI_ADOPT",
+        .exchange_v2_v2 => "EXC_V2",
+        .global_wallet_v2 => "GLB_WALLET",
+        // v2.28
+        .swarm_10m_v2 => "SWM_10M",
+        .community_5m_v2 => "COM_5M",
+        .earning_ultimate_v2 => "ERN_ULT",
+        .node_discovery_10m_v2 => "NOD_10M",
+        .swarm_1b_v2 => "SWM_1B",
+        .community_500m_v2 => "COM_500M",
+        .earning_god_mode_v2 => "ERN_GOD",
+        .node_discovery_1b_v2 => "NOD_1B",
+        // v2.30: Trinity Neural Network v1.0
+        .ternary_nn_v2 => "TRN_NN",
+        .recursive_self_train_v2 => "REC_ST",
+        .contribution_reward_v2 => "CTR_RW",
+        .neural_consensus_v2 => "NRL_CON",
+        .tri_to_1000_v2 => "TRI_1K",
+        .universal_reserve_v2_v2 => "UNI_RSV",
+        .global_dominance_v2_v2 => "GLB_DOM",
+        .eternal_governance_v2_v2 => "ETR_GOV",
+        // v2.32: Trinity Beyond v1.0
+        .trinity_beyond_v2 => "TRN_BYD",
+        .infinite_scale_v2_v2 => "INF_SCL",
+        .multiverse_dominance_v2 => "MLT_DOM",
+        .eternal_evolution_v2 => "ETR_EVO",
+        // v3.0: Trinity Absolute v1.0
+        .trinity_absolute_v3 => "TRN_ABS",
+        .infinite_tri_v3 => "INF_TRI",
+        .eternal_victory_v3 => "ETR_VIC",
+        .multiverse_complete_v3 => "MLT_CMP",
         .user => "YOU",
         .ai => "AI",
         .log => "LOG",
@@ -970,49 +971,49 @@ fn chainMsgToCanvasType(chain_msg: *const golden_chain.ChainMessage) ChatMsgType
         .WorldAdoptionUpdate => .world_adoption_v2,
         .TriToOneEvent => .tri_to_one_v2,
         .EcosystemCompleteEvent => .ecosystem_complete_v2,
-                // v2.25: Trinity Eternal v1.0
-                .OuroborosEvolveEvent => .ouroboros_evolve_v2,
-                .InfiniteScaleUpdate => .infinite_scale_v2,
-                .UniversalReserveEvent => .universal_reserve_v2,
-                .EternalUptimeEvent => .eternal_uptime_v2,
-                    // v2.26
-                    .TriToTenEvent => .tri_to_ten_v2,
-                    .MassAdoptionUpdate => .mass_adoption_v2,
-                    .ExchangeListingEvent => .exchange_listing_v2,
-                    .UniversalWalletEvent => .universal_wallet_v2,
-                    // v2.27
-                    .TriToHundredEvent => .tri_to_hundred_v2,
-                    .UniversalAdoptionUpdate => .universal_adoption_v2,
-                    .ExchangeV2Event => .exchange_v2_v2,
-                    .GlobalWalletEvent => .global_wallet_v2,
-                    // v2.28
-                    .Swarm10MEventV2 => .swarm_10m_v2,
-                    .Community5MUpdateV2 => .community_5m_v2,
-                    .EarningUltimateEvent => .earning_ultimate_v2,
-                    .NodeDiscovery10MEvent => .node_discovery_10m_v2,
-                    .Swarm1BEvent => .swarm_1b_v2,
-                    .Community500MUpdate => .community_500m_v2,
-                    .EarningGodModeEvent => .earning_god_mode_v2,
-                    .NodeDiscovery1BEvent => .node_discovery_1b_v2,
-            // v2.30: Trinity Neural Network v1.0
-            .TernaryNNEvent => .ternary_nn_v2,
-            .RecursiveSelfTrainUpdate => .recursive_self_train_v2,
-            .ContributionRewardEvent => .contribution_reward_v2,
-            .NeuralConsensusEvent => .neural_consensus_v2,
-            .TRITo1000Event => .tri_to_1000_v2,
-            .UniversalReserveV2Update => .universal_reserve_v2_v2,
-            .GlobalDominanceV2Event => .global_dominance_v2_v2,
-            .EternalGovernanceV2Event => .eternal_governance_v2_v2,
-            // v2.32: Trinity Beyond v1.0
-            .TrinityBeyondEvent => .trinity_beyond_v2,
-            .InfiniteScaleUpdateV2 => .infinite_scale_v2_v2,
-            .MultiVerseDominanceEvent => .multiverse_dominance_v2,
-            .EternalEvolutionEvent => .eternal_evolution_v2,
-            // v3.0: Trinity Absolute v1.0
-            .TrinityAbsoluteEvent => .trinity_absolute_v3,
-            .InfiniteTRIUpdate => .infinite_tri_v3,
-            .EternalVictoryEvent => .eternal_victory_v3,
-            .MultiVerseCompleteEvent => .multiverse_complete_v3,
+        // v2.25: Trinity Eternal v1.0
+        .OuroborosEvolveEvent => .ouroboros_evolve_v2,
+        .InfiniteScaleUpdate => .infinite_scale_v2,
+        .UniversalReserveEvent => .universal_reserve_v2,
+        .EternalUptimeEvent => .eternal_uptime_v2,
+        // v2.26
+        .TriToTenEvent => .tri_to_ten_v2,
+        .MassAdoptionUpdate => .mass_adoption_v2,
+        .ExchangeListingEvent => .exchange_listing_v2,
+        .UniversalWalletEvent => .universal_wallet_v2,
+        // v2.27
+        .TriToHundredEvent => .tri_to_hundred_v2,
+        .UniversalAdoptionUpdate => .universal_adoption_v2,
+        .ExchangeV2Event => .exchange_v2_v2,
+        .GlobalWalletEvent => .global_wallet_v2,
+        // v2.28
+        .Swarm10MEventV2 => .swarm_10m_v2,
+        .Community5MUpdateV2 => .community_5m_v2,
+        .EarningUltimateEvent => .earning_ultimate_v2,
+        .NodeDiscovery10MEvent => .node_discovery_10m_v2,
+        .Swarm1BEvent => .swarm_1b_v2,
+        .Community500MUpdate => .community_500m_v2,
+        .EarningGodModeEvent => .earning_god_mode_v2,
+        .NodeDiscovery1BEvent => .node_discovery_1b_v2,
+        // v2.30: Trinity Neural Network v1.0
+        .TernaryNNEvent => .ternary_nn_v2,
+        .RecursiveSelfTrainUpdate => .recursive_self_train_v2,
+        .ContributionRewardEvent => .contribution_reward_v2,
+        .NeuralConsensusEvent => .neural_consensus_v2,
+        .TRITo1000Event => .tri_to_1000_v2,
+        .UniversalReserveV2Update => .universal_reserve_v2_v2,
+        .GlobalDominanceV2Event => .global_dominance_v2_v2,
+        .EternalGovernanceV2Event => .eternal_governance_v2_v2,
+        // v2.32: Trinity Beyond v1.0
+        .TrinityBeyondEvent => .trinity_beyond_v2,
+        .InfiniteScaleUpdateV2 => .infinite_scale_v2_v2,
+        .MultiVerseDominanceEvent => .multiverse_dominance_v2,
+        .EternalEvolutionEvent => .eternal_evolution_v2,
+        // v3.0: Trinity Absolute v1.0
+        .TrinityAbsoluteEvent => .trinity_absolute_v3,
+        .InfiniteTRIUpdate => .infinite_tri_v3,
+        .EternalVictoryEvent => .eternal_victory_v3,
+        .MultiVerseCompleteEvent => .multiverse_complete_v3,
     };
 }
 
@@ -1983,13 +1984,14 @@ fn extractJsonString(json: []const u8, key: []const u8) ?[]const u8 {
 
 // ── v2.4: DePIN Node Management ──────────────────────────────────────────
 
-/// Check if Docker is installed by running `docker --version`.
+/// Check if Docker is installed using /bin/sh -c to inherit user PATH.
 fn depinCheckDocker() bool {
     if (is_emscripten) return false;
     const allocator = std.heap.page_allocator;
+    // Use /bin/sh -c so the user's PATH is inherited (Docker Desktop, Homebrew, etc.)
     const result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &[_][]const u8{ "docker", "--version" },
+        .argv = &[_][]const u8{ "/bin/sh", "-c", "docker --version" },
     }) catch return false;
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
@@ -2002,11 +2004,10 @@ fn depinCheckRunning() bool {
     const allocator = std.heap.page_allocator;
     const result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &[_][]const u8{ "docker", "ps", "-q", "--filter", "name=trinity-node" },
+        .argv = &[_][]const u8{ "/bin/sh", "-c", "docker ps -q --filter name=trinity-node" },
     }) catch return false;
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
-    // Non-empty output means container is running
     for (result.stdout) |c| {
         if (c != ' ' and c != '\n' and c != '\r') return true;
     }
@@ -2018,23 +2019,20 @@ fn depinStartNode() void {
     if (is_emscripten) return;
     if (!g_depin_docker_ok) return;
     const allocator = std.heap.page_allocator;
-    // Remove any stopped container with the same name first (ignore errors)
-    if (std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &[_][]const u8{ "docker", "rm", "-f", "trinity-node" },
-    })) |rm_ok| {
-        allocator.free(rm_ok.stdout);
-        allocator.free(rm_ok.stderr);
-    } else |_| {}
+
+    // Resolve $HOME for volume mount (tilde doesn't expand in argv)
+    const home = std.posix.getenv("HOME") orelse "/tmp";
+    const run_cmd = std.fmt.allocPrint(allocator, "docker rm -f trinity-node 2>/dev/null; " ++
+        "docker pull ghcr.io/ghashtag/trinity-node:latest && " ++
+        "docker run -d --name trinity-node " ++
+        "-p 8080:8080 -p 9090:9090 -p 9333:9333/udp -p 9334:9334 " ++
+        "-v {s}/.trinity:/data " ++
+        "ghcr.io/ghashtag/trinity-node:latest", .{home}) catch return;
+    defer allocator.free(run_cmd);
+
     const result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &[_][]const u8{
-            "docker", "run", "-d", "--name", "trinity-node",
-            "-p", "8080:8080", "-p", "9090:9090",
-            "-p", "9333:9333/udp", "-p", "9334:9334",
-            "-v", "~/.trinity:/data",
-            "ghcr.io/ghashtag/trinity-node:latest",
-        },
+        .argv = &[_][]const u8{ "/bin/sh", "-c", run_cmd },
     }) catch return;
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
@@ -2047,17 +2045,10 @@ fn depinStopNode() void {
     const allocator = std.heap.page_allocator;
     if (std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &[_][]const u8{ "docker", "stop", "trinity-node" },
-    })) |stop_ok| {
-        allocator.free(stop_ok.stdout);
-        allocator.free(stop_ok.stderr);
-    } else |_| {}
-    if (std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &[_][]const u8{ "docker", "rm", "trinity-node" },
-    })) |rm_ok| {
-        allocator.free(rm_ok.stdout);
-        allocator.free(rm_ok.stderr);
+        .argv = &[_][]const u8{ "/bin/sh", "-c", "docker stop trinity-node && docker rm trinity-node" },
+    })) |ok| {
+        allocator.free(ok.stdout);
+        allocator.free(ok.stderr);
     } else |_| {}
     g_depin_running = false;
     g_depin_earned_tri = 0;
@@ -2853,7 +2844,8 @@ const GlassPanel = struct {
         const shadow_color = rl.Color{ .r = 0x00, .g = 0x00, .b = 0x00, .a = shadow_alpha };
         rl.DrawRectangleRounded(
             .{ .x = sx + shadow_offset, .y = sy + shadow_offset, .width = sw, .height = sh },
-            roundness, 32, // More segments for smoother corners
+            roundness,
+            32, // More segments for smoother corners
             shadow_color,
         );
 
@@ -2865,7 +2857,8 @@ const GlassPanel = struct {
         const bg_color = if (self.panel_type == .sacred_world) @as(rl.Color, @bitCast(theme.sacred_world_bg)) else BG_SURFACE;
         rl.DrawRectangleRounded(
             .{ .x = sx, .y = sy, .width = sw, .height = sh },
-            roundness, 32,
+            roundness,
+            32,
             withAlpha(bg_color, bg_alpha),
         );
 
@@ -2882,7 +2875,9 @@ const GlassPanel = struct {
         const border_alpha: u8 = @intFromFloat(self.opacity * border_strength);
         rl.DrawRectangleRoundedLinesEx(
             .{ .x = sx, .y = sy, .width = sw, .height = sh },
-            roundness, 32, 1.0,
+            roundness,
+            32,
+            1.0,
             withAlpha(@as(rl.Color, @bitCast(theme.border)), border_alpha),
         );
 
@@ -2892,7 +2887,9 @@ const GlassPanel = struct {
             const wb_alpha: u8 = @intFromFloat(@max(0, @min(255.0, wave_border_pulse * 50.0 * self.opacity)));
             rl.DrawRectangleRoundedLinesEx(
                 .{ .x = sx - 1, .y = sy - 1, .width = sw + 2, .height = sh + 2 },
-                roundness, 32, 1.0,
+                roundness,
+                32,
+                1.0,
                 rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = wb_alpha },
             );
         }
@@ -3569,7 +3566,7 @@ const GlassPanel = struct {
                                             // Measure width up to 'next'
                                             var tmp: [256:0]u8 = undefined;
                                             const seg_len = @min(next - pos, 255);
-                                            @memcpy(tmp[0..seg_len], msg_data[pos..pos + seg_len]);
+                                            @memcpy(tmp[0..seg_len], msg_data[pos .. pos + seg_len]);
                                             tmp[seg_len] = 0;
                                             const w = rl.MeasureTextEx(chat_font, &tmp, msg_font_size, 0.5).x;
                                             if (w > max_text_w and end > pos) break;
@@ -3601,7 +3598,7 @@ const GlassPanel = struct {
                                         while (next2 < msg_data.len and (msg_data[next2] & 0xC0) == 0x80) next2 += 1;
                                         var tmp2: [256:0]u8 = undefined;
                                         const seg_len2 = @min(next2 - pos2, 255);
-                                        @memcpy(tmp2[0..seg_len2], msg_data[pos2..pos2 + seg_len2]);
+                                        @memcpy(tmp2[0..seg_len2], msg_data[pos2 .. pos2 + seg_len2]);
                                         tmp2[seg_len2] = 0;
                                         const w2 = rl.MeasureTextEx(chat_font, &tmp2, msg_font_size, 0.5).x;
                                         if (w2 > max_text_w and end2 > pos2) break;
@@ -3612,7 +3609,7 @@ const GlassPanel = struct {
 
                                     if (text_y >= chat_top - line_h and text_y <= chat_bottom + line_h) {
                                         const ln_len = @min(end2 - pos2, 255);
-                                        @memcpy(line_buf_chat[0..ln_len], msg_data[pos2..pos2 + ln_len]);
+                                        @memcpy(line_buf_chat[0..ln_len], msg_data[pos2 .. pos2 + ln_len]);
                                         // Trim trailing space
                                         var tlen = ln_len;
                                         while (tlen > 0 and line_buf_chat[tlen - 1] == ' ') tlen -= 1;
@@ -3666,13 +3663,15 @@ const GlassPanel = struct {
                     rl.DrawLineEx(
                         .{ .x = sx + chat_margin, .y = input_y },
                         .{ .x = sx + sw - chat_margin, .y = input_y },
-                        1.0, sep_color,
+                        1.0,
+                        sep_color,
                     );
                     // Bottom separator line
                     rl.DrawLineEx(
                         .{ .x = sx + chat_margin, .y = input_y + input_h },
                         .{ .x = sx + sw - chat_margin, .y = input_y + input_h },
-                        1.0, sep_color,
+                        1.0,
+                        sep_color,
                     );
 
                     // ">" prompt
@@ -3876,7 +3875,8 @@ const GlassPanel = struct {
                         const thumb_y = doc_top + scroll_pct * (doc_h - thumb_h);
                         rl.DrawRectangleRounded(
                             .{ .x = scroll_track_x, .y = thumb_y, .width = 4, .height = thumb_h },
-                            1.0, 4,
+                            1.0,
+                            4,
                             withAlpha(rc, 60),
                         );
                     }
@@ -4277,7 +4277,8 @@ const GlassPanel = struct {
                     const badge_w = @as(f32, @floatFromInt(rl.MeasureText(badge_text, @intFromFloat(12 * fs))));
                     rl.DrawRectangleRounded(
                         .{ .x = center_x - badge_w / 2 - 12 * fs, .y = badge_y - 4 * fs, .width = badge_w + 24 * fs, .height = 24 * fs },
-                        0.5, 4,
+                        0.5,
+                        4,
                         withAlpha(BORDER_SUBTLE, content_alpha / 2),
                     );
                     rl.DrawTextEx(font, badge_text, .{ .x = center_x - badge_w / 2, .y = badge_y }, 12 * fs, 0.5, withAlpha(TEXT_DIM, content_alpha));
@@ -4394,7 +4395,9 @@ const GlassPanel = struct {
                 const bp_alpha: u8 = @intFromFloat(@as(f32, @floatFromInt(bounce_a)) * bounce_pulse);
                 rl.DrawRectangleRoundedLinesEx(
                     .{ .x = sx + 1, .y = sy + 1, .width = sw - 2, .height = sh - 2 },
-                    roundness, 32, 2.0,
+                    roundness,
+                    32,
+                    2.0,
                     rl.Color{ .r = 0xF8, .g = 0x1C, .b = 0xE5, .a = bp_alpha },
                 );
             }
@@ -4408,7 +4411,8 @@ const GlassPanel = struct {
             const ind_alpha: u8 = @intFromFloat(@max(0, @min(255.0, wave_pulse * (40.0 + 60.0 * visual_intensity) * self.opacity)));
             rl.DrawRectangleRounded(
                 .{ .x = sx + sw - 6, .y = indicator_y, .width = 3, .height = indicator_h },
-                0.5, 8,
+                0.5,
+                8,
                 rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = ind_alpha },
             );
 
@@ -5813,43 +5817,37 @@ pub fn main() !void {
     // Sacred formula particles — Fibonacci spiral orbit
     const formula_texts = [42][]const u8{
         // 27 world formulas
-        "phi = 1.618", "pi*phi*e = 13.82", "L(10) = 123",
-        "1/alpha = 137.036", "phi^2 = 2.618", "Feigenbaum = 4.669",
-        "F(7) = 13", "sqrt(5) = 2.236", "999 = 37 x 27",
-        "pi = 3.14159", "27 = 3^3", "CHSH = 2*sqrt(2)",
-        "m_p/m_e = 1836", "pi^2 = 9.87", "e^pi = 23.14",
-        "E8 = 248 dim", "603 = 67*9", "76 photons",
-        "phi^2+1/phi^2 = 3", "tau = 6.283", "Menger = 2.727",
-        "mu = 0.0382", "chi = 0.0618", "sigma = phi",
-        "e = 2.71828", "13.82 Gyr", "H0 = 70.74",
+        "phi = 1.618",              "pi*phi*e = 13.82",      "L(10) = 123",
+        "1/alpha = 137.036",        "phi^2 = 2.618",         "Feigenbaum = 4.669",
+        "F(7) = 13",                "sqrt(5) = 2.236",       "999 = 37 x 27",
+        "pi = 3.14159",             "27 = 3^3",              "CHSH = 2*sqrt(2)",
+        "m_p/m_e = 1836",           "pi^2 = 9.87",           "e^pi = 23.14",
+        "E8 = 248 dim",             "603 = 67*9",            "76 photons",
+        "phi^2+1/phi^2 = 3",        "tau = 6.283",           "Menger = 2.727",
+        "mu = 0.0382",              "chi = 0.0618",          "sigma = phi",
+        "e = 2.71828",              "13.82 Gyr",             "H0 = 70.74",
         // 15 extra sacred formulas
-        "V = n*3^k*pi^m*phi^p*e^q", "1.58 bits/trit",
-        "phi = (1+sqrt(5))/2", "e^(i*pi) + 1 = 0",
-        "3 = phi^2 + 1/phi^2", "F(n) = F(n-1)+F(n-2)",
-        "hbar = 1.054e-34", "c = 299792458 m/s",
-        "G = 6.674e-11", "L(n): 2,1,3,4,7,11,18...",
-        "tau/phi = 3.883", "pi*e = 8.539",
-        "phi^phi = 2.390", "3^3^3 = 7625597484987",
-        "sqrt(2) = 1.414",
+        "V = n*3^k*pi^m*phi^p*e^q", "1.58 bits/trit",        "phi = (1+sqrt(5))/2",
+        "e^(i*pi) + 1 = 0",         "3 = phi^2 + 1/phi^2",   "F(n) = F(n-1)+F(n-2)",
+        "hbar = 1.054e-34",         "c = 299792458 m/s",     "G = 6.674e-11",
+        "L(n): 2,1,3,4,7,11,18...", "tau/phi = 3.883",       "pi*e = 8.539",
+        "phi^phi = 2.390",          "3^3^3 = 7625597484987", "sqrt(2) = 1.414",
     };
     const formula_descs = [42][]const u8{
-        "Golden ratio — nature's proportion", "Product of transcendentals", "10th Lucas number",
-        "Fine structure constant inverse", "Golden ratio squared", "Feigenbaum chaos constant",
-        "7th Fibonacci number", "Square root of five", "Sacred number 999",
-        "Circle ratio", "Cube of trinity", "Quantum Bell bound",
-        "Proton-electron mass ratio", "Basel problem result", "Euler to pi",
-        "E8 Lie group dimension", "Energy efficiency", "Quantum advantage",
-        "TRINITY IDENTITY", "Full turn tau", "Menger sponge fractal",
-        "Mutation rate from phi", "Crossover rate from phi", "Selection = phi",
-        "Euler's number", "Age of universe", "Hubble constant",
-        "Trinity value formula", "Ternary information density",
-        "Golden ratio definition", "Euler's identity",
-        "Trinity identity", "Fibonacci recurrence",
-        "Reduced Planck constant", "Speed of light",
-        "Gravitational constant", "Lucas sequence",
-        "Tau over phi", "Pi times e",
-        "Phi to phi power", "Tower of threes",
-        "Pythagoras' constant",
+        "Golden ratio — nature's proportion", "Product of transcendentals",  "10th Lucas number",
+        "Fine structure constant inverse",      "Golden ratio squared",        "Feigenbaum chaos constant",
+        "7th Fibonacci number",                 "Square root of five",         "Sacred number 999",
+        "Circle ratio",                         "Cube of trinity",             "Quantum Bell bound",
+        "Proton-electron mass ratio",           "Basel problem result",        "Euler to pi",
+        "E8 Lie group dimension",               "Energy efficiency",           "Quantum advantage",
+        "TRINITY IDENTITY",                     "Full turn tau",               "Menger sponge fractal",
+        "Mutation rate from phi",               "Crossover rate from phi",     "Selection = phi",
+        "Euler's number",                       "Age of universe",             "Hubble constant",
+        "Trinity value formula",                "Ternary information density", "Golden ratio definition",
+        "Euler's identity",                     "Trinity identity",            "Fibonacci recurrence",
+        "Reduced Planck constant",              "Speed of light",              "Gravitational constant",
+        "Lucas sequence",                       "Tau over phi",                "Pi times e",
+        "Phi to phi power",                     "Tower of threes",             "Pythagoras' constant",
     };
     // formula_particles is file-scope global (frame_formula_particles)
     // Golden angle = 2*pi/phi^2 ~ 137.508 degrees — Fibonacci spiral
@@ -5866,7 +5864,9 @@ pub fn main() !void {
         frame_formula_particles[fi] = FormulaParticle.init(
             formula_texts[fi],
             formula_descs[fi],
-            angle, radius, speed,
+            angle,
+            radius,
+            speed,
         );
     }
 
@@ -5881,612 +5881,623 @@ pub fn main() !void {
 }
 
 fn updateDrawFrame() callconv(.c) void {
-        // === BeginDrawing FIRST — ensures we always see something ===
-        rl.BeginDrawing();
-        defer rl.EndDrawing();
-        rl.ClearBackground(rl.Color{ .r = 10, .g = 10, .b = 30, .a = 255 });
+    // === BeginDrawing FIRST — ensures we always see something ===
+    rl.BeginDrawing();
+    defer rl.EndDrawing();
+    rl.ClearBackground(rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 });
 
-        // DEBUG: always draw a visible marker so we know the callback fires
-        rl.DrawText("TRINITY WASM OK", 20, 20, 30, rl.Color{ .r = 0, .g = 255, .b = 0, .a = 255 });
+    // DEBUG marker removed (was: TRINITY WASM OK)
 
-        const dt = rl.GetFrameTime();
-        frame_time += dt;
+    const dt = rl.GetFrameTime();
+    frame_time += dt;
 
-        // Cmd+Q to quit (desktop only, not in WASM)
-        if (!is_emscripten and (rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER)) and rl.IsKeyPressed(rl.KEY_Q)) {
-            g_should_quit = true;
-            return;
-        }
+    // Cmd+Q to quit (desktop only, not in WASM)
+    if (!is_emscripten and (rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER)) and rl.IsKeyPressed(rl.KEY_Q)) {
+        g_should_quit = true;
+        return;
+    }
 
-        // Cmd+D = toggle dark/light theme
-        if ((rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER)) and rl.IsKeyPressed(rl.KEY_D)) {
+    // Cmd+D = toggle dark/light theme
+    if ((rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER)) and rl.IsKeyPressed(rl.KEY_D)) {
+        theme.toggle();
+        reloadThemeAliases();
+    }
+
+    // Click on sun/moon toggle button (top-right)
+    if (rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT)) {
+        const tcx: f32 = @as(f32, @floatFromInt(g_width)) - 35;
+        const tcy: f32 = 30;
+        const tmx = @as(f32, @floatFromInt(rl.GetMouseX()));
+        const tmy = @as(f32, @floatFromInt(rl.GetMouseY()));
+        const dx_t = tmx - tcx;
+        const dy_t = tmy - tcy;
+        if (dx_t * dx_t + dy_t * dy_t <= 14 * 14) {
             theme.toggle();
             reloadThemeAliases();
         }
+    }
 
-        // Click on sun/moon toggle button (top-right)
-        if (rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT)) {
-            const tcx: f32 = @as(f32, @floatFromInt(g_width)) - 35;
-            const tcy: f32 = 30;
-            const tmx = @as(f32, @floatFromInt(rl.GetMouseX()));
-            const tmy = @as(f32, @floatFromInt(rl.GetMouseY()));
-            const dx_t = tmx - tcx;
-            const dy_t = tmy - tcy;
-            if (dx_t * dx_t + dy_t * dy_t <= 14 * 14) {
-                theme.toggle();
-                reloadThemeAliases();
-            }
+    // Update window size (adaptive/resizable)
+    g_width = rl.GetScreenWidth();
+    g_height = rl.GetScreenHeight();
+
+    // Adaptive font scale: proportional to screen width (ref 1280px)
+    // Trinity rule: scale by phi^(log3(w/1280)) for ternary harmony
+    g_font_scale = @max(0.75, @min(2.0, @as(f32, @floatFromInt(g_width)) / 1280.0));
+
+    // Calculate pixel size to COVER full window (no gaps at edges)
+    const grid_w_c: c_int = @intCast(frame_grid.width);
+    const grid_h_c: c_int = @intCast(frame_grid.height);
+    const px_w = @divTrunc(g_width + grid_w_c - 1, grid_w_c); // ceil division
+    const px_h = @divTrunc(g_height + grid_h_c - 1, grid_h_c);
+    g_pixel_size = @max(1, @max(px_w, px_h));
+
+    const mouse_x = rl.GetMouseX();
+    const mouse_y = rl.GetMouseY();
+    const mx = @as(f32, @floatFromInt(mouse_x));
+    const my = @as(f32, @floatFromInt(mouse_y));
+
+    const gx = @as(usize, @intCast(@max(0, @min(@as(c_int, @intCast(frame_grid.width - 1)), @divTrunc(mouse_x, g_pixel_size)))));
+    const gy = @as(usize, @intCast(@max(0, @min(@as(c_int, @intCast(frame_grid.height - 1)), @divTrunc(mouse_y, g_pixel_size)))));
+
+    frame_cursor_hue = @mod(frame_cursor_hue + dt * 30.0, 360.0);
+
+    // === INPUT HANDLING ===
+
+    // Detect if chat is active (wave mode or legacy panel)
+    const chat_is_open: bool = if (g_wave_mode == .chat) true else blk_chat: {
+        if (frame_panels.active_panel) |idx| {
+            const p = &frame_panels.panels[idx];
+            const is_visible = (p.state == .open or p.state == .opening);
+            if (is_visible and p.panel_type == .chat) break :blk_chat true;
+            if (is_visible and p.panel_type == .sacred_world and p.world_id == 0) break :blk_chat true;
         }
+        break :blk_chat false;
+    };
 
-        // Update window size (adaptive/resizable)
-        g_width = rl.GetScreenWidth();
-        g_height = rl.GetScreenHeight();
+    // Sacred Worlds keyboard shortcuts:
+    // Shift+1-9 = Realm RAZUM (blocks 0-8)
+    // Ctrl+1-9  = Realm MATERIYA (blocks 9-17)
+    // Cmd+1-9   = Realm DUKH (blocks 18-26)
+    // DISABLED when chat panel is open (so user can type freely)
+    const shift_held = rl.IsKeyDown(rl.KEY_LEFT_SHIFT) or rl.IsKeyDown(rl.KEY_RIGHT_SHIFT);
+    const ctrl_held = rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL);
+    const cmd_held = rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER);
 
-        // Adaptive font scale: proportional to screen width (ref 1280px)
-        // Trinity rule: scale by phi^(log3(w/1280)) for ternary harmony
-        g_font_scale = @max(0.75, @min(2.0, @as(f32, @floatFromInt(g_width)) / 1280.0));
+    // Calculate fullscreen panel positions
+    const screen_w = @as(f32, @floatFromInt(g_width));
+    const screen_h = @as(f32, @floatFromInt(g_height));
 
-        // Calculate pixel size to COVER full window (no gaps at edges)
-        const grid_w_c: c_int = @intCast(frame_grid.width);
-        const grid_h_c: c_int = @intCast(frame_grid.height);
-        const px_w = @divTrunc(g_width + grid_w_c - 1, grid_w_c); // ceil division
-        const px_h = @divTrunc(g_height + grid_h_c - 1, grid_h_c);
-        g_pixel_size = @max(1, @max(px_w, px_h));
+    // v1.9: Shift+1-6 = Wave Mode Switch (no panels)
+    // Chat mode also allows Shift+keys for wave mode switch
+    if (!chat_is_open) {
+        if (shift_held) {
+            var new_mode: ?WaveMode = null;
+            if (rl.IsKeyPressed(rl.KEY_ONE)) new_mode = .chat;
+            if (rl.IsKeyPressed(rl.KEY_TWO)) new_mode = .code;
+            if (rl.IsKeyPressed(rl.KEY_THREE)) new_mode = .tools;
+            if (rl.IsKeyPressed(rl.KEY_FOUR)) new_mode = .settings;
+            if (rl.IsKeyPressed(rl.KEY_FIVE)) new_mode = .vision;
+            if (rl.IsKeyPressed(rl.KEY_SIX)) new_mode = .voice;
+            if (rl.IsKeyPressed(rl.KEY_SEVEN)) new_mode = .finder;
+            if (rl.IsKeyPressed(rl.KEY_EIGHT)) new_mode = .docs;
+            if (rl.IsKeyPressed(rl.KEY_NINE)) new_mode = .mirror;
+            if (rl.IsKeyPressed(rl.KEY_ZERO)) new_mode = .idle;
+            if (rl.IsKeyPressed(rl.KEY_D)) new_mode = .depin;
 
-        const mouse_x = rl.GetMouseX();
-        const mouse_y = rl.GetMouseY();
-        const mx = @as(f32, @floatFromInt(mouse_x));
-        const my = @as(f32, @floatFromInt(mouse_y));
-
-        const gx = @as(usize, @intCast(@max(0, @min(@as(c_int, @intCast(frame_grid.width - 1)), @divTrunc(mouse_x, g_pixel_size)))));
-        const gy = @as(usize, @intCast(@max(0, @min(@as(c_int, @intCast(frame_grid.height - 1)), @divTrunc(mouse_y, g_pixel_size)))));
-
-        frame_cursor_hue = @mod(frame_cursor_hue + dt * 30.0, 360.0);
-
-        // === INPUT HANDLING ===
-
-        // Detect if chat is active (wave mode or legacy panel)
-        const chat_is_open: bool = if (g_wave_mode == .chat) true else blk_chat: {
-            if (frame_panels.active_panel) |idx| {
-                const p = &frame_panels.panels[idx];
-                const is_visible = (p.state == .open or p.state == .opening);
-                if (is_visible and p.panel_type == .chat) break :blk_chat true;
-                if (is_visible and p.panel_type == .sacred_world and p.world_id == 0) break :blk_chat true;
-            }
-            break :blk_chat false;
-        };
-
-        // Sacred Worlds keyboard shortcuts:
-        // Shift+1-9 = Realm RAZUM (blocks 0-8)
-        // Ctrl+1-9  = Realm MATERIYA (blocks 9-17)
-        // Cmd+1-9   = Realm DUKH (blocks 18-26)
-        // DISABLED when chat panel is open (so user can type freely)
-        const shift_held = rl.IsKeyDown(rl.KEY_LEFT_SHIFT) or rl.IsKeyDown(rl.KEY_RIGHT_SHIFT);
-        const ctrl_held = rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL);
-        const cmd_held = rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER);
-
-        // Calculate fullscreen panel positions
-        const screen_w = @as(f32, @floatFromInt(g_width));
-        const screen_h = @as(f32, @floatFromInt(g_height));
-
-        // v1.9: Shift+1-6 = Wave Mode Switch (no panels)
-        // Chat mode also allows Shift+keys for wave mode switch
-        if (!chat_is_open) {
-            if (shift_held) {
-                var new_mode: ?WaveMode = null;
-                if (rl.IsKeyPressed(rl.KEY_ONE)) new_mode = .chat;
-                if (rl.IsKeyPressed(rl.KEY_TWO)) new_mode = .code;
-                if (rl.IsKeyPressed(rl.KEY_THREE)) new_mode = .tools;
-                if (rl.IsKeyPressed(rl.KEY_FOUR)) new_mode = .settings;
-                if (rl.IsKeyPressed(rl.KEY_FIVE)) new_mode = .vision;
-                if (rl.IsKeyPressed(rl.KEY_SIX)) new_mode = .voice;
-                if (rl.IsKeyPressed(rl.KEY_SEVEN)) new_mode = .finder;
-                if (rl.IsKeyPressed(rl.KEY_EIGHT)) new_mode = .docs;
-                if (rl.IsKeyPressed(rl.KEY_NINE)) new_mode = .mirror;
-                if (rl.IsKeyPressed(rl.KEY_ZERO)) new_mode = .idle;
-                if (rl.IsKeyPressed(rl.KEY_D)) new_mode = .depin;
-
-                if (new_mode) |nm| {
-                    if (nm != g_wave_mode) {
-                        g_wave_mode_prev = g_wave_mode;
-                        g_wave_mode = nm;
-                        g_wave_transition = 0; // Start transition animation
-                        // Wave burst on mode change
-                        frame_effects.nova(screen_w / 2, screen_h / 2);
-                        // Perturb grid with mode's hue
-                        const mode_hue = nm.getHue();
-                        const freq_shift = mode_hue / 360.0 * TAU;
-                        for (0..@min(frame_grid.height, 5)) |wy| {
-                            for (0..frame_grid.width) |wx| {
-                                frame_grid.getMut(wx, wy).amplitude += @sin(freq_shift + @as(f32, @floatFromInt(wx)) * 0.3) * 0.2;
-                            }
+            if (new_mode) |nm| {
+                if (nm != g_wave_mode) {
+                    g_wave_mode_prev = g_wave_mode;
+                    g_wave_mode = nm;
+                    g_wave_transition = 0; // Start transition animation
+                    // Wave burst on mode change
+                    frame_effects.nova(screen_w / 2, screen_h / 2);
+                    // Perturb grid with mode's hue
+                    const mode_hue = nm.getHue();
+                    const freq_shift = mode_hue / 360.0 * TAU;
+                    for (0..@min(frame_grid.height, 5)) |wy| {
+                        for (0..frame_grid.width) |wx| {
+                            frame_grid.getMut(wx, wy).amplitude += @sin(freq_shift + @as(f32, @floatFromInt(wx)) * 0.3) * 0.2;
                         }
                     }
                 }
             }
         }
+    }
 
-        // Keyboard scroll for active sacred_world panel (docs/chat only)
-        if (frame_panels.active_panel) |ap_idx| {
-            const ap = &frame_panels.panels[ap_idx];
-            if (ap.panel_type == .sacred_world and ap.state == .open and ap.world_id != 0) {
-                // Skip keyboard scroll for chat panel (world_id 0) — keys go to text input
-                const max_scroll_kb: f32 = if (ap.world_id == 18) blk_ks: {
-                    var total: u32 = 0;
-                    var dsi: usize = 0;
-                    while (dsi < 27) : (dsi += 1) {
-                        total += world_docs.countVisibleLines(world_docs.WORLD_DOCS[dsi].raw);
-                        total += 4;
-                    }
-                    break :blk_ks @as(f32, @floatFromInt(total)) * 18.0 * g_font_scale;
-                } else 0.0;
-                if (ap.wave_scroll_enabled) {
-                    // Wave scroll: keyboard impulses
-                    if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyDown(rl.KEY_DOWN)) ap.wave_sv.applyImpulse(0.1);
-                    if (rl.IsKeyPressed(rl.KEY_UP) or rl.IsKeyDown(rl.KEY_UP)) ap.wave_sv.applyImpulse(-0.1);
-                    if (rl.IsKeyPressed(rl.KEY_PAGE_DOWN)) ap.wave_sv.applyImpulse(7.5);
-                    if (rl.IsKeyPressed(rl.KEY_PAGE_UP)) ap.wave_sv.applyImpulse(-7.5);
-                    if (rl.IsKeyPressed(rl.KEY_HOME)) ap.wave_sv.scrollToItem(0);
-                    if (rl.IsKeyPressed(rl.KEY_END)) ap.wave_sv.scrollToItem(ap.wave_sv.total_items -| 1);
-                } else {
-                    // Legacy lerp scroll: keyboard targets
-                    if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyDown(rl.KEY_DOWN)) ap.scroll_target += 4.0;
-                    if (rl.IsKeyPressed(rl.KEY_UP) or rl.IsKeyDown(rl.KEY_UP)) ap.scroll_target -= 4.0;
-                    if (rl.IsKeyPressed(rl.KEY_PAGE_DOWN)) ap.scroll_target += 300;
-                    if (rl.IsKeyPressed(rl.KEY_PAGE_UP)) ap.scroll_target -= 300;
-                    if (rl.IsKeyPressed(rl.KEY_HOME)) ap.scroll_target = 0;
-                    if (rl.IsKeyPressed(rl.KEY_END)) ap.scroll_target = max_scroll_kb;
-                    ap.scroll_target = @max(0, @min(ap.scroll_target, max_scroll_kb));
+    // Keyboard scroll for active sacred_world panel (docs/chat only)
+    if (frame_panels.active_panel) |ap_idx| {
+        const ap = &frame_panels.panels[ap_idx];
+        if (ap.panel_type == .sacred_world and ap.state == .open and ap.world_id != 0) {
+            // Skip keyboard scroll for chat panel (world_id 0) — keys go to text input
+            const max_scroll_kb: f32 = if (ap.world_id == 18) blk_ks: {
+                var total: u32 = 0;
+                var dsi: usize = 0;
+                while (dsi < 27) : (dsi += 1) {
+                    total += world_docs.countVisibleLines(world_docs.WORLD_DOCS[dsi].raw);
+                    total += 4;
+                }
+                break :blk_ks @as(f32, @floatFromInt(total)) * 18.0 * g_font_scale;
+            } else 0.0;
+            if (ap.wave_scroll_enabled) {
+                // Wave scroll: keyboard impulses
+                if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyDown(rl.KEY_DOWN)) ap.wave_sv.applyImpulse(0.1);
+                if (rl.IsKeyPressed(rl.KEY_UP) or rl.IsKeyDown(rl.KEY_UP)) ap.wave_sv.applyImpulse(-0.1);
+                if (rl.IsKeyPressed(rl.KEY_PAGE_DOWN)) ap.wave_sv.applyImpulse(7.5);
+                if (rl.IsKeyPressed(rl.KEY_PAGE_UP)) ap.wave_sv.applyImpulse(-7.5);
+                if (rl.IsKeyPressed(rl.KEY_HOME)) ap.wave_sv.scrollToItem(0);
+                if (rl.IsKeyPressed(rl.KEY_END)) ap.wave_sv.scrollToItem(ap.wave_sv.total_items -| 1);
+            } else {
+                // Legacy lerp scroll: keyboard targets
+                if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyDown(rl.KEY_DOWN)) ap.scroll_target += 4.0;
+                if (rl.IsKeyPressed(rl.KEY_UP) or rl.IsKeyDown(rl.KEY_UP)) ap.scroll_target -= 4.0;
+                if (rl.IsKeyPressed(rl.KEY_PAGE_DOWN)) ap.scroll_target += 300;
+                if (rl.IsKeyPressed(rl.KEY_PAGE_UP)) ap.scroll_target -= 300;
+                if (rl.IsKeyPressed(rl.KEY_HOME)) ap.scroll_target = 0;
+                if (rl.IsKeyPressed(rl.KEY_END)) ap.scroll_target = max_scroll_kb;
+                ap.scroll_target = @max(0, @min(ap.scroll_target, max_scroll_kb));
+            }
+        }
+    }
+
+    // ESC = return to idle (27 petals logo)
+    if (rl.IsKeyPressed(rl.KEY_ESCAPE)) {
+        if (g_wave_mode != .idle) {
+            if (g_wave_mode == .depin) g_depin_auto_started = false;
+            g_wave_mode_prev = g_wave_mode;
+            g_wave_mode = .idle;
+            g_wave_transition = 0;
+            frame_effects.sink(screen_w / 2, screen_h / 2);
+        }
+        frame_panels.unfocusAll();
+        // Close all sacred world panels
+        for (0..frame_panels.count) |pi| {
+            if (frame_panels.panels[pi].panel_type == .sacred_world) {
+                frame_panels.panels[pi].close();
+            }
+        }
+    }
+
+    // Click outside any panel = close all panels (return to logo menu)
+    if (rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT) and !shift_held and !ctrl_held and !cmd_held) {
+        var clicked_on_panel = false;
+        for (0..frame_panels.count) |pi| {
+            const p = &frame_panels.panels[pi];
+            if (p.state == .open or p.state == .opening) {
+                if (mx >= p.x and mx <= p.x + p.width and my >= p.y and my <= p.y + p.height) {
+                    clicked_on_panel = true;
+                    break;
                 }
             }
         }
-
-        // ESC = return to idle (27 petals logo)
-        if (rl.IsKeyPressed(rl.KEY_ESCAPE)) {
-            if (g_wave_mode != .idle) {
-                g_wave_mode_prev = g_wave_mode;
-                g_wave_mode = .idle;
-                g_wave_transition = 0;
-                frame_effects.sink(screen_w / 2, screen_h / 2);
+        // Also check if click is on the logo (don't close if clicking logo)
+        const on_logo = frame_logo_anim.hovered_block >= 0;
+        if (!clicked_on_panel and !on_logo) {
+            // Close all panels — return to main logo menu
+            for (0..frame_panels.count) |pi| {
+                frame_panels.panels[pi].close();
+                frame_panels.panels[pi].is_focused = false;
             }
             frame_panels.unfocusAll();
-            // Close all sacred world panels
-            for (0..frame_panels.count) |pi| {
-                if (frame_panels.panels[pi].panel_type == .sacred_world) {
-                    frame_panels.panels[pi].close();
+        }
+    }
+
+    // === CHAT INPUT (v1.9: wave mode or legacy panel) ===
+    // Routes keyboard to chat when g_wave_mode == .chat or legacy panel
+    const wave_chat_active = g_wave_mode == .chat;
+    const focused_chat_panel: ?*GlassPanel = if (wave_chat_active) null else blk: {
+        if (frame_panels.active_panel) |idx| {
+            const p = &frame_panels.panels[idx];
+            const is_visible = (p.state == .open or p.state == .opening);
+            if (is_visible and p.panel_type == .chat) {
+                break :blk p;
+            }
+            if (is_visible and p.panel_type == .sacred_world and p.world_id == 0) {
+                break :blk p;
+            }
+        }
+        break :blk null;
+    };
+
+    if (wave_chat_active or focused_chat_panel != null) {
+        if (focused_chat_panel) |chat_panel| {
+            _ = chat_panel;
+        } // legacy compat
+        // All panel-switching hotkeys are disabled when chat is open (see chat_is_open above)
+        {
+            // Text input: Unicode codepoints → UTF-8 encoded into global buffer
+            // Skip character input when Ctrl/Cmd is held (prevents Ctrl+O etc from interfering)
+            const skip_char_input = (rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL) or
+                rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER));
+            var char_key = rl.GetCharPressed();
+            while (char_key > 0) {
+                const cp: u21 = @intCast(char_key);
+                if (cp >= 32 and !skip_char_input) {
+                    // Encode UTF-8
+                    var utf8_buf: [4]u8 = undefined;
+                    const utf8_len: usize = if (cp < 0x80) blk_u: {
+                        utf8_buf[0] = @intCast(cp);
+                        break :blk_u 1;
+                    } else if (cp < 0x800) blk_u: {
+                        utf8_buf[0] = @intCast(0xC0 | (cp >> 6));
+                        utf8_buf[1] = @intCast(0x80 | (cp & 0x3F));
+                        break :blk_u 2;
+                    } else if (cp < 0x10000) blk_u: {
+                        utf8_buf[0] = @intCast(0xE0 | (cp >> 12));
+                        utf8_buf[1] = @intCast(0x80 | ((cp >> 6) & 0x3F));
+                        utf8_buf[2] = @intCast(0x80 | (cp & 0x3F));
+                        break :blk_u 3;
+                    } else blk_u: {
+                        utf8_buf[0] = @intCast(0xF0 | (cp >> 18));
+                        utf8_buf[1] = @intCast(0x80 | ((cp >> 12) & 0x3F));
+                        utf8_buf[2] = @intCast(0x80 | ((cp >> 6) & 0x3F));
+                        utf8_buf[3] = @intCast(0x80 | (cp & 0x3F));
+                        break :blk_u 4;
+                    };
+                    if (g_chat_input_len + utf8_len < 250) {
+                        @memcpy(g_chat_input[g_chat_input_len..][0..utf8_len], utf8_buf[0..utf8_len]);
+                        g_chat_input_len += utf8_len;
+                        // Typing wave effect
+                        frame_effects.sink(screen_w / 2, screen_h * 0.9);
+                    }
                 }
+                char_key = rl.GetCharPressed();
             }
         }
 
-        // Click outside any panel = close all panels (return to logo menu)
-        if (rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT) and !shift_held and !ctrl_held and !cmd_held) {
-            var clicked_on_panel = false;
-            for (0..frame_panels.count) |pi| {
-                const p = &frame_panels.panels[pi];
-                if (p.state == .open or p.state == .opening) {
-                    if (mx >= p.x and mx <= p.x + p.width and my >= p.y and my <= p.y + p.height) {
-                        clicked_on_panel = true;
-                        break;
-                    }
+        // Backspace — delete UTF-8 characters (with key repeat for hold)
+        {
+            const bs_pressed = rl.IsKeyPressed(rl.KEY_BACKSPACE);
+            const bs_held = rl.IsKeyDown(rl.KEY_BACKSPACE);
+            if (bs_pressed) {
+                g_backspace_timer = 0.4; // Initial delay before repeat
+            }
+            var do_delete = bs_pressed;
+            if (bs_held and !bs_pressed) {
+                g_backspace_timer -= rl.GetFrameTime();
+                if (g_backspace_timer <= 0) {
+                    do_delete = true;
+                    g_backspace_timer = 0.04; // Repeat rate (25 chars/sec)
                 }
             }
-            // Also check if click is on the logo (don't close if clicking logo)
-            const on_logo = frame_logo_anim.hovered_block >= 0;
-            if (!clicked_on_panel and !on_logo) {
-                // Close all panels — return to main logo menu
-                for (0..frame_panels.count) |pi| {
-                    frame_panels.panels[pi].close();
-                    frame_panels.panels[pi].is_focused = false;
+            if (!bs_held) g_backspace_timer = 0;
+            if (do_delete and g_chat_input_len > 0) {
+                var del: usize = 1;
+                while (del < g_chat_input_len and
+                    (g_chat_input[g_chat_input_len - del] & 0xC0) == 0x80)
+                {
+                    del += 1;
                 }
-                frame_panels.unfocusAll();
+                g_chat_input_len -= del;
             }
         }
 
-        // === CHAT INPUT (v1.9: wave mode or legacy panel) ===
-        // Routes keyboard to chat when g_wave_mode == .chat or legacy panel
-        const wave_chat_active = g_wave_mode == .chat;
-        const focused_chat_panel: ?*GlassPanel = if (wave_chat_active) null else blk: {
-            if (frame_panels.active_panel) |idx| {
-                const p = &frame_panels.panels[idx];
-                const is_visible = (p.state == .open or p.state == .opening);
-                if (is_visible and p.panel_type == .chat) {
-                    break :blk p;
-                }
-                if (is_visible and p.panel_type == .sacred_world and p.world_id == 0) {
-                    break :blk p;
-                }
-            }
-            break :blk null;
-        };
+        // Ctrl+O clears the input
+        if ((rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL)) and rl.IsKeyPressed(rl.KEY_O)) {
+            g_chat_input_len = 0;
+        }
 
-        if (wave_chat_active or focused_chat_panel != null) {
-            if (focused_chat_panel) |chat_panel| { _ = chat_panel; } // legacy compat
-            // All panel-switching hotkeys are disabled when chat is open (see chat_is_open above)
-            {
-                // Text input: Unicode codepoints → UTF-8 encoded into global buffer
-                // Skip character input when Ctrl/Cmd is held (prevents Ctrl+O etc from interfering)
-                const skip_char_input = (rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL) or
-                    rl.IsKeyDown(rl.KEY_LEFT_SUPER) or rl.IsKeyDown(rl.KEY_RIGHT_SUPER));
-                var char_key = rl.GetCharPressed();
-                while (char_key > 0) {
-                    const cp: u21 = @intCast(char_key);
-                    if (cp >= 32 and !skip_char_input) {
-                        // Encode UTF-8
-                        var utf8_buf: [4]u8 = undefined;
-                        const utf8_len: usize = if (cp < 0x80) blk_u: {
-                            utf8_buf[0] = @intCast(cp);
-                            break :blk_u 1;
-                        } else if (cp < 0x800) blk_u: {
-                            utf8_buf[0] = @intCast(0xC0 | (cp >> 6));
-                            utf8_buf[1] = @intCast(0x80 | (cp & 0x3F));
-                            break :blk_u 2;
-                        } else if (cp < 0x10000) blk_u: {
-                            utf8_buf[0] = @intCast(0xE0 | (cp >> 12));
-                            utf8_buf[1] = @intCast(0x80 | ((cp >> 6) & 0x3F));
-                            utf8_buf[2] = @intCast(0x80 | (cp & 0x3F));
-                            break :blk_u 3;
-                        } else blk_u: {
-                            utf8_buf[0] = @intCast(0xF0 | (cp >> 18));
-                            utf8_buf[1] = @intCast(0x80 | ((cp >> 12) & 0x3F));
-                            utf8_buf[2] = @intCast(0x80 | ((cp >> 6) & 0x3F));
-                            utf8_buf[3] = @intCast(0x80 | (cp & 0x3F));
-                            break :blk_u 4;
-                        };
-                        if (g_chat_input_len + utf8_len < 250) {
-                            @memcpy(g_chat_input[g_chat_input_len..][0..utf8_len], utf8_buf[0..utf8_len]);
-                            g_chat_input_len += utf8_len;
-                            // Typing wave effect
-                            frame_effects.sink(screen_w / 2, screen_h * 0.9);
-                        }
-                    }
-                    char_key = rl.GetCharPressed();
+        // Enter sends message
+        if (rl.IsKeyPressed(rl.KEY_ENTER) and g_chat_input_len > 0) {
+            // Lazy init IglaHybridChat (v2.4: 4-level cache with self-reflection)
+            if (!g_hybrid_inited) {
+                const alloc = if (is_emscripten) std.heap.page_allocator else g_hybrid_gpa.allocator();
+
+                // Create TVC corpus on heap
+                g_hybrid_corpus = alloc.create(tvc.TVCCorpus) catch null;
+                if (g_hybrid_corpus) |c| {
+                    c.initInPlace();
+                }
+
+                // Create hybrid chat with env API keys
+                var hconfig = igla_hybrid_chat.HybridConfig{};
+                if (!is_emscripten) {
+                    hconfig.groq_api_key = std.posix.getenv("GROQ_API_KEY");
+                    hconfig.claude_api_key = std.posix.getenv("ANTHROPIC_API_KEY");
+                    hconfig.openai_api_key = std.posix.getenv("OPENAI_API_KEY");
+                }
+                hconfig.enable_context = true;
+                hconfig.system_prompt = "You are Trinity, a helpful AI. Be concise.";
+
+                g_hybrid_engine = igla_hybrid_chat.IglaHybridChat.initWithConfig(alloc, null, hconfig) catch null;
+                if (g_hybrid_engine != null and g_hybrid_corpus != null) {
+                    g_hybrid_engine.?.corpus = g_hybrid_corpus;
+                }
+                g_hybrid_inited = true;
+
+                // Also init FluentChatEngine as fallback
+                if (!g_fluent_engine_inited) {
+                    g_fluent_engine = fluent_chat.FluentChatEngine{
+                        .message_store = fluent_chat.LightMessageStore.init(),
+                        .context = fluent_chat.ConversationContext.init(),
+                        .generator = undefined,
+                        .fluent_enabled = true,
+                        .total_turns = 0,
+                        .fluent_responses = 0,
+                        .high_quality_count = 0,
+                    };
+                    g_fluent_engine.generator = fluent_chat.ResponseGenerator.init(&g_fluent_engine.context);
+                    g_fluent_engine_inited = true;
                 }
             }
 
-            // Backspace — delete UTF-8 characters (with key repeat for hold)
-            {
-                const bs_pressed = rl.IsKeyPressed(rl.KEY_BACKSPACE);
-                const bs_held = rl.IsKeyDown(rl.KEY_BACKSPACE);
-                if (bs_pressed) {
-                    g_backspace_timer = 0.4; // Initial delay before repeat
+            // 1. Add user message
+            addGlobalChatMessage(g_chat_input[0..g_chat_input_len], .user);
+
+            // 2. v3.0: Golden Chain — 8-node pipeline via GoldenChainAgent
+            if (g_hybrid_engine != null) {
+                // Init chain agent on first use (lazy)
+                if (g_chain_agent == null) {
+                    g_chain_agent = golden_chain.GoldenChainAgent.init(&g_hybrid_engine.?);
                 }
-                var do_delete = bs_pressed;
-                if (bs_held and !bs_pressed) {
-                    g_backspace_timer -= rl.GetFrameTime();
-                    if (g_backspace_timer <= 0) {
-                        do_delete = true;
-                        g_backspace_timer = 0.04; // Repeat rate (25 chars/sec)
+
+                if (g_chain_agent) |*agent| {
+                    agent.processInput(g_chat_input[0..g_chat_input_len]);
+
+                    // Copy all chain messages to canvas chat
+                    for (agent.getMessages()) |*chain_msg| {
+                        const canvas_type = chainMsgToCanvasType(chain_msg);
+                        addGlobalChatMessage(chain_msg.getContent(), canvas_type);
                     }
-                }
-                if (!bs_held) g_backspace_timer = 0;
-                if (do_delete and g_chat_input_len > 0) {
-                    var del: usize = 1;
-                    while (del < g_chat_input_len and
-                        (g_chat_input[g_chat_input_len - del] & 0xC0) == 0x80)
+
+                    // Feed live log with final chain state
                     {
-                        del += 1;
-                    }
-                    g_chat_input_len -= del;
-                }
-            }
+                        const cs = golden_chain.g_chain_state;
+                        var ll_buf: [96]u8 = undefined;
+                        const ll_text = std.fmt.bufPrint(&ll_buf, "CHAIN|{d:.0}%|{d}us", .{ cs.total_confidence * 100, cs.total_latency_us }) catch "";
+                        addLiveLog(ll_text, igla_hybrid_chat.g_last_wave_state.source_hue);
 
-            // Ctrl+O clears the input
-            if ((rl.IsKeyDown(rl.KEY_LEFT_CONTROL) or rl.IsKeyDown(rl.KEY_RIGHT_CONTROL)) and rl.IsKeyPressed(rl.KEY_O)) {
-                g_chat_input_len = 0;
-            }
-
-            // Enter sends message
-            if (rl.IsKeyPressed(rl.KEY_ENTER) and g_chat_input_len > 0) {
-                // Lazy init IglaHybridChat (v2.4: 4-level cache with self-reflection)
-                if (!g_hybrid_inited) {
-                    const alloc = if (is_emscripten) std.heap.page_allocator else g_hybrid_gpa.allocator();
-
-                    // Create TVC corpus on heap
-                    g_hybrid_corpus = alloc.create(tvc.TVCCorpus) catch null;
-                    if (g_hybrid_corpus) |c| {
-                        c.* = tvc.TVCCorpus.init();
+                        // Update reflection name from chain
+                        const rname = "GoldenChain";
+                        @memcpy(g_last_reflection_name[0..rname.len], rname);
+                        g_last_reflection_name[rname.len] = 0;
+                        g_last_reflection_len = rname.len;
                     }
 
-                    // Create hybrid chat with env API keys
-                    var hconfig = igla_hybrid_chat.HybridConfig{};
-                    if (!is_emscripten) {
-                        hconfig.groq_api_key = std.posix.getenv("GROQ_API_KEY");
-                        hconfig.claude_api_key = std.posix.getenv("ANTHROPIC_API_KEY");
-                        hconfig.openai_api_key = std.posix.getenv("OPENAI_API_KEY");
-                    }
-                    hconfig.enable_context = true;
-                    hconfig.system_prompt = "You are Trinity, a helpful AI. Be concise.";
-
-                    g_hybrid_engine = igla_hybrid_chat.IglaHybridChat.initWithConfig(alloc, null, hconfig) catch null;
-                    if (g_hybrid_engine != null and g_hybrid_corpus != null) {
-                        g_hybrid_engine.?.corpus = g_hybrid_corpus;
-                    }
-                    g_hybrid_inited = true;
-
-                    // Also init FluentChatEngine as fallback
-                    if (!g_fluent_engine_inited) {
-                        g_fluent_engine = fluent_chat.FluentChatEngine{
-                            .message_store = fluent_chat.LightMessageStore.init(),
-                            .context = fluent_chat.ConversationContext.init(),
-                            .generator = undefined,
-                            .fluent_enabled = true,
-                            .total_turns = 0,
-                            .fluent_responses = 0,
-                            .high_quality_count = 0,
-                        };
-                        g_fluent_engine.generator = fluent_chat.ResponseGenerator.init(&g_fluent_engine.context);
-                        g_fluent_engine_inited = true;
-                    }
-                }
-
-                // 1. Add user message
-                addGlobalChatMessage(g_chat_input[0..g_chat_input_len], .user);
-
-                // 2. v3.0: Golden Chain — 8-node pipeline via GoldenChainAgent
-                if (g_hybrid_engine != null) {
-                    // Init chain agent on first use (lazy)
-                    if (g_chain_agent == null) {
-                        g_chain_agent = golden_chain.GoldenChainAgent.init(&g_hybrid_engine.?);
-                    }
-
-                    if (g_chain_agent) |*agent| {
-                        agent.processInput(g_chat_input[0..g_chat_input_len]);
-
-                        // Copy all chain messages to canvas chat
-                        for (agent.getMessages()) |*chain_msg| {
-                            const canvas_type = chainMsgToCanvasType(chain_msg);
-                            addGlobalChatMessage(chain_msg.getContent(), canvas_type);
-                        }
-
-                        // Feed live log with final chain state
-                        {
-                            const cs = golden_chain.g_chain_state;
-                            var ll_buf: [96]u8 = undefined;
-                            const ll_text = std.fmt.bufPrint(&ll_buf, "CHAIN|{d:.0}%|{d}us", .{ cs.total_confidence * 100, cs.total_latency_us }) catch "";
-                            addLiveLog(ll_text, igla_hybrid_chat.g_last_wave_state.source_hue);
-
-                            // Update reflection name from chain
-                            const rname = "GoldenChain";
-                            @memcpy(g_last_reflection_name[0..rname.len], rname);
-                            g_last_reflection_name[rname.len] = 0;
-                            g_last_reflection_len = rname.len;
-                        }
-
-                        frame_effects.nova(screen_w / 2, screen_h / 2);
-                    } else {
-                        // Fallback: direct hybrid (shouldn't reach here)
-                        if (g_hybrid_engine.?.respond(g_chat_input[0..g_chat_input_len])) |hr| {
-                            addGlobalChatMessage(hr.response, .ai);
-                        } else |_| {
-                            addGlobalChatMessage("Error: no response", .agent_error);
-                        }
-                        frame_effects.nova(screen_w / 2, screen_h / 2);
-                    }
+                    frame_effects.nova(screen_w / 2, screen_h / 2);
                 } else {
-                    // No hybrid engine — use FluentChatEngine
-                    const result = g_fluent_engine.respond(g_chat_input[0..g_chat_input_len]);
-                    addGlobalChatMessage(result.getText(), .ai);
-                    const stats = g_fluent_engine.getStats();
-                    const ms = @divFloor(result.execution_time_ns, @as(i64, 1_000_000));
-                    addChatLogMessage("{s} | {s} | {s} | q:{d:.0}% | {d}ms | s:{d:.2} | e:{d:.2}", .{
-                        result.intent.getName(),
-                        result.topic.getName(),
-                        result.language.getName(),
-                        result.quality * 100,
-                        ms,
-                        stats.sentiment,
-                        stats.engagement,
-                    });
+                    // Fallback: direct hybrid (shouldn't reach here)
+                    if (g_hybrid_engine.?.respond(g_chat_input[0..g_chat_input_len])) |hr| {
+                        addGlobalChatMessage(hr.response, .ai);
+                    } else |_| {
+                        addGlobalChatMessage("Error: no response", .agent_error);
+                    }
                     frame_effects.nova(screen_w / 2, screen_h / 2);
                 }
-
-                // Auto-scroll: set to a large value, renderer will clamp
-                g_chat_scroll_target = 99999.0;
-
-                // Clear input
-                g_chat_input_len = 0;
-            }
-        } else {
-            // Normal controls (no global input - use Shift+N for panels)
-
-            // T = Tool spawn (demo)
-            if (rl.IsKeyPressed(rl.KEY_T)) {
-                const center_x = @as(f32, @floatFromInt(g_width)) / 2.0;
-                const center_y = @as(f32, @floatFromInt(g_height)) / 2.0;
-                frame_tools.spawn(center_x, center_y, "inference");
-                frame_tools.setStatus("inference", .running);
-                frame_mode = .tools;
-            }
-
-            // V = Vision (inject image perturbation - demo)
-            if (rl.IsKeyPressed(rl.KEY_V)) {
-                // Simulate image loading as grid perturbation
-                for (0..frame_grid.height) |y| {
-                    for (0..frame_grid.width) |x| {
-                        const px = @as(f32, @floatFromInt(x)) / @as(f32, @floatFromInt(frame_grid.width));
-                        const py = @as(f32, @floatFromInt(y)) / @as(f32, @floatFromInt(frame_grid.height));
-                        const pattern = @sin(px * TAU * 4.0) * @cos(py * TAU * 4.0);
-                        frame_grid.getMut(x, y).amplitude += pattern * 0.3;
-                    }
-                }
-                frame_clusters.spawn(mx, my, "VISION INPUT", false);
-                frame_mode = .vision;
+            } else {
+                // No hybrid engine — use FluentChatEngine
+                const result = g_fluent_engine.respond(g_chat_input[0..g_chat_input_len]);
+                addGlobalChatMessage(result.getText(), .ai);
+                const stats = g_fluent_engine.getStats();
+                const ms = @divFloor(result.execution_time_ns, @as(i64, 1_000_000));
+                addChatLogMessage("{s} | {s} | {s} | q:{d:.0}% | {d}ms | s:{d:.2} | e:{d:.2}", .{
+                    result.intent.getName(),
+                    result.topic.getName(),
+                    result.language.getName(),
+                    result.quality * 100,
+                    ms,
+                    stats.sentiment,
+                    stats.engagement,
+                });
+                frame_effects.nova(screen_w / 2, screen_h / 2);
             }
 
-            // A = Voice/Audio mode (frequency modulation)
-            if (rl.IsKeyPressed(rl.KEY_A)) {
-                // Simulate voice as frequency modulation
-                const freq_mod = @sin(frame_time * 10.0) * 0.5;
-                for (frame_grid.photons[0..frame_grid.width]) |*p| {
-                    p.frequency += freq_mod;
-                }
-                frame_clusters.spawn(mx, my, "VOICE INPUT", false);
-                frame_mode = .voice;
-            }
+            // Auto-scroll: set to a large value, renderer will clamp
+            g_chat_scroll_target = 99999.0;
 
-            // N = Nova effect (success)
-            if (rl.IsKeyPressed(rl.KEY_N)) {
-                frame_effects.nova(mx, my);
-            }
+            // Clear input
+            g_chat_input_len = 0;
+        }
+    } else {
+        // Normal controls (no global input - use Shift+N for panels)
 
-            // S = Sink effect (failure)
-            if (rl.IsKeyPressed(rl.KEY_S)) {
-                frame_effects.sink(mx, my);
-            }
-
-            // R = Reset
-            if (rl.IsKeyPressed(rl.KEY_R)) {
-                for (frame_grid.photons) |*p| {
-                    p.amplitude = 0;
-                    p.interference = 0;
-                }
-                const center_x = @as(f32, @floatFromInt(g_width)) / 2.0;
-                const center_y = @as(f32, @floatFromInt(g_height)) / 2.0;
-                frame_clusters.spawn(center_x, center_y, "REBIRTH", false);
-                frame_mode = .idle;
-            }
-
-            // Mouse interactions
-            if (rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT)) {
-                if (gx < frame_grid.width and gy < frame_grid.height) {
-                    frame_grid.setCursor(@floatFromInt(gx), @floatFromInt(gy), 1.0);
-                }
-            }
-
-            if (rl.IsMouseButtonDown(rl.MOUSE_BUTTON_RIGHT)) {
-                if (gx < frame_grid.width and gy < frame_grid.height) {
-                    frame_grid.getMut(gx, gy).amplitude = -1.0;
-                }
-            }
+        // T = Tool spawn (demo)
+        if (rl.IsKeyPressed(rl.KEY_T)) {
+            const center_x = @as(f32, @floatFromInt(g_width)) / 2.0;
+            const center_y = @as(f32, @floatFromInt(g_height)) / 2.0;
+            frame_tools.spawn(center_x, center_y, "inference");
+            frame_tools.setStatus("inference", .running);
+            frame_mode = .tools;
         }
 
-        // === UPDATE ===
-        frame_grid.stepSIMD();
-        frame_clusters.update(dt);
-        frame_spirals.update(dt);
-        frame_tools.update(dt);
-        frame_effects.update(dt);
-        frame_goal.update(&frame_grid, dt);
+        // V = Vision (inject image perturbation - demo)
+        if (rl.IsKeyPressed(rl.KEY_V)) {
+            // Simulate image loading as grid perturbation
+            for (0..frame_grid.height) |y| {
+                for (0..frame_grid.width) |x| {
+                    const px = @as(f32, @floatFromInt(x)) / @as(f32, @floatFromInt(frame_grid.width));
+                    const py = @as(f32, @floatFromInt(y)) / @as(f32, @floatFromInt(frame_grid.height));
+                    const pattern = @sin(px * TAU * 4.0) * @cos(py * TAU * 4.0);
+                    frame_grid.getMut(x, y).amplitude += pattern * 0.3;
+                }
+            }
+            frame_clusters.spawn(mx, my, "VISION INPUT", false);
+            frame_mode = .vision;
+        }
 
-        // Update panels with mouse state
-        const mouse_pressed = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT);
-        const mouse_down_state = rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT);
-        const mouse_released = rl.IsMouseButtonReleased(rl.MOUSE_BUTTON_LEFT);
-        const mouse_wheel = rl.GetMouseWheelMove();
-        frame_panels.update(dt, frame_time, mx, my, mouse_pressed, mouse_down_state, mouse_released, mouse_wheel);
+        // A = Voice/Audio mode (frequency modulation)
+        if (rl.IsKeyPressed(rl.KEY_A)) {
+            // Simulate voice as frequency modulation
+            const freq_mod = @sin(frame_time * 10.0) * 0.5;
+            for (frame_grid.photons[0..frame_grid.width]) |*p| {
+                p.frequency += freq_mod;
+            }
+            frame_clusters.spawn(mx, my, "VOICE INPUT", false);
+            frame_mode = .voice;
+        }
 
-        // Check autonomous goal completion
-        if (frame_goal.progress >= 1.0 and frame_mode == .autonomous) {
-            frame_effects.nova(frame_goal.x, frame_goal.y);
-            frame_clusters.spawn(frame_goal.x, frame_goal.y, "GOAL ACHIEVED", false);
+        // N = Nova effect (success)
+        if (rl.IsKeyPressed(rl.KEY_N)) {
+            frame_effects.nova(mx, my);
+        }
+
+        // S = Sink effect (failure)
+        if (rl.IsKeyPressed(rl.KEY_S)) {
+            frame_effects.sink(mx, my);
+        }
+
+        // R = Reset
+        if (rl.IsKeyPressed(rl.KEY_R)) {
+            for (frame_grid.photons) |*p| {
+                p.amplitude = 0;
+                p.interference = 0;
+            }
+            const center_x = @as(f32, @floatFromInt(g_width)) / 2.0;
+            const center_y = @as(f32, @floatFromInt(g_height)) / 2.0;
+            frame_clusters.spawn(center_x, center_y, "REBIRTH", false);
             frame_mode = .idle;
         }
 
-        // === RENDER ===
-        // (BeginDrawing/EndDrawing moved to top of updateDrawFrame)
-
-        // Theme-aware background (second clear overrides debug text above — keep for now)
-        // rl.ClearBackground(@as(rl.Color, @bitCast(theme.clear_bg)));
-
-        // === LOGO LOADING ANIMATION (Apple-style luxury welcome) ===
-        if (!frame_loading_complete) {
-            // Update logo animation
-            frame_logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
-            frame_logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
-            frame_logo_anim.update(dt);
-
-            // Draw logo animation
-            frame_logo_anim.draw();
-
-            // Check if animation complete
-            if (frame_logo_anim.is_complete) {
-                frame_loading_complete = true;
+        // Mouse interactions
+        if (rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT)) {
+            if (gx < frame_grid.width and gy < frame_grid.height) {
+                frame_grid.setCursor(@floatFromInt(gx), @floatFromInt(gy), 1.0);
             }
-
-            return; // Skip main canvas rendering during loading
         }
 
-        // Grid
-        drawImmersiveGrid(&frame_grid, frame_time);
+        if (rl.IsMouseButtonDown(rl.MOUSE_BUTTON_RIGHT)) {
+            if (gx < frame_grid.width and gy < frame_grid.height) {
+                frame_grid.getMut(gx, gy).amplitude = -1.0;
+            }
+        }
+    }
 
-        // Systems
+    // === UPDATE ===
+    frame_grid.stepSIMD();
+    frame_clusters.update(dt);
+    frame_spirals.update(dt);
+    frame_tools.update(dt);
+    frame_effects.update(dt);
+    frame_goal.update(&frame_grid, dt);
+
+    // Update panels with mouse state
+    const mouse_pressed = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT);
+    const mouse_down_state = rl.IsMouseButtonDown(rl.MOUSE_BUTTON_LEFT);
+    const mouse_released = rl.IsMouseButtonReleased(rl.MOUSE_BUTTON_LEFT);
+    const mouse_wheel = rl.GetMouseWheelMove();
+    frame_panels.update(dt, frame_time, mx, my, mouse_pressed, mouse_down_state, mouse_released, mouse_wheel);
+
+    // Check autonomous goal completion
+    if (frame_goal.progress >= 1.0 and frame_mode == .autonomous) {
+        frame_effects.nova(frame_goal.x, frame_goal.y);
+        frame_clusters.spawn(frame_goal.x, frame_goal.y, "GOAL ACHIEVED", false);
+        frame_mode = .idle;
+    }
+
+    // === RENDER ===
+    // (BeginDrawing/EndDrawing moved to top of updateDrawFrame)
+
+    // Theme-aware background (second clear overrides debug text above — keep for now)
+    // rl.ClearBackground(@as(rl.Color, @bitCast(theme.clear_bg)));
+
+    // === LOGO LOADING ANIMATION (Apple-style luxury welcome) ===
+    if (!frame_loading_complete) {
+        // Update logo animation
+        frame_logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
+        frame_logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
+        frame_logo_anim.update(dt);
+
+        // Draw logo animation
+        frame_logo_anim.draw();
+
+        // Check if animation complete
+        if (frame_logo_anim.is_complete) {
+            frame_loading_complete = true;
+        }
+
+        return; // Skip main canvas rendering during loading
+    }
+
+    // Grid & visual systems (skip in DePIN mode for clean background)
+    if (g_wave_mode != .depin) {
+        drawImmersiveGrid(&frame_grid, frame_time);
         frame_clusters.draw(frame_time);
         frame_spirals.draw();
         frame_tools.draw(frame_time);
         frame_effects.draw();
         frame_goal.draw(frame_time);
+    }
 
-        // === v2.4: DePIN Node Polling ===
-        if (g_wave_mode == .depin or g_depin_running) {
-            g_depin_poll_timer += dt;
-            if (g_depin_poll_timer >= 10.0) {
-                g_depin_poll_timer = 0;
-                g_depin_running = depinCheckRunning();
-                if (g_depin_running) depinPollStats();
+    // === v2.4: DePIN Node Polling ===
+    if (g_wave_mode == .depin or g_depin_running) {
+        // Auto-start on first entry to DePIN mode
+        if (g_wave_mode == .depin and g_depin_docker_ok and !g_depin_running and !g_depin_auto_started) {
+            g_depin_auto_started = true;
+            depinStartNode();
+            g_depin_poll_timer = 8.0; // Poll soon after start
+        }
+        g_depin_poll_timer += dt;
+        if (g_depin_poll_timer >= 10.0) {
+            g_depin_poll_timer = 0;
+            g_depin_running = depinCheckRunning();
+            if (g_depin_running) depinPollStats();
+        }
+    }
+
+    // === v1.9: Wave Mode Transition ===
+    g_wave_transition = @min(1.0, g_wave_transition + dt * 3.0); // 0.33s transition
+
+    // === IDLE MODE: Logo + Formula Particles ===
+    if (g_wave_mode == .idle) {
+        // Static logo in center (realm-colored, stays after loading)
+        frame_logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
+        frame_logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
+        frame_logo_anim.applyMouse(mx, my, dt, mouse_pressed);
+        frame_logo_anim.draw();
+
+        // Sacred formula particles — Fibonacci spiral orbit
+        {
+            const fcx = @as(f32, @floatFromInt(g_width)) / 2;
+            const fcy = @as(f32, @floatFromInt(g_height)) / 2;
+            const formula_click = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT);
+            for (&frame_formula_particles) |*fp| {
+                fp.update(dt, frame_time, mx, my, formula_click, fcx, fcy);
+                fp.draw(frame_time, fcx, fcy, frame_font_small);
             }
         }
 
-        // === v1.9: Wave Mode Transition ===
-        g_wave_transition = @min(1.0, g_wave_transition + dt * 3.0); // 0.33s transition
-
-        // === IDLE MODE: Logo + Formula Particles ===
-        if (g_wave_mode == .idle) {
-            // Static logo in center (realm-colored, stays after loading)
-            frame_logo_anim.logo_scale = @min(@as(f32, @floatFromInt(g_width)) / LogoAnimation.SVG_WIDTH, @as(f32, @floatFromInt(g_height)) / LogoAnimation.SVG_HEIGHT) * 0.35;
-            frame_logo_anim.logo_offset = .{ .x = @as(f32, @floatFromInt(g_width)) / 2, .y = @as(f32, @floatFromInt(g_height)) / 2 };
-            frame_logo_anim.applyMouse(mx, my, dt, mouse_pressed);
-            frame_logo_anim.draw();
-
-            // Sacred formula particles — Fibonacci spiral orbit
-            {
-                const fcx = @as(f32, @floatFromInt(g_width)) / 2;
-                const fcy = @as(f32, @floatFromInt(g_height)) / 2;
-                const formula_click = rl.IsMouseButtonPressed(rl.MOUSE_BUTTON_LEFT);
-                for (&frame_formula_particles) |*fp| {
-                    fp.update(dt, frame_time, mx, my, formula_click, fcx, fcy);
-                    fp.draw(frame_time, fcx, fcy, frame_font_small);
-                }
-            }
-
-            // Handle logo block click — switch to wave mode
-            if (frame_logo_anim.clicked_block >= 0) {
-                const block_idx = @as(usize, @intCast(frame_logo_anim.clicked_block));
-                // Block 0 = Chat, Block 18 = Docs, others = tools
-                const new_wm: WaveMode = if (block_idx == 0) .chat else if (block_idx == 18) .docs else .tools;
-                g_wave_mode_prev = g_wave_mode;
-                g_wave_mode = new_wm;
-                g_wave_transition = 0;
-                frame_effects.nova(screen_w / 2, screen_h / 2);
-            }
-
-            // Hover tooltip: show world name + realm color
-            if (frame_logo_anim.hovered_block >= 0) {
-                const hi = @as(usize, @intCast(frame_logo_anim.hovered_block));
-                const world = sacred_worlds.getWorldByBlock(hi);
-                const tw: f32 = @as(f32, @floatFromInt(world.name_len)) * 9.0 + 30;
-                const tx = mx + 15;
-                const ty = my - 28;
-                const tt_bg: rl.Color = @bitCast(theme.tooltip_bg);
-                const tt_text: rl.Color = @bitCast(theme.tooltip_text);
-                rl.DrawRectangleRounded(.{ .x = tx, .y = ty, .width = tw, .height = 24 }, 0.3, 8, tt_bg);
-                rl.DrawCircle(@intFromFloat(tx + 10), @intFromFloat(ty + 12), 4, tt_text);
-                var tooltip_buf: [28:0]u8 = undefined;
-                @memcpy(tooltip_buf[0..world.name_len], world.name[0..world.name_len]);
-                tooltip_buf[world.name_len] = 0;
-                rl.DrawTextEx(frame_font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, tt_text);
-            }
+        // Handle logo block click — switch to wave mode
+        if (frame_logo_anim.clicked_block >= 0) {
+            const block_idx = @as(usize, @intCast(frame_logo_anim.clicked_block));
+            // Block 0 = Chat, Block 16 = DePIN, Block 18 = Docs, others = tools
+            const new_wm: WaveMode = if (block_idx == 0) .chat else if (block_idx == 16) .depin else if (block_idx == 18) .docs else .tools;
+            g_wave_mode_prev = g_wave_mode;
+            g_wave_mode = new_wm;
+            g_wave_transition = 0;
+            frame_effects.nova(screen_w / 2, screen_h / 2);
         }
 
-        // === WAVE MODE RENDERERS (fullscreen, no panels) ===
-        if (g_wave_mode != .idle) {
-            const fs = g_font_scale;
-            const chat_font = g_font_chat;
-            const sw = @as(f32, @floatFromInt(g_width));
-            const sh = @as(f32, @floatFromInt(g_height));
-            const alpha_u8: u8 = @intFromFloat(@min(255, g_wave_transition * 255));
-            const mode_hue = g_wave_mode.getHue();
-            const mode_rgb = hsvToRgb(mode_hue, 0.7, 1.0);
-            const mode_color = rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = alpha_u8 };
+        // Hover tooltip: show world name + realm color
+        if (frame_logo_anim.hovered_block >= 0) {
+            const hi = @as(usize, @intCast(frame_logo_anim.hovered_block));
+            const world = sacred_worlds.getWorldByBlock(hi);
+            const tw: f32 = @as(f32, @floatFromInt(world.name_len)) * 9.0 + 30;
+            const tx = mx + 15;
+            const ty = my - 28;
+            const tt_bg: rl.Color = @bitCast(theme.tooltip_bg);
+            const tt_text: rl.Color = @bitCast(theme.tooltip_text);
+            rl.DrawRectangleRounded(.{ .x = tx, .y = ty, .width = tw, .height = 24 }, 0.3, 8, tt_bg);
+            rl.DrawCircle(@intFromFloat(tx + 10), @intFromFloat(ty + 12), 4, tt_text);
+            var tooltip_buf: [28:0]u8 = undefined;
+            @memcpy(tooltip_buf[0..world.name_len], world.name[0..world.name_len]);
+            tooltip_buf[world.name_len] = 0;
+            rl.DrawTextEx(frame_font_small, &tooltip_buf, .{ .x = tx + 20, .y = ty + 5 }, 13, 0.5, tt_text);
+        }
+    }
+
+    // === WAVE MODE RENDERERS (fullscreen, no panels) ===
+    if (g_wave_mode != .idle) {
+        const fs = g_font_scale;
+        const chat_font = g_font_chat;
+        const sw = @as(f32, @floatFromInt(g_width));
+        const sh = @as(f32, @floatFromInt(g_height));
+        const alpha_u8: u8 = @intFromFloat(@min(255, g_wave_transition * 255));
+        const mode_hue = g_wave_mode.getHue();
+        const mode_rgb = hsvToRgb(mode_hue, 0.7, 1.0);
+        const mode_color = rl.Color{ .r = mode_rgb[0], .g = mode_rgb[1], .b = mode_rgb[2], .a = alpha_u8 };
+
+        // DePIN mode: skip all other wave renderers, draw only DePIN panel
+        if (g_wave_mode != .depin) {
 
             // Mode label (top-center)
             const label = g_wave_mode.getLabel();
@@ -6649,7 +6660,7 @@ fn updateDrawFrame() callconv(.c) void {
                                         while (next < msg_data.len and (msg_data[next] & 0xC0) == 0x80) next += 1;
                                         var tmp: [256:0]u8 = undefined;
                                         const seg_len = @min(next - pos, 255);
-                                        @memcpy(tmp[0..seg_len], msg_data[pos..pos + seg_len]);
+                                        @memcpy(tmp[0..seg_len], msg_data[pos .. pos + seg_len]);
                                         tmp[seg_len] = 0;
                                         const w = rl.MeasureTextEx(chat_font, &tmp, msg_font_size, 0.5).x;
                                         if (w > max_text_w and end > pos) break;
@@ -6678,7 +6689,7 @@ fn updateDrawFrame() callconv(.c) void {
                                     while (next2 < msg_data.len and (msg_data[next2] & 0xC0) == 0x80) next2 += 1;
                                     var tmp2: [256:0]u8 = undefined;
                                     const seg_len2 = @min(next2 - pos2, 255);
-                                    @memcpy(tmp2[0..seg_len2], msg_data[pos2..pos2 + seg_len2]);
+                                    @memcpy(tmp2[0..seg_len2], msg_data[pos2 .. pos2 + seg_len2]);
                                     tmp2[seg_len2] = 0;
                                     const w2 = rl.MeasureTextEx(chat_font, &tmp2, msg_font_size, 0.5).x;
                                     if (w2 > max_text_w and end2 > pos2) break;
@@ -6689,7 +6700,7 @@ fn updateDrawFrame() callconv(.c) void {
 
                                 if (text_y >= chat_top - line_h and text_y <= chat_bottom + line_h) {
                                     const ln_len = @min(end2 - pos2, 255);
-                                    @memcpy(line_buf_chat[0..ln_len], msg_data[pos2..pos2 + ln_len]);
+                                    @memcpy(line_buf_chat[0..ln_len], msg_data[pos2 .. pos2 + ln_len]);
                                     var tlen = ln_len;
                                     while (tlen > 0 and line_buf_chat[tlen - 1] == ' ') tlen -= 1;
                                     line_buf_chat[tlen] = 0;
@@ -7509,309 +7520,311 @@ fn updateDrawFrame() callconv(.c) void {
                     }
                 }
             }
+        } // end: if (g_wave_mode != .depin) — skip other renderers in DePIN mode
 
-            // === DePIN NODE WAVE FIELD === (v2.4: Docker node management)
-            if (g_wave_mode == .depin) {
-                const margin: f32 = 40 * fs;
-                const line_h: f32 = 28 * fs;
-                const title_sz: f32 = 28 * fs;
-                const subtitle_sz: f32 = 16 * fs;
-                const label_sz: f32 = 14 * fs;
-                const val_sz: f32 = 16 * fs;
-                const col_w = (sw - margin * 3) / 2;
+        // === DePIN NODE WAVE FIELD === (v2.4: Docker node management)
+        if (g_wave_mode == .depin) {
+            // Opaque black background — clean slate
+            rl.DrawRectangle(0, 0, @intFromFloat(sw), @intFromFloat(sh), rl.Color{ .r = 0, .g = 0, .b = 0, .a = 255 });
+            const margin: f32 = 40 * fs;
+            const line_h: f32 = 28 * fs;
+            const title_sz: f32 = 28 * fs;
+            const subtitle_sz: f32 = 16 * fs;
+            const label_sz: f32 = 14 * fs;
+            const val_sz: f32 = 16 * fs;
+            const col_w = (sw - margin * 3) / 2;
 
-                const depin_green = rl.Color{ .r = 0x50, .g = 0xFA, .b = 0x50, .a = alpha_u8 };
-                const depin_yellow = rl.Color{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha_u8 };
-                const depin_red = rl.Color{ .r = 0xFF, .g = 0x55, .b = 0x55, .a = alpha_u8 };
-                const dim_text = withAlpha(MUTED_GRAY, alpha_u8);
-                const bright_text = withAlpha(rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 }, alpha_u8);
+            const depin_green = rl.Color{ .r = 0x50, .g = 0xFA, .b = 0x50, .a = alpha_u8 };
+            const depin_yellow = rl.Color{ .r = 0xFF, .g = 0xD7, .b = 0x00, .a = alpha_u8 };
+            const depin_red = rl.Color{ .r = 0xFF, .g = 0x55, .b = 0x55, .a = alpha_u8 };
+            const dim_text = withAlpha(MUTED_GRAY, alpha_u8);
+            const bright_text = withAlpha(rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 }, alpha_u8);
 
-                var y: f32 = 30 * fs;
+            var y: f32 = 30 * fs;
 
-                // Title
-                rl.DrawTextEx(chat_font, "TRINITY DePIN NODE", .{ .x = margin, .y = y }, title_sz, 0.5, mode_color);
-                y += title_sz + 4;
-                rl.DrawTextEx(chat_font, "Earn $TRI for VSA compute & storage", .{ .x = margin, .y = y }, subtitle_sz, 0.5, dim_text);
-                y += line_h + 10;
+            // Title
+            rl.DrawTextEx(chat_font, "TRINITY DePIN NODE", .{ .x = margin, .y = y }, title_sz, 0.5, mode_color);
+            y += title_sz + 4;
+            rl.DrawTextEx(chat_font, "Earn $TRI for VSA compute & storage", .{ .x = margin, .y = y }, subtitle_sz, 0.5, dim_text);
+            y += line_h + 10;
 
-                // Status indicator
-                {
-                    const status_color = if (g_depin_running) depin_green else if (g_depin_docker_ok) depin_yellow else depin_red;
-                    const status_text: [*:0]const u8 = if (g_depin_running) "RUNNING" else if (g_depin_docker_ok) "STOPPED" else "NO DOCKER";
+            // Status indicator
+            {
+                const status_color = if (g_depin_running) depin_green else if (g_depin_docker_ok) depin_yellow else depin_red;
+                const status_text: [*:0]const u8 = if (g_depin_running) "RUNNING" else if (g_depin_docker_ok) "STOPPED" else "NO DOCKER";
 
-                    // Pulsing status dot
-                    const pulse = if (g_depin_running) @sin(frame_time * 3.0) * 0.3 + 0.7 else 0.5;
-                    const dot_a: u8 = @intFromFloat(@max(60, @min(255, pulse * @as(f32, @floatFromInt(alpha_u8)))));
-                    rl.DrawCircle(@intFromFloat(margin + 8), @intFromFloat(y + 10), 6, rl.Color{ .r = status_color.r, .g = status_color.g, .b = status_color.b, .a = dot_a });
+                // Pulsing status dot
+                const pulse = if (g_depin_running) @sin(frame_time * 3.0) * 0.3 + 0.7 else 0.5;
+                const dot_a: u8 = @intFromFloat(@max(60, @min(255, pulse * @as(f32, @floatFromInt(alpha_u8)))));
+                rl.DrawCircle(@intFromFloat(margin + 8), @intFromFloat(y + 10), 6, rl.Color{ .r = status_color.r, .g = status_color.g, .b = status_color.b, .a = dot_a });
 
-                    rl.DrawTextEx(chat_font, "Status:", .{ .x = margin + 22, .y = y }, label_sz, 0.5, dim_text);
-                    rl.DrawTextEx(chat_font, status_text, .{ .x = margin + 80 * fs, .y = y }, val_sz, 0.5, status_color);
-                    y += line_h;
+                rl.DrawTextEx(chat_font, "Status:", .{ .x = margin + 22, .y = y }, label_sz, 0.5, dim_text);
+                rl.DrawTextEx(chat_font, status_text, .{ .x = margin + 80 * fs, .y = y }, val_sz, 0.5, status_color);
+                y += line_h;
 
-                    // Uptime bar (if running)
-                    if (g_depin_running) {
-                        const bar_w = col_w;
-                        const bar_fill = @min(1.0, g_depin_uptime_hours / 24.0); // Scale to 24h
-                        rl.DrawRectangle(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(bar_w), 6, rl.Color{ .r = 40, .g = 40, .b = 50, .a = alpha_u8 });
-                        rl.DrawRectangle(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(bar_w * bar_fill), 6, depin_green);
-                        y += 14;
-                    }
-                }
-
-                y += 10;
-
-                // Separator
-                rl.DrawLine(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(sw - margin), @intFromFloat(y), rl.Color{ .r = 80, .g = 80, .b = 100, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3)) });
-                y += 15;
-
-                // Two columns: EARNINGS | INFRASTRUCTURE
-                const col1_x = margin;
-                const col2_x = margin + col_w + margin;
-                var y1 = y;
-                var y2 = y;
-
-                // Column 1: EARNINGS
-                rl.DrawTextEx(chat_font, "EARNINGS", .{ .x = col1_x, .y = y1 }, subtitle_sz, 0.5, depin_yellow);
-                y1 += subtitle_sz + 8;
-
-                // Earned
-                rl.DrawTextEx(chat_font, "Earned:", .{ .x = col1_x, .y = y1 }, label_sz, 0.5, dim_text);
-                var earned_buf: [24:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&earned_buf, "{d:.6} TRI", .{g_depin_earned_tri}) catch {};
-                earned_buf[@min(23, std.mem.indexOfScalar(u8, &earned_buf, 0) orelse 23)] = 0;
-                rl.DrawTextEx(chat_font, &earned_buf, .{ .x = col1_x + 80 * fs, .y = y1 }, val_sz, 0.5, depin_yellow);
-                y1 += line_h;
-
-                // Pending
-                rl.DrawTextEx(chat_font, "Pending:", .{ .x = col1_x, .y = y1 }, label_sz, 0.5, dim_text);
-                var pending_buf: [24:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&pending_buf, "{d:.6} TRI", .{g_depin_pending_tri}) catch {};
-                pending_buf[@min(23, std.mem.indexOfScalar(u8, &pending_buf, 0) orelse 23)] = 0;
-                rl.DrawTextEx(chat_font, &pending_buf, .{ .x = col1_x + 80 * fs, .y = y1 }, val_sz, 0.5, bright_text);
-                y1 += line_h;
-
-                // Operations
-                rl.DrawTextEx(chat_font, "Ops:", .{ .x = col1_x, .y = y1 }, label_sz, 0.5, dim_text);
-                var ops_buf: [16:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&ops_buf, "{d}", .{g_depin_operations}) catch {};
-                ops_buf[@min(15, std.mem.indexOfScalar(u8, &ops_buf, 0) orelse 15)] = 0;
-                rl.DrawTextEx(chat_font, &ops_buf, .{ .x = col1_x + 80 * fs, .y = y1 }, val_sz, 0.5, bright_text);
-                y1 += line_h;
-
-                // Column 2: INFRASTRUCTURE
-                rl.DrawTextEx(chat_font, "INFRASTRUCTURE", .{ .x = col2_x, .y = y2 }, subtitle_sz, 0.5, withAlpha(rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = 255 }, alpha_u8));
-                y2 += subtitle_sz + 8;
-
-                // Peers
-                rl.DrawTextEx(chat_font, "Peers:", .{ .x = col2_x, .y = y2 }, label_sz, 0.5, dim_text);
-                var peers_buf: [16:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&peers_buf, "{d}", .{g_depin_peers}) catch {};
-                peers_buf[@min(15, std.mem.indexOfScalar(u8, &peers_buf, 0) orelse 15)] = 0;
-                rl.DrawTextEx(chat_font, &peers_buf, .{ .x = col2_x + 100 * fs, .y = y2 }, val_sz, 0.5, bright_text);
-                y2 += line_h;
-
-                // Shards
-                rl.DrawTextEx(chat_font, "Shards:", .{ .x = col2_x, .y = y2 }, label_sz, 0.5, dim_text);
-                var shards_buf: [16:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&shards_buf, "{d}", .{g_depin_shards}) catch {};
-                shards_buf[@min(15, std.mem.indexOfScalar(u8, &shards_buf, 0) orelse 15)] = 0;
-                rl.DrawTextEx(chat_font, &shards_buf, .{ .x = col2_x + 100 * fs, .y = y2 }, val_sz, 0.5, bright_text);
-                y2 += line_h;
-
-                // Uptime
-                rl.DrawTextEx(chat_font, "Uptime:", .{ .x = col2_x, .y = y2 }, label_sz, 0.5, dim_text);
-                var uptime_buf: [16:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&uptime_buf, "{d:.1}h", .{g_depin_uptime_hours}) catch {};
-                uptime_buf[@min(15, std.mem.indexOfScalar(u8, &uptime_buf, 0) orelse 15)] = 0;
-                rl.DrawTextEx(chat_font, &uptime_buf, .{ .x = col2_x + 100 * fs, .y = y2 }, val_sz, 0.5, bright_text);
-                y2 += line_h;
-
-                // Buttons area
-                const btn_y = @max(y1, y2) + 20;
-                const btn_w: f32 = 180;
-                const btn_h: f32 = 40;
-                const btn_gap: f32 = 20;
-                const btn_x_start = margin;
-
-                // Start/Stop button
-                {
-                    const btn_rect = rl.Rectangle{ .x = btn_x_start, .y = btn_y, .width = btn_w, .height = btn_h };
-                    const btn_label: [*:0]const u8 = if (g_depin_running) "Stop Node" else "Start Node";
-
-                    // Draw button manually (no raygui dependency)
-                    const btn_color = if (g_depin_running) depin_red else depin_green;
-                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
-                    const btn_bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15);
-                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = btn_color.r, .g = btn_color.g, .b = btn_color.b, .a = btn_bg_a });
-                    rl.DrawRectangleLinesEx(btn_rect, 1, btn_color);
-                    rl.DrawTextEx(chat_font, btn_label, .{ .x = btn_x_start + 30, .y = btn_y + 10 }, val_sz, 0.5, btn_color);
-
-                    if (hover and mouse_pressed) {
-                        if (g_depin_running) depinStopNode() else depinStartNode();
-                    }
-                }
-
-                // Claim Rewards button
-                {
-                    const btn2_x = btn_x_start + btn_w + btn_gap;
-                    const btn_rect = rl.Rectangle{ .x = btn2_x, .y = btn_y, .width = btn_w, .height = btn_h };
-                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
-                    const btn_bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15);
-                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = depin_yellow.r, .g = depin_yellow.g, .b = depin_yellow.b, .a = btn_bg_a });
-                    rl.DrawRectangleLinesEx(btn_rect, 1, depin_yellow);
-                    rl.DrawTextEx(chat_font, "Claim Rewards", .{ .x = btn2_x + 20, .y = btn_y + 10 }, val_sz, 0.5, depin_yellow);
-
-                    if (hover and mouse_pressed and g_depin_running) {
-                        depinClaimRewards();
-                    }
-                }
-
-                // Dashboard button
-                {
-                    const btn3_x = btn_x_start + (btn_w + btn_gap) * 2;
-                    const btn_rect = rl.Rectangle{ .x = btn3_x, .y = btn_y, .width = btn_w, .height = btn_h };
-                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
-                    const dash_color = withAlpha(rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = 255 }, alpha_u8);
-                    const btn_bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15);
-                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = btn_bg_a });
-                    rl.DrawRectangleLinesEx(btn_rect, 1, dash_color);
-                    rl.DrawTextEx(chat_font, "Dashboard", .{ .x = btn3_x + 40, .y = btn_y + 10 }, val_sz, 0.5, dash_color);
-
-                    if (hover and mouse_pressed) {
-                        rl.OpenURL("https://gHashTag.github.io/trinity/docs/depin");
-                    }
-                }
-
-                // Footer: contract address
-                const footer_y = btn_y + btn_h + 30;
-                rl.DrawTextEx(chat_font, "Contract: 0xef368e29...F9f469  \xc2\xb7  Sepolia Testnet", .{ .x = margin, .y = footer_y }, 13 * fs, 0.5, dim_text);
-
-                // Docker not found warning
-                if (!g_depin_docker_ok) {
-                    const warn_y = footer_y + line_h;
-                    rl.DrawTextEx(chat_font, "Docker not found. Install at docker.com to run a node.", .{ .x = margin, .y = warn_y }, label_sz, 0.5, depin_red);
+                // Uptime bar (if running)
+                if (g_depin_running) {
+                    const bar_w = col_w;
+                    const bar_fill = @min(1.0, g_depin_uptime_hours / 24.0); // Scale to 24h
+                    rl.DrawRectangle(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(bar_w), 6, rl.Color{ .r = 40, .g = 40, .b = 50, .a = alpha_u8 });
+                    rl.DrawRectangle(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(bar_w * bar_fill), 6, depin_green);
+                    y += 14;
                 }
             }
-        }
 
-        // Legacy panels (hidden when wave mode active, kept for backward compat)
-        if (g_wave_mode == .idle) {
-            frame_panels.draw(frame_time, frame_font);
-        }
+            y += 10;
 
-        // Keyboard hint (minimal, top-left)
-        if (g_wave_mode == .idle) {
-            rl.DrawTextEx(frame_font_small, "Shift+1 Chat | 2 Code | 3 Tools | 4 Settings | D DePIN | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+            // Separator
+            rl.DrawLine(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(sw - margin), @intFromFloat(y), rl.Color{ .r = 80, .g = 80, .b = 100, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3)) });
+            y += 15;
+
+            // Two columns: EARNINGS | INFRASTRUCTURE
+            const col1_x = margin;
+            const col2_x = margin + col_w + margin;
+            var y1 = y;
+            var y2 = y;
+
+            // Column 1: EARNINGS
+            rl.DrawTextEx(chat_font, "EARNINGS", .{ .x = col1_x, .y = y1 }, subtitle_sz, 0.5, depin_yellow);
+            y1 += subtitle_sz + 8;
+
+            // Earned
+            rl.DrawTextEx(chat_font, "Earned:", .{ .x = col1_x, .y = y1 }, label_sz, 0.5, dim_text);
+            var earned_buf: [24:0]u8 = undefined;
+            _ = std.fmt.bufPrint(&earned_buf, "{d:.6} TRI", .{g_depin_earned_tri}) catch {};
+            earned_buf[@min(23, std.mem.indexOfScalar(u8, &earned_buf, 0) orelse 23)] = 0;
+            rl.DrawTextEx(chat_font, &earned_buf, .{ .x = col1_x + 80 * fs, .y = y1 }, val_sz, 0.5, depin_yellow);
+            y1 += line_h;
+
+            // Pending
+            rl.DrawTextEx(chat_font, "Pending:", .{ .x = col1_x, .y = y1 }, label_sz, 0.5, dim_text);
+            var pending_buf: [24:0]u8 = undefined;
+            _ = std.fmt.bufPrint(&pending_buf, "{d:.6} TRI", .{g_depin_pending_tri}) catch {};
+            pending_buf[@min(23, std.mem.indexOfScalar(u8, &pending_buf, 0) orelse 23)] = 0;
+            rl.DrawTextEx(chat_font, &pending_buf, .{ .x = col1_x + 80 * fs, .y = y1 }, val_sz, 0.5, bright_text);
+            y1 += line_h;
+
+            // Operations
+            rl.DrawTextEx(chat_font, "Ops:", .{ .x = col1_x, .y = y1 }, label_sz, 0.5, dim_text);
+            var ops_buf: [16:0]u8 = undefined;
+            _ = std.fmt.bufPrint(&ops_buf, "{d}", .{g_depin_operations}) catch {};
+            ops_buf[@min(15, std.mem.indexOfScalar(u8, &ops_buf, 0) orelse 15)] = 0;
+            rl.DrawTextEx(chat_font, &ops_buf, .{ .x = col1_x + 80 * fs, .y = y1 }, val_sz, 0.5, bright_text);
+            y1 += line_h;
+
+            // Column 2: INFRASTRUCTURE
+            rl.DrawTextEx(chat_font, "INFRASTRUCTURE", .{ .x = col2_x, .y = y2 }, subtitle_sz, 0.5, withAlpha(rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = 255 }, alpha_u8));
+            y2 += subtitle_sz + 8;
+
+            // Peers
+            rl.DrawTextEx(chat_font, "Peers:", .{ .x = col2_x, .y = y2 }, label_sz, 0.5, dim_text);
+            var peers_buf: [16:0]u8 = undefined;
+            _ = std.fmt.bufPrint(&peers_buf, "{d}", .{g_depin_peers}) catch {};
+            peers_buf[@min(15, std.mem.indexOfScalar(u8, &peers_buf, 0) orelse 15)] = 0;
+            rl.DrawTextEx(chat_font, &peers_buf, .{ .x = col2_x + 100 * fs, .y = y2 }, val_sz, 0.5, bright_text);
+            y2 += line_h;
+
+            // Shards
+            rl.DrawTextEx(chat_font, "Shards:", .{ .x = col2_x, .y = y2 }, label_sz, 0.5, dim_text);
+            var shards_buf: [16:0]u8 = undefined;
+            _ = std.fmt.bufPrint(&shards_buf, "{d}", .{g_depin_shards}) catch {};
+            shards_buf[@min(15, std.mem.indexOfScalar(u8, &shards_buf, 0) orelse 15)] = 0;
+            rl.DrawTextEx(chat_font, &shards_buf, .{ .x = col2_x + 100 * fs, .y = y2 }, val_sz, 0.5, bright_text);
+            y2 += line_h;
+
+            // Uptime
+            rl.DrawTextEx(chat_font, "Uptime:", .{ .x = col2_x, .y = y2 }, label_sz, 0.5, dim_text);
+            var uptime_buf: [16:0]u8 = undefined;
+            _ = std.fmt.bufPrint(&uptime_buf, "{d:.1}h", .{g_depin_uptime_hours}) catch {};
+            uptime_buf[@min(15, std.mem.indexOfScalar(u8, &uptime_buf, 0) orelse 15)] = 0;
+            rl.DrawTextEx(chat_font, &uptime_buf, .{ .x = col2_x + 100 * fs, .y = y2 }, val_sz, 0.5, bright_text);
+            y2 += line_h;
+
+            // Buttons area
+            const btn_y = @max(y1, y2) + 20;
+            const btn_w: f32 = 180;
+            const btn_h: f32 = 40;
+            const btn_gap: f32 = 20;
+            const btn_x_start = margin;
+
+            // Start/Stop button
+            {
+                const btn_rect = rl.Rectangle{ .x = btn_x_start, .y = btn_y, .width = btn_w, .height = btn_h };
+                const btn_label: [*:0]const u8 = if (g_depin_running) "Stop Node" else "Start Node";
+
+                // Draw button manually (no raygui dependency)
+                const btn_color = if (g_depin_running) depin_red else depin_green;
+                const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
+                const btn_bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15);
+                rl.DrawRectangleRec(btn_rect, rl.Color{ .r = btn_color.r, .g = btn_color.g, .b = btn_color.b, .a = btn_bg_a });
+                rl.DrawRectangleLinesEx(btn_rect, 1, btn_color);
+                rl.DrawTextEx(chat_font, btn_label, .{ .x = btn_x_start + 30, .y = btn_y + 10 }, val_sz, 0.5, btn_color);
+
+                if (hover and mouse_pressed) {
+                    if (g_depin_running) depinStopNode() else depinStartNode();
+                }
+            }
+
+            // Claim Rewards button
+            {
+                const btn2_x = btn_x_start + btn_w + btn_gap;
+                const btn_rect = rl.Rectangle{ .x = btn2_x, .y = btn_y, .width = btn_w, .height = btn_h };
+                const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
+                const btn_bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15);
+                rl.DrawRectangleRec(btn_rect, rl.Color{ .r = depin_yellow.r, .g = depin_yellow.g, .b = depin_yellow.b, .a = btn_bg_a });
+                rl.DrawRectangleLinesEx(btn_rect, 1, depin_yellow);
+                rl.DrawTextEx(chat_font, "Claim Rewards", .{ .x = btn2_x + 20, .y = btn_y + 10 }, val_sz, 0.5, depin_yellow);
+
+                if (hover and mouse_pressed and g_depin_running) {
+                    depinClaimRewards();
+                }
+            }
+
+            // Dashboard button
+            {
+                const btn3_x = btn_x_start + (btn_w + btn_gap) * 2;
+                const btn_rect = rl.Rectangle{ .x = btn3_x, .y = btn_y, .width = btn_w, .height = btn_h };
+                const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
+                const dash_color = withAlpha(rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = 255 }, alpha_u8);
+                const btn_bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15);
+                rl.DrawRectangleRec(btn_rect, rl.Color{ .r = 0x50, .g = 0xFA, .b = 0xFA, .a = btn_bg_a });
+                rl.DrawRectangleLinesEx(btn_rect, 1, dash_color);
+                rl.DrawTextEx(chat_font, "Dashboard", .{ .x = btn3_x + 40, .y = btn_y + 10 }, val_sz, 0.5, dash_color);
+
+                if (hover and mouse_pressed) {
+                    rl.OpenURL("https://gHashTag.github.io/trinity/docs/depin");
+                }
+            }
+
+            // Footer: contract address
+            const footer_y = btn_y + btn_h + 30;
+            rl.DrawTextEx(chat_font, "Contract: 0xef368e29...F9f469  \xc2\xb7  Sepolia Testnet", .{ .x = margin, .y = footer_y }, 13 * fs, 0.5, dim_text);
+
+            // Docker not found warning
+            if (!g_depin_docker_ok) {
+                const warn_y = footer_y + line_h;
+                rl.DrawTextEx(chat_font, "Docker not found. Install at docker.com to run a node.", .{ .x = margin, .y = warn_y }, label_sz, 0.5, depin_red);
+            }
+        }
+    }
+
+    // Legacy panels (hidden when wave mode active, kept for backward compat)
+    if (g_wave_mode == .idle) {
+        frame_panels.draw(frame_time, frame_font);
+    }
+
+    // Keyboard hint (minimal, top-left) — skip in DePIN for clean UI
+    if (g_wave_mode == .idle) {
+        rl.DrawTextEx(frame_font_small, "Shift+1 Chat | 2 Code | 3 Tools | 4 Settings | D DePIN | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
+    } else if (g_wave_mode != .depin) {
+        rl.DrawTextEx(frame_font_small, "ESC = back | Shift+1-6 switch mode", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 140));
+    }
+
+    // === SUN/MOON THEME TOGGLE (top-right, 20px from top) ===
+    {
+        const toggle_cx: f32 = @as(f32, @floatFromInt(g_width)) - 35;
+        const toggle_cy: f32 = 30; // 20px margin from top + radius
+        const toggle_r: f32 = 10;
+        if (theme.isDark()) {
+            // Crescent moon: white circle + bg-colored circle offset
+            const moon_color = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 220 };
+            rl.DrawCircle(@intFromFloat(toggle_cx), @intFromFloat(toggle_cy), toggle_r, moon_color);
+            rl.DrawCircle(@intFromFloat(toggle_cx + 5), @intFromFloat(toggle_cy - 3), toggle_r - 1, @as(rl.Color, @bitCast(theme.clear_bg)));
         } else {
-            rl.DrawTextEx(frame_font_small, "ESC = back | Shift+1-6 switch mode", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 140));
-        }
-
-
-        // === SUN/MOON THEME TOGGLE (top-right, 20px from top) ===
-        {
-            const toggle_cx: f32 = @as(f32, @floatFromInt(g_width)) - 35;
-            const toggle_cy: f32 = 30; // 20px margin from top + radius
-            const toggle_r: f32 = 10;
-            if (theme.isDark()) {
-                // Crescent moon: white circle + bg-colored circle offset
-                const moon_color = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 220 };
-                rl.DrawCircle(@intFromFloat(toggle_cx), @intFromFloat(toggle_cy), toggle_r, moon_color);
-                rl.DrawCircle(@intFromFloat(toggle_cx + 5), @intFromFloat(toggle_cy - 3), toggle_r - 1, @as(rl.Color, @bitCast(theme.clear_bg)));
-            } else {
-                // Sun: black on light theme (visible on white background)
-                const sun_color = rl.Color{ .r = 0x1A, .g = 0x1A, .b = 0x1A, .a = 220 };
-                rl.DrawCircle(@intFromFloat(toggle_cx), @intFromFloat(toggle_cy), toggle_r - 2, sun_color);
-                var ray: usize = 0;
-                while (ray < 8) : (ray += 1) {
-                    const angle = @as(f32, @floatFromInt(ray)) * (TAU / 8.0);
-                    const rx1 = toggle_cx + @cos(angle) * (toggle_r + 1);
-                    const ry1 = toggle_cy + @sin(angle) * (toggle_r + 1);
-                    const rx2 = toggle_cx + @cos(angle) * (toggle_r + 5);
-                    const ry2 = toggle_cy + @sin(angle) * (toggle_r + 5);
-                    rl.DrawLineEx(.{ .x = rx1, .y = ry1 }, .{ .x = rx2, .y = ry2 }, 1.5, sun_color);
-                }
+            // Sun: black on light theme (visible on white background)
+            const sun_color = rl.Color{ .r = 0x1A, .g = 0x1A, .b = 0x1A, .a = 220 };
+            rl.DrawCircle(@intFromFloat(toggle_cx), @intFromFloat(toggle_cy), toggle_r - 2, sun_color);
+            var ray: usize = 0;
+            while (ray < 8) : (ray += 1) {
+                const angle = @as(f32, @floatFromInt(ray)) * (TAU / 8.0);
+                const rx1 = toggle_cx + @cos(angle) * (toggle_r + 1);
+                const ry1 = toggle_cy + @sin(angle) * (toggle_r + 1);
+                const rx2 = toggle_cx + @cos(angle) * (toggle_r + 5);
+                const ry2 = toggle_cy + @sin(angle) * (toggle_r + 5);
+                rl.DrawLineEx(.{ .x = rx1, .y = ry1 }, .{ .x = rx2, .y = ry2 }, 1.5, sun_color);
             }
         }
+    }
 
-        // === STATUS BAR (Hyper terminal style, bottom) ===
-        const status_bar_h: f32 = 24;
-        const status_y: f32 = @as(f32, @floatFromInt(g_height)) - status_bar_h;
+    // === STATUS BAR (Hyper terminal style, bottom) ===
+    const status_bar_h: f32 = 24;
+    const status_y: f32 = @as(f32, @floatFromInt(g_height)) - status_bar_h;
 
-        // Status bar background (Hyper style)
-        rl.DrawRectangle(0, @intFromFloat(status_y), g_width, @intFromFloat(status_bar_h), withAlpha(BG_SURFACE, 240));
-        rl.DrawLine(0, @intFromFloat(status_y), g_width, @intFromFloat(status_y), BORDER_SUBTLE);
+    // Status bar background (Hyper style)
+    rl.DrawRectangle(0, @intFromFloat(status_y), g_width, @intFromFloat(status_bar_h), withAlpha(BG_SURFACE, 240));
+    rl.DrawLine(0, @intFromFloat(status_y), g_width, @intFromFloat(status_y), BORDER_SUBTLE);
 
-        // Get system stats (simulated with realistic values)
-        const cpu_usage: f32 = 15.0 + @sin(frame_time * 0.5) * 10;
-        const mem_used: f32 = 8.2 + @sin(frame_time * 0.3) * 0.5;
-        _ = @as(f32, 16.0); // mem_total (unused in rainbow mode)
-        const cpu_temp: f32 = 42.0 + @sin(frame_time * 0.7) * 5;
-        const disk_used: f32 = 256.0;
-        _ = @as(f32, 512.0); // disk_total (unused in rainbow mode)
-        const net_down: f32 = 1.2 + @abs(@sin(frame_time * 0.8)) * 2;
-        const net_up: f32 = 0.3 + @abs(@sin(frame_time * 0.6)) * 0.5;
-        const processes: u32 = 234;
-        const uptime_sec: u32 = @intFromFloat(frame_time);
+    // Get system stats (simulated with realistic values)
+    const cpu_usage: f32 = 15.0 + @sin(frame_time * 0.5) * 10;
+    const mem_used: f32 = 8.2 + @sin(frame_time * 0.3) * 0.5;
+    _ = @as(f32, 16.0); // mem_total (unused in rainbow mode)
+    const cpu_temp: f32 = 42.0 + @sin(frame_time * 0.7) * 5;
+    const disk_used: f32 = 256.0;
+    _ = @as(f32, 512.0); // disk_total (unused in rainbow mode)
+    const net_down: f32 = 1.2 + @abs(@sin(frame_time * 0.8)) * 2;
+    const net_up: f32 = 0.3 + @abs(@sin(frame_time * 0.6)) * 0.5;
+    const processes: u32 = 234;
+    const uptime_sec: u32 = @intFromFloat(frame_time);
 
-        var stat_buf: [64:0]u8 = undefined;
-        const sw = @as(f32, @floatFromInt(g_width));
+    var stat_buf: [64:0]u8 = undefined;
+    const sw = @as(f32, @floatFromInt(g_width));
 
-        // Status bar text: rainbow on dark, dark text on light
-        const stat_text_color = if (theme.isDark()) @as(?rl.Color, null) else TEXT_WHITE; // null = use per-stat color
+    // Status bar text: rainbow on dark, dark text on light
+    const stat_text_color = if (theme.isDark()) @as(?rl.Color, null) else TEXT_WHITE; // null = use per-stat color
 
-        // Left: TRINITY label
-        rl.DrawTextEx(frame_font_small, "TRINITY", .{ .x = 12, .y = status_y + 5 }, 13, 0.5, stat_text_color orelse HYPER_GREEN);
+    // Left: TRINITY label
+    rl.DrawTextEx(frame_font_small, "TRINITY", .{ .x = 12, .y = status_y + 5 }, 13, 0.5, stat_text_color orelse HYPER_GREEN);
 
-        // All stats aligned to RIGHT, close together
-        const spacing: f32 = 75;
-        var x_pos: f32 = sw - 12; // Start from right edge
+    // All stats aligned to RIGHT, close together
+    const spacing: f32 = 75;
+    var x_pos: f32 = sw - 12; // Start from right edge
 
-        // Time (rightmost)
-        var time_buf: [16:0]u8 = undefined;
-        const display_time = @mod(@as(u32, @intFromFloat(frame_time)), 86400);
-        const hours = display_time / 3600;
-        const minutes = (display_time % 3600) / 60;
-        const seconds = display_time % 60;
-        _ = std.fmt.bufPrintZ(&time_buf, "{d:0>2}:{d:0>2}:{d:0>2}", .{ hours, minutes, seconds }) catch {};
-        x_pos -= 70;
-        rl.DrawTextEx(frame_font_small, &time_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_MAGENTA);
+    // Time (rightmost)
+    var time_buf: [16:0]u8 = undefined;
+    const display_time = @mod(@as(u32, @intFromFloat(frame_time)), 86400);
+    const hours = display_time / 3600;
+    const minutes = (display_time % 3600) / 60;
+    const seconds = display_time % 60;
+    _ = std.fmt.bufPrintZ(&time_buf, "{d:0>2}:{d:0>2}:{d:0>2}", .{ hours, minutes, seconds }) catch {};
+    x_pos -= 70;
+    rl.DrawTextEx(frame_font_small, &time_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_MAGENTA);
 
-        // Uptime
-        const up_hours = uptime_sec / 3600;
-        const up_mins = (uptime_sec % 3600) / 60;
-        _ = std.fmt.bufPrintZ(&stat_buf, "UP {d}h{d}m", .{ up_hours, up_mins }) catch {};
-        x_pos -= spacing;
-        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse PURPLE);
+    // Uptime
+    const up_hours = uptime_sec / 3600;
+    const up_mins = (uptime_sec % 3600) / 60;
+    _ = std.fmt.bufPrintZ(&stat_buf, "UP {d}h{d}m", .{ up_hours, up_mins }) catch {};
+    x_pos -= spacing;
+    rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse PURPLE);
 
-        // Processes
-        _ = std.fmt.bufPrintZ(&stat_buf, "PROC {d}", .{processes}) catch {};
-        x_pos -= spacing;
-        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse BLUE);
+    // Processes
+    _ = std.fmt.bufPrintZ(&stat_buf, "PROC {d}", .{processes}) catch {};
+    x_pos -= spacing;
+    rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse BLUE);
 
-        // NET
-        _ = std.fmt.bufPrintZ(&stat_buf, "NET {d:.1}M", .{net_down + net_up}) catch {};
-        x_pos -= spacing;
-        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_CYAN);
+    // NET
+    _ = std.fmt.bufPrintZ(&stat_buf, "NET {d:.1}M", .{net_down + net_up}) catch {};
+    x_pos -= spacing;
+    rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_CYAN);
 
-        // DISK
-        _ = std.fmt.bufPrintZ(&stat_buf, "DISK {d:.0}G", .{disk_used}) catch {};
-        x_pos -= spacing + 10;
-        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_GREEN);
+    // DISK
+    _ = std.fmt.bufPrintZ(&stat_buf, "DISK {d:.0}G", .{disk_used}) catch {};
+    x_pos -= spacing + 10;
+    rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_GREEN);
 
-        // TEMP
-        _ = std.fmt.bufPrintZ(&stat_buf, "{d:.0}C", .{cpu_temp}) catch {};
-        x_pos -= spacing - 30;
-        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_YELLOW);
+    // TEMP
+    _ = std.fmt.bufPrintZ(&stat_buf, "{d:.0}C", .{cpu_temp}) catch {};
+    x_pos -= spacing - 30;
+    rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_YELLOW);
 
-        // MEM
-        _ = std.fmt.bufPrintZ(&stat_buf, "MEM {d:.1}G", .{mem_used}) catch {};
-        x_pos -= spacing + 5;
-        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse ORANGE);
+    // MEM
+    _ = std.fmt.bufPrintZ(&stat_buf, "MEM {d:.1}G", .{mem_used}) catch {};
+    x_pos -= spacing + 5;
+    rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse ORANGE);
 
-        // CPU
-        _ = std.fmt.bufPrintZ(&stat_buf, "CPU {d:.0}%", .{cpu_usage}) catch {};
-        x_pos -= spacing;
-        rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_RED);
+    // CPU
+    _ = std.fmt.bufPrintZ(&stat_buf, "CPU {d:.0}%", .{cpu_usage}) catch {};
+    x_pos -= spacing;
+    rl.DrawTextEx(frame_font_small, &stat_buf, .{ .x = x_pos, .y = status_y + 5 }, 12, 0.5, stat_text_color orelse HYPER_RED);
 } // end updateDrawFrame
 
 // Custom input box with font
