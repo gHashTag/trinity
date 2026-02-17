@@ -18,9 +18,14 @@
 
 |DEV-002|KG-INSIGHT (JSON)|development|3/5|Local triple inspection suite|
 |DEV-003|SWARM-WATCH (DHT)|development|4/5|Live DHT & economy monitor|
+|MGEN-001|FLUENT-PYTHON|multilingual|3/5|Idiomatic Python code generation|
+|MGEN-002|FLUENT-RUST|multilingual|4/5|Idiomatic Rust code generation|
+|MGEN-003|FLUENT-TS|multilingual|3/5|Idiomatic TypeScript code generation|
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**NEXUS-003**|**VIBEE Compiler Migration**|**nexus**|**38 files migrated to trinity-nexus/lang/src/, 28186 lines, 15 pub exports, codegen/ module with 20 files, 100% self-contained imports**|
 |----|------|--------|------|
 |**OPT-PC01**|**Prefix Caching**|**optimization**|**99% prefill reduction, 19 tests, scheduler integration (3 fixes), TTFT/throughput benchmarks, LRU/LFU/FIFO eviction, block sharing**|
 |----|------|--------|------|
@@ -84,11 +89,11 @@
 |Development|1|3|33%|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
-|Nexus|2|10|20%|
-|**Total**|**33**|**54**|**61%**|
+|Nexus|3|10|30%|
+|**Total**|**34**|**54**|**63%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **NEXUS-003** Migrate VIBEE compiler to trinity-nexus/lang/ (unblocked by NEXUS-002)
+1. **NEXUS-004** Migrate Symbolic AI to trinity-nexus/symb/ (unblocked by NEXUS-003)
 2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with completed Symbolic branch
 3. **DEV-003** SWARM-WATCH — live DHT and economy monitor, pairs with SYM-003
 
