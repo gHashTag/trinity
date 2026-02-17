@@ -13,7 +13,7 @@
 ## 🚀 Available Nodes
 | ID | Name | Branch | Complexity | Gain |
 |----|------|--------|------------|------|
-|**MATH-005**|**Large-Scale Analogies (1000+)**|**math**|**4/5**|**Scalable analogy reasoning with VSA**|
+
 |SYM-002|LLM Triples Extractor|symbolic|3/5|Auto-extraction from LLM response|
 |SYM-003|Decentralized KG Sync|symbolic|4/5|Kademlia DHT + $TRI rewards|
 |SYM-004|IGLA + KG Full Pipeline|symbolic|3/5|Reuse symbolic knowledge in chat|
@@ -66,10 +66,10 @@
 |Deployment|2|4|50%|
 |Optimization|11|14|79%|
 |Hardware|0|3|0%|
-|**Math**|**4**|**5**|**80%**|
+|**Math**|**5**|**5**|**100%**|
 |Development|1|3|33%|
 |Symbolic|1|5|20%|
-|**Total**|**23+1ip**|**43**|**53%→56%**|
+|**Total**|**24+1ip**|**43**|**56%→56%**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **SYM-002** LLM Triples Extractor — priority for Cycle 40, builds KG collector
