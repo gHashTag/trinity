@@ -348,6 +348,7 @@ const sidebars: SidebarsConfig = {
         'research/trinity-level11-igla-canvas-maturity-report',
         'research/trinity-level11-real-world-hybrid-report',
         'research/trinity-level11-community-release-report',
+        'research/trinity-level11-feedback-evolution-report',
         'research/trinity-golden-chain-v2-23-swarm-report',
         'research/trinity-golden-chain-v2-24-dominance-report',
         'research/trinity-golden-chain-v2-25-eternal-report',
