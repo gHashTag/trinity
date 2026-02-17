@@ -10,7 +10,7 @@
 |----|------|--------|----------|------|
 |OPT-PC01|Prefix Caching|optimization|2/5|99% prefill reduction for cached prompts|
 
-|VIS-001|Ralph Canvas Monitor|visualization|3/5 (75%)|Dedicated fullscreen Ralph panel in Trinity Canvas|
+
 
 ## 🚀 Available Nodes
 | ID | Name | Branch | Complexity | Gain |
@@ -25,6 +25,8 @@
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**VIS-001**|**Ralph Canvas Monitor**|**visualization**|**Fullscreen Ralph panel: WaveMode.ralph, Shift+9, Block 2 petal click, START/STOP/RESTART buttons, tri-state circuit breaker (green/yellow/red), alert banners, live log display**|
 |----|------|--------|------|
 |**DEV-001**|**TRI-TRACE Symbolic Trace**|**development**|**Tracer struct, 9 OpKinds, VectorMeta, 4 tests, global singleton, build.zig wired**|
 |**SYM-001**|**SOTA Tech Report Pivot**|**symbolic**|**10/10 metrics validated, report demo, 3 vibee specs**|
@@ -71,8 +73,8 @@
 |**Math**|**5**|**5**|**100%**|
 |Development|1|3|33%|
 |Symbolic|1|5|20%|
-|Visualization|0+1ip|1|50%|
-|**Total**|**24+2ip**|**44**|**55%→57%**|
+|Visualization|1|1|100%|
+|**Total**|**26**|**44**|**59%→57%**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **SYM-002** LLM Triples Extractor — priority for Cycle 40, builds KG collector
