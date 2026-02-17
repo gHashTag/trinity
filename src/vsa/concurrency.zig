@@ -1,15 +1,10 @@
 // 🤖 TRINITY v0.11.0: Suborbital Order
 // Concurrency and Parallel Processing layer for VSA
-// Lock-free deques, Work-stealing pools, Priority/Deadline schedulers, DAG execution
-
 const std = @import("std");
 const common = @import("common.zig");
 const HybridBigInt = common.HybridBigInt;
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
-// ═══════════════════════════════════════════════════════════════════════════════
-
 pub const POOL_SIZE = 4;
 pub const DEQUE_CAPACITY = 128;
 pub const MAX_WORKERS = 8;
@@ -20,34 +15,12 @@ pub const MAX_DAG_NODES = 256;
 pub const MAX_DEPENDENCIES = 16;
 pub const PHI_INVERSE: f64 = 0.618033988749895;
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
-// ═══════════════════════════════════════════════════════════════════════════════
-
 pub const JobFn = *const fn (context: *anyopaque) void;
-
-pub const PoolJob = struct {
-    func: JobFn,
-    context: *anyopaque,
-};
-
-pub const PriorityLevel = enum(u8) {
-    critical = 0,
-    high = 1,
-    normal = 2,
-    low = 3,
-    background = 4,
-};
-
+pub const PoolJob = struct { func: JobFn, context: *anyopaque };
+pub const PriorityLevel = enum(u8) { critical = 0, high = 1, normal = 2, low = 3, background = 4 };
 pub const JobPriority = PriorityLevel;
-
-pub const TaskState = enum(u8) {
-    pending = 0,
-    ready = 1,
-    running = 2,
-    completed = 3,
-    failed = 4,
-};
+pub const TaskState = enum(u8) { pending = 0, ready = 1, running = 2, completed = 3, failed = 4 };
 
 pub const TaskNode = struct {
     id: u32,
@@ -77,7 +50,6 @@ pub const TaskNode = struct {
             .wait_count = std.atomic.Value(usize).init(0),
         };
     }
-
     pub fn addDependency(self: *TaskNode, dep_id: u32) bool {
         if (self.dep_count >= MAX_DEPENDENCIES) return false;
         self.dependencies[self.dep_count] = dep_id;
@@ -85,14 +57,12 @@ pub const TaskNode = struct {
         _ = self.wait_count.fetchAdd(1, .monotonic);
         return true;
     }
-
     pub fn addDependent(self: *TaskNode, dep_id: u32) bool {
         if (self.dependent_count >= MAX_DEPENDENCIES) return false;
         self.dependents[self.dependent_count] = dep_id;
         self.dependent_count += 1;
         return true;
     }
-
     pub fn satisfyDependency(self: *TaskNode) bool {
         const remaining = self.wait_count.fetchSub(1, .release) - 1;
         if (remaining == 0) {
@@ -102,7 +72,6 @@ pub const TaskNode = struct {
         }
         return false;
     }
-
     pub fn getEffectivePriority(self: *const TaskNode) f64 {
         const base = switch (self.priority) {
             .critical => 1.0,
@@ -111,11 +80,10 @@ pub const TaskNode = struct {
             .low => 0.4,
             .background => 0.2,
         };
-        // If deadline is short, boost priority
         if (self.deadline) |dl| {
             const now = std.time.nanoTimestamp();
             const remaining = dl - now;
-            if (remaining < 0) return 2.0; // Overdue
+            if (remaining < 0) return 2.0;
             const boost = 1.0 / (@as(f64, @floatFromInt(remaining)) / 1e9 + 1.0);
             return base + boost;
         }
@@ -132,23 +100,15 @@ pub const DAGStats = struct {
     completion_rate: f64,
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // CHASE-LEV DEQUE & WORK-STEALING POOL
-// ═══════════════════════════════════════════════════════════════════════════════
-
 pub const ChaseLevDeque = struct {
     jobs: [DEQUE_CAPACITY]PoolJob,
     bottom: usize,
     top: usize,
 
     pub fn init() ChaseLevDeque {
-        return ChaseLevDeque{
-            .jobs = undefined,
-            .bottom = 0,
-            .top = 0,
-        };
+        return ChaseLevDeque{ .jobs = undefined, .bottom = 0, .top = 0 };
     }
-
     pub fn push(self: *ChaseLevDeque, job: PoolJob) bool {
         const b = @atomicLoad(usize, &self.bottom, .seq_cst);
         const t = @atomicLoad(usize, &self.top, .seq_cst);
@@ -157,7 +117,6 @@ pub const ChaseLevDeque = struct {
         @atomicStore(usize, &self.bottom, b + 1, .seq_cst);
         return true;
     }
-
     pub fn pop(self: *ChaseLevDeque) ?PoolJob {
         var b = @atomicLoad(usize, &self.bottom, .seq_cst);
         if (b == 0) return null;
@@ -182,7 +141,6 @@ pub const ChaseLevDeque = struct {
             return null;
         }
     }
-
     pub fn steal(self: *ChaseLevDeque) ?PoolJob {
         const t = @atomicLoad(usize, &self.top, .seq_cst);
         const b = @atomicLoad(usize, &self.bottom, .seq_cst);
@@ -192,13 +150,11 @@ pub const ChaseLevDeque = struct {
         if (result == null) return job;
         return null;
     }
-
     pub fn size(self: *ChaseLevDeque) usize {
         const b = @atomicLoad(usize, &self.bottom, .seq_cst);
         const t = @atomicLoad(usize, &self.top, .seq_cst);
         return if (b > t) b - t else 0;
     }
-
     pub fn reset(self: *ChaseLevDeque) void {
         @atomicStore(usize, &self.bottom, 0, .seq_cst);
         @atomicStore(usize, &self.top, 0, .seq_cst);
@@ -206,35 +162,25 @@ pub const ChaseLevDeque = struct {
 };
 
 pub const ThreadPool = struct {
-    // Placeholder for real thread pool
-    // In this facade, we might just keep it simple or implement a minimal version
     workers: [MAX_WORKERS]ChaseLevDeque,
     count: usize,
-
     pub fn init() ThreadPool {
-        return ThreadPool{
-            .workers = undefined,
-            .count = 0,
-        };
+        return ThreadPool{ .workers = undefined, .count = 0 };
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // DEPENDENCY GRAPH (DAG)
-// ═══════════════════════════════════════════════════════════════════════════════
-
 pub const DependencyGraph = struct {
     nodes: [MAX_DAG_NODES]?TaskNode,
     node_count: usize,
-    ready_queue: [MAX_DAG_NODES]u32, // IDs of ready tasks
+    ready_queue: [MAX_DAG_NODES]u32,
     ready_count: std.atomic.Value(usize),
     completed_count: usize,
     failed_count: usize,
-    execution_order: [MAX_DAG_NODES]u32, // Topological order
+    execution_order: [MAX_DAG_NODES]u32,
     order_computed: bool,
 
     const Self = @This();
-
     pub fn init() Self {
         return Self{
             .nodes = .{null} ** MAX_DAG_NODES,
@@ -247,7 +193,6 @@ pub const DependencyGraph = struct {
             .order_computed = false,
         };
     }
-
     pub fn addTask(self: *Self, func: JobFn, context: *anyopaque) ?u32 {
         if (self.node_count >= MAX_DAG_NODES) return null;
         const id: u32 = @intCast(self.node_count);
@@ -256,15 +201,11 @@ pub const DependencyGraph = struct {
         self.order_computed = false;
         return id;
     }
-
     pub fn addTaskWithPriority(self: *Self, func: JobFn, context: *anyopaque, priority: JobPriority) ?u32 {
         const id = self.addTask(func, context) orelse return null;
-        if (self.nodes[id]) |*node| {
-            node.priority = priority;
-        }
+        if (self.nodes[id]) |*node| node.priority = priority;
         return id;
     }
-
     pub fn addDependency(self: *Self, from_id: u32, to_id: u32) bool {
         if (from_id >= self.node_count or to_id >= self.node_count) return false;
         if (from_id == to_id) return false;
@@ -277,7 +218,6 @@ pub const DependencyGraph = struct {
         self.order_computed = false;
         return true;
     }
-
     pub fn computeTopologicalOrder(self: *Self) bool {
         if (self.order_computed) return true;
         var in_degree: [MAX_DAG_NODES]usize = .{0} ** MAX_DAG_NODES;
@@ -314,7 +254,6 @@ pub const DependencyGraph = struct {
         self.order_computed = true;
         return true;
     }
-
     pub fn executeAll(self: *Self) struct { completed: usize, failed: usize } {
         if (!self.computeTopologicalOrder()) return .{ .completed = 0, .failed = self.node_count };
         var completed: usize = 0;
@@ -330,13 +269,11 @@ pub const DependencyGraph = struct {
     }
 };
 
-// Singleton accessors
 var global_pool: ?ThreadPool = null;
 pub fn getGlobalPool() *ThreadPool {
     if (global_pool == null) global_pool = ThreadPool.init();
     return &global_pool.?;
 }
-
 var global_dag: ?DependencyGraph = null;
 pub fn getDAG() *DependencyGraph {
     if (global_dag == null) global_dag = DependencyGraph.init();

@@ -9,8 +9,6 @@
 | ID | Name | Branch | Progress | Gain |
 |----|------|--------|----------|------|
 |OPT-PC01|Prefix Caching|optimization|2/5|99% prefill reduction for cached prompts|
-|**MATH-003**|**VSA Benchmarks vs Competitors**|**math**|**4/5**|**Quantified advantage vs float32: throughput, memory, recall, convergence**|
-|**MATH-004**|**Multilingual Math Codegen**|**math**|**4/5**|**Pipeline wired: 9 language targets, multi-language array syntax `[zig, python, ts]` in parser + generator**|
 
 ## 🚀 Available Nodes
 | ID | Name | Branch | Complexity | Gain |
@@ -23,10 +21,13 @@
 |OPT-004|Flash Attention|optimization|5/5|+200% attention speed|
 |OPT-005|Quantization Engine|optimization|4/5|Support Q4, Q5, Q6 formats|
 |OPT-CP01|Chunked Prefill|optimization|3/5|-50% TTFT latency|
+|**MATH-005**|**Large-Scale Analogies (1000+)**|**math**|**4/5**|**Scalable analogy reasoning with VSA**|
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**MATH-003**|**VSA Benchmarks vs Competitors**|**math**|**7-section benchmark suite: throughput, bundleN, memory (20x vs f32), recall curves, convergence, proof timing, comparison table**|
+|**MATH-004**|**Multilingual Math Codegen**|**math**|**10 VSA proofs in 5 languages (Zig, Python, TypeScript, Rust, Go) from single spec. 9 generators wired, array syntax [zig, python, ts]**|
 |**MATH-001**|**VSA Math Proofs v2**|**math**|**12 proofs: bind inverse, commutativity, associativity, self-identity, bundle convergence, orthogonality, permute cycle, similarity bounds, trinity identity, bundle2, permute inverse, info density**|
 |**MATH-002**|**Bundle N Optimization**|**math**|**O(N*D) accumulator, bundleN API, 6 tests**|
 |**CORE-002b**|**Multilingual Codegen Fix**|**core**|**Fixed type errors in generated multilingual engine, enum variant support in codegen**|
@@ -57,7 +58,6 @@
 |HW-001|GPU Backend (CUDA)|hardware|OPT-001 ❌|
 |HW-002|Metal Backend (Apple)|hardware|OPT-001 ❌|
 |HW-003|FPGA Acceleration|hardware|HW-001 ❌|
-|MATH-005|Large-Scale Analogies (1000+)|math|MATH-003 🔄|
 
 ## 📊 Branch Progress
 | Branch | Done | Total | % |
@@ -67,12 +67,12 @@
 |Deployment|2|4|50%|
 |Optimization|10|14|71%|
 |Hardware|0|3|0%|
-|**Math**|**2+2ip**|**5**|**40%→80%**|
-|**Total**|**19+3ip**|**35**|**54%→63%**|
+|**Math**|**4**|**5**|**80%**|
+|**Total**|**21+1ip**|**35**|**60%→63%**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **OPT-001** SIMD Vectorization — unlocks 3 nodes (OPT-004, HW-001, HW-002), highest unlock count
-2. **MATH-004** Multilingual Math Codegen — extend proofs to Python/Rust/Go targets
+2. **MATH-005** Large-Scale Analogies — completes Math branch (80%→100%), unlocked by MATH-003
 3. **INF-003** KV Cache Optimization — +50% inference speed, unlocks INF-005
 
 ---

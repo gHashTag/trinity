@@ -12,7 +12,7 @@ CLAUDE_TIMEOUT_MINUTES=30
 CLAUDE_OUTPUT_FORMAT="json"
 
 # ── Tool permissions ────────────────────────────────────────────
-ALLOWED_TOOLS="Write,Read,Edit,Bash(zig *),Bash(git *),Bash(ls *),Bash(mkdir *),Bash(mv *),Bash(rm *),Bash(cat *),Bash(head *),Bash(tail *),Bash(wc *),Bash(which *)"
+ALLOWED_TOOLS="Write,Read,Edit,MultiEdit,Flatten,Glob,Grep,Task,Bash(*)"
 
 # ── Branch safety ───────────────────────────────────────────────
 BRANCH_POLICY="feature-only"
@@ -32,7 +32,7 @@ SESSION_EXPIRY_HOURS=24
 
 # ── Task sources ────────────────────────────────────────────────
 TASK_SOURCES="local"
-TASK_FILE=".ralph/fix_plan.md"
+TASK_FILE=".ralph/internal/fix_plan.md"
 
 # ── Circuit breaker thresholds ──────────────────────────────────
 CB_NO_PROGRESS_THRESHOLD=3

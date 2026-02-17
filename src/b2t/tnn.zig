@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // TNN - Ternary Neural Network
 // BitNet b1.58 compatible implementation
 // Based on arXiv:2402.17764 "The Era of 1-bit LLMs"
@@ -944,3 +945,4 @@ test "TernaryMatrix sparsity" {
     matrix.set(1, 1, .N);
     try std.testing.expectApproxEqAbs(@as(f32, 0.0), matrix.sparsity(), 0.001);
 }
+// φ² + 1/φ² = 3 | TRINITY
