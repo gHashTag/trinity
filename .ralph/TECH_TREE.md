@@ -25,6 +25,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**NEXUS-008**|**Workspace Wiring**|**nexus**|**15 files: build.zig + build.nexus.zig wired with .imports dep graph, 6 build.zig.zon with path deps, 6 module build.zig with b.dependency(), workspace.toml, spec. DAG: core->lang->symb->network, core->canvas, tools->all**|
+|----|------|--------|------|
 |**NEXUS-007**|**Tools Module Migration**|**nexus**|**73 files migrated to trinity-nexus/tools/src/ in 8 subdirs (cli/devtools/bench/gen/util/maxwell/phi), 26629 lines, 44 pub exports, maxwell+phi 100% self-contained**|
 |----|------|--------|------|
 |**NEXUS-006**|**Network Module Migration**|**nexus**|**60 files migrated to trinity-nexus/network/src/, 37534 lines, P2P/DHT/sharding/consensus/repair/crypto/monitoring, 52 pub exports, 96.2% self-contained, 8 deferred**|
@@ -97,13 +99,13 @@
 |Development|1|3|33%|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
-|Nexus|7|10|70%|
-|**Total**|**38**|**54**|**70%**|
+|Nexus|8|10|80%|
+|**Total**|**39**|**54**|**72%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **NEXUS-008** Wire Zig workspace and configure internal dependencies
-2. **NEXUS-009** Configure user + openclaw workspace
-3. **DEV-002** KG-INSIGHT — local triple inspection
+1. **NEXUS-009** Configure user + openclaw workspace
+2. **DEV-002** KG-INSIGHT — local triple inspection
+3. **MGEN-001** FLUENT-PYTHON — idiomatic Python code generation
 
 ---
 φ² + 1/φ² = 3 | TRINITY
