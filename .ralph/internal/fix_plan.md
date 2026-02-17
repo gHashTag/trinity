@@ -136,10 +136,11 @@
   - Tech Tree: DEV-001
   - DONE: Tracer struct (256-entry ring buffer), 9 OpKinds, VectorMeta, TraceEntry, global singleton, recordBinary/recordScalar/printTrace, 4 tests pass, build.zig wired
 
-- [ ] [P2] KG-INSIGHT: Local Knowledge Graph Inspector
+- [x] [P2] KG-INSIGHT: Local Knowledge Graph Inspector
   - Acceptance: CLI command `zig build query -- --inspect <vector_id>` returns human-readable triples associated with the node.
   - Files: `src/query_cli.zig`, `src/vsa/storage.zig`
   - Tech Tree: DEV-002
+  - DONE: kg_cli.zig v2.0 (517 lines), 4 new commands (triples/inspect/export/find), case-insensitive search, JSON export, kg_insight.vibee spec
 
 - [ ] [P2] SWARM-WATCH: Real-time DHT & $TRI Rewards Monitor
   - Acceptance: Dashboard (TMUX pane or CLI) showing real-time sync events and reward payouts.
