@@ -1,0 +1,44 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE SPECIFICATION TEMPLATE
+# Purpose: Guide for creating consistent, high-performance Trinity modules
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: module_name
+version: "1.0.0"
+language: zig           # zig | varlog | python | go | rust
+module: module_name
+
+types:
+  # Use PascalCase for type names
+  DataPacket:
+    fields:
+      id: Int
+      payload: List<Float>
+      metadata: String
+      
+  # Enums are supported for status/states
+  JobStatus:
+    fields:
+      enum: ["pending", "active", "completed", "failed"]
+
+behaviors:
+  # Logic templates go here. Every behavior name should be descriptive.
+  - name: process_incoming_data
+    given: DataPacket is received
+    when: Checksum is valid
+    then: Update internal state and emit success signal
+    implementation: |
+        // Zig implementation snippet
+        std.debug.print("Processing packet: {}\n", .{packet.id});
+        // Add performance-critical logic here
+
+  - name: handle_error
+    given: DataPacket is corrupt
+    when: Retry limit not exceeded
+    then: Log error and re-queue packet
+    implementation: |
+        std.debug.print("Packet corruption detected\n", .{});
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════

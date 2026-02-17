@@ -1,0 +1,11 @@
+{
+    "state": "OPEN",
+    "last_change": "2026-02-17T10:26:08+00:00",
+    "consecutive_no_progress": 0,
+    "consecutive_same_error": 0,
+    "consecutive_permission_denials": 3,
+    "last_progress_loop": 1,
+    "total_opens": 1,
+    "reason": "Circuit breaker is open, execution halted",
+    "current_loop": 1
+}
