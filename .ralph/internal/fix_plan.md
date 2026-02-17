@@ -79,11 +79,12 @@
   - Blocked-by: NEXUS-001, NEXUS-002, NEXUS-003, NEXUS-004, NEXUS-005, NEXUS-006, NEXUS-007
   - DONE: 15 files wired: build.zig + build.nexus.zig with .imports dep graph, 6 build.zig.zon with path deps, workspace.toml, spec
 
-- [ ] [P1] NEXUS-009: Configure user + openclaw in workspace for internal collab
+- [x] [P1] NEXUS-009: Configure user + openclaw in workspace for internal collab
   - Acceptance: `.trinity/workspace.toml` includes openclaw workspace at `/Users/playra/openclaw`. Ralph and clawd agents can build/test all modules. CI/CD config works with user + openclaw in workspace.
   - Files: `.trinity/workspace.toml`, `.trinity/config.toml`, `trinity-nexus/.github/workflows/`
   - Tech Tree: NEXUS-009
   - Blocked-by: NEXUS-008
+  - DONE: 4 files: workspace.toml extended with openclaw + agents + CI, config.toml (73 lines), nexus-build.yml (matrix 6 modules), spec
 
 - [ ] [P2] NEXUS-010: Write Trinity Nexus Architecture documentation
   - Acceptance: `docs/ARCHITECTURE.md` created with full module diagram, dependency graph, Zig workspace config guide. README.md updated with Nexus overview.
