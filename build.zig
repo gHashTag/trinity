@@ -977,6 +977,7 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "igla_chat", .module = vibeec_chat },
                 .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
+                .{ .name = "igla_kg", .module = igla_kg_mod },
             },
         }),
     });

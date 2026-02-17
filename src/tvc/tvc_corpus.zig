@@ -131,24 +131,12 @@ pub const TVCCorpus = struct {
     // INITIALIZATION
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Initialize empty TVC corpus
+    /// Initialize empty TVC corpus.
+    /// WARNING: This struct is ~4 GB. Always heap-allocate via initHeap() or create()+initInPlace().
+    /// This function exists for backward compatibility but relies on RLS to avoid stack copies.
     pub fn init() Self {
-        var corpus = Self{
-            .entries = undefined,
-            .count = 0,
-            .memory_vector = HybridBigInt.zero(),
-            .version = 1,
-            .node_id = undefined,
-            .next_entry_id = 1,
-            .total_queries = 0,
-            .total_hits = 0,
-            .total_stores = 0,
-        };
-
-        // Generate random node ID
-        var prng = std.Random.DefaultPrng.init(@bitCast(std.time.timestamp()));
-        prng.fill(&corpus.node_id);
-
+        var corpus: Self = undefined;
+        corpus.initInPlace();
         return corpus;
     }
 
@@ -169,7 +157,8 @@ pub const TVCCorpus = struct {
 
     /// Initialize with specific node ID
     pub fn initWithNodeId(node_id: [16]u8) Self {
-        var corpus = init();
+        var corpus: Self = undefined;
+        corpus.initInPlace();
         corpus.node_id = node_id;
         return corpus;
     }
@@ -420,7 +409,8 @@ pub const TVCCorpus = struct {
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
 
-        var corpus = Self.init();
+        var corpus: Self = undefined;
+        corpus.initInPlace();
 
         // Header
         var magic: [4]u8 = undefined;
@@ -746,7 +736,8 @@ pub const TVCStats = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "TVCCorpus basic store and search" {
-    var corpus = TVCCorpus.init();
+    const corpus = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus.deinitHeap(std.testing.allocator);
 
     // Store some entries
     const id1 = try corpus.store("What is VSA?", "VSA is Vector Symbolic Architecture for hyperdimensional computing.");
@@ -764,7 +755,8 @@ test "TVCCorpus basic store and search" {
 }
 
 test "TVCCorpus save and load" {
-    var corpus = TVCCorpus.init();
+    const corpus = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus.deinitHeap(std.testing.allocator);
 
     _ = try corpus.store("Test query", "Test response");
     _ = try corpus.store("Another query", "Another response");
@@ -772,8 +764,10 @@ test "TVCCorpus save and load" {
     // Save
     try corpus.save("test_corpus.tvc");
 
-    // Load
-    var loaded = try TVCCorpus.load("test_corpus.tvc");
+    // Load into heap
+    const loaded = try TVCCorpus.initHeap(std.testing.allocator);
+    defer loaded.deinitHeap(std.testing.allocator);
+    try loaded.loadInto("test_corpus.tvc");
 
     try std.testing.expect(loaded.count == 2);
     try std.testing.expect(std.mem.eql(u8, loaded.entries[0].getQuery(), "Test query"));
@@ -784,13 +778,15 @@ test "TVCCorpus save and load" {
 }
 
 test "TVCCorpus merge" {
-    var corpus1 = TVCCorpus.init();
-    var corpus2 = TVCCorpus.initWithNodeId(.{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+    const corpus1 = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus1.deinitHeap(std.testing.allocator);
+    const corpus2 = try TVCCorpus.initHeapWithNodeId(std.testing.allocator, .{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 });
+    defer corpus2.deinitHeap(std.testing.allocator);
 
     _ = try corpus1.store("Query A", "Response A");
     _ = try corpus2.store("Query B", "Response B");
 
-    const added = try corpus1.merge(&corpus2);
+    const added = try corpus1.merge(corpus2);
     try std.testing.expect(added == 1);
     try std.testing.expect(corpus1.count == 2);
 }

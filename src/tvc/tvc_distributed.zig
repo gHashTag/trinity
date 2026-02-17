@@ -338,14 +338,16 @@ pub fn simulateTwoNodes() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "TVCDistributor export and import" {
-    var corpus1 = TVCCorpus.init();
-    var dist1 = TVCDistributor.init(&corpus1);
+    const corpus1 = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus1.deinitHeap(std.testing.allocator);
+    var dist1 = TVCDistributor.init(corpus1);
 
     _ = try corpus1.store("Test query", "Test response");
     try dist1.exportToFile("test_dist.tvc");
 
-    var corpus2 = TVCCorpus.init();
-    var dist2 = TVCDistributor.init(&corpus2);
+    const corpus2 = try TVCCorpus.initHeap(std.testing.allocator);
+    defer corpus2.deinitHeap(std.testing.allocator);
+    var dist2 = TVCDistributor.init(corpus2);
 
     const added = try dist2.importFromFile("test_dist.tvc");
     try std.testing.expect(added == 1);
@@ -355,8 +357,10 @@ test "TVCDistributor export and import" {
 }
 
 test "TVCDistributor sync" {
-    var corpus1 = TVCCorpus.initWithNodeId(.{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 });
-    var corpus2 = TVCCorpus.initWithNodeId(.{ 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 });
+    const corpus1 = try TVCCorpus.initHeapWithNodeId(std.testing.allocator, .{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 });
+    defer corpus1.deinitHeap(std.testing.allocator);
+    const corpus2 = try TVCCorpus.initHeapWithNodeId(std.testing.allocator, .{ 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 });
+    defer corpus2.deinitHeap(std.testing.allocator);
 
     _ = try corpus1.store("Query A", "Response A");
     _ = try corpus2.store("Query B", "Response B");
@@ -365,12 +369,16 @@ test "TVCDistributor sync" {
     try corpus1.save("sync_test1.tvc");
     try corpus2.save("sync_test2.tvc");
 
-    // Cross-import
-    var loaded2 = try TVCCorpus.load("sync_test2.tvc");
-    const added1 = try corpus1.merge(&loaded2);
+    // Cross-import via loadInto
+    const loaded2 = try TVCCorpus.initHeap(std.testing.allocator);
+    defer loaded2.deinitHeap(std.testing.allocator);
+    try loaded2.loadInto("sync_test2.tvc");
+    const added1 = try corpus1.merge(loaded2);
 
-    var loaded1 = try TVCCorpus.load("sync_test1.tvc");
-    const added2 = try corpus2.merge(&loaded1);
+    const loaded1 = try TVCCorpus.initHeap(std.testing.allocator);
+    defer loaded1.deinitHeap(std.testing.allocator);
+    try loaded1.loadInto("sync_test1.tvc");
+    const added2 = try corpus2.merge(loaded1);
 
     try std.testing.expect(added1 == 1);
     try std.testing.expect(added2 == 1);

@@ -16353,7 +16353,8 @@ test "v2.32 expandInfiniteScale uses INFINITE_NODES_TARGET" {
 }
 
 test "v2.32 320 quarks per query target" {
-    try std.testing.expectEqual(@as(usize, 320), MAX_QUARK_RECORDS);
+    // v3.0 bumped MAX_QUARK_RECORDS to 328; v2.32 baseline was 320
+    try std.testing.expect(MAX_QUARK_RECORDS >= 320);
 }
 
 test "v2.32 u16 enum capacity 288/65536" {
