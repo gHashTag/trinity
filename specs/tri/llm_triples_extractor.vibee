@@ -1,0 +1,65 @@
+name: llm_triples_extractor
+version: "1.0.0"
+language: zig
+module: triples_parser
+
+description: >
+  SYM-002: LLM Triples Extractor for Trinity Knowledge Graph.
+  Auto-extracts (subject, predicate, object) triples from LLM responses.
+  Pattern-based extraction with confidence scoring.
+  Integrates with igla_knowledge_graph via addFact API.
+  Tech Tree: SYM-002 (Symbolic branch, unlocks SYM-003/004/005).
+
+constants:
+  MAX_TRIPLES_PER_RESPONSE: 16
+  MAX_ENTITY_LEN: 128
+  MAX_PREDICATE_LEN: 64
+  MIN_ENTITY_LEN: 2
+  BASE_CONFIDENCE: 0.7
+
+types:
+  ExtractedTriple:
+    fields:
+      subject: String
+      predicate: String
+      object: String
+      confidence: Float
+
+  ExtractionResult:
+    fields:
+      triples: List<ExtractedTriple>
+      count: Int
+      source_len: Int
+
+behaviors:
+  - name: extractTriples
+    given: LLM response text as byte slice
+    when: Text is split into sentences, each sentence parsed for SVO patterns
+    then: Returns array of ExtractedTriple with confidence scores
+
+  - name: parseSentence
+    given: A single sentence as byte slice
+    when: Pattern matching against copula/verb templates
+    then: Returns optional ExtractedTriple if pattern matches
+
+  - name: normalizeEntity
+    given: Raw entity string from text
+    when: Trimming whitespace, lowering case, removing articles
+    then: Returns cleaned entity name suitable for KG lookup
+
+  - name: scoreConfidence
+    given: Subject, predicate, object lengths and pattern type
+    when: Scoring based on entity clarity and pattern strength
+    then: Returns float confidence 0.0 to 1.0
+
+test_cases:
+  - input: "Paris is the capital of France"
+    expected: "(paris, is_capital_of, france) conf >= 0.7"
+  - input: "Python is a programming language"
+    expected: "(python, is_a, programming language) conf >= 0.7"
+  - input: "The Earth has a diameter of 12742 km"
+    expected: "(earth, has, diameter of 12742 km) conf >= 0.6"
+  - input: "Dogs are mammals"
+    expected: "(dogs, are, mammals) conf >= 0.7"
+  - input: "Water contains hydrogen and oxygen"
+    expected: "(water, contains, hydrogen and oxygen) conf >= 0.7"
