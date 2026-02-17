@@ -1055,6 +1055,12 @@ pub fn build(b: *std.Build) void {
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
         },
     });
+    // LLM Triples Extractor module (SYM-002: pattern-based extraction)
+    const triples_parser_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/triples_parser.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     // IGLA Hybrid Chat module (symbolic + LLM fallback + KG)
     const vibeec_hybrid_chat = b.createModule(.{
         .root_source_file = b.path("src/vibeec/igla_hybrid_chat.zig"),
@@ -1064,6 +1070,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "igla_chat", .module = vibeec_chat },
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
             .{ .name = "igla_kg", .module = igla_kg_mod },
+            .{ .name = "triples_parser", .module = triples_parser_mod },
         },
     });
     // Golden Chain Agent (8-node unified pipeline)
@@ -1297,6 +1304,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "igla_chat", .module = wasm_igla_chat },
                 .{ .name = "tvc_corpus", .module = wasm_tvc_corpus },
                 .{ .name = "igla_kg", .module = wasm_igla_kg },
+                .{ .name = "triples_parser", .module = triples_parser_mod },
             },
         });
         const wasm_golden_chain = b.createModule(.{
@@ -1503,6 +1511,19 @@ pub fn build(b: *std.Build) void {
     const triples_parser_step = b.step("test-triples-parser", "Test LLM Triples Extractor (SYM-002: pattern-based extraction)");
     triples_parser_step.dependOn(&run_triples_parser.step);
     test_step.dependOn(&run_triples_parser.step);
+
+    // KG Pipeline Integration (SYM-004: extract triples from LLM responses -> KG)
+    const kg_pipeline_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/kg_pipeline.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_kg_pipeline = b.addRunArtifact(kg_pipeline_tests);
+    const kg_pipeline_step = b.step("test-kg-pipeline", "Test KG Pipeline Integration (SYM-004: triples extraction -> KG)");
+    kg_pipeline_step.dependOn(&run_kg_pipeline.step);
+    test_step.dependOn(&run_kg_pipeline.step);
 
     // VSA Math Benchmark executable (MATH-003)
     // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence

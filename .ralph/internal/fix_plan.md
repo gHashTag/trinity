@@ -190,10 +190,11 @@
   - Files: `src/swarm/kg_sync.zig`, `src/economy/rewards.zig`
   - Tech Tree: SYM-003
 
-- [ ] [P1] Stage 3: IGLA + KG Full Pipeline + Query CLI
+- [x] [P1] Stage 3: IGLA + KG Full Pipeline + Query CLI
   - Acceptance: Pipeline: Question -> LLM -> KG -> Reuse. `zig build query --` implements reasoning trace.
   - Files: `src/igla_hybrid_chat.zig`, `src/query_cli.zig`
   - Tech Tree: SYM-004
+  - DONE: triples_parser wired into respond() pipeline, confidence 0.6 filter, addFact KG storage, CLI compiles, format clean
 
 - [ ] [P2] Stage 4: MVP Release + $TRI Staking
   - Acceptance: Public demo live (web + CLI), $TRI staking for contributors enabled.

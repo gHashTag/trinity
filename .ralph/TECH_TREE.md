@@ -17,13 +17,14 @@
 |----|------|--------|------------|------|
 
 |SYM-003|Decentralized KG Sync|symbolic|4/5|Kademlia DHT + $TRI rewards|
-|SYM-004|IGLA + KG Full Pipeline|symbolic|3/5|Reuse symbolic knowledge in chat|
 |SYM-005|**TRI SOTA MVP**|**symbolic**|**5/5**|**Decentralized Knowledge Collector Live**|
 |DEV-002|KG-INSIGHT (JSON)|development|3/5|Local triple inspection suite|
 |DEV-003|SWARM-WATCH (DHT)|development|4/5|Live DHT & economy monitor|
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**SYM-004**|**IGLA + KG Full Pipeline**|**symbolic**|**extractTriples wired into respond(), confidence 0.6 filter, addFact KG storage, CLI compiles**|
 |----|------|--------|------|
 |**SYM-002**|**LLM Triples Extractor**|**symbolic**|**6 SVO patterns, zero-alloc, confidence scoring, 11 tests, build.zig wired**|
 |----|------|--------|------|
@@ -73,12 +74,12 @@
 |Hardware|0|3|0%|
 |**Math**|**5**|**5**|**100%**|
 |Development|1|3|33%|
-|Symbolic|2|5|40%|
+|Symbolic|3|5|60%|
 |Visualization|1|1|100%|
-|**Total**|**27**|**44**|**61%**|
+|**Total**|**28**|**44**|**64%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **SYM-004** IGLA + KG Full Pipeline — wire triples into hybrid chat pipeline, builds KG collector
+1. **SYM-003** Decentralized KG Sync — wire triples into hybrid chat pipeline, builds KG collector
 2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002
 3. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
 
