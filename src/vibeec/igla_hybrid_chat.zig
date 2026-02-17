@@ -51,7 +51,6 @@ const triples_parser = @import("triples_parser");
 const openai_client = @import("openai_client.zig");
 const anthropic_client = @import("anthropic_client.zig");
 const long_context = @import("igla_long_context_engine.zig");
-const triples_parser = @import("triples_parser");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONFIGURATION
@@ -920,20 +919,6 @@ pub const IglaHybridChat = struct {
         // v3.0: SYM-004 Extract triples from LLM response and store in KG
         if (reflection_status.wasLearned()) {
             self.extractAndStoreTriples(llm_result.response);
-        }
-
-        // v2.5: Extract knowledge triples from LLM response -> KG (SYM-004)
-        if (self.knowledge_graph) |*kgraph| {
-            if (reflection_status.wasLearned() and llm_result.confidence >= 0.5) {
-                const extraction = triples_parser.extractTriples(llm_result.response);
-                for (0..extraction.count) |ei| {
-                    if (extraction.get(ei)) |triple| {
-                        if (triple.confidence >= 0.6) {
-                            kgraph.addFact(triple.subject(), triple.predicate(), triple.object()) catch {};
-                        }
-                    }
-                }
-            }
         }
 
         // v2.0: Export wave state for canvas
