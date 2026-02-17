@@ -1491,6 +1491,19 @@ pub fn build(b: *std.Build) void {
     vsa_large_analogies_step.dependOn(&run_vsa_large_analogies.step);
     test_step.dependOn(&run_vsa_large_analogies.step);
 
+    // LLM Triples Extractor (SYM-002: pattern-based triple extraction from text)
+    const triples_parser_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/triples_parser.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_triples_parser = b.addRunArtifact(triples_parser_tests);
+    const triples_parser_step = b.step("test-triples-parser", "Test LLM Triples Extractor (SYM-002: pattern-based extraction)");
+    triples_parser_step.dependOn(&run_triples_parser.step);
+    test_step.dependOn(&run_triples_parser.step);
+
     // VSA Math Benchmark executable (MATH-003)
     // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence
     const bundle_opt_mod = b.createModule(.{
