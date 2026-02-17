@@ -1783,12 +1783,17 @@ pub const PagedBatchingScheduler = struct {
         return null;
     }
 
-    /// Allocate blocks for a request's prompt
+    /// Allocate blocks for a request's prompt (respects prefix-cached blocks)
     fn allocateBlocksForPrompt(self: *PagedBatchingScheduler, req: *PagedRequest) !void {
         const num_tokens = req.prompt_tokens.len;
-        const blocks_needed = (num_tokens + self.config.block_size - 1) / self.config.block_size;
+        const total_blocks_needed = (num_tokens + self.config.block_size - 1) / self.config.block_size;
 
-        for (0..blocks_needed) |_| {
+        // Subtract blocks already provided by prefix cache
+        const cached_blocks = req.block_table.block_ids.items.len;
+        if (cached_blocks >= total_blocks_needed) return; // Fully cached
+
+        const remaining_blocks = total_blocks_needed - cached_blocks;
+        for (0..remaining_blocks) |_| {
             const block_id = self.block_pool.allocateBlock() orelse return error.OutOfBlocks;
             try req.block_table.block_ids.append(block_id);
         }
@@ -1902,16 +1907,20 @@ pub const PagedBatchingScheduler = struct {
             };
 
             if (self.findEmptySlot()) |slot_idx| {
+                // OPT-PC01: Check if prefix cache provided blocks (skip prefill)
+                const cached_tokens = req.block_table.num_tokens;
+                const fully_cached = cached_tokens >= req.prompt_tokens.len;
+
                 self.slots[slot_idx] = PagedBatchSlot{
                     .request_id = req.id,
                     .seq_idx = slot_idx,
-                    .current_pos = 0,
-                    .is_prefill = true,
+                    .current_pos = if (fully_cached) req.prompt_tokens.len else cached_tokens,
+                    .is_prefill = !fully_cached,
                     .active = true,
                     .num_blocks = req.block_table.block_ids.items.len,
                 };
                 self.active_slots += 1;
-                req.status = .prefill;
+                req.status = if (fully_cached) .generating else .prefill;
                 try self.running_requests.put(req.id, req);
             }
         }
@@ -1937,6 +1946,7 @@ pub const PagedBatchingScheduler = struct {
     pub fn getStats(self: *const PagedBatchingScheduler) PagedSchedulerStats {
         const pool_stats = self.block_pool.getStats();
 
+        const pc_total = self.prefix_cache_hits + self.prefix_cache_misses;
         return PagedSchedulerStats{
             .total_requests = self.total_requests,
             .completed_requests = self.completed_requests.items.len,
@@ -1949,6 +1959,9 @@ pub const PagedBatchingScheduler = struct {
             .blocks_allocated = pool_stats.allocated_blocks,
             .blocks_free = pool_stats.free_blocks,
             .memory_utilization = pool_stats.utilization_percent,
+            .prefix_cache_hits = self.prefix_cache_hits,
+            .prefix_cache_misses = self.prefix_cache_misses,
+            .prefix_cache_hit_rate = if (pc_total > 0) @as(f32, @floatFromInt(self.prefix_cache_hits)) / @as(f32, @floatFromInt(pc_total)) else 0.0,
         };
     }
 
@@ -1974,6 +1987,10 @@ pub const PagedSchedulerStats = struct {
     blocks_allocated: usize,
     blocks_free: usize,
     memory_utilization: f32,
+    // OPT-PC01: Prefix cache statistics
+    prefix_cache_hits: u64,
+    prefix_cache_misses: u64,
+    prefix_cache_hit_rate: f32,
 
     pub fn print(self: *const PagedSchedulerStats) void {
         std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});

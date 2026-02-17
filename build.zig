@@ -1560,6 +1560,27 @@ pub fn build(b: *std.Build) void {
     sym_005_step.dependOn(&run_sym_005.step);
     test_step.dependOn(&run_sym_005.step);
 
+    // OPT-PC01 Prefix Caching Completion (Phase 3-5)
+    const kv_cache_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/kv_cache.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const prefix_cache_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/prefix_cache_completion.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "kv_cache", .module = kv_cache_mod },
+            },
+        }),
+    });
+    const run_prefix_cache = b.addRunArtifact(prefix_cache_tests);
+    const prefix_cache_step = b.step("test-prefix-cache", "Test OPT-PC01 Prefix Caching (Phase 3-5 completion)");
+    prefix_cache_step.dependOn(&run_prefix_cache.step);
+    test_step.dependOn(&run_prefix_cache.step);
+
     // VSA Math Benchmark executable (MATH-003)
     // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence
     const bundle_opt_mod = b.createModule(.{
