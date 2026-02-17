@@ -8,7 +8,7 @@
 ## 🏗 In Progress
 | ID | Name | Branch | Progress | Gain |
 |----|------|--------|----------|------|
-|OPT-PC01|Prefix Caching|optimization|2/5|99% prefill reduction for cached prompts|
+(none)
 
 
 
@@ -21,6 +21,8 @@
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**OPT-PC01**|**Prefix Caching**|**optimization**|**99% prefill reduction, 19 tests, scheduler integration (3 fixes), TTFT/throughput benchmarks, LRU/LFU/FIFO eviction, block sharing**|
 |----|------|--------|------|
 |**NEXUS-002**|**Core VM Migration**|**nexus**|**39 files migrated to trinity-nexus/core/, all tests pass, JIT 17.74x**|
 |----|------|--------|------|
@@ -76,20 +78,19 @@
 |Core|3|4|75%|
 |Inference|2|5|40%|
 |Deployment|2|4|50%|
-|Optimization|11|14|79%|
+|Optimization|12|14|86%|
 |Hardware|0|3|0%|
 |**Math**|**5**|**5**|**100%**|
 |Development|1|3|33%|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
 |Nexus|2|10|20%|
-|**Total**|**32**|**54**|**59%**|
+|**Total**|**33**|**54**|**61%**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **NEXUS-003** Migrate VIBEE compiler to trinity-nexus/lang/ (unblocked by NEXUS-002)
 2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with completed Symbolic branch
-3. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
-4. **DEV-003** SWARM-WATCH — live DHT and economy monitor, pairs with SYM-003
+3. **DEV-003** SWARM-WATCH — live DHT and economy monitor, pairs with SYM-003
 
 ---
 φ² + 1/φ² = 3 | TRINITY
