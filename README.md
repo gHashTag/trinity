@@ -309,6 +309,50 @@ trinity/
 
 ---
 
+## 🤖 Autonomous Development (Ralph)
+
+Trinity uses the **Ralph Loop** for sustained autonomous development, optimization, and code generation. 
+
+> [!TIP]
+> **🐣 New to Ralph?** Read our [Beginner's Guide to Ralph](.ralph/README.md) to understand how to add tasks and use the autonomous workflow effectively.
+
+### Installation
+To use Ralph, you must first install it globally:
+
+```bash
+git clone https://github.com/frankbria/ralph-claude-code.git
+cd ralph-claude-code
+./install.sh
+```
+
+### Quick Start
+Navigate to the Trinity root and run:
+
+```bash
+ralph --monitor        # Recommended: Start Ralph with live monitor in tmux
+```
+
+### Custom Autonomy Tools
+We've integrated specialized scripts in the `.ralph/` directory to ensure high-fidelity work:
+
+| Script | Purpose |
+|--------|---------|
+| `.ralph/gate.sh` | **Quality Gate**: build + test + format + branch safety. |
+| `.ralph/bench.sh` | **Performance Guard**: Prevents latency/throughput regressions. |
+| `.ralph/sync_tree.sh` | **Tech Tree Sync**: Updates `TECH_TREE.md` from VIBEE specs. |
+| `.ralph/audit.sh` | **Health Audit**: Checks modularity and unresolved markers. |
+
+### Workflow (The Golden Chain)
+1.  **Define**: Edit or create a specification in `specs/tri/*.vibee`.
+2.  **Plan**: Update `.ralph/fix_plan.md` with your next objective and acceptance criteria.
+3.  **Run**: Execute `ralph --monitor`. 
+4.  **Verify**: Ralph will automatically generate code, run tests, and check performance via the quality gates.
+5.  **Commit**: Upon success, Ralph updates `.ralph/SUCCESS_HISTORY.md` and proposes next Tech Tree nodes.
+
+For detailed development protocols and constraints, see **[.ralph/RULES.md](.ralph/RULES.md)**.
+
+---
+
 ## Build Commands
 
 ```bash

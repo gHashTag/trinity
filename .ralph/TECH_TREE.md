@@ -10,7 +10,7 @@
 |----|------|--------|----------|------|
 |OPT-PC01|Prefix Caching|optimization|2/5|99% prefill reduction for cached prompts|
 |**MATH-003**|**VSA Benchmarks vs Competitors**|**math**|**4/5**|**Quantified advantage vs float32: throughput, memory, recall, convergence**|
-|**MATH-004**|**Multilingual Math Codegen**|**math**|**3/5**|**Pipeline wired: 9 language targets via vibee_gen.zig → lang_generators.zig**|
+|**MATH-004**|**Multilingual Math Codegen**|**math**|**4/5**|**Pipeline wired: 9 language targets, multi-language array syntax `[zig, python, ts]` in parser + generator**|
 
 ## 🚀 Available Nodes
 | ID | Name | Branch | Complexity | Gain |
