@@ -22,6 +22,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**NEXUS-001**|**Trinity Nexus Repository Structure**|**nexus**|**6 modules (core/lang/symb/network/canvas/tools), workspace.toml, build.nexus.zig, all builds pass, 21 files**|
+|----|------|--------|------|
 |**SYM-005**|**TRI SOTA MVP**|**symbolic**|**Full pipeline: extractTriples -> KG DHT -> TRI rewards, PoK, 7 tests, 268B wire, 125x energy**|
 |----|------|--------|------|
 |**SYM-003**|**Decentralized KG Sync + $TRI Rewards**|**symbolic**|**KgTripleDHT Kademlia XOR routing k=3, 268-byte wire format, ProofOfKnowledge, KgRewardCalculator 0.0002 TRI/triple, 12 tests**|
@@ -78,12 +80,14 @@
 |Development|1|3|33%|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
-|**Total**|**30**|**44**|**68%**|
+|Nexus|1|10|10%|
+|**Total**|**31**|**54**|**57%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **DEV-002** KG-INSIGHT — local triple inspection, pairs with completed Symbolic branch
-2. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
-3. **DEV-003** SWARM-WATCH — live DHT and economy monitor, pairs with SYM-003
+1. **NEXUS-002** Migrate core VM to trinity-nexus/core/ (unblocked by NEXUS-001)
+2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with completed Symbolic branch
+3. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
+4. **DEV-003** SWARM-WATCH — live DHT and economy monitor, pairs with SYM-003
 
 ---
 φ² + 1/φ² = 3 | TRINITY

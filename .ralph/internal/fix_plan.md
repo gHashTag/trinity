@@ -23,11 +23,12 @@
 > **Tech Tree:** NEXUS-001 (Monolithic → Modular transition)
 > **Golden Chain:** Level 11.42 → 12.0 transition. Cycle 0: Trinity Nexus Foundation.
 
-- [ ] [P1] NEXUS-001: Create Trinity Nexus repository structure
+- [x] [P1] NEXUS-001: Create Trinity Nexus repository structure
   - Acceptance: `trinity-nexus/` created with modular layout (core/, lang/, symb/, network/, canvas/, tools/, docs/, .trinity/). Each module has zig.mod, tests/ directory, and src/ folder. Workspace config `.trinity/workspace.toml` wired.
   - Files: `trinity-nexus/` (all directories), `.trinity/workspace.toml`, `trinity-nexus/build.nexus.zig`
   - Tech Tree: NEXUS-001
   - Blocked-by: (none)
+  - DONE: 6 modules (core/lang/symb/network/canvas/tools), workspace.toml, build.nexus.zig, all pass
 
 - [ ] [P1] NEXUS-002: Migrate core VM from trinity/src/vsa/ to trinity-nexus/core/
   - Acceptance: All VM code (vm.zig, mem.zig, tryte.zig, isa.zig, builder.zig) moved to `trinity-nexus/core/src/`. `trinity-core` package created with zig.mod, @import paths updated, tests pass.
@@ -266,9 +267,10 @@
   - Tech Tree: SYM-004
   - DONE: triples_parser wired into respond() pipeline, confidence 0.6 filter, addFact KG storage, CLI compiles, format clean
 
-- [ ] [P2] Stage 4: MVP Release + $TRI Staking
+- [x] [P2] Stage 4: MVP Release + $TRI Staking
   - Acceptance: Public demo live (web + CLI), $TRI staking for contributors enabled.
   - Tech Tree: SYM-005
+  - DONE: sym_005_demo.zig (extractTriples->KG DHT->TRI rewards->PoK), 7 tests, 268B wire, 125x energy
 
 ---
 
