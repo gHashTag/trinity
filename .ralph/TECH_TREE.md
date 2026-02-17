@@ -81,7 +81,7 @@
 |**Total**|**30**|**44**|**68%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **DEV-002** KG-INSIGHT — local triple inspection, pairs with SYM-002/003/004/005
+1. **DEV-002** KG-INSIGHT — local triple inspection, pairs with completed Symbolic branch
 2. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
 3. **DEV-003** SWARM-WATCH — live DHT and economy monitor, pairs with SYM-003
 
