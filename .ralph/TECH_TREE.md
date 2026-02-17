@@ -22,6 +22,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**NEXUS-002**|**Core VM Migration**|**nexus**|**39 files migrated to trinity-nexus/core/, all tests pass, JIT 17.74x**|
+|----|------|--------|------|
 |**NEXUS-001**|**Trinity Nexus Repository Structure**|**nexus**|**6 modules (core/lang/symb/network/canvas/tools), workspace.toml, build.nexus.zig, all builds pass, 21 files**|
 |----|------|--------|------|
 |**SYM-005**|**TRI SOTA MVP**|**symbolic**|**Full pipeline: extractTriples -> KG DHT -> TRI rewards, PoK, 7 tests, 268B wire, 125x energy**|
@@ -80,11 +82,11 @@
 |Development|1|3|33%|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
-|Nexus|1|10|10%|
-|**Total**|**31**|**54**|**57%**|
+|Nexus|2|10|20%|
+|**Total**|**32**|**54**|**59%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **NEXUS-002** Migrate core VM to trinity-nexus/core/ (unblocked by NEXUS-001)
+1. **NEXUS-003** Migrate VIBEE compiler to trinity-nexus/lang/ (unblocked by NEXUS-002)
 2. **DEV-002** KG-INSIGHT — local triple inspection, pairs with completed Symbolic branch
 3. **OPT-PC01** Prefix Caching — already 2/5 in progress, 99% prefill reduction
 4. **DEV-003** SWARM-WATCH — live DHT and economy monitor, pairs with SYM-003
