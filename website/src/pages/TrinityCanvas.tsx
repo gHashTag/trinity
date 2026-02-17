@@ -25,12 +25,20 @@
  * φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
  */
 
+// Web Speech API type declarations
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import QuantumCanvas from '../components/QuantumCanvas';
 import type { VizMode } from '../components/QuantumCanvas';
 import ChatMessage from '../components/chat/ChatMessage';
-import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type FileEntry, type StorageMetrics } from '../services/chatApi';
+import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics } from '../services/chatApi';
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -469,7 +477,7 @@ export default function TrinityCanvas() {
 
   // Mirror RAZUM: inline chat with history (v2.6)
   const [mChatInput, setMChatInput] = useState('');
-  const [mChatReply, setMChatReply] = useState<{ text: string; source: string; conf: number; lat: number } | null>(null);
+  const [, setMChatReply] = useState<{ text: string; source: string; conf: number; lat: number } | null>(null);
   const [mChatSending, setMChatSending] = useState(false);
   const [mChatHistory, setMChatHistory] = useState<{ role: 'user' | 'assistant'; text: string; source?: string; conf?: number; lat?: number; reflection?: string }[]>([]);
 
@@ -850,7 +858,7 @@ export default function TrinityCanvas() {
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
         recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'ru-RU';
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
+        recognition.onresult = (event: Event & { resultIndex: number; results: SpeechRecognitionResultList }) => {
           let transcript = '';
           for (let i = event.resultIndex; i < event.results.length; i++) transcript += event.results[i][0].transcript;
           setVoiceTranscript(transcript);
@@ -1010,7 +1018,7 @@ export default function TrinityCanvas() {
     if (!SR) { setMVoiceText('Speech API not supported'); return; }
     const rec = new SR();
     rec.continuous = false; rec.interimResults = false; rec.lang = 'en-US';
-    rec.onresult = (ev: SpeechRecognitionEvent) => {
+    rec.onresult = (ev: Event & { results: SpeechRecognitionResultList }) => {
       const text = ev.results[0][0].transcript;
       setMVoiceText(text);
       // Auto-send voice transcript as chat
@@ -1217,8 +1225,8 @@ export default function TrinityCanvas() {
           >
             {PETALS.map((petal, i) => {
               const pts = blockToPoints(i, logoScale, cx, cy);
-              const [lx, ly] = blockCenter(i, logoScale, cx, cy);
-              const realmColor = REALM_COLORS[petal.realm].primary;
+              blockCenter(i, logoScale, cx, cy);
+              REALM_COLORS[petal.realm].primary;
               const isHovered = hoveredBlock === i;
               // Fly-in: each block flies from its own direction
               const verts = BLOCK_VERTS[i];
