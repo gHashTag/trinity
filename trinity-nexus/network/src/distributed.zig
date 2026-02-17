@@ -1,0 +1,1365 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRINITY NODE - Pipeline-Parallel Distributed Inference (Optimized)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Splits a GGUF model's transformer layers across 2+ nodes.
+// Each node loads a contiguous subset of layers and processes them sequentially.
+// Hidden state (8KB for TinyLlama) is transferred between nodes via TCP.
+//
+// Optimizations (v2):
+//   - Batch prefill: all prompt hidden states sent in 1 TCP round-trip
+//   - TCP_NODELAY: disables Nagle buffering
+//   - Coalesced writes: header+payload in single syscall
+//   - Pre-allocated buffers: zero heap allocs in hot path
+//   - Timing instrumentation: compute vs network breakdown
+//
+// Architecture:
+//   [Coordinator: layers 0..N/2]  --TCP-->  [Worker: layers N/2..N]
+//   embed(token)                            recv hidden_state
+//   forwardShard()                          forwardShard()
+//   send hidden_state                       computeLogits + sample
+//   recv token                              send token
+//
+// φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+const protocol = @import("protocol.zig");
+const gguf_model = @import("gguf_model");
+pub const auto_shard = @import("auto_shard.zig");
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SHARD CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const ShardConfig = struct {
+    total_layers: u32,
+    start_layer: u32, // inclusive
+    end_layer: u32, // exclusive
+    is_first: bool, // owns embedding
+    is_last: bool, // owns output_norm + output_weight
+    hidden_size: u32,
+    model_path: []const u8,
+
+    pub fn layerCount(self: ShardConfig) u32 {
+        return self.end_layer - self.start_layer;
+    }
+
+    /// Auto-split for 2 nodes: coordinator gets first half, worker gets second half
+    pub fn autoSplit(total_layers: u32, model_path: []const u8, hidden_size: u32) struct { coordinator: ShardConfig, worker: ShardConfig } {
+        const mid = total_layers / 2;
+        return .{
+            .coordinator = ShardConfig{
+                .total_layers = total_layers,
+                .start_layer = 0,
+                .end_layer = mid,
+                .is_first = true,
+                .is_last = false,
+                .hidden_size = hidden_size,
+                .model_path = model_path,
+            },
+            .worker = ShardConfig{
+                .total_layers = total_layers,
+                .start_layer = mid,
+                .end_layer = total_layers,
+                .is_first = false,
+                .is_last = true,
+                .hidden_size = hidden_size,
+                .model_path = model_path,
+            },
+        };
+    }
+
+    /// Auto-split for N nodes: divides layers as evenly as possible
+    /// Returns ShardConfig for the given node_idx (0-based)
+    pub fn autoSplitN(total_layers: u32, num_nodes: u32, node_idx: u32, model_path: []const u8, hidden_size: u32) ShardConfig {
+        const base = total_layers / num_nodes;
+        const remainder = total_layers % num_nodes;
+        // First `remainder` nodes get one extra layer
+        var start: u32 = 0;
+        var idx: u32 = 0;
+        while (idx < node_idx) : (idx += 1) {
+            start += base + @as(u32, if (idx < remainder) 1 else 0);
+        }
+        const count = base + @as(u32, if (node_idx < remainder) 1 else 0);
+        return ShardConfig{
+            .total_layers = total_layers,
+            .start_layer = start,
+            .end_layer = start + count,
+            .is_first = (node_idx == 0),
+            .is_last = (node_idx == num_nodes - 1),
+            .hidden_size = hidden_size,
+            .model_path = model_path,
+        };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PIPELINE WORKER (runs on second/subsequent nodes)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const PipelineWorker = struct {
+    allocator: std.mem.Allocator,
+    model: gguf_model.FullModel,
+    shard: ShardConfig,
+    listen_port: u16,
+    running: std.atomic.Value(bool),
+    server_thread: ?std.Thread = null,
+    // Pre-allocated hot-path buffers (zero allocs per token)
+    output_buf: []f32,
+    logits_buf: []f32,
+    probs_buf: []f32,
+
+    pub fn init(allocator: std.mem.Allocator, shard: ShardConfig, port: u16, use_quantized: bool) !PipelineWorker {
+        std.debug.print("\n\x1b[38;2;255;215;0m[Worker] Initializing pipeline shard: layers {d}..{d}\x1b[0m\n", .{
+            shard.start_layer, shard.end_layer,
+        });
+
+        var model = try gguf_model.FullModel.init(allocator, shard.model_path);
+        if (use_quantized) {
+            try model.loadPartialWeightsQuantized(shard.start_layer, shard.end_layer, shard.is_first, shard.is_last);
+        } else {
+            try model.loadPartialWeights(shard.start_layer, shard.end_layer, shard.is_first, shard.is_last);
+        }
+
+        std.debug.print("\x1b[38;2;0;229;153m[Worker] Model shard loaded. Listening on port {d}\x1b[0m\n", .{port});
+
+        return PipelineWorker{
+            .allocator = allocator,
+            .model = model,
+            .shard = shard,
+            .listen_port = port,
+            .running = std.atomic.Value(bool).init(true),
+            .output_buf = try allocator.alloc(f32, shard.hidden_size),
+            .logits_buf = try allocator.alloc(f32, model.config.vocab_size),
+            .probs_buf = try allocator.alloc(f32, model.config.vocab_size),
+        };
+    }
+
+    pub fn deinit(self: *PipelineWorker) void {
+        self.stop();
+        self.allocator.free(self.output_buf);
+        self.allocator.free(self.logits_buf);
+        self.allocator.free(self.probs_buf);
+        self.model.deinit();
+    }
+
+    pub fn start(self: *PipelineWorker) !void {
+        self.server_thread = try std.Thread.spawn(.{}, serverLoop, .{self});
+    }
+
+    pub fn stop(self: *PipelineWorker) void {
+        self.running.store(false, .release);
+        if (self.server_thread) |t| {
+            t.join();
+            self.server_thread = null;
+        }
+    }
+
+    fn serverLoop(self: *PipelineWorker) void {
+        const addr = std.net.Address.initIp4(.{ 0, 0, 0, 0 }, self.listen_port);
+        const sock = std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, 0) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Worker] Socket error: {}\x1b[0m\n", .{err});
+            return;
+        };
+        defer std.posix.close(sock);
+
+        // Enable SO_REUSEADDR
+        const optval: u32 = 1;
+        std.posix.setsockopt(sock, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, std.mem.asBytes(&optval)) catch {};
+
+        std.posix.bind(sock, &addr.any, addr.getOsSockLen()) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Worker] Bind error on port {d}: {}\x1b[0m\n", .{ self.listen_port, err });
+            return;
+        };
+
+        std.posix.listen(sock, 10) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Worker] Listen error: {}\x1b[0m\n", .{err});
+            return;
+        };
+
+        std.debug.print("\x1b[38;2;0;229;153m[Worker] Listening on 0.0.0.0:{d} — ready for forward requests\x1b[0m\n", .{self.listen_port});
+
+        while (self.running.load(.acquire)) {
+            var client_addr: std.net.Address = undefined;
+            var addr_len: std.posix.socklen_t = @sizeOf(std.posix.sockaddr);
+            const client = std.posix.accept(sock, &client_addr.any, &addr_len, 0) catch |err| {
+                if (!self.running.load(.acquire)) break;
+                std.debug.print("\x1b[38;2;239;68;68m[Worker] Accept error: {}\x1b[0m\n", .{err});
+                continue;
+            };
+
+            setTcpNodelay(client);
+            std.debug.print("\x1b[38;2;0;255;255m[Worker] Connection from coordinator\x1b[0m\n", .{});
+            self.handleSession(client);
+            std.posix.close(client);
+            std.debug.print("\x1b[38;2;156;156;160m[Worker] Session ended\x1b[0m\n", .{});
+        }
+    }
+
+    /// Handle a persistent session — dispatches single and batch forward requests.
+    /// Logs specific disconnect reasons for diagnosis.
+    fn handleSession(self: *PipelineWorker, sock: std.posix.socket_t) void {
+        var tokens_processed: u32 = 0;
+        const session_start = std.time.milliTimestamp();
+        var last_activity = std.time.milliTimestamp();
+        const heartbeat_timeout_ms: i64 = 120_000; // 2 minutes
+
+        while (self.running.load(.acquire)) {
+            // Check heartbeat timeout
+            const now = std.time.milliTimestamp();
+            if (now - last_activity > heartbeat_timeout_ms) {
+                std.debug.print("\x1b[38;2;239;68;68m[Worker] Heartbeat timeout ({d}s with no message) — closing session\x1b[0m\n", .{@divTrunc(now - last_activity, 1000)});
+                break;
+            }
+
+            // Read message header (9 bytes: TRIN + type + length)
+            var header_buf: [protocol.MessageHeader.SIZE]u8 = undefined;
+            const header_read = readExact(sock, &header_buf) catch |err| {
+                std.debug.print("\x1b[38;2;239;68;68m[Worker] Header read error: {} (after {d} tokens)\x1b[0m\n", .{ err, tokens_processed });
+                break;
+            };
+            if (header_read < protocol.MessageHeader.SIZE) {
+                if (header_read == 0) {
+                    std.debug.print("\x1b[38;2;156;156;160m[Worker] Coordinator disconnected cleanly (after {d} tokens)\x1b[0m\n", .{tokens_processed});
+                } else {
+                    std.debug.print("\x1b[38;2;239;68;68m[Worker] Incomplete header: {d}/{d} bytes\x1b[0m\n", .{ header_read, protocol.MessageHeader.SIZE });
+                }
+                break;
+            }
+
+            last_activity = std.time.milliTimestamp();
+
+            const header = protocol.MessageHeader.deserialize(&header_buf) catch |err| {
+                std.debug.print("\x1b[38;2;239;68;68m[Worker] Invalid header (magic/type): {}\x1b[0m\n", .{err});
+                break;
+            };
+
+            switch (header.msg_type) {
+                .forward_request => {
+                    self.handleSingleForward(sock, header.length) catch |err| {
+                        std.debug.print("\x1b[38;2;239;68;68m[Worker] Forward error at token {d}: {}\x1b[0m\n", .{ tokens_processed, err });
+                        break;
+                    };
+                    tokens_processed += 1;
+                },
+                .batch_forward_request => {
+                    const batch_count = self.handleBatchForward(sock, header.length) catch |err| {
+                        std.debug.print("\x1b[38;2;239;68;68m[Worker] Batch forward error: {}\x1b[0m\n", .{err});
+                        break;
+                    };
+                    tokens_processed += batch_count;
+                },
+                else => {
+                    std.debug.print("\x1b[38;2;239;68;68m[Worker] Unknown message type: {d}\x1b[0m\n", .{@intFromEnum(header.msg_type)});
+                    break;
+                },
+            }
+        }
+
+        const elapsed = std.time.milliTimestamp() - session_start;
+        std.debug.print("\x1b[38;2;0;229;153m[Worker] Session complete: {d} tokens in {d}ms\x1b[0m\n", .{ tokens_processed, elapsed });
+    }
+
+    /// Handle a single-token forward request (used during decode phase)
+    fn handleSingleForward(self: *PipelineWorker, sock: std.posix.socket_t, payload_len: u32) !void {
+        // Read payload
+        const payload = try self.allocator.alloc(u8, payload_len);
+        defer self.allocator.free(payload);
+        const payload_read = try readExact(sock, payload);
+        if (payload_read < payload.len) return error.IncompleteRead;
+
+        // Deserialize
+        const req = try protocol.ForwardRequest.deserialize(payload, self.allocator);
+        defer self.allocator.free(req.hidden_state);
+
+        // Process through local layers (zero-alloc: uses pre-allocated output_buf)
+        self.model.forwardShard(self.output_buf, req.hidden_state, req.token_pos);
+
+        // Compute logits + sample (zero-alloc: uses pre-allocated logits_buf/probs_buf)
+        var sampled_token: u32 = 0;
+        if (self.shard.is_last) {
+            self.model.computeLogitsInto(self.logits_buf, self.output_buf);
+            sampled_token = self.model.sampleFromLogitsInto(self.logits_buf, self.probs_buf, req.temperature);
+        }
+
+        // Send response (coalesced header + payload)
+        const resp = protocol.ForwardResponse{
+            .sequence_id = req.sequence_id,
+            .token_pos = req.token_pos,
+            .sampled_token = sampled_token,
+        };
+        const resp_header = protocol.MessageHeader{
+            .msg_type = .forward_response,
+            .length = protocol.ForwardResponse.SIZE,
+        };
+        var combined: [protocol.MessageHeader.SIZE + protocol.ForwardResponse.SIZE]u8 = undefined;
+        const hdr_bytes = resp_header.serialize();
+        const resp_bytes = resp.serialize();
+        @memcpy(combined[0..protocol.MessageHeader.SIZE], &hdr_bytes);
+        @memcpy(combined[protocol.MessageHeader.SIZE..], &resp_bytes);
+        _ = try std.posix.write(sock, &combined);
+    }
+
+    /// Handle a batched forward request (used during prefill phase)
+    fn handleBatchForward(self: *PipelineWorker, sock: std.posix.socket_t, payload_len: u32) !u32 {
+        // Read full payload
+        const payload = try self.allocator.alloc(u8, payload_len);
+        defer self.allocator.free(payload);
+        const payload_read = try readExact(sock, payload);
+        if (payload_read < payload.len) return error.IncompleteRead;
+
+        // Deserialize batch request
+        const req = try protocol.BatchForwardRequest.deserialize(payload, self.allocator);
+        defer self.allocator.free(@constCast(req.token_positions));
+        defer self.allocator.free(@constCast(req.hidden_states));
+
+        // Allocate result tokens
+        const sampled_tokens = try self.allocator.alloc(u32, req.batch_size);
+        defer self.allocator.free(sampled_tokens);
+
+        std.debug.print("\x1b[38;2;0;255;255m[Worker] Processing batch of {d} tokens: \x1b[0m", .{req.batch_size});
+
+        // Process each token SEQUENTIALLY (KV cache must see tokens in order)
+        for (0..req.batch_size) |i| {
+            const hs_offset = i * req.hidden_size;
+            const input_slice = req.hidden_states[hs_offset..][0..req.hidden_size];
+
+            // Forward through local layers (zero-alloc)
+            self.model.forwardShard(self.output_buf, input_slice, req.token_positions[i]);
+
+            // Compute logits + sample (zero-alloc)
+            if (self.shard.is_last) {
+                self.model.computeLogitsInto(self.logits_buf, self.output_buf);
+                sampled_tokens[i] = self.model.sampleFromLogitsInto(self.logits_buf, self.probs_buf, req.temperature);
+            } else {
+                sampled_tokens[i] = 0;
+            }
+
+            if (i % 5 == 0) std.debug.print(".", .{});
+        }
+        std.debug.print(" done\n", .{});
+
+        // Send batch response
+        const resp = protocol.BatchForwardResponse{
+            .sequence_id = req.sequence_id,
+            .batch_size = req.batch_size,
+            .sampled_tokens = sampled_tokens,
+        };
+        const resp_payload = try resp.serialize(self.allocator);
+        defer self.allocator.free(resp_payload);
+
+        const resp_header = protocol.MessageHeader{
+            .msg_type = .batch_forward_response,
+            .length = @intCast(resp_payload.len),
+        };
+        const hdr_bytes = resp_header.serialize();
+        _ = try std.posix.write(sock, &hdr_bytes);
+        _ = try std.posix.write(sock, resp_payload);
+
+        return req.batch_size;
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PIPELINE RELAY (runs on middle nodes — Worker + Coordinator hybrid)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// A relay node sits between coordinator and worker in an N-node chain:
+//   [Coordinator] --TCP--> [Relay] --TCP--> [Worker]
+// It listens for upstream requests (like Worker), processes its layers,
+// then forwards hidden state downstream (like Coordinator).
+// The sampled token flows back through the chain.
+//
+
+pub const PipelineRelay = struct {
+    allocator: std.mem.Allocator,
+    model: gguf_model.FullModel,
+    shard: ShardConfig,
+    listen_port: u16,
+    downstream_host: []const u8,
+    downstream_port: u16,
+    running: std.atomic.Value(bool),
+    server_thread: ?std.Thread = null,
+    // Downstream connection (persistent)
+    downstream_sock: ?std.posix.socket_t = null,
+    // Pre-allocated hot-path buffer
+    output_buf: []f32,
+
+    pub fn init(allocator: std.mem.Allocator, shard: ShardConfig, listen_port: u16, downstream_host: []const u8, downstream_port: u16, use_quantized: bool) !PipelineRelay {
+        std.debug.print("\n\x1b[38;2;255;215;0m[Relay] Initializing pipeline shard: layers {d}..{d}\x1b[0m\n", .{
+            shard.start_layer, shard.end_layer,
+        });
+
+        var model = try gguf_model.FullModel.init(allocator, shard.model_path);
+        if (use_quantized) {
+            try model.loadPartialWeightsQuantized(shard.start_layer, shard.end_layer, shard.is_first, shard.is_last);
+        } else {
+            try model.loadPartialWeights(shard.start_layer, shard.end_layer, shard.is_first, shard.is_last);
+        }
+
+        std.debug.print("\x1b[38;2;0;229;153m[Relay] Model shard loaded. Listen:{d} → Downstream:{s}:{d}\x1b[0m\n", .{
+            listen_port, downstream_host, downstream_port,
+        });
+
+        return PipelineRelay{
+            .allocator = allocator,
+            .model = model,
+            .shard = shard,
+            .listen_port = listen_port,
+            .downstream_host = downstream_host,
+            .downstream_port = downstream_port,
+            .running = std.atomic.Value(bool).init(true),
+            .output_buf = try allocator.alloc(f32, shard.hidden_size),
+        };
+    }
+
+    pub fn deinit(self: *PipelineRelay) void {
+        self.disconnectDownstream();
+        self.allocator.free(self.output_buf);
+        self.model.deinit();
+    }
+
+    // ─── Downstream connection (Coordinator-like) ───
+
+    fn connectDownstream(self: *PipelineRelay) !void {
+        if (self.downstream_sock != null) return;
+
+        std.debug.print("\x1b[38;2;0;255;255m[Relay] Connecting to downstream {s}:{d}...\x1b[0m\n", .{
+            self.downstream_host, self.downstream_port,
+        });
+
+        const ip_parts = parseIpv4(self.downstream_host);
+        const sock = try connectWithRetry(ip_parts, self.downstream_port, 10, "Relay");
+        self.downstream_sock = sock;
+
+        std.debug.print("\x1b[38;2;0;229;153m[Relay] Connected to downstream\x1b[0m\n", .{});
+    }
+
+    fn reconnectDownstream(self: *PipelineRelay) !void {
+        self.disconnectDownstream();
+        std.debug.print("\x1b[38;2;255;165;0m[Relay] Reconnecting to downstream...\x1b[0m\n", .{});
+        try self.connectDownstream();
+    }
+
+    fn disconnectDownstream(self: *PipelineRelay) void {
+        if (self.downstream_sock) |s| {
+            std.posix.close(s);
+            self.downstream_sock = null;
+        }
+    }
+
+    // ─── Upstream server (Worker-like) ───
+
+    pub fn serverLoop(self: *PipelineRelay) void {
+        const addr = std.net.Address.initIp4(.{ 0, 0, 0, 0 }, self.listen_port);
+        const sock = std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, 0) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Relay] Socket error: {}\x1b[0m\n", .{err});
+            return;
+        };
+        defer std.posix.close(sock);
+
+        const optval: u32 = 1;
+        std.posix.setsockopt(sock, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, std.mem.asBytes(&optval)) catch {};
+
+        std.posix.bind(sock, &addr.any, addr.getOsSockLen()) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Relay] Bind error on port {d}: {}\x1b[0m\n", .{ self.listen_port, err });
+            return;
+        };
+
+        std.posix.listen(sock, 10) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Relay] Listen error: {}\x1b[0m\n", .{err});
+            return;
+        };
+
+        std.debug.print("\x1b[38;2;0;229;153m[Relay] Listening on 0.0.0.0:{d} — ready for relay\x1b[0m\n", .{self.listen_port});
+
+        while (self.running.load(.acquire)) {
+            var client_addr: std.net.Address = undefined;
+            var addr_len: std.posix.socklen_t = @sizeOf(std.posix.sockaddr);
+            const client = std.posix.accept(sock, &client_addr.any, &addr_len, 0) catch |err| {
+                if (!self.running.load(.acquire)) break;
+                std.debug.print("\x1b[38;2;239;68;68m[Relay] Accept error: {}\x1b[0m\n", .{err});
+                continue;
+            };
+
+            setTcpNodelay(client);
+            std.debug.print("\x1b[38;2;0;255;255m[Relay] Connection from upstream\x1b[0m\n", .{});
+            self.handleSession(client);
+            std.posix.close(client);
+            self.disconnectDownstream();
+            std.debug.print("\x1b[38;2;156;156;160m[Relay] Session ended\x1b[0m\n", .{});
+        }
+    }
+
+    fn handleSession(self: *PipelineRelay, sock: std.posix.socket_t) void {
+        var tokens_processed: u32 = 0;
+        const session_start = std.time.milliTimestamp();
+        var last_activity = std.time.milliTimestamp();
+        const heartbeat_timeout_ms: i64 = 120_000;
+
+        while (self.running.load(.acquire)) {
+            const now = std.time.milliTimestamp();
+            if (now - last_activity > heartbeat_timeout_ms) {
+                std.debug.print("\x1b[38;2;239;68;68m[Relay] Heartbeat timeout ({d}s) — closing session\x1b[0m\n", .{@divTrunc(now - last_activity, 1000)});
+                break;
+            }
+
+            var header_buf: [protocol.MessageHeader.SIZE]u8 = undefined;
+            const header_read = readExact(sock, &header_buf) catch |err| {
+                std.debug.print("\x1b[38;2;239;68;68m[Relay] Header read error: {} (after {d} tokens)\x1b[0m\n", .{ err, tokens_processed });
+                break;
+            };
+            if (header_read < protocol.MessageHeader.SIZE) {
+                if (header_read == 0) {
+                    std.debug.print("\x1b[38;2;156;156;160m[Relay] Upstream disconnected cleanly (after {d} tokens)\x1b[0m\n", .{tokens_processed});
+                } else {
+                    std.debug.print("\x1b[38;2;239;68;68m[Relay] Incomplete header: {d}/{d} bytes\x1b[0m\n", .{ header_read, protocol.MessageHeader.SIZE });
+                }
+                break;
+            }
+
+            last_activity = std.time.milliTimestamp();
+
+            const header = protocol.MessageHeader.deserialize(&header_buf) catch |err| {
+                std.debug.print("\x1b[38;2;239;68;68m[Relay] Invalid header: {}\x1b[0m\n", .{err});
+                break;
+            };
+
+            switch (header.msg_type) {
+                .forward_request => {
+                    self.handleSingleForward(sock, header.length) catch |err| {
+                        std.debug.print("\x1b[38;2;239;68;68m[Relay] Forward error at token {d}: {}\x1b[0m\n", .{ tokens_processed, err });
+                        break;
+                    };
+                    tokens_processed += 1;
+                },
+                .batch_forward_request => {
+                    const batch_count = self.handleBatchForward(sock, header.length) catch |err| {
+                        std.debug.print("\x1b[38;2;239;68;68m[Relay] Batch forward error: {}\x1b[0m\n", .{err});
+                        break;
+                    };
+                    tokens_processed += batch_count;
+                },
+                else => {
+                    std.debug.print("\x1b[38;2;239;68;68m[Relay] Unknown message type: {d}\x1b[0m\n", .{@intFromEnum(header.msg_type)});
+                    break;
+                },
+            }
+        }
+
+        const elapsed = std.time.milliTimestamp() - session_start;
+        std.debug.print("\x1b[38;2;0;229;153m[Relay] Session complete: {d} tokens in {d}ms\x1b[0m\n", .{ tokens_processed, elapsed });
+    }
+
+    // ─── Single-token relay (decode phase) ───
+
+    fn handleSingleForward(self: *PipelineRelay, upstream_sock: std.posix.socket_t, payload_len: u32) !void {
+        // Read request from upstream
+        const payload = try self.allocator.alloc(u8, payload_len);
+        defer self.allocator.free(payload);
+        const payload_read = try readExact(upstream_sock, payload);
+        if (payload_read < payload.len) return error.IncompleteRead;
+
+        const req = try protocol.ForwardRequest.deserialize(payload, self.allocator);
+        defer self.allocator.free(req.hidden_state);
+
+        // Process through local layers
+        self.model.forwardShard(self.output_buf, req.hidden_state, req.token_pos);
+
+        // Forward downstream and get token back
+        const sampled_token = try self.forwardRemoteDownstream(self.output_buf, req.token_pos, req.temperature);
+
+        // Send token back to upstream (coalesced)
+        const resp = protocol.ForwardResponse{
+            .sequence_id = req.sequence_id,
+            .token_pos = req.token_pos,
+            .sampled_token = sampled_token,
+        };
+        const resp_header = protocol.MessageHeader{
+            .msg_type = .forward_response,
+            .length = protocol.ForwardResponse.SIZE,
+        };
+        var combined: [protocol.MessageHeader.SIZE + protocol.ForwardResponse.SIZE]u8 = undefined;
+        const hdr_bytes = resp_header.serialize();
+        const resp_bytes = resp.serialize();
+        @memcpy(combined[0..protocol.MessageHeader.SIZE], &hdr_bytes);
+        @memcpy(combined[protocol.MessageHeader.SIZE..], &resp_bytes);
+        _ = try std.posix.write(upstream_sock, &combined);
+    }
+
+    /// Forward hidden state to downstream node, get sampled token back
+    fn forwardRemoteDownstream(self: *PipelineRelay, hidden: []const f32, pos: u32, temperature: f32) !u32 {
+        try self.connectDownstream();
+        const sock = self.downstream_sock orelse return error.NotConnected;
+
+        const req = protocol.ForwardRequest{
+            .sequence_id = 0,
+            .token_pos = pos,
+            .hidden_size = self.shard.hidden_size,
+            .temperature = temperature,
+            .hidden_state = hidden,
+        };
+        const fwd_payload = try req.serialize(self.allocator);
+        defer self.allocator.free(fwd_payload);
+
+        const header = protocol.MessageHeader{
+            .msg_type = .forward_request,
+            .length = @intCast(fwd_payload.len),
+        };
+        const hdr_bytes = header.serialize();
+        const fwd_combined = try self.allocator.alloc(u8, protocol.MessageHeader.SIZE + fwd_payload.len);
+        defer self.allocator.free(fwd_combined);
+        @memcpy(fwd_combined[0..protocol.MessageHeader.SIZE], &hdr_bytes);
+        @memcpy(fwd_combined[protocol.MessageHeader.SIZE..], fwd_payload);
+        _ = try std.posix.write(sock, fwd_combined);
+
+        // Read response
+        var resp_buf: [protocol.MessageHeader.SIZE + protocol.ForwardResponse.SIZE]u8 = undefined;
+        _ = try readExact(sock, &resp_buf);
+        const resp_hdr = try protocol.MessageHeader.deserialize(resp_buf[0..protocol.MessageHeader.SIZE]);
+        if (resp_hdr.msg_type != .forward_response) return error.UnexpectedResponse;
+        const resp = protocol.ForwardResponse.deserialize(resp_buf[protocol.MessageHeader.SIZE..][0..protocol.ForwardResponse.SIZE]);
+
+        return resp.sampled_token;
+    }
+
+    // ─── Batch relay (prefill phase) ───
+
+    fn handleBatchForward(self: *PipelineRelay, upstream_sock: std.posix.socket_t, payload_len: u32) !u32 {
+        // Read batch request from upstream
+        const payload = try self.allocator.alloc(u8, payload_len);
+        defer self.allocator.free(payload);
+        const payload_read = try readExact(upstream_sock, payload);
+        if (payload_read < payload.len) return error.IncompleteRead;
+
+        const req = try protocol.BatchForwardRequest.deserialize(payload, self.allocator);
+        defer self.allocator.free(@constCast(req.token_positions));
+        defer self.allocator.free(@constCast(req.hidden_states));
+
+        std.debug.print("\x1b[38;2;0;255;255m[Relay] Relaying batch of {d} tokens: \x1b[0m", .{req.batch_size});
+
+        // Process each token through local layers, accumulate output hidden states
+        const relay_hidden = try self.allocator.alloc(f32, req.batch_size * req.hidden_size);
+        defer self.allocator.free(relay_hidden);
+
+        for (0..req.batch_size) |idx| {
+            const hs_offset = idx * req.hidden_size;
+            const input_slice = req.hidden_states[hs_offset..][0..req.hidden_size];
+
+            self.model.forwardShard(self.output_buf, input_slice, req.token_positions[idx]);
+
+            // Store processed hidden state
+            @memcpy(relay_hidden[hs_offset..][0..req.hidden_size], self.output_buf);
+
+            if (idx % 5 == 0) std.debug.print(".", .{});
+        }
+        std.debug.print(" local done, ", .{});
+
+        // Forward entire batch downstream
+        const batch_tokens = try self.batchForwardRemoteDownstream(
+            relay_hidden,
+            req.token_positions,
+            req.batch_size,
+            req.temperature,
+        );
+        defer self.allocator.free(batch_tokens);
+
+        std.debug.print("relay done\n", .{});
+
+        // Send batch response back to upstream
+        const resp = protocol.BatchForwardResponse{
+            .sequence_id = req.sequence_id,
+            .batch_size = req.batch_size,
+            .sampled_tokens = batch_tokens,
+        };
+        const resp_payload = try resp.serialize(self.allocator);
+        defer self.allocator.free(resp_payload);
+
+        const resp_header = protocol.MessageHeader{
+            .msg_type = .batch_forward_response,
+            .length = @intCast(resp_payload.len),
+        };
+        const resp_hdr_bytes = resp_header.serialize();
+        _ = try std.posix.write(upstream_sock, &resp_hdr_bytes);
+        _ = try std.posix.write(upstream_sock, resp_payload);
+
+        return req.batch_size;
+    }
+
+    /// Forward all hidden states to downstream node in one batch, get tokens back
+    fn batchForwardRemoteDownstream(
+        self: *PipelineRelay,
+        hidden_states: []const f32,
+        positions: []const u32,
+        batch_size: u32,
+        temperature: f32,
+    ) ![]u32 {
+        try self.connectDownstream();
+        const sock = self.downstream_sock orelse return error.NotConnected;
+
+        const req = protocol.BatchForwardRequest{
+            .sequence_id = 0,
+            .batch_size = batch_size,
+            .hidden_size = self.shard.hidden_size,
+            .temperature = temperature,
+            .token_positions = positions,
+            .hidden_states = hidden_states,
+        };
+        const fwd_payload = try req.serialize(self.allocator);
+        defer self.allocator.free(fwd_payload);
+
+        const header = protocol.MessageHeader{
+            .msg_type = .batch_forward_request,
+            .length = @intCast(fwd_payload.len),
+        };
+        const hdr_bytes = header.serialize();
+        _ = try std.posix.write(sock, &hdr_bytes);
+        _ = try std.posix.write(sock, fwd_payload);
+
+        // Read batch response
+        var resp_hdr_buf: [protocol.MessageHeader.SIZE]u8 = undefined;
+        _ = try readExact(sock, &resp_hdr_buf);
+        const resp_hdr = try protocol.MessageHeader.deserialize(&resp_hdr_buf);
+        if (resp_hdr.msg_type != .batch_forward_response) return error.UnexpectedResponse;
+
+        const resp_payload = try self.allocator.alloc(u8, resp_hdr.length);
+        defer self.allocator.free(resp_payload);
+        _ = try readExact(sock, resp_payload);
+
+        const resp = try protocol.BatchForwardResponse.deserialize(resp_payload, self.allocator);
+        return @constCast(resp.sampled_tokens);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PIPELINE COORDINATOR (runs on the first node)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const PipelineCoordinator = struct {
+    allocator: std.mem.Allocator,
+    model: gguf_model.FullModel,
+    shard: ShardConfig,
+    peer_host: []const u8,
+    peer_port: u16,
+    sock: ?std.posix.socket_t = null,
+    // Timing instrumentation
+    time_prefill_local_ms: i64 = 0,
+    time_prefill_net_ms: i64 = 0,
+    time_decode_compute_ms: i64 = 0,
+    time_decode_net_ms: i64 = 0,
+
+    pub fn init(allocator: std.mem.Allocator, shard: ShardConfig, peer_host: []const u8, peer_port: u16, use_quantized: bool) !PipelineCoordinator {
+        std.debug.print("\n\x1b[38;2;255;215;0m[Coordinator] Initializing pipeline shard: layers {d}..{d}\x1b[0m\n", .{
+            shard.start_layer, shard.end_layer,
+        });
+
+        var model = try gguf_model.FullModel.init(allocator, shard.model_path);
+        if (use_quantized) {
+            try model.loadPartialWeightsQuantized(shard.start_layer, shard.end_layer, shard.is_first, shard.is_last);
+        } else {
+            try model.loadPartialWeights(shard.start_layer, shard.end_layer, shard.is_first, shard.is_last);
+        }
+
+        std.debug.print("\x1b[38;2;0;229;153m[Coordinator] Model shard loaded. Peer: {s}:{d}\x1b[0m\n", .{ peer_host, peer_port });
+
+        return PipelineCoordinator{
+            .allocator = allocator,
+            .model = model,
+            .shard = shard,
+            .peer_host = peer_host,
+            .peer_port = peer_port,
+        };
+    }
+
+    pub fn deinit(self: *PipelineCoordinator) void {
+        self.disconnect();
+        self.model.deinit();
+    }
+
+    fn connect(self: *PipelineCoordinator) !void {
+        if (self.sock != null) return;
+
+        std.debug.print("\x1b[38;2;0;255;255m[Coordinator] Connecting to worker {s}:{d}...\x1b[0m\n", .{ self.peer_host, self.peer_port });
+
+        const ip_parts = parseIpv4(self.peer_host);
+        const sock = try connectWithRetry(ip_parts, self.peer_port, 10, "Coordinator");
+        self.sock = sock;
+
+        std.debug.print("\x1b[38;2;0;229;153m[Coordinator] Connected to worker\x1b[0m\n", .{});
+    }
+
+    /// Reconnect to worker after a network failure during decode.
+    /// Does NOT retry prefill — only re-establishes TCP for subsequent tokens.
+    fn reconnect(self: *PipelineCoordinator) !void {
+        self.disconnect();
+        std.debug.print("\x1b[38;2;255;165;0m[Coordinator] Reconnecting to worker...\x1b[0m\n", .{});
+        try self.connect();
+    }
+
+    fn disconnect(self: *PipelineCoordinator) void {
+        if (self.sock) |s| {
+            std.posix.close(s);
+            self.sock = null;
+        }
+    }
+
+    /// Send hidden state to worker, receive sampled token back (single-token, for decode)
+    fn forwardRemote(self: *PipelineCoordinator, hidden: []const f32, pos: u32, temperature: f32) !u32 {
+        try self.connect();
+        const sock = self.sock orelse return error.NotConnected;
+
+        // Serialize forward request
+        const req = protocol.ForwardRequest{
+            .sequence_id = 0,
+            .token_pos = pos,
+            .hidden_size = self.shard.hidden_size,
+            .temperature = temperature,
+            .hidden_state = hidden,
+        };
+        const payload = try req.serialize(self.allocator);
+        defer self.allocator.free(payload);
+
+        // Send header + payload (coalesced into single write)
+        const header = protocol.MessageHeader{
+            .msg_type = .forward_request,
+            .length = @intCast(payload.len),
+        };
+        const hdr_bytes = header.serialize();
+        const combined = try self.allocator.alloc(u8, protocol.MessageHeader.SIZE + payload.len);
+        defer self.allocator.free(combined);
+        @memcpy(combined[0..protocol.MessageHeader.SIZE], &hdr_bytes);
+        @memcpy(combined[protocol.MessageHeader.SIZE..], payload);
+        _ = try std.posix.write(sock, combined);
+
+        // Read response (header + payload coalesced read)
+        var resp_buf: [protocol.MessageHeader.SIZE + protocol.ForwardResponse.SIZE]u8 = undefined;
+        _ = try readExact(sock, &resp_buf);
+        const resp_hdr = try protocol.MessageHeader.deserialize(resp_buf[0..protocol.MessageHeader.SIZE]);
+        if (resp_hdr.msg_type != .forward_response) return error.UnexpectedResponse;
+        const resp = protocol.ForwardResponse.deserialize(resp_buf[protocol.MessageHeader.SIZE..][0..protocol.ForwardResponse.SIZE]);
+
+        return resp.sampled_token;
+    }
+
+    /// Send all prefill hidden states in one batch, receive all tokens back
+    fn batchForwardRemote(
+        self: *PipelineCoordinator,
+        hidden_states: []const f32,
+        positions: []const u32,
+        batch_size: u32,
+        temperature: f32,
+    ) ![]u32 {
+        try self.connect();
+        const sock = self.sock orelse return error.NotConnected;
+
+        const req = protocol.BatchForwardRequest{
+            .sequence_id = 0,
+            .batch_size = batch_size,
+            .hidden_size = self.shard.hidden_size,
+            .temperature = temperature,
+            .token_positions = positions,
+            .hidden_states = hidden_states,
+        };
+        const payload = try req.serialize(self.allocator);
+        defer self.allocator.free(payload);
+
+        // Send header + payload
+        const header = protocol.MessageHeader{
+            .msg_type = .batch_forward_request,
+            .length = @intCast(payload.len),
+        };
+        const hdr_bytes = header.serialize();
+        _ = try std.posix.write(sock, &hdr_bytes);
+        _ = try std.posix.write(sock, payload);
+
+        // Read batch response header
+        var resp_hdr_buf: [protocol.MessageHeader.SIZE]u8 = undefined;
+        _ = try readExact(sock, &resp_hdr_buf);
+        const resp_hdr = try protocol.MessageHeader.deserialize(&resp_hdr_buf);
+        if (resp_hdr.msg_type != .batch_forward_response) return error.UnexpectedResponse;
+
+        // Read batch response payload
+        const resp_payload = try self.allocator.alloc(u8, resp_hdr.length);
+        defer self.allocator.free(resp_payload);
+        _ = try readExact(sock, resp_payload);
+
+        const resp = try protocol.BatchForwardResponse.deserialize(resp_payload, self.allocator);
+        return @constCast(resp.sampled_tokens);
+    }
+
+    /// Generate tokens for a prompt using distributed pipeline
+    pub fn generate(
+        self: *PipelineCoordinator,
+        prompt_tokens: []const u32,
+        max_new_tokens: u32,
+        temperature: f32,
+    ) ![]u32 {
+        const hidden_size = self.shard.hidden_size;
+        var output_tokens: std.ArrayList(u32) = .empty;
+        errdefer output_tokens.deinit(self.allocator);
+
+        // Allocate hidden state buffers
+        const hidden = try self.allocator.alloc(f32, hidden_size);
+        defer self.allocator.free(hidden);
+        const shard_output = try self.allocator.alloc(f32, hidden_size);
+        defer self.allocator.free(shard_output);
+
+        const total_start = std.time.milliTimestamp();
+
+        // Connect to worker
+        try self.connect();
+
+        // ─── Phase 1: Prefill (BATCHED — 1 TCP round-trip for all tokens) ───
+        const prefill_start = std.time.milliTimestamp();
+        std.debug.print("\x1b[38;2;0;255;255m[Coordinator] Prefill {d} tokens (batched): \x1b[0m", .{prompt_tokens.len});
+
+        const batch_size: u32 = @intCast(prompt_tokens.len);
+        const all_hidden = try self.allocator.alloc(f32, batch_size * hidden_size);
+        defer self.allocator.free(all_hidden);
+        const positions = try self.allocator.alloc(u32, batch_size);
+        defer self.allocator.free(positions);
+
+        // Local compute: embed + forwardShard for all prompt tokens
+        const local_start = std.time.milliTimestamp();
+        for (prompt_tokens, 0..) |token, i| {
+            const emb_offset = @as(usize, token) * hidden_size;
+            @memcpy(hidden, self.model.token_embedding[emb_offset..][0..hidden_size]);
+            self.model.forwardShard(shard_output, hidden, i);
+
+            // Store in batch buffer
+            const dest_offset = i * hidden_size;
+            @memcpy(all_hidden[dest_offset..][0..hidden_size], shard_output);
+            positions[i] = @intCast(i);
+
+            if (i % 5 == 0) std.debug.print(".", .{});
+        }
+        self.time_prefill_local_ms = std.time.milliTimestamp() - local_start;
+        std.debug.print(" local done ({d}ms), ", .{self.time_prefill_local_ms});
+
+        // Network: send entire batch at once
+        const net_start = std.time.milliTimestamp();
+        const batch_tokens = try self.batchForwardRemote(all_hidden, positions, batch_size, temperature);
+        defer self.allocator.free(batch_tokens);
+        self.time_prefill_net_ms = std.time.milliTimestamp() - net_start;
+
+        const prefill_time = std.time.milliTimestamp() - prefill_start;
+        std.debug.print("batch ok ({d}ms, net={d}ms)\n", .{ prefill_time, self.time_prefill_net_ms });
+
+        // Use last sampled token as starting point for decode
+        var last_token: u32 = batch_tokens[batch_tokens.len - 1];
+        try output_tokens.append(self.allocator, last_token);
+
+        // ─── Phase 2: Decode (single-token per round-trip, autoregressive) ───
+        std.debug.print("\x1b[38;2;0;255;255m[Coordinator] Generating: \x1b[0m", .{});
+        var gen_count: u32 = 0;
+        while (gen_count < max_new_tokens) : (gen_count += 1) {
+            const pos = prompt_tokens.len + gen_count;
+
+            // Embed last token
+            const emb_offset = @as(usize, last_token) * hidden_size;
+            if (emb_offset + hidden_size > self.model.token_embedding.len) break;
+            @memcpy(hidden, self.model.token_embedding[emb_offset..][0..hidden_size]);
+
+            // Local compute
+            const compute_start = std.time.milliTimestamp();
+            self.model.forwardShard(shard_output, hidden, pos);
+            self.time_decode_compute_ms += std.time.milliTimestamp() - compute_start;
+
+            // Network (with reconnection on failure)
+            const decode_net_start = std.time.milliTimestamp();
+            const remote_result = self.forwardRemote(shard_output, @intCast(pos), temperature);
+            if (remote_result) |token| {
+                last_token = token;
+            } else |err| {
+                std.debug.print("\x1b[38;2;255;165;0m[Coordinator] Decode failed at token {d}: {} — attempting reconnect\x1b[0m\n", .{ gen_count, err });
+                self.reconnect() catch |reconn_err| {
+                    std.debug.print("\x1b[38;2;239;68;68m[Coordinator] Reconnect failed: {} — aborting generation\x1b[0m\n", .{reconn_err});
+                    break;
+                };
+                // Retry this token after reconnect
+                last_token = self.forwardRemote(shard_output, @intCast(pos), temperature) catch |retry_err| {
+                    std.debug.print("\x1b[38;2;239;68;68m[Coordinator] Retry after reconnect failed: {} — aborting\x1b[0m\n", .{retry_err});
+                    break;
+                };
+            }
+            const decode_net_time = std.time.milliTimestamp() - decode_net_start;
+            self.time_decode_net_ms += decode_net_time;
+
+            try output_tokens.append(self.allocator, last_token);
+            std.debug.print("[{d}ms]", .{decode_net_time});
+
+            // EOS check
+            if (last_token == 2) break;
+        }
+
+        const total_time = std.time.milliTimestamp() - total_start;
+
+        // ─── Performance Summary ───
+        std.debug.print("\n", .{});
+        std.debug.print("\x1b[38;2;255;215;0m╔══════════════════════════════════════════════════════════╗\x1b[0m\n", .{});
+        std.debug.print("\x1b[38;2;255;215;0m║         DISTRIBUTED INFERENCE PROFILE                    ║\x1b[0m\n", .{});
+        std.debug.print("\x1b[38;2;255;215;0m╠══════════════════════════════════════════════════════════╣\x1b[0m\n", .{});
+        std.debug.print("║  Prefill: {d} tokens                                    \n", .{prompt_tokens.len});
+        std.debug.print("║    Local compute:  {d:>8}ms                             \n", .{self.time_prefill_local_ms});
+        std.debug.print("║    Network (batch):{d:>8}ms                             \n", .{self.time_prefill_net_ms});
+        std.debug.print("║    Total prefill:  {d:>8}ms                             \n", .{prefill_time});
+        std.debug.print("║  Decode: {d} tokens                                     \n", .{gen_count});
+        std.debug.print("║    Total compute:  {d:>8}ms                             \n", .{self.time_decode_compute_ms});
+        std.debug.print("║    Total network:  {d:>8}ms                             \n", .{self.time_decode_net_ms});
+        const decode_total = self.time_decode_compute_ms + self.time_decode_net_ms;
+        std.debug.print("║    Total decode:   {d:>8}ms                             \n", .{decode_total});
+        const net_total = self.time_prefill_net_ms + self.time_decode_net_ms;
+        const net_pct = if (total_time > 0)
+            @as(f64, @floatFromInt(net_total)) / @as(f64, @floatFromInt(total_time)) * 100.0
+        else
+            0.0;
+        std.debug.print("║  Network fraction: {d:.1}%                               \n", .{net_pct});
+        std.debug.print("║  Total:            {d:>8}ms                             \n", .{total_time});
+        std.debug.print("\x1b[38;2;255;215;0m╚══════════════════════════════════════════════════════════╝\x1b[0m\n", .{});
+
+        return output_tokens.toOwnedSlice(self.allocator);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Read exactly `buf.len` bytes from socket, blocking until complete.
+/// Retries on EINTR (signal interruption). Returns error on true failures.
+fn readExact(sock: std.posix.socket_t, buf: []u8) !usize {
+    var total: usize = 0;
+    var consecutive_zero: u32 = 0;
+    while (total < buf.len) {
+        const n = std.posix.read(sock, buf[total..]) catch |err| {
+            if (err == error.Interrupted) continue; // EINTR — retry
+            if (total > 0) {
+                std.debug.print("\x1b[38;2;239;68;68m[Net] Read error after {d}/{d} bytes: {}\x1b[0m\n", .{ total, buf.len, err });
+                return error.IncompleteRead;
+            }
+            return err;
+        };
+        if (n == 0) {
+            consecutive_zero += 1;
+            if (consecutive_zero > 3) {
+                if (total > 0) {
+                    std.debug.print("\x1b[38;2;239;68;68m[Net] EOF after {d}/{d} bytes\x1b[0m\n", .{ total, buf.len });
+                }
+                return total; // true EOF
+            }
+            continue;
+        }
+        consecutive_zero = 0;
+        total += n;
+    }
+    return total;
+}
+
+/// Connect to a TCP endpoint with exponential backoff.
+/// Starts at 200ms delay, doubles each retry, caps at 30s.
+/// Returns the connected socket or error after max_retries attempts.
+fn connectWithRetry(ip_parts: [4]u8, port: u16, max_retries: u32, label: []const u8) !std.posix.socket_t {
+    var delay_ms: u64 = 200;
+    var attempt: u32 = 0;
+
+    while (true) {
+        const addr = std.net.Address.initIp4(ip_parts, port);
+        const sock = std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, 0) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[{s}] Socket creation failed: {}\x1b[0m\n", .{ label, err });
+            return err;
+        };
+
+        std.posix.connect(sock, &addr.any, addr.getOsSockLen()) catch |err| {
+            std.posix.close(sock);
+            attempt += 1;
+            if (attempt >= max_retries) {
+                std.debug.print("\x1b[38;2;239;68;68m[{s}] Connection failed after {d} attempts: {}\x1b[0m\n", .{ label, attempt, err });
+                return err;
+            }
+            std.debug.print("\x1b[38;2;255;165;0m[{s}] Connect attempt {d}/{d} failed ({}), retry in {d}ms\x1b[0m\n", .{ label, attempt, max_retries, err, delay_ms });
+            std.Thread.sleep(delay_ms * std.time.ns_per_ms);
+            delay_ms = @min(delay_ms * 2, 30_000); // cap at 30s
+            continue;
+        };
+
+        setTcpNodelay(sock);
+        if (attempt > 0) {
+            std.debug.print("\x1b[38;2;0;229;153m[{s}] Connected after {d} retries\x1b[0m\n", .{ label, attempt });
+        }
+        return sock;
+    }
+}
+
+/// Parse "a.b.c.d" into [4]u8
+fn parseIpv4(host: []const u8) [4]u8 {
+    var ip_parts: [4]u8 = .{ 127, 0, 0, 1 };
+    var part_idx: usize = 0;
+    var current: u8 = 0;
+    for (host) |c| {
+        if (c == '.') {
+            if (part_idx < 4) ip_parts[part_idx] = current;
+            part_idx += 1;
+            current = 0;
+        } else if (c >= '0' and c <= '9') {
+            current = current * 10 + (c - '0');
+        }
+    }
+    if (part_idx < 4) ip_parts[part_idx] = current;
+    return ip_parts;
+}
+
+/// Set TCP_NODELAY to disable Nagle's algorithm (reduces latency for small writes)
+fn setTcpNodelay(sock: std.posix.socket_t) void {
+    const optval: u32 = 1;
+    std.posix.setsockopt(sock, std.posix.IPPROTO.TCP, std.posix.TCP.NODELAY, std.mem.asBytes(&optval)) catch {};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STANDALONE ENTRY POINT (for direct execution)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runDistributed(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    // Parse arguments
+    var role: []const u8 = "worker";
+    var model_path: []const u8 = "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+    var layers_start: u32 = 11;
+    var layers_end: u32 = 22;
+    var port: u16 = 9335;
+    var peer_host: []const u8 = "127.0.0.1";
+    var peer_port: u16 = 9335;
+    var downstream_host: []const u8 = "127.0.0.1";
+    var downstream_port: u16 = 9335;
+    var prompt: []const u8 = "Hello, how are you?";
+    var max_tokens: u32 = 20;
+    var temperature: f32 = 0.7;
+    var total_layers: u32 = 22;
+    var hidden_size: u32 = 2048;
+    var use_quantized: bool = false;
+    var auto_shard_mode: bool = false;
+    var num_nodes: u32 = 2;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+        if (std.mem.eql(u8, arg, "--role") and i + 1 < args.len) {
+            i += 1;
+            role = args[i];
+        } else if (std.mem.eql(u8, arg, "--model") and i + 1 < args.len) {
+            i += 1;
+            model_path = args[i];
+        } else if (std.mem.eql(u8, arg, "--layers") and i + 1 < args.len) {
+            i += 1;
+            // Parse "start-end" format, e.g. "0-10" or "11-21"
+            const layer_arg = args[i];
+            var dash_pos: usize = 0;
+            for (layer_arg, 0..) |c, j| {
+                if (c == '-') {
+                    dash_pos = j;
+                    break;
+                }
+            }
+            if (dash_pos > 0) {
+                layers_start = std.fmt.parseInt(u32, layer_arg[0..dash_pos], 10) catch 0;
+                layers_end = (std.fmt.parseInt(u32, layer_arg[dash_pos + 1 ..], 10) catch 22) + 1; // exclusive
+            }
+        } else if (std.mem.eql(u8, arg, "--port") and i + 1 < args.len) {
+            i += 1;
+            port = std.fmt.parseInt(u16, args[i], 10) catch 9335;
+        } else if (std.mem.eql(u8, arg, "--peer") and i + 1 < args.len) {
+            i += 1;
+            // Parse "host:port"
+            const peer_arg = args[i];
+            var colon_pos: usize = peer_arg.len;
+            for (peer_arg, 0..) |c, j| {
+                if (c == ':') {
+                    colon_pos = j;
+                    break;
+                }
+            }
+            peer_host = peer_arg[0..colon_pos];
+            if (colon_pos < peer_arg.len) {
+                peer_port = std.fmt.parseInt(u16, peer_arg[colon_pos + 1 ..], 10) catch 9335;
+            }
+        } else if (std.mem.eql(u8, arg, "--downstream") and i + 1 < args.len) {
+            i += 1;
+            // Parse "host:port" for relay downstream
+            const ds_arg = args[i];
+            var colon_pos: usize = ds_arg.len;
+            for (ds_arg, 0..) |c, j| {
+                if (c == ':') {
+                    colon_pos = j;
+                    break;
+                }
+            }
+            downstream_host = ds_arg[0..colon_pos];
+            if (colon_pos < ds_arg.len) {
+                downstream_port = std.fmt.parseInt(u16, ds_arg[colon_pos + 1 ..], 10) catch 9335;
+            }
+        } else if (std.mem.eql(u8, arg, "--prompt") and i + 1 < args.len) {
+            i += 1;
+            prompt = args[i];
+        } else if (std.mem.eql(u8, arg, "--max-tokens") and i + 1 < args.len) {
+            i += 1;
+            max_tokens = std.fmt.parseInt(u32, args[i], 10) catch 20;
+        } else if (std.mem.eql(u8, arg, "--temperature") and i + 1 < args.len) {
+            i += 1;
+            temperature = std.fmt.parseFloat(f32, args[i]) catch 0.7;
+        } else if (std.mem.eql(u8, arg, "--total-layers") and i + 1 < args.len) {
+            i += 1;
+            total_layers = std.fmt.parseInt(u32, args[i], 10) catch 22;
+        } else if (std.mem.eql(u8, arg, "--hidden-size") and i + 1 < args.len) {
+            i += 1;
+            hidden_size = std.fmt.parseInt(u32, args[i], 10) catch 2048;
+        } else if (std.mem.eql(u8, arg, "--quantized")) {
+            use_quantized = true;
+        } else if (std.mem.eql(u8, arg, "--auto-shard")) {
+            auto_shard_mode = true;
+        } else if (std.mem.eql(u8, arg, "--num-nodes") and i + 1 < args.len) {
+            i += 1;
+            num_nodes = std.fmt.parseInt(u32, args[i], 10) catch 2;
+        }
+    }
+
+    std.debug.print("\n\x1b[38;2;255;215;0m═══ TRINITY DISTRIBUTED INFERENCE v7 (N-Node Pipeline) ═══\x1b[0m\n", .{});
+
+    // Auto-shard: query local RAM and compute optimal layer split
+    if (auto_shard_mode) {
+        const mem = auto_shard.getSystemMemory() catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Auto-Shard] Failed to query system memory: {}\x1b[0m\n", .{err});
+            return err;
+        };
+        std.debug.print("\x1b[38;2;0;255;255m[Auto-Shard] Local RAM: {d}MB total, {d}MB available\x1b[0m\n", .{
+            mem.total_bytes / (1024 * 1024),
+            mem.available_bytes / (1024 * 1024),
+        });
+
+        const profile = if (use_quantized) auto_shard.QWEN2_5_7B_Q4K else auto_shard.QWEN2_5_7B_F32;
+
+        // For auto-shard, assume equal RAM across nodes (local query only)
+        // A future version will query remote nodes via protocol
+        var node_ram: [8]u64 = undefined;
+        for (0..num_nodes) |idx| {
+            node_ram[idx] = mem.available_bytes;
+        }
+        const plan = auto_shard.planShards(node_ram[0..num_nodes], total_layers, profile, model_path);
+        auto_shard.printPlan(plan);
+
+        // Apply plan to this node's role
+        if (std.mem.eql(u8, role, "coordinator")) {
+            layers_start = plan.assignments[0].start_layer;
+            layers_end = plan.assignments[0].end_layer;
+        } else if (std.mem.eql(u8, role, "worker")) {
+            const last = plan.num_nodes - 1;
+            layers_start = plan.assignments[last].start_layer;
+            layers_end = plan.assignments[last].end_layer;
+        }
+        // For relay, user specifies --node-idx (or keeps manual --layers)
+    }
+
+    if (use_quantized) {
+        std.debug.print("Role: {s} | Layers: {d}..{d} | Model: {s} | \x1b[38;2;0;255;0mQUANTIZED\x1b[0m\n", .{ role, layers_start, layers_end, model_path });
+    } else {
+        std.debug.print("Role: {s} | Layers: {d}..{d} | Model: {s}\n", .{ role, layers_start, layers_end, model_path });
+    }
+
+    if (std.mem.eql(u8, role, "worker")) {
+        const shard = ShardConfig{
+            .total_layers = total_layers,
+            .start_layer = layers_start,
+            .end_layer = layers_end,
+            .is_first = layers_start == 0,
+            .is_last = true,
+            .hidden_size = hidden_size,
+            .model_path = model_path,
+        };
+
+        var worker = try PipelineWorker.init(allocator, shard, port, use_quantized);
+        defer worker.deinit();
+
+        // Run in foreground (blocking)
+        worker.serverLoop();
+    } else if (std.mem.eql(u8, role, "relay")) {
+        const shard = ShardConfig{
+            .total_layers = total_layers,
+            .start_layer = layers_start,
+            .end_layer = layers_end,
+            .is_first = false,
+            .is_last = false,
+            .hidden_size = hidden_size,
+            .model_path = model_path,
+        };
+
+        std.debug.print("Downstream: {s}:{d}\n", .{ downstream_host, downstream_port });
+
+        var relay = try PipelineRelay.init(allocator, shard, port, downstream_host, downstream_port, use_quantized);
+        defer relay.deinit();
+
+        // Run in foreground (blocking)
+        relay.serverLoop();
+    } else {
+        const shard = ShardConfig{
+            .total_layers = total_layers,
+            .start_layer = layers_start,
+            .end_layer = layers_end,
+            .is_first = true,
+            .is_last = false,
+            .hidden_size = hidden_size,
+            .model_path = model_path,
+        };
+
+        var coordinator = try PipelineCoordinator.init(allocator, shard, peer_host, peer_port, use_quantized);
+        defer coordinator.deinit();
+
+        std.debug.print("\x1b[38;2;0;255;255m[Coordinator] Prompt: \"{s}\"\x1b[0m\n", .{prompt});
+
+        // Initialize GGUF tokenizer for proper text encode/decode
+        var tokenizer = gguf_model.tokenizer.Tokenizer.init(allocator, &coordinator.model.reader) catch |err| {
+            std.debug.print("\x1b[38;2;239;68;68m[Coordinator] Tokenizer init failed: {} — falling back to byte tokenization\x1b[0m\n", .{err});
+            // Fallback: byte tokenization
+            var prompt_tokens_fb: std.ArrayList(u32) = .empty;
+            defer prompt_tokens_fb.deinit(allocator);
+            try prompt_tokens_fb.append(allocator, 1); // BOS
+            for (prompt) |byte| {
+                try prompt_tokens_fb.append(allocator, @as(u32, byte) + 100);
+            }
+            const tokens_fb = try coordinator.generate(prompt_tokens_fb.items, max_tokens, temperature);
+            defer allocator.free(tokens_fb);
+            std.debug.print("\x1b[38;2;255;255;255m[Coordinator] Generated tokens (raw): ", .{});
+            for (tokens_fb) |t| std.debug.print("{d} ", .{t});
+            std.debug.print("\x1b[0m\n", .{});
+            return;
+        };
+        defer tokenizer.deinit();
+
+        tokenizer.printInfo();
+
+        // Encode prompt using GGUF tokenizer (proper BPE)
+        const prompt_tokens = try tokenizer.encode(allocator, prompt);
+        defer allocator.free(prompt_tokens);
+
+        std.debug.print("\x1b[38;2;0;255;255m[Coordinator] Tokenized prompt ({d} tokens): ", .{prompt_tokens.len});
+        for (prompt_tokens) |t| std.debug.print("{d} ", .{t});
+        std.debug.print("\x1b[0m\n", .{});
+
+        const tokens = try coordinator.generate(prompt_tokens, max_tokens, temperature);
+        defer allocator.free(tokens);
+
+        // Print raw token IDs
+        std.debug.print("\x1b[38;2;255;255;255m[Coordinator] Generated tokens: ", .{});
+        for (tokens) |t| {
+            std.debug.print("{d} ", .{t});
+        }
+        std.debug.print("\x1b[0m\n", .{});
+
+        // Decode tokens to text using GGUF tokenizer
+        const decoded_text = try tokenizer.decode(allocator, tokens);
+        defer allocator.free(decoded_text);
+
+        std.debug.print("\n\x1b[38;2;0;255;0m╔══════════════════════════════════════════════════════════╗\x1b[0m\n", .{});
+        std.debug.print("\x1b[38;2;0;255;0m║         DECODED OUTPUT                                   ║\x1b[0m\n", .{});
+        std.debug.print("\x1b[38;2;0;255;0m╠══════════════════════════════════════════════════════════╣\x1b[0m\n", .{});
+        std.debug.print("\x1b[38;2;255;255;255m{s}\x1b[0m\n", .{decoded_text});
+        std.debug.print("\x1b[38;2;0;255;0m╚══════════════════════════════════════════════════════════╝\x1b[0m\n", .{});
+    }
+}
