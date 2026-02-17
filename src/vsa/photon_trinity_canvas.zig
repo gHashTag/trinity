@@ -376,6 +376,7 @@ var g_ralph_status: RalphStatus = RalphStatus{};
 var g_ralph_logs: [10][128:0]u8 = undefined;
 var g_ralph_log_count: usize = 0;
 var g_ralph_update_timer: f32 = 0;
+var g_ralph_running: bool = false;
 
 // v2.1: Add entry to live log buffer (ring buffer)
 fn addLiveLog(text: []const u8, source_hue: f32) void {
@@ -7970,6 +7971,62 @@ fn updateDrawFrame() callconv(.c) void {
             rl.DrawTextEx(chat_font, &g_ralph_status.goal, .{ .x = margin + 16, .y = y + 16 }, val_sz, 0.5, bright_text);
             y += 50 * fs + 20;
 
+            // v2.9: Control buttons (START / STOP / RESTART)
+            {
+                const btn_w: f32 = 160;
+                const btn_h: f32 = 36;
+                const btn_gap: f32 = 16;
+                const btn_start_x = margin;
+
+                // START button
+                {
+                    const btn_rect = rl.Rectangle{ .x = btn_start_x, .y = y, .width = btn_w, .height = btn_h };
+                    const btn_color = if (g_ralph_running) dim_text else ralph_green;
+                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
+                    const bg_a: u8 = if (hover and !g_ralph_running) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
+                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = btn_color.r, .g = btn_color.g, .b = btn_color.b, .a = bg_a });
+                    rl.DrawRectangleLinesEx(btn_rect, 1, btn_color);
+                    rl.DrawTextEx(chat_font, "START", .{ .x = btn_start_x + 50, .y = y + 9 }, val_sz, 0.5, btn_color);
+                    if (hover and mouse_pressed and !g_ralph_running) {
+                        g_ralph_running = true;
+                        g_ralph_status.is_healthy = true;
+                    }
+                }
+
+                // STOP button
+                {
+                    const btn2_x = btn_start_x + btn_w + btn_gap;
+                    const btn_rect = rl.Rectangle{ .x = btn2_x, .y = y, .width = btn_w, .height = btn_h };
+                    const btn_color = if (!g_ralph_running) dim_text else ralph_red;
+                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
+                    const bg_a: u8 = if (hover and g_ralph_running) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
+                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = btn_color.r, .g = btn_color.g, .b = btn_color.b, .a = bg_a });
+                    rl.DrawRectangleLinesEx(btn_rect, 1, btn_color);
+                    rl.DrawTextEx(chat_font, "STOP", .{ .x = btn2_x + 55, .y = y + 9 }, val_sz, 0.5, btn_color);
+                    if (hover and mouse_pressed and g_ralph_running) {
+                        g_ralph_running = false;
+                    }
+                }
+
+                // RESTART button
+                {
+                    const btn3_x = btn_start_x + (btn_w + btn_gap) * 2;
+                    const btn_rect = rl.Rectangle{ .x = btn3_x, .y = y, .width = btn_w, .height = btn_h };
+                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
+                    const bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
+                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = ralph_cyan.r, .g = ralph_cyan.g, .b = ralph_cyan.b, .a = bg_a });
+                    rl.DrawRectangleLinesEx(btn_rect, 1, ralph_cyan);
+                    rl.DrawTextEx(chat_font, "RESTART", .{ .x = btn3_x + 40, .y = y + 9 }, val_sz, 0.5, ralph_cyan);
+                    if (hover and mouse_pressed) {
+                        g_ralph_running = false;
+                        g_ralph_status.loop = 0;
+                        g_ralph_status.total_calls = 0;
+                        g_ralph_running = true;
+                        g_ralph_status.is_healthy = true;
+                    }
+                }
+            }
+            y += 36 * fs + 16;
             // Live Log section
             rl.DrawTextEx(chat_font, "LIVE LOG", .{ .x = margin, .y = y }, subtitle_sz, 0.5, ralph_cyan);
             y += subtitle_sz + 8;
