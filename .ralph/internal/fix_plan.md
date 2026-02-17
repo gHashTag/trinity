@@ -226,20 +226,29 @@
 
 ---
 
-## Current Sprint — Golden Chain Cycle 41: Full Multilingual Codegen (Level 11.41)
+## Current Sprint — Golden Chain Cycle 43: Full Local Fluent Multilingual Code Gen (Level 11.43)
 
-> **Goal:** Full local fluent multilingual code gen.
-> **Enforced:** 9-link Golden Chain flow. No direct .zig edits for spec-governed logic.
-> **Verification:** Toxic Verdict + Empirical Benchmarks with proofs.
+> **Goal:** High-fidelity, idiomatic code generation in Zig, Python, Rust, and TS.
+> **Enforced:** 9-link Golden Chain flow. VIBEE-FIRST mandate.
+> **Verification:** Toxic Verdict + Detailed Performance Benchmarking (vs previous versions/SOTA).
 
-- [ ] [P1] Link 1: Tri Decompose — "full local fluent multilingual code gen"
-- [ ] [P1] Link 2: Tri Plan — Tech Tree strategy update (Level 11.41)
-- [ ] [P1] Link 3: Tri Spec Create — `.vibee` source of truth updates
-- [ ] [P1] Link 4: Tri Gen — Generate Zig/TS/Python code from specs
-- [ ] [P1] Link 5: Tri Test — E2E validation of generated targets
-- [ ] [P1] Link 6: Tri Bench — Performance benchmarking vs Cycle 40 (with proof logs)
-- [ ] [P1] Link 7: Tri Verdict — **TOXIC VERDICT MANDATE**
-- [ ] [P1] Link 8: Tri Git — Multi-agent commit and push
+- [x] Link 1: Tri Decompose — "full local fluent multilingual code gen"
+- [/] Link 2: Tri Plan — Update Tech Tree (MGEN-001..003) and Strategy
+- [x] Link 3: Tri Spec Create — Update `multilingual_code_gen.vibee` with Fluency Engine
+- [ ] Link 4: Tri Gen — `zig build vibee -- gen`. Generate Zig/Python/Rust/TS from spec.
+- [ ] Link 5: Tri Test — E2E validation of all generated targets.
+- [ ] Link 6: Tri Bench — Performance benchmarking vs Cycle 40 & SOTA (with proofs).
+- [ ] Link 7: Tri Verdict — **TOXIC VERDICT MANDATE**
+- [ ] Link 8: Tri Git — Multi-agent commit/push with Telegram report.
+- [ ] Link 9: Tri Loop Decision — Needle check for Level 11.43 achievement.
+
+### Quarks
+- [x] [P1] Q-MGEN-001: Support `language: [list]` in VIBEE parser and update specs
+- [ ] [P1] Q-MGEN-002: Implement Fluent Python Template (Dataclasses, Type Hints)
+- [ ] [P1] Q-MGEN-003: Implement Fluent Rust Template (Structs, Traits, Result)
+- [ ] [P1] Q-MGEN-004: Implement Fluent TypeScript Template (Interfaces, ESM, CamelCase)
+- [ ] [P2] Q-MGEN-005: Symbolic Mapping Verification (unbind/bind semantic transfer)
+- [ ] [P2] Q-MGEN-006: Multilingual Benchmark Suite (Speed/Memory proofs)
 - [ ] [P1] Link 9: Tri Loop Decision — Needle check for Level 11.41 achievement
 
 ---

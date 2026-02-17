@@ -34,10 +34,9 @@ zig build test                    # All tests
 | Role | Path | Editable |
 |------|------|----------|
 | Specs | `specs/tri/*.vibee` | YES (Primary Source) |
-| Logic | `src/*.zig`, `src/vibeec/*.zig` | YES |
-| Output | `trinity/output/` | NEVER (Auto-generated) |
+| Generated Code | `src/*.zig`, `trinity/output/*.zig` | NEVER (Auto-generated) |
 
-**Golden Rule:** If a feature exists in a `.vibee` spec, edit the spec, not the generated Zig code.
+**Golden Rule:** Every `.zig` file in `src/` MUST be generated from a `.vibee` specification. Manual edits to `.zig` files are strictly forbidden unless it is impossible to express the logic in VIBEE (RARE). If a feature exists in a `.vibee` spec, edit the spec, not the generated Zig code.
 
 ---
 
@@ -451,7 +450,12 @@ git worktree prune
 
 ## 18. Ralph-Only Development Mandate
 
-**All Claude Code development on Trinity MUST go through the Ralph autonomous workflow.**
+**All Claude Code development on Trinity MUST go through the Ralph autonomous workflow and follow the VIBEE-FIRST generation mandate.**
+
+### VIBEE-FIRST Mandate
+- **All** `.zig` code must originate from `.vibee` specs.
+- **Never** create a `.zig` file manually in a project folder.
+- **Always** create the spec first, then generate.
 
 ### Why
 
@@ -480,3 +484,26 @@ git worktree prune
 - **Never** skip recording outcomes in memory files
 - **Never** work on tasks not in fix_plan.md or TECH_TREE.md
 - **Always** propose 3 Tech Tree options at task completion
+
+---
+
+## 19. Telegram Reporting Protocol
+
+All pipeline events are reported to Telegram via OpenClaw. This is automatic and non-blocking.
+
+| Rule | Detail |
+|------|--------|
+| Report script | `.ralph/scripts/report.sh` |
+| Config | `.ralphrc` (`RALPH_REPORT_ENABLED`, `RALPH_TELEGRAM_CHAT_ID`) |
+| Gate integration | `gate.sh` calls `report.sh` on pass/fail |
+| Commit hook | `.git/hooks/post-commit` triggers commit report |
+| Failure mode | Graceful — reporting failure never blocks the pipeline |
+| Kill switch | `RALPH_REPORT_ENABLED=false` in `.ralphrc` |
+
+**Events reported:**
+1. Quality gate pass/fail (with specific gate name on failure)
+2. Git commits (branch + SHA + message)
+3. Circuit breaker open/close
+4. Loop start/end
+5. Toxic verdict summary
+6. RALPH_STATUS block summary
