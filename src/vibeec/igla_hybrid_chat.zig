@@ -47,9 +47,11 @@ const tokenizer_mod = @import("gguf_tokenizer.zig");
 const inference = @import("gguf_inference.zig");
 const tvc = @import("tvc_corpus");
 const kg = @import("igla_kg");
+const triples_parser = @import("triples_parser");
 const openai_client = @import("openai_client.zig");
 const anthropic_client = @import("anthropic_client.zig");
 const long_context = @import("igla_long_context_engine.zig");
+const triples_parser = @import("triples_parser");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONFIGURATION
@@ -915,6 +917,25 @@ pub const IglaHybridChat = struct {
             self.memory.store(query, llm_result.response, llm_result.confidence);
         }
 
+        // v3.0: SYM-004 Extract triples from LLM response and store in KG
+        if (reflection_status.wasLearned()) {
+            self.extractAndStoreTriples(llm_result.response);
+        }
+
+        // v2.5: Extract knowledge triples from LLM response -> KG (SYM-004)
+        if (self.knowledge_graph) |*kgraph| {
+            if (reflection_status.wasLearned() and llm_result.confidence >= 0.5) {
+                const extraction = triples_parser.extractTriples(llm_result.response);
+                for (0..extraction.count) |ei| {
+                    if (extraction.get(ei)) |triple| {
+                        if (triple.confidence >= 0.6) {
+                            kgraph.addFact(triple.subject(), triple.predicate(), triple.object()) catch {};
+                        }
+                    }
+                }
+            }
+        }
+
         // v2.0: Export wave state for canvas
         self.exportWaveState(self.last_routing, 0.0, llm_result.confidence, elapsed, reflection_status.wasLearned());
 
@@ -1336,6 +1357,36 @@ pub const IglaHybridChat = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // v3.0: SYM-004 TRIPLE EXTRACTION PIPELINE
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Extract triples from LLM response and store qualifying ones in KG.
+    /// Only stores triples with confidence >= MIN_TRIPLE_CONFIDENCE (0.6).
+    fn extractAndStoreTriples(self: *Self, response: []const u8) void {
+        const extraction = triples_parser.extractTriples(response);
+        if (extraction.count == 0) return;
+
+        self.ensureKG();
+        if (self.knowledge_graph) |*kgraph| {
+            for (0..extraction.count) |i| {
+                if (extraction.get(i)) |triple| {
+                    // Filter by confidence threshold
+                    if (triple.confidence < 0.6) continue;
+
+                    kgraph.addFact(
+                        triple.subject(),
+                        triple.predicate(),
+                        triple.object(),
+                    ) catch {
+                        // KG full or allocation failed — skip silently
+                        continue;
+                    };
+                }
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // v2.1: TOOL DETECTION AND EXECUTION
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1447,7 +1498,7 @@ pub const IglaHybridChat = struct {
 
         // Strip common prefixes
         const prefixes = [_][]const u8{
-            "what is ", "what's ", "calculate ", "compute ", "evaluate ", "solve ",
+            "what is ",     "what's ",    "calculate ", "compute ", "evaluate ", "solve ",
             "how much is ", "result of ",
         };
         for (prefixes) |prefix| {
@@ -1965,7 +2016,7 @@ pub const IglaHybridChat = struct {
         std.debug.print(" ok ({d}ms, {d} tok/s)\n[LLM] ", .{ prefill_us / 1000, prefill_tps });
 
         // Seed history with last prompt tokens for context
-        const history_seed = if (tokens.len > 16) tokens[tokens.len - 16..] else tokens;
+        const history_seed = if (tokens.len > 16) tokens[tokens.len - 16 ..] else tokens;
         for (history_seed) |t| {
             try token_history.append(self.allocator, t);
         }
