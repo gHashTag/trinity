@@ -1882,4 +1882,17 @@ pub fn build(b: *std.Build) void {
     const gen_gguf_parser_step = b.step("test-gguf-parser", "Test INF-001 GGUF Parser — load any GGUF model");
     gen_gguf_parser_step.dependOn(&run_gen_gguf_parser_tests.step);
     test_step.dependOn(&run_gen_gguf_parser_tests.step);
+
+    // Generated Transformer Forward Pass tests (INF-002: Native LLM inference)
+    const gen_tfm_fwd_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/transformer_forward.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_tfm_fwd_tests = b.addRunArtifact(gen_tfm_fwd_tests);
+    const gen_tfm_fwd_step = b.step("test-transformer-forward", "Test INF-002 Transformer Forward Pass — native LLM inference");
+    gen_tfm_fwd_step.dependOn(&run_gen_tfm_fwd_tests.step);
+    test_step.dependOn(&run_gen_tfm_fwd_tests.step);
 }
