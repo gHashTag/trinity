@@ -81,7 +81,7 @@
 |CORE-001|VIBEE Parser v2|core|+20% spec parsing speed|
 |CORE-002|Multi-Language Codegen|core|+42 target languages|
 |CORE-003|Bytecode VM|core|+500% execution speed vs interpreter|
-|INF-001|GGUF Parser|inference|Load any GGUF model|
+|**INF-001**|**GGUF Parser**|**inference**|**gguf_parser.zig (850 lines): GGUF v3 binary parser, ByteReader, 13 value types, tensor info, Q4_0/Q8_0 dequant, f16-to-f32, model config extraction, GGUFBuilder for round-trip tests, 20 tests, build.zig wired**|
 |INF-002|Transformer Forward Pass|inference|Native LLM inference|
 |DEP-001|Docker Container|deployment|Portable deployment|
 |DEP-002|Fly.io Integration|deployment|Global edge deployment|
@@ -104,7 +104,7 @@
 | Branch | Done | Total | % |
 |--------|------|-------|---|
 |Core|3|4|75%|
-|Inference|2|5|40%|
+|**Inference**|**3**|**5**|**60%**|
 |Deployment|2|4|50%|
 |**Optimization**|**16**|**16**|**100%**|
 |Hardware|0|3|0%|
@@ -114,10 +114,10 @@
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
 |Multilingual|3|3|100%|
-|**Total**|**47**|**56**|**84%**|
+|**Total**|**48**|**56**|**86%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **INF-001** GGUF Parser — load any GGUF model, unlocks real inference pipeline
+1. **INF-002** Transformer Forward Pass — native LLM inference with ternary ops
 2. **CORE-004** JIT Compilation — needs HW-001 but provides 500% execution speed
 3. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
 
