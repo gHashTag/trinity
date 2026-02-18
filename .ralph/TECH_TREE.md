@@ -97,7 +97,7 @@
 ## 🔒 Locked (waiting for dependencies)
 | ID | Name | Branch | Needs (missing) |
 |----|------|--------|----------------|
-|CORE-004|JIT Compilation|core|HW-001 ✅ — **UNLOCKED**|
+
 |INF-005|Speculative Decoding v2|inference|INF-003 ❌, INF-004 ❌|
 |OPT-003|Weight Streaming|optimization|OPT-002 ❌|
 |DEP-004|Multi-Region Replication|deployment|DEP-003 ❌|
@@ -106,7 +106,7 @@
 ## 📊 Branch Progress
 | Branch | Done | Total | % |
 |--------|------|-------|---|
-|Core|3|4|75%|
+|**Core**|**4**|**4**|**100%**|
 |**Inference**|**4**|**5**|**80%**|
 |Deployment|2|4|50%|
 |**Optimization**|**16**|**16**|**100%**|
@@ -117,12 +117,12 @@
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
 |Multilingual|3|3|100%|
-|**Total**|**50**|**56**|**89%**|
+|**Total**|**51**|**56**|**91%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **CORE-004** JIT Compilation — HW-001 ✅ UNLOCKED, provides 500% execution speed
-2. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
-3. **DEP-001** Docker Container — portable deployment, enables CI testing
+1. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
+2. **DEP-001** Docker Container — portable deployment, enables CI testing
+3. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
 
 ---
 φ² + 1/φ² = 3 | TRINITY

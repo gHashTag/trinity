@@ -1908,4 +1908,17 @@ pub fn build(b: *std.Build) void {
     const gen_hw_abs_step = b.step("test-hardware-abstraction", "Test HW-001 Hardware Abstraction Layer — unified ternary backend");
     gen_hw_abs_step.dependOn(&run_gen_hw_abs_tests.step);
     test_step.dependOn(&run_gen_hw_abs_tests.step);
+
+    // Generated JIT Compilation tests (CORE-004: Multi-tier JIT pipeline)
+    const gen_jit_comp_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/jit_compilation.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_jit_comp_tests = b.addRunArtifact(gen_jit_comp_tests);
+    const gen_jit_comp_step = b.step("test-jit-compilation", "Test CORE-004 JIT Compilation — multi-tier pipeline");
+    gen_jit_comp_step.dependOn(&run_gen_jit_comp_tests.step);
+    test_step.dependOn(&run_gen_jit_comp_tests.step);
 }
