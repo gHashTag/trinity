@@ -1791,4 +1791,17 @@ pub fn build(b: *std.Build) void {
     const gen_rewards_step = b.step("test-rewards", "Test $TRI live rewards mint/slash economics");
     gen_rewards_step.dependOn(&run_gen_rewards_tests.step);
     test_step.dependOn(&run_gen_rewards_tests.step);
+
+    // Generated Swarm Watch tests (DEV-003: DHT + TRI economy monitor)
+    const gen_swarm_watch_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/swarm_watch.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_swarm_watch_tests = b.addRunArtifact(gen_swarm_watch_tests);
+    const gen_swarm_watch_step = b.step("test-swarm-watch", "Test DEV-003 Swarm Watch DHT & TRI monitor");
+    gen_swarm_watch_step.dependOn(&run_gen_swarm_watch_tests.step);
+    test_step.dependOn(&run_gen_swarm_watch_tests.step);
 }
