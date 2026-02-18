@@ -1804,4 +1804,17 @@ pub fn build(b: *std.Build) void {
     const gen_swarm_watch_step = b.step("test-swarm-watch", "Test DEV-003 Swarm Watch DHT & TRI monitor");
     gen_swarm_watch_step.dependOn(&run_gen_swarm_watch_tests.step);
     test_step.dependOn(&run_gen_swarm_watch_tests.step);
+
+    // Generated Ternary KV Cache tests (OPT-T03: 16x KV cache compression)
+    const gen_ternary_kv_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/ternary_kv_cache.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_ternary_kv_tests = b.addRunArtifact(gen_ternary_kv_tests);
+    const gen_ternary_kv_step = b.step("test-ternary-kv", "Test OPT-T03 Ternary KV Cache 16x compression");
+    gen_ternary_kv_step.dependOn(&run_gen_ternary_kv_tests.step);
+    test_step.dependOn(&run_gen_ternary_kv_tests.step);
 }
