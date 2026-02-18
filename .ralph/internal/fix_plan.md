@@ -359,3 +359,37 @@
 - Implementation blocks in .vibee must match `!void` signature — no typed returns
 - Generated modules in `generated/` use `@import("vsa")` module name, not relative paths
 - When adding proofs: use `vsa.randomVector(dim, seed)` with deterministic seeds for reproducibility
+
+---
+
+## 💰 POST-NEXUS: TRI SOTA Monetization
+
+> **Start after NEXUS-024 complete**
+> **Goal:** $1M/month revenue, $1B valuation
+
+### Developer Experience (Week 1-2)
+- [ ] [P1] DX-001: One-line install (`curl -sSL trinity.ai/install | bash`)
+- [ ] [P2] DX-002: VS Code extension
+- [ ] [P2] DX-003: Web playground (trinity.ai/playground)
+
+### Community (Week 3-4)
+- [ ] [P2] OSS-001: GitHub stars campaign (10K stars = $TRI airdrop)
+- [ ] [P3] OSS-002: Hackathon ($10K prize pool)
+
+### Enterprise (Month 2-3)
+- [ ] [P1] ENT-001: Enterprise tier ($999/mo)
+- [ ] [P2] ENT-002: On-premise deployment
+- [ ] [P2] ENT-003: Cloud platform (pay-per-hour)
+
+### AI Products (Month 4-6)
+- [ ] [P1] API-001: Trinity AI API ($0.01/1K tokens)
+- [ ] [P2] LLM-011: Trinity Chat ($9/mo)
+- [ ] [P2] LLM-012: Trinity Code ($9/mo)
+
+### Token (Month 6-12)
+- [ ] [P1] TOKEN-001: $TRI launch (1B supply, $100M market cap)
+- [ ] [P2] TOKEN-002: Staking (10% APY) + governance
+
+---
+
+*Full roadmap: /Users/playra/clawd/TRI_SOTA_ROADMAP.md*

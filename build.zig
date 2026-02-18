@@ -994,6 +994,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // LLM Triples Extractor module (SYM-002: pattern-based extraction) - defined early for fluent CLI
+    const triples_parser_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/triples_parser.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Fluent CLI - Local Chat with History Truncation (NO HANG!)
     const fluent_cli = b.addExecutable(.{
         .name = "fluent",
@@ -1005,6 +1012,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "igla_chat", .module = vibeec_chat },
                 .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
                 .{ .name = "igla_kg", .module = igla_kg_mod },
+                .{ .name = "triples_parser", .module = triples_parser_mod },
             },
         }),
     });
@@ -1054,12 +1062,6 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
         },
-    });
-    // LLM Triples Extractor module (SYM-002: pattern-based extraction)
-    const triples_parser_mod = b.createModule(.{
-        .root_source_file = b.path("src/vibeec/triples_parser.zig"),
-        .target = target,
-        .optimize = optimize,
     });
     // IGLA Hybrid Chat module (symbolic + LLM fallback + KG)
     const vibeec_hybrid_chat = b.createModule(.{
