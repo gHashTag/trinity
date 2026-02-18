@@ -89,7 +89,7 @@
 |OPT-T07|Batch Ternary MatMul|optimization|2.28x matmul speedup|
 |OPT-M01|Memory-Mapped Loading|optimization|30x faster model load|
 |OPT-C01|KV Cache Compression|optimization|5-16x cache compression|
-|OPT-S01|Speculative Decoding|optimization|2-3x generation speed|
+|**OPT-S01**|**Speculative Decoding**|**optimization**|**speculative_decoding.zig (700 lines): draft-verify-accept cycle, min(1,p_target/p_draft) criterion, adjusted rejection sampling, LCG PRNG, mock ProbDist, SpeedupAnalysis, 14 tests, build.zig wired**|
 
 ## 🔒 Locked (waiting for dependencies)
 | ID | Name | Branch | Needs (missing) |
@@ -117,9 +117,9 @@
 |**Total**|**47**|**56**|**84%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **OPT-S01** Speculative Decoding — 2-3x generation speed, uses existing ternary pipeline
-2. **INF-001** GGUF Parser — load any GGUF model, unlocks real inference pipeline
-3. **CORE-004** JIT Compilation — needs HW-001 but provides 500% execution speed
+1. **INF-001** GGUF Parser — load any GGUF model, unlocks real inference pipeline
+2. **CORE-004** JIT Compilation — needs HW-001 but provides 500% execution speed
+3. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
 
 ---
 φ² + 1/φ² = 3 | TRINITY

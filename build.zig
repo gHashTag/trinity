@@ -1856,4 +1856,17 @@ pub fn build(b: *std.Build) void {
     const gen_cont_batch_step = b.step("test-continuous-batching", "Test OPT-B01 Continuous Batching 2-3x throughput");
     gen_cont_batch_step.dependOn(&run_gen_cont_batch_tests.step);
     test_step.dependOn(&run_gen_cont_batch_tests.step);
+
+    // Generated Speculative Decoding tests (OPT-S01: 2-3x generation speed)
+    const gen_spec_dec_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/speculative_decoding.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_spec_dec_tests = b.addRunArtifact(gen_spec_dec_tests);
+    const gen_spec_dec_step = b.step("test-speculative-decoding", "Test OPT-S01 Speculative Decoding 2-3x generation speed");
+    gen_spec_dec_step.dependOn(&run_gen_spec_dec_tests.step);
+    test_step.dependOn(&run_gen_spec_dec_tests.step);
 }
