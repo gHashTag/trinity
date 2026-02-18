@@ -116,7 +116,10 @@ types:
       naming_convention: String
       file_extension: String
       indent_style: String
+      comment_style: String
       type_mappings: HashMap<String, String>
+      idioms: List<String> # e.g., "async-await", "error-union", "dataclass"
+      template_path: String
 
   CodeGenStats:
     fields:
@@ -126,11 +129,17 @@ types:
       generation_time_ms: u64
       memory_used_bytes: u64
 
+  FluencyEngine:
+    fields:
+      profiles: HashMap<TargetLanguage, LanguageProfile>
+      active_dimension: usize
+      semantic_codebook: Codebook
+
   MultilingualCodeGen:
     fields:
       allocator: Allocator
       codebook: Codebook
-      language_profiles: HashMap<TargetLanguage, LanguageProfile>
+      fluency: FluencyEngine
       dimension: usize
       generated_modules: List<GeneratedModule>
 

@@ -81,6 +81,11 @@ branches:
     color: "#9370DB"
     nodes: ["HW-001", "HW-002", "HW-003"]
 
+  - name: "math"
+    description: "Mathematical foundations of VSA and Ternary logic"
+    color: "#FF1493"
+    nodes: ["MATH-001", "MATH-002", "MATH-003", "MATH-004", "MATH-005"]
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # TECHNOLOGY NODES
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -412,6 +417,57 @@ tech_nodes:
     status: "available"
     estimated_hours: 30
     priority: 2
+
+  # MATH BRANCH (NEW - 2026-02-17)
+  - id: "MATH-001"
+    name: "VSA Math Proofs v2"
+    branch: "math"
+    complexity: 3
+    potential_gain: "12 proofs: bind inverse, trinity identity, etc."
+    dependencies: []
+    status: "completed"
+    estimated_hours: 40
+    priority: 1
+
+  - id: "MATH-002"
+    name: "Bundle N Optimization"
+    branch: "math"
+    complexity: 3
+    potential_gain: "O(N*D) accumulator"
+    dependencies: ["MATH-001"]
+    status: "completed"
+    estimated_hours: 30
+    priority: 1
+
+  - id: "MATH-003"
+    name: "VSA Benchmarks vs Competitors"
+    branch: "math"
+    complexity: 4
+    potential_gain: "Quantified advantage vs float32"
+    dependencies: ["MATH-002"]
+    status: "in_progress"
+    estimated_hours: 50
+    priority: 1
+
+  - id: "MATH-004"
+    name: "Multilingual Math Codegen"
+    branch: "math"
+    complexity: 3
+    potential_gain: "Math proofs in Python/Rust/Go"
+    dependencies: ["MATH-001"]
+    status: "in_progress"
+    estimated_hours: 40
+    priority: 2
+
+  - id: "MATH-005"
+    name: "Large-Scale Analogies (1000+)"
+    branch: "math"
+    complexity: 5
+    potential_gain: "Semantic scalability"
+    dependencies: ["MATH-003"]
+    status: "locked"
+    estimated_hours: 100
+    priority: 3
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MILESTONES

@@ -197,6 +197,8 @@ pub const ChatServer = struct {
             }
         } else if (std.mem.startsWith(u8, path, "/diagnostic")) {
             try self.handleDiagnostic(connection);
+        } else if (std.mem.startsWith(u8, path, "/api/ralph-status")) {
+            try self.handleRalphStatus(connection, path);
         } else if (std.mem.startsWith(u8, path, "/api/files")) {
             try self.handleFileList(connection);
         } else if (std.mem.startsWith(u8, path, "/api/compile")) {
@@ -422,6 +424,124 @@ pub const ChatServer = struct {
         try self.sendJsonResponse(connection, file_list);
     }
 
+    /// GET /api/ralph-status?agent=N — Return internal Ralph autonomous state for agent N (0-3)
+    fn handleRalphStatus(self: *Self, connection: *std.net.Server.Connection, path: []const u8) !void {
+        // Parse ?agent=N from path (default to 0 = main worktree)
+        const worktree_paths = [_][]const u8{
+            "/Users/playra/trinity",
+            "/Users/playra/trinity-w1",
+            "/Users/playra/trinity-w2",
+            "/Users/playra/trinity-w3",
+        };
+        const agent_idx: usize = blk: {
+            if (std.mem.indexOf(u8, path, "agent=")) |idx| {
+                const start = idx + 6;
+                if (start < path.len and path[start] >= '0' and path[start] <= '3') {
+                    break :blk path[start] - '0';
+                }
+            }
+            break :blk 0;
+        };
+        const base_path = worktree_paths[@min(agent_idx, 3)];
+
+        // Open worktree directory (absolute path)
+        var base_dir = std.fs.openDirAbsolute(base_path, .{}) catch {
+            try self.sendJsonResponse(connection, "{\"loop\":{\"status\":\"offline\"},\"circuit_breaker\":{\"state\":\"UNKNOWN\"},\"logs\":[],\"agent\":" ++ "0" ++ ",\"reachable\":false}");
+            return;
+        };
+        defer base_dir.close();
+
+        var json: std.ArrayListUnmanaged(u8) = .{};
+        defer json.deinit(self.allocator);
+
+        try json.appendSlice(self.allocator, "{\"agent\":");
+        var agent_buf: [4]u8 = undefined;
+        _ = std.fmt.bufPrint(&agent_buf, "{d}", .{agent_idx}) catch {};
+        const agent_str_len = std.mem.indexOfScalar(u8, &agent_buf, 0) orelse 1;
+        try json.appendSlice(self.allocator, agent_buf[0..agent_str_len]);
+
+        // 1. Read .ralph/logs/status.json
+        const status_json = base_dir.readFileAlloc(self.allocator, ".ralph/logs/status.json", 4096) catch |err| s_blk: {
+            std.debug.print("[ChatServer] Ralph agent {d} status read error: {}\n", .{ agent_idx, err });
+            break :s_blk "{\"status\":\"offline\"}";
+        };
+        const status_is_fallback = std.mem.eql(u8, status_json, "{\"status\":\"offline\"}");
+        defer if (!status_is_fallback) self.allocator.free(status_json);
+
+        try json.appendSlice(self.allocator, ",\"reachable\":");
+        try json.appendSlice(self.allocator, if (status_is_fallback) "false" else "true");
+        try json.appendSlice(self.allocator, ",\"loop\":");
+        try json.appendSlice(self.allocator, status_json);
+
+        // 2. Read .ralph/internal/.circuit_breaker_state
+        const cb_json = base_dir.readFileAlloc(self.allocator, ".ralph/internal/.circuit_breaker_state", 4096) catch |err| cb_blk: {
+            std.debug.print("[ChatServer] Ralph agent {d} CB read error: {}\n", .{ agent_idx, err });
+            break :cb_blk "{\"state\":\"UNKNOWN\"}";
+        };
+        const cb_is_fallback = std.mem.eql(u8, cb_json, "{\"state\":\"UNKNOWN\"}");
+        defer if (!cb_is_fallback) self.allocator.free(cb_json);
+
+        try json.appendSlice(self.allocator, ",\"circuit_breaker\":");
+        try json.appendSlice(self.allocator, cb_json);
+
+        // 3. Tail latest log
+        try json.appendSlice(self.allocator, ",\"logs\":[");
+        {
+            var dir = base_dir.openDir(".ralph/logs", .{ .iterate = true }) catch null;
+            if (dir) |*d| {
+                defer d.close();
+                var latest_time: i128 = 0;
+                var latest_name: [128]u8 = undefined;
+                var latest_len: usize = 0;
+                var it = d.iterate();
+                while (it.next() catch null) |entry| {
+                    if (std.mem.startsWith(u8, entry.name, "claude_output_")) {
+                        const stat = d.statFile(entry.name) catch continue;
+                        if (stat.mtime > latest_time) {
+                            latest_time = stat.mtime;
+                            @memcpy(latest_name[0..entry.name.len], entry.name);
+                            latest_len = entry.name.len;
+                        }
+                    }
+                }
+
+                if (latest_len > 0) {
+                    const log_content = d.readFileAlloc(self.allocator, latest_name[0..latest_len], 16384) catch null;
+                    if (log_content) |content| {
+                        defer self.allocator.free(content);
+                        var line_it = std.mem.splitBackwardsScalar(u8, content, '\n');
+                        var count: usize = 0;
+                        var lines_buf: [20][]const u8 = undefined;
+                        while (line_it.next()) |line| {
+                            if (line.len == 0) continue;
+                            lines_buf[count] = line;
+                            count += 1;
+                            if (count >= 20) break;
+                        }
+
+                        var i: usize = 0;
+                        while (i < count) : (i += 1) {
+                            const line = lines_buf[count - 1 - i];
+                            if (i > 0) try json.appendSlice(self.allocator, ",");
+                            try json.appendSlice(self.allocator, "\"");
+                            for (line) |c| {
+                                switch (c) {
+                                    '"' => try json.appendSlice(self.allocator, "\\\""),
+                                    '\\' => try json.appendSlice(self.allocator, "\\\\"),
+                                    else => if (c >= 32) try json.append(self.allocator, c) else try json.append(self.allocator, ' '),
+                                }
+                            }
+                            try json.appendSlice(self.allocator, "\"");
+                        }
+                    }
+                }
+            }
+        }
+        try json.appendSlice(self.allocator, "]}");
+
+        try self.sendJsonResponse(connection, json.items);
+    }
+
     /// POST /api/compile — Compile VIBEE spec or analyze Zig code
     fn handleCompile(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
         const code = extractJsonString(body, "code") orelse {
@@ -507,20 +627,21 @@ pub const ChatServer = struct {
             try json.appendSlice(self.allocator, "{\"success\":true,\"language\":\"vibee\",\"output\":\"");
 
             // VIBEE Compiler v2.5 output
-            const output = std.fmt.allocPrint(self.allocator,
+            const output = std.fmt.allocPrint(
+                self.allocator,
                 "VIBEE Compiler v2.5 \\u2014 Real Parse\\n" ++
-                "\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\n" ++
-                "Spec:       {s} v{s}\\n" ++
-                "Language:   {s}\\n" ++
-                "Module:     {s}\\n" ++
-                "Types:      {d} defined\\n" ++
-                "Fields:     {d} total\\n" ++
-                "Behaviors:  {d} found\\n" ++
-                "Lines:      {d}\\n" ++
-                "\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\n" ++
-                "Status:     {s}\\n" ++
-                "Output:     trinity/output/{s}.zig\\n" ++
-                "Target:     {s}",
+                    "\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\n" ++
+                    "Spec:       {s} v{s}\\n" ++
+                    "Language:   {s}\\n" ++
+                    "Module:     {s}\\n" ++
+                    "Types:      {d} defined\\n" ++
+                    "Fields:     {d} total\\n" ++
+                    "Behaviors:  {d} found\\n" ++
+                    "Lines:      {d}\\n" ++
+                    "\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\n" ++
+                    "Status:     {s}\\n" ++
+                    "Output:     trinity/output/{s}.zig\\n" ++
+                    "Target:     {s}",
                 .{
                     name,
                     version,
@@ -609,7 +730,8 @@ pub const ChatServer = struct {
     // ═══════════════════════════════════════════════════════════════════════════
 
     fn sendJsonResponse(self: *Self, connection: *std.net.Server.Connection, json_body: []const u8) !void {
-        const header = std.fmt.allocPrint(self.allocator,
+        const header = std.fmt.allocPrint(
+            self.allocator,
             "HTTP/1.1 200 OK\r\n" ++
                 "Content-Type: application/json\r\n" ++
                 "Access-Control-Allow-Origin: *\r\n" ++
@@ -629,7 +751,8 @@ pub const ChatServer = struct {
         const body = std.fmt.allocPrint(self.allocator, "{{\"error\":\"{s}\"}}", .{message}) catch return;
         defer self.allocator.free(body);
 
-        const header = std.fmt.allocPrint(self.allocator,
+        const header = std.fmt.allocPrint(
+            self.allocator,
             "HTTP/1.1 500 Internal Server Error\r\n" ++
                 "Content-Type: application/json\r\n" ++
                 "Access-Control-Allow-Origin: *\r\n" ++
@@ -665,17 +788,18 @@ pub const ChatServer = struct {
             // ── RAZUM (Mind) ──
             try json.appendSlice(self.allocator, ",\"razum\":{");
             {
-                const r = std.fmt.allocPrint(self.allocator,
+                const r = std.fmt.allocPrint(
+                    self.allocator,
                     "\"symbolic_hits\":{d}," ++
-                    "\"symbolic_hit_rate\":{d:.4}," ++
-                    "\"memory_entries\":{d}," ++
-                    "\"memory_hit_rate\":{d:.4}," ++
-                    "\"memory_evictions\":{d}," ++
-                    "\"kg_hits\":{d}," ++
-                    "\"kg_hit_rate\":{d:.4}," ++
-                    "\"kg_facts_loaded\":{d}," ++
-                    "\"llm_loaded\":{s}," ++
-                    "\"last_routing\":\"{s}\"",
+                        "\"symbolic_hit_rate\":{d:.4}," ++
+                        "\"memory_entries\":{d}," ++
+                        "\"memory_hit_rate\":{d:.4}," ++
+                        "\"memory_evictions\":{d}," ++
+                        "\"kg_hits\":{d}," ++
+                        "\"kg_hit_rate\":{d:.4}," ++
+                        "\"kg_facts_loaded\":{d}," ++
+                        "\"llm_loaded\":{s}," ++
+                        "\"last_routing\":\"{s}\"",
                     .{
                         stats.symbolic_hits,
                         stats.symbolic_hit_rate,
@@ -699,12 +823,13 @@ pub const ChatServer = struct {
             // ── MATERIYA (Matter) ──
             try json.appendSlice(self.allocator, ",\"materiya\":{");
             {
-                const m = std.fmt.allocPrint(self.allocator,
+                const m = std.fmt.allocPrint(
+                    self.allocator,
                     "\"tvc_enabled\":{s}," ++
-                    "\"tvc_corpus_size\":{d}," ++
-                    "\"tvc_hits\":{d}," ++
-                    "\"tvc_hit_rate\":{d:.4}," ++
-                    "\"cache_hit_rate\":{d:.4}",
+                        "\"tvc_corpus_size\":{d}," ++
+                        "\"tvc_hits\":{d}," ++
+                        "\"tvc_hit_rate\":{d:.4}," ++
+                        "\"cache_hit_rate\":{d:.4}",
                     .{
                         if (stats.tvc_enabled) "true" else "false",
                         stats.tvc_corpus_size,
@@ -723,19 +848,20 @@ pub const ChatServer = struct {
             // ── DUKH (Spirit) ──
             try json.appendSlice(self.allocator, ",\"dukh\":{");
             {
-                const d = std.fmt.allocPrint(self.allocator,
+                const d = std.fmt.allocPrint(
+                    self.allocator,
                     "\"total_queries\":{d}," ++
-                    "\"energy_saved_wh\":{d:.6}," ++
-                    "\"groq_calls\":{d}," ++
-                    "\"claude_calls\":{d}," ++
-                    "\"tool_hits\":{d}," ++
-                    "\"vision_calls\":{d}," ++
-                    "\"whisper_calls\":{d}," ++
-                    "\"groq_success_rate\":{d:.4}," ++
-                    "\"claude_success_rate\":{d:.4}," ++
-                    "\"context_enabled\":{s}," ++
-                    "\"context_messages\":{d}," ++
-                    "\"context_key_facts\":{d}",
+                        "\"energy_saved_wh\":{d:.6}," ++
+                        "\"groq_calls\":{d}," ++
+                        "\"claude_calls\":{d}," ++
+                        "\"tool_hits\":{d}," ++
+                        "\"vision_calls\":{d}," ++
+                        "\"whisper_calls\":{d}," ++
+                        "\"groq_success_rate\":{d:.4}," ++
+                        "\"claude_success_rate\":{d:.4}," ++
+                        "\"context_enabled\":{s}," ++
+                        "\"context_messages\":{d}," ++
+                        "\"context_key_facts\":{d}",
                     .{
                         stats.total_queries,
                         stats.energy_saved_wh,

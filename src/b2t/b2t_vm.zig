@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T VM - Ternary Virtual Machine
 // Executes .trit bytecode files
 // V = n × 3^k × π^m × φ^p × e^q
@@ -1145,3 +1146,4 @@ test "VM execute T_TNEG (native ternary negate)" {
     const result = try vm.run();
     try std.testing.expectEqual(@as(i32, -42), result);
 }
+// φ² + 1/φ² = 3 | TRINITY

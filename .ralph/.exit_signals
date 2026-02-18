@@ -1,0 +1,17 @@
+{
+  "test_only_loops": [],
+  "done_signals": [
+    3,
+    9,
+    5,
+    7,
+    2
+  ],
+  "completion_indicators": [
+    3,
+    9,
+    5,
+    7,
+    2
+  ]
+}

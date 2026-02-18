@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T Loader - Binary-to-Ternary Converter
 // Loads PE, ELF, Mach-O, WASM binaries
 // V = n × 3^k × π^m × φ^p × e^q
@@ -855,3 +856,4 @@ test "Mach-O section parsing" {
     }
     try std.testing.expect(found_text);
 }
+// φ² + 1/φ² = 3 | TRINITY

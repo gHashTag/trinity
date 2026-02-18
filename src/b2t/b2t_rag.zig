@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T RAG - Retrieval-Augmented Generation для декомпиляции
 // Использует троичные эмбеддинги (VSA) для поиска похожего кода
 // V = n × 3^k × π^m × φ^p × e^q
@@ -397,3 +398,4 @@ test "rag engine embed code" {
 
     try std.testing.expectEqual(DEFAULT_DIMENSION, emb.dimension);
 }
+// φ² + 1/φ² = 3 | TRINITY
