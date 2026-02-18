@@ -1817,4 +1817,17 @@ pub fn build(b: *std.Build) void {
     const gen_ternary_kv_step = b.step("test-ternary-kv", "Test OPT-T03 Ternary KV Cache 16x compression");
     gen_ternary_kv_step.dependOn(&run_gen_ternary_kv_tests.step);
     test_step.dependOn(&run_gen_ternary_kv_tests.step);
+
+    // Generated Ternary MatMul tests (OPT-T02: 10x matmul speedup)
+    const gen_ternary_matmul_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/ternary_matmul.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_ternary_matmul_tests = b.addRunArtifact(gen_ternary_matmul_tests);
+    const gen_ternary_matmul_step = b.step("test-ternary-matmul", "Test OPT-T02 Ternary Matrix Multiplication 10x speedup");
+    gen_ternary_matmul_step.dependOn(&run_gen_ternary_matmul_tests.step);
+    test_step.dependOn(&run_gen_ternary_matmul_tests.step);
 }

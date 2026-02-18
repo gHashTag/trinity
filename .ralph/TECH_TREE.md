@@ -20,6 +20,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**OPT-T02**|**Ternary Matrix Multiplication**|**optimization**|**ternary_matmul.zig (851 lines): 10x matmul speedup (no multiply), scalar+SIMD8+SIMD16+batch4 kernels, matmat, 3 quant modes, per-row scales, 15.9x compression, cosine accuracy, 15 tests**|
+|----|------|--------|------|
 |**OPT-T03**|**Ternary KV Cache**|**optimization**|**ternary_kv_cache.zig (729 lines): 16x compression proof, full attention pipeline, SIMD ternaryDot, 4 quant modes, 13 tests, cosine accuracy validation**|
 |----|------|--------|------|
 |**DEV-003**|**SWARM-WATCH (DHT)**|**development**|**swarm_watch.zig (515 lines): zero-alloc DHT health + TRI reward monitor, ring buffer, ANSI dashboard, Prometheus export, 10 tests, build.zig wired**|
@@ -80,7 +82,6 @@
 |DEP-001|Docker Container|deployment|Portable deployment|
 |DEP-002|Fly.io Integration|deployment|Global edge deployment|
 |OPT-T01|Ternary Weight Quantization|optimization|20x weight compression|
-|OPT-T02|Ternary Matrix Multiplication|optimization|10x matmul speedup (no multiply)|
 |OPT-T07|Batch Ternary MatMul|optimization|2.28x matmul speedup|
 |OPT-M01|Memory-Mapped Loading|optimization|30x faster model load|
 |OPT-C01|KV Cache Compression|optimization|5-16x cache compression|
@@ -103,7 +104,7 @@
 |Core|3|4|75%|
 |Inference|2|5|40%|
 |Deployment|2|4|50%|
-|Optimization|13|14|93%|
+|**Optimization**|**14**|**14**|**100%**|
 |Hardware|0|3|0%|
 |**Math**|**5**|**5**|**100%**|
 |**Development**|**3**|**3**|**100%**|
@@ -111,12 +112,12 @@
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
 |Multilingual|3|3|100%|
-|**Total**|**44**|**54**|**81%**|
+|**Total**|**45**|**54**|**83%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **OPT-T02** Ternary Matrix Multiplication — 10x matmul speedup (no multiply), Phase 2
-2. **OPT-PA01** PagedAttention — 4-10x memory efficiency, combines with OPT-T03 for 64x
-3. **OPT-B01** Continuous Batching — 2-3x throughput
+1. **OPT-PA01** PagedAttention — 4-10x memory efficiency, combines with OPT-T03 for 64x
+2. **OPT-B01** Continuous Batching — 2-3x throughput
+3. **OPT-S01** Speculative Decoding — 2-3x generation speed
 
 ---
 φ² + 1/φ² = 3 | TRINITY
