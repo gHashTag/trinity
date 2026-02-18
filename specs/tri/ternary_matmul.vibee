@@ -1,128 +1,148 @@
-# Ternary Matrix Multiplication Specification
-# BitNet-style {-1, 0, +1} weights for 20x memory reduction
+# Ternary Matrix Multiplication Specification v2.0
+# BitNet-style {-1, 0, +1} weights — 10x matmul speedup, 16-20x compression
+# OPT-T02: Phase 2 — consolidates ternary_weights + tnn + ternary_packing
 # φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
 
 name: ternary_matmul
-version: "1.0.0"
+version: "2.0.0"
 language: zig
 module: ternary_matmul
 
 description: |
-  Ternary matrix-vector multiplication for neural network inference.
-  Uses 2-bit encoding: 00=0, 01=+1, 10=-1, 11=reserved.
-  4 trits packed per byte (TritPack4).
-  SIMD-optimized using AVX2/AVX-512 vectors.
+  Standalone ternary matrix multiplication engine for LLM inference.
+  Consolidates best patterns from ternary_weights.zig, tnn.zig, ternary_packing.zig.
+  2-bit encoding: 00=0, 01=+1, 10=-1. 4 trits per byte.
+  Per-row scale factors for quantization accuracy.
+  SIMD-optimized (8-wide + 16-wide), batched (4-row + 8-row).
+  MatVec AND MatMat (true matrix-matrix multiplication).
+  Zero external dependencies — fully self-contained generated module.
 
 types:
-  TritWeight:
-    description: "Single ternary weight {-1, 0, +1}"
-    fields:
-      value: Int
-    encoding:
-      ZERO: 0b00
-      PLUS_ONE: 0b01
-      MINUS_ONE: 0b10
-      RESERVED: 0b11
-
-  TritPack4:
-    description: "4 ternary weights packed in 1 byte"
-    fields:
-      packed: Int
-    width: 8
-
   TernaryMatrix:
-    description: "Packed ternary weight matrix"
+    description: "Packed ternary weight matrix with per-row scales"
     fields:
       data: List<Int>
+      scales: List<Float>
       rows: Int
       cols: Int
       cols_packed: Int
 
-  MemoryStats:
-    description: "Memory usage statistics"
+  QuantConfig:
+    description: "Quantization configuration"
     fields:
-      float32_bytes: Int
+      mode: String
+    modes:
+      - absmean: "threshold = mean(|w|) * 0.5"
+      - rms: "threshold = rms(w) * 0.5"
+      - max: "threshold = max(|w|) * 0.5"
+
+  MemoryStats:
+    description: "Memory usage comparison"
+    fields:
+      f32_bytes: Int
       ternary_bytes: Int
       compression_ratio: Float
+      rows: Int
+      cols: Int
 
 behaviors:
-  - name: trit_to_float
-    given: TritWeight with 2-bit encoding
-    when: Converting to float for computation
-    then: Returns -1.0, 0.0, or +1.0
+  - name: quantize_row
+    given: f32 row vector and threshold
+    when: Packing weights to ternary
+    then: Returns packed bytes + scale factor for the row
 
-  - name: float_to_trit
-    given: Float value
-    when: Quantizing to ternary
-    then: Returns nearest trit (threshold at 0.5)
+  - name: quantize_matrix
+    given: f32 weight matrix (rows x cols) and QuantConfig
+    when: Converting full weight matrix to ternary
+    then: Returns TernaryMatrix with per-row scales
 
-  - name: pack_trits
-    given: 4 TritWeight values
-    when: Packing for storage
-    then: Returns single byte with 4 trits
+  - name: dequantize_row
+    given: Packed ternary bytes, scale, and row length
+    when: Reconstructing f32 approximation
+    then: Returns f32 vector where trit * scale
 
-  - name: unpack_trits
-    given: Packed byte
-    when: Extracting for computation
-    then: Returns 4 TritWeight values
+  - name: ternary_matvec_scalar
+    given: TernaryMatrix and f32 input vector
+    when: Computing y = W * x (scalar path)
+    then: Output via add/sub only — no multiplication
 
-  - name: ternary_matvec
-    given: Packed weight matrix and input vector
-    when: Computing matrix-vector product
-    then: Output vector with dot products (no multiplications, only add/sub)
+  - name: ternary_matvec_simd8
+    given: TernaryMatrix and f32 input vector
+    when: Computing y = W * x with @Vector(8, f32)
+    then: 8-wide SIMD with sign LUT decode, scalar tail
 
-  - name: simd_ternary_matvec
-    given: Packed weights, input vector, SIMD width 8
-    when: Computing with AVX2 vectors
-    then: 8x speedup via vectorized sign lookup
+  - name: ternary_matvec_simd16
+    given: TernaryMatrix and f32 input vector
+    when: Computing y = W * x with @Vector(16, f32)
+    then: 16-wide SIMD (AVX-512), scalar tail
 
-  - name: simd_ternary_matvec_16
-    given: Packed weights, input vector, SIMD width 16
-    when: Computing with AVX-512 vectors
-    then: 16x speedup via wider vectors
+  - name: ternary_matvec_batch4
+    given: TernaryMatrix and f32 input vector
+    when: Computing 4 output rows simultaneously
+    then: 4x register-level parallelism
 
-  - name: batch_ternary_matvec
-    given: Packed weights, input vector, batch of 4 rows
-    when: Processing multiple output rows
-    then: 4 rows computed in parallel
+  - name: ternary_matvec_batch8
+    given: TernaryMatrix and f32 input vector
+    when: Computing 8 output rows simultaneously
+    then: 8x register-level parallelism, falls back to batch4/scalar
+
+  - name: ternary_matmat
+    given: TernaryMatrix W and f32 matrix X (cols x batch)
+    when: Computing Y = W * X for batched inference
+    then: Column-major output, reuses matvec kernels
 
   - name: compute_memory_stats
     given: Matrix dimensions (rows, cols)
     when: Analyzing memory savings
-    then: Returns compression ratio (~20x vs float32)
+    then: Returns compression ratio (16-20x vs f32)
+
+  - name: accuracy_check
+    given: f32 weights and TernaryMatrix
+    when: Validating quantization quality
+    then: Cosine similarity per row, mean absolute error
 
 optimizations:
   - name: sign_lookup_table
-    description: "LUT for trit→sign: [0.0, 1.0, -1.0, 0.0]"
-    
+    description: "SIGN_LUT[4] = {0.0, 1.0, -1.0, 0.0} for instant trit decode"
+
   - name: no_multiplication
-    description: "y += sign * x becomes y += x or y -= x based on sign"
-    
-  - name: cache_friendly
-    description: "Row-major layout, sequential memory access"
-    
+    description: "y += x (trit=+1), y -= x (trit=-1), skip (trit=0)"
+
+  - name: per_row_scales
+    description: "Each row has independent scale for accuracy"
+
   - name: simd_reduction
     description: "@reduce(.Add, vec) for horizontal sum"
+
+  - name: batch_row_parallelism
+    description: "Process 4-8 rows simultaneously for register reuse"
+
+  - name: cache_friendly_layout
+    description: "Row-major packed data, sequential access pattern"
 
 benchmarks:
   - name: throughput
     metric: "GFLOPS equivalent"
     target: ">100 GFLOPS on AVX2"
-    
-  - name: memory_bandwidth
-    metric: "GB/s"
-    target: "Near memory bandwidth limit"
-    
-  - name: latency
-    metric: "ns per row"
-    target: "<100ns for 4096-dim row"
+
+  - name: memory_compression
+    metric: "ratio"
+    target: "16-20x vs f32"
+
+  - name: accuracy
+    metric: "cosine similarity"
+    target: ">0.90 per row"
+
+  - name: simd_vs_scalar_speedup
+    metric: "ratio"
+    target: ">3x"
 
 integration:
-  - target: bytecode_vm
-    description: "OP_TERNARY_MATVEC opcode"
-    
-  - target: model_loader
-    description: "Load .tri model files"
-    
   - target: inference_pipeline
     description: "Replace float matmul in forward pass"
+
+  - target: ternary_kv_cache
+    description: "Complement OPT-T03 for full ternary attention"
+
+  - target: kv_cache_optimized
+    description: "Use with ring buffer for streaming inference"
