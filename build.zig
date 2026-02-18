@@ -1830,4 +1830,17 @@ pub fn build(b: *std.Build) void {
     const gen_ternary_matmul_step = b.step("test-ternary-matmul", "Test OPT-T02 Ternary Matrix Multiplication 10x speedup");
     gen_ternary_matmul_step.dependOn(&run_gen_ternary_matmul_tests.step);
     test_step.dependOn(&run_gen_ternary_matmul_tests.step);
+
+    // Generated Paged Attention tests (OPT-PA01: 4-10x memory efficiency)
+    const gen_paged_attn_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/paged_attention.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_paged_attn_tests = b.addRunArtifact(gen_paged_attn_tests);
+    const gen_paged_attn_step = b.step("test-paged-attention", "Test OPT-PA01 PagedAttention 4-10x memory efficiency");
+    gen_paged_attn_step.dependOn(&run_gen_paged_attn_tests.step);
+    test_step.dependOn(&run_gen_paged_attn_tests.step);
 }

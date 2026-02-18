@@ -20,6 +20,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**OPT-PA01**|**PagedAttention**|**optimization**|**paged_attention.zig (947 lines): vLLM-style block KV cache, CoW block sharing, 14 tests, 4-10x memory efficiency, beam search fork, pool lifecycle, attention Q@K^T+softmax+V, memory analysis (64x with ternary), build.zig wired**|
+|----|------|--------|------|
 |**OPT-T02**|**Ternary Matrix Multiplication**|**optimization**|**ternary_matmul.zig (851 lines): 10x matmul speedup (no multiply), scalar+SIMD8+SIMD16+batch4 kernels, matmat, 3 quant modes, per-row scales, 15.9x compression, cosine accuracy, 15 tests**|
 |----|------|--------|------|
 |**OPT-T03**|**Ternary KV Cache**|**optimization**|**ternary_kv_cache.zig (729 lines): 16x compression proof, full attention pipeline, SIMD ternaryDot, 4 quant modes, 13 tests, cosine accuracy validation**|
@@ -87,7 +89,6 @@
 |OPT-C01|KV Cache Compression|optimization|5-16x cache compression|
 |OPT-S01|Speculative Decoding|optimization|2-3x generation speed|
 |OPT-B01|Continuous Batching|optimization|2-3x throughput|
-|OPT-PA01|PagedAttention|optimization|4-10x memory efficiency|
 
 ## 🔒 Locked (waiting for dependencies)
 | ID | Name | Branch | Needs (missing) |
@@ -104,7 +105,7 @@
 |Core|3|4|75%|
 |Inference|2|5|40%|
 |Deployment|2|4|50%|
-|**Optimization**|**14**|**14**|**100%**|
+|**Optimization**|**15**|**15**|**100%**|
 |Hardware|0|3|0%|
 |**Math**|**5**|**5**|**100%**|
 |**Development**|**3**|**3**|**100%**|
@@ -112,12 +113,12 @@
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
 |Multilingual|3|3|100%|
-|**Total**|**45**|**54**|**83%**|
+|**Total**|**46**|**55**|**84%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **OPT-PA01** PagedAttention — 4-10x memory efficiency, combines with OPT-T03 for 64x
-2. **OPT-B01** Continuous Batching — 2-3x throughput
-3. **OPT-S01** Speculative Decoding — 2-3x generation speed
+1. **OPT-B01** Continuous Batching — 2-3x throughput, combines with PagedAttention
+2. **OPT-S01** Speculative Decoding — 2-3x generation speed
+3. **INF-001** GGUF Parser — load any GGUF model, unlocks real inference
 
 ---
 φ² + 1/φ² = 3 | TRINITY
