@@ -427,6 +427,13 @@ fn setAgentIdentity(agent: *RalphAgent, name: []const u8, branch: []const u8) vo
     agent.branch_len = bl;
 }
 
+const RALPH_WORKTREE_PATHS = [MAX_RALPH_AGENTS][]const u8{
+    "/Users/playra/trinity",
+    "/Users/playra/trinity-w1",
+    "/Users/playra/trinity-w2",
+    "/Users/playra/trinity-w3",
+};
+
 fn initRalphAgents() void {
     if (g_ralph_initialized) return;
     g_ralph_initialized = true;
@@ -440,6 +447,180 @@ fn initRalphAgents() void {
     g_ralph_agents[2].update_timer = 1.0;
     g_ralph_agents[3].update_timer = 1.5;
     g_ralph_agent_count = 4;
+}
+
+/// Desktop-only: Read .ralph/ files directly from worktree filesystem
+fn pollRalphAgentDesktop(ai: usize) void {
+    if (ai >= g_ralph_agent_count) return;
+    const agent = &g_ralph_agents[ai];
+    const base_path = RALPH_WORKTREE_PATHS[ai];
+
+    var path_buf: [256]u8 = undefined;
+
+    // Read status_report.json
+    {
+        const sr_path = std.fmt.bufPrint(&path_buf, "{s}/.ralph/status_report.json", .{base_path}) catch return;
+        const file = std.fs.openFileAbsolute(sr_path[0..sr_path.len :0], .{}) catch {
+            agent.reachable = false;
+            return;
+        };
+        defer file.close();
+        agent.reachable = true;
+
+        var read_buf: [2048]u8 = undefined;
+        const bytes_read = file.readAll(&read_buf) catch 0;
+        if (bytes_read < 10) return;
+        const json = read_buf[0..bytes_read];
+
+        // Parse circuit_breaker.state
+        if (std.mem.indexOf(u8, json, "\"state\":")) |idx| {
+            const after = json[@min(idx + 9, json.len)..];
+            if (std.mem.indexOf(u8, after, "\"")) |q1| {
+                const val_start = q1 + 1;
+                if (std.mem.indexOfScalar(u8, after[val_start..], '"')) |q2| {
+                    const val = after[val_start .. val_start + q2];
+                    if (std.mem.eql(u8, val, "CLOSED")) {
+                        agent.cb_state = .closed;
+                        agent.is_healthy = true;
+                    } else if (std.mem.eql(u8, val, "OPEN")) {
+                        agent.cb_state = .cb_open;
+                        agent.is_healthy = false;
+                    } else {
+                        agent.cb_state = .degraded;
+                        agent.is_healthy = false;
+                    }
+                }
+            }
+        }
+
+        // Parse circuit_breaker.loop (skip whitespace after colon)
+        if (std.mem.indexOf(u8, json, "\"loop\":")) |idx| {
+            var start = idx + 7;
+            while (start < json.len and (json[start] == ' ' or json[start] == '\t' or json[start] == '\n')) start += 1;
+            var end = start;
+            while (end < json.len and json[end] >= '0' and json[end] <= '9') end += 1;
+            if (end > start)
+                agent.loop = std.fmt.parseInt(usize, json[start..end], 10) catch agent.loop;
+        }
+
+        // Parse session.call_count as total_calls (skip whitespace)
+        if (std.mem.indexOf(u8, json, "\"call_count\":")) |idx| {
+            var start = idx + 13;
+            while (start < json.len and (json[start] == ' ' or json[start] == '\t' or json[start] == '\n')) start += 1;
+            var end = start;
+            while (end < json.len and json[end] >= '0' and json[end] <= '9') end += 1;
+            if (end > start)
+                agent.total_calls = std.fmt.parseInt(usize, json[start..end], 10) catch agent.total_calls;
+        }
+
+        // Parse active_task as goal
+        if (std.mem.indexOf(u8, json, "\"active_task\":")) |idx| {
+            const after = json[@min(idx + 14, json.len)..];
+            if (std.mem.indexOf(u8, after, "\"")) |q1| {
+                const val_start = q1 + 1;
+                if (std.mem.indexOfScalar(u8, after[val_start..], '"')) |q2| {
+                    const val = after[val_start .. val_start + q2];
+                    const len = @min(val.len, 127);
+                    @memcpy(agent.goal[0..len], val[0..len]);
+                    agent.goal[len] = 0;
+                    agent.goal_len = len;
+                }
+            }
+        }
+
+        agent.running = (agent.loop > 0);
+    }
+
+    // Read .ralph/internal/.circuit_breaker_state for current_loop (more accurate)
+    {
+        const cb_path = std.fmt.bufPrint(&path_buf, "{s}/.ralph/internal/.circuit_breaker_state", .{base_path}) catch "";
+        if (cb_path.len > 0) {
+            const file = std.fs.openFileAbsolute(cb_path[0..cb_path.len :0], .{}) catch null;
+            if (file) |f| {
+                defer f.close();
+                var cb_buf: [1024]u8 = undefined;
+                const bytes = f.readAll(&cb_buf) catch 0;
+                if (bytes > 10) {
+                    const cb_json = cb_buf[0..bytes];
+                    if (std.mem.indexOf(u8, cb_json, "\"current_loop\":")) |idx| {
+                        var start = idx + 15;
+                        while (start < cb_json.len and (cb_json[start] == ' ' or cb_json[start] == '\t' or cb_json[start] == '\n')) start += 1;
+                        var end = start;
+                        while (end < cb_json.len and cb_json[end] >= '0' and cb_json[end] <= '9') end += 1;
+                        if (end > start)
+                            agent.loop = std.fmt.parseInt(usize, cb_json[start..end], 10) catch agent.loop;
+                    }
+                    if (std.mem.indexOf(u8, cb_json, "\"consecutive_no_progress\":")) |idx| {
+                        var start = idx + 25;
+                        while (start < cb_json.len and (cb_json[start] == ' ' or cb_json[start] == '\t' or cb_json[start] == '\n')) start += 1;
+                        var end = start;
+                        while (end < cb_json.len and cb_json[end] >= '0' and cb_json[end] <= '9') end += 1;
+                        if (end > start) {
+                            const no_progress = std.fmt.parseInt(usize, cb_json[start..end], 10) catch 0;
+                            if (no_progress > 0 and agent.cb_state == .closed)
+                                agent.cb_state = .degraded;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Read last N lines of .ralph/logs/ralph.log
+    {
+        const log_path = std.fmt.bufPrint(&path_buf, "{s}/.ralph/logs/ralph.log", .{base_path}) catch return;
+        const file = std.fs.openFileAbsolute(log_path[0..log_path.len :0], .{}) catch return;
+        defer file.close();
+
+        // Seek to end to get file size, then read last 4KB
+        const file_size = file.getEndPos() catch 0;
+        if (file_size == 0) return;
+        const read_start: u64 = if (file_size > 4096) file_size - 4096 else 0;
+        file.seekTo(read_start) catch return;
+
+        var log_buf: [4096]u8 = undefined;
+        const bytes = file.readAll(&log_buf) catch 0;
+        if (bytes == 0) return;
+        const content = log_buf[0..bytes];
+
+        // Find line boundaries, keep last 10
+        var line_starts: [11]usize = undefined;
+        var line_count: usize = 0;
+        line_starts[0] = 0;
+        line_count = 1;
+        for (content, 0..) |c, ci| {
+            if (c == '\n' and ci + 1 < content.len) {
+                if (line_count < 11) {
+                    line_starts[line_count] = ci + 1;
+                    line_count += 1;
+                } else {
+                    for (0..10) |si| {
+                        line_starts[si] = line_starts[si + 1];
+                    }
+                    line_starts[10] = ci + 1;
+                }
+            }
+        }
+
+        const first_line = if (line_count > 10) line_count - 10 else 0;
+        var li: usize = 0;
+        var si: usize = first_line;
+        while (si < line_count and li < 10) {
+            const start = line_starts[si];
+            const end = if (si + 1 < line_count) line_starts[si + 1] -| 1 else content.len;
+            if (end > start) {
+                const line_data = content[start..end];
+                const len = @min(line_data.len, 127);
+                @memcpy(agent.logs[li][0..len], line_data[0..len]);
+                agent.logs[li][len] = 0;
+            } else {
+                agent.logs[li][0] = 0;
+            }
+            si += 1;
+            li += 1;
+        }
+        agent.log_count = li;
+    }
 }
 
 // v2.1: Add entry to live log buffer (ring buffer)
@@ -6541,7 +6722,7 @@ fn updateDrawFrame() callconv(.c) void {
                 if (g_ralph_agents[ai].update_timer > 2.0) {
                     g_ralph_agents[ai].update_timer = 0;
                     if (is_emscripten) {
-                        // Fetch Ralph status for agent ai from backend via JS
+                        // WASM: Fetch Ralph status for agent ai from backend via JS
                         var fetch_buf: [256]u8 = undefined;
                         const fetch_script = std.fmt.bufPrint(&fetch_buf,
                             \\(function(){{ fetch('/api/ralph-status?agent={d}')
@@ -6625,6 +6806,9 @@ fn updateDrawFrame() callconv(.c) void {
                                 }
                             }
                         }
+                    } else {
+                        // Desktop: Read .ralph/ files directly from disk
+                        pollRalphAgentDesktop(ai);
                     }
                 }
             }
@@ -7616,14 +7800,14 @@ fn updateDrawFrame() callconv(.c) void {
                     // Loop info
                     rl.DrawTextEx(chat_font, "Loop:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
                     var l_buf: [16:0]u8 = undefined;
+                    @memset(&l_buf, 0);
                     _ = std.fmt.bufPrint(&l_buf, "{d}", .{mirror_agent.loop}) catch {};
-                    l_buf[@min(15, std.mem.indexOfScalar(u8, &l_buf, 0) orelse 15)] = 0;
                     rl.DrawTextEx(chat_font, &l_buf, .{ .x = x + 40 * fs, .y = y }, val_sz, 0.5, bright_text);
 
                     rl.DrawTextEx(chat_font, "Calls:", .{ .x = x + 80 * fs, .y = y }, label_sz, 0.5, dim_text);
                     var tc_buf: [16:0]u8 = undefined;
+                    @memset(&tc_buf, 0);
                     _ = std.fmt.bufPrint(&tc_buf, "{d}", .{mirror_agent.total_calls}) catch {};
-                    tc_buf[@min(15, std.mem.indexOfScalar(u8, &tc_buf, 0) orelse 15)] = 0;
                     rl.DrawTextEx(chat_font, &tc_buf, .{ .x = x + 125 * fs, .y = y }, val_sz, 0.5, razum_color);
                     y += line_h;
 
@@ -8086,8 +8270,8 @@ fn updateDrawFrame() callconv(.c) void {
                 rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, ralph_cyan);
                 rl.DrawTextEx(chat_font, "LOOP", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
                 var buf: [16:0]u8 = undefined;
+                @memset(&buf, 0);
                 _ = std.fmt.bufPrint(&buf, "{d}", .{agent.loop}) catch {};
-                buf[@min(15, std.mem.indexOfScalar(u8, &buf, 0) orelse 15)] = 0;
                 rl.DrawTextEx(chat_font, &buf, .{ .x = cx + 12, .y = y + 30 * fs }, 24 * fs, 0.5, bright_text);
             }
 
@@ -8098,8 +8282,8 @@ fn updateDrawFrame() callconv(.c) void {
                 rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, ralph_cyan);
                 rl.DrawTextEx(chat_font, "CALLS", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
                 var buf: [16:0]u8 = undefined;
+                @memset(&buf, 0);
                 _ = std.fmt.bufPrint(&buf, "{d}", .{agent.total_calls}) catch {};
-                buf[@min(15, std.mem.indexOfScalar(u8, &buf, 0) orelse 15)] = 0;
                 rl.DrawTextEx(chat_font, &buf, .{ .x = cx + 12, .y = y + 30 * fs }, 24 * fs, 0.5, bright_text);
             }
 
