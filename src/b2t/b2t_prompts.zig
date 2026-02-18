@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T Prompts - Distortion-Aware Prompt Templates
 // Шаблоны промптов для LLM-ассистированной декомпиляции
 // V = n × 3^k × π^m × φ^p × e^q
@@ -353,3 +354,4 @@ test "build cot prompt" {
     try std.testing.expect(prompt.len > 0);
     try std.testing.expect(std.mem.indexOf(u8, prompt, "Шаг 1") != null);
 }
+// φ² + 1/φ² = 3 | TRINITY

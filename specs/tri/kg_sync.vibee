@@ -1,0 +1,139 @@
+name: kg_sync
+version: "1.0.0"
+language: zig
+module: kg_sync
+
+description: >
+  SYM-003: Decentralized Knowledge Graph Sync + $TRI Rewards.
+  Kademlia-style DHT for KG triple distribution across swarm peers.
+  Proof-of-Knowledge challenge/verify for $TRI reward gating.
+  Wire format for triple serialization over protocol envelope.
+  Tech Tree: SYM-003 (Symbolic branch, unlocks SYM-005 MVP).
+
+constants:
+  MAX_TRIPLE_SIZE: 256
+  MAX_SUBJECT_LEN: 64
+  MAX_PREDICATE_LEN: 32
+  MAX_OBJECT_LEN: 128
+  CONFIDENCE_BYTES: 4
+  REPLICATION_FACTOR: 3
+  MIN_SYNC_CONFIDENCE: 0.6
+  REWARD_KG_TRIPLE_WEI: 200_000_000_000_000
+  MIN_CONTRIBUTION_FOR_REWARD: 5
+  PROOF_CHALLENGE_TIMEOUT_SECS: 30
+
+types:
+  SerializedTriple:
+    fields:
+      subject: FixedBytes64
+      predicate: FixedBytes32
+      object: FixedBytes128
+      confidence_u32: Int
+      source_node: NodeId32
+      timestamp: Int
+
+  KgDHTStats:
+    fields:
+      triples_stored: Int
+      triples_retrieved: Int
+      triples_distributed: Int
+      triples_received: Int
+      sync_rounds: Int
+
+  KgContribution:
+    fields:
+      node_id: NodeId32
+      triples_contributed: Int
+      triples_accepted: Int
+      rewards_earned_wei: Int
+      last_contribution_time: Int
+
+  ProofOfKnowledge:
+    fields:
+      challenge_id: Bytes32
+      challenger_id: NodeId32
+      target_id: NodeId32
+      triple_hash: Bytes32
+      timestamp: Int
+
+  ProofResponse:
+    fields:
+      challenge_id: Bytes32
+      prover_id: NodeId32
+      subject: String
+      predicate: String
+      object: String
+
+behaviors:
+  - name: serializeTriple
+    given: Subject, predicate, object strings and confidence float
+    when: Pack into fixed-size wire format (MAX_TRIPLE_SIZE bytes)
+    then: Returns SerializedTriple with null-padded fixed fields
+
+  - name: deserializeTriple
+    given: SerializedTriple bytes
+    when: Unpack fixed fields, trim null padding
+    then: Returns subject, predicate, object slices and confidence float
+
+  - name: tripleHash
+    given: Subject, predicate, object strings
+    when: Concatenate with separator, compute hash
+    then: Returns 32-byte hash for DHT key and dedup
+
+  - name: storeTriple
+    given: Triple hash and serialized data
+    when: Store locally, find k closest peers by XOR distance
+    then: Triple stored, distribution count tracked
+
+  - name: retrieveTriple
+    given: Triple hash
+    when: Check local store, would query DHT peers if not found
+    then: Returns serialized triple or null
+
+  - name: syncInbound
+    given: SerializedTriple from remote peer
+    when: Deserialize, validate confidence >= MIN_SYNC_CONFIDENCE, check dedup
+    then: Store if new, reject if duplicate or low confidence
+
+  - name: createChallenge
+    given: Challenger node, target node, known triple hash
+    when: Generate challenge ID, record timestamp
+    then: Returns ProofOfKnowledge challenge
+
+  - name: respondToChallenge
+    given: ProofOfKnowledge challenge and local triple store
+    when: Look up triple by hash, extract fields
+    then: Returns ProofResponse with actual triple content
+
+  - name: verifyProof
+    given: ProofResponse and original challenge
+    when: Hash proof fields, compare to challenge triple_hash
+    then: Returns true if hash matches (node has the triple)
+
+  - name: calculateReward
+    given: Node contribution record
+    when: Check triples_accepted >= MIN_CONTRIBUTION_FOR_REWARD
+    then: Returns reward in wei (REWARD_KG_TRIPLE_WEI * accepted_count)
+
+  - name: recordContribution
+    given: Node ID and accepted triple count
+    when: Update contribution tracker
+    then: Contribution record updated with timestamp
+
+test_cases:
+  - input: "serializeTriple('paris', 'is_capital_of', 'france', 0.85)"
+    expected: "256-byte buffer, deserialize roundtrip matches"
+  - input: "tripleHash('paris', 'is_capital_of', 'france')"
+    expected: "32-byte hash, deterministic (same input = same hash)"
+  - input: "storeTriple + retrieveTriple roundtrip"
+    expected: "stored triple retrievable by hash"
+  - input: "syncInbound with confidence 0.3"
+    expected: "rejected (below MIN_SYNC_CONFIDENCE 0.6)"
+  - input: "syncInbound with confidence 0.8"
+    expected: "accepted and stored"
+  - input: "createChallenge + respondToChallenge + verifyProof"
+    expected: "proof verified successfully"
+  - input: "calculateReward with 10 accepted triples"
+    expected: "reward = 10 * REWARD_KG_TRIPLE_WEI"
+  - input: "calculateReward with 3 accepted triples"
+    expected: "reward = 0 (below MIN_CONTRIBUTION_FOR_REWARD)"

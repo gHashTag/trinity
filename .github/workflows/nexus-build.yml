@@ -1,0 +1,53 @@
+name: Trinity Nexus Build
+
+on:
+  push:
+    branches: [ralph/*, main]
+    paths:
+      - 'trinity-nexus/**'
+      - '.github/workflows/nexus-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'trinity-nexus/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: [core, lang, symb, network, canvas, tools]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.15.0
+
+      - name: Build ${{ matrix.module }}
+        working-directory: trinity-nexus
+        run: zig build
+
+      - name: Test ${{ matrix.module }}
+        working-directory: trinity-nexus
+        run: zig build test-${{ matrix.module }}
+
+  build-all:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.15.0
+
+      - name: Build all modules
+        working-directory: trinity-nexus
+        run: zig build
+
+      - name: Run all tests
+        working-directory: trinity-nexus
+        run: zig build test

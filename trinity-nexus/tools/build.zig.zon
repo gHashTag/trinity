@@ -1,0 +1,23 @@
+.{
+    .name = .trinity_tools,
+    .version = "0.1.0",
+    .dependencies = .{
+        .trinity_core = .{
+            .path = "../core",
+        },
+        .trinity_lang = .{
+            .path = "../lang",
+        },
+        .trinity_symb = .{
+            .path = "../symb",
+        },
+        .trinity_network = .{
+            .path = "../network",
+        },
+        .trinity_canvas = .{
+            .path = "../canvas",
+        },
+    },
+    .paths = .{""},
+    .fingerprint = 0x29d57da07db5901f,
+}

@@ -164,6 +164,17 @@ pub fn build(b: *std.Build) void {
     const run_vibeec_tests = b.addRunArtifact(vibeec_tests);
     test_step.dependOn(&run_vibeec_tests.step);
 
+    // TRI-TRACE tests (DEV-001)
+    const trace_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/igla/trace.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_trace_tests = b.addRunArtifact(trace_tests);
+    test_step.dependOn(&run_trace_tests.step);
+
     // trinity-search CLI — Semantic search over text files
     const trinity_search = b.addExecutable(.{
         .name = "trinity-search",
@@ -273,6 +284,22 @@ pub fn build(b: *std.Build) void {
     examples_step.dependOn(&run_memory.step);
     examples_step.dependOn(&run_sequence.step);
     examples_step.dependOn(&run_vm_example.step);
+
+    // SOTA Tech Report Demo (SYM-001)
+    const sota_report = b.addExecutable(.{
+        .name = "sota-report",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sota_report_demo.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
+        }),
+    });
+    b.installArtifact(sota_report);
+
+    const run_sota = b.addRunArtifact(sota_report);
+    const sota_step = b.step("sota-report", "Run SOTA Tech Report validation");
+    sota_step.dependOn(&run_sota.step);
 
     // Firebird CLI
     const firebird = b.addExecutable(.{
@@ -967,6 +994,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // LLM Triples Extractor module (SYM-002: pattern-based extraction) - defined early for fluent CLI
+    const triples_parser_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/triples_parser.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Fluent CLI - Local Chat with History Truncation (NO HANG!)
     const fluent_cli = b.addExecutable(.{
         .name = "fluent",
@@ -978,6 +1012,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "igla_chat", .module = vibeec_chat },
                 .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
                 .{ .name = "igla_kg", .module = igla_kg_mod },
+                .{ .name = "triples_parser", .module = triples_parser_mod },
             },
         }),
     });
@@ -1037,6 +1072,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "igla_chat", .module = vibeec_chat },
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
             .{ .name = "igla_kg", .module = igla_kg_mod },
+            .{ .name = "triples_parser", .module = triples_parser_mod },
         },
     });
     // Golden Chain Agent (8-node unified pipeline)
@@ -1270,6 +1306,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "igla_chat", .module = wasm_igla_chat },
                 .{ .name = "tvc_corpus", .module = wasm_tvc_corpus },
                 .{ .name = "igla_kg", .module = wasm_igla_kg },
+                .{ .name = "triples_parser", .module = triples_parser_mod },
             },
         });
         const wasm_golden_chain = b.createModule(.{
@@ -1413,6 +1450,167 @@ pub fn build(b: *std.Build) void {
     const quark_step = b.step("test-quark", "Test VSA Quark Proofs (18 ternary algebra proofs)");
     quark_step.dependOn(&run_quark_tests.step);
     test_step.dependOn(&run_quark_tests.step);
+
+    // VSA Math Proofs — Mathematical Framework (MATH-001)
+    // bind/unbind inverse, commutativity, associativity, bundle convergence,
+    // orthogonality, permute cycles, similarity bounds, trinity identity
+    const vsa_math_proofs_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/vsa_math_proofs.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_vsa_math_proofs = b.addRunArtifact(vsa_math_proofs_tests);
+    const vsa_math_proofs_step = b.step("test-math-proofs", "Test VSA Math Proofs (bind/unbind/bundle invariances)");
+    vsa_math_proofs_step.dependOn(&run_vsa_math_proofs.step);
+    test_step.dependOn(&run_vsa_math_proofs.step);
+
+    // VSA Bundle-N Optimization — Accumulator-based N-way bundling (MATH-002)
+    const vsa_bundle_opt_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/vsa_bundle_opt.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_vsa_bundle_opt = b.addRunArtifact(vsa_bundle_opt_tests);
+    const vsa_bundle_opt_step = b.step("test-bundle-opt", "Test VSA Bundle-N Optimization (accumulator majority vote)");
+    vsa_bundle_opt_step.dependOn(&run_vsa_bundle_opt.step);
+    test_step.dependOn(&run_vsa_bundle_opt.step);
+
+    // VSA Large-Scale Analogies (MATH-005: 1000+ vector analogy reasoning)
+    const vsa_large_analogies_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/vsa_large_scale_analogies.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_vsa_large_analogies = b.addRunArtifact(vsa_large_analogies_tests);
+    const vsa_large_analogies_step = b.step("test-large-analogies", "Test VSA Large-Scale Analogies (MATH-005: 1000+ vectors)");
+    vsa_large_analogies_step.dependOn(&run_vsa_large_analogies.step);
+    test_step.dependOn(&run_vsa_large_analogies.step);
+
+    // LLM Triples Extractor (SYM-002: pattern-based triple extraction from text)
+    const triples_parser_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/triples_parser.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_triples_parser = b.addRunArtifact(triples_parser_tests);
+    const triples_parser_step = b.step("test-triples-parser", "Test LLM Triples Extractor (SYM-002: pattern-based extraction)");
+    triples_parser_step.dependOn(&run_triples_parser.step);
+    test_step.dependOn(&run_triples_parser.step);
+
+    // KG Pipeline Integration (SYM-004: extract triples from LLM responses -> KG)
+    const kg_pipeline_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/kg_pipeline.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_kg_pipeline = b.addRunArtifact(kg_pipeline_tests);
+    const kg_pipeline_step = b.step("test-kg-pipeline", "Test KG Pipeline Integration (SYM-004: triples extraction -> KG)");
+    kg_pipeline_step.dependOn(&run_kg_pipeline.step);
+    test_step.dependOn(&run_kg_pipeline.step);
+
+    // KG Sync DHT (SYM-003: Decentralized KG Sync + $TRI Rewards)
+    const kg_sync_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/kg_sync.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_kg_sync = b.addRunArtifact(kg_sync_tests);
+    const kg_sync_step = b.step("test-kg-sync", "Test KG Sync DHT (SYM-003: Kademlia DHT + $TRI rewards)");
+    kg_sync_step.dependOn(&run_kg_sync.step);
+    test_step.dependOn(&run_kg_sync.step);
+
+    // SYM-005 TRI SOTA MVP Demo (Decentralized Knowledge Collector)
+    const kg_sync_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/kg_sync.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const sym_005_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/sym_005_demo.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "triples_parser", .module = triples_parser_mod },
+                .{ .name = "kg_sync", .module = kg_sync_mod },
+            },
+        }),
+    });
+    const run_sym_005 = b.addRunArtifact(sym_005_tests);
+    const sym_005_step = b.step("test-sym-005", "Test SYM-005 TRI SOTA MVP (full symbolic pipeline)");
+    sym_005_step.dependOn(&run_sym_005.step);
+    test_step.dependOn(&run_sym_005.step);
+
+    // OPT-PC01 Prefix Caching Completion (Phase 3-5)
+    const kv_cache_mod = b.createModule(.{
+        .root_source_file = b.path("src/vibeec/kv_cache.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const prefix_cache_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/prefix_cache_completion.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "kv_cache", .module = kv_cache_mod },
+            },
+        }),
+    });
+    const run_prefix_cache = b.addRunArtifact(prefix_cache_tests);
+    const prefix_cache_step = b.step("test-prefix-cache", "Test OPT-PC01 Prefix Caching (Phase 3-5 completion)");
+    prefix_cache_step.dependOn(&run_prefix_cache.step);
+    test_step.dependOn(&run_prefix_cache.step);
+
+    // VSA Math Benchmark executable (MATH-003)
+    // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence
+    const bundle_opt_mod = b.createModule(.{
+        .root_source_file = b.path("generated/vsa_bundle_opt.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
+        .imports = &.{
+            .{ .name = "vsa", .module = vsa_mod },
+        },
+    });
+
+    const bench_math = b.addExecutable(.{
+        .name = "bench-math",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/bench_math.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+                .{ .name = "bundle_opt", .module = bundle_opt_mod },
+            },
+        }),
+    });
+    b.installArtifact(bench_math);
+
+    const run_bench_math = b.addRunArtifact(bench_math);
+    const bench_math_step = b.step("bench-math", "Run VSA math benchmarks (MATH-003: ternary vs float32)");
+    bench_math_step.dependOn(&run_bench_math.step);
 
     // Storage Init — Basic Disk Shards + VSA Fingerprints (Cycle 59)
     const storage_init_tests = b.addTest(.{
