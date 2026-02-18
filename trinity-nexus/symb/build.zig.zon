@@ -1,0 +1,14 @@
+.{
+    .name = .trinity_symb,
+    .version = "0.1.0",
+    .dependencies = .{
+        .trinity_core = .{
+            .path = "../core",
+        },
+        .trinity_lang = .{
+            .path = "../lang",
+        },
+    },
+    .paths = .{""},
+    .fingerprint = 0x532ce0d2afc76594,
+}

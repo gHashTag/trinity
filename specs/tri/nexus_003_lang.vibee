@@ -1,0 +1,51 @@
+# nexus_003_lang.vibee
+# NEXUS-003: Migrate VIBEE compiler to trinity-nexus/lang/
+# Core compiler pipeline: parser, AST, semantic, IR, codegen, multilang
+
+name: nexus_003_lang
+version: "1.0.0"
+language: zig
+module: trinity_lang
+
+types:
+  LangModule:
+    description: "Trinity Language module - VIBEE compiler pipeline"
+    fields:
+      version: String
+      module_name: String
+      root_path: String
+      source_path: String
+
+  MigrationManifest:
+    description: "Files migrated from src/vibeec/ to trinity-nexus/lang/src/"
+    fields:
+      parser_files: List<String>
+      compiler_files: List<String>
+      semantic_files: List<String>
+      ir_files: List<String>
+      codegen_files: List<String>
+      multilang_files: List<String>
+      codegen_module: List<String>
+      total_files: Int
+      total_lines: Int
+
+behaviors:
+  - name: copy_compiler_files
+    given: src/vibeec/ source files
+    when: migrating to trinity-nexus/lang/src/
+    then: all core compiler files copied preserving directory structure
+
+  - name: create_root_exports
+    given: copied files in lang/src/
+    when: setting up module exports
+    then: root.zig exports parser, ast, lexer, compiler, semantic, ir, codegen
+
+  - name: configure_build
+    given: lang/build.zig
+    when: setting up build system
+    then: build.zig creates trinity-lang static library with test step
+
+  - name: verify_compilation
+    given: complete lang module
+    when: running zig build
+    then: trinity-lang compiles without errors, all tests pass

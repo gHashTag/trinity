@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T Test - End-to-end test for Binary-to-Ternary Converter
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
@@ -243,7 +244,8 @@ const TEST_WASM_LOOP = [_]u8{
     // block $exit
     0x02, 0x40,
     // loop $loop
-    0x03, 0x40,
+    0x03,
+    0x40,
     // if n == 0, exit
     0x20, 0x00, // local.get 0 (n)
     0x45, // i32.eqz
@@ -281,9 +283,13 @@ const TEST_WASM_SUM = [_]u8{
     0x01, 0x00, // 1 func, type 0
     // Export section (id=7, size=7)
     0x07, 0x07,
-    0x01, 0x03, 's', 'u', 'm', 0x00, 0x00,
+    0x01, 0x03,
+    's',  'u',
+    'm',  0x00,
+    0x00,
     // Code section (id=10, size=39)
-    0x0A, 0x27,
+    0x0A,
+    0x27,
     0x01, // 1 function
     0x25, // body size = 37
     0x01, 0x01, 0x7F, // 1 local: i32 (sum)
@@ -293,7 +299,8 @@ const TEST_WASM_SUM = [_]u8{
     // block $exit
     0x02, 0x40,
     // loop $loop
-    0x03, 0x40,
+    0x03,
+    0x40,
     // if n == 0, exit
     0x20, 0x00, // local.get 0 (n)
     0x45, // i32.eqz
@@ -661,3 +668,5 @@ test "loop sum(0) = 0" {
     const result = try runPipeline(std.testing.allocator, &TEST_WASM_SUM, &[_]i32{0});
     try std.testing.expectEqual(@as(i32, 0), result);
 }
+
+// φ² + 1/φ² = 3 | TRINITY

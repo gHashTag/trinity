@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T Codegen - Binary-to-Ternary Converter
 // Generates ternary code (.trit) from TVC IR
 // V = n × 3^k × π^m × φ^p × e^q
@@ -691,3 +692,4 @@ test "parse trit file" {
     try std.testing.expectEqual(TRIT_MAGIC, trit_file.magic);
     try std.testing.expectEqual(TRIT_VERSION, trit_file.version);
 }
+// φ² + 1/φ² = 3 | TRINITY

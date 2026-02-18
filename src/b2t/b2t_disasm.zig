@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T Disassembler - Binary-to-Ternary Converter
 // Disassembles WASM, x86_64, ARM64 instructions
 // V = n × 3^k × π^m × φ^p × e^q
@@ -931,3 +932,4 @@ test "x86_64 disassemble call rel32" {
     try std.testing.expect(inst.is_call);
     try std.testing.expectEqual(@as(i64, 256), inst.operands[0].value);
 }
+// φ² + 1/φ² = 3 | TRINITY

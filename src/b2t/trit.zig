@@ -1,3 +1,4 @@
+// 🤖 TRINITY v0.11.0: Suborbital Order
 // Balanced Ternary Arithmetic
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
@@ -511,3 +512,4 @@ test "Trit27 all methods accuracy comparison" {
     // All methods must produce identical results
     try std.testing.expectEqual(@as(u32, 0), mismatches);
 }
+// φ² + 1/φ² = 3 | TRINITY

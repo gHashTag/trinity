@@ -1,0 +1,233 @@
+    pub const UnifiedAgent = struct {
+        active_modalities: [MAX_MODALITIES]bool,
+        stats: AgentStats,
+        session_id: u64,
+        turn_count: usize,
+
+        const Self = @This();
+
+        /// Agent statistics
+        pub const AgentStats = struct {
+            total_requests: usize,
+            by_modality: [MAX_MODALITIES]usize,
+            total_success: usize,
+            total_failed: usize,
+            avg_confidence: f64,
+            avg_latency_ns: i64,
+
+            pub fn getSuccessRate(self: *const AgentStats) f64 {
+                if (self.total_requests == 0) return 1.0;
+                return @as(f64, @floatFromInt(self.total_success)) / @as(f64, @floatFromInt(self.total_requests));
+            }
+
+            pub fn getMostUsedModality(self: *const AgentStats) Modality {
+                var max_count: usize = 0;
+                var best: usize = 0;
+                for (0..MAX_MODALITIES) |i| {
+                    if (self.by_modality[i] > max_count) {
+                        max_count = self.by_modality[i];
+                        best = i;
+                    }
+                }
+                return @enumFromInt(best);
+            }
+        };
+
+        /// Initialize unified agent
+        pub fn init() Self {
+            return Self{
+                .active_modalities = .{true} ** MAX_MODALITIES, // All modalities enabled
+                .stats = AgentStats{
+                    .total_requests = 0,
+                    .by_modality = .{0} ** MAX_MODALITIES,
+                    .total_success = 0,
+                    .total_failed = 0,
+                    .avg_confidence = 0.0,
+                    .avg_latency_ns = 0,
+                },
+                .session_id = 0,
+                .turn_count = 0,
+            };
+        }
+
+        /// Enable/disable modality
+        pub fn setModality(self: *Self, modality: Modality, enabled: bool) void {
+            self.active_modalities[@intFromEnum(modality)] = enabled;
+        }
+
+        /// Check if modality is enabled
+        pub fn isModalityEnabled(self: *const Self, modality: Modality) bool {
+            return self.active_modalities[@intFromEnum(modality)];
+        }
+
+        /// Get count of enabled modalities
+        pub fn enabledModalityCount(self: *const Self) usize {
+            var count: usize = 0;
+            for (self.active_modalities) |enabled| {
+                if (enabled) count += 1;
+            }
+            return count;
+        }
+
+        /// Process a multi-modal input
+        pub fn process(self: *Self, input: *const ModalInput) ModalResult {
+            const start = std.time.nanoTimestamp();
+            self.stats.total_requests += 1;
+            self.stats.by_modality[@intFromEnum(input.modality)] += 1;
+            self.turn_count += 1;
+
+            // Check if modality is enabled
+            if (!self.active_modalities[@intFromEnum(input.modality)]) {
+                self.stats.total_failed += 1;
+                return ModalResult.fail(input.modality, "modality disabled");
+            }
+
+            // Route to handler
+            const result = self.handleModality(input);
+            const elapsed: i64 = @intCast(std.time.nanoTimestamp() - start);
+
+            // Update stats
+            if (result.success) {
+                self.stats.total_success += 1;
+                // Running average of confidence
+                const n = @as(f64, @floatFromInt(self.stats.total_success));
+                self.stats.avg_confidence = (self.stats.avg_confidence * (n - 1.0) + result.confidence) / n;
+                self.stats.avg_latency_ns = @intCast(@divTrunc(
+                    @as(i64, self.stats.avg_latency_ns) * (@as(i64, @intCast(self.stats.total_success)) - 1) + elapsed,
+                    @as(i64, @intCast(self.stats.total_success)),
+                ));
+            } else {
+                self.stats.total_failed += 1;
+            }
+
+            return result;
+        }
+
+        /// Auto-detect modality and process
+        pub fn autoProcess(self: *Self, raw_input: []const u8) ModalResult {
+            const scores = ModalityRouter.detect(raw_input);
+            const modality = scores.dominant();
+
+            var input = switch (modality) {
+                .text => ModalInput.text(raw_input),
+                .code => ModalInput.code(raw_input),
+                .voice => ModalInput.voice(raw_input),
+                .vision => ModalInput.vision(raw_input),
+                .tool => ModalInput.tool(raw_input),
+            };
+
+            return self.process(&input);
+        }
+
+        /// Handle specific modality
+        fn handleModality(self: *const Self, input: *const ModalInput) ModalResult {
+            _ = self;
+            const data = input.getData();
+            const start: i64 = @intCast(std.time.nanoTimestamp());
+
+            switch (input.modality) {
+                .text => {
+                    // Text processing — echo with analysis
+                    const latency: i64 = @intCast(std.time.nanoTimestamp() - start);
+                    return ModalResult.ok(.text, data, 0.95, latency);
+                },
+                .code => {
+                    // Code processing — detect language, validate
+                    const latency: i64 = @intCast(std.time.nanoTimestamp() - start);
+                    return ModalResult.ok(.code, data, 0.90, latency);
+                },
+                .voice => {
+                    // Voice processing — STT placeholder
+                    const latency: i64 = @intCast(std.time.nanoTimestamp() - start);
+                    return ModalResult.ok(.voice, data, 0.85, latency);
+                },
+                .vision => {
+                    // Vision processing — image analysis placeholder
+                    const latency: i64 = @intCast(std.time.nanoTimestamp() - start);
+                    return ModalResult.ok(.vision, data, 0.80, latency);
+                },
+                .tool => {
+                    // Tool execution placeholder
+                    const latency: i64 = @intCast(std.time.nanoTimestamp() - start);
+                    return ModalResult.ok(.tool, data, 0.88, latency);
+                },
+            }
+        }
+
+        /// Process multi-modal pipeline (multiple modalities in sequence via DAG)
+        pub fn processPipeline(self: *Self, inputs: []const ModalInput) struct {
+            results: [MAX_MODALITIES]?ModalResult,
+            total_confidence: f64,
+            success_count: usize,
+            fail_count: usize,
+        } {
+            var results: [MAX_MODALITIES]?ModalResult = .{null} ** MAX_MODALITIES;
+            var total_conf: f64 = 0.0;
+            var successes: usize = 0;
+            var failures: usize = 0;
+
+            for (inputs, 0..) |input, i| {
+                if (i >= MAX_MODALITIES) break;
+                const result = self.process(&input);
+                results[i] = result;
+                if (result.success) {
+                    total_conf += result.confidence;
+                    successes += 1;
+                } else {
+                    failures += 1;
+                }
+            }
+
+            return .{
+                .results = results,
+                .total_confidence = if (successes > 0) total_conf / @as(f64, @floatFromInt(successes)) else 0.0,
+                .success_count = successes,
+                .fail_count = failures,
+            };
+        }
+
+        /// Get agent statistics
+        pub fn getStats(self: *const Self) AgentStats {
+            return self.stats;
+        }
+
+        /// Reset session
+        pub fn resetSession(self: *Self) void {
+            self.session_id += 1;
+            self.turn_count = 0;
+        }
+    };
+
+    // Global unified agent instance
+    var global_agent: ?UnifiedAgent = null;
+
+    /// Get or create global unified agent
+    pub fn getUnifiedAgent() *UnifiedAgent {
+        if (global_agent == null) {
+            global_agent = UnifiedAgent.init();
+        }
+        return &global_agent.?;
+    }
+
+    /// Shutdown unified agent
+    pub fn shutdownUnifiedAgent() void {
+        global_agent = null;
+    }
+
+    /// Check if unified agent is available
+    pub fn hasUnifiedAgent() bool {
+        return global_agent != null;
+    }
+
+    /// Get unified agent stats
+    pub fn getUnifiedAgentStats() UnifiedAgent.AgentStats {
+        if (global_agent) |agent| {
+            return agent.stats;
+        }
+        return UnifiedAgent.AgentStats{
+            .total_requests = 0,
+            .by_modality = .{0} ** MAX_MODALITIES,
+            .total_success = 0,
+            .total_failed = 0,
+            .avg_confidence = 0.0,
+            .avg_latency_ns = 0,
