@@ -1895,4 +1895,17 @@ pub fn build(b: *std.Build) void {
     const gen_tfm_fwd_step = b.step("test-transformer-forward", "Test INF-002 Transformer Forward Pass — native LLM inference");
     gen_tfm_fwd_step.dependOn(&run_gen_tfm_fwd_tests.step);
     test_step.dependOn(&run_gen_tfm_fwd_tests.step);
+
+    // Generated Hardware Abstraction tests (HW-001: Unified ternary backend interface)
+    const gen_hw_abs_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/hardware_abstraction.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_hw_abs_tests = b.addRunArtifact(gen_hw_abs_tests);
+    const gen_hw_abs_step = b.step("test-hardware-abstraction", "Test HW-001 Hardware Abstraction Layer — unified ternary backend");
+    gen_hw_abs_step.dependOn(&run_gen_hw_abs_tests.step);
+    test_step.dependOn(&run_gen_hw_abs_tests.step);
 }
