@@ -1,12 +1,14 @@
 name: ralph_canvas_monitor
-version: "1.0.0"
+version: "2.0.0"
 language: zig
 module: ralph_canvas_monitor
 
 description: >
-  RALPH-CANVAS-001: Ralph Monitor Panel for Trinity Canvas.
-  Adds dedicated WaveMode.ralph fullscreen panel to the 27-petal Canvas UI.
-  Shows loop_count, calls_per_hour, health status, active task, live log stream.
+  RALPH-CANVAS-005: Multi-Agent Ralph Monitor Panel for Trinity Canvas.
+  Extends the original single-agent panel (RALPH-CANVAS-001..004) with tabbed
+  multi-agent support for monitoring parallel Ralph instances across git worktrees.
+  Shows per-agent loop_count, calls, health status, circuit breaker, active task,
+  and live log stream. Tab bar with health dots for quick agent switching.
   Activated via Shift+9 keyboard shortcut or Block 2 petal click in idle logo.
   Tech Tree: VIS-001 (Canvas visualization integration).
 
@@ -19,17 +21,33 @@ constants:
   RALPH_METRIC_ROW_HEIGHT: 28
   RALPH_LOG_ROW_HEIGHT: 18
   RALPH_HUE: 200.0
+  MAX_RALPH_AGENTS: 4
+  RALPH_TAB_HEIGHT: 36
+  RALPH_TAB_GAP: 4
 
 types:
-  RalphPanelState:
+  RalphAgent:
     fields:
-      loop_count: Int
+      name: String[32]
+      branch: String[64]
+      loop: Int
       total_calls: Int
-      calls_per_hour: Float
       is_healthy: Bool
-      active_task: String
-      circuit_breaker: String
-      last_poll_time: Float
+      goal: String[128]
+      last_action: String[64]
+      cb_state: CircuitBreakerState
+      running: Bool
+      reachable: Bool
+      logs: Array[10, String[128]]
+      log_count: Int
+      update_timer: Float
+
+  RalphMultiAgentState:
+    fields:
+      agents: Array[4, RalphAgent]
+      agent_count: Int
+      active_tab: Int
+      initialized: Bool
 
   CircuitBreakerState:
     fields:
@@ -37,20 +55,50 @@ types:
       consecutive_no_progress: Int
 
 behaviors:
+  - name: initRalphAgents
+    given: Ralph panel opened for first time
+    when: g_ralph_initialized is false
+    then: Populate 4-agent array with worktree identities and staggered timers
+
+  - name: renderTabBar
+    given: WaveMode is .ralph and agents are populated
+    when: Frame render cycle draws ralph panel
+    then: Draw horizontal tab bar with per-agent health dot, name, branch
+
+  - name: handleTabClick
+    given: Mouse click within tab bar region
+    when: Click position falls within a tab rectangle
+    then: Set g_ralph_active_tab to clicked tab index
+
+  - name: handleTabKeyboard
+    given: Ralph panel active and key pressed
+    when: Arrow left/right or 1-4 without Shift
+    then: Switch active tab by direction or direct index
+
+  - name: pollMultiAgent
+    given: Ralph or Mirror mode active with staggered timers
+    when: Any agent timer exceeds RALPH_POLL_INTERVAL
+    then: Fetch /api/ralph-status?agent=N, parse into agents[N]
+
+  - name: renderActiveAgentPanel
+    given: Active tab selected and agent data available
+    when: Frame render after tab bar
+    then: Render full dashboard (metrics, task, controls, logs) for agents[active_tab]
+
   - name: renderRalphPanel
-    given: WaveMode is .ralph and RalphPanelState is populated
+    given: WaveMode is .ralph and RalphAgent is populated
     when: Frame render cycle executes
-    then: Fullscreen panel draws header, 4 metric cards, active task box, live log area
+    then: Fullscreen panel draws tab bar, header, 4 metric cards, active task box, live log area
 
   - name: pollRalphStatus
     given: Timer exceeds RALPH_POLL_INTERVAL seconds
-    when: Native mode reads .ralph/internal/ files
-    then: RalphPanelState updated with fresh data
+    when: Emscripten fetch to /api/ralph-status?agent=N
+    then: RalphAgent[N] updated with fresh data
 
   - name: parseLiveLog
-    given: .ralph/logs/live.log exists and has new content
-    when: Poll cycle reads tail of live.log
-    then: Last RALPH_LOG_LINES stored in ring buffer for display
+    given: .ralph/logs/ contains claude_output_*.log files
+    when: Poll cycle reads tail of latest log
+    then: Last 10 lines stored in agent ring buffer for display
 
   - name: parseCircuitBreakerState
     given: .ralph/internal/.circuit_breaker_state file content
@@ -62,27 +110,34 @@ behaviors:
     when: Scan for first unchecked P1 line
     then: Extract task description as active_task string
 
-
   - name: handlePetalClick
     given: Idle mode and Block 2 petal clicked
     when: Logo click handler dispatches block_idx 2
     then: Transition to WaveMode.ralph with nova effect
 
   - name: renderPetalHighlight
-    given: Idle mode and Block 2 petal hovered
-    when: hovered_block equals 2
-    then: Petal outline glows cyan with pulse when Ralph is active
+    given: Idle mode and any Ralph agent active
+    when: Any agent has loop > 0 and is_healthy
+    then: Block 2 petal outline glows cyan with pulse
 
 test_cases:
   - input: Shift+9 pressed
-    expected: WaveMode transitions to .ralph panel renders
-  - input: Poll timer expires
-    expected: Ralph state files read metrics updated
+    expected: WaveMode transitions to .ralph, tab bar renders with 4 agents
+  - input: Tab 2 clicked
+    expected: active_tab changes to 1, panel shows agent 1 data
+  - input: Right arrow pressed when active_tab is 0
+    expected: active_tab changes to 1
+  - input: Key 3 pressed without Shift in ralph mode
+    expected: active_tab changes to 2
+  - input: Poll timer for agent 1 expires
+    expected: Fetch called with ?agent=1, agent 1 metrics updated
+  - input: Agent 2 worktree has no .ralph directory
+    expected: Panel shows reachable=false with "--" indicators, health dot is gray
   - input: circuit_breaker_state contains CLOSED
     expected: Green indicator displayed
   - input: circuit_breaker_state contains OPEN
     expected: Red indicator with alert banner
   - input: Block 2 petal clicked in idle mode
     expected: WaveMode transitions to .ralph
-  - input: Block 2 petal hovered while Ralph active
+  - input: Block 2 petal hovered while any Ralph agent active
     expected: Cyan glow pulse on petal outline
