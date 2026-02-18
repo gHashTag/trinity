@@ -58,6 +58,9 @@ trinity/
 │   ├── architecture/          # Architecture docs
 │   └── guides/                # User guides
 │
+├── 📂 docsite/                # Docusaurus documentation site (ACTIVE)
+├── 📂 website/                # Main Trinity website (ACTIVE)
+│
 ├── 📂 deploy/                 # Deployment
 │   ├── docker/                # Docker configs
 │   └── kubernetes/            # K8s configs
