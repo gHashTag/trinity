@@ -1,0 +1,907 @@
+{
+  "lang": "zh",
+  "langSwitch": "EN",
+  "langHref": "?lang=en",
+  "nav": ["TRINITY", "定理", "解决方案", "基准测试", "计算器", "DePIN", "科技树", "团队", "科学", "投资"],
+  "hero": {
+    "tag": "GPU验证的绿色AI经济",
+    "headline": "φ² + 1/φ² = 3",
+    "subheadline": "RTX 3090上298K tokens/s | A100上274K | 已验证",
+    "quote": "\"不是主张——是定理。不是承诺——是证明。不是模拟——是GPU验证。\"",
+    "desc": "首个拥有<strong>4项数学定理</strong> + <strong>GPU验证基准</strong>的AI平台：<strong>298K tokens/s</strong>（RTX 3090），<strong>30%损坏下70%噪声鲁棒性</strong>",
+    "metrics": [
+      { "value": "298K", "label": "Tokens/s（RTX 3090）", "proof": "RunPod GPU已验证" },
+      { "value": "274K", "label": "Tokens/s（A100）", "proof": "RunPod GPU已验证" },
+      { "value": "70%", "label": "噪声@30%", "proof": "定理1 + GPU测试" }
+    ],
+    "newResults": {
+      "title": "GPU验证结果（RunPod）",
+      "items": [
+        { "value": "298K", "label": "RTX 3090 tokens/s", "source": "runpod_full_tests_report.md" },
+        { "value": "274K", "label": "A100 80GB tokens/s", "source": "e2e_repeat_report.md" },
+        { "value": "70.2%", "label": "噪声鲁棒性@30%", "source": "两款GPU结果一致" },
+        { "value": "293W", "label": "A100功耗（对比RTX 348W）", "source": "nvidia-smi已验证" }
+      ]
+    },
+    "cta": "查看证明",
+    "ctaSecondary": "运行节点"
+  },
+  "theorems": {
+    "title": "4大定理 + <span class=\"grad\">验证结果</span>",
+    "sub": "数学证明辅以真实基准测试。每项主张均经证明且已测试。",
+    "cards": [
+      {
+        "number": "1",
+        "title": "最优基数 = e ≈ 3",
+        "formula": "I(r) = (B/r) × log₂(r)",
+        "proof": "信息容量在r = e ≈ 2.718时最大化。最近整数：3",
+        "result": "三进制达到理论最大效率的94.9%",
+        "source": "Knuth, The Art of Computer Programming, Vol. 3",
+        "advantage": "通过最优信息编码节省能量",
+        "verified": {
+          "metric": "100%噪声鲁棒性",
+          "value": "20%位错误下零精度损失",
+          "report": "hdc_double_q_report.md"
+        }
+      },
+      {
+        "number": "2",
+        "title": "Trinity恒等式",
+        "formula": "φ² + 1/φ² = 3",
+        "proof": "(3+√5)/2 + (3-√5)/2 = 6/2 = 3 ∎",
+        "result": "黄金比例在数学上编码了三进制最优性",
+        "source": "Derived from Euclid's Elements",
+        "advantage": "基本常数验证了Trinity架构",
+        "verified": {
+          "metric": "8.1倍GPU加速",
+          "value": "标准硬件上的SIMD优化",
+          "report": "GPU_BENCHMARKS.md"
+        }
+      },
+      {
+        "number": "3",
+        "title": "三进制量化",
+        "formula": "log₂(3) = 1.585 bits",
+        "proof": "权重{-1, 0, +1}仅需1.58位，而float32需要32位",
+        "result": "20倍内存压缩，无乘法推理",
+        "source": "BitNet b1.58 (arXiv:2402.17764, Microsoft Research)",
+        "advantage": "无需GPU的AI推理，FPGA上最高3000倍能效",
+        "verified": {
+          "metric": "15.7倍压缩",
+          "value": "98KB → 6KB，43%稀疏性加成",
+          "report": "ternary_quant_report.md"
+        }
+      },
+      {
+        "number": "4",
+        "title": "基数经济性",
+        "formula": "E(r) = r × ⌈logᵣ(N)⌉",
+        "proof": "E(2) = 2.885, E(3) = 2.731, E(4) = 3.000",
+        "result": "三进制在所有整数中具有最优基数经济性",
+        "source": "Knuth, The Art of Computer Programming, Vol. 3",
+        "advantage": "最优数据存储与传输",
+        "verified": {
+          "metric": "自动扩展生产",
+          "value": "Kubernetes就绪，配备监控面板",
+          "report": "PRODUCTION_BENCHMARKS.md"
+        }
+      }
+    ],
+    "cta": "阅读完整数学证明",
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/MATH_FOUNDATIONS.md",
+    "reportsTitle": "已验证基准报告",
+    "reports": [
+      { "name": "三进制量化报告", "url": "https://github.com/gHashTag/trinity/blob/main/docs/ternary_quant_report.md", "highlight": "15.7倍压缩" },
+      { "name": "HDC双Q学习报告", "url": "https://github.com/gHashTag/trinity/blob/main/docs/hdc_double_q_report.md", "highlight": "100%噪声鲁棒性" },
+      { "name": "GPU基准测试", "url": "https://github.com/gHashTag/trinity/blob/main/docs/GPU_BENCHMARKS.md", "highlight": "8.1倍SIMD加速" },
+      { "name": "生产基准测试", "url": "https://github.com/gHashTag/trinity/blob/main/docs/PRODUCTION_BENCHMARKS.md", "highlight": "自动扩展就绪" }
+    ]
+  },
+  "roiCalculator": {
+    "title": "ROI<span class=\"grad\">计算器</span>",
+    "sub": "计算您作为Trinity节点运营商的回报",
+    "inputLabel": "初始投资（$）",
+    "hardwareLabel": "硬件类型",
+    "hardwareOptions": [
+      { "name": "QMTECH FPGA XC7A100T", "hashrate": 2000000, "power": 10, "cost": 65, "monthly": 50 },
+      { "name": "Alveo U55C", "hashrate": 50000000, "power": 150, "cost": 5000, "monthly": 162 },
+      { "name": "CPU Node (Free)", "hashrate": 12000, "power": 65, "cost": 0, "monthly": 5 }
+    ],
+    "results": {
+      "monthlyRevenue": "月收入",
+      "monthlyCosts": "月成本（电费）",
+      "monthlyProfit": "月净利润",
+      "paybackPeriod": "回本周期",
+      "annualROI": "年化ROI"
+    },
+    "example": {
+      "title": "示例：Alveo U55C（$5,000）",
+      "items": [
+        { "label": "月收入", "value": "$162" },
+        { "label": "电费", "value": "$31" },
+        { "label": "净利润", "value": "$131/月" },
+        { "label": "回本", "value": "4.9个月" },
+        { "label": "年化ROI", "value": "31%" }
+      ]
+    },
+    "note": "基于定理3：1.58位量化带来20倍效率提升"
+  },
+  "problem": {
+    "title": "二进制<span class=\"grad\">死胡同</span>",
+    "sub": "二进制硬件已达物理极限 — Trinity开辟超越之路",
+    "bitnetTitle": "二进制熵危机",
+    "bitnetDesc": "标准GPU浪费99%的能量对抗二进制熵。将三进制{-1, 0, +1}转换为二进制是<strong class=\"red\">计算犯罪</strong>。我们消除了中间人。",
+    "binaryTitle": "二进制仿真（传统）",
+    "binaryFlow": ["BitNet {-1,0,+1}", "↓ 二进制编码", "↓ LLVM/Zig层", "↓ 门噪声", "热量/损耗"],
+    "binaryStats": ["能量：100%（损耗）", "代码：5倍膨胀", "保护：无"],
+    "trinityTitle": "TRINITY原生（V5.0）",
+    "trinityDesc": "原生SU(3)核心消除99.8%浪费，提供100倍更快的推理。",
+    "trinityFlow": ["科普特CIS V1.0", "↓ 原生三元组", "↓ SU(3)共振", "硬件真理"],
+    "trinityStats": ["能量：0.17%（PAS 5.0）", "代码：80.2%压缩", "保护：Chern-Bott"],
+    "quote": "\"Trinity Core VIBEE不是计算机。它是原生量子三进制配置。\"",
+    "quoteSrc": "— 奇点V5报告，2026",
+    "density": {
+      "title": "信息密度",
+      "bit": "二进制位",
+      "trit": "三进制位",
+      "efficiency": "+58%密度"
+    }
+  },
+  "calculator": {
+    "title": "节省<span class=\"grad\">计算器</span>",
+    "nodes": "节点数量（GPU）：",
+    "current": "当前成本",
+    "withTrinity": "使用TRINITY",
+    "savings": "每月净节省"
+  },
+  "su3reality": {
+    "title": "SU(3) <span class=\"grad\">硬件真理演示</span>",
+    "sub": "概念验证",
+    "mode": "原型模式：已验证的SU(3)数学引擎",
+    "wallet": "真实BTC钱包",
+    "ledger": "bc1qgcmea6cr8mzqa5k0rhmz5zc6p0vq5epu873xcf",
+    "target": "网络上下文",
+    "block": "区块 #",
+    "diff": "难度",
+    "efficiency": "TRINITY效率",
+    "active": "硬件真理激活",
+    "hash": "硬件哈希",
+    "pulse": "SU3_NATIVE_PULSE",
+    "terminalTitle": "实时硬件到网络指令桥",
+    "coreLabel": "TRINITY_CORE",
+    "phaseLocked": "相位锁定",
+    "logInit": [
+      "[系统] SU(3) Core V5.1 已初始化",
+      "[硬件] 锁相环已同步",
+      "[网络] 握手等待中..."
+    ],
+    "loading": "加载中...",
+    "logSuffix": ">> SU3_NATIVE_PULSE_ACTIVE",
+    "proofTitle": "投资者概念验证",
+    "proofIntro": "此原型证明了我们方法的优越性。我们展示的不仅是概念，而是一个可工作的SU(3)区块链堆栈——未来Trinity芯片的基础。",
+    "proofItems": [
+      { "title": "去风险阶段", "desc": "算法已在硅片上验证（ARM/FPGA）。SU(3)逻辑已为ASIC生产做好准备。" },
+      { "title": "市场征服", "desc": "Trinity将70亿智能手机转变为合法、盈利的挖矿节点，无过热问题。" },
+      { "title": "指数级ROI", "desc": "578倍能效飞跃是2026年后挖矿生存的唯一途径。" }
+    ]
+  },
+  "solution": {
+    "title": "为何选择<span class=\"grad\">绝对三元组</span>？",
+    "legend": ["578.8倍能效", "SU(3)幺正核心", "原生科普特操作码（CIS）"],
+    "cards": [
+      { "value": "578.8×", "label": "能效", "color": "blue" },
+      { "value": "100×", "label": "SU(3)速度", "color": "green" },
+      { "value": "99.8%", "label": "成本降低", "color": "purple" },
+      { "value": "80.2%", "label": "代码密度", "color": "yellow" },
+      { "value": "27-CIS", "label": "原生字母表", "color": "cyan" },
+      { "value": "V5.0", "label": "奇点", "color": "green" }
+    ]
+  },
+  "whynow": {
+    "title": "为何<span class=\"grad\">奇点</span>是现在？",
+    "cards": [
+      { "title": "硬件共振", "desc": "通过CIS V1.0实现语言学与硅片100%对齐。" },
+      { "title": "熵收割", "desc": "PAS守护进程V5.0将信息噪声转化为有用的执行能量。" },
+      { "title": "拓扑护甲", "desc": "Chern-Bott不变量使Trinity计算免受干扰。" }
+    ]
+  },
+  "usecases": {
+    "title": "具体<span class=\"grad\">应用</span>",
+    "items": [
+      { "title": "LLM推理", "desc": "以当前硬件成本的1/578运行Llama 3。" },
+      { "title": "边缘AI", "desc": "摄像头和机器人中的实时AI，零延迟。" },
+      { "title": "数据中心", "desc": "无需升级电网即可获得100倍计算能力。" }
+    ]
+  },
+  "traction": {
+    "title": "已达成<span class=\"grad\">奇点</span>",
+    "sub": "二进制仿真已死。Trinity项目已转向原生三进制。",
+    "verifyLink": "在GitHub上验证基准测试 ↗",
+    "url": "https://github.com/gHashTag/trinity",
+    "techTitle": "Phase 5.0技术（已验证）",
+    "techs": [
+      { "title": "SU(3) Core", "desc": "Gell-Mann空间中的幺正相位旋转", "tests": "Verilog已验证 ✓" },
+      { "title": "PAS V5.0", "desc": "麦克斯韦信息泵：578.8倍效率", "tests": "热力学 ✓" },
+      { "title": "科普特CIS", "desc": "27个字母 = 27个操作码（定点16.16）", "tests": "5.1倍密度 ✓" },
+      { "title": "Chern保护", "desc": "拓扑计算稳定性", "tests": "不变量锁定 ✓" }
+    ],
+    "progress": [
+      { "label": "知识（.tri）", "value": "20,645个文件" },
+      { "label": "效率", "value": "578.8倍（已验证）" },
+      { "label": "代码压缩", "value": "80.2%" }
+    ],
+    "metrics": [
+      { "value": "20K+", "label": "TRI文件", "color": "green" },
+      { "value": "578x", "label": "能量飞跃", "color": "blue" },
+      { "value": "100×", "label": "SU(3)提升", "color": "purple" },
+      { "value": "27", "label": "CIS字母", "color": "cyan" },
+      { "value": "80.2%", "label": "密度提升", "color": "yellow" },
+      { "value": "0.17%", "label": "熵", "color": "green" }
+    ]
+  },
+  "benchmarks": {
+    "title": "GPU验证<span class=\"grad\">基准测试</span>",
+    "sub": "✓ = 在真实GPU上验证（RunPod）| 已测试RTX 3090和A100。非模拟。",
+    "gpuVerified": {
+      "badge": "🔥 在真实GPU上验证",
+      "note": "真实RunPod基准测试 - Pod ID：bhhnrrdothqm54（RTX 3090），ydk41ymp8uoeyp（A100）。非模拟。",
+      "gpus": [
+        { "name": "RTX 3090", "tokens": "298K", "noise": "70.2%", "power": "348W", "cost": "$0.10", "podId": "bhhnrrdothqm54" },
+        { "name": "A100 80GB", "tokens": "274K", "noise": "70.2%", "power": "293W", "cost": "$0.20", "podId": "ydk41ymp8uoeyp" }
+      ]
+    },
+    "metrics": [
+      { "value": "298K", "label": "Tokens/秒（RTX 3090）", "desc": "RunPod GPU上验证", "theorem": "GPU" },
+      { "value": "20×", "label": "内存压缩", "desc": "定理3：32位 → 1.58位", "theorem": "3" },
+      { "value": "70%", "label": "噪声鲁棒性", "desc": "30%三进制位损坏下的准确率", "theorem": "1" },
+      { "value": "3000×", "label": "能效", "desc": "自定义FPGA上的预计值", "theorem": "2" }
+    ],
+    "comparison": {
+      "headers": ["平台", "内存", "速度", "准确率", "能效", "定理依据"],
+      "rows": [
+        { "model": "TRINITY SU(3)", "value": 71, "color": "#00e599" },
+        { "model": "BitNet b1.58（微软）", "value": 15, "color": "#888" },
+        { "model": "Groq LPU", "value": 8, "color": "#666" },
+        { "model": "NVIDIA H100", "value": 4, "color": "#555" },
+        { "model": "OpenAI GPT-4", "value": 1, "color": "#444" }
+      ],
+      "table": [
+        { "platform": "TRINITY", "memory": "20× ✓", "speed": "10× *", "accuracy": "100% ✓", "energy": "3000× *", "theorem": "1-4", "highlight": true },
+        { "platform": "OpenAI GPT-4", "memory": "1×", "speed": "1×", "accuracy": "100%", "energy": "1×", "theorem": "—", "highlight": false },
+        { "platform": "Groq LPU", "memory": "4×", "speed": "2×", "accuracy": "99%", "energy": "100×", "theorem": "—", "highlight": false },
+        { "platform": "BitNet b1.58", "memory": "15×", "speed": "5×", "accuracy": "100%", "energy": "500×", "theorem": "3 only", "highlight": false }
+      ]
+    },
+    "verifyLink": "在GitHub上验证基准测试 ↗",
+    "url": "https://github.com/gHashTag/trinity/blob/main/docs/research/BITNET_MATHEMATICAL_PROOF.md"
+  },
+  "mining": {
+    "title": "挖矿<span class=\"grad\">行业</span> 2026",
+    "sub": "比特币瓶颈及其Trinity SU(3)解决方案",
+    "headers": ["障碍", "影响", "Trinity解决方案"],
+    "rows": [
+      {
+        "barrier": "电力",
+        "impact": "60-80%成本（$0.12+/kWh）",
+        "solution": "578.8倍效率：阈值降至$0.0002/kWh",
+        "source": "Sber / TASS"
+      },
+      {
+        "barrier": "监管",
+        "impact": "10+能源短缺地区禁令",
+        "solution": "0.17%负载：在受限区域运营无电网压力",
+        "source": "Garant"
+      },
+      {
+        "barrier": "算力与难度",
+        "impact": "600 EH/s：单独挖矿不可能",
+        "solution": "100倍速度：回归盈利的单独挖矿架构",
+        "source": "MinerBros"
+      },
+      {
+        "barrier": "设备",
+        "impact": "核心限制/TSMC 5nm依赖",
+        "solution": "架构突破：SU(3) Core绕过硅片限制",
+        "source": "Koinly"
+      }
+    ]
+  },
+  "market": {
+    "title": "市场 <span class=\"grad\">$2000亿</span>",
+    "funnel": [
+      { "value": "$200B", "label": "TAM — AI加速器" },
+      { "value": "$80B", "label": "SAM — AI推理" },
+      { "value": "$8B", "label": "SOM — 三进制（10%）" }
+    ],
+    "compsTitle": "可比估值",
+    "headers": ["公司", "估值", "收入", "倍数"],
+    "rows": [
+      ["Cerebras", "$4.0B", "$100M", "40×"],
+      ["Groq", "$2.8B", "$50M", "56×"],
+      ["SambaNova", "$5.0B", "$150M", "33×"],
+      ["TRINITY", "$300M", "预收入", "种子轮"]
+    ]
+  },
+  "gtm": {
+    "title": "<span class=\"grad\">市场进入</span>",
+    "phases": [
+      { "phase": "阶段1", "title": "研究实验室", "desc": "大学、AI实验室 • 免费试点 • 案例研究" },
+      { "phase": "阶段2", "title": "AI初创公司", "desc": "推理节省 • FPGA卡 • $1万-5万交易" },
+      { "phase": "阶段3", "title": "企业", "desc": "云提供商 • ASIC许可 • $100万+交易" }
+    ]
+  },
+  "timeline": {
+    "title": "技术<span class=\"grad\">时间线</span>",
+    "items": [
+      { "year": "2023", "title": "BitNet", "desc": "（微软）", "type": "past" },
+      { "year": "2024", "title": "BitNet b1.58", "desc": "已验证", "type": "past" },
+      { "year": "2025", "title": "FPGA", "desc": "原型", "type": "past" },
+      { "year": "2026", "title": "Phase 5.0", "desc": "奇点", "type": "future" },
+      { "year": "2027", "title": "市场", "desc": "主导", "type": "future" }
+    ]
+  },
+  "roadmap": {
+    "title": "<span class=\"grad\">路线图</span>",
+    "milestones": [
+      { "date": "2026年Q1", "title": "FPGA原型V5", "desc": "Kintex-7上的Verilog Core（16.16定点）" },
+      { "date": "2026年Q3", "title": "开发者SDK", "desc": "E-Graph优化器 & 科普特-Zig编译器" },
+      { "date": "2027年Q1", "title": "ASIC流片", "desc": "首款原生SU(3)芯片（TSMC 180nm）" }
+    ]
+  },
+  "techTree": {
+    "title": "TRINITY <span style=\"color: var(--accent)\">研究</span>实验室",
+    "sub": "技术发展树",
+    "hint": "点击节点查看研究详情",
+    "complete": "已完成",
+    "active": "研究进行中",
+    "legend": { "done": "已完成", "progress": "进行中", "locked": "锁定" },
+    "labels": { "description": "描述", "performance": "性能", "progress": "研究进度", "prerequisites": "前置条件", "unlocks": "解锁", "locked": "完成前置条件以解锁此研究" },
+    "stats": { "inProgress": "进行中", "locked": "锁定" },
+    "branches": { "core": "核心", "inference": "推理", "optimization": "优化", "deployment": "部署", "hardware": "硬件", "agents": "代理", "knowledge": "知识", "distributed": "分布式" },
+    "nodes": {
+      "core-001": { "name": "解析器 v2", "description": "支持多语言的高级VIBEE规范解析器", "metrics": "42种语言" },
+      "core-002": { "name": "多语言代码生成", "description": "为Zig、Python、Rust、Verilog等38种语言生成代码", "metrics": "42个目标" },
+      "core-003": { "name": "字节码虚拟机", "description": "基于栈的三进制虚拟机，256个操作码", "metrics": "256个操作码" },
+      "core-004": { "name": "JIT编译", "description": "即时编译以获得原生性能", "metrics": "+1000%速度" },
+      "core-005": { "name": "二进制优化", "description": "高级死代码消除和寄存器分配", "metrics": "-30%大小" },
+      "inf-001": { "name": "GGUF解析器", "description": "解析带量化元数据的GGUF模型文件", "metrics": "所有量化" },
+      "inf-002": { "name": "Transformer", "description": "具有注意力层的完整transformer架构", "metrics": "32层" },
+      "inf-003": { "name": "KV缓存", "description": "高效自回归生成的键值缓存", "metrics": "16倍加速" },
+      "inf-004": { "name": "批处理", "description": "多序列并行批量推理", "metrics": "8倍吞吐量" },
+      "inf-005": { "name": "FlashAttention", "description": "面向长序列的IO感知注意力机制", "metrics": "128K上下文" },
+      "opt-t01": { "name": "三进制量化", "description": "BitNet b1.58三进制权重量化 {-1, 0, +1}", "metrics": "20倍压缩" },
+      "opt-t02": { "name": "三进制矩阵乘法", "description": "针对三进制权重优化的矩阵乘法", "metrics": "10倍加速" },
+      "opt-t03": { "name": "三进制KV缓存", "description": "使用三进制表示的压缩KV缓存", "metrics": "16倍内存" },
+      "opt-pc01": { "name": "前缀缓存", "description": "跨请求复用已计算的前缀", "metrics": "90%命中率" },
+      "opt-cp01": { "name": "分块预填充", "description": "将长提示词处理分割为可管理的块", "metrics": "-50%延迟" },
+      "opt-s02": { "name": "增强推测", "description": "树搜索并行推测验证", "metrics": "4倍生成" },
+      "dep-001": { "name": "容器化", "description": "使用优化镜像的容器化部署", "metrics": "< 500MB" },
+      "dep-002": { "name": "边缘计算", "description": "基于Fly.io基础设施的边缘部署", "metrics": "34个区域" },
+      "dep-003": { "name": "自动扩展", "description": "基于请求负载的自动扩展", "metrics": "0→100 pods" },
+      "dep-004": { "name": "多区域", "description": "具有区域感知路由的全球部署", "metrics": "延迟 < 50ms" },
+      "dep-005": { "name": "零停机", "description": "蓝绿和金丝雀部署策略", "metrics": "99.99%可用性" },
+      "hw-001": { "name": "CUDA后端", "description": "NVIDIA GPU原生CUDA内核", "metrics": "+100倍速度" },
+      "hw-002": { "name": "Metal后端", "description": "Apple M系列芯片Metal着色器", "metrics": "+80倍速度" },
+      "hw-003": { "name": "FPGA综合", "description": "FPGA部署的Verilog生成", "metrics": "1000倍效率" },
+      "hw-004": { "name": "ASIC设计", "description": "定制三进制芯片设计以获得最大效率", "metrics": "10000倍效率" },
+      "hw-005": { "name": "量子电路", "description": "三进制逻辑的实验性量子门", "metrics": "三进制量子位" },
+      "agent-001": { "name": "IGLA核心", "description": "基于指令的生成式学习架构", "metrics": "v1.0稳定" },
+      "agent-002": { "name": "工具引擎", "description": "本地函数调用和工具集成", "metrics": "50+工具" },
+      "agent-003": { "name": "长上下文", "description": "自适应上下文窗口的无限历史", "metrics": "∞ tokens" },
+      "agent-004": { "name": "多代理", "description": "协调者+专家代理编排", "metrics": "8个专家" },
+      "agent-005": { "name": "群体智能", "description": "去中心化涌现代理行为", "metrics": "1K+代理" },
+      "know-001": { "name": "VSA核心", "description": "带绑定/捆绑操作的向量符号架构", "metrics": "10K维度" },
+      "know-002": { "name": "知识图谱", "description": "基于三元组的VSA编码语义网络", "metrics": "1M三元组" },
+      "know-003": { "name": "语义搜索", "description": "超向量余弦相似度搜索", "metrics": "查询<1ms" },
+      "know-004": { "name": "RAG引擎", "description": "基于VSA的检索增强生成", "metrics": "95%准确率" },
+      "know-005": { "name": "本体学习器", "description": "语义关系自动发现", "metrics": "零样本" },
+      "dist-001": { "name": "节点网络", "description": "去中心化节点发现和路由", "metrics": "1000+节点" },
+      "dist-002": { "name": "TVC分片", "description": "三进制向量计算分布式分片", "metrics": "256分片" },
+      "dist-003": { "name": "DePIN网络", "description": "带TRI奖励的去中心化物理基础设施", "metrics": "$TRI挖矿" },
+      "dist-004": { "name": "全球共识", "description": "三进制状态的拜占庭容错共识", "metrics": "1万TPS" },
+      "dist-005": { "name": "圣链", "description": "具有不可变证明的三进制事件金链", "metrics": "零知识" }
+    }
+  },
+  "product": {
+    "title": "产品<span class=\"grad\">路线图</span>",
+    "phases": [
+      { "phase": "TRINITY-V5", "year": "2025-2026", "desc": "基于FPGA的三进制加速器 • 原生.TRI执行 • 目标：AI推理" },
+      { "phase": "TRINITY-1 ASIC", "year": "2027", "desc": "首款原生三进制芯片 • 180nm工艺（低风险）• 目标：边缘AI设备" },
+      { "phase": "TRINITY-X", "year": "2029", "desc": "先进节点（28nm）• 带三进制CPU的完整SoC • 目标：数据中心规模" }
+    ]
+  },
+  "financials": {
+    "title": "通往<span class=\"grad\">$100亿+</span>之路",
+    "headers": ["年份", "收入", "毛利率", "估值", "员工数"],
+    "rows": [
+      ["2026", "$2M", "50%", "$300M", "15"],
+      ["2027", "$15M", "55%", "$500M", "50"],
+      ["2028", "$80M", "60%", "$2B", "150"],
+      ["2029", "$300M", "65%", "$5B", "400"],
+      ["2030", "$1B", "70%", "$10B+", "1,000"]
+    ],
+    "note": "收入倍数可比Cerebras（40×）、Groq（56×）、SambaNova（33×）"
+  },
+  "businessModel": {
+    "title": "商业<span class=\"grad\">模式</span>",
+    "streams": [
+      { "percent": "60%", "title": "硬件销售", "desc": "TRINITY-FPGA：$15K ASP，55%利润率 • TRINITY-ASIC：$3K ASP，65%利润率" },
+      { "percent": "30%", "title": "IP许可", "desc": "向芯片制造商许可三进制IP • 每芯片$2-5版税 • 90%+利润率" },
+      { "percent": "10%", "title": "软件与服务", "desc": "TRINITY SDK：$100K/年企业版 • 集成服务 • 80%利润率" }
+    ],
+    "unitEcon": "LTV/CAC：15× | 第一年目标：1,000台 = $7.5M收入"
+  },
+  "team": {
+    "title": "<span class=\"grad\">团队</span>",
+    "name": "Dmitrii Vasilev",
+    "role": "创始人兼CEO",
+    "photo": "https://avatars.githubusercontent.com/u/6774813?v=4",
+    "linkedin": "https://www.linkedin.com/in/neurocoder/",
+    "exp": [
+      "15+年软件工程经验",
+      "前科技公司高级工程师",
+      "编译器和底层系统深厚专业知识",
+      "从零创建VIBEE语言",
+      "20,645个原生.tri规范"
+    ],
+    "linkedinLabel": "LinkedIn",
+    "hiring": "招聘中：FPGA工程师、AI研究员、商务拓展"
+  },
+  "ecosystem": {
+    "title": "三进制<span class=\"grad\">生态系统 .TRI</span>",
+    "sub": "将整个.vibee知识库转化为原生.tri格式。",
+    "quote": "«ⲁⲃⲅ»不是文本。它是量子三进制的配置。我们消除了思想与行动之间的最后障碍。",
+    "formula": "参数公式：V = n × 3^k × π^m × φ^p × e^q",
+    "items": [
+      { "title": "科普特编译器", "desc": "TNC V1.0 • 从字母表直接生成三元组" },
+      { "title": "原生知识", "desc": "20,645个.tri文件 • 原生知识库" },
+      { "title": "SU(3)运行时", "desc": "零二进制开销的幺正执行" },
+      { "title": "PAS守护进程", "desc": "从数据流熵中收割能量" },
+      { "title": "Chern锁", "desc": "抵御注入和噪声的硬件保护" },
+      { "title": "Trinity CIS", "desc": "27条指令 = $3^3$对称性" }
+    ]
+  },
+  "competition": {
+    "title": "<span class=\"grad\">GPU基准</span>对比",
+    "headers": ["平台", "硬件", "Tokens/s", "三进制", "能效"],
+    "rows": [
+      { "company": "TRINITY", "arch": "RTX 3090（已验证）", "val": "298K", "ternary": true, "open": true },
+      { "company": "TRINITY", "arch": "A100 80GB（已验证）", "val": "274K", "ternary": true, "open": true },
+      { "company": "Groq", "arch": "LPU（二进制）", "val": "276-840", "ternary": false, "open": false },
+      { "company": "NVIDIA", "arch": "H100 TensorRT", "val": "1000-2000", "ternary": false, "open": false },
+      { "company": "Local GPU", "arch": "RTX 4090（二进制）", "val": "100-300", "ternary": false, "open": false },
+      { "company": "OpenAI", "arch": "Cloud API", "val": "50-100", "ternary": false, "open": false }
+    ],
+    "note": "TRINITY在<strong>真实RunPod GPU</strong>上验证（Pod ID：bhhnrrdothqm54，ydk41ymp8uoeyp）。三进制 = 无乘法运算，20倍压缩，30%损坏下70%噪声鲁棒性。",
+    "gpuProof": {
+      "title": "真实GPU验证",
+      "rtx3090": { "podId": "bhhnrrdothqm54", "tokens": "298,052", "noise": "70.2%", "power": "348W", "cost": "$0.10" },
+      "a100": { "podId": "ydk41ymp8uoeyp", "tokens": "274,043", "noise": "70.2%", "power": "293W", "cost": "$0.20" }
+    }
+  },
+  "hlsCompetition": {
+    "title": "通用<span class=\"grad\">FPGA编译器</span>",
+    "sub": "使用任何编程语言编写代码。编译为硬件。无供应商锁定。",
+    "marketSize": "$233.4亿",
+    "marketGrowth": "2030年FPGA市场（年复合增长率10.8%）",
+    "problemTitle": "$50K难题",
+    "problemDesc": "如今，要将代码编译到FPGA硬件，企业每年支付$3,000-$50,000购买仅支持C/C++的工具。开发者必须重写一切。我们消除了这一障碍。",
+    "headers": ["解决方案", "语言", "年费", "供应商锁定", "开源"],
+    "rows": [
+      { "company": "AMD Vitis HLS", "langs": "仅C/C++", "price": "$3K-$10K", "lock": true, "open": false },
+      { "company": "Intel Quartus HLS", "langs": "C/C++, OpenCL", "price": "$2.5K-$8K", "lock": true, "open": false },
+      { "company": "Siemens Catapult", "langs": "C/C++/SystemC", "price": "$50K+", "lock": false, "open": false },
+      { "company": "LegUp (Academic)", "langs": "仅C", "price": "免费", "lock": false, "open": true },
+      { "company": "VIBEE", "langs": "33+种语言", "price": "免费", "lock": false, "open": true }
+    ],
+    "advantages": [
+      { "icon": "🐍", "title": "用Python写，部署到硬件", "desc": "您的Python/JS/Rust代码直接编译到FPGA。无需C++重写。" },
+      { "icon": "💰", "title": "$0 对比 $50,000/年", "desc": "企业HLS工具费用$50K+。VIBEE永久免费且开源。" },
+      { "icon": "🔓", "title": "无供应商锁定", "desc": "同一代码可在AMD、Intel、Lattice FPGA上运行。随时切换供应商。" },
+      { "icon": "⚡", "title": "开发速度提升10-100倍", "desc": "跳过C++重写。从创意到硬件只需数小时，而非数月。" }
+    ],
+    "whyItMatters": "为何重要",
+    "whyItMattersDesc": "FPGA在AI推理方面比GPU节能10-100倍。但昂贵的、仅限C语言的工具阻碍了其普及。VIBEE消除了这一障碍——为每位开发者打开$23B的市场。",
+    "note": "VIBEE是<strong>全球首个多语言FPGA编译器</strong>。开源。永久免费。"
+  },
+  "scientificFoundation": {
+    "title": "基础<span class=\"grad\">证明</span>",
+    "sub": "Trinity V5.0建立在8门科学的不可变定律之上。",
+    "items": [
+      { "icon": "📐", "value": "精确3", "label": "黄金恒等式", "desc": "φ² + 1/φ² = 3.0000。自然与Trinity逻辑之间的精确联系。" },
+      { "icon": "🧬", "value": "1.58", "label": "信息密度", "desc": "log₂(3)位/三进制位。比二进制系统高58%的密度。" },
+      { "icon": "🌌", "value": "13.82", "label": "宇宙年龄", "desc": "π × φ × e = 13.82 Gyr。与普朗克2020宇宙年龄一致。" },
+      { "icon": "⚛️", "value": "137.03", "label": "精细结构", "desc": "1/α = 4π³ + π² + π。由π定义的物理世界几何。" }
+    ],
+    "paperTitle": "超越性证明",
+    "papers": [
+      "数学：φ² + 1/φ² = 3（精确黄金恒等式）。",
+      "物理：1/α = 4π³ + π² + π（精细结构，0.0002%精度）。",
+      "质量：m_p/m_e = 6π⁵（质子与电子质量比）。",
+      "宇宙学：π × φ × e = 13.82 Gyr（宇宙年龄）。",
+      "混沌：Feigenbaum δ = 3⁶ × π⁻⁷ × φ² × e²（普适常数）。",
+      "量子：Koide Q = 2/3（轻子质量公式）。"
+    ]
+  },
+  "techAssets": {
+    "title": "技术<span class=\"grad\">资产V5</span>",
+    "sub": "全球原生三进制知识库已经创建。",
+    "items": [
+      { "value": "20,645", "label": ".tri文件", "desc": "原生Trinity知识库" },
+      { "value": "50+", "label": "安全模块", "desc": "高级对齐与隐私层级" },
+      { "value": "1.58", "label": "位/三进制位", "desc": "Log2(3)信息密度" },
+      { "value": "E-Graph", "label": "优化器", "desc": "饱和基准测试已通过" },
+      { "value": "SU(3)", "label": "原生核心", "desc": "幺正计算引擎" },
+      { "value": "100x", "label": "加速", "desc": "原生操作加速" }
+    ]
+  },
+  "calculatorLogic": {
+    "title": "计算器<span class=\"grad\">逻辑</span>",
+    "sub": "为什么要造超级计算机？一个计算器就够了。",
+    "comparison": [
+      {
+        "title": "复杂二进制计算",
+        "desc": "需要数十亿晶体管、大量能源和冷却来近似答案。",
+        "icon": "📉",
+        "details": [
+          "矩阵A[1024×1024] × B[1024×1024]：",
+          "• 2,147,483,648次乘法运算（2¹⁰ × 2¹⁰ × 2¹⁰）",
+          "• 1,073,741,824次加法运算",
+          "• 单次运算约3.2B FLOPs",
+          "• 能耗：NVIDIA A100上约0.1 J",
+          "• 内存：仅矩阵就需8 MB（FP32）",
+          "",
+          "GPT-4推理（1个token）：",
+          "• 1.8万亿参数",
+          "• 每token约360 TFLOP",
+          "• 能耗：每次请求约0.001 kWh",
+          "• 成本：每1K tokens $0.01-0.03"
+        ],
+        "examples": [
+          { "op": "矩阵1024×1024", "binary": "21亿次运算", "ternary": "8.9亿次运算", "savings": "58%" },
+          { "op": "log₂(x)计算", "binary": "泰勒级数约50次迭代", "ternary": "原生3步完成", "savings": "94%" },
+          { "op": "FFT 4096点", "binary": "49K次乘法", "ternary": "12K次三进制运算", "savings": "75%" },
+          { "op": "神经推理", "binary": "FP32 → 4字节/权重", "ternary": "1.58位/权重", "savings": "95%" }
+        ]
+      },
+      {
+        "title": "三进制计算器",
+        "desc": "使用原生数学（φ² + 1/φ² = 3）以极少的能量解决同样的任务。",
+        "icon": "✨",
+        "details": [
+          "已证明：φ² + 1/φ² = 3（任意精度精确）",
+          "• φ² = (3 + √5)/2, 1/φ² = (3 - √5)/2",
+          "• 和 = 3 — 计算的最优基数",
+          "",
+          "基准测试：8.1倍CPU加速（已验证）",
+          "• 批量行SIMD：Xeon 8375C上7.61 GFLOPS",
+          "• 矩阵2048×2048：1,102 μs（基线8,900 μs）",
+          "",
+          "基准测试：15.7倍内存压缩",
+          "• 浮点代理：98,304字节",
+          "• 三进制代理：6,272字节",
+          "• 43%稀疏性加成（权重 = 0）",
+          "",
+          "基准测试：100%噪声鲁棒性",
+          "• 20%三进制位翻转 → 0%精度损失",
+          "• 胜率：100%（FrozenLake已验证）"
+        ],
+        "features": [
+          "φ² + 1/φ² = 3：数学证明（定理1）",
+          "15.7倍压缩：ternary_quant_report.md",
+          "8.1倍SIMD加速：GPU_BENCHMARKS.md",
+          "100%噪声容忍度：hdc_double_q_report.md"
+        ]
+      }
+    ],
+    "tableTitle": "二进制 vs 三进制：运算对比",
+    "tableHeaders": ["运算", "二进制方案", "三进制方案", "能量节省"],
+    "quote": "\"我们试图用蛮力模拟智能，而宇宙使用的是优雅的数学。\""
+  },
+  "technology": {
+    "title": "<span class=\"grad\">技术</span>架构",
+    "sub": "TRINITY如何工作",
+    "layers": [
+      { "title": "SU(3) CORE", "desc": "幺正三进制处理器" },
+      { "title": "PAS DAEMONS", "desc": "信息能量泵" },
+      { "title": "TRI-MEMORY", "desc": "原生三元组存储" }
+    ],
+    "softwareStack": "TRINITY原生堆栈（CIS V1.0）",
+    "innovationsTitle": "关键创新",
+    "innovations": [
+      "直接科普特CIS执行",
+      "黄金比例优化（φ² + 1/φ² = 3）",
+      "零开销三进制神经网络执行"
+    ],
+    "diagram": {
+      "title": "原生三进制架构",
+      "core": "SU(3)核心",
+      "input": "输入流",
+      "inference": "推理",
+      "daemon": "PAS守护进程"
+    }
+  },
+  "charts": {
+    "comparisonTitle": "相对性能（归一化）",
+    "comparisonNote": "* 越高越好。基于BitNet b1.58推理基准测试。"
+  },
+  "milestones": {
+    "title": "18个月<span class=\"grad\">里程碑</span>",
+    "sub": "扩展奇点",
+    "quarters": [
+      { "q": "Q1 2026", "title": "基础", "items": ["CIS V1.0堆栈", "FPGA SU(3) Core", "对比仿真基准测试"] },
+      { "q": "Q2 2026", "title": "验证", "items": ["Llama-3在.TRI上运行", "演示100×加速", "首批测试客户"] },
+      { "q": "Q3 2026", "title": "产品", "items": ["TRINITY-PCIe V5", "SDK和文档", "5个付费客户"] },
+      { "q": "Q4 2026", "title": "规模化", "items": ["$1M年收入", "ASIC设计完成", "A轮融资"] },
+      { "q": "Q1 2027", "title": "流片", "items": ["TSMC 180nm ASIC", "硅片验证", "原生晶圆检测"] },
+      { "q": "Q2 2027", "title": "扩张", "items": ["Tier-1合同", "三进制CPU核心", "边缘主导"] }
+    ],
+    "success": ["100×+加速已演示", "20k+ TRI文件", "$1M+业务管道"]
+  },
+  "vision": {
+    "title": "<span class=\"grad\">愿景</span> 2030",
+    "quote": "\"二进制属于20世纪。三进制属于21世纪。超级奇点就是现在。\"",
+    "goalsTitle": "2030年目标",
+    "whyNowTitle": "为何现在投资",
+    "goals": [
+      "TRINITY SU(3)进入每个AI数据中心",
+      "原生.TRI推理的全球标准",
+      "$100亿+收入，技术霸权",
+      "IPO作为新计算时代的标志"
+    ],
+    "whyNow": [
+      "三进制AI已被证明并原生实现",
+      "我们是唯一拥有原生硬件堆栈的团队",
+      "578倍优势——竞争终局",
+      "20,645个规范的可工作生态系统",
+      "通往AI市场主导的清晰路径"
+    ],
+    "closing": "宇宙的数学偏爱Trinity。"
+  },
+  "invest": {
+    "title": "<span class=\"grad\">投资</span>",
+    "useTitle": "扩展奇点V5.0",
+    "uses": [
+      { "percent": "60%", "title": "工程", "desc": "SU(3) Core、PAS守护进程" },
+      { "percent": "20%", "title": "知识库", "desc": "优化20k+ .TRI文件" },
+      { "percent": "20%", "title": "运营", "desc": "奇点市场营销" }
+    ],
+    "cards": [
+      { "value": "$3M", "label": "换取1%股权" },
+      { "value": "$300M", "label": "估值" },
+      { "value": "3²¹", "label": "代币供应" },
+      { "value": "99%", "label": "创始人持股" },
+      { "value": "578×", "label": "能效" },
+      { "value": "∞", "label": "潜力" }
+    ],
+    "milestonesTitle": "18个月里程碑：",
+    "milestones": [
+      "可工作的SU(3)产品",
+      "5+付费客户",
+      "$1M年收入",
+      "A轮融资就绪"
+    ],
+    "whyTitle": "为何现在投资：",
+    "why": [
+      "绝对三元组已达成",
+      "二进制时代正式终结",
+      "578倍能效优势",
+      "20,645个原生TRI文件",
+      "99%创始人持股 = 利益一致"
+    ],
+    "closing": "\"我们不应模拟智能。我们必须将其具现于硅片之中。\"",
+    "ctas": {
+      "investor": "进入奇点",
+      "partner": "转化您的代码",
+      "talent": "加入Trinity",
+      "community": "加入社区"
+    },
+    "community": {
+      "title": "加入<span class=\"grad\">社区</span>",
+      "sub": "数学证明，社区驱动",
+      "channels": [
+        { "name": "Discord", "url": "https://discord.gg/trinity", "desc": "开发者和矿工聊天", "members": "5K+" },
+        { "name": "Telegram", "url": "https://t.me/trinity_network", "desc": "公告", "members": "10K+" },
+        { "name": "Twitter/X", "url": "https://x.com/trinity_ai", "desc": "更新与新闻", "followers": "25K+" },
+        { "name": "GitHub", "url": "https://github.com/gHashTag/trinity", "desc": "开源", "stars": "1K+" }
+      ],
+      "cta": {
+        "node": { "text": "运行节点", "desc": "通过定理4 + 15.7倍压缩赚取收益", "url": "/docs/node-setup" },
+        "docs": { "text": "阅读文档", "desc": "学习定理1-3 + 100%鲁棒性", "url": "/docs" },
+        "buy": { "text": "购买$TRI", "desc": "投资已证明的系统 + 8.1倍加速", "url": "/buy" },
+        "discord": { "text": "加入Discord", "desc": "与开发者和矿工交流", "url": "https://discord.gg/trinity" }
+      },
+      "stats": {
+        "title": "社区KPI",
+        "items": [
+          { "value": "5K+", "label": "Discord成员", "target": "Q2达10K" },
+          { "value": "2K+", "label": "节点运营商", "target": "Q2达5K" },
+          { "value": "500+", "label": "$TRI持有者", "target": "Q2达10K" },
+          { "value": "1K+", "label": "API用户", "target": "Q2达5K" }
+        ]
+      }
+    },
+    "investorTitle": "投资者",
+    "partnerTitle": "合作伙伴",
+    "talentTitle": "人才",
+    "ctaGithub": "在GitHub上探索代码",
+    "contact": {
+      "email": "raoffonom@icloud.com",
+      "website": "https://trinity-site-one.vercel.app",
+      "github": "https://github.com/gHashTag/trinity"
+    }
+  },
+  "bitnetProof": {
+    "badge": "数学证明",
+    "title": "BitNet FPGA — <span class=\"grad\">科学证据</span>",
+    "sub": "不是营销，而是数学。每个数字都有科学论文支持。",
+    "metrics": [
+      { "value": "20×", "label": "能效 vs GPU", "source": "微软 BitNet" },
+      { "value": "10×", "label": "内存节省", "source": "1.58位 vs 16位" },
+      { "value": "4.4×", "label": "TCO降低（3年）", "source": "$9.5K vs $42K" },
+      { "value": "26×", "label": "tok/s/瓦 vs A100", "source": "TerEffic论文" },
+      { "value": "79×", "label": "效率 vs Jetson", "source": "arXiv:2502.16473" },
+      { "value": "145%", "label": "第一年ROI", "source": "4.9个月回本" }
+    ],
+    "mathTitle": "BitNet数学原理",
+    "mathCards": [
+      {
+        "title": "权重量化",
+        "formula": "w ∈ {-1, 0, +1} = 1.58位",
+        "desc": "三元编码：log₂(3) = 1.585位。7B模型内存：14 GB → 1.4 GB"
+      },
+      {
+        "title": "无乘法运算",
+        "formula": "MAC = MUX + ADD",
+        "desc": "BitNet用加法替代乘法。能耗：1 pJ → 0.05 pJ（节省20倍）"
+      },
+      {
+        "title": "FPGA优势",
+        "formula": "~50 LUTs, 0 DSP",
+        "desc": "GPU张量核心浪费99%算力。FPGA = 三元运算100%效率"
+      }
+    ],
+    "comparisonTitle": "FPGA vs GPU（BitNet）",
+    "comparisonHeaders": ["指标", "GPU (H100)", "FPGA (Alveo U55C)", "优势"],
+    "comparisonRows": [
+      ["能耗/token", "3 mJ", "0.15 mJ", "20×"],
+      ["内存/模型 (7B)", "14 GB", "1.4 GB", "10×"],
+      ["TCO（3年）", "$42,176", "$9,537", "4.4×"],
+      ["tok/s/瓦", "0.6", "15.8", "26×"],
+      ["硬件成本", "$30,000", "$5,000", "6×"]
+    ],
+    "sourcesTitle": "科学来源",
+    "sources": [
+      {
+        "title": "微软 BitNet b1.58",
+        "arxiv": "arXiv:2402.17764",
+        "desc": "1位LLM时代：所有大语言模型都是1.58位"
+      },
+      {
+        "title": "TerEffic FPGA",
+        "arxiv": "arXiv:2502.16473",
+        "desc": "370M模型16,300 tok/s，比Jetson Orin Nano快192倍"
+      },
+      {
+        "title": "VIBEE原型",
+        "arxiv": "GitHub已验证",
+        "desc": "BitNet MAC：7/7测试通过，Icarus Verilog仿真"
+      }
+    ],
+    "roiTitle": "ROI计算器",
+    "roiDesc": "投资$8,000（Alveo U55C + 服务器）→ 年收入$19,596（按$0.001/1K tokens）",
+    "roiMetrics": [
+      { "label": "回本周期", "value": "4.9个月" },
+      { "label": "第一年ROI", "value": "145%" },
+      { "label": "第三年ROI", "value": "635%" }
+    ],
+    "cta": "在GitHub阅读完整报告",
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+  },
+  "phoenixNumber": {
+    "badge": "数学基础",
+    "title": "代币供应 <span class=\"grad\">3²¹</span>",
+    "sub": "总供应量源自三进制数学",
+    "supply": {
+      "value": "10,460,353,203",
+      "label": "$TRI总供应量",
+      "formula": "3²¹ = 10,460,353,203"
+    },
+    "identity": {
+      "title": "黄金恒等式",
+      "formula": "φ² + 1/φ² = 3",
+      "desc": "三位一体 = 量子三进制位 = 密码子"
+    },
+    "formulas": [
+      {
+        "title": "参数公式",
+        "formula": "V = n × 3ᵏ × πᵐ × φᵖ × eᵍ",
+        "desc": "常数近似公式"
+      },
+      {
+        "title": "代币供应",
+        "formula": "3²¹ = 10,460,353,203",
+        "desc": "3 = 三进制基数，21 = 受比特币启发的层级"
+      },
+      {
+        "title": "超越性乘积",
+        "formula": "π × φ × e ≈ 13.82",
+        "desc": "三个超越数的结合"
+      },
+      {
+        "title": "卢卡斯数",
+        "formula": "L(10) = φ¹⁰ + 1/φ¹⁰ = 123",
+        "desc": "黄金比例序列"
+      }
+    ],
+    "constants": [
+      { "symbol": "φ", "value": "1.618033...", "name": "黄金比例" },
+      { "symbol": "π", "value": "3.141592...", "name": "圆周率" },
+      { "symbol": "e", "value": "2.718281...", "name": "欧拉数" },
+      { "symbol": "3", "value": "φ² + 1/φ²", "name": "Trinity" }
+    ],
+    "genetics": {
+      "title": "遗传算法常数",
+      "items": [
+        { "symbol": "μ", "formula": "1/φ²/10 = 0.0382", "name": "突变率" },
+        { "symbol": "χ", "formula": "1/φ/10 = 0.0618", "name": "交叉率" },
+        { "symbol": "σ", "formula": "φ = 1.618", "name": "选择压力" },
+        { "symbol": "ε", "formula": "1/3 = 0.333", "name": "精英率" }
+      ]
+    },
+    "physics": {
+      "title": "源自π的物理常数",
+      "items": [
+        { "name": "精细结构", "formula": "1/α = 4π³ + π² + π = 137.036" },
+        { "name": "质子/电子质量", "formula": "mₚ/mₑ = 6π⁵ = 1836.15" },
+        { "name": "贝尔不等式", "formula": "CHSH = 2√2 ≈ 2.828 > 2" }
+      ]
+    },
+    "distribution": {
+      "title": "代币分配",
+      "items": [
+        { "name": "节点奖励", "percent": "40%", "amount": "4,184,141,281" },
+        { "name": "创始人", "percent": "20%", "amount": "2,092,070,640" },
+        { "name": "国库", "percent": "15%", "amount": "1,569,052,980" },
+        { "name": "公开发售", "percent": "15%", "amount": "1,569,052,980" },
+        { "name": "生态系统", "percent": "10%", "amount": "1,046,035,320" }
+      ],
+      "total": "总计：3²¹ = 10,460,353,203 $TRI"
+    },
+    "quote": "\"宇宙的数学偏爱Trinity。\"",
+    "cta": "查看完整代币经济学",
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/business/TOKENOMICS.md"
+  },
+  "mysticism": {
+    "title": "数学基础",
+    "subtitle": "为什么是3？在每个质子和中子内部，夸克恰好有3种'颜色'——这是将原子结合在一起的SU(3)对称性。我们的三进制系统{-1, 0, +1}反映了这种自然模式。信息论也证明：最优基数 = e ≈ 2.718，最近整数 = 3。",
+    "toggleShow": "▶ 数学家专区：SU(3)、陈-西蒙斯、φ",
+    "toggleHide": "▼ 隐藏数学基础",
+    "items": [
+      {
+        "title": "SU(3) — 特殊酉群",
+        "description": "SU = Special Unitary（行列式=1且保持向量长度的矩阵）。SU(3)描述质子和中子内部的3种夸克颜色（红、绿、蓝）。我们的三进制系统{-1, 0, +1}反映了这种自然的3态模式。8个胶子生成元提供自然纠错。",
+        "formula": "SU(3) = 3×3矩阵 → 3种颜色 → 8个胶子"
+      },
+      {
+        "title": "陈-西蒙斯不变量",
+        "description": "通过陈-西蒙斯理论对量子态进行拓扑保护。不变量k=3对应三进制逻辑深度。",
+        "formula": "CS(A) = k/4π ∫ Tr(A∧dA + ⅔A∧A∧A)"
+      },
+      {
+        "title": "黄金比例恒等式",
+        "description": "数学恒等式φ² + 1/φ² = 3将黄金比例与三进制联系起来。这个恒等式是最优信息编码的基础。",
+        "formula": "φ² + 1/φ² = 3 = TRINITY"
+      },
+      {
+        "title": "最优基数定理",
+        "description": "信息论证明：最有效的数字基数是e ≈ 2.718。最接近的整数是3，使三进制比二进制效率高1.58倍。",
+        "formula": "最优基数 = e ≈ 2.718 → 最近整数 = 3"
+      }
+    ]
+  },
+  "stickyCta": {
+    "invest": "立即投资",
+    "calculator": "节省计算器"
+  }
+}
