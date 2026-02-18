@@ -198,7 +198,7 @@ pub const ChatServer = struct {
         } else if (std.mem.startsWith(u8, path, "/diagnostic")) {
             try self.handleDiagnostic(connection);
         } else if (std.mem.startsWith(u8, path, "/api/ralph-status")) {
-            try self.handleRalphStatus(connection);
+            try self.handleRalphStatus(connection, path);
         } else if (std.mem.startsWith(u8, path, "/api/files")) {
             try self.handleFileList(connection);
         } else if (std.mem.startsWith(u8, path, "/api/compile")) {
@@ -424,29 +424,62 @@ pub const ChatServer = struct {
         try self.sendJsonResponse(connection, file_list);
     }
 
-    /// GET /api/ralph-status — Return internal Ralph autonomous state
-    fn handleRalphStatus(self: *Self, connection: *std.net.Server.Connection) !void {
+    /// GET /api/ralph-status?agent=N — Return internal Ralph autonomous state for agent N (0-3)
+    fn handleRalphStatus(self: *Self, connection: *std.net.Server.Connection, path: []const u8) !void {
+        // Parse ?agent=N from path (default to 0 = main worktree)
+        const worktree_paths = [_][]const u8{
+            "/Users/playra/trinity",
+            "/Users/playra/trinity-w1",
+            "/Users/playra/trinity-w2",
+            "/Users/playra/trinity-w3",
+        };
+        const agent_idx: usize = blk: {
+            if (std.mem.indexOf(u8, path, "agent=")) |idx| {
+                const start = idx + 6;
+                if (start < path.len and path[start] >= '0' and path[start] <= '3') {
+                    break :blk path[start] - '0';
+                }
+            }
+            break :blk 0;
+        };
+        const base_path = worktree_paths[@min(agent_idx, 3)];
+
+        // Open worktree directory (absolute path)
+        var base_dir = std.fs.openDirAbsolute(base_path, .{}) catch {
+            try self.sendJsonResponse(connection, "{\"loop\":{\"status\":\"offline\"},\"circuit_breaker\":{\"state\":\"UNKNOWN\"},\"logs\":[],\"agent\":" ++ "0" ++ ",\"reachable\":false}");
+            return;
+        };
+        defer base_dir.close();
+
         var json: std.ArrayListUnmanaged(u8) = .{};
         defer json.deinit(self.allocator);
 
-        try json.appendSlice(self.allocator, "{");
+        try json.appendSlice(self.allocator, "{\"agent\":");
+        var agent_buf: [4]u8 = undefined;
+        _ = std.fmt.bufPrint(&agent_buf, "{d}", .{agent_idx}) catch {};
+        const agent_str_len = std.mem.indexOfScalar(u8, &agent_buf, 0) orelse 1;
+        try json.appendSlice(self.allocator, agent_buf[0..agent_str_len]);
 
         // 1. Read .ralph/logs/status.json
-        const status_json = std.fs.cwd().readFileAlloc(self.allocator, ".ralph/logs/status.json", 4096) catch |err| blk: {
-            std.debug.print("[ChatServer] Ralph status read error: {}\n", .{err});
-            break :blk "{\"status\":\"offline\"}";
+        const status_json = base_dir.readFileAlloc(self.allocator, ".ralph/logs/status.json", 4096) catch |err| s_blk: {
+            std.debug.print("[ChatServer] Ralph agent {d} status read error: {}\n", .{ agent_idx, err });
+            break :s_blk "{\"status\":\"offline\"}";
         };
-        defer if (!std.mem.eql(u8, status_json, "{\"status\":\"offline\"}")) self.allocator.free(status_json);
+        const status_is_fallback = std.mem.eql(u8, status_json, "{\"status\":\"offline\"}");
+        defer if (!status_is_fallback) self.allocator.free(status_json);
 
-        try json.appendSlice(self.allocator, "\"loop\":");
+        try json.appendSlice(self.allocator, ",\"reachable\":");
+        try json.appendSlice(self.allocator, if (status_is_fallback) "false" else "true");
+        try json.appendSlice(self.allocator, ",\"loop\":");
         try json.appendSlice(self.allocator, status_json);
 
         // 2. Read .ralph/internal/.circuit_breaker_state
-        const cb_json = std.fs.cwd().readFileAlloc(self.allocator, ".ralph/internal/.circuit_breaker_state", 4096) catch |err| blk: {
-            std.debug.print("[ChatServer] Ralph CB read error: {}\n", .{err});
-            break :blk "{\"state\":\"UNKNOWN\"}";
+        const cb_json = base_dir.readFileAlloc(self.allocator, ".ralph/internal/.circuit_breaker_state", 4096) catch |err| cb_blk: {
+            std.debug.print("[ChatServer] Ralph agent {d} CB read error: {}\n", .{ agent_idx, err });
+            break :cb_blk "{\"state\":\"UNKNOWN\"}";
         };
-        defer if (!std.mem.eql(u8, cb_json, "{\"state\":\"UNKNOWN\"}")) self.allocator.free(cb_json);
+        const cb_is_fallback = std.mem.eql(u8, cb_json, "{\"state\":\"UNKNOWN\"}");
+        defer if (!cb_is_fallback) self.allocator.free(cb_json);
 
         try json.appendSlice(self.allocator, ",\"circuit_breaker\":");
         try json.appendSlice(self.allocator, cb_json);
@@ -454,11 +487,10 @@ pub const ChatServer = struct {
         // 3. Tail latest log
         try json.appendSlice(self.allocator, ",\"logs\":[");
         {
-            // Find latest claude_output log
-            var dir = std.fs.cwd().openDir(".ralph/logs", .{ .iterate = true }) catch null;
+            var dir = base_dir.openDir(".ralph/logs", .{ .iterate = true }) catch null;
             if (dir) |*d| {
                 defer d.close();
-                var latest_time: i64 = 0;
+                var latest_time: i128 = 0;
                 var latest_name: [128]u8 = undefined;
                 var latest_len: usize = 0;
                 var it = d.iterate();
@@ -477,7 +509,6 @@ pub const ChatServer = struct {
                     const log_content = d.readFileAlloc(self.allocator, latest_name[0..latest_len], 16384) catch null;
                     if (log_content) |content| {
                         defer self.allocator.free(content);
-                        // Take last 20 lines
                         var line_it = std.mem.splitBackwardsScalar(u8, content, '\n');
                         var count: usize = 0;
                         var lines_buf: [20][]const u8 = undefined;
@@ -493,7 +524,6 @@ pub const ChatServer = struct {
                             const line = lines_buf[count - 1 - i];
                             if (i > 0) try json.appendSlice(self.allocator, ",");
                             try json.appendSlice(self.allocator, "\"");
-                            // Escape line for JSON
                             for (line) |c| {
                                 switch (c) {
                                     '"' => try json.appendSlice(self.allocator, "\\\""),

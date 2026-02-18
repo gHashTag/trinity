@@ -361,23 +361,6 @@ var g_live_log_count: usize = 0;
 var g_last_reflection_name: [32:0]u8 = undefined;
 var g_last_reflection_len: usize = 0;
 
-// v2.8: Ralph Autonomous Monitor state
-pub const RalphStatus = struct {
-    loop: usize = 0,
-    total_calls: usize = 0,
-    is_healthy: bool = true,
-    goal: [128:0]u8 = [_:0]u8{0} ** 128,
-    goal_len: usize = 0,
-    last_action: [64:0]u8 = [_:0]u8{0} ** 64,
-    last_action_len: usize = 0,
-    log_ptr: usize = 0, // Current line in circle log
-};
-var g_ralph_status: RalphStatus = RalphStatus{};
-var g_ralph_logs: [10][128:0]u8 = undefined;
-var g_ralph_log_count: usize = 0;
-var g_ralph_update_timer: f32 = 0;
-var g_ralph_running: bool = false;
-
 // v2.9: Circuit breaker tri-state (RALPH-CANVAS-004)
 const CircuitBreakerState = enum {
     closed, // Normal operation (green)
@@ -400,7 +383,64 @@ const CircuitBreakerState = enum {
         };
     }
 };
-var g_ralph_cb_state: CircuitBreakerState = .closed;
+
+// v3.0: Multi-agent Ralph Monitor (RALPH-CANVAS-005)
+const MAX_RALPH_AGENTS = 4;
+
+pub const RalphAgent = struct {
+    // Identity
+    name: [32:0]u8 = [_:0]u8{0} ** 32,
+    name_len: usize = 0,
+    branch: [64:0]u8 = [_:0]u8{0} ** 64,
+    branch_len: usize = 0,
+    // Metrics
+    loop: usize = 0,
+    total_calls: usize = 0,
+    is_healthy: bool = true,
+    goal: [128:0]u8 = [_:0]u8{0} ** 128,
+    goal_len: usize = 0,
+    last_action: [64:0]u8 = [_:0]u8{0} ** 64,
+    last_action_len: usize = 0,
+    log_ptr: usize = 0,
+    // Per-agent state
+    cb_state: CircuitBreakerState = .closed,
+    running: bool = false,
+    reachable: bool = false,
+    // Per-agent logs
+    logs: [10][128:0]u8 = undefined,
+    log_count: usize = 0,
+    // Per-agent poll timer (staggered)
+    update_timer: f32 = 0,
+};
+
+var g_ralph_agents: [MAX_RALPH_AGENTS]RalphAgent = [_]RalphAgent{RalphAgent{}} ** MAX_RALPH_AGENTS;
+var g_ralph_agent_count: usize = 0;
+var g_ralph_active_tab: usize = 0;
+var g_ralph_initialized: bool = false;
+
+fn setAgentIdentity(agent: *RalphAgent, name: []const u8, branch: []const u8) void {
+    const nl = @min(name.len, 31);
+    @memcpy(agent.name[0..nl], name[0..nl]);
+    agent.name_len = nl;
+    const bl = @min(branch.len, 63);
+    @memcpy(agent.branch[0..bl], branch[0..bl]);
+    agent.branch_len = bl;
+}
+
+fn initRalphAgents() void {
+    if (g_ralph_initialized) return;
+    g_ralph_initialized = true;
+    setAgentIdentity(&g_ralph_agents[0], "trinity", "ralph/math-framework");
+    setAgentIdentity(&g_ralph_agents[1], "w1-nexus-src", "ralph/nexus-src");
+    setAgentIdentity(&g_ralph_agents[2], "w2-nexus-specs", "ralph/nexus-specs");
+    setAgentIdentity(&g_ralph_agents[3], "w3-nexus-docs", "ralph/nexus-docs");
+    // Stagger initial timers so polls don't all fire at once
+    g_ralph_agents[0].update_timer = 0.0;
+    g_ralph_agents[1].update_timer = 0.5;
+    g_ralph_agents[2].update_timer = 1.0;
+    g_ralph_agents[3].update_timer = 1.5;
+    g_ralph_agent_count = 4;
+}
 
 // v2.1: Add entry to live log buffer (ring buffer)
 fn addLiveLog(text: []const u8, source_hue: f32) void {
@@ -1503,8 +1543,14 @@ const LogoAnimation = struct {
         const outline_color: rl.Color = @bitCast(theme.logo_outline);
 
         for (self.blocks, 0..) |block, idx| {
-            // v2.9: Block 2 pulses cyan when Ralph is active (healthy + loop > 0)
-            const is_ralph_active = g_ralph_status.loop > 0 and g_ralph_status.is_healthy;
+            // v3.0: Block 2 pulses cyan when ANY Ralph agent is active (healthy + loop > 0)
+            const is_ralph_active = blk: {
+                var rai: usize = 0;
+                while (rai < g_ralph_agent_count) : (rai += 1) {
+                    if (g_ralph_agents[rai].loop > 0 and g_ralph_agents[rai].is_healthy) break :blk true;
+                }
+                break :blk false;
+            };
             const ralph_petal_glow = if (idx == 2 and is_ralph_active)
                 rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @intFromFloat(@max(40, @min(120, @sin(frame_time * 3.0) * 40 + 80))) }
             else
@@ -6485,91 +6531,98 @@ fn updateDrawFrame() callconv(.c) void {
             // For now, we simulate or use exported functions
         }
 
-        // ── v2.8: Ralph Monitor Polling ──
+        // ── v3.0: Multi-Agent Ralph Monitor Polling (RALPH-CANVAS-005) ──
         if (g_wave_mode == .mirror or g_wave_mode == .ralph) {
-            g_ralph_update_timer += dt;
-            if (g_ralph_update_timer > 2.0) {
-                g_ralph_update_timer = 0;
-                if (is_emscripten) {
-                    // Fetch Ralph status from backend via JS
-                    const script =
-                        \\(function() {
-                        \\  fetch('/api/ralph-status')
-                        \\    .then(r => r.json())
-                        \\    .then(data => {
-                        \\      const loop = data.loop.loop || 0;
-                        \\      const calls = data.loop.total_calls || 0;
-                        \\      const healthy = data.circuit_breaker.state === 'CLOSED';
-                        \\      const goal = (data.loop.goal || '').slice(0, 127);
-                        \\      const logs = (data.logs || []).slice(0, 10).map(l => l.slice(0, 127));
-                        \\      // Call back into Zig via ccall if we were to export,
-                        \\      // but for "zig zig zig" simplicity, we'll use a sneaky window global
-                        \\      window._RALPH_DATA = { loop, calls, healthy, goal, logs };
-                        \\    }).catch(() => {});
-                        \\})();
-                    ;
-                    _ = emc.emscripten_run_script(script);
+            if (!g_ralph_initialized) initRalphAgents();
 
-                    // Sync from window._RALPH_DATA
-                    const sync_script =
-                        \\(function() {
-                        \\  if (!window._RALPH_DATA) return "";
-                        \\  const d = window._RALPH_DATA;
-                        \\  return JSON.stringify(d);
-                        \\})()
-                    ;
-                    const json_ptr = emc.emscripten_run_script(sync_script);
-                    if (json_ptr != null) {
-                        // Primitive JSON extraction to avoid dependency bloat
-                        const js_str = std.mem.span(json_ptr);
-                        if (js_str.len > 10) {
-                            // Extract loop
-                            if (std.mem.indexOf(u8, js_str, "\"loop\":")) |idx| {
-                                const start = idx + 7;
-                                var end = start;
-                                while (end < js_str.len and js_str[end] >= '0' and js_str[end] <= '9') end += 1;
-                                g_ralph_status.loop = std.fmt.parseInt(usize, js_str[start..end], 10) catch g_ralph_status.loop;
-                            }
-                            // Extract calls
-                            if (std.mem.indexOf(u8, js_str, "\"calls\":")) |idx| {
-                                const start = idx + 8;
-                                var end = start;
-                                while (end < js_str.len and js_str[end] >= '0' and js_str[end] <= '9') end += 1;
-                                g_ralph_status.total_calls = std.fmt.parseInt(usize, js_str[start..end], 10) catch g_ralph_status.total_calls;
-                            }
-                            // Extract healthy
-                            if (std.mem.indexOf(u8, js_str, "\"healthy\":")) |idx| {
-                                g_ralph_status.is_healthy = std.mem.startsWith(u8, js_str[idx + 10 ..], "true");
-                            }
-                            // Extract goal
-                            if (std.mem.indexOf(u8, js_str, "\"goal\":\"")) |idx| {
-                                const start = idx + 8;
-                                if (std.mem.indexOfScalar(u8, js_str[start..], '"')) |end_rel| {
-                                    const end = start + end_rel;
-                                    const content = js_str[start..end];
-                                    const len = @min(content.len, 127);
-                                    @memcpy(g_ralph_status.goal[0..len], content[0..len]);
-                                    g_ralph_status.goal[len] = 0;
+            var ai: usize = 0;
+            while (ai < g_ralph_agent_count) : (ai += 1) {
+                g_ralph_agents[ai].update_timer += dt;
+                if (g_ralph_agents[ai].update_timer > 2.0) {
+                    g_ralph_agents[ai].update_timer = 0;
+                    if (is_emscripten) {
+                        // Fetch Ralph status for agent ai from backend via JS
+                        var fetch_buf: [256]u8 = undefined;
+                        const fetch_script = std.fmt.bufPrint(&fetch_buf,
+                            \\(function(){{ fetch('/api/ralph-status?agent={d}')
+                            \\  .then(function(r){{ return r.json(); }})
+                            \\  .then(function(data){{
+                            \\    if(!window._RALPH_DATA) window._RALPH_DATA={{}};
+                            \\    window._RALPH_DATA[{d}]=JSON.stringify({{
+                            \\      loop:data.loop.loop||0, calls:data.loop.total_calls||0,
+                            \\      healthy:data.circuit_breaker.state==='CLOSED',
+                            \\      reachable:data.reachable!==false,
+                            \\      goal:(data.loop.goal||'').slice(0,127),
+                            \\      logs:(data.logs||[]).slice(0,10).map(function(l){{return l.slice(0,127);}})
+                            \\    }});
+                            \\  }}).catch(function(){{}});
+                            \\}})();
+                        , .{ ai, ai }) catch continue;
+                        _ = emc.emscripten_run_script(@as([*:0]const u8, @ptrCast(fetch_buf[0..fetch_script.len :0])));
+
+                        // Sync from window._RALPH_DATA[ai]
+                        var sync_buf: [128]u8 = undefined;
+                        const sync_script = std.fmt.bufPrint(&sync_buf,
+                            \\(function(){{ return window._RALPH_DATA&&window._RALPH_DATA[{d}]||""; }})()
+                        , .{ai}) catch continue;
+                        const json_ptr = emc.emscripten_run_script(@as([*:0]const u8, @ptrCast(sync_buf[0..sync_script.len :0])));
+                        if (json_ptr != null) {
+                            const js_str = std.mem.span(json_ptr);
+                            if (js_str.len > 10) {
+                                const agent = &g_ralph_agents[ai];
+                                // Extract reachable
+                                if (std.mem.indexOf(u8, js_str, "\"reachable\":")) |idx| {
+                                    agent.reachable = std.mem.startsWith(u8, js_str[idx + 12 ..], "true");
                                 }
-                            }
-                            // Extract logs (just the first few for visual feedback)
-                            if (std.mem.indexOf(u8, js_str, "\"logs\":[")) |idx| {
-                                var l_start = idx + 8;
-                                var l_idx: usize = 0;
-                                while (l_idx < 10) : (l_idx += 1) {
-                                    if (std.mem.indexOfScalar(u8, js_str[l_start..], '"')) |q_start_rel| {
-                                        const q_start = l_start + q_start_rel + 1;
-                                        if (std.mem.indexOfScalar(u8, js_str[q_start..], '"')) |q_end_rel| {
-                                            const q_end = q_start + q_end_rel;
-                                            const line = js_str[q_start..q_end];
-                                            const len = @min(line.len, 127);
-                                            @memcpy(g_ralph_logs[l_idx][0..len], line[0..len]);
-                                            g_ralph_logs[l_idx][len] = 0;
-                                            l_start = q_end + 1;
+                                // Extract loop
+                                if (std.mem.indexOf(u8, js_str, "\"loop\":")) |idx| {
+                                    const start = idx + 7;
+                                    var end = start;
+                                    while (end < js_str.len and js_str[end] >= '0' and js_str[end] <= '9') end += 1;
+                                    agent.loop = std.fmt.parseInt(usize, js_str[start..end], 10) catch agent.loop;
+                                }
+                                // Extract calls
+                                if (std.mem.indexOf(u8, js_str, "\"calls\":")) |idx| {
+                                    const start = idx + 8;
+                                    var end = start;
+                                    while (end < js_str.len and js_str[end] >= '0' and js_str[end] <= '9') end += 1;
+                                    agent.total_calls = std.fmt.parseInt(usize, js_str[start..end], 10) catch agent.total_calls;
+                                }
+                                // Extract healthy
+                                if (std.mem.indexOf(u8, js_str, "\"healthy\":")) |idx| {
+                                    agent.is_healthy = std.mem.startsWith(u8, js_str[idx + 10 ..], "true");
+                                    agent.cb_state = if (agent.is_healthy) .closed else .cb_open;
+                                }
+                                // Extract goal
+                                if (std.mem.indexOf(u8, js_str, "\"goal\":\"")) |idx| {
+                                    const start = idx + 8;
+                                    if (std.mem.indexOfScalar(u8, js_str[start..], '"')) |end_rel| {
+                                        const end = start + end_rel;
+                                        const content = js_str[start..end];
+                                        const len = @min(content.len, 127);
+                                        @memcpy(agent.goal[0..len], content[0..len]);
+                                        agent.goal[len] = 0;
+                                    }
+                                }
+                                // Extract logs
+                                if (std.mem.indexOf(u8, js_str, "\"logs\":[")) |idx| {
+                                    var l_start = idx + 8;
+                                    var l_idx: usize = 0;
+                                    while (l_idx < 10) : (l_idx += 1) {
+                                        if (std.mem.indexOfScalar(u8, js_str[l_start..], '"')) |q_start_rel| {
+                                            const q_start = l_start + q_start_rel + 1;
+                                            if (std.mem.indexOfScalar(u8, js_str[q_start..], '"')) |q_end_rel| {
+                                                const q_end = q_start + q_end_rel;
+                                                const line_content = js_str[q_start..q_end];
+                                                const len = @min(line_content.len, 127);
+                                                @memcpy(agent.logs[l_idx][0..len], line_content[0..len]);
+                                                agent.logs[l_idx][len] = 0;
+                                                l_start = q_end + 1;
+                                            } else break;
                                         } else break;
-                                    } else break;
+                                    }
+                                    agent.log_count = l_idx;
                                 }
-                                g_ralph_log_count = l_idx;
                             }
                         }
                     }
@@ -7552,43 +7605,45 @@ fn updateDrawFrame() callconv(.c) void {
                     rl.DrawTextEx(chat_font, "Active", .{ .x = x + 40 * fs, .y = y }, val_sz, 0.5, withAlpha(rl.Color{ .r = 0, .g = 255, .b = 150, .a = 255 }, alpha_u8));
                     y += line_h + 10;
 
-                    // ── v2.8: RALPH MONITOR ──
+                    // ── v2.8: RALPH MONITOR (multi-agent) ──
                     rl.DrawLine(@intFromFloat(x), @intFromFloat(y), @intFromFloat(x + col_w - 40 * fs), @intFromFloat(y), rl.Color{ .r = 80, .g = 80, .b = 100, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.5)) });
                     y += 10;
                     rl.DrawTextEx(chat_font, "RALPH MONITOR", .{ .x = x, .y = y }, title_sz * 0.8, 1.0, withAlpha(rl.Color{ .r = 0, .g = 200, .b = 255, .a = 255 }, alpha_u8));
                     y += title_sz + 4;
 
+                    const mirror_agent = &g_ralph_agents[@min(g_ralph_active_tab, if (g_ralph_agent_count > 0) g_ralph_agent_count - 1 else 0)];
+
                     // Loop info
                     rl.DrawTextEx(chat_font, "Loop:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
                     var l_buf: [16:0]u8 = undefined;
-                    _ = std.fmt.bufPrint(&l_buf, "{d}", .{g_ralph_status.loop}) catch {};
+                    _ = std.fmt.bufPrint(&l_buf, "{d}", .{mirror_agent.loop}) catch {};
                     l_buf[@min(15, std.mem.indexOfScalar(u8, &l_buf, 0) orelse 15)] = 0;
                     rl.DrawTextEx(chat_font, &l_buf, .{ .x = x + 40 * fs, .y = y }, val_sz, 0.5, bright_text);
 
                     rl.DrawTextEx(chat_font, "Calls:", .{ .x = x + 80 * fs, .y = y }, label_sz, 0.5, dim_text);
                     var tc_buf: [16:0]u8 = undefined;
-                    _ = std.fmt.bufPrint(&tc_buf, "{d}", .{g_ralph_status.total_calls}) catch {};
+                    _ = std.fmt.bufPrint(&tc_buf, "{d}", .{mirror_agent.total_calls}) catch {};
                     tc_buf[@min(15, std.mem.indexOfScalar(u8, &tc_buf, 0) orelse 15)] = 0;
                     rl.DrawTextEx(chat_font, &tc_buf, .{ .x = x + 125 * fs, .y = y }, val_sz, 0.5, razum_color);
                     y += line_h;
 
                     // Health (Circuit Breaker)
                     rl.DrawTextEx(chat_font, "Health:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
-                    const h_col = if (g_ralph_status.is_healthy) rl.Color{ .r = 0, .g = 255, .b = 150, .a = alpha_u8 } else rl.Color{ .r = 255, .g = 80, .b = 80, .a = alpha_u8 };
-                    rl.DrawTextEx(chat_font, if (g_ralph_status.is_healthy) "OPTIMAL" else "BREAK", .{ .x = x + 55 * fs, .y = y }, val_sz, 0.5, h_col);
+                    const h_col = if (mirror_agent.is_healthy) rl.Color{ .r = 0, .g = 255, .b = 150, .a = alpha_u8 } else rl.Color{ .r = 255, .g = 80, .b = 80, .a = alpha_u8 };
+                    rl.DrawTextEx(chat_font, if (mirror_agent.is_healthy) "OPTIMAL" else "BREAK", .{ .x = x + 55 * fs, .y = y }, val_sz, 0.5, h_col);
                     y += line_h;
 
                     // Goal
                     rl.DrawTextEx(chat_font, "Goal:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
                     y += line_h;
-                    rl.DrawTextEx(chat_font, &g_ralph_status.goal, .{ .x = x, .y = y }, label_sz * 0.9, 0.5, withAlpha(rl.Color{ .r = 150, .g = 200, .b = 255, .a = 255 }, alpha_u8));
+                    rl.DrawTextEx(chat_font, &mirror_agent.goal, .{ .x = x, .y = y }, label_sz * 0.9, 0.5, withAlpha(rl.Color{ .r = 150, .g = 200, .b = 255, .a = 255 }, alpha_u8));
                     y += line_h + 4;
 
                     // Ralph Logs
                     rl.DrawRectangle(@intFromFloat(x), @intFromFloat(y), @intFromFloat(col_w - 40 * fs), @intFromFloat(70 * fs), rl.Color{ .r = 20, .g = 20, .b = 30, .a = alpha_u8 });
                     var ly = y + 4;
-                    for (0..g_ralph_log_count) |i| {
-                        rl.DrawTextEx(chat_font, &g_ralph_logs[i], .{ .x = x + 4, .y = ly }, 10, 0.5, withAlpha(rl.Color{ .r = 100, .g = 150, .b = 200, .a = 255 }, alpha_u8));
+                    for (0..mirror_agent.log_count) |i| {
+                        rl.DrawTextEx(chat_font, &mirror_agent.logs[i], .{ .x = x + 4, .y = ly }, 10, 0.5, withAlpha(rl.Color{ .r = 100, .g = 150, .b = 200, .a = 255 }, alpha_u8));
                         ly += 12;
                     }
                     y += 80 * fs;
@@ -7906,8 +7961,9 @@ fn updateDrawFrame() callconv(.c) void {
             }
         }
 
-        // === RALPH AUTONOMOUS MONITOR === (v2.9: Dedicated fullscreen panel)
+        // === RALPH AUTONOMOUS MONITOR === (v3.0: Multi-agent tabbed panel — RALPH-CANVAS-005)
         if (g_wave_mode == .ralph) {
+            if (!g_ralph_initialized) initRalphAgents();
             // Opaque dark background
             rl.DrawRectangle(0, 0, @intFromFloat(sw), @intFromFloat(sh), rl.Color{ .r = 5, .g = 8, .b = 18, .a = 255 });
             const margin: f32 = 40 * fs;
@@ -7933,19 +7989,86 @@ fn updateDrawFrame() callconv(.c) void {
             rl.DrawTextEx(chat_font, "Real-time dev loop telemetry", .{ .x = margin + 24, .y = y }, subtitle_sz, 0.5, dim_text);
             y += line_h + 10;
 
+            // ── v3.0: Agent Tab Bar (RALPH-CANVAS-005) ──
+            {
+                const tab_h: f32 = 36 * fs;
+                const tab_gap: f32 = 4;
+                const tabs_w = sw - margin * 2;
+                const tab_w = (tabs_w - tab_gap * @as(f32, @floatFromInt(g_ralph_agent_count -| 1))) / @as(f32, @floatFromInt(@max(g_ralph_agent_count, 1)));
+
+                var ti: usize = 0;
+                while (ti < g_ralph_agent_count) : (ti += 1) {
+                    const tab_agent = &g_ralph_agents[ti];
+                    const tx = margin + @as(f32, @floatFromInt(ti)) * (tab_w + tab_gap);
+                    const is_active = (ti == g_ralph_active_tab);
+                    const tab_rect = rl.Rectangle{ .x = tx, .y = y, .width = tab_w, .height = tab_h };
+
+                    // Tab background
+                    const bg_alpha: u8 = if (is_active) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.25) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.08);
+                    rl.DrawRectangleRounded(tab_rect, 0.15, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = bg_alpha });
+
+                    // Active tab bottom border
+                    if (is_active) {
+                        rl.DrawLine(@intFromFloat(tx + 2), @intFromFloat(y + tab_h), @intFromFloat(tx + tab_w - 2), @intFromFloat(y + tab_h), ralph_cyan);
+                    }
+
+                    // Health dot (left side)
+                    const dot_color = if (tab_agent.reachable) tab_agent.cb_state.getColor(alpha_u8) else withAlpha(MUTED_GRAY, alpha_u8);
+                    rl.DrawCircle(@intFromFloat(tx + 14), @intFromFloat(y + tab_h / 2), 4, dot_color);
+
+                    // Agent name
+                    rl.DrawTextEx(chat_font, &tab_agent.name, .{ .x = tx + 26, .y = y + 4 }, 12 * fs, 0.5, if (is_active) ralph_cyan else dim_text);
+
+                    // Branch name (smaller)
+                    rl.DrawTextEx(chat_font, &tab_agent.branch, .{ .x = tx + 26, .y = y + 18 * fs }, 10 * fs, 0.5, dim_text);
+
+                    // Unreachable indicator
+                    if (!tab_agent.reachable) {
+                        rl.DrawTextEx(chat_font, "--", .{ .x = tx + tab_w - 24, .y = y + 10 }, 12 * fs, 0.5, dim_text);
+                    }
+
+                    // Click handling
+                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, tab_rect);
+                    if (hover and mouse_pressed) {
+                        g_ralph_active_tab = ti;
+                    }
+                }
+                y += tab_h + 8;
+            }
+
             // Separator
             rl.DrawLine(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(sw - margin), @intFromFloat(y), rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3)) });
             y += 15;
 
-            // v2.9: Alert banner when circuit breaker is OPEN (RALPH-CANVAS-004)
-            if (g_ralph_cb_state == .cb_open) {
+            // ── Active agent alias ──
+            const agent = &g_ralph_agents[@min(g_ralph_active_tab, g_ralph_agent_count -| 1)];
+
+            // Keyboard tab navigation (arrow keys + 1-4 without shift)
+            {
+                const shift_down = rl.IsKeyDown(rl.KEY_LEFT_SHIFT) or rl.IsKeyDown(rl.KEY_RIGHT_SHIFT);
+                if (rl.IsKeyPressed(rl.KEY_LEFT) and g_ralph_active_tab > 0) {
+                    g_ralph_active_tab -= 1;
+                }
+                if (rl.IsKeyPressed(rl.KEY_RIGHT) and g_ralph_active_tab < g_ralph_agent_count -| 1) {
+                    g_ralph_active_tab += 1;
+                }
+                if (!shift_down) {
+                    if (rl.IsKeyPressed(rl.KEY_ONE) and g_ralph_agent_count > 0) g_ralph_active_tab = 0;
+                    if (rl.IsKeyPressed(rl.KEY_TWO) and g_ralph_agent_count > 1) g_ralph_active_tab = 1;
+                    if (rl.IsKeyPressed(rl.KEY_THREE) and g_ralph_agent_count > 2) g_ralph_active_tab = 2;
+                    if (rl.IsKeyPressed(rl.KEY_FOUR) and g_ralph_agent_count > 3) g_ralph_active_tab = 3;
+                }
+            }
+
+            // Alert banner when circuit breaker is OPEN
+            if (agent.cb_state == .cb_open) {
                 const alert_h: f32 = 32 * fs;
                 const alert_pulse: u8 = @intFromFloat(@max(120, @min(220, @sin(frame_time * 4.0) * 50 + 170)));
                 rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alert_pulse)) * 0.15)) });
                 rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = alert_pulse });
                 rl.DrawTextEx(chat_font, "CIRCUIT BREAKER OPEN: Ralph halted due to no-progress loops", .{ .x = margin + 16, .y = y + 8 * fs }, val_sz, 0.5, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = alert_pulse });
                 y += alert_h + 10;
-            } else if (g_ralph_cb_state == .degraded) {
+            } else if (agent.cb_state == .degraded) {
                 const alert_h: f32 = 28 * fs;
                 rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0xCC, .b = 0x00, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.1)) });
                 rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0xCC, .b = 0x00, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.5)) });
@@ -7963,7 +8086,7 @@ fn updateDrawFrame() callconv(.c) void {
                 rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, ralph_cyan);
                 rl.DrawTextEx(chat_font, "LOOP", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
                 var buf: [16:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&buf, "{d}", .{g_ralph_status.loop}) catch {};
+                _ = std.fmt.bufPrint(&buf, "{d}", .{agent.loop}) catch {};
                 buf[@min(15, std.mem.indexOfScalar(u8, &buf, 0) orelse 15)] = 0;
                 rl.DrawTextEx(chat_font, &buf, .{ .x = cx + 12, .y = y + 30 * fs }, 24 * fs, 0.5, bright_text);
             }
@@ -7975,19 +8098,19 @@ fn updateDrawFrame() callconv(.c) void {
                 rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, ralph_cyan);
                 rl.DrawTextEx(chat_font, "CALLS", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
                 var buf: [16:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&buf, "{d}", .{g_ralph_status.total_calls}) catch {};
+                _ = std.fmt.bufPrint(&buf, "{d}", .{agent.total_calls}) catch {};
                 buf[@min(15, std.mem.indexOfScalar(u8, &buf, 0) orelse 15)] = 0;
                 rl.DrawTextEx(chat_font, &buf, .{ .x = cx + 12, .y = y + 30 * fs }, 24 * fs, 0.5, bright_text);
             }
 
-            // Card 3: Health Status (tri-state: OPTIMAL / DEGRADED / CIRCUIT OPEN)
+            // Card 3: Health Status
             {
                 const cx = margin * 3 + card_w * 2;
-                const h_color = g_ralph_cb_state.getColor(alpha_u8);
+                const h_color = agent.cb_state.getColor(alpha_u8);
                 rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
                 rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, h_color);
                 rl.DrawTextEx(chat_font, "HEALTH", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
-                const h_label: [*:0]const u8 = switch (g_ralph_cb_state) {
+                const h_label: [*:0]const u8 = switch (agent.cb_state) {
                     .closed => "OPTIMAL",
                     .degraded => "DEGRADED",
                     .cb_open => "CIRCUIT OPEN",
@@ -7995,17 +8118,16 @@ fn updateDrawFrame() callconv(.c) void {
                 rl.DrawTextEx(chat_font, h_label, .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, h_color);
             }
 
-            // Card 4: Circuit Breaker (tri-state with pulsing indicator)
+            // Card 4: Circuit Breaker
             {
                 const cx = margin * 4 + card_w * 3;
-                const cb_color = g_ralph_cb_state.getColor(alpha_u8);
+                const cb_color = agent.cb_state.getColor(alpha_u8);
                 rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
                 rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, cb_color);
                 rl.DrawTextEx(chat_font, "BREAKER", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
-                // Pulsing dot indicator
-                const cb_pulse_a: u8 = if (g_ralph_cb_state == .cb_open) @intFromFloat(@max(80, @min(255, @sin(frame_time * 5.0) * 90 + 165))) else alpha_u8;
-                rl.DrawCircle(@intFromFloat(cx + card_w - 20), @intFromFloat(y + 20), 6, g_ralph_cb_state.getColor(cb_pulse_a));
-                rl.DrawTextEx(chat_font, g_ralph_cb_state.getLabel(), .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, cb_color);
+                const cb_pulse_a: u8 = if (agent.cb_state == .cb_open) @intFromFloat(@max(80, @min(255, @sin(frame_time * 5.0) * 90 + 165))) else alpha_u8;
+                rl.DrawCircle(@intFromFloat(cx + card_w - 20), @intFromFloat(y + 20), 6, agent.cb_state.getColor(cb_pulse_a));
+                rl.DrawTextEx(chat_font, agent.cb_state.getLabel(), .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, cb_color);
             }
 
             y += card_h + 20;
@@ -8015,10 +8137,10 @@ fn updateDrawFrame() callconv(.c) void {
             y += subtitle_sz + 8;
             rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = 50 * fs }, 0.08, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
             rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = 50 * fs }, 0.08, 8, rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.2)) });
-            rl.DrawTextEx(chat_font, &g_ralph_status.goal, .{ .x = margin + 16, .y = y + 16 }, val_sz, 0.5, bright_text);
+            rl.DrawTextEx(chat_font, &agent.goal, .{ .x = margin + 16, .y = y + 16 }, val_sz, 0.5, bright_text);
             y += 50 * fs + 20;
 
-            // v2.9: Control buttons (START / STOP / RESTART)
+            // Control buttons (START / STOP / RESTART) — per active agent
             {
                 const btn_w: f32 = 160;
                 const btn_h: f32 = 36;
@@ -8028,16 +8150,16 @@ fn updateDrawFrame() callconv(.c) void {
                 // START button
                 {
                     const btn_rect = rl.Rectangle{ .x = btn_start_x, .y = y, .width = btn_w, .height = btn_h };
-                    const btn_color = if (g_ralph_running) dim_text else ralph_green;
+                    const btn_color = if (agent.running) dim_text else ralph_green;
                     const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
-                    const bg_a: u8 = if (hover and !g_ralph_running) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
+                    const bg_a: u8 = if (hover and !agent.running) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
                     rl.DrawRectangleRec(btn_rect, rl.Color{ .r = btn_color.r, .g = btn_color.g, .b = btn_color.b, .a = bg_a });
                     rl.DrawRectangleLinesEx(btn_rect, 1, btn_color);
                     rl.DrawTextEx(chat_font, "START", .{ .x = btn_start_x + 50, .y = y + 9 }, val_sz, 0.5, btn_color);
-                    if (hover and mouse_pressed and !g_ralph_running) {
-                        g_ralph_running = true;
-                        g_ralph_status.is_healthy = true;
-                        g_ralph_cb_state = .closed;
+                    if (hover and mouse_pressed and !agent.running) {
+                        g_ralph_agents[g_ralph_active_tab].running = true;
+                        g_ralph_agents[g_ralph_active_tab].is_healthy = true;
+                        g_ralph_agents[g_ralph_active_tab].cb_state = .closed;
                     }
                 }
 
@@ -8045,15 +8167,15 @@ fn updateDrawFrame() callconv(.c) void {
                 {
                     const btn2_x = btn_start_x + btn_w + btn_gap;
                     const btn_rect = rl.Rectangle{ .x = btn2_x, .y = y, .width = btn_w, .height = btn_h };
-                    const btn_color = if (!g_ralph_running) dim_text else ralph_red;
+                    const btn_color = if (!agent.running) dim_text else ralph_red;
                     const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
-                    const bg_a: u8 = if (hover and g_ralph_running) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
+                    const bg_a: u8 = if (hover and agent.running) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
                     rl.DrawRectangleRec(btn_rect, rl.Color{ .r = btn_color.r, .g = btn_color.g, .b = btn_color.b, .a = bg_a });
                     rl.DrawRectangleLinesEx(btn_rect, 1, btn_color);
                     rl.DrawTextEx(chat_font, "STOP", .{ .x = btn2_x + 55, .y = y + 9 }, val_sz, 0.5, btn_color);
-                    if (hover and mouse_pressed and g_ralph_running) {
-                        g_ralph_running = false;
-                        g_ralph_cb_state = .cb_open;
+                    if (hover and mouse_pressed and agent.running) {
+                        g_ralph_agents[g_ralph_active_tab].running = false;
+                        g_ralph_agents[g_ralph_active_tab].cb_state = .cb_open;
                     }
                 }
 
@@ -8067,12 +8189,12 @@ fn updateDrawFrame() callconv(.c) void {
                     rl.DrawRectangleLinesEx(btn_rect, 1, ralph_cyan);
                     rl.DrawTextEx(chat_font, "RESTART", .{ .x = btn3_x + 40, .y = y + 9 }, val_sz, 0.5, ralph_cyan);
                     if (hover and mouse_pressed) {
-                        g_ralph_running = false;
-                        g_ralph_status.loop = 0;
-                        g_ralph_status.total_calls = 0;
-                        g_ralph_running = true;
-                        g_ralph_status.is_healthy = true;
-                        g_ralph_cb_state = .closed;
+                        g_ralph_agents[g_ralph_active_tab].running = false;
+                        g_ralph_agents[g_ralph_active_tab].loop = 0;
+                        g_ralph_agents[g_ralph_active_tab].total_calls = 0;
+                        g_ralph_agents[g_ralph_active_tab].running = true;
+                        g_ralph_agents[g_ralph_active_tab].is_healthy = true;
+                        g_ralph_agents[g_ralph_active_tab].cb_state = .closed;
                     }
                 }
             }
@@ -8087,11 +8209,11 @@ fn updateDrawFrame() callconv(.c) void {
             // Render log lines
             var ly = y + 8;
             const log_line_h: f32 = 18 * fs;
-            if (g_ralph_log_count > 0) {
-                for (0..g_ralph_log_count) |i| {
+            if (agent.log_count > 0) {
+                for (0..agent.log_count) |i| {
                     if (ly + log_line_h > y + log_h - 8) break;
                     const log_color = withAlpha(rl.Color{ .r = 100, .g = 180, .b = 220, .a = 255 }, alpha_u8);
-                    rl.DrawTextEx(chat_font, &g_ralph_logs[i], .{ .x = margin + 12, .y = ly }, 12 * fs, 0.5, log_color);
+                    rl.DrawTextEx(chat_font, &agent.logs[i], .{ .x = margin + 12, .y = ly }, 12 * fs, 0.5, log_color);
                     ly += log_line_h;
                 }
             } else {
@@ -8099,7 +8221,7 @@ fn updateDrawFrame() callconv(.c) void {
             }
 
             // Keyboard hint at bottom
-            rl.DrawTextEx(chat_font, "Shift+9: Toggle  |  Shift+0: Home  |  Shift+M: Mirror", .{ .x = margin, .y = sh - 28 * fs }, 11 * fs, 0.5, dim_text);
+            rl.DrawTextEx(chat_font, "1-4: Agent  |  </>: Switch  |  Shift+9: Toggle  |  Shift+0: Home", .{ .x = margin, .y = sh - 28 * fs }, 11 * fs, 0.5, dim_text);
         }
     }
 
