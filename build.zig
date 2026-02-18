@@ -1843,4 +1843,17 @@ pub fn build(b: *std.Build) void {
     const gen_paged_attn_step = b.step("test-paged-attention", "Test OPT-PA01 PagedAttention 4-10x memory efficiency");
     gen_paged_attn_step.dependOn(&run_gen_paged_attn_tests.step);
     test_step.dependOn(&run_gen_paged_attn_tests.step);
+
+    // Generated Continuous Batching tests (OPT-B01: 2-3x throughput)
+    const gen_cont_batch_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/continuous_batching.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_cont_batch_tests = b.addRunArtifact(gen_cont_batch_tests);
+    const gen_cont_batch_step = b.step("test-continuous-batching", "Test OPT-B01 Continuous Batching 2-3x throughput");
+    gen_cont_batch_step.dependOn(&run_gen_cont_batch_tests.step);
+    test_step.dependOn(&run_gen_cont_batch_tests.step);
 }
