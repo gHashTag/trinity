@@ -1869,4 +1869,17 @@ pub fn build(b: *std.Build) void {
     const gen_spec_dec_step = b.step("test-speculative-decoding", "Test OPT-S01 Speculative Decoding 2-3x generation speed");
     gen_spec_dec_step.dependOn(&run_gen_spec_dec_tests.step);
     test_step.dependOn(&run_gen_spec_dec_tests.step);
+
+    // Generated GGUF Parser tests (INF-001: Load any GGUF model)
+    const gen_gguf_parser_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/gguf_parser.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_gguf_parser_tests = b.addRunArtifact(gen_gguf_parser_tests);
+    const gen_gguf_parser_step = b.step("test-gguf-parser", "Test INF-001 GGUF Parser — load any GGUF model");
+    gen_gguf_parser_step.dependOn(&run_gen_gguf_parser_tests.step);
+    test_step.dependOn(&run_gen_gguf_parser_tests.step);
 }
