@@ -1,0 +1,80 @@
+# Trinity Node - Multi-Stage Docker Build
+# Decentralized Inference Network Node
+# phi^2 + 1/phi^2 = 3 | Trinity Identity
+
+ARG ZIG_VERSION=0.15.2
+ARG TARGETARCH=amd64
+
+# Stage 1: Build
+FROM alpine:3.19 AS builder
+
+ARG ZIG_VERSION
+ARG TARGETARCH
+
+# Install build dependencies
+RUN apk add --no-cache curl xz tar
+
+# Download Zig for the target architecture
+# Stable releases: /download/VERSION/zig-ARCH-linux-VERSION.tar.xz
+RUN case "${TARGETARCH}" in \
+    amd64) ZIG_ARCH="x86_64" ;; \
+    arm64) ZIG_ARCH="aarch64" ;; \
+    *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac && \
+    curl -fL "https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz" -o zig.tar.xz && \
+    tar -xf zig.tar.xz -C /opt && \
+    rm zig.tar.xz && \
+    ln -s /opt/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}/zig /usr/local/bin/zig
+
+WORKDIR /build
+
+# Copy full source tree (needed for build.zig dependencies)
+COPY build.zig build.zig.zon ./
+COPY src/ ./src/
+COPY specs/ ./specs/
+
+# Build all installable artifacts — GUI targets may fail (no raylib), but trinity-node will succeed.
+# We only need the trinity-node binary.
+RUN zig build -Doptimize=ReleaseFast 2>&1 || true && \
+    test -f zig-out/bin/trinity-node && \
+    echo "trinity-node binary built successfully"
+
+# Stage 2: Runtime
+FROM alpine:3.19 AS runtime
+
+RUN apk add --no-cache \
+    ca-certificates \
+    curl \
+    libc6-compat
+
+# Copy built binary
+COPY --from=builder /build/zig-out/bin/trinity-node /usr/local/bin/trinity-node
+
+# Create data directories matching ~/.trinity/ structure
+RUN mkdir -p /data/wallet /data/config /data/models /data/shards
+
+# Expose ports
+#   8080  - HTTP API
+#   9090  - Prometheus metrics
+#   9333  - Peer discovery (UDP)
+#   9334  - Job server (TCP)
+EXPOSE 8080 9090 9333/udp 9334
+
+# Health check via HTTP API
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Data volume
+VOLUME ["/data"]
+
+# Environment
+ENV TRINITY_HOME=/data
+
+LABEL org.opencontainers.image.title="Trinity Node"
+LABEL org.opencontainers.image.description="Decentralized Inference Network Node - Ternary Computing"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.source="https://github.com/gHashTag/trinity"
+LABEL org.opencontainers.image.licenses="MIT"
+
+ENTRYPOINT ["trinity-node"]
+CMD ["--headless", "--storage", "--http-api", "--prometheus-http", "--pos", "--reputation", "--staking"]

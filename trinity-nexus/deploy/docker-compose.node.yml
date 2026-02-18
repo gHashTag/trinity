@@ -1,0 +1,75 @@
+# Trinity Node - Docker Compose
+# Decentralized Inference Network with Monitoring Stack
+# Usage: docker compose -f deploy/docker-compose.node.yml up -d
+# phi^2 + 1/phi^2 = 3 | Trinity Identity
+
+version: '3.8'
+
+services:
+  trinity-node:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.node
+      args:
+        - ZIG_VERSION=0.15.0-dev
+    image: trinity-node:latest
+    container_name: trinity-node
+    ports:
+      - "8080:8080"      # HTTP API
+      - "9090:9090"      # Prometheus metrics
+      - "9333:9333/udp"  # Peer discovery
+      - "9334:9334"      # Job server
+    volumes:
+      - trinity-data:/data
+    restart: unless-stopped
+    environment:
+      - TRINITY_HOME=/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    networks:
+      - trinity-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: trinity-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.node.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      trinity-node:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - trinity-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: trinity-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=trinity
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - trinity-net
+
+networks:
+  trinity-net:
+    driver: bridge
+
+volumes:
+  trinity-data:
+  prometheus-data:
+  grafana-data:

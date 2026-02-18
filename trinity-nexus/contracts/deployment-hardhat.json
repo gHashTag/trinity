@@ -1,0 +1,16 @@
+{
+  "network": "hardhat",
+  "chainId": "31337",
+  "tokenAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "timestamp": "2026-02-06T06:14:37.091Z",
+  "phoenixNumber": "10460353203",
+  "totalSupply": "10460353203000000000000000000",
+  "allocations": {
+    "founder": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "nodeRewards": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "community": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "treasury": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "liquidity": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+  }
+}
