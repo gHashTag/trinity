@@ -211,20 +211,8 @@ pub fn build(b: *std.Build) void {
     const query_step = b.step("query", "Run trinity-query (KG query CLI)");
     query_step.dependOn(&run_query.step);
 
-    // Benchmark executable
-    const bench = b.addExecutable(.{
-        .name = "trinity-bench",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-        }),
-    });
-    b.installArtifact(bench);
-
-    const run_bench = b.addRunArtifact(bench);
-    const bench_step = b.step("bench", "Run benchmarks");
-    bench_step.dependOn(&run_bench.step);
+    // Benchmark executable — run directly: zig run benchmarks/bench_core.zig
+    _ = b.step("bench", "Run benchmarks (use: zig run benchmarks/bench_core.zig)");
 
     // Compression Benchmark executable
     const bench_compress = b.addExecutable(.{
