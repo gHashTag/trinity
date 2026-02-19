@@ -39,9 +39,6 @@ pub const multi_lang_codegen = @import("multi_lang_codegen.zig");
 pub const multilingual_engine = @import("multilingual_engine.zig");
 pub const lang_generators = @import("lang_generators.zig");
 
-// ─── Codegen Module ─────────────────────────────────────────────────────────────
-pub const codegen = @import("codegen/mod.zig");
-
 // ─── Runtime / Support ──────────────────────────────────────────────────────────
 pub const coptic_parser_real = @import("coptic_parser_real.zig");
 pub const coptic_lexer = @import("coptic_lexer.zig");
@@ -60,7 +57,6 @@ test {
     _ = parser_v3;
 
     // Code generation — primary pipeline
-    _ = codegen;
     _ = multi_lang_codegen;
     _ = multilingual_engine;
     _ = lang_generators;
