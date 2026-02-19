@@ -271,7 +271,8 @@ pub const Lexer = struct {
     pos: u32 = 0,
     line: u32 = 1,
     column: u16 = 1,
-    tokens: std.ArrayList(Token),
+    tokens: std.ArrayListUnmanaged(Token),
+    allocator: Allocator,
     
     // Statistics
     simd_scans: u64 = 0,
@@ -280,12 +281,13 @@ pub const Lexer = struct {
     pub fn init(allocator: Allocator, source: []const u8) Lexer {
         return .{
             .source = source,
-            .tokens = std.ArrayList(Token).init(allocator),
+            .tokens = .{},
+            .allocator = allocator,
         };
     }
-    
+
     pub fn deinit(self: *Lexer) void {
-        self.tokens.deinit();
+        self.tokens.deinit(self.allocator);
     }
     
     /// Tokenize entire source - main entry point
@@ -295,7 +297,7 @@ pub const Lexer = struct {
         }
         
         // Add EOF token
-        try self.tokens.append(.{
+        try self.tokens.append(self.allocator, .{
             .type = .eof,
             .start = @truncate(self.source.len),
             .len = 0,
@@ -359,7 +361,7 @@ pub const Lexer = struct {
         
         const len: u16 = @truncate(self.pos - start_pos);
         
-        try self.tokens.append(.{
+        try self.tokens.append(self.allocator, .{
             .type = token_type,
             .start = start_pos,
             .len = len,

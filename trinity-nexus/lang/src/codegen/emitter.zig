@@ -1438,19 +1438,31 @@ pub const ZigCodeGen = struct {
         try self.builder.writeFmt("/// {s}\n", .{b.given});
         try self.builder.writeFmt("/// When: {s}\n", .{b.when});
         try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
-        try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
-        self.builder.incIndent();
 
         // Check for manual implementation in spec
         if (b.implementation.len > 0) {
-            try self.builder.writeLine(b.implementation);
+            // If implementation contains full function definition, write as-is
+            if (std.mem.indexOf(u8, b.implementation, "pub fn ") != null or
+                std.mem.indexOf(u8, b.implementation, "fn ") != null)
+            {
+                // Full function — write as-is (includes signature)
+                try self.builder.writeLine(b.implementation);
+            } else {
+                // Body only — wrap in generated signature
+                try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
+                self.builder.incIndent();
+                try self.builder.writeLine(b.implementation);
+                self.builder.decIndent();
+                try self.builder.writeLine("}");
+            }
         } else {
-            // Generate auto-body from behavior semantics
+            // No implementation — use pattern matching or auto-body
+            try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
+            self.builder.incIndent();
             try self.generateRealBody(b);
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
         }
-
-        self.builder.decIndent();
-        try self.builder.writeLine("}");
         try self.builder.newline();
     }
 
@@ -1765,9 +1777,8 @@ pub const ZigCodeGen = struct {
         }
 
         // --- Fallback: generate from then description ---
-        try self.builder.writeFmt("// {s}\n", .{then});
-        try self.builder.writeLine("const result = @as([]const u8, \"implemented\");");
-        try self.builder.writeLine("_ = result;");
+        try self.builder.writeFmt("// TODO: implement — {s}\n", .{then});
+        try self.builder.writeLine("// Add 'implementation:' field in .vibee spec to provide real code.");
     }
 
     /// Generate real VSA function calls for VSA-related behaviors

@@ -15,24 +15,27 @@ const Behavior = types.Behavior;
 
 /// Match I/O patterns
 pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
-    // Pattern: read* -> read data
+    // Pattern: read* -> read file contents
     if (std.mem.startsWith(u8, b.name, "read")) {
-        try builder.writeFmt("pub fn {s}(source: anytype) ![]const u8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(allocator: std.mem.Allocator, path: []const u8) ![]u8 {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Read from source");
-        try builder.writeLine("_ = source;");
-        try builder.writeLine("return &[_]u8{};");
+        try builder.writeLine("// Read entire file into memory");
+        try builder.writeLine("const file = try std.fs.cwd().openFile(path, .{});");
+        try builder.writeLine("defer file.close();");
+        try builder.writeLine("return try file.readToEndAlloc(allocator, 1024 * 1024);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: write* -> write data
+    // Pattern: write* -> write data to file
     if (std.mem.startsWith(u8, b.name, "write")) {
-        try builder.writeFmt("pub fn {s}(dest: anytype, data: []const u8) !void {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(path: []const u8, data: []const u8) !void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Write to destination");
-        try builder.writeLine("_ = dest; _ = data;");
+        try builder.writeLine("// Write data to file");
+        try builder.writeLine("const file = try std.fs.cwd().createFile(path, .{});");
+        try builder.writeLine("defer file.close();");
+        try builder.writeLine("try file.writeAll(data);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;

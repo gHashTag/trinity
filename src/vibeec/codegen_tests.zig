@@ -2,14 +2,14 @@
 // VIBEE CODEGEN TESTS — Bridge file for zig build test
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Root at src/vibeec/ so all imports resolve correctly:
-//   codegen/types.zig → @import("../vibee_parser.zig") → src/vibeec/vibee_parser.zig
+// Tests the VIBEEC compiler pipeline via the trinity-lang module.
+// Source of truth: trinity-nexus/lang/src/
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
+const lang = @import("trinity-lang");
+
 // Pattern modules (each has embedded tests)
 comptime {
-    _ = @import("codegen/patterns/rl.zig"); // 52 e2e tests
-    _ = @import("codegen/patterns/mod.zig"); // matchAll, matchWithCategory tests
-    _ = @import("codegen/patterns/registry.zig"); // prefix/category lookup tests
+    _ = lang.codegen; // mod.zig + all pattern submodules
 }
