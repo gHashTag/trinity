@@ -1934,4 +1934,17 @@ pub fn build(b: *std.Build) void {
     const gen_jit_comp_step = b.step("test-jit-compilation", "Test CORE-004 JIT Compilation — multi-tier pipeline");
     gen_jit_comp_step.dependOn(&run_gen_jit_comp_tests.step);
     test_step.dependOn(&run_gen_jit_comp_tests.step);
+
+    // Generated FPGA Acceleration tests (HW-003: Ternary hardware backend)
+    const gen_fpga_acc_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/fpga_acceleration.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_fpga_acc_tests = b.addRunArtifact(gen_fpga_acc_tests);
+    const gen_fpga_acc_step = b.step("test-fpga-acceleration", "Test HW-003 FPGA Acceleration — ternary hardware backend");
+    gen_fpga_acc_step.dependOn(&run_gen_fpga_acc_tests.step);
+    test_step.dependOn(&run_gen_fpga_acc_tests.step);
 }
