@@ -70,41 +70,76 @@ behaviors:
     given: BatchConfig with size and acceleration options
     when: Creating batch processor
     then: Return initialized processor with empty queue
+    implementation: |
+        pub fn init(config: BatchConfig) BatchConfig {
+            _ = config;
+            return BatchConfig{};
+        }
 
   - name: enqueue
     given: BatchItem with operation and inputs
     when: Adding operation to queue
     then: Add to queue, auto-flush if full
+    implementation: |
+        pub fn enqueue(queue: *BatchQueue, item: BatchItem) !void {
+            _ = queue;
+            _ = item;
+        }
 
   - name: flush
     given: BatchQueue with pending items
     when: Batch threshold reached or manual flush
     then: Process all items in optimized batch
+    implementation: |
+        pub fn flush(queue: *BatchQueue) !void {
+            _ = queue;
+        }
 
   - name: processBindBatch
     given: Batch of bind operations
     when: Executing bind batch
     then: SIMD vectorized element-wise multiply
+    implementation: |
+        pub fn processBindBatch(items: []const BatchItem) !void {
+            _ = items;
+        }
 
   - name: processBundleBatch
     given: Batch of bundle operations
     when: Executing bundle batch
     then: SIMD vectorized majority vote
+    implementation: |
+        pub fn processBundleBatch(items: []const BatchItem) !void {
+            _ = items;
+        }
 
   - name: processDotBatch
     given: Batch of dot product operations
     when: Executing dot product batch
     then: SIMD vectorized accumulation
+    implementation: |
+        pub fn processDotBatch(items: []const BatchItem) !void {
+            _ = items;
+        }
 
   - name: enableMetal
     given: Metal device availability
     when: GPU acceleration requested
     then: Initialize Metal compute pipeline
+    implementation: |
+        pub fn enableMetal(device: anytype) !void {
+            _ = device;
+        }
 
   - name: getStats
     given: Batch processor state
     when: Statistics requested
     then: Return BatchStats with performance metrics
+    implementation: |
+        pub fn getStats(config: BatchConfig) BatchStats {
+            _ = config;
+            return BatchStats{};
+        }
 
 test_cases:
   - name: batch_faster_than_sequential
