@@ -34,6 +34,8 @@ pub const ZigCodeGen = struct {
     dht_emitted: bool,
     swarm_emitted: bool,
     rewards_emitted: bool,
+    /// Cached reference to spec types for signature inference
+    spec_types: []const TypeDef = &.{},
 
     const Self = @This();
 
@@ -987,6 +989,9 @@ pub const ZigCodeGen = struct {
     }
 
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
+        // Store spec types for signature inference
+        self.spec_types = spec.types.items;
+
         try self.writeHeader(spec);
         try self.writeImports(spec);
         try self.writeConstants(spec.constants.items);
@@ -1449,7 +1454,7 @@ pub const ZigCodeGen = struct {
                 try self.builder.writeLine(b.implementation);
             } else {
                 // Body only — wrap in inferred signature
-                const sig = inferSignatureFromSpec(b);
+                const sig = inferSignatureFromSpec(b.given, b.then, b.name);
                 try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
                 self.builder.incIndent();
                 try self.builder.writeLine(b.implementation);
@@ -1458,7 +1463,7 @@ pub const ZigCodeGen = struct {
             }
         } else {
             // No implementation — use pattern matching or auto-body
-            const sig = inferSignatureFromSpec(b);
+            const sig = inferSignatureFromSpec(b.given, b.then, b.name);
             try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
             self.builder.incIndent();
             try self.generateRealBody(b);
@@ -1582,7 +1587,7 @@ pub const ZigCodeGen = struct {
                 try self.builder.writeLine("_ = result;");
             }
             // Reference params to suppress unused warnings
-            const sig = inferSignatureFromSpec(b);
+            const sig = inferSignatureFromSpec(b.given, b.then, b.name);
             if (std.mem.indexOf(u8, sig.params, "values") != null) {
                 try self.builder.writeLine("_ = values;");
             }
@@ -1653,7 +1658,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("const elapsed = std.time.timestamp() - start_time;");
             try self.builder.writeLine("_ = elapsed;");
             // Reference params to suppress unused warnings - check signature directly
-            const sig = inferSignatureFromSpec(b);
+            const sig = inferSignatureFromSpec(b.given, b.then, b.name);
             if (std.mem.indexOf(u8, sig.params, "self") != null) {
                 try self.builder.writeLine("_ = self;");
             } else if (containsAnyCI(b.given, &.{ "items", "batch", "array", "request" })) {
@@ -1801,7 +1806,7 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("// Add 'implementation:' field in .vibee spec to provide real code.");
 
         // Suppress unused parameter warnings by referencing params
-        const sig = inferSignatureFromSpec(b);
+        const sig = inferSignatureFromSpec(b.given, b.then, b.name);
         if (sig.params.len > 0 and !std.mem.eql(u8, sig.params, "")) {
             // Parse param names (simple extraction: split by ", " then extract name after last space)
             var iter = std.mem.splitScalar(u8, sig.params, ',');
@@ -1825,12 +1830,75 @@ pub const ZigCodeGen = struct {
         }
     }
 
+    /// Resolve a type name from the spec's types: section.
+    /// Returns the Zig type representation for a custom type.
+    fn resolveTypeName(self: *Self, type_name: []const u8) []const u8 {
+        // Inline check for common VIBEE types
+        if (std.mem.eql(u8, type_name, "String")) return "[]const u8";
+        if (std.mem.eql(u8, type_name, "Int")) return "i64";
+        if (std.mem.eql(u8, type_name, "Float")) return "f64";
+        if (std.mem.eql(u8, type_name, "Bool")) return "bool";
+        if (std.mem.eql(u8, type_name, "usize")) return "usize";
+        if (std.mem.eql(u8, type_name, "u8")) return "u8";
+        if (std.mem.eql(u8, type_name, "u32")) return "u32";
+        if (std.mem.eql(u8, type_name, "u64")) return "u64";
+        if (std.mem.eql(u8, type_name, "i32")) return "i32";
+        if (std.mem.eql(u8, type_name, "i64")) return "i64";
+        if (std.mem.eql(u8, type_name, "f32")) return "f32";
+        if (std.mem.eql(u8, type_name, "f64")) return "f64";
+        if (std.mem.eql(u8, type_name, "void")) return "void";
+        if (std.mem.eql(u8, type_name, "anytype")) return "anytype";
+
+        // For custom types, check if they're defined in the spec
+        for (self.spec_types) |t| {
+            if (std.mem.eql(u8, t.name, type_name)) {
+                // Type exists in spec - return the name as-is (it will be generated as a struct)
+                return type_name;
+            }
+        }
+
+        // Unknown type - return as-is (will generate a compile error if not defined)
+        return type_name;
+    }
+
+    /// Parse complex type syntax like Option<T>, []T, !T, List<T>
+    fn parseComplexType(self: *Self, type_str: []const u8) ![]const u8 {
+        // Option<T> or ?T -> ?resolved_type
+        if (std.mem.startsWith(u8, type_str, "Option<")) {
+            const inner = type_str[8 .. type_str.len - 1]; // Skip "Option<" and ">"
+            const resolved = try self.parseComplexType(inner);
+            return try std.fmt.allocPrint(self.allocator, "?{s}", .{resolved});
+        }
+
+        // List<T> -> []const T
+        if (std.mem.startsWith(u8, type_str, "List<")) {
+            const inner = type_str[5 .. type_str.len - 1]; // Skip "List<" and ">"
+            const resolved = try self.parseComplexType(inner);
+            return try std.fmt.allocPrint(self.allocator, "[]const {s}", .{resolved});
+        }
+
+        // [T] already is slice syntax - keep as-is but resolve inner type
+        if (type_str[0] == '[' and type_str[type_str.len - 1] == ']') {
+            const inner = type_str[1 .. type_str.len - 1];
+            if (inner.len > 0) {
+                const resolved = self.resolveTypeName(inner);
+                return try std.fmt.allocPrint(self.allocator, "[{s}]", .{resolved});
+            }
+            return type_str;
+        }
+
+        // *T is pointer - keep as-is
+        if (type_str[0] == '*') {
+            return type_str;
+        }
+
+        // For simple type names, resolve them using resolveTypeName (no alloc needed)
+        return self.resolveTypeName(type_str);
+    }
+
     /// Infer function signature from behavior given/then fields.
-    /// Uses keyword matching to determine params and return type.
-    fn inferSignatureFromSpec(b: *const Behavior) struct { params: []const u8, ret: []const u8 } {
-        const given = b.given;
-        const then = b.then;
-        const name = b.name;
+    /// Enhanced with types: section support and complex type parsing.
+    fn inferSignatureFromSpec(given: []const u8, then: []const u8, name: []const u8) struct { params: []const u8, ret: []const u8 } {
         const mem = std.mem;
 
         // --- Infer params from `given` field keywords (case-insensitive via lowercase check) ---
@@ -1894,6 +1962,18 @@ pub const ZigCodeGen = struct {
             // Key-value
             if (containsAnyCI(given, &.{ "key" }))
                 break :params_blk "key: []const u8";
+
+            // ChainMessage (golden_chain specific) - exact substrings
+            if (containsAnyCI(given, &.{ "chainmessage", "from the pipeline" }))
+                break :params_blk "msg: ChainMessage";
+
+            // ChatMsgType / chain-type message
+            if (containsAnyCI(given, &.{ "chatmsgtype", "chat display", "chain-type" }))
+                break :params_blk "msg: ChatMsgType";
+
+            // GoldenChainAgent (method calls)
+            if (containsAnyCI(given, &.{ "monitor reports", "adapt node", "min_quality" }))
+                break :params_blk "self: *GoldenChainAgent";
 
             // No input
             if (containsAnyCI(given, &.{ "no input" }))
