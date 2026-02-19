@@ -393,7 +393,7 @@ pub const RalphAgent = struct {
     name_len: usize = 0,
     branch: [64:0]u8 = [_:0]u8{0} ** 64,
     branch_len: usize = 0,
-    // Metrics
+    // Metrics (from status_report.json + circuit_breaker_state)
     loop: usize = 0,
     total_calls: usize = 0,
     is_healthy: bool = true,
@@ -406,17 +406,94 @@ pub const RalphAgent = struct {
     cb_state: CircuitBreakerState = .closed,
     running: bool = false,
     reachable: bool = false,
-    // Per-agent logs
-    logs: [10][128:0]u8 = undefined,
+    // Ralph loop logs (ralph.log — left pane)
+    logs: [30][128:0]u8 = undefined,
     log_count: usize = 0,
+    // Live Claude Code output (from latest claude_output_*.log — right-top pane)
+    live_result: [4096:0]u8 = [_:0]u8{0} ** 4096,
+    live_result_len: usize = 0,
+    live_num_turns: usize = 0,
+    live_duration_ms: usize = 0,
+    live_cost_usd: [16:0]u8 = [_:0]u8{0} ** 16, // formatted as string
+    live_cost_len: usize = 0,
+    live_is_error: bool = false,
+    live_session_id: [40:0]u8 = [_:0]u8{0} ** 40,
+    live_session_len: usize = 0,
+    // Status monitor data (status.json — right-bottom pane)
+    loop_count_status: usize = 0, // from status.json loop_count
+    calls_this_hour: usize = 0, // calls_made_this_hour
+    max_calls_hour: usize = 100, // max_calls_per_hour
+    status_text: [32:0]u8 = [_:0]u8{0} ** 32, // "running", "idle", etc
+    status_text_len: usize = 0,
+    next_reset: [16:0]u8 = [_:0]u8{0} ** 16,
+    next_reset_len: usize = 0,
+    // Progress tracking from status_report.json
+    progress_status: [32:0]u8 = [_:0]u8{0} ** 32, // "completed", "in_progress", etc
+    progress_status_len: usize = 0,
+    recent_commits_count: usize = 0,
+    // Data freshness tracking (file modification times as epoch seconds)
+    log_mtime: i64 = 0, // ralph.log last modified
+    status_mtime: i64 = 0, // status.json last modified
+    live_mtime: i64 = 0, // latest claude_output_*.log modified
+    data_age_seconds: i64 = 0, // age of newest data source
+    rate_limited: bool = false, // detected from live_result
+    is_executing: bool = false, // detected from status.json last_action
+    // Todo list from TodoWrite (parsed from claude_output log tail)
+    todo_items: [10][96:0]u8 = [_][96:0]u8{[_:0]u8{0} ** 96} ** 10,
+    todo_statuses: [10]u8 = [_]u8{0} ** 10, // 0=none, 1=pending, 2=in_progress, 3=completed
+    todo_count: usize = 0,
     // Per-agent poll timer (staggered)
     update_timer: f32 = 0,
+    // Unified chat dialog messages (chronologically sorted)
+    chat_msgs: [50]ChatMsg = [_]ChatMsg{ChatMsg{}} ** 50,
+    chat_count: usize = 0,
+    chat_built_log_mt: i64 = 0,
+    chat_built_live_mt: i64 = 0,
+};
+
+// ── Unified Chat Message for merged agent dialog ──
+const ChatSender = enum { loop, claude };
+const ChatMsgKind = enum { log_line, claude_result, task_list, meta_info };
+
+const ChatMsg = struct {
+    sender: ChatSender = .loop,
+    kind: ChatMsgKind = .log_line,
+    timestamp: i64 = 0,
+    text: [256:0]u8 = [_:0]u8{0} ** 256,
+    text_len: usize = 0,
+    result_offset: usize = 0,
+    result_len: usize = 0,
+    todo_count: usize = 0,
+    tag_r: u8 = 0xBB,
+    tag_g: u8 = 0xBB,
+    tag_b: u8 = 0xBB,
+    show_full: bool = false,
 };
 
 var g_ralph_agents: [MAX_RALPH_AGENTS]RalphAgent = [_]RalphAgent{RalphAgent{}} ** MAX_RALPH_AGENTS;
+
 var g_ralph_agent_count: usize = 0;
 var g_ralph_active_tab: usize = 0;
+var g_ralph_prev_tab: usize = 0;
 var g_ralph_initialized: bool = false;
+// Unified chat scroll state
+var g_ralph_chat_scroll_y: f32 = 0;
+var g_ralph_chat_scroll_target: f32 = 0;
+var g_ralph_prev_chat_count: usize = 0;
+var g_ralph_prev_result_len: usize = 0;
+
+// ── v8.1: Collapsible section state ──
+const MAX_SECTIONS_PER_MSG = 16;
+var g_ralph_section_collapsed: [MAX_RALPH_AGENTS][50][MAX_SECTIONS_PER_MSG]bool =
+    [_][50][MAX_SECTIONS_PER_MSG]bool{
+        [_][MAX_SECTIONS_PER_MSG]bool{[_]bool{false} ** MAX_SECTIONS_PER_MSG} ** 50,
+    } ** MAX_RALPH_AGENTS;
+var g_ralph_section_anim: [MAX_RALPH_AGENTS][50][MAX_SECTIONS_PER_MSG]f32 =
+    [_][50][MAX_SECTIONS_PER_MSG]f32{
+        [_][MAX_SECTIONS_PER_MSG]f32{[_]f32{1.0} ** MAX_SECTIONS_PER_MSG} ** 50,
+    } ** MAX_RALPH_AGENTS;
+var g_ralph_msg_prev_rlen: [MAX_RALPH_AGENTS][50]usize =
+    [_][50]usize{[_]usize{0} ** 50} ** MAX_RALPH_AGENTS;
 
 fn setAgentIdentity(agent: *RalphAgent, name: []const u8, branch: []const u8) void {
     const nl = @min(name.len, 31);
@@ -427,19 +504,1005 @@ fn setAgentIdentity(agent: *RalphAgent, name: []const u8, branch: []const u8) vo
     agent.branch_len = bl;
 }
 
+// Dynamic worktree paths (discovered at runtime from .git/worktrees/)
+var g_ralph_worktree_paths: [MAX_RALPH_AGENTS][256]u8 = undefined;
+var g_ralph_worktree_path_lens: [MAX_RALPH_AGENTS]usize = [_]usize{0} ** MAX_RALPH_AGENTS;
+
+fn getWorktreePath(ai: usize) []const u8 {
+    if (ai >= g_ralph_agent_count) return "";
+    return g_ralph_worktree_paths[ai][0..g_ralph_worktree_path_lens[ai]];
+}
+
+// ═══ Ralph Process Control (tmux commands) ═══
+const RalphCmd = enum { none, start, stop, restart };
+var g_ralph_pending_cmd: RalphCmd = .none;
+var g_ralph_tmux_session: [64]u8 = [_]u8{0} ** 64;
+var g_ralph_tmux_session_len: usize = 0;
+
+// v8.1.1: Hybrid mode — track external ralph_loop.sh process
+var g_ralph_loop_pid: i32 = 0;
+var g_ralph_tmux_loop_running: bool = false;
+var g_ralph_last_pid_check: f64 = 0;
+
+/// Discover the ralph tmux session name (ralph-XXXXXXXXXX) — picks newest (last sorted)
+fn ralphDiscoverTmuxSession() void {
+    const allocator = std.heap.page_allocator;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "/bin/sh", "-c", "tmux list-sessions -F '#{session_name}' 2>/dev/null | grep '^ralph-' | sort -r | head -1" },
+    }) catch return;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    const out = std.mem.trimRight(u8, result.stdout, "\n\r \t");
+    if (out.len > 0 and out.len < 64) {
+        @memcpy(g_ralph_tmux_session[0..out.len], out);
+        g_ralph_tmux_session_len = out.len;
+        std.debug.print("[RALPH] discovered tmux session: {s}\n", .{g_ralph_tmux_session[0..out.len]});
+    } else {
+        std.debug.print("[RALPH] no tmux session found\n", .{});
+    }
+}
+
+/// Find PID of external ralph_loop.sh process (v8.1.1 hybrid mode)
+fn ralphFindLoopPid() i32 {
+    const allocator = std.heap.page_allocator;
+    // pgrep returns multiple PIDs, take the first one (newest)
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "/bin/sh", "-c", "pgrep -f 'ralph_loop.sh' 2>/dev/null | head -1" },
+    }) catch return 0;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    const out = std.mem.trimRight(u8, result.stdout, "\n\r \t");
+    if (out.len > 0) {
+        const pid = std.fmt.parseInt(i32, out, 10) catch 0;
+        if (pid > 0) {
+            std.debug.print("[RALPH] found external loop PID: {}\n", .{pid});
+            return pid;
+        }
+    }
+    return 0;
+}
+
+/// Check if ralph is running INSIDE tmux pane (v8.1.1 hybrid mode)
+fn ralphCheckTmuxLoop() bool {
+    if (g_ralph_tmux_session_len == 0) return false;
+    const sess = g_ralph_tmux_session[0..g_ralph_tmux_session_len];
+    const allocator = std.heap.page_allocator;
+
+    // Get pane PID for pane 1.1
+    var buf: [128]u8 = undefined;
+    const cmd = std.fmt.bufPrint(&buf, "tmux list-panes -t '{s}:1.1' -F '{{pane_pid}}' 2>/dev/null", .{sess}) catch return false;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "/bin/sh", "-c", cmd },
+    }) catch return false;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    const pane_pid_str = std.mem.trimRight(u8, result.stdout, "\n\r \t");
+    if (pane_pid_str.len == 0) return false;
+
+    const pane_pid = std.fmt.parseInt(i32, pane_pid_str, 10) catch return false;
+    if (pane_pid <= 0) return false;
+
+    // Check if that process has 'ralph' in its command line
+    var buf2: [256]u8 = undefined;
+    const cmd2 = std.fmt.bufPrint(&buf2, "ps -p {} -o command= 2>/dev/null | grep -q ralph", .{pane_pid}) catch return false;
+    const result2 = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "/bin/sh", "-c", cmd2 },
+    }) catch return false;
+    defer allocator.free(result2.stdout);
+    defer allocator.free(result2.stderr);
+
+    const running = result2.term.Exited == 0;
+    if (running) {
+        std.debug.print("[RALPH] tmux pane has ralph running (PID {})\n", .{pane_pid});
+    }
+    return running;
+}
+
+/// Update ralph loop detection state (call periodically)
+fn ralphUpdateLoopState() void {
+    const now = rl.GetTime();
+    // Check every 2 seconds
+    if (now - g_ralph_last_pid_check < 2.0) return;
+    g_ralph_last_pid_check = now;
+
+    g_ralph_loop_pid = ralphFindLoopPid();
+    g_ralph_tmux_loop_running = ralphCheckTmuxLoop();
+}
+
+/// Quick check if any ralph_loop.sh process is actually running (v8.1.1 fix)
+/// Used to override status.json when processes are killed but file not updated
+fn ralphProcessRunning() bool {
+    const allocator = std.heap.page_allocator;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "/bin/sh", "-c", "pgrep -f 'ralph_loop.sh' 2>/dev/null | head -1" },
+    }) catch return false;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    const out = std.mem.trimRight(u8, result.stdout, "\n\r \t");
+    return out.len > 0;
+}
+
+/// Execute pending ralph command (v8.1.1: hybrid mode — PID signals OR tmux)
+fn ralphExecPendingCmd() void {
+    const cmd = g_ralph_pending_cmd;
+    if (cmd == .none) return;
+    std.debug.print("[RALPH] executing cmd: {s}\n", .{if (cmd == .start) "START" else if (cmd == .stop) "STOP" else if (cmd == .restart) "RESTART" else "NONE"});
+    g_ralph_pending_cmd = .none;
+
+    // Update detection state
+    ralphUpdateLoopState();
+
+    const allocator = std.heap.page_allocator;
+
+    // Hybrid mode: external process takes priority
+    if (g_ralph_loop_pid > 0) {
+        std.debug.print("[RALPH] STOP: killing external process (PID {})\n", .{g_ralph_loop_pid});
+        switch (cmd) {
+            .stop => {
+                // v8.1.1 fix: Kill monitor, loop processes, AND all their children
+                // First kill children, then parents (to avoid orphans)
+                const sh_cmd = "pgrep -f 'ralph_loop.sh' 2>/dev/null | xargs -r pkill -9 -P 2>/dev/null; pkill -9 -f 'ralph_monitor.sh' 2>/dev/null; pkill -9 -f 'ralph_loop.sh' 2>/dev/null";
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", sh_cmd },
+                }) catch {};
+            },
+            .start => {
+                // Already running, just log
+                std.debug.print("[RALPH] START: already running (PID {})\n", .{g_ralph_loop_pid});
+            },
+            .restart => {
+                // v8.1.1 fix: Kill children first, then parents (same as STOP)
+                const cmd1 = "pgrep -f 'ralph_loop.sh' 2>/dev/null | xargs -r pkill -9 -P 2>/dev/null; pkill -9 -f 'ralph_monitor.sh' 2>/dev/null; pkill -9 -f 'ralph_loop.sh' 2>/dev/null; sleep 1";
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", cmd1 },
+                }) catch {};
+                std.debug.print("[RALPH] RESTART: killed processes, will restart\n", .{});
+            },
+            .none => {},
+        }
+        return;
+    }
+
+    // Fallback: tmux mode (if tmux loop is running or session exists)
+    if (g_ralph_tmux_loop_running or g_ralph_tmux_session_len > 0) {
+        std.debug.print("[RALPH] using tmux mode\n", .{});
+        if (g_ralph_tmux_session_len == 0) ralphDiscoverTmuxSession();
+        if (g_ralph_tmux_session_len == 0) return; // no tmux session
+
+        const sess = g_ralph_tmux_session[0..g_ralph_tmux_session_len];
+
+        switch (cmd) {
+            .stop => {
+                var buf: [128]u8 = undefined;
+                const sh_cmd = std.fmt.bufPrint(&buf, "tmux send-keys -t '{s}:1.1' C-c 2>/dev/null", .{sess}) catch return;
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", buf[0..sh_cmd.len] },
+                }) catch {};
+            },
+            .start => {
+                var buf: [128]u8 = undefined;
+                const sh_cmd = std.fmt.bufPrint(&buf, "tmux send-keys -t '{s}:1.1' 'ralph' Enter 2>/dev/null", .{sess}) catch return;
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", buf[0..sh_cmd.len] },
+                }) catch {};
+            },
+            .restart => {
+                var buf1: [128]u8 = undefined;
+                const cmd1 = std.fmt.bufPrint(&buf1, "tmux send-keys -t '{s}:1.1' C-c 2>/dev/null; sleep 1; tmux send-keys -t '{s}:1.1' 'ralph' Enter 2>/dev/null", .{ sess, sess }) catch return;
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", buf1[0..cmd1.len] },
+                }) catch {};
+            },
+            .none => {},
+        }
+        return;
+    }
+
+    std.debug.print("[RALPH] no ralph loop found to control\n", .{});
+}
+
+/// Read a git HEAD file and extract the branch name (strip "ref: refs/heads/")
+fn readGitBranch(head_path: [:0]const u8, out: []u8) usize {
+    const file = std.fs.openFileAbsolute(head_path, .{}) catch return 0;
+    defer file.close();
+    var buf: [256]u8 = undefined;
+    const n = file.readAll(&buf) catch return 0;
+    if (n == 0) return 0;
+    // Strip trailing newline/whitespace
+    var end: usize = n;
+    while (end > 0 and (buf[end - 1] == '\n' or buf[end - 1] == '\r' or buf[end - 1] == ' ')) end -= 1;
+    const line = buf[0..end];
+    const prefix = "ref: refs/heads/";
+    const branch = if (std.mem.startsWith(u8, line, prefix)) line[prefix.len..] else line;
+    const len = @min(branch.len, out.len);
+    @memcpy(out[0..len], branch[0..len]);
+    return len;
+}
+
 fn initRalphAgents() void {
     if (g_ralph_initialized) return;
     g_ralph_initialized = true;
-    setAgentIdentity(&g_ralph_agents[0], "trinity", "ralph/math-framework");
-    setAgentIdentity(&g_ralph_agents[1], "w1-nexus-src", "ralph/nexus-src");
-    setAgentIdentity(&g_ralph_agents[2], "w2-nexus-specs", "ralph/nexus-specs");
-    setAgentIdentity(&g_ralph_agents[3], "w3-nexus-docs", "ralph/nexus-docs");
-    // Stagger initial timers so polls don't all fire at once
+
+    // Zero all paths
+    for (&g_ralph_worktree_paths) |*p| @memset(p, 0);
+
+    // Agent 0 = main repo (cwd)
+    const main_path = "/Users/playra/trinity";
+    const main_len = main_path.len;
+    @memcpy(g_ralph_worktree_paths[0][0..main_len], main_path);
+    g_ralph_worktree_path_lens[0] = main_len;
+
+    // Read main repo branch from .git/HEAD
+    var branch_buf: [64]u8 = undefined;
+    @memset(&branch_buf, 0);
+    const branch_len = readGitBranch("/Users/playra/trinity/.git/HEAD", &branch_buf);
+    const main_branch = if (branch_len > 0) branch_buf[0..branch_len] else "main";
+    setAgentIdentity(&g_ralph_agents[0], "trinity", main_branch);
     g_ralph_agents[0].update_timer = 0.0;
-    g_ralph_agents[1].update_timer = 0.5;
-    g_ralph_agents[2].update_timer = 1.0;
-    g_ralph_agents[3].update_timer = 1.5;
-    g_ralph_agent_count = 4;
+    g_ralph_agent_count = 1;
+
+    // Discover additional worktrees from .git/worktrees/
+    const wt_dir = std.fs.openDirAbsolute("/Users/playra/trinity/.git/worktrees", .{ .iterate = true }) catch {
+        return; // No worktrees dir — single repo mode
+    };
+    // Need mutable for iteration
+    var wt_dir_m = wt_dir;
+    defer wt_dir_m.close();
+    var iter = wt_dir_m.iterate();
+    while (iter.next() catch null) |entry| {
+        if (g_ralph_agent_count >= MAX_RALPH_AGENTS) break;
+        if (entry.kind != .directory) continue;
+
+        const ai = g_ralph_agent_count;
+        var gitdir_path_buf: [256]u8 = undefined;
+        @memset(&gitdir_path_buf, 0);
+        const gitdir_path = std.fmt.bufPrint(&gitdir_path_buf, "/Users/playra/trinity/.git/worktrees/{s}/gitdir", .{entry.name}) catch continue;
+
+        // Read gitdir to get worktree path (contains "<worktree>/.git\n")
+        const gf = std.fs.openFileAbsolute(gitdir_path_buf[0..gitdir_path.len :0], .{}) catch continue;
+        defer gf.close();
+        var gd_buf: [256]u8 = undefined;
+        const gd_n = gf.readAll(&gd_buf) catch continue;
+        if (gd_n < 5) continue;
+
+        // Strip trailing whitespace and "/.git" suffix
+        var gd_end: usize = gd_n;
+        while (gd_end > 0 and (gd_buf[gd_end - 1] == '\n' or gd_buf[gd_end - 1] == '\r' or gd_buf[gd_end - 1] == ' ')) gd_end -= 1;
+        const gd_line = gd_buf[0..gd_end];
+        const wt_path = if (std.mem.endsWith(u8, gd_line, "/.git")) gd_line[0 .. gd_line.len - 5] else gd_line;
+        if (wt_path.len == 0 or wt_path.len >= 256) continue;
+
+        @memcpy(g_ralph_worktree_paths[ai][0..wt_path.len], wt_path);
+        g_ralph_worktree_path_lens[ai] = wt_path.len;
+
+        // Read branch from .git/worktrees/<name>/HEAD
+        var head_path_buf: [256]u8 = undefined;
+        @memset(&head_path_buf, 0);
+        const head_path = std.fmt.bufPrint(&head_path_buf, "/Users/playra/trinity/.git/worktrees/{s}/HEAD", .{entry.name}) catch continue;
+
+        @memset(&branch_buf, 0);
+        const wt_branch_len = readGitBranch(head_path_buf[0..head_path.len :0], &branch_buf);
+        const wt_branch = if (wt_branch_len > 0) branch_buf[0..wt_branch_len] else entry.name;
+
+        setAgentIdentity(&g_ralph_agents[ai], entry.name, wt_branch);
+        g_ralph_agents[ai].update_timer = @as(f32, @floatFromInt(ai)) * 0.5; // Stagger polls
+        g_ralph_agent_count += 1;
+    }
+
+    // Discover ralph tmux session for process control
+    ralphDiscoverTmuxSession();
+}
+
+/// Desktop-only: Read .ralph/ files directly from worktree filesystem
+fn pollRalphAgentDesktop(ai: usize) void {
+    if (ai >= g_ralph_agent_count) return;
+    const agent = &g_ralph_agents[ai];
+    const base_path = getWorktreePath(ai);
+
+    std.debug.print("[POLL ai={d}] base_path={s}\n", .{ ai, base_path });
+
+    var path_buf: [256]u8 = undefined;
+    @memset(&path_buf, 0);
+
+    // Read status_report.json
+    {
+        const sr_path = std.fmt.bufPrint(&path_buf, "{s}/.ralph/status_report.json", .{base_path}) catch return;
+        const file = std.fs.openFileAbsolute(path_buf[0..sr_path.len :0], .{}) catch {
+            std.debug.print("[POLL ai={d}] status_report.json NOT FOUND - unreachable\n", .{ai});
+            agent.reachable = false;
+            return;
+        };
+        defer file.close();
+        agent.reachable = true;
+
+        var read_buf: [4096]u8 = undefined;
+        const bytes_read = file.readAll(&read_buf) catch 0;
+        if (bytes_read < 10) return;
+        const json = read_buf[0..bytes_read];
+
+        // Parse circuit_breaker.state
+        if (std.mem.indexOf(u8, json, "\"state\":")) |idx| {
+            const after = json[@min(idx + 9, json.len)..];
+            if (std.mem.indexOf(u8, after, "\"")) |q1| {
+                const val_start = q1 + 1;
+                if (std.mem.indexOfScalar(u8, after[val_start..], '"')) |q2| {
+                    const val = after[val_start .. val_start + q2];
+                    if (std.mem.eql(u8, val, "CLOSED")) {
+                        agent.cb_state = .closed;
+                        agent.is_healthy = true;
+                    } else if (std.mem.eql(u8, val, "OPEN")) {
+                        agent.cb_state = .cb_open;
+                        agent.is_healthy = false;
+                    } else {
+                        agent.cb_state = .degraded;
+                        agent.is_healthy = false;
+                    }
+                }
+            }
+        }
+
+        // Parse circuit_breaker.loop
+        if (std.mem.indexOf(u8, json, "\"loop\":")) |idx| {
+            var start = idx + 7;
+            while (start < json.len and (json[start] == ' ' or json[start] == '\t' or json[start] == '\n' or json[start] == '\r')) start += 1;
+            var end = start;
+            while (end < json.len and json[end] >= '0' and json[end] <= '9') end += 1;
+            if (end > start) {
+                agent.loop = std.fmt.parseInt(usize, json[start..end], 10) catch agent.loop;
+            }
+        }
+
+        // Parse session.call_count as total_calls
+        if (std.mem.indexOf(u8, json, "\"call_count\":")) |idx| {
+            var start = idx + 13;
+            while (start < json.len and (json[start] == ' ' or json[start] == '\t' or json[start] == '\n' or json[start] == '\r')) start += 1;
+            var end = start;
+            while (end < json.len and json[end] >= '0' and json[end] <= '9') end += 1;
+            if (end > start) {
+                agent.total_calls = std.fmt.parseInt(usize, json[start..end], 10) catch agent.total_calls;
+            }
+        }
+
+        // Parse active_task as goal
+        if (std.mem.indexOf(u8, json, "\"active_task\":")) |idx| {
+            const after = json[@min(idx + 14, json.len)..];
+            if (std.mem.indexOf(u8, after, "\"")) |q1| {
+                const val_start = q1 + 1;
+                if (std.mem.indexOfScalar(u8, after[val_start..], '"')) |q2| {
+                    const val = after[val_start .. val_start + q2];
+                    const len = @min(val.len, 127);
+                    @memcpy(agent.goal[0..len], val[0..len]);
+                    agent.goal[len] = 0;
+                    agent.goal_len = len;
+                }
+            }
+        }
+
+        // Parse progress.status
+        if (std.mem.indexOf(u8, json, "\"status\":")) |idx| {
+            const after = json[@min(idx + 9, json.len)..];
+            if (std.mem.indexOf(u8, after, "\"")) |q1| {
+                const val_start = q1 + 1;
+                if (std.mem.indexOfScalar(u8, after[val_start..], '"')) |q2| {
+                    const val = after[val_start .. val_start + q2];
+                    const len = @min(val.len, 31);
+                    @memcpy(agent.progress_status[0..len], val[0..len]);
+                    agent.progress_status[len] = 0;
+                    agent.progress_status_len = len;
+                }
+            }
+        }
+
+        // Count recent_commits
+        {
+            var count: usize = 0;
+            if (std.mem.indexOf(u8, json, "\"recent_commits\":")) |idx| {
+                const after = json[@min(idx + 17, json.len)..];
+                for (after) |ch| {
+                    if (ch == '"') count += 1;
+                    if (ch == ']') break;
+                }
+                agent.recent_commits_count = count / 2;
+            }
+        }
+
+        agent.running = (agent.loop > 0);
+        std.debug.print("[POLL ai={d}] status_report: cb={s} loop={d} calls={d} goal_len={d}\n", .{
+            ai,
+            if (agent.cb_state == .closed) "CLOSED" else if (agent.cb_state == .cb_open) "OPEN" else "DEGRADED",
+            agent.loop,
+            agent.total_calls,
+            agent.goal_len,
+        });
+    }
+
+    // Read .ralph/internal/.circuit_breaker_state for current_loop (more accurate)
+    {
+        @memset(&path_buf, 0);
+        const cb_path = std.fmt.bufPrint(&path_buf, "{s}/.ralph/internal/.circuit_breaker_state", .{base_path}) catch "";
+        if (cb_path.len > 0) {
+            if (std.fs.openFileAbsolute(path_buf[0..cb_path.len :0], .{})) |f| {
+                defer f.close();
+                var cb_buf: [1024]u8 = undefined;
+                const bytes = f.readAll(&cb_buf) catch 0;
+                if (bytes > 10) {
+                    const cb_json = cb_buf[0..bytes];
+                    if (std.mem.indexOf(u8, cb_json, "\"current_loop\":")) |idx| {
+                        var start = idx + 15;
+                        while (start < cb_json.len and (cb_json[start] == ' ' or cb_json[start] == '\t' or cb_json[start] == '\n' or cb_json[start] == '\r')) start += 1;
+                        var end = start;
+                        while (end < cb_json.len and cb_json[end] >= '0' and cb_json[end] <= '9') end += 1;
+                        if (end > start) {
+                            agent.loop = std.fmt.parseInt(usize, cb_json[start..end], 10) catch agent.loop;
+                            agent.running = true;
+                        }
+                    }
+                }
+            } else |_| {}
+        }
+    }
+
+    // Read last N lines of .ralph/logs/ralph.log (Left pane: Ralph Loop output)
+    {
+        @memset(&path_buf, 0);
+        const log_path = std.fmt.bufPrint(&path_buf, "{s}/.ralph/logs/ralph.log", .{base_path}) catch return;
+        const file = std.fs.openFileAbsolute(path_buf[0..log_path.len :0], .{}) catch return;
+        defer file.close();
+
+        // Track file modification time
+        if (file.stat()) |st| {
+            agent.log_mtime = @intCast(@divFloor(st.mtime, std.time.ns_per_s));
+            std.debug.print("[POLL ai={d}] ralph.log mtime={d}\n", .{ ai, agent.log_mtime });
+        } else |_| {}
+
+        const file_size = file.getEndPos() catch 0;
+        if (file_size > 8192) {
+            file.seekTo(file_size - 8192) catch {};
+        }
+
+        var log_buf: [8192]u8 = undefined;
+        const bytes = file.readAll(&log_buf) catch 0;
+        if (bytes == 0) return;
+        const content = log_buf[0..bytes];
+
+        // Find line boundaries, keep last 30
+        var line_starts: [31]usize = undefined;
+        var line_count: usize = 0;
+        line_starts[0] = 0;
+        line_count = 1;
+        for (content, 0..) |c, ci| {
+            if (c == '\n' and ci + 1 < content.len) {
+                if (line_count < 31) {
+                    line_starts[line_count] = ci + 1;
+                    line_count += 1;
+                } else {
+                    for (0..30) |si| {
+                        line_starts[si] = line_starts[si + 1];
+                    }
+                    line_starts[30] = ci + 1;
+                }
+            }
+        }
+
+        const first_line = if (line_count > 30) line_count - 30 else 0;
+        var li: usize = 0;
+        var si: usize = first_line;
+        while (si < line_count and li < 30) {
+            const start = line_starts[si];
+            const end_pos = if (si + 1 < line_count) line_starts[si + 1] -| 1 else content.len;
+            const end = if (end_pos > start and content[end_pos - 1] == '\r') end_pos - 1 else end_pos;
+            if (end > start) {
+                const line_data = content[start..end];
+                const len = @min(line_data.len, 127);
+                @memset(&agent.logs[li], 0);
+                @memcpy(agent.logs[li][0..len], line_data[0..len]);
+            } else {
+                agent.logs[li][0] = 0;
+            }
+            si += 1;
+            li += 1;
+        }
+        agent.log_count = li;
+    }
+
+    // Read latest .ralph/logs/claude_output_*.log (Right-Top: Claude Code result)
+    // Find latest non-stream log by scanning directory for newest timestamp in filename
+    {
+        @memset(&path_buf, 0);
+        const logs_dir_path = std.fmt.bufPrint(&path_buf, "{s}/.ralph/logs", .{base_path}) catch return;
+        if (std.fs.openDirAbsolute(logs_dir_path[0..logs_dir_path.len], .{})) |dir_handle| {
+            var dir = dir_handle;
+            defer dir.close();
+            // Find newest and second-newest claude_output_*.log (not _stream.log)
+            var newest_name: [64]u8 = undefined;
+            var newest_len: usize = 0;
+            var second_name: [64]u8 = undefined;
+            var second_len: usize = 0;
+            var iter = dir.iterate();
+            while (iter.next() catch null) |entry| {
+                if (entry.kind != .file) continue;
+                const name = entry.name;
+                if (!std.mem.startsWith(u8, name, "claude_output_")) continue;
+                if (std.mem.endsWith(u8, name, "_stream.log")) continue;
+                if (!std.mem.endsWith(u8, name, ".log")) continue;
+                // Lexicographic compare: later timestamp = larger string
+                if (name.len <= 63 and (newest_len == 0 or std.mem.order(u8, name[0..name.len], newest_name[0..newest_len]) == .gt)) {
+                    // Demote current newest to second
+                    if (newest_len > 0) {
+                        @memcpy(second_name[0..newest_len], newest_name[0..newest_len]);
+                        second_len = newest_len;
+                    }
+                    @memcpy(newest_name[0..name.len], name[0..name.len]);
+                    newest_len = name.len;
+                } else if (name.len <= 63 and (second_len == 0 or std.mem.order(u8, name[0..name.len], second_name[0..second_len]) == .gt)) {
+                    @memcpy(second_name[0..name.len], name[0..name.len]);
+                    second_len = name.len;
+                }
+            }
+            // Try newest file, fall back to second-newest if newest is empty
+            const candidates = [_]struct { name: []const u8 }{
+                .{ .name = if (newest_len > 0) newest_name[0..newest_len] else "" },
+                .{ .name = if (second_len > 0) second_name[0..second_len] else "" },
+            };
+            var parsed_output = false;
+            for (&candidates) |cand| {
+                if (cand.name.len == 0 or parsed_output) continue;
+                var full_path: [320]u8 = undefined;
+                @memset(&full_path, 0);
+                const fp = std.fmt.bufPrint(&full_path, "{s}/.ralph/logs/{s}", .{ base_path, cand.name }) catch "";
+                if (fp.len == 0) continue;
+                const f = std.fs.openFileAbsolute(full_path[0..fp.len :0], .{}) catch continue;
+                defer f.close();
+                // Track mtime (from newest candidate only)
+                if (!parsed_output) {
+                    if (f.stat()) |st| {
+                        agent.live_mtime = @intCast(@divFloor(st.mtime, std.time.ns_per_s));
+                    } else |_| {}
+                }
+                // Read last 4KB (the JSON result is at end of file)
+                const fsize = f.getEndPos() catch 0;
+                if (fsize > 4096) f.seekTo(fsize - 4096) catch {};
+                var out_buf: [4096]u8 = undefined;
+                const bytes = f.readAll(&out_buf) catch 0;
+                if (bytes <= 10) continue; // Empty — try next candidate
+                parsed_output = true;
+                const json = out_buf[0..bytes];
+
+                // Parse "result":"..." — extract first 500 chars
+                if (std.mem.indexOf(u8, json, "\"result\":\"")) |idx| {
+                    const vs = idx + 10;
+                    // Find closing quote (handle escaped quotes)
+                    var end_q: usize = vs;
+                    while (end_q < json.len) {
+                        if (json[end_q] == '\\' and end_q + 1 < json.len) {
+                            end_q += 2;
+                            continue;
+                        }
+                        if (json[end_q] == '"') break;
+                        end_q += 1;
+                    }
+                    const val = json[vs..end_q];
+                    const rlen = @min(val.len, 4095);
+                    @memset(&agent.live_result, 0);
+                    // Copy with ASCII sanitization (replace non-ASCII with -)
+                    for (0..rlen) |ci| {
+                        agent.live_result[ci] = if (val[ci] >= 0x80) '-' else val[ci];
+                    }
+                    agent.live_result_len = rlen;
+                }
+
+                // Parse "is_error":true/false
+                agent.live_is_error = std.mem.indexOf(u8, json, "\"is_error\":true") != null;
+
+                // Parse "num_turns":N
+                if (std.mem.indexOf(u8, json, "\"num_turns\":")) |idx| {
+                    var start = idx + 12;
+                    while (start < json.len and json[start] == ' ') start += 1;
+                    var end_n: usize = start;
+                    while (end_n < json.len and json[end_n] >= '0' and json[end_n] <= '9') end_n += 1;
+                    if (end_n > start) agent.live_num_turns = std.fmt.parseInt(usize, json[start..end_n], 10) catch 0;
+                }
+
+                // Parse "duration_ms":N
+                if (std.mem.indexOf(u8, json, "\"duration_ms\":")) |idx| {
+                    var start = idx + 14;
+                    while (start < json.len and json[start] == ' ') start += 1;
+                    var end_n: usize = start;
+                    while (end_n < json.len and json[end_n] >= '0' and json[end_n] <= '9') end_n += 1;
+                    if (end_n > start) agent.live_duration_ms = std.fmt.parseInt(usize, json[start..end_n], 10) catch 0;
+                }
+
+                // Parse "total_cost_usd":N.NN
+                if (std.mem.indexOf(u8, json, "\"total_cost_usd\":")) |idx| {
+                    var start = idx + 17;
+                    while (start < json.len and json[start] == ' ') start += 1;
+                    var end_n: usize = start;
+                    while (end_n < json.len and (json[end_n] >= '0' and json[end_n] <= '9' or json[end_n] == '.')) end_n += 1;
+                    if (end_n > start) {
+                        const val = json[start..end_n];
+                        const clen = @min(val.len, 15);
+                        @memset(&agent.live_cost_usd, 0);
+                        @memcpy(agent.live_cost_usd[0..clen], val[0..clen]);
+                        agent.live_cost_len = clen;
+                    }
+                }
+
+                // Parse TodoWrite from log tail (last 16KB for last "todos":[)
+                {
+                    agent.todo_count = 0;
+                    for (&agent.todo_items) |*item| @memset(item, 0);
+                    @memset(&agent.todo_statuses, 0);
+                    f.seekTo(if (fsize > 16384) fsize - 16384 else 0) catch {};
+                    var todo_buf: [16384]u8 = undefined;
+                    const tbytes = f.readAll(&todo_buf) catch 0;
+                    if (tbytes > 20) {
+                        const tdata = todo_buf[0..tbytes];
+                        // Find LAST occurrence of "todos":[{
+                        var last_todos_pos: ?usize = null;
+                        var search_pos: usize = 0;
+                        while (search_pos < tdata.len) {
+                            if (std.mem.indexOf(u8, tdata[search_pos..], "\"todos\":[{")) |found| {
+                                last_todos_pos = search_pos + found;
+                                search_pos = search_pos + found + 10;
+                            } else break;
+                        }
+                        if (last_todos_pos) |tp| {
+                            var tpos = tp + 9; // skip "todos":[
+                            while (tpos < tdata.len and agent.todo_count < 10) {
+                                // Find "content":"
+                                if (std.mem.indexOf(u8, tdata[tpos..], "\"content\":\"")) |ci| {
+                                    const cs = tpos + ci + 11;
+                                    if (cs < tdata.len) {
+                                        if (std.mem.indexOfScalar(u8, tdata[cs..@min(cs + 96, tdata.len)], '"')) |ce| {
+                                            const clen = @min(ce, 95);
+                                            @memcpy(agent.todo_items[agent.todo_count][0..clen], tdata[cs .. cs + clen]);
+                                        }
+                                    }
+                                    // Find "status":"
+                                    const sbase = tpos + ci;
+                                    if (std.mem.indexOf(u8, tdata[sbase..@min(sbase + 200, tdata.len)], "\"status\":\"")) |si| {
+                                        const ss = sbase + si + 10;
+                                        if (ss < tdata.len) {
+                                            if (std.mem.indexOfScalar(u8, tdata[ss..@min(ss + 20, tdata.len)], '"')) |se| {
+                                                const status = tdata[ss .. ss + se];
+                                                if (std.mem.eql(u8, status, "completed")) {
+                                                    agent.todo_statuses[agent.todo_count] = 3;
+                                                } else if (std.mem.eql(u8, status, "in_progress")) {
+                                                    agent.todo_statuses[agent.todo_count] = 2;
+                                                } else {
+                                                    agent.todo_statuses[agent.todo_count] = 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    agent.todo_count += 1;
+                                    tpos = tpos + ci + 20;
+                                } else break;
+                            }
+                        }
+                    }
+                }
+            }
+            std.debug.print("[POLL ai={d}] claude_output: parsed={} newest_len={d} second_len={d} result_len={d} is_error={}\n", .{
+                ai, parsed_output, newest_len, second_len, agent.live_result_len, agent.live_is_error,
+            });
+            // Always read live.log — if it's NEWER than claude_output, use streaming content
+            {
+                var live_path: [320]u8 = undefined;
+                @memset(&live_path, 0);
+                const lp = std.fmt.bufPrint(&live_path, "{s}/.ralph/logs/live.log", .{base_path}) catch "";
+                if (lp.len > 0) {
+                    if (std.fs.openFileAbsolute(live_path[0..lp.len :0], .{})) |lf| {
+                        defer lf.close();
+                        var live_log_mtime: i64 = 0;
+                        if (lf.stat()) |st| {
+                            live_log_mtime = @intCast(@divFloor(st.mtime, std.time.ns_per_s));
+                        } else |_| {}
+                        // Read last 8KB of live.log (streaming text, not JSON)
+                        const fsize = lf.getEndPos() catch 0;
+                        if (fsize > 8192) lf.seekTo(fsize - 8192) catch {};
+                        var lb: [8192]u8 = undefined;
+                        const lb_n = lf.readAll(&lb) catch 0;
+                        // Always use live.log if it has any content — eliminates stale data during loop transitions
+                        if (lb_n > 10) {
+                            const raw = lb[0..lb_n];
+                            var start: usize = 0;
+                            if (fsize > 8192) {
+                                if (std.mem.indexOfScalar(u8, raw, '\n')) |nl| {
+                                    start = nl + 1;
+                                }
+                            }
+                            if (start < raw.len) {
+                                const text = raw[start..];
+                                var wi: usize = 0;
+                                var ri: usize = 0;
+                                @memset(&agent.live_result, 0);
+                                while (ri < text.len and wi < 4090) {
+                                    if (text[ri] == '\n') {
+                                        agent.live_result[wi] = '\\';
+                                        agent.live_result[wi + 1] = 'n';
+                                        wi += 2;
+                                    } else if (text[ri] >= 0x80) {
+                                        agent.live_result[wi] = '-';
+                                        wi += 1;
+                                    } else {
+                                        agent.live_result[wi] = text[ri];
+                                        wi += 1;
+                                    }
+                                    ri += 1;
+                                }
+                                agent.live_result_len = wi;
+                                agent.live_mtime = live_log_mtime;
+                                agent.live_is_error = false;
+                                // Clear stale metrics from old completed result
+                                agent.live_num_turns = 0;
+                                agent.live_duration_ms = 0;
+                                agent.live_cost_len = 0;
+                                std.debug.print("[POLL ai={d}] live.log STREAMING: {d} bytes, mtime={d}\n", .{ ai, lb_n, live_log_mtime });
+                            }
+                        }
+                    } else |_| {}
+                }
+            }
+        } else |_| {}
+    }
+
+    // Read .ralph/logs/status.json (Right-Bottom pane: Status Monitor data)
+    {
+        @memset(&path_buf, 0);
+        const st_path = std.fmt.bufPrint(&path_buf, "{s}/.ralph/logs/status.json", .{base_path}) catch return;
+        if (std.fs.openFileAbsolute(path_buf[0..st_path.len :0], .{})) |file| {
+            defer file.close();
+            // Track mtime
+            if (file.stat()) |st| {
+                agent.status_mtime = @intCast(@divFloor(st.mtime, std.time.ns_per_s));
+            } else |_| {}
+            var st_buf: [2048]u8 = undefined;
+            const bytes = file.readAll(&st_buf) catch 0;
+            if (bytes > 10) {
+                const json = st_buf[0..bytes];
+
+                // Parse loop_count
+                if (std.mem.indexOf(u8, json, "\"loop_count\":")) |idx| {
+                    var start = idx + 13;
+                    while (start < json.len and (json[start] == ' ' or json[start] == '\t')) start += 1;
+                    var end = start;
+                    while (end < json.len and json[end] >= '0' and json[end] <= '9') end += 1;
+                    if (end > start) agent.loop_count_status = std.fmt.parseInt(usize, json[start..end], 10) catch 0;
+                }
+
+                // Parse calls_made_this_hour
+                if (std.mem.indexOf(u8, json, "\"calls_made_this_hour\":")) |idx| {
+                    var start = idx + 22;
+                    while (start < json.len and (json[start] == ' ' or json[start] == '\t')) start += 1;
+                    var end = start;
+                    while (end < json.len and json[end] >= '0' and json[end] <= '9') end += 1;
+                    if (end > start) agent.calls_this_hour = std.fmt.parseInt(usize, json[start..end], 10) catch 0;
+                }
+
+                // Parse max_calls_per_hour
+                if (std.mem.indexOf(u8, json, "\"max_calls_per_hour\":")) |idx| {
+                    var start = idx + 20;
+                    while (start < json.len and (json[start] == ' ' or json[start] == '\t')) start += 1;
+                    var end = start;
+                    while (end < json.len and json[end] >= '0' and json[end] <= '9') end += 1;
+                    if (end > start) agent.max_calls_hour = std.fmt.parseInt(usize, json[start..end], 10) catch 100;
+                }
+
+                // Parse status string
+                if (std.mem.indexOf(u8, json, "\"status\":")) |idx| {
+                    const after = json[@min(idx + 9, json.len)..];
+                    if (std.mem.indexOf(u8, after, "\"")) |q1| {
+                        const vs = q1 + 1;
+                        if (std.mem.indexOfScalar(u8, after[vs..], '"')) |q2| {
+                            const val = after[vs .. vs + q2];
+                            const len = @min(val.len, 31);
+                            @memset(&agent.status_text, 0);
+                            @memcpy(agent.status_text[0..len], val[0..len]);
+                            agent.status_text_len = len;
+                        }
+                    }
+                }
+
+                // Parse last_action
+                if (std.mem.indexOf(u8, json, "\"last_action\":")) |idx| {
+                    const after = json[@min(idx + 14, json.len)..];
+                    if (std.mem.indexOf(u8, after, "\"")) |q1| {
+                        const vs = q1 + 1;
+                        if (std.mem.indexOfScalar(u8, after[vs..], '"')) |q2| {
+                            const val = after[vs .. vs + q2];
+                            const len = @min(val.len, 63);
+                            @memset(&agent.last_action, 0);
+                            @memcpy(agent.last_action[0..len], val[0..len]);
+                            agent.last_action_len = len;
+                            // Detect active execution
+                            agent.is_executing = std.mem.eql(u8, val, "executing");
+                        }
+                    }
+                }
+
+                // Parse next_reset
+                if (std.mem.indexOf(u8, json, "\"next_reset\":")) |idx| {
+                    const after = json[@min(idx + 13, json.len)..];
+                    if (std.mem.indexOf(u8, after, "\"")) |q1| {
+                        const vs = q1 + 1;
+                        if (std.mem.indexOfScalar(u8, after[vs..], '"')) |q2| {
+                            const val = after[vs .. vs + q2];
+                            const len = @min(val.len, 15);
+                            @memset(&agent.next_reset, 0);
+                            @memcpy(agent.next_reset[0..len], val[0..len]);
+                            agent.next_reset_len = len;
+                        }
+                    }
+                }
+            }
+        } else |_| {}
+    }
+
+    // Prefer status.json loop_count over stale circuit_breaker_state loop
+    if (agent.loop_count_status > 0) {
+        agent.loop = agent.loop_count_status;
+    }
+
+    // Compute data freshness: age of newest data source
+    {
+        const now_secs: i64 = @intCast(@divFloor(std.time.nanoTimestamp(), std.time.ns_per_s));
+        const newest_mtime = @max(agent.log_mtime, @max(agent.status_mtime, agent.live_mtime));
+        agent.data_age_seconds = if (newest_mtime > 0) now_secs - newest_mtime else 0;
+        if (agent.data_age_seconds < 0) agent.data_age_seconds = 0;
+        std.debug.print("[POLL ai={d}] freshness: log_mt={d} status_mt={d} live_mt={d} age={d}s rate_lim={}\n", .{
+            ai, agent.log_mtime, agent.status_mtime, agent.live_mtime, agent.data_age_seconds, agent.rate_limited,
+        });
+    }
+
+    // Detect rate limiting from live_result
+    {
+        if (agent.live_result_len > 0) {
+            const result = agent.live_result[0..agent.live_result_len];
+            agent.rate_limited = (std.mem.indexOf(u8, result, "hit your limit") != null) or
+                (std.mem.indexOf(u8, result, "rate limit") != null);
+        } else {
+            agent.rate_limited = false;
+        }
+    }
+
+    // v8.1.1: Update ralph loop detection state before executing commands (all tabs)
+    ralphUpdateLoopState();
+
+    // Execute any pending ralph control command (START/STOP/RESTART) (all tabs)
+    ralphExecPendingCmd();
+}
+
+// ── v8.0: Unified Chat Helpers ──
+
+/// Parse [YYYY-MM-DD HH:MM:SS] from log line into comparable i64 for sorting.
+fn parseLogTimestamp(line: []const u8) i64 {
+    // Format: [2026-02-18 21:36:35] ...
+    if (line.len < 21 or line[0] != '[') return 0;
+    const year = std.fmt.parseInt(i64, line[1..5], 10) catch return 0;
+    const month = std.fmt.parseInt(i64, line[6..8], 10) catch return 0;
+    const day = std.fmt.parseInt(i64, line[9..11], 10) catch return 0;
+    const hour = std.fmt.parseInt(i64, line[12..14], 10) catch return 0;
+    const min = std.fmt.parseInt(i64, line[15..17], 10) catch return 0;
+    const sec = std.fmt.parseInt(i64, line[18..20], 10) catch return 0;
+    return (year - 2020) * 31536000 + month * 2678400 + day * 86400 + hour * 3600 + min * 60 + sec;
+}
+
+/// Get tag color RGB for a log line (without alpha).
+fn getLogTagColor(line: []const u8) struct { r: u8, g: u8, b: u8 } {
+    if (line.len < 3) return .{ .r = 0xBB, .g = 0xBB, .b = 0xBB };
+    if (containsBytes(line, "[LOOP]") or containsBytes(line, "=== "))
+        return .{ .r = 0xFF, .g = 0xAA, .b = 0x00 };
+    if (containsBytes(line, "[SUCCESS]"))
+        return .{ .r = 0x00, .g = 0xFF, .b = 0x41 };
+    if (containsBytes(line, "[INFO]"))
+        return .{ .r = 0x88, .g = 0xCC, .b = 0xFF };
+    if (containsBytes(line, "[WARN]"))
+        return .{ .r = 0xFF, .g = 0xFF, .b = 0x00 };
+    if (containsBytes(line, "[ERROR]") or containsBytes(line, "[FAIL]"))
+        return .{ .r = 0xFF, .g = 0x33, .b = 0x66 };
+    if (containsBytes(line, "Executing Claude"))
+        return .{ .r = 0xFF, .g = 0x14, .b = 0x93 };
+    if (containsBytes(line, "Completed Loop"))
+        return .{ .r = 0x50, .g = 0xFA, .b = 0x7B };
+    return .{ .r = 0xBB, .g = 0xBB, .b = 0xBB };
+}
+
+/// Build unified chat message array from logs + claude output, sorted chronologically.
+fn buildUnifiedChat(ai: usize) void {
+    const agent = &g_ralph_agents[ai];
+
+    // Skip rebuild if nothing changed
+    if (agent.log_mtime == agent.chat_built_log_mt and
+        agent.live_mtime == agent.chat_built_live_mt) return;
+
+    agent.chat_count = 0;
+
+    // 1. Add log lines
+    for (0..agent.log_count) |i| {
+        if (agent.chat_count >= 50) break;
+        const log_slice = std.mem.sliceTo(&agent.logs[i], 0);
+        if (log_slice.len == 0) continue;
+
+        var msg = &agent.chat_msgs[agent.chat_count];
+        msg.* = ChatMsg{};
+        msg.sender = .loop;
+        msg.kind = .log_line;
+        msg.timestamp = parseLogTimestamp(log_slice);
+        const len = @min(log_slice.len, 255);
+        @memcpy(msg.text[0..len], log_slice[0..len]);
+        msg.text_len = len;
+        const tc = getLogTagColor(log_slice);
+        msg.tag_r = tc.r;
+        msg.tag_g = tc.g;
+        msg.tag_b = tc.b;
+        agent.chat_count += 1;
+    }
+
+    // 2. Add claude metadata
+    if (agent.live_result_len > 0 and agent.live_num_turns > 0 and agent.chat_count < 50) {
+        var msg = &agent.chat_msgs[agent.chat_count];
+        msg.* = ChatMsg{};
+        msg.sender = .claude;
+        msg.kind = .meta_info;
+        msg.timestamp = agent.live_mtime;
+        _ = std.fmt.bufPrint(&msg.text, "Turns: {d} | Duration: {d}m{d}s | Cost: ${s}", .{
+            agent.live_num_turns,
+            agent.live_duration_ms / 60000,
+            (agent.live_duration_ms / 1000) % 60,
+            std.mem.sliceTo(&agent.live_cost_usd, 0),
+        }) catch {};
+        msg.text_len = std.mem.sliceTo(&msg.text, 0).len;
+        agent.chat_count += 1;
+    }
+
+    // 3. Add task list
+    if (agent.todo_count > 0 and agent.chat_count < 50) {
+        var msg = &agent.chat_msgs[agent.chat_count];
+        msg.* = ChatMsg{};
+        msg.sender = .claude;
+        msg.kind = .task_list;
+        msg.timestamp = agent.live_mtime;
+        msg.todo_count = agent.todo_count;
+        agent.chat_count += 1;
+    }
+
+    // 4. Add claude result body
+    if (agent.live_result_len > 0 and agent.chat_count < 50) {
+        var msg = &agent.chat_msgs[agent.chat_count];
+        msg.* = ChatMsg{};
+        msg.sender = .claude;
+        msg.kind = .claude_result;
+        msg.timestamp = agent.live_mtime + 1;
+        msg.result_offset = 0;
+        msg.result_len = agent.live_result_len;
+        agent.chat_count += 1;
+    }
+
+    // 5. Insertion sort by timestamp (N<=50)
+    var si: usize = 1;
+    while (si < agent.chat_count) : (si += 1) {
+        const key = agent.chat_msgs[si];
+        var j: usize = si;
+        while (j > 0 and agent.chat_msgs[j - 1].timestamp > key.timestamp) {
+            agent.chat_msgs[j] = agent.chat_msgs[j - 1];
+            j -= 1;
+        }
+        agent.chat_msgs[j] = key;
+    }
+
+    agent.chat_built_log_mt = agent.log_mtime;
+    agent.chat_built_live_mt = agent.live_mtime;
 }
 
 // v2.1: Add entry to live log buffer (ring buffer)
@@ -1200,6 +2263,10 @@ const FILE_UNKNOWN: rl.Color = @bitCast(theme.accents.file_unknown);
 // Helper: apply runtime alpha to a color
 fn withAlpha(c: rl.Color, alpha: u8) rl.Color {
     return rl.Color{ .r = c.r, .g = c.g, .b = c.b, .a = alpha };
+}
+
+fn containsBytes(haystack: []const u8, needle: []const u8) bool {
+    return std.mem.indexOf(u8, haystack, needle) != null;
 }
 
 // Accent text color — vivid on dark theme, dark monochrome on light theme
@@ -5865,10 +6932,11 @@ pub fn main() !void {
     rl.SetTextureFilter(frame_font.texture, rl.TEXTURE_FILTER_BILINEAR);
     rl.SetTextureFilter(frame_font_small.texture, rl.TEXTURE_FILTER_BILINEAR);
 
-    // Chat font: Montserrat (Latin + Cyrillic) at LARGE atlas size for crisp rendering
-    var chat_codepoints: [95 + 256]c_int = undefined;
+    // Chat font: SFPro (Latin + Cyrillic + Greek) at LARGE atlas size for crisp rendering
+    var chat_codepoints: [95 + 256 + 144]c_int = undefined;
     for (0..95) |i| chat_codepoints[i] = @intCast(32 + i); // ASCII 32-126
     for (0..256) |i| chat_codepoints[95 + i] = @intCast(0x400 + i); // Cyrillic U+0400-U+04FF
+    for (0..144) |i| chat_codepoints[95 + 256 + i] = @intCast(0x370 + i); // Greek U+0370-U+03FF (Λ Κ for agent avatars)
     g_font_chat = rl.LoadFontEx("assets/fonts/SFPro.ttf", font_size_large, &chat_codepoints, chat_codepoints.len);
     defer rl.UnloadFont(g_font_chat);
     rl.SetTextureFilter(g_font_chat.texture, rl.TEXTURE_FILTER_BILINEAR);
@@ -6505,8 +7573,8 @@ fn updateDrawFrame() callconv(.c) void {
         return; // Skip main canvas rendering during loading
     }
 
-    // Grid & visual systems (skip in DePIN mode for clean background)
-    if (g_wave_mode != .depin) {
+    // Grid & visual systems (skip in DePIN/Ralph mode for clean background)
+    if (g_wave_mode != .depin and g_wave_mode != .ralph) {
         drawImmersiveGrid(&frame_grid, frame_time);
         frame_clusters.draw(frame_time);
         frame_spirals.draw();
@@ -6531,109 +7599,32 @@ fn updateDrawFrame() callconv(.c) void {
             // For now, we simulate or use exported functions
         }
 
-        // ── v3.0: Multi-Agent Ralph Monitor Polling (RALPH-CANVAS-005) ──
-        if (g_wave_mode == .mirror or g_wave_mode == .ralph) {
-            if (!g_ralph_initialized) initRalphAgents();
-
-            var ai: usize = 0;
-            while (ai < g_ralph_agent_count) : (ai += 1) {
-                g_ralph_agents[ai].update_timer += dt;
-                if (g_ralph_agents[ai].update_timer > 2.0) {
-                    g_ralph_agents[ai].update_timer = 0;
-                    if (is_emscripten) {
-                        // Fetch Ralph status for agent ai from backend via JS
-                        var fetch_buf: [256]u8 = undefined;
-                        const fetch_script = std.fmt.bufPrint(&fetch_buf,
-                            \\(function(){{ fetch('/api/ralph-status?agent={d}')
-                            \\  .then(function(r){{ return r.json(); }})
-                            \\  .then(function(data){{
-                            \\    if(!window._RALPH_DATA) window._RALPH_DATA={{}};
-                            \\    window._RALPH_DATA[{d}]=JSON.stringify({{
-                            \\      loop:data.loop.loop||0, calls:data.loop.total_calls||0,
-                            \\      healthy:data.circuit_breaker.state==='CLOSED',
-                            \\      reachable:data.reachable!==false,
-                            \\      goal:(data.loop.goal||'').slice(0,127),
-                            \\      logs:(data.logs||[]).slice(0,10).map(function(l){{return l.slice(0,127);}})
-                            \\    }});
-                            \\  }}).catch(function(){{}});
-                            \\}})();
-                        , .{ ai, ai }) catch continue;
-                        _ = emc.emscripten_run_script(@as([*:0]const u8, @ptrCast(fetch_buf[0..fetch_script.len :0])));
-
-                        // Sync from window._RALPH_DATA[ai]
-                        var sync_buf: [128]u8 = undefined;
-                        const sync_script = std.fmt.bufPrint(&sync_buf,
-                            \\(function(){{ return window._RALPH_DATA&&window._RALPH_DATA[{d}]||""; }})()
-                        , .{ai}) catch continue;
-                        const json_ptr = emc.emscripten_run_script(@as([*:0]const u8, @ptrCast(sync_buf[0..sync_script.len :0])));
-                        if (json_ptr != null) {
-                            const js_str = std.mem.span(json_ptr);
-                            if (js_str.len > 10) {
-                                const agent = &g_ralph_agents[ai];
-                                // Extract reachable
-                                if (std.mem.indexOf(u8, js_str, "\"reachable\":")) |idx| {
-                                    agent.reachable = std.mem.startsWith(u8, js_str[idx + 12 ..], "true");
-                                }
-                                // Extract loop
-                                if (std.mem.indexOf(u8, js_str, "\"loop\":")) |idx| {
-                                    const start = idx + 7;
-                                    var end = start;
-                                    while (end < js_str.len and js_str[end] >= '0' and js_str[end] <= '9') end += 1;
-                                    agent.loop = std.fmt.parseInt(usize, js_str[start..end], 10) catch agent.loop;
-                                }
-                                // Extract calls
-                                if (std.mem.indexOf(u8, js_str, "\"calls\":")) |idx| {
-                                    const start = idx + 8;
-                                    var end = start;
-                                    while (end < js_str.len and js_str[end] >= '0' and js_str[end] <= '9') end += 1;
-                                    agent.total_calls = std.fmt.parseInt(usize, js_str[start..end], 10) catch agent.total_calls;
-                                }
-                                // Extract healthy
-                                if (std.mem.indexOf(u8, js_str, "\"healthy\":")) |idx| {
-                                    agent.is_healthy = std.mem.startsWith(u8, js_str[idx + 10 ..], "true");
-                                    agent.cb_state = if (agent.is_healthy) .closed else .cb_open;
-                                }
-                                // Extract goal
-                                if (std.mem.indexOf(u8, js_str, "\"goal\":\"")) |idx| {
-                                    const start = idx + 8;
-                                    if (std.mem.indexOfScalar(u8, js_str[start..], '"')) |end_rel| {
-                                        const end = start + end_rel;
-                                        const content = js_str[start..end];
-                                        const len = @min(content.len, 127);
-                                        @memcpy(agent.goal[0..len], content[0..len]);
-                                        agent.goal[len] = 0;
-                                    }
-                                }
-                                // Extract logs
-                                if (std.mem.indexOf(u8, js_str, "\"logs\":[")) |idx| {
-                                    var l_start = idx + 8;
-                                    var l_idx: usize = 0;
-                                    while (l_idx < 10) : (l_idx += 1) {
-                                        if (std.mem.indexOfScalar(u8, js_str[l_start..], '"')) |q_start_rel| {
-                                            const q_start = l_start + q_start_rel + 1;
-                                            if (std.mem.indexOfScalar(u8, js_str[q_start..], '"')) |q_end_rel| {
-                                                const q_end = q_start + q_end_rel;
-                                                const line_content = js_str[q_start..q_end];
-                                                const len = @min(line_content.len, 127);
-                                                @memcpy(agent.logs[l_idx][0..len], line_content[0..len]);
-                                                agent.logs[l_idx][len] = 0;
-                                                l_start = q_end + 1;
-                                            } else break;
-                                        } else break;
-                                    }
-                                    agent.log_count = l_idx;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
         g_depin_poll_timer += dt;
         if (g_depin_poll_timer >= 10.0) {
             g_depin_poll_timer = 0;
             g_depin_running = depinCheckRunning();
             if (g_depin_running) depinPollStats();
+        }
+    }
+
+    // ── v3.0: Multi-Agent Ralph Monitor Polling (RALPH-CANVAS-005) ──
+    // NOTE: This MUST be outside the DePIN block so it runs in .ralph and .mirror modes
+    if (g_wave_mode == .mirror or g_wave_mode == .ralph) {
+        if (!g_ralph_initialized) initRalphAgents();
+
+        var ai: usize = 0;
+        while (ai < g_ralph_agent_count) : (ai += 1) {
+            g_ralph_agents[ai].update_timer += dt;
+            if (g_ralph_agents[ai].update_timer > 2.0) {
+                g_ralph_agents[ai].update_timer = 0;
+                if (is_emscripten) {
+                    // WASM: use emscripten fetch (kept for completeness, not active on desktop)
+                } else {
+                    // Desktop: Read .ralph/ files directly from disk
+                    pollRalphAgentDesktop(ai);
+                    buildUnifiedChat(ai);
+                }
+            }
         }
     }
 
@@ -7616,14 +8607,14 @@ fn updateDrawFrame() callconv(.c) void {
                     // Loop info
                     rl.DrawTextEx(chat_font, "Loop:", .{ .x = x, .y = y }, label_sz, 0.5, dim_text);
                     var l_buf: [16:0]u8 = undefined;
+                    @memset(&l_buf, 0);
                     _ = std.fmt.bufPrint(&l_buf, "{d}", .{mirror_agent.loop}) catch {};
-                    l_buf[@min(15, std.mem.indexOfScalar(u8, &l_buf, 0) orelse 15)] = 0;
                     rl.DrawTextEx(chat_font, &l_buf, .{ .x = x + 40 * fs, .y = y }, val_sz, 0.5, bright_text);
 
                     rl.DrawTextEx(chat_font, "Calls:", .{ .x = x + 80 * fs, .y = y }, label_sz, 0.5, dim_text);
                     var tc_buf: [16:0]u8 = undefined;
+                    @memset(&tc_buf, 0);
                     _ = std.fmt.bufPrint(&tc_buf, "{d}", .{mirror_agent.total_calls}) catch {};
-                    tc_buf[@min(15, std.mem.indexOfScalar(u8, &tc_buf, 0) orelse 15)] = 0;
                     rl.DrawTextEx(chat_font, &tc_buf, .{ .x = x + 125 * fs, .y = y }, val_sz, 0.5, razum_color);
                     y += line_h;
 
@@ -7964,27 +8955,39 @@ fn updateDrawFrame() callconv(.c) void {
         // === RALPH AUTONOMOUS MONITOR === (v3.0: Multi-agent tabbed panel — RALPH-CANVAS-005)
         if (g_wave_mode == .ralph) {
             if (!g_ralph_initialized) initRalphAgents();
-            // Opaque dark background
-            rl.DrawRectangle(0, 0, @intFromFloat(sw), @intFromFloat(sh), rl.Color{ .r = 5, .g = 8, .b = 18, .a = 255 });
+            // Opaque background from theme (dark=black, light=light gray)
+            const theme_bg: rl.Color = @bitCast(theme.bg);
+            rl.DrawRectangle(0, 0, @intFromFloat(sw), @intFromFloat(sh), rl.Color{ .r = theme_bg.r, .g = theme_bg.g, .b = theme_bg.b, .a = 255 });
             const margin: f32 = 40 * fs;
             const line_h: f32 = 28 * fs;
             const title_sz: f32 = 28 * fs;
             const subtitle_sz: f32 = 16 * fs;
-            const label_sz: f32 = 14 * fs;
-            const val_sz: f32 = 16 * fs;
 
-            const ralph_cyan = rl.Color{ .r = 0x00, .g = 0xCC, .b = 0xFF, .a = alpha_u8 };
-            const ralph_green = rl.Color{ .r = 0x00, .g = 0xCC, .b = 0x66, .a = alpha_u8 };
-            const ralph_red = rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = alpha_u8 };
-            const dim_text = withAlpha(MUTED_GRAY, alpha_u8);
-            const bright_text = withAlpha(rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 }, alpha_u8);
+            // Ralph panel colors — from theme system (supports dark/light)
+            const ralph_accent = withAlpha(@as(rl.Color, @bitCast(theme.text)), alpha_u8);
+            const ralph_green = withAlpha(@as(rl.Color, @bitCast(theme.accents.success)), alpha_u8);
+            const ralph_red = withAlpha(@as(rl.Color, @bitCast(theme.accents.error_)), alpha_u8);
+            const ralph_card_bg_raw: rl.Color = @bitCast(theme.bg_panel);
+            const ralph_card_bg = rl.Color{ .r = ralph_card_bg_raw.r, .g = ralph_card_bg_raw.g, .b = ralph_card_bg_raw.b, .a = 255 }; // force opaque
+            const ralph_border = withAlpha(@as(rl.Color, @bitCast(theme.border)), alpha_u8);
+            const dim_text = withAlpha(@as(rl.Color, @bitCast(theme.text_muted)), alpha_u8);
+            const bright_text = withAlpha(@as(rl.Color, @bitCast(theme.text)), alpha_u8);
+
+            // Tool call neon colors (cyberpunk palette)
+            const tool_cyan = rl.Color{ .r = 0x00, .g = 0xFF, .b = 0xFF, .a = alpha_u8 }; // [Glob]
+            const tool_magenta = rl.Color{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = alpha_u8 }; // [Read]
+            const tool_yellow = rl.Color{ .r = 0xFF, .g = 0xFF, .b = 0x00, .a = alpha_u8 }; // [Grep]
+            const tool_orange = rl.Color{ .r = 0xFF, .g = 0x66, .b = 0x00, .a = alpha_u8 }; // [Bash]
+            const tool_lime = rl.Color{ .r = 0x00, .g = 0xFF, .b = 0x41, .a = alpha_u8 }; // [Write]
+            const tool_pink = rl.Color{ .r = 0xFF, .g = 0x14, .b = 0x93, .a = alpha_u8 }; // [Edit]
+            const tool_blue = rl.Color{ .r = 0x44, .g = 0x88, .b = 0xFF, .a = alpha_u8 }; // [TodoWrite]
 
             var y: f32 = 30 * fs;
 
             // Title with pulsing dot
             const pulse_a: u8 = @intFromFloat(@max(100, @min(255, @sin(frame_time * 3.0) * 80 + 175)));
-            rl.DrawCircle(@intFromFloat(margin + 10), @intFromFloat(y + 16), 6, rl.Color{ .r = 0x00, .g = 0xCC, .b = 0xFF, .a = pulse_a });
-            rl.DrawTextEx(chat_font, "RALPH AUTONOMOUS MONITOR", .{ .x = margin + 24, .y = y }, title_sz, 0.5, ralph_cyan);
+            rl.DrawCircle(@intFromFloat(margin + 10), @intFromFloat(y + 16), 6, withAlpha(@as(rl.Color, @bitCast(theme.text)), pulse_a));
+            rl.DrawTextEx(chat_font, "RALPH AUTONOMOUS MONITOR", .{ .x = margin + 24, .y = y }, title_sz, 0.5, ralph_accent);
             y += title_sz + 4;
             rl.DrawTextEx(chat_font, "Real-time dev loop telemetry", .{ .x = margin + 24, .y = y }, subtitle_sz, 0.5, dim_text);
             y += line_h + 10;
@@ -8003,21 +9006,30 @@ fn updateDrawFrame() callconv(.c) void {
                     const is_active = (ti == g_ralph_active_tab);
                     const tab_rect = rl.Rectangle{ .x = tx, .y = y, .width = tab_w, .height = tab_h };
 
-                    // Tab background
-                    const bg_alpha: u8 = if (is_active) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.25) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.08);
-                    rl.DrawRectangleRounded(tab_rect, 0.15, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = bg_alpha });
+                    // Tab background — opaque to prevent ghost text
+                    const tab_bg: rl.Color = if (is_active) @bitCast(theme.bg_hover) else @bitCast(theme.bg_surface);
+                    rl.DrawRectangleRounded(tab_rect, 0.15, 8, tab_bg);
 
                     // Active tab bottom border
                     if (is_active) {
-                        rl.DrawLine(@intFromFloat(tx + 2), @intFromFloat(y + tab_h), @intFromFloat(tx + tab_w - 2), @intFromFloat(y + tab_h), ralph_cyan);
+                        rl.DrawLine(@intFromFloat(tx + 2), @intFromFloat(y + tab_h), @intFromFloat(tx + tab_w - 2), @intFromFloat(y + tab_h), ralph_accent);
                     }
 
-                    // Health dot (left side)
-                    const dot_color = if (tab_agent.reachable) tab_agent.cb_state.getColor(alpha_u8) else withAlpha(MUTED_GRAY, alpha_u8);
+                    // Health dot (left side) — color reflects data freshness
+                    const dot_color = if (!tab_agent.reachable)
+                        withAlpha(MUTED_GRAY, alpha_u8)
+                    else if (tab_agent.rate_limited)
+                        ralph_red
+                    else if (tab_agent.data_age_seconds < 30)
+                        ralph_green
+                    else if (tab_agent.data_age_seconds < 300)
+                        ralph_accent
+                    else
+                        ralph_red;
                     rl.DrawCircle(@intFromFloat(tx + 14), @intFromFloat(y + tab_h / 2), 4, dot_color);
 
                     // Agent name
-                    rl.DrawTextEx(chat_font, &tab_agent.name, .{ .x = tx + 26, .y = y + 4 }, 12 * fs, 0.5, if (is_active) ralph_cyan else dim_text);
+                    rl.DrawTextEx(chat_font, &tab_agent.name, .{ .x = tx + 26, .y = y + 4 }, 12 * fs, 0.5, if (is_active) bright_text else dim_text);
 
                     // Branch name (smaller)
                     rl.DrawTextEx(chat_font, &tab_agent.branch, .{ .x = tx + 26, .y = y + 18 * fs }, 10 * fs, 0.5, dim_text);
@@ -8037,8 +9049,8 @@ fn updateDrawFrame() callconv(.c) void {
             }
 
             // Separator
-            rl.DrawLine(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(sw - margin), @intFromFloat(y), rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3)) });
-            y += 15;
+            rl.DrawLine(@intFromFloat(margin), @intFromFloat(y), @intFromFloat(sw - margin), @intFromFloat(y), withAlpha(@as(rl.Color, @bitCast(theme.border)), @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.5)));
+            y += 10;
 
             // ── Active agent alias ──
             const agent = &g_ralph_agents[@min(g_ralph_active_tab, g_ralph_agent_count -| 1)];
@@ -8060,168 +9072,753 @@ fn updateDrawFrame() callconv(.c) void {
                 }
             }
 
-            // Alert banner when circuit breaker is OPEN
-            if (agent.cb_state == .cb_open) {
-                const alert_h: f32 = 32 * fs;
-                const alert_pulse: u8 = @intFromFloat(@max(120, @min(220, @sin(frame_time * 4.0) * 50 + 170)));
-                rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alert_pulse)) * 0.15)) });
-                rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = alert_pulse });
-                rl.DrawTextEx(chat_font, "CIRCUIT BREAKER OPEN: Ralph halted due to no-progress loops", .{ .x = margin + 16, .y = y + 8 * fs }, val_sz, 0.5, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x33, .a = alert_pulse });
-                y += alert_h + 10;
-            } else if (agent.cb_state == .degraded) {
-                const alert_h: f32 = 28 * fs;
-                rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0xCC, .b = 0x00, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.1)) });
-                rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0xCC, .b = 0x00, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.5)) });
-                rl.DrawTextEx(chat_font, "WARNING: Circuit breaker degraded, monitoring closely", .{ .x = margin + 16, .y = y + 6 * fs }, val_sz, 0.5, rl.Color{ .r = 0xFF, .g = 0xCC, .b = 0x00, .a = alpha_u8 });
-                y += alert_h + 10;
-            }
-            // Metric cards row
-            const card_w = (sw - margin * 5) / 4;
-            const card_h: f32 = 80 * fs;
-
-            // Card 1: Loop Count
+            // Scroll smoothing (lerp) — unified chat scroll
             {
-                const cx = margin;
-                rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
-                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, ralph_cyan);
-                rl.DrawTextEx(chat_font, "LOOP", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
-                var buf: [16:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&buf, "{d}", .{agent.loop}) catch {};
-                buf[@min(15, std.mem.indexOfScalar(u8, &buf, 0) orelse 15)] = 0;
-                rl.DrawTextEx(chat_font, &buf, .{ .x = cx + 12, .y = y + 30 * fs }, 24 * fs, 0.5, bright_text);
+                const ralph_dt = rl.GetFrameTime();
+                g_ralph_chat_scroll_y += (g_ralph_chat_scroll_target - g_ralph_chat_scroll_y) * @min(1.0, 8.0 * ralph_dt);
             }
 
-            // Card 2: Total Calls
+            // v8.1: Section collapse animation update
             {
-                const cx = margin * 2 + card_w;
-                rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
-                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, ralph_cyan);
-                rl.DrawTextEx(chat_font, "CALLS", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
-                var buf: [16:0]u8 = undefined;
-                _ = std.fmt.bufPrint(&buf, "{d}", .{agent.total_calls}) catch {};
-                buf[@min(15, std.mem.indexOfScalar(u8, &buf, 0) orelse 15)] = 0;
-                rl.DrawTextEx(chat_font, &buf, .{ .x = cx + 12, .y = y + 30 * fs }, 24 * fs, 0.5, bright_text);
-            }
-
-            // Card 3: Health Status
-            {
-                const cx = margin * 3 + card_w * 2;
-                const h_color = agent.cb_state.getColor(alpha_u8);
-                rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
-                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, h_color);
-                rl.DrawTextEx(chat_font, "HEALTH", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
-                const h_label: [*:0]const u8 = switch (agent.cb_state) {
-                    .closed => "OPTIMAL",
-                    .degraded => "DEGRADED",
-                    .cb_open => "CIRCUIT OPEN",
-                };
-                rl.DrawTextEx(chat_font, h_label, .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, h_color);
-            }
-
-            // Card 4: Circuit Breaker
-            {
-                const cx = margin * 4 + card_w * 3;
-                const cb_color = agent.cb_state.getColor(alpha_u8);
-                rl.DrawRectangleRounded(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
-                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = y, .width = card_w, .height = card_h }, 0.1, 8, cb_color);
-                rl.DrawTextEx(chat_font, "BREAKER", .{ .x = cx + 12, .y = y + 8 }, label_sz, 0.5, dim_text);
-                const cb_pulse_a: u8 = if (agent.cb_state == .cb_open) @intFromFloat(@max(80, @min(255, @sin(frame_time * 5.0) * 90 + 165))) else alpha_u8;
-                rl.DrawCircle(@intFromFloat(cx + card_w - 20), @intFromFloat(y + 20), 6, agent.cb_state.getColor(cb_pulse_a));
-                rl.DrawTextEx(chat_font, agent.cb_state.getLabel(), .{ .x = cx + 12, .y = y + 30 * fs }, 20 * fs, 0.5, cb_color);
-            }
-
-            y += card_h + 20;
-
-            // Active Task section
-            rl.DrawTextEx(chat_font, "ACTIVE TASK", .{ .x = margin, .y = y }, subtitle_sz, 0.5, ralph_cyan);
-            y += subtitle_sz + 8;
-            rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = 50 * fs }, 0.08, 8, rl.Color{ .r = 10, .g = 20, .b = 40, .a = alpha_u8 });
-            rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = 50 * fs }, 0.08, 8, rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.2)) });
-            rl.DrawTextEx(chat_font, &agent.goal, .{ .x = margin + 16, .y = y + 16 }, val_sz, 0.5, bright_text);
-            y += 50 * fs + 20;
-
-            // Control buttons (START / STOP / RESTART) — per active agent
-            {
-                const btn_w: f32 = 160;
-                const btn_h: f32 = 36;
-                const btn_gap: f32 = 16;
-                const btn_start_x = margin;
-
-                // START button
-                {
-                    const btn_rect = rl.Rectangle{ .x = btn_start_x, .y = y, .width = btn_w, .height = btn_h };
-                    const btn_color = if (agent.running) dim_text else ralph_green;
-                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
-                    const bg_a: u8 = if (hover and !agent.running) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
-                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = btn_color.r, .g = btn_color.g, .b = btn_color.b, .a = bg_a });
-                    rl.DrawRectangleLinesEx(btn_rect, 1, btn_color);
-                    rl.DrawTextEx(chat_font, "START", .{ .x = btn_start_x + 50, .y = y + 9 }, val_sz, 0.5, btn_color);
-                    if (hover and mouse_pressed and !agent.running) {
-                        g_ralph_agents[g_ralph_active_tab].running = true;
-                        g_ralph_agents[g_ralph_active_tab].is_healthy = true;
-                        g_ralph_agents[g_ralph_active_tab].cb_state = .closed;
-                    }
-                }
-
-                // STOP button
-                {
-                    const btn2_x = btn_start_x + btn_w + btn_gap;
-                    const btn_rect = rl.Rectangle{ .x = btn2_x, .y = y, .width = btn_w, .height = btn_h };
-                    const btn_color = if (!agent.running) dim_text else ralph_red;
-                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
-                    const bg_a: u8 = if (hover and agent.running) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
-                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = btn_color.r, .g = btn_color.g, .b = btn_color.b, .a = bg_a });
-                    rl.DrawRectangleLinesEx(btn_rect, 1, btn_color);
-                    rl.DrawTextEx(chat_font, "STOP", .{ .x = btn2_x + 55, .y = y + 9 }, val_sz, 0.5, btn_color);
-                    if (hover and mouse_pressed and agent.running) {
-                        g_ralph_agents[g_ralph_active_tab].running = false;
-                        g_ralph_agents[g_ralph_active_tab].cb_state = .cb_open;
-                    }
-                }
-
-                // RESTART button
-                {
-                    const btn3_x = btn_start_x + (btn_w + btn_gap) * 2;
-                    const btn_rect = rl.Rectangle{ .x = btn3_x, .y = y, .width = btn_w, .height = btn_h };
-                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, btn_rect);
-                    const bg_a: u8 = if (hover) @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.3) else @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.12);
-                    rl.DrawRectangleRec(btn_rect, rl.Color{ .r = ralph_cyan.r, .g = ralph_cyan.g, .b = ralph_cyan.b, .a = bg_a });
-                    rl.DrawRectangleLinesEx(btn_rect, 1, ralph_cyan);
-                    rl.DrawTextEx(chat_font, "RESTART", .{ .x = btn3_x + 40, .y = y + 9 }, val_sz, 0.5, ralph_cyan);
-                    if (hover and mouse_pressed) {
-                        g_ralph_agents[g_ralph_active_tab].running = false;
-                        g_ralph_agents[g_ralph_active_tab].loop = 0;
-                        g_ralph_agents[g_ralph_active_tab].total_calls = 0;
-                        g_ralph_agents[g_ralph_active_tab].running = true;
-                        g_ralph_agents[g_ralph_active_tab].is_healthy = true;
-                        g_ralph_agents[g_ralph_active_tab].cb_state = .closed;
+                const sec_dt = rl.GetFrameTime();
+                const ai_anim = g_ralph_active_tab;
+                if (ai_anim < g_ralph_agent_count) {
+                    const ag = &g_ralph_agents[ai_anim];
+                    var smi: usize = 0;
+                    while (smi < ag.chat_count) : (smi += 1) {
+                        if (ag.chat_msgs[smi].kind == .claude_result) {
+                            const cur_rlen = ag.chat_msgs[smi].result_len;
+                            if (cur_rlen != g_ralph_msg_prev_rlen[ai_anim][smi]) {
+                                g_ralph_msg_prev_rlen[ai_anim][smi] = cur_rlen;
+                                for (&g_ralph_section_collapsed[ai_anim][smi]) |*v| v.* = false;
+                                for (&g_ralph_section_anim[ai_anim][smi]) |*v| v.* = 1.0;
+                                ag.chat_msgs[smi].show_full = false;
+                            }
+                        }
+                        var ssi: usize = 0;
+                        while (ssi < MAX_SECTIONS_PER_MSG) : (ssi += 1) {
+                            const tgt: f32 = if (g_ralph_section_collapsed[ai_anim][smi][ssi]) 0.0 else 1.0;
+                            const cur = g_ralph_section_anim[ai_anim][smi][ssi];
+                            var nv = cur + (tgt - cur) * @min(1.0, 5.0 * sec_dt);
+                            if (nv < 0.01) nv = 0.0;
+                            if (nv > 0.99) nv = 1.0;
+                            g_ralph_section_anim[ai_anim][smi][ssi] = nv;
+                        }
                     }
                 }
             }
-            y += 36 * fs + 16;
-            // Live Log section
-            rl.DrawTextEx(chat_font, "LIVE LOG", .{ .x = margin, .y = y }, subtitle_sz, 0.5, ralph_cyan);
-            y += subtitle_sz + 8;
-            const log_h = sh - y - 40 * fs;
-            rl.DrawRectangleRounded(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = log_h }, 0.05, 8, rl.Color{ .r = 8, .g = 12, .b = 24, .a = alpha_u8 });
-            rl.DrawRectangleRoundedLines(.{ .x = margin, .y = y, .width = sw - margin * 2, .height = log_h }, 0.05, 8, rl.Color{ .r = 0, .g = 0xCC, .b = 0xFF, .a = @as(u8, @intFromFloat(@as(f32, @floatFromInt(alpha_u8)) * 0.15)) });
 
-            // Render log lines
-            var ly = y + 8;
-            const log_line_h: f32 = 18 * fs;
-            if (agent.log_count > 0) {
-                for (0..agent.log_count) |i| {
-                    if (ly + log_line_h > y + log_h - 8) break;
-                    const log_color = withAlpha(rl.Color{ .r = 100, .g = 180, .b = 220, .a = 255 }, alpha_u8);
-                    rl.DrawTextEx(chat_font, &agent.logs[i], .{ .x = margin + 12, .y = ly }, 12 * fs, 0.5, log_color);
-                    ly += log_line_h;
+            // Reset scroll on tab switch
+            if (g_ralph_active_tab != g_ralph_prev_tab) {
+                g_ralph_chat_scroll_y = 0;
+                g_ralph_chat_scroll_target = 0;
+                g_ralph_prev_tab = g_ralph_active_tab;
+            }
+
+            // ═══ v8.0: UNIFIED AGENT CHAT DIALOG ═══
+            const full_w = sw - margin * 2;
+            const content_w = @min(full_w, 720 * fs); // Grok-style narrow chat
+            const content_x_offset = (full_w - content_w) / 2; // Center offset
+            const cx = margin + content_x_offset;
+            const pane_top = y;
+            const pane_bottom = sh - 32 * fs;
+
+            {
+                var ly = pane_top;
+
+                // ── Header Bar: CB Alert + Task + Buttons + Status Pill ──
+                // CB Alert banner
+                if (agent.cb_state == .cb_open) {
+                    const alert_h: f32 = 28 * fs;
+                    const cb_pulse: u8 = @intFromFloat(180.0 + 60.0 * @sin(frame_time * 4.0));
+                    rl.DrawRectangleRounded(.{ .x = cx, .y = ly, .width = content_w, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0x00, .b = 0x33, .a = cb_pulse / 4 });
+                    rl.DrawTextEx(chat_font, "CIRCUIT BREAKER OPEN — Agent paused", .{ .x = cx + 12, .y = ly + 6 }, 14 * fs, 0.5, rl.Color{ .r = 0xFF, .g = 0x33, .b = 0x66, .a = cb_pulse });
+                    ly += alert_h + 4;
+                } else if (agent.cb_state == .degraded) {
+                    const alert_h: f32 = 24 * fs;
+                    rl.DrawRectangleRounded(.{ .x = cx, .y = ly, .width = content_w, .height = alert_h }, 0.1, 8, rl.Color{ .r = 0xFF, .g = 0xAA, .b = 0x00, .a = 30 });
+                    rl.DrawTextEx(chat_font, "DEGRADED — reduced rate", .{ .x = cx + 12, .y = ly + 4 }, 13 * fs, 0.5, rl.Color{ .r = 0xFF, .g = 0xAA, .b = 0x00, .a = alpha_u8 });
+                    ly += alert_h + 4;
                 }
-            } else {
-                rl.DrawTextEx(chat_font, "Waiting for Ralph activity...", .{ .x = margin + 12, .y = ly }, 12 * fs, 0.5, dim_text);
+
+                // Task bar + buttons + status pill
+                {
+                    const bar_h: f32 = 36 * fs;
+                    rl.DrawRectangleRoundedLines(.{ .x = cx, .y = ly, .width = content_w, .height = bar_h }, 0.06, 8, rl.Color{ .r = 0x22, .g = 0x22, .b = 0x28, .a = 120 });
+
+                    // Task text (left side, clipped)
+                    const task_w = content_w * 0.42;
+                    rl.BeginScissorMode(@intFromFloat(cx + 10), @intFromFloat(ly), @intFromFloat(task_w), @intFromFloat(bar_h));
+                    rl.DrawTextEx(chat_font, &agent.goal, .{ .x = cx + 12, .y = ly + 10 * fs }, 12 * fs, 0.5, bright_text);
+                    rl.EndScissorMode();
+
+                    // Buttons (center)
+                    const btn_section_x = cx + task_w + 16;
+                    const btn_w: f32 = 70 * fs;
+                    const btn_h: f32 = 24 * fs;
+                    const btn_y_pos = ly + (bar_h - btn_h) / 2;
+                    const btn_gap: f32 = 8;
+
+                    // Hotkey: K = Kill/STOP all ralph processes (emergency stop)
+                    if (rl.IsKeyPressed(rl.KEY_K)) {
+                        g_ralph_pending_cmd = .stop;
+                        ralphExecPendingCmd();
+                    }
+
+                    // START
+                    {
+                        const bx = btn_section_x;
+                        const br = rl.Rectangle{ .x = bx, .y = btn_y_pos, .width = btn_w, .height = btn_h };
+                        const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, br);
+                        const active = !agent.running;
+                        const c = if (active) ralph_green else dim_text;
+                        const bg_a: u8 = if (hover and active) 40 else 15;
+                        rl.DrawRectangleRounded(br, 0.3, 8, rl.Color{ .r = c.r, .g = c.g, .b = c.b, .a = bg_a });
+                        rl.DrawRectangleRoundedLines(br, 0.3, 8, c);
+                        const start_sz = rl.MeasureTextEx(chat_font, "START", 12 * fs, 0.5);
+                        rl.DrawTextEx(chat_font, "START", .{ .x = bx + (btn_w - start_sz.x) / 2, .y = btn_y_pos + (btn_h - start_sz.y) / 2 }, 12 * fs, 0.5, c);
+                        if (hover and mouse_pressed and active) {
+                            g_ralph_pending_cmd = .start;
+                            agent.running = true;
+                            agent.is_healthy = true;
+                            agent.cb_state = .closed;
+                            ralphExecPendingCmd();
+                        }
+                    }
+                    // STOP
+                    {
+                        const bx = btn_section_x + btn_w + btn_gap;
+                        const br = rl.Rectangle{ .x = bx, .y = btn_y_pos, .width = btn_w, .height = btn_h };
+                        const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, br);
+                        // STOP is always clickable - check actual processes in handler
+                        const c = ralph_red;
+                        const bg_a: u8 = if (hover) 40 else 15;
+                        rl.DrawRectangleRounded(br, 0.3, 8, rl.Color{ .r = c.r, .g = c.g, .b = c.b, .a = bg_a });
+                        rl.DrawRectangleRoundedLines(br, 0.3, 8, c);
+                        const stop_sz = rl.MeasureTextEx(chat_font, "STOP", 12 * fs, 0.5);
+                        rl.DrawTextEx(chat_font, "STOP", .{ .x = bx + (btn_w - stop_sz.x) / 2, .y = btn_y_pos + (btn_h - stop_sz.y) / 2 }, 12 * fs, 0.5, c);
+                        if (hover and mouse_pressed) {
+                            g_ralph_pending_cmd = .stop;
+                            ralphExecPendingCmd();
+                        }
+                    }
+                    // RESTART
+                    {
+                        const bx = btn_section_x + (btn_w + btn_gap) * 2;
+                        const br = rl.Rectangle{ .x = bx, .y = btn_y_pos, .width = btn_w + 10 * fs, .height = btn_h };
+                        const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, br);
+                        const c = ralph_accent;
+                        const bg_a: u8 = if (hover) 40 else 15;
+                        rl.DrawRectangleRounded(br, 0.3, 8, rl.Color{ .r = c.r, .g = c.g, .b = c.b, .a = bg_a });
+                        rl.DrawRectangleRoundedLines(br, 0.3, 8, c);
+                        const rst_w = btn_w + 10 * fs;
+                        const rst_sz = rl.MeasureTextEx(chat_font, "RESTART", 12 * fs, 0.5);
+                        rl.DrawTextEx(chat_font, "RESTART", .{ .x = bx + (rst_w - rst_sz.x) / 2, .y = btn_y_pos + (btn_h - rst_sz.y) / 2 }, 12 * fs, 0.5, c);
+                        if (hover and mouse_pressed) {
+                            g_ralph_pending_cmd = .restart;
+                            agent.running = true;
+                            agent.is_healthy = true;
+                            agent.cb_state = .closed;
+                            ralphExecPendingCmd();
+                        }
+                    }
+
+                    // STATUS pill (right side)
+                    {
+                        const sm_age = agent.data_age_seconds;
+                        // v8.1.1 fix: Check actual processes, not just status.json
+                        const actually_running = ralphProcessRunning();
+                        const st_label: [*:0]const u8 = if (agent.rate_limited)
+                            "RATE LIMITED"
+                        else if (agent.cb_state == .cb_open)
+                            "ERROR"
+                        else if (agent.is_executing and actually_running)
+                            "ACTIVE"
+                        else if (!actually_running)
+                            "STOPPED"
+                        else if (sm_age < 120)
+                            "IDLE"
+                        else if (sm_age < 1800)
+                            "PAUSED"
+                        else
+                            "STOPPED";
+                        const st_color = if (agent.rate_limited)
+                            ralph_red
+                        else if (agent.cb_state == .cb_open)
+                            ralph_red
+                        else if (agent.is_executing and actually_running)
+                            ralph_green
+                        else if (!actually_running)
+                            ralph_red
+                        else if (sm_age < 120)
+                            ralph_accent
+                        else
+                            dim_text;
+
+                        // Loop counter
+                        var loop_buf: [32:0]u8 = undefined;
+                        @memset(&loop_buf, 0);
+                        _ = std.fmt.bufPrint(&loop_buf, "Loop #{d}", .{agent.loop}) catch {};
+
+                        // Right-align: loop text, then status dot+label
+                        const loop_sz = rl.MeasureTextEx(chat_font, &loop_buf, 11 * fs, 0.5);
+                        const st_sz = rl.MeasureTextEx(chat_font, st_label, 11 * fs, 0.5);
+                        const pill_right = cx + content_w - 8;
+                        const loop_x = pill_right - loop_sz.x;
+                        const st_text_x = loop_x - 12 - st_sz.x;
+                        const dot_x = st_text_x - 10;
+                        rl.DrawCircle(@intFromFloat(dot_x), @intFromFloat(ly + bar_h / 2), 4 * fs, st_color);
+                        rl.DrawTextEx(chat_font, st_label, .{ .x = st_text_x, .y = ly + 10 * fs }, 11 * fs, 0.5, st_color);
+                        rl.DrawTextEx(chat_font, &loop_buf, .{ .x = loop_x, .y = ly + 10 * fs }, 11 * fs, 0.5, dim_text);
+
+                        // LIVE indicator (pulsing red dot before status) — only if actually running
+                        if (actually_running and agent.is_executing and agent.data_age_seconds < 30) {
+                            const live_pulse: u8 = @intFromFloat(180.0 + 75.0 * @sin(frame_time * 6.0));
+                            const live_x = dot_x - 14;
+                            rl.DrawCircle(@intFromFloat(live_x), @intFromFloat(ly + bar_h / 2), 4 * fs, rl.Color{ .r = 0xFF, .g = 0x00, .b = 0x00, .a = live_pulse });
+                        }
+
+                        // Hover popover for full status
+                        const pill_rect = rl.Rectangle{ .x = dot_x - 10, .y = ly, .width = pill_right - dot_x + 20, .height = bar_h };
+                        const pill_hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, pill_rect);
+                        if (pill_hover) {
+                            // Draw popover below the bar
+                            const pop_x = cx + content_w - 200 * fs;
+                            const pop_y = ly + bar_h + 4;
+                            const pop_w: f32 = 195 * fs;
+                            const pop_h: f32 = 120 * fs;
+                            const pop_row: f32 = 15 * fs;
+                            rl.DrawRectangleRounded(.{ .x = pop_x, .y = pop_y, .width = pop_w, .height = pop_h }, 0.08, 8, ralph_card_bg);
+                            rl.DrawRectangleRoundedLines(.{ .x = pop_x, .y = pop_y, .width = pop_w, .height = pop_h }, 0.08, 8, ralph_border);
+                            var py = pop_y + 8;
+                            // Status
+                            rl.DrawTextEx(chat_font, "Status:", .{ .x = pop_x + 8, .y = py }, 11 * fs, 0.5, dim_text);
+                            rl.DrawTextEx(chat_font, st_label, .{ .x = pop_x + 70 * fs, .y = py }, 11 * fs, 0.5, st_color);
+                            py += pop_row;
+                            // CB
+                            rl.DrawTextEx(chat_font, "CB:", .{ .x = pop_x + 8, .y = py }, 11 * fs, 0.5, dim_text);
+                            rl.DrawTextEx(chat_font, agent.cb_state.getLabel(), .{ .x = pop_x + 70 * fs, .y = py }, 11 * fs, 0.5, agent.cb_state.getColor(alpha_u8));
+                            py += pop_row;
+                            // Calls
+                            rl.DrawTextEx(chat_font, "Calls:", .{ .x = pop_x + 8, .y = py }, 11 * fs, 0.5, dim_text);
+                            {
+                                var cbuf2: [32:0]u8 = undefined;
+                                @memset(&cbuf2, 0);
+                                _ = std.fmt.bufPrint(&cbuf2, "{d}/{d}", .{ agent.calls_this_hour, agent.max_calls_hour }) catch {};
+                                rl.DrawTextEx(chat_font, &cbuf2, .{ .x = pop_x + 70 * fs, .y = py }, 11 * fs, 0.5, bright_text);
+                            }
+                            py += pop_row;
+                            // Updated
+                            rl.DrawTextEx(chat_font, "Updated:", .{ .x = pop_x + 8, .y = py }, 11 * fs, 0.5, dim_text);
+                            {
+                                var abuf2: [32:0]u8 = undefined;
+                                @memset(&abuf2, 0);
+                                if (sm_age <= 0) {
+                                    _ = std.fmt.bufPrint(&abuf2, "now", .{}) catch {};
+                                } else if (sm_age < 60) {
+                                    _ = std.fmt.bufPrint(&abuf2, "{d}s ago", .{@as(u64, @intCast(sm_age))}) catch {};
+                                } else if (sm_age < 3600) {
+                                    _ = std.fmt.bufPrint(&abuf2, "{d}m ago", .{@as(u64, @intCast(@divFloor(sm_age, 60)))}) catch {};
+                                } else {
+                                    _ = std.fmt.bufPrint(&abuf2, "{d}h{d}m", .{ @as(u64, @intCast(@divFloor(sm_age, 3600))), @as(u64, @intCast(@mod(@divFloor(sm_age, 60), 60))) }) catch {};
+                                }
+                                const a_color2 = if (sm_age < 30) ralph_green else if (sm_age < 300) ralph_accent else ralph_red;
+                                rl.DrawTextEx(chat_font, &abuf2, .{ .x = pop_x + 70 * fs, .y = py }, 11 * fs, 0.5, a_color2);
+                            }
+                            py += pop_row;
+                            // Progress
+                            rl.DrawTextEx(chat_font, "Progress:", .{ .x = pop_x + 8, .y = py }, 11 * fs, 0.5, dim_text);
+                            if (agent.progress_status_len > 0) {
+                                var psbuf2: [32:0]u8 = undefined;
+                                @memset(&psbuf2, 0);
+                                const psl2 = @min(agent.progress_status_len, 31);
+                                @memcpy(psbuf2[0..psl2], agent.progress_status[0..psl2]);
+                                rl.DrawTextEx(chat_font, &psbuf2, .{ .x = pop_x + 70 * fs, .y = py }, 11 * fs, 0.5, bright_text);
+                            } else {
+                                rl.DrawTextEx(chat_font, "—", .{ .x = pop_x + 70 * fs, .y = py }, 11 * fs, 0.5, dim_text);
+                            }
+                            py += pop_row;
+                            // Commits
+                            rl.DrawTextEx(chat_font, "Commits:", .{ .x = pop_x + 8, .y = py }, 11 * fs, 0.5, dim_text);
+                            if (agent.recent_commits_count > 0) {
+                                var cmbuf2: [32:0]u8 = undefined;
+                                @memset(&cmbuf2, 0);
+                                _ = std.fmt.bufPrint(&cmbuf2, "{d} recent", .{agent.recent_commits_count}) catch {};
+                                rl.DrawTextEx(chat_font, &cmbuf2, .{ .x = pop_x + 70 * fs, .y = py }, 11 * fs, 0.5, ralph_green);
+                            } else {
+                                rl.DrawTextEx(chat_font, "—", .{ .x = pop_x + 70 * fs, .y = py }, 11 * fs, 0.5, dim_text);
+                            }
+                        }
+                    }
+
+                    ly += bar_h + 8;
+                }
+
+                // ── Unified Chat Area ──
+                const chat_top = ly;
+                const chat_h = pane_bottom - chat_top;
+
+                // Chat area — no background, pure black canvas
+                // Only subtle border
+                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = chat_top, .width = content_w, .height = chat_h }, 0.03, 8, rl.Color{ .r = 0x22, .g = 0x22, .b = 0x28, .a = 120 });
+
+                rl.BeginScissorMode(@intFromFloat(margin), @intFromFloat(chat_top), @intFromFloat(content_w), @intFromFloat(chat_h));
+
+                const avatar_r: f32 = 14 * fs;
+                const msg_font_sz: f32 = 13 * fs;
+                const row_h: f32 = 22 * fs;
+                const bubble_max_w = content_w * 0.65;
+                const loop_avatar_color = rl.Color{ .r = 0x00, .g = 0xCC, .b = 0xFF, .a = alpha_u8 };
+                const claude_avatar_color = rl.Color{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = alpha_u8 };
+                const avatar_letter_color = rl.Color{ .r = 0x10, .g = 0x10, .b = 0x14, .a = 220 };
+
+                var cy = chat_top + 8 - g_ralph_chat_scroll_y;
+
+                if (agent.chat_count == 0) {
+                    // Empty state
+                    rl.DrawTextEx(chat_font, "Waiting for agent output...", .{ .x = cx + content_w / 2 - 100 * fs, .y = chat_top + chat_h / 2 - 10 }, 14 * fs, 0.5, dim_text);
+                } else {
+                    var mi: usize = 0;
+                    while (mi < agent.chat_count) : (mi += 1) {
+                        const msg = &agent.chat_msgs[mi];
+                        if (cy > chat_top + chat_h + 100) break; // below visible
+
+                        const is_first_in_run = (mi == 0) or (agent.chat_msgs[mi - 1].sender != msg.sender);
+
+                        switch (msg.kind) {
+                            .log_line => {
+                                // Left-aligned bubble
+                                if (cy + row_h > chat_top and cy < chat_top + chat_h) {
+                                    const tag_color = rl.Color{ .r = msg.tag_r, .g = msg.tag_g, .b = msg.tag_b, .a = alpha_u8 };
+
+                                    // Avatar (only on first msg in run)
+                                    if (is_first_in_run) {
+                                        const ax = cx + avatar_r + 8;
+                                        const ay = cy + row_h / 2;
+                                        rl.DrawCircle(@intFromFloat(ax), @intFromFloat(ay), avatar_r, loop_avatar_color);
+                                        rl.DrawTextEx(chat_font, "\xce\x9b", .{ .x = ax - 5 * fs, .y = ay - 7 * fs }, 14 * fs, 0.5, avatar_letter_color);
+                                    }
+
+                                    // Message area (no background)
+                                    const bubble_x = cx + avatar_r * 2 + 18;
+
+                                    // Colored dot
+                                    if (msg.tag_r != 0xBB or msg.tag_g != 0xBB or msg.tag_b != 0xBB) {
+                                        rl.DrawCircle(@intFromFloat(bubble_x + 8), @intFromFloat(cy + row_h * 0.4), 3, tag_color);
+                                    }
+
+                                    // Text
+                                    rl.DrawTextEx(chat_font, &msg.text, .{ .x = bubble_x + 16, .y = cy + 3 }, msg_font_sz, 0.5, tag_color);
+                                }
+                                cy += row_h;
+                            },
+
+                            .meta_info => {
+                                // Left-aligned metadata line (dim)
+                                if (cy + row_h > chat_top and cy < chat_top + chat_h) {
+                                    const tx = cx + avatar_r * 2 + 18;
+                                    rl.DrawTextEx(chat_font, &msg.text, .{ .x = tx, .y = cy + 4 }, 11 * fs, 0.5, dim_text);
+
+                                    // Avatar on first
+                                    if (is_first_in_run) {
+                                        const ax = cx + avatar_r + 8;
+                                        const ay = cy + row_h / 2;
+                                        rl.DrawCircle(@intFromFloat(ax), @intFromFloat(ay), avatar_r, claude_avatar_color);
+                                        rl.DrawTextEx(chat_font, "\xce\x9a", .{ .x = ax - 5 * fs, .y = ay - 7 * fs }, 14 * fs, 0.5, avatar_letter_color);
+                                    }
+                                }
+                                cy += row_h;
+                            },
+
+                            .task_list => {
+                                // Left-aligned task card
+                                const task_row_h: f32 = 16 * fs;
+                                const card_h = @as(f32, @floatFromInt(agent.todo_count)) * task_row_h + 24;
+                                const card_x = cx + avatar_r * 2 + 18;
+
+                                if (cy + card_h > chat_top and cy < chat_top + chat_h) {
+                                    // Avatar on first
+                                    if (is_first_in_run) {
+                                        const ax = cx + avatar_r + 8;
+                                        const ay = cy + 16;
+                                        rl.DrawCircle(@intFromFloat(ax), @intFromFloat(ay), avatar_r, claude_avatar_color);
+                                        rl.DrawTextEx(chat_font, "\xce\x9a", .{ .x = ax - 5 * fs, .y = ay - 7 * fs }, 14 * fs, 0.5, avatar_letter_color);
+                                    }
+
+                                    // Task card (no colored bg)
+
+                                    // Header
+                                    rl.DrawTextEx(chat_font, "TASKS", .{ .x = card_x + 10, .y = cy + 4 }, 11 * fs, 0.5, ralph_accent);
+
+                                    // Items
+                                    var ti: usize = 0;
+                                    while (ti < agent.todo_count) : (ti += 1) {
+                                        const ty_pos = cy + 20 + @as(f32, @floatFromInt(ti)) * task_row_h;
+                                        if (ty_pos + task_row_h > chat_top + chat_h) break;
+                                        const ts = agent.todo_statuses[ti];
+                                        const ind: [*:0]const u8 = if (ts == 3) "+" else if (ts == 2) ">" else "o";
+                                        const ind_c: rl.Color = if (ts == 3) ralph_green else if (ts == 2) tool_cyan else dim_text;
+                                        const txt_c: rl.Color = if (ts == 3) dim_text else if (ts == 2) bright_text else dim_text;
+                                        rl.DrawTextEx(chat_font, ind, .{ .x = card_x + 12, .y = ty_pos }, 11 * fs, 0.5, ind_c);
+                                        rl.DrawTextEx(chat_font, &agent.todo_items[ti], .{ .x = card_x + 24, .y = ty_pos }, 11 * fs, 0.5, txt_c);
+                                    }
+                                }
+                                cy += card_h + 4;
+                            },
+
+                            .claude_result => {
+                                // Left-aligned markdown bubble
+                                const bubble_w = bubble_max_w;
+                                const bubble_x = cx + avatar_r * 2 + 18;
+
+                                // Avatar on first
+                                if (is_first_in_run) {
+                                    if (cy + row_h > chat_top and cy < chat_top + chat_h) {
+                                        const ax = cx + avatar_r + 8;
+                                        const ay = cy + avatar_r;
+                                        rl.DrawCircle(@intFromFloat(ax), @intFromFloat(ay), avatar_r, claude_avatar_color);
+                                        rl.DrawTextEx(chat_font, "\xce\x9a", .{ .x = ax - 5 * fs, .y = ay - 7 * fs }, 14 * fs, 0.5, avatar_letter_color);
+                                    }
+                                }
+
+                                // Inline markdown rendering (from live_result)
+                                if (msg.result_len > 0 and msg.result_offset + msg.result_len <= agent.live_result_len) {
+                                    const result_text = agent.live_result[msg.result_offset .. msg.result_offset + msg.result_len];
+                                    const text_color = if (agent.live_is_error) ralph_red else withAlpha(@as(rl.Color, @bitCast(theme.content_text)), alpha_u8);
+                                    const base_font = msg_font_sz;
+                                    const max_chars: usize = @intFromFloat(@max(20, (bubble_w - 32) / (7.5 * fs)));
+                                    var pos: usize = 0;
+                                    var in_code_block: bool = false;
+                                    var consecutive_empty: u32 = 0;
+                                    const ToolId = enum { none, bash, read, glob, grep, write, edit, todo };
+                                    var prev_tool_id: ToolId = .none;
+                                    var prev_tool_color: rl.Color = dim_text;
+                                    var tool_run_count: u32 = 0;
+                                    const row_h_md: f32 = 20 * fs;
+
+                                    // v8.1: Collapsible section state
+                                    var section_idx: usize = 0;
+                                    var in_collapsed: bool = false;
+                                    var sec_anim: f32 = 1.0;
+                                    var visible_lines: u32 = 0;
+                                    const ai_idx = g_ralph_active_tab;
+
+                                    // Claude result area (no colored bg)
+
+                                    while (pos < result_text.len) {
+                                        const remaining = result_text[pos..];
+                                        var line_end: usize = @min(remaining.len, max_chars);
+                                        for (remaining[0..line_end], 0..) |c, ci| {
+                                            if (c == '\\' and ci + 1 < line_end and remaining[ci + 1] == 'n') {
+                                                line_end = ci;
+                                                break;
+                                            }
+                                        }
+                                        const line_data = remaining[0..line_end];
+
+                                        var render_text = line_data;
+                                        var line_color = text_color;
+                                        var font_sz = base_font;
+                                        var x_offset: f32 = 12;
+                                        var extra_spacing: f32 = 0;
+                                        var is_tool = false;
+                                        var cur_tool_id: ToolId = .none;
+                                        var is_separator = false;
+                                        var draw_underline = false;
+                                        var is_code = in_code_block;
+                                        var is_header = false;
+
+                                        if (line_data.len >= 3 and line_data[0] == '`' and line_data[1] == '`' and line_data[2] == '`') {
+                                            in_code_block = !in_code_block;
+                                            is_code = in_code_block;
+                                            render_text = if (line_data.len > 3) line_data[3..] else "";
+                                        } else if (in_code_block) {
+                                            is_code = true;
+                                        } else if (line_data.len >= 4 and line_data[0] == '#' and line_data[1] == '#' and line_data[2] == '#' and line_data[3] == ' ') {
+                                            render_text = line_data[4..];
+                                            font_sz = 16 * fs;
+                                            line_color = tool_yellow;
+                                            extra_spacing = 4;
+                                            is_header = true;
+                                        } else if (line_data.len >= 3 and line_data[0] == '#' and line_data[1] == '#' and line_data[2] == ' ') {
+                                            render_text = line_data[3..];
+                                            font_sz = 18 * fs;
+                                            line_color = tool_magenta;
+                                            draw_underline = true;
+                                            extra_spacing = 6;
+                                            is_header = true;
+                                        } else if (line_data.len >= 2 and line_data[0] == '#' and line_data[1] == ' ') {
+                                            render_text = line_data[2..];
+                                            font_sz = 22 * fs;
+                                            line_color = tool_cyan;
+                                            draw_underline = true;
+                                            extra_spacing = 8;
+                                            is_header = true;
+                                        } else if (line_data.len >= 3) {
+                                            const is_pure_sep = blk: {
+                                                for (line_data) |ch| {
+                                                    if (ch != '-' and ch != '*' and ch != ' ') break :blk false;
+                                                }
+                                                break :blk true;
+                                            };
+                                            if (is_pure_sep) {
+                                                is_separator = true;
+                                            } else if (line_data.len >= 2 and (line_data[0] == '-' or line_data[0] == '*') and line_data[1] == ' ') {
+                                                render_text = line_data[2..];
+                                                x_offset = 28;
+                                                line_color = text_color;
+                                            } else {
+                                                if (line_data.len > 4) {
+                                                    if (containsBytes(line_data, "[Glob]")) { line_color = tool_cyan; is_tool = true; cur_tool_id = .glob; } else if (containsBytes(line_data, "[Read]")) { line_color = tool_magenta; is_tool = true; cur_tool_id = .read; } else if (containsBytes(line_data, "[Grep]")) { line_color = tool_yellow; is_tool = true; cur_tool_id = .grep; } else if (containsBytes(line_data, "[Bash]")) { line_color = tool_orange; is_tool = true; cur_tool_id = .bash; } else if (containsBytes(line_data, "[Write]")) { line_color = tool_lime; is_tool = true; cur_tool_id = .write; } else if (containsBytes(line_data, "[Edit]")) { line_color = tool_pink; is_tool = true; cur_tool_id = .edit; } else if (containsBytes(line_data, "[Todo]")) { line_color = tool_blue; is_tool = true; cur_tool_id = .todo; }
+                                                }
+                                                if (line_data.len > 4 and containsBytes(line_data, "**")) { line_color = bright_text; }
+                                            }
+                                        } else if (line_data.len >= 2 and (line_data[0] == '-' or line_data[0] == '*') and line_data[1] == ' ') {
+                                            render_text = line_data[2..];
+                                            x_offset = 28;
+                                            line_color = text_color;
+                                        } else {
+                                            if (line_data.len > 4 and containsBytes(line_data, "**")) { line_color = bright_text; }
+                                        }
+
+                                        if (is_tool) {
+                                            if (std.mem.indexOfScalar(u8, render_text, '[')) |bracket_pos| {
+                                                render_text = render_text[bracket_pos..];
+                                            }
+                                        }
+
+                                        // Collapse empty lines
+                                        if (render_text.len == 0 and !is_separator and !is_code) {
+                                            consecutive_empty += 1;
+                                            if (consecutive_empty > 1) {
+                                                pos += line_end;
+                                                if (pos < result_text.len and result_text[pos] == '\\' and pos + 1 < result_text.len and result_text[pos + 1] == 'n') pos += 2;
+                                                continue;
+                                            }
+                                            cy += row_h_md * 0.25;
+                                            pos += line_end;
+                                            if (pos < result_text.len and result_text[pos] == '\\' and pos + 1 < result_text.len and result_text[pos + 1] == 'n') pos += 2;
+                                            continue;
+                                        }
+                                        consecutive_empty = 0;
+
+                                        // v8.1: Section collapse tracking
+                                        if (is_header and section_idx < MAX_SECTIONS_PER_MSG) {
+                                            in_collapsed = g_ralph_section_collapsed[ai_idx][mi][section_idx];
+                                            sec_anim = g_ralph_section_anim[ai_idx][mi][section_idx];
+                                        }
+
+                                        // v8.1: Progressive disclosure (show more / show less)
+                                        visible_lines += 1;
+                                        if (!msg.show_full and visible_lines > 15 and !is_header) {
+                                            if (visible_lines == 16) {
+                                                if (cy + row_h_md > chat_top and cy < chat_top + chat_h) {
+                                                    const sm_rect = rl.Rectangle{ .x = bubble_x + 12, .y = cy, .width = 120 * fs, .height = row_h_md };
+                                                    const sm_hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, sm_rect);
+                                                    const sm_color = if (sm_hover) tool_cyan else ralph_accent;
+                                                    rl.DrawTextEx(chat_font, "Show more...", .{ .x = bubble_x + 12, .y = cy }, base_font, 0.5, sm_color);
+                                                    if (sm_hover) rl.DrawRectangle(@intFromFloat(bubble_x + 12), @intFromFloat(cy + base_font + 1), @intFromFloat(80 * fs), 1, sm_color);
+                                                    if (sm_hover and mouse_pressed) msg.show_full = true;
+                                                }
+                                                cy += row_h_md;
+                                            }
+                                            pos += line_end;
+                                            if (pos < result_text.len and result_text[pos] == '\\' and pos + 1 < result_text.len and result_text[pos + 1] == 'n') pos += 2;
+                                            continue;
+                                        }
+
+                                        // v8.1: Section collapse skip
+                                        if (!is_header and in_collapsed and sec_anim < 0.01) {
+                                            pos += line_end;
+                                            if (pos < result_text.len and result_text[pos] == '\\' and pos + 1 < result_text.len and result_text[pos + 1] == 'n') pos += 2;
+                                            continue;
+                                        }
+
+                                        // Tool grouping
+                                        if (is_tool and cur_tool_id != .none) {
+                                            if (cur_tool_id == prev_tool_id) {
+                                                tool_run_count += 1;
+                                                pos += line_end;
+                                                if (pos < result_text.len and result_text[pos] == '\\' and pos + 1 < result_text.len and result_text[pos + 1] == 'n') pos += 2;
+                                                continue;
+                                            } else {
+                                                if (tool_run_count > 1 and prev_tool_id != .none) {
+                                                    if (cy + row_h_md > chat_top and cy < chat_top + chat_h) {
+                                                        rl.DrawRectangle(@intFromFloat(bubble_x + 4), @intFromFloat(cy + 2), 3, @intFromFloat(row_h_md - 4), prev_tool_color);
+                                                        var grp_buf: [48:0]u8 = undefined;
+                                                        @memset(&grp_buf, 0);
+                                                        _ = std.fmt.bufPrint(&grp_buf, "    ... (x{d} more)", .{tool_run_count}) catch {};
+                                                        rl.DrawTextEx(chat_font, &grp_buf, .{ .x = bubble_x + 12, .y = cy }, base_font, 0.5, rl.Color{ .r = prev_tool_color.r, .g = prev_tool_color.g, .b = prev_tool_color.b, .a = 120 });
+                                                    }
+                                                    cy += row_h_md;
+                                                }
+                                                prev_tool_id = cur_tool_id;
+                                                prev_tool_color = line_color;
+                                                tool_run_count = 0;
+                                            }
+                                        } else {
+                                            if (tool_run_count > 1 and prev_tool_id != .none) {
+                                                if (cy + row_h_md > chat_top and cy < chat_top + chat_h) {
+                                                    rl.DrawRectangle(@intFromFloat(bubble_x + 4), @intFromFloat(cy + 2), 3, @intFromFloat(row_h_md - 4), prev_tool_color);
+                                                    var grp_buf2: [48:0]u8 = undefined;
+                                                    @memset(&grp_buf2, 0);
+                                                    _ = std.fmt.bufPrint(&grp_buf2, "    ... (x{d} more)", .{tool_run_count}) catch {};
+                                                    rl.DrawTextEx(chat_font, &grp_buf2, .{ .x = bubble_x + 12, .y = cy }, base_font, 0.5, rl.Color{ .r = prev_tool_color.r, .g = prev_tool_color.g, .b = prev_tool_color.b, .a = 120 });
+                                                }
+                                                cy += row_h_md;
+                                            }
+                                            prev_tool_id = .none;
+                                            tool_run_count = 0;
+                                        }
+
+                                        const md_row_h = row_h_md + extra_spacing;
+                                        // v8.1: Animated height for collapsing content
+                                        const effective_row_h = if (!is_header and sec_anim < 1.0 and sec_anim > 0.0) md_row_h * sec_anim else md_row_h;
+
+                                        if (cy + effective_row_h > chat_top and cy < chat_top + chat_h) {
+                                            // v8.1: Triangle indicator + click for headers
+                                            if (is_header and section_idx < MAX_SECTIONS_PER_MSG) {
+                                                const tri_x = bubble_x + 2;
+                                                const tri_cy = cy + font_sz / 2;
+                                                const tri_sz: f32 = 4 * fs;
+                                                const tri_color = rl.Color{ .r = line_color.r, .g = line_color.g, .b = line_color.b, .a = 160 };
+                                                if (in_collapsed) {
+                                                    // Right-pointing triangle (collapsed)
+                                                    rl.DrawTriangle(
+                                                        .{ .x = tri_x, .y = tri_cy + tri_sz },
+                                                        .{ .x = tri_x, .y = tri_cy - tri_sz },
+                                                        .{ .x = tri_x + tri_sz * 1.5, .y = tri_cy },
+                                                        tri_color,
+                                                    );
+                                                } else {
+                                                    // Down-pointing triangle (expanded)
+                                                    rl.DrawTriangle(
+                                                        .{ .x = tri_x + tri_sz, .y = tri_cy - tri_sz * 0.5 },
+                                                        .{ .x = tri_x - tri_sz * 0.5, .y = tri_cy - tri_sz * 0.5 },
+                                                        .{ .x = tri_x + tri_sz * 0.25, .y = tri_cy + tri_sz },
+                                                        tri_color,
+                                                    );
+                                                }
+                                                // Click hitbox on header row
+                                                const hdr_rect = rl.Rectangle{ .x = bubble_x, .y = cy, .width = bubble_w, .height = md_row_h };
+                                                if (rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, hdr_rect) and mouse_pressed) {
+                                                    g_ralph_section_collapsed[ai_idx][mi][section_idx] = !g_ralph_section_collapsed[ai_idx][mi][section_idx];
+                                                    in_collapsed = g_ralph_section_collapsed[ai_idx][mi][section_idx];
+                                                }
+                                                // Left border on header
+                                                rl.DrawRectangle(@intFromFloat(bubble_x), @intFromFloat(cy), 2, @intFromFloat(md_row_h), rl.Color{ .r = line_color.r, .g = line_color.g, .b = line_color.b, .a = 40 });
+                                                section_idx += 1;
+                                            }
+                                            // v8.1: Section left border for content
+                                            if (!is_header and section_idx > 0 and !is_tool and !is_separator) {
+                                                rl.DrawRectangle(@intFromFloat(bubble_x), @intFromFloat(cy), 2, @intFromFloat(effective_row_h), rl.Color{ .r = 0x44, .g = 0x44, .b = 0x55, .a = 30 });
+                                            }
+                                            if (is_separator) {
+                                                const sep_y = cy + md_row_h / 2;
+                                                rl.DrawRectangle(@intFromFloat(bubble_x + 12), @intFromFloat(sep_y), @intFromFloat(bubble_w - 24), 1, rl.Color{ .r = 0x00, .g = 0xFF, .b = 0xFF, .a = 60 });
+                                            } else if (render_text.len > 0) {
+                                                if (is_code) {
+                                                    rl.DrawRectangle(@intFromFloat(bubble_x + 8), @intFromFloat(cy), @intFromFloat(bubble_w - 16), @intFromFloat(md_row_h), rl.Color{ .r = 0x10, .g = 0x10, .b = 0x18, .a = 200 });
+                                                    line_color = tool_lime;
+                                                }
+                                                if (is_tool) {
+                                                    rl.DrawRectangle(@intFromFloat(bubble_x + 4), @intFromFloat(cy + 2), 3, @intFromFloat(md_row_h - 4), line_color);
+                                                }
+                                                if (x_offset > 12) {
+                                                    rl.DrawCircle(@intFromFloat(bubble_x + 18), @intFromFloat(cy + font_sz / 2), 3, tool_cyan);
+                                                }
+                                                // Render text (strip **)
+                                                var md_buf: [128:0]u8 = undefined;
+                                                @memset(&md_buf, 0);
+                                                var stripped2: [128]u8 = undefined;
+                                                var s2i: usize = 0;
+                                                var r2i: usize = 0;
+                                                while (r2i < render_text.len and s2i < 127) {
+                                                    if (r2i + 1 < render_text.len and render_text[r2i] == '*' and render_text[r2i + 1] == '*') {
+                                                        r2i += 2;
+                                                    } else {
+                                                        stripped2[s2i] = render_text[r2i];
+                                                        s2i += 1;
+                                                        r2i += 1;
+                                                    }
+                                                }
+                                                const cl2 = @min(s2i, 127);
+                                                @memcpy(md_buf[0..cl2], stripped2[0..cl2]);
+                                                rl.DrawTextEx(chat_font, &md_buf, .{ .x = bubble_x + x_offset, .y = cy }, font_sz, 0.5, line_color);
+                                                if (draw_underline) {
+                                                    const uw2 = @min(bubble_w * 0.6, @as(f32, @floatFromInt(cl2)) * font_sz * 0.55);
+                                                    rl.DrawRectangle(@intFromFloat(bubble_x + x_offset), @intFromFloat(cy + font_sz + 2), @intFromFloat(uw2), 2, rl.Color{ .r = line_color.r, .g = line_color.g, .b = line_color.b, .a = 80 });
+                                                }
+                                            }
+                                        }
+                                        cy += effective_row_h;
+                                        pos += line_end;
+                                        if (pos < result_text.len and result_text[pos] == '\\' and pos + 1 < result_text.len and result_text[pos + 1] == 'n') pos += 2;
+                                    }
+                                    // v8.1: "Show less" link
+                                    if (msg.show_full and visible_lines > 15) {
+                                        if (cy + row_h_md > chat_top and cy < chat_top + chat_h) {
+                                            const sl_rect = rl.Rectangle{ .x = bubble_x + 12, .y = cy, .width = 100 * fs, .height = row_h_md };
+                                            const sl_hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, sl_rect);
+                                            const sl_color = if (sl_hover) tool_cyan else ralph_accent;
+                                            rl.DrawTextEx(chat_font, "Show less", .{ .x = bubble_x + 12, .y = cy }, base_font, 0.5, sl_color);
+                                            if (sl_hover) rl.DrawRectangle(@intFromFloat(bubble_x + 12), @intFromFloat(cy + base_font + 1), @intFromFloat(65 * fs), 1, sl_color);
+                                            if (sl_hover and mouse_pressed) msg.show_full = false;
+                                        }
+                                        cy += row_h_md;
+                                    }
+                                } else {
+                                    rl.DrawTextEx(chat_font, "Waiting for Claude output...", .{ .x = bubble_x + 12, .y = cy }, msg_font_sz, 0.5, dim_text);
+                                    cy += row_h;
+                                }
+                            },
+                        }
+                    }
+                }
+
+                rl.EndScissorMode();
+
+                // Scroll clamping + auto-scroll
+                {
+                    const total_chat_h = cy + g_ralph_chat_scroll_y - (chat_top + 8);
+                    const max_scroll = @max(0.0, total_chat_h - chat_h + 16);
+                    g_ralph_chat_scroll_target = @min(g_ralph_chat_scroll_target, max_scroll);
+                    g_ralph_chat_scroll_target = @max(0.0, g_ralph_chat_scroll_target);
+                    g_ralph_chat_scroll_y = @min(g_ralph_chat_scroll_y, max_scroll + 10 * fs);
+
+                    // Auto-scroll on new content
+                    if (agent.chat_count != g_ralph_prev_chat_count) {
+                        if (g_ralph_chat_scroll_target >= max_scroll - 50 or g_ralph_prev_chat_count == 0) {
+                            g_ralph_chat_scroll_target = max_scroll;
+                        }
+                        g_ralph_prev_chat_count = agent.chat_count;
+                    }
+                }
+
+                // Mouse wheel
+                {
+                    const cmx = @as(f32, @floatFromInt(rl.GetMouseX()));
+                    const cmy = @as(f32, @floatFromInt(rl.GetMouseY()));
+                    if (cmx >= margin and cmx <= cx + content_w and cmy >= chat_top and cmy <= chat_top + chat_h) {
+                        g_ralph_chat_scroll_target -= rl.GetMouseWheelMove() * 40.0 * fs;
+                        g_ralph_chat_scroll_target = @max(0.0, g_ralph_chat_scroll_target);
+                    }
+                }
+
+                // Stale data overlay
+                if (agent.data_age_seconds > 300) {
+                    const stale_y = pane_bottom - 30 * fs;
+                    const blink_a: u8 = @intFromFloat(120.0 + 80.0 * @sin(frame_time * 3.0));
+                    var stale_buf: [64:0]u8 = undefined;
+                    @memset(&stale_buf, 0);
+                    _ = std.fmt.bufPrint(&stale_buf, "Last activity: {d}m ago", .{@as(u64, @intCast(@divFloor(agent.data_age_seconds, 60)))}) catch {};
+                    rl.DrawTextEx(chat_font, &stale_buf, .{ .x = cx + content_w / 2 - 80 * fs, .y = stale_y }, 12 * fs, 0.5, rl.Color{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = blink_a });
+                }
             }
 
             // Keyboard hint at bottom
             rl.DrawTextEx(chat_font, "1-4: Agent  |  </>: Switch  |  Shift+9: Toggle  |  Shift+0: Home", .{ .x = margin, .y = sh - 28 * fs }, 11 * fs, 0.5, dim_text);
+
         }
     }
 
@@ -8233,7 +9830,7 @@ fn updateDrawFrame() callconv(.c) void {
     // Keyboard hint (minimal, top-left) — skip in DePIN for clean UI
     if (g_wave_mode == .idle) {
         rl.DrawTextEx(frame_font_small, "Shift+1 Chat | 2 Code | 3 Tools | 4 Settings | D DePIN | ESC", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 180));
-    } else if (g_wave_mode != .depin) {
+    } else if (g_wave_mode != .depin and g_wave_mode != .ralph) {
         rl.DrawTextEx(frame_font_small, "ESC = back | Shift+1-6 switch mode", .{ .x = 10, .y = 10 }, 13, 1, withAlpha(TEXT_DIM, 140));
     }
 

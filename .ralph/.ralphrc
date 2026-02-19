@@ -1,0 +1,6 @@
+
+# Fallback API Configuration
+# When Claude API hits rate limit, switch to GLM-5
+FALLBACK_API_KEY="fcbb5dadc5ea462284f5475a04daa174.Ei5KkZb0WQMwasmd"
+FALLBACK_API_BASE="https://api.z.ai/api/paas/v4"
+FALLBACK_MODEL="glm-5"

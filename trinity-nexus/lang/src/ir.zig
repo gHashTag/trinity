@@ -79,19 +79,22 @@ pub const Value = struct {
     def_inst: ?*Instruction = null,
     
     // Use-def chain
-    uses: std.ArrayList(*Instruction),
-    
+    uses: std.ArrayListUnmanaged(*Instruction),
+
+    allocator: Allocator,
+
     pub fn init(allocator: Allocator, id: u32, kind: ValueKind, ir_type: IRType) Value {
         return .{
             .id = id,
             .kind = kind,
             .ir_type = ir_type,
-            .uses = std.ArrayList(*Instruction).init(allocator),
+            .uses = .{},
+            .allocator = allocator,
         };
     }
-    
+
     pub fn deinit(self: *Value) void {
-        self.uses.deinit();
+        self.uses.deinit(self.allocator);
     }
     
     pub fn isConstant(self: *const Value) bool {
@@ -99,7 +102,7 @@ pub const Value = struct {
     }
     
     pub fn addUse(self: *Value, inst: *Instruction) !void {
-        try self.uses.append(inst);
+        try self.uses.append(self.allocator, inst);
     }
 };
 
@@ -184,7 +187,7 @@ pub const Instruction = struct {
     operand_count: u8 = 0,
     
     // For phi nodes
-    phi_incoming: ?std.ArrayList(PhiIncoming) = null,
+    phi_incoming: ?std.ArrayListUnmanaged(PhiIncoming) = null,
     
     // For branches
     true_block: ?*BasicBlock = null,
@@ -237,42 +240,45 @@ pub const PhiIncoming = struct {
 pub const BasicBlock = struct {
     id: u32,
     name: ?[]const u8 = null,
-    instructions: std.ArrayList(*Instruction),
-    
+    instructions: std.ArrayListUnmanaged(*Instruction),
+
     // CFG edges
-    predecessors: std.ArrayList(*BasicBlock),
-    successors: std.ArrayList(*BasicBlock),
-    
+    predecessors: std.ArrayListUnmanaged(*BasicBlock),
+    successors: std.ArrayListUnmanaged(*BasicBlock),
+
     // Dominator tree (PRE pattern)
     idom: ?*BasicBlock = null,        // Immediate dominator
-    dom_children: std.ArrayList(*BasicBlock),
-    dom_frontier: std.ArrayList(*BasicBlock),
-    
+    dom_children: std.ArrayListUnmanaged(*BasicBlock),
+    dom_frontier: std.ArrayListUnmanaged(*BasicBlock),
+
     // Parent function
     parent: ?*Function = null,
-    
+
+    allocator: Allocator,
+
     pub fn init(allocator: Allocator, id: u32) BasicBlock {
         return .{
             .id = id,
-            .instructions = std.ArrayList(*Instruction).init(allocator),
-            .predecessors = std.ArrayList(*BasicBlock).init(allocator),
-            .successors = std.ArrayList(*BasicBlock).init(allocator),
-            .dom_children = std.ArrayList(*BasicBlock).init(allocator),
-            .dom_frontier = std.ArrayList(*BasicBlock).init(allocator),
+            .instructions = .{},
+            .predecessors = .{},
+            .successors = .{},
+            .dom_children = .{},
+            .dom_frontier = .{},
+            .allocator = allocator,
         };
     }
-    
+
     pub fn deinit(self: *BasicBlock) void {
-        self.instructions.deinit();
-        self.predecessors.deinit();
-        self.successors.deinit();
-        self.dom_children.deinit();
-        self.dom_frontier.deinit();
+        self.instructions.deinit(self.allocator);
+        self.predecessors.deinit(self.allocator);
+        self.successors.deinit(self.allocator);
+        self.dom_children.deinit(self.allocator);
+        self.dom_frontier.deinit(self.allocator);
     }
-    
+
     pub fn append(self: *BasicBlock, inst: *Instruction) !void {
         inst.parent = self;
-        try self.instructions.append(inst);
+        try self.instructions.append(self.allocator, inst);
     }
     
     pub fn getTerminator(self: *const BasicBlock) ?*Instruction {
@@ -282,8 +288,8 @@ pub const BasicBlock = struct {
     }
     
     pub fn addSuccessor(self: *BasicBlock, succ: *BasicBlock) !void {
-        try self.successors.append(succ);
-        try succ.predecessors.append(self);
+        try self.successors.append(self.allocator, succ);
+        try succ.predecessors.append(succ.allocator, self);
     }
 };
 
@@ -295,15 +301,15 @@ pub const Function = struct {
     id: u32,
     name: []const u8,
     return_type: IRType,
-    params: std.ArrayList(*Value),
-    blocks: std.ArrayList(*BasicBlock),
+    params: std.ArrayListUnmanaged(*Value),
+    blocks: std.ArrayListUnmanaged(*BasicBlock),
     entry_block: ?*BasicBlock = null,
     
     // Value numbering (HSH pattern)
     value_map: std.AutoHashMap(u32, *Value),
     
     // Track all instructions for cleanup
-    all_instructions: std.ArrayList(*Instruction),
+    all_instructions: std.ArrayListUnmanaged(*Instruction),
     
     // Counters
     next_value_id: u32 = 0,
@@ -317,10 +323,10 @@ pub const Function = struct {
             .id = id,
             .name = name,
             .return_type = ret_type,
-            .params = std.ArrayList(*Value).init(allocator),
-            .blocks = std.ArrayList(*BasicBlock).init(allocator),
+            .params = .{},
+            .blocks = .{},
             .value_map = std.AutoHashMap(u32, *Value).init(allocator),
-            .all_instructions = std.ArrayList(*Instruction).init(allocator),
+            .all_instructions = .{},
             .allocator = allocator,
         };
     }
@@ -330,23 +336,23 @@ pub const Function = struct {
             block.deinit();
             self.allocator.destroy(block);
         }
-        self.blocks.deinit();
-        
+        self.blocks.deinit(self.allocator);
+
         for (self.all_instructions.items) |inst| {
             if (inst.phi_incoming) |*incoming| {
-                incoming.deinit();
+                incoming.deinit(self.allocator);
             }
             self.allocator.destroy(inst);
         }
-        self.all_instructions.deinit();
-        
+        self.all_instructions.deinit(self.allocator);
+
         var val_iter = self.value_map.valueIterator();
         while (val_iter.next()) |val| {
             val.*.deinit();
             self.allocator.destroy(val.*);
         }
         self.value_map.deinit();
-        self.params.deinit();
+        self.params.deinit(self.allocator);
     }
     
     /// Create new basic block
@@ -356,8 +362,8 @@ pub const Function = struct {
         block.name = name;
         block.parent = self;
         self.next_block_id += 1;
-        try self.blocks.append(block);
-        
+        try self.blocks.append(self.allocator, block);
+
         if (self.entry_block == null) {
             self.entry_block = block;
         }
@@ -400,7 +406,7 @@ pub const Function = struct {
         const inst = try self.allocator.create(Instruction);
         inst.* = Instruction.init(self.next_inst_id, opcode);
         self.next_inst_id += 1;
-        try self.all_instructions.append(inst);
+        try self.all_instructions.append(self.allocator, inst);
         return inst;
     }
     
@@ -449,7 +455,7 @@ pub const Function = struct {
     /// Build phi node
     pub fn buildPhi(self: *Function, block: *BasicBlock, ir_type: IRType) !*Instruction {
         const inst = try self.createInst(.phi);
-        inst.phi_incoming = std.ArrayList(PhiIncoming).init(self.allocator);
+        inst.phi_incoming = .{};
         
         const result = try self.createValue(.instruction, ir_type);
         result.def_inst = inst;
@@ -461,9 +467,8 @@ pub const Function = struct {
     
     /// Add phi incoming
     pub fn addPhiIncoming(self: *Function, phi: *Instruction, val: *Value, from_block: *BasicBlock) !void {
-        _ = self;
         if (phi.phi_incoming) |*incoming| {
-            try incoming.append(.{ .value = val, .block = from_block });
+            try incoming.append(self.allocator, .{ .value = val, .block = from_block });
         }
     }
 };

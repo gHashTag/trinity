@@ -41,12 +41,13 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: start* -> start process
+    // Pattern: start* -> start process with state tracking
     if (std.mem.startsWith(u8, b.name, "start")) {
         try builder.writeFmt("pub fn {s}(self: *@This()) !void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Start process/service");
-        try builder.writeLine("_ = self;");
+        try builder.writeLine("self.running = true;");
+        try builder.writeLine("self.start_time = std.time.timestamp();");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -57,7 +58,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         try builder.writeFmt("pub fn {s}(self: *@This()) void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Stop process/service");
-        try builder.writeLine("_ = self;");
+        try builder.writeLine("self.running = false;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -68,7 +69,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         try builder.writeFmt("pub fn {s}(self: *@This()) void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Pause operation");
-        try builder.writeLine("_ = self;");
+        try builder.writeLine("self.paused = true;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -79,7 +80,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         try builder.writeFmt("pub fn {s}(self: *@This()) void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Resume operation");
-        try builder.writeLine("_ = self;");
+        try builder.writeLine("self.paused = false;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -139,12 +140,13 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: shutdown* -> shutdown
+    // Pattern: shutdown* -> graceful shutdown
     if (std.mem.startsWith(u8, b.name, "shutdown")) {
         try builder.writeFmt("pub fn {s}(self: *@This()) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Graceful shutdown");
-        try builder.writeLine("_ = self;");
+        try builder.writeLine("// Graceful shutdown: stop running and mark uninitialized");
+        try builder.writeLine("self.running = false;");
+        try builder.writeLine("self.initialized = false;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -152,10 +154,15 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: create* -> create
     if (std.mem.startsWith(u8, b.name, "create")) {
-        try builder.writeFmt("pub fn {s}(config: anytype) !@TypeOf(config) {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(allocator: std.mem.Allocator) !@This() {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Create resource");
-        try builder.writeLine("return config;");
+        try builder.writeLine("// Create and initialize instance");
+        try builder.writeLine("const ptr = try allocator.create(@This());");
+        try builder.writeLine("ptr.* = @This(){");
+        try builder.writeLine("    .allocator = allocator,");
+        try builder.writeLine("    .initialized = true,");
+        try builder.writeLine("};");
+        try builder.writeLine("return ptr.*;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;

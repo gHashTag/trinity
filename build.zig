@@ -14,6 +14,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // VIBEEC compiler module — single source of truth from trinity-nexus/lang
+    const trinity_lang_mod = b.createModule(.{
+        .root_source_file = b.path("trinity-nexus/lang/src/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Library artifact
     const lib = b.addLibrary(.{
         .name = "trinity",
@@ -153,12 +160,15 @@ pub fn build(b: *std.Build) void {
     const run_c_api_tests = b.addRunArtifact(c_api_tests);
     test_step.dependOn(&run_c_api_tests.step);
 
-    // VIBEE codegen tests (rl patterns, mod dispatch, registry)
+    // VIBEE codegen tests — use trinity-lang module as source of truth
     const vibeec_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/codegen_tests.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity-lang", .module = trinity_lang_mod },
+            },
         }),
     });
     const run_vibeec_tests = b.addRunArtifact(vibeec_tests);
@@ -211,20 +221,8 @@ pub fn build(b: *std.Build) void {
     const query_step = b.step("query", "Run trinity-query (KG query CLI)");
     query_step.dependOn(&run_query.step);
 
-    // Benchmark executable
-    const bench = b.addExecutable(.{
-        .name = "trinity-bench",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-        }),
-    });
-    b.installArtifact(bench);
-
-    const run_bench = b.addRunArtifact(bench);
-    const bench_step = b.step("bench", "Run benchmarks");
-    bench_step.dependOn(&run_bench.step);
+    // Benchmark executable — run directly: zig run benchmarks/bench_core.zig
+    _ = b.step("bench", "Run benchmarks (use: zig run benchmarks/bench_core.zig)");
 
     // Compression Benchmark executable
     const bench_compress = b.addExecutable(.{
@@ -1025,13 +1023,16 @@ pub fn build(b: *std.Build) void {
     const fluent_cli_step = b.step("fluent", "Run Fluent CLI (Local Chat with History Truncation)");
     fluent_cli_step.dependOn(&run_fluent_cli.step);
 
-    // VIBEE Compiler CLI
+    // VIBEE Compiler CLI — uses trinity-lang module as source of truth
     const vibee = b.addExecutable(.{
         .name = "vibee",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/gen_cmd.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity-lang", .module = trinity_lang_mod },
+            },
         }),
     });
     b.installArtifact(vibee);
@@ -1803,4 +1804,147 @@ pub fn build(b: *std.Build) void {
     const gen_rewards_step = b.step("test-rewards", "Test $TRI live rewards mint/slash economics");
     gen_rewards_step.dependOn(&run_gen_rewards_tests.step);
     test_step.dependOn(&run_gen_rewards_tests.step);
+
+    // Generated Swarm Watch tests (DEV-003: DHT + TRI economy monitor)
+    const gen_swarm_watch_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/swarm_watch.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_swarm_watch_tests = b.addRunArtifact(gen_swarm_watch_tests);
+    const gen_swarm_watch_step = b.step("test-swarm-watch", "Test DEV-003 Swarm Watch DHT & TRI monitor");
+    gen_swarm_watch_step.dependOn(&run_gen_swarm_watch_tests.step);
+    test_step.dependOn(&run_gen_swarm_watch_tests.step);
+
+    // Generated Ternary KV Cache tests (OPT-T03: 16x KV cache compression)
+    const gen_ternary_kv_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/ternary_kv_cache.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_ternary_kv_tests = b.addRunArtifact(gen_ternary_kv_tests);
+    const gen_ternary_kv_step = b.step("test-ternary-kv", "Test OPT-T03 Ternary KV Cache 16x compression");
+    gen_ternary_kv_step.dependOn(&run_gen_ternary_kv_tests.step);
+    test_step.dependOn(&run_gen_ternary_kv_tests.step);
+
+    // Generated Ternary MatMul tests (OPT-T02: 10x matmul speedup)
+    const gen_ternary_matmul_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/ternary_matmul.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_ternary_matmul_tests = b.addRunArtifact(gen_ternary_matmul_tests);
+    const gen_ternary_matmul_step = b.step("test-ternary-matmul", "Test OPT-T02 Ternary Matrix Multiplication 10x speedup");
+    gen_ternary_matmul_step.dependOn(&run_gen_ternary_matmul_tests.step);
+    test_step.dependOn(&run_gen_ternary_matmul_tests.step);
+
+    // Generated Paged Attention tests (OPT-PA01: 4-10x memory efficiency)
+    const gen_paged_attn_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/paged_attention.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_paged_attn_tests = b.addRunArtifact(gen_paged_attn_tests);
+    const gen_paged_attn_step = b.step("test-paged-attention", "Test OPT-PA01 PagedAttention 4-10x memory efficiency");
+    gen_paged_attn_step.dependOn(&run_gen_paged_attn_tests.step);
+    test_step.dependOn(&run_gen_paged_attn_tests.step);
+
+    // Generated Continuous Batching tests (OPT-B01: 2-3x throughput)
+    const gen_cont_batch_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/continuous_batching.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_cont_batch_tests = b.addRunArtifact(gen_cont_batch_tests);
+    const gen_cont_batch_step = b.step("test-continuous-batching", "Test OPT-B01 Continuous Batching 2-3x throughput");
+    gen_cont_batch_step.dependOn(&run_gen_cont_batch_tests.step);
+    test_step.dependOn(&run_gen_cont_batch_tests.step);
+
+    // Generated Speculative Decoding tests (OPT-S01: 2-3x generation speed)
+    const gen_spec_dec_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/speculative_decoding.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_spec_dec_tests = b.addRunArtifact(gen_spec_dec_tests);
+    const gen_spec_dec_step = b.step("test-speculative-decoding", "Test OPT-S01 Speculative Decoding 2-3x generation speed");
+    gen_spec_dec_step.dependOn(&run_gen_spec_dec_tests.step);
+    test_step.dependOn(&run_gen_spec_dec_tests.step);
+
+    // Generated GGUF Parser tests (INF-001: Load any GGUF model)
+    const gen_gguf_parser_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/gguf_parser.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_gguf_parser_tests = b.addRunArtifact(gen_gguf_parser_tests);
+    const gen_gguf_parser_step = b.step("test-gguf-parser", "Test INF-001 GGUF Parser — load any GGUF model");
+    gen_gguf_parser_step.dependOn(&run_gen_gguf_parser_tests.step);
+    test_step.dependOn(&run_gen_gguf_parser_tests.step);
+
+    // Generated Transformer Forward Pass tests (INF-002: Native LLM inference)
+    const gen_tfm_fwd_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/transformer_forward.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_tfm_fwd_tests = b.addRunArtifact(gen_tfm_fwd_tests);
+    const gen_tfm_fwd_step = b.step("test-transformer-forward", "Test INF-002 Transformer Forward Pass — native LLM inference");
+    gen_tfm_fwd_step.dependOn(&run_gen_tfm_fwd_tests.step);
+    test_step.dependOn(&run_gen_tfm_fwd_tests.step);
+
+    // Generated Hardware Abstraction tests (HW-001: Unified ternary backend interface)
+    const gen_hw_abs_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/hardware_abstraction.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_hw_abs_tests = b.addRunArtifact(gen_hw_abs_tests);
+    const gen_hw_abs_step = b.step("test-hardware-abstraction", "Test HW-001 Hardware Abstraction Layer — unified ternary backend");
+    gen_hw_abs_step.dependOn(&run_gen_hw_abs_tests.step);
+    test_step.dependOn(&run_gen_hw_abs_tests.step);
+
+    // Generated JIT Compilation tests (CORE-004: Multi-tier JIT pipeline)
+    const gen_jit_comp_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/jit_compilation.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_jit_comp_tests = b.addRunArtifact(gen_jit_comp_tests);
+    const gen_jit_comp_step = b.step("test-jit-compilation", "Test CORE-004 JIT Compilation — multi-tier pipeline");
+    gen_jit_comp_step.dependOn(&run_gen_jit_comp_tests.step);
+    test_step.dependOn(&run_gen_jit_comp_tests.step);
+
+    // Generated FPGA Acceleration tests (HW-003: Ternary hardware backend)
+    const gen_fpga_acc_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated/fpga_acceleration.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_fpga_acc_tests = b.addRunArtifact(gen_fpga_acc_tests);
+    const gen_fpga_acc_step = b.step("test-fpga-acceleration", "Test HW-003 FPGA Acceleration — ternary hardware backend");
+    gen_fpga_acc_step.dependOn(&run_gen_fpga_acc_tests.step);
+    test_step.dependOn(&run_gen_fpga_acc_tests.step);
 }
