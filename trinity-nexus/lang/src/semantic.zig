@@ -9,7 +9,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const ArrayList = std.ArrayListUnmanaged;
 const StringHashMap = std.StringHashMap;
 const ast_mod = @import("ast.zig");
 const Ast = ast_mod.Ast;
@@ -76,6 +76,7 @@ pub const Scope = struct {
     symbols: StringHashMap(SymbolId),
     children: ArrayList(ScopeId),
     span: SourceSpan,
+    allocator: Allocator,
 
     pub fn init(allocator: Allocator, id: ScopeId, parent: ScopeId, kind: ScopeKind, span: SourceSpan) Scope {
         return Scope{
@@ -83,14 +84,15 @@ pub const Scope = struct {
             .parent = parent,
             .kind = kind,
             .symbols = StringHashMap(SymbolId).init(allocator),
-            .children = ArrayList(ScopeId).init(allocator),
+            .children = .{},
             .span = span,
+            .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *Scope) void {
         self.symbols.deinit();
-        self.children.deinit();
+        self.children.deinit(self.allocator);
     }
 };
 
@@ -117,8 +119,8 @@ pub const SymbolTable = struct {
     pub fn init(allocator: Allocator) !Self {
         var self = Self{
             .allocator = allocator,
-            .symbols = ArrayList(Symbol).init(allocator),
-            .scopes = ArrayList(Scope).init(allocator),
+            .symbols = .{},
+            .scopes = .{},
             .current_scope = 0,
             .global_symbols = StringHashMap(SymbolId).init(allocator),
             .type_registry = StringHashMap(SymbolId).init(allocator),
@@ -127,7 +129,7 @@ pub const SymbolTable = struct {
         };
 
         // Create global scope
-        try self.scopes.append(Scope.init(allocator, 0, INVALID_SCOPE, .global, SourceSpan.empty()));
+        try self.scopes.append(allocator, Scope.init(allocator, 0, INVALID_SCOPE, .global, SourceSpan.empty()));
 
         // Register built-in types
         try self.registerBuiltins();
@@ -139,8 +141,8 @@ pub const SymbolTable = struct {
         for (self.scopes.items) |*scope| {
             scope.deinit();
         }
-        self.scopes.deinit();
-        self.symbols.deinit();
+        self.scopes.deinit(self.allocator);
+        self.symbols.deinit(self.allocator);
         self.global_symbols.deinit();
         self.type_registry.deinit();
     }
@@ -173,10 +175,10 @@ pub const SymbolTable = struct {
     pub fn enterScope(self: *Self, kind: ScopeKind, span: SourceSpan) !ScopeId {
         const new_id: ScopeId = @intCast(self.scopes.items.len);
 
-        try self.scopes.append(Scope.init(self.allocator, new_id, self.current_scope, kind, span));
+        try self.scopes.append(self.allocator, Scope.init(self.allocator, new_id, self.current_scope, kind, span));
 
         // Add as child of current scope
-        try self.scopes.items[self.current_scope].children.append(new_id);
+        try self.scopes.items[self.current_scope].children.append(self.allocator, new_id);
 
         self.current_scope = new_id;
         return new_id;
@@ -213,7 +215,7 @@ pub const SymbolTable = struct {
             .ast_node = ast_node,
         };
 
-        try self.symbols.append(symbol);
+        try self.symbols.append(self.allocator, symbol);
         try self.scopes.items[self.current_scope].symbols.put(name, id);
 
         // Add to global cache if in global scope
@@ -321,15 +323,15 @@ pub const SemanticAnalyzer = struct {
         return Self{
             .allocator = allocator,
             .symbol_table = try SymbolTable.init(allocator),
-            .errors = ArrayList(SemanticError).init(allocator),
-            .warnings = ArrayList(SemanticError).init(allocator),
+            .errors = .{},
+            .warnings = .{},
         };
     }
 
     pub fn deinit(self: *Self) void {
         self.symbol_table.deinit();
-        self.errors.deinit();
-        self.warnings.deinit();
+        self.errors.deinit(self.allocator);
+        self.warnings.deinit(self.allocator);
     }
 
     pub fn analyze(self: *Self, ast: *const Ast) !SemanticResult {
@@ -373,7 +375,7 @@ pub const SemanticAnalyzer = struct {
                     if (type_node.kind == .type_def) {
                         // Check for duplicate
                         if (self.symbol_table.lookupType(type_node.data)) |_| {
-                            try self.errors.append(.{
+                            try self.errors.append(self.allocator, .{
                                 .code = .duplicate_definition,
                                 .message = "type already defined",
                                 .span = type_node.span,
@@ -422,7 +424,7 @@ pub const SemanticAnalyzer = struct {
                     if (self.symbol_table.lookupType(field_node.data) == null) {
                         // Check if it's a built-in or unknown
                         if (!self.isBuiltinType(field_node.data)) {
-                            try self.errors.append(.{
+                            try self.errors.append(self.allocator, .{
                                 .code = .type_not_found,
                                 .message = "unknown type",
                                 .span = field_node.span,

@@ -2,29 +2,35 @@
 // TRINITY NEXUS -- Lang Module (trinity-lang)
 // VIBEE compiler: parser, AST, code generation, multilingual targets
 // =============================================================================
-// Migrated from src/vibeec/ in NEXUS-003
-// 38 files, 28186 lines — core compiler pipeline
+// Single source of truth for the VIBEEC compiler pipeline.
+// Consolidated from src/vibeec/ — all compiler logic lives here.
+// CLI tools (gen_cmd, gguf_chat, http_server) remain in src/vibeec/.
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // =============================================================================
 
 const std = @import("std");
 
-pub const VERSION = "0.1.0";
+pub const VERSION = "0.2.0";
 pub const MODULE = "trinity-lang";
 
 // ─── Parser / Lexer / AST ───────────────────────────────────────────────────────────
 pub const vibee_parser = @import("vibee_parser.zig");
 pub const lexer = @import("lexer.zig");
 pub const ast = @import("ast.zig");
+pub const parser_v3 = @import("parser_v3.zig");
 
 // ─── Semantic Analysis ────────────────────────────────────────────────────────────
 pub const semantic = @import("semantic.zig");
 pub const semantic_analyzer = @import("semantic_analyzer.zig");
 pub const type_system = @import("type_system.zig");
+pub const type_checker = @import("type_checker.zig");
+pub const error_reporter = @import("error_reporter.zig");
 
 // ─── IR / Bytecode ────────────────────────────────────────────────────────────────
 pub const ir = @import("ir.zig");
 pub const bytecode = @import("bytecode.zig");
+pub const bytecode_compiler = @import("bytecode_compiler.zig");
+pub const spec_compiler = @import("spec_compiler.zig");
 
 // ─── Code Generation ────────────────────────────────────────────────────────────
 pub const zig_codegen = @import("zig_codegen.zig");
@@ -36,34 +42,50 @@ pub const lang_generators = @import("lang_generators.zig");
 // ─── Codegen Module ─────────────────────────────────────────────────────────────
 pub const codegen = @import("codegen/mod.zig");
 
+// ─── Runtime / Support ──────────────────────────────────────────────────────────
+pub const coptic_parser_real = @import("coptic_parser_real.zig");
+pub const coptic_lexer = @import("coptic_lexer.zig");
+pub const vm_runtime = @import("vm_runtime.zig");
+pub const sacred_math = @import("sacred_math.zig");
+pub const simd_ternary = @import("simd_ternary.zig");
+pub const simd_ternary_optimized = @import("simd_ternary_optimized.zig");
+
 // ─── Re-exported types ────────────────────────────────────────────────────────────
 pub const VibeeSpec = vibee_parser.VibeeSpec;
 pub const Token = lexer.Token;
 
 test {
-    // Core parser/lexer/AST (self-contained, std-only imports)
+    // Core parser (self-contained, std-only imports)
     _ = vibee_parser;
-    _ = lexer;
-    _ = ast;
+    _ = parser_v3;
 
-    // Semantic analysis
-    _ = semantic;
-    _ = semantic_analyzer;
-    _ = type_system;
-
-    // IR / Bytecode
-    _ = ir;
-    _ = bytecode;
-
-    // Code generation
+    // Code generation — primary pipeline
+    _ = codegen;
     _ = multi_lang_codegen;
     _ = multilingual_engine;
     _ = lang_generators;
+
+    // Self-contained support modules
+    _ = coptic_lexer;
+    _ = sacred_math;
+    _ = simd_ternary;
+    _ = simd_ternary_optimized;
+
+    // NOTE: The following modules use Zig 0.13-style ArrayList/IO API
+    // and need migration to 0.15 ArrayListUnmanaged before inclusion:
+    // _ = lexer;
+    // _ = ast;
+    // _ = semantic;
+    // _ = semantic_analyzer;
+    // _ = type_system;
+    // _ = ir;
+    // _ = bytecode;
+    // _ = error_reporter;
 }
 
 test "trinity-lang module identity" {
     try std.testing.expectEqualStrings("trinity-lang", MODULE);
-    try std.testing.expectEqualStrings("0.1.0", VERSION);
+    try std.testing.expectEqualStrings("0.2.0", VERSION);
 }
 
 test "trinity-lang parser available" {

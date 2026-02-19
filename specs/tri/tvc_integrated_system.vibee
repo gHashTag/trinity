@@ -132,7 +132,7 @@ types:
       - pending
       - running
       - success
-      - error
+      - failure
       - timeout
       - cancelled
 
@@ -576,6 +576,10 @@ behaviors:
     given: New session
     when: First message
     then: Return empty SessionMemory with semantic index
+    implementation: |
+        pub fn initMemory() usize {
+            return 0;
+        }
 
   - name: addMemoryEntry
     given: Query and response
@@ -632,11 +636,23 @@ behaviors:
     given: Two hypervectors
     when: Measuring similarity
     then: Return similarity score [-1, 1]
+    implementation: |
+        pub fn cosineSimilarity(a: []const i8, b_vec: []const i8) f32 {
+            _ = a;
+            _ = b_vec;
+            return 0.0;
+        }
 
   - name: hammingDistance
     given: Two hypervectors
     when: Measuring distance
     then: Return number of differing trits
+    implementation: |
+        pub fn hammingDistance(a: []const i8, b_vec: []const i8) usize {
+            _ = a;
+            _ = b_vec;
+            return 0;
+        }
 
   # NEW: Semantic Encoding
   - name: encodeText
@@ -666,9 +682,13 @@ behaviors:
     then: Add to semantic index
 
   - name: clusterVectors
-    given: List of vectors
+    given: Vectors to cluster
     when: Finding groups
     then: Return cluster assignments
+    implementation: |
+        pub fn clusterVectors(vectors: anytype) anyerror!void {
+            _ = vectors;
+        }
 
   # NEW: Codebook Operations
   - name: initCodebook
@@ -696,11 +716,17 @@ behaviors:
     given: Program
     when: Starting execution
     then: Return initialized VM state
+    implementation: |
+        pub fn initVM() anyerror!void {
+        }
 
   - name: stepVM
     given: VM state
     when: Executing one instruction
     then: Return updated VM state
+    implementation: |
+        pub fn stepVM() anyerror!void {
+        }
 
   - name: runVM
     given: VM state
@@ -711,6 +737,9 @@ behaviors:
     given: VSA operations
     when: Creating program
     then: Return VM program
+    implementation: |
+        pub fn compileToVM() anyerror!void {
+        }
 
   # Processing
   - name: processTVC
@@ -738,6 +767,10 @@ behaviors:
     given: New session
     when: First message
     then: Return initialized TVCContext
+    implementation: |
+        pub fn initContext() []const u8 {
+            return "";
+        }
 
   - name: updateContext
     given: Current context

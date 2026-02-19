@@ -1,0 +1,16 @@
+Package: TrinityVSA
+Title: Vector Symbolic Architecture with Balanced Ternary Arithmetic
+Version: 0.1.0
+Authors@R: person("Trinity Project", email = "trinity@example.com", role = c("aut", "cre"))
+Description: High-performance Vector Symbolic Architecture (VSA) library with 
+    balanced ternary arithmetic. Provides bind, bundle, permute, and similarity
+    operations for hyperdimensional computing.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    stats
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

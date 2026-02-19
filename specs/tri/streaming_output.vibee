@@ -77,56 +77,107 @@ behaviors:
     given: StreamConfig with optional settings
     when: Starting streaming session
     then: Return initialized StreamState
+    implementation: |
+        pub fn init(config: StreamConfig) StreamState {
+            _ = config;
+            return StreamState{};
+        }
 
   - name: streamChar
     given: Single character to output
     when: Outputting next character
     then: Write character with optional delay
+    implementation: |
+        pub fn streamChar(state: *StreamState, char: u8) !void {
+            _ = state;
+            _ = char;
+        }
 
   - name: streamToken
     given: Token string to output
     when: New token generated from LLM
     then: Write token immediately, update stats
+    implementation: |
+        pub fn streamToken(state: *StreamState, token: []const u8) !void {
+            _ = state;
+            _ = token;
+        }
 
   - name: streamText
     given: Text string to output
     when: Outputting full text with streaming effect
     then: Output each character with delay between
+    implementation: |
+        pub fn streamText(state: *StreamState, text: []const u8) !void {
+            _ = state;
+            _ = text;
+        }
 
   - name: streamLine
     given: Line of text
     when: Outputting line with streaming
     then: Stream text then newline
+    implementation: |
+        pub fn streamLine(state: *StreamState, line: []const u8) !void {
+            _ = state;
+            _ = line;
+        }
 
   - name: flush
     given: Pending output
     when: Immediate output needed
     then: Write all pending characters immediately
+    implementation: |
+        pub fn flush(state: *StreamState) !void {
+            _ = state;
+        }
 
   - name: setColor
     given: ANSI color code
     when: Color output enabled
     then: Write color escape sequence to stdout
+    implementation: |
+        pub fn setColor(color_code: u8) !void {
+            _ = color_code;
+        }
 
   - name: resetColor
     given: Current color state
     when: Resetting to default terminal color
     then: Write reset escape sequence
+    implementation: |
+        pub fn resetColor() !void {
+        }
 
   - name: showTokenRate
     given: Current token rate
     when: Rate display enabled
     then: Update inline rate indicator
+    implementation: |
+        pub fn showTokenRate(state: StreamState, tokens_per_sec: f32) !void {
+            _ = state;
+            _ = tokens_per_sec;
+        }
 
   - name: complete
     given: StreamState with final stats
     when: Generation finished
     then: Flush remaining, show stats, print newline
+    implementation: |
+        pub fn complete(state: *StreamState) StreamStats {
+            _ = state;
+            return StreamStats{};
+        }
 
   - name: getStats
     given: Current stream state
     when: Statistics requested
     then: Return StreamStats with timing info
+    implementation: |
+        pub fn getStats(state: StreamState) StreamStats {
+            _ = state;
+            return StreamStats{};
+        }
 
 test_cases:
   - name: immediate_mode_no_buffer

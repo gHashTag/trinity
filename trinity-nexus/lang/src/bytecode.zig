@@ -9,7 +9,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const ArrayList = std.ArrayListUnmanaged;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED CONSTANTS
@@ -365,14 +365,14 @@ pub const ConstantPool = struct {
     pub fn init(allocator: Allocator) Self {
         return Self{
             .allocator = allocator,
-            .entries = ArrayList(Value).init(allocator),
+            .entries = .{},
             .int_map = std.AutoHashMap(i64, u16).init(allocator),
             .float_map = std.AutoHashMap(u64, u16).init(allocator),
         };
     }
 
     pub fn deinit(self: *Self) void {
-        self.entries.deinit();
+        self.entries.deinit(self.allocator);
         self.int_map.deinit();
         self.float_map.deinit();
     }
@@ -384,7 +384,7 @@ pub const ConstantPool = struct {
         }
 
         const idx: u16 = @intCast(self.entries.items.len);
-        try self.entries.append(.{ .int_val = value });
+        try self.entries.append(self.allocator, .{ .int_val = value });
         try self.int_map.put(value, idx);
         return idx;
     }
@@ -396,20 +396,20 @@ pub const ConstantPool = struct {
         }
 
         const idx: u16 = @intCast(self.entries.items.len);
-        try self.entries.append(.{ .float_val = value });
+        try self.entries.append(self.allocator, .{ .float_val = value });
         try self.float_map.put(bits, idx);
         return idx;
     }
 
     pub fn addBool(self: *Self, value: bool) !u16 {
         const idx: u16 = @intCast(self.entries.items.len);
-        try self.entries.append(.{ .bool_val = value });
+        try self.entries.append(self.allocator, .{ .bool_val = value });
         return idx;
     }
 
     pub fn addString(self: *Self, value: []const u8) !u16 {
         const idx: u16 = @intCast(self.entries.items.len);
-        try self.entries.append(.{ .string_val = value });
+        try self.entries.append(self.allocator, .{ .string_val = value });
         return idx;
     }
 
@@ -444,14 +444,14 @@ pub const LabelTable = struct {
         return Self{
             .allocator = allocator,
             .labels = std.StringHashMap(u32).init(allocator),
-            .forward_refs = ArrayList(ForwardRef).init(allocator),
+            .forward_refs = .{},
             .next_label_id = 0,
         };
     }
 
     pub fn deinit(self: *Self) void {
         self.labels.deinit();
-        self.forward_refs.deinit();
+        self.forward_refs.deinit(self.allocator);
     }
 
     pub fn newLabel(self: *Self) []const u8 {
@@ -466,7 +466,7 @@ pub const LabelTable = struct {
     }
 
     pub fn addForwardRef(self: *Self, name: []const u8, patch_offset: u32) !void {
-        try self.forward_refs.append(.{
+        try self.forward_refs.append(self.allocator, .{
             .label_name = name,
             .patch_offset = patch_offset,
         });
@@ -496,7 +496,7 @@ pub const BytecodeEmitter = struct {
     pub fn init(allocator: Allocator) Self {
         return Self{
             .allocator = allocator,
-            .code = ArrayList(u8).init(allocator),
+            .code = .{},
             .constants = ConstantPool.init(allocator),
             .labels = LabelTable.init(allocator),
             .instructions_emitted = 0,
@@ -505,41 +505,41 @@ pub const BytecodeEmitter = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        self.code.deinit();
+        self.code.deinit(self.allocator);
         self.constants.deinit();
         self.labels.deinit();
     }
 
     /// Emit single-byte opcode
     pub fn emit(self: *Self, op: Opcode) !void {
-        try self.code.append(@intFromEnum(op));
+        try self.code.append(self.allocator, @intFromEnum(op));
         self.instructions_emitted += 1;
         self.bytes_emitted += 1;
     }
 
     /// Emit opcode with u16 operand (big-endian)
     pub fn emitWithU16(self: *Self, op: Opcode, operand: u16) !void {
-        try self.code.append(@intFromEnum(op));
-        try self.code.append(@intCast(operand >> 8));
-        try self.code.append(@intCast(operand & 0xFF));
+        try self.code.append(self.allocator, @intFromEnum(op));
+        try self.code.append(self.allocator, @intCast(operand >> 8));
+        try self.code.append(self.allocator, @intCast(operand & 0xFF));
         self.instructions_emitted += 1;
         self.bytes_emitted += 3;
     }
 
     /// Emit opcode with i8 operand (for trit values)
     pub fn emitWithI8(self: *Self, op: Opcode, operand: i8) !void {
-        try self.code.append(@intFromEnum(op));
-        try self.code.append(@bitCast(operand));
+        try self.code.append(self.allocator, @intFromEnum(op));
+        try self.code.append(self.allocator, @bitCast(operand));
         self.instructions_emitted += 1;
         self.bytes_emitted += 2;
     }
 
     /// Emit opcode with i16 operand (big-endian, for tryte values)
     pub fn emitWithI16(self: *Self, op: Opcode, operand: i16) !void {
-        try self.code.append(@intFromEnum(op));
+        try self.code.append(self.allocator, @intFromEnum(op));
         const u_operand: u16 = @bitCast(operand);
-        try self.code.append(@intCast(u_operand >> 8));
-        try self.code.append(@intCast(u_operand & 0xFF));
+        try self.code.append(self.allocator, @intCast(u_operand >> 8));
+        try self.code.append(self.allocator, @intCast(u_operand & 0xFF));
         self.instructions_emitted += 1;
         self.bytes_emitted += 3;
     }
@@ -580,16 +580,16 @@ pub const BytecodeEmitter = struct {
 
     /// Emit jump to label
     pub fn emitJump(self: *Self, op: Opcode, label: []const u8) !void {
-        try self.code.append(@intFromEnum(op));
+        try self.code.append(self.allocator, @intFromEnum(op));
 
         if (self.labels.resolve(label)) |addr| {
-            try self.code.append(@intCast(addr >> 8));
-            try self.code.append(@intCast(addr & 0xFF));
+            try self.code.append(self.allocator, @intCast(addr >> 8));
+            try self.code.append(self.allocator, @intCast(addr & 0xFF));
         } else {
             // Forward reference
             try self.labels.addForwardRef(label, @intCast(self.code.items.len));
-            try self.code.append(0);
-            try self.code.append(0);
+            try self.code.append(self.allocator, 0);
+            try self.code.append(self.allocator, 0);
         }
 
         self.instructions_emitted += 1;
@@ -616,16 +616,16 @@ pub const BytecodeEmitter = struct {
     pub fn finalize(self: *Self) ![]const u8 {
         try self.resolveLabels();
 
-        var output = ArrayList(u8).init(self.allocator);
+        var output: ArrayList(u8) = .{};
 
         // Header
-        try output.appendSlice(&MAGIC);
-        try output.append(@intCast(BYTECODE_VERSION >> 8));
-        try output.append(@intCast(BYTECODE_VERSION & 0xFF));
+        try output.appendSlice(self.allocator, &MAGIC);
+        try output.append(self.allocator, @intCast(BYTECODE_VERSION >> 8));
+        try output.append(self.allocator, @intCast(BYTECODE_VERSION & 0xFF));
 
         // Flags (reserved)
-        try output.append(0);
-        try output.append(0);
+        try output.append(self.allocator, 0);
+        try output.append(self.allocator, 0);
 
         // Constant pool offset (after header = 24 bytes)
         const cp_offset: u32 = 24;
@@ -646,17 +646,16 @@ pub const BytecodeEmitter = struct {
         try self.serializeConstantPool(&output);
 
         // Code section
-        try output.appendSlice(self.code.items);
+        try output.appendSlice(self.allocator, self.code.items);
 
-        return output.toOwnedSlice();
+        return output.toOwnedSlice(self.allocator);
     }
 
     fn appendU32(self: *Self, output: *ArrayList(u8), value: u32) !void {
-        _ = self;
-        try output.append(@intCast((value >> 24) & 0xFF));
-        try output.append(@intCast((value >> 16) & 0xFF));
-        try output.append(@intCast((value >> 8) & 0xFF));
-        try output.append(@intCast(value & 0xFF));
+        try output.append(self.allocator, @intCast((value >> 24) & 0xFF));
+        try output.append(self.allocator, @intCast((value >> 16) & 0xFF));
+        try output.append(self.allocator, @intCast((value >> 8) & 0xFF));
+        try output.append(self.allocator, @intCast(value & 0xFF));
     }
 
     fn serializeConstantPoolSize(self: *const Self) u32 {
@@ -666,75 +665,75 @@ pub const BytecodeEmitter = struct {
 
     fn serializeConstantPool(self: *Self, output: *ArrayList(u8)) !void {
         const count: u16 = @intCast(self.constants.count());
-        try output.append(@intCast(count >> 8));
-        try output.append(@intCast(count & 0xFF));
+        try output.append(self.allocator, @intCast(count >> 8));
+        try output.append(self.allocator, @intCast(count & 0xFF));
 
         for (self.constants.entries.items) |entry| {
             switch (entry) {
                 .nil => {
-                    try output.append(@intFromEnum(ValueTag.nil));
-                    try output.appendNTimes(0, 8);
+                    try output.append(self.allocator, @intFromEnum(ValueTag.nil));
+                    try output.appendNTimes(self.allocator, 0, 8);
                 },
                 .bool_val => |v| {
-                    try output.append(@intFromEnum(ValueTag.bool_val));
-                    try output.append(if (v) 1 else 0);
-                    try output.appendNTimes(0, 7);
+                    try output.append(self.allocator, @intFromEnum(ValueTag.bool_val));
+                    try output.append(self.allocator, if (v) 1 else 0);
+                    try output.appendNTimes(self.allocator, 0, 7);
                 },
                 .int_val => |v| {
-                    try output.append(@intFromEnum(ValueTag.int_val));
+                    try output.append(self.allocator, @intFromEnum(ValueTag.int_val));
                     const bytes: [8]u8 = @bitCast(v);
-                    try output.appendSlice(&bytes);
+                    try output.appendSlice(self.allocator, &bytes);
                 },
                 .float_val => |v| {
-                    try output.append(@intFromEnum(ValueTag.float_val));
+                    try output.append(self.allocator, @intFromEnum(ValueTag.float_val));
                     const bytes: [8]u8 = @bitCast(v);
-                    try output.appendSlice(&bytes);
+                    try output.appendSlice(self.allocator, &bytes);
                 },
                 .string_val => |v| {
-                    try output.append(@intFromEnum(ValueTag.string_val));
+                    try output.append(self.allocator, @intFromEnum(ValueTag.string_val));
                     // Store length as u32 + padding
                     const len: u32 = @intCast(v.len);
                     try self.appendU32(output, len);
-                    try output.appendNTimes(0, 4);
+                    try output.appendNTimes(self.allocator, 0, 4);
                 },
                 .func_val => |v| {
-                    try output.append(@intFromEnum(ValueTag.func_val));
+                    try output.append(self.allocator, @intFromEnum(ValueTag.func_val));
                     // Store addr (2 bytes) + arity (1 byte) + locals (1 byte) + padding
-                    try output.append(@intCast(v.addr >> 8));
-                    try output.append(@intCast(v.addr & 0xFF));
-                    try output.append(v.arity);
-                    try output.append(v.locals);
-                    try output.appendNTimes(0, 4);
+                    try output.append(self.allocator, @intCast(v.addr >> 8));
+                    try output.append(self.allocator, @intCast(v.addr & 0xFF));
+                    try output.append(self.allocator, v.arity);
+                    try output.append(self.allocator, v.locals);
+                    try output.appendNTimes(self.allocator, 0, 4);
                 },
                 .array_val, .object_val => {
                     // Arrays and objects are runtime-only, not serialized
-                    try output.append(@intFromEnum(ValueTag.nil));
-                    try output.appendNTimes(0, 8);
+                    try output.append(self.allocator, @intFromEnum(ValueTag.nil));
+                    try output.appendNTimes(self.allocator, 0, 8);
                 },
                 .closure_val => |v| {
                     // Closures serialized as function reference
-                    try output.append(@intFromEnum(ValueTag.closure_val));
-                    try output.append(@intCast(v.func_addr >> 8));
-                    try output.append(@intCast(v.func_addr & 0xFF));
-                    try output.append(v.upvalue_count);
-                    try output.appendNTimes(0, 5);
+                    try output.append(self.allocator, @intFromEnum(ValueTag.closure_val));
+                    try output.append(self.allocator, @intCast(v.func_addr >> 8));
+                    try output.append(self.allocator, @intCast(v.func_addr & 0xFF));
+                    try output.append(self.allocator, v.upvalue_count);
+                    try output.appendNTimes(self.allocator, 0, 5);
                 },
                 .trit_val => |v| {
                     // Trit value: -1=F, 0=U, 1=T
-                    try output.append(@intFromEnum(ValueTag.trit_val));
-                    try output.append(@bitCast(v));
-                    try output.appendNTimes(0, 7);
+                    try output.append(self.allocator, @intFromEnum(ValueTag.trit_val));
+                    try output.append(self.allocator, @bitCast(v));
+                    try output.appendNTimes(self.allocator, 0, 7);
                 },
                 .tryte_val => |v| {
                     // Tryte value: -13..+13 (balanced ternary)
-                    try output.append(@intFromEnum(ValueTag.tryte_val));
-                    try output.append(@bitCast(v));
-                    try output.appendNTimes(0, 7);
+                    try output.append(self.allocator, @intFromEnum(ValueTag.tryte_val));
+                    try output.append(self.allocator, @bitCast(v));
+                    try output.appendNTimes(self.allocator, 0, 7);
                 },
                 .tryte_array_val => {
                     // TryteArray is runtime-only, not serialized
-                    try output.append(@intFromEnum(ValueTag.nil));
-                    try output.appendNTimes(0, 8);
+                    try output.append(self.allocator, @intFromEnum(ValueTag.nil));
+                    try output.appendNTimes(self.allocator, 0, 8);
                 },
             }
         }

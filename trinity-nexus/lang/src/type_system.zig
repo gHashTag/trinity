@@ -154,22 +154,22 @@ pub const TypeEnv = struct {
     next_type_var: u32 = 0,
     
     // Track allocated type vars for cleanup
-    type_vars: std.ArrayList(*Type),
-    
+    type_vars: std.ArrayListUnmanaged(*Type),
+
     pub fn init(allocator: Allocator, parent: ?*TypeEnv) TypeEnv {
         return .{
             .allocator = allocator,
             .bindings = std.StringHashMap(*Type).init(allocator),
             .parent = parent,
-            .type_vars = std.ArrayList(*Type).init(allocator),
+            .type_vars = .{},
         };
     }
-    
+
     pub fn deinit(self: *TypeEnv) void {
         for (self.type_vars.items) |tv| {
             self.allocator.destroy(tv);
         }
-        self.type_vars.deinit();
+        self.type_vars.deinit(self.allocator);
         self.bindings.deinit();
     }
     
@@ -193,7 +193,7 @@ pub const TypeEnv = struct {
             .id = self.next_type_var,
         };
         self.next_type_var += 1;
-        try self.type_vars.append(t);
+        try self.type_vars.append(self.allocator, t);
         return t;
     }
 };
@@ -213,7 +213,7 @@ pub const InferenceError = error{
 
 pub const TypeInference = struct {
     allocator: Allocator,
-    constraints: std.ArrayList(TypeConstraint),
+    constraints: std.ArrayListUnmanaged(TypeConstraint),
     
     // PRE: Cached unification results
     unification_cache: std.AutoHashMap(u64, *Type),
@@ -225,19 +225,19 @@ pub const TypeInference = struct {
     pub fn init(allocator: Allocator) TypeInference {
         return .{
             .allocator = allocator,
-            .constraints = std.ArrayList(TypeConstraint).init(allocator),
+            .constraints = .{},
             .unification_cache = std.AutoHashMap(u64, *Type).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *TypeInference) void {
-        self.constraints.deinit();
+        self.constraints.deinit(self.allocator);
         self.unification_cache.deinit();
     }
     
     /// Add constraint
     pub fn addConstraint(self: *TypeInference, constraint: TypeConstraint) !void {
-        try self.constraints.append(constraint);
+        try self.constraints.append(self.allocator, constraint);
     }
     
     /// Solve all constraints - D&C pattern
@@ -399,7 +399,7 @@ pub const TypeRegistry = struct {
     named_types: std.StringHashMap(*Type),
     
     // All allocated types
-    all_types: std.ArrayList(*Type),
+    all_types: std.ArrayListUnmanaged(*Type),
     
     next_id: u32 = 0,
     
@@ -416,7 +416,7 @@ pub const TypeRegistry = struct {
             .phi_type = undefined,
             .sacred_type = undefined,
             .named_types = std.StringHashMap(*Type).init(allocator),
-            .all_types = std.ArrayList(*Type).init(allocator),
+            .all_types = .{},
         };
         
         // Initialize primitive types
@@ -437,7 +437,7 @@ pub const TypeRegistry = struct {
         for (self.all_types.items) |t| {
             self.allocator.destroy(t);
         }
-        self.all_types.deinit();
+        self.all_types.deinit(self.allocator);
         self.named_types.deinit();
     }
     
@@ -450,7 +450,7 @@ pub const TypeRegistry = struct {
             .alignment = alignment,
         };
         self.next_id += 1;
-        try self.all_types.append(t);
+        try self.all_types.append(self.allocator, t);
         return t;
     }
     
@@ -465,7 +465,7 @@ pub const TypeRegistry = struct {
             .alignment = elem.alignment,
         };
         self.next_id += 1;
-        try self.all_types.append(t);
+        try self.all_types.append(self.allocator, t);
         return t;
     }
     
@@ -481,7 +481,7 @@ pub const TypeRegistry = struct {
             .alignment = 8,
         };
         self.next_id += 1;
-        try self.all_types.append(t);
+        try self.all_types.append(self.allocator, t);
         return t;
     }
     
@@ -496,7 +496,7 @@ pub const TypeRegistry = struct {
             .alignment = inner.alignment,
         };
         self.next_id += 1;
-        try self.all_types.append(t);
+        try self.all_types.append(self.allocator, t);
         return t;
     }
     

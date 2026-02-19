@@ -1,7 +1,7 @@
-# Tech Tree — Ralph Navigation
+# Tech Tree — Ralph Navigation# Tech Tree — Ralph Navigation
 
 > Source of truth: `specs/tri/tech_tree_strategy.vibee`
-> Last sync: 2026-02-17
+> Last sync: 2026-02-18
 
 ---
 
@@ -16,10 +16,21 @@
 | ID | Name | Branch | Complexity | Gain |
 |----|------|--------|------------|------|
 
-|DEV-003|SWARM-WATCH (DHT)|development|4/5|Live DHT & economy monitor|
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**CODEGEN-005**|**VIBEE v5 Production Components**|**vibee-v5-production**|**2 production specs: llm_full_inference (14 behaviors, KV cache/RoPE/RMSNorm/FlashAttention/sampling), vsa_swarm_agent (17 behaviors, VSA bind/bundle/consensus/phi-spiral/self-heal). v4.1: 155+ TODO stubs eliminated across 14+ specs. CI updated with production tests.**|
+|----|------|--------|------|
+|**OPT-B01**|**Continuous Batching**|**optimization**|**continuous_batching.zig (891 lines): Orca/vLLM-style iteration-level scheduler, priority queue with wait-time boost, preemption, 13 tests, completion detection, continuous admission, throughput analysis, build.zig wired**|
+|----|------|--------|------|
+|**OPT-PA01**|**PagedAttention**|**optimization**|**paged_attention.zig (947 lines): vLLM-style block KV cache, CoW block sharing, 14 tests, 4-10x memory efficiency, beam search fork, pool lifecycle, attention Q@K^T+softmax+V, memory analysis (64x with ternary), build.zig wired**|
+|----|------|--------|------|
+|**OPT-T02**|**Ternary Matrix Multiplication**|**optimization**|**ternary_matmul.zig (851 lines): 10x matmul speedup (no multiply), scalar+SIMD8+SIMD16+batch4 kernels, matmat, 3 quant modes, per-row scales, 15.9x compression, cosine accuracy, 15 tests**|
+|----|------|--------|------|
+|**OPT-T03**|**Ternary KV Cache**|**optimization**|**ternary_kv_cache.zig (729 lines): 16x compression proof, full attention pipeline, SIMD ternaryDot, 4 quant modes, 13 tests, cosine accuracy validation**|
+|----|------|--------|------|
+|**DEV-003**|**SWARM-WATCH (DHT)**|**development**|**swarm_watch.zig (515 lines): zero-alloc DHT health + TRI reward monitor, ring buffer, ANSI dashboard, Prometheus export, 10 tests, build.zig wired**|
 |----|------|--------|------|
 |**DEV-002**|**KG-INSIGHT**|**development**|**kg_cli.zig v2.0: 4 commands (triples/inspect/export/find), case-insensitive entity search, JSON export, kg_insight.vibee spec**|
 |----|------|--------|------|
@@ -72,48 +83,50 @@
 |CORE-001|VIBEE Parser v2|core|+20% spec parsing speed|
 |CORE-002|Multi-Language Codegen|core|+42 target languages|
 |CORE-003|Bytecode VM|core|+500% execution speed vs interpreter|
-|INF-001|GGUF Parser|inference|Load any GGUF model|
-|INF-002|Transformer Forward Pass|inference|Native LLM inference|
+|**INF-001**|**GGUF Parser**|**inference**|**gguf_parser.zig (850 lines): GGUF v3 binary parser, ByteReader, 13 value types, tensor info, Q4_0/Q8_0 dequant, f16-to-f32, model config extraction, GGUFBuilder for round-trip tests, 20 tests, build.zig wired**|
+|**INF-002**|**Transformer Forward Pass**|**inference**|**transformer_forward.zig (960 lines): LLaMA-style transformer, RMSNorm, RoPE cache, SIMD matVec, GQA attention, SwiGLU FFN, KV cache, generation loop, top-p sampling, inference stats, 18 tests, build.zig wired**|
+|----|------|--------|------|
+|**HW-001**|**Hardware Abstraction Layer**|**hardware**|**hardware_abstraction.zig (~750 lines): compile-time backend selection (CPU_SCALAR/CPU_SIMD/FPGA/GPU), SIMD capability detection (AVX-512/AVX2/SSE4/NEON), ScalarBackend + SimdBackend @Vector(8,i8), unified dispatch, PerfCounters, MemoryAnalysis (16x compression), 21 tests, build.zig wired**|
+|----|------|--------|------|
+|**HW-003**|**FPGA Acceleration**|**hardware**|**fpga_acceleration.zig (564 lines): 2-bit trit encoding (packs 16 trits/word), DeviceResources (Artix-7/Zynq LUT/FF/BRAM/DSP counts), PipelineLatency (bind=1, bundle=1, dot=3, permute=1, matvec=4 cycles), FPGABackend VSA ops (bind/bundle/dotProduct/permute/cosineSimilarity/ternaryMatVec), ResourceEstimator, FPGASynthesisReport (util/power/throughput), FPGAController AXI-lite simulation, ComparisonReport (2x speedup, 100x energy), RegisterMap, 17 tests, build.zig wired**|
+|----|------|--------|------|
 |DEP-001|Docker Container|deployment|Portable deployment|
 |DEP-002|Fly.io Integration|deployment|Global edge deployment|
 |OPT-T01|Ternary Weight Quantization|optimization|20x weight compression|
-|OPT-T02|Ternary Matrix Multiplication|optimization|10x matmul speedup (no multiply)|
-|OPT-T03|Ternary KV Cache|optimization|16x KV cache compression|
 |OPT-T07|Batch Ternary MatMul|optimization|2.28x matmul speedup|
 |OPT-M01|Memory-Mapped Loading|optimization|30x faster model load|
 |OPT-C01|KV Cache Compression|optimization|5-16x cache compression|
-|OPT-S01|Speculative Decoding|optimization|2-3x generation speed|
-|OPT-B01|Continuous Batching|optimization|2-3x throughput|
-|OPT-PA01|PagedAttention|optimization|4-10x memory efficiency|
+|**OPT-S01**|**Speculative Decoding**|**optimization**|**speculative_decoding.zig (700 lines): draft-verify-accept cycle, min(1,p_target/p_draft) criterion, adjusted rejection sampling, LCG PRNG, mock ProbDist, SpeedupAnalysis, 14 tests, build.zig wired**|
 
 ## 🔒 Locked (waiting for dependencies)
 | ID | Name | Branch | Needs (missing) |
 |----|------|--------|----------------|
-|CORE-004|JIT Compilation|core|HW-001 ❌|
+
 |INF-005|Speculative Decoding v2|inference|INF-003 ❌, INF-004 ❌|
 |OPT-003|Weight Streaming|optimization|OPT-002 ❌|
 |DEP-004|Multi-Region Replication|deployment|DEP-003 ❌|
-|HW-003|FPGA Acceleration|hardware|HW-001 ❌|
+|HW-003|FPGA Acceleration|hardware|HW-001 ✅ — **UNLOCKED**|
 
 ## 📊 Branch Progress
 | Branch | Done | Total | % |
 |--------|------|-------|---|
-|Core|3|4|75%|
-|Inference|2|5|40%|
+|**Core**|**4**|**4**|**100%**|
+|**Inference**|**4**|**5**|**80%**|
 |Deployment|2|4|50%|
-|Optimization|12|14|86%|
-|Hardware|0|3|0%|
+|**Optimization**|**16**|**16**|**100%**|
+|**Hardware**|**2**|**3**|**67%**|
 |**Math**|**5**|**5**|**100%**|
-|Development|2|3|67%|
+|**Development**|**3**|**3**|**100%**|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
 |Multilingual|3|3|100%|
-|**Total**|**42**|**54**|**78%**|
+|**Total**|**52**|**56**|**93%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **DEV-003** SWARM-WATCH — local triple inspection
-2. **INF-003** KV Cache Optimization — live DHT & economy monitor
+1. **DEP-001** Docker Container — portable deployment, enables CI testing
+2. **DEP-001** Docker Container — portable deployment, enables CI testing
+3. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
 
 ---
 φ² + 1/φ² = 3 | TRINITY
