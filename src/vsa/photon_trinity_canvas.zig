@@ -613,6 +613,20 @@ fn ralphUpdateLoopState() void {
     g_ralph_tmux_loop_running = ralphCheckTmuxLoop();
 }
 
+/// Quick check if any ralph_loop.sh process is actually running (v8.1.1 fix)
+/// Used to override status.json when processes are killed but file not updated
+fn ralphProcessRunning() bool {
+    const allocator = std.heap.page_allocator;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "/bin/sh", "-c", "pgrep -f 'ralph_loop.sh' 2>/dev/null | head -1" },
+    }) catch return false;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    const out = std.mem.trimRight(u8, result.stdout, "\n\r \t");
+    return out.len > 0;
+}
+
 /// Execute pending ralph command (v8.1.1: hybrid mode — PID signals OR tmux)
 fn ralphExecPendingCmd() void {
     const cmd = g_ralph_pending_cmd;
@@ -627,7 +641,7 @@ fn ralphExecPendingCmd() void {
 
     // Hybrid mode: external process takes priority
     if (g_ralph_loop_pid > 0) {
-        std.debug.print("[RALPH] using external process mode (PID {})\n", .{g_ralph_loop_pid});
+        std.debug.print("[RALPH] STOP: killing external process (PID {})\n", .{g_ralph_loop_pid});
         switch (cmd) {
             .stop => {
                 // v8.1.1 fix: Kill monitor, loop processes, AND all their children
@@ -640,7 +654,7 @@ fn ralphExecPendingCmd() void {
             },
             .start => {
                 // Already running, just log
-                std.debug.print("[RALPH] loop already running (PID {})\n", .{g_ralph_loop_pid});
+                std.debug.print("[RALPH] START: already running (PID {})\n", .{g_ralph_loop_pid});
             },
             .restart => {
                 // v8.1.1 fix: Kill children first, then parents (same as STOP)
@@ -649,7 +663,7 @@ fn ralphExecPendingCmd() void {
                     .allocator = allocator,
                     .argv = &[_][]const u8{ "/bin/sh", "-c", cmd1 },
                 }) catch {};
-                std.debug.print("[RALPH] sent SIGKILL to ralph_monitor.sh and all children\n", .{});
+                std.debug.print("[RALPH] RESTART: killed processes, will restart\n", .{});
             },
             .none => {},
         }
@@ -9145,6 +9159,12 @@ fn updateDrawFrame() callconv(.c) void {
                     const btn_y_pos = ly + (bar_h - btn_h) / 2;
                     const btn_gap: f32 = 8;
 
+                    // Hotkey: K = Kill/STOP all ralph processes (emergency stop)
+                    if (rl.IsKeyPressed(rl.KEY_K)) {
+                        g_ralph_pending_cmd = .stop;
+                        ralphExecPendingCmd();
+                    }
+
                     // START
                     {
                         const bx = btn_section_x;
@@ -9170,16 +9190,15 @@ fn updateDrawFrame() callconv(.c) void {
                         const bx = btn_section_x + btn_w + btn_gap;
                         const br = rl.Rectangle{ .x = bx, .y = btn_y_pos, .width = btn_w, .height = btn_h };
                         const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, br);
-                        const active = agent.running;
-                        const c = if (active) ralph_red else dim_text;
-                        const bg_a: u8 = if (hover and active) 40 else 15;
+                        // STOP is always clickable - check actual processes in handler
+                        const c = ralph_red;
+                        const bg_a: u8 = if (hover) 40 else 15;
                         rl.DrawRectangleRounded(br, 0.3, 8, rl.Color{ .r = c.r, .g = c.g, .b = c.b, .a = bg_a });
                         rl.DrawRectangleRoundedLines(br, 0.3, 8, c);
                         const stop_sz = rl.MeasureTextEx(chat_font, "STOP", 12 * fs, 0.5);
                         rl.DrawTextEx(chat_font, "STOP", .{ .x = bx + (btn_w - stop_sz.x) / 2, .y = btn_y_pos + (btn_h - stop_sz.y) / 2 }, 12 * fs, 0.5, c);
-                        if (hover and mouse_pressed and active) {
+                        if (hover and mouse_pressed) {
                             g_ralph_pending_cmd = .stop;
-                            agent.running = false;
                             ralphExecPendingCmd();
                         }
                     }
@@ -9207,12 +9226,16 @@ fn updateDrawFrame() callconv(.c) void {
                     // STATUS pill (right side)
                     {
                         const sm_age = agent.data_age_seconds;
+                        // v8.1.1 fix: Check actual processes, not just status.json
+                        const actually_running = ralphProcessRunning();
                         const st_label: [*:0]const u8 = if (agent.rate_limited)
                             "RATE LIMITED"
                         else if (agent.cb_state == .cb_open)
                             "ERROR"
-                        else if (agent.is_executing)
+                        else if (agent.is_executing and actually_running)
                             "ACTIVE"
+                        else if (!actually_running)
+                            "STOPPED"
                         else if (sm_age < 120)
                             "IDLE"
                         else if (sm_age < 1800)
@@ -9223,8 +9246,10 @@ fn updateDrawFrame() callconv(.c) void {
                             ralph_red
                         else if (agent.cb_state == .cb_open)
                             ralph_red
-                        else if (agent.is_executing)
+                        else if (agent.is_executing and actually_running)
                             ralph_green
+                        else if (!actually_running)
+                            ralph_red
                         else if (sm_age < 120)
                             ralph_accent
                         else
@@ -9246,8 +9271,8 @@ fn updateDrawFrame() callconv(.c) void {
                         rl.DrawTextEx(chat_font, st_label, .{ .x = st_text_x, .y = ly + 10 * fs }, 11 * fs, 0.5, st_color);
                         rl.DrawTextEx(chat_font, &loop_buf, .{ .x = loop_x, .y = ly + 10 * fs }, 11 * fs, 0.5, dim_text);
 
-                        // LIVE indicator (pulsing red dot before status)
-                        if (agent.is_executing and agent.data_age_seconds < 30) {
+                        // LIVE indicator (pulsing red dot before status) — only if actually running
+                        if (actually_running and agent.is_executing and agent.data_age_seconds < 30) {
                             const live_pulse: u8 = @intFromFloat(180.0 + 75.0 * @sin(frame_time * 6.0));
                             const live_x = dot_x - 14;
                             rl.DrawCircle(@intFromFloat(live_x), @intFromFloat(ly + bar_h / 2), 4 * fs, rl.Color{ .r = 0xFF, .g = 0x00, .b = 0x00, .a = live_pulse });
