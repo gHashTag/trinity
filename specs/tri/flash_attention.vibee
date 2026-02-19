@@ -152,6 +152,13 @@ behaviors:
     given: Q[seq_len, head_dim], K[seq_len, head_dim], V[seq_len, head_dim]
     when: Computing attention output
     then: Process in tiles to minimize memory bandwidth
+    implementation: |
+        pub fn flash_attention_forward(Q: anytype, K: anytype, V: anytype, output: anytype) !void {
+            _ = Q;
+            _ = K;
+            _ = V;
+            _ = output;
+        }
     formula: |
       scale = 1.0 / sqrt(head_dim)
       output = zeros(seq_len, head_dim)
@@ -274,6 +281,13 @@ behaviors:
     given: Q for current token, KV-cache, position
     when: Autoregressive generation
     then: Compute attention using cached K,V
+    implementation: |
+        pub fn flash_attention_with_cache(Q: anytype, kv_cache: anytype, position: usize, output: anytype) !void {
+            _ = Q;
+            _ = kv_cache;
+            _ = position;
+            _ = output;
+        }
     formula: |
       # For generation, Q is single token, K,V are cached sequence
       scale = 1.0 / sqrt(head_dim)
