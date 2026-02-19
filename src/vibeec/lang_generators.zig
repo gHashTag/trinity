@@ -22,6 +22,7 @@ pub const Behavior = struct {
     given: []const u8,
     when: []const u8,
     then: []const u8,
+    implementation: []const u8 = "",
 };
 
 pub const ParsedSpec = struct {
@@ -60,9 +61,16 @@ pub fn generatePython(allocator: Allocator, spec: ParsedSpec) ![]u8 {
     }
 
     for (spec.behaviors) |b| {
-        try w.print("def {s}():\n", .{b.name});
-        try w.print("    \"\"\"Given: {s}, When: {s}, Then: {s}\"\"\"\n", .{ b.given, b.when, b.then });
-        try w.print("    pass\n\n", .{});
+        if (b.implementation.len > 0) {
+            // Use custom implementation (contains full function definition)
+            const impl = std.mem.trim(u8, b.implementation, &std.ascii.whitespace);
+            try w.print("{s}\n\n", .{impl});
+        } else {
+            // Generate stub
+            try w.print("def {s}():\n", .{b.name});
+            try w.print("    \"\"\"Given: {s}, When: {s}, Then: {s}\"\"\"\n", .{ b.given, b.when, b.then });
+            try w.print("    pass\n\n", .{});
+        }
     }
 
     return result.toOwnedSlice(allocator);
@@ -102,10 +110,18 @@ pub fn generateRust(allocator: Allocator, spec: ParsedSpec) ![]u8 {
     }
 
     for (spec.behaviors) |b| {
-        try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{ b.given, b.when, b.then });
-        try w.print("pub fn {s}() {{\n", .{b.name});
-        try w.print("    todo!()\n", .{});
-        try w.print("}}\n\n", .{});
+        if (b.implementation.len > 0) {
+            // Use custom implementation (contains full function definition)
+            const impl = std.mem.trim(u8, b.implementation, &std.ascii.whitespace);
+            try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{ b.given, b.when, b.then });
+            try w.print("{s}\n\n", .{impl});
+        } else {
+            // Generate stub
+            try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{ b.given, b.when, b.then });
+            try w.print("pub fn {s}() {{\n", .{b.name});
+            try w.print("    todo!()\n", .{});
+            try w.print("}}\n\n", .{});
+        }
     }
 
     return result.toOwnedSlice(allocator);
@@ -144,10 +160,18 @@ pub fn generateGo(allocator: Allocator, spec: ParsedSpec) ![]u8 {
     }
 
     for (spec.behaviors) |b| {
-        try w.print("// {s}: Given {s}, When {s}, Then {s}\n", .{ b.name, b.given, b.when, b.then });
-        try w.print("func {c}{s}() {{\n", .{ std.ascii.toUpper(b.name[0]), b.name[1..] });
-        try w.print("\t// TODO: implement\n", .{});
-        try w.print("}}\n\n", .{});
+        if (b.implementation.len > 0) {
+            // Use custom implementation (contains full function definition)
+            const impl = std.mem.trim(u8, b.implementation, &std.ascii.whitespace);
+            try w.print("// {s}: Given {s}, When {s}, Then {s}\n", .{ b.name, b.given, b.when, b.then });
+            try w.print("{s}\n\n", .{impl});
+        } else {
+            // Generate stub
+            try w.print("// {s}: Given {s}, When {s}, Then {s}\n", .{ b.name, b.given, b.when, b.then });
+            try w.print("func {c}{s}() {{\n", .{ std.ascii.toUpper(b.name[0]), b.name[1..] });
+            try w.print("\t// TODO: implement\n", .{});
+            try w.print("}}\n\n", .{});
+        }
     }
 
     return result.toOwnedSlice(allocator);
@@ -185,10 +209,18 @@ pub fn generateTypeScript(allocator: Allocator, spec: ParsedSpec) ![]u8 {
     }
 
     for (spec.behaviors) |b| {
-        try w.print("/** Given: {s}, When: {s}, Then: {s} */\n", .{ b.given, b.when, b.then });
-        try w.print("export function {s}(): void {{\n", .{b.name});
-        try w.print("  // TODO: implement\n", .{});
-        try w.print("}}\n\n", .{});
+        if (b.implementation.len > 0) {
+            // Use custom implementation (contains full function definition)
+            const impl = std.mem.trim(u8, b.implementation, &std.ascii.whitespace);
+            try w.print("/** Given: {s}, When: {s}, Then: {s} */\n", .{ b.given, b.when, b.then });
+            try w.print("{s}\n\n", .{impl});
+        } else {
+            // Generate stub
+            try w.print("/** Given: {s}, When: {s}, Then: {s} */\n", .{ b.given, b.when, b.then });
+            try w.print("export function {s}(): void {{\n", .{b.name});
+            try w.print("  // TODO: implement\n", .{});
+            try w.print("}}\n\n", .{});
+        }
     }
 
     return result.toOwnedSlice(allocator);
@@ -264,10 +296,18 @@ pub fn generateSwift(allocator: Allocator, spec: ParsedSpec) ![]u8 {
     }
 
     for (spec.behaviors) |b| {
-        try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{ b.given, b.when, b.then });
-        try w.print("func {s}() {{\n", .{b.name});
-        try w.print("    // TODO: implement\n", .{});
-        try w.print("}}\n\n", .{});
+        if (b.implementation.len > 0) {
+            // Use custom implementation (contains full function definition)
+            const impl = std.mem.trim(u8, b.implementation, &std.ascii.whitespace);
+            try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{ b.given, b.when, b.then });
+            try w.print("{s}\n\n", .{impl});
+        } else {
+            // Generate stub
+            try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{ b.given, b.when, b.then });
+            try w.print("func {s}() {{\n", .{b.name});
+            try w.print("    // TODO: implement\n", .{});
+            try w.print("}}\n\n", .{});
+        }
     }
 
     return result.toOwnedSlice(allocator);
@@ -307,10 +347,18 @@ pub fn generateKotlin(allocator: Allocator, spec: ParsedSpec) ![]u8 {
     }
 
     for (spec.behaviors) |b| {
-        try w.print("/** Given: {s}, When: {s}, Then: {s} */\n", .{ b.given, b.when, b.then });
-        try w.print("fun {s}() {{\n", .{b.name});
-        try w.print("    TODO(\"implement\")\n", .{});
-        try w.print("}}\n\n", .{});
+        if (b.implementation.len > 0) {
+            // Use custom implementation (contains full function definition)
+            const impl = std.mem.trim(u8, b.implementation, &std.ascii.whitespace);
+            try w.print("/** Given: {s}, When: {s}, Then: {s} */\n", .{ b.given, b.when, b.then });
+            try w.print("{s}\n\n", .{impl});
+        } else {
+            // Generate stub
+            try w.print("/** Given: {s}, When: {s}, Then: {s} */\n", .{ b.given, b.when, b.then });
+            try w.print("fun {s}() {{\n", .{b.name});
+            try w.print("    TODO(\"implement\")\n", .{});
+            try w.print("}}\n\n", .{});
+        }
     }
 
     return result.toOwnedSlice(allocator);

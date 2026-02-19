@@ -407,6 +407,7 @@ fn generateMultiLang(allocator: std.mem.Allocator, spec: *vibee_parser.VibeeSpec
             .given = b.given,
             .when = b.when,
             .then = b.then,
+            .implementation = b.implementation,
         };
     }
 
