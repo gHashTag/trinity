@@ -14,6 +14,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // VIBEEC compiler module — single source of truth from trinity-nexus/lang
+    const trinity_lang_mod = b.createModule(.{
+        .root_source_file = b.path("trinity-nexus/lang/src/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Library artifact
     const lib = b.addLibrary(.{
         .name = "trinity",
@@ -153,12 +160,15 @@ pub fn build(b: *std.Build) void {
     const run_c_api_tests = b.addRunArtifact(c_api_tests);
     test_step.dependOn(&run_c_api_tests.step);
 
-    // VIBEE codegen tests (rl patterns, mod dispatch, registry)
+    // VIBEE codegen tests — use trinity-lang module as source of truth
     const vibeec_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/codegen_tests.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity-lang", .module = trinity_lang_mod },
+            },
         }),
     });
     const run_vibeec_tests = b.addRunArtifact(vibeec_tests);
@@ -1013,13 +1023,16 @@ pub fn build(b: *std.Build) void {
     const fluent_cli_step = b.step("fluent", "Run Fluent CLI (Local Chat with History Truncation)");
     fluent_cli_step.dependOn(&run_fluent_cli.step);
 
-    // VIBEE Compiler CLI
+    // VIBEE Compiler CLI — uses trinity-lang module as source of truth
     const vibee = b.addExecutable(.{
         .name = "vibee",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/gen_cmd.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity-lang", .module = trinity_lang_mod },
+            },
         }),
     });
     b.installArtifact(vibee);

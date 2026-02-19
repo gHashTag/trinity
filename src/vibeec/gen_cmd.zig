@@ -1,8 +1,13 @@
 const std = @import("std");
-const vibee_parser = @import("vibee_parser.zig");
-const zig_codegen = @import("zig_codegen.zig");
-const verilog_codegen = @import("verilog_codegen.zig");
-const lang_generators = @import("lang_generators.zig");
+
+// Compiler library — single source of truth from trinity-nexus/lang
+const lang = @import("trinity-lang");
+const vibee_parser = lang.vibee_parser;
+const zig_codegen = lang.zig_codegen;
+const verilog_codegen = lang.verilog_codegen;
+const lang_generators = lang.lang_generators;
+
+// CLI-specific tools (remain local in src/vibeec/)
 const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
 

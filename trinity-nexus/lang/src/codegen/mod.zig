@@ -12,6 +12,7 @@
 pub const types = @import("types.zig");
 pub const builder = @import("builder.zig");
 pub const utils = @import("utils.zig");
+pub const utils_fix = @import("utils_fix.zig");
 pub const patterns = @import("patterns.zig");
 pub const tests_gen = @import("tests_gen.zig");
 pub const emitter = @import("emitter.zig");
@@ -39,6 +40,10 @@ pub const parseF64 = utils.parseF64;
 pub const extractNumber = utils.extractNumber;
 pub const extractIntParam = utils.extractIntParam;
 pub const extractFloatParam = utils.extractFloatParam;
+
+// Fixed generic type utilities
+pub const mapTypeFixed = utils_fix.mapTypeFixed;
+pub const extractInnerType = utils_fix.extractInnerType;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS

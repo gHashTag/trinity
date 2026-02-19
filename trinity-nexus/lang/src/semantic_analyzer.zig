@@ -93,7 +93,7 @@ pub const Scope = struct {
     symbols: std.StringHashMap(Symbol),
     
     // Children scopes (D&C pattern)
-    children: std.ArrayList(*Scope),
+    children: std.ArrayListUnmanaged(*Scope),
     
     // For function scopes
     return_type_id: u32 = 0,
@@ -113,7 +113,7 @@ pub const Scope = struct {
             .kind = kind,
             .parent = parent,
             .symbols = std.StringHashMap(Symbol).init(allocator),
-            .children = std.ArrayList(*Scope).init(allocator),
+            .children = .{},
             .loop_depth = loop_depth,
             .allocator = allocator,
         };
@@ -121,7 +121,7 @@ pub const Scope = struct {
     
     pub fn deinit(self: *Scope) void {
         // Children are freed by SemanticAnalyzer.all_scopes
-        self.children.deinit();
+        self.children.deinit(self.allocator);
         self.symbols.deinit();
     }
     
@@ -204,10 +204,10 @@ pub const SemanticAnalyzer = struct {
     next_scope_id: u32 = 1,
     
     // All scopes for cleanup
-    all_scopes: std.ArrayList(*Scope),
-    
+    all_scopes: std.ArrayListUnmanaged(*Scope),
+
     // Diagnostics
-    diagnostics: std.ArrayList(Diagnostic),
+    diagnostics: std.ArrayListUnmanaged(Diagnostic),
     error_count: u32 = 0,
     warning_count: u32 = 0,
     
@@ -227,12 +227,12 @@ pub const SemanticAnalyzer = struct {
             .allocator = allocator,
             .global_scope = global,
             .current_scope = global,
-            .all_scopes = std.ArrayList(*Scope).init(allocator),
-            .diagnostics = std.ArrayList(Diagnostic).init(allocator),
+            .all_scopes = .{},
+            .diagnostics = .{},
             .analysis_cache = std.AutoHashMap(u64, bool).init(allocator),
         };
         
-        try analyzer.all_scopes.append(global);
+        try analyzer.all_scopes.append(allocator, global);
         
         // Define sacred symbols
         try analyzer.defineSacredSymbols();
@@ -245,8 +245,8 @@ pub const SemanticAnalyzer = struct {
             scope.deinit();
             self.allocator.destroy(scope);
         }
-        self.all_scopes.deinit();
-        self.diagnostics.deinit();
+        self.all_scopes.deinit(self.allocator);
+        self.diagnostics.deinit(self.allocator);
         self.analysis_cache.deinit();
     }
     
@@ -276,8 +276,8 @@ pub const SemanticAnalyzer = struct {
         scope.* = Scope.init(self.allocator, self.next_scope_id, kind, self.current_scope);
         self.next_scope_id += 1;
         
-        try self.current_scope.children.append(scope);
-        try self.all_scopes.append(scope);
+        try self.current_scope.children.append(self.current_scope.allocator, scope);
+        try self.all_scopes.append(self.allocator, scope);
         self.current_scope = scope;
         
         return scope;
@@ -394,7 +394,7 @@ pub const SemanticAnalyzer = struct {
     
     /// Add diagnostic
     pub fn addDiagnostic(self: *SemanticAnalyzer, kind: Diagnostic.DiagnosticKind, message: []const u8, line: u32, column: u16) !void {
-        try self.diagnostics.append(.{
+        try self.diagnostics.append(self.allocator, .{
             .kind = kind,
             .message = message,
             .line = line,

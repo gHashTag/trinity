@@ -15,37 +15,64 @@ const Behavior = types.Behavior;
 
 /// Match data transform patterns
 pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
-    // Pattern: encode* -> encoding
+    // Pattern: encode* -> ternary encoding (byte → 6 trits)
     if (std.mem.startsWith(u8, b.name, "encode")) {
-        try builder.writeFmt("pub fn {s}(input: []const u8) []i8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(input: []const u8, output: []i8) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Encode input to representation");
-        try builder.writeLine("_ = input;");
-        try builder.writeLine("return &[_]i8{};");
+        try builder.writeLine("// Ternary encoding: each byte → 6 balanced trits");
+        try builder.writeLine("// 3^6 = 729 > 256, so 6 trits suffice for 1 byte");
+        try builder.writeLine("for (input, 0..) |byte, i| {");
+        builder.incIndent();
+        try builder.writeLine("var val = @as(i16, byte) - 128; // center around 0");
+        try builder.writeLine("const base = i * 6;");
+        try builder.writeLine("for (0..6) |t| {");
+        builder.incIndent();
+        try builder.writeLine("const rem = @mod(val + 1, 3) - 1; // balanced mod: -1, 0, 1");
+        try builder.writeLine("output[base + t] = @as(i8, @intCast(rem));");
+        try builder.writeLine("val = @divTrunc(val - rem, 3);");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: decode* -> decoding
+    // Pattern: decode* -> ternary decoding (6 trits → byte)
     if (std.mem.startsWith(u8, b.name, "decode")) {
-        try builder.writeFmt("pub fn {s}(input: []const u8) DecodeResult {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(trits: []const i8, output: []u8) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Decode input data");
-        try builder.writeLine("_ = input;");
-        try builder.writeLine("return DecodeResult{};");
+        try builder.writeLine("// Ternary decoding: 6 balanced trits → 1 byte");
+        try builder.writeLine("const n_bytes = trits.len / 6;");
+        try builder.writeLine("for (0..n_bytes) |i| {");
+        builder.incIndent();
+        try builder.writeLine("var val: i16 = 0;");
+        try builder.writeLine("var power: i16 = 1;");
+        try builder.writeLine("for (0..6) |t| {");
+        builder.incIndent();
+        try builder.writeLine("val += @as(i16, trits[i * 6 + t]) * power;");
+        try builder.writeLine("power *= 3;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("output[i] = @as(u8, @intCast(val + 128));");
+        builder.decIndent();
+        try builder.writeLine("}");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: quantize* -> quantization
+    // Pattern: quantize* -> float-to-ternary quantization
     if (std.mem.startsWith(u8, b.name, "quantize")) {
-        try builder.writeFmt("pub fn {s}(values: []const f32) []i8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(values: []const f32, output: []i8, threshold: f32) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Quantize float values to int8");
-        try builder.writeLine("_ = values;");
-        try builder.writeLine("return &[_]i8{};");
+        try builder.writeLine("// Ternary quantization: >threshold → 1, <-threshold → -1, else 0");
+        try builder.writeLine("for (values, 0..) |v, i| {");
+        builder.incIndent();
+        try builder.writeLine("output[i] = if (v > threshold) 1 else if (v < -threshold) -1 else 0;");
+        builder.decIndent();
+        try builder.writeLine("}");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -146,12 +173,22 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: normalize* -> normalization
+    // Pattern: normalize* -> min-max normalization
     if (std.mem.startsWith(u8, b.name, "normalize")) {
-        try builder.writeFmt("pub fn {s}(data: anytype) @TypeOf(data) {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(input: []const f32, output: []f32) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Normalize data");
-        try builder.writeLine("return data;");
+        try builder.writeLine("// Min-max normalization: (x - min) / (max - min)");
+        try builder.writeLine("var min_val: f32 = input[0];");
+        try builder.writeLine("var max_val: f32 = input[0];");
+        try builder.writeLine("for (input) |v| {");
+        builder.incIndent();
+        try builder.writeLine("if (v < min_val) min_val = v;");
+        try builder.writeLine("if (v > max_val) max_val = v;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("const range = max_val - min_val;");
+        try builder.writeLine("if (range == 0) { @memset(output, 0); return; }");
+        try builder.writeLine("for (input, 0..) |v, i| { output[i] = (v - min_val) / range; }");
         builder.decIndent();
         try builder.writeLine("}");
         return true;

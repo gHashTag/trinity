@@ -69,16 +69,23 @@ permute(v, count)    // Cyclic permutation
 | `extension_wasm.zig` | Extension system |
 | `depin.zig` | Decentralized Physical Infrastructure |
 
-### VIBEE Compiler (src/vibeec/)
+### VIBEE Compiler
 
-| File | Purpose |
-|------|---------|
-| `vibee_parser.zig` | Parse .vibee specifications |
-| `zig_codegen.zig` | Generate Zig code |
-| `verilog_codegen.zig` | Generate Verilog (FPGA) |
-| `gen_cmd.zig` | CLI entry point |
-| `gguf_chat.zig` | GGUF model interface |
-| `http_server.zig` | HTTP API server |
+**Source of truth:** `trinity-nexus/lang/src/` (imported as `trinity-lang` module)
+
+| File | Location | Purpose |
+|------|----------|---------|
+| `root.zig` | `trinity-nexus/lang/src/` | Module exports (v0.2.0) |
+| `vibee_parser.zig` | `trinity-nexus/lang/src/` | Parse .vibee specifications |
+| `zig_codegen.zig` | `trinity-nexus/lang/src/` | Generate Zig code |
+| `verilog_codegen.zig` | `trinity-nexus/lang/src/` | Generate Verilog (FPGA) |
+| `lang_generators.zig` | `trinity-nexus/lang/src/` | Multi-language generators |
+| `codegen/` | `trinity-nexus/lang/src/` | Pattern-based code generation (141+ patterns) |
+| `gen_cmd.zig` | `src/vibeec/` | CLI entry point (thin wrapper) |
+| `gguf_chat.zig` | `src/vibeec/` | GGUF model interface |
+| `http_server.zig` | `src/vibeec/` | HTTP API server |
+
+**Architecture:** `src/vibeec/gen_cmd.zig` imports `trinity-lang` module. No compiler code lives in `src/vibeec/` — only CLI tools.
 
 ### Other Subsystems
 

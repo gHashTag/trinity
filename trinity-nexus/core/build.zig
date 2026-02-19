@@ -14,6 +14,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Expose named module for dependent packages (lang, symb, etc.)
+    b.modules.put(b.dupe("trinity_core"), mod) catch @panic("OOM");
+
     // Library
     const lib = b.addLibrary(.{
         .name = "trinity-core",

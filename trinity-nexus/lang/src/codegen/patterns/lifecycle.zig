@@ -41,12 +41,13 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: start* -> start process
+    // Pattern: start* -> start process with state tracking
     if (std.mem.startsWith(u8, b.name, "start")) {
         try builder.writeFmt("pub fn {s}(self: *@This()) !void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Start process/service");
-        try builder.writeLine("_ = self;");
+        try builder.writeLine("self.running = true;");
+        try builder.writeLine("self.start_time = std.time.timestamp();");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -57,7 +58,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         try builder.writeFmt("pub fn {s}(self: *@This()) void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Stop process/service");
-        try builder.writeLine("_ = self;");
+        try builder.writeLine("self.running = false;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -139,12 +140,13 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: shutdown* -> shutdown
+    // Pattern: shutdown* -> graceful shutdown
     if (std.mem.startsWith(u8, b.name, "shutdown")) {
         try builder.writeFmt("pub fn {s}(self: *@This()) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Graceful shutdown");
-        try builder.writeLine("_ = self;");
+        try builder.writeLine("// Graceful shutdown: stop running and mark uninitialized");
+        try builder.writeLine("self.running = false;");
+        try builder.writeLine("self.initialized = false;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
