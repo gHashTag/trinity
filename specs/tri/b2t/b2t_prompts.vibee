@@ -120,7 +120,7 @@ behaviors:
     when: Форматирование примеров для ICL
     then: Возвращает PromptSection с role=example
     implementation: |
-        pub fn build_icl_examples(examples: []const SimilarCode, max_examples: usize) PromptSection {
+        pub fn build_icl_examples(examples: anytype, max_examples: usize) PromptSection {
             _ = examples;
             _ = max_examples;
             return PromptSection{};
@@ -157,7 +157,7 @@ behaviors:
     when: Получение шаблона для конкретного искажения
     then: Возвращает DistortionTemplate
     implementation: |
-        pub fn get_distortion_template(dist_type: DistortionType) DistortionTemplate {
+        pub fn get_distortion_template(dist_type: anytype) DistortionTemplate {
             _ = dist_type;
             return DistortionTemplate{};
         }
@@ -167,7 +167,7 @@ behaviors:
     when: Создание промпта для детекции искажений
     then: Возвращает String промпт
     implementation: |
-        pub fn format_detection_prompt(code: []const u8, template: DistortionTemplate) []const u8 {
+        pub fn format_detection_prompt(code: []const u8, template: anytype) []const u8 {
             _ = code;
             _ = template;
             return "";
@@ -178,7 +178,7 @@ behaviors:
     when: Создание промпта для исправления
     then: Возвращает String промпт
     implementation: |
-        pub fn format_correction_prompt(code: []const u8, distortions: []const Distortion, template: DistortionTemplate) []const u8 {
+        pub fn format_correction_prompt(code: []const u8, distortions: anytype, template: anytype) []const u8 {
             _ = code;
             _ = distortions;
             _ = template;
@@ -190,7 +190,7 @@ behaviors:
     when: Создание промпта для валидации
     then: Возвращает String промпт
     implementation: |
-        pub fn format_validation_prompt(original: []const u8, corrected: []const u8, template: DistortionTemplate) []const u8 {
+        pub fn format_validation_prompt(original: []const u8, corrected: []const u8, template: anytype) []const u8 {
             _ = original;
             _ = corrected;
             _ = template;
@@ -206,7 +206,7 @@ behaviors:
     when: Создание промпта с пошаговым рассуждением
     then: Возвращает String промпт
     implementation: |
-        pub fn create_cot_prompt(task: []const u8, cot: ChainOfThought) []const u8 {
+        pub fn create_cot_prompt(task: []const u8, cot: anytype) []const u8 {
             _ = task;
             _ = cot;
             return "";
