@@ -20,6 +20,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**CODEGEN-005**|**VIBEE v5 Production Components**|**vibee-v5-production**|**2 production specs: llm_full_inference (14 behaviors, KV cache/RoPE/RMSNorm/FlashAttention/sampling), vsa_swarm_agent (17 behaviors, VSA bind/bundle/consensus/phi-spiral/self-heal). v4.1: 155+ TODO stubs eliminated across 14+ specs. CI updated with production tests.**|
+|----|------|--------|------|
 |**OPT-B01**|**Continuous Batching**|**optimization**|**continuous_batching.zig (891 lines): Orca/vLLM-style iteration-level scheduler, priority queue with wait-time boost, preemption, 13 tests, completion detection, continuous admission, throughput analysis, build.zig wired**|
 |----|------|--------|------|
 |**OPT-PA01**|**PagedAttention**|**optimization**|**paged_attention.zig (947 lines): vLLM-style block KV cache, CoW block sharing, 14 tests, 4-10x memory efficiency, beam search fork, pool lifecycle, attention Q@K^T+softmax+V, memory analysis (64x with ternary), build.zig wired**|
