@@ -135,49 +135,66 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: distance* -> generic distance
+    // Pattern: distance* -> cosine distance (1 - cosine_similarity)
     if (std.mem.startsWith(u8, b.name, "distance")) {
-        try builder.writeFmt("pub fn {s}(a: anytype, b: @TypeOf(a)) f64 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(a: []const i8, b_vec: []const i8) f32 {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Calculate distance between a and b");
-        try builder.writeLine("_ = a; _ = b;");
-        try builder.writeLine("return 0.0;");
+        try builder.writeLine("// Cosine distance: 1.0 - dot(a,b) / (|a| * |b|)");
+        try builder.writeLine("var dot: i32 = 0;");
+        try builder.writeLine("var norm_a: i32 = 0;");
+        try builder.writeLine("var norm_b: i32 = 0;");
+        try builder.writeLine("for (a, b_vec) |av, bv| {");
+        builder.incIndent();
+        try builder.writeLine("dot += @as(i32, av) * @as(i32, bv);");
+        try builder.writeLine("norm_a += @as(i32, av) * @as(i32, av);");
+        try builder.writeLine("norm_b += @as(i32, bv) * @as(i32, bv);");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("const denom = @sqrt(@as(f32, @floatFromInt(norm_a))) * @sqrt(@as(f32, @floatFromInt(norm_b)));");
+        try builder.writeLine("if (denom == 0) return 1.0;");
+        try builder.writeLine("return 1.0 - @as(f32, @floatFromInt(dot)) / denom;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: random* -> random vector generation
+    // Pattern: random* -> random ternary vector via xorshift64
     if (std.mem.startsWith(u8, b.name, "random")) {
-        try builder.writeFmt("pub fn {s}(dim: usize) []i8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(result: []i8, seed: u64) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Generate random vector");
-        try builder.writeLine("_ = dim;");
-        try builder.writeLine("return &[_]i8{};");
+        try builder.writeLine("// Generate random ternary vector via xorshift64");
+        try builder.writeLine("var state = seed;");
+        try builder.writeLine("for (result) |*r| {");
+        builder.incIndent();
+        try builder.writeLine("state ^= state << 13;");
+        try builder.writeLine("state ^= state >> 7;");
+        try builder.writeLine("state ^= state << 17;");
+        try builder.writeLine("const rem = state % 3;");
+        try builder.writeLine("r.* = if (rem == 0) -1 else if (rem == 1) 0 else 1;");
+        builder.decIndent();
+        try builder.writeLine("}");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: ones* -> create ones vector
+    // Pattern: ones* -> fill vector with 1s
     if (std.mem.startsWith(u8, b.name, "ones")) {
-        try builder.writeFmt("pub fn {s}(dim: usize) []i8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(result: []i8) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Create vector of ones");
-        try builder.writeLine("_ = dim;");
-        try builder.writeLine("return &[_]i8{};");
+        try builder.writeLine("// Fill vector with ones");
+        try builder.writeLine("@memset(result, 1);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: zeros* -> create zeros vector
+    // Pattern: zeros* -> fill vector with 0s
     if (std.mem.startsWith(u8, b.name, "zeros") or std.mem.startsWith(u8, b.name, "zero_")) {
-        try builder.writeFmt("pub fn {s}(dim: usize) []i8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(result: []i8) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Create vector of zeros");
-        try builder.writeLine("_ = dim;");
-        try builder.writeLine("return &[_]i8{};");
+        try builder.writeLine("// Fill vector with zeros");
+        try builder.writeLine("@memset(result, 0);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -196,25 +213,32 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: vector* / vec* -> vector operations
+    // Pattern: vector* / vec* -> vector copy
     if (std.mem.startsWith(u8, b.name, "vector") or std.mem.startsWith(u8, b.name, "vec")) {
-        try builder.writeFmt("pub fn {s}(data: anytype) @TypeOf(data) {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(src: []const i8, dst: []i8) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Vector operation");
-        try builder.writeLine("return data;");
+        try builder.writeLine("// Copy vector: src → dst");
+        try builder.writeLine("@memcpy(dst, src);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: analogy* -> analogy solving
+    // Pattern: analogy* -> analogy solving: D = bind(unbind(B,A), C)
     if (std.mem.startsWith(u8, b.name, "analogy")) {
-        try builder.writeFmt("pub fn {s}(a: []const i8, b_vec: []const i8, c: []const i8) []i8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(a: []const i8, b_vec: []const i8, c: []const i8, result: []i8) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Solve analogy: A:B::C:?");
-        try builder.writeLine("// D = C + (B - A) in VSA: D = bind(unbind(b_vec, a), c)");
-        try builder.writeLine("_ = a; _ = b_vec; _ = c;");
-        try builder.writeLine("return &[_]i8{};");
+        try builder.writeLine("// Solve analogy A:B::C:? → D = bind(unbind(B,A), C)");
+        try builder.writeLine("for (a, 0..) |av, i| {");
+        builder.incIndent();
+        try builder.writeLine("// unbind: B * A (self-inverse)");
+        try builder.writeLine("const unbound = @as(i16, b_vec[i]) * @as(i16, av);");
+        try builder.writeLine("const ub: i8 = if (unbound > 0) 1 else if (unbound < 0) -1 else 0;");
+        try builder.writeLine("// bind: unbound * C");
+        try builder.writeLine("const bound = @as(i16, ub) * @as(i16, c[i]);");
+        try builder.writeLine("result[i] = if (bound > 0) 1 else if (bound < 0) -1 else 0;");
+        builder.decIndent();
+        try builder.writeLine("}");
         builder.decIndent();
         try builder.writeLine("}");
         return true;

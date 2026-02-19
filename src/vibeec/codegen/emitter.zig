@@ -1438,19 +1438,33 @@ pub const ZigCodeGen = struct {
         try self.builder.writeFmt("/// {s}\n", .{b.given});
         try self.builder.writeFmt("/// When: {s}\n", .{b.when});
         try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
-        try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
-        self.builder.incIndent();
 
         // Check for manual implementation in spec
         if (b.implementation.len > 0) {
-            try self.builder.writeLine(b.implementation);
+            // If implementation contains full function definition, write as-is
+            if (std.mem.indexOf(u8, b.implementation, "pub fn ") != null or
+                std.mem.indexOf(u8, b.implementation, "fn ") != null)
+            {
+                // Full function — write as-is (includes signature)
+                try self.builder.writeLine(b.implementation);
+            } else {
+                // Body only — wrap in inferred signature
+                const sig = inferSignatureFromSpec(b);
+                try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
+                self.builder.incIndent();
+                try self.builder.writeLine(b.implementation);
+                self.builder.decIndent();
+                try self.builder.writeLine("}");
+            }
         } else {
-            // Generate auto-body from behavior semantics
+            // No implementation — use pattern matching or auto-body
+            const sig = inferSignatureFromSpec(b);
+            try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
+            self.builder.incIndent();
             try self.generateRealBody(b);
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
         }
-
-        self.builder.decIndent();
-        try self.builder.writeLine("}");
         try self.builder.newline();
     }
 
@@ -1765,9 +1779,180 @@ pub const ZigCodeGen = struct {
         }
 
         // --- Fallback: generate from then description ---
-        try self.builder.writeFmt("// {s}\n", .{then});
-        try self.builder.writeLine("const result = @as([]const u8, \"implemented\");");
-        try self.builder.writeLine("_ = result;");
+        try self.builder.writeFmt("// TODO: implement — {s}\n", .{then});
+        try self.builder.writeLine("// Add 'implementation:' field in .vibee spec to provide real code.");
+    }
+
+    /// Infer function signature from behavior given/then fields.
+    /// Uses keyword matching to determine params and return type.
+    fn inferSignatureFromSpec(b: *const Behavior) struct { params: []const u8, ret: []const u8 } {
+        const given = b.given;
+        const then = b.then;
+        const name = b.name;
+        const mem = std.mem;
+
+        // --- Infer params from `given` field keywords (case-insensitive via lowercase check) ---
+        const params: []const u8 = params_blk: {
+            // Two vectors / pair of vectors
+            if (containsAnyCI(given, &.{ "two vectors", "two ternary vectors", "two hypervectors", "pair of vectors" }))
+                break :params_blk "a: []const i8, b_vec: []const i8";
+
+            // Vector and scalar
+            if (containsAnyCI(given, &.{ "vector and scalar", "vector with threshold" }))
+                break :params_blk "vec: []const i8, scalar: i8";
+
+            // Array of items / batch
+            if (containsAnyCI(given, &.{ "array of", "batch of", "list of", "multiple" }))
+                break :params_blk "items: anytype";
+
+            // Input vector / single vector
+            if (containsAnyCI(given, &.{ "input vector", "ternary vector", "hypervector", "a vector" }))
+                break :params_blk "input: []const i8";
+
+            // Float arrays / weights / embeddings / f32
+            if (containsAnyCI(given, &.{ "float array", "weight", "embedding", "float values", "f32" }))
+                break :params_blk "values: []const f32";
+
+            // Model / neural network
+            if (containsAnyCI(given, &.{ "trained model", "neural network", "model" }))
+                break :params_blk "model: anytype";
+
+            // File path
+            if (containsAnyCI(given, &.{ "file path", "file", "path" }))
+                break :params_blk "path: []const u8";
+
+            // Allocator-based
+            if (containsAnyCI(given, &.{ "allocator" }))
+                break :params_blk "allocator: std.mem.Allocator";
+
+            // Queue / request / connection
+            if (containsAnyCI(given, &.{ "queue", "request", "connection", "http" }))
+                break :params_blk "request: anytype";
+
+            // Configuration / settings
+            if (containsAnyCI(given, &.{ "config", "setting", "option", "parameter" }))
+                break :params_blk "config: anytype";
+
+            // Token / tokens
+            if (containsAnyCI(given, &.{ "token" }))
+                break :params_blk "token_ids: []const u32";
+
+            // Text / string input
+            if (containsAnyCI(given, &.{ "text", "string", "input", "query", "prompt", "dimension" }))
+                break :params_blk "input: []const u8";
+
+            // Data / bytes / memory
+            if (containsAnyCI(given, &.{ "data", "bytes", "buffer", "memory" }))
+                break :params_blk "data: []const u8";
+
+            // Matrix / tensor
+            if (containsAnyCI(given, &.{ "matrix", "tensor" }))
+                break :params_blk "matrix: []const f32, rows: usize, cols: usize";
+
+            // Key-value
+            if (containsAnyCI(given, &.{ "key" }))
+                break :params_blk "key: []const u8";
+
+            // No input
+            if (containsAnyCI(given, &.{ "no input" }))
+                break :params_blk "";
+
+            // Self-based (method naming convention)
+            if (mem.startsWith(u8, name, "get") or
+                mem.startsWith(u8, name, "set") or
+                mem.startsWith(u8, name, "is_") or
+                mem.startsWith(u8, name, "has_") or
+                mem.startsWith(u8, name, "update") or
+                mem.startsWith(u8, name, "process") or
+                mem.startsWith(u8, name, "compute") or
+                mem.startsWith(u8, name, "calculate"))
+                break :params_blk "self: *@This()";
+
+            break :params_blk "";
+        };
+
+        // --- Infer return type from `then` field keywords ---
+        const ret: []const u8 = ret_blk: {
+            // Vector / hypervector result
+            if (containsAnyCI(then, &.{ "resulting vector", "hypervector", "ternary vector", "output vector", "bound vector", "f32 vector" }))
+                break :ret_blk "[]i8";
+
+            // Similarity / score / ratio
+            if (containsAnyCI(then, &.{ "similarity", "score", "ratio", "accuracy", "probability", "confidence", "compression" }))
+                break :ret_blk "f32";
+
+            // Distance / loss / error
+            if (containsAnyCI(then, &.{ "distance", "loss", "error rate" }))
+                break :ret_blk "f32";
+
+            // Integer / count / index
+            if (containsAnyCI(then, &.{ "count", "index", "number of", "size", "length" }))
+                break :ret_blk "usize";
+
+            // Bytes / encoded data
+            if (containsAnyCI(then, &.{ "encoded", "packed", "compressed", "bytes" }))
+                break :ret_blk "[]u8";
+
+            // Float array / weights / embeddings / quantize / scale
+            if (containsAnyCI(then, &.{ "float array", "weights", "embeddings", "probabilities", "activations", "quantize", "scale", "dequantiz" }))
+                break :ret_blk "[]f32";
+
+            // Boolean / flag / valid
+            if (containsAnyCI(then, &.{ "boolean", "true or false", "valid", "flag" }))
+                break :ret_blk "bool";
+
+            // Array / batch of results
+            if (containsAnyCI(then, &.{ "array of", "batch", "responses", "results" }))
+                break :ret_blk "anyerror!void";
+
+            // Return as void actions (queue/send/update/add/store)
+            if (containsAnyCI(then, &.{ "add to", "send ", "update ", "return immediately", "stored", "saved", "written", "completed", "success" }))
+                break :ret_blk "!void";
+
+            // Text / string result / metrics
+            if (containsAnyCI(then, &.{ "text", "string", "name", "label", "identifier", "response" }))
+                break :ret_blk "[]const u8";
+
+            // Return struct (contains "Return X")
+            if (containsAnyCI(then, &.{ "return " }))
+                break :ret_blk "anyerror!void";
+
+            break :ret_blk "!void";
+        };
+
+        return .{ .params = params, .ret = ret };
+    }
+
+    /// Case-insensitive substring check: does `haystack` contain any of the `needles`?
+    fn containsAnyCI(haystack: []const u8, needles: []const []const u8) bool {
+        for (needles) |needle| {
+            if (containsCI(haystack, needle)) return true;
+        }
+        return false;
+    }
+
+    /// Case-insensitive substring search (ASCII only)
+    fn containsCI(haystack: []const u8, needle: []const u8) bool {
+        if (needle.len == 0) return true;
+        if (haystack.len < needle.len) return false;
+        const limit = haystack.len - needle.len + 1;
+        for (0..limit) |i| {
+            var found = true;
+            for (0..needle.len) |j| {
+                const h = toLowerASCII(haystack[i + j]);
+                const n = toLowerASCII(needle[j]);
+                if (h != n) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) return true;
+        }
+        return false;
+    }
+
+    fn toLowerASCII(c: u8) u8 {
+        return if (c >= 'A' and c <= 'Z') c + 32 else c;
     }
 
     /// Generate real VSA function calls for VSA-related behaviors

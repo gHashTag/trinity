@@ -1,27 +1,18 @@
 const std = @import("std");
 
 // Build file for trinity-lang module (Zig 0.15.x)
-// Part of Trinity Nexus modular architecture — NEXUS-008 wired
-// Dependency: trinity-core
+// Part of Trinity Nexus modular architecture
+// Single source of truth for VIBEEC compiler
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Resolve dependencies from build.zig.zon
-    const core_dep = b.dependency("trinity_core", .{
-        .target = target,
-        .optimize = optimize,
-    });
-
-    // Module with core dependency
+    // Module (self-contained — no external dependencies)
     const mod = b.createModule(.{
         .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
-        .imports = &.{
-            .{ .name = "trinity-core", .module = core_dep.module("trinity_core") },
-        },
     });
 
     // Library

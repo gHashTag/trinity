@@ -3327,11 +3327,12 @@ pub const TestGenerator = struct {
             const mem = std.mem;
             if (mem.startsWith(u8, name, "init") or mem.startsWith(u8, name, "deinit")) {
                 try self.builder.writeFmt("// Test {s}: verify lifecycle function exists\n", .{name});
-                try self.builder.writeFmt("try std.testing.expect(@TypeOf({s}) != void);\n", .{name});
+                try self.builder.writeFmt("const ptr = &{s};\n", .{name});
+                try self.builder.writeLine("try std.testing.expect(@intFromPtr(ptr) != 0);");
             } else {
                 try self.builder.writeFmt("// Test {s}: verify behavior is callable\n", .{name});
-                try self.builder.writeFmt("const func = @TypeOf({s});\n", .{name});
-                try self.builder.writeLine("try std.testing.expect(func != void);");
+                try self.builder.writeFmt("const ptr = &{s};\n", .{name});
+                try self.builder.writeLine("try std.testing.expect(@intFromPtr(ptr) != 0);");
             }
         }
     }
