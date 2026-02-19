@@ -191,22 +191,47 @@ pub const SelfImprover = struct {
         var stubs: usize = 0;
 
         var lines = std.mem.splitScalar(u8, source, '\n');
+        var in_function = false;
+        var function_has_real = false;
+        var function_has_stub = false;
+
         while (lines.next()) |line| {
+            // Check for function declaration
             if (std.mem.indexOf(u8, line, "pub fn")) |_| {
+                // Count previous function if any
+                if (in_function) {
+                    if (function_has_real) real += 1;
+                    if (function_has_stub) stubs += 1;
+                }
+                // Start new function
                 total += 1;
+                in_function = true;
+                function_has_real = false;
+                function_has_stub = false;
             }
-            // Check for stub indicators
-            const is_stub = std.mem.indexOf(u8, line, "TODO") != null or
-                           std.mem.indexOf(u8, line, "unimplemented") != null or
-                           std.mem.indexOf(u8, line, "_ = @as") != null;
-            if (is_stub) {
-                stubs += 1;
+
+            if (in_function) {
+                // Check for stub indicators within function
+                if (!function_has_stub) {
+                    const is_stub = std.mem.indexOf(u8, line, "TODO") != null or
+                                   std.mem.indexOf(u8, line, "unimplemented") != null or
+                                   std.mem.indexOf(u8, line, "_ = @as") != null;
+                    if (is_stub) function_has_stub = true;
+                }
+
+                // Check for real implementation within function
+                if (!function_has_real and
+                    std.mem.indexOf(u8, line, "return") != null and
+                    std.mem.indexOf(u8, line, "// Then:") == null) {
+                    function_has_real = true;
+                }
             }
-            // Check for real implementation
-            if (std.mem.indexOf(u8, line, "return") != null and
-                std.mem.indexOf(u8, line, "// Then:") == null) {
-                real += 1;
-            }
+        }
+
+        // Count last function
+        if (in_function) {
+            if (function_has_real) real += 1;
+            if (function_has_stub) stubs += 1;
         }
 
         const real_pct: f64 = if (total > 0)
