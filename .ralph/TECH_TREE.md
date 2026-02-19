@@ -130,3 +130,29 @@
 
 ---
 φ² + 1/φ² = 3 | TRINITY
+
+### CODEGEN-007: Self-Improving Codegen ✅ COMPLETE (v7.0.0, 2026-02-19)
+
+**Status:** ✅ PRODUCTION READY
+**Branch:** `vibee-v7-self-improving` → merged to main
+**Tag:** `v7.0.0`
+
+**Achievements:**
+- 20 behaviors in `vibee_self_improver.vibee`
+- `src/vibeec/self_improver.zig` (366 loc) + CLI
+- 73.5% real patterns (fixed 138.2% overcount bug)
+- 27/27 tests pass
+- Self-improvement loop: analyze → suggest → patch → regenerate → validate
+
+**Files:**
+- `specs/tri/vibee_self_improver.vibee` — Self-improvement spec
+- `src/vibeec/self_improver.zig` — Engine + CLI
+- `src/vibeec/codegen/tests_gen.zig` — Test generator with spec-level tests
+
+**Usage:**
+```bash
+zig-out/bin/vibee-self-improve specs/tri/vibee_self_improver.vibee --iterations 5 --threshold 95.0
+```
+
+**Next:** v8 Production Swarm Runtime (32 agents, Docker/K8s, 24/7 operation)
+

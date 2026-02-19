@@ -487,3 +487,33 @@ Trinity Identity: `φ² + 1/φ² = 3` where φ = (1 + √5) / 2
 
 ---
 
+
+## V7 Self-Improving Codegen (19.02.2026)
+
+VIBEE v7 adds self-improvement capability — VIBEE analyzes its own generated code, finds weak spots, and automatically patches itself.
+
+### Components
+
+- `specs/tri/vibee_self_improver.vibee` — 20 behaviors for self-improvement loop
+- `src/vibeec/self_improver.zig` — Engine with CLI (366 loc)
+- `src/vibeec/codegen/tests_gen.zig` — Test generator with spec-level test support
+
+### Usage
+
+```bash
+# Generate code with self-improvement
+zig build vibee -- gen specs/tri/vibee_self_improver.vibee
+
+# Run self-improvement engine (dry-run)
+./zig-out/bin/vibee-self-improve specs/tri/vibee_self_improver.vibee --dry-run --verbose
+
+# Run full improvement loop
+./zig-out/bin/vibee-self-improve --iterations 5 --threshold 95.0
+```
+
+### Metrics
+
+- 73.5% real patterns (fixed from 138.2% overcount bug)
+- 27/27 tests pass
+- Self-improvement loop: analyze → suggest → patch → regenerate → validate
+
