@@ -1,0 +1,83 @@
+# ============================================================================
+# VSA Multi-Language Test
+# ============================================================================
+
+name: vsa_multilang_test
+version: "1.0.0"
+language: python
+module: vsa_multilang_test
+
+description: |
+  Test VSA core operations across multiple languages.
+  Demonstrates bind/unbind/bundle operations.
+
+constants:
+  HYPERVECTOR_DIM: 10000
+  PHI: 1.618033988749895
+
+types:
+  HyperVector:
+    description: "Ternary hypervector"
+    fields:
+      data: List<Int>
+      dimension: Int
+
+  BundleResult:
+    description: "Result of bundle operation"
+    fields:
+      vector: HyperVector
+      confidence: Float
+
+behaviors:
+  - name: bind
+    given: two hypervectors
+    when: binding two vectors
+    then: return bound hypervector
+    implementation: |
+        pub fn bind(a: *const HyperVector, b: *const HyperVector) HyperVector {
+            _ = a;
+            _ = b;
+            return HyperVector{};
+        }
+
+  - name: unbind
+    given: bound hypervector and key
+    when: unbinding with key
+    then: return original hypervector
+    implementation: |
+        pub fn unbind(bound: *const HyperVector, key: *const HyperVector) HyperVector {
+            _ = bound;
+            _ = key;
+            return HyperVector{};
+        }
+
+  - name: bundle2
+    given: two hypervectors
+    when: computing majority vote
+    then: return bundled hypervector
+    implementation: |
+        pub fn bundle2(a: *const HyperVector, b: *const HyperVector) HyperVector {
+            _ = a;
+            _ = b;
+            return HyperVector{};
+        }
+
+  - name: cosineSimilarity
+    given: two hypervectors
+    when: measuring similarity
+    then: return similarity in [-1, 1]
+    implementation: |
+        pub fn cosineSimilarity(a: *const HyperVector, b: *const HyperVector) f64 {
+            _ = a;
+            _ = b;
+            return 0.0;
+        }
+
+test_cases:
+  - name: bind_unbind_roundtrip
+    given: "vectors A, B"
+    expected: "unbind(bind(A, B), B) ≈ A"
+
+  - name: bundle_amplifies
+    given: "10 similar vectors"
+    expected: "bundle amplifies common signal"
