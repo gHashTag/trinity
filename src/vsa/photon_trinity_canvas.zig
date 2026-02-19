@@ -519,6 +519,11 @@ var g_ralph_pending_cmd: RalphCmd = .none;
 var g_ralph_tmux_session: [64]u8 = [_]u8{0} ** 64;
 var g_ralph_tmux_session_len: usize = 0;
 
+// v8.1.1: Hybrid mode — track external ralph_loop.sh process
+var g_ralph_loop_pid: i32 = 0;
+var g_ralph_tmux_loop_running: bool = false;
+var g_ralph_last_pid_check: f64 = 0;
+
 /// Discover the ralph tmux session name (ralph-XXXXXXXXXX) — picks newest (last sorted)
 fn ralphDiscoverTmuxSession() void {
     const allocator = std.heap.page_allocator;
@@ -538,50 +543,158 @@ fn ralphDiscoverTmuxSession() void {
     }
 }
 
-/// Execute pending ralph command via tmux
+/// Find PID of external ralph_loop.sh process (v8.1.1 hybrid mode)
+fn ralphFindLoopPid() i32 {
+    const allocator = std.heap.page_allocator;
+    // pgrep returns multiple PIDs, take the first one (newest)
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "/bin/sh", "-c", "pgrep -f 'ralph_loop.sh' 2>/dev/null | head -1" },
+    }) catch return 0;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    const out = std.mem.trimRight(u8, result.stdout, "\n\r \t");
+    if (out.len > 0) {
+        const pid = std.fmt.parseInt(i32, out, 10) catch 0;
+        if (pid > 0) {
+            std.debug.print("[RALPH] found external loop PID: {}\n", .{pid});
+            return pid;
+        }
+    }
+    return 0;
+}
+
+/// Check if ralph is running INSIDE tmux pane (v8.1.1 hybrid mode)
+fn ralphCheckTmuxLoop() bool {
+    if (g_ralph_tmux_session_len == 0) return false;
+    const sess = g_ralph_tmux_session[0..g_ralph_tmux_session_len];
+    const allocator = std.heap.page_allocator;
+
+    // Get pane PID for pane 1.1
+    var buf: [128]u8 = undefined;
+    const cmd = std.fmt.bufPrint(&buf, "tmux list-panes -t '{s}:1.1' -F '{{pane_pid}}' 2>/dev/null", .{sess}) catch return false;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "/bin/sh", "-c", cmd },
+    }) catch return false;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+    const pane_pid_str = std.mem.trimRight(u8, result.stdout, "\n\r \t");
+    if (pane_pid_str.len == 0) return false;
+
+    const pane_pid = std.fmt.parseInt(i32, pane_pid_str, 10) catch return false;
+    if (pane_pid <= 0) return false;
+
+    // Check if that process has 'ralph' in its command line
+    var buf2: [256]u8 = undefined;
+    const cmd2 = std.fmt.bufPrint(&buf2, "ps -p {} -o command= 2>/dev/null | grep -q ralph", .{pane_pid}) catch return false;
+    const result2 = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "/bin/sh", "-c", cmd2 },
+    }) catch return false;
+    defer allocator.free(result2.stdout);
+    defer allocator.free(result2.stderr);
+
+    const running = result2.term.Exited == 0;
+    if (running) {
+        std.debug.print("[RALPH] tmux pane has ralph running (PID {})\n", .{pane_pid});
+    }
+    return running;
+}
+
+/// Update ralph loop detection state (call periodically)
+fn ralphUpdateLoopState() void {
+    const now = rl.GetTime();
+    // Check every 2 seconds
+    if (now - g_ralph_last_pid_check < 2.0) return;
+    g_ralph_last_pid_check = now;
+
+    g_ralph_loop_pid = ralphFindLoopPid();
+    g_ralph_tmux_loop_running = ralphCheckTmuxLoop();
+}
+
+/// Execute pending ralph command (v8.1.1: hybrid mode — PID signals OR tmux)
 fn ralphExecPendingCmd() void {
     const cmd = g_ralph_pending_cmd;
     if (cmd == .none) return;
     std.debug.print("[RALPH] executing cmd: {s}\n", .{if (cmd == .start) "START" else if (cmd == .stop) "STOP" else if (cmd == .restart) "RESTART" else "NONE"});
     g_ralph_pending_cmd = .none;
 
-    // Make sure we know the session
-    if (g_ralph_tmux_session_len == 0) ralphDiscoverTmuxSession();
-    if (g_ralph_tmux_session_len == 0) return; // no ralph tmux session
+    // Update detection state
+    ralphUpdateLoopState();
 
-    const sess = g_ralph_tmux_session[0..g_ralph_tmux_session_len];
     const allocator = std.heap.page_allocator;
 
-    switch (cmd) {
-        .stop => {
-            // Send Ctrl+C to the ralph loop pane (pane 0 in window 1)
-            var buf: [128]u8 = undefined;
-            const sh_cmd = std.fmt.bufPrint(&buf, "tmux send-keys -t '{s}:1.1' C-c 2>/dev/null", .{sess}) catch return;
-            _ = std.process.Child.run(.{
-                .allocator = allocator,
-                .argv = &[_][]const u8{ "/bin/sh", "-c", buf[0..sh_cmd.len] },
-            }) catch {};
-        },
-        .start => {
-            // Send "ralph" command to the ralph loop pane
-            var buf: [128]u8 = undefined;
-            const sh_cmd = std.fmt.bufPrint(&buf, "tmux send-keys -t '{s}:1.1' 'ralph' Enter 2>/dev/null", .{sess}) catch return;
-            _ = std.process.Child.run(.{
-                .allocator = allocator,
-                .argv = &[_][]const u8{ "/bin/sh", "-c", buf[0..sh_cmd.len] },
-            }) catch {};
-        },
-        .restart => {
-            // Ctrl+C then start after a tiny delay
-            var buf1: [128]u8 = undefined;
-            const cmd1 = std.fmt.bufPrint(&buf1, "tmux send-keys -t '{s}:1.1' C-c 2>/dev/null; sleep 1; tmux send-keys -t '{s}:1.1' 'ralph' Enter 2>/dev/null", .{ sess, sess }) catch return;
-            _ = std.process.Child.run(.{
-                .allocator = allocator,
-                .argv = &[_][]const u8{ "/bin/sh", "-c", buf1[0..cmd1.len] },
-            }) catch {};
-        },
-        .none => {},
+    // Hybrid mode: external process takes priority
+    if (g_ralph_loop_pid > 0) {
+        std.debug.print("[RALPH] using external process mode (PID {})\n", .{g_ralph_loop_pid});
+        switch (cmd) {
+            .stop => {
+                // v8.1.1 fix: Kill monitor, loop processes, AND all their children
+                // First kill children, then parents (to avoid orphans)
+                const sh_cmd = "pgrep -f 'ralph_loop.sh' 2>/dev/null | xargs -r pkill -9 -P 2>/dev/null; pkill -9 -f 'ralph_monitor.sh' 2>/dev/null; pkill -9 -f 'ralph_loop.sh' 2>/dev/null";
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", sh_cmd },
+                }) catch {};
+            },
+            .start => {
+                // Already running, just log
+                std.debug.print("[RALPH] loop already running (PID {})\n", .{g_ralph_loop_pid});
+            },
+            .restart => {
+                // v8.1.1 fix: Kill children first, then parents (same as STOP)
+                const cmd1 = "pgrep -f 'ralph_loop.sh' 2>/dev/null | xargs -r pkill -9 -P 2>/dev/null; pkill -9 -f 'ralph_monitor.sh' 2>/dev/null; pkill -9 -f 'ralph_loop.sh' 2>/dev/null; sleep 1";
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", cmd1 },
+                }) catch {};
+                std.debug.print("[RALPH] sent SIGKILL to ralph_monitor.sh and all children\n", .{});
+            },
+            .none => {},
+        }
+        return;
     }
+
+    // Fallback: tmux mode (if tmux loop is running or session exists)
+    if (g_ralph_tmux_loop_running or g_ralph_tmux_session_len > 0) {
+        std.debug.print("[RALPH] using tmux mode\n", .{});
+        if (g_ralph_tmux_session_len == 0) ralphDiscoverTmuxSession();
+        if (g_ralph_tmux_session_len == 0) return; // no tmux session
+
+        const sess = g_ralph_tmux_session[0..g_ralph_tmux_session_len];
+
+        switch (cmd) {
+            .stop => {
+                var buf: [128]u8 = undefined;
+                const sh_cmd = std.fmt.bufPrint(&buf, "tmux send-keys -t '{s}:1.1' C-c 2>/dev/null", .{sess}) catch return;
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", buf[0..sh_cmd.len] },
+                }) catch {};
+            },
+            .start => {
+                var buf: [128]u8 = undefined;
+                const sh_cmd = std.fmt.bufPrint(&buf, "tmux send-keys -t '{s}:1.1' 'ralph' Enter 2>/dev/null", .{sess}) catch return;
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", buf[0..sh_cmd.len] },
+                }) catch {};
+            },
+            .restart => {
+                var buf1: [128]u8 = undefined;
+                const cmd1 = std.fmt.bufPrint(&buf1, "tmux send-keys -t '{s}:1.1' C-c 2>/dev/null; sleep 1; tmux send-keys -t '{s}:1.1' 'ralph' Enter 2>/dev/null", .{ sess, sess }) catch return;
+                _ = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "/bin/sh", "-c", buf1[0..cmd1.len] },
+                }) catch {};
+            },
+            .none => {},
+        }
+        return;
+    }
+
+    std.debug.print("[RALPH] no ralph loop found to control\n", .{});
 }
 
 /// Read a git HEAD file and extract the branch name (strip "ref: refs/heads/")
@@ -1249,8 +1362,11 @@ fn pollRalphAgentDesktop(ai: usize) void {
         }
     }
 
-    // Execute any pending ralph control command (START/STOP/RESTART)
-    if (ai == 0) ralphExecPendingCmd();
+    // v8.1.1: Update ralph loop detection state before executing commands (all tabs)
+    ralphUpdateLoopState();
+
+    // Execute any pending ralph control command (START/STOP/RESTART) (all tabs)
+    ralphExecPendingCmd();
 }
 
 // ── v8.0: Unified Chat Helpers ──
