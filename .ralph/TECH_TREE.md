@@ -1,4 +1,5 @@
-# Tech Tree — Ralph Navigation
+n|**HW-003**|**FPGA Acceleration**|**hardware**|**fpga_acceleration.zig (~560 lines): 2-bit trit encoding (packs 16 trits/word, 4x compression), DeviceResources (Artix-7/Zynq LUT/FF/BRAM/DSP counts), PipelineLatency (bind=1, bundle=1, dot=3, permute=1, matvec=4 cycles), FPGABackend VSA ops (bind/bundle/dotProduct/permute/cosineSimilarity/ternaryMatVec), ResourceEstimator, FPGASynthesisReport (util/power/throughput), FPGAController AXI-lite simulation, ComparisonReport (2x speedup, 100x energy), RegisterMap, 17 tests, build.zig wired**|
+|----|------|--------|------|# Tech Tree — Ralph Navigation
 
 > Source of truth: `specs/tri/tech_tree_strategy.vibee`
 > Last sync: 2026-02-18
@@ -117,7 +118,7 @@
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
 |Multilingual|3|3|100%|
-|**Total**|**51**|**56**|**91%**|
+|**Total**|**52**|**56**|**93%**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
