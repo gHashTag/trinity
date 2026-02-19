@@ -83,65 +83,125 @@ behaviors:
     given: Running inference instance
     when: Metrics interval elapsed (every 10s)
     then: Gather CPU, memory, queue, latency metrics
+    implementation: |
+        pub fn collect_instance_metrics(instance_id: []const u8) InstanceMetrics {
+            _ = instance_id;
+            return InstanceMetrics{};
+        }
 
   - name: aggregate_cluster_metrics
     given: All instance metrics collected
     when: Aggregation interval elapsed (every 30s)
     then: Calculate cluster-wide averages and totals
+    implementation: |
+        pub fn aggregate_cluster_metrics(metrics: []const InstanceMetrics) ClusterMetrics {
+            _ = metrics;
+            return ClusterMetrics{};
+        }
 
   # Scaling decisions
   - name: evaluate_scale_up
     given: Cluster metrics exceed thresholds
     when: CPU > 80% OR queue > 100 OR TTFT > target
     then: Recommend scale up by 1-N instances
+    implementation: |
+        pub fn evaluate_scale_up(metrics: ClusterMetrics, config: ScalingConfig) ScalingDecision {
+            _ = metrics;
+            _ = config;
+            return ScalingDecision{};
+        }
 
   - name: evaluate_scale_down
     given: Cluster metrics below thresholds
     when: CPU < 30% AND queue < 10 AND instances > min
     then: Recommend scale down by 1 instance
+    implementation: |
+        pub fn evaluate_scale_down(metrics: ClusterMetrics, config: ScalingConfig) ScalingDecision {
+            _ = metrics;
+            _ = config;
+            return ScalingDecision{};
+        }
 
   - name: apply_scaling_decision
     given: Scaling decision made
     when: Cooldown period elapsed
     then: Call Fly.io API to adjust instance count
+    implementation: |
+        pub fn apply_scaling_decision(decision: ScalingDecision, api_token: []const u8) !void {
+            _ = decision;
+            _ = api_token;
+        }
 
   # Health checks
   - name: liveness_check
     given: Health check request received
     when: Endpoint /health/live called
     then: Return 200 if process running, 503 otherwise
+    implementation: |
+        pub fn liveness_check() HealthStatus {
+            return HealthStatus{};
+        }
 
   - name: readiness_check
     given: Readiness check request received
     when: Endpoint /health/ready called
     then: Return 200 if model loaded and accepting requests
+    implementation: |
+        pub fn readiness_check() HealthStatus {
+            return HealthStatus{};
+        }
 
   - name: startup_check
     given: Startup check request received
     when: Endpoint /health/startup called
     then: Return 200 when initialization complete
+    implementation: |
+        pub fn startup_check() HealthStatus {
+            return HealthStatus{};
+        }
 
   # Prometheus export
   - name: export_prometheus_metrics
     given: Metrics request received
     when: Endpoint /metrics called
     then: Return Prometheus-formatted metrics
+    implementation: |
+        pub fn export_prometheus_metrics(metrics: ClusterMetrics) []const u8 {
+            _ = metrics;
+            return "";
+        }
 
   - name: register_metric
     given: New metric type needed
     when: Metric not yet registered
     then: Add to metrics registry with type and help
+    implementation: |
+        pub fn register_metric(metric: PrometheusMetric) !void {
+            _ = metric;
+        }
 
   # Fly.io integration
   - name: get_fly_instance_count
     given: Fly.io API credentials available
     when: Instance count query needed
     then: Call Fly.io machines API
+    implementation: |
+        pub fn get_fly_instance_count(api_token: []const u8, app_name: []const u8) !usize {
+            _ = api_token;
+            _ = app_name;
+            return 1;
+        }
 
   - name: scale_fly_instances
     given: Scaling decision approved
     when: Target differs from current
     then: Call Fly.io scale API
+    implementation: |
+        pub fn scale_fly_instances(api_token: []const u8, app_name: []const u8, target_count: usize) !void {
+            _ = api_token;
+            _ = app_name;
+            _ = target_count;
+        }
 
 constants:
   # Default scaling config

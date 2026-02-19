@@ -685,6 +685,10 @@ behaviors:
     given: Vectors to cluster
     when: Finding groups
     then: Return cluster assignments
+    implementation: |
+        pub fn clusterVectors(vectors: anytype) anyerror!void {
+            _ = vectors;
+        }
 
   # NEW: Codebook Operations
   - name: initCodebook

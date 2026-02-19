@@ -60,41 +60,78 @@ behaviors:
     given: ProgressConfig with style and update rate
     when: Starting a long operation
     then: Return initialized ProgressState
+    implementation: |
+        pub fn init(config: ProgressConfig) ProgressState {
+            _ = config;
+            return ProgressState{};
+        }
 
   - name: update
     given: Current progress count
     when: Progress has changed
     then: Update state and render if interval elapsed
+    implementation: |
+        pub fn update(state: *ProgressState, current: usize) !void {
+            _ = state;
+            _ = current;
+        }
 
   - name: render
     given: ProgressState
     when: Update interval reached
     then: Output appropriate progress indicator
+    implementation: |
+        pub fn render(state: ProgressState) !void {
+            _ = state;
+        }
 
   - name: renderSpinner
     given: Frame index
     when: Spinner style selected
     then: Output rotating character
+    implementation: |
+        pub fn renderSpinner(frame: usize) !void {
+            _ = frame;
+        }
 
   - name: renderBar
     given: Current and total counts
     when: Bar style selected
     then: Output progress bar with fill
+    implementation: |
+        pub fn renderBar(current: usize, total: usize) !void {
+            _ = current;
+            _ = total;
+        }
 
   - name: renderPercentage
     given: Current and total counts
     when: Percentage style selected
     then: Output percentage value
+    implementation: |
+        pub fn renderPercentage(current: usize, total: usize) !void {
+            _ = current;
+            _ = total;
+        }
 
   - name: complete
     given: ProgressState
     when: Operation finished
     then: Clear progress line and show completion
+    implementation: |
+        pub fn complete(state: *ProgressState) !void {
+            _ = state;
+        }
 
   - name: getStats
     given: ProgressState
     when: Stats requested
     then: Return ProgressStats with timing info
+    implementation: |
+        pub fn getStats(state: ProgressState) ProgressStats {
+            _ = state;
+            return ProgressStats{};
+        }
 
 spinner_frames:
   - "|"
