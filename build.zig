@@ -1023,16 +1023,14 @@ pub fn build(b: *std.Build) void {
     const fluent_cli_step = b.step("fluent", "Run Fluent CLI (Local Chat with History Truncation)");
     fluent_cli_step.dependOn(&run_fluent_cli.step);
 
-    // VIBEE Compiler CLI — uses trinity-lang module as source of truth
+    // VIBEE Compiler CLI — single source of truth in src/vibeec/
+    // VIBEE Compiler CLI — single source of truth in src/vibeec/
     const vibee = b.addExecutable(.{
         .name = "vibee",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/gen_cmd.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{
-                .{ .name = "trinity-lang", .module = trinity_lang_mod },
-            },
         }),
     });
     b.installArtifact(vibee);
@@ -1043,6 +1041,21 @@ pub fn build(b: *std.Build) void {
     }
     const vibee_step = b.step("vibee", "Run VIBEE Compiler CLI");
     vibee_step.dependOn(&run_vibee.step);
+
+    // VIBEE Self-Improvement Engine — VIBEE improves VIBEE
+    const self_improve = b.addExecutable(.{
+        .name = "vibee-self-improve",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/self_improver.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(self_improve);
+
+    const run_self_improve = b.addRunArtifact(self_improve);
+    const self_improve_step = b.step("self-improve", "Run VIBEE Self-Improvement Loop");
+    self_improve_step.dependOn(&run_self_improve.step);
 
     // Vibeec modules for TRI
     const vibeec_swe = b.createModule(.{
@@ -1258,6 +1271,9 @@ pub fn build(b: *std.Build) void {
         }),
     });
     trinity_canvas.linkSystemLibrary("raylib");
+    // v8.4: Add raygui include path and C implementation
+    trinity_canvas.addIncludePath(b.path("external/raygui/src"));
+    trinity_canvas.addCSourceFile(.{ .file = b.path("src/vsa/raygui_impl.c") });
     b.installArtifact(trinity_canvas);
 
     const run_trinity_canvas = b.addRunArtifact(trinity_canvas);
