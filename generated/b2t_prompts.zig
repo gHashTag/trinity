@@ -90,6 +90,13 @@ pub const ChainOfThought = struct {
     final_instruction: []const u8,
 };
 
+/// 
+pub const CoTParseResult = struct {
+    steps: []const u8,
+    final_answer: []const u8,
+    reasoning: []const u8,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // ПАМЯТЬ ДЛЯ WASM
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -190,7 +197,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// List<SimilarCode> и max_examples
 /// When: Форматирование примеров для ICL
 /// Then: Возвращает PromptSection с role=example
-        pub fn build_icl_examples(examples: []const SimilarCode, max_examples: usize) PromptSection {
+        pub fn build_icl_examples(examples: anytype, max_examples: usize) PromptSection {
             _ = examples;
             _ = max_examples;
             return PromptSection{};
@@ -223,7 +230,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// DistortionType
 /// When: Получение шаблона для конкретного искажения
 /// Then: Возвращает DistortionTemplate
-        pub fn get_distortion_template(dist_type: DistortionType) DistortionTemplate {
+        pub fn get_distortion_template(dist_type: anytype) DistortionTemplate {
             _ = dist_type;
             return DistortionTemplate{};
         }
@@ -233,7 +240,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// Код и DistortionTemplate
 /// When: Создание промпта для детекции искажений
 /// Then: Возвращает String промпт
-        pub fn format_detection_prompt(code: []const u8, template: DistortionTemplate) []const u8 {
+        pub fn format_detection_prompt(code: []const u8, template: anytype) []const u8 {
             _ = code;
             _ = template;
             return "";
@@ -244,7 +251,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// Код, искажения и DistortionTemplate
 /// When: Создание промпта для исправления
 /// Then: Возвращает String промпт
-        pub fn format_correction_prompt(code: []const u8, distortions: []const Distortion, template: DistortionTemplate) []const u8 {
+        pub fn format_correction_prompt(code: []const u8, distortions: anytype, template: anytype) []const u8 {
             _ = code;
             _ = distortions;
             _ = template;
@@ -256,7 +263,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// Оригинал, исправление и DistortionTemplate
 /// When: Создание промпта для валидации
 /// Then: Возвращает String промпт
-        pub fn format_validation_prompt(original: []const u8, corrected: []const u8, template: DistortionTemplate) []const u8 {
+        pub fn format_validation_prompt(original: []const u8, corrected: []const u8, template: anytype) []const u8 {
             _ = original;
             _ = corrected;
             _ = template;
@@ -268,7 +275,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// Задача и ChainOfThought
 /// When: Создание промпта с пошаговым рассуждением
 /// Then: Возвращает String промпт
-        pub fn create_cot_prompt(task: []const u8, cot: ChainOfThought) []const u8 {
+        pub fn create_cot_prompt(task: []const u8, cot: anytype) []const u8 {
             _ = task;
             _ = cot;
             return "";
