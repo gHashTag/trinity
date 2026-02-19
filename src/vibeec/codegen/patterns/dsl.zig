@@ -54,11 +54,17 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // $http.get pattern
     if (std.mem.indexOf(u8, when_text, "$http.get") != null) {
-        try builder.writeFmt("pub fn {s}(url: []const u8) ![]const u8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(url: []const u8, allocator: std.mem.Allocator) ![]const u8 {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// HTTP GET request");
-        try builder.writeLine("_ = url;");
-        try builder.writeLine("return \"HTTP response placeholder\";");
+        try builder.writeLine("var client = std.http.Client{ .allocator = allocator };");
+        try builder.writeLine("defer client.deinit();");
+        try builder.writeLine("var req = try client.request(.GET, url, .{ .redirect = .follow });");
+        try builder.writeLine("defer req.deinit();");
+        try builder.writeLine("try req.setHeader(\"Accept\", \"application/json\");");
+        try builder.writeLine("const resp = try req.wait();");
+        try builder.writeLine("defer resp.deinit();");
+        try builder.writeLine("return try allocator.dupe(u8, resp.body);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -66,11 +72,19 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // $http.post pattern
     if (std.mem.indexOf(u8, when_text, "$http.post") != null) {
-        try builder.writeFmt("pub fn {s}(url: []const u8, body: []const u8) ![]const u8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(url: []const u8, body: []const u8, allocator: std.mem.Allocator) ![]const u8 {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// HTTP POST request");
-        try builder.writeLine("_ = url; _ = body;");
-        try builder.writeLine("return \"HTTP response placeholder\";");
+        try builder.writeLine("var client = std.http.Client{ .allocator = allocator };");
+        try builder.writeLine("defer client.deinit();");
+        try builder.writeLine("var req = try client.request(.POST, url, .{ .redirect = .follow });");
+        try builder.writeLine("defer req.deinit();");
+        try builder.writeLine("try req.setHeader(\"Content-Type\", \"application/json\");");
+        try builder.writeLine("try req.setHeader(\"Accept\", \"application/json\");");
+        try builder.writeLine("try req.writeAll(body);");
+        try builder.writeLine("const resp = try req.wait();");
+        try builder.writeLine("defer resp.deinit();");
+        try builder.writeLine("return try allocator.dupe(u8, resp.body);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
