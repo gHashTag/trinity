@@ -3324,15 +3324,14 @@ pub const TestGenerator = struct {
 
         } else {
             // Generate real test assertions: verify function exists and is callable
+            // Note: Function existence is verified at compile time - this is a placeholder test
             const mem = std.mem;
             if (mem.startsWith(u8, name, "init") or mem.startsWith(u8, name, "deinit")) {
-                try self.builder.writeFmt("// Test {s}: verify lifecycle function exists\n", .{name});
-                try self.builder.writeFmt("const ptr = &{s};\n", .{name});
-                try self.builder.writeLine("try std.testing.expect(@intFromPtr(ptr) != 0);");
+                try self.builder.writeFmt("// Test {s}: verify lifecycle function exists (compile-time check)\n", .{name});
+                try self.builder.writeFmt("_ = {s};\n", .{name}); // Reference function to verify it compiles
             } else {
-                try self.builder.writeFmt("// Test {s}: verify behavior is callable\n", .{name});
-                try self.builder.writeFmt("const ptr = &{s};\n", .{name});
-                try self.builder.writeLine("try std.testing.expect(@intFromPtr(ptr) != 0);");
+                try self.builder.writeFmt("// Test {s}: verify behavior is callable (compile-time check)\n", .{name});
+                try self.builder.writeFmt("_ = {s};\n", .{name}); // Reference function to verify it compiles
             }
         }
     }

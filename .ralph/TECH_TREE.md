@@ -1,5 +1,4 @@
-n|**HW-003**|**FPGA Acceleration**|**hardware**|**fpga_acceleration.zig (~560 lines): 2-bit trit encoding (packs 16 trits/word, 4x compression), DeviceResources (Artix-7/Zynq LUT/FF/BRAM/DSP counts), PipelineLatency (bind=1, bundle=1, dot=3, permute=1, matvec=4 cycles), FPGABackend VSA ops (bind/bundle/dotProduct/permute/cosineSimilarity/ternaryMatVec), ResourceEstimator, FPGASynthesisReport (util/power/throughput), FPGAController AXI-lite simulation, ComparisonReport (2x speedup, 100x energy), RegisterMap, 17 tests, build.zig wired**|
-|----|------|--------|------|# Tech Tree — Ralph Navigation
+# Tech Tree — Ralph Navigation# Tech Tree — Ralph Navigation
 
 > Source of truth: `specs/tri/tech_tree_strategy.vibee`
 > Last sync: 2026-02-18
@@ -87,6 +86,8 @@ n|**HW-003**|**FPGA Acceleration**|**hardware**|**fpga_acceleration.zig (~560 li
 |----|------|--------|------|
 |**HW-001**|**Hardware Abstraction Layer**|**hardware**|**hardware_abstraction.zig (~750 lines): compile-time backend selection (CPU_SCALAR/CPU_SIMD/FPGA/GPU), SIMD capability detection (AVX-512/AVX2/SSE4/NEON), ScalarBackend + SimdBackend @Vector(8,i8), unified dispatch, PerfCounters, MemoryAnalysis (16x compression), 21 tests, build.zig wired**|
 |----|------|--------|------|
+|**HW-003**|**FPGA Acceleration**|**hardware**|**fpga_acceleration.zig (564 lines): 2-bit trit encoding (packs 16 trits/word), DeviceResources (Artix-7/Zynq LUT/FF/BRAM/DSP counts), PipelineLatency (bind=1, bundle=1, dot=3, permute=1, matvec=4 cycles), FPGABackend VSA ops (bind/bundle/dotProduct/permute/cosineSimilarity/ternaryMatVec), ResourceEstimator, FPGASynthesisReport (util/power/throughput), FPGAController AXI-lite simulation, ComparisonReport (2x speedup, 100x energy), RegisterMap, 17 tests, build.zig wired**|
+|----|------|--------|------|
 |DEP-001|Docker Container|deployment|Portable deployment|
 |DEP-002|Fly.io Integration|deployment|Global edge deployment|
 |OPT-T01|Ternary Weight Quantization|optimization|20x weight compression|
@@ -111,7 +112,7 @@ n|**HW-003**|**FPGA Acceleration**|**hardware**|**fpga_acceleration.zig (~560 li
 |**Inference**|**4**|**5**|**80%**|
 |Deployment|2|4|50%|
 |**Optimization**|**16**|**16**|**100%**|
-|**Hardware**|**1**|**3**|**33%**|
+|**Hardware**|**2**|**3**|**67%**|
 |**Math**|**5**|**5**|**100%**|
 |**Development**|**3**|**3**|**100%**|
 |**Symbolic**|**5**|**5**|**100%**|
@@ -121,7 +122,7 @@ n|**HW-003**|**FPGA Acceleration**|**hardware**|**fpga_acceleration.zig (~560 li
 |**Total**|**52**|**56**|**93%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
+1. **DEP-001** Docker Container — portable deployment, enables CI testing
 2. **DEP-001** Docker Container — portable deployment, enables CI testing
 3. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
 

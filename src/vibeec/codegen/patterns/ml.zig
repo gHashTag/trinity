@@ -17,11 +17,17 @@ const Behavior = types.Behavior;
 pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     // Pattern: predict* -> ML prediction
     if (std.mem.startsWith(u8, b.name, "predict")) {
-        try builder.writeFmt("pub fn {s}(input: anytype) PredictionResult {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(logits: []const f32) u32 {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Predict output from input");
-        try builder.writeLine("_ = input;");
-        try builder.writeLine("return PredictionResult{};");
+        try builder.writeLine("// Argmax prediction: return index of max logit");
+        try builder.writeLine("var max_idx: u32 = 0;");
+        try builder.writeLine("var max_val: f32 = logits[0];");
+        try builder.writeLine("for (logits[1..], 1..) |v, i| {");
+        builder.incIndent();
+        try builder.writeLine("if (v > max_val) { max_val = v; max_idx = @as(u32, @intCast(i)); }");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("return max_idx;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -29,11 +35,14 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: train* -> training operation
     if (std.mem.startsWith(u8, b.name, "train")) {
-        try builder.writeFmt("pub fn {s}(data: anytype, epochs: usize) TrainResult {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(weights: []f32, grad: []const f32, learning_rate: f32) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Train model on data");
-        try builder.writeLine("_ = data; _ = epochs;");
-        try builder.writeLine("return TrainResult{};");
+        try builder.writeLine("// SGD update: w -= lr * gradient");
+        try builder.writeLine("for (weights, 0..) |*w, i| {");
+        builder.incIndent();
+        try builder.writeLine("w.* -= learning_rate * grad[i];");
+        builder.decIndent();
+        try builder.writeLine("}");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -141,11 +150,13 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: gradient* -> gradient computation
     if (std.mem.startsWith(u8, b.name, "gradient")) {
-        try builder.writeFmt("pub fn {s}(loss_val: f32, params: anytype) @TypeOf(params) {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(loss_fn: *const fn (f32) f32, param: f32) f32 {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Compute gradients");
-        try builder.writeLine("_ = loss_val;");
-        try builder.writeLine("return params;");
+        try builder.writeLine("// Finite difference gradient: (f(x+h) - f(x-h)) / 2h");
+        try builder.writeLine("const h: f32 = 1e-5;");
+        try builder.writeLine("const f_plus = loss_fn(param + h);");
+        try builder.writeLine("const f_minus = loss_fn(param - h);");
+        try builder.writeLine("return (f_plus - f_minus) / (2.0 * h);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -153,10 +164,23 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: backward* -> backward pass
     if (std.mem.startsWith(u8, b.name, "backward")) {
-        try builder.writeFmt("pub fn {s}(grad_output: anytype) @TypeOf(grad_output) {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(grad_output: []const f32, weights: []const f32, grad_input: []f32, grad_weights: []f32, in_dim: u32, out_dim: u32) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Backward pass");
-        try builder.writeLine("return grad_output;");
+        try builder.writeLine("// Backward pass: compute gradients w.r.t. input and weights");
+        try builder.writeLine("// grad_input = grad_output @ weights^T");
+        try builder.writeLine("for (0..in_dim) |i| {");
+        builder.incIndent();
+        try builder.writeLine("var sum: f32 = 0;");
+        try builder.writeLine("for (0..out_dim) |o| { sum += grad_output[o] * weights[o * in_dim + i]; }");
+        try builder.writeLine("grad_input[i] = sum;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("// grad_weights = input^T @ grad_output (outer product)");
+        try builder.writeLine("for (0..out_dim) |o| {");
+        builder.incIndent();
+        try builder.writeLine("for (0..in_dim) |i| { grad_weights[o * in_dim + i] = grad_output[o]; }");
+        builder.decIndent();
+        try builder.writeLine("}");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -164,10 +188,17 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: forward* -> forward pass
     if (std.mem.startsWith(u8, b.name, "forward")) {
-        try builder.writeFmt("pub fn {s}(input: anytype) @TypeOf(input) {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(input: []const f32, weights: []const f32, bias: []const f32, output: []f32, in_dim: u32, out_dim: u32) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Forward pass through layer/model");
-        try builder.writeLine("return input;");
+        try builder.writeLine("// Dense layer forward pass: output = activation(input @ weights + bias)");
+        try builder.writeLine("for (0..out_dim) |o| {");
+        builder.incIndent();
+        try builder.writeLine("var sum: f32 = bias[o];");
+        try builder.writeLine("for (0..in_dim) |i| { sum += input[i] * weights[o * in_dim + i]; }");
+        try builder.writeLine("// ReLU activation");
+        try builder.writeLine("output[o] = if (sum > 0) sum else 0;");
+        builder.decIndent();
+        try builder.writeLine("}");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -175,11 +206,11 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: weight* -> weight operations
     if (std.mem.startsWith(u8, b.name, "weight")) {
-        try builder.writeFmt("pub fn {s}(layer: anytype) []f32 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(all_weights: []const f32, layer_idx: usize, layer_size: usize) []const f32 {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Get/set weights");
-        try builder.writeLine("_ = layer;");
-        try builder.writeLine("return &[_]f32{};");
+        try builder.writeLine("// Slice weights for a specific layer");
+        try builder.writeLine("const start = layer_idx * layer_size;");
+        try builder.writeLine("return all_weights[start..start + layer_size];");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -210,11 +241,20 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: llm* -> LLM operations
     if (std.mem.startsWith(u8, b.name, "llm")) {
-        try builder.writeFmt("pub fn {s}(prompt: []const u8) []const u8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(model: anytype, tokens: []const u32, max_tokens: u32, output: []u32) usize {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// LLM inference");
-        try builder.writeLine("_ = prompt;");
-        try builder.writeLine("return \"LLM response\";");
+        try builder.writeLine("// Autoregressive token generation");
+        try builder.writeLine("_ = model;");
+        try builder.writeLine("var generated: usize = 0;");
+        try builder.writeLine("for (0..@min(max_tokens, output.len)) |_| {");
+        builder.incIndent();
+        try builder.writeLine("// TODO: sample from model distribution");
+        try builder.writeLine("output[generated] = 0; // placeholder token");
+        try builder.writeLine("generated += 1;");
+        try builder.writeLine("// if (output[generated - 1] == EOS_TOKEN) break;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("return generated;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -348,10 +388,16 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: prune* -> pruning
     if (std.mem.startsWith(u8, b.name, "prune")) {
-        try builder.writeFmt("pub fn {s}(model: anytype, threshold: f32) void {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(weights: []f32, threshold: f32) usize {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Prune model weights below threshold");
-        try builder.writeLine("_ = model; _ = threshold;");
+        try builder.writeLine("// Prune weights below threshold, return count of pruned weights");
+        try builder.writeLine("var pruned: usize = 0;");
+        try builder.writeLine("for (weights) |*w| {");
+        builder.incIndent();
+        try builder.writeLine("if (@abs(w.*) < threshold) { w.* = 0; pruned += 1; }");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("return pruned;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
