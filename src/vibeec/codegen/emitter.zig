@@ -1000,7 +1000,7 @@ pub const ZigCodeGen = struct {
         try self.writeCreationPatterns(spec.creation_patterns.items, spec.types.items);
         try self.writeBehaviorFunctions(spec.behaviors.items);
 
-        var test_gen = TestGenerator.init(&self.builder, self.allocator);
+        var test_gen = TestGenerator.withSpec(&self.builder, self.allocator, spec.name);
         // Behavior-level tests (one per behavior)
         try test_gen.writeTests(spec.behaviors.items);
         // Spec-level tests (integration tests from test_cases:)

@@ -23,7 +23,11 @@ const world_dots = @import("world_dots.zig");
 const math = std.math;
 const rl = @cImport({
     @cInclude("raylib.h");
+    @cInclude("raygui.h");
 });
+// v8.4: raygui shortcut
+const rg = rl;
+
 // Emscripten API for browser yield (emscripten_sleep)
 const emc = if (is_emscripten) @cImport(@cInclude("emscripten/emscripten.h")) else struct {};
 
@@ -386,6 +390,14 @@ const CircuitBreakerState = enum {
 
 // v3.0: Multi-agent Ralph Monitor (RALPH-CANVAS-005)
 const MAX_RALPH_AGENTS = 4;
+
+// v8.6: Aceternity Glassmorphism Neon Palette (global)
+const GLASS_NEON_PURPLE = rl.Color{ .r = 0x88, .g = 0x44, .b = 0xFF, .a = 255 };
+const GLASS_NEON_CYAN = rl.Color{ .r = 0x00, .g = 0xFF, .b = 0xFF, .a = 255 };
+const GLASS_NEON_MAGENTA = rl.Color{ .r = 0xFF, .g = 0x14, .b = 0x93, .a = 255 };
+const GLASS_NEON_LIME = rl.Color{ .r = 0x00, .g = 0xFF, .b = 0x66, .a = 255 };
+const GLASS_BG_DARK = rl.Color{ .r = 20, .g = 20, .b = 35, .a = 180 };
+const GLASS_BG_LIGHT = rl.Color{ .r = 40, .g = 40, .b = 60, .a = 160 };
 
 pub const RalphAgent = struct {
     // Identity
@@ -8982,6 +8994,24 @@ fn updateDrawFrame() callconv(.c) void {
             const tool_pink = rl.Color{ .r = 0xFF, .g = 0x14, .b = 0x93, .a = alpha_u8 }; // [Edit]
             const tool_blue = rl.Color{ .r = 0x44, .g = 0x88, .b = 0xFF, .a = alpha_u8 }; // [TodoWrite]
 
+            // ── v8.4: Configure raygui style with our theme colors ──
+            // raygui uses packed 32-bit colors: 0xaabbggrr
+            const bg_color = @as(c_int, @bitCast((@as(u32, ralph_card_bg.a) << 24) | (@as(u32, ralph_card_bg.b) << 16) | (@as(u32, ralph_card_bg.g) << 8) | @as(u32, ralph_card_bg.r)));
+            const accent_color = @as(c_int, @bitCast((@as(u32, ralph_accent.a) << 24) | (@as(u32, ralph_accent.b) << 16) | (@as(u32, ralph_accent.g) << 8) | @as(u32, ralph_accent.r)));
+            const border_color = @as(c_int, @bitCast((@as(u32, ralph_border.a) << 24) | (@as(u32, ralph_border.b) << 16) | (@as(u32, ralph_border.g) << 8) | @as(u32, ralph_border.r)));
+            // DEFAULT control (applies to all controls including TabBar)
+            rg.GuiSetStyle(0, 0, border_color); // BORDER_COLOR_NORMAL
+            rg.GuiSetStyle(0, 1, bg_color);     // BASE_COLOR_NORMAL
+            rg.GuiSetStyle(0, 2, accent_color); // TEXT_COLOR_NORMAL
+            // BUTTON control (2)
+            rg.GuiSetStyle(2, 1, bg_color);     // BASE_COLOR_NORMAL
+            rg.GuiSetStyle(2, 7, @as(c_int, @bitCast(@as(u32, 0xff505060))));   // BASE_COLOR_PRESSED
+            rg.GuiSetStyle(2, 2, accent_color); // TEXT_COLOR_NORMAL
+            rg.GuiSetStyle(2, 0, border_color); // BORDER_COLOR_NORMAL
+            // SCROLLBAR control (15)
+            rg.GuiSetStyle(15, 0, border_color); // BORDER_COLOR_NORMAL
+            rg.GuiSetStyle(15, 1, @as(c_int, @bitCast(@as(u32, 0xff404050))));   // BASE_COLOR_NORMAL
+
             var y: f32 = 30 * fs;
 
             // Title with pulsing dot
@@ -8992,59 +9022,31 @@ fn updateDrawFrame() callconv(.c) void {
             rl.DrawTextEx(chat_font, "Real-time dev loop telemetry", .{ .x = margin + 24, .y = y }, subtitle_sz, 0.5, dim_text);
             y += line_h + 10;
 
-            // ── v3.0: Agent Tab Bar (RALPH-CANVAS-005) ──
+            // ── v8.4: Agent Tab Bar with raygui (RALPH-CANVAS-005) ──
             {
                 const tab_h: f32 = 36 * fs;
-                const tab_gap: f32 = 4;
                 const tabs_w = sw - margin * 2;
-                const tab_w = (tabs_w - tab_gap * @as(f32, @floatFromInt(g_ralph_agent_count -| 1))) / @as(f32, @floatFromInt(@max(g_ralph_agent_count, 1)));
 
+                // Prepare tab names for raygui
+                var tab_names: [16][32:0]u8 = undefined;
+                var name_ptrs: [16][*]const u8 = undefined;
                 var ti: usize = 0;
                 while (ti < g_ralph_agent_count) : (ti += 1) {
                     const tab_agent = &g_ralph_agents[ti];
-                    const tx = margin + @as(f32, @floatFromInt(ti)) * (tab_w + tab_gap);
-                    const is_active = (ti == g_ralph_active_tab);
-                    const tab_rect = rl.Rectangle{ .x = tx, .y = y, .width = tab_w, .height = tab_h };
-
-                    // Tab background — opaque to prevent ghost text
-                    const tab_bg: rl.Color = if (is_active) @bitCast(theme.bg_hover) else @bitCast(theme.bg_surface);
-                    rl.DrawRectangleRounded(tab_rect, 0.15, 8, tab_bg);
-
-                    // Active tab bottom border
-                    if (is_active) {
-                        rl.DrawLine(@intFromFloat(tx + 2), @intFromFloat(y + tab_h), @intFromFloat(tx + tab_w - 2), @intFromFloat(y + tab_h), ralph_accent);
-                    }
-
-                    // Health dot (left side) — color reflects data freshness
-                    const dot_color = if (!tab_agent.reachable)
-                        withAlpha(MUTED_GRAY, alpha_u8)
-                    else if (tab_agent.rate_limited)
-                        ralph_red
-                    else if (tab_agent.data_age_seconds < 30)
-                        ralph_green
-                    else if (tab_agent.data_age_seconds < 300)
-                        ralph_accent
-                    else
-                        ralph_red;
-                    rl.DrawCircle(@intFromFloat(tx + 14), @intFromFloat(y + tab_h / 2), 4, dot_color);
-
-                    // Agent name
-                    rl.DrawTextEx(chat_font, &tab_agent.name, .{ .x = tx + 26, .y = y + 4 }, 12 * fs, 0.5, if (is_active) bright_text else dim_text);
-
-                    // Branch name (smaller)
-                    rl.DrawTextEx(chat_font, &tab_agent.branch, .{ .x = tx + 26, .y = y + 18 * fs }, 10 * fs, 0.5, dim_text);
-
-                    // Unreachable indicator
-                    if (!tab_agent.reachable) {
-                        rl.DrawTextEx(chat_font, "--", .{ .x = tx + tab_w - 24, .y = y + 10 }, 12 * fs, 0.5, dim_text);
-                    }
-
-                    // Click handling
-                    const hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, tab_rect);
-                    if (hover and mouse_pressed) {
-                        g_ralph_active_tab = ti;
-                    }
+                    @memset(&tab_names[ti], 0);
+                    _ = std.fmt.bufPrint(&tab_names[ti], "{s} ({s})", .{ tab_agent.name, tab_agent.branch }) catch "Unknown";
+                    name_ptrs[ti] = &tab_names[ti];
                 }
+
+                // raygui GuiTabBar signature: (bounds, text[*], count, active[*])
+                var active_tab: c_int = @intCast(g_ralph_active_tab);
+                _ = rg.GuiTabBar(
+                    .{ .x = margin, .y = y, .width = tabs_w, .height = tab_h },
+                    @ptrCast(&name_ptrs),
+                    @intCast(g_ralph_agent_count),
+                    &active_tab
+                );
+                g_ralph_active_tab = @intCast(active_tab);
                 y += tab_h + 8;
             }
 
@@ -9354,15 +9356,15 @@ fn updateDrawFrame() callconv(.c) void {
                     ly += bar_h + 8;
                 }
 
-                // ── Unified Chat Area ──
+                // ── v8.6: Unified Chat Area with Glassmorphism ──
                 const chat_top = ly;
                 const chat_h = pane_bottom - chat_top;
 
-                // Chat area — no background, pure black canvas
-                // Only subtle border
-                rl.DrawRectangleRoundedLines(.{ .x = cx, .y = chat_top, .width = content_w, .height = chat_h }, 0.03, 8, rl.Color{ .r = 0x22, .g = 0x22, .b = 0x28, .a = 120 });
+                // v8.6: Glass card for chat area
+                const chat_card = rl.Rectangle{ .x = cx, .y = chat_top, .width = content_w, .height = chat_h };
+                drawGlassCard(chat_card, 12, GLASS_NEON_PURPLE);
 
-                rl.BeginScissorMode(@intFromFloat(margin), @intFromFloat(chat_top), @intFromFloat(content_w), @intFromFloat(chat_h));
+                rl.BeginScissorMode(@intFromFloat(cx), @intFromFloat(chat_top), @intFromFloat(content_w), @intFromFloat(chat_h));
 
                 const avatar_r: f32 = 14 * fs;
                 const msg_font_sz: f32 = 13 * fs;
@@ -9721,18 +9723,43 @@ fn updateDrawFrame() callconv(.c) void {
                                                     rl.DrawRectangle(@intFromFloat(bubble_x + 8), @intFromFloat(cy), @intFromFloat(bubble_w - 16), @intFromFloat(md_row_h), rl.Color{ .r = 0x10, .g = 0x10, .b = 0x18, .a = 200 });
                                                     line_color = tool_lime;
                                                 }
+                                                // v8.6: Glassmorphism tool pill with emoji
                                                 if (is_tool) {
-                                                    rl.DrawRectangle(@intFromFloat(bubble_x + 4), @intFromFloat(cy + 2), 3, @intFromFloat(md_row_h - 4), line_color);
+                                                    const tool_name = switch (cur_tool_id) {
+                                                        .glob => "Glob",
+                                                        .read => "Read",
+                                                        .grep => "Grep",
+                                                        .bash => "Bash",
+                                                        .write => "Write",
+                                                        .edit => "Edit",
+                                                        .todo => "Todo",
+                                                        else => "Tool",
+                                                    };
+                                                    drawToolPill(bubble_x + 4, cy, tool_name, line_color, fs, chat_font);
                                                 }
                                                 if (x_offset > 12) {
                                                     rl.DrawCircle(@intFromFloat(bubble_x + 18), @intFromFloat(cy + font_sz / 2), 3, tool_cyan);
                                                 }
-                                                // Render text (strip **)
+                                                // Render text (strip ** and tool brackets)
                                                 var md_buf: [128:0]u8 = undefined;
                                                 @memset(&md_buf, 0);
                                                 var stripped2: [128]u8 = undefined;
                                                 var s2i: usize = 0;
                                                 var r2i: usize = 0;
+
+                                                // v8.6: Skip tool bracket [ToolName] at start
+                                                if (is_tool and render_text.len > 0) {
+                                                    // Skip past the bracket
+                                                    if (std.mem.indexOfScalar(u8, render_text[r2i..], ']')) |close_bracket| {
+                                                        r2i += close_bracket + 1;
+                                                        // Skip trailing space if present
+                                                        if (r2i < render_text.len and render_text[r2i] == ' ') r2i += 1;
+                                                    }
+                                                }
+
+                                                // v8.6: Adjust text position after tool pill
+                                                const text_x_offset = if (is_tool) 92 * fs else x_offset;
+
                                                 while (r2i < render_text.len and s2i < 127) {
                                                     if (r2i + 1 < render_text.len and render_text[r2i] == '*' and render_text[r2i + 1] == '*') {
                                                         r2i += 2;
@@ -9744,10 +9771,10 @@ fn updateDrawFrame() callconv(.c) void {
                                                 }
                                                 const cl2 = @min(s2i, 127);
                                                 @memcpy(md_buf[0..cl2], stripped2[0..cl2]);
-                                                rl.DrawTextEx(chat_font, &md_buf, .{ .x = bubble_x + x_offset, .y = cy }, font_sz, 0.5, line_color);
+                                                rl.DrawTextEx(chat_font, &md_buf, .{ .x = bubble_x + text_x_offset, .y = cy }, font_sz, 0.5, line_color);
                                                 if (draw_underline) {
                                                     const uw2 = @min(bubble_w * 0.6, @as(f32, @floatFromInt(cl2)) * font_sz * 0.55);
-                                                    rl.DrawRectangle(@intFromFloat(bubble_x + x_offset), @intFromFloat(cy + font_sz + 2), @intFromFloat(uw2), 2, rl.Color{ .r = line_color.r, .g = line_color.g, .b = line_color.b, .a = 80 });
+                                                    rl.DrawRectangle(@intFromFloat(bubble_x + text_x_offset), @intFromFloat(cy + font_sz + 2), @intFromFloat(uw2), 2, rl.Color{ .r = line_color.r, .g = line_color.g, .b = line_color.b, .a = 80 });
                                                 }
                                             }
                                         }
@@ -10083,3 +10110,134 @@ fn hsvToRgb(h: f32, s: f32, v: f32) [3]u8 {
         @intFromFloat((b + m) * 255.0),
     };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v8.6: Aceternity Glassmorphism Helper Functions
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Draw a glassmorphism card with subtle glow and translucent background
+fn drawGlassCard(bounds: rl.Rectangle, radius: f32, glow_color: rl.Color) void {
+    // Subtle glow layer
+    const glow_bounds = rl.Rectangle{ .x = bounds.x - 4, .y = bounds.y - 4, .width = bounds.width + 8, .height = bounds.height + 8 };
+    rl.DrawRectangleRounded(glow_bounds, radius, 8, withAlpha(glow_color, 30));
+
+    // Glass background (translucent)
+    const glass_bg = rl.Color{ .r = 20, .g = 20, .b = 35, .a = 180 };
+    rl.DrawRectangleRounded(bounds, radius, 8, glass_bg);
+
+    // Neon border (top gradient)
+    const border_top = rl.Rectangle{ .x = bounds.x, .y = bounds.y, .width = bounds.width, .height = 2 };
+    rl.DrawRectangleRec(border_top, rl.Color{ .r = 0x88, .g = 0x44, .b = 0xFF, .a = 200 });
+}
+
+/// Draw a chat bubble for PHI (left) or VIBEE (right) messages
+fn drawChatBubble(bounds: rl.Rectangle, is_phi: bool) void {
+    const radius = 16.0;
+    const bg_color = if (is_phi)
+        rl.Color{ .r = 0x00, .g = 0x44, .b = 0x54, .a = 200 }  // Cyan-dark
+    else
+        rl.Color{ .r = 0x54, .g = 0x00, .b = 0x54, .a = 200 }; // Purple-dark
+
+    const accent = if (is_phi) GLASS_NEON_CYAN else GLASS_NEON_MAGENTA;
+
+    // Shadow
+    const shadow_bounds = rl.Rectangle{ .x = bounds.x + 4, .y = bounds.y + 4, .width = bounds.width, .height = bounds.height };
+    rl.DrawRectangleRounded(shadow_bounds, radius, 8, withAlpha(accent, 50));
+
+    // Background
+    rl.DrawRectangleRounded(bounds, radius, 8, bg_color);
+
+    // Accent strip (left for PHI, right for VIBEE)
+    if (is_phi) {
+        rl.DrawRectangleRec(.{ .x = bounds.x, .y = bounds.y, .width = 4, .height = bounds.height }, accent);
+    } else {
+        rl.DrawRectangleRec(.{ .x = bounds.x + bounds.width - 4, .y = bounds.y, .width = 4, .height = bounds.height }, accent);
+    }
+}
+
+/// Draw a circular avatar with φ (PHI) or ψ (VIBEE) symbol
+fn drawAvatar(center_x: f32, center_y: f32, radius: f32, is_phi: bool, font: rl.Font, fs: f32) void {
+    const glow = if (is_phi) GLASS_NEON_CYAN else GLASS_NEON_MAGENTA;
+
+    // Glow ring
+    rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), @intFromFloat(radius + 4), withAlpha(glow, 60));
+
+    // Main circle
+    const circle_color = if (is_phi) rl.Color{ .r = 0x00, .g = 0x88, .b = 0x88, .a = 255 } else rl.Color{ .r = 0x88, .g = 0x00, .b = 0x88, .a = 255 };
+    rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), @intFromFloat(radius), circle_color);
+
+    // Φ or Ψ symbol
+    const symbol = if (is_phi) "Φ" else "Ψ";
+    const font_size = 14 * fs;
+    const text_width = rl.MeasureTextEx(font, symbol, font_size, 0.5).x;
+    rl.DrawTextEx(font, symbol, .{ .x = center_x - text_width / 2, .y = center_y - 10 * fs }, font_size, 0.5, rl.Color{ .r = 255, .g = 255, .b = 255, .a = 255 });
+}
+
+/// Draw a tool pill with glass effect (no square brackets)
+fn drawToolPill(x: f32, y: f32, text: []const u8, tool_color: rl.Color, fs: f32, font: rl.Font) void {
+    const pill_w: f32 = 80 * fs;
+    const pill_h: f32 = 24 * fs;
+    const radius = 12.0;
+
+    // Glass background
+    const bg = rl.Color{ .r = 20, .g = 20, .b = 35, .a = 200 };
+    rl.DrawRectangleRounded(.{ .x = x, .y = y, .width = pill_w, .height = pill_h }, radius, 8, bg);
+
+    // Accent strip (left side)
+    rl.DrawRectangleRec(.{ .x = x, .y = y, .width = 4, .height = pill_h }, tool_color);
+
+    // v8.6: Emoji icon + text
+    const emoji = getToolEmoji(text);
+    const text_y = y + 7 * fs;
+
+    // Draw emoji (left side) - emoji is a string literal, use pointer
+    rl.DrawTextEx(font, emoji.ptr, .{ .x = x + 10, .y = text_y }, 12 * fs, 0.5, tool_color);
+
+    // Draw tool name (after emoji, skip brackets)
+    var buf: [16:0]u8 = undefined;
+    @memset(&buf, 0);
+    const max_len = @min(text.len, 15);
+    @memcpy(buf[0..max_len], text[0..max_len]);
+    rl.DrawTextEx(font, &buf, .{ .x = x + 28, .y = text_y }, 11 * fs, 0.5, rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 });
+}
+
+/// Get emoji icon for tool name (v8.6: ASCII fallback for font compatibility)
+fn getToolEmoji(tool: []const u8) []const u8 {
+    if (std.mem.eql(u8, tool, "Glob")) return "#";  // file search
+    if (std.mem.eql(u8, tool, "Read")) return "R";  // read
+    if (std.mem.eql(u8, tool, "Grep")) return "/";  // search
+    if (std.mem.eql(u8, tool, "Bash")) return "$";  // shell
+    if (std.mem.eql(u8, tool, "Write")) return "W"; // write
+    if (std.mem.eql(u8, tool, "Edit")) return "E";  // edit
+    if (std.mem.eql(u8, tool, "Todo")) return "T";  // todo
+    return "";
+}
+
+/// Draw STATUS pill with pulsing dot and glass effect
+fn drawStatusPill(x: f32, y: f32, status: CircuitBreakerState, fs: f32, font: rl.Font) void {
+    const pill_w = 120 * fs;
+    const pill_h = 32 * fs;
+
+    // Glass background
+    const glass_bg = rl.Color{ .r = 20, .g = 20, .b = 35, .a = 180 };
+    rl.DrawRectangleRounded(.{ .x = x, .y = y, .width = pill_w, .height = pill_h }, 16, 8, glass_bg);
+
+    // Status indicator (pulsing dot)
+    const pulse = @as(u8, @intFromFloat(@max(150, @min(255, @sin(rl.GetTime() * 4) * 60 + 200))));
+    const status_color = switch (status) {
+        .closed => rl.Color{ .r = 0x00, .g = 0xFF, .b = 0x66, .a = pulse },   // Green
+        .degraded => rl.Color{ .r = 0xFF, .g = 0xAA, .b = 0x00, .a = pulse },  // Orange
+        .cb_open => rl.Color{ .r = 0xFF, .g = 0x44, .b = 0x66, .a = pulse },   // Red
+    };
+    rl.DrawCircle(@intFromFloat(x + 20), @intFromFloat(y + pill_h / 2), 6, status_color);
+
+    // Status text
+    const status_text = switch (status) {
+        .closed => "ONLINE",
+        .degraded => "DEGRADED",
+        .cb_open => "HALTED",
+    };
+    rl.DrawTextEx(font, status_text, .{ .x = x + 36, .y = y + 8 * fs }, 10 * fs, 0.5, rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
