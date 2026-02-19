@@ -39,6 +39,8 @@ pub const VibeeSpec = struct {
     signals: ArrayList(Signal),
     fsms: ArrayList(FSMDef),
     reset: ResetDef,
+    // Top-level test cases (independent of behaviors)
+    test_cases: ArrayList(TestCase),
     allocator: Allocator,
 
     pub fn init(allocator: Allocator) VibeeSpec {
@@ -64,6 +66,7 @@ pub const VibeeSpec = struct {
             .signals = .{},
             .fsms = .{},
             .reset = ResetDef{ .reset_type = "async", .level = "low" }, // Default
+            .test_cases = .{}, // Top-level test cases
             .allocator = allocator,
         };
     }
@@ -104,6 +107,7 @@ pub const VibeeSpec = struct {
         self.pas_predictions.deinit(self.allocator);
         self.signals.deinit(self.allocator);
         self.fsms.deinit(self.allocator);
+        self.test_cases.deinit(self.allocator);
     }
 };
 
@@ -420,6 +424,9 @@ pub const VibeeParser = struct {
             } else if (std.mem.eql(u8, key, "fsm")) {
                 self.skipToNextLine();
                 try self.parseFSMs(&spec.fsms);
+            } else if (std.mem.eql(u8, key, "test_cases")) {
+                self.skipToNextLine();
+                try self.parseTopLevelTestCases(&spec.test_cases);
             } else if (std.mem.eql(u8, key, "reset")) {
                 self.skipInlineWhitespace();
                 const reset_val = self.readValue();
@@ -1451,6 +1458,82 @@ pub const VibeeParser = struct {
                     test_case.name = self.readValue();
                 } else if (std.mem.eql(u8, field_key, "input")) {
                     test_case.input = self.readBraceValue();
+                } else if (std.mem.eql(u8, field_key, "expected")) {
+                    test_case.expected = self.readValue();
+                } else if (std.mem.eql(u8, field_key, "tolerance")) {
+                    const tol_str = self.readValue();
+                    test_case.tolerance = std.fmt.parseFloat(f64, tol_str) catch null;
+                }
+                self.skipToNextLine();
+            }
+
+            try test_cases.append(self.allocator, test_case);
+        }
+    }
+
+    fn parseTopLevelTestCases(self: *Self, test_cases: *ArrayList(TestCase)) !void {
+        // Parse top-level test_cases: (indent 2, not nested under behaviors)
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 2) break;
+            self.pos += indent;
+
+            if (self.pos >= self.source.len or self.source[self.pos] != '-') {
+                self.pos -= indent;
+                break;
+            }
+            self.pos += 1;
+            self.skipInlineWhitespace();
+
+            var test_case = TestCase{
+                .name = "",
+                .input = "",
+                .expected = "",
+                .tolerance = null,
+            };
+
+            // First field on same line
+            const first_key = self.readKey();
+            if (first_key.len > 0) {
+                self.skipColon();
+                if (std.mem.eql(u8, first_key, "name")) {
+                    test_case.name = self.readValue();
+                } else if (std.mem.eql(u8, first_key, "given")) {
+                    test_case.input = self.readValue();
+                } else if (std.mem.eql(u8, first_key, "input")) {
+                    test_case.input = self.readBraceValue();
+                }
+            }
+            self.skipToNextLine();
+
+            // Read remaining fields
+            while (self.pos < self.source.len) {
+                self.skipEmptyLinesAndComments();
+                if (self.pos >= self.source.len) break;
+
+                const field_indent = self.countIndent();
+                if (field_indent < 4) break;
+                self.pos += field_indent;
+
+                const field_key = self.readKey();
+                if (field_key.len == 0) {
+                    self.pos -= field_indent;
+                    break;
+                }
+                self.skipColon();
+
+                if (std.mem.eql(u8, field_key, "name")) {
+                    test_case.name = self.readValue();
+                } else if (std.mem.eql(u8, field_key, "given") or std.mem.eql(u8, field_key, "input")) {
+                    // Support both "given" (from test_cases) and "input" (from behavior test_cases)
+                    if (self.pos < self.source.len and self.source[self.pos] == '"') {
+                        test_case.input = self.readValue();
+                    } else {
+                        test_case.input = self.readBraceValue();
+                    }
                 } else if (std.mem.eql(u8, field_key, "expected")) {
                     test_case.expected = self.readValue();
                 } else if (std.mem.eql(u8, field_key, "tolerance")) {

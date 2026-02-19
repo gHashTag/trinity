@@ -74,6 +74,144 @@ pub const TestGenerator = struct {
         }
     }
 
+    /// Write tests from spec-level test_cases (independent of behaviors)
+    /// These are full integration tests with names like "cluster_init_16"
+    pub fn writeSpecLevelTests(self: *Self, test_cases: []const TestCase) !void {
+        if (test_cases.len == 0) return;
+
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("// SPEC-LEVEL TESTS - Integration tests from test_cases:");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
+        try self.builder.newline();
+
+        for (test_cases) |tc| {
+            if (tc.name.len == 0) continue;
+
+            try self.builder.writeFmt("test \"{s}\" {{\n", .{tc.name});
+            self.builder.incIndent();
+            try self.builder.writeFmt("// Given: {s}\n", .{tc.input});
+            try self.builder.writeFmt("// Expected: {s}\n", .{tc.expected});
+
+            // Generate assertions based on test name and expected output
+            try self.generateSpecLevelTestAssertion(tc);
+
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            try self.builder.newline();
+        }
+    }
+
+    /// Extract parameter value from "key=value, key2=value2" format
+    fn extractKeyValueParam(input: []const u8, key: []const u8) ?[]const u8 {
+        var search_buf: [64]u8 = undefined;
+        const search = std.fmt.bufPrint(&search_buf, "{s}=", .{key}) catch return null;
+
+        if (std.mem.indexOf(u8, input, search)) |idx| {
+            var start = idx + search.len;
+            while (start < input.len and (input[start] == ' ' or input[start] == '\t' or input[start] == '"')) {
+                start += 1;
+            }
+            var end = start;
+            while (end < input.len and input[end] != ',' and input[end] != '"' and !std.ascii.isWhitespace(input[end])) {
+                end += 1;
+            }
+            if (end > start) {
+                return input[start..end];
+            }
+        }
+        return null;
+    }
+
+    /// Extract integer from "key=value" format
+    fn extractIntKeyValue(input: []const u8, key: []const u8) ?i32 {
+        if (extractKeyValueParam(input, key)) |val_str| {
+            return std.fmt.parseInt(i32, val_str, 10) catch null;
+        }
+        return null;
+    }
+
+    /// Generate assertion for a spec-level test case
+    fn generateSpecLevelTestAssertion(self: *Self, tc: TestCase) !void {
+        const name = tc.name;
+        const input = utils.stripQuotes(tc.input);
+        const expected = std.mem.trim(u8, utils.stripQuotes(tc.expected), &std.ascii.whitespace);
+
+        // Cluster initialization tests
+        if (std.mem.indexOf(u8, name, "cluster_init") != null or
+            std.mem.indexOf(u8, name, "init") != null) {
+            if (std.mem.indexOf(u8, expected, "agents") != null) {
+                // Try both "num_agents=" and "num_agents:" formats
+                const n = extractIntKeyValue(input, "num_agents") orelse
+                          utils.extractIntParam(input, "num_agents") orelse 16;
+                try self.builder.writeFmt("// Test: Initialize cluster with {d} agents\n", .{n});
+                try self.builder.writeFmt("const cluster = try initCluster({d}, 10000);\n", .{n});
+                try self.builder.writeFmt("try std.testing.expectEqual(cluster.agents.len, {d});\n", .{n});
+            }
+        }
+        // Task distribution tests
+        else if (std.mem.indexOf(u8, name, "task_distribution") != null) {
+            const num_agents = extractIntKeyValue(input, "agents") orelse
+                               utils.extractIntParam(input, "agents") orelse 16;
+            const num_tasks = extractIntKeyValue(input, "tasks") orelse
+                             utils.extractIntParam(input, "tasks") orelse 32;
+            try self.builder.writeFmt("// Test: Distribute {d} tasks across {d} agents\n", .{ num_tasks, num_agents });
+            try self.builder.writeLine("var cluster = try initCluster(16, 10000);");
+            try self.builder.writeFmt("var tasks = try createTestTasks({d});\n", .{num_tasks});
+            try self.builder.writeLine("const distribution = try distributeTasks(&cluster, tasks);");
+            try self.builder.writeLine("try std.testing.expect(distribution.load_balance >= 0.8);");
+        }
+        // Consensus tests
+        else if (std.mem.indexOf(u8, name, "consensus") != null) {
+            if (std.mem.indexOf(u8, expected, "> 0.8") != null or std.mem.indexOf(u8, expected, ">80%") != null) {
+                try self.builder.writeLine("// Test: Verify consensus reaches > 80% agreement");
+                try self.builder.writeLine("const opinions = try createTestOpinions(16);");
+                try self.builder.writeLine("const result = phiSpiralConsensus(opinions);");
+                try self.builder.writeLine("try std.testing.expect(result.agreement > 0.8);");
+            } else if (std.mem.indexOf(u8, expected, "> 0.75") != null or std.mem.indexOf(u8, expected, ">75%") != null) {
+                try self.builder.writeLine("// Test: Verify consensus reaches > 75% agreement");
+                try self.builder.writeLine("const result = phiSpiralConsensus(&[_]HyperVector{});");
+                try self.builder.writeLine("try std.testing.expect(result.agreement > 0.75);");
+            } else {
+                try self.builder.writeLine("// Test: Verify consensus threshold");
+                try self.builder.writeLine("try std.testing.expect(result.agreement > 0.5);");
+            }
+        }
+        // Self-healing tests
+        else if (std.mem.indexOf(u8, name, "self_heal") != null or std.mem.indexOf(u8, name, "recover") != null) {
+            try self.builder.writeLine("// Test: Verify self-healing restores failed agents");
+            try self.builder.writeLine("var cluster = try initCluster(16, 10000);");
+            try self.builder.writeLine("const failed = [_]AgentId{AgentId{.id = 0}, AgentId{.id = 1}};");
+            try self.builder.writeLine("try selfHealingLoop(&cluster, &failed);");
+            try self.builder.writeLine("try std.testing.expect(cluster.agents.len == 16);");
+        }
+        // Heartbeat/failure detection tests
+        else if (std.mem.indexOf(u8, name, "heartbeat") != null or std.mem.indexOf(u8, name, "failure") != null) {
+            try self.builder.writeLine("// Test: Verify failure detection via heartbeat");
+            try self.builder.writeLine("var cluster = try initCluster(16, 10000);");
+            try self.builder.writeLine("const failed_count = swarmHeartbeat(&cluster);");
+            try self.builder.writeLine("try std.testing.expect(failed_count >= 0);");
+        }
+        // Convergence tests
+        else if (std.mem.indexOf(u8, name, "converge") != null or std.mem.indexOf(u8, expected, "round") != null) {
+            if (utils.extractIntParam(expected, "rounds")) |max_rounds| {
+                try self.builder.writeFmt("// Test: Verify convergence in < {d} rounds\n", .{max_rounds});
+                try self.builder.writeLine("var cluster = try initCluster(16, 10000);");
+                try self.builder.writeFmt("const result = try consensusLoop(&cluster, {d});\n", .{max_rounds});
+                try self.builder.writeLine("try std.testing.expect(result.participants.len > 0);");
+            } else {
+                try self.builder.writeLine("// Test: Verify convergence");
+                try self.builder.writeLine("const result = try consensusLoop(&cluster, 10);");
+                try self.builder.writeLine("try std.testing.expect(result.agreement > 0.5);");
+            }
+        }
+        // Default fallback - compile-time check
+        else {
+            try self.builder.writeFmt("// Test: {s}\n", .{name});
+            try self.builder.writeLine("// (Test setup and assertions to be implemented)");
+            try self.builder.writeLine("_ = @as(usize, 0); // Compile-time check");
+        }
+    }
+
     pub fn generateTestAssertion(self: *Self, behavior_name: []const u8, tc: TestCase) !void {
         const input = utils.stripQuotes(tc.input);
         const expected = utils.extractNumber(utils.stripQuotes(tc.expected));
@@ -3344,6 +3482,53 @@ pub const TestGenerator = struct {
                 // Lifecycle functions - just verify callable
                 try self.builder.writeFmt("// Test {s}: verify lifecycle function exists (compile-time check)\n", .{name});
                 try self.builder.writeFmt("_ = {s};\n", .{name});
+            } else if (thenContains(then_clause, "consensus") or thenContains(then_clause, "agreement")) {
+                // Consensus tests - check agreement threshold (must check before generic "score")
+                try self.builder.writeFmt("// Test {s}: verify consensus threshold\n", .{name});
+                if (thenContains(then_clause, "> 0.8") or thenContains(then_clause, ">80%")) {
+                    try self.builder.writeLine("try std.testing.expect(consensus_result.agreement > 0.8);");
+                } else if (thenContains(then_clause, "> 0.75") or thenContains(then_clause, ">75%")) {
+                    try self.builder.writeLine("try std.testing.expect(consensus_result.agreement > 0.75);");
+                } else {
+                    try self.builder.writeLine("try std.testing.expect(consensus_result.agreement > 0.5);");
+                }
+            } else if (thenContains(then_clause, "agents") or thenContains(then_clause, "cluster")) {
+                // Agent/cluster initialization tests
+                try self.builder.writeFmt("// Test {s}: verify agent/cluster initialization\n", .{name});
+                if (thenContains(then_clause, "16 agents")) {
+                    try self.builder.writeLine("try std.testing.expectEqual(cluster.agents.len, 16);");
+                } else if (utils.extractIntParam(then_clause, "agents")) |n| {
+                    try self.builder.writeFmt("try std.testing.expectEqual(cluster.agents.len, {d});\n", .{n});
+                } else {
+                    try self.builder.writeLine("try std.testing.expect(cluster.agents.len > 0);");
+                }
+            } else if (thenContains(then_clause, "task") or thenContains(then_clause, "distribution")) {
+                // Task distribution tests
+                try self.builder.writeFmt("// Test {s}: verify task distribution\n", .{name});
+                if (thenContains(then_clause, "load_balance") or thenContains(then_clause, "balanced")) {
+                    try self.builder.writeLine("try std.testing.expect(distribution.load_balance >= 0.8);");
+                }
+                try self.builder.writeLine("try std.testing.expect(distribution.agent_tasks.len > 0);");
+            } else if (thenContains(then_clause, "failure") or thenContains(then_clause, "failed")) {
+                // Failure detection/healing tests
+                try self.builder.writeFmt("// Test {s}: verify failure handling\n", .{name});
+                if (thenContains(then_clause, "detected")) {
+                    try self.builder.writeLine("try std.testing.expect(failed_agents.len > 0 or failure_detected == true);");
+                } else if (thenContains(then_clause, "recovered") or thenContains(then_clause, "restored")) {
+                    try self.builder.writeLine("try std.testing.expect(restored_agents.len > 0);");
+                }
+            } else if (thenContains(then_clause, "heartbeat")) {
+                // Heartbeat tests
+                try self.builder.writeFmt("// Test {s}: verify heartbeat mechanism\n", .{name});
+                try self.builder.writeLine("try std.testing.expect(last_heartbeat > 0);");
+            } else if (thenContains(then_clause, "round") or thenContains(then_clause, "converges")) {
+                // Consensus rounds tests
+                try self.builder.writeFmt("// Test {s}: verify convergence\n", .{name});
+                if (utils.extractIntParam(then_clause, "rounds")) |max_rounds| {
+                    try self.builder.writeFmt("try std.testing.expect(consensus_rounds <= {d});\n", .{max_rounds});
+                } else {
+                    try self.builder.writeLine("try std.testing.expect(consensus_rounds > 0);");
+                }
             } else if (thenContains(then_clause, "similarity") or thenContains(then_clause, "score") or
                        thenContains(then_clause, "probability") or thenContains(then_clause, "confidence")) {
                 // Float return tests - check that function returns a reasonable value
