@@ -43,11 +43,12 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: load* -> load data
     if (std.mem.startsWith(u8, b.name, "load")) {
-        try builder.writeFmt("pub fn {s}(path: []const u8) !LoadResult {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(path: []const u8, allocator: std.mem.Allocator) ![]u8 {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Load from path");
-        try builder.writeLine("_ = path;");
-        try builder.writeLine("return LoadResult{};");
+        try builder.writeLine("// Load entire file into memory");
+        try builder.writeLine("const file = try std.fs.cwd().openFile(path, .{});");
+        try builder.writeLine("defer file.close();");
+        try builder.writeLine("return file.readToEndAlloc(allocator, 1024 * 1024);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -55,10 +56,12 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: save* -> save data
     if (std.mem.startsWith(u8, b.name, "save")) {
-        try builder.writeFmt("pub fn {s}(data: anytype, path: []const u8) !void {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(data: []const u8, path: []const u8) !void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Save to path");
-        try builder.writeLine("_ = data; _ = path;");
+        try builder.writeLine("// Save data to file");
+        try builder.writeLine("const file = try std.fs.cwd().createFile(path, .{});");
+        try builder.writeLine("defer file.close();");
+        try builder.writeLine("try file.writeAll(data);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -66,10 +69,10 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: store* -> store data
     if (std.mem.startsWith(u8, b.name, "store")) {
-        try builder.writeFmt("pub fn {s}(key: []const u8, value: anytype) !void {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(map: *std.StringHashMap([]const u8), key: []const u8, value: []const u8) !void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Store value with key");
-        try builder.writeLine("_ = key; _ = value;");
+        try builder.writeLine("// Store key-value pair in map");
+        try builder.writeLine("try map.put(key, value);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -77,11 +80,10 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: retrieve* -> retrieve data
     if (std.mem.startsWith(u8, b.name, "retrieve")) {
-        try builder.writeFmt("pub fn {s}(key: []const u8) ?[]const u8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(map: *const std.StringHashMap([]const u8), key: []const u8) ?[]const u8 {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Retrieve value by key");
-        try builder.writeLine("_ = key;");
-        try builder.writeLine("return null;");
+        try builder.writeLine("return map.get(key);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -147,10 +149,10 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: close* -> close resource
     if (std.mem.startsWith(u8, b.name, "close")) {
-        try builder.writeFmt("pub fn {s}(handle: anytype) void {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(file: std.fs.File) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Close resource");
-        try builder.writeLine("_ = handle;");
+        try builder.writeLine("// Close file resource");
+        try builder.writeLine("file.close();");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
@@ -216,11 +218,14 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: mmap* -> memory mapping
     if (std.mem.startsWith(u8, b.name, "mmap")) {
-        try builder.writeFmt("pub fn {s}(path: []const u8) ![]align(4096) u8 {{\n", .{b.name});
+        try builder.writeFmt("pub fn {s}(path: []const u8, allocator: std.mem.Allocator) ![]align(4096) u8 {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Memory map file");
-        try builder.writeLine("_ = path;");
-        try builder.writeLine("return error.NotImplemented;");
+        try builder.writeLine("// Memory map file (read-only)");
+        try builder.writeLine("const file = try std.fs.cwd().openFile(path, .{});");
+        try builder.writeLine("defer file.close();");
+        try builder.writeLine("const file_size = try file.getEndPos();");
+        try builder.writeLine("const ptr = try std.os.mmap(null, file_size, std.os.PROT.READ, std.os.MAP.PRIVATE, file.handle, 0);");
+        try builder.writeLine("return ptr[0..file_size];");
         builder.decIndent();
         try builder.writeLine("}");
         return true;

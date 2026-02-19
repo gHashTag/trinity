@@ -1581,6 +1581,11 @@ pub const ZigCodeGen = struct {
                 try self.builder.writeLine("const result: f64 = PHI_INV; // 0.618 default");
                 try self.builder.writeLine("_ = result;");
             }
+            // Reference params to suppress unused warnings
+            const sig = inferSignatureFromSpec(b);
+            if (std.mem.indexOf(u8, sig.params, "values") != null) {
+                try self.builder.writeLine("_ = values;");
+            }
             return;
         }
 
@@ -1623,6 +1628,9 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("// Query: {s}\n", .{then});
             try self.builder.writeLine("const result = @as([]const u8, \"query_result\");");
             try self.builder.writeLine("_ = result;");
+            // Reference params to suppress unused warnings
+            if (containsAnyCI(b.given, &.{ "input", "query", "text", "path", "key", "name" }))
+                try self.builder.writeLine("_ = input;");
             return;
         }
 
@@ -1631,6 +1639,9 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("// Validate: {s}\n", .{then});
             try self.builder.writeLine("const is_valid = true;");
             try self.builder.writeLine("_ = is_valid;");
+            // Reference params to suppress unused warnings
+            if (containsAnyCI(b.given, &.{ "input", "data", "value", "query", "text" }))
+                try self.builder.writeLine("_ = input;");
             return;
         }
 
@@ -1641,6 +1652,13 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("// Pipeline: {s}\n", .{then});
             try self.builder.writeLine("const elapsed = std.time.timestamp() - start_time;");
             try self.builder.writeLine("_ = elapsed;");
+            // Reference params to suppress unused warnings - check signature directly
+            const sig = inferSignatureFromSpec(b);
+            if (std.mem.indexOf(u8, sig.params, "self") != null) {
+                try self.builder.writeLine("_ = self;");
+            } else if (containsAnyCI(b.given, &.{ "items", "batch", "array", "request" })) {
+                try self.builder.writeLine("_ = items;");
+            }
             return;
         }
 
@@ -1781,6 +1799,30 @@ pub const ZigCodeGen = struct {
         // --- Fallback: generate from then description ---
         try self.builder.writeFmt("// TODO: implement — {s}\n", .{then});
         try self.builder.writeLine("// Add 'implementation:' field in .vibee spec to provide real code.");
+
+        // Suppress unused parameter warnings by referencing params
+        const sig = inferSignatureFromSpec(b);
+        if (sig.params.len > 0 and !std.mem.eql(u8, sig.params, "")) {
+            // Parse param names (simple extraction: split by ", " then extract name after last space)
+            var iter = std.mem.splitScalar(u8, sig.params, ',');
+            while (iter.next()) |param| {
+                const trimmed = std.mem.trim(u8, param, &std.ascii.whitespace);
+                if (trimmed.len > 0) {
+                    // Find parameter name (last word before colon or after type)
+                    if (std.mem.indexOf(u8, trimmed, ":")) |colon_idx| {
+                        const param_name = trimmed[0..colon_idx];
+                        if (!std.mem.eql(u8, param_name, "")) {
+                            try self.builder.writeFmt("_ = {s};\n", .{param_name});
+                        }
+                    } else if (std.mem.lastIndexOf(u8, trimmed, " ")) |space_idx| {
+                        const param_name = trimmed[space_idx + 1 ..];
+                        if (!std.mem.eql(u8, param_name, "")) {
+                            try self.builder.writeFmt("_ = {s};\n", .{param_name});
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /// Infer function signature from behavior given/then fields.
