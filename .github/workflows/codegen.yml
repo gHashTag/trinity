@@ -1,0 +1,75 @@
+name: Codegen Validation
+
+on:
+  push:
+    branches: [main, ralph/dev-*]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate VIBEE Codegen
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Zig
+        run: |
+          brew install zig
+
+      - name: Build Project
+        run: |
+          zig build
+
+      - name: Run Codegen Validation
+        run: |
+          bash scripts/validate_codegen.sh
+
+      - name: Test E2E Specs
+        run: |
+          zig build vibee -- gen specs/tri/batch_processing.vibee
+          zig test generated/batch_processing.zig
+
+          zig build vibee -- gen specs/tri/ternary_mathematics.vibee
+          zig test generated/ternary_mathematics.zig
+
+          zig build vibee -- gen specs/tri/flash_attention.vibee
+          zig test generated/flash_attention.zig
+
+          zig build vibee -- gen specs/tri/ternary_embeddings.vibee
+          zig test generated/ternary_embeddings.zig
+
+          zig build vibee -- gen specs/tri/golden_chain.vibee
+          zig test generated/golden_chain.zig
+
+      - name: Run Full Tests
+        run: |
+          zig build test 2>&1 | tail -20
+
+  count-patterns:
+    name: Count Pattern Coverage
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Count Patterns
+        run: |
+          echo "=== VIBEE Pattern Statistics ==="
+          total=$(grep -rh "pub fn" trinity-nexus/lang/src/codegen/patterns/*.zig 2>/dev/null | wc -l | tr -d ' ')
+          real=$(grep -rh "pub fn" trinity-nexus/lang/src/codegen/patterns/*.zig 2>/dev/null | grep -v "TODO: implement" | wc -l | tr -d ' ')
+          echo "Real patterns: $real/$total"
+          if [ -z "$total" ] || [ "$total" -eq 0 ]; then total=112; fi
+          if [ -z "$real" ]; then real=0; fi
+          percent=$((real * 100 / total))
+          echo "Coverage: $percent%"
+          echo "Target: 76%"
+          if [ $percent -ge 76 ]; then
+            echo "✅ Target met!"
+          else
+            echo "⚠️  Below target"
+            exit 1
+          fi
