@@ -9,7 +9,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const ArrayList = std.ArrayListUnmanaged;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED CONSTANTS
@@ -162,7 +162,7 @@ pub const Ast = struct {
     pub fn init(allocator: Allocator) Self {
         return Self{
             .allocator = allocator,
-            .nodes = ArrayList(AstNode).init(allocator),
+            .nodes = .{},
             .root = INVALID_NODE,
             .name = "",
             .version = "",
@@ -172,12 +172,12 @@ pub const Ast = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        self.nodes.deinit();
+        self.nodes.deinit(self.allocator);
     }
 
     pub fn addNode(self: *Self, kind: NodeKind, span: SourceSpan, data: []const u8) !NodeId {
         const id: NodeId = @intCast(self.nodes.items.len);
-        try self.nodes.append(.{
+        try self.nodes.append(self.allocator, .{
             .id = id,
             .kind = kind,
             .span = span,

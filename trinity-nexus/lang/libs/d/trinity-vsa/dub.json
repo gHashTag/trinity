@@ -1,0 +1,7 @@
+{
+    "name": "trinity-vsa",
+    "version": "0.1.0",
+    "description": "Vector Symbolic Architecture with balanced ternary arithmetic",
+    "license": "MIT",
+    "sourcePaths": ["source"]
+}

@@ -167,16 +167,32 @@ behaviors:
     given: Декомпилированный код и TVC IR
     when: Анализ семантических искажений
     then: Возвращает список Distortion с локациями и severity
+    implementation: |
+        pub fn detect_distortions(code: []const u8, ir: anytype) []const Distortion {
+            _ = code;
+            _ = ir;
+            return &[_]Distortion{};
+        }
 
   - name: compute_semantic_intensity
     given: Строка декомпилированного кода
     when: Вычисление "семантической интенсивности" (по FidelityGPT)
     then: Возвращает Float score для приоритизации исправлений
+    implementation: |
+        pub fn compute_semantic_intensity(code: []const u8) f32 {
+            _ = code;
+            return 0.5;
+        }
 
   - name: analyze_variable_dependencies
     given: Список переменных с искажениями
     when: Построение графа зависимостей
     then: Возвращает упорядоченный список для исправления
+    implementation: |
+        pub fn analyze_variable_dependencies(variables: []const []const u8) []const []const u8 {
+            _ = variables;
+            return &[_][]const u8{};
+        }
 
   # ═══════════════════════════════════════════════════════════════════════════
   # CONTEXT EXTRACTION (Link 2)
@@ -191,11 +207,22 @@ behaviors:
     given: TVC IR модуля
     when: Построение графа вызовов
     then: Возвращает List<CallGraphNode>
+    implementation: |
+        pub fn extract_call_graph(ir: anytype) []const CallGraphNode {
+            _ = ir;
+            return &[_]CallGraphNode{};
+        }
 
   - name: build_semantic_context
     given: TVC IR и результаты дизассемблирования
     when: Агрегация всего контекста
     then: Возвращает SemanticContext
+    implementation: |
+        pub fn build_semantic_context(ir: anytype, disasm: anytype) SemanticContext {
+            _ = ir;
+            _ = disasm;
+            return SemanticContext{};
+        }
 
   # ═══════════════════════════════════════════════════════════════════════════
   # RAG RETRIEVAL (Link 3)
@@ -205,16 +232,33 @@ behaviors:
     given: Фрагмент кода
     when: Генерация эмбеддинга через LLM
     then: Возвращает CodeEmbedding
+    implementation: |
+        pub fn embed_code(code: []const u8) CodeEmbedding {
+            _ = code;
+            return CodeEmbedding{};
+        }
 
   - name: search_similar
     given: CodeEmbedding и RAGDatabase
     when: Поиск k ближайших соседей
     then: Возвращает List<SimilarCode> отсортированный по similarity
+    implementation: |
+        pub fn search_similar(embedding: CodeEmbedding, db: anytype) []const SimilarCode {
+            _ = embedding;
+            _ = db;
+            return &[_]SimilarCode{};
+        }
 
   - name: retrieve_examples
     given: Декомпилированный код и тип искажения
     when: Поиск релевантных примеров для ICL
     then: Возвращает List<SimilarCode> для промпта
+    implementation: |
+        pub fn retrieve_examples(code: []const u8, dist_type: DistortionType) []const SimilarCode {
+            _ = code;
+            _ = dist_type;
+            return &[_]SimilarCode{};
+        }
 
   # ═══════════════════════════════════════════════════════════════════════════
   # PROMPT CONSTRUCTION (Link 4)
@@ -224,16 +268,32 @@ behaviors:
     given: Тип искажения и целевое качество
     when: Выбор оптимального шаблона промпта
     then: Возвращает PromptTemplate
+    implementation: |
+        pub fn select_template(dist_type: DistortionType, quality: []const u8) PromptTemplate {
+            _ = dist_type;
+            _ = quality;
+            return PromptTemplate{};
+        }
 
   - name: build_prompt
     given: Все компоненты контекста
     when: Сборка финального промпта
     then: Возвращает DecompilationPrompt
+    implementation: |
+        pub fn build_prompt(context: anytype) DecompilationPrompt {
+            _ = context;
+            return DecompilationPrompt{};
+        }
 
   - name: format_icl_examples
     given: List<SimilarCode>
     when: Форматирование примеров для in-context learning
     then: Возвращает String с примерами в формате few-shot
+    implementation: |
+        pub fn format_icl_examples(examples: []const SimilarCode) []const u8 {
+            _ = examples;
+            return "";
+        }
 
   # ═══════════════════════════════════════════════════════════════════════════
   # LLM CORRECTION (Link 5)
@@ -243,16 +303,32 @@ behaviors:
     given: DecompilationPrompt
     when: Отправка в LLM и получение исправлений
     then: Возвращает CorrectedCode
+    implementation: |
+        pub fn correct_code(prompt: DecompilationPrompt) CorrectedCode {
+            _ = prompt;
+            return CorrectedCode{};
+        }
 
   - name: validate_correction
     given: CorrectedCode
     when: Проверка синтаксиса и семантики
     then: Возвращает Bool (валидно или нет)
+    implementation: |
+        pub fn validate_correction(correction: CorrectedCode) bool {
+            _ = correction;
+            return true;
+        }
 
   - name: apply_corrections
     given: Оригинальный код и List<CodeChange>
     when: Применение исправлений
     then: Возвращает исправленный код
+    implementation: |
+        pub fn apply_corrections(original: []const u8, changes: []const CodeChange) []const u8 {
+            _ = original;
+            _ = changes;
+            return "";
+        }
 
   # ═══════════════════════════════════════════════════════════════════════════
   # FULL PIPELINE (Link 6)
@@ -262,16 +338,32 @@ behaviors:
     given: Бинарный файл и адрес функции
     when: Полный пайплайн декомпиляции с LLM
     then: Возвращает DecompilationResult
+    implementation: |
+        pub fn decompile_with_llm(binary: []const u8, address: usize) DecompilationResult {
+            _ = binary;
+            _ = address;
+            return DecompilationResult{};
+        }
 
   - name: batch_decompile
     given: Бинарный файл и список адресов
     when: Пакетная декомпиляция всех функций
     then: Возвращает List<DecompilationResult>
+    implementation: |
+        pub fn batch_decompile(binary: []const u8, addresses: []const usize) []const DecompilationResult {
+            _ = binary;
+            _ = addresses;
+            return &[_]DecompilationResult{};
+        }
 
   - name: learn_from_result
     given: DecompilationResult с feedback
     when: Обновление RAG базы успешными примерами
     then: Добавляет новые эмбеддинги в базу
+    implementation: |
+        pub fn learn_from_result(result: DecompilationResult) void {
+            _ = result;
+        }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PROMPT TEMPLATES

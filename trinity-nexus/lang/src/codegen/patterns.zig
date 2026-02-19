@@ -69,16 +69,7 @@ pub const PatternMatcher = struct {
     }
 
     /// Get pattern statistics
-    pub fn getStats() struct {
-        dsl: u32,
-        lifecycle: u32,
-        generic: u32,
-        io: u32,
-        data: u32,
-        ml: u32,
-        vsa: u32,
-        total: u32,
-    } {
+    pub fn getStats() @TypeOf(patterns_mod.getPatternCounts()) {
         return patterns_mod.getPatternCounts();
     }
 };
@@ -89,16 +80,16 @@ pub const PatternMatcher = struct {
 
 test "PatternMatcher init" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
     const matcher = PatternMatcher.init(&builder);
     try testing.expect(matcher.builder == &builder);
 }
 
 test "DSL pattern matching" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
     var matcher = PatternMatcher.init(&builder);
 
     const b = Behavior{
@@ -106,6 +97,8 @@ test "DSL pattern matching" {
         .given = "path",
         .when = "$fs.read file",
         .then = "content",
+        .implementation = "",
+        .test_cases = .{},
     };
 
     const matched = try matcher.generateFromDsLPattern(&b);
@@ -114,8 +107,8 @@ test "DSL pattern matching" {
 
 test "Lifecycle pattern matching" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
     var matcher = PatternMatcher.init(&builder);
 
     const b = Behavior{
@@ -123,6 +116,8 @@ test "Lifecycle pattern matching" {
         .given = "allocator",
         .when = "system starts",
         .then = "initialized",
+        .implementation = "",
+        .test_cases = .{},
     };
 
     const matched = try matcher.generateFromWhenThenPattern(&b);
@@ -131,8 +126,8 @@ test "Lifecycle pattern matching" {
 
 test "ML pattern matching" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
     var matcher = PatternMatcher.init(&builder);
 
     const b = Behavior{
@@ -140,6 +135,8 @@ test "ML pattern matching" {
         .given = "input",
         .when = "model ready",
         .then = "output",
+        .implementation = "",
+        .test_cases = .{},
     };
 
     const matched = try matcher.generateFromWhenThenPattern(&b);
@@ -148,8 +145,8 @@ test "ML pattern matching" {
 
 test "VSA pattern matching" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
     var matcher = PatternMatcher.init(&builder);
 
     const b = Behavior{
@@ -157,6 +154,8 @@ test "VSA pattern matching" {
         .given = "two vectors",
         .when = "bind operation",
         .then = "bound vector",
+        .implementation = "",
+        .test_cases = .{},
     };
 
     const matched = try matcher.generateFromWhenThenPattern(&b);
@@ -165,8 +164,8 @@ test "VSA pattern matching" {
 
 test "Generic pattern matching" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
     var matcher = PatternMatcher.init(&builder);
 
     const b = Behavior{
@@ -174,6 +173,8 @@ test "Generic pattern matching" {
         .given = "key",
         .when = "lookup",
         .then = "value",
+        .implementation = "",
+        .test_cases = .{},
     };
 
     const matched = try matcher.generateFromWhenThenPattern(&b);
@@ -182,8 +183,8 @@ test "Generic pattern matching" {
 
 test "I/O pattern matching" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
     var matcher = PatternMatcher.init(&builder);
 
     const b = Behavior{
@@ -191,6 +192,8 @@ test "I/O pattern matching" {
         .given = "source",
         .when = "read from source",
         .then = "data",
+        .implementation = "",
+        .test_cases = .{},
     };
 
     const matched = try matcher.generateFromWhenThenPattern(&b);
@@ -199,8 +202,8 @@ test "I/O pattern matching" {
 
 test "Data transform pattern matching" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
     var matcher = PatternMatcher.init(&builder);
 
     const b = Behavior{
@@ -208,6 +211,8 @@ test "Data transform pattern matching" {
         .given = "input",
         .when = "encode",
         .then = "encoded",
+        .implementation = "",
+        .test_cases = .{},
     };
 
     const matched = try matcher.generateFromWhenThenPattern(&b);
@@ -222,8 +227,8 @@ test "Pattern stats" {
 
 test "Match with category" {
     const testing = std.testing;
-    var buffer: [4096]u8 = undefined;
-    var builder = CodeBuilder.init(&buffer);
+    var builder = CodeBuilder.init(testing.allocator);
+    defer builder.deinit();
     var matcher = PatternMatcher.init(&builder);
 
     const b = Behavior{
@@ -231,6 +236,8 @@ test "Match with category" {
         .given = "data",
         .when = "training",
         .then = "trained model",
+        .implementation = "",
+        .test_cases = .{},
     };
 
     const result = try matcher.matchWithCategory(&b);

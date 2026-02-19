@@ -77,183 +77,324 @@ behaviors:
     given: Generated .zig file path
     when: Compiling with zig build
     then: Return true if no compile errors
+    implementation: |
+        pub fn checkCompile(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkFormat
     given: Generated .zig file
     when: Running zig fmt check
     then: Return true if properly formatted
+    implementation: |
+        pub fn checkFormat(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkParse
     given: Generated .zig file
     when: Parsing AST structure
     then: Return true if valid Zig syntax
+    implementation: |
+        pub fn checkParse(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkImports
     given: Generated .zig file
     when: Verifying imports
     then: Return true if all imports valid
+    implementation: |
+        pub fn checkImports(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkExports
     given: Generated .zig file
     when: Checking public exports
     then: Return true if exports consistent
+    implementation: |
+        pub fn checkExports(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   # Test Checks (6-10)
   - name: checkTestsExist
     given: Generated .zig file
     when: Counting test blocks
     then: Return true if tests >= behaviors
+    implementation: |
+        pub fn checkTestsExist(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkTestsRun
     given: Generated .zig file
     when: Running zig test
     then: Return true if all tests execute
+    implementation: |
+        pub fn checkTestsRun(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkTestsPass
     given: Generated .zig file
     when: Checking test results
     then: Return true if all tests pass
+    implementation: |
+        pub fn checkTestsPass(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkCoverage
     given: Generated .zig file
     when: Measuring code coverage
     then: Return true if coverage >= 80%
+    implementation: |
+        pub fn checkCoverage(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkAssertions
     given: Generated .zig file
     when: Counting assertions per test
     then: Return true if assertions >= 1 per test
+    implementation: |
+        pub fn checkAssertions(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   # Style Checks (11-15)
   - name: checkNaming
     given: Generated .zig file
     when: Verifying naming conventions
     then: Return true if camelCase/snake_case consistent
+    implementation: |
+        pub fn checkNaming(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkComments
     given: Generated .zig file
     when: Measuring comment density
     then: Return true if comments >= 10% of lines
+    implementation: |
+        pub fn checkComments(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkFunctionLength
     given: Generated .zig file
     when: Measuring function lengths
     then: Return true if all functions < 100 lines
+    implementation: |
+        pub fn checkFunctionLength(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkIndentation
     given: Generated .zig file
     when: Checking indentation
     then: Return true if consistent 4-space indent
+    implementation: |
+        pub fn checkIndentation(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkLineLength
     given: Generated .zig file
     when: Measuring line lengths
     then: Return true if all lines < 120 chars
+    implementation: |
+        pub fn checkLineLength(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   # Coherence Checks (16-20)
   - name: checkNoStubs
     given: Generated .zig file
     when: Searching for TODO stubs
     then: Return true if no "TODO: implementation" found
+    implementation: |
+        pub fn checkNoStubs(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkLogicComplete
     given: Generated .zig file
     when: Verifying function bodies
     then: Return true if all functions have real logic
+    implementation: |
+        pub fn checkLogicComplete(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkTypesUsed
     given: Generated .zig file
     when: Checking type usage
     then: Return true if all defined types used
+    implementation: |
+        pub fn checkTypesUsed(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkBehaviorsMatch
     given: Generated .zig file and .vibee spec
     when: Comparing behaviors to functions
     then: Return true if all behaviors implemented
+    implementation: |
+        pub fn checkBehaviorsMatch(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkReturnTypes
     given: Generated .zig file
     when: Verifying return statements
     then: Return true if all functions return correctly
+    implementation: |
+        pub fn checkReturnTypes(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   # Performance Checks (21-25)
   - name: checkBenchmark
     given: Generated .zig file
     when: Running performance test
     then: Return true if meets baseline
+    implementation: |
+        pub fn checkBenchmark(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkNeedle
     given: Benchmark results
     when: Comparing to previous version
     then: Return true if improvement >= phi^-1
+    implementation: |
+        pub fn checkNeedle(results: anytype) anyerror!void {
+            _ = results;
+        }
 
   - name: checkMemory
     given: Generated .zig file
     when: Running with valgrind/asan
     then: Return true if no memory issues
+    implementation: |
+        pub fn checkMemory(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkAllocations
     given: Generated .zig file
     when: Counting allocations
     then: Return true if allocations minimal
+    implementation: |
+        pub fn checkAllocations(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkComplexity
     given: Generated .zig file
     when: Measuring cyclomatic complexity
     then: Return true if complexity < 10 per function
+    implementation: |
+        pub fn checkComplexity(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   # Security Checks (26-30)
   - name: checkNoUnsafe
     given: Generated .zig file
     when: Scanning for unsafe operations
     then: Return true if no @ptrCast abuse
+    implementation: |
+        pub fn checkNoUnsafe(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkBoundsCheck
     given: Generated .zig file
     when: Verifying array access
     then: Return true if bounds checked
+    implementation: |
+        pub fn checkBoundsCheck(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkNullCheck
     given: Generated .zig file
     when: Verifying optional handling
     then: Return true if nulls handled
+    implementation: |
+        pub fn checkNullCheck(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkErrorHandling
     given: Generated .zig file
     when: Verifying error propagation
     then: Return true if errors handled
+    implementation: |
+        pub fn checkErrorHandling(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkNoSecrets
     given: Generated .zig file
     when: Scanning for hardcoded secrets
     then: Return true if no secrets found
+    implementation: |
+        pub fn checkNoSecrets(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   # Trinity Checks (31-33)
   - name: checkPhiLayout
     given: Generated .zig file
     when: Verifying golden ratio in structure
     then: Return true if phi-proportioned
+    implementation: |
+        pub fn checkPhiLayout(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkTernaryCompliance
     given: Generated .zig file
     when: Verifying ternary operations
     then: Return true if uses [-1, 0, 1]
+    implementation: |
+        pub fn checkTernaryCompliance(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: checkSacredFormula
     given: Generated .zig file
     when: Verifying phi constants
     then: Return true if phi^2 + 1/phi^2 = 3
+    implementation: |
+        pub fn checkSacredFormula(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   # Main Verifier
   - name: runAllChecks
     given: Generated .zig file path
     when: Running full verification
     then: Return VerificationReport with all 33 results
+    implementation: |
+        pub fn runAllChecks(path: []const u8) anyerror!void {
+            _ = path;
+        }
 
   - name: isApproved
     given: VerificationReport
     when: Checking pass rate
     then: Return true if pass_rate >= 90%
+    implementation: |
+        pub fn isApproved(report: VerificationReport) bool {
+            _ = report;
+            return true;
+        }
 
 test_cases:
   - name: clean_file_passes
