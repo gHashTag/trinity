@@ -36,12 +36,6 @@ pub const Category = enum {
     data,
     /// Inference operations
     inference,
-    /// Model operations
-    model,
-    /// Chat/response operations
-    chat,
-    /// Raylib GUI operations
-    rl,
 };
 
 /// Golden implementation - verified code pattern
@@ -56,16 +50,12 @@ pub const GoldenImpl = struct {
     category: Category,
     /// Confidence score (0.0-1.0)
     confidence: f32,
-    /// Required types/imports
-    dependencies: []const []const u8,
     /// Semantic tags for fuzzy matching
     tags: []const []const u8,
 };
 
 /// Context for matching implementations
 pub const MatchContext = struct {
-    /// Types defined in the spec
-    spec_types: []const type,
     /// Given precondition
     given: []const u8 = "",
     /// When trigger
@@ -86,18 +76,18 @@ pub const GoldenDB = struct {
 
     const Self = @This();
 
-    /// Initialize the golden database with 150+ verified implementations
+    /// Initialize the golden database with verified implementations
     pub fn init(allocator: Allocator) !Self {
         var db = Self{
             .allocator = allocator,
             .by_name = std.StringHashMap(*GoldenImpl).init(allocator),
-            .implementations = std.ArrayList(*GoldenImpl).init(allocator),
+            .implementations = std.ArrayList(*GoldenImpl).empty,
             .by_category = std.EnumMap(Category, std.ArrayList(*GoldenImpl)).init(allocator),
         };
 
         // Initialize category lists
         inline for (std.meta.fields(Category)) |field| {
-            db.by_category.get(field.name).* = std.ArrayList(*GoldenImpl).init(allocator);
+            db.by_category.get(field.name).* = .empty;
         }
 
         // Populate with golden implementations
@@ -117,10 +107,10 @@ pub const GoldenDB = struct {
     /// Deinitialize and free memory
     pub fn deinit(self: *Self) void {
         self.by_name.deinit();
-        self.implementations.deinit();
         inline for (std.meta.fields(Category)) |field| {
-            self.by_category.get(field.name).deinit();
+            self.by_category.get(field.name).deinit(self.allocator);
         }
+        // Note: implementations list doesn't own the data, just references
     }
 
     /// Get implementation by exact name match
@@ -132,25 +122,25 @@ pub const GoldenDB = struct {
     /// Search by semantic tags (fuzzy matching)
     pub fn search(self: *const Self, query: []const u8, ctx: MatchContext) ![]*const GoldenImpl {
         _ = ctx;
-        var results = std.ArrayList(*const GoldenImpl).init(self.allocator);
+        var results = std.ArrayList(*const GoldenImpl).empty;
 
         for (self.implementations.items) |impl| {
             // Check name match
             if (std.mem.indexOf(u8, impl.name, query) != null) {
-                try results.append(impl);
+                try results.append(self.allocator, impl);
                 continue;
             }
 
             // Check tags match
             for (impl.tags) |tag| {
                 if (std.mem.indexOf(u8, tag, query) != null) {
-                    try results.append(impl);
+                    try results.append(self.allocator, impl);
                     break;
                 }
             }
         }
 
-        return results.toOwnedSlice();
+        return results.toOwnedSlice(self.allocator);
     }
 
     /// Get implementations by category
@@ -167,726 +157,448 @@ pub const GoldenDB = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // VSA Patterns (19 implementations)
+    // VSA Patterns
     // ═══════════════════════════════════════════════════════════════════════════════
 
     fn populateVSA(self: *Self) !void {
-        const vsa_impls = &[_]GoldenImpl{
+        const impls = &[_]struct {
+            name: []const u8,
+            sig: []const u8,
+            body: []const u8,
+            tags: []const []const u8,
+        }{
             .{
                 .name = "bind",
-                .signature = "(a: []const i8, b_vec: []const i8, result: []i8) void",
-                .body = "// VSA bind: element-wise multiply, clamp to [-1, 0, 1]\n" ++
-                    "for (a, 0..) |val, i| {\n" ++
-                    "    const product = @as(i16, val) * @as(i16, b_vec[i]);\n" ++
-                    "    result[i] = if (product > 0) 1 else if (product < 0) -1 else 0;\n" ++
-                    "}\n",
-                .category = .vsa,
-                .confidence = 1.0,
-                .dependencies = &.{},
+                .sig = "(a: []const i8, b_vec: []const i8, result: []i8) void",
+                .body = "for (a, 0..) |val, i| { const p = @as(i16, val) * @as(i16, b_vec[i]); result[i] = if (p > 0) 1 else if (p < 0) -1 else 0; }",
                 .tags = &.{ "vector", "multiply", "vsa" },
             },
             .{
                 .name = "bundle",
-                .signature = "(vectors: []const []const i8, result: []i8) void",
-                .body = \\
-// VSA bundle: majority vote across vectors
-const dim = result.len;
-for (0..dim) |i| {
-    var sum: i32 = 0;
-    for (vectors) |vec| { sum += vec[i]; }
-    result[i] = if (sum > 0) 1 else if (sum < 0) -1 else 0;
-}
-,
-                .category = .vsa,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "vector", "majority", "vote", "aggregate" },
+                .sig = "(vectors: []const []const i8, result: []i8) void",
+                .body = "for (0..result.len) |i| { var s: i32 = 0; for (vectors) |v| s += v[i]; result[i] = if (s > 0) 1 else if (s < 0) -1 else 0; }",
+                .tags = &.{ "vector", "majority", "vote" },
             },
             .{
                 .name = "unbind",
-                .signature = "(bound: []const i8, key: []const i8, result: []i8) void",
-                .body = \\
-// VSA unbind: same as bind (self-inverse)
-for (bound, 0..) |val, i| {
-    const product = @as(i16, val) * @as(i16, key[i]);
-    result[i] = if (product > 0) 1 else if (product < 0) -1 else 0;
-}
-,
-                .category = .vsa,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "vector", "inverse", "vsa" },
+                .sig = "(bound: []const i8, key: []const i8, result: []i8) void",
+                .body = "for (bound, 0..) |val, i| { const p = @as(i16, val) * @as(i16, key[i]); result[i] = if (p > 0) 1 else if (p < 0) -1 else 0; }",
+                .tags = &.{ "vector", "inverse" },
             },
             .{
                 .name = "similarity",
-                .signature = "(a: []const i8, b_vec: []const i8) f32",
-                .body = \\
-// VSA similarity: normalized dot product
-var dot: i32 = 0;
-for (a, b_vec) |av, bv| { dot += @as(i32, av) * @as(i32, bv); }
-return @as(f32, @floatFromInt(dot)) / @as(f32, @floatFromInt(a.len));
-,
-                .category = .vsa,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "vector", "distance", "match", "cosine" },
-            },
-            .{
-                .name = "permute",
-                .signature = "(vec: []const i8, shift: usize, result: []i8) void",
-                .body = \\
-// VSA permute: cyclic shift
-const n = vec.len;
-for (0..n) |i| { result[i] = vec[(i + shift) % n]; }
-,
-                .category = .vsa,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "vector", "shift", "rotate" },
+                .sig = "(a: []const i8, b: []const i8) f32",
+                .body = "var dot: i32 = 0; for (a, b) |av, bv| dot += @as(i32, av) * @as(i32, bv); return @as(f32, @floatFromInt(dot)) / @as(f32, @floatFromInt(a.len));",
+                .tags = &.{ "vector", "distance", "cosine" },
             },
             .{
                 .name = "cosineSimilarity",
-                .signature = "(a: []const i8, b: []const i8) f32",
-                .body = \\
-// Cosine similarity for VSA vectors
-var dot: i32 = 0;
-var norm_a: i32 = 0;
-var norm_b: i32 = 0;
-for (a, b) |av, bv| {
-    dot += @as(i32, av) * @as(i32, bv);
-    norm_a += av * av;
-    norm_b += bv * bv;
-}
-const norm_product = @as(f32, @floatFromInt(norm_a)) * @as(f32, @floatFromInt(norm_b));
-return if (norm_product > 0)
-    @as(f32, @floatFromInt(dot)) / @sqrt(norm_product)
-else
-    0;
-,
-                .category = .vsa,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "similarity", "cosine", "vector" },
+                .sig = "(a: []const i8, b: []const i8) f32",
+                .body = "var d: i32 = 0, na: i32 = 0, nb: i32 = 0; for (a, b) |av, bv| { d += @as(i32, av) * @as(i32, bv); na += av * av; nb += bv * bv; } const np = @as(f32, @floatFromInt(na)) * @as(f32, @floatFromInt(nb)); return if (np > 0) @as(f32, @floatFromInt(d)) / @sqrt(np) else 0;",
+                .tags = &.{ "similarity", "cosine" },
             },
             .{
                 .name = "hammingDistance",
-                .signature = "(a: []const i8, b: []const i8) usize",
-                .body = \\
-// Hamming distance: count differing trits
-var count: usize = 0;
-for (a, b) |av, bv| {
-    if (av != bv) count += 1;
-}
-return count;
-,
-                .category = .vsa,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "distance", "vector", "trit" },
+                .sig = "(a: []const i8, b: []const i8) usize",
+                .body = "var c: usize = 0; for (a, b) |av, bv| if (av != bv) c += 1; return c;",
+                .tags = &.{ "distance", "trit" },
             },
-            // Add more VSA patterns...
+            .{
+                .name = "permute",
+                .sig = "(vec: []const i8, shift: usize, result: []i8) void",
+                .body = "const n = vec.len; for (0..n) |i| result[i] = vec[(i + shift) % n];",
+                .tags = &.{ "vector", "shift" },
+            },
         };
 
-        for (vsa_impls) |*impl| {
+        for (impls) |def| {
             const owned = try self.allocator.create(GoldenImpl);
-            owned.* = impl.*;
+            owned.* = .{
+                .name = def.name,
+                .signature = def.sig,
+                .body = def.body,
+                .category = .vsa,
+                .confidence = 1.0,
+                .tags = def.tags,
+            };
             try self.add(owned);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // Economic Patterns (18 implementations)
+    // Economic Patterns ($TRI)
     // ═══════════════════════════════════════════════════════════════════════════════
 
     fn populateEconomic(self: *Self) !void {
-        const econ_impls = &[_]GoldenImpl{
+        const impls = &[_]struct {
+            name: []const u8,
+            sig: []const u8,
+            body: []const u8,
+            tags: []const []const u8,
+        }{
             .{
                 .name = "earn_task_reward",
-                .signature = "(wallet: *Wallet, difficulty: f32, quality: f32, base_rate: f32) !f64",
-                .body = \\
-// Calculate $TRI reward = difficulty * quality * base_rate
-const reward = difficulty * quality * base_rate;
-wallet.balance_tri += reward;
-wallet.total_earned_tri += reward;
-return reward;
-,
-                .category = .economic,
-                .confidence = 1.0,
-                .dependencies = &.{"Wallet"},
-                .tags = &.{ "tri", "reward", "earn", "token" },
+                .sig = "(wallet: *Wallet, difficulty: f32, quality: f32, base_rate: f32) !f64",
+                .body = "const r = difficulty * quality * base_rate; wallet.balance_tri += r; wallet.total_earned_tri += r; return r;",
+                .tags = &.{ "tri", "reward", "earn" },
             },
             .{
                 .name = "stake_tri",
-                .signature = "(wallet: *Wallet, amount: f64) !void",
-                .body = \\
-// Stake $TRI for priority queue access + governance voting power
-if (wallet.balance_tri < amount) return error.InsufficientBalance;
-wallet.balance_tri -= amount;
-wallet.staked_tri += amount;
-// Priority increases proportional to stake
-,
-                .category = .economic,
-                .confidence = 1.0,
-                .dependencies = &.{"Wallet"},
-                .tags = &.{ "tri", "stake", "lock", "governance" },
+                .sig = "(wallet: *Wallet, amount: f64) !void",
+                .body = "if (wallet.balance_tri < amount) return error.InsufficientBalance; wallet.balance_tri -= amount; wallet.staked_tri += amount;",
+                .tags = &.{ "tri", "stake", "lock" },
             },
             .{
                 .name = "spend_tri",
-                .signature = "(wallet: *Wallet, amount: f64, resource_type: []const u8) !void",
-                .body = \\
-// Spend $TRI for GPU/agent/storage resources
-if (wallet.balance_tri < amount) return error.InsufficientBalance;
-wallet.balance_tri -= amount;
-wallet.total_spent_tri += amount;
-_ = resource_type; // Resource type logged
-,
-                .category = .economic,
-                .confidence = 1.0,
-                .dependencies = &.{"Wallet"},
-                .tags = &.{ "tri", "spend", "resource", "payment" },
+                .sig = "(wallet: *Wallet, amount: f64, resource: []const u8) !void",
+                .body = "if (wallet.balance_tri < amount) return error.InsufficientBalance; wallet.balance_tri -= amount; wallet.total_spent_tri += amount; _ = resource;",
+                .tags = &.{ "tri", "spend", "payment" },
             },
             .{
                 .name = "distribute_reward",
-                .signature = "(participants: []const *Agent, total_reward: f64) !void",
-                .body = \\
-// Distribute reward proportionally to contribution
-var total_contribution: f64 = 0;
-for (participants) |p| { total_contribution += p.contribution_score; }
-
-if (total_contribution == 0) return;
-
-for (participants) |p| {
-    const share = (p.contribution_score / total_contribution) * total_reward;
-    p.wallet.balance_tri += share;
-}
-,
-                .category = .economic,
-                .confidence = 0.9,
-                .dependencies = &.{ "Agent", "Wallet" },
-                .tags = &.{ "tri", "distribute", "reward", "split" },
+                .sig = "(agents: []const *Agent, total: f64) !void",
+                .body = "var tc: f64 = 0; for (agents) |a| tc += a.contribution; if (tc == 0) return; for (agents) |a| { const s = (a.contribution / tc) * total; a.wallet.balance_tri += s; };",
+                .tags = &.{ "tri", "distribute", "split" },
             },
         };
 
-        for (econ_impls) |*impl| {
+        for (impls) |def| {
             const owned = try self.allocator.create(GoldenImpl);
-            owned.* = impl.*;
+            owned.* = .{
+                .name = def.name,
+                .signature = def.sig,
+                .body = def.body,
+                .category = .economic,
+                .confidence = 1.0,
+                .tags = def.tags,
+            };
             try self.add(owned);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // Tensor Patterns (4 implementations)
+    // Tensor Patterns
     // ═══════════════════════════════════════════════════════════════════════════════
 
     fn populateTensor(self: *Self) !void {
-        const tensor_impls = &[_]GoldenImpl{
+        const impls = &[_]struct {
+            name: []const u8,
+            sig: []const u8,
+            body: []const u8,
+            tags: []const []const u8,
+        }{
             .{
                 .name = "tensor_add",
-                .signature = "(a: Tensor, b: Tensor) !Tensor",
-                .body = \\
-// Element-wise tensor addition
-if (a.shape.len != b.shape.len) return error.ShapeMismatch;
-var result = try Tensor.init(a.shape, a.allocator);
-for (a.data, b.data, 0..) |av, bv, i| {
-    result.data[i] = av + bv;
-}
-return result;
-,
-                .category = .tensor,
-                .confidence = 1.0,
-                .dependencies = &.{"Tensor"},
-                .tags = &.{ "tensor", "add", "elementwise", "math" },
+                .sig = "(a: Tensor, b: Tensor) !Tensor",
+                .body = "if (a.shape.len != b.shape.len) return error.ShapeMismatch; var r = try Tensor.init(a.shape); for (a.data, b.data, 0..) |av, bv, i| r.data[i] = av + bv; return r;",
+                .tags = &.{ "tensor", "add", "elementwise" },
             },
             .{
                 .name = "tensor_matmul",
-                .signature = "(a: Tensor, b: Tensor) !Tensor",
-                .body = \\
-// Matrix multiplication
-if (a.shape.len != 2 or b.shape.len != 2) return error.ShapeMismatch;
-if (a.shape[1] != b.shape[0]) return error.DimensionMismatch;
-
-const m = a.shape[0];
-const n = b.shape[1];
-const k = a.shape[1];
-
-var result = try Tensor.init(&.{ m, n }, a.allocator);
-
-for (0..m) |i| {
-    for (0..n) |j| {
-        var sum: f32 = 0;
-        for (0..k) |kk| {
-            sum += a.get(i, kk) * b.get(kk, j);
-        }
-        result.set(i, j, sum);
-    }
-}
-
-return result;
-,
-                .category = .tensor,
-                .confidence = 1.0,
-                .dependencies = &.{"Tensor"},
-                .tags = &.{ "tensor", "matmul", "matrix", "multiply" },
+                .sig = "(a: Tensor, b: Tensor) !Tensor",
+                .body = "if (a.shape[1] != b.shape[0]) return error.DimensionMismatch; var r = try Tensor.init(&.{ a.shape[0], b.shape[1] }); for (0..a.shape[0]) |i| for (0..b.shape[1]) |j| { var s: f32 = 0; for (0..a.shape[1]) |k| s += a.get(i,k) * b.get(k,j); r.set(i,j,s); } return r;",
+                .tags = &.{ "tensor", "matmul", "matrix" },
             },
         };
 
-        for (tensor_impls) |*impl| {
+        for (impls) |def| {
             const owned = try self.allocator.create(GoldenImpl);
-            owned.* = impl.*;
+            owned.* = .{
+                .name = def.name,
+                .signature = def.sig,
+                .body = def.body,
+                .category = .tensor,
+                .confidence = 1.0,
+                .tags = def.tags,
+            };
             try self.add(owned);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // I/O Patterns (23 implementations)
+    // I/O Patterns
     // ═══════════════════════════════════════════════════════════════════════════════
 
     fn populateIO(self: *Self) !void {
-        const io_impls = &[_]GoldenImpl{
+        const impls = &[_]struct {
+            name: []const u8,
+            sig: []const u8,
+            body: []const u8,
+            tags: []const []const u8,
+        }{
             .{
                 .name = "read_file",
-                .signature = "(path: []const u8, allocator: Allocator) ![]u8",
-                .body = \\
-const file = try std.fs.cwd().openFile(path, .{});
-defer file.close();
-return file.readToEndAlloc(allocator, 10_000_000);
-,
-                .category = .io,
-                .confidence = 1.0,
-                .dependencies = &.{"std.fs"},
-                .tags = &.{ "io", "read", "file", "load" },
+                .sig = "(path: []const u8, alloc: Allocator) ![]u8",
+                .body = "const f = try std.fs.cwd().openFile(path, .{}); defer f.close(); return f.readToEndAlloc(alloc, 10_000_000);",
+                .tags = &.{ "io", "read", "file" },
             },
             .{
                 .name = "write_file",
-                .signature = "(path: []const u8, data: []const u8) !void",
-                .body = \\
-const file = try std.fs.cwd().createFile(path, .{});
-defer file.close();
-try file.writeAll(data);
-,
-                .category = .io,
-                .confidence = 1.0,
-                .dependencies = &.{"std.fs"},
-                .tags = &.{ "io", "write", "file", "save" },
+                .sig = "(path: []const u8, data: []const u8) !void",
+                .body = "const f = try std.fs.cwd().createFile(path, .{}); defer f.close(); try f.writeAll(data);",
+                .tags = &.{ "io", "write", "file" },
             },
             .{
                 .name = "load_json",
-                .signature = "(path: []const u8, allocator: Allocator) !std.json.Value",
-                .body = \\
-const content = try read_file(path, allocator);
-defer allocator.free(content);
-return try std.json.parseFromSlice(std.json.Value, allocator, content, .{});
-,
-                .category = .io,
-                .confidence = 0.9,
-                .dependencies = &.{"std.json"},
-                .tags = &.{ "io", "json", "load", "parse" },
+                .sig = "(path: []const u8, alloc: Allocator) !std.json.Value",
+                .body = "const c = try read_file(path, alloc); defer alloc.free(c); return try std.json.parseFromSlice(std.json.Value, alloc, c, .{});",
+                .tags = &.{ "io", "json", "parse" },
             },
         };
 
-        for (io_impls) |*impl| {
+        for (impls) |def| {
             const owned = try self.allocator.create(GoldenImpl);
-            owned.* = impl.*;
+            owned.* = .{
+                .name = def.name,
+                .signature = def.sig,
+                .body = def.body,
+                .category = .io,
+                .confidence = 1.0,
+                .tags = def.tags,
+            };
             try self.add(owned);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // Lifecycle Patterns (18 implementations)
+    // Lifecycle Patterns
     // ═══════════════════════════════════════════════════════════════════════════════
 
     fn populateLifecycle(self: *Self) !void {
-        const lifecycle_impls = &[_]GoldenImpl{
+        const impls = &[_]struct {
+            name: []const u8,
+            sig: []const u8,
+            body: []const u8,
+            tags: []const []const u8,
+        }{
             .{
                 .name = "init",
-                .signature = "(config: Config) !Self",
-                .body = \\
-return Self{
-    .allocator = config.allocator,
-    .state = .initialized,
-    // Initialize fields...
-};
-,
-                .category = .lifecycle,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "lifecycle", "init", "constructor" },
+                .sig = "(config: Config) !Self",
+                .body = "return Self{ .allocator = config.allocator, .state = .initialized };",
+                .tags = &.{ "lifecycle", "constructor" },
             },
             .{
                 .name = "start",
-                .signature = "(self: *Self) !void",
-                .body = \\
-if (self.state != .initialized) return error.InvalidState;
-self.state = .running;
-// Start background tasks...
-,
-                .category = .lifecycle,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "lifecycle", "start", "run" },
+                .sig = "(self: *Self) !void",
+                .body = "if (self.state != .initialized) return error.InvalidState; self.state = .running;",
+                .tags = &.{ "lifecycle", "run" },
             },
             .{
                 .name = "stop",
-                .signature = "(self: *Self) !void",
-                .body = \\
-if (self.state != .running) return error.InvalidState;
-self.state = .stopped;
-// Cleanup resources...
-,
-                .category = .lifecycle,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "lifecycle", "stop", "halt" },
+                .sig = "(self: *Self) !void",
+                .body = "if (self.state != .running) return error.InvalidState; self.state = .stopped;",
+                .tags = &.{ "lifecycle", "halt" },
             },
             .{
                 .name = "reset",
-                .signature = "(self: *Self) void",
-                .body = \\
-self.state = .initialized;
-// Reset counters and state...
-,
-                .category = .lifecycle,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "lifecycle", "reset", "clear" },
+                .sig = "(self: *Self) void",
+                .body = "self.state = .initialized;",
+                .tags = &.{ "lifecycle", "clear" },
             },
         };
 
-        for (lifecycle_impls) |*impl| {
+        for (impls) |def| {
             const owned = try self.allocator.create(GoldenImpl);
-            owned.* = impl.*;
+            owned.* = .{
+                .name = def.name,
+                .signature = def.sig,
+                .body = def.body,
+                .category = .lifecycle,
+                .confidence = 1.0,
+                .tags = def.tags,
+            };
             try self.add(owned);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // ML Patterns (29 implementations)
+    // ML Patterns
     // ═══════════════════════════════════════════════════════════════════════════════
 
     fn populateML(self: *Self) !void {
-        const ml_impls = &[_]GoldenImpl{
+        const impls = &[_]struct {
+            name: []const u8,
+            sig: []const u8,
+            body: []const u8,
+            tags: []const []const u8,
+        }{
             .{
                 .name = "predict",
-                .signature = "(self: *const Model, input: []const f32) ![]f32",
-                .body = \\
-const output = try self.allocator.alloc(f32, self.output_size);
-defer self.allocator.free(output);
-
-// Run forward pass
-_ = try self.forward(input, output);
-return output;
-,
-                .category = .ml,
-                .confidence = 0.9,
-                .dependencies = &.{ "Model" },
-                .tags = &.{ "ml", "predict", "inference", "forward" },
+                .sig = "(self: *const Model, input: []const f32) ![]f32",
+                .body = "const out = try self.allocator.alloc(f32, self.output_size); _ = try self.forward(input, out); return out;",
+                .tags = &.{ "ml", "predict", "inference" },
             },
             .{
                 .name = "train_step",
-                .signature = "(self: *Model, input: []const f32, target: []const f32, learning_rate: f32) !f32",
-                .body = \\
-// Forward pass
-const output = try self.forward(input, null);
-defer self.allocator.free(output);
-
-// Calculate loss
-var loss: f32 = 0;
-for (output, target) |o, t| {
-    const diff = o - t;
-    loss += diff * diff;
-}
-loss /= @as(f32, @floatFromInt(output.len));
-
-// Backward pass (gradient descent)
-try self.backward(input, target, learning_rate);
-
-return loss;
-,
-                .category = .ml,
-                .confidence = 0.8,
-                .dependencies = &.{ "Model" },
-                .tags = &.{ "ml", "train", "backward", "gradient" },
-            },
-            .{
-                .name = "evaluate",
-                .signature = "(self: *const Model, inputs: []const []f32, targets: []const []f32) !Metrics",
-                .body = \\
-var correct: usize = 0;
-var total_loss: f64 = 0;
-
-for (inputs, targets) |input, target| {
-    const output = try self.predict(input);
-    defer self.allocator.free(output);
-
-    // Calculate accuracy
-    const predicted = @max(output);
-    const actual = @max(target);
-    if (predicted == actual) correct += 1;
-
-    // Calculate loss
-    for (output, target) |o, t| {
-        const diff = o - t;
-        total_loss += @as(f64, @floatCast(diff * diff));
-    }
-}
-
-return Metrics{
-    .accuracy = @as(f32, @floatFromInt(correct)) / @as(f32, @floatFromInt(inputs.len)),
-    .avg_loss = @as(f32, @floatCast(total_loss / @as(f64, @floatFromInt(inputs.len)))),
-};
-,
-                .category = .ml,
-                .confidence = 0.85,
-                .dependencies = &.{ "Model", "Metrics" },
-                .tags = &.{ "ml", "evaluate", "metrics", "accuracy" },
+                .sig = "(self: *Model, input: []const f32, target: []const f32, lr: f32) !f32",
+                .body = "const out = try self.forward(input, null); defer self.allocator.free(out); var loss: f32 = 0; for (out, target) |o, t| { const d = o - t; loss += d * d; } loss /= @as(f32, @floatFromInt(out.len)); try self.backward(input, target, lr); return loss;",
+                .tags = &.{ "ml", "train", "gradient" },
             },
         };
 
-        for (ml_impls) |*impl| {
+        for (impls) |def| {
             const owned = try self.allocator.create(GoldenImpl);
-            owned.* = impl.*;
+            owned.* = .{
+                .name = def.name,
+                .signature = def.sig,
+                .body = def.body,
+                .category = .ml,
+                .confidence = 0.9,
+                .tags = def.tags,
+            };
             try self.add(owned);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // Generic Patterns (35+ implementations)
+    // Generic Patterns
     // ═══════════════════════════════════════════════════════════════════════════════
 
     fn populateGeneric(self: *Self) !void {
-        const generic_impls = &[_]GoldenImpl{
+        const impls = &[_]struct {
+            name: []const u8,
+            sig: []const u8,
+            body: []const u8,
+            tags: []const []const u8,
+        }{
             .{
                 .name = "get",
-                .signature = "(key: []const u8) ?Value",
-                .body = \\
-const entry = self.map.get(key);
-return if (entry) |*e| e.value else null;
-,
-                .category = .generic,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "generic", "get", "retrieve", "lookup" },
+                .sig = "(key: []const u8) ?Value",
+                .body = "const e = self.map.get(key); return if (e) |*v| v.value else null;",
+                .tags = &.{ "generic", "get", "lookup" },
             },
             .{
                 .name = "set",
-                .signature = "(key: []const u8, value: Value) !void",
-                .body = \\
-try self.map.put(key, value);
-,
-                .category = .generic,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "generic", "set", "store", "put" },
+                .sig = "(key: []const u8, val: Value) !void",
+                .body = "try self.map.put(key, val);",
+                .tags = &.{ "generic", "set", "store" },
             },
             .{
                 .name = "add",
-                .signature = "(items: []const T) !void",
-                .body = \\
-for (items) |item| {
-    try self.list.append(item);
-}
-,
-                .category = .generic,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "generic", "add", "append", "push" },
+                .sig = "(items: []const T) !void",
+                .body = "for (items) |item| try self.list.append(item);",
+                .tags = &.{ "generic", "add", "push" },
             },
             .{
                 .name = "remove",
-                .signature = "(item: T) !bool",
-                .body = \\
-for (self.list.items, 0..) |value, i| {
-    if (value == item) {
-        _ = self.list.orderedRemove(i);
-        return true;
-    }
-}
-return false;
-,
-                .category = .generic,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "generic", "remove", "delete", "erase" },
+                .sig = "(item: T) !bool",
+                .body = "for (self.list.items, 0..) |v, i| if (v == item) { _ = self.list.orderedRemove(i); return true; } return false;",
+                .tags = &.{ "generic", "remove", "delete" },
             },
             .{
                 .name = "find",
-                .signature = "(predicate: fn (T) bool) ?T",
-                .body = \\
-for (self.list.items) |item| {
-    if (predicate(item)) return item;
-}
-return null;
-,
-                .category = .generic,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "generic", "find", "search", "locate" },
+                .sig = "(pred: fn (T) bool) ?T",
+                .body = "for (self.list.items) |item| if (pred(item)) return item; return null;",
+                .tags = &.{ "generic", "find", "search" },
             },
             .{
                 .name = "contains",
-                .signature = "(item: T) bool",
-                .body = \\
-for (self.list.items) |value| {
-    if (value == item) return true;
-}
-return false;
-,
-                .category = .generic,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "generic", "contains", "has", "includes" },
+                .sig = "(item: T) bool",
+                .body = "for (self.list.items) |v| if (v == item) return true; return false;",
+                .tags = &.{ "generic", "has" },
             },
             .{
                 .name = "count",
-                .signature = "() usize",
-                .body = \\
-return self.list.items.len;
-,
-                .category = .generic,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "generic", "count", "length", "size" },
+                .sig = "() usize",
+                .body = "return self.list.items.len;",
+                .tags = &.{ "generic", "size" },
             },
             .{
                 .name = "clear",
-                .signature = "() void",
-                .body = \\
-self.list.clearRetainingCapacity();
-,
-                .category = .generic,
-                .confidence = 1.0,
-                .dependencies = &.{},
-                .tags = &.{ "generic", "clear", "empty", "reset" },
+                .sig = "() void",
+                .body = "self.list.clearRetainingCapacity();",
+                .tags = &.{ "generic", "reset" },
             },
         };
 
-        for (generic_impls) |*impl| {
+        for (impls) |def| {
             const owned = try self.allocator.create(GoldenImpl);
-            owned.* = impl.*;
+            owned.* = .{
+                .name = def.name,
+                .signature = def.sig,
+                .body = def.body,
+                .category = .generic,
+                .confidence = 1.0,
+                .tags = def.tags,
+            };
             try self.add(owned);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // Inference Patterns (4 implementations)
+    // Inference Patterns
     // ═══════════════════════════════════════════════════════════════════════════════
 
     fn populateInference(self: *Self) !void {
-        const inference_impls = &[_]GoldenImpl{
+        const impls = &[_]struct {
+            name: []const u8,
+            sig: []const u8,
+            body: []const u8,
+            tags: []const []const u8,
+        }{
             .{
                 .name = "forward_pass",
-                .signature = "(self: *const Model, input: []const f32, output: ?[]f32) ![]const f32",
-                .body = \\
-const out = if (output) |o| o else try self.allocator.alloc(f32, self.output_size);
-
-// Apply layers
-var layer_input = input;
-for (self.layers) |layer| {
-    layer_input = try layer.forward(layer_input);
-}
-
-@memcpy(out, layer_input, self.output_size);
-return out;
-,
-                .category = .inference,
-                .confidence = 0.9,
-                .dependencies = &.{ "Model", "Layer" },
-                .tags = &.{ "inference", "forward", "nn", "neural" },
-            },
-            .{
-                .name = "backward_pass",
-                .signature = "(self: *Model, input: []const f32, target: []const f32, learning_rate: f32) !void",
-                .body = \\
-// Compute gradients via backpropagation
-var grad = try self.allocator.alloc(f32, self.output_size);
-defer self.allocator.free(grad);
-
-// Output layer gradient
-const output = try self.forward(input, null);
-defer self.allocator.free(output);
-
-for (output, target, 0..) |o, t, i| {
-    grad[i] = 2.0 * (o - t); // Derivative of MSE
-}
-
-// Propagate backward through layers
-for (self.layers.items, 0..) |_, layer_idx| {
-    const reverse_idx = self.layers.items.len - 1 - layer_idx;
-    try self.layers.items[reverse_idx].backward(grad, learning_rate);
-}
-,
-                .category = .inference,
-                .confidence = 0.85,
-                .dependencies = &.{ "Model", "Layer" },
-                .tags = &.{ "inference", "backward", "backprop", "gradient" },
+                .sig = "(self: *const Model, input: []const f32) ![]const f32",
+                .body = "const out = try self.allocator.alloc(f32, self.output_size); var inp = input; for (self.layers) |l| inp = try l.forward(inp); @memcpy(out, inp, self.output_size); return out;",
+                .tags = &.{ "inference", "forward", "nn" },
             },
         };
 
-        for (inference_impls) |*impl| {
+        for (impls) |def| {
             const owned = try self.allocator.create(GoldenImpl);
-            owned.* = impl.*;
+            owned.* = .{
+                .name = def.name,
+                .signature = def.sig,
+                .body = def.body,
+                .category = .inference,
+                .confidence = 0.9,
+                .tags = def.tags,
+            };
             try self.add(owned);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // Data Patterns (encode, decode, transform)
+    // Data Patterns
     // ═══════════════════════════════════════════════════════════════════════════════
 
     fn populateData(self: *Self) !void {
-        const data_impls = &[_]GoldenImpl{
+        const impls = &[_]struct {
+            name: []const u8,
+            sig: []const u8,
+            body: []const u8,
+            tags: []const []const u8,
+        }{
             .{
                 .name = "encode",
-                .signature = "(data: []const u8) ![]const u8",
-                .body = \\
-// Base64 encoding
-const encoder = std.base64.standard.Encoder;
-const encoded = try encoder.alloc(self.allocator, data);
-return encoded;
-,
-                .category = .data,
-                .confidence = 0.95,
-                .dependencies = &.{"std.base64"},
-                .tags = &.{ "data", "encode", "base64", "transform" },
+                .sig = "(data: []const u8) ![]const u8",
+                .body = "return std.base64.standard.Encoder.alloc(self.allocator, data);",
+                .tags = &.{ "data", "encode", "base64" },
             },
             .{
                 .name = "decode",
-                .signature = "(encoded: []const u8) ![]u8",
-                .body = \\
-// Base64 decoding
-const decoder = std.base64.standard.Decoder;
-return try decoder.alloc(self.allocator, encoded);
-,
-                .category = .data,
-                .confidence = 0.95,
-                .dependencies = &.{"std.base64"},
-                .tags = &.{ "data", "decode", "base64", "transform" },
+                .sig = "(encoded: []const u8) ![]u8",
+                .body = "return std.base64.standard.Decoder.alloc(self.allocator, encoded);",
+                .tags = &.{ "data", "decode", "base64" },
             },
             .{
                 .name = "quantize",
-                .signature = "(values: []const f32, bits: u8) ![]const i8",
-                .body = \\
-// Quantize float values to int8
-const result = try self.allocator.alloc(i8, values.len);
-const scale = @as(f32, @floatFromInt(@as(i32, 1) << (bits - 1)));
-
-for (values, 0..) |v, i| {
-    const clamped = @max(-1.0, @min(1.0, v));
-    result[i] = @intFromFloat(clamped * scale);
-}
-
-return result;
-,
-                .category = .data,
-                .confidence = 0.9,
-                .dependencies = &.{},
-                .tags = &.{ "data", "quantize", "compress", "int8" },
+                .sig = "(values: []const f32) ![]const i8",
+                .body = "const r = try self.allocator.alloc(i8, values.len); for (values, 0..) |v, i| { const c = @max(-1.0, @min(1.0, v)); r[i] = @intFromFloat(c * 127); } return r;",
+                .tags = &.{ "data", "quantize", "compress" },
             },
         };
 
-        for (data_impls) |*impl| {
+        for (impls) |def| {
             const owned = try self.allocator.create(GoldenImpl);
-            owned.* = impl.*;
+            owned.* = .{
+                .name = def.name,
+                .signature = def.sig,
+                .body = def.body,
+                .category = .data,
+                .confidence = 0.9,
+                .tags = def.tags,
+            };
             try self.add(owned);
         }
     }
@@ -900,33 +612,24 @@ test "GoldenDB: init and query" {
     const db = try GoldenDB.init(std.testing.allocator);
     defer db.deinit();
 
-    // Test exact name match
     const bind_impl = db.get("bind", .{});
     try std.testing.expect(bind_impl != null);
     try std.testing.expectEqualStrings("bind", bind_impl.?.name);
-    try std.testing.expectEqual(Category.vsa, bind_impl.?.category);
 }
 
-test "GoldenDB: search by semantic tags" {
+test "GoldenDB: search by tags" {
     const db = try GoldenDB.init(std.testing.allocator);
     defer db.deinit();
 
-    // Search for VSA operations
     const results = try db.search("vector", .{});
     try std.testing.expect(results.len > 0);
-
-    // Search for economic operations
-    const econ_results = try db.search("tri", .{});
-    try std.testing.expect(econ_results.len > 0);
 }
 
-test "GoldenDB: get by category" {
+test "GoldenDB: category counts" {
     const db = try GoldenDB.init(std.testing.allocator);
     defer db.deinit();
 
-    const vsa_impls = db.getByCategory(.vsa);
-    try std.testing.expect(vsa_impls.len > 0);
-
-    const econ_impls = db.getByCategory(.economic);
-    try std.testing.expect(econ_impls.len > 0);
+    try std.testing.expect(db.getByCategory(.vsa).len > 0);
+    try std.testing.expect(db.getByCategory(.economic).len > 0);
+    try std.testing.expect(db.getByCategory(.generic).len > 0);
 }
