@@ -81,6 +81,8 @@ pub fn matchAll(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Economic: earnTaskReward, stakeTRI, spendTRI, depinStaking, etc.
+    // Marketplace: createMarketplaceListing, searchMarketplace, matchAgentToTask, etc.
+    // Multi-tenant: multiTenantIsolate, tenantResourceLimit, tenantBilling, etc.
     // Must be checked BEFORE generic patterns to avoid interception
     if (std.mem.indexOf(u8, name, "earn") != null or
         std.mem.indexOf(u8, name, "stake") != null or
@@ -91,7 +93,19 @@ pub fn matchAll(builder: *CodeBuilder, b: *const Behavior) !bool {
         std.mem.indexOf(u8, name, "fee") != null or
         std.mem.indexOf(u8, name, "governance") != null or
         std.mem.indexOf(u8, name, "hire") != null or
-        std.mem.indexOf(u8, name, "terminate") != null)
+        std.mem.indexOf(u8, name, "terminate") != null or
+        std.mem.indexOf(u8, name, "create") != null or
+        std.mem.indexOf(u8, name, "marketplace") != null or
+        std.mem.indexOf(u8, name, "search") != null or
+        std.mem.indexOf(u8, name, "match") != null or
+        std.mem.indexOf(u8, name, "accept") != null or
+        std.mem.indexOf(u8, name, "reject") != null or
+        std.mem.indexOf(u8, name, "multi") != null or
+        std.mem.indexOf(u8, name, "tenant") != null or
+        std.mem.indexOf(u8, name, "isolate") != null or
+        std.mem.indexOf(u8, name, "resource") != null or
+        std.mem.indexOf(u8, name, "limit") != null or
+        std.mem.indexOf(u8, name, "billing") != null)
     {
         if (try economic.match(builder, b)) return true;
     }

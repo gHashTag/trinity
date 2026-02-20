@@ -204,6 +204,221 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // MARKETPLACE PATTERNS (v10 Phase 3)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    // Pattern: createMarketplaceListing* / create_marketplace_listing -> agent lists capabilities
+    if (std.mem.indexOf(u8, name, "create") != null and std.mem.indexOf(u8, name, "marketplace") != null and std.mem.indexOf(u8, name, "listing") != null)
+    {
+        try builder.writeFmt("pub fn {s}(agent: *AgentInfo, capabilities: []const Capability, hourly_rate: f64) !MarketplaceListing {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Create marketplace listing for agent capabilities");
+        try builder.writeLine("return MarketplaceListing{");
+        try builder.writeLine("    .agent_id = agent.wallet.address,");
+        try builder.writeLine("    .capabilities = capabilities,");
+        try builder.writeLine("    .hourly_rate_tri = hourly_rate,");
+        try builder.writeLine("    .reputation_score = agent.reputation_score,");
+        try builder.writeLine("    .status = .active,");
+        try builder.writeLine("    .created_at = std.time.timestamp(),");
+        try builder.writeLine("};");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: searchMarketplace* / search_marketplace -> tenant searches for agents
+    if (std.mem.indexOf(u8, name, "search") != null and std.mem.indexOf(u8, name, "marketplace") != null)
+    {
+        try builder.writeFmt("pub fn {s}(marketplace: []const MarketplaceListing, required_capability: []const u8, max_rate: f64) ![]const MarketplaceListing {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Search marketplace for agents with required capability under rate");
+        try builder.writeLine("var results = std.ArrayList(MarketplaceListing).init(marketplace.allocator);");
+        try builder.writeLine("defer results.deinit();");
+        try builder.writeLine("");
+        try builder.writeLine("for (marketplace) |listing| {");
+        builder.incIndent();
+        try builder.writeLine("// Check if agent has required capability");
+        try builder.writeLine("for (listing.capabilities) |cap| {");
+        builder.incIndent();
+        try builder.writeLine("if (std.mem.eql(u8, cap.name, required_capability) and");
+        try builder.writeLine("    listing.hourly_rate_tri <= max_rate and");
+        try builder.writeLine("    listing.status == .active)");
+        try builder.writeLine("{");
+        builder.incIndent();
+        try builder.writeLine("try results.append(listing);");
+        try builder.writeLine("break;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("");
+        try builder.writeLine("return results.toOwnedSlice();");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: matchAgentToTask* / match_agent_to_task -> matchmaking algorithm
+    if (std.mem.indexOf(u8, name, "match") != null and std.mem.indexOf(u8, name, "agent") != null and std.mem.indexOf(u8, name, "task") != null)
+    {
+        try builder.writeFmt("pub fn {s}(task: *Task, candidates: []const AgentInfo) ?*AgentInfo {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Match best agent using φ-based scoring");
+        try builder.writeLine("var best_agent: ?*AgentInfo = null;");
+        try builder.writeLine("var best_score: f32 = 0;");
+        try builder.writeLine("");
+        try builder.writeLine("for (candidates) |*agent| {");
+        builder.incIndent();
+        try builder.writeLine("// Score = reputation * skill_match * availability");
+        try builder.writeLine("const skill_match = calculateSkillMatch(task.required_capability, agent.capabilities);");
+        try builder.writeLine("const availability = if (agent.status == .idle) @as(f32, 1.0) else 0.0;");
+        try builder.writeLine("const score = agent.reputation_score * skill_match * availability;");
+        try builder.writeLine("");
+        try builder.writeLine("if (score > best_score) {");
+        builder.incIndent();
+        try builder.writeLine("best_score = score;");
+        try builder.writeLine("best_agent = agent;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("");
+        try builder.writeLine("return best_agent;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: acceptMarketplaceOffer* / accept_marketplace_offer -> accept agent contract
+    if (std.mem.indexOf(u8, name, "accept") != null and std.mem.indexOf(u8, name, "marketplace") != null and std.mem.indexOf(u8, name, "offer") != null)
+    {
+        try builder.writeFmt("pub fn {s}(offer: *MarketplaceOffer, tenant_wallet: *Wallet) !Contract {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Accept marketplace offer, create contract, deduct escrow");
+        try builder.writeLine("const escrow_amount = offer.hourly_rate * @as(f32, @floatFromInt(offer.duration_hours));");
+        try builder.writeLine("if (tenant_wallet.balance_tri < escrow_amount) return error.InsufficientBalance;");
+        try builder.writeLine("");
+        try builder.writeLine("tenant_wallet.balance_tri -= escrow_amount;");
+        try builder.writeLine("offer.status = .accepted;");
+        try builder.writeLine("");
+        try builder.writeLine("return Contract{");
+        try builder.writeLine("    .agent_id = offer.agent_id,");
+        try builder.writeLine("    .tenant_id = tenant_wallet.address,");
+        try builder.writeLine("    .escrow_tri = escrow_amount,");
+        try builder.writeLine("    .hourly_rate = offer.hourly_rate,");
+        try builder.writeLine("    .started_at = std.time.timestamp(),");
+        try builder.writeLine("    .status = .active,");
+        try builder.writeLine("};");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: rejectMarketplaceOffer* / reject_marketplace_offer -> reject agent contract
+    if (std.mem.indexOf(u8, name, "reject") != null and std.mem.indexOf(u8, name, "marketplace") != null and std.mem.indexOf(u8, name, "offer") != null)
+    {
+        try builder.writeFmt("pub fn {s}(offer: *MarketplaceOffer, reason: []const u8) !void {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Reject marketplace offer with reason");
+        try builder.writeLine("offer.status = .rejected;");
+        try builder.writeLine("offer.rejection_reason = reason;");
+        try builder.writeLine("// Agent returns to available pool");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // MULTI-TENANT PATTERNS (v10 Phase 3)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    // Pattern: multiTenantIsolate* / multi_tenant_isolate -> isolate tenant execution
+    if (std.mem.indexOf(u8, name, "multi") != null and std.mem.indexOf(u8, name, "tenant") != null and std.mem.indexOf(u8, name, "isolate") != null)
+    {
+        try builder.writeFmt("pub fn {s}(tenant: *Tenant, task: *Task) !TenantContext {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Create isolated execution context for tenant");
+        try builder.writeLine("const ctx = TenantContext{");
+        try builder.writeLine("    .tenant_id = tenant.id,");
+        try builder.writeLine("    .isolation_key = generateIsolationKey(tenant.id),");
+        try builder.writeLine("    .resource_limits = tenant.resource_limits,");
+        try builder.writeLine("    .task = task,");
+        try builder.writeLine("    .created_at = std.time.timestamp(),");
+        try builder.writeLine("};");
+        try builder.writeLine("");
+        try builder.writeLine("// Enforce resource isolation");
+        try builder.writeLine("try enforceResourceLimits(&ctx);");
+        try builder.writeLine("");
+        try builder.writeLine("return ctx;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: tenantResourceLimit* / tenant_resource_limit -> enforce per-tenant limits
+    if (std.mem.indexOf(u8, name, "tenant") != null and std.mem.indexOf(u8, name, "resource") != null and std.mem.indexOf(u8, name, "limit") != null)
+    {
+        try builder.writeFmt("pub fn {s}(tenant: *Tenant, resource_type: ResourceType, amount: u64) !bool {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Check if tenant has sufficient resource quota");
+        try builder.writeLine("const current_usage = getCurrentUsage(tenant.id, resource_type);");
+        try builder.writeLine("const limit = getLimit(tenant.resource_limits, resource_type);");
+        try builder.writeLine("");
+        try builder.writeLine("if (current_usage + amount > limit) {");
+        builder.incIndent();
+        try builder.writeLine("// Resource limit exceeded");
+        try builder.writeLine("return false;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("");
+        try builder.writeLine("// Update usage tracking");
+        try builder.writeLine("updateUsage(tenant.id, resource_type, current_usage + amount);");
+        try builder.writeLine("return true;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: tenantBilling* / tenant_billing -> bill tenant for usage
+    if (std.mem.indexOf(u8, name, "tenant") != null and std.mem.indexOf(u8, name, "billing") != null)
+    {
+        try builder.writeFmt("pub fn {s}(tenant: *Tenant, billing_period: BillingPeriod) !TenantInvoice {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Generate billing invoice for tenant");
+        try builder.writeLine("const usage_records = getUsageRecords(tenant.id, billing_period);");
+        try builder.writeLine("var total_tri: f64 = 0;");
+        try builder.writeLine("");
+        try builder.writeLine("// Calculate cost per resource type");
+        try builder.writeLine("var line_items = std.ArrayList(InvoiceLineItem).init(usage_records.allocator);");
+        try builder.writeLine("for (usage_records) |record| {");
+        builder.incIndent();
+        try builder.writeLine("const cost = record.amount * record.unit_price_tri;");
+        try builder.writeLine("total_tri += cost;");
+        try builder.writeLine("try line_items.append(.{");
+        try builder.writeLine("    .resource_type = record.resource_type,");
+        try builder.writeLine("    .amount = record.amount,");
+        try builder.writeLine("    .unit_price_tri = record.unit_price_tri,");
+        try builder.writeLine("    .total_tri = cost,");
+        try builder.writeLine("});");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("");
+        try builder.writeLine("return TenantInvoice{");
+        try builder.writeLine("    .tenant_id = tenant.id,");
+        try builder.writeLine("    .period = billing_period,");
+        try builder.writeLine("    .line_items = line_items.toOwnedSlice(),");
+        try builder.writeLine("    .total_tri = total_tri,");
+        try builder.writeLine("    .status = .pending,");
+        try builder.writeLine("    .created_at = std.time.timestamp(),");
+        try builder.writeLine("};");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
     return false;
 }
 
@@ -262,4 +477,137 @@ pub const AgentStatus = enum {
     busy,
     staked,
     maintenance,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MARKETPLACE TYPE DEFINITIONS (v10 Phase 3)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const Capability = struct {
+    name: []const u8,
+    skill_level: f32,
+    verified: bool,
+};
+
+pub const MarketplaceListing = struct {
+    agent_id: []const u8,
+    capabilities: []const Capability,
+    hourly_rate_tri: f64,
+    reputation_score: f64,
+    status: ListingStatus,
+    created_at: i64,
+};
+
+pub const ListingStatus = enum {
+    active,
+    paused,
+    sold,
+    expired,
+};
+
+pub const MarketplaceOffer = struct {
+    agent_id: []const u8,
+    tenant_id: []const u8,
+    hourly_rate: f64,
+    duration_hours: u32,
+    status: OfferStatus,
+    rejection_reason: []const u8,
+};
+
+pub const OfferStatus = enum {
+    pending,
+    accepted,
+    rejected,
+    expired,
+};
+
+pub const Contract = struct {
+    agent_id: []const u8,
+    tenant_id: []const u8,
+    escrow_tri: f64,
+    hourly_rate: f64,
+    started_at: i64,
+    status: ContractStatus,
+};
+
+pub const ContractStatus = enum {
+    active,
+    completed,
+    terminated,
+    disputed,
+};
+
+pub const Task = struct {
+    task_id: []const u8,
+    required_capability: []const u8,
+    priority: f32,
+    max_payment_tri: f64,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MULTI-TENANT TYPE DEFINITIONS (v10 Phase 3)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const Tenant = struct {
+    id: []const u8,
+    wallet: *Wallet,
+    resource_limits: ResourceLimits,
+    created_at: i64,
+};
+
+pub const ResourceLimits = struct {
+    max_agents: u32,
+    max_tasks_per_hour: u32,
+    max_storage_mb: u64,
+    max_compute_units: u64,
+};
+
+pub const TenantContext = struct {
+    tenant_id: []const u8,
+    isolation_key: []const u8,
+    resource_limits: ResourceLimits,
+    task: *Task,
+    created_at: i64,
+};
+
+pub const ResourceType = enum {
+    agent,
+    task,
+    storage,
+    compute,
+    bandwidth,
+};
+
+pub const BillingPeriod = struct {
+    start: i64,
+    end: i64,
+};
+
+pub const UsageRecord = struct {
+    resource_type: ResourceType,
+    amount: u64,
+    unit_price_tri: f64,
+};
+
+pub const InvoiceLineItem = struct {
+    resource_type: ResourceType,
+    amount: u64,
+    unit_price_tri: f64,
+    total_tri: f64,
+};
+
+pub const TenantInvoice = struct {
+    tenant_id: []const u8,
+    period: BillingPeriod,
+    line_items: []const InvoiceLineItem,
+    total_tri: f64,
+    status: InvoiceStatus,
+    created_at: i64,
+};
+
+pub const InvoiceStatus = enum {
+    pending,
+    paid,
+    overdue,
+    cancelled,
 };
