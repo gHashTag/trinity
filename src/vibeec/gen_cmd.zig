@@ -11,6 +11,7 @@ const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
 
 // V10.2: Spec Intelligence
+const golden_db = @import("golden_db.zig");
 const reasoning_engine = @import("reasoning_engine.zig");
 const spec_improver = @import("spec_improver.zig");
 
@@ -132,6 +133,16 @@ pub fn main() !void {
         }
 
         try improveSpec(allocator, spec_path, dry_run, min_confidence);
+    } else if (std.mem.eql(u8, command, "import-seeds")) {
+        // V10.3: Import seeds from generated directory
+        if (args.len < 3) {
+            std.debug.print("Error: Missing directory\n", .{});
+            printUsage();
+            return;
+        }
+
+        const dir = args[2];
+        try importSeeds(allocator, dir);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {
@@ -144,7 +155,7 @@ fn printUsage() void {
     std.debug.print(
         \\
         \\═══════════════════════════════════════════════════════════════════════════════
-        \\                    VIBEEC - VIBEE Compiler v10.2
+        \\                    VIBEEC - VIBEE Compiler v10.3
         \\                    φ² + 1/φ² = 3
         \\═══════════════════════════════════════════════════════════════════════════════
         \\
@@ -153,6 +164,7 @@ fn printUsage() void {
         \\  vibeec improve-spec <file.vibee> [options]  Fill empty implementations using Golden DB
         \\    --dry-run                                 Show what would be filled without writing
         \\    --min-confidence F                        Minimum confidence threshold (default: 0.7)
+        \\  vibeec import-seeds <dir>                   Import seeds from generated/*.zig files
         \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
         \\    --prompt "text"                           Initial prompt
         \\    --max-tokens N                            Max tokens to generate (default: 100)
@@ -348,4 +360,24 @@ fn improveSpec(allocator: std.mem.Allocator, spec_path: []const u8, dry_run: boo
     }
     // Cast away const for cleanup - we own this data
     @constCast(&result.errors).deinit(allocator);
+}
+
+/// V10.3: Import seeds from generated directory
+fn importSeeds(allocator: std.mem.Allocator, dir: []const u8) !void {
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.3: Import Seeds                                   ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Directory: {s}\n", .{dir});
+    std.debug.print("  Scanning for .zig files...\n\n", .{});
+
+    var golden_db = try golden_db.GoldenDB.init(allocator);
+    defer golden_db.deinit();
+
+    const count = try golden_db.importFromGenerated(dir);
+
+    std.debug.print("\n  Results:\n", .{});
+    std.debug.print("    Seeds imported: {d}\n", .{count});
+    std.debug.print("    Total DB size:  {d}\n", .{golden_db.implementations.items.len});
+    std.debug.print("\n", .{});
 }
