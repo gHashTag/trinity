@@ -1,0 +1,425 @@
+# ═══════════════════════════════════════════════════════════════
+# VIBEE v10.0.0 — TRINITY AUTONOMOUS ORGANIZATION
+# $TRI Economy + Persistent State + Multi-Tenant Swarm
+# ═══════════════════════════════════════════════════════════════
+
+name: vsa_swarm_organization_128
+version: "10.0.0"
+language: zig
+module: vsa_swarm_organization
+
+description: |
+  128-agent autonomous swarm with $TRI economic layer.
+  Agents earn $TRI for tasks, stake for governance, and optimize DePIN yields.
+
+# ═══════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════
+
+types:
+  Wallet:
+    fields:
+      address: String
+      balance_tri: Float
+      staked_tri: Float
+      total_earned: Float
+      total_spent: Float
+
+  Task:
+    fields:
+      id: String
+      type: TaskType
+      description: String
+      difficulty: Float
+      reward_tri: Float
+      status: TaskStatus
+      assigned_agent: Option<String>
+      created_at: Timestamp
+      completed_at: Option<Timestamp>
+
+  TaskType:
+    values:
+      - github_pr
+      - arxiv_analysis
+      - gguf_quantize
+      - depin_stake
+      - cross_chain_bridge
+      - model_training
+      - inference_optimization
+      - data_processing
+
+  TaskStatus:
+    values:
+      - pending
+      - assigned
+      - in_progress
+      - completed
+      - failed
+      - paid
+
+  TRIEvent:
+    fields:
+      event_id: String
+      type: EventType
+      from_wallet: String
+      to_wallet: String
+      amount_tri: Float
+      timestamp: Timestamp
+      task_id: Option<String>
+      metadata: String
+
+  EventType:
+    values:
+      - task_earned
+      - task_paid
+      - stake_deposit
+      - stake_withdraw
+      - resource_purchase
+      - governance_vote
+      - agent_hire
+      - agent_termination
+
+  AgentInfo:
+    fields:
+      agent_id: String
+      wallet: Wallet
+      capabilities: List<String>
+      hourly_rate_tri: Float
+      reputation_score: Float
+      tasks_completed: Int
+      total_earned_tri: Float
+      status: AgentStatus
+
+  AgentStatus:
+    values:
+      - idle
+      - busy
+      - staked
+      - maintenance
+
+  DePINPosition:
+    fields:
+      protocol: String
+      amount_tri: Float
+      apy: Float
+      staked_at: Timestamp
+      auto_compound: Bool
+      min_apy_threshold: Float
+
+  SwarmMetrics:
+    fields:
+      online_agents: Int
+      active_tasks: Int
+      total_earned_tri: Float
+      total_staked_tri: Float
+      consensus_agreement: Float
+      tasks_per_second: Float
+      average_task_duration: Float
+
+  GovernanceProposal:
+    fields:
+      proposal_id: String
+      proposer: String
+      description: String
+      for_votes: Float
+      against_votes: Float
+      quorum_required: Float
+      expires_at: Timestamp
+      status: ProposalStatus
+
+  ProposalStatus:
+    values:
+      - active
+      - passed
+      - rejected
+      - executed
+
+# ═══════════════════════════════════════════════════════════════
+# $TRI ECONOMIC BEHAVIORS
+# ═══════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: earnTaskReward
+    given: completed task with difficulty and quality score
+    when: agent completes task successfully
+    then: calculate $TRI reward = difficulty * quality * base_rate and credit to agent wallet
+
+  - name: stakeTRIForPriority
+    given: agent wallet and $TRI amount
+    when: agent stakes $TRI for priority queue access
+    then: increase queue priority and governance voting power proportional to stake
+
+  - name: spendTRIOnResources
+    given: task requiring compute resources
+    when: resources allocated (GPU, agents, storage)
+    then: deduct $TRI based on resource usage and duration
+
+  - name: depinStakingOptimizer
+    given: current DePIN positions and target APY
+    when: APY drops below threshold or new opportunity found
+    then: auto-restake to highest-APY protocol with φ-based allocation
+
+  - name: triTreasury
+    given: total $TRI inflow from task fees
+    when: treasury rebalance triggered (daily)
+    then: distribute 70% to agents, 20% to treasury, 10% to buyback
+
+  - name: rewardDistribution
+    given: completed task and reward pool
+    when: distribution calculation needed
+    then: split reward among participants based on contribution weight
+
+  - name: feeForTask
+    given: user task request
+    when: task accepted into queue
+    then: charge $TRI deposit = estimated_cost * priority_multiplier
+
+  - name: governanceVote
+    given: active proposal and staked $TRI
+    when: agent votes on proposal
+    then: cast vote with weight = staked_tri and record on-chain
+
+  - name: hireAgent
+    given: agent marketplace listing and wallet
+    when: tenant hires specialized agent
+    then: transfer $TRI to agent escrow, activate agent for tenant
+
+  - name: terminateAgent
+    given: active agent contract
+    when: contract ended or agent underperforms
+    then: calculate final payout, release escrow, update reputation
+
+# ═══════════════════════════════════════════════════════════════
+# PERSISTENT STATE BEHAVIORS
+# ═══════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: saveHypervectorWithTRI
+    given: VSA hypervector and wallet signature
+    when: hypervector state needs persistence
+    then: store on IPFS with $TRI wallet as owner, return CID
+
+  - name: loadHypervectorByCID
+    given: IPFS CID and wallet signature
+    when: hypervector state needs restoration
+    then: verify ownership, fetch from IPFS, deserialize hypervector
+
+  - name: persistentModelState
+    given: agent state and wallet
+    when: agent shutdown or checkpoint
+    then: serialize state, encrypt with wallet key, store on IPFS + BadgerDB
+
+  - name: restoreModelState
+    given: wallet signature and state CID
+    when: agent restart
+    then: fetch from IPFS, decrypt, deserialize, restore agent state
+
+  - name: backupToBadgerDB
+    given: state data and key
+    when: persistent storage needed
+    then: write to BadgerDB key-value store with automatic compaction
+
+  - name: syncWithIPFS
+    given: local state and IPFS CID
+    when: consistency check required
+    then: compare hashes, re-upload if mismatch, update CID registry
+
+# ═══════════════════════════════════════════════════════════════
+# TENSOR / INFERENCE BEHAVIORS (from new modules)
+# ═══════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: tensorCreateForInference
+    given: model weights and input shape
+    when: preparing tensors for inference
+    then: create tensor with correct shape, allocate on GPU if available
+
+  - name: forwardPassWithTernary
+    given: input tensor and ternary-optimized weights
+    when: running inference
+    then: execute forward pass using {-1, 0, +1} weights, return logits
+
+  - name: quantizeGGUFToTernary
+    given: GGUF model path and compression target
+    when: ternary quantization requested
+    then: convert weights to {-1, 0, +1}, pack trits, measure perplexity
+
+  - name: loadGGUFModel
+    given: model path and allocator
+    when: model needs loading
+    then: parse GGUF format, load tensors, create model struct
+
+  - name: sampleTokenWithTemperature
+    given: logits and temperature parameter
+    when: generating next token
+    then: apply temperature, top-k sampling, return token ID
+
+# ═══════════════════════════════════════════════════════════════
+# SWARM COORDINATION BEHAVIORS
+# ═══════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: initSwarm128
+    given: allocator and configuration
+    when: swarm initialization requested
+    then: spawn 128 agents, initialize wallets, register with discovery
+
+  - name: routeTaskByPriority
+    given: task and staked amounts
+    when: task enters queue
+    then: sort by (stake_amount * urgency), assign to highest-priority agent
+
+  - name: achieveConsensus
+    given: proposal and participating agents
+    when: decision required
+    then: φ-spiral voting, require 99% agreement for execution
+
+  - name: scaleSwarm
+    given: current load and target utilization
+    when: load > 80% or < 20%
+    then: adjust agent count 32 → 128, bill $TRI for added capacity
+
+  - name: multiTenantIsolate
+    given: tenant ID and task
+    when: multi-tenant execution
+    then: execute in isolated context, bill to tenant wallet, separate state
+
+# ═══════════════════════════════════════════════════════════════
+# OBSERVABILITY BEHAVIORS
+# ═══════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: emitOpenTelemetrySpan
+    given: operation name and parent span
+    when: operation starts
+    then: create span with TraceId, record attributes, mark on complete
+
+  - name: recordPrometheusMetric
+    given: metric name and value
+    when: metric update triggered
+    then: update counter/gauge/histogram, expose on /metrics endpoint
+
+  - name: grafanaDashboardUpdate
+    given: metrics snapshot
+    when: dashboard refresh (5s interval)
+    then: publish to WebSocket, update $TRI balance panels
+
+  - name: healthCheckWithTRI
+    given: service endpoint
+    when: health check requested
+    then: return status + wallet balance + recent $TRI events
+
+# ═══════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════
+
+test_cases:
+  - name: earnTaskReward_basic
+    input:
+      difficulty: 0.8
+      quality: 0.95
+      base_rate: 10.0
+    expected:
+      reward: 76.0  # 0.8 * 0.95 * 100 (adjusted base)
+    tolerance: 0.01
+
+  - name: stakeTRIForPriority_priority
+    input:
+      wallet_balance: 1000.0
+      stake_amount: 100.0
+      current_priority: 5
+    expected:
+      new_priority: 15  # Increased by stake_weight
+
+  - name: depinStakingOptimizer_rebalance
+    input:
+      current_apy: 5.0
+      threshold: 8.0
+      alternative_apy: 12.0
+    expected:
+      should_rebalance: true
+      new_protocol: "high_apy_protocol"
+
+  - name: tensorCreate_shape
+    input:
+      weights: "[1.0, 2.0, 3.0, 4.0]"
+      shape: "[2, 2]"
+    expected:
+      tensor_shape: "[2, 2]"
+      tensor_size: 4
+
+  - name: forwardPass_output
+    input:
+      input_tensor: "[1.0, 2.0, 3.0, 4.0]"
+      weights: "[-1, 0, 1, -1]"
+    expected:
+      output_length: 4
+
+# ═══════════════════════════════════════════════════════════════
+# OBSERVABILITY CONFIG
+# ═══════════════════════════════════════════════════════════════
+
+observability:
+  metrics:
+    - name: tri_wallet_balance
+      type: gauge
+      description: Current $TRI balance per wallet
+      labels: [wallet_address, tenant_id]
+
+    - name: tri_earned_total
+      type: counter
+      description: Total $TRI earned from tasks
+      labels: [agent_id, task_type]
+
+    - name: tri_staked_total
+      type: gauge
+      description: Total $TRI staked for governance
+      labels: [wallet_address]
+
+    - name: depin_apy_current
+      type: gauge
+      description: Current DePIN position APY
+      labels: [protocol]
+
+    - name: swarm_tasks_completed
+      type: counter
+      description: Total tasks completed by swarm
+      labels: [task_type, status]
+
+    - name: swarm_consensus_agreement
+      type: gauge
+      description: Consensus agreement percentage
+      labels: [proposal_id]
+
+    - name: agent_hourly_rate
+      type: gauge
+      description: Agent hourly rate in $TRI
+      labels: [agent_id, capability]
+
+  traces:
+    - name: task_execution
+      attributes: [task_id, task_type, agent_id, reward_tri]
+      events: [assigned, started, completed, paid]
+
+    - name: tri_transaction
+      attributes: [from_wallet, to_wallet, amount, event_type]
+      events: [initiated, confirmed, failed]
+
+  dashboard:
+    title: "VIBEE v10 — $TRI Economy"
+    refresh: 5s
+    panels:
+      - title: "$TRI Total Supply"
+        metrics: [tri_wallet_balance]
+
+      - title: "Task Earnings Rate"
+        metrics: [tri_earned_total]
+
+      - title: "Staking Distribution"
+        metrics: [tri_staked_total]
+
+      - title: "DePIN APY Comparison"
+        metrics: [depin_apy_current]
+
+      - title: "Agent Earnings Leaderboard"
+        metrics: [tri_earned_total, agent_hourly_rate]
