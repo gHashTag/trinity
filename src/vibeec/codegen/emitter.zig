@@ -2088,7 +2088,7 @@ pub const ZigCodeGen = struct {
                 // Try to extract parameter names
                 if (containsCI(given, " and ")) {
                     // Pattern: "two Vec3 vectors a and b"
-                    const params = self.extractNamedParams(given, base_type, 2) orelse
+                    const params = self.extractNamedParams(given, base_type, 2) catch null orelse
                         buildDefaultParams(base_type, 2);
                     return .{ .params = params, .ret = base_type };
                 }
