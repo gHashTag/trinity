@@ -189,6 +189,10 @@ pub const GoldenDB = struct {
     /// V10.3: Import quality implementations from generated/*.zig files
     pub fn importFromGenerated(self: *Self, gen_dir: []const u8) !usize {
         var added: usize = 0;
+        var processed: usize = 0;
+        const max_files = 20; // Process at most 20 files per run
+
+        std.debug.print("  Opening directory '{s}'...\n", .{gen_dir});
 
         // Open directory
         var dir = std.fs.cwd().openDir(gen_dir, .{}) catch |err| {
@@ -197,26 +201,49 @@ pub const GoldenDB = struct {
         };
         defer dir.close();
 
+        std.debug.print("  Iterating files (max {d})...\n", .{max_files});
+
         var iter = dir.iterate();
         while (try iter.next()) |entry| {
+            if (processed >= max_files) {
+                std.debug.print("  Reached file limit ({d})\n", .{max_files});
+                break;
+            }
+            processed += 1;
+
             if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+
+            // Skip test files and benchmark files
+            if (std.mem.indexOf(u8, entry.name, "test") != null) continue;
+            if (std.mem.indexOf(u8, entry.name, "bench") != null) continue;
+            if (std.mem.indexOf(u8, entry.name, "stress") != null) continue;
+
+            std.debug.print("  [{d}/{d}] Processing {s}...\n", .{processed, max_files, entry.name});
 
             // Read file
             const file_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}", .{gen_dir, entry.name});
             defer self.allocator.free(file_path);
 
-            const content = std.fs.cwd().readFileAlloc(self.allocator, file_path, 2_000_000) catch |err| {
-                std.debug.print("Failed to read '{s}': {}\n", .{file_path, err});
+            const content = std.fs.cwd().readFileAlloc(self.allocator, file_path, 500_000) catch |err| {
+                std.debug.print("  Failed to read '{s}': {}\n", .{file_path, err});
                 continue;
             };
             defer self.allocator.free(content);
 
-            // Extract and add functions
+            // Skip very large files (likely full programs)
+            if (content.len > 200_000) {
+                std.debug.print("    Skipping (too large: {d} bytes)\n", .{content.len});
+                continue;
+            }
+
+            // Extract and add functions (limit to avoid infinite loops)
             const count = try self.extractAndImportFunctions(content);
             added += count;
 
-            std.debug.print("  Imported {d} seeds from {s}\n", .{count, entry.name});
+            std.debug.print("    -> {d} seeds imported\n", .{count});
         }
+
+        std.debug.print("  Total: {d} files processed, {d} seeds added\n", .{processed, added});
 
         return added;
     }
@@ -225,8 +252,10 @@ pub const GoldenDB = struct {
     fn extractAndImportFunctions(self: *Self, source: []const u8) !usize {
         var added: usize = 0;
         var pos: usize = 0;
+        var iterations: usize = 0;
+        const max_iterations = 10000; // Increased safety limit for larger files
 
-        while (pos < source.len) {
+        while (pos < source.len and iterations < max_iterations) : (iterations += 1) {
             // Skip to "pub fn" or "fn "
             const fn_start = if (std.mem.indexOfPos(u8, source, pos, "pub fn")) |idx| idx else if (std.mem.indexOfPos(u8, source, pos, "\nfn ")) |idx| idx + 1 else break;
 
@@ -240,18 +269,33 @@ pub const GoldenDB = struct {
             // Skip if name contains special characters (likely not a real function)
             if (std.mem.indexOfAny(u8, name, ".[(*")) |_| continue;
 
+            // Skip known non-function names
+            if (std.mem.eql(u8, name, "main")) continue;
+            if (std.mem.eql(u8, name, "test")) continue;
+
             // Find opening brace (start of body)
             const brace = std.mem.indexOfPos(u8, source, paren, "{") orelse break;
 
-            // Extract body (handle nested braces)
+            // Extract body (handle nested braces) with safety limit
             var body_end = brace + 1;
             var depth: usize = 1;
-            while (body_end < source.len and depth > 0) : (body_end += 1) {
+            const max_body_scan = 100_000; // Safety limit for body scanning
+            var scan_count: usize = 0;
+            while (body_end < source.len and depth > 0 and scan_count < max_body_scan) : (body_end += 1) {
+                scan_count += 1;
                 if (source[body_end] == '{') depth += 1;
                 if (source[body_end] == '}') depth -= 1;
             }
 
-            if (depth != 0) break; // Unmatched braces
+            if (depth != 0) {
+                std.debug.print("    [WARN] Unmatched braces in function '{s}'\n", .{name});
+                break; // Unmatched braces - likely malformed
+            }
+
+            if (scan_count >= max_body_scan) {
+                std.debug.print("    [WARN] Body scan limit exceeded for '{s}'\n", .{name});
+                break;
+            }
 
             // Extract signature (from fn name to opening brace)
             const signature = source[name_start..brace];
@@ -262,6 +306,18 @@ pub const GoldenDB = struct {
 
             // Skip small bodies (likely stubs)
             if (body.len < 20) continue;
+
+            // Skip if mostly comments
+            const comment_ratio = blk: {
+                var comment_bytes: usize = 0;
+                var line_iter = std.mem.splitScalar(u8, body, '\n');
+                while (line_iter.next()) |line| {
+                    const trimmed = std.mem.trimLeft(u8, line, " \t");
+                    if (std.mem.startsWith(u8, trimmed, "//")) comment_bytes += line.len;
+                }
+                break :blk @as(f32, @floatFromInt(comment_bytes)) / @as(f32, @floatFromInt(body.len));
+            };
+            if (comment_ratio > 0.7) continue; // Skip if mostly comments
 
             // Check quality (no TODO, has actual logic)
             if (self.estimateQuality(body) < 0.7) continue;
@@ -274,10 +330,14 @@ pub const GoldenDB = struct {
             if (added_result) |_| {
                 added += 1;
             } else |err| {
-                std.debug.print("  Failed to add seed '{s}': {}\n", .{name, err});
+                std.debug.print("    Failed to add seed '{s}': {}\n", .{name, err});
             }
 
             pos = body_end + 1;
+        }
+
+        if (iterations >= max_iterations) {
+            std.debug.print("    [WARN] Iteration limit reached\n", .{});
         }
 
         return added;
