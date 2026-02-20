@@ -47,7 +47,8 @@ fn printUsage() !void {
         \\  --run-one-cycle              Run one Golden Chain cycle
         \\  --run-until-complete         Run cycles until EXIT_SIGNAL
         \\  --init [PATH]                Initialize .ralph directory
-        \\  --swarm-monitor              Live DHT & TRI rewards monitor dashboard
+        \\  --swarm-monitor              Show DHT & TRI monitor dashboard (single shot)
+        \\  --swarm-monitor-live         Live DHT monitor with auto-refresh (2s interval)
         \\
         \\OPTIONS:
         \\  -v, --verbose                Enable verbose output
@@ -59,6 +60,7 @@ fn printUsage() !void {
         \\  ralph --run-until-complete
         \\  ralph --init ./my-project
         \\  ralph --swarm-monitor
+        \\  ralph --swarm-monitor-live
         \\
     );
 }
@@ -226,8 +228,19 @@ fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
 }
 
 /// Run Swarm Watch - Live DHT & TRI rewards monitor dashboard
-fn runSwarmMonitor(allocator: Allocator, verbose: bool) !void {
+fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool) !void {
     _ = verbose;
+
+    if (live) {
+        // Live mode with auto-refresh every 2 seconds
+        const config = swarm_watch.LiveConfig{
+            .interval_ms = 2000,
+            .clear_screen = true,
+            .show_timestamp = true,
+        };
+        try swarm_watch.runLiveDashboard(allocator, stdout_file, config);
+        return;
+    }
 
     try stdoutWrite("\n╔══════════════════════════════════════════════════════════════════════════════╗\n");
     try stdoutWrite("║           SWARM-WATCH DEV-003 | Live DHT & TRI Monitor                ║\n");
@@ -313,7 +326,10 @@ pub fn main() !void {
             try initRalph(allocator, path, force);
             return;
         } else if (std.mem.eql(u8, arg, "--swarm-monitor")) {
-            try runSwarmMonitor(allocator, verbose);
+            try runSwarmMonitor(allocator, verbose, false);
+            return;
+        } else if (std.mem.eql(u8, arg, "--swarm-monitor-live")) {
+            try runSwarmMonitor(allocator, verbose, true);
             return;
         } else {
             try stdoutPrint("Unknown argument: {s}\n\n", .{arg});
