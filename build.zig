@@ -1057,6 +1057,34 @@ pub fn build(b: *std.Build) void {
     const self_improve_step = b.step("self-improve", "Run VIBEE Self-Improvement Loop");
     self_improve_step.dependOn(&run_self_improve.step);
 
+    // V8 Production Swarm Runtime — 32-agent Trinity cluster
+    // Generated production swarm module (must be generated first with: zig build vibee -- gen specs/tri/vsa_swarm_production_32.vibee)
+    const vsa_swarm_mod = b.createModule(.{
+        .root_source_file = b.path("generated/vsa_swarm_production_32.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const swarm_runtime = b.addExecutable(.{
+        .name = "swarm-runtime",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/runtime_swarm.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa_swarm_production_32", .module = vsa_swarm_mod },
+            },
+        }),
+    });
+    b.installArtifact(swarm_runtime);
+
+    const run_swarm_runtime = b.addRunArtifact(swarm_runtime);
+    if (b.args) |args| {
+        run_swarm_runtime.addArgs(args);
+    }
+    const swarm_runtime_step = b.step("swarm", "Run Production Swarm Runtime (32-agent cluster)");
+    swarm_runtime_step.dependOn(&run_swarm_runtime.step);
+
     // Vibeec modules for TRI
     const vibeec_swe = b.createModule(.{
         .root_source_file = b.path("src/vibeec/trinity_swe_agent.zig"),
