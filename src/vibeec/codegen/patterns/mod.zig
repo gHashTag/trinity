@@ -30,6 +30,9 @@ pub const io = @import("io.zig"); // PRE: 16%
 pub const data = @import("data.zig"); // FDT: 13%
 pub const ml = @import("ml.zig"); // MLS: 6%
 pub const vsa = @import("vsa.zig"); // TEN: 6%
+pub const tensor = @import("tensor.zig"); // Tensor operations (NEW)
+pub const inference = @import("inference.zig"); // Inference operations (NEW)
+pub const model = @import("model.zig"); // Model operations (NEW)
 pub const dsl = @import("dsl.zig"); // DSL patterns
 pub const chat = @import("chat.zig"); // Chat patterns (fluent responses)
 pub const rl = @import("rl.zig"); // RL: raylib GUI/rendering patterns
@@ -49,6 +52,9 @@ pub const Category = enum {
     data,
     ml,
     vsa,
+    tensor,
+    inference,
+    model,
     rl,
     unknown,
 };
@@ -153,6 +159,28 @@ pub fn matchAll(builder: *CodeBuilder, b: *const Behavior) !bool {
         if (try vsa.match(builder, b)) return true;
     }
 
+    // Tensor: tensor_create, tensor_add, tensor_mul, tensor_matmul
+    if (std.mem.startsWith(u8, name, "tensor")) {
+        if (try tensor.match(builder, b)) return true;
+    }
+
+    // Inference: forward_pass, backward_pass, attention, feedforward
+    if (std.mem.indexOf(u8, name, "forward") != null or
+        std.mem.indexOf(u8, name, "backward") != null or
+        std.mem.indexOf(u8, name, "attention") != null or
+        std.mem.indexOf(u8, name, "feedforward") != null)
+    {
+        if (try inference.match(builder, b)) return true;
+    }
+
+    // Model: load_model, save_model, predict, sample_token
+    if (std.mem.startsWith(u8, name, "load_model") or
+        std.mem.startsWith(u8, name, "save_model") or
+        std.mem.startsWith(u8, name, "sample"))
+    {
+        if (try model.match(builder, b)) return true;
+    }
+
     return false;
 }
 
@@ -183,6 +211,9 @@ pub fn matchWithCategory(builder: *CodeBuilder, b: *const Behavior) !MatchResult
     if (try data.match(builder, b)) return .{ .matched = true, .category = .data };
     if (try ml.match(builder, b)) return .{ .matched = true, .category = .ml };
     if (try vsa.match(builder, b)) return .{ .matched = true, .category = .vsa };
+    if (try tensor.match(builder, b)) return .{ .matched = true, .category = .tensor };
+    if (try inference.match(builder, b)) return .{ .matched = true, .category = .inference };
+    if (try model.match(builder, b)) return .{ .matched = true, .category = .model };
 
     return .{ .matched = false, .category = .unknown };
 }
@@ -197,6 +228,9 @@ pub fn getPatternCounts() struct {
     data: u32,
     ml: u32,
     vsa: u32,
+    tensor: u32,
+    inference: u32,
+    model: u32,
     rl: u32,
     total: u32,
 } {
@@ -205,12 +239,15 @@ pub fn getPatternCounts() struct {
         .chat = 45, // respondGreeting/Farewell/Thanks/Feelings/Weather/Humor/AboutSelf/Unknown (8 × 3 langs = 24 responses) + detectLanguage/Topic/Intent/Mood (4) + context ops (6) + validators (3) + response arrays (8)
         .lifecycle = 18, // init, deinit, start, stop, pause, resume, cancel, reset, cleanup, clear, flush, shutdown, create, destroy, delete, enable, disable, register, unregister
         .generic = 35, // get, set, add, remove, update, find, search, filter, sort, compare, merge, apply, compute, calculate, measure, process, execute, run, build, validate, verify, check, test, benchmark, simulate, handle, list, query, step, sync, task, invoke
-        .io = 20, // read, write, load, save, store, retrieve, cache, fetch, import, export, open, close, connect, disconnect, send, receive, stream, mmap, prefetch, memory, recall
+        .io = 23, // read, write, load, save, store, retrieve, cache, fetch, import, export, open, close, connect, disconnect, send, receive, stream, mmap, prefetch, memory, recall + http_client, websocket, sqlite
         .data = 23, // encode, decode, quantize, dequantize, pack, unpack, compress, serialize, deserialize, transform, convert, normalize, format, parse, token, translate, explain, summarize, extract, split, chunk, fallback, honest, unknown
-        .ml = 24, // predict, train, evaluate, learn, adapt, fit, infer, calibrate, accuracy, loss, gradient, backward, forward, weight, evolve, mutate, llm, layer, softmax, relu, gelu, embed, flash, prune, online
-        .vsa = 15, // bind, bundle, unbind, similarity, permute, dot, hamming, cosine, distance, random, ones, zeros, sparsity, vector, analogy
+        .ml = 29, // predict, train, evaluate, learn, adapt, fit, infer, calibrate, accuracy, loss, gradient, backward, forward, weight, evolve, mutate, llm, layer, softmax, relu, gelu, embed, flash, prune, online + optimizer_step, kv_cache, rotary_embedding, rms_norm, scheduler
+        .vsa = 19, // bind, bundle, unbind, similarity, permute, dot, hamming, cosine, distance, random, ones, zeros, sparsity, vector, analogy + map, reduce, sequence, permute_optimized
+        .tensor = 4, // tensor_create, tensor_add, tensor_mul, tensor_matmul
+        .inference = 4, // forward_pass, backward_pass, attention, feedforward
+        .model = 4, // load_model, save_model, predict, sample_token
         .rl = 57, // Drawing(10) + Text(7) + Input(7) + Window(15) + Color(4) + Audio(2) + Cursor(2) + Texture(1) + Composites(9)
-        .total = 243, // 186 + 57 rl patterns
+        .total = 267, // Previous 243 + 12 new patterns (ml +5, vsa +4, io +3, tensor +4, inference +4, model +4) = 255 + 12 = 267
     };
 }
 
