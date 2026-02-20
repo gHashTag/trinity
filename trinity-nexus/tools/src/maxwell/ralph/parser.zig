@@ -371,12 +371,15 @@ pub fn parseSuccessHistory(allocator: Allocator, content: []const u8) ![]Success
 
         // Parse ## sha pattern
         if (std.mem.startsWith(u8, trimmed, "## ")) {
-            const rest = trimmed[2..];
-            var parts = std.mem.splitScalar(u8, rest, ' ');
+            // Format: ## sha description
+            const rest = trimmed[3..]; // Skip "## "
 
-            const sha = if (parts.next()) |s| std.mem.trim(u8, s, " \t\r") else "";
-            const description = if (parts.rest().len > 0)
-                std.mem.trim(u8, parts.rest(), " \t\r")
+            // Find first space to separate sha from description
+            const space_idx = std.mem.indexOfScalar(u8, rest, ' ') orelse rest.len;
+
+            const sha = rest[0..space_idx];
+            const description = if (space_idx < rest.len)
+                std.mem.trim(u8, rest[space_idx + 1 ..], " \t\r")
             else
                 "";
 

@@ -229,30 +229,25 @@ behaviors:
 # ═══════════════════════════════════════════════════════════════
 
 behaviors:
-  - name: tensorCreateForInference
+  - name: tensor_create
     given: model weights and input shape
-    when: preparing tensors for inference
-    then: create tensor with correct shape, allocate on GPU if available
+    when: create tensor for inference
+    then: tensor with correct shape allocated
 
-  - name: forwardPassWithTernary
-    given: input tensor and ternary-optimized weights
-    when: running inference
-    then: execute forward pass using {-1, 0, +1} weights, return logits
+  - name: forward_pass
+    given: input tensor and weights
+    when: run neural network forward pass
+    then: output tensor with activations
 
-  - name: quantizeGGUFToTernary
-    given: GGUF model path and compression target
-    when: ternary quantization requested
-    then: convert weights to {-1, 0, +1}, pack trits, measure perplexity
-
-  - name: loadGGUFModel
+  - name: load_model
     given: model path and allocator
-    when: model needs loading
-    then: parse GGUF format, load tensors, create model struct
+    when: load GGUF model from file
+    then: model struct with weights
 
-  - name: sampleTokenWithTemperature
-    given: logits and temperature parameter
-    when: generating next token
-    then: apply temperature, top-k sampling, return token ID
+  - name: sample_token
+    given: logits and temperature
+    when: sample next token for generation
+    then: sampled token ID
 
 # ═══════════════════════════════════════════════════════════════
 # SWARM COORDINATION BEHAVIORS
