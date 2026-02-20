@@ -107,11 +107,19 @@ pub const GoldenDB = struct {
 
     /// Deinitialize and free memory
     pub fn deinit(self: *Self) void {
+        // Free all GoldenImpl allocations
+        for (self.implementations.items) |impl| {
+            self.allocator.destroy(impl);
+        }
+
         self.by_name.deinit();
         inline for (std.meta.fields(Category)) |field| {
-            self.by_category.get(field.name).deinit(self.allocator);
+            const cat = @field(Category, field.name);
+            if (self.by_category.getPtr(cat)) |list| {
+                list.deinit(self.allocator);
+            }
         }
-        // Note: implementations list doesn't own the data, just references
+        self.implementations.deinit(self.allocator);
     }
 
     /// Get implementation by exact name match
