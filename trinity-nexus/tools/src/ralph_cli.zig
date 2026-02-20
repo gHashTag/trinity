@@ -241,6 +241,38 @@ fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
     try stdoutWrite("  3. Run: ralph --run-one-cycle\n");
 }
 
+/// Get Telegram credentials from environment or command-line args
+/// Priority: env vars > command-line args > empty (log-only mode)
+fn getTelegramCredentials(allocator: Allocator, cli_token: []const u8, cli_chat_id: []const u8) !struct { token: []const u8, chat_id: []const u8 } {
+    // Zig 0.15: use std.posix.getenv for environment variables
+    const env_token = std.posix.getenv("TELEGRAM_BOT_TOKEN") orelse "";
+    const env_chat_id = std.posix.getenv("TELEGRAM_CHAT_ID") orelse "";
+
+    const token = if (env_token.len > 0) env_token else cli_token;
+    const chat_id = if (env_chat_id.len > 0) env_chat_id else cli_chat_id;
+
+    // Return owned copies for safety
+    return .{
+        .token = if (token.len > 0) try allocator.dupe(u8, token) else try allocator.dupe(u8, ""),
+        .chat_id = if (chat_id.len > 0) try allocator.dupe(u8, chat_id) else try allocator.dupe(u8, ""),
+    };
+}
+
+/// Initialize TelegramAlerts with proper credential resolution
+fn initTelegramAlerts(allocator: Allocator, cli_token: []const u8, cli_chat_id: []const u8) !telegram_alerts.TelegramAlerts {
+    const creds = try getTelegramCredentials(allocator, cli_token, cli_chat_id);
+
+    // Phase 5: Alerts enabled by default - uses HTTP if credentials provided, log-only otherwise
+    if (creds.token.len > 0 and creds.chat_id.len > 0) {
+        std.debug.print("📢 Telegram alerts enabled (real HTTP)\n", .{});
+        return telegram_alerts.TelegramAlerts.init(allocator, creds.token, creds.chat_id);
+    } else {
+        std.debug.print("📢 Telegram alerts enabled (log-only mode - set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID env vars or use --telegram flags)\n", .{});
+        // Return a disabled instance - will still log but won't send HTTP
+        return telegram_alerts.TelegramAlerts.initDisabled(allocator);
+    }
+}
+
 /// Run Swarm Watch - Live DHT & TRI rewards monitor dashboard
 fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht: bool, telegram_bot_token: []const u8, telegram_chat_id: []const u8) !void {
     _ = verbose;
@@ -275,11 +307,8 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
         };
         const mode = if (use_real_dht) swarm_watch.PollMode.real else swarm_watch.PollMode.mock;
 
-        // Initialize Telegram alerts if config provided (Phase 4)
-        var alerts = if (telegram_bot_token.len > 0 and telegram_chat_id.len > 0)
-            telegram_alerts.TelegramAlerts.init(allocator, telegram_bot_token, telegram_chat_id)
-        else
-            telegram_alerts.TelegramAlerts.initDisabled(allocator);
+        // Initialize Telegram alerts (Phase 5: enabled by default with env var support)
+        var alerts = try initTelegramAlerts(allocator, telegram_bot_token, telegram_chat_id);
 
         // Initialize System Stats Collector (Phase 4 Enhanced)
         var stats_collector = system_stats.SystemStatsCollector.init(allocator);
