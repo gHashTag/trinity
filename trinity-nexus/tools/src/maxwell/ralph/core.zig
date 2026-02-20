@@ -462,7 +462,7 @@ test "core: tri_verdict all pass" {
         .output = &.{},
     };
 
-    const verdict = try triVerdict(allocator, test_result, bench_result);
+    var verdict = try triVerdict(allocator, test_result, bench_result);
     defer verdict.deinit(allocator);
 
     try std.testing.expect(verdict.score >= 8);
@@ -485,7 +485,7 @@ test "core: tri_verdict with failures" {
         .output = &.{},
     };
 
-    const verdict = try triVerdict(allocator, test_result, bench_result);
+    var verdict = try triVerdict(allocator, test_result, bench_result);
     defer verdict.deinit(allocator);
 
     try std.testing.expect(verdict.score < 8);

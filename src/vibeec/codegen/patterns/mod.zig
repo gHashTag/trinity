@@ -79,6 +79,22 @@ pub fn matchAll(builder: *CodeBuilder, b: *const Behavior) !bool {
         if (try dsl.match(builder, b)) return true;
     }
 
+    // Economic: earnTaskReward, stakeTRI, spendTRI, depinStaking, etc.
+    // Must be checked BEFORE generic patterns to avoid interception
+    if (std.mem.indexOf(u8, name, "earn") != null or
+        std.mem.indexOf(u8, name, "stake") != null or
+        std.mem.indexOf(u8, name, "spend") != null or
+        std.mem.indexOf(u8, name, "depin") != null or
+        std.mem.indexOf(u8, name, "treasury") != null or
+        std.mem.indexOf(u8, name, "reward") != null or
+        std.mem.indexOf(u8, name, "fee") != null or
+        std.mem.indexOf(u8, name, "governance") != null or
+        std.mem.indexOf(u8, name, "hire") != null or
+        std.mem.indexOf(u8, name, "terminate") != null)
+    {
+        if (try economic.match(builder, b)) return true;
+    }
+
     // PAS frequency order (31% → 22% → 16% → 13% → 6% → 6%)
     // Early-exit hints for common prefixes
     const first_char = if (name.len > 0) name[0] else 0;
@@ -181,21 +197,6 @@ pub fn matchAll(builder: *CodeBuilder, b: *const Behavior) !bool {
         std.mem.startsWith(u8, name, "sample"))
     {
         if (try model.match(builder, b)) return true;
-    }
-
-    // Economic: earnTaskReward, stakeTRI, spendTRI, depinStaking, etc.
-    if (std.mem.indexOf(u8, name, "earn") != null or
-        std.mem.indexOf(u8, name, "stake") != null or
-        std.mem.indexOf(u8, name, "spend") != null or
-        std.mem.indexOf(u8, name, "depin") != null or
-        std.mem.indexOf(u8, name, "treasury") != null or
-        std.mem.indexOf(u8, name, "reward") != null or
-        std.mem.indexOf(u8, name, "fee") != null or
-        std.mem.indexOf(u8, name, "governance") != null or
-        std.mem.indexOf(u8, name, "hire") != null or
-        std.mem.indexOf(u8, name, "terminate") != null)
-    {
-        if (try economic.match(builder, b)) return true;
     }
 
     return false;
