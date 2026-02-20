@@ -192,7 +192,7 @@ pub const GoldenDB = struct {
 
         // Open directory
         var dir = std.fs.cwd().openDir(gen_dir, .{}) catch |err| {
-            std.log.warn("Failed to open directory '{s}': {}", .{gen_dir, err});
+            std.debug.print("Failed to open directory '{s}': {}\n", .{gen_dir, err});
             return 0;
         };
         defer dir.close();
@@ -206,7 +206,7 @@ pub const GoldenDB = struct {
             defer self.allocator.free(file_path);
 
             const content = std.fs.cwd().readFileAlloc(self.allocator, file_path, 2_000_000) catch |err| {
-                std.log.warn("Failed to read '{s}': {}", .{file_path, err});
+                std.debug.print("Failed to read '{s}': {}\n", .{file_path, err});
                 continue;
             };
             defer self.allocator.free(content);
@@ -215,7 +215,7 @@ pub const GoldenDB = struct {
             const count = try self.extractAndImportFunctions(content);
             added += count;
 
-            std.log.info("Imported {d} seeds from {s}", .{count, entry.name});
+            std.debug.print("  Imported {d} seeds from {s}\n", .{count, entry.name});
         }
 
         return added;
@@ -274,7 +274,7 @@ pub const GoldenDB = struct {
             if (added_result) |_| {
                 added += 1;
             } else |err| {
-                std.log.warn("Failed to add seed '{s}': {}", .{name, err});
+                std.debug.print("  Failed to add seed '{s}': {}\n", .{name, err});
             }
 
             pos = body_end + 1;
