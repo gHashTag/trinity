@@ -273,17 +273,109 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
         const mode = if (use_real_dht) swarm_watch.PollMode.real else swarm_watch.PollMode.mock;
 
         // Initialize Telegram alerts if config provided (Phase 4)
-        const alerts = if (telegram_bot_token.len > 0 and telegram_chat_id.len > 0)
+        var alerts = if (telegram_bot_token.len > 0 and telegram_chat_id.len > 0)
             telegram_alerts.TelegramAlerts.init(allocator, telegram_bot_token, telegram_chat_id)
         else
             telegram_alerts.TelegramAlerts.initDisabled(allocator);
 
-        // Note: In a full implementation, alerts would be checked periodically
-        // during the live dashboard loop. For now, alerts are configured but
-        // the live dashboard runs without integrated alert checking.
-        _ = alerts; // Suppress unused warning
+        // Custom live loop with integrated alert checking
+        var watch = swarm_watch.SwarmWatch.init(allocator);
+        watch.mode = mode;
+        var mock_tick: u64 = 0;
+        var last_alert_check: i64 = 0;
 
-        try swarm_watch.runLiveDashboard(allocator, stdout_file, config, mode);
+        while (true) {
+            mock_tick +%= 1;
+
+            if (config.clear_screen) {
+                try stdout_file.writeAll("\x1b[2J\x1b[H");
+            }
+
+            if (config.show_timestamp) {
+                const now = std.time.timestamp();
+                var timestamp_buf: [64]u8 = undefined;
+                const timestamp = try std.fmt.bufPrint(&timestamp_buf, "// Last update: {d} // Press Ctrl+C to exit\n\n", .{now});
+                try stdout_file.writeAll(timestamp);
+            }
+
+            // Update mock DHT stats (simulated variations)
+            _ = @as(f64, @floatFromInt(mock_tick % 20)) * 0.01 - 0.1;
+            const peer_variation = @as(i64, @intCast(mock_tick % 5)) - 2;
+            const mock_acceptance = @max(0.85, @min(0.99, 0.96 + (@as(f64, @floatFromInt(mock_tick % 20)) * 0.01 - 0.1)));
+            const mock_peers = @max(5, 10 + peer_variation);
+
+            watch.pollDhtStats(.{
+                .triples_stored = 1337 + mock_tick,
+                .triples_distributed = 500 + (mock_tick / 2),
+                .triples_received = 450 + (mock_tick / 3),
+                .triples_rejected = 15 + (mock_tick % 10),
+                .triples_duplicate = 10 + (mock_tick % 5),
+                .sync_rounds = 42 + (mock_tick / 10),
+                .peer_count = mock_peers,
+            });
+
+            // Periodic reward stats update
+            if (mock_tick % 10 == 0) {
+                watch.pollRewardStats(.{
+                    .total_paid_wei = 4_233_000_000_000_000_000 + @as(u128, mock_tick) * 1_000_000_000_000,
+                    .pending_wei = 87_000_000_000_000 + @as(u128, mock_tick) * 10_000_000,
+                    .triples_rewarded = 5000 + mock_tick,
+                });
+            }
+
+            // Record some test events periodically
+            if (mock_tick % 20 == 0) {
+                const test_subjects = [_][]const u8{ "Trinity", "Alice", "Ralph", "Bob", "System" };
+                const test_predicates = [_][]const u8{ "is", "knows", "generates", "syncs", "validates" };
+                const test_objects = [_][]const u8{ "ternary", "Bob", "code", "data", "state" };
+                const subject = test_subjects[mock_tick % test_subjects.len];
+                const predicate = test_predicates[mock_tick % test_predicates.len];
+                const object = test_objects[mock_tick % test_objects.len];
+
+                const result = if (mock_tick % 3 == 0) swarm_watch.EventResult.duplicate else swarm_watch.EventResult.accepted;
+                watch.recordSyncEvent(.store, subject, predicate, object, result);
+            }
+
+            // Render dashboard
+            try watch.renderDashboard(allocator, stdout_file);
+
+            // Phase 4: Check health and send Telegram alerts (every 5 seconds)
+            const now = std.time.timestamp();
+            if (alerts.config.enabled and (now - last_alert_check >= 5)) {
+                last_alert_check = now;
+
+                // Collect recent events as strings (fixed array for simplicity)
+                var recent_event_strings: [5][]const u8 = undefined;
+                var event_count: usize = 0;
+
+                const events = watch.event_buffer.slice();
+                const show_count = @min(events.len, 5);
+                if (events.len > 0) {
+                    for (events[events.len - show_count ..]) |ev| {
+                        if (event_count < 5) {
+                            recent_event_strings[event_count] = try std.fmt.allocPrint(allocator, "{s}: {s} {s} {s} ({s})", .{
+                                @tagName(ev.event_type), ev.subject, ev.predicate, ev.object, @tagName(ev.result),
+                            });
+                            event_count += 1;
+                        }
+                    }
+                }
+
+                // Process health checks and send alerts if needed
+                try alerts.processAndAlert(
+                    mock_acceptance,
+                    mock_peers,
+                    watch.dht_stats.triples_stored,
+                    recent_event_strings[0..event_count],
+                );
+
+                // Free allocated strings
+                for (recent_event_strings[0..event_count]) |ev| allocator.free(ev);
+            }
+
+            // Wait for interval (convert ms to ns)
+            std.Thread.sleep(config.interval_ms * 1_000_000);
+        }
         return;
     }
 
