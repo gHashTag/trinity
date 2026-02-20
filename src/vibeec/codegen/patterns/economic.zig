@@ -16,10 +16,13 @@ const Behavior = types.Behavior;
 /// Match economic operation patterns
 pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     const when_text = b.when;
+    const name = b.name;
 
-    // Pattern: earnTaskReward* -> calculate and credit $TRI reward
-    if (std.mem.startsWith(u8, b.name, "earnTaskReward") or
-        (std.mem.indexOf(u8, when_text, "earn") != null and std.mem.indexOf(u8, when_text, "reward") != null))
+    // Pattern: earnTaskReward* / earn_task_reward -> calculate and credit $TRI reward
+    if (std.mem.startsWith(u8, name, "earnTaskReward") or
+        std.mem.startsWith(u8, name, "earn_task_reward") or
+        (std.mem.indexOf(u8, when_text, "earn") != null and std.mem.indexOf(u8, when_text, "reward") != null) or
+        (std.mem.indexOf(u8, name, "earn") != null and std.mem.indexOf(u8, name, "reward") != null))
     {
         try builder.writeFmt("pub fn {s}(wallet: *Wallet, difficulty: f32, quality: f32, base_rate: f32) !f64 {{\n", .{b.name});
         builder.incIndent();
@@ -33,9 +36,10 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: stakeTRIForPriority* -> stake $TRI for priority queue
-    if (std.mem.startsWith(u8, b.name, "stakeTRI") or
-        (std.mem.indexOf(u8, b.name, "stake") != null and std.mem.indexOf(u8, b.name, "TRI") != null))
+    // Pattern: stakeTRI* / stake_tri -> stake $TRI for priority queue
+    if (std.mem.startsWith(u8, name, "stakeTRI") or
+        std.mem.startsWith(u8, name, "stake_tri") or
+        std.mem.indexOf(u8, name, "stake") != null)
     {
         try builder.writeFmt("pub fn {s}(wallet: *Wallet, amount: f64) !void {{\n", .{b.name});
         builder.incIndent();
@@ -49,9 +53,11 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: spendTRIOnResources* -> spend $TRI for resources
-    if (std.mem.startsWith(u8, b.name, "spendTRI") or
-        (std.mem.indexOf(u8, when_text, "spend") != null and std.mem.indexOf(u8, when_text, "resource") != null))
+    // Pattern: spendTRI* / spend_tri -> spend $TRI for resources
+    if (std.mem.startsWith(u8, name, "spendTRI") or
+        std.mem.startsWith(u8, name, "spend_tri") or
+        (std.mem.indexOf(u8, when_text, "spend") != null and std.mem.indexOf(u8, when_text, "resource") != null) or
+        std.mem.indexOf(u8, name, "spend") != null)
     {
         try builder.writeFmt("pub fn {s}(wallet: *Wallet, amount: f64, resource_type: []const u8) !void {{\n", .{b.name});
         builder.incIndent();
@@ -65,9 +71,10 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: depinStakingOptimizer* -> optimize DePIN yields with φ-based allocation
-    if (std.mem.startsWith(u8, b.name, "depinStaking") or
-        (std.mem.indexOf(u8, b.name, "depin") != null and std.mem.indexOf(u8, b.name, "stake") != null))
+    // Pattern: depinStaking* / depin_staking -> optimize DePIN yields with φ-based allocation
+    if (std.mem.startsWith(u8, name, "depinStaking") or
+        std.mem.startsWith(u8, name, "depin_staking") or
+        (std.mem.indexOf(u8, name, "depin") != null and std.mem.indexOf(u8, name, "stake") != null))
     {
         try builder.writeFmt("pub fn {s}(positions: []DePINPosition, target_apy: f32) ![]const u8 {{\n", .{b.name});
         builder.incIndent();
@@ -110,9 +117,11 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: rewardDistribution* -> split reward among participants
-    if (std.mem.startsWith(u8, b.name, "rewardDistribution") or
-        (std.mem.indexOf(u8, when_text, "distribute") != null and std.mem.indexOf(u8, when_text, "reward") != null))
+    // Pattern: rewardDistribution* / reward_distribution -> split reward among participants
+    if (std.mem.startsWith(u8, name, "rewardDistribution") or
+        std.mem.startsWith(u8, name, "reward_distribution") or
+        (std.mem.indexOf(u8, when_text, "distribute") != null and std.mem.indexOf(u8, when_text, "reward") != null) or
+        (std.mem.indexOf(u8, name, "reward") != null and std.mem.indexOf(u8, name, "distribution") != null))
     {
         try builder.writeFmt("pub fn {s}(total_reward: f64, contribution_weights: []const f64) []f64 {{\n", .{b.name});
         builder.incIndent();
@@ -136,9 +145,11 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: feeForTask* -> charge $TRI for task execution
-    if (std.mem.startsWith(u8, b.name, "feeForTask") or
-        (std.mem.indexOf(u8, when_text, "fee") != null and std.mem.indexOf(u8, when_text, "task") != null))
+    // Pattern: feeForTask* / fee_for_task -> charge $TRI for task execution
+    if (std.mem.startsWith(u8, name, "feeForTask") or
+        std.mem.startsWith(u8, name, "fee_for_task") or
+        (std.mem.indexOf(u8, when_text, "fee") != null and std.mem.indexOf(u8, when_text, "task") != null) or
+        (std.mem.indexOf(u8, name, "fee") != null and std.mem.indexOf(u8, name, "task") != null))
     {
         try builder.writeFmt("pub fn {s}(wallet: *Wallet, estimated_cost: f32, priority_multiplier: f32) !f64 {{\n", .{b.name});
         builder.incIndent();
@@ -176,9 +187,11 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: hireAgent* -> hire specialized agent for tenant
-    if (std.mem.startsWith(u8, b.name, "hireAgent") or
-        (std.mem.indexOf(u8, when_text, "hire") != null and std.mem.indexOf(u8, when_text, "agent") != null))
+    // Pattern: hireAgent* / hire_agent -> hire specialized agent for tenant
+    if (std.mem.startsWith(u8, name, "hireAgent") or
+        std.mem.startsWith(u8, name, "hire_agent") or
+        (std.mem.indexOf(u8, when_text, "hire") != null and std.mem.indexOf(u8, when_text, "agent") != null) or
+        (std.mem.indexOf(u8, name, "hire") != null and std.mem.indexOf(u8, name, "agent") != null))
     {
         try builder.writeFmt("pub fn {s}(tenant_wallet: *Wallet, agent: *AgentInfo, duration_hours: u32) !void {{\n", .{b.name});
         builder.incIndent();
@@ -193,9 +206,11 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: terminateAgent* -> end agent contract
-    if (std.mem.startsWith(u8, b.name, "terminateAgent") or
-        (std.mem.indexOf(u8, when_text, "terminate") != null and std.mem.indexOf(u8, when_text, "agent") != null))
+    // Pattern: terminateAgent* / terminate_agent -> end agent contract
+    if (std.mem.startsWith(u8, name, "terminateAgent") or
+        std.mem.startsWith(u8, name, "terminate_agent") or
+        (std.mem.indexOf(u8, when_text, "terminate") != null and std.mem.indexOf(u8, when_text, "agent") != null) or
+        (std.mem.indexOf(u8, name, "terminate") != null and std.mem.indexOf(u8, name, "agent") != null))
     {
         try builder.writeFmt("pub fn {s}(agent: *AgentInfo, performance_score: f32) !f64 {{\n", .{b.name});
         builder.incIndent();
