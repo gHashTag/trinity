@@ -138,7 +138,21 @@ pub fn cleanTypeName(type_name: []const u8) []const u8 {
     return std.mem.trim(u8, result, " \t");
 }
 
-/// Map VIBEE type to Zig type
+/// Extract inner type from generic type like "List<Float>" -> "Float"
+pub fn extractInnerType(composite: []const u8, prefix: []const u8, suffix: []const u8) []const u8 {
+    // Check if starts with prefix
+    if (!std.mem.startsWith(u8, composite, prefix)) {
+        return composite;
+    }
+
+    // Find the suffix (closing >)
+    const start = prefix.len;
+    const end = std.mem.indexOf(u8, composite[start..], suffix) orelse return composite;
+
+    return std.mem.trim(u8, composite[start..][0..end], " ");
+}
+
+/// Map VIBEE type to Zig type with proper generic handling
 pub fn mapType(type_name: []const u8) []const u8 {
     // Primitive types
     if (std.mem.eql(u8, type_name, "f64")) return "f64";
@@ -166,7 +180,7 @@ pub fn mapType(type_name: []const u8) []const u8 {
         return "*anyopaque";
     }
 
-    // Allocator -> std.mem.Allocator
+    // Allocator
     if (std.mem.eql(u8, type_name, "Allocator")) {
         return "std.mem.Allocator";
     }
@@ -176,14 +190,19 @@ pub fn mapType(type_name: []const u8) []const u8 {
         return "*anyopaque";
     }
 
-    // Generic types Option<T> -> ?T
-    if (std.mem.startsWith(u8, type_name, "Option<")) {
-        return "?[]const u8";
-    }
-
-    // Generic types List<T> -> []T
+    // Generic types List<T> -> []T (FIXED: parse inner type)
     if (std.mem.startsWith(u8, type_name, "List<")) {
-        return "[]const u8";
+        const inner = extractInnerType(type_name, "List<", ">");
+        const inner_zig = mapType(inner);
+        // Map common inner types to correct slice types
+        if (std.mem.eql(u8, inner_zig, "f64")) return "[]f64";
+        if (std.mem.eql(u8, inner_zig, "f32")) return "[]f32";
+        if (std.mem.eql(u8, inner_zig, "i64")) return "[]i64";
+        if (std.mem.eql(u8, inner_zig, "i32")) return "[]i32";
+        if (std.mem.eql(u8, inner_zig, "usize")) return "[]usize";
+        if (std.mem.eql(u8, inner_zig, "bool")) return "[]bool";
+        if (std.mem.eql(u8, inner_zig, "[]const u8")) return "[]const []const u8";
+        return "[]const u8"; // fallback
     }
 
     // Plain List type -> slice
@@ -191,17 +210,33 @@ pub fn mapType(type_name: []const u8) []const u8 {
         return "[]const u8";
     }
 
-    // Generic types HashMap<K,V> -> std.AutoHashMap
+    // Generic types Option<T> -> ?T (FIXED: parse inner type)
+    if (std.mem.startsWith(u8, type_name, "Option<")) {
+        const inner = extractInnerType(type_name, "Option<", ">");
+        const inner_zig = mapType(inner);
+        // Map common inner types to correct optional types
+        if (std.mem.eql(u8, inner_zig, "f64")) return "?f64";
+        if (std.mem.eql(u8, inner_zig, "f32")) return "?f32";
+        if (std.mem.eql(u8, inner_zig, "i64")) return "?i64";
+        if (std.mem.eql(u8, inner_zig, "i32")) return "?i32";
+        if (std.mem.eql(u8, inner_zig, "usize")) return "?usize";
+        if (std.mem.eql(u8, inner_zig, "bool")) return "?bool";
+        if (std.mem.eql(u8, inner_zig, "[]f64")) return "?[]f64";
+        if (std.mem.eql(u8, inner_zig, "[]const u8")) return "?[]const u8";
+        return "?[]const u8"; // fallback
+    }
+
+    // HashMap<K,V>
     if (std.mem.startsWith(u8, type_name, "HashMap<")) {
         return "std.AutoHashMap(usize, *anyopaque)";
     }
 
-    // Generic types Map<K,V> -> std.StringHashMap
+    // Map<K,V>
     if (std.mem.startsWith(u8, type_name, "Map<")) {
         return "std.StringHashMap([]const u8)";
     }
 
-    // Plain Map type -> std.StringHashMap
+    // Plain Map type
     if (std.mem.eql(u8, type_name, "Map")) {
         return "std.StringHashMap([]const u8)";
     }
@@ -224,6 +259,12 @@ pub fn mapType(type_name: []const u8) []const u8 {
     if (std.mem.eql(u8, type_name, "StreamEvent")) return "[]const u8";
     if (std.mem.eql(u8, type_name, "TokenStats")) return "[]const u8";
 
+    // Handle Tensor type specially
+    if (std.mem.eql(u8, type_name, "Tensor")) {
+        return "Tensor";
+    }
+
+    // Unknown types - return as-is (could be custom types)
     return type_name;
 }
 
@@ -248,8 +289,28 @@ test "extractIntParam" {
     try std.testing.expectEqual(@as(?i32, null), extractIntParam("{ x: 5 }", "n"));
 }
 
-test "mapType" {
+test "extractInnerType" {
+    try std.testing.expectEqualStrings("Float", extractInnerType("List<Float>", "List<", ">"));
+    try std.testing.expectEqualStrings("Int", extractInnerType("Option<Int>", "Option<", ">"));
+    try std.testing.expectEqualStrings("usize", extractInnerType("List<usize>", "List<", ">"));
+}
+
+test "mapType - primitives" {
     try std.testing.expectEqualStrings("[]const u8", mapType("String"));
     try std.testing.expectEqualStrings("i64", mapType("Int"));
+    try std.testing.expectEqualStrings("bool", mapType("Bool"));
     try std.testing.expectEqualStrings("f64", mapType("f64"));
+}
+
+test "mapType - generics (FIXED)" {
+    // List<T> now correctly maps to []T instead of []const u8
+    try std.testing.expectEqualStrings("[]f64", mapType("List<Float>"));
+    try std.testing.expectEqualStrings("[]i64", mapType("List<Int>"));
+    try std.testing.expectEqualStrings("[]usize", mapType("List<usize>"));
+    try std.testing.expectEqualStrings("[]bool", mapType("List<Bool>"));
+
+    // Option<T> now correctly maps to ?T instead of ?[]const u8
+    try std.testing.expectEqualStrings("?f64", mapType("Option<Float>"));
+    try std.testing.expectEqualStrings("?i64", mapType("Option<Int>"));
+    try std.testing.expectEqualStrings("?bool", mapType("Option<Bool>"));
 }
