@@ -1451,7 +1451,16 @@ pub const ZigCodeGen = struct {
         // Only use pattern system for behaviors where it generates self-contained code
         // (no references to undefined types like ChatTopicReal, InputLanguage)
         const is_safe_pattern = std.mem.eql(u8, name, "detectInputLanguage") or
-            std.mem.eql(u8, name, "detectLanguage");
+            std.mem.eql(u8, name, "detectLanguage") or
+            std.mem.startsWith(u8, name, "tensor_") or
+            std.mem.startsWith(u8, name, "forward_") or
+            std.mem.startsWith(u8, name, "backward_") or
+            std.mem.indexOf(u8, name, "attention") != null or
+            std.mem.indexOf(u8, name, "feedforward") != null or
+            std.mem.startsWith(u8, name, "load_model") or
+            std.mem.startsWith(u8, name, "save_model") or
+            std.mem.startsWith(u8, name, "sample_token") or
+            std.mem.startsWith(u8, name, "predict");
 
         if (is_safe_pattern) {
             if (try pattern_matcher.generateFromWhenThenPattern(b)) {
