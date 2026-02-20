@@ -359,6 +359,8 @@ pub fn main() !void {
     var verbose = false;
     var force = false;
     var use_real_dht = false;
+    var telegram_bot_token: []const u8 = "";
+    var telegram_chat_id: []const u8 = "";
     const config = ralph.RalphConfig{};
 
     // Parse arguments
@@ -375,6 +377,24 @@ pub fn main() !void {
             force = true;
         } else if (std.mem.eql(u8, arg, "--real-dht")) {
             use_real_dht = true;
+        } else if (std.mem.eql(u8, arg, "--telegram-bot-token")) {
+            if (i + 1 < args.len) {
+                i += 1;
+                telegram_bot_token = args[i];
+            } else {
+                try stdoutWrite("Error: --telegram-bot-token requires a value\n\n");
+                try printUsage();
+                return error.MissingArgument;
+            }
+        } else if (std.mem.eql(u8, arg, "--telegram-chat-id")) {
+            if (i + 1 < args.len) {
+                i += 1;
+                telegram_chat_id = args[i];
+            } else {
+                try stdoutWrite("Error: --telegram-chat-id requires a value\n\n");
+                try printUsage();
+                return error.MissingArgument;
+            }
         } else if (std.mem.eql(u8, arg, "--status")) {
             try showStatus(allocator, config);
             return;
@@ -392,10 +412,10 @@ pub fn main() !void {
             try initRalph(allocator, path, force);
             return;
         } else if (std.mem.eql(u8, arg, "--swarm-monitor")) {
-            try runSwarmMonitor(allocator, verbose, false, use_real_dht);
+            try runSwarmMonitor(allocator, verbose, false, use_real_dht, telegram_bot_token, telegram_chat_id);
             return;
         } else if (std.mem.eql(u8, arg, "--swarm-monitor-live")) {
-            try runSwarmMonitor(allocator, verbose, true, use_real_dht);
+            try runSwarmMonitor(allocator, verbose, true, use_real_dht, telegram_bot_token, telegram_chat_id);
             return;
         } else {
             try stdoutPrint("Unknown argument: {s}\n\n", .{arg});

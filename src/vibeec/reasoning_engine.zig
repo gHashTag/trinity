@@ -143,6 +143,7 @@ pub const ReasoningEngine = struct {
         // Pass 1: Semantic Understanding
         var analysis = try self.pass1_semantic(behavior);
         defer {
+            self.allocator.free(analysis.signature);
             for (analysis.keywords.items) |kw| {
                 self.allocator.free(kw);
             }
@@ -458,6 +459,7 @@ test "ReasoningEngine: pass1_semantic" {
 
     var analysis = try engine.pass1_semantic(&behavior);
     defer {
+        std.testing.allocator.free(analysis.signature);
         for (analysis.keywords.items) |kw| {
             std.testing.allocator.free(kw);
         }
