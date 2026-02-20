@@ -923,6 +923,9 @@ pub fn build(b: *std.Build) void {
     const b2t_step = b.step("b2t", "Run B2T CLI");
     b2t_step.dependOn(&run_b2t.step);
 
+    // Ralph CLI is in trinity-nexus/tools - run from there:
+    //   cd trinity-nexus/tools && zig build ralph
+
     // Claude UI Demo
     const claude_ui = b.addExecutable(.{
         .name = "claude-ui",

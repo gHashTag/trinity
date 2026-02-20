@@ -66,6 +66,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Import swarm_watch module from generated directory (at project root)
+    const swarm_watch_mod = b.createModule(.{
+        .root_source_file = b.path("../../generated/swarm_watch.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Create CLI module
     const ralph_cli_mod = b.createModule(.{
         .root_source_file = b.path("src/ralph_cli.zig"),
@@ -73,6 +80,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "ralph", .module = ralph_mod },
+            .{ .name = "swarm_watch", .module = swarm_watch_mod },
+            .{ .name = "trinity-symb", .module = symb_dep.module("trinity_symb") },
         },
     });
 
