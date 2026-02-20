@@ -49,14 +49,14 @@ fn showStatus(allocator: Allocator, config: ralph.RalphConfig) !void {
     const status = try agent.getStatus(allocator);
     defer allocator.free(status);
 
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.io.getStdOut();
     try stdout.writeAll(status);
     try stdout.writeAll("\n");
 }
 
 /// Run one development cycle
 fn runOneCycle(allocator: Allocator, config: ralph.RalphConfig, verbose: bool) !void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.io.getStdOut();
 
     if (verbose) {
         try stdout.writeAll("Starting Ralph Golden Chain cycle...\n");
@@ -80,7 +80,7 @@ fn runOneCycle(allocator: Allocator, config: ralph.RalphConfig, verbose: bool) !
 
 /// Run cycles until completion
 fn runUntilComplete(allocator: Allocator, config: ralph.RalphConfig, verbose: bool) !void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.io.getStdOut();
 
     if (verbose) {
         try stdout.writeAll("Starting Ralph autonomous development...\n");
@@ -115,7 +115,8 @@ fn runUntilComplete(allocator: Allocator, config: ralph.RalphConfig, verbose: bo
 
 /// Initialize .ralph directory structure
 fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
-    const stdout = std.io.getStdOut().writer();
+    _ = allocator;
+    const stdout = std.io.getStdOut();
 
     const ralph_path = if (std.mem.eql(u8, path, ".")) ".ralph" else path;
 
@@ -144,9 +145,6 @@ fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
 
     for (subdirs) |sub| {
         try dir.makePath(sub);
-        if (std.mem.eql(u8, verbose, "true")) {
-            try stdout.print("  Created: {s}/\n", .{sub});
-        }
     }
 
     // Create default files
@@ -219,14 +217,14 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        const stdout = std.io.getStdOut().writer();
+        const stdout = std.io.getStdOut();
         try printUsage(stdout);
         return;
     }
 
     var verbose = false;
     var force = false;
-    var config = ralph.RalphConfig{};
+    const config = ralph.RalphConfig{};
 
     // Parse arguments
     var i: usize = 1;
@@ -234,7 +232,7 @@ pub fn main() !void {
         const arg = args[i];
 
         if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
-            const stdout = std.io.getStdOut().writer();
+            const stdout = std.io.getStdOut();
             try printUsage(stdout);
             return;
         } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--verbose")) {
@@ -255,9 +253,10 @@ pub fn main() !void {
             try initRalph(allocator, path, force);
             return;
         } else {
-            const stdout = std.io.getStdOut().writer();
+            const stdout = std.io.getStdOut();
             try stdout.print("Unknown argument: {s}\n\n", .{arg});
-            try printUsage(stdout);
+            const stdout_writer = std.io.getStdOut();
+            try printUsage(stdout_writer);
             return error.UnknownArgument;
         }
 
@@ -270,8 +269,6 @@ pub fn main() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "cli: parse help command" {
-    const allocator = std.testing.allocator;
-
     // Simulate --help argument
     const args = &[_][]const u8{ "ralph", "--help" };
     try std.testing.expectEqual(@as(usize, 2), args.len);
@@ -279,8 +276,6 @@ test "cli: parse help command" {
 }
 
 test "cli: parse status command" {
-    const allocator = std.testing.allocator;
-
     // Simulate --status argument
     const args = &[_][]const u8{ "ralph", "--status" };
     try std.testing.expectEqual(@as(usize, 2), args.len);
@@ -288,8 +283,6 @@ test "cli: parse status command" {
 }
 
 test "cli: parse run-one-cycle command" {
-    const allocator = std.testing.allocator;
-
     // Simulate --run-one-cycle argument
     const args = &[_][]const u8{ "ralph", "--run-one-cycle" };
     try std.testing.expectEqual(@as(usize, 2), args.len);
@@ -297,8 +290,6 @@ test "cli: parse run-one-cycle command" {
 }
 
 test "cli: parse run-until-complete command" {
-    const allocator = std.testing.allocator;
-
     // Simulate --run-until-complete argument
     const args = &[_][]const u8{ "ralph", "--run-until-complete" };
     try std.testing.expectEqual(@as(usize, 2), args.len);
@@ -306,8 +297,6 @@ test "cli: parse run-until-complete command" {
 }
 
 test "cli: parse init command with path" {
-    const allocator = std.testing.allocator;
-
     // Simulate --init ./my-project
     const args = &[_][]const u8{ "ralph", "--init", "./my-project" };
     try std.testing.expectEqual(@as(usize, 3), args.len);
