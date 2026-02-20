@@ -65,7 +65,7 @@ pub const SpecEditor = struct {
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 10_000_000);
         defer self.allocator.free(content);
 
-        try std.fs.cwd().writeFile(.{ .sub_path = backup_name }, content);
+        try std.fs.cwd().writeFile(.{ .sub_path = backup_name, .data = content });
 
         return backup_name;
     }
@@ -83,7 +83,7 @@ pub const SpecEditor = struct {
         const tmp_path = try std.fmt.allocPrint(self.allocator, "{s}.tmp", .{path});
         defer self.allocator.free(tmp_path);
 
-        try std.fs.cwd().writeFile(.{ .sub_path = tmp_path }, yaml);
+        try std.fs.cwd().writeFile(.{ .sub_path = tmp_path, .data = yaml });
 
         // Atomic rename (overwrites target)
         try std.fs.cwd().rename(tmp_path, path);
