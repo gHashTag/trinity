@@ -117,10 +117,11 @@ pub const SpecEditor = struct {
 
     /// Convert spec back to YAML format (for writing)
     fn specToYaml(self: *const Self, spec: *const vibee_parser.VibeeSpec) ![]const u8 {
-        var buffer = std.ArrayList(u8).init(self.allocator);
-        errdefer buffer.deinit();
+        const ArrayList = @import("std").ArrayList;
+        var buffer = ArrayList(u8).empty;
+        defer buffer.deinit(self.allocator);
 
-        const writer = buffer.writer();
+        const writer = buffer.writer(self.allocator);
 
         // Header
         try writer.print("name: {s}\n", .{spec.name});
@@ -184,7 +185,7 @@ pub const SpecEditor = struct {
             }
         }
 
-        return buffer.toOwnedSlice();
+        return buffer.toOwnedSlice(self.allocator);
     }
 
     /// Clean old backups (keep last N)
