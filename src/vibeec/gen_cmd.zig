@@ -371,13 +371,13 @@ fn importSeeds(allocator: std.mem.Allocator, dir: []const u8) !void {
     std.debug.print("  Directory: {s}\n", .{dir});
     std.debug.print("  Scanning for .zig files...\n\n", .{});
 
-    var golden_db = try golden_db.GoldenDB.init(allocator);
-    defer golden_db.deinit();
+    var db = try golden_db.GoldenDB.init(allocator);
+    defer db.deinit();
 
-    const count = try golden_db.importFromGenerated(dir);
+    const count = try db.importFromGenerated(dir);
 
     std.debug.print("\n  Results:\n", .{});
     std.debug.print("    Seeds imported: {d}\n", .{count});
-    std.debug.print("    Total DB size:  {d}\n", .{golden_db.implementations.items.len});
+    std.debug.print("    Total DB size:  {d}\n", .{db.implementations.items.len});
     std.debug.print("\n", .{});
 }
