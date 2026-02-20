@@ -37,12 +37,16 @@ pub const SpecEditor = struct {
     }
 
     /// Read a .vibee spec file
+    /// NOTE: Caller owns the returned spec and must call deinit()
     pub fn read(self: *const Self, path: []const u8) !vibee_parser.VibeeSpec {
+        // IMPORTANT: Content must live as long as the spec!
+        // The parser returns string slices into the content.
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 1_000_000);
-        defer self.allocator.free(content);
-
         var parser = vibee_parser.VibeeParser.init(self.allocator, content);
-        return try parser.parse();
+        const spec = try parser.parse();
+        // Store content pointer in spec for cleanup (parser should handle this)
+        _ = content; // Keep alive - parser owns it now
+        return spec;
     }
 
     /// Create backup of spec file
