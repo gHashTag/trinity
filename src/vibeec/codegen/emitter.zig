@@ -1947,6 +1947,9 @@ pub const ZigCodeGen = struct {
     // v10.1: Advanced Signature Inference
     // ═══════════════════════════════════════════════════════════════════════════════
 
+    /// Common return type for signature inference functions
+    const SignatureInfo = struct { params: []const u8, ret: []const u8 };
+
     /// Map semantic type names to concrete Zig types
     fn mapSemanticType(type_name: []const u8) []const u8 {
         // Semantic mappings for common domain terms
@@ -2067,18 +2070,18 @@ pub const ZigCodeGen = struct {
 
     /// Parse complex multi-param given patterns
     /// Examples: "two Vec3 vectors a and b", "list of probabilities", "multiple agents"
-    fn parseMultiParamGiven(self: *Self, given: []const u8, name: []const u8) struct { params: []const u8, ret: []const u8 } {
+    fn parseMultiParamGiven(self: *Self, given: []const u8, name: []const u8) SignatureInfo {
         // 1. Check for "list of {semantic}" patterns
         if (containsCI(given, "list of")) {
             const semantic_start = std.mem.indexOf(u8, given, "list of") orelse given.len;
             const semantic = given[semantic_start + 7 ..]; // Skip "list of "
-            const mapped_type = self.mapSemanticType(semantic);
+            const mapped_type = mapSemanticType(semantic);
             return .{ .params = "items: anytype", .ret = mapped_type };
         }
 
         // 2. Check for multi-param patterns ("two X", "three Y", etc.)
-        if (self.extractCount(given)) |count| {
-            const base_type = self.extractBaseType(given);
+        if (extractCount(given)) |count| {
+            const base_type = extractBaseType(given);
 
             // Build params string
             if (count == 2) {
@@ -2147,7 +2150,7 @@ pub const ZigCodeGen = struct {
 
     /// Advanced signature inference with v10.1 complex pattern support
     /// Tries new patterns first, falls back to keyword-based matching
-    fn inferSignatureFromSpecAdvanced(self: *Self, given: []const u8, then: []const u8, name: []const u8) struct { params: []const u8, ret: []const u8 } {
+    fn inferSignatureFromSpecAdvanced(self: *Self, given: []const u8, then: []const u8, name: []const u8) SignatureInfo {
         // v10.1: Try complex pattern parsing first
         const complex_result = self.parseMultiParamGiven(given, name);
 
@@ -2203,7 +2206,7 @@ pub const ZigCodeGen = struct {
     }
 
     /// Fallback keyword-based signature inference (original logic preserved)
-    fn inferSignatureFromSpecFallback(self: *Self, given: []const u8, then: []const u8, name: []const u8) struct { params: []const u8, ret: []const u8 } {
+    fn inferSignatureFromSpecFallback(self: *Self, given: []const u8, then: []const u8, name: []const u8) SignatureInfo {
         _ = self;
 
         // Import for backward compatibility with original code
@@ -2288,7 +2291,7 @@ pub const ZigCodeGen = struct {
     }
 
     /// Legacy signature inference (original keyword-based, params only)
-    fn inferSignatureFromSpecLegacy(self: *Self, given: []const u8, name: []const u8) struct { params: []const u8, ret: []const u8 } {
+    fn inferSignatureFromSpecLegacy(self: *Self, given: []const u8, name: []const u8) SignatureInfo {
         _ = self;
         _ = name;
         // Use existing keyword-based logic from below
@@ -2308,7 +2311,7 @@ pub const ZigCodeGen = struct {
 
     /// Infer function signature from behavior given/then fields.
     /// Enhanced with types: section support and complex type parsing.
-    fn inferSignatureFromSpec(given: []const u8, then: []const u8, name: []const u8) struct { params: []const u8, ret: []const u8 } {
+    fn inferSignatureFromSpec(given: []const u8, then: []const u8, name: []const u8) SignatureInfo {
         const mem = std.mem;
 
         // --- Infer params from `given` field keywords (case-insensitive via lowercase check) ---
