@@ -229,7 +229,8 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
     defer file.close();
 
     const source = try file.readToEndAlloc(allocator, 1024 * 1024);
-    defer allocator.free(source);
+    // Note: source is now owned by the spec via spec.source_content
+    // Don't free here - spec.deinit() will handle it
 
     var parser = vibee_parser.VibeeParser.init(allocator, source);
     var spec = try parser.parse();
