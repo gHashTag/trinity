@@ -1419,7 +1419,7 @@ pub const ZigCodeGen = struct {
                 return;
             } else {
                 // Body only — wrap in inferred signature
-                const sig = inferSignatureFromSpec(b.given, b.then, b.name);
+                const sig = self.inferSignatureFromSpecAdvanced(b.given, b.then, b.name);
                 try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
                 self.builder.incIndent();
                 try self.builder.writeLine(b.implementation);
