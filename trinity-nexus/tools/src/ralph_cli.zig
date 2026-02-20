@@ -373,8 +373,8 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
                     mock_peers,
                     watch.dht_stats.triples_stored,
                 );
-                // Update with mock cycle data
-                system_stats.SystemStats.updateWithCycle(&sys_stats, mock_tick, 7);
+                // Update with mock cycle data (method of collector)
+                system_stats.SystemStatsCollector.updateWithCycle(&sys_stats, mock_tick, 7);
 
                 // Process health checks and send RICH alerts with system information
                 try alerts.processAndAlertRich(
