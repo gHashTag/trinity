@@ -20,7 +20,7 @@ pub const RalphAgent = struct {
 
     /// Initialize a new Ralph agent
     pub fn init(allocator: Allocator, config: RalphConfig) !RalphAgent {
-        const session = try Session.init(allocator);
+        var session = try Session.init(allocator);
         errdefer session.deinit(allocator);
 
         const memory = if (config.enable_memory)
@@ -103,13 +103,7 @@ pub const RalphAgent = struct {
 
         // Consult memory if enabled
         if (self.memory) |*mem| {
-            const consult_result = memory_mod.consult(mem, self.allocator, task.description) catch {
-                self.session.history_consulted = false;
-                self.session.patterns_found = 0;
-                null;
-            };
-
-            if (consult_result) |cr| {
+            if (memory_mod.consult(mem.*, self.allocator, task.description)) |cr| {
                 defer {
                     self.allocator.free(cr.keywords);
                     for (cr.success) |*s| {
@@ -126,6 +120,9 @@ pub const RalphAgent = struct {
 
                 self.session.history_consulted = true;
                 self.session.patterns_found = cr.success.len + cr.regression.len;
+            } else |_| {
+                self.session.history_consulted = false;
+                self.session.patterns_found = 0;
             }
         }
 
@@ -175,8 +172,9 @@ pub const RalphAgent = struct {
         };
 
         if (!git_result.success) {
-            cycle_result.error_message = try std.fmt.allocPrint(self.allocator, "Git gates failed: {s}",
-                git_result.failed_gate orelse "unknown");
+            cycle_result.error_message = try std.fmt.allocPrint(self.allocator, "Git gates failed: {s}", .{
+                git_result.failed_gate orelse "unknown",
+            });
             try self.handleCycleError(.git, cycle_result.error_message);
             return cycle_result;
         }

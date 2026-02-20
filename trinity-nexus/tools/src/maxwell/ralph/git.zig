@@ -93,7 +93,7 @@ pub fn commit(allocator: Allocator, message: []const u8) !void {
 
     // Stage all changes
     {
-        const add_result = try process.git(allocator, &[_][]const u8{"add", "-A"});
+        var add_result = try process.git(allocator, &[_][]const u8{"add", "-A"});
         defer add_result.deinit(allocator);
 
         if (add_result.exit_code != 0) {
@@ -103,7 +103,7 @@ pub fn commit(allocator: Allocator, message: []const u8) !void {
 
     // Commit
     {
-        const commit_result = try process.git(allocator, &[_][]const u8{ "commit", "-m", message });
+        var commit_result = try process.git(allocator, &[_][]const u8{ "commit", "-m", message });
         defer commit_result.deinit(allocator);
 
         if (commit_result.exit_code != 0) {
