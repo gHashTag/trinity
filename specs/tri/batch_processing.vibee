@@ -36,13 +36,21 @@ behaviors:
     when: New chat completion request received
     then: Add to request queue, return immediately
     implementation: |
-                    pub fn enqueue_request(self: *@This(), req: BatchRequest) !void {
-                        // Add to request queue with timestamp
-                        _ = self;
-                        _ = req;
-                        // In real implementation: queue.append(req) with mutex lock
-                        // For now: simple stub that compiles
-                    }
+                                            pub fn enqueue_request(self: *@This(), req: BatchRequest) !void {
+                                                // Add to request queue with timestamp
+                                                _ = self;
+                                                _ = req;
+                                                // In real implementation: queue.append(req) with mutex lock
+                                                // For now: simple stub that compiles
+                                            }
+                                    
+                                    
+                              
+                              
+                        
+                        
+                  
+                  
             
             
       
@@ -53,12 +61,20 @@ behaviors:
     when: Batch timeout or max_batch_size reached
     then: Return array of BatchRequest up to max_batch_size
     implementation: |
-                    pub fn dequeue_batch(self: *@This()) []BatchRequest {
-                        // Return batch of up to max_batch_size requests
-                        _ = self;
-                        // In real implementation: return queue items[0..max_batch_size]
-                        return &[_]BatchRequest{};
-                    }
+                                            pub fn dequeue_batch(self: *@This()) []BatchRequest {
+                                                // Return batch of up to max_batch_size requests
+                                                _ = self;
+                                                // In real implementation: return queue items[0..max_batch_size]
+                                                return &[_]BatchRequest{};
+                                            }
+                                    
+                                    
+                              
+                              
+                        
+                        
+                  
+                  
             
             
       
@@ -74,11 +90,19 @@ behaviors:
     when: Generation complete
     then: Send HTTP response to client
     implementation: |
-                    pub fn send_response(resp: BatchResponse) !void {
-                        // Send HTTP response with JSON body
-                        _ = resp;
-                        // In real implementation: write to connection stream
-                    }
+                                            pub fn send_response(resp: BatchResponse) !void {
+                                                // Send HTTP response with JSON body
+                                                _ = resp;
+                                                // In real implementation: write to connection stream
+                                            }
+                                    
+                                    
+                              
+                              
+                        
+                        
+                  
+                  
             
             
       
@@ -94,12 +118,20 @@ behaviors:
     when: Configuration update requested
     then: Update batching parameters
     implementation: |
-                    pub fn configure_batching(self: *@This(), config: BatchConfig) void {
-                        // Update batching parameters
-                        _ = config;
-                        self.max_batch_size = 4; // Default
-                        // In real implementation: self.config = config
-                    }
+                                            pub fn configure_batching(self: *@This(), config: BatchConfig) void {
+                                                // Update batching parameters
+                                                _ = config;
+                                                self.max_batch_size = 4; // Default
+                                                // In real implementation: self.config = config
+                                            }
+                                    
+                              
+                              
+                        
+                        
+                  
+                  
+            
             
       
       
