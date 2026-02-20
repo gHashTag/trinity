@@ -289,7 +289,7 @@ test "SpecImprover: findStubBehaviors" {
 }
 
 test "SpecImprover: generateImplementation" {
-    const improver = try SpecImprover.init(std.testing.allocator);
+    var improver = try SpecImprover.init(std.testing.allocator);
     defer improver.deinit();
 
     const behavior = vibee_parser.Behavior{
