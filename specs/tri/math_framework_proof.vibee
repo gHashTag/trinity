@@ -1,369 +1,283 @@
-# ============================================================================
-# VSA Mathematical Framework — Proofs & Invariances
-# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
-# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
-# ============================================================================
-
 name: math_framework_proof
 version: "1.0.0"
 language: zig
-module: vsa_math_proofs
-
-description: |
-  Mathematical proofs for VSA (Vector Symbolic Architecture) ternary operations.
-  Proves key invariances: bind/unbind inverse, bundle convergence, similarity
-  bounds, and permutation cycles. All proofs operate on {-1, 0, +1} ternary
-  vectors using element-wise multiplication (bind) and majority voting (bundle).
-
-imports:
-  - name: vsa
-    path: "../../src/vsa.zig"
-
-constants:
-  PROOF_DIM: 1024
-  PROOF_TRIALS: 100
-  SIMILARITY_EPSILON: 0.05
-  CONVERGENCE_THRESHOLD: 0.99
-  BUNDLE_MAX_N: 1000
 
 types:
   ProofResult:
-    description: "Result of a mathematical proof verification"
     fields:
       name: String
       passed: Bool
       expected: Float
       actual: Float
       epsilon: Float
-
   ProofSuite:
-    description: "Collection of proof results"
     fields:
       total: Int
       passed: Int
       failed: Int
-
   SimilarityBounds:
-    description: "Theoretical similarity bounds for VSA operations"
     fields:
       lower: Float
       upper: Float
       expected_mean: Float
 
 behaviors:
-  # --- Core Proofs ---
   - name: prove_bind_inverse
     given: Two random ternary vectors A, B of dimension D
     when: Computing unbind(bind(A, B), A)
     then: Result equals B exactly (similarity = 1.0)
     implementation: |
-      // Proof: bind(A,B) = A*B element-wise
-      // unbind(A*B, A) = (A*B)*A = A*A*B = I*B = B
-      // Because A[i]*A[i] = 1 for all non-zero trits
-      const vsa = @import("vsa");
-      const dim = 1024;
-      var prng = std.Random.DefaultPrng.init(42);
-      var random = prng.random();
-
-      var a = vsa.HybridBigInt.zero();
-      a.mode = .unpacked_mode;
-      a.dirty = true;
-      a.trit_len = dim;
-      var b = vsa.HybridBigInt.zero();
-      b.mode = .unpacked_mode;
-      b.dirty = true;
-      b.trit_len = dim;
-
-      // Fill with random trits {-1, 0, +1}
-      for (0..dim) |i| {
-          const r = random.intRangeAtMost(i8, -1, 1);
-          a.unpacked_cache[i] = r;
-          const r2 = random.intRangeAtMost(i8, -1, 1);
-          b.unpacked_cache[i] = r2;
-      }
-
-      var bound = vsa.bind(&a, &b);
-      var recovered = vsa.unbind(&bound, &a);
-
-      const sim = vsa.cosineSimilarity(&recovered, &b);
-      try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.001);
-
-    test_cases:
-      - name: bind_inverse_exact
-        input: "random vectors dim=1024"
-        expected: "similarity = 1.0"
-        tolerance: 0.001
+                  // Proof: bind(A,B) = A*B element-wise
+                  // unbind(A*B, A) = (A*B)*A = A*A*B = I*B = B
+                  // Because A[i]*A[i] = 1 for all non-zero trits
+                  const vsa = @import("vsa");
+                  const dim = 1024;
+                  var prng = std.Random.DefaultPrng.init(42);
+                  var random = prng.random();
+            
+                  var a = vsa.HybridBigInt.zero();
+                  a.mode = .unpacked_mode;
+                  a.dirty = true;
+                  a.trit_len = dim;
+                  var b = vsa.HybridBigInt.zero();
+                  b.mode = .unpacked_mode;
+                  b.dirty = true;
+                  b.trit_len = dim;
+            
+                  // Fill with random trits {-1, 0, +1}
+                  for (0..dim) |i| {
+                      const r = random.intRangeAtMost(i8, -1, 1);
+                      a.unpacked_cache[i] = r;
+                      const r2 = random.intRangeAtMost(i8, -1, 1);
+                      b.unpacked_cache[i] = r2;
+                  }
+            
+                  var bound = vsa.bind(&a, &b);
+                  var recovered = vsa.unbind(&bound, &a);
+            
+                  const sim = vsa.cosineSimilarity(&recovered, &b);
+                  try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.001);
+            
+            
+      
+      
 
   - name: prove_bind_commutative
     given: Two random ternary vectors A, B
     when: Computing bind(A,B) and bind(B,A)
     then: Results are identical (commutativity)
     implementation: |
-      const vsa = @import("vsa");
-      const dim = 1024;
-      var prng = std.Random.DefaultPrng.init(123);
-      var random = prng.random();
-
-      var a = vsa.HybridBigInt.zero();
-      a.mode = .unpacked_mode;
-      a.dirty = true;
-      a.trit_len = dim;
-      var b = vsa.HybridBigInt.zero();
-      b.mode = .unpacked_mode;
-      b.dirty = true;
-      b.trit_len = dim;
-
-      for (0..dim) |i| {
-          a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-          b.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-      }
-
-      var ab = vsa.bind(&a, &b);
-      var ba = vsa.bind(&b, &a);
-
-      const sim = vsa.cosineSimilarity(&ab, &ba);
-      try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.001);
-
-    test_cases:
-      - name: bind_commutative
-        input: "random vectors"
-        expected: "bind(A,B) == bind(B,A)"
+                  const vsa = @import("vsa");
+                  const dim = 1024;
+                  var prng = std.Random.DefaultPrng.init(123);
+                  var random = prng.random();
+            
+                  var a = vsa.HybridBigInt.zero();
+                  a.mode = .unpacked_mode;
+                  a.dirty = true;
+                  a.trit_len = dim;
+                  var b = vsa.HybridBigInt.zero();
+                  b.mode = .unpacked_mode;
+                  b.dirty = true;
+                  b.trit_len = dim;
+            
+                  for (0..dim) |i| {
+                      a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                      b.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                  }
+            
+                  var ab = vsa.bind(&a, &b);
+                  var ba = vsa.bind(&b, &a);
+            
+                  const sim = vsa.cosineSimilarity(&ab, &ba);
+                  try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.001);
+            
+            
+      
+      
 
   - name: prove_bind_self_identity
     given: A random ternary vector A
     when: Computing bind(A, A)
     then: Result has all non-zero trits equal to +1 (identity-like)
     implementation: |
-      const vsa = @import("vsa");
-      const dim = 1024;
-      var prng = std.Random.DefaultPrng.init(777);
-      var random = prng.random();
-
-      var a = vsa.HybridBigInt.zero();
-      a.mode = .unpacked_mode;
-      a.dirty = true;
-      a.trit_len = dim;
-
-      for (0..dim) |i| {
-          a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-      }
-
-      var self_bind = vsa.bind(&a, &a);
-
-      // Verify: a[i]*a[i] = 1 for non-zero, 0 for zero
-      for (0..dim) |i| {
-          const expected: i8 = if (a.unpacked_cache[i] == 0) 0 else 1;
-          try std.testing.expectEqual(expected, self_bind.unpacked_cache[i]);
-      }
-
-    test_cases:
-      - name: self_bind_identity
-        input: "vector A"
-        expected: "bind(A,A)[i] = 1 if A[i]!=0, else 0"
+                  const vsa = @import("vsa");
+                  const dim = 1024;
+                  var prng = std.Random.DefaultPrng.init(777);
+                  var random = prng.random();
+            
+                  var a = vsa.HybridBigInt.zero();
+                  a.mode = .unpacked_mode;
+                  a.dirty = true;
+                  a.trit_len = dim;
+            
+                  for (0..dim) |i| {
+                      a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                  }
+            
+                  var self_bind = vsa.bind(&a, &a);
+            
+                  // Verify: a[i]*a[i] = 1 for non-zero, 0 for zero
+                  for (0..dim) |i| {
+                      const expected: i8 = if (a.unpacked_cache[i] == 0) 0 else 1;
+                      try std.testing.expectEqual(expected, self_bind.unpacked_cache[i]);
+                  }
+            
+            
+      
+      
 
   - name: prove_bundle_convergence
     given: N random ternary vectors
     when: Computing bundle of all N vectors
     then: Bundle similarity to each input converges to 1/sqrt(N)
     implementation: |
-      // For large N, the expected cosine similarity of the bundle
-      // with any single input is approximately 1/sqrt(N)
-      const vsa = @import("vsa");
-      const dim = 1024;
-      var prng = std.Random.DefaultPrng.init(42);
-      var random = prng.random();
-
-      // Test with N=3 (bundle3 available)
-      var a = vsa.HybridBigInt.zero();
-      a.mode = .unpacked_mode;
-      a.dirty = true;
-      a.trit_len = dim;
-      var b = vsa.HybridBigInt.zero();
-      b.mode = .unpacked_mode;
-      b.dirty = true;
-      b.trit_len = dim;
-      var c = vsa.HybridBigInt.zero();
-      c.mode = .unpacked_mode;
-      c.dirty = true;
-      c.trit_len = dim;
-
-      for (0..dim) |i| {
-          a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-          b.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-          c.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-      }
-
-      var bundled = vsa.bundle3(&a, &b, &c);
-
-      // Each input should have positive similarity with the bundle
-      const sim_a = vsa.cosineSimilarity(&bundled, &a);
-      const sim_b = vsa.cosineSimilarity(&bundled, &b);
-      const sim_c = vsa.cosineSimilarity(&bundled, &c);
-
-      // For 3-way bundle, expected similarity ~1/sqrt(3) ~ 0.577
-      // Allow generous tolerance for ternary quantization effects
-      try std.testing.expect(sim_a > 0.2);
-      try std.testing.expect(sim_b > 0.2);
-      try std.testing.expect(sim_c > 0.2);
-
-    test_cases:
-      - name: bundle3_positive_similarity
-        input: "3 random vectors"
-        expected: "similarity > 0.2 for each"
-        tolerance: 0.1
+                  // For large N, the expected cosine similarity of the bundle
+                  // with any single input is approximately 1/sqrt(N)
+                  const vsa = @import("vsa");
+                  const dim = 1024;
+                  var prng = std.Random.DefaultPrng.init(42);
+                  var random = prng.random();
+            
+                  // Test with N=3 (bundle3 available)
+                  var a = vsa.HybridBigInt.zero();
+                  a.mode = .unpacked_mode;
+                  a.dirty = true;
+                  a.trit_len = dim;
+                  var b = vsa.HybridBigInt.zero();
+                  b.mode = .unpacked_mode;
+                  b.dirty = true;
+                  b.trit_len = dim;
+                  var c = vsa.HybridBigInt.zero();
+                  c.mode = .unpacked_mode;
+                  c.dirty = true;
+                  c.trit_len = dim;
+            
+                  for (0..dim) |i| {
+                      a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                      b.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                      c.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                  }
+            
+                  var bundled = vsa.bundle3(&a, &b, &c);
+            
+                  // Each input should have positive similarity with the bundle
+                  const sim_a = vsa.cosineSimilarity(&bundled, &a);
+                  const sim_b = vsa.cosineSimilarity(&bundled, &b);
+                  const sim_c = vsa.cosineSimilarity(&bundled, &c);
+            
+                  // For 3-way bundle, expected similarity ~1/sqrt(3) ~ 0.577
+                  // Allow generous tolerance for ternary quantization effects
+                  try std.testing.expect(sim_a > 0.2);
+                  try std.testing.expect(sim_b > 0.2);
+                  try std.testing.expect(sim_c > 0.2);
+            
+            
+      
+      
 
   - name: prove_orthogonality
     given: Two independently random ternary vectors
     when: Computing their cosine similarity
     then: Similarity is near zero (orthogonal in expectation)
     implementation: |
-      const vsa = @import("vsa");
-      const dim = 1024;
-      var prng = std.Random.DefaultPrng.init(99);
-      var random = prng.random();
-
-      var total_sim: f64 = 0;
-      const trials = 50;
-
-      for (0..trials) |_| {
-          var a = vsa.HybridBigInt.zero();
-          a.mode = .unpacked_mode;
-          a.dirty = true;
-          a.trit_len = dim;
-          var b = vsa.HybridBigInt.zero();
-          b.mode = .unpacked_mode;
-          b.dirty = true;
-          b.trit_len = dim;
-
-          for (0..dim) |i| {
-              a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-              b.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-          }
-
-          const sim = vsa.cosineSimilarity(&a, &b);
-          total_sim += @abs(sim);
-      }
-
-      const avg_sim = total_sim / @as(f64, trials);
-      // Average absolute similarity should be small (< 0.1 for dim=1024)
-      try std.testing.expect(avg_sim < 0.15);
-
-    test_cases:
-      - name: random_orthogonality
-        input: "50 random pairs dim=1024"
-        expected: "avg |similarity| < 0.15"
-        tolerance: 0.05
+                  const vsa = @import("vsa");
+                  const dim = 1024;
+                  var prng = std.Random.DefaultPrng.init(99);
+                  var random = prng.random();
+            
+                  var total_sim: f64 = 0;
+                  const trials = 50;
+            
+                  for (0..trials) |_| {
+                      var a = vsa.HybridBigInt.zero();
+                      a.mode = .unpacked_mode;
+                      a.dirty = true;
+                      a.trit_len = dim;
+                      var b = vsa.HybridBigInt.zero();
+                      b.mode = .unpacked_mode;
+                      b.dirty = true;
+                      b.trit_len = dim;
+            
+                      for (0..dim) |i| {
+                          a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                          b.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                      }
+            
+                      const sim = vsa.cosineSimilarity(&a, &b);
+                      total_sim += @abs(sim);
+                  }
+            
+                  const avg_sim = total_sim / @as(f64, trials);
+                  // Average absolute similarity should be small (< 0.1 for dim=1024)
+                  try std.testing.expect(avg_sim < 0.15);
+            
+            
+      
+      
 
   - name: prove_permute_cycle
     given: A ternary vector and permutation count K
     when: Applying permute K times then permute D-K times
     then: Result equals original (cyclic group property)
     implementation: |
-      const vsa = @import("vsa");
-      const dim = 256;
-      var prng = std.Random.DefaultPrng.init(55);
-      var random = prng.random();
-
-      var a = vsa.HybridBigInt.zero();
-      a.mode = .unpacked_mode;
-      a.dirty = true;
-      a.trit_len = dim;
-
-      for (0..dim) |i| {
-          a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-      }
-
-      // Permute by K, then by (dim - K) should give back original
-      const k = 17;
-      var p1 = vsa.permute(&a, k);
-      var p2 = vsa.permute(&p1, dim - k);
-
-      const sim = vsa.cosineSimilarity(&p2, &a);
-      try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.001);
-
-    test_cases:
-      - name: permute_cycle
-        input: "vector A, K=17, dim=256"
-        expected: "permute(permute(A, K), D-K) == A"
+                  const vsa = @import("vsa");
+                  const dim = 256;
+                  var prng = std.Random.DefaultPrng.init(55);
+                  var random = prng.random();
+            
+                  var a = vsa.HybridBigInt.zero();
+                  a.mode = .unpacked_mode;
+                  a.dirty = true;
+                  a.trit_len = dim;
+            
+                  for (0..dim) |i| {
+                      a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                  }
+            
+                  // Permute by K, then by (dim - K) should give back original
+                  const k = 17;
+                  var p1 = vsa.permute(&a, k);
+                  var p2 = vsa.permute(&p1, dim - k);
+            
+                  const sim = vsa.cosineSimilarity(&p2, &a);
+                  try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.001);
+            
+            
+      
+      
 
   - name: prove_similarity_bounds
     given: Ternary vectors in {-1, 0, +1}^D
     when: Computing cosine similarity
     then: Result is bounded in [-1, +1]
     implementation: |
-      const vsa = @import("vsa");
-      const dim = 512;
-      var prng = std.Random.DefaultPrng.init(314);
-      var random = prng.random();
+                  const vsa = @import("vsa");
+                  const dim = 512;
+                  var prng = std.Random.DefaultPrng.init(314);
+                  var random = prng.random();
+            
+                  for (0..100) |_| {
+                      var a = vsa.HybridBigInt.zero();
+                      a.mode = .unpacked_mode;
+                      a.dirty = true;
+                      a.trit_len = dim;
+                      var b = vsa.HybridBigInt.zero();
+                      b.mode = .unpacked_mode;
+                      b.dirty = true;
+                      b.trit_len = dim;
+            
+                      for (0..dim) |i| {
+                          a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                          b.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+                      }
+            
+                      const sim = vsa.cosineSimilarity(&a, &b);
+                      try std.testing.expect(sim >= -1.0 - 0.001);
+                      try std.testing.expect(sim <= 1.0 + 0.001);
+                  }
+            
+            
+      
+      
 
-      for (0..100) |_| {
-          var a = vsa.HybridBigInt.zero();
-          a.mode = .unpacked_mode;
-          a.dirty = true;
-          a.trit_len = dim;
-          var b = vsa.HybridBigInt.zero();
-          b.mode = .unpacked_mode;
-          b.dirty = true;
-          b.trit_len = dim;
-
-          for (0..dim) |i| {
-              a.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-              b.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
-          }
-
-          const sim = vsa.cosineSimilarity(&a, &b);
-          try std.testing.expect(sim >= -1.0 - 0.001);
-          try std.testing.expect(sim <= 1.0 + 0.001);
-      }
-
-    test_cases:
-      - name: similarity_bounds
-        input: "100 random pairs"
-        expected: "-1 <= sim <= 1"
-
-algorithms:
-  bind_proof:
-    description: "Algebraic proof of bind/unbind invariance"
-    complexity: "O(D)"
-    pattern: "element-wise"
-    steps:
-      - "bind(A, B)[i] = A[i] * B[i] for ternary multiplication"
-      - "unbind(bind(A,B), A)[i] = (A[i]*B[i]) * A[i] = A[i]^2 * B[i]"
-      - "For ternary: (-1)^2 = 1, 0^2 = 0, 1^2 = 1"
-      - "Therefore unbind(bind(A,B), A)[i] = B[i] for non-zero A[i]"
-      - "QED: unbind(bind(A,B), A) = B (modulo zero positions)"
-
-  bundle_convergence_proof:
-    description: "Statistical proof of bundle majority voting convergence"
-    complexity: "O(N*D)"
-    pattern: "majority-vote"
-    steps:
-      - "bundle(v1..vN)[i] = sign(sum(v1[i]..vN[i]))"
-      - "For random vectors, each trit is iid Uniform{-1,0,+1}"
-      - "P(correct majority) increases with N for non-zero trits"
-      - "Expected similarity of bundle with any input ~ 1/sqrt(N)"
-      - "At N=1000, recall >= 99.5% via CLT"
-
-  trinity_identity_proof:
-    description: "Algebraic proof of phi^2 + 1/phi^2 = 3"
-    complexity: "O(1)"
-    pattern: "algebraic"
-    steps:
-      - "phi = (1 + sqrt(5)) / 2"
-      - "phi^2 = phi + 1 = (3 + sqrt(5)) / 2"
-      - "1/phi = phi - 1 = (sqrt(5) - 1) / 2"
-      - "1/phi^2 = (3 - sqrt(5)) / 2"
-      - "phi^2 + 1/phi^2 = (3 + sqrt(5))/2 + (3 - sqrt(5))/2 = 3"
-      - "QED: phi^2 + 1/phi^2 = 3 = TRINITY"
-
-  information_density_proof:
-    description: "Proof of ternary information density advantage"
-    complexity: "O(1)"
-    pattern: "algebraic"
-    steps:
-      - "Binary digit: 2 states -> log2(2) = 1 bit"
-      - "Ternary digit: 3 states -> log2(3) = 1.585 bits"
-      - "Ratio: 1.585 / 1 = 58.5% more info per digit"
-      - "Memory: packed 1.58 bits/trit vs 32 bits/float32"
-      - "Compression: 32 / 1.58 = 20.25x savings"
-      - "QED: ternary provides optimal information-per-wire"

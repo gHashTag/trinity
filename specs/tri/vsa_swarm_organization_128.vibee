@@ -1,20 +1,6 @@
-# ═══════════════════════════════════════════════════════════════
-# VIBEE v10.0.0 — TRINITY AUTONOMOUS ORGANIZATION
-# $TRI Economy + Persistent State + Multi-Tenant Swarm
-# ═══════════════════════════════════════════════════════════════
-
 name: vsa_swarm_organization_128
 version: "10.0.0"
 language: zig
-module: vsa_swarm_organization
-
-description: |
-  128-agent autonomous swarm with $TRI economic layer.
-  Agents earn $TRI for tasks, stake for governance, and optimize DePIN yields.
-
-# ═══════════════════════════════════════════════════════════════
-# TYPES
-# ═══════════════════════════════════════════════════════════════
 
 types:
   Wallet:
@@ -24,7 +10,6 @@ types:
       staked_tri: Float
       total_earned: Float
       total_spent: Float
-
   Task:
     fields:
       id: String
@@ -36,27 +21,8 @@ types:
       assigned_agent: Option<String>
       created_at: Timestamp
       completed_at: Option<Timestamp>
-
   TaskType:
-    values:
-      - github_pr
-      - arxiv_analysis
-      - gguf_quantize
-      - depin_stake
-      - cross_chain_bridge
-      - model_training
-      - inference_optimization
-      - data_processing
-
   TaskStatus:
-    values:
-      - pending
-      - assigned
-      - in_progress
-      - completed
-      - failed
-      - paid
-
   TRIEvent:
     fields:
       event_id: String
@@ -67,18 +33,7 @@ types:
       timestamp: Timestamp
       task_id: Option<String>
       metadata: String
-
   EventType:
-    values:
-      - task_earned
-      - task_paid
-      - stake_deposit
-      - stake_withdraw
-      - resource_purchase
-      - governance_vote
-      - agent_hire
-      - agent_termination
-
   AgentInfo:
     fields:
       agent_id: String
@@ -89,14 +44,7 @@ types:
       tasks_completed: Int
       total_earned_tri: Float
       status: AgentStatus
-
   AgentStatus:
-    values:
-      - idle
-      - busy
-      - staked
-      - maintenance
-
   DePINPosition:
     fields:
       protocol: String
@@ -105,7 +53,6 @@ types:
       staked_at: Timestamp
       auto_compound: Bool
       min_apy_threshold: Float
-
   SwarmMetrics:
     fields:
       online_agents: Int
@@ -115,7 +62,6 @@ types:
       consensus_agreement: Float
       tasks_per_second: Float
       average_task_duration: Float
-
   GovernanceProposal:
     fields:
       proposal_id: String
@@ -126,17 +72,7 @@ types:
       quorum_required: Float
       expires_at: Timestamp
       status: ProposalStatus
-
   ProposalStatus:
-    values:
-      - active
-      - passed
-      - rejected
-      - executed
-
-# ═══════════════════════════════════════════════════════════════
-# $TRI ECONOMIC BEHAVIORS
-# ═══════════════════════════════════════════════════════════════
 
 behaviors:
   - name: earn_task_reward
@@ -189,11 +125,6 @@ behaviors:
     when: contract ends
     then: final payout
 
-# ═══════════════════════════════════════════════════════════════
-# MARKETPLACE BEHAVIORS (v10 Phase 3)
-# ═══════════════════════════════════════════════════════════════
-
-behaviors:
   - name: create_marketplace_listing
     given: agent and capabilities
     when: list services on marketplace
@@ -219,11 +150,6 @@ behaviors:
     when: tenant declines
     then: offer rejected with reason
 
-# ═══════════════════════════════════════════════════════════════
-# MULTI-TENANT BEHAVIORS (v10 Phase 3)
-# ═══════════════════════════════════════════════════════════════
-
-behaviors:
   - name: tenant_resource_limit
     given: tenant and resource request
     when: check quota
@@ -234,11 +160,6 @@ behaviors:
     when: generate invoice
     then: invoice with line items and total
 
-# ═══════════════════════════════════════════════════════════════
-# PERSISTENT STATE BEHAVIORS
-# ═══════════════════════════════════════════════════════════════
-
-behaviors:
   - name: save_hypervector
     given: hypervector and wallet
     when: persist state
@@ -269,11 +190,6 @@ behaviors:
     when: consistency check
     then: verify and update
 
-# ═══════════════════════════════════════════════════════════════
-# TENSOR / INFERENCE BEHAVIORS (from new modules)
-# ═══════════════════════════════════════════════════════════════
-
-behaviors:
   - name: tensor_create
     given: model weights and input shape
     when: create tensor for inference
@@ -294,11 +210,6 @@ behaviors:
     when: sample next token for generation
     then: sampled token ID
 
-# ═══════════════════════════════════════════════════════════════
-# SWARM COORDINATION BEHAVIORS
-# ═══════════════════════════════════════════════════════════════
-
-behaviors:
   - name: init_swarm
     given: allocator and config
     when: initialize swarm
@@ -324,11 +235,6 @@ behaviors:
     when: multi-tenant
     then: isolated execution
 
-# ═══════════════════════════════════════════════════════════════
-# OBSERVABILITY BEHAVIORS
-# ═══════════════════════════════════════════════════════════════
-
-behaviors:
   - name: emit_span
     given: operation and parent
     when: operation starts
@@ -349,117 +255,3 @@ behaviors:
     when: health check
     then: return status
 
-# ═══════════════════════════════════════════════════════════════
-# TEST CASES
-# ═══════════════════════════════════════════════════════════════
-
-test_cases:
-  - name: earnTaskReward_basic
-    input:
-      difficulty: 0.8
-      quality: 0.95
-      base_rate: 10.0
-    expected:
-      reward: 76.0  # 0.8 * 0.95 * 100 (adjusted base)
-    tolerance: 0.01
-
-  - name: stakeTRIForPriority_priority
-    input:
-      wallet_balance: 1000.0
-      stake_amount: 100.0
-      current_priority: 5
-    expected:
-      new_priority: 15  # Increased by stake_weight
-
-  - name: depinStakingOptimizer_rebalance
-    input:
-      current_apy: 5.0
-      threshold: 8.0
-      alternative_apy: 12.0
-    expected:
-      should_rebalance: true
-      new_protocol: "high_apy_protocol"
-
-  - name: tensorCreate_shape
-    input:
-      weights: "[1.0, 2.0, 3.0, 4.0]"
-      shape: "[2, 2]"
-    expected:
-      tensor_shape: "[2, 2]"
-      tensor_size: 4
-
-  - name: forwardPass_output
-    input:
-      input_tensor: "[1.0, 2.0, 3.0, 4.0]"
-      weights: "[-1, 0, 1, -1]"
-    expected:
-      output_length: 4
-
-# ═══════════════════════════════════════════════════════════════
-# OBSERVABILITY CONFIG
-# ═══════════════════════════════════════════════════════════════
-
-observability:
-  metrics:
-    - name: tri_wallet_balance
-      type: gauge
-      description: Current $TRI balance per wallet
-      labels: [wallet_address, tenant_id]
-
-    - name: tri_earned_total
-      type: counter
-      description: Total $TRI earned from tasks
-      labels: [agent_id, task_type]
-
-    - name: tri_staked_total
-      type: gauge
-      description: Total $TRI staked for governance
-      labels: [wallet_address]
-
-    - name: depin_apy_current
-      type: gauge
-      description: Current DePIN position APY
-      labels: [protocol]
-
-    - name: swarm_tasks_completed
-      type: counter
-      description: Total tasks completed by swarm
-      labels: [task_type, status]
-
-    - name: swarm_consensus_agreement
-      type: gauge
-      description: Consensus agreement percentage
-      labels: [proposal_id]
-
-    - name: agent_hourly_rate
-      type: gauge
-      description: Agent hourly rate in $TRI
-      labels: [agent_id, capability]
-
-  traces:
-    - name: task_execution
-      attributes: [task_id, task_type, agent_id, reward_tri]
-      events: [assigned, started, completed, paid]
-
-    - name: tri_transaction
-      attributes: [from_wallet, to_wallet, amount, event_type]
-      events: [initiated, confirmed, failed]
-
-  dashboard:
-    title: "VIBEE v10 — $TRI Economy"
-    refresh: 5s
-    panels:
-      - title: "$TRI Total Supply"
-        metrics: [tri_wallet_balance]
-
-      - title: "Task Earnings Rate"
-        metrics: [tri_earned_total]
-
-      - title: "Staking Distribution"
-        metrics: [tri_staked_total]
-
-      - title: "DePIN APY Comparison"
-        metrics: [depin_apy_current]
-
-      - title: "Agent Earnings Leaderboard"
-        metrics: [tri_earned_total, agent_hourly_rate]

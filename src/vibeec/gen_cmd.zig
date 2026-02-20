@@ -15,6 +15,9 @@ const golden_db = @import("golden_db.zig");
 const reasoning_engine = @import("reasoning_engine.zig");
 const spec_improver = @import("spec_improver.zig");
 
+// V10.3: Self-Feeding Loop + Rewards
+const vibe_rewards = @import("vibe_rewards.zig");
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -143,6 +146,15 @@ pub fn main() !void {
 
         const dir = args[2];
         try importSeeds(allocator, dir);
+    } else if (std.mem.eql(u8, command, "show-rewards")) {
+        // V10.3: Show reward system info
+        var agent_id: []const u8 = "vibee-v10.3";
+        if (args.len > 2) {
+            if (std.mem.eql(u8, args[2], "--agent") and args.len > 3) {
+                agent_id = args[3];
+            }
+        }
+        try showRewards(allocator, agent_id);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {
@@ -165,6 +177,7 @@ fn printUsage() void {
         \\    --dry-run                                 Show what would be filled without writing
         \\    --min-confidence F                        Minimum confidence threshold (default: 0.7)
         \\  vibeec import-seeds <dir>                   Import seeds from generated/*.zig files
+        \\  vibeec show-rewards [--agent <id>]          Show $TRI reward info (V10.3)
         \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
         \\    --prompt "text"                           Initial prompt
         \\    --max-tokens N                            Max tokens to generate (default: 100)
@@ -379,5 +392,46 @@ fn importSeeds(allocator: std.mem.Allocator, dir: []const u8) !void {
     std.debug.print("\n  Results:\n", .{});
     std.debug.print("    Seeds imported: {d}\n", .{count});
     std.debug.print("    Total DB size:  {d}\n", .{db.implementations.items.len});
+    std.debug.print("\n", .{});
+}
+
+fn showRewards(allocator: std.mem.Allocator, agent_id: []const u8) !void {
+    _ = allocator;
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.3: $TRI Reward System                           ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Agent: {s}\n\n", .{agent_id});
+
+    // Show reward tiers
+    std.debug.print("  Reward Tiers:\n", .{});
+    std.debug.print("    Platinum (≥0.95): {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.95, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(1.0, 8),
+    });
+    std.debug.print("    Gold (≥0.90):      {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.90, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.94, 8),
+    });
+    std.debug.print("    Silver (≥0.85):    {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.85, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.89, 8),
+    });
+    std.debug.print("    Bronze (≥0.75):    {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.75, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.84, 8),
+    });
+    std.debug.print("    Unranked (<0.75):  0 - {d:.1} $TRI\n\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.74, 5),
+    });
+
+    // Show staking bonuses
+    std.debug.print("  Staking Bonuses (priority multiplier):\n", .{});
+    std.debug.print("    0 $TRI:     1.0x (normal)\n", .{});
+    std.debug.print("    100 $TRI:   1.5x\n", .{});
+    std.debug.print("    500+ $TRI:  2.0x\n\n", .{});
+
+    // Show daily cap
+    std.debug.print("  Daily Earnings Cap: {d:.0} $TRI\n", .{vibe_rewards.VibeRewardSystem.DAILY_CAP});
     std.debug.print("\n", .{});
 }
