@@ -191,13 +191,13 @@ pub const GoldenDB = struct {
         var added: usize = 0;
 
         // Open directory
-        var dir = std.fs.cwd().openIterableDir(gen_dir, .{}) catch |err| {
+        var dir = std.fs.cwd().openDir(gen_dir, .{}) catch |err| {
             std.log.warn("Failed to open directory '{s}': {}", .{gen_dir, err});
             return 0;
         };
         defer dir.close();
 
-        var iter = dir.iterate(null);
+        var iter = dir.iterate();
         while (try iter.next()) |entry| {
             if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
 
