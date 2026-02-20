@@ -73,6 +73,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Import telegram_alerts module from generated directory (Phase 4)
+    const telegram_alerts_mod = b.createModule(.{
+        .root_source_file = b.path("../../generated/telegram_alerts.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Create CLI module
     const ralph_cli_mod = b.createModule(.{
         .root_source_file = b.path("src/ralph_cli.zig"),
@@ -81,6 +88,7 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "ralph", .module = ralph_mod },
             .{ .name = "swarm_watch", .module = swarm_watch_mod },
+            .{ .name = "telegram_alerts", .module = telegram_alerts_mod },
             .{ .name = "trinity-symb", .module = symb_dep.module("trinity_symb") },
         },
     });
