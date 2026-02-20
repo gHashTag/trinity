@@ -1405,6 +1405,30 @@ pub const ZigCodeGen = struct {
     }
 
     fn generateBehaviorImplementation(self: *Self, pattern_matcher: *PatternMatcher, b: *const Behavior) !void {
+        // IMPORTANT: Check for custom implementation FIRST, before any pattern matching
+        // If a behavior has an implementation field, use it instead of pattern-generated stubs
+        if (b.implementation.len > 0) {
+            // If implementation contains full function definition, write as-is
+            if (std.mem.indexOf(u8, b.implementation, "pub fn ") != null or
+                std.mem.indexOf(u8, b.implementation, "fn ") != null)
+            {
+                // Full function — write as-is (includes signature)
+                try self.builder.writeLine(b.implementation);
+                try self.builder.newline();
+                return;
+            } else {
+                // Body only — wrap in inferred signature
+                const sig = inferSignatureFromSpec(b.given, b.then, b.name);
+                try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
+                self.builder.incIndent();
+                try self.builder.writeLine(b.implementation);
+                self.builder.decIndent();
+                try self.builder.writeLine("}");
+                try self.builder.newline();
+                return;
+            }
+        }
+
         // Try DSL patterns first (these are spec-level patterns)
         if (try pattern_matcher.generateFromDsLPattern(b)) {
             try self.builder.newline();
@@ -1447,32 +1471,14 @@ pub const ZigCodeGen = struct {
         try self.builder.writeFmt("/// When: {s}\n", .{b.when});
         try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
 
-        // Check for manual implementation in spec
-        if (b.implementation.len > 0) {
-            // If implementation contains full function definition, write as-is
-            if (std.mem.indexOf(u8, b.implementation, "pub fn ") != null or
-                std.mem.indexOf(u8, b.implementation, "fn ") != null)
-            {
-                // Full function — write as-is (includes signature)
-                try self.builder.writeLine(b.implementation);
-            } else {
-                // Body only — wrap in inferred signature
-                const sig = inferSignatureFromSpec(b.given, b.then, b.name);
-                try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
-                self.builder.incIndent();
-                try self.builder.writeLine(b.implementation);
-                self.builder.decIndent();
-                try self.builder.writeLine("}");
-            }
-        } else {
-            // No implementation — use pattern matching or auto-body
-            const sig = inferSignatureFromSpec(b.given, b.then, b.name);
-            try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
-            self.builder.incIndent();
-            try self.generateRealBody(b);
-            self.builder.decIndent();
-            try self.builder.writeLine("}");
-        }
+        // No implementation — use pattern matching or auto-body
+        const sig = inferSignatureFromSpec(b.given, b.then, b.name);
+        try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
+        self.builder.incIndent();
+        try self.generateRealBody(b);
+        self.builder.decIndent();
+        try self.builder.writeLine("}");
+        try self.builder.newline();
         try self.builder.newline();
     }
 
