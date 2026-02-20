@@ -41,7 +41,8 @@ pub const SpecEditor = struct {
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 1_000_000);
         defer self.allocator.free(content);
 
-        return try vibee_parser.parseVibeeSpec(self.allocator, content);
+        var parser = vibee_parser.VibeeParser.init(self.allocator, content);
+        return try parser.parse();
     }
 
     /// Create backup of spec file
