@@ -139,90 +139,90 @@ types:
 # ═══════════════════════════════════════════════════════════════
 
 behaviors:
-  - name: earnTaskReward
-    given: completed task with difficulty and quality score
-    when: agent completes task successfully
-    then: calculate $TRI reward = difficulty * quality * base_rate and credit to agent wallet
+  - name: earn_task_reward
+    given: wallet, task difficulty, quality score
+    when: agent completes task
+    then: credit $TRI to wallet
 
-  - name: stakeTRIForPriority
-    given: agent wallet and $TRI amount
-    when: agent stakes $TRI for priority queue access
-    then: increase queue priority and governance voting power proportional to stake
+  - name: stake_tri
+    given: wallet and amount
+    when: stake for priority queue
+    then: increase priority and voting power
 
-  - name: spendTRIOnResources
-    given: task requiring compute resources
-    when: resources allocated (GPU, agents, storage)
-    then: deduct $TRI based on resource usage and duration
+  - name: spend_tri
+    given: wallet and resource cost
+    when: resources allocated
+    then: deduct $TRI from wallet
 
-  - name: depinStakingOptimizer
-    given: current DePIN positions and target APY
-    when: APY drops below threshold or new opportunity found
-    then: auto-restake to highest-APY protocol with φ-based allocation
+  - name: depin_staking
+    given: DePIN positions and target APY
+    when: rebalance needed
+    then: restake to highest APY
 
-  - name: triTreasury
-    given: total $TRI inflow from task fees
-    when: treasury rebalance triggered (daily)
-    then: distribute 70% to agents, 20% to treasury, 10% to buyback
+  - name: tri_treasury
+    given: total inflow
+    when: rebalance triggered
+    then: distribute 70/20/10 split
 
-  - name: rewardDistribution
-    given: completed task and reward pool
-    when: distribution calculation needed
-    then: split reward among participants based on contribution weight
+  - name: reward_distribution
+    given: total reward and weights
+    when: distribute to participants
+    then: proportional split
 
-  - name: feeForTask
-    given: user task request
-    when: task accepted into queue
-    then: charge $TRI deposit = estimated_cost * priority_multiplier
+  - name: fee_for_task
+    given: wallet and estimated cost
+    when: task accepted
+    then: charge deposit
 
-  - name: governanceVote
-    given: active proposal and staked $TRI
-    when: agent votes on proposal
-    then: cast vote with weight = staked_tri and record on-chain
+  - name: governance_vote
+    given: proposal and wallet
+    when: casting vote
+    then: record weighted vote
 
-  - name: hireAgent
-    given: agent marketplace listing and wallet
-    when: tenant hires specialized agent
-    then: transfer $TRI to agent escrow, activate agent for tenant
+  - name: hire_agent
+    given: tenant wallet and agent
+    when: hiring for task
+    then: transfer escrow
 
-  - name: terminateAgent
-    given: active agent contract
-    when: contract ended or agent underperforms
-    then: calculate final payout, release escrow, update reputation
+  - name: terminate_agent
+    given: agent and performance score
+    when: contract ends
+    then: final payout
 
 # ═══════════════════════════════════════════════════════════════
 # PERSISTENT STATE BEHAVIORS
 # ═══════════════════════════════════════════════════════════════
 
 behaviors:
-  - name: saveHypervectorWithTRI
-    given: VSA hypervector and wallet signature
-    when: hypervector state needs persistence
-    then: store on IPFS with $TRI wallet as owner, return CID
+  - name: save_hypervector
+    given: hypervector and wallet
+    when: persist state
+    then: store on IPFS
 
-  - name: loadHypervectorByCID
-    given: IPFS CID and wallet signature
-    when: hypervector state needs restoration
-    then: verify ownership, fetch from IPFS, deserialize hypervector
+  - name: load_hypervector
+    given: CID and wallet
+    when: restore state
+    then: fetch from IPFS
 
-  - name: persistentModelState
-    given: agent state and wallet
-    when: agent shutdown or checkpoint
-    then: serialize state, encrypt with wallet key, store on IPFS + BadgerDB
+  - name: persistent_model_state
+    given: state and wallet
+    when: checkpoint
+    then: encrypt and store
 
-  - name: restoreModelState
-    given: wallet signature and state CID
-    when: agent restart
-    then: fetch from IPFS, decrypt, deserialize, restore agent state
+  - name: restore_model_state
+    given: CID and wallet
+    when: restart
+    then: decrypt and restore
 
-  - name: backupToBadgerDB
-    given: state data and key
-    when: persistent storage needed
-    then: write to BadgerDB key-value store with automatic compaction
+  - name: backup_to_badger
+    given: state and key
+    when: persist
+    then: write to BadgerDB
 
-  - name: syncWithIPFS
-    given: local state and IPFS CID
-    when: consistency check required
-    then: compare hashes, re-upload if mismatch, update CID registry
+  - name: sync_with_ipfs
+    given: state and CID
+    when: consistency check
+    then: verify and update
 
 # ═══════════════════════════════════════════════════════════════
 # TENSOR / INFERENCE BEHAVIORS (from new modules)
@@ -254,55 +254,55 @@ behaviors:
 # ═══════════════════════════════════════════════════════════════
 
 behaviors:
-  - name: initSwarm128
-    given: allocator and configuration
-    when: swarm initialization requested
-    then: spawn 128 agents, initialize wallets, register with discovery
+  - name: init_swarm
+    given: allocator and config
+    when: initialize swarm
+    then: spawn 128 agents
 
-  - name: routeTaskByPriority
-    given: task and staked amounts
-    when: task enters queue
-    then: sort by (stake_amount * urgency), assign to highest-priority agent
+  - name: route_task
+    given: task and stakes
+    when: route to agent
+    then: assign by priority
 
-  - name: achieveConsensus
-    given: proposal and participating agents
-    when: decision required
-    then: φ-spiral voting, require 99% agreement for execution
+  - name: achieve_consensus
+    given: proposal
+    when: vote needed
+    then: φ-spiral consensus
 
-  - name: scaleSwarm
-    given: current load and target utilization
-    when: load > 80% or < 20%
-    then: adjust agent count 32 → 128, bill $TRI for added capacity
+  - name: scale_swarm
+    given: load metrics
+    when: scaling needed
+    then: adjust 32 → 128
 
-  - name: multiTenantIsolate
-    given: tenant ID and task
-    when: multi-tenant execution
-    then: execute in isolated context, bill to tenant wallet, separate state
+  - name: multi_tenant_isolate
+    given: tenant and task
+    when: multi-tenant
+    then: isolated execution
 
 # ═══════════════════════════════════════════════════════════════
 # OBSERVABILITY BEHAVIORS
 # ═══════════════════════════════════════════════════════════════
 
 behaviors:
-  - name: emitOpenTelemetrySpan
-    given: operation name and parent span
+  - name: emit_span
+    given: operation and parent
     when: operation starts
-    then: create span with TraceId, record attributes, mark on complete
+    then: create span
 
-  - name: recordPrometheusMetric
+  - name: record_metric
     given: metric name and value
-    when: metric update triggered
-    then: update counter/gauge/histogram, expose on /metrics endpoint
+    when: metric update
+    then: update counter/gauge
 
-  - name: grafanaDashboardUpdate
+  - name: update_dashboard
     given: metrics snapshot
-    when: dashboard refresh (5s interval)
-    then: publish to WebSocket, update $TRI balance panels
+    when: refresh
+    then: publish update
 
-  - name: healthCheckWithTRI
+  - name: health_check
     given: service endpoint
-    when: health check requested
-    then: return status + wallet balance + recent $TRI events
+    when: health check
+    then: return status
 
 # ═══════════════════════════════════════════════════════════════
 # TEST CASES
