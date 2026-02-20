@@ -11,6 +11,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const ArrayList = std.ArrayListUnmanaged;
 const golden_db = @import("golden_db.zig");
 const vibee_parser = @import("vibee_parser.zig");
 const SpecEditor = @import("spec_editor.zig").SpecEditor;
@@ -91,7 +92,7 @@ pub const SpecImprover = struct {
         self: *const Self,
         spec: *const vibee_parser.VibeeSpec,
     ) !ArrayList(StubBehavior) {
-        var stubs = ArrayList(StubBehavior).init(self.allocator);
+        var stubs = ArrayList(StubBehavior){};
 
         for (spec.behaviors.items, 0..) |b, i| {
             const reason = if (b.implementation.len == 0)
@@ -101,7 +102,7 @@ pub const SpecImprover = struct {
             else
                 continue;
 
-            try stubs.append(.{
+            try stubs.append(self.allocator, .{
                 .index = i,
                 .name = b.name,
                 .given = b.given,
@@ -119,16 +120,15 @@ pub const SpecImprover = struct {
         self: *const Self,
         behavior: *const vibee_parser.Behavior,
     ) !?[]const u8 {
-        _ = behavior;
-
         // Strategy 1: Exact name match
         if (self.golden_db.get(behavior.name, .{})) |impl| {
             // Build full implementation with signature and body
-            return self.buildFullImplementation(impl);
+            const impl_str = try self.buildFullImplementation(impl);
+            return impl_str;
         }
 
         // Strategy 2: Search by semantic tags
-        const tags = self.extractKeywords(behavior);
+        var tags = try self.extractKeywords(behavior);
         defer {
             for (tags.items) |tag| {
                 self.allocator.free(tag);
@@ -142,7 +142,8 @@ pub const SpecImprover = struct {
             defer self.allocator.free(results);
 
             if (results.len > 0) {
-                return self.buildFullImplementation(results[0]);
+                const impl_str = try self.buildFullImplementation(results[0]);
+                return impl_str;
             }
         }
 
@@ -155,14 +156,14 @@ pub const SpecImprover = struct {
         self: *const Self,
         behavior: *const vibee_parser.Behavior,
     ) !ArrayList([]const u8) {
-        var keywords = ArrayList([]const u8).init(self.allocator);
+        var keywords = ArrayList([]const u8){};
 
         // Extract from behavior name
         var name_parts = std.mem.splitScalar(u8, behavior.name, '_');
         while (name_parts.next()) |part| {
             if (part.len > 2) { // Skip short words
                 const dupe = try self.allocator.dupe(u8, part);
-                try keywords.append(dupe);
+                try keywords.append(self.allocator, dupe);
             }
         }
 
@@ -186,7 +187,7 @@ pub const SpecImprover = struct {
     /// Improve a spec file by filling empty implementations
     pub fn improveSpecFile(self: *Self, spec_path: []const u8) !ImprovementResult {
         var result = ImprovementResult{
-            .errors = ArrayList(ImprovementResult.ErrorEntry).init(self.allocator),
+            .errors = ArrayList(ImprovementResult.ErrorEntry){},
         };
 
         // Read spec
@@ -222,7 +223,7 @@ pub const SpecImprover = struct {
                     .behavior_name = behavior.name,
                     .reason = "No matching implementation found",
                 };
-                try result.errors.append(entry);
+                try result.errors.append(self.allocator, entry);
             }
         }
 
@@ -238,7 +239,7 @@ pub const SpecImprover = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "SpecImprover: init" {
-    const improver = try SpecImprover.init(std.testing.allocator);
+    var improver = try SpecImprover.init(std.testing.allocator);
     defer improver.deinit();
 
     // Check that golden DB has VSA implementations
@@ -248,7 +249,7 @@ test "SpecImprover: init" {
 }
 
 test "SpecImprover: findStubBehaviors" {
-    const improver = try SpecImprover.init(std.testing.allocator);
+    var improver = try SpecImprover.init(std.testing.allocator);
     defer improver.deinit();
 
     // Create a mock spec with some behaviors
@@ -275,8 +276,11 @@ test "SpecImprover: findStubBehaviors" {
         .test_cases = .{},
     });
 
-    const stubs = try improver.findStubBehaviors(&spec);
+    var stubs = try improver.findStubBehaviors(&spec);
     defer {
+        for (stubs.items) |*s| {
+            _ = s;
+        }
         stubs.deinit(std.testing.allocator);
     }
 
