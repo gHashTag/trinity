@@ -42,6 +42,8 @@ pub const VibeeSpec = struct {
     // Top-level test cases (independent of behaviors)
     test_cases: ArrayList(TestCase),
     allocator: Allocator,
+    // Source content ownership - all string fields are slices into this
+    source_content: []const u8,
 
     pub fn init(allocator: Allocator) VibeeSpec {
         return .{
@@ -68,6 +70,7 @@ pub const VibeeSpec = struct {
             .reset = ResetDef{ .reset_type = "async", .level = "low" }, // Default
             .test_cases = .{}, // Top-level test cases
             .allocator = allocator,
+            .source_content = "",
         };
     }
 
