@@ -64,7 +64,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: depinStaking* / depin_staking -> optimize DePIN yields with φ-based allocation
-    if (std.mem.indexOf(u8, name, "depin") != null and std.mem.indexOf(u8, name, "stake") != null)
+    if (std.mem.indexOf(u8, name, "depin") != null)
     {
         try builder.writeFmt("pub fn {s}(positions: []DePINPosition, target_apy: f32) ![]const u8 {{\n", .{b.name});
         builder.incIndent();
