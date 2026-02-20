@@ -137,8 +137,7 @@ pub const SpecEditor = struct {
                 if (t.fields.items.len > 0) {
                     try writer.writeAll("    fields:\n");
                     for (t.fields.items) |f| {
-                        const type_str = if (f.type_override) |ty| ty else f.type;
-                        try writer.print("      {s}: {s}\n", .{ f.name, type_str });
+                        try writer.print("      {s}: {s}\n", .{ f.name, f.type_name });
                     }
                 }
             }
