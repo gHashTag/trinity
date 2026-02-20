@@ -2120,12 +2120,12 @@ pub const ZigCodeGen = struct {
     }
 
     /// Extract named parameters from given phrase
-    fn extractNamedParams(self: *Self, given: []const u8, base_type: []const u8, count: usize) ?[]const u8 {
+    fn extractNamedParams(self: *Self, given: []const u8, base_type: []const u8, count: usize) !?[]const u8 {
         _ = count;
         // Look for patterns like "a and b", "x, y, z", etc.
         if (std.mem.indexOf(u8, given, " and ")) |_| {
             // Extract names before and after " and "
-            var iter = std.mem.split(u8, given, " ");
+            var iter = std.mem.tokenizeScalar(u8, given, ' ');
             var names: [2][]const u8 = undefined;
 
             var i: usize = 0;
