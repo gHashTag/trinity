@@ -243,12 +243,18 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
         const dht = try allocator.create(kg_sync.KgTripleDHT);
         dht.* = kg_sync.KgTripleDHT.init(allocator, node_id);
         dht_heap_allocated = dht;
-        defer allocator.destroy(dht);
 
         // Seed with test triple for demonstration
         const hash = kg_sync.tripleHash("Trinity", "is", "ternary");
         const test_triple = kg_sync.serializeTriple("Trinity", "is", "ternary", 0.95, node_id);
         try dht.storeTriple(hash, test_triple);
+    }
+
+    // Cleanup at end of function
+    defer {
+        if (dht_heap_allocated) |dht| {
+            allocator.destroy(dht);
+        }
     }
 
     if (live) {
