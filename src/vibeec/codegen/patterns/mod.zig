@@ -281,9 +281,9 @@ pub fn getPatternCounts() struct {
         .tensor = 4, // tensor_create, tensor_add, tensor_mul, tensor_matmul
         .inference = 4, // forward_pass, backward_pass, attention, feedforward
         .model = 4, // load_model, save_model, predict, sample_token
-        .economic = 10, // earnTaskReward, stakeTRIForPriority, spendTRIOnResources, depinStakingOptimizer, triTreasury, rewardDistribution, feeForTask, governanceVote, hireAgent, terminateAgent
+        .economic = 18, // earnTaskReward, stakeTRI, spendTRI, depinStaking, triTreasury, rewardDistribution, feeForTask, governanceVote, hireAgent, terminateAgent, createMarketplaceListing, searchMarketplace, matchAgentToTask, acceptMarketplaceOffer, rejectMarketplaceOffer, multiTenantIsolate, tenantResourceLimit, tenantBilling
         .rl = 57, // Drawing(10) + Text(7) + Input(7) + Window(15) + Color(4) + Audio(2) + Cursor(2) + Texture(1) + Composites(9)
-        .total = 277, // Previous 267 + 10 economic patterns
+        .total = 285, // Previous 267 + 18 economic patterns (+8 marketplace/multi-tenant)
     };
 }
 
