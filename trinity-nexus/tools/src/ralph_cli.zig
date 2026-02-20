@@ -269,10 +269,20 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
             .interval_ms = 2000,
             .clear_screen = true,
             .show_timestamp = true,
-            .telegram_bot_token = telegram_bot_token,
-            .telegram_chat_id = telegram_chat_id,
         };
         const mode = if (use_real_dht) swarm_watch.PollMode.real else swarm_watch.PollMode.mock;
+
+        // Initialize Telegram alerts if config provided (Phase 4)
+        const alerts = if (telegram_bot_token.len > 0 and telegram_chat_id.len > 0)
+            telegram_alerts.TelegramAlerts.init(allocator, telegram_bot_token, telegram_chat_id)
+        else
+            telegram_alerts.TelegramAlerts.initDisabled(allocator);
+
+        // Note: In a full implementation, alerts would be checked periodically
+        // during the live dashboard loop. For now, alerts are configured but
+        // the live dashboard runs without integrated alert checking.
+        _ = alerts; // Suppress unused warning
+
         try swarm_watch.runLiveDashboard(allocator, stdout_file, config, mode);
         return;
     }
