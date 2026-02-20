@@ -48,14 +48,14 @@ pub const ASTAnalyzer = struct {
 
     /// Parse Zig source and extract all function definitions
     pub fn findFunctions(self: *const ASTAnalyzer) ![]FunctionInfo {
-        var functions = std.ArrayList(FunctionInfo).init(self.allocator);
-        errdefer functions.deinit();
+        var functions: std.ArrayList(FunctionInfo) = .empty;
+        defer functions.deinit(self.allocator);
 
         var pos: usize = 0;
         while (pos < self.source.len) {
             // Find "pub fn" or "fn" declarations
             const fn_start = std.mem.indexOfPos(u8, self.source, pos, "fn ") orelse break;
-            
+
             // Skip if this is inside a comment or string (basic check)
             if (self.isInsideCommentOrString(fn_start)) {
                 pos = fn_start + 3;
@@ -73,13 +73,13 @@ pub const ASTAnalyzer = struct {
 
             // Extract return type and body start
             const body_start = std.mem.indexOfPos(u8, self.source, params_end, "{") orelse break;
-            
+
             // Find matching closing brace
             const body_end = self.findMatchingBrace(body_start) orelse break;
 
             // Classify function quality
             const quality = self.classifyFunction(self.source[body_start..body_end]);
-            
+
             // Calculate complexity
             const complexity = self.calculateComplexity(self.source[body_start..body_end]);
 
@@ -91,7 +91,7 @@ pub const ASTAnalyzer = struct {
                 }
             }
 
-            try functions.append(.{
+            try functions.append(self.allocator, .{
                 .name = name,
                 .params = params,
                 .return_type = return_type,
@@ -104,7 +104,7 @@ pub const ASTAnalyzer = struct {
             pos = body_end + 1;
         }
 
-        return functions.toOwnedSlice();
+        return functions.toOwnedSlice(self.allocator);
     }
 
     /// Find matching closing brace for code block
@@ -125,23 +125,39 @@ pub const ASTAnalyzer = struct {
 
     /// Classify function based on body content
     fn classifyFunction(self: *const ASTAnalyzer, body: []const u8) FunctionQuality {
-        const body_lower = std.asciiAllocLower(self.allocator, body) catch return .partial;
-        defer self.allocator.free(body_lower);
+        _ = self;
+        // Use case-insensitive pattern matching
+        const hasPattern = comptime struct {
+            fn fnHasPattern(s: []const u8, pattern: []const u8) bool {
+                // Simple case-insensitive substring search
+                if (pattern.len > s.len) return false;
+                const limit = s.len - pattern.len + 1;
+                outer: for (0..limit) |i| {
+                    for (0..pattern.len) |j| {
+                        const sc = std.ascii.toLower(s[i + j]);
+                        const pc = std.ascii.toLower(pattern[j]);
+                        if (sc != pc) continue :outer;
+                    }
+                    return true;
+                }
+                return false;
+            }
+        }.fnHasPattern;
 
         // Check for obvious stub patterns
-        if (std.mem.indexOf(u8, body_lower, "todo") != null or
-            std.mem.indexOf(u8, body_lower, "unimplemented") != null or
-            std.mem.indexOf(u8, body_lower, "unreachable") != null or
-            std.mem.indexOf(u8, body_lower, "stub") != null) {
+        if (hasPattern(body, "todo") or
+            hasPattern(body, "unimplemented") or
+            hasPattern(body, "unreachable") or
+            hasPattern(body, "stub")) {
             return .stub;
         }
 
         // Check for real implementation patterns
-        if (std.mem.indexOf(u8, body_lower, "return ") != null or
-            std.mem.indexOf(u8, body_lower, "if (") != null or
-            std.mem.indexOf(u8, body_lower, "while (") != null or
-            std.mem.indexOf(u8, body_lower, "for (") != null or
-            std.mem.indexOf(u8, body_lower, "=") != null) {
+        if (hasPattern(body, "return ") or
+            hasPattern(body, "if (") or
+            hasPattern(body, "while (") or
+            hasPattern(body, "for (") or
+            std.mem.indexOf(u8, body, "=") != null) {
             return .real;
         }
 
