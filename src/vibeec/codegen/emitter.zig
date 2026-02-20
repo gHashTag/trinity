@@ -1472,6 +1472,13 @@ pub const ZigCodeGen = struct {
             std.mem.indexOf(u8, name, "governance") != null or
             std.mem.startsWith(u8, name, "hire") or
             std.mem.startsWith(u8, name, "terminate") or
+            std.mem.indexOf(u8, name, "marketplace") != null or
+            std.mem.startsWith(u8, name, "search") or
+            std.mem.indexOf(u8, name, "match") != null or
+            std.mem.startsWith(u8, name, "accept") or
+            std.mem.startsWith(u8, name, "reject") or
+            std.mem.indexOf(u8, name, "tenant") != null or
+            std.mem.indexOf(u8, name, "billing") != null or
             std.mem.startsWith(u8, name, "save") or
             std.mem.startsWith(u8, name, "load") or
             std.mem.startsWith(u8, name, "init") or
