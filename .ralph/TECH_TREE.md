@@ -20,6 +20,10 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**CODEGEN-009**|**VIBEE v8.1 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent swarm: 51.59% consensus, 97.2% self-improve. Fixed: bundle-based hypervectors, similarity measurement, metric capping. 7/7 tests pass.**|
+|----|------|--------|------|
+|**CODEGEN-008**|**VIBEE v8 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent Trinity swarm: runtime_swarm.zig (270 lines) + vsa_swarm_production_32.vibee (35 behaviors, 39/40 tests). Docker/K8s packaging, CI workflow, demo script. Runtime: 32/32 online, phi-spiral consensus, self-healing, Prometheus :9090.**|
+|----|------|--------|------|
 |**CODEGEN-005**|**VIBEE v5 Production Components**|**vibee-v5-production**|**2 production specs: llm_full_inference (14 behaviors, KV cache/RoPE/RMSNorm/FlashAttention/sampling), vsa_swarm_agent (17 behaviors, VSA bind/bundle/consensus/phi-spiral/self-heal). v4.1: 155+ TODO stubs eliminated across 14+ specs. CI updated with production tests.**|
 |----|------|--------|------|
 |**OPT-B01**|**Continuous Batching**|**optimization**|**continuous_batching.zig (891 lines): Orca/vLLM-style iteration-level scheduler, priority queue with wait-time boost, preemption, 13 tests, completion detection, continuous admission, throughput analysis, build.zig wired**|

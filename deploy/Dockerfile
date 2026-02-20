@@ -1,67 +1,60 @@
-# VIBEE Language - Multi-Arch Docker Build
-# Supports amd64 (x86_64) and arm64 (aarch64)
-# φ² + 1/φ² = 3 | PHOENIX = 999
+# VIBEE v8 - Production Swarm Runtime Dockerfile
+# Multi-stage build for minimal image size
 
-ARG ZIG_VERSION=0.13.0
-ARG TARGETARCH
+# Stage 1: Build stage
+FROM ziglang/zig:0.15.2-alpine AS builder
 
-FROM alpine:3.19 AS builder
+# Install build dependencies
+RUN apk add --no-cache git musl-dev
 
-ARG ZIG_VERSION
-ARG TARGETARCH
+# Set working directory
+WORKDIR /app
 
-# Install dependencies
-RUN apk add --no-cache curl xz tar
+# Copy project files
+COPY . .
 
-# Download Zig for the target architecture
-RUN case "${TARGETARCH}" in \
-    amd64) ZIG_ARCH="x86_64" ;; \
-    arm64) ZIG_ARCH="aarch64" ;; \
-    *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
-    esac && \
-    curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz" -o zig.tar.xz && \
-    tar -xf zig.tar.xz -C /opt && \
-    rm zig.tar.xz
+# Generate production swarm code
+RUN zig build vibee -- gen specs/tri/vsa_swarm_production_32.vibee
 
-ENV PATH="/opt/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}:$PATH"
+# Build the swarm runtime binary
+RUN zig build -Drelease-safe=true swarm-runtime
 
-WORKDIR /build
-
-# Copy compiler source
-COPY src/vibeec/ ./src/vibeec/
-COPY specs/ ./specs/
-COPY bindings/ ./bindings/
-
-# Build compiler with ReleaseSafe optimization (safe for all CPUs)
-RUN cd src/vibeec && zig build -Doptimize=ReleaseSafe
-
-# Runtime image
+# Stage 2: Runtime stage (minimal Alpine)
 FROM alpine:3.19
 
-ARG TARGETARCH
+# Install runtime dependencies
+RUN apk add --no-cache \
+    curl \
+    ca-certificates
 
-RUN apk add --no-cache libc6-compat
+# Create non-root user
+RUN addgroup -g 1000 trinity && \
+    adduser -D -u 1000 -G trinity trinity
 
-WORKDIR /vibee
+# Copy binary from builder
+COPY --from=builder /app/zig-out/bin/swarm-runtime /usr/local/bin/swarm-runtime
 
-# Copy built binary
-COPY --from=builder /build/src/vibeec/zig-out/bin/vibeec /usr/local/bin/vibee
+# Copy generated code (for self-improvement analysis)
+COPY --from=builder /app/generated /app/generated
 
-# Copy specifications
-COPY --from=builder /build/specs/ ./specs/
+# Create directories for specs
+RUN mkdir -p /app/specs/tri
 
-# Set up volumes for user specifications and output
-VOLUME ["/vibee/user-specs", "/vibee/output"]
+# Set permissions
+RUN chown -R trinity:trinity /app /usr/local/bin/swarm-runtime
+
+# Switch to non-root user
+USER trinity
+
+# Set working directory
+WORKDIR /app
+
+# Expose Prometheus metrics port
+EXPOSE 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:9090/metrics || exit 1
 
 # Default command
-ENTRYPOINT ["vibee"]
-CMD ["--help"]
-
-LABEL org.opencontainers.image.title="VIBEE Language"
-LABEL org.opencontainers.image.description="Specification-first programming language that generates code from behavioral specifications"
-LABEL org.opencontainers.image.version="1.0.0"
-LABEL org.opencontainers.image.source="https://github.com/gHashTag/vibee-lang"
-LABEL org.opencontainers.image.licenses="MIT"
-
-# Verify installation
-RUN vibee --version 2>/dev/null || echo "VIBEE version unknown"
+CMD ["swarm-runtime"]
