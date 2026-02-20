@@ -15,6 +15,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Expose named module for dependent packages (symb, tools, etc.)
+    b.modules.put(b.dupe("trinity_lang"), mod) catch @panic("OOM");
+
     // Library
     const lib = b.addLibrary(.{
         .name = "trinity-lang",

@@ -12,6 +12,10 @@ const ralph = @import("maxwell/ralph/agent.zig");
 // This is imported as a build module named "swarm_watch"
 const swarm_watch = @import("swarm_watch");
 
+// Import trinity-symb for kg_sync (real DHT)
+const trinity_symb = @import("trinity-symb");
+const kg_sync = trinity_symb.kg_sync;
+
 // Stdout file handle
 const stdout_file = std.fs.File{ .handle = posix.STDOUT_FILENO };
 
@@ -51,6 +55,7 @@ fn printUsage() !void {
         \\  --swarm-monitor-live         Live DHT monitor with auto-refresh (2s interval)
         \\
         \\OPTIONS:
+        \\  --real-dht                   Use real DHT polling from kg_sync.zig (instead of mock)
         \\  -v, --verbose                Enable verbose output
         \\  --no-color                   Disable colored output
         \\
@@ -228,8 +233,23 @@ fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
 }
 
 /// Run Swarm Watch - Live DHT & TRI rewards monitor dashboard
-fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool) !void {
+fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht: bool) !void {
     _ = verbose;
+
+    // Create real DHT instance if --real-dht flag is set
+    var dht_heap_allocated: ?*kg_sync.KgTripleDHT = null;
+    if (use_real_dht) {
+        const node_id = std.mem.zeroes([32]u8);
+        const dht = try allocator.create(kg_sync.KgTripleDHT);
+        dht.* = kg_sync.KgTripleDHT.init(allocator, node_id);
+        dht_heap_allocated = dht;
+        defer allocator.destroy(dht);
+
+        // Seed with test triple for demonstration
+        const hash = kg_sync.tripleHash("Trinity", "is", "ternary");
+        const test_triple = kg_sync.serializeTriple("Trinity", "is", "ternary", 0.95, node_id);
+        try dht.storeTriple(hash, test_triple);
+    }
 
     if (live) {
         // Live mode with auto-refresh every 2 seconds
@@ -243,24 +263,42 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool) !void {
     }
 
     try stdoutWrite("\n╔══════════════════════════════════════════════════════════════════════════════╗\n");
-    try stdoutWrite("║           SWARM-WATCH DEV-003 | Live DHT & TRI Monitor                ║\n");
+    if (use_real_dht) {
+        try stdoutWrite("║           SWARM-WATCH DEV-003 | Live DHT & TRI Monitor (REAL)          ║\n");
+    } else {
+        try stdoutWrite("║           SWARM-WATCH DEV-003 | Live DHT & TRI Monitor (MOCK)          ║\n");
+    }
     try stdoutWrite("╚══════════════════════════════════════════════════════════════════════════════╝\n\n");
 
-    // Initialize SwarmWatch with mock data for Phase 1
-    var watch = swarm_watch.SwarmWatch.init();
+    // Initialize SwarmWatch
+    var watch = swarm_watch.SwarmWatch.init(allocator);
 
-    // Poll mock DHT stats
-    watch.pollDhtStats(.{
-        .triples_stored = 1337,
-        .triples_distributed = 500,
-        .triples_received = 450,
-        .triples_rejected = 15,
-        .triples_duplicate = 10,
-        .sync_rounds = 42,
-        .peer_count = 7,
-    });
+    // Poll DHT stats (real or mock)
+    if (use_real_dht and dht_heap_allocated != null) {
+        const stats = dht_heap_allocated.?.getStats();
+        watch.pollDhtStats(.{
+            .triples_stored = stats.triples_stored,
+            .triples_distributed = stats.triples_distributed,
+            .triples_received = stats.triples_received,
+            .triples_rejected = stats.triples_rejected,
+            .triples_duplicate = stats.triples_duplicate,
+            .sync_rounds = stats.sync_rounds,
+            .peer_count = 1, // Local node only
+        });
+    } else {
+        // Mock data
+        watch.pollDhtStats(.{
+            .triples_stored = 1337,
+            .triples_distributed = 500,
+            .triples_received = 450,
+            .triples_rejected = 15,
+            .triples_duplicate = 10,
+            .sync_rounds = 42,
+            .peer_count = 7,
+        });
+    }
 
-    // Poll mock reward stats
+    // Poll mock reward stats (Phase 3 will integrate real rewards)
     watch.pollRewardStats(.{
         .total_paid_wei = 4_233_000_000_000_000_000, // 4.233 TRI
         .pending_wei = 87_000_000_000_000, // 0.000087 TRI
@@ -275,8 +313,13 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool) !void {
     // Render the dashboard (provide allocator for formatting)
     try watch.renderDashboard(allocator, stdout_file);
 
-    try stdoutWrite("\n[Mock Data Mode - Phase 1]\n");
-    try stdoutWrite("Real DHT integration will be added in Phase 2.\n");
+    if (use_real_dht) {
+        try stdoutWrite("\n[Real DHT Mode - Phase 3]\n");
+        try stdoutWrite("DHT stats polled from kg_sync.zig\n");
+    } else {
+        try stdoutWrite("\n[Mock Data Mode]\n");
+        try stdoutWrite("Use --real-dht flag for actual DHT polling\n");
+    }
     try stdoutWrite("Press Ctrl+C to exit.\n");
 }
 
@@ -295,6 +338,7 @@ pub fn main() !void {
 
     var verbose = false;
     var force = false;
+    var use_real_dht = false;
     const config = ralph.RalphConfig{};
 
     // Parse arguments
@@ -309,6 +353,8 @@ pub fn main() !void {
             verbose = true;
         } else if (std.mem.eql(u8, arg, "--force")) {
             force = true;
+        } else if (std.mem.eql(u8, arg, "--real-dht")) {
+            use_real_dht = true;
         } else if (std.mem.eql(u8, arg, "--status")) {
             try showStatus(allocator, config);
             return;
@@ -326,10 +372,10 @@ pub fn main() !void {
             try initRalph(allocator, path, force);
             return;
         } else if (std.mem.eql(u8, arg, "--swarm-monitor")) {
-            try runSwarmMonitor(allocator, verbose, false);
+            try runSwarmMonitor(allocator, verbose, false, use_real_dht);
             return;
         } else if (std.mem.eql(u8, arg, "--swarm-monitor-live")) {
-            try runSwarmMonitor(allocator, verbose, true);
+            try runSwarmMonitor(allocator, verbose, true, use_real_dht);
             return;
         } else {
             try stdoutPrint("Unknown argument: {s}\n\n", .{arg});

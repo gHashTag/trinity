@@ -190,6 +190,51 @@ behaviors:
     then: final payout
 
 # ═══════════════════════════════════════════════════════════════
+# MARKETPLACE BEHAVIORS (v10 Phase 3)
+# ═══════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: create_marketplace_listing
+    given: agent and capabilities
+    when: list services on marketplace
+    then: listing with rate and reputation
+
+  - name: search_marketplace
+    given: marketplace and required capability
+    when: tenant searches for agents
+    then: matching agents under budget
+
+  - name: match_agent_to_task
+    given: task and candidates
+    when: find best agent
+    then: highest scoring agent
+
+  - name: accept_marketplace_offer
+    given: offer and tenant wallet
+    when: tenant accepts offer
+    then: contract created, escrow deducted
+
+  - name: reject_marketplace_offer
+    given: offer and reason
+    when: tenant declines
+    then: offer rejected with reason
+
+# ═══════════════════════════════════════════════════════════════
+# MULTI-TENANT BEHAVIORS (v10 Phase 3)
+# ═══════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: tenant_resource_limit
+    given: tenant and resource request
+    when: check quota
+    then: allow or deny based on limits
+
+  - name: tenant_billing
+    given: tenant and billing period
+    when: generate invoice
+    then: invoice with line items and total
+
+# ═══════════════════════════════════════════════════════════════
 # PERSISTENT STATE BEHAVIORS
 # ═══════════════════════════════════════════════════════════════
 
