@@ -1462,15 +1462,25 @@ pub const ZigCodeGen = struct {
             std.mem.startsWith(u8, name, "sample_token") or
             std.mem.startsWith(u8, name, "predict") or
             std.mem.startsWith(u8, name, "earn") or
-            std.mem.indexOf(u8, name, "stake") != null or
-            std.mem.indexOf(u8, name, "spend") != null or
-            std.mem.indexOf(u8, name, "depin") != null or
+            std.mem.startsWith(u8, name, "stake") or
+            std.mem.startsWith(u8, name, "spend") or
+            std.mem.startsWith(u8, name, "depin") or
             std.mem.indexOf(u8, name, "treasury") != null or
-            std.mem.indexOf(u8, name, "reward") != null or
-            std.mem.indexOf(u8, name, "fee") != null or
+            std.mem.startsWith(u8, name, "reward") or
+            std.mem.startsWith(u8, name, "fee") or
             std.mem.indexOf(u8, name, "governance") != null or
-            std.mem.indexOf(u8, name, "hire") != null or
-            std.mem.indexOf(u8, name, "terminate") != null;
+            std.mem.startsWith(u8, name, "hire") or
+            std.mem.startsWith(u8, name, "terminate") or
+            std.mem.startsWith(u8, name, "save") or
+            std.mem.startsWith(u8, name, "load") or
+            std.mem.startsWith(u8, name, "init") or
+            std.mem.startsWith(u8, name, "route") or
+            std.mem.startsWith(u8, name, "scale") or
+            std.mem.startsWith(u8, name, "multi") or
+            std.mem.startsWith(u8, name, "emit") or
+            std.mem.startsWith(u8, name, "record") or
+            std.mem.startsWith(u8, name, "update") or
+            std.mem.startsWith(u8, name, "health");
 
         if (is_safe_pattern) {
             if (try pattern_matcher.generateFromWhenThenPattern(b)) {

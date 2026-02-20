@@ -45,9 +45,6 @@ pub fn runWithConfig(allocator: Allocator, argv: []const []const u8, config: Pro
 
     try child.spawn();
 
-    // Close stdin immediately
-    if (child.stdin.*) |stdin| stdin.close();
-
     var timer: ?std.time.Timer = null;
     if (config.timeout_ms > 0) {
         timer = std.time.Timer.start() catch null;
@@ -57,19 +54,15 @@ pub fn runWithConfig(allocator: Allocator, argv: []const []const u8, config: Pro
     var stdout_data: []u8 = &.{};
     var stderr_data: []u8 = &.{};
     if (config.capture_output) {
-        const stdout_reader = child.stdout.?.reader();
-        const stderr_reader = child.stderr.?.reader();
-
-        // Read with timeout check
         const max_size = std.math.maxInt(usize);
 
-        stdout_data = stdout_reader.readAllAlloc(allocator, max_size) catch {
+        stdout_data = child.stdout.?.readToEndAlloc(allocator, max_size) catch {
             _ = child.kill() catch {};
             return ProcessError.ReadFailed;
         };
         errdefer allocator.free(stdout_data);
 
-        stderr_data = stderr_reader.readAllAlloc(allocator, max_size) catch {
+        stderr_data = child.stderr.?.readToEndAlloc(allocator, max_size) catch {
             allocator.free(stdout_data);
             _ = child.kill() catch {};
             return ProcessError.ReadFailed;
@@ -98,7 +91,7 @@ pub fn runWithConfig(allocator: Allocator, argv: []const []const u8, config: Pro
 
 /// Execute git command
 pub fn git(allocator: Allocator, args: []const []const u8) !ProcessResult {
-    const full_args = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 1);
+    var full_args = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 1);
     defer {
         for (full_args.items) |arg| {
             if (!std.mem.eql(u8, arg, "git")) allocator.free(arg);
@@ -116,7 +109,7 @@ pub fn git(allocator: Allocator, args: []const []const u8) !ProcessResult {
 
 /// Execute zig build command
 pub fn zigBuild(allocator: Allocator, args: []const []const u8) !ProcessResult {
-    const full_args = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 2);
+    var full_args = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 2);
     defer {
         for (full_args.items) |arg| {
             if (!std.mem.eql(u8, arg, "zig") and !std.mem.eql(u8, arg, "build")) {
@@ -137,7 +130,7 @@ pub fn zigBuild(allocator: Allocator, args: []const []const u8) !ProcessResult {
 
 /// Execute zig test command
 pub fn zigTest(allocator: Allocator, args: []const []const u8) !ProcessResult {
-    const full_args = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 2);
+    var full_args = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 2);
     defer {
         for (full_args.items) |arg| {
             if (!std.mem.eql(u8, arg, "zig") and !std.mem.eql(u8, arg, "test")) {
@@ -158,7 +151,7 @@ pub fn zigTest(allocator: Allocator, args: []const []const u8) !ProcessResult {
 
 /// Execute zig fmt command
 pub fn zigFmt(allocator: Allocator, args: []const []const u8) !ProcessResult {
-    const full_args = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 2);
+    var full_args = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 2);
     defer {
         for (full_args.items) |arg| {
             if (!std.mem.eql(u8, arg, "zig") and !std.mem.eql(u8, arg, "fmt")) {
@@ -179,7 +172,7 @@ pub fn zigFmt(allocator: Allocator, args: []const []const u8) !ProcessResult {
 
 /// Execute VIBEE gen command
 pub fn vibeeGen(allocator: Allocator, spec_path: []const u8) !ProcessResult {
-    const full_args = try std.ArrayList([]const u8).initCapacity(allocator, 3);
+    var full_args = try std.ArrayList([]const u8).initCapacity(allocator, 3);
     defer {
         for (full_args.items) |arg| {
             if (!std.mem.eql(u8, arg, "zig")) {
@@ -207,7 +200,7 @@ test "process: run echo command" {
     const allocator = std.testing.allocator;
 
     var result = try run(allocator, &[_][]const u8{ "echo", "hello" });
-    defer result.deinit(allocator);
+    defer _ = result.deinit(allocator);
 
     try std.testing.expectEqual(@as(i32, 0), result.exit_code);
     try std.testing.expectEqualStrings("hello\n", result.stdout);
@@ -217,7 +210,7 @@ test "process: run failing command" {
     const allocator = std.testing.allocator;
 
     var result = try run(allocator, &[_][]const u8{ "false" });
-    defer result.deinit(allocator);
+    defer _ = result.deinit(allocator);
 
     try std.testing.expect(result.exit_code != 0);
 }
@@ -225,11 +218,11 @@ test "process: run failing command" {
 test "process: git version" {
     const allocator = std.testing.allocator;
 
-    const result = git(allocator, &[_][]const u8{"--version"}) catch |err| {
+    var result = git(allocator, &[_][]const u8{"--version"}) catch |err| {
         if (err == ProcessError.SpawnFailed) return error.SkipZigTest;
         return err;
     };
-    defer result.deinit(allocator);
+    defer _ = result.deinit(allocator);
 
     try std.testing.expectEqual(@as(i32, 0), result.exit_code);
     try std.testing.expect(result.stdout.len > 0);
