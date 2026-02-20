@@ -57,4 +57,38 @@ pub fn build(b: *std.Build) void {
     const run_tests = b.addRunArtifact(tests);
     const test_step = b.step("test", "Run trinity-tools tests");
     test_step.dependOn(&run_tests.step);
+
+    // Ralph CLI - Autonomous Development Assistant
+    // Import the ralph module (maxwell/ralph/agent.zig)
+    const ralph_mod = b.createModule(.{
+        .root_source_file = b.path("src/maxwell/ralph/agent.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Create CLI module
+    const ralph_cli_mod = b.createModule(.{
+        .root_source_file = b.path("src/ralph_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "ralph", .module = ralph_mod },
+        },
+    });
+
+    const ralph_cli = b.addExecutable(.{
+        .name = "ralph",
+        .root_module = ralph_cli_mod,
+    });
+
+    b.installArtifact(ralph_cli);
+
+    // Run Ralph CLI
+    const run_ralph_cmd = b.addRunArtifact(ralph_cli);
+    run_ralph_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        run_ralph_cmd.addArgs(args);
+    }
+    const ralph_step = b.step("ralph", "Run Ralph Autonomous Development Assistant");
+    ralph_step.dependOn(&run_ralph_cmd.step);
 }
