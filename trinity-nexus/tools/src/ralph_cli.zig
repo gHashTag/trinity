@@ -3,9 +3,25 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const posix = std.posix;
 
 // Import Ralph Agent module
 const ralph = @import("maxwell/ralph/agent.zig");
+
+// Stdout file handle
+const stdout_file = std.fs.File{ .handle = posix.STDOUT_FILENO };
+
+/// Write string to stdout
+fn stdoutWrite(s: []const u8) !void {
+    try stdout_file.writeAll(s);
+}
+
+/// Print formatted string to stdout
+fn stdoutPrint(comptime fmt: []const u8, args: anytype) !void {
+    const result = std.fmt.allocPrintZ(std.heap.page_allocator, fmt, args) catch return error.OutOfMemory;
+    defer std.heap.page_allocator.free(result);
+    try stdout_file.writeAll(result);
+}
 
 /// CLI configuration
 const CLIConfig = struct {
@@ -14,8 +30,8 @@ const CLIConfig = struct {
 };
 
 /// Print usage information
-fn printUsage(writer: anytype) !void {
-    try writer.writeAll(
+fn printUsage() !void {
+    try stdoutWrite(
         \\Ralph Autonomous Development CLI v1.0.0
         \\
         \\USAGE:
@@ -49,17 +65,14 @@ fn showStatus(allocator: Allocator, config: ralph.RalphConfig) !void {
     const status = try agent.getStatus(allocator);
     defer allocator.free(status);
 
-    const stdout = std.io.getStdOut();
-    try stdout.writeAll(status);
-    try stdout.writeAll("\n");
+    try stdoutWrite(status);
+    try stdoutWrite("\n");
 }
 
 /// Run one development cycle
 fn runOneCycle(allocator: Allocator, config: ralph.RalphConfig, verbose: bool) !void {
-    const stdout = std.io.getStdOut();
-
     if (verbose) {
-        try stdout.writeAll("Starting Ralph Golden Chain cycle...\n");
+        try stdoutWrite("Starting Ralph Golden Chain cycle...\n");
     }
 
     var agent = try ralph.RalphAgent.init(allocator, config);
@@ -68,23 +81,21 @@ fn runOneCycle(allocator: Allocator, config: ralph.RalphConfig, verbose: bool) !
     const result = try agent.runOneCycle();
 
     if (result.success) {
-        try stdout.print("✅ Cycle completed successfully\n", .{});
-        try stdout.print("   Files modified: {d}\n", .{result.files_modified});
-        try stdout.print("   Last completed link: {s}\n", .{@tagName(result.link_completed)});
+        try stdoutWrite("✅ Cycle completed successfully\n");
+        try stdoutPrint("   Files modified: {d}\n", .{result.files_modified});
+        try stdoutPrint("   Last completed link: {s}\n", .{@tagName(result.link_completed)});
     } else {
-        try stdout.print("❌ Cycle failed: {s}\n", .{result.error_message});
-        try stdout.print("   Stopped at link: {s}\n", .{@tagName(result.link_completed)});
+        try stdoutPrint("❌ Cycle failed: {s}\n", .{result.error_message});
+        try stdoutPrint("   Stopped at link: {s}\n", .{@tagName(result.link_completed)});
         return error.CycleFailed;
     }
 }
 
 /// Run cycles until completion
 fn runUntilComplete(allocator: Allocator, config: ralph.RalphConfig, verbose: bool) !void {
-    const stdout = std.io.getStdOut();
-
     if (verbose) {
-        try stdout.writeAll("Starting Ralph autonomous development...\n");
-        try stdout.writeAll("Running until EXIT_SIGNAL or max_loops reached.\n\n");
+        try stdoutWrite("Starting Ralph autonomous development...\n");
+        try stdoutWrite("Running until EXIT_SIGNAL or max_loops reached.\n\n");
     }
 
     var agent = try ralph.RalphAgent.init(allocator, config);
@@ -92,44 +103,43 @@ fn runUntilComplete(allocator: Allocator, config: ralph.RalphConfig, verbose: bo
 
     const summary = try agent.runUntilComplete();
 
-    try stdout.writeAll("\n╔════════════════════════════════════════════════════════╗\n", .{});
-    try stdout.writeAll("║           RALPH AUTONOMOUS DEVELOPMENT SUMMARY           ║\n", .{});
-    try stdout.writeAll("╚════════════════════════════════════════════════════════╝\n", .{});
-    try stdout.print("Total cycles: {d}\n", .{summary.total_cycles});
-    try stdout.print("Successful: {d}\n", .{summary.successful_cycles});
-    try stdout.print("Failed: {d}\n", .{summary.failed_cycles});
-    try stdout.print("Files modified: {d}\n", .{summary.total_files_modified});
-    try stdout.print("Exit reason: {s}\n", .{summary.exit_reason});
+    try stdoutWrite("\n╔════════════════════════════════════════════════════════╗\n");
+    try stdoutWrite("║           RALPH AUTONOMOUS DEVELOPMENT SUMMARY           ║\n");
+    try stdoutWrite("╚════════════════════════════════════════════════════════╝\n");
+    try stdoutPrint("Total cycles: {d}\n", .{summary.total_cycles});
+    try stdoutPrint("Successful: {d}\n", .{summary.successful_cycles});
+    try stdoutPrint("Failed: {d}\n", .{summary.failed_cycles});
+    try stdoutPrint("Files modified: {d}\n", .{summary.total_files_modified});
+    try stdoutPrint("Exit reason: {s}\n", .{summary.exit_reason});
 
     if (summary.failed_cycles > 0) {
         const failure_rate = @as(f64, @floatFromInt(summary.failed_cycles)) / @as(f64, @floatFromInt(summary.total_cycles)) * 100.0;
-        try stdout.print("Failure rate: {d:.1}%\n", .{failure_rate});
+        try stdoutPrint("Failure rate: {d:.1}%\n", .{failure_rate});
     }
 
     if (summary.successful_cycles > 0) {
-        try stdout.writeAll("\n✅ Development completed successfully!\n", .{});
+        try stdoutWrite("\n✅ Development completed successfully!\n");
     } else {
-        try stdout.writeAll("\n⚠️  No successful cycles completed.\n", .{});
+        try stdoutWrite("\n⚠️  No successful cycles completed.\n");
     }
 }
 
 /// Initialize .ralph directory structure
 fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
     _ = allocator;
-    const stdout = std.io.getStdOut();
 
     const ralph_path = if (std.mem.eql(u8, path, ".")) ".ralph" else path;
 
     // Check if directory exists
     if (std.fs.openDirAbsolute(ralph_path, .{})) |_| {
         if (!force) {
-            try stdout.print("Error: .ralph directory already exists at '{s}'\n", .{ralph_path});
-            try stdout.writeAll("Use --force to overwrite.\n", .{});
+            try stdoutPrint("Error: .ralph directory already exists at '{s}'\n", .{ralph_path});
+            try stdoutWrite("Use --force to overwrite.\n");
             return error.AlreadyExists;
         }
     } else |_| {}
 
-    try stdout.print("Initializing Ralph at '{s}'...\n", .{ralph_path});
+    try stdoutPrint("Initializing Ralph at '{s}'...\n", .{ralph_path});
 
     // Create directory structure
     var dir = try std.fs.cwd().makeOpenPath(ralph_path, .{});
@@ -201,11 +211,11 @@ fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
     try tech_tree_file.writeAll(tech_tree_content);
     tech_tree_file.close();
 
-    try stdout.print("\n✅ Ralph initialized successfully at '{s}'\n", .{ralph_path});
-    try stdout.writeAll("\nNext steps:\n", .{});
-    try stdout.writeAll("  1. Edit fix_plan.md to add your tasks\n", .{});
-    try stdout.writeAll("  2. Update TECH_TREE.md with your tech tree\n", .{});
-    try stdout.writeAll("  3. Run: ralph --run-one-cycle\n", .{});
+    try stdout_writer.print("\n✅ Ralph initialized successfully at '{s}'\n", .{ralph_path});
+    try stdout_writer.writeAll("\nNext steps:\n");
+    try stdout_writer.writeAll("  1. Edit fix_plan.md to add your tasks\n");
+    try stdout_writer.writeAll("  2. Update TECH_TREE.md with your tech tree\n");
+    try stdout_writer.writeAll("  3. Run: ralph --run-one-cycle\n");
 }
 
 pub fn main() !void {
@@ -217,8 +227,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        const stdout = std.io.getStdOut();
-        try printUsage(stdout);
+        try printUsage(stdout_writer);
         return;
     }
 
@@ -232,8 +241,7 @@ pub fn main() !void {
         const arg = args[i];
 
         if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
-            const stdout = std.io.getStdOut();
-            try printUsage(stdout);
+            try printUsage(stdout_writer);
             return;
         } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--verbose")) {
             verbose = true;
@@ -249,13 +257,14 @@ pub fn main() !void {
             try runUntilComplete(allocator, config, verbose);
             return;
         } else if (std.mem.eql(u8, arg, "--init")) {
-            const path = if (i + 1 < args.len and args[i + 1][0] != '-') b: { i += 1; args[i]; } else ".";
+            const path = if (i + 1 < args.len and args[i + 1][0] != '-') blk: {
+                i += 1;
+                break :blk args[i];
+            } else ".";
             try initRalph(allocator, path, force);
             return;
         } else {
-            const stdout = std.io.getStdOut();
-            try stdout.print("Unknown argument: {s}\n\n", .{arg});
-            const stdout_writer = std.io.getStdOut();
+            try stdout_writer.print("Unknown argument: {s}\n\n", .{arg});
             try printUsage(stdout_writer);
             return error.UnknownArgument;
         }
