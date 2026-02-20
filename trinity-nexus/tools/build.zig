@@ -80,14 +80,21 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // telegram_alerts needs system_stats for rich alerts
-    // Re-create telegram_alerts_mod with system_stats import
+    // Import real_telegram_http module from generated directory (Phase 5)
+    const real_telegram_http_mod = b.createModule(.{
+        .root_source_file = b.path("../../generated/real_telegram_http.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // telegram_alerts needs system_stats for rich alerts AND real_telegram_http (Phase 5)
     const telegram_alerts_mod_with_deps = b.createModule(.{
         .root_source_file = b.path("../../generated/telegram_alerts.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
             .{ .name = "system_stats", .module = system_stats_mod },
+            .{ .name = "real_telegram_http", .module = real_telegram_http_mod },
         },
     });
 
@@ -101,6 +108,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "swarm_watch", .module = swarm_watch_mod },
             .{ .name = "telegram_alerts", .module = telegram_alerts_mod_with_deps },
             .{ .name = "system_stats", .module = system_stats_mod },
+            .{ .name = "real_telegram_http", .module = real_telegram_http_mod },
             .{ .name = "trinity-symb", .module = symb_dep.module("trinity_symb") },
         },
     });
