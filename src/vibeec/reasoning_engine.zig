@@ -63,6 +63,7 @@ pub const SemanticAnalysis = struct {
     keywords: ArrayList([]const u8),
 
     pub fn deinit(self: *SemanticAnalysis, allocator: Allocator) void {
+        allocator.free(self.signature);
         for (self.keywords.items) |kw| {
             allocator.free(kw);
         }

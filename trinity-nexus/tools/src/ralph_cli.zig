@@ -12,6 +12,9 @@ const ralph = @import("maxwell/ralph/agent.zig");
 // This is imported as a build module named "swarm_watch"
 const swarm_watch = @import("swarm_watch");
 
+// Import Telegram Alerts module (Phase 4)
+const telegram_alerts = @import("telegram_alerts");
+
 // Import trinity-symb for kg_sync (real DHT)
 const trinity_symb = @import("trinity-symb");
 const kg_sync = trinity_symb.kg_sync;
@@ -56,6 +59,8 @@ fn printUsage() !void {
         \\
         \\OPTIONS:
         \\  --real-dht                   Use real DHT polling from kg_sync.zig (instead of mock)
+        \\  --telegram-bot-token TOKEN   Telegram bot token for alerts (Phase 4)
+        \\  --telegram-chat-id ID        Telegram chat ID for alerts (Phase 4)
         \\  -v, --verbose                Enable verbose output
         \\  --no-color                   Disable colored output
         \\
@@ -66,6 +71,7 @@ fn printUsage() !void {
         \\  ralph --init ./my-project
         \\  ralph --swarm-monitor
         \\  ralph --swarm-monitor-live
+        \\  ralph --telegram-bot-token BOT_TOKEN --telegram-chat-id CHAT_ID --swarm-monitor-live
         \\
     );
 }
@@ -233,7 +239,7 @@ fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
 }
 
 /// Run Swarm Watch - Live DHT & TRI rewards monitor dashboard
-fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht: bool) !void {
+fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht: bool, telegram_bot_token: []const u8, telegram_chat_id: []const u8) !void {
     _ = verbose;
 
     // Create real DHT instance if --real-dht flag is set
@@ -263,6 +269,8 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
             .interval_ms = 2000,
             .clear_screen = true,
             .show_timestamp = true,
+            .telegram_bot_token = telegram_bot_token,
+            .telegram_chat_id = telegram_chat_id,
         };
         const mode = if (use_real_dht) swarm_watch.PollMode.real else swarm_watch.PollMode.mock;
         try swarm_watch.runLiveDashboard(allocator, stdout_file, config, mode);
