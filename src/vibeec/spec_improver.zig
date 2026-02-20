@@ -219,9 +219,12 @@ pub const SpecImprover = struct {
                 result.behaviors_filled += 1;
             } else {
                 result.behaviors_skipped += 1;
+                // Duplicate strings since they point into spec which will be deinited
+                const name_dup = try self.allocator.dupe(u8, behavior.name);
+                const reason_dup = try self.allocator.dupe(u8, "No matching implementation found");
                 const entry = ImprovementResult.ErrorEntry{
-                    .behavior_name = behavior.name,
-                    .reason = "No matching implementation found",
+                    .behavior_name = name_dup,
+                    .reason = reason_dup,
                 };
                 try result.errors.append(self.allocator, entry);
             }

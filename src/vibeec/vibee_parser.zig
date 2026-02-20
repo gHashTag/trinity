@@ -340,6 +340,8 @@ pub const VibeeParser = struct {
 
     pub fn parse(self: *Self) !VibeeSpec {
         var spec = VibeeSpec.init(self.allocator);
+        // Transfer source ownership to spec - all parsed strings are slices into this
+        spec.source_content = self.source;
 
         while (self.pos < self.source.len) {
             self.skipEmptyLinesAndComments();
