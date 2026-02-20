@@ -75,6 +75,11 @@ pub const VibeeSpec = struct {
     }
 
     pub fn deinit(self: *VibeeSpec) void {
+        // Free source content if owned
+        if (self.source_content.len > 0) {
+            self.allocator.free(self.source_content);
+        }
+
         // Освобождаем вложенные структуры
         for (self.types.items) |*t| {
             t.fields.deinit(self.allocator);
