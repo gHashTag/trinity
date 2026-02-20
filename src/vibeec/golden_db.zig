@@ -78,18 +78,18 @@ pub const GoldenDB = struct {
 
     /// Initialize the golden database with verified implementations
     pub fn init(allocator: Allocator) !Self {
-        var by_category: std.EnumMap(Category, std.ArrayList(*GoldenImpl)) = .{};
-        // Initialize all category lists as empty
-        inline for (std.meta.fields(Category)) |field| {
-            by_category.set(@field(Category, field.name), .empty);
-        }
-
         var db = Self{
             .allocator = allocator,
             .by_name = std.StringHashMap(*GoldenImpl).init(allocator),
             .implementations = std.ArrayList(*GoldenImpl).empty,
-            .by_category = by_category,
+            .by_category = std.EnumMap(Category, std.ArrayList(*GoldenImpl)){},
         };
+
+        // Initialize all category lists as empty
+        inline for (std.meta.fields(Category)) |field| {
+            const cat = @field(Category, field.name);
+            db.by_category.put(cat, .empty);
+        }
 
         // Populate with golden implementations
         try db.populateVSA();
@@ -146,15 +146,19 @@ pub const GoldenDB = struct {
 
     /// Get implementations by category
     pub fn getByCategory(self: *const Self, cat: Category) []const *GoldenImpl {
-        const list = self.by_category.get(cat);
-        return list.items;
+        if (self.by_category.get(cat)) |list| {
+            return list.items;
+        }
+        return &.{};
     }
 
     /// Add implementation to database
     fn add(self: *Self, impl: *GoldenImpl) !void {
         try self.implementations.append(self.allocator, impl);
         try self.by_name.put(impl.name, impl);
-        try self.by_category.get(impl.category).append(self.allocator, impl);
+        if (self.by_category.getPtr(impl.category)) |list| {
+            try list.append(self.allocator, impl);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -610,7 +614,7 @@ pub const GoldenDB = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "GoldenDB: init and query" {
-    const db = try GoldenDB.init(std.testing.allocator);
+    var db = try GoldenDB.init(std.testing.allocator);
     defer db.deinit();
 
     const bind_impl = db.get("bind", .{});
@@ -619,7 +623,7 @@ test "GoldenDB: init and query" {
 }
 
 test "GoldenDB: search by tags" {
-    const db = try GoldenDB.init(std.testing.allocator);
+    var db = try GoldenDB.init(std.testing.allocator);
     defer db.deinit();
 
     const results = try db.search("vector", .{});
@@ -627,7 +631,7 @@ test "GoldenDB: search by tags" {
 }
 
 test "GoldenDB: category counts" {
-    const db = try GoldenDB.init(std.testing.allocator);
+    var db = try GoldenDB.init(std.testing.allocator);
     defer db.deinit();
 
     try std.testing.expect(db.getByCategory(.vsa).len > 0);
