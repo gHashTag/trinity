@@ -264,7 +264,8 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
             .clear_screen = true,
             .show_timestamp = true,
         };
-        try swarm_watch.runLiveDashboard(allocator, stdout_file, config);
+        const mode = if (use_real_dht) swarm_watch.PollMode.real else swarm_watch.PollMode.mock;
+        try swarm_watch.runLiveDashboard(allocator, stdout_file, config, mode);
         return;
     }
 
