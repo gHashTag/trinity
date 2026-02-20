@@ -33,6 +33,7 @@ pub const vsa = @import("vsa.zig"); // TEN: 6%
 pub const tensor = @import("tensor.zig"); // Tensor operations (NEW)
 pub const inference = @import("inference.zig"); // Inference operations (NEW)
 pub const model = @import("model.zig"); // Model operations (NEW)
+pub const economic = @import("economic.zig"); // $TRI Economic patterns (NEW v10)
 pub const dsl = @import("dsl.zig"); // DSL patterns
 pub const chat = @import("chat.zig"); // Chat patterns (fluent responses)
 pub const rl = @import("rl.zig"); // RL: raylib GUI/rendering patterns
@@ -55,6 +56,7 @@ pub const Category = enum {
     tensor,
     inference,
     model,
+    economic,
     rl,
     unknown,
 };
@@ -181,6 +183,21 @@ pub fn matchAll(builder: *CodeBuilder, b: *const Behavior) !bool {
         if (try model.match(builder, b)) return true;
     }
 
+    // Economic: earnTaskReward, stakeTRI, spendTRI, depinStaking, etc.
+    if (std.mem.indexOf(u8, name, "earn") != null or
+        std.mem.indexOf(u8, name, "stake") != null or
+        std.mem.indexOf(u8, name, "spend") != null or
+        std.mem.indexOf(u8, name, "depin") != null or
+        std.mem.indexOf(u8, name, "treasury") != null or
+        std.mem.indexOf(u8, name, "reward") != null or
+        std.mem.indexOf(u8, name, "fee") != null or
+        std.mem.indexOf(u8, name, "governance") != null or
+        std.mem.indexOf(u8, name, "hire") != null or
+        std.mem.indexOf(u8, name, "terminate") != null)
+    {
+        if (try economic.match(builder, b)) return true;
+    }
+
     return false;
 }
 
@@ -214,6 +231,7 @@ pub fn matchWithCategory(builder: *CodeBuilder, b: *const Behavior) !MatchResult
     if (try tensor.match(builder, b)) return .{ .matched = true, .category = .tensor };
     if (try inference.match(builder, b)) return .{ .matched = true, .category = .inference };
     if (try model.match(builder, b)) return .{ .matched = true, .category = .model };
+    if (try economic.match(builder, b)) return .{ .matched = true, .category = .economic };
 
     return .{ .matched = false, .category = .unknown };
 }
@@ -231,6 +249,7 @@ pub fn getPatternCounts() struct {
     tensor: u32,
     inference: u32,
     model: u32,
+    economic: u32,
     rl: u32,
     total: u32,
 } {
@@ -246,8 +265,9 @@ pub fn getPatternCounts() struct {
         .tensor = 4, // tensor_create, tensor_add, tensor_mul, tensor_matmul
         .inference = 4, // forward_pass, backward_pass, attention, feedforward
         .model = 4, // load_model, save_model, predict, sample_token
+        .economic = 10, // earnTaskReward, stakeTRIForPriority, spendTRIOnResources, depinStakingOptimizer, triTreasury, rewardDistribution, feeForTask, governanceVote, hireAgent, terminateAgent
         .rl = 57, // Drawing(10) + Text(7) + Input(7) + Window(15) + Color(4) + Audio(2) + Cursor(2) + Texture(1) + Composites(9)
-        .total = 267, // Previous 243 + 12 new patterns (ml +5, vsa +4, io +3, tensor +4, inference +4, model +4) = 255 + 12 = 267
+        .total = 277, // Previous 267 + 10 economic patterns
     };
 }
 
