@@ -374,8 +374,19 @@ pub const Session = struct {
     }
 
     pub fn deinit(self: *Session, allocator: Allocator) void {
-        _ = allocator;
-        _ = self;
+        // Free allocated strings from git functions
+        // Note: Only free if not a static literal ("unknown" or "??????")
+        if (self.current_branch.len > 0 and self.current_branch.ptr[0] != 0) {
+            // Check if it's dynamically allocated (heuristic: longer than static literals)
+            if (self.current_branch.len > 10) {
+                allocator.free(self.current_branch);
+            }
+        }
+        if (self.last_commit_sha.len > 0 and self.last_commit_sha.ptr[0] != 0) {
+            if (self.last_commit_sha.len > 6) {
+                allocator.free(self.last_commit_sha);
+            }
+        }
     }
 };
 
