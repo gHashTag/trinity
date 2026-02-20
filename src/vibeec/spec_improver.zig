@@ -197,7 +197,7 @@ pub const SpecImprover = struct {
         result.behaviors_total = spec.behaviors.items.len;
 
         // Find stub behaviors
-        const stubs = try self.findStubBehaviors(&spec);
+        var stubs = try self.findStubBehaviors(&spec);
         defer {
             for (stubs.items) |*s| {
                 _ = s;
