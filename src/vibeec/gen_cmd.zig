@@ -339,4 +339,12 @@ fn improveSpec(allocator: std.mem.Allocator, spec_path: []const u8, dry_run: boo
     }
 
     std.debug.print("\n", .{});
+
+    // Clean up duplicated error strings
+    for (result.errors.items) |err| {
+        allocator.free(err.behavior_name);
+        allocator.free(err.reason);
+    }
+    // Cast away const for cleanup - we own this data
+    @constCast(&result.errors).deinit(allocator);
 }

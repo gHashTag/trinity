@@ -1,94 +1,43 @@
-# FPGA ACCELERATION — Ternary Hardware Backend
-# Host-side driver + FPGA pipeline model for VSA operations
-# phi^2 + 1/phi^2 = 3 = TRINITY
-
 name: fpga_acceleration
 version: "1.0.0"
 language: zig
-module: fpga_acceleration
 
-# CONSTANTS
-constants:
-  VECTOR_DIM: 256
-  TRIT_BITS: 2
-  WORD_BITS: 32
-  TRITS_PER_WORD: 16
-  WORDS_PER_VECTOR: 16
-  BRAM_WIDTH: 512
-  AXI_DATA_WIDTH: 32
-  AXI_ADDR_WIDTH: 12
-  MAX_CLOCK_MHZ: 200
-  DEFAULT_CLOCK_MHZ: 100
-
-# TYPES
 types:
   FPGADevice:
-    enum:
-      - ARTIX7_35T: 0
-      - ARTIX7_100T: 1
-      - ZYNQ_7020: 2
-      - ZYNQ_7045: 3
-
   FPGAOperation:
-    enum:
-      - BIND: 0
-      - BUNDLE: 1
-      - DOT_PRODUCT: 2
-      - PERMUTE: 3
-      - MATVEC: 4
-      - COSINE: 5
-
   TritEncoding:
-    description: 2-bit encoding for ternary values
-    values:
-      ZERO: 0b00
-      POS: 0b01
-      NEG: 0b10
-      INVALID: 0b11
-
   FPGAConfig:
-    description: FPGA device configuration
     fields:
       device: FPGADevice
       clock_mhz: Int
       vector_dim: Int
       num_mac_units: Int
       bram_depth: Int
-
   DeviceResources:
-    description: Available resources for target device
     fields:
       total_luts: Int
       total_ffs: Int
       total_bram_kb: Int
       total_dsp: Int
-
   ResourceUsage:
-    description: Estimated resource consumption
     fields:
       luts: Int
       ffs: Int
       bram_kb: Int
       dsp: Int
-
   PipelineLatency:
-    description: Cycle counts for each pipeline stage
     fields:
       bind_cycles: Int
       bundle_cycles: Int
       dot_product_cycles: Int
       permute_cycles: Int
       matvec_cycles: Int
-
   AXIRegister:
-    description: AXI-lite register map entry
     fields:
       offset: Int
       name: String
       access: String
-
   FPGASynthesisReport:
-    description: Post-synthesis metrics
     fields:
       device: FPGADevice
       clock_mhz: Int
@@ -97,9 +46,7 @@ types:
       throughput_ops_per_sec: Int
       power_watts: Float
       utilization_pct: Float
-
   FPGAPerformanceCounters:
-    description: Runtime operation counters
     fields:
       bind_ops: Int
       bundle_ops: Int
@@ -109,9 +56,7 @@ types:
       total_cycles: Int
       stall_cycles: Int
 
-# BEHAVIORS
 behaviors:
-  # Trit Encoding/Decoding
   - name: encode_trit
     given: Ternary value {-1, 0, +1}
     when: Need 2-bit FPGA representation
@@ -132,7 +77,6 @@ behaviors:
     when: Need i8 ternary vector
     then: Unpack 16 trits per word into i8 array
 
-  # FPGA Pipeline Operations
   - name: fpga_bind
     given: Two encoded vectors A, B
     when: Need element-wise trit multiply
@@ -158,7 +102,6 @@ behaviors:
     when: Need cosine similarity
     then: Dot product + norm pipeline (5 cycles)
 
-  # Resource Estimation
   - name: get_device_resources
     given: FPGADevice target
     when: Need available resource budget
@@ -174,19 +117,16 @@ behaviors:
     when: Checking if design fits
     then: Return utilization percentage
 
-  # AXI-Lite Register Map
   - name: get_register_map
     given: Standard control interface
     when: Need AXI-lite address layout
     then: Return register offset table (control/status/data/perf)
 
-  # Synthesis Report
   - name: generate_synthesis_report
     given: FPGAConfig
     when: Need estimated metrics
     then: Return FPGASynthesisReport with timing, power, throughput
 
-  # Host Controller
   - name: write_register
     given: Register offset and value
     when: Host writes to FPGA
@@ -202,4 +142,3 @@ behaviors:
     when: Host triggers FPGA computation
     then: Execute operation, update counters, return result
 
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3
