@@ -73,11 +73,22 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // Import telegram_alerts module from generated directory (Phase 4)
-    const telegram_alerts_mod = b.createModule(.{
+    // Import system_stats module from generated directory (Phase 4 Enhanced)
+    const system_stats_mod = b.createModule(.{
+        .root_source_file = b.path("../../generated/system_stats.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // telegram_alerts needs system_stats for rich alerts
+    // Re-create telegram_alerts_mod with system_stats import
+    const telegram_alerts_mod_with_deps = b.createModule(.{
         .root_source_file = b.path("../../generated/telegram_alerts.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "system_stats", .module = system_stats_mod },
+        },
     });
 
     // Create CLI module
@@ -88,7 +99,8 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "ralph", .module = ralph_mod },
             .{ .name = "swarm_watch", .module = swarm_watch_mod },
-            .{ .name = "telegram_alerts", .module = telegram_alerts_mod },
+            .{ .name = "telegram_alerts", .module = telegram_alerts_mod_with_deps },
+            .{ .name = "system_stats", .module = system_stats_mod },
             .{ .name = "trinity-symb", .module = symb_dep.module("trinity_symb") },
         },
     });

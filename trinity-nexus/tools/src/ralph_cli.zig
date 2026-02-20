@@ -15,6 +15,9 @@ const swarm_watch = @import("swarm_watch");
 // Import Telegram Alerts module (Phase 4)
 const telegram_alerts = @import("telegram_alerts");
 
+// Import System Stats module (Phase 4 Enhanced)
+const system_stats = @import("system_stats");
+
 // Import trinity-symb for kg_sync (real DHT)
 const trinity_symb = @import("trinity-symb");
 const kg_sync = trinity_symb.kg_sync;
@@ -278,6 +281,9 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
         else
             telegram_alerts.TelegramAlerts.initDisabled(allocator);
 
+        // Initialize System Stats Collector (Phase 4 Enhanced)
+        var stats_collector = system_stats.SystemStatsCollector.init(allocator);
+
         // Custom live loop with integrated alert checking
         var watch = swarm_watch.SwarmWatch.init(allocator);
         watch.mode = mode;
@@ -361,12 +367,22 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
                     }
                 }
 
-                // Process health checks and send alerts if needed
-                try alerts.processAndAlert(
+                // Collect system stats with current DHT values (Phase 4 Enhanced)
+                var sys_stats = stats_collector.collectWithDht(
+                    mock_acceptance,
+                    mock_peers,
+                    watch.dht_stats.triples_stored,
+                );
+                // Update with mock cycle data
+                system_stats.SystemStats.updateWithCycle(&sys_stats, mock_tick, 7);
+
+                // Process health checks and send RICH alerts with system information
+                try alerts.processAndAlertRich(
                     mock_acceptance,
                     mock_peers,
                     watch.dht_stats.triples_stored,
                     recent_event_strings[0..event_count],
+                    sys_stats,
                 );
 
                 // Free allocated strings
