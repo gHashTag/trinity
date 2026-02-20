@@ -78,17 +78,18 @@ pub const GoldenDB = struct {
 
     /// Initialize the golden database with verified implementations
     pub fn init(allocator: Allocator) !Self {
+        var by_category: std.EnumMap(Category, std.ArrayList(*GoldenImpl)) = .{};
+        // Initialize all category lists as empty
+        inline for (std.meta.fields(Category)) |field| {
+            by_category.set(@field(Category, field.name), .empty);
+        }
+
         var db = Self{
             .allocator = allocator,
             .by_name = std.StringHashMap(*GoldenImpl).init(allocator),
             .implementations = std.ArrayList(*GoldenImpl).empty,
-            .by_category = std.EnumMap(Category, std.ArrayList(*GoldenImpl)).init(allocator),
+            .by_category = by_category,
         };
-
-        // Initialize category lists
-        inline for (std.meta.fields(Category)) |field| {
-            db.by_category.get(field.name).* = .empty;
-        }
 
         // Populate with golden implementations
         try db.populateVSA();
@@ -151,9 +152,9 @@ pub const GoldenDB = struct {
 
     /// Add implementation to database
     fn add(self: *Self, impl: *GoldenImpl) !void {
-        try self.implementations.append(impl);
+        try self.implementations.append(self.allocator, impl);
         try self.by_name.put(impl.name, impl);
-        try self.by_category.get(impl.category).append(impl);
+        try self.by_category.get(impl.category).append(self.allocator, impl);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════

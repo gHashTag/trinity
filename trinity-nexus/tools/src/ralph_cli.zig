@@ -273,6 +273,11 @@ fn runSwarmMonitor(allocator: Allocator, verbose: bool, live: bool, use_real_dht
     // Initialize SwarmWatch
     var watch = swarm_watch.SwarmWatch.init(allocator);
 
+    // Set mode based on whether we're using real DHT
+    if (use_real_dht) {
+        watch.mode = .real;
+    }
+
     // Poll DHT stats (real or mock)
     if (use_real_dht and dht_heap_allocated != null) {
         const stats = dht_heap_allocated.?.getStats();
