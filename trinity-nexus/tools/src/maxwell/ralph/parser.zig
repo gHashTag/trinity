@@ -453,16 +453,23 @@ pub fn parseRegressionPatterns(allocator: Allocator, content: []const u8) ![]Reg
             var p = &current_pattern.?;
 
             if (std.mem.indexOf(u8, trimmed, "**Description:**") != null) {
-                const desc_start = std.mem.indexOf(u8, trimmed, ":") orelse 0;
-                const desc = trimmed[desc_start + 1 ..];
+                // Find the colon after "**Description:**"
+                const marker = "**Description:**";
+                const marker_idx = std.mem.indexOf(u8, trimmed, marker) orelse 0;
+                const desc_start = marker_idx + marker.len;
+                const desc = trimmed[desc_start..];
                 p.description = try allocator.dupe(u8, std.mem.trim(u8, desc, " \t\r"));
             } else if (std.mem.indexOf(u8, trimmed, "**Root Cause:**") != null) {
-                const cause_start = std.mem.indexOf(u8, trimmed, ":") orelse 0;
-                const cause = trimmed[cause_start + 1 ..];
+                const marker = "**Root Cause:**";
+                const marker_idx = std.mem.indexOf(u8, trimmed, marker) orelse 0;
+                const cause_start = marker_idx + marker.len;
+                const cause = trimmed[cause_start..];
                 p.root_cause = try allocator.dupe(u8, std.mem.trim(u8, cause, " \t\r"));
             } else if (std.mem.indexOf(u8, trimmed, "**Solution:**") != null) {
-                const sol_start = std.mem.indexOf(u8, trimmed, ":") orelse 0;
-                const sol = trimmed[sol_start + 1 ..];
+                const marker = "**Solution:**";
+                const marker_idx = std.mem.indexOf(u8, trimmed, marker) orelse 0;
+                const sol_start = marker_idx + marker.len;
+                const sol = trimmed[sol_start..];
                 p.solution = try allocator.dupe(u8, std.mem.trim(u8, sol, " \t\r"));
             }
         }
