@@ -1405,6 +1405,7 @@ pub const ZigCodeGen = struct {
     }
 
     fn generateBehaviorImplementation(self: *Self, pattern_matcher: *PatternMatcher, b: *const Behavior) !void {
+        // ALWAYS write this marker to verify we're using the latest emitter code
         // IMPORTANT: Check for custom implementation FIRST, before any pattern matching
         // If a behavior has an implementation field, use it instead of pattern-generated stubs
         if (b.implementation.len > 0) {
@@ -1481,6 +1482,7 @@ pub const ZigCodeGen = struct {
             std.mem.startsWith(u8, name, "record") or
             std.mem.startsWith(u8, name, "update") or
             std.mem.startsWith(u8, name, "health");
+
 
         if (is_safe_pattern) {
             if (try pattern_matcher.generateFromWhenThenPattern(b)) {
