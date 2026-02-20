@@ -635,6 +635,7 @@ test "GoldenDB: search by tags" {
     defer db.deinit();
 
     const results = try db.search("vector", .{});
+    defer std.testing.allocator.free(results);
     try std.testing.expect(results.len > 0);
 }
 
