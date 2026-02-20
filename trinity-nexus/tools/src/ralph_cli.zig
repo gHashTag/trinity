@@ -8,6 +8,10 @@ const posix = std.posix;
 // Import Ralph Agent module
 const ralph = @import("maxwell/ralph/agent.zig");
 
+// Import Swarm Watch module (for --swarm-monitor command)
+// This is imported as a build module named "swarm_watch"
+const swarm_watch = @import("swarm_watch");
+
 // Stdout file handle
 const stdout_file = std.fs.File{ .handle = posix.STDOUT_FILENO };
 
@@ -18,8 +22,8 @@ fn stdoutWrite(s: []const u8) !void {
 
 /// Print formatted string to stdout
 fn stdoutPrint(comptime fmt: []const u8, args: anytype) !void {
-    const result = std.fmt.allocPrintZ(std.heap.page_allocator, fmt, args) catch return error.OutOfMemory;
-    defer std.heap.page_allocator.free(result);
+    var buffer: [1024]u8 = undefined;
+    const result = try std.fmt.bufPrint(&buffer, fmt, args);
     try stdout_file.writeAll(result);
 }
 
@@ -43,6 +47,7 @@ fn printUsage() !void {
         \\  --run-one-cycle              Run one Golden Chain cycle
         \\  --run-until-complete         Run cycles until EXIT_SIGNAL
         \\  --init [PATH]                Initialize .ralph directory
+        \\  --swarm-monitor              Live DHT & TRI rewards monitor dashboard
         \\
         \\OPTIONS:
         \\  -v, --verbose                Enable verbose output
@@ -53,6 +58,7 @@ fn printUsage() !void {
         \\  ralph --run-one-cycle
         \\  ralph --run-until-complete
         \\  ralph --init ./my-project
+        \\  ralph --swarm-monitor
         \\
     );
 }
@@ -60,7 +66,7 @@ fn printUsage() !void {
 /// Print Ralph status
 fn showStatus(allocator: Allocator, config: ralph.RalphConfig) !void {
     var agent = try ralph.RalphAgent.init(allocator, config);
-    defer agent.deinit(allocator);
+    defer agent.deinit();
 
     const status = try agent.getStatus(allocator);
     defer allocator.free(status);
@@ -76,7 +82,7 @@ fn runOneCycle(allocator: Allocator, config: ralph.RalphConfig, verbose: bool) !
     }
 
     var agent = try ralph.RalphAgent.init(allocator, config);
-    defer agent.deinit(allocator);
+    defer agent.deinit();
 
     const result = try agent.runOneCycle();
 
@@ -99,7 +105,7 @@ fn runUntilComplete(allocator: Allocator, config: ralph.RalphConfig, verbose: bo
     }
 
     var agent = try ralph.RalphAgent.init(allocator, config);
-    defer agent.deinit(allocator);
+    defer agent.deinit();
 
     const summary = try agent.runUntilComplete();
 
@@ -131,7 +137,8 @@ fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
     const ralph_path = if (std.mem.eql(u8, path, ".")) ".ralph" else path;
 
     // Check if directory exists
-    if (std.fs.openDirAbsolute(ralph_path, .{})) |_| {
+    const cwd = std.fs.cwd();
+    if (cwd.openDir(ralph_path, .{})) |_| {
         if (!force) {
             try stdoutPrint("Error: .ralph directory already exists at '{s}'\n", .{ralph_path});
             try stdoutWrite("Use --force to overwrite.\n");
@@ -211,11 +218,53 @@ fn initRalph(allocator: Allocator, path: []const u8, force: bool) !void {
     try tech_tree_file.writeAll(tech_tree_content);
     tech_tree_file.close();
 
-    try stdout_writer.print("\n✅ Ralph initialized successfully at '{s}'\n", .{ralph_path});
-    try stdout_writer.writeAll("\nNext steps:\n");
-    try stdout_writer.writeAll("  1. Edit fix_plan.md to add your tasks\n");
-    try stdout_writer.writeAll("  2. Update TECH_TREE.md with your tech tree\n");
-    try stdout_writer.writeAll("  3. Run: ralph --run-one-cycle\n");
+    try stdoutPrint("\n✅ Ralph initialized successfully at '{s}'\n", .{ralph_path});
+    try stdoutWrite("\nNext steps:\n");
+    try stdoutWrite("  1. Edit fix_plan.md to add your tasks\n");
+    try stdoutWrite("  2. Update TECH_TREE.md with your tech tree\n");
+    try stdoutWrite("  3. Run: ralph --run-one-cycle\n");
+}
+
+/// Run Swarm Watch - Live DHT & TRI rewards monitor dashboard
+fn runSwarmMonitor(allocator: Allocator, verbose: bool) !void {
+    _ = verbose;
+
+    try stdoutWrite("\n╔══════════════════════════════════════════════════════════════════════════════╗\n");
+    try stdoutWrite("║           SWARM-WATCH DEV-003 | Live DHT & TRI Monitor                ║\n");
+    try stdoutWrite("╚══════════════════════════════════════════════════════════════════════════════╝\n\n");
+
+    // Initialize SwarmWatch with mock data for Phase 1
+    var watch = swarm_watch.SwarmWatch.init();
+
+    // Poll mock DHT stats
+    watch.pollDhtStats(.{
+        .triples_stored = 1337,
+        .triples_distributed = 500,
+        .triples_received = 450,
+        .triples_rejected = 15,
+        .triples_duplicate = 10,
+        .sync_rounds = 42,
+        .peer_count = 7,
+    });
+
+    // Poll mock reward stats
+    watch.pollRewardStats(.{
+        .total_paid_wei = 4_233_000_000_000_000_000, // 4.233 TRI
+        .pending_wei = 87_000_000_000_000, // 0.000087 TRI
+        .triples_rewarded = 5000,
+    });
+
+    // Record some sync events
+    watch.recordSyncEvent(.store, "Trinity", "is", "ternary", .accepted);
+    watch.recordSyncEvent(.sync_inbound, "Alice", "knows", "Bob", .duplicate);
+    watch.recordSyncEvent(.store, "Ralph", "generates", "code", .accepted);
+
+    // Render the dashboard (provide allocator for formatting)
+    try watch.renderDashboard(allocator, stdout_file);
+
+    try stdoutWrite("\n[Mock Data Mode - Phase 1]\n");
+    try stdoutWrite("Real DHT integration will be added in Phase 2.\n");
+    try stdoutWrite("Press Ctrl+C to exit.\n");
 }
 
 pub fn main() !void {
@@ -227,7 +276,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        try printUsage(stdout_writer);
+        try printUsage();
         return;
     }
 
@@ -241,7 +290,7 @@ pub fn main() !void {
         const arg = args[i];
 
         if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
-            try printUsage(stdout_writer);
+            try printUsage();
             return;
         } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--verbose")) {
             verbose = true;
@@ -263,9 +312,12 @@ pub fn main() !void {
             } else ".";
             try initRalph(allocator, path, force);
             return;
+        } else if (std.mem.eql(u8, arg, "--swarm-monitor")) {
+            try runSwarmMonitor(allocator, verbose);
+            return;
         } else {
-            try stdout_writer.print("Unknown argument: {s}\n\n", .{arg});
-            try printUsage(stdout_writer);
+            try stdoutPrint("Unknown argument: {s}\n\n", .{arg});
+            try printUsage();
             return error.UnknownArgument;
         }
 

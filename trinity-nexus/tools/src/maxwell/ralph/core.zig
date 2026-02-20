@@ -53,10 +53,10 @@ pub fn triDecompose(allocator: Allocator, fix_plan_path: []const u8) ![]types.Ta
 
     if (selected_task) |task| {
         var result = try std.ArrayList(types.TaskEntry).initCapacity(allocator, 0);
-        try result.append(task);
+        try result.append(allocator, task);
 
         for (task.subtasks) |subtask| {
-            try result.append(types.TaskEntry{
+            try result.append(allocator, types.TaskEntry{
                 .id = try std.fmt.allocPrint(allocator, "{s}-{s}", .{ task.id, subtask.description }),
                 .description = subtask.description,
                 .priority = task.priority,
@@ -104,7 +104,7 @@ pub fn triPlan(allocator: Allocator, tech_tree_path: []const u8) !PlanOptions {
     for (tree.available) |node| {
         const roi = (node.impact / node.complexity) * @as(f64, @floatFromInt(node.dependencies.len));
 
-        try candidates.append(NodeCandidate{
+        try candidates.append(allocator, NodeCandidate{
             .id = try allocator.dupe(u8, node.id),
             .name = try allocator.dupe(u8, node.name),
             .roi = roi,
@@ -114,7 +114,7 @@ pub fn triPlan(allocator: Allocator, tech_tree_path: []const u8) !PlanOptions {
         });
     }
 
-    std.sort.insertion(f64, candidates.items, {}, struct {
+    std.sort.insertion(NodeCandidate, candidates.items, {}, struct {
         fn lessThan(_: void, a: NodeCandidate, b: NodeCandidate) bool {
             return a.roi > b.roi;
         }
@@ -161,9 +161,9 @@ pub fn triSpecCreate(allocator: Allocator, task: types.TaskEntry) ![]const u8 {
     var spec_name = try std.ArrayList(u8).initCapacity(allocator, 0);
     for (task.description) |c| {
         if (c == ' ' or c == '/' or c == '\\') {
-            try spec_name.append('_');
-        } else if (std.ascii.isAlNum(c) or c == '_' or c == '-') {
-            try spec_name.append(c);
+            try spec_name.append(allocator, '_');
+        } else if (std.ascii.isAlphanumeric(c) or c == '_' or c == '-') {
+            try spec_name.append(allocator, c);
         }
     }
 
@@ -207,7 +207,7 @@ fn generateSpecContent(allocator: Allocator, task: types.TaskEntry) ![]const u8 
 
 /// Link 4: TRI GEN - Generate Zig code via VIBEE compiler
 pub fn triGen(allocator: Allocator, spec_path: []const u8) !void {
-    const result = try process.vibeeGen(allocator, spec_path);
+    var result = try process.vibeeGen(allocator, spec_path);
     defer result.deinit(allocator);
 
     if (result.exit_code != 0) {
@@ -222,7 +222,7 @@ pub fn triGen(allocator: Allocator, spec_path: []const u8) !void {
 pub fn triTest(allocator: Allocator) !TestResult {
     const start_time = try std.time.Instant.now();
 
-    const result = process.zigTest(allocator, &[_][]const u8{}) catch |err| {
+    var result = process.zigTest(allocator, &[_][]const u8{}) catch |err| {
         return TestResult{
             .passed = false,
             .duration_ns = 0,
@@ -250,7 +250,7 @@ pub const TestResult = struct {
 pub fn triBench(allocator: Allocator, baseline_path: []const u8) !BenchmarkResult {
     const start_time = try std.time.Instant.now();
 
-    const result = process.run(allocator, &[_][]const u8{ "zig", "build", "bench" }) catch |err| {
+    var result = process.run(allocator, &[_][]const u8{ "zig", "build", "bench" }) catch |err| {
         return BenchmarkResult{
             .passed = false,
             .duration_ns = 0,
@@ -340,7 +340,7 @@ pub const ToxicVerdict = struct {
 
 /// Link 8: TRI GIT - Commit to feature branch
 pub fn triGit(allocator: Allocator, message: []const u8) !GitCommitResult {
-    const gates = try quality.runQualityGates(allocator);
+    var gates = try quality.runQualityGates(allocator);
     defer gates.deinit(allocator);
 
     if (!gates.allPassed()) {
@@ -419,13 +419,13 @@ pub fn selectTechTreeNode(allocator: Allocator, tech_tree_path: []const u8) ![]N
     const options = try triPlan(allocator, tech_tree_path);
 
     var candidates = try std.ArrayList(NodeCandidate).initCapacity(allocator, 0);
-    try candidates.append(options.option1);
+    try candidates.append(allocator, options.option1);
 
     if (options.option2) |opt2| {
-        try candidates.append(opt2);
+        try candidates.append(allocator, opt2);
     }
     if (options.option3) |opt3| {
-        try candidates.append(opt3);
+        try candidates.append(allocator, opt3);
     }
 
     return candidates.toOwnedSlice(allocator);
