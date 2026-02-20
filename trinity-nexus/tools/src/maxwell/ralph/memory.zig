@@ -43,7 +43,7 @@ pub const BenchmarkBaseline = struct {
         while (iter.next()) |entry| {
             allocator.free(entry.key_ptr.*);
         }
-        self.metrics.deinit(allocator);
+        self.metrics.deinit();
     }
 };
 
@@ -65,24 +65,21 @@ pub fn init(allocator: Allocator, ralph_path: []const u8) !MemoryStore {
     }
 
     {
-        const success_file = std.fs.cwd().openFile(
-            try std.fmt.allocPrint(allocator, "{s}/SUCCESS_HISTORY.md", .{ralph_path}),
-            .{},
-        ) catch |err| {
-            if (err == error.FileNotFound) {
-                // File doesn't exist yet - continue with empty patterns
-            } else {
-                return err;
-            }
-        };
-        defer if (success_file) |f| f.close();
+        const success_path = try std.fmt.allocPrint(allocator, "{s}/SUCCESS_HISTORY.md", .{ralph_path});
+        defer allocator.free(success_path);
 
-        if (success_file) |file| {
-            const content = try file.readAllAlloc(allocator, std.math.maxInt(usize));
+        if (std.fs.cwd().openFile(success_path, .{})) |success_file| {
+            defer success_file.close();
+            const content = try success_file.readToEndAlloc(allocator, std.math.maxInt(usize));
             defer allocator.free(content);
 
             const parsed = try parser.parseSuccessHistory(allocator, content);
             success_patterns.items = parsed;
+        } else |err| {
+            if (err != error.FileNotFound) {
+                return err;
+            }
+            // File doesn't exist yet - continue with empty patterns
         }
     }
 
@@ -94,45 +91,38 @@ pub fn init(allocator: Allocator, ralph_path: []const u8) !MemoryStore {
     }
 
     {
-        const regression_file = std.fs.cwd().openFile(
-            try std.fmt.allocPrint(allocator, "{s}/REGRESSION_PATTERNS.md", .{ralph_path}),
-            .{},
-        ) catch |err| {
-            if (err == error.FileNotFound) {
-                // File doesn't exist yet - continue with empty patterns
-            } else {
-                return err;
-            }
-        };
-        defer if (regression_file) |f| f.close();
+        const regression_path = try std.fmt.allocPrint(allocator, "{s}/REGRESSION_PATTERNS.md", .{ralph_path});
+        defer allocator.free(regression_path);
 
-        if (regression_file) |file| {
-            const content = try file.readAllAlloc(allocator, std.math.maxInt(usize));
+        if (std.fs.cwd().openFile(regression_path, .{})) |regression_file| {
+            defer regression_file.close();
+            const content = try regression_file.readToEndAlloc(allocator, std.math.maxInt(usize));
             defer allocator.free(content);
 
             const parsed = try parser.parseRegressionPatterns(allocator, content);
             regression_patterns.items = parsed;
+        } else |err| {
+            if (err != error.FileNotFound) {
+                return err;
+            }
+            // File doesn't exist yet - continue with empty patterns
         }
     }
 
     // Load benchmark baseline
     const baseline = BenchmarkBaseline.init();
     {
-        const baseline_file = std.fs.cwd().openFile(
-            try std.fmt.allocPrint(allocator, "{s}/internal/.benchmark_baseline", .{ralph_path}),
-            .{},
-        ) catch |err| {
-            if (err == error.FileNotFound) {
-                // File doesn't exist - use default baseline
-            } else {
+        const baseline_path = try std.fmt.allocPrint(allocator, "{s}/internal/.benchmark_baseline", .{ralph_path});
+        defer allocator.free(baseline_path);
+
+        if (std.fs.cwd().openFile(baseline_path, .{})) |baseline_file| {
+            // TODO: parse baseline from content
+            baseline_file.close();
+        } else |err| {
+            if (err != error.FileNotFound) {
                 return err;
             }
-        };
-        defer if (baseline_file) |f| f.close();
-
-        if (baseline_file) |file| {
-            _ = file;
-            // TODO: Parse JSON baseline
+            // File doesn't exist - use default baseline
         }
     }
 
@@ -305,12 +295,12 @@ pub fn consult(memory: MemoryStore, allocator: Allocator, task_description: []co
     const success_results = if (keywords.len > 0)
         try searchSuccess(memory, allocator, keywords)
     else
-        &.{};
+        try allocator.alloc(SearchResult, 0);
 
     const regression_results = if (keywords.len > 0)
         try searchRegression(memory, allocator, keywords)
     else
-        &.{};
+        try allocator.alloc(SearchResult, 0);
 
     return .{
         .success = success_results,

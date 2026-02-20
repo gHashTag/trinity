@@ -5,6 +5,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const process = @import("process.zig");
 const git_mod = @import("git.zig");
+const types = @import("types.zig");
 
 pub const GateResult = struct {
     passed: bool,
@@ -145,7 +146,7 @@ pub fn checkBranch(allocator: Allocator) !GateResult {
 pub fn checkBuild(allocator: Allocator) !GateResult {
     const start_time = try std.time.Instant.now();
 
-    const result = process.zigBuild(allocator, &[_][]const u8{}) catch |err| {
+    var result = process.zigBuild(allocator, &[_][]const u8{}) catch |err| {
         const end_time = try std.time.Instant.now();
         return GateResult{
             .passed = false,
@@ -171,7 +172,7 @@ pub fn checkBuild(allocator: Allocator) !GateResult {
 pub fn checkTests(allocator: Allocator) !GateResult {
     const start_time = try std.time.Instant.now();
 
-    const result = process.zigTest(allocator, &[_][]const u8{}) catch |err| {
+    var result = process.zigTest(allocator, &[_][]const u8{}) catch |err| {
         const end_time = try std.time.Instant.now();
         return GateResult{
             .passed = false,
@@ -197,7 +198,7 @@ pub fn checkTests(allocator: Allocator) !GateResult {
 pub fn checkFormat(allocator: Allocator) !GateResult {
     const start_time = try std.time.Instant.now();
 
-    const result = process.zigFmt(allocator, &[_][]const u8{ "--check", "src/" }) catch |err| {
+    var result = process.zigFmt(allocator, &[_][]const u8{ "--check", "src/" }) catch |err| {
         const end_time = try std.time.Instant.now();
         return GateResult{
             .passed = false,
@@ -221,7 +222,7 @@ pub fn checkFormat(allocator: Allocator) !GateResult {
 /// Circuit breaker state machine check
 /// Transitions state based on progress/no-progress
 pub fn circuitBreakerCheck(
-    state: CircuitBreakerState,
+    state: types.CircuitBreakerState,
     made_progress: bool,
     no_progress_count: u32,
     threshold: u32,
@@ -247,18 +248,12 @@ pub fn circuitBreakerCheck(
     };
 }
 
-pub const CircuitBreakerState = enum {
-    closed, // Normal operation
-    half_open, // Testing if recovery is possible
-    open, // Stopped - waiting for human intervention
-};
-
 pub const CircuitBreakerTransition = struct {
-    new_state: CircuitBreakerState,
+    new_state: types.CircuitBreakerState,
     no_progress_count: u32,
     should_halt: bool,
 
-    pub fn init(new_state: CircuitBreakerState, no_progress_count: u32) CircuitBreakerTransition {
+    pub fn init(new_state: types.CircuitBreakerState, no_progress_count: u32) CircuitBreakerTransition {
         return .{
             .new_state = new_state,
             .no_progress_count = no_progress_count,
@@ -283,7 +278,7 @@ test "quality: check branch" {
 test "quality: circuit breaker closed -> no progress -> closed" {
     const transition = try circuitBreakerCheck(.closed, false, 0, 3);
 
-    try std.testing.expectEqual(CircuitBreakerState.closed, transition.new_state);
+    try std.testing.expectEqual(types.CircuitBreakerState.closed, transition.new_state);
     try std.testing.expectEqual(@as(u32, 1), transition.no_progress_count);
     try std.testing.expect(false == transition.should_halt);
 }
@@ -291,7 +286,7 @@ test "quality: circuit breaker closed -> no progress -> closed" {
 test "quality: circuit breaker closed -> no progress threshold -> open" {
     const transition = try circuitBreakerCheck(.closed, false, 2, 3);
 
-    try std.testing.expectEqual(CircuitBreakerState.open, transition.new_state);
+    try std.testing.expectEqual(types.CircuitBreakerState.open, transition.new_state);
     try std.testing.expectEqual(@as(u32, 3), transition.no_progress_count);
     try std.testing.expect(true == transition.should_halt);
 }
@@ -299,7 +294,7 @@ test "quality: circuit breaker closed -> no progress threshold -> open" {
 test "quality: circuit breaker closed -> progress -> closed" {
     const transition = try circuitBreakerCheck(.closed, true, 2, 3);
 
-    try std.testing.expectEqual(CircuitBreakerState.closed, transition.new_state);
+    try std.testing.expectEqual(types.CircuitBreakerState.closed, transition.new_state);
     try std.testing.expectEqual(@as(u32, 0), transition.no_progress_count);
     try std.testing.expect(false == transition.should_halt);
 }
