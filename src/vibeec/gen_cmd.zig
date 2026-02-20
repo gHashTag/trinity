@@ -10,6 +10,10 @@ const lang_generators = @import("lang_generators.zig");
 const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
 
+// V10.2: Spec Intelligence
+const reasoning_engine = @import("reasoning_engine.zig");
+const spec_improver = @import("spec_improver.zig");
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -104,6 +108,30 @@ pub fn main() !void {
         }
 
         try http_server.runServer(allocator, model_path.?, port);
+    } else if (std.mem.eql(u8, command, "improve-spec")) {
+        // V10.2: Improve spec by filling empty implementations
+        if (args.len < 3) {
+            std.debug.print("Error: Missing spec file\n", .{});
+            printUsage();
+            return;
+        }
+
+        const spec_path = args[2];
+        var dry_run: bool = false;
+        var min_confidence: f32 = 0.7;
+
+        // Parse optional flags
+        var i: usize = 3;
+        while (i < args.len) : (i += 1) {
+            if (std.mem.eql(u8, args[i], "--dry-run")) {
+                dry_run = true;
+            } else if (std.mem.eql(u8, args[i], "--min-confidence") and i + 1 < args.len) {
+                min_confidence = std.fmt.parseFloat(f32, args[i + 1]) catch 0.7;
+                i += 1;
+            }
+        }
+
+        try improveSpec(allocator, spec_path, dry_run, min_confidence);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {
@@ -116,12 +144,15 @@ fn printUsage() void {
     std.debug.print(
         \\
         \\═══════════════════════════════════════════════════════════════════════════════
-        \\                    VIBEEC - VIBEE Compiler v24.φ
+        \\                    VIBEEC - VIBEE Compiler v10.2
         \\                    φ² + 1/φ² = 3
         \\═══════════════════════════════════════════════════════════════════════════════
         \\
         \\USAGE:
         \\  vibeec gen <input.vibee> [output.zig]       Generate Zig code from .vibee spec
+        \\  vibeec improve-spec <file.vibee> [options]  Fill empty implementations using Golden DB
+        \\    --dry-run                                 Show what would be filled without writing
+        \\    --min-confidence F                        Minimum confidence threshold (default: 0.7)
         \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
         \\    --prompt "text"                           Initial prompt
         \\    --max-tokens N                            Max tokens to generate (default: 100)
@@ -278,4 +309,34 @@ fn generateMultiLang(allocator: std.mem.Allocator, spec: *vibee_parser.VibeeSpec
     };
 
     return lang_generators.generateForLanguage(allocator, parsed, spec.language);
+}
+
+/// V10.2: Improve a spec file by filling empty implementations
+fn improveSpec(allocator: std.mem.Allocator, spec_path: []const u8, dry_run: bool, min_confidence: f32) !void {
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.2: Spec Improver                                 ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Spec: {s}\n", .{spec_path});
+    std.debug.print("  Dry run: {any}\n", .{dry_run});
+    std.debug.print("  Min confidence: {d:.1}\n\n", .{min_confidence});
+
+    var improver = try spec_improver.SpecImprover.init(allocator);
+    defer improver.deinit();
+
+    const result = try improver.improveSpecFile(spec_path);
+
+    std.debug.print("\n  Results:\n", .{});
+    std.debug.print("    Behaviors filled:  {d}\n", .{result.behaviors_filled});
+    std.debug.print("    Behaviors skipped: {d}\n", .{result.behaviors_skipped});
+    std.debug.print("    Total behaviors:   {d}\n", .{result.behaviors_total});
+
+    if (result.errors.items.len > 0) {
+        std.debug.print("\n  Errors:\n", .{});
+        for (result.errors.items) |err| {
+            std.debug.print("    - {s}: {s}\n", .{err.behavior_name, err.reason});
+        }
+    }
+
+    std.debug.print("\n", .{});
 }
