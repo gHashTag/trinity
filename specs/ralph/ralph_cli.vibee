@@ -1,0 +1,102 @@
+name: ralph_cli
+version: "1.0.0"
+language: zig
+module: ralph_cli
+
+description: |
+  Ralph CLI - Autonomous Development Assistant
+  Command-line interface for Ralph autonomous development system.
+  Provides access to Golden Chain workflow, status reporting, and configuration.
+
+types:
+  # CLI Command variants
+  CLICommand:
+    variants:
+      - help: HelpRequest
+      - status: StatusRequest
+      - run_one_cycle: RunOneCycleRequest
+      - run_until_complete: RunUntilCompleteRequest
+      - init: InitRequest
+
+  # Request types
+  HelpRequest:
+    fields:
+      topic: Option<String>
+
+  StatusRequest:
+    fields:
+      format: OutputFormat
+      verbose: Bool
+
+  RunOneCycleRequest:
+    fields:
+      verbose: Bool
+      dry_run: Bool
+
+  RunUntilCompleteRequest:
+    fields:
+      max_cycles: Option<u64>
+      verbose: Bool
+
+  InitRequest:
+    fields:
+      path: String
+      force: Bool
+
+  # Configuration
+  OutputFormat:
+    variants:
+      - text
+      - json
+      - markdown
+
+  # CLI State
+  CLIState:
+    fields:
+      config: RalphConfig
+      agent: Option<RalphAgent>
+      exit_code: u8
+
+behaviors:
+  - name: parse_args
+    given: Command line arguments as string slice
+    when: User runs ralph command
+    then: Return parsed CLICommand or error
+
+  - name: execute_help
+    given: HelpRequest
+    when: User runs --help or -h
+    then: Display usage information with all available commands
+
+  - name: execute_status
+    given: StatusRequest and RalphAgent
+    when: User runs --status
+    then: Display RALPH_STATUS block with current state
+
+  - name: execute_run_one_cycle
+    given: RunOneCycleRequest and RalphAgent
+    when: User runs --run-one-cycle
+    then: Run one Golden Chain cycle, display result
+
+  - name: execute_run_until_complete
+    given: RunUntilCompleteRequest and RalphAgent
+    when: User runs --run-until-complete
+    then: Run cycles until EXIT_SIGNAL, display summary
+
+  - name: execute_init
+    given: InitRequest
+    when: User runs --init
+    then: Create .ralph directory structure with defaults
+
+examples:
+  - command: "ralph --help"
+    description: "Show usage information"
+
+  - command: "ralph --status"
+    description: "Show current Ralph status"
+
+  - command: "ralph --run-one-cycle"
+    description: "Run one development cycle"
+
+  - command: "ralph --run-until-complete"
+    description: "Run until exit criteria met"
