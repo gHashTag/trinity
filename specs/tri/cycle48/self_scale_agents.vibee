@@ -1,0 +1,380 @@
+# Self-Scaling Agents (Phase 7) - MGEN-012
+# Dynamic agent pool scaling based on workload and system metrics
+
+name: self_scale_agents
+version: "1.0.0"
+language: zig
+module: self_scale_agents
+
+types:
+  AgentPool:
+    fields:
+      pool_id: String
+      min_agents: Int
+      max_agents: Int
+      current_count: Int
+      active_count: Int
+      idle_count: Int
+
+  ScalingMetric:
+    fields:
+      metric_name: String
+      current_value: Float
+      threshold_up: Float
+      threshold_down: Float
+      weight: Float
+
+  ScalingDecision:
+    fields:
+      action: String
+      agent_count: Int
+      reason: String
+      priority: Int
+      estimated_cost: Float
+
+  ScalingConfig:
+    fields:
+      scale_up_cooldown_sec: Int
+      scale_down_cooldown_sec: Int
+      scale_up_percent: Float
+      scale_down_percent: Float
+      predictive_enabled: Bool
+      cost_limit_per_hour: Float
+
+  ScaleEvent:
+    fields:
+      timestamp: Int
+      action: String
+      from_count: Int
+      to_count: Int
+      trigger_metric: String
+      duration_ms: Int
+
+behaviors:
+  - name: evaluate_scaling_need
+    given: current metrics and agent pool state
+    when: evaluating if scaling is needed
+    then: returns ScalingDecision with recommended action
+    implementation: |
+      pub fn evaluateScalingNeed(allocator: Allocator, pool: AgentPool, metrics: []ScalingMetric, config: ScalingConfig) !ScalingDecision {
+          var up_score: f64 = 0;
+          var down_score: f64 = 0;
+          var trigger_metric: []const u8 = "";
+
+          // Calculate weighted score for scaling up
+          for (metrics) |m| {
+              const normalized = (m.current_value - m.threshold_down) / (m.threshold_up - m.threshold_down + 0.001);
+              if (normalized > 0.5) {
+                  up_score += normalized * m.weight;
+              } else if (normalized < -0.5) {
+                  down_score += @abs(normalized) * m.weight;
+              }
+          }
+
+          // Determine action
+          if (up_score > 1.0 and pool.current_count < pool.max_agents) {
+              const new_count = @min(
+                  @floatToInt(usize, @floor(@as(f64, @floatFromInt(pool.current_count)) * (1.0 + config.scale_up_percent))),
+                  @as(usize, @intCast(pool.max_agents))
+              );
+              return .{
+                  .action = "scale_up",
+                  .agent_count = @intCast(new_count),
+                  .reason = try allocator.dupe(u8, "High workload detected"),
+                  .priority = 8,
+                  .estimated_cost = calculateCost(new_count),
+              };
+          }
+
+          if (down_score > 1.0 and pool.current_count > pool.min_agents) {
+              const new_count = @max(
+                  @floatToInt(usize, @floor(@as(f64, @floatFromInt(pool.current_count)) * (1.0 - config.scale_down_percent))),
+                  @as(usize, @intCast(pool.min_agents))
+              );
+              return .{
+                  .action = "scale_down",
+                  .agent_count = @intCast(new_count),
+                  .reason = try allocator.dupe(u8, "Low workload, optimizing cost"),
+                  .priority = 3,
+                  .estimated_cost = calculateCost(new_count),
+              };
+          }
+
+          return .{
+              .action = "none",
+              .agent_count = pool.current_count,
+              .reason = try allocator.dupe(u8, "No scaling needed"),
+              .priority = 0,
+              .estimated_cost = calculateCost(pool.current_count),
+          };
+      }
+
+      fn calculateCost(count: usize) f64 {
+          // Base cost per agent per hour
+          const COST_PER_AGENT = 0.5;
+          return @as(f64, @floatFromInt(count)) * COST_PER_AGENT;
+      }
+
+  - name: check_scale_cooldown
+    given: scaling event history
+    when: checking if scaling allowed
+    then: returns true if cooldown period passed since last scale
+    implementation: |
+      pub fn checkScaleCooldown(events: []ScaleEvent, pool_id: []const u8, cooldown_sec: i64, action: []const u8) bool {
+          const now = std.time.timestamp();
+          var last_action_time: i64 = 0;
+
+          // Find last scaling event for this pool and action type
+          for (events) |event| {
+              if (std.mem.eql(u8, event.action, action)) {
+                  if (event.timestamp > last_action_time) {
+                      last_action_time = event.timestamp;
+                  }
+              }
+          }
+
+          if (last_action_time == 0) return true;
+          return (now - last_action_time) >= cooldown_sec;
+      }
+
+  - name: execute_scale
+    given: scaling decision and pool handle
+    when: performing scaling operation
+    then: spawns or terminates agents, returns ScaleEvent
+    implementation: |
+      pub fn executeScale(allocator: Allocator, decision: ScalingDecision, pool: *AgentPool) !ScaleEvent {
+          const start = std.time.timestamp();
+          const from_count = pool.current_count;
+
+          if (std.mem.eql(u8, decision.action, "scale_up")) {
+              const to_add = decision.agent_count - pool.current_count;
+              var spawned: usize = 0;
+
+              while (spawned < to_add) : (spawned += 1) {
+                  const success = spawnAgent(pool.pool_id);
+                  if (success) {
+                      pool.current_count += 1;
+                      pool.active_count += 1;
+                  } else {
+                      break;
+                  }
+              }
+          } else if (std.mem.eql(u8, decision.action, "scale_down")) {
+              const to_remove = pool.current_count - decision.agent_count;
+              var removed: usize = 0;
+
+              while (removed < to_remove) : (removed += 1) {
+                  const success = terminateIdleAgent(pool);
+                  if (success) {
+                      pool.current_count -= 1;
+                      if (pool.idle_count > 0) pool.idle_count -= 1;
+                  } else {
+                      break;
+                  }
+              }
+          } else {
+              // No action
+              return .{
+                  .timestamp = @intCast(start),
+                  .action = "none",
+                  .from_count = from_count,
+                  .to_count = from_count,
+                  .trigger_metric = "none",
+                  .duration_ms = 0,
+              };
+          }
+
+          const duration_ms = (std.time.timestamp() - start) * 1000;
+
+          return .{
+              .timestamp = @intCast(start),
+              .action = decision.action,
+              .from_count = from_count,
+              .to_count = pool.current_count,
+              .trigger_metric = decision.reason,
+              .duration_ms = @intCast(duration_ms),
+          };
+      }
+
+      fn spawnAgent(pool_id: []const u8) bool {
+          _ = pool_id;
+          // TODO: actual agent spawning logic
+          return true;
+      }
+
+      fn terminateIdleAgent(pool: *AgentPool) bool {
+          if (pool.idle_count > 0) {
+              pool.idle_count -= 1;
+              return true;
+          }
+          return false;
+      }
+
+  - name: predict_workload
+    given: historical metrics and time series data
+    when: predictive scaling enabled
+    then: returns expected workload for next N minutes
+    implementation: |
+      pub const WorkloadPrediction = struct {
+          expected_load: f64,
+          confidence: f64,
+          recommended_agents: usize,
+          prediction_horizon_min: u32,
+      };
+
+      pub fn predictWorkload(metrics: []ScalingMetric, history: []const f64, horizon_min: u32) !WorkloadPrediction {
+          if (history.len < 10) return error.InsufficientHistory;
+
+          // Simple moving average prediction
+          var sum: f64 = 0;
+          const window = @min(10, history.len);
+          for (history[history.len - window ..]) |v| {
+              sum += v;
+          }
+          const avg = sum / @as(f64, @floatFromInt(window));
+
+          // Calculate trend
+          var trend: f64 = 0;
+          if (history.len >= 20) {
+              const recent_avg = avg;
+              var older_sum: f64 = 0;
+              for (history[history.len - 20 .. history.len - 10]) |v| {
+                  older_sum += v;
+              }
+              const older_avg = older_sum / 10;
+              trend = (recent_avg - older_avg) / @max(older_avg, 0.001);
+          }
+
+          // Apply trend to prediction
+          const trend_factor = 1.0 + (trend * @as(f64, @floatFromInt(horizon_min)) / 60.0);
+          const expected = avg * trend_factor;
+
+          // Confidence decreases with prediction horizon
+          const confidence = @max(0.5, 1.0 - (@as(f64, @floatFromInt(horizon_min)) / 120.0));
+
+          // Recommended agents based on expected load
+          const recommended = @floatToInt(usize, @ceil(expected / 10.0));
+
+          return .{
+              .expected_load = expected,
+              .confidence = confidence,
+              .recommended_agents = recommended,
+              .prediction_horizon_min = horizon_min,
+          };
+      }
+
+  - name: get_pool_efficiency
+    given: agent pool state
+    when: calculating pool utilization
+    then: returns efficiency metrics
+    implementation: |
+      pub const PoolEfficiency = struct {
+          utilization_rate: f64,
+          idle_rate: f64,
+          active_rate: f64,
+          cost_efficiency: f64,
+          recommended_action: []const u8,
+      };
+
+      pub fn getPoolEfficiency(allocator: Allocator, pool: AgentPool) !PoolEfficiency {
+          const utilization = if (pool.current_count > 0)
+              @as(f64, @floatFromInt(pool.active_count)) / @as(f64, @floatFromInt(pool.current_count))
+          else 0;
+
+          const idle = if (pool.current_count > 0)
+              @as(f64, @floatFromInt(pool.idle_count)) / @as(f64, @floatFromInt(pool.current_count))
+          else 0;
+
+          const active = 1.0 - idle;
+
+          // Cost efficiency: work done per cost unit
+          const cost_efficiency = utilization * (1.0 - idle);
+
+          const action = if (utilization > 0.9) "consider_scale_up"
+                        else if (utilization < 0.3) "consider_scale_down"
+                        else if (idle > 0.5) "reduce_pool"
+                        else "optimal";
+
+          return .{
+              .utilization_rate = utilization,
+              .idle_rate = idle,
+              .active_rate = active,
+              .cost_efficiency = cost_efficiency,
+              .recommended_action = try allocator.dupe(u8, action),
+          };
+      }
+
+  - name: enforce_cost_limit
+    given: scaling decision and cost limit
+    when: checking if scaling exceeds budget
+    then: returns modified decision within cost limits
+    implementation: |
+      pub fn enforceCostLimit(decision: ScalingDecision, config: ScalingConfig, pool: AgentPool) ScalingDecision {
+          const hourly_cost = decision.estimated_cost;
+
+          if (hourly_cost <= config.cost_limit_per_hour) {
+              return decision;  // Within limit
+          }
+
+          // Scale down to fit budget
+          const affordable_agents = @floatToInt(usize, @floor(
+              config.cost_limit_per_hour / (hourly_cost / @as(f64, @floatFromInt(decision.agent_count)))
+          ));
+
+          return .{
+              .action = "scale_up",  // Still scale up, but less
+              .agent_count = @max(affordable_agents, pool.current_count),
+              .reason = "Cost limited",
+              .priority = decision.priority,
+              .estimated_cost = config.cost_limit_per_hour * 0.95,
+          };
+      }
+
+  - name: get_scaling_stats
+    given: scaling event history
+    when: analyzing scaling patterns
+    then: returns statistics about scaling operations
+    implementation: |
+      pub const ScalingStats = struct {
+          total_scale_up: u32,
+          total_scale_down: u32,
+          avg_up_delta: f64,
+          avg_down_delta: f64,
+          avg_duration_ms: u64,
+          most_common_trigger: []const u8,
+      };
+
+      pub fn getScalingStats(allocator: Allocator, events: []ScaleEvent) !ScalingStats {
+          var scale_up: u32 = 0;
+          var scale_down: u32 = 0;
+          var up_delta_total: f64 = 0;
+          var down_delta_total: f64 = 0;
+          var duration_total: u64 = 0;
+
+          for (events) |event| {
+              if (std.mem.eql(u8, event.action, "scale_up")) {
+                  scale_up += 1;
+                  up_delta_total += @as(f64, @floatFromInt(event.to_count - event.from_count));
+              } else if (std.mem.eql(u8, event.action, "scale_down")) {
+                  scale_down += 1;
+                  down_delta_total += @as(f64, @floatFromInt(event.from_count - event.to_count));
+              }
+              duration_total += event.duration_ms;
+          }
+
+          const avg_up = if (scale_up > 0) up_delta_total / @as(f64, @floatFromInt(scale_up)) else 0;
+          const avg_down = if (scale_down > 0) down_delta_total / @as(f64, @floatFromInt(scale_down)) else 0;
+          const avg_duration = if (events.len > 0) duration_total / @as(u64, @intCast(events.len)) else 0;
+
+          // Find most common trigger
+          // TODO: implement frequency counting
+
+          return .{
+              .total_scale_up = scale_up,
+              .total_scale_down = scale_down,
+              .avg_up_delta = avg_up,
+              .avg_down_delta = avg_down,
+              .avg_duration_ms = avg_duration,
+              .most_common_trigger = try allocator.dupe(u8, "unknown"),
+          };
+      }
