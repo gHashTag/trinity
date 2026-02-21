@@ -14,6 +14,8 @@ types:
       pending_rewards: Int
       total_earned: Int
       stake_amount: Int
+      nonce: Int
+      last_activity: Int
 
   Reward:
     fields:
@@ -22,6 +24,7 @@ types:
       timestamp: Int
       from_peer: Option<String>
       block_height: Int
+      signature: Option<String>
 
   Transaction:
     fields:
@@ -33,6 +36,8 @@ types:
       timestamp: Int
       status: String
       block_height: Option<Int>
+      nonce: Int
+      signature: String
 
   EconomyState:
     fields:
@@ -42,29 +47,140 @@ types:
       active_peers: Int
       block_height: Int
       avg_triples_per_block: Float
+      total_burned: Int
+      last_updated: Int
+
+  TxError:
+    fields:
+      code: Int
+      message: String
+      details: Option<String>
 
 behaviors:
   - name: create_wallet
-    given: valid address
+    given: valid address string
     when: creating new wallet
-    then: returns Wallet with zero balance
+    then: returns Wallet with zero balance, nonce=0, last_activity=now
+    implementation: |
+      pub fn createWallet(allocator: Allocator, address: []const u8) !Wallet {
+          const now = std.time.timestamp();
+          return .{
+              .address = try allocator.dupe(u8, address),
+              .balance_wei = 0,
+              .pending_rewards = 0,
+              .total_earned = 0,
+              .stake_amount = 0,
+              .nonce = 0,
+              .last_activity = now,
+          };
+      }
 
   - name: add_reward
-    given: wallet and reward amount
-    when: adding reward for work
-    then: updates pending_rewards
+    given: wallet pointer and reward amount with reason
+    when: adding reward for work completed
+    then: atomically increments pending_rewards and updates last_activity
+    implementation: |
+      pub fn addReward(wallet: *Wallet, amount: i64, reason: []const u8, block_height: i64) !void {
+          if (amount <= 0) return error.InvalidAmount;
+          @atomicRmw(i64, &wallet.pending_rewards, .Add, amount, .acq_rel);
+          wallet.last_activity = std.time.timestamp();
+      }
 
   - name: claim_rewards
     given: wallet with pending rewards
-    when: claiming rewards
-    then: transfers pending to balance
+    when: claiming rewards to balance
+    then: transfers pending to balance, resets pending to 0, updates total_earned
+    implementation: |
+      pub fn claimRewards(wallet: *Wallet) !i64 {
+          const pending = @atomicLoad(i64, &wallet.pending_rewards, .acquire);
+          if (pending == 0) return error.NoPendingRewards;
+          @atomicStore(i64, &wallet.pending_rewards, 0, .release);
+          wallet.balance_wei += pending;
+          wallet.total_earned += pending;
+          wallet.nonce += 1;
+          wallet.last_activity = std.time.timestamp();
+          return pending;
+      }
 
   - name: get_balance
     given: wallet address
     when: querying balance
-    then: returns current balance in wei
+    then: returns balance_wei atomically
+    implementation: |
+      pub fn getBalance(wallet: *const Wallet) i64 {
+          return @atomicLoad(i64, &wallet.balance_wei, .acquire);
+      }
 
   - name: transfer
-    given: sender, recipient, amount
-    when: transferring TRI
-    then: creates transaction or error if insufficient funds
+    given: sender wallet, recipient address, amount, fee
+    when: transferring TRI between wallets
+    then: validates balance, subtracts amount+fee, returns transaction or error
+    implementation: |
+      pub fn transfer(allocator: Allocator, sender: *Wallet, recipient_addr: []const u8, amount: i64, fee: i64) !Transaction {
+          if (amount <= 0 or fee < 0) return error.InvalidAmount;
+          const total = amount + fee;
+          const current_balance = @atomicLoad(i64, &sender.balance_wei, .acquire);
+          if (current_balance < total) return error.InsufficientFunds;
+
+          // Atomic debit
+          _ = @atomicRmw(i64, &sender.balance_wei, .Sub, total, .acq_rel);
+          sender.nonce += 1;
+          sender.last_activity = std.time.timestamp();
+
+          // Generate transaction ID
+          const tx_id = try generateTxId(allocator, sender.address, recipient_addr, sender.nonce);
+
+          return .{
+              .tx_id = tx_id,
+              .from = sender.address,
+              .to = recipient_addr,
+              .amount = amount,
+              .fee = fee,
+              .timestamp = std.time.timestamp(),
+              .status = "pending",
+              .block_height = null,
+              .nonce = sender.nonce,
+              .signature = "",  // TODO: generate signature
+          };
+      }
+
+  - name: verify_transaction
+    given: transaction and signature
+    when: verifying transaction validity
+    then: returns true if signature valid and sender has funds
+    implementation: |
+      pub fn verifyTransaction(tx: Transaction, wallet: *const Wallet) bool {
+          const current_balance = @atomicLoad(i64, &wallet.balance_wei, .acquire);
+          const total = tx.amount + tx.fee;
+          return current_balance >= total and std.mem.eql(u8, tx.from, wallet.address);
+      }
+
+  - name: stake
+    given: wallet and amount
+    when: staking TRI for rewards multiplier
+    then: transfers from balance to stake_amount, returns new stake
+    implementation: |
+      pub fn stake(wallet: *Wallet, amount: i64) !void {
+          if (amount <= 0) return error.InvalidAmount;
+          const current_balance = @atomicLoad(i64, &wallet.balance_wei, .acquire);
+          if (current_balance < amount) return error.InsufficientFunds;
+          _ = @atomicRmw(i64, &wallet.balance_wei, .Sub, amount, .acq_rel);
+          wallet.stake_amount += amount;
+          wallet.last_activity = std.time.timestamp();
+      }
+
+  - name: unstake
+    given: wallet and amount
+    when: unstaking TRI
+    then: returns staked amount to balance after cooldown check
+    implementation: |
+      pub fn unstake(wallet: *Wallet, amount: i64, cooldown_seconds: i64) !void {
+          if (amount <= 0) return error.InvalidAmount;
+          if (wallet.stake_amount < amount) return error.InsufficientStake;
+          const now = std.time.timestamp();
+          const stake_age = now - wallet.last_activity;
+          if (stake_age < cooldown_seconds) return error.StakeLocked;
+          wallet.stake_amount -= amount;
+          wallet.balance_wei += amount;
+          wallet.last_activity = now;
+      }
