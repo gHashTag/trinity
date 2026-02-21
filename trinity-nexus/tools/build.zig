@@ -57,4 +57,75 @@ pub fn build(b: *std.Build) void {
     const run_tests = b.addRunArtifact(tests);
     const test_step = b.step("test", "Run trinity-tools tests");
     test_step.dependOn(&run_tests.step);
+
+    // Ralph CLI - Autonomous Development Assistant
+    // Import the ralph module (maxwell/ralph/agent.zig)
+    const ralph_mod = b.createModule(.{
+        .root_source_file = b.path("src/maxwell/ralph/agent.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Import swarm_watch module from generated directory (at project root)
+    const swarm_watch_mod = b.createModule(.{
+        .root_source_file = b.path("../../generated/swarm_watch.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Import system_stats module from generated directory (Phase 4 Enhanced)
+    const system_stats_mod = b.createModule(.{
+        .root_source_file = b.path("../../generated/system_stats.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Import real_telegram_http module from generated directory (Phase 5)
+    const real_telegram_http_mod = b.createModule(.{
+        .root_source_file = b.path("../../generated/real_telegram_http.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // telegram_alerts needs system_stats for rich alerts AND real_telegram_http (Phase 5)
+    const telegram_alerts_mod_with_deps = b.createModule(.{
+        .root_source_file = b.path("../../generated/telegram_alerts.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "system_stats", .module = system_stats_mod },
+            .{ .name = "real_telegram_http", .module = real_telegram_http_mod },
+        },
+    });
+
+    // Create CLI module
+    const ralph_cli_mod = b.createModule(.{
+        .root_source_file = b.path("src/ralph_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "ralph", .module = ralph_mod },
+            .{ .name = "swarm_watch", .module = swarm_watch_mod },
+            .{ .name = "telegram_alerts", .module = telegram_alerts_mod_with_deps },
+            .{ .name = "system_stats", .module = system_stats_mod },
+            .{ .name = "real_telegram_http", .module = real_telegram_http_mod },
+            .{ .name = "trinity-symb", .module = symb_dep.module("trinity_symb") },
+        },
+    });
+
+    const ralph_cli = b.addExecutable(.{
+        .name = "ralph",
+        .root_module = ralph_cli_mod,
+    });
+
+    b.installArtifact(ralph_cli);
+
+    // Run Ralph CLI
+    const run_ralph_cmd = b.addRunArtifact(ralph_cli);
+    run_ralph_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        run_ralph_cmd.addArgs(args);
+    }
+    const ralph_step = b.step("ralph", "Run Ralph Autonomous Development Assistant");
+    ralph_step.dependOn(&run_ralph_cmd.step);
 }

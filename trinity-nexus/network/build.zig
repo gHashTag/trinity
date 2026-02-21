@@ -29,6 +29,9 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // Expose named module for dependent packages (tools, canvas, etc.)
+    b.modules.put(b.dupe("trinity_network"), mod) catch @panic("OOM");
+
     // Library
     const lib = b.addLibrary(.{
         .name = "trinity-network",

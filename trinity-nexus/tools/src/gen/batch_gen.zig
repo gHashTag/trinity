@@ -16,6 +16,7 @@ pub const DomainConfig = struct {
 
 /// Генерирует .vibee спецификацию
 pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: ModuleDef, version: u32) ![]const u8 {
+    _ = domain;
     const v1 = version / 100;
     const v2 = (version / 10) % 10;
     const v3 = version % 10;

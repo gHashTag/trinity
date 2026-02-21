@@ -244,5 +244,73 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
+    // Pattern: map* -> apply function to each trit
+    if (std.mem.startsWith(u8, b.name, "map")) {
+        try builder.writeFmt("pub fn {s}(vec: []const i8, result: []i8, comptime func: fn(i8) i8) void {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// VSA map: apply function to each trit");
+        try builder.writeLine("for (vec, 0..) |v, i| { result[i] = func(v); }");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: reduce* -> fold operation across vector
+    if (std.mem.startsWith(u8, b.name, "reduce")) {
+        try builder.writeFmt("pub fn {s}(vec: []const i8, comptime func: fn(i32, i8) i32, init: i32) i32 {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// VSA reduce: fold operation across vector");
+        try builder.writeLine("var acc = init;");
+        try builder.writeLine("for (vec) |v| { acc = func(acc, v); }");
+        try builder.writeLine("return acc;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: sequence* -> generate sequence of permuted vectors
+    if (std.mem.startsWith(u8, b.name, "sequence")) {
+        try builder.writeFmt("pub fn {s}(base: []const i8, count: usize, result: []i8) void {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// VSA sequence: generate count permutations");
+        try builder.writeLine("const dim = base.len;");
+        try builder.writeLine("for (0..count) |i| {");
+        builder.incIndent();
+        try builder.writeLine("const offset = i * dim;");
+        try builder.writeLine("for (0..dim) |j| {");
+        builder.incIndent();
+        try builder.writeLine("result[offset + j] = base[(j + i) % dim];");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: permute_optimized* -> efficient cyclic permutation with lookahead
+    if (std.mem.startsWith(u8, b.name, "permute_optimized")) {
+        try builder.writeFmt("pub fn {s}(vec: []const i8, shift: usize, result: []i8) void {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Optimized VSA permute: unroll for small shifts");
+        try builder.writeLine("const n = vec.len;");
+        try builder.writeLine("const s = @mod(shift, n);");
+        try builder.writeLine("// Fast path for small shifts using memcpy");
+        try builder.writeLine("if (s == 0) {");
+        builder.incIndent();
+        try builder.writeLine("@memcpy(result, vec);");
+        builder.decIndent();
+        try builder.writeLine("} else {");
+        builder.incIndent();
+        try builder.writeLine("@memcpy(result[0 .. n - s], vec[s..]);");
+        try builder.writeLine("@memcpy(result[n - s ..], vec[0..s]);");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
     return false;
 }
