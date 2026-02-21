@@ -1,0 +1,5 @@
+#!/bin/bash
+# Quick restart of Ralph Dashboard v3 with TRI COMMANDER
+cd /Users/playra/trinity
+bash bin/ralph-dashboard-v3
+tmux attach-session -t ralph

@@ -253,9 +253,12 @@
 
 ### Quarks
 - [x] [P1] Q-MGEN-001: Support `language: [list]` in VIBEE parser and update specs
-- [ ] [P1] Q-MGEN-002: Implement Fluent Python Template (Dataclasses, Type Hints)
-- [ ] [P1] Q-MGEN-003: Implement Fluent Rust Template (Structs, Traits, Result)
-- [ ] [P1] Q-MGEN-004: Implement Fluent TypeScript Template (Interfaces, ESM, CamelCase)
+- [ ] [P3] Q-MGEN-002: Implement Fluent Python Template (Dataclasses, Type Hints)
+  - **DEPRECATED**: Multilingual support maintained but not actively developed. Focus on Zig.
+- [ ] [P3] Q-MGEN-003: Implement Fluent Rust Template (Structs, Traits, Result)
+  - **DEPRECATED**: Multilingual support maintained but not actively developed. Focus on Zig.
+- [ ] [P3] Q-MGEN-004: Implement Fluent TypeScript Template (Interfaces, ESM, CamelCase)
+  - **DEPRECATED**: Multilingual support maintained but not actively developed. Focus on Zig.
 - [ ] [P2] Q-MGEN-005: Symbolic Mapping Verification (unbind/bind semantic transfer)
 - [ ] [P2] Q-MGEN-006: Multilingual Benchmark Suite (Speed/Memory proofs)
 - [ ] [P1] Link 9: Tri Loop Decision — Needle check for Level 11.41 achievement
