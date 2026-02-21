@@ -1,0 +1,182 @@
+# Browser Extension Content Script Specification
+# Generates content.js for fingerprint injection
+# φ² + 1/φ² = 3 = TRINITY
+
+name: firebird_content
+version: "1.0.0"
+language: zig
+module: content_script
+
+description: |
+  Content script для инъекции fingerprint overrides.
+  Запускается на каждой странице для evasion.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FINGERPRINT OVERRIDES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+overrides:
+  Canvas:
+    description: "Override canvas fingerprinting"
+    methods:
+      - toDataURL: "Modify canvas data based on profile hash"
+      - toBlob: "Modify blob output"
+      - getImageData: "Add noise to pixel data"
+    implementation: |
+      1. Intercept canvas context creation
+      2. Wrap drawing methods
+      3. Add deterministic noise based on profile.canvas_seed
+      4. Return modified data
+
+  WebGL:
+    description: "Override WebGL fingerprinting"
+    methods:
+      - getParameter: "Spoof GPU info"
+      - getExtension: "Filter extensions"
+      - getSupportedExtensions: "Modify extension list"
+      - getShaderPrecisionFormat: "Spoof precision"
+    implementation: |
+      1. Intercept WebGL context
+      2. Return spoofed vendor/renderer
+      3. Modify extension list based on profile
+      4. Add noise to precision values
+
+  AudioContext:
+    description: "Override audio fingerprinting"
+    methods:
+      - createOscillator: "Modify oscillator output"
+      - createAnalyser: "Add noise to frequency data"
+      - getFloatFrequencyData: "Modify frequency array"
+    implementation: |
+      1. Intercept AudioContext creation
+      2. Wrap analyser methods
+      3. Add deterministic noise based on profile.audio_seed
+
+  Navigator:
+    description: "Override navigator properties"
+    properties:
+      - userAgent: "Spoof based on profile"
+      - platform: "Match user agent"
+      - language: "From profile settings"
+      - languages: "Array of languages"
+      - hardwareConcurrency: "Spoof CPU cores"
+      - deviceMemory: "Spoof RAM"
+      - maxTouchPoints: "Spoof touch support"
+    implementation: |
+      1. Define property descriptors
+      2. Return values from profile
+      3. Ensure consistency across properties
+
+  Screen:
+    description: "Override screen properties"
+    properties:
+      - width: "From profile"
+      - height: "From profile"
+      - availWidth: "Slightly less than width"
+      - availHeight: "Slightly less than height"
+      - colorDepth: "24 or 32"
+      - pixelDepth: "Match colorDepth"
+    implementation: |
+      1. Override screen object properties
+      2. Use values from wasm_get_screen_*
+
+  Date:
+    description: "Override timezone"
+    methods:
+      - getTimezoneOffset: "Return profile timezone"
+    implementation: |
+      1. Wrap Date prototype
+      2. Return offset from wasm_get_timezone_offset
+
+  Plugins:
+    description: "Override plugin detection"
+    properties:
+      - plugins: "Empty or spoofed list"
+      - mimeTypes: "Match plugins"
+    implementation: |
+      1. Return empty PluginArray
+      2. Or return common plugins based on profile
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INJECTION STRATEGY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+injection:
+  timing: "document_start"
+  method: "script_injection"
+  
+  steps:
+    1. "Check if evasion is enabled via storage"
+    2. "Load current profile from storage"
+    3. "Initialize WASM module"
+    4. "Create injection script with profile data"
+    5. "Inject script into page context"
+    6. "Apply all overrides"
+    7. "Listen for messages from popup"
+
+  isolation: |
+    Content script runs in isolated world.
+    Injection script runs in page context.
+    Communication via postMessage.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMUNICATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+messages:
+  from_popup:
+    - ENABLE_EVASION: "Enable/disable evasion"
+    - UPDATE_PROFILE: "Apply new profile"
+    - GET_STATUS: "Request current status"
+
+  to_popup:
+    - STATUS_UPDATE: "Current evasion status"
+    - DETECTION_ALERT: "Potential detection"
+    - METRICS_UPDATE: "Updated metrics"
+
+  from_background:
+    - PROFILE_CHANGED: "Profile was updated"
+    - CONFIG_CHANGED: "Config was updated"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DETECTION AVOIDANCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+stealth:
+  techniques:
+    - "Remove injection traces from DOM"
+    - "Spoof Object.getOwnPropertyDescriptor"
+    - "Hide modified prototype methods"
+    - "Randomize injection timing"
+    - "Use Proxy for transparent interception"
+
+  anti_detection:
+    - "Check for debugger detection"
+    - "Avoid common fingerprinting patterns"
+    - "Ensure consistent behavior across calls"
+    - "Match real browser behavior"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ТЕСТЫ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: test_canvas_override
+    description: "Canvas returns modified data"
+    assert: canvas.toDataURL() != original_data
+
+  - name: test_webgl_spoof
+    description: "WebGL returns spoofed vendor"
+    assert: gl.getParameter(VENDOR) == profile.vendor
+
+  - name: test_navigator_consistency
+    description: "Navigator properties are consistent"
+    assert: navigator.platform matches userAgent
+
+  - name: test_timezone_override
+    description: "Timezone matches profile"
+    assert: new Date().getTimezoneOffset() == profile.timezone
+
+  - name: test_stealth
+    description: "No injection traces visible"
+    assert: Object.keys(window).length == original_keys

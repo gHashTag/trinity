@@ -1,0 +1,81 @@
+name: response_verifier
+version: "1.0.0"
+language: zig
+
+types:
+  ResponseQuality:
+  VerificationResult:
+    fields:
+      quality: ResponseQuality
+      confidence: Float
+      is_honest: Bool
+      reason: String
+  GenericPattern:
+    fields:
+      pattern: String
+      penalty: Float
+
+behaviors:
+  - name: verifyResponse
+    given: Chat response text and confidence
+    when: Checking response quality
+    then: Return VerificationResult with honest assessment
+    implementation: |
+              pub fn verifyResponse(response_text: []const u8, confidence: f32) VerificationResult {
+                  _ = response_text;
+                  _ = confidence;
+                  return VerificationResult{};
+              }
+      
+      
+
+  - name: detectGeneric
+    given: Response text
+    when: Scanning for generic patterns
+    then: Return true if generic, false if specific
+    implementation: |
+              pub fn detectGeneric(response_text: []const u8) bool {
+                  _ = response_text;
+                  return false;
+              }
+      
+      
+
+  - name: adjustConfidence
+    given: Original confidence and response quality
+    when: Enforcing honest scoring
+    then: Return adjusted confidence (penalize generic)
+    implementation: |
+              pub fn adjustConfidence(confidence: f32, quality: ResponseQuality) f32 {
+                  _ = confidence;
+                  _ = quality;
+                  return 0.5;
+              }
+      
+      
+
+  - name: isHonest
+    given: Response confidence and actual quality
+    when: Checking honesty
+    then: Return true if confidence matches quality
+    implementation: |
+              pub fn isHonest(confidence: f32, quality: ResponseQuality) bool {
+                  _ = confidence;
+                  _ = quality;
+                  return true;
+              }
+      
+      
+
+  - name: suggestFallback
+    given: Query with no good pattern match
+    when: Deciding fallback action
+    then: Return "llm" for LLM fallback or "unknown" for honest uncertainty
+    implementation: |
+              pub fn suggestFallback(query: []const u8) []const u8 {
+                  _ = query;
+                  return "unknown";
+              }
+      
+      
+

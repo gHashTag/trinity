@@ -340,7 +340,7 @@ fn generateMultiLang(allocator: std.mem.Allocator, spec: *vibee_parser.VibeeSpec
 /// V10.2: Improve a spec file by filling empty implementations
 fn improveSpec(allocator: std.mem.Allocator, spec_path: []const u8, dry_run: bool, min_confidence: f32) !void {
     std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
-    std.debug.print("║  VIBEE v10.2: Spec Improver                                 ║\n", .{});
+    std.debug.print("║  VIBEE v10.4: Spec Improver + Live TRI Rewards                   ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
 
     std.debug.print("  Spec: {s}\n", .{spec_path});
@@ -356,6 +356,18 @@ fn improveSpec(allocator: std.mem.Allocator, spec_path: []const u8, dry_run: boo
     std.debug.print("    Behaviors filled:  {d}\n", .{result.behaviors_filled});
     std.debug.print("    Behaviors skipped: {d}\n", .{result.behaviors_skipped});
     std.debug.print("    Total behaviors:   {d}\n", .{result.behaviors_total});
+
+    // V10.4: Calculate estimated rewards
+    if (result.behaviors_filled > 0) {
+        // Assume average quality 0.8 for filled behaviors
+        const avg_quality: f32 = 0.8;
+        const estimated_reward = vibe_rewards.VibeRewardSystem.rewardForImprovement(avg_quality, 5);
+        const total_reward = estimated_reward * @as(f64, @floatFromInt(result.behaviors_filled));
+        std.debug.print("\n  Estimated TRI Rewards:\n", .{});
+        std.debug.print("    Behaviors filled: {d}\n", .{result.behaviors_filled});
+        std.debug.print("    Avg quality: {d:.2}\n", .{avg_quality});
+        std.debug.print("    Estimated earned: {d:.1} TRI\n", .{total_reward});
+    }
 
     if (result.errors.items.len > 0) {
         std.debug.print("\n  Errors:\n", .{});
