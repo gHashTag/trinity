@@ -1,0 +1,355 @@
+name: fallback_provider
+version: "10.0.0"
+language: zig
+module: fallback_provider
+
+constants:
+  MAX_RETRIES_PER_PROVIDER: 3
+  RATE_LIMIT_WINDOW_MS: 60000
+  RATE_LIMIT_THRESHOLD: 100
+  PROVIDER_SWITCH_COOLDOWN_MS: 5000
+  HEALTH_CHECK_INTERVAL_MS: 30000
+  PHI: 1.618033988749895
+  SACRED_CONSTANT: 1.58
+
+types:
+  FallbackProvider:
+    fields:
+      primary: Provider
+      secondary: Provider
+      current_provider: ProviderIndex
+      rate_limits: Dict<String, RateLimitState>
+      last_switch_time: Float
+      switch_count: Int
+      persistent_state: StateStore
+
+  Provider:
+    fields:
+      name: String
+      api_key: String
+      endpoint: String
+      model: String
+      http_client: HttpClient
+      healthy: Bool
+      last_error: Option<Error>
+
+  ProviderIndex:
+    enum:
+      - PRIMARY
+      - SECONDARY
+
+  RateLimitState:
+    fields:
+      request_count: Int
+      window_start: Float
+      limited_until: Float
+      retry_after: Option<Int>
+
+  Error:
+    enum:
+      - RATE_LIMIT
+      - AUTHENTICATION
+      - QUOTA_EXCEEDED
+      - TIMEOUT
+      - SERVER_ERROR
+      - NETWORK_ERROR
+
+  StateStore:
+    implementation: file
+    methods:
+      - name: save
+        given: Provider state
+        when: Persisting to disk
+        then: State saved
+      - name: load
+        given: State file path
+        when: Loading previous state
+        then: Restored state or default
+
+  ProviderResponse:
+    fields:
+      content: String
+      tokens_used: Int
+      model: String
+      provider: String
+      latency_ms: Int
+
+  ProviderRequest:
+    fields:
+      messages: List<Message>
+      temperature: Float
+      max_tokens: Int
+      tools: Option<List<Tool>>
+
+  Message:
+    fields:
+      role: MessageRole
+      content: String
+      tool_calls: Option<List<ToolCall>>
+
+  MessageRole:
+    enum:
+      - SYSTEM
+      - USER
+      - ASSISTANT
+
+  Tool:
+    fields:
+      name: String
+      description: String
+      parameters: Dict<String, Any>
+
+  ToolCall:
+    fields:
+      id: String
+      name: String
+      arguments: String
+
+behaviors:
+  - name: init_fallback_provider
+    given: Primary and secondary provider configs
+    when: Initializing fallback system
+    then: FallbackProvider with state loaded
+    implementation: |
+      const std = @import("std");
+      const http = @import("http");
+
+      pub fn init(primary_cfg: ProviderConfig, secondary_cfg: ProviderConfig) !FallbackProvider {
+          var primary = try Provider.init(primary_cfg);
+          var secondary = try Provider.init(secondary_cfg);
+
+          const state_store = try StateStore.load("ralph_provider_state.json");
+
+          return FallbackProvider{
+              .primary = primary,
+              .secondary = secondary,
+              .current_provider = .PRIMARY,
+              .rate_limits = std.StringHashMap(RateLimitState).init(
+                  std.heap.page_allocator
+              ),
+              .last_switch_time = 0,
+              .switch_count = 0,
+              .persistent_state = state_store,
+          };
+      }
+
+  - name: complete
+    given: ProviderRequest with messages and parameters
+    when: Calling AI provider
+    then: ProviderResponse from active provider or fallback
+    implementation: |
+      pub fn complete(self: *FallbackProvider, request: ProviderRequest) !ProviderResponse {
+          const provider = self.getActiveProvider();
+          const start_time = std.time.nanoTimestamp();
+
+          const response = provider.complete(request) catch |err| {
+              const latency = @as(i64, @intCast(
+                  (std.time.nanoTimestamp() - start_time) / std.time.ns_per_ms
+              ));
+
+              const should_switch = self.shouldSwitchProvider(err);
+              if (should_switch) {
+                  try self.switchProvider();
+                  return self.complete(request);
+              }
+
+              return err;
+          };
+
+          const latency = @as(i64, @intCast(
+              (std.time.nanoTimestamp() - start_time) / std.time.ns_per_ms
+          ));
+
+          try self.updateRateLimit(provider.name);
+
+          return ProviderResponse{
+              .content = response.content,
+              .tokens_used = response.tokens_used,
+              .model = response.model,
+              .provider = provider.name,
+              .latency_ms = latency,
+          };
+      }
+
+  - name: should_switch_provider
+    given: Error from provider call
+    when: Determining if fallback needed
+    then: Boolean based on error type and state
+    implementation: |
+      fn shouldSwitchProvider(self: *FallbackProvider, err: anyerror) bool {
+          const now = std.time.timestamp();
+          const time_since_switch = now - self.last_switch_time;
+          const cooldown_passed = time_since_switch >= (PROVIDER_SWITCH_COOLDOWN_MS / 1000);
+
+          if (!cooldown_passed) {
+              return false;
+          }
+
+          return switch (err) {
+              error.RateLimited, error.QuotaExceeded => true,
+              error.Authentication => false,
+              error.Timeout, error.ServerError, error.NetworkError => true,
+              else => false,
+          };
+      }
+
+  - name: switch_provider
+    given: FallbackProvider instance
+    when: Switching active provider
+    then: Provider index updated and state persisted
+    implementation: |
+      fn switchProvider(self: *FallbackProvider) !void {
+          self.current_provider = switch (self.current_provider) {
+              .PRIMARY => .SECONDARY,
+              .SECONDARY => .PRIMARY,
+          };
+
+          self.last_switch_time = std.time.timestamp();
+          self.switch_count += 1;
+
+          try self.persistent_state.save(self);
+
+          std.log.info("Switched to provider: {s}", .{@tagName(self.current_provider)});
+      }
+
+  - name: update_rate_limit
+    given: Provider name
+    when: Recording API call
+    then: Rate limit state updated
+    implementation: |
+      fn updateRateLimit(self: *FallbackProvider, provider_name: []const u8) !void {
+          const now = std.time.timestamp();
+          const entry = try self.rate_limits.getOrPut(provider_name);
+
+          if (!entry.exists) {
+              entry.value_ptr.* = RateLimitState{
+                  .request_count = 0,
+                  .window_start = now,
+                  .limited_until = 0,
+                  .retry_after = null,
+              };
+          }
+
+          const state = entry.value_ptr.*;
+
+          if (now - state.window_start >= (RATE_LIMIT_WINDOW_MS / 1000)) {
+              state.request_count = 0;
+              state.window_start = now;
+          }
+
+          state.request_count += 1;
+
+          if (state.request_count >= RATE_LIMIT_THRESHOLD) {
+              state.limited_until = now + 60;
+          }
+      }
+
+  - name: get_active_provider
+    given: FallbackProvider instance
+    when: Retrieving current provider
+    then: Provider reference based on index
+    implementation: |
+      fn getActiveProvider(self: *FallbackProvider) *Provider {
+          return switch (self.current_provider) {
+              .PRIMARY => &self.primary,
+              .SECONDARY => &self.secondary,
+          };
+      }
+
+  - name: check_health
+    given: Provider instance
+    when: Running health check
+    then: Provider healthy status updated
+    implementation: |
+      pub fn checkHealth(self: *FallbackProvider) !void {
+          const test_request = ProviderRequest{
+              .messages = &[_]Message{
+                  .{ .role = .USER, .content = "ping", .tool_calls = null }
+              },
+              .temperature = 0.0,
+              .max_tokens = 5,
+              .tools = null,
+          };
+
+          for ([_]*Provider{ &self.primary, &self.secondary }) |provider| {
+              const result = provider.complete(test_request);
+              provider.healthy = result != null;
+
+              if (result) |response| {
+                  std.log.info("{s} health check: OK ({d}ms)", .{
+                      provider.name, response.latency_ms
+                  });
+              } else |err| {
+                  std.log.err("{s} health check: FAILED ({s}", .{
+                      provider.name, @errorName(err)
+                  });
+              }
+          }
+      }
+
+  - name: rotate_api_key
+    given: Provider with multiple API keys
+    when: Current key exhausted or invalid
+    then: Next API key activated
+    implementation: |
+      pub fn rotateApiKey(self: *FallbackProvider, provider_name: []const u8) !void {
+          const provider = switch (provider_name) {
+              "primary" => &self.primary,
+              "secondary" => &self.secondary,
+              else => return error.UnknownProvider,
+          };
+
+          if (provider.api_keys.len <= 1) {
+              return error.NoBackupKey;
+          }
+
+          provider.key_index = (provider.key_index + 1) % provider.api_keys.len;
+          provider.api_key = provider.api_keys[provider.key_index];
+
+          std.log.info("Rotated API key for {s} (index {d})", .{
+              provider_name, provider.key_index
+          });
+      }
+
+  - name: get_stats
+    given: FallbackProvider instance
+    when: Querying statistics
+    then: ProviderStats with usage metrics
+    implementation: |
+      pub fn getStats(self: *FallbackProvider) ProviderStats {
+          return ProviderStats{
+              .current_provider = @tagName(self.current_provider),
+              .switch_count = self.switch_count,
+              .primary_requests = self.getRateLimit("primary").request_count,
+              .secondary_requests = self.getRateLimit("secondary").request_count,
+              .last_switch = self.last_switch_time,
+              .uptime_percent = self.calculateUptime(),
+          };
+      }
+
+  - name: shutdown
+    given: FallbackProvider instance
+    when: System shutdown
+    then: State persisted and connections closed
+    implementation: |
+      pub fn shutdown(self: *FallbackProvider) !void {
+          try self.persistent_state.save(self);
+
+          self.primary.http_client.deinit();
+          self.secondary.http_client.deinit();
+
+          self.rate_limits.deinit();
+      }
+
+metadata:
+  phase: 5
+  domain: external-integration
+  dependencies:
+    - std
+    - http
+  sacred_math:
+    phi_ratio: PHI
+    bits_per_trit: SACRED_CONSTANT
+  performance:
+    target_latency_ms: 500
+    max_throughput: 100
