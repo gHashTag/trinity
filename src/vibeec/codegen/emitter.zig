@@ -999,6 +999,8 @@ pub const ZigCodeGen = struct {
         try self.writeMemoryBuffers();
         try self.writeCreationPatterns(spec.creation_patterns.items, spec.types.items);
         try self.writeBehaviorFunctions(spec.behaviors.items);
+        // Write snake_case aliases for test compatibility
+        try self.writeBehaviorAliases(spec.behaviors.items);
 
         var test_gen = TestGenerator.withSpec(&self.builder, self.allocator, spec.name);
         // Behavior-level tests (one per behavior)
@@ -1027,6 +1029,7 @@ pub const ZigCodeGen = struct {
     fn writeImports(self: *Self, spec: *const VibeeSpec) !void {
         try self.builder.writeLine("const std = @import(\"std\");");
         try self.builder.writeLine("const math = std.math;");
+        try self.builder.writeLine("const Allocator = std.mem.Allocator;");
 
         // Emit custom imports from spec (uses module names for build.zig integration)
         if (spec.imports.items.len > 0) {
@@ -1402,6 +1405,45 @@ pub const ZigCodeGen = struct {
         for (behaviors) |b| {
             try self.generateBehaviorImplementation(&pattern_matcher, &b);
         }
+    }
+
+    /// Write snake_case aliases for behavior functions (for test compatibility)
+    /// Tests reference snake_case names like check_recovery_cooldown but functions are camelCase
+    fn writeBehaviorAliases(self: *Self, behaviors: []const Behavior) !void {
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("// SNAKE_CASE ALIASES - For test compatibility");
+        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
+        try self.builder.writeLine("// CYCLE_49_FIX: Adding aliases for snake_case test references");
+        try self.builder.newline();
+
+        for (behaviors) |b| {
+            // b.name is snake_case (e.g., "check_recovery_cooldown")
+            // Generated function is camelCase (e.g., "checkRecoveryCooldown")
+            // Create alias: const check_recovery_cooldown = checkRecoveryCooldown;
+            const snake = b.name;
+            var camel_buf: [256]u8 = undefined;
+            var camel_idx: usize = 0;
+            var capitalize_next = false;
+
+            for (snake) |c| {
+                if (c == '_') {
+                    capitalize_next = true;
+                } else {
+                    camel_buf[camel_idx] = if (capitalize_next and c >= 'a' and c <= 'z')
+                        c - 32  // Convert to uppercase
+                    else
+                        c;
+                    camel_idx += 1;
+                    capitalize_next = false;
+                }
+            }
+            const camel_name = camel_buf[0..camel_idx];
+
+            // Write alias
+            try self.builder.writeFmt("const {s} = {s};\n", .{ snake, camel_name });
+        }
+
+        try self.builder.newline();
     }
 
     fn generateBehaviorImplementation(self: *Self, pattern_matcher: *PatternMatcher, b: *const Behavior) !void {
