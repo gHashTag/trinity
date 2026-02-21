@@ -22,6 +22,12 @@
 |----|------|--------|------|
 |**PAS-001**|**PAS v8.20 Live Production**|**vibee-v8-production-swarm**|**HTTP API (3 endpoints), PAS Task Runner (before/after comparison), Dashboard Widget (RAZUM), Sacred Constants validated: φ² + 1/φ² = 3, μ = 0.0382. Demo executable: zig build pas-demo**|
 |----|------|--------|------|
+|**AMU-015**|**Dashboard Integration**|**vibee-v8-production-swarm**|**SacredMathWidget.tsx (μ, φ, L(10), Trinity), InteractiveEvolutionTree.tsx (zoom/pan/click/SVG export), AgentMuDashboard.tsx (combined), chatApi.ts fetch functions**|
+|----|------|--------|------|
+|**AMU-014**|**Production Testing Suite**|**vibee-v8-production-swarm**|**production_test.zig (3 tests: basic, stats, markdown), production_hardening_test.zig (37 tests: circuit breaker, rollback, validation, HTTP endpoints, sacred constants, integration). All 40 tests pass**|
+|----|------|--------|------|
+|**AMU-013**|**Runtime Pattern Manager**|**vibee-v8-production-swarm**|**runtime_pattern_manager.zig (~550 lines): CircuitBreaker (closed→open→half_open), LivePatternManager (propose/recordOutcome/rollback), ValidationPipeline, 95% confidence threshold, 5-failure trigger, auto-rollback**|
+|----|------|--------|------|
 |**CODEGEN-009**|**VIBEE v8.1 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent swarm: 51.59% consensus, 97.2% self-improve. Fixed: bundle-based hypervectors, similarity measurement, metric capping. 7/7 tests pass.**|
 |----|------|--------|------|
 |**CODEGEN-008**|**VIBEE v8 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent Trinity swarm: runtime_swarm.zig (270 lines) + vsa_swarm_production_32.vibee (35 behaviors, 39/40 tests). Docker/K8s packaging, CI workflow, demo script. Runtime: 32/32 online, phi-spiral consensus, self-healing, Prometheus :9090.**|
