@@ -36,6 +36,40 @@ pub const Result = struct {
     attempts_made: u32,
     error_message: []const u8,
     fix_applied: bool,
+    intelligence_gain: f64 = 0.0, // μ accumulated during fixing
+};
+
+/// Generator feedback for self-patching v8.12
+pub const GeneratorFeedback = struct {
+    template_name: []const u8,
+    issue_type: []const u8,
+    suggested_fix: []const u8,
+    priority: u32, // 1=highest, 10=lowest
+    before_hash: []const u8,
+    after_hash: []const u8,
+
+    /// Free allocated memory
+    pub fn deinit(self: *const GeneratorFeedback, allocator: std.mem.Allocator) void {
+        allocator.free(self.template_name);
+        allocator.free(self.issue_type);
+        allocator.free(self.suggested_fix);
+        allocator.free(self.before_hash);
+        allocator.free(self.after_hash);
+    }
+};
+
+/// Version comparison for tracking changes
+pub const VersionComparison = struct {
+    before_hash: []const u8,
+    after_hash: []const u8,
+    lines_changed: usize,
+    improvements: []const u8,
+
+    pub fn deinit(self: *const VersionComparison, allocator: std.mem.Allocator) void {
+        allocator.free(self.before_hash);
+        allocator.free(self.after_hash);
+        allocator.free(self.improvements);
+    }
 };
 
 /// Verify and fix generated code
@@ -202,6 +236,130 @@ pub fn verifyAndFix(
 pub fn verifyOnly(allocator: std.mem.Allocator, generated_file: []const u8) !bool {
     const result = try verifier.verify(allocator, generated_file);
     return result.success;
+}
+
+// ============================================================================
+// GENERATOR FEEDBACK LOOP v8.12
+// ============================================================================
+
+/// Calculate file hash for version comparison
+fn calculateFileHash(allocator: std.mem.Allocator, file_path: []const u8) ![]const u8 {
+    const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 1024 * 1024);
+    defer allocator.free(content);
+
+    var hash_buf: [16]u8 = undefined;
+    std.hash.hash(content, &hash_buf);
+
+    return std.fmt.allocPrint(allocator, "{x}{x}{x}{x}", .{
+        hash_buf[0], hash_buf[1], hash_buf[2], hash_buf[3],
+    });
+}
+
+/// Compare versions before and after fix
+pub fn compareVersions(
+    allocator: std.mem.Allocator,
+    file_path: []const u8,
+    before_content: []const u8,
+) !VersionComparison {
+    const after_content = try std.fs.cwd().readFileAlloc(allocator, file_path, 1024 * 1024);
+    defer allocator.free(after_content);
+
+    const before_hash = try calculateFileHash(allocator, file_path);
+    errdefer allocator.free(before_hash);
+
+    // Simple line count comparison
+    var lines_before: usize = 0;
+    var lines_after: usize = 0;
+
+    for (before_content) |c| {
+        if (c == '\n') lines_before += 1;
+    }
+    for (after_content) |c| {
+        if (c == '\n') lines_after += 1;
+    }
+
+    const lines_changed = if (lines_after > lines_before)
+        lines_after - lines_before
+    else
+        lines_before - lines_after;
+
+    const improvements = try std.fmt.allocPrint(
+        allocator,
+        "Lines changed: {d}",
+        .{lines_changed},
+    );
+
+    return VersionComparison{
+        .before_hash = before_hash,
+        .after_hash = try calculateFileHash(allocator, file_path),
+        .lines_changed = lines_changed,
+        .improvements = improvements,
+    };
+}
+
+/// Create generator feedback from error and fix result
+pub fn createGeneratorFeedback(
+    allocator: std.mem.Allocator,
+    err_info: *const diagnostic.ErrorInfo,
+    fix_result: *const fixer.FixResult,
+) !GeneratorFeedback {
+    // Extract template name from file path
+    const template_name = if (std.mem.indexOf(u8, err_info.file, "generated/")) |pos| {
+        const rel_path = err_info.file[pos..];
+        try allocator.dupe(u8, rel_path);
+    } else {
+        try allocator.dupe(u8, "unknown_template");
+    };
+
+    const issue_type = try std.fmt.allocPrint(allocator, "{s}", .{@tagName(err_info.fix_type)});
+    const suggested_fix = try allocator.dupe(u8, fix_result.description);
+
+    return GeneratorFeedback{
+        .template_name = template_name,
+        .issue_type = issue_type,
+        .suggested_fix = suggested_fix,
+        .priority = if (fix_result.confidence > 0.8) 1 else 5,
+        .before_hash = "",
+        .after_hash = "",
+    };
+}
+
+/// Log feedback to SUCCESS_HISTORY.md
+pub fn logFeedbackToHistory(
+    allocator: std.mem.Allocator,
+    feedback: *const GeneratorFeedback,
+) !void {
+    const history_file = ".ralph/memory/SUCCESS_HISTORY.md";
+
+    const entry = try std.fmt.allocPrint(allocator,
+        \\---
+        \\date: {s}
+        \\type: generator_feedback
+        \\status: logged
+        \\---
+        \\### Generator Feedback: {s}
+        \\
+        \\- **Issue Type:** {s}
+        \\- **Suggested Fix:** {s}
+        \\- **Priority:** {d}
+        \\
+    , .{
+        std.time.timestamp(), // TODO: format as date
+        feedback.template_name,
+        feedback.issue_type,
+        feedback.suggested_fix,
+        feedback.priority,
+    });
+    defer allocator.free(entry);
+
+    // Append to history file
+    const file = try std.fs.cwd().openFile(history_file, .{ .mode = .write });
+    defer file.close();
+
+    const stat = try file.stat();
+    try file.seekTo(stat.size);
+
+    try file.writeAll(entry);
 }
 
 test "AGENT MU: verifyAndFix - successful verification" {

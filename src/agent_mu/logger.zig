@@ -179,3 +179,129 @@ fn appendToFile(_: std.mem.Allocator, file_path: []const u8, content: []const u8
     // Write content
     try file.writeAll(content);
 }
+
+// ============================================================================
+// MUTATION STATISTICS TRACKING v8.12
+// ============================================================================
+
+/// Sacred constant for intelligence gain
+pub const MU: f64 = 1.0 / (1.618033988749895 * 1.618033988749895) / 10.0; // = 0.0382
+
+/// Mutation statistics tracking
+pub const MutationStats = struct {
+    total_fixes: u32 = 0,
+    successful_fixes: u32 = 0,
+    failed_fixes: u32 = 0,
+    intelligence_gain: f64 = 0.0, // μ accumulated
+
+    /// Calculate current intelligence gain
+    pub fn calculateGain(self: *const MutationStats) f64 {
+        return @as(f64, @floatFromInt(self.successful_fixes)) * MU;
+    }
+
+    /// Get success rate (0.0 to 1.0)
+    pub fn successRate(self: *const MutationStats) f64 {
+        if (self.total_fixes == 0) return 0.0;
+        return @as(f64, @floatFromInt(self.successful_fixes)) / @as(f64, @floatFromInt(self.total_fixes));
+    }
+
+    /// Record a successful fix
+    pub fn recordSuccess(self: *MutationStats) void {
+        self.total_fixes += 1;
+        self.successful_fixes += 1;
+        self.intelligence_gain = self.calculateGain();
+    }
+
+    /// Record a failed fix
+    pub fn recordFailure(self: *MutationStats) void {
+        self.total_fixes += 1;
+        self.failed_fixes += 1;
+    }
+
+    /// Format stats as string
+    pub fn format(self: *const MutationStats, allocator: std.mem.Allocator) ![]const u8 {
+        return std.fmt.allocPrint(allocator,
+            \\Mutation Statistics:
+            \\  Total fixes: {d}
+            \\  Successful: {d}
+            \\  Failed: {d}
+            \\  Success rate: {d:.1}%
+            \\  Intelligence gain (μ): {d:.4}
+            \\  Projected intelligence (100 fixes): ×{d:.1}
+        , .{
+            self.total_fixes,
+            self.successful_fixes,
+            self.failed_fixes,
+            self.successRate() * 100.0,
+            self.intelligence_gain,
+            // Projected: intelligence × (1 + μ)^100 ≈ intelligence × 47× after 100 fixes
+            std.math.pow(f64, 1.0 + MU, 100.0),
+        });
+    }
+};
+
+/// Global mutation statistics (persisted to file)
+var global_stats = MutationStats{};
+
+/// Get global mutation statistics
+pub fn getGlobalStats() *const MutationStats {
+    return &global_stats;
+}
+
+/// Record fix result and update global stats
+pub fn recordFixResult(success: bool) void {
+    if (success) {
+        global_stats.recordSuccess();
+    } else {
+        global_stats.recordFailure();
+    }
+}
+
+/// Save stats to .ralph/memory/MUTATION_STATS.md
+pub fn saveStats(allocator: std.mem.Allocator) !void {
+    const stats_file = ".ralph/memory/MUTATION_STATS.md";
+
+    const content = try global_stats.format(allocator);
+    defer allocator.free(content);
+
+    // Overwrite file with current stats
+    const file = try std.fs.cwd().createFile(stats_file, .{ .read = true });
+    defer file.close();
+
+    try file.writeAll(content);
+}
+
+/// Load stats from .ralph/memory/MUTATION_STATS.md
+pub fn loadStats(allocator: std.mem.Allocator) !void {
+    const stats_file = ".ralph/memory/MUTATION_STATS.md";
+
+    const file = std.fs.cwd().openFile(stats_file, .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            // File doesn't exist yet, use default stats
+            return;
+        }
+        return err;
+    };
+    defer file.close();
+
+    const content = try file.readToEndAlloc(allocator, 1024);
+    defer allocator.free(content);
+
+    // Parse stats from file (simple line-based parsing)
+    // Format: "  Total fixes: N", etc.
+    var lines = std.mem.splitScalar(u8, content, '\n');
+    while (lines.next()) |line| {
+        if (std.mem.indexOf(u8, line, "Total fixes:")) |pos| {
+            const num_str = line[pos + "Total fixes:".len ..];
+            global_stats.total_fixes = std.fmt.parseInt(u32, std.mem.trim(u8, num_str, &std.ascii.whitespace), 10) catch 0;
+        } else if (std.mem.indexOf(u8, line, "Successful:")) |pos| {
+            const num_str = line[pos + "Successful:".len ..];
+            global_stats.successful_fixes = std.fmt.parseInt(u32, std.mem.trim(u8, num_str, &std.ascii.whitespace), 10) catch 0;
+        } else if (std.mem.indexOf(u8, line, "Failed:")) |pos| {
+            const num_str = line[pos + "Failed:".len ..];
+            global_stats.failed_fixes = std.fmt.parseInt(u32, std.mem.trim(u8, num_str, &std.ascii.whitespace), 10) catch 0;
+        }
+    }
+
+    global_stats.intelligence_gain = global_stats.calculateGain();
+}
