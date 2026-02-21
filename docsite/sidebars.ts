@@ -375,6 +375,8 @@ const sidebars: SidebarsConfig = {
         'research/pas-v8.22-production-final-report',
         // PAS v8.23 Final Production
         'research/pas-v8.23-final-production-report',
+        // PAS v8.24 KOSCHEI MODE
+        'research/trinity-golden-chain-v2-32-koschei-mode-report',
       ],
     },
     'faq',
