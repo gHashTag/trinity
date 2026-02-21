@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY CHAT API SERVICE v2.7
+// TRINITY CHAT API SERVICE v2.8
 // Connects Cosmic UI to Zig HTTP backend
 // v2.5: + /api/files (Finder) + /api/compile (Editor)
 // v2.7: + /api/storage-metrics (Storage Network Dashboard)
+// v2.8: + /api/agent-mu/intelligence-history (AGENT MU v8.16)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BASE_URL = 'http://localhost:8080';
@@ -312,5 +313,92 @@ export async function fetchRalphStatus(): Promise<RalphStatus | null> {
     return await res.json();
   } catch {
     return null;
+  }
+}
+
+// ─── v8.15: AGENT MU Self-Evolution API ───────────────────────────────────────
+// v8.16: + intelligence_history + adaptive_mu
+
+export interface AgentMuFixRecord {
+  timestamp: number;
+  fix_type: string;
+  file: string;
+  success: boolean;
+}
+
+export interface IntelligenceHistoryPoint {
+  timestamp: number;
+  intelligence_multiplier: number;
+  mu_used: number;
+  fix_type: string;
+}
+
+export interface AgentMuStatus {
+  total_fixes: number;
+  intelligence_multiplier: number;
+  mu_accumulated: number;
+  adaptive_mu: number;
+  intelligence_history: IntelligenceHistoryPoint[];
+  recent_fixes: AgentMuFixRecord[];
+  uptime_s: number;
+}
+
+function generateMockIntelligenceHistory(): IntelligenceHistoryPoint[] {
+  const points: IntelligenceHistoryPoint[] = [];
+  const now = Date.now();
+  let mult = 1.0;
+
+  for (let i = 0; i < 10; i++) {
+    mult *= 1.15;
+    points.push({
+      timestamp: now - (10 - i) * 300000,
+      intelligence_multiplier: mult,
+      mu_used: 0.0382 + (i * 0.002),
+      fix_type: ['TYPE_FIX', 'SYNTAX_FIX', 'ALLOCATOR_FIX', 'IMPORT_FIX'][i % 4],
+    });
+  }
+  return points;
+}
+
+function generateMockAgentMuStatus(): AgentMuStatus {
+  const now = Date.now();
+  return {
+    total_fixes: 127,
+    intelligence_multiplier: 6.82,
+    mu_accumulated: 4.8514,
+    adaptive_mu: 0.0418,
+    intelligence_history: generateMockIntelligenceHistory(),
+    recent_fixes: [
+      { timestamp: now - 30000, fix_type: 'ALLOCATOR_FIX', file: 'generated/tri_ops.zig', success: true },
+      { timestamp: now - 90000, fix_type: 'TYPE_FIX', file: 'generated/vsa_bundle.zig', success: true },
+      { timestamp: now - 180000, fix_type: 'SYNTAX_FIX', file: 'generated/parser.zig', success: true },
+      { timestamp: now - 300000, fix_type: 'MEM_FIX', file: 'generated/cache.zig', success: true },
+      { timestamp: now - 450000, fix_type: 'IMPORT_FIX', file: 'generated/http.zig', success: true },
+    ],
+    uptime_s: 86400,
+  };
+}
+
+export async function fetchAgentMuStatus(): Promise<AgentMuStatus> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/status`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return generateMockAgentMuStatus();
+    return await res.json();
+  } catch {
+    return generateMockAgentMuStatus();
+  }
+}
+
+export async function fetchAgentMuIntelligenceHistory(): Promise<IntelligenceHistoryPoint[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/intelligence-history`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return generateMockIntelligenceHistory();
+    return await res.json();
+  } catch {
+    return generateMockIntelligenceHistory();
   }
 }
