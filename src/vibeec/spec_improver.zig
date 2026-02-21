@@ -158,12 +158,14 @@ pub const StubBehavior = struct {
 
 /// Spec Improver - fills empty implementations using GoldenDB
 /// V10.3: Self-feeding loop integration
+/// V10.4: Live $TRI earnings tracking
 pub const SpecImprover = struct {
     allocator: Allocator,
     golden_db: golden_db.GoldenDB,
     editor: SpecEditor,
     self_feeding_loop: ?*self_feeding.SelfFeedingLoop,
     agent_id: []const u8,
+    total_tri_earned: f64,
 
     const Self = @This();
 
@@ -175,7 +177,8 @@ pub const SpecImprover = struct {
             .golden_db = db,
             .editor = SpecEditor.init(allocator),
             .self_feeding_loop = null,
-            .agent_id = "vibee-v10.3",
+            .agent_id = "vibee-v10.4",
+            .total_tri_earned = 0,
         };
     }
 
@@ -187,6 +190,16 @@ pub const SpecImprover = struct {
     /// Set agent ID for rewards (V10.3)
     pub fn setAgentId(self: *Self, agent_id: []const u8) void {
         self.agent_id = agent_id;
+    }
+
+    /// V10.4: Get total $TRI earned by this improver
+    pub fn getTotalEarned(self: *const Self) f64 {
+        return self.total_tri_earned;
+    }
+
+    /// V10.4: Reset earnings tracker
+    pub fn resetEarnings(self: *Self) void {
+        self.total_tri_earned = 0;
     }
 
     /// Deinitialize
@@ -427,6 +440,17 @@ pub const SpecImprover = struct {
                 result.quality,
             );
 
+            // V10.4: Track $TRI earned for this improvement
+            const reward = vibe_rewards.VibeRewardSystem.rewardForImprovement(
+                result.quality,
+                5, // Default complexity
+            );
+            self.total_tri_earned += reward;
+
+            std.debug.print("  [Reward] {s}: quality={d:.2} → {d:.1} TRI\n", .{
+                behavior.name, result.quality, reward
+            });
+
             // Self-feed high-quality implementations back to Golden DB
             if (self.self_feeding_loop != null and result.quality > 0.85) {
                 self_feeding.SelfFeedingLoop.selfFeedSuccess(
@@ -442,6 +466,8 @@ pub const SpecImprover = struct {
                 };
             }
         }
+
+        std.debug.print("  [Total] TRI earned this session: {d:.1}\n", .{self.total_tri_earned});
 
         return detailed_result;
     }

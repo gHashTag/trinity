@@ -345,10 +345,17 @@ pub fn runLiveDashboard(
     allocator: Allocator,
     stdout_file: std.fs.File,
     config: LiveConfig,
+    mode: PollMode,
 ) !void {
     var watch = SwarmWatch.init(allocator);
+    watch.mode = mode;
+
+    // Mock DHT data for live dashboard
+    var mock_tick: u64 = 0;
 
     while (true) {
+        mock_tick +%= 1;
+
         if (config.clear_screen) {
             // ANSI clear screen and move cursor to top-left
             try stdout_file.writeAll("\x1b[2J\x1b[H");
@@ -359,6 +366,42 @@ pub fn runLiveDashboard(
             var timestamp_buf: [64]u8 = undefined;
             const timestamp = try std.fmt.bufPrint(&timestamp_buf, "// Last update: {d} // Press Ctrl+C to exit\n\n", .{now});
             try stdout_file.writeAll(timestamp);
+        }
+
+        // Update mock DHT stats (simulated variations)
+        _ = @as(f64, @floatFromInt(mock_tick % 20)) * 0.01 - 0.1;
+        const peer_variation = @as(i64, @intCast(mock_tick % 5)) - 2;
+
+        watch.pollDhtStats(.{
+            .triples_stored = 1337 + mock_tick,
+            .triples_distributed = 500 + (mock_tick / 2),
+            .triples_received = 450 + (mock_tick / 3),
+            .triples_rejected = 15 + (mock_tick % 10),
+            .triples_duplicate = 10 + (mock_tick % 5),
+            .sync_rounds = 42 + (mock_tick / 10),
+            .peer_count = @max(5, 10 + peer_variation),
+        });
+
+        // Periodic reward stats update
+        if (mock_tick % 10 == 0) {
+            watch.pollRewardStats(.{
+                .total_paid_wei = 4_233_000_000_000_000_000 + @as(u128, mock_tick) * 1_000_000_000_000,
+                .pending_wei = 87_000_000_000_000 + @as(u128, mock_tick) * 10_000_000,
+                .triples_rewarded = 5000 + mock_tick,
+            });
+        }
+
+        // Record some test events periodically
+        if (mock_tick % 20 == 0) {
+            const test_subjects = [_][]const u8{ "Trinity", "Alice", "Ralph", "Bob", "System" };
+            const test_predicates = [_][]const u8{ "is", "knows", "generates", "syncs", "validates" };
+            const test_objects = [_][]const u8{ "ternary", "Bob", "code", "data", "state" };
+            const subject = test_subjects[mock_tick % test_subjects.len];
+            const predicate = test_predicates[mock_tick % test_predicates.len];
+            const object = test_objects[mock_tick % test_objects.len];
+
+            const result = if (mock_tick % 3 == 0) EventResult.duplicate else EventResult.accepted;
+            watch.recordSyncEvent(.store, subject, predicate, object, result);
         }
 
         // Render dashboard
