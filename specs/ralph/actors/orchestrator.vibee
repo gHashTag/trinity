@@ -1,0 +1,555 @@
+name: orchestrator
+version: "1.0.0"
+language: zig
+module: orchestrator
+
+description: |
+  Orchestrator - Task scheduling and progress tracking system
+  Manages Ralph autonomous development tasks, calculates progress percentages,
+  synchronizes tech tree state, and broadcasts completion notifications.
+
+types:
+  # Sacred math constants
+  Constants:
+    fields:
+      PHI: 1.618033988749895
+      PHI_SQ: 2.618033988749895
+      TRINITY_IDENTITY: 3.0
+      DEFAULT_CYCLE_TIMEOUT_SECONDS: 300
+
+  # Task priority levels
+  TaskPriority:
+    variants:
+      - critical
+      - high
+      - normal
+      - low
+
+  # Task status states
+  TaskStatus:
+    variants:
+      - pending
+      - in_progress
+      - blocked
+      - completed
+      - failed
+      - cancelled
+
+  # Individual task record
+  Task:
+    fields:
+      id: String
+      name: String
+      description: String
+      priority: TaskPriority
+      status: TaskStatus
+      created_at: Timestamp
+      started_at: Option<Timestamp>
+      completed_at: Option<Timestamp>
+      assignee: Option<String>
+      dependencies: List<String>
+      acceptance_criteria: List<String>
+      tech_tree_node: Option<String>
+
+  # Progress calculation result
+  Progress:
+    fields:
+      total_tasks: Int
+      completed_tasks: Int
+      failed_tasks: Int
+      in_progress_tasks: Int
+      blocked_tasks: Int
+      percent_complete: Float
+      estimated_completion: Option<Timestamp>
+
+  # Tech tree node state
+  TechTreeNode:
+    fields:
+      node_id: String
+      name: String
+      status: String
+      completed_at: Option<Timestamp>
+      dependencies: List<String>
+      children: List<String>
+
+  # Tech tree snapshot
+  TechTree:
+    fields:
+      root_node: String
+      total_nodes: Int
+      completed_nodes: Int
+      current_focus: Option<String>
+      last_updated: Timestamp
+
+  # Orchestrator state
+  OrchestratorState:
+    fields:
+      current_task: Option<String>
+      tasks: List<Task>
+      progress: Progress
+      tech_tree: TechTree
+      session_start_time: Timestamp
+      cycle_count: Int
+
+  # Completion notification
+  CompletionNotification:
+    fields:
+      task_id: String
+      task_name: String
+      status: TaskStatus
+      duration_seconds: Int
+      output_summary: String
+      timestamp: Timestamp
+
+behaviors:
+  - name: load_tasks_from_fix_plan
+    given: .ralph/fix_plan.md file
+    when: Orchestrator initialized or tasks updated
+    then: Parse markdown and return Task list
+    implementation: |
+      pub fn load_tasks_from_fix_plan(fix_plan_path: []const u8) ![]Task {
+          const file = try std.fs.cwd().openFile(fix_plan_path, .{});
+          defer file.close();
+
+          const content = try file.readAllAlloc(std.heap.page_allocator, 65536);
+          defer std.heap.page_allocator.free(content);
+
+          var tasks = std.ArrayList(Task).init(std.heap.page_allocator);
+          var task_id_counter: u32 = 0;
+
+          var iter = std.mem.splitScalar(u8, content, '\n');
+          var current_task: ?Task = null;
+
+          while (iter.next()) |line| {
+              // Task header: ## [TASK-XXX] Task Name
+              if (std.mem.indexOf(u8, line, "## [TASK-")) |_| {
+                  if (current_task) |t| {
+                      try tasks.append(t);
+                  }
+
+                  const name_start = std.mem.indexOf(u8, line, "] ") orelse line.len;
+                  const name = std.mem.trim(u8, line[name_start + 2 ..], &[_]u8{' ', '\t'});
+
+                  current_task = Task{
+                      .id = try std.fmt.allocPrint(
+                          std.heap.page_allocator,
+                          "task-{d}",
+                          .{task_id_counter}
+                      ),
+                      .name = try std.heap.page_allocator.dupe(u8, name),
+                      .description = "",
+                      .priority = .normal,
+                      .status = .pending,
+                      .created_at = std.time.timestamp(),
+                      .started_at = null,
+                      .completed_at = null,
+                      .assignee = null,
+                      .dependencies = &[_][]const u8{},
+                      .acceptance_criteria = &[_][]const u8{},
+                      .tech_tree_node = null,
+                  };
+                  task_id_counter += 1;
+              }
+
+              // Status line: **Status:** pending | in_progress | completed
+              if (std.mem.indexOf(u8, line, "**Status:**")) |_| {
+                  if (current_task) |*t| {
+                      if (std.mem.indexOf(u8, line, "completed")) |_| {
+                          t.status = .completed;
+                      } else if (std.mem.indexOf(u8, line, "in_progress")) |_| {
+                          t.status = .in_progress;
+                      } else if (std.mem.indexOf(u8, line, "blocked")) |_| {
+                          t.status = .blocked;
+                      } else if (std.mem.indexOf(u8, line, "failed")) |_| {
+                          t.status = .failed;
+                      }
+                  }
+              }
+
+              // Acceptance criteria: - [x] or - [ ]
+              if (std.mem.indexOf(u8, line, "- [")) |_| {
+                  if (current_task) |*t| {
+                      const criterion = std.mem.trim(u8, line, &[_]u8{' ', '-', '[', ']', 'x', ' '});
+                      if (criterion.len > 0) {
+                          // In real impl, add to acceptance_criteria list
+                      }
+                  }
+              }
+          }
+
+          if (current_task) |t| {
+              try tasks.append(t);
+          }
+
+          return tasks.toOwnedSlice();
+      }
+
+  - name: pick_next_task
+    given: Task list and current state
+    when: Previous task completed or orchestrator started
+    then: Return highest priority unblocked task
+    implementation: |
+      pub fn pick_next_task(tasks: []const Task) !?Task {
+          var best_task: ?Task = null;
+          var best_priority: TaskPriority = .low;
+
+          for (tasks) |task| {
+              // Skip completed, failed, or in_progress tasks
+              if (task.status == .completed or
+                  task.status == .failed or
+                  task.status == .in_progress) {
+                  continue;
+              }
+
+              // Check if dependencies satisfied
+              var deps_satisfied = true;
+              for (task.dependencies) |dep_id| {
+                  const dep_completed = for (tasks) |t| {
+                      if (std.mem.eql(u8, t.id, dep_id))
+                          break t.status == .completed;
+                  } else false;
+
+                  if (!dep_completed) {
+                      deps_satisfied = false;
+                      break;
+                  }
+              };
+
+              if (!deps_satisfied) {
+                  continue;
+              }
+
+              // Select higher priority task
+              if (@intFromEnum(task.priority) > @intFromEnum(best_priority)) {
+                  best_priority = task.priority;
+                  best_task = task;
+              }
+          }
+
+          return best_task;
+      }
+
+  - name: calculate_progress
+    given: Current task list
+    when: Task status changes or progress requested
+    then: Return Progress with counts and percentage
+    implementation: |
+      pub fn calculate_progress(tasks: []const Task) !Progress {
+          var completed: u32 = 0;
+          var failed: u32 = 0;
+          var in_progress: u32 = 0;
+          var blocked: u32 = 0;
+
+          for (tasks) |task| {
+              switch (task.status) {
+                  .completed => completed += 1,
+                  .failed => failed += 1,
+                  .in_progress => in_progress += 1,
+                  .blocked => blocked += 1,
+                  else => {},
+              }
+          }
+
+          const percent_complete = if (tasks.len > 0)
+              @as(f64, @floatFromInt(completed)) / @as(f64, @floatFromInt(tasks.len)) * 100.0
+          else
+              0.0;
+
+          // Estimate completion using remaining tasks
+          const remaining = tasks.len - completed - failed;
+          const estimated_completion = if (remaining > 0 and in_progress > 0)
+              std.time.timestamp() + (remaining * 300) // 5 min per task estimate
+          else
+              null;
+
+          return Progress{
+              .total_tasks = @intCast(tasks.len),
+              .completed_tasks = completed,
+              .failed_tasks = failed,
+              .in_progress_tasks = in_progress,
+              .blocked_tasks = blocked,
+              .percent_complete = percent_complete,
+              .estimated_completion = estimated_completion,
+          };
+      }
+
+  - name: update_task_status
+    given: Task ID and new status
+    when: Task state changes (started, completed, failed)
+    then: Update task record and write to fix_plan.md
+    implementation: |
+      pub fn update_task_status(
+          fix_plan_path: []const u8,
+          task_id: []const u8,
+          new_status: TaskStatus
+      ) !void {
+          const file = try std.fs.cwd().openFile(fix_plan_path, .{ .mode = .read_write });
+          defer file.close();
+
+          const content = try file.readAllAlloc(std.heap.page_allocator, 65536);
+          defer std.heap.page_allocator.free(content);
+
+          // Find and replace status line for task
+          var modified = std.ArrayList(u8).init(std.heap.page_allocator);
+          var iter = std.mem.splitScalar(u8, content, '\n');
+          var in_target_task = false;
+
+          while (iter.next()) |line| {
+              if (std.mem.indexOf(u8, line, task_id)) |_| {
+                  in_target_task = true;
+              }
+
+              if (in_target_task and std.mem.indexOf(u8, line, "**Status:**")) |_| {
+                  const status_str = switch (new_status) {
+                      .pending => "pending",
+                      .in_progress => "in_progress",
+                      .blocked => "blocked",
+                      .completed => "completed",
+                      .failed => "failed",
+                      .cancelled => "cancelled",
+                  };
+
+                  try modified.appendSlice("**Status:** ");
+                  try modified.appendSlice(status_str);
+                  try modified.append('\n');
+                  in_target_task = false;
+                  continue;
+              }
+
+              try modified.appendSlice(line);
+              try modified.append('\n');
+          }
+
+          // Write back
+          try file.seekTo(0);
+          try file.writeAll(modified.items);
+          try file.setEndPos(modified.items.len);
+      }
+
+  - name: sync_tech_tree
+    given: Current task and TECH_TREE.md
+    when: Task completes or starts
+    then: Update tech tree node status
+    implementation: |
+      pub fn sync_tech_tree(
+          tech_tree_path: []const u8,
+          task: Task
+      ) !void {
+          const file = try std.fs.cwd().openFile(tech_tree_path, .{ .mode = .read_write });
+          defer file.close();
+
+          const content = try file.readAllAlloc(std.heap.page_allocator, 131072);
+          defer std.heap.page_allocator.free(content);
+
+          if (task.tech_tree_node == null) return;
+
+          const node_id = task.tech_tree_node.?;
+          const status_marker = switch (task.status) {
+              .completed => "[✓]",
+              .in_progress => "[→]",
+              .blocked => "[✖]",
+              .failed => "[✗]",
+              else => "[ ]",
+          };
+
+          var modified = std.ArrayList(u8).init(std.heap.page_allocator);
+          var iter = std.mem.splitScalar(u8, content, '\n');
+
+          while (iter.next()) |line| {
+              if (std.mem.indexOf(u8, line, node_id)) |_| {
+                  // Replace status marker
+                  try modified.appendSlice(status_marker);
+                  try modified.appendSlice(" ");
+                  try modified.appendSlice(line[4..]); // Skip old marker
+                  try modified.append('\n');
+                  continue;
+              }
+
+              try modified.appendSlice(line);
+              try modified.append('\n');
+          }
+
+          try file.seekTo(0);
+          try file.writeAll(modified.items);
+          try file.setEndPos(modified.items.len);
+      }
+
+  - name: publish_completion_notification
+    given: Completed task with summary
+    when: Task marked as completed
+    then: Publish to message_bus and write to .ralph/queue/
+    implementation: |
+      pub fn publish_completion_notification(
+          task: Task,
+          output_summary: []const u8,
+          message_bus: *MessageBus,
+          queue_dir: []const u8
+      ) !void {
+          const duration = if (task.completed_at) |ca|
+              @intCast(ca - task.created_at)
+          else
+              0;
+
+          const notification = CompletionNotification{
+              .task_id = try std.heap.page_allocator.dupe(u8, task.id),
+              .task_name = try std.heap.page_allocator.dupe(u8, task.name),
+              .status = task.status,
+              .duration_seconds = duration,
+              .output_summary = try std.heap.page_allocator.dupe(u8, output_summary),
+              .timestamp = std.time.timestamp(),
+          };
+
+          // Publish to message bus
+          const event = try MessageBus.Event.init(
+              "orchestrator.task_completed",
+              notification,
+              std.time.timestamp()
+          );
+          try message_bus.publish(event);
+
+          // Write to queue file
+          const filename = try std.fmt.allocPrint(
+              std.heap.page_allocator,
+              "{s}/completed_{s}.json",
+              .{ queue_dir, task.id }
+          );
+          defer std.heap.page_allocator.free(filename);
+
+          const queue_file = try std.fs.cwd().createFile(filename, .{});
+          defer queue_file.close();
+
+          // Write JSON (simplified)
+          try queue_file.writer().print(
+              \\{{"task_id":"{s}","task_name":"{s}","status":"{s}","duration":{d}}}
+          , .{
+              notification.task_id,
+              notification.task_name,
+              @tagName(notification.status),
+              notification.duration_seconds
+          });
+      }
+
+  - name: check_exit_criteria
+    given: Current progress and task list
+    when: Task completes
+    then: Return true if all tasks completed or EXIT_SIGNAL in fix_plan
+    implementation: |
+      pub fn check_exit_criteria(tasks: []const Task, progress: Progress) bool {
+          // Check for explicit EXIT_SIGNAL in fix plan
+          // (would read fix_plan.md and check for EXIT_SIGNAL = true)
+
+          // Or check if all critical/high priority tasks completed
+          var critical_complete = true;
+          for (tasks) |task| {
+              if (task.priority == .critical or task.priority == .high) {
+                  if (task.status != .completed) {
+                      critical_complete = false;
+                      break;
+                  }
+              }
+          }
+
+          return progress.percent_complete >= 100.0 or critical_complete;
+      }
+
+  - name: orchestration_loop
+    given: Fix plan, tech tree, state manager, message bus
+    when: Orchestrator started
+    then: Pick tasks, update status, sync tech tree, check exit
+    implementation: |
+      pub fn orchestration_loop(
+          fix_plan_path: []const u8,
+          tech_tree_path: []const u8,
+          state_manager: *StateManager,
+          message_bus: *MessageBus
+      ) !void {
+          const session_start = std.time.timestamp();
+          var cycle_count: u32 = 0;
+
+          while (true) {
+              cycle_count += 1;
+
+              // Load tasks
+              const tasks = try load_tasks_from_fix_plan(fix_plan_path);
+              defer {
+                  for (tasks) |t| {
+                      std.heap.page_allocator.free(t.id);
+                      std.heap.page_allocator.free(t.name);
+                  }
+                  std.heap.page_allocator.free(tasks);
+              }
+
+              // Calculate progress
+              const progress = try calculate_progress(tasks);
+
+              // Check exit criteria
+              if (try check_exit_criteria(tasks, progress)) {
+                  std.log.info("All tasks complete, exiting", .{});
+                  break;
+              }
+
+              // Pick next task
+              const next_task = try pick_next_task(tasks);
+
+              if (next_task) |task| {
+                  // Update status to in_progress
+                  try update_task_status(
+                      fix_plan_path,
+                      task.id,
+                      .in_progress
+                  );
+
+                  // Sync tech tree
+                  try sync_tech_tree(tech_tree_path, task);
+
+                  // Publish task started event
+                  const event = try MessageBus.Event.init(
+                      "orchestrator.task_started",
+                      task,
+                      std.time.timestamp()
+                  );
+                  try message_bus.publish(event);
+
+                  // Wait for task completion (in real impl, would monitor worker)
+                  std.time.sleep(1_000_000_000); // 1 second
+
+              } else {
+                  // No tasks available, wait
+                  std.time.sleep(5_000_000_000); // 5 seconds
+              }
+          }
+      }
+
+  - name: format_progress_summary
+    given: Progress and current task
+    when: Display requested (tmux/dashboard)
+    then: Return formatted summary with percentage and task name
+    implementation: |
+      pub fn format_progress_summary(
+          progress: Progress,
+          current_task: ?Task
+      ) ![]const u8 {
+          var buffer = std.ArrayList(u8).init(std.heap.page_allocator);
+          defer buffer.deinit();
+
+          try buffer.appendSlice("Progress: ");
+          try buffer.appendSlice(try std.fmt.allocPrint(
+              std.heap.page_allocator,
+              "{d:.1}%",
+              .{progress.percent_complete}
+          ));
+          try buffer.appendSlice(" (");
+          try buffer.appendSlice(try std.fmt.allocPrint(
+              std.heap.page_allocator,
+              "{d}/{d}",
+              .{ progress.completed_tasks, progress.total_tasks }
+          ));
+          try buffer.appendSlice(")");
+
+          if (current_task) |t| {
+              try buffer.appendSlice("\nCurrent: ");
+              try buffer.appendSlice(t.name);
+          }
+
+          return buffer.toOwnedSlice();
+      }

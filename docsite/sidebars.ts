@@ -369,6 +369,14 @@ const sidebars: SidebarsConfig = {
         // Math Framework (Level 11.39)
         'research/trinity-vsa-benchmark-suite-report',
         'research/trinity-multilingual-math-codegen-report',
+        // PAS v8.21 Production Validation
+        'research/pas-v8.21-production-validation-report',
+        // PAS v8.22 Production Final
+        'research/pas-v8.22-production-final-report',
+        // PAS v8.23 Final Production
+        'research/pas-v8.23-final-production-report',
+        // PAS v8.24 KOSCHEI MODE
+        'research/trinity-golden-chain-v2-32-koschei-mode-report',
       ],
     },
     'faq',
@@ -378,3 +386,4 @@ const sidebars: SidebarsConfig = {
 };
 
 export default sidebars;
+      'research/trinity-cycle53-ralph-zig-refactor-report',

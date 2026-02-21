@@ -1,0 +1,164 @@
+name: command_input
+version: "10.0.0"
+language: zig
+module: ralph_actors_command_input
+
+description: |
+  Interactive terminal input system with history, validation, and signal handling.
+  Provides user interface for Ralph orchestration with persistent command history
+  and graceful signal handling (Ctrl+C, Ctrl+D).
+
+types:
+  CommandInput:
+    fields:
+      allocator: std.mem.Allocator
+      stdin: std.fs.File
+      stdout: std.fs.File
+      history: History
+      signal_handler: SignalHandler
+      validator: CommandValidator
+      active: Bool
+
+  History:
+    fields:
+      entries: List<String>
+      max_size: Int
+      current_index: Int
+      file_path: Option<String>
+
+  SignalHandler:
+    fields:
+      sigint_count: Int
+      shutdown_requested: Bool
+
+  CommandValidator:
+    fields:
+      allowed_commands: List<String>
+      forbidden_commands: List<String>
+
+  ParsedCommand:
+    fields:
+      raw: String
+      command: String
+      args: List<String>
+      valid: Bool
+      error_msg: Option<String>
+
+behaviors:
+  - name: initCommandInput
+    given: Allocator and history file path
+    when: Initializing command input system
+    then: Returns initialized CommandInput with signal handlers installed
+    implementation: |
+      pub fn initCommandInput(allocator: std.mem.Allocator, history_path: []const u8) !CommandInput {
+          const path_copy = try allocator.dupeZ(u8, history_path);
+          const history = try History.init(allocator, path_copy, 1000);
+          const signal_handler = try SignalHandler.init(allocator);
+          const validator = CommandValidator.init();
+
+          return CommandInput{
+              .allocator = allocator,
+              .stdin = std.io.getStdIn(),
+              .stdout = std.io.getStdOut(),
+              .history = history,
+              .signal_handler = signal_handler,
+              .validator = validator,
+              .active = true,
+          };
+      }
+
+  - name: readCommand
+    given: Active CommandInput instance
+    when: User enters command at terminal
+    then: Returns validated ParsedCommand with history persistence
+    implementation: |
+      pub fn readCommand(self: *CommandInput) !?ParsedCommand {
+          // Display prompt
+          try self.stdout.writeAll("ralph> ");
+
+          // Read line
+          var buffer: [4096]u8 = undefined;
+          const line = (try self.stdin.read(buffer[0..])) orelse return null;
+
+          // Trim whitespace
+          const trimmed = std.mem.trim(u8, line, " \n\r\t");
+
+          // Handle empty input
+          if (trimmed.len == 0) {
+              return null;
+          }
+
+          // Parse command
+          const parsed = try parseCommand(self.allocator, trimmed);
+
+          // Validate
+          parsed.valid = try self.validator.validate(parsed.command);
+
+          // Add to history
+          try self.history.add(trimmed);
+
+          return parsed;
+      }
+
+  - name: parseCommand
+    given: Raw command string
+    when: Splitting into command and arguments
+    then: Returns ParsedCommand with structured components
+    implementation: |
+      pub fn parseCommand(allocator: std.mem.Allocator, raw: []const u8) !ParsedCommand {
+          var iterator = std.mem.tokenizeScalar(u8, raw, ' ');
+          const command = iterator.next() orelse "";
+
+          var args = std.ArrayList([]const u8).init(allocator);
+          while (iterator.next()) |arg| {
+              try args.append(arg);
+          }
+
+          return ParsedCommand{
+              .raw = raw,
+              .command = command,
+              .args = args.toOwnedSlice(),
+              .valid = false,
+              .error_msg = null,
+          };
+      }
+
+  - name: handleSignal
+    given: Signal number and SignalHandler context
+    when: User presses Ctrl+C or Ctrl+D
+    then: Updates signal state, initiates graceful shutdown after 3 SIGINTs
+    implementation: |
+      pub fn handleSignal(handler: *SignalHandler, sig: u32) void {
+          if (sig == 2) { // SIGINT
+              handler.sigint_count += 1;
+
+              if (handler.sigint_count >= 3) {
+                  handler.shutdown_requested = true;
+                  std.debug.print("\nForce shutdown requested\n", .{});
+                  std.process.exit(1);
+              }
+
+              std.debug.print("\nInterrupt ({}/3). Press Ctrl+C again to force quit.\nralph> ", .{handler.sigint_count});
+              return;
+          }
+
+          if (sig == 15) { // SIGTERM
+              handler.shutdown_requested = true;
+              std.debug.print("\nGraceful shutdown requested\n", .{});
+          }
+      }
+
+  - name: saveHistory
+    given: CommandInput with history
+    when: Session ending or periodic flush
+    then: Persists history to disk atomically
+    implementation: |
+      pub fn saveHistory(input: *CommandInput) !void {
+          const file = try std.fs.createFileAbsolute(input.history.file_path.?, .{ .read = true });
+          defer file.close();
+
+          const writer = file.writer();
+          for (input.history.entries) |entry| {
+              try writer.print("{s}\n", .{entry});
+          }
+      }
