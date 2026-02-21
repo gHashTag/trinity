@@ -9,7 +9,7 @@
 | ID | Name | Branch | Progress | Gain |
 |----|------|--------|----------|------|
 |**VIBEE-PURE-001**|**Pure Zig Focus**|**vibee**|**Zig-first codegen with AGENT MU integration**|
-|**AGENT-MU-001**|**Self-Evolution**|**agent**|**Auto-fix + Regression learning + Version comparison**|
+|**AGENT-MU-002**|**Full Self-Evolution Mode**|**agent**|**12 FixType implementations + semantic pattern search + generator self-patching**|
 
 
 
@@ -44,6 +44,8 @@
 |**AGENT-001**|**IGLA Hybrid Chat**|**agent**|**Hybrid symbolic + neural reasoning engine**|
 |----|------|--------|------|
 |**ZIG15-001**|**Zig 0.15.1 Idioms Demo**|**agent**|**AGENT MU demo with 7 idioms: comptime generics, unmanaged containers, inferred errors, build.zig modules, raygui glassmorphism, sacred math, inline unrolling. docs/AGENT_MU_ZIG15_DEMO.md + generated/agent_mu_zig15_demo.zig**|
+|----|------|--------|------|
+|**AGENT-MU-001**|**Self-Evolution Demo**|**agent**|**AGENT MU flow demonstration: V01 → Pi03 → Phi02 → Mu05 → Sigma07, 7 Zig 0.15.1 idioms, before/after examples, μ = 0.0382 sacred mutation**|
 |----|------|--------|------|
 |**NEXUS-010**|**Architecture Documentation**|**nexus**|**docs/ARCHITECTURE.md (267 lines): module map, ASCII dep graph, build guide, 6 module details, workspace config, math foundation, migration history NEXUS-001 through NEXUS-010**|
 |----|------|--------|------|
@@ -129,13 +131,13 @@
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
-|**Agent**|**6**|**6**|**100%**|
+|**Agent**|**6**|**7**|**86%**|
 |**VIBEE**|**8**|**9**|**89%**|
 |Multilingual|3|3|100%|
-|**Total**|**68**|**74**|**92%**|
+|**Total**|**68**|**75**|**91%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **AGENT-MU-001** Self-Evolution — Auto-fix + Regression learning with μ = 0.0382
+1. **AGENT-MU-002** Full Self-Evolution Mode — 12 FixType + semantic search + generator self-patching
 2. **VIBEE-PURE-001** Pure Zig Focus — Zig-first codegen with AGENT MU integration
 3. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
 4. **DEP-001** Docker Container — portable deployment, enables CI testing
@@ -153,13 +155,14 @@
 
 **Branch Focus:** Pure Zig — Multilingual support maintained but not actively developed
 
-**Symbolic AI Maturity:** AGENT branch (83% complete)
+**Symbolic AI Maturity:** AGENT branch (86% complete)
 - AGENT-001: IGLA Hybrid Chat ✅
 - AGENT-002: Triples Parser ✅
 - AGENT-003: KG DHT Sync ✅
 - AGENT-004: $TRI Rewards ✅
 - AGENT-005: Query CLI ✅
-- AGENT-MU-001: Self-Evolution (IN PROGRESS)
+- AGENT-MU-001: Self-Evolution Demo ✅ (Cycle 44: 7 Zig 0.15.1 idioms)
+- AGENT-MU-002: Full Self-Evolution Mode (IN PROGRESS - Cycle 45)
 
 **VIBEE Maturity:** VIBEE branch (89% complete)
 - VIBEE-001..007: Core ✅
