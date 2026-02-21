@@ -6,6 +6,7 @@ const lang_generators = @import("lang_generators.zig");
 const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
 const agent_mu = @import("agent_mu");
+const orchestrator = @import("orchestrator.zig");
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -101,6 +102,50 @@ pub fn main() !void {
         }
 
         try http_server.runServer(allocator, model_path.?, port);
+    } else if (std.mem.eql(u8, command, "ralph")) {
+        // Ralph autonomous development loop
+        if (args.len < 3) {
+            std.debug.print("Error: Missing ralph subcommand\n", .{});
+            printRalphUsage();
+            return;
+        }
+
+        const subcommand = args[2];
+
+        if (std.mem.eql(u8, subcommand, "run")) {
+            // Parse options
+            var task_filter: ?[]const u8 = null;
+            var max_iterations: u32 = 100;
+            var verbose: bool = false;
+            var auto_fix: bool = true;
+            var create_branch: bool = false; // Default: no branch creation
+
+            var i: usize = 3;
+            while (i < args.len) : (i += 1) {
+                if (std.mem.eql(u8, args[i], "--task") and i + 1 < args.len) {
+                    task_filter = args[i + 1];
+                    i += 1;
+                } else if (std.mem.eql(u8, args[i], "--max-iterations") and i + 1 < args.len) {
+                    max_iterations = std.fmt.parseInt(u32, args[i + 1], 10) catch 100;
+                    i += 1;
+                } else if (std.mem.eql(u8, args[i], "--verbose") or std.mem.eql(u8, args[i], "-v")) {
+                    verbose = true;
+                } else if (std.mem.eql(u8, args[i], "--no-fix")) {
+                    auto_fix = false;
+                } else if (std.mem.eql(u8, args[i], "--branch")) {
+                    create_branch = true;
+                }
+            }
+
+            try ralphRun(allocator, task_filter, max_iterations, verbose, auto_fix, create_branch);
+        } else if (std.mem.eql(u8, subcommand, "status")) {
+            try ralphStatus(allocator);
+        } else if (std.mem.eql(u8, subcommand, "help") or std.mem.eql(u8, subcommand, "--help")) {
+            printRalphUsage();
+        } else {
+            std.debug.print("Unknown ralph subcommand: {s}\n", .{subcommand});
+            printRalphUsage();
+        }
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {
@@ -127,6 +172,10 @@ fn printUsage() void {
         \\    --ternary                                 Enable BitNet ternary mode (16x memory savings)
         \\  vibeec serve --model <path.gguf> [options]  HTTP API server (OpenAI compatible)
         \\    --port N                                  Port to listen on (default: 8080)
+        \\  vibeec ralph <subcommand> [options]        Ralph autonomous development (v8.11)
+        \\    run [--task <name>]                      Run autonomous development cycle
+        \\    status                                   Show current task status
+        \\    help                                     Show Ralph commands
         \\  vibeec help                                 Show this help
         \\
     , .{});
@@ -299,4 +348,136 @@ fn generateMultiLang(allocator: std.mem.Allocator, spec: *vibee_parser.VibeeSpec
     };
 
     return lang_generators.generateForLanguage(allocator, parsed, spec.language);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RALPH AUTONOMOUS DEVELOPMENT COMMANDS (v8.11)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Run Ralph autonomous development loop
+fn ralphRun(
+    alloc: std.mem.Allocator,
+    task_filter: ?[]const u8,
+    max_iterations: u32,
+    verbose: bool,
+    auto_fix: bool,
+    create_branch: bool,
+) !void {
+    std.debug.print("\n🤖 Ralph Autonomous Development Starting...\n", .{});
+
+    const config = orchestrator.OrchestratorConfig{
+        .max_iterations = max_iterations,
+        .enable_circuit_breaker = true,
+        .rate_limit_per_hour = 100,
+        .auto_fix_enabled = auto_fix,
+        .verbose = verbose,
+        .create_branch = create_branch,
+        .commit_on_success = false, // User confirmation required
+    };
+
+    var orch = try orchestrator.Orchestrator.init(alloc, config);
+    defer orch.deinit();
+
+    const report = try orch.run(task_filter);
+    defer report.deinit(alloc);
+
+    // Print report
+    std.debug.print("\n═══════════════════════════════════════════════════════════════════\n", .{});
+    std.debug.print("📊 Ralph Cycle Report\n", .{});
+    std.debug.print("═══════════════════════════════════════════════════════════════════\n", .{});
+    std.debug.print("Result: {s}\n", .{report.result.toString()});
+
+    if (report.task) |*task| {
+        std.debug.print("Task: {s} {s}\n", .{ task.priority.toString(), task.name });
+    }
+
+    std.debug.print("Iteration: {d}/{}\n", .{ report.iteration, max_iterations });
+    std.debug.print("Duration: {d}ms\n", .{report.duration_ms });
+
+    if (report.tests_total > 0) {
+        std.debug.print("Tests: {d}/{} passed\n", .{ report.tests_passed, report.tests_total });
+    }
+
+    if (report.errors_found > 0) {
+        std.debug.print("Errors: {d} found, {d} fixed\n", .{ report.errors_found, report.errors_fixed });
+    }
+
+    if (report.message.len > 0) {
+        std.debug.print("Message: {s}\n", .{report.message});
+    }
+
+    std.debug.print("═══════════════════════════════════════════════════════════════════\n\n", .{});
+
+    // Exit with appropriate code
+    std.process.exit(switch (report.result) {
+        .success, .no_tasks => 0,
+        else => 1,
+    });
+}
+
+/// Show Ralph status
+fn ralphStatus(alloc: std.mem.Allocator) !void {
+    std.debug.print("\n📊 Ralph Status\n", .{});
+    std.debug.print("─────────────────────────────────────────────────────────────\n", .{});
+
+    // Try to read fix_plan.md
+    const file = std.fs.cwd().openFile(".ralph/internal/fix_plan.md", .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            std.debug.print("⚠️  fix_plan.md not found\n", .{});
+            std.debug.print("   Run 'vibeec ralph help' for usage\n", .{});
+            return;
+        }
+        return err;
+    };
+    defer file.close();
+
+    const content = try file.readToEndAlloc(alloc, 1024 * 1024);
+    defer alloc.free(content);
+
+    // Count tasks
+    var p1_count: u32 = 0;
+    var p2_count: u32 = 0;
+    var p3_count: u32 = 0;
+    var completed_count: u32 = 0;
+
+    var lines = std.mem.splitScalar(u8, content, '\n');
+    while (lines.next()) |line| {
+        const trimmed = std.mem.trim(u8, line, &std.ascii.whitespace);
+
+        if (std.mem.startsWith(u8, trimmed, "- [x]")) {
+            completed_count += 1;
+        } else if (std.mem.startsWith(u8, trimmed, "- [ ] [P1]")) {
+            p1_count += 1;
+        } else if (std.mem.startsWith(u8, trimmed, "- [ ] [P2]")) {
+            p2_count += 1;
+        } else if (std.mem.startsWith(u8, trimmed, "- [ ] [P3]")) {
+            p3_count += 1;
+        }
+    }
+
+    std.debug.print("Tasks:\n", .{});
+    std.debug.print("  [P1] High Priority: {d}\n", .{p1_count});
+    std.debug.print("  [P2] Medium: {d}\n", .{p2_count});
+    std.debug.print("  [P3] Low: {d}\n", .{p3_count});
+    std.debug.print("  ✓ Completed: {d}\n", .{completed_count});
+    std.debug.print("─────────────────────────────────────────────────────────────\n\n", .{});
+}
+
+/// Print Ralph usage
+fn printRalphUsage() void {
+    std.debug.print(
+        \\
+        \\RALPH AUTONOMOUS DEVELOPMENT COMMANDS:
+        \\
+        \\  vibeec ralph run [options]              Run autonomous development cycle
+        \\    --task <name>                         Only work on matching task
+        \\    --max-iterations <n>                  Max iterations (default: 100)
+        \\    --verbose, -v                         Enable verbose logging
+        \\    --no-fix                              Disable auto-fix
+        \\    --branch                              Create git branch for work
+        \\
+        \\  vibeec ralph status                     Show current task status
+        \\  vibeec ralph help                       Show this help
+        \\
+    , .{});
 }

@@ -33,6 +33,12 @@ pub const vsa = @import("vsa.zig"); // TEN: 6%
 pub const dsl = @import("dsl.zig"); // DSL patterns
 pub const chat = @import("chat.zig"); // Chat patterns (fluent responses)
 pub const rl = @import("rl.zig"); // RL: raylib GUI/rendering patterns
+pub const zig_idioms = @import("zig_idioms.zig"); // v8.10: Zig-specific patterns (allocator, error union, comptime)
+
+// v8.11: Zig 0.15 Deep Integration patterns
+pub const comptime = @import("comptime.zig"); // Comptime metaprogramming (type functions, @typeInfo)
+pub const io_writergate = @import("io_writergate.zig"); // Writergate I/O (Reader/Writer vtable, peek/discard/splat)
+pub const unmanaged = @import("unmanaged.zig"); // Unmanaged containers (ArrayListUnmanaged, ArenaAllocator)
 
 // Optimization modules
 pub const registry = @import("registry.zig"); // Hash-based lookup
@@ -50,6 +56,11 @@ pub const Category = enum {
     ml,
     vsa,
     rl,
+    zig_idioms, // v8.10: Zig-specific idiom patterns
+    // v8.11: Zig 0.15 Deep Integration categories
+    comptime, // Comptime metaprogramming (type functions, @typeInfo, @setEvalBranchQuota)
+    io_writergate, // Writergate I/O (Reader/Writer vtable, peek/discard/splat)
+    unmanaged, // Unmanaged containers (ArrayListUnmanaged, ArenaAllocator, GPA)
     unknown,
 };
 
@@ -177,6 +188,12 @@ pub fn matchWithCategory(builder: *CodeBuilder, b: *const Behavior) !MatchResult
     }
 
     // PAS frequency order
+    // v8.10: Try zig_idioms BEFORE lifecycle for allocator-aware init/deinit
+    // v8.11: Add Zig 0.15 patterns (comptime, io_writergate, unmanaged)
+    if (try zig_idioms.match(builder, b)) return .{ .matched = true, .category = .zig_idioms };
+    if (try comptime.match(builder, b)) return .{ .matched = true, .category = .comptime };
+    if (try io_writergate.match(builder, b)) return .{ .matched = true, .category = .io_writergate };
+    if (try unmanaged.match(builder, b)) return .{ .matched = true, .category = .unmanaged };
     if (try lifecycle.match(builder, b)) return .{ .matched = true, .category = .lifecycle };
     if (try generic.match(builder, b)) return .{ .matched = true, .category = .generic };
     if (try io.match(builder, b)) return .{ .matched = true, .category = .io };
@@ -198,6 +215,11 @@ pub fn getPatternCounts() struct {
     ml: u32,
     vsa: u32,
     rl: u32,
+    zig_idioms: u32,
+    // v8.11: Zig 0.15 patterns
+    comptime: u32,
+    io_writergate: u32,
+    unmanaged: u32,
     total: u32,
 } {
     return .{
@@ -210,7 +232,12 @@ pub fn getPatternCounts() struct {
         .ml = 24, // predict, train, evaluate, learn, adapt, fit, infer, calibrate, accuracy, loss, gradient, backward, forward, weight, evolve, mutate, llm, layer, softmax, relu, gelu, embed, flash, prune, online
         .vsa = 15, // bind, bundle, unbind, similarity, permute, dot, hamming, cosine, distance, random, ones, zeros, sparsity, vector, analogy
         .rl = 57, // Drawing(10) + Text(7) + Input(7) + Window(15) + Color(4) + Audio(2) + Cursor(2) + Texture(1) + Composites(9)
-        .total = 243, // 186 + 57 rl patterns
+        .zig_idioms = 16, // v8.10: init, deinit, create*, try*, alloc*/new*, *_bind, *_bundle, *_unbind, comptime*, *_error, arena*, gpa*, noop*/dummy*
+        // v8.11: Zig 0.15 patterns
+        .comptime = 6, // type functions, comptime const, comptime block, eval quota, type deduction, inline hint
+        .io_writergate = 6, // reader, writer, peek, discard, splat, buffered
+        .unmanaged = 6, // unmanaged list, arena allocator, unmanaged hashmap, appendAssumeCapacity, bounded array, GPA
+        .total = 293, // 259 + 6 comptime + 6 io_writergate + 6 unmanaged
     };
 }
 

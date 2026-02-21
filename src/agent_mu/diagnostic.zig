@@ -21,6 +21,32 @@ pub const FixType = enum {
     SYNTAX_FIX,
     /// Unknown error type - requires manual review
     UNKNOWN,
+
+    // === ZIG-SPECIFIC FIX TYPES (v8.10) ===
+
+    /// Missing or incorrect allocator parameter (std.mem.Allocator, GPA, Arena)
+    ALLOCATOR_FIX,
+    /// Error union or error handling issues (!T, try, catch, errdefer)
+    ERROR_UNION_FIX,
+    /// Comptime-related errors (@setEvalBranchQuota, comptime blocks)
+    COMPTIME_FIX,
+    /// VSA-specific issues (Hypervector, bind/bundle operations)
+    VSA_FIX,
+    /// Memory management issues (leaks, missing deinit, use-after-free)
+    MEM_FIX,
+
+    // === ZIG 0.15 SPECIFIC FIX TYPES (v8.11) ===
+
+    /// Writergate I/O pattern issues (std.Io.Reader/Writer, peek, discard, splat)
+    IOPATTERN_FIX,
+    /// Comptime quota exceeded (@setEvalBranchQuota)
+    COMPTIME_QUOTA_FIX,
+    /// Unmanaged container issues (ArrayListUnmanaged, HashMapUnmanaged)
+    UNMANAGED_FIX,
+    /// Type function errors (@Type, @typeInfo)
+    TYPEFUNCTION_FIX,
+    /// Inline/comptime hint issues
+    INLINE_FIX,
 };
 
 /// Parsed error information
@@ -74,7 +100,11 @@ fn parseErrorLine(allocator: std.mem.Allocator, line: []const u8) !ErrorInfo {
 
     // Clean up message (trim whitespace and "error:" prefix if present)
     var message = std.mem.trim(u8, message_part, &std.ascii.whitespace);
-    message = std.mem.trim(u8, message, "error:");
+    // Remove "error:" prefix if present (literal string, not character set)
+    if (std.mem.startsWith(u8, message, "error:")) {
+        message = message["error:".len..];
+        message = std.mem.trim(u8, message, &std.ascii.whitespace);
+    }
 
     return ErrorInfo{
         .fix_type = .UNKNOWN,
@@ -147,6 +177,133 @@ fn classifyError(err_info: *ErrorInfo) void {
         return;
     }
 
+    // === ZIG-SPECIFIC CLASSIFIERS (v8.10) ===
+
+    // Allocator errors
+    if (std.mem.indexOf(u8, msg, "no allocator") != null or
+        std.mem.indexOf(u8, msg, "std.mem.Allocator") != null or
+        std.mem.indexOf(u8, msg, " GPA") != null or
+        std.mem.indexOf(u8, msg, "GeneralPurposeAllocator") != null or
+        std.mem.indexOf(u8, msg, "ArenaAllocator") != null or
+        std.mem.indexOf(u8, msg, "allocator") != null and std.mem.indexOf(u8, msg, "parameter") != null)
+    {
+        err_info.fix_type = .ALLOCATOR_FIX;
+        return;
+    }
+
+    // Error union issues
+    if (std.mem.indexOf(u8, msg, "error union") != null or
+        std.mem.indexOf(u8, msg, "expected type '!'") != null or
+        std.mem.indexOf(u8, msg, "inferred error set") != null or
+        std.mem.indexOf(u8, msg, "error set not declared") != null or
+        std.mem.indexOf(u8, msg, "cannot assign error to") != null or
+        std.mem.indexOf(u8, msg, " void cannot be error") != null)
+    {
+        err_info.fix_type = .ERROR_UNION_FIX;
+        return;
+    }
+
+    // Comptime issues
+    if (std.mem.indexOf(u8, msg, "comptime") != null or
+        std.mem.indexOf(u8, msg, "@setEvalBranchQuota") != null or
+        std.mem.indexOf(u8, msg, "eval exceeded") != null or
+        std.mem.indexOf(u8, msg, "unable to evaluate") != null or
+        std.mem.indexOf(u8, msg, "not available at comptime") != null or
+        std.mem.indexOf(u8, msg, "cannot be evaluated at comptime") != null)
+    {
+        err_info.fix_type = .COMPTIME_FIX;
+        return;
+    }
+
+    // VSA-specific
+    if (std.mem.indexOf(u8, msg, "Hypervector") != null or
+        std.mem.indexOf(u8, msg, "vsa.") != null or
+        std.mem.indexOf(u8, msg, "trinity.") != null or
+        std.mem.indexOf(u8, msg, "bind") != null or std.mem.indexOf(u8, msg, "bundle") != null or
+        std.mem.indexOf(u8, msg, "Hypervector") != null or
+        std.mem.indexOf(u8, msg, "VectorSymbolic") != null)
+    {
+        err_info.fix_type = .VSA_FIX;
+        return;
+    }
+
+    // Memory management
+    if (std.mem.indexOf(u8, msg, "deinit") != null or
+        std.mem.indexOf(u8, msg, "memory leak") != null or
+        std.mem.indexOf(u8, msg, "use after free") != null or
+        std.mem.indexOf(u8, msg, "leak detected") != null or
+        std.mem.indexOf(u8, msg, "invalid pointer") != null or
+        std.mem.indexOf(u8, msg, "cleanup") != null or
+        std.mem.indexOf(u8, msg, "defer") != null and std.mem.indexOf(u8, msg, "missing") != null)
+    {
+        err_info.fix_type = .MEM_FIX;
+        return;
+    }
+
+    // === ZIG 0.15 SPECIFIC CLASSIFIERS (v8.11) ===
+
+    // Writergate I/O pattern errors
+    if (std.mem.indexOf(u8, msg, "Reader") != null or
+        std.mem.indexOf(u8, msg, "Writer") != null or
+        std.mem.indexOf(u8, msg, "std.Io") != null or
+        std.mem.indexOf(u8, msg, "std.io.") != null or
+        std.mem.indexOf(u8, msg, "peek") != null or
+        std.mem.indexOf(u8, msg, "discard") != null or
+        std.mem.indexOf(u8, msg, "splat") != null or
+        std.mem.indexOf(u8, msg, "bufferedReader") != null or
+        std.mem.indexOf(u8, msg, "no method 'read'") != null or
+        std.mem.indexOf(u8, msg, "no method 'write'") != null)
+    {
+        err_info.fix_type = .IOPATTERN_FIX;
+        return;
+    }
+
+    // Comptime quota exceeded (specific to @setEvalBranchQuota)
+    if (std.mem.indexOf(u8, msg, "Evaluation branch quota") != null or
+        std.mem.indexOf(u8, msg, "branch quota") != null or
+        std.mem.indexOf(u8, msg, "@setEvalBranchQuota") != null and std.mem.indexOf(u8, msg, "exceeded") != null or
+        std.mem.indexOf(u8, msg, "comptime call depth") != null or
+        std.mem.indexOf(u8, msg, "too much comptime") != null)
+    {
+        err_info.fix_type = .COMPTIME_QUOTA_FIX;
+        return;
+    }
+
+    // Unmanaged container issues
+    if (std.mem.indexOf(u8, msg, "Unmanaged") != null or
+        std.mem.indexOf(u8, msg, "ArrayListUnmanaged") != null or
+        std.mem.indexOf(u8, msg, "HashMapUnmanaged") != null or
+        std.mem.indexOf(u8, msg, "no allocator passed") != null or
+        std.mem.indexOf(u8, msg, "no field 'allocator'") != null or
+        std.mem.indexOf(u8, msg, "cannot pass allocator to unmanaged") != null)
+    {
+        err_info.fix_type = .UNMANAGED_FIX;
+        return;
+    }
+
+    // Type function errors
+    if (std.mem.indexOf(u8, msg, "@Type") != null or
+        std.mem.indexOf(u8, msg, "@typeInfo") != null or
+        std.mem.indexOf(u8, msg, "type function") != null or
+        std.mem.indexOf(u8, msg, "type deduction") != null or
+        std.mem.indexOf(u8, msg, "StructField") != null or
+        std.mem.indexOf(u8, msg, "invalid type value") != null)
+    {
+        err_info.fix_type = .TYPEFUNCTION_FIX;
+        return;
+    }
+
+    // Inline/comptime hint issues
+    if (std.mem.indexOf(u8, msg, "inline") != null and std.mem.indexOf(u8, msg, "callconv") != null or
+        std.mem.indexOf(u8, msg, "inline hint") != null or
+        std.mem.indexOf(u8, msg, "cannot inline") != null or
+        std.mem.indexOf(u8, msg, "alwaysinline") != null or
+        std.mem.indexOf(u8, msg, "neverinline") != null)
+    {
+        err_info.fix_type = .INLINE_FIX;
+        return;
+    }
+
     // Default: unknown error
     err_info.fix_type = .UNKNOWN;
 }
@@ -195,11 +352,22 @@ pub fn isAutoFixable(fix_type: FixType) bool {
     return switch (fix_type) {
         .IMPORT_FIX => true,
         .SYNTAX_FIX => true,  // Some syntax errors are fixable
-        .SPEC_FIX => false,   // Requires spec modification
+        .ALLOCATOR_FIX => false,  // Requires design decision (where to add allocator)
+        .ERROR_UNION_FIX => false,  // Requires error handling strategy
+        .COMPTIME_FIX => false,     // Requires architectural change
+        .VSA_FIX => false,          // VSA-specific, requires domain knowledge
+        .MEM_FIX => false,          // Manual review needed
+        .SPEC_FIX => false,         // Requires spec modification
         .GENERATOR_PATCH => false,  // Requires generator code change
         .TEMPLATE_FIX => false,     // Requires template modification
-        .TYPE_FIX => false,    // Usually requires design decision
+        .TYPE_FIX => false,         // Usually requires design decision
         .UNKNOWN => false,
+        // Zig 0.15 specific (v8.11)
+        .IOPATTERN_FIX => true,      // Can add Reader/Writer methods automatically
+        .COMPTIME_QUOTA_FIX => true, // Can add @setEvalBranchQuota call
+        .UNMANAGED_FIX => false,     // Requires design decision (managed vs unmanaged)
+        .TYPEFUNCTION_FIX => false,  // Requires type-level design
+        .INLINE_FIX => false,        // Compiler hint - requires profiling
     };
 }
 
@@ -213,6 +381,18 @@ pub fn fixTypeDescription(fix_type: FixType) []const u8 {
         .TYPE_FIX => "Type mismatch or incorrect type",
         .SYNTAX_FIX => "Zig syntax error",
         .UNKNOWN => "Unknown error type",
+        // Zig-specific (v8.10)
+        .ALLOCATOR_FIX => "Allocator parameter missing or incorrect",
+        .ERROR_UNION_FIX => "Error union or error handling issue",
+        .COMPTIME_FIX => "Comptime evaluation error",
+        .VSA_FIX => "VSA (Vector Symbolic Architecture) issue",
+        .MEM_FIX => "Memory management issue (leak, deinit, etc.)",
+        // Zig 0.15 specific (v8.11)
+        .IOPATTERN_FIX => "Writergate I/O pattern issue (Reader/Writer, peek, discard, splat)",
+        .COMPTIME_QUOTA_FIX => "Comptime branch quota exceeded (needs @setEvalBranchQuota)",
+        .UNMANAGED_FIX => "Unmanaged container issue (ArrayListUnmanaged, HashMapUnmanaged)",
+        .TYPEFUNCTION_FIX => "Type function error (@Type, @typeInfo)",
+        .INLINE_FIX => "Inline/comptime hint issue",
     };
 }
 
@@ -221,7 +401,7 @@ test "diagnostic: parse error line" {
 
     const error_line = "/path/to/file.zig:42:15: error: expected type 'T', found '[]const u8'";
 
-    const err_info = try parse(allocator, error_line);
+    var err_info = try parse(allocator, error_line);
     defer err_info.deinit(allocator);
 
     try std.testing.expectEqual(@as(u32, 42), err_info.line);
@@ -235,7 +415,7 @@ test "diagnostic: undeclared identifier -> IMPORT_FIX" {
 
     const error_line = "/path/to/file.zig:10:5: error: use of undeclared identifier 'std'";
 
-    const err_info = try parse(allocator, error_line);
+    var err_info = try parse(allocator, error_line);
     defer err_info.deinit(allocator);
 
     try std.testing.expectEqual(FixType.IMPORT_FIX, err_info.fix_type);
@@ -246,7 +426,7 @@ test "diagnostic: syntax error -> SYNTAX_FIX" {
 
     const error_line = "/path/to/file.zig:5:3: error: expected ';' after expression";
 
-    const err_info = try parse(allocator, error_line);
+    var err_info = try parse(allocator, error_line);
     defer err_info.deinit(allocator);
 
     try std.testing.expectEqual(FixType.SYNTAX_FIX, err_info.fix_type);
@@ -257,7 +437,7 @@ test "diagnostic: .vibee error -> SPEC_FIX" {
 
     const error_line = "/specs/test.vibee:8:2: error: invalid YAML syntax";
 
-    const err_info = try parse(allocator, error_line);
+    var err_info = try parse(allocator, error_line);
     defer err_info.deinit(allocator);
 
     try std.testing.expectEqual(FixType.SPEC_FIX, err_info.fix_type);

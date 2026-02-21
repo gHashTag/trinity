@@ -1679,16 +1679,16 @@ pub const BlockPool = struct {
         var pool = BlockPool{
             .allocator = allocator,
             .config = config,
-            .blocks = std.ArrayList(KVBlock).init(allocator),
-            .free_list = std.ArrayList(usize).init(allocator),
+            .blocks = std.ArrayList(KVBlock){},
+            .free_list = std.ArrayList(usize){},
             .num_allocated = 0,
         };
 
         // Pre-allocate all blocks
         for (0..config.max_blocks) |i| {
             const block = try KVBlock.init(allocator, &config, i, 0);
-            try pool.blocks.append(block);
-            try pool.free_list.append(i);
+            try pool.blocks.append(allocator, block);
+            try pool.free_list.append(allocator, i);
         }
 
         return pool;
@@ -1698,14 +1698,14 @@ pub const BlockPool = struct {
         for (self.blocks.items) |*block| {
             block.deinit(self.allocator);
         }
-        self.blocks.deinit();
-        self.free_list.deinit();
+        self.blocks.deinit(self.allocator);
+        self.free_list.deinit(self.allocator);
     }
 
     /// Allocate a block from the pool
     pub fn allocateBlock(self: *BlockPool) ?usize {
         if (self.free_list.items.len == 0) return null;
-        const block_id = self.free_list.pop();
+        const block_id = self.free_list.pop() orelse return null;
         self.num_allocated += 1;
         self.blocks.items[block_id].ref_count = 1;
         self.blocks.items[block_id].num_tokens = 0;
@@ -1718,7 +1718,7 @@ pub const BlockPool = struct {
 
         self.blocks.items[block_id].ref_count -= 1;
         if (self.blocks.items[block_id].ref_count == 0) {
-            self.free_list.append(block_id) catch {};
+            self.free_list.append(self.allocator, block_id) catch {};
             self.num_allocated -= 1;
         }
     }
@@ -2045,10 +2045,11 @@ pub const CachedPrefix = struct {
     created_at: i64,
 
     pub fn init(allocator: std.mem.Allocator, hash: u64) CachedPrefix {
+        _ = allocator; // Mark as used for future allocation
         return .{
             .prefix_hash = hash,
-            .tokens = std.ArrayList(u32).init(allocator),
-            .block_ids = std.ArrayList(usize).init(allocator),
+            .tokens = std.ArrayList(u32){},
+            .block_ids = std.ArrayList(usize){},
             .num_tokens = 0,
             .hit_count = 0,
             .last_access = std.time.milliTimestamp(),
@@ -2056,9 +2057,9 @@ pub const CachedPrefix = struct {
         };
     }
 
-    pub fn deinit(self: *CachedPrefix) void {
-        self.tokens.deinit();
-        self.block_ids.deinit();
+    pub fn deinit(self: *CachedPrefix, allocator: std.mem.Allocator) void {
+        self.tokens.deinit(allocator);
+        self.block_ids.deinit(allocator);
     }
 };
 
@@ -2122,7 +2123,7 @@ pub const PrefixCache = struct {
             for (entry.value_ptr.block_ids.items) |block_id| {
                 self.block_pool.freeBlock(block_id);
             }
-            entry.value_ptr.deinit();
+            entry.value_ptr.deinit(self.allocator);
         }
         self.cache.deinit();
     }
@@ -2200,8 +2201,8 @@ pub const PrefixCache = struct {
         if (self.cache.contains(hash)) return;
 
         var entry = CachedPrefix.init(self.allocator, hash);
-        try entry.tokens.appendSlice(tokens);
-        try entry.block_ids.appendSlice(block_ids);
+        try entry.tokens.appendSlice(self.allocator, tokens);
+        try entry.block_ids.appendSlice(self.allocator, block_ids);
         entry.num_tokens = tokens.len;
 
         // Increment ref counts for shared blocks
@@ -2240,7 +2241,7 @@ pub const PrefixCache = struct {
                 for (entry.block_ids.items) |block_id| {
                     self.block_pool.freeBlock(block_id);
                 }
-                entry.deinit();
+                entry.deinit(self.allocator);
                 self.evictions += 1;
             }
         }
@@ -2265,7 +2266,7 @@ pub const PrefixCache = struct {
             for (entry.value_ptr.block_ids.items) |block_id| {
                 self.block_pool.freeBlock(block_id);
             }
-            entry.value_ptr.deinit();
+            entry.value_ptr.deinit(self.allocator);
         }
         self.cache.clearRetainingCapacity();
         self.total_hits = 0;

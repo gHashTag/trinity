@@ -104,6 +104,18 @@ fn entryMatchesError(
         .SPEC_FIX => "spec",
         .GENERATOR_PATCH => "generator",
         .UNKNOWN => "error",
+        // Zig-specific (v8.10)
+        .ALLOCATOR_FIX => "allocator",
+        .ERROR_UNION_FIX => "error",
+        .COMPTIME_FIX => "comptime",
+        .VSA_FIX => "vsa",
+        .MEM_FIX => "memory",
+        // Zig 0.15 specific (v8.11)
+        .IOPATTERN_FIX => "io",
+        .COMPTIME_QUOTA_FIX => "quota",
+        .UNMANAGED_FIX => "unmanaged",
+        .TYPEFUNCTION_FIX => "typefunction",
+        .INLINE_FIX => "inline",
     };
 
     // Check if entry contains relevant keywords
