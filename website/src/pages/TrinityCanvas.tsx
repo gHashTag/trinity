@@ -43,6 +43,7 @@ import ChatMessage from '../components/chat/ChatMessage';
 import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, fetchPasStatus, fetchPasAnalysis, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics, type PasStatus, type PasAnalysis } from '../services/chatApi';
 import { connectPasWebSocket, disconnectPasWebSocket, type PasWsMessage, type PasWsCallbacks } from '../services/pasWebSocket';
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
+import KoscheiStatusWidget from '../components/KoscheiStatusWidget';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -2001,6 +2002,11 @@ export default function TrinityCanvas() {
                       )}
                     </div>
                   )}
+                </div>
+
+                {/* ── KOSCHEI v8.24: Production Swarm Status ── */}
+                <div style={{ marginTop: 4 }}>
+                  <KoscheiStatusWidget width={336} />
                 </div>
 
                 {/* Live log — hidden unless debugLogs enabled */}

@@ -1,143 +1,48 @@
 #!/bin/bash
-# Ralph Dashboard v4.1 — Vertical layout with tmux best practices
 cd /Users/playra/trinity
 
-# Pre-flight test
-echo "Running pre-flight checks..."
-if ! bash .ralph/tests/launch_test.sh; then
-    echo "Pre-flight checks failed. Fix errors above."
-    exit 1
-fi
+echo "Starting Ralph Dashboard..."
+bash .ralph/tests/launch_test.sh || exit 1
 
-# Stop old handlers and sessions
-pkill -f tri_cmd_handler 2>/dev/null || true
 pkill -f tri_cmd_real_handler_v2 2>/dev/null || true
 tmux kill-server 2>/dev/null || true
 sleep 0.5
 
-# Start handler
 bash .ralph/scripts/tri_cmd_real_handler_v2.sh > /dev/null 2>&1 &
-HANDLER_PID=$!
 
-# === TMUX CONFIGURATION (awesome-tmux best practices) ===
-# Create temporary config for this session
 TMUX_CONF=$(mktemp)
 cat > "$TMUX_CONF" << 'EOF'
-# Mouse mode (best practice: enable for modern terminals)
 set -g mouse on
-
-# Scrollback buffer (best practice: large history)
-set -g history-limit 10000
-
-# Status bar (minimalist - hide for cleaner chat)
-set -g status off
-
-# Window/pane numbering (start at 0 for simpler indexing)
+set -g status on
+set -g window-status-current-format ' #I:#W* '
 set -g base-index 0
-set -g pane-base-index 0
-
-# Key bindings (vi-style for chat navigation)
 setw -g mode-keys vi
-set -g status-keys vi
-
-# Copy mode settings (better text selection)
-setw -g mode-style 'bg=#1e1e2e,fg=#cdd6f4'
-set -g copy-mode-match-style 'bg=#89b4fa,fg=#1e1e2e'
-set -g copy-mode-current-match-style 'bg=#f9e2af,fg=#1e1e2e'
-
-# Pane borders (subtle)
-set -g pane-border-style 'fg=#313244'
-set -g pane-active-border-style 'fg=#89b4fa'
-
-# Clock (for sessions window)
-set -g clock-mode-colour '#89b4fa'
-
-# Messages (subtle)
-set -g message-style 'bg=#313244,fg=#cdd6f4'
-set -g message-command-style 'bg=#1e1e2e,fg=#cdd6f4'
-
-# Faster escape sequences (better vim responsiveness)
-set -sg escape-time 10
-
-# Focus events (auto window title)
-set -g focus-events on
-
-# Aggressive resize (smaller windows get less space)
-setw -g aggressive-resize on
-
-# Terminal overrides (better colors)
-set -sa terminal-overrides ",xterm-256color:Tc"
-
-# New window/pane in current path
-bind c new-window -c "#{pane_current_path}"
-bind '"' split-window -v -c "#{pane_current_path}"
-bind % split-window -h -c "#{pane_current_path}"
 EOF
 
-# === HOME window - VERTICAL 2-PANE LAYOUT ===
-# Chat (top 80%) | Input (bottom 20%)
-
-# Start full session with custom config
 tmux -f "$TMUX_CONF" new-session -s ralph -n "HOME" -d
-
-# Split vertically: 80% for chat, 20% for input
-tmux split-window -v -p 20 -t ralph:0
-
-# Pane 0.0 = CHAT (top, scrollable)
+tmux split-window -v -p 2 -t ralph:0
 tmux send-keys -t ralph:0.0 "bash .ralph/scripts/output_monitor_v4.sh" C-m
-
-# Pane 0.1 = INPUT (bottom, fixed)
 tmux send-keys -t ralph:0.1 "bash .ralph/scripts/tri_cmd_input_v4.sh" C-m
-
-# Select INPUT pane for typing
 tmux select-pane -t ralph:0.1
 
-# === Other windows ===
 tmux new-window -t ralph -n "Loop"
 tmux send-keys -t ralph:1 "while true; do clear; .ralph/scripts/tmux_status.sh panel0; sleep 2; done" C-m
 tmux split-window -h -t ralph:1
 tmux send-keys -t ralph:1.1 "while true; do clear; .ralph/scripts/tmux_status.sh panel1; sleep 5; done" C-m
-tmux select-pane -t ralph:1.0
 
 tmux new-window -t ralph -n "Tasks"
 tmux send-keys -t ralph:2 "while true; do clear; .ralph/scripts/tmux_status.sh panel2; sleep 5; done" C-m
 tmux split-window -h -p 60 -t ralph:2
 tmux send-keys -t ralph:2.1 "while true; do clear; .ralph/scripts/tmux_status.sh panel3; sleep 10; done" C-m
-tmux select-pane -t ralph:2.0
 
 tmux new-window -t ralph -n "Memory"
 tmux send-keys -t ralph:3 "while true; do clear; .ralph/scripts/tmux_status.sh panel4; sleep 15; done" C-m
 tmux split-window -h -p 60 -t ralph:3
 tmux send-keys -t ralph:3.1 "cd .ralph/logs && tail -f \$(ls -t *.log 2>/dev/null | head -1 || echo ralph.log)" C-m
-tmux select-pane -t ralph:3.0
 
 tmux new-window -t ralph -n "Log"
 tmux send-keys -t ralph:4 "cd .ralph/logs && tail -f ralph.log" C-m
 
-# Select HOME
 tmux select-window -t ralph:0
-
-# Cleanup temp config
 rm -f "$TMUX_CONF"
-
-echo ""
-echo "   ╔═══════════════════════════════════════════════════╗"
-echo "   ║     RALPH DASHBOARD v4.1 — CHAT MODE             ║"
-echo "   ╠═══════════════════════════════════════════════════╣"
-echo "   ║  Handler PID: $HANDLER_PID"
-echo "   ║  Layout: Vertical (Chat 80% | Input 20%)         "
-echo "   ║                                                   ║"
-echo "   ║  [HOME]  → TRI COMMANDER v4.1                     ║"
-echo "   ║            • Chat history (scrollable)           ║"
-echo "   ║            • Mouse scroll enabled                 ║"
-echo "   ║            • Input (bottom, fixed)                ║"
-echo "   ║                                                   ║"
-echo "   ║  Keybinds:                                        ║"
-echo "   ║    Prefix+C-[  → Copy mode (vi-style)            ║"
-echo "   ║    Prefix+PgUp → Scroll chat                     ║"
-echo "   ║    Mouse drag  → Select text                     ║"
-echo "   ║    Mouse wheel → Scroll history                  ║"
-echo "   ║                                                   ║"
-echo "   ║  Присоединяйся: tmux attach -t ralph              ║"
-echo "   ╚═══════════════════════════════════════════════════╝"
-echo ""
+echo "Ready! tmux attach -t ralph"

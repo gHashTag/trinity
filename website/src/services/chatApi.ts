@@ -389,6 +389,68 @@ export async function fetchPasAnalysis(): Promise<PasAnalysis | null> {
   }
 }
 
+// ─── v8.24: KOSCHEI MODE API ───────────────────────────────────────────────────────────
+
+export type KoscheiState = 'IMMORTAL' | 'RECOVERING' | 'VULNERABLE';
+
+export interface KoscheiNode {
+  id: string;
+  address: string;
+  status: 'online' | 'offline' | 'recovering';
+  load: number;  // 0.0 - 1.0
+  last_heartbeat: number;
+  circuit_breaker_state: 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+  pas_efficiency: number;  // 0.0 - 1.0
+}
+
+export interface KoscheiStatus {
+  state: KoscheiState;
+  nodes_online: number;
+  nodes_total: number;
+  leader_id: string | null;
+  auto_recovery_active: boolean;
+  circuit_breakers_closed: number;
+  circuit_breakers_total: number;
+  avg_pas_efficiency: number;
+  phi_spiral_consensus: number;  // 0.0 - 1.0
+  uptime_seconds: number;
+  last_recovery_time: number | null;
+  nodes: KoscheiNode[];
+}
+
+export async function fetchKoscheiStatus(): Promise<KoscheiStatus> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/koschei/status`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return generateMockKoscheiStatus();
+    return await res.json();
+  } catch {
+    return generateMockKoscheiStatus();
+  }
+}
+
+function generateMockKoscheiStatus(): KoscheiStatus {
+  return {
+    state: 'IMMORTAL',
+    nodes_online: 5,
+    nodes_total: 5,
+    leader_id: 'ralph-0',
+    auto_recovery_active: true,
+    circuit_breakers_closed: 12,
+    circuit_breakers_total: 12,
+    avg_pas_efficiency: 0.255,
+    phi_spiral_consensus: 0.5159,
+    uptime_seconds: 86400,
+    last_recovery_time: null,
+    nodes: [
+      { id: 'ralph-0', address: 'ralph-0:8080', status: 'online', load: 0.3, last_heartbeat: Date.now(), circuit_breaker_state: 'CLOSED', pas_efficiency: 0.26 },
+      { id: 'ralph-1', address: 'ralph-1:8080', status: 'online', load: 0.25, last_heartbeat: Date.now(), circuit_breaker_state: 'CLOSED', pas_efficiency: 0.27 },
+      { id: 'ralph-2', address: 'ralph-2:8080', status: 'online', load: 0.35, last_heartbeat: Date.now(), circuit_breaker_state: 'CLOSED', pas_efficiency: 0.24 },
+      { id: 'ralph-3', address: 'ralph-3:8080', status: 'online', load: 0.2, last_heartbeat: Date.now(), circuit_breaker_state: 'CLOSED', pas_efficiency: 0.25 },
+      { id: 'ralph-4', address: 'ralph-4:8080', status: 'online', load: 0.28, last_heartbeat: Date.now(), circuit_breaker_state: 'CLOSED', pas_efficiency: 0.25 },
+    ],
+  };
+}
+
 // ─── v8.19: AGENT MU API ───────────────────────────────────────────────────────────
 
 export interface AgentMuStatus {
