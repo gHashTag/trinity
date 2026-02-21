@@ -310,6 +310,214 @@ fn fuzzySimilarity(a: []const u8, b: []const u8) f64 {
 
 ---
 
+## Zig 0.15.1 Idioms Mastery — Trinity Standard
+
+### 1. Comptime Metaprogramming
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **@Type dynamic struct** | Create types at compile time | `@Type(.{.Struct = .{.fields = &fields}})` | VIBEE codegen |
+| **Type Functions + @This()** | Generic type helpers | `fn List(comptime T: type) type` | Generic templates |
+| **Comptime Assertions** | Compile-time validation | `comptime assert(phi * phi + 1.0 / (phi * phi) == 3.0)` | Sacred math |
+| **Comptime String Building** | Dynamic code generation | `@fmt("pub fn {s}(...)", .{name})` | Template expansion |
+| **Inline Loops + Branch Quota** | Unroll loops at comptime | `inline for (0..32) \|i\| { @setEvalBranchQuota(100000); }` | Fast struct gen |
+
+```zig
+// Type function pattern (used in VIBEE codegen)
+fn Vec(comptime T: type, comptime n: usize) type {
+    return extern struct {
+        data: [n]T,
+        const Self = @This();
+
+        pub fn init() Self {
+            return .{ .data = undefined };
+        }
+    };
+}
+
+// Comptime assertion for sacred constants
+comptime {
+    const phi: f64 = 1.618033988749895;
+    const result = phi * phi + 1.0 / (phi * phi);
+    if (result != 3.0) @compileError("Trinity identity violated!");
+}
+```
+
+### 2. Memory & Allocators
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **ArrayListUnmanaged** | No embedded allocator | `var list = std.ArrayListUnmanaged(u8){};` | AGENT MU, logger |
+| **ArenaAllocator** | Temporary allocations | `var arena = std.heap.ArenaAllocator.init(allocator);` | Log analysis |
+| **Packed Structs** | Memory optimization | `const PackedVSA = packed struct { value: u3, flag: u1 };` | VSA structures |
+| **Sentinel-terminated slices** | Safe C string handling | `const path: [:0]const u8 = "specs/...";` | File paths |
+| **FixedBufferAllocator** | Stack-based allocation | `var buf: [1024]u8 = undefined; var fba = std.heap.FixedBufferAllocator.init(&buf);` | Temporary buffers |
+
+```zig
+// ArrayListUnmanaged pattern (AGENT MU standard)
+var list = std.ArrayListUnmanaged(u8){};
+defer list.deinit(allocator);
+
+try list.append(allocator, 42);
+try list.appendSlice(allocator, &.{1, 2, 3});
+
+// Arena for temporary allocations
+var arena = std.heap.ArenaAllocator.init(allocator);
+defer arena.deinit();
+const arena_allocator = arena.allocator();
+
+const temp1 = try arena_allocator.alloc(u8, 100);
+const temp2 = try arena_allocator.alloc(u8, 200);
+// All freed at once when arena.deinit() is called
+```
+
+### 3. Error Handling & Safety
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **Inferred Error Sets** | `!T` infers from body | `fn foo() !void { return error.OutOfMemory; }` | All AGENT MU |
+| **Error Return Traces** | Debug error sources | `std.debug.print("{}", .{@errorReturnTrace()});` | Diagnostic |
+| **Explicit Error Sets** | Defined error types | `const Error = error{OutOfMemory, InvalidVibee};` | VIBEE parser |
+| **try vs catch** | Propagate vs handle | `const val = try foo();` vs `const val = foo() catch null;` | Error propagation |
+| **errdefer** | Cleanup on error | `errdefer freeAlloc(ptr);` | Resource cleanup |
+
+```zig
+// Inferred error set (Zig 0.15+ standard)
+fn parseVibee(allocator: std.mem.Allocator, source: []const u8) !VibeeSpec {
+    const tokens = try tokenize(allocator, source);
+    errdefer allocator.free(tokens);
+
+    return try parseSpec(allocator, tokens);
+}
+
+// Error return traces for debugging
+fn diagnosticDebug() !void {
+    std.debug.print("Error trace:\n{}\n", .{@errorReturnTrace()});
+}
+```
+
+### 4. Performance & SIMD
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **@Vector + @reduce** | SIMD operations | `const sum = @reduce(.Add, @Vector(8, f32){...});` | Sacred math |
+| **@splat** | Broadcast scalar to vector | `const vec = @splat(@as(f32, 1.0));` | Vector init |
+| **@prefetch** | Memory prefetching | `@prefetch(&data[i], .{.cache = .data, .rw = .read});` | Hot loops |
+| **@shuffle** | Vector permutation | `@shuffle(f32, v1, v2, mask)` | VSA permutations |
+| **Inline assembly** | CPU-specific instructions | `asm volatile ("nop" ::: "memory");` | Optimized paths |
+
+```zig
+// SIMD for sacred math calculations
+const Vec4 = @Vector(4, f64);
+
+fn sacredSIMD(a: Vec4, b: Vec4) Vec4 {
+    // Parallel multiply-add
+    const prod = a * b;
+    const sum = @reduce(.Add, prod);
+    return @splat(sum);
+}
+
+// Prefetch for hot loops (VSA operations)
+fn fastBundle(vectors: []const VSAVector) VSAVector {
+    var result: VSAVector = undefined;
+    for (vectors, 0..) |v, i| {
+        if (i + 4 < vectors.len) {
+            @prefetch(&vectors[i + 4], .{.cache = .data, .rw = .read});
+        }
+        result = bundle2(result, v);
+    }
+    return result;
+}
+```
+
+### 5. Build System & Project Structure
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **Lazy Modules** | On-demand module loading | `const mu = b.dependency("agent_mu", .{}).module("agent_mu");` | Modular arch |
+| **Custom Build Steps** | Define build phases | `const mu_test = b.step("mu-test", "Run AGENT MU tests");` | Automated tests |
+| **Conditional compilation** | Platform-specific code | `if (builtin.os.tag == .linux) ...` | Cross-platform |
+| **b.addExecutable** | Create binaries | `const exe = b.addExecutable(.{ .name = "vibee", .root_source_file = "src/main.zig" });` | Build targets |
+
+```zig
+// build.zig: AGENT MU integration
+const agent_mu = b.dependency("agent_mu", .{
+    .target = target,
+    .optimize = optimize,
+});
+
+const agent_mu_module = agent_mu.module("agent_mu");
+exe.root_module.addImport("agent_mu", agent_mu_module);
+
+// Custom build step for AGENT MU tests
+const mu_test = b.step("agent-mu-test", "Run AGENT MU tests");
+const mu_test_run = b.addRunArtifact(mu_test_exe);
+mu_test.dependOn(&mu_test_run.step);
+```
+
+### 6. Raygui & UI (Glassmorphism)
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **Rounded + Glow + Alpha** | Glassmorphism cards | `rl.DrawRectangleRounded(bounds, 16, 8, glass_bg);` + glow | Cards, bubbles |
+| **Scissor + Virtual List** | Efficient scrolling | `rl.BeginScissorMode(...)` + visible rows only | Chat panels |
+| **Font loading** | Custom fonts | `const font = rl.LoadFontFromMemory(...)` | UI typography |
+| **Render texture** | Offscreen rendering | `const texture = rl.LoadRenderTexture(width, height);` | Compositing |
+
+```c
+// Glassmorphism card (Trinity UI standard)
+Color glass_bg = { 255, 255, 255, 20 };   // 8% opacity
+Color glow = { 255, 215, 0, 40 };         // Gold glow
+
+void DrawGlassCard(Rectangle bounds, const char* text) {
+    // Card background
+    DrawRectangleRounded(bounds, 16, 8, glass_bg);
+
+    // Border glow
+    DrawRectangleRoundedLines(bounds, 16, 8, 2, glow);
+
+    // Text
+    DrawTextEx(FONT, text, (Vector2){ bounds.x + 12, bounds.y + 8 }, 12, 0, WHITE);
+}
+```
+
+### 7. Sacred Math in Comptime
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **Comptime φ, π, e** | Compile-time constants | `const golden = phi * phi + 1.0 / (phi * phi); // = 3` | All sacred calc |
+| **Lucas Numbers** | Comptime sequence | `comptime var L = [_]f64{2, 1};` | VSA dimension |
+| **Fibonacci @embedFile** | Precomputed tables | `const fib = @embedFile("fib_table.bin");` | Fast lookup |
+
+```zig
+// Sacred constants at comptime
+const PHI: f64 = 1.618033988749895;
+const MU: f64 = 1.0 / (PHI * PHI) / 10.0; // = 0.0382
+
+comptime {
+    // Verify Trinity identity
+    const identity = PHI * PHI + 1.0 / (PHI * PHI);
+    if (@abs(identity - 3.0) > 0.0001) {
+        @compileError("φ² + 1/φ² ≠ 3");
+    }
+}
+
+// Lucas numbers at comptime (VSA dimensions)
+fn lucas(comptime n: usize) usize {
+    comptime var a: usize = 2;
+    comptime var b: usize = 1;
+    comptime var i: usize = 0;
+    inline while (i < n) : (i += 1) {
+        const tmp = a + b;
+        a = b;
+        b = tmp;
+    }
+    return a;
+}
+```
+
+---
+
 ## Exit Criteria
 
 ```
