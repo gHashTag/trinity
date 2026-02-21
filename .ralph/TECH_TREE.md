@@ -8,7 +8,8 @@
 ## 🏗 In Progress
 | ID | Name | Branch | Progress | Gain |
 |----|------|--------|----------|------|
-(none)
+|**VIBEE-PURE-001**|**Pure Zig Focus**|**vibee**|**Zig-first codegen with AGENT MU integration**|
+|**AGENT-MU-001**|**Self-Evolution**|**agent**|**Auto-fix + Regression learning + Version comparison**|
 
 
 
@@ -32,13 +33,23 @@
 |----|------|--------|------|
 |**DEV-002**|**KG-INSIGHT**|**development**|**kg_cli.zig v2.0: 4 commands (triples/inspect/export/find), case-insensitive entity search, JSON export, kg_insight.vibee spec**|
 |----|------|--------|------|
+|**AGENT-005**|**Query CLI**|**agent**|**CLI for IGLA + KG pipeline queries with full reasoning trace**|
+|----|------|--------|------|
+|**AGENT-004**|**$TRI Rewards**|**agent**|**ProofOfKnowledge + KgRewardCalculator (0.0002 TRI/triple)**|
+|----|------|--------|------|
+|**AGENT-003**|**KG DHT Sync**|**agent**|**Kademlia XOR routing, k=3, 268-byte wire format**|
+|----|------|--------|------|
+|**AGENT-002**|**Triples Parser**|**agent**|**6 SVO patterns, zero-alloc, confidence scoring, 11 tests**|
+|----|------|--------|------|
+|**AGENT-001**|**IGLA Hybrid Chat**|**agent**|**Hybrid symbolic + neural reasoning engine**|
+|----|------|--------|------|
 |**NEXUS-010**|**Architecture Documentation**|**nexus**|**docs/ARCHITECTURE.md (267 lines): module map, ASCII dep graph, build guide, 6 module details, workspace config, math foundation, migration history NEXUS-001 through NEXUS-010**|
 |----|------|--------|------|
 |**NEXUS-009**|**Workspace Collaboration**|**nexus**|**4 files: workspace.toml extended with [external] openclaw + [agents] ralph/clawd + [ci], config.toml (73 lines agent config), nexus-build.yml CI (matrix 6 modules), spec**|
 |----|------|--------|------|
 |**MGEN-001**|**FLUENT-PYTHON**|**multilingual**|**Idiomatic Python: dataclasses, type hints, snake_case**|
-|**MGEN-002**|**FLUENT-RUST**|**multilingual**|**Idiomatic Rust: structs, traits, Result error handling**|
-|**MGEN-003**|**FLUENT-TS**|**multilingual**|**Idiomatic TypeScript: interfaces, ESM, camelCase**|
+|**MGEN-002**|**FLUENT-RUST**|**multilingual**|**[DEPRECATED] Idiomatic Rust: structs, traits, Result error handling — Focus on Zig. Multilingual support maintained but not actively developed.**|
+|**MGEN-003**|**FLUENT-TS**|**multilingual**|**[DEPRECATED] Idiomatic TypeScript: interfaces, ESM, camelCase — Focus on Zig. Multilingual support maintained but not actively developed.**|
 |----|------|--------|------|
 |**NEXUS-008**|**Workspace Wiring**|**nexus**|**15 files: build.zig + build.nexus.zig wired with .imports dep graph, 6 build.zig.zon with path deps, 6 module build.zig with b.dependency(), workspace.toml, spec. DAG: core->lang->symb->network, core->canvas, tools->all**|
 |----|------|--------|------|
@@ -116,13 +127,42 @@
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
+|**Agent**|**5**|**6**|**83%**|
+|**VIBEE**|**8**|**9**|**89%**|
 |Multilingual|3|3|100%|
-|**Total**|**51**|**56**|**91%**|
+|**Total**|**67**|**74**|**91%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
-2. **DEP-001** Docker Container — portable deployment, enables CI testing
-3. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
+1. **AGENT-MU-001** Self-Evolution — Auto-fix + Regression learning with μ = 0.0382
+2. **VIBEE-PURE-001** Pure Zig Focus — Zig-first codegen with AGENT MU integration
+3. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
+4. **DEP-001** Docker Container — portable deployment, enables CI testing
+5. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
 
 ---
-φ² + 1/φ² = 3 | TRINITY
+
+## Sacred Metrics (v8.12)
+
+**Trinity Identity:** φ² + 1/φ² = 3 (where φ = (1 + √5) / 2)
+
+**Intelligence Gain:** μ = 1/φ²/10 = 0.0382 (0.0382% per failure iteration)
+
+**Learning Curve:** After 100 failures → intelligence × 47×
+
+**Branch Focus:** Pure Zig — Multilingual support maintained but not actively developed
+
+**Symbolic AI Maturity:** AGENT branch (83% complete)
+- AGENT-001: IGLA Hybrid Chat ✅
+- AGENT-002: Triples Parser ✅
+- AGENT-003: KG DHT Sync ✅
+- AGENT-004: $TRI Rewards ✅
+- AGENT-005: Query CLI ✅
+- AGENT-MU-001: Self-Evolution (IN PROGRESS)
+
+**VIBEE Maturity:** VIBEE branch (89% complete)
+- VIBEE-001..007: Core ✅
+- VIBEE-008: Self-Improver ✅
+- VIBEE-PURE-001: Pure Zig Focus (IN PROGRESS)
+
+---
+φ² + 1/φ² = 3 | μ = 0.0382 | TRINITY
