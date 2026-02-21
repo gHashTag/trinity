@@ -20,6 +20,7 @@ const vibe_rewards = @import("vibe_rewards.zig");
 
 // V10.5: Golden Seed Factory
 const synthetic_seed_gen = @import("synthetic_seed_gen.zig");
+const auto_curation_v2 = @import("auto_curation_v2.zig");
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -180,6 +181,9 @@ pub fn main() !void {
         }
 
         try generateSyntheticSeeds(allocator, spec_files, min_quality, import_to_db);
+    } else if (std.mem.eql(u8, command, "curate-seeds")) {
+        // V10.5: Curate synthetic seeds with multi-stage validation
+        try curateSyntheticSeeds(allocator);
     } else if (std.mem.eql(u8, command, "show-rewards")) {
         // V10.3: Show reward system info
         var agent_id: []const u8 = "vibee-v10.3";
@@ -214,6 +218,7 @@ fn printUsage() void {
         \\  vibeec generate-seeds <specs...> [options] V10.5: Generate synthetic seeds
         \\    --min-quality F                           Minimum quality threshold (default: 0.6)
         \\    --import                                  Auto-import to Golden DB
+        \\  vibeec curate-seeds                         V10.5: Auto-curate seeds through validation
         \\  vibeec show-rewards [--agent <id>]          Show $TRI reward info (V10.3)
         \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
         \\    --prompt "text"                           Initial prompt
@@ -594,4 +599,72 @@ fn generateSyntheticSeeds(
 
     std.debug.print("\n", .{});
 }
-// 
+
+/// V10.5: Curate synthetic seeds through multi-stage validation
+fn curateSyntheticSeeds(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.5: Auto-Curation & Self-Feeding v2                 ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    // Initialize Golden DB and curator
+    var db = try golden_db.GoldenDB.init(allocator);
+    defer db.deinit();
+
+    var loop = try auto_curation_v2.SelfFeedingLoopV2.init(allocator, &db, "vibee-v10.5");
+
+    // Get all seeds from Golden DB for curation
+    const seed_count = db.implementations.items.len;
+    std.debug.print("  Seeds in Golden DB: {d}\n", .{seed_count});
+
+    if (seed_count == 0) {
+        std.debug.print("  No seeds to curate. Run 'generate-seeds' first.\n\n", .{});
+        return;
+    }
+
+    // Convert GoldenImpl to GeneratedSeed for validation
+    var seeds = try std.ArrayList(synthetic_seed_gen.GeneratedSeed).initCapacity(allocator, seed_count);
+    defer {
+        for (seeds.items) |*seed| {
+            allocator.free(seed.name);
+            allocator.free(seed.signature);
+            allocator.free(seed.body);
+        }
+        seeds.deinit(allocator);
+    }
+
+    for (db.implementations.items) |impl| {
+        // Note: We need to duplicate strings since GeneratedSeed owns them
+        const name_copy = try allocator.dupe(u8, impl.name);
+        errdefer allocator.free(name_copy);
+
+        const sig_copy = try allocator.dupe(u8, impl.signature);
+        errdefer allocator.free(sig_copy);
+
+        const body_copy = try allocator.dupe(u8, impl.body);
+        errdefer allocator.free(body_copy);
+
+        try seeds.append(allocator, .{
+            .name = name_copy,
+            .signature = sig_copy,
+            .body = body_copy,
+            .category = impl.category,
+            .quality_score = 1.0, // Default high quality for existing seeds
+            .synthesis_method = .template,
+        });
+    }
+
+    // Process and feed
+    const stats = try loop.processAndFeed(seeds.items);
+
+    // Report results
+    std.debug.print("\n  Curation Results:\n", .{});
+    std.debug.print("    Total processed: {d}\n", .{stats.total_processed});
+    std.debug.print("    Syntax passed: {d}\n", .{stats.syntax_passed});
+    std.debug.print("    Semantic passed: {d}\n", .{stats.semantic_passed});
+    std.debug.print("    Pattern passed: {d}\n", .{stats.pattern_passed});
+    std.debug.print("    Approved: {d}\n", .{stats.approved});
+    std.debug.print("    $TRI earned: {d:.1}\n", .{stats.total_tri_earned});
+
+    std.debug.print("\n", .{});
+}
+//
