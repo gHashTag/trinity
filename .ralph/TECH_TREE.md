@@ -20,6 +20,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**CODEGEN-001**|**VIBEE Real Codegen (implementation field)**|**codegen-002-fix-implementation-field**|**Implementation field support (full fn + body-only), 4 ML patterns (evaluate/learn/adapt/fit), test_implementation.vibee spec, 25.5% avg improvement with PAS. Report: pas-v8.23-final-production-report.md**|
+|----|------|--------|------|
 |**AMU-019**|**Real-Time Swarm Collaboration**|**vibee-v8-production-swarm**|**swarm_collaboration.zig (~470 lines): AgentType enum (AGENT_MU, PAS, PHI, VIBEE), RequestStatus (pending/accepted/rejected/completed), AgentRequest struct, SwarmCollaboration manager with request/response protocol, JSON generation for dashboard. 13/13 tests pass**|
 |----|------|--------|------|
 |**AMU-018**|**Multi-Agent Evolution Tree**|**vibee-v8-production-swarm**|**InteractiveEvolutionTree.tsx v8.20: Agent filter checkboxes, AGENT_COLORS (MU=gold, PAS=cyan, PHI=purple, VIBEE=green), cross-agent collaboration edges (dotted lines), agent counts display, multi-source nodes**|

@@ -373,6 +373,8 @@ const sidebars: SidebarsConfig = {
         'research/pas-v8.21-production-validation-report',
         // PAS v8.22 Production Final
         'research/pas-v8.22-production-final-report',
+        // PAS v8.23 Final Production
+        'research/pas-v8.23-final-production-report',
       ],
     },
     'faq',
