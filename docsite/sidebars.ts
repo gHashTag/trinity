@@ -369,6 +369,8 @@ const sidebars: SidebarsConfig = {
         // Math Framework (Level 11.39)
         'research/trinity-vsa-benchmark-suite-report',
         'research/trinity-multilingual-math-codegen-report',
+        // PAS v8.21 Production Validation
+        'research/pas-v8.21-production-validation-report',
       ],
     },
     'faq',
