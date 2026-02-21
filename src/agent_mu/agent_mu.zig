@@ -195,6 +195,9 @@ pub fn verifyAndFix(
                 .success = false,
                 .description = "Fix execution failed",
                 .files_modified = &[_][]const u8{},
+                .lines_changed = 0,
+                .confidence = 0.0,
+                .mutation_applied = false,
             };
         };
 
@@ -247,12 +250,9 @@ fn calculateFileHash(allocator: std.mem.Allocator, file_path: []const u8) ![]con
     const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 1024 * 1024);
     defer allocator.free(content);
 
-    var hash_buf: [16]u8 = undefined;
-    std.hash.hash(content, &hash_buf);
+    const hash_val = std.hash.Wyhash.hash(0, content);
 
-    return std.fmt.allocPrint(allocator, "{x}{x}{x}{x}", .{
-        hash_buf[0], hash_buf[1], hash_buf[2], hash_buf[3],
-    });
+    return std.fmt.allocPrint(allocator, "{x:0>16}", .{hash_val});
 }
 
 /// Compare versions before and after fix
@@ -353,7 +353,7 @@ pub fn logFeedbackToHistory(
     defer allocator.free(entry);
 
     // Append to history file
-    const file = try std.fs.cwd().openFile(history_file, .{ .mode = .write });
+    const file = try std.fs.cwd().openFile(history_file, .{ .mode = .write_only });
     defer file.close();
 
     const stat = try file.stat();

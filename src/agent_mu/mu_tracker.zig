@@ -8,7 +8,7 @@
 //!   - After 1000 fixes: ×2.1×10^15 multiplier
 
 const std = @import("std");
-const ArrayListManaged = std.array_list.AlignedManaged;
+const ArrayListManaged = std.array_list.Managed;
 
 /// Sacred μ constant: intelligence gain per successful fix
 /// μ = 1/φ²/10 where φ = (1 + √5) / 2
@@ -16,6 +16,23 @@ pub const SACRED_MU: f64 = 0.0382;
 
 /// φ (golden ratio)
 pub const PHI: f64 = 1.6180339887498948482;
+
+/// Format a UNIX timestamp as ISO 8601 string into a buffer
+fn formatTimestampBuf(buf: []u8, ts: i64) []const u8 {
+    const epoch: std.time.epoch.EpochSeconds = .{ .secs = @intCast(ts) };
+    const epoch_day = epoch.getEpochDay();
+    const day_seconds = epoch.getDaySeconds();
+    const year_day = epoch_day.calculateYearDay();
+    const month_day = year_day.calculateMonthDay();
+    return std.fmt.bufPrint(buf, "{d:04}-{d:02}-{d:02}T{d:02}:{d:02}:{d:02}Z", .{
+        year_day.year,
+        @intFromEnum(month_day.month),
+        month_day.day_index + 1,
+        day_seconds.getHoursIntoDay(),
+        day_seconds.getMinutesIntoHour(),
+        day_seconds.getSecondsIntoMinute(),
+    }) catch "0000-00-00T00:00:00Z";
+}
 
 /// Intelligence metrics at a point in time
 pub const IntelligenceSnapshot = struct {
@@ -53,6 +70,8 @@ pub const IntelligenceSnapshot = struct {
     }
 
     pub fn format(self: *const IntelligenceSnapshot, writer: anytype) !void {
+        var ts_buf: [32]u8 = undefined;
+        const ts_str = formatTimestampBuf(&ts_buf, self.timestamp);
         try writer.print(
             \\## Intelligence Snapshot
             \\- Timestamp: {s}
@@ -63,7 +82,7 @@ pub const IntelligenceSnapshot = struct {
             \\- Intelligence Multiplier: ×{d:.2}
             \\
         , .{
-            std.time.timestampToIso(self.timestamp),
+            ts_str,
             self.total_fixes,
             self.successful_fixes,
             self.success_rate * 100.0,
@@ -109,8 +128,8 @@ pub const FixRecord = struct {
 
 /// Real-time μ tracker
 pub const MuTracker = struct {
-    fixes: ArrayListManaged(FixRecord, std.heap.page_allocator),
-    snapshots: ArrayListManaged(IntelligenceSnapshot, std.heap.page_allocator),
+    fixes: ArrayListManaged(FixRecord),
+    snapshots: ArrayListManaged(IntelligenceSnapshot),
     total_fixes: usize,
     successful_fixes: usize,
     failed_fixes: usize,
@@ -119,8 +138,8 @@ pub const MuTracker = struct {
 
     pub fn init(allocator: std.mem.Allocator) !MuTracker {
         return MuTracker{
-            .fixes = ArrayListManaged(FixRecord, std.heap.page_allocator).init(allocator),
-            .snapshots = ArrayListManaged(IntelligenceSnapshot, std.heap.page_allocator).init(allocator),
+            .fixes = ArrayListManaged(FixRecord).init(allocator),
+            .snapshots = ArrayListManaged(IntelligenceSnapshot).init(allocator),
             .total_fixes = 0,
             .successful_fixes = 0,
             .failed_fixes = 0,
@@ -277,7 +296,10 @@ pub const MuTracker = struct {
             \\## Projections
             \\
         , .{
-            std.time.timestampToIso(std.time.timestamp()),
+            blk: {
+                var buf: [32]u8 = undefined;
+                break :blk formatTimestampBuf(&buf, std.time.timestamp());
+            },
             self.getUptimeSeconds(),
             @as(f64, @floatFromInt(self.getUptimeSeconds())) / 60.0,
             self.total_fixes,
@@ -304,7 +326,7 @@ pub const MuTracker = struct {
 
         // Fix type breakdown
         try writer.writeAll("\n## Fix Type Breakdown\n\n");
-        var seen_types = ArrayListManaged([]const u8, self.allocator).init(self.allocator);
+        var seen_types = ArrayListManaged([]const u8).init(self.allocator);
         defer {
             for (seen_types.items) |t| {
                 self.allocator.free(t);

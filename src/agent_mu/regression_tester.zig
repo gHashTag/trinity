@@ -4,35 +4,36 @@
 //! detects regressions, validates all specs still compile.
 
 const std = @import("std");
-const ArrayListManaged = std.array_list.AlignedManaged;
+const ArrayListManaged = std.array_list.Managed;
 const template_mutator = @import("template_mutator.zig");
 
 /// Test result for single spec
 pub const SpecTestResult = struct {
     spec_name: []const u8,
     passed: bool,
-    compile_errors: ArrayListManaged([]const u8, std.heap.page_allocator),
-    test_errors: ArrayListManaged([]const u8, std.heap.page_allocator),
+    compile_errors: ArrayListManaged([]const u8),
+    test_errors: ArrayListManaged([]const u8),
     duration_ms: u64,
 
     pub fn init(allocator: std.mem.Allocator, spec_name: []const u8) !SpecTestResult {
         return SpecTestResult{
             .spec_name = try allocator.dupe(u8, spec_name),
             .passed = true,
-            .compile_errors = ArrayListManaged([]const u8, std.heap.page_allocator).init(allocator),
-            .test_errors = ArrayListManaged([]const u8, std.heap.page_allocator).init(allocator),
+            .compile_errors = ArrayListManaged([]const u8).init(allocator),
+            .test_errors = ArrayListManaged([]const u8).init(allocator),
             .duration_ms = 0,
         };
     }
 
     pub fn deinit(self: *SpecTestResult) void {
-        self.spec_name.allocator.free(self.spec_name);
+        const alloc = self.compile_errors.allocator;
+        alloc.free(self.spec_name);
         for (self.compile_errors.items) |err| {
-            self.compile_errors.allocator.free(err);
+            alloc.free(err);
         }
         self.compile_errors.deinit();
         for (self.test_errors.items) |err| {
-            self.test_errors.allocator.free(err);
+            alloc.free(err);
         }
         self.test_errors.deinit();
     }
@@ -45,7 +46,7 @@ pub const RegressionTestResult = struct {
     failed_specs: usize,
     total_duration_ms: u64,
     regressions_detected: usize,
-    spec_results: ArrayListManaged(SpecTestResult, std.heap.page_allocator),
+    spec_results: ArrayListManaged(SpecTestResult),
     success: bool,
 
     pub fn init(allocator: std.mem.Allocator) !RegressionTestResult {
@@ -55,7 +56,7 @@ pub const RegressionTestResult = struct {
             .failed_specs = 0,
             .total_duration_ms = 0,
             .regressions_detected = 0,
-            .spec_results = ArrayListManaged(SpecTestResult, std.heap.page_allocator).init(allocator),
+            .spec_results = ArrayListManaged(SpecTestResult).init(allocator),
             .success = true,
         };
     }
@@ -88,14 +89,14 @@ pub const RegressionTestResult = struct {
 pub const RegressionTester = struct {
     specs_dir: []const u8,
     output_dir: []const u8,
-    baseline_results: ArrayListManaged(SpecTestResult, std.heap.page_allocator),
+    baseline_results: ArrayListManaged(SpecTestResult),
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, specs_dir: []const u8, output_dir: []const u8) !RegressionTester {
         return RegressionTester{
             .specs_dir = try allocator.dupe(u8, specs_dir),
             .output_dir = try allocator.dupe(u8, output_dir),
-            .baseline_results = ArrayListManaged(SpecTestResult, std.heap.page_allocator).init(allocator),
+            .baseline_results = ArrayListManaged(SpecTestResult).init(allocator),
             .allocator = allocator,
         };
     }
@@ -194,18 +195,21 @@ pub const RegressionTester = struct {
         const start_time = std.time.nanoTimestamp();
 
         // Try to compile the spec
-        const compile_result = try std.process.Child.exec(
-            self.allocator,
-            &.{ "zig", "build", "vibee", "--", "gen", spec_path },
-        );
+        const compile_result = std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &.{ "zig", "build", "vibee", "--", "gen", spec_path },
+        }) catch {
+            result.passed = false;
+            return result;
+        };
         defer {
-            _ = compile_result.deinit();
-            _ = compile_result.term.deinit();
+            self.allocator.free(compile_result.stdout);
+            self.allocator.free(compile_result.stderr);
         }
 
-        if (compile_result.term.exited != 0) {
+        if (compile_result.term != .Exited or compile_result.term.Exited != 0) {
             result.passed = false;
-            try result.compile_errors.append(try self.allocator.dupe(u8, compile_result.stdout));
+            try result.compile_errors.append(try self.allocator.dupe(u8, compile_result.stderr));
         }
 
         const end_time = std.time.nanoTimestamp();
@@ -215,8 +219,8 @@ pub const RegressionTester = struct {
     }
 
     /// Find all .vibee spec files
-    fn findSpecFiles(self: *RegressionTester) !ArrayListManaged([]const u8, std.heap.page_allocator) {
-        var specs = ArrayListManaged([]const u8, std.heap.page_allocator).init(self.allocator);
+    fn findSpecFiles(self: *RegressionTester) !ArrayListManaged([]const u8) {
+        var specs = ArrayListManaged([]const u8).init(self.allocator);
 
         var dir = try std.fs.cwd().openDir(self.specs_dir, .{ .iterate = true });
         defer dir.close();

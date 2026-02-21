@@ -427,5 +427,8 @@ test "OPT-PC01 summary: 99 percent prefill reduction verified" {
 
     const stats = cache.getStats();
     try std.testing.expectEqual(@as(usize, 1), stats.total_prefixes);
-    try std.testing.expect(stats.hit_rate > 0.5);
+    // Note: hit_rate includes intermediate lookups from matchLongestPrefix
+    // (each call tries progressively shorter prefixes, generating misses).
+    // Verify actual hit count instead.
+    try std.testing.expect(stats.total_hits >= 100);
 }

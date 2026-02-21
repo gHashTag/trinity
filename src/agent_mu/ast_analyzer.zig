@@ -4,7 +4,7 @@
 //! identifies bug patterns, extracts metadata.
 
 const std = @import("std");
-const ArrayListManaged = std.array_list.AlignedManaged;
+const ArrayListManaged = std.array_list.Managed;
 
 /// AST node type
 pub const NodeType = enum {
@@ -26,7 +26,7 @@ pub const ASTNode = struct {
     name: []const u8,
     line: usize,
     column: usize,
-    children: ArrayListManaged(*ASTNode, std.heap.page_allocator),
+    children: ArrayListManaged(*ASTNode),
 
     pub fn init(allocator: std.mem.Allocator, node_type: NodeType) !ASTNode {
         return ASTNode{
@@ -34,7 +34,7 @@ pub const ASTNode = struct {
             .name = "",
             .line = 0,
             .column = 0,
-            .children = ArrayListManaged(*ASTNode, std.heap.page_allocator).init(allocator),
+            .children = ArrayListManaged(*ASTNode).init(allocator),
         };
     }
 
@@ -53,16 +53,16 @@ pub const TemplateMetadata = struct {
     file_path: []const u8,
     line_start: usize,
     line_end: usize,
-    parameters: ArrayListManaged([]const u8, std.heap.page_allocator),
-    bug_patterns: ArrayListManaged([]const u8, std.heap.page_allocator),
+    parameters: ArrayListManaged([]const u8),
+    bug_patterns: ArrayListManaged([]const u8),
     last_modified: i64,
 };
 
 /// AST analysis result
 pub const ASTAnalysisResult = struct {
     success: bool,
-    templates: ArrayListManaged(TemplateMetadata, std.heap.page_allocator),
-    errors: ArrayListManaged([]const u8, std.heap.page_allocator),
+    templates: ArrayListManaged(TemplateMetadata),
+    errors: ArrayListManaged([]const u8),
     total_lines: usize,
 };
 
@@ -128,8 +128,8 @@ fn parseLine(allocator: std.mem.Allocator, root: *ASTNode, line: []const u8, lin
 pub fn analyzeCompilerSource(allocator: std.mem.Allocator, source_path: []const u8) !ASTAnalysisResult {
     var result = ASTAnalysisResult{
         .success = true,
-        .templates = ArrayListManaged(TemplateMetadata, std.heap.page_allocator).init(allocator),
-        .errors = ArrayListManaged([]const u8, std.heap.page_allocator).init(allocator),
+        .templates = ArrayListManaged(TemplateMetadata).init(allocator),
+        .errors = ArrayListManaged([]const u8).init(allocator),
         .total_lines = 0,
     };
 
@@ -161,8 +161,8 @@ pub fn analyzeCompilerSource(allocator: std.mem.Allocator, source_path: []const 
 
 /// Extract template metadata from function declaration
 fn extractTemplateMetadata(allocator: std.mem.Allocator, line: []const u8, file_path: []const u8, line_num: usize) !TemplateMetadata {
-    var params = ArrayListManaged([]const u8, std.heap.page_allocator).init(allocator);
-    var bugs = ArrayListManaged([]const u8, std.heap.page_allocator).init(allocator);
+    var params = ArrayListManaged([]const u8).init(allocator);
+    var bugs = ArrayListManaged([]const u8).init(allocator);
 
     // Extract function name
     const name = if (std.mem.indexOf(u8, line, "fn ")) |pos| {
