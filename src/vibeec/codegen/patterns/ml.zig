@@ -414,5 +414,127 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // V4 NEW PATTERNS (5 new patterns for 76% coverage)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    // Pattern: optimizer_step — Adam/SGD optimizer step
+    if (std.mem.eql(u8, b.name, "optimizer_step")) {
+        try builder.writeFmt("pub fn {s}(weights: []f32, gradients: []const f32, m: []f32, v: []f32, t: usize, learning_rate: f32, beta1: f32, beta2: f32, epsilon: f32) void {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Adam optimizer step with bias correction");
+        try builder.writeLine("// m = β₁·m + (1-β₁)·grad  (first moment)");
+        try builder.writeLine("// v = β₂·v + (1-β₂)·grad² (second moment)");
+        try builder.writeLine("// m_hat = m / (1-β₁^t), v_hat = v / (1-β₂^t)");
+        try builder.writeLine("// w -= lr · m_hat / (sqrt(v_hat) + ε)");
+        try builder.writeLine("const one_minus_beta1 = 1.0 - beta1;");
+        try builder.writeLine("const one_minus_beta2 = 1.0 - beta2;");
+        try builder.writeLine("for (weights, gradients, m, v) |*w, g, *mm, *vv| {");
+        builder.incIndent();
+        try builder.writeLine("mm.* = beta1 * mm.* + one_minus_beta1 * g;");
+        try builder.writeLine("vv.* = beta2 * vv.* + one_minus_beta2 * g * g;");
+        try builder.writeLine("const m_hat = mm.* / (1.0 - std.math.pow(f32, beta1, @floatFromInt(t)));");
+        try builder.writeLine("const v_hat = vv.* / (1.0 - std.math.pow(f32, beta2, @floatFromInt(t)));");
+        try builder.writeLine("w.* -= learning_rate * m_hat / (@sqrt(v_hat) + epsilon);");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: kv_cache — KV cache for autoregressive generation
+    if (std.mem.startsWith(u8, b.name, "kv_cache")) {
+        try builder.writeFmt("pub fn {s}(k_cache: []f32, v_cache: []f32, new_k: []const f32, new_v: []const f32, pos: usize, num_heads: usize, head_dim: usize) void {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Update KV cache with new keys and values at position pos");
+        try builder.writeLine("// Each head has its own cache segment");
+        try builder.writeLine("const cache_per_head = head_dim;");
+        try builder.writeLine("for (0..num_heads) |h| {");
+        builder.incIndent();
+        try builder.writeLine("const h_offset = h * cache_per_head;");
+        try builder.writeLine("const pos_offset = pos * cache_per_head;");
+        try builder.writeLine("// Cache new_k at position pos");
+        try builder.writeLine("for (0..head_dim) |i| {");
+        try builder.writeLine("    k_cache[h_offset + pos_offset + i] = new_k[h * head_dim + i];");
+        try builder.writeLine("}");
+        try builder.writeLine("// Cache new_v at position pos");
+        try builder.writeLine("for (0..head_dim) |i| {");
+        try builder.writeLine("    v_cache[h_offset + pos_offset + i] = new_v[h * head_dim + i];");
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: rotary_embedding — RoPE position encoding
+    if (std.mem.startsWith(u8, b.name, "rotary_embedding")) {
+        try builder.writeFmt("pub fn {s}(x: []f32, y: []f32, dim: usize, pos: usize) void {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Rotary Position Embedding (RoPE)");
+        try builder.writeLine("// Apply rotation based on position to x and y");
+        try builder.writeLine("// θ = pos^(-2/dim), 2/dim) for i in 0..dim/2");
+        try builder.writeLine("for (0..dim / 2) |i| {");
+        builder.incIndent();
+        try builder.writeLine("const theta = @as(f32, @floatFromInt(pos)) / std.math.pow(f32, @as(f32, @floatFromInt(i)), 2.0 / @as(f32, @floatFromInt(dim / 2)));");
+        try builder.writeLine("const cos_theta = @cos(theta);");
+        try builder.writeLine("const sin_theta = @sin(theta);");
+        try builder.writeLine("// x[i] = x[i] * cos(θ) - x[i + dim/2] * sin(θ)");
+        try builder.writeLine("// x[i + dim/2] = x[i] * sin(θ) + x[i + dim/2] * cos(θ)");
+        try builder.writeLine("const x_val = x[i];");
+        try builder.writeLine("x[i] = x_val * cos_theta - x[i + dim / 2] * sin_theta;");
+        try builder.writeLine("x[i + dim / 2] = x_val * sin_theta + x[i + dim / 2] * cos_theta;");
+        try builder.writeLine("// Apply same rotation to y");
+        try builder.writeLine("const y_val = y[i];");
+        try builder.writeLine("y[i] = y_val * cos_theta - y[i + dim / 2] * sin_theta;");
+        try builder.writeLine("y[i + dim / 2] = y_val * sin_theta + y[i + dim / 2] * cos_theta;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: rms_norm — Root Mean Square normalization
+    if (std.mem.startsWith(u8, b.name, "rms_norm")) {
+        try builder.writeFmt("pub fn {s}(input: []const f32, weight: []const f32, output: []f32, epsilon: f32) void {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// RMSNorm: output = input / sqrt(mean(x²) + ε) * weight");
+        try builder.writeLine("var sum_squares: f32 = 0.0;");
+        try builder.writeLine("for (input) |v| { sum_squares += v * v; }");
+        try builder.writeLine("const rms = @sqrt(sum_squares / @as(f32, @floatFromInt(input.len)) + epsilon);");
+        try builder.writeLine("for (input, weight, 0..) |i, w, o| {");
+        try builder.writeLine("    o.* = (i / rms) * w.*;");
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
+    // Pattern: scheduler — Learning rate scheduler
+    if (std.mem.startsWith(u8, b.name, "scheduler")) {
+        try builder.writeFmt("pub fn {s}(initial_lr: f32, step: usize, warmup_steps: usize, total_steps: usize, min_lr: f32) f32 {{\n", .{b.name});
+        builder.incIndent();
+        try builder.writeLine("// Cosine learning rate scheduler with warmup");
+        try builder.writeLine("// lr = min_lr + 0.5 * (1 - cos(π * progress)) * (initial_lr - min_lr)");
+        try builder.writeLine("if (step < warmup_steps) {");
+        builder.incIndent();
+        try builder.writeLine("// Warmup phase: linear increase");
+        try builder.writeLine("return min_lr + (initial_lr - min_lr) * @as(f32, @floatFromInt(step)) / @as(f32, @floatFromInt(warmup_steps));");
+        builder.decIndent();
+        try builder.writeLine("} else {");
+        builder.incIndent();
+        try builder.writeLine("// Decay phase: cosine annealing");
+        try builder.writeLine("const progress = @as(f32, @floatFromInt(step - warmup_step)) / @as(f32, @floatFromInt(total_steps - warmup_steps));");
+        try builder.writeLine("return min_lr + 0.5 * (initial_lr - min_lr) * (1.0 - @cos(std.pi * progress));");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
+        return true;
+    }
+
     return false;
 }

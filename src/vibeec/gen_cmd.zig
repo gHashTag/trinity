@@ -10,6 +10,14 @@ const lang_generators = @import("lang_generators.zig");
 const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
 
+// V10.2: Spec Intelligence
+const golden_db = @import("golden_db.zig");
+const reasoning_engine = @import("reasoning_engine.zig");
+const spec_improver = @import("spec_improver.zig");
+
+// V10.3: Self-Feeding Loop + Rewards
+const vibe_rewards = @import("vibe_rewards.zig");
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -104,6 +112,49 @@ pub fn main() !void {
         }
 
         try http_server.runServer(allocator, model_path.?, port);
+    } else if (std.mem.eql(u8, command, "improve-spec")) {
+        // V10.2: Improve spec by filling empty implementations
+        if (args.len < 3) {
+            std.debug.print("Error: Missing spec file\n", .{});
+            printUsage();
+            return;
+        }
+
+        const spec_path = args[2];
+        var dry_run: bool = false;
+        var min_confidence: f32 = 0.7;
+
+        // Parse optional flags
+        var i: usize = 3;
+        while (i < args.len) : (i += 1) {
+            if (std.mem.eql(u8, args[i], "--dry-run")) {
+                dry_run = true;
+            } else if (std.mem.eql(u8, args[i], "--min-confidence") and i + 1 < args.len) {
+                min_confidence = std.fmt.parseFloat(f32, args[i + 1]) catch 0.7;
+                i += 1;
+            }
+        }
+
+        try improveSpec(allocator, spec_path, dry_run, min_confidence);
+    } else if (std.mem.eql(u8, command, "import-seeds")) {
+        // V10.3: Import seeds from generated directory
+        if (args.len < 3) {
+            std.debug.print("Error: Missing directory\n", .{});
+            printUsage();
+            return;
+        }
+
+        const dir = args[2];
+        try importSeeds(allocator, dir);
+    } else if (std.mem.eql(u8, command, "show-rewards")) {
+        // V10.3: Show reward system info
+        var agent_id: []const u8 = "vibee-v10.3";
+        if (args.len > 2) {
+            if (std.mem.eql(u8, args[2], "--agent") and args.len > 3) {
+                agent_id = args[3];
+            }
+        }
+        try showRewards(allocator, agent_id);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {
@@ -116,12 +167,17 @@ fn printUsage() void {
     std.debug.print(
         \\
         \\═══════════════════════════════════════════════════════════════════════════════
-        \\                    VIBEEC - VIBEE Compiler v24.φ
+        \\                    VIBEEC - VIBEE Compiler v10.3
         \\                    φ² + 1/φ² = 3
         \\═══════════════════════════════════════════════════════════════════════════════
         \\
         \\USAGE:
         \\  vibeec gen <input.vibee> [output.zig]       Generate Zig code from .vibee spec
+        \\  vibeec improve-spec <file.vibee> [options]  Fill empty implementations using Golden DB
+        \\    --dry-run                                 Show what would be filled without writing
+        \\    --min-confidence F                        Minimum confidence threshold (default: 0.7)
+        \\  vibeec import-seeds <dir>                   Import seeds from generated/*.zig files
+        \\  vibeec show-rewards [--agent <id>]          Show $TRI reward info (V10.3)
         \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
         \\    --prompt "text"                           Initial prompt
         \\    --max-tokens N                            Max tokens to generate (default: 100)
@@ -198,7 +254,8 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
     defer file.close();
 
     const source = try file.readToEndAlloc(allocator, 1024 * 1024);
-    defer allocator.free(source);
+    // Note: source is now owned by the spec via spec.source_content
+    // Don't free here - spec.deinit() will handle it
 
     var parser = vibee_parser.VibeeParser.init(allocator, source);
     var spec = try parser.parse();
@@ -278,4 +335,115 @@ fn generateMultiLang(allocator: std.mem.Allocator, spec: *vibee_parser.VibeeSpec
     };
 
     return lang_generators.generateForLanguage(allocator, parsed, spec.language);
+}
+
+/// V10.2: Improve a spec file by filling empty implementations
+fn improveSpec(allocator: std.mem.Allocator, spec_path: []const u8, dry_run: bool, min_confidence: f32) !void {
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.4: Spec Improver + Live TRI Rewards                   ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Spec: {s}\n", .{spec_path});
+    std.debug.print("  Dry run: {any}\n", .{dry_run});
+    std.debug.print("  Min confidence: {d:.1}\n\n", .{min_confidence});
+
+    var improver = try spec_improver.SpecImprover.init(allocator);
+    defer improver.deinit();
+
+    const result = try improver.improveSpecFile(spec_path);
+
+    std.debug.print("\n  Results:\n", .{});
+    std.debug.print("    Behaviors filled:  {d}\n", .{result.behaviors_filled});
+    std.debug.print("    Behaviors skipped: {d}\n", .{result.behaviors_skipped});
+    std.debug.print("    Total behaviors:   {d}\n", .{result.behaviors_total});
+
+    // V10.4: Calculate estimated rewards
+    if (result.behaviors_filled > 0) {
+        // Assume average quality 0.8 for filled behaviors
+        const avg_quality: f32 = 0.8;
+        const estimated_reward = vibe_rewards.VibeRewardSystem.rewardForImprovement(avg_quality, 5);
+        const total_reward = estimated_reward * @as(f64, @floatFromInt(result.behaviors_filled));
+        std.debug.print("\n  Estimated TRI Rewards:\n", .{});
+        std.debug.print("    Behaviors filled: {d}\n", .{result.behaviors_filled});
+        std.debug.print("    Avg quality: {d:.2}\n", .{avg_quality});
+        std.debug.print("    Estimated earned: {d:.1} TRI\n", .{total_reward});
+    }
+
+    if (result.errors.items.len > 0) {
+        std.debug.print("\n  Errors:\n", .{});
+        for (result.errors.items) |err| {
+            std.debug.print("    - {s}: {s}\n", .{err.behavior_name, err.reason});
+        }
+    }
+
+    std.debug.print("\n", .{});
+
+    // Clean up duplicated error strings
+    for (result.errors.items) |err| {
+        allocator.free(err.behavior_name);
+        allocator.free(err.reason);
+    }
+    // Cast away const for cleanup - we own this data
+    @constCast(&result.errors).deinit(allocator);
+}
+
+/// V10.3: Import seeds from generated directory
+fn importSeeds(allocator: std.mem.Allocator, dir: []const u8) !void {
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.3: Import Seeds                                   ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Directory: {s}\n", .{dir});
+    std.debug.print("  Scanning for .zig files...\n\n", .{});
+
+    var db = try golden_db.GoldenDB.init(allocator);
+    defer db.deinit();
+
+    const count = try db.importFromGenerated(dir);
+
+    std.debug.print("\n  Results:\n", .{});
+    std.debug.print("    Seeds imported: {d}\n", .{count});
+    std.debug.print("    Total DB size:  {d}\n", .{db.implementations.items.len});
+    std.debug.print("\n", .{});
+}
+
+fn showRewards(allocator: std.mem.Allocator, agent_id: []const u8) !void {
+    _ = allocator;
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.3: $TRI Reward System                           ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Agent: {s}\n\n", .{agent_id});
+
+    // Show reward tiers
+    std.debug.print("  Reward Tiers:\n", .{});
+    std.debug.print("    Platinum (≥0.95): {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.95, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(1.0, 8),
+    });
+    std.debug.print("    Gold (≥0.90):      {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.90, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.94, 8),
+    });
+    std.debug.print("    Silver (≥0.85):    {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.85, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.89, 8),
+    });
+    std.debug.print("    Bronze (≥0.75):    {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.75, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.84, 8),
+    });
+    std.debug.print("    Unranked (<0.75):  0 - {d:.1} $TRI\n\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.74, 5),
+    });
+
+    // Show staking bonuses
+    std.debug.print("  Staking Bonuses (priority multiplier):\n", .{});
+    std.debug.print("    0 $TRI:     1.0x (normal)\n", .{});
+    std.debug.print("    100 $TRI:   1.5x\n", .{});
+    std.debug.print("    500+ $TRI:  2.0x\n\n", .{});
+
+    // Show daily cap
+    std.debug.print("  Daily Earnings Cap: {d:.0} $TRI\n", .{vibe_rewards.VibeRewardSystem.DAILY_CAP});
+    std.debug.print("\n", .{});
 }

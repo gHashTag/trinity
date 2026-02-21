@@ -1,0 +1,144 @@
+name: real_kg_sync_poll
+version: "1.0.0"
+language: zig
+module: real_kg_sync_poll
+
+description: |
+  Real DHT polling bridge from kg_sync.zig to Swarm Watch.
+  Replaces mock data with actual KgTripleDHT stats.
+  Phase 3 of Swarm Watch DEV-003.
+
+types:
+  DHTPoller:
+    fields:
+      dht_ptr: Ptr
+      allocator: Ptr
+      is_connected: Bool
+      last_poll_ms: Int
+      consecutive_failures: Int
+
+  RealDHTStats:
+    fields:
+      triples_stored: Int
+      triples_distributed: Int
+      triples_received: Int
+      triples_rejected: Int
+      triples_duplicate: Int
+      sync_rounds: Int
+      peer_count: Int
+      acceptance_rate: Float
+      last_update_ms: Int
+
+behaviors:
+  - name: init_dht_poller
+    given: Allocator and KgTripleDHT instance
+    when: Poller initializes
+    then: Returns DHTPoller with dht_ptr set, connected state, zero counters
+
+  - name: poll_real_stats
+    given: DHTPoller with valid dht_ptr
+    when: Stats polling requested
+    then: Calls dht.getStats(), returns RealDHTStats with actual metrics
+
+  - name: poll_with_fallback
+    given: DHTPoller (dht may be null)
+    when: Stats polling requested
+    then: If dht valid, returns real stats; else returns zero stats with is_connected=false
+
+  - name: compute_acceptance_rate
+    given: Triples received and rejected counts
+    when: Rate calculation requested
+    then: Returns (received - rejected) / max(1, received + rejected) as Float
+
+  - name: check_health_threshold
+    given: RealDHTStats
+    when: Health check requested
+    then: Returns true if acceptance_rate >= 0.95, else false (alert condition)
+
+  - name: format_prometheus_metrics
+    given: RealDHTStats
+    when: Prometheus export requested
+    then: Returns formatted string with HELP and TYPE declarations
+
+implementation: |
+  // Import kg_sync module
+  const kg_sync = @import("trinity-symb").kg_sync;
+
+  pub const DHTPoller = struct {
+      dht: ?*kg_sync.KgTripleDHT,
+      allocator: Allocator,
+      last_poll_ms: i64,
+      consecutive_failures: u32,
+
+      pub fn init(allocator: Allocator, dht: ?*kg_sync.KgTripleDHT) DHTPoller {
+          return .{
+              .dht = dht,
+              .allocator = allocator,
+              .last_poll_ms = 0,
+              .consecutive_failures = 0,
+          };
+      }
+
+      pub fn pollStats(self: *DHTPoller) !RealDHTStats {
+          if (self.dht) |dht| {
+              const stats = dht.getStats();
+              self.last_poll_ms = std.time.timestamp();
+              self.consecutive_failures = 0;
+              return RealDHTStats.fromKgDHTStats(stats);
+          } else {
+              self.consecutive_failures += 1;
+              return RealDHTStats.empty();
+          }
+      }
+  };
+
+  pub const RealDHTStats = struct {
+      triples_stored: u64,
+      triples_distributed: u64,
+      triples_received: u64,
+      triples_rejected: u64,
+      triples_duplicate: u64,
+      sync_rounds: u64,
+      peer_count: usize,
+      acceptance_rate: f32,
+      last_update_ms: i64,
+
+      pub fn fromKgDHTStats(stats: kg_sync.KgDHTStats) RealDHTStats {
+          const total_received = stats.triples_received + stats.triples_duplicate;
+          const acceptance_rate: f32 = if (total_received > 0)
+              @as(f32, @floatFromInt(stats.triples_stored)) / @as(f32, @floatFromInt(total_received))
+          else
+              1.0;
+
+          return .{
+              .triples_stored = stats.triples_stored,
+              .triples_distributed = stats.triples_distributed,
+              .triples_received = stats.triples_received,
+              .triples_rejected = stats.triples_rejected,
+              .triples_duplicate = stats.triples_duplicate,
+              .sync_rounds = stats.sync_rounds,
+              .peer_count = 1, // TODO: get from peer registry
+              .acceptance_rate = acceptance_rate,
+              .last_update_ms = std.time.timestamp(),
+          };
+      }
+
+      pub fn isHealthy(self: RealDHTStats) bool {
+          return self.acceptance_rate >= 0.95;
+      }
+
+      pub fn exportPrometheus(self: RealDHTStats, writer: anytype) !void {
+          try writer.print(
+              \\# HELP dht_triples_stored Total number of triples stored in DHT
+              \\# TYPE dht_triples_stored gauge
+              \\dht_triples_stored {d}
+              \\# HELP dht_acceptance_rate DHT acceptance rate (0-1)
+              \\# TYPE dht_acceptance_rate gauge
+              \\dht_acceptance_rate {d:.3}
+              \\# HELP dht_sync_rounds Total number of DHT sync rounds
+              \\# TYPE dht_sync_rounds counter
+              \\dht_sync_rounds {d}
+              \\
+          , .{self.triples_stored, self.acceptance_rate, self.sync_rounds});
+      }
+  };

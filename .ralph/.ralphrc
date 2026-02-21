@@ -1,6 +1,15 @@
+# Ralph Configuration
 
-# Fallback API Configuration
-# When Claude API hits rate limit, switch to GLM-5
+# API Fallback
 FALLBACK_API_KEY="fcbb5dadc5ea462284f5475a04daa174.Ei5KkZb0WQMwasmd"
 FALLBACK_API_BASE="https://api.z.ai/api/paas/v4"
 FALLBACK_MODEL="glm-5"
+
+# Telegram Reporting (minimal)
+RALPH_REPORT_ENABLED=true
+RALPH_TELEGRAM_CHAT_ID=144022504
+RALPH_REPORT_ONLY_IMPORTANT=true
+
+# Rate limit handling
+RALPH_RATE_LIMIT_WAIT=true
+RALPH_AUTO_RESTART=true

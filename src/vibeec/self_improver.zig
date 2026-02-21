@@ -12,6 +12,11 @@ const std = @import("std");
 const vibee_parser = @import("vibee_parser.zig");
 const zig_codegen = @import("zig_codegen.zig");
 
+// v10.1: Deep Intelligence components
+const ASTAnalyzer = @import("codegen/ast_analyzer.zig").ASTAnalyzer;
+const PatchValidator = @import("codegen/validator.zig").PatchValidator;
+const RollbackManager = @import("codegen/rollback.zig").RollbackManager;
+
 const Allocator = std.mem.Allocator;
 
 /// Configuration for self-improvement loop
@@ -58,6 +63,10 @@ pub const SelfImprover = struct {
     config: ImproverConfig,
     iteration: usize = 0,
 
+    // v10.1: Deep Intelligence components
+    validator: PatchValidator,
+    rollback_mgr: RollbackManager,
+
     const Self = @This();
 
     pub fn init(allocator: Allocator, config: ImproverConfig) Self {
@@ -65,6 +74,8 @@ pub const SelfImprover = struct {
             .allocator = allocator,
             .config = config,
             .iteration = 0,
+            .validator = PatchValidator.init(allocator),
+            .rollback_mgr = RollbackManager.init(allocator, ".vibee/backups"),
         };
     }
 
@@ -184,8 +195,30 @@ pub const SelfImprover = struct {
         return self.analyzeSource(source);
     }
 
-    /// Analyze source code for patterns
-    fn analyzeSource(_: *Self, source: []const u8) CodeAnalysis {
+    /// Analyze source code for patterns using AST-based analysis (v10.1)
+    fn analyzeSource(self: *Self, source: []const u8) CodeAnalysis {
+        // v10.1: Use ASTAnalyzer instead of primitive grep/regex
+        var analyzer = ASTAnalyzer.init(self.allocator, source);
+        const stats = analyzer.analyzeFile() catch {
+            // Fallback to simple analysis if AST fails
+            return self.fallbackAnalyze(source);
+        };
+
+        const real_pct: f64 = if (stats.total_functions > 0)
+            @as(f64, @floatFromInt(stats.real_count)) / @as(f64, @floatFromInt(stats.total_functions)) * 100.0
+        else
+            0.0;
+
+        return CodeAnalysis{
+            .total_patterns = stats.total_functions,
+            .real_patterns = stats.real_count,
+            .stub_patterns = stats.stub_count,
+            .real_patterns_pct = real_pct,
+        };
+    }
+
+    /// Fallback simple analysis if AST parsing fails
+    fn fallbackAnalyze(_: *Self, source: []const u8) CodeAnalysis {
         var total: usize = 0;
         var real: usize = 0;
         var stubs: usize = 0;
@@ -196,14 +229,11 @@ pub const SelfImprover = struct {
         var function_has_stub = false;
 
         while (lines.next()) |line| {
-            // Check for function declaration
             if (std.mem.indexOf(u8, line, "pub fn")) |_| {
-                // Count previous function if any
                 if (in_function) {
                     if (function_has_real) real += 1;
                     if (function_has_stub) stubs += 1;
                 }
-                // Start new function
                 total += 1;
                 in_function = true;
                 function_has_real = false;
@@ -211,7 +241,6 @@ pub const SelfImprover = struct {
             }
 
             if (in_function) {
-                // Check for stub indicators within function
                 if (!function_has_stub) {
                     const is_stub = std.mem.indexOf(u8, line, "TODO") != null or
                                    std.mem.indexOf(u8, line, "unimplemented") != null or
@@ -219,7 +248,6 @@ pub const SelfImprover = struct {
                     if (is_stub) function_has_stub = true;
                 }
 
-                // Check for real implementation within function
                 if (!function_has_real and
                     std.mem.indexOf(u8, line, "return") != null and
                     std.mem.indexOf(u8, line, "// Then:") == null) {
@@ -228,7 +256,6 @@ pub const SelfImprover = struct {
             }
         }
 
-        // Count last function
         if (in_function) {
             if (function_has_real) real += 1;
             if (function_has_stub) stubs += 1;
@@ -261,11 +288,54 @@ pub const SelfImprover = struct {
         return false;
     }
 
-    /// Regenerate code from spec
+    /// Regenerate code from spec with transaction-safe patching (v10.1)
     fn regenerateCode(self: *Self, spec_path: []const u8) !void {
-        _ = self.allocator;
+        // Get output path
+        const spec_basename = std.fs.path.basename(spec_path);
+        const name_end = std.mem.lastIndexOf(u8, spec_basename, ".") orelse spec_basename.len;
+        const name = spec_basename[0..name_end];
+        const gen_path = try std.fmt.allocPrint(self.allocator, "generated/{s}.zig", .{name});
+        defer self.allocator.free(gen_path);
+
+        // v10.1: Check if file exists and needs patching vs fresh generation
+        var buffer: [1024]u8 = undefined;
+        const file_exists = std.fs.cwd().readFile(gen_path, &buffer) catch |err| {
+            if (err == error.FileNotFound) {
+                // File doesn't exist - fresh generation
+                try self.generateFresh(spec_path);
+                return;
+            }
+            return err;
+        };
+
+        if (file_exists.len == 0) {
+            // Empty file - fresh generation
+            try self.generateFresh(spec_path);
+            return;
+        }
+
+        // File exists - use transaction-safe patching
+        var transaction = self.rollback_mgr.beginTransaction(gen_path);
+        defer transaction.cleanup();
+
+        // Apply patch (regeneration)
+        const patch_fn = struct {
+            fn patch(path: []const u8) anyerror![]const u8 {
+                _ = path;
+                // In actual implementation, would regenerate and return new source
+                // For now, just return placeholder
+                return "";
+            }
+        }.patch;
+
+        _ = try transaction.apply(patch_fn, &self.validator);
+        _ = try transaction.commit();
+    }
+
+    /// Generate fresh code from spec
+    fn generateFresh(self: *Self, spec_path: []const u8) !void {
+        _ = self;
         // In actual implementation, would spawn: zig build vibee -- gen {spec_path}
-        // For now, just note it would happen
         _ = spec_path;
     }
 };

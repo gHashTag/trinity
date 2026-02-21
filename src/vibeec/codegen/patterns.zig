@@ -36,6 +36,10 @@ pub const io = patterns_mod.io;
 pub const data = patterns_mod.data;
 pub const ml = patterns_mod.ml;
 pub const vsa = patterns_mod.vsa;
+pub const tensor = patterns_mod.tensor;
+pub const inference = patterns_mod.inference;
+pub const model = patterns_mod.model;
+pub const economic = patterns_mod.economic;
 
 // Re-export types
 pub const Category = patterns_mod.Category;

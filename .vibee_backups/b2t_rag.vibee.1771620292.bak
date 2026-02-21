@@ -1,0 +1,416 @@
+name: b2t_rag
+version: "1.0.0"
+language: zig
+
+types:
+  TernaryEmbedding:
+    fields:
+      dimension: Int
+      trits: List<Int>
+      sparsity: Float
+      source_hash: String
+  CodeChunk:
+    fields:
+      code: String
+      chunk_type: ChunkType
+      start_line: Int
+      end_line: Int
+      embedding: TernaryEmbedding
+      metadata: Map<String, String>
+  ChunkType:
+  SimilarityMetric:
+  SimilarityResult:
+    fields:
+      query_hash: String
+      match_hash: String
+      similarity: Float
+      metric_used: SimilarityMetric
+      matched_chunk: CodeChunk
+  IndexType:
+  TernaryIndex:
+    fields:
+      index_type: IndexType
+      dimension: Int
+      num_entries: Int
+      chunks: List<CodeChunk>
+      hash_tables: Option<Int>
+      hash_functions: Option<Int>
+      max_connections: Option<Int>
+      ef_construction: Option<Int>
+  KnowledgeSource:
+  KnowledgeEntry:
+    fields:
+      id: String
+      source: KnowledgeSource
+      code: String
+      description: String
+      tags: List<String>
+      quality_score: Float
+      usage_count: Int
+      last_used: Int
+      embedding: TernaryEmbedding
+  KnowledgeBase:
+    fields:
+      name: String
+      entries: List<KnowledgeEntry>
+      index: TernaryIndex
+      total_tokens: Int
+      last_updated: Int
+  RetrievalQuery:
+    fields:
+      code: String
+      query_type: QueryType
+      max_results: Int
+      min_similarity: Float
+      filters: List<String>
+  QueryType:
+  RetrievalResult:
+    fields:
+      query: RetrievalQuery
+      matches: List<SimilarityResult>
+      retrieval_time_ms: Int
+      index_hits: Int
+
+behaviors:
+  - name: embed_code_ternary
+    given: Фрагмент кода
+    when: Генерация троичного эмбеддинга через VSA
+    then: Возвращает TernaryEmbedding размерности 10000
+    implementation: |
+              pub fn embed_code_ternary(code: []const u8) TernaryEmbedding {
+                  // Generate ternary embedding via VSA
+                  _ = code;
+                  return TernaryEmbedding{
+                      .dimension = 10000,
+                      .trits = &[_]i32{},
+                      .sparsity = 0.33,
+                      .source_hash = "",
+                  };
+              }
+      
+      
+
+  - name: embed_tokens
+    given: Список токенов кода
+    when: Токенизация и эмбеддинг каждого токена
+    then: Возвращает List<TernaryEmbedding>
+    implementation: |
+              pub fn embed_tokens(tokens: []const []const u8) []TernaryEmbedding {
+                  // Embed each token individually
+                  _ = tokens;
+                  return &[_]TernaryEmbedding{};
+              }
+      
+      
+
+  - name: combine_embeddings
+    given: List<TernaryEmbedding>
+    when: Комбинирование через bundling (мажоритарное голосование)
+    then: Возвращает единый TernaryEmbedding
+    implementation: |
+              pub fn combine_embeddings(embeddings: []const TernaryEmbedding) TernaryEmbedding {
+                  // Combine via bundling (majority vote)
+                  _ = embeddings;
+                  return TernaryEmbedding{
+                      .dimension = 10000,
+                      .trits = &[_]i32{},
+                      .sparsity = 0.33,
+                      .source_hash = "",
+                  };
+              }
+      
+      
+
+  - name: bind_embeddings
+    given: Два TernaryEmbedding
+    when: Связывание через XOR (троичный)
+    then: Возвращает связанный TernaryEmbedding
+    implementation: |
+              pub fn bind_embeddings(a: TernaryEmbedding, b: TernaryEmbedding) TernaryEmbedding {
+                  // Bind via XOR (ternary)
+                  _ = a;
+                  _ = b;
+                  return TernaryEmbedding{
+                      .dimension = 10000,
+                      .trits = &[_]i32{},
+                      .sparsity = 0.33,
+                      .source_hash = "",
+                  };
+              }
+      
+      
+
+  - name: chunk_code
+    given: Полный исходный код
+    when: Разбиение на семантические чанки
+    then: Возвращает List<CodeChunk>
+    implementation: |
+              pub fn chunk_code(code: []const u8) []CodeChunk {
+                  // Split code into semantic chunks
+                  _ = code;
+                  return &[_]CodeChunk{};
+              }
+      
+      
+
+  - name: detect_chunk_type
+    given: Фрагмент кода
+    when: Классификация типа чанка
+    then: Возвращает ChunkType
+    implementation: |
+              pub fn detect_chunk_type(chunk: CodeChunk) ChunkType {
+                  // Classify chunk type
+                  _ = chunk;
+                  return .function_body;
+              }
+      
+      
+
+  - name: extract_chunk_metadata
+    given: CodeChunk
+    when: Извлечение метаданных (имена, типы, вызовы)
+    then: Возвращает Map<String, String>
+    implementation: |
+              pub fn extract_chunk_metadata(chunk: CodeChunk) std.StringHashMap([]const u8) {
+                  // Extract metadata (names, types, calls)
+                  _ = chunk;
+                  var map = std.StringHashMap([]const u8).init(std.heap.page_allocator);
+                  return map;
+              }
+      
+      
+
+  - name: create_index
+    given: IndexType и параметры
+    when: Создание пустого индекса
+    then: Возвращает TernaryIndex
+    implementation: |
+              pub fn create_index(index_type: IndexType, dimension: usize) TernaryIndex {
+                  // Create empty index
+                  _ = index_type;
+                  _ = dimension;
+                  return TernaryIndex{
+                      .index_type = .brute_force,
+                      .dimension = 10000,
+                      .num_entries = 0,
+                      .chunks = &[_]CodeChunk{},
+                      .hash_tables = null,
+                      .hash_functions = null,
+                      .max_connections = null,
+                      .ef_construction = null,
+                  };
+              }
+      
+      
+
+  - name: add_to_index
+    given: TernaryIndex и CodeChunk
+    when: Добавление чанка в индекс
+    then: Обновляет индекс
+    implementation: |
+              pub fn add_to_index(index: *TernaryIndex, chunk: CodeChunk) void {
+                  // Add chunk to index
+                  _ = index;
+                  _ = chunk;
+              }
+      
+      
+
+  - name: build_lsh_tables
+    given: List<TernaryEmbedding>
+    when: Построение LSH таблиц для быстрого поиска
+    then: Возвращает hash tables
+    implementation: |
+              pub fn build_lsh_tables(embeddings: []const TernaryEmbedding) void {
+                  // Build LSH hash tables
+                  _ = embeddings;
+              }
+      
+      
+
+  - name: build_ternary_tree
+    given: List<TernaryEmbedding>
+    when: Построение троичного дерева поиска
+    then: Возвращает корень дерева
+    implementation: |
+              pub fn build_ternary_tree(embeddings: []const TernaryEmbedding) void {
+                  // Build ternary search tree
+                  _ = embeddings;
+              }
+      
+      
+
+  - name: search_similar
+    given: RetrievalQuery и TernaryIndex
+    when: Поиск похожих чанков
+    then: Возвращает RetrievalResult
+    implementation: |
+              pub fn search_similar(query: RetrievalQuery, index: TernaryIndex) RetrievalResult {
+                  // Search for similar chunks
+                  _ = query;
+                  _ = index;
+                  return RetrievalResult{};
+              }
+      
+      
+
+  - name: compute_similarity
+    given: Два TernaryEmbedding и SimilarityMetric
+    when: Вычисление сходства
+    then: Возвращает Float 0.0-1.0
+    implementation: |
+              pub fn compute_similarity(a: TernaryEmbedding, b: TernaryEmbedding, metric: SimilarityMetric) f32 {
+                  // Compute similarity between embeddings
+                  _ = a;
+                  _ = b;
+                  _ = metric;
+                  return 0.5;
+              }
+      
+      
+
+  - name: rank_results
+    given: List<SimilarityResult>
+    when: Ранжирование по релевантности
+    then: Возвращает отсортированный список
+    implementation: |
+              pub fn rank_results(results: []const SimilarityResult) []SimilarityResult {
+                  // Rank by relevance
+                  _ = results;
+                  return &[_]SimilarityResult{};
+              }
+      
+      
+
+  - name: filter_by_quality
+    given: List<SimilarityResult> и min_quality
+    when: Фильтрация низкокачественных результатов
+    then: Возвращает отфильтрованный список
+    implementation: |
+              pub fn filter_by_quality(results: []const SimilarityResult, min_quality: f32) []SimilarityResult {
+                  // Filter by quality score
+                  _ = results;
+                  _ = min_quality;
+                  return &[_]SimilarityResult{};
+              }
+      
+      
+
+  - name: create_knowledge_base
+    given: Имя и начальные данные
+    when: Создание новой базы знаний
+    then: Возвращает KnowledgeBase
+    implementation: |
+              pub fn create_knowledge_base(name: []const u8) KnowledgeBase {
+                  // Create new knowledge base
+                  _ = name;
+                  return KnowledgeBase{};
+              }
+      
+      
+
+  - name: add_knowledge
+    given: KnowledgeBase и KnowledgeEntry
+    when: Добавление новой записи
+    then: Обновляет базу и индекс
+    implementation: |
+              pub fn add_knowledge(kb: *KnowledgeBase, entry: KnowledgeEntry) void {
+                  // Add new entry to KB
+                  _ = kb;
+                  _ = entry;
+              }
+      
+      
+
+  - name: update_quality_score
+    given: KnowledgeEntry и feedback
+    when: Обновление оценки качества на основе использования
+    then: Пересчитывает quality_score
+    implementation: |
+              pub fn update_quality_score(entry: *KnowledgeEntry, feedback: f32) void {
+                  // Update quality score based on feedback
+                  _ = entry;
+                  _ = feedback;
+              }
+      
+      
+
+  - name: prune_low_quality
+    given: KnowledgeBase и threshold
+    when: Удаление низкокачественных записей
+    then: Очищает базу
+    implementation: |
+              pub fn prune_low_quality(kb: *KnowledgeBase, threshold: f32) void {
+                  // Remove low-quality entries
+                  _ = kb;
+                  _ = threshold;
+              }
+      
+      
+
+  - name: save_knowledge_base
+    given: KnowledgeBase и путь
+    when: Сохранение на диск
+    then: Записывает в файл
+    implementation: |
+              pub fn save_knowledge_base(kb: KnowledgeBase, path: []const u8) !void {
+                  // Save KB to disk
+                  _ = kb;
+                  _ = path;
+              }
+      
+      
+
+  - name: load_knowledge_base
+    given: Путь к файлу
+    when: Загрузка с диска
+    then: Возвращает KnowledgeBase
+    implementation: |
+              pub fn load_knowledge_base(path: []const u8) !KnowledgeBase {
+                  // Load KB from disk
+                  _ = path;
+                  return KnowledgeBase{};
+              }
+      
+      
+
+  - name: compute_semantic_intensity
+    given: Строка кода
+    when: Вычисление "семантической интенсивности"
+    then: Возвращает Float score
+    implementation: |
+              pub fn compute_semantic_intensity(code: []const u8) f32 {
+                  // Compute semantic intensity score
+                  _ = code;
+                  return 0.5;
+              }
+      
+      
+
+  - name: identify_distorted_lines
+    given: Декомпилированный код и пороговое значение
+    when: Поиск строк с высокой вероятностью искажения
+    then: Возвращает List<Int> номеров строк
+    implementation: |
+              pub fn identify_distorted_lines(code: []const u8, threshold: f32) []usize {
+                  // Identify likely distorted lines
+                  _ = code;
+                  _ = threshold;
+                  return &[_]usize{};
+              }
+      
+      
+
+  - name: prioritize_retrieval
+    given: List<Int> искажённых строк
+    when: Приоритизация для RAG запросов
+    then: Возвращает упорядоченный список
+    implementation: |
+              pub fn prioritize_retrieval(distorted_lines: []const usize) []usize {
+                  // Prioritize for RAG queries
+                  _ = distorted_lines;
+                  return &[_]usize{};
+              }
+      
+      
+
