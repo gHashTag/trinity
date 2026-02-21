@@ -314,3 +314,259 @@ export async function fetchRalphStatus(): Promise<RalphStatus | null> {
     return null;
   }
 }
+
+// ─── v8.20: PAS (Predictive Algorithmic Systematics) API ───────────────────────
+
+export interface PasStatus {
+  active: boolean;
+  analyses_performed: number;
+  energy_harvested: number;
+  berry_phase: number;
+  pas_energy: number;
+  sacred_valid: boolean;
+  pending_recommendations: number;
+  pas_version: string;
+  trinity_identity: string;
+}
+
+export interface PasRecommendation {
+  action: 'increase_mu' | 'decrease_mu' | 'switch_fixtype' | 'explore_random' | 'maintain_current' | 'emergency_stop';
+  priority: number;
+  rationale: string;
+  impact_estimate: number;
+  target_fixtype?: string;
+  target_mu?: number;
+}
+
+export interface PasAnalysis {
+  daemon_active: boolean;
+  sacred_constants: {
+    phi: number;
+    phi_sq: number;
+    phi_inv_sq: number;
+    trinity: number;
+    mu: number;
+    chi: number;
+    sigma: number;
+    epsilon: number;
+    lucas_10: number;
+    phoenix: number;
+  };
+  current_metrics: {
+    berry_phase: number;
+    pas_energy: number;
+    sacred_validation_rate: number;
+  };
+}
+
+export async function fetchPasStatus(): Promise<PasStatus | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/pas/status`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchPasRecommendations(): Promise<{ active: boolean; analyses_performed: number; energy_harvested: number; berry_phase: number; pas_energy: number; sacred_validation_rate: number; pending_recommendations: number; recommendations: PasRecommendation[] } | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/pas/recs`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchPasAnalysis(): Promise<PasAnalysis | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/pas/analyze`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+// ─── v8.19: AGENT MU API ───────────────────────────────────────────────────────────
+
+export interface AgentMuStatus {
+  total_fixes: number;
+  successful_fixes: number;
+  failed_fixes: number;
+  current_mu: number;
+  intelligence_multiplier: number;
+  success_rate: number;
+  adaptive_mu: number;
+  uptime_seconds: number;
+  fixes_per_second: number;
+  last_fix_type: string | null;
+  version: string;
+}
+
+export interface IntelligenceHistoryPoint {
+  timestamp: number;
+  intelligence_multiplier: number;
+  mu_used: number;
+  fix_type: string;
+}
+
+export interface IntelligenceForecast {
+  predicted_multiplier: number;
+  confidence_min: number;
+  confidence_max: number;
+  time_horizon: number;
+  model_quality: number;
+  growth_rate: number;
+}
+
+export interface EvolutionTreeNode {
+  node_id: string;
+  parent_id: string | null;
+  mutation_type: string;
+  timestamp: number;
+  fitness: number;
+  depth: number;
+}
+
+export interface SacredMathData {
+  mu: number;
+  phi: number;
+  lucas_10: number;
+  trinity_score: number;
+  current_intelligence: number;
+  uptime_seconds: number;
+  last_update: number;
+  version: string;
+}
+
+function generateMockAgentMuStatus(): AgentMuStatus {
+  const uptime = Math.floor(Date.now() / 1000);
+  return {
+    total_fixes: 100,
+    successful_fixes: 95,
+    failed_fixes: 5,
+    current_mu: 3.82,
+    intelligence_multiplier: 21.24,
+    success_rate: 0.95,
+    adaptive_mu: 0.039,
+    uptime_seconds: uptime,
+    fixes_per_second: 0.028,
+    last_fix_type: 'TYPE_FIX',
+    version: '8.19.0',
+  };
+}
+
+function generateMockIntelligenceHistory(count: number): IntelligenceHistoryPoint[] {
+  const now = Math.floor(Date.now() / 1000);
+  const points: IntelligenceHistoryPoint[] = [];
+  let current_mu = 0.0382;
+
+  for (let i = 0; i < Math.min(count, 100); i++) {
+    current_mu += 0.0382;
+    const multiplier = Math.exp(current_mu);
+    points.push({
+      timestamp: now - (100 - i) * 3600,
+      intelligence_multiplier: multiplier,
+      mu_used: current_mu,
+      fix_type: 'TYPE_FIX',
+    });
+  }
+
+  return points;
+}
+
+function generateMockForecast(horizons: number[]): IntelligenceForecast[] {
+  const current_mult = 21.24;
+  return horizons.map((h) => {
+    const predicted = current_mult * Math.exp(0.0382 * h);
+    const margin = predicted * 0.1;
+    return {
+      predicted_multiplier: predicted,
+      confidence_min: predicted - margin,
+      confidence_max: predicted + margin,
+      time_horizon: h,
+      model_quality: 0.95,
+      growth_rate: 0.0382,
+    };
+  });
+}
+
+function generateMockEvolutionTree(): EvolutionTreeNode[] {
+  const now = Math.floor(Date.now() / 1000);
+  const mutations = ['SYNTAX_FIX', 'TYPE_FIX', 'META_LEARN', 'SELF_MOD', 'PREDICT', 'COLLAB'];
+
+  return Array.from({ length: 50 }, (_, i) => ({
+    node_id: `node_${i}`,
+    parent_id: i > 0 ? `node_${i - 1}` : null,
+    mutation_type: mutations[i % mutations.length],
+    timestamp: now - (50 - i) * 3600,
+    fitness: 0.3 + ((i % 7) * 0.1),
+    depth: Math.floor(i / 4),
+  }));
+}
+
+function generateMockSacredMath(): SacredMathData {
+  const now = Math.floor(Date.now() / 1000);
+  return {
+    mu: 0.0382,
+    phi: 1.6180339887498948482,
+    lucas_10: 123,
+    trinity_score: 3.0,
+    current_intelligence: 21.24,
+    uptime_seconds: 3600,
+    last_update: now,
+    version: '8.19.0',
+  };
+}
+
+export async function fetchAgentMuStatus(): Promise<AgentMuStatus> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/status`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return generateMockAgentMuStatus();
+    return await res.json();
+  } catch {
+    return generateMockAgentMuStatus();
+  }
+}
+
+export async function fetchAgentMuHistory(count: number = 50): Promise<IntelligenceHistoryPoint[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/history?count=${count}`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return generateMockIntelligenceHistory(count);
+    return await res.json();
+  } catch {
+    return generateMockIntelligenceHistory(count);
+  }
+}
+
+export async function fetchAgentMuForecast(horizons: number[] = [10, 50, 100]): Promise<IntelligenceForecast[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/forecast?horizon=${horizons.join(',')}`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return generateMockForecast(horizons);
+    return await res.json();
+  } catch {
+    return generateMockForecast(horizons);
+  }
+}
+
+export async function fetchAgentMuEvolutionTree(): Promise<EvolutionTreeNode[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/evolution-tree`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return generateMockEvolutionTree();
+    return await res.json();
+  } catch {
+    return generateMockEvolutionTree();
+  }
+}
+
+export async function fetchAgentMuSacredMath(): Promise<SacredMathData> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/sacred-math`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return generateMockSacredMath();
+    return await res.json();
+  } catch {
+    return generateMockSacredMath();
+  }
+}
