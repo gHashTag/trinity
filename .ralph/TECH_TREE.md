@@ -20,6 +20,8 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**PAS-001**|**PAS v8.20 Live Production**|**vibee-v8-production-swarm**|**HTTP API (3 endpoints), PAS Task Runner (before/after comparison), Dashboard Widget (RAZUM), Sacred Constants validated: φ² + 1/φ² = 3, μ = 0.0382. Demo executable: zig build pas-demo**|
+|----|------|--------|------|
 |**CODEGEN-009**|**VIBEE v8.1 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent swarm: 51.59% consensus, 97.2% self-improve. Fixed: bundle-based hypervectors, similarity measurement, metric capping. 7/7 tests pass.**|
 |----|------|--------|------|
 |**CODEGEN-008**|**VIBEE v8 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent Trinity swarm: runtime_swarm.zig (270 lines) + vsa_swarm_production_32.vibee (35 behaviors, 39/40 tests). Docker/K8s packaging, CI workflow, demo script. Runtime: 32/32 online, phi-spiral consensus, self-healing, Prometheus :9090.**|

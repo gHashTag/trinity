@@ -40,7 +40,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import QuantumCanvas from '../components/QuantumCanvas';
 import type { VizMode } from '../components/QuantumCanvas';
 import ChatMessage from '../components/chat/ChatMessage';
-import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics } from '../services/chatApi';
+import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, fetchPasStatus, fetchPasAnalysis, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics, type PasStatus, type PasAnalysis } from '../services/chatApi';
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -476,6 +476,11 @@ export default function TrinityCanvas() {
   const [mirrorLoading, setMirrorLoading] = useState(false);
   const [mirrorLogs, setMirrorLogs] = useState<MirrorLogEntry[]>([]);
   const mirrorLogRef = useRef<HTMLDivElement>(null);
+
+  // PAS v8.20 state
+  const [pasStatus, setPasStatus] = useState<PasStatus | null>(null);
+  const [pasAnalysis, setPasAnalysis] = useState<PasAnalysis | null>(null);
+  const [pasExpanded, setPasExpanded] = useState(true);
 
   // Mirror RAZUM: inline chat with history (v2.6)
   const [mChatInput, setMChatInput] = useState('');
@@ -945,6 +950,28 @@ export default function TrinityCanvas() {
     const id = setInterval(refreshMirror, 2000);
     return () => clearInterval(id);
   }, [layer, refreshMirror]);
+
+  // ─── PAS v8.20 polling (layer 7 / tools) ───────────────────────────────────────
+
+  const refreshPas = useCallback(async () => {
+    try {
+      const [status, analysis] = await Promise.all([
+        fetchPasStatus(),
+        fetchPasAnalysis(),
+      ]);
+      setPasStatus(status);
+      setPasAnalysis(analysis);
+    } catch {
+      // PAS offline - ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    if (layer !== 'tools') return;
+    refreshPas();
+    const id = setInterval(refreshPas, 5000); // Poll every 5 seconds
+    return () => clearInterval(id);
+  }, [layer, refreshPas]);
 
   // Auto-scroll logs
   useEffect(() => {
@@ -1808,6 +1835,48 @@ export default function TrinityCanvas() {
                     )}
                   </div>
                 )}
+
+                {/* ── PAS v8.20: Predictive Algorithmic Systematics ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                  <div onClick={() => setPasExpanded(!pasExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>PAS v8.20</span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>
+                      {pasExpanded ? '-' : '+'}
+                    </span>
+                  </div>
+                  {pasExpanded && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {pasStatus ? (
+                        <>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: pasStatus.active ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              {pasStatus.active ? '●' : '○'} {pasStatus.pas_version}
+                            </span>
+                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>
+                              φ²+1/φ²={pasStatus.sacred_valid ? '3' : '?'}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: '#ffd700' }}>Analyses:{pasStatus.analyses_performed}</span>
+                            <span style={{ color: pasStatus.energy_harvested > 0 ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              Energy:{pasStatus.energy_harvested.toFixed(1)}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>
+                              Berry:{pasStatus.berry_phase.toFixed(3)}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ color: 'rgba(255,215,0,0.15)', fontSize: 8, fontFamily: MONO, padding: 4, textAlign: 'center' }}>
+                          PAS v8.20 — Pattern Analysis System
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Live log — hidden unless debugLogs enabled */}
                 {debugLogs && (

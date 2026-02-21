@@ -299,6 +299,21 @@ pub fn build(b: *std.Build) void {
     const sota_step = b.step("sota-report", "Run SOTA Tech Report validation");
     sota_step.dependOn(&run_sota.step);
 
+    // PAS Demo v8.20 — Before/After Comparison Demonstration
+    const pas_demo = b.addExecutable(.{
+        .name = "pas-demo",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/agent_mu/pas_demo.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(pas_demo);
+
+    const run_pas_demo = b.addRunArtifact(pas_demo);
+    const pas_demo_step = b.step("pas-demo", "Run PAS v8.20 before/after comparison demo");
+    pas_demo_step.dependOn(&run_pas_demo.step);
+
     // Firebird CLI
     const firebird = b.addExecutable(.{
         .name = "firebird",
