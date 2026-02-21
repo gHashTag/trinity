@@ -15,6 +15,10 @@ types:
       total_peers: Int
       reward_rate_per_hour: Float
       next_payout_time: Int
+      current_tier: String
+      tier_multiplier: Float
+      stake_amount: Int
+      total_earned: Int
 
   PeerEconomyInfo:
     fields:
@@ -23,6 +27,8 @@ types:
       score: Float
       triples_stored: Int
       rewards_earned: Int
+      rank: Int
+      uptime_ratio: Float
 
   DashboardUpdate:
     fields:
@@ -30,35 +36,271 @@ types:
       leaderboard: List<PeerEconomyInfo>
       recent_transactions: List<String>
       timestamp: Int
+      update_id: Int
 
   AlertThreshold:
     fields:
       min_balance: Int
       max_unclaimed_hours: Int
       min_rank: Int
+      alert_on_tier_change: Bool
+      alert_on_large_payment: Bool
+      large_payment_threshold: Int
+
+  Alert:
+    fields:
+      alert_type: String
+      severity: String
+      message: String
+      timestamp: Int
+      data: String
+
+  EarningsProjection:
+    fields:
+      period_24h: Int
+      period_7d: Int
+      period_30d: Int
+      based_on_hours: Float
+      confidence: String
 
 behaviors:
   - name: get_metrics
-    given: wallet address
+    given: wallet address and leaderboard
     when: requesting dashboard data
     then: returns EconomyMetrics with current state
+    implementation: |
+      pub fn getMetrics(allocator: Allocator, wallet: Wallet, leaderboard: Leaderboard, contribution: Contribution) !EconomyMetrics {
+          // Find peer rank
+          var rank: usize = 0;
+          var tier: []const u8 = "Basic";
+          var multiplier: f64 = 1.0;
+
+          for (leaderboard.rankings) |r| {
+              if (std.mem.eql(u8, r.peer_id, wallet.address)) {
+                  rank = r.rank;
+                  tier = r.tier;
+                  multiplier = getTierMultiplier(r.score);
+                  break;
+              }
+          }
+
+          // Calculate reward rate based on contribution
+          const hourly_rate = calculateHourlyRate(contribution, multiplier);
+
+          // Next payout is every 24 hours from last claim
+          const next_payout = wallet.last_activity + (24 * 3600);
+
+          return .{
+              .my_wallet_balance = wallet.balance_wei,
+              .pending_rewards = wallet.pending_rewards,
+              .current_rank = @intCast(rank),
+              .total_peers = leaderboard.total_peers,
+              .reward_rate_per_hour = hourly_rate,
+              .next_payout_time = next_payout,
+              .current_tier = try allocator.dupe(u8, tier),
+              .tier_multiplier = multiplier,
+              .stake_amount = wallet.stake_amount,
+              .total_earned = wallet.total_earned,
+          };
+      }
+
+      fn calculateHourlyRate(contrib: Contribution, multiplier: f64) f64 {
+          var base: f64 = 0;
+          // Storage reward per hour
+          base += @as(f64, @floatFromInt(contrib.triples_stored)) / 1000;
+          // Retrieval reward per hour
+          base += @as(f64, @floatFromInt(contrib.triples_retrieved)) / 500;
+          // Uptime bonus
+          const uptime_hours = @as(f64, @floatFromInt(contrib.uptime_seconds)) / 3600;
+          base += uptime_hours * 0.1;
+          return base * multiplier;
+      }
+
+      fn getTierMultiplier(score: f64) f64 {
+          return if (score >= 90) 2.0
+                 else if (score >= 75) 1.5
+                 else if (score >= 60) 1.2
+                 else if (score >= 40) 1.0
+                 else 0.8;
+      }
 
   - name: format_dashboard_update
     given: metrics and leaderboard
     when: preparing for Swarm Watch display
     then: returns formatted DashboardUpdate
+    implementation: |
+      pub fn formatDashboardUpdate(allocator: Allocator, metrics: EconomyMetrics, leaderboard: Leaderboard, update_id: i64) !DashboardUpdate {
+          // Get top 10 peers
+          const top_n = @min(10, leaderboard.rankings.len);
+
+          var peer_infos = try std.ArrayList(PeerEconomyInfo).initCapacity(allocator, top_n);
+          defer peer_infos.deinit();
+
+          for (leaderboard.rankings[0..top_n]) |r| {
+              try peer_infos.append(.{
+                  .peer_id = r.peer_id,
+                  .tier = r.tier,
+                  .score = r.score,
+                  .triples_stored = 0,  // Would come from Contribution data
+                  .rewards_earned = 0,   // Would come from wallet data
+                  .rank = r.rank,
+                  .uptime_ratio = 0,     // Would come from stats
+              });
+          }
+
+          return .{
+              .metrics = metrics,
+              .leaderboard = try allocator.dupe(PeerEconomyInfo, peer_infos.items),
+              .recent_transactions = &[_][]const u8{},  // Empty for now
+              .timestamp = std.time.timestamp(),
+              .update_id = @intCast(update_id),
+          };
+      }
 
   - name: check_alerts
     given: metrics and thresholds
     when: checking if alert needed
     then: returns alert list if thresholds exceeded
+    implementation: |
+      pub fn checkAlerts(allocator: Allocator, metrics: EconomyMetrics, thresholds: AlertThreshold) ![]Alert {
+          var alerts = std.ArrayList(Alert).init(allocator);
+          defer alerts.deinit();
+
+          // Low balance alert
+          if (metrics.my_wallet_balance < thresholds.min_balance) {
+              try alerts.append(.{
+                  .alert_type = "low_balance",
+                  .severity = "warning",
+                  .message = try std.fmt.allocPrint(allocator, "Balance low: {d} TRI", .{metrics.my_wallet_balance}),
+                  .timestamp = std.time.timestamp(),
+                  .data = "",
+              });
+          }
+
+          // Unclaimed rewards alert
+          const unclaimed_hours = @as(f64, @floatFromInt(metrics.pending_rewards)) / @max(metrics.reward_rate_per_hour, 0.001);
+          if (unclaimed_hours > @as(f64, @floatFromInt(thresholds.max_unclaimed_hours))) {
+              try alerts.append(.{
+                  .alert_type = "unclaimed_rewards",
+                  .severity = "info",
+                  .message = try std.fmt.allocPrint(allocator, "{d:.1} hours of unclaimed rewards", .{unclaimed_hours}),
+                  .timestamp = std.time.timestamp(),
+                  .data = "",
+              });
+          }
+
+          // Rank drop alert
+          if (metrics.current_rank > thresholds.min_rank) {
+              try alerts.append(.{
+                  .alert_type = "rank_drop",
+                  .severity = "warning",
+                  .message = try std.fmt.allocPrint(allocator, "Rank dropped to #{d}", .{metrics.current_rank}),
+                  .timestamp = std.time.timestamp(),
+                  .data = "",
+              });
+          }
+
+          return allocator.dupe(Alert, alerts.items);
+      }
 
   - name: get_earnings_projection
-    given: current stats
+    given: current stats and rate
     when: projecting future earnings
     then: returns estimated rewards for 24h/7d/30d
+    implementation: |
+      pub fn getEarningsProjection(hourly_rate: f64, hours_sampled: f64) EarningsProjection {
+          const confidence = if (hours_sampled >= 168) "high"  // 1 week
+                             else if (hours_sampled >= 24) "medium"
+                             else "low";
+
+          return .{
+              .period_24h = @floatToInt(i64, @floor(hourly_rate * 24)),
+              .period_7d = @floatToInt(i64, @floor(hourly_rate * 24 * 7)),
+              .period_30d = @floatToInt(i64, @floor(hourly_rate * 24 * 30)),
+              .based_on_hours = hours_sampled,
+              .confidence = confidence,
+          };
+      }
 
   - name: notify_balance_change
-    given: wallet and amount
+    given: wallet and amount and thresholds
     when: balance changes significantly
     then: triggers Telegram notification if enabled
+    implementation: |
+      pub fn notifyBalanceChange(allocator: Allocator, wallet: Wallet, amount: i64, thresholds: AlertThreshold) !?[]const u8 {
+          if (!thresholds.alert_on_large_payment) return null;
+          if (@abs(amount) < thresholds.large_payment_threshold) return null;
+
+          const emoji = if (amount > 0) "🟡" else "🔴";
+          const action = if (amount > 0) "received" else "sent";
+
+          const message = try std.fmt.allocPrint(allocator,
+              \\{s} Balance Update
+              \\Amount: {d} TRI {s}
+              \\New Balance: {d} TRI
+              \\Tier: {s}
+          , .{ emoji, @abs(amount), action, wallet.balance_wei, "Basic" });
+
+          // Send to Telegram
+          // TODO: actual Telegram integration
+          _ = sendTelegramNotification(message);
+
+          return message;
+      }
+
+  - name: format_leaderboard_entry
+    given: peer ranking info
+    when: formatting single leaderboard entry
+    then: returns formatted string for display
+    implementation: |
+      pub fn formatLeaderboardEntry(allocator: Allocator, info: PeerEconomyInfo) ![]const u8 {
+          const tier_emoji = getTierEmoji(info.tier);
+          return try std.fmt.allocPrint(allocator,
+              "{s} #{d: >3} | {s: <12} | Score: {d: >5.1} | Stored: {d: >6}",
+              .{ tier_emoji, info.rank, info.peer_id, info.score, info.triples_stored }
+          );
+      }
+
+      fn getTierEmoji(tier: []const u8) []const u8 {
+          return if (std.mem.eql(u8, tier, "Elite")) "👑"
+                 else if (std.mem.eql(u8, tier, "Gold")) "🥇"
+                 else if (std.mem.eql(u8, tier, "Silver")) "🥈"
+                 else if (std.mem.eql(u8, tier, "Bronze")) "🥉"
+                 else "⚪";
+      }
+
+  - name: create_dashboard_summary
+    given: metrics and projection
+    when: creating summary widget
+    then: returns formatted multi-line summary
+    implementation: |
+      pub fn createDashboardSummary(allocator: Allocator, metrics: EconomyMetrics, projection: EarningsProjection) ![]const u8 {
+          return try std.fmt.allocPrint(allocator,
+              \\╔════════════════════════════════════════╗
+              \\║        TRI ECONOMY DASHBOARD           ║
+              \\╠════════════════════════════════════════╣
+              \\║ Balance:     {d: >15} TRI           ║
+              \\║ Pending:     {d: >15} TRI           ║
+              \\║ Rank:        #{d: >14}              ║
+              \\║ Tier:        {s: <15}                ║
+              \\║ Multiplier:  {d: >15.1f}x            ║
+              \\║ Rate/h:      {d: >15.2} TRI          ║
+              \\╠────────────────────────────────────────╣
+              \\║ Projections ({s: >6} confidence):      ║
+              \\║ 24h:  +{d: >12} TRI                  ║
+              \\║ 7d:   +{d: >12} TRI                  ║
+              \\║ 30d:  +{d: >12} TRI                  ║
+              \\╚════════════════════════════════════════╝
+          , .{
+              metrics.my_wallet_balance,
+              metrics.pending_rewards,
+              metrics.current_rank,
+              metrics.current_tier,
+              metrics.tier_multiplier,
+              metrics.reward_rate_per_hour,
+              projection.confidence,
+              projection.period_24h,
+              projection.period_7d,
+              projection.period_30d,
+          });
+      }
