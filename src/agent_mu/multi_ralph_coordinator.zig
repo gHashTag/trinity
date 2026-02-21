@@ -68,6 +68,8 @@ pub const NodeState = struct {
     }
 
     pub fn isHealthy(self: NodeState, timeout_ms: i64, current_time_ms: i64) bool {
+        // Node with last_heartbeat_ms = 0 means never received a heartbeat
+        if (self.last_heartbeat_ms == 0) return false;
         const elapsed = current_time_ms - self.last_heartbeat_ms;
         return elapsed < timeout_ms;
     }
@@ -262,6 +264,12 @@ pub const MultiRalphCoordinator = struct {
             s.deinit();
             self.allocator.destroy(s);
         }
+
+        // Free the node_id we allocated in init
+        if (self.state.nodes.get(self.config.node_id)) |node| {
+            self.allocator.free(node.id);
+        }
+
         self.state.deinit();
     }
 
