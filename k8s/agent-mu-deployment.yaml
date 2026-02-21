@@ -1,5 +1,5 @@
-# AGENT MU v8.21 - Kubernetes Deployment
-# Production-ready configuration for 32-agent swarm
+# AGENT MU v10.0 - Kubernetes Deployment
+# Cycle 56: Production-ready with VIBEE-generated PAS daemon
 
 apiVersion: v1
 kind: ConfigMap
@@ -42,7 +42,7 @@ metadata:
   namespace: trinity
   labels:
     app: agent-mu
-    version: v8.21.0
+    version: v10.0.0
 spec:
   replicas: 3
   strategy:
@@ -57,7 +57,7 @@ spec:
     metadata:
       labels:
         app: agent-mu
-        version: v8.21.0
+        version: v10.0.0
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
@@ -65,7 +65,7 @@ spec:
     spec:
       containers:
       - name: agent-mu
-        image: ghcr.io/ghashtag/trinity/agent-mu:v8.21.0
+        image: ghcr.io/ghashtag/trinity/agent-mu:v10.0.0
         imagePullPolicy: Always
         ports:
         - name: http

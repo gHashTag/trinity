@@ -1,5 +1,6 @@
-# AGENT MU v8.21 - CI/CD Pipeline
+# AGENT MU v10.0 - CI/CD Pipeline
 # Builds, tests, and deploys AGENT MU to production
+# Cycle 56: Uses VIBEE-generated PAS daemon code
 
 name: AGENT MU - Build & Deploy
 
@@ -10,6 +11,7 @@ on:
     - vibee-v*-production-swarm
     paths:
     - 'src/agent_mu/**'
+    - 'generated/agent_mu_pas_daemon.zig'
     - 'docker/Dockerfile.agent-mu'
     - 'k8s/agent-mu-deployment.yaml'
     - '.github/workflows/agent-mu-deploy.yml'
@@ -18,12 +20,13 @@ on:
     - main
     paths:
     - 'src/agent_mu/**'
+    - 'generated/agent_mu_pas_daemon.zig'
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version tag (e.g., v8.21.0)'
+        description: 'Version tag (e.g., v10.0.0)'
         required: true
-        default: 'v8.21.0'
+        default: 'v10.0.0'
 
 env:
   REGISTRY: ghcr.io
@@ -50,10 +53,15 @@ jobs:
         zig test src/agent_mu/predictive/markov_predictor.zig
         zig test src/agent_mu/predictive/monte_carlo.zig
         zig test src/agent_mu/evolution/checkpoint_manager.zig
-        zig test src/agent_mu/daemon/pas_daemon.zig
+        # Cycle 56: Test VIBEE-generated PAS daemon
+        zig test generated/agent_mu_pas_daemon.zig
 
     - name: Build Test
-      run: zig build -Drelease-fast=true
+      run: zig build agent-mu -Drelease-fast=true
+
+    - name: CLI Validation Test
+      run: |
+        zig-out/bin/agent-mu-daemon --test
 
   build:
     name: Build Docker Image
