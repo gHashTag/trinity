@@ -1,17 +1,19 @@
-# AGENT MU v8.21 - Production Docker Image
+# AGENT MU v10.0 - Production Docker Image (Cycle 56)
 # Multi-stage build for minimal image size
+# Uses VIBEE-generated PAS daemon code
 
-FROM ziglang/zig:0.15.0 AS builder
+FROM ziglang/zig:0.15.2 AS builder
 
 WORKDIR /app
 
-# Copy build files
+# Copy build files including generated code
 COPY build.zig ./
 COPY zig-cache ./
 COPY src ./src
+COPY generated ./generated
 
-# Build AGENT MU with release optimizations
-RUN zig build -Drelease-fast=true
+# Build AGENT MU daemon with release optimizations
+RUN zig build agent-mu -Drelease-fast=true
 
 # Production stage
 FROM ubuntu:22.04
@@ -20,10 +22,11 @@ FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     libssl3 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy built binary
-COPY --from=builder /app/zig-out/bin/agent-mu /usr/local/bin/
+# Copy built binary (renamed from agent-mu-daemon to agent-mu)
+COPY --from=builder /app/zig-out/bin/agent-mu-daemon /usr/local/bin/agent-mu
 
 # Copy configuration
 COPY config/agent-mu.yaml /etc/agent-mu/config.yaml
@@ -38,5 +41,5 @@ EXPOSE 8080 8081 9090
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-# Run AGENT MU daemon
-CMD ["agent-mu", "daemon", "--config", "/etc/agent-mu/config.yaml"]
+# Run AGENT MU daemon (v10.0 CLI uses --daemon flag)
+CMD ["agent-mu", "--daemon", "--config", "/etc/agent-mu/config.yaml"]
