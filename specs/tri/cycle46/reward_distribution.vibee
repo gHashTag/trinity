@@ -1,0 +1,67 @@
+# TRI Reward Distribution (MGEN-008)
+# Distribute rewards to peers based on contribution
+
+name: reward_distribution
+version: "1.0.0"
+language: zig
+module: reward_distribution
+
+types:
+  Contribution:
+    fields:
+      peer_id: String
+      triples_stored: Int
+      triples_retrieved: Int
+      uptime_seconds: Int
+      storage_bytes: Int
+      network_bytes: Int
+
+  DistributionConfig:
+    fields:
+      reward_per_triple: Int
+      reward_per_retrieval: Int
+      reward_per_uptime_hour: Int
+      reward_per_storage_mb: Int
+      reward_pool: Int
+
+  DistributionResult:
+    fields:
+      peer_id: String
+      reward_amount: Int
+      contribution_score: Float
+      rank: Int
+
+  DistributionRound:
+    fields:
+      round_id: Int
+      start_time: Int
+      end_time: Int
+      total_rewards: Int
+      num_peers: Int
+      results: List<DistributionResult>
+
+behaviors:
+  - name: calculate_reward
+    given: peer contribution and config
+    when: calculating reward for round
+    then: returns reward amount based on contribution
+
+  - name: distribute_round
+    given: list of contributions and reward pool
+    when: running distribution round
+    then: returns DistributionRound with results
+
+  - name: get_leaderboard
+    given: distribution round
+    when: getting top peers
+    then: returns sorted list by reward amount
+
+  - name: verify_contribution
+    given: peer contribution claim
+    when: verifying triple storage
+    then: returns true if contribution is valid
+
+  - name: claim_reward
+    given: peer_id and round_id
+    when: peer claims reward
+    then: transfers reward to wallet or returns error

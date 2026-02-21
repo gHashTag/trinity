@@ -1,0 +1,64 @@
+# TRI Economy Dashboard (MGEN-010)
+# Swarm Watch integration for economy metrics and rewards
+
+name: economy_dashboard
+version: "1.0.0"
+language: zig
+module: economy_dashboard
+
+types:
+  EconomyMetrics:
+    fields:
+      my_wallet_balance: Int
+      pending_rewards: Int
+      current_rank: Int
+      total_peers: Int
+      reward_rate_per_hour: Float
+      next_payout_time: Int
+
+  PeerEconomyInfo:
+    fields:
+      peer_id: String
+      tier: String
+      score: Float
+      triples_stored: Int
+      rewards_earned: Int
+
+  DashboardUpdate:
+    fields:
+      metrics: EconomyMetrics
+      leaderboard: List<PeerEconomyInfo>
+      recent_transactions: List<String>
+      timestamp: Int
+
+  AlertThreshold:
+    fields:
+      min_balance: Int
+      max_unclaimed_hours: Int
+      min_rank: Int
+
+behaviors:
+  - name: get_metrics
+    given: wallet address
+    when: requesting dashboard data
+    then: returns EconomyMetrics with current state
+
+  - name: format_dashboard_update
+    given: metrics and leaderboard
+    when: preparing for Swarm Watch display
+    then: returns formatted DashboardUpdate
+
+  - name: check_alerts
+    given: metrics and thresholds
+    when: checking if alert needed
+    then: returns alert list if thresholds exceeded
+
+  - name: get_earnings_projection
+    given: current stats
+    when: projecting future earnings
+    then: returns estimated rewards for 24h/7d/30d
+
+  - name: notify_balance_change
+    given: wallet and amount
+    when: balance changes significantly
+    then: triggers Telegram notification if enabled
