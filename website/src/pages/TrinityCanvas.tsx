@@ -40,8 +40,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import QuantumCanvas from '../components/QuantumCanvas';
 import type { VizMode } from '../components/QuantumCanvas';
 import ChatMessage from '../components/chat/ChatMessage';
-import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics } from '../services/chatApi';
+import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, fetchAgentMuStatus, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics } from '../services/chatApi';
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
+import AgentMuWidget from '../components/AgentMuWidget';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -508,6 +509,9 @@ export default function TrinityCanvas() {
   const [storageMetrics, setStorageMetrics] = useState<StorageMetrics | null>(null);
   const [storageCollapsed, setStorageCollapsed] = useState<Record<string, boolean>>({});
 
+  // AGENT MU v8.16 metrics (v8.17)
+  const [agentMuStatus, setAgentMuStatus] = useState<any | null>(null);
+
   // UI
   const [showLayerHint, setShowLayerHint] = useState(true);
 
@@ -945,6 +949,27 @@ export default function TrinityCanvas() {
     const id = setInterval(refreshMirror, 2000);
     return () => clearInterval(id);
   }, [layer, refreshMirror]);
+
+  // ─── AGENT MU v8.17 polling (5s interval) ─────────────────────────────
+  useEffect(() => {
+    if (layer !== 'tools') return;
+    let cancelled = false;
+    const fetchAgentMu = async () => {
+      if (cancelled) return;
+      try {
+        const status = await fetchAgentMuStatus();
+        if (!cancelled) setAgentMuStatus(status);
+      } catch {
+        // Keep showing last known status or fallback to mock
+      }
+    };
+    fetchAgentMu();
+    const id = setInterval(fetchAgentMu, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [layer]);
 
   // Auto-scroll logs
   useEffect(() => {
@@ -1742,6 +1767,13 @@ export default function TrinityCanvas() {
                     <span style={{ color: (mirrorStatus.razum.kg_hits || 0) > 0 ? '#ff8800' : 'rgba(255,136,0,0.3)' }}>KG:{mirrorStatus.razum.kg_hits || 0}/{mirrorStatus.razum.kg_facts_loaded || 0}</span>
                     <span style={{ color: mirrorStatus.razum.memory_entries > 0 ? '#ffd700' : 'rgba(255,215,0,0.3)' }}>Mem:{mirrorStatus.razum.memory_entries}/256</span>
                     <span style={{ color: mirrorStatus.razum.llm_loaded ? '#00e599' : 'rgba(255,215,0,0.3)' }}>LLM:{mirrorStatus.razum.llm_loaded ? 'ON' : 'OFF'}</span>
+                  </div>
+                )}
+
+                {/* ═══ AGENT MU v8.17 — Intelligence Evolution ═══ */}
+                {agentMuStatus && (
+                  <div style={{ marginTop: 4 }}>
+                    <AgentMuWidget />
                   </div>
                 )}
 
