@@ -704,6 +704,111 @@ pub const MutationStats = struct {
 };
 ```
 
+### More Before/After Examples
+
+| Idiom | Before Fix | After Fix | Why |
+|-------|-----------|-----------|-----|
+| **errdefer** | Manual cleanup in each error path | `errdefer allocator.free(ptr);` | Guaranteed cleanup |
+| **@prefetch** | No prefetching in hot loops | `@prefetch(&data[i+4], .{.cache=.data, .rw=.read});` | Hot loop optimization |
+| **@compileLog** | Silent comptime failures | `@compileLog("Generating struct:", name);` | Debug codegen |
+| **@setEvalBranchQuota** | Quota exceeded on complex templates | `inline for (0..100) \|i\| { @setEvalBranchQuota(100000); }` | Complex templates |
+| **@shuffle/@select** | Scalar operations | `@shuffle(u32, a, b, mask)` | SIMD permutation |
+
+#### Example: errdefer Fix
+
+```zig
+// ❌ BEFORE (causes memory leak on error)
+fn parseFile(allocator: std.mem.Allocator, path: []const u8) !VibeeSpec {
+    const content = try std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024);
+    // If next line fails, content leaks!
+    const tokens = try tokenize(allocator, content);
+    allocator.free(content);
+    return parseSpec(allocator, tokens);
+}
+
+// ✅ AFTER (AGENT MU applies errdefer)
+fn parseFile(allocator: std.mem.Allocator, path: []const u8) !VibeeSpec {
+    const content = try std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024);
+    errdefer allocator.free(content); // Freed if any error occurs
+
+    const tokens = try tokenize(allocator, content);
+    allocator.free(content);
+    return parseSpec(allocator, tokens);
+}
+```
+
+#### Example: @prefetch for Hot Loops
+
+```zig
+// ❌ BEFORE (no prefetching)
+fn bundleMany(vectors: []const VSAVector) VSAVector {
+    var result: VSAVector = undefined;
+    for (vectors, 0..) |v, i| {
+        result = bundle2(result, v);
+        // Next iteration will cache miss!
+    }
+    return result;
+}
+
+// ✅ AFTER (AGENT MU adds prefetch)
+fn bundleMany(vectors: []const VSAVector) VSAVector {
+    var result: VSAVector = undefined;
+    for (vectors, 0..) |v, i| {
+        // Prefetch 4 iterations ahead
+        if (i + 4 < vectors.len) {
+            @prefetch(&vectors[i + 4], .{ .cache = .data, .rw = .read });
+        }
+        result = bundle2(result, v);
+    }
+    return result;
+}
+```
+
+#### Example: @compileLog for Codegen Debug
+
+```zig
+// ❌ BEFORE (silent comptime failures)
+fn generateStruct(comptime name: []const u8) type {
+    return @Type(.{ .Struct = .{
+        .fields = &fields,
+        // If something wrong here, no output!
+    } });
+}
+
+// ✅ AFTER (AGENT MU adds @compileLog)
+fn generateStruct(comptime name: []const u8) type {
+    @compileLog("Generating struct:", name);
+    @compileLog("Field count:", fields.len);
+    return @Type(.{ .Struct = .{
+        .fields = &fields,
+    } });
+}
+```
+
+#### Example: @setEvalBranchQuota for Complex Templates
+
+```zig
+// ❌ BEFORE (quota exceeded)
+fn generateLargeTable(comptime size: usize) type {
+    var fields: [size]std.builtin.Type.StructField = undefined;
+    inline for (0..size) |i| {
+        fields[i] = .{ .name = "field", .type = u32, ... };
+    }
+    // Error: evaluation exceeded 1000 branch quota
+    return @Type(.{ .Struct = .{ .fields = &fields } });
+}
+
+// ✅ AFTER (AGENT MU adds @setEvalBranchQuota)
+fn generateLargeTable(comptime size: usize) type {
+    @setEvalBranchQuota(100000); // Increase quota
+    var fields: [size]std.builtin.Type.StructField = undefined;
+    inline for (0..size) |i| {
+        fields[i] = .{ .name = "field", .type = u32, ... };
+    }
+    return @Type(.{ .Struct = .{ .fields = &fields } });
+}
+```
+
 ---
 
 **KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**

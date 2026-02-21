@@ -516,6 +516,141 @@ fn lucas(comptime n: usize) usize {
 }
 ```
 
+### 8. Advanced Comptime Patterns
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **@compileLog** | Debug comptime execution | `@compileLog("Generating:", name);` | VIBEE codegen debug |
+| **@setEvalBranchQuota** | Increase comptime limit | `@setEvalBranchQuota(100000);` | Complex templates |
+| **Full @Type syntax** | Complete type definition | `@Type(.{.Struct = .{.fields, .decls, .layout}})` | Dynamic structs with methods |
+
+```zig
+// @compileLog for debugging comptime
+comptime {
+    @compileLog("PHI:", PHI);
+    @compileLog("MU:", MU);
+    // Output during compilation: PHI: 1.618033988749895
+    //                      MU: 0.0382
+}
+
+// Full @Type with decls (methods)
+fn createStructType(comptime name: []const u8) type {
+    const fields = [_]std.builtin.Type.StructField{
+        .{ .name = "value", .type = u32, .default_value = null, .is_comptime = false, .alignment = 0 },
+    };
+    const decls = [_]std.builtin.Type.Declaration{
+        .{ .name = "init", .value = @as(fn() @This(), struct { fn init() @This() { return .{ .value = 0 }; } }).init },
+    };
+    return @Type(.{ .Struct = .{
+        .layout = .auto,
+        .fields = &fields,
+        .decls = &decls,
+        .is_tuple = false,
+    } });
+}
+```
+
+### 9. Additional Memory Patterns
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **Bitfields** | Packed struct bit fields | `value: u3, flag: u1` | VSA trit packing |
+| **Multi-pointer** | C-style array pointers | `[*]const u8` | FFI interop |
+
+```zig
+// Bitfields for VSA trit packing
+const Trit3 = packed struct {
+    t0: u2,  // Trit 0 (-1, 0, +1 encoded as 2 bits)
+    t1: u2,  // Trit 1
+    t2: u2,  // Trit 2
+    // Total: 6 bits = 3 trits
+};
+
+// Multi-pointer for FFI
+extern fn c_function(ptr: [*]const u8, len: usize) c_int;
+```
+
+### 10. Additional Error Patterns
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **errdefer** | Cleanup on error | `errdefer allocator.free(ptr);` | Resource cleanup |
+| **error_union** | Error or value | `!T` syntax sugar | Error propagation |
+
+```zig
+// errdefer for guaranteed cleanup
+fn processData(allocator: std.mem.Allocator) ![]const u8 {
+    const data = try allocator.alloc(u8, 1024);
+    errdefer allocator.free(data); // Freed if error occurs
+
+    const result = try processChunk(data);
+    return result;
+}
+
+// Explicit vs Inferred comparison
+// Explicit (old):
+const ParseError = error{ InvalidSyntax, UnexpectedEOF };
+fn parseExplicit() !ParseError { ... }
+
+// Inferred (new, preferred):
+fn parseInferred() !void { ... } // Error set inferred from body
+```
+
+### 11. Advanced SIMD Patterns
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **@shuffle** | Vector permutation | `@shuffle(f32, a, b, mask)` | VSA permutations |
+| **@select** | Conditional vectors | `@select(bool, mask, a, b)` | Predicated operations |
+| **Inline assembly** | CPU instructions | `asm volatile ("nop" ::: "memory");` | Optimized paths |
+
+```zig
+// @shuffle for VSA permutations
+const Vec4 = @Vector(4, u32);
+fn permuteVSA(v: Vec4, shift: u2) Vec4 {
+    const mask = @Vector(4, i32){ -1, 0, 1, 2 }; // Rotation mask
+    return @shuffle(u32, v, v, @as(@Vector(4, i32), @shuffle(i32, mask, mask, shift)));
+}
+
+// @select for predicated operations
+fn vectorSelect(cond: @Vector(4, bool), a: @Vector(4, f32), b: @Vector(4, f32)) @Vector(4, f32) {
+    return @select(f32, cond, a, b);
+}
+```
+
+### 12. Conditional Compilation
+
+| Idiom | Description | Example | Usage |
+|-------|-------------|---------|-------|
+| **builtin.os.tag** | Platform detection | `if (builtin.os.tag == .linux)` | Platform-specific code |
+| **builtin.cpu.arch** | CPU architecture | `if (builtin.cpu.arch == .x86_64)` | Architecture opt |
+
+```zig
+const std = @import("std");
+
+// Platform-specific allocator
+const platform_allocator = if (builtin.os.tag == .linux)
+    std.heap.c_allocator
+else if (builtin.os.tag == .windows)
+    std.heap.HeapAllocator.init()
+else
+    std.heap.page_allocator;
+
+// Architecture-specific optimizations
+fn fastMemcpy(dest: []u8, src: []const u8) void {
+    if (builtin.cpu.arch == .x86_64) {
+        // Use rep movsb
+        asm volatile (
+            \\rep movsb
+            : [dest] "{di}", [src] "{si}", [count] "{cx}"
+            : [count] "r" (src.len)
+        );
+    } else {
+        @memcpy(dest, src);
+    }
+}
+```
+
 ---
 
 ## Exit Criteria
