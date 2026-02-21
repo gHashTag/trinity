@@ -999,8 +999,8 @@ pub const ZigCodeGen = struct {
         try self.writeMemoryBuffers();
         try self.writeCreationPatterns(spec.creation_patterns.items, spec.types.items);
         try self.writeBehaviorFunctions(spec.behaviors.items);
-        // Write snake_case aliases for test compatibility
-        try self.writeBehaviorAliases(spec.behaviors.items);
+        // NOTE: snake_case aliases disabled - use camelCase function names in tests
+        // try self.writeBehaviorAliases(spec.behaviors.items);
 
         var test_gen = TestGenerator.withSpec(&self.builder, self.allocator, spec.name);
         // Behavior-level tests (one per behavior)
@@ -1417,10 +1417,16 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
 
         for (behaviors) |b| {
-            // b.name is snake_case (e.g., "check_recovery_cooldown")
-            // Generated function is camelCase (e.g., "checkRecoveryCooldown")
-            // Create alias: const check_recovery_cooldown = checkRecoveryCooldown;
+            // b.name may be snake_case (e.g., "check_recovery_cooldown") or camelCase
+            // Generated function is always camelCase (e.g., "checkRecoveryCooldown")
+            // Create alias ONLY if snake_case != camel_case (skip self-referential aliases)
             const snake = b.name;
+
+            // Skip if name is already camelCase (no underscores)
+            if (std.mem.indexOf(u8, snake, "_") == null) {
+                continue; // Already camelCase, no alias needed
+            }
+
             var camel_buf: [256]u8 = undefined;
             var camel_idx: usize = 0;
             var capitalize_next = false;
