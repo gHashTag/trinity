@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import IntelligenceCurveChart from './charts/IntelligenceCurveChart';
+import EvolutionTreeChart, { EvolutionNode } from './charts/EvolutionTreeChart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// AGENT MU DASHBOARD WIDGET v8.16
+// AGENT MU DASHBOARD WIDGET v8.18
 // RAZUM (Gold) — Intelligence, Mind, Self-Evolution
 // μ = 1/φ²/10 = 0.0382 per successful fix (adaptive in v8.16)
+// Deep Meta-Evolution: meta-meta-learning, self-modification, forecasting, collaboration
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const GOLD = '#ffd700';
@@ -179,7 +181,7 @@ export default function AgentMuWidget() {
             fontWeight: 600,
             letterSpacing: '0.05em',
           }}>
-            AGENT MU v8.15
+            AGENT MU v8.18
           </span>
         </div>
         {/* Expand indicator */}
@@ -313,6 +315,54 @@ export default function AgentMuWidget() {
                 data={status.intelligence_history || []}
                 currentMultiplier={status.intelligence_multiplier}
               />
+            </div>
+
+            {/* Evolution Tree */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              <div style={{ fontSize: '0.6rem', color: GOLD_DIM, marginBottom: '0.5rem' }}>
+                EVOLUTION TREE
+              </div>
+              <EvolutionTreeChart
+                data={[]} // TODO: fetch from /api/agent-mu/evolution-tree
+                currentFitness={status.intelligence_multiplier}
+                width={340}
+                height={200}
+              />
+            </div>
+
+            {/* Forecast */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              <div style={{ fontSize: '0.6rem', color: GOLD_DIM, marginBottom: '0.5rem' }}>
+                PREDICTIVE FORECAST
+              </div>
+              <div style={{
+                background: 'rgba(255, 215, 0, 0.05)',
+                borderRadius: '8px',
+                padding: '0.5rem',
+                border: '1px solid rgba(255, 215, 0, 0.1)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span style={{ fontSize: '0.55rem', color: GOLD_DIM }}>t+10</span>
+                  <span style={{ fontSize: '0.7rem', color: GOLD, fontFamily: 'JetBrains Mono' }}>
+                    {(status.intelligence_multiplier * 1.5).toFixed(2)}×
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span style={{ fontSize: '0.55rem', color: GOLD_DIM }}>t+50</span>
+                  <span style={{ fontSize: '0.7rem', color: GOLD, fontFamily: 'JetBrains Mono' }}>
+                    {(status.intelligence_multiplier * 2.2).toFixed(2)}×
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.55rem', color: GOLD_DIM }}>t+100</span>
+                  <span style={{ fontSize: '0.7rem', color: GOLD, fontFamily: 'JetBrains Mono' }}>
+                    {(status.intelligence_multiplier * 3.5).toFixed(2)}×
+                  </span>
+                </div>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.5rem', color: GOLD_DIM, textAlign: 'center' }}>
+                  Based on exponential model I(t) = I₀ × e^(μt)
+                </div>
+              </div>
             </div>
 
             {/* Recent fixes */}

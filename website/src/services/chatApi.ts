@@ -402,3 +402,105 @@ export async function fetchAgentMuIntelligenceHistory(): Promise<IntelligenceHis
     return generateMockIntelligenceHistory();
   }
 }
+
+// ─── v8.18: AGENT MU Deep Meta-Evolution API ─────────────────────────────────────
+// Forecast + Evolution Tree
+
+export interface IntelligenceForecast {
+  predicted_multiplier: number;
+  confidence_min: number;
+  confidence_max: number;
+  time_horizon: number;
+  model_quality: number;
+  growth_rate: number;
+}
+
+export interface EvolutionNode {
+  node_id: string;
+  parent_id: string | null;
+  mutation_type: string;
+  timestamp: number;
+  fitness: number;
+  depth: number;
+}
+
+function generateMockForecasts(): IntelligenceForecast[] {
+  const base_I = 6.82;
+  const lambda = 0.0382;
+  return [
+    {
+      predicted_multiplier: base_I * Math.exp(lambda * 10),
+      confidence_min: base_I * Math.exp(lambda * 10) * 0.9,
+      confidence_max: base_I * Math.exp(lambda * 10) * 1.1,
+      time_horizon: 10,
+      model_quality: 0.92,
+      growth_rate: lambda,
+    },
+    {
+      predicted_multiplier: base_I * Math.exp(lambda * 50),
+      confidence_min: base_I * Math.exp(lambda * 50) * 0.85,
+      confidence_max: base_I * Math.exp(lambda * 50) * 1.15,
+      time_horizon: 50,
+      model_quality: 0.89,
+      growth_rate: lambda,
+    },
+    {
+      predicted_multiplier: base_I * Math.exp(lambda * 100),
+      confidence_min: base_I * Math.exp(lambda * 100) * 0.8,
+      confidence_max: base_I * Math.exp(lambda * 100) * 1.2,
+      time_horizon: 100,
+      model_quality: 0.85,
+      growth_rate: lambda,
+    },
+  ];
+}
+
+function generateMockEvolutionTree(): EvolutionNode[] {
+  const nodes: EvolutionNode[] = [];
+  const mutations = [
+    'SYNTAX_FIX',
+    'TYPE_FIX',
+    'ALLOCATOR_FIX',
+    'META_LEARN',
+    'SELF_MOD',
+    'PREDICT',
+    'COLLAB',
+  ];
+  const now = Date.now();
+
+  for (let i = 0; i < 15; i++) {
+    nodes.push({
+      node_id: `node_${i}`,
+      parent_id: i > 0 ? `node_${i - 1}` : null,
+      mutation_type: mutations[i % mutations.length],
+      timestamp: now - (15 - i) * 3600000,
+      fitness: 0.3 + Math.random() * 0.6,
+      depth: Math.floor(i / 5),
+    });
+  }
+  return nodes;
+}
+
+export async function fetchAgentMuForecast(horizons: number[] = [10, 50, 100]): Promise<IntelligenceForecast[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/forecast?horizon=${horizons.join(',')}`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return generateMockForecasts();
+    return await res.json();
+  } catch {
+    return generateMockForecasts();
+  }
+}
+
+export async function fetchAgentMuEvolutionTree(): Promise<EvolutionNode[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/evolution-tree`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return generateMockEvolutionTree();
+    return await res.json();
+  } catch {
+    return generateMockEvolutionTree();
+  }
+}

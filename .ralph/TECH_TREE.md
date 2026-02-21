@@ -74,7 +74,15 @@
 |**AMU-007**|**Intelligence Curve Widget**|**agent**|**IntelligenceCurveChart.tsx (255 lines): SVG line chart with log scale Y-axis, gold gradient fill, target line at 47×, animated path drawing, data points with fix_type colors, current value marker**|
 |----|------|--------|------|
 |**AMU-008**|**Comptime Embeddings**|**agent**|**comptime_embeddings.zig (333 lines): 384-dim comptime embeddings, zero-allocation pattern matching, SYNTAX/TYPE/ALLOCATOR/IMPORT/COMPTIME pattern libraries, cosineSimilarity(), findPattern(), comprehensive tests**|
-|----|------|--------|------|
+|----|------|--------|------|------|
+|**AMU-009**|**Meta-Meta-Learning Engine**|**agent**|**meta_meta_learner.zig (~400 lines): Learning velocity (d(success_rate)/dt), acceleration tracking, plateau detection, exploration suggestion (increase_mu/decrease_mu/switch_strategy/new_fixtype), getFastestLearner(), getMostStruggling(), 6 tests**|
+|----|------|--------|------|------|
+|**AMU-010**|**Comptime Self-Modification**|**agent**|**comptime_self_mod.zig (~300 lines): PendingPattern with meetsThreshold (>0.9 conf, >10 samples), SelfModification with proposePattern/mergePattern/generateModCode/pruneLowConfidence, auto-generates comptime pattern entries, 7 tests**|
+|----|------|--------|------|------|
+|**AMU-011**|**Predictive Intelligence Forecasting**|**agent**|**predictive_intelligence.zig (~250 lines): ForecastModel with exponential fit I(t)=I₀×e^(λt), R² fit_quality, 95% confidence intervals, isBounded() explosion check, generateForecasts() for t+10/50/100, 5 tests**|
+|----|------|--------|------|------|
+|**AMU-012**|**Multi-Agent Collaboration + Evolution Tree**|**agent**|**agent_collaboration.zig (~350 lines): AgentType (phi/vibee/swarm/claude_flow), CollaborationMessage with JSON over HTTP, MergedResponse voting. EvolutionTreeChart.tsx (~400 lines): SVG visualization, fitness gradient, animated nodes. agent_mu_api.zig HTTP endpoints. deep_meta_test.zig integration tests**|
+|----|------|--------|------|------|
 |----|------|--------|------|
 |**NEXUS-010**|**Architecture Documentation**|**nexus**|**docs/ARCHITECTURE.md (267 lines): module map, ASCII dep graph, build guide, 6 module details, workspace config, math foundation, migration history NEXUS-001 through NEXUS-010**|
 |----|------|--------|------|
@@ -174,15 +182,18 @@
 
 ---
 
-## Sacred Metrics (v8.16)
+## Sacred Metrics (v8.18)
 
 **Trinity Identity:** φ² + 1/φ² = 3 (where φ = (1 + √5) / 2)
 
 **Intelligence Gain:** μ = 1/φ²/10 = 0.0382 per successful fix (baseline)
 **Adaptive μ:** μ(success_rate) = 0.0382 × φ^(success_rate - 0.5) × (L(10) / 123)
+**Meta-Learning Rate:** α_i(t) = α_base × (1 + velocity_i(t) / max_velocity)
 **Lucas Number:** L(10) = φ¹⁰ + 1/φ¹⁰ = 123
 
 **Learning Curve:** After 100 fixes → intelligence × 47×
+
+**Forecast Model:** I(t) = I₀ × e^(λt + ε) where λ = fitted_growth_rate, ε ~ N(0, σ²)
 
 **Branch Focus:** Pure Zig — Multilingual support maintained but not actively developed
 
@@ -194,7 +205,7 @@
 - AGENT-005: Query CLI ✅
 - AGENT-MU-001 through 012: Complete self-evolution loop ✅ (12 nodes)
 
-**AGENT MU Self-Evolution Engine (v8.16):**
+**AGENT MU Self-Evolution Engine (v8.18 — Deep Meta-Evolution):**
 - AMU-001: Dashboard Widget ✅ — Gold glass widget with μ metrics, recent fixes, intelligence gauge
 - AMU-002: TypeScript API ✅ — chatApi.ts extended with AgentMuStatus + mock fallback
 - AMU-003: Full Loop Spec ✅ — agent_mu_full_self_improvement.vibee (7 phases, 14 FixType)
@@ -203,6 +214,10 @@
 - AMU-006: Meta-Learning Strategies ✅ — FixStrategy tracking per FixType, optimal μ learning via EMA
 - AMU-007: Intelligence Curve Widget ✅ — SVG chart showing intelligence growth over time (IntelligenceCurveChart.tsx)
 - AMU-008: Comptime Embeddings ✅ — Zero-allocation 384-dim pattern matching at compile time
+- AMU-009: Meta-Meta-Learning ✅ — Learning velocity, acceleration, plateau detection, exploration triggers
+- AMU-010: Comptime Self-Modification ✅ — AGENT MU modifies its own pattern table (>0.9 confidence threshold)
+- AMU-011: Predictive Forecasting ✅ — Exponential growth model with 95% confidence intervals
+- AMU-012: Multi-Agent + Evolution Tree ✅ — PHI/VIBEE/Swarm collaboration, SVG evolution visualization
 
 **VIBEE Maturity:** VIBEE branch (89% complete)
 - VIBEE-001..007: Core ✅
