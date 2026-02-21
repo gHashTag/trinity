@@ -20,6 +20,11 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
+|**AMU-004**|**AGENT MU v8.21 PAS Daemon**|**vibee-v8-production-swarm**|**PAS Daemon: pas_daemon.zig (678 lines) + sacred_constants.zig, 33 tests pass. WebSocket real-time streaming, auto-apply threshold 95%, sacred confidence boost, task queue with priority ordering. Docker + K8s + CI/CD pipeline.**|
+|**AMU-003**|**AGENT MU v8.21 Evolution Time Travel**|**vibee-v8-production-swarm**|**checkpoint_manager.zig (420 lines): Git-style evolution, branches, rollback to generation, 14 tests pass. History tracking with metadata, merge support.**|
+|**AMU-002**|**AGENT MU v8.21 Predictive Intelligence**|**vibee-v8-production-swarm**|**markov_predictor.zig (310 lines) + monte_carlo.zig (370 lines): Markov chain state transitions, Monte Carlo simulation with 95% CI, 33 total tests pass.**|
+|**AMU-001**|**AGENT MU v8.21 Meta-Learner**|**vibee-v8-production-swarm**|**meta_learner.zig + comptime_optimizer.zig + runtime_pattern_manager.zig: Cross-agent validation, φ-weighted consensus, compile-time optimization, 58 total tests pass.**|
+|----|------|--------|------|
 |**CODEGEN-009**|**VIBEE v8.1 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent swarm: 51.59% consensus, 97.2% self-improve. Fixed: bundle-based hypervectors, similarity measurement, metric capping. 7/7 tests pass.**|
 |----|------|--------|------|
 |**CODEGEN-008**|**VIBEE v8 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent Trinity swarm: runtime_swarm.zig (270 lines) + vsa_swarm_production_32.vibee (35 behaviors, 39/40 tests). Docker/K8s packaging, CI workflow, demo script. Runtime: 32/32 online, phi-spiral consensus, self-healing, Prometheus :9090.**|
