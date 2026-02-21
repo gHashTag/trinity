@@ -1,0 +1,430 @@
+name: tmux_integration
+version: "10.0.0"
+language: zig
+module: tmux_integration
+
+constants:
+  TMUX_SOCKET_FORMAT: "/tmp/tmux-{s}/default"
+  STATUS_LINE_MAX_LENGTH: 256
+  UPDATE_INTERVAL_MS: 500
+  PHI: 1.618033988749895
+  SACRED_CONSTANT: 1.58
+
+types:
+  TmuxIntegration:
+    fields:
+      socket_path: String
+      session_name: String
+      panels: Dict<String, StatusPanel>
+      color_scheme: ColorScheme
+      last_update: Float
+      enabled: Bool
+
+  StatusPanel:
+    fields:
+      name: String
+      position: PanelPosition
+      width: Int
+      update_interval: Float
+      last_update: Float
+      format_fn: FormatFunction
+      data_source: DataSource
+
+  PanelPosition:
+    enum:
+      - LEFT
+      - CENTER
+      - RIGHT
+
+  FormatFunction:
+    signature: (DataSource) -> String
+
+  DataSource:
+    fields:
+      type: DataSourceType
+      endpoint: Option<String>
+      cache_duration_ms: Int
+      last_fetch: Float
+      cached_value: Option<String>
+
+  DataSourceType:
+    enum:
+      - ACTOR_HEALTH
+      - QUEUE_STATUS
+      - PROGRESS_METRIC
+      - PERFORMANCE_COUNTER
+      - CUSTOM_METRIC
+
+  ColorScheme:
+    fields:
+      success: String
+      warning: String
+      error: String
+      info: String
+      neutral: String
+
+  StatusLine:
+    fields:
+      left: String
+      center: String
+      right: String
+      timestamp: Float
+
+  HealthIndicator:
+    fields:
+      status: HealthStatus
+      color: String
+      icon: String
+
+  HealthStatus:
+    enum:
+      - HEALTHY
+      - DEGRADED
+      - CRITICAL
+      - UNKNOWN
+
+behaviors:
+  - name: init_tmux_integration
+    given: Session name and panel configs
+    when: Initializing tmux integration
+    then: TmuxIntegration with status line hooks
+    implementation: |
+      ```zig
+      const std = @import("std");
+
+      pub fn init(session_name: []const u8, panel_configs: []StatusPanelConfig) !TmuxIntegration {
+          var panels = std.StringHashMap(StatusPanel).init(std.heap.page_allocator);
+
+          for (panel_configs) |cfg| {
+              const panel = try StatusPanel.init(cfg);
+              try panels.put(cfg.name, panel);
+          }
+
+          return TmuxIntegration{
+              .socket_path = try std.fmt.allocPrint(
+                  std.heap.page_allocator,
+                  TMUX_SOCKET_FORMAT,
+                  .{session_name}
+              ),
+              .session_name = try std.dupe(std.heap.page_allocator, session_name),
+              .panels = panels,
+              .color_scheme = defaultColorScheme(),
+              .last_update = 0,
+              .enabled = true,
+          };
+      }
+      ```
+
+  - name: register_panel
+    given: Panel name, position, data source
+    when: Adding status panel
+    then: Panel registered with format function
+    implementation: |
+      ```zig
+      pub fn registerPanel(
+          self: *TmuxIntegration,
+          name: []const u8,
+          position: PanelPosition,
+          data_source: DataSource
+      ) !void {
+          const panel = StatusPanel{
+              .name = try std.dupe(std.heap.page_allocator, name),
+              .position = position,
+              .width = 20,
+              .update_interval = 1.0,
+              .last_update = 0,
+              .format_fn = self.getFormatFunction(data_source.type),
+              .data_source = data_source,
+          };
+
+          try self.panels.put(name, panel);
+      }
+      ```
+
+  - name: format_actor_health
+    given: Actor health data source
+    when: Generating health status string
+    then: Color-coded status with icon
+    implementation: |
+      ```zig
+      fn formatActorHealth(data: DataSource) ![]const u8 {
+          const health = try data.fetch();
+
+          const indicator = switch (health.status) {
+              .HEALTHY => HealthIndicator{
+                  .status = .HEALTHY,
+                  .color = "#[fg=green]",
+                  .icon = "✓",
+              },
+              .DEGRADED => HealthIndicator{
+                  .status = .DEGRADED,
+                  .color = "#[fg=yellow]",
+                  .icon = "⚠",
+              },
+              .CRITICAL => HealthIndicator{
+                  .status = .CRITICAL,
+                  .color = "#[fg=red]",
+                  .icon = "✗",
+              },
+              .UNKNOWN => HealthIndicator{
+                  .status = .UNKNOWN,
+                  .color = "#[fg=grey]",
+                  .icon = "?",
+              },
+          };
+
+          return std.fmt.allocPrint(
+              std.heap.page_allocator,
+              "{s}{s} {s}: {d}%",
+              .{indicator.color, indicator.icon, health.actor_name, health.health_percent}
+          );
+      }
+      ```
+
+  - name: format_queue_status
+    given: Queue status data source
+    when: Generating queue metrics
+    then: Pending/processing/completed counts
+    implementation: |
+      ```zig
+      fn formatQueueStatus(data: DataSource) ![]const u8 {
+          const status = try data.fetch();
+
+          return std.fmt.allocPrint(
+              std.heap.page_allocator,
+              "#[fg=cyan]Q: #[fg=white]{d}/#[fg=yellow]{d}/#[fg=green]{d}",
+              .{status.pending, status.processing, status.completed}
+          );
+      }
+      ```
+
+  - name: format_progress_metric
+    given: Progress data source
+    when: Generating progress indicator
+    then: Percentage with visual bar
+    implementation: |
+      ```zig
+      fn formatProgressMetric(data: DataSource) ![]const u8 {
+          const progress = try data.fetch();
+
+          const bar_width = 10;
+          const filled = @as(usize, @intFromFloat(progress.percent * bar_width / 100));
+          const empty = bar_width - filled;
+
+          var buffer: [32]u8 = undefined;
+          var fbs = std.io.fixedBufferStream(&buffer);
+          const writer = fbs.writer();
+
+          try writer.writeAll("#[fg=cyan][");
+          var i: usize = 0;
+          while (i < filled) : (i += 1) {
+              try writer.writeAll("█");
+          }
+          while (i < bar_width) : (i += 1) {
+              try writer.writeAll("░");
+          }
+          try writer.print("] {d:.0}%", .{progress.percent});
+
+          return fbs.getWritten();
+      }
+      ```
+
+  - name: format_performance_counter
+    given: Performance metrics data source
+    when: Generating perf stats
+    then: Latency/throughput display
+    implementation: |
+      ```zig
+      fn formatPerformanceCounter(data: DataSource) ![]const u8 {
+          const perf = try data.fetch();
+
+          return std.fmt.allocPrint(
+              std.heap.page_allocator,
+              "#[fg=magenta]⚡ {d}ms #[fg=blue]| #[fg=cyan]{d}/s",
+              .{perf.latency_ms, perf.requests_per_sec}
+          );
+      }
+      ```
+
+  - name: generate_status_line
+    given: All registered panels
+    when: Building tmux status line
+    then: Formatted status string for tmux
+    implementation: |
+      ```zig
+      pub fn generateStatusLine(self: *TmuxIntegration) !StatusLine {
+          var left_buffer = std.ArrayList(u8).init(std.heap.page_allocator);
+          var center_buffer = std.ArrayList(u8).init(std.heap.page_allocator);
+          var right_buffer = std.ArrayList(u8).init(std.heap.page_allocator);
+          defer {
+              left_buffer.deinit();
+              center_buffer.deinit();
+              right_buffer.deinit();
+          }
+
+          var panel_iter = self.panels.iterator();
+          while (panel_iter.next()) |entry| {
+              const panel = entry.value_ptr.*;
+
+              if (self.shouldUpdate(panel)) {
+                  const formatted = try panel.format_fn(panel.data_source);
+
+                  switch (panel.position) {
+                      .LEFT => try left_buffer.appendSlice(formatted),
+                      .CENTER => try center_buffer.appendSlice(formatted),
+                      .RIGHT => try right_buffer.appendSlice(formatted),
+                  }
+
+                  panel.last_update = std.time.timestamp();
+              }
+          }
+
+          return StatusLine{
+              .left = try left_buffer.toOwnedSlice(),
+              .center = try center_buffer.toOwnedSlice(),
+              .right = try right_buffer.toOwnedSlice(),
+              .timestamp = std.time.timestamp(),
+          };
+      }
+      ```
+
+  - name: should_update
+    given: Panel and current time
+    when: Checking update eligibility
+    then: Boolean based on interval
+    implementation: |
+      ```zig
+      fn shouldUpdate(self: *TmuxIntegration, panel: StatusPanel) bool {
+          const now = std.time.timestamp();
+          const elapsed = now - panel.last_update;
+          return elapsed >= panel.update_interval;
+      }
+      ```
+
+  - name: send_to_tmux
+    given: StatusLine with left/center/right
+    when: Pushing to tmux session
+    then: Status line updated via control command
+    implementation: |
+      ```zig
+      fn sendToTmux(self: *TmuxIntegration, line: StatusLine) !void {
+          const cmd = try std.fmt.allocPrint(
+              std.heap.page_allocator,
+              "tmux -S {s} set-option -g status-left \"{s}\"; " ++
+              "tmux -S {s} set-option -g status-center \"{s}\"; " ++
+              "tmux -S {s} set-option -g status-right \"{s}\"",
+              .{
+                  self.socket_path, line.left,
+                  self.socket_path, line.center,
+                  self.socket_path, line.right,
+              }
+          );
+
+          const result = std.process.Child.exec(
+              std.heap.page_allocator,
+              &[_][]const u8{ "sh", "-c", cmd },
+              .{}
+          ) catch |err| {
+              std.log.err("Failed to send to tmux: {s}", .{@errorName(err)});
+              return err;
+          };
+
+          if (result.term.Exited != 0) {
+              std.log.err("tmux command failed: {s}", .{result.stderr});
+              return error.TmuxCommandFailed;
+          }
+      }
+      ```
+
+  - name: start_update_loop
+    given: TmuxIntegration instance
+    when: Starting periodic updates
+    then: Background task updates tmux every interval
+    implementation: |
+      ```zig
+      pub fn startUpdateLoop(self: *TmuxIntegration) !void {
+          while (self.enabled) {
+              const line = try self.generateStatusLine();
+              try self.sendToTmux(line);
+
+              std.time.sleep(UPDATE_INTERVAL_MS * std.time.ns_per_ms);
+          }
+      }
+      ```
+
+  - name: get_format_function
+    given: DataSourceType enum
+    when: Looking up format function
+    then: Function pointer for data type
+    implementation: |
+      ```zig
+      fn getFormatFunction(self: *TmuxIntegration, data_type: DataSourceType) FormatFunction {
+          return switch (data_type) {
+              .ACTOR_HEALTH => formatActorHealth,
+              .QUEUE_STATUS => formatQueueStatus,
+              .PROGRESS_METRIC => formatProgressMetric,
+              .PERFORMANCE_COUNTER => formatPerformanceCounter,
+              .CUSTOM_METRIC => formatCustomMetric,
+          };
+      }
+      ```
+
+  - name: set_color_scheme
+    given: Color scheme definition
+    when: Customizing colors
+    then: Color scheme updated for all panels
+    implementation: |
+      ```zig
+      pub fn setColorScheme(self: *TmuxIntegration, scheme: ColorScheme) !void {
+          self.color_scheme = scheme;
+
+          var panel_iter = self.panels.iterator();
+          while (panel_iter.next()) |entry| {
+              const panel = entry.value_ptr.*;
+              panel.data_source.color_scheme = scheme;
+          }
+      }
+      ```
+
+  - name: shutdown
+    given: TmuxIntegration instance
+    when: Stopping updates
+    then: Update loop stopped and resources freed
+    implementation: |
+      ```zig
+      pub fn shutdown(self: *TmuxIntegration) !void {
+          self.enabled = false;
+
+          const clear_cmd = try std.fmt.allocPrint(
+              std.heap.page_allocator,
+              "tmux -S {s} set-option -g status-left \"\"; " ++
+              "tmux -S {s} set-option -g status-center \"\"; " ++
+              "tmux -S {s} set-option -g status-right \"\"",
+              .{self.socket_path, self.socket_path, self.socket_path}
+          );
+
+          _ = try std.process.Child.exec(
+              std.heap.page_allocator,
+              &[_][]const u8{ "sh", "-c", clear_cmd },
+              .{}
+          );
+
+          var panel_iter = self.panels.iterator();
+          while (panel_iter.next()) |entry| {
+              entry.value_ptr.deinit();
+          }
+          self.panels.deinit();
+      }
+      ```
+
+metadata:
+  phase: 6
+  domain: external-integration
+  dependencies:
+    - std
+  sacred_math:
+    phi_ratio: PHI
+    bits_per_trit: SACRED_CONSTANT
+  performance:
+    target_latency_ms: 50
+    max_throughput: 2
