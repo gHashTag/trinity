@@ -152,3 +152,68 @@ status: success
   - Clean separation: existing generators untouched, only vibee_gen.zig modified
   - Using `spec.types.items` and `t.fields.items` to access ArrayList contents as slices
 - **Lesson:** When bridging between two type systems (parser vs generator), allocate intermediate slices and copy field-by-field. Don't try to cast or reinterpret — the struct layouts differ (ArrayList vs plain slice). Always defer-free the intermediate buffers.
+---
+date: 2026-02-20T08:01:49+00:00
+type: feature
+files: [generated/agent_mu_self_evolution_guard.zig]
+branch: ralph/agent-mu-auto
+tech_tree: NEXUS-011
+status: success
+---
+### AGENT MU Auto-Fix
+
+- **Pattern:** 
+- **What worked:** All checks passed after auto-fix
+- **Lesson:** Auto-fixed at generated/agent_mu_self_evolution_guard.zig:0:0
+---
+date: 2026-02-20T08:03:05+00:00
+type: feature
+files: [generated/agent_mu_self_evolution_guard.zig]
+branch: ralph/agent-mu-auto
+tech_tree: NEXUS-011
+status: success
+---
+### AGENT MU Auto-Fix
+
+- **Pattern:** 
+- **What worked:** All checks passed after auto-fix
+- **Lesson:** Auto-fixed at generated/agent_mu_self_evolution_guard.zig:0:0
+---
+date: 2026-02-20T08:40:52+00:00
+type: feature
+files: [generated/multilingual_codegen.zig]
+branch: ralph/agent-mu-auto
+tech_tree: NEXUS-011
+status: success
+---
+### AGENT MU Auto-Fix
+
+- **Pattern:** 
+- **What worked:** All checks passed after auto-fix
+- **Lesson:** Auto-fixed at generated/multilingual_codegen.zig:0:0
+---
+date: 2026-02-20T10:08:44+00:00
+type: feature
+files: [generated/swarm_watch.zig]
+branch: ralph/agent-mu-auto
+tech_tree: NEXUS-011
+status: success
+---
+### AGENT MU Auto-Fix
+
+- **Pattern:** 
+- **What worked:** All checks passed after auto-fix
+- **Lesson:** Auto-fixed at generated/swarm_watch.zig:0:0
+---
+date: 2026-02-20T10:32:18+00:00
+type: feature
+files: [generated/agent_mu_zig15_demo.zig]
+branch: ralph/agent-mu-auto
+tech_tree: NEXUS-011
+status: success
+---
+### AGENT MU Auto-Fix
+
+- **Pattern:** 
+- **What worked:** All checks passed after auto-fix
+- **Lesson:** Auto-fixed at generated/agent_mu_zig15_demo.zig:0:0

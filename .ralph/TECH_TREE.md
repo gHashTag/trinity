@@ -43,6 +43,8 @@
 |----|------|--------|------|
 |**AGENT-001**|**IGLA Hybrid Chat**|**agent**|**Hybrid symbolic + neural reasoning engine**|
 |----|------|--------|------|
+|**ZIG15-001**|**Zig 0.15.1 Idioms Demo**|**agent**|**AGENT MU demo with 7 idioms: comptime generics, unmanaged containers, inferred errors, build.zig modules, raygui glassmorphism, sacred math, inline unrolling. docs/AGENT_MU_ZIG15_DEMO.md + generated/agent_mu_zig15_demo.zig**|
+|----|------|--------|------|
 |**NEXUS-010**|**Architecture Documentation**|**nexus**|**docs/ARCHITECTURE.md (267 lines): module map, ASCII dep graph, build guide, 6 module details, workspace config, math foundation, migration history NEXUS-001 through NEXUS-010**|
 |----|------|--------|------|
 |**NEXUS-009**|**Workspace Collaboration**|**nexus**|**4 files: workspace.toml extended with [external] openclaw + [agents] ralph/clawd + [ci], config.toml (73 lines agent config), nexus-build.yml CI (matrix 6 modules), spec**|
@@ -127,10 +129,10 @@
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
-|**Agent**|**5**|**6**|**83%**|
+|**Agent**|**6**|**6**|**100%**|
 |**VIBEE**|**8**|**9**|**89%**|
 |Multilingual|3|3|100%|
-|**Total**|**67**|**74**|**91%**|
+|**Total**|**68**|**74**|**92%**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **AGENT-MU-001** Self-Evolution — Auto-fix + Regression learning with μ = 0.0382
