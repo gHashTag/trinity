@@ -13,15 +13,18 @@ pub const PatternMatch = struct {
     correct_approach: []const u8,
     files: [][]const u8,
     attempted_fixes: [][]const u8,
+    confidence: f64 = 0.0, // 0.0 to 1.0 similarity score
+    pattern_id: []const u8 = "", // Identifier for the matched pattern
 
     /// Free allocated memory
     pub fn deinit(self: *const PatternMatch, allocator: std.mem.Allocator) void {
-        allocator.free(self.anti_pattern);
-        allocator.free(self.correct_approach);
+        if (self.anti_pattern.len > 0) allocator.free(self.anti_pattern);
+        if (self.correct_approach.len > 0) allocator.free(self.correct_approach);
         for (self.files) |f| allocator.free(f);
         allocator.free(self.files);
         for (self.attempted_fixes) |f| allocator.free(f);
         allocator.free(self.attempted_fixes);
+        if (self.pattern_id.len > 0) allocator.free(self.pattern_id);
     }
 };
 
@@ -205,4 +208,191 @@ fn toLowerAlloc(allocator: std.mem.Allocator, s: []const u8) ![]const u8 {
         result[i] = if (c >= 'A' and c <= 'Z') c + 32 else c;
     }
     return result;
+}
+
+// ============================================================================
+// SEMANTIC PATTERN SEARCH v8.12
+// ============================================================================
+
+/// Candidate pattern with confidence score
+const PatternCandidate = struct {
+    entry: []const u8,
+    confidence: f64,
+    pattern_id: []const u8,
+};
+
+/// Semantic pattern search with fuzzy matching and confidence scoring
+///
+/// Returns top-k matches with confidence scores > threshold
+pub fn semanticPatternMatch(
+    allocator: std.mem.Allocator,
+    error_message: []const u8,
+    error_type: diagnostic.FixType,
+    top_k: usize,
+    threshold: f64,
+) ![]PatternMatch {
+    const patterns_file = ".ralph/memory/REGRESSION_PATTERNS.md";
+
+    // Try to open the file
+    const file = std.fs.cwd().openFile(patterns_file, .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            // File doesn't exist yet - return empty array
+            return &[_]PatternMatch{};
+        }
+        return err;
+    };
+    defer file.close();
+
+    const content = try file.readToEndAlloc(allocator, 1024 * 1024); // Max 1MB
+    defer allocator.free(content);
+
+    // Collect all candidates with confidence scores
+    var candidates = ArrayListManaged(PatternCandidate, null).init(allocator);
+    defer {
+        for (candidates.items) |c| {
+            allocator.free(c.pattern_id);
+        }
+        candidates.deinit();
+    }
+
+    // Search for pattern entries and score them
+    var entries = std.mem.splitSequence(u8, content, "---");
+    var entry_idx: usize = 0;
+
+    while (entries.next()) |entry| {
+        if (entry.len < 10) continue; // Skip empty entries
+
+        const confidence = try calculateConfidence(allocator, entry, error_message, error_type);
+        if (confidence > threshold) {
+            const pattern_id = try std.fmt.allocPrint(allocator, "pattern_{d}", .{entry_idx});
+            try candidates.append(.{
+                .entry = entry,
+                .confidence = confidence,
+                .pattern_id = pattern_id,
+            });
+        }
+        entry_idx += 1;
+    }
+
+    // Sort by confidence (highest first)
+    std.sort.insert(f64, candidates.items, {}, struct {
+        fn lessThan(_: void, a: PatternCandidate, b: PatternCandidate) bool {
+            return a.confidence > b.confidence;
+        }
+    }.lessThan);
+
+    // Return top-k results
+    const result_count = @min(top_k, candidates.items.len);
+    const results = try allocator.alloc(PatternMatch, result_count);
+
+    for (0..result_count) |i| {
+        const candidate = candidates.items[i];
+        var solution = try extractSolution(allocator, candidate.entry);
+        solution.confidence = candidate.confidence;
+        solution.pattern_id = try allocator.dupe(u8, candidate.pattern_id);
+        results[i] = solution;
+    }
+
+    return results;
+}
+
+/// Calculate confidence score for a pattern entry (0.0 to 1.0)
+fn calculateConfidence(
+    allocator: std.mem.Allocator,
+    entry: []const u8,
+    error_message: []const u8,
+    error_type: diagnostic.FixType,
+) !f64 {
+    var score: f64 = 0.0;
+
+    // 1. Error type match: +0.3
+    const type_keyword = switch (error_type) {
+        .IMPORT_FIX => "import",
+        .TYPE_FIX => "type",
+        .SYNTAX_FIX => "syntax",
+        .ALLOCATOR_FIX => "allocator",
+        .ERROR_UNION_FIX => "error",
+        .TEMPLATE_FIX => "template",
+        else => "error",
+    };
+
+    const entry_lower = try toLowerAlloc(allocator, entry);
+    defer allocator.free(entry_lower);
+
+    if (std.mem.indexOf(u8, entry_lower, type_keyword) != null) {
+        score += 0.3;
+    }
+
+    // 2. Keyword matching: +0.1 per matching keyword
+    const msg_lower = try toLowerAlloc(allocator, error_message);
+    defer allocator.free(msg_lower);
+
+    const keywords = [_][]const u8{ "expected", "found", "undeclared", "identifier", "type", "syntax" };
+    for (keywords) |kw| {
+        if (std.mem.indexOf(u8, msg_lower, kw) != null and
+            std.mem.indexOf(u8, entry_lower, kw) != null)
+        {
+            score += 0.1;
+        }
+    }
+
+    // 3. Fuzzy similarity: up to +0.4
+    const fuzzy_score = fuzzySimilarity(msg_lower, entry_lower);
+    score += fuzzy_score * 0.4;
+
+    // Cap at 1.0
+    return if (score > 1.0) 1.0 else score;
+}
+
+/// Fuzzy string similarity using simple character matching (0.0 to 1.0)
+fn fuzzySimilarity(a: []const u8, b: []const u8) f64 {
+    if (a.len == 0 or b.len == 0) return 0.0;
+
+    // Count matching character bigrams
+    var matches: usize = 0;
+    const min_len = @min(a.len - 1, b.len - 1);
+
+    for (0..@min(min_len, 100)) |i| { // Limit to 100 bigrams for performance
+        if (i + 1 < a.len and i + 1 < b.len) {
+            if (a[i] == b[i] and a[i + 1] == b[i + 1]) {
+                matches += 1;
+            }
+        }
+    }
+
+    const max_possible = @min(a.len, b.len);
+    if (max_possible == 0) return 0.0;
+
+    return @as(f64, @floatFromInt(matches)) / @as(f64, @floatFromInt(max_possible));
+}
+
+/// Simple semantic search - returns single best match or null
+pub fn semanticPatternSearch(
+    allocator: std.mem.Allocator,
+    error_message: []const u8,
+    error_type: diagnostic.FixType,
+) !?PatternMatch {
+    const results = try semanticPatternMatch(allocator, error_message, error_type, 1, 0.6);
+    defer {
+        for (results) |r| {
+            r.deinit(allocator);
+        }
+        allocator.free(results);
+    }
+
+    if (results.len > 0) {
+        // Return a copy of the first result
+        const r = results[0];
+        return PatternMatch{
+            .found = r.found,
+            .anti_pattern = try allocator.dupe(u8, r.anti_pattern),
+            .correct_approach = try allocator.dupe(u8, r.correct_approach),
+            .files = try allocator.dupe([]const u8, r.files),
+            .attempted_fixes = try allocator.dupe([]const u8, r.attempted_fixes),
+            .confidence = r.confidence,
+            .pattern_id = try allocator.dupe(u8, r.pattern_id),
+        };
+    }
+
+    return null;
 }
