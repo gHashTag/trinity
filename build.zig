@@ -185,6 +185,37 @@ pub fn build(b: *std.Build) void {
     const run_trace_tests = b.addRunArtifact(trace_tests);
     test_step.dependOn(&run_trace_tests.step);
 
+    // AGENT MU v8.20 tests — Swarm collaboration, live self-modification
+    const swarm_collab_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/agent_mu/swarm_collaboration.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_swarm_collab_tests = b.addRunArtifact(swarm_collab_tests);
+    test_step.dependOn(&run_swarm_collab_tests.step);
+
+    const production_hardening_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/agent_mu/production_hardening_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_production_hardening_tests = b.addRunArtifact(production_hardening_tests);
+    test_step.dependOn(&run_production_hardening_tests.step);
+
+    const production_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/agent_mu/production_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_production_tests = b.addRunArtifact(production_tests);
+    test_step.dependOn(&run_production_tests.step);
+
     // trinity-search CLI — Semantic search over text files
     const trinity_search = b.addExecutable(.{
         .name = "trinity-search",
