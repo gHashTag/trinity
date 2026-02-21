@@ -59,7 +59,7 @@ behaviors:
       pub fn evaluateScalingNeed(allocator: Allocator, pool: AgentPool, metrics: []ScalingMetric, config: ScalingConfig) !ScalingDecision {
           var up_score: f64 = 0;
           var down_score: f64 = 0;
-          var trigger_metric: []const u8 = "";
+          // TODO: track which metric triggered scaling
 
           // Calculate weighted score for scaling up
           for (metrics) |m| {
@@ -74,7 +74,7 @@ behaviors:
           // Determine action
           if (up_score > 1.0 and pool.current_count < pool.max_agents) {
               const new_count = @min(
-                  @floatToInt(usize, @floor(@as(f64, @floatFromInt(pool.current_count)) * (1.0 + config.scale_up_percent))),
+                  @as(usize, @intFromFloat(@floor(@as(f64, @floatFromInt(pool.current_count)) * (1.0 + config.scale_up_percent)))),
                   @as(usize, @intCast(pool.max_agents))
               );
               return .{
@@ -88,7 +88,7 @@ behaviors:
 
           if (down_score > 1.0 and pool.current_count > pool.min_agents) {
               const new_count = @max(
-                  @floatToInt(usize, @floor(@as(f64, @floatFromInt(pool.current_count)) * (1.0 - config.scale_down_percent))),
+                  @as(usize, @intFromFloat(@floor(@as(f64, @floatFromInt(pool.current_count)) * (1.0 - config.scale_down_percent)))),
                   @as(usize, @intCast(pool.min_agents))
               );
               return .{
@@ -120,16 +120,14 @@ behaviors:
     when: checking if scaling allowed
     then: returns true if cooldown period passed since last scale
     implementation: |
-      pub fn checkScaleCooldown(events: []ScaleEvent, pool_id: []const u8, cooldown_sec: i64, action: []const u8) bool {
+      pub fn checkScaleCooldown(events: []ScaleEvent, cooldown_sec: i64) bool {
           const now = std.time.timestamp();
           var last_action_time: i64 = 0;
 
-          // Find last scaling event for this pool and action type
+          // Find last scaling event
           for (events) |event| {
-              if (std.mem.eql(u8, event.action, action)) {
-                  if (event.timestamp > last_action_time) {
-                      last_action_time = event.timestamp;
-                  }
+              if (event.timestamp > last_action_time) {
+                  last_action_time = event.timestamp;
               }
           }
 
@@ -142,7 +140,7 @@ behaviors:
     when: performing scaling operation
     then: spawns or terminates agents, returns ScaleEvent
     implementation: |
-      pub fn executeScale(allocator: Allocator, decision: ScalingDecision, pool: *AgentPool) !ScaleEvent {
+      pub fn executeScale(decision: ScalingDecision, pool: *AgentPool) !ScaleEvent {
           const start = std.time.timestamp();
           const from_count = pool.current_count;
 
@@ -223,6 +221,7 @@ behaviors:
       };
 
       pub fn predictWorkload(metrics: []ScalingMetric, history: []const f64, horizon_min: u32) !WorkloadPrediction {
+          _ = metrics;  // Reserved for future metric-based prediction
           if (history.len < 10) return error.InsufficientHistory;
 
           // Simple moving average prediction
@@ -253,7 +252,7 @@ behaviors:
           const confidence = @max(0.5, 1.0 - (@as(f64, @floatFromInt(horizon_min)) / 120.0));
 
           // Recommended agents based on expected load
-          const recommended = @floatToInt(usize, @ceil(expected / 10.0));
+          const recommended = @as(usize, @intFromFloat(@ceil(expected / 10.0)));
 
           return .{
               .expected_load = expected,
@@ -317,9 +316,9 @@ behaviors:
           }
 
           // Scale down to fit budget
-          const affordable_agents = @floatToInt(usize, @floor(
+          const affordable_agents = @as(usize, @intFromFloat(@floor(
               config.cost_limit_per_hour / (hourly_cost / @as(f64, @floatFromInt(decision.agent_count)))
-          ));
+          )));
 
           return .{
               .action = "scale_up",  // Still scale up, but less
