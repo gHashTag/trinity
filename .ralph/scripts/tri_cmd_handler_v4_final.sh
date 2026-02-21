@@ -6,7 +6,10 @@ INCOMING=".ralph/queue/incoming.cmd"
 RESPONSE=".ralph/queue/responses/current.resp"
 STATE_FILE=".ralph/queue/.handler_state"
 
-# Init state
+# Init response file
+echo "=== TRI COMMANDER v4.0 ===" > "$RESPONSE"
+echo "Ожидание команд..." >> "$RESPONSE"
+echo "" >> "$RESPONSE"
 echo "init" > "$STATE_FILE"
 
 while true; do
@@ -18,16 +21,7 @@ while true; do
             # Update state
             echo "$current_cmd" > "$STATE_FILE"
 
-            # Progress
-            {
-                echo ',-----------------------------------------------------------.'
-                echo '|  > Processing...                                          |'
-                echo '`-----------------------------------------------------------'\'
-            } > "$RESPONSE"
-
-            sleep 2
-
-            # Response
+            # Clear and write new response
             {
                 echo ',-----------------------------------------------------------.'
                 echo "|  > $current_cmd"
