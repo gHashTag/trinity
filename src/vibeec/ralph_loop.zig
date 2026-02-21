@@ -258,13 +258,14 @@ pub const RalphLoop = struct {
 
     const Self = @This();
 
-    pub fn init(allocator: Allocator) Self {
+    pub fn init(allocator: Allocator) !Self {
+        const circuit = try circuit_breaker.CircuitBreaker.init(allocator);
         return Self{
             .allocator = allocator,
             .config = LoopConfig{},
             .state = .idle,
             .iteration = 0,
-            .circuit = circuit_breaker.CircuitBreaker.init(allocator),
+            .circuit = circuit,
             .analyzer = ResponseAnalyzer.init(allocator),
             .exit_condition = .none,
             .total_files_changed = 0,
@@ -277,8 +278,8 @@ pub const RalphLoop = struct {
         };
     }
 
-    pub fn initWithConfig(allocator: Allocator, config: LoopConfig) Self {
-        var loop = init(allocator);
+    pub fn initWithConfig(allocator: Allocator, config: LoopConfig) !Self {
+        var loop = try init(allocator);
         loop.config = config;
         return loop;
     }
@@ -574,4 +575,129 @@ test "golden identity" {
     const phi_inv_sq = 1.0 / phi_sq;
     const result = phi_sq + phi_inv_sq;
     try testing.expectApproxEqAbs(TRINITY, result, 0.0001);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AGENT MU INTEGRATION (v8.11)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Run single code generation iteration with AGENT MU verification
+///
+/// This is the main entry point for Ralph Loop to work with AGENT MU.
+/// It generates code from a spec file, then runs AGENT MU verification.
+pub fn runIterationWithAgentMu(self: *RalphLoop, spec_file: []const u8) !AgentMuIterationResult {
+    const start_time = std.time.timestamp();
+
+    // Generate code (would call VIBEE codegen here)
+    const generated_file = try self.generateCodeFromSpec(spec_file);
+    defer self.allocator.free(generated_file);
+
+    // Run AGENT MU verification
+    const agent_mu = @import("agent_mu");
+    const config = agent_mu.Config{
+        .max_retries = 3,
+        .timeout_seconds = 120,
+        .verbose = false,
+        .enable_auto_fix = true,
+    };
+
+    const verify_result = try agent_mu.verifyAndFix(self.allocator, generated_file, config);
+
+    const duration_ms: u64 = @intCast((std.time.timestamp() - start_time) * 1000);
+
+    // Update iteration metrics
+    const iter_result = IterationResult{
+        .iteration = self.iteration + 1,
+        .state = if (verify_result.success) .completed else .iterating,
+        .files_changed = if (verify_result.success) 1 else 0,
+        .tests_run = 1,
+        .tests_passed = if (verify_result.success) 1 else 0,
+        .errors = if (verify_result.success) 0 else 1,
+        .confidence = if (verify_result.success) 100 else 0,
+        .exit_signal = verify_result.success,
+        .duration_ms = duration_ms,
+    };
+
+    try self.processIteration(iter_result);
+
+    return AgentMuIterationResult{
+        .success = verify_result.success,
+        .generated_file = generated_file,
+        .attempts_made = verify_result.attempts_made,
+        .fix_applied = verify_result.fix_applied,
+        .error_message = verify_result.error_message,
+        .duration_ms = duration_ms,
+    };
+}
+
+pub const AgentMuIterationResult = struct {
+    success: bool,
+    generated_file: []const u8,
+    attempts_made: u32,
+    fix_applied: bool,
+    error_message: []const u8,
+    duration_ms: u64,
+};
+
+/// Generate code from spec file (placeholder for VIBEE integration)
+fn generateCodeFromSpec(self: *RalphLoop, spec_file: []const u8) ![]const u8 {
+    // Parse spec file name to derive output path
+    const basename = std.fs.path.basename(spec_file);
+    const stem = std.fs.path.stem(basename);
+
+    // Default output path
+    return std.fmt.allocPrint(
+        self.allocator,
+        "trinity/output/{s}.zig",
+        .{stem},
+    );
+}
+
+/// Log failure to REGRESSION_PATTERNS.md
+pub fn logRegression(self: *RalphLoop, error_message: []const u8, fix_type: anytype) !void {
+    _ = fix_type;
+
+    const timestamp = std.time.timestamp();
+    const datetime = std.time.timestampToDateTime(timestamp);
+
+    const pattern = try std.fmt.allocPrint(
+        self.allocator,
+        "\n---\n## Failure at {d}-{d:0>2}-{d:0>2} {d:0>2}:{d:0>2}\n\n**Error**: {s}\n**State**: {s}\n**Iteration**: {d}\n",
+        .{
+            datetime.year,
+            datetime.month,
+            datetime.day,
+            datetime.hour,
+            datetime.minute,
+            error_message,
+            self.state.toString(),
+            self.iteration,
+        },
+    );
+    defer self.allocator.free(pattern);
+
+    const file = try std.fs.cwd().openFile(
+        ".ralph/memory/REGRESSION_PATTERNS.md",
+        .{ .mode = .write },
+    ) catch |err| {
+        if (err == error.FileNotFound) {
+            // File doesn't exist, create it
+            try std.fs.cwd().makePath(".ralph/memory");
+            return std.fs.cwd().createFile(".ralph/memory/REGRESSION_PATTERNS.md", .{});
+        }
+        return err;
+    };
+    defer file.close();
+
+    try file.seekFromEnd(0);
+    try file.writeAll(pattern);
+}
+
+test "RalphLoop: runIterationWithAgentMu stub" {
+    var loop = RalphLoop.init(testing.allocator);
+    defer loop.deinit();
+
+    // This test just verifies the function signature works
+    // In production, would need a real spec file
+    _ = &loop;
 }

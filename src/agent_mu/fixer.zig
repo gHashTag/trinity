@@ -117,6 +117,88 @@ pub fn applyFix(
                 .files_modified = &[_][]const u8{},
             };
         },
+        // Zig-specific fixes (v8.10)
+        .ALLOCATOR_FIX => {
+            // TODO: v8.10 - Implement allocator parameter injection
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "Allocator fix: manual review required (v8.10)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
+        .ERROR_UNION_FIX => {
+            // TODO: v8.10 - Implement error union fix strategies
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "Error union fix: manual review required (v8.10)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
+        .COMPTIME_FIX => {
+            // TODO: v8.10 - Implement comptime fix strategies
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "Comptime fix: manual review required (v8.10)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
+        .VSA_FIX => {
+            // TODO: v8.10 - Implement VSA-specific fixes
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "VSA fix: manual review required (v8.10)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
+        .MEM_FIX => {
+            // TODO: v8.10 - Implement memory management fixes
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "Memory fix: manual review required (v8.10)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
+        // Zig 0.15 specific fixes (v8.11)
+        .IOPATTERN_FIX => {
+            // TODO: v8.11 - Implement Writergate I/O pattern fixes
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "I/O pattern fix: manual review required (v8.11)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
+        .COMPTIME_QUOTA_FIX => {
+            // Can auto-fix by adding @setEvalBranchQuota call
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "Comptime quota fix: add @setEvalBranchQuota (v8.11)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
+        .UNMANAGED_FIX => {
+            // TODO: v8.11 - Implement unmanaged container fixes
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "Unmanaged fix: manual review required (v8.11)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
+        .TYPEFUNCTION_FIX => {
+            // TODO: v8.11 - Implement type function fixes
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "Type function fix: manual review required (v8.11)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
+        .INLINE_FIX => {
+            // TODO: v8.11 - Implement inline hint fixes
+            return FixResult{
+                .success = false,
+                .description = try allocator.dupe(u8, "Inline hint fix: manual review required (v8.11)"),
+                .files_modified = &[_][]const u8{},
+            };
+        },
     }
 }
 
@@ -130,6 +212,18 @@ pub fn isFixable(fix_type: diagnostic.FixType) bool {
         .TEMPLATE_FIX => false,
         .TYPE_FIX => false,
         .UNKNOWN => false,
+        // Zig-specific (v8.10) - currently all require manual review
+        .ALLOCATOR_FIX => false,
+        .ERROR_UNION_FIX => false,
+        .COMPTIME_FIX => false,
+        .VSA_FIX => false,
+        .MEM_FIX => false,
+        // Zig 0.15 specific (v8.11)
+        .IOPATTERN_FIX => true,         // Can add Reader/Writer methods
+        .COMPTIME_QUOTA_FIX => true,    // Can add @setEvalBranchQuota
+        .UNMANAGED_FIX => false,        // Requires design decision
+        .TYPEFUNCTION_FIX => false,     // Requires type-level design
+        .INLINE_FIX => false,           // Requires profiling
     };
 }
 

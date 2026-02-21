@@ -88,7 +88,8 @@ pub const CircuitBreaker = struct {
 
     const Self = @This();
 
-    pub fn init(allocator: Allocator) Self {
+    pub fn init(allocator: Allocator) !Self {
+        const history = std.ArrayList(StateTransition).initCapacity(allocator, 0) catch return error.OutOfMemory;
         return Self{
             .allocator = allocator,
             .config = Config{},
@@ -100,18 +101,18 @@ pub const CircuitBreaker = struct {
             .last_output_length = 0,
             .total_opens = 0,
             .current_loop = 0,
-            .history = std.ArrayList(StateTransition).init(allocator),
+            .history = history,
         };
     }
 
-    pub fn initWithConfig(allocator: Allocator, config: Config) Self {
-        var cb = init(allocator);
+    pub fn initWithConfig(allocator: Allocator, config: Config) !Self {
+        var cb = try init(allocator);
         cb.config = config;
         return cb;
     }
 
     pub fn deinit(self: *Self) void {
-        self.history.deinit();
+        self.history.deinit(self.allocator);
     }
 
     /// Check if execution is allowed
@@ -189,7 +190,7 @@ pub const CircuitBreaker = struct {
 
         // Record transition if state changed
         if (old_state != self.state) {
-            try self.history.append(StateTransition{
+            try self.history.append(self.allocator, StateTransition{
                 .from_state = old_state,
                 .to_state = self.state,
                 .reason = reason,
