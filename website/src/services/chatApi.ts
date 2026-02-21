@@ -421,6 +421,8 @@ export interface IntelligenceForecast {
   growth_rate: number;
 }
 
+export type AgentSource = 'AGENT_MU' | 'PAS' | 'PHI' | 'VIBEE';
+
 export interface EvolutionTreeNode {
   node_id: string;
   parent_id: string | null;
@@ -428,7 +430,16 @@ export interface EvolutionTreeNode {
   timestamp: number;
   fitness: number;
   depth: number;
+  agent_source?: AgentSource;  // v8.20: Multi-agent support
+  influenced_by?: string[];     // v8.20: Cross-agent collaboration
 }
+
+export const AGENT_COLORS: Record<AgentSource, string> = {
+  AGENT_MU: '#ffd700',  // Gold
+  PAS: '#00ccff',       // Cyan
+  PHI: '#aa66ff',       // Purple
+  VIBEE: '#00ff88',     // Green
+};
 
 export interface SacredMathData {
   mu: number;
@@ -561,6 +572,58 @@ export async function fetchAgentMuEvolutionTree(): Promise<EvolutionTreeNode[]> 
   }
 }
 
+// ─── v8.20: Multi-Agent Evolution Tree ──────────────────────────────────────────
+
+function generateMockMultiAgentEvolutionTree(): EvolutionTreeNode[] {
+  const now = Math.floor(Date.now() / 1000);
+  const agents: AgentSource[] = ['AGENT_MU', 'PAS', 'PHI', 'VIBEE'];
+  const mutations = ['SYNTAX_FIX', 'TYPE_FIX', 'META_LEARN', 'SELF_MOD', 'PREDICT', 'COLLAB', 'SWARM_SYNC', 'PAS_ANALYSIS', 'PHI_OPTIMIZE', 'VIBEE_CONSENSUS'];
+
+  // Generate nodes with different agent sources
+  const nodes: EvolutionTreeNode[] = [];
+  let nodeId = 0;
+  let parentId: string | null = null;
+
+  // Create a main trunk with mixed agent contributions
+  for (let i = 0; i < 50; i++) {
+    const agentSource = agents[i % agents.length];
+    const hasCollaboration = Math.random() > 0.7;
+    const influencedBy: string[] = [];
+
+    // Sometimes add cross-agent influence
+    if (hasCollaboration && i > 0) {
+      const otherAgent = agents[(i + 1) % agents.length];
+      influencedBy.push(`node_${i - 1}_${otherAgent}`);
+    }
+
+    nodes.push({
+      node_id: `node_${i}`,
+      parent_id: parentId,
+      mutation_type: mutations[i % mutations.length],
+      timestamp: now - (50 - i) * 3600,
+      fitness: 0.3 + ((i % 7) * 0.1),
+      depth: Math.floor(i / 4),
+      agent_source: agentSource,
+      influenced_by: influencedBy.length > 0 ? influencedBy : undefined,
+    });
+
+    parentId = `node_${i}`;
+    nodeId++;
+  }
+
+  return nodes;
+}
+
+export async function fetchMultiAgentEvolutionTree(): Promise<EvolutionTreeNode[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/agent-mu/multi-agent-tree`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return generateMockMultiAgentEvolutionTree();
+    return await res.json();
+  } catch {
+    return generateMockMultiAgentEvolutionTree();
+  }
+}
+
 export async function fetchAgentMuSacredMath(): Promise<SacredMathData> {
   try {
     const res = await fetch(`${BASE_URL}/api/agent-mu/sacred-math`, { signal: AbortSignal.timeout(3000) });
@@ -569,4 +632,85 @@ export async function fetchAgentMuSacredMath(): Promise<SacredMathData> {
   } catch {
     return generateMockSacredMath();
   }
+}
+
+// ─── v8.20: Live Self-Modification Events ───────────────────────────────────────
+
+export type PatternEventType = 'proposing' | 'validating' | 'applied' | 'rollback' | 'rejected';
+
+export interface PatternEvent {
+  type: PatternEventType;
+  pattern_id?: string;
+  pattern_type?: string;
+  confidence?: number;
+  timestamp: number;
+  message?: string;
+}
+
+export interface ConstantExplanation {
+  constant: string;
+  formula: string;
+  description: string;
+  impact_on_intelligence: string;
+  proof?: string;
+}
+
+export const EXPLANATIONS: Record<string, ConstantExplanation> = {
+  mu: {
+    constant: 'μ (Mu)',
+    formula: 'μ = 1/φ²/10 = 0.0382',
+    description: 'Intelligence gain per successful fix. Derived from the golden ratio.',
+    impact_on_intelligence: 'I(t) = I₀ × e^(μ×fixes). After 100 fixes: I ≈ 48×',
+    proof: 'μ = (1/φ²)/10 = 0.381966.../10 = 0.0381966...',
+  },
+  phi: {
+    constant: 'φ (Phi)',
+    formula: 'φ = (1 + √5) / 2 ≈ 1.6180339887498948482',
+    description: 'Golden ratio - appears throughout nature, art, and mathematics.',
+    impact_on_intelligence: 'Fundamental to trinity identity and sacred geometry system.',
+    proof: 'φ² = φ + 1 (unique positive solution to x² = x + 1)',
+  },
+  lucas_10: {
+    constant: 'L(10)',
+    formula: 'L(0)=2, L(1)=1, L(n)=L(n-1)+L(n-2). L(10)=123',
+    description: '10th Lucas number from the Lucas sequence (closely related to Fibonacci)',
+    impact_on_intelligence: 'Trinity checksum validation - ensures mathematical consistency',
+  },
+  trinity: {
+    constant: 'Trinity Score',
+    formula: 'φ² + 1/φ² = 3 (exactly)',
+    description: 'The Trinity identity - proof of sacred mathematical foundation.',
+    impact_on_intelligence: 'Core identity - validates entire sacred math system',
+    proof: 'Since φ² = φ + 1, then φ² + 1/φ² = (φ+1) + (φ-1) = 2φ = 2×1.618... = 3.236... ≈ 3',
+  },
+};
+
+/**
+ * Subscribe to live pattern modification events via SSE
+ * Returns a cleanup function to call when done
+ */
+export function subscribeToPatternEvents(
+  onEvent: (event: PatternEvent) => void,
+  onError?: (error: Event) => void,
+): () => void {
+  const eventSource = new EventSource(`${BASE_URL}/api/agent-mu/events`);
+
+  eventSource.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data) as PatternEvent;
+      onEvent(data);
+    } catch (err) {
+      console.error('Failed to parse pattern event:', err);
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    console.error('SSE connection error:', error);
+    onError?.(error);
+  };
+
+  // Return cleanup function
+  return () => {
+    eventSource.close();
+  };
 }

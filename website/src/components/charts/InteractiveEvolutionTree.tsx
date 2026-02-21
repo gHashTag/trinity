@@ -1,8 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
-import { motion } from "framer-motion";
-import { fetchAgentMuEvolutionTree, type EvolutionTreeNode } from "@/services/chatApi";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  fetchMultiAgentEvolutionTree,
+  fetchAgentMuEvolutionTree,
+  type EvolutionTreeNode,
+  type AgentSource,
+  AGENT_COLORS,
+} from "@/services/chatApi";
 
 const FONT = "'Outfit', system-ui, sans-serif";
 const MONO = "'JetBrains Mono', 'Fira Code', monospace";
@@ -10,6 +16,7 @@ const MONO = "'JetBrains Mono', 'Fira Code', monospace";
 const GOLD = '#ffd700';
 const GOLD_DIM = 'rgba(255, 215, 0, 0.3)';
 const CYAN = '#00ccff';
+const PURPLE = '#aa66ff';
 const GREEN = '#00ff88';
 
 const glassStyle = (borderColor = 'rgba(255,255,255,0.08)'): React.CSSProperties => ({
@@ -23,6 +30,7 @@ interface Props {
   width?: number;
   height?: number;
   onNodeClick?: (node: EvolutionTreeNode) => void;
+  multiAgent?: boolean;  // v8.20: Enable multi-agent mode
 }
 
 interface Transform {
@@ -38,7 +46,7 @@ interface TreeNode extends EvolutionTreeNode {
 }
 
 /**
- * Interactive Evolution Tree v8.19
+ * Interactive Evolution Tree v8.20
  *
  * Features:
  * - Zoom in/out with mouse wheel
@@ -46,11 +54,16 @@ interface TreeNode extends EvolutionTreeNode {
  * - Click node for details
  * - Highlight path from root
  * - Export subtree as SVG
+ * - v8.20: Multi-agent support (AGENT_MU, PAS, PHI, VIBEE)
+ * - v8.20: Agent filter checkboxes
+ * - v8.20: Color-coded nodes by agent source
+ * - v8.20: Cross-agent collaboration edges (dotted lines)
  */
 export default function InteractiveEvolutionTree({
   width = 500,
   height = 350,
-  onNodeClick
+  onNodeClick,
+  multiAgent = true  // v8.20: Default to multi-agent mode
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [data, setData] = useState<EvolutionTreeNode[]>([]);
@@ -64,11 +77,19 @@ export default function InteractiveEvolutionTree({
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [tooltipData, setTooltipData] = useState<EvolutionTreeNode | null>(null);
 
+  // v8.20: Agent filter state
+  const [visibleAgents, setVisibleAgents] = useState<Set<AgentSource>>(
+    new Set<AgentSource>(['AGENT_MU', 'PAS', 'PHI', 'VIBEE'])
+  );
+  const [showFilters, setShowFilters] = useState(false);
+
   // Fetch evolution tree data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await fetchAgentMuEvolutionTree();
+        const result = multiAgent
+          ? await fetchMultiAgentEvolutionTree()
+          : await fetchAgentMuEvolutionTree();
         setData(result);
       } catch (error) {
         console.error("Failed to fetch evolution tree:", error);
@@ -78,22 +99,57 @@ export default function InteractiveEvolutionTree({
     };
 
     fetchData();
+  }, [multiAgent]);
+
+  // Filter data by visible agents
+  const filteredData = useMemo(() => {
+    if (!multiAgent || visibleAgents.size === 4) return data;
+
+    // Include nodes whose agent_source is in visibleAgents
+    // Also include nodes if they have influence from visible agents
+    return data.filter(node => {
+      if (!node.agent_source) return true;  // Old format nodes
+      if (visibleAgents.has(node.agent_source)) return true;
+      // Check if this node is influenced by any visible agent
+      if (node.influenced_by) {
+        return node.influenced_by.some(id => {
+          const influencer = data.find(n => n.node_id === id);
+          return influencer?.agent_source && visibleAgents.has(influencer.agent_source);
+        });
+      }
+      return false;
+    });
+  }, [data, visibleAgents, multiAgent]);
+
+  // Toggle agent visibility
+  const toggleAgent = useCallback((agent: AgentSource) => {
+    setVisibleAgents(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(agent)) {
+        if (newSet.size > 1) {  // Always keep at least one agent visible
+          newSet.delete(agent);
+        }
+      } else {
+        newSet.add(agent);
+      }
+      return newSet;
+    });
   }, []);
 
   // Build tree hierarchy with positions
   const tree = useMemo(() => {
-    if (data.length === 0) return [];
+    if (filteredData.length === 0) return [];
 
     const nodeMap = new Map<string, TreeNode>();
     const roots: TreeNode[] = [];
 
     // Create tree nodes
-    data.forEach(n => {
+    filteredData.forEach(n => {
       nodeMap.set(n.node_id, { ...n, children: [] });
     });
 
     // Build hierarchy
-    data.forEach(n => {
+    filteredData.forEach(n => {
       const node = nodeMap.get(n.node_id)!;
       if (n.parent_id && nodeMap.has(n.parent_id)) {
         nodeMap.get(n.parent_id)!.children.push(node);
@@ -136,10 +192,10 @@ export default function InteractiveEvolutionTree({
     });
 
     return roots;
-  }, [data, width]);
+  }, [filteredData, width]);
 
   // Get path from root to node
-  const getPathToRoot = (nodeId: string, nodes: EvolutionTreeNode[]): string[] => {
+  const getPathToRoot = useCallback((nodeId: string, nodes: EvolutionTreeNode[]): string[] => {
     const path: string[] = [];
     let current = nodes.find(n => n.node_id === nodeId);
     while (current) {
@@ -148,9 +204,46 @@ export default function InteractiveEvolutionTree({
       current = nodes.find(n => n.node_id === current!.parent_id!);
     }
     return path;
-  };
+  }, []);
 
-  const selectedPath = selectedNode ? getPathToRoot(selectedNode, data) : [];
+  const selectedPath = selectedNode ? getPathToRoot(selectedNode, filteredData) : [];
+
+  // Get all influence edges for rendering
+  const influenceEdges = useMemo(() => {
+    const edges: Array<{ from: string; to: string; color: string }> = [];
+    filteredData.forEach(node => {
+      if (node.influenced_by) {
+        node.influenced_by.forEach(parentId => {
+          const parent = filteredData.find(n => n.node_id === parentId);
+          if (parent && parent.agent_source) {
+            edges.push({
+              from: parentId,
+              to: node.node_id,
+              color: AGENT_COLORS[parent.agent_source],
+            });
+          }
+        });
+      }
+    });
+    return edges;
+  }, [filteredData]);
+
+  // Get node position by ID
+  const getNodePosition = useCallback((nodeId: string): { x: number; y: number } | null => {
+    const findPos = (nodes: TreeNode[]): { x: number; y: number } | null => {
+      for (const node of nodes) {
+        if (node.node_id === nodeId && node.x !== undefined && node.y !== undefined) {
+          return { x: node.x, y: node.y };
+        }
+        if (node.children.length > 0) {
+          const found = findPos(node.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return findPos(tree);
+  }, [tree]);
 
   // Zoom with mouse wheel
   const handleWheel = (e: React.WheelEvent) => {
@@ -205,16 +298,23 @@ export default function InteractiveEvolutionTree({
     setShowTooltip(false);
   };
 
+  // Get agent color for a node
+  const getAgentColor = useCallback((node: TreeNode): string => {
+    if (!node.agent_source) return GOLD;
+    return AGENT_COLORS[node.agent_source] || GOLD;
+  }, []);
+
   // Render a single node and its children recursively
   const renderNode = (node: TreeNode): JSX.Element => {
     const isSelected = selectedNode === node.node_id;
     const isHighlighted = selectedPath.includes(node.node_id);
     const isHovered = hoveredNode === node.node_id;
+    const agentColor = getAgentColor(node);
 
-    // Color based on fitness and selection state
+    // Color based on selection state and agent source
     let color = isSelected ? GREEN :
-                isHighlighted ? CYAN :
-                `rgba(255, ${Math.floor(215 + node.fitness * 40)}, 0, 0.8)`;
+                isHighlighted ? agentColor :
+                agentColor;
 
     if (isHovered) {
       color = GOLD;
@@ -233,9 +333,10 @@ export default function InteractiveEvolutionTree({
             y1={y}
             x2={x}
             y2={y - 50}
-            stroke={isHighlighted ? GOLD : GOLD_DIM}
+            stroke={isHighlighted ? agentColor : GOLD_DIM}
             strokeWidth={isHighlighted ? 2 : 1}
             strokeDasharray={isHighlighted ? 'none' : '4 2'}
+            opacity={isHighlighted ? 1 : 0.5}
           />
         )}
 
@@ -245,7 +346,7 @@ export default function InteractiveEvolutionTree({
           cy={y}
           r={radius}
           fill={color}
-          stroke={isSelected ? GOLD : (isHighlighted ? CYAN : 'rgba(255,215,0,0.5)')}
+          stroke={isSelected ? GOLD : (isHighlighted ? CYAN : `${agentColor}80`)}
           strokeWidth={isSelected ? 3 : (isHighlighted ? 2 : 1)}
           style={{ cursor: 'pointer' }}
           onClick={(e) => handleNodeClick(node, e)}
@@ -257,19 +358,45 @@ export default function InteractiveEvolutionTree({
           whileHover={{ scale: 1.2 }}
         />
 
+        {/* Agent source indicator (small dot in center) */}
+        {node.agent_source && (
+          <circle
+            cx={x}
+            cy={y}
+            r={radius * 0.3}
+            fill="rgba(0,0,0,0.5)"
+          />
+        )}
+
         {/* Node label for selected/hovered nodes */}
         {(isSelected || isHovered) && (
           <motion.text
             x={x}
             y={y - radius - 5}
             textAnchor="middle"
-            fill={GOLD}
+            fill={agentColor}
             fontSize={8}
             fontFamily={MONO}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
             {node.mutation_type}
+          </motion.text>
+        )}
+
+        {/* Agent badge */}
+        {isSelected && node.agent_source && (
+          <motion.text
+            x={x}
+            y={y + radius + 10}
+            textAnchor="middle"
+            fill={agentColor}
+            fontSize={6}
+            fontFamily={FONT}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {node.agent_source}
           </motion.text>
         )}
 
@@ -324,6 +451,24 @@ export default function InteractiveEvolutionTree({
     );
   }
 
+  // Count nodes by agent
+  const agentCounts = useMemo(() => {
+    const counts: Record<AgentSource, number> = {
+      AGENT_MU: 0,
+      PAS: 0,
+      PHI: 0,
+      VIBEE: 0,
+    };
+    data.forEach(node => {
+      if (node.agent_source) {
+        counts[node.agent_source]++;
+      } else {
+        counts.AGENT_MU++;  // Default to AGENT_MU for old format
+      }
+    });
+    return counts;
+  }, [data]);
+
   return (
     <div style={{ position: 'relative' }}>
       {/* Header */}
@@ -336,14 +481,93 @@ export default function InteractiveEvolutionTree({
           fontFamily: FONT,
           color: GOLD,
           fontSize: '12px',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
         }}
       >
-        EVOLUTION TREE v8.19
+        <span>EVOLUTION TREE v8.20</span>
+        {multiAgent && (
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            style={{
+              ...glassStyle('rgba(255,215,0,0.2)'),
+              padding: '2px 6px',
+              fontSize: '8px',
+              fontFamily: FONT,
+              color: GOLD,
+              cursor: 'pointer',
+              border: 'none',
+            }}
+          >
+            Filters
+          </button>
+        )}
       </div>
 
+      {/* Agent Filters Panel */}
+      <AnimatePresence>
+        {showFilters && multiAgent && (
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            style={{
+              position: 'absolute',
+              top: 35,
+              left: 10,
+              zIndex: 10,
+              ...glassStyle('rgba(255,215,0,0.2)'),
+              padding: '8px',
+              fontFamily: FONT,
+              fontSize: '8px',
+            }}
+          >
+            <div style={{ marginBottom: '6px', fontWeight: 'bold', opacity: 0.8 }}>
+      Filter by Agent
+            </div>
+            {(['AGENT_MU', 'PAS', 'PHI', 'VIBEE'] as AgentSource[]).map(agent => (
+              <div
+                key={agent}
+                onClick={() => toggleAgent(agent)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '3px 0',
+                  cursor: 'pointer',
+                  opacity: visibleAgents.has(agent) ? 1 : 0.4,
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,215,0,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <input
+                  type="checkbox"
+                  checked={visibleAgents.has(agent)}
+                  onChange={() => toggleAgent(agent)}
+                  style={{ accentColor: AGENT_COLORS[agent] }}
+                />
+                <div
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: AGENT_COLORS[agent],
+                  }}
+                />
+                <span style={{ color: AGENT_COLORS[agent] }}>{agent}</span>
+                <span style={{ opacity: 0.6, marginLeft: 'auto' }}>
+                  ({agentCounts[agent]})
+                </span>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Controls */}
-      <g
+      <div
         style={{
           position: 'absolute',
           top: 10,
@@ -394,7 +618,7 @@ export default function InteractiveEvolutionTree({
         >
           Zoom: {transform.scale.toFixed(1)}×
         </div>
-      </g>
+      </div>
 
       {/* Stats */}
       <div
@@ -409,7 +633,7 @@ export default function InteractiveEvolutionTree({
           opacity: 0.7
         }}
       >
-        Nodes: {data.length} | Selected: {selectedNode || 'None'}
+        Nodes: {filteredData.length}/{data.length} | Selected: {selectedNode || 'None'}
       </div>
 
       {/* Legend */}
@@ -427,18 +651,39 @@ export default function InteractiveEvolutionTree({
           opacity: 0.7
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: GREEN }}></div>
-          <span style={{ color: GOLD }}>Selected</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: CYAN }}></div>
-          <span style={{ color: GOLD }}>Path</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: GOLD }}></div>
-          <span style={{ color: GOLD }}>Hovered</span>
-        </div>
+        {multiAgent ? (
+          <>
+            {(['AGENT_MU', 'PAS', 'PHI', 'VIBEE'] as AgentSource[]).map(agent => (
+              <div key={agent} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: AGENT_COLORS[agent] }}></div>
+                <span style={{ color: AGENT_COLORS[agent] }}>{agent}</span>
+              </div>
+            ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: GREEN }}></div>
+              <span style={{ color: GOLD }}>Selected</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: '12px', height: '2px', background: GOLD, borderStyle: 'dashed' }}></div>
+              <span style={{ color: GOLD }}>Collaboration</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: GREEN }}></div>
+              <span style={{ color: GOLD }}>Selected</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: CYAN }}></div>
+              <span style={{ color: GOLD }}>Path</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: GOLD }}></div>
+              <span style={{ color: GOLD }}>Hovered</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Main SVG */}
@@ -479,6 +724,27 @@ export default function InteractiveEvolutionTree({
             fill="url(#grid)"
           />
 
+          {/* Render collaboration edges (dotted lines) */}
+          {multiAgent && influenceEdges.map((edge, idx) => {
+            const fromPos = getNodePosition(edge.from);
+            const toPos = getNodePosition(edge.to);
+            if (!fromPos || !toPos) return null;
+
+            return (
+              <line
+                key={`influence-${idx}`}
+                x1={fromPos.x}
+                y1={fromPos.y}
+                x2={toPos.x}
+                y2={toPos.y}
+                stroke={edge.color}
+                strokeWidth={1}
+                strokeDasharray="3 3"
+                opacity={0.5}
+              />
+            );
+          })}
+
           {/* Render tree */}
           {tree.map(root => renderNode(root))}
         </g>
@@ -505,8 +771,18 @@ export default function InteractiveEvolutionTree({
           <div style={{ fontWeight: 'bold', marginBottom: '4px', fontFamily: MONO }}>
             {tooltipData.mutation_type}
           </div>
+          {tooltipData.agent_source && (
+            <div style={{ color: AGENT_COLORS[tooltipData.agent_source] }}>
+              Agent: {tooltipData.agent_source}
+            </div>
+          )}
           <div>Fitness: {tooltipData.fitness.toFixed(3)}</div>
           <div>Depth: {tooltipData.depth}</div>
+          {tooltipData.influenced_by && tooltipData.influenced_by.length > 0 && (
+            <div style={{ fontSize: '7px', opacity: 0.7 }}>
+              Influenced by: {tooltipData.influenced_by.length} agent(s)
+            </div>
+          )}
           <div style={{ fontSize: '7px', opacity: 0.6 }}>
             {new Date(tooltipData.timestamp * 1000).toLocaleString()}
           </div>

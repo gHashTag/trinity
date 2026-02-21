@@ -125,14 +125,14 @@ pub fn runBenchmark(
     var cache = kv_cache.PrefixCache.init(allocator, pc_config, &pool);
     defer cache.deinit();
 
-    var system_prompt = try allocator.alloc(u32, bench_config.system_prompt_len);
+    const system_prompt = try allocator.alloc(u32, bench_config.system_prompt_len);
     defer allocator.free(system_prompt);
     for (system_prompt, 0..) |*t, i| {
         t.* = @intCast(i + 1);
     }
 
     const sys_blocks_needed = (bench_config.system_prompt_len + bench_config.block_size - 1) / bench_config.block_size;
-    var sys_blocks = try allocator.alloc(usize, sys_blocks_needed);
+    const sys_blocks = try allocator.alloc(usize, sys_blocks_needed);
     defer allocator.free(sys_blocks);
     for (sys_blocks) |*b| {
         b.* = pool.allocateBlock() orelse break;
