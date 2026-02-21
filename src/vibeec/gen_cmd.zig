@@ -18,6 +18,9 @@ const spec_improver = @import("spec_improver.zig");
 // V10.3: Self-Feeding Loop + Rewards
 const vibe_rewards = @import("vibe_rewards.zig");
 
+// V10.5: Golden Seed Factory
+const synthetic_seed_gen = @import("synthetic_seed_gen.zig");
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -146,6 +149,37 @@ pub fn main() !void {
 
         const dir = args[2];
         try importSeeds(allocator, dir);
+    } else if (std.mem.eql(u8, command, "generate-seeds")) {
+        // V10.5: Generate synthetic seeds
+        var spec_files: []const []const u8 = &[_][]const u8{};
+        var min_quality: f32 = 0.6;
+        var import_to_db: bool = false;
+
+        // Parse flags
+        var i: usize = 2;
+        while (i < args.len) : (i += 1) {
+            if (std.mem.eql(u8, args[i], "--min-quality") and i + 1 < args.len) {
+                min_quality = std.fmt.parseFloat(f32, args[i + 1]) catch 0.6;
+                i += 1;
+            } else if (std.mem.eql(u8, args[i], "--import")) {
+                import_to_db = true;
+            } else if (!std.mem.eql(u8, args[i][0..2], "--")) {
+                // Not a flag, treat as spec file
+                const new_list = try allocator.alloc([]const u8, spec_files.len + 1);
+                @memcpy(new_list[0..spec_files.len], spec_files);
+                new_list[spec_files.len] = args[i];
+                if (spec_files.len > 0) allocator.free(spec_files);
+                spec_files = new_list;
+            }
+        }
+
+        if (spec_files.len == 0) {
+            std.debug.print("Error: No spec files provided\n", .{});
+            std.debug.print("Usage: vibeec generate-seeds <spec.vibee...> [--min-quality F] [--import]\n", .{});
+            return;
+        }
+
+        try generateSyntheticSeeds(allocator, spec_files, min_quality, import_to_db);
     } else if (std.mem.eql(u8, command, "show-rewards")) {
         // V10.3: Show reward system info
         var agent_id: []const u8 = "vibee-v10.3";
@@ -167,7 +201,7 @@ fn printUsage() void {
     std.debug.print(
         \\
         \\═══════════════════════════════════════════════════════════════════════════════
-        \\                    VIBEEC - VIBEE Compiler v10.3
+        \\                    VIBEEC - VIBEE Compiler v10.5
         \\                    φ² + 1/φ² = 3
         \\═══════════════════════════════════════════════════════════════════════════════
         \\
@@ -177,6 +211,9 @@ fn printUsage() void {
         \\    --dry-run                                 Show what would be filled without writing
         \\    --min-confidence F                        Minimum confidence threshold (default: 0.7)
         \\  vibeec import-seeds <dir>                   Import seeds from generated/*.zig files
+        \\  vibeec generate-seeds <specs...> [options] V10.5: Generate synthetic seeds
+        \\    --min-quality F                           Minimum quality threshold (default: 0.6)
+        \\    --import                                  Auto-import to Golden DB
         \\  vibeec show-rewards [--agent <id>]          Show $TRI reward info (V10.3)
         \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
         \\    --prompt "text"                           Initial prompt
@@ -447,3 +484,114 @@ fn showRewards(allocator: std.mem.Allocator, agent_id: []const u8) !void {
     std.debug.print("  Daily Earnings Cap: {d:.0} $TRI\n", .{vibe_rewards.VibeRewardSystem.DAILY_CAP});
     std.debug.print("\n", .{});
 }
+
+/// V10.5: Generate synthetic seeds from spec files
+fn generateSyntheticSeeds(
+    allocator: std.mem.Allocator,
+    spec_files: []const []const u8,
+    min_quality: f32,
+    import_to_db: bool,
+) !void {
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.5: Synthetic Seed Generator                        ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Spec files: {d}\n", .{spec_files.len});
+    std.debug.print("  Min quality: {d:.2}\n", .{min_quality});
+    std.debug.print("  Import to DB: {any}\n\n", .{import_to_db});
+
+    // Initialize Golden DB
+    var db = try golden_db.GoldenDB.init(allocator);
+    defer db.deinit();
+
+    // Initialize synthetic generator
+    var generator = synthetic_seed_gen.SyntheticSeedGenerator.init(allocator, &db);
+
+    // Collect all behavior names from specs
+    var behavior_names = std.ArrayList([]const u8).initCapacity(allocator, 256) catch |err| {
+        std.debug.print("    [Error] Cannot allocate behavior list: {}\n", .{err});
+        return err;
+    };
+    defer behavior_names.deinit(allocator);
+
+    for (spec_files) |spec_path| {
+        std.debug.print("  Reading: {s}\n", .{spec_path});
+
+        const file = std.fs.cwd().openFile(spec_path, .{}) catch |err| {
+            std.debug.print("    [Error] Cannot open: {}\n", .{err});
+            continue;
+        };
+        defer file.close();
+
+        const source = try file.readToEndAlloc(allocator, 1024 * 1024);
+        // Note: Don't free source - VibeeParser takes ownership
+
+        var parser = vibee_parser.VibeeParser.init(allocator, source);
+        var spec = try parser.parse();
+        defer spec.deinit();  // This will free source_content
+
+        for (spec.behaviors.items) |b| {
+            const name_copy = try allocator.dupe(u8, b.name);
+            try behavior_names.append(allocator, name_copy);
+        }
+
+        std.debug.print("    Found {d} behaviors\n", .{spec.behaviors.items.len});
+    }
+
+    std.debug.print("\n  Total behaviors: {d}\n", .{behavior_names.items.len});
+    std.debug.print("  Generating synthetic seeds...\n\n", .{});
+
+    // Generate seeds
+    var result = try generator.generateForBehaviors(behavior_names.items, min_quality);
+    defer result.deinit(allocator);
+
+    // Report results
+    std.debug.print("  Results:\n", .{});
+    std.debug.print("    Generated: {d} seeds\n", .{result.generated.items.len});
+    std.debug.print("    High quality (≥0.9): {d}\n", .{result.high_quality_count});
+    std.debug.print("    Avg quality: {d:.2}\n", .{
+        if (result.generated.items.len > 0)
+            result.total_quality / @as(f32, @floatFromInt(result.generated.items.len))
+        else
+            0.0
+    });
+
+    // Import to DB if requested
+    if (import_to_db) {
+        std.debug.print("\n  Importing to Golden DB...\n", .{});
+        var imported: usize = 0;
+        for (result.generated.items) |seed| {
+            if (seed.quality_score >= min_quality) {
+                db.addNewSeed(
+                    seed.name,
+                    seed.signature,
+                    seed.body,
+                    seed.category,
+                ) catch |err| {
+                    std.debug.print("    [Error] Failed to add '{s}': {}\n", .{seed.name, err});
+                    continue;
+                };
+                imported += 1;
+            }
+        }
+        std.debug.print("    Imported: {d} seeds\n", .{imported});
+        std.debug.print("    DB size: {d}\n", .{db.implementations.items.len});
+    }
+
+    // Show sample of generated seeds
+    if (result.generated.items.len > 0) {
+        std.debug.print("\n  Sample (first 3):\n", .{});
+        const sample_count = @min(3, result.generated.items.len);
+        for (result.generated.items[0..sample_count], 0..) |seed, i| {
+            std.debug.print("    {d}. {s} (quality: {d:.2}, category: {s})\n", .{
+                i + 1,
+                seed.name,
+                seed.quality_score,
+                @tagName(seed.category),
+            });
+        }
+    }
+
+    std.debug.print("\n", .{});
+}
+// 
