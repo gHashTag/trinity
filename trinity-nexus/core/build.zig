@@ -14,6 +14,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Export module for other packages to import
+    _ = b.addModule("trinity_core", mod);
+
     // Library
     const lib = b.addLibrary(.{
         .name = "trinity-core",

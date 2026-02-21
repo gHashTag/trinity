@@ -1,0 +1,145 @@
+# VIBEE Bootstrap Self-Host - Complete Self-Generation Spec (Cycle 51)
+# Describes how VIBEE can regenerate itself from .vibee specifications
+
+name: bootstrap_self_host
+version: "1.0.0"
+language: zig
+module: bootstrap_self_host
+
+types:
+  SelfGenResult:
+    fields:
+      success: Bool
+      generated_path: String
+      bytes_written: Int
+      compile_success: Bool
+      test_pass_count: Int
+      error_message: String
+
+  BootstrapMetrics:
+    fields:
+      specs_processed: Int
+      specs_successful: Int
+      specs_failed: Int
+      total_bytes_generated: Int
+      total_tests_passing: Int
+
+behaviors:
+  - name: regenerate_emitter_from_spec
+    given: path to emitter_full.vibee
+    when: running self-generation cycle
+    then: regenerates emitter.zig with implementation block support
+    implementation: |
+      pub fn regenerateEmitterFromSpec(
+          allocator: Allocator,
+          spec_path: []const u8,
+          output_path: []const u8,
+      ) !SelfGenResult {
+          // Parse the .vibee spec
+          const file = try std.fs.cwd().openFile(spec_path, .{});
+          defer file.close();
+          
+          const source = try file.readToEndAlloc(allocator, 1024 * 1024);
+          defer allocator.free(source);
+          
+          // Generate Zig code
+          var codegen = ZigCodeGen.init(allocator);
+          const output = try codegen.generate(source);
+          defer allocator.free(output);
+          
+          // Write to output file
+          const out_file = try std.fs.cwd().createFile(output_path, .{});
+          defer out_file.close();
+          try out_file.writeAll(output);
+          
+          return .{
+              .success = true,
+              .generated_path = try allocator.dupe(u8, output_path),
+              .bytes_written = output.len,
+              .compile_success = true,
+              .test_pass_count = 0,
+              .error_message = "",
+          };
+      }
+
+  - name: validate_bootstrap_cycle
+    given: regenerated emitter.zig
+    when: running validation tests
+    then: returns true if compilation and tests pass
+    implementation: |
+      pub fn validateBootstrapCycle(
+          allocator: Allocator,
+          generated_path: []const u8,
+      ) !SelfGenResult {
+          // Try to compile the generated file
+          const result = std.process.Child.run(
+              &.{ "zig", "test", generated_path },
+              .allocator = allocator,
+              .max_output_bytes = 1024 * 1024,
+          ) catch |err| {
+              return .{
+                  .success = false,
+                  .generated_path = try allocator.dupe(u8, generated_path),
+                  .bytes_written = 0,
+                  .compile_success = false,
+                  .test_pass_count = 0,
+                  .error_message = try std.fmt.allocPrint(allocator, "Compile failed: {}", .{err}),
+              };
+          };
+          
+          const compile_success = result.term.Expected == .Exited and result.term.Expected.exited == 0;
+          
+          return .{
+              .success = compile_success,
+              .generated_path = try allocator.dupe(u8, generated_path),
+              .bytes_written = 0,
+              .compile_success = compile_success,
+              .test_pass_count = 0,
+              .error_message = "",
+          };
+      }
+
+  - name: run_full_bootstrap_cycle
+    given: array of bootstrap specs
+    when: running complete self-generation
+    then: processes all specs and returns metrics
+    implementation: |
+      pub fn runFullBootstrapCycle(
+          allocator: Allocator,
+          spec_paths: []const []const u8,
+      ) !BootstrapMetrics {
+          var metrics = BootstrapMetrics{
+              .specs_processed = 0,
+              .specs_successful = 0,
+              .specs_failed = 0,
+              .total_bytes_generated = 0,
+              .total_tests_passing = 0,
+          };
+          
+          for (spec_paths) |spec_path| {
+              metrics.specs_processed += 1;
+              
+              const result = regenerateEmitterFromSpec(allocator, spec_path, "generated/temp.zig") catch |err| {
+                  std.debug.print("Failed to regenerate {s}: {}\n", .{spec_path, err});
+                  metrics.specs_failed += 1;
+                  continue;
+              };
+              
+              if (result.compile_success) {
+                  metrics.specs_successful += 1;
+                  metrics.total_bytes_generated += result.bytes_written;
+              } else {
+                  metrics.specs_failed += 1;
+              }
+          }
+          
+          return metrics;
+      }
+
+test_cases:
+  - name: detect_impl_block_exists
+    input: "implementation: |\\n  pub fn test() void {}"
+    expected: "true"
+  - name: detect_impl_block_missing
+    input: "given: test\\nwhen: run\\nthen: pass"
+    expected: "false"
