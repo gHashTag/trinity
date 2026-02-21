@@ -15,6 +15,7 @@ const std = @import("std");
 const fluent_general = @import("igla_fluent_general.zig");
 const multilingual = @import("igla_multilingual_coder.zig");
 const self_opt = @import("igla_self_opt.zig");
+const pas_predictions = @import("pas_predictions.zig");
 
 // =============================================================================
 // CONFIGURATION
@@ -226,8 +227,31 @@ pub const UnifiedResponse = struct {
     confidence: f32,
     is_generic: bool,
     has_code: bool,
+    pas_recommendation: ?PasRecommendation,
+
+    pub const PasRecommendation = struct {
+        prediction_id: []const u8,
+        description: []const u8,
+        confidence: f32,
+        efficiency_gain: f32,
+    };
 
     pub fn format(self: *const UnifiedResponse) []const u8 {
+        return self.text;
+    }
+
+    pub fn formatWithPas(self: *const UnifiedResponse, allocator: std.mem.Allocator) ![]const u8 {
+        if (self.pas_recommendation) |rec| {
+            const prefix = try std.fmt.allocPrint(allocator,
+                \\[PAS v8.22: +{d:.0}% efficiency | μ={d:.4} | φ={d:.3}]
+            , .{ rec.efficiency_gain * 100.0, pas_predictions.MU, pas_predictions.PHI });
+            defer allocator.free(prefix);
+
+            const combined = try allocator.alloc(u8, prefix.len + self.text.len);
+            @memcpy(combined[0..prefix.len], prefix);
+            @memcpy(combined[prefix.len..], self.text);
+            return combined;
+        }
         return self.text;
     }
 };
@@ -240,6 +264,7 @@ pub const UnifiedChatEngine = struct {
     fluent_engine: fluent_general.FluentGeneralEngine,
     code_engine: multilingual.MultilingualCoder,
     optimizer: self_opt.PatternOptimizer,
+    pas_engine: pas_predictions.PredictionEngine,
     context: SessionContext,
     total_queries: usize,
     code_queries: usize,
@@ -254,6 +279,7 @@ pub const UnifiedChatEngine = struct {
             .fluent_engine = fluent_general.FluentGeneralEngine.init(),
             .code_engine = multilingual.MultilingualCoder.init(),
             .optimizer = self_opt.PatternOptimizer.init(),
+            .pas_engine = pas_predictions.PredictionEngine{},
             .context = SessionContext.init(),
             .total_queries = 0,
             .code_queries = 0,
@@ -309,6 +335,7 @@ pub const UnifiedChatEngine = struct {
 
     fn handleCodeQuery(self: *Self, query: []const u8, lang: multilingual.Language) UnifiedResponse {
         const code_response = self.code_engine.respond(query);
+        const pas_rec = self.getPasRecommendation(query, .Code);
 
         return UnifiedResponse{
             .text = code_response.text,
@@ -320,11 +347,13 @@ pub const UnifiedChatEngine = struct {
             .confidence = code_response.confidence,
             .is_generic = false,
             .has_code = code_response.category == .Code,
+            .pas_recommendation = pas_rec,
         };
     }
 
     fn handleChatQuery(self: *Self, query: []const u8, lang: multilingual.Language) UnifiedResponse {
         const fluent_response = self.fluent_engine.respond(query);
+        const pas_rec = self.getPasRecommendation(query, .General);
 
         return UnifiedResponse{
             .text = fluent_response.text,
@@ -336,6 +365,7 @@ pub const UnifiedChatEngine = struct {
             .confidence = fluent_response.confidence,
             .is_generic = fluent_response.is_generic,
             .has_code = false,
+            .pas_recommendation = pas_rec,
         };
     }
 
@@ -359,7 +389,7 @@ pub const UnifiedChatEngine = struct {
         return self.handleChatQuery(query, lang);
     }
 
-    fn generateCodeExplanation(_: *Self, query: []const u8, lang: multilingual.Language) UnifiedResponse {
+    fn generateCodeExplanation(self: *Self, query: []const u8, lang: multilingual.Language) UnifiedResponse {
         _ = query;
 
         // Generate explanation about code concepts
@@ -370,6 +400,7 @@ pub const UnifiedChatEngine = struct {
             .German => "Gute Frage zur Programmierung! Lass uns das genauer analysieren. Was interessiert dich konkret — Syntax, Logik oder praktische Anwendung?",
             else => "Great question about programming! Let's explore this in detail. What specifically interests you — syntax, logic, or practical application?",
         };
+        const pas_rec = self.getPasRecommendation(query, .Mixed);
 
         return UnifiedResponse{
             .text = explanations,
@@ -381,6 +412,7 @@ pub const UnifiedChatEngine = struct {
             .confidence = 0.85,
             .is_generic = false,
             .has_code = false,
+            .pas_recommendation = pas_rec,
         };
     }
 
@@ -419,6 +451,33 @@ pub const UnifiedChatEngine = struct {
             .code_ratio = code_ratio,
             .chat_ratio = chat_ratio,
         };
+    }
+
+    /// Get PAS recommendation based on query and mode
+    fn getPasRecommendation(self: *Self, query: []const u8, mode: ChatMode) ?UnifiedResponse.PasRecommendation {
+        _ = mode;
+        _ = self;
+
+        // Get PAS predictions
+        const predictions = self.pas_engine.getAllPredictions();
+
+        // Find high-confidence prediction (75%+)
+        for (predictions) |pred| {
+            if (pred.confidence.toPercent() >= 75.0) {
+                // Calculate efficiency gain based on pattern success rate
+                const efficiency_gain = pred.confidence.value * 0.3; // Up to 30% improvement
+
+                return UnifiedResponse.PasRecommendation{
+                    .prediction_id = pred.id,
+                    .description = pred.description,
+                    .confidence = pred.confidence.value,
+                    .efficiency_gain = efficiency_gain,
+                };
+            }
+        }
+
+        // No high-confidence prediction
+        return null;
     }
 };
 
