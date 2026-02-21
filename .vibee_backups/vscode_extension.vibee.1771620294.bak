@@ -1,0 +1,220 @@
+name: vscode_extension
+version: "1.0.0"
+language: zig
+
+types:
+  ExtensionCommand:
+  ExtensionConfig:
+    fields:
+      model: String
+      local_only: Bool
+      streaming: Bool
+      max_tokens: Int
+      temperature: Float
+      show_inline_hints: Bool
+      auto_complete: Bool
+  CodeContext:
+    fields:
+      file_path: String
+      language: String
+      selection: String
+      surrounding_code: String
+      cursor_line: Int
+      cursor_column: Int
+  ChatMessage:
+    fields:
+      role: String
+      content: String
+      timestamp: Int
+  ChatSession:
+    fields:
+      id: String
+      messages: List<ChatMessage>
+      context: CodeContext
+      model_used: String
+  GenerationResult:
+    fields:
+      code: String
+      language: String
+      explanation: String
+      tokens_used: Int
+      generation_time_ms: Int
+  InlineCompletion:
+    fields:
+      text: String
+      range_start: Int
+      range_end: Int
+      confidence: Float
+  LSPRequest:
+    fields:
+      method: String
+      params: String
+      id: Int
+  LSPResponse:
+    fields:
+      id: Int
+      result: String
+      error: String
+  ExtensionStats:
+    fields:
+      total_generations: Int
+      total_chats: Int
+      tokens_generated: Int
+      avg_latency_ms: Float
+      local_usage_percent: Float
+
+behaviors:
+  - name: init
+    given: ExtensionConfig with settings
+    when: Extension activates in VS Code
+    then: Initialize LSP server, load model
+    implementation: |
+              pub fn init(config: ExtensionConfig) !void {
+                  _ = config;
+              }
+      
+      
+
+  - name: handleCommand
+    given: ExtensionCommand and context
+    when: User triggers command
+    then: Route to appropriate handler
+    implementation: |
+              pub fn handleCommand(command: ExtensionCommand, context: CodeContext) !void {
+                  _ = command;
+                  _ = context;
+              }
+      
+      
+
+  - name: chat
+    given: User message and chat session
+    when: Chat command invoked
+    then: Send to IGLA, stream response
+    implementation: |
+              pub fn chat(session: *ChatSession, message: []const u8) !void {
+                  _ = session;
+                  _ = message;
+              }
+      
+      
+
+  - name: generateCode
+    given: Prompt and code context
+    when: Generate code command invoked
+    then: Generate code, insert at cursor
+    implementation: |
+              pub fn generateCode(prompt: []const u8, context: CodeContext) GenerationResult {
+                  _ = prompt;
+                  _ = context;
+                  return GenerationResult{};
+              }
+      
+      
+
+  - name: explainCode
+    given: Selected code
+    when: Explain command invoked
+    then: Generate explanation in panel
+    implementation: |
+              pub fn explainCode(code: []const u8, language: []const u8) []const u8 {
+                  _ = code;
+                  _ = language;
+                  return "";
+              }
+      
+      
+
+  - name: refactorCode
+    given: Selected code and refactor type
+    when: Refactor command invoked
+    then: Generate refactored version
+    implementation: |
+              pub fn refactorCode(code: []const u8, refactor_type: []const u8) []const u8 {
+                  _ = code;
+                  _ = refactor_type;
+                  return "";
+              }
+      
+      
+
+  - name: addTests
+    given: Selected function or class
+    then: Generate test cases
+    implementation: |
+              pub fn addTests(code: []const u8, language: []const u8) []const u8 {
+                  _ = code;
+                  _ = language;
+                  return "";
+              }
+      
+      
+
+  - name: fixError
+    given: Error message and code context
+    then: Suggest fix based on error
+    implementation: |
+              pub fn fixError(error_message: []const u8, context: CodeContext) []const u8 {
+                  _ = error_message;
+                  _ = context;
+                  return "";
+              }
+      
+      
+
+  - name: completeInline
+    given: Cursor position and surrounding code
+    when: Typing pause detected
+    then: Suggest inline completion
+    implementation: |
+              pub fn completeInline(context: CodeContext) InlineCompletion {
+                  _ = context;
+                  return InlineCompletion{};
+              }
+      
+      
+
+  - name: startLSPServer
+    given: LSP port configuration
+    when: Extension initializes
+    then: Start LSP server on port
+    implementation: |
+              pub fn startLSPServer(port: u16) !void {
+                  _ = port;
+              }
+      
+      
+
+  - name: handleLSPRequest
+    given: LSPRequest from client
+    when: Request received
+    then: Process and return LSPResponse
+    implementation: |
+              pub fn handleLSPRequest(request: LSPRequest) LSPResponse {
+                  _ = request;
+                  return LSPResponse{};
+              }
+      
+      
+
+  - name: getStats
+    given: Extension state
+    when: Statistics requested
+    then: Return ExtensionStats
+    implementation: |
+              pub fn getStats() ExtensionStats {
+                  return ExtensionStats{};
+              }
+      
+      
+
+  - name: shutdown
+    given: Extension deactivating
+    when: VS Code closing
+    then: Save state, stop LSP server
+    implementation: |
+              pub fn shutdown() void {
+              }
+      
+      
+

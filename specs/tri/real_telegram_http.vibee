@@ -1,0 +1,123 @@
+name: real_telegram_http
+version: "1.0.0"
+language: zig
+module: real_telegram_http
+
+description: |
+  DEV-003-PHASE5: Real HTTP Client for Telegram Bot API
+  Actual HTTPS POST to api.telegram.org with retry logic and error handling
+  Tech Tree: Swarm Watch Phase 5, complexity 4/5
+
+types:
+  HttpRequest:
+    fields:
+      method: String
+      url: String
+      headers: List[Header]
+      body: String
+
+  Header:
+    fields:
+      name: String
+      value: String
+
+  HttpResponse:
+    fields:
+      status_code: Int
+      status_text: String
+      body: String
+      headers: List[Header]
+
+  TelegramResponse:
+    fields:
+      ok: Bool
+      result: Option[TelegramMessage]
+      error_code: Option[Int]
+      description: Option[String]
+
+  TelegramMessage:
+    fields:
+      message_id: Int
+      chat: ChatInfo
+      date: Int
+      text: String
+
+  ChatInfo:
+    fields:
+      id: Int
+      type: String
+      title: Option[String]
+
+  RetryConfig:
+    fields:
+      max_attempts: Int
+      base_delay_ms: Int
+      max_delay_ms: Int
+      backoff_multiplier: Float
+
+behaviors:
+  - name: init_http_client
+    given: Allocator
+    when: RealHttpClient initialized
+    then: Returns client with default retry config (3 attempts, 1s base delay, 2x multiplier)
+
+  - name: send_telegram_message
+    given: Bot token, chat ID, and formatted message
+    when: Alert triggered
+    then: Sends HTTPS POST to api.telegram.org/bot<token>/sendMessage with JSON body
+
+  - name: handle_http_response
+    given: HTTP response from Telegram
+    when: Response received
+    then: Parses JSON, checks ok field, returns error if not ok
+
+  - name: retry_on_failure
+    given: Failed request with retryable error (5xx, timeout)
+    when: Send fails with retryable error
+    then: Waits with exponential backoff, retries up to max_attempts
+
+  - name: handle_rate_limit
+    given: HTTP 429 (Too Many Requests) response
+    when: Telegram rate limit hit
+    then: Extracts retry_after from response, waits that many seconds, retries
+
+  - name: format_json_body
+    given: Chat ID, message text, parse_mode
+    when: Preparing request
+    then: Returns escaped JSON string with proper formatting
+
+  - name: escape_json_string
+    given: Raw message string
+    when: Building JSON body
+    then: Escapes backslashes, quotes, newlines, tabs for JSON
+
+test_cases:
+  - name: http_client_init
+    given: Default config
+    when: RealHttpClient.init()
+    then: Returns client with retry_config.max_attempts = 3
+
+  - name: json_escaping
+    given: String with quotes and newlines
+    when: escapeJsonString() called
+    then: Returns properly escaped string
+
+  - name: rate_limit_handling
+    given: HTTP 429 response with retry_after = 30
+    when: send_telegram_message receives 429
+    then: Waits 30 seconds, retries once more
+
+  - name: exponential_backoff
+    given: 3 failed attempts
+    when: Retrying with backoff
+    then: Delays: 1s, 2s, 4s (not exceeding max_delay_ms)
+
+  - name: success_response_parsing
+    given: HTTP 200 with valid JSON response
+    when: Response received
+    then: Returns ok=true, message_id set
+
+  - name: error_response_parsing
+    given: HTTP 200 with ok=false, error_code=400
+    when: Response received
+    then: Returns error with description

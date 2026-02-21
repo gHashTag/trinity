@@ -1,0 +1,167 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRINITY BATCH PROCESSING (INF-004)
+# Request batching for improved throughput under load
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: batch_processing
+version: "1.0.0"
+language: zig
+module: batch_processing
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PROBLEM ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Current state:
+# - Sequential request processing (one at a time)
+# - ~1.4 tok/s inference speed
+# - Requests queue up during generation
+# - No parallelism in request handling
+
+# Target:
+# - Batch multiple requests together
+# - Process batch in parallel where possible
+# - Reduce per-request overhead
+# - Target: 3-4x throughput improvement
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  BatchRequest:
+    fields:
+      id: String
+      messages: List<String>
+      max_tokens: Int
+      temperature: Float
+      connection: Object      # HTTP connection to respond to
+      received_at: Timestamp
+
+  BatchResponse:
+    fields:
+      request_id: String
+      content: String
+      tokens_generated: Int
+      latency_ms: Float
+
+  BatchConfig:
+    fields:
+      max_batch_size: Int     # Max requests per batch (default: 4)
+      batch_timeout_ms: Int   # Max wait time for batch (default: 100ms)
+      max_queue_size: Int     # Max pending requests (default: 32)
+
+  BatchMetrics:
+    fields:
+      total_requests: Int
+      total_batches: Int
+      avg_batch_size: Float
+      avg_latency_ms: Float
+      throughput_tok_per_sec: Float
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BATCHING STRATEGY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Strategy: Continuous Batching
+# 
+# 1. Accept thread: receives requests, adds to queue
+# 2. Batch thread: collects requests, forms batches
+# 3. Inference thread: processes batches
+# 
+# Benefits:
+# - Amortize model overhead across multiple requests
+# - Better GPU/CPU utilization (when we add GPU)
+# - Reduced latency variance
+
+batching_config:
+  max_batch_size: 4
+  batch_timeout_ms: 100
+  max_queue_size: 32
+  
+# For CPU inference, batching helps less than GPU
+# But still reduces per-request overhead:
+# - HTTP parsing
+# - Tokenization
+# - Response formatting
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPLEMENTATION APPROACH
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Phase 1: Request Queue (simpler)
+# - Add thread-safe queue for incoming requests
+# - Process requests in FIFO order
+# - Still sequential inference, but async HTTP handling
+
+# Phase 2: True Batching (complex)
+# - Batch multiple prompts together
+# - Requires padding/masking for different lengths
+# - Shared KV cache management
+# - Significant code changes
+
+# For now: Implement Phase 1 (async request handling)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: enqueue_request
+    given: HTTP connection and parsed request body
+    when: New chat completion request received
+    then: Add to request queue, return immediately
+    implementation: |
+        pub fn enqueue_request(self: *@This(), req: BatchRequest) !void {
+            // Add to request queue with timestamp
+            _ = self;
+            _ = req;
+            // In real implementation: queue.append(req) with mutex lock
+            // For now: simple stub that compiles
+        }
+
+  - name: dequeue_batch
+    given: Request queue and batch config
+    when: Batch timeout or max_batch_size reached
+    then: Return array of BatchRequest up to max_batch_size
+    implementation: |
+        pub fn dequeue_batch(self: *@This()) []BatchRequest {
+            // Return batch of up to max_batch_size requests
+            _ = self;
+            // In real implementation: return queue items[0..max_batch_size]
+            return &[_]BatchRequest{};
+        }
+
+  - name: process_batch
+    given: Array of BatchRequest and model
+    when: Batch ready for processing
+    then: Generate responses for all requests
+
+  - name: send_response
+    given: BatchResponse and HTTP connection
+    when: Generation complete
+    then: Send HTTP response to client
+    implementation: |
+        pub fn send_response(resp: BatchResponse) !void {
+            // Send HTTP response with JSON body
+            _ = resp;
+            // In real implementation: write to connection stream
+        }
+
+  - name: get_metrics
+    given: No input required
+    when: Metrics requested
+    then: Return BatchMetrics with current stats
+
+  - name: configure_batching
+    given: BatchConfig
+    when: Configuration update requested
+    then: Update batching parameters
+    implementation: |
+        pub fn configure_batching(self: *@This(), config: BatchConfig) void {
+            // Update batching parameters
+            _ = config;
+            self.max_batch_size = 4; // Default
+            // In real implementation: self.config = config
+        }
