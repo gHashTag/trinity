@@ -48,6 +48,14 @@ types:
       analysis_duration_ms: Int
       recommendations: List<ImprovementSuggestion>
 
+  AutoImproverConfig:
+    fields:
+      min_confidence: Float
+      max_files_per_cycle: Int
+      require_test_pass: Bool
+      auto_commit: Bool
+      dry_run: Bool
+
 behaviors:
   - name: analyze_regression_patterns
     given: codebase files and error history
@@ -103,7 +111,7 @@ behaviors:
                       const rate_num = rate_str[0..pct_end];
                       success_rate = std.fmt.parseFloat(f64, rate_num) catch 0.5;
                       success_rate = success_rate / 100.0;
-                  };
+                  }
 
                   try patterns.append(.{
                       .pattern_id = try allocator.dupe(u8, name),
@@ -315,6 +323,8 @@ behaviors:
 
           // 2. Scan for issues
           const matches = try analyzeRegressionPatterns(allocator, &[_][]const u8{}, regressions);
+          // TODO: use successes in analyzeSuccessPatterns
+          _ = successes;
           const success_patterns = try analyzeSuccessPatterns(allocator, "");
 
           // 3. Generate suggestions
@@ -353,16 +363,3 @@ behaviors:
           // TODO: load from .ralph/memory/SUCCESS_HISTORY.md
           return &[_]SuccessPattern{};
       }
-
-  - name: AutoImproverConfig
-    given: configuration for auto-improver
-    when: setting up cycle parameters
-    then: returns config with thresholds and limits
-    types:
-      AutoImproverConfig:
-        fields:
-          min_confidence: Float
-          max_files_per_cycle: Int
-          require_test_pass: Bool
-          auto_commit: Bool
-          dry_run: Bool
