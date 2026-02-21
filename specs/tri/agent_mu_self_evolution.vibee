@@ -1,0 +1,137 @@
+name: agent_mu_self_evolution
+version: "8.13.0"
+language: zig
+module: agent_mu
+
+description: |
+  AGENT MU — Full Self-Evolution Mode (Cycle 45)
+  μ = 1/φ²/10 = 0.0382 — священная мутация
+
+  Permanent post-generation guardian that runs after every tri gen.
+  Implements 12 FixType auto-fixes with semantic pattern search
+  and generator self-patching feedback loop.
+
+types:
+  # Auto-fix result with confidence scoring
+  AutoFixResult:
+    fields:
+      fix_type: String
+      confidence: Float
+      lines_changed: Int
+      description: String
+      success: Bool
+
+  # Pattern match with semantic similarity
+  PatternMatch:
+    fields:
+      pattern_id: String
+      similarity: Float
+      anti_pattern: String
+      correct_approach: String
+      effectiveness: Float
+
+  # Generator feedback for self-patching
+  GeneratorFeedback:
+    fields:
+      template_name: String
+      issue_type: String
+      suggested_fix: String
+      priority: Int
+
+behaviors:
+  - name: auto_import_fix
+    given: Missing import statement causes compilation error
+    when: Error message contains "use of undeclared identifier" or "no such member"
+    then:
+      - Parse error to identify missing symbol
+      - Search std library for matching module
+      - Add import statement at top of file
+      - Verify fix by recompiling
+
+  - name: auto_allocator_fix
+    given: Function requires allocator parameter but missing
+    when: Error message contains "missing parameter: allocator" or "no such member 'allocator'"
+    then:
+      - Identify function signature requiring allocator
+      - Inject std.mem.Allocator parameter
+      - Update function calls to pass allocator
+      - Verify fix by recompiling
+
+  - name: auto_error_fix
+    given: Error union handling issue
+    when: Error message contains "error union" or "error set" or "ignored error"
+    then:
+      - Analyze error context (try/catch/try/orelse)
+      - Choose appropriate error handling strategy
+      - Apply fix (try, catch, orelse, or unwrap)
+      - Verify fix by recompiling
+
+  - name: pattern_semantic_search
+    given: Compilation error occurs
+    when: Searching REGRESSION_PATTERNS.md for matching fix
+    then:
+      - Generate vector embedding for error message
+      - Compute semantic similarity with known patterns
+      - Return top-k matches with confidence scores
+      - Select pattern with highest similarity > 0.8
+
+  - name: generator_feedback
+    given: Auto-fix fails after 3 attempts
+    when: Pattern match confidence < 0.5 or no pattern found
+    then:
+      - Analyze AST of generated code
+      - Identify template that generated error
+      - Create GeneratorFeedback with suggested fix
+      - Log to generator feedback loop for self-patching
+
+  - name: comptime_analysis
+    given: Comptime evaluation error
+    when: Error message contains "@compileError" or "comptime"
+    then:
+      - Identify comptime context (block, call, type)
+      - Apply comptime-specific fix (inline, const, @setEvalBranchQuota)
+      - Verify fix at compile time
+      - Log successful comptime pattern to SUCCESS_HISTORY
+
+  - name: multi_target_propagation
+    given: Fix applied successfully for Zig target
+    when: Spec has multiple language targets
+    then:
+      - Identify equivalent fix in other languages
+      - Apply fixes to all generated targets
+      - Verify each target independently
+      - Log cross-language pattern to REGRESSION_PATTERNS
+
+quality_gates:
+  - name: gate_auto_fix_coverage
+    description: All 12 FixType variants must have implementations
+    acceptance:
+      - IMPORT_FIX implemented
+      - ALLOCATOR_FIX implemented
+      - ERROR_UNION_FIX implemented
+      - TYPE_FIX implemented
+      - TEMPLATE_FIX implemented
+      - GENERATOR_PATCH implemented
+
+  - name: gate_pattern_quality
+    description: Semantic search must achieve >0.8 confidence
+    acceptance:
+      - Vector embedding generation works
+      - Similarity scoring returns 0.0-1.0 range
+      - Top-k pattern retrieval functional
+      - Confidence threshold filtering works
+
+  - name: gate_generator_loop
+    description: Generator feedback must close the loop
+    acceptance:
+      - GeneratorFeedback struct defined
+      - AST analysis identifies templates
+      - Suggested fixes logged
+      - Self-patching mechanism exists
+
+config:
+  enable_semantic_search: true
+  confidence_threshold: 0.8
+  max_fix_attempts: 3
+  enable_generator_feedback: true
+  multi_target_propagation: true
