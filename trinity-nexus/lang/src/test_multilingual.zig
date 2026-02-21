@@ -148,6 +148,93 @@ pub fn main() !void {
         std.debug.print("\n  Result: {s}\n\n", .{if (ts_ok) "✅ PASS" else "❌ FAIL"});
     }
 
+    // Generate Go (MGEN-004)
+    {
+        std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+        std.debug.print("  MGEN-004: Fluent Go\n", .{});
+        std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+        const go_code = try lang.generateGo(allocator, spec);
+        defer allocator.free(go_code);
+
+        const has_import = std.mem.indexOf(u8, go_code, "import (") != null;
+        const has_error_type = std.mem.indexOf(u8, go_code, "Error struct") != null;
+        const has_error_unwrap = std.mem.indexOf(u8, go_code, "Unwrap() error") != null;
+        const has_constructor = std.mem.indexOf(u8, go_code, "func New") != null;
+        const has_string_slice = std.mem.indexOf(u8, go_code, "[]string") != null;
+        const has_json_tag = std.mem.indexOf(u8, go_code, "json:") != null;
+        const has_pointer_option = std.mem.indexOf(u8, go_code, "*") != null; // Any pointer type
+
+        std.debug.print("  ✓ Import block: {s}\n", .{if (has_import) "✓" else "✗"});
+        std.debug.print("  ✓ Custom error type: {s}\n", .{if (has_error_type) "✓" else "✗"});
+        std.debug.print("  ✓ Error Unwrap: {s}\n", .{if (has_error_unwrap) "✓" else "✗"});
+        std.debug.print("  ✓ Constructor New: {s}\n", .{if (has_constructor) "✓" else "✗"});
+        std.debug.print("  ✓ []string slice: {s}\n", .{if (has_string_slice) "✓" else "✗"});
+        std.debug.print("  ✓ Pointer types: {s}\n", .{if (has_pointer_option) "✓" else "✗"});
+        std.debug.print("  ✓ JSON tags: {s}\n", .{if (has_json_tag) "✓" else "✗"});
+
+        const go_ok = has_import and has_error_type and has_error_unwrap and
+                     has_constructor and has_string_slice and has_json_tag;
+        std.debug.print("\n  Result: {s}\n\n", .{if (go_ok) "✅ PASS" else "❌ FAIL"});
+    }
+
+    // Generate Zig (MGEN-005)
+    {
+        std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+        std.debug.print("  MGEN-005: Fluent Zig\n", .{});
+        std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+        const zig_code = try lang.generateZig(allocator, spec);
+        defer allocator.free(zig_code);
+
+        const has_std_import = std.mem.indexOf(u8, zig_code, "@import(\"std\")") != null;
+        const has_error_set = std.mem.indexOf(u8, zig_code, "const") != null and std.mem.indexOf(u8, zig_code, "Error = error{") != null;
+        const has_allocator = std.mem.indexOf(u8, zig_code, "Allocator") != null;
+        const has_init_fn = std.mem.indexOf(u8, zig_code, "Init(") != null;
+        const has_const_struct = std.mem.indexOf(u8, zig_code, "pub const") != null;
+        const has_optional = std.mem.indexOf(u8, zig_code, "?") != null;
+        const has_error_union = std.mem.indexOf(u8, zig_code, "!") != null;
+
+        std.debug.print("  ✓ std import: {s}\n", .{if (has_std_import) "✓" else "✗"});
+        std.debug.print("  ✓ Error set: {s}\n", .{if (has_error_set) "✓" else "✗"});
+        std.debug.print("  ✓ Allocator param: {s}\n", .{if (has_allocator) "✓" else "✗"});
+        std.debug.print("  ✓ Init function: {s}\n", .{if (has_init_fn) "✓" else "✗"});
+        std.debug.print("  ✓ const struct: {s}\n", .{if (has_const_struct) "✓" else "✗"});
+        std.debug.print("  ✓ Optional (?): {s}\n", .{if (has_optional) "✓" else "✗"});
+        std.debug.print("  ✓ Error union (!): {s}\n", .{if (has_error_union) "✓" else "✗"});
+
+        const zig_ok = has_std_import and has_error_set and has_allocator and
+                      has_init_fn and has_const_struct and has_optional and has_error_union;
+        std.debug.print("\n  Result: {s}\n\n", .{if (zig_ok) "✅ PASS" else "❌ FAIL"});
+    }
+
+    // Generate V (MGEN-006)
+    {
+        std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+        std.debug.print("  MGEN-006: Fluent V\n", .{});
+        std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+        const v_code = try lang.generateV(allocator, spec);
+        defer allocator.free(v_code);
+
+        const has_module = std.mem.indexOf(u8, v_code, "module ") != null;
+        const has_import = std.mem.indexOf(u8, v_code, "import ") != null;
+        const has_result_type = std.mem.indexOf(u8, v_code, "pub type Result") != null;
+        const has_struct = std.mem.indexOf(u8, v_code, "pub struct") != null;
+        const has_array = std.mem.indexOf(u8, v_code, "[]string") != null;
+        const has_error_return = std.mem.indexOf(u8, v_code, "!Result") != null;
+        const has_optional_syntax = std.mem.indexOf(u8, v_code, "?") != null; // Any optional
+
+        std.debug.print("  ✓ Module decl: {s}\n", .{if (has_module) "✓" else "✗"});
+        std.debug.print("  ✓ Import: {s}\n", .{if (has_import) "✓" else "✗"});
+        std.debug.print("  ✓ Result type: {s}\n", .{if (has_result_type) "✓" else "✗"});
+        std.debug.print("  ✓ pub struct: {s}\n", .{if (has_struct) "✓" else "✗"});
+        std.debug.print("  ✓ Optional (?): {s}\n", .{if (has_optional_syntax) "✓" else "✗"});
+        std.debug.print("  ✓ Array []string: {s}\n", .{if (has_array) "✓" else "✗"});
+        std.debug.print("  ✓ Error return (!): {s}\n", .{if (has_error_return) "✓" else "✗"});
+
+        const v_ok = has_module and has_import and has_result_type and
+                     has_struct and has_array and has_error_return;
+        std.debug.print("\n  Result: {s}\n\n", .{if (v_ok) "✅ PASS" else "❌ FAIL"});
+    }
+
     std.debug.print("══════════════════════════════════════════════════════════════\n", .{});
     std.debug.print("  E2E TEST COMPLETE\n", .{});
     std.debug.print("══════════════════════════════════════════════════════════════\n\n", .{});
