@@ -1,0 +1,65 @@
+# TRI Peer Ranking (MGEN-009)
+# Rank peers by reputation, contribution, and reliability
+
+name: peer_ranking
+version: "1.0.0"
+language: zig
+module: peer_ranking
+
+types:
+  PeerStats:
+    fields:
+      peer_id: String
+      reputation_score: Float
+      total_contribution: Int
+      success_rate: Float
+      avg_response_time_ms: Int
+      last_seen: Int
+      uptime_ratio: Float
+
+  RankTier:
+    fields:
+      tier_name: String
+      min_score: Float
+      max_score: Float
+      reward_multiplier: Float
+
+  Ranking:
+    fields:
+      peer_id: String
+      rank: Int
+      tier: String
+      score: Float
+      change: Int
+
+  Leaderboard:
+    fields:
+      rankings: List<Ranking>
+      last_updated: Int
+      total_peers: Int
+
+behaviors:
+  - name: calculate_score
+    given: peer stats
+    when: calculating reputation score
+    then: returns weighted score based on all factors
+
+  - name: update_ranking
+    given: peer_id and new stats
+    when: peer contributes to network
+    then: recalculates rank and tier
+
+  - name: get_tier
+    given: reputation score
+    when: determining reward tier
+    then: returns tier with multiplier
+
+  - name: get_leaderboard
+    given: top N limit
+    when: requesting leaderboard
+    then: returns sorted rankings
+
+  - name: is_peer_reliable
+    given: peer_id
+    when: checking if peer meets reliability threshold
+    then: returns true if success_rate > 95% and uptime_ratio > 0.9

@@ -1,0 +1,70 @@
+# TRI Economy Core (MGEN-007)
+# Core economy types: balances, rewards, transactions
+
+name: tri_economy_core
+version: "1.0.0"
+language: zig
+module: tri_economy
+
+types:
+  Wallet:
+    fields:
+      address: String
+      balance_wei: Int
+      pending_rewards: Int
+      total_earned: Int
+      stake_amount: Int
+
+  Reward:
+    fields:
+      amount: Int
+      reason: String
+      timestamp: Int
+      from_peer: Option<String>
+      block_height: Int
+
+  Transaction:
+    fields:
+      tx_id: String
+      from: String
+      to: String
+      amount: Int
+      fee: Int
+      timestamp: Int
+      status: String
+      block_height: Option<Int>
+
+  EconomyState:
+    fields:
+      total_supply: Int
+      circulating_supply: Int
+      staked_amount: Int
+      active_peers: Int
+      block_height: Int
+      avg_triples_per_block: Float
+
+behaviors:
+  - name: create_wallet
+    given: valid address
+    when: creating new wallet
+    then: returns Wallet with zero balance
+
+  - name: add_reward
+    given: wallet and reward amount
+    when: adding reward for work
+    then: updates pending_rewards
+
+  - name: claim_rewards
+    given: wallet with pending rewards
+    when: claiming rewards
+    then: transfers pending to balance
+
+  - name: get_balance
+    given: wallet address
+    when: querying balance
+    then: returns current balance in wei
+
+  - name: transfer
+    given: sender, recipient, amount
+    when: transferring TRI
+    then: creates transaction or error if insufficient funds
