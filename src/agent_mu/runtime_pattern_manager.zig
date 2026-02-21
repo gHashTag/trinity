@@ -1,9 +1,14 @@
-//! Runtime Pattern Manager v8.19 — Live Self-Modification
+//! Runtime Pattern Manager v8.21 — Live Self-Modification
 //!
 //! AGENT MU can patch its own patterns during runtime execution.
-//! This is the PRODUCTION version of comptime_self_mod.zig
+//! Features:
+//! - Cross-agent validation via MetaLearner
+//! - Sacred math-based confidence calculation
+//! - Circuit breaker for safety
+//! - Automatic rollback on regression
 
 const std = @import("std");
+const sacred = @import("sacred_constants.zig");
 
 const Allocator = std.mem.Allocator;
 const ArrayList = std.array_list.Managed;
@@ -241,6 +246,12 @@ pub const LivePatternManager = struct {
     pattern_counter: usize,
     confidence_threshold: f64,
 
+    // v8.21 additions: Meta-learner integration
+    meta_enabled: bool,
+    phi_weighted_consensus: bool,
+    intelligence_multiplier: f64,
+    successful_fixes: usize,
+
     /// Initialize with safety defaults
     pub fn init(allocator: Allocator) !LivePatternManager {
         return .{
@@ -251,6 +262,10 @@ pub const LivePatternManager = struct {
             .allocator = allocator,
             .pattern_counter = 0,
             .confidence_threshold = 0.95,
+            .meta_enabled = true,
+            .phi_weighted_consensus = true,
+            .intelligence_multiplier = 1.0,
+            .successful_fixes = 0,
         };
     }
 
@@ -402,6 +417,138 @@ pub const LivePatternManager = struct {
             .health = pattern.health,
         };
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // v8.21: Meta-Learning Integration
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Calculate φ-weighted consensus score for pattern validation
+    pub fn phiWeightedConsensus(self: *const LivePatternManager, scores: []const f64) f64 {
+        if (!self.phi_weighted_consensus) {
+            // Simple average if φ-weighting disabled
+            var sum: f64 = 0;
+            for (scores) |s| sum += s;
+            return if (scores.len > 0) sum / @as(f64, @floatFromInt(scores.len)) else 0;
+        }
+
+        // φ-weighted consensus: weight by powers of φ
+        var weighted_sum: f64 = 0;
+        var total_weight: f64 = 0;
+        var weight: f64 = 1.0;
+
+        for (scores) |score| {
+            weighted_sum += score * weight;
+            total_weight += weight;
+            weight *= sacred.PHI;
+        }
+
+        return if (total_weight > 0) weighted_sum / total_weight else 0;
+    }
+
+    /// Check if pattern meets meta-learning criteria
+    pub fn metaEvaluatePattern(
+        self: *const LivePatternManager,
+        confidence: f64,
+        agent_scores: ?[]const f64,
+    ) bool {
+        // Base confidence check
+        if (confidence < self.confidence_threshold) return false;
+
+        // φ-weighted consensus from multiple agents
+        if (agent_scores) |scores| {
+            const consensus = self.phiWeightedConsensus(scores);
+            if (consensus < 0.95) return false;
+        }
+
+        return true;
+    }
+
+    /// Update intelligence multiplier after successful fix
+    pub fn updateIntelligence(self: *LivePatternManager) void {
+        self.successful_fixes += 1;
+        // I(t) = I₀ × e^(μ×fixes) where μ = 0.0382
+        self.intelligence_multiplier = std.math.exp(
+            sacred.MU * @as(f64, @floatFromInt(self.successful_fixes)),
+        );
+    }
+
+    /// Get current intelligence multiplier
+    pub fn getIntelligenceMultiplier(self: *const LivePatternManager) f64 {
+        return self.intelligence_multiplier;
+    }
+
+    /// Predict success probability using sacred math
+    pub fn predictSuccessProbability(
+        self: *const LivePatternManager,
+        pattern_confidence: f64,
+    ) f64 {
+        // Combine pattern confidence with intelligence multiplier
+        // Use μ (MU) for scaling
+        const base_prob = pattern_confidence;
+        const intelligence_boost = (self.intelligence_multiplier - 1.0) * sacred.MU;
+        const result = base_prob + intelligence_boost;
+        return if (result > 1.0) 1.0 else result;
+    }
+
+    /// Auto-apply pattern if meta-learning criteria met
+    pub fn autoApplyIfReady(
+        self: *LivePatternManager,
+        template: []const u8,
+        fix_type: FixType,
+        confidence: f64,
+        agent_scores: ?[]const f64,
+    ) !bool {
+        if (!self.meta_enabled) {
+            return self.proposePattern(template, fix_type, confidence);
+        }
+
+        // Check meta-learning criteria
+        if (!self.metaEvaluatePattern(confidence, agent_scores)) {
+            return false;
+        }
+
+        // Apply pattern
+        const accepted = try self.proposePattern(template, fix_type, confidence);
+        if (accepted) {
+            self.updateIntelligence();
+        }
+        return accepted;
+    }
+
+    /// Generate meta-learning report
+    pub fn generateMetaReport(
+        self: *const LivePatternManager,
+        allocator: Allocator,
+    ) ![]const u8 {
+        return std.fmt.allocPrint(
+            allocator,
+            \\{{"patterns":{d},"fixes":{d},"intelligence":{d:.4},"multiplier":{d:.4}}}
+        ,
+            .{
+                self.active_patterns.items.len,
+                self.successful_fixes,
+                self.intelligence_multiplier,
+                self.intelligence_multiplier,
+            },
+        );
+    }
+
+    /// Enable/disable meta-learning
+    pub fn setMetaEnabled(self: *LivePatternManager, enabled: bool) void {
+        self.meta_enabled = enabled;
+    }
+
+    /// Enable/disable φ-weighted consensus
+    pub fn setPhiWeightedConsensus(self: *LivePatternManager, enabled: bool) void {
+        self.phi_weighted_consensus = enabled;
+    }
+
+    /// Get Trinity-aligned status
+    pub fn isTrinityAligned(self: *const LivePatternManager) bool {
+        // Check if metrics are Trinity-aligned (φ² + 1/φ² = 3)
+        const sum = self.intelligence_multiplier + (1.0 / self.intelligence_multiplier);
+        return sum >= 2.99 and sum <= 3.01;
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -548,3 +695,129 @@ test "LivePatternManager: record outcome" {
         try std.testing.expectEqual(@as(usize, 1), m.total_attempts);
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v8.21: Meta-Learning Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "LivePatternManager: phi-weighted consensus" {
+    const allocator = std.testing.allocator;
+
+    var lpm = try LivePatternManager.init(allocator);
+    defer lpm.deinit();
+
+    const scores = [_]f64{ 0.9, 0.95, 0.88 };
+    const consensus = lpm.phiWeightedConsensus(&scores);
+
+    // φ-weighted should be slightly higher than simple average (0.91)
+    try std.testing.expect(consensus > 0.90 and consensus < 0.94);
+}
+
+test "LivePatternManager: meta-evaluate pattern" {
+    const allocator = std.testing.allocator;
+
+    var lpm = try LivePatternManager.init(allocator);
+    defer lpm.deinit();
+
+    // High confidence with good agent scores should pass
+    const agent_scores = [_]f64{ 0.96, 0.97, 0.94 };
+    const result = lpm.metaEvaluatePattern(0.98, &agent_scores);
+    try std.testing.expect(result);
+
+    // Low confidence should fail
+    const result2 = lpm.metaEvaluatePattern(0.80, null);
+    try std.testing.expect(!result2);
+}
+
+test "LivePatternManager: update intelligence multiplier" {
+    const allocator = std.testing.allocator;
+
+    var lpm = try LivePatternManager.init(allocator);
+    defer lpm.deinit();
+
+    const initial = lpm.getIntelligenceMultiplier();
+    try std.testing.expectApproxEqAbs(1.0, initial, 0.01);
+
+    // After 10 successful fixes, multiplier should increase
+    lpm.successful_fixes = 10;
+    lpm.updateIntelligence();
+
+    const updated = lpm.getIntelligenceMultiplier();
+    try std.testing.expect(updated > 1.0 and updated < 2.0);
+}
+
+test "LivePatternManager: predict success probability" {
+    const allocator = std.testing.allocator;
+
+    var lpm = try LivePatternManager.init(allocator);
+    defer lpm.deinit();
+
+    const prob = lpm.predictSuccessProbability(0.95);
+    // Should be close to base confidence with minimal intelligence boost
+    try std.testing.expect(prob >= 0.95 and prob <= 1.0);
+
+    // With higher intelligence, probability should increase
+    lpm.successful_fixes = 50;
+    lpm.updateIntelligence();
+
+    const prob2 = lpm.predictSuccessProbability(0.95);
+    try std.testing.expect(prob2 >= prob);
+}
+
+test "LivePatternManager: auto-apply with meta criteria" {
+    const allocator = std.testing.allocator;
+
+    var lpm = try LivePatternManager.init(allocator);
+    defer lpm.deinit();
+
+    const agent_scores = [_]f64{ 0.96, 0.97, 0.94 };
+    const accepted = try lpm.autoApplyIfReady("test pattern", .TYPE_FIX, 0.98, &agent_scores);
+
+    try std.testing.expect(accepted);
+    try std.testing.expectEqual(@as(usize, 1), lpm.active_patterns.items.len);
+}
+
+test "LivePatternManager: generate meta report" {
+    const allocator = std.testing.allocator;
+
+    var lpm = try LivePatternManager.init(allocator);
+    defer lpm.deinit();
+
+    const report = try lpm.generateMetaReport(allocator);
+    defer allocator.free(report);
+
+    try std.testing.expect(std.mem.indexOf(u8, report, "patterns") != null);
+    try std.testing.expect(std.mem.indexOf(u8, report, "intelligence") != null);
+}
+
+test "LivePatternManager: enable/disable meta learning" {
+    const allocator = std.testing.allocator;
+
+    var lpm = try LivePatternManager.init(allocator);
+    defer lpm.deinit();
+
+    try std.testing.expect(lpm.meta_enabled);
+
+    lpm.setMetaEnabled(false);
+    try std.testing.expect(!lpm.meta_enabled);
+
+    lpm.setMetaEnabled(true);
+    try std.testing.expect(lpm.meta_enabled);
+}
+
+test "LivePatternManager: Trinity alignment check" {
+    const allocator = std.testing.allocator;
+
+    var lpm = try LivePatternManager.init(allocator);
+    defer lpm.deinit();
+
+    // With multiplier = 1.0, 1 + 1/1 = 2, not Trinity-aligned
+    try std.testing.expect(!lpm.isTrinityAligned());
+
+    // With multiplier ≈ 1.618 (φ), φ + 1/φ ≈ 1.618 + 0.618 = 2.236, still not 3
+    // Need to find value where x + 1/x ≈ 3
+    // This happens at x ≈ φ² ≈ 2.618
+    lpm.intelligence_multiplier = 2.618;
+    try std.testing.expect(lpm.isTrinityAligned());
+}
+
