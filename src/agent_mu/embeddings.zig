@@ -4,7 +4,7 @@
 //! Provides O(log n) similarity search for pattern matching.
 
 const std = @import("std");
-const ArrayListManaged = std.array_list.AlignedManaged;
+const ArrayListManaged = std.array_list.Managed;
 const diagnostic = @import("diagnostic.zig");
 
 /// Embedding dimension (384-dim vectors)
@@ -23,11 +23,11 @@ pub const ErrorEmbedding = struct {
 pub const HNSWNode = struct {
     id: usize,
     embedding: *const [EMBEDDING_DIM]f32,
-    neighbors: ArrayListManaged(usize, std.heap.page_allocator),
+    neighbors: ArrayListManaged(usize),
     level: usize,
 
     pub fn init(allocator: std.mem.Allocator, id: usize, embedding: *const [EMBEDDING_DIM]f32, level: usize) !HNSWNode {
-        var neighbors = ArrayListManaged(usize, std.heap.page_allocator).init(allocator);
+        var neighbors = ArrayListManaged(usize).init(allocator);
         return HNSWNode{
             .id = id,
             .embedding = embedding,
@@ -43,7 +43,7 @@ pub const HNSWNode = struct {
 
 /// HNSW index for fast similarity search
 pub const HNSWIndex = struct {
-    nodes: ArrayListManaged(*HNSWNode, std.heap.page_allocator),
+    nodes: ArrayListManaged(*HNSWNode),
     entry_point: ?*HNSWNode,
     max_level: usize,
     ml: f64, // Level normalization factor
@@ -51,7 +51,7 @@ pub const HNSWIndex = struct {
 
     pub fn init(allocator: std.mem.Allocator, ef_construction: usize) !HNSWIndex {
         return HNSWIndex{
-            .nodes = ArrayListManaged(*HNSWNode, std.heap.page_allocator).init(allocator),
+            .nodes = ArrayListManaged(*HNSWNode).init(allocator),
             .entry_point = null,
             .max_level = 0,
             .ml = 1.0 / std.math.ln(@as(f32, @floatFromInt(ef_construction))),
@@ -117,11 +117,10 @@ pub const HNSWIndex = struct {
 
     /// Get random level for new node (exponential distribution)
     fn getRandomLevel(self: *const HNSWIndex) usize {
-        const rand = std.crypto.random;
         var level: usize = 0;
         var rand_val: u32 = undefined;
         while (true) {
-            rand.random.bytes(std.mem.asBytes(&rand_val));
+            std.crypto.random.bytes(std.mem.asBytes(&rand_val));
             const unif: f32 = @as(f32, @floatFromInt(rand_val)) / @as(f32, std.math.maxInt(u32));
             if (unif > self.ml) break;
             level += 1;

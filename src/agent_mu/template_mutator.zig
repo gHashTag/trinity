@@ -4,7 +4,7 @@
 //! validates syntax, tests on sample specs.
 
 const std = @import("std");
-const ArrayListManaged = std.array_list.AlignedManaged;
+const ArrayListManaged = std.array_list.Managed;
 const ast_analyzer = @import("ast_analyzer.zig");
 
 /// Mutation type
@@ -38,14 +38,14 @@ pub const MutationResult = struct {
 
 /// Template mutator
 pub const TemplateMutator = struct {
-    mutations: ArrayListManaged(TemplateMutation, std.heap.page_allocator),
-    rollback_history: ArrayListManaged([]const u8, std.heap.page_allocator),
+    mutations: ArrayListManaged(TemplateMutation),
+    rollback_history: ArrayListManaged([]const u8),
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) !TemplateMutator {
         return TemplateMutator{
-            .mutations = ArrayListManaged(TemplateMutation, std.heap.page_allocator).init(allocator),
-            .rollback_history = ArrayListManaged([]const u8, std.heap.page_allocator).init(allocator),
+            .mutations = ArrayListManaged(TemplateMutation).init(allocator),
+            .rollback_history = ArrayListManaged([]const u8).init(allocator),
             .allocator = allocator,
         };
     }
@@ -83,19 +83,17 @@ pub const TemplateMutator = struct {
 
     /// Validate mutated template
     pub fn validateMutation(self: *TemplateMutator, template_path: []const u8) !bool {
-        _ = self;
-
         // Try to compile the template
-        const result = try std.process.Child.exec(
-            self.allocator,
-            &.{ "zig", "build", "--check", template_path },
-        );
+        const result = std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &.{ "zig", "build", "--check", template_path },
+        }) catch return false;
         defer {
-            _ = result.deinit();
-            _ = result.term.deinit();
+            self.allocator.free(result.stdout);
+            self.allocator.free(result.stderr);
         }
 
-        return result.term.exited == 0;
+        return result.term == .Exited and result.term.Exited == 0;
     }
 
     /// Rollback last mutation
@@ -202,24 +200,24 @@ test "TemplateMutator: basic mutation" {
 
 test "generateMutatedLine: add_try" {
     const allocator = std.testing.allocator;
-    const mutated = try TemplateMutator.generateFixMutation(
-        allocator,
-        "add_try",
-        0,
-        "someFunction()",
-    );
+    var mutator = try TemplateMutator.init(allocator);
+    defer mutator.deinit();
+
+    const mutated = try mutator.generateFixMutation("add_try", 0, "someFunction()");
+    defer allocator.free(mutated.original_line);
+    defer allocator.free(mutated.mutated_line);
 
     try std.testing.expectEqualStrings("try someFunction()", mutated.mutated_line);
 }
 
 test "generateMutatedLine: add_allocator" {
     const allocator = std.testing.allocator;
-    const mutated = try TemplateMutator.generateFixMutation(
-        allocator,
-        "add_allocator",
-        0,
-        "ArrayList(u8).init()",
-    );
+    var mutator = try TemplateMutator.init(allocator);
+    defer mutator.deinit();
+
+    const mutated = try mutator.generateFixMutation("add_allocator", 0, "ArrayList(u8).init()");
+    defer allocator.free(mutated.original_line);
+    defer allocator.free(mutated.mutated_line);
 
     try std.testing.expectEqualStrings("ArrayList(u8).init(), allocator", mutated.mutated_line);
 }

@@ -3,7 +3,7 @@
 //! Searches REGRESSION_PATTERNS.md for similar past errors and their solutions.
 
 const std = @import("std");
-const ArrayListManaged = std.array_list.AlignedManaged;
+const ArrayListManaged = std.array_list.Managed;
 const diagnostic = @import("diagnostic.zig");
 
 /// Match result from REGRESSION_PATTERNS.md
@@ -161,8 +161,8 @@ fn extractSolution(allocator: std.mem.Allocator, entry: []const u8) !PatternMatc
 
     var anti_pattern: []const u8 = "";
     var correct_approach: []const u8 = "";
-    var files_list = ArrayListManaged([]const u8, null).init(allocator);
-    var fixes_list = ArrayListManaged([]const u8, null).init(allocator);
+    var files_list = ArrayListManaged([]const u8).init(allocator);
+    var fixes_list = ArrayListManaged([]const u8).init(allocator);
 
     errdefer {
         if (files_list.items.len > 0) {
@@ -247,7 +247,7 @@ pub fn semanticPatternMatch(
     defer allocator.free(content);
 
     // Collect all candidates with confidence scores
-    var candidates = ArrayListManaged(PatternCandidate, null).init(allocator);
+    var candidates = ArrayListManaged(PatternCandidate).init(allocator);
     defer {
         for (candidates.items) |c| {
             allocator.free(c.pattern_id);
@@ -275,7 +275,7 @@ pub fn semanticPatternMatch(
     }
 
     // Sort by confidence (highest first)
-    std.sort.insert(f64, candidates.items, {}, struct {
+    std.sort.insertion(PatternCandidate, candidates.items, {}, struct {
         fn lessThan(_: void, a: PatternCandidate, b: PatternCandidate) bool {
             return a.confidence > b.confidence;
         }

@@ -3,7 +3,7 @@
 //! Records successful fixes and unfixable errors to Ralph memory files.
 
 const std = @import("std");
-const ArrayListManaged = std.array_list.AlignedManaged;
+const ArrayListManaged = std.array_list.Managed;
 const diagnostic = @import("diagnostic.zig");
 
 /// Log a successful fix to SUCCESS_HISTORY.md
@@ -26,7 +26,7 @@ pub fn logSuccess(
     defer allocator.free(timestamp);
 
     // Build file list string
-    var files_str = ArrayListManaged(u8, null).init(allocator);
+    var files_str = ArrayListManaged(u8).init(allocator);
     defer files_str.deinit();
     try files_str.append('[');
     for (files_modified, 0..) |f, i| {
@@ -95,7 +95,7 @@ pub fn logRegression(
     defer allocator.free(anti_pattern);
 
     // Build attempted fixes list
-    var fixes_str = ArrayListManaged(u8, null).init(allocator);
+    var fixes_str = ArrayListManaged(u8).init(allocator);
     defer fixes_str.deinit();
     for (attempted_fixes) |fix| {
         try fixes_str.appendSlice("  ");

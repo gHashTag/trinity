@@ -4,7 +4,7 @@
 //! Clusters similar patterns for better organization.
 
 const std = @import("std");
-const ArrayListManaged = std.array_list.AlignedManaged;
+const ArrayListManaged = std.array_list.Managed;
 const diagnostic = @import("diagnostic.zig");
 const embeddings = @import("embeddings.zig");
 
@@ -47,7 +47,7 @@ pub const NeuralSearchEngine = struct {
         const nodes = try self.index.search(&query_emb, @min(k, self.index.nodes.items.len));
 
         // Build results
-        var results = ArrayListManaged(SearchResult, self.allocator).init(self.allocator);
+        var results = ArrayListManaged(SearchResult).init(self.allocator);
         for (nodes) |node| {
             const sim = embeddings.cosineSimilarity(&query_emb, node.embedding);
             if (sim >= threshold) {
@@ -81,7 +81,7 @@ pub const NeuralSearchEngine = struct {
 pub const PatternCluster = struct {
     cluster_id: []const u8,
     centroid: [embeddings.EMBEDDING_DIM]f32,
-    patterns: ArrayListManaged(*embeddings.ErrorEmbedding, std.heap.page_allocator),
+    patterns: ArrayListManaged(*embeddings.ErrorEmbedding),
     fix_type: diagnostic.FixType,
     avg_success_rate: f32,
 
@@ -89,14 +89,14 @@ pub const PatternCluster = struct {
         return PatternCluster{
             .cluster_id = try allocator.dupe(u8, cluster_id),
             .centroid = [_]f32{0.0} ** embeddings.EMBEDDING_DIM,
-            .patterns = ArrayListManaged(*embeddings.ErrorEmbedding, std.heap.page_allocator).init(allocator),
+            .patterns = ArrayListManaged(*embeddings.ErrorEmbedding).init(allocator),
             .fix_type = fix_type,
             .avg_success_rate = 0.0,
         };
     }
 
     pub fn deinit(self: *PatternCluster) void {
-        self.patterns.allocator.free(self.centroid);
+        self.patterns.allocator.free(self.cluster_id);
         self.patterns.deinit();
     }
 
@@ -145,13 +145,13 @@ pub const PatternCluster = struct {
 
 /// K-means clustering for patterns
 pub const PatternClustering = struct {
-    clusters: ArrayListManaged(PatternCluster, std.heap.page_allocator),
+    clusters: ArrayListManaged(PatternCluster),
     k: usize,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, k: usize) !PatternClustering {
         return PatternClustering{
-            .clusters = ArrayListManaged(PatternCluster, std.heap.page_allocator).init(allocator),
+            .clusters = ArrayListManaged(PatternCluster).init(allocator),
             .k = k,
             .allocator = allocator,
         };
@@ -271,7 +271,7 @@ test "PatternClustering: k-means" {
     var clustering = try PatternClustering.init(allocator, 2);
     defer clustering.deinit();
 
-    var patterns = ArrayListManaged(embeddings.ErrorEmbedding, allocator).init(allocator);
+    var patterns = ArrayListManaged(embeddings.ErrorEmbedding).init(allocator);
 
     // Add 4 patterns (2 similar pairs)
     const emb1 = try embeddings.EmbeddingGenerator.generate(allocator, "error type mismatch");
