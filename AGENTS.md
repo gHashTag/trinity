@@ -642,4 +642,68 @@ AGENT_MU_EXIT = (
 
 ---
 
+## 🔧 Zig 0.15 Idioms in AGENT MU
+
+AGENT MU actively applies these idioms when fixing code:
+
+| Idiom | Before Fix | After Fix | Why |
+|-------|-----------|-----------|-----|
+| **ArrayListUnmanaged** | `ArrayList(T).init(allocator)` | `ArrayListUnmanaged(T){}` | No allocator capture needed |
+| **Inferred errors** | `const Error = error{...}; fn foo() !Error` | `fn foo() !void` | Simpler, auto-inferred |
+| **Packed structs** | `struct { x: u8, y: u8, z: u8 }` | `packed struct { xyz: u24 }` | Memory optimization |
+| **ArenaAllocator** | Multiple allocs | Single arena block | Faster temp allocations |
+| **Error Return Traces** | Silent failure | `@errorReturnTrace()` in logs | Better diagnostics |
+| **Comptime assertions** | Runtime checks | `comptime assert(...)` | Catch errors at compile time |
+| **errdefer** | Manual cleanup | `errdefer freeAlloc(ptr)` | Guaranteed cleanup |
+
+### Example: ArrayListUnmanaged Fix
+
+```zig
+// ❌ BEFORE (causes ALLOCATOR_FIX)
+var list = std.ArrayList(u8).init(allocator);
+defer list.deinit();
+try list.append(42);
+
+// ✅ AFTER (AGENT MU applies)
+var list = std.ArrayListUnmanaged(u8){};
+defer list.deinit(allocator);
+try list.append(allocator, 42);
+```
+
+### Example: Inferred Error Set Fix
+
+```zig
+// ❌ BEFORE (causes ERROR_UNION_FIX)
+const ParseError = error{ InvalidSyntax, UnexpectedEOF };
+fn parse(data: []const u8) !ParseError {
+    // ...
+}
+
+// ✅ AFTER (AGENT MU applies)
+fn parse(data: []const u8) !void {
+    // Error set inferred from body
+    return error.InvalidSyntax;
+}
+```
+
+### Sacred Constants in AGENT MU
+
+```zig
+// src/agent_mu/logger.zig
+pub const MU: f64 = 1.0 / (1.618033988749895 * 1.618033988749895) / 10.0; // = 0.0382
+
+pub const MutationStats = struct {
+    total_fixes: u32 = 0,
+    successful_fixes: u32 = 0,
+    failed_fixes: u32 = 0,
+    intelligence_gain: f64 = 0.0,
+
+    pub fn calculateGain(self: *const MutationStats) f64 {
+        return @as(f64, @floatFromInt(self.successful_fixes)) * MU;
+    }
+};
+```
+
+---
+
 **KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**
