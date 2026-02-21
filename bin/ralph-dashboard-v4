@@ -4,26 +4,35 @@ cd /Users/playra/trinity
 
 # Stop old handlers and sessions
 pkill -f tri_cmd_handler 2>/dev/null || true
+pkill -f tri_cmd_real_handler_v2 2>/dev/null || true
 tmux kill-session -t ralph 2>/dev/null || true
 sleep 0.5
 
 # Start handler (fixed version)
-bash .ralph/scripts/tri_cmd_handler_v4_final.sh > /dev/null 2>&1 &
+bash .ralph/scripts/tri_cmd_real_handler_v2.sh > /dev/null 2>&1 &
 HANDLER_PID=$!
 
 # === HOME window (3 panes) ===
-# Layout: Status(25%) | Output(~50%) | Input(~25%)
+# Layout: Output(~60% left) | Status(~20% top-right) | Input(~20% bottom-right)
 
-# Start with full width pane (this becomes OUTPUT)
+# Start with full width pane
 tmux new-session -s ralph -n "HOME" -d
-tmux send-keys -t ralph:1.1 "tail -f .ralph/queue/responses/current.resp" C-m
 
-# Split to create Status on LEFT (25%)
-tmux split-window -h -p 25 -t ralph:1
-tmux send-keys -t ralph:1.2 "while true; do clear; .ralph/scripts/tmux_status_v4.sh compact; sleep 10; done" C-m
+# Split horizontally: ~38% on right for STATUS+INPUT column
+tmux split-window -h -p 38 -t ralph:1
+# Now: Pane 1 (left, ~62%), Pane 2 (right, ~38%)
 
-# Split OUTPUT pane vertically to create INPUT at bottom (~12 lines)
-tmux split-window -v -l 12 -t ralph:1.1
+# Split RIGHT pane (pane 2) vertically: top for STATUS, bottom for INPUT
+tmux split-window -v -p 50 -t ralph:1.2
+# Now: Pane 1 (OUTPUT left), Pane 2 (STATUS top-right), Pane 3 (INPUT bottom-right)
+
+# Pane 1 = OUTPUT (left main area)
+tmux send-keys -t ralph:1.1 "bash .ralph/scripts/output_monitor_v4.sh" C-m
+
+# Pane 2 = STATUS (top right)
+tmux send-keys -t ralph:1.2 "while true; do clear; bash .ralph/scripts/tmux_status_v4.sh compact; sleep 10; done" C-m
+
+# Pane 3 = INPUT (bottom right)
 tmux send-keys -t ralph:1.3 "bash .ralph/scripts/tri_cmd_input_v4.sh" C-m
 
 # Select INPUT pane for typing

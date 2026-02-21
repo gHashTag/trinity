@@ -1,7 +1,7 @@
 # Tech Tree — Ralph Navigation
 
 > Source of truth: `specs/tri/tech_tree_strategy.vibee`
-> Last sync: 2026-02-18
+> Last sync: 2026-02-21
 
 ---
 
@@ -9,8 +9,6 @@
 | ID | Name | Branch | Progress | Gain |
 |----|------|--------|----------|------|
 |**VIBEE-PURE-001**|**Pure Zig Focus**|**vibee**|**Zig-first codegen with AGENT MU integration**|
-|**AGENT-MU-002**|**Full Self-Evolution Mode**|**agent**|**12 FixType implementations + semantic pattern search + generator self-patching**|
-
 
 
 ## 🚀 Available Nodes
@@ -46,6 +44,28 @@
 |**ZIG15-001**|**Zig 0.15.1 Idioms Demo**|**agent**|**AGENT MU demo with 7 idioms: comptime generics, unmanaged containers, inferred errors, build.zig modules, raygui glassmorphism, sacred math, inline unrolling. docs/AGENT_MU_ZIG15_DEMO.md + generated/agent_mu_zig15_demo.zig**|
 |----|------|--------|------|
 |**AGENT-MU-001**|**Self-Evolution Demo**|**agent**|**AGENT MU flow demonstration: V01 → Pi03 → Phi02 → Mu05 → Sigma07, 7 Zig 0.15.1 idioms, before/after examples, μ = 0.0382 sacred mutation**|
+|----|------|--------|------|
+|**AGENT-MU-002**|**Full Self-Evolution Mode**|**agent**|**Complete self-evolution loop: 14 FixType (all 8 missing implemented), enhanced semantic search (HNSW + 384-dim embeddings), generator self-patching (AST + mutator + regression), μ real-time tracking. 10 new files, ~3500 lines, specs/tri/agent_mu_self_improvement_loop.vibee**|
+|----|------|--------|------|
+|**AGENT-MU-003**|**TEMPLATE_FIX Implementation**|**agent**|**template_fixer.zig (300 lines): Auto-update codegen templates, fix undefined field/missing comma/expected type errors, validate templates, 7 tests**|
+|----|------|--------|------|
+|**AGENT-MU-004**|**GENERATOR_PATCH Implementation**|**agent**|**generator_patch.zig (400 lines): Self-patch VIBEE compiler bugs, codegen/parser/type inference fixes, rollback capability, patch validation, 8 tests**|
+|----|------|--------|------|
+|**AGENT-MU-005**|**SPEC_FIX Implementation**|**agent**|**spec_fixer.zig (250 lines): Auto-fix .vibee syntax errors, missing name/version/language/types/behaviors, schema validation, 6 tests**|
+|----|------|--------|------|
+|**AGENT-MU-006**|**VSA_FIX Implementation**|**agent**|**vsa_fixer.zig (200 lines): Fix VSA-specific issues, dimension mismatch/invalid permutation/similarity/hamming errors, bind/unbind/bundle/permute ops, 5 tests**|
+|----|------|--------|------|
+|**AGENT-MU-007**|**MEM_FIX Implementation**|**agent**|**memory_fixer.zig (200 lines): Auto-fix memory management, leaks/double-free/allocator misuse/use-after-free/buffer overflow, errdefer cleanup generation, 6 tests**|
+|----|------|--------|------|
+|**AGENT-MU-008**|**Enhanced Semantic Search**|**agent**|**embeddings.zig (250 lines) + neural_search.zig (280 lines): HNSW index O(log n), 384-dim neural embeddings, cosine similarity, pattern clustering, k-means, 5 tests**|
+|----|------|--------|------|
+|**AGENT-MU-009**|**Generator Self-Patching**|**agent**|**ast_analyzer.zig (200 lines) + template_mutator.zig (180 lines) + regression_tester.zig (280 lines): Parse VIBEE compiler source, apply mutations, validate, smoke test critical specs, 4 tests**|
+|----|------|--------|------|
+|**AGENT-MU-010**|**μ Real-Time Tracking**|**agent**|**mu_tracker.zig (370 lines): Real-time μ tracking (0.0382 per fix), IntelligenceSnapshot, FixRecord, projectIntelligence, fixesForMultiplier, AGENT PHI report markdown export, 5 tests**|
+|----|------|--------|------|
+|**AGENT-MU-011**|**IOPATTERN_FIX + TYPEFUNCTION_FIX + INLINE_FIX**|**agent**|**iopattern_fixer.zig (200 lines): Fix blocking I/O in async/missing errors/file not closed. typefunction_fixer.zig (280 lines): Fix missing comptime/type resolution/@Type. inline_fixer.zig (280 lines): Fix branch quota/inline loop/comptime expr, @setEvalBranchQuota generation, 12 tests total**|
+|----|------|--------|------|
+|**AGENT-MU-012**|**Full Self-Evolution Loop Complete**|**agent**|**Complete cycle: V01→Phi02→Pi03→Mu05→Sigma07→Chi06. All 14 FixType operational, neural search indexing, generator can patch itself, μ tracking real-time, intelligence multiplier verified, TECH_TREE updated with 12 new nodes**|
 |----|------|--------|------|
 |**NEXUS-010**|**Architecture Documentation**|**nexus**|**docs/ARCHITECTURE.md (267 lines): module map, ASCII dep graph, build guide, 6 module details, workspace config, math foundation, migration history NEXUS-001 through NEXUS-010**|
 |----|------|--------|------|
@@ -131,38 +151,39 @@
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
-|**Agent**|**6**|**7**|**86%**|
+|**Agent**|**17**|**18**|**94%**|
 |**VIBEE**|**8**|**9**|**89%**|
 |Multilingual|3|3|100%|
-|**Total**|**68**|**75**|**91%**|
+|**Total**|**79**|**86**|**92%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **AGENT-MU-002** Full Self-Evolution Mode — 12 FixType + semantic search + generator self-patching
-2. **VIBEE-PURE-001** Pure Zig Focus — Zig-first codegen with AGENT MU integration
-3. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
-4. **DEP-001** Docker Container — portable deployment, enables CI testing
-5. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
+1. **VIBEE-PURE-001** Pure Zig Focus — Zig-first codegen with AGENT MU integration
+2. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
+3. **DEP-001** Docker Container — portable deployment, enables CI testing
+4. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
+5. **INF-003** GGUF Model Loader — Complete inference pipeline
 
 ---
 
-## Sacred Metrics (v8.12)
+## Sacred Metrics (v8.13)
 
 **Trinity Identity:** φ² + 1/φ² = 3 (where φ = (1 + √5) / 2)
 
-**Intelligence Gain:** μ = 1/φ²/10 = 0.0382 (0.0382% per failure iteration)
+**Intelligence Gain:** μ = 1/φ²/10 = 0.0382 per successful fix
 
-**Learning Curve:** After 100 failures → intelligence × 47×
+**Learning Curve:** After 100 fixes → intelligence × 47×
 
 **Branch Focus:** Pure Zig — Multilingual support maintained but not actively developed
 
-**Symbolic AI Maturity:** AGENT branch (86% complete)
+**Symbolic AI Maturity:** AGENT branch (94% complete)
 - AGENT-001: IGLA Hybrid Chat ✅
 - AGENT-002: Triples Parser ✅
 - AGENT-003: KG DHT Sync ✅
 - AGENT-004: $TRI Rewards ✅
 - AGENT-005: Query CLI ✅
-- AGENT-MU-001: Self-Evolution Demo ✅ (Cycle 44: 7 Zig 0.15.1 idioms)
-- AGENT-MU-002: Full Self-Evolution Mode (IN PROGRESS - Cycle 45)
+- AGENT-MU-001: Self-Evolution Demo ✅ (Cycle 44)
+- AGENT-MU-002: Full Self-Evolution Mode ✅ (Cycle 45: 14 FixType, HNSW, self-patching)
+- AGENT-MU-003 through 012: Complete self-evolution loop ✅ (11 nodes)
 
 **VIBEE Maturity:** VIBEE branch (89% complete)
 - VIBEE-001..007: Core ✅
