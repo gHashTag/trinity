@@ -1013,6 +1013,13 @@ pub fn build(b: *std.Build) void {
     const fluent_cli_step = b.step("fluent", "Run Fluent CLI (Local Chat with History Truncation)");
     fluent_cli_step.dependOn(&run_fluent_cli.step);
 
+    // AGENT MU - Auto-Fixer for generated code (must be defined before vibee which uses it)
+    const agent_mu = b.createModule(.{
+        .root_source_file = b.path("src/agent_mu/agent_mu.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // VIBEE Compiler CLI
     const vibee = b.addExecutable(.{
         .name = "vibee",
@@ -1020,6 +1027,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/gen_cmd.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "agent_mu", .module = agent_mu },
+            },
         }),
     });
     b.installArtifact(vibee);
@@ -1030,6 +1040,21 @@ pub fn build(b: *std.Build) void {
     }
     const vibee_step = b.step("vibee", "Run VIBEE Compiler CLI");
     vibee_step.dependOn(&run_vibee.step);
+
+    // VIBEE v10.6 Factory Orchestrator
+    const factory = b.addExecutable(.{
+        .name = "factory",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/factory_orchestrator.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(factory);
+
+    const run_factory = b.addRunArtifact(factory);
+    const factory_step = b.step("factory", "Run VIBEE v10.6 Seed Factory");
+    factory_step.dependOn(&run_factory.step);
 
     // Vibeec modules for TRI
     const vibeec_swe = b.createModule(.{
@@ -1098,6 +1123,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
                 .{ .name = "tvc_distributed", .module = tvc_distributed_mod },
                 .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
+                .{ .name = "agent_mu", .module = agent_mu },
             },
         }),
     });

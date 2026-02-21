@@ -1383,6 +1383,37 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
     }
 
+    /// Check if implementation block contains a full function definition
+    /// CYCLE 51: Detects "pub fn" or "fn" after trimming whitespace
+    fn isFullFunctionDefinition(implementation: []const u8) bool {
+        // DEBUG: Log what we're checking
+        std.debug.print("DEBUG: isFullFunctionDefinition called with:\n{s}\n(len={d})\n", .{ implementation, implementation.len });
+
+        var start: usize = 0;
+        while (start < implementation.len and (
+            implementation[start] == ' ' or
+            implementation[start] == '\t' or
+            implementation[start] == '\n'
+        )) : (start += 1) {}
+
+        if (start + 6 > implementation.len) return false;
+
+        // Check for "pub fn" or just "fn"
+        var fn_start = start;
+        if (std.mem.eql(u8, implementation[start..start + 3], "pub")) {
+            // Skip "pub"
+            var i = start + 3;
+            while (i < implementation.len and (
+                implementation[i] == ' ' or
+                implementation[i] == '\t'
+            )) : (i += 1) {}
+            fn_start = i;
+        }
+
+        if (fn_start + 2 > implementation.len) return false;
+        return std.mem.eql(u8, implementation[fn_start..fn_start + 2], "fn");
+    }
+
     fn writeBehaviorFunctions(self: *Self, behaviors: []const Behavior) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("// BEHAVIOR FUNCTIONS - Generated from behaviors");
@@ -1434,23 +1465,34 @@ pub const ZigCodeGen = struct {
             return;
         }
 
-        // Generate real implementation from given/when/then semantics
-        try self.builder.writeFmt("/// {s}\n", .{b.given});
-        try self.builder.writeFmt("/// When: {s}\n", .{b.when});
-        try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
-        try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
-        self.builder.incIndent();
-
         // Check for manual implementation in spec
         if (b.implementation.len > 0) {
-            try self.builder.writeLine(b.implementation);
+            // CYCLE 51 FIX: If implementation contains a full function definition, write it directly
+            // This prevents invalid nested "pub fn" syntax when spec provides complete function
+            if (isFullFunctionDefinition(b.implementation)) {
+                try self.builder.writeLine(b.implementation);
+            } else {
+                // Wrap partial implementation in function stub
+                try self.builder.writeFmt("/// {s}\n", .{b.given});
+                try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+                try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+                try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
+                self.builder.incIndent();
+                try self.builder.writeLine(b.implementation);
+                self.builder.decIndent();
+                try self.builder.writeLine("}");
+            }
         } else {
             // Generate auto-body from behavior semantics
+            try self.builder.writeFmt("/// {s}\n", .{b.given});
+            try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+            try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+            try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
+            self.builder.incIndent();
             try self.generateRealBody(b);
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
         }
-
-        self.builder.decIndent();
-        try self.builder.writeLine("}");
         try self.builder.newline();
     }
 

@@ -5,6 +5,7 @@ const verilog_codegen = @import("verilog_codegen.zig");
 const lang_generators = @import("lang_generators.zig");
 const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
+const agent_mu = @import("agent_mu");
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -219,6 +220,31 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
         const output = try codegen.generate(&spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
+    }
+
+    // AGENT MU: Post-generation verification (Zig code only)
+    if (std.mem.eql(u8, spec.language, "zig")) {
+        try out_file.sync();
+
+        const config = agent_mu.Config{
+            .max_retries = 3,
+            .timeout_seconds = 120,
+            .verbose = false,
+            .enable_auto_fix = true, // Phase 2-4: Auto-fix enabled
+        };
+
+        const result = agent_mu.verifyAndFix(allocator, output_path, config) catch |err| {
+            std.debug.print("  AGENT MU: Verification failed with error: {}\n", .{err});
+            return;
+        };
+
+        if (result.success) {
+            std.debug.print("  AGENT MU: Verification PASSED\n", .{});
+        } else {
+            std.debug.print("  AGENT MU: Verification FAILED\n", .{});
+            std.debug.print("    Error: {s}\n", .{result.error_message});
+            std.debug.print("    Attempts: {d}\n", .{result.attempts_made});
+        }
     }
 }
 
