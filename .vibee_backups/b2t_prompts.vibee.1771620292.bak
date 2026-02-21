@@ -1,0 +1,192 @@
+name: b2t_prompts
+version: "1.0.0"
+language: zig
+
+types:
+  PromptRole:
+  PromptSection:
+    fields:
+      role: PromptRole
+      content: String
+      priority: Int
+      required: Bool
+      max_tokens: Option<Int>
+  PromptConfig:
+    fields:
+      max_total_tokens: Int
+      temperature: Float
+      top_p: Float
+      presence_penalty: Float
+      frequency_penalty: Float
+  DistortionTemplate:
+    fields:
+      distortion_type: String
+      detection_prompt: String
+      correction_prompt: String
+      validation_prompt: String
+      examples: List<DistortionExample>
+  DistortionExample:
+    fields:
+      distorted_code: String
+      corrected_code: String
+      explanation: String
+      distortion_markers: List<String>
+  ReasoningStep:
+    fields:
+      step_number: Int
+      description: String
+      expected_output: String
+  ChainOfThought:
+    fields:
+      task: String
+      steps: List<ReasoningStep>
+      final_instruction: String
+  CoTParseResult:
+    fields:
+      steps: List<ReasoningStep>
+      final_answer: String
+      reasoning: String
+
+behaviors:
+  - name: build_system_prompt
+    given: Роль агента и ограничения
+    when: Создание системного промпта
+    then: Возвращает PromptSection с role=system
+    implementation: |
+              pub fn build_system_prompt(role: []const u8, constraints: []const u8) PromptSection {
+                  _ = role;
+                  _ = constraints;
+                  return PromptSection{};
+              }
+      
+      
+
+  - name: build_context_section
+    given: SemanticContext из b2t_llm_assist
+    when: Форматирование контекста
+    then: Возвращает PromptSection с role=context
+    implementation: |
+              pub fn build_context_section(context: anytype) PromptSection {
+                  _ = context;
+                  return PromptSection{};
+              }
+      
+      
+
+  - name: build_icl_examples
+    given: List<SimilarCode> и max_examples
+    when: Форматирование примеров для ICL
+    then: Возвращает PromptSection с role=example
+    implementation: |
+              pub fn build_icl_examples(examples: anytype, max_examples: usize) PromptSection {
+                  _ = examples;
+                  _ = max_examples;
+                  return PromptSection{};
+              }
+      
+      
+
+  - name: build_query
+    given: Декомпилированный код и задача
+    when: Формирование запроса
+    then: Возвращает PromptSection с role=query
+    implementation: |
+              pub fn build_query(code: []const u8, task: []const u8) PromptSection {
+                  _ = code;
+                  _ = task;
+                  return PromptSection{};
+              }
+      
+      
+
+  - name: assemble_prompt
+    given: List<PromptSection> и PromptConfig
+    when: Сборка финального промпта с учётом лимитов
+    then: Возвращает String промпт
+    implementation: |
+              pub fn assemble_prompt(sections: []const PromptSection, config: PromptConfig) []const u8 {
+                  _ = sections;
+                  _ = config;
+                  return "";
+              }
+      
+      
+
+  - name: get_distortion_template
+    given: DistortionType
+    when: Получение шаблона для конкретного искажения
+    then: Возвращает DistortionTemplate
+    implementation: |
+              pub fn get_distortion_template(dist_type: anytype) DistortionTemplate {
+                  _ = dist_type;
+                  return DistortionTemplate{};
+              }
+      
+      
+
+  - name: format_detection_prompt
+    given: Код и DistortionTemplate
+    when: Создание промпта для детекции искажений
+    then: Возвращает String промпт
+    implementation: |
+              pub fn format_detection_prompt(code: []const u8, template: anytype) []const u8 {
+                  _ = code;
+                  _ = template;
+                  return "";
+              }
+      
+      
+
+  - name: format_correction_prompt
+    given: Код, искажения и DistortionTemplate
+    when: Создание промпта для исправления
+    then: Возвращает String промпт
+    implementation: |
+              pub fn format_correction_prompt(code: []const u8, distortions: anytype, template: anytype) []const u8 {
+                  _ = code;
+                  _ = distortions;
+                  _ = template;
+                  return "";
+              }
+      
+      
+
+  - name: format_validation_prompt
+    given: Оригинал, исправление и DistortionTemplate
+    when: Создание промпта для валидации
+    then: Возвращает String промпт
+    implementation: |
+              pub fn format_validation_prompt(original: []const u8, corrected: []const u8, template: anytype) []const u8 {
+                  _ = original;
+                  _ = corrected;
+                  _ = template;
+                  return "";
+              }
+      
+      
+
+  - name: create_cot_prompt
+    given: Задача и ChainOfThought
+    when: Создание промпта с пошаговым рассуждением
+    then: Возвращает String промпт
+    implementation: |
+              pub fn create_cot_prompt(task: []const u8, cot: anytype) []const u8 {
+                  _ = task;
+                  _ = cot;
+                  return "";
+              }
+      
+      
+
+  - name: parse_cot_response
+    given: Ответ LLM с рассуждениями
+    when: Извлечение шагов и финального ответа
+    then: Возвращает структурированный результат
+    implementation: |
+              pub fn parse_cot_response(response: []const u8) CoTParseResult {
+                  _ = response;
+                  return CoTParseResult{};
+              }
+      
+      
+

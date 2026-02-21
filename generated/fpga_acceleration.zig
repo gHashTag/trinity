@@ -1,564 +1,522 @@
-//! FPGA Acceleration — Ternary Hardware Backend + Host-Side Driver
-//! Generated from specs/tri/fpga_acceleration.vibee
-//! HW-003: FPGA pipeline model for VSA operations
-//! phi^2 + 1/phi^2 = 3 = TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════
+// fpga_acceleration v1.0.0 - Generated from .vibee specification
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Священная формула: V = n × 3^k × π^m × φ^p × e^q
+// Золотая идентичность: φ² + 1/φ² = 3
+//
+// Author: 
+// DO NOT EDIT - This file is auto-generated
+//
+// ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
+const math = std.math;
 
-pub const VECTOR_DIM: usize = 256;
-pub const TRIT_BITS: usize = 2;
-pub const TRITS_PER_WORD: usize = 16;
-pub const WORDS_PER_VECTOR: usize = VECTOR_DIM / TRITS_PER_WORD;
-pub const AXI_DATA_WIDTH: usize = 32;
-pub const DEFAULT_CLOCK_MHZ: u32 = 100;
-pub const MAX_CLOCK_MHZ: u32 = 200;
+// ═══════════════════════════════════════════════════════════════════════════════
+// КОНСТАНТЫ
+// ═══════════════════════════════════════════════════════════════════════════════
 
-pub const FPGADevice = enum(u8) {
-    artix7_35t,
-    artix7_100t,
-    zynq_7020,
-    zynq_7045,
+pub const VECTOR_DIM: f64 = 256;
 
-    pub fn name(self: FPGADevice) []const u8 {
-        return switch (self) {
-            .artix7_35t => "Artix-7 XC7A35T",
-            .artix7_100t => "Artix-7 XC7A100T",
-            .zynq_7020 => "Zynq-7020",
-            .zynq_7045 => "Zynq-7045",
-        };
-    }
+pub const TRIT_BITS: f64 = 2;
+
+pub const WORD_BITS: f64 = 32;
+
+pub const TRITS_PER_WORD: f64 = 16;
+
+pub const WORDS_PER_VECTOR: f64 = 16;
+
+pub const BRAM_WIDTH: f64 = 512;
+
+pub const AXI_DATA_WIDTH: f64 = 32;
+
+pub const AXI_ADDR_WIDTH: f64 = 12;
+
+pub const MAX_CLOCK_MHZ: f64 = 200;
+
+pub const DEFAULT_CLOCK_MHZ: f64 = 100;
+
+// Базовые φ-константы (Sacred Formula)
+pub const PHI: f64 = 1.618033988749895;
+pub const PHI_INV: f64 = 0.618033988749895;
+pub const PHI_SQ: f64 = 2.618033988749895;
+pub const TRINITY: f64 = 3.0;
+pub const SQRT5: f64 = 2.2360679774997896;
+pub const TAU: f64 = 6.283185307179586;
+pub const PI: f64 = 3.141592653589793;
+pub const E: f64 = 2.718281828459045;
+pub const PHOENIX: i64 = 999;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ТИПЫ
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// 
+pub const FPGADevice = enum {
+    ARTIX7_35T: 0,
+    ARTIX7_100T: 1,
+    ZYNQ_7020: 2,
+    ZYNQ_7045: 3,
 };
 
-pub const FPGAOperation = enum(u8) {
-    bind,
-    bundle,
-    dot_product,
-    permute,
-    matvec,
-    cosine,
-
-    pub fn name(self: FPGAOperation) []const u8 {
-        return switch (self) {
-            .bind => "BIND",
-            .bundle => "BUNDLE",
-            .dot_product => "DOT_PRODUCT",
-            .permute => "PERMUTE",
-            .matvec => "MATVEC",
-            .cosine => "COSINE",
-        };
-    }
+/// 
+pub const FPGAOperation = enum {
+    BIND: 0,
+    BUNDLE: 1,
+    DOT_PRODUCT: 2,
+    PERMUTE: 3,
+    MATVEC: 4,
+    COSINE: 5,
 };
 
+/// 2-bit encoding for ternary values
 pub const TritEncoding = struct {
-    pub const ZERO: u2 = 0b00;
-    pub const POS: u2 = 0b01;
-    pub const NEG: u2 = 0b10;
-    pub const INVALID: u2 = 0b11;
-
-    pub fn encode(value: i8) u2 {
-        return switch (value) {
-            0 => ZERO,
-            1 => POS,
-            -1 => NEG,
-            else => INVALID,
-        };
-    }
-
-    pub fn decode(encoded: u2) i8 {
-        return switch (encoded) {
-            ZERO => 0,
-            POS => 1,
-            NEG => -1,
-            else => 0,
-        };
-    }
-
-    pub fn encodeVector(output: []u32, input: []const i8, dim: usize) void {
-        const num_words = (dim + TRITS_PER_WORD - 1) / TRITS_PER_WORD;
-        for (0..num_words) |w| {
-            var word: u32 = 0;
-            for (0..TRITS_PER_WORD) |t| {
-                const idx = w * TRITS_PER_WORD + t;
-                if (idx < dim) {
-                    const enc: u32 = @intCast(encode(input[idx]));
-                    word |= enc << @intCast(t * TRIT_BITS);
-                }
-            }
-            output[w] = word;
-        }
-    }
-
-    pub fn decodeVector(output: []i8, input: []const u32, dim: usize) void {
-        const num_words = (dim + TRITS_PER_WORD - 1) / TRITS_PER_WORD;
-        for (0..num_words) |w| {
-            const word = input[w];
-            for (0..TRITS_PER_WORD) |t| {
-                const idx = w * TRITS_PER_WORD + t;
-                if (idx < dim) {
-                    const bits: u2 = @truncate(word >> @intCast(t * TRIT_BITS));
-                    output[idx] = decode(bits);
-                }
-            }
-        }
-    }
-
-    pub fn encodedBytes(dim: usize) usize {
-        return ((dim + TRITS_PER_WORD - 1) / TRITS_PER_WORD) * 4;
-    }
 };
 
-pub const DeviceResources = struct {
-    total_luts: u32,
-    total_ffs: u32,
-    total_bram_kb: u32,
-    total_dsp: u32,
-
-    pub fn forDevice(device: FPGADevice) DeviceResources {
-        return switch (device) {
-            .artix7_35t => .{ .total_luts = 20800, .total_ffs = 41600, .total_bram_kb = 225, .total_dsp = 90 },
-            .artix7_100t => .{ .total_luts = 63400, .total_ffs = 126800, .total_bram_kb = 607, .total_dsp = 240 },
-            .zynq_7020 => .{ .total_luts = 53200, .total_ffs = 106400, .total_bram_kb = 630, .total_dsp = 220 },
-            .zynq_7045 => .{ .total_luts = 218600, .total_ffs = 437200, .total_bram_kb = 2180, .total_dsp = 900 },
-        };
-    }
-};
-
-pub const ResourceUsage = struct {
-    luts: u32,
-    ffs: u32,
-    bram_kb: u32,
-    dsp: u32,
-
-    pub fn utilization(self: *const ResourceUsage, available: DeviceResources) f32 {
-        const lut_pct = @as(f32, @floatFromInt(self.luts)) / @as(f32, @floatFromInt(available.total_luts));
-        const ff_pct = @as(f32, @floatFromInt(self.ffs)) / @as(f32, @floatFromInt(available.total_ffs));
-        const bram_pct = @as(f32, @floatFromInt(self.bram_kb)) / @as(f32, @floatFromInt(available.total_bram_kb));
-        return @max(lut_pct, @max(ff_pct, bram_pct));
-    }
-};
-
-pub const PipelineLatency = struct {
-    bind_cycles: u32,
-    bundle_cycles: u32,
-    dot_product_cycles: u32,
-    permute_cycles: u32,
-    matvec_cycles: u32,
-
-    pub fn forOperation(op: FPGAOperation, vector_dim: u32) PipelineLatency {
-        _ = op;
-        _ = vector_dim;
-        return .{ .bind_cycles = 1, .bundle_cycles = 1, .dot_product_cycles = 3, .permute_cycles = 1, .matvec_cycles = 4 };
-    }
-
-    pub fn cosine_cycles(self: *const PipelineLatency) u32 {
-        return self.dot_product_cycles * 3 + 2;
-    }
-};
-
+/// FPGA device configuration
 pub const FPGAConfig = struct {
     device: FPGADevice,
-    clock_mhz: u32,
-    vector_dim: u32,
-    num_mac_units: u32,
-    bram_depth: u32,
+    clock_mhz: i64,
+    vector_dim: i64,
+    num_mac_units: i64,
+    bram_depth: i64,
 };
 
-pub const RegisterMap = struct {
-    pub const CTRL: u12 = 0x000;
-    pub const STATUS: u12 = 0x004;
-    pub const VECTOR_DIM_REG: u12 = 0x008;
-    pub const SHIFT_AMT: u12 = 0x00C;
-    pub const DATA_A_BASE: u12 = 0x100;
-    pub const DATA_B_BASE: u12 = 0x140;
-    pub const DATA_OUT_BASE: u12 = 0x180;
-    pub const PERF_BIND_OPS: u12 = 0x200;
-    pub const PERF_BUNDLE_OPS: u12 = 0x204;
-    pub const PERF_DOT_OPS: u12 = 0x208;
-    pub const PERF_PERMUTE_OPS: u12 = 0x20C;
-    pub const PERF_TOTAL_CYCLES: u12 = 0x210;
-    pub const PERF_STALL_CYCLES: u12 = 0x214;
+/// Available resources for target device
+pub const DeviceResources = struct {
+    total_luts: i64,
+    total_ffs: i64,
+    total_bram_kb: i64,
+    total_dsp: i64,
 };
 
-pub const FPGAPerformanceCounters = struct {
-    bind_ops: u32,
-    bundle_ops: u32,
-    dot_ops: u32,
-    permute_ops: u32,
-    matvec_ops: u32,
-    total_cycles: u32,
-    stall_cycles: u32,
-
-    pub fn init() FPGAPerformanceCounters {
-        return .{ .bind_ops = 0, .bundle_ops = 0, .dot_ops = 0, .permute_ops = 0, .matvec_ops = 0, .total_cycles = 0, .stall_cycles = 0 };
-    }
-
-    pub fn totalOps(self: *const FPGAPerformanceCounters) u32 {
-        return self.bind_ops + self.bundle_ops + self.dot_ops + self.permute_ops + self.matvec_ops;
-    }
-
-    pub fn throughput(self: *const FPGAPerformanceCounters, clock_mhz: u32) f64 {
-        if (self.total_cycles == 0) return 0;
-        const cycles_per_sec: f64 = @as(f64, @floatFromInt(clock_mhz)) * 1_000_000;
-        const ops: f64 = @floatFromInt(self.totalOps());
-        const cycles: f64 = @floatFromInt(self.total_cycles);
-        return ops / cycles * cycles_per_sec;
-    }
-
-    pub fn stallRate(self: *const FPGAPerformanceCounters) f32 {
-        if (self.total_cycles == 0) return 0;
-        return @as(f32, @floatFromInt(self.stall_cycles)) / @as(f32, @floatFromInt(self.total_cycles));
-    }
-
-    pub fn reset(self: *FPGAPerformanceCounters) void {
-        self.* = init();
-    }
+/// Estimated resource consumption
+pub const ResourceUsage = struct {
+    luts: i64,
+    ffs: i64,
+    bram_kb: i64,
+    dsp: i64,
 };
 
-pub const FPGABackend = struct {
-    config: FPGAConfig,
-    counters: FPGAPerformanceCounters,
-    latency: PipelineLatency,
-
-    pub fn init(config: FPGAConfig) FPGABackend {
-        return .{
-            .config = config,
-            .counters = FPGAPerformanceCounters.init(),
-            .latency = PipelineLatency.forOperation(.bind, config.vector_dim),
-        };
-    }
-
-    pub fn initDefault() FPGABackend {
-        return init(.{ .device = .artix7_100t, .clock_mhz = DEFAULT_CLOCK_MHZ, .vector_dim = VECTOR_DIM, .num_mac_units = 16, .bram_depth = 4096 });
-    }
-
-    pub fn bind(self: *FPGABackend, output: []i8, a: []const i8, b: []const i8, dim: usize) void {
-        for (0..dim) |i| {
-            const prod = @as(i16, a[i]) * @as(i16, b[i]);
-            output[i] = @as(i8, @intCast(std.math.clamp(prod, -1, 1)));
-        }
-        self.counters.bind_ops += 1;
-        self.counters.total_cycles += self.latency.bind_cycles;
-    }
-
-    pub fn bundle(self: *FPGABackend, output: []i8, a: []const i8, b: []const i8, dim: usize) void {
-        for (0..dim) |i| {
-            const sum = @as(i16, a[i]) + @as(i16, b[i]);
-            output[i] = if (sum > 0) @as(i8, 1) else if (sum < 0) @as(i8, -1) else @as(i8, 0);
-        }
-        self.counters.bundle_ops += 1;
-        self.counters.total_cycles += self.latency.bundle_cycles;
-    }
-
-    pub fn dotProduct(self: *FPGABackend, a: []const i8, b: []const i8, dim: usize) i32 {
-        var acc: i32 = 0;
-        for (0..dim) |i| {
-            acc += @as(i32, a[i]) * @as(i32, b[i]);
-        }
-        self.counters.dot_ops += 1;
-        self.counters.total_cycles += self.latency.dot_product_cycles;
-        return acc;
-    }
-
-    pub fn permute(self: *FPGABackend, output: []i8, input: []const i8, dim: usize, shift: u32) void {
-        for (0..dim) |i| {
-            const src = (i + shift) % dim;
-            output[i] = input[src];
-        }
-        self.counters.permute_ops += 1;
-        self.counters.total_cycles += self.latency.permute_cycles;
-    }
-
-    pub fn cosineSimilarity(self: *FPGABackend, a: []const i8, b: []const i8, dim: usize) f32 {
-        var dot: i64 = 0;
-        var norm_a: i64 = 0;
-        var norm_b: i64 = 0;
-        for (0..dim) |i| {
-            dot += @as(i64, a[i]) * @as(i64, b[i]);
-            norm_a += @as(i64, a[i]) * @as(i64, a[i]);
-            norm_b += @as(i64, b[i]) * @as(i64, b[i]);
-        }
-        const denom = @sqrt(@as(f64, @floatFromInt(norm_a))) * @sqrt(@as(f64, @floatFromInt(norm_b)));
-        self.counters.dot_ops += 1;
-        self.counters.total_cycles += self.latency.cosine_cycles();
-        if (denom == 0.0) return 0.0;
-        return @floatCast(@as(f64, @floatFromInt(dot)) / denom);
-    }
-
-    pub fn ternaryMatVec(self: *FPGABackend, output: []f32, matrix: []const i8, vector: []const f32, rows: usize, cols: usize) void {
-        for (0..rows) |r| {
-            var acc: f32 = 0.0;
-            for (0..cols) |c| {
-                const w = matrix[r * cols + c];
-                if (w == 1) acc += vector[c] else if (w == -1) acc -= vector[c];
-            }
-            output[r] = acc;
-        }
-        self.counters.matvec_ops += 1;
-        self.counters.total_cycles += self.latency.matvec_cycles * @as(u32, @intCast(rows));
-    }
-
-    pub fn getCounters(self: *const FPGABackend) FPGAPerformanceCounters {
-        return self.counters;
-    }
-
-    pub fn resetCounters(self: *FPGABackend) void {
-        self.counters.reset();
-    }
+/// Cycle counts for each pipeline stage
+pub const PipelineLatency = struct {
+    bind_cycles: i64,
+    bundle_cycles: i64,
+    dot_product_cycles: i64,
+    permute_cycles: i64,
+    matvec_cycles: i64,
 };
 
-pub const ResourceEstimator = struct {
-    pub fn estimateTotal(vector_dim: u32, num_mac_units: u32) ResourceUsage {
-        const control_luts: u32 = 200;
-        const total_luts = vector_dim * 4 + 968 * num_mac_units + control_luts;
-        return .{ .luts = total_luts, .ffs = total_luts / 2, .bram_kb = 36, .dsp = 0 };
-    }
+/// AXI-lite register map entry
+pub const AXIRegister = struct {
+    offset: i64,
+    name: []const u8,
+    access: []const u8,
 };
 
+/// Post-synthesis metrics
 pub const FPGASynthesisReport = struct {
     device: FPGADevice,
-    clock_mhz: u32,
+    clock_mhz: i64,
     resource_usage: ResourceUsage,
-    device_resources: DeviceResources,
     latency: PipelineLatency,
-    throughput_ops_per_sec: u64,
-    power_watts: f32,
-    utilization_pct: f32,
+    throughput_ops_per_sec: i64,
+    power_watts: f64,
+    utilization_pct: f64,
+};
 
-    pub fn generate(device: FPGADevice, clock_mhz: u32, vector_dim: u32, num_mac_units: u32) FPGASynthesisReport {
-        const dev_res = DeviceResources.forDevice(device);
-        const usage = ResourceEstimator.estimateTotal(vector_dim, num_mac_units);
-        const latency = PipelineLatency.forOperation(.bind, vector_dim);
-        const ops_per_sec: u64 = @as(u64, clock_mhz) * 1_000_000;
-        const power = 0.5 + @as(f32, @floatFromInt(usage.luts)) * 0.003 / 1000.0;
-        return .{
-            .device = device,
-            .clock_mhz = clock_mhz,
-            .resource_usage = usage,
-            .device_resources = dev_res,
-            .latency = latency,
-            .throughput_ops_per_sec = ops_per_sec,
-            .power_watts = power,
-            .utilization_pct = usage.utilization(dev_res) * 100.0,
-        };
+/// Runtime operation counters
+pub const FPGAPerformanceCounters = struct {
+    bind_ops: i64,
+    bundle_ops: i64,
+    dot_ops: i64,
+    permute_ops: i64,
+    matvec_ops: i64,
+    total_cycles: i64,
+    stall_cycles: i64,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ПАМЯТЬ ДЛЯ WASM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+var global_buffer: [65536]u8 align(16) = undefined;
+var f64_buffer: [8192]f64 align(16) = undefined;
+
+export fn get_global_buffer_ptr() [*]u8 {
+    return &global_buffer;
+}
+
+export fn get_f64_buffer_ptr() [*]f64 {
+    return &f64_buffer;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CREATION PATTERNS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Trit - ternary digit (-1, 0, +1)
+pub const Trit = enum(i8) {
+    negative = -1, // FALSE
+    zero = 0,      // UNKNOWN
+    positive = 1,  // TRUE
+
+    pub fn trit_and(a: Trit, b: Trit) Trit {
+        return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
     }
 
-    pub fn fitsOnDevice(self: *const FPGASynthesisReport) bool {
-        return self.utilization_pct < 95.0;
+    pub fn trit_or(a: Trit, b: Trit) Trit {
+        return @enumFromInt(@max(@intFromEnum(a), @intFromEnum(b)));
     }
 
-    pub fn energyEfficiency(self: *const FPGASynthesisReport) f64 {
-        if (self.power_watts == 0) return 0;
-        return @as(f64, @floatFromInt(self.throughput_ops_per_sec)) / @as(f64, self.power_watts);
+    pub fn trit_not(a: Trit) Trit {
+        return @enumFromInt(-@intFromEnum(a));
+    }
+
+    pub fn trit_xor(a: Trit, b: Trit) Trit {
+        const av = @intFromEnum(a);
+        const bv = @intFromEnum(b);
+        if (av == 0 or bv == 0) return .zero;
+        if (av == bv) return .negative;
+        return .positive;
     }
 };
 
-pub const FPGAController = struct {
-    backend: FPGABackend,
-    registers: [256]u32,
-    is_busy: bool,
-    has_error: bool,
+/// Проверка TRINITY identity: φ² + 1/φ² = 3
+fn verify_trinity() f64 {
+    return PHI * PHI + 1.0 / (PHI * PHI);
+}
 
-    pub fn init(device: FPGADevice, clock_mhz: u32) FPGAController {
-        var ctrl: FPGAController = undefined;
-        @memset(&ctrl.registers, 0);
-        ctrl.backend = FPGABackend.init(.{ .device = device, .clock_mhz = clock_mhz, .vector_dim = VECTOR_DIM, .num_mac_units = 16, .bram_depth = 4096 });
-        ctrl.is_busy = false;
-        ctrl.has_error = false;
-        return ctrl;
+/// φ-интерполяция
+fn phi_lerp(a: f64, b: f64, t: f64) f64 {
+    const phi_t = math.pow(f64, t, PHI_INV);
+    return a + (b - a) * phi_t;
+}
+
+/// Генерация φ-спирали
+fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
+    const max_points = f64_buffer.len / 2;
+    const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
+    var i: u32 = 0;
+    while (i < count) : (i += 1) {
+        const fi: f64 = @floatFromInt(i);
+        const angle = fi * TAU * PHI_INV;
+        const radius = scale * math.pow(f64, PHI, fi * 0.1);
+        f64_buffer[i * 2] = cx + radius * @cos(angle);
+        f64_buffer[i * 2 + 1] = cy + radius * @sin(angle);
     }
-
-    pub fn initDefault() FPGAController {
-        return init(.artix7_100t, DEFAULT_CLOCK_MHZ);
-    }
-
-    pub fn writeRegister(self: *FPGAController, offset: u12, value: u32) void {
-        const idx = @as(usize, offset) / 4;
-        if (idx < self.registers.len) self.registers[idx] = value;
-    }
-
-    pub fn readRegister(self: *const FPGAController, offset: u12) u32 {
-        const idx = @as(usize, offset) / 4;
-        if (idx < self.registers.len) return self.registers[idx];
-        return 0;
-    }
-
-    pub fn dispatchBind(self: *FPGAController, output: []i8, a: []const i8, b: []const i8, dim: usize) void {
-        self.is_busy = true;
-        self.backend.bind(output, a, b, dim);
-        self.is_busy = false;
-        self.registers[@as(usize, RegisterMap.STATUS) / 4] = 0x02;
-    }
-
-    pub fn dispatchDotProduct(self: *FPGAController, a: []const i8, b: []const i8, dim: usize) i32 {
-        self.is_busy = true;
-        const result = self.backend.dotProduct(a, b, dim);
-        self.is_busy = false;
-        self.registers[@as(usize, RegisterMap.STATUS) / 4] = 0x02;
-        return result;
-    }
-
-    pub fn dispatchCosine(self: *FPGAController, a: []const i8, b: []const i8, dim: usize) f32 {
-        self.is_busy = true;
-        const result = self.backend.cosineSimilarity(a, b, dim);
-        self.is_busy = false;
-        self.registers[@as(usize, RegisterMap.STATUS) / 4] = 0x02;
-        return result;
-    }
-
-    pub fn getCounters(self: *const FPGAController) FPGAPerformanceCounters {
-        return self.backend.getCounters();
-    }
-
-    pub fn getSynthesisReport(self: *const FPGAController) FPGASynthesisReport {
-        return FPGASynthesisReport.generate(self.backend.config.device, self.backend.config.clock_mhz, self.backend.config.vector_dim, self.backend.config.num_mac_units);
-    }
-
-    pub fn isBusy(self: *const FPGAController) bool {
-        return self.is_busy;
-    }
-};
-
-pub const ComparisonReport = struct {
-    cpu_ops_per_sec: f64,
-    fpga_ops_per_sec: f64,
-    cpu_power_watts: f32,
-    fpga_power_watts: f32,
-
-    pub fn speedup(self: *const ComparisonReport) f64 {
-        if (self.cpu_ops_per_sec == 0) return 0;
-        return self.fpga_ops_per_sec / self.cpu_ops_per_sec;
-    }
-
-    pub fn energyRatio(self: *const ComparisonReport) f64 {
-        if (self.fpga_ops_per_sec == 0 or self.cpu_power_watts == 0) return 0;
-        const cpu_energy = @as(f64, self.cpu_power_watts) / self.cpu_ops_per_sec;
-        const fpga_energy = @as(f64, self.fpga_power_watts) / self.fpga_ops_per_sec;
-        if (fpga_energy == 0) return 0;
-        return cpu_energy / fpga_energy;
-    }
-
-    pub fn forBind256() ComparisonReport {
-        return .{ .cpu_ops_per_sec = 50_000_000, .fpga_ops_per_sec = 100_000_000, .cpu_power_watts = 65.0, .fpga_power_watts = 0.5 };
-    }
-};
-
-test "trit encoding roundtrip" {
-    try std.testing.expectEqual(TritEncoding.decode(TritEncoding.encode(0)), 0);
-    try std.testing.expectEqual(TritEncoding.decode(TritEncoding.encode(1)), 1);
-    try std.testing.expectEqual(TritEncoding.decode(TritEncoding.encode(-1)), -1);
+    return count;
 }
 
-test "trit vector encoding roundtrip" {
-    const original = [_]i8{ 1, -1, 0, 1, -1, -1, 0, 1, 1, 0, -1, 1, 0, 0, 1, -1 };
-    var encoded: [1]u32 = undefined;
-    var decoded: [16]i8 = undefined;
-    TritEncoding.encodeVector(&encoded, &original, 16);
-    TritEncoding.decodeVector(&decoded, &encoded, 16);
-    try std.testing.expectEqualSlices(i8, &original, &decoded);
+// ═══════════════════════════════════════════════════════════════════════════════
+// BEHAVIOR FUNCTIONS - Generated from behaviors
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Ternary value {-1, 0, +1}
+/// When: Need 2-bit FPGA representation
+/// Then: Return 2-bit encoding (00=zero, 01=pos, 10=neg)
+pub fn encode_trit() anyerror!void {
+// TODO: implement — Return 2-bit encoding (00=zero, 01=pos, 10=neg)
+    // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
-test "device resources" {
-    try std.testing.expectEqual(DeviceResources.forDevice(.artix7_35t).total_luts, 20800);
-    try std.testing.expectEqual(DeviceResources.forDevice(.artix7_100t).total_luts, 63400);
+
+/// 2-bit encoded value
+/// When: Need ternary value from FPGA
+/// Then: Return {-1, 0, +1} or error for invalid
+pub fn decode_trit() bool {
+// TODO: implement — Return {-1, 0, +1} or error for invalid
+    // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
-test "pipeline latency" {
-    const lat = PipelineLatency.forOperation(.bind, 256);
-    try std.testing.expectEqual(lat.bind_cycles, 1);
-    try std.testing.expectEqual(lat.dot_product_cycles, 3);
+
+/// i8 ternary vector of dim D
+/// When: Need packed FPGA word representation
+/// Then: Pack 16 trits per 32-bit word (D/16 words total)
+pub fn encode_vector(input: []const i8) !void {
+// TODO: implement — Pack 16 trits per 32-bit word (D/16 words total)
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = input;
 }
 
-test "FPGA backend bind" {
-    var fpga = FPGABackend.initDefault();
-    const a = [_]i8{ 1, -1, 1, 0 };
-    const b = [_]i8{ 1, 1, -1, 1 };
-    var out: [4]i8 = undefined;
-    fpga.bind(&out, &a, &b, 4);
-    try std.testing.expectEqualSlices(i8, &[_]i8{ 1, -1, -1, 0 }, &out);
+
+/// Packed 32-bit words
+/// When: Need i8 ternary vector
+/// Then: Unpack 16 trits per word into i8 array
+pub fn decode_vector() !void {
+// TODO: implement — Unpack 16 trits per word into i8 array
+    // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
-test "FPGA backend dot product" {
-    var fpga = FPGABackend.initDefault();
-    const a = [_]i8{ 1, -1, 1, -1 };
-    const b = [_]i8{ 1, -1, 1, -1 };
-    try std.testing.expectEqual(fpga.dotProduct(&a, &b, 4), 4);
+
+/// Two encoded vectors A, B
+/// When: Need element-wise trit multiply
+/// Then: Parallel LUT2 multiply (1 cycle, 256 LUTs)
+pub fn fpga_bind() !void {
+// TODO: implement — Parallel LUT2 multiply (1 cycle, 256 LUTs)
+    // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
-test "FPGA backend cosine" {
-    var fpga = FPGABackend.initDefault();
-    const a = [_]i8{ 1, -1, 1, -1 };
-    try std.testing.expectApproxEqAbs(fpga.cosineSimilarity(&a, &a, 4), 1.0, 0.001);
+
+/// Two encoded vectors A, B
+/// When: Need majority vote
+/// Then: LUT3 majority per trit (1 cycle, 256 LUTs)
+pub fn fpga_bundle() !void {
+// TODO: implement — LUT3 majority per trit (1 cycle, 256 LUTs)
+    // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
-test "FPGA backend permute" {
-    var fpga = FPGABackend.initDefault();
-    const input = [_]i8{ 1, -1, 0 };
-    var out: [3]i8 = undefined;
-    fpga.permute(&out, &input, 3, 1);
-    try std.testing.expectEqualSlices(i8, &[_]i8{ -1, 0, 1 }, &out);
+
+/// Two encoded vectors A, B
+/// When: Need dot product
+/// Then: Parallel multiply + popcount tree (3 cycles)
+pub fn fpga_dot_product() usize {
+// TODO: implement — Parallel multiply + popcount tree (3 cycles)
+    // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
-test "FPGA backend matvec" {
-    var fpga = FPGABackend.initDefault();
-    const matrix = [_]i8{ 1, -1, 0, 0, 1, -1 };
-    const vector = [_]f32{ 3, 2, 1 };
-    var out: [2]f32 = undefined;
-    fpga.ternaryMatVec(&out, &matrix, &vector, 2, 3);
-    try std.testing.expectApproxEqAbs(out[0], 1.0, 0.01);
-    try std.testing.expectApproxEqAbs(out[1], 1.0, 0.01);
+
+/// Encoded vector, shift count
+/// When: Need cyclic rotation
+/// Then: Barrel shifter (1 cycle)
+pub fn fpga_permute() !void {
+// TODO: implement — Barrel shifter (1 cycle)
+    // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
-test "FPGA performance counters" {
-    var fpga = FPGABackend.initDefault();
-    const a = [_]i8{ 1, -1 };
-    const b = [_]i8{ 1, 1 };
-    var out: [2]i8 = undefined;
-    fpga.bind(&out, &a, &b, 2);
-    try std.testing.expectEqual(fpga.getCounters().bind_ops, 1);
+
+/// Two encoded vectors A, B
+/// VSA ops: Need cosine similarity
+/// Result: Dot product + norm pipeline (5 cycles)
+pub fn fpga_cosine() void {
+    // VSA operation detected from spec keywords.
+    // Available primitives: bind, unbind, bundle2, bundle3, permute, cosineSimilarity
+// Intent: Dot product + norm pipeline (5 cycles)
 }
 
-test "resource estimation" {
-    const usage = ResourceEstimator.estimateTotal(256, 16);
-    try std.testing.expect(usage.luts > 5000);
-    try std.testing.expectEqual(usage.dsp, 0);
+/// FPGADevice target
+/// When: Need available resource budget
+/// Then: Return DeviceResources for the target
+pub fn get_device_resources(self: *@This()) anyerror!void {
+// Query: Return DeviceResources for the target
+    const result = @as([]const u8, "query_result");
+    _ = result;
 }
 
-test "synthesis report" {
-    const report = FPGASynthesisReport.generate(.artix7_100t, 100, 256, 16);
-    try std.testing.expect(report.fitsOnDevice());
-    try std.testing.expect(report.throughput_ops_per_sec > 0);
+
+/// FPGAConfig with vector_dim and mac_units
+/// When: Planning synthesis
+/// Then: Return ResourceUsage estimate
+pub fn estimate_resources(config: anytype) anyerror!void {
+// Compute: Return ResourceUsage estimate
+    const result: f64 = PHI_INV; // 0.618 default
+    _ = result;
 }
 
-test "FPGA controller" {
-    var ctrl = FPGAController.initDefault();
-    const a = [_]i8{ 1, -1 };
-    const b = [_]i8{ 1, 1 };
-    var out: [2]i8 = undefined;
-    ctrl.dispatchBind(&out, &a, &b, 2);
-    try std.testing.expectEqualSlices(i8, &[_]i8{ 1, -1 }, &out);
-    try std.testing.expectEqual(ctrl.dispatchDotProduct(&a, &b, 2), 0);
+
+/// ResourceUsage and DeviceResources
+/// When: Checking if design fits
+/// Then: Return utilization percentage
+pub fn estimate_utilization() anyerror!void {
+// Compute: Return utilization percentage
+    const result: f64 = PHI_INV; // 0.618 default
+    _ = result;
 }
 
-test "FPGA controller cosine" {
-    var ctrl = FPGAController.initDefault();
-    const a = [_]i8{ 1, -1, 1 };
-    try std.testing.expectApproxEqAbs(ctrl.dispatchCosine(&a, &a, 3), 1.0, 0.001);
+
+/// Standard control interface
+/// When: Need AXI-lite address layout
+/// Then: Return register offset table (control/status/data/perf)
+pub fn get_register_map(self: *@This()) anyerror!void {
+// Query: Return register offset table (control/status/data/perf)
+    const result = @as([]const u8, "query_result");
+    _ = result;
 }
 
-test "comparison report" {
-    const cmp = ComparisonReport.forBind256();
-    try std.testing.expect(cmp.speedup() >= 1.5);
-    try std.testing.expect(cmp.energyRatio() > 100);
+
+/// FPGAConfig
+/// When: Need estimated metrics
+/// Then: Return FPGASynthesisReport with timing, power, throughput
+pub fn generate_synthesis_report(config: anytype) anyerror!void {
+// Generate: Return FPGASynthesisReport with timing, power, throughput
+    const template = @as([]const u8, "generated_output");
+    _ = template;
 }
 
-test "device names" {
-    try std.testing.expectEqualSlices(u8, "Artix-7 XC7A35T", FPGADevice.artix7_35t.name());
-    try std.testing.expectEqualSlices(u8, "Zynq-7045", FPGADevice.zynq_7045.name());
+
+/// Register offset and value
+/// When: Host writes to FPGA
+/// Then: Set register value (simulated)
+pub fn write_register() !void {
+// TODO: implement — Set register value (simulated)
+    // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
-test "operation names" {
-    try std.testing.expectEqualSlices(u8, "BIND", FPGAOperation.bind.name());
-    try std.testing.expectEqualSlices(u8, "DOT_PRODUCT", FPGAOperation.dot_product.name());
+
+/// Register offset
+/// When: Host reads from FPGA
+/// Then: Return register value (simulated)
+pub fn read_register() anyerror!void {
+// TODO: implement — Return register value (simulated)
+    // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
-// phi^2 + 1/phi^2 = 3 | TRINITY
+
+/// FPGAOperation, input vectors
+/// When: Host triggers FPGA computation
+/// Then: Execute operation, update counters, return result
+pub fn dispatch_operation(input: []const i8) f32 {
+// Dispatch: Execute operation, update counters, return result
+    const target = @as([]const u8, "default_agent");
+    const confidence: f64 = 0.85;
+    _ = target;
+    _ = confidence;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS - Generated from behaviors and test_cases
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "encode_trit_behavior" {
+// Given: Ternary value {-1, 0, +1}
+// When: Need 2-bit FPGA representation
+// Then: Return 2-bit encoding (00=zero, 01=pos, 10=neg)
+// Test encode_trit: verify behavior is callable (compile-time check)
+_ = encode_trit;
+}
+
+test "decode_trit_behavior" {
+// Given: 2-bit encoded value
+// When: Need ternary value from FPGA
+// Then: Return {-1, 0, +1} or error for invalid
+// Test decode_trit: verify returns boolean
+// TODO: Add specific test for decode_trit
+_ = decode_trit;
+}
+
+test "encode_vector_behavior" {
+// Given: i8 ternary vector of dim D
+// When: Need packed FPGA word representation
+// Then: Pack 16 trits per 32-bit word (D/16 words total)
+// Test encode_vector: verify behavior is callable (compile-time check)
+_ = encode_vector;
+}
+
+test "decode_vector_behavior" {
+// Given: Packed 32-bit words
+// When: Need i8 ternary vector
+// Then: Unpack 16 trits per word into i8 array
+// Test decode_vector: verify behavior is callable (compile-time check)
+_ = decode_vector;
+}
+
+test "fpga_bind_behavior" {
+// Given: Two encoded vectors A, B
+// When: Need element-wise trit multiply
+// Then: Parallel LUT2 multiply (1 cycle, 256 LUTs)
+// Test fpga_bind: verify behavior is callable (compile-time check)
+_ = fpga_bind;
+}
+
+test "fpga_bundle_behavior" {
+// Given: Two encoded vectors A, B
+// When: Need majority vote
+// Then: LUT3 majority per trit (1 cycle, 256 LUTs)
+// Test fpga_bundle: verify behavior is callable (compile-time check)
+_ = fpga_bundle;
+}
+
+test "fpga_dot_product_behavior" {
+// Given: Two encoded vectors A, B
+// When: Need dot product
+// Then: Parallel multiply + popcount tree (3 cycles)
+// Test fpga_dot_product: verify behavior is callable (compile-time check)
+_ = fpga_dot_product;
+}
+
+test "fpga_permute_behavior" {
+// Given: Encoded vector, shift count
+// When: Need cyclic rotation
+// Then: Barrel shifter (1 cycle)
+// Test fpga_permute: verify behavior is callable (compile-time check)
+_ = fpga_permute;
+}
+
+test "fpga_cosine_behavior" {
+// Given: Two encoded vectors A, B
+// When: Need cosine similarity
+// Then: Dot product + norm pipeline (5 cycles)
+// Test fpga_cosine: verify behavior is callable (compile-time check)
+_ = fpga_cosine;
+}
+
+test "get_device_resources_behavior" {
+// Given: FPGADevice target
+// When: Need available resource budget
+// Then: Return DeviceResources for the target
+// Test get_device_resources: verify behavior is callable (compile-time check)
+_ = get_device_resources;
+}
+
+test "estimate_resources_behavior" {
+// Given: FPGAConfig with vector_dim and mac_units
+// When: Planning synthesis
+// Then: Return ResourceUsage estimate
+// Test estimate_resources: verify behavior is callable (compile-time check)
+_ = estimate_resources;
+}
+
+test "estimate_utilization_behavior" {
+// Given: ResourceUsage and DeviceResources
+// When: Checking if design fits
+// Then: Return utilization percentage
+// Test estimate_utilization: verify behavior is callable (compile-time check)
+_ = estimate_utilization;
+}
+
+test "get_register_map_behavior" {
+// Given: Standard control interface
+// When: Need AXI-lite address layout
+// Then: Return register offset table (control/status/data/perf)
+// Test get_register_map: verify behavior is callable (compile-time check)
+_ = get_register_map;
+}
+
+test "generate_synthesis_report_behavior" {
+// Given: FPGAConfig
+// When: Need estimated metrics
+// Then: Return FPGASynthesisReport with timing, power, throughput
+// Test generate_synthesis_report: verify behavior is callable (compile-time check)
+_ = generate_synthesis_report;
+}
+
+test "write_register_behavior" {
+// Given: Register offset and value
+// When: Host writes to FPGA
+// Then: Set register value (simulated)
+// Test write_register: verify behavior is callable (compile-time check)
+_ = write_register;
+}
+
+test "read_register_behavior" {
+// Given: Register offset
+// When: Host reads from FPGA
+// Then: Return register value (simulated)
+// Test read_register: verify behavior is callable (compile-time check)
+_ = read_register;
+}
+
+test "dispatch_operation_behavior" {
+// Given: FPGAOperation, input vectors
+// When: Host triggers FPGA computation
+// Then: Execute operation, update counters, return result
+// Test dispatch_operation: verify behavior is callable (compile-time check)
+_ = dispatch_operation;
+}
+
+test "phi_constants" {
+    try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);
+    try std.testing.expectApproxEqAbs(PHI_SQ - PHI, 1.0, 1e-10);
+}

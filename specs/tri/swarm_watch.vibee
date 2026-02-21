@@ -55,22 +55,28 @@ behaviors:
     when: Monitor polls at interval
     then: If dht available calls getStats() for real data; else uses mock incremental data
     implementation: |
-                  const std = @import("std");
-                  const Allocator = std.mem.Allocator;
-                  const DHTStats = struct {
-                      triples_stored: u64,
-                      triples_distributed: u64,
-                      triples_received: u64,
-                      triples_rejected: u64,
-                      triples_duplicate: u64,
-                      sync_rounds: u64,
-                      peer_count: u64,
-                  };
-                  pub fn pollDhtStats(self: *@This(), stats: DHTStats) void {
-                      _ = self;
-                      _ = stats;
-                      // Store stats internally for rendering
-                  }
+                                    const std = @import("std");
+                                    const Allocator = std.mem.Allocator;
+                                    const DHTStats = struct {
+                                        triples_stored: u64,
+                                        triples_distributed: u64,
+                                        triples_received: u64,
+                                        triples_rejected: u64,
+                                        triples_duplicate: u64,
+                                        sync_rounds: u64,
+                                        peer_count: u64,
+                                    };
+                                    pub fn pollDhtStats(self: *@This(), stats: DHTStats) void {
+                                        _ = self;
+                                        _ = stats;
+                                        // Store stats internally for rendering
+                                    }
+                              
+                              
+                        
+                        
+                  
+                  
             
             
       
@@ -81,17 +87,23 @@ behaviors:
     when: Monitor polls at interval
     then: RewardSummary with total paid and pending amounts
     implementation: |
-                  const std = @import("std");
-                  const RewardStats = struct {
-                      total_paid_wei: u128,
-                      pending_wei: u128,
-                      triples_rewarded: u64,
-                  };
-                  pub fn pollRewardStats(self: *@This(), stats: RewardStats) void {
-                      _ = self;
-                      _ = stats;
-                      // Store reward stats internally
-                  }
+                                    const std = @import("std");
+                                    const RewardStats = struct {
+                                        total_paid_wei: u128,
+                                        pending_wei: u128,
+                                        triples_rewarded: u64,
+                                    };
+                                    pub fn pollRewardStats(self: *@This(), stats: RewardStats) void {
+                                        _ = self;
+                                        _ = stats;
+                                        // Store reward stats internally
+                                    }
+                              
+                              
+                        
+                        
+                  
+                  
             
             
       
@@ -102,18 +114,24 @@ behaviors:
     when: SyncResult is accepted duplicate or rejected
     then: SyncEvent added to ring buffer with timestamp and result type
     implementation: |
-                  const std = @import("std");
-                  const EventType = enum { store, sync_inbound, sync_outbound };
-                  const EventResult = enum { accepted, duplicate, rejected };
-                  pub fn recordSyncEvent(self: *@This(), event_type: EventType, subject: []const u8, predicate: []const u8, object: []const u8, result: EventResult) void {
-                      _ = self;
-                      _ = event_type;
-                      _ = subject;
-                      _ = predicate;
-                      _ = object;
-                      _ = result;
-                      // Store event in ring buffer
-                  }
+                                    const std = @import("std");
+                                    const EventType = enum { store, sync_inbound, sync_outbound };
+                                    const EventResult = enum { accepted, duplicate, rejected };
+                                    pub fn recordSyncEvent(self: *@This(), event_type: EventType, subject: []const u8, predicate: []const u8, object: []const u8, result: EventResult) void {
+                                        _ = self;
+                                        _ = event_type;
+                                        _ = subject;
+                                        _ = predicate;
+                                        _ = object;
+                                        _ = result;
+                                        // Store event in ring buffer
+                                    }
+                              
+                              
+                        
+                        
+                  
+                  
             
             
       
@@ -124,15 +142,21 @@ behaviors:
     when: Dashboard refresh requested
     then: ANSI formatted output with DHT health rewards and recent events
     implementation: |
-                  const std = @import("std");
-                  const Allocator = std.mem.Allocator;
-                  const File = std.fs.File;
-                  pub fn renderDashboard(self: *@This(), allocator: Allocator, file: File) !void {
-                      _ = allocator;
-                      _ = self;
-                      _ = file;
-                      // Render ANSI formatted dashboard
-                  }
+                                    const std = @import("std");
+                                    const Allocator = std.mem.Allocator;
+                                    const File = std.fs.File;
+                                    pub fn renderDashboard(self: *@This(), allocator: Allocator, file: File) !void {
+                                        _ = allocator;
+                                        _ = self;
+                                        _ = file;
+                                        // Render ANSI formatted dashboard
+                                    }
+                              
+                              
+                        
+                        
+                  
+                  
             
             
       
