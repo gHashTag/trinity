@@ -371,6 +371,8 @@ const sidebars: SidebarsConfig = {
         'research/trinity-multilingual-math-codegen-report',
         // PAS v8.21 Production Validation
         'research/pas-v8.21-production-validation-report',
+        // PAS v8.22 Production Final
+        'research/pas-v8.22-production-final-report',
       ],
     },
     'faq',
