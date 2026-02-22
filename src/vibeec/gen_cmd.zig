@@ -368,7 +368,7 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
     const file = try std.fs.cwd().openFile(input_path, .{});
     defer file.close();
 
-    const source = try file.readToEndAlloc(allocator, 1024 * 1024);
+    const source = try file.readToEndAlloc(allocator, 10 * 1024 * 1024); // 10MB max for large specs
     // Note: source is now owned by the spec via spec.source_content
     // Don't free here - spec.deinit() will handle it
 
@@ -668,7 +668,7 @@ fn generateSyntheticSeeds(
         };
         defer file.close();
 
-        const source = try file.readToEndAlloc(allocator, 1024 * 1024);
+        const source = try file.readToEndAlloc(allocator, 10 * 1024 * 1024); // 10MB max for large specs
         // Note: Don't free source - VibeeParser takes ownership
 
         var parser = vibee_parser.VibeeParser.init(allocator, source);
