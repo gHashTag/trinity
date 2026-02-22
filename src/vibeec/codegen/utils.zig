@@ -139,17 +139,35 @@ pub fn cleanTypeName(type_name: []const u8) []const u8 {
 }
 
 /// Extract inner type from generic type like "List<Float>" -> "Float"
+/// Now supports nested generics like "List<List<T>>" -> "List<T>"
 pub fn extractInnerType(composite: []const u8, prefix: []const u8, suffix: []const u8) []const u8 {
+    _ = suffix; // Not needed with bracket counting
     // Check if starts with prefix
     if (!std.mem.startsWith(u8, composite, prefix)) {
         return composite;
     }
 
-    // Find the suffix (closing >)
+    // Find matching closing bracket using bracket counting for nested generics
     const start = prefix.len;
-    const end = std.mem.indexOf(u8, composite[start..], suffix) orelse return composite;
+    const end = findMatchingBracketPos(composite, start) orelse return composite;
 
-    return std.mem.trim(u8, composite[start..][0..end], " ");
+    return std.mem.trim(u8, composite[start..end], " ");
+}
+
+/// Find matching closing bracket position for nested generics
+/// Returns position of matching '>' after start_pos, or null if unmatched
+fn findMatchingBracketPos(str: []const u8, start_pos: usize) ?usize {
+    var depth: usize = 1;
+    var i = start_pos;
+    while (i < str.len) : (i += 1) {
+        const c = str[i];
+        if (c == '<') depth += 1
+        else if (c == '>') {
+            depth -= 1;
+            if (depth == 0) return i;
+        }
+    }
+    return null; // Unmatched brackets
 }
 
 /// Map VIBEE type to Zig type with proper generic handling
@@ -190,18 +208,27 @@ pub fn mapType(type_name: []const u8) []const u8 {
         return "*anyopaque";
     }
 
-    // Generic types List<T> -> []T (FIXED: parse inner type)
+    // Generic types List<T> -> []const T (FIXED: recursively parse inner type)
     if (std.mem.startsWith(u8, type_name, "List<")) {
         const inner = extractInnerType(type_name, "List<", ">");
+        // Check inner type FIRST before calling mapType recursively
+        // This avoids double-conversion (String -> []const u8 -> []const []const u8)
+        if (std.mem.eql(u8, inner, "String")) return "[]const u8";
+        if (std.mem.eql(u8, inner, "Int")) return "[]const i64";
+        if (std.mem.eql(u8, inner, "Float")) return "[]const f64";
+        if (std.mem.eql(u8, inner, "Bool")) return "[]const bool";
+        if (std.mem.eql(u8, inner, "usize")) return "[]const usize";
+        if (std.mem.eql(u8, inner, "u8")) return "[]u8";
+        // For complex inner types (generics, custom types), use mapType recursively
         const inner_zig = mapType(inner);
-        // Map common inner types to correct slice types
-        if (std.mem.eql(u8, inner_zig, "f64")) return "[]f64";
-        if (std.mem.eql(u8, inner_zig, "f32")) return "[]f32";
-        if (std.mem.eql(u8, inner_zig, "i64")) return "[]i64";
-        if (std.mem.eql(u8, inner_zig, "i32")) return "[]i32";
-        if (std.mem.eql(u8, inner_zig, "usize")) return "[]usize";
-        if (std.mem.eql(u8, inner_zig, "bool")) return "[]bool";
-        if (std.mem.eql(u8, inner_zig, "[]const u8")) return "[]const []const u8";
+        // Nested generics support for already-converted types
+        if (std.mem.eql(u8, inner_zig, "[]const u8")) return "[]const []const u8"; // List<List<String>>
+        if (std.mem.eql(u8, inner_zig, "[]const i64")) return "[]const []const i64"; // List<List<Int>>
+        if (std.mem.eql(u8, inner_zig, "[]const f64")) return "[]const []const f64"; // List<List<Float>>
+        if (std.mem.eql(u8, inner_zig, "[]i64")) return "[][]i64";
+        if (std.mem.eql(u8, inner_zig, "[]f64")) return "[][]f64";
+        if (std.mem.eql(u8, inner_zig, "?i64")) return "[]?i64"; // List<Option<Int>>
+        if (std.mem.eql(u8, inner_zig, "?f64")) return "[]?f64";
         return "[]const u8"; // fallback
     }
 

@@ -26,14 +26,12 @@ echo "Starting Trinity Dashboard — Chat Bot + Golden Chain v8.26..."
 
 tmux new-session -d -s "$SESSION_NAME" -n "HOME"
 
-# Split vertically - bottom pane for input (10% height)
-tmux split-window -v -p 10 -t "$SESSION_NAME:0"
+# Split vertically - bottom pane for input (10% height) - run command directly for proper stdin
+tmux split-window -v -p 10 -t "$SESSION_NAME:0" "cd $RALPH_DIR && exec bash .ralph/scripts/tri_cmd_input_v4.sh"
 
 # Top pane: output monitor (shows responses)
 tmux send-keys -t "$SESSION_NAME:0.0" "cd $RALPH_DIR && bash .ralph/scripts/output_monitor_v4.sh" C-m
 
-# Bottom pane: interactive command input
-tmux send-keys -t "$SESSION_NAME:0.1" "cd $RALPH_DIR && bash .ralph/scripts/tri_cmd_input_v4.sh" C-m
 tmux select-pane -t "$SESSION_NAME:0.1"
 
 # ═══════════════════════════════════════════════════════════════════════════════

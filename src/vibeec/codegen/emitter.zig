@@ -23,6 +23,12 @@ const CreationPattern = types.CreationPattern;
 const Behavior = types.Behavior;
 const Allocator = std.mem.Allocator;
 
+pub const CodegenError = error{
+    UnmatchedBrackets,
+    InvalidMapType,
+    InvalidHashMapType,
+};
+
 pub const ZigCodeGen = struct {
     allocator: Allocator,
     builder: CodeBuilder,
@@ -1133,7 +1139,9 @@ pub const ZigCodeGen = struct {
                     try self.builder.writeIndent();
                     const clean_type = utils.cleanTypeName(field.type_name);
                     const safe_name = utils.escapeReservedWord(field.name);
-                    try self.builder.writeFmt("{s}: {s},\n", .{ safe_name, utils.mapType(clean_type) });
+                    // Try parseComplexTypeNoAlloc for nested generics, fallback to utils.mapType
+                    const zig_type = self.parseComplexTypeNoAlloc(clean_type) orelse utils.mapType(clean_type);
+                    try self.builder.writeFmt("{s}: {s},\n", .{ safe_name, zig_type });
                 }
 
                 self.builder.decIndent();
@@ -1956,20 +1964,125 @@ pub const ZigCodeGen = struct {
         return type_name;
     }
 
+    /// Find matching closing bracket for nested generics
+    /// Returns index of matching '>' after start_pos, or null if unmatched
+    fn findMatchingBracket(str: []const u8, start_pos: usize) ?usize {
+        var depth: usize = 1;
+        var i = start_pos;
+        while (i < str.len) : (i += 1) {
+            const c = str[i];
+            if (c == '<') depth += 1
+            else if (c == '>') {
+                depth -= 1;
+                if (depth == 0) return i;
+            }
+        }
+        return null; // Unmatched brackets
+    }
+
     /// Parse complex type syntax like Option<T>, []T, !T, List<T>
-    fn parseComplexType(self: *Self, type_str: []const u8) ![]const u8 {
+    /// Now supports nested generics like List<List<T>>, Map<String, List<U>>
+    /// Returns null if the type cannot be parsed (caller should fallback to utils.mapType)
+    fn parseComplexTypeNoAlloc(self: *Self, type_str: []const u8) ?[]const u8 {
         // Option<T> or ?T -> ?resolved_type
         if (std.mem.startsWith(u8, type_str, "Option<")) {
-            const inner = type_str[8 .. type_str.len - 1]; // Skip "Option<" and ">"
+            const end_pos = findMatchingBracket(type_str, 8) orelse return null;
+            const inner = type_str[8..end_pos];
+            const resolved = self.parseComplexTypeNoAlloc(inner) orelse return null;
+            // For optional, prepend "?" to resolved type (static strings only)
+            if (std.mem.eql(u8, resolved, "i64")) return "?i64";
+            if (std.mem.eql(u8, resolved, "f64")) return "?f64";
+            if (std.mem.eql(u8, resolved, "bool")) return "?bool";
+            if (std.mem.eql(u8, resolved, "[]const u8")) return "?[]const u8";
+            if (std.mem.eql(u8, resolved, "[]const i64")) return "?[]const i64";
+            if (std.mem.eql(u8, resolved, "[]const f64")) return "?[]const f64";
+            // For other types, can't handle without allocation
+            return null;
+        }
+
+        // List<T> -> []const T (with nested generics support)
+        if (std.mem.startsWith(u8, type_str, "List<")) {
+            const end_pos = findMatchingBracket(type_str, 5) orelse return null;
+            const inner = type_str[5..end_pos];
+            const resolved = self.parseComplexTypeNoAlloc(inner) orelse return null;
+            // For list, prepend "[]const " to resolved type (static strings only)
+            if (std.mem.eql(u8, resolved, "i64")) return "[]const i64";
+            if (std.mem.eql(u8, resolved, "f64")) return "[]const f64";
+            if (std.mem.eql(u8, resolved, "bool")) return "[]const bool";
+            if (std.mem.eql(u8, resolved, "u8")) return "[]const u8";
+            if (std.mem.eql(u8, resolved, "usize")) return "[]const usize";
+            if (std.mem.eql(u8, resolved, "[]const u8")) return "[]const []const u8"; // Nested list
+            if (std.mem.eql(u8, resolved, "[]const i64")) return "[]const []const i64"; // Nested list
+            if (std.mem.eql(u8, resolved, "[]const f64")) return "[]const []const f64"; // Nested list
+            if (std.mem.eql(u8, resolved, "?i64")) return "[]const ?i64";
+            if (std.mem.eql(u8, resolved, "?f64")) return "[]const ?f64";
+            // For other types, can't handle
+            return null;
+        }
+
+        // Primitive types - return as-is
+        if (std.mem.eql(u8, type_str, "String")) return "[]const u8";
+        if (std.mem.eql(u8, type_str, "Int")) return "i64";
+        if (std.mem.eql(u8, type_str, "Float")) return "f64";
+        if (std.mem.eql(u8, type_str, "Bool")) return "bool";
+        if (std.mem.eql(u8, type_str, "usize")) return "usize";
+        if (std.mem.eql(u8, type_str, "u8")) return "u8";
+        if (std.mem.eql(u8, type_str, "void")) return "void";
+        if (std.mem.eql(u8, type_str, "anytype")) return "anytype";
+
+        // Unknown type - return null to signal fallback
+        return null;
+    }
+
+    fn parseComplexType(self: *Self, type_str: []const u8) ![]const u8 {
+        // Debug: log entry
+        //std.debug.print("parseComplexType: '{s}'\n", .{type_str});
+
+        // Option<T> or ?T -> ?resolved_type
+        if (std.mem.startsWith(u8, type_str, "Option<")) {
+            const end_pos = findMatchingBracket(type_str, 8) orelse
+                return error.UnmatchedBrackets;
+            const inner = type_str[8..end_pos];
             const resolved = try self.parseComplexType(inner);
             return try std.fmt.allocPrint(self.allocator, "?{s}", .{resolved});
         }
 
-        // List<T> -> []const T
+        // List<T> -> []const T (with nested generics support)
         if (std.mem.startsWith(u8, type_str, "List<")) {
-            const inner = type_str[5 .. type_str.len - 1]; // Skip "List<" and ">"
+            const end_pos = findMatchingBracket(type_str, 5) orelse
+                return error.UnmatchedBrackets;
+            const inner = type_str[5..end_pos];
+            //std.debug.print("List inner: '{s}'\n", .{inner});
             const resolved = try self.parseComplexType(inner);
+            //std.debug.print("List resolved: '{s}'\n", .{resolved});
             return try std.fmt.allocPrint(self.allocator, "[]const {s}", .{resolved});
+        }
+
+        // Map<K,V> -> std.StringHashMap(V) (with nested generics support)
+        if (std.mem.startsWith(u8, type_str, "Map<")) {
+            const end_pos = findMatchingBracket(type_str, 4) orelse
+                return error.UnmatchedBrackets;
+            const inner = type_str[4..end_pos];
+            // Parse Key,Value format
+            const comma_idx = std.mem.indexOf(u8, inner, ",") orelse return error.InvalidMapType;
+            const key_type = try self.parseComplexType(inner[0..comma_idx]);
+            const value_type = try self.parseComplexType(inner[comma_idx + 1 ..]);
+            // For String keys, use StringHashMap; otherwise AutoHashMap
+            if (std.mem.eql(u8, key_type, "[]const u8") or std.mem.eql(u8, key_type, "String")) {
+                return try std.fmt.allocPrint(self.allocator, "std.StringHashMap({s})", .{value_type});
+            }
+            return try std.fmt.allocPrint(self.allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
+        }
+
+        // HashMap<K,V> -> std.AutoHashMap(K, V)
+        if (std.mem.startsWith(u8, type_str, "HashMap<")) {
+            const end_pos = findMatchingBracket(type_str, 8) orelse
+                return error.UnmatchedBrackets;
+            const inner = type_str[8..end_pos];
+            const comma_idx = std.mem.indexOf(u8, inner, ",") orelse return error.InvalidHashMapType;
+            const key_type = try self.parseComplexType(inner[0..comma_idx]);
+            const value_type = try self.parseComplexType(inner[comma_idx + 1 ..]);
+            return try std.fmt.allocPrint(self.allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
         }
 
         // [T] already is slice syntax - keep as-is but resolve inner type
@@ -2121,10 +2234,15 @@ pub const ZigCodeGen = struct {
     fn parseMultiParamGiven(self: *Self, given: []const u8, name: []const u8) SignatureInfo {
         // 1. Check for "list of {semantic}" patterns
         if (containsCI(given, "list of")) {
-            const semantic_start = std.mem.indexOf(u8, given, "list of") orelse given.len;
-            const semantic = given[semantic_start + 7 ..]; // Skip "list of "
-            const mapped_type = mapSemanticType(semantic);
-            return .{ .params = "items: anytype", .ret = mapped_type };
+            // SAFE: Only create slice if "list of" is found AND bounds are valid
+            if (std.mem.indexOf(u8, given, "list of")) |idx| {
+                if (idx + 7 < given.len) {
+                    const semantic = given[idx + 7 ..]; // Skip "list of "
+                    const mapped_type = mapSemanticType(semantic);
+                    return .{ .params = "items: anytype", .ret = mapped_type };
+                }
+            }
+            // Fall through to other patterns if bounds check fails
         }
 
         // 2. Check for multi-param patterns ("two X", "three Y", etc.)
