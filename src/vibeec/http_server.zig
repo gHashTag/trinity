@@ -8,6 +8,7 @@ const std = @import("std");
 const model_mod = @import("gguf_model.zig");
 const tokenizer_mod = @import("gguf_tokenizer.zig");
 const inference = @import("gguf_inference.zig");
+const agent_mu_api = @import("agent_mu_api.zig");
 
 const Allocator = std.mem.Allocator;
 const FullModel = model_mod.FullModel;
@@ -103,6 +104,13 @@ pub const HttpServer = struct {
         std.debug.print("  GET  /health              - Health check\n", .{});
         std.debug.print("  GET  /                    - Server info\n", .{});
         std.debug.print("\n", .{});
+        std.debug.print("AGENT MU v8.19 Endpoints:\n", .{});
+        std.debug.print("  GET  /api/agent-mu/status          - Intelligence metrics\n", .{});
+        std.debug.print("  GET  /api/agent-mu/history         - History curve data\n", .{});
+        std.debug.print("  GET  /api/agent-mu/forecast        - Predictive forecasting\n", .{});
+        std.debug.print("  GET  /api/agent-mu/evolution-tree  - Evolution tree\n", .{});
+        std.debug.print("  GET  /api/agent-mu/sacred-math     - Sacred constants (μ, φ, L(10))\n", .{});
+        std.debug.print("\n", .{});
 
         const address = std.net.Address.initIp4(.{ 0, 0, 0, 0 }, self.port);
         var server = try address.listen(.{
@@ -163,6 +171,20 @@ pub const HttpServer = struct {
             try self.sendHealth(connection);
         } else if (std.mem.eql(u8, path, "/") or std.mem.startsWith(u8, path, "/ ")) {
             try self.sendInfo(connection);
+        } else if (std.mem.startsWith(u8, path, "/api/agent-mu/status")) {
+            try self.handleAgentMuStatus(connection);
+        } else if (std.mem.startsWith(u8, path, "/api/agent-mu/history")) {
+            const query_start = if (std.mem.indexOf(u8, path, "?")) |i| i + 1 else 0;
+            const query = if (query_start > 0) path[query_start..] else "";
+            try self.handleAgentMuHistory(connection, query);
+        } else if (std.mem.startsWith(u8, path, "/api/agent-mu/forecast")) {
+            const query_start = if (std.mem.indexOf(u8, path, "?")) |i| i + 1 else 0;
+            const query = if (query_start > 0) path[query_start..] else "";
+            try self.handleAgentMuForecast(connection, query);
+        } else if (std.mem.startsWith(u8, path, "/api/agent-mu/evolution-tree")) {
+            try self.handleAgentMuEvolutionTree(connection);
+        } else if (std.mem.startsWith(u8, path, "/api/agent-mu/sacred-math")) {
+            try self.handleAgentMuSacredMath(connection);
         } else if (std.mem.startsWith(u8, path, "/v1/chat/completions")) {
             if (std.mem.eql(u8, method, "POST")) {
                 try self.handleChatCompletion(connection, body, model, tokenizer);
@@ -231,6 +253,114 @@ pub const HttpServer = struct {
         _ = self;
         const response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: application/json\r\nContent-Length: 30\r\nConnection: close\r\n\r\n{\"error\":\"Method Not Allowed\"}";
         try connection.stream.writeAll(response);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // AGENT MU v8.19 API HANDLERS
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Handle AGENT MU status request
+    fn handleAgentMuStatus(self: *HttpServer, connection: *std.net.Server.Connection) !void {
+        const body = agent_mu_api.handleAgentMuStatus(self.allocator) catch |err| {
+            std.debug.print("AGENT MU status error: {}\n", .{err});
+            try self.sendAgentMuError(connection, 500, "Internal error");
+            return;
+        };
+        defer self.allocator.free(body);
+
+        const response = try agent_mu_api.sendJsonResponse(self.allocator, body);
+        defer self.allocator.free(response);
+        try connection.stream.writeAll(response);
+    }
+
+    /// Handle intelligence history request
+    fn handleAgentMuHistory(self: *HttpServer, connection: *std.net.Server.Connection, query: []const u8) !void {
+        // Parse count from query string (default: 50)
+        var count: usize = 50;
+        if (std.mem.indexOf(u8, query, "count=")) |idx| {
+            const start = idx + 6;
+            const end = std.mem.indexOfScalar(u8, query[start..], '&') orelse query[start..].len;
+            count = std.fmt.parseInt(usize, query[start..start + end], 10) catch 50;
+        }
+
+        const body = agent_mu_api.handleIntelligenceHistory(self.allocator, count) catch |err| {
+            std.debug.print("AGENT MU history error: {}\n", .{err});
+            try self.sendAgentMuError(connection, 500, "Internal error");
+            return;
+        };
+        defer self.allocator.free(body);
+
+        const response = try agent_mu_api.sendJsonResponse(self.allocator, body);
+        defer self.allocator.free(response);
+        try connection.stream.writeAll(response);
+    }
+
+    /// Handle forecast request
+    fn handleAgentMuForecast(self: *HttpServer, connection: *std.net.Server.Connection, query: []const u8) !void {
+        // Parse horizon from query string (default: 10,50,100)
+        const default_horizon = "10,50,100";
+        var horizon_str: []const u8 = default_horizon;
+        if (std.mem.indexOf(u8, query, "horizon=")) |idx| {
+            const start = idx + 8;
+            const end = std.mem.indexOfScalar(u8, query[start..], '&') orelse query[start..].len;
+            horizon_str = query[start..start + end];
+        }
+
+        const body = agent_mu_api.handleForecast(self.allocator, horizon_str) catch |err| {
+            std.debug.print("AGENT MU forecast error: {}\n", .{err});
+            try self.sendAgentMuError(connection, 500, "Internal error");
+            return;
+        };
+        defer self.allocator.free(body);
+
+        const response = try agent_mu_api.sendJsonResponse(self.allocator, body);
+        defer self.allocator.free(response);
+        try connection.stream.writeAll(response);
+    }
+
+    /// Handle evolution tree request
+    fn handleAgentMuEvolutionTree(self: *HttpServer, connection: *std.net.Server.Connection) !void {
+        const body = agent_mu_api.handleEvolutionTree(self.allocator) catch |err| {
+            std.debug.print("AGENT MU evolution tree error: {}\n", .{err});
+            try self.sendAgentMuError(connection, 500, "Internal error");
+            return;
+        };
+        defer self.allocator.free(body);
+
+        const response = try agent_mu_api.sendJsonResponse(self.allocator, body);
+        defer self.allocator.free(response);
+        try connection.stream.writeAll(response);
+    }
+
+    /// Handle sacred math request
+    fn handleAgentMuSacredMath(self: *HttpServer, connection: *std.net.Server.Connection) !void {
+        const body = agent_mu_api.handleSacredMath(self.allocator) catch |err| {
+            std.debug.print("AGENT MU sacred math error: {}\n", .{err});
+            try self.sendAgentMuError(connection, 500, "Internal error");
+            return;
+        };
+        defer self.allocator.free(body);
+
+        const response = try agent_mu_api.sendJsonResponse(self.allocator, body);
+        defer self.allocator.free(response);
+        try connection.stream.writeAll(response);
+    }
+
+    /// Send AGENT MU error response
+    fn sendAgentMuError(self: *HttpServer, connection: *std.net.Server.Connection, status_code: u16, message: []const u8) !void {
+        const status_str = switch (status_code) {
+            400 => "400 Bad Request",
+            500 => "500 Internal Server Error",
+            else => "500 Internal Server Error",
+        };
+        const json_body = std.fmt.allocPrint(self.allocator, "{{\"error\":\"{s}\"}}", .{message}) catch return;
+        defer self.allocator.free(json_body);
+        const header = std.fmt.allocPrint(self.allocator,
+            "HTTP/1.1 {s}\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
+        , .{ status_str, json_body.len }) catch return;
+        defer self.allocator.free(header);
+        try connection.stream.writeAll(header);
+        try connection.stream.writeAll(json_body);
     }
 
     fn handleChatCompletion(self: *HttpServer, connection: *std.net.Server.Connection, body: []const u8, model: *FullModel, tokenizer: *Tokenizer) !void {
