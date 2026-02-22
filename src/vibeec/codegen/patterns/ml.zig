@@ -48,46 +48,73 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         return true;
     }
 
-    // Pattern: evaluate* -> evaluation
+    // Pattern: evaluate* -> evaluation (MSE calculation)
     if (std.mem.startsWith(u8, b.name, "evaluate")) {
         try builder.writeFmt("pub fn {s}(model: anytype, data: anytype) EvalResult {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Evaluate model on data");
-        try builder.writeLine("_ = model; _ = data;");
-        try builder.writeLine("return EvalResult{};");
+        try builder.writeLine("// Calculate MSE (Mean Squared Error) on dataset");
+        try builder.writeLine("var total_error: f32 = 0.0;");
+        try builder.writeLine("var count: usize = 0;");
+        try builder.writeLine("for (data.inputs, data.targets) |input, target| {");
+        builder.incIndent();
+        try builder.writeLine("const pred = model.forward(input);");
+        try builder.writeLine("const diff = pred - target;");
+        try builder.writeLine("total_error += diff * diff;");
+        try builder.writeLine("count += 1;");
+        builder.decIndent();
+        try builder.writeLine("}");
+        try builder.writeLine("return EvalResult{ .mse = total_error / @as(f32, @floatFromInt(count)), .samples = count };");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: learn* -> learning
+    // Pattern: learn* -> learning (Hebbian update)
     if (std.mem.startsWith(u8, b.name, "learn")) {
         try builder.writeFmt("pub fn {s}(model: anytype, sample: anytype) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Learn from sample");
-        try builder.writeLine("_ = model; _ = sample;");
+        try builder.writeLine("// Hebbian learning: update weights based on prediction error");
+        try builder.writeLine("const prediction = model.forward(sample.input);");
+        try builder.writeLine("const error = sample.target - prediction;");
+        try builder.writeLine("// Update weights with learning rate 0.01");
+        try builder.writeLine("model.updateWeights(sample.input, error * 0.01);");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: adapt* -> adaptation
+    // Pattern: adapt* -> adaptation (moving average)
     if (std.mem.startsWith(u8, b.name, "adapt")) {
         try builder.writeFmt("pub fn {s}(model: anytype, new_data: anytype) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Adapt model to new data");
-        try builder.writeLine("_ = model; _ = new_data;");
+        try builder.writeLine("// Adapt model using exponential moving average");
+        try builder.writeLine("const alpha = 0.1;  // Smoothing factor");
+        try builder.writeLine("const new_mean = computeMean(new_data);");
+        try builder.writeLine("model.mean = alpha * new_mean + (1 - alpha) * model.mean;");
         builder.decIndent();
         try builder.writeLine("}");
         return true;
     }
 
-    // Pattern: fit* -> fitting
+    // Pattern: fit* -> fitting (gradient descent loop)
     if (std.mem.startsWith(u8, b.name, "fit")) {
         try builder.writeFmt("pub fn {s}(model: anytype, x: anytype, y: anytype) void {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Fit model to data");
-        try builder.writeLine("_ = model; _ = x; _ = y;");
+        try builder.writeLine("// Train model using gradient descent");
+        try builder.writeLine("const epochs = 100;");
+        try builder.writeLine("const lr = 0.01;  // Learning rate");
+        try builder.writeLine("var epoch: usize = 0;");
+        try builder.writeLine("while (epoch < epochs) : (epoch += 1) {");
+        builder.incIndent();
+        try builder.writeLine("for (x, y) |input, target| {");
+        builder.incIndent();
+        try builder.writeLine("const pred = model.forward(input);");
+        try builder.writeLine("const grad = 2 * (pred - target);");
+        try builder.writeLine("model.backward(grad, lr);");
+        builder.decIndent();
+        try builder.writeLine("}");
+        builder.decIndent();
+        try builder.writeLine("}");
         builder.decIndent();
         try builder.writeLine("}");
         return true;

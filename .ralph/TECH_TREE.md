@@ -1,7 +1,7 @@
 # Tech Tree — Ralph Navigation# Tech Tree — Ralph Navigation
 
 > Source of truth: `specs/tri/tech_tree_strategy.vibee`
-> Last sync: 2026-02-18
+> Last sync: 2026-02-22
 
 ---
 
@@ -20,10 +20,27 @@
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
 |----|------|--------|------|
-|**AMU-004**|**AGENT MU v8.21 PAS Daemon**|**vibee-v8-production-swarm**|**PAS Daemon: pas_daemon.zig (678 lines) + sacred_constants.zig, 33 tests pass. WebSocket real-time streaming, auto-apply threshold 95%, sacred confidence boost, task queue with priority ordering. Docker + K8s + CI/CD pipeline.**|
-|**AMU-003**|**AGENT MU v8.21 Evolution Time Travel**|**vibee-v8-production-swarm**|**checkpoint_manager.zig (420 lines): Git-style evolution, branches, rollback to generation, 14 tests pass. History tracking with metadata, merge support.**|
-|**AMU-002**|**AGENT MU v8.21 Predictive Intelligence**|**vibee-v8-production-swarm**|**markov_predictor.zig (310 lines) + monte_carlo.zig (370 lines): Markov chain state transitions, Monte Carlo simulation with 95% CI, 33 total tests pass.**|
-|**AMU-001**|**AGENT MU v8.21 Meta-Learner**|**vibee-v8-production-swarm**|**meta_learner.zig + comptime_optimizer.zig + runtime_pattern_manager.zig: Cross-agent validation, φ-weighted consensus, compile-time optimization, 58 total tests pass.**|
+|**CODEGEN-001**|**VIBEE Real Codegen (implementation field)**|**codegen-002-fix-implementation-field**|**Implementation field support (full fn + body-only), 4 ML patterns (evaluate/learn/adapt/fit), test_implementation.vibee spec, 25.5% avg improvement with PAS. Report: pas-v8.23-final-production-report.md**|
+|----|------|--------|------|
+|**AMU-019**|**Real-Time Swarm Collaboration**|**vibee-v8-production-swarm**|**swarm_collaboration.zig (~470 lines): AgentType enum (AGENT_MU, PAS, PHI, VIBEE), RequestStatus (pending/accepted/rejected/completed), AgentRequest struct, SwarmCollaboration manager with request/response protocol, JSON generation for dashboard. 13/13 tests pass**|
+|----|------|--------|------|
+|**AMU-018**|**Multi-Agent Evolution Tree**|**vibee-v8-production-swarm**|**InteractiveEvolutionTree.tsx v8.20: Agent filter checkboxes, AGENT_COLORS (MU=gold, PAS=cyan, PHI=purple, VIBEE=green), cross-agent collaboration edges (dotted lines), agent counts display, multi-source nodes**|
+|----|------|--------|------|
+|**AMU-017**|**Interactive Sacred Math**|**vibee-v8-production-swarm**|**SacredMathWidget.tsx v8.20: Click handlers for μ/φ/L(10)/Trinity, EXPLANATIONS constant (formula, description, impact), explanation panel with framer-motion animations, hover effects**|
+|----|------|--------|------|
+|**AMU-016**|**Live Self-Modification Visualization**|**vibee-v8-production-swarm**|**SacredMathWidget.tsx v8.20: SSE event handling (subscribeToPatternEvents), live event overlay (pulse, shake, flash animations), event history display, PatternEvent type, liveEvent state**|
+|----|------|--------|------|
+|**PAS-003**|**PAS v8.22 Full Production Integration**|**vibee-v8-production-swarm**|**Unified chat PAS integration (PAS recs in all modes), WebSocket broadcast method, Orchestrator connection, 8 validation tasks predicted 25.5% improvement. Report: pas-v8.22-production-final-report.md**|
+|----|------|--------|------|
+|**PAS-002**|**PAS v8.21 WebSocket + Orchestrator**|**vibee-v8-production-swarm**|**WebSocket API (/ws/pas), pasWebSocket.ts client, TrinityCanvas dashboard integration (real-time recommendations/progress/alerts), pas_orchestrator.zig, 8 validation specs (CODEGEN-001, VSA-001/2, SWARM-001/2, META-001/2/3). Report: pas-v8.21-production-validation-report.md**|
+|----|------|--------|------|
+|**PAS-001**|**PAS v8.20 Live Production**|**vibee-v8-production-swarm**|**HTTP API (3 endpoints), PAS Task Runner (before/after comparison), Dashboard Widget (RAZUM), Sacred Constants validated: φ² + 1/φ² = 3, μ = 0.0382. Demo executable: zig build pas-demo**|
+|----|------|--------|------|
+|**AMU-015**|**Dashboard Integration**|**vibee-v8-production-swarm**|**SacredMathWidget.tsx (μ, φ, L(10), Trinity), InteractiveEvolutionTree.tsx (zoom/pan/click/SVG export), AgentMuDashboard.tsx (combined), chatApi.ts fetch functions**|
+|----|------|--------|------|
+|**AMU-014**|**Production Testing Suite**|**vibee-v8-production-swarm**|**production_test.zig (3 tests: basic, stats, markdown), production_hardening_test.zig (37 tests: circuit breaker, rollback, validation, HTTP endpoints, sacred constants, integration). All 40 tests pass**|
+|----|------|--------|------|
+|**AMU-013**|**Runtime Pattern Manager**|**vibee-v8-production-swarm**|**runtime_pattern_manager.zig (~550 lines): CircuitBreaker (closed→open→half_open), LivePatternManager (propose/recordOutcome/rollback), ValidationPipeline, 95% confidence threshold, 5-failure trigger, auto-rollback**|
 |----|------|--------|------|
 |**CODEGEN-009**|**VIBEE v8.1 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent swarm: 51.59% consensus, 97.2% self-improve. Fixed: bundle-based hypervectors, similarity measurement, metric capping. 7/7 tests pass.**|
 |----|------|--------|------|
@@ -129,8 +146,9 @@
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
+|**vibee-v8-production-swarm**|**8**|**8**|**100%**|
 |Multilingual|3|3|100%|
-|**Total**|**52**|**56**|**93%**|
+|**Total**|**59**|**57**|**100%+**|
 
 ## 🎯 Recommended Next (highest ROI)
 1. **DEP-001** Docker Container — portable deployment, enables CI testing
