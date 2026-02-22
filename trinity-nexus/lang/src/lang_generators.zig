@@ -694,20 +694,22 @@ pub fn generateZig(allocator: Allocator, spec: ParsedSpec) ![]u8 {
     return result.toOwnedSlice(allocator);
 }
 
-// MGEN-005: Enhanced type mapping with Zig idioms
+// MGEN-005: Enhanced type mapping with Zig idioms (Zig 0.15.x compatible)
 fn mapTypeZigFluent(vibee_type: []const u8) []const u8 {
     if (std.mem.eql(u8, vibee_type, "String")) return "[]const u8";
     if (std.mem.eql(u8, vibee_type, "Int")) return "i64";
     if (std.mem.eql(u8, vibee_type, "Float")) return "f64";
     if (std.mem.eql(u8, vibee_type, "Bool")) return "bool";
 
-    // Parse generic types
+    // Parse generic types - Zig 0.15.x: use std.array_list.Managed for dynamic arrays
     if (std.mem.startsWith(u8, vibee_type, "List<")) {
         const inner = vibee_type[5 .. vibee_type.len - 1];
         const inner_mapped = mapTypeZigFluent(inner);
-        if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "std.ArrayList([]const u8)";
-        if (std.mem.eql(u8, inner_mapped, "i64")) return "std.ArrayList(i64)";
-        return "std.ArrayList(u8)";
+        // Zig 0.15.x: std.ArrayList is now unmanaged, use std.array_list.Managed for managed lists
+        if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "std.array_list.Managed([]const u8)";
+        if (std.mem.eql(u8, inner_mapped, "i64")) return "std.array_list.Managed(i64)";
+        if (std.mem.eql(u8, inner_mapped, "u8")) return "std.array_list.Managed(u8)";
+        return "std.array_list.Managed(u8)";
     }
 
     if (std.mem.startsWith(u8, vibee_type, "Option<")) {
