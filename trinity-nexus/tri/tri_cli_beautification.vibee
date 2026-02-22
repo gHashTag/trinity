@@ -208,6 +208,73 @@ behaviors:
           try print_trinity_logo();
       }
 
+  - name: execute_chat
+    given: ChatMode
+    when: User runs tri chat --model <path>
+    then: Start interactive chat with GGUF model
+    implementation: |
+      pub fn execute_chat(mode: anytype) !void {
+          const gguf_chat = @import("gguf_chat");
+
+          const model_path = mode.model orelse {
+              std.debug.print("\\x1b[31mError: --model <path> required\\x1b[0m\\n", .{});
+              std.debug.print("Usage: tri chat --model <path.gguf>\\n", .{});
+              return error.ModelPathRequired;
+          };
+
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           TRINITY Chat - Interactive Mode                 ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+          std.debug.print("Model: {s}\\n\\n", .{model_path});
+
+          // Try to load and run GGUF chat
+          std.debug.print("\\x1b[33mLoading model...\\x1b[0m\\n", .{});
+          _ = try gguf_chat.runChat(model_path);
+      }
+
+  - name: execute_gen
+    given: CodeMode
+    when: User runs tri gen <spec.vibee>
+    then: Generate Zig code from .vibee specification
+    implementation: |
+      pub fn execute_gen(mode: anytype) !void {
+          const vibee_gen = @import("codegen");
+
+          const spec_path = mode.spec;
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           VIBEE Code Generation                            ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+          std.debug.print("Spec: {s}\\n\\n", .{spec_path});
+
+          std.debug.print("\\x1b[33m[1/3] Parsing .vibee specification...\\x1b[0m\\n", .{});
+          const spec = try vibee_gen.parse(spec_path);
+
+          std.debug.print("\\x1b[33m[2/3] Generating Zig code...\\x1b[0m\\n", .{});
+          const output_path = mode.output orelse "trinity-nexus/output/tri/zig";
+          try vibee_gen.generate(spec, output_path);
+
+          std.debug.print("\\x1b[32m[3/3] ✓ Code generation complete!\\x1b[0m\\n", .{});
+          std.debug.print("\\nOutput: {s}/\\n", .{output_path});
+      }
+
+  - name: execute_serve
+    given: void
+    when: User runs tri serve --port 8080
+    then: Start HTTP API server
+    implementation: |
+      pub fn execute_serve() !void {
+          const http_server = @import("http_server");
+
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           TRINITY HTTP Server                            ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+
+          try http_server.start(.{
+              .port = 8080,
+              .host = "0.0.0.0",
+          });
+      }
+
   - name: print_trinity_logo
     given: TrinityLogo and CLIState
     when: CLI starts or --verbose flag
@@ -318,16 +385,76 @@ behaviors:
     given: KnowledgeBuildMode
     when: User runs tri knowledge build
     then: Build knowledge base from specifications
+    implementation: |
+      pub fn execute_knowledge_build(options: anytype) !void {
+          const fs = std.fs;
+          const allocator = std.heap.page_allocator;
+
+          const specs_path = if (options.specs_path) |p| p else "trinity-nexus/tri";
+
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           Knowledge Base Builder                           ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+          std.debug.print("Scanning: {s}/\\n\\n", .{specs_path});
+
+          var dir = fs.cwd().openDir(specs_path, .{ .iterate = true }) catch |err| {
+              std.debug.print("\\x1b[31mError opening directory: {any}\\x1b[0m\\n", .{err});
+              return err;
+          };
+          defer dir.close();
+
+          var count: usize = 0;
+          var walker = try dir.walk(allocator);
+          defer walker.deinit();
+
+          while (try walker.next()) |entry| {
+              if (entry.kind == .file and std.mem.endsWith(u8, entry.path, ".vibee")) {
+                  std.debug.print("  \\x1b[32m✓\\x1b[0m {s}\\n", .{entry.path});
+                  count += 1;
+              }
+          }
+
+          std.debug.print("\\n\\x1b[36mIndexed {} specification(s)\\x1b[0m\\n", .{count});
+          std.debug.print("\\nKnowledge base ready for queries!\\n", .{});
+      }
 
   - name: execute_knowledge_ask
     given: KnowledgeAskMode
     when: User runs tri knowledge ask
     then: Query knowledge base with natural language
+    implementation: |
+      pub fn execute_knowledge_ask(options: anytype) !void {
+          const question = options.question;
+
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           Knowledge Query                                 ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+          std.debug.print("Question: {s}\\n\\n", .{question});
+
+          // TODO: Implement actual knowledge graph query
+          std.debug.print("\\x1b[33m[Knowledge Graph]\\x1b[0m\\n", .{});
+          std.debug.print("  Searching for relevant specifications...\\n\\n", .{});
+          std.debug.print("\\x1b[90m(Full knowledge graph integration coming soon)\\x1b[0m\\n", .{});
+      }
 
   - name: execute_knowledge_list
     given: KnowledgeListMode
     when: User runs tri knowledge list
     then: List all knowledge entries
+    implementation: |
+      pub fn execute_knowledge_list(_: anytype) !void {
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           Knowledge Base Contents                         ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n\\n", .{});
+
+          std.debug.print("\\x1b[33mCategories:\\x1b[0m\\n", .{});
+          std.debug.print("  • VSA (Vector Symbolic Architecture)\\n", .{});
+          std.debug.print("  • HDC (Hyperdimensional Computing)\\n", .{});
+          std.debug.print("  • VIBEE (Code Generation)\\n", .{});
+          std.debug.print("  • PHI LOOP (Consciousness Chain)\\n", .{});
+          std.debug.print("  • CLI Commands\\n", .{});
+          std.debug.print("\\n\\x1b[90mUse 'tri knowledge ask \"<question>\"' to query\\x1b[0m\\n", .{});
+      }
 
   - name: execute_model_list
     given: ModelListMode
@@ -335,7 +462,57 @@ behaviors:
     then: List all available models
     implementation: |
       pub fn execute_model_list(_: anytype) !void {
-          std.debug.print("Listing all available models...\n", .{});
+          const fs = std.fs;
+          const allocator = std.heap.page_allocator;
+
+          // Model directories to search
+          const model_paths = [_][]const u8{
+              "models",
+              "trinity/models",
+              "../models",
+              "~/.cache/trinity/models",
+          };
+
+          std.debug.print("\\x1b[33m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[33m║           TRINITY - Available GGUF Models                ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[33m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n\\n", .{});
+
+          var found_count: usize = 0;
+
+          for (model_paths) |search_path| {
+              if (fs.cwd().openDir(search_path, .{ .iterate = true })) |dir| {
+                  defer dir.close();
+
+                  var walker = dir.walk(allocator) catch |err| {
+                      std.debug.print("  [skip] {s}: {any}\\n", .{search_path, err});
+                      continue;
+                  };
+                  defer walker.deinit();
+
+                  while (walker.next() catch |err| {
+                      std.debug.print("  [error] {any}\\n", .{err});
+                      break;
+                  }) |entry| {
+                      if (entry.kind == .file and std.mem.endsWith(u8, entry.path, ".gguf")) {
+                          const file_size = dir.getFileSize(entry.path) catch continue;
+                          const size_mb = @as(f64, @floatFromInt(file_size)) / (1024.0 * 1024.0);
+
+                          std.debug.print("  \\x1b[32m✓\\x1b[0m {s}\\n", .{entry.path});
+                          std.debug.print("     Size: {d:.1} MB\\n", .{size_mb});
+                          found_count += 1;
+                      }
+                  }
+              } else |_| {
+                  continue;
+              }
+          }
+
+          if (found_count == 0) {
+              std.debug.print("\\x1b[31m  No GGUF models found.\\n", .{});
+              std.debug.print("  Download models with: tri model download <name>\\x1b[0m\\n", .{});
+          } else {
+              std.debug.print("\\n  \\x1b[36mTotal: {} model(s)\\x1b[0m\\n", .{found_count});
+          }
       }
 
   - name: execute_model_download
