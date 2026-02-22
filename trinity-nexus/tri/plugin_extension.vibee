@@ -1,0 +1,409 @@
+# ============================================================================
+# Plugin & Extension System - Cycle 40
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: plugin_extension
+version: "1.0.0"
+language: zig
+module: plugin_extension
+
+description: |
+  Plugin & Extension System — Dynamic WASM plugin loading, sandboxed execution,
+  hot-reload without pipeline restart, and a typed plugin API for third-party
+  modality handlers, pipeline stages, and agent behaviors.
+
+  Architecture:
+    Plugin Registry:
+      Central registry of loaded plugins
+      Versioned plugin manifests (name, version, capabilities)
+      Dependency resolution between plugins
+      Conflict detection (two plugins claiming same hook)
+
+    WASM Sandbox:
+      Each plugin runs in isolated WASM instance
+      Memory limit per plugin (configurable, default 16MB)
+      CPU time limit per call (configurable, default 100ms)
+      No direct host filesystem access
+      Capability-based permissions (network, fs, gpu)
+
+    Plugin API (Host Functions):
+      vsa_bind(a, b) -> bound vector
+      vsa_unbind(bound, key) -> vector
+      vsa_similarity(a, b) -> f64
+      stream_push(chunk) -> void
+      stream_pull(timeout) -> chunk
+      log(level, message) -> void
+      config_get(key) -> value
+
+    Hot-Reload:
+      File watcher on plugin directory
+      Detect .wasm file changes
+      Drain in-flight calls to old version
+      Swap to new version atomically
+      Rollback on load failure
+
+    Hook Points:
+      pre_pipeline: Before pipeline starts
+      post_chunk: After each chunk processed
+      pre_fusion: Before cross-modal fusion
+      post_fusion: After fusion completes
+      on_error: On pipeline error
+      on_metrics: On metrics collection
+      custom: User-defined hook names
+
+    Extension Types:
+      Modality handler: Add new stream types
+      Pipeline stage: Custom transform/filter
+      Agent behavior: New agent capabilities
+      Metric collector: Custom metrics/telemetry
+      Storage backend: Alternative persistence
+
+  Safety:
+    - Max plugins loaded: 32
+    - Max memory per plugin: 16MB
+    - Max CPU per call: 100ms
+    - Max hook depth: 4 (prevent infinite recursion)
+    - Capability allowlist (deny by default)
+    - Version compatibility check on load
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_PLUGINS: 32
+  MAX_PLUGIN_MEMORY_MB: 16
+  MAX_CALL_TIMEOUT_MS: 100
+  MAX_HOOK_DEPTH: 4
+  PLUGIN_DIR: "plugins/"
+  HOT_RELOAD_DEBOUNCE_MS: 500
+  MAX_DEPENDENCIES: 8
+  MANIFEST_VERSION: 1
+  MAX_HOOKS_PER_PLUGIN: 16
+  WASM_STACK_SIZE: 65536
+  MAX_HOST_FUNCTIONS: 32
+
+types:
+  PluginState:
+    enum:
+      - unloaded
+      - loading
+      - active
+      - paused
+      - reloading
+      - error
+      - draining
+
+  PluginCapability:
+    enum:
+      - vsa_ops
+      - stream_io
+      - file_read
+      - file_write
+      - network
+      - gpu_compute
+      - agent_spawn
+      - metrics
+
+  HookPoint:
+    enum:
+      - pre_pipeline
+      - post_chunk
+      - pre_fusion
+      - post_fusion
+      - on_error
+      - on_metrics
+      - custom
+
+  ExtensionType:
+    enum:
+      - modality_handler
+      - pipeline_stage
+      - agent_behavior
+      - metric_collector
+      - storage_backend
+
+  PluginManifest:
+    fields:
+      name: String
+      version: String
+      author: String
+      description: String
+      extension_type: ExtensionType
+      capabilities: List<String>
+      dependencies: List<String>
+      hooks: List<String>
+      min_host_version: String
+      wasm_size_bytes: Int
+
+  PluginInstance:
+    fields:
+      plugin_id: Int
+      manifest: PluginManifest
+      state: PluginState
+      memory_used_bytes: Int
+      calls_total: Int
+      calls_failed: Int
+      avg_call_ms: Int
+      loaded_at_ms: Int
+      last_call_ms: Int
+
+  HookRegistration:
+    fields:
+      hook_point: HookPoint
+      plugin_id: Int
+      priority: Int
+      hook_name: String
+      enabled: Bool
+
+  HotReloadEvent:
+    fields:
+      plugin_name: String
+      old_version: String
+      new_version: String
+      success: Bool
+      reload_ms: Int
+      calls_drained: Int
+
+  SandboxLimits:
+    fields:
+      max_memory_bytes: Int
+      max_cpu_ms: Int
+      max_stack_bytes: Int
+      allowed_capabilities: List<String>
+      max_host_calls: Int
+
+  PluginError:
+    fields:
+      plugin_id: Int
+      error_type: String
+      message: String
+      timestamp_ms: Int
+      recoverable: Bool
+
+  PluginMetrics:
+    fields:
+      total_plugins: Int
+      active_plugins: Int
+      total_calls: Int
+      total_errors: Int
+      total_reloads: Int
+      avg_call_latency_ms: Int
+      total_memory_used_mb: Float
+      hooks_registered: Int
+
+  DependencyGraph:
+    fields:
+      plugin_name: String
+      depends_on: List<String>
+      depended_by: List<String>
+      resolved: Bool
+
+  PluginConfig:
+    fields:
+      plugin_dir: String
+      max_plugins: Int
+      max_memory_per_plugin_mb: Int
+      max_call_timeout_ms: Int
+      enable_hot_reload: Bool
+      enable_sandbox: Bool
+      default_capabilities: List<String>
+
+behaviors:
+  - name: load_plugin
+    given: WASM file path and manifest
+    when: Plugin load requested
+    then: Plugin loaded into sandbox, hooks registered
+
+  - name: unload_plugin
+    given: Active plugin ID
+    when: Plugin removal requested
+    then: Hooks deregistered, in-flight calls drained, memory freed
+
+  - name: hot_reload_plugin
+    given: Updated WASM file detected
+    when: File watcher triggers change
+    then: Old version drained, new version loaded atomically
+
+  - name: call_plugin
+    given: Plugin ID, function name, arguments
+    when: Host invokes plugin function
+    then: Function executed in sandbox with limits enforced
+
+  - name: register_hook
+    given: Plugin ID, hook point, priority
+    when: Plugin declares hook interest
+    then: Hook registered in execution chain
+
+  - name: fire_hook
+    given: Hook point and context data
+    when: Pipeline reaches hook point
+    then: All registered plugins called in priority order
+
+  - name: check_sandbox
+    given: Plugin attempting host operation
+    when: Capability check required
+    then: Operation allowed or denied based on manifest capabilities
+
+  - name: resolve_dependencies
+    given: Plugin manifest with dependency list
+    when: Plugin being loaded
+    then: Dependencies verified present and compatible
+
+  - name: rollback_reload
+    given: Hot-reload failed for new version
+    when: New WASM fails validation or first call
+    then: Previous version restored, error logged
+
+  - name: collect_plugin_metrics
+    given: Active plugin instances
+    when: Metrics collection triggered
+    then: Returns PluginMetrics with call stats and memory usage
+
+  - name: pause_plugin
+    given: Active plugin ID
+    when: Plugin needs temporary suspension
+    then: Plugin paused, hooks skipped, state preserved
+
+  - name: list_plugins
+    given: Plugin registry state
+    when: Plugin listing requested
+    then: Returns all plugins with state and metrics
+
+tests:
+  # Loading (4)
+  - name: load_wasm_plugin
+    category: loading
+    input: "Valid .wasm file with manifest"
+    expected: "Plugin loaded, state=active"
+    description: Basic WASM plugin loading
+
+  - name: load_with_dependencies
+    category: loading
+    input: "Plugin A depends on Plugin B"
+    expected: "B loaded first, then A"
+    description: Dependency resolution on load
+
+  - name: load_conflict_detection
+    category: loading
+    input: "Two plugins claim same hook"
+    expected: "Conflict reported, priority resolves"
+    description: Hook conflict detection
+
+  - name: load_exceeds_limit
+    category: loading
+    input: "33rd plugin load (max=32)"
+    expected: "Load rejected, limit reached"
+    description: Plugin count limit enforcement
+
+  # Sandbox (4)
+  - name: memory_limit_enforced
+    category: sandbox
+    input: "Plugin allocates 20MB (limit=16MB)"
+    expected: "Allocation denied, error returned"
+    description: Memory limit enforcement
+
+  - name: cpu_timeout_enforced
+    category: sandbox
+    input: "Plugin runs 200ms (limit=100ms)"
+    expected: "Execution terminated, timeout error"
+    description: CPU time limit enforcement
+
+  - name: capability_denied
+    category: sandbox
+    input: "Plugin without network cap tries HTTP"
+    expected: "Operation denied, capability error"
+    description: Capability-based access control
+
+  - name: sandbox_isolation
+    category: sandbox
+    input: "Plugin A tries to access Plugin B memory"
+    expected: "Access denied, isolated instances"
+    description: Cross-plugin memory isolation
+
+  # Hot-Reload (4)
+  - name: hot_reload_success
+    category: hot_reload
+    input: "Updated .wasm file detected"
+    expected: "Old drained, new loaded, zero downtime"
+    description: Successful hot-reload
+
+  - name: hot_reload_rollback
+    category: hot_reload
+    input: "New .wasm fails validation"
+    expected: "Rollback to previous version"
+    description: Rollback on failed reload
+
+  - name: hot_reload_drain
+    category: hot_reload
+    input: "5 in-flight calls during reload"
+    expected: "All 5 complete before swap"
+    description: In-flight call draining
+
+  - name: hot_reload_debounce
+    category: hot_reload
+    input: "3 rapid file changes in 100ms"
+    expected: "Single reload after 500ms debounce"
+    description: File change debouncing
+
+  # Hooks (3)
+  - name: hook_priority_order
+    category: hooks
+    input: "3 plugins on post_chunk, priorities 1,2,3"
+    expected: "Called in priority order 1,2,3"
+    description: Hook priority ordering
+
+  - name: hook_depth_limit
+    category: hooks
+    input: "Hook triggers another hook (depth=4)"
+    expected: "Stopped at depth=4, error logged"
+    description: Hook recursion depth limit
+
+  - name: hook_disable_enable
+    category: hooks
+    input: "Disable plugin hook, fire hook point"
+    expected: "Disabled plugin skipped"
+    description: Hook enable/disable
+
+  # Performance (3)
+  - name: plugin_call_latency
+    category: performance
+    input: "1000 plugin calls"
+    expected: "<1ms average per call"
+    description: Plugin call overhead
+
+  - name: hot_reload_latency
+    category: performance
+    input: "Reload 1MB WASM plugin"
+    expected: "<100ms total reload time"
+    description: Hot-reload speed
+
+  - name: memory_efficiency
+    category: performance
+    input: "16 plugins loaded"
+    expected: "Total memory <256MB"
+    description: Memory efficiency with many plugins
+
+  # Integration (4)
+  - name: plugin_with_pipeline
+    category: integration
+    input: "Custom pipeline stage plugin"
+    expected: "Plugin processes stream chunks"
+    description: Plugin as pipeline stage
+
+  - name: plugin_with_agents
+    category: integration
+    input: "Agent behavior extension plugin"
+    expected: "Agent uses plugin capabilities"
+    description: Plugin extends agent behavior
+
+  - name: plugin_with_scheduler
+    category: integration
+    input: "Plugin submits jobs to scheduler"
+    expected: "Jobs processed via work-stealing"
+    description: Plugin with work-stealing scheduler
+
+  - name: plugin_with_cluster
+    category: integration
+    input: "Plugin across distributed nodes"
+    expected: "Same plugin version on all nodes"
+    description: Plugin in distributed cluster

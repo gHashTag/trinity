@@ -1,0 +1,43 @@
+# phase3_modules.vibee - Module System Example
+
+module math
+
+export add, subtract, multiply, divide
+
+# Public functions (exported)
+pub fn add(x, y) {
+  x + y
+}
+
+pub fn subtract(x, y) {
+  x - y
+}
+
+pub fn multiply(x, y) {
+  x * y
+}
+
+pub fn divide(x, y) {
+  guard y != 0 else Error("Division by zero")
+  Ok(x / y)
+}
+
+# Private function (not exported)
+fn internal_helper(x) {
+  x * 2
+}
+
+# ============================================
+# Usage in another module:
+# ============================================
+
+# module main
+# 
+# import math.{add, subtract}
+# import math as m
+# 
+# pub fn main() {
+#   result1 = add(2, 3)        # Direct import
+#   result2 = m.multiply(4, 5)  # Qualified import
+#   print("Results: {result1}, {result2}")
+# }

@@ -1,0 +1,871 @@
+// Adaptive Strategy Selection - Choose best strategy for context
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants  // AI Suggestion: Replace magic numbers with named constants// Tracks strategy performance and adapts based on results
+
+// =============================================================================
+// Strategy Types
+// =============================================================================
+
+struct Strategy {
+  Strategy(
+    strategy_id: str,
+    name: str,
+    description: str,
+    applicable_contexts: [Context],
+    success_rate: float,
+    avg_execution_time_ms: int,
+    total_uses: int,
+    successful_uses: int,
+    failed_uses: int,
+    learned_optimizations: [Optimization],
+    last_used: int,
+    created_at: int
+  )
+}
+
+struct Context {
+  Context(
+    task_type: str,
+    complexity: ComplexityRange,
+    time_constraint: TimeConstraint?,
+    resource_availability: ResourceLevel,
+    risk_tolerance: RiskLevel,
+    quality_requirement: QualityLevel
+  )
+}
+fn new() · Self {
+    strategy_id: strategy_id,
+    name: name,
+    description: description,
+    success_rate: success_rate,
+    avg_execution_time_ms: avg_execution_time_ms,
+    total_uses: total_uses,
+    successful_uses: successful_uses,
+    failed_uses: failed_uses,
+    last_used: last_used,
+    created_at: created_at
+  
+}
+
+  # Auto-generated getters
+fn strategy_id(self) · self.strategy_id
+
+
+  # Auto-generated getters
+fn task_type(self) · self.task_type
+
+fn complexity(self) · self.complexity
+
+fn time_constraint(self) · self.time_constraint
+
+fn resource_availability(self) · self.resource_availability
+
+fn risk_tolerance(self) · self.risk_tolerance
+
+fn quality_requirement(self) · self.quality_requirement
+
+fn name(self) · self.name
+
+fn description(self) · self.description
+
+fn success_rate(self) · self.success_rate
+
+fn avg_execution_time_ms(self) · self.avg_execution_time_ms
+
+
+  # Auto-generated getters
+fn optimization_id(self) · self.optimization_id
+
+fn description(self) · self.description
+
+fn improvement(self) · self.improvement
+
+fn learned_from(self) · self.learned_from
+
+fn confidence(self) · self.confidence
+
+fn total_uses(self) · self.total_uses
+
+fn successful_uses(self) · self.successful_uses
+
+fn failed_uses(self) · self.failed_uses
+
+
+  # Auto-generated getters
+fn execution_id(self) · self.execution_id
+
+fn strategy_id(self) · self.strategy_id
+
+fn context(self) · self.context
+
+fn success(self) · self.success
+
+fn execution_time_ms(self) · self.execution_time_ms
+
+
+  # Auto-generated getters
+fn agent_id(self) · self.agent_id
+
+fn str(self) · self.str
+
+fn quality_score(self) · self.quality_score
+
+fn timestamp(self) · self.timestamp
+
+fn last_used(self) · self.last_used
+
+fn created_at(self) · self.created_at
+
+
+struct ComplexityRange {
+  VeryLow    // 1-2
+  Low        // 3-4
+  Medium     // 5-6
+  High       // 7-8
+  VeryHigh   // 9-10
+}
+
+derive(Json)
+struct TimeConstraint {
+  Urgent      // < 5 minutes
+  Short       // 5-30 minutes
+  Medium      // 30-120 minutes
+  Long        // > 120 minutes
+}
+
+derive(Json)
+struct ResourceLevel {
+  Limited
+  Moderate
+  Abundant
+}
+
+derive(Json)
+struct RiskLevel {
+  VeryLow
+  Low
+  Medium
+  High
+  VeryHigh
+}
+
+derive(Json)
+struct QualityLevel {
+  Minimum
+  Standard
+  High
+  Maximum
+}
+
+struct Optimization {
+  Optimization(
+    optimization_id: str,
+    description: str,
+    improvement: float,
+    applicable_when: [str],
+    learned_from: int,
+    confidence: float
+  )
+}
+
+// =============================================================================
+// Strategy Execution Record
+// =============================================================================
+
+struct StrategyExecution {
+  StrategyExecution(
+    execution_id: str,
+    strategy_id: str,
+    context: Context,
+    success: bool,
+    execution_time_ms: int,
+    quality_score: float,
+    optimizations_applied: [str],
+    timestamp: int
+  )
+}
+
+// =============================================================================
+// Strategy Adapter
+// =============================================================================
+
+struct StrategyAdapter {
+  StrategyAdapter(
+    agent_id: str,
+    strategies: {str: Strategy},
+    executions: [StrategyExecution],
+    context_strategy_map: {str, },  // context_hash → strategy_id
+    learning_rate: float,
+    exploration_rate: float,
+    max_executions: int
+  )
+}
+
+// =============================================================================
+// Adapter Creation
+// =============================================================================
+
+@spec new_strategy_adapter(agent_id: str) → StrategyAdapter {
+  /// Create new strategy adapter
+  given: Agent ID
+  when: Initializing agent
+  then: Returns strategy adapter
+}
+
+@impl {
+  let default_strategies = create_default_strategies()
+
+  strategies: default_strategies,
+    executions: [],
+    context_strategy_map: dict.new( · StrategyAdapter,
+    learning_rate: 0.1,
+    exploration_rate: 0.2,  // 20% exploration
+    max_executions: 500
+  )
+}
+
+@spec create_default_strategies() → {str: Strategy} {
+  /// Create default strategies
+  given: Nothing
+  when: Initializing adapter
+  then: Returns default strategies
+}
+
+@impl {
+  let strategies = [
+    Strategy(
+      strategy_id: "conservative",
+      name: "Conservative",
+      description: "Minimize risk, maximize validation",
+      applicable_contexts: [
+        Context(
+          task_type: "any",
+          complexity: High,
+          time_constraint: ∅,
+          resource_availability: Abundant,
+          risk_tolerance: Low,
+          quality_requirement: Maximum
+        )
+      ],
+      success_rate: 0.9,
+      avg_execution_time_ms: 10000,
+      total_uses: 0,
+      successful_uses: 0,
+      failed_uses: 0,
+      learned_optimizations: [],
+      last_used: 0,
+      created_at: current_timestamp_ms()
+    ),
+
+    Strategy(
+      strategy_id: "balanced",
+      name: "Balanced",
+      description: "Balance speed and quality",
+      applicable_contexts: [
+        Context(
+          task_type: "any",
+          complexity: Medium,
+          time_constraint: ☐Medium),
+          resource_availability: Moderate,
+          risk_tolerance: Medium,
+          quality_requirement: Standard
+        )
+      ],
+      success_rate: 0.85,
+      avg_execution_time_ms: 5000,
+      total_uses: 0,
+      successful_uses: 0,
+      failed_uses: 0,
+      learned_optimizations: [],
+      last_used: 0,
+      created_at: current_timestamp_ms()
+    ),
+
+    Strategy(
+      strategy_id: "aggressive",
+      name: "Aggressive",
+      description: "Maximize speed, accept higher risk",
+      applicable_contexts: [
+        Context(
+          task_type: "any",
+          complexity: Low,
+          time_constraint: ☐Urgent),
+          resource_availability: Limited,
+          risk_tolerance: High,
+          quality_requirement: Minimum
+        )
+      ],
+      success_rate: 0.75,
+      avg_execution_time_ms: 2000,
+      total_uses: 0,
+      successful_uses: 0,
+      failed_uses: 0,
+      learned_optimizations: [],
+      last_used: 0,
+      created_at: current_timestamp_ms()
+    )
+  ]
+
+  strategies.fold(dict.new(), strategy · fn {
+    dict.strategy.strategy_id, strategy · insert
+  })
+}
+
+// =============================================================================
+// Strategy Selection
+// =============================================================================
+
+@spec select_strategy(
+  adapter: StrategyAdapter,
+  context: Context
+) → str · Result {
+  /// Select best strategy for context
+  given: Adapter and context
+  when: Planning execution
+  then: Returns selected strategy
+}
+
+@impl {
+    agent: adapter.agent_id,
+    task_type: context.task_type,
+    complexity: context.complexity
+  }
+
+  // Check if we should explore (try different strategy)
+  let should_explore = should_explore_strategy(adapter)
+
+  match should_explore {
+    true → {
+      // Exploration: try less-used strategy
+      context · select_exploration_strategy
+    }
+    false → {
+      // Exploitation: use best known strategy
+      context · select_exploitation_strategy
+    }
+  }
+}
+
+@spec should_explore_strategy(adapter: StrategyAdapter) → bool {
+  /// Decide whether to explore or exploit
+  given: Adapter
+  when: Selecting strategy
+  then: Returns true if should explore
+}
+
+@impl {
+  // Random exploration based on exploration rate
+  let random = generate_random_float()
+  random < adapter.exploration_rate
+}
+
+@spec select_exploration_strategy(
+  adapter: StrategyAdapter,
+  context: Context
+) → str · Result {
+  /// Select strategy for exploration
+  given: Adapter and context
+  when: Exploring
+  then: Returns less-used strategy
+}
+
+@impl {
+  // Find applicable strategies
+  let applicable = adapter.strategies
+    · dict.values()
+    · list.filter(fn(strategy) {
+      context · is_strategy_applicable
+    })
+
+  case list.len(applicable) {
+    0 → ❌"No applicable strategies found")
+    _ → {
+      // Select least used
+      applicable
+        · list.sort_by(fn(strategy) { strategy.total_uses })
+        · list.first()
+        · result.map_error(fn(_) { "Failed to select strategy" })
+    }
+  }
+}
+
+@spec select_exploitation_strategy(
+  adapter: StrategyAdapter,
+  context: Context
+) → str · Result {
+  /// Select best known strategy
+  given: Adapter and context
+  when: Exploiting knowledge
+  then: Returns best strategy
+}
+
+@impl {
+  // Check context-strategy map first
+  let context_hash = hash_context(context)
+
+  case dict.get(adapter.context_strategy_map, context_hash) {
+    ✅strategy_id) → {
+      // Use cached strategy
+      case dict.get(adapter.strategies, strategy_id) {
+        ✅strategy) → {
+          ✅strategy)
+        }
+        ❌_) → context · select_best_strategy
+      }
+    }
+    ❌_) → {
+      // Calculate best strategy
+      context · select_best_strategy
+    }
+  }
+}
+
+@spec select_best_strategy(
+  adapter: StrategyAdapter,
+  context: Context
+) → str · Result {
+  /// Select best strategy based on performance
+  given: Adapter and context
+  when: No cached strategy
+  then: Returns best strategy
+}
+
+@impl {
+  // Find applicable strategies
+  let applicable = adapter.strategies
+    · dict.values()
+    · list.filter(fn(strategy) {
+      context · is_strategy_applicable
+    })
+
+  case list.len(applicable) {
+    0 → ❌"No applicable strategies found")
+    _ → {
+      // Score each strategy
+      let scored = applicable.map(fn(strategy) {
+        let score = context · calculate_strategy_score
+        (strategy, score)
+      })
+
+      // Select highest score
+      scored
+        · list.sort_by(fn(pair) { pair.1 })
+        · list.reverse()
+        · list.first()
+        · result.map(fn(pair) { pair.0 })
+        · result.map_error(fn(_) { "Failed to select strategy" })
+    }
+  }
+}
+
+@spec is_strategy_applicable(
+  strategy: Strategy,
+  context: Context
+) → bool {
+  /// Check if strategy is applicable to context
+  given: Strategy and context
+  when: Filtering strategies
+  then: Returns true if applicable
+}
+
+@impl {
+  strategy.applicable_contexts.any(fn(applicable_ctx) {
+    context · context_matches
+  })
+}
+
+@spec context_matches(ctx1: Context, ctx2: Context) → bool {
+  /// Check if contexts match
+  given: Two contexts
+  when: Comparing contexts
+  then: Returns true if match
+}
+
+@impl {
+  // Match task type (or "any")
+  let task_match = ctx1.task_type == "any" || ctx1.task_type == ctx2.task_type
+
+  // Match complexity range
+  let complexity_match = complexity_in_range(ctx2.complexity, ctx1.complexity)
+
+  // Match risk tolerance
+  let risk_match = risk_compatible(ctx1.risk_tolerance, ctx2.risk_tolerance)
+
+  task_match && complexity_match && risk_match
+}
+
+@spec calculate_strategy_score(
+  strategy: Strategy,
+  context: Context
+) → float {
+  /// Calculate score for strategy in context
+  given: Strategy and context
+  when: Selecting strategy
+  then: Returns score
+}
+
+@impl {
+  let factors = []
+
+  // Factor 1: Success rate (weight: 0.4)
+  let factors = [strategy.success_rate *. 0.4, ..factors]
+
+  // Factor 2: Speed (weight: 0.3)
+  let speed_score = case context.time_constraint {
+    ☐Urgent) → {
+      // Prefer faster strategies
+      let max_time = 10000.0
+      float.max(0.0, 1.0 -. (int.to_float(strategy.avg_execution_time_ms) /. max_time))
+    }
+    _ → 0.5  // Neutral
+  }
+  let factors = [speed_score *. 0.3, ..factors]
+
+  // Factor 3: Experience (weight: 0.2)
+  let experience_score = case strategy.total_uses {
+    0 → 0.3  // Low confidence
+    n if n < 10 → 0.6
+    n if n < 50 → 0.8
+    _ → 1.0
+  }
+  let factors = [experience_score *. 0.2, ..factors]
+
+  // Factor 4: Recency (weight: 0.1)
+  let recency_score = calculate_recency_score(strategy.last_used)
+  let factors = [recency_score *. 0.1, ..factors]
+
+  // Sum all factors
+  list.0.0, fn(acc, f · fold { acc +. f })
+}
+
+@spec calculate_recency_score(last_used: int) → float {
+  /// Calculate recency score
+  given: Last used timestamp
+  when: Scoring strategy
+  then: Returns recency score 0.0-1.0
+}
+
+@impl {
+  match last_used {
+    0 → 0.5  // Never used
+    _ → {
+      let age_ms = current_timestamp_ms() - last_used
+      let max_age = 86400000.0  // 24 hours
+      float.max(0.0, 1.0 -. (int.to_float(age_ms) /. max_age))
+    }
+  }
+}
+
+// =============================================================================
+// Recording Executions
+// =============================================================================
+
+@spec record_execution(
+  adapter: StrategyAdapter,
+  execution: StrategyExecution
+) → StrategyAdapter {
+  /// Record strategy execution
+  given: Adapter and execution
+  when: Strategy completes
+  then: Returns updated adapter
+}
+
+@impl {
+    agent: adapter.agent_id,
+    strategy: execution.strategy_id,
+    success: execution.success
+  }
+
+  // Add to executions
+  let new_executions = [execution, ..adapter.executions]
+    · list.take(adapter.max_executions)
+
+  // Update strategy stats
+  let updated_strategies = case dict.get(adapter.strategies, execution.strategy_id) {
+    ✅strategy) → {
+      let new_total = strategy.total_uses + 1
+      let new_successful = case execution.success {
+        true → strategy.successful_uses + 1
+        false → strategy.successful_uses
+      }
+      let new_failed = case execution.success {
+        true → strategy.failed_uses
+        false → strategy.failed_uses + 1
+      }
+
+      let new_success_rate = int.to_float(new_successful) /. int.to_float(new_total)
+
+      // Update average execution time (moving average)
+      let new_avg_time = calculate_moving_average(
+        strategy.avg_execution_time_ms,
+        execution.execution_time_ms,
+        strategy.total_uses
+      )
+
+      let updated_strategy = Strategy(
+        ..strategy,
+        success_rate: new_success_rate,
+        avg_execution_time_ms: new_avg_time,
+        total_uses: new_total,
+        successful_uses: new_successful,
+        failed_uses: new_failed,
+        last_used: execution.timestamp
+      )
+
+      dict.insert(adapter.strategies, execution.strategy_id, updated_strategy)
+    }
+    ❌_) → adapter.strategies
+  }
+
+  // Update context-strategy map
+  let context_hash = hash_context(execution.context)
+  let new_map = dict.insert(
+    adapter.context_strategy_map,
+    context_hash,
+    execution.strategy_id
+  )
+
+  StrategyAdapter(
+    ..adapter,
+    strategies: updated_strategies,
+    executions: new_executions,
+    context_strategy_map: new_map
+  )
+}
+
+// =============================================================================
+// Learning New Strategies
+// =============================================================================
+
+@spec learn_new_strategy(
+  adapter: StrategyAdapter,
+  executions: [StrategyExecution]
+) → str · Result {
+  /// Learn new strategy from executions
+  given: Adapter and executions
+  when: Identifying patterns
+  then: Returns new strategy or error
+}
+
+@impl {
+    agent: adapter.agent_id,
+    executions: list.len(executions)
+  }
+
+  case list.len(executions) {
+    n if n < 10 → ❌"Not enough executions to learn strategy")
+    _ → {
+      // Find common pattern
+      let successful = executions
+        · list.filter(fn(exec) { exec.success })
+
+      case list.len(successful) {
+        n if n < 5 → ❌"Not enough successful executions")
+        _ → {
+          // Extract common context
+          let common_context = extract_common_context(successful)
+
+          // Calculate performance metrics
+          let success_rate = int.to_float(list.len(successful))
+            /. int.to_float(list.len(executions))
+
+          let avg_time = successful
+            · list.map(fn(exec) { exec.execution_time_ms })
+            · calculate_average_int()
+
+          // Extract optimizations
+          let optimizations = extract_optimizations(successful)
+
+          ✅Strategy(
+            strategy_id: generate_strategy_id(),
+            name: "Learned Strategy",
+            description: "Learned from {int.$(list.len(executions))} executions",
+            applicable_contexts: [common_context],
+            success_rate,
+            avg_execution_time_ms: avg_time,
+            total_uses: list.len(executions),
+            successful_uses: list.len(successful),
+            failed_uses: list.len(executions) - list.len(successful),
+            learned_optimizations,
+            last_used: current_timestamp_ms(),
+            created_at: current_timestamp_ms()
+          ))
+        }
+      }
+    }
+  }
+}
+
+@spec extract_common_context(
+  executions: [StrategyExecution]
+) → Context {
+  /// Extract common context from executions
+  given: type {name} {
+  items: List[Item],
+  count: Int} executions
+  when: Learning strategy
+  then: Returns common context
+}
+
+@impl {
+  // Find most common task type
+  let task_types = executions
+    · list.map(fn(exec) { exec.context.task_type })
+    · list.group_by(&t)
+    · dict.to_list()
+    · list.sort_by(fn(pair) { list.len(pair.1) })
+    · list.reverse()
+    · list.first()
+    · result.map(fn(pair) { pair.0 })
+    · result.unwrap("any")
+
+  // Average complexity
+  let complexities = executions
+    · list.map(fn(exec) { complexity_to_int(exec.context.complexity) })
+  let avg_complexity = calculate_average_int(complexities)
+
+  Context(
+    task_type: task_types,
+    complexity: int_to_complexity(avg_complexity),
+    time_constraint: ∅,
+    resource_availability: Moderate,
+    risk_tolerance: Medium,
+    quality_requirement: Standard
+  )
+}
+
+@spec extract_optimizations(
+  executions: [StrategyExecution]
+) → [Optimization] {
+  /// Extract optimizations from executions
+  given: type {name} {
+  items: List[Item],
+  count: Int} executions
+  when: Learning strategy
+  then: Returns optimizations
+}
+
+@impl {
+  // Group by optimizations applied
+  executions
+    · list.flat_map(fn(exec) { exec.optimizations_applied })
+    · list.group_by(&opt)
+    · dict.to_list()
+    · list.filter(fn(pair) {
+      let {_, opts} = pair
+      list.len(opts) > list.len(executions) / 2
+    })
+    · list.map(fn(pair) {
+      let {opt_name, _} = pair
+      Optimization(
+        optimization_id: generate_optimization_id(),
+        description: opt_name,
+        improvement: 0.1,  // Placeholder
+        applicable_when: [],
+        learned_from: list.len(executions),
+        confidence: 0.7
+      )
+    })
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec hash_context(context: Context) → str {
+  /// Create hash of context
+  given: Context
+  when: Caching strategy
+  then: Returns hash string
+}
+
+@impl {
+  context.task_type
+    + "_{complexity_$(context.complexity)}"
+    + "_ {risk_$(context.risk_tolerance)}"
+}
+
+@spec complexity_in_range(actual: ComplexityRange, expected: ComplexityRange) → bool {
+  /// Check if complexity is in range
+  given: Actual and expected complexity
+  when: Matching contexts
+  then: Returns true if in range
+}
+
+@impl {
+  let actual_val = complexity_to_int(actual)
+  let expected_val = complexity_to_int(expected)
+  int.absolute_value(actual_val - expected_val) <= 2
+}
+
+@spec risk_compatible(risk1: RiskLevel, risk2: RiskLevel) → bool {
+  /// Check if risk levels are compatible
+  given: Two risk levels
+  when: Matching contexts
+  then: Returns true if compatible
+}
+
+@impl {
+  let val1 = risk_to_int(risk1)
+  let val2 = risk_to_int(risk2)
+  int.absolute_value(val1 - val2) <= 1
+}
+
+@spec complexity_to_int(complexity: ComplexityRange) → int {
+  /// Convert complexity to int
+  given: Complexity range
+  when: Comparing
+  then: Returns int value
+}
+
+@impl {
+  match complexity {
+    VeryLow → 1
+    Low → 3
+    Medium → 5
+    High → 7
+    VeryHigh → 9
+  }
+}
+
+@spec int_to_complexity(value: int) → ComplexityRange {
+  /// Convert int to complexity
+  given: int value
+  when: Creating context
+  then: Returns complexity range
+}
+
+@impl {
+  match value {
+    n if n <= 2 → VeryLow
+    n if n <= 4 → Low
+    n if n <= 6 → Medium
+    n if n <= 8 → High
+    _ → VeryHigh
+  }
+}
+
+@spec risk_to_int(risk: RiskLevel) → int
+@spec complexity_$(complexity: ComplexityRange) → str
+@spec risk_$(risk: RiskLevel) → str
+@spec calculate_moving_average(old_avg: int, new_value: int, count: int) → int
+@spec calculate_average_int(numbers: [int]) → int
+@spec generate_random_float() → float
+@spec generate_strategy_id() → str
+@spec generate_optimization_id() → str
+@spec current_timestamp_ms() → int
+
+// =============================================================================
+// Export Public API
+// =============================================================================
+
+pub new_strategy_adapter(agent_id: str) → StrategyAdapter
+pub select_strategy(adapter: StrategyAdapter, context: Context) → str · Result
+pub record_execution(adapter: StrategyAdapter, execution: StrategyExecution) → StrategyAdapter
+pub learn_new_strategy(adapter: StrategyAdapter, executions: [StrategyExecution]) → str · Result
+
+# v8.0
+
+# v8.0
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration

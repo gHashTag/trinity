@@ -1,0 +1,244 @@
+name: maxwell_daemon
+version: "1.0.0"
+language: zig
+module: maxwell_daemon
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MAXWELL DAEMON - Автономный Агент-Программист
+# "Демон, который сортирует код по энтропии"
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Демон Максвелла в термодинамике - гипотетическое существо, способное
+# сортировать молекулы по скорости, уменьшая энтропию системы.
+#
+# Maxwell Daemon в программировании - автономный агент, способный:
+# - Анализировать код и находить проблемы (высокая энтропия)
+# - Генерировать решения через .vibee спецификации
+# - Тестировать и улучшать код (уменьшение энтропии)
+# - Учиться на своих ошибках
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # Состояние демона
+  DaemonState:
+    fields:
+      status: String          # "idle", "working", "error", "stopped"
+      current_task: Option<Task>
+      tasks_completed: Int
+      tasks_failed: Int
+      uptime_seconds: Int
+      memory_usage_mb: Float
+
+  # Задача для агента
+  Task:
+    fields:
+      id: String
+      description: String
+      priority: Int           # 1-10, где 10 - максимальный
+      task_type: String       # "feature", "bugfix", "refactor", "test", "optimize"
+      target_files: List<String>
+      constraints: List<String>
+      deadline: Option<Int>   # Unix timestamp
+      status: String          # "pending", "in_progress", "completed", "failed"
+      result: Option<TaskResult>
+
+  # Результат выполнения задачи
+  TaskResult:
+    fields:
+      success: Bool
+      files_created: List<String>
+      files_modified: List<String>
+      tests_passed: Int
+      tests_failed: Int
+      error_message: Option<String>
+      duration_ms: Int
+      metrics: Metrics
+
+  # Метрики производительности
+  Metrics:
+    fields:
+      lines_of_code: Int
+      cyclomatic_complexity: Float
+      test_coverage: Float
+      performance_delta: Float  # % изменение производительности
+
+  # Память агента
+  Memory:
+    fields:
+      experiences: List<Experience>
+      learned_patterns: List<Pattern>
+      error_history: List<ErrorRecord>
+
+  # Опыт (для обучения)
+  Experience:
+    fields:
+      task_type: String
+      approach: String
+      outcome: String         # "success", "partial", "failure"
+      lessons: List<String>
+      timestamp: Int
+
+  # Паттерн (выученный)
+  Pattern:
+    fields:
+      name: String
+      trigger: String         # Когда применять
+      solution: String        # Что делать
+      confidence: Float       # 0.0 - 1.0
+      usage_count: Int
+
+  # Запись об ошибке
+  ErrorRecord:
+    fields:
+      error_type: String
+      context: String
+      solution_attempted: String
+      resolved: Bool
+      timestamp: Int
+
+  # Конфигурация демона
+  DaemonConfig:
+    fields:
+      llm_api_key: String
+      llm_model: String       # "claude-3-opus", "gpt-4", etc.
+      max_concurrent_tasks: Int
+      auto_commit: Bool
+      safety_mode: String     # "strict", "normal", "permissive"
+      working_directory: String
+      log_level: String       # "debug", "info", "warn", "error"
+
+  # Сообщение для LLM
+  LLMMessage:
+    fields:
+      role: String            # "system", "user", "assistant"
+      content: String
+
+  # Ответ от LLM
+  LLMResponse:
+    fields:
+      content: String
+      tokens_used: Int
+      model: String
+      finish_reason: String
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LIFECYCLE
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: daemon_start
+    given: DaemonConfig
+    when: User starts the daemon
+    then: Daemon initializes and enters idle state
+
+  - name: daemon_stop
+    given: Running daemon
+    when: User stops the daemon
+    then: Daemon gracefully shuts down, saves state
+
+  - name: daemon_status
+    given: Running daemon
+    when: User queries status
+    then: Returns DaemonState with current metrics
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # TASK MANAGEMENT
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: task_submit
+    given: Task description
+    when: User submits a new task
+    then: Task is added to queue with priority
+
+  - name: task_process
+    given: Task from queue
+    when: Daemon picks up task
+    then: Task is decomposed and executed
+
+  - name: task_complete
+    given: Executed task
+    when: All subtasks complete
+    then: TaskResult is generated and stored
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CODE GENERATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: analyze_codebase
+    given: Target files
+    when: Daemon needs context
+    then: Returns code structure and patterns
+
+  - name: generate_spec
+    given: Task and analysis
+    when: Daemon plans implementation
+    then: Creates .vibee specification
+
+  - name: generate_code
+    given: .vibee specification
+    when: Daemon executes plan
+    then: Runs vibee gen, creates code
+
+  - name: run_tests
+    given: Generated code
+    when: Daemon verifies implementation
+    then: Returns test results
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LEARNING
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: learn_from_success
+    given: Successful TaskResult
+    when: Task completes successfully
+    then: Pattern is extracted and stored
+
+  - name: learn_from_failure
+    given: Failed TaskResult
+    when: Task fails
+    then: Error is analyzed, lessons learned
+
+  - name: apply_pattern
+    given: Similar task
+    when: Pattern matches
+    then: Use learned approach
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LLM INTEGRATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: llm_reason
+    given: Context and question
+    when: Daemon needs reasoning
+    then: LLM provides analysis
+
+  - name: llm_generate_spec
+    given: Task description
+    when: Daemon needs .vibee
+    then: LLM generates specification
+
+  - name: llm_fix_error
+    given: Error message and context
+    when: Code fails tests
+    then: LLM suggests fix
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SAFETY
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: safety_check
+    given: Proposed action
+    when: Before any file modification
+    then: Validates action is safe
+
+  - name: safety_rollback
+    given: Failed or dangerous action
+    when: Safety violation detected
+    then: Reverts all changes
+
+  - name: safety_audit
+    given: Completed task
+    when: After task completion
+    then: Logs all actions for review

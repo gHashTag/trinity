@@ -1,0 +1,24 @@
+name: fluent_pure
+version: "1.0.0"
+language: zig
+module: fluent_pure
+
+types:
+  GenerationSample:
+    fields:
+      prompt: String
+      generated: String
+      unique_chars: Int
+      temperature: Float
+      top_k: Int
+
+behaviors:
+  - name: generatePureTrigram
+    given: Pure trigram forward pass (no roles), T=0.8 K=8 and T=0.6 K=5
+    when: Generate 80 tokens from Shakespeare prompt
+    then: Generation samples showing concentrated predictions from pure frequency
+
+  - name: assessFluency
+    given: Generation samples from pure trigram at multiple temperatures
+    when: Check for English-like patterns vs character noise
+    then: Honest assessment of generation quality (not fluent English)

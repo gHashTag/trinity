@@ -1,0 +1,120 @@
+name: ml_tensor
+version: "1.0.0"
+language: zig
+module: ml
+
+description: |
+  Tensor Implementation for Trinity Nexus with gradient support.
+  Based on archived implementation from archive/implementations/zig/src/ml/tensor.zig
+
+  Features:
+  - Multi-dimensional tensor with shape tracking
+  - Automatic gradient computation
+  - Matrix operations (matmul, add, mul)
+  - Activation functions (ReLU, GELU)
+  - Softmax with numerical stability
+  - Cross-entropy loss
+  - Xavier initialization scaled by φ (Golden Ratio)
+
+  Sacred Constants:
+  - PHI: 1.618033988749895 (Golden Ratio)
+  - GOLDEN_IDENTITY: 3.0 (φ² + 1/φ² = 3)
+  - PHOENIX: 999 (Rebirth cycle)
+
+types:
+  Tensor:
+    fields:
+      data: List<Float>
+      grad: Option<List<Float>>
+      shape: List<usize>
+      requires_grad: Bool
+    # Note: allocator is implicit in Zig
+
+behaviors:
+  - name: init
+    given: Allocator, shape (list of dimensions), requires_grad flag
+    when: Allocates memory for tensor data and optionally for gradients
+    then: Returns initialized tensor with zeros
+
+  - name: deinit
+    given: Tensor pointer
+    when: Frees all allocated memory (data, grad, shape)
+    then: Memory released
+
+  - name: numel
+    given: Tensor
+    when: Computes product of all dimensions
+    then: Returns total number of elements
+
+  - name: fill
+    given: Tensor pointer and value
+    when: Sets all elements to the given value
+    then: Tensor data filled uniformly
+
+  - name: fillRandom
+    given: Tensor pointer and seed
+    when: Fills with random values using Xavier initialization scaled by φ
+    then: Random tensor ready for training
+
+  - name: zeroGrad
+    given: Tensor pointer
+    when: Sets all gradient values to zero
+    then: Gradients reset for new backward pass
+
+  - name: add
+    given: Self tensor, other tensor, output tensor pointer
+    when: Element-wise addition of two tensors
+    then: Output contains element-wise sum
+
+  - name: mul
+    given: Self tensor, other tensor, output tensor pointer
+    when: Element-wise multiplication of two tensors
+    then: Output contains element-wise product
+
+  - name: matmul
+    given: Self tensor (M×K), other tensor (K×N), output tensor (M×N)
+    when: Matrix multiplication of 2D tensors
+    then: Output contains matrix product
+
+  - name: relu
+    given: Self tensor, output tensor pointer
+    when: Applies ReLU activation (max(0, x)) element-wise
+    then: Output contains ReLU activations
+
+  - name: gelu
+    given: Self tensor, output tensor pointer
+    when: Applies GELU activation approximation
+    then: Output contains GELU activations (smoother than ReLU)
+
+  - name: softmax
+    given: Self tensor, output tensor pointer
+    when: Applies softmax along last dimension with numerical stability
+    then: Output contains probability distributions (sum to 1)
+
+  - name: crossEntropyLoss
+    given: Self tensor (logits) and targets (class indices)
+    when: Computes cross-entropy loss for classification
+    then: Returns scalar loss value
+
+  - name: sum
+    given: Tensor
+    when: Sums all elements
+    then: Returns scalar sum
+
+  - name: mean
+    given: Tensor
+    when: Computes mean of all elements
+    then: Returns scalar mean value
+
+test_cases:
+  - name: tensor_basics
+    input: shape=[2,3], requires_grad=true
+    expected: numel=6, fill(1.0) -> sum=6.0
+
+  - name: matmul
+    input: A=[2,3] filled with 1.0, B=[3,2] filled with 1.0
+    expected: C=[2,2] with all elements = 3.0
+
+  - name: softmax
+    input: tensor=[1.0, 2.0, 3.0]
+    expected: output sums to 1.0 (valid probability distribution)

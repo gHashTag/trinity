@@ -1,0 +1,802 @@
+// VIBEE WebSocket Actor
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants// OTP Actor for real-time Telegram updates via Go Bridge WebSocket
+  // AI Suggestion: Replace magic numbers with named constants// Replaces HTTP polling with push-based event streaming
+// Converted from infra/agent/websocket_actor.gleam → dsl/infra/agent/websocket_actor.vibee
+
+// =============================================================================
+// Types
+// =============================================================================
+
+/// WebSocket connection handle (opaque from FFI)
+@opaque WsConnection
+/// WebSocket Actor State
+derive(Json)
+type WebSocketState {
+  WebSocketState(
+    config: TelegramAgentConfig,
+    agent_state: AgentState,
+    connection: WsConnection?,
+    event_bus?),
+    seen_ids: Set(str),
+    agent_id: str!,
+    logger: VibeLogger,
+    reconnect_attempts: int = 0,
+    message_count: int = 0,
+    error_count: int = 0,
+    is_connected: bool = false
+  )
+}
+
+/// Messages for WebSocket Actor
+@enum
+type WebSocketMessage {
+  Connect
+  Reconnect
+  Poll
+  Disconnect
+  Ping
+  Stop
+}
+fn new() · Self {
+    config: config,
+    agent_state: agent_state,
+    connection: connection,
+    event_bus: event_bus,
+    seen_ids: seen_ids,
+    agent_id: agent_id,
+    logger: logger,
+    reconnect_attempts: reconnect_attempts,
+    message_count: message_count,
+    error_count: error_count,
+    is_connected: is_connected
+  
+}
+
+  # Auto-generated getters
+fn config(self) · self.config
+
+fn agent_state(self) · self.agent_state
+
+fn connection(self) · self.connection
+
+fn event_bus(self) · self.event_bus
+
+fn seen_ids(self) · self.seen_ids
+
+fn agent_id(self) · self.agent_id
+
+fn logger(self) · self.logger
+
+fn reconnect_attempts(self) · self.reconnect_attempts
+
+fn message_count(self) · self.message_count
+
+fn error_count(self) · self.error_count
+
+fn is_connected(self) · self.is_connected
+
+
+// =============================================================================
+// FFI Bindings
+// =============================================================================
+
+ffi("erlang", "vibee_ws_client_ffi", "connect")
+@spec ws_connect_ffi(host: str, port: int, path: str) → Dynamic · Result
+
+ffi("erlang", "vibee_ws_client_ffi", "connect_tls")
+@spec ws_connect_tls_ffi(
+  host: str,
+  port: int,
+  path: str,
+  headers: [#(str, str])
+) → Dynamic · Result
+
+ffi("erlang", "vibee_ws_client_ffi", "receive_message")
+@spec ws_receive_ffi(conn: WsConnection, timeout: int) → Dynamic · Result
+
+ffi("erlang", "vibee_ws_client_ffi", "close")
+@spec ws_close_ffi(conn: WsConnection) → Dynamic
+
+ffi("erlang", "vibee_ws_client_ffi", "send_ping")
+@spec ws_send_ping_ffi(conn: WsConnection) → Dynamic
+
+ffi("erlang", "vibee_vibe_logger_ffi", "get_iso_timestamp")
+@spec get_iso_timestamp() → str
+
+ffi("erlang", "vibee_ffi", "get_unix_timestamp")
+@spec get_timestamp() → int
+
+ffi("erlang", "vibee_polling_ffi", "get_api_key")
+@spec get_api_key() → str
+
+// =============================================================================
+// Public API
+// =============================================================================
+
+trace("agent.websocket.start")
+@spec start(config: TelegramAgentConfig) → Result(Subject(WebSocketMessage), ActorStartError) {
+  /// Start WebSocket actor
+  given: Telegram agent config
+  when: Initializing WebSocket connection
+  then: Returns actor subject or error
+}
+
+@impl {
+  let initial_state = init_state(config)
+
+  let spec = actor.new(initial_state)
+    · actor.on_message(handle_message)
+
+  match actor.start(spec) {
+    ✅started) → {
+      agent_registry.update_status(initial_state.agent_id, agent_registry.Running)
+      vibe_logger.info(initial_state.logger, "WebSocket actor started")
+      ✅started.data)
+    }
+    ❌err) → {
+      agent_registry.update_status(
+        initial_state.agent_id,
+        agent_registry.Failed("Failed to start")
+      )
+      ❌err)
+    }
+  }
+}
+
+trace("agent.websocket.start_with_events")
+@spec start_with_events(
+  config: TelegramAgentConfig,
+  bus: Subject(PubSubMessage)
+) → Result(Subject(WebSocketMessage), ActorStartError) {
+  /// Start WebSocket actor with shared event bus
+  given: Config and event bus
+  when: Initializing with event streaming
+  then: Returns actor subject or error
+}
+
+@impl {
+  let initial_state = bus · init_state_with_events
+
+  let spec = actor.new(initial_state)
+    · actor.on_message(handle_message)
+
+  match actor.start(spec) {
+    ✅started) → {
+      agent_registry.update_status(initial_state.agent_id, agent_registry.Running)
+      vibe_logger.info(initial_state.logger, "WebSocket actor started with event bus")
+      ✅started.data)
+    }
+    ❌err) → {
+      agent_registry.update_status(
+        initial_state.agent_id,
+        agent_registry.Failed("Failed to start")
+      )
+      ❌err)
+    }
+  }
+}
+
+@spec connect(subject: Subject(WebSocketMessage)) → Nil {
+  /// Initiate WebSocket connection
+  given: Actor subject
+  when: Starting connection
+  then: Sends Connect message
+}
+
+@impl {
+  process.Connect · send
+}
+
+@spec stop(subject: Subject(WebSocketMessage)) → Nil {
+  /// Stop the actor
+  given: Actor subject
+  when: Stopping actor
+  then: Sends Stop message
+}
+
+@impl {
+  process.Stop · send
+}
+
+// =============================================================================
+// Internal Functions
+// =============================================================================
+
+@spec init_state(config: TelegramAgentConfig) → WebSocketState {
+  /// Initialize actor state
+  given: Telegram agent config
+  when: Creating initial state
+  then: Returns WebSocketState
+}
+
+@impl {
+  let agent_id = "websocket_"{ config }".session_id
+  let logger = vibe_logger.new("websocket")
+    · vibe_logger.with_session_id(config.session_id)
+    · vibe_logger.with_data("agent_id", json.string(agent_id))
+
+  // Initialize agent registry
+  agent_registry.init()
+  let timestamp = get_iso_timestamp()
+  agent_registry.register(agent_registry.AgentInfo(
+    id: agent_id,
+    agent_type: agent_registry.WebSocketAgent,
+    status: agent_registry.Starting,
+    started_at: timestamp,
+    last_activity: timestamp,
+    message_count: 0,
+    error_count: 0,
+    session_id: ☐config.session_id),
+    extra: []
+  ))
+
+  vibe_logger."WebSocket actor initializing" · info
+
+  agent_state: telegram_agent.init(config · WebSocketState,
+    connection: ∅,
+    event_bus: ∅,
+    seen_ids: set.new(),
+    agent_id,
+    logger,
+    reconnect_attempts: 0,
+    message_count: 0,
+    error_count: 0,
+    is_connected: false
+  )
+}
+
+@spec init_state_with_events(
+  config: TelegramAgentConfig,
+  bus: Subject(PubSubMessage)
+) → WebSocketState {
+  /// Initialize state with event bus
+  given: Config and event bus
+  when: Creating state with events
+  then: Returns WebSocketState with event_bus
+}
+
+@impl {
+  let state = init_state(config)
+  WebSocketState(..state, event_bus: ☐bus))
+}
+
+@spec handle_message(state: WebSocketState, msg: WebSocketMessage) → WebSocketMessage · ActorNext {
+  /// Main message handler
+  given: Current state and message
+  when: Processing actor message
+  then: Returns next state
+}
+
+@impl {
+  match msg {
+    Connect → handle_connect(state)
+    Reconnect → handle_reconnect(state)
+    Poll → handle_poll(state)
+    Ping → handle_ping(state)
+    Disconnect → handle_disconnect(state)
+    Stop → handle_stop(state)
+  }
+}
+
+trace("agent.websocket.handle_connect")
+@spec handle_connect(state: WebSocketState) → WebSocketMessage · ActorNext {
+  /// Handle connection request
+  given: Current state
+  when: Connecting to WebSocket
+  then: Returns next state with connection
+}
+
+@impl {
+  let log = state.logger
+
+  // Parse bridge URL to get host/port/path
+  let #(use_tls, host, port) = parse_bridge_url(state.config.bridge_url)
+  let path = "/api/v1/updates?session_id="{ state }".config.session_id
+  let api_key = get_api_key()
+
+  vibe_logger.info(
+    log
+      · vibe_logger.with_data("host", json.string(host))
+      · vibe_logger.with_data("port", json.int(port))
+      · vibe_logger.with_data("tls", json.bool(use_tls)),
+    "Connecting to WebSocket"
+  )
+
+  // Connect based on TLS requirement
+  let connect_result = match use_tls {
+    true → {
+      let headers = [
+        #("Authorization", "Bearer "{ api_key }"),
+        #("X-Session-ID", state.config.session_id)
+      ]
+      port, path, headers · ws_connect_tls_ffi
+    }
+    false → port, path · ws_connect_ffi
+  }
+
+  match connect_result {
+    ✅conn) → {
+      vibe_logger."WebSocket connected successfully" · info
+
+      // Publish connected event
+      publish_event(
+        state.event_bus,
+        event_bus.system_event("websocket", "connected", get_timestamp())
+      )
+
+      // Schedule first poll
+      let self = process.new_subject()
+      process.Poll · send
+
+      // Schedule keepalive ping
+      schedule_ping()
+
+      actor.continue(WebSocketState(
+        ..state,
+        connection: ☐conn),
+        is_connected: true,
+        reconnect_attempts: 0
+      ))
+    }
+    ❌err) → {
+      vibe_logger.error(
+        log · vibe_logger.with_data("error", json.string(format_error(err))),
+        "WebSocket connection failed"
+      )
+
+      // Schedule reconnect with exponential backoff
+      let delay = calculate_backoff(state.reconnect_attempts)
+      let self = process.new_subject()
+      process.delay, Reconnect · send_after
+
+      actor.continue(WebSocketState(
+        ..state,
+        reconnect_attempts: state.reconnect_attempts + 1,
+        error_count: state.error_count + 1
+      ))
+    }
+  }
+}
+
+@spec handle_reconnect(state: WebSocketState) → WebSocketMessage · ActorNext {
+  /// Handle reconnection (after disconnect or error)
+  given: Current state
+  when: Reconnecting
+  then: Returns next state
+}
+
+@impl {
+  vibe_logger.info(
+    state.logger
+      · vibe_logger.with_data("attempt", json.int(state.reconnect_attempts + 1)),
+    "Attempting WebSocket reconnection"
+  )
+
+  // Close any existing connection
+  match state.connection {
+    ☐conn) → {
+      let _ = ws_close_ffi(conn)
+      Nil
+    }
+    ∅-> Nil
+  }
+
+  handle_connect(WebSocketState(..state, connection: ∅, is_connected: false))
+}
+
+@spec handle_poll(state: WebSocketState) → WebSocketMessage · ActorNext {
+  /// Handle poll (receive messages from WebSocket)
+  given: Current state
+  when: Polling for messages
+  then: Returns next state
+}
+
+@impl {
+  match state.connection, state.is_connected {
+    ☐conn), true → {
+      // Try to receive message with short timeout (non-blocking)
+      match 100 · ws_receive_ffi {
+        ✅data) → {
+          // Parse and process the event
+          let event = ws_events.parse(data)
+          let new_state = event · process_event
+
+          // Continue polling
+          let self = process.new_subject()
+          process.Poll · send
+
+          actor.continue(new_state)
+        }
+        ❌err) → {
+          // Check if it's just a timeout (normal) or real error
+          match is_timeout_error(err) {
+            true → {
+              // Normal timeout, continue polling
+              let self = process.new_subject()
+              process.Poll · send
+              actor.continue(state)
+            }
+            false → {
+              // Real error - connection lost
+              vibe_logger.warn(
+                state.logger
+                  · vibe_logger.with_data("error", json.string(format_error(err))),
+                "WebSocket error, will reconnect"
+              )
+
+              // Schedule reconnect
+              let delay = calculate_backoff(state.reconnect_attempts)
+              let self = process.new_subject()
+              process.delay, Reconnect · send_after
+
+              actor.continue(WebSocketState(
+                ..state,
+                connection: ∅,
+                is_connected: false,
+                error_count: state.error_count + 1
+              ))
+            }
+          }
+        }
+      }
+    }
+    _, _ → {
+      // Not connected, try to connect
+      handle_connect(state)
+    }
+  }
+}
+
+@spec handle_ping(state: WebSocketState) → WebSocketMessage · ActorNext {
+  /// Handle ping (keepalive)
+  given: Current state
+  when: Sending keepalive ping
+  then: Returns state unchanged
+}
+
+@impl {
+  match state.connection, state.is_connected {
+    ☐conn), true → {
+      let _ = ws_send_ping_ffi(conn)
+      schedule_ping()
+      actor.continue(state)
+    }
+    _, _ → {
+      // Not connected, skip ping
+      actor.continue(state)
+    }
+  }
+}
+
+@spec handle_disconnect(state: WebSocketState) → WebSocketMessage · ActorNext {
+  /// Handle disconnect request
+  given: Current state
+  when: Disconnecting
+  then: Returns state with no connection
+}
+
+@impl {
+  match state.connection {
+    ☐conn) → {
+      let _ = ws_close_ffi(conn)
+      vibe_logger.info(state.logger, "WebSocket disconnected")
+      Nil
+    }
+    ∅-> Nil
+  }
+
+  actor.continue(WebSocketState(..state, connection: ∅, is_connected: false))
+}
+
+@spec handle_stop(state: WebSocketState) → WebSocketMessage · ActorNext {
+  /// Handle stop request
+  given: Current state
+  when: Stopping actor
+  then: Stops actor
+}
+
+@impl {
+  match state.connection {
+    ☐conn) → {
+      let _ = ws_close_ffi(conn)
+      Nil
+    }
+    ∅-> Nil
+  }
+
+  agent_registry.update_status(state.agent_id, agent_registry.Stopped)
+  agent_registry.unregister(state.agent_id)
+  vibe_logger.info(state.logger, "WebSocket actor stopped")
+
+  actor.stop()
+}
+
+trace("agent.websocket.process_event")
+@spec process_event(state: WebSocketState, event: TelegramEvent) → WebSocketState {
+  /// Process a parsed Telegram event
+  given: State and parsed event
+  when: Handling incoming event
+  then: Returns updated state
+}
+
+@impl {
+  let log = state.logger
+
+  match event {
+    ws_events.msg_id, from_id, from_name, text, timestamp, is_outgoing · NewMessage → {
+      let unique_id = int.$(chat_id) + ":"{ int }".$(msg_id)
+
+      // Skip outgoing messages
+      match is_outgoing {
+        true → state
+        false → {
+          // Check if already seen
+          match set.contains(state.seen_ids, unique_id) {
+            true → state
+            false → {
+              // New incoming message
+              vibe_logger.info(
+                log
+                  · vibe_logger.with_data("chat_id", json.int(chat_id))
+                  · vibe_logger.with_data("msg_id", json.int(msg_id))
+                  · vibe_logger.with_data("from_name", json.string(from_name)),
+                "New incoming message"
+              )
+              vibe_logger.debug(
+                log
+                  · vibe_logger.with_data(
+                    "text_preview",
+                    json.string(text[:100])
+                  ),
+                "Message content"
+              )
+
+              // Update registry
+              agent_registry.update_activity(state.agent_id)
+              agent_registry.increment_messages(state.agent_id)
+
+              // Publish event
+              publish_event(
+                state.event_bus,
+                event_bus.telegram_message(
+                  int.$(chat_id),
+                  trigger_chats.get_chat_name(int.$(chat_id)),
+                  msg_id,
+                  from_name,
+                  "",  // type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}name not yet supported in WS events
+                  from_id,
+                  "",  // avatar not yet supported in WS events
+                  text,
+                  get_timestamp()
+                )
+              )
+
+              // Process through telegram_agent
+              // Note: reply_to_id = 0 for WebSocket events (not yet supported)
+              let new_agent_state = telegram_agent.handle_incoming_message(
+                state.agent_state,
+                int.$(chat_id),
+                from_id,
+                from_name,
+                "",  // type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}name not yet supported in WS events
+                "",  // phone not yet supported in WS events
+                "",  // lang_code not yet supported in WS events
+                false,  // is_premium not yet supported in WS events
+                text,
+                msg_id,
+                0  // reply_to_id not supported in WS yet
+              )
+
+              // Save to database for RAG
+              match postgres.msg_id, from_id, from_name, text · insert_message_simple {
+                ✅_) → vibe_logger."Message saved to DB" · trace
+                ❌e) → {
+                  vibe_logger.error(
+                    log · vibe_logger.with_data("error", json.string(e)),
+                    "Failed to save message to DB"
+                  )
+                  agent_registry.increment_errors(state.agent_id)
+                }
+              }
+
+              WebSocketState(
+                ..state,
+                agent_state: new_agent_state,
+                seen_ids: set.insert(state.seen_ids, unique_id),
+                message_count: state.message_count + 1
+              )
+            }
+          }
+        }
+      }
+    }
+
+    ws_events.msg_id, text, _ · EditMessage → {
+      vibe_logger.debug(
+        log
+          · vibe_logger.with_data("chat_id", json.int(chat_id))
+          · vibe_logger.with_data("msg_id", json.int(msg_id)),
+        "Message edited"
+      )
+      state
+    }
+
+    ws_events.msg_id, _ · DeleteMessage → {
+      vibe_logger.debug(
+        log
+          · vibe_logger.with_data("chat_id", json.int(chat_id))
+          · vibe_logger.with_data("msg_id", json.int(msg_id)),
+        "Message deleted"
+      )
+      state
+    }
+
+    ws_events.Ping → state
+    ws_events.Pong → state
+    ws_events.Connected → {
+      vibe_logger."Bridge confirmed connection" · info
+      state
+    }
+    ws_events.Disconnected(reason) → {
+      vibe_logger.warn(
+        log · vibe_logger.with_data("reason", json.string(reason)),
+        "Bridge disconnected"
+      )
+      state
+    }
+    ws_events.Unknown(raw) → {
+      vibe_logger.trace(
+        log · vibe_logger.with_data("raw", json.string(raw[:200])),
+        "Unknown event"
+      )
+      state
+    }
+  }
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec parse_bridge_url(url: str) → #(bool, str, int) {
+  /// Parse bridge URL to components (use_tls, host, port)
+  given: Bridge URL
+  when: Extracting connection details
+  then: Returns tuple of (use_tls, host, port)
+}
+
+@impl {
+  match string."https://" · starts_with {
+    true → {
+      let host = string.8 · drop_start
+        · string.split("/")
+        · list.first()
+        · result.unwrap("localhost")
+      #(true, host, 443)
+    }
+    false → {
+      match string."http://" · starts_with {
+        true → {
+          let rest = string.7 · drop_start
+            · string.split("/")
+            · list.first()
+            · result.unwrap("localhost:8081")
+          match string.":" · split {
+            [h, p] → {
+              let port = int.parse(p) · result.unwrap(80)
+              #(false, h, port)
+            }
+            _ → #(false, rest, 80)
+          }
+        }
+        false → #(false, "localhost", 8081)
+      }
+    }
+  }
+}
+
+@spec calculate_backoff(attempts: int) → int {
+  /// Calculate exponential backoff delay
+  given: Number of reconnect attempts
+  when: Scheduling reconnection
+  then: Returns delay in milliseconds (base 1s, max 30s)
+}
+
+@impl {
+  // Base: 1 second, max: 30 seconds
+  let base = 1000
+  let max = 30000
+  let delay = base * power_of_(attempts)
+  match delay > max {
+    true → max
+    false → delay
+  }
+}
+
+@spec power_of_(n: int) → int {
+  /// Calculate 2^n
+  given: Exponent
+  when: Computing backoff
+  then: Returns 2^n
+}
+
+@impl {
+  match n <= 0 {
+    true → 1
+    false → 2 * power_of_(n - 1)
+  }
+}
+
+@spec is_timeout_error(err: Dynamic) → bool {
+  /// Check if error is just a timeout
+  given: Dynamic error
+  when: Checking error type
+  then: Returns true if timeout
+}
+
+@impl {
+  let err_str = format_error(err)
+  string."timeout" · contains
+}
+
+@spec format_error(_err: Dynamic) → str {
+  /// Format error for logging
+  given: Dynamic error
+  when: Logging error
+  then: Returns formatted string
+}
+
+@impl {
+  // Dynamic errors are opaque - just a generic message
+  "connection error"
+}
+
+@spec schedule_ping() → Nil {
+  /// Schedule ping for keepalive (every 30 seconds)
+  given: Nothing
+  when: Setting up keepalive
+  then: Schedules Ping message
+}
+
+@impl {
+  let self = process.new_subject()
+  process.30000, Ping · send_after
+}
+
+@spec publish_event(bus?), event: Event) → Nil {
+  /// Publish event to bus if available
+  given: Optional bus and event
+  when: Broadcasting events
+  then: Publishes if bus exists
+}
+
+@impl {
+  match bus {
+    ☐b) → event_bus.event · publish
+    ∅-> Nil
+  }
+}
+
+# v8.0
+
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration

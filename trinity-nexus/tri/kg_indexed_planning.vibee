@@ -1,0 +1,35 @@
+name: kg_indexed_planning
+version: "1.0.0"
+language: zig
+module: kg_indexed_planning
+description: "Level 11.10 — Indexed planning: multi-hop traversal on indexed KG with per-layer sub-memories"
+
+constants:
+  DIM: 1024
+  LAYERS: 4
+  ENTITIES_PER_LAYER: 20
+
+types:
+  LayerTraversalResult:
+    fields:
+      hops: Int
+      correct: Int
+      total: Int
+      accuracy: Float
+      description: "Result of multi-hop traversal through indexed layers. Each layer has its own sub-memory for clean retrieval."
+
+behaviors:
+  - name: singleHopPerLayer
+    given: 4 layers with 20 entities each, per-layer sub-memories
+    when: Query each entity through its layer memory
+    then: 100% accuracy all 4 layers (80/80) — per-layer isolation eliminates cross-layer interference
+
+  - name: multiHopPlanning
+    given: Indexed KG with 4 layers
+    when: Traverse 1-4 hops sequentially through sub-memories
+    then: 100% accuracy at all depths (60/60) — indexed sub-memories prevent signal degradation across hops
+
+  - name: noisyIndexedTraversal
+    given: 2-hop traversal with noise levels 0-5
+    when: Add ternary noise to retrieved vectors at each hop
+    then: 100% at noise=0, 80% at noise=1, degrades at noise>=2 due to compound noise across hops

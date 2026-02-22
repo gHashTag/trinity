@@ -1,0 +1,540 @@
+# MCP Email Tools Specification
+# Spec-driven development: This spec is the SINGLE SOURCE OF TRUTH
+# All code, tests, and documentation are GENERATED from this spec
+
+metadata:
+  name: mcp_email
+  version: 1.0.0
+  description: Email operations MCP tools for sending and receiving emails
+  author: VIBEE Team
+  license: MIT
+  generated_from: spec
+  manual_code_forbidden: true
+
+# Type definitions
+types:
+  - name: EmailConfig
+    description: Email server configuration
+    fields:
+      - name: smtp_host
+        type: String
+        description: SMTP server host
+        required: true
+      - name: smtp_port
+        type: Int
+        description: SMTP server port
+        default: 587
+      - name: smtp_username
+        type: String
+        description: SMTP username
+        required: true
+      - name: smtp_password
+        type: String
+        description: SMTP password
+        required: true
+      - name: imap_host
+        type: String
+        description: IMAP server host
+        required: false
+      - name: imap_port
+        type: Int
+        description: IMAP server port
+        default: 993
+      - name: use_tls
+        type: Bool
+        description: Whether to use TLS
+        default: true
+
+  - name: Email
+    description: Email message
+    fields:
+      - name: id
+        type: String
+        description: Email ID
+        required: false
+      - name: from
+        type: String
+        description: Sender email address
+        required: true
+      - name: to
+        type: List<String>
+        description: Recipient email addresses
+        required: true
+      - name: cc
+        type: List<String>
+        description: CC recipients
+        default: []
+      - name: bcc
+        type: List<String>
+        description: BCC recipients
+        default: []
+      - name: subject
+        type: String
+        description: Email subject
+        required: true
+      - name: body
+        type: String
+        description: Email body (plain text or HTML)
+        required: true
+      - name: is_html
+        type: Bool
+        description: Whether body is HTML
+        default: false
+      - name: attachments
+        type: List<Attachment>
+        description: Email attachments
+        default: []
+      - name: sent_at
+        type: String
+        description: Sent timestamp
+        required: false
+
+  - name: Attachment
+    description: Email attachment
+    fields:
+      - name: filename
+        type: String
+        description: Attachment filename
+        required: true
+      - name: content_type
+        type: String
+        description: MIME content type
+        required: true
+      - name: data
+        type: String
+        description: Attachment data (base64 encoded)
+        required: true
+      - name: size_bytes
+        type: Int
+        description: Attachment size in bytes
+        required: true
+
+  - name: EmailFolder
+    description: Email folder/mailbox
+    fields:
+      - name: name
+        type: String
+        description: Folder name
+        required: true
+      - name: message_count
+        type: Int
+        description: Number of messages
+        default: 0
+      - name: unread_count
+        type: Int
+        description: Number of unread messages
+        default: 0
+
+  - name: EmailFilter
+    description: Email filter criteria
+    fields:
+      - name: from
+        type: String
+        description: Filter by sender
+        required: false
+      - name: subject
+        type: String
+        description: Filter by subject
+        required: false
+      - name: unread_only
+        type: Bool
+        description: Only unread messages
+        default: false
+      - name: since_date
+        type: String
+        description: Messages since date
+        required: false
+      - name: before_date
+        type: String
+        description: Messages before date
+        required: false
+
+  - name: EmailTemplate
+    description: Email template
+    fields:
+      - name: id
+        type: String
+        description: Template ID
+        required: true
+      - name: name
+        type: String
+        description: Template name
+        required: true
+      - name: subject
+        type: String
+        description: Template subject
+        required: true
+      - name: body
+        type: String
+        description: Template body with placeholders
+        required: true
+      - name: variables
+        type: List<String>
+        description: Template variables
+        default: []
+
+# Behavior specifications with test cases
+behaviors:
+  - name: sending_operations
+    description: Email sending operations
+    functions:
+      - name: send_email
+        description: Send an email
+        params:
+          - name: config
+            type: EmailConfig
+          - name: email
+            type: Email
+        returns: Result<String, String>
+        test_cases:
+          - input:
+              config:
+                smtp_host: "smtp.gmail.com"
+                smtp_port: 587
+                smtp_username: "user@gmail.com"
+                smtp_password: "password"
+                use_tls: true
+              email:
+                from: "user@gmail.com"
+                to: ["recipient@example.com"]
+                subject: "Test Email"
+                body: "This is a test email"
+                is_html: false
+            expected:
+              Ok: "email-123"
+          - input:
+              config:
+                smtp_host: "invalid.smtp.com"
+                smtp_username: "user"
+                smtp_password: "pass"
+              email:
+                from: "user@example.com"
+                to: ["recipient@example.com"]
+                subject: "Test"
+                body: "Test"
+            expected:
+              Error: "Failed to connect to SMTP server"
+
+      - name: send_html_email
+        description: Send HTML email
+        params:
+          - name: config
+            type: EmailConfig
+          - name: from
+            type: String
+          - name: to
+            type: List<String>
+          - name: subject
+            type: String
+          - name: html_body
+            type: String
+        returns: Result<String, String>
+        test_cases:
+          - input:
+              config: {smtp_host: "smtp.gmail.com", smtp_username: "user", smtp_password: "pass"}
+              from: "user@gmail.com"
+              to: ["recipient@example.com"]
+              subject: "HTML Email"
+              html_body: "<h1>Hello</h1><p>This is HTML</p>"
+            expected:
+              Ok: "email-124"
+
+      - name: send_with_attachments
+        description: Send email with attachments
+        params:
+          - name: config
+            type: EmailConfig
+          - name: email
+            type: Email
+        returns: Result<String, String>
+        test_cases:
+          - input:
+              config: {smtp_host: "smtp.gmail.com", smtp_username: "user", smtp_password: "pass"}
+              email:
+                from: "user@gmail.com"
+                to: ["recipient@example.com"]
+                subject: "Email with attachment"
+                body: "See attached file"
+                attachments:
+                  - filename: "document.pdf"
+                    content_type: "application/pdf"
+                    data: "JVBERi0xLjQK..."
+                    size_bytes: 1024
+            expected:
+              Ok: "email-125"
+
+  - name: receiving_operations
+    description: Email receiving operations
+    functions:
+      - name: fetch_emails
+        description: Fetch emails from inbox
+        params:
+          - name: config
+            type: EmailConfig
+          - name: folder
+            type: String
+          - name: limit
+            type: Int
+        returns: Result<List<Email>, String>
+        test_cases:
+          - input:
+              config:
+                imap_host: "imap.gmail.com"
+                imap_port: 993
+                smtp_username: "user@gmail.com"
+                smtp_password: "password"
+              folder: "INBOX"
+              limit: 10
+            expected:
+              Ok:
+                - id: "email-1"
+                  from: "sender@example.com"
+                  to: ["user@gmail.com"]
+                  subject: "Test Email"
+                  body: "Email content"
+                  sent_at: "2024-01-01T00:00:00Z"
+
+      - name: search_emails
+        description: Search emails by criteria
+        params:
+          - name: config
+            type: EmailConfig
+          - name: filter
+            type: EmailFilter
+        returns: Result<List<Email>, String>
+        test_cases:
+          - input:
+              config: {imap_host: "imap.gmail.com", smtp_username: "user", smtp_password: "pass"}
+              filter:
+                from: "sender@example.com"
+                subject: "important"
+                unread_only: true
+            expected:
+              Ok:
+                - id: "email-2"
+                  from: "sender@example.com"
+                  subject: "Important message"
+
+      - name: mark_as_read
+        description: Mark email as read
+        params:
+          - name: config
+            type: EmailConfig
+          - name: email_id
+            type: String
+        returns: Result<Bool, String>
+        test_cases:
+          - input:
+              config: {imap_host: "imap.gmail.com", smtp_username: "user", smtp_password: "pass"}
+              email_id: "email-1"
+            expected:
+              Ok: true
+
+      - name: delete_email
+        description: Delete email
+        params:
+          - name: config
+            type: EmailConfig
+          - name: email_id
+            type: String
+        returns: Result<Bool, String>
+        test_cases:
+          - input:
+              config: {imap_host: "imap.gmail.com", smtp_username: "user", smtp_password: "pass"}
+              email_id: "email-1"
+            expected:
+              Ok: true
+
+  - name: folder_operations
+    description: Email folder operations
+    functions:
+      - name: list_folders
+        description: List email folders
+        params:
+          - name: config
+            type: EmailConfig
+        returns: Result<List<EmailFolder>, String>
+        test_cases:
+          - input:
+              config: {imap_host: "imap.gmail.com", smtp_username: "user", smtp_password: "pass"}
+            expected:
+              Ok:
+                - {name: "INBOX", message_count: 100, unread_count: 10}
+                - {name: "Sent", message_count: 50, unread_count: 0}
+                - {name: "Drafts", message_count: 5, unread_count: 0}
+
+      - name: create_folder
+        description: Create email folder
+        params:
+          - name: config
+            type: EmailConfig
+          - name: folder_name
+            type: String
+        returns: Result<EmailFolder, String>
+        test_cases:
+          - input:
+              config: {imap_host: "imap.gmail.com", smtp_username: "user", smtp_password: "pass"}
+              folder_name: "Archive"
+            expected:
+              Ok:
+                name: "Archive"
+                message_count: 0
+                unread_count: 0
+
+  - name: template_operations
+    description: Email template operations
+    functions:
+      - name: render_template
+        description: Render email template with variables
+        params:
+          - name: template
+            type: EmailTemplate
+          - name: variables
+            type: Map<String, String>
+        returns: Result<Email, String>
+        test_cases:
+          - input:
+              template:
+                id: "template-1"
+                name: "Welcome Email"
+                subject: "Welcome {{name}}!"
+                body: "Hello {{name}}, welcome to {{company}}!"
+                variables: ["name", "company"]
+              variables:
+                name: "Alice"
+                company: "VIBEE"
+            expected:
+              Ok:
+                subject: "Welcome Alice!"
+                body: "Hello Alice, welcome to VIBEE!"
+
+# Function declarations (generated from behaviors)
+functions:
+  # Sending operations
+  - name: send_email
+    params: [config: EmailConfig, email: Email]
+    returns: Result<String, String>
+    behavior: sending_operations
+
+  - name: send_html_email
+    params: [config: EmailConfig, from: String, to: List<String>, subject: String, html_body: String]
+    returns: Result<String, String>
+    behavior: sending_operations
+
+  - name: send_with_attachments
+    params: [config: EmailConfig, email: Email]
+    returns: Result<String, String>
+    behavior: sending_operations
+
+  # Receiving operations
+  - name: fetch_emails
+    params: [config: EmailConfig, folder: String, limit: Int]
+    returns: Result<List<Email>, String>
+    behavior: receiving_operations
+
+  - name: search_emails
+    params: [config: EmailConfig, filter: EmailFilter]
+    returns: Result<List<Email>, String>
+    behavior: receiving_operations
+
+  - name: mark_as_read
+    params: [config: EmailConfig, email_id: String]
+    returns: Result<Bool, String>
+    behavior: receiving_operations
+
+  - name: delete_email
+    params: [config: EmailConfig, email_id: String]
+    returns: Result<Bool, String>
+    behavior: receiving_operations
+
+  # Folder operations
+  - name: list_folders
+    params: [config: EmailConfig]
+    returns: Result<List<EmailFolder>, String>
+    behavior: folder_operations
+
+  - name: create_folder
+    params: [config: EmailConfig, folder_name: String]
+    returns: Result<EmailFolder, String>
+    behavior: folder_operations
+
+  # Template operations
+  - name: render_template
+    params: [template: EmailTemplate, variables: Map<String, String>]
+    returns: Result<Email, String>
+    behavior: template_operations
+
+# Documentation
+documentation:
+  overview: |
+    # MCP Email Tools
+    
+    Complete email operations for sending and receiving emails via SMTP/IMAP.
+    
+    ## Features
+    - Send emails (plain text, HTML, attachments)
+    - Receive emails (fetch, search, filter)
+    - Folder management (list, create)
+    - Email templates with variables
+    - Mark as read/unread, delete
+    
+  examples:
+    - title: Send Email
+      code: |
+        let config = EmailConfig(
+          smtp_host: "smtp.gmail.com",
+          smtp_port: 587,
+          smtp_username: "user@gmail.com",
+          smtp_password: "password",
+          use_tls: true
+        )
+        let email = Email(
+          from: "user@gmail.com",
+          to: ["recipient@example.com"],
+          subject: "Hello",
+          body: "This is a test email",
+          is_html: false,
+          attachments: []
+        )
+        let result = send_email(config, email)
+        case result {
+          Ok(email_id) -> io.println("Sent: " <> email_id)
+          Error(err) -> io.println("Error: " <> err)
+        }
+    
+    - title: Fetch Emails
+      code: |
+        let result = fetch_emails(config, "INBOX", 10)
+        case result {
+          Ok(emails) -> {
+            list.each(emails, fn(e) {
+              io.println("From: " <> e.from)
+              io.println("Subject: " <> e.subject)
+            })
+          }
+          Error(err) -> io.println("Error: " <> err)
+        }
+    
+    - title: Render Template
+      code: |
+        let template = EmailTemplate(
+          id: "welcome",
+          name: "Welcome Email",
+          subject: "Welcome {{name}}!",
+          body: "Hello {{name}}, welcome to {{company}}!",
+          variables: ["name", "company"]
+        )
+        let vars = map.from_list([
+          #("name", "Alice"),
+          #("company", "VIBEE")
+        ])
+        let result = render_template(template, vars)
+
+# Generation metadata
+generation:
+  target_language: gleam
+  output_path: src/mcp_email.gleam
+  test_path: test/mcp_email_test.gleam
+  generate_docs: true
+  generate_tests: true
+  generate_helpers: true

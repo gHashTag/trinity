@@ -1,0 +1,74 @@
+name: shard_manager_api
+version: "1.0.0"
+language: zig
+module: shard_manager_api
+
+imports:
+  - name: vsa
+    path: "src/vsa.zig"
+
+description: |
+  ShardManager API v1.0 — Reusable Struct with Real Methods
+
+  === PURPOSE ===
+  Production-grade ShardManager struct with init/put/get/delete/list/saveManifest
+  methods. Real std.fs I/O, SHA-256 content-addressing, JSON manifest persistence.
+  Promotes test-proven logic into reusable library methods.
+
+  === API ===
+  ShardManager.init(root)       → create dirs, return manager
+  ShardManager.put(data)        → SHA-256 hash, write .shard, return hex
+  ShardManager.get(hex, buf)    → read .shard by hash, return bytes read
+  ShardManager.delete(hex)      → remove .shard file
+  ShardManager.exists(hex)      → check if .shard file exists
+  ShardManager.count()          → count .shard files in dir
+  ShardManager.saveManifest()   → write manifest.json with shard_count
+  ShardManager.fingerprint(data)→ SHA-256 seed → vsa.randomVector
+
+  === PROOFS ===
+  R1: shardMgrInitDirs      — init creates root + shards subdir
+  R2: shardMgrPutGetRoundtrip — put → get → byte-for-byte match
+  R3: shardMgrDeleteExists   — put → delete → exists returns false
+  R4: shardMgrCountAfterPuts — put 3 items → count returns 3
+  R5: shardMgrManifestPersist — saveManifest → read file → has shard_count
+  R6: shardMgrFingerprintMatch — same data → same fingerprint → cosine 1.0
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+
+types:
+  ShardManagerConfig:
+    fields:
+      root_path: String
+      shard_size: Int
+      max_shards: Int
+
+behaviors:
+  - name: shardMgrInitDirs
+    given: A temporary test path for storage root
+    when: Calls ShardManager.init which creates root and shards subdirectory
+    then: Both directories exist on filesystem proving init works
+
+  - name: shardMgrPutGetRoundtrip
+    given: A ShardManager and 256-byte test payload
+    when: Calls put to write shard then get to read by returned hash
+    then: Retrieved bytes match original payload proving put-get roundtrip
+
+  - name: shardMgrDeleteExists
+    given: A ShardManager with one shard written via put
+    when: Calls delete with shard hash then checks exists
+    then: Exists returns false proving shard was removed from disk
+
+  - name: shardMgrCountAfterPuts
+    given: A ShardManager with 3 distinct shards written via put
+    when: Calls count to enumerate shard files in directory
+    then: Count returns 3 proving all shards persisted
+
+  - name: shardMgrManifestPersist
+    given: A ShardManager with 2 shards written
+    when: Calls saveManifest to write manifest.json then reads file
+    then: File contains shard_count field with value 2
+
+  - name: shardMgrFingerprintMatch
+    given: Two identical byte payloads processed through fingerprint method
+    when: Computes VSA fingerprints via SHA-256 seed and vsa.randomVector
+    then: Both fingerprints have cosine similarity of 1.0

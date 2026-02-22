@@ -1,0 +1,46 @@
+name: pure_symbolic_reasoning
+version: "1.0.0"
+language: zig
+module: pure_symbolic_reasoning
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 60
+  MAX_HOPS: 10
+  NUM_ANALOGIES: 5
+  NUM_RELATIONS: 3
+
+types:
+  AnalogyResult:
+    fields:
+      exemplar_a: Int
+      exemplar_b: Int
+      query: Int
+      result: Int
+      correct: Bool
+      similarity: Float
+    description: "Result of an A:B :: C:? analogy query."
+
+  ChainResult:
+    fields:
+      start: Int
+      hops: Int
+      final: Int
+      correct: Bool
+    description: "Result of a transitive chain query."
+
+behaviors:
+  - name: fewShotAnalogies
+    given: 5 exemplar pairs encoding a relation, bundled into a single analogy memory.
+    when: Query each exemplar key (forward and reverse) to verify analogy recall
+    then: 10/10 (100%) — both forward (A→B) and reverse (B→A) analogies resolve
+
+  - name: transitiveChains10Hop
+    given: 10 single-pair memories forming a transitive chain (ent[20]→ent[21]→...→ent[30]).
+    when: Execute 5-hop and 10-hop chains, each hop using a dedicated memory
+    then: 15/15 (100%) — 5/5 for 5-hop, 10/10 for 10-hop, zero degradation
+
+  - name: compositionalMultiRelation
+    given: 5 entities each with 3 different relations (15 pairs across 3 memories).
+    when: Query each entity against all 3 relation memories
+    then: 15/15 (100%) — all 3 relations resolve correctly for all 5 entities

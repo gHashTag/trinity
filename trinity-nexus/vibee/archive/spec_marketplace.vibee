@@ -1,0 +1,187 @@
+name: spec_marketplace
+version: 1.0.0
+description: Marketplace for spec.yml templates and generators
+type: marketplace
+category: ecosystem
+
+behaviors:
+  - name: publish_template
+    description: Publish spec.yml template to marketplace
+    given: User has spec.yml template
+    when: User publishes to marketplace
+    then: Template available for others
+    test_cases:
+      - name: publish_valid_template
+        input:
+          name: "user_auth"
+          spec: "valid spec.yml"
+          author: "john"
+        expected:
+          published: true
+          template_id: "tpl_123"
+      
+      - name: publish_duplicate
+        input:
+          name: "user_auth"
+          spec: "spec.yml"
+          author: "john"
+          exists: true
+        expected:
+          published: false
+          error: "Template already exists"
+
+  - name: search_templates
+    description: Search for spec.yml templates
+    given: User wants to find template
+    when: User searches marketplace
+    then: Matching templates shown
+    test_cases:
+      - name: search_by_name
+        input:
+          query: "user auth"
+        expected:
+          results_count: 5
+          top_result: "user_auth"
+      
+      - name: search_by_category
+        input:
+          category: "authentication"
+        expected:
+          results_count: 10
+          all_match_category: true
+      
+      - name: search_no_results
+        input:
+          query: "xyz123"
+        expected:
+          results_count: 0
+          suggestions_shown: true
+
+  - name: install_template
+    description: Install template from marketplace
+    given: User found template
+    when: User installs template
+    then: spec.yml created in project
+    test_cases:
+      - name: install_template
+        input:
+          template_id: "tpl_123"
+          project_path: "/my_project"
+        expected:
+          installed: true
+          file_created: "/my_project/spec.yml"
+      
+      - name: install_with_customization
+        input:
+          template_id: "tpl_123"
+          project_path: "/my_project"
+          customizations: {name: "my_plugin"}
+        expected:
+          installed: true
+          customized: true
+
+  - name: rate_template
+    description: Rate and review template
+    given: User used template
+    when: User rates template
+    then: Rating saved
+    test_cases:
+      - name: rate_5_stars
+        input:
+          template_id: "tpl_123"
+          rating: 5
+          review: "Excellent template!"
+        expected:
+          rating_saved: true
+          average_rating: 4.8
+      
+      - name: rate_without_review
+        input:
+          template_id: "tpl_123"
+          rating: 4
+        expected:
+          rating_saved: true
+          review_optional: true
+
+  - name: browse_categories
+    description: Browse templates by category
+    given: User wants to explore
+    when: User browses categories
+    then: Templates grouped by category
+    test_cases:
+      - name: view_all_categories
+        input: {}
+        expected:
+          categories: ["Authentication", "CRUD", "API", "Database", "AI"]
+          templates_per_category: 10
+      
+      - name: view_category_templates
+        input:
+          category: "Authentication"
+        expected:
+          templates_count: 15
+          sorted_by: "popularity"
+
+  - name: publish_generator
+    description: Publish custom generator
+    given: User created custom generator
+    when: User publishes generator
+    then: Generator available in marketplace
+    test_cases:
+      - name: publish_custom_generator
+        input:
+          name: "rust_generator"
+          description: "Generate Rust code"
+          code: "generator.vibee"
+        expected:
+          published: true
+          generator_id: "gen_123"
+
+types:
+  Template:
+    id: str
+    name: str
+    description: str
+    author: str
+    spec_content: str
+    category: str
+    downloads: int
+    rating: float
+    created_at: str
+  
+  Generator:
+    id: str
+    name: str
+    description: str
+    author: str
+    language: str
+    downloads: int
+    rating: float
+  
+  Rating:
+    template_id: str
+    user_id: str
+    rating: int
+    review: str
+    created_at: str
+
+functions:
+  - name: publish_template
+    signature: "publish_template(template: Template) → Result(String, String)"
+    description: Publish template to marketplace
+    
+  - name: search_templates
+    signature: "search_templates(query: String) → List(Template)"
+    description: Search for templates
+    
+  - name: install_template
+    signature: "install_template(template_id: String, path: String) → Result(Nil, String)"
+    description: Install template to project
+    
+  - name: rate_template
+    signature: "rate_template(template_id: String, rating: Int, review: String) → Result(Nil, String)"
+    description: Rate template
+
+completeness:
+  test_coverage: 100%
+  all_behaviors_implemented: true

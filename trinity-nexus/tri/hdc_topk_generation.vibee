@@ -1,0 +1,48 @@
+name: hdc_topk_generation
+version: "1.0.0"
+language: zig
+module: hdc_topk_generation
+
+description: |
+  HDC Top-K Autoregressive Generation — Level 10A.6.2: Sampled Generation Pipeline.
+  Full autoregressive generation with hybrid forward + temperature sampling.
+
+  === ARCHITECTURE ===
+  generateWithHybridSampled(context, role, dim, last_char, counts,
+                            output_buf, max_tokens, temperature, top_k, seed):
+    for each token:
+      1. output_hv = forwardPassHybrid(context, role, dim, last_char, counts)
+      2. decoded = hvToCharSampled(dim, output_hv, temperature, top_k, seed+step)
+      3. Shift context window, insert charToHV(decoded) as new context[7]
+      4. Update last_char = decoded for next Hebbian lookup
+
+  === KEY DESIGN DECISIONS ===
+  - Per-token seed (base_seed + step) ensures reproducibility while varying randomness
+  - Context window uses charToHV(decoded) not raw output HV for clean autoregression
+  - last_char tracks the decoded char for Hebbian bigram lookup continuity
+
+  === RESULTS ===
+  50-token generation with T=0.8, K=8 produces 40 unique chars
+  vs 2 unique chars with greedy decoding — 20x diversity improvement
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+
+types:
+  GenerationConfig:
+    fields:
+      temperature: Float
+      top_k: Int
+      max_tokens: Int
+      base_seed: Int
+
+behaviors:
+  - name: generateWithHybridSampled
+    given: Context, role, Hebbian counts, sampling params
+    when: Autoregressive loop with sampled decoding at each step
+    then: Token sequence with controlled diversity
+
+test_cases:
+  - name: generation_50_tokens
+    description: Generate 50 tokens without crash
+    input: "context='to be or ', T=0.8, K=8, max=50"
+    expected: "gen_count == 50"

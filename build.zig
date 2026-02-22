@@ -1106,10 +1106,139 @@ pub fn build(b: *std.Build) void {
     const self_improve_step = b.step("self-improve", "Run VIBEE Self-Improvement Loop");
     self_improve_step.dependOn(&run_self_improve.step);
 
+    // PHI LOOP — 999 Links of Cosmic Consciousness Gene
+    const phi_loop = b.addExecutable(.{
+        .name = "phi-loop",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/phi_loop_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(phi_loop);
+
+    const run_phi_loop = b.addRunArtifact(phi_loop);
+    const phi_loop_step = b.step("phi-loop", "Run PHI LOOP — 999 Links of Cosmic Consciousness");
+    phi_loop_step.dependOn(&run_phi_loop.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Trinity Orchestrator — Cycle 59: Central Integration Hub
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // Generated orchestrator module
+    const orchestrator_gen_mod = b.createModule(.{
+        .root_source_file = b.path("generated.old/trinity_orchestrator.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const orchestrator = b.addExecutable(.{
+        .name = "orchestrate",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/orchestrator_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity_orchestrator", .module = orchestrator_gen_mod },
+                .{ .name = "phi_types", .module = trinity_mod },
+            },
+        }),
+    });
+    b.installArtifact(orchestrator);
+
+    const run_orchestrator = b.addRunArtifact(orchestrator);
+    if (b.args) |args| {
+        run_orchestrator.addArgs(args);
+    }
+    const orchestrate_step = b.step("orchestrate", "Run Trinity Orchestrator — Central Integration Hub");
+    orchestrate_step.dependOn(&run_orchestrator.step);
+
+    // Meta-Evolution — Cycle 62: Army Creates Its Own Specs
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // Generated meta_evolution module
+    const meta_gen_mod = b.createModule(.{
+        .root_source_file = b.path("generated.old/meta_evolution.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const meta_evolution = b.addExecutable(.{
+        .name = "meta-evolution",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/meta_evolution_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "meta_evolution", .module = meta_gen_mod },
+            },
+        }),
+    });
+    b.installArtifact(meta_evolution);
+
+    const run_meta = b.addRunArtifact(meta_evolution);
+    if (b.args) |args| {
+        run_meta.addArgs(args);
+    }
+    const meta_step = b.step("meta-evolution", "Run Meta-Evolution — Army Creates Its Own Specs");
+    meta_step.dependOn(&run_meta.step);
+
+    // TMUX Golden Chain Integration — Cycle 63: Dashboard UI
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const sigma_mod = b.createModule(.{
+        .root_source_file = b.path("generated.old/sigma07_success.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const chi_mod = b.createModule(.{
+        .root_source_file = b.path("generated.old/chi06_regress.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const tmux_integration_mod = b.createModule(.{
+        .root_source_file = b.path("generated.old/tmux_golden_chain_integration.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // PHI LOOP cluster module for tmux integration
+    const phi_loop_mod = b.createModule(.{
+        .root_source_file = b.path("src/phi_loop/cluster.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const tmux_golden_chain = b.addExecutable(.{
+        .name = "tmux-golden-chain",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/tmux_golden_chain.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "sigma07_success", .module = sigma_mod },
+                .{ .name = "chi06_regress", .module = chi_mod },
+                .{ .name = "tmux_golden_chain_integration", .module = tmux_integration_mod },
+                .{ .name = "trinity", .module = trinity_mod },
+                .{ .name = "phi_loop", .module = phi_loop_mod },
+            },
+        }),
+    });
+    b.installArtifact(tmux_golden_chain);
+
+    const run_tmux_gc = b.addRunArtifact(tmux_golden_chain);
+    if (b.args) |args| {
+        run_tmux_gc.addArgs(args);
+    }
+    const tmux_step = b.step("tmux-golden-chain", "Run TMUX Golden Chain Integration — Dashboard UI");
+    tmux_step.dependOn(&run_tmux_gc.step);
+
     // V8 Production Swarm Runtime — 32-agent Trinity cluster
     // Generated production swarm module (must be generated first with: zig build vibee -- gen specs/tri/vsa_swarm_production_32.vibee)
     const vsa_swarm_mod = b.createModule(.{
-        .root_source_file = b.path("generated/vsa_swarm_production_32.zig"),
+        .root_source_file = b.path("generated.old/vsa_swarm_production_32.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -1516,7 +1645,7 @@ pub fn build(b: *std.Build) void {
     // Uses vsa module only - hybrid types accessed via vsa.HybridBigInt
     const vsa_imported_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/vsa_imported_system.zig"),
+            .root_source_file = b.path("generated.old/vsa_imported_system.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1532,7 +1661,7 @@ pub fn build(b: *std.Build) void {
     // Self-contained proofs: bind inverse, bundle majority, permute cycle, etc.
     const quark_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/quark_tests.zig"),
+            .root_source_file = b.path("generated.old/quark_tests.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1550,7 +1679,7 @@ pub fn build(b: *std.Build) void {
     // orthogonality, permute cycles, similarity bounds, trinity identity
     const vsa_math_proofs_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/vsa_math_proofs.zig"),
+            .root_source_file = b.path("generated.old/vsa_math_proofs.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1566,7 +1695,7 @@ pub fn build(b: *std.Build) void {
     // VSA Bundle-N Optimization — Accumulator-based N-way bundling (MATH-002)
     const vsa_bundle_opt_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/vsa_bundle_opt.zig"),
+            .root_source_file = b.path("generated.old/vsa_bundle_opt.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1582,7 +1711,7 @@ pub fn build(b: *std.Build) void {
     // VSA Large-Scale Analogies (MATH-005: 1000+ vector analogy reasoning)
     const vsa_large_analogies_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/vsa_large_scale_analogies.zig"),
+            .root_source_file = b.path("generated.old/vsa_large_scale_analogies.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1680,7 +1809,7 @@ pub fn build(b: *std.Build) void {
     // VSA Math Benchmark executable (MATH-003)
     // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence
     const bundle_opt_mod = b.createModule(.{
-        .root_source_file = b.path("generated/vsa_bundle_opt.zig"),
+        .root_source_file = b.path("generated.old/vsa_bundle_opt.zig"),
         .target = target,
         .optimize = .ReleaseFast,
         .imports = &.{
@@ -1709,7 +1838,7 @@ pub fn build(b: *std.Build) void {
     // Storage Init — Basic Disk Shards + VSA Fingerprints (Cycle 59)
     const storage_init_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/init.zig"),
+            .root_source_file = b.path("generated.old/init.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1725,7 +1854,7 @@ pub fn build(b: *std.Build) void {
     // Generated Shard Manager — Cohesive Storage API + Manifest + Splitting (Cycle 61)
     const gen_shard_mgr_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/manager.zig"),
+            .root_source_file = b.path("generated.old/manager.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1741,7 +1870,7 @@ pub fn build(b: *std.Build) void {
     // ShardManager API — Reusable Struct with Real Methods (Cycle 62)
     const shard_mgr_api_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/shard_manager.zig"),
+            .root_source_file = b.path("generated.old/shard_manager.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1757,7 +1886,7 @@ pub fn build(b: *std.Build) void {
     // Generated network transfer tests (from specs/storage/network.vibee)
     const network_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/network.zig"),
+            .root_source_file = b.path("generated.old/network.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1773,7 +1902,7 @@ pub fn build(b: *std.Build) void {
     // Generated erasure coding tests (from specs/storage/erasure.vibee)
     const erasure_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/erasure.zig"),
+            .root_source_file = b.path("generated.old/erasure.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1789,7 +1918,7 @@ pub fn build(b: *std.Build) void {
     // Generated pipeline tests (from specs/storage/pipeline.vibee)
     const pipeline_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/pipeline.zig"),
+            .root_source_file = b.path("generated.old/pipeline.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1805,7 +1934,7 @@ pub fn build(b: *std.Build) void {
     // Generated network pipeline tests (from specs/storage/netpipeline.vibee)
     const netpipeline_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/netpipeline.zig"),
+            .root_source_file = b.path("generated.old/netpipeline.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1821,7 +1950,7 @@ pub fn build(b: *std.Build) void {
     // Generated discovery tests (from specs/storage/discovery.vibee)
     const discovery_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/discovery.zig"),
+            .root_source_file = b.path("generated.old/discovery.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1837,7 +1966,7 @@ pub fn build(b: *std.Build) void {
     // Generated Proof-of-Storage tests (PoS challenge-response verification)
     const gen_pos_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/pos.zig"),
+            .root_source_file = b.path("generated.old/pos.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1853,7 +1982,7 @@ pub fn build(b: *std.Build) void {
     // Generated Kademlia DHT tests (XOR distance routing + store/find)
     const gen_dht_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/dht.zig"),
+            .root_source_file = b.path("generated.old/dht.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1869,7 +1998,7 @@ pub fn build(b: *std.Build) void {
     // Generated Live Swarm tests (bootstrap + node lifecycle + ping/pong)
     const gen_swarm_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/swarm.zig"),
+            .root_source_file = b.path("generated.old/swarm.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1885,7 +2014,7 @@ pub fn build(b: *std.Build) void {
     // Generated Live Rewards tests ($TRI mint/slash on PoS results)
     const gen_rewards_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/rewards.zig"),
+            .root_source_file = b.path("generated.old/rewards.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1901,7 +2030,7 @@ pub fn build(b: *std.Build) void {
     // Generated Swarm Watch tests (DEV-003: DHT + TRI economy monitor)
     const gen_swarm_watch_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/swarm_watch.zig"),
+            .root_source_file = b.path("generated.old/swarm_watch.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -1914,7 +2043,7 @@ pub fn build(b: *std.Build) void {
     // Generated Ternary KV Cache tests (OPT-T03: 16x KV cache compression)
     const gen_ternary_kv_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/ternary_kv_cache.zig"),
+            .root_source_file = b.path("generated.old/ternary_kv_cache.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -1927,7 +2056,7 @@ pub fn build(b: *std.Build) void {
     // Generated Ternary MatMul tests (OPT-T02: 10x matmul speedup)
     const gen_ternary_matmul_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/ternary_matmul.zig"),
+            .root_source_file = b.path("generated.old/ternary_matmul.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -1940,7 +2069,7 @@ pub fn build(b: *std.Build) void {
     // Generated Paged Attention tests (OPT-PA01: 4-10x memory efficiency)
     const gen_paged_attn_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/paged_attention.zig"),
+            .root_source_file = b.path("generated.old/paged_attention.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -1953,7 +2082,7 @@ pub fn build(b: *std.Build) void {
     // Generated Continuous Batching tests (OPT-B01: 2-3x throughput)
     const gen_cont_batch_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/continuous_batching.zig"),
+            .root_source_file = b.path("generated.old/continuous_batching.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -1966,7 +2095,7 @@ pub fn build(b: *std.Build) void {
     // Generated Speculative Decoding tests (OPT-S01: 2-3x generation speed)
     const gen_spec_dec_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/speculative_decoding.zig"),
+            .root_source_file = b.path("generated.old/speculative_decoding.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -1979,7 +2108,7 @@ pub fn build(b: *std.Build) void {
     // Generated GGUF Parser tests (INF-001: Load any GGUF model)
     const gen_gguf_parser_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/gguf_parser.zig"),
+            .root_source_file = b.path("generated.old/gguf_parser.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -1992,7 +2121,7 @@ pub fn build(b: *std.Build) void {
     // Generated Transformer Forward Pass tests (INF-002: Native LLM inference)
     const gen_tfm_fwd_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/transformer_forward.zig"),
+            .root_source_file = b.path("generated.old/transformer_forward.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -2005,7 +2134,7 @@ pub fn build(b: *std.Build) void {
     // Generated Hardware Abstraction tests (HW-001: Unified ternary backend interface)
     const gen_hw_abs_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/hardware_abstraction.zig"),
+            .root_source_file = b.path("generated.old/hardware_abstraction.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -2018,7 +2147,7 @@ pub fn build(b: *std.Build) void {
     // Generated JIT Compilation tests (CORE-004: Multi-tier JIT pipeline)
     const gen_jit_comp_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/jit_compilation.zig"),
+            .root_source_file = b.path("generated.old/jit_compilation.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -2031,7 +2160,7 @@ pub fn build(b: *std.Build) void {
     // Generated FPGA Acceleration tests (HW-003: Ternary hardware backend)
     const gen_fpga_acc_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/fpga_acceleration.zig"),
+            .root_source_file = b.path("generated.old/fpga_acceleration.zig"),
             .target = target,
             .optimize = optimize,
         }),

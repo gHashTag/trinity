@@ -1,0 +1,512 @@
+// Reels Creation Action (ElizaOS Architecture)
+  // Performance Warning:   // AI Suggestion: Replace magic numbers with named constants  // AI Suggestion: Consider extracting hardcoded strings to constants// Converted from infra/agent/actions/reels_action.gleam → dsl/infra/agent/actions/reels_action.vibee
+//
+// NO COMMANDS! This action triggers based on conversation context.
+// validate() detects intent through NLP patterns, not /reels command.
+//
+// Trigger patterns (similes):
+// - "создай рилс", "сделай видео для рилс"
+// - "хочу видео для инстаграм"
+// - "нужен контент для соцсетей"
+// - "генерируй reels", "make a reel"
+
+import "../eliza.vibee" as eliza
+
+// =============================================================================
+// Types
+// =============================================================================
+
+struct RenderStatus(
+  RenderStatus(
+    completed: bool,
+    video_url: str?,
+    error: str?
+  )
+}
+
+// =============================================================================
+// Reels Action Definition
+// =============================================================================
+
+@spec create_reels_action() → Action {
+  /// Create the Reels Action
+  given: Nothing
+  when: Setting up action registry
+  then: Returns reels creation action
+}
+
+@impl {
+  Action(
+    "CREATE_REELS",
+    "Creates Instagram-style reels video with AI-generated content. Uses type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}'s photo for avatar, generates script, TTS, lipsync, and B-roll.",
+    // Similes for NLP matching
+    [
+      "создай рилс", "сделай рилс", "рилс видео",
+      "создай видео для инстаграм", "видео для инсты",
+      "make a reel", "create reels", "instagram video",
+      "сгенерируй видео", "хочу рилс", "нужен рилс",
+      "контент для reels", "reels creator"
+    ],
+    // Example messages
+    [
+      "Создай рилс про продуктивность",
+      "Хочу видео для инстаграма о бизнесе",
+      "Сделай мне reels на тему заработка",
+      "Make a reel about productivity tips",
+      "Нужен рилс для моего продукта"
+    ],
+    { validate_reels_request(it) },
+    { handle_reels_creation(it) }
+  )
+}
+
+// =============================================================================
+// Validate Function
+// =============================================================================
+
+trace("agent.reels_action.validate")
+@spec validate_reels_request(context: ActionContext) → bool {
+  /// Validate if message context indicates reels creation intent
+  /// Returns true if ANY of the similes match in message
+  given: Action context
+  when: Checking for reels intent
+  then: Returns true if should handle
+}
+
+@impl {
+  let message = string.lowercase(context.message)
+
+  // Check for explicit reels keywords
+  let reels_keywords = [
+    "рилс", "reels", "рилз",
+    "видео для инста", "video for insta",
+    "видео для соцсет", "social media video"
+  ]
+
+  // Check for creation intent
+  let creation_intent = [
+    "создай", "сделай", "сгенерируй", "хочу",
+    "create", "make", "generate", "need"
+  ]
+
+  // Must have BOTH: reels keyword AND creation intent
+  let has_reels = list.fn(kw · any {
+    string.kw · contains
+  }
+
+  let has_intent = list.fn(intent · any {
+    string.intent · contains
+  }
+
+  has_reels && has_intent
+}
+
+// =============================================================================
+// Handler Function
+// =============================================================================
+
+trace("agent.reels_action.handle")
+timeout(300s)
+@spec handle_reels_creation(context: ActionContext) → ActionResult {
+  /// Handle reels creation - full pipeline execution
+  given: Action context with type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} message
+  when: Creating reels video
+  then: Returns video URL or error
+}
+
+@impl {
+  print("[REELS_ACTION] Handler started for type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}: {context.chat_id}")
+
+  // Extract topic/idea from message
+  let idea = extract_idea_from_message(context.message)
+  print("[REELS_ACTION] Extracted idea: {idea}")
+
+  // Detect niche from message
+  let niche = detect_niche(context.message)
+  print("[REELS_ACTION] Detected niche: {niche}")
+
+  // Get photo URL from context or use default
+  let photo_url = match context.photo_url {
+    ☐url) → url
+    ∅-> {
+      let test_assets = config.get_env_or("TEST_ASSETS_URL", "https://fly.storage.tigris.dev/vibee-assets")
+      "{test_assets}/photos/avatar_test.jpg"
+    }
+  }
+
+  // Generate script from idea
+  let script = niche · generate_script
+  print("[REELS_ACTION] Generated script: {string.0, 50 · slice}...")
+
+  // Configure pipeline
+  let remotion_url = endpoints.get_remotion_url()
+  let test_assets = config.get_env_or("TEST_ASSETS_URL", "https://fly.storage.tigris.dev/vibee-assets")
+
+  let pipeline_config = pipeline.PipelineConfig(
+    config.get_env_or("ELEVENLABS_API_KEY", ""),
+    config.get_env_or("FAL_API_KEY", ""),
+    remotion_url,
+    test_assets
+  )
+
+  let pipeline_request = pipeline.script,
+    ∅,
+    ∅,
+    false,  // Use real AI pipeline
+    false   // Full render, not quick test
+   · PipelineRequest
+
+  // Start pipeline
+  print("[REELS_ACTION] Starting AI pipeline...")
+
+  match pipeline.pipeline_request · start_ai_pipeline {
+    ✅job) → {
+      print("[REELS_ACTION] Pipeline started, job_id: {job.id}")
+
+      // Poll for completion
+      match job · poll_render_job {
+        ✅video_url) → {
+          print("[REELS_ACTION] Video ready: {video_url}")
+
+          let data = dict.new()
+            · dict.insert("video_url", video_url)
+            · dict.insert("job_id", job.id)
+            · dict.insert("idea", idea)
+            · dict.insert("niche", niche)
+
+          eliza.success_result_with_data(
+            "Ваш рилс готов! Тема: {idea}",
+            data
+          )
+        }
+
+        ❌err) → {
+          print("[REELS_ACTION] Render failed: {err}")
+          eliza.error_result("Ошибка рендеринга: {err}")
+        }
+      }
+    }
+
+    ❌err) → {
+      let err_str = pipeline_error_to_string(err)
+      print("[REELS_ACTION] Pipeline error: {err_str}")
+      eliza.error_result("Ошибка пайплайна: {err_str}")
+    }
+  }
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec extract_idea_from_message(message: str) → str {
+  /// Extract idea/topic from message
+  given: type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} message
+  when: Parsing request
+  then: Returns extracted idea or default
+}
+
+@impl {
+  let cleaned = message
+    · string.lowercase()
+    · remove_prefix("создай рилс")
+    · remove_prefix("сделай рилс")
+    · remove_prefix("хочу рилс")
+    · remove_prefix("create reels")
+    · remove_prefix("make a reel")
+    · remove_prefix("про ")
+    · remove_prefix("о ")
+    · remove_prefix("на тему ")
+    · remove_prefix("about ")
+    · string.trim()
+
+  match cleaned {
+    "" → "5 полезных советов для продуктивности"
+    idea → idea
+  }
+}
+
+@spec remove_prefix(text: str, prefix: str) → str {
+  /// Remove prefix from text if present
+  given: Text and prefix
+  when: Cleaning message
+  then: Returns text without prefix
+}
+
+@impl {
+  match string.prefix · starts_with {
+    true → string.string.length(prefix · drop_start)
+    false → text
+  }
+}
+
+@spec detect_niche(message: str) → str {
+  /// Detect niche from message keywords
+  given: type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} message
+  when: Categorizing content
+  then: Returns detected niche
+}
+
+@impl {
+  let msg = string.lowercase(message)
+
+  let niches = [
+    #(["бизнес", "business"], "business"),
+    #(["продуктив", "productiv"], "productivity"),
+    #(["здоров", "health"], "health"),
+    #(["финанс", "finance"], "finance"),
+    #(["технолог", "tech"], "technology"),
+    #(["образован", "educat"], "education"),
+    #(["маркетинг", "marketing"], "marketing")
+  ]
+
+  niches · find_niche
+}
+
+@spec find_niche(text: str, niches: [#([str], str])) → str {
+  /// Find matching niche from keywords
+  given: Text and niche definitions
+  when: Searching for match
+  then: Returns niche or default
+}
+
+@impl {
+  match niches {
+    [] → "lifestyle"
+    [#(keywords, niche) | rest] → {
+      match list.{ string.contains(text, it · any } {
+        true → niche
+        false → rest · find_niche
+      }
+    }
+  }
+}
+
+@spec generate_script(idea: str, niche: str) → str {
+  /// Generate script from idea and niche
+  given: Idea and niche
+  when: Creating content
+  then: Returns script text
+}
+
+@impl {
+  let intro = match niche {
+    "business" → "Вот что должен знать каждый предприниматель..."
+    "productivity" → "Хотите быть продуктивнее? Вот мой секрет..."
+    "health" → "Ваше здоровье - главный приоритет..."
+    "finance" → "Деньги любят счёт. И вот почему..."
+    "technology" → "Технологии меняют мир. А вы готовы?"
+    "education" → "Учиться никогда не поздно..."
+    "marketing" → "Маркетинг - это не реклама, это стратегия..."
+    _ → "Сегодня я расскажу вам кое-что важное..."
+  }
+
+  "{intro}\n\n{idea}\n\nПодписывайтесь и ставьте лайк!"
+}
+
+@spec poll_render_job(remotion_url: str, job: PipelineJob) → str · Result {
+  /// Poll render job for completion
+  given: Remotion URL and job
+  when: Waiting for render
+  then: Returns video URL or error
+}
+
+@impl {
+  job.id, 0, 60 · poll_loop  // Max 60 attempts
+}
+
+@spec poll_loop(remotion_url: str, job_id: str, attempt: int, max_attempts: int) → str · Result {
+  /// Polling loop for render status
+  given: URL, job ID, attempt count, max attempts
+  when: Checking status
+  then: Returns result when complete
+}
+
+@impl {
+  match attempt >= max_attempts {
+    true → ❌"Timeout: render job took too long")
+    false → {
+      // Wait before polling
+      sleep(3000)
+
+      // Check status
+      match job_id · get_render_status {
+        ✅status) → {
+          match status.completed {
+            true → {
+              match status.video_url {
+                ☐url) → ✅url)
+                ∅-> ❌"Render completed but no video URL")
+              }
+            }
+            false → {
+              match status.error {
+                ☐err) → ❌err)
+                ∅-> job_id, attempt + 1, max_attempts · poll_loop
+              }
+            }
+          }
+        }
+        ❌err) → ❌err)
+      }
+    }
+  }
+}
+
+@spec get_render_status(remotion_url: str, job_id: str) → str · Result {
+  /// Get render status from remotion
+  given: Remotion URL and job ID
+  when: Checking job status
+  then: Returns status or error
+}
+
+@impl {
+  // TODO: Implement actual HTTP call to remotion
+  // For now, simulate successful completion
+  ✅☐"{remotion_url}/output/{job_id}.mp4" · RenderStatus,
+    ∅))
+}
+
+@spec pipeline_error_to_string(err: PipelineError) → str {
+  /// Convert pipeline error to string
+  given: PipelineError
+  when: Formatting error
+  then: Returns error message
+}
+
+@impl {
+  match err {
+    TTS❌msg) → "TTS error: {msg}"
+    Lipsync❌msg) → "Lipsync error: {msg}"
+    Render❌msg) → "Render error: {msg}"
+    Config❌msg) → "Config error: {msg}"
+    Network❌msg) → "Network error: {msg}"
+    BRoll❌msg) → "B-roll error: {msg}"
+  }
+}
+
+ffi("timer")
+@spec sleep(ms: int) → Nil {
+  /// Sleep for specified milliseconds
+  given: Milliseconds
+  when: Waiting
+  then: Blocks for duration
+}
+
+# v8.0
+
+# v10.0 - ML-Powered Migration

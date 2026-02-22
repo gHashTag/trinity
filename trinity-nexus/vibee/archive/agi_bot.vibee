@@ -1,0 +1,157 @@
+name: agi_bot
+version: "1.0.0"
+language: zig
+module: agi_bot
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: start
+    given: Input data provided
+    when: start function called
+    then: Result returned
+    test_cases:
+      - name: test_start
+        input: {}
+        expected: {}
+
+  - name: get_me
+    given: Input data provided
+    when: get_me function called
+    then: Result returned
+    test_cases:
+      - name: test_get_me
+        input: {}
+        expected: {}
+
+  - name: poll_loop
+    given: Input data provided
+    when: poll_loop function called
+    then: Result returned
+    test_cases:
+      - name: test_poll_loop
+        input: {}
+        expected: {}
+
+  - name: get_updates
+    given: Input data provided
+    when: get_updates function called
+    then: Result returned
+    test_cases:
+      - name: test_get_updates
+        input: {}
+        expected: {}
+
+  - name: parse_updates
+    given: Input data provided
+    when: parse_updates function called
+    then: Result returned
+    test_cases:
+      - name: test_parse_updates
+        input: {}
+        expected: {}
+
+  - name: process_updates
+    given: Input data provided
+    when: process_updates function called
+    then: Result returned
+    test_cases:
+      - name: test_process_updates
+        input: {}
+        expected: {}
+
+  - name: process_update
+    given: Input data provided
+    when: process_update function called
+    then: Result returned
+    test_cases:
+      - name: test_process_update
+        input: {}
+        expected: {}
+
+  - name: send_message
+    given: Input data provided
+    when: send_message function called
+    then: Result returned
+    test_cases:
+      - name: test_send_message
+        input: {}
+        expected: {}
+
+types:
+  TelegramUpdate:
+    # TODO: Define fields
+
+  TelegramMessage:
+    # TODO: Define fields
+
+  TelegramUser:
+    # TODO: Define fields
+
+  TelegramChat:
+    # TODO: Define fields
+
+  BotConfig:
+    # TODO: Define fields
+
+functions:
+  - name: start
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_me
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: poll_loop
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_updates
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: parse_updates
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: process_updates
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: process_update
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: send_message
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/erlang/process
+  # gleam/http
+  # gleam/http/request
+  # gleam/httpc
+  # gleam/json
+  # gleam/result
+  # gleam/string
+  # gleam/int
+  # gleam/io
+  # gleam/float
+  # gleam/option.{type Option, None, Some}
+  # honeycomb/agi_chatbot/chatbot
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

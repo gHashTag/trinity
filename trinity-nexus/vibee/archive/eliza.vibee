@@ -1,0 +1,672 @@
+// ElizaOS-inspired Architecture for type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}-Bots
+// Based on https://docs.elizaos.ai/plugins/architecture
+// Converted from infra/agent/eliza.gleam → dsl/infra/agent/eliza.vibee
+//
+// KEY PRINCIPLE: NO COMMANDS! type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}-bots work through conversation understanding.
+// Actions trigger based on context and NLP patterns, not explicit /commands.
+//
+// Components:
+// - Actions: discrete tasks with validate() + handler()
+// - Providers: aggregate context for decision-making
+// - Evaluators: assess situations and determine responses
+
+// =============================================================================
+// Core Types
+// =============================================================================
+
+/// Action Result - standardized from action handlers
+
+struct ActionResult {
+  ActionResult(
+    success: bool,
+    text: str,
+    values: {str, },
+    data: {str, }
+fn new() · Self {
+    success: success,
+    text: text,
+    str: str
+  
+}
+
+  # Auto-generated getters
+fn success(self) · self.success
+
+fn text(self) · self.text
+
+fn str(self) · self.str
+
+  )
+}
+
+/// Action Context - passed to validate() and handler()
+
+struct ActionContext {
+  ActionContext(
+    type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_id: int,
+    chat_id: str,
+    message: str,
+    history: [str],
+    type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_name: str?,
+    photo_url: str?,
+    previous_results: [ActionResult]
+  )
+}
+
+  # Auto-generated getters
+fn type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_id(self) → int {
+  self.type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_id
+}
+fn chat_id(self) · self.chat_id
+
+fn message(self) · self.message
+
+
+  # Auto-generated getters
+fn name(self) · self.name
+
+fn description(self) · self.description
+
+fn validate(self) · self.validate
+
+fn handler(self) · self.handler
+
+fn type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_name(self) → str {
+  self.type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_name
+}
+
+  # Auto-generated getters
+fn name(self) · self.name
+
+fn description(self) · self.description
+
+
+  # Auto-generated getters
+fn text(self) · self.text
+
+fn str(self) · self.str
+
+fn dynamic(self) · self.dynamic
+
+fn position(self) · self.position
+
+fn get(self) · self.get
+
+
+  # Auto-generated getters
+fn name(self) · self.name
+
+fn description(self) · self.description
+
+
+  # Auto-generated getters
+fn store_memory(self) · self.store_memory
+
+fn handler(self) · self.handler
+
+fn photo_url(self) · self.photo_url
+
+
+/// Action - discrete task an agent can perform
+/// Similar to ElizaOS Action interface
+
+struct Action {
+  Action(
+    name: str,
+    description: str,
+    similes: [str],
+    examples: [str],
+    validate: fn(ActionContext) → bool,
+    handler: fn(ActionContext) → ActionResult
+  )
+}
+
+/// Provider - supplies contextual information before decisions
+
+struct Provider {
+  Provider(
+    name: str,
+    description: str,
+    dynamic: bool,
+    position: int,
+    get: fn(ActionContext) → ProviderResult
+  )
+}
+
+/// Provider Result - context data from provider
+
+struct ProviderResult {
+  ProviderResult(
+    text: str,
+    values: {str, },
+    data: {str, }
+  )
+}
+
+/// Evaluator - post-processes responses, extracts insights
+
+struct Evaluator {
+  Evaluator(
+    name: str,
+    description: str,
+    handler: ActionResult · fn → EvaluatorResult
+  )
+}
+
+/// Evaluator Result
+
+struct EvaluatorResult {
+  EvaluatorResult(
+    store_memory: bool,
+    facts: [str],
+    suggested_actions: [str]
+  )
+}
+
+// =============================================================================
+// Action Registry
+// =============================================================================
+
+/// Registry of all available actions
+
+struct ActionRegistry {
+  ActionRegistry(
+    actions: [Action],
+    providers: [Provider],
+    evaluators: [Evaluator]
+  )
+}
+
+// =============================================================================
+// Registry Functions
+// =============================================================================
+
+@spec new_registry() → ActionRegistry {
+  /// Create empty registry
+  given: Nothing
+  when: Initializing ElizaOS plugin
+  then: Returns empty ActionRegistry
+}
+
+@impl {
+  ActionRegistry([], [], [])
+}
+
+@spec register_action(registry: ActionRegistry, action: Action) → ActionRegistry {
+  /// Register an action in the registry
+  given: Registry and action
+  when: Adding new capability
+  then: Returns updated registry with action
+}
+
+@impl {
+  ActionRegistry(
+    [action | registry.actions],
+    registry.providers,
+    registry.evaluators
+  )
+}
+
+@spec register_provider(registry: ActionRegistry, provider: Provider) → ActionRegistry {
+  /// Register a provider in the registry
+  given: Registry and provider
+  when: Adding context source
+  then: Returns updated registry with provider
+}
+
+@impl {
+  ActionRegistry(
+    registry.actions,
+    [provider | registry.providers],
+    registry.evaluators
+  )
+}
+
+@spec register_evaluator(registry: ActionRegistry, evaluator: Evaluator) → ActionRegistry {
+  /// Register an evaluator in the registry
+  given: Registry and evaluator
+  when: Adding post-processor
+  then: Returns updated registry with evaluator
+}
+
+@impl {
+  ActionRegistry(
+    registry.actions,
+    registry.providers,
+    [evaluator | registry.evaluators]
+  )
+}
+
+// =============================================================================
+// Action Execution Flow
+// =============================================================================
+
+trace("agent.eliza.find_matching_action")
+@spec find_matching_action(registry: ActionRegistry, context: ActionContext) → Action? {
+  /// Find matching action for context
+  /// Uses validate() and simile matching
+  given: Registry and context
+  when: Processing type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} message
+  then: Returns matching action or ∅}
+
+@impl {
+  find_first_valid(registry.actions, context)
+}
+
+@spec find_first_valid(actions: [Action], context: ActionContext) → Action? {
+  /// Helper to find first valid action
+  given: type {name} {
+  items: List[Item],
+  count: Int} actions and context
+  when: Iterating through actions
+  then: Returns first action where validate() returns true
+}
+
+@impl {
+  match actions {
+    [] → ∅[action | rest] → {
+      match action.validate(context) {
+        true → ☐action)
+        false → context · find_first_valid
+      }
+    }
+  }
+}
+
+trace("agent.eliza.execute_action")
+@spec execute_action(registry: ActionRegistry, action: Action, context: ActionContext) → ActionResult {
+  /// Execute action with full flow:
+  /// 1. Gather context from providers
+  /// 2. Execute action handler
+  /// 3. Process with evaluators
+  given: Registry, action, and context
+  when: Running action
+  then: Returns action result
+}
+
+@impl {
+  // Step 1: Gather provider context
+  let _provider_data = gather_provider_context(registry.providers, context)
+
+  // Step 2: Execute action handler
+  let result = action.handler(context)
+
+  // Step 3: Run evaluators (for memory/analytics)
+  let _evaluator_results = run_evaluators(registry.evaluators, context, result)
+
+  // Return action result
+  result
+}
+
+trace("agent.eliza.gather_provider_context")
+@spec gather_provider_context(providers: [Provider], context: ActionContext) → [ProviderResult] {
+  /// Gather context from all providers
+  given: type {name} {
+  items: List[Item],
+  count: Int} providers and context
+  when: Preparing for action execution
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} provider results
+}
+
+@impl {
+  match providers {
+    [] → []
+    [provider | rest] → {
+      let result = provider.get(context)
+      [result | context · gather_provider_context]
+    }
+  }
+}
+
+trace("agent.eliza.run_evaluators")
+@spec run_evaluators(evaluators: [Evaluator], context: ActionContext, result: ActionResult) → [EvaluatorResult] {
+  /// Run all evaluators on action result
+  given: Evaluators, context, and result
+  when: Post-processing action
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} evaluator results
+}
+
+@impl {
+  match evaluators {
+    [] → []
+    [evaluator | rest] → {
+      let eval_result = evaluator.result · handler
+      [eval_result | context, result · run_evaluators]
+    }
+  }
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec success_result(text: str) → ActionResult {
+  /// Create a successful action result
+  given: Response text
+  when: Action completed successfully
+  then: Returns ActionResult with success=true
+}
+
+@impl {
+  text, dict.new( · ActionResult, dict.new())
+}
+
+@spec success_result_with_data(text: str, data: {str, }) → ActionResult {
+  /// Create a successful action result with data
+  given: Response text and data dict
+  when: Action completed with structured data
+  then: Returns ActionResult with data
+}
+
+@impl {
+  text, dict.new( · ActionResult, data)
+}
+
+@spec error_result(error: str) → ActionResult {
+  /// Create a failed action result
+  given: Error message
+  when: Action failed
+  then: Returns ActionResult with success=false
+}
+
+@impl {
+  error, dict.new( · ActionResult, dict.new())
+}
+
+@spec empty_context() → ActionContext {
+  /// Create empty context for testing
+  given: Nothing
+  when: Testing actions
+  then: Returns empty ActionContext
+}
+
+@impl {
+  "", "", [], ∅, ∅, [] · ActionContext
+}
+
+# v8.0
+
+# v8.0
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration

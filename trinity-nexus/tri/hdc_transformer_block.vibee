@@ -1,0 +1,217 @@
+name: hdc_transformer_block
+version: "1.0.0"
+language: zig
+module: hdc_transformer_block
+
+description: |
+  HDC Transformer Block — Level 10A.1: Full Neuro-Symbolic Transformer Stack.
+  Composes HDC Attention + Feed-Forward + Residual + Layer Norm into a
+  complete transformer block operating entirely in ternary {-1, 0, +1} space.
+
+  === ARCHITECTURE (per block) ===
+  Input sequence [x_1, ..., x_n] as hypervectors (dim D)
+
+  1. MULTI-HEAD ATTENTION (from hdc_attention.vibee):
+     For each head h in [1..H]:
+       Q_h = bind(x_i, q_role_h)     — query projection
+       K_h = bind(x_j, k_role_h)     — key projection
+       V_h = bind(x_j, v_role_h)     — value projection
+       score(i,j) = cosineSimilarity(Q_h_i, K_h_j)
+       attn_h_i = ternary_softmax(scores) weighted bundle of V_h_j
+     multi_head_i = bundle(attn_1_i, attn_2_i, ..., attn_H_i)
+
+  2. RESIDUAL CONNECTION #1:
+     res1_i = bundle(x_i, multi_head_i)
+     Why bundle works as residual: majority vote preserves both original
+     and attended signal. In high dimensions, bundle(A, B) preserves
+     similarity to both A and B (within ~1/sqrt(D) noise).
+
+  3. TERNARY LAYER NORM:
+     norm_i = threshold(res1_i, density_target=0.33)
+     Enforces balanced ternary distribution: ~33% each of {-1, 0, +1}.
+     This is the HDC analog of LayerNorm: controls vector magnitude
+     without division or square root (just threshold + rebalance).
+
+  4. FEED-FORWARD NETWORK:
+     ff_i = bind(norm_i, ff_weight_1)        — "linear layer 1"
+     act_i = ternary_relu(ff_i)              — activation: clamp to {-1, 0, +1}
+     out_i = bind(act_i, ff_weight_2)        — "linear layer 2"
+     Why bind works as linear: bind(x, W) = element-wise multiplication
+     with fixed weight vector W, equivalent to a diagonal linear transform.
+
+  5. RESIDUAL CONNECTION #2:
+     block_out_i = bundle(norm_i, out_i)
+
+  === STACKING ===
+  Full transformer = stack(block_1, block_2, ..., block_L)
+  Output of block_l feeds as input to block_(l+1).
+  Final output decoded via codebook.decode(block_L_out_last_pos).
+
+  === TERNARY SOFTMAX ===
+  Standard softmax: exp(x_i) / sum(exp(x_j)) — requires float, overflow-prone.
+  Ternary softmax: rank scores, assign weights from geometric series:
+    sorted_scores = sort(scores, descending)
+    weight[k] = phi^(-k)  (golden ratio decay)
+    normalize: weight[k] /= sum(weights)
+  This creates a sparse, interpretable attention pattern.
+
+  === TRAINING (HDC-NATIVE) ===
+  No backpropagation. Instead:
+    1. Present (context, target) pair
+    2. Encode context through transformer block
+    3. Compare output to target: delta = bind(target_hv, negate(output_hv))
+    4. Update role vectors: role_new = bundle(role_old, scale(delta, lr))
+  Learning rate lr controls how much delta shifts the role vector.
+  Convergence: O(sqrt(D)) samples for D-dimensional vectors.
+
+  === COMPLEXITY ===
+  Per block, per token:
+    Attention: O(n * D) trit-multiplies (bind) + O(n) cosine similarities
+    Feed-forward: O(D) trit-multiplies (2 binds)
+    Residual: O(D) trit-additions (2 bundles)
+    Total per block: O(n * D + D) = O(n * D)
+  L blocks: O(L * n * D) — linear in all dimensions.
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  TransformerConfig:
+    fields:
+      dimension: usize
+      num_heads: usize
+      num_layers: usize
+      context_length: usize
+      use_causal_mask: Bool
+      dropout_rate: Float
+      learning_rate: Float
+
+  FeedForwardWeights:
+    fields:
+      weight_1: List<i8>
+      weight_2: List<i8>
+      dimension: usize
+
+  TransformerBlock:
+    fields:
+      block_id: usize
+      attention_heads: List<AttentionHead>
+      ff_weights: FeedForwardWeights
+      density_target: Float
+
+  BlockOutput:
+    fields:
+      position: usize
+      hv: List<i8>
+      attention_entropy: Float
+      residual_similarity: Float
+
+  TransformerOutput:
+    fields:
+      sequence_hvs: List<List<i8>>
+      predicted_token: String
+      confidence: Float
+      attention_maps: List<List<List<Float>>>
+      layer_similarities: List<Float>
+
+  TrainingExample:
+    fields:
+      context_tokens: List<String>
+      target_token: String
+
+  TrainingStats:
+    fields:
+      examples_seen: u64
+      avg_loss: Float
+      accuracy: Float
+      convergence_rate: Float
+
+  HDCTransformer:
+    fields:
+      allocator: Allocator
+      config: TransformerConfig
+      blocks: List<TransformerBlock>
+      codebook: Codebook
+      position_cache: List<List<i8>>
+      training_stats: TrainingStats
+
+behaviors:
+  - name: initTransformer
+    given: TransformerConfig specifying dimensions, heads, layers
+    when: Creates L transformer blocks, each with H attention heads and FF weights
+    then: Full transformer stack initialized with random orthogonal role vectors
+
+  - name: forwardBlock
+    given: Sequence of hypervectors and a TransformerBlock
+    when: Runs multi-head attention, residual, layer norm, feed-forward, residual
+    then: Returns transformed sequence as BlockOutput list
+
+  - name: ternaryLayerNorm
+    given: Hypervector and target density (default 0.33)
+    when: Rebalances trit distribution by thresholding accumulator values
+    then: Returns normalized vector with approximately equal {-1, 0, +1} distribution
+
+  - name: feedForward
+    given: Input hypervector and FeedForwardWeights
+    when: Applies bind(input, W1), ternary_relu, bind(activated, W2)
+    then: Returns transformed hypervector (diagonal linear transform + activation)
+
+  - name: ternaryRelu
+    given: Hypervector (trit values)
+    when: Applies activation: negative trits become zero, others unchanged
+    then: Returns sparsified vector (only 0 and +1 remain)
+
+  - name: residualConnect
+    given: Original hypervector and transformed hypervector
+    when: Bundles both vectors (majority vote element-wise)
+    then: Returns residual-connected vector preserving both signals
+
+  - name: forward
+    given: List of token strings
+    when: Embeds tokens, passes through all L blocks sequentially
+    then: Returns TransformerOutput with predictions and attention maps
+
+  - name: predict
+    given: Context token sequence
+    when: Full forward pass, decode last position via codebook
+    then: Returns predicted next token with confidence
+
+  - name: generate
+    given: Seed text and max_length
+    when: Autoregressive generation with causal masking
+    then: Returns generated text token by token
+
+  - name: trainStep
+    given: TrainingExample (context + target)
+    when: Forward pass, compute delta, update role vectors via bundle
+    then: Returns loss value for this step
+
+  - name: trainBatch
+    given: List of TrainingExamples
+    when: Processes batch, accumulates deltas, applies bundled update
+    then: Returns TrainingStats with accuracy and convergence
+
+  - name: perplexity
+    given: Test text as token sequence
+    when: Computes prediction probability for each actual next token
+    then: Returns perplexity score (lower = better)
+
+  - name: getAttentionMaps
+    given: Layer index
+    when: Extracts attention score matrices from last forward pass
+    then: Returns per-head attention maps for visualization
+
+  - name: interpretPrediction
+    given: Token position
+    when: Traces attention flow through all layers via unbind
+    then: Returns contribution scores showing which input tokens influenced prediction
+
+  - name: saveWeights
+    given: File path
+    when: Serializes all role vectors and FF weights as packed trits
+    then: Model saved to disk in compact binary format
+
+  - name: loadWeights
+    given: File path
+    when: Deserializes packed trit weights into transformer blocks
+    then: Model restored from disk ready for inference

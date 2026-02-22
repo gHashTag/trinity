@@ -1,0 +1,45 @@
+name: block_world_map
+version: "1.0.0"
+language: zig
+module: block_world_map
+description: |
+  Maps 27 logo SVG blocks to 27 sacred worlds
+  Outer ring (0-8) = Realm RAZUM (phi)
+  Middle ring (9-17) = Realm MATERIYA (pi)
+  Inner ring (18-26) = Realm DUKH (e)
+
+imports:
+  - sacred_worlds
+
+types:
+  BlockWorldEntry:
+    description: "One entry in block-to-world mapping"
+    fields:
+      block_index: U8
+      world_id: WorldId
+      realm: RealmId
+      domain: DomainId
+
+constants:
+  OUTER_RING_START: 0
+  OUTER_RING_END: 8
+  MIDDLE_RING_START: 9
+  MIDDLE_RING_END: 17
+  INNER_RING_START: 18
+  INNER_RING_END: 26
+
+behaviors:
+  - name: block_to_world
+    given: Block index 0-26
+    when: Block is clicked
+    then: Return WorldId from static mapping table
+
+  - name: world_to_block
+    given: WorldId
+    when: Need to highlight block for active world
+    then: Return block index 0-26
+
+  - name: block_to_realm
+    given: Block index 0-26
+    when: Need realm for coloring
+    then: Return RealmId (0-8=razum, 9-17=materiya, 18-26=dukh)

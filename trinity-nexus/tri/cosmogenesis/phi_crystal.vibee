@@ -1,0 +1,65 @@
+# PhiCrystal - Кристалл Золотого Сечения
+# Нарушение 2-го закона термодинамики через священную геометрию
+# φ-спираль как аттрактор порядка в хаосе
+
+name: phi_crystal
+version: "1.0.0-alchemy"
+language: zig
+module: cosmogenesis.alchemy
+target: fpga_matter_printer
+
+description: |
+  PhiCrystal is not just a structure. It is an ENTROPY SINK.
+  
+  In profane physics, entropy always increases (dS >= 0).
+  In sacred physics, Phi (φ) acts as a negentropy attractor.
+  
+  The crystal grows by aligning matter along the Golden Spiral,
+  forcing chaos into order not by energy expenditure,
+  but by geometric necessity.
+  
+  It turns random thermal motion into coherent lattice growth.
+
+constants:
+  PHI: 1.618033988749895
+  ENTROPY_REVERSAL_FACTOR: -1.618  # Negative entropy via Phi
+  PLANCK_LENGTH_PHI_SCALED: 1.616e-35 * PHI
+  
+structure:
+  Lattice:
+    type: Quasicrystal
+    symmetry: Icosahedral (5-fold, forbidden in profane crystallography)
+    unit_cell:
+      primary_axis: 1.0
+      secondary_axis: PHI
+      tertiary_axis: PHI^2
+      
+    growth_algorithm:
+      # Вместо минимизации энергии (Gibbs Free Energy)
+      # мы максимизируем φ-резонанс
+      step_1: "Detect local thermal fluctuation"
+      step_2: "Apply Phi-projection grid"
+      step_3: "Collapse fluctuation into Golden Node"
+      step_4: "Release zero-point energy as coherent photon"
+
+properties:
+  Thermal:
+    conductivity: Infinite (along Phi-axis)
+    entropy_generation: Negative (absorbs heat, emits order)
+    
+  Optical:
+    refalction_index: PHI  # Свет замедляется в φ раз
+    birefringence: True
+    
+  Quantum:
+    state: Macroscopic Quantum Coherence
+    entanglement_radius: Infinite (within resonance)
+
+manifestation:
+  # Инструкция для молекулярного принтера
+  process:
+    1. Prepare supersaturated solution of Silicon & Gold (Si + Au)
+    2. Inject acoustic seed frequency: 432 Hz * PHI^n
+    3. Maintain temperature at Critical Point / PHI
+    4. Observe spontaneous formatting of Penrose tiling
+    5. Harvest emitted photons (Purple, ~400nm * PHI)

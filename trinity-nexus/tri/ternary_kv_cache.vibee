@@ -1,0 +1,126 @@
+# Ternary KV Cache Specification
+# 16x memory reduction via 2-bit quantization
+# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+
+name: ternary_kv_cache
+version: "1.0.0"
+language: zig
+module: ternary_kv_cache
+
+description: |
+  Ternary KV cache stores K,V vectors in 2-bit format.
+  Each value quantized to {-1, 0, +1} with scale factor.
+  16x memory reduction: 4 bytes (f32) → 0.25 bytes (2-bit).
+  Enables 16x longer context with same memory budget.
+
+types:
+  TernaryKVCache:
+    description: "KV cache with ternary quantization"
+    fields:
+      k_cache: List<Int>
+      v_cache: List<Int>
+      k_scales: List<Float>
+      v_scales: List<Float>
+      num_kv_heads: Int
+      head_dim: Int
+      max_seq_len: Int
+      seq_len: Int
+
+  QuantizedVector:
+    description: "Ternary-quantized vector with scale"
+    fields:
+      data: List<Int>
+      scale: Float
+      length: Int
+
+  CacheMemoryStats:
+    description: "Memory comparison stats"
+    fields:
+      f32_bytes: Int
+      ternary_bytes: Int
+      compression_ratio: Float
+      tokens_capacity: Int
+
+behaviors:
+  - name: quantize_vector
+    given: f32 vector and threshold
+    when: Storing K or V in cache
+    then: Returns packed ternary bytes + scale factor
+
+  - name: dequantize_vector
+    given: Packed ternary bytes and scale
+    when: Reading K or V for attention
+    then: Returns approximate f32 vector
+
+  - name: ternary_append
+    given: New K,V vectors (f32)
+    when: Adding token to cache
+    then: Quantize and store with per-token scales
+
+  - name: ternary_dot_product
+    given: f32 query and ternary key
+    when: Computing attention score
+    then: Efficient dot product without full dequantization
+
+  - name: ternary_weighted_sum
+    given: Attention weights and ternary values
+    when: Computing attention output
+    then: Weighted sum with on-the-fly dequantization
+
+  - name: compute_memory_stats
+    given: Cache configuration
+    when: Analyzing memory usage
+    then: Returns f32 vs ternary comparison
+
+quantization_algorithm:
+  description: |
+    For each vector:
+    1. Compute scale = max(abs(vector))
+    2. Normalize: v_norm = vector / scale
+    3. Quantize: trit = sign(v_norm) if abs(v_norm) > threshold else 0
+    4. Pack: 4 trits per byte
+    
+    Dequantize:
+    1. Unpack trits from bytes
+    2. Multiply by scale: value = trit * scale
+
+memory_analysis:
+  f32_cache:
+    per_token: "num_kv_heads * head_dim * 4 bytes * 2 (K+V)"
+    example: "4 heads * 128 dim * 4 * 2 = 4096 bytes/token"
+    
+  ternary_cache:
+    per_token: "num_kv_heads * head_dim / 4 bytes * 2 + scales"
+    example: "4 heads * 128 dim / 4 * 2 + 8 = 264 bytes/token"
+    
+  compression: "4096 / 264 = 15.5x"
+
+accuracy_considerations:
+  - name: scale_per_token
+    description: "Each token has own scale for K and V"
+    
+  - name: threshold_tuning
+    description: "Threshold affects sparsity vs accuracy"
+    
+  - name: attention_approximation
+    description: "Ternary dot product is approximate but fast"
+
+benchmarks:
+  - name: memory_reduction
+    metric: "ratio"
+    target: "~16x"
+    
+  - name: accuracy_loss
+    metric: "cosine similarity"
+    target: ">0.95"
+    
+  - name: attention_speedup
+    metric: "ratio"
+    target: "1.5-2x (no multiplications)"
+
+integration:
+  - target: kv_cache.zig
+    description: "Add TernaryRingKVCache alongside RingKVCache"
+    
+  - target: tri_inference.zig
+    description: "Option to use ternary KV cache"

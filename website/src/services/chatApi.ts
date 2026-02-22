@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY CHAT API SERVICE v2.7
+// TRINITY CHAT API SERVICE v2.8
 // Connects Cosmic UI to Zig HTTP backend
 // v2.5: + /api/files (Finder) + /api/compile (Editor)
 // v2.7: + /api/storage-metrics (Storage Network Dashboard)
+// v2.8: + /api/model-status (Model Status Bar in Settings)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BASE_URL = 'http://localhost:8080';
@@ -11,6 +12,30 @@ export interface ChatRequest {
   message: string;
   image_path?: string;
   audio_path?: string;
+}
+
+export type ModelProvider = 'anthropic' | 'openai' | 'groq' | 'local';
+export type ModelStatus = 'online' | 'degraded' | 'offline' | 'error';
+
+export interface ModelInfo {
+  id: string;
+  name: string;
+  provider: ModelProvider;
+  status: ModelStatus;
+  context_tokens: number;
+  max_tokens: number;
+  latency_ms: number;
+  rpm_limit: number;
+  rpm_used: number;
+  error_count: number;
+  last_error?: string;
+}
+
+export interface ModelStatusResponse {
+  current_model: ModelInfo;
+  available_models: ModelInfo[];
+  fallback_enabled: boolean;
+  timestamp: number;
 }
 
 export interface ChatResponse {
@@ -44,6 +69,75 @@ export async function checkHealth(): Promise<boolean> {
     return res.ok;
   } catch {
     return false;
+  }
+}
+
+// ─── v2.8: Model Status API ────────────────────────────────────────────────────────
+
+function generateMockModelStatus(): ModelStatusResponse {
+  return {
+    current_model: {
+      id: 'claude-sonnet-4-6',
+      name: 'Claude Sonnet 4.6',
+      provider: 'anthropic',
+      status: 'online',
+      context_tokens: 127_840,
+      max_tokens: 200_000,
+      latency_ms: 380,
+      rpm_limit: 400,
+      rpm_used: 23,
+      error_count: 0,
+    },
+    available_models: [
+      {
+        id: 'claude-opus-4-6',
+        name: 'Claude Opus 4.6',
+        provider: 'anthropic',
+        status: 'online',
+        context_tokens: 184_320,
+        max_tokens: 200_000,
+        latency_ms: 850,
+        rpm_limit: 400,
+        rpm_used: 12,
+        error_count: 0,
+      },
+      {
+        id: 'claude-sonnet-4-6',
+        name: 'Claude Sonnet 4.6',
+        provider: 'anthropic',
+        status: 'online',
+        context_tokens: 127_840,
+        max_tokens: 200_000,
+        latency_ms: 380,
+        rpm_limit: 400,
+        rpm_used: 23,
+        error_count: 0,
+      },
+      {
+        id: 'claude-haiku-4-5',
+        name: 'Claude Haiku 4.5',
+        provider: 'anthropic',
+        status: 'online',
+        context_tokens: 0,
+        max_tokens: 200_000,
+        latency_ms: 150,
+        rpm_limit: 400,
+        rpm_used: 8,
+        error_count: 0,
+      },
+    ],
+    fallback_enabled: true,
+    timestamp: Date.now(),
+  };
+}
+
+export async function fetchModelStatus(): Promise<ModelStatusResponse> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/model-status`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return generateMockModelStatus();
+    return await res.json();
+  } catch {
+    return generateMockModelStatus();
   }
 }
 
@@ -448,6 +542,52 @@ function generateMockKoscheiStatus(): KoscheiStatus {
       { id: 'ralph-3', address: 'ralph-3:8080', status: 'online', load: 0.2, last_heartbeat: Date.now(), circuit_breaker_state: 'CLOSED', pas_efficiency: 0.25 },
       { id: 'ralph-4', address: 'ralph-4:8080', status: 'online', load: 0.28, last_heartbeat: Date.now(), circuit_breaker_state: 'CLOSED', pas_efficiency: 0.25 },
     ],
+  };
+}
+
+// ─── Cycle 59: TRINITY ORCHESTRATOR API ─────────────────────────────────────────────
+
+export interface OrchestratorStatus {
+  link: number;           // Current PHI LOOP link (1-999)
+  passed: number;         // Passed links
+  failed: number;         // Failed links
+  skipped: number;        // Skipped links
+  consensus_score: number; // φ-weighted consensus score
+  trinity_verified: boolean; // φ² + 1/φ² = 3
+  circuit_breaker_open: boolean;
+  agents_active: number;  // Active agents
+  phi: number;            // 1.618033988749895
+  mu: number;             // 0.0382
+  sacred_threshold: number; // 0.95
+  state: string;          // idle, decomposing, planning, generating, validating, etc.
+  timestamp: number;
+}
+
+export async function fetchOrchestratorStatus(): Promise<OrchestratorStatus | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/orchestrator/status`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return mockOrchestratorStatus();
+  }
+}
+
+export function mockOrchestratorStatus(): OrchestratorStatus {
+  return {
+    link: 1,
+    passed: 0,
+    failed: 0,
+    skipped: 0,
+    consensus_score: 1.618,
+    trinity_verified: true,
+    circuit_breaker_open: false,
+    agents_active: 5,
+    phi: 1.618033988749895,
+    mu: 0.0382,
+    sacred_threshold: 0.95,
+    state: 'idle',
+    timestamp: Date.now(),
   };
 }
 

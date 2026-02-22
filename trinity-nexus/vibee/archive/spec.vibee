@@ -1,0 +1,91 @@
+# REST API Template
+# VIBEEC Template Marketplace
+
+name: rest_api
+version: 1.0.0
+description: REST API with CRUD operations
+author: VIBEE Team
+category: API
+tags: [rest, api, crud, http]
+
+behaviors:
+  - name: create_resource
+    description: Create new resource
+    given: Valid resource data
+    when: POST /resources
+    then: Resource created with 201
+    test_cases:
+      - name: valid_resource
+        input: {name: "Test", value: "123"}
+        expected: {status: "201", created: "true"}
+      - name: invalid_data
+        input: {name: "", value: ""}
+        expected: {status: "400", error: "Invalid data"}
+
+  - name: get_resource
+    description: Get resource by ID
+    given: Resource exists
+    when: GET /resources/:id
+    then: Resource returned with 200
+    test_cases:
+      - name: existing_resource
+        input: {id: "1"}
+        expected: {status: "200", found: "true"}
+      - name: not_found
+        input: {id: "999"}
+        expected: {status: "404", error: "Not found"}
+
+  - name: update_resource
+    description: Update existing resource
+    given: Resource exists
+    when: PUT /resources/:id
+    then: Resource updated with 200
+    test_cases:
+      - name: valid_update
+        input: {id: "1", name: "Updated"}
+        expected: {status: "200", updated: "true"}
+
+  - name: delete_resource
+    description: Delete resource
+    given: Resource exists
+    when: DELETE /resources/:id
+    then: Resource deleted with 204
+    test_cases:
+      - name: successful_delete
+        input: {id: "1"}
+        expected: {status: "204", deleted: "true"}
+
+  - name: list_resources
+    description: List all resources
+    given: Resources exist
+    when: GET /resources
+    then: Resources returned with 200
+    test_cases:
+      - name: list_all
+        input: {}
+        expected: {status: "200", count: "10"}
+
+types:
+  Resource:
+    id: int
+    name: str
+    value: str
+    created_at: str
+    updated_at: str
+  
+  ResourceList:
+    resources: list
+    count: int
+    page: int
+
+functions:
+  - name: create_resource
+    signature: "create_resource(name: String, value: String) → Result(Resource, String)"
+  - name: get_resource
+    signature: "get_resource(id: Int) → Result(Resource, String)"
+  - name: update_resource
+    signature: "update_resource(id: Int, name: String, value: String) → Result(Resource, String)"
+  - name: delete_resource
+    signature: "delete_resource(id: Int) → Result(Nil, String)"
+  - name: list_resources
+    signature: "list_resources(page: Int) → Result(ResourceList, String)"

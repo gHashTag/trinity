@@ -1,0 +1,39 @@
+name: pattern_resolver
+version: "10.1.0"
+language: zig
+module: codegen.pattern_resolver
+
+description: |
+  Pattern Reference resolution system for VIBEE.
+  Resolves PatternRef unions to actual Pattern objects.
+
+types:
+  PatternRef:
+    variant: union
+    cases:
+      - by_name: String
+      - by_category: String
+      - by_query: String
+      - direct: Pattern
+
+  ResolveResult:
+    fields:
+      pattern: Pattern
+      confidence: Float
+      source: String
+
+behaviors:
+  - name: resolve
+    given: PatternRef and registry
+    when: Pattern reference needs resolution
+    then: Returns ResolveResult with pattern
+
+  - name: resolveByName
+    given: Pattern name
+    when: Exact name lookup
+    then: Returns pattern or error
+
+  - name: resolveByCategory
+    given: Category name
+    when: Category filtering needed
+    then: Returns list of matching patterns

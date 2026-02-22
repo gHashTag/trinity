@@ -1,0 +1,316 @@
+name: yoga
+version: "1.0.0"
+language: zig
+module: yoga
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: ffi_node_create
+    given: Input data provided
+    when: ffi_node_create function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_node_create
+        input: {}
+        expected: {}
+
+  - name: ffi_node_free
+    given: Input data provided
+    when: ffi_node_free function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_node_free
+        input: {}
+        expected: {}
+
+  - name: ffi_set_width
+    given: Input data provided
+    when: ffi_set_width function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_set_width
+        input: {}
+        expected: {}
+
+  - name: ffi_set_height
+    given: Input data provided
+    when: ffi_set_height function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_set_height
+        input: {}
+        expected: {}
+
+  - name: ffi_set_flex_direction
+    given: Input data provided
+    when: ffi_set_flex_direction function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_set_flex_direction
+        input: {}
+        expected: {}
+
+  - name: ffi_calculate_layout
+    given: Input data provided
+    when: ffi_calculate_layout function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_calculate_layout
+        input: {}
+        expected: {}
+
+  - name: ffi_get_computed_left
+    given: Input data provided
+    when: ffi_get_computed_left function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_get_computed_left
+        input: {}
+        expected: {}
+
+  - name: ffi_get_computed_top
+    given: Input data provided
+    when: ffi_get_computed_top function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_get_computed_top
+        input: {}
+        expected: {}
+
+  - name: ffi_get_computed_width
+    given: Input data provided
+    when: ffi_get_computed_width function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_get_computed_width
+        input: {}
+        expected: {}
+
+  - name: ffi_get_computed_height
+    given: Input data provided
+    when: ffi_get_computed_height function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_get_computed_height
+        input: {}
+        expected: {}
+
+  - name: node_create
+    given: Input data provided
+    when: node_create function called
+    then: Result returned
+    test_cases:
+      - name: test_node_create
+        input: {}
+        expected: {}
+
+  - name: node_free
+    given: Input data provided
+    when: node_free function called
+    then: Result returned
+    test_cases:
+      - name: test_node_free
+        input: {}
+        expected: {}
+
+  - name: set_width
+    given: Input data provided
+    when: set_width function called
+    then: Result returned
+    test_cases:
+      - name: test_set_width
+        input: {}
+        expected: {}
+
+  - name: set_height
+    given: Input data provided
+    when: set_height function called
+    then: Result returned
+    test_cases:
+      - name: test_set_height
+        input: {}
+        expected: {}
+
+  - name: set_flex_direction
+    given: Input data provided
+    when: set_flex_direction function called
+    then: Result returned
+    test_cases:
+      - name: test_set_flex_direction
+        input: {}
+        expected: {}
+
+  - name: calculate_layout
+    given: Input data provided
+    when: calculate_layout function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_layout
+        input: {}
+        expected: {}
+
+  - name: get_computed_left
+    given: Input data provided
+    when: get_computed_left function called
+    then: Result returned
+    test_cases:
+      - name: test_get_computed_left
+        input: {}
+        expected: {}
+
+  - name: get_computed_top
+    given: Input data provided
+    when: get_computed_top function called
+    then: Result returned
+    test_cases:
+      - name: test_get_computed_top
+        input: {}
+        expected: {}
+
+  - name: get_computed_width
+    given: Input data provided
+    when: get_computed_width function called
+    then: Result returned
+    test_cases:
+      - name: test_get_computed_width
+        input: {}
+        expected: {}
+
+  - name: get_computed_height
+    given: Input data provided
+    when: get_computed_height function called
+    then: Result returned
+    test_cases:
+      - name: test_get_computed_height
+        input: {}
+        expected: {}
+
+  - name: create_flex_container
+    given: Input data provided
+    when: create_flex_container function called
+    then: Result returned
+    test_cases:
+      - name: test_create_flex_container
+        input: {}
+        expected: {}
+
+types:
+  FlexDirection:
+    # TODO: Define fields
+
+functions:
+  - name: ffi_node_create
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_node_free
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_set_width
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_set_height
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_set_flex_direction
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_calculate_layout
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_get_computed_left
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_get_computed_top
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_get_computed_width
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_get_computed_height
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: node_create
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: node_free
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: set_width
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: set_height
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: set_flex_direction
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_layout
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_computed_left
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_computed_top
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_computed_width
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_computed_height
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: create_flex_container
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/result
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

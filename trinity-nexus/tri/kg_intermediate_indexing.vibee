@@ -1,0 +1,38 @@
+name: kg_intermediate_indexing
+version: "1.0.0"
+language: zig
+module: kg_intermediate_indexing
+description: "Level 11.10 — Intermediate indexing sub-bundle capacity fix: per-relation sub-memories vs flat bundling"
+
+constants:
+  DIM: 1024
+  DOMAINS: 3
+  RELS: 5
+  ENTS_PER_REL: 30
+  TOTAL: 450
+
+types:
+  IndexedKGResult:
+    fields:
+      domain: String
+      relation: Int
+      correct: Int
+      total: Int
+      accuracy: Float
+      description: "Result of querying a domain's relation-specific sub-memory. Indexed approach isolates each relation's entities into its own memory vector."
+
+behaviors:
+  - name: indexedSingleHop
+    given: 3 domains x 5 relations x 30 entities = 450 triples with per-relation sub-memories
+    when: Query each entity via unbind from relation-specific memory
+    then: 98.7% indexed accuracy (444/450) vs 75.3% flat — sub-memory isolation keeps each bundle under capacity limit
+
+  - name: flatComparison
+    given: Same 3 domains with all triples bundled into one memory per domain (50 per domain)
+    when: Query entities from flat bundle
+    then: 75.3% accuracy — capacity wall at >32 items, flat bundles exceed sqrt(DIM) limit
+
+  - name: indexedAdvantage
+    given: Indexed vs flat on 450 triples
+    when: Compare accuracy
+    then: Indexed > flat by >20% — sub-memory isolation preserves capacity by keeping each relation's bundle small

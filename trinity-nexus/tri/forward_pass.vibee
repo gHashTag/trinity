@@ -1,0 +1,119 @@
+name: forward_pass
+version: "1.0.0"
+language: zig
+module: forward_pass
+author: Dmitrii Vasilev
+description: Full forward pass integration connecting GGUF loader to BitNet inference
+
+types:
+  TensorMapping:
+    description: Maps GGUF tensor names to BitNet layer weights
+    fields:
+      gguf_name: String
+      layer_idx: Int
+      weight_type: String
+      shape: List<Int>
+
+  LayerWeights:
+    description: All weights for a single transformer layer
+    fields:
+      layer_idx: Int
+      w_q: List<Float>
+      w_k: List<Float>
+      w_v: List<Float>
+      w_o: List<Float>
+      w_gate: List<Float>
+      w_up: List<Float>
+      w_down: List<Float>
+      input_norm: List<Float>
+      post_attn_norm: List<Float>
+
+  ModelWeights:
+    description: Complete model weights loaded from GGUF
+    fields:
+      embed_tokens: List<Float>
+      layers: List<LayerWeights>
+      final_norm: List<Float>
+      lm_head: List<Float>
+      total_params: Int
+      memory_bytes: Int
+
+  ForwardState:
+    description: State during forward pass
+    fields:
+      hidden: List<Float>
+      position: Int
+      kv_cache_len: Int
+
+  InferenceConfig:
+    description: Configuration for inference
+    fields:
+      hidden_size: Int
+      num_layers: Int
+      num_heads: Int
+      num_kv_heads: Int
+      head_dim: Int
+      intermediate_size: Int
+      vocab_size: Int
+      max_seq_len: Int
+      rope_theta: Float
+      rms_norm_eps: Float
+
+behaviors:
+  - name: map_gguf_tensors
+    given: GGUF tensor list and model architecture
+    when: Loading model weights
+    then: Return list of TensorMapping for each weight
+
+  - name: load_layer_weights
+    given: GGUF reader and layer index
+    when: Loading specific layer
+    then: Return LayerWeights with dequantized data
+
+  - name: load_all_weights
+    given: GGUF reader and config
+    when: Loading complete model
+    then: Return ModelWeights with all layers
+
+  - name: forward_embedding
+    given: Token ID and embed_tokens
+    when: Looking up token embedding
+    then: Return hidden state vector
+
+  - name: forward_layer
+    given: Hidden state, LayerWeights, KV cache, position
+    when: Processing through transformer layer
+    then: Return updated hidden state
+
+  - name: forward_lm_head
+    given: Hidden state and lm_head weights
+    when: Computing logits
+    then: Return logits over vocabulary
+
+  - name: full_forward_pass
+    given: Token ID, position, ModelWeights
+    when: Running complete inference
+    then: Return logits for next token prediction
+
+  - name: generate_token
+    given: Logits, temperature, top_p
+    when: Sampling next token
+    then: Return sampled token ID
+
+constants:
+  LLAMA_TENSOR_NAMES:
+    embed: "token_embd.weight"
+    attn_q: "blk.{}.attn_q.weight"
+    attn_k: "blk.{}.attn_k.weight"
+    attn_v: "blk.{}.attn_v.weight"
+    attn_o: "blk.{}.attn_output.weight"
+    ffn_gate: "blk.{}.ffn_gate.weight"
+    ffn_up: "blk.{}.ffn_up.weight"
+    ffn_down: "blk.{}.ffn_down.weight"
+    attn_norm: "blk.{}.attn_norm.weight"
+    ffn_norm: "blk.{}.ffn_norm.weight"
+    output_norm: "output_norm.weight"
+    output: "output.weight"
+  PHI: 1.618033988749895
+  TRINITY: 3.0
+  GOLDEN_IDENTITY: "φ² + 1/φ² = 3"

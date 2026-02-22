@@ -1,0 +1,124 @@
+name: fix_malformed_specs
+version: "10.2.0"
+language: zig
+module: trinity.fix_malformed_specs
+
+description: |
+  Automatic .vibee specification fixer — detects and repairs common issues:
+  - Missing required fields (adds defaults)
+  - Invalid YAML (reformats)
+  - Malformed behaviors (fixes structure)
+  - Type errors (adds missing fields)
+  - PAS score improvement
+
+types:
+  SpecIssue:
+    variant: struct
+    fields:
+      category: IssueCategory
+      description: String
+      auto_fixable: Bool
+      fix_suggestion: String
+
+  IssueCategory:
+    variant: enum
+    cases:
+      - missing_required_field
+      - invalid_yaml
+      - malformed_behavior
+      - invalid_type
+      - unknown_language
+      - circular_dependency
+      - duplicate_name
+
+  FixResult:
+    variant: struct
+    fields:
+      success: Bool
+      original_content: String
+      fixed_content: String
+      issues_found: Int
+      issues_fixed: Int
+      new_pas_score: Float
+
+  FixReport:
+    variant: struct
+    fields:
+      total_files: Int
+      files_processed: Int
+      total_issues: Int
+      issues_fixed: Int
+      files_perfect: Int
+
+behaviors:
+  - name: analyzeSpec
+    given: Raw .vibee content
+    when: Analysis needed
+    then: Returns list of SpecIssue
+
+  - name: fixMissingFields
+    given: Spec content with missing fields
+    when: Auto-fix enabled
+    then: Adds default values for required fields
+
+  - name: fixYamlFormatting
+    given: Malformed YAML
+    when: Reformatting needed
+    then: Returns properly formatted YAML
+
+  - name: fixBehaviors
+    given: Malformed behaviors
+    when: Behavior structure fix needed
+    then: Returns corrected behavior list
+
+  - name: fixTypes
+    given: Malformed types
+    when: Type structure fix needed
+    then: Returns corrected type definitions
+
+  - name: applyFixes
+    given: Spec content and issue list
+    when: Auto-fixing enabled
+    then: Returns fixed content
+
+  - name: fixSpecFile
+    given: Path to .vibee file
+    when: File needs fixing
+    then: Overwrites with fixed content (creates backup)
+
+  - name: fixAllSpecs
+    given: Directory path
+    when: Batch fix needed
+    then: Returns FixReport
+
+  - name: validateFix
+    given: Fixed spec content
+    when: Verification needed
+    then: Returns true if PAS Score >= 0.95
+
+test_cases:
+  - name: missingNameFixed
+    given: Spec without name field
+    when: fixMissingFields called
+    then: Adds name: "unnamed_spec"
+
+  - name: invalidYamlFixed
+    given: Spec with bad indentation
+    when: fixYamlFormatting called
+    then: Returns valid YAML
+
+  - name: batchFixWorks
+    given: Directory with 10 problematic specs
+    when: fixAllSpecs called
+    then: Returns FixReport with issues_fixed > 0
+
+implementation: |
+  // Auto-fix common .vibee issues
+  // 1. Add missing required fields with defaults
+  // 2. Reformat YAML to 2-space indent
+  // 3. Fix behavior structure (given/when/then)
+  // 4. Add missing type fields
+  // 5. Validate and return fixed content
+  //
+  // Backup strategy: create .backup before overwriting
+  // PAS scoring: re-validate after fix

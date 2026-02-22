@@ -1,0 +1,124 @@
+name: theme_editor
+version: "1.0.0"
+language: zig
+module: theme_editor
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+    test_cases:
+      - name: test_main
+        input: {}
+        expected: {}
+
+  - name: handle_request
+    given: Input data provided
+    when: handle_request function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_request
+        input: {}
+        expected: {}
+
+  - name: serve_html
+    given: Input data provided
+    when: serve_html function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_html
+        input: {}
+        expected: {}
+
+  - name: serve_json
+    given: Input data provided
+    when: serve_json function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_json
+        input: {}
+        expected: {}
+
+  - name: serve_text
+    given: Input data provided
+    when: serve_text function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_text
+        input: {}
+        expected: {}
+
+  - name: default_theme
+    given: Input data provided
+    when: default_theme function called
+    then: Result returned
+    test_cases:
+      - name: test_default_theme
+        input: {}
+        expected: {}
+
+  - name: theme_editor_html
+    given: Input data provided
+    when: theme_editor_html function called
+    then: Result returned
+    test_cases:
+      - name: test_theme_editor_html
+        input: {}
+        expected: {}
+
+types:
+functions:
+  - name: main
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_request
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_html
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_json
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_text
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: default_theme
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: theme_editor_html
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # envoy
+  # gleam/bytes_tree
+  # gleam/erlang/process
+  # gleam/http/request.{type Request}
+  # gleam/http/response
+  # gleam/int
+  # gleam/io
+  # mist
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions
