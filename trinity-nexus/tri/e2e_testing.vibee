@@ -1,0 +1,286 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRINITY E2E TESTING FRAMEWORK
+# End-to-end test specifications
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: e2e_testing
+version: "1.0.0"
+language: zig
+module: e2e_testing
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  TestCase:
+    fields:
+      id: String
+      name: String
+      category: String        # api|inference|deployment|integration
+      description: String
+      endpoint: String
+      method: String          # GET|POST|PUT|DELETE
+      request_body: String    # JSON
+      expected_status: Int
+      expected_fields: List<String>
+      timeout_ms: Int
+      priority: Int           # 1=critical, 2=high, 3=medium
+
+  TestResult:
+    fields:
+      test_id: String
+      passed: Bool
+      actual_status: Int
+      response_time_ms: Int
+      error_message: String
+      timestamp: Timestamp
+
+  TestSuite:
+    fields:
+      name: String
+      description: String
+      test_ids: List<String>
+      run_parallel: Bool
+
+  HealthMetric:
+    fields:
+      name: String
+      current_value: Float
+      threshold_min: Float
+      threshold_max: Float
+      unit: String
+      status: String          # healthy|warning|critical
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_cases:
+  # API Health Tests
+  - id: "E2E-001"
+    name: "Health Check Endpoint"
+    category: "api"
+    description: "Verify /health returns 200"
+    endpoint: "https://trinity-llm.fly.dev/health"
+    method: "GET"
+    request_body: ""
+    expected_status: 200
+    expected_fields: []
+    timeout_ms: 5000
+    priority: 1
+
+  - id: "E2E-002"
+    name: "Root Endpoint Info"
+    category: "api"
+    description: "Verify / returns server info"
+    endpoint: "https://trinity-llm.fly.dev/"
+    method: "GET"
+    request_body: ""
+    expected_status: 200
+    expected_fields: ["model", "version"]
+    timeout_ms: 5000
+    priority: 2
+
+  # Chat Completion Tests
+  - id: "E2E-003"
+    name: "Basic Chat Completion"
+    category: "inference"
+    description: "Simple hello message"
+    endpoint: "https://trinity-llm.fly.dev/v1/chat/completions"
+    method: "POST"
+    request_body: '{"model":"smollm2","messages":[{"role":"user","content":"Hello!"}],"max_tokens":50}'
+    expected_status: 200
+    expected_fields: ["id", "object", "choices", "usage"]
+    timeout_ms: 30000
+    priority: 1
+
+  - id: "E2E-004"
+    name: "Chat with System Prompt"
+    category: "inference"
+    description: "System + user message"
+    endpoint: "https://trinity-llm.fly.dev/v1/chat/completions"
+    method: "POST"
+    request_body: '{"model":"smollm2","messages":[{"role":"system","content":"You are a helpful assistant."},{"role":"user","content":"What is 2+2?"}],"max_tokens":50}'
+    expected_status: 200
+    expected_fields: ["choices"]
+    timeout_ms: 30000
+    priority: 1
+
+  - id: "E2E-005"
+    name: "Max Tokens Limit"
+    category: "inference"
+    description: "Verify max_tokens is respected"
+    endpoint: "https://trinity-llm.fly.dev/v1/chat/completions"
+    method: "POST"
+    request_body: '{"model":"smollm2","messages":[{"role":"user","content":"Write a long story"}],"max_tokens":10}'
+    expected_status: 200
+    expected_fields: ["usage"]
+    timeout_ms: 30000
+    priority: 2
+
+  - id: "E2E-006"
+    name: "Temperature Parameter"
+    category: "inference"
+    description: "Verify temperature affects output"
+    endpoint: "https://trinity-llm.fly.dev/v1/chat/completions"
+    method: "POST"
+    request_body: '{"model":"smollm2","messages":[{"role":"user","content":"Say hi"}],"max_tokens":20,"temperature":0.1}'
+    expected_status: 200
+    expected_fields: ["choices"]
+    timeout_ms: 30000
+    priority: 3
+
+  # Error Handling Tests
+  - id: "E2E-007"
+    name: "Empty Messages Array"
+    category: "api"
+    description: "Should return error for empty messages"
+    endpoint: "https://trinity-llm.fly.dev/v1/chat/completions"
+    method: "POST"
+    request_body: '{"model":"smollm2","messages":[]}'
+    expected_status: 400
+    expected_fields: ["error"]
+    timeout_ms: 5000
+    priority: 2
+
+  - id: "E2E-008"
+    name: "Invalid JSON"
+    category: "api"
+    description: "Should return error for malformed JSON"
+    endpoint: "https://trinity-llm.fly.dev/v1/chat/completions"
+    method: "POST"
+    request_body: '{invalid json}'
+    expected_status: 400
+    expected_fields: []
+    timeout_ms: 5000
+    priority: 2
+
+  - id: "E2E-009"
+    name: "Missing Model Field"
+    category: "api"
+    description: "Should handle missing model gracefully"
+    endpoint: "https://trinity-llm.fly.dev/v1/chat/completions"
+    method: "POST"
+    request_body: '{"messages":[{"role":"user","content":"Hi"}]}'
+    expected_status: 200
+    expected_fields: ["choices"]
+    timeout_ms: 30000
+    priority: 3
+
+  # Performance Tests
+  - id: "E2E-010"
+    name: "Response Time Under Load"
+    category: "integration"
+    description: "Verify response time < 30s"
+    endpoint: "https://trinity-llm.fly.dev/v1/chat/completions"
+    method: "POST"
+    request_body: '{"model":"smollm2","messages":[{"role":"user","content":"Quick test"}],"max_tokens":20}'
+    expected_status: 200
+    expected_fields: []
+    timeout_ms: 30000
+    priority: 1
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST SUITES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_suites:
+  - name: "smoke"
+    description: "Quick sanity check"
+    test_ids: ["E2E-001", "E2E-003"]
+    run_parallel: false
+
+  - name: "api"
+    description: "All API endpoint tests"
+    test_ids: ["E2E-001", "E2E-002", "E2E-007", "E2E-008", "E2E-009"]
+    run_parallel: true
+
+  - name: "inference"
+    description: "LLM inference tests"
+    test_ids: ["E2E-003", "E2E-004", "E2E-005", "E2E-006"]
+    run_parallel: false
+
+  - name: "full"
+    description: "Complete test suite"
+    test_ids: ["E2E-001", "E2E-002", "E2E-003", "E2E-004", "E2E-005", "E2E-006", "E2E-007", "E2E-008", "E2E-009", "E2E-010"]
+    run_parallel: false
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HEALTH METRICS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+health_metrics:
+  - name: "api_response_time"
+    current_value: 0.0
+    threshold_min: 0.0
+    threshold_max: 1000.0
+    unit: "ms"
+    status: "healthy"
+
+  - name: "model_load_time"
+    current_value: 208.53
+    threshold_min: 0.0
+    threshold_max: 300.0
+    unit: "seconds"
+    status: "healthy"
+
+  - name: "health_check_pass_rate"
+    current_value: 100.0
+    threshold_min: 99.0
+    threshold_max: 100.0
+    unit: "percent"
+    status: "healthy"
+
+  - name: "error_rate"
+    current_value: 0.0
+    threshold_min: 0.0
+    threshold_max: 1.0
+    unit: "percent"
+    status: "healthy"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: run_test
+    given: TestCase ID
+    when: Test execution requested
+    then: Execute HTTP request and return TestResult
+
+  - name: run_suite
+    given: TestSuite name
+    when: Suite execution requested
+    then: Run all tests in suite and return array of TestResult
+
+  - name: get_test_by_id
+    given: Test ID
+    when: Test info requested
+    then: Return TestCase or null
+
+  - name: get_suite_by_name
+    given: Suite name
+    when: Suite info requested
+    then: Return TestSuite or null
+
+  - name: calculate_pass_rate
+    given: Array of TestResult
+    when: Summary requested
+    then: Return percentage of passed tests
+
+  - name: get_failed_tests
+    given: Array of TestResult
+    when: Failure analysis requested
+    then: Return array of failed TestResult
+
+  - name: check_health_metrics
+    given: No input required
+    when: Health check requested
+    then: Return array of HealthMetric with current status
+
+  - name: generate_report
+    given: Array of TestResult
+    when: Report requested
+    then: Return formatted test report string

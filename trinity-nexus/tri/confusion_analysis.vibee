@@ -1,0 +1,35 @@
+name: confusion_analysis
+version: "1.0.0"
+language: zig
+module: confusion_analysis
+description: "Confusion matrix analysis — overlap structure predicts misclassification patterns"
+
+constants:
+  DIM: 1024
+  NUM_CLASSES: 5
+  SHOTS: 10
+  NOISE_COMPONENTS: 3
+  OVERALL_ACCURACY: 0.48
+
+types:
+  ConfusionEntry:
+    fields:
+      true_class: Int
+      predicted_class: Int
+      count: Int
+
+behaviors:
+  - name: confusionMatrix
+    given: 10-shot classifier with 3 noise components, 10 test per class
+    when: Classify all test items, build confusion matrix
+    then: 48% overall accuracy, confusion matches overlap structure
+
+  - name: overlapPrediction
+    given: Class concept similarity matrix
+    when: Identify high-similarity pairs (dog-insect 0.76, bird-fish 0.32)
+    then: High-overlap pairs have more mutual confusion
+
+  - name: perClassRecall
+    given: Confusion matrix rows
+    when: Compute recall per class
+    then: insect 70% (distinctive), dog 30% (confused with insect)

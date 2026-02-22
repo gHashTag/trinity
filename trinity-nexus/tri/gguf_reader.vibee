@@ -1,0 +1,175 @@
+# GGUF READER - TRINITY FORMAT BRIDGE
+# Read pre-quantized models from llama.cpp ecosystem
+# phi^2 + 1/phi^2 = 3 = TRINITY
+
+name: gguf_reader
+version: "1.0.0"
+language: zig
+module: gguf_reader
+
+# GGUF MAGIC AND CONSTANTS
+constants:
+  GGUF_MAGIC: 0x46554747  # "GGUF" in little-endian
+  GGUF_VERSION: 3
+  DEFAULT_ALIGNMENT: 32
+  MAX_TENSOR_NAME_LEN: 64
+
+# GGUF VALUE TYPES
+types:
+  GGUFValueType:
+    enum:
+      - UINT8: 0
+      - INT8: 1
+      - UINT16: 2
+      - INT16: 3
+      - UINT32: 4
+      - INT32: 5
+      - FLOAT32: 6
+      - BOOL: 7
+      - STRING: 8
+      - ARRAY: 9
+      - UINT64: 10
+      - INT64: 11
+      - FLOAT64: 12
+
+  # GGML Tensor Types (quantization formats)
+  GGMLType:
+    enum:
+      - F32: 0
+      - F16: 1
+      - Q4_0: 2
+      - Q4_1: 3
+      - Q5_0: 6
+      - Q5_1: 7
+      - Q8_0: 8
+      - Q8_1: 9
+      - Q2_K: 10
+      - Q3_K: 11
+      - Q4_K: 12
+      - Q5_K: 13
+      - Q6_K: 14
+      - Q8_K: 15
+      - IQ2_XXS: 16
+      - IQ2_XS: 17
+      - IQ3_XXS: 18
+      - IQ1_S: 19
+      - IQ4_NL: 20
+      - IQ3_S: 21
+      - IQ2_S: 22
+      - IQ4_XS: 23
+      - I8: 24
+      - I16: 25
+      - I32: 26
+      - I64: 27
+      - F64: 28
+      - BF16: 30
+
+  # GGUF Header
+  GGUFHeader:
+    fields:
+      magic: Int           # Must be GGUF_MAGIC
+      version: Int         # Must be 3
+      tensor_count: Int    # Number of tensors
+      metadata_kv_count: Int  # Number of metadata pairs
+
+  # GGUF String
+  GGUFString:
+    fields:
+      len: Int
+      data: String
+
+  # GGUF Metadata Key-Value
+  GGUFMetadataKV:
+    fields:
+      key: String
+      value_type: Int
+      value: Object  # Depends on value_type
+
+  # GGUF Tensor Info
+  GGUFTensorInfo:
+    fields:
+      name: String
+      n_dimensions: Int
+      dimensions: List<Int>
+      type: Int      # GGMLType
+      offset: Int    # Offset in tensor data section
+
+  # Parsed GGUF File
+  GGUFFile:
+    fields:
+      header: Object
+      metadata: Map<String, Object>
+      tensors: List<Object>
+      alignment: Int
+      data_offset: Int
+
+# QUANTIZATION BLOCK SIZES
+quantization:
+  Q4_0:
+    block_size: 32
+    type_size: 18  # 2 bytes scale + 16 bytes data (32 * 4 bits / 8)
+  Q4_K:
+    block_size: 256
+    type_size: 144  # Complex structure with scales and mins
+  Q8_0:
+    block_size: 32
+    type_size: 34  # 2 bytes scale + 32 bytes data
+
+# BEHAVIORS
+behaviors:
+  - name: read_header
+    given: File handle at position 0
+    when: Need to parse GGUF header
+    then: Return GGUFHeader with magic, version, counts
+
+  - name: read_string
+    given: File handle at current position
+    when: Need to read GGUF string
+    then: Read length (u64), then read that many bytes
+
+  - name: read_metadata_value
+    given: File handle and value_type
+    when: Need to read metadata value
+    then: Read value based on type (recursive for arrays)
+
+  - name: read_tensor_info
+    given: File handle at tensor info position
+    when: Need to parse tensor metadata
+    then: Return name, dimensions, type, offset
+
+  - name: read_tensor_data
+    given: Tensor info and file handle
+    when: Need to load tensor weights
+    then: Seek to data_offset + tensor.offset, read bytes
+
+  - name: dequantize_q4_0
+    given: Quantized Q4_0 block data
+    when: Need f32 values for inference
+    then: Unpack 4-bit values, multiply by scale
+
+  - name: dequantize_q4_k
+    given: Quantized Q4_K block data
+    when: Need f32 values for inference
+    then: Complex dequantization with super-blocks
+
+  - name: get_model_config
+    given: Parsed GGUF metadata
+    when: Need model architecture info
+    then: Extract vocab_size, hidden_size, num_layers, etc.
+
+# METADATA KEYS FOR LLM
+metadata_keys:
+  architecture: "general.architecture"
+  name: "general.name"
+  vocab_size: "{arch}.vocab_size"
+  context_length: "{arch}.context_length"
+  embedding_length: "{arch}.embedding_length"
+  block_count: "{arch}.block_count"
+  feed_forward_length: "{arch}.feed_forward_length"
+  attention_head_count: "{arch}.attention.head_count"
+  attention_head_count_kv: "{arch}.attention.head_count_kv"
+  rope_dimension_count: "{arch}.rope.dimension_count"
+  rope_freq_base: "{arch}.rope.freq_base"
+  layer_norm_rms_epsilon: "{arch}.attention.layer_norm_rms_epsilon"
+
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3

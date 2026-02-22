@@ -1,0 +1,692 @@
+name: ir
+version: "1.0.0"
+language: zig
+module: ir
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: validate
+    given: Input data provided
+    when: validate function called
+    then: Result returned
+    test_cases:
+      - name: test_validate
+        input: {}
+        expected: {}
+
+  - name: validate_function
+    given: Input data provided
+    when: validate_function function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_function
+        input: {}
+        expected: {}
+
+  - name: validate_type
+    given: Input data provided
+    when: validate_type function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_type
+        input: {}
+        expected: {}
+
+  - name: is_snake_case
+    given: Input data provided
+    when: is_snake_case function called
+    then: Result returned
+    test_cases:
+      - name: test_is_snake_case
+        input: {}
+        expected: {}
+
+  - name: is_pascal_case
+    given: Input data provided
+    when: is_pascal_case function called
+    then: Result returned
+    test_cases:
+      - name: test_is_pascal_case
+        input: {}
+        expected: {}
+
+  - name: is_lowercase_or_underscore
+    given: Input data provided
+    when: is_lowercase_or_underscore function called
+    then: Result returned
+    test_cases:
+      - name: test_is_lowercase_or_underscore
+        input: {}
+        expected: {}
+
+  - name: is_uppercase
+    given: Input data provided
+    when: is_uppercase function called
+    then: Result returned
+    test_cases:
+      - name: test_is_uppercase
+        input: {}
+        expected: {}
+
+  - name: is_digit
+    given: Input data provided
+    when: is_digit function called
+    then: Result returned
+    test_cases:
+      - name: test_is_digit
+        input: {}
+        expected: {}
+
+  - name: default_config
+    given: Input data provided
+    when: default_config function called
+    then: Result returned
+    test_cases:
+      - name: test_default_config
+        input: {}
+        expected: {}
+
+  - name: print
+    given: Input data provided
+    when: print function called
+    then: Result returned
+    test_cases:
+      - name: test_print
+        input: {}
+        expected: {}
+
+  - name: print_with_config
+    given: Input data provided
+    when: print_with_config function called
+    then: Result returned
+    test_cases:
+      - name: test_print_with_config
+        input: {}
+        expected: {}
+
+  - name: print_doc_comment
+    given: Input data provided
+    when: print_doc_comment function called
+    then: Result returned
+    test_cases:
+      - name: test_print_doc_comment
+        input: {}
+        expected: {}
+
+  - name: print_import
+    given: Input data provided
+    when: print_import function called
+    then: Result returned
+    test_cases:
+      - name: test_print_import
+        input: {}
+        expected: {}
+
+  - name: print_import_item
+    given: Input data provided
+    when: print_import_item function called
+    then: Result returned
+    test_cases:
+      - name: test_print_import_item
+        input: {}
+        expected: {}
+
+  - name: print_type
+    given: Input data provided
+    when: print_type function called
+    then: Result returned
+    test_cases:
+      - name: test_print_type
+        input: {}
+        expected: {}
+
+  - name: print_variant
+    given: Input data provided
+    when: print_variant function called
+    then: Result returned
+    test_cases:
+      - name: test_print_variant
+        input: {}
+        expected: {}
+
+  - name: print_type_field
+    given: Input data provided
+    when: print_type_field function called
+    then: Result returned
+    test_cases:
+      - name: test_print_type_field
+        input: {}
+        expected: {}
+
+  - name: print_type_expr
+    given: Input data provided
+    when: print_type_expr function called
+    then: Result returned
+    test_cases:
+      - name: test_print_type_expr
+        input: {}
+        expected: {}
+
+  - name: print_const
+    given: Input data provided
+    when: print_const function called
+    then: Result returned
+    test_cases:
+      - name: test_print_const
+        input: {}
+        expected: {}
+
+  - name: print_function
+    given: Input data provided
+    when: print_function function called
+    then: Result returned
+    test_cases:
+      - name: test_print_function
+        input: {}
+        expected: {}
+
+  - name: print_param
+    given: Input data provided
+    when: print_param function called
+    then: Result returned
+    test_cases:
+      - name: test_print_param
+        input: {}
+        expected: {}
+
+  - name: print_expr
+    given: Input data provided
+    when: print_expr function called
+    then: Result returned
+    test_cases:
+      - name: test_print_expr
+        input: {}
+        expected: {}
+
+  - name: print_binary_op
+    given: Input data provided
+    when: print_binary_op function called
+    then: Result returned
+    test_cases:
+      - name: test_print_binary_op
+        input: {}
+        expected: {}
+
+  - name: print_unary_op
+    given: Input data provided
+    when: print_unary_op function called
+    then: Result returned
+    test_cases:
+      - name: test_print_unary_op
+        input: {}
+        expected: {}
+
+  - name: print_call_arg
+    given: Input data provided
+    when: print_call_arg function called
+    then: Result returned
+    test_cases:
+      - name: test_print_call_arg
+        input: {}
+        expected: {}
+
+  - name: print_case_clause
+    given: Input data provided
+    when: print_case_clause function called
+    then: Result returned
+    test_cases:
+      - name: test_print_case_clause
+        input: {}
+        expected: {}
+
+  - name: print_pattern
+    given: Input data provided
+    when: print_pattern function called
+    then: Result returned
+    test_cases:
+      - name: test_print_pattern
+        input: {}
+        expected: {}
+
+  - name: escape_string
+    given: Input data provided
+    when: escape_string function called
+    then: Result returned
+    test_cases:
+      - name: test_escape_string
+        input: {}
+        expected: {}
+
+  - name: float_to_string
+    given: Input data provided
+    when: float_to_string function called
+    then: Result returned
+    test_cases:
+      - name: test_float_to_string
+        input: {}
+        expected: {}
+
+  - name: empty_module
+    given: Input data provided
+    when: empty_module function called
+    then: Result returned
+    test_cases:
+      - name: test_empty_module
+        input: {}
+        expected: {}
+
+  - name: add_import
+    given: Input data provided
+    when: add_import function called
+    then: Result returned
+    test_cases:
+      - name: test_add_import
+        input: {}
+        expected: {}
+
+  - name: add_type
+    given: Input data provided
+    when: add_type function called
+    then: Result returned
+    test_cases:
+      - name: test_add_type
+        input: {}
+        expected: {}
+
+  - name: add_function
+    given: Input data provided
+    when: add_function function called
+    then: Result returned
+    test_cases:
+      - name: test_add_function
+        input: {}
+        expected: {}
+
+  - name: add_const
+    given: Input data provided
+    when: add_const function called
+    then: Result returned
+    test_cases:
+      - name: test_add_const
+        input: {}
+        expected: {}
+
+  - name: pub_fn
+    given: Input data provided
+    when: pub_fn function called
+    then: Result returned
+    test_cases:
+      - name: test_pub_fn
+        input: {}
+        expected: {}
+
+  - name: priv_fn
+    given: Input data provided
+    when: priv_fn function called
+    then: Result returned
+    test_cases:
+      - name: test_priv_fn
+        input: {}
+        expected: {}
+
+  - name: param
+    given: Input data provided
+    when: param function called
+    then: Result returned
+    test_cases:
+      - name: test_param
+        input: {}
+        expected: {}
+
+  - name: typed_param
+    given: Input data provided
+    when: typed_param function called
+    then: Result returned
+    test_cases:
+      - name: test_typed_param
+        input: {}
+        expected: {}
+
+  - name: labeled_param
+    given: Input data provided
+    when: labeled_param function called
+    then: Result returned
+    test_cases:
+      - name: test_labeled_param
+        input: {}
+        expected: {}
+
+  - name: simple_type
+    given: Input data provided
+    when: simple_type function called
+    then: Result returned
+    test_cases:
+      - name: test_simple_type
+        input: {}
+        expected: {}
+
+  - name: generic_type
+    given: Input data provided
+    when: generic_type function called
+    then: Result returned
+    test_cases:
+      - name: test_generic_type
+        input: {}
+        expected: {}
+
+  - name: option_type
+    given: Input data provided
+    when: option_type function called
+    then: Result returned
+    test_cases:
+      - name: test_option_type
+        input: {}
+        expected: {}
+
+  - name: result_type
+    given: Input data provided
+    when: result_type function called
+    then: Result returned
+    test_cases:
+      - name: test_result_type
+        input: {}
+        expected: {}
+
+  - name: list_type
+    given: Input data provided
+    when: list_type function called
+    then: Result returned
+    test_cases:
+      - name: test_list_type
+        input: {}
+        expected: {}
+
+types:
+  GleamModule:
+    # TODO: Define fields
+
+  GleamImport:
+    # TODO: Define fields
+
+  ImportItem:
+    # TODO: Define fields
+
+  GleamType:
+    # TODO: Define fields
+
+  TypeVariant:
+    # TODO: Define fields
+
+  TypeField:
+    # TODO: Define fields
+
+  GleamTypeExpr:
+    # TODO: Define fields
+
+  GleamFunction:
+    # TODO: Define fields
+
+  FunctionParam:
+    # TODO: Define fields
+
+  GleamConst:
+    # TODO: Define fields
+
+  GleamExpr:
+    # TODO: Define fields
+
+  BinaryOperator:
+    # TODO: Define fields
+
+  UnaryOperator:
+    # TODO: Define fields
+
+  CallArg:
+    # TODO: Define fields
+
+  CaseClause:
+    # TODO: Define fields
+
+  GleamPattern:
+    # TODO: Define fields
+
+  IRError:
+    # TODO: Define fields
+
+  PrintConfig:
+    # TODO: Define fields
+
+functions:
+  - name: validate
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: validate_function
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: validate_type
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: is_snake_case
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: is_pascal_case
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: is_lowercase_or_underscore
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: is_uppercase
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: is_digit
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: default_config
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_with_config
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_doc_comment
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_import
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_import_item
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_type
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_variant
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_type_field
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_type_expr
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_const
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_function
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_param
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_expr
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_binary_op
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_unary_op
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_call_arg
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_case_clause
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_pattern
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: escape_string
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: float_to_string
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: empty_module
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: add_import
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: add_type
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: add_function
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: add_const
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: pub_fn
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: priv_fn
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: param
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: typed_param
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: labeled_param
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: simple_type
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generic_type
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: option_type
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: result_type
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: list_type
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/int
+  # gleam/list
+  # gleam/option.{type Option, None, Some}
+  # gleam/string
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

@@ -34,6 +34,54 @@ zig fmt src/                 # Format Zig code
 
 ---
 
+## TRI COMMANDER
+
+TRI COMMANDER is the primary human-AI interface for Trinity development — a tmux-based chat dashboard with sacred mathematics.
+
+**Launch:**
+```bash
+bash bin/ralph-dashboard-v4      # Start tmux dashboard
+tmux attach -t ralph               # Attach to running session
+```
+
+**Interface Layout:**
+| Window | Key | Purpose |
+|--------|-----|---------|
+| HOME | `Ctrl+b 0` | Chat interface with AI (▲ user, ▼ agent) |
+| Loop | `Ctrl+b 1` | Development cycle status |
+| Tasks | `Ctrl+b 2` | Task queue and progress |
+| Memory | `Ctrl+b 3` | Success history + regression patterns |
+| Log | `Ctrl+b 4` | Real-time logs |
+
+**Trit Pyramid Banner (4 levels):**
+```
+                    +1
+                   -1 +1
+                  +1  0 +1
+                 -1 +1 +1 -1
+             ═════════════════════
+            ▐ T R I N I T Y ▌  φ² + 1/φ² = 3
+             ═════════════════════
+
+    Trit:  -1   0   +1    |  Base: 3  |  φ = 1.6180339...
+    μ = φ^(-4) = 0.0382   |  χ = 0.0618  |  σ = φ  |  ε = 1/3
+    Lucas: 2,1,3,4,7,11,18,29,47,76,123
+```
+
+**Keyboard Shortcuts:**
+- `Ctrl+b 0-4` — Switch windows
+- `Ctrl+b d` — Detach (keep running in background)
+- `Ctrl+b [` — Scroll/copy mode (q to exit, arrows to scroll)
+- `Ctrl+b c` — Create new window
+- `Ctrl+b ,` — Rename window
+
+**Trit Symbols:**
+- `▲` = +1 (positive trit) — User input
+- `▼` = -1 (negative trit) — AI response
+- `●` = 0 (zero trit) — System/neutral
+
+---
+
 ## Architecture
 
 ### Core VSA System (src/)

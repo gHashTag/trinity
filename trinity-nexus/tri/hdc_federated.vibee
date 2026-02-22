@@ -1,0 +1,105 @@
+name: hdc_federated
+version: "1.0.0"
+language: zig
+module: hdc_federated
+
+description: |
+  HDC Federated Learning — Privacy-Preserving Distributed Classification.
+  Multiple nodes train HDCClassifiers locally on private data, then
+  merge prototypes WITHOUT sharing raw samples.
+
+  Core Insight (Why HDC is ideal for FL):
+    In neural networks: federated averaging requires gradient exchange,
+    complex aggregation, and convergence guarantees.
+    In HDC: class prototypes ARE the model. Merging = bundling prototypes.
+    prototype_global = bundle(proto_node1, proto_node2, ..., proto_nodeN)
+
+  Architecture:
+    Node 1 (private data) → train → proto_1
+    Node 2 (private data) → train → proto_2
+    ...
+    Node N (private data) → train → proto_N
+                                       ↓
+                              [Aggregation Server]
+                                       ↓
+                              proto_global = bundle(proto_1..N)
+                                       ↓
+                              [Distribute back to nodes]
+
+  Aggregation Strategies:
+    simple_bundle: bundle all prototypes (majority vote per trit)
+    weighted_bundle: weight by sample count (repeat bundling)
+    centroid: average prototypes (for continuous representations)
+
+  Privacy Guarantees:
+    - Raw data never leaves the node
+    - Only prototype HVs are shared (high-dimensional, non-invertible)
+    - Prototypes are bundled averages: individual samples unrecoverable
+    - Optional: add noise to prototypes before sharing (DP-like)
+
+  Properties:
+    - Communication-efficient: send one HV per class per round
+    - Non-iterative: can aggregate in a single round (no convergence loop)
+    - Robust to non-IID data: bundling handles class imbalance
+    - Incremental: new nodes can join without retraining
+
+types:
+  NodeModel:
+    fields:
+      node_id: String
+      prototypes: HashMap<String, ClassPrototype>
+      sample_counts: HashMap<String, u32>
+      total_samples: u32
+
+  AggregationStrategy:
+    enum:
+      - simple_bundle      # Equal weight per node
+      - weighted_bundle    # Weight by sample count
+
+  FederatedStats:
+    fields:
+      num_nodes: usize
+      num_classes: usize
+      total_samples: u32
+      rounds_completed: usize
+
+  HDCFederatedCoordinator:
+    fields:
+      allocator: Allocator
+      dimension: usize
+      seed: u64
+      nodes: List<NodeModel>
+      global_model: Option<HDCClassifier>
+      strategy: AggregationStrategy
+      rounds_completed: usize
+
+behaviors:
+  - name: createNode
+    given: Node ID
+    when: Creates a new federated node (local classifier)
+    then: Returns HDCClassifier for local training
+
+  - name: registerNode
+    given: Node ID and its trained prototypes
+    when: Stores node model for aggregation
+    then: Node registered
+
+  - name: aggregate
+    given: Nothing (all nodes registered)
+    when: Merges all node prototypes using chosen strategy
+    then: Global model updated
+
+  - name: getGlobalModel
+    given: Nothing
+    when: Returns the aggregated global classifier
+    then: Returns HDCClassifier with merged prototypes
+
+  - name: evaluateConvergence
+    given: Test texts and labels
+    when: Tests global model accuracy
+    then: Returns accuracy score
+
+  - name: stats
+    given: Nothing
+    when: Computes federation statistics
+    then: Returns FederatedStats

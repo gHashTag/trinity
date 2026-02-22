@@ -1,0 +1,194 @@
+# ============================================================================
+# Enhanced Unified Coder - Full Fluent Chat + Multi-Language Code Gen
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: enhanced_unified_coder
+version: "1.0.0"
+language: zig
+module: enhanced_unified_coder
+
+description: |
+  Enhanced unified system with 10+ algorithms and multi-language output.
+  Full fluent chat with context memory.
+  Generates code in Zig, Python, JavaScript, TypeScript.
+  Covers: sorting (3), searching (2), math (3), data structures (3).
+  Honest responses with confidence scoring.
+
+constants:
+  HIGH_CONFIDENCE: 0.9
+  MED_CONFIDENCE: 0.7
+  LOW_CONFIDENCE: 0.4
+  UNKNOWN_CONFIDENCE: 0.3
+  MAX_CONTEXT_TURNS: 10
+  ALGORITHM_COUNT: 11
+
+types:
+  OutputLanguage:
+    description: "Target code language"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+
+  AlgorithmType:
+    description: "Algorithm categories"
+    enum:
+      - sort_bubble
+      - sort_quick
+      - sort_merge
+      - search_linear
+      - search_binary
+      - math_fibonacci
+      - math_factorial
+      - math_prime
+      - data_stack
+      - data_queue
+      - data_linkedlist
+      - unknown
+
+  ChatContext:
+    description: "Conversation context memory"
+    fields:
+      turn_count: Int
+      last_queries: List<String>
+      last_intents: List<String>
+      preferred_lang: OutputLanguage
+
+  EnhancedRequest:
+    description: "Enhanced request with context"
+    fields:
+      text: String
+      context: ChatContext
+      is_code_request: Bool
+      algorithm: AlgorithmType
+      target_lang: OutputLanguage
+
+  EnhancedResponse:
+    description: "Enhanced response with code"
+    fields:
+      text: String
+      code: String
+      language: OutputLanguage
+      algorithm: AlgorithmType
+      confidence: Float
+      is_honest: Bool
+      context_updated: Bool
+
+behaviors:
+  - name: detectAlgorithm
+    given: User input text
+    when: Analyzing code request
+    then: Return AlgorithmType enum
+
+  - name: detectTargetLanguage
+    given: User input text
+    when: Detecting output language
+    then: Return OutputLanguage (zig/python/js/ts)
+
+  - name: generateBubbleSort
+    given: Target language
+    when: User requests bubble sort
+    then: Return real bubble sort code
+
+  - name: generateQuickSort
+    given: Target language
+    when: User requests quick sort
+    then: Return real quick sort code
+
+  - name: generateMergeSort
+    given: Target language
+    when: User requests merge sort
+    then: Return real merge sort code
+
+  - name: generateLinearSearch
+    given: Target language
+    when: User requests linear search
+    then: Return real linear search code
+
+  - name: generateBinarySearch
+    given: Target language
+    when: User requests binary search
+    then: Return real binary search code
+
+  - name: generateFibonacci
+    given: Target language
+    when: User requests fibonacci
+    then: Return real fibonacci code
+
+  - name: generateFactorial
+    given: Target language
+    when: User requests factorial
+    then: Return real factorial code
+
+  - name: generatePrimeCheck
+    given: Target language
+    when: User requests prime check
+    then: Return real prime check code
+
+  - name: generateStack
+    given: Target language
+    when: User requests stack
+    then: Return real stack implementation
+
+  - name: generateQueue
+    given: Target language
+    when: User requests queue
+    then: Return real queue implementation
+
+  - name: generateLinkedList
+    given: Target language
+    when: User requests linked list
+    then: Return real linked list code
+
+  - name: processEnhanced
+    given: EnhancedRequest with context
+    when: Processing user request
+    then: Return EnhancedResponse with code
+
+  - name: updateContext
+    given: Current context and new query
+    when: Tracking conversation
+    then: Return updated ChatContext
+
+  - name: respondWithCode
+    given: Algorithm and language
+    when: Generating code response
+    then: Return code with explanation
+
+  - name: respondHonest
+    given: Unknown query
+    when: Cannot confidently respond
+    then: Return honest uncertainty
+
+  - name: listCapabilities
+    given: Help request
+    when: User asks what can be done
+    then: Return list of 11 algorithms in 4 languages
+
+test_cases:
+  - name: russian_quicksort_python
+    given: "Напиши быструю сортировку на Python"
+    expected: "Real quicksort in Python"
+
+  - name: chinese_fibonacci_javascript
+    given: "用JavaScript写斐波那契"
+    expected: "Real fibonacci in JavaScript"
+
+  - name: english_stack_typescript
+    given: "Create a stack class in TypeScript"
+    expected: "Real Stack class in TypeScript"
+
+  - name: detect_merge_sort
+    given: "Write merge sort"
+    expected: "algorithm = .sort_merge"
+
+  - name: detect_prime
+    given: "Check if prime number"
+    expected: "algorithm = .math_prime"
+
+  - name: multi_lang_detect
+    given: "binary search in python"
+    expected: "language = .python, algorithm = .search_binary"

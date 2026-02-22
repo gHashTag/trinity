@@ -1,0 +1,455 @@
+// Agent Actor - individual agent implementation
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants// Updated for gleam_otp 1.2.0 builder API
+// Converted from infra/agent/agent.gleam → dsl/infra/agent/agent_actor.vibee
+//
+// NOTE: This file contains OTP actor logic which requires FFI.
+// The actual actor spawning uses @external but the business logic is in VIBEE.
+
+// =============================================================================
+// Agent Types
+// =============================================================================
+
+struct AgentConfig {
+  AgentConfig(
+    id: str,
+    name: str,
+    tone: str,
+    language: str,
+    history_limit: int,
+    system_prompt: str
+  )
+}
+
+struct AgentState {
+  AgentState(
+    id: str,
+    name: str,
+    tone: str,
+    language: str,
+    history: [Message],
+    history_limit: int,
+    system_prompt: str,
+    messages_since_save: int
+  )
+}
+fn new() · Self {
+    id: id,
+    name: name,
+    tone: tone,
+    language: language,
+    history_limit: history_limit,
+    system_prompt: system_prompt
+  
+}
+
+  # Auto-generated getters
+fn id(self) · self.id
+
+
+  # Auto-generated getters
+fn id(self) · self.id
+
+
+  # Auto-generated getters
+fn id(self) · self.id
+
+fn sender(self) · self.sender
+
+fn content(self) · self.content
+
+
+  # Auto-generated getters
+fn text(self) · self.text
+
+fn url(self) · self.url
+
+fn caption(self) · self.caption
+
+
+  # Auto-generated getters
+fn update(self) · self.update
+
+fn request_id(self) · self.request_id
+
+fn text(self) · self.text
+
+fn request_id(self) · self.request_id
+
+fn text(self) · self.text
+
+
+  # Auto-generated getters
+fn chat_id(self) · self.chat_id
+
+fn message_id(self) · self.message_id
+
+fn text(self) · self.text
+
+fn sender_id(self) · self.sender_id
+
+fn sender_name(self) · self.sender_name
+
+fn chat_id(self) · self.chat_id
+
+fn message_id(self) · self.message_id
+
+fn text(self) · self.text
+
+fn chat_id(self) · self.chat_id
+
+fn message_id(self) · self.message_id
+
+fn url(self) · self.url
+
+fn name(self) · self.name
+
+fn timestamp(self) · self.timestamp
+
+fn name(self) · self.name
+
+fn tone(self) · self.tone
+
+fn language(self) · self.language
+
+fn history_limit(self) · self.history_limit
+
+fn system_prompt(self) · self.system_prompt
+
+fn messages_since_save(self) · self.messages_since_save
+
+fn name(self) · self.name
+
+fn tone(self) · self.tone
+
+fn language(self) · self.language
+
+fn history_limit(self) · self.history_limit
+
+fn system_prompt(self) · self.system_prompt
+
+
+struct Message {
+  Message(
+    id: str,
+    sender: str,
+    content: MessageContent,
+    timestamp: int
+  )
+}
+
+struct MessageContent {
+  TextContent(text: str)
+  PhotoContent(url: str, caption: str?)
+  DocumentContent(url: str, name: str)
+}
+
+derive(Json)
+struct AgentMessage {
+  TgUpdate(update: TelegramUpdate)
+  ProcessText(request_id: str, text: str)
+  Reply(request_id: str, text: str)
+  SaveState
+  Shutdown
+}
+
+derive(Json)
+struct TelegramUpdate {
+  NewMessage(
+    chat_id: int,
+    message_id: int,
+    text: str,
+    sender_id: int,
+    sender_name: str
+  )
+  EditedMessage(chat_id: int, message_id: int, text: str)
+  DeletedMessage(chat_id: int, message_id: int)
+}
+
+// =============================================================================
+// Agent State Management
+// =============================================================================
+
+metrics("agent.actor")
+trace("agent.actor.create_initial_state")
+@spec create_initial_state(config: AgentConfig) → AgentState {
+  /// Create initial agent state from config
+  given: Agent configuration
+  when: Starting new agent
+  then: Returns initial state
+}
+
+  # Auto-generated getters
+fn state(self) · self.state
+
+fn state(self) · self.state
+
+fn response(self) · self.response
+
+
+@impl {
+  AgentState(
+    config.ID,
+    config.name,
+    config.tone,
+    config.language,
+    [],
+    config.history_limit,
+    config.system_prompt,
+    0
+  )
+}
+
+metrics("agent.actor")
+trace("agent.actor.add_to_history")
+@spec add_to_history(state: AgentState, message: Message) → AgentState {
+  /// Add message to history, respecting limit
+  given: Current state and new message
+  when: Message received
+  then: Returns state with updated history
+}
+
+@impl {
+  let new_history = [message | state.history]
+  let trimmed = list.state.history_limit · take
+  AgentState(
+    state.ID,
+    state.name,
+    state.tone,
+    state.language,
+    trimmed,
+    state.history_limit,
+    state.system_prompt,
+    state.messages_since_save + 1
+  )
+}
+
+// =============================================================================
+// Message Handling
+// =============================================================================
+
+metrics("agent.actor")
+trace("agent.actor.handle_message")
+@spec handle_message(state: AgentState, message: AgentMessage) → AgentHandlerResult {
+  /// Handle agent messages
+  given: Current state and message
+  when: Processing agent message
+  then: Returns new state and optional response
+}
+
+@impl {
+  match message {
+    TgUpdate(update) → update · handle_telegram_update
+    text · ProcessText → request_id, text · handle_process_text
+    text · Reply → request_id, text · handle_reply
+    SaveState → handle_save_state(state)
+    Shutdown → handle_shutdown(state)
+  }
+}
+
+derive(Json)
+struct AgentHandlerResult {
+  Continue(state: AgentState)
+  ContinueWithResponse(state: AgentState, response: str)
+  Stop
+}
+
+metrics("agent.actor")
+trace("agent.actor.handle_telegram_update")
+@spec handle_telegram_update(state: AgentState, update: TelegramUpdate) → AgentHandlerResult {
+  /// Handle incoming Telegram updates
+  given: State and Telegram update
+  when: New message received
+  then: Returns updated state
+}
+
+@impl {
+  match update {
+    message_id, text, sender_id, sender_name · NewMessage → {
+      log_agent(state.name, "New message from {sender_name}: {text}")
+
+      // Create message
+      let msg = Message(
+        int_$(message_id),
+        sender_name,
+        TextContent(text),
+        now_ms()
+      )
+
+      // Add to history
+      let new_state = msg · add_to_history
+
+      // Auto-save every 5 messages
+      let auto_save_threshold = 5
+      match new_state.messages_since_save >= auto_save_threshold {
+        true → {
+          log_agent(state.name, "Auto-saving state (threshold reached)")
+          // Would call persistence.save_state here
+          let saved_state = AgentState(
+            new_state.ID,
+            new_state.name,
+            new_state.tone,
+            new_state.language,
+            new_state.history,
+            new_state.history_limit,
+            new_state.system_prompt,
+            0
+          )
+          Continue(saved_state)
+        }
+        false → Continue(new_state)
+      }
+    }
+
+    _, _ · EditedMessage → Continue(state)
+    _ · DeletedMessage → Continue(state)
+  }
+}
+
+metrics("agent.actor")
+trace("agent.actor.handle_process_text")
+@spec handle_process_text(state: AgentState, request_id: str, text: str) → AgentHandlerResult {
+  /// Handle text processing request
+  given: State, request ID, and text
+  when: Processing text with LLM
+  then: Returns state (processing is async)
+}
+
+@impl {
+  log_agent(state.name, "Processing: "{ text }")
+  // TODO: Process text with LLM
+  Continue(state)
+}
+
+metrics("agent.actor")
+trace("agent.actor.handle_reply")
+@spec handle_reply(state: AgentState, request_id: str, text: str) → AgentHandlerResult {
+  /// Handle reply message
+  given: State, request ID, and reply text
+  when: Sending reply
+  then: Returns state
+}
+
+@impl {
+  log_agent(state.name, "Reply: "{ text }")
+  // TODO: Send reply via Telegram bridge
+  Continue(state)
+}
+
+metrics("agent.actor")
+trace("agent.actor.handle_save_state")
+@spec handle_save_state(state: AgentState) → AgentHandlerResult {
+  /// Handle save state request
+  given: Current state
+  when: Persisting state
+  then: Returns state with reset counter
+}
+
+@impl {
+  log_agent(state.name, "Saving state...")
+  // Would call persistence.save_state here
+  let new_state = AgentState(
+    state.ID,
+    state.name,
+    state.tone,
+    state.language,
+    state.history,
+    state.history_limit,
+    state.system_prompt,
+    0
+  )
+  Continue(new_state)
+}
+
+metrics("agent.actor")
+trace("agent.actor.handle_shutdown")
+@spec handle_shutdown(state: AgentState) → AgentHandlerResult {
+  /// Handle shutdown request
+  given: Current state
+  when: Shutting down
+  then: Returns Stop
+}
+
+@impl {
+  log_agent(state.name, "Shutting down...")
+  // Save state before shutdown
+  // persistence.save_state(state)
+  Stop
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec log_agent(name: str, message: str) → Nil {
+  /// Log agent message
+  given: Agent name and message
+  when: Logging
+  then: Prints formatted log
+}
+
+@impl {
+  print("[{name}] {message}")
+}
+
+@spec int_$(n: int) → str {
+  /// Convert integer to string
+  given: Integer
+  when: Formatting
+  then: Returns string
+}
+
+@impl {
+  match n {
+    0 → "0"
+    _ → do_int_$(n, "")
+  }
+}
+
+@spec do_int_$(n: int, acc: str) → str {
+  /// Helper for int_to_string
+  given: Remaining number and accumulator
+  when: Building string
+  then: Returns completed string
+}
+
+@impl {
+  match n {
+    0 → acc
+    _ → {
+      let digit = n % 10
+      let char = match digit {
+        0 → "0"
+        1 → "1"
+        2 → "2"
+        3 → "3"
+        4 → "4"
+        5 → "5"
+        6 → "6"
+        7 → "7"
+        8 → "8"
+        9 → "9"
+        _ → "?"
+      }
+      do_int_$(n / 10, { char }{ acc })
+    }
+  }
+}
+
+@spec now_ms() → int {
+  /// Get current timestamp in milliseconds
+  given: Nothing
+  when: Recording time
+  then: Returns timestamp
+}
+
+@impl {
+  // Would use @ffi for actual implementation
+  0
+}
+
+# v8.0
+
+# v8.0
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration

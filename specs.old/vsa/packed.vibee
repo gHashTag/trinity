@@ -1,0 +1,38 @@
+name: packed_trit_vec
+version: "1.0.0"
+language: zig
+module: packed_trit_vec
+
+description: |
+  Bitsliced packed trit vector for SIMD acceleration.
+  Uses 2 bits per trit: pos[i] & neg[i] encodes {-1, 0, +1}.
+
+types:
+  PackedTritVec:
+    description: "Bitsliced trit vector (2 bits per trit)"
+    fields:
+      pos: List<Int>
+      neg: List<Int>
+      dim: Int
+      num_words: Int
+
+behaviors:
+  - name: from_vector
+    given: Dense TritVector v
+    when: Packing to bitsliced format
+    then: Returns PackedTritVec with pos/neg bitmasks
+
+  - name: to_vector
+    given: PackedTritVec p
+    when: Unpacking to dense format
+    then: Returns TritVector
+
+  - name: packed_bind
+    given: Two PackedTritVec a and b
+    when: Fast bitwise bind
+    then: Returns bound vector using bitwise ops
+
+  - name: packed_dot
+    given: Two PackedTritVec a and b
+    when: Fast dot product using popcount
+    then: Returns dot product via bit counting

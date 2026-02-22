@@ -1,0 +1,1283 @@
+# ============================================================================
+# Trinity SWE Agent - Autonomous Software Engineering Agent
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: trinity_swe_agent
+version: "1.0.0"
+language: zig
+module: trinity_swe_agent
+
+description: |
+  Trinity SWE Agent - Autonomous Software Engineering Agent powered by
+  Hyperdimensional Computing (HDC) and Vector Symbolic Architecture (VSA).
+
+  Capabilities:
+    1. Bug Fix        - Identify and fix bugs from error reports
+    2. Feature Add    - Implement new features from specifications
+    3. Refactor       - Improve code structure and quality
+    4. Test Add       - Generate comprehensive tests
+    5. Doc Update     - Update documentation to match code
+    6. Perf Optimize  - Optimize for speed/memory/size
+    7. Security Fix   - Address security vulnerabilities
+    8. Dep Update     - Update and manage dependencies
+    9. Migration      - Migrate code between versions/frameworks
+
+  Architecture:
+    Agent encodes code as hyperdimensional vectors using VSA.
+    Pattern matching via cosine similarity finds relevant patterns.
+    Templates guide code generation with context-aware substitution.
+    Self-improvement loop refines patterns from successful fixes.
+
+  HDC Encoding:
+    code_hv = bind(syntax_hv, semantic_hv, context_hv)
+    pattern_match = argmax similarity(code_hv, pattern_hvs)
+    fix = template.apply(matched_pattern.variables)
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+constants:
+  # Vector dimensions
+  DIMENSION: 10000
+  CONTEXT_SIZE: 16
+
+  # Sacred constants
+  PHI: 1.6180339887498948482
+  PHI_SQUARED: 2.6180339887498948482
+  TRINITY: 3.0
+
+  # Similarity thresholds
+  HIGH_CONFIDENCE: 0.85
+  MEDIUM_CONFIDENCE: 0.70
+  LOW_CONFIDENCE: 0.50
+  MIN_SIMILARITY: 0.30
+
+  # Agent limits
+  MAX_ITERATIONS: 100
+  MAX_FILE_SIZE: 1048576      # 1MB
+  MAX_FILES_PER_TASK: 50
+  MAX_CHANGES_PER_TASK: 100
+  TIMEOUT_MS: 300000          # 5 minutes
+
+  # Pattern database
+  MAX_PATTERNS: 10000
+  PATTERN_DECAY_RATE: 0.995
+  PATTERN_MIN_USES: 3
+
+  # Learning rates
+  POSITIVE_REINFORCEMENT: 1.618    # phi for success
+  NEGATIVE_REINFORCEMENT: 0.382    # 1-1/phi for failure
+
+# ============================================================================
+# TYPES - CORE
+# ============================================================================
+
+types:
+  # Agent Core
+  SWEAgent:
+    description: "Main SWE Agent structure"
+    fields:
+      allocator: Allocator
+      dimension: usize
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      pattern_db: PatternDatabase
+      template_engine: TemplateEngine
+      task_queue: TaskQueue
+      metrics: AgentMetrics
+      config: AgentConfig
+      jit_engine: Option<JitVSAEngine>
+
+  AgentConfig:
+    description: "Agent configuration"
+    fields:
+      auto_apply: Bool
+      dry_run: Bool
+      verbose: Bool
+      max_iterations: usize
+      timeout_ms: u64
+      confidence_threshold: Float
+      learning_enabled: Bool
+
+  AgentMetrics:
+    description: "Agent performance metrics"
+    fields:
+      tasks_completed: usize
+      tasks_failed: usize
+      patterns_learned: usize
+      patterns_applied: usize
+      total_fixes: usize
+      avg_confidence: Float
+      avg_time_ms: u64
+
+  # Task Types
+  TaskType:
+    description: "The 9 SWE task types"
+    variants:
+      - bug_fix
+      - feature_add
+      - refactor
+      - test_add
+      - doc_update
+      - perf_optimize
+      - security_fix
+      - dep_update
+      - migration
+
+  Task:
+    description: "A task for the agent to complete"
+    fields:
+      id: String
+      task_type: TaskType
+      description: String
+      context: TaskContext
+      constraints: List<String>
+      priority: Priority
+      status: TaskStatus
+      created_at: u64
+      deadline: Option<u64>
+
+  TaskContext:
+    description: "Context for task execution"
+    fields:
+      files: List<FileContext>
+      symbols: List<SymbolInfo>
+      dependencies: List<DependencyInfo>
+      error_info: Option<ErrorInfo>
+      test_results: Option<TestResults>
+      project_type: ProjectType
+
+  TaskStatus:
+    description: "Status of a task"
+    variants:
+      - pending
+      - in_progress
+      - completed
+      - failed
+      - blocked
+      - cancelled
+
+  Priority:
+    description: "Task priority level"
+    variants:
+      - critical    # P0 - immediate
+      - high        # P1 - within hours
+      - medium      # P2 - within days
+      - low         # P3 - backlog
+
+  TaskResult:
+    description: "Result of task execution"
+    fields:
+      task_id: String
+      status: TaskStatus
+      changes: List<CodeChange>
+      confidence: Float
+      explanation: String
+      suggestions: List<Suggestion>
+      elapsed_ms: u64
+      patterns_used: List<String>
+
+  # File and Code Context
+  FileContext:
+    description: "Context for a single file"
+    fields:
+      path: String
+      content: String
+      language: Language
+      ast: Option<ASTNode>
+      symbols: List<SymbolInfo>
+      imports: List<String>
+      exports: List<String>
+
+  Language:
+    description: "Programming language"
+    variants:
+      - zig
+      - rust
+      - python
+      - javascript
+      - typescript
+      - go
+      - c
+      - cpp
+      - java
+      - kotlin
+      - swift
+      - vibee
+
+  ASTNode:
+    description: "Abstract Syntax Tree node"
+    fields:
+      node_type: String
+      value: Option<String>
+      children: List<Ptr<ASTNode>>
+      location: SourceLocation
+
+  SourceLocation:
+    description: "Location in source code"
+    fields:
+      file: String
+      line_start: usize
+      line_end: usize
+      col_start: usize
+      col_end: usize
+
+  SymbolInfo:
+    description: "Information about a code symbol"
+    fields:
+      name: String
+      kind: SymbolKind
+      type_signature: Option<String>
+      location: SourceLocation
+      doc_comment: Option<String>
+      visibility: Visibility
+
+  SymbolKind:
+    description: "Kind of code symbol"
+    variants:
+      - function
+      - method
+      - struct
+      - enum
+      - const
+      - var
+      - type_alias
+      - interface
+      - module
+      - import
+
+  Visibility:
+    description: "Symbol visibility"
+    variants:
+      - public
+      - private
+      - internal
+
+  # Changes
+  CodeChange:
+    description: "A change to apply to code"
+    fields:
+      file_path: String
+      change_type: ChangeType
+      location: SourceLocation
+      old_content: String
+      new_content: String
+      explanation: String
+
+  ChangeType:
+    description: "Type of code change"
+    variants:
+      - insert
+      - replace
+      - delete
+      - rename
+      - move
+      - reformat
+
+  Suggestion:
+    description: "Suggested improvement or fix"
+    fields:
+      severity: Severity
+      category: String
+      message: String
+      location: Option<SourceLocation>
+      fix: Option<String>
+      confidence: Float
+
+  Severity:
+    description: "Severity of issue"
+    variants:
+      - hint
+      - info
+      - warning
+      - error
+      - critical
+
+  # Error Analysis
+  ErrorInfo:
+    description: "Information about an error"
+    fields:
+      error_type: ErrorType
+      message: String
+      stack_trace: Option<String>
+      location: Option<SourceLocation>
+      related_code: Option<String>
+
+  ErrorType:
+    description: "Category of error"
+    variants:
+      - compile_error
+      - runtime_error
+      - logic_error
+      - type_error
+      - null_reference
+      - bounds_error
+      - memory_error
+      - concurrency_error
+      - io_error
+      - network_error
+
+  # Test Results
+  TestResults:
+    description: "Results from test execution"
+    fields:
+      total: usize
+      passed: usize
+      failed: usize
+      skipped: usize
+      coverage: Option<Float>
+      failures: List<TestFailure>
+
+  TestFailure:
+    description: "A single test failure"
+    fields:
+      test_name: String
+      file_path: String
+      error_message: String
+      expected: Option<String>
+      actual: Option<String>
+      stack_trace: Option<String>
+
+  # Dependencies
+  DependencyInfo:
+    description: "Information about a dependency"
+    fields:
+      name: String
+      version: String
+      latest_version: Option<String>
+      has_vulnerabilities: Bool
+      vulnerability_count: usize
+      is_dev_only: Bool
+
+  ProjectType:
+    description: "Type of project"
+    variants:
+      - library
+      - application
+      - service
+      - cli
+      - web
+      - wasm
+      - embedded
+
+# ============================================================================
+# TYPES - PATTERN DATABASE
+# ============================================================================
+
+  PatternDatabase:
+    description: "Database of learned patterns"
+    fields:
+      patterns: HashMap<String, CodePattern>
+      pattern_hvs: HashMap<String, Ptr<HybridBigInt>>
+      bug_patterns: List<BugPattern>
+      fix_patterns: List<FixPattern>
+      total_patterns: usize
+      last_updated: u64
+
+  CodePattern:
+    description: "A recognized code pattern"
+    fields:
+      id: String
+      name: String
+      description: String
+      category: PatternCategory
+      language: Language
+      regex: String
+      ast_pattern: Option<String>
+      hv: Ptr<HybridBigInt>
+      use_count: u32
+      success_rate: Float
+      created_at: u64
+
+  PatternCategory:
+    description: "Category of code pattern"
+    variants:
+      - idiom           # Language idiom
+      - anti_pattern    # Anti-pattern to avoid
+      - bug_prone       # Commonly buggy pattern
+      - security_risk   # Security vulnerability
+      - performance     # Performance issue
+      - style           # Style issue
+      - best_practice   # Recommended pattern
+
+  BugPattern:
+    description: "Pattern for detecting bugs"
+    fields:
+      id: String
+      name: String
+      description: String
+      detection_rule: DetectionRule
+      error_types: List<ErrorType>
+      severity: Severity
+      confidence: Float
+      fix_template_id: Option<String>
+      examples: List<BugExample>
+
+  DetectionRule:
+    description: "Rule for detecting a pattern"
+    fields:
+      rule_type: RuleType
+      pattern: String
+      context_required: List<String>
+      negative_patterns: List<String>
+
+  RuleType:
+    description: "Type of detection rule"
+    variants:
+      - regex           # Regular expression
+      - ast_match       # AST pattern matching
+      - semantic        # Semantic analysis
+      - dataflow        # Data flow analysis
+      - hdc_similarity  # HDC similarity match
+
+  BugExample:
+    description: "Example of a bug and its fix"
+    fields:
+      buggy_code: String
+      fixed_code: String
+      explanation: String
+      language: Language
+
+  FixPattern:
+    description: "Pattern for fixing issues"
+    fields:
+      id: String
+      name: String
+      applies_to: List<String>
+      fix_template: FixTemplate
+      confidence: Float
+      success_count: u32
+      failure_count: u32
+
+# ============================================================================
+# TYPES - TEMPLATE ENGINE
+# ============================================================================
+
+  TemplateEngine:
+    description: "Engine for code templates"
+    fields:
+      templates: HashMap<String, FixTemplate>
+      code_templates: HashMap<String, CodeTemplate>
+      doc_templates: HashMap<String, DocTemplate>
+
+  FixTemplate:
+    description: "Template for fixing code"
+    fields:
+      id: String
+      name: String
+      description: String
+      applies_to: List<ErrorType>
+      languages: List<Language>
+      template: String
+      variables: List<TemplateVariable>
+      conditions: List<TemplateCondition>
+
+  TemplateVariable:
+    description: "Variable in a template"
+    fields:
+      name: String
+      description: String
+      var_type: VariableType
+      default: Option<String>
+      required: Bool
+
+  VariableType:
+    description: "Type of template variable"
+    variants:
+      - identifier     # Code identifier
+      - type_name      # Type name
+      - expression     # Code expression
+      - statement      # Code statement
+      - block          # Code block
+      - string         # String literal
+      - number         # Numeric literal
+
+  TemplateCondition:
+    description: "Condition for template application"
+    fields:
+      condition: String
+      action: ConditionAction
+
+  ConditionAction:
+    description: "Action when condition is met"
+    variants:
+      - include
+      - exclude
+      - modify
+
+  CodeTemplate:
+    description: "Template for generating code"
+    fields:
+      id: String
+      name: String
+      description: String
+      category: CodeTemplateCategory
+      language: Language
+      template: String
+      variables: List<TemplateVariable>
+
+  CodeTemplateCategory:
+    description: "Category of code template"
+    variants:
+      - function
+      - struct
+      - test
+      - module
+      - error_handler
+      - iterator
+      - builder
+      - factory
+
+  DocTemplate:
+    description: "Template for documentation"
+    fields:
+      id: String
+      name: String
+      doc_type: DocType
+      template: String
+      variables: List<TemplateVariable>
+
+  DocType:
+    description: "Type of documentation"
+    variants:
+      - function_doc
+      - struct_doc
+      - module_doc
+      - api_doc
+      - readme
+      - changelog
+
+# ============================================================================
+# TYPES - TASK QUEUE
+# ============================================================================
+
+  TaskQueue:
+    description: "Queue of tasks for the agent"
+    fields:
+      pending: List<Task>
+      in_progress: Option<Task>
+      completed: List<TaskResult>
+      failed: List<TaskResult>
+      total_queued: usize
+
+# ============================================================================
+# BUG PATTERNS (PREDEFINED)
+# ============================================================================
+
+bug_patterns:
+  # Null/Undefined Reference
+  - id: "BP001"
+    name: "Null Dereference"
+    description: "Dereferencing potentially null pointer"
+    detection: "\\*([a-z_][a-z0-9_]*)\\s*(?!\\s*!=\\s*null)"
+    error_types: [null_reference, runtime_error]
+    severity: error
+    fix_template: "FT001"
+    languages: [zig, c, cpp]
+
+  - id: "BP002"
+    name: "Optional Unwrap Without Check"
+    description: "Unwrapping optional without null check"
+    detection: "\\.\\?\\s*(?!\\s*orelse)"
+    error_types: [null_reference]
+    severity: error
+    fix_template: "FT002"
+    languages: [zig]
+
+  # Memory Errors
+  - id: "BP003"
+    name: "Use After Free"
+    description: "Using memory after it has been freed"
+    detection: "allocator\\.free\\(([^)]+)\\)[^;]*\\1"
+    error_types: [memory_error]
+    severity: critical
+    fix_template: "FT003"
+    languages: [zig, c, cpp]
+
+  - id: "BP004"
+    name: "Memory Leak"
+    description: "Allocated memory not freed"
+    detection: "allocator\\.alloc\\([^)]+\\)(?!.*defer.*free)"
+    error_types: [memory_error]
+    severity: warning
+    fix_template: "FT004"
+    languages: [zig]
+
+  # Bounds Errors
+  - id: "BP005"
+    name: "Array Index Out of Bounds"
+    description: "Array access with potentially invalid index"
+    detection: "\\[([a-z_][a-z0-9_]*)\\](?!.*\\1\\s*<\\s*\\.len)"
+    error_types: [bounds_error]
+    severity: error
+    fix_template: "FT005"
+    languages: [zig, rust, c, cpp]
+
+  - id: "BP006"
+    name: "Slice Out of Bounds"
+    description: "Slice operation with invalid range"
+    detection: "\\[([^:]+):([^\\]]+)\\]"
+    error_types: [bounds_error]
+    severity: error
+    fix_template: "FT006"
+    languages: [zig, python, go]
+
+  # Type Errors
+  - id: "BP007"
+    name: "Integer Overflow"
+    description: "Potential integer overflow in arithmetic"
+    detection: "([a-z_][a-z0-9_]*)\\s*\\+\\s*([a-z_][a-z0-9_]*)(?!.*@addWithOverflow)"
+    error_types: [type_error, runtime_error]
+    severity: warning
+    fix_template: "FT007"
+    languages: [zig, c, cpp]
+
+  - id: "BP008"
+    name: "Type Coercion Loss"
+    description: "Unsafe type coercion with potential data loss"
+    detection: "@intCast\\([^)]+\\)(?!.*if)"
+    error_types: [type_error]
+    severity: warning
+    fix_template: "FT008"
+    languages: [zig]
+
+  # Concurrency Errors
+  - id: "BP009"
+    name: "Data Race"
+    description: "Potential data race in concurrent code"
+    detection: "std\\.Thread\\.spawn.*&([a-z_][a-z0-9_]*)(?!.*Mutex)"
+    error_types: [concurrency_error]
+    severity: critical
+    fix_template: "FT009"
+    languages: [zig, rust, go]
+
+  - id: "BP010"
+    name: "Deadlock Risk"
+    description: "Potential deadlock from lock ordering"
+    detection: "mutex\\.lock\\(\\).*mutex2\\.lock\\(\\)"
+    error_types: [concurrency_error]
+    severity: critical
+    fix_template: "FT010"
+    languages: [zig, rust, go]
+
+  # Logic Errors
+  - id: "BP011"
+    name: "Off By One"
+    description: "Off-by-one error in loop or index"
+    detection: "while\\s*\\(([a-z_][a-z0-9_]*)\\s*<=\\s*([a-z_][a-z0-9_]*)\\.len\\)"
+    error_types: [logic_error, bounds_error]
+    severity: error
+    fix_template: "FT011"
+    languages: [zig, c, cpp, rust]
+
+  - id: "BP012"
+    name: "Empty Catch Block"
+    description: "Catching error without handling"
+    detection: "catch\\s*\\{\\s*\\}"
+    error_types: [logic_error]
+    severity: warning
+    fix_template: "FT012"
+    languages: [zig, java, kotlin]
+
+  # Security Vulnerabilities
+  - id: "BP013"
+    name: "SQL Injection"
+    description: "Potential SQL injection vulnerability"
+    detection: "\"SELECT.*\\+\\s*[a-z_]"
+    error_types: [security_risk]
+    severity: critical
+    fix_template: "FT013"
+    languages: [zig, python, javascript, go]
+
+  - id: "BP014"
+    name: "Hardcoded Secret"
+    description: "Hardcoded password or API key"
+    detection: "(password|api_key|secret)\\s*=\\s*\"[^\"]+\""
+    error_types: [security_risk]
+    severity: critical
+    fix_template: "FT014"
+    languages: [zig, python, javascript, go]
+
+  - id: "BP015"
+    name: "Command Injection"
+    description: "Potential command injection vulnerability"
+    detection: "std\\.ChildProcess\\.spawn\\(.*\\+.*\\)"
+    error_types: [security_risk]
+    severity: critical
+    fix_template: "FT015"
+    languages: [zig]
+
+# ============================================================================
+# FIX TEMPLATES (PREDEFINED)
+# ============================================================================
+
+fix_templates:
+  # Null Safety
+  - id: "FT001"
+    name: "Add Null Check"
+    template: |
+      if (${VAR} != null) {
+          ${ORIGINAL_CODE}
+      } else {
+          ${ERROR_HANDLER}
+      }
+    variables:
+      - VAR: identifier
+      - ORIGINAL_CODE: block
+      - ERROR_HANDLER: block
+
+  - id: "FT002"
+    name: "Add orelse Default"
+    template: |
+      ${OPTIONAL} orelse ${DEFAULT}
+    variables:
+      - OPTIONAL: expression
+      - DEFAULT: expression
+
+  # Memory Safety
+  - id: "FT003"
+    name: "Set Null After Free"
+    template: |
+      allocator.free(${PTR});
+      ${PTR} = null;
+    variables:
+      - PTR: identifier
+
+  - id: "FT004"
+    name: "Add Defer Free"
+    template: |
+      const ${VAR} = allocator.alloc(${TYPE}, ${SIZE}) catch return error.OutOfMemory;
+      defer allocator.free(${VAR});
+    variables:
+      - VAR: identifier
+      - TYPE: type_name
+      - SIZE: expression
+
+  # Bounds Safety
+  - id: "FT005"
+    name: "Add Bounds Check"
+    template: |
+      if (${INDEX} < ${ARRAY}.len) {
+          ${ORIGINAL_CODE}
+      } else {
+          return error.IndexOutOfBounds;
+      }
+    variables:
+      - INDEX: identifier
+      - ARRAY: identifier
+      - ORIGINAL_CODE: block
+
+  - id: "FT006"
+    name: "Safe Slice"
+    template: |
+      const safe_start = @min(${START}, ${ARRAY}.len);
+      const safe_end = @min(${END}, ${ARRAY}.len);
+      const ${RESULT} = ${ARRAY}[safe_start..safe_end];
+    variables:
+      - START: expression
+      - END: expression
+      - ARRAY: identifier
+      - RESULT: identifier
+
+  # Integer Safety
+  - id: "FT007"
+    name: "Checked Arithmetic"
+    template: |
+      const ${RESULT} = @addWithOverflow(${A}, ${B});
+      if (${RESULT}[1] != 0) {
+          return error.Overflow;
+      }
+    variables:
+      - A: identifier
+      - B: identifier
+      - RESULT: identifier
+
+  - id: "FT008"
+    name: "Safe Cast"
+    template: |
+      const ${RESULT} = std.math.cast(${TARGET_TYPE}, ${VALUE}) orelse return error.CastOverflow;
+    variables:
+      - VALUE: identifier
+      - TARGET_TYPE: type_name
+      - RESULT: identifier
+
+  # Concurrency Safety
+  - id: "FT009"
+    name: "Add Mutex Protection"
+    template: |
+      var mutex = std.Thread.Mutex{};
+      {
+          mutex.lock();
+          defer mutex.unlock();
+          ${CRITICAL_SECTION}
+      }
+    variables:
+      - CRITICAL_SECTION: block
+
+  - id: "FT010"
+    name: "Ordered Lock Acquisition"
+    template: |
+      // Always acquire locks in consistent order to prevent deadlock
+      const first_mutex = if (@intFromPtr(&${MUTEX1}) < @intFromPtr(&${MUTEX2})) &${MUTEX1} else &${MUTEX2};
+      const second_mutex = if (@intFromPtr(&${MUTEX1}) < @intFromPtr(&${MUTEX2})) &${MUTEX2} else &${MUTEX1};
+      first_mutex.lock();
+      defer first_mutex.unlock();
+      second_mutex.lock();
+      defer second_mutex.unlock();
+      ${CRITICAL_SECTION}
+    variables:
+      - MUTEX1: identifier
+      - MUTEX2: identifier
+      - CRITICAL_SECTION: block
+
+  # Logic Fixes
+  - id: "FT011"
+    name: "Fix Off By One"
+    template: |
+      while (${INDEX} < ${ARRAY}.len) {
+          ${LOOP_BODY}
+          ${INDEX} += 1;
+      }
+    variables:
+      - INDEX: identifier
+      - ARRAY: identifier
+      - LOOP_BODY: block
+
+  - id: "FT012"
+    name: "Add Error Logging"
+    template: |
+      catch |err| {
+          std.log.err("Error: {}", .{err});
+          return err;
+      }
+    variables: []
+
+  # Security Fixes
+  - id: "FT013"
+    name: "Parameterized Query"
+    template: |
+      const query = "SELECT ${COLUMNS} FROM ${TABLE} WHERE ${CONDITION} = ?";
+      try db.execute(query, .{${PARAM}});
+    variables:
+      - COLUMNS: string
+      - TABLE: identifier
+      - CONDITION: identifier
+      - PARAM: identifier
+
+  - id: "FT014"
+    name: "Environment Variable"
+    template: |
+      const ${VAR} = std.os.getenv("${ENV_NAME}") orelse {
+          std.log.err("Missing required environment variable: ${ENV_NAME}", .{});
+          return error.MissingConfig;
+      };
+    variables:
+      - VAR: identifier
+      - ENV_NAME: string
+
+  - id: "FT015"
+    name: "Sanitized Command"
+    template: |
+      // Validate and sanitize command arguments
+      const sanitized = try sanitizeArg(${USER_INPUT});
+      const result = try std.ChildProcess.spawn(&.{${COMMAND}, sanitized}, .{});
+    variables:
+      - USER_INPUT: identifier
+      - COMMAND: string
+
+# ============================================================================
+# CODE TEMPLATES (FOR FEATURE GENERATION)
+# ============================================================================
+
+code_templates:
+  # Function Templates
+  - id: "CT001"
+    name: "Public Function"
+    category: function
+    language: zig
+    template: |
+      /// ${DOC_COMMENT}
+      pub fn ${FUNC_NAME}(${PARAMS}) ${RETURN_TYPE} {
+          ${BODY}
+      }
+    variables:
+      - DOC_COMMENT: string
+      - FUNC_NAME: identifier
+      - PARAMS: string
+      - RETURN_TYPE: type_name
+      - BODY: block
+
+  - id: "CT002"
+    name: "Error Handling Function"
+    category: function
+    language: zig
+    template: |
+      /// ${DOC_COMMENT}
+      pub fn ${FUNC_NAME}(${PARAMS}) !${RETURN_TYPE} {
+          ${PRECONDITIONS}
+
+          const result = ${MAIN_LOGIC} catch |err| {
+              std.log.err("${FUNC_NAME} failed: {}", .{err});
+              return err;
+          };
+
+          ${POSTCONDITIONS}
+          return result;
+      }
+    variables:
+      - DOC_COMMENT: string
+      - FUNC_NAME: identifier
+      - PARAMS: string
+      - RETURN_TYPE: type_name
+      - PRECONDITIONS: block
+      - MAIN_LOGIC: expression
+      - POSTCONDITIONS: block
+
+  # Struct Templates
+  - id: "CT003"
+    name: "Resource Struct"
+    category: struct
+    language: zig
+    template: |
+      /// ${DOC_COMMENT}
+      pub const ${STRUCT_NAME} = struct {
+          ${FIELDS}
+
+          pub fn init(allocator: std.mem.Allocator) !${STRUCT_NAME} {
+              ${INIT_BODY}
+          }
+
+          pub fn deinit(self: *${STRUCT_NAME}) void {
+              ${DEINIT_BODY}
+          }
+      };
+    variables:
+      - DOC_COMMENT: string
+      - STRUCT_NAME: identifier
+      - FIELDS: block
+      - INIT_BODY: block
+      - DEINIT_BODY: block
+
+  # Test Templates
+  - id: "CT004"
+    name: "Unit Test"
+    category: test
+    language: zig
+    template: |
+      test "${TEST_NAME}" {
+          // Arrange
+          ${SETUP}
+
+          // Act
+          const result = ${ACTION};
+
+          // Assert
+          try std.testing.expect${ASSERTION}(${EXPECTED}, result);
+      }
+    variables:
+      - TEST_NAME: string
+      - SETUP: block
+      - ACTION: expression
+      - ASSERTION: identifier
+      - EXPECTED: expression
+
+  - id: "CT005"
+    name: "Property Test"
+    category: test
+    language: zig
+    template: |
+      test "${TEST_NAME} - property: ${PROPERTY}" {
+          var prng = std.Random.DefaultPrng.init(${SEED});
+          const random = prng.random();
+
+          var i: usize = 0;
+          while (i < ${ITERATIONS}) : (i += 1) {
+              const input = ${GENERATE_INPUT};
+              const result = ${FUNCTION}(input);
+              try std.testing.expect(${PROPERTY_CHECK});
+          }
+      }
+    variables:
+      - TEST_NAME: string
+      - PROPERTY: string
+      - SEED: number
+      - ITERATIONS: number
+      - GENERATE_INPUT: expression
+      - FUNCTION: identifier
+      - PROPERTY_CHECK: expression
+
+  # Module Template
+  - id: "CT006"
+    name: "Module"
+    category: module
+    language: zig
+    template: |
+      //! ${MODULE_DOC}
+
+      const std = @import("std");
+      ${IMPORTS}
+
+      ${PUBLIC_EXPORTS}
+
+      ${PRIVATE_IMPLEMENTATIONS}
+
+      test {
+          _ = @import("${TEST_FILE}");
+      }
+    variables:
+      - MODULE_DOC: string
+      - IMPORTS: block
+      - PUBLIC_EXPORTS: block
+      - PRIVATE_IMPLEMENTATIONS: block
+      - TEST_FILE: string
+
+  # Error Handler Template
+  - id: "CT007"
+    name: "Error Handler"
+    category: error_handler
+    language: zig
+    template: |
+      pub const ${ERROR_SET} = error{
+          ${ERROR_VARIANTS}
+      };
+
+      fn handle${ERROR_SET}(err: ${ERROR_SET}) void {
+          switch (err) {
+              ${ERROR_HANDLERS}
+          }
+      }
+    variables:
+      - ERROR_SET: identifier
+      - ERROR_VARIANTS: block
+      - ERROR_HANDLERS: block
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  # Agent Lifecycle
+  - name: init
+    given: Allocator and optional config
+    when: Creating new SWE agent
+    then: Return initialized agent with empty pattern DB
+
+  - name: deinit
+    given: Initialized agent
+    when: Shutting down agent
+    then: Free all resources, save learned patterns
+
+  - name: reset
+    given: Running agent
+    when: Reset requested
+    then: Clear task queue, keep learned patterns
+
+  # Task Management
+  - name: submitTask
+    given: Task description and context
+    when: User submits new task
+    then: Parse task, add to queue, return task ID
+
+  - name: processNextTask
+    given: Non-empty task queue
+    when: Agent is idle
+    then: Dequeue task, begin processing
+
+  - name: cancelTask
+    given: Task ID
+    when: Cancellation requested
+    then: Mark task cancelled, cleanup if in progress
+
+  - name: getTaskStatus
+    given: Task ID
+    when: Status query
+    then: Return current task status and progress
+
+  # Task Type Handlers
+  - name: handleBugFix
+    given: Task with bug_fix type
+    when: Processing bug fix task
+    then: Analyze error, match patterns, apply fix template
+
+  - name: handleFeatureAdd
+    given: Task with feature_add type
+    when: Processing feature task
+    then: Parse requirements, generate code from templates
+
+  - name: handleRefactor
+    given: Task with refactor type
+    when: Processing refactor task
+    then: Analyze code structure, apply refactoring patterns
+
+  - name: handleTestAdd
+    given: Task with test_add type
+    when: Processing test task
+    then: Analyze code, generate test cases from templates
+
+  - name: handleDocUpdate
+    given: Task with doc_update type
+    when: Processing doc task
+    then: Extract symbols, generate documentation
+
+  - name: handlePerfOptimize
+    given: Task with perf_optimize type
+    when: Processing optimization task
+    then: Profile code, apply optimization patterns
+
+  - name: handleSecurityFix
+    given: Task with security_fix type
+    when: Processing security task
+    then: Scan for vulnerabilities, apply security fixes
+
+  - name: handleDepUpdate
+    given: Task with dep_update type
+    when: Processing dependency task
+    then: Check versions, update dependencies safely
+
+  - name: handleMigration
+    given: Task with migration type
+    when: Processing migration task
+    then: Analyze code, apply migration transformations
+
+  # Pattern Matching
+  - name: encodeCode
+    given: Source code string
+    when: Encoding for pattern matching
+    then: Return hyperdimensional vector representation
+
+  - name: matchPattern
+    given: Code HV and pattern database
+    when: Finding matching patterns
+    then: Return patterns with similarity above threshold
+
+  - name: applyFixTemplate
+    given: Matched pattern and template
+    when: Generating fix
+    then: Substitute variables, return code change
+
+  # Learning
+  - name: learnFromSuccess
+    given: Successfully applied fix
+    when: Fix verified working
+    then: Reinforce pattern, update success rate
+
+  - name: learnFromFailure
+    given: Failed fix attempt
+    when: Fix did not work
+    then: Reduce pattern confidence, log failure
+
+  - name: addPattern
+    given: New pattern definition
+    when: Pattern discovered
+    then: Encode pattern, add to database
+
+  # Code Analysis
+  - name: analyzeFile
+    given: File path
+    when: Building context
+    then: Parse AST, extract symbols, return FileContext
+
+  - name: findRelatedFiles
+    given: File path
+    when: Building task context
+    then: Return files that import/are imported by target
+
+  - name: extractSymbols
+    given: AST of file
+    when: Building symbol table
+    then: Return list of SymbolInfo
+
+  # Template Application
+  - name: renderTemplate
+    given: Template and variable bindings
+    when: Generating code
+    then: Substitute variables, return rendered code
+
+  - name: validateTemplate
+    given: Rendered code
+    when: Before applying change
+    then: Check syntax validity, return errors if any
+
+  # Utility
+  - name: computeSimilarity
+    given: Two code hypervectors
+    when: Comparing code patterns
+    then: Return cosine similarity in [-1, 1]
+
+  - name: rankPatterns
+    given: List of pattern matches
+    when: Selecting best fix
+    then: Return patterns sorted by confidence * success_rate
+
+  - name: generateExplanation
+    given: Applied changes
+    when: Task complete
+    then: Return human-readable explanation of changes
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+
+integration:
+  - target: trinity_cli.zig
+    description: "CLI interface for SWE agent commands"
+
+  - target: vsa.zig
+    description: "VSA operations for code encoding"
+
+  - target: hybrid.zig
+    description: "HybridBigInt for efficient vector storage"
+
+  - target: sdk.zig
+    description: "High-level API for pattern matching"
+
+  - target: vibee_parser.zig
+    description: "Parse VIBEE specs for feature generation"
+
+  - target: zig_codegen.zig
+    description: "Generate Zig code from templates"
+
+# ============================================================================
+# METRICS & THRESHOLDS
+# ============================================================================
+
+metrics:
+  # Success criteria
+  target_success_rate: 0.85
+  target_avg_time_ms: 5000
+  target_confidence: 0.80
+
+  # Pattern thresholds
+  pattern_promotion_threshold: 0.90    # Promote pattern after 90% success
+  pattern_demotion_threshold: 0.50     # Demote pattern below 50% success
+  pattern_removal_threshold: 0.20      # Remove pattern below 20% success
+
+  # Learning parameters
+  learning_rate: 0.1
+  momentum: 0.9
+  decay: 0.001
+
+# ============================================================================
+# EXAMPLES
+# ============================================================================
+
+examples:
+  - task: "Fix null pointer dereference in vsa.zig line 42"
+    type: bug_fix
+    expected_pattern: "BP001"
+    expected_template: "FT001"
+
+  - task: "Add unit tests for sdk.Hypervector"
+    type: test_add
+    expected_template: "CT004"
+
+  - task: "Optimize similarity computation for speed"
+    type: perf_optimize
+    expected_analysis: "Profile hotspots, apply SIMD or caching"
+
+  - task: "Update dependencies to latest versions"
+    type: dep_update
+    expected_analysis: "Check build.zig.zon, verify compatibility"

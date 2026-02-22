@@ -1,0 +1,63 @@
+name: heap_massive_kg
+version: "1.0.0"
+language: zig
+module: heap_massive_kg
+description: "Level 11.23 — Heap-Allocated Massive Knowledge Graph. First test breaking the stack barrier via heap allocation. 120 entities across 10 categories (Scientists, Universities, Cities, Countries, Fields, Instruments, Theories, Elements, Labs, Continents). 12 relation types, all 4×3 split. 10 query tasks including 3-hop chains and cross-chain reasoning. Total 144/144 (100%). Memory: ~8.4MB heap."
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 120
+  NUM_RELATIONS: 12
+  NUM_CATEGORIES: 10
+
+types:
+  MassiveKGResult:
+    fields:
+      task: String
+      queries: Int
+      correct: Int
+      hops: Int
+      description: "Result of a query task in the massive KG."
+
+behaviors:
+  - name: heapAllocation
+    given: 120 entities × ~70KB each = ~8.4MB total.
+    when: Allocate all entity vectors on heap via std.testing.allocator
+    then: No stack overflow — all 120 entities initialized and queryable
+
+  - name: directOneHopQueries
+    given: 12 scientists with 12 relations each (works_at, studies, uses, proposed, element, lab).
+    when: Query each 1-hop relation for all 12 scientists against 120 candidates
+    then: 6 tasks × 12 queries = 72/72 (100%) — all direct lookups correct
+
+  - name: multiHopChains
+    given: scientist→university→city→country chain (3 hops).
+    when: Chain 3 hops for all 12 scientists
+    then: 12/12 (100%) — 3-hop chains remain perfect at 120-entity scale
+
+  - name: crossChainReasoning
+    given: scientist→university→lab and lab→element divergent chain.
+    when: Resolve both lab and element for each scientist via university
+    then: 24/24 (100%) — cross-chain reasoning intact at scale
+
+  - name: crossDomainRelations
+    given: field→instrument and country→continent cross-domain relations.
+    when: Query non-scientist-centric relations
+    then: 24/24 (100%) — knowledge graph supports multi-domain queries
+
+test_cases:
+  - name: test_direct_72_72
+    input: "6 direct 1-hop tasks × 12 scientists"
+    expected: "72/72 (100%)"
+
+  - name: test_3hop_12_12
+    input: "3-hop scientist→university→city→country"
+    expected: "12/12 (100%)"
+
+  - name: test_cross_chain_24_24
+    input: "Cross-chain scientist→univ→lab + lab→element"
+    expected: "24/24 (100%)"
+
+  - name: test_total_144_144
+    input: "Total massive KG accuracy"
+    expected: "144/144 (100%)"

@@ -1,0 +1,94 @@
+name: hdc_anomaly_detector
+version: "1.0.0"
+language: zig
+module: hdc_anomaly_detector
+
+description: |
+  One-Class Anomaly Detection using Hyperdimensional Computing.
+  Learns a "normal" prototype from positive examples only.
+  Detects anomalies by distance from the normal prototype.
+
+  Architecture:
+    normal_prototype = bundle(sample_1, sample_2, ..., sample_N)
+    anomaly_score(query) = 1 - cosine(encode(query), normal_prototype)
+    is_anomaly = anomaly_score > threshold
+
+  Threshold Estimation:
+    Auto-threshold from training data:
+    threshold = mean(scores) + k * std(scores)
+    where k = sensitivity parameter (default 2.0)
+
+  Properties:
+    - No negative examples needed (one-class learning)
+    - Incremental: add new normal samples without retraining
+    - Interpretable: anomaly score = distance from normal
+    - Multiple profiles: detect different types of anomalies
+
+types:
+  AnomalyProfile:
+    fields:
+      name: String
+      prototype_hv: Ptr<HybridBigInt>
+      sample_count: u32
+      mean_score: Float
+      std_score: Float
+      threshold: Float
+
+  AnomalyResult:
+    fields:
+      score: Float           # 0.0 = perfectly normal, 1.0+ = very anomalous
+      is_anomaly: Bool
+      nearest_profile: String
+      nearest_similarity: Float
+
+  DetectorConfig:
+    fields:
+      sensitivity: Float     # k in threshold = mean + k*std (default 2.0)
+      auto_threshold: Bool   # compute threshold from training data
+
+  DetectorStats:
+    fields:
+      num_profiles: usize
+      total_samples: u32
+      dimension: usize
+
+  HDCAnomalyDetector:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      profiles: HashMap<String, Ptr<AnomalyProfile>>
+      encoding_mode: EncodingMode
+      sensitivity: Float
+
+behaviors:
+  - name: trainNormal
+    given: Profile name and normal text sample
+    when: Encodes text, bundles into profile prototype
+    then: Profile updated with new normal sample
+
+  - name: calibrate
+    given: Profile name and list of normal samples
+    when: Computes mean/std of anomaly scores on training data
+    then: Auto-sets threshold = mean + sensitivity * std
+
+  - name: detect
+    given: Text to test
+    when: Computes anomaly score against all profiles
+    then: Returns AnomalyResult with score and classification
+
+  - name: detectAgainst
+    given: Text and specific profile name
+    when: Computes anomaly score against single profile
+    then: Returns score and is_anomaly for that profile
+
+  - name: removeProfile
+    given: Profile name
+    when: Removes profile from detector
+    then: Returns true if existed
+
+  - name: stats
+    given: Nothing
+    when: Computes detector statistics
+    then: Returns DetectorStats

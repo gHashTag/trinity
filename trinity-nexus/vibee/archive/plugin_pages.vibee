@@ -1,0 +1,79 @@
+name: plugin_pages
+version: "1.0.0"
+language: zig
+module: plugin_pages
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: handle_plugin_request
+    given: Input data provided
+    when: handle_plugin_request function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_plugin_request
+        input: {}
+        expected: {}
+
+  - name: serve_plugin_dashboard
+    given: Input data provided
+    when: serve_plugin_dashboard function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_plugin_dashboard
+        input: {}
+        expected: {}
+
+  - name: serve_plugin_page
+    given: Input data provided
+    when: serve_plugin_page function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_plugin_page
+        input: {}
+        expected: {}
+
+  - name: serve_text
+    given: Input data provided
+    when: serve_text function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_text
+        input: {}
+        expected: {}
+
+types:
+functions:
+  - name: handle_plugin_request
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_plugin_dashboard
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_plugin_page
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_text
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/http/request.{type Request}
+  # gleam/http/response
+  # gleam/string
+  # gleam/bytes_tree
+  # mist
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

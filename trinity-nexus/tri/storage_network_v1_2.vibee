@@ -1,0 +1,75 @@
+name: storage_network_v1_2
+version: "1.2.0"
+language: zig
+module: storage_network_v1_2
+
+# Trinity Storage Network v1.2 — CLI Commands, LRU Eviction, XOR Parity, Peer Discovery
+# Build on v1.1 (disk persistence, lazy loading, rewards, 5-node test)
+# V = n × 3^k × π^m × φ^p × e^q
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+types:
+  LruConfig:
+    fields:
+      max_memory_shards: Int
+      access_times: Map<Hash, Int>
+
+  XorParityShard:
+    fields:
+      parity_data: List<Int>
+      source_shard_count: Int
+      parity_hash: Hash
+
+  StoragePeerInfo:
+    fields:
+      node_id: Hash
+      available_bytes: Int
+      total_bytes: Int
+      shard_count: Int
+      last_seen: Int
+      address: Option<String>
+
+  StoragePeerRegistry:
+    fields:
+      peers: Map<Hash, StoragePeerInfo>
+
+behaviors:
+  - name: evict_lru
+    given: In-memory shard count exceeds max_memory_shards
+    when: New shard stored or lazy-loaded from disk
+    then: Find shard with oldest access_time, remove from memory, keep in disk_index
+
+  - name: touch_shard
+    given: A shard is accessed (stored or retrieved)
+    when: storeShard or retrieveShard called
+    then: Update access_times with current timestamp
+
+  - name: compute_xor_parity
+    given: Array of data shard slices
+    when: storeFile completes sharding
+    then: XOR all shard bytes together to produce parity shard
+
+  - name: recover_from_parity
+    given: One shard missing, parity shard available
+    when: retrieveFile finds exactly 1 missing shard
+    then: XOR parity with all present shards to recover missing shard
+
+  - name: store_file_cli
+    given: User runs --store=<file_path>
+    when: CLI argument parsed
+    then: Read file, shard, encrypt, store locally, persist manifest, print file_id
+
+  - name: retrieve_file_cli
+    given: User runs --retrieve=<file_id_hex>
+    when: CLI argument parsed
+    then: Load manifest, retrieve shards, decrypt, reassemble, write to output dir
+
+  - name: find_storage_peers
+    given: StoragePeerRegistry populated from StorageAnnounce messages
+    when: Storage operation needs peers with capacity
+    then: Return list of peers with available_bytes >= min_bytes
+
+  - name: prune_stale_peers
+    given: StoragePeerRegistry with entries
+    when: Periodic prune timer fires
+    then: Remove peers not seen in 60 seconds

@@ -1,0 +1,114 @@
+name: hdc_igla_hybrid_v2_1
+version: "2.1.0"
+language: zig
+module: igla_hybrid_chat
+
+# IglaHybridChat v2.1 — Heap-Allocated VSA + Live Provider Health + Canvas Wave State
+# Extends v2.0 (VSAMemoryManager, SemanticRouter, WaveState, ProviderHealth)
+# Focus: Fix stack frame issue, wire health to real HTTP, canvas reads wave state
+#
+# Technology Tree:
+#   v1.9 (Canvas Wave UI + basic fallback)
+#   → v2.0 (VSA memory + semantic routing + wave state)
+#   → v2.1 (Heap allocation + live health + canvas wave) ← CURRENT
+#   → v3.0 (Phi-Engine quantum visualization + ouroboros self-repair)
+#   → v4.0 (immortal hybrid agent)
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS ENERGY IMMORTAL
+
+types:
+  # ── Heap-Allocated TVCCorpus convenience ──
+  HeapCorpusResult:
+    description: "Result of heap-allocated corpus initialization"
+    fields:
+      corpus_ptr: Pointer<TVCCorpus>   # Heap-allocated pointer
+      allocator: Allocator             # For deallocation
+
+  # ── LLM Call Result with latency ──
+  LLMCallResult:
+    description: "Result from LLM provider call preserving latency for health tracking"
+    fields:
+      content: String                   # Response text
+      latency_us: Int                   # Microseconds for health tracking
+      provider: String                  # "groq" or "claude"
+
+  # ── Canvas Wave Integration ──
+  CanvasWaveParams:
+    description: "Mapped wave parameters for canvas rendering"
+    fields:
+      ring_hue: Float                   # Source hue (0-360) from RoutingDecision
+      ring_pulse: Float                 # Confidence-based pulse amplitude (0-1)
+      ring_brightness: Float            # Provider health brightness (0-1)
+      learning_glow: Bool               # Green glow when is_learning
+      memory_ring_radius: Float         # Memory load → ring thickness (0-1)
+
+behaviors:
+  # ── A: Heap-Allocated TVCCorpus ──
+  - name: initHeap
+    given: "Allocator"
+    when: "Creating TVCCorpus without stack frame"
+    then: "allocator.create(TVCCorpus), call initInPlace(), return pointer. Eliminates 2.15 GB stack frame."
+
+  - name: initHeapWithNodeId
+    given: "Allocator + node_id"
+    when: "Creating TVCCorpus with specific node ID"
+    then: "initHeap() then set node_id. Replaces initWithNodeId() value return."
+
+  # ── B: Provider Health Wiring ──
+  - name: tryGroqWithHealth
+    given: "Query + API key + system prompt + ProviderHealth pointer"
+    when: "Calling Groq API with health tracking"
+    then: "Time the HTTP call. On success: recordSuccess(latency_us). On failure: recordFailure(timestamp). Return content."
+
+  - name: tryClaudeWithHealth
+    given: "Query + API key + system prompt + ProviderHealth pointer"
+    when: "Calling Claude API with health tracking"
+    then: "Time the HTTP call. On success: recordSuccess(latency_us). On failure: recordFailure(timestamp). Return content."
+
+  - name: llmCascadeWithHealth
+    given: "Query + augmented prompt"
+    when: "Running LLM cascade with provider health tracking"
+    then: "Check groq_health.is_available before trying Groq. Check claude_health.is_available before trying Claude. Record health on each attempt. Skip unavailable providers."
+
+  # ── C: Canvas Wave State Integration ──
+  - name: readWaveStateForCanvas
+    given: "g_last_wave_state global"
+    when: "Canvas render loop reads wave state"
+    then: "Map WaveState fields to visual parameters: source_hue → ring color, confidence → pulse amplitude, is_learning → green glow, memory_load → ring thickness."
+
+  - name: waveStateToRingParams
+    given: "WaveState"
+    when: "Computing canvas wave ring parameters"
+    then: "ring_hue = routing.getSourceHue(). ring_pulse = confidence * 0.5 + similarity * 0.5. ring_brightness = provider_health_avg. learning_glow = is_learning. memory_ring_radius = memory_load * 0.3."
+
+# Architecture v2.1:
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │ FIX A: TVCCorpus.initHeap(allocator) → *TVCCorpus          │
+# │   - allocator.create(TVCCorpus) on heap                     │
+# │   - corpus.initInPlace() — no stack copy                    │
+# │   - Returns pointer (8 bytes vs 2.15 GB)                    │
+# │   - Debug mode: works! No stack overflow                    │
+# └─────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │ FIX B: Provider Health Wiring                               │
+# │   llmCascade()                                              │
+# │   ├─ groq_health.is_available? → tryGroqWithContext()       │
+# │   │   ├─ success → groq_health.recordSuccess(latency_us)   │
+# │   │   └─ failure → groq_health.recordFailure(now)          │
+# │   ├─ claude_health.is_available? → tryClaudeWithContext()   │
+# │   │   ├─ success → claude_health.recordSuccess(latency_us) │
+# │   │   └─ failure → claude_health.recordFailure(now)        │
+# │   └─ RouteFallback if all unavailable                       │
+# └─────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │ FIX C: Canvas Wave State                                    │
+# │   photon_trinity_canvas.zig render loop:                    │
+# │   ├─ Read igla_hybrid_chat.g_last_wave_state                │
+# │   ├─ Map source_hue → wave ring color                       │
+# │   ├─ Map confidence → pulse amplitude                       │
+# │   ├─ Map is_learning → green glow overlay                   │
+# │   └─ Map memory_load → ring thickness                       │
+# └─────────────────────────────────────────────────────────────┘

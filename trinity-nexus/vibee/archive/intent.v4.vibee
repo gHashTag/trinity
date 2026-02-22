@@ -1,0 +1,503 @@
+// Intent Detection Module - Hybrid Keywords + LLM fallback
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants// Part of Actions-based Architecture for type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}-Bot (Digital Twin)
+// Converted from infra/agent/intent.gleam → dsl/infra/agent/intent.vibee
+
+// =============================================================================
+// Intent Types
+// =============================================================================
+
+/// type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} intent detected from message
+derive(Json)
+
+struct Intent(
+  // Onboarding intents
+  GreetingIntent
+  SetupIntent
+  HelpIntent
+  StatusIntent
+
+  // Input types (during onboarding)
+  PhoneInput(phone: str)
+  CodeInput(code: str)
+  PasswordInput
+
+  // Selection intents
+  ChatSelection(numbers: [int])
+  ModeSelection(mode: str)
+  TriggerSelection(triggers: [str])
+
+  // Confirmation intents
+  ConfirmYes
+  ConfirmNo
+  SkipIntent
+  BackIntent
+
+  // Unknown - requires LLM fallback
+  Unknown(message: str)
+}
+
+// =============================================================================
+// Hybrid Intent Detection
+// =============================================================================
+
+@spec detect(message: str) → Intent {
+  /// Detect intent from message using hybrid approach:
+  /// 1. Check structural patterns (phone, code)
+  /// 2. Check keyword matches
+  /// 3. Unknown → LLM fallback
+  given: type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} message
+  when: Processing input
+  then: Returns detected intent
+}
+
+@impl {
+  let trimmed = string.trim(message)
+  let lower = string.lowercase(trimmed)
+
+  // Step 1: Structural patterns (highest priority)
+  match detect_phone(trimmed) {
+    ☐phone) → PhoneInput(phone)
+    ∅-> {
+      match detect_code(trimmed) {
+        ☐code) → CodeInput(code)
+        ∅-> {
+          match detect_chat_selection(trimmed) {
+            ☐nums) → ChatSelection(nums)
+            ∅-> {
+              // Step 2: Keyword matching
+              trimmed · detect_by_keywords
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// =============================================================================
+// Structural Pattern Detection
+// =============================================================================
+
+@spec detect_phone(text: str) → str? {
+  /// Detect phone number in various formats
+  given: Text input
+  when: Checking for phone pattern
+  then: Returns normalized phone or ∅}
+
+@impl {
+  let cleaned = text
+    · string.replace(" ", "")
+    · string.replace("-", "")
+    · string.replace("(", "")
+    · string.replace(")", "")
+
+  match string."+" · starts_with {
+    true → {
+      let digits_only = string.1 · drop_start
+      let len = string.length(digits_only)
+      match len >= 10 && len <= 15 {
+        true → {
+          match is_all_digits(digits_only) {
+            true → ☐cleaned)
+            false → ∅}
+        }
+        false → ∅}
+    }
+    false → {
+      // Handle Russian 8-prefix
+      match string."8" · starts_with && string.length(cleaned) == 11 {
+        true → {
+          match is_all_digits(cleaned) {
+            true → ☐"+7{string.1 · drop_start}")
+            false → ∅}
+        }
+        false → ∅}
+    }
+  }
+}
+
+@spec detect_code(text: str) → str? {
+  /// Detect numeric code (5-6 digits)
+  given: Text input
+  when: Checking for verification code
+  then: Returns code or ∅}
+
+@impl {
+  let cleaned = text
+    · string.replace(" ", "")
+    · string.replace("-", "")
+
+  let len = string.length(cleaned)
+  match len >= 4 && len <= 6 {
+    true → {
+      match is_all_digits(cleaned) {
+        true → ☐cleaned)
+        false → ∅}
+    }
+    false → ∅}
+}
+
+@spec detect_chat_selection(text: str) → Option([int]) {
+  /// Detect chat selection (numbers separated by comma)
+  given: Text like "1, 3" or "1,2,3"
+  when: type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} selecting chats
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} numbers or ∅}
+
+@impl {
+  // Pattern: "1, 3" or "1,2,3" or "1 2 3"
+  let cleaned = string." ", "," · replace
+  let parts = string."," · split
+  let parts = list.{ string.length(string.trim(it · filter) > 0 }
+
+  match list.length(parts) >= 1 {
+    true → {
+      let numbers = list.fn(p · filter_map {
+        int.parse(string.trim(p))
+      }
+      match list.length(numbers) == list.length(parts) && list.length(numbers) > 0 {
+        true → ☐numbers)
+        false → ∅}
+    }
+    false → ∅}
+}
+
+// =============================================================================
+// Keyword-based Detection
+// =============================================================================
+
+@spec detect_by_keywords(lower: str, original: str) → Intent {
+  /// Detect intent by keyword matching
+  given: Lowercased and original text
+  when: No structural pattern matched
+  then: Returns keyword-based intent or Unknown
+}
+
+@impl {
+  // Confirmation intents (high priority)
+  match ["da", "yes", "davay", "ok", "ok", "konechno", "hochu", "soglasen"] · contains_any {
+    true → ConfirmYes
+    false → {
+      match ["net", "no", "otmena", "cancel", "ne hochu"] · contains_any {
+        true → ConfirmNo
+        false → {
+          match ["propustit'", "skip", "propusk"] · contains_any {
+            true → SkipIntent
+            false → {
+              match ["nazad", "back", "vernut'sya"] · contains_any {
+                true → BackIntent
+                false → original · detect_complex_intents
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@spec detect_complex_intents(lower: str, original: str) → Intent {
+  /// Detect more complex intents
+  given: Lowercased and original text
+  when: Simple confirmations didn't match
+  then: Returns complex intent or Unknown
+}
+
+@impl {
+  // Setup/onboarding intents
+  match ["nastroit'", "setup", "nachat'", "podklyuchit'", "sozdat' bot", "digital twin", "type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}-bot", "type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}bot", "yuzerbot"] · contains_any {
+    true → SetupIntent
+    false → {
+      match ["privet", "zdravstvuy", "hi", "hello", "dobryy den'", "dobryy vecher", "dobroe utro"] · contains_any {
+        true → GreetingIntent
+        false → {
+          match ["pomoshch'", "help", "chto umeesh'", "chto ty umeesh'", "chto mozhesh'", "chto ty mozhesh'", "vozmozhnosti", "funkcii"] · contains_any {
+            true → HelpIntent
+            false → {
+              match ["status", "status", "moy bot", "kak dela", "rabotaet"] · contains_any {
+                true → StatusIntent
+                false → original · detect_mode_and_triggers
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@spec detect_mode_and_triggers(lower: str, original: str) → Intent {
+  /// Detect mode selection and triggers
+  given: Lowercased and original text
+  when: Complex intents didn't match
+  then: Returns mode/trigger intent or Unknown
+}
+
+@impl {
+  match ["passivnyy", "passive", "tol'ko monitoring", "nablyudatel'"] · contains_any {
+    true → ModeSelection("passive")
+    false → {
+      match ["aktivnyy", "active", "otvechat'", "digital twin"] · contains_any {
+        true → ModeSelection("active")
+        false → {
+          // Check for trigger word patterns
+          match detect_trigger_selection(lower) {
+            ☐triggers) → TriggerSelection(triggers)
+            ∅-> Unknown(original)
+          }
+        }
+      }
+    }
+  }
+}
+
+@spec detect_trigger_selection(lower: str) → Option([str]) {
+  /// Detect trigger word selection
+  given: Lowercased text
+  when: Checking for preset triggers
+  then: Returns trigger list or ∅}
+
+@impl {
+  match ["kripto", "crypto", "btc", "usdt", "p2p"] · contains_any {
+    true → ☐["crypto"])
+    false → {
+      match ["nedvizhimost'", "arenda", "kvartira", "realty"] · contains_any {
+        true → ☐["realty"])
+        false → {
+          match ["it", "frilans", "razrabotka", "programmist"] · contains_any {
+            true → ☐["it"])
+            false → ∅}
+        }
+      }
+    }
+  }
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec is_all_digits(s: str) → bool {
+  /// Check if string contains only digits
+  given: str
+  when: Validating numeric input
+  then: Returns true if all digits
+}
+
+@impl {
+  let chars = string.to_graphemes(s)
+  list.fn(c · all {
+    match c {
+      "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" → true
+      _ → false
+    }
+  }
+}
+
+@spec contains_any(text: str, patterns: [str]) → bool {
+  /// Check if text contains any of the patterns
+  given: Text and pattern list
+  when: Matching keywords
+  then: Returns true if any match
+}
+
+@impl {
+  list.fn(pattern · any {
+    string.pattern · contains
+  }
+}
+
+@spec to_string(intent: Intent) → str {
+  /// Format intent as human-readable string (for debugging)
+  given: Intent
+  when: Logging/debugging
+  then: Returns string representation
+}
+
+@impl {
+  match intent {
+    GreetingIntent → "GreetingIntent"
+    SetupIntent → "SetupIntent"
+    HelpIntent → "HelpIntent"
+    StatusIntent → "StatusIntent"
+    PhoneInput(phone) → "PhoneInput({phone})"
+    CodeInput(code) → "CodeInput({code})"
+    PasswordInput → "PasswordInput"
+    ChatSelection(nums) → "ChatSelection({string.inspect(nums)})"
+    ModeSelection(mode) → "ModeSelection({mode})"
+    TriggerSelection(triggers) → "TriggerSelection({string.inspect(triggers)})"
+    ConfirmYes → "ConfirmYes"
+    ConfirmNo → "ConfirmNo"
+    SkipIntent → "SkipIntent"
+    BackIntent → "BackIntent"
+    Unknown(msg) → "Unknown({msg})"
+  }
+}
+
+# v8.0
+
+# v8.0
+# v10.0 - ML-Powered Migration

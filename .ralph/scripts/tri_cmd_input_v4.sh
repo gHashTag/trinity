@@ -5,25 +5,27 @@ QUEUE_DIR="$RALPH_DIR/.ralph/queue"
 HISTORY_FILE="$QUEUE_DIR/.history"
 mkdir -p "$QUEUE_DIR"
 
-CYAN="\033[38;5;075m"
+GREEN="\033[32m"
+BOLD="\033[1m"
 RESET="\033[0m"
 
-# Hide cursor, clear startup noise
+# Hide cursor
 tput civis 2>/dev/null
-clear
 
 touch "$HISTORY_FILE"
 
 while true; do
-    # Prompt - with margin
-    echo -ne "  ${CYAN}►${RESET} "
+    # Clear line and show prompt
+    printf "\r%70s" " "
+    printf "\r${BOLD}${GREEN}▲${RESET} / "
 
-    # Read with history
+    # Read with history - use read without /dev/tty in tmux
     history -r "$HISTORY_FILE" 2>/dev/null
-    read -e -r cmd < /dev/tty || break
+    IFS= read -e -r cmd
 
-    # Handle empty input
+    # Handle empty input or Ctrl+D
     [ -z "$cmd" ] && continue
+    [ "$cmd" = "exit" ] && break
 
     # Save to history
     grep -qxF "$cmd" "$HISTORY_FILE" 2>/dev/null || echo "$cmd" >> "$HISTORY_FILE"

@@ -1,0 +1,70 @@
+# ternary_normalization.vibee
+# TernaryNorm: RMSNorm with ternary-quantized weights
+# Reduces weight memory by 16x (f32 -> 2-bit)
+
+name: ternary_normalization
+version: "1.0.0"
+language: zig
+module: ternary_normalization
+
+types:
+  TernaryNormWeights:
+    description: "Ternary-quantized normalization weights"
+    fields:
+      packed_ternary: List<u8>    # 4 ternary values per byte
+      scale: Float               # Scale factor for reconstruction
+      size: Int                  # Original weight count
+
+  NormConfig:
+    description: "Normalization configuration"
+    fields:
+      eps: Float                 # Epsilon for numerical stability (default 1e-5)
+      use_simd: Bool             # Enable SIMD optimization
+
+behaviors:
+  - name: quantize_norm_weights
+    given: f32 normalization weights array
+    when: quantizing to ternary format
+    then: returns TernaryNormWeights with packed ternary values and scale
+
+  - name: ternary_rms_norm
+    given: input tensor, TernaryNormWeights, epsilon
+    when: applying RMS normalization with ternary weights
+    then: returns normalized output with ternary weight multiplication
+
+  - name: simd_ternary_rms_norm
+    given: input tensor, TernaryNormWeights, epsilon
+    when: applying SIMD-optimized RMS normalization
+    then: returns normalized output using SIMD for sum-of-squares and ternary multiply
+
+  - name: unpack_ternary_weight
+    given: packed byte, position (0-3)
+    when: extracting single ternary value
+    then: returns -1, 0, or +1
+
+  - name: ternary_multiply_add
+    given: input value, ternary value (-1/0/+1), scale
+    when: multiplying by ternary weight
+    then: returns input * (ternary * scale) without actual multiplication
+
+# Algorithm:
+# 1. RMS = sqrt(mean(x^2) + eps)
+# 2. x_norm = x / RMS
+# 3. output = x_norm * (ternary_weight * scale)
+#
+# Ternary multiply optimization:
+# - ternary = +1: output = x_norm * scale
+# - ternary =  0: output = 0
+# - ternary = -1: output = -x_norm * scale
+#
+# Memory savings:
+# - f32 weights: 4 bytes per weight
+# - ternary: 2 bits per weight = 0.25 bytes
+# - Compression: 16x
+
+# Packing format:
+# Each byte stores 4 ternary values:
+# bits [1:0] = value 0 (00=-1, 01=0, 10=+1)
+# bits [3:2] = value 1
+# bits [5:4] = value 2
+# bits [7:6] = value 3

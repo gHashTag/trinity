@@ -1,0 +1,116 @@
+name: hdc_continual_learning
+version: "1.0.0"
+language: zig
+module: hdc_continual_learning
+
+description: |
+  HDC Continual Learning — Zero Catastrophic Forgetting Classification.
+  Learn new classes incrementally without retraining or losing accuracy
+  on previously learned classes.
+
+  Core Insight (Why HDC has Zero Forgetting):
+    Neural networks: new training overwrites weights → old knowledge lost.
+    HDC: each class has an INDEPENDENT prototype.
+    Adding class C = creating prototype_C. Prototypes A,B are UNTOUCHED.
+    No shared weights, no gradient interference, no replay buffer needed.
+
+  Phase-Based Training:
+    Phase 1: Train on classes {A, B} → prototypes {P_A, P_B}
+    Phase 2: Train on classes {C, D} → add prototypes {P_C, P_D}
+    Phase 3: Train on classes {E} → add prototype {P_E}
+
+    After Phase 3: model has {P_A, P_B, P_C, P_D, P_E}
+    Accuracy on A,B samples should be IDENTICAL to after Phase 1.
+
+  Forgetting Metric:
+    forgetting(phase_i) = accuracy_after_phase_i(old_classes) - accuracy_before_new_phase(old_classes)
+    For perfect HDC: forgetting = 0 (exactly zero, not approximately)
+
+    In practice: forgetting can be slightly negative due to:
+    - More classes → more confusion (decision boundary crowding)
+    - Not a flaw of HDC, but of the task itself
+
+  Accuracy Tracking:
+    After each phase, evaluate ALL previous classes plus new ones.
+    Track per-class accuracy evolution across phases.
+
+  Elastic Dimension Protection (optional enhancement):
+    For each old class prototype, identify "important" dimensions
+    (high absolute trit values after bundling = strong signal).
+    When new training might interfere, protect these dimensions.
+    (In practice, HDC doesn't need this — prototypes are independent.)
+
+  Properties:
+    - Zero catastrophic forgetting (prototypes are independent)
+    - No replay buffer needed (no old samples stored)
+    - Constant training cost per phase (only new class samples)
+    - Memory grows linearly with number of classes
+    - Can also UPDATE existing class prototypes incrementally
+
+types:
+  LearningPhase:
+    fields:
+      phase_id: usize
+      class_names: List<String>
+      samples_per_class: usize
+
+  PhaseResult:
+    fields:
+      phase_id: usize
+      new_class_accuracy: Float       # accuracy on this phase's new classes
+      old_class_accuracy: Float       # accuracy on all previously learned classes
+      total_accuracy: Float           # accuracy on ALL classes
+      forgetting: Float               # old_accuracy_now - old_accuracy_before
+      num_total_classes: usize
+
+  ContinualStats:
+    fields:
+      num_phases: usize
+      num_total_classes: usize
+      total_samples_trained: usize
+      avg_forgetting: Float           # average forgetting across phases
+      max_forgetting: Float           # worst forgetting observed
+      phase_history: List<PhaseResult>
+
+  HDCContinualLearner:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoder: HDCTextEncoder
+      classifier: HDCClassifier
+      phase_history: List<PhaseResult>
+      current_phase: usize
+      class_to_phase: HashMap<String, usize>
+
+behaviors:
+  - name: trainPhase
+    given: List of labeled samples for new classes
+    when: Trains new class prototypes, evaluates all classes
+    then: PhaseResult with forgetting metric
+
+  - name: evaluateClasses
+    given: Test samples and optional class filter
+    when: Predicts each sample, computes accuracy
+    then: Returns accuracy for specified classes
+
+  - name: evaluateAll
+    given: Test samples for all known classes
+    when: Predicts each, computes overall accuracy
+    then: Returns total accuracy
+
+  - name: measureForgetting
+    given: Test samples for old classes, accuracy before new phase
+    when: Computes accuracy on old classes after new training
+    then: Returns forgetting = new_accuracy - old_accuracy
+
+  - name: getPhaseHistory
+    given: Nothing
+    when: Returns all phase results
+    then: List of PhaseResults showing evolution
+
+  - name: stats
+    given: Nothing
+    when: Computes continual learning statistics
+    then: Returns ContinualStats with avg/max forgetting

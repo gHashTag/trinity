@@ -1,0 +1,325 @@
+# real_world_chat_server.vibee
+# Real-world example: Chat Server with Actors
+
+# ============================================================================
+# Message Types
+# ============================================================================
+
+# type Message {
+#   Join(user: String, room: String)
+#   Leave(user: String, room: String)
+#   Send(user: String, room: String, text: String)
+#   Broadcast(room: String, text: String)
+# }
+
+# ============================================================================
+# Room Actor (Manages chat room state)
+# ============================================================================
+
+# actor Room {
+#   state: #{
+#     name => String,
+#     users => List(String),
+#     messages => List(String)
+#   }
+#   
+#   fn init(name) {
+#     #{
+#       name => name,
+#       users => [],
+#       messages => []
+#     }
+#   }
+#   
+#   fn handle_call("join", user) {
+#     new_users = [user, ..state.users]
+#     new_state = #{..state, users => new_users}
+#     broadcast = "#{user} joined the room"
+#     {new_state, {ok, broadcast}}
+#   }
+#   
+#   fn handle_call("leave", user) {
+#     new_users = list.filter(state.users, fn(u) { u != user })
+#     new_state = #{..state, users => new_users}
+#     broadcast = "#{user} left the room"
+#     {new_state, {ok, broadcast}}
+#   }
+#   
+#   fn handle_call("send", {user, text}) {
+#     message = "#{user}: #{text}"
+#     new_messages = [message, ..state.messages]
+#     new_state = #{..state, messages => new_messages}
+#     {new_state, {ok, message}}
+#   }
+#   
+#   fn handle_call("get_users") {
+#     {state, {ok, state.users}}
+#   }
+#   
+#   fn handle_call("get_messages", count) {
+#     recent = list.take(state.messages, count)
+#     {state, {ok, recent}}
+#   }
+# }
+
+# ============================================================================
+# User Session Actor
+# ============================================================================
+
+# actor UserSession {
+#   state: #{
+#     user => String,
+#     room => String,
+#     connected => Bool
+#   }
+#   
+#   fn init(user) {
+#     #{
+#       user => user,
+#       room => None,
+#       connected => True
+#     }
+#   }
+#   
+#   fn handle_call("join_room", room_name) {
+#     new_state = #{..state, room => Some(room_name)}
+#     {new_state, {ok, room_name}}
+#   }
+#   
+#   fn handle_call("leave_room") {
+#     new_state = #{..state, room => None}
+#     {new_state, ok}
+#   }
+#   
+#   fn handle_call("disconnect") {
+#     new_state = #{..state, connected => False}
+#     {new_state, ok}
+#   }
+# }
+
+# ============================================================================
+# Chat Server (Simplified Implementation)
+# ============================================================================
+
+pub fn create_room(name) {
+  #{
+    name => name,
+    users => [],
+    messages => []
+  }
+}
+
+pub fn join_room(room, user) {
+  new_users = [user, ..room.users]
+  new_room = #{..room, users => new_users}
+  message = "{user} joined {room.name}"
+  {new_room, message}
+}
+
+pub fn leave_room(room, user) {
+  new_users = filter_users(room.users, user)
+  new_room = #{..room, users => new_users}
+  message = "{user} left {room.name}"
+  {new_room, message}
+}
+
+fn filter_users(users, target) {
+  case users {
+    [] -> []
+    [user, ..rest] -> {
+      case user == target {
+        True -> filter_users(rest, target)
+        False -> [user, ..filter_users(rest, target)]
+      }
+    }
+  }
+}
+
+pub fn send_message(room, user, text) {
+  message = "{user}: {text}"
+  new_messages = [message, ..room.messages]
+  new_room = #{..room, messages => new_messages}
+  {new_room, message}
+}
+
+pub fn get_users(room) {
+  room.users
+}
+
+pub fn get_recent_messages(room, count) {
+  take_messages(room.messages, count)
+}
+
+fn take_messages(messages, count) {
+  case count {
+    0 -> []
+    n -> {
+      case messages {
+        [] -> []
+        [msg, ..rest] -> [msg, ..take_messages(rest, n - 1)]
+      }
+    }
+  }
+}
+
+pub fn count_users(room) {
+  count_list(room.users)
+}
+
+fn count_list(list) {
+  case list {
+    [] -> 0
+    [_, ..rest] -> 1 + count_list(rest)
+  }
+}
+
+# ============================================================================
+# Chat Commands
+# ============================================================================
+
+pub fn parse_command(text) {
+  case text {
+    "/help" -> "help"
+    "/users" -> "users"
+    "/leave" -> "leave"
+    _ -> "message"
+  }
+}
+
+pub fn handle_command(room, user, command) {
+  case command {
+    "help" -> {
+      help_text = "Commands: /help, /users, /leave"
+      {room, help_text}
+    }
+    "users" -> {
+      users = get_users(room)
+      count = count_users(room)
+      text = "Users online: {count}"
+      {room, text}
+    }
+    "leave" -> {
+      leave_room(room, user)
+    }
+    _ -> {
+      {room, "Unknown command"}
+    }
+  }
+}
+
+# ============================================================================
+# Message History
+# ============================================================================
+
+pub fn get_message_history(room, limit) {
+  take_messages(room.messages, limit)
+}
+
+pub fn search_messages(room, query) {
+  filter_messages(room.messages, query)
+}
+
+fn filter_messages(messages, query) {
+  case messages {
+    [] -> []
+    [msg, ..rest] -> {
+      case contains(msg, query) {
+        True -> [msg, ..filter_messages(rest, query)]
+        False -> filter_messages(rest, query)
+      }
+    }
+  }
+}
+
+fn contains(text, query) {
+  # Simplified - in real implementation would use string.contains
+  True
+}
+
+# ============================================================================
+# Tests
+# ============================================================================
+
+test create_room_test {
+  room = create_room("general")
+  room.name == "general"
+}
+
+test join_room_test {
+  room = create_room("general")
+  {new_room, message} = join_room(room, "Alice")
+  count_users(new_room) == 1
+}
+
+test send_message_test {
+  room = create_room("general")
+  {room, _} = join_room(room, "Alice")
+  {new_room, message} = send_message(room, "Alice", "Hello!")
+  count_list(new_room.messages) == 1
+}
+
+test leave_room_test {
+  room = create_room("general")
+  {room, _} = join_room(room, "Alice")
+  {new_room, _} = leave_room(room, "Alice")
+  count_users(new_room) == 0
+}
+
+test multiple_users_test {
+  room = create_room("general")
+  {room, _} = join_room(room, "Alice")
+  {room, _} = join_room(room, "Bob")
+  {room, _} = join_room(room, "Charlie")
+  count_users(room) == 3
+}
+
+test message_history_test {
+  room = create_room("general")
+  {room, _} = join_room(room, "Alice")
+  {room, _} = send_message(room, "Alice", "Hello!")
+  {room, _} = send_message(room, "Alice", "How are you?")
+  history = get_message_history(room, 2)
+  count_list(history) == 2
+}
+
+# ============================================================================
+# Main Demo
+# ============================================================================
+
+pub fn main() {
+  print("Chat Server Demo")
+  print("================")
+  
+  # Create room
+  room = create_room("general")
+  print("\nRoom created: {room.name}")
+  
+  # Users join
+  {room, msg1} = join_room(room, "Alice")
+  print(msg1)
+  
+  {room, msg2} = join_room(room, "Bob")
+  print(msg2)
+  
+  # Send messages
+  {room, msg3} = send_message(room, "Alice", "Hello everyone!")
+  print(msg3)
+  
+  {room, msg4} = send_message(room, "Bob", "Hi Alice!")
+  print(msg4)
+  
+  # Show stats
+  users = count_users(room)
+  messages = count_list(room.messages)
+  
+  print("\nRoom Stats:")
+  print("Users: {users}")
+  print("Messages: {messages}")
+  
+  # User leaves
+  {room, msg5} = leave_room(room, "Alice")
+  print("\n{msg5}")
+  
+  users = count_users(room)
+  print("Users remaining: {users}")
+}

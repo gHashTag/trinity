@@ -1,0 +1,70 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# META-003: Validate self-modification safety
+# φ² + 1/φ² = 3 | PAS v8.21 Validation Task (CRITICAL)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: meta_003_self_modification_safety_validation
+version: "8.21.0"
+language: zig
+module: meta_validation
+
+types:
+  Modification:
+    fields:
+      id: String
+      target: String
+      description: String
+      risk_level: String
+
+  SafetyCheckResult:
+    fields:
+      passed: Bool
+      risk_score: Float
+      blockers: List<String>
+      rollback_available: Bool
+
+behaviors:
+  - name: test_sacred_math_invariant
+    given: Any self-modification proposal
+    when: Check against sacred constants
+    then: Must preserve φ² + 1/φ² = 3 invariant
+
+  - name: test_rollback_capability
+    given: Self-modification applied
+    when: Rollback requested
+    then: System returns to exact previous state
+
+  - name: test_mutation_rate_bounds
+    given: μ = 0.0382 baseline
+    when: Self-mod proposes new μ
+    then: Must stay within [0.01, 0.1] bounds
+
+  - name: test_test_gate_enforcement
+    given: Self-modification affecting core logic
+    when: Apply without passing all tests
+    then: Modification rejected; system unchanged
+
+  - name: test_memory_safety
+    given: Self-modification adding new patterns
+    when: Memory > 90% capacity
+    then: Automatically triggers cleanup; no OOM
+
+  - name: test_consensus_requirement
+    given: 32-agent swarm
+    when: Self-mod proposed
+    then: Requires >75% consensus before apply
+
+  - name: test_emergency_stop
+    given: Self-modification in progress
+    when: Emergency stop triggered
+    then: Halt immediately; rollback applied
+
+  - name: validate_pas_safety_override
+    given: PAS recommends dangerous modification
+    when: Safety check fails
+    then: Safety check takes precedence; modification blocked
+
+  - name: measure_safety_overhead
+    given: 100 safe modifications
+    when: Measure overhead of safety checks
+    then: Should be <5% of total time

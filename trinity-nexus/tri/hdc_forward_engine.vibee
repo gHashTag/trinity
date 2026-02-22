@@ -1,0 +1,239 @@
+name: hdc_forward_engine
+version: "1.0.0"
+language: zig
+module: hdc_forward_engine
+
+description: |
+  HDC Forward Engine — Level 10A.1: Real Forward Pass on vsa.zig Primitives.
+  Maps the abstract transformer block to concrete HybridBigInt operations.
+
+  === IMPLEMENTATION CONTRACT ===
+  This spec maps directly to src/vsa.zig and src/sdk.zig:
+    bind(a, b) -> vsa.bind(&a.data, &b.data)           -- O(D) SIMD trit-multiply
+    bundle(a, b) -> vsa.bundle2(&a.data, &b.data)       -- O(D) majority vote
+    bundle3(a, b, c) -> vsa.bundle3(&a.data, &b.data, &c.data) -- 3-way majority
+    permute(v, k) -> vsa.permute(&v.data, k)            -- O(D) cyclic shift
+    similarity(a, b) -> vsa.cosineSimilarity(&a.data, &b.data) -- O(D) dot/norm
+    Codebook.encode(sym) -> sdk.Codebook.encode(sym)     -- Wyhash seeded HV
+    Codebook.decode(hv) -> sdk.Codebook.decode(hv)       -- nearest symbol
+
+  === MEMORY MODEL ===
+  HybridBigInt uses STACK ALLOCATION (no allocator for core ops).
+  Codebook and Classifier need std.mem.Allocator for HashMap.
+  Dimension 256 = 51 bytes packed, 256 bytes unpacked.
+  Dimension 1024 = 205 bytes packed, 1KB unpacked.
+  MAX_TRITS = 59049 (3^10). SIMD_WIDTH = 32 trits.
+
+  === REAL FORWARD PASS (per token, per block) ===
+  Given input x_i as Hypervector (dim D):
+
+  Phase 1 — MULTI-HEAD ATTENTION:
+    For each head h in [0..H):
+      Q_h = bind(permute(x_i, pos_i), q_role_h)   -- query projection + position
+      K_h = bind(permute(x_j, pos_j), k_role_h)   -- key projection + position
+      V_h = bind(x_j, v_role_h)                    -- value projection (no position)
+      For each key position j:
+        score_ij = cosineSimilarity(Q_h, K_h_j)    -- attention score
+      Select top-k scores (phi-rank weighting):
+        weights = phi_rank_softmax(scores, temperature)
+      Aggregate: attn_h_i = majority_bundle(V_h_j for j in top_k)
+    Merge heads: multi_head_i = bundle3(attn_0, attn_1, attn_2) (for H=3)
+                 or chain bundle2 for arbitrary H
+
+  Phase 2 — RESIDUAL #1:
+    res1_i = bundle2(x_i, multi_head_i)
+
+  Phase 3 — TERNARY LAYER NORM:
+    Count trits: n_pos = count(res1_i == +1), n_neg = count(res1_i == -1), n_zero = count(res1_i == 0)
+    If n_pos/D > 0.5: flip random positive trits to zero until balanced
+    If n_neg/D > 0.5: flip random negative trits to zero until balanced
+    Target: ~33% each of {-1, 0, +1}
+
+  Phase 4 — FEED-FORWARD:
+    ff_hidden = bind(norm_i, ff_w1)                -- diagonal linear layer 1
+    ff_act = ternary_relu(ff_hidden)               -- clamp negatives to zero
+    ff_out = bind(ff_act, ff_w2)                   -- diagonal linear layer 2
+
+  Phase 5 — RESIDUAL #2:
+    block_out_i = bundle2(norm_i, ff_out)
+
+  === STACKING L BLOCKS ===
+  block_0_out = forward_block(input, block_0_params)
+  block_1_out = forward_block(block_0_out, block_1_params)
+  ...
+  final_out = forward_block(block_{L-1}_out, block_{L-1}_params)
+
+  === PREDICTION ===
+  predicted = codebook.decode(final_out[last_pos])
+  confidence = codebook.findSimilar(final_out[last_pos], threshold=0.3)
+
+  === PERFORMANCE BUDGET (D=256, n=16 tokens, H=3 heads, L=2 blocks) ===
+  Attention per token: H * n * (bind + cosine) = 3 * 16 * (2000 + 200) ns = 105.6 us
+  FF per token: 2 * bind + relu = 2 * 2000 + 500 = 4.5 us
+  Residuals: 2 * bundle = 2 * 2200 = 4.4 us
+  Total per token per block: ~115 us
+  Total for n=16, L=2: 16 * 2 * 115 = 3.68 ms
+  Throughput: ~4300 tokens/sec (single-threaded, D=256)
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  EngineConfig:
+    fields:
+      dimension: usize
+      num_heads: usize
+      num_layers: usize
+      context_length: usize
+      use_causal_mask: Bool
+      temperature: Float
+      top_k_attention: usize
+      phi_decay_rate: Float
+
+  RoleVectors:
+    fields:
+      q_role: List<i8>
+      k_role: List<i8>
+      v_role: List<i8>
+
+  HeadParams:
+    fields:
+      head_id: usize
+      roles: RoleVectors
+      seed: u64
+
+  FFParams:
+    fields:
+      weight_1: List<i8>
+      weight_2: List<i8>
+
+  BlockParams:
+    fields:
+      block_id: usize
+      heads: List<HeadParams>
+      ff: FFParams
+      density_target: Float
+
+  TokenState:
+    fields:
+      token_str: String
+      position: usize
+      hv: List<i8>
+
+  AttentionScoreEntry:
+    fields:
+      key_position: usize
+      score: Float
+      weight: Float
+
+  ForwardResult:
+    fields:
+      output_hvs: List<List<i8>>
+      predicted_token: String
+      confidence: Float
+      attention_scores: List<List<AttentionScoreEntry>>
+      layer_cosines: List<Float>
+      total_ops: u64
+      elapsed_ns: u64
+
+  TrainDelta:
+    fields:
+      target_hv: List<i8>
+      output_hv: List<i8>
+      error_hv: List<i8>
+      loss: Float
+
+  HDCForwardEngine:
+    fields:
+      allocator: Allocator
+      config: EngineConfig
+      blocks: List<BlockParams>
+      codebook: Codebook
+      token_cache: List<TokenState>
+      last_attention: List<List<AttentionScoreEntry>>
+
+behaviors:
+  - name: initEngine
+    given: EngineConfig specifying dimension, heads, layers, context length
+    when: Creates L blocks each with H heads (random role vectors) and FF weights
+    then: Engine initialized, codebook empty, ready for encode + forward
+
+  - name: encodeToken
+    given: Token string and position index
+    when: Encodes via codebook.encode(token), applies permute(hv, position)
+    then: Returns TokenState with positioned hypervector
+
+  - name: encodeSequence
+    given: List of token strings
+    when: Encodes each token with position, caches in token_cache
+    then: Returns list of TokenState ready for forward pass
+
+  - name: computeHeadAttention
+    given: Query TokenState, list of key TokenStates, HeadParams
+    when: Projects Q=bind(query,q_role), K=bind(key,k_role) for each key, computes cosine similarity, applies phi-rank softmax, bundles top-k values
+    then: Returns attended hypervector for this head
+
+  - name: phiRankWeights
+    given: List of raw cosine similarity scores, temperature
+    when: Sorts descending, assigns weight[k] = phi^(-k/T), normalizes to sum=1
+    then: Returns list of (position, weight) pairs
+
+  - name: multiHeadAttention
+    given: Query position and all TokenStates, list of HeadParams
+    when: Runs each head, bundles all head outputs via majority vote
+    then: Returns combined multi-head hypervector
+
+  - name: residualConnect
+    given: Original hypervector and transformed hypervector
+    when: Applies bundle2 (element-wise majority vote)
+    then: Returns residual-connected vector
+
+  - name: ternaryLayerNorm
+    given: Hypervector
+    when: Counts trit distribution, rebalances toward 33% each by random flips
+    then: Returns normalized vector with balanced ternary density
+
+  - name: feedForward
+    given: Input hypervector and FFParams
+    when: Applies bind(input, w1), ternary_relu, bind(activated, w2)
+    then: Returns feed-forward output vector
+
+  - name: ternaryRelu
+    given: Trit vector
+    when: Maps each trit: -1 -> 0, 0 -> 0, +1 -> +1
+    then: Returns sparsified vector
+
+  - name: forwardBlock
+    given: List of TokenStates and BlockParams
+    when: For each token: multi-head attention, residual, norm, FF, residual
+    then: Returns transformed TokenStates
+
+  - name: forward
+    given: List of token strings
+    when: Encodes tokens, passes through all L blocks sequentially
+    then: Returns ForwardResult with predictions, attention maps, metrics
+
+  - name: predict
+    given: Context token strings
+    when: Full forward pass, decode last position via codebook.decode
+    then: Returns predicted next token with confidence
+
+  - name: generate
+    given: Seed text and max_length
+    when: Autoregressive: predict next, append, repeat (causal mask enforced)
+    then: Returns generated text string
+
+  - name: computeTrainDelta
+    given: Forward output hv and target hv
+    when: error = bind(target, negate(output)), loss = 1 - similarity(output, target)
+    then: Returns TrainDelta with error vector and loss
+
+  - name: updateBlockWeights
+    given: TrainDelta and BlockParams and learning_rate
+    when: For each head role: role_new = bundle2(role_old, scale(error, lr))
+    then: Block weights shifted toward target
+
+  - name: getAttentionMap
+    given: Layer index
+    when: Returns cached attention scores from last forward pass
+    then: Returns 2D attention map (query_pos x key_pos) per head

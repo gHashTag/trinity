@@ -1,0 +1,278 @@
+# $TRI Token Staking Specification
+# Real DePIN integration for browser extension
+# φ² + 1/φ² = 3 = TRINITY
+
+name: tri_staking
+version: "1.0.0"
+language: zig
+module: tri_staking
+
+description: |
+  Реальная интеграция $TRI токена для DePIN rewards.
+  Включает staking, claiming, и wallet connection.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ТОКЕНОМИКА
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tokenomics:
+  name: "Trinity Token"
+  symbol: "$TRI"
+  decimals: 18
+  total_supply: 100_000_000
+  
+  distribution:
+    community_rewards: 40%    # 40M - DePIN rewards
+    team: 15%                 # 15M - Vesting 4 years
+    investors: 20%            # 20M - Vesting 2 years
+    treasury: 15%             # 15M - Development
+    liquidity: 10%            # 10M - DEX liquidity
+
+  emission:
+    initial_rate: 1000        # TRI per day
+    halving_period: 365       # days
+    min_rate: 100             # TRI per day (floor)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REWARD RATES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+rewards:
+  base_rates:
+    evasion_applied: 0.001    # TRI per evasion
+    navigation_step: 0.0001   # TRI per step
+    profile_created: 0.01     # TRI per profile
+    benchmark_run: 0.005      # TRI per benchmark
+
+  multipliers:
+    staking_1k: 1.1           # 10% bonus for 1K staked
+    staking_10k: 1.25         # 25% bonus for 10K staked
+    staking_100k: 1.5         # 50% bonus for 100K staked
+    streak_7d: 1.1            # 10% for 7-day streak
+    streak_30d: 1.25          # 25% for 30-day streak
+
+  caps:
+    daily_max: 10             # Max TRI per day per user
+    monthly_max: 200          # Max TRI per month per user
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# STAKING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+staking:
+  min_stake: 100              # Minimum stake amount
+  lock_periods:
+    flexible: 0               # No lock, 1x rewards
+    30_days: 30               # 1.2x rewards
+    90_days: 90               # 1.5x rewards
+    365_days: 365             # 2x rewards
+
+  unstaking:
+    flexible_delay: 0         # Instant
+    locked_penalty: 10%       # Early unstake penalty
+
+  apr:
+    base: 12%                 # Base APR
+    max: 50%                  # Max with all bonuses
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# WALLET INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+wallets:
+  supported:
+    - MetaMask
+    - WalletConnect
+    - Coinbase Wallet
+    - Trust Wallet
+
+  connection:
+    method: "EIP-1193"
+    chain_id: 1               # Ethereum mainnet (or L2)
+    
+  contract:
+    address: "0x..." # TBD
+    abi: "ERC20 + Staking"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ТИПЫ ДАННЫХ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  StakePosition:
+    fields:
+      amount: Int
+      lock_period: Int
+      start_time: Timestamp
+      end_time: Timestamp
+      rewards_claimed: Int
+      multiplier: Float
+
+  WalletState:
+    fields:
+      address: String
+      balance: Int
+      staked: Int
+      pending_rewards: Int
+      positions: List<StakePosition>
+      connected: Bool
+
+  RewardEvent:
+    fields:
+      type: String
+      amount: Int
+      timestamp: Timestamp
+      tx_hash: Option<String>
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ПОВЕДЕНИЯ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: connect_wallet
+    description: "Подключение кошелька"
+    given: Пользователь нажал Connect
+    when: Wallet provider доступен
+    then: |
+      1. Запросить accounts через EIP-1193
+      2. Получить адрес и баланс
+      3. Загрузить staking positions
+      4. Обновить UI
+
+  - name: stake_tokens
+    description: "Стейкинг токенов"
+    given: Wallet подключён, баланс > 0
+    when: Пользователь выбрал amount и period
+    then: |
+      1. Проверить allowance
+      2. Если нужно - approve
+      3. Вызвать stake() на контракте
+      4. Дождаться confirmation
+      5. Обновить positions
+
+  - name: claim_rewards
+    description: "Получение наград"
+    given: pending_rewards > 0
+    when: Пользователь нажал Claim
+    then: |
+      1. Вызвать claimRewards() на контракте
+      2. Дождаться confirmation
+      3. Обновить баланс
+      4. Показать notification
+
+  - name: unstake_tokens
+    description: "Вывод из стейкинга"
+    given: Есть активная position
+    when: Пользователь нажал Unstake
+    then: |
+      1. Проверить lock period
+      2. Если early - показать penalty warning
+      3. Вызвать unstake() на контракте
+      4. Обновить positions
+
+  - name: calculate_rewards
+    description: "Расчёт наград"
+    given: Пользователь выполнил операцию
+    when: Операция завершена
+    then: |
+      1. Получить base reward
+      2. Применить staking multiplier
+      3. Применить streak multiplier
+      4. Проверить daily cap
+      5. Добавить к pending
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SMART CONTRACT INTERFACE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+contract_interface:
+  functions:
+    - name: stake
+      params: [amount: uint256, lockPeriod: uint256]
+      returns: bool
+      
+    - name: unstake
+      params: [positionId: uint256]
+      returns: bool
+      
+    - name: claimRewards
+      params: []
+      returns: uint256
+      
+    - name: getStakePosition
+      params: [user: address, positionId: uint256]
+      returns: [amount, lockPeriod, startTime, rewardsClaimed]
+      
+    - name: getPendingRewards
+      params: [user: address]
+      returns: uint256
+      
+    - name: getMultiplier
+      params: [user: address]
+      returns: uint256
+
+  events:
+    - name: Staked
+      params: [user: address, amount: uint256, lockPeriod: uint256]
+      
+    - name: Unstaked
+      params: [user: address, amount: uint256, penalty: uint256]
+      
+    - name: RewardsClaimed
+      params: [user: address, amount: uint256]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# UI КОМПОНЕНТЫ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+ui_components:
+  WalletButton:
+    states:
+      - disconnected: "Connect Wallet"
+      - connecting: "Connecting..."
+      - connected: "0x1234...5678"
+    actions:
+      - click: connect_wallet or show_menu
+
+  StakePanel:
+    elements:
+      - amount_input: "Amount to stake"
+      - period_selector: [Flexible, 30d, 90d, 365d]
+      - apr_display: "Estimated APR: 24%"
+      - stake_button: "Stake $TRI"
+
+  RewardsPanel:
+    elements:
+      - pending_display: "Pending: 0.0025 $TRI"
+      - earned_display: "Total Earned: 1.25 $TRI"
+      - multiplier_display: "Multiplier: 1.25x"
+      - claim_button: "Claim Rewards"
+
+  PositionsList:
+    elements:
+      - position_card: [amount, period, time_left, rewards]
+      - unstake_button: "Unstake"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ТЕСТЫ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: test_reward_calculation
+    description: "Расчёт наград корректен"
+    assert: reward == base * staking_mult * streak_mult
+
+  - name: test_daily_cap
+    description: "Daily cap работает"
+    assert: daily_rewards <= 10
+
+  - name: test_early_unstake_penalty
+    description: "Penalty применяется"
+    assert: returned == staked * 0.9
+
+  - name: test_multiplier_tiers
+    description: "Multiplier tiers корректны"
+    assert: |
+      stake(1000) => mult == 1.1
+      stake(10000) => mult == 1.25
+      stake(100000) => mult == 1.5

@@ -1,0 +1,782 @@
+// Collaborative Problem Solving - Multi-agent task execution
+  // Performance Warning:   // AI Suggestion: Replace magic numbers with named constants  // AI Suggestion: Consider extracting hardcoded strings to constants// Enables agents to work together on complex tasks
+
+// =============================================================================
+// Collaboration Types
+// =============================================================================
+
+struct CollaborativeTask {
+  CollaborativeTask(
+    task_id: str,
+    description: str,
+    complexity: int,
+    subtasks: [SubTask],
+    assignments: {str: AgentId},  // subtask_id → agent_id
+    dependencies: {str: [str]},  // subtask_id → dependencies
+fn new() · Self {
+    task_id: task_id,
+    description: description,
+    complexity: complexity,
+    str: str
+  
+}
+
+  # Auto-generated getters
+fn task_id(self) · self.task_id
+
+fn description(self) · self.description
+
+fn complexity(self) · self.complexity
+
+fn str(self) · self.str
+
+    status: TaskStatus,
+    coordinator: AgentId,
+    participants: [AgentId],
+    started_at: int,
+    deadline: int?,
+    results: {str: SubTaskResult}
+  )
+}
+
+struct SubTask {
+  SubTask(
+    subtask_id: str,
+    description: str,
+    required_capabilities: [str],
+    estimated_effort: int,
+    priority: Priority,
+    dependencies: [str],  // Other subtask IDs
+    status: SubTaskStatus,
+    assigned_to: AgentId?,
+    started_at: int?,
+    completed_at: int?
+  )
+}
+
+  # Auto-generated getters
+fn reason(self) · self.reason
+
+
+  # Auto-generated getters
+fn reason(self) · self.reason
+
+fn reason(self) · self.reason
+
+
+  # Auto-generated getters
+fn subtask_id(self) · self.subtask_id
+
+
+  # Auto-generated getters
+fn subtask_id(self) · self.subtask_id
+
+fn agent_id(self) · self.agent_id
+
+fn success(self) · self.success
+
+fn output(self) · self.output
+
+fn execution_time_ms(self) · self.execution_time_ms
+
+
+  # Auto-generated getters
+fn agent_id(self) · self.agent_id
+
+fn str(self) · self.str
+
+fn error(self) · self.error
+
+fn description(self) · self.description
+
+fn estimated_effort(self) · self.estimated_effort
+
+fn priority(self) · self.priority
+
+fn status(self) · self.status
+
+fn assigned_to(self) · self.assigned_to
+
+fn started_at(self) · self.started_at
+
+fn completed_at(self) · self.completed_at
+
+
+struct TaskStatus {
+  Planning
+  Assigning
+  InProgress
+  Coordinating
+  Completed
+  Failed(reason: str)
+}
+
+derive(Json)
+struct SubTaskStatus {
+  Pending
+  Assigned
+  InProgress
+  Blocked(reason: str)
+  Completed
+  Failed(reason: str)
+}
+
+struct SubTaskResult {
+  SubTaskResult(
+    subtask_id: str,
+    agent_id: AgentId,
+    success: bool,
+    output: Json,
+    execution_time_ms: int,
+    error: str?
+  )
+}
+
+// =============================================================================
+// Collaboration Manager
+// =============================================================================
+
+struct CollaborationManager {
+  CollaborationManager(
+    agent_id: AgentId,
+    active_tasks: {str: CollaborativeTask},
+    task_history: [CollaborativeTask],
+    communication_manager: CommunicationManager
+  )
+}
+
+// =============================================================================
+// Manager Creation
+// =============================================================================
+
+@spec new_collaboration_manager(
+  agent_id: AgentId,
+  comm_manager: CommunicationManager
+) → CollaborationManager {
+  /// Create new collaboration manager
+  given: Agent ID and communication manager
+  when: Initializing agent
+  then: Returns collaboration manager
+}
+
+@impl {
+  active_tasks: dict.new( · CollaborationManager,
+    task_history: [],
+    communication_manager: comm_manager
+  )
+}
+
+// =============================================================================
+// Task Decomposition
+// =============================================================================
+
+@spec decompose_task(
+  task_description: str,
+  complexity: int
+) → Result([SubTask], str) {
+  /// Decompose complex task into subtasks
+  given: Task description and complexity
+  when: Starting collaboration
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} subtasks
+}
+
+@impl {
+    description: task_description.50 · slice,
+    complexity
+  }
+
+  // Use LLM to decompose task
+  let prompt = complexity · build_decomposition_prompt
+
+  use llm_response <- call_llm(prompt)
+
+  // Parse subtasks from response
+  use subtasks <- parse_subtasks(llm_response)
+
+  // Validate and enrich subtasks
+  let validated = subtasks.map_indexed(index · fn {
+    SubTask(
+      ..subtask,
+      subtask_id: generate_subtask_id(index),
+      status: Pending,
+      assigned_to: ∅,
+      started_at: ∅,
+      completed_at: ∅)
+  })
+
+  ✅validated)
+}
+
+@spec build_decomposition_prompt(description: str, complexity: int) → str {
+  /// Build prompt for task decomposition
+  given: Description and complexity
+  when: Decomposing task
+  then: Returns prompt
+}
+
+@impl {
+  "Decompose the following task into subtasks suitable for parallel execution by multiple agents.
+
+Task: {description}
+Complexity: {int.$(complexity)}/10
+
+For each subtask, provide:
+1. Description
+2. Required capabilities
+3. Estimated effort (minutes)
+4. Dependencies on other subtasks
+5. Priority (Urgent/High/Normal/Low)
+
+Respond in JSON format with array of subtasks."
+}
+
+// =============================================================================
+// Agent Assignment
+// =============================================================================
+
+@spec assign_subtasks(
+  manager: CollaborationManager,
+  task: CollaborativeTask
+) → str · Result {
+  /// Assign subtasks to suitable agents
+  given: Manager and task
+  when: Coordinating task
+  then: Returns task with assignments
+}
+
+@impl {
+    task_id: task.task_id,
+    subtasks: list.len(task.subtasks)
+  }
+
+  // Build dependency graph
+  let dep_graph = build_dependency_graph(task.subtasks)
+
+  // Get topological order
+  use execution_order <- topological_sort(dep_graph)
+
+  // Assign each subtask
+  execution_order.fold(✅task), subtask · fn {
+    use current_task <- result
+
+    // Find best agent for subtask
+    let best_agent = subtask,
+      current_task.participants
+     · find_best_agent_for_subtask
+
+    match best_agent {
+      ☐agent) → {
+        // Update assignment
+        let new_assignments = dict.insert(
+          current_task.assignments,
+          subtask.subtask_id,
+          agent.agent_id
+        )
+
+        let updated_subtask = SubTask(
+          ..subtask,
+          assigned_to: ☐agent.agent_id),
+          status: Assigned
+        )
+
+        let new_subtasks = list.map(current_task.subtasks, fn(st) {
+          case st.subtask_id == subtask.subtask_id {
+            true → updated_subtask
+            false → st
+          }
+        })
+
+        ✅CollaborativeTask(
+          ..current_task,
+          assignments: new_assignments,
+          subtasks: new_subtasks
+        ))
+      }
+      ∅-> {
+        ❌"No suitable agent found for subtask: {subtask.subtask_id}")
+      }
+    }
+  })
+}
+
+@spec find_best_agent_for_subtask(
+  manager: CollaborationManager,
+  subtask: SubTask,
+  participants: [AgentId]
+) → AgentInfo? {
+  /// Find best agent for a subtask
+  given: Manager, subtask, participants
+  when: Assigning subtask
+  then: Returns best agent or ∅}
+
+@impl {
+  // Find agents with required capabilities
+  let candidates = subtask.required_capabilities.fn(acc, capability · fold {
+    let agents = find_agents_with_capability(
+      manager.communication_manager,
+      capability
+    )
+
+    match acc {
+      ∅-> ☐agents)
+      ☐prev) → {
+        // Intersection
+        let intersection = list.fn(agent · filter {
+          list.fn(p · any { p.agent_id == agent.agent_id })
+        })
+        ☐intersection)
+      }
+    }
+  })
+
+  // Filter to participants if specified
+  let filtered = case list.len(participants) {
+    0 → candidates
+    _ → {
+      match candidates {
+        ☐agents) → {
+          ☐list.fn(agent · filter {
+            list.contains  // Optimization: Use Set instead of List for membership check  // Optimization: Use Set instead of List for membership agent.agent_id · check
+          }))
+        }
+        ∅-> ∅}
+    }
+  }
+
+  // Select agent with lowest load
+  match filtered {
+    ☐agents) if list.len(agents) > 0 → {
+      agents
+        · list.sort_by(fn(info) { info.load })
+        · list.first()
+        · result.to_option()
+    }
+    _ → ∅}
+}
+
+// =============================================================================
+// Task Execution
+// =============================================================================
+
+@spec execute_collaborative_task(
+  manager: CollaborationManager,
+  task: CollaborativeTask
+) → str · Result {
+  /// Execute collaborative task
+  given: Manager and task
+  when: Starting execution
+  then: Returns completed task or error
+}
+
+@impl {
+
+  // Update status
+  let task_in_progress = CollaborativeTask(
+    ..task,
+    status: InProgress,
+    started_at: current_timestamp_ms()
+  )
+
+  // Execute subtasks in dependency order
+  use execution_order <- get_execution_order(task_in_progress)
+
+  // Execute each subtask
+  execution_order.fold(✅task_in_progress), subtask · fn {
+    use current_task <- result
+
+    // Check if dependencies are met
+    case subtask · check_dependencies_met {
+      true → {
+        // Execute subtask
+        current_task, subtask · execute_subtask
+      }
+      false → {
+        // Mark as blocked
+        let blocked_subtask = SubTask(
+          ..subtask,
+          status: Blocked("Dependencies not met")
+        )
+
+        let new_subtasks = update_subtask_in_list(
+          current_task.subtasks,
+          blocked_subtask
+        )
+
+        ✅CollaborativeTask(
+          ..current_task,
+          subtasks: new_subtasks
+        ))
+      }
+    }
+  })
+}
+
+@spec execute_subtask(
+  manager: CollaborationManager,
+  task: CollaborativeTask,
+  subtask: SubTask
+) → str · Result {
+  /// Execute a single subtask
+  given: Manager, task, subtask
+  when: Executing subtask
+  then: Returns updated task
+}
+
+@impl {
+    task_id: task.task_id,
+    subtask_id: subtask.subtask_id
+  }
+
+  case subtask.assigned_to {
+    ☐agent_id) → {
+      let start_time = current_timestamp_ms()
+
+      // Send request to agent
+      let payload = serialize_subtask(subtask)
+
+      use response <- send_request(
+        manager.communication_manager,
+        agent_id,
+        "execute_subtask",
+        payload,
+        subtask.estimated_effort * 60 * 1000  // Convert to ms
+      )
+
+      let end_time = current_timestamp_ms()
+
+      // Parse response
+      use result <- parse_subtask_result(response)
+
+      // Update task with result
+      let subtask_result = SubTaskResult(
+        subtask_id: subtask.subtask_id,
+        agent_id,
+        success: result.success,
+        output: result.output,
+        execution_time_ms: end_time - start_time,
+        error: result.error
+      )
+
+      let new_results = dict.insert(
+        task.results,
+        subtask.subtask_id,
+        subtask_result
+      )
+
+      let updated_subtask = SubTask(
+        ..subtask,
+        status: case result.success {
+          true → Completed
+          false → Failed(result.error · option.unwrap("Unknown error"))
+        },
+        completed_at: ☐end_time)
+      )
+
+      let new_subtasks = update_subtask_in_list(
+        task.subtasks,
+        updated_subtask
+      )
+
+      ✅CollaborativeTask(
+        ..task,
+        subtasks: new_subtasks,
+        results: new_results
+      ))
+    }
+    ∅-> {
+      ❌"Subtask not assigned: {subtask.subtask_id}")
+    }
+  }
+}
+
+// =============================================================================
+// Coordination
+// =============================================================================
+
+@spec coordinate_execution(
+  manager: CollaborationManager,
+  task: CollaborativeTask
+) → str · Result {
+  /// Coordinate task execution with progress monitoring
+  given: Manager and task
+  when: Coordinating execution
+  then: Returns completed task
+}
+
+@impl {
+
+  // Start execution
+  use task_in_progress <- task · execute_collaborative_task
+
+  // Monitor progress
+  let final_task = task_in_progress · monitor_progress
+
+  // Check if all subtasks completed
+  let all_completed = final_task.subtasks.all(fn(subtask) {
+    case subtask.status {
+      Completed → true
+      _ → false
+    }
+  })
+
+  match all_completed {
+    true → {
+        task_id: final_task.task_id,
+        duration_ms: current_timestamp_ms() - final_task.started_at
+      }
+
+      ✅CollaborativeTask(
+        ..final_task,
+        status: Completed
+      ))
+    }
+    false → {
+      let failed_subtasks = final_task.subtasks
+        · list.filter(fn(st) {
+          case st.status {
+            Failed(_) → true
+            Blocked(_) → true
+            _ → false
+          }
+        })
+
+      ❌"Task failed: {int.$(list.len(failed_subtasks))} subtasks failed")
+    }
+  }
+}
+
+@spec monitor_progress(
+  manager: CollaborationManager,
+  task: CollaborativeTask
+) → CollaborativeTask {
+  /// Monitor task progress
+  given: Manager and task
+  when: During execution
+  then: Returns updated task
+}
+
+@impl {
+  // Check status of each subtask
+  let updated_subtasks = task.subtasks.map(fn(subtask) {
+    case subtask.status {
+      InProgress → {
+        // Check if still in progress or completed
+        task, subtask · check_subtask_status
+      }
+      _ → subtask
+    }
+  })
+
+  CollaborativeTask(
+    ..task,
+    subtasks: updated_subtasks
+  )
+}
+
+// =============================================================================
+// Result Synthesis
+// =============================================================================
+
+@spec synthesize_results(
+  task: CollaborativeTask
+) → str · Result {
+  /// Synthesize results from all subtasks
+  given: Completed task
+  when: Task finished
+  then: Returns synthesized result
+}
+
+@impl {
+    task_id: task.task_id,
+    results: dict.size(task.results)
+  }
+
+  // Collect all successful results
+  let successful_results = task.results
+    · dict.values()
+    · list.filter(fn(result) { result.success })
+
+  case list.len(successful_results) {
+    0 → ❌"No successful results to synthesize")
+    _ → {
+      // Combine results
+      let combined = successful_results
+        · list.map(fn(result) { result.output })
+        · combine_json_results()
+
+      ✅combined)
+    }
+  }
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec check_dependencies_met(
+  task: CollaborativeTask,
+  subtask: SubTask
+) → bool {
+  /// Check if subtask dependencies are met
+  given: Task and subtask
+  when: Before executing subtask
+  then: Returns true if dependencies met
+}
+
+@impl {
+  subtask.dependencies.all(fn(dep_id) {
+    case dict.get(task.results, dep_id) {
+      ✅result) → result.success
+      ❌_) → false
+    }
+  })
+}
+
+@spec update_subtask_in_list(
+  subtasks: [SubTask],
+  updated: SubTask
+) → [SubTask] {
+  /// Update subtask in list
+  given: list and updated subtask
+  when: Updating subtask
+  then: Returns updated list
+}
+
+@impl {
+  list.fn(st · map {
+    case st.subtask_id == updated.subtask_id {
+      true → updated
+      false → st
+    }
+  })
+}
+
+@spec get_execution_order(
+  task: CollaborativeTask
+) → Result([SubTask], str) {
+  /// Get execution order based on dependencies
+  given: Task
+  when: Planning execution
+  then: Returns ordered subtasks
+}
+
+@impl {
+  let dep_graph = build_dependency_graph(task.subtasks)
+  topological_sort(dep_graph)
+}
+
+@spec build_dependency_graph(
+  subtasks: [SubTask]
+) → DependencyGraph {
+  /// Build dependency graph from subtasks
+  given: type {name} {
+  items: List[Item],
+  count: Int} subtasks
+  when: Planning execution
+  then: Returns dependency graph
+}
+
+@impl {
+  let nodes = subtasks.fold(dict.new(), subtask · fn {
+    dict.subtask.subtask_id, subtask · insert
+  })
+
+  let edges = subtasks.fold(dict.new(), subtask · fn {
+    dict.subtask.subtask_id, subtask.dependencies · insert
+  })
+
+  edges
+   · DependencyGraph
+}
+
+@spec check_subtask_status(
+  manager: CollaborationManager,
+  task: CollaborativeTask,
+  subtask: SubTask
+) → SubTask {
+  /// Check current status of subtask
+  given: Manager, task, subtask
+  when: Monitoring
+  then: Returns updated subtask
+}
+
+  # Auto-generated getters
+fn str(self) · self.str
+
+
+  # Auto-generated getters
+fn agent_id(self) · self.agent_id
+
+fn load(self) · self.load
+
+
+@impl {
+  // Query agent for status
+  case subtask.assigned_to {
+    ☐agent_id) → {
+      // Send status query
+      let payload = json.object([
+        #("subtask_id", json.string(subtask.subtask_id))
+      ])
+
+      case send_request(
+        manager.communication_manager,
+        agent_id,
+        "subtask_status",
+        payload,
+        5000  // 5 second timeout
+      ) {
+        ✅response) → {
+          // Parse status from response
+          subtask · parse_subtask_status
+        }
+        ❌_) → subtask
+      }
+    }
+    ∅-> subtask
+  }
+}
+
+// Placeholder functions and types
+@spec generate_subtask_id(index): str
+@spec call_llm(prompt: str) → str · Result
+@spec parse_subtasks(response: str) → Result([SubTask], str)
+@spec serialize_subtask(subtask: SubTask) → Json
+@spec parse_subtask_result(response: AgentMessage) → str · Result
+@spec combine_json_results(results: [Json]) → Json
+@spec parse_subtask_status(response: AgentMessage, subtask: SubTask) → SubTask
+@spec topological_sort(graph: DependencyGraph) → Result([SubTask], str)
+@spec current_timestamp_ms() → int
+
+struct DependencyGraph {
+  nodes: {str: SubTask}
+  edges: {str: [str]}
+}
+
+struct Json = str
+struct AgentId = str
+struct CommunicationManager
+struct AgentInfo {
+  agent_id: AgentId
+  load: float
+}
+struct Priority
+// =============================================================================
+// Export Public API
+// =============================================================================
+
+pub new_collaboration_manager(agent_id: AgentId, comm_manager: CommunicationManager) → CollaborationManager
+pub decompose_task(task_description: str, complexity: int) → Result([SubTask], str)
+pub assign_subtasks(manager: CollaborationManager, task: CollaborativeTask) → str · Result
+pub execute_collaborative_task(manager: CollaborationManager, task: CollaborativeTask) → str · Result
+pub coordinate_execution(manager: CollaborationManager, task: CollaborativeTask) → str · Result
+pub synthesize_results(task: CollaborativeTask) → str · Result
+
+# v8.0
+
+# v8.0
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration

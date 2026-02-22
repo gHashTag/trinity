@@ -1,0 +1,80 @@
+name: hdc_scaled_corpus
+version: "1.0.0"
+language: zig
+module: hdc_scaled_corpus
+
+description: |
+  HDC Scaled Corpus — Level 10A.2.5: 512-Char Shakespeare Training.
+  Scales corpus from 48 chars (v2.31) to 512 chars with honest train/eval/test split.
+
+  === MEASURED RESULTS (v2.32) ===
+  Corpus: 512 chars Hamlet soliloquy
+  Split: 70% train / 15% eval / 15% test
+  Epochs: 200 with LR decay (0.3 * 0.99^epoch, floor 0.05)
+  Train loss epoch 0:   1.0001
+  Train loss epoch 199: 1.0134
+  Train loss drop: -1.3% (NEGATIVE — model did not converge)
+  Best eval loss: 1.0105
+
+  === HONEST ASSESSMENT ===
+  Loss ~1.0 means output is orthogonal to target (random behavior).
+  200 epochs on 12 samples with LR decay did NOT produce convergence.
+  The training signal from bundle2(role, sparse_error) is too weak
+  to overcome the noise in majority-vote role updates.
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+
+types:
+  ScaledConfig:
+    fields:
+      corpus_length: usize
+      train_ratio: Float
+      eval_ratio: Float
+      test_ratio: Float
+      num_epochs: usize
+      lr_initial: Float
+      lr_decay: Float
+      lr_floor: Float
+      train_samples: usize
+      eval_samples: usize
+      test_samples: usize
+
+  ScaledResult:
+    fields:
+      train_loss_first: Float
+      train_loss_last: Float
+      train_loss_drop_pct: Float
+      best_eval_loss: Float
+      converged: Bool
+
+behaviors:
+  - name: trainScaledCorpus
+    given: 512-char corpus, 200 epochs, 12 train samples, LR decay
+    when: Train with error-driven bundling, track train and eval loss
+    then: ScaledResult (measured: no convergence, -1.3%)
+
+  - name: applyLRDecay
+    given: Base LR 0.3, decay 0.99 per epoch, floor 0.05
+    when: lr = max(0.3 * 0.99^epoch, 0.05)
+    then: LR schedule from 0.3 down to 0.05 over 200 epochs
+
+  - name: honestSplit
+    given: Corpus and split ratios 70/15/15
+    when: Partition samples by position (no shuffle — deterministic)
+    then: Non-overlapping train/eval/test sample sets
+
+test_cases:
+  - name: loss_in_range
+    description: All loss values in valid range [0, 2]
+    input: "any epoch"
+    expected: "0 <= loss <= 2"
+
+  - name: lr_decays_correctly
+    description: LR decreases over epochs, floors at 0.05
+    input: "200 epochs"
+    expected: "lr_199 == 0.05, lr_0 == 0.3"
+
+  - name: eval_loss_measured
+    description: Eval loss computed on held-out data every 20 epochs
+    input: "200 epochs"
+    expected: "eval_loss defined at epochs 0,20,...,199"

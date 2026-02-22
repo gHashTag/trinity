@@ -1,0 +1,144 @@
+# Trinity Plugin CLI Commands
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3
+
+name: plugin_cli
+version: "1.0.0"
+language: zig
+module: plugin_cmd
+
+description: |
+  CLI commands for plugin management.
+  Similar to npm/cargo for package management.
+  Integrates with vibee CLI.
+
+imports:
+  - plugin_interface
+  - plugin_registry
+  - plugin_loader
+  - plugin_manifest
+
+types:
+  PluginSubcommand:
+    description: "Plugin management subcommands"
+    variants:
+      - list       # List installed plugins
+      - info       # Show plugin details
+      - search     # Search remote registry
+      - install    # Install plugin
+      - uninstall  # Remove plugin
+      - update     # Update plugins
+      - init       # Create new plugin project
+      - build      # Build plugin to WASM
+      - publish    # Publish to registry
+      - enable     # Enable disabled plugin
+      - disable    # Disable plugin
+
+  ListOptions:
+    description: "Options for list command"
+    fields:
+      kind: Option<PluginKind>
+      show_disabled: Bool
+      format: OutputFormat
+
+  InfoOptions:
+    description: "Options for info command"
+    fields:
+      plugin_id: String
+      show_deps: Bool
+
+  SearchOptions:
+    description: "Options for search command"
+    fields:
+      query: String
+      kind: Option<PluginKind>
+      limit: Int
+
+  InstallOptions:
+    description: "Options for install command"
+    fields:
+      plugin_spec: String    # "name" or "name@version"
+      force: Bool
+      dev: Bool
+
+  InitOptions:
+    description: "Options for init command"
+    fields:
+      name: String
+      kind: PluginKind
+      directory: Option<String>
+
+  OutputFormat:
+    description: "Output format"
+    variants:
+      - table      # Human-readable table
+      - json       # JSON output
+      - minimal    # Just names
+
+  CommandResult:
+    description: "Result of CLI command execution"
+    fields:
+      success: Bool
+      message: String
+      data: Option<String>
+
+behaviors:
+  - name: cmd_list
+    given: "ListOptions"
+    when: "vibee plugin list [--kind codegen] [--all]"
+    then: "Print table of installed plugins"
+
+  - name: cmd_info
+    given: "InfoOptions"
+    when: "vibee plugin info <plugin-id>"
+    then: "Print detailed plugin information"
+
+  - name: cmd_search
+    given: "SearchOptions"
+    when: "vibee plugin search <query>"
+    then: "Search remote registry, print results"
+
+  - name: cmd_install
+    given: "InstallOptions"
+    when: "vibee plugin install <name>[@version]"
+    then: "Download, verify, install plugin"
+
+  - name: cmd_uninstall
+    given: "Plugin ID"
+    when: "vibee plugin uninstall <plugin-id>"
+    then: "Remove plugin from registry"
+
+  - name: cmd_update
+    given: "Optional plugin ID or --all"
+    when: "vibee plugin update [plugin-id | --all]"
+    then: "Check and install updates"
+
+  - name: cmd_init
+    given: "InitOptions"
+    when: "vibee plugin init <name> --kind <kind>"
+    then: "Create plugin scaffold with manifest"
+
+  - name: cmd_enable
+    given: "Plugin ID"
+    when: "vibee plugin enable <plugin-id>"
+    then: "Enable disabled plugin"
+
+  - name: cmd_disable
+    given: "Plugin ID"
+    when: "vibee plugin disable <plugin-id>"
+    then: "Disable plugin without removing"
+
+  - name: parse_plugin_command
+    given: "Command line arguments"
+    when: "vibee plugin <subcommand> [args]"
+    then: "Parse and dispatch to appropriate handler"
+
+  - name: format_plugin_table
+    given: "List of plugins"
+    when: "Displaying plugin list"
+    then: "Format as aligned table with colors"
+
+constants:
+  DEFAULT_REGISTRY_URL: "https://registry.trinity-network.dev"
+  CACHE_DIR: "~/.trinity/cache/plugins"
+  MAX_SEARCH_RESULTS: 50
