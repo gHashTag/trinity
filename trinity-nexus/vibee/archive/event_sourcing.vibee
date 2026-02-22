@@ -1,0 +1,406 @@
+name: event_sourcing
+version: "1.0.0"
+language: zig
+module: event_sourcing
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: create_event_store
+    given: Input data provided
+    when: create_event_store function called
+    then: Result returned
+    test_cases:
+      - name: test_create_event_store
+        input: {}
+        expected: {}
+
+  - name: append_event
+    given: Input data provided
+    when: append_event function called
+    then: Result returned
+    test_cases:
+      - name: test_append_event
+        input: {}
+        expected: {}
+
+  - name: get_events
+    given: Input data provided
+    when: get_events function called
+    then: Result returned
+    test_cases:
+      - name: test_get_events
+        input: {}
+        expected: {}
+
+  - name: save_snapshot
+    given: Input data provided
+    when: save_snapshot function called
+    then: Result returned
+    test_cases:
+      - name: test_save_snapshot
+        input: {}
+        expected: {}
+
+  - name: get_snapshot
+    given: Input data provided
+    when: get_snapshot function called
+    then: Result returned
+    test_cases:
+      - name: test_get_snapshot
+        input: {}
+        expected: {}
+
+  - name: handle_command
+    given: Input data provided
+    when: handle_command function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_command
+        input: {}
+        expected: {}
+
+  - name: create_aggregate
+    given: Input data provided
+    when: create_aggregate function called
+    then: Result returned
+    test_cases:
+      - name: test_create_aggregate
+        input: {}
+        expected: {}
+
+  - name: apply_event
+    given: Input data provided
+    when: apply_event function called
+    then: Result returned
+    test_cases:
+      - name: test_apply_event
+        input: {}
+        expected: {}
+
+  - name: add_event
+    given: Input data provided
+    when: add_event function called
+    then: Result returned
+    test_cases:
+      - name: test_add_event
+        input: {}
+        expected: {}
+
+  - name: commit_events
+    given: Input data provided
+    when: commit_events function called
+    then: Result returned
+    test_cases:
+      - name: test_commit_events
+        input: {}
+        expected: {}
+
+  - name: create_read_model
+    given: Input data provided
+    when: create_read_model function called
+    then: Result returned
+    test_cases:
+      - name: test_create_read_model
+        input: {}
+        expected: {}
+
+  - name: project_event
+    given: Input data provided
+    when: project_event function called
+    then: Result returned
+    test_cases:
+      - name: test_project_event
+        input: {}
+        expected: {}
+
+  - name: query_read_model
+    given: Input data provided
+    when: query_read_model function called
+    then: Result returned
+    test_cases:
+      - name: test_query_read_model
+        input: {}
+        expected: {}
+
+  - name: rebuild_aggregate
+    given: Input data provided
+    when: rebuild_aggregate function called
+    then: Result returned
+    test_cases:
+      - name: test_rebuild_aggregate
+        input: {}
+        expected: {}
+
+  - name: rebuild_read_model
+    given: Input data provided
+    when: rebuild_read_model function called
+    then: Result returned
+    test_cases:
+      - name: test_rebuild_read_model
+        input: {}
+        expected: {}
+
+  - name: get_current_timestamp
+    given: Input data provided
+    when: get_current_timestamp function called
+    then: Result returned
+    test_cases:
+      - name: test_get_current_timestamp
+        input: {}
+        expected: {}
+
+  - name: generate_event_id
+    given: Input data provided
+    when: generate_event_id function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_event_id
+        input: {}
+        expected: {}
+
+  - name: validate_email
+    given: Input data provided
+    when: validate_email function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_email
+        input: {}
+        expected: {}
+
+  - name: domain_event_type
+    given: Input data provided
+    when: domain_event_type function called
+    then: Result returned
+    test_cases:
+      - name: test_domain_event_type
+        input: {}
+        expected: {}
+
+  - name: domain_event_to_json
+    given: Input data provided
+    when: domain_event_to_json function called
+    then: Result returned
+    test_cases:
+      - name: test_domain_event_to_json
+        input: {}
+        expected: {}
+
+  - name: event_to_domain_event
+    given: Input data provided
+    when: event_to_domain_event function called
+    then: Result returned
+    test_cases:
+      - name: test_event_to_domain_event
+        input: {}
+        expected: {}
+
+  - name: user_view_to_json
+    given: Input data provided
+    when: user_view_to_json function called
+    then: Result returned
+    test_cases:
+      - name: test_user_view_to_json
+        input: {}
+        expected: {}
+
+  - name: order_view_to_json
+    given: Input data provided
+    when: order_view_to_json function called
+    then: Result returned
+    test_cases:
+      - name: test_order_view_to_json
+        input: {}
+        expected: {}
+
+  - name: users_to_json
+    given: Input data provided
+    when: users_to_json function called
+    then: Result returned
+    test_cases:
+      - name: test_users_to_json
+        input: {}
+        expected: {}
+
+  - name: orders_to_json
+    given: Input data provided
+    when: orders_to_json function called
+    then: Result returned
+    test_cases:
+      - name: test_orders_to_json
+        input: {}
+        expected: {}
+
+types:
+  EventStore:
+    # TODO: Define fields
+
+  Event:
+    # TODO: Define fields
+
+  Snapshot:
+    # TODO: Define fields
+
+  Command:
+    # TODO: Define fields
+
+  DomainEvent:
+    # TODO: Define fields
+
+  Query:
+    # TODO: Define fields
+
+  Aggregate:
+    # TODO: Define fields
+
+  AggregateState:
+    # TODO: Define fields
+
+  ReadModel:
+    # TODO: Define fields
+
+  UserView:
+    # TODO: Define fields
+
+  OrderView:
+    # TODO: Define fields
+
+functions:
+  - name: create_event_store
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: append_event
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_events
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: save_snapshot
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_snapshot
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_command
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: create_aggregate
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: apply_event
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: add_event
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: commit_events
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: create_read_model
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: project_event
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: query_read_model
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: rebuild_aggregate
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: rebuild_read_model
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_current_timestamp
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_event_id
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: validate_email
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: domain_event_type
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: domain_event_to_json
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: event_to_domain_event
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: user_view_to_json
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: order_view_to_json
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: users_to_json
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: orders_to_json
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/string
+  # gleam/list
+  # gleam/result
+  # gleam/option.{type Option, None, Some}
+  # gleam/dict.{type Dict}
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

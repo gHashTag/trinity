@@ -1,0 +1,343 @@
+name: llm_ffi
+version: "1.0.0"
+language: zig
+module: llm_ffi
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: init
+    given: Input data provided
+    when: init function called
+    then: Result returned
+    test_cases:
+      - name: test_init
+        input: {}
+        expected: {}
+
+  - name: ffi_chat
+    given: Input data provided
+    when: ffi_chat function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_chat
+        input: {}
+        expected: {}
+
+  - name: ffi_chat_with_model
+    given: Input data provided
+    when: ffi_chat_with_model function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_chat_with_model
+        input: {}
+        expected: {}
+
+  - name: ffi_chat_stream
+    given: Input data provided
+    when: ffi_chat_stream function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_chat_stream
+        input: {}
+        expected: {}
+
+  - name: ffi_is_claude_code_available
+    given: Input data provided
+    when: ffi_is_claude_code_available function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_is_claude_code_available
+        input: {}
+        expected: {}
+
+  - name: ffi_claude_code_chat
+    given: Input data provided
+    when: ffi_claude_code_chat function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_claude_code_chat
+        input: {}
+        expected: {}
+
+  - name: ffi_claude_code_chat_with_model
+    given: Input data provided
+    when: ffi_claude_code_chat_with_model function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_claude_code_chat_with_model
+        input: {}
+        expected: {}
+
+  - name: ffi_is_ona_available
+    given: Input data provided
+    when: ffi_is_ona_available function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_is_ona_available
+        input: {}
+        expected: {}
+
+  - name: ffi_ona_chat
+    given: Input data provided
+    when: ffi_ona_chat function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_ona_chat
+        input: {}
+        expected: {}
+
+  - name: ffi_ona_chat_with_model
+    given: Input data provided
+    when: ffi_ona_chat_with_model function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_ona_chat_with_model
+        input: {}
+        expected: {}
+
+  - name: chat
+    given: Input data provided
+    when: chat function called
+    then: Result returned
+    test_cases:
+      - name: test_chat
+        input: {}
+        expected: {}
+
+  - name: chat_with_model
+    given: Input data provided
+    when: chat_with_model function called
+    then: Result returned
+    test_cases:
+      - name: test_chat_with_model
+        input: {}
+        expected: {}
+
+  - name: chat_stream
+    given: Input data provided
+    when: chat_stream function called
+    then: Result returned
+    test_cases:
+      - name: test_chat_stream
+        input: {}
+        expected: {}
+
+  - name: models
+    given: Input data provided
+    when: models function called
+    then: Result returned
+    test_cases:
+      - name: test_models
+        input: {}
+        expected: {}
+
+  - name: is_claude_code_available
+    given: Input data provided
+    when: is_claude_code_available function called
+    then: Result returned
+    test_cases:
+      - name: test_is_claude_code_available
+        input: {}
+        expected: {}
+
+  - name: claude_chat
+    given: Input data provided
+    when: claude_chat function called
+    then: Result returned
+    test_cases:
+      - name: test_claude_chat
+        input: {}
+        expected: {}
+
+  - name: claude_chat_with_model
+    given: Input data provided
+    when: claude_chat_with_model function called
+    then: Result returned
+    test_cases:
+      - name: test_claude_chat_with_model
+        input: {}
+        expected: {}
+
+  - name: is_ona_available
+    given: Input data provided
+    when: is_ona_available function called
+    then: Result returned
+    test_cases:
+      - name: test_is_ona_available
+        input: {}
+        expected: {}
+
+  - name: ona_chat
+    given: Input data provided
+    when: ona_chat function called
+    then: Result returned
+    test_cases:
+      - name: test_ona_chat
+        input: {}
+        expected: {}
+
+  - name: ona_chat_with_model
+    given: Input data provided
+    when: ona_chat_with_model function called
+    then: Result returned
+    test_cases:
+      - name: test_ona_chat_with_model
+        input: {}
+        expected: {}
+
+  - name: claude_models
+    given: Input data provided
+    when: claude_models function called
+    then: Result returned
+    test_cases:
+      - name: test_claude_models
+        input: {}
+        expected: {}
+
+  - name: chat_with_provider
+    given: Input data provided
+    when: chat_with_provider function called
+    then: Result returned
+    test_cases:
+      - name: test_chat_with_provider
+        input: {}
+        expected: {}
+
+  - name: ffi_chat_with_provider
+    given: Input data provided
+    when: ffi_chat_with_provider function called
+    then: Result returned
+    test_cases:
+      - name: test_ffi_chat_with_provider
+        input: {}
+        expected: {}
+
+types:
+  LlmProvider:
+    # TODO: Define fields
+
+functions:
+  - name: init
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_chat
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_chat_with_model
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_chat_stream
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_is_claude_code_available
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_claude_code_chat
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_claude_code_chat_with_model
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_is_ona_available
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_ona_chat
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_ona_chat_with_model
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: chat
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: chat_with_model
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: chat_stream
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: models
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: is_claude_code_available
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: claude_chat
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: claude_chat_with_model
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: is_ona_available
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ona_chat
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ona_chat_with_model
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: claude_models
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: chat_with_provider
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ffi_chat_with_provider
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

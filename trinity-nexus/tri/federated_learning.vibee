@@ -1,0 +1,407 @@
+# ============================================================================
+# Federated Learning Protocol - Cycle 46
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: federated_learning
+version: "1.0.0"
+language: zig
+module: federated_learning
+
+description: |
+  Federated Learning Protocol — Privacy-preserving distributed model
+  training across agents without sharing raw data. Gradient aggregation,
+  differential privacy, secure aggregation, and model versioning.
+
+  Architecture:
+    Training Coordinator:
+      Central aggregation server (leader via Cycle 43 consensus)
+      Round-based training with configurable epochs
+      Client selection per round (random or contribution-based)
+      Async federated averaging for heterogeneous agents
+      Model checkpoint and version management
+
+    Local Training:
+      Each agent trains on local data only
+      Configurable local epochs and batch size
+      Gradient clipping for stability
+      Early stopping on local convergence
+      VSA-encoded model parameters
+
+    Gradient Aggregation:
+      Federated Averaging (FedAvg): weighted mean
+      Federated SGD (FedSGD): gradient sum
+      Trimmed mean: discard outlier gradients
+      Median aggregation: robust to poisoning
+      Krum: Byzantine-tolerant aggregation
+
+    Differential Privacy:
+      Gaussian noise injection (calibrated to epsilon)
+      Per-sample gradient clipping (max norm)
+      Privacy budget tracking (epsilon accumulation)
+      Moments accountant for tight bounds
+      Configurable privacy level (epsilon, delta)
+
+    Secure Aggregation:
+      Agents submit masked gradients
+      Server sees only aggregate, not individual
+      Dropout tolerance (min participants)
+      Pairwise masking protocol
+      Verification of aggregate correctness
+
+    Model Versioning:
+      Monotonic version numbers
+      Rollback to previous version on degradation
+      A/B testing between model versions
+      Gradient staleness detection
+      Model diff for incremental updates
+
+  Safety:
+    - Max participants per round: 64
+    - Min participants for aggregation: 3
+    - Max local epochs: 10
+    - Max gradient norm: 1.0
+    - Default epsilon: 1.0
+    - Default delta: 1e-5
+    - Max model size: 10MB
+    - Max rounds: 1000
+    - Staleness threshold: 5 rounds
+    - Privacy budget max: 10.0
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_PARTICIPANTS_PER_ROUND: 64
+  MIN_PARTICIPANTS: 3
+  MAX_LOCAL_EPOCHS: 10
+  MAX_GRADIENT_NORM: 1.0
+  DEFAULT_EPSILON: 1.0
+  DEFAULT_DELTA: 0.00001
+  MAX_MODEL_SIZE_BYTES: 10485760
+  MAX_ROUNDS: 1000
+  STALENESS_THRESHOLD: 5
+  PRIVACY_BUDGET_MAX: 10.0
+  DEFAULT_LEARNING_RATE: 0.01
+  NOISE_MULTIPLIER: 1.1
+  CLIP_NORM: 1.0
+  AGGREGATION_TIMEOUT_MS: 30000
+  MODEL_CHECKPOINT_INTERVAL: 10
+
+types:
+  AggregationStrategy:
+    enum:
+      - fed_avg
+      - fed_sgd
+      - trimmed_mean
+      - median
+      - krum
+
+  TrainingPhase:
+    enum:
+      - idle
+      - selecting_clients
+      - distributing_model
+      - local_training
+      - collecting_gradients
+      - aggregating
+      - updating_model
+      - evaluating
+
+  PrivacyLevel:
+    enum:
+      - none
+      - low
+      - medium
+      - high
+      - maximum
+
+  ClientStatus:
+    enum:
+      - available
+      - selected
+      - training
+      - submitted
+      - dropped
+      - excluded
+
+  ModelStatus:
+    enum:
+      - draft
+      - active
+      - deprecated
+      - rolled_back
+
+  TrainingRound:
+    fields:
+      round_id: Int
+      phase: TrainingPhase
+      participants_selected: Int
+      participants_submitted: Int
+      participants_dropped: Int
+      start_ms: Int
+      end_ms: Int
+      model_version: Int
+      aggregation_strategy: AggregationStrategy
+
+  ClientState:
+    fields:
+      agent_id: Int
+      status: ClientStatus
+      local_data_size: Int
+      local_epochs_completed: Int
+      gradient_norm: Float
+      contribution_score: Float
+      rounds_participated: Int
+      last_round_id: Int
+
+  GradientUpdate:
+    fields:
+      agent_id: Int
+      round_id: Int
+      gradient_size_bytes: Int
+      gradient_norm: Float
+      local_loss: Float
+      local_epochs: Int
+      clipped: Bool
+      noise_added: Bool
+
+  PrivacyState:
+    fields:
+      epsilon_spent: Float
+      epsilon_budget: Float
+      delta: Float
+      noise_multiplier: Float
+      clip_norm: Float
+      samples_processed: Int
+      privacy_level: PrivacyLevel
+
+  ModelVersion:
+    fields:
+      version: Int
+      round_created: Int
+      status: ModelStatus
+      size_bytes: Int
+      accuracy: Float
+      loss: Float
+      participants_count: Int
+      created_ms: Int
+
+  AggregationResult:
+    fields:
+      round_id: Int
+      strategy: AggregationStrategy
+      participants_used: Int
+      outliers_removed: Int
+      aggregate_norm: Float
+      aggregation_ms: Int
+      model_improved: Bool
+
+  SecureAggState:
+    fields:
+      round_id: Int
+      masks_collected: Int
+      masks_required: Int
+      aggregate_verified: Bool
+      dropout_count: Int
+
+  FederatedMetrics:
+    fields:
+      total_rounds: Int
+      total_participants: Int
+      total_gradients: Int
+      avg_round_time_ms: Int
+      avg_participants_per_round: Float
+      avg_local_loss: Float
+      global_accuracy: Float
+      privacy_epsilon_spent: Float
+      model_version: Int
+      outliers_detected: Int
+      rollbacks: Int
+
+  FederatedConfig:
+    fields:
+      max_participants: Int
+      min_participants: Int
+      max_local_epochs: Int
+      learning_rate: Float
+      aggregation_strategy: AggregationStrategy
+      enable_differential_privacy: Bool
+      epsilon: Float
+      delta: Float
+      enable_secure_aggregation: Bool
+      model_checkpoint_interval: Int
+
+behaviors:
+  - name: start_round
+    given: Coordinator ready with current model
+    when: New training round initiated
+    then: Clients selected, model distributed
+
+  - name: select_clients
+    given: Available agents and selection criteria
+    when: Round begins
+    then: Subset of agents selected for participation
+
+  - name: train_local
+    given: Agent with local data and global model
+    when: Agent receives model for training
+    then: Local training produces gradient update
+
+  - name: clip_gradient
+    given: Gradient update exceeding max norm
+    when: Gradient clipping enabled
+    then: Gradient scaled to max norm
+
+  - name: add_noise
+    given: Clipped gradient and privacy parameters
+    when: Differential privacy enabled
+    then: Calibrated Gaussian noise added to gradient
+
+  - name: aggregate_gradients
+    given: Collected gradients from participants
+    when: Minimum participants reached or timeout
+    then: Gradients aggregated per strategy
+
+  - name: detect_outlier
+    given: Gradient updates from all participants
+    when: Trimmed mean or Krum aggregation
+    then: Outlier gradients identified and excluded
+
+  - name: update_model
+    given: Aggregated gradient
+    when: Aggregation complete
+    then: Global model updated, version incremented
+
+  - name: evaluate_model
+    given: Updated model and validation data
+    when: Model update applied
+    then: Accuracy and loss computed, rollback if degraded
+
+  - name: rollback_model
+    given: Model degradation detected
+    when: New version worse than previous
+    then: Previous model version restored
+
+  - name: track_privacy
+    given: Privacy budget and noise parameters
+    when: Each round completes
+    then: Epsilon accumulated, budget checked
+
+  - name: get_federated_metrics
+    given: Training state
+    when: Metrics requested
+    then: Returns FederatedMetrics with training stats
+
+tests:
+  # Training (4)
+  - name: basic_round
+    category: training
+    input: "5 agents, 1 round, FedAvg"
+    expected: "Model updated with averaged gradients"
+    description: Basic federated training round
+
+  - name: async_training
+    category: training
+    input: "Agents submit at different speeds"
+    expected: "Aggregation proceeds when min reached"
+    description: Async federated averaging
+
+  - name: local_convergence
+    category: training
+    input: "Agent converges after 3 local epochs"
+    expected: "Early stopping, gradient submitted"
+    description: Local early stopping
+
+  - name: gradient_clipping
+    category: training
+    input: "Gradient with norm 5.0, max 1.0"
+    expected: "Gradient scaled to norm 1.0"
+    description: Gradient norm clipping
+
+  # Privacy (4)
+  - name: noise_injection
+    category: privacy
+    input: "Epsilon 1.0, delta 1e-5"
+    expected: "Gaussian noise calibrated to epsilon"
+    description: Differential privacy noise
+
+  - name: budget_tracking
+    category: privacy
+    input: "10 rounds with epsilon 1.0 each"
+    expected: "Total epsilon tracked via moments accountant"
+    description: Privacy budget accumulation
+
+  - name: budget_exhausted
+    category: privacy
+    input: "Budget 10.0, spent 9.5, next round 1.0"
+    expected: "Training paused, budget exceeded"
+    description: Privacy budget enforcement
+
+  - name: privacy_accuracy_tradeoff
+    category: privacy
+    input: "High privacy (epsilon 0.1) vs low (10.0)"
+    expected: "High privacy = more noise = lower accuracy"
+    description: Privacy-accuracy tradeoff
+
+  # Aggregation (4)
+  - name: fed_avg_weighted
+    category: aggregation
+    input: "3 agents with different data sizes"
+    expected: "Weighted average by data size"
+    description: FedAvg weighted aggregation
+
+  - name: trimmed_mean_outlier
+    category: aggregation
+    input: "5 agents, 1 sends poisoned gradient"
+    expected: "Poisoned gradient trimmed"
+    description: Trimmed mean outlier removal
+
+  - name: krum_byzantine
+    category: aggregation
+    input: "7 agents, 2 Byzantine"
+    expected: "Krum selects honest gradient"
+    description: Byzantine-tolerant Krum
+
+  - name: median_robust
+    category: aggregation
+    input: "5 agents, median aggregation"
+    expected: "Median gradient selected"
+    description: Median aggregation robustness
+
+  # Versioning (3)
+  - name: model_rollback
+    category: versioning
+    input: "New model worse than previous"
+    expected: "Rollback to previous version"
+    description: Model rollback on degradation
+
+  - name: version_monotonic
+    category: versioning
+    input: "10 rounds of training"
+    expected: "Versions 1-10, monotonically increasing"
+    description: Monotonic version numbers
+
+  - name: staleness_detection
+    category: versioning
+    input: "Agent uses model 5 rounds old"
+    expected: "Gradient marked stale, fresh model sent"
+    description: Gradient staleness detection
+
+  # Integration (3)
+  - name: federated_with_comms
+    category: integration
+    input: "Gradients sent via Cycle 41 messages"
+    expected: "Messages route gradients to coordinator"
+    description: Integration with agent communication
+
+  - name: federated_with_consensus
+    category: integration
+    input: "Coordinator elected via Cycle 43 Raft"
+    expected: "Leader serves as aggregation server"
+    description: Integration with consensus protocol
+
+  - name: federated_with_governor
+    category: integration
+    input: "Training respects Cycle 45 budgets"
+    expected: "Memory/CPU limits enforced during training"
+    description: Integration with resource governor

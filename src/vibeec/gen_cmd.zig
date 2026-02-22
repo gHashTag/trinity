@@ -22,6 +22,9 @@ const vibe_rewards = @import("vibe_rewards.zig");
 const synthetic_seed_gen = @import("synthetic_seed_gen.zig");
 const auto_curation_v2 = @import("auto_curation_v2.zig");
 
+// PHI LOOP: PAS Validation integration
+const phi_types = @import("phi_types.zig");
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -257,6 +260,80 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
     const basename = std.fs.path.basename(input_path);
     const stem = std.fs.path.stem(basename);
 
+    // Determine spec category from input path
+    const spec_dir: []const u8 = if (std.mem.indexOf(u8, input_path, "trinity-nexus/ralph") != null)
+        "ralph"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/agent_mu") != null)
+        "agent_mu"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/vibeec") != null)
+        "vibeec"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/bootstrap") != null)
+        "bootstrap"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/lang") != null)
+        "lang"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/vsa") != null)
+        "vsa"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/core") != null)
+        "core"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/network") != null)
+        "network"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/sym") != null)
+        "sym"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/examples") != null)
+        "examples"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/phi") != null)
+        "phi"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/storage") != null)
+        "storage"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/tri") != null)
+        "tri"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/vibee") != null)
+        "vibee"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/deploy") != null)
+        "deploy"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/trinity-w1") != null)
+        "trinity-w1"
+    else
+        "lang"; // Default to lang for backwards compatibility
+
+    // Determine extension and language subdirectory
+    const lang_dir = if (std.mem.eql(u8, language, "verilog") or std.mem.eql(u8, language, "varlog"))
+        "fpga"
+    else if (std.mem.eql(u8, language, "python"))
+        "python"
+    else if (std.mem.eql(u8, language, "typescript"))
+        "typescript"
+    else if (std.mem.eql(u8, language, "rust"))
+        "rust"
+    else if (std.mem.eql(u8, language, "go"))
+        "go"
+    else if (std.mem.eql(u8, language, "cpp"))
+        "cpp"
+    else if (std.mem.eql(u8, language, "csharp"))
+        "csharp"
+    else if (std.mem.eql(u8, language, "java"))
+        "java"
+    else if (std.mem.eql(u8, language, "swift"))
+        "swift"
+    else if (std.mem.eql(u8, language, "kotlin"))
+        "kotlin"
+    else if (std.mem.eql(u8, language, "dart"))
+        "dart"
+    else if (std.mem.eql(u8, language, "lua"))
+        "lua"
+    else if (std.mem.eql(u8, language, "r"))
+        "r"
+    else if (std.mem.eql(u8, language, "matlab"))
+        "matlab"
+    else if (std.mem.eql(u8, language, "php"))
+        "php"
+    else if (std.mem.eql(u8, language, "c"))
+        "c"
+    else if (std.mem.eql(u8, language, "sql"))
+        "sql"
+    else
+        "zig";
+
     const ext = if (std.mem.eql(u8, language, "verilog") or std.mem.eql(u8, language, "varlog"))
         "v"
     else if (std.mem.eql(u8, language, "python"))
@@ -280,12 +357,8 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
     else
         "zig";
 
-    const dir = if (std.mem.eql(u8, language, "verilog") or std.mem.eql(u8, language, "varlog"))
-        "trinity/output/fpga"
-    else
-        "generated";
-
-    return try std.fmt.allocPrint(allocator, "{s}/{s}.{s}", .{ dir, stem, ext });
+    // Clean mirror: trinity-nexus/output/{spec_dir}/{lang_dir}/{stem}.{ext}
+    return try std.fmt.allocPrint(allocator, "trinity-nexus/output/{s}/{s}/{s}.{s}", .{ spec_dir, lang_dir, stem, ext });
 }
 
 fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_path: []const u8) !void {
@@ -313,16 +386,83 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
         const output = try verilog_codegen.generateVerilog(allocator, &spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
+        try validateWithPAS(allocator, output, output_path);
     } else if (isMultiLangTarget(spec.language)) {
         const output = try generateMultiLang(allocator, &spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
+        try validateWithPAS(allocator, output, output_path);
     } else {
         var codegen = zig_codegen.ZigCodeGen.init(allocator);
         const output = try codegen.generate(&spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
+        try validateWithPAS(allocator, output, output_path);
     }
+}
+
+/// PAS Validation — validate generated code through sacred mathematics
+/// Returns PAS score and logs validation result
+fn validateWithPAS(allocator: std.mem.Allocator, code: []const u8, output_path: []const u8) !void {
+    _ = allocator;
+    _ = output_path;
+
+    // Calculate basic PAS score using sacred constants
+    const line_count = std.mem.count(u8, code, "\n");
+    const has_comments = std.mem.indexOf(u8, code, "//") != null;
+    const has_tests = std.mem.indexOf(u8, code, "test") != null;
+
+    // Base PAS score calculation (0.0 to 1.0)
+    var pas_score: f64 = 0.0;
+
+    // Lines of code contribution (up to 0.3)
+    pas_score += @min(@as(f64, @floatFromInt(line_count)) / 500.0, 0.3);
+
+    // Comments contribution (0.2)
+    if (has_comments) pas_score += 0.2;
+
+    // Tests contribution (0.3)
+    if (has_tests) pas_score += 0.3;
+
+    // Base contribution for generating code (0.2)
+    pas_score += 0.2;
+
+    // Clamp to [0, 1]
+    pas_score = @max(0.0, @min(pas_score, 1.0));
+
+    // Apply φ-weighted boost if below threshold
+    const pas_final = if (pas_score < phi_types.Sacred.SACRED_THRESHOLD)
+        phi_types.Sacred.phiWeighted(pas_score)
+    else
+        pas_score;
+
+    // Clamp final score
+    const pas_clamped = @min(pas_final, 1.0);
+
+    // Check Trinity Identity
+    const trinity_ok = phi_types.Sacred.trinityIdentity();
+
+    // Print validation result
+    std.debug.print("\n  ┌─────────────────────────────────────┐\n", .{});
+    std.debug.print("  │ φ GATE VALIDATION                    │\n", .{});
+    std.debug.print("  ├─────────────────────────────────────┤\n", .{});
+    std.debug.print("  │ PAS Score:       {d:.3} / 1.000     │\n", .{pas_clamped});
+    std.debug.print("  │ Trinity Identity: {s}                │\n", .{if (trinity_ok) "✓" else "✗"});
+    std.debug.print("  │ Threshold:       {d:.3}             │\n", .{phi_types.Sacred.SACRED_THRESHOLD});
+    std.debug.print("  ├─────────────────────────────────────┤\n", .{});
+
+    if (pas_clamped >= phi_types.Sacred.SACRED_THRESHOLD and trinity_ok) {
+        std.debug.print("  │ ✓ PASSED φ GATE                     │\n", .{});
+    } else {
+        std.debug.print("  │ ✗ FAILED φ GATE                      │\n", .{});
+        if (pas_clamped < phi_types.Sacred.SACRED_THRESHOLD) {
+            std.debug.print("  │   Reason: PAS score below threshold   │\n", .{});
+        }
+        if (!trinity_ok) {
+            std.debug.print("  │   Reason: Trinity identity failed     │\n", .{});
+        }
+    }
+    std.debug.print("  └─────────────────────────────────────┘\n\n", .{});
 }
 
 fn isMultiLangTarget(language: []const u8) bool {

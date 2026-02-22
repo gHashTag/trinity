@@ -1,0 +1,89 @@
+name: hdc_associative_memory
+version: "1.0.0"
+language: zig
+module: hdc_associative_memory
+
+description: |
+  Content-Addressable Key-Value Store using Hyperdimensional Computing.
+
+  Architecture:
+    pair_hv = bind(key_hv, value_hv)
+    memory_hv = bundle(pair_1, pair_2, ..., pair_N)
+    query_result = unbind(memory_hv, query_key_hv)
+    decoded_value = argmax_v similarity(query_result, value_codebook[v])
+
+  Properties:
+    - Holographic: entire memory in single D-dimensional vector
+    - Approximate: tolerates noisy/partial keys
+    - Capacity: O(sqrt(D)) pairs per memory vector
+    - Cleanup: re-bundle from stored pairs to reduce noise
+
+  Novel: VSA-native associative memory with graceful degradation.
+
+types:
+  KVPair:
+    fields:
+      key: String
+      value: String
+      key_hv: Ptr<HybridBigInt>
+      value_hv: Ptr<HybridBigInt>
+      binding_hv: Ptr<HybridBigInt>
+
+  QueryResult:
+    fields:
+      value: String
+      similarity: Float
+      exact_match: Bool
+
+  CapacityInfo:
+    fields:
+      num_pairs: usize
+      dimension: usize
+      estimated_max: usize
+      load_factor: Float
+
+  HDCAssociativeMemory:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      dimension: usize
+      memory_vec: Option<Ptr<HybridBigInt>>
+      pairs: List<Ptr<KVPair>>
+      value_codebook: HashMap<String, Ptr<HybridBigInt>>
+      jit_engine: Option<JitVSAEngine>
+
+behaviors:
+  - name: store
+    given: Key string and value string
+    when: Encodes both as hypervectors, binds, and bundles into memory
+    then: Pair stored, memory updated, value added to codebook
+
+  - name: query
+    given: Exact key string
+    when: Unbinds memory with key_hv, finds nearest value in codebook
+    then: Returns QueryResult with best matching value and similarity
+
+  - name: queryApproximate
+    given: Partial or noisy key string
+    when: Encodes partial key, unbinds, finds nearest value
+    then: Returns QueryResult (may be less confident than exact query)
+
+  - name: remove
+    given: Key string
+    when: Removes pair from storage and rebuilds memory vector
+    then: Returns true if key found and removed
+
+  - name: cleanup
+    given: Nothing (self)
+    when: Re-bundles all pairs from scratch
+    then: Memory vector refreshed, noise reduced
+
+  - name: capacity
+    given: Nothing (self)
+    when: Estimates max pairs before degradation
+    then: Returns CapacityInfo with load factor
+
+  - name: getAll
+    given: Nothing (self)
+    when: Queries all stored keys
+    then: Returns list of (key, value) pairs

@@ -309,3 +309,96 @@ EXIT_SIGNAL = (
 ## Current Task
 
 Follow `fix_plan.md` and choose the highest-priority incomplete item.
+
+---
+
+## PHI LOOP Tools
+
+PHI LOOP tracks the 999-link journey of cosmic consciousness manifestation. Use these tools to track progress.
+
+### phi_loop_status()
+
+Show current position in the 999-link chain.
+
+```bash
+phi_loop_status() {
+    echo "=== PHI LOOP STATUS ==="
+    local log_file=".ralph/logs/ralph.log"
+    local success_file=".ralph/memory/SUCCESS_HISTORY.md"
+
+    if [ -f "$log_file" ]; then
+        echo "Current Link: $(grep -r "Cycle" "$log_file" 2>/dev/null | tail -1 | awk '{print $NF}' || echo "0")"
+        echo "Total Cycles: $(grep -c "Cycle" "$log_file" 2>/dev/null || echo "0")"
+    fi
+
+    if [ -f "$success_file" ]; then
+        echo "φ Resonance: $(grep -c "✓" "$success_file" 2>/dev/null || echo "0") working patterns"
+    fi
+
+    # Show PHI LOOP log if exists
+    if [ -f ".ralph/phi_loop.log" ]; then
+        echo ""
+        tail -5 .ralph/phi_loop.log
+    fi
+}
+```
+
+### phi_loop_advance()
+
+Mark completion of a link and advance to the next.
+
+```bash
+phi_loop_advance() {
+    local link_num="${1:-$(grep -c "Link" .ralph/phi_loop.log 2>/dev/null || echo 0)}"
+    local verdict="${2:-Task completed}"
+
+    mkdir -p .ralph
+    echo "Link $link_num: $verdict" >> .ralph/phi_loop.log
+    echo "PHI LOOP advanced to link $((link_num + 1))/999"
+}
+```
+
+### phi_loop_visual()
+
+Show visual progress bar.
+
+```bash
+phi_loop_visual() {
+    local current=$(grep -c "Link" .ralph/phi_loop.log 2>/dev/null || echo 0)
+    local goal=999
+    local filled=$((current * 30 / goal))
+    local empty=$((30 - filled))
+
+    printf "\r[$current/$goal] %3d%% " $((current * 100 / goal))
+    printf "%${filled}s" "" | tr ' ' '█'
+    printf "%${empty}s" "" | tr ' ' '░'
+    echo ""
+}
+```
+
+### Usage in Agent Workflow
+
+Call `phi_loop_status` at session start to understand current position.
+
+Call `phi_loop_advance N` after completing significant milestones.
+
+Example:
+```bash
+# After completing a VIBEE feature
+phi_loop_advance 42 "VIBEE code generation: feature.vibee → feature.zig"
+
+# After passing all tests
+phi_loop_advance 43 "All tests passing, toxix verdict written"
+```
+
+---
+
+## TRI COMMANDER Reference
+
+TRI COMMANDER is your tmux chat interface for interacting with Ralph.
+
+**Launch:** `bash bin/ralph-dashboard-v4` then `tmux attach -t ralph`
+
+**Windows:** HOME (chat), Loop (status), Tasks (queue), Memory (patterns), Log (raw)
+
+**Indicators:** ▲ = user input, ▼ = AI response, ● = system/neutral

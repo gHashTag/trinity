@@ -1,0 +1,144 @@
+name: hdc_golden_chain_v2_10_dao_staking
+version: "2.10.0"
+language: zig
+module: golden_chain
+
+# Golden Chain v2.10 — Trinity DAO Full Governance v1.0 + $TRI Staking Rewards
+# Agent: #19 Lucas | Cycle: 66
+
+constants:
+  MAX_QUARK_RECORDS: 144
+  QUARK_EXPORT_VERSION: 14
+  QUARK_EXPORT_HEADER_SIZE: 74
+  DAO_GOVERNANCE_QUORUM_PCT: 67
+  DAO_MIN_PROPOSAL_STAKE: 1000
+  STAKING_MIN_AMOUNT: 100
+  STAKING_REWARD_RATE_BPS: 500
+  STAKING_EPOCH_DURATION_US: 86400000000
+  STAKING_MAX_VALIDATORS: 1000
+
+types:
+  QuarkType:
+    enum: u7
+    new_variants:
+      - dao_full_governance: 104    # GoalParse
+      - tri_staking: 105            # Decompose
+      - reward_distribution: 106    # Schedule
+      - governance_quorum: 107      # Execute
+      - staking_validator: 108      # Monitor
+      - yield_optimizer: 109        # Adapt
+      - dao_treasury: 110           # Synthesize
+      - staking_anchor: 111         # Deliver
+
+  ChainMessageType:
+    new_variants:
+      - DAOFullGovernance
+      - TRIStaking
+      - RewardDistribution
+      - StakingValidation
+
+  DAOFullGovernanceState:
+    fields:
+      total_proposals: u32
+      passed_proposals: u32
+      quorum_threshold_pct: u8
+      governance_epoch: u32
+      governance_hash: "[32]u8"
+
+  TRIStakingState:
+    fields:
+      total_staked: u64
+      active_stakers: u32
+      reward_pool: u64
+      last_reward_us: i64
+      staking_hash: "[32]u8"
+
+  RewardDistributionState:
+    fields:
+      total_distributed: u64
+      distribution_count: u32
+      unclaimed_rewards: u64
+      last_distribution_us: i64
+      distribution_hash: "[32]u8"
+
+  StakingValidatorState:
+    fields:
+      active_validators: u16
+      total_validated: u32
+      slashed_count: u16
+      last_validation_us: i64
+      validator_hash: "[32]u8"
+
+behaviors:
+  - name: initDAOFullGovernance
+    given: Agent with dao_full_governance_state
+    when: DAO full governance initialization triggered
+    then: Increments passed_proposals, computes governance_hash
+
+  - name: stakeTRI
+    given: Agent with tri_staking_state
+    when: $TRI staking executed
+    then: Increments active_stakers, updates staking_hash
+
+  - name: distributeRewards
+    given: Agent with reward_distribution_state
+    when: Reward distribution triggered
+    then: Increments distribution_count, updates distribution_hash
+
+  - name: validateStaking
+    given: Agent with staking_validator_state
+    when: Staking validation triggered
+    then: Increments total_validated, updates validator_hash
+
+  - name: daoFullGovernanceVerify
+    given: Agent with DAO full governance state
+    when: Phase Q verification
+    then: Q1 governance active, Q2 staking active, Q3 rewards distributed
+
+verification:
+  phase_Q:
+    - Q1: dao_full_governance_state.passed_proposals > 0
+    - Q2: tri_staking_state.active_stakers > 0
+    - Q3: reward_distribution_state.distribution_count > 0
+
+export:
+  version: 14
+  header_size: 74
+  new_bytes: "+4 from v13: passed_proposals(u16) + active_stakers(u16)"
+  backward_compatible: "v1-v14"
+
+quark_distribution:
+  GoalParse: 18      # +dao_full_governance
+  Decompose: 18      # +tri_staking
+  Schedule: 18       # +reward_distribution
+  Execute: 19        # +governance_quorum
+  Monitor: 18        # +staking_validator
+  Adapt: 17          # +yield_optimizer
+  Synthesize: 18     # +dao_treasury
+  Deliver: 18        # +staking_anchor
+  total: 144
+
+tests:
+  - test_u7_quark_type_112_variants
+  - test_dao_full_governance_label
+  - test_tri_staking_label
+  - test_reward_distribution_label
+  - test_governance_quorum_label
+  - test_staking_validator_label
+  - test_yield_optimizer_label
+  - test_dao_treasury_label
+  - test_staking_anchor_label
+  - test_is_dao_full_governance_quark
+  - test_is_tri_staking_quark
+  - test_is_reward_distribution_quark
+  - test_is_staking_validator_quark
+  - test_dao_full_governance_state_defaults
+  - test_tri_staking_state_defaults
+  - test_reward_distribution_state_defaults
+  - test_staking_validator_state_defaults
+  - test_phase_Q_pass
+  - test_phase_Q_fail
+  - test_export_v14
+  - test_144_quark_distribution
+  - test_chain_message_type_v210
+  - test_v210_constants

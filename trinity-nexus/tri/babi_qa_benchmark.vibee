@@ -1,0 +1,83 @@
+name: babi_qa_benchmark
+version: "1.0.0"
+language: zig
+module: babi_qa_benchmark
+description: "Level 11.16 — bAbI-style QA tasks on VSA Knowledge Graph. Tests multi-hop symbolic reasoning (1-hop through 3-hop) and list/set queries using bind/unbind/bundle operations over ternary hypervectors."
+
+constants:
+  DIM: 1024
+  PERSONS: 10
+  PLACES: 10
+  ITEMS: 8
+  REGIONS: 5
+
+types:
+  BabiQaResult:
+    fields:
+      task: Int
+      correct: Int
+      total: Int
+      accuracy: Float
+      description: "Result for a single bAbI-style QA task. Each task tests a specific reasoning pattern (1-hop, 2-hop, 3-hop, or list/set) over a VSA knowledge graph. Triples are stored as bind(subject, relation) -> object and retrieved via unbind."
+
+behaviors:
+  - name: singleFact
+    given: 10 persons each bound to a unique location via bind(person, AT_LOCATION) -> place, stored in VSA knowledge graph
+    when: For each person, query location by unbinding bind(person, AT_LOCATION) and finding nearest match among all place vectors via cosine similarity
+    then: 1-hop person->location retrieval achieves 100% accuracy — single bind/unbind is exact in clean VSA with orthogonal base vectors
+
+  - name: twoFacts
+    given: 8 items each bound to an owner via bind(item, OWNED_BY) -> person, and each person bound to a location via bind(person, AT_LOCATION) -> place
+    when: For each item, resolve 2-hop chain item->owner->location by first unbinding owner from item, then unbinding location from resolved owner
+    then: 2-hop item->owner->location retrieval achieves 100% accuracy — sequential unbind chain preserves signal through two clean hops
+
+  - name: threeFacts
+    given: Items bound to owners, owners bound to locations, locations bound to regions via bind(place, IN_REGION) -> region, forming a 3-hop chain
+    when: For each item, resolve 3-hop chain item->owner->location->region by chaining three sequential unbind operations
+    then: 3-hop item->owner->location->region retrieval achieves 100% accuracy — three sequential unbinds remain exact with orthogonal base vectors at DIM=1024
+
+  - name: listSets
+    given: Multiple items assigned to same owner via bundle(bind(item1, OWNED_BY), bind(item2, OWNED_BY), ...) and owners bound to locations
+    when: Query all items belonging to a person at a specific location using 2-hop reasoning with bundled item sets
+    then: Multi-entity 2-hop bundle query achieves 100% accuracy — bundle preserves all item signals and 2-hop chain resolves correctly for each bundled entity
+
+test_cases:
+  - name: test_single_fact_all_persons
+    input: "Query location for each of 10 persons using 1-hop unbind"
+    expected: "Accuracy = 100%, all 10 person->location queries resolve correctly"
+
+  - name: test_single_fact_cosine_threshold
+    input: "Verify cosine similarity between query result and correct location exceeds 0.9"
+    expected: "All cosine similarities > 0.9 for 1-hop clean queries"
+
+  - name: test_two_facts_all_items
+    input: "Query location for each of 8 items using 2-hop chain item->owner->location"
+    expected: "Accuracy = 100%, all 8 items resolve to correct location through owner"
+
+  - name: test_two_facts_intermediate_check
+    input: "Verify intermediate owner resolution is correct before second hop"
+    expected: "All 8 intermediate owner lookups match ground truth before location hop"
+
+  - name: test_three_facts_all_items
+    input: "Query region for each of 8 items using 3-hop chain item->owner->location->region"
+    expected: "Accuracy = 100%, all 8 items resolve to correct region through 3-hop chain"
+
+  - name: test_three_facts_chain_integrity
+    input: "Verify each hop in the 3-hop chain independently resolves correctly"
+    expected: "Hop 1 (item->owner), hop 2 (owner->location), hop 3 (location->region) each at 100%"
+
+  - name: test_list_sets_bundled_items
+    input: "Query all items owned by a person who is at a specific location using bundled 2-hop"
+    expected: "Accuracy = 100%, bundled multi-entity query resolves all items for target person"
+
+  - name: test_list_sets_no_false_positives
+    input: "Verify bundled query does not return items belonging to other persons"
+    expected: "Zero false positives — only items bound to target owner are retrieved"
+
+  - name: test_orthogonality_baseline
+    input: "Verify all base person, place, item, region vectors are near-orthogonal"
+    expected: "Average pairwise cosine similarity < 0.1 across all base vectors at DIM=1024"
+
+  - name: test_all_tasks_100_percent
+    input: "Run all 4 bAbI tasks (singleFact, twoFacts, threeFacts, listSets) and aggregate"
+    expected: "All 4 tasks at 100% accuracy — VSA KG achieves perfect symbolic QA on clean data"

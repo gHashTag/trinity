@@ -40,7 +40,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import QuantumCanvas from '../components/QuantumCanvas';
 import type { VizMode } from '../components/QuantumCanvas';
 import ChatMessage from '../components/chat/ChatMessage';
-import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, fetchPasStatus, fetchPasAnalysis, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics, type PasStatus, type PasAnalysis } from '../services/chatApi';
+import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, fetchPasStatus, fetchPasAnalysis, fetchOrchestratorStatus, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics, type PasStatus, type PasAnalysis, type OrchestratorStatus } from '../services/chatApi';
 import { connectPasWebSocket, disconnectPasWebSocket, type PasWsMessage, type PasWsCallbacks } from '../services/pasWebSocket';
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
 import KoscheiStatusWidget from '../components/KoscheiStatusWidget';
@@ -489,6 +489,10 @@ export default function TrinityCanvas() {
   const [pasRecommendations, setPasRecommendations] = useState<PasWsMessage[]>([]);
   const [pasProgress, setPasProgress] = useState<PasWsMessage[]>([]);
   const [pasAlerts, setPasAlerts] = useState<PasWsMessage[]>([]);
+
+  // Cycle 59: Trinity Orchestrator state
+  const [orchestratorStatus, setOrchestratorStatus] = useState<OrchestratorStatus | null>(null);
+  const [orchestratorExpanded, setOrchestratorExpanded] = useState(true);
 
   // Mirror RAZUM: inline chat with history (v2.6)
   const [mChatInput, setMChatInput] = useState('');
@@ -980,6 +984,19 @@ export default function TrinityCanvas() {
     const id = setInterval(refreshPas, 5000); // Poll every 5 seconds
     return () => clearInterval(id);
   }, [layer, refreshPas]);
+
+  // ─── Cycle 59: Trinity Orchestrator polling ───────────────────────────────────────
+
+  useEffect(() => {
+    if (layer !== 'tools') return;
+    const loadOrchestrator = async () => {
+      const status = await fetchOrchestratorStatus();
+      setOrchestratorStatus(status);
+    };
+    loadOrchestrator();
+    const id = setInterval(loadOrchestrator, 10000); // Poll every 10 seconds
+    return () => clearInterval(id);
+  }, [layer]);
 
   // ─── PAS v8.21 WebSocket connection (real-time) ───────────────────────────────
 
@@ -1998,6 +2015,84 @@ export default function TrinityCanvas() {
                       ) : (
                         <div style={{ color: 'rgba(255,215,0,0.15)', fontSize: 8, fontFamily: MONO, padding: 4, textAlign: 'center' }}>
                           PAS v8.21 — Pattern Analysis System
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Cycle 59: Trinity Orchestrator — φ-weighted consensus ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                  <div onClick={() => setOrchestratorExpanded(!orchestratorExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
+                      ORCHESTRATOR
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>
+                      {orchestratorExpanded ? '-' : '+'}
+                    </span>
+                  </div>
+                  {orchestratorExpanded && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {orchestratorStatus ? (
+                        <>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: orchestratorStatus.trinity_verified ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              {orchestratorStatus.trinity_verified ? '✓' : '✗'} φ²+1/φ²=3
+                            </span>
+                            <span style={{ color: '#ffd700' }}>
+                              Link:{orchestratorStatus.link}/{999}
+                            </span>
+                            <span style={{ color: orchestratorStatus.consensus_score > 1.0 ? '#00e599' : 'rgba(255,215,0,0.5)' }}>
+                              Consensus:{orchestratorStatus.consensus_score.toFixed(3)}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: orchestratorStatus.passed > 0 ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              Passed:{orchestratorStatus.passed}
+                            </span>
+                            <span style={{ color: orchestratorStatus.failed > 0 ? '#ff4444' : 'rgba(255,215,0,0.3)' }}>
+                              Failed:{orchestratorStatus.failed}
+                            </span>
+                            <span style={{ color: orchestratorStatus.circuit_breaker_open ? '#ff4444' : 'rgba(255,215,0,0.3)' }}>
+                              CB:{orchestratorStatus.circuit_breaker_open ? 'OPEN' : 'CLOSED'}
+                            </span>
+                            <span style={{ color: '#ffd700' }}>
+                              Agents:{orchestratorStatus.agents_active}
+                            </span>
+                          </div>
+                          {/* Consensus gauge */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.4)' }}>φ:</span>
+                            <div style={{ flex: 1, height: 3, background: 'rgba(255,215,0,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${Math.min(100, (orchestratorStatus.consensus_score / 1.618) * 100)}%`,
+                                height: '100%',
+                                background: `linear-gradient(90deg, #ffd700, #00e599)`,
+                                borderRadius: 2
+                              }} />
+                            </div>
+                          </div>
+                          {/* State badge */}
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <span style={{
+                              padding: '2px 6px',
+                              borderRadius: 4,
+                              background: orchestratorStatus.state === 'idle' ? 'rgba(0,229,153,0.15)' : 'rgba(255,215,0,0.15)',
+                              border: `1px solid ${orchestratorStatus.state === 'idle' ? 'rgba(0,229,153,0.3)' : 'rgba(255,215,0,0.3)'}`,
+                              color: orchestratorStatus.state === 'idle' ? '#00e599' : '#ffd700',
+                              fontSize: 7,
+                              fontFamily: MONO,
+                              fontWeight: 600,
+                              letterSpacing: 1
+                            }}>
+                              {orchestratorStatus.state.toUpperCase()}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ color: 'rgba(255,215,0,0.15)', fontSize: 8, fontFamily: MONO, padding: 4, textAlign: 'center' }}>
+                          Trinity Orchestrator — Cycle 59
                         </div>
                       )}
                     </div>

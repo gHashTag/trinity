@@ -1,0 +1,174 @@
+name: hdc_golden_chain_v2_0_immortal
+version: "2.0.0"
+language: zig
+module: golden_chain
+
+description: |
+  Golden Chain v2.0: Immortal Self-Verifying Agent.
+  Builds on v1.5 (56 quarks, 29 QuarkTypes, 6-phase verification, QGC1 v3 export).
+  Adds 3 new QuarkTypes (32 total, FULL u5), 64 quarks per query,
+  self-repair engine, immortal persistence, evolution loop,
+  Phase G verification, export v4 (34-byte header).
+  TVC integration via SHA256 fingerprint for corpus storage compatibility.
+
+constants:
+  SELF_REPAIR_CONFIDENCE_THRESHOLD: 0.3
+  MAX_REPAIR_RECORDS: 16
+  MAX_EVOLUTION_RECORDS: 32
+  DEFAULT_MAX_GENERATIONS: 1000
+  DEFAULT_FITNESS_THRESHOLD: 0.7
+  QUARK_EXPORT_VERSION: 4
+  QUARK_EXPORT_HEADER_SIZE: 34
+
+types:
+  # 3 new QuarkType variants (indices 29-31, fills u5 to 32/32)
+  QuarkType_v2_0:
+    variants:
+      self_repair: 29             # Self-repair checkpoint
+      immortal_persist: 30        # Persistence checkpoint
+      evolution_checkpoint: 31    # Evolution checkpoint
+
+  # 4 new ChainMessageType variants
+  ChainMessageType_v2_0:
+    variants:
+      SelfRepairEvent: "Self-repair action taken"
+      ImmortalPersist: "Persistence checkpoint"
+      EvolutionStep: "Evolution generation step"
+      ChainHealthCheck: "Chain health assessment"
+
+  SelfRepairState:
+    description: "Agent self-repair state machine"
+    variants:
+      healthy: "All quarks valid"
+      degraded: "Some quarks below threshold"
+      repairing: "Actively repairing chain"
+      repaired: "Chain repaired successfully"
+
+  SelfRepairType:
+    description: "Type of repair operation"
+    variants:
+      hash_recompute: "Re-link prev_hash and recompute current_hash"
+      confidence_restore: "Restore confidence to threshold"
+      entangle_fix: "Reset broken entanglement"
+      chain_rebuild: "Full chain rebuild from point"
+
+  RepairRecord:
+    fields:
+      broken_index: u8
+      repair_type: SelfRepairType
+      confidence_before: f32
+      confidence_after: f32
+      timestamp_us: i64
+
+  EvolutionConfig:
+    fields:
+      max_generations: u16        # default 1000
+      fitness_threshold: f32      # default 0.7
+
+  EvolutionRecord:
+    fields:
+      generation: u16
+      fitness_score: f32
+      repairs_applied: u8
+      quarks_healthy: u8
+      timestamp_us: i64
+
+  ImmortalState:
+    description: "Persistence state for TVC-compatible immortality"
+    fields:
+      last_persist_us: i64
+      persist_count: u32
+      restore_count: u32
+      uptime_start_us: i64
+      tvc_corpus_hash: "[32]u8"   # SHA256 fingerprint for TVC cross-verification
+
+  ChainHealthReport:
+    fields:
+      total: u8
+      healthy: u8
+      repaired: u8
+      broken: u8
+      health_score: f32
+
+behaviors:
+  - name: selfRepairChain
+    given: A GoldenChainAgent with quarks recorded
+    when: selfRepairChain() is called
+    then: Scans for broken quarks (hash mismatch, low confidence), repairs first found, returns RepairRecord or null
+
+  - name: getChainHealth
+    given: A GoldenChainAgent with quarks recorded
+    when: getChainHealth() is called
+    then: Returns ChainHealthReport with healthy/repaired/broken counts and health_score
+
+  - name: persistState
+    given: A GoldenChainAgent with chain state
+    when: persistState() is called
+    then: Computes SHA256 fingerprint of all quark+provenance hashes, stores in tvc_corpus_hash
+
+  - name: restoreState
+    given: A serialized chain buffer
+    when: restoreState(buf) is called
+    then: Deserializes chain, increments restore_count, returns true if successful
+
+  - name: evolveChain
+    given: A GoldenChainAgent with chain health data
+    when: evolveChain() is called
+    then: Records EvolutionRecord with generation, fitness_score, increments generation
+
+  - name: selfRepairVerify
+    given: A GoldenChainAgent with repair records
+    when: selfRepairVerify() (Phase G) is called
+    then: G1 repaired quarks valid, G2 tvc_corpus_hash consistent with chain state
+
+tests:
+  - name: QuarkType has 32 variants
+    assert: All 32 QuarkType variants accessible and distinct (FULL u5)
+
+  - name: v2.0 QuarkType labels unique
+    assert: SELF_RPR, IMMORTAL, EVOLVE all unique across all 32 labels
+
+  - name: isSelfRepairQuark classification
+    assert: Only self_repair returns true
+
+  - name: isImmortalQuark classification
+    assert: Only immortal_persist returns true
+
+  - name: isEvolutionQuark classification
+    assert: Only evolution_checkpoint returns true
+
+  - name: SelfRepairState transitions
+    assert: State transitions between healthy, degraded, repairing, repaired work
+
+  - name: selfRepairChain detects broken quark
+    assert: Returns RepairRecord for quark with hash mismatch
+
+  - name: selfRepairChain repairs hash mismatch
+    assert: After repair, chain hashes are valid, repair_state is repaired
+
+  - name: selfRepairChain handles healthy chain
+    assert: Returns null for chain with all valid hashes
+
+  - name: getChainHealth returns correct counts
+    assert: Reports correct healthy, broken, repaired counts and health_score
+
+  - name: persistState produces valid fingerprint
+    assert: Fingerprint is non-zero, persist_count incremented
+
+  - name: restoreState roundtrip
+    assert: Serialize+deserialize preserves v2.0 fields (repair, evolution, persist)
+
+  - name: evolveChain tracks generation
+    assert: Generation increments, fitness_score matches health, evolution_count grows
+
+  - name: Phase G selfRepairVerify passes
+    assert: Passes with correct repair state and matching tvc_corpus_hash
+
+  - name: Phase G fails with invalid repair
+    assert: Fails when repaired quark still has bad hash
+
+  - name: serializeQuarkChain v4 roundtrip
+    assert: Serialize+deserialize preserves repair/evolution/persist in 34-byte header
+
+  - name: v2.0 QuarkType verification count
+    assert: 29 work quarks + 3 verification quarks = 32 total

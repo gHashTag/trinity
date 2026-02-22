@@ -1,0 +1,88 @@
+name: sota_tech_report
+version: "1.0.0"
+language: zig
+module: sota_tech_report
+description: >
+  SOTA Technology Report — structured comparison of Trinity ternary computing
+  against state-of-the-art systems. Covers VSA operations, memory efficiency,
+  inference speed, and symbolic reasoning benchmarks.
+
+constants:
+  TRINITY_VERSION: "0.11.0"
+  TRIT_DENSITY: 1.5849625007211563
+  MEMORY_RATIO_VS_F32: 20
+  SIMD_SPEEDUP_MIN: 3
+  SIMD_SPEEDUP_MAX: 16
+
+types:
+  TechCategory:
+    fields:
+      name: String
+      description: String
+
+  ProjectTech:
+    fields:
+      name: String
+      category: String
+      version: String
+      metric_name: String
+      metric_value: Float
+      metric_unit: String
+      verified: Bool
+
+  ComparisonEntry:
+    fields:
+      metric: String
+      trinity_value: Float
+      baseline_value: Float
+      ratio: Float
+      unit: String
+      advantage: Bool
+
+  SotaReport:
+    fields:
+      title: String
+      version: String
+      timestamp: Int
+      categories: List<String>
+      total_metrics: Int
+      advantages_count: Int
+      summary: String
+
+behaviors:
+  - name: categorize_tech
+    given: A technology name and its metrics
+    when: Classification requested
+    then: Return TechCategory with appropriate domain assignment
+
+  - name: compare_against_baseline
+    given: Trinity metric and float32 baseline metric
+    when: Comparison requested
+    then: Return ComparisonEntry with ratio and advantage flag
+
+  - name: generate_report
+    given: All ProjectTech entries and ComparisonEntries
+    when: Full report generation requested
+    then: Return SotaReport with summary statistics
+
+  - name: validate_claims
+    given: A list of claimed metrics
+    when: Empirical validation requested
+    then: Return list of validated claims with pass/fail status
+
+test_cases:
+  - name: test_memory_advantage
+    input: "Compare ternary 1.58 bits/trit vs float32 32 bits"
+    expected: "Ratio >= 20x memory savings"
+
+  - name: test_simd_speedup
+    input: "Compare SIMD-optimized VSA ops vs scalar"
+    expected: "Speedup >= 3x for all operations"
+
+  - name: test_symbolic_accuracy
+    input: "bAbI + CLUTRR combined accuracy"
+    expected: "100% on all 190 queries"
+
+  - name: test_trinity_identity
+    input: "Verify phi^2 + 1/phi^2 = 3"
+    expected: "Identity holds within epsilon 1e-10"

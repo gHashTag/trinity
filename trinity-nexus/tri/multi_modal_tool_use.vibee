@@ -1,0 +1,493 @@
+# ============================================================================
+# Multi-Modal Tool Use Engine - Cycle 27
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: multi_modal_tool_use
+version: "1.0.0"
+language: zig
+module: multi_modal_tool_use
+
+description: |
+  Multi-Modal Tool Use Engine — Local Tool Execution from any modality.
+  Cycle 27 feature: file read/write, code execution, system commands
+  triggered from text, vision, voice, or code modalities.
+
+  Architecture:
+    Input: Any modality (text/image/audio/code)
+    → Intent Detection: What tool does the user want?
+    → Tool Selection: Match intent to available tool
+    → Parameter Extraction: Extract args from multi-modal input
+    → Tool Execution: Run tool in sandboxed environment
+    → Result Encoding: Encode result back to VSA space
+    → Output: Return in requested modality
+
+  Tool Categories:
+    File Operations: read, write, list, search, delete
+    Code Execution: compile, run, test, benchmark
+    System: env info, process list, disk usage
+    Transform: convert format, resize image, transcode audio
+    Analysis: code review, security scan, lint
+
+  Safety:
+    - All tools run in sandboxed environment
+    - File operations restricted to project directory
+    - Code execution has timeout and memory limits
+    - No network access from tools (local-only)
+
+  Cross-Modal Tool Use Examples:
+    - Voice: "Read the file config.zig" → File Read → Voice output
+    - Image: [screenshot of error] → Code Fix → Text output
+    - Text: "Run tests and fix failures" → Execute + Fix → Text output
+    - Code: [function] → "Benchmark this" → Execute → Text output
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+constants:
+  MAX_FILE_SIZE: 1048576         # 1MB max file read
+  MAX_OUTPUT_SIZE: 65536         # 64KB max tool output
+  EXECUTION_TIMEOUT_MS: 30000   # 30 second timeout
+  MAX_MEMORY_MB: 256            # 256MB memory limit
+  SANDBOX_ROOT: "."             # Project root
+  MAX_TOOL_CHAIN: 5             # Max chained tool calls
+  PHI: 1.6180339887498948482
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+types:
+  # Tool Definition
+  ToolKind:
+    description: "Category of tool"
+    variants:
+      - file_read         # Read file contents
+      - file_write        # Write/create file
+      - file_list         # List directory
+      - file_search       # Search in files
+      - file_delete       # Delete file
+      - code_compile      # Compile code
+      - code_run          # Execute code
+      - code_test         # Run tests
+      - code_bench        # Run benchmarks
+      - code_lint         # Lint/format code
+      - system_info       # System information
+      - system_process    # Process management
+      - transform_format  # Convert between formats
+      - transform_image   # Image manipulation
+      - transform_audio   # Audio manipulation
+      - analysis_review   # Code review
+      - analysis_security # Security scan
+
+  ToolDefinition:
+    description: "Definition of an available tool"
+    fields:
+      kind: ToolKind
+      name: String
+      description: String
+      parameters: List<ToolParam>
+      returns: String
+      requires_confirmation: Bool    # Dangerous ops need confirm
+      max_execution_ms: u32
+
+  ToolParam:
+    description: "Parameter for a tool"
+    fields:
+      name: String
+      param_type: ParamType
+      required: Bool
+      description: String
+      default_value: Option<String>
+
+  ParamType:
+    description: "Type of tool parameter"
+    variants:
+      - string
+      - integer
+      - float
+      - boolean
+      - file_path
+      - code_snippet
+      - binary_data
+
+  # Tool Invocation
+  ToolCall:
+    description: "A request to execute a tool"
+    fields:
+      tool_kind: ToolKind
+      arguments: List<ToolArgument>
+      source_modality: ModalityType    # Which modality triggered this
+      timeout_ms: u32
+      chain_index: u8                  # Position in tool chain (0 = first)
+
+  ToolArgument:
+    description: "Argument for tool call"
+    fields:
+      name: String
+      value: String
+
+  ToolResult:
+    description: "Result from tool execution"
+    fields:
+      success: Bool
+      output: String
+      error_message: Option<String>
+      execution_time_ms: u64
+      output_type: OutputType
+      metadata: ToolMetadata
+
+  OutputType:
+    description: "Type of tool output"
+    variants:
+      - text              # Plain text
+      - code              # Source code
+      - binary            # Binary data
+      - structured        # JSON/structured
+      - void              # No output
+
+  ToolMetadata:
+    description: "Metadata about tool execution"
+    fields:
+      tool_kind: ToolKind
+      start_time: u64
+      end_time: u64
+      memory_used_bytes: usize
+      files_accessed: List<String>
+      sandboxed: Bool
+
+  # Intent Detection
+  ToolIntent:
+    description: "Detected intent from multi-modal input"
+    fields:
+      tool_kind: ToolKind
+      confidence: f32
+      extracted_params: List<ToolArgument>
+      source_text: String               # Normalized text representation
+      requires_chain: Bool               # Needs multiple tools?
+
+  IntentDetectionResult:
+    description: "Result of intent detection"
+    fields:
+      primary_intent: ToolIntent
+      alternative_intents: List<ToolIntent>
+      modality_source: ModalityType
+      detection_time_us: u64
+
+  # Tool Chain
+  ToolChain:
+    description: "Chain of tool calls"
+    fields:
+      steps: List<ToolCall>
+      results: List<ToolResult>
+      total_time_ms: u64
+      all_succeeded: Bool
+
+  # Modality reference (from Cycle 26)
+  ModalityType:
+    description: "Input modality type"
+    variants:
+      - text
+      - vision
+      - voice
+      - code
+      - structured
+
+  # Sandbox Configuration
+  SandboxConfig:
+    description: "Sandbox security configuration"
+    fields:
+      root_dir: String
+      allowed_extensions: List<String>
+      max_file_size: usize
+      max_memory_mb: u32
+      timeout_ms: u32
+      allow_write: Bool
+      allow_execute: Bool
+      allow_delete: Bool
+
+  # Engine State
+  ToolUseEngine:
+    description: "Multi-modal tool use engine"
+    fields:
+      allocator: Allocator
+      tools: List<ToolDefinition>
+      sandbox_config: SandboxConfig
+      call_history: List<ToolCall>
+      result_history: List<ToolResult>
+      stats: ToolUseStats
+      intent_patterns: List<IntentPattern>
+
+  IntentPattern:
+    description: "Pattern for detecting tool intent"
+    fields:
+      pattern: String             # Regex or keyword pattern
+      tool_kind: ToolKind
+      priority: u8
+      language: String            # en, ru, zh, etc.
+
+  ToolUseStats:
+    description: "Tool use statistics"
+    fields:
+      total_calls: u64
+      successful_calls: u64
+      failed_calls: u64
+      total_chains: u64
+      avg_execution_ms: f64
+      avg_detection_us: f64
+      tools_by_frequency: List<ToolKindCount>
+
+  ToolKindCount:
+    description: "Tool usage count"
+    fields:
+      kind: ToolKind
+      count: u64
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  # Initialization
+  - name: init
+    given: Allocator, optional SandboxConfig
+    when: Creating tool use engine
+    then: Initialize with default tools and sandbox config
+
+  - name: deinit
+    given: Engine instance
+    when: Destroying engine
+    then: Free all resources
+
+  # Intent Detection
+  - name: detectIntent
+    given: Multi-modal input (text, image, audio, code)
+    when: User provides input in any modality
+    then: Detect which tool the user wants to use
+    impl: |
+      1. If text: keyword matching + pattern detection
+      2. If image: OCR → text → keyword matching
+      3. If audio: STT → text → keyword matching
+      4. If code: AST analysis → intent inference
+      5. Return IntentDetectionResult with confidence
+
+  - name: detectIntentFromText
+    given: Text input
+    when: Processing text for tool intent
+    then: Match against intent patterns
+    impl: |
+      Patterns (multilingual):
+        "read file X" / "прочитай файл X" → file_read
+        "write to X" / "запиши в X" → file_write
+        "list files" / "покажи файлы" → file_list
+        "search for X" / "найди X" → file_search
+        "run X" / "запусти X" → code_run
+        "test X" / "тестируй X" → code_test
+        "compile X" / "компилируй X" → code_compile
+        "benchmark" / "бенчмарк" → code_bench
+        "fix X" / "исправь X" → code_lint + code_compile
+        "review X" / "проверь X" → analysis_review
+
+  - name: extractParams
+    given: Detected intent and raw input
+    when: Building tool call from intent
+    then: Extract file paths, code snippets, options from input
+
+  # Tool Execution
+  - name: executeTool
+    given: ToolCall
+    when: Executing a single tool
+    then: Run in sandbox, return ToolResult
+    impl: |
+      1. Validate against sandbox config
+      2. Resolve file paths (relative to sandbox root)
+      3. Execute with timeout
+      4. Capture stdout/stderr
+      5. Return ToolResult
+
+  - name: executeFileRead
+    given: File path
+    when: Reading file contents
+    then: Return file content as text
+
+  - name: executeFileWrite
+    given: File path, content
+    when: Writing to file
+    then: Write content, return confirmation
+
+  - name: executeFileList
+    given: Directory path, optional pattern
+    when: Listing directory
+    then: Return list of files
+
+  - name: executeFileSearch
+    given: Search pattern, optional path
+    when: Searching in files
+    then: Return matching lines with context
+
+  - name: executeCodeCompile
+    given: File path or code snippet
+    when: Compiling code
+    then: Return compilation output (success/errors)
+
+  - name: executeCodeRun
+    given: File path or code snippet, language
+    when: Executing code
+    then: Run in sandbox, return output
+
+  - name: executeCodeTest
+    given: File path or test pattern
+    when: Running tests
+    then: Return test results
+
+  - name: executeCodeBench
+    given: File path or bench pattern
+    when: Running benchmarks
+    then: Return benchmark results
+
+  # Tool Chaining
+  - name: executeChain
+    given: List of ToolCalls
+    when: Multiple tools needed for task
+    then: Execute sequentially, pipe results
+    impl: |
+      1. Execute first tool
+      2. If success, feed result as input to next tool
+      3. Continue until chain complete or failure
+      4. Return ToolChain with all results
+
+  - name: planChain
+    given: Complex intent
+    when: Intent requires multiple tools
+    then: Plan optimal tool chain
+    impl: |
+      "Run tests and fix failures" →
+        1. code_test → get failures
+        2. analysis_review → analyze failures
+        3. code_lint → suggest fixes
+        4. code_compile → verify fixes
+
+  # Cross-Modal Tool Use
+  - name: toolFromVoice
+    given: Audio input
+    when: Voice command for tool
+    then: STT → detectIntent → executeTool → result
+
+  - name: toolFromImage
+    given: Image input (screenshot)
+    when: Image shows error/code
+    then: OCR → detectIntent → executeTool → result
+
+  - name: toolFromCode
+    given: Code input
+    when: Code needs execution/testing
+    then: Analyze → detectIntent → executeTool → result
+
+  # Result Formatting
+  - name: formatResult
+    given: ToolResult, target modality
+    when: Returning result to user
+    then: Format for text/voice/code output
+
+  # Statistics
+  - name: getStats
+    given: Engine instance
+    when: Querying usage
+    then: Return ToolUseStats
+
+# ============================================================================
+# INTEGRATION
+# ============================================================================
+
+integration:
+  - target: multi_modal_unified.vibee
+    description: "Multi-modal engine from Cycle 26"
+
+  - target: vsa.zig
+    description: "VSA operations for intent encoding"
+
+  - target: sandbox_engine.zig
+    description: "Code execution sandbox"
+
+  - target: voice_engine.zig
+    description: "Voice I/O (STT/TTS)"
+
+# ============================================================================
+# TESTS
+# ============================================================================
+
+tests:
+  - name: test_intent_detection_text
+    given: "Read the file src/vsa.zig"
+    then: Detects file_read intent with path "src/vsa.zig"
+
+  - name: test_intent_detection_russian
+    given: "Прочитай файл main.zig"
+    then: Detects file_read intent with path "main.zig"
+
+  - name: test_file_read
+    given: Valid file path
+    then: Returns file contents
+
+  - name: test_file_list
+    given: Directory path "src/"
+    then: Returns list of .zig files
+
+  - name: test_file_search
+    given: Pattern "fn init" in src/
+    then: Returns matching lines
+
+  - name: test_code_compile
+    given: Valid Zig file
+    then: Returns compilation success
+
+  - name: test_code_test
+    given: Test file path
+    then: Returns test results
+
+  - name: test_tool_chain
+    given: "Run tests and show failures"
+    then: Chains code_test → analysis
+
+  - name: test_sandbox_restriction
+    given: Path outside sandbox root
+    then: Returns error (access denied)
+
+  - name: test_timeout
+    given: Infinite loop code
+    then: Times out after limit
+
+  - name: test_cross_modal_voice
+    given: Audio "read file config"
+    then: STT → file_read → result
+
+  - name: test_cross_modal_image
+    given: Screenshot of error
+    then: OCR → code_fix → result
+
+# ============================================================================
+# METRICS
+# ============================================================================
+
+metrics:
+  - name: intent_detection_accuracy
+    description: "Correct intent detection rate"
+    target: "> 90%"
+
+  - name: tool_execution_throughput
+    description: "Tool calls per second"
+    target: "> 100 ops/s"
+
+  - name: chain_success_rate
+    description: "Successful multi-tool chains"
+    target: "> 85%"
+
+  - name: sandbox_safety
+    description: "No sandbox escapes"
+    target: "100%"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

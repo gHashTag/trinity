@@ -1,0 +1,426 @@
+# ============================================================================
+# Contract-Based Agent Negotiation - Cycle 51
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: contract_negotiation
+version: "1.0.0"
+language: zig
+module: contract_negotiation
+
+description: |
+  Contract-Based Agent Negotiation — Service-level agreements (SLAs) between
+  agents with negotiation protocol, QoS enforcement, penalty/reward mechanisms,
+  and multi-party contract orchestration.
+
+  Architecture:
+    Contract Types:
+      Bilateral: Two-party agreement (provider + consumer)
+      Multilateral: Multi-party agreement (N participants)
+      Hierarchical: Parent-child delegation contracts
+      Composite: Aggregation of sub-contracts
+
+    SLA Parameters:
+      Latency: max response time guarantee (p50, p95, p99)
+      Throughput: min requests per second
+      Availability: uptime percentage (99.9%, 99.99%)
+      Accuracy: min result quality score
+      Priority: processing priority level (1-10)
+      Resource: max memory/CPU allocation
+
+    Negotiation Protocol:
+      Propose: initiator sends contract offer
+      Counter: responder modifies terms
+      Accept: both parties agree to terms
+      Reject: negotiation fails
+      Renegotiate: modify active contract
+      Expire: contract reaches end of term
+
+    QoS Enforcement:
+      Real-time SLA monitoring per contract
+      Sliding window metrics (1min, 5min, 15min)
+      Threshold-based alerting
+      Automatic degradation on overload
+      Grace period before penalty
+
+    Penalty/Reward:
+      Penalty: SLA violation deducts from provider stake
+      Reward: SLA exceeded grants bonus to provider
+      Escalation: repeated violations trigger contract review
+      Compensation: consumer compensated on violation
+      Reputation: cumulative performance score per agent
+
+    Multi-Party Orchestration:
+      Contract discovery via agent communication (Cycle 41)
+      Auction-based provider selection
+      Consensus on multi-party terms (Cycle 43)
+      Atomic contract activation (Cycle 49)
+      Event-driven contract lifecycle (Cycle 47)
+
+  Safety:
+    - Max contracts per agent: 64
+    - Max parties per contract: 16
+    - Max SLA parameters per contract: 32
+    - Negotiation timeout: 30000ms
+    - Contract max duration: 86400000ms (24h)
+    - Min renegotiation interval: 60000ms
+    - Max penalty per violation: 1000 (units)
+    - Max reward per period: 500 (units)
+    - Reputation score range: 0.0 - 1.0
+    - Grace period: 5000ms
+    - SLA check interval: 1000ms
+    - Max auction participants: 32
+    - Auction timeout: 10000ms
+    - Max composite sub-contracts: 8
+    - Contract history retention: 1000
+    - Max concurrent negotiations: 128
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_CONTRACTS_PER_AGENT: 64
+  MAX_PARTIES_PER_CONTRACT: 16
+  MAX_SLA_PARAMS: 32
+  NEGOTIATION_TIMEOUT_MS: 30000
+  CONTRACT_MAX_DURATION_MS: 86400000
+  MIN_RENEGOTIATION_INTERVAL_MS: 60000
+  MAX_PENALTY_PER_VIOLATION: 1000
+  MAX_REWARD_PER_PERIOD: 500
+  REPUTATION_MIN: 0.0
+  REPUTATION_MAX: 1.0
+  GRACE_PERIOD_MS: 5000
+  SLA_CHECK_INTERVAL_MS: 1000
+  MAX_AUCTION_PARTICIPANTS: 32
+  AUCTION_TIMEOUT_MS: 10000
+  MAX_COMPOSITE_SUBCONTRACTS: 8
+
+types:
+  ContractType:
+    enum:
+      - bilateral
+      - multilateral
+      - hierarchical
+      - composite
+
+  ContractState:
+    enum:
+      - draft
+      - proposed
+      - negotiating
+      - active
+      - suspended
+      - violated
+      - completed
+      - expired
+
+  NegotiationAction:
+    enum:
+      - propose
+      - counter
+      - accept
+      - reject
+      - renegotiate
+      - expire
+
+  SlaMetricType:
+    enum:
+      - latency_p50
+      - latency_p95
+      - latency_p99
+      - throughput
+      - availability
+      - accuracy
+
+  PenaltyType:
+    enum:
+      - stake_deduction
+      - priority_reduction
+      - contract_suspension
+      - reputation_penalty
+      - compensation
+
+  AuctionState:
+    enum:
+      - open
+      - bidding
+      - evaluating
+      - awarded
+      - cancelled
+
+  Contract:
+    fields:
+      contract_id: Int
+      contract_type: ContractType
+      state: ContractState
+      provider_id: Int
+      consumer_id: Int
+      parties_count: Int
+      sla_params_count: Int
+      created_ms: Int
+      expires_ms: Int
+      reputation_score: Float
+
+  SlaParameter:
+    fields:
+      contract_id: Int
+      metric_type: SlaMetricType
+      target_value: Float
+      current_value: Float
+      threshold_warning: Float
+      threshold_critical: Float
+      weight: Float
+      violations_count: Int
+
+  NegotiationSession:
+    fields:
+      session_id: Int
+      contract_id: Int
+      initiator_id: Int
+      responder_id: Int
+      action: NegotiationAction
+      rounds: Int
+      started_ms: Int
+      timeout_ms: Int
+
+  PenaltyRecord:
+    fields:
+      contract_id: Int
+      agent_id: Int
+      penalty_type: PenaltyType
+      amount: Float
+      violation_count: Int
+      timestamp_ms: Int
+      grace_period_used: Bool
+
+  RewardRecord:
+    fields:
+      contract_id: Int
+      agent_id: Int
+      amount: Float
+      metric_exceeded: SlaMetricType
+      excess_percentage: Float
+      timestamp_ms: Int
+
+  AuctionSession:
+    fields:
+      auction_id: Int
+      requester_id: Int
+      state: AuctionState
+      bids_count: Int
+      winner_id: Int
+      started_ms: Int
+      timeout_ms: Int
+
+  AgentReputation:
+    fields:
+      agent_id: Int
+      overall_score: Float
+      contracts_completed: Int
+      contracts_violated: Int
+      total_penalties: Float
+      total_rewards: Float
+      avg_sla_compliance: Float
+      last_updated_ms: Int
+
+  ContractMetrics:
+    fields:
+      total_contracts: Int
+      active_contracts: Int
+      completed_contracts: Int
+      violated_contracts: Int
+      total_negotiations: Int
+      avg_negotiation_rounds: Float
+      total_penalties: Float
+      total_rewards: Float
+      avg_sla_compliance: Float
+      auctions_completed: Int
+      avg_reputation_score: Float
+      multi_party_contracts: Int
+
+  ContractConfig:
+    fields:
+      max_contracts: Int
+      max_parties: Int
+      negotiation_timeout_ms: Int
+      max_duration_ms: Int
+      grace_period_ms: Int
+      sla_check_interval_ms: Int
+      max_penalty: Float
+      max_reward: Float
+      enable_auctions: Bool
+      enable_reputation: Bool
+
+behaviors:
+  - name: propose_contract
+    given: Contract terms and target agent
+    when: New contract negotiation initiated
+    then: Contract created in draft, proposal sent to target
+
+  - name: negotiate_terms
+    given: Active negotiation session
+    when: Counter-offer or acceptance received
+    then: Terms updated or contract finalized
+
+  - name: activate_contract
+    given: Both parties accepted terms
+    when: Contract activation triggered
+    then: SLA monitoring started, contract active
+
+  - name: monitor_sla
+    given: Active contract with SLA parameters
+    when: SLA check interval reached
+    then: Metrics evaluated, violations detected
+
+  - name: enforce_penalty
+    given: SLA violation detected after grace period
+    when: Penalty enforcement triggered
+    then: Penalty applied to violating agent
+
+  - name: grant_reward
+    given: SLA exceeded beyond target
+    when: Reward evaluation triggered
+    then: Bonus granted to performing agent
+
+  - name: run_auction
+    given: Service requirement and candidate providers
+    when: Auction initiated for provider selection
+    then: Best bid selected based on SLA and reputation
+
+  - name: renegotiate_contract
+    given: Active contract and changed conditions
+    when: Renegotiation requested
+    then: Contract terms updated via negotiation
+
+  - name: compose_contract
+    given: Multiple sub-contracts
+    when: Composite contract creation
+    then: Aggregated SLA from sub-contracts
+
+  - name: update_reputation
+    given: Contract completed or violated
+    when: Reputation recalculation triggered
+    then: Agent reputation score updated
+
+  - name: expire_contract
+    given: Contract reached end of term
+    when: Expiration check triggered
+    then: Contract marked expired, final settlement
+
+  - name: get_contract_metrics
+    given: Contract system state
+    when: Metrics requested
+    then: Returns ContractMetrics with negotiation stats
+
+tests:
+  # Contract Operations (4)
+  - name: propose_accept
+    category: contracts
+    input: "Agent A proposes bilateral contract to Agent B"
+    expected: "Contract created, proposal sent, B accepts"
+    description: Basic contract proposal and acceptance
+
+  - name: counter_negotiate
+    category: contracts
+    input: "Agent B counters with modified terms"
+    expected: "Terms updated, negotiation continues"
+    description: Counter-offer negotiation
+
+  - name: multi_party
+    category: contracts
+    input: "4 agents negotiate multilateral contract"
+    expected: "All parties agree, contract activated"
+    description: Multi-party contract creation
+
+  - name: composite_contract
+    category: contracts
+    input: "Composite of 3 sub-contracts"
+    expected: "Aggregated SLA enforced across all"
+    description: Composite contract aggregation
+
+  # SLA Monitoring (3)
+  - name: sla_compliance
+    category: sla
+    input: "Provider meets all SLA parameters"
+    expected: "100% compliance, no violations"
+    description: SLA compliance monitoring
+
+  - name: sla_violation
+    category: sla
+    input: "Latency exceeds p99 target"
+    expected: "Violation detected after grace period"
+    description: SLA violation detection
+
+  - name: sla_degradation
+    category: sla
+    input: "System overloaded, multiple SLA breaches"
+    expected: "Automatic degradation applied"
+    description: Graceful degradation on overload
+
+  # Penalty/Reward (4)
+  - name: penalty_enforcement
+    category: penalty_reward
+    input: "Provider violates latency SLA 3 times"
+    expected: "Stake deducted, reputation reduced"
+    description: Penalty enforcement on violations
+
+  - name: reward_grant
+    category: penalty_reward
+    input: "Provider exceeds throughput by 20%"
+    expected: "Bonus reward granted"
+    description: Reward for exceeding SLA
+
+  - name: escalation
+    category: penalty_reward
+    input: "5 consecutive violations on same contract"
+    expected: "Contract suspended for review"
+    description: Escalation on repeated violations
+
+  - name: compensation
+    category: penalty_reward
+    input: "Critical SLA breach affects consumer"
+    expected: "Consumer compensated from provider stake"
+    description: Consumer compensation mechanism
+
+  # Auctions (3)
+  - name: basic_auction
+    category: auctions
+    input: "3 providers bid for compute service"
+    expected: "Best SLA-reputation combo wins"
+    description: Basic provider auction
+
+  - name: auction_timeout
+    category: auctions
+    input: "Auction with no bids before timeout"
+    expected: "Auction cancelled, requester notified"
+    description: Auction timeout handling
+
+  - name: reputation_weighted
+    category: auctions
+    input: "Lower price vs higher reputation"
+    expected: "Reputation-weighted scoring selects winner"
+    description: Reputation-weighted bid evaluation
+
+  # Integration (4)
+  - name: contract_with_events
+    category: integration
+    input: "Contract lifecycle events published"
+    expected: "Event store captures all transitions"
+    description: Integration with event sourcing (Cycle 47)
+
+  - name: contract_with_consensus
+    category: integration
+    input: "Multi-party contract requires consensus"
+    expected: "Raft consensus on contract terms"
+    description: Integration with consensus (Cycle 43)
+
+  - name: contract_with_cache
+    category: integration
+    input: "SLA metrics cached for fast lookup"
+    expected: "Cache hit for recent SLA checks"
+    description: Integration with caching (Cycle 50)
+
+  - name: contract_with_security
+    category: integration
+    input: "Contract requires delegate capability"
+    expected: "Only authorized agents can negotiate"
+    description: Integration with capability security (Cycle 48)

@@ -1,0 +1,176 @@
+# List Utilities Specification
+# Common list manipulation functions
+
+name: list_utils
+version: 1.0.0
+description: |
+  List utility functions for common operations.
+  Demonstrates spec-driven development with list processing.
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  - name: sum_list
+    description: Sum all numbers in a list
+    given: A list of numbers
+    when: sum_list is called
+    then: Sum of all numbers is returned
+    test_cases:
+      - name: sum_positive_numbers
+        input:
+          list: "[1, 2, 3, 4, 5]"
+        expected:
+          result: "15"
+      
+      - name: sum_with_negatives
+        input:
+          list: "[1, -2, 3, -4, 5]"
+        expected:
+          result: "3"
+      
+      - name: empty_list
+        input:
+          list: "[]"
+        expected:
+          result: "0"
+  
+  - name: average
+    description: Calculate average of numbers
+    given: A list of numbers
+    when: average is called
+    then: Average is returned
+    test_cases:
+      - name: simple_average
+        input:
+          list: "[1, 2, 3, 4, 5]"
+        expected:
+          result: "3.0"
+      
+      - name: empty_list_error
+        input:
+          list: "[]"
+        expected:
+          error: "Cannot calculate average of empty list"
+  
+  - name: max_value
+    description: Find maximum value in list
+    given: A list of numbers
+    when: max_value is called
+    then: Maximum value is returned
+    test_cases:
+      - name: simple_max
+        input:
+          list: "[1, 5, 3, 9, 2]"
+        expected:
+          result: "9"
+      
+      - name: negative_numbers
+        input:
+          list: "[-5, -2, -8, -1]"
+        expected:
+          result: "-1"
+  
+  - name: min_value
+    description: Find minimum value in list
+    given: A list of numbers
+    when: min_value is called
+    then: Minimum value is returned
+    test_cases:
+      - name: simple_min
+        input:
+          list: "[1, 5, 3, 9, 2]"
+        expected:
+          result: "1"
+  
+  - name: unique
+    description: Remove duplicates from list
+    given: A list with duplicates
+    when: unique is called
+    then: List with unique values is returned
+    test_cases:
+      - name: remove_duplicates
+        input:
+          list: "[1, 2, 2, 3, 3, 3, 4]"
+        expected:
+          result: "[1, 2, 3, 4]"
+      
+      - name: no_duplicates
+        input:
+          list: "[1, 2, 3, 4]"
+        expected:
+          result: "[1, 2, 3, 4]"
+  
+  - name: chunk
+    description: Split list into chunks of size n
+    given: A list and chunk size
+    when: chunk is called
+    then: List of chunks is returned
+    test_cases:
+      - name: chunk_by_2
+        input:
+          list: "[1, 2, 3, 4, 5, 6]"
+          size: "2"
+        expected:
+          result: "[[1, 2], [3, 4], [5, 6]]"
+      
+      - name: chunk_with_remainder
+        input:
+          list: "[1, 2, 3, 4, 5]"
+          size: "2"
+        expected:
+          result: "[[1, 2], [3, 4], [5]]"
+
+# ============================================================================
+# FUNCTIONS
+# ============================================================================
+
+functions:
+  - name: sum_list
+    signature: "sum_list(list: List(Int)) -> Int"
+    description: Sum all numbers in a list
+    examples:
+      - "sum_list([1, 2, 3]) // returns 6"
+  
+  - name: average
+    signature: "average(list: List(Float)) -> Result(Float, String)"
+    description: Calculate average of numbers
+    examples:
+      - "average([1.0, 2.0, 3.0]) // returns Ok(2.0)"
+  
+  - name: max_value
+    signature: "max_value(list: List(Int)) -> Result(Int, String)"
+    description: Find maximum value
+    examples:
+      - "max_value([1, 5, 3]) // returns Ok(5)"
+  
+  - name: min_value
+    signature: "min_value(list: List(Int)) -> Result(Int, String)"
+    description: Find minimum value
+    examples:
+      - "min_value([1, 5, 3]) // returns Ok(1)"
+  
+  - name: unique
+    signature: "unique(list: List(a)) -> List(a)"
+    description: Remove duplicates
+    examples:
+      - "unique([1, 2, 2, 3]) // returns [1, 2, 3]"
+  
+  - name: chunk
+    signature: "chunk(list: List(a), size: Int) -> List(List(a))"
+    description: Split into chunks
+    examples:
+      - "chunk([1, 2, 3, 4], 2) // returns [[1, 2], [3, 4]]"
+
+dependencies:
+  - gleam_stdlib
+
+metadata:
+  author: VIBEE Team
+  license: MIT
+  category: utilities
+  tags:
+    - list
+    - array
+    - utilities

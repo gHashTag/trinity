@@ -1,0 +1,216 @@
+name: hdc_model_persistence
+version: "1.0.0"
+language: zig
+module: hdc_model_persistence
+
+description: |
+  HDC Model Persistence — Level 10A.3: Trained Bundle Save/Load.
+  Serializes and deserializes trained HDC transformer models
+  using packed trit encoding for minimal storage.
+
+  === WHY PERSISTENCE MATTERS ===
+  Training takes minutes (5000+ samples). Persist once, inference forever.
+  No GPU, no ONNX, no protobuf — just packed ternary trits.
+
+  === SERIALIZATION FORMAT (.trinity model) ===
+  Header (32 bytes):
+    magic: "TRI\x00" (4 bytes)
+    version: u32 (format version, currently 1)
+    dimension: u32 (D, typically 256)
+    num_heads: u32 (H, typically 3)
+    num_blocks: u32 (L, typically 1-2)
+    vocab_size: u32 (number of codebook entries)
+    num_roles: u32 (total role vectors)
+    flags: u32 (reserved)
+
+  Codebook Section:
+    For each vocab entry:
+      symbol_len: u16
+      symbol_bytes: [symbol_len]u8 (UTF-8 encoded)
+      hv_packed: [D/5 + 1]u8 (packed trits, 5 trits/byte)
+
+  Role Vectors Section:
+    For each role vector (Q*H + K*H + V*H + FF1 + FF2):
+      role_id: u16
+      hv_packed: [D/5 + 1]u8 (packed trits)
+
+  Training Metadata:
+    epochs_trained: u32
+    samples_seen: u64
+    final_train_loss: f32
+    final_eval_loss: f32
+    final_perplexity: f32
+    timestamp: u64
+
+  === SIZE CALCULATION ===
+  Codebook (70 chars, D=256):
+    70 * (2 + avg(1) + 52) = 70 * 55 = 3,850 bytes
+  Role vectors (3*3 + 2 = 11 roles, D=256):
+    11 * (2 + 52) = 594 bytes
+  Header + metadata: 32 + 28 = 60 bytes
+  TOTAL: ~4,504 bytes = ~4.4 KB
+
+  Compare: float32 model of same structure:
+    Codebook: 70 * (2 + 1 + 256*4) = 71,750 bytes = ~70 KB
+    Roles: 11 * (2 + 256*4) = 11,286 bytes = ~11 KB
+    TOTAL: ~81 KB
+  SAVINGS: 18x smaller with packed trits.
+
+  === VERSIONING ===
+  Each saved model includes training metadata.
+  Multiple versions can coexist (model_v1.trinity, model_v2.trinity).
+  Loading validates magic + version + dimension before deserializing.
+
+  === CHECKPOINT PROTOCOL ===
+  Save after each epoch (if eval_loss improved):
+    model_checkpoint_epoch_N.trinity
+  Save final model after training completes:
+    model_final.trinity
+  Atomic write: write to temp file, then rename (crash-safe).
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  ModelHeader:
+    fields:
+      magic: String
+      format_version: u32
+      dimension: usize
+      num_heads: usize
+      num_blocks: usize
+      vocab_size: usize
+      num_roles: usize
+      flags: u32
+
+  SerializedCodebook:
+    fields:
+      symbols: List<String>
+      packed_hvs: List<List<u8>>
+
+  SerializedRoles:
+    fields:
+      role_ids: List<u16>
+      role_labels: List<String>
+      packed_hvs: List<List<u8>>
+
+  TrainingMetadata:
+    fields:
+      epochs_trained: usize
+      samples_seen: u64
+      final_train_loss: Float
+      final_eval_loss: Float
+      final_perplexity: Float
+      training_time_ms: u64
+      timestamp_unix: u64
+      config_hash: String
+
+  ModelFile:
+    fields:
+      header: ModelHeader
+      codebook: SerializedCodebook
+      roles: SerializedRoles
+      metadata: TrainingMetadata
+      checksum: u32
+
+  ModelVersion:
+    fields:
+      version_id: String
+      file_path: String
+      perplexity: Float
+      accuracy: Float
+      size_bytes: u64
+      created_at: u64
+
+  ModelRegistry:
+    fields:
+      models: List<ModelVersion>
+      best_model_id: String
+      total_versions: usize
+
+  HDCModelPersistence:
+    fields:
+      allocator: Allocator
+      dimension: usize
+      registry: ModelRegistry
+
+behaviors:
+  - name: saveModel
+    given: Trained codebook, role vectors, training metadata
+    when: Packs all HVs (5 trits/byte), writes header + sections to file
+    then: Model saved as .trinity file (~4.4 KB for D=256, vocab=70)
+
+  - name: loadModel
+    given: File path to .trinity model
+    when: Validates magic/version/dimension, unpacks trits, reconstructs codebook + roles
+    then: Returns ready-to-use codebook and role vectors
+
+  - name: packHypervector
+    given: HybridBigInt (unpacked trit array)
+    when: Calls HybridBigInt.pack() to compress 5 trits/byte
+    then: Returns packed byte array (D/5 + 1 bytes)
+
+  - name: unpackHypervector
+    given: Packed byte array
+    when: Creates HybridBigInt, writes packed bytes, calls ensureUnpacked()
+    then: Returns HybridBigInt with full trit access
+
+  - name: serializeCodebook
+    given: sdk.Codebook with all entries
+    when: Iterates entries, encodes symbols as UTF-8, packs each HV
+    then: Returns SerializedCodebook ready for file write
+
+  - name: deserializeCodebook
+    given: SerializedCodebook from file
+    when: Creates new Codebook, inserts each symbol → unpacked HV
+    then: Returns reconstructed Codebook
+
+  - name: serializeRoles
+    given: E2ERoles (query, key, value per head + ff1, ff2)
+    when: Labels each role (e.g., "Q_h0", "K_h1"), packs HV
+    then: Returns SerializedRoles
+
+  - name: deserializeRoles
+    given: SerializedRoles from file
+    when: Unpacks each HV, assigns to correct role slot by label
+    then: Returns reconstructed E2ERoles
+
+  - name: writeFile
+    given: ModelFile and output path
+    when: Writes header, codebook, roles, metadata, checksum atomically
+    then: File written (temp → rename for crash safety)
+
+  - name: readFile
+    given: Input path
+    when: Reads header, validates magic "TRI\0", unpacks sections
+    then: Returns ModelFile or error if corrupted/incompatible
+
+  - name: computeChecksum
+    given: All serialized bytes (header + codebook + roles + metadata)
+    when: CRC32 over entire payload
+    then: Returns checksum for corruption detection
+
+  - name: validateChecksum
+    given: ModelFile with stored checksum
+    when: Recomputes CRC32 and compares
+    then: Returns valid/invalid
+
+  - name: saveCheckpoint
+    given: Current training state and epoch number
+    when: Saves model_checkpoint_epoch_N.trinity if eval_loss improved
+    then: Checkpoint persisted for recovery
+
+  - name: loadBestCheckpoint
+    given: Model directory
+    when: Scans for checkpoint files, loads one with lowest perplexity
+    then: Returns best model for continued training or inference
+
+  - name: compareModels
+    given: Two ModelFile instances
+    when: Compares perplexity, accuracy, size, training epochs
+    then: Returns comparison table
+
+  - name: exportToSwarm
+    given: ModelFile
+    when: Splits into chunks for gossip distribution (< 1KB each)
+    then: Returns list of chunks with sequence numbers for reassembly

@@ -1,0 +1,419 @@
+name: intent_transformations
+version: "1.0.0"
+language: zig
+module: intent_transformations
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: apply
+    given: Input data provided
+    when: apply function called
+    then: Result returned
+    test_cases:
+      - name: test_apply
+        input: {}
+        expected: {}
+
+  - name: apply_all
+    given: Input data provided
+    when: apply_all function called
+    then: Result returned
+    test_cases:
+      - name: test_apply_all
+        input: {}
+        expected: {}
+
+  - name: apply_chain
+    given: Input data provided
+    when: apply_chain function called
+    then: Result returned
+    test_cases:
+      - name: test_apply_chain
+        input: {}
+        expected: {}
+
+  - name: remove_whitespace
+    given: Input data provided
+    when: remove_whitespace function called
+    then: Result returned
+    test_cases:
+      - name: test_remove_whitespace
+        input: {}
+        expected: {}
+
+  - name: capitalize
+    given: Input data provided
+    when: capitalize function called
+    then: Result returned
+    test_cases:
+      - name: test_capitalize
+        input: {}
+        expected: {}
+
+  - name: transform_number
+    given: Input data provided
+    when: transform_number function called
+    then: Result returned
+    test_cases:
+      - name: test_transform_number
+        input: {}
+        expected: {}
+
+  - name: transform_number_int
+    given: Input data provided
+    when: transform_number_int function called
+    then: Result returned
+    test_cases:
+      - name: test_transform_number_int
+        input: {}
+        expected: {}
+
+  - name: format_date
+    given: Input data provided
+    when: format_date function called
+    then: Result returned
+    test_cases:
+      - name: test_format_date
+        input: {}
+        expected: {}
+
+  - name: format_number
+    given: Input data provided
+    when: format_number function called
+    then: Result returned
+    test_cases:
+      - name: test_format_number
+        input: {}
+        expected: {}
+
+  - name: format_phone
+    given: Input data provided
+    when: format_phone function called
+    then: Result returned
+    test_cases:
+      - name: test_format_phone
+        input: {}
+        expected: {}
+
+  - name: format_email
+    given: Input data provided
+    when: format_email function called
+    then: Result returned
+    test_cases:
+      - name: test_format_email
+        input: {}
+        expected: {}
+
+  - name: remove_non_digits
+    given: Input data provided
+    when: remove_non_digits function called
+    then: Result returned
+    test_cases:
+      - name: test_remove_non_digits
+        input: {}
+        expected: {}
+
+  - name: power
+    given: Input data provided
+    when: power function called
+    then: Result returned
+    test_cases:
+      - name: test_power
+        input: {}
+        expected: {}
+
+  - name: lowercase
+    given: Input data provided
+    when: lowercase function called
+    then: Result returned
+    test_cases:
+      - name: test_lowercase
+        input: {}
+        expected: {}
+
+  - name: uppercase
+    given: Input data provided
+    when: uppercase function called
+    then: Result returned
+    test_cases:
+      - name: test_uppercase
+        input: {}
+        expected: {}
+
+  - name: trim
+    given: Input data provided
+    when: trim function called
+    then: Result returned
+    test_cases:
+      - name: test_trim
+        input: {}
+        expected: {}
+
+  - name: replace
+    given: Input data provided
+    when: replace function called
+    then: Result returned
+    test_cases:
+      - name: test_replace
+        input: {}
+        expected: {}
+
+  - name: capitalize_transform
+    given: Input data provided
+    when: capitalize_transform function called
+    then: Result returned
+    test_cases:
+      - name: test_capitalize_transform
+        input: {}
+        expected: {}
+
+  - name: round
+    given: Input data provided
+    when: round function called
+    then: Result returned
+    test_cases:
+      - name: test_round
+        input: {}
+        expected: {}
+
+  - name: format_phone_transform
+    given: Input data provided
+    when: format_phone_transform function called
+    then: Result returned
+    test_cases:
+      - name: test_format_phone_transform
+        input: {}
+        expected: {}
+
+  - name: format_email_transform
+    given: Input data provided
+    when: format_email_transform function called
+    then: Result returned
+    test_cases:
+      - name: test_format_email_transform
+        input: {}
+        expected: {}
+
+  - name: custom
+    given: Input data provided
+    when: custom function called
+    then: Result returned
+    test_cases:
+      - name: test_custom
+        input: {}
+        expected: {}
+
+  - name: chain
+    given: Input data provided
+    when: chain function called
+    then: Result returned
+    test_cases:
+      - name: test_chain
+        input: {}
+        expected: {}
+
+  - name: clean_string
+    given: Input data provided
+    when: clean_string function called
+    then: Result returned
+    test_cases:
+      - name: test_clean_string
+        input: {}
+        expected: {}
+
+  - name: normalize_name
+    given: Input data provided
+    when: normalize_name function called
+    then: Result returned
+    test_cases:
+      - name: test_normalize_name
+        input: {}
+        expected: {}
+
+  - name: clean_phone
+    given: Input data provided
+    when: clean_phone function called
+    then: Result returned
+    test_cases:
+      - name: test_clean_phone
+        input: {}
+        expected: {}
+
+  - name: clean_email
+    given: Input data provided
+    when: clean_email function called
+    then: Result returned
+    test_cases:
+      - name: test_clean_email
+        input: {}
+        expected: {}
+
+  - name: describe
+    given: Input data provided
+    when: describe function called
+    then: Result returned
+    test_cases:
+      - name: test_describe
+        input: {}
+        expected: {}
+
+types:
+  SlotTransformation:
+    # TODO: Define fields
+
+functions:
+  - name: apply
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: apply_all
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: apply_chain
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: remove_whitespace
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: capitalize
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: transform_number
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: transform_number_int
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_date
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_number
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_phone
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_email
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: remove_non_digits
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: power
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: lowercase
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: uppercase
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: trim
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: replace
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: capitalize_transform
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: round
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_phone_transform
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_email_transform
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: custom
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: chain
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: clean_string
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: normalize_name
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: clean_phone
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: clean_email
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: describe
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/float
+  # gleam/int
+  # gleam/list
+  # gleam/option.{type Option, None, Some}
+  # gleam/result
+  # gleam/string
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

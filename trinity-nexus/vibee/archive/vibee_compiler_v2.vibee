@@ -1,0 +1,415 @@
+name: vibee_compiler_v2
+version: 2.0.0
+description: VIBEE Compiler V2 - Enforces new syntax, rejects old patterns
+
+metadata:
+  author: VIBEE Team
+  category: compiler
+  tags: [syntax, enforcement, validation, errors]
+
+types:
+  CompilerConfig:
+    strict_mode: boolean
+    allow_deprecated: boolean
+    error_level: string  # error, warning, info
+    suggest_fixes: boolean
+    
+  SyntaxViolation:
+    file: string
+    line: number
+    column: number
+    old_syntax: string
+    new_syntax: string
+    message: string
+    fix: optional<string>
+    severity: string
+    
+  CompilationResult:
+    success: boolean
+    violations: list<SyntaxViolation>
+    warnings: list<string>
+    output: optional<string>
+    
+  DeprecatedPattern:
+    pattern: string
+    replacement: string
+    deprecated_since: string
+    removed_in: string
+    migration_guide: string
+
+constants:
+  DEPRECATED_PATTERNS:
+    - pattern: "pub fn (\\w+)\\(\\) → Result\\(String, String\\)"
+      replacement: "pub {name}: Result<String, String> = !impl"
+      deprecated_since: "2.0.0"
+      removed_in: "2.1.0"
+      migration_guide: "Use type inference and concise syntax"
+      error_message: |
+        Old function stub syntax detected.
+        
+        Found:    pub fn {name}() → Result(String, String) {{ Error("Not implemented") }}
+        Expected: pub {name}: Result<String, String> = !impl
+        
+        Run: vibee migrate {file}
+        
+    - pattern: "pub type (\\w+)\\((\\w+), (\\w+)\\) \\{"
+      replacement: "type {name}<{T}, {E}> = "
+      deprecated_since: "2.0.0"
+      removed_in: "2.1.0"
+      migration_guide: "Use concise type syntax with generics"
+      error_message: |
+        Old type definition syntax detected.
+        
+        Found:    pub type Result(a, e) {{ Ok(a) Error(e) }}
+        Expected: type Result<T, E> = Ok(T) | Error(E)
+        
+        Run: vibee migrate {file}
+        
+    - pattern: "import gleam/(\\w+)\\nimport gleam/(\\w+)"
+      replacement: "import gleam/{{$1, $2}}"
+      deprecated_since: "2.0.0"
+      removed_in: "2.1.0"
+      migration_guide: "Group imports from same module"
+      error_message: |
+        Multiple imports from same module detected.
+        
+        Found:    import gleam/io
+                  import gleam/string
+        Expected: import gleam/{{io, string}}
+        
+        Run: vibee migrate {file}
+        
+    - pattern: "case (\\w+) \\{\\s*Some\\(value\\) -> value\\s*None -> (\\w+)\\s*\\}"
+      replacement: "{$1} ?? {$2}"
+      deprecated_since: "2.0.0"
+      removed_in: "2.1.0"
+      migration_guide: "Use null coalescing operator"
+      error_message: |
+        Verbose null handling detected.
+        
+        Found:    case option {{ Some(value) -> value None -> default }}
+        Expected: option ?? default
+        
+        Run: vibee migrate {file}
+        
+    - pattern: "→"
+      replacement: ":"
+      deprecated_since: "2.0.0"
+      removed_in: "2.1.0"
+      migration_guide: "Use colon for return types"
+      error_message: |
+        Old arrow syntax detected.
+        
+        Found:    fn() → Result
+        Expected: fn(): Result
+        
+        Run: vibee migrate {file}
+        
+    - pattern: "case (\\w+) \\{"
+      replacement: "{$1} match {"
+      deprecated_since: "2.0.0"
+      removed_in: "2.1.0"
+      migration_guide: "Use 'match' keyword for pattern matching"
+      error_message: |
+        Old case syntax detected.
+        
+        Found:    case result {{ ... }}
+        Expected: result match {{ ... }}
+        
+        Run: vibee migrate {file}
+
+  ERROR_MESSAGES:
+    syntax_error: |
+      Syntax Error: {message}
+      
+      File: {file}:{line}:{column}
+      
+      {code_snippet}
+      {error_indicator}
+      
+      {suggestion}
+      
+    deprecated_syntax: |
+      Deprecated Syntax: {pattern_name}
+      
+      This syntax is deprecated since v{version} and will be removed in v{removal_version}.
+      
+      {migration_guide}
+      
+      To automatically fix: vibee migrate {file}
+      
+    strict_mode_violation: |
+      Strict Mode Violation: Old syntax not allowed
+      
+      The compiler is running in strict mode and old syntax patterns are not permitted.
+      
+      {violation_details}
+      
+      To migrate your code: vibee migrate {directory}
+
+behaviors:
+  compile_with_enforcement:
+    input:
+      file_path: string
+      config: CompilerConfig
+    output: CompilationResult
+    description: Compile file with syntax enforcement
+    steps:
+      - Read file content
+      - Parse to AST
+      - Check for deprecated patterns
+      - If strict_mode and violations found, fail
+      - If allow_deprecated, emit warnings
+      - Generate code
+      - Return result
+      
+  detect_violations:
+    input:
+      code: string
+      patterns: list<DeprecatedPattern>
+    output:
+      violations: list<SyntaxViolation>
+    description: Detect syntax violations
+    steps:
+      - Parse code
+      - For each deprecated pattern
+      - Search for matches
+      - Collect violations with locations
+      - Generate fix suggestions
+      - Return violations
+      
+  generate_error_message:
+    input:
+      violation: SyntaxViolation
+      config: CompilerConfig
+    output:
+      message: string
+    description: Generate helpful error message
+    steps:
+      - Load error template
+      - Fill in violation details
+      - Add code snippet
+      - Add fix suggestion
+      - Format message
+      - Return message
+      
+  suggest_fix:
+    input:
+      violation: SyntaxViolation
+    output:
+      fix: string
+      confidence: number
+    description: Suggest automatic fix
+    steps:
+      - Identify pattern
+      - Load replacement template
+      - Generate fixed code
+      - Calculate confidence
+      - Return fix
+      
+  batch_compile:
+    input:
+      directory: string
+      config: CompilerConfig
+    output:
+      results: list<CompilationResult>
+      summary: CompilationSummary
+    description: Compile entire directory
+    steps:
+      - Scan for .vibee files
+      - Compile each file
+      - Collect results
+      - Generate summary
+      - Return results
+
+functions:
+  - name: parse_and_validate
+    params:
+      code: string
+      strict: boolean
+    returns: Result<AST, list<SyntaxViolation>>
+    description: Parse code and validate syntax
+    
+  - name: match_deprecated_pattern
+    params:
+      code: string
+      pattern: DeprecatedPattern
+    returns: list<Match>
+    description: Find matches of deprecated pattern
+    
+  - name: format_error_message
+    params:
+      template: string
+      context: map<string, any>
+    returns: string
+    description: Format error message with context
+    
+  - name: extract_code_snippet
+    params:
+      code: string
+      line: number
+      context_lines: number
+    returns: string
+    description: Extract code snippet around error
+
+tests:
+  - name: reject_old_function_stub
+    behavior: compile_with_enforcement
+    input:
+      file_path: "test.vibee"
+      config:
+        strict_mode: true
+        allow_deprecated: false
+    file_content: |
+      pub fn example() → Result(String, String) {
+        Error("Not implemented")
+      }
+    expected:
+      success: false
+      violations: length == 1
+      violations[0].message: contains("Old function stub syntax")
+      violations[0].fix: "pub example: Result<String, String> = !impl"
+      
+  - name: warn_deprecated_in_permissive_mode
+    behavior: compile_with_enforcement
+    input:
+      file_path: "test.vibee"
+      config:
+        strict_mode: false
+        allow_deprecated: true
+    file_content: |
+      pub fn example() → Result(String, String) {
+        Error("Not implemented")
+      }
+    expected:
+      success: true
+      warnings: length == 1
+      warnings[0]: contains("deprecated")
+      
+  - name: detect_multiple_violations
+    behavior: detect_violations
+    input:
+      code: |
+        import gleam/io
+        import gleam/string
+        pub fn test() → Result(String, String) {
+          Error("Not implemented")
+        }
+      patterns: DEPRECATED_PATTERNS
+    expected:
+      violations: length == 3
+      
+  - name: generate_helpful_error
+    behavior: generate_error_message
+    input:
+      violation:
+        file: "test.vibee"
+        line: 5
+        old_syntax: "pub fn test() →"
+        new_syntax: "pub test:"
+      config:
+        suggest_fixes: true
+    expected:
+      message: contains("Old arrow syntax")
+      message: contains("vibee migrate")
+      
+  - name: suggest_automatic_fix
+    behavior: suggest_fix
+    input:
+      violation:
+        old_syntax: "case option { Some(v) -> v None -> default }"
+        pattern: "null_coalescing"
+    expected:
+      fix: "option ?? default"
+      confidence: > 0.9
+      
+  - name: batch_compile_directory
+    behavior: batch_compile
+    input:
+      directory: "honeycomb/test/"
+      config:
+        strict_mode: true
+    expected:
+      results: length > 0
+      summary.total_files: > 0
+      summary.violations_found: >= 0
+
+cli_integration:
+  commands:
+    - name: "vibee compile"
+      description: "Compile with syntax enforcement"
+      options:
+        - "--strict": "Enable strict mode (reject old syntax)"
+        - "--allow-deprecated": "Allow deprecated syntax with warnings"
+        - "--suggest-fixes": "Show automatic fix suggestions"
+      examples:
+        - "vibee compile --strict src/"
+        - "vibee compile --allow-deprecated legacy/"
+        
+    - name: "vibee check"
+      description: "Check syntax without compiling"
+      options:
+        - "--fix": "Automatically apply fixes"
+      examples:
+        - "vibee check src/"
+        - "vibee check --fix src/"
+
+migration_phases:
+  phase_1:
+    version: "2.0.0"
+    description: "Warnings only, both syntaxes allowed"
+    config:
+      strict_mode: false
+      allow_deprecated: true
+      error_level: "warning"
+      
+  phase_2:
+    version: "2.0.5"
+    description: "Errors in strict mode, warnings by default"
+    config:
+      strict_mode: false
+      allow_deprecated: true
+      error_level: "error"
+      
+  phase_3:
+    version: "2.1.0"
+    description: "Old syntax completely removed"
+    config:
+      strict_mode: true
+      allow_deprecated: false
+      error_level: "error"
+
+examples:
+  - name: "Strict Mode Compilation"
+    command: "vibee compile --strict honeycomb/"
+    output: |
+      Compiling honeycomb/ in strict mode...
+      
+      ❌ Error in honeycomb/language/types/src/example_behavior.vibee:5:1
+      
+      Old function stub syntax detected.
+      
+      5 | pub fn example_behavior() → Result(String, String) {
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      
+      Expected: pub example_behavior: Result<String, String> = !impl
+      
+      To automatically fix: vibee migrate honeycomb/language/types/src/example_behavior.vibee
+      
+      Compilation failed: 1 error, 0 warnings
+      
+  - name: "Permissive Mode Compilation"
+    command: "vibee compile --allow-deprecated honeycomb/"
+    output: |
+      Compiling honeycomb/ with deprecated syntax allowed...
+      
+      ⚠️  Warning in honeycomb/language/types/src/example_behavior.vibee:5:1
+      
+      Deprecated syntax: This pattern will be removed in v2.1.0
+      
+      5 | pub fn example_behavior() → Result(String, String) {
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      
+      Consider migrating: vibee migrate honeycomb/
+      
+      Compilation succeeded: 0 errors, 1 warning

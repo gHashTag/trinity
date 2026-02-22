@@ -1,0 +1,50 @@
+name: vsa_operations
+version: "1.0.0"
+language: zig
+module: vsa_operations
+
+description: |
+  Core VSA operations: bind, bundle, permute, similarity.
+  These operations form the foundation of hyperdimensional computing.
+
+types:
+  VSAResult:
+    fields:
+      vector: TritVector
+      success: Bool
+
+behaviors:
+  - name: bind
+    given: Two vectors a and b of same dimension
+    when: Binding (element-wise multiplication)
+    then: Returns vector c where c[i] = a[i] * b[i]
+
+  - name: unbind
+    given: Two vectors a and b of same dimension
+    when: Unbinding (inverse of bind)
+    then: Returns bind(a, b) since ternary bind is self-inverse
+
+  - name: bundle
+    given: List of vectors
+    when: Bundling via majority voting
+    then: Returns vector where each element is majority vote
+
+  - name: permute
+    given: Vector v and shift amount k
+    when: Circular permutation
+    then: Returns vector shifted by k positions
+
+  - name: dot
+    given: Two vectors a and b
+    when: Computing dot product
+    then: Returns sum of element-wise products
+
+  - name: similarity
+    given: Two vectors a and b
+    when: Computing cosine similarity
+    then: Returns dot(a,b) / (norm(a) * norm(b))
+
+  - name: hamming_distance
+    given: Two vectors a and b
+    when: Computing Hamming distance
+    then: Returns count of differing positions

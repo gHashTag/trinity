@@ -1,0 +1,281 @@
+# real_world_todo_app.vibee
+# Real-world example: Todo List Application
+
+# ============================================================================
+# Data Types
+# ============================================================================
+
+# Todo item
+# type Todo {
+#   id: Int
+#   title: String
+#   completed: Bool
+# }
+
+# ============================================================================
+# State Management
+# ============================================================================
+
+# Global state (simplified)
+pub fn init_state() {
+  []
+}
+
+# ============================================================================
+# CRUD Operations
+# ============================================================================
+
+# Create
+pub fn create_todo(todos, id, title) {
+  todo = #{
+    id => id,
+    title => title,
+    completed => False
+  }
+  [todo, ..todos]
+}
+
+# Read
+pub fn get_todo(todos, id) {
+  case todos {
+    [] -> None
+    [todo, ..rest] -> {
+      case todo.id == id {
+        True -> Some(todo)
+        False -> get_todo(rest, id)
+      }
+    }
+  }
+}
+
+# Update
+pub fn update_todo(todos, id, title) {
+  case todos {
+    [] -> []
+    [todo, ..rest] -> {
+      case todo.id == id {
+        True -> {
+          updated = #{..todo, title => title}
+          [updated, ..rest]
+        }
+        False -> [todo, ..update_todo(rest, id, title)]
+      }
+    }
+  }
+}
+
+# Delete
+pub fn delete_todo(todos, id) {
+  case todos {
+    [] -> []
+    [todo, ..rest] -> {
+      case todo.id == id {
+        True -> rest
+        False -> [todo, ..delete_todo(rest, id)]
+      }
+    }
+  }
+}
+
+# Toggle completion
+pub fn toggle_todo(todos, id) {
+  case todos {
+    [] -> []
+    [todo, ..rest] -> {
+      case todo.id == id {
+        True -> {
+          toggled = #{..todo, completed => !todo.completed}
+          [toggled, ..rest]
+        }
+        False -> [todo, ..toggle_todo(rest, id)]
+      }
+    }
+  }
+}
+
+# ============================================================================
+# Queries
+# ============================================================================
+
+# Get all todos
+pub fn get_all_todos(todos) {
+  todos
+}
+
+# Get completed todos
+pub fn get_completed_todos(todos) {
+  case todos {
+    [] -> []
+    [todo, ..rest] -> {
+      case todo.completed {
+        True -> [todo, ..get_completed_todos(rest)]
+        False -> get_completed_todos(rest)
+      }
+    }
+  }
+}
+
+# Get active todos
+pub fn get_active_todos(todos) {
+  case todos {
+    [] -> []
+    [todo, ..rest] -> {
+      case todo.completed {
+        False -> [todo, ..get_active_todos(rest)]
+        True -> get_active_todos(rest)
+      }
+    }
+  }
+}
+
+# Count todos
+pub fn count_todos(todos) {
+  case todos {
+    [] -> 0
+    [_, ..rest] -> 1 + count_todos(rest)
+  }
+}
+
+# ============================================================================
+# Bulk Operations
+# ============================================================================
+
+# Complete all
+pub fn complete_all(todos) {
+  case todos {
+    [] -> []
+    [todo, ..rest] -> {
+      completed = #{..todo, completed => True}
+      [completed, ..complete_all(rest)]
+    }
+  }
+}
+
+# Clear completed
+pub fn clear_completed(todos) {
+  case todos {
+    [] -> []
+    [todo, ..rest] -> {
+      case todo.completed {
+        True -> clear_completed(rest)
+        False -> [todo, ..clear_completed(rest)]
+      }
+    }
+  }
+}
+
+# ============================================================================
+# Display
+# ============================================================================
+
+pub fn display_todo(todo) {
+  status = case todo.completed {
+    True -> "[x]"
+    False -> "[ ]"
+  }
+  print("{status} {todo.id}. {todo.title}")
+}
+
+pub fn display_all_todos(todos) {
+  case todos {
+    [] -> print("No todos")
+    [todo, ..rest] -> {
+      display_todo(todo)
+      display_all_todos(rest)
+    }
+  }
+}
+
+# ============================================================================
+# Tests
+# ============================================================================
+
+test create_todo_test {
+  todos = init_state()
+  todos = create_todo(todos, 1, "Buy milk")
+  count_todos(todos) == 1
+}
+
+test get_todo_test {
+  todos = init_state()
+  todos = create_todo(todos, 1, "Buy milk")
+  result = get_todo(todos, 1)
+  result != None
+}
+
+test update_todo_test {
+  todos = init_state()
+  todos = create_todo(todos, 1, "Buy milk")
+  todos = update_todo(todos, 1, "Buy bread")
+  todo = get_todo(todos, 1)
+  todo.title == "Buy bread"
+}
+
+test delete_todo_test {
+  todos = init_state()
+  todos = create_todo(todos, 1, "Buy milk")
+  todos = delete_todo(todos, 1)
+  count_todos(todos) == 0
+}
+
+test toggle_todo_test {
+  todos = init_state()
+  todos = create_todo(todos, 1, "Buy milk")
+  todos = toggle_todo(todos, 1)
+  todo = get_todo(todos, 1)
+  todo.completed == True
+}
+
+test get_completed_todos_test {
+  todos = init_state()
+  todos = create_todo(todos, 1, "Buy milk")
+  todos = create_todo(todos, 2, "Buy bread")
+  todos = toggle_todo(todos, 1)
+  completed = get_completed_todos(todos)
+  count_todos(completed) == 1
+}
+
+test clear_completed_test {
+  todos = init_state()
+  todos = create_todo(todos, 1, "Buy milk")
+  todos = create_todo(todos, 2, "Buy bread")
+  todos = toggle_todo(todos, 1)
+  todos = clear_completed(todos)
+  count_todos(todos) == 1
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+pub fn main() {
+  print("Todo App Example")
+  print("================")
+  
+  # Initialize
+  todos = init_state()
+  
+  # Create todos
+  todos = create_todo(todos, 1, "Buy milk")
+  todos = create_todo(todos, 2, "Buy bread")
+  todos = create_todo(todos, 3, "Buy eggs")
+  
+  print("\nAll todos:")
+  display_all_todos(todos)
+  
+  # Toggle one
+  todos = toggle_todo(todos, 1)
+  
+  print("\nAfter completing first:")
+  display_all_todos(todos)
+  
+  # Show stats
+  total = count_todos(todos)
+  completed = count_todos(get_completed_todos(todos))
+  active = count_todos(get_active_todos(todos))
+  
+  print("\nStats:")
+  print("Total: {total}")
+  print("Completed: {completed}")
+  print("Active: {active}")
+}

@@ -1,0 +1,128 @@
+name: hdc_ternary_softmax
+version: "1.0.0"
+language: zig
+module: hdc_ternary_softmax
+
+description: |
+  HDC Ternary Softmax — Attention Weight Normalization Without Float Division.
+  Replaces standard softmax(exp(x)/sum(exp)) with ternary-native alternatives.
+
+  === PROBLEM ===
+  Standard softmax requires:
+    1. Exponentiation (float-only, overflow risk)
+    2. Division by sum (float-only, precision loss)
+    3. Full precision arithmetic (incompatible with ternary {-1, 0, +1})
+
+  === SOLUTION: THREE TERNARY SOFTMAX VARIANTS ===
+
+  Variant 1: PHI-RANK SOFTMAX (default)
+    Rank scores in descending order.
+    Assign weight[k] = phi^(-k) where phi = 1.618... (golden ratio).
+    Normalize: weight[k] /= sum(weights).
+    Property: Top-1 gets ~61.8% weight, top-2 gets ~23.6%, etc.
+    Geometric convergence: sum = phi (finite for any n).
+
+  Variant 2: MAJORITY-VOTE SOFTMAX (for discrete outputs)
+    Convert scores to ternary: score > threshold -> +1, score < -threshold -> -1, else 0.
+    Bundle all positively-scored value vectors.
+    Natural: already in trit space, no conversion needed.
+    Property: Acts as hard attention (winners take all).
+
+  Variant 3: TOP-K UNIFORM SOFTMAX (for sparse attention)
+    Select top-k scores.
+    Assign equal weight 1/k to each.
+    Bundle k value vectors (majority vote = equal weighting).
+    Property: Sparse, efficient, interpretable.
+
+  === PHI-RANK PROPERTIES ===
+  Weight distribution follows Zeckendorf's theorem:
+    Every positive integer has a unique Fibonacci representation.
+    phi^(-k) weights create Fibonacci-like attention patterns.
+  Connection to Trinity Identity: phi^2 + 1/phi^2 = 3
+    The sum of weights for 2 items = phi^0 + phi^(-1) = 1 + 0.618 = 1.618 = phi
+    Normalized: 61.8% + 38.2% = 100% (golden split).
+
+  === TEMPERATURE CONTROL ===
+  phi-rank with temperature T:
+    weight[k] = phi^(-k/T)
+    T < 1: sharper (top items dominate more)
+    T = 1: standard golden ratio decay
+    T > 1: flatter (more uniform distribution)
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  SoftmaxVariant:
+    enum:
+      - phi_rank
+      - majority_vote
+      - top_k_uniform
+
+  SoftmaxConfig:
+    fields:
+      variant: SoftmaxVariant
+      temperature: Float
+      top_k: usize
+      threshold: Float
+
+  WeightedScore:
+    fields:
+      index: usize
+      raw_score: Float
+      normalized_weight: Float
+
+  SoftmaxOutput:
+    fields:
+      weights: List<WeightedScore>
+      entropy: Float
+      sparsity: Float
+      variant_used: SoftmaxVariant
+
+  PhiRankState:
+    fields:
+      phi_powers: List<Float>
+      max_length: usize
+      temperature: Float
+
+  HDCTernarySoftmax:
+    fields:
+      config: SoftmaxConfig
+      phi_state: PhiRankState
+      allocator: Allocator
+
+behaviors:
+  - name: initSoftmax
+    given: SoftmaxConfig with variant, temperature, top_k
+    when: Precomputes phi power table for max context length
+    then: Softmax engine ready for score normalization
+
+  - name: phiRankSoftmax
+    given: Array of raw similarity scores (float)
+    when: Ranks descending, assigns phi^(-k/T) weights, normalizes to sum=1
+    then: Returns SoftmaxOutput with golden-ratio weighted distribution
+
+  - name: majorityVoteSoftmax
+    given: Array of raw scores and threshold
+    when: Thresholds to ternary {-1, 0, +1}, returns indices of positive scores
+    then: Returns SoftmaxOutput with binary weights (1/count for positives, 0 for rest)
+
+  - name: topKUniformSoftmax
+    given: Array of raw scores and k
+    when: Selects top-k by score, assigns equal weight 1/k
+    then: Returns SoftmaxOutput with sparse uniform weights
+
+  - name: apply
+    given: Array of raw scores
+    when: Dispatches to configured variant (phi_rank, majority_vote, or top_k_uniform)
+    then: Returns SoftmaxOutput with normalized weights
+
+  - name: entropy
+    given: SoftmaxOutput weights
+    when: Computes Shannon entropy H = -sum(w * log(w))
+    then: Returns entropy value (higher = more uniform attention)
+
+  - name: sparsity
+    given: SoftmaxOutput weights
+    when: Counts fraction of near-zero weights (< 0.01)
+    then: Returns sparsity ratio [0, 1] (higher = sparser attention)

@@ -1,0 +1,144 @@
+name: vibee_lexer
+version: "1.0.0"
+language: zig
+module: vibee_lexer
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: tokenize
+    given: Input data provided
+    when: tokenize function called
+    then: Result returned
+    test_cases:
+      - name: test_tokenize
+        input: {}
+        expected: {}
+
+  - name: tokenize_with_state
+    given: Input data provided
+    when: tokenize_with_state function called
+    then: Result returned
+    test_cases:
+      - name: test_tokenize_with_state
+        input: {}
+        expected: {}
+
+  - name: handle_single_line_comment
+    given: Input data provided
+    when: handle_single_line_comment function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_single_line_comment
+        input: {}
+        expected: {}
+
+  - name: handle_multiline_comment
+    given: Input data provided
+    when: handle_multiline_comment function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_multiline_comment
+        input: {}
+        expected: {}
+
+  - name: handle_regular_token
+    given: Input data provided
+    when: handle_regular_token function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_regular_token
+        input: {}
+        expected: {}
+
+  - name: extract_token
+    given: Input data provided
+    when: extract_token function called
+    then: Result returned
+    test_cases:
+      - name: test_extract_token
+        input: {}
+        expected: {}
+
+  - name: extract_word
+    given: Input data provided
+    when: extract_word function called
+    then: Result returned
+    test_cases:
+      - name: test_extract_word
+        input: {}
+        expected: {}
+
+  - name: word_to_token
+    given: Input data provided
+    when: word_to_token function called
+    then: Result returned
+    test_cases:
+      - name: test_word_to_token
+        input: {}
+        expected: {}
+
+types:
+  Token:
+    # TODO: Define fields
+
+  LexerState:
+    # TODO: Define fields
+
+  LocatedToken:
+    # TODO: Define fields
+
+functions:
+  - name: tokenize
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: tokenize_with_state
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_single_line_comment
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_multiline_comment
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_regular_token
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: extract_token
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: extract_word
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: word_to_token
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/list
+  # gleam/string
+  # gleam/int
+  # gleam/result
+  # gleam/option.{type Option, None, Some}
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions
