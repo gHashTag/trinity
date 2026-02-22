@@ -13,7 +13,6 @@
 const std = @import("std");
 const igla_hybrid_chat = @import("igla_hybrid_chat");
 const tvc = @import("tvc_corpus");
-const pas_orchestrator = @import("../agent_mu/pas_orchestrator.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WEBSOCKET SERVER (v8.21)
@@ -169,26 +168,6 @@ pub const PasWebSocketServer = struct {
         );
     }
 
-    /// Broadcast message to all connected WebSocket clients (v8.22)
-    pub fn broadcast(self: *Self, message: []const u8) void {
-        var disconnected: usize = 0;
-        for (self.clients.items) |stream| {
-            if (!self.sendWsFrame(stream, message)) {
-                disconnected += 1;
-            }
-        }
-
-        // Remove disconnected clients
-        if (disconnected > 0) {
-            var i: usize = 0;
-            while (i < self.clients.items.len) {
-                const stream = self.clients.items[i];
-                // Simple heuristic: if send failed, remove
-                // In production, use proper connection state tracking
-                i += 1;
-            }
-        }
-    }
 };
 
 /// Simple UUID v4 generator
