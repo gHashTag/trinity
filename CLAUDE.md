@@ -34,6 +34,27 @@ zig fmt src/                 # Format Zig code
 
 ---
 
+## VIBEE-FIRST DEVELOPMENT (MANDATORY)
+
+**ВСЯ ПРИКЛАДНАЯ ЛОГИКА ДОЛЖНА БЫТЬ ГЕНЕРИРОВАНА ИЗ .vibee СПЕЦИФИКАЦИЙ**
+
+```
+trinity-nexus/tri/*.vibee (источник) → VIBEE codegen → trinity-nexus/output/tri/zig/*.zig
+```
+
+**ЗАПРЕЩЕНО:**
+- ❌ Ручное редактирование сгенерированных .zig файлов
+- ❌ Дублирование логики между проектами
+
+**РАЗРЕШЕНО:**
+- ✅ Создавать/редактировать .vibee в `trinity-nexus/tri/`
+- ✅ Запускать: `zig build vibee -- gen trinity-nexus/tri/file.vibee`
+- ✅ Использовать `agent_mu` для улучшения codegen при проблемах
+
+**Единственное исключение:** `src/vibeec/*.zig` — исходный код компилятора
+
+---
+
 ## TRI COMMANDER
 
 TRI COMMANDER is the primary human-AI interface for Trinity development — a tmux-based chat dashboard with sacred mathematics.
