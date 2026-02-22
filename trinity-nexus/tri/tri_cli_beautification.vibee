@@ -3,6 +3,53 @@ version: "10.1.0"
 language: zig
 
 types:
+  Command:
+    enum:
+      - Help
+      - Chat
+      - Gen
+      - Serve
+      - ModelList
+      - ModelDownload
+      - ModelConvert
+      - ModelBenchmark
+      - ModelInfo
+      - KnowledgeBuild
+      - KnowledgeAsk
+      - KnowledgeList
+      - ProjectInit
+      - ProjectNew
+      - ProjectStatus
+      - ProjectInfo
+      - ProjectDeploy
+      - ProjectBuild
+      - Search
+      - TestCoverage
+      - TestBenchmark
+      - TestIntegration
+      - TestE2E
+      - Lint
+      - FormatCheck
+      - Security
+      - DataImport
+      - DataExport
+      - DataStats
+      - Stats
+      - Profile
+      - Monitor
+      - DocsGenerate
+      - DocsServe
+      - DocsPublish
+      - Clean
+      - Doctor
+      - Update
+  ParsedArgs:
+    fields:
+      command: Command
+      positional: List<String>
+      flags: Map<String, String>
+      verbose: Bool
+      dry_run: Bool
   ColorScheme:
   RazumColor:
     fields:
@@ -202,10 +249,261 @@ behaviors:
   - name: main
     given: void
     when: Program starts
-    then: Print TRINITY logo and exit
+    then: Parse arguments, show logo, dispatch command
     implementation: |
       pub fn main() !void {
+          // Show logo first
           try print_trinity_logo();
+
+          // Parse command line arguments
+          const args = try parseArgs(std.heap.page_allocator);
+
+          // Dispatch to appropriate command
+          try dispatchCommand(args);
+      }
+
+  - name: parseArgs
+    given: void
+    when: main calls argument parser
+    then: Parse argv into ParsedArgs struct
+    implementation: |
+      pub fn parseArgs(allocator: std.mem.Allocator) !ParsedArgs {
+          var args = std.process.args();
+          defer args.deinit();
+
+          // Skip executable name
+          _ = args.skip();
+
+          var parsed = ParsedArgs{
+              .command = .Help,
+              .positional = &[_][]const u8{},
+              .flags = std.StringHashMap([]const u8).init(allocator),
+              .verbose = false,
+              .dry_run = false,
+          };
+
+          var positional_list = std.ArrayList([]const u8).init(allocator);
+
+          while (args.next()) |arg_or_err| {
+              const arg = arg_or_err catch break;
+
+                              if (std.mem.startsWith(u8, arg, "--")) {
+                  // Flag: --name or --name=value
+                  const eq_idx = std.mem.indexOfScalar(u8, arg, '=');
+
+                                  if (eq_idx) |idx| {
+                      // --name=value format
+                      const name = arg[2..idx];
+                      const value = arg[idx + 1 ..];
+                      try parsed.flags.put(name, value);
+                  } else {
+                      // --name format (boolean flag)
+                      const name = arg[2..];
+                      try parsed.flags.put(name, "true");
+
+                                          // Handle special flags
+                      if (std.mem.eql(u8, name, "verbose") or
+                          std.mem.eql(u8, name, "v")) {
+                          parsed.verbose = true;
+                      }
+                      if (std.mem.eql(u8, name, "dry-run")) {
+                          parsed.dry_run = true;
+                      }
+                  }
+              } else if (std.mem.startsWith(u8, arg, "-")) {
+                  // Short flag: -n or -nv
+                                  const flag_contents = arg[1..];
+                  for (flag_contents) |c| {
+                      if (c == 'v') {
+                          parsed.verbose = true;
+                      } else if (c == 'h') {
+                          parsed.command = .Help;
+                      }
+                  }
+              } else {
+                  // Positional argument
+                  // First positional is the command
+                  if (parsed.command == .Help) {
+                      parsed.command = commandFromString(arg);
+                  } else {
+                      try positional_list.append(arg);
+                  }
+              }
+          }
+
+          parsed.positional = positional_list.toOwnedSlice();
+
+          // Handle special command mappings
+          if (parsed.flags.get("model")) |_| {
+              if (parsed.command == .Help) {
+                  parsed.command = .Chat;
+              }
+          }
+
+          return parsed;
+      }
+
+  - name: commandFromString
+    given: String
+    when: Parsing command from string
+    then: Convert string to Command enum
+    implementation: |
+      fn commandFromString(s: []const u8) Command {
+          if (std.mem.eql(u8, s, "chat")) return .Chat;
+          if (std.mem.eql(u8, s, "gen")) return .Gen;
+          if (std.mem.eql(u8, s, "serve")) return .Serve;
+          if (std.mem.eql(u8, s, "model")) return .ModelList;
+          if (std.mem.eql(u8, s, "models")) return .ModelList;
+          if (std.mem.eql(u8, s, "knowledge") or std.mem.eql(u8, s, "kb")) return .KnowledgeList;
+          if (std.mem.eql(u8, s, "project")) return .ProjectStatus;
+          if (std.mem.eql(u8, s, "test")) return .TestCoverage;
+          if (std.mem.eql(u8, s, "lint")) return .Lint;
+          if (std.mem.eql(u8, s, "fmt") or std.mem.eql(u8, s, "format")) return .FormatCheck;
+          if (std.mem.eql(u8, s, "clean")) return .Clean;
+          if (std.mem.eql(u8, s, "doctor")) return .Doctor;
+          if (std.mem.eql(u8, s, "help") or std.mem.eql(u8, s, "-h") or std.mem.eql(u8, s, "--help")) return .Help;
+          return .Help;
+      }
+
+  - name: dispatchCommand
+    given: ParsedArgs
+    when: main dispatches to command implementation
+    then: Route to appropriate execute_* function
+    implementation: |
+      pub fn dispatchCommand(args: ParsedArgs) !void {
+          switch (args.command) {
+              .Help => {
+                  try printHelp();
+                  std.process.exit(0);
+              },
+              .Chat => {
+                  const mode = ChatMode{
+                      .model = args.flags.get("model"),
+                      .prompt = args.flags.get("prompt"),
+                  };
+                  try execute_chat(mode);
+              },
+              .Gen => {
+                  if (args.positional.len == 0) {
+                      std.debug.print("\\x1b[31mError: spec path required\\x1b[0m\\n", .{});
+                      std.debug.print("Usage: tri gen <spec.vibee>\\n", .{});
+                      return error.SpecPathRequired;
+                  }
+                  const mode = CodeMode{
+                      .spec = args.positional[0],
+                      .output = args.flags.get("output"),
+                  };
+                  try execute_gen(mode);
+              },
+              .Serve => {
+                  const port_str = args.flags.get("port") orelse "8080";
+                  _ = port_str;
+                  try execute_serve();
+              },
+              .ModelList => {
+                  try execute_model_list(args);
+              },
+              .ModelDownload => {
+                  if (args.positional.len == 0) {
+                      std.debug.print("\\x1b[31mError: model name required\\x1b[0m\\n", .{});
+                      return error.ModelNameRequired;
+                  }
+                  // TODO: implement download
+                  std.debug.print("Downloading model: {s}\\n", .{args.positional[0]});
+              },
+              .KnowledgeBuild => {
+                  const specs_path = args.flags.get("specs");
+                  try execute_knowledge_build(.{ .specs_path = specs_path });
+              },
+              .KnowledgeAsk => {
+                  if (args.positional.len == 0) {
+                      std.debug.print("\\x1b[31mError: question required\\x1b[0m\\n", .{});
+                      return error.QuestionRequired;
+                  }
+                  try execute_knowledge_ask(.{ .question = args.positional[0] });
+              },
+              .KnowledgeList => {
+                  try execute_knowledge_list(args);
+              },
+              .Clean => {
+                  try execute_clean(args);
+              },
+              .Doctor => {
+                  try execute_doctor(args);
+              },
+              else => {
+                  std.debug.print("\\x1b[33mCommand not yet implemented: {}\\x1b[0m\\n", .{@intFromEnum(args.command)});
+                  std.debug.print("Run 'tri help' for available commands\\n", .{});
+              },
+          }
+      }
+
+  - name: printHelp
+    given: void
+    when: User runs tri help or invalid command
+    then: Display usage information
+    implementation: |
+      pub fn printHelp() !void {
+          std.debug.print(
+              \\
+              \\╔═══════════════════════════════════════════════════════════════╗
+              \\║     TRINITY CLI - VIBEE-first Development Environment          ║
+              \\╠═══════════════════════════════════════════════════════════════╣
+              \\║   phi² + 1/phi² = 3 | Local AI | Codegen | Ternary Computing  ║
+              \\╚═══════════════════════════════════════════════════════════════╝
+              \\
+              \\USAGE:
+              \\  tri <command> [options] [args]
+              \\
+              \\COMMANDS:
+              \\  chat          Interactive chat with GGUF models
+              \\    --model <path>    Path to .gguf model file
+              \\    --prompt <text>   Optional initial prompt
+              \\
+              \\  gen           Generate Zig code from .vibee spec
+              \\    <spec.vibee>      Specification file
+              \\    --output <dir>    Output directory
+              \\
+              \\  serve         Start HTTP API server
+              \\    --port <num>      Port (default: 8080)
+              \\
+              \\  model         Model management
+              \\    list              List available models
+              \\    download <name>   Download model
+              \\    info <path>       Show model info
+              \\
+              \\  knowledge     Knowledge base operations
+              \\    build             Index specifications
+              \\    ask "<query>"     Query knowledge
+              \\    list              Show categories
+              \\
+              \\  project       Project operations
+              \\    init              Initialize new project
+              \\    status            Show project status
+              \\
+              \\  test          Testing commands
+              \\    coverage          Generate coverage report
+              \\    benchmark         Run benchmarks
+              \\
+              \\  lint          Run linter
+              \\  fmt           Format code
+              \\  clean         Clean build artifacts
+              \\  doctor        System diagnostics
+              \\  help          Show this help
+              \\
+              \\GLOBAL OPTIONS:
+              \\  -v, --verbose   Verbose output
+              \\    --dry-run      Show what would be done
+              \\
+              \\EXAMPLES:
+              \\  tri chat --model models/phi-2.Q4_K_M.gguf
+              \\  tri gen trinity-nexus/tri/my_feature.vibee
+              \\  tri model list
+              \\  tri knowledge build
+              \\
+              \\For more info: https://github.com/gHashTag/trinity
+              \\
+          , .{});
       }
 
   - name: execute_chat
@@ -651,11 +949,77 @@ behaviors:
     given: CleanMode
     when: User runs tri clean
     then: Clean build artifacts and cache
+    implementation: |
+      pub fn execute_clean(_: anytype) !void {
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           Cleaning Build Artifacts                       ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+
+          const paths_to_clean = [_][]const u8{
+              "zig-cache",
+              "zig-out",
+              ".zig-cache",
+          };
+
+          for (paths_to_clean) |path| {
+              if (std.fs.cwd().deleteTree(path)) {
+                  std.debug.print("  \\x1b[32m✓\\x1b[0m Removed {s}/\\n", .{path});
+              } else |_| {
+                  std.debug.print("  \\x1b[90m- {s}/ (not found)\\x1b[0m\\n", .{path});
+              }
+          }
+
+          std.debug.print("\\n\\x1b[32m✓ Clean complete!\\x1b[0m\\n", .{});
+      }
 
   - name: execute_doctor
     given: DoctorMode
     when: User runs tri doctor
     then: Run system diagnostics
+    implementation: |
+      pub fn execute_doctor(_: anytype) !void {
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           TRINITY System Diagnostics                    ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+
+          // Check Zig version
+          std.debug.print("\\n\\x1b[33m[Zig Compiler]\\x1b[0m\\n", .{});
+          const zig_version = @import("builtin").zig_version;
+          std.debug.print("  Version: {}\\n", .{zig_version});
+
+          if (zig_version.major >= 0 and zig_version.minor >= 15) {
+              std.debug.print("  \\x1b[32m✓ Compatible (>= 0.15)\\x1b[0m\\n", .{});
+          } else {
+              std.debug.print("  \\x1b[31m✗ Requires Zig >= 0.15\\x1b[0m\\n", .{});
+          }
+
+          // Check directories
+          std.debug.print("\\n\\x1b[33m[Project Structure]\\x1b[0m\\n", .{});
+          const dirs = [_][]const u8{
+              "trinity-nexus/tri",
+              "trinity-nexus/output",
+              "trinity-nexus/lang/src",
+          };
+
+          for (dirs) |dir| {
+              if (std.fs.cwd().openDir(dir, .{})) |_| {
+                  std.debug.print("  \\x1b[32m✓ {s}/\\x1b[0m\\n", .{dir});
+              } else |_| {
+                  std.debug.print("  \\x1b[31m✗ {s}/ (missing)\\x1b[0m\\n", .{dir});
+              }
+          }
+
+          // Check VIBEE compiler
+          std.debug.print("\\n\\x1b[33m[VIBEE Compiler]\\x1b[0m\\n", .{});
+          if (std.fs.cwd().openDir("src/vibeec", .{})) |_| {
+              std.debug.print("  \\x1b[32m✓ VIBEE compiler source present\\x1b[0m\\n", .{});
+          } else |_| {
+              std.debug.print("  \\x1b[31m✗ VIBEE compiler missing\\x1b[0m\\n", .{});
+          }
+
+          std.debug.print("\\n\\x1b[36m═══════════════════════════════════════════════════════\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[32mSystem check complete!\\x1b[0m\\n", .{});
+      }
 
   - name: execute_update
     given: UpdateMode
