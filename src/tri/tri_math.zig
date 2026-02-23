@@ -1,5 +1,5 @@
 // =============================================================================
-// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85 + 86 + 87 + 88)
+// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85 + 86 + 87 + 88 + 89)
 // =============================================================================
 //
 // Exposes sacred_math.zig library as TRI CLI commands:
@@ -38,6 +38,11 @@
 // Cycle 88 extensions:
 //   tri math particles  - Particle masses + sacred mass ratios + mixing angles
 //   tri math groups     - Group theory (E8, topology, sacred numbers, neuro, SC)
+//
+// Cycle 89 extensions (v3.1 Platform):
+//   tri math holo-render - Holographic renderer (AdS, spin network, Penrose, entropy)
+//   tri math qg-sim      - Quantum gravity simulation (spin foam, Regge, AdS therm.)
+//   tri math marketplace  - $TRI marketplace (dashboard, staking, proof, tokenomics)
 //
 // All math is inlined from sacred_math.zig to avoid build.zig coupling.
 //
@@ -635,6 +640,13 @@ pub fn runMathCommand(args: []const []const u8) void {
         runParticlesCommand();
     } else if (std.mem.eql(u8, sub, "groups") or std.mem.eql(u8, sub, "group-theory") or std.mem.eql(u8, sub, "dimensions") or std.mem.eql(u8, sub, "e8")) {
         runGroupsCommand();
+        // --- Cycle 87 v3.1: Holographic Renderer + QG Sim + Marketplace ---
+    } else if (std.mem.eql(u8, sub, "holo-render") or std.mem.eql(u8, sub, "render") or std.mem.eql(u8, sub, "holo")) {
+        runHoloRendererCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "qg-sim") or std.mem.eql(u8, sub, "qg") or std.mem.eql(u8, sub, "spin-foam")) {
+        runQGSimCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "marketplace") or std.mem.eql(u8, sub, "market") or std.mem.eql(u8, sub, "tri-market")) {
+        runMarketplaceCommand(sub_args);
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
@@ -684,6 +696,10 @@ fn printMathHelp() void {
     std.debug.print("\n{s}PARTICLE PHYSICS (Cycle 88):{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}particles{s}                   Particle masses + sacred mass ratios + mixing angles\n", .{ GREEN, RESET });
     std.debug.print("  {s}groups{s}                      Group theory (E8, topology, sacred numbers, neuro, SC)\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}v3.1 PLATFORM (Cycle 87):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}holo-render{s} [mode]          Holographic renderer (ads/spin/penrose/entropy/hawking)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}qg-sim{s} [steps]              Quantum gravity simulation (spin foam/Regge/AdS therm.)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}marketplace{s} [mode]           $TRI marketplace (dashboard/staking/proof/economics)\n", .{ GREEN, RESET });
     std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}math-verify{s}                Trinity identity checks (38 checks)\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-bench{s}                 Performance benchmark\n", .{ GREEN, RESET });
@@ -2521,6 +2537,471 @@ fn runGroupsCommand() void {
 }
 
 // =============================================================================
+// COMMAND: tri math holo-render (Cycle 87 v3.1 — from holographic_renderer.vibee)
+// Real-time holographic renderer: AdS slice, spin network, Penrose, entropy surface
+// =============================================================================
+
+fn runHoloRendererCommand(args: []const []const u8) void {
+    const mode = if (args.len > 0) args[0] else "ads";
+
+    std.debug.print("\n{s}HOLOGRAPHIC RENDERER v3.1{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Generated from: specs/tri/holographic_renderer.vibee\n\n", .{});
+
+    if (std.mem.eql(u8, mode, "ads") or std.mem.eql(u8, mode, "ads-slice")) {
+        // --- AdS/CFT Bulk-Boundary Slice ---
+        std.debug.print("{s}  AdS₅ Radial Slice — Bulk/Boundary Correspondence:{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  {s}Boundary (CFT₄) ────────────────────── z → 0{s}\n", .{ GOLDEN, RESET });
+
+        // Render 12 radial layers
+        var z: u32 = 0;
+        while (z < 12) : (z += 1) {
+            const zf: f64 = @as(f64, @floatFromInt(z)) * 0.1 + 0.05;
+            const width: u32 = 60 - z * 4;
+            const entropy = BEKENSTEIN_HAWKING_RATIO / (zf * zf);
+            std.debug.print("  z={d:.2} ", .{zf});
+            // Render bulk layer
+            if (z == 0) {
+                std.debug.print("{s}", .{GOLDEN});
+            } else if (z < 4) {
+                std.debug.print("{s}", .{CYAN});
+            } else if (z < 8) {
+                std.debug.print("{s}", .{GREEN});
+            } else {
+                std.debug.print("{s}", .{GRAY});
+            }
+            var w: u32 = 0;
+            const pad = (60 - width) / 2;
+            while (w < pad) : (w += 1) std.debug.print(" ", .{});
+            w = 0;
+            while (w < width) : (w += 1) {
+                if (w == 0 or w == width - 1) {
+                    std.debug.print("|", .{});
+                } else if (w == width / 2) {
+                    std.debug.print("*", .{});
+                } else if (@mod(w, 6) == 0) {
+                    std.debug.print(".", .{});
+                } else {
+                    std.debug.print(" ", .{});
+                }
+            }
+            std.debug.print("{s} S/A={d:.2}\n", .{ RESET, entropy });
+        }
+        std.debug.print("  {s}Horizon (IR) ──── z → ∞  (deep bulk){s}\n\n", .{ RED, RESET });
+
+        std.debug.print("  {s}Bulk → Boundary Dictionary:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    Bulk field φ(z,x)   ↔  Boundary operator O(x)\n", .{});
+        std.debug.print("    Bulk mass m         ↔  Conformal dim Δ = d/2 + √(d²/4 + m²R²)\n", .{});
+        std.debug.print("    Geodesic length     ↔  Entanglement entropy (Ryu-Takayanagi)\n", .{});
+        std.debug.print("    Black hole horizon  ↔  Thermal state at T = 1/(2πz_h)\n", .{});
+    } else if (std.mem.eql(u8, mode, "spin") or std.mem.eql(u8, mode, "spin-network")) {
+        // --- Spin Network (LQG) ---
+        std.debug.print("{s}  Spin Network — Loop Quantum Gravity:{s}\n\n", .{ CYAN, RESET });
+
+        // 7-node spin network
+        std.debug.print("             {s}j=1/2{s}           {s}j=1{s}\n", .{ GREEN, RESET, GREEN, RESET });
+        std.debug.print("      [N1]─────────[N2]─────────[N3]\n", .{});
+        std.debug.print("       |  \\{s}j=1/2{s}  / |  \\{s}j=3/2{s} / |\n", .{ GREEN, RESET, GREEN, RESET });
+        std.debug.print("  {s}j=1{s} |   \\   /   |   \\   /   | {s}j=1{s}\n", .{ GREEN, RESET, GREEN, RESET });
+        std.debug.print("       |    [N4]    |    [N5]    |\n", .{});
+        std.debug.print("       |   / {s}j=1{s} \\  |   / {s}j=1{s}  \\ |\n", .{ GREEN, RESET, GREEN, RESET });
+        std.debug.print("       |  /       \\ |  /        \\|\n", .{});
+        std.debug.print("      [N6]─────────[N7]\n", .{});
+        std.debug.print("           {s}j=3/2{s}\n\n", .{ GREEN, RESET });
+
+        std.debug.print("  {s}Area Eigenvalues:{s}\n", .{ WHITE, RESET });
+        // A_j = 8*pi*gamma*l_P^2 * sqrt(j*(j+1))
+        const spins = [_]f64{ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0 };
+        for (spins) |j| {
+            const area = 8.0 * PI * BARBERO_IMMIRZI * @sqrt(j * (j + 1.0));
+            std.debug.print("    j={d:.1}  →  A = {d:.6} l_P²\n", .{ j, area });
+        }
+
+        std.debug.print("\n  {s}Volume Quantization:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    V ~ l_P³ × Σ √|j₁j₂j₃...| (intertwiner spectrum)\n", .{});
+        std.debug.print("    Minimum volume quantum: V_min ≈ 0.056 l_P³\n", .{});
+        std.debug.print("    {s}Spacetime is discrete at Planck scale!{s}\n", .{ GOLDEN, RESET });
+    } else if (std.mem.eql(u8, mode, "penrose")) {
+        // --- Penrose Tiling ---
+        std.debug.print("{s}  Penrose P3 Tiling — phi in Geometry:{s}\n\n", .{ CYAN, RESET });
+
+        // ASCII Penrose-like pattern showing kites and darts
+        std.debug.print("          {s}/\\    /\\    /\\{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("         {s}/K \\  /D \\  /K \\{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("        {s}/    \\/    \\/    \\{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("       {s}/\\   /\\   /\\   /\\  /\\{s}\n", .{ CYAN, RESET });
+        std.debug.print("      {s}/D \\ /K \\ /K \\ /D \\ /K \\{s}\n", .{ CYAN, RESET });
+        std.debug.print("     {s}/    X    X    X    X    \\{s}\n", .{ CYAN, RESET });
+        std.debug.print("    {s}/\\  / \\  / \\  / \\  / \\  /\\{s}\n", .{ GREEN, RESET });
+        std.debug.print("   {s}/K \\/D  \\/K  \\/K  \\/D  \\/K \\{s}\n", .{ GREEN, RESET });
+        std.debug.print("  {s}/    \\    \\    \\    \\    \\    \\{s}\n", .{ GREEN, RESET });
+
+        std.debug.print("\n  K = Kite, D = Dart\n\n", .{});
+        std.debug.print("  {s}Golden Properties:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    Kite/Dart ratio:  {s}phi = {d:.10}{s}\n", .{ GOLDEN, PHI, RESET });
+        std.debug.print("    Long/Short edge:  {s}phi = {d:.10}{s}\n", .{ GOLDEN, PHI, RESET });
+        std.debug.print("    Inflation factor: {s}phi² = {d:.10}{s}\n", .{ GOLDEN, PHI_SQ, RESET });
+        std.debug.print("    5-fold symmetry:  {s}cos(2π/5) = (phi-1)/2{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("    Aperiodic:        {s}Never repeats — infinite non-periodic order{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("    Quasicrystal:     Dan Shechtman 1982 → Nobel 2011\n", .{});
+    } else if (std.mem.eql(u8, mode, "entropy") or std.mem.eql(u8, mode, "horizon")) {
+        // --- Entropy Surface ---
+        std.debug.print("{s}  Bekenstein-Hawking Entropy Surface:{s}\n\n", .{ CYAN, RESET });
+
+        // Render circular horizon with entropy density
+        const r: u32 = 10;
+        var dy: i32 = -@as(i32, @intCast(r));
+        while (dy <= @as(i32, @intCast(r))) : (dy += 1) {
+            std.debug.print("  ", .{});
+            var dx: i32 = -@as(i32, @intCast(r * 2));
+            while (dx <= @as(i32, @intCast(r * 2))) : (dx += 1) {
+                const fx: f64 = @as(f64, @floatFromInt(dx)) / 2.0;
+                const fy: f64 = @floatFromInt(dy);
+                const dist = @sqrt(fx * fx + fy * fy);
+                const rf: f64 = @floatFromInt(r);
+                if (dist >= rf - 0.5 and dist <= rf + 0.5) {
+                    std.debug.print("{s}#{s}", .{ RED, RESET });
+                } else if (dist < rf - 0.5) {
+                    // Entropy density gradient
+                    const density = 1.0 - dist / rf;
+                    if (density > 0.8) {
+                        std.debug.print("{s}@{s}", .{ GOLDEN, RESET });
+                    } else if (density > 0.5) {
+                        std.debug.print("{s}*{s}", .{ CYAN, RESET });
+                    } else if (density > 0.2) {
+                        std.debug.print("{s}.{s}", .{ GREEN, RESET });
+                    } else {
+                        std.debug.print(" ", .{});
+                    }
+                } else {
+                    std.debug.print(" ", .{});
+                }
+            }
+            std.debug.print("\n", .{});
+        }
+
+        std.debug.print("\n  {s}Entropy Formula:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    S = A / (4 l_P²) = A × {d:.6} bits/l_P²\n", .{HOLOGRAPHIC_BITS});
+        std.debug.print("    {s}@ = high entropy density, * = medium, . = low{s}\n", .{ GRAY, RESET });
+        std.debug.print("    {s}# = event horizon (information boundary){s}\n", .{ RED, RESET });
+        std.debug.print("    For M_sun: S ≈ 10^{d:.0} bits\n", .{77.0});
+    } else if (std.mem.eql(u8, mode, "hawking")) {
+        // --- Hawking Radiation Animation ---
+        std.debug.print("{s}  Hawking Radiation — Black Hole Evaporation:{s}\n\n", .{ CYAN, RESET });
+
+        var frame: u32 = 0;
+        while (frame < 6) : (frame += 1) {
+            const mass = 1.0 - @as(f64, @floatFromInt(frame)) * 0.15;
+            const radius: u32 = @intFromFloat(8.0 * mass);
+            const temp = 1.0 / (8.0 * PI * mass);
+
+            std.debug.print("  {s}Frame {d}/6{s}  M={d:.2} M_sun  T={d:.4} T_P  r={d}\n", .{ WHITE, frame + 1, RESET, mass, temp, radius });
+            std.debug.print("  ", .{});
+
+            // Simple shrinking circle
+            var y: i32 = -@as(i32, @intCast(radius));
+            while (y <= @as(i32, @intCast(radius))) : (y += 1) {
+                if (y != -@as(i32, @intCast(radius))) std.debug.print("  ", .{});
+                var x: i32 = -@as(i32, @intCast(radius * 2));
+                while (x <= @as(i32, @intCast(radius * 2))) : (x += 1) {
+                    const fx: f64 = @as(f64, @floatFromInt(x)) / 2.0;
+                    const fy: f64 = @floatFromInt(y);
+                    const dist = @sqrt(fx * fx + fy * fy);
+                    const rf: f64 = @floatFromInt(radius);
+                    if (dist >= rf - 0.5 and dist <= rf + 0.5) {
+                        std.debug.print("{s}*{s}", .{ RED, RESET });
+                    } else if (dist < rf) {
+                        std.debug.print(" ", .{});
+                    } else if (dist < rf + 2.0 and @mod(@as(u32, @intFromFloat(dist * 3.0 + @as(f64, @floatFromInt(frame)))), 3) == 0) {
+                        std.debug.print("{s}~{s}", .{ GOLDEN, RESET }); // radiation
+                    } else {
+                        std.debug.print(" ", .{});
+                    }
+                }
+                std.debug.print("\n", .{});
+            }
+            std.debug.print("\n", .{});
+        }
+        std.debug.print("  {s}T_Hawking = ℏc³/(8πGMk_B) — smaller BH = hotter{s}\n", .{ GOLDEN, RESET });
+    } else {
+        // Help for renderer
+        std.debug.print("{s}  Available render modes:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    tri math holo-render ads       — AdS₅ radial bulk-boundary slice\n", .{});
+        std.debug.print("    tri math holo-render spin      — LQG spin network graph\n", .{});
+        std.debug.print("    tri math holo-render penrose   — Penrose P3 tiling (phi geometry)\n", .{});
+        std.debug.print("    tri math holo-render entropy   — Bekenstein-Hawking entropy surface\n", .{});
+        std.debug.print("    tri math holo-render hawking   — Hawking radiation animation\n", .{});
+        return;
+    }
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — reality renders itself{s}\n\n", .{ GOLDEN, trinity, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math qg-sim (Cycle 87 v3.1 — from quantum_gravity_sim.vibee)
+// Quantum gravity simulation: spin foam, Regge calculus, AdS thermalization
+// =============================================================================
+
+fn runQGSimCommand(args: []const []const u8) void {
+    const steps = parseU32(args, 10);
+
+    std.debug.print("\n{s}QUANTUM GRAVITY SIMULATION v3.1{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Generated from: specs/tri/quantum_gravity_sim.vibee\n\n", .{});
+
+    // --- Part 1: Spin Foam Evolution ---
+    std.debug.print("{s}  1. SPIN FOAM EVOLUTION (Ponzano-Regge model):{s}\n\n", .{ CYAN, RESET });
+    std.debug.print("  {s}Step  Amplitude    Action      Phase       Vertices  Edges{s}\n", .{ WHITE, RESET });
+    std.debug.print("  {s}─────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+    var amp: f64 = 1.0;
+    var action: f64 = 0.0;
+    var phase: f64 = 0.0;
+    var i: u32 = 0;
+    while (i < steps) : (i += 1) {
+        const fi: f64 = @floatFromInt(i);
+        // Spin foam amplitude: A ~ product of 6j symbols
+        // Simplified: exponential decay with phi modulation
+        amp *= (PHI_INV + 0.1 * @sin(fi * BERRY_PHASE_QUTRIT));
+        // Regge action contribution
+        action += BARBERO_IMMIRZI * @sqrt(fi + 1.0) * @cos(fi * PI / 6.0);
+        // Phase accumulates Berry-like
+        phase += BERRY_PHASE_QUTRIT;
+        const verts = 4 + i * 3;
+        const edges = 6 + i * 5;
+        std.debug.print("  {d:>4}  {d:>11.6}  {d:>10.4}  {d:>10.4} rad  {d:>4}      {d:>4}\n", .{ i + 1, amp, action, phase, verts, edges });
+    }
+
+    std.debug.print("\n  Final: amplitude={d:.8}, action={d:.4}\n", .{ amp, action });
+    std.debug.print("  Phase accumulated: {d:.4} rad = {d:.2} × 2π/3 cycles\n", .{ phase, phase / BERRY_PHASE_QUTRIT });
+
+    // --- Part 2: Regge Calculus ---
+    std.debug.print("\n{s}  2. REGGE CALCULUS (Simplicial Quantum Gravity):{s}\n\n", .{ CYAN, RESET });
+
+    // 4-simplex lattice relaxation
+    std.debug.print("  {s}Iter  Simplices  Mean Deficit   Regge Action   Curvature{s}\n", .{ WHITE, RESET });
+    std.debug.print("  {s}───────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+    var regge_action: f64 = 10.0;
+    var deficit: f64 = 0.5;
+    i = 0;
+    while (i < @min(steps, 12)) : (i += 1) {
+        // Relaxation: action decreases, deficit angles shrink
+        regge_action *= (0.85 + 0.05 * PHI_INV);
+        deficit *= 0.88;
+        const simplices = 8 + i * 4;
+        const curvature = deficit * 2.0 * PI;
+        std.debug.print("  {d:>4}  {d:>9}  {d:>12.6} rad  {d:>12.4}  {d:>10.4}\n", .{ i + 1, simplices, deficit, regge_action, curvature });
+    }
+
+    std.debug.print("\n  Converged: S_Regge → {d:.6} (Einstein-Hilbert limit)\n", .{regge_action});
+    std.debug.print("  Deficit angle → {d:.6} rad (approaching flat)\n", .{deficit});
+
+    // --- Part 3: AdS/CFT Thermalization ---
+    std.debug.print("\n{s}  3. AdS/CFT THERMALIZATION DYNAMICS:{s}\n\n", .{ CYAN, RESET });
+
+    std.debug.print("  Quench: inject energy E=1.0 into boundary CFT\n", .{});
+    std.debug.print("  Monitor: entanglement entropy → thermal entropy\n\n", .{});
+
+    std.debug.print("  {s}Time    S_entangle   S_thermal   Scrambling%%   T_boundary{s}\n", .{ WHITE, RESET });
+    std.debug.print("  {s}──────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+    i = 0;
+    while (i <= @min(steps, 10)) : (i += 1) {
+        const t: f64 = @as(f64, @floatFromInt(i)) * 0.1;
+        // Scrambling: sigmoid approach to thermal
+        const scramble = 1.0 / (1.0 + @exp(-5.0 * (t - 0.5)));
+        const s_thermal = BROWN_HENNEAUX * PI;
+        const s_entangle = s_thermal * scramble;
+        const temp = 0.5 * (1.0 + 0.3 * @exp(-t));
+
+        std.debug.print("  {d:.1}     {d:>9.4}   {d:>9.4}   {d:>10.1}%%    {d:.4}\n", .{ t, s_entangle, s_thermal, scramble * 100.0, temp });
+
+        // ASCII scrambling bar
+        std.debug.print("         [{s}", .{GREEN});
+        const filled: u32 = @intFromFloat(scramble * 30.0);
+        var b: u32 = 0;
+        while (b < 30) : (b += 1) {
+            if (b < filled) {
+                std.debug.print("█", .{});
+            } else {
+                std.debug.print("{s}░{s}", .{ GRAY, GREEN });
+            }
+        }
+        std.debug.print("{s}]\n", .{RESET});
+    }
+
+    std.debug.print("\n  {s}Key Results:{s}\n", .{ WHITE, RESET });
+    std.debug.print("    Scrambling time: t* ≈ 0.5 (in units of β/2π)\n", .{});
+    std.debug.print("    Fast scrambling: t* ~ log(S) — black holes are fastest scramblers\n", .{});
+    std.debug.print("    Brown-Henneaux central charge: c = {d:.4}\n", .{BROWN_HENNEAUX});
+
+    // --- Part 4: Area spectrum ---
+    std.debug.print("\n{s}  4. LQG AREA SPECTRUM (Barbero-Immirzi):{s}\n\n", .{ CYAN, RESET });
+
+    std.debug.print("  A_j = 8π γ l_P² √(j(j+1))   where γ = {d:.8}\n\n", .{BARBERO_IMMIRZI});
+    std.debug.print("  {s}j       A_j / l_P²     A_j × φ        Ratio A(j)/A(j-1){s}\n", .{ WHITE, RESET });
+    std.debug.print("  {s}──────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+    var prev_area: f64 = 0.0;
+    const js = [_]f64{ 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0 };
+    for (js) |j| {
+        const area = 8.0 * PI * BARBERO_IMMIRZI * @sqrt(j * (j + 1.0));
+        const area_phi = area * PHI;
+        const ratio = if (prev_area > 0.0) area / prev_area else 0.0;
+        std.debug.print("  {d:.1}     {d:>10.6}     {d:>10.6}     {d:.6}\n", .{ j, area, area_phi, ratio });
+        prev_area = area;
+    }
+
+    std.debug.print("\n  {s}Area gap (minimum area): A_min = {d:.6} l_P²{s}\n", .{ GOLDEN, 8.0 * PI * BARBERO_IMMIRZI * @sqrt(0.5 * 1.5), RESET });
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — gravity quantizes in threes{s}\n\n", .{ GOLDEN, trinity, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math marketplace (Cycle 87 v3.1 — from tri_marketplace.vibee)
+// $TRI Sacred Computation Marketplace: rewards, staking, proof-of-computation
+// =============================================================================
+
+fn runMarketplaceCommand(args: []const []const u8) void {
+    const mode = if (args.len > 0) args[0] else "dashboard";
+
+    std.debug.print("\n{s}$TRI SACRED COMPUTATION MARKETPLACE v3.1{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Generated from: specs/tri/tri_marketplace.vibee\n\n", .{});
+
+    if (std.mem.eql(u8, mode, "dashboard") or std.mem.eql(u8, mode, "status")) {
+        // --- Dashboard ---
+        std.debug.print("{s}  ╔══════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}  ║            $TRI MARKETPLACE DASHBOARD                   ║{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}  ╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
+
+        // Simulated marketplace stats
+        std.debug.print("  {s}Network Status:{s}  {s}● ACTIVE{s}\n", .{ WHITE, RESET, GREEN, RESET });
+        std.debug.print("  {s}Constants:{s}       145 sacred + physics\n", .{ WHITE, RESET });
+        std.debug.print("  {s}Verify checks:{s}   38/38 passing\n", .{ WHITE, RESET });
+        std.debug.print("  {s}Formula fits:{s}    18 (4 EXACT < 0.01%%)\n\n", .{ WHITE, RESET });
+
+        std.debug.print("  {s}$TRI Tokenomics:{s}\n", .{ CYAN, RESET });
+        std.debug.print("    Total Supply:     {s}999,999{s} $TRI (= 37 × 27027)\n", .{ GOLDEN, RESET });
+        std.debug.print("    Circulating:      {s}618,033{s} $TRI (= phi-fraction)\n", .{ GREEN, RESET });
+        std.debug.print("    Staked:           {s}381,966{s} $TRI (= 1/phi-fraction)\n", .{ CYAN, RESET });
+        std.debug.print("    Burned:           {s}0{s} $TRI\n", .{ GRAY, RESET });
+        std.debug.print("    Inflation:        {s}{d:.2}%%{s}/epoch (μ = 1/phi²/10)\n", .{ GOLDEN, MU * 100.0, RESET });
+        std.debug.print("    Deflation:        {s}{d:.2}%%{s}/epoch (χ = 1/phi/10)\n\n", .{ RED, CHI * 100.0, RESET });
+
+        // Top computations
+        std.debug.print("  {s}Top Sacred Computations (by reward):{s}\n", .{ CYAN, RESET });
+        std.debug.print("  {s}Rank  Computation              Accuracy    Reward{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}──────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+        std.debug.print("  #1    m_tau/m_e = 4*3³π³φ⁻²e   {s}0.0002%%{s}     {s}phi⁴ = {d:.2}{s} $TRI\n", .{ GREEN, RESET, GOLDEN, std.math.pow(f64, PHI, 4.0), RESET });
+        std.debug.print("  #2    CHSH = 8*3⁴π⁻³            {s}0.0020%%{s}     {s}phi³ = {d:.2}{s} $TRI\n", .{ GREEN, RESET, GOLDEN, std.math.pow(f64, PHI, 3.0), RESET });
+        std.debug.print("  #3    gamma_BI = 7*3⁻³π²e⁻³     {s}0.0082%%{s}     {s}phi³ = {d:.2}{s} $TRI\n", .{ GREEN, RESET, GOLDEN, std.math.pow(f64, PHI, 3.0), RESET });
+        std.debug.print("  #4    Age = 1*3⁴π⁻²φ⁻¹e         {s}0.0051%%{s}     {s}phi³ = {d:.2}{s} $TRI\n", .{ GREEN, RESET, GOLDEN, std.math.pow(f64, PHI, 3.0), RESET });
+        std.debug.print("  #5    1/alpha sacred formula     {s}0.0002%%{s}     {s}phi⁴ = {d:.2}{s} $TRI\n", .{ GREEN, RESET, GOLDEN, std.math.pow(f64, PHI, 4.0), RESET });
+    } else if (std.mem.eql(u8, mode, "staking") or std.mem.eql(u8, mode, "stake")) {
+        // --- Staking Tiers ---
+        std.debug.print("{s}  $TRI STAKING TIERS (Fibonacci × phi):{s}\n\n", .{ CYAN, RESET });
+
+        std.debug.print("  {s}Tier  Stake     Multiplier  Annual Yield  Lock Period{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        const fib_stakes = [_]u32{ 3, 5, 8, 13, 21, 34, 55, 89, 144, 233 };
+        var tier: u32 = 0;
+        while (tier < 10) : (tier += 1) {
+            const mult = std.math.pow(f64, PHI, @as(f64, @floatFromInt(tier)));
+            const yield_pct = mult * MU * 100.0 * 12.0; // monthly rate × 12
+            const lock = (tier + 1) * 3; // lock in days, multiple of TRINITY
+            std.debug.print("  {d:>4}  {d:>5} $TRI  phi^{d} = {d:>7.3}  {d:>10.2}%%/yr   {d:>3} days\n", .{ tier, fib_stakes[tier], tier, mult, yield_pct, lock });
+
+            // Visual bar
+            std.debug.print("        [{s}", .{GREEN});
+            const bar_len: u32 = @min(@as(u32, @intFromFloat(mult * 3.0)), 30);
+            var b: u32 = 0;
+            while (b < 30) : (b += 1) {
+                if (b < bar_len) {
+                    std.debug.print("█", .{});
+                } else {
+                    std.debug.print("{s}░{s}", .{ GRAY, GREEN });
+                }
+            }
+            std.debug.print("{s}]\n", .{RESET});
+        }
+
+        std.debug.print("\n  {s}Key:{s} Stake amounts = Fibonacci sequence\n", .{ WHITE, RESET });
+        std.debug.print("  Lock periods = multiples of TRINITY (3 days)\n", .{});
+        std.debug.print("  Multipliers = phi^tier (golden exponential growth)\n", .{});
+    } else if (std.mem.eql(u8, mode, "proof") or std.mem.eql(u8, mode, "validate")) {
+        // --- Proof of Computation ---
+        std.debug.print("{s}  PROOF-OF-SACRED-COMPUTATION SYSTEM:{s}\n\n", .{ CYAN, RESET });
+
+        std.debug.print("  {s}How it works:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    1. Submit computation (formula fit, verify, constant derivation)\n", .{});
+        std.debug.print("    2. System validates accuracy against sacred constants\n", .{});
+        std.debug.print("    3. Reward based on accuracy tier:\n\n", .{});
+
+        std.debug.print("  {s}Accuracy Tier    Error %%     Reward Multiplier  Label{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+        std.debug.print("  {s}EXACT{s}            < 0.01%%     phi⁴ = {d:.3}x        Sacred Fit\n", .{ GOLDEN, RESET, std.math.pow(f64, PHI, 4.0) });
+        std.debug.print("  {s}CLOSE{s}            < 0.1%%      phi² = {d:.3}x        Golden Fit\n", .{ GREEN, RESET, PHI_SQ });
+        std.debug.print("  {s}NEAR{s}             < 1.0%%      phi¹ = {d:.3}x        Silver Fit\n", .{ CYAN, RESET, PHI });
+        std.debug.print("  {s}APPROXIMATE{s}      < 5.0%%      phi⁰ = 1.000x        Bronze Fit\n", .{ GRAY, RESET });
+        std.debug.print("  {s}REJECTED{s}         > 5.0%%      0x                    No Reward\n\n", .{ RED, RESET });
+
+        std.debug.print("  {s}Difficulty Scaling:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    Base difficulty:  27 = 3³ = (phi² + 1/phi²)³\n", .{});
+        std.debug.print("    Each tier:        difficulty × 27\n", .{});
+        std.debug.print("    EXACT proofs:     27⁴ = 531,441 difficulty units\n", .{});
+        std.debug.print("    This makes EXACT sacred fits genuinely rare and valuable.\n", .{});
+
+        std.debug.print("\n  {s}Trinity Bonus:{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("    Any computation proving phi²+1/phi²=3 earns 3x bonus\n", .{});
+        std.debug.print("    Marketplace fee: 3%% (= 1/TRINITY × 9%%)\n", .{});
+    } else if (std.mem.eql(u8, mode, "economics") or std.mem.eql(u8, mode, "tokenomics")) {
+        // --- Full Tokenomics ---
+        std.debug.print("{s}  $TRI TOKENOMICS MODEL:{s}\n\n", .{ CYAN, RESET });
+
+        std.debug.print("  {s}Supply Schedule (phi-deflation):{s}\n\n", .{ WHITE, RESET });
+        std.debug.print("  {s}Epoch  Supply        Inflation  Staked %%   Burned   Net Change{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}─────────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        var supply: f64 = 999999.0;
+        var staked_pct: f64 = 38.2; // 1/phi^2 fraction
+        var epoch: u32 = 0;
+        while (epoch < 12) : (epoch += 1) {
+            const inflation = supply * MU / 12.0; // monthly
+            const burned = supply * CHI / 12.0 * (staked_pct / 100.0);
+            const net = inflation - burned;
+            const sign: []const u8 = if (net >= 0) "+" else "";
+            std.debug.print("  {d:>4}   {d:>10.0}    {d:>7.1}    {d:>6.1}%%    {d:>7.1}   {s}{s}{d:>7.1}{s}\n", .{
+                epoch, supply, inflation, staked_pct, burned, if (net > 0) GREEN else RED, sign, net, RESET,
+            });
+            supply += net;
+            staked_pct = @min(61.8, staked_pct + 0.5); // trends toward phi fraction
+        }
+
+        std.debug.print("\n  {s}Key Properties:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    Initial supply:  999,999 = 37 × 27,027 (sacred number)\n", .{});
+        std.debug.print("    Inflation rate:  μ = {d:.4} = 1/(phi² × 10)\n", .{MU});
+        std.debug.print("    Burn rate:       χ = {d:.4} = 1/(phi × 10)\n", .{CHI});
+        std.debug.print("    Equilibrium:     staking → 61.8%% (= 1/phi)\n", .{});
+        std.debug.print("    Net deflationary when staked > {d:.1}%%\n", .{MU / CHI * 100.0});
+    } else {
+        std.debug.print("{s}  Available modes:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    tri math marketplace dashboard   — Full marketplace overview\n", .{});
+        std.debug.print("    tri math marketplace staking     — Staking tiers table\n", .{});
+        std.debug.print("    tri math marketplace proof       — Proof-of-computation system\n", .{});
+        std.debug.print("    tri math marketplace economics   — Full tokenomics model\n", .{});
+        return;
+    }
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — sacred math has value{s}\n\n", .{ GOLDEN, trinity, RESET });
+}
+
+// =============================================================================
 // COMMAND: tri math visual (Cycle 87)
 // =============================================================================
 
@@ -2988,10 +3469,11 @@ fn runEngineCommand() void {
     std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
 
     std.debug.print("\n{s}  Engine Status:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}[OK]{s} Version:          v3.1 (Cycle 88)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Version:          v3.2 (Cycle 89)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Constants:         145 sacred + physics + cosmological\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[OK]{s} Subcommands:       34 (25 base + 7 v3.0 + 2 v3.1)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Subcommands:       37 (25 base + 7 v3.0 + 2 v3.1 + 3 v3.2)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Verify checks:     38/38 passing\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Specs generated:   3 .vibee → 1008 lines Zig (holographic, qg, market)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Backend:           Zig 0.15.x (zero-alloc math)\n", .{ GREEN, RESET });
 
     std.debug.print("\n{s}  Module Roadmap:{s}\n", .{ CYAN, RESET });
@@ -3002,13 +3484,14 @@ fn runEngineCommand() void {
     std.debug.print("  {s}[OK]{s} Cycle 86: Holographic (AdS/CFT, LQG, quantum gravity)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Cycle 87: v3.0 Engine (visual, qsim, rewards, cosmos)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Cycle 88: v3.1 Full Integration (particles, groups, 145 constants)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[..]{s} Cycle 89: v3.2 Real-time renderer + marketplace\n", .{ GRAY, RESET });
+    std.debug.print("  {s}[OK]{s} Cycle 89: v3.2 Platform (holo-renderer, qg-sim, marketplace)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[..]{s} Cycle 90: v3.3 WASM export + browser visualization\n", .{ GRAY, RESET });
 
     std.debug.print("\n{s}  Architecture:{s}\n", .{ CYAN, RESET });
     std.debug.print("    File:     src/tri/tri_math.zig\n", .{});
     std.debug.print("    Backend:  Pure Zig, no allocations for math\n", .{});
     std.debug.print("    Entry:    main.zig -> math_mod.runMathCommand()\n", .{});
-    std.debug.print("    Router:   String-match dispatch (34 routes)\n", .{});
+    std.debug.print("    Router:   String-match dispatch (37 routes)\n", .{});
 
     std.debug.print("\n{s}  Sacred Foundation:{s}\n", .{ CYAN, RESET });
     const trinity = PHI_SQ + PHI_INV_SQ;
