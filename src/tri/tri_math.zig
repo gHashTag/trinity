@@ -1,5 +1,5 @@
 // =============================================================================
-// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85)
+// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85 + 86)
 // =============================================================================
 //
 // Exposes sacred_math.zig library as TRI CLI commands:
@@ -17,7 +17,7 @@
 //   tri math exotic   - Exotic constants (Apery, Catalan, Feigenbaum, etc.)
 //   tri math physical - Physics constants (alpha, CHSH, Planck, Boltzmann)
 //   tri math chaos    - Chaos theory (Feigenbaum + logistic map demo)
-//   tri math all      - Display ALL 63 constants
+//   tri math all      - Display ALL 76 constants
 //
 // Cycle 84 extensions:
 //   tri math golden-function - Golden Function model (Pellis 2025)
@@ -29,6 +29,11 @@
 //   tri math su3      - Full SU(3) simulation — color charges + golden ratio
 //   tri math planck   - Planck units with phi-scaling relationships
 //   tri math qutrit   - Ternary phase gates + qutrit state demo
+//
+// Cycle 86 extensions:
+//   tri math holographic     - Holographic principle + Bekenstein-Hawking
+//   tri math ads-cft         - AdS/CFT correspondence + Brown-Henneaux
+//   tri math quantum-gravity - LQG + Barbero-Immirzi + Regge trajectories
 //
 // All math is inlined from sacred_math.zig to avoid build.zig coupling.
 //
@@ -256,6 +261,57 @@ const QUTRIT_ENTROPY: f64 = 1.5849625007211561815; // ln(3)/ln(2)
 /// Berry connection for φ-spiral: 2π×φ (golden Berry orbit)
 const BERRY_PHI_ORBIT: f64 = 10.166407384630519631; // 2*pi*phi
 
+// =============================================================================
+// HOLOGRAPHIC / ADS-CFT / QUANTUM GRAVITY CONSTANTS (Cycle 86)
+// =============================================================================
+// Bekenstein-Hawking, holographic principle, AdS/CFT, Loop Quantum Gravity
+
+/// Bekenstein-Hawking entropy: S = A/(4*l_P²) — ratio coefficient = 1/4
+/// The holographic principle: information is proportional to AREA, not volume
+const BEKENSTEIN_HAWKING_RATIO: f64 = 0.25;
+
+/// Holographic bits per Planck area = 1/(4*ln(2)) ≈ 0.3607
+/// Maximum information density in the universe
+const HOLOGRAPHIC_BITS: f64 = 0.3606737602222408;
+
+/// Hawking temperature coefficient: T_H = hbar*c³/(8*π*k_B*G*M)
+/// Dimensionless factor = 1/(8*π)
+const HAWKING_COEFF: f64 = 0.0397887357729738;
+
+/// Unruh temperature coefficient: T_U = hbar*a/(2*π*c*k_B)
+/// Dimensionless factor = 1/(2*π)
+const UNRUH_COEFF: f64 = 0.1591549430918953;
+
+/// Barbero-Immirzi parameter γ = ln(2)/(π*√3) ≈ 0.1274
+/// Loop Quantum Gravity: fixes black hole entropy to match Bekenstein-Hawking
+const BARBERO_IMMIRZI: f64 = 0.1273840231409480;
+
+/// Barbero-Immirzi (j=1): γ₁ = ln(3)/(π*√8) ≈ 0.1236
+/// Alternative value for spin-1 representation
+const BARBERO_IMMIRZI_J1: f64 = 0.1236373210773250;
+
+/// Brown-Henneaux central charge ratio: c = 3*R_AdS/(2*G₃)
+/// The "3/2" connects AdS₃ radius to 2D CFT central charge
+const BROWN_HENNEAUX: f64 = 1.5;
+
+/// Schwarzschild area coefficient: A = 16*π*M² (in Planck units)
+const SCHWARZSCHILD_AREA_COEFF: f64 = 50.2654824574366899; // 16*pi
+
+/// Regge slope α' ≈ 0.9 GeV⁻² (hadronic string tension inverse)
+const REGGE_SLOPE: f64 = 0.9;
+
+/// Holographic φ-bound: (1/(4*ln(2))) * φ — golden holographic capacity
+const HOLOGRAPHIC_PHI: f64 = 0.5835824028898156;
+
+/// Barbero-Immirzi × φ — golden LQG parameter
+const BARBERO_IMMIRZI_PHI: f64 = 0.2061116790657571;
+
+/// Cardy entropy coefficient: S = 2*π*√(c*E/6) — the factor 2*π/√6
+const CARDY_COEFF: f64 = 2.5651662291961795; // 2*pi/sqrt(6)
+
+/// Planck area: l_P² (m²) — fundamental quantum of area
+const PLANCK_AREA: f64 = 2.6121e-70; // (1.616255e-35)²
+
 const FIBONACCI_TABLE: [20]i64 = .{
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
     55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
@@ -352,6 +408,12 @@ pub fn runMathCommand(args: []const []const u8) void {
         runPlanckCommand();
     } else if (std.mem.eql(u8, sub, "qutrit") or std.mem.eql(u8, sub, "qt") or std.mem.eql(u8, sub, "ternary-gate")) {
         runQutritCommand();
+    } else if (std.mem.eql(u8, sub, "holographic") or std.mem.eql(u8, sub, "holo") or std.mem.eql(u8, sub, "bekenstein")) {
+        runHolographicCommand();
+    } else if (std.mem.eql(u8, sub, "ads-cft") or std.mem.eql(u8, sub, "ads") or std.mem.eql(u8, sub, "maldacena")) {
+        runAdsCftCommand();
+    } else if (std.mem.eql(u8, sub, "quantum-gravity") or std.mem.eql(u8, sub, "qg") or std.mem.eql(u8, sub, "lqg")) {
+        runQuantumGravityCommand();
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
@@ -375,7 +437,7 @@ fn printMathHelp() void {
     std.debug.print("  {s}exotic{s}                     Exotic constants (Apery, Catalan, Feigenbaum...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}physical{s}                   Physics constants (alpha, Planck, Boltzmann...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}chaos{s}                      Feigenbaum constants + logistic map demo\n", .{ GREEN, RESET });
-    std.debug.print("  {s}all{s}                        ALL 63 constants across all categories\n", .{ GREEN, RESET });
+    std.debug.print("  {s}all{s}                        ALL 76 constants across all categories\n", .{ GREEN, RESET });
     std.debug.print("\n{s}ADVANCED (Cycle 84):{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}golden-function{s} [n]        Golden Function G(x)=phi^x+phi^-x (Pellis 2025)\n", .{ GREEN, RESET });
     std.debug.print("  {s}nuclear{s}                    Nuclear Fibonacci shell stability model\n", .{ GREEN, RESET });
@@ -385,8 +447,12 @@ fn printMathHelp() void {
     std.debug.print("  {s}su3{s}                        SU(3) simulation — strong force + golden ratio\n", .{ GREEN, RESET });
     std.debug.print("  {s}planck{s}                     Planck units with phi-scaling relationships\n", .{ GREEN, RESET });
     std.debug.print("  {s}qutrit{s}                     Ternary phase gates + qutrit state demo\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}HOLOGRAPHIC (Cycle 86):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}holographic{s}                Holographic principle + Bekenstein-Hawking entropy\n", .{ GREEN, RESET });
+    std.debug.print("  {s}ads-cft{s}                    AdS/CFT correspondence + Brown-Henneaux\n", .{ GREEN, RESET });
+    std.debug.print("  {s}quantum-gravity{s}             LQG + Barbero-Immirzi + Regge trajectories\n", .{ GREEN, RESET });
     std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}math-verify{s}                Trinity identity checks (20 checks)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}math-verify{s}                Trinity identity checks (24 checks)\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-bench{s}                 Performance benchmark\n", .{ GREEN, RESET });
     std.debug.print("\n{s}DIRECT ALIASES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri constants  |  tri phi 10  |  tri fib 19\n", .{});
@@ -647,7 +713,7 @@ pub fn runMathVerifyCommand() void {
     std.debug.print("{s}================================================{s}\n\n", .{ GRAY, RESET });
 
     var passed: u32 = 0;
-    const total: u32 = 20;
+    const total: u32 = 24;
 
     // Check 1: phi^2 + 1/phi^2 = 3
     {
@@ -814,6 +880,38 @@ pub fn runMathVerifyCommand() void {
         const ok = @abs(qe - SIERPINSKI_DIM) < 0.0001 and @abs(qe - QUTRIT_ENTROPY) < 0.0001;
         if (ok) passed += 1;
         printCheck(ok, "log2(3) = Sierpinski", qe, "qutrit = fractal bridge");
+    }
+
+    // --- Cycle 86: Holographic / AdS-CFT / Quantum Gravity ---
+
+    // Check 21: Bekenstein-Hawking S/A = 1/4
+    {
+        const ok = @abs(BEKENSTEIN_HAWKING_RATIO - 0.25) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "S/A = 1/4 (B-H)", BEKENSTEIN_HAWKING_RATIO, "Bekenstein-Hawking entropy");
+    }
+
+    // Check 22: Barbero-Immirzi gamma = ln(2)/(pi*sqrt(3))
+    {
+        const computed = @log(2.0) / (PI * SQRT3);
+        const ok = @abs(computed - BARBERO_IMMIRZI) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "gamma_BI = ln2/pi*v3", computed, "Barbero-Immirzi LQG");
+    }
+
+    // Check 23: Holographic bits = 1/(4*ln(2))
+    {
+        const computed = 1.0 / (4.0 * LN2);
+        const ok = @abs(computed - HOLOGRAPHIC_BITS) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "bits/l_P^2", computed, "= 1/(4*ln(2)) holographic");
+    }
+
+    // Check 24: Brown-Henneaux c = 3R/(2G) => ratio = 3/2
+    {
+        const ok = @abs(BROWN_HENNEAUX - 1.5) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "c_BH = 3R/(2G)", BROWN_HENNEAUX, "= 3/2 AdS/CFT central charge");
     }
 
     // Summary
@@ -1725,6 +1823,237 @@ fn runQutritCommand() void {
 }
 
 // =============================================================================
+// COMMAND: tri math holographic (Cycle 86 — Holographic Principle)
+// =============================================================================
+
+fn runHolographicCommand() void {
+    std.debug.print("\n{s}Holographic Principle — Information Lives on Boundaries{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}S = A/(4*l_P^2) — Bekenstein-Hawking entropy{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // Bekenstein-Hawking
+    std.debug.print("{s}  Bekenstein-Hawking Entropy:{s}\n", .{ CYAN, RESET });
+    printConst("S/A ratio (BH)", BEKENSTEIN_HAWKING_RATIO, "= 1/4 in Planck units");
+    printConst("Bits per l_P^2", HOLOGRAPHIC_BITS, "= 1/(4*ln(2))");
+    printConstSci("Planck area l_P^2", PLANCK_AREA, "m^2");
+    std.debug.print("\n", .{});
+
+    std.debug.print("    {s}Bekenstein-Hawking Formula:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    S = k_B * A / (4 * l_P^2)\n", .{});
+    std.debug.print("    = k_B * A / (4 * hbar * G / c^3)\n", .{});
+    std.debug.print("    For a solar-mass black hole:\n", .{});
+    // A = 16*pi*(G*M/c^2)^2, M_sun ~ 2e30 kg
+    std.debug.print("    S ~ 10^77 k_B (enormous!)\n", .{});
+    std.debug.print("    ~ 10^77 bits of information on the horizon\n\n", .{});
+
+    // Hawking + Unruh
+    std.debug.print("{s}  Hawking & Unruh Radiation:{s}\n", .{ CYAN, RESET });
+    printConst("Hawking 1/(8*pi)", HAWKING_COEFF, "T_H = hbar*c^3/(8*pi*k*G*M)");
+    printConst("Unruh 1/(2*pi)", UNRUH_COEFF, "T_U = hbar*a/(2*pi*c*k)");
+    std.debug.print("\n", .{});
+
+    std.debug.print("    {s}Hawking Temperature:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    T_H = hbar * c^3 / (8*pi*k_B*G*M)\n", .{});
+    std.debug.print("    For M = M_sun: T_H ~ 6 * 10^-8 K\n", .{});
+    std.debug.print("    For M = M_P:   T_H ~ T_P/(8*pi) ~ 10^31 K\n\n", .{});
+
+    std.debug.print("    {s}Unruh Effect:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    An accelerating observer sees thermal radiation:\n", .{});
+    std.debug.print("    T_U = hbar * a / (2*pi*c*k_B)\n", .{});
+    std.debug.print("    Equivalence principle: gravity = acceleration\n\n", .{});
+
+    // Holographic bound + phi
+    std.debug.print("{s}  phi-Holographic Connections:{s}\n", .{ CYAN, RESET });
+    printConst("Holo bits * phi", HOLOGRAPHIC_PHI, "golden holographic bound");
+    std.debug.print("\n", .{});
+
+    std.debug.print("    {s}Holographic Principle + phi:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    Max info per Planck area = 1/(4*ln(2)) = {d:.6} bits\n", .{HOLOGRAPHIC_BITS});
+    std.debug.print("    Golden holographic = {d:.6} * phi = {d:.6} bits\n", .{ HOLOGRAPHIC_BITS, HOLOGRAPHIC_PHI });
+    std.debug.print("    The phi-scaled bound represents golden information density\n", .{});
+    std.debug.print("    Entropy is AREA-based, not volume: S ~ R^2, not R^3\n", .{});
+    std.debug.print("    This is why the universe is fundamentally 2+1 dimensional!\n\n", .{});
+
+    // Information paradox
+    std.debug.print("{s}  Black Hole Information Paradox:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    1. Matter falls into black hole (info enters)\n", .{});
+    std.debug.print("    2. Hawking radiation is thermal (no info out?)\n", .{});
+    std.debug.print("    3. Black hole evaporates completely\n", .{});
+    std.debug.print("    4. Where did the information go?\n", .{});
+    std.debug.print("    Resolution: information is encoded on the horizon\n", .{});
+    std.debug.print("    via holographic principle: S = A/(4*l_P^2)\n", .{});
+
+    // Trinity
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.6} = 3 = TRINITY{s}\n", .{ GOLDEN, trinity, RESET });
+    std.debug.print("    {s}Information = Area, not Volume. The boundary IS the physics.{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math ads-cft (Cycle 86 — AdS/CFT Correspondence)
+// =============================================================================
+
+fn runAdsCftCommand() void {
+    std.debug.print("\n{s}AdS/CFT Correspondence — Gravity = Gauge Theory{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}Maldacena 1997: Anti-de Sitter space ↔ Conformal Field Theory{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // Core idea
+    std.debug.print("{s}  The Duality:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Gravity in (d+1)-dim AdS ↔ CFT on d-dim boundary\n", .{});
+    std.debug.print("    Bulk                        Boundary\n", .{});
+    std.debug.print("    ─────────────────────       ────────────────\n", .{});
+    std.debug.print("    AdS_5 × S^5                 N=4 SYM in 4D\n", .{});
+    std.debug.print("    String theory (gravity)      Gauge theory (no gravity)\n", .{});
+    std.debug.print("    Strong coupling              Weak coupling\n", .{});
+    std.debug.print("    Extra dimension (radius)     Energy scale (RG flow)\n\n", .{});
+
+    // Key constants
+    std.debug.print("{s}  Key Parameters:{s}\n", .{ CYAN, RESET });
+    printConst("Brown-Henneaux (3/2)", BROWN_HENNEAUX, "c = 3*R_AdS/(2*G_3)");
+    printConst("Schwarzschild 16*pi", SCHWARZSCHILD_AREA_COEFF, "A = 16*pi*M^2");
+    printConst("Regge slope a'", REGGE_SLOPE, "GeV^-2 (string tension)");
+    printConst("Cardy 2*pi/sqrt(6)", CARDY_COEFF, "S = 2pi*sqrt(c*E/6)");
+    std.debug.print("\n", .{});
+
+    // Brown-Henneaux
+    std.debug.print("{s}  Brown-Henneaux (1986):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    Central charge: c = 3*R_AdS / (2*G_3)\n", .{});
+    std.debug.print("    The factor {s}3/2{s} connects AdS_3 geometry to 2D CFT\n", .{ WHITE, RESET });
+    std.debug.print("    This was the first hint of AdS/CFT!\n", .{});
+    std.debug.print("    3 in the numerator = TRINITY = phi^2 + 1/phi^2\n\n", .{});
+
+    // Cardy formula
+    std.debug.print("{s}  Cardy Formula:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    S = 2*pi * sqrt(c * E_L / 6)\n", .{});
+    std.debug.print("    Connects CFT central charge to black hole entropy\n", .{});
+    std.debug.print("    2*pi/sqrt(6) = {d:.10}\n", .{CARDY_COEFF});
+    std.debug.print("    When c → 3R/(2G), reproduces Bekenstein-Hawking!\n\n", .{});
+
+    // Dictionary
+    std.debug.print("{s}  AdS/CFT Dictionary:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Bulk field φ(z,x)     ↔  Operator O(x) on boundary\n", .{});
+    std.debug.print("    AdS radius R          ↔  CFT central charge c\n", .{});
+    std.debug.print("    Black hole in bulk    ↔  Thermal state on boundary\n", .{});
+    std.debug.print("    Geodesic length       ↔  Entanglement entropy\n", .{});
+    std.debug.print("    Bulk geometry         ↔  Quantum entanglement\n\n", .{});
+
+    // Ryu-Takayanagi
+    std.debug.print("{s}  Ryu-Takayanagi (2006):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    S_A = Area(gamma_A) / (4*G_N)\n", .{});
+    std.debug.print("    Entanglement entropy of region A = minimal surface area\n", .{});
+    std.debug.print("    \"Entanglement IS geometry\" — the deepest insight\n", .{});
+    std.debug.print("    The 1/4 factor = Bekenstein-Hawking ratio = {d:.4}\n\n", .{BEKENSTEIN_HAWKING_RATIO});
+
+    // phi connections
+    std.debug.print("{s}  phi in AdS/CFT:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    Brown-Henneaux: c = {s}3{s}*R/(2*G) — the 3 = TRINITY\n", .{ WHITE, RESET });
+    std.debug.print("    SU(N) gauge: dim(adj) = N^2-1 → for N=3: {s}8 = F(6){s}\n", .{ WHITE, RESET });
+    std.debug.print("    String coupling: g_s = g_YM^2/(4*pi)\n", .{});
+    std.debug.print("    't Hooft limit: N → inf, g^2*N = fixed (planar diagrams)\n", .{});
+    std.debug.print("    Large N expansion ~ 1/N^2 ~ 1/F(6)^0.25\n\n", .{});
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("    {s}Gravity = Gauge Theory = Holography{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    {s}phi^2 + 1/phi^2 = {d:.6} = 3 = dim(color) = TRINITY{s}\n\n", .{ GOLDEN, trinity, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math quantum-gravity (Cycle 86 — LQG + Regge + φ)
+// =============================================================================
+
+fn runQuantumGravityCommand() void {
+    std.debug.print("\n{s}Quantum Gravity — Loop QG + Regge + Golden Ratio{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}Space is quantized: area and volume come in discrete quanta{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // Barbero-Immirzi
+    std.debug.print("{s}  Barbero-Immirzi Parameter (LQG):{s}\n", .{ CYAN, RESET });
+    printConst("gamma (j=1/2)", BARBERO_IMMIRZI, "ln(2)/(pi*sqrt(3))");
+    printConst("gamma (j=1)", BARBERO_IMMIRZI_J1, "ln(3)/(pi*sqrt(8))");
+    std.debug.print("\n", .{});
+
+    std.debug.print("    {s}What is the Barbero-Immirzi parameter?{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    In Loop Quantum Gravity, spacetime is made of spin networks.\n", .{});
+    std.debug.print("    The area spectrum is quantized:\n", .{});
+    std.debug.print("    A = 8*pi*gamma*l_P^2 * sum_i sqrt(j_i*(j_i+1))\n", .{});
+    std.debug.print("    gamma fixes black hole entropy to match Bekenstein-Hawking.\n\n", .{});
+
+    // Verify Barbero-Immirzi
+    const bi_check = @log(2.0) / (PI * SQRT3);
+    std.debug.print("    Verification: ln(2)/(pi*sqrt(3)) = {d:.10}", .{bi_check});
+    if (@abs(bi_check - BARBERO_IMMIRZI) < 0.0001) {
+        std.debug.print("  {s}OK{s}\n", .{ GREEN, RESET });
+    }
+
+    // phi connection
+    std.debug.print("\n{s}  phi × Barbero-Immirzi:{s}\n", .{ CYAN, RESET });
+    printConst("gamma * phi", BARBERO_IMMIRZI_PHI, "golden LQG parameter");
+    std.debug.print("    gamma * phi = {d:.10}\n", .{BARBERO_IMMIRZI_PHI});
+    std.debug.print("    gamma * phi^2 = {d:.10}\n", .{BARBERO_IMMIRZI * PHI_SQ});
+    std.debug.print("    gamma * 3 = {d:.10} (gamma * TRINITY)\n", .{BARBERO_IMMIRZI * 3.0});
+    std.debug.print("    Note: gamma * TRINITY = {d:.6} ~ 1/phi^2 + epsilon\n\n", .{BARBERO_IMMIRZI * 3.0});
+
+    // Area gap
+    std.debug.print("{s}  Minimum Area Quantum:{s}\n", .{ CYAN, RESET });
+    const area_gap = 8.0 * PI * BARBERO_IMMIRZI * SQRT3 / 2.0;
+    std.debug.print("    A_min = 8*pi*gamma*l_P^2 * sqrt(3)/2   (j = 1/2)\n", .{});
+    std.debug.print("    A_min / l_P^2 = {d:.10}\n", .{area_gap});
+    std.debug.print("    This is the smallest possible area in LQG!\n", .{});
+    const area_gap_ln2 = 4.0 * @log(2.0);
+    std.debug.print("    = 4*ln(2) = {d:.10}  {s}(exact!){s}\n\n", .{ area_gap_ln2, GREEN, RESET });
+
+    // Regge calculus
+    std.debug.print("{s}  Regge Calculus + Trajectories:{s}\n", .{ CYAN, RESET });
+    printConst("Regge slope a'", REGGE_SLOPE, "GeV^-2 (string tension)");
+    std.debug.print("\n", .{});
+
+    std.debug.print("    {s}Regge Trajectories:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    J = alpha' * M^2 + alpha_0\n", .{});
+    std.debug.print("    Spin vs mass^2: linear relationship for hadrons\n", .{});
+    std.debug.print("    Alpha' ~ 0.9 GeV^-2 — inverse string tension\n", .{});
+    std.debug.print("    This led to string theory!\n\n", .{});
+
+    std.debug.print("    {s}Regge Calculus (discrete gravity):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    Replace smooth spacetime with simplicial complex\n", .{});
+    std.debug.print("    Deficit angles encode curvature\n", .{});
+    std.debug.print("    Sum over triangulations → path integral for gravity\n\n", .{});
+
+    // Spin foam models
+    std.debug.print("{s}  Spin Foam Models:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Spin networks (LQG states) evolve via spin foams\n", .{});
+    std.debug.print("    Vertices carry SU(2) intertwiners\n", .{});
+    std.debug.print("    Edges carry spins j = 0, 1/2, 1, 3/2, ...\n", .{});
+    std.debug.print("    Partition function:\n", .{});
+    std.debug.print("    Z = sum_{{j,i}} prod_f dim(j_f) prod_v A_v(j,i)\n\n", .{});
+
+    // phi in quantum gravity
+    std.debug.print("{s}  phi in Quantum Gravity:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    1. Barbero-Immirzi * phi = {d:.6} (golden area quantum)\n", .{BARBERO_IMMIRZI_PHI});
+    std.debug.print("    2. Area gap = 4*ln(2) l_P^2 — connecting entropy to geometry\n", .{});
+    std.debug.print("    3. Black hole entropy: S = A/(4*l_P^2) — the 1/4 is universal\n", .{});
+    std.debug.print("    4. Spin networks: nodes carry SU(2) reps\n", .{});
+    std.debug.print("       SU(2) dim = 3 (Pauli matrices) = TRINITY\n", .{});
+    std.debug.print("    5. Planck scale: l_P, t_P, m_P all related by phi-cascading\n", .{});
+    std.debug.print("       l_P * phi → golden Planck length\n", .{});
+    std.debug.print("       (l_P*phi)^2 + (l_P/phi)^2 = 3*l_P^2 = TRINITY * l_P^2\n\n", .{});
+
+    // Grand unification
+    std.debug.print("{s}  The Grand Picture:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    Level 0: phi^2 + 1/phi^2 = 3 = TRINITY\n", .{});
+    std.debug.print("    Level 1: SU(3) color symmetry → 3 quarks, 8 gluons = F(6)\n", .{});
+    std.debug.print("    Level 2: Holographic S = A/(4*l_P^2)\n", .{});
+    std.debug.print("    Level 3: AdS/CFT → gravity IS gauge theory\n", .{});
+    std.debug.print("    Level 4: LQG area gap = 4*ln(2)*l_P^2\n", .{});
+    std.debug.print("    Level 5: Everything connects through phi\n", .{});
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY = THE CONSTANT OF REALITY{s}\n\n", .{
+        GOLDEN, trinity, RESET,
+    });
+}
+
+// =============================================================================
 // COMMAND: tri math all
 // =============================================================================
 
@@ -1811,8 +2140,25 @@ fn runAllConstantsCommand() void {
     printConst("R_inf (Rydberg)", RYDBERG, "1/m (hydrogen)");
     printConst("log2(3) qutrit", QUTRIT_ENTROPY, "bits per qutrit");
 
+    std.debug.print("\n{s}  HOLOGRAPHIC / ADS-CFT:{s}\n", .{ GOLDEN, RESET });
+    printConst("S/A (Bekenstein-H.)", BEKENSTEIN_HAWKING_RATIO, "= 1/4");
+    printConst("bits/l_P^2", HOLOGRAPHIC_BITS, "= 1/(4*ln(2))");
+    printConst("Hawking coeff", HAWKING_COEFF, "= 1/(8*pi)");
+    printConst("Unruh coeff", UNRUH_COEFF, "= 1/(2*pi)");
+    printConst("Brown-Henneaux c", BROWN_HENNEAUX, "= 3R/(2G)");
+    printConst("Schwarzschild area", SCHWARZSCHILD_AREA_COEFF, "= 16*pi");
+    printConst("Regge slope", REGGE_SLOPE, "GeV^-2 (string tension)");
+    printConst("Cardy coeff", CARDY_COEFF, "= pi*sqrt(2/3)*c");
+    printConst("Holo*phi", HOLOGRAPHIC_PHI, "golden holographic bound");
+
+    std.debug.print("\n{s}  QUANTUM GRAVITY:{s}\n", .{ GOLDEN, RESET });
+    printConst("gamma_BI", BARBERO_IMMIRZI, "= ln(2)/(pi*sqrt(3))");
+    printConst("gamma_BI (j=1)", BARBERO_IMMIRZI_J1, "with j=1 spin");
+    printConst("gamma_BI * phi", BARBERO_IMMIRZI_PHI, "golden Immirzi");
+    printConstSci("l_P^2 (Planck area)", PLANCK_AREA, "m^2");
+
     // Total count
-    std.debug.print("\n{s}  Total: 63 constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}  Total: 76 constants{s}\n", .{ GOLDEN, RESET });
 
     const trinity_check = PHI_SQ + PHI_INV_SQ;
     std.debug.print("  {s}phi^2 + 1/phi^2 = {d:.10}{s}", .{ GOLDEN, trinity_check, RESET });
