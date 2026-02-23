@@ -204,6 +204,8 @@ pub const Command = enum {
     math_compare,
     // Cycle 84: $TRI Rewards
     rewards,
+    // Cycle 85: Dashboard
+    dashboard,
 };
 
 pub const CLIState = struct {
@@ -572,6 +574,10 @@ pub fn printHelp() void {
     std.debug.print("  {s}lint{s} [path]                 5-check code quality scanner\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}DASHBOARD (Cycle 85):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}dashboard{s}                  System overview + $TRI + LSP status\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}$TRI REWARDS (Cycle 84):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}rewards{s}                    Show $TRI balance + earning history\n", .{ GREEN, RESET });
     std.debug.print("  {s}rewards earn{s}               Log earned $TRI from completed task\n", .{ GREEN, RESET });
@@ -782,6 +788,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "math-compare") or std.mem.eql(u8, arg, "compare")) return .math_compare;
     // Cycle 84: $TRI Rewards
     if (std.mem.eql(u8, arg, "rewards") or std.mem.eql(u8, arg, "tri-rewards") or std.mem.eql(u8, arg, "tokens")) return .rewards;
+    // Cycle 85: Dashboard
+    if (std.mem.eql(u8, arg, "dashboard") or std.mem.eql(u8, arg, "dash") or std.mem.eql(u8, arg, "panel")) return .dashboard;
     return .none;
 }
 
