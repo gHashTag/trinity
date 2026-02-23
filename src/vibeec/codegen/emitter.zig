@@ -13,6 +13,7 @@ const patterns_mod = @import("patterns.zig");
 const tests_gen_mod = @import("tests_gen.zig");
 const utils = @import("utils.zig");
 const type_resolver = @import("type_resolver.zig");
+const zig_idioms_mod = @import("zig_idioms.zig");
 
 const CodeBuilder = builder_mod.CodeBuilder;
 const PatternMatcher = patterns_mod.PatternMatcher;
@@ -43,6 +44,8 @@ pub const ZigCodeGen = struct {
     rewards_emitted: bool,
     /// Cached reference to spec types for signature inference
     spec_types: []const TypeDef = &.{},
+    /// Zig idiom transforms (Cycle 74)
+    idioms: ?zig_idioms_mod.ZigIdioms = null,
 
     const Self = @This();
 
@@ -998,6 +1001,8 @@ pub const ZigCodeGen = struct {
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         // Store spec types for signature inference
         self.spec_types = spec.types.items;
+        // Initialize Zig idioms from spec (Cycle 74)
+        self.idioms = zig_idioms_mod.ZigIdioms.fromSpec(spec);
 
         try self.writeHeader(spec);
         try self.writeImports(spec);
@@ -1009,7 +1014,7 @@ pub const ZigCodeGen = struct {
         // NOTE: snake_case aliases disabled - use camelCase function names in tests
         // try self.writeBehaviorAliases(spec.behaviors.items);
 
-        var test_gen = TestGenerator.withSpec(&self.builder, self.allocator, spec.name);
+        var test_gen = TestGenerator.withSpec(&self.builder, self.allocator, spec.name, spec.zig_mode);
         // Behavior-level tests (one per behavior)
         try test_gen.writeTests(spec.behaviors.items);
         // Spec-level tests (integration tests from test_cases:)
@@ -1605,6 +1610,53 @@ pub const ZigCodeGen = struct {
 
         // No implementation — use pattern matching or auto-body
         const sig = inferSignatureFromSpec(b.given, b.then, b.name);
+
+        // Cycle 74: Apply Zig idioms if active
+        if (self.idioms) |idioms| {
+            if (idioms.isActive()) {
+                const params = idioms.transformParams(sig.params, b.given, b.then);
+                const has_alloc = idioms.needsAllocator(b.given, b.then);
+                const wrap_err = idioms.shouldWrapErrorUnion();
+                // Prevent double error union: don't wrap if ret already starts with '!'
+                const already_error = sig.ret.len > 0 and sig.ret[0] == '!';
+                const do_wrap = wrap_err and !already_error;
+
+                // Write function signature with idiom transforms
+                if (idioms.hasOriginalParams(sig.params, b.given, b.then)) {
+                    // Allocator + original params
+                    if (do_wrap) {
+                        try self.builder.writeFmt("pub fn {s}({s}, {s}) !{s} {{\n", .{ b.name, params, sig.params, sig.ret });
+                    } else {
+                        try self.builder.writeFmt("pub fn {s}({s}, {s}) {s} {{\n", .{ b.name, params, sig.params, sig.ret });
+                    }
+                } else if (has_alloc) {
+                    // Allocator only (no original params)
+                    if (do_wrap) {
+                        try self.builder.writeFmt("pub fn {s}({s}) !{s} {{\n", .{ b.name, params, sig.ret });
+                    } else {
+                        try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, params, sig.ret });
+                    }
+                } else {
+                    // No allocator needed, but wrap error union if not already
+                    if (do_wrap) {
+                        try self.builder.writeFmt("pub fn {s}({s}) !{s} {{\n", .{ b.name, sig.params, sig.ret });
+                    } else {
+                        try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
+                    }
+                }
+                self.builder.incIndent();
+                try idioms.emitCleanup(&self.builder, has_alloc);
+                try idioms.emitAllocatorSetup(&self.builder);
+                try self.generateRealBody(b);
+                self.builder.decIndent();
+                try self.builder.writeLine("}");
+                try self.builder.newline();
+                try self.builder.newline();
+                return;
+            }
+        }
+
+        // Standard fallback (no idioms)
         try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
         self.builder.incIndent();
         try self.generateRealBody(b);
