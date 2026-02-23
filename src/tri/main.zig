@@ -30,6 +30,7 @@ const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const strict_mode = @import("tri_strict.zig");
+const math_mod = @import("tri_math.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -218,5 +219,19 @@ pub fn main() !void {
         .kg_server => commands.runKGServerCommand(allocator, cmd_args),
         // VIBEE-First Strict Mode
         .strict => strict_mode.runStrictCommand(allocator, cmd_args),
+        // Cycle 81: LSP + Auto-fix
+        .lsp => commands.runLspCommand(allocator, cmd_args),
+        .autofix => commands.runAutofixCommand(allocator, cmd_args),
+        .lint => commands.runLintCommand(allocator, cmd_args),
+        // Cycle 82: Sacred Math
+        .math => math_mod.runMathCommand(cmd_args),
+        .constants_cmd => math_mod.runConstantsCommand(),
+        .phi_cmd => math_mod.runPhiCommand(cmd_args),
+        .fib_cmd => math_mod.runFibCommand(cmd_args),
+        .lucas_cmd => math_mod.runLucasCommand(cmd_args),
+        .spiral_cmd => math_mod.runSpiralCommand(cmd_args),
+        .math_verify => math_mod.runMathVerifyCommand(),
+        .math_bench => math_mod.runMathBenchCommand(),
+        .math_compare => math_mod.runMathCompareCommand(cmd_args),
     }
 }
