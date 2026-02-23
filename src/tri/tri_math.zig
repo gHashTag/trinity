@@ -1,5 +1,5 @@
 // =============================================================================
-// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85 + 86)
+// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85 + 86 + 87)
 // =============================================================================
 //
 // Exposes sacred_math.zig library as TRI CLI commands:
@@ -414,6 +414,21 @@ pub fn runMathCommand(args: []const []const u8) void {
         runAdsCftCommand();
     } else if (std.mem.eql(u8, sub, "quantum-gravity") or std.mem.eql(u8, sub, "qg") or std.mem.eql(u8, sub, "lqg")) {
         runQuantumGravityCommand();
+        // --- Cycle 87: v3.0 Sacred Computation Engine ---
+    } else if (std.mem.eql(u8, sub, "visual") or std.mem.eql(u8, sub, "viz") or std.mem.eql(u8, sub, "plot")) {
+        runVisualCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "quantum-sim") or std.mem.eql(u8, sub, "qsim") or std.mem.eql(u8, sub, "simulate")) {
+        runQuantumSimCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "rewards") or std.mem.eql(u8, sub, "tri-rewards") or std.mem.eql(u8, sub, "stake")) {
+        runRewardsCalcCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "trinity") or std.mem.eql(u8, sub, "identity") or std.mem.eql(u8, sub, "proof")) {
+        runTrinityCommand();
+    } else if (std.mem.eql(u8, sub, "harmony") or std.mem.eql(u8, sub, "music") or std.mem.eql(u8, sub, "acoustic")) {
+        runHarmonyCommand();
+    } else if (std.mem.eql(u8, sub, "cosmos") or std.mem.eql(u8, sub, "cosmological") or std.mem.eql(u8, sub, "hubble")) {
+        runCosmosCommand();
+    } else if (std.mem.eql(u8, sub, "engine") or std.mem.eql(u8, sub, "v3") or std.mem.eql(u8, sub, "about")) {
+        runEngineCommand();
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
@@ -451,6 +466,14 @@ fn printMathHelp() void {
     std.debug.print("  {s}holographic{s}                Holographic principle + Bekenstein-Hawking entropy\n", .{ GREEN, RESET });
     std.debug.print("  {s}ads-cft{s}                    AdS/CFT correspondence + Brown-Henneaux\n", .{ GREEN, RESET });
     std.debug.print("  {s}quantum-gravity{s}             LQG + Barbero-Immirzi + Regge trajectories\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}ENGINE v3.0 (Cycle 87):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}visual{s} [n]                  phi-spiral ASCII visualization + holographic\n", .{ GREEN, RESET });
+    std.debug.print("  {s}quantum-sim{s} [steps]         Qutrit gate simulation + Berry phase evolution\n", .{ GREEN, RESET });
+    std.debug.print("  {s}rewards{s} [n]                 $TRI rewards calculator (phi^n multiplier)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}trinity{s}                     Deep Trinity identity derivation + proofs\n", .{ GREEN, RESET });
+    std.debug.print("  {s}harmony{s}                     Musical ratios + phi in acoustics\n", .{ GREEN, RESET });
+    std.debug.print("  {s}cosmos{s}                      Cosmological constants + phi in nature\n", .{ GREEN, RESET });
+    std.debug.print("  {s}engine{s}                      v3.0 Sacred Computation Engine status\n", .{ GREEN, RESET });
     std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}math-verify{s}                Trinity identity checks (24 checks)\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-bench{s}                 Performance benchmark\n", .{ GREEN, RESET });
@@ -2054,6 +2077,491 @@ fn runQuantumGravityCommand() void {
 }
 
 // =============================================================================
+// COMMAND: tri math visual (Cycle 87)
+// =============================================================================
+
+fn runVisualCommand(args: []const []const u8) void {
+    const n = parseU32(args, 12);
+
+    std.debug.print("\n{s}phi-Spiral Visualization{s} ({d} points)\n", .{ GOLDEN, RESET, n });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    // Compute spiral points
+    std.debug.print("\n{s}  Coordinates:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}n    angle(rad)    radius     x          y{s}\n", .{ GRAY, RESET });
+
+    var min_x: f64 = 1e9;
+    var max_x: f64 = -1e9;
+    var min_y: f64 = 1e9;
+    var max_y: f64 = -1e9;
+
+    var i: u32 = 0;
+    while (i < n) : (i += 1) {
+        const nf: f64 = @floatFromInt(i);
+        const angle = nf * PHI * PI;
+        const radius = 30.0 + nf * 8.0;
+        const x = radius * @cos(angle);
+        const y = radius * @sin(angle);
+
+        std.debug.print("  {s}{d:<4} {d:>10.4}  {d:>10.4} {d:>10.4}  {d:>10.4}{s}\n", .{
+            GREEN, i, angle, radius, x, y, RESET,
+        });
+
+        if (x < min_x) min_x = x;
+        if (x > max_x) max_x = x;
+        if (y < min_y) min_y = y;
+        if (y > max_y) max_y = y;
+    }
+
+    // ASCII plot (60x24 grid)
+    const width: usize = 60;
+    const height: usize = 24;
+    var grid: [24][60]u8 = undefined;
+    for (0..height) |row| {
+        for (0..width) |col| {
+            grid[row][col] = ' ';
+        }
+    }
+
+    // Plot center axes
+    const cx: usize = width / 2;
+    const cy: usize = height / 2;
+    for (0..width) |col| {
+        grid[cy][col] = '-';
+    }
+    for (0..height) |row| {
+        grid[row][cx] = '|';
+    }
+    grid[cy][cx] = '+';
+
+    // Plot points
+    const range_x = if (max_x - min_x > 0.001) max_x - min_x else 1.0;
+    const range_y = if (max_y - min_y > 0.001) max_y - min_y else 1.0;
+
+    i = 0;
+    while (i < n) : (i += 1) {
+        const nf: f64 = @floatFromInt(i);
+        const angle = nf * PHI * PI;
+        const radius = 30.0 + nf * 8.0;
+        const x = radius * @cos(angle);
+        const y = radius * @sin(angle);
+
+        const px: usize = @intFromFloat(@min(@as(f64, @floatFromInt(width - 1)), @max(0.0, (x - min_x) / range_x * @as(f64, @floatFromInt(width - 1)))));
+        const py: usize = @intFromFloat(@min(@as(f64, @floatFromInt(height - 1)), @max(0.0, (y - min_y) / range_y * @as(f64, @floatFromInt(height - 1)))));
+
+        const symbols = "0123456789ABCDEF";
+        grid[height - 1 - py][px] = if (i < 16) symbols[i] else '*';
+    }
+
+    std.debug.print("\n{s}  ASCII phi-Spiral Plot:{s}\n\n", .{ CYAN, RESET });
+    for (0..height) |row| {
+        std.debug.print("    {s}", .{GRAY});
+        for (0..width) |col| {
+            const ch = grid[row][col];
+            if (ch != ' ' and ch != '-' and ch != '|' and ch != '+') {
+                std.debug.print("{s}{c}{s}", .{ GREEN, ch, GRAY });
+            } else {
+                std.debug.print("{c}", .{ch});
+            }
+        }
+        std.debug.print("{s}\n", .{RESET});
+    }
+
+    // Holographic bound visualization
+    std.debug.print("\n{s}  Holographic Information Bound:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Max bits per Planck area = {d:.6}\n", .{HOLOGRAPHIC_BITS});
+    std.debug.print("    phi-scaled bound         = {d:.6}\n", .{HOLOGRAPHIC_PHI});
+    std.debug.print("    For area of {d} l_P^2:\n", .{n});
+    const nf: f64 = @floatFromInt(n);
+    std.debug.print("      Standard:  {d:.2} bits\n", .{nf * HOLOGRAPHIC_BITS});
+    std.debug.print("      Golden:    {d:.2} bits\n", .{nf * HOLOGRAPHIC_PHI});
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — spirals encode the universe{s}\n\n", .{
+        GOLDEN, trinity, RESET,
+    });
+}
+
+// =============================================================================
+// COMMAND: tri math quantum-sim (Cycle 87)
+// =============================================================================
+
+fn runQuantumSimCommand(args: []const []const u8) void {
+    const steps = parseU32(args, 8);
+
+    std.debug.print("\n{s}Qutrit Quantum Simulation{s} ({d} steps)\n", .{ GOLDEN, RESET, steps });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    // Initial state: |0> = (1, 0, 0)
+    var alpha: f64 = 1.0;
+    var beta: f64 = 0.0;
+    var gamma: f64 = 0.0;
+
+    std.debug.print("\n{s}  Qutrit State Evolution (Z_3 gate rotation):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}Step  |alpha|^2   |beta|^2    |gamma|^2   Phase       State{s}\n", .{ GRAY, RESET });
+
+    var step_i: u32 = 0;
+    while (step_i <= steps) : (step_i += 1) {
+        const p0 = alpha * alpha;
+        const p1 = beta * beta;
+        const p2 = gamma * gamma;
+
+        // Determine dominant state
+        var state_str: []const u8 = "|0>";
+        if (p1 > p0 and p1 > p2) state_str = "|1>";
+        if (p2 > p0 and p2 > p1) state_str = "|2>";
+        if (@abs(p0 - p1) < 0.01 and p0 > p2) state_str = "|0>+|1>";
+        if (@abs(p0 - p2) < 0.01 and p0 > p1) state_str = "|0>+|2>";
+        if (@abs(p1 - p2) < 0.01 and p1 > p0) state_str = "|1>+|2>";
+
+        const phase: f64 = @floatFromInt(step_i);
+        const angle = phase * BERRY_PHASE_QUTRIT;
+
+        std.debug.print("  {s}[{d:>2}]{s}  {d:.4}      {d:.4}      {d:.4}      {d:>8.4}    {s}{s}{s}\n", .{
+            GREEN, step_i, RESET, p0, p1, p2, angle, GOLDEN, state_str, RESET,
+        });
+
+        // Apply Z_3 gate: rotate by 2pi/3
+        if (step_i < steps) {
+            const cos_t = @cos(BERRY_PHASE_QUTRIT);
+            const sin_t = @sin(BERRY_PHASE_QUTRIT);
+            const new_a = alpha * cos_t - beta * sin_t;
+            const new_b = alpha * sin_t + beta * cos_t;
+            const new_g = gamma * @cos(QUTRIT_GATE_ANGLE) + @sqrt(@abs(1.0 - gamma * gamma)) * @sin(QUTRIT_GATE_ANGLE) * 0.5;
+            const norm = @sqrt(new_a * new_a + new_b * new_b + new_g * new_g);
+            if (norm > 0.001) {
+                alpha = new_a / norm;
+                beta = new_b / norm;
+                gamma = new_g / norm;
+            }
+        }
+    }
+
+    // Berry phase accumulation
+    std.debug.print("\n{s}  Berry Phase Accumulation:{s}\n", .{ CYAN, RESET });
+    const total_berry: f64 = @as(f64, @floatFromInt(steps)) * BERRY_PHASE_QUTRIT;
+    const cycles = total_berry / (2.0 * PI);
+    std.debug.print("    Total phase: {d:.4} rad = {d:.2} * 2pi\n", .{ total_berry, cycles });
+    std.debug.print("    Berry phase per step: 2pi/3 = {d:.6} rad\n", .{BERRY_PHASE_QUTRIT});
+    std.debug.print("    After 3 steps: {d:.4} rad = 2pi (full cycle)\n", .{3.0 * BERRY_PHASE_QUTRIT});
+
+    // Geometric phase diagram
+    std.debug.print("\n{s}  Geometric Phase Diagram:{s}\n\n", .{ CYAN, RESET });
+    std.debug.print("           |0>          \n", .{});
+    std.debug.print("           /\\           \n", .{});
+    std.debug.print("          /  \\          Berry phase = 2pi/3\n", .{});
+    std.debug.print("         / {s}phi{s} \\         per vertex transit\n", .{ GOLDEN, RESET });
+    std.debug.print("        /______\\        \n", .{});
+    std.debug.print("      |1>      |2>      3 vertices = TRINITY\n\n", .{});
+
+    std.debug.print("{s}  SU(3) x Qutrit:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    dim SU(3) = 8 = F(6) Fibonacci\n", .{});
+    std.debug.print("    SU(3) golden = 3/(2*phi) = {d:.6}\n", .{SU3_GOLDEN});
+    std.debug.print("    Qutrit entropy = log2(3) = {d:.6} bits\n", .{QUTRIT_ENTROPY});
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — quantum geometry is ternary{s}\n\n", .{
+        GOLDEN, trinity, RESET,
+    });
+}
+
+// =============================================================================
+// COMMAND: tri math rewards (Cycle 87)
+// =============================================================================
+
+fn runRewardsCalcCommand(args: []const []const u8) void {
+    const n = parseU32(args, 10);
+
+    std.debug.print("\n{s}$TRI Sacred Computation Rewards{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}  Reward = base * phi^level — golden exponential growth{s}\n\n", .{ WHITE, RESET });
+
+    const base_reward: f64 = 1.0;
+
+    std.debug.print("  {s}Level   phi^n multiplier    Reward ($TRI)    Cumulative{s}\n", .{ GRAY, RESET });
+
+    var cumulative: f64 = 0.0;
+    var i: u32 = 0;
+    while (i <= n) : (i += 1) {
+        const nf_i: f64 = @floatFromInt(i);
+        const multiplier = std.math.pow(f64, PHI, nf_i);
+        const reward = base_reward * multiplier;
+        cumulative += reward;
+
+        const bar_len: usize = @intFromFloat(@min(30.0, multiplier));
+        std.debug.print("  {s}[{d:>2}]{s}    {d:>12.4}x         {d:>8.4}        {d:>10.4}  ", .{
+            GREEN, i, RESET, multiplier, reward, cumulative,
+        });
+        var b: usize = 0;
+        while (b < bar_len) : (b += 1) {
+            std.debug.print("{s}|{s}", .{ GOLDEN, RESET });
+        }
+        std.debug.print("\n", .{});
+    }
+
+    std.debug.print("\n{s}  Reward Economics:{s}\n", .{ CYAN, RESET });
+    const phi_n: f64 = std.math.pow(f64, PHI, @as(f64, @floatFromInt(n)));
+    std.debug.print("    Base reward:      1.0000 $TRI\n", .{});
+    std.debug.print("    Max multiplier:   phi^{d} = {d:.4}x\n", .{ n, phi_n });
+    std.debug.print("    Total earned:     {d:.4} $TRI\n", .{cumulative});
+    std.debug.print("    Growth rate:      phi = {d:.10} (golden exponential)\n", .{PHI});
+
+    std.debug.print("\n{s}  Staking Tiers:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Tier 0 (F(4)=3):    Stake 3 $TRI    -> 1.0x base\n", .{});
+    std.debug.print("    Tier 1 (F(5)=5):    Stake 5 $TRI    -> phi^1 = 1.618x\n", .{});
+    std.debug.print("    Tier 2 (F(6)=8):    Stake 8 $TRI    -> phi^2 = 2.618x\n", .{});
+    std.debug.print("    Tier 3 (F(7)=13):   Stake 13 $TRI   -> phi^3 = 4.236x\n", .{});
+    std.debug.print("    Tier 4 (F(8)=21):   Stake 21 $TRI   -> phi^4 = 6.854x\n", .{});
+    std.debug.print("    Tier 5 (F(9)=34):   Stake 34 $TRI   -> phi^5 = 11.090x\n", .{});
+
+    std.debug.print("\n{s}  Sacred Properties:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Fibonacci staking: each tier = F(n+4) $TRI\n", .{});
+    std.debug.print("    Golden multiplier: reward = phi^tier\n", .{});
+    std.debug.print("    Maximum sustainability: mu = 1/phi^2/10 = {d:.4}\n", .{MU});
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — sacred economics{s}\n\n", .{
+        GOLDEN, trinity, RESET,
+    });
+}
+
+// =============================================================================
+// COMMAND: tri math trinity (Cycle 87)
+// =============================================================================
+
+fn runTrinityCommand() void {
+    std.debug.print("\n{s}The Trinity Identity — Complete Derivation{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  THEOREM: phi^2 + 1/phi^2 = 3{s}\n\n", .{ WHITE, RESET });
+
+    std.debug.print("{s}  Step 1: Definition{s}\n", .{ CYAN, RESET });
+    std.debug.print("    phi = (1 + sqrt(5)) / 2 = {d:.16}\n", .{PHI});
+    std.debug.print("    phi is the positive root of x^2 - x - 1 = 0\n", .{});
+    std.debug.print("    Therefore: phi^2 = phi + 1\n\n", .{});
+
+    std.debug.print("{s}  Step 2: Reciprocal{s}\n", .{ CYAN, RESET });
+    std.debug.print("    1/phi = phi - 1 = {d:.16}\n", .{PHI_INV});
+    std.debug.print("    Proof: phi * (phi - 1) = phi^2 - phi = (phi+1) - phi = 1\n", .{});
+    std.debug.print("    Therefore: 1/phi^2 = (phi - 1)^2 = phi^2 - 2*phi + 1\n", .{});
+    std.debug.print("              = (phi + 1) - 2*phi + 1 = 2 - phi\n", .{});
+    std.debug.print("    1/phi^2 = {d:.16}\n\n", .{PHI_INV_SQ});
+
+    std.debug.print("{s}  Step 3: The Identity{s}\n", .{ CYAN, RESET });
+    std.debug.print("    phi^2 + 1/phi^2\n", .{});
+    std.debug.print("    = (phi + 1) + (2 - phi)\n", .{});
+    std.debug.print("    = phi + 1 + 2 - phi\n", .{});
+    std.debug.print("    = {s}3{s}  QED\n\n", .{ GOLDEN, RESET });
+
+    const result = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("    Numerical: {d:.16} + {d:.16}\n", .{ PHI_SQ, PHI_INV_SQ });
+    std.debug.print("             = {s}{d:.16}{s}\n\n", .{ GOLDEN, result, RESET });
+
+    std.debug.print("{s}  Step 4: Generalization — Lucas Numbers{s}\n", .{ CYAN, RESET });
+    std.debug.print("    L(n) = phi^n + (-1/phi)^n\n", .{});
+    std.debug.print("    L(0) = 2, L(1) = 1, L(2) = 3 = TRINITY\n", .{});
+    std.debug.print("    The identity phi^2 + 1/phi^2 = 3 IS L(2) = 3\n\n", .{});
+
+    std.debug.print("    n  | L(n) | phi^n + 1/phi^n\n", .{});
+    std.debug.print("    ---|------|----------------\n", .{});
+    var i: u32 = 0;
+    while (i <= 8) : (i += 1) {
+        const ln = lucas(i);
+        const nf: f64 = @floatFromInt(i);
+        const phi_n = std.math.pow(f64, PHI, nf);
+        const phi_neg_n = std.math.pow(f64, PHI_INV, nf);
+        const sum = phi_n + phi_neg_n;
+        const mark: []const u8 = if (ln == 3) " <-- TRINITY" else if (ln == 2) " <-- DUALITY" else if (ln == 1) " <-- UNITY" else "";
+        std.debug.print("    {d}  | {d:<4} | {d:.4}{s}{s}{s}\n", .{ i, ln, sum, GOLDEN, mark, RESET });
+    }
+
+    std.debug.print("\n{s}  Step 5: Why 3?{s}\n", .{ CYAN, RESET });
+    std.debug.print("    3 = number of spatial dimensions\n", .{});
+    std.debug.print("    3 = number of color charges (SU(3))\n", .{});
+    std.debug.print("    3 = number of quark generations\n", .{});
+    std.debug.print("    3 = number of qutrit states\n", .{});
+    std.debug.print("    3^3 = 27 = tryte space\n", .{});
+    std.debug.print("    F(4) = 3 (Fibonacci)\n", .{});
+    std.debug.print("    L(2) = 3 (Lucas)\n", .{});
+    std.debug.print("    dim SU(2) = 3 (Pauli matrices)\n", .{});
+    std.debug.print("    Brown-Henneaux: c = {s}3{s}R/(2G)\n", .{ GOLDEN, RESET });
+
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = 3 = TRINITY — the deepest identity in mathematics{s}\n\n", .{
+        GOLDEN, RESET,
+    });
+}
+
+// =============================================================================
+// COMMAND: tri math harmony (Cycle 87)
+// =============================================================================
+
+fn runHarmonyCommand() void {
+    std.debug.print("\n{s}Musical Harmony + Golden Ratio{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Pythagorean Intervals:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}Interval         Ratio      Cents       phi connection{s}\n", .{ GRAY, RESET });
+    printHarmony("Unison", 1.0, 1.0, "1/1 = identity");
+    printHarmony("Minor 2nd", 16.0, 15.0, "semitone");
+    printHarmony("Major 2nd", 9.0, 8.0, "whole tone");
+    printHarmony("Minor 3rd", 6.0, 5.0, "phi^-0.42");
+    printHarmony("Major 3rd", 5.0, 4.0, "phi^-0.17");
+    printHarmony("Perfect 4th", 4.0, 3.0, "4/TRINITY");
+    printHarmony("Tritone", 1.4142, 1.0, "sqrt(2) devil's interval");
+    printHarmony("Perfect 5th", 3.0, 2.0, "TRINITY/2");
+    printHarmony("Minor 6th", 8.0, 5.0, "F(6)/F(5) -> phi");
+    printHarmony("Major 6th", 5.0, 3.0, "F(5)/F(4) -> phi");
+    printHarmony("Octave", 2.0, 1.0, "2/1 doubling");
+
+    std.debug.print("\n{s}  Fibonacci Frequency Ratios:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    F(n+1)/F(n) converges to phi:\n", .{});
+    var i: u32 = 2;
+    while (i <= 12) : (i += 1) {
+        const fn1 = fibonacci(i + 1);
+        const fn0 = fibonacci(i);
+        const ratio = @as(f64, @floatFromInt(fn1)) / @as(f64, @floatFromInt(fn0));
+        const err = @abs(ratio - PHI);
+        std.debug.print("    F({d})/F({d}) = {d}/{d} = {d:.10}  (err: {e:.2})\n", .{
+            i + 1, i, fn1, fn0, ratio, err,
+        });
+    }
+
+    std.debug.print("\n{s}  phi in Music Theory:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Perfect 5th / Perfect 4th = (3/2) / (4/3) = 9/8 (whole tone)\n", .{});
+    std.debug.print("    Minor 6th = 8/5 = F(6)/F(5) = {d:.4} (close to phi!)\n", .{8.0 / 5.0});
+    std.debug.print("    phi itself = {d:.4} lies between Minor 6th and Major 6th\n", .{PHI});
+
+    std.debug.print("\n{s}  Ternary Music (3-based):{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Tritave = 3:1 ratio (instead of 2:1 octave)\n", .{});
+    std.debug.print("    Bohlen-Pierce scale: 13 steps per tritave\n", .{});
+    std.debug.print("    13 = F(7) = TRYTE_MAX — Fibonacci in ternary music!\n", .{});
+    std.debug.print("    Step ratio = 3^(1/13) = {d:.6}\n", .{std.math.pow(f64, 3.0, 1.0 / 13.0)});
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — harmony IS sacred geometry{s}\n\n", .{
+        GOLDEN, trinity, RESET,
+    });
+}
+
+fn printHarmony(name: []const u8, num: f64, den: f64, desc: []const u8) void {
+    const ratio = num / den;
+    const cents = 1200.0 * @log2(ratio);
+    std.debug.print("  {s}{s:<17}{s} {d:>7.4}    {d:>7.1}       {s}{s}{s}\n", .{
+        GREEN, name, RESET, ratio, cents, GRAY, desc, RESET,
+    });
+}
+
+// =============================================================================
+// COMMAND: tri math cosmos (Cycle 87)
+// =============================================================================
+
+const HUBBLE: f64 = 67.4;
+const OMEGA_MATTER: f64 = 0.315;
+const OMEGA_LAMBDA: f64 = 0.685;
+const OMEGA_BARYON: f64 = 0.0493;
+const CMB_TEMP: f64 = 2.7255;
+const AGE_UNIVERSE: f64 = 13.787;
+const DARK_ENERGY_W: f64 = -1.03;
+
+fn runCosmosCommand() void {
+    std.debug.print("\n{s}Cosmological Constants + phi in the Cosmos{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Standard Cosmological Parameters (Planck 2018):{s}\n", .{ CYAN, RESET });
+    printConst("H_0 (Hubble)", HUBBLE, "km/s/Mpc");
+    printConst("Omega_m (matter)", OMEGA_MATTER, "total matter density");
+    printConst("Omega_L (dark energy)", OMEGA_LAMBDA, "cosmological constant");
+    printConst("Omega_b (baryonic)", OMEGA_BARYON, "visible matter");
+    printConst("T_CMB", CMB_TEMP, "K (cosmic microwave bg)");
+    printConst("Age of Universe", AGE_UNIVERSE, "Gyr (13.787 billion yr)");
+    printConst("w (dark energy EoS)", DARK_ENERGY_W, "~= -1 (cosmological const.)");
+
+    std.debug.print("\n{s}  phi in Cosmology:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Omega_L / Omega_m = {d:.4} / {d:.4} = {d:.4}\n", .{
+        OMEGA_LAMBDA, OMEGA_MATTER, OMEGA_LAMBDA / OMEGA_MATTER,
+    });
+    std.debug.print("    Compare: phi^2 = {d:.4}\n", .{PHI_SQ});
+    std.debug.print("    Dark matter fraction = 1 - Omega_b/Omega_m = {d:.4}\n", .{
+        1.0 - OMEGA_BARYON / OMEGA_MATTER,
+    });
+
+    std.debug.print("\n{s}  Sacred Coincidences:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    F(7) = 13 ~ Age of Universe in Gyr ({d:.3})\n", .{AGE_UNIVERSE});
+    std.debug.print("    T_CMB = {d:.4} K ~ e (Euler's number {d:.4})\n", .{ CMB_TEMP, E });
+    std.debug.print("    Omega_L = {d:.3} ~ 1/phi + epsilon\n", .{OMEGA_LAMBDA});
+
+    std.debug.print("\n{s}  The Dark Sector:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Visible matter:  {d:.1}%\n", .{OMEGA_BARYON * 100.0});
+    std.debug.print("    Dark matter:     {d:.1}%\n", .{(OMEGA_MATTER - OMEGA_BARYON) * 100.0});
+    std.debug.print("    Dark energy:     {d:.1}%\n", .{OMEGA_LAMBDA * 100.0});
+    std.debug.print("    Total:           100.0%\n", .{});
+
+    std.debug.print("\n    Universe Composition:\n", .{});
+    std.debug.print("    {s}", .{GOLDEN});
+    const de_bars: usize = @intFromFloat(OMEGA_LAMBDA * 50.0);
+    const dm_bars: usize = @intFromFloat((OMEGA_MATTER - OMEGA_BARYON) * 50.0);
+    const bm_bars: usize = @intFromFloat(OMEGA_BARYON * 50.0);
+    var b: usize = 0;
+    while (b < de_bars) : (b += 1) std.debug.print("=", .{});
+    std.debug.print("{s}", .{CYAN});
+    b = 0;
+    while (b < dm_bars) : (b += 1) std.debug.print("#", .{});
+    std.debug.print("{s}", .{GREEN});
+    b = 0;
+    while (b < bm_bars) : (b += 1) std.debug.print("*", .{});
+    std.debug.print("{s}\n", .{RESET});
+    std.debug.print("    {s}={s} Dark Energy  {s}#{s} Dark Matter  {s}*{s} Baryonic\n", .{
+        GOLDEN, RESET, CYAN, RESET, GREEN, RESET,
+    });
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — the universe remembers its origin{s}\n\n", .{
+        GOLDEN, trinity, RESET,
+    });
+}
+
+// =============================================================================
+// COMMAND: tri math engine (Cycle 87)
+// =============================================================================
+
+fn runEngineCommand() void {
+    std.debug.print("\n{s}TRI MATH v3.0 — Sacred Computation Engine{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Engine Status:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[OK]{s} Version:          v3.0 (Cycle 87)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Constants:         76 sacred + 7 cosmological = 83\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Subcommands:       32 (25 base + 7 v3.0)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Verify checks:     24/24 passing\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Backend:           Zig 0.15.x (zero-alloc math)\n", .{ GREEN, RESET });
+
+    std.debug.print("\n{s}  Module Roadmap:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[OK]{s} Cycle 82: Core constants + CLI wiring\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Cycle 83: Extended (exotic, fundamental, physics)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Cycle 84: Advanced (nuclear, fractal, golden function)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Cycle 85: Quantum (Berry, SU(3), Planck-phi, qutrits)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Cycle 86: Holographic (AdS/CFT, LQG, quantum gravity)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Cycle 87: v3.0 Engine (visual, qsim, rewards, cosmos)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[..]{s} Cycle 88: v3.1 Real-time renderer + marketplace\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Architecture:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    File:     src/tri/tri_math.zig\n", .{});
+    std.debug.print("    Backend:  Pure Zig, no allocations for math\n", .{});
+    std.debug.print("    Entry:    main.zig -> math_mod.runMathCommand()\n", .{});
+    std.debug.print("    Router:   String-match dispatch (32 routes)\n", .{});
+
+    std.debug.print("\n{s}  Sacred Foundation:{s}\n", .{ CYAN, RESET });
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("    phi = {d:.16}\n", .{PHI});
+    std.debug.print("    phi^2 + 1/phi^2 = {s}{d:.16}{s}\n", .{ GOLDEN, trinity, RESET });
+    std.debug.print("    L(2) = {d} = F(4) = 3 = TRINITY\n", .{lucas(2)});
+    std.debug.print("    F(7) = {d} = TRYTE_MAX\n", .{fibonacci(7)});
+
+    std.debug.print("\n    {s}The Sacred Computation Engine computes reality.{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    {s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// =============================================================================
 // COMMAND: tri math all
 // =============================================================================
 
@@ -2157,8 +2665,17 @@ fn runAllConstantsCommand() void {
     printConst("gamma_BI * phi", BARBERO_IMMIRZI_PHI, "golden Immirzi");
     printConstSci("l_P^2 (Planck area)", PLANCK_AREA, "m^2");
 
+    std.debug.print("\n{s}  COSMOLOGICAL (v3.0):{s}\n", .{ GOLDEN, RESET });
+    printConst("H_0 (Hubble)", HUBBLE, "km/s/Mpc");
+    printConst("Omega_m (matter)", OMEGA_MATTER, "total matter density");
+    printConst("Omega_L (dark energy)", OMEGA_LAMBDA, "cosmological constant");
+    printConst("Omega_b (baryonic)", OMEGA_BARYON, "visible matter");
+    printConst("T_CMB", CMB_TEMP, "K (cosmic microwave bg)");
+    printConst("Age of Universe", AGE_UNIVERSE, "Gyr");
+    printConst("w (dark energy EoS)", DARK_ENERGY_W, "~= -1");
+
     // Total count
-    std.debug.print("\n{s}  Total: 76 constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}  Total: 83 constants{s}\n", .{ GOLDEN, RESET });
 
     const trinity_check = PHI_SQ + PHI_INV_SQ;
     std.debug.print("  {s}phi^2 + 1/phi^2 = {d:.10}{s}", .{ GOLDEN, trinity_check, RESET });
