@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VIBEE PARSER - Парсер .vibee спецификаций
+// VIBEE PARSER - Парсер .tri спецификаций
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Парсит YAML-подобный формат .vibee файлов
+// Парсит YAML-подобный формат .tri файлов (legacy .vibee supported)
 // Автор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
@@ -15,6 +15,12 @@ const ArrayList = std.ArrayListUnmanaged;
 // ═══════════════════════════════════════════════════════════════════════════════
 // ТИПЫ СПЕЦИФИКАЦИИ
 // ═══════════════════════════════════════════════════════════════════════════════
+
+/// Zig code generation mode (Cycle 74: Zig Idioms Enhancement)
+pub const ZigMode = enum { standard, idiomatic, wasm };
+
+/// Allocator injection strategy for idiomatic Zig
+pub const AllocatorStrategy = enum { none, param, arena, gpa };
 
 pub const VibeeSpec = struct {
     name: []const u8,
@@ -45,6 +51,10 @@ pub const VibeeSpec = struct {
     // Source content ownership - all string fields are slices into this
     source_content: []const u8,
     owns_source: bool,
+    // Zig idiom control (Cycle 74)
+    zig_mode: ZigMode,
+    allocator_strategy: AllocatorStrategy,
+    error_sets: ArrayList([]const u8),
 
     pub fn init(allocator: Allocator) VibeeSpec {
         return .{
@@ -73,6 +83,9 @@ pub const VibeeSpec = struct {
             .allocator = allocator,
             .source_content = "",
             .owns_source = false,
+            .zig_mode = .standard,
+            .allocator_strategy = .none,
+            .error_sets = .{},
         };
     }
 
@@ -118,6 +131,7 @@ pub const VibeeSpec = struct {
         self.signals.deinit(self.allocator);
         self.fsms.deinit(self.allocator);
         self.test_cases.deinit(self.allocator);
+        self.error_sets.deinit(self.allocator);
     }
 };
 
@@ -405,6 +419,30 @@ pub const VibeeParser = struct {
                 self.skipInlineWhitespace();
                 const val = self.readValue();
                 spec.target_frequency = std.fmt.parseInt(u32, val, 10) catch 100;
+                self.skipToNextLine();
+            } else if (std.mem.eql(u8, key, "zig_mode")) {
+                self.skipInlineWhitespace();
+                const val = self.readValue();
+                if (std.mem.eql(u8, val, "idiomatic")) {
+                    spec.zig_mode = .idiomatic;
+                } else if (std.mem.eql(u8, val, "wasm")) {
+                    spec.zig_mode = .wasm;
+                } else {
+                    spec.zig_mode = .standard;
+                }
+                self.skipToNextLine();
+            } else if (std.mem.eql(u8, key, "allocator_strategy")) {
+                self.skipInlineWhitespace();
+                const val = self.readValue();
+                if (std.mem.eql(u8, val, "param")) {
+                    spec.allocator_strategy = .param;
+                } else if (std.mem.eql(u8, val, "arena")) {
+                    spec.allocator_strategy = .arena;
+                } else if (std.mem.eql(u8, val, "gpa")) {
+                    spec.allocator_strategy = .gpa;
+                } else {
+                    spec.allocator_strategy = .none;
+                }
                 self.skipToNextLine();
             } else if (std.mem.eql(u8, key, "targets")) {
                 self.skipToNextLine();
