@@ -381,6 +381,336 @@ pub fn runGitCommand(allocator: std.mem.Allocator, subcmd: []const u8, args: []c
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// DEV UTILITIES: doctor, clean, fmt, stats, igla
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runDoctorCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("\n{s}═══ TRI DOCTOR — Project Health Check ═══{s}\n\n", .{ GOLDEN, RESET });
+
+    // 1. Zig version
+    std.debug.print("{s}[1/5]{s} Zig version: ", .{ CYAN, RESET });
+    const zig_ver = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "version" },
+    }) catch |err| {
+        std.debug.print("{s}ERROR: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(zig_ver.stdout);
+    defer allocator.free(zig_ver.stderr);
+    if (zig_ver.stdout.len > 0) {
+        std.debug.print("{s}{s}{s}", .{ GREEN, std.mem.trim(u8, zig_ver.stdout, "\n\r "), RESET });
+    }
+    std.debug.print("\n", .{});
+
+    // 2. Git branch
+    std.debug.print("{s}[2/5]{s} Git branch:  ", .{ CYAN, RESET });
+    const git_branch = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "branch", "--show-current" },
+    }) catch |err| {
+        std.debug.print("{s}ERROR: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(git_branch.stdout);
+    defer allocator.free(git_branch.stderr);
+    std.debug.print("{s}{s}{s}\n", .{ GREEN, std.mem.trim(u8, git_branch.stdout, "\n\r "), RESET });
+
+    // 3. Git status (dirty files)
+    std.debug.print("{s}[3/5]{s} Working tree: ", .{ CYAN, RESET });
+    const git_status = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "status", "--porcelain" },
+    }) catch |err| {
+        std.debug.print("{s}ERROR: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(git_status.stdout);
+    defer allocator.free(git_status.stderr);
+    if (git_status.stdout.len == 0) {
+        std.debug.print("{s}clean{s}\n", .{ GREEN, RESET });
+    } else {
+        // Count dirty files
+        var dirty_count: usize = 0;
+        var it = std.mem.splitScalar(u8, std.mem.trim(u8, git_status.stdout, "\n\r "), '\n');
+        while (it.next()) |_| dirty_count += 1;
+        std.debug.print("{s}{d} modified files{s}\n", .{ GOLDEN, dirty_count, RESET });
+    }
+
+    // 4. Build check
+    std.debug.print("{s}[4/5]{s} Build:       ", .{ CYAN, RESET });
+    const build_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "build" },
+        .max_output_bytes = 10 * 1024 * 1024,
+    }) catch |err| {
+        std.debug.print("{s}ERROR: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(build_result.stdout);
+    defer allocator.free(build_result.stderr);
+    if (build_result.term.Exited == 0) {
+        std.debug.print("{s}OK{s}\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("{s}FAILED{s}\n", .{ RED, RESET });
+        if (build_result.stderr.len > 0) {
+            // Show first 3 lines of error
+            var lines_it = std.mem.splitScalar(u8, build_result.stderr, '\n');
+            var line_count: usize = 0;
+            while (lines_it.next()) |line| {
+                if (line_count >= 3) break;
+                std.debug.print("         {s}{s}{s}\n", .{ RED, line, RESET });
+                line_count += 1;
+            }
+        }
+    }
+
+    // 5. Critical files check
+    std.debug.print("{s}[5/5]{s} Critical files:\n", .{ CYAN, RESET });
+    const critical_files = [_][]const u8{
+        "src/vsa.zig",
+        "src/vm.zig",
+        "src/vibeec/vibee_parser.zig",
+        "src/vibeec/parser_types.zig",
+        "src/vibeec/parser_sections.zig",
+        "src/vibeec/parser_utils.zig",
+        "build.zig",
+    };
+    for (critical_files) |path| {
+        std.fs.cwd().access(path, .{}) catch {
+            std.debug.print("         {s}MISSING: {s}{s}\n", .{ RED, path, RESET });
+            continue;
+        };
+        std.debug.print("         {s}OK{s} {s}\n", .{ GREEN, RESET, path });
+    }
+
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+pub fn runCleanCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("{s}TRI CLEAN — Removing build artifacts{s}\n\n", .{ GOLDEN, RESET });
+
+    // Remove .zig-cache
+    std.debug.print("  Removing .zig-cache... ", .{});
+    const rm_cache = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "rm", "-rf", ".zig-cache" },
+    }) catch |err| {
+        std.debug.print("{s}ERROR: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(rm_cache.stdout);
+    defer allocator.free(rm_cache.stderr);
+    std.debug.print("{s}done{s}\n", .{ GREEN, RESET });
+
+    // Remove zig-out
+    std.debug.print("  Removing zig-out...    ", .{});
+    const rm_out = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "rm", "-rf", "zig-out" },
+    }) catch |err| {
+        std.debug.print("{s}ERROR: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(rm_out.stdout);
+    defer allocator.free(rm_out.stderr);
+    std.debug.print("{s}done{s}\n", .{ GREEN, RESET });
+
+    std.debug.print("\n{s}Clean complete.{s}\n", .{ GREEN, RESET });
+}
+
+pub fn runFmtCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("{s}TRI FMT — Formatting Zig source{s}\n\n", .{ GOLDEN, RESET });
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "fmt", "src/" },
+        .max_output_bytes = 1 * 1024 * 1024,
+    }) catch |err| {
+        std.debug.print("{s}Error running zig fmt: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len == 0 and result.stderr.len == 0) {
+        std.debug.print("  {s}All files already formatted.{s}\n", .{ GREEN, RESET });
+    } else {
+        if (result.stdout.len > 0) {
+            // Count formatted files
+            var count: usize = 0;
+            var it = std.mem.splitScalar(u8, std.mem.trim(u8, result.stdout, "\n\r "), '\n');
+            while (it.next()) |line| {
+                if (line.len > 0) count += 1;
+            }
+            std.debug.print("  {s}Formatted {d} files{s}\n", .{ GREEN, count, RESET });
+            std.debug.print("{s}{s}{s}", .{ GRAY, result.stdout, RESET });
+        }
+        if (result.stderr.len > 0) {
+            std.debug.print("{s}{s}{s}\n", .{ RED, result.stderr, RESET });
+        }
+    }
+}
+
+pub fn runStatsCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("\n{s}═══ TRI STATS — Project Statistics ═══{s}\n\n", .{ GOLDEN, RESET });
+
+    // Count .zig files
+    std.debug.print("{s}Zig source:{s}\n", .{ CYAN, RESET });
+    const zig_count = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find src -name '*.zig' | wc -l" },
+    }) catch |err| {
+        std.debug.print("  ERROR: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(zig_count.stdout);
+    defer allocator.free(zig_count.stderr);
+    std.debug.print("  .zig files:    {s}{s}{s}\n", .{ GREEN, std.mem.trim(u8, zig_count.stdout, " \n\r\t"), RESET });
+
+    // Count LOC
+    const zig_loc = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find src -name '*.zig' -exec cat {} + | wc -l" },
+    }) catch |err| {
+        std.debug.print("  LOC ERROR: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(zig_loc.stdout);
+    defer allocator.free(zig_loc.stderr);
+    std.debug.print("  Total LOC:     {s}{s}{s}\n", .{ GREEN, std.mem.trim(u8, zig_loc.stdout, " \n\r\t"), RESET });
+
+    // Count specs
+    std.debug.print("\n{s}Specifications:{s}\n", .{ CYAN, RESET });
+    const vibee_count = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find specs -name '*.vibee' 2>/dev/null | wc -l" },
+    }) catch |err| {
+        std.debug.print("  ERROR: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(vibee_count.stdout);
+    defer allocator.free(vibee_count.stderr);
+    std.debug.print("  .vibee specs:  {s}{s}{s}\n", .{ GREEN, std.mem.trim(u8, vibee_count.stdout, " \n\r\t"), RESET });
+
+    const tri_count = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find specs -name '*.tri' 2>/dev/null | wc -l" },
+    }) catch |err| {
+        std.debug.print("  ERROR: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(tri_count.stdout);
+    defer allocator.free(tri_count.stderr);
+    std.debug.print("  .tri specs:    {s}{s}{s}\n", .{ GREEN, std.mem.trim(u8, tri_count.stdout, " \n\r\t"), RESET });
+
+    // Count generated output files
+    std.debug.print("\n{s}Generated output:{s}\n", .{ CYAN, RESET });
+    const gen_count = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find trinity-nexus/output -name '*.zig' 2>/dev/null | wc -l" },
+    }) catch |err| {
+        std.debug.print("  ERROR: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(gen_count.stdout);
+    defer allocator.free(gen_count.stderr);
+    std.debug.print("  Output .zig:   {s}{s}{s}\n", .{ GREEN, std.mem.trim(u8, gen_count.stdout, " \n\r\t"), RESET });
+
+    // Count test declarations
+    std.debug.print("\n{s}Tests:{s}\n", .{ CYAN, RESET });
+    const test_count = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "grep -r '^test ' src/ --include='*.zig' | wc -l" },
+    }) catch |err| {
+        std.debug.print("  ERROR: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(test_count.stdout);
+    defer allocator.free(test_count.stderr);
+    std.debug.print("  test blocks:   {s}{s}{s}\n", .{ GREEN, std.mem.trim(u8, test_count.stdout, " \n\r\t"), RESET });
+
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+pub fn runIglaCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("\n{s}═══ IGLA STATUS — Parser Module Coverage ═══{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}IGLA (Igla) — ukolov, ubivayushchiy ruchnoy kod{s}\n\n", .{ GRAY, RESET });
+
+    // Parser modules with line counts
+    const modules = [_]struct { path: []const u8, name: []const u8 }{
+        .{ .path = "src/vibeec/parser_types.zig", .name = "parser_types.zig" },
+        .{ .path = "src/vibeec/parser_utils.zig", .name = "parser_utils.zig" },
+        .{ .path = "src/vibeec/parser_sections.zig", .name = "parser_sections.zig" },
+        .{ .path = "src/vibeec/vibee_parser.zig", .name = "vibee_parser.zig (orchestrator)" },
+    };
+
+    var total_lines: usize = 0;
+    std.debug.print("{s}Parser modules:{s}\n", .{ CYAN, RESET });
+    for (modules) |m| {
+        var cmd_buf: [256]u8 = undefined;
+        const cmd = std.fmt.bufPrint(&cmd_buf, "wc -l < {s}", .{m.path}) catch continue;
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &[_][]const u8{ "sh", "-c", cmd },
+        }) catch continue;
+        defer allocator.free(result.stdout);
+        defer allocator.free(result.stderr);
+        const trimmed = std.mem.trim(u8, result.stdout, " \n\r\t");
+        const lines = std.fmt.parseInt(usize, trimmed, 10) catch 0;
+        total_lines += lines;
+        std.debug.print("  {s}{s: <40}{s} {d} lines\n", .{ GREEN, m.name, RESET, lines });
+    }
+    std.debug.print("  {s}{s: <40}{s} {d} lines total\n", .{ GOLDEN, "TOTAL", RESET, total_lines });
+
+    // List .tri specs
+    std.debug.print("\n{s}IGLA specs (.tri):{s}\n", .{ CYAN, RESET });
+    const specs_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "ls -1 specs/tri/igla_*.tri 2>/dev/null" },
+    }) catch |err| {
+        std.debug.print("  ERROR: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(specs_result.stdout);
+    defer allocator.free(specs_result.stderr);
+    if (specs_result.stdout.len > 0) {
+        var it = std.mem.splitScalar(u8, std.mem.trim(u8, specs_result.stdout, "\n\r "), '\n');
+        while (it.next()) |line| {
+            if (line.len > 0) {
+                std.debug.print("  {s}OK{s} {s}\n", .{ GREEN, RESET, line });
+            }
+        }
+    } else {
+        std.debug.print("  (none found)\n", .{});
+    }
+
+    // List generated output
+    std.debug.print("\n{s}Generated output:{s}\n", .{ CYAN, RESET });
+    const output_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "ls -1 trinity-nexus/output/lang/zig/igla_*.zig 2>/dev/null" },
+    }) catch |err| {
+        std.debug.print("  ERROR: {}\n", .{err});
+        return;
+    };
+    defer allocator.free(output_result.stdout);
+    defer allocator.free(output_result.stderr);
+    if (output_result.stdout.len > 0) {
+        var it = std.mem.splitScalar(u8, std.mem.trim(u8, output_result.stdout, "\n\r "), '\n');
+        while (it.next()) |line| {
+            if (line.len > 0) {
+                std.debug.print("  {s}GEN{s} {s}\n", .{ GREEN, RESET, line });
+            }
+        }
+    } else {
+        std.debug.print("  (none found)\n", .{});
+    }
+
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // DISTRIBUTED INFERENCE COMMAND
 // ═══════════════════════════════════════════════════════════════════════════════
 
