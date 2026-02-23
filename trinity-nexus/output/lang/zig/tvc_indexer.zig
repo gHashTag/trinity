@@ -85,7 +85,7 @@ pub const Symbol = struct {
     column: usize,
     language: Language,
     context: []const u8,
-    imports: []const u8,
+    imports: []const []const u8,
 };
 
 /// 

@@ -53,21 +53,21 @@ pub const PHOENIX: i64 = 999;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
-pub const FPGADevice = enum {
-    ARTIX7_35T: 0,
-    ARTIX7_100T: 1,
-    ZYNQ_7020: 2,
-    ZYNQ_7045: 3,
+pub const FPGADevice = enum(u8) {
+    ARTIX7_35T = 0,
+    ARTIX7_100T = 1,
+    ZYNQ_7020 = 2,
+    ZYNQ_7045 = 3,
 };
 
 /// 
-pub const FPGAOperation = enum {
-    BIND: 0,
-    BUNDLE: 1,
-    DOT_PRODUCT: 2,
-    PERMUTE: 3,
-    MATVEC: 4,
-    COSINE: 5,
+pub const FPGAOperation = enum(u8) {
+    BIND = 0,
+    BUNDLE = 1,
+    DOT_PRODUCT = 2,
+    PERMUTE = 3,
+    MATVEC = 4,
+    COSINE = 5,
 };
 
 /// 2-bit encoding for ternary values
@@ -298,7 +298,7 @@ pub fn fpga_cosine() void {
 /// FPGADevice target
 /// When: Need available resource budget
 /// Then: Return DeviceResources for the target
-pub fn get_device_resources(self: *@This()) anyerror!void {
+pub fn get_device_resources(_: *@This()) anyerror!void {
 // Query: Return DeviceResources for the target
     const result = @as([]const u8, "query_result");
     _ = result;
@@ -308,7 +308,7 @@ pub fn get_device_resources(self: *@This()) anyerror!void {
 /// FPGAConfig with vector_dim and mac_units
 /// When: Planning synthesis
 /// Then: Return ResourceUsage estimate
-pub fn estimate_resources(config: anytype) anyerror!void {
+pub fn estimate_resources(_: anytype) anyerror!void {
 // Compute: Return ResourceUsage estimate
     const result: f64 = PHI_INV; // 0.618 default
     _ = result;
@@ -328,7 +328,7 @@ pub fn estimate_utilization() anyerror!void {
 /// Standard control interface
 /// When: Need AXI-lite address layout
 /// Then: Return register offset table (control/status/data/perf)
-pub fn get_register_map(self: *@This()) anyerror!void {
+pub fn get_register_map(_: *@This()) anyerror!void {
 // Query: Return register offset table (control/status/data/perf)
     const result = @as([]const u8, "query_result");
     _ = result;
@@ -338,7 +338,7 @@ pub fn get_register_map(self: *@This()) anyerror!void {
 /// FPGAConfig
 /// When: Need estimated metrics
 /// Then: Return FPGASynthesisReport with timing, power, throughput
-pub fn generate_synthesis_report(config: anytype) anyerror!void {
+pub fn generate_synthesis_report(_: anytype) anyerror!void {
 // Generate: Return FPGASynthesisReport with timing, power, throughput
     const template = @as([]const u8, "generated_output");
     _ = template;
@@ -366,7 +366,7 @@ pub fn read_register() anyerror!void {
 /// FPGAOperation, input vectors
 /// When: Host triggers FPGA computation
 /// Then: Execute operation, update counters, return result
-pub fn dispatch_operation(input: []const i8) f32 {
+pub fn dispatch_operation(_: []const i8) f32 {
 // Dispatch: Execute operation, update counters, return result
     const target = @as([]const u8, "default_agent");
     const confidence: f64 = 0.85;

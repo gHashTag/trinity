@@ -188,40 +188,32 @@ pub fn getAllIdentities() []const Identity {
 }
 
 pub fn printAllIdentities(writer: anytype) !void {
-    try writer.writeAll(format.colors.bold);
-    try writer.writeAll("╔════════════════════════════════════════════════════════════════════╗\n");
-    try writer.writeAll("║              SACRED MATHEMATICS IDENTITIES                      ║\n");
-    try writer.writeAll("║                    φ² + 1/φ² = 3 = TRINITY                       ║\n");
-    try writer.writeAll("╠════════════════════════════════════════════════════════════════════╣\n");
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("+====================================================================+\n");
+    try writer.writeAll("|              SACRED MATHEMATICS IDENTITIES                         |\n");
+    try writer.writeAll("|              phi^2 + 1/phi^2 = 3 = TRINITY                        |\n");
+    try writer.writeAll("+====================================================================+\n\n");
 
-    try printIdentityGroup(writer, &golden_identities, format.colors.gold);
-    try printIdentityGroup(writer, &sequence_identities, format.colors.cyan);
-    try printIdentityGroup(writer, &transcendental_identities, format.colors.purple);
-    try printIdentityGroup(writer, &trinity_connections, format.colors.green);
+    try printIdentityGroup(writer, &golden_identities);
+    try printIdentityGroup(writer, &sequence_identities);
+    try printIdentityGroup(writer, &transcendental_identities);
+    try printIdentityGroup(writer, &trinity_connections);
 
-    try writer.writeAll(format.colors.bold);
-    try writer.writeAll("╚════════════════════════════════════════════════════════════════════╝\n");
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("+====================================================================+\n");
 }
 
-fn printIdentityGroup(writer: anytype, identities: []const Identity, color: []const u8) !void {
+fn printIdentityGroup(writer: anytype, identities: []const Identity) !void {
     if (identities.len == 0) return;
 
-    try writer.writeAll(color);
-    try writer.print("  {s}\n", .{identities[0].category});
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("  --- ");
+    try writer.print("{s}", .{identities[0].category});
+    try writer.writeAll(" ---\n\n");
 
     for (identities) |id| {
-        try writer.writeAll(format.colors.bold);
-        try writer.print("  • {s}: ", .{id.name});
-        try writer.writeAll(format.colors.reset);
+        try writer.print("  * {s}: ", .{id.name});
         try writer.writeAll(id.formula);
         try writer.writeAll("\n");
 
-        try writer.writeAll(format.colors.dim);
         try writer.writeAll("    Proof: ");
-        try writer.writeAll(format.colors.reset);
         var iter = std.mem.tokenizeAny(u8, id.proof, "\n");
         var first = true;
         while (iter.next()) |line| {
