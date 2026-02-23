@@ -237,5 +237,7 @@ pub fn main() !void {
         .rewards => commands.runRewardsCommand(allocator, cmd_args),
         // Cycle 85: Dashboard
         .dashboard => commands.runDashboardCommand(allocator),
+        // Cycle 86: Swarm Sync
+        .swarm => commands.runSwarmCommand(allocator, cmd_args),
     }
 }
