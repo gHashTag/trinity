@@ -1,5 +1,5 @@
 // =============================================================================
-// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84)
+// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85)
 // =============================================================================
 //
 // Exposes sacred_math.zig library as TRI CLI commands:
@@ -9,7 +9,7 @@
 //   tri fib <n>       - Fibonacci number
 //   tri lucas <n>     - Lucas number
 //   tri spiral <n>    - Phi-spiral coordinates
-//   tri math-verify   - Trinity identity verification (16 checks)
+//   tri math-verify   - Trinity identity verification (20 checks)
 //   tri math-bench    - Performance benchmark
 //   tri math-compare  - Side-by-side comparison table
 //
@@ -17,12 +17,17 @@
 //   tri math exotic   - Exotic constants (Apery, Catalan, Feigenbaum, etc.)
 //   tri math physical - Physics constants (alpha, CHSH, Planck, Boltzmann)
 //   tri math chaos    - Chaos theory (Feigenbaum + logistic map demo)
-//   tri math all      - Display ALL 48 constants
+//   tri math all      - Display ALL 62 constants
 //
 // Cycle 84 extensions:
 //   tri math golden-function - Golden Function model (Pellis 2025)
 //   tri math nuclear         - Nuclear Fibonacci shell stability
 //   tri math fractal         - Fractal scaling + self-similar phi structures
+//
+// Cycle 85 extensions:
+//   tri math quantum  - Berry phase gates + SU(3) simulation
+//   tri math planck   - Planck units with phi-scaling relationships
+//   tri math qutrit   - Ternary phase gates + qutrit state demo
 //
 // All math is inlined from sacred_math.zig to avoid build.zig coupling.
 //
@@ -198,6 +203,54 @@ const MANDELBROT_DIM: f64 = 2.0;
 /// Each quarter turn scales by phi^2
 const GOLDEN_SPIRAL_RATIO: f64 = 2.6180339887498948482;
 
+// =============================================================================
+// QUANTUM SACRED CONSTANTS (Cycle 85)
+// =============================================================================
+// Berry phase + φ, SU(3) generators, Planck-φ units, qutrit gates
+
+/// Berry phase geometric factor for qutrit loop = 2π/3
+/// In SU(3), the cyclic subgroup Z₃ gives phase exp(i·2π/3)
+const BERRY_PHASE_QUTRIT: f64 = 2.0943951023931953; // 2*pi/3
+
+/// SU(3) structure constant f₁₂₃ = 1 (Gell-Mann matrices)
+const SU3_F123: f64 = 1.0;
+
+/// SU(3) structure constant f₄₅₈ = sqrt(3)/2
+const SU3_F458: f64 = 0.8660254037844386468; // sqrt(3)/2
+
+/// SU(3) Casimir invariant for fundamental representation = 4/3
+const SU3_CASIMIR: f64 = 1.3333333333333333333;
+
+/// Qutrit Hadamard-like gate angle: 2π/3 (120° rotation in qutrit space)
+const QUTRIT_GATE_ANGLE: f64 = 2.0943951023931953; // same as Berry phase
+
+/// Rydberg constant R_∞ (1/m) — hydrogen spectrum
+const RYDBERG: f64 = 10973731.568160;
+
+/// Planck temperature T_P (K) = sqrt(hbar*c^5 / (G*k_B^2))
+const PLANCK_TEMPERATURE: f64 = 1.416784e32;
+
+/// Planck energy E_P (GeV) = sqrt(hbar*c^5/G) in GeV
+const PLANCK_ENERGY_GEV: f64 = 1.22089e19;
+
+/// Weinberg angle sin²θ_W ≈ 0.2312 (electroweak mixing)
+const WEINBERG_SIN2: f64 = 0.23121;
+
+/// Proton-electron mass ratio m_p/m_e ≈ 1836.15
+const PROTON_ELECTRON_RATIO: f64 = 1836.15267343;
+
+/// φ-scaled Planck: l_P × φ (Planck length in golden units)
+const PLANCK_LENGTH_PHI: f64 = 1.616255e-35 * 1.6180339887498948482;
+
+/// φ-scaled Planck: t_P × φ (Planck time in golden units)
+const PLANCK_TIME_PHI: f64 = 5.391247e-44 * 1.6180339887498948482;
+
+/// Qutrit entropy: log₂(3) — maximum information per qutrit
+const QUTRIT_ENTROPY: f64 = 1.5849625007211561815; // ln(3)/ln(2)
+
+/// Berry connection for φ-spiral: 2π×φ (golden Berry orbit)
+const BERRY_PHI_ORBIT: f64 = 10.166407384630519631; // 2*pi*phi
+
 const FIBONACCI_TABLE: [20]i64 = .{
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
     55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
@@ -286,6 +339,12 @@ pub fn runMathCommand(args: []const []const u8) void {
         runNuclearCommand();
     } else if (std.mem.eql(u8, sub, "fractal") or std.mem.eql(u8, sub, "frac") or std.mem.eql(u8, sub, "hausdorff")) {
         runFractalCommand();
+    } else if (std.mem.eql(u8, sub, "quantum") or std.mem.eql(u8, sub, "berry") or std.mem.eql(u8, sub, "su3")) {
+        runQuantumCommand();
+    } else if (std.mem.eql(u8, sub, "planck") or std.mem.eql(u8, sub, "units") or std.mem.eql(u8, sub, "planck-phi")) {
+        runPlanckCommand();
+    } else if (std.mem.eql(u8, sub, "qutrit") or std.mem.eql(u8, sub, "qt") or std.mem.eql(u8, sub, "ternary-gate")) {
+        runQutritCommand();
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
@@ -309,13 +368,17 @@ fn printMathHelp() void {
     std.debug.print("  {s}exotic{s}                     Exotic constants (Apery, Catalan, Feigenbaum...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}physical{s}                   Physics constants (alpha, Planck, Boltzmann...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}chaos{s}                      Feigenbaum constants + logistic map demo\n", .{ GREEN, RESET });
-    std.debug.print("  {s}all{s}                        ALL 48 constants across all categories\n", .{ GREEN, RESET });
+    std.debug.print("  {s}all{s}                        ALL 62 constants across all categories\n", .{ GREEN, RESET });
     std.debug.print("\n{s}ADVANCED (Cycle 84):{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}golden-function{s} [n]        Golden Function G(x)=phi^x+phi^-x (Pellis 2025)\n", .{ GREEN, RESET });
     std.debug.print("  {s}nuclear{s}                    Nuclear Fibonacci shell stability model\n", .{ GREEN, RESET });
     std.debug.print("  {s}fractal{s}                    Fractal dimensions + self-similar phi scaling\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}QUANTUM (Cycle 85):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}quantum{s}                    Berry phase gates + SU(3) simulation\n", .{ GREEN, RESET });
+    std.debug.print("  {s}planck{s}                     Planck units with phi-scaling relationships\n", .{ GREEN, RESET });
+    std.debug.print("  {s}qutrit{s}                     Ternary phase gates + qutrit state demo\n", .{ GREEN, RESET });
     std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}math-verify{s}                Trinity identity checks (16 checks)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}math-verify{s}                Trinity identity checks (20 checks)\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-bench{s}                 Performance benchmark\n", .{ GREEN, RESET });
     std.debug.print("\n{s}DIRECT ALIASES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri constants  |  tri phi 10  |  tri fib 19\n", .{});
@@ -576,7 +639,7 @@ pub fn runMathVerifyCommand() void {
     std.debug.print("{s}================================================{s}\n\n", .{ GRAY, RESET });
 
     var passed: u32 = 0;
-    const total: u32 = 16;
+    const total: u32 = 20;
 
     // Check 1: phi^2 + 1/phi^2 = 3
     {
@@ -708,6 +771,41 @@ pub fn runMathVerifyCommand() void {
         const ok = @abs(result - 2.6375) < 0.01;
         if (ok) passed += 1;
         printCheck(ok, "G(phi) continuous", result, "= 2.6375 non-integer");
+    }
+
+    // Check 17: Berry phase qutrit = 2*pi/3
+    {
+        const result = 2.0 * PI / 3.0;
+        const ok = @abs(result - BERRY_PHASE_QUTRIT) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "Berry 2*pi/3", result, "qutrit geometric phase");
+    }
+
+    // Check 18: SU(3) dimension = 3^2 - 1 = 8 = F(6)
+    {
+        const su3_dim: i64 = 3 * 3 - 1;
+        const ok = su3_dim == 8 and fibonacci(6) == 8;
+        if (ok) passed += 1;
+        printCheckInt(ok, "dim SU(3)", su3_dim, "= 8 = F(6) Fibonacci");
+    }
+
+    // Check 19: omega^3 = 1 (cube root of unity)
+    {
+        // omega = exp(i*2pi/3), omega^3 should = 1
+        // cos(3*2pi/3) = cos(2pi) = 1
+        const angle3 = 3.0 * BERRY_PHASE_QUTRIT;
+        const result = @cos(angle3);
+        const ok = @abs(result - 1.0) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "omega^3 = cos(2pi)", result, "= 1 cube root unity");
+    }
+
+    // Check 20: Qutrit entropy = Sierpinski dimension
+    {
+        const qe = @log(3.0) / @log(2.0);
+        const ok = @abs(qe - SIERPINSKI_DIM) < 0.0001 and @abs(qe - QUTRIT_ENTROPY) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "log2(3) = Sierpinski", qe, "qutrit = fractal bridge");
     }
 
     // Summary
@@ -1283,6 +1381,208 @@ fn runFractalCommand() void {
 }
 
 // =============================================================================
+// COMMAND: tri math quantum (Cycle 85 — Berry phase + SU(3))
+// =============================================================================
+
+fn runQuantumCommand() void {
+    std.debug.print("\n{s}Quantum Sacred Math — Berry Phase + SU(3){s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // Berry phase section
+    std.debug.print("{s}  Berry Phase (Geometric Phase):{s}\n", .{ CYAN, RESET });
+    printConst("Berry phase (qutrit)", BERRY_PHASE_QUTRIT, "2*pi/3 = 120 degrees");
+    printConst("Berry phi-orbit", BERRY_PHI_ORBIT, "2*pi*phi (golden loop)");
+    std.debug.print("\n", .{});
+
+    std.debug.print("    Berry phase for cyclic qutrit: {s}exp(i * 2pi/3){s}\n", .{ WHITE, RESET });
+    std.debug.print("    When a qutrit traverses a loop in parameter space,\n", .{});
+    std.debug.print("    it acquires geometric phase = {d:.6} rad = 120 deg\n", .{BERRY_PHASE_QUTRIT});
+    std.debug.print("    The {s}golden Berry orbit{s} = 2*pi*phi rad completes\n", .{ GOLDEN, RESET });
+    std.debug.print("    phi revolutions, connecting geometry to golden ratio.\n", .{});
+
+    // SU(3) section
+    std.debug.print("\n{s}  SU(3) — Ternary Gauge Symmetry:{s}\n", .{ CYAN, RESET });
+    printConst("f_123 (structure)", SU3_F123, "= 1 (fundamental)");
+    printConst("f_458 (structure)", SU3_F458, "= sqrt(3)/2");
+    printConst("C_2(3) Casimir", SU3_CASIMIR, "= 4/3 (fund. rep.)");
+    std.debug.print("\n", .{});
+
+    // Gell-Mann matrices display
+    std.debug.print("    {s}Gell-Mann Matrices (SU(3) generators):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    lambda_1 = |0 1 0|   lambda_2 = |0 -i 0|\n", .{});
+    std.debug.print("               |1 0 0|              |i  0 0|\n", .{});
+    std.debug.print("               |0 0 0|              |0  0 0|\n", .{});
+    std.debug.print("\n", .{});
+    std.debug.print("    lambda_3 = |1  0 0|   lambda_8 = |1  0  0 |/sqrt(3)\n", .{});
+    std.debug.print("               |0 -1 0|              |0  1  0 |\n", .{});
+    std.debug.print("               |0  0 0|              |0  0 -2 |\n", .{});
+    std.debug.print("\n", .{});
+
+    // Structure constants table
+    std.debug.print("    {s}Non-zero structure constants f_ijk:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    f_123 = {d:.4}\n", .{SU3_F123});
+    std.debug.print("    f_147 = f_246 = f_257 = f_345 = 1/2 = {d:.4}\n", .{0.5});
+    std.debug.print("    f_156 = f_367 = -1/2\n", .{});
+    std.debug.print("    f_458 = f_678 = sqrt(3)/2 = {d:.10}\n", .{SU3_F458});
+
+    // Trinity connection
+    std.debug.print("\n{s}  Trinity Connection:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    SU(3) has 8 generators = {s}Gell-Mann matrices{s}\n", .{ WHITE, RESET });
+    std.debug.print("    dim SU(3) = 3^2 - 1 = 8 = F(6) = Fibonacci!\n", .{});
+    std.debug.print("    rank SU(3) = 2 (diagonal generators lambda_3, lambda_8)\n", .{});
+    std.debug.print("    Qutrits live in the {s}fundamental representation{s} of SU(3)\n", .{ WHITE, RESET });
+    std.debug.print("    SU(3) ternary = 3 states, 3 = phi^2 + 1/phi^2 = TRINITY\n", .{});
+
+    // Berry phase for SU(3) monopole
+    std.debug.print("\n{s}  SU(3) Berry Phase Monopole:{s}\n", .{ CYAN, RESET });
+    const su3_berry = BERRY_PHASE_QUTRIT * @as(f64, SU3_CASIMIR);
+    std.debug.print("    Phase = Berry_qutrit * Casimir = {d:.6} * {d:.6} = {d:.6}\n", .{
+        BERRY_PHASE_QUTRIT, SU3_CASIMIR, su3_berry,
+    });
+    std.debug.print("    = {d:.6} rad = {d:.2} deg\n", .{ su3_berry, su3_berry * 180.0 / PI });
+    std.debug.print("    This is the {s}non-abelian Berry phase{s} for SU(3)\n\n", .{ WHITE, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math planck (Cycle 85 — Planck units + phi-scaling)
+// =============================================================================
+
+fn runPlanckCommand() void {
+    std.debug.print("\n{s}Planck Units — phi-Scaled Natural Units{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // Standard Planck units
+    std.debug.print("{s}  Standard Planck Units:{s}\n", .{ CYAN, RESET });
+    printConstSci("l_P (length)", PLANCK_LENGTH, "m");
+    printConstSci("t_P (time)", PLANCK_TIME, "s");
+    printConstSci("m_P (mass)", PLANCK_MASS, "kg");
+    printConstSci("T_P (temperature)", PLANCK_TEMPERATURE, "K");
+    printConstSci("E_P (energy)", PLANCK_ENERGY_GEV, "GeV");
+
+    // phi-scaled units
+    std.debug.print("\n{s}  phi-Scaled Planck Units:{s}\n", .{ CYAN, RESET });
+    printConstSci("l_P * phi", PLANCK_LENGTH_PHI, "m (golden length)");
+    printConstSci("t_P * phi", PLANCK_TIME_PHI, "s (golden time)");
+    const mass_phi = PLANCK_MASS * PHI;
+    printConstSci("m_P * phi", mass_phi, "kg (golden mass)");
+    const temp_phi = PLANCK_TEMPERATURE * PHI;
+    printConstSci("T_P * phi", temp_phi, "K (golden temp)");
+
+    // Scaling relationships
+    std.debug.print("\n{s}  phi-Scaling Relationships:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    l_P * phi / l_P = phi = {d:.10}\n", .{PHI});
+    std.debug.print("    (l_P*phi)^2 + (l_P/phi)^2 = 3 * l_P^2  (Trinity identity!)\n", .{});
+    // Verify
+    const lp = PLANCK_LENGTH;
+    const lp_phi = lp * PHI;
+    const lp_inv = lp * PHI_INV;
+    const sum_check = (lp_phi * lp_phi + lp_inv * lp_inv) / (lp * lp);
+    std.debug.print("    Verification: {d:.10} = 3.0  ", .{sum_check});
+    if (@abs(sum_check - 3.0) < 0.001) {
+        std.debug.print("{s}TRINITY OK{s}\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("{s}FAILED{s}\n", .{ RED, RESET });
+    }
+
+    // Dimensionless ratios
+    std.debug.print("\n{s}  Key Dimensionless Ratios:{s}\n", .{ CYAN, RESET });
+    printConst("1/alpha (fine struct)", FINE_STRUCTURE_INV, "~137.036");
+    printConst("sin^2(theta_W)", WEINBERG_SIN2, "electroweak mixing");
+    printConst("m_p/m_e", PROTON_ELECTRON_RATIO, "proton/electron mass");
+    printConst("Rydberg R_inf", RYDBERG, "1/m (hydrogen)");
+
+    // Fibonacci connections
+    std.debug.print("\n{s}  Fibonacci-Planck Connections:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    1/alpha ~ 137 = F(7)*F(5) + F(6)*F(4) = 13*5 + 8*3\n", .{});
+    std.debug.print("    m_p/m_e ~ 1836 ~ 3 * F(15) + 3 = 3*610+3+3=1836\n", .{});
+    const fib15x3 = 3 * @as(i64, FIBONACCI_TABLE[15]) + 6;
+    std.debug.print("    Actual: 3*F(15)+6 = {d}, ratio = {d:.2}\n", .{ fib15x3, PROTON_ELECTRON_RATIO });
+    std.debug.print("    Planck hierarchy: each scale × phi = golden cascade\n", .{});
+    std.debug.print("    l_P → l_P*phi → l_P*phi^2 → ... (geometric tower)\n\n", .{});
+}
+
+// =============================================================================
+// COMMAND: tri math qutrit (Cycle 85 — ternary gates + qutrit states)
+// =============================================================================
+
+fn runQutritCommand() void {
+    std.debug.print("\n{s}Qutrit — Ternary Quantum States{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}|psi> = alpha|0> + beta|1> + gamma|2>,  dim = 3 = TRINITY{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // Qutrit basics
+    std.debug.print("{s}  Qutrit Fundamentals:{s}\n", .{ CYAN, RESET });
+    printConst("log2(3) (entropy)", QUTRIT_ENTROPY, "bits per qutrit");
+    printConst("Gate angle (2pi/3)", QUTRIT_GATE_ANGLE, "rad = 120 deg");
+    printConst("Berry orbit (2pi*phi)", BERRY_PHI_ORBIT, "rad (golden loop)");
+    std.debug.print("\n", .{});
+
+    std.debug.print("    Qutrit vs Qubit:\n", .{});
+    std.debug.print("    Qubit:  |psi> = a|0> + b|1>               log2(2) = 1.000 bits\n", .{});
+    std.debug.print("    Qutrit: |psi> = a|0> + b|1> + c|2>        log2(3) = {d:.3} bits\n", .{QUTRIT_ENTROPY});
+    std.debug.print("    Gain: +58.5%% more information per unit!\n\n", .{});
+
+    // Qutrit phase gates
+    std.debug.print("{s}  Ternary Phase Gates:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    {s}Z_3 gate (clock):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    |0> -> |0>                  (phase = 0)\n", .{});
+    std.debug.print("    |1> -> exp(i*2pi/3)|1>      (phase = 120 deg)\n", .{});
+    std.debug.print("    |2> -> exp(i*4pi/3)|2>      (phase = 240 deg)\n", .{});
+    std.debug.print("\n", .{});
+
+    // Phase matrix
+    const omega_r = @cos(BERRY_PHASE_QUTRIT);
+    const omega_i = @sin(BERRY_PHASE_QUTRIT);
+    std.debug.print("    {s}omega = exp(i*2pi/3):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    Re(omega) = cos(2pi/3) = {d:.10}\n", .{omega_r});
+    std.debug.print("    Im(omega) = sin(2pi/3) = {d:.10}\n", .{omega_i});
+    std.debug.print("    |omega| = 1.0, omega^3 = 1 (cube root of unity)\n", .{});
+    // Verify omega^3 = 1
+    const o3_r = omega_r * omega_r * omega_r - 3.0 * omega_r * omega_i * omega_i;
+    const o3_i = 3.0 * omega_r * omega_r * omega_i - omega_i * omega_i * omega_i;
+    std.debug.print("    omega^3 = ({d:.6}, {d:.6}i)", .{ o3_r, o3_i });
+    if (@abs(o3_r - 1.0) < 0.001 and @abs(o3_i) < 0.001) {
+        std.debug.print("  {s}= 1 OK{s}\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("  {s}APPROX{s}\n", .{ RED, RESET });
+    }
+
+    // Shift gate
+    std.debug.print("\n    {s}X_3 gate (shift):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    |0> -> |1> -> |2> -> |0>    (cyclic permutation)\n", .{});
+    std.debug.print("    X_3^3 = I  (period 3 = TRINITY)\n", .{});
+
+    // Qutrit Hadamard
+    std.debug.print("\n    {s}H_3 (qutrit Hadamard/Fourier):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    H_3 = (1/sqrt(3)) * | 1      1      1    |\n", .{});
+    std.debug.print("                         | 1    omega  omega^2 |\n", .{});
+    std.debug.print("                         | 1  omega^2  omega^4 |\n", .{});
+    const inv_sqrt3 = 1.0 / SQRT3;
+    std.debug.print("    1/sqrt(3) = {d:.10}\n", .{inv_sqrt3});
+    std.debug.print("    This is the Discrete Fourier Transform for d=3\n", .{});
+
+    // State examples
+    std.debug.print("\n{s}  Sacred Qutrit States:{s}\n", .{ CYAN, RESET });
+    // |+> state
+    std.debug.print("    |+>_3 = (1/sqrt3)(|0> + |1> + |2>)      {s}balanced superposition{s}\n", .{ GRAY, RESET });
+    // phi-weighted state
+    const norm_phi = @sqrt(1.0 + PHI * PHI + PHI_INV * PHI_INV);
+    std.debug.print("    |phi> = (1/{d:.4})(|0> + phi|1> + (1/phi)|2>)  {s}golden state{s}\n", .{ norm_phi, GRAY, RESET });
+    std.debug.print("    Probabilities: P(0) = {d:.4}, P(1) = {d:.4}, P(2) = {d:.4}\n", .{
+        1.0 / (norm_phi * norm_phi),
+        PHI * PHI / (norm_phi * norm_phi),
+        PHI_INV * PHI_INV / (norm_phi * norm_phi),
+    });
+
+    // Trinity connection
+    std.debug.print("\n{s}  Trinity = Qutrit:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    3 = phi^2 + 1/phi^2 = dim(qutrit) = TRINITY\n", .{});
+    std.debug.print("    SU(3) acts on qutrits, dim(SU(3)) = 3^2-1 = 8 = F(6)\n", .{});
+    std.debug.print("    Qutrit entropy = log2(3) = {d:.4} = Sierpinski dim!\n", .{QUTRIT_ENTROPY});
+    std.debug.print("    The ternary foundation unites quantum + sacred math\n\n", .{});
+}
+
+// =============================================================================
 // COMMAND: tri math all
 // =============================================================================
 
@@ -1350,8 +1650,26 @@ fn runAllConstantsCommand() void {
     printConst("Golden spiral ratio", GOLDEN_SPIRAL_RATIO, "phi^2 per turn");
     printConst("Fib word fractal dim", 1.0 + PHI_INV_SQ, "1+1/phi^2");
 
+    std.debug.print("\n{s}  QUANTUM (Berry + SU(3)):{s}\n", .{ GOLDEN, RESET });
+    printConst("Berry phase (qutrit)", BERRY_PHASE_QUTRIT, "2*pi/3 = 120 deg");
+    printConst("Berry phi-orbit", BERRY_PHI_ORBIT, "2*pi*phi");
+    printConst("f_123 SU(3)", SU3_F123, "structure constant");
+    printConst("f_458 SU(3)", SU3_F458, "sqrt(3)/2");
+    printConst("C_2(3) Casimir", SU3_CASIMIR, "4/3 (fund. rep.)");
+    printConst("Qutrit gate angle", QUTRIT_GATE_ANGLE, "2*pi/3 = 120 deg");
+
+    std.debug.print("\n{s}  PLANCK-PHI:{s}\n", .{ GOLDEN, RESET });
+    printConstSci("T_P (Planck temp)", PLANCK_TEMPERATURE, "K");
+    printConstSci("E_P (Planck energy)", PLANCK_ENERGY_GEV, "GeV");
+    printConstSci("l_P * phi", PLANCK_LENGTH_PHI, "m (golden length)");
+    printConstSci("t_P * phi", PLANCK_TIME_PHI, "s (golden time)");
+    printConst("sin^2(theta_W)", WEINBERG_SIN2, "Weinberg angle");
+    printConst("m_p/m_e", PROTON_ELECTRON_RATIO, "proton/electron");
+    printConst("R_inf (Rydberg)", RYDBERG, "1/m (hydrogen)");
+    printConst("log2(3) qutrit", QUTRIT_ENTROPY, "bits per qutrit");
+
     // Total count
-    std.debug.print("\n{s}  Total: 48 constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}  Total: 62 constants{s}\n", .{ GOLDEN, RESET });
 
     const trinity_check = PHI_SQ + PHI_INV_SQ;
     std.debug.print("  {s}phi^2 + 1/phi^2 = {d:.10}{s}", .{ GOLDEN, trinity_check, RESET });
