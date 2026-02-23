@@ -52,12 +52,186 @@ pub const ShardNetwork = struct {
     root_buf: [256]u8,
     root_len: usize,
     port: u16,
+
+          /// Create network node with storage directories
+      pub fn init(root: []const u8, port: u16) !ShardNetwork {
+          var node = ShardNetwork{
+              .root_buf = undefined,
+              .root_len = root.len,
+              .port = port,
+          };
+          @memcpy(node.root_buf[0..root.len], root);
+          std.fs.makeDirAbsolute(root) catch |e| switch (e) {
+              error.PathAlreadyExists => {},
+              else => return e,
+          };
+          var sbuf: [280]u8 = undefined;
+          const sdir = std.fmt.bufPrint(&sbuf, "{s}/shards", .{root}) catch unreachable;
+          std.fs.makeDirAbsolute(sdir) catch |e| switch (e) {
+              error.PathAlreadyExists => {},
+              else => return e,
+          };
+          return node;
+      }
+
+
+
+
+          fn rootPath(self: *const ShardNetwork) []const u8 {
+          return self.root_buf[0..self.root_len];
+      }
+
+
+
+
+          /// Bind TCP listener on port (use port 0 for OS-assigned)
+      pub fn listen(self: *const ShardNetwork) !std.net.Server {
+          const addr = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, self.port);
+          return addr.listen(.{ .reuse_address = true });
+      }
+
+
+
+
+          /// Accept one connection, read protocol, store shard to disk
+      pub fn receiveOne(self: *const ShardNetwork, server: *std.net.Server) !void {
+          const conn = try server.accept();
+          defer conn.stream.close();
+          var hash_buf: [64]u8 = undefined;
+          const hn = try conn.stream.readAtLeast(&hash_buf, 64);
+          if (hn != 64) return error.ProtocolError;
+          var len_buf: [4]u8 = undefined;
+          const ln = try conn.stream.readAtLeast(&len_buf, 4);
+          if (ln != 4) return error.ProtocolError;
+          const data_len = std.mem.readInt(u32, &len_buf, .little);
+          var data_buf: [8192]u8 = undefined;
+          const dn = try conn.stream.readAtLeast(data_buf[0..data_len], data_len);
+          if (dn != data_len) return error.ProtocolError;
+          var pbuf: [350]u8 = undefined;
+          const spath = std.fmt.bufPrint(&pbuf, "{s}/shards/{s}.shard", .{ self.rootPath(), hash_buf }) catch unreachable;
+          const file = try std.fs.createFileAbsolute(spath, .{});
+          defer file.close();
+          try file.writeAll(data_buf[0..dn]);
+      }
+
+
+
+
+          /// Connect to peer and send shard via TCP wire protocol
+      pub fn sendShard(_: *const ShardNetwork, peer_port: u16, hex: *const [64]u8, data: []const u8) !void {
+          const addr = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, peer_port);
+          const stream = try std.net.tcpConnectToAddress(addr);
+          defer stream.close();
+          stream.writeAll(hex) catch return error.SendFailed;
+          var len_buf: [4]u8 = undefined;
+          std.mem.writeInt(u32, &len_buf, @intCast(data.len), .little);
+          stream.writeAll(&len_buf) catch return error.SendFailed;
+          stream.writeAll(data) catch return error.SendFailed;
+      }
+
+
+
+
+          /// Remove all storage (for testing)
+      pub fn cleanup(self: *const ShardNetwork) void {
+          std.fs.deleteTreeAbsolute(self.rootPath()) catch {};
+      }
+
+
+
 };
 
 /// GF(2^8) Reed-Solomon erasure coding
 pub const ReedSolomon = struct {
     data_shards: u8,
     total_shards: u8,
+
+          pub fn init(k: u8, m: u8) ReedSolomon {
+          return .{ .data_shards = k, .total_shards = k + m };
+      }
+
+
+
+
+          /// Encode one byte position: k input bytes → n coded bytes (Vandermonde)
+      pub fn encodeByte(self: *const ReedSolomon, input: []const u8, output: []u8) void {
+          var i: u8 = 0;
+          while (i < self.total_shards) : (i += 1) {
+              var val: u8 = 0;
+              var j: u8 = 0;
+              while (j < self.data_shards) : (j += 1) {
+                  const coeff = gfPow(i + 1, j);
+                  val ^= gfMul(coeff, input[j]);
+              }
+              output[i] = val;
+          }
+      }
+
+
+
+
+          /// Decode one byte position: any k of n coded bytes → k original bytes
+      /// avail = k available bytes, indices = their shard indices (0-based)
+      pub fn decodeByte(self: *const ReedSolomon, avail: []const u8, indices: []const u8, output: []u8) !void {
+          const k = self.data_shards;
+          var mat: [8][8]u8 = undefined;
+          var aug: [8][8]u8 = undefined;
+          var r: usize = 0;
+          while (r < k) : (r += 1) {
+              var c: usize = 0;
+              while (c < k) : (c += 1) {
+                  mat[r][c] = gfPow(indices[r] + 1, @intCast(c));
+                  aug[r][c] = if (r == c) 1 else 0;
+              }
+          }
+          var col: usize = 0;
+          while (col < k) : (col += 1) {
+              if (mat[col][col] == 0) {
+                  var sr: usize = col + 1;
+                  while (sr < k) : (sr += 1) {
+                      if (mat[sr][col] != 0) {
+                          var sc: usize = 0;
+                          while (sc < k) : (sc += 1) {
+                              const tmp1 = mat[col][sc]; mat[col][sc] = mat[sr][sc]; mat[sr][sc] = tmp1;
+                              const tmp2 = aug[col][sc]; aug[col][sc] = aug[sr][sc]; aug[sr][sc] = tmp2;
+                          }
+                          break;
+                      }
+                  }
+              }
+              const piv_inv = gfInv(mat[col][col]);
+              var sc2: usize = 0;
+              while (sc2 < k) : (sc2 += 1) {
+                  mat[col][sc2] = gfMul(mat[col][sc2], piv_inv);
+                  aug[col][sc2] = gfMul(aug[col][sc2], piv_inv);
+              }
+              var er: usize = 0;
+              while (er < k) : (er += 1) {
+                  if (er == col) { er += 0; } else {
+                      const factor = mat[er][col];
+                      if (factor != 0) {
+                          var ec: usize = 0;
+                          while (ec < k) : (ec += 1) {
+                              mat[er][ec] ^= gfMul(factor, mat[col][ec]);
+                              aug[er][ec] ^= gfMul(factor, aug[col][ec]);
+                          }
+                      }
+                  }
+              }
+          }
+          var oi: usize = 0;
+          while (oi < k) : (oi += 1) {
+              var val: u8 = 0;
+              var oj: usize = 0;
+              while (oj < k) : (oj += 1) {
+                  val ^= gfMul(aug[oi][oj], avail[oj]);
+              }
+              output[oi] = val;
+          }
+      }
+
+
+
 };
 
 /// 32-byte SHA256 hash
@@ -152,35 +326,6 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-      /// Create network node with storage directories
-      pub fn init(root: []const u8, port: u16) !ShardNetwork {
-          var node = ShardNetwork{
-              .root_buf = undefined,
-              .root_len = root.len,
-              .port = port,
-          };
-          @memcpy(node.root_buf[0..root.len], root);
-          std.fs.makeDirAbsolute(root) catch |e| switch (e) {
-              error.PathAlreadyExists => {},
-              else => return e,
-          };
-          var sbuf: [280]u8 = undefined;
-          const sdir = std.fmt.bufPrint(&sbuf, "{s}/shards", .{root}) catch unreachable;
-          std.fs.makeDirAbsolute(sdir) catch |e| switch (e) {
-              error.PathAlreadyExists => {},
-              else => return e,
-          };
-          return node;
-      }
-
-
-
-      fn rootPath(self: *const ShardNetwork) []const u8 {
-          return self.root_buf[0..self.root_len];
-      }
-
-
-
       fn hashToHex(hash: [32]u8) [64]u8 {
           const hex_chars = "0123456789abcdef";
           var result: [64]u8 = undefined;
@@ -189,64 +334,6 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               result[i * 2 + 1] = hex_chars[byte & 0x0F];
           }
           return result;
-      }
-
-
-
-      /// Bind TCP listener on port (use port 0 for OS-assigned)
-      pub fn listen(self: *const ShardNetwork) !std.net.Server {
-          const addr = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, self.port);
-          return addr.listen(.{ .reuse_address = true });
-      }
-
-
-
-      /// Accept one connection, read protocol, store shard to disk
-      pub fn receiveOne(self: *const ShardNetwork, server: *std.net.Server) !void {
-          const conn = try server.accept();
-          defer conn.stream.close();
-          var hash_buf: [64]u8 = undefined;
-          const hn = try conn.stream.readAtLeast(&hash_buf, 64);
-          if (hn != 64) return error.ProtocolError;
-          var len_buf: [4]u8 = undefined;
-          const ln = try conn.stream.readAtLeast(&len_buf, 4);
-          if (ln != 4) return error.ProtocolError;
-          const data_len = std.mem.readInt(u32, &len_buf, .little);
-          var data_buf: [8192]u8 = undefined;
-          const dn = try conn.stream.readAtLeast(data_buf[0..data_len], data_len);
-          if (dn != data_len) return error.ProtocolError;
-          var pbuf: [350]u8 = undefined;
-          const spath = std.fmt.bufPrint(&pbuf, "{s}/shards/{s}.shard", .{ self.rootPath(), hash_buf }) catch unreachable;
-          const file = try std.fs.createFileAbsolute(spath, .{});
-          defer file.close();
-          try file.writeAll(data_buf[0..dn]);
-      }
-
-
-
-      /// Connect to peer and send shard via TCP wire protocol
-      pub fn sendShard(_: *const ShardNetwork, peer_port: u16, hex: *const [64]u8, data: []const u8) !void {
-          const addr = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, peer_port);
-          const stream = try std.net.tcpConnectToAddress(addr);
-          defer stream.close();
-          stream.writeAll(hex) catch return error.SendFailed;
-          var len_buf: [4]u8 = undefined;
-          std.mem.writeInt(u32, &len_buf, @intCast(data.len), .little);
-          stream.writeAll(&len_buf) catch return error.SendFailed;
-          stream.writeAll(data) catch return error.SendFailed;
-      }
-
-
-
-      /// Remove all storage (for testing)
-      pub fn cleanup(self: *const ShardNetwork) void {
-          std.fs.deleteTreeAbsolute(self.rootPath()) catch {};
-      }
-
-
-
-      pub fn init(k: u8, m: u8) ReedSolomon {
-          return .{ .data_shards = k, .total_shards = k + m };
       }
 
 
@@ -290,84 +377,6 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
       pub fn gfInv(a: u8) u8 {
           if (a == 0) return 0;
           return gfPow(a, 254);
-      }
-
-
-
-      /// Encode one byte position: k input bytes → n coded bytes (Vandermonde)
-      pub fn encodeByte(self: *const ReedSolomon, input: []const u8, output: []u8) void {
-          var i: u8 = 0;
-          while (i < self.total_shards) : (i += 1) {
-              var val: u8 = 0;
-              var j: u8 = 0;
-              while (j < self.data_shards) : (j += 1) {
-                  const coeff = gfPow(i + 1, j);
-                  val ^= gfMul(coeff, input[j]);
-              }
-              output[i] = val;
-          }
-      }
-
-
-
-      /// Decode one byte position: any k of n coded bytes → k original bytes
-      /// avail = k available bytes, indices = their shard indices (0-based)
-      pub fn decodeByte(self: *const ReedSolomon, avail: []const u8, indices: []const u8, output: []u8) !void {
-          const k = self.data_shards;
-          var mat: [8][8]u8 = undefined;
-          var aug: [8][8]u8 = undefined;
-          var r: usize = 0;
-          while (r < k) : (r += 1) {
-              var c: usize = 0;
-              while (c < k) : (c += 1) {
-                  mat[r][c] = gfPow(indices[r] + 1, @intCast(c));
-                  aug[r][c] = if (r == c) 1 else 0;
-              }
-          }
-          var col: usize = 0;
-          while (col < k) : (col += 1) {
-              if (mat[col][col] == 0) {
-                  var sr: usize = col + 1;
-                  while (sr < k) : (sr += 1) {
-                      if (mat[sr][col] != 0) {
-                          var sc: usize = 0;
-                          while (sc < k) : (sc += 1) {
-                              const tmp1 = mat[col][sc]; mat[col][sc] = mat[sr][sc]; mat[sr][sc] = tmp1;
-                              const tmp2 = aug[col][sc]; aug[col][sc] = aug[sr][sc]; aug[sr][sc] = tmp2;
-                          }
-                          break;
-                      }
-                  }
-              }
-              const piv_inv = gfInv(mat[col][col]);
-              var sc2: usize = 0;
-              while (sc2 < k) : (sc2 += 1) {
-                  mat[col][sc2] = gfMul(mat[col][sc2], piv_inv);
-                  aug[col][sc2] = gfMul(aug[col][sc2], piv_inv);
-              }
-              var er: usize = 0;
-              while (er < k) : (er += 1) {
-                  if (er == col) { er += 0; } else {
-                      const factor = mat[er][col];
-                      if (factor != 0) {
-                          var ec: usize = 0;
-                          while (ec < k) : (ec += 1) {
-                              mat[er][ec] ^= gfMul(factor, mat[col][ec]);
-                              aug[er][ec] ^= gfMul(factor, aug[col][ec]);
-                          }
-                      }
-                  }
-              }
-          }
-          var oi: usize = 0;
-          while (oi < k) : (oi += 1) {
-              var val: u8 = 0;
-              var oj: usize = 0;
-              while (oj < k) : (oj += 1) {
-                  val ^= gfMul(aug[oi][oj], avail[oj]);
-              }
-              output[oi] = val;
-          }
       }
 
 
