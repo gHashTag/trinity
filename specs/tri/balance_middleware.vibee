@@ -1,0 +1,29 @@
+# ============================================================================
+# balance_middleware - Auto-generated skeleton spec
+# Created by: tri strict fix
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: balance_middleware
+version: "1.0.0"
+language: zig
+module: balance_middleware
+
+description: |
+  Auto-generated skeleton from generated/balance_middleware.zig.
+  Contains 12 constants and 4 public functions.
+  TODO: Review and add proper types/behaviors.
+
+constants:
+  PLACEHOLDER: 0
+
+types:
+  Config:
+    fields:
+      enabled: Bool
+
+behaviors:
+  - name: init
+    given: Module is loaded
+    when: Initialization requested
+    then: Returns configured instance
