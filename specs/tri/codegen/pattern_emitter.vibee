@@ -1,0 +1,55 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# PATTERN EMITTER - VIBEE Codegen Module Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Module: pattern_emitter.zig
+# Purpose: DSL pattern expansion for filesystem, HTTP, math, crypto operations
+#
+# φ² + 1/φ² = 3
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: pattern_emitter
+version: "10.1.0"
+language: zig
+module: vibeec.codegen.pattern_emitter
+
+dependencies:
+  - module: std
+    used_as: standard library
+  - module: vibeec.codegen.builder
+    used_as: CodeBuilder for output
+  - module: vibeec.codegen.patterns.registry
+    used_as: Pattern registry for DSL expansion
+
+behaviors:
+  - name: generatePatternFunction
+    given: CreationPattern definition
+    when: Expanding DSL pattern to Zig code
+    then:
+      - Look up pattern in registry
+      - Expand pattern with type substitutions
+      - Emit complete Zig function
+      - Handle error propagation
+
+dsl_patterns:
+  fs_read: "$fs.read(path)"
+  fs_write: "$fs.write(path, data)"
+  fs_delete: "$fs.delete(path)"
+  http_get: "$http.get(url)"
+  http_post: "$http.post(url, body)"
+  math_sin: "$math.sin(angle)"
+  crypto_hash: "$crypto.hash(data)"
+
+pattern_categories:
+  filesystem: "File I/O operations"
+  http: "HTTP client operations"
+  math: "Mathematical functions"
+  crypto: "Cryptographic operations"
+  vsa: "Vector Symbolic Architecture"
+
+implementation:
+  cycle: "73"
+  extracted_from: "src/vibeec/codegen/emitter.zig"
+  lines: 1191-1328 (generatePatternFunction)
+  complexity: "high - depends on 141+ patterns"

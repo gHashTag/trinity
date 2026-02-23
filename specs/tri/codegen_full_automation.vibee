@@ -1,0 +1,252 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE CODEGEN FULL AUTOMATION (Cycle 73)
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Цель: Сделать VIBEE codegen полностью автономным
+# - Автоматическое разрешение типов (string → []const u8, float → f32, etc.)
+# - Nested generics (List<List<T>>, Map<K, V>, Option<T>)
+# - Правильное именование (camelCase для функций, snake_case для переменных)
+# - Автоматические импорты модулей
+# - Полные тесты из behaviors
+#
+# φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: codegen_full_automation
+version: "1.0.0"
+language: zig
+module: codegen_full_automation
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPE MAPPING RULES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  ZigTypeMapping:
+    description: "Maps VIBEE placeholder types to Zig types"
+    fields:
+      vibee_type: string
+      zig_type: string
+      is_allocatable: bool
+      default_value: string
+
+  GenericType:
+    description: "Handles generic type instantiation"
+    fields:
+      base_type: string
+      type_params: list<GenericType>
+      is_optional: bool
+
+  ImportResolver:
+    description: "Automatically resolves module imports"
+    fields:
+      module_name: string
+      import_path: string
+      is_stdlib: bool
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPE RESOLUTION RULES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  # Primitive types
+  STRING_TYPE: "[]const u8"
+  FLOAT_TYPE: "f32"
+  DOUBLE_TYPE: "f64"
+  INT_TYPE: "i32"
+  UINT_TYPE: "u32"
+  USIZE_TYPE: "usize"
+  BOOL_TYPE: "bool"
+
+  # Collection types
+  LIST_PREFIX: "[]const "
+  OPTION_TYPE: "?"
+
+behaviors:
+  - name: resolve_vibee_type
+    description: "Convert VIBEE placeholder type to Zig type"
+    given: "VIBEE type string (e.g., 'string', 'float', 'list<T>')"
+    when: "resolve_vibee_type is called"
+    implementation: |
+      pub fn resolveVibeeType(vibee_type: []const u8, allocator: Allocator) ![]const u8 {
+          // Primitive types
+          if (std.mem.eql(u8, vibee_type, "string")) return allocator.dupe(u8, "[]const u8");
+          if (std.mem.eql(u8, vibee_type, "float")) return allocator.dupe(u8, "f32");
+          if (std.mem.eql(u8, vibee_type, "int")) return allocator.dupe(u8, "i32");
+          if (std.mem.eql(u8, vibee_type, "bool")) return allocator.dupe(u8, "bool");
+
+          // Generic types: list<T>
+          if (std.mem.startsWith(u8, vibee_type, "list<")) {
+              const inner = vibee_type[5..vibee_type.len-1];
+              const resolved_inner = try resolveVibeeType(inner, allocator);
+              const result = try std.fmt.allocPrint(allocator, "[]const {s}", .{resolved_inner});
+              return result;
+          }
+
+          // Generic types: Option<T>
+          if (std.mem.startsWith(u8, vibee_type, "Option<")) {
+              const inner = vibee_type[7..vibee_type.len-1];
+              const resolved_inner = try resolveVibeeType(inner, allocator);
+              const result = try std.fmt.allocPrint(allocator, "?{s}", .{resolved_inner});
+              return result;
+          }
+
+          // Default: return as-is
+          return allocator.dupe(u8, vibee_type);
+      }
+
+  - name: generate_function_name
+    description: "Convert behavior name to Zig function name (camelCase)"
+    given: "Behavior name from VIBEE spec (snake_case)"
+    when: "generate_function_name is called"
+    implementation: |
+      pub fn generateFunctionName(behavior_name: []const u8, allocator: Allocator) ![]const u8 {
+          var result = std.ArrayList(u8).init(allocator);
+          var capitalize_next = true;
+
+          for (behavior_name) |c| {
+              if (c == '_') {
+                  capitalize_next = true;
+              } else if (capitalize_next) {
+                  try result.append(std.ascii.toUpper(c));
+                  capitalize_next = false;
+              } else {
+                  try result.append(c);
+              }
+          }
+
+          return result.toOwnedSlice();
+      }
+
+  - name: auto_import_modules
+    description: "Automatically generate import statements based on used types"
+    given: "Generated Zig code"
+    when: "auto_import_modules is called"
+    implementation: |
+      pub const RequiredImport = struct {
+          module_path: []const u8,
+          reason: []const u8,
+      };
+
+      pub fn autoImportModules(code: []const u8) ![]const RequiredImport {
+          // Check for stdlib patterns
+          var imports = std.ArrayList(RequiredImport).init(std.heap.page_allocator);
+
+          if (std.mem.indexOf(u8, code, "std.ArrayList") != null) {
+              try imports.append(.{ .module_path = "std", .reason = "ArrayList" });
+          }
+          if (std.mem.indexOf(u8, code, "std.mem.Allocator") != null) {
+              try imports.append(.{ .module_path = "std", .reason = "mem" });
+          }
+
+          return imports.toOwnedSlice();
+      }
+
+  - name: emit_zig_struct
+    description: "Emit Zig struct with proper type resolution"
+    given: "VIBEE type definition"
+    when: "emit_zig_struct is called"
+    implementation: |
+      pub fn emitZigStruct(type_name: []const u8, fields: []const Field, allocator: Allocator) ![]const u8 {
+          var buffer = std.ArrayList(u8).init(allocator);
+
+          try buffer.appendSlice("pub const ");
+          try buffer.appendSlice(type_name);
+          try buffer.appendSlice(" = struct {\n");
+
+          for (fields) |field| {
+              try buffer.appendSlice("    ");
+              try buffer.appendSlice(field.name);
+              try buffer.appendSlice(": ");
+
+              const resolved_type = try resolveVibeeType(field.vibee_type, allocator);
+              try buffer.appendSlice(resolved_type);
+
+              if (field.default_value) |dv| {
+                  try buffer.appendSlice(" = ");
+                  try buffer.appendSlice(dv);
+              }
+
+              try buffer.appendSlice(",\n");
+          }
+
+          try buffer.appendSlice("};\n");
+          return buffer.toOwnedSlice();
+      }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# NESTED GENERICS SUPPORT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: parse_generic_type
+    description: "Parse nested generic types like List<Map<String, Option<T>>>"
+    given: "Generic type string"
+    when: "parse_generic_type is called"
+    implementation: |
+      pub const GenericTypeInfo = struct {
+          base: []const u8,
+          params: []GenericTypeInfo,
+          is_optional: bool,
+      };
+
+      pub fn parseGenericType(type_str: []const u8, allocator: Allocator) !GenericTypeInfo {
+          var result = GenericTypeInfo{
+              .base = "",
+              .params = &.{},
+              .is_optional = false,
+          };
+
+          // Check for Optional<T>
+          if (std.mem.startsWith(u8, type_str, "Optional<")) {
+              result.is_optional = true;
+              // Parse inner type...
+          }
+
+          // Check for List<T>
+          if (std.mem.startsWith(u8, type_str, "List<")) {
+              result.base = "list";
+              // Extract T and parse recursively...
+          }
+
+          return result;
+      }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ-GATE VALIDATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# PAS Score must be ≥ 0.99 for full automation
+validation:
+  min_pas_score: 0.99
+  require_compilable: true
+  require_tests_pass: true
+  zero_manual_edits: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_cases:
+  - name: type_resolution_string
+    input: { type: "string" }
+    expected: "[]const u8"
+
+  - name: type_resolution_list
+    input: { type: "list<int>" }
+    expected: "[]const i32"
+
+  - name: type_resolution_nested_list
+    input: { type: "list<list<string>>" }
+    expected: "[][]const u8"
+
+  - name: type_resolution_option
+    input: { type: "Option<float>" }
+    expected: "?f32"
+
+  - name: function_name_camel_case
+    input: { name: "sacred_score" }
+    expected: "sacredScore"
+
+  - name: function_name_camel_case_complex
+    input: { name: "augment_prompt_with_context" }
+    expected: "augmentPromptWithContext"

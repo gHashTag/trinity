@@ -1,0 +1,228 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPE EMITTER - VIBEE Codegen Module Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Module: type_emitter.zig
+# Purpose: Emit Zig type definitions from .vibee TypeDef
+#
+# φ² + 1/φ² = 3
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: type_emitter
+version: "10.1.0"
+language: zig
+module: vibeec.codegen.type_emitter
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEPENDENCIES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+dependencies:
+  - module: std
+    used_as: standard library
+  - module: vibeec.codegen.builder
+    used_as: CodeBuilder for output
+  - module: vibeec.codegen.utils
+    used_as: Type mapping utilities
+  - module: vibeec.codegen.types
+    used_as: TypeDef definitions
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  TypeEmitter:
+    description: "Handles type definition emission"
+    fields:
+      builder: CodeBuilder
+      allocator: Allocator
+
+  # Test types to verify type mapping
+  TestTypeMapping:
+    description: "Test type mapping behaviors"
+    fields:
+      simple_string: String
+      simple_int: Int
+      list_string: List(String)
+      list_int: List(Int)
+      nested_list: List(List(String))
+      optional_int: Option(Int)
+      list_optional: List(Option(Int))
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: writeTypes
+    given: TypeDef array from parsed .vibee spec
+    when: Emitting Zig type definitions section
+    then:
+      - Write section header comment "ТИПЫ"
+      - For each type definition:
+        - If type has base: Emit type alias (pub const Name = Base)
+        - If type has enum variants: Emit enum definition
+        - Otherwise: Emit struct definition with fields
+        - Apply type mapping for VIBEE types (String, Int, Float, Bool)
+        - Handle nested generics (List<T>, Option<T>)
+      - Add blank line after each type
+
+  - name: writeMemoryBuffers
+    given: No parameters
+    when: Emitting WASM memory exports
+    then:
+      - Write section header comment "ПАМЯТЬ ДЛЯ WASM"
+      - Declare global_buffer: [65536]u8 align(16)
+      - Declare f64_buffer: [8192]f64 align(16)
+      - Export get_global_buffer_ptr() returning [*]u8
+      - Export get_f64_buffer_ptr() returning [*]f64
+
+  - name: resolveTypeName
+    given: VIBEE type name (e.g., "String", "List(Int)", "Option<Float)")
+    when: Need to map to Zig type
+    then:
+      - Check for VIBEE primitives first (String → []const u8, Int → i64, Float → f64, Bool → bool)
+      - Check for generic types with angle brackets (List<T>, Option<T>)
+      - Check for generic types with parentheses (List(T), Option(T))
+      - Handle nested generics recursively
+      - Return mapped Zig type or original if unknown
+
+  - name: parseComplexTypeNoAlloc
+    given: Complex type string with generics
+    when: Parsing nested generic types without allocation
+    then:
+      - Find matching bracket using depth counting
+      - Extract inner type
+      - Recursively resolve inner type
+      - Apply container transformation
+      - Return static string slice or null if cannot parse
+
+  - name: findMatchingBracket
+    given: String and starting position of opening bracket
+    when: Need to find matching closing bracket
+    then:
+      - Auto-detect bracket type: < >, ( ), [ ], { }
+      - Track depth: increment on opening, decrement on closing
+      - Return position when depth reaches 0
+      - Return null if no match found
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPE MAPPING TABLE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+type_mappings:
+  primitives:
+    String: "[]const u8"
+    Int: "i64"
+    Float: "f64"
+    Bool: "bool"
+    usize: "usize"
+    u8: "u8"
+    void: "void"
+    anytype: "anytype"
+
+  generics_angle:
+    "List<{T}": "[]const {mapped_T}"
+    "Option<{T}": "?{mapped_T}"
+    "Map<K,V>": "std.StringHashMap(V) if K is String else std.AutoHashMap(K, V)"
+
+  generics_paren:
+    "List({T})": "[]const {mapped_T}"
+    "Option({T})": "?{mapped_T}"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# NESTED GENERICS EXAMPLES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+nested_examples:
+  - input: "List(String)"
+    output: "[]const u8"
+  - input: "List(List(String))"
+    output: "[]const []const u8"
+  - input: "List(Option(Int))"
+    output: "[]const ?i64"
+  - input: "Option(List(Float))"
+    output: "?[]const f64"
+  - input: "List(String)"
+    output: "[]const u8"  # VIBEE spec format with parentheses
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BRACKET PARSING ALGORITHM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+bracket_parsing:
+  algorithm: recursive_depth_counting
+  steps:
+    1. Start at position of opening bracket
+    2. Set depth = 1
+    3. Scan forward from position + 1
+    4. If character == opening_bracket: depth += 1
+    5. If character == closing_bracket: depth -= 1
+    6. If depth == 0: return current position
+    7. If end of string: return null (unmatched)
+
+  position_examples:
+    - type: "List(String)"
+      opening_pos: 4  # '(' position
+      closing_pos: 11 # ')' position
+      inner: "String" # positions 5-10
+    - type: "Option(Int)"
+      opening_pos: 6
+      closing_pos: 9
+      inner: "Int"
+    - type: "List(List(String))"
+      outer_opening: 4
+      outer_closing: 18
+      inner_opening: 5
+      inner_closing: 17
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_behaviors:
+  - name: type_mapping_test
+    given: VIBEE spec with complex nested types
+    when: Types are emitted
+    then:
+      - String → []const u8
+      - List(String) → []const u8
+      - List(List(String)) → []const []const u8
+      - Option(Int) → ?i64
+      - All types compile successfully
+
+  - name: bracket_parsing_test
+    given: Nested generic type string
+    when: Brackets are parsed
+    then:
+      - Opening bracket position found
+      - Matching closing bracket found
+      - Inner type extracted correctly
+      - Nested brackets handled recursively
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPLEMENTATION NOTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+implementation:
+  cycle: "73"
+  status: "specification"
+  extracted_from: "src/vibeec/codegen/emitter.zig"
+  lines: 1112-2727 (approximately)
+  complexity: "medium"
+
+  notes: |
+    This module handles:
+    - Type definition emission (structs, enums, aliases)
+    - VIBEE to Zig type mapping
+    - Nested generic type parsing
+    - Bracket matching for generics
+    - WASM memory buffer exports
+
+    Dependencies:
+    - CodeBuilder for output generation
+    - utils.mapType for basic type mapping
+    - utils.cleanTypeName for sanitization
+    - utils.escapeReservedWord for keyword handling
