@@ -168,7 +168,6 @@ pub const PasWebSocketServer = struct {
             .{ level, message, std.time.timestamp() },
         );
     }
-
 };
 
 /// Simple UUID v4 generator
@@ -1354,7 +1353,7 @@ pub const ChatServer = struct {
         var i: usize = 0;
         while (i < request.len) : (i += 1) {
             if (i + header_name.len + 2 <= request.len and
-                std.mem.eql(u8, request[i..i + header_name.len], header_name) and
+                std.mem.eql(u8, request[i .. i + header_name.len], header_name) and
                 request[i + header_name.len] == ':' and
                 request[i + header_name.len + 1] == ' ')
             {

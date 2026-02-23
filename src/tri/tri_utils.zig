@@ -172,6 +172,12 @@ pub const Command = enum {
     fib,
     lucas,
     spiral,
+    // Dev Utilities
+    doctor,
+    clean,
+    fmt_cmd,
+    stats_cmd,
+    igla,
     // Info
     info,
     version,
@@ -497,6 +503,14 @@ pub fn printHelp() void {
     std.debug.print("  {s}spiral{s} <n>                   phi-spiral coordinates\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}doctor{s}                      Project health check (build, test, zig version)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}clean{s}                       Clean build artifacts (.zig-cache, zig-out)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fmt{s}                         Format Zig source (zig fmt src/)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}stats{s}                       Project statistics (files, LOC, specs, tests)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}igla{s}                        IGLA initiative status (parser coverage)\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}INFO:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}info{s}                        System information\n", .{ GREEN, RESET });
     std.debug.print("  {s}version{s}                     Show version\n", .{ GREEN, RESET });
@@ -680,6 +694,12 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "fib")) return .fib;
     if (std.mem.eql(u8, arg, "lucas")) return .lucas;
     if (std.mem.eql(u8, arg, "spiral")) return .spiral;
+    // Dev Utilities
+    if (std.mem.eql(u8, arg, "doctor") or std.mem.eql(u8, arg, "dr")) return .doctor;
+    if (std.mem.eql(u8, arg, "clean")) return .clean;
+    if (std.mem.eql(u8, arg, "fmt") or std.mem.eql(u8, arg, "format")) return .fmt_cmd;
+    if (std.mem.eql(u8, arg, "stats")) return .stats_cmd;
+    if (std.mem.eql(u8, arg, "igla")) return .igla;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
