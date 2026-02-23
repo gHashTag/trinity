@@ -1,0 +1,29 @@
+# ============================================================================
+# i18n - Auto-generated skeleton spec
+# Created by: tri strict fix
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: i18n
+version: "1.0.0"
+language: zig
+module: i18n
+
+description: |
+  Auto-generated skeleton from generated/i18n.zig.
+  Contains 13 constants and 4 public functions.
+  TODO: Review and add proper types/behaviors.
+
+constants:
+  PLACEHOLDER: 0
+
+types:
+  Config:
+    fields:
+      enabled: Bool
+
+behaviors:
+  - name: init
+    given: Module is loaded
+    when: Initialization requested
+    then: Returns configured instance
