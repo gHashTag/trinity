@@ -13,8 +13,7 @@ name: phi_utils
 version: "1.0.0"
 language: [zig, python, typescript]
 module: tri.phi_utils
-zig_mode: idiomatic
-allocator_strategy: param
+# Cycle 76: zig_mode and allocator_strategy removed — idiomatic/param are defaults
 
 types:
   PhiResult:
@@ -72,7 +71,7 @@ implementation:
   notes: |
     Cycle 74: Zig Idioms Enhancement + Multi-Target
     One spec → Zig (idiomatic) + Python + TypeScript
-    Validates: zig_mode, allocator_strategy, ZigIdioms transforms
+    Validates: ZigIdioms transforms (idiomatic by default since Cycle 76)
     φ² + 1/φ² = 3
 
 # ═══════════════════════════════════════════════════════════════════════════════
