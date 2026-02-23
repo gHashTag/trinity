@@ -428,3 +428,624 @@ pub fn runDistributedCommand(allocator: std.mem.Allocator, args: []const []const
     if (result.stdout.len > 0) std.debug.print("{s}", .{result.stdout});
     if (result.stderr.len > 0) std.debug.print("{s}", .{result.stderr});
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEW COMMANDS - VIBEE FIRST INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IMPROVE COMMAND (Self-Improvement)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runImproveCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    _ = allocator;
+    var spec_path: ?[]const u8 = null;
+    var iterations: u32 = 5;
+    var threshold: f32 = 95.0;
+    var dry_run = false;
+    var verbose = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--iterations") and i + 1 < args.len) {
+            i += 1;
+            iterations = std.fmt.parseInt(u32, args[i], 10) catch 5;
+        } else if (std.mem.eql(u8, args[i], "--threshold") and i + 1 < args.len) {
+            i += 1;
+            threshold = std.fmt.parseFloat(f32, args[i]) catch 95.0;
+        } else if (std.mem.eql(u8, args[i], "--dry-run")) {
+            dry_run = true;
+        } else if (std.mem.eql(u8, args[i], "--verbose")) {
+            verbose = true;
+        } else if (args[i][0] != '-') {
+            spec_path = args[i];
+        }
+    }
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              VIBEE SELF-IMPROVER{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    if (spec_path) |path| {
+        std.debug.print("  Spec:        {s}\n", .{path});
+    } else {
+        std.debug.print("  Spec:        (using default)\n", .{});
+    }
+    std.debug.print("  Iterations:  {d}\n", .{iterations});
+    std.debug.print("  Threshold:    {d:.1}%\n", .{threshold});
+    std.debug.print("  Dry Run:     {s}\n", .{if (dry_run) "true" else "false"});
+    std.debug.print("  Verbose:     {s}\n", .{if (verbose) "true" else "false"});
+
+    std.debug.print("\n{s}Note: Self-improvement requires vibee-self-improve binary:{s}\n", .{ GRAY, RESET });
+    if (spec_path) |path| {
+        std.debug.print("  ./zig-out/bin/vibee-self-improve {s} --iterations {d} --threshold {d:.1}\n", .{ path, iterations, threshold });
+        if (dry_run) std.debug.print("    Option: --dry-run\n", .{});
+        if (verbose) std.debug.print("    Option: --verbose\n", .{});
+    } else {
+        std.debug.print("  ./zig-out/bin/vibee-self-improve --iterations {d} --threshold {d:.1}\n", .{ iterations, threshold });
+        if (dry_run) std.debug.print("    Option: --dry-run\n", .{});
+        if (verbose) std.debug.print("    Option: --verbose\n", .{});
+    }
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GGUF CHAT COMMAND
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runGgufChatCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    var model_path: ?[]const u8 = null;
+    var stream = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--model") and i + 1 < args.len) {
+            i += 1;
+            model_path = args[i];
+        } else if (std.mem.eql(u8, args[i], "--stream")) {
+            stream = true;
+        } else if (std.mem.startsWith(u8, args[i], "--model=")) {
+            model_path = args[i][8..];
+        }
+    }
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}                  GGUF CHAT{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    if (model_path) |path| {
+        std.debug.print("  Model:   {s}\n", .{path});
+        std.debug.print("  Stream:  {s}\n", .{if (stream) "enabled" else "disabled"});
+        std.debug.print("\n{s}Note: GGUF chat requires vibee binary:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  zig build vibee -- chat --model {s}{s}\n", .{ path, if (stream) " --stream" else "" });
+    } else {
+        std.debug.print("{s}Usage:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri gguf-chat --model <path.gguf> [--stream]\n", .{});
+        std.debug.print("\n{s}Note: GGUF chat requires vibee binary:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  zig build vibee -- chat --model <path.gguf> [--stream]\n", .{});
+    }
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+    _ = allocator;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// METAL COMMAND (GPU Acceleration)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runMetalCommand(allocator: std.mem.Allocator) void {
+    _ = allocator;
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              METAL GPU STATUS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    std.debug.print("  Platform:     {s}\n", .{if (@import("builtin").target.os.tag == .macos) "macOS (Metal)" else "Not macOS"});
+    std.debug.print("  Architecture:  {s}\n", .{if (@import("builtin").target.cpu.arch == .aarch64) "Apple Silicon" else "x86_64"});
+
+    if (@import("builtin").target.os.tag == .macos) {
+        std.debug.print("  Status:       {s}{s}\n", .{ GREEN, "Metal GPU available" });
+        std.debug.print("\n{s}Note: Metal acceleration requires igla_metal_gpu:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  zig build vibee -- metal --enable\n", .{});
+    } else {
+        std.debug.print("  Status:       {s}{s}\n", .{ RED, "Metal not available on this platform" });
+    }
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VALIDATE COMMAND (Trinity Validator)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runValidateCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    var input_path: ?[]const u8 = null;
+    var strict = false;
+    var auto_fix = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--strict")) {
+            strict = true;
+        } else if (std.mem.eql(u8, args[i], "--fix")) {
+            auto_fix = true;
+        } else if (args[i][0] != '-') {
+            input_path = args[i];
+        }
+    }
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRINITY VALIDATOR{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    if (input_path) |path| {
+        std.debug.print("  File:     {s}\n", .{path});
+        std.debug.print("  Strict:   {s}\n", .{if (strict) "true" else "false"});
+        std.debug.print("  Auto Fix: {s}\n", .{if (auto_fix) "true" else "false"});
+        std.debug.print("\n{s}Note: Validation requires trinity-validator binary:{s}\n", .{ GRAY, RESET });
+        const strict_flag = if (strict) " --strict" else "";
+        const fix_flag = if (auto_fix) " --fix" else "";
+        std.debug.print("  ./zig-out/bin/trinity-validator {s}{s}{s}\n", .{ path, strict_flag, fix_flag });
+    } else {
+        std.debug.print("{s}Usage:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri validate <spec.vibee|file.zig> [--strict] [--fix]\n", .{});
+        std.debug.print("\n{s}Options:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  --strict   Enable strict validation mode\n", .{});
+        std.debug.print("  --fix      Automatically fix detected issues\n", .{});
+    }
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+    _ = allocator;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROMETHEUS COMMAND (Float32 → Ternary Conversion)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runPrometheusCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    var input_path: ?[]const u8 = null;
+    var show_info = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--info")) {
+            show_info = true;
+        } else if (args[i][0] != '-') {
+            input_path = args[i];
+        }
+    }
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              PROMETHEUS CONVERTER{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    std.debug.print("  Converts: Float32 → Ternary (.tri format)\n", .{});
+    std.debug.print("  Input:    safetensors, pytorch weights, etc.\n", .{});
+    std.debug.print("  Output:   .tri (packed ternary)\n", .{});
+
+    if (input_path) |path| {
+        std.debug.print("\n  File: {s}\n", .{path});
+        std.debug.print("\n{s}Note: Conversion requires prometheus binary:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  ./zig-out/bin/prometheus {s} --to ternary --info{s}\n", .{
+            path,
+            if (show_info) " --info" else "",
+        });
+    } else {
+        std.debug.print("\n{s}Usage:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri prometheus <input> [--info]\n", .{});
+        std.debug.print("\n{s}Options:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  --info     Show detailed conversion info\n", .{});
+        std.debug.print("  --to ternary  Convert to ternary format\n", .{});
+    }
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+    _ = allocator;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TVC COMPILE COMMAND
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runTVCCompileCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    var spec_path: ?[]const u8 = null;
+    var output_path: ?[]const u8 = null;
+    var debug_mode = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--output") and i + 1 < args.len) {
+            i += 1;
+            output_path = args[i];
+        } else if (std.mem.eql(u8, args[i], "--debug")) {
+            debug_mode = true;
+        } else if (std.mem.eql(u8, args[i], "compile") and i + 1 < args.len) {
+            i += 1;
+            spec_path = args[i];
+        } else if (args[i][0] != '-') {
+            spec_path = args[i];
+        }
+    }
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TVC COMPILER{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    if (spec_path) |path| {
+        std.debug.print("  Spec:   {s}\n", .{path});
+        if (output_path) |op| std.debug.print("  Output: {s}\n", .{op});
+        std.debug.print("  Debug:  {s}\n", .{if (debug_mode) "true" else "false"});
+        std.debug.print("\n{s}Note: TVC compilation requires tvc binary:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  ./zig-out/bin/tvc compile {s}\n", .{ path });
+        if (output_path) |op| std.debug.print("    Option: --output {s}\n", .{op});
+        if (debug_mode) std.debug.print("    Option: --debug\n", .{});
+    } else {
+        std.debug.print("{s}Usage:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri tvc compile <spec.vibee> [--output <path>] [--debug]\n", .{});
+        std.debug.print("\n{s}Options:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  --output <path>  Output binary path\n", .{});
+        std.debug.print("  --debug          Enable debug output\n", .{});
+    }
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+    _ = allocator;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPETITIVE REPL COMMAND
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runCompetitiveReplCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    var lang: []const u8 = "en";
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--lang") and i + 1 < args.len) {
+            i += 1;
+            lang = args[i];
+        } else if (std.mem.startsWith(u8, args[i], "--lang=")) {
+            lang = args[i][7..];
+        }
+    }
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}            COMPETITIVE REPL{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    const lang_name = if (std.mem.eql(u8, lang, "en")) "English"
+                     else if (std.mem.eql(u8, lang, "ru")) "Русский"
+                     else if (std.mem.eql(u8, lang, "th")) "ภาษาไทย"
+                     else "Unknown";
+
+    std.debug.print("  Language: {s} ({s})\n", .{ lang_name, lang });
+    std.debug.print("  Features: Tab completion, multi-language support\n", .{});
+    std.debug.print("\n{s}Note: Competitive REPL requires competitive-repl binary:{s}\n", .{ GRAY, RESET });
+    std.debug.print("  ./zig-out/bin/competitive-repl --lang {s}\n", .{ lang });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+    _ = allocator;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KG SERVER COMMAND (Knowledge Graph Server)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runKGServerCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    var port: u16 = 8081;
+    var persist = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--port") and i + 1 < args.len) {
+            i += 1;
+            port = std.fmt.parseInt(u16, args[i], 10) catch 8081;
+        } else if (std.mem.startsWith(u8, args[i], "--port=")) {
+            port = std.fmt.parseInt(u16, args[i][7..], 10) catch 8081;
+        } else if (std.mem.eql(u8, args[i], "--persist")) {
+            persist = true;
+        }
+    }
+
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}         KNOWLEDGE GRAPH SERVER{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Port:    {d}\n", .{port});
+    std.debug.print("  Persist: {s}\n", .{if (persist) "enabled" else "disabled"});
+    std.debug.print("\n{s}Note: KG Server requires trinity-kg-server binary:{s}\n", .{ GRAY, RESET });
+    std.debug.print("  ./zig-out/bin/trinity-kg-server --port {d}{s}\n", .{
+        port,
+        if (persist) " --persist" else "",
+    });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+    _ = allocator;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEV UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runDoctorCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}                TRI DOCTOR{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\nRunning diagnostics...\n\n", .{});
+
+    var pass_count: u32 = 0;
+    var fail_count: u32 = 0;
+
+    // 1. Zig version
+    const zig_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "version" },
+    }) catch {
+        std.debug.print("  {s}✗ Zig compiler not found{s}\n", .{ RED, RESET });
+        fail_count += 1;
+        return;
+    };
+    defer allocator.free(zig_result.stdout);
+    defer allocator.free(zig_result.stderr);
+
+    const zig_ver = std.mem.trim(u8, zig_result.stdout, " \t\n\r");
+    if (zig_result.term.Exited == 0) {
+        std.debug.print("  {s}✓ Zig compiler:{s} {s}\n", .{ GREEN, RESET, zig_ver });
+        pass_count += 1;
+    } else {
+        std.debug.print("  {s}✗ Zig compiler error{s}\n", .{ RED, RESET });
+        fail_count += 1;
+    }
+
+    // 2. build.zig exists
+    std.fs.cwd().access("build.zig", .{}) catch {
+        std.debug.print("  {s}✗ build.zig not found{s}\n", .{ RED, RESET });
+        fail_count += 1;
+        printDoctorSummary(pass_count, fail_count);
+        return;
+    };
+    std.debug.print("  {s}✓ build.zig found{s}\n", .{ GREEN, RESET });
+    pass_count += 1;
+
+    // 3. src/ directory
+    std.fs.cwd().access("src/tri/main.zig", .{}) catch {
+        std.debug.print("  {s}✗ src/tri/main.zig not found{s}\n", .{ RED, RESET });
+        fail_count += 1;
+        printDoctorSummary(pass_count, fail_count);
+        return;
+    };
+    std.debug.print("  {s}✓ src/tri/main.zig found{s}\n", .{ GREEN, RESET });
+    pass_count += 1;
+
+    // 4. tri_colors.zig
+    std.fs.cwd().access("src/tri/tri_colors.zig", .{}) catch {
+        std.debug.print("  {s}✗ src/tri/tri_colors.zig missing{s}\n", .{ RED, RESET });
+        fail_count += 1;
+        printDoctorSummary(pass_count, fail_count);
+        return;
+    };
+    std.debug.print("  {s}✓ tri_colors.zig found{s}\n", .{ GREEN, RESET });
+    pass_count += 1;
+
+    // 5. Check zig-out/bin/tri binary exists (skip recursive build)
+    std.debug.print("\n", .{});
+
+    // 6. zig-out/bin/tri exists
+    std.fs.cwd().access("zig-out/bin/tri", .{}) catch {
+        std.debug.print("  {s}✗ zig-out/bin/tri binary not found{s}\n", .{ RED, RESET });
+        fail_count += 1;
+        printDoctorSummary(pass_count, fail_count);
+        return;
+    };
+    std.debug.print("  {s}✓ zig-out/bin/tri binary exists{s}\n", .{ GREEN, RESET });
+    pass_count += 1;
+
+    // 7. specs/ directory
+    std.fs.cwd().access("specs", .{}) catch {
+        std.debug.print("  {s}✗ specs/ directory not found{s}\n", .{ RED, RESET });
+        fail_count += 1;
+        printDoctorSummary(pass_count, fail_count);
+        return;
+    };
+    std.debug.print("  {s}✓ specs/ directory found{s}\n", .{ GREEN, RESET });
+    pass_count += 1;
+
+    printDoctorSummary(pass_count, fail_count);
+}
+
+fn printDoctorSummary(pass_count: u32, fail_count: u32) void {
+    const total = pass_count + fail_count;
+    std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Passed: {s}{d}/{d}{s}\n", .{ GREEN, pass_count, total, RESET });
+    if (fail_count > 0) {
+        std.debug.print("  Failed: {s}{d}/{d}{s}\n", .{ RED, fail_count, total, RESET });
+    }
+    if (fail_count == 0) {
+        std.debug.print("  Status: {s}ALL CHECKS PASSED{s}\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("  Status: {s}ISSUES FOUND{s}\n", .{ RED, RESET });
+    }
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+pub fn runCleanCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRI CLEAN{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    // Remove .zig-cache
+    std.debug.print("\n  Removing .zig-cache...", .{});
+    std.fs.cwd().deleteTree(".zig-cache") catch |err| {
+        if (err == error.FileNotFound) {
+            std.debug.print(" {s}(not found){s}\n", .{ GRAY, RESET });
+        } else {
+            std.debug.print(" {s}error: {}{s}\n", .{ RED, err, RESET });
+        }
+        // Continue with zig-out
+        removeZigOut(allocator);
+        return;
+    };
+    std.debug.print(" {s}done{s}\n", .{ GREEN, RESET });
+
+    removeZigOut(allocator);
+}
+
+fn removeZigOut(allocator: std.mem.Allocator) void {
+    _ = allocator;
+    std.debug.print("  Removing zig-out...", .{});
+    std.fs.cwd().deleteTree("zig-out") catch |err| {
+        if (err == error.FileNotFound) {
+            std.debug.print(" {s}(not found){s}\n", .{ GRAY, RESET });
+        } else {
+            std.debug.print(" {s}error: {}{s}\n", .{ RED, err, RESET });
+        }
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    std.debug.print(" {s}done{s}\n", .{ GREEN, RESET });
+    std.debug.print("\n  {s}✓ Clean complete{s}\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+pub fn runFmtCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRI FORMAT{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\nFormatting Zig source files...\n", .{});
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "fmt", "src/" },
+    }) catch |err| {
+        std.debug.print("{s}Error running zig fmt: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len > 0) std.debug.print("{s}", .{result.stdout});
+    if (result.stderr.len > 0) std.debug.print("{s}", .{result.stderr});
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+pub fn runStatsCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRI STATS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    // Count .zig files and lines via wc -l
+    const zig_count = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find src -name '*.zig' | wc -l" },
+    }) catch {
+        std.debug.print("\n  {s}✗ Could not count .zig files{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(zig_count.stdout);
+    defer allocator.free(zig_count.stderr);
+
+    const zig_loc = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find src -name '*.zig' -exec cat {} + | wc -l" },
+    }) catch {
+        std.debug.print("\n  {s}✗ Could not count LOC{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(zig_loc.stdout);
+    defer allocator.free(zig_loc.stderr);
+
+    // Count .vibee specs
+    const spec_count = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find specs -name '*.vibee' 2>/dev/null | wc -l" },
+    }) catch {
+        std.debug.print("\n  {s}✗ Could not count specs{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(spec_count.stdout);
+    defer allocator.free(spec_count.stderr);
+
+    // Count test files
+    const test_count = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "grep -rl 'test \"' src --include='*.zig' 2>/dev/null | wc -l" },
+    }) catch {
+        std.debug.print("\n  {s}✗ Could not count test files{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(test_count.stdout);
+    defer allocator.free(test_count.stderr);
+
+    std.debug.print("\n{s}  Codebase:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Zig files:     {s}", .{std.mem.trim(u8, zig_count.stdout, " \t\n\r")});
+    std.debug.print("\n    Lines of code:  {s}", .{std.mem.trim(u8, zig_loc.stdout, " \t\n\r")});
+    std.debug.print("\n    VIBEE specs:    {s}", .{std.mem.trim(u8, spec_count.stdout, " \t\n\r")});
+    std.debug.print("\n    Test files:     {s}", .{std.mem.trim(u8, test_count.stdout, " \t\n\r")});
+    std.debug.print("\n", .{});
+
+    // Architecture info
+    std.debug.print("\n{s}  Architecture:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Platform:      {s}\n", .{@tagName(@import("builtin").os.tag)});
+    std.debug.print("    Arch:          {s}\n", .{@tagName(@import("builtin").cpu.arch)});
+    std.debug.print("    Encoding:      Ternary (1.58 bits/trit)\n", .{});
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+pub fn runIglaCommand(allocator: std.mem.Allocator) void {
+    _ = allocator;
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              IGLA CMD{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}Note: IGLA requires vibee binary:{s}\n", .{ GRAY, RESET });
+    std.debug.print("  zig build vibee -- igla\n", .{});
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+pub fn runTestAllCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRI TEST ALL{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\nRunning all tests...\n", .{});
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "build", "test" },
+    }) catch |err| {
+        std.debug.print("{s}Error running tests: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len > 0) std.debug.print("{s}", .{result.stdout});
+    if (result.stderr.len > 0) std.debug.print("{s}", .{result.stderr});
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+pub fn runAnalyzeCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRI ANALYZE{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}Note: Analysis requires trinity-analyze binary:{s}\n", .{ GRAY, RESET });
+    std.debug.print("  ./zig-out/bin/trinity-analyze\n", .{});
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+pub fn runSearchCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRI SEARCH{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}Usage: tri search <pattern> [path]{s}\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+pub fn runDepsCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRI DEPS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}Usage: tri deps <file.zig>{s}\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
