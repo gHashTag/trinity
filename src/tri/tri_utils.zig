@@ -311,7 +311,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.0 — Full Dev OS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.1 — Full Dev OS + Self-Hosting + Swarm Control{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -337,6 +337,7 @@ pub fn printHelp() void {
     std.debug.print("{s}TOOLS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}gen{s} <spec.vibee>            VIBEE → Zig/Verilog compiler\n", .{ GREEN, RESET });
     std.debug.print("  {s}convert{s} <file>              Convert WASM/Binary → Ternary\n", .{ GREEN, RESET });
+    std.debug.print("  {s}serve{s} --self-host [--port N] Self-hosting dev server (v2.1)\n", .{ GREEN, RESET });
     std.debug.print("  {s}serve{s} --model <path>        Start HTTP API server\n", .{ GREEN, RESET });
     std.debug.print("  {s}bench{s}                       Run performance benchmarks\n", .{ GREEN, RESET });
     std.debug.print("  {s}evolve{s} [--dim N]            Evolve fingerprint (Firebird)\n", .{ GREEN, RESET });
@@ -587,15 +588,18 @@ pub fn printHelp() void {
     std.debug.print("{s}$TRI REWARDS (Cycle 84):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}rewards{s}                    Show $TRI balance + earning history\n", .{ GREEN, RESET });
     std.debug.print("  {s}rewards earn{s}               Log earned $TRI from completed task\n", .{ GREEN, RESET });
-    std.debug.print("  {s}rewards stake{s} <amount>     Stake $TRI for earning multiplier\n", .{ GREEN, RESET });
+    std.debug.print("  {s}rewards stake{s} <amount>     Stake $TRI (phi^n multiplier tiers)\n", .{ GREEN, RESET });
     std.debug.print("  {s}rewards leaderboard{s}        Top contributors ranking\n", .{ GREEN, RESET });
     std.debug.print("  {s}rewards stats{s}              Detailed earning statistics\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
-    std.debug.print("{s}SWARM SYNC (Cycle 86):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}swarm{s}                      Agent state sync overview\n", .{ GREEN, RESET });
+    std.debug.print("{s}SWARM CONTROL (Cycle 87):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}swarm{s}                      Agent state overview\n", .{ GREEN, RESET });
     std.debug.print("  {s}swarm status{s}               Show sync state + branch info\n", .{ GREEN, RESET });
     std.debug.print("  {s}swarm agents{s}               List connected agents + roles\n", .{ GREEN, RESET });
+    std.debug.print("  {s}swarm control{s}              Full control dashboard (CPU/Mem/Tasks)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}swarm kill{s} <agent>         Stop agent gracefully\n", .{ GREEN, RESET });
+    std.debug.print("  {s}swarm restart{s} <agent>      Restart an agent\n", .{ GREEN, RESET });
     std.debug.print("  {s}swarm broadcast{s} <msg>      Send message to all agents\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 

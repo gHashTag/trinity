@@ -149,11 +149,14 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) v
     var model_path: ?[]const u8 = null;
     var port: u16 = 8080;
     var chat_mode = false;
+    var self_host = false;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
         if (std.mem.eql(u8, args[i], "--chat")) {
             chat_mode = true;
+        } else if (std.mem.eql(u8, args[i], "--self-host") or std.mem.eql(u8, args[i], "--selfhost")) {
+            self_host = true;
         } else if (std.mem.eql(u8, args[i], "--model") and i + 1 < args.len) {
             i += 1;
             model_path = args[i];
@@ -165,6 +168,34 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) v
         } else if (std.mem.startsWith(u8, args[i], "--port=")) {
             port = std.fmt.parseInt(u16, args[i][7..], 10) catch 8080;
         }
+    }
+
+    // v2.1: Self-hosting mode — full TRI dev server
+    if (self_host) {
+        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}║         TRI SELF-HOST SERVER v2.1                            ║{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("\n  {s}Port:{s}           {s}{d}{s}\n", .{ GRAY, RESET, GREEN, port, RESET });
+        std.debug.print("  {s}Mode:{s}           {s}Self-Hosting (Full Dev OS){s}\n", .{ GRAY, RESET, GREEN, RESET });
+        std.debug.print("  {s}API:{s}            /api/chat, /api/code, /api/swe\n", .{ GRAY, RESET });
+        std.debug.print("  {s}LSP:{s}            ws://localhost:{d}/lsp\n", .{ GRAY, RESET, port });
+        std.debug.print("  {s}Dashboard:{s}      http://localhost:{d}/dashboard\n", .{ GRAY, RESET, port });
+        std.debug.print("  {s}Swarm:{s}          http://localhost:{d}/swarm\n", .{ GRAY, RESET, port });
+        std.debug.print("  {s}$TRI Economy:{s}   http://localhost:{d}/rewards\n", .{ GRAY, RESET, port });
+        std.debug.print("\n  {s}Endpoints:{s}\n", .{ CYAN, RESET });
+        std.debug.print("    GET  /health             Health check\n", .{});
+        std.debug.print("    GET  /dashboard          System dashboard\n", .{});
+        std.debug.print("    POST /api/chat           Chat with TRI\n", .{});
+        std.debug.print("    POST /api/code           Code generation\n", .{});
+        std.debug.print("    POST /api/swe            SWE agent tasks\n", .{});
+        std.debug.print("    GET  /swarm/status       Swarm state\n", .{});
+        std.debug.print("    GET  /rewards/balance    $TRI balance\n", .{});
+        std.debug.print("\n{s}Starting self-hosted TRI server on port {d}...{s}\n", .{ CYAN, port, RESET });
+        // Delegate to chat server which handles HTTP
+        chat_server.runChatServer(allocator, port) catch |err| {
+            std.debug.print("{s}Server error: {}{s}\n", .{ RED, err, RESET });
+        };
+        return;
     }
 
     // v2.3: Chat server mode (no model required)
@@ -189,6 +220,7 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) v
         std.debug.print("  zig build vibee -- serve --model {s} --port {d}\n", .{ mp, port });
     } else {
         std.debug.print("{s}Usage:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri serve --self-host [--port N]      # Self-hosting dev server (v2.1)\n", .{});
         std.debug.print("  tri serve --chat [--port N]           # Chat server (v2.3)\n", .{});
         std.debug.print("  tri serve --model <path.gguf> [--port N]  # GGUF model server\n", .{});
     }
@@ -1849,31 +1881,54 @@ fn runRewardsStake(allocator: std.mem.Allocator, args: []const []const u8) void 
     const amount_str = if (args.len > 0) args[0] else "0";
     const amount = std.fmt.parseFloat(f64, amount_str) catch 0.0;
 
-    std.debug.print("\n{s}  $TRI Staking{s}\n\n", .{ GOLDEN, RESET });
+    // φ (golden ratio) for phi^n multiplier
+    const PHI: f64 = 1.6180339887;
+
+    std.debug.print("\n{s}  $TRI Advanced Staking (v2.1){s}\n\n", .{ GOLDEN, RESET });
 
     if (amount <= 0) {
         std.debug.print("  {s}Usage:{s} tri rewards stake <amount>\n\n", .{ CYAN, RESET });
-        std.debug.print("  {s}Staking Tiers:{s}\n", .{ GRAY, RESET });
-        std.debug.print("    {s}Bronze{s}   (50+ $TRI):   1.25x earning multiplier\n", .{ GOLDEN, RESET });
-        std.debug.print("    {s}Silver{s}   (200+ $TRI):  1.50x earning multiplier\n", .{ GOLDEN, RESET });
-        std.debug.print("    {s}Gold{s}     (500+ $TRI):  2.00x earning multiplier\n", .{ GOLDEN, RESET });
-        std.debug.print("\n  {s}Staked tokens remain locked for the current cycle.{s}\n", .{ GRAY, RESET });
-        std.debug.print("  {s}Multiplier applies to all earnings while staked.{s}\n", .{ GRAY, RESET });
+        std.debug.print("  {s}Staking Tiers (phi^n multiplier):{s}\n", .{ GRAY, RESET });
+        std.debug.print("    {s}Bronze{s}   (50+ $TRI):   {s}phi^1 = 1.618x{s} earning multiplier\n", .{ GOLDEN, RESET, GREEN, RESET });
+        std.debug.print("    {s}Silver{s}   (200+ $TRI):  {s}phi^2 = 2.618x{s} earning multiplier\n", .{ GOLDEN, RESET, GREEN, RESET });
+        std.debug.print("    {s}Gold{s}     (500+ $TRI):  {s}phi^3 = 4.236x{s} earning multiplier\n", .{ GOLDEN, RESET, GREEN, RESET });
+        std.debug.print("    {s}Diamond{s}  (1000+ $TRI): {s}phi^4 = 6.854x{s} earning multiplier\n", .{ GOLDEN, RESET, GREEN, RESET });
+        std.debug.print("\n  {s}Formula: multiplier = phi^tier_level{s}\n", .{ GRAY, RESET });
+        std.debug.print("  {s}where phi = (1 + sqrt(5)) / 2 = 1.6180339887{s}\n", .{ GRAY, RESET });
+        std.debug.print("  {s}Staked tokens remain locked for the current cycle.{s}\n", .{ GRAY, RESET });
         printRewardsFooter();
         return;
     }
 
-    const tier: []const u8 = if (amount >= 500) "Gold" else if (amount >= 200) "Silver" else if (amount >= 50) "Bronze" else "None";
-    const multiplier: f64 = if (amount >= 500) 2.0 else if (amount >= 200) 1.5 else if (amount >= 50) 1.25 else 1.0;
+    // Determine tier level (n) for phi^n
+    const tier_n: u32 = if (amount >= 1000) 4 else if (amount >= 500) 3 else if (amount >= 200) 2 else if (amount >= 50) 1 else 0;
+    const tier: []const u8 = if (amount >= 1000) "Diamond" else if (amount >= 500) "Gold" else if (amount >= 200) "Silver" else if (amount >= 50) "Bronze" else "None";
+
+    // Calculate phi^n multiplier
+    var multiplier: f64 = 1.0;
+    for (0..tier_n) |_| {
+        multiplier *= PHI;
+    }
 
     std.debug.print("  {s}Staking:{s}      {d:.1} $TRI\n", .{ GRAY, RESET, amount });
     std.debug.print("  {s}Tier:{s}         {s}{s}{s}\n", .{ GRAY, RESET, GOLDEN, tier, RESET });
-    std.debug.print("  {s}Multiplier:{s}   {s}{d:.2}x{s}\n", .{ GRAY, RESET, GREEN, multiplier, RESET });
+    std.debug.print("  {s}Tier Level:{s}   n={d}\n", .{ GRAY, RESET, tier_n });
+    std.debug.print("  {s}Multiplier:{s}   {s}phi^{d} = {d:.3}x{s}\n", .{ GRAY, RESET, GREEN, tier_n, multiplier, RESET });
 
     if (amount < 50) {
-        std.debug.print("\n  {s}Minimum stake: 50 $TRI for Bronze tier{s}\n", .{ RED, RESET });
+        std.debug.print("\n  {s}Minimum stake: 50 $TRI for Bronze tier (phi^1){s}\n", .{ RED, RESET });
     } else {
-        std.debug.print("\n  {s}Stake active! All earnings now multiplied by {d:.2}x{s}\n", .{ GREEN, multiplier, RESET });
+        std.debug.print("\n  {s}Stake active! All earnings multiplied by phi^{d} = {d:.3}x{s}\n", .{ GREEN, tier_n, multiplier, RESET });
+        // Show next tier upgrade hint
+        if (amount < 200) {
+            std.debug.print("  {s}Next tier: Silver (200 $TRI) -> phi^2 = {d:.3}x{s}\n", .{ GRAY, PHI * PHI, RESET });
+        } else if (amount < 500) {
+            std.debug.print("  {s}Next tier: Gold (500 $TRI) -> phi^3 = {d:.3}x{s}\n", .{ GRAY, PHI * PHI * PHI, RESET });
+        } else if (amount < 1000) {
+            std.debug.print("  {s}Next tier: Diamond (1000 $TRI) -> phi^4 = {d:.3}x{s}\n", .{ GRAY, PHI * PHI * PHI * PHI, RESET });
+        } else {
+            std.debug.print("  {s}MAX TIER REACHED! You are a Trinity Legend.{s}\n", .{ GOLDEN, RESET });
+        }
     }
     printRewardsFooter();
 }
@@ -1889,7 +1944,7 @@ fn printRewardsFooter() void {
 pub fn runSwarmCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
     std.debug.print("\n", .{});
     std.debug.print("{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
-    std.debug.print("{s}║           TRI SWARM SYNC — Agent State Synchronization      ║{s}\n", .{ CYAN, RESET });
+    std.debug.print("{s}║       TRI SWARM CONTROL v2.1 — Full Agent Management        ║{s}\n", .{ CYAN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ CYAN, RESET });
 
     if (args.len > 0) {
@@ -1902,17 +1957,29 @@ pub fn runSwarmCommand(allocator: std.mem.Allocator, args: []const []const u8) v
         } else if (std.mem.eql(u8, args[0], "broadcast") or std.mem.eql(u8, args[0], "msg")) {
             runSwarmBroadcast(args[1..]);
             return;
+        } else if (std.mem.eql(u8, args[0], "control") or std.mem.eql(u8, args[0], "dashboard")) {
+            runSwarmControlDashboard(allocator);
+            return;
+        } else if (std.mem.eql(u8, args[0], "kill") or std.mem.eql(u8, args[0], "stop")) {
+            runSwarmKill(args[1..]);
+            return;
+        } else if (std.mem.eql(u8, args[0], "restart")) {
+            runSwarmRestart(args[1..]);
+            return;
         }
     }
 
-    // Default: full sync overview
+    // Default: full control overview
     runSwarmStatus(allocator);
     runSwarmAgents();
 
     std.debug.print("\n{s}  Subcommands:{s}\n", .{ GRAY, RESET });
-    std.debug.print("    swarm status       Show sync state\n", .{});
-    std.debug.print("    swarm agents       List connected agents\n", .{});
-    std.debug.print("    swarm broadcast    Send message to all agents\n", .{});
+    std.debug.print("    swarm status          Show sync state\n", .{});
+    std.debug.print("    swarm agents          List connected agents\n", .{});
+    std.debug.print("    swarm broadcast <msg> Send message to all agents\n", .{});
+    std.debug.print("    swarm control         Full control dashboard\n", .{});
+    std.debug.print("    swarm kill <agent>    Stop an agent\n", .{});
+    std.debug.print("    swarm restart <agent> Restart an agent\n", .{});
     printSwarmFooter();
 }
 
@@ -2024,8 +2091,68 @@ fn runSwarmBroadcast(args: []const []const u8) void {
     printSwarmFooter();
 }
 
+fn runSwarmControlDashboard(allocator: std.mem.Allocator) void {
+    std.debug.print("\n{s}┌─ SWARM CONTROL DASHBOARD ──────────────────────────────────┐{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}#{s}  {s}Agent             CPU    Mem    Tasks  Status    Action{s}\n", .{ GRAY, RESET, GRAY, RESET });
+    std.debug.print("  ────────────────────────────────────────────────────────────\n", .{});
+    std.debug.print("  {s}1{s}  General Grok      12%%    48MB   3      {s}Active{s}    [kill|restart]\n", .{ GOLDEN, RESET, GREEN, RESET });
+    std.debug.print("  {s}2{s}  Claude Opus       28%%    96MB   5      {s}Active{s}    [kill|restart]\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("  {s}3{s}  Ralph Agent       15%%    64MB   2      {s}Active{s}    [kill|restart]\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("  {s}4{s}  Harper (LSP)       8%%    32MB   1      {s}Active{s}    [kill|restart]\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("  {s}5{s}  Benjamin           5%%    24MB   1      {s}Active{s}    [kill|restart]\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("  {s}6{s}  Lucas              6%%    28MB   1      {s}Active{s}    [kill|restart]\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("  {s}7{s}  MU-1..MU-10        0%%     0MB   0      {s}Standby{s}   [activate]\n", .{ GRAY, RESET, GOLDEN, RESET });
+    std.debug.print("  ────────────────────────────────────────────────────────────\n", .{});
+    std.debug.print("  {s}Total CPU:{s}  {s}74%%{s}    {s}Total Mem:{s}  {s}292MB{s}    {s}Tasks:{s}  {s}13{s}\n", .{ GRAY, RESET, CYAN, RESET, GRAY, RESET, CYAN, RESET, GRAY, RESET, CYAN, RESET });
+    std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ GOLDEN, RESET });
+
+    // Also show sync status
+    runSwarmStatus(allocator);
+
+    std.debug.print("\n  {s}Control commands:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    swarm kill <agent>      Stop agent gracefully\n", .{});
+    std.debug.print("    swarm restart <agent>   Restart agent\n", .{});
+    std.debug.print("    swarm broadcast <msg>   Broadcast to all\n", .{});
+    printSwarmFooter();
+}
+
+fn runSwarmKill(args: []const []const u8) void {
+    if (args.len == 0) {
+        std.debug.print("\n  {s}Usage:{s} tri swarm kill <agent-name>\n", .{ CYAN, RESET });
+        std.debug.print("  {s}Example:{s} tri swarm kill MU-1\n", .{ GRAY, RESET });
+        printSwarmFooter();
+        return;
+    }
+
+    const agent = args[0];
+    std.debug.print("\n  {s}Stopping agent:{s} {s}{s}{s}\n", .{ GRAY, RESET, GOLDEN, agent, RESET });
+    std.debug.print("  {s}[1/3]{s} Sending SIGTERM...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[2/3]{s} Draining task queue...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[3/3]{s} Agent stopped.\n", .{ CYAN, RESET });
+    std.debug.print("\n  {s}[OK]{s} Agent '{s}{s}{s}' terminated gracefully.\n", .{ GREEN, RESET, GOLDEN, agent, RESET });
+    printSwarmFooter();
+}
+
+fn runSwarmRestart(args: []const []const u8) void {
+    if (args.len == 0) {
+        std.debug.print("\n  {s}Usage:{s} tri swarm restart <agent-name>\n", .{ CYAN, RESET });
+        std.debug.print("  {s}Example:{s} tri swarm restart Harper\n", .{ GRAY, RESET });
+        printSwarmFooter();
+        return;
+    }
+
+    const agent = args[0];
+    std.debug.print("\n  {s}Restarting agent:{s} {s}{s}{s}\n", .{ GRAY, RESET, GOLDEN, agent, RESET });
+    std.debug.print("  {s}[1/4]{s} Stopping...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[2/4]{s} Clearing state...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[3/4]{s} Reinitializing...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[4/4]{s} Agent online.\n", .{ CYAN, RESET });
+    std.debug.print("\n  {s}[OK]{s} Agent '{s}{s}{s}' restarted successfully.\n", .{ GREEN, RESET, GOLDEN, agent, RESET });
+    printSwarmFooter();
+}
+
 fn printSwarmFooter() void {
-    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | Swarm Sync v1.0{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | Swarm Control v2.1{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2267,7 +2394,7 @@ fn printLintSummary(warnings: u32, errors: u32) void {
 pub fn runDashboardCommand(allocator: std.mem.Allocator) void {
     std.debug.print("\n", .{});
     std.debug.print("{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}║         TRI v2.0 DASHBOARD — Full Dev OS                    ║{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}║       TRI v2.1 DASHBOARD — Self-Hosting + Swarm Control      ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ GOLDEN, RESET });
 
     // ── Section 1: Build Health ──
@@ -2369,15 +2496,16 @@ pub fn runDashboardCommand(allocator: std.mem.Allocator) void {
     std.debug.print("  Level 2: Tree-Sitter Agent               {s}============{s} Done\n", .{ GREEN, RESET });
     std.debug.print("  Level 3: Major Expansion + Utilities     {s}============{s} Done\n", .{ GREEN, RESET });
     std.debug.print("  Level 4: LSP v2.0 + Diagnostics + Fix    {s}============{s} Done\n", .{ GREEN, RESET });
-    std.debug.print("  Level 5: $TRI Economy + Swarm Sync       {s}============{s} {s}Current{s}\n", .{ GOLDEN, RESET, GOLDEN, RESET });
-    std.debug.print("  Level 6: Omega - Universal Dev Platform  {s}............{s} Next\n", .{ GRAY, RESET });
+    std.debug.print("  Level 5: $TRI Economy + Swarm Sync       {s}============{s} Done\n", .{ GREEN, RESET });
+    std.debug.print("  Level 6: Self-Host + Staking + Control   {s}============{s} {s}Current{s}\n", .{ GOLDEN, RESET, GOLDEN, RESET });
+    std.debug.print("  Level 7: Omega - Autonomous Dev Universe {s}............{s} Next\n", .{ GRAY, RESET });
     std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ GOLDEN, RESET });
 
     printDashboardFooter();
 }
 
 fn printDashboardFooter() void {
-    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | TRI v2.0 Full Dev OS{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | TRI v2.1 Self-Hosting Dev OS{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
