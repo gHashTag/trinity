@@ -1,12 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// ZIG IDIOMS — Idiomatic Zig code generation transforms (Cycle 74)
+// ZIG IDIOMS — Idiomatic Zig code generation transforms (Cycle 74→76)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Transforms generated Zig code to follow community best practices:
 // - Explicit allocator parameters (ziggit.dev/14043 naming conventions)
 // - defer/errdefer cleanup (ziggit.dev/11489 diagnostics pattern)
 // - Error unions !T (no anyerror — community best practice)
-// - Mode-aware: standard (pass-through), idiomatic (full), wasm (global buffers)
+//
+// Cycle 76: Idiomatic mode is now the default — transforms always apply.
 //
 // φ² + 1/φ² = 3
 //
@@ -39,15 +40,17 @@ pub const ZigIdioms = struct {
         };
     }
 
-    /// Returns true if idioms should be applied (non-standard mode)
+    /// Returns true if idioms should be applied
+    /// Cycle 76: Always active — idiomatic is the default
     pub fn isActive(self: Self) bool {
-        return self.mode != .standard;
+        _ = self;
+        return true;
     }
 
     /// Check if behavior works with heap-allocated data (needs allocator param)
     /// Scans given/then descriptions for allocation-related keywords
+    /// Cycle 76: Removed mode check — always scan keywords
     pub fn needsAllocator(self: Self, given: []const u8, then: []const u8) bool {
-        if (self.mode != .idiomatic) return false;
         if (self.allocator_strategy == .none) return false;
 
         // Check given description
@@ -60,9 +63,8 @@ pub const ZigIdioms = struct {
 
     /// Transform function parameters: prepend allocator if needed
     /// Returns new params string (or original if no transform)
-    /// In idiomatic mode with param strategy: "allocator: Allocator, <original_params>"
+    /// Cycle 76: Always applies — "allocator: Allocator, <original_params>"
     pub fn transformParams(self: Self, params: []const u8, given: []const u8, then: []const u8) []const u8 {
-        if (self.mode != .idiomatic) return params;
         if (self.allocator_strategy == .none) return params;
         if (!self.needsAllocator(given, then)) return params;
 
@@ -76,25 +78,26 @@ pub const ZigIdioms = struct {
     }
 
     /// Check if original params should be appended after allocator
+    /// Cycle 76: Removed mode check
     pub fn hasOriginalParams(self: Self, params: []const u8, given: []const u8, then: []const u8) bool {
-        if (self.mode != .idiomatic) return false;
         if (self.allocator_strategy == .none) return false;
         if (!self.needsAllocator(given, then)) return false;
         return params.len > 0;
     }
 
     /// Wrap return type with error union: T → !T
-    /// In idiomatic mode: always returns error union
-    /// In standard/wasm mode: pass-through
+    /// Cycle 76: Always wrap — idiomatic is the default
     pub fn shouldWrapErrorUnion(self: Self) bool {
-        return self.mode == .idiomatic;
+        _ = self;
+        return true;
     }
 
     /// Emit defer/errdefer cleanup after function opening brace
     /// - defer: cleanup resources on normal exit
     /// - errdefer: diagnostic logging on error exit
+    /// Cycle 76: Removed mode check — always emit when has_alloc
     pub fn emitCleanup(self: Self, builder: *CodeBuilder, has_alloc: bool) !void {
-        if (self.mode != .idiomatic) return;
+        _ = self;
         if (!has_alloc) return;
 
         // Emit errdefer for error diagnostics (ziggit.dev/11489 pattern)
@@ -172,14 +175,15 @@ fn containsAllocKeyword(text: []const u8) bool {
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "zig_idioms_standard_passthrough" {
-    // Standard mode: no transforms
+test "zig_idioms_always_active" {
+    // Cycle 76: Idioms always active regardless of mode
     const idioms = ZigIdioms{
         .mode = .standard,
         .allocator_strategy = .none,
         .error_set_names = &.{},
     };
-    try std.testing.expect(!idioms.isActive());
+    try std.testing.expect(idioms.isActive());
+    // With allocator_strategy = .none, no allocator is prepended
     try std.testing.expect(!idioms.needsAllocator("input", "output"));
     try std.testing.expectEqualStrings("self: *@This()", idioms.transformParams("self: *@This()", "input", "output"));
 }
@@ -196,8 +200,8 @@ test "zig_idioms_idiomatic_allocator" {
     try std.testing.expect(idioms.shouldWrapErrorUnion());
 }
 
-test "zig_idioms_wasm_no_alloc" {
-    // WASM mode: no allocator, global buffers
+test "zig_idioms_alloc_none_skips" {
+    // With allocator_strategy = .none, allocator checks are skipped
     const idioms = ZigIdioms{
         .mode = .wasm,
         .allocator_strategy = .none,
@@ -205,7 +209,8 @@ test "zig_idioms_wasm_no_alloc" {
     };
     try std.testing.expect(idioms.isActive());
     try std.testing.expect(!idioms.needsAllocator("input", "Returns slice"));
-    try std.testing.expect(!idioms.shouldWrapErrorUnion());
+    // Cycle 76: shouldWrapErrorUnion is always true now
+    try std.testing.expect(idioms.shouldWrapErrorUnion());
 }
 
 test "containsAllocKeyword_detects_keywords" {

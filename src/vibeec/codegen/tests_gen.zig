@@ -21,7 +21,7 @@ pub const TestGenerator = struct {
     builder: *CodeBuilder,
     allocator: Allocator,
     spec_name: []const u8 = "",
-    zig_mode: ZigMode = .standard,
+    zig_mode: ZigMode = .idiomatic, // Cycle 76: idiomatic by default
 
     const Self = @This();
 

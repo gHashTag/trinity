@@ -1420,8 +1420,8 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("}");
         try self.builder.newline();
 
-        // generate_phi_spiral (only when WASM buffers are available)
-        const skip_spiral = if (self.idioms) |idioms| idioms.mode == .idiomatic else false;
+        // generate_phi_spiral (only when WASM buffers are available — not in idiomatic mode)
+        const skip_spiral = if (self.idioms) |_| true else false; // Cycle 76: idiomatic always skips
         if (!skip_spiral) {
             try self.builder.writeLine("/// Генерация φ-спирали");
             try self.builder.writeLine("fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {");
@@ -1617,58 +1617,56 @@ pub const ZigCodeGen = struct {
         // No implementation — use pattern matching or auto-body
         const sig = inferSignatureFromSpec(b.given, b.then, b.name);
 
-        // Cycle 74/75: Apply Zig idioms if active
+        // Cycle 76: Idiomatic idioms always applied (no mode gate)
         if (self.idioms) |idioms| {
-            if (idioms.isActive()) {
-                // Cycle 75: Strip self param for free functions (no owner)
-                const base_params = if (b.owner == null and std.mem.eql(u8, sig.params, "self: *@This()"))
-                    ""
-                else
-                    sig.params;
-                const params = idioms.transformParams(base_params, b.given, b.then);
-                const has_alloc = idioms.needsAllocator(b.given, b.then);
-                const wrap_err = idioms.shouldWrapErrorUnion();
-                // Prevent double error union: don't wrap if ret already starts with '!'
-                const already_error = sig.ret.len > 0 and sig.ret[0] == '!';
-                // Cycle 76: Don't wrap error union for pure functions (no allocator needed)
-                const do_wrap = wrap_err and !already_error and has_alloc;
+            // Cycle 75: Strip self param for free functions (no owner)
+            const base_params = if (b.owner == null and std.mem.eql(u8, sig.params, "self: *@This()"))
+                ""
+            else
+                sig.params;
+            const params = idioms.transformParams(base_params, b.given, b.then);
+            const has_alloc = idioms.needsAllocator(b.given, b.then);
+            const wrap_err = idioms.shouldWrapErrorUnion();
+            // Prevent double error union: don't wrap if ret already starts with '!'
+            const already_error = sig.ret.len > 0 and sig.ret[0] == '!';
+            // Cycle 76: Don't wrap error union for pure functions (no allocator needed)
+            const do_wrap = wrap_err and !already_error and has_alloc;
 
-                // Write function signature with idiom transforms
-                if (idioms.hasOriginalParams(base_params, b.given, b.then)) {
-                    // Allocator + original params
-                    if (do_wrap) {
-                        try self.builder.writeFmt("pub fn {s}({s}, {s}) !{s} {{\n", .{ b.name, params, base_params, sig.ret });
-                    } else {
-                        try self.builder.writeFmt("pub fn {s}({s}, {s}) {s} {{\n", .{ b.name, params, base_params, sig.ret });
-                    }
-                } else if (has_alloc) {
-                    // Allocator only (no original params)
-                    if (do_wrap) {
-                        try self.builder.writeFmt("pub fn {s}({s}) !{s} {{\n", .{ b.name, params, sig.ret });
-                    } else {
-                        try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, params, sig.ret });
-                    }
+            // Write function signature with idiom transforms
+            if (idioms.hasOriginalParams(base_params, b.given, b.then)) {
+                // Allocator + original params
+                if (do_wrap) {
+                    try self.builder.writeFmt("pub fn {s}({s}, {s}) !{s} {{\n", .{ b.name, params, base_params, sig.ret });
                 } else {
-                    // No allocator needed, but wrap error union if not already
-                    if (do_wrap) {
-                        try self.builder.writeFmt("pub fn {s}({s}) !{s} {{\n", .{ b.name, base_params, sig.ret });
-                    } else {
-                        try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, base_params, sig.ret });
-                    }
+                    try self.builder.writeFmt("pub fn {s}({s}, {s}) {s} {{\n", .{ b.name, params, base_params, sig.ret });
                 }
-                self.builder.incIndent();
-                try idioms.emitCleanup(&self.builder, has_alloc);
-                try idioms.emitAllocatorSetup(&self.builder);
-                try self.generateRealBody(b);
-                self.builder.decIndent();
-                try self.builder.writeLine("}");
-                try self.builder.newline();
-                try self.builder.newline();
-                return;
+            } else if (has_alloc) {
+                // Allocator only (no original params)
+                if (do_wrap) {
+                    try self.builder.writeFmt("pub fn {s}({s}) !{s} {{\n", .{ b.name, params, sig.ret });
+                } else {
+                    try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, params, sig.ret });
+                }
+            } else {
+                // No allocator needed
+                if (do_wrap) {
+                    try self.builder.writeFmt("pub fn {s}({s}) !{s} {{\n", .{ b.name, base_params, sig.ret });
+                } else {
+                    try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, base_params, sig.ret });
+                }
             }
+            self.builder.incIndent();
+            try idioms.emitCleanup(&self.builder, has_alloc);
+            try idioms.emitAllocatorSetup(&self.builder);
+            try self.generateRealBody(b);
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            try self.builder.newline();
+            try self.builder.newline();
+            return;
         }
 
-        // Standard fallback (no idioms)
+        // Fallback (idioms not initialized — shouldn't happen in normal flow)
         try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
         self.builder.incIndent();
         try self.generateRealBody(b);
