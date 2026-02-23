@@ -228,6 +228,71 @@ pub const MetaLearner = struct {
             self.mu,
         });
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // PAS-Enhanced μ Calculation (v8.18)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// Get PAS-recommended μ value with sacred modulation
+    pub fn getPasRecommendedMu(self: *const Self) f64 {
+        // Base μ from sacred constants
+        const base_mu = self.mu;
+        // Apply φ modulation: μ_pas = μ × φ^(success_rate - 0.5)
+        const history_len = self.validation_history.items.len;
+        if (history_len == 0) return base_mu;
+
+        // Estimate success rate from validation history
+        var approved_count: usize = 0;
+        for (self.validation_history.items) |mod| {
+            if (mod.validation.approved) approved_count += 1;
+        }
+        const success_rate = @as(f64, @floatFromInt(approved_count)) / @as(f64, @floatFromInt(history_len));
+        const phi_mod = std.math.pow(f64, self.phi, success_rate - 0.5);
+        return base_mu * phi_mod;
+    }
+
+    /// Get PAS confidence score from validation history
+    pub fn getPasConfidence(self: *const Self) f64 {
+        const history_len = self.validation_history.items.len;
+        if (history_len == 0) return 0.0;
+
+        var total_confidence: f64 = 0;
+        for (self.validation_history.items) |mod| {
+            total_confidence += @as(f64, @floatCast(mod.confidence));
+        }
+        return total_confidence / @as(f64, @floatFromInt(history_len));
+    }
+
+    /// Get PAS metrics summary
+    pub fn getPasMetrics(self: *const Self) struct {
+        total_modifications: usize,
+        approved_count: usize,
+        success_rate: f64,
+        trinity_score: f64,
+        recommended_mu: f64,
+    } {
+        const total = self.validation_history.items.len;
+        var approved: usize = 0;
+        for (self.validation_history.items) |mod| {
+            if (mod.validation.approved) approved += 1;
+        }
+        const rate = if (total > 0)
+            @as(f64, @floatFromInt(approved)) / @as(f64, @floatFromInt(total))
+        else
+            0.0;
+
+        // Trinity score: φ² + 1/φ² should ≈ 3
+        const phi_sq = self.phi * self.phi;
+        const trinity_score = phi_sq + 1.0 / phi_sq;
+
+        return .{
+            .total_modifications = total,
+            .approved_count = approved,
+            .success_rate = rate,
+            .trinity_score = trinity_score,
+            .recommended_mu = self.getPasRecommendedMu(),
+        };
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

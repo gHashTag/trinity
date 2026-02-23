@@ -25,6 +25,7 @@ pub const AgentType = enum {
     swarm, // Consensus engine
     claude_flow, // MCP bridge
     agent_mu, // Self-reference
+    pas, // Predictive Algorithmic Systematics
 };
 
 /// Message types for inter-agent communication
@@ -36,6 +37,9 @@ pub const MessageType = enum {
     fix_result,
     status_query,
     error_report,
+    pas_analysis,
+    pas_forecast,
+    pas_validation,
 };
 
 /// Collaboration message between agents
@@ -117,12 +121,48 @@ pub const AgentEndpoint = struct {
     }
 };
 
+/// PAS analysis response
+pub const PasAnalysisResponse = struct {
+    primary_pattern: []const u8,
+    confidence: f64,
+    recommended_mu: f64,
+    energy_harvested: f64,
+    sacred_valid: bool,
+    timestamp: i64,
+};
+
+/// PAS forecast response
+pub const PasForecastResponse = struct {
+    predicted_multiplier: f64,
+    confidence_min: f64,
+    confidence_max: f64,
+    time_horizon: u64,
+    trinity_score: f64,
+};
+
+/// PAS sacred validation result
+pub const PasSacredValidation = struct {
+    trinity_valid: bool,
+    phi_sq_plus_phi_inv_sq: f64,
+    mu_valid: bool,
+    chi_valid: bool,
+};
+
+/// PAS daemon status
+pub const PasDaemonStatus = struct {
+    active: bool,
+    analyses_performed: u64,
+    energy_harvested: f64,
+    sacred_validation_rate: f64,
+    pending_recommendations: u32,
+};
+
 /// Multi-agent collaborator
 pub const AgentCollaborator = struct {
     outgoing: ArrayListManaged(CollaborationMessage, null),
     incoming: ArrayListManaged(CollaborationMessage, null),
     pending_requests: StringHashMap(PendingRequest),
-    endpoints: [4]AgentEndpoint,
+    endpoints: [5]AgentEndpoint,
     allocator: Allocator,
     enabled: bool,
     last_error: ?[]const u8,
@@ -165,6 +205,13 @@ pub const AgentCollaborator = struct {
             .host = "localhost",
             .port = 8084,
             .path = "/api/claude/forward",
+            .timeout_ms = 5000,
+        };
+        collab.endpoints[4] = AgentEndpoint{
+            .agent = .pas,
+            .host = "localhost",
+            .port = 8085,
+            .path = "/api/pas/analyze",
             .timeout_ms = 5000,
         };
 
@@ -371,6 +418,83 @@ pub const AgentCollaborator = struct {
         }
     }
 
+    /// Request PAS analysis (Predictive Algorithmic Systematics)
+    pub fn requestPasAnalysis(
+        self: *AgentCollaborator,
+        fix_type: []const u8,
+        success_rate: f64,
+        attempt_count: u32,
+    ) !?PasAnalysisResponse {
+        if (!self.enabled) return null;
+
+        _ = fix_type;
+        _ = attempt_count;
+
+        // STUB: In production, would HTTP to localhost:8085
+        // For now, return mock PAS analysis
+        const phi: f64 = 1.6180339887;
+        const mu: f64 = 1.0 / (phi * phi * 10.0);
+
+        return PasAnalysisResponse{
+            .primary_pattern = "divide_and_conquer",
+            .confidence = 0.96,
+            .recommended_mu = mu * success_rate,
+            .energy_harvested = 0.42,
+            .sacred_valid = true,
+            .timestamp = std.time.timestamp(),
+        };
+    }
+
+    /// Request PAS forecast
+    pub fn requestPasForecast(
+        self: *AgentCollaborator,
+        horizon: u64,
+    ) !?PasForecastResponse {
+        if (!self.enabled) return null;
+
+        _ = horizon;
+
+        const phi: f64 = 1.6180339887;
+        return PasForecastResponse{
+            .predicted_multiplier = phi * phi,
+            .confidence_min = 0.85,
+            .confidence_max = 0.98,
+            .time_horizon = 100,
+            .trinity_score = 3.0,
+        };
+    }
+
+    /// Validate PAS sacred constants
+    pub fn validatePasSacred(self: *AgentCollaborator) !PasSacredValidation {
+        _ = self;
+        const phi: f64 = 1.6180339887;
+        const phi_sq = phi * phi;
+        const phi_inv_sq = 1.0 / phi_sq;
+        const sum = phi_sq + phi_inv_sq;
+        const mu: f64 = 1.0 / (phi_sq * 10.0);
+        const chi: f64 = 1.0 / (phi * 10.0);
+
+        return PasSacredValidation{
+            .trinity_valid = @abs(sum - 3.0) < 0.001,
+            .phi_sq_plus_phi_inv_sq = sum,
+            .mu_valid = @abs(mu - 0.0382) < 0.001,
+            .chi_valid = @abs(chi - 0.0618) < 0.001,
+        };
+    }
+
+    /// Get PAS daemon status
+    pub fn getPasStatus(self: *AgentCollaborator) !PasDaemonStatus {
+        _ = self;
+        // STUB: Would query PAS daemon health endpoint
+        return PasDaemonStatus{
+            .active = true,
+            .analyses_performed = 0,
+            .energy_harvested = 0.0,
+            .sacred_validation_rate = 1.0,
+            .pending_recommendations = 0,
+        };
+    }
+
     /// Export collaboration log as markdown
     pub fn exportLog(self: *const AgentCollaborator, writer: anytype) !void {
         try writer.writeAll(
@@ -425,7 +549,7 @@ test "AgentCollaborator: initialization" {
     defer collab.deinit();
 
     try std.testing.expect(collab.enabled);
-    try std.testing.expectEqual(@as(usize, 4), collab.endpoints.len);
+    try std.testing.expectEqual(@as(usize, 5), collab.endpoints.len);
 }
 
 test "AgentCollaborator: is agent available" {
