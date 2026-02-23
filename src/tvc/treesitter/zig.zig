@@ -38,7 +38,7 @@ pub const Parser = struct {
 
     /// Set the language for the parser
     pub fn setLanguage(self: *Parser, language: Language) !void {
-        if (c.ts_parser_set_language(self.ptr, language) == 0) {
+        if (!c.ts_parser_set_language(self.ptr, language)) {
             return error.LanguageSetFailed;
         }
     }
@@ -49,7 +49,7 @@ pub const Parser = struct {
             self.ptr,
             null, // old_tree
             source.ptr,
-            source.len,
+            @intCast(source.len),
         ) orelse return error.ParseFailed;
         return tree;
     }
@@ -154,11 +154,11 @@ pub const Node = struct {
     }
 
     /// Get child by field name
-    pub fn childByFieldName(self: Node, source: []const u8, field_name: []const u8) ?Node {
+    pub fn childByFieldName(self: Node, _: []const u8, field_name: []const u8) ?Node {
         const c_str = @as([*c]const u8, @ptrCast(field_name.ptr));
-        const child = c.ts_node_child_by_field_name(self.ptr, c_str, @intCast(field_name.len));
-        if (c.ts_node_is_null(child)) return null;
-        return Node{ .ptr = child };
+        const result = c.ts_node_child_by_field_name(self.ptr, c_str, @intCast(field_name.len));
+        if (c.ts_node_is_null(result)) return null;
+        return Node{ .ptr = result };
     }
 
     /// Get parent node
@@ -258,7 +258,7 @@ pub const Query = struct {
     ptr: *c.TSQuery,
 
     /// Create a query from a string
-    pub fn init(allocator: Allocator, language: Language, source: []const u8) !Query {
+    pub fn init(_: Allocator, language: Language, source: []const u8) !Query {
         var error_offset: u32 = 0;
         var error_type: c.TSQueryError = 0;
 
@@ -306,11 +306,11 @@ pub const QueryCursor = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// External function to load Zig language
-/// This must be linked from tree-sitter-zig parser
+/// Provided by tree-sitter-zig grammar, or by zig_lang_stub.c (returns NULL)
 extern fn tree_sitter_zig() ?*c.TSLanguage;
 
 /// Load the Zig language parser
-/// Returns null if tree-sitter-zig is not available
+/// Returns null if tree-sitter-zig grammar is not available (stub returns NULL)
 pub fn loadZigLanguage() ?Language {
     return tree_sitter_zig();
 }
@@ -350,22 +350,22 @@ pub fn byteToLineColumn(source: []const u8, byte_offset: usize) struct { line: u
 
 /// Find all nodes of a specific type
 pub fn findNodesOfType(allocator: Allocator, node: Node, node_type: []const u8) ![]Node {
-    var list = std.ArrayList(Node).init(allocator);
+    var list: std.ArrayList(Node) = .empty;
 
-    try findNodesOfTypeRecursive(node, node_type, &list);
+    try findNodesOfTypeRecursive(allocator, node, node_type, &list);
 
-    return list.toOwnedSlice();
+    return list.toOwnedSlice(allocator);
 }
 
-fn findNodesOfTypeRecursive(node: Node, node_type: []const u8, list: *std.ArrayList(Node)) !void {
+fn findNodesOfTypeRecursive(allocator: Allocator, node: Node, node_type: []const u8, list: *std.ArrayList(Node)) !void {
     var iter = node.iterateChildren();
-    while (iter.next()) |child| {
-        if (child.isNamed()) {
-            const child_type = child.getType();
+    while (iter.next()) |child_node| {
+        if (child_node.isNamed()) {
+            const child_type = child_node.getType();
             if (std.mem.eql(u8, child_type, node_type)) {
-                try list.append(child);
+                try list.append(allocator, child_node);
             }
-            try findNodesOfTypeRecursive(child, node_type, list);
+            try findNodesOfTypeRecursive(allocator, child_node, node_type, list);
         }
     }
 }

@@ -1100,15 +1100,13 @@ pub fn build(b: *std.Build) void {
         });
         ts_zig_mod.linkSystemLibrary("tree-sitter", .{});
         ts_zig_mod.link_libc = true;
-        vibee.root_module.addImport("treesitter_zig", ts_zig_mod);
-
-        const ts_ast_mod = b.createModule(.{
-            .root_source_file = b.path("src/tvc/treesitter/ast_nodes.zig"),
-            .target = target,
-            .optimize = optimize,
+        // Stub: tree_sitter_zig() returns NULL until real grammar is compiled
+        ts_zig_mod.addCSourceFile(.{
+            .file = b.path("src/tvc/treesitter/zig_lang_stub.c"),
         });
-        ts_ast_mod.addImport("treesitter_zig", ts_zig_mod);
-        vibee.root_module.addImport("treesitter_ast", ts_ast_mod);
+        vibee.root_module.addImport("treesitter_zig", ts_zig_mod);
+        // NOTE: ast_nodes.zig not wired yet (needs Zig 0.15 ArrayList migration)
+        // The treesitter_analyzer only uses zig_parser for AST traversal
     }
 
     b.installArtifact(vibee);
