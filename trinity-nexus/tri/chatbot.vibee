@@ -1,0 +1,23 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: process_message
+    given: Input data provided
+    when: process_message function called
+    then: Result returned
+  - name: test_process_message
+  - name: start
+    given: Input data provided
+    when: start function called
+    then: Result returned
+  - name: test_start
+
+types:
+  process_message:
+    description: Auto-generated
+
+  start:
+    description: Auto-generated

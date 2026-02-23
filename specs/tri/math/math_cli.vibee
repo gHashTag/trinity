@@ -1,0 +1,445 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED MATHEMATICS FRAMEWORK v2.0 — CLI INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+# Command hierarchy, aliases, help text, argument parsing
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: math_cli
+version: "2.0.0"
+language: zig
+module: commands
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLI STRUCTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+cli:
+  main_command: math
+  description: "Sacred Mathematics Framework — φ-driven computation"
+
+  hierarchy:
+    level0: "math (main dispatcher)"
+    level1: "constants, eval, compute, bench, identities, help"
+    level2: "eval: [phi, fib, lucas], compute: [spiral, verify, compare]"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMAND DEFINITIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+commands:
+  - name: math
+    description: "Main math command dispatcher"
+    function: "runMathCommand"
+    subcommands: [constants, eval, compute, bench, identities, help]
+    args: "[subcommand] [args...]"
+
+  - name: constants
+    description: "Show all sacred constants"
+    function: "runConstantsCommand"
+    alias: true
+    flags:
+      - name: format
+        values: [pretty, json, csv]
+        default: pretty
+    examples:
+      - "tri math constants"
+      - "tri constants"
+      - "tri constants --format=json"
+
+  - name: eval
+    description: "Evaluate mathematical sequences"
+    function: "runEvalCommand"
+    subcommands: [phi, fib, lucas]
+    args: "<sequence> <n>"
+
+  - name: phi
+    description: "Compute φ^n (golden ratio power)"
+    function: "runPhiCommand"
+    alias: true
+    args: "<n>"
+    flags:
+      - name: precision
+        type: "int"
+        default: 16
+    examples:
+      - "tri math eval phi 42"
+      - "tri phi 42"
+      - "tri phi 100 --precision=50"
+
+  - name: fib
+    description: "Compute Fibonacci F(n)"
+    function: "runFibCommand"
+    alias: true
+    args: "<n>"
+    examples:
+      - "tri math eval fib 100"
+      - "tri fib 1000"
+      - "tri fib 10000 (BigInt, 2090 digits)"
+
+  - name: lucas
+    description: "Compute Lucas L(n)"
+    function: "runLucasCommand"
+    alias: true
+    args: "<n>"
+    examples:
+      - "tri math eval lucas 20"
+      - "tri lucas 100"
+      - "tri lucas 2 (= 3 = TRINITY)"
+
+  - name: compute
+    description: "Computational operations"
+    function: "runComputeCommand"
+    subcommands: [spiral, verify, compare]
+    args: "<operation> [args...]"
+
+  - name: spiral
+    description: "Show φ-spiral coordinates"
+    function: "runSpiralCommand"
+    alias: true
+    args: "<n>"
+    flags:
+      - name: plot
+        type: "bool"
+        default: false
+      - name: count
+        type: "int"
+        default: 1
+    examples:
+      - "tri math compute spiral 12"
+      - "tri spiral 0"
+      - "tri spiral 12 --plot"
+
+  - name: verify
+    description: "Verify all sacred identities"
+    function: "runVerifyCommand"
+    alias: true
+    args: ""
+    examples:
+      - "tri math compute verify"
+      - "tri verify"
+
+  - name: compare
+    description: "Compare φ^n vs F(n) vs L(n)"
+    function: "runCompareCommand"
+    args: "[max_n]"
+    flags:
+      - name: max_n
+        type: "int"
+        default: 20
+    examples:
+      - "tri math compute compare"
+      - "tri math compute compare 30"
+
+  - name: bench
+    description: "Run performance benchmarks"
+    function: "runBenchCommand"
+    args: ""
+    examples:
+      - "tri math bench"
+
+  - name: identities
+    description: "Show all φ-identities with proofs"
+    function: "runIdentitiesCommand"
+    args: ""
+    flags:
+      - name: format
+        values: [pretty, json, csv]
+        default: pretty
+    examples:
+      - "tri math identities"
+      - "tri math identities --format=json"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ALIASES (Direct Commands)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+aliases:
+  - alias: constants
+    target: math constants
+    description: "Show all sacred constants"
+
+  - alias: phi
+    target: math eval phi
+    description: "Compute φ^n"
+
+  - alias: fib
+    target: math eval fib
+    description: "Compute Fibonacci F(n)"
+
+  - alias: lucas
+    target: math eval lucas
+    description: "Compute Lucas L(n)"
+
+  - alias: spiral
+    target: math compute spiral
+    description: "Show φ-spiral coordinates"
+
+  - alias: verify
+    target: math compute verify
+    description: "Verify sacred identities"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ENUM VALUES (for tri_utils.zig)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+enum_values:
+  - name: math
+    description: "Main math command"
+    priority: 10
+
+  - name: constants
+    description: "Show sacred constants"
+    alias: true
+    priority: 11
+
+  - name: phi
+    description: "Compute φ^n"
+    alias: true
+    priority: 12
+
+  - name: fib
+    description: "Fibonacci"
+    alias: true
+    priority: 13
+
+  - name: lucas
+    description: "Lucas"
+    alias: true
+    priority: 14
+
+  - name: spiral
+    description: "φ-spiral"
+    alias: true
+    priority: 15
+
+  - name: verify
+    description: "Verify identities"
+    alias: true
+    priority: 16
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SWITCH CASES (for main.zig)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+switch_cases:
+  - case: ".math"
+    function: "commands.runMathCommand(allocator, cmd_args)"
+    import: "const commands = @import(\"math/commands.zig\");"
+
+  - case: ".constants"
+    function: "commands.runConstantsCommand(allocator, cmd_args)"
+
+  - case: ".phi"
+    function: "commands.runPhiCommand(allocator, cmd_args)"
+
+  - case: ".fib"
+    function: "commands.runFibCommand(allocator, cmd_args)"
+
+  - case: ".lucas"
+    function: "commands.runLucasCommand(allocator, cmd_args)"
+
+  - case: ".spiral"
+    function: "commands.runSpiralCommand(allocator, cmd_args)"
+
+  - case: ".verify"
+    function: "commands.runVerifyCommand(allocator, cmd_args)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HELP TEXT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+help_text: |
+  ╔══════════════════════════════════════════════════════════════════════════════╗
+  ║                    SACRED MATHEMATICS FRAMEWORK v2.0                         ║
+  ║                    φ² + 1/φ² = 3 = TRINITY                                    ║
+  ╠══════════════════════════════════════════════════════════════════════════════╣
+  ║                                                                            ║
+  ║  HIERARCHICAL COMMANDS                                                      ║
+  ║  ─────────────────────────────────────────────────────────────────────────  ║
+  ║  tri math                      Show all math commands                        ║
+  ║  tri math constants            Show all sacred constants                     ║
+  ║  tri math eval phi <n>         Compute φ^n                                   ║
+  ║  tri math eval fib <n>         Fibonacci F(n) (BigInt)                       ║
+  ║  tri math eval lucas <n>       Lucas L(n)                                    ║
+  ║  tri math compute spiral <n>   φ-spiral + ASCII plot                         ║
+  ║  tri math compute verify       Verify all sacred identities                  ║
+  ║  tri math compute compare <n>  Compare φ^n vs F(n) vs L(n)                   ║
+  ║  tri math bench                Run benchmarks                                ║
+  ║  tri math identities           Show all φ-identities with proofs             ║
+  ║                                                                            ║
+  ║  ALIASES (Quick Access)                                                      ║
+  ║  ─────────────────────────────────────────────────────────────────────────  ║
+  ║  tri constants                Same as 'tri math constants'                   ║
+  ║  tri phi <n>                  Same as 'tri math eval phi <n>'                ║
+  ║  tri fib <n>                  Same as 'tri math eval fib <n>'                ║
+  ║  tri lucas <n>                Same as 'tri math eval lucas <n>'              ║
+  ║  tri spiral <n>               Same as 'tri math compute spiral <n>'          ║
+  ║  tri verify                   Same as 'tri math compute verify'              ║
+  ║                                                                            ║
+  ║  FLAGS                                                                       ║
+  ║  ─────────────────────────────────────────────────────────────────────────  ║
+  ║  --format=pretty|json|csv    Output format                                  ║
+  ║  --precision=N                Decimal precision (default: 16)                ║
+  ║  --plot                       Show ASCII spiral plot                        ║
+  ║  --max-n=N                    Comparison range (default: 20)                 ║
+  ║                                                                            ║
+  ║  EXAMPLES                                                                    ║
+  ║  ─────────────────────────────────────────────────────────────────────────  ║
+  ║  tri phi 42                   Compute φ⁴²                                    ║
+  ║  tri fib 1000                 F(1000) = 4346655... (209 digits)              ║
+  ║  tri lucas 2                  L(2) = 3 = TRINITY                             ║
+  ║  tri spiral 12 --plot         φ-spiral with ASCII plot                       ║
+  ║  tri verify                   Check all sacred identities                    ║
+  ║  tri math constants --json    Export constants as JSON                       ║
+  ║                                                                            ║
+  ╚══════════════════════════════════════════════════════════════════════════════╝
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DATA STRUCTURES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  CommandResult:
+    description: "Result of command execution"
+    fields:
+      - name: success
+        type: "bool"
+      - name: output
+        type: "[]const u8"
+      - name: error
+        type: "?[]const u8"
+
+  ParsedArgs:
+    description: "Parsed command arguments"
+    fields:
+      - name: positional
+        type: "[][]const u8"
+      - name: flags
+        type: "StringMap"
+      - name: subcommand
+        type: "?[]const u8"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS / FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: runMathCommand
+    description: "Main math command dispatcher"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+    implementation: |
+      If no args: show math help
+      Otherwise: dispatch to subcommand
+
+  - name: runConstantsCommand
+    description: "Show all sacred constants"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: runEvalCommand
+    description: "Eval dispatcher (phi/fib/lucas)"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: runPhiCommand
+    description: "Compute φ^n"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: runFibCommand
+    description: "Compute Fibonacci"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: runLucasCommand
+    description: "Compute Lucas"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: runComputeCommand
+    description: "Compute dispatcher (spiral/verify/compare)"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: runSpiralCommand
+    description: "Show φ-spiral"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: runVerifyCommand
+    description: "Verify identities"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: runBenchCommand
+    description: "Run benchmarks"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: runIdentitiesCommand
+    description: "Show φ-identities"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+    returns: "void"
+
+  - name: parseFlag
+    description: "Parse --flag=value or --flag value"
+    params:
+      - name: args
+        type: "[][]const u8"
+      - name: flag_name
+        type: "[]const u8"
+    returns: "?[]const u8"
+
+  - name: showMathHelp
+    description: "Display math command help"
+    returns: "void"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END OF SPECIFICATION
+# ═══════════════════════════════════════════════════════════════════════════════

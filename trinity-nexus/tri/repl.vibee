@@ -1,0 +1,87 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: new_state
+    given: Input data provided
+    when: new_state function called
+    then: Result returned
+  - name: test_new_state
+  - name: process_command
+    given: Input data provided
+    when: process_command function called
+    then: Result returned
+  - name: test_process_command
+  - name: evaluate
+    given: Input data provided
+    when: evaluate function called
+    then: Result returned
+  - name: test_evaluate
+  - name: evaluate_math
+    given: Input data provided
+    when: evaluate_math function called
+    then: Result returned
+  - name: test_evaluate_math
+  - name: evaluate_macro
+    given: Input data provided
+    when: evaluate_macro function called
+    then: Result returned
+  - name: test_evaluate_macro
+  - name: print_help
+    given: Input data provided
+    when: print_help function called
+    then: Result returned
+  - name: test_print_help
+  - name: print_history
+    given: Input data provided
+    when: print_history function called
+    then: Result returned
+  - name: test_print_history
+  - name: print_variables
+    given: Input data provided
+    when: print_variables function called
+    then: Result returned
+  - name: test_print_variables
+  - name: print_banner
+    given: Input data provided
+    when: print_banner function called
+    then: Result returned
+  - name: test_print_banner
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+  - name: test_main
+
+types:
+  new_state:
+    description: Auto-generated
+
+  process_command:
+    description: Auto-generated
+
+  evaluate:
+    description: Auto-generated
+
+  evaluate_math:
+    description: Auto-generated
+
+  evaluate_macro:
+    description: Auto-generated
+
+  print_help:
+    description: Auto-generated
+
+  print_history:
+    description: Auto-generated
+
+  print_variables:
+    description: Auto-generated
+
+  print_banner:
+    description: Auto-generated
+
+  main:
+    description: Auto-generated

@@ -1,0 +1,175 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: ffi_node_create
+    given: Input data provided
+    when: ffi_node_create function called
+    then: Result returned
+  - name: test_ffi_node_create
+  - name: ffi_node_free
+    given: Input data provided
+    when: ffi_node_free function called
+    then: Result returned
+  - name: test_ffi_node_free
+  - name: ffi_set_width
+    given: Input data provided
+    when: ffi_set_width function called
+    then: Result returned
+  - name: test_ffi_set_width
+  - name: ffi_set_height
+    given: Input data provided
+    when: ffi_set_height function called
+    then: Result returned
+  - name: test_ffi_set_height
+  - name: ffi_set_flex_direction
+    given: Input data provided
+    when: ffi_set_flex_direction function called
+    then: Result returned
+  - name: test_ffi_set_flex_direction
+  - name: ffi_calculate_layout
+    given: Input data provided
+    when: ffi_calculate_layout function called
+    then: Result returned
+  - name: test_ffi_calculate_layout
+  - name: ffi_get_computed_left
+    given: Input data provided
+    when: ffi_get_computed_left function called
+    then: Result returned
+  - name: test_ffi_get_computed_left
+  - name: ffi_get_computed_top
+    given: Input data provided
+    when: ffi_get_computed_top function called
+    then: Result returned
+  - name: test_ffi_get_computed_top
+  - name: ffi_get_computed_width
+    given: Input data provided
+    when: ffi_get_computed_width function called
+    then: Result returned
+  - name: test_ffi_get_computed_width
+  - name: ffi_get_computed_height
+    given: Input data provided
+    when: ffi_get_computed_height function called
+    then: Result returned
+  - name: test_ffi_get_computed_height
+  - name: node_create
+    given: Input data provided
+    when: node_create function called
+    then: Result returned
+  - name: test_node_create
+  - name: node_free
+    given: Input data provided
+    when: node_free function called
+    then: Result returned
+  - name: test_node_free
+  - name: set_width
+    given: Input data provided
+    when: set_width function called
+    then: Result returned
+  - name: test_set_width
+  - name: set_height
+    given: Input data provided
+    when: set_height function called
+    then: Result returned
+  - name: test_set_height
+  - name: set_flex_direction
+    given: Input data provided
+    when: set_flex_direction function called
+    then: Result returned
+  - name: test_set_flex_direction
+  - name: calculate_layout
+    given: Input data provided
+    when: calculate_layout function called
+    then: Result returned
+  - name: test_calculate_layout
+  - name: get_computed_left
+    given: Input data provided
+    when: get_computed_left function called
+    then: Result returned
+  - name: test_get_computed_left
+  - name: get_computed_top
+    given: Input data provided
+    when: get_computed_top function called
+    then: Result returned
+  - name: test_get_computed_top
+  - name: get_computed_width
+    given: Input data provided
+    when: get_computed_width function called
+    then: Result returned
+  - name: test_get_computed_width
+  - name: get_computed_height
+    given: Input data provided
+    when: get_computed_height function called
+    then: Result returned
+  - name: test_get_computed_height
+  - name: create_flex_container
+    given: Input data provided
+    when: create_flex_container function called
+    then: Result returned
+  - name: test_create_flex_container
+
+types:
+  ffi_node_create:
+    description: Auto-generated
+
+  ffi_node_free:
+    description: Auto-generated
+
+  ffi_set_width:
+    description: Auto-generated
+
+  ffi_set_height:
+    description: Auto-generated
+
+  ffi_set_flex_direction:
+    description: Auto-generated
+
+  ffi_calculate_layout:
+    description: Auto-generated
+
+  ffi_get_computed_left:
+    description: Auto-generated
+
+  ffi_get_computed_top:
+    description: Auto-generated
+
+  ffi_get_computed_width:
+    description: Auto-generated
+
+  ffi_get_computed_height:
+    description: Auto-generated
+
+  node_create:
+    description: Auto-generated
+
+  node_free:
+    description: Auto-generated
+
+  set_width:
+    description: Auto-generated
+
+  set_height:
+    description: Auto-generated
+
+  set_flex_direction:
+    description: Auto-generated
+
+  calculate_layout:
+    description: Auto-generated
+
+  get_computed_left:
+    description: Auto-generated
+
+  get_computed_top:
+    description: Auto-generated
+
+  get_computed_width:
+    description: Auto-generated
+
+  get_computed_height:
+    description: Auto-generated
+
+  create_flex_container:
+    description: Auto-generated

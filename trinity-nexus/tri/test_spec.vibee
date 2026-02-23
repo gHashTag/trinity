@@ -1,0 +1,16 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: parse_yaml
+    given: A YAML file
+    when: Parser is invoked
+    then: Returns parsed data
+
+types:
+  Config:
+    fields:
+
+  parse:

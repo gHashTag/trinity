@@ -1314,6 +1314,12 @@ pub fn build(b: *std.Build) void {
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
         },
     });
+    // PAS Orchestrator module
+    const pas_orchestrator_mod = b.createModule(.{
+        .root_source_file = b.path("src/agent_mu/pas_orchestrator.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     // TRI - Unified Trinity CLI
     const tri = b.addExecutable(.{
         .name = "tri",
@@ -1330,6 +1336,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
                 .{ .name = "tvc_distributed", .module = tvc_distributed_mod },
                 .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
+                .{ .name = "pas_orchestrator", .module = pas_orchestrator_mod },
             },
         }),
     });
