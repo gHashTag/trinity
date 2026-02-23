@@ -1,51 +1,14 @@
-# .ralphrc - Ralph project configuration
-# Project: Trinity — Ternary Computing Framework
-# Documentation: https://github.com/frankbria/ralph-claude-code
-
-# ── Project identification ──────────────────────────────────────
-PROJECT_NAME="trinity"
-PROJECT_TYPE="zig-ternary-framework"
-
-# ── Loop settings ───────────────────────────────────────────────
+# W1 Worker Configuration
+PROJECT_NAME="trinity-w1"
+PROJECT_TYPE="zig"
 MAX_CALLS_PER_HOUR=100
 CLAUDE_TIMEOUT_MINUTES=30
 CLAUDE_OUTPUT_FORMAT="json"
-
-# ── Tool permissions ────────────────────────────────────────────
-ALLOWED_TOOLS="*"
-
-# ── Branch safety ───────────────────────────────────────────────
-BRANCH_POLICY="feature-only"
-BRANCH_PREFIX="ralph/"
-PROTECTED_BRANCHES="main,master"
-
-# ── Quality gates (run after every task) ────────────────────────
-QUALITY_GATES="build,test,format"
-GATE_BUILD="zig build"
-GATE_TEST="zig build test"
-GATE_FORMAT="zig fmt --check src/"
-PRE_FLIGHT_CHECK=true
-
-# ── Session management ──────────────────────────────────────────
+ALLOWED_TOOLS="Write,Read,Edit,Grep,Glob,Bash(git *),Bash(zig *),Bash(ls *),Bash(cat *)"
 SESSION_CONTINUITY=true
 SESSION_EXPIRY_HOURS=24
-
-# ── Task sources ────────────────────────────────────────────────
 TASK_SOURCES="local"
-TASK_FILE=".ralph/internal/fix_plan.md"
-
-# ── Circuit breaker thresholds ──────────────────────────────────
-CB_NO_PROGRESS_THRESHOLD=3
-CB_SAME_ERROR_THRESHOLD=5
-CB_OUTPUT_DECLINE_THRESHOLD=70
-CB_COOLDOWN_MINUTES=5
-AUTO_RESTART=true
-
-# ── File safety ─────────────────────────────────────────────────
-FORBIDDEN_PATHS="trinity/output/,generated/"
-PROTECTED_FILES="build.zig,build.zig.zon"
-
-# ── Telegram Reporting (via OpenClaw) ─────────────────────────────
-RALPH_REPORT_ENABLED=true
-RALPH_TELEGRAM_CHAT_ID="144022504"
-OPENCLAW_BIN="node /Users/playra/openclaw/openclaw.mjs"
+CB_NO_PROGRESS_THRESHOLD=5
+CB_SAME_ERROR_THRESHOLD=7
+CLAUDE_MIN_VERSION="2.0.76"
+RALPH_VERBOSE=true
