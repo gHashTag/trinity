@@ -390,7 +390,6 @@ pub const UnifiedChatEngine = struct {
     }
 
     fn generateCodeExplanation(self: *Self, query: []const u8, lang: multilingual.Language) UnifiedResponse {
-        _ = query;
 
         // Generate explanation about code concepts
         const explanations = switch (lang) {
@@ -456,7 +455,7 @@ pub const UnifiedChatEngine = struct {
     /// Get PAS recommendation based on query and mode
     fn getPasRecommendation(self: *Self, query: []const u8, mode: ChatMode) ?UnifiedResponse.PasRecommendation {
         _ = mode;
-        _ = self;
+        _ = query;
 
         // Get PAS predictions
         const predictions = self.pas_engine.getAllPredictions();

@@ -1,0 +1,72 @@
+name: router
+version: "1.0.0"
+language: zig
+module: router
+description: Declarative HTTP routing system - eliminates boilerplate case matching
+
+types:
+  Route:
+    description: HTTP route definition
+    fields:
+      method: String
+      path: List<String>
+      handler: Handler
+
+  Router:
+    description: HTTP router
+    fields:
+      routes: List<Route>
+      not_found: Handler
+      middleware: List<Middleware>
+
+  Handler:
+    description: Request handler function type
+    fields:
+      function: Function
+
+  Middleware:
+    description: Middleware function type
+    fields:
+      function: Function
+
+behaviors:
+  - name: router_creation
+  - name: new
+  - name: not_found_handler
+  - name: route_registration
+  - name: get
+  - name: router
+  - name: path
+  - name: handler
+  - name: post
+  - name: router
+  - name: path
+  - name: handler
+  - name: put
+  - name: router
+  - name: path
+  - name: handler
+  - name: delete
+  - name: router
+  - name: path
+  - name: handler
+  - name: middleware_operations
+  - name: use
+  - name: router
+  - name: middleware
+  - name: request_handling
+  - name: handle
+  - name: router
+  - name: request
+  - name: find_route
+  - name: routes
+  - name: method
+  - name: path
+  - name: new
+  - name: get
+  - name: post
+  - name: put
+  - name: delete
+  - name: use
+  - name: handle
+  - name: find_route

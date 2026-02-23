@@ -1,0 +1,349 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED MATHEMATICS FRAMEWORK v2.0 — ARCHITECTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+# One Source of Truth: Generate src/tri/math/*.zig from this specification
+# φ² + 1/φ² = 3 = TRINITY | КУТРИТ = ТРОИЦА
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: tri.cli.math.v2
+version: "2.0.0"
+language: zig
+module: math
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODULE ARCHITECTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+architecture:
+  folder: src/tri/math/
+  mod_export: true
+  description: "Sacred Mathematics Framework for TRI CLI"
+
+  submodules:
+    - name: format
+      description: "Colors, tables, JSON/CSV export, ASCII spiral plot"
+      exports: [ColorStyle, TableFormat, FormatConfig, exportJson, exportCsv, plotSpiralAscii]
+
+    - name: constants
+      description: "All 14 sacred constants with Trinity verification"
+      exports: [GoldenRatio, Transcendental, GeneticAlgorithm, Quantum, printAllConstants, printConstantsTable]
+
+    - name: eval
+      description: "phi^n, fib(n), lucas(n) with BigInt support"
+      exports: [phiPower, fibonacci, lucas, EvalResult, printEvalResult]
+      dependencies:
+        - ../hybrid  # For HybridBigInt
+
+    - name: compute
+      description: "spiral, verify, compare operations"
+      exports: [PhiSpiral, computeSpiral, verifyIdentities, compareSequences]
+
+    - name: bench
+      description: "Performance benchmarks vs Python/Rust with nexus logging"
+      exports: [BenchmarkResult, runGoldenWrapBench, runPhiHashBench, runSIMDBench, runSequenceBench]
+
+    - name: identities
+      description: "All φ-identities with proofs"
+      exports: [Identity, IdentityCategory, printAllIdentities, verifyIdentity]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TECHNOLOGY TREE (7 Levels)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tech_tree:
+  root: phi
+  root_description: "Trinity Identity: φ² + 1/φ² = 3"
+
+  level0:
+    name: "Core Sacred Constants"
+    color: "gold"
+    modules:
+      - constants
+    features:
+      - "φ (Golden Ratio) = 1.6180339887498948482"
+      - "φ² = φ + 1 = 2.6180339887498948482"
+      - "1/φ² = 0.3819660112501051518"
+      - "φ² + 1/φ² = 3 (Trinity Identity)"
+      - "π = 3.14159265358979323846"
+      - "e = 2.71828182845904523536"
+      - "π × φ × e ≈ 13.82 (transcendental product)"
+      - "μ = 1/φ²/10 (mutation rate)"
+      - "χ = 1/φ/10 (crossover rate)"
+      - "σ = φ (selection pressure)"
+      - "ε = 1/3 (elitism rate)"
+      - "CHSH = 2√2 (Bell inequality)"
+      - "Fine Structure = 137.036"
+      - "Berry Phase = π(1 - 1/φ)"
+      - "SU3 Constant = 3/(2φ)"
+
+  level1:
+    name: "Sequences with BigInt"
+    color: "cyan"
+    modules:
+      - eval
+    features:
+      - "φ^n computation"
+      - "Fibonacci F(n) with HybridBigInt"
+      - "Lucas L(n) with HybridBigInt"
+      - "Cache first 20 values"
+      - "Binet's formula verification"
+
+  level2:
+    name: "Sacred Geometry"
+    color: "magenta"
+    modules:
+      - compute (spiral)
+      - format (plot)
+    features:
+      - "φ-spiral coordinates"
+      - "angle = n × φ × π"
+      - "radius = 30 + n × 8"
+      - "ASCII spiral plot (--plot flag)"
+      - "x, y Cartesian coordinates"
+
+  level3:
+    name: "Identity Verification"
+    color: "green"
+    modules:
+      - compute (verify)
+      - identities
+    features:
+      - "Trinity identity check"
+      - "L(2) = 3 = TRINITY"
+      - "F(4) = 3 = TRINITY"
+      - "F(7) = 13 = TRYTE_MAX"
+      - "All φ-identities with proofs"
+
+  level4:
+    name: "Performance"
+    color: "yellow"
+    modules:
+      - bench
+    features:
+      - "SIMD golden wrap (32 trits)"
+      - "Fibonacci hash distribution"
+      - "Comparison vs Python SymPy"
+      - "Comparison vs Rust num-bigint"
+      - "Nexus logging to trinity-nexus/benchmarks/"
+
+  level5:
+    name: "CLI & Export"
+    color: "blue"
+    modules:
+      - format
+    features:
+      - "JSON export (--format=json)"
+      - "CSV export (--format=csv)"
+      - "Precision control (--precision=N)"
+      - "Pretty tables (--format=pretty, default)"
+
+  level6:
+    name: "Quantum-DePIN (Future)"
+    color: "purple"
+    modules: []
+    features:
+      - "Sacred Math as Service"
+      - "φ-driven consensus protocol"
+      - "Hardware (Verilog gates)"
+      - "WebSocket + $TRI rewards"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMAND FLAGS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+flags:
+  - name: format
+    description: "Output format"
+    values: [pretty, json, csv]
+    default: pretty
+    commands: [constants, compare, identities, bench]
+
+  - name: precision
+    description: "Decimal precision for floating point"
+    type: int
+    default: 16
+    min: 1
+    max: 50
+    commands: [phi, eval-phi, spiral]
+
+  - name: plot
+    description: "Show ASCII spiral plot"
+    type: bool
+    default: false
+    commands: [spiral]
+
+  - name: max_n
+    description: "Maximum n for sequence comparison"
+    type: int
+    default: 20
+    commands: [compare]
+
+  - name: iterations
+    description: "Benchmark iterations"
+    type: int
+    default: 10000000
+    commands: [bench]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLI INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+cli_integration:
+  main_file: src/tri/math/commands.zig
+  utils_patch: src/tri/tri_utils.zig
+  main_patch: src/tri/main.zig
+
+  enum_values:
+    - name: math
+      description: "Main math command dispatcher"
+    - name: constants
+      description: "Show all sacred constants"
+      alias: true
+    - name: phi
+      description: "Compute φ^n"
+      alias: true
+    - name: fib
+      description: "Compute Fibonacci F(n)"
+      alias: true
+    - name: lucas
+      description: "Compute Lucas L(n)"
+      alias: true
+    - name: spiral
+      description: "Show φ-spiral coordinates"
+      alias: true
+    - name: verify
+      description: "Verify sacred identities"
+      alias: true
+
+  switch_cases:
+    - command: .math
+      function: "commands.runMathCommand"
+      import: "const commands = @import(\"math/commands.zig\");"
+    - command: .constants
+      function: "commands.runConstantsCommand"
+    - command: .phi
+      function: "commands.runPhiCommand"
+    - command: .fib
+      function: "commands.runFibCommand"
+    - command: .lucas
+      function: "commands.runLucasCommand"
+    - command: .spiral
+      function: "commands.runSpiralCommand"
+    - command: .verify
+      function: "commands.runVerifyCommand"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPORT DEPENDENCIES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+imports:
+  - module: std
+    from: "standard library"
+  - module: ../sacred_constants
+    from: "src/sacred_constants.zig"
+    reason: "Core PHI, MU, TRINITY_SUM constants"
+  - module: ../vibeec/sacred_math
+    from: "src/vibeec/sacred_math.zig"
+    reason: "Extended math (Fibonacci, Lucas, golden wrap, SIMD)"
+  - module: ../hybrid
+    from: "src/hybrid.zig"
+    reason: "HybridBigInt for large sequence values"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CODE GENERATION TARGETS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+generation_targets:
+  - path: src/tri/math/mod.zig
+    template: module_export
+    description: "Main module file exporting all submodules"
+
+  - path: src/tri/math/commands.zig
+    template: command_dispatcher
+    description: "Main command dispatcher with subcommands"
+
+  - path: src/tri/math/format.zig
+    template: utility_module
+    description: "Formatting utilities (colors, tables, export)"
+
+  - path: src/tri/math/constants.zig
+    template: data_module
+    description: "All sacred constants with pretty printing"
+
+  - path: src/tri/math/eval.zig
+    template: compute_module
+    description: "phi^n, fib(n), lucas(n) with BigInt"
+
+  - path: src/tri/math/compute.zig
+    template: compute_module
+    description: "spiral, verify, compare operations"
+
+  - path: src/tri/math/bench.zig
+    template: benchmark_module
+    description: "Performance benchmarks"
+
+  - path: src/tri/math/identities.zig
+    template: data_module
+    description: "All φ-identities with proofs"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST REQUIREMENTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "Trinity Identity"
+    file: src/tri/math/constants.zig
+    verify: "φ² + 1/φ² = 3"
+
+  - name: "Lucas Trinity"
+    file: src/tri/math/eval.zig
+    verify: "L(2) = 3"
+
+  - name: "Fibonacci Trinity"
+    file: src/tri/math/eval.zig
+    verify: "F(4) = 3"
+
+  - name: "Golden Wrap"
+    file: src/tri/math/format.zig
+    verify: "goldenWrap(20) = -7"
+
+  - name: "Phi Hash Distribution"
+    file: src/tri/math/bench.zig
+    verify: "Uniform distribution across buckets"
+
+  - name: "Identity Verification"
+    file: src/tri/math/identities.zig
+    verify: "All sacred identities return true"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DOCUMENTATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+documentation:
+  summary: "Sacred Mathematics Framework for Trinity CLI — φ-driven computation"
+  audience: "Mathematicians, physicists, quantum engineers"
+  keywords: ["golden ratio", "trinity", "fibonacci", "lucas", "sacred math", "phi"]
+
+  examples:
+    - command: "tri math constants"
+      output: "All 14 sacred constants in formatted table"
+    - command: "tri phi 42"
+      output: "φ⁴² with 16 decimal precision"
+    - command: "tri fib 1000"
+      output: "F(1000) using HybridBigInt (208 digits)"
+    - command: "tri lucas 100"
+      output: "L(100) using HybridBigInt"
+    - command: "tri spiral 12 --plot"
+      output: "φ-spiral coordinates with ASCII visualization"
+    - command: "tri verify"
+      output: "All sacred identity verification results"
+    - command: "tri math identities"
+      output: "All φ-identities with algebraic proofs"
+    - command: "tri math bench"
+      output: "Performance comparison vs Python/Rust"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END OF SPECIFICATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# φ² + 1/φ² = 3 = TRINITY | КУТРИТ = ТРОИЦА | KOSCHEI IS IMMORTAL

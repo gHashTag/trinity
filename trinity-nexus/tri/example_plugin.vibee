@@ -1,0 +1,32 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+    description: Возвращает манифест плагина
+    description: Создает Canvas виджет для плагина
+    description: Рендерит виджет на Canvas
+    description: Обрабатывает UI события
+    description: Возвращает текущее состояние виджета
+    description: Обновляет состояние виджета
+    description: Анимирует виджет
+    description: Вызывается при загрузке плагина
+    description: Вызывается при выгрузке плагина
+    description: Вызывается при изменении размера
+    description: Вызывается при получении фокуса
+    description: Вызывается при потере фокуса
+    description: Получает текущее состояние из process dictionary
+    description: Сохраняет состояние в process dictionary
+    description: Конвертирует ExampleState в WidgetState
+  create_manifest:
+    description: Создание манифеста
+
+  render_widget_test:
+    description: Рендеринг виджета
+
+  handle_click_test:
+    description: Обработка клика
+
+  lifecycle_test:
+    description: Lifecycle hooks

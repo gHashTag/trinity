@@ -1,0 +1,91 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+  Parser:
+    description: Parser state
+    fields:
+      tokens: List(Token)
+      position: Int
+      errors: List(ParseError)
+
+  ParseError:
+    description: Parse error information
+    fields:
+      message: String
+      position: Int
+      token: Option(Token)
+
+  ParseResult(a):
+    description: Result of parsing operation
+
+  parse:
+    description: Parse tokens into module AST
+      tokens: List(Token)
+
+  parse_expr:
+    description: Parse expression
+      parser: Parser
+
+  parse_stmt:
+    description: Parse statement
+      parser: Parser
+
+  parse_type:
+    description: Parse type annotation
+      parser: Parser
+
+  parse_pattern:
+    description: Parse pattern for pattern matching
+      parser: Parser
+
+  expect_token:
+    description: Expect specific token at current position
+      parser: Parser
+      expected: Token
+
+  peek_token:
+    description: Look at current token without consuming
+      parser: Parser
+
+  advance:
+    description: Move to next token
+      parser: Parser
+
+  expression:
+    description: expr := term (('+' | '-') term)*
+
+  term:
+    description: term := factor (('*' | '/') factor)*
+
+  factor:
+    description: factor := number | string | identifier | '(' expr ')'
+
+  statement:
+    description: stmt := fn_def | test_def | type_alias | import | expr_stmt
+
+  function_definition:
+    description: fn_def := 'pub'? 'fn' identifier '(' params ')' (':' type)? '{' expr '}'
+
+  type_annotation:
+    description: type := 'Int' | 'String' | 'Bool' | 'List' '(' type ')' | identifier
+
+behaviors:
+  - name: token_consumption
+    given: Token stream
+    when: Parser processes tokens
+    then: Tokens consumed and AST built
+  - name: error_recovery
+    given: Invalid token sequence
+    when: Parser encounters error
+    then: Error recorded and parsing continues
+  - name: operator_precedence
+    given: Expression with multiple operators
+    when: Parser builds AST
+    then: Operators grouped by precedence
+  - name: pattern_matching
+    given: Case expression tokens
+    when: Parser processes case
+    then: Returns CaseExpr with patterns

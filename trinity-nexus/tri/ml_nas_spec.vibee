@@ -1,0 +1,124 @@
+name: ml_nas
+version: "1.0.0"
+language: zig
+module: ml_nas
+description: Neural Architecture Search system for automated model design
+
+types:
+  SearchSpace:
+    description: Architecture search space
+    fields:
+      id: String
+      name: String
+      type: String
+      operations: List<String>
+      constraints: SearchConstraints
+
+  SearchConstraints:
+    description: Search constraints
+    fields:
+      max_params: Int
+      max_latency_ms: Int
+      min_accuracy: Float
+      target_device: String
+
+  Architecture:
+    description: Neural network architecture
+    fields:
+      id: String
+      layers: List<Layer>
+      connections: List<Connection>
+      params_count: Int
+      flops: Int
+
+  Layer:
+    description: Network layer
+    fields:
+      id: Int
+      operation: String
+      params: Map<String, Int>
+      input_shape: List<Int>
+      output_shape: List<Int>
+
+  Connection:
+    description: Layer connection
+    fields:
+      from_layer: Int
+      to_layer: Int
+      type: String
+
+  SearchJob:
+    description: NAS search job
+    fields:
+      id: String
+      search_space_id: String
+      algorithm: String
+      status: String
+      iterations: Int
+      max_iterations: Int
+      best_architecture: Architecture
+      best_accuracy: Float
+
+  SearchResult:
+    description: Search result
+    fields:
+      architecture: Architecture
+      accuracy: Float
+      latency_ms: Int
+      params: Int
+      search_time_hours: Float
+      iterations: Int
+
+  EvaluationResult:
+    description: Architecture evaluation result
+    fields:
+      architecture_id: String
+      accuracy: Float
+      loss: Float
+      latency_ms: Int
+      memory_mb: Int
+
+behaviors:
+  - name: search_space_operations
+  - name: create_search_space
+  - name: name
+  - name: space_type
+  - name: operations
+  - name: constraints
+  - name: sample_architecture
+  - name: space_id
+  - name: search_operations
+  - name: start_search
+  - name: space_id
+  - name: algorithm
+  - name: max_iterations
+  - name: get_search_status
+  - name: job_id
+  - name: stop_search
+  - name: job_id
+  - name: get_search_result
+  - name: job_id
+  - name: evaluation_operations
+  - name: evaluate_architecture
+  - name: architecture_id
+  - name: dataset_id
+  - name: benchmark_architecture
+  - name: architecture_id
+  - name: device
+  - name: architecture_operations
+  - name: mutate_architecture
+  - name: architecture_id
+  - name: mutation_rate
+  - name: crossover_architectures
+  - name: parent1_id
+  - name: parent2_id
+  - name: create_search_space
+  - name: sample_architecture
+  - name: start_search
+  - name: get_search_status
+  - name: stop_search
+  - name: get_search_result
+  - name: evaluate_architecture
+  - name: benchmark_architecture
+  - name: mutate_architecture
+  - name: crossover_architectures

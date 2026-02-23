@@ -13,6 +13,7 @@
 const std = @import("std");
 const igla_hybrid_chat = @import("igla_hybrid_chat");
 const tvc = @import("tvc_corpus");
+const pas_orchestrator = @import("pas_orchestrator");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WEBSOCKET SERVER (v8.21)

@@ -1,0 +1,82 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+  Spec:
+    description: Complete specification parsed from YAML
+    fields:
+      name: String
+      version: String
+      description: String
+      author: Option(String)
+      category: Option(String)
+      tags: List(String)
+      types: List(TypeDef)
+      functions: List(FunctionSpec)
+      behaviors: List(Behavior)
+
+  TypeDef:
+    description: Type definition with fields
+    fields:
+      name: String
+      description: Option(String)
+      fields: List(FieldDef)
+
+  FieldDef:
+    description: Field definition with metadata
+    fields:
+      name: String
+      field_type: String
+      description: Option(String)
+      required: Bool
+      default: Option(String)
+
+  FunctionSpec:
+    description: Function specification
+    fields:
+      name: String
+      signature: String
+
+  Behavior:
+    description: Behavior specification with test cases
+    fields:
+      name: String
+      description: String
+      given: String
+      when: String
+      then: String
+      test_cases: List(TestCase)
+
+  TestCase:
+    description: Test case with input and expected output
+    fields:
+      name: String
+      input: Dict(String, String)
+      expected: Dict(String, String)
+
+behaviors:
+  - name: parse_yaml
+    given: A YAML file path
+    when: parse_yaml is called
+    then: Returns parsed Spec or error
+  - name: parse_valid_yaml
+  - name: generate_code
+    given: A parsed Spec
+    when: generate_code is called
+    then: Returns generated Gleam code
+  - name: generate_simple_module
+  - name: generate_tests
+    given: A parsed Spec with behaviors
+    when: generate_tests is called
+    then: Returns generated test code
+  - name: generate_test_file
+  - name: parse_spec_from_yaml
+  - name: generate_code_v2
+  - name: generate_tests
+  - name: parse_type_node
+  - name: parse_field_node
+  - name: parse_behavior_node
+  - name: parse_test_case_node
+  - name: infer_implementation_with_type

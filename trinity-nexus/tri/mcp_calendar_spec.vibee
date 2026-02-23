@@ -1,0 +1,124 @@
+name: mcp_calendar
+version: "1.0.0"
+language: zig
+module: mcp_calendar
+description: Calendar operations MCP tools for event management and scheduling
+
+types:
+  CalendarConfig:
+    description: Calendar service configuration
+    fields:
+      provider: String
+      api_key: String
+      calendar_id: String
+      timezone: String
+
+  Event:
+    description: Calendar event
+    fields:
+      id: String
+      title: String
+      description: String
+      location: String
+      start_time: String
+      end_time: String
+      all_day: Bool
+      attendees: List<Attendee>
+      reminders: List<Reminder>
+      recurrence: Recurrence
+      status: String
+
+  Attendee:
+    description: Event attendee
+    fields:
+      email: String
+      name: String
+      response_status: String
+      is_organizer: Bool
+
+  Reminder:
+    description: Event reminder
+    fields:
+      method: String
+      minutes_before: Int
+
+  Recurrence:
+    description: Event recurrence rule
+    fields:
+      frequency: String
+      interval: Int
+      count: Int
+      until: String
+      by_day: List<String>
+
+  Calendar:
+    description: Calendar information
+    fields:
+      id: String
+      name: String
+      description: String
+      timezone: String
+      color: String
+
+  TimeSlot:
+    description: Available time slot
+    fields:
+      start_time: String
+      end_time: String
+      is_available: Bool
+
+behaviors:
+  - name: event_management
+  - name: create_event
+  - name: config
+  - name: event
+  - name: update_event
+  - name: config
+  - name: event_id
+  - name: event
+  - name: delete_event
+  - name: config
+  - name: event_id
+  - name: get_event
+  - name: config
+  - name: event_id
+  - name: event_listing
+  - name: list_events
+  - name: config
+  - name: start_date
+  - name: end_date
+  - name: search_events
+  - name: config
+  - name: query
+  - name: get_upcoming_events
+  - name: config
+  - name: limit
+  - name: availability_operations
+  - name: check_availability
+  - name: config
+  - name: start_time
+  - name: end_time
+  - name: find_available_slots
+  - name: config
+  - name: start_date
+  - name: end_date
+  - name: duration_minutes
+  - name: calendar_management
+  - name: list_calendars
+  - name: config
+  - name: create_calendar
+  - name: config
+  - name: name
+  - name: description
+  - name: timezone
+  - name: create_event
+  - name: update_event
+  - name: delete_event
+  - name: get_event
+  - name: list_events
+  - name: search_events
+  - name: get_upcoming_events
+  - name: check_availability
+  - name: find_available_slots
+  - name: list_calendars
+  - name: create_calendar

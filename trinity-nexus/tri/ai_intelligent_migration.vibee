@@ -1,0 +1,23 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+    description: string
+    description: string
+
+constants:
+
+behaviors:
+  - name: build_dependency_graph
+  - name: analyze_usage_patterns
+  - name: estimate_migration_time
+  - name: calculate_risk_score
+  - name: analyze_simple_function
+  - name: migrate_with_context
+  - name: validate_semantic_equivalence
+  - name: migrate_module_with_deps
+  - name: "Умная миграция функции"
+  - name: "Контекстная миграция"
+  - name: "Миграция с зависимостями"
