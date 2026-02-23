@@ -1,0 +1,440 @@
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+# TRI CLI TECH TREE — Command Technology Hierarchy
+# ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# Technology tree showing all TRI CLI commands organized by category and complexity
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+name: tri_cli_tech_tree
+version: "1.0.0"
+language: zig
+module: commands
+
+cli:
+  main_command: tech-tree
+  description: "Display CLI command technology tree"
+
+tech_tree:
+  tier_0_foundation:
+    name: "Foundation Commands"
+    commands:
+      - name: "tri chat"
+        level: 0
+        description: "Interactive chat with vision + voice + tools"
+        dependencies: []
+      
+      - name: "tri code"
+        level: 0
+        description: "Generate code with typing effect"
+        dependencies: []
+      
+      - name: "tri help"
+        level: 0
+        description: "Show all commands"
+        dependencies: []
+      
+      - name: "tri version"
+        level: 0
+        description: "Show version information"
+        dependencies: []
+
+  tier_1_code_generation:
+    name: "Code Generation"
+    commands:
+      - name: "tri gen"
+        level: 1
+        description: "Compile VIBEE spec to Zig/Verilog"
+        dependencies: ["tri help"]
+      
+      - name: "tri spec-create"
+        level: 1
+        description: "Create .vibee spec template"
+        dependencies: ["tri gen"]
+      
+      - name: "tri plan"
+        level: 1
+        description: "Generate implementation plan from task"
+        dependencies: ["tri spec-create", "tri gen"]
+
+  tier_2_pipeline:
+    name: "Golden Chain Pipeline"
+    commands:
+      - name: "tri pipeline run"
+        level: 2
+        description: "Execute 17-link development cycle"
+        dependencies: ["tri plan"]
+      
+      - name: "tri pipeline status"
+        level: 2
+        description: "Show current pipeline state"
+        dependencies: ["tri pipeline run"]
+      
+      - name: "tri pipeline resume"
+        level: 2
+        description: "Resume from checkpoint"
+        dependencies: ["tri pipeline status"]
+      
+      - name: "tri decompose"
+        level: 2
+        description: "Break task into sub-tasks"
+        dependencies: ["tri plan"]
+      
+      - name: "tri loop-decide"
+        level: 2
+        description: "Continue/exit decision"
+        dependencies: ["tri pipeline run"]
+
+  tier_3_verification:
+    name: "Verification"
+    commands:
+      - name: "tri verify"
+        level: 3
+        description: "Run tests + benchmarks"
+        dependencies: ["tri pipeline run"]
+      
+      - name: "tri bench"
+        level: 3
+        description: "Run performance benchmarks"
+        dependencies: ["tri verify"]
+      
+      - name: "tri verdict"
+        level: 3
+        description: "Generate toxic verdict"
+        dependencies: ["tri verify", "tri bench"]
+
+  tier_4_swe_agent:
+    name: "SWE Agent Commands"
+    commands:
+      - name: "tri fix"
+        level: 4
+        description: "Detect and fix bugs"
+        dependencies: ["tri verify"]
+      
+      - name: "tri explain"
+        level: 4
+        description: "Explain code or concept"
+        dependencies: ["tri fix"]
+      
+      - name: "tri test"
+        level: 4
+        description: "Generate tests"
+        dependencies: ["tri verify"]
+      
+      - name: "tri doc"
+        level: 4
+        description: "Generate documentation"
+        dependencies: ["tri test"]
+      
+      - name: "tri refactor"
+        level: 4
+        description: "Suggest refactoring"
+        dependencies: ["tri explain"]
+      
+      - name: "tri reason"
+        level: 4
+        description: "Chain-of-thought reasoning"
+        dependencies: ["tri explain"]
+
+  tier_5_maintenance:
+    name: "Development Maintenance"
+    commands:
+      - name: "tri doctor"
+        level: 5
+        description: "Health check (5 checks)"
+        dependencies: []
+      
+      - name: "tri clean"
+        level: 5
+        description: "Remove .zig-cache, zig-out"
+        dependencies: ["tri doctor"]
+      
+      - name: "tri fmt"
+        level: 5
+        description: "Run zig fmt src/"
+        dependencies: ["tri doctor"]
+      
+      - name: "tri stats"
+        level: 5
+        description: "Show LOC, .tri count, tests"
+        dependencies: ["tri doctor"]
+      
+      - name: "tri igla"
+        level: 5
+        description: "IGLA status"
+        dependencies: ["tri stats"]
+
+  tier_6_analysis:
+    name: "Code Analysis"
+    commands:
+      - name: "tri analyze"
+        level: 6
+        description: "Run tree-sitter AST analyzer"
+        dependencies: ["tri doctor"]
+      
+      - name: "tri search"
+        level: 6
+        description: "Code search with tree-sitter"
+        dependencies: ["tri analyze"]
+      
+      - name: "tri deps"
+        level: 6
+        description: "Dependency tree visualization"
+        dependencies: ["tri analyze"]
+
+  tier_7_tvc:
+    name: "TVC (Distributed Learning)"
+    commands:
+      - name: "tri tvc-demo"
+        level: 7
+        description: "Run TVC chat demo"
+        dependencies: ["tri verify"]
+      
+      - name: "tri tvc-stats"
+        level: 7
+        description: "Show TVC corpus statistics"
+        dependencies: ["tri tvc-demo"]
+
+  tier_8_demos_benchmarks:
+    name: "Demo & Benchmark Suites"
+    categories:
+      - name: "Multi-Agent"
+        demo: "tri agents-demo"
+        bench: "tri agents-bench"
+        level: 8
+      
+      - name: "Long Context"
+        demo: "tri context-demo"
+        bench: "tri context-bench"
+        level: 8
+      
+      - name: "RAG"
+        demo: "tri rag-demo"
+        bench: "tri rag-bench"
+        level: 8
+      
+      - name: "Voice I/O"
+        demo: "tri voice-demo"
+        bench: "tri voice-bench"
+        level: 8
+      
+      - name: "Code Sandbox"
+        demo: "tri sandbox-demo"
+        bench: "tri sandbox-bench"
+        level: 8
+      
+      - name: "Streaming"
+        demo: "tri stream-demo"
+        bench: "tri stream-bench"
+        level: 8
+      
+      - name: "Vision"
+        demo: "tri vision-demo"
+        bench: "tri vision-bench"
+        level: 8
+      
+      - name: "Fine-tuning"
+        demo: "tri finetune-demo"
+        bench: "tri finetune-bench"
+        level: 8
+      
+      - name: "Multi-Modal"
+        demo: "tri multimodal-demo"
+        bench: "tri multimodal-bench"
+        level: 8
+      
+      - name: "Tool Use"
+        demo: "tri tooluse-demo"
+        bench: "tri tooluse-bench"
+        level: 8
+      
+      - name: "Unified Agent"
+        demo: "tri unified-demo"
+        bench: "tri unified-bench"
+        level: 8
+      
+      - name: "Autonomous"
+        demo: "tri auto-demo"
+        bench: "tri auto-bench"
+        level: 8
+      
+      - name: "Orchestration"
+        demo: "tri orch-demo"
+        bench: "tri orch-bench"
+        level: 8
+      
+      - name: "MM Orchestration"
+        demo: "tri mmo-demo"
+        bench: "tri mmo-bench"
+        level: 8
+      
+      - name: "Memory"
+        demo: "tri memory-demo"
+        bench: "tri memory-bench"
+        level: 8
+      
+      - name: "Persistent"
+        demo: "tri persist-demo"
+        bench: "tri persist-bench"
+        level: 8
+      
+      - name: "Spawn"
+        demo: "tri spawn-demo"
+        bench: "tri spawn-bench"
+        level: 8
+      
+      - name: "Cluster"
+        demo: "tri cluster-demo"
+        bench: "tri cluster-bench"
+        level: 8
+      
+      - name: "Work-Stealing"
+        demo: "tri worksteal-demo"
+        bench: "tri worksteal-bench"
+        level: 8
+      
+      - name: "Plugin"
+        demo: "tri plugin-demo"
+        bench: "tri plugin-bench"
+        level: 8
+      
+      - name: "Comms"
+        demo: "tri comms-demo"
+        bench: "tri comms-bench"
+        level: 8
+      
+      - name: "Observe"
+        demo: "tri observe-demo"
+        bench: "tri observe-bench"
+        level: 8
+      
+      - name: "Consensus"
+        demo: "tri consensus-demo"
+        bench: "tri consensus-bench"
+        level: 8
+      
+      - name: "Spec Exec"
+        demo: "tri specexec-demo"
+        bench: "tri specexec-bench"
+        level: 8
+      
+      - name: "Governor"
+        demo: "tri governor-demo"
+        bench: "tri governor-bench"
+        level: 8
+      
+      - name: "Fed Learn"
+        demo: "tri fedlearn-demo"
+        bench: "tri fedlearn-bench"
+        level: 8
+      
+      - name: "Event Src"
+        demo: "tri eventsrc-demo"
+        bench: "tri eventsrc-bench"
+        level: 8
+      
+      - name: "Cap Sec"
+        demo: "tri capsec-demo"
+        bench: "tri capsec-bench"
+        level: 8
+      
+      - name: "DTXN"
+        demo: "tri dtxn-demo"
+        bench: "tri dtxn-bench"
+        level: 8
+      
+      - name: "Cache"
+        demo: "tri cache-demo"
+        bench: "tri cache-bench"
+        level: 8
+      
+      - name: "Contract"
+        demo: "tri contract-demo"
+        bench: "tri contract-bench"
+        level: 8
+      
+      - name: "Workflow"
+        demo: "tri workflow-demo"
+        bench: "tri workflow-bench"
+        level: 8
+
+  tier_9_sacred_math:
+    name: "Sacred Mathematics"
+    commands:
+      - name: "tri math"
+        level: 9
+        description: "Sacred math dispatcher"
+        dependencies: []
+      
+      - name: "tri constants"
+        level: 9
+        description: "Show φ, π, e, μ, χ, σ, ε"
+        dependencies: ["tri math"]
+      
+      - name: "tri phi"
+        level: 9
+        description: "Compute φⁿ"
+        dependencies: ["tri math"]
+      
+      - name: "tri fib"
+        level: 9
+        description: "Fibonacci with BigInt"
+        dependencies: ["tri math"]
+      
+      - name: "tri lucas"
+        level: 9
+        description: "Lucas L(n) — L(2)=3=TRINITY"
+        dependencies: ["tri math"]
+      
+      - name: "tri spiral"
+        level: 9
+        description: "φ-spiral coordinates"
+        dependencies: ["tri math"]
+
+  tier_10_git_integration:
+    name: "Git Integration"
+    commands:
+      - name: "tri status"
+        level: 10
+        description: "Git status --short"
+        dependencies: []
+      
+      - name: "tri diff"
+        level: 10
+        description: "Git diff"
+        dependencies: ["tri status"]
+      
+      - name: "tri log"
+        level: 10
+        description: "Git log --oneline -10"
+        dependencies: ["tri status"]
+      
+      - name: "tri commit"
+        level: 10
+        description: "Git add -A && commit"
+        dependencies: ["tri status"]
+
+progression_paths:
+  foundation_to_codegen:
+    path: ["tri help", "tri gen", "tri plan"]
+    description: "Learn CLI → Generate code → Create plans"
+  
+  full_development_cycle:
+    path: ["tri spec-create", "tri plan", "tri pipeline run", "tri verify", "tri verdict"]
+    description: "Complete Golden Chain development cycle"
+  
+  maintenance_workflow:
+    path: ["tri doctor", "tri clean", "tri fmt", "tri stats", "tri igla"]
+    description: "Check health, clean, format, measure"
+  
+  analysis_workflow:
+    path: ["tri analyze", "tri search", "tri deps"]
+    description: "Analyze code, search, show dependencies"
+  
+  demo_to_prod:
+    path: ["tri agents-demo", "tri agents-bench", "tri verify", "tri commit"]
+    description: "Demo → Benchmark → Verify → Commit"
+
+examples:
+  - "tri tech-tree"
+  - "tri tech-tree --tier 5"
+  - "tri tech-tree --path full_development_cycle"
