@@ -64,9 +64,12 @@ pub const ZigIdioms = struct {
     /// Transform function parameters: prepend allocator if needed
     /// Returns new params string (or original if no transform)
     /// Cycle 76: Always applies — "allocator: Allocator, <original_params>"
+    /// Cycle 77: Skip prepend if params already contain allocator (prevent duplicates)
     pub fn transformParams(self: Self, params: []const u8, given: []const u8, then: []const u8) []const u8 {
         if (self.allocator_strategy == .none) return params;
         if (!self.needsAllocator(given, then)) return params;
+        // Cycle 77: Don't duplicate allocator if signature already has one
+        if (containsAllocatorParam(params)) return params;
 
         // Return the allocator-prefixed version
         // Since we can't allocate here (no allocator available), we use comptime strings
@@ -79,9 +82,12 @@ pub const ZigIdioms = struct {
 
     /// Check if original params should be appended after allocator
     /// Cycle 76: Removed mode check
+    /// Cycle 77: Returns false if params already have allocator (no prepend happened)
     pub fn hasOriginalParams(self: Self, params: []const u8, given: []const u8, then: []const u8) bool {
         if (self.allocator_strategy == .none) return false;
         if (!self.needsAllocator(given, then)) return false;
+        // Cycle 77: If params already have allocator, transformParams is a no-op
+        if (containsAllocatorParam(params)) return false;
         return params.len > 0;
     }
 
@@ -171,6 +177,78 @@ fn containsAllocKeyword(text: []const u8) bool {
     return false;
 }
 
+/// Check if a parameter string already contains an allocator parameter
+/// Cycle 77: Prevents duplicate allocator params in generated signatures
+fn containsAllocatorParam(params: []const u8) bool {
+    if (std.mem.indexOf(u8, params, "allocator:") != null) return true;
+    if (std.mem.indexOf(u8, params, "Allocator") != null) return true;
+    return false;
+}
+
+/// Check if a behavior is a pure function (no side effects, no allocation)
+/// Pure functions are candidates for comptime evaluation
+/// Cycle 77: Comptime detection for generated code
+pub fn isPureFunction(given: []const u8, then: []const u8, name: []const u8) bool {
+    // Must not need allocation
+    if (containsAllocKeyword(given) or containsAllocKeyword(then)) return false;
+
+    // Must not have I/O side effects
+    const io_keywords = [_][]const u8{ "print", "write", "log", "send", "file", "File", "http", "network" };
+    for (io_keywords) |kw| {
+        if (std.mem.indexOf(u8, then, kw) != null) return false;
+        if (std.mem.indexOf(u8, given, kw) != null) return false;
+    }
+
+    // Match known pure function patterns
+    const pure_prefixes = [_][]const u8{ "verify_", "compute_", "phi_", "calculate_", "fib", "lucas" };
+    for (pure_prefixes) |prefix| {
+        if (std.mem.startsWith(u8, name, prefix)) return true;
+    }
+
+    // Check if then describes a pure result
+    const pure_results = [_][]const u8{ "Returns true", "Returns false", "Returns bool", "identity holds" };
+    for (pure_results) |pr| {
+        if (std.mem.indexOf(u8, then, pr) != null) return true;
+    }
+
+    return false;
+}
+
+/// Infer specific error set from behavior description
+/// Returns null if generic inferred error set is acceptable
+/// Cycle 77: Replace generic !T with specific error{...}!T
+pub fn inferErrorSet(given: []const u8, then: []const u8, name: []const u8) ?[]const u8 {
+    // Parse/extract behaviors
+    if (containsAnyCI(name, &.{ "parse", "Parse" }))
+        return "error{ParseError, OutOfMemory}";
+
+    // File I/O behaviors
+    if (containsAnyCI(given, &.{ "file", "path", "File" }))
+        return "error{FileNotFound, AccessDenied, OutOfMemory}";
+
+    // Validation behaviors
+    if (containsAnyCI(name, &.{ "validate", "Validate" }))
+        return "error{ValidationFailed}";
+
+    // Encoding behaviors
+    if (containsAnyCI(then, &.{ "encoded", "representation" }))
+        return "error{EncodingError, OutOfMemory}";
+
+    // Default for allocating behaviors
+    if (containsAllocKeyword(given) or containsAllocKeyword(then))
+        return "error{OutOfMemory}";
+
+    return null;
+}
+
+/// Case-insensitive search for any of the needles in haystack
+fn containsAnyCI(haystack: []const u8, needles: []const []const u8) bool {
+    for (needles) |needle| {
+        if (std.mem.indexOf(u8, haystack, needle) != null) return true;
+    }
+    return false;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -219,4 +297,56 @@ test "containsAllocKeyword_detects_keywords" {
     try std.testing.expect(containsAllocKeyword("Returns TritVector with encoded representation"));
     try std.testing.expect(!containsAllocKeyword("An integer exponent n >= 0"));
     try std.testing.expect(!containsAllocKeyword("Returns true if identity holds"));
+}
+
+test "zig_idioms_no_duplicate_allocator" {
+    // Cycle 77: When sig.params already has allocator, don't prepend another
+    const idioms = ZigIdioms{
+        .mode = .idiomatic,
+        .allocator_strategy = .param,
+        .error_set_names = &.{},
+    };
+    // Params already contain "allocator: std.mem.Allocator" from signature inference
+    const params = idioms.transformParams(
+        "allocator: std.mem.Allocator",
+        "Source, position, line, allocator, fields list",
+        "Read field_name: field_type pairs",
+    );
+    // Should NOT duplicate — return original params unchanged
+    try std.testing.expectEqualStrings("allocator: std.mem.Allocator", params);
+    // hasOriginalParams should be false (no prepend happened)
+    try std.testing.expect(!idioms.hasOriginalParams(
+        "allocator: std.mem.Allocator",
+        "Source, position, line, allocator, fields list",
+        "Read field_name: field_type pairs",
+    ));
+}
+
+test "containsAllocatorParam_detection" {
+    try std.testing.expect(containsAllocatorParam("allocator: std.mem.Allocator"));
+    try std.testing.expect(containsAllocatorParam("alloc: Allocator, input: []const u8"));
+    try std.testing.expect(!containsAllocatorParam("input: []const u8"));
+    try std.testing.expect(!containsAllocatorParam("n: u32"));
+    try std.testing.expect(!containsAllocatorParam(""));
+}
+
+test "isPureFunction_detection" {
+    // Pure math functions
+    try std.testing.expect(isPureFunction("The golden ratio", "Returns true if identity holds", "verify_trinity_identity"));
+    try std.testing.expect(isPureFunction("An integer exponent n >= 0", "Returns PhiResult with value", "compute_phi_power"));
+    // Non-pure: allocation-related
+    try std.testing.expect(!isPureFunction("A float value", "Returns TritVector with encoded representation", "encode_to_trits"));
+    // Non-pure: I/O
+    try std.testing.expect(!isPureFunction("Log message", "write to file", "log_event"));
+}
+
+test "inferErrorSet_patterns" {
+    // Parse behaviors
+    try std.testing.expectEqualStrings("error{ParseError, OutOfMemory}", inferErrorSet("source code", "AST", "parseFields").?);
+    // File I/O
+    try std.testing.expectEqualStrings("error{FileNotFound, AccessDenied, OutOfMemory}", inferErrorSet("file path", "contents", "readConfig").?);
+    // Encoding
+    try std.testing.expectEqualStrings("error{EncodingError, OutOfMemory}", inferErrorSet("value", "encoded representation", "encode_to_trits").?);
+    // Pure math — no error set
+    try std.testing.expect(inferErrorSet("integer n", "Returns PhiResult", "compute_phi_power") == null);
 }

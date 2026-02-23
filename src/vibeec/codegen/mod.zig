@@ -22,6 +22,7 @@ pub const signature = @import("signature.zig");
 pub const body_emitter = @import("body_emitter.zig");
 pub const vsa_emitter = @import("vsa_emitter.zig");
 pub const struct_emitters = @import("struct_emitters.zig");
+pub const idiom_analyzer = @import("idiom_analyzer.zig");
 
 // Primary exports
 pub const ZigCodeGen = emitter.ZigCodeGen;
@@ -29,6 +30,7 @@ pub const CodeBuilder = builder.CodeBuilder;
 pub const PatternMatcher = patterns.PatternMatcher;
 pub const TestGenerator = tests_gen.TestGenerator;
 pub const ZigIdioms = zig_idioms.ZigIdioms;
+pub const IdiomAnalyzer = idiom_analyzer.IdiomAnalyzer;
 
 // Type re-exports from parser
 pub const VibeeSpec = types.VibeeSpec;
