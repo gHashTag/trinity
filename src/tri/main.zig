@@ -29,6 +29,7 @@ const utils = @import("tri_utils.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
+const math_commands = @import("math/commands.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -192,6 +193,25 @@ pub fn main() !void {
         .workflow_bench => demos.runWorkflowBench(),
         // Distributed Inference
         .distributed => commands.runDistributedCommand(allocator, cmd_args),
+        // Sacred Mathematics (v2.0)
+        .math => math_commands.runMathCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Math error: {}\n", .{err});
+        },
+        .constants_cmd => math_commands.runConstantsCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Constants error: {}\n", .{err});
+        },
+        .phi => math_commands.runPhiCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Phi error: {}\n", .{err});
+        },
+        .fib => math_commands.runFibCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Fib error: {}\n", .{err});
+        },
+        .lucas => math_commands.runLucasCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Lucas error: {}\n", .{err});
+        },
+        .spiral => math_commands.runSpiralCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Spiral error: {}\n", .{err});
+        },
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),
