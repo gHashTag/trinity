@@ -1439,7 +1439,7 @@ pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) voi
         if (std.mem.indexOf(u8, body, "\"initialize\"") != null) {
             // Respond with capabilities
             const response =
-                \\{"jsonrpc":"2.0","id":0,"result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"codeActionProvider":true,"completionProvider":{"triggerCharacters":[".",":","@"]},"diagnosticProvider":{"interFileDependencies":false,"workspaceDiagnostics":false}},"serverInfo":{"name":"tri-lsp","version":"1.0.0"}}}
+                \\{"jsonrpc":"2.0","id":0,"result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"codeActionProvider":true,"documentFormattingProvider":true,"completionProvider":{"triggerCharacters":[".",":","@"]},"diagnosticProvider":{"interFileDependencies":false,"workspaceDiagnostics":false}},"serverInfo":{"name":"tri-lsp","version":"1.1.0"}}}
             ;
             var resp_buf: [512]u8 = undefined;
             const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch continue;
@@ -1475,6 +1475,11 @@ pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) voi
             const id_str = extractJsonString(body, "\"id\":") orelse "1";
             const req_id = std.fmt.parseInt(i64, std.mem.trim(u8, id_str, " ,"), 10) catch 1;
             sendCompletions(stdout_file, req_id);
+        } else if (std.mem.indexOf(u8, body, "\"textDocument/formatting\"") != null) {
+            const id_str = extractJsonString(body, "\"id\":") orelse "1";
+            const req_id = std.fmt.parseInt(i64, std.mem.trim(u8, id_str, " ,"), 10) catch 1;
+            const uri = extractJsonString(body, "\"uri\":\"") orelse "";
+            sendFormatting(allocator, stdout_file, req_id, uri);
         } else if (std.mem.indexOf(u8, body, "\"exit\"") != null) {
             return;
         }
@@ -1649,6 +1654,40 @@ fn sendCompletions(stdout_file: std.fs.File, req_id: i64) void {
         \\{{"label":"TRINITY","kind":21,"detail":"phi^2 + 1/phi^2 = 3","insertText":"3.0"}}
         \\]}}}}
     , .{req_id}) catch return;
+    var hdr_buf: [128]u8 = undefined;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+    stdout_file.writeAll(hdr) catch return;
+    stdout_file.writeAll(response) catch return;
+}
+
+/// Send formatting response — run zig fmt and return full-document edit
+fn sendFormatting(allocator: std.mem.Allocator, stdout_file: std.fs.File, req_id: i64, uri: []const u8) void {
+    const path = if (std.mem.startsWith(u8, uri, "file://"))
+        uri["file://".len..]
+    else
+        uri;
+
+    // Run zig fmt on the file
+    var cmd_buf: [512]u8 = undefined;
+    const fmt_cmd = std.fmt.bufPrint(&cmd_buf, "zig fmt {s} 2>&1", .{path}) catch return;
+    _ = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", fmt_cmd },
+        .max_output_bytes = 4096,
+    }) catch {
+        // Send empty edits on error
+        var resp_buf: [256]u8 = undefined;
+        const response = std.fmt.bufPrint(&resp_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{d},\"result\":[]}}", .{req_id}) catch return;
+        var hdr_buf: [128]u8 = undefined;
+        const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+        stdout_file.writeAll(hdr) catch return;
+        stdout_file.writeAll(response) catch return;
+        return;
+    };
+
+    // zig fmt modifies in-place; the editor will reload. Return empty edit array (file already formatted)
+    var resp_buf: [256]u8 = undefined;
+    const response = std.fmt.bufPrint(&resp_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{d},\"result\":[]}}", .{req_id}) catch return;
     var hdr_buf: [128]u8 = undefined;
     const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
     stdout_file.writeAll(hdr) catch return;
@@ -2031,4 +2070,124 @@ fn printLintSummary(warnings: u32, errors: u32) void {
         std.debug.print("  Status: {s}FAIL{s}\n", .{ RED, RESET });
     }
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DASHBOARD COMMAND — system overview + $TRI + LSP status
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runDashboardCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("\n", .{});
+    std.debug.print("{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}║           TRI DASHBOARD — System Overview                   ║{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ GOLDEN, RESET });
+
+    // ── Section 1: Build Health ──
+    std.debug.print("\n{s}┌─ BUILD HEALTH ─────────────────────────────────────────────┐{s}\n", .{ CYAN, RESET });
+    const zig_ver = runShellCount(allocator, "zig version 2>/dev/null || echo 'N/A'");
+    std.debug.print("  {s}Zig Version:{s}    {s}{s}{s}\n", .{ GRAY, RESET, GREEN, zig_ver, RESET });
+
+    const bin_exists = std.fs.cwd().access("zig-out/bin/tri", .{});
+    if (bin_exists) |_| {
+        std.debug.print("  {s}TRI Binary:{s}     {s}Ready{s}\n", .{ GRAY, RESET, GREEN, RESET });
+    } else |_| {
+        std.debug.print("  {s}TRI Binary:{s}     {s}Not built{s}\n", .{ GRAY, RESET, RED, RESET });
+    }
+
+    const zig_files = runShellCount(allocator, "find src/ -name '*.zig' 2>/dev/null | wc -l");
+    const spec_files = runShellCount(allocator, "find specs/ -name '*.vibee' 2>/dev/null | wc -l");
+    std.debug.print("  {s}Zig Files:{s}      {s}{s}{s}\n", .{ GRAY, RESET, CYAN, zig_files, RESET });
+    std.debug.print("  {s}VIBEE Specs:{s}    {s}{s}{s}\n", .{ GRAY, RESET, CYAN, spec_files, RESET });
+    std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ CYAN, RESET });
+
+    // ── Section 2: $TRI Economy ──
+    std.debug.print("\n{s}┌─ $TRI ECONOMY ─────────────────────────────────────────────┐{s}\n", .{ GOLDEN, RESET });
+    const home = std.posix.getenv("HOME") orelse "/tmp";
+    var rewards_buf: [512]u8 = undefined;
+    const rewards_path = std.fmt.bufPrint(&rewards_buf, "{s}/.tri/rewards.json", .{home}) catch "N/A";
+    var cat_buf: [1024]u8 = undefined;
+    const cat_cmd = std.fmt.bufPrint(&cat_buf, "cat {s} 2>/dev/null || echo '{{\"balance\":0,\"earned\":0,\"tasks\":0}}'", .{rewards_path}) catch "";
+
+    if (cat_cmd.len > 0) {
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &[_][]const u8{ "sh", "-c", cat_cmd },
+            .max_output_bytes = 4096,
+        }) catch {
+            std.debug.print("  {s}Balance:{s}        {s}0.000 $TRI{s}\n", .{ GRAY, RESET, GOLDEN, RESET });
+            std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ GOLDEN, RESET });
+            printDashboardFooter();
+            return;
+        };
+        defer allocator.free(result.stdout);
+        defer allocator.free(result.stderr);
+
+        const balance = extractJsonString(result.stdout, "\"balance\":") orelse "0";
+        const earned = extractJsonString(result.stdout, "\"earned\":") orelse "0";
+        const tasks = extractJsonString(result.stdout, "\"tasks\":") orelse "0";
+
+        std.debug.print("  {s}Balance:{s}        {s}{s} $TRI{s}\n", .{ GRAY, RESET, GOLDEN, balance, RESET });
+        std.debug.print("  {s}Total Earned:{s}   {s}{s} $TRI{s}\n", .{ GRAY, RESET, GREEN, earned, RESET });
+        std.debug.print("  {s}Tasks Done:{s}     {s}{s}{s}\n", .{ GRAY, RESET, CYAN, tasks, RESET });
+
+        const bal_val = std.fmt.parseFloat(f64, balance) catch 0.0;
+        const bar_len: usize = @min(@as(usize, @intFromFloat(bal_val / 5.0)), 40);
+        std.debug.print("  {s}Progress:{s}       {s}", .{ GRAY, RESET, GOLDEN });
+        for (0..bar_len) |_| std.debug.print("\xe2\x96\x88", .{});
+        for (0..40 - bar_len) |_| std.debug.print("\xe2\x96\x91", .{});
+        std.debug.print("{s} {d:.1}\n", .{ RESET, bal_val });
+    }
+    std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ GOLDEN, RESET });
+
+    // ── Section 3: LSP Status ──
+    std.debug.print("\n{s}┌─ LSP SERVER ───────────────────────────────────────────────┐{s}\n", .{ GREEN, RESET });
+    std.debug.print("  {s}Version:{s}        {s}v1.1.0{s}\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("  {s}Protocol:{s}       JSON-RPC 2.0 (stdio)\n", .{ GRAY, RESET });
+    std.debug.print("  {s}Capabilities:{s}\n", .{ GRAY, RESET });
+    std.debug.print("    {s}+{s} textDocumentSync      {s}+{s} hover\n", .{ GREEN, RESET, GREEN, RESET });
+    std.debug.print("    {s}+{s} codeAction            {s}+{s} completion (27 items)\n", .{ GREEN, RESET, GREEN, RESET });
+    std.debug.print("    {s}+{s} publishDiagnostics    {s}+{s} formatting\n", .{ GREEN, RESET, GREEN, RESET });
+    std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ GREEN, RESET });
+
+    // ── Section 4: Recent Git Activity ──
+    std.debug.print("\n{s}┌─ RECENT COMMITS ───────────────────────────────────────────┐{s}\n", .{ CYAN, RESET });
+    const git_log = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "log", "--oneline", "-5" },
+        .max_output_bytes = 2048,
+    }) catch {
+        std.debug.print("  {s}(git not available){s}\n", .{ GRAY, RESET });
+        std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ CYAN, RESET });
+        printDashboardFooter();
+        return;
+    };
+    defer allocator.free(git_log.stdout);
+    defer allocator.free(git_log.stderr);
+
+    var line_it = std.mem.splitScalar(u8, git_log.stdout, '\n');
+    var shown: u32 = 0;
+    while (line_it.next()) |line| {
+        if (line.len > 0 and shown < 5) {
+            std.debug.print("  {s}{s}{s}\n", .{ GRAY, line, RESET });
+            shown += 1;
+        }
+    }
+    std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ CYAN, RESET });
+
+    // ── Section 5: Tech Tree Level ──
+    std.debug.print("\n{s}┌─ TECH TREE ────────────────────────────────────────────────┐{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Level 0: Core + Sacred Math              {s}============{s} Done\n", .{ GREEN, RESET });
+    std.debug.print("  Level 1: Idiomatic + Analyzer            {s}============{s} Done\n", .{ GREEN, RESET });
+    std.debug.print("  Level 2: Tree-Sitter Agent               {s}============{s} Done\n", .{ GREEN, RESET });
+    std.debug.print("  Level 3: Major Expansion + Utilities     {s}============{s} Done\n", .{ GREEN, RESET });
+    std.debug.print("  Level 4: LSP v1.1 + Diagnostics + Fix    {s}============{s} Done\n", .{ GREEN, RESET });
+    std.debug.print("  Level 5: $TRI Rewards + Dashboard        {s}============{s} {s}Current{s}\n", .{ GOLDEN, RESET, GOLDEN, RESET });
+    std.debug.print("  Level 6: Omega - Full Dev OS             {s}............{s} Next\n", .{ GRAY, RESET });
+    std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ GOLDEN, RESET });
+
+    printDashboardFooter();
+}
+
+fn printDashboardFooter() void {
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | Dashboard v1.0{s}\n\n", .{ GOLDEN, RESET });
 }

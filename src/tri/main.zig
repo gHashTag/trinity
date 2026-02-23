@@ -235,5 +235,7 @@ pub fn main() !void {
         .math_compare => math_mod.runMathCompareCommand(cmd_args),
         // Cycle 84: $TRI Rewards
         .rewards => commands.runRewardsCommand(allocator, cmd_args),
+        // Cycle 85: Dashboard
+        .dashboard => commands.runDashboardCommand(allocator),
     }
 }
