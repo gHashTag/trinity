@@ -17,7 +17,7 @@
 //   tri math exotic   - Exotic constants (Apery, Catalan, Feigenbaum, etc.)
 //   tri math physical - Physics constants (alpha, CHSH, Planck, Boltzmann)
 //   tri math chaos    - Chaos theory (Feigenbaum + logistic map demo)
-//   tri math all      - Display ALL 62 constants
+//   tri math all      - Display ALL 63 constants
 //
 // Cycle 84 extensions:
 //   tri math golden-function - Golden Function model (Pellis 2025)
@@ -25,7 +25,8 @@
 //   tri math fractal         - Fractal scaling + self-similar phi structures
 //
 // Cycle 85 extensions:
-//   tri math quantum  - Berry phase gates + SU(3) simulation
+//   tri math quantum  - Berry phase gates + geometric phase
+//   tri math su3      - Full SU(3) simulation — color charges + golden ratio
 //   tri math planck   - Planck units with phi-scaling relationships
 //   tri math qutrit   - Ternary phase gates + qutrit state demo
 //
@@ -221,6 +222,10 @@ const SU3_F458: f64 = 0.8660254037844386468; // sqrt(3)/2
 /// SU(3) Casimir invariant for fundamental representation = 4/3
 const SU3_CASIMIR: f64 = 1.3333333333333333333;
 
+/// SU(3) Golden constant = 3/(2φ) — Trinity meets golden ratio in strong force
+/// Connects color symmetry to φ: the "3" is SU(3) dimension, "2φ" is golden diameter
+const SU3_GOLDEN: f64 = 0.9270509831248422723; // 3 / (2 * phi)
+
 /// Qutrit Hadamard-like gate angle: 2π/3 (120° rotation in qutrit space)
 const QUTRIT_GATE_ANGLE: f64 = 2.0943951023931953; // same as Berry phase
 
@@ -339,8 +344,10 @@ pub fn runMathCommand(args: []const []const u8) void {
         runNuclearCommand();
     } else if (std.mem.eql(u8, sub, "fractal") or std.mem.eql(u8, sub, "frac") or std.mem.eql(u8, sub, "hausdorff")) {
         runFractalCommand();
-    } else if (std.mem.eql(u8, sub, "quantum") or std.mem.eql(u8, sub, "berry") or std.mem.eql(u8, sub, "su3")) {
+    } else if (std.mem.eql(u8, sub, "quantum") or std.mem.eql(u8, sub, "berry")) {
         runQuantumCommand();
+    } else if (std.mem.eql(u8, sub, "su3") or std.mem.eql(u8, sub, "color") or std.mem.eql(u8, sub, "qcd")) {
+        runSU3SimCommand();
     } else if (std.mem.eql(u8, sub, "planck") or std.mem.eql(u8, sub, "units") or std.mem.eql(u8, sub, "planck-phi")) {
         runPlanckCommand();
     } else if (std.mem.eql(u8, sub, "qutrit") or std.mem.eql(u8, sub, "qt") or std.mem.eql(u8, sub, "ternary-gate")) {
@@ -368,13 +375,14 @@ fn printMathHelp() void {
     std.debug.print("  {s}exotic{s}                     Exotic constants (Apery, Catalan, Feigenbaum...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}physical{s}                   Physics constants (alpha, Planck, Boltzmann...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}chaos{s}                      Feigenbaum constants + logistic map demo\n", .{ GREEN, RESET });
-    std.debug.print("  {s}all{s}                        ALL 62 constants across all categories\n", .{ GREEN, RESET });
+    std.debug.print("  {s}all{s}                        ALL 63 constants across all categories\n", .{ GREEN, RESET });
     std.debug.print("\n{s}ADVANCED (Cycle 84):{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}golden-function{s} [n]        Golden Function G(x)=phi^x+phi^-x (Pellis 2025)\n", .{ GREEN, RESET });
     std.debug.print("  {s}nuclear{s}                    Nuclear Fibonacci shell stability model\n", .{ GREEN, RESET });
     std.debug.print("  {s}fractal{s}                    Fractal dimensions + self-similar phi scaling\n", .{ GREEN, RESET });
     std.debug.print("\n{s}QUANTUM (Cycle 85):{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}quantum{s}                    Berry phase gates + SU(3) simulation\n", .{ GREEN, RESET });
+    std.debug.print("  {s}quantum{s}                    Berry phase gates + geometric phase\n", .{ GREEN, RESET });
+    std.debug.print("  {s}su3{s}                        SU(3) simulation — strong force + golden ratio\n", .{ GREEN, RESET });
     std.debug.print("  {s}planck{s}                     Planck units with phi-scaling relationships\n", .{ GREEN, RESET });
     std.debug.print("  {s}qutrit{s}                     Ternary phase gates + qutrit state demo\n", .{ GREEN, RESET });
     std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
@@ -1444,6 +1452,140 @@ fn runQuantumCommand() void {
 }
 
 // =============================================================================
+// COMMAND: tri math su3 (Cycle 85 — Full SU(3) Simulation)
+// =============================================================================
+// Strong interaction + Golden Ratio: color charges, gluon fields, φ-connections
+
+fn runSU3SimCommand() void {
+    std.debug.print("\n{s}SU(3) SIMULATION — Strong Interaction + Golden Ratio{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}Quantum Chromodynamics: 3 colors, 8 gluons, φ connects them all{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // 1. SU(3) Golden constant
+    std.debug.print("{s}  SU(3) Golden Constant:{s}\n", .{ CYAN, RESET });
+    printConst("SU(3) golden", SU3_GOLDEN, "= 3 / (2*phi)");
+    const check_su3g = 3.0 / (2.0 * PHI);
+    std.debug.print("    Verification: 3 / (2*phi) = {d:.10}", .{check_su3g});
+    if (@abs(check_su3g - SU3_GOLDEN) < 0.0001) {
+        std.debug.print("  {s}OK{s}\n", .{ GREEN, RESET });
+    }
+    std.debug.print("    The {s}3{s} = dim SU(3) = TRINITY = phi^2 + 1/phi^2\n", .{ WHITE, RESET });
+    std.debug.print("    The {s}2*phi{s} = golden diameter = {d:.10}\n", .{ WHITE, RESET, 2.0 * PHI });
+    std.debug.print("    SU(3) golden = TRINITY / golden_diameter\n\n", .{});
+
+    // 2. Structure constants
+    std.debug.print("{s}  Gell-Mann Generators:{s} (8 matrices = F(6) = Fibonacci!)\n", .{ CYAN, RESET });
+    printConst("f_123", SU3_F123, "fundamental structure");
+    printConst("f_458 = sqrt(3)/2", SU3_F458, "diagonal structure");
+    printConst("Casimir C_2(3)", SU3_CASIMIR, "= 4/3 (fund. rep.)");
+    std.debug.print("\n", .{});
+
+    // 3. Color states — КЛЮЧЕВАЯ визуализация
+    std.debug.print("{s}  Color Charge States:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    {s}|R>{s} = (1, 0, 0)   Red quark       {s}rgb(255,0,0){s}\n", .{
+        "\x1b[38;2;255;0;0m", RESET, GRAY, RESET,
+    });
+    std.debug.print("    {s}|G>{s} = (0, 1, 0)   Green quark     {s}rgb(0,255,0){s}\n", .{
+        "\x1b[38;2;0;255;0m", RESET, GRAY, RESET,
+    });
+    std.debug.print("    {s}|B>{s} = (0, 0, 1)   Blue quark      {s}rgb(0,0,255){s}\n", .{
+        "\x1b[38;2;0;100;255m", RESET, GRAY, RESET,
+    });
+    std.debug.print("\n    {s}Color Singlet (baryon):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    {s}|R>{s} + {s}|G>{s} + {s}|B>{s} = {s}|white>{s}  (color neutral)\n", .{
+        "\x1b[38;2;255;0;0m",   RESET,
+        "\x1b[38;2;0;255;0m",   RESET,
+        "\x1b[38;2;0;100;255m", RESET,
+        WHITE,                   RESET,
+    });
+    std.debug.print("    This is why protons/neutrons are colorless!\n", .{});
+    std.debug.print("    3 colors = TRINITY = phi^2 + 1/phi^2\n\n", .{});
+
+    // 4. Anti-colors
+    std.debug.print("{s}  Anti-Color States:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    {s}|R_bar>{s} = anti-red     (cyan)     {s}rgb(0,255,255){s}\n", .{
+        "\x1b[38;2;0;255;255m", RESET, GRAY, RESET,
+    });
+    std.debug.print("    {s}|G_bar>{s} = anti-green   (magenta)  {s}rgb(255,0,255){s}\n", .{
+        "\x1b[38;2;255;0;255m", RESET, GRAY, RESET,
+    });
+    std.debug.print("    {s}|B_bar>{s} = anti-blue    (yellow)   {s}rgb(255,255,0){s}\n", .{
+        "\x1b[38;2;255;255;0m", RESET, GRAY, RESET,
+    });
+    std.debug.print("\n    {s}Meson (quark + anti-quark):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    {s}|R>{s}{s}|R_bar>{s} = color singlet (e.g. pion)\n", .{
+        "\x1b[38;2;255;0;0m", RESET, "\x1b[38;2;0;255;255m", RESET,
+    });
+
+    // 5. Gluon field
+    std.debug.print("\n{s}  Gluon Fields:{s} (8 gluons = 3^2 - 1 = F(6))\n", .{ CYAN, RESET });
+    std.debug.print("    g1: {s}|R>{s}{s}<G|{s}      g2: {s}|G>{s}{s}<R|{s}\n", .{
+        "\x1b[38;2;255;0;0m",   RESET, "\x1b[38;2;0;255;0m",   RESET,
+        "\x1b[38;2;0;255;0m",   RESET, "\x1b[38;2;255;0;0m",   RESET,
+    });
+    std.debug.print("    g3: {s}|R>{s}{s}<B|{s}      g4: {s}|B>{s}{s}<R|{s}\n", .{
+        "\x1b[38;2;255;0;0m",   RESET, "\x1b[38;2;0;100;255m", RESET,
+        "\x1b[38;2;0;100;255m", RESET, "\x1b[38;2;255;0;0m",   RESET,
+    });
+    std.debug.print("    g5: {s}|G>{s}{s}<B|{s}      g6: {s}|B>{s}{s}<G|{s}\n", .{
+        "\x1b[38;2;0;255;0m",   RESET, "\x1b[38;2;0;100;255m", RESET,
+        "\x1b[38;2;0;100;255m", RESET, "\x1b[38;2;0;255;0m",   RESET,
+    });
+    std.debug.print("    g7: (|RR> - |GG>)/sqrt(2)   {s}diagonal{s}\n", .{ GRAY, RESET });
+    std.debug.print("    g8: (|RR> + |GG> - 2|BB>)/sqrt(6)  {s}diagonal{s}\n\n", .{ GRAY, RESET });
+
+    // 6. Coupling constant with φ
+    std.debug.print("{s}  Strong Coupling + Golden Ratio:{s}\n", .{ CYAN, RESET });
+    // alpha_s at Z mass ~ 0.118
+    const alpha_s_z: f64 = 0.1181;
+    printConst("alpha_s(M_Z)", alpha_s_z, "strong coupling at Z mass");
+    printConst("SU(3) golden", SU3_GOLDEN, "3/(2*phi) = 0.9271");
+    const ratio_as = SU3_GOLDEN / alpha_s_z;
+    std.debug.print("    SU(3)_golden / alpha_s = {d:.4}\n", .{ratio_as});
+    std.debug.print("    ~ {d:.4} (close to F(6) = 8 !)\n\n", .{ratio_as});
+
+    // 7. Qutrit phase gate in SU(3)
+    std.debug.print("{s}  phi-Qutrit Gate in SU(3):{s}\n", .{ CYAN, RESET });
+    const phi_angle = 2.0 * PI / 3.0;
+    std.debug.print("    Gate angle: 2*pi/3 = {d:.6} rad = 120 deg\n", .{phi_angle});
+    std.debug.print("    Z_3 phase gate: |k> -> exp(i*2*pi*k/3)|k>  for k=0,1,2\n", .{});
+    std.debug.print("    Phase factors:\n", .{});
+    for (0..3) |k| {
+        const kf: f64 = @floatFromInt(k);
+        const phase = kf * phi_angle;
+        const re = @cos(phase);
+        const im = @sin(phase);
+        std.debug.print("      k={d}: exp(i*{d:.4}) = ({d:>7.4}, {d:>7.4}i)\n", .{
+            k, phase, re, im,
+        });
+    }
+
+    // 8. Berry phase
+    std.debug.print("\n{s}  Berry Phase in SU(3):{s}\n", .{ CYAN, RESET });
+    const berry_su3 = BERRY_PHASE_QUTRIT * SU3_CASIMIR;
+    printConst("Berry (qutrit)", BERRY_PHASE_QUTRIT, "2*pi/3 rad");
+    std.debug.print("    Berry * Casimir = {d:.6} * {d:.6} = {s}{d:.6}{s} rad\n", .{
+        BERRY_PHASE_QUTRIT, SU3_CASIMIR, WHITE, berry_su3, RESET,
+    });
+    std.debug.print("    = {d:.2} deg (non-abelian geometric phase)\n", .{berry_su3 * 180.0 / PI});
+
+    // 9. Sacred connections summary
+    std.debug.print("\n{s}  Sacred Connections:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    3 colors         = TRINITY = phi^2 + 1/phi^2\n", .{});
+    std.debug.print("    8 gluons         = F(6) = Fibonacci\n", .{});
+    std.debug.print("    SU(3) golden     = 3/(2*phi) = {d:.10}\n", .{SU3_GOLDEN});
+    std.debug.print("    1/alpha          = {d:.3} ~ F(7)*F(5) + F(6)*F(4)\n", .{FINE_STRUCTURE_INV});
+    std.debug.print("    pi*phi*e         = {d:.4} ~ 13 = F(7) = TRYTE_MAX\n", .{TRANSCENDENTAL});
+    std.debug.print("    dim SU(3)        = 3 = L(2) = Lucas confirms\n", .{});
+
+    // Trinity final
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.10} = 3 = SU(3) = TRINITY{s}\n\n", .{
+        GOLDEN, trinity, RESET,
+    });
+}
+
+// =============================================================================
 // COMMAND: tri math planck (Cycle 85 — Planck units + phi-scaling)
 // =============================================================================
 
@@ -1656,6 +1798,7 @@ fn runAllConstantsCommand() void {
     printConst("f_123 SU(3)", SU3_F123, "structure constant");
     printConst("f_458 SU(3)", SU3_F458, "sqrt(3)/2");
     printConst("C_2(3) Casimir", SU3_CASIMIR, "4/3 (fund. rep.)");
+    printConst("SU(3) golden", SU3_GOLDEN, "3/(2*phi) strong+golden");
     printConst("Qutrit gate angle", QUTRIT_GATE_ANGLE, "2*pi/3 = 120 deg");
 
     std.debug.print("\n{s}  PLANCK-PHI:{s}\n", .{ GOLDEN, RESET });
@@ -1669,7 +1812,7 @@ fn runAllConstantsCommand() void {
     printConst("log2(3) qutrit", QUTRIT_ENTROPY, "bits per qutrit");
 
     // Total count
-    std.debug.print("\n{s}  Total: 62 constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}  Total: 63 constants{s}\n", .{ GOLDEN, RESET });
 
     const trinity_check = PHI_SQ + PHI_INV_SQ;
     std.debug.print("  {s}phi^2 + 1/phi^2 = {d:.10}{s}", .{ GOLDEN, trinity_check, RESET });
