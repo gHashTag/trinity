@@ -33,29 +33,15 @@ pub const PHOENIX: i64 = 999;
 // ТИПЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// 
-pub const TypeMapping = struct {
-    vibee_name: []const u8,
-    zig_name: []const u8,
+/// Imported from codegen types — represents a VIBEE type definition
+pub const TypeDef = struct {
+    name: []const u8,
 };
 
-/// 
-pub const SemanticTypeMapping = struct {
-    semantic_term: []const u8,
-    concrete_type: []const u8,
-};
-
-/// 
-pub const ParseError = struct {
-    error_code: i64,
-    message: []const u8,
-};
-
-/// 
-pub const BracketMatchResult = struct {
-    found: bool,
-    position: u64,
-    has_error: bool,
+/// Maps a semantic keyword to a concrete Zig type
+pub const SemanticEntry = struct {
+    keyword: []const u8,
+    zig_type: []const u8,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -134,317 +120,332 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// a VIBEE primitive type name (String, Int, Float, Bool, etc.)
-/// When: resolvePrimitiveType is called
-/// Then: returns the corresponding Zig type ([]const u8, i64, f64, bool, etc.)
-pub fn resolve_primitive_type(input: []const u8) !void {
-// Resolve: returns the corresponding Zig type ([]const u8, i64, f64, bool, etc.)
-    // Pick highest confidence result
-    const confidence_a: f64 = 0.85;
-    const confidence_b: f64 = 0.72;
-    const winner = if (confidence_a >= confidence_b) @as([]const u8, "agent_a") else @as([]const u8, "agent_b");
-    _ = winner;
-_ = input;
-}
+      pub fn findMatchingBracket(str: []const u8, start_pos: usize) ?usize {
+          var depth: usize = 1;
+          var i = start_pos;
+          while (i < str.len) : (i += 1) {
+              const c = str[i];
+              if (c == '<') depth += 1
+              else if (c == '>') {
+                  depth -= 1;
+                  if (depth == 0) return i;
+              }
+          }
+          return null;
+      }
 
 
-/// a custom type name defined in the spec
-/// When: resolveCustomType is called with spec_types context
-/// Then: returns the type name as-is if defined, or returns unknown type
-pub fn resolve_custom_type() []const u8 {
-// Resolve: returns the type name as-is if defined, or returns unknown type
-    // Pick highest confidence result
-    const confidence_a: f64 = 0.85;
-    const confidence_b: f64 = 0.72;
-    const winner = if (confidence_a >= confidence_b) @as([]const u8, "agent_a") else @as([]const u8, "agent_b");
-    _ = winner;
-}
+
+      pub fn parseComplexTypeNoAlloc(spec_types: []const TypeDef, type_str: []const u8) ?[]const u8 {
+          if (std.mem.startsWith(u8, type_str, "Option<")) {
+              const end_pos = findMatchingBracket(type_str, 8) orelse return null;
+              const inner = type_str[8..end_pos];
+              const resolved = parseComplexTypeNoAlloc(spec_types, inner) orelse return null;
+              if (std.mem.eql(u8, resolved, "i64")) return "?i64";
+              if (std.mem.eql(u8, resolved, "f64")) return "?f64";
+              if (std.mem.eql(u8, resolved, "bool")) return "?bool";
+              if (std.mem.eql(u8, resolved, "[]const u8")) return "?[]const u8";
+              if (std.mem.eql(u8, resolved, "[]const i64")) return "?[]const i64";
+              if (std.mem.eql(u8, resolved, "[]const f64")) return "?[]const f64";
+              return null;
+          }
+
+          if (std.mem.startsWith(u8, type_str, "List<")) {
+              const end_pos = findMatchingBracket(type_str, 5) orelse return null;
+              const inner = type_str[5..end_pos];
+              const resolved = parseComplexTypeNoAlloc(spec_types, inner) orelse return null;
+              if (std.mem.eql(u8, resolved, "i64")) return "[]const i64";
+              if (std.mem.eql(u8, resolved, "f64")) return "[]const f64";
+              if (std.mem.eql(u8, resolved, "bool")) return "[]const bool";
+              if (std.mem.eql(u8, resolved, "u8")) return "[]const u8";
+              if (std.mem.eql(u8, resolved, "usize")) return "[]const usize";
+              if (std.mem.eql(u8, resolved, "[]const u8")) return "[]const []const u8";
+              if (std.mem.eql(u8, resolved, "[]const i64")) return "[]const []const i64";
+              if (std.mem.eql(u8, resolved, "[]const f64")) return "[]const []const f64";
+              if (std.mem.eql(u8, resolved, "?i64")) return "[]const ?i64";
+              if (std.mem.eql(u8, resolved, "?f64")) return "[]const ?f64";
+              return null;
+          }
+
+          if (std.mem.eql(u8, type_str, "String")) return "[]const u8";
+          if (std.mem.eql(u8, type_str, "Int")) return "i64";
+          if (std.mem.eql(u8, type_str, "Float")) return "f64";
+          if (std.mem.eql(u8, type_str, "Bool")) return "bool";
+          if (std.mem.eql(u8, type_str, "usize")) return "usize";
+          if (std.mem.eql(u8, type_str, "u8")) return "u8";
+          if (std.mem.eql(u8, type_str, "void")) return "void";
+          if (std.mem.eql(u8, type_str, "anytype")) return "anytype";
+
+          return null;
+      }
 
 
-pub fn find_matching_bracket(haystack: anytype, needle: anytype) ?@TypeOf(needle) {
-    // Find needle in haystack
-    _ = haystack;
-    // needle is used in return type @TypeOf(needle)
-    return null;
-}
 
-/// a type string like Option<T> or ?T
-/// When: parseOptionType is called
-/// Then: returns ?resolved_type (e.g., ?i64, ?[]const u8)
-pub fn parse_option_type(config: anytype) !void {
-// Extract: returns ?resolved_type (e.g., ?i64, ?[]const u8)
-    const sample_input = @as([]const u8, "sample input");
-    var found_count: usize = 0;
-    for (sample_input) |c| {
-        if (c >= 'A' and c <= 'Z') found_count += 1; // count significant tokens
-    }
-    std.debug.assert(found_count <= sample_input.len);
-_ = config;
-}
+      pub fn parseComplexType(allocator: std.mem.Allocator, spec_types: []const TypeDef, type_str: []const u8) ![]const u8 {
+          if (std.mem.startsWith(u8, type_str, "Option<")) {
+              const end_pos = findMatchingBracket(type_str, 8) orelse
+                  return error.UnmatchedBrackets;
+              const inner = type_str[8..end_pos];
+              const resolved = try parseComplexType(allocator, spec_types, inner);
+              return try std.fmt.allocPrint(allocator, "?{s}", .{resolved});
+          }
 
+          if (std.mem.startsWith(u8, type_str, "List<")) {
+              const end_pos = findMatchingBracket(type_str, 5) orelse
+                  return error.UnmatchedBrackets;
+              const inner = type_str[5..end_pos];
+              const resolved = try parseComplexType(allocator, spec_types, inner);
+              return try std.fmt.allocPrint(allocator, "[]const {s}", .{resolved});
+          }
 
-/// a type string like List<T> or [T]
-/// When: parseListType is called
-/// Then: returns []const T (supports nested generics)
-pub fn parse_list_type(input: []const u8) !void {
-// Extract: returns []const T (supports nested generics)
-    const sample_input = @as([]const u8, "sample input");
-    var found_count: usize = 0;
-    for (sample_input) |c| {
-        if (c >= 'A' and c <= 'Z') found_count += 1; // count significant tokens
-    }
-    std.debug.assert(found_count <= sample_input.len);
-_ = input;
-}
+          if (std.mem.startsWith(u8, type_str, "Map<")) {
+              const end_pos = findMatchingBracket(type_str, 4) orelse
+                  return error.UnmatchedBrackets;
+              const inner = type_str[4..end_pos];
+              const comma_idx = std.mem.indexOf(u8, inner, ",") orelse return error.InvalidMapType;
+              const key_type = try parseComplexType(allocator, spec_types, inner[0..comma_idx]);
+              const value_type = try parseComplexType(allocator, spec_types, inner[comma_idx + 1 ..]);
+              if (std.mem.eql(u8, key_type, "[]const u8") or std.mem.eql(u8, key_type, "String")) {
+                  return try std.fmt.allocPrint(allocator, "std.StringHashMap({s})", .{value_type});
+              }
+              return try std.fmt.allocPrint(allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
+          }
 
+          if (std.mem.startsWith(u8, type_str, "HashMap<")) {
+              const end_pos = findMatchingBracket(type_str, 8) orelse
+                  return error.UnmatchedBrackets;
+              const inner = type_str[8..end_pos];
+              const comma_idx = std.mem.indexOf(u8, inner, ",") orelse return error.InvalidHashMapType;
+              const key_type = try parseComplexType(allocator, spec_types, inner[0..comma_idx]);
+              const value_type = try parseComplexType(allocator, spec_types, inner[comma_idx + 1 ..]);
+              return try std.fmt.allocPrint(allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
+          }
 
-/// a type string like Map<K,V> or HashMap<K,V>
-/// When: parseMapType is called
-/// Then: returns std.StringHashMap(V) or std.AutoHashMap(K, V)
-pub fn parse_map_type(input: []const u8) []const u8 {
-// Extract: returns std.StringHashMap(V) or std.AutoHashMap(K, V)
-    const sample_input = @as([]const u8, "sample input");
-    var found_count: usize = 0;
-    for (sample_input) |c| {
-        if (c >= 'A' and c <= 'Z') found_count += 1; // count significant tokens
-    }
-    std.debug.assert(found_count <= sample_input.len);
-_ = input;
-}
+          if (type_str.len > 0 and type_str[0] == '[' and type_str[type_str.len - 1] == ']') {
+              const inner = type_str[1 .. type_str.len - 1];
+              if (inner.len > 0) {
+                  const resolved = resolveTypeName(spec_types, inner);
+                  return try std.fmt.allocPrint(allocator, "[{s}]", .{resolved});
+              }
+              return type_str;
+          }
 
+          if (type_str.len > 0 and type_str[0] == '*') {
+              return type_str;
+          }
 
-/// any type string (primitive, Option<T>, List<T>, Map<K,V>, nested)
-/// When: parseComplexType is called
-/// Then: returns the fully resolved Zig type string with proper allocation
-pub fn parse_complex_type(config: anytype) []const u8 {
-// Extract: returns the fully resolved Zig type string with proper allocation
-    const sample_input = @as([]const u8, "sample input");
-    var found_count: usize = 0;
-    for (sample_input) |c| {
-        if (c >= 'A' and c <= 'Z') found_count += 1; // count significant tokens
-    }
-    std.debug.assert(found_count <= sample_input.len);
-_ = config;
-}
+          return resolveTypeName(spec_types, type_str);
+      }
 
 
-/// a simple type string that doesn't need allocation
-/// When: parseComplexTypeNoAlloc is called
-/// Then: returns static string for common types or null if allocation needed
-pub fn parse_complex_type_no_alloc(input: []const u8) []const u8 {
-// Extract: returns static string for common types or null if allocation needed
-    const sample_input = @as([]const u8, "sample input");
-    var found_count: usize = 0;
-    for (sample_input) |c| {
-        if (c >= 'A' and c <= 'Z') found_count += 1; // count significant tokens
-    }
-    std.debug.assert(found_count <= sample_input.len);
-_ = input;
-}
+
+      pub fn mapSemanticType(type_name: []const u8) []const u8 {
+          const semantic_map = [_]struct { []const u8, []const u8 }{
+              .{ "probability", "f32" },
+              .{ "probabilities", "[]f32" },
+              .{ "similarity", "f32" },
+              .{ "score", "f32" },
+              .{ "confidence", "f32" },
+              .{ "accuracy", "f32" },
+              .{ "count", "usize" },
+              .{ "index", "usize" },
+              .{ "size", "usize" },
+              .{ "length", "usize" },
+              .{ "tensor", "Tensor" },
+              .{ "embedding", "[]const f32" },
+              .{ "embeddings", "[]const []f32" },
+              .{ "distribution", "[]f32" },
+              .{ "vector", "[]const i8" },
+              .{ "hypervector", "[]const i8" },
+              .{ "matrix", "[]const f32" },
+              .{ "agent", "AgentInfo" },
+              .{ "wallet", "Wallet" },
+              .{ "task", "Task" },
+              .{ "tenant", "Tenant" },
+          };
+
+          for (semantic_map) |entry| {
+              if (containsCI(type_name, entry[0])) {
+                  return entry[1];
+              }
+          }
+
+          if (containsCI(type_name, "int")) return "i64";
+          if (containsCI(type_name, "float") or containsCI(type_name, "f32")) return "f32";
+          if (containsCI(type_name, "string") or containsCI(type_name, "text")) return "[]const u8";
+          if (containsCI(type_name, "bool")) return "bool";
+
+          return type_name;
+      }
 
 
-/// a semantic term like "probability", "embedding", "tensor"
-/// When: mapSemanticType is called
-/// Then: returns the appropriate Zig type (f32, []const f32, Tensor, etc.)
-pub fn map_semantic_type(values: []const f32) !void {
-// TODO: implement — returns the appropriate Zig type (f32, []const f32, Tensor, etc.)
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = values;
-}
+
+      pub fn resolveTypeFromSpec(spec_types: []const TypeDef, type_name: []const u8) []const u8 {
+          for (spec_types) |t| {
+              if (std.mem.eql(u8, t.name, type_name)) {
+                  return type_name;
+              }
+          }
+
+          const semantic = mapSemanticType(type_name);
+          if (!std.mem.eql(u8, semantic, type_name)) {
+              return semantic;
+          }
+
+          return resolveTypeName(spec_types, type_name);
+      }
 
 
-/// a type name
-/// When: isPrimitiveType is called
-/// Then: returns true if it's a VIBEE primitive type
-pub fn is_primitive_type(self: *@This()) !void {
-// TODO: implement — returns true if it's a VIBEE primitive type
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = self;
-}
+
+      pub fn containsCI(haystack: []const u8, needle: []const u8) bool {
+          if (needle.len == 0) return true;
+          if (haystack.len < needle.len) return false;
+          const limit = haystack.len - needle.len + 1;
+          for (0..limit) |i| {
+              var found = true;
+              for (0..needle.len) |j| {
+                  const h = toLowerASCII(haystack[i + j]);
+                  const n = toLowerASCII(needle[j]);
+                  if (h != n) {
+                      found = false;
+                      break;
+                  }
+              }
+              if (found) return true;
+          }
+          return false;
+      }
 
 
-/// a generic type like List<T> or Option<T>
-/// When: extractInnerType is called
-/// Then: returns the inner type T
-pub fn extract_inner_type(config: anytype) !void {
-// Extract: returns the inner type T
-    const sample_input = @as([]const u8, "sample input");
-    var found_count: usize = 0;
-    for (sample_input) |c| {
-        if (c >= 'A' and c <= 'Z') found_count += 1; // count significant tokens
-    }
-    std.debug.assert(found_count <= sample_input.len);
-_ = config;
-}
+
+      pub fn toLowerASCII(c: u8) u8 {
+          return if (c >= 'A' and c <= 'Z') c + 32 else c;
+      }
 
 
-/// a type string
-/// When: isOptionalType is called
-/// Then: returns true if the type is optional (starts with ? or Option<)
-pub fn is_optional_type(input: []const u8) !void {
-// TODO: implement — returns true if the type is optional (starts with ? or Option<)
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = input;
-}
+
+      pub fn extractCount(phrase: []const u8) ?usize {
+          if (containsCI(phrase, "two") or containsCI(phrase, "pair")) return 2;
+          if (containsCI(phrase, "three") or containsCI(phrase, "triple")) return 3;
+          if (containsCI(phrase, "four")) return 4;
+          if (containsCI(phrase, "five")) return 5;
+          if (containsCI(phrase, "six")) return 6;
+          if (containsCI(phrase, "seven")) return 7;
+          if (containsCI(phrase, "eight")) return 8;
+          if (containsCI(phrase, "nine")) return 9;
+          if (containsCI(phrase, "ten")) return 10;
+          if (containsCI(phrase, "multiple")) return null;
+          return null;
+      }
 
 
-/// a type string
-/// When: isListType is called
-/// Then: returns true if the type is a list (starts with [] or List<)
-pub fn is_list_type(input: []const u8) !void {
-// TODO: implement — returns true if the type is a list (starts with [] or List<)
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = input;
-}
 
+      pub fn extractBaseType(phrase: []const u8) []const u8 {
+          const type_markers = [_][]const u8 {
+              "Vec3", "Vec2", "Vec4", "vec3", "vec2", "vec4",
+              "Tensor", "tensor", "Matrix", "matrix",
+              "Agent", "Wallet", "Task", "Tenant",
+          };
 
-/// a type string
-/// When: isMapType is called
-/// Then: returns true if the type is a map (Map< or HashMap<)
-pub fn is_map_type(input: []const u8) !void {
-// TODO: implement — returns true if the type is a map (Map< or HashMap<)
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = input;
-}
+          for (type_markers) |marker| {
+              if (containsCI(phrase, marker)) {
+                  return marker;
+              }
+          }
 
+          if (containsCI(phrase, "vector") or containsCI(phrase, "hypervector")) return "[]const i8";
+          if (containsCI(phrase, "tensor")) return "Tensor";
+          if (containsCI(phrase, "matrix")) return "[]const f32";
+          if (containsCI(phrase, "agent")) return "AgentInfo";
+          if (containsCI(phrase, "wallet")) return "Wallet";
 
-/// a type string
-/// When: getTypeCategory is called
-/// Then: returns the category: primitive, optional, list, map, custom, or unknown
-pub fn get_type_category(input: []const u8) !void {
-// Query: returns the category: primitive, optional, list, map, custom, or unknown
-    const result = @as([]const u8, "query_result");
-    _ = result;
-_ = input;
-}
+          return "anytype";
+      }
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS - Generated from behaviors and test_cases
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "resolve_primitive_type_behavior" {
-// Given: a VIBEE primitive type name (String, Int, Float, Bool, etc.)
-// When: resolvePrimitiveType is called
-// Then: returns the corresponding Zig type ([]const u8, i64, f64, bool, etc.)
-// Test resolve_primitive_type: verify behavior is callable (compile-time check)
-_ = resolve_primitive_type;
+test "resolveTypeName_behavior" {
+// Given: A VIBEE type name (String, Int, Float, Bool, etc.) and spec_types list
+// When: Mapping VIBEE type names to Zig types
+// Then: - Map String to "[]const u8"
+// Test resolveTypeName: verify behavior is callable (compile-time check)
+_ = resolveTypeName;
 }
 
-test "resolve_custom_type_behavior" {
-// Given: a custom type name defined in the spec
-// When: resolveCustomType is called with spec_types context
-// Then: returns the type name as-is if defined, or returns unknown type
-// Test resolve_custom_type: verify behavior is callable (compile-time check)
-_ = resolve_custom_type;
+test "findMatchingBracket_behavior" {
+// Given: A string and start position after opening bracket
+// When: Finding the closing bracket for nested generics like List<Map<K,V>>
+// Then: - Track bracket depth starting at 1
+// Test findMatchingBracket: verify behavior is callable (compile-time check)
+_ = findMatchingBracket;
 }
 
-test "find_matching_bracket_behavior" {
-// Given: a string containing nested generics and starting position
-// When: the parser needs to find the closing bracket
-// Then: returns the position of matching '>' or null if unmatched
-// Test find_matching_bracket: verify behavior is callable (compile-time check)
-_ = find_matching_bracket;
+test "parseComplexTypeNoAlloc_behavior" {
+// Given: A complex VIBEE type string (Option<T>, List<T>, etc.) and spec_types
+// When: Resolving type without heap allocation (static string returns)
+// Then: - Handle Option<T> to optional for known primitives
+// Test parseComplexTypeNoAlloc: verify behavior is callable (compile-time check)
+_ = parseComplexTypeNoAlloc;
 }
 
-test "parse_option_type_behavior" {
-// Given: a type string like Option<T> or ?T
-// When: parseOptionType is called
-// Then: returns ?resolved_type (e.g., ?i64, ?[]const u8)
-// Test parse_option_type: verify behavior is callable (compile-time check)
-_ = parse_option_type;
+test "parseComplexType_behavior" {
+// Given: A complex VIBEE type string and allocator and spec_types
+// When: Resolving type with heap allocation for dynamic results
+// Then: - Handle Option<T> to optional (allocating)
+// Test parseComplexType: verify behavior is callable (compile-time check)
+_ = parseComplexType;
 }
 
-test "parse_list_type_behavior" {
-// Given: a type string like List<T> or [T]
-// When: parseListType is called
-// Then: returns []const T (supports nested generics)
-// Test parse_list_type: verify behavior is callable (compile-time check)
-_ = parse_list_type;
+test "mapSemanticType_behavior" {
+// Given: A domain-specific type name (probability, embedding, tensor, etc.)
+// When: Mapping semantic concepts to concrete Zig types
+// Then: - Map probability/similarity/score/confidence/accuracy to f32
+// Test mapSemanticType: verify returns a float in valid range
+// TODO: Add specific test for mapSemanticType
+_ = mapSemanticType;
 }
 
-test "parse_map_type_behavior" {
-// Given: a type string like Map<K,V> or HashMap<K,V>
-// When: parseMapType is called
-// Then: returns std.StringHashMap(V) or std.AutoHashMap(K, V)
-// Test parse_map_type: verify behavior is callable (compile-time check)
-_ = parse_map_type;
+test "resolveTypeFromSpec_behavior" {
+// Given: A type name and spec_types list
+// When: Resolving type using all available sources
+// Then: - First check spec.types for custom struct definitions
+// Test resolveTypeFromSpec: verify behavior is callable (compile-time check)
+_ = resolveTypeFromSpec;
 }
 
-test "parse_complex_type_behavior" {
-// Given: any type string (primitive, Option<T>, List<T>, Map<K,V>, nested)
-// When: parseComplexType is called
-// Then: returns the fully resolved Zig type string with proper allocation
-// Test parse_complex_type: verify behavior is callable (compile-time check)
-_ = parse_complex_type;
+test "containsCI_behavior" {
+// Given: A haystack string and needle string
+// When: Checking if haystack contains needle (case-insensitive)
+// Then: - Compare character by character with ASCII lowering
+// Test containsCI: verify behavior is callable (compile-time check)
+_ = containsCI;
 }
 
-test "parse_complex_type_no_alloc_behavior" {
-// Given: a simple type string that doesn't need allocation
-// When: parseComplexTypeNoAlloc is called
-// Then: returns static string for common types or null if allocation needed
-// Test parse_complex_type_no_alloc: verify behavior is callable (compile-time check)
-_ = parse_complex_type_no_alloc;
+test "toLowerASCII_behavior" {
+// Given: A single byte
+// When: Converting ASCII uppercase to lowercase
+// Then: - If byte is A-Z, return a-z equivalent
+// Test toLowerASCII: verify behavior is callable (compile-time check)
+_ = toLowerASCII;
 }
 
-test "map_semantic_type_behavior" {
-// Given: a semantic term like "probability", "embedding", "tensor"
-// When: mapSemanticType is called
-// Then: returns the appropriate Zig type (f32, []const f32, Tensor, etc.)
-// Test map_semantic_type: verify behavior is callable (compile-time check)
-_ = map_semantic_type;
+test "extractCount_behavior" {
+// Given: A natural language phrase
+// When: Extracting numeric count from words like "two", "three", "pair"
+// Then: - Map English words to numbers (two=2, three=3, etc. up to ten=10)
+// Test extractCount: verify behavior is callable (compile-time check)
+_ = extractCount;
 }
 
-test "is_primitive_type_behavior" {
-// Given: a type name
-// When: isPrimitiveType is called
-// Then: returns true if it's a VIBEE primitive type
-// Test is_primitive_type: verify returns boolean
-// TODO: Add specific test for is_primitive_type
-_ = is_primitive_type;
-}
-
-test "extract_inner_type_behavior" {
-// Given: a generic type like List<T> or Option<T>
-// When: extractInnerType is called
-// Then: returns the inner type T
-// Test extract_inner_type: verify behavior is callable (compile-time check)
-_ = extract_inner_type;
-}
-
-test "is_optional_type_behavior" {
-// Given: a type string
-// When: isOptionalType is called
-// Then: returns true if the type is optional (starts with ? or Option<)
-// Test is_optional_type: verify returns boolean
-// TODO: Add specific test for is_optional_type
-_ = is_optional_type;
-}
-
-test "is_list_type_behavior" {
-// Given: a type string
-// When: isListType is called
-// Then: returns true if the type is a list (starts with [] or List<)
-// Test is_list_type: verify returns boolean
-// TODO: Add specific test for is_list_type
-_ = is_list_type;
-}
-
-test "is_map_type_behavior" {
-// Given: a type string
-// When: isMapType is called
-// Then: returns true if the type is a map (Map< or HashMap<)
-// Test is_map_type: verify returns boolean
-// TODO: Add specific test for is_map_type
-_ = is_map_type;
-}
-
-test "get_type_category_behavior" {
-// Given: a type string
-// When: getTypeCategory is called
-// Then: returns the category: primitive, optional, list, map, custom, or unknown
-// Test get_type_category: verify behavior is callable (compile-time check)
-_ = get_type_category;
+test "extractBaseType_behavior" {
+// Given: A natural language phrase describing data types
+// When: Extracting the base type from phrases like "Vec3 vectors a and b"
+// Then: - Check for specific type markers (Vec3, Tensor, Matrix, Agent, etc.)
+// Test extractBaseType: verify behavior is callable (compile-time check)
+_ = extractBaseType;
 }
 
 test "phi_constants" {

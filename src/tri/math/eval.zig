@@ -22,11 +22,7 @@ pub fn phiPower(n: usize) f64 {
 pub fn printPhiPower(writer: anytype, n: usize) !void {
     const result = phiPower(n);
 
-    try writer.writeAll(format.colors.gold);
-    try writer.print("φ^{d} = ", .{n});
-    try writer.writeAll(format.colors.cyan);
-    try writer.print("{d:.[1]}\n", .{ result, 16 });
-    try writer.writeAll(format.colors.reset);
+    try writer.print("phi^{d} = {d:.16}\n", .{ n, result });
 
     // Special notes
     if (n == 0) {
@@ -85,24 +81,17 @@ pub fn printFibonacci(writer: anytype, allocator: std.mem.Allocator, n: usize) !
     const formatted = try fibonacciBigInt(allocator, n);
     defer allocator.free(formatted);
 
-    try writer.writeAll(format.colors.gold);
     try writer.print("F({d}) = ", .{n});
-    try writer.writeAll(format.colors.cyan);
     try writer.writeAll(formatted);
-    try writer.writeAll(format.colors.reset);
 
     const digit_count = formatted.len - @as(usize, @intCast(@divTrunc(formatted.len - 1, 3)));
     try writer.print(" [{d} digits]\n", .{digit_count});
 
     // Special notes
     if (n == 4) {
-        try writer.writeAll(format.colors.purple);
-        try writer.writeAll("  ★ F(4) = 3 = TRINITY\n");
-        try writer.writeAll(format.colors.reset);
+        try writer.writeAll("  * F(4) = 3 = TRINITY\n");
     } else if (n == 7) {
-        try writer.writeAll(format.colors.purple);
-        try writer.writeAll("  ★ F(7) = 13 = TRYTE_MAX\n");
-        try writer.writeAll(format.colors.reset);
+        try writer.writeAll("  * F(7) = 13 = TRYTE_MAX\n");
     }
 }
 
@@ -153,25 +142,18 @@ pub fn printLucas(writer: anytype, allocator: std.mem.Allocator, n: usize) !void
     const formatted = try lucasBigInt(allocator, n);
     defer allocator.free(formatted);
 
-    try writer.writeAll(format.colors.gold);
     try writer.print("L({d}) = ", .{n});
-    try writer.writeAll(format.colors.cyan);
     try writer.writeAll(formatted);
-    try writer.writeAll(format.colors.reset);
 
     const digit_count = formatted.len - @as(usize, @intCast(@divTrunc(formatted.len - 1, 3)));
     try writer.print(" [{d} digits]\n", .{digit_count});
 
     // Special notes
     if (n == 2) {
-        try writer.writeAll(format.colors.purple);
-        try writer.writeAll("  ★ L(2) = 3 = TRINITY\n");
-        try writer.writeAll("  ★ L(n) = φⁿ + 1/φⁿ (Binet's formula for Lucas)\n");
-        try writer.writeAll(format.colors.reset);
+        try writer.writeAll("  * L(2) = 3 = TRINITY\n");
+        try writer.writeAll("  * L(n) = phi^n + 1/phi^n (Binet's formula for Lucas)\n");
     } else if (n == 10) {
-        try writer.writeAll(format.colors.purple);
-        try writer.writeAll("  ★ L(10) = 123 (Lucas number L(10))\n");
-        try writer.writeAll(format.colors.reset);
+        try writer.writeAll("  * L(10) = 123 (Lucas number L(10))\n");
     }
 }
 

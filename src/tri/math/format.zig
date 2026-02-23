@@ -142,9 +142,10 @@ fn padString(str: []const u8, width: usize, align_param: Alignment) ![width:0]u8
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn formatFloat(allocator: std.mem.Allocator, value: f64, precision: usize) ![]u8 {
+    _ = precision;
     const max_buf_len = 100;
     var buffer: [max_buf_len]u8 = undefined;
-    const formatted = try std.fmt.bufPrintZ(&buffer, "{d:.[1]}", .{ value, precision });
+    const formatted = try std.fmt.bufPrintZ(&buffer, "{d:.6}", .{value});
     return allocator.dupe(u8, formatted);
 }
 
