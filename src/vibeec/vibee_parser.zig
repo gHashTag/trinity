@@ -528,56 +528,14 @@ pub const VibeeParser = struct {
         return r.value;
     }
 
-    /// Parse language array syntax: [zig, python, typescript]
     fn parseLanguageArray(self: *Self, languages: *ArrayList([]const u8)) !void {
-        if (self.pos >= self.source.len or self.source[self.pos] != '[') return;
-        self.pos += 1; // skip '['
-
-        while (self.pos < self.source.len) {
-            self.skipInlineWhitespace();
-            if (self.pos >= self.source.len) break;
-
-            // Check for end of array
-            if (self.source[self.pos] == ']') {
-                self.pos += 1; // skip ']'
-                break;
-            }
-
-            // Skip comma separator
-            if (self.source[self.pos] == ',') {
-                self.pos += 1;
-                continue;
-            }
-
-            // Read language name
-            const start = self.pos;
-            while (self.pos < self.source.len) {
-                const c = self.source[self.pos];
-                if (c == ',' or c == ']' or c == ' ' or c == '\t' or c == '\n' or c == '\r') break;
-                self.pos += 1;
-            }
-            const lang = std.mem.trim(u8, self.source[start..self.pos], " \t");
-            if (lang.len > 0) {
-                try languages.append(self.allocator, lang);
-            }
-        }
+        self.pos = try parser_sections.parseLanguageArray(self.source, self.pos, self.allocator, languages);
     }
 
     fn parseTargets(self: *Self, targets: *ArrayList([]const u8)) !void {
-        self.skipWhitespaceAndComments();
-        while (self.pos < self.source.len) {
-            self.skipWhitespaceAndComments();
-            if (self.pos >= self.source.len) break;
-
-            if (self.source[self.pos] != '-') break;
-            self.pos += 1; // skip '-'
-            self.skipWhitespaceAndComments();
-
-            const target = self.readValue();
-            if (target.len > 0) {
-                try targets.append(self.allocator, target);
-            }
-        }
+        const s = try parser_sections.parseTargets(self.source, self.pos, self.line, self.allocator, targets);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn parseConstants(self: *Self, constants: *ArrayList(Constant)) !void {
@@ -798,57 +756,9 @@ pub const VibeeParser = struct {
     }
 
     fn parseFSMOutputs(self: *Self, outputs: *ArrayList(FSMOutput)) !void {
-        while (self.pos < self.source.len) {
-            self.skipEmptyLinesAndComments();
-            if (self.pos >= self.source.len) break;
-
-            const indent = self.countIndent();
-            if (indent < 6) break;
-            self.pos += indent;
-
-            if (self.pos >= self.source.len or self.source[self.pos] != '-') {
-                self.pos -= indent;
-                break;
-            }
-            self.pos += 1; // skip '-'
-            self.skipInlineWhitespace();
-
-            var out = FSMOutput.init(self.allocator);
-
-            // Read first key (should be 'state')
-            const first_key = self.readKey();
-            if (std.mem.eql(u8, first_key, "state")) {
-                self.skipColon();
-                out.state = self.readValue();
-                self.skipToNextLine();
-
-                // Read output signal values (any key except 'state')
-                while (self.pos < self.source.len) {
-                    self.skipEmptyLinesAndComments();
-                    if (self.pos >= self.source.len) break;
-
-                    const prop_indent = self.countIndent();
-                    if (prop_indent < 8) break;
-                    self.pos += prop_indent;
-
-                    const prop_key = self.readKey();
-                    if (prop_key.len == 0) break;
-                    self.skipColon();
-
-                    const val = self.readQuotedOrValue();
-                    // Store any signal name -> value mapping
-                    try out.signals.put(prop_key, val);
-                    self.skipToNextLine();
-                }
-            } else {
-                self.skipToNextLine();
-                continue;
-            }
-
-            if (out.state.len > 0) {
-                try outputs.append(self.allocator, out);
-            }
-        }
+        const s = try parser_sections.parseFSMOutputs(self.source, self.pos, self.line, self.allocator, outputs);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn parseFSMTimers(self: *Self, timers: *ArrayList(FSMTimer)) !void {
@@ -869,26 +779,10 @@ pub const VibeeParser = struct {
         self.line = s.line;
     }
 
-    // VIBEE Generator v2: Parse const definitions (name: "value")
     fn parseConsts(self: *Self, consts: *std.StringHashMap([]const u8)) !void {
-        while (self.pos < self.source.len) {
-            self.skipEmptyLinesAndComments();
-            if (self.pos >= self.source.len) break;
-
-            const indent = self.countIndent();
-            if (indent < 6) break;
-            self.pos += indent;
-
-            const const_name = self.readKey();
-            if (const_name.len == 0) break;
-            self.skipColon();
-
-            const const_value = self.readValue();
-            // Store the name (owned) and value (reference to source)
-            const name_owned = try self.allocator.dupe(u8, const_name);
-            try consts.put(name_owned, const_value);
-            self.skipToNextLine();
-        }
+        const s = try parser_sections.parseConsts(self.source, self.pos, self.line, self.allocator, consts);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn parseEnum(self: *Self, enum_variants: *ArrayList([]const u8)) !void {
@@ -986,79 +880,9 @@ pub const VibeeParser = struct {
     }
 
     fn parseTopLevelTestCases(self: *Self, test_cases: *ArrayList(TestCase)) !void {
-        // Parse top-level test_cases: (indent 2, not nested under behaviors)
-        while (self.pos < self.source.len) {
-            self.skipEmptyLinesAndComments();
-            if (self.pos >= self.source.len) break;
-
-            const indent = self.countIndent();
-            if (indent < 2) break;
-            self.pos += indent;
-
-            if (self.pos >= self.source.len or self.source[self.pos] != '-') {
-                self.pos -= indent;
-                break;
-            }
-            self.pos += 1;
-            self.skipInlineWhitespace();
-
-            var test_case = TestCase{
-                .name = "",
-                .input = "",
-                .expected = "",
-                .tolerance = null,
-            };
-
-            // First field on same line
-            const first_key = self.readKey();
-            if (first_key.len > 0) {
-                self.skipColon();
-                if (std.mem.eql(u8, first_key, "name")) {
-                    test_case.name = self.readValue();
-                } else if (std.mem.eql(u8, first_key, "given")) {
-                    test_case.input = self.readValue();
-                } else if (std.mem.eql(u8, first_key, "input")) {
-                    test_case.input = self.readBraceValue();
-                }
-            }
-            self.skipToNextLine();
-
-            // Read remaining fields
-            while (self.pos < self.source.len) {
-                self.skipEmptyLinesAndComments();
-                if (self.pos >= self.source.len) break;
-
-                const field_indent = self.countIndent();
-                if (field_indent < 4) break;
-                self.pos += field_indent;
-
-                const field_key = self.readKey();
-                if (field_key.len == 0) {
-                    self.pos -= field_indent;
-                    break;
-                }
-                self.skipColon();
-
-                if (std.mem.eql(u8, field_key, "name")) {
-                    test_case.name = self.readValue();
-                } else if (std.mem.eql(u8, field_key, "given") or std.mem.eql(u8, field_key, "input")) {
-                    // Support both "given" (from test_cases) and "input" (from behavior test_cases)
-                    if (self.pos < self.source.len and self.source[self.pos] == '"') {
-                        test_case.input = self.readValue();
-                    } else {
-                        test_case.input = self.readBraceValue();
-                    }
-                } else if (std.mem.eql(u8, field_key, "expected")) {
-                    test_case.expected = self.readValue();
-                } else if (std.mem.eql(u8, field_key, "tolerance")) {
-                    const tol_str = self.readValue();
-                    test_case.tolerance = std.fmt.parseFloat(f64, tol_str) catch null;
-                }
-                self.skipToNextLine();
-            }
-
-            try test_cases.append(self.allocator, test_case);
-        }
+        const s = try parser_sections.parseTopLevelTestCases(self.source, self.pos, self.line, self.allocator, test_cases);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn parseAlgorithms(self: *Self, algorithms: *ArrayList(Algorithm)) !void {
@@ -1126,25 +950,6 @@ pub const VibeeParser = struct {
         }
     }
 
-    fn parseSteps(self: *Self, steps: *ArrayList([]const u8)) !void {
-        while (self.pos < self.source.len) {
-            self.skipWhitespaceAndComments();
-            if (self.pos >= self.source.len) break;
-
-            const indent = self.countIndent();
-            if (indent < 6) break;
-
-            if (self.source[self.pos] != '-') break;
-            self.pos += 1;
-            self.skipWhitespaceAndComments();
-
-            const step = self.readQuotedOrValue();
-            if (step.len > 0) {
-                try steps.append(self.allocator, step);
-            }
-        }
-    }
-
     fn parseAlgorithmSteps(self: *Self, steps: *ArrayList([]const u8)) !void {
         const s = try parser_sections.parseAlgorithmSteps(self.source, self.pos, self.line, self.allocator, steps);
         self.pos = s.pos;
@@ -1189,74 +994,10 @@ pub const VibeeParser = struct {
         self.line = s.line;
     }
 
-    fn parseFunctionList(self: *Self, functions: *ArrayList([]const u8)) !void {
-        while (self.pos < self.source.len) {
-            self.skipWhitespaceAndComments();
-            if (self.pos >= self.source.len) break;
-
-            const indent = self.countIndent();
-            if (indent < 4) break;
-
-            if (self.source[self.pos] != '-') break;
-            self.pos += 1;
-            self.skipWhitespaceAndComments();
-
-            const func = self.readValue();
-            if (func.len > 0) {
-                try functions.append(self.allocator, func);
-            }
-        }
-    }
-
     fn parseWasmMemoryExports(self: *Self, memory: *ArrayList(MemoryExport)) !void {
         const s = try parser_sections.parseWasmMemoryExports(self.source, self.pos, self.line, self.allocator, memory);
         self.pos = s.pos;
         self.line = s.line;
-    }
-
-    fn parseMemoryExports(self: *Self, memory: *ArrayList(MemoryExport)) !void {
-        while (self.pos < self.source.len) {
-            self.skipWhitespaceAndComments();
-            if (self.pos >= self.source.len) break;
-
-            const indent = self.countIndent();
-            if (indent < 4) break;
-
-            const name = self.readKey();
-            if (name.len == 0) break;
-            self.skipColon();
-
-            var mem_export = MemoryExport{
-                .name = name,
-                .size = 0,
-                .type_name = null,
-                .alignment = 8,
-            };
-
-            while (self.pos < self.source.len) {
-                self.skipWhitespaceAndComments();
-                if (self.pos >= self.source.len) break;
-
-                const field_indent = self.countIndent();
-                if (field_indent <= 4) break;
-
-                const field_key = self.readKey();
-                if (field_key.len == 0) break;
-                self.skipColon();
-
-                if (std.mem.eql(u8, field_key, "size")) {
-                    const size_str = self.readValue();
-                    mem_export.size = std.fmt.parseInt(usize, size_str, 10) catch 0;
-                } else if (std.mem.eql(u8, field_key, "type")) {
-                    mem_export.type_name = self.readValue();
-                } else if (std.mem.eql(u8, field_key, "alignment")) {
-                    const align_str = self.readValue();
-                    mem_export.alignment = std.fmt.parseInt(usize, align_str, 10) catch 8;
-                }
-            }
-
-            try memory.append(self.allocator, mem_export);
-        }
     }
 
     fn parsePasPredictions(self: *Self, predictions: *ArrayList(PasPrediction)) !void {
