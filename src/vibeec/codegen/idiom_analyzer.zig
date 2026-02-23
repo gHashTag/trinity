@@ -34,10 +34,17 @@ pub const Severity = enum {
 };
 
 pub const ViolationKind = enum {
+    // Cycle 77 (string-based)
     duplicate_param,
     unused_allocator,
     empty_struct,
     missing_errdefer,
+    // Cycle 78 (AST-based, requires tree-sitter)
+    variable_shadowing,
+    scope_aware_defer,
+    comptime_misuse,
+    missing_return_path,
+    type_annotation_missing,
 };
 
 pub const Violation = struct {
