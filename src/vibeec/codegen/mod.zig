@@ -18,6 +18,10 @@ pub const tests_gen = @import("tests_gen.zig");
 pub const emitter = @import("emitter.zig");
 pub const type_resolver = @import("type_resolver.zig");
 pub const zig_idioms = @import("zig_idioms.zig");
+pub const signature = @import("signature.zig");
+pub const body_emitter = @import("body_emitter.zig");
+pub const vsa_emitter = @import("vsa_emitter.zig");
+pub const struct_emitters = @import("struct_emitters.zig");
 
 // Primary exports
 pub const ZigCodeGen = emitter.ZigCodeGen;
