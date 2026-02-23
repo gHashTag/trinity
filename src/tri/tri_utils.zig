@@ -188,6 +188,20 @@ pub const Command = enum {
     kg_server,
     // VIBEE-First Strict Mode
     strict,
+    // Cycle 81: LSP + Auto-fix
+    lsp,
+    autofix,
+    lint,
+    // Cycle 82: Sacred Math
+    math,
+    constants_cmd,
+    phi_cmd,
+    fib_cmd,
+    lucas_cmd,
+    spiral_cmd,
+    math_verify,
+    math_bench,
+    math_compare,
 };
 
 pub const CLIState = struct {
@@ -538,6 +552,18 @@ pub fn printHelp() void {
     std.debug.print("  {s}strict check{s} [path]        Validate VIBEE-first compliance\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}SACRED MATH (Cycle 82):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}math{s} [subcommand]          Sacred math router/help\n", .{ GREEN, RESET });
+    std.debug.print("  {s}constants{s}                  Display all 14 sacred constants\n", .{ GREEN, RESET });
+    std.debug.print("  {s}phi{s} <n>                    Compute phi^n powers\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fib{s} <n>                    Fibonacci number F(n)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}lucas{s} <n>                  Lucas number L(n)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}spiral{s} <n>                 Phi-spiral coordinates + ASCII plot\n", .{ GREEN, RESET });
+    std.debug.print("  {s}math-verify{s}                Trinity identity verification (8 checks)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}math-bench{s}                 Performance benchmark (10K iterations)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}math-compare{s} [n]           Side-by-side phi/fib/lucas table\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -725,6 +751,20 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "kg-server") or std.mem.eql(u8, arg, "kg")) return .kg_server;
     // VIBEE-First Strict Mode
     if (std.mem.eql(u8, arg, "strict") or std.mem.eql(u8, arg, "strict-mode")) return .strict;
+    // Cycle 81: LSP + Auto-fix
+    if (std.mem.eql(u8, arg, "lsp") or std.mem.eql(u8, arg, "language-server")) return .lsp;
+    if (std.mem.eql(u8, arg, "autofix") or std.mem.eql(u8, arg, "auto-fix")) return .autofix;
+    if (std.mem.eql(u8, arg, "lint") or std.mem.eql(u8, arg, "check")) return .lint;
+    // Cycle 82: Sacred Math
+    if (std.mem.eql(u8, arg, "math") or std.mem.eql(u8, arg, "sacred-math")) return .math;
+    if (std.mem.eql(u8, arg, "constants") or std.mem.eql(u8, arg, "const")) return .constants_cmd;
+    if (std.mem.eql(u8, arg, "phi") or std.mem.eql(u8, arg, "golden")) return .phi_cmd;
+    if (std.mem.eql(u8, arg, "fib") or std.mem.eql(u8, arg, "fibonacci")) return .fib_cmd;
+    if (std.mem.eql(u8, arg, "lucas")) return .lucas_cmd;
+    if (std.mem.eql(u8, arg, "spiral") or std.mem.eql(u8, arg, "phi-spiral")) return .spiral_cmd;
+    if (std.mem.eql(u8, arg, "math-verify") or std.mem.eql(u8, arg, "trinity-verify")) return .math_verify;
+    if (std.mem.eql(u8, arg, "math-bench") or std.mem.eql(u8, arg, "sacred-bench")) return .math_bench;
+    if (std.mem.eql(u8, arg, "math-compare") or std.mem.eql(u8, arg, "compare")) return .math_compare;
     return .none;
 }
 
