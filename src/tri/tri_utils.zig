@@ -55,6 +55,17 @@ pub const Command = enum {
     // TVC (Distributed Learning)
     tvc_demo,
     tvc_stats,
+    // Dev Utilities (Cycle 78)
+    doctor,
+    clean,
+    fmt_cmd,
+    stats_cmd,
+    igla,
+    test_all,
+    // Code Analysis
+    analyze,
+    search_cmd,
+    deps,
     // Multi-Agent System
     agents_demo,
     agents_bench,
@@ -166,6 +177,15 @@ pub const Command = enum {
     info,
     version,
     help,
+    // New Commands - VIBEE First Integration
+    improve,
+    gguf_chat,
+    metal,
+    validate,
+    prometheus,
+    tvc_compile,
+    competitive_repl,
+    kg_server,
 };
 
 pub const CLIState = struct {
@@ -490,6 +510,25 @@ pub fn printHelp() void {
     std.debug.print("  /stats /verbose /help /quit\n", .{});
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}NEW COMMANDS (VIBEE FIRST INTEGRATION):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}improve{s} [--iterations N] [--threshold N] [--dry-run]\n", .{ GREEN, RESET });
+    std.debug.print("         VIBEE self-improvement: analyze patterns, suggest patches\n", .{});
+    std.debug.print("  {s}gguf-chat{s} --model <path.gguf> [--stream]\n", .{ GREEN, RESET });
+    std.debug.print("         Chat with GGUF models (SIMD optimized)\n", .{});
+    std.debug.print("  {s}metal{s} [--status]\n", .{ GREEN, RESET });
+    std.debug.print("         Metal GPU acceleration status\n", .{});
+    std.debug.print("  {s}validate{s} <spec.vibee|file.zig> [--fix]\n", .{ GREEN, RESET });
+    std.debug.print("         Validate VIBEE specifications and code quality\n", .{});
+    std.debug.print("  {s}prometheus{s} <input> [--to ternary] [--info]\n", .{ GREEN, RESET });
+    std.debug.print("         Convert float32 → ternary (safetensors → .tri)\n", .{});
+    std.debug.print("  {s}tvc compile{s} <spec.vibee> [--output] [--debug]\n", .{ GREEN, RESET });
+    std.debug.print("         TVC compiler (.vibee → TVC binary)\n", .{});
+    std.debug.print("  {s}competitive-repl{s} [--lang en|ru|th]\n", .{ GREEN, RESET });
+    std.debug.print("         REPL with tab completion and EN/RU/TH support\n", .{});
+    std.debug.print("  {s}kg-server{s} [--port N] [--persist]\n", .{ GREEN, RESET });
+    std.debug.print("         Knowledge Graph HTTP server\n", .{});
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -651,10 +690,30 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "workflow-demo") or std.mem.eql(u8, arg, "workflow") or std.mem.eql(u8, arg, "wf")) return .workflow_demo;
     if (std.mem.eql(u8, arg, "workflow-bench") or std.mem.eql(u8, arg, "wf-bench")) return .workflow_bench;
     if (std.mem.eql(u8, arg, "distributed") or std.mem.eql(u8, arg, "dist")) return .distributed;
+    // Dev Utilities (Cycle 78)
+    if (std.mem.eql(u8, arg, "doctor")) return .doctor;
+    if (std.mem.eql(u8, arg, "clean")) return .clean;
+    if (std.mem.eql(u8, arg, "fmt")) return .fmt_cmd;
+    if (std.mem.eql(u8, arg, "stats")) return .stats_cmd;
+    if (std.mem.eql(u8, arg, "igla")) return .igla;
+    if (std.mem.eql(u8, arg, "test-all") or std.mem.eql(u8, arg, "test_all")) return .test_all;
+    // Code Analysis
+    if (std.mem.eql(u8, arg, "analyze")) return .analyze;
+    if (std.mem.eql(u8, arg, "search")) return .search_cmd;
+    if (std.mem.eql(u8, arg, "deps")) return .deps;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
     if (std.mem.eql(u8, arg, "help") or std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) return .help;
+    // New Commands - VIBEE First Integration
+    if (std.mem.eql(u8, arg, "improve") or std.mem.eql(u8, arg, "self-improve")) return .improve;
+    if (std.mem.eql(u8, arg, "gguf-chat")) return .gguf_chat;
+    if (std.mem.eql(u8, arg, "metal")) return .metal;
+    if (std.mem.eql(u8, arg, "validate")) return .validate;
+    if (std.mem.eql(u8, arg, "prometheus")) return .prometheus;
+    if (std.mem.eql(u8, arg, "tvc-compile") or std.mem.eql(u8, arg, "tvcc")) return .tvc_compile;
+    if (std.mem.eql(u8, arg, "competitive-repl")) return .competitive_repl;
+    if (std.mem.eql(u8, arg, "kg-server") or std.mem.eql(u8, arg, "kg")) return .kg_server;
     return .none;
 }
 
