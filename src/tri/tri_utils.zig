@@ -52,6 +52,9 @@ pub const Command = enum {
     plan,
     verify,
     verdict,
+    // Spec & Loop (v8.27)
+    spec_create,
+    loop_decide,
     // TVC (Distributed Learning)
     tvc_demo,
     tvc_stats,
@@ -558,6 +561,9 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "plan")) return .plan;
     if (std.mem.eql(u8, arg, "verify")) return .verify;
     if (std.mem.eql(u8, arg, "verdict")) return .verdict;
+    // Spec & Loop (v8.27)
+    if (std.mem.eql(u8, arg, "spec-create") or std.mem.eql(u8, arg, "spec_create")) return .spec_create;
+    if (std.mem.eql(u8, arg, "loop-decide") or std.mem.eql(u8, arg, "loop_decide")) return .loop_decide;
     // TVC (Distributed Learning)
     if (std.mem.eql(u8, arg, "tvc-demo") or std.mem.eql(u8, arg, "tvc")) return .tvc_demo;
     if (std.mem.eql(u8, arg, "tvc-stats")) return .tvc_stats;
