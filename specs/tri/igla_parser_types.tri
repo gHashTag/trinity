@@ -1,0 +1,278 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# IGLA PARSER TYPES — Shared Type Definitions for VIBEE Parser
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Cycle 88: IGLA Phase 8 — Parser types specification
+# Purpose: Source of truth for all parser type definitions
+#
+# Target: src/vibeec/parser_types.zig (365 lines, 20 types)
+# These types are used by vibee_parser, parser_sections, zig_codegen,
+# verilog_codegen, and all other compiler modules.
+#
+# IGLA (Игла) — укол, убивающий ручной код
+#
+# φ² + 1/φ² = 3
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: igla_parser_types
+version: "1.0.0"
+language: zig
+module: vibeec.parser_types
+
+types:
+  # ─── Enums ───
+
+  ZigMode:
+    description: "Zig code generation mode"
+    enum:
+      - standard
+      - idiomatic
+      - wasm
+
+  AllocatorStrategy:
+    description: "Allocator injection strategy for idiomatic Zig"
+    enum:
+      - none
+      - param
+      - arena
+      - gpa
+
+  # ─── Core Simple Types ───
+
+  Constant:
+    description: "Named constant with numeric value and description"
+    fields:
+      name: String
+      value: Float
+      description: String
+
+  Import:
+    description: "Import definition for @import statements in generated code"
+    fields:
+      name: String
+      path: String
+
+  ResetDef:
+    description: "HDL reset configuration"
+    fields:
+      reset_type: String
+      level: String
+
+  Field:
+    description: "Type field definition (name: type)"
+    fields:
+      name: String
+      type_name: String
+
+  CreationPattern:
+    description: "Creation pattern for factory-style constructors"
+    fields:
+      name: String
+      source: String
+      transformer: String
+      result: String
+
+  TestCase:
+    description: "Test case with input/expected/tolerance"
+    fields:
+      name: String
+      input: String
+      expected: String
+      tolerance: Option<Float>
+
+  MemoryExport:
+    description: "WASM memory export definition"
+    fields:
+      name: String
+      size: Int
+      type_name: Option<String>
+      alignment: Int
+
+  PasPrediction:
+    description: "PAS (Perfect Aesthetic Score) prediction entry"
+    fields:
+      target: String
+      current: String
+      predicted: String
+      confidence: Float
+      pattern: String
+      status: Option<String>
+      timeline: Option<String>
+
+  # ─── Composite Types (with nested collections) ───
+
+  TypeDef:
+    description: "Type definition with fields, constraints, enum variants, and consts"
+    fields:
+      name: String
+      base: Option<String>
+      fields: List<Field>
+      constraints: List<String>
+      generic: Option<String>
+      description: String
+      enum_variants: List<String>
+      consts: Map<String, String>
+
+  Behavior:
+    description: "Behavior specification (given/when/then + implementation)"
+    fields:
+      name: String
+      owner: Option<String>
+      given: String
+      when: String
+      then: String
+      implementation: String
+      test_cases: List<TestCase>
+
+  Algorithm:
+    description: "Algorithm definition with steps"
+    fields:
+      name: String
+      description: String
+      complexity: String
+      pattern: String
+      steps: List<String>
+
+  WasmExports:
+    description: "WASM export configuration"
+    fields:
+      functions: List<String>
+      memory: List<MemoryExport>
+
+  # ─── HDL Types ───
+
+  Signal:
+    description: "HDL signal definition for FPGA targets"
+    fields:
+      name: String
+      width: Int
+      direction: String
+      signed: Bool
+      default_value: Option<Int>
+
+  FSMTransition:
+    description: "FSM state transition"
+    fields:
+      from_state: String
+      to_state: String
+      condition: String
+
+  FSMOutput:
+    description: "FSM output signal assignment per state"
+    fields:
+      state: String
+      signals: Map<String, String>
+
+  FSMTimer:
+    description: "FSM timer configuration"
+    fields:
+      state: String
+      timeout_constant: String
+      timeout_value: Int
+
+  FSMDef:
+    description: "Finite State Machine definition"
+    fields:
+      name: String
+      initial_state: String
+      encoding: String
+      states: List<String>
+      transitions: List<FSMTransition>
+      outputs: List<FSMOutput>
+      timers: List<FSMTimer>
+
+  # ─── Top-Level Spec ───
+
+  VibeeSpec:
+    description: "Complete VIBEE specification (top-level parsed result)"
+    fields:
+      name: String
+      version: String
+      language: String
+      languages: List<String>
+      author: String
+      license: String
+      targets: List<String>
+      fpga_target: String
+      pipeline: String
+      target_frequency: Int
+      imports: List<Import>
+      constants: List<Constant>
+      types: List<TypeDef>
+      creation_patterns: List<CreationPattern>
+      behaviors: List<Behavior>
+      algorithms: List<Algorithm>
+      wasm_exports: WasmExports
+      pas_predictions: List<PasPrediction>
+      signals: List<Signal>
+      fsms: List<FSMDef>
+      reset: ResetDef
+      test_cases: List<TestCase>
+      zig_mode: ZigMode
+      allocator_strategy: AllocatorStrategy
+      error_sets: List<String>
+
+behaviors:
+  # ─── Init Methods ───
+
+  - name: TypeDef_init
+    owner: TypeDef
+    given: Allocator
+    when: Creating a new empty TypeDef
+    then: Return TypeDef with empty fields, StringHashMap initialized with allocator
+
+  - name: Behavior_init
+    owner: Behavior
+    given: Allocator
+    when: Creating a new empty Behavior
+    then: Return Behavior with empty strings and empty test_cases list
+
+  - name: Algorithm_init
+    owner: Algorithm
+    given: Allocator
+    when: Creating a new empty Algorithm
+    then: Return Algorithm with empty strings and empty steps list
+
+  - name: WasmExports_init
+    owner: WasmExports
+    given: Allocator
+    when: Creating a new empty WasmExports
+    then: Return WasmExports with empty functions and memory lists
+
+  - name: WasmExports_deinit
+    owner: WasmExports
+    given: Self pointer, allocator
+    when: Freeing WasmExports resources
+    then: Deinit functions and memory ArrayLists
+
+  - name: FSMOutput_init
+    owner: FSMOutput
+    given: Allocator
+    when: Creating a new empty FSMOutput
+    then: Return FSMOutput with empty state and signals HashMap initialized with allocator
+
+  - name: FSMDef_init
+    owner: FSMDef
+    given: Allocator
+    when: Creating a new empty FSMDef
+    then: Return FSMDef with onehot encoding, empty states/transitions/outputs/timers
+
+  - name: VibeeSpec_init
+    owner: VibeeSpec
+    given: Allocator
+    when: Creating a new empty VibeeSpec
+    then:
+      - Set language to "zig", zig_mode to idiomatic, allocator_strategy to param
+      - Set fpga_target to "generic", pipeline to "none", target_frequency to 100
+      - Set reset to async/low default
+      - Initialize all lists as empty
+
+  - name: VibeeSpec_deinit
+    owner: VibeeSpec
+    given: Self pointer
+    when: Freeing all VibeeSpec resources
+    then:
+      - Free source_content if owned
+      - Deinit nested structures (type fields, behavior test_cases, algorithm steps, FSM sub-lists)
+      - Deinit all top-level ArrayLists
