@@ -1363,3 +1363,334 @@ pub fn runDepsCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
 
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 81: LSP + AUTO-FIX + LINT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LSP COMMAND — Language Server Protocol (JSON-RPC over stdin/stdout)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    _ = allocator;
+    var port: u16 = 0; // 0 = stdio mode
+    var verbose_mode = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--port") and i + 1 < args.len) {
+            i += 1;
+            port = std.fmt.parseInt(u16, args[i], 10) catch 0;
+        } else if (std.mem.eql(u8, args[i], "--verbose")) {
+            verbose_mode = true;
+        }
+    }
+
+    if (port > 0) {
+        std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}              TRI LSP SERVER{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("\n  Mode:    TCP (port {d})\n", .{port});
+        std.debug.print("  Verbose: {s}\n", .{if (verbose_mode) "true" else "false"});
+        std.debug.print("\n{s}TCP mode not yet implemented. Use stdio mode:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  tri lsp          (stdin/stdout JSON-RPC)\n", .{});
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    // STDIO LSP mode — write JSON-RPC responses
+    const stdin_file = std.fs.File.stdin();
+    const stdout_file = std.fs.File.stdout();
+
+    // LSP server loop: read Content-Length headers, parse JSON-RPC
+    var header_buf: [4096]u8 = undefined;
+    var body_buf: [65536]u8 = undefined;
+
+    while (true) {
+        // Read header lines until empty line
+        var content_length: usize = 0;
+        while (true) {
+            var line_len: usize = 0;
+            while (line_len < header_buf.len - 1) {
+                const n = stdin_file.read(header_buf[line_len .. line_len + 1]) catch return;
+                if (n == 0) return; // EOF
+                if (header_buf[line_len] == '\n') break;
+                line_len += 1;
+            }
+            const line = std.mem.trim(u8, header_buf[0..line_len], "\r\n ");
+            if (line.len == 0) break; // empty line = end of headers
+            if (std.mem.startsWith(u8, line, "Content-Length: ")) {
+                content_length = std.fmt.parseInt(usize, line["Content-Length: ".len..], 10) catch 0;
+            }
+        }
+
+        if (content_length == 0 or content_length >= body_buf.len) continue;
+
+        // Read body
+        var total_read: usize = 0;
+        while (total_read < content_length) {
+            const n = stdin_file.read(body_buf[total_read..content_length]) catch return;
+            if (n == 0) return;
+            total_read += n;
+        }
+        const body = body_buf[0..content_length];
+
+        // Minimal JSON-RPC: detect method
+        if (std.mem.indexOf(u8, body, "\"initialize\"") != null) {
+            // Respond with capabilities
+            const response =
+                \\{"jsonrpc":"2.0","id":0,"result":{"capabilities":{"textDocumentSync":1,"diagnosticProvider":{"interFileDependencies":false,"workspaceDiagnostics":false}},"serverInfo":{"name":"tri-lsp","version":"0.1.0"}}}
+            ;
+            var resp_buf: [512]u8 = undefined;
+            const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch continue;
+            stdout_file.writeAll(header) catch return;
+            stdout_file.writeAll(response) catch return;
+        } else if (std.mem.indexOf(u8, body, "\"initialized\"") != null) {
+            // No response needed
+        } else if (std.mem.indexOf(u8, body, "\"shutdown\"") != null) {
+            const response =
+                \\{"jsonrpc":"2.0","id":1,"result":null}
+            ;
+            var resp_buf: [256]u8 = undefined;
+            const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch continue;
+            stdout_file.writeAll(header) catch return;
+            stdout_file.writeAll(response) catch return;
+        } else if (std.mem.indexOf(u8, body, "\"exit\"") != null) {
+            return;
+        }
+        // Other methods: silently ignore for now
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUTOFIX COMMAND — detect + fix common code issues
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runAutofixCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRI AUTOFIX{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    if (args.len < 1) {
+        std.debug.print("\n{s}Usage: tri autofix <file.zig|path/>{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri autofix src/tri/           Fix all .zig in directory\n", .{});
+        std.debug.print("  tri autofix src/vsa.zig        Fix single file\n", .{});
+        std.debug.print("\n{s}Fixes:{s}\n", .{ GRAY, RESET });
+        std.debug.print("  - Trailing whitespace\n", .{});
+        std.debug.print("  - Missing final newline\n", .{});
+        std.debug.print("  - zig fmt formatting\n", .{});
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const target = args[0];
+    std.debug.print("\n  Target: {s}{s}{s}\n\n", .{ CYAN, target, RESET });
+
+    var fixes_applied: u32 = 0;
+
+    // 1. Remove trailing whitespace
+    std.debug.print("{s}  [1/3] Removing trailing whitespace...{s}\n", .{ CYAN, RESET });
+    var tw_buf: [512]u8 = undefined;
+    const tw_cmd = std.fmt.bufPrint(&tw_buf, "find {s} -name '*.zig' -exec sed -i '' 's/[[:space:]]*$//' {{}} + 2>/dev/null && echo 'done'", .{target}) catch {
+        std.debug.print("    {s}✗ path too long{s}\n", .{ RED, RESET });
+        return;
+    };
+    const tw_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", tw_cmd },
+        .max_output_bytes = 4096,
+    }) catch {
+        std.debug.print("    {s}✗ sed failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(tw_result.stdout);
+    defer allocator.free(tw_result.stderr);
+    if (std.mem.indexOf(u8, tw_result.stdout, "done") != null) {
+        std.debug.print("    {s}✓ Trailing whitespace cleaned{s}\n", .{ GREEN, RESET });
+        fixes_applied += 1;
+    }
+
+    // 2. Ensure final newline
+    std.debug.print("{s}  [2/3] Ensuring final newlines...{s}\n", .{ CYAN, RESET });
+    var nl_buf: [512]u8 = undefined;
+    const nl_cmd = std.fmt.bufPrint(&nl_buf, "find {s} -name '*.zig' -exec sh -c '[ -n \"$(tail -c 1 \"$1\")\" ] && echo >> \"$1\" && echo \"$1\"' _ {{}} \\; 2>/dev/null", .{target}) catch {
+        std.debug.print("    {s}✗ path too long{s}\n", .{ RED, RESET });
+        return;
+    };
+    const nl_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", nl_cmd },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("    {s}✗ newline fix failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(nl_result.stdout);
+    defer allocator.free(nl_result.stderr);
+
+    const nl_fixed = std.mem.count(u8, nl_result.stdout, "\n");
+    if (nl_fixed > 0) {
+        std.debug.print("    {s}✓ Added final newline to {d} file(s){s}\n", .{ GREEN, nl_fixed, RESET });
+        fixes_applied += 1;
+    } else {
+        std.debug.print("    {s}✓ All files already have final newline{s}\n", .{ GREEN, RESET });
+    }
+
+    // 3. Run zig fmt
+    std.debug.print("{s}  [3/3] Running zig fmt...{s}\n", .{ CYAN, RESET });
+    const fmt_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "fmt", target },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("    {s}✗ zig fmt failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(fmt_result.stdout);
+    defer allocator.free(fmt_result.stderr);
+
+    if (fmt_result.term.Exited == 0) {
+        if (fmt_result.stdout.len > 0) {
+            const fmt_count = std.mem.count(u8, fmt_result.stdout, "\n");
+            std.debug.print("    {s}✓ Formatted {d} file(s){s}\n", .{ GREEN, fmt_count, RESET });
+        } else {
+            std.debug.print("    {s}✓ All files already formatted{s}\n", .{ GREEN, RESET });
+        }
+        fixes_applied += 1;
+    } else {
+        std.debug.print("    {s}✗ zig fmt returned errors{s}\n", .{ RED, RESET });
+        if (fmt_result.stderr.len > 0) {
+            const preview = fmt_result.stderr[0..@min(fmt_result.stderr.len, 200)];
+            std.debug.print("    {s}{s}{s}\n", .{ GRAY, preview, RESET });
+        }
+    }
+
+    std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Fixes applied: {s}{d}/3{s}\n", .{ GREEN, fixes_applied, RESET });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LINT COMMAND — code quality checks (read-only, no modifications)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              TRI LINT{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    const target = if (args.len > 0) args[0] else "src/";
+    std.debug.print("\n  Target: {s}\n\n", .{target});
+
+    var warnings: u32 = 0;
+    var errors: u32 = 0;
+
+    // 1. Check zig fmt compliance
+    std.debug.print("{s}  [1/5] Format compliance (zig fmt --check)...{s}\n", .{ CYAN, RESET });
+    const fmt_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "fmt", "--check", target },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("    {s}✗ zig fmt --check failed{s}\n", .{ RED, RESET });
+        errors += 1;
+        printLintSummary(warnings, errors);
+        return;
+    };
+    defer allocator.free(fmt_result.stdout);
+    defer allocator.free(fmt_result.stderr);
+
+    if (fmt_result.term.Exited == 0) {
+        std.debug.print("    {s}✓ All files properly formatted{s}\n", .{ GREEN, RESET });
+    } else {
+        const unformatted = std.mem.count(u8, fmt_result.stdout, "\n");
+        std.debug.print("    {s}⚠ {d} file(s) need formatting{s}\n", .{ RED, unformatted, RESET });
+        if (fmt_result.stdout.len > 0) {
+            // Show first few
+            var line_it = std.mem.splitScalar(u8, fmt_result.stdout, '\n');
+            var shown: u32 = 0;
+            while (line_it.next()) |line| {
+                if (line.len > 0 and shown < 5) {
+                    std.debug.print("      {s}{s}{s}\n", .{ GRAY, line, RESET });
+                    shown += 1;
+                }
+            }
+            if (unformatted > 5) {
+                std.debug.print("      {s}... and {d} more{s}\n", .{ GRAY, unformatted - 5, RESET });
+            }
+        }
+        warnings += @intCast(unformatted);
+    }
+
+    // 2. TODO/FIXME count
+    std.debug.print("\n{s}  [2/5] TODO/FIXME markers...{s}\n", .{ CYAN, RESET });
+    const todo_count_str = runShellCount(allocator, "grep -rn 'TODO\\|FIXME' --include='*.zig' src/ 2>/dev/null | wc -l");
+    std.debug.print("    Found: {s} (informational)\n", .{todo_count_str});
+
+    // 3. Unsafe patterns (@panic without context)
+    std.debug.print("\n{s}  [3/5] @panic usage...{s}\n", .{ CYAN, RESET });
+    const panic_str = runShellCount(allocator, "grep -rn '@panic' --include='*.zig' src/ 2>/dev/null | wc -l");
+    const panic_count = std.fmt.parseInt(u32, panic_str, 10) catch 0;
+    if (panic_count > 0) {
+        std.debug.print("    {s}⚠ {d} @panic call(s) — consider error returns{s}\n", .{ RED, panic_count, RESET });
+        warnings += panic_count;
+    } else {
+        std.debug.print("    {s}✓ No @panic calls{s}\n", .{ GREEN, RESET });
+    }
+
+    // 4. Debug print in non-CLI code
+    std.debug.print("\n{s}  [4/5] std.debug.print in library code...{s}\n", .{ CYAN, RESET });
+    const dbg_str = runShellCount(allocator, "grep -rn 'std.debug.print' --include='*.zig' src/ 2>/dev/null | grep -v 'src/tri/' | grep -v 'src/vibeec/' | wc -l");
+    const dbg_count = std.fmt.parseInt(u32, dbg_str, 10) catch 0;
+    if (dbg_count > 50) {
+        std.debug.print("    {s}⚠ {d} debug.print in library code{s}\n", .{ RED, dbg_count, RESET });
+        warnings += 1;
+    } else {
+        std.debug.print("    {s}✓ {d} debug.print in library code (acceptable){s}\n", .{ GREEN, dbg_count, RESET });
+    }
+
+    // 5. Empty catch blocks
+    std.debug.print("\n{s}  [5/5] Empty catch blocks...{s}\n", .{ CYAN, RESET });
+    const catch_str = runShellCount(allocator, "grep -rn 'catch {}' --include='*.zig' src/ 2>/dev/null | wc -l");
+    const catch_count = std.fmt.parseInt(u32, catch_str, 10) catch 0;
+    if (catch_count > 0) {
+        std.debug.print("    {s}⚠ {d} empty catch {{}} block(s){s}\n", .{ RED, catch_count, RESET });
+        warnings += catch_count;
+    } else {
+        std.debug.print("    {s}✓ No empty catch blocks{s}\n", .{ GREEN, RESET });
+    }
+
+    printLintSummary(warnings, errors);
+}
+
+fn runShellCount(allocator: std.mem.Allocator, cmd: []const u8) []const u8 {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", cmd },
+        .max_output_bytes = 1024,
+    }) catch return "0";
+    // Note: caller uses this immediately, small leak is acceptable
+    return std.mem.trim(u8, result.stdout, " \t\n\r");
+}
+
+fn printLintSummary(warnings: u32, errors: u32) void {
+    std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
+    if (errors > 0) {
+        std.debug.print("  Errors:   {s}{d}{s}\n", .{ RED, errors, RESET });
+    }
+    if (warnings > 0) {
+        std.debug.print("  Warnings: {s}{d}{s}\n", .{ RED, warnings, RESET });
+    }
+    if (errors == 0 and warnings == 0) {
+        std.debug.print("  Status: {s}CLEAN — no issues found{s}\n", .{ GREEN, RESET });
+    } else if (errors == 0) {
+        std.debug.print("  Status: {s}PASS with warnings{s}\n", .{ GOLDEN, RESET });
+    } else {
+        std.debug.print("  Status: {s}FAIL{s}\n", .{ RED, RESET });
+    }
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
