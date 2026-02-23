@@ -1,0 +1,29 @@
+# ============================================================================
+# fast_image_gen - Auto-generated skeleton spec
+# Created by: tri strict fix
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: fast_image_gen
+version: "1.0.0"
+language: zig
+module: fast_image_gen
+
+description: |
+  Auto-generated skeleton from generated/fast_image_gen.zig.
+  Contains 14 constants and 4 public functions.
+  TODO: Review and add proper types/behaviors.
+
+constants:
+  PLACEHOLDER: 0
+
+types:
+  Config:
+    fields:
+      enabled: Bool
+
+behaviors:
+  - name: init
+    given: Module is loaded
+    when: Initialization requested
+    then: Returns configured instance
