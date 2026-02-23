@@ -29,6 +29,7 @@ const utils = @import("tri_utils.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
+const strict_mode = @import("tri_strict.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -215,5 +216,7 @@ pub fn main() !void {
         .tvc_compile => commands.runTVCCompileCommand(allocator, cmd_args),
         .competitive_repl => commands.runCompetitiveReplCommand(allocator, cmd_args),
         .kg_server => commands.runKGServerCommand(allocator, cmd_args),
+        // VIBEE-First Strict Mode
+        .strict => strict_mode.runStrictCommand(allocator, cmd_args),
     }
 }

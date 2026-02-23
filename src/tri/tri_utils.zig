@@ -186,6 +186,8 @@ pub const Command = enum {
     tvc_compile,
     competitive_repl,
     kg_server,
+    // VIBEE-First Strict Mode
+    strict,
 };
 
 pub const CLIState = struct {
@@ -529,6 +531,13 @@ pub fn printHelp() void {
     std.debug.print("         Knowledge Graph HTTP server\n", .{});
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}VIBEE-FIRST STRICT MODE:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}strict enable{s}              Activate strict mode\n", .{ GREEN, RESET });
+    std.debug.print("  {s}strict disable{s}             Deactivate strict mode\n", .{ GREEN, RESET });
+    std.debug.print("  {s}strict status{s}              Show mode and rules\n", .{ GREEN, RESET });
+    std.debug.print("  {s}strict check{s} [path]        Validate VIBEE-first compliance\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -714,6 +723,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "tvc-compile") or std.mem.eql(u8, arg, "tvcc")) return .tvc_compile;
     if (std.mem.eql(u8, arg, "competitive-repl")) return .competitive_repl;
     if (std.mem.eql(u8, arg, "kg-server") or std.mem.eql(u8, arg, "kg")) return .kg_server;
+    // VIBEE-First Strict Mode
+    if (std.mem.eql(u8, arg, "strict") or std.mem.eql(u8, arg, "strict-mode")) return .strict;
     return .none;
 }
 
