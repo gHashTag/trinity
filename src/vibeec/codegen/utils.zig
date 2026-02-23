@@ -171,46 +171,77 @@ fn findMatchingBracketPos(str: []const u8, start_pos: usize) ?usize {
 }
 
 /// Map VIBEE type to Zig type with proper generic handling
+/// VIBEE Generator v2: Support raw Zig types in field definitions
 pub fn mapType(type_name: []const u8) []const u8 {
+    // VIBEE Generator v2: Strip surrounding quotes from raw Zig types
+    // YAML contains \"[256]u8\" which parses to "[256]u8" (9 chars)
+    // First pass: strip outer quotes "[256]u8" -> [256]u8 (or \"[256]u8\")
+    var first_pass = type_name;
+    if (first_pass.len >= 2 and first_pass[0] == '"' and first_pass[first_pass.len - 1] == '"') {
+        first_pass = first_pass[1 .. first_pass.len - 1];
+    }
+
+    // Second pass: strip \" patterns from both ends \"[256]u8\" -> [256]u8
+    // Pattern at both ends is: backslash (\) then quote (")
+    const clean_input = if (first_pass.len >= 4)
+        if (first_pass[0] == '\\' and first_pass[1] == '"' and
+            first_pass[first_pass.len - 2] == '\\' and first_pass[first_pass.len - 1] == '"')
+            first_pass[2 .. first_pass.len - 2]
+        else
+            first_pass
+    else
+        first_pass;
+
     // Primitive types
-    if (std.mem.eql(u8, type_name, "f64")) return "f64";
-    if (std.mem.eql(u8, type_name, "f32")) return "f32";
-    if (std.mem.eql(u8, type_name, "i32")) return "i32";
-    if (std.mem.eql(u8, type_name, "i64")) return "i64";
-    if (std.mem.eql(u8, type_name, "u32")) return "u32";
-    if (std.mem.eql(u8, type_name, "u64")) return "u64";
-    if (std.mem.eql(u8, type_name, "bool")) return "bool";
+    if (std.mem.eql(u8, clean_input, "f64")) return "f64";
+    if (std.mem.eql(u8, clean_input, "f32")) return "f32";
+    if (std.mem.eql(u8, clean_input, "i32")) return "i32";
+    if (std.mem.eql(u8, clean_input, "i64")) return "i64";
+    if (std.mem.eql(u8, clean_input, "u32")) return "u32";
+    if (std.mem.eql(u8, clean_input, "u64")) return "u64";
+    if (std.mem.eql(u8, clean_input, "u8")) return "u8";
+    if (std.mem.eql(u8, clean_input, "u16")) return "u16";
+    if (std.mem.eql(u8, clean_input, "usize")) return "usize";
+    if (std.mem.eql(u8, clean_input, "bool")) return "bool";
 
     // VIBEE types -> Zig types
-    if (std.mem.eql(u8, type_name, "String")) return "[]const u8";
-    if (std.mem.eql(u8, type_name, "Int")) return "i64";
-    if (std.mem.eql(u8, type_name, "Float")) return "f64";
-    if (std.mem.eql(u8, type_name, "Bool")) return "bool";
-    if (std.mem.eql(u8, type_name, "Bytes")) return "[]const u8";
-    if (std.mem.eql(u8, type_name, "Timestamp")) return "i64";
-    if (std.mem.eql(u8, type_name, "Duration")) return "i64";
-    if (std.mem.eql(u8, type_name, "Any")) return "[]const u8";
-    if (std.mem.eql(u8, type_name, "Void")) return "void";
-    if (std.mem.eql(u8, type_name, "Error")) return "anyerror";
+    if (std.mem.eql(u8, clean_input, "String")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "Int")) return "i64";
+    if (std.mem.eql(u8, clean_input, "Float")) return "f64";
+    if (std.mem.eql(u8, clean_input, "Bool")) return "bool";
+    if (std.mem.eql(u8, clean_input, "Bytes")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "Timestamp")) return "i64";
+    if (std.mem.eql(u8, clean_input, "Duration")) return "i64";
+    if (std.mem.eql(u8, clean_input, "Any")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "Void")) return "void";
+    if (std.mem.eql(u8, clean_input, "Error")) return "anyerror";
+
+    // VIBEE Generator v2: Check if this is a raw Zig type (array, pointer, optional)
+    // Array types: [N]T
+    if (std.mem.startsWith(u8, clean_input, "[")) return clean_input;
+    // Pointer types: *T, *const T
+    if (std.mem.startsWith(u8, clean_input, "*")) return clean_input;
+    // Optional types: ?T
+    if (std.mem.startsWith(u8, clean_input, "?")) return clean_input;
 
     // Pointer type Ptr<T> -> *T (use opaque pointer for generated code)
-    if (std.mem.startsWith(u8, type_name, "Ptr<")) {
+    if (std.mem.startsWith(u8, clean_input, "Ptr<")) {
         return "*anyopaque";
     }
 
     // Allocator
-    if (std.mem.eql(u8, type_name, "Allocator")) {
+    if (std.mem.eql(u8, clean_input, "Allocator")) {
         return "std.mem.Allocator";
     }
 
     // Codebook -> opaque VSA codebook type
-    if (std.mem.eql(u8, type_name, "Codebook")) {
+    if (std.mem.eql(u8, clean_input, "Codebook")) {
         return "*anyopaque";
     }
 
     // Generic types List<T> -> []const T (FIXED: recursively parse inner type)
-    if (std.mem.startsWith(u8, type_name, "List<")) {
-        const inner = extractInnerType(type_name, "List<", ">");
+    if (std.mem.startsWith(u8, clean_input, "List<")) {
+        const inner = extractInnerType(clean_input, "List<", ">");
         // Check inner type FIRST before calling mapType recursively
         // This avoids double-conversion (String -> []const u8 -> []const []const u8)
         if (std.mem.eql(u8, inner, "String")) return "[]const u8";
@@ -233,13 +264,13 @@ pub fn mapType(type_name: []const u8) []const u8 {
     }
 
     // Plain List type -> slice
-    if (std.mem.eql(u8, type_name, "List")) {
+    if (std.mem.eql(u8, clean_input, "List")) {
         return "[]const u8";
     }
 
     // Generic types Option<T> -> ?T (FIXED: parse inner type)
-    if (std.mem.startsWith(u8, type_name, "Option<")) {
-        const inner = extractInnerType(type_name, "Option<", ">");
+    if (std.mem.startsWith(u8, clean_input, "Option<")) {
+        const inner = extractInnerType(clean_input, "Option<", ">");
         const inner_zig = mapType(inner);
         // Map common inner types to correct optional types
         if (std.mem.eql(u8, inner_zig, "f64")) return "?f64";
@@ -254,45 +285,45 @@ pub fn mapType(type_name: []const u8) []const u8 {
     }
 
     // HashMap<K,V>
-    if (std.mem.startsWith(u8, type_name, "HashMap<")) {
+    if (std.mem.startsWith(u8, clean_input, "HashMap<")) {
         return "std.AutoHashMap(usize, *anyopaque)";
     }
 
     // Map<K,V>
-    if (std.mem.startsWith(u8, type_name, "Map<")) {
+    if (std.mem.startsWith(u8, clean_input, "Map<")) {
         return "std.StringHashMap([]const u8)";
     }
 
     // Plain Map type
-    if (std.mem.eql(u8, type_name, "Map")) {
+    if (std.mem.eql(u8, clean_input, "Map")) {
         return "std.StringHashMap([]const u8)";
     }
 
     // Handle trailing ? (nullable)
-    if (type_name.len > 0 and type_name[type_name.len - 1] == '?') {
+    if (clean_input.len > 0 and clean_input[clean_input.len - 1] == '?') {
         return "?[]const u8";
     }
 
     // Object type
-    if (std.mem.eql(u8, type_name, "Object")) {
+    if (std.mem.eql(u8, clean_input, "Object")) {
         return "[]const u8";
     }
 
     // Unknown complex types -> []const u8
-    if (std.mem.eql(u8, type_name, "JsonSchema")) return "[]const u8";
-    if (std.mem.eql(u8, type_name, "Role")) return "[]const u8";
-    if (std.mem.eql(u8, type_name, "PluginManifest")) return "[]const u8";
-    if (std.mem.eql(u8, type_name, "PluginConfig")) return "[]const u8";
-    if (std.mem.eql(u8, type_name, "StreamEvent")) return "[]const u8";
-    if (std.mem.eql(u8, type_name, "TokenStats")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "JsonSchema")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "Role")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "PluginManifest")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "PluginConfig")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "StreamEvent")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "TokenStats")) return "[]const u8";
 
     // Handle Tensor type specially
-    if (std.mem.eql(u8, type_name, "Tensor")) {
+    if (std.mem.eql(u8, clean_input, "Tensor")) {
         return "Tensor";
     }
 
-    // Unknown types - return as-is (could be custom types)
-    return type_name;
+    // Unknown types - return as-is (could be custom types or raw Zig types)
+    return clean_input;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

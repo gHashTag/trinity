@@ -1001,7 +1001,7 @@ pub const ZigCodeGen = struct {
         try self.writeHeader(spec);
         try self.writeImports(spec);
         try self.writeConstants(spec.constants.items);
-        try self.writeTypes(spec.types.items);
+        try self.writeTypes(spec.types.items, spec.behaviors.items);
         try self.writeMemoryBuffers();
         try self.writeCreationPatterns(spec.creation_patterns.items, spec.types.items);
         try self.writeBehaviorFunctions(spec.behaviors.items);
@@ -1109,7 +1109,7 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
     }
 
-    fn writeTypes(self: *Self, type_defs: []const TypeDef) !void {
+    fn writeTypes(self: *Self, type_defs: []const TypeDef, behaviors: []const Behavior) !void {
         if (type_defs.len == 0) return;
 
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
@@ -1144,11 +1144,28 @@ pub const ZigCodeGen = struct {
                     try self.builder.writeFmt("{s}: {s},\n", .{ safe_name, zig_type });
                 }
 
+                // VIBEE Generator v2: Write methods inside struct (behaviors with owner == type.name)
+                for (behaviors) |b| {
+                    if (b.owner) |owner| {
+                        if (std.mem.eql(u8, owner, t.name)) {
+                            try self.writeStructMethod(&b);
+                        }
+                    }
+                }
+
                 self.builder.decIndent();
                 try self.builder.writeLine("};");
             }
             try self.builder.newline();
         }
+    }
+
+    /// VIBEE Generator v2: Write a behavior as a method inside a struct
+    fn writeStructMethod(self: *Self, b: *const Behavior) !void {
+        try self.builder.newline();
+        // Write method implementation
+        var pattern_matcher = PatternMatcher.init(&self.builder);
+        try self.generateBehaviorImplementation(&pattern_matcher, b);
     }
 
     fn writeMemoryBuffers(self: *Self) !void {
@@ -1411,6 +1428,9 @@ pub const ZigCodeGen = struct {
         var pattern_matcher = PatternMatcher.init(&self.builder);
 
         for (behaviors) |b| {
+            // VIBEE Generator v2: Skip behaviors with owner (already written as struct methods)
+            if (b.owner != null) continue;
+
             try self.generateBehaviorImplementation(&pattern_matcher, &b);
         }
     }
@@ -1425,6 +1445,9 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
 
         for (behaviors) |b| {
+            // VIBEE Generator v2: Skip behaviors with owner (struct methods don't need aliases)
+            if (b.owner != null) continue;
+
             // b.name may be snake_case (e.g., "check_recovery_cooldown") or camelCase
             // Generated function is always camelCase (e.g., "checkRecoveryCooldown")
             // Create alias ONLY if snake_case != camel_case (skip self-referential aliases)
