@@ -21,6 +21,8 @@ const ArrayList = std.ArrayListUnmanaged;
 const pu = @import("parser_utils.zig");
 const ScanState = pu.ScanState;
 
+const StringHashMap = std.StringHashMap;
+
 // Re-import parser types
 const vibee_parser = @import("vibee_parser.zig");
 const Constant = vibee_parser.Constant;
@@ -984,6 +986,321 @@ test "parseConstraints reads constraint strings" {
     const s = try parseConstraints(source, 0, 1, std.testing.allocator, &constraints);
     try std.testing.expectEqual(@as(usize, 2), constraints.items.len);
     try std.testing.expectEqualStrings("value >= 0", constraints.items[0]);
+    _ = s;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE 86 — PHASE 3: FINAL LEAF PARSERS
+// ═══════════════════════════════════════════════════════════════════════════════
+// Source of truth: specs/tri/igla_parser_phase3.tri
+
+/// Parse const definitions (indent 6+): key: "value"
+/// Uses StringHashMap — keys are owned (allocator.dupe), values reference source.
+pub fn parseConsts(source: []const u8, pos: usize, line: usize, allocator: Allocator, consts: *StringHashMap([]const u8)) !ScanState {
+    var s = ScanState{ .pos = pos, .line = line };
+    while (s.pos < source.len) {
+        const sk = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+        s = sk;
+        if (s.pos >= source.len) break;
+
+        const indent = pu.countIndent(source, s.pos);
+        if (indent < 6) break;
+        s.pos += indent;
+
+        const kr = pu.readKey(source, s.pos);
+        if (kr.key.len == 0) break;
+        s.pos = kr.new_pos;
+        s.pos = pu.skipColon(source, s.pos);
+
+        const vr = pu.readValue(source, s.pos);
+        const name_owned = try allocator.dupe(u8, kr.key);
+        try consts.put(name_owned, vr.value);
+        s.pos = vr.new_pos;
+
+        const ns = pu.skipToNextLine(source, s.pos, s.line);
+        s = ns;
+    }
+    return s;
+}
+
+/// Parse FSM output definitions (indent 6+, dash items).
+/// Each output has a state and signal HashMap (signal_name -> value).
+pub fn parseFSMOutputs(source: []const u8, pos: usize, line: usize, allocator: Allocator, outputs: *ArrayList(FSMOutput)) !ScanState {
+    var s = ScanState{ .pos = pos, .line = line };
+    while (s.pos < source.len) {
+        const sk = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+        s = sk;
+        if (s.pos >= source.len) break;
+
+        const indent = pu.countIndent(source, s.pos);
+        if (indent < 6) break;
+        s.pos += indent;
+
+        if (s.pos >= source.len or source[s.pos] != '-') {
+            s.pos -= indent;
+            break;
+        }
+        s.pos += 1; // skip '-'
+        s.pos = pu.skipInlineWhitespace(source, s.pos);
+
+        var out = FSMOutput.init(allocator);
+
+        // Read first key (should be 'state')
+        const kr = pu.readKey(source, s.pos);
+        if (std.mem.eql(u8, kr.key, "state")) {
+            s.pos = kr.new_pos;
+            s.pos = pu.skipColon(source, s.pos);
+            const vr = pu.readValue(source, s.pos);
+            out.state = vr.value;
+            s.pos = vr.new_pos;
+            const ns = pu.skipToNextLine(source, s.pos, s.line);
+            s = ns;
+
+            // Read output signal values at indent 8+
+            while (s.pos < source.len) {
+                const sk2 = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+                s = sk2;
+                if (s.pos >= source.len) break;
+
+                const prop_indent = pu.countIndent(source, s.pos);
+                if (prop_indent < 8) break;
+                s.pos += prop_indent;
+
+                const pk = pu.readKey(source, s.pos);
+                if (pk.key.len == 0) break;
+                s.pos = pk.new_pos;
+                s.pos = pu.skipColon(source, s.pos);
+
+                const pvr = pu.readQuotedOrValue(source, s.pos, s.line);
+                try out.signals.put(pk.key, pvr.value);
+                s.pos = pvr.new_pos;
+                s.line = pvr.new_line;
+
+                const ns2 = pu.skipToNextLine(source, s.pos, s.line);
+                s = ns2;
+            }
+        } else {
+            s.pos = kr.new_pos;
+            const ns = pu.skipToNextLine(source, s.pos, s.line);
+            s = ns;
+            continue;
+        }
+
+        if (out.state.len > 0) {
+            try outputs.append(allocator, out);
+        }
+    }
+    return s;
+}
+
+/// Parse top-level test_cases section (indent 2+, dash items).
+/// Fields: name, given/input, expected, tolerance.
+pub fn parseTopLevelTestCases(source: []const u8, pos: usize, line: usize, allocator: Allocator, test_cases: *ArrayList(TestCase)) !ScanState {
+    var s = ScanState{ .pos = pos, .line = line };
+    while (s.pos < source.len) {
+        const sk = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+        s = sk;
+        if (s.pos >= source.len) break;
+
+        const indent = pu.countIndent(source, s.pos);
+        if (indent < 2) break;
+        s.pos += indent;
+
+        if (s.pos >= source.len or source[s.pos] != '-') {
+            s.pos -= indent;
+            break;
+        }
+        s.pos += 1; // skip '-'
+        s.pos = pu.skipInlineWhitespace(source, s.pos);
+
+        var test_case = TestCase{
+            .name = "",
+            .input = "",
+            .expected = "",
+            .tolerance = null,
+        };
+
+        // First field on same line
+        const first_kr = pu.readKey(source, s.pos);
+        if (first_kr.key.len > 0) {
+            s.pos = first_kr.new_pos;
+            s.pos = pu.skipColon(source, s.pos);
+            if (std.mem.eql(u8, first_kr.key, "name")) {
+                const vr = pu.readValue(source, s.pos);
+                test_case.name = vr.value;
+                s.pos = vr.new_pos;
+            } else if (std.mem.eql(u8, first_kr.key, "given")) {
+                const vr = pu.readValue(source, s.pos);
+                test_case.input = vr.value;
+                s.pos = vr.new_pos;
+            } else if (std.mem.eql(u8, first_kr.key, "input")) {
+                const br = pu.readBraceValue(source, s.pos, s.line);
+                test_case.input = br.value;
+                s.pos = br.new_pos;
+                s.line = br.new_line;
+            }
+        }
+        const ns = pu.skipToNextLine(source, s.pos, s.line);
+        s = ns;
+
+        // Read remaining fields at indent 4+
+        while (s.pos < source.len) {
+            const fsk = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+            s = fsk;
+            if (s.pos >= source.len) break;
+
+            const field_indent = pu.countIndent(source, s.pos);
+            if (field_indent < 4) break;
+            s.pos += field_indent;
+
+            const fkr = pu.readKey(source, s.pos);
+            if (fkr.key.len == 0) {
+                s.pos -= field_indent;
+                break;
+            }
+            s.pos = fkr.new_pos;
+            s.pos = pu.skipColon(source, s.pos);
+
+            if (std.mem.eql(u8, fkr.key, "name")) {
+                const vr = pu.readValue(source, s.pos);
+                test_case.name = vr.value;
+                s.pos = vr.new_pos;
+            } else if (std.mem.eql(u8, fkr.key, "given") or std.mem.eql(u8, fkr.key, "input")) {
+                if (s.pos < source.len and source[s.pos] == '"') {
+                    const vr = pu.readValue(source, s.pos);
+                    test_case.input = vr.value;
+                    s.pos = vr.new_pos;
+                } else {
+                    const br = pu.readBraceValue(source, s.pos, s.line);
+                    test_case.input = br.value;
+                    s.pos = br.new_pos;
+                    s.line = br.new_line;
+                }
+            } else if (std.mem.eql(u8, fkr.key, "expected")) {
+                const vr = pu.readValue(source, s.pos);
+                test_case.expected = vr.value;
+                s.pos = vr.new_pos;
+            } else if (std.mem.eql(u8, fkr.key, "tolerance")) {
+                const vr = pu.readValue(source, s.pos);
+                test_case.tolerance = std.fmt.parseFloat(f64, vr.value) catch null;
+                s.pos = vr.new_pos;
+            }
+            const fns = pu.skipToNextLine(source, s.pos, s.line);
+            s = fns;
+        }
+
+        try test_cases.append(allocator, test_case);
+    }
+    return s;
+}
+
+/// Parse bracketed language array: [zig, python, typescript]
+/// Returns updated position only (no line tracking — single-line construct).
+pub fn parseLanguageArray(source: []const u8, pos: usize, allocator: Allocator, languages: *ArrayList([]const u8)) !usize {
+    var p = pos;
+    if (p >= source.len or source[p] != '[') return p;
+    p += 1; // skip '['
+
+    while (p < source.len) {
+        p = pu.skipInlineWhitespace(source, p);
+        if (p >= source.len) break;
+
+        if (source[p] == ']') {
+            p += 1;
+            break;
+        }
+
+        if (source[p] == ',') {
+            p += 1;
+            continue;
+        }
+
+        // Read language name
+        const start = p;
+        while (p < source.len) {
+            const c = source[p];
+            if (c == ',' or c == ']' or c == ' ' or c == '\t' or c == '\n' or c == '\r') break;
+            p += 1;
+        }
+        const lang = std.mem.trim(u8, source[start..p], " \t");
+        if (lang.len > 0) {
+            try languages.append(allocator, lang);
+        }
+    }
+    return p;
+}
+
+/// Parse targets section (dash-prefixed items).
+pub fn parseTargets(source: []const u8, pos: usize, line: usize, allocator: Allocator, targets: *ArrayList([]const u8)) !ScanState {
+    var s = pu.skipWhitespaceAndComments(source, pos, line);
+    while (s.pos < source.len) {
+        s = pu.skipWhitespaceAndComments(source, s.pos, s.line);
+        if (s.pos >= source.len) break;
+
+        if (source[s.pos] != '-') break;
+        s.pos += 1; // skip '-'
+        s = pu.skipWhitespaceAndComments(source, s.pos, s.line);
+
+        const vr = pu.readValue(source, s.pos);
+        if (vr.value.len > 0) {
+            try targets.append(allocator, vr.value);
+        }
+        s.pos = vr.new_pos;
+    }
+    return s;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS — Phase 3
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "parseConsts reads key-value pairs" {
+    const source = "      PHI: 1.618\n      TAU: 6.283\n  end:";
+    var consts = StringHashMap([]const u8).init(std.testing.allocator);
+    defer consts.deinit();
+    const s = try parseConsts(source, 0, 1, std.testing.allocator, &consts);
+    try std.testing.expectEqual(@as(usize, 2), consts.count());
+    try std.testing.expectEqualStrings("1.618", consts.get("PHI").?);
+    try std.testing.expectEqualStrings("6.283", consts.get("TAU").?);
+    // Free owned keys
+    var it = consts.keyIterator();
+    while (it.next()) |key| {
+        std.testing.allocator.free(key.*);
+    }
+    _ = s;
+}
+
+test "parseTopLevelTestCases reads test entries" {
+    const source = "  - name: test1\n    input: {a: 1}\n    expected: 42\n  - name: test2\n    given: hello\n    expected: world\n";
+    var cases: ArrayList(TestCase) = .{};
+    defer cases.deinit(std.testing.allocator);
+    const s = try parseTopLevelTestCases(source, 0, 1, std.testing.allocator, &cases);
+    try std.testing.expectEqual(@as(usize, 2), cases.items.len);
+    try std.testing.expectEqualStrings("test1", cases.items[0].name);
+    try std.testing.expectEqualStrings("test2", cases.items[1].name);
+    _ = s;
+}
+
+test "parseLanguageArray reads bracketed list" {
+    const source = "[zig, python, typescript]";
+    var langs: ArrayList([]const u8) = .{};
+    defer langs.deinit(std.testing.allocator);
+    const p = try parseLanguageArray(source, 0, std.testing.allocator, &langs);
+    try std.testing.expectEqual(@as(usize, 3), langs.items.len);
+    try std.testing.expectEqualStrings("zig", langs.items[0]);
+    try std.testing.expectEqualStrings("python", langs.items[1]);
+    try std.testing.expectEqualStrings("typescript", langs.items[2]);
+    _ = p;
+}
+
+test "parseTargets reads dash items" {
+    const source = "- zig\n- varlog\n- python\n";
+    var targets: ArrayList([]const u8) = .{};
+    defer targets.deinit(std.testing.allocator);
+    const s = try parseTargets(source, 0, 1, std.testing.allocator, &targets);
+    try std.testing.expectEqual(@as(usize, 3), targets.items.len);
+    try std.testing.expectEqualStrings("zig", targets.items[0]);
+    try std.testing.expectEqualStrings("varlog", targets.items[1]);
     _ = s;
 }
 
