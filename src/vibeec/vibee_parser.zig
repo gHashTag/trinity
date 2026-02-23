@@ -11,6 +11,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayListUnmanaged;
+pub const parser_utils = @import("parser_utils.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ТИПЫ СПЕЦИФИКАЦИИ
@@ -499,68 +500,31 @@ pub const VibeeParser = struct {
     }
 
     fn skipWhitespaceAndComments(self: *Self) void {
-        while (self.pos < self.source.len) {
-            const c = self.source[self.pos];
-            if (c == ' ' or c == '\t' or c == '\r') {
-                self.pos += 1;
-            } else if (c == '\n') {
-                self.pos += 1;
-                self.line += 1;
-            } else if (c == '#') {
-                // Пропускаем комментарий до конца строки
-                while (self.pos < self.source.len and self.source[self.pos] != '\n') {
-                    self.pos += 1;
-                }
-            } else {
-                break;
-            }
-        }
+        const s = parser_utils.skipWhitespaceAndComments(self.source, self.pos, self.line);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn readKey(self: *Self) []const u8 {
-        const start = self.pos;
-        while (self.pos < self.source.len) {
-            const c = self.source[self.pos];
-            if (c == ':' or c == ' ' or c == '\n' or c == '\r') break;
-            self.pos += 1;
-        }
-        return self.source[start..self.pos];
+        const r = parser_utils.readKey(self.source, self.pos);
+        self.pos = r.new_pos;
+        return r.key;
     }
 
     fn skipColon(self: *Self) void {
-        self.skipInlineWhitespace();
-        if (self.pos < self.source.len and self.source[self.pos] == ':') {
-            self.pos += 1;
-        }
-        self.skipInlineWhitespace();
+        self.pos = parser_utils.skipColon(self.source, self.pos);
     }
 
     fn readValue(self: *Self) []const u8 {
-        self.skipInlineWhitespace();
-        const start = self.pos;
-        while (self.pos < self.source.len) {
-            const c = self.source[self.pos];
-            if (c == '\n' or c == '\r') break;
-            // Stop at comment marker '#'
-            if (c == '#') break;
-            self.pos += 1;
-        }
-        return std.mem.trim(u8, self.source[start..self.pos], " \t");
+        const r = parser_utils.readValue(self.source, self.pos);
+        self.pos = r.new_pos;
+        return r.value;
     }
 
     fn readQuotedValue(self: *Self) []const u8 {
-        self.skipInlineWhitespace();
-        if (self.pos < self.source.len and self.source[self.pos] == '"') {
-            self.pos += 1;
-            const start = self.pos;
-            while (self.pos < self.source.len and self.source[self.pos] != '"') {
-                self.pos += 1;
-            }
-            const value = self.source[start..self.pos];
-            if (self.pos < self.source.len) self.pos += 1;
-            return value;
-        }
-        return self.readValue();
+        const r = parser_utils.readQuotedValue(self.source, self.pos);
+        self.pos = r.new_pos;
+        return r.value;
     }
 
     /// Parse language array syntax: [zig, python, typescript]
@@ -759,56 +723,19 @@ pub const VibeeParser = struct {
     }
 
     fn skipToNextLine(self: *Self) void {
-        while (self.pos < self.source.len and self.source[self.pos] != '\n') {
-            self.pos += 1;
-        }
-        if (self.pos < self.source.len) {
-            self.pos += 1;
-            self.line += 1;
-        }
+        const s = parser_utils.skipToNextLine(self.source, self.pos, self.line);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn skipInlineWhitespace(self: *Self) void {
-        while (self.pos < self.source.len) {
-            const c = self.source[self.pos];
-            if (c == ' ' or c == '\t') {
-                self.pos += 1;
-            } else {
-                break;
-            }
-        }
+        self.pos = parser_utils.skipInlineWhitespace(self.source, self.pos);
     }
 
     fn skipEmptyLinesAndComments(self: *Self) void {
-        while (self.pos < self.source.len) {
-            // Пропускаем пустые строки
-            if (self.source[self.pos] == '\n') {
-                self.pos += 1;
-                self.line += 1;
-                continue;
-            }
-            // Проверяем строку
-            const line_start = self.pos;
-            var spaces: usize = 0;
-            while (self.pos < self.source.len and self.source[self.pos] == ' ') {
-                spaces += 1;
-                self.pos += 1;
-            }
-            // Пропускаем строки-комментарии
-            if (self.pos < self.source.len and self.source[self.pos] == '#') {
-                self.skipToNextLine();
-                continue;
-            }
-            // Пропускаем строки только с пробелами
-            if (self.pos < self.source.len and self.source[self.pos] == '\n') {
-                self.pos += 1;
-                self.line += 1;
-                continue;
-            }
-            // Откатываемся к началу строки
-            self.pos = line_start;
-            break;
-        }
+        const s = parser_utils.skipEmptyLinesAndComments(self.source, self.pos, self.line);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn parseTypes(self: *Self, types: *ArrayList(TypeDef)) !void {
@@ -883,13 +810,9 @@ pub const VibeeParser = struct {
     }
 
     fn skipNestedBlock(self: *Self, min_indent: usize) void {
-        while (self.pos < self.source.len) {
-            self.skipEmptyLinesAndComments();
-            if (self.pos >= self.source.len) break;
-            const indent = self.countIndent();
-            if (indent <= min_indent) break;
-            self.skipToNextLine();
-        }
+        const s = parser_utils.skipNestedBlock(self.source, self.pos, self.line, min_indent);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn parseSignals(self: *Self, signals: *ArrayList(Signal)) !void {
@@ -1983,106 +1906,41 @@ pub const VibeeParser = struct {
         }
     }
 
-    // Вспомогательные функции
     fn countIndent(self: *Self) usize {
-        var count: usize = 0;
-        const start = self.pos;
-        while (self.pos < self.source.len and self.source[self.pos] == ' ') {
-            count += 1;
-            self.pos += 1;
-        }
-        self.pos = start; // Откатываемся
-        return count;
+        return parser_utils.countIndent(self.source, self.pos);
     }
 
     fn skipLine(self: *Self) void {
-        while (self.pos < self.source.len and self.source[self.pos] != '\n') {
-            self.pos += 1;
-        }
-        if (self.pos < self.source.len) {
-            self.pos += 1;
-            self.line += 1;
-        }
+        const s = parser_utils.skipLine(self.source, self.pos, self.line);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn skipBlock(self: *Self) void {
-        // Пропускаем блок с отступом
-        const base_indent = self.countIndent();
-        self.skipLine();
-        while (self.pos < self.source.len) {
-            const indent = self.countIndent();
-            if (indent <= base_indent) break;
-            self.skipLine();
-        }
+        const s = parser_utils.skipBlock(self.source, self.pos, self.line);
+        self.pos = s.pos;
+        self.line = s.line;
     }
 
     fn readQuotedOrValue(self: *Self) []const u8 {
-        self.skipWhitespaceAndComments();
-        if (self.pos < self.source.len and self.source[self.pos] == '"') {
-            return self.readQuotedValue();
-        }
-        return self.readValue();
+        const r = parser_utils.readQuotedOrValue(self.source, self.pos, self.line);
+        self.pos = r.new_pos;
+        self.line = r.new_line;
+        return r.value;
     }
 
-    /// Read multiline block starting with | or indented lines
     fn readMultilineBlock(self: *Self) []const u8 {
-        self.skipWhitespaceAndComments();
-        // Check for | indicator (YAML multiline)
-        if (self.pos < self.source.len and self.source[self.pos] == '|') {
-            self.pos += 1;
-            self.skipToNextLine();
-        }
-        const start = self.pos;
-        const base_indent = self.countIndent();
-
-        // Read all lines with greater or equal indent
-        while (self.pos < self.source.len) {
-            const line_start = self.pos;
-
-            // Check for empty line (just newline) - part of block or skip?
-            // If we are at newline, it's an empty line. countIndent returns 0.
-            // But empty lines should be allowed in the block.
-            var is_empty = false;
-            var p = self.pos;
-            while (p < self.source.len and self.source[p] == ' ') : (p += 1) {}
-            if (p < self.source.len and self.source[p] == '\n') is_empty = true;
-
-            if (is_empty) {
-                self.skipToNextLine();
-                continue;
-            }
-
-            const indent = self.countIndent();
-            // If indent is LESS than base_indent, we hit the end of the block
-            if (indent < base_indent and self.pos > start) {
-                // End of block - return to line start
-                return self.source[start..line_start];
-            }
-            self.skipToNextLine();
-        }
-        return self.source[start..self.pos];
+        const r = parser_utils.readMultilineBlock(self.source, self.pos, self.line);
+        self.pos = r.new_pos;
+        self.line = r.new_line;
+        return r.value;
     }
 
     fn readBraceValue(self: *Self) []const u8 {
-        self.skipWhitespaceAndComments();
-        if (self.pos < self.source.len and self.source[self.pos] == '{') {
-            const start = self.pos;
-            var depth: usize = 0;
-            while (self.pos < self.source.len) {
-                const c = self.source[self.pos];
-                if (c == '{') depth += 1;
-                if (c == '}') {
-                    depth -= 1;
-                    if (depth == 0) {
-                        self.pos += 1;
-                        return self.source[start..self.pos];
-                    }
-                }
-                self.pos += 1;
-            }
-            return self.source[start..self.pos];
-        }
-        return self.readValue();
+        const r = parser_utils.readBraceValue(self.source, self.pos, self.line);
+        self.pos = r.new_pos;
+        self.line = r.new_line;
+        return r.value;
     }
 };
 
