@@ -162,6 +162,13 @@ pub const Command = enum {
     workflow_bench,
     // Distributed Inference
     distributed,
+    // Sacred Mathematics (v2.0)
+    math,
+    constants_cmd,
+    phi,
+    fib,
+    lucas,
+    spiral,
     // Info
     info,
     version,
@@ -478,6 +485,15 @@ pub fn printHelp() void {
     std.debug.print("  {s}workflow-bench{s}                 Run temporal workflow benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}SACRED MATHEMATICS (v2.0):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}math{s}                        Sacred math dispatcher\n", .{ GREEN, RESET });
+    std.debug.print("  {s}constants{s}                    Show all sacred constants\n", .{ GREEN, RESET });
+    std.debug.print("  {s}phi{s} <n>                      Compute phi^n\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fib{s} <n>                      Fibonacci F(n) with BigInt\n", .{ GREEN, RESET });
+    std.debug.print("  {s}lucas{s} <n>                    Lucas L(n)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}spiral{s} <n>                   phi-spiral coordinates\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}INFO:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}info{s}                        System information\n", .{ GREEN, RESET });
     std.debug.print("  {s}version{s}                     Show version\n", .{ GREEN, RESET });
@@ -651,6 +667,13 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "workflow-demo") or std.mem.eql(u8, arg, "workflow") or std.mem.eql(u8, arg, "wf")) return .workflow_demo;
     if (std.mem.eql(u8, arg, "workflow-bench") or std.mem.eql(u8, arg, "wf-bench")) return .workflow_bench;
     if (std.mem.eql(u8, arg, "distributed") or std.mem.eql(u8, arg, "dist")) return .distributed;
+    // Sacred Mathematics (v2.0)
+    if (std.mem.eql(u8, arg, "math")) return .math;
+    if (std.mem.eql(u8, arg, "constants")) return .constants_cmd;
+    if (std.mem.eql(u8, arg, "phi")) return .phi;
+    if (std.mem.eql(u8, arg, "fib")) return .fib;
+    if (std.mem.eql(u8, arg, "lucas")) return .lucas;
+    if (std.mem.eql(u8, arg, "spiral")) return .spiral;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;

@@ -1,0 +1,281 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# IGLA PHASE 2 — Discovery: PeerRegistry + ShardManifest
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Cycle 82: Migrating PeerRegistry and ShardManifest from manual code
+# Purpose: Generate peer discovery and shard tracking structures
+#
+# IGLA (Игла) — укол, убивающий ручной код
+#
+# φ² + 1/φ² = 3
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: igla_emitter_phase2
+version: "1.0.0"
+language: zig
+module: vibeec.emitter.phase2
+
+types:
+  PeerRegistry:
+    description: "Registry of network peers with alive/dead status tracking"
+    fields:
+      ports: "\"[8]u16\""
+      alive: "\"[8]bool\""
+      shard_counts: "\"[8]u16\""
+      count: "\"u8\""
+
+  ShardManifest:
+    description: "Maps data groups to (shard_index, peer_id) pairs for self-healing"
+    fields:
+      shard_idx: "\"[16][8]u8\""
+      peer_ids: "\"[16][8]u8\""
+      entry_counts: "\"[16]u8\""
+      group_count: "\"u8\""
+
+behaviors:
+  # PeerRegistry methods
+
+  - name: peerRegistryInit
+    owner: PeerRegistry
+    given: No parameters
+    when: Creating empty registry
+    then:
+      - Initialize all arrays to zero/empty
+      - Set count to 0
+      - Return empty PeerRegistry
+    implementation: |
+      pub fn init() PeerRegistry {
+          return .{
+              .ports = [_]u16{0} ** 8,
+              .alive = [_]bool{false} ** 8,
+              .shard_counts = [_]u16{0} ** 8,
+              .count = 0,
+          };
+      }
+
+  - name: registerPeer
+    owner: PeerRegistry
+    given: PeerRegistry instance and port number
+    when: Registering a new peer
+    then:
+      - Check if registry is full (max 8 peers)
+      - Allocate new peer_id = count
+      - Store port at ports[peer_id]
+      - Mark peer as alive
+      - Initialize shard_count to 0
+      - Increment count
+      - Return peer_id
+    implementation: |
+      pub fn registerPeer(self: *PeerRegistry, port: u16) !u8 {
+          if (self.count >= 8) return error.RegistryFull;
+          const id = self.count;
+          self.ports[id] = port;
+          self.alive[id] = true;
+          self.shard_counts[id] = 0;
+          self.count += 1;
+          return id;
+      }
+
+  - name: markDead
+    owner: PeerRegistry
+    given: PeerRegistry instance and peer_id
+    when: Peer has failed
+    then:
+      - Mark peer as not alive
+      - Keep peer in registry (count unchanged)
+    implementation: |
+      pub fn markDead(self: *PeerRegistry, peer_id: u8) void {
+          if (peer_id < self.count) self.alive[peer_id] = false;
+      }
+
+  - name: isAlive
+    owner: PeerRegistry
+    given: PeerRegistry instance and peer_id
+    when: Checking peer status
+    then:
+      - Return true if peer exists and is alive
+      - Return false otherwise
+    implementation: |
+      pub fn isAlive(self: *const PeerRegistry, peer_id: u8) bool {
+          if (peer_id >= self.count) return false;
+          return self.alive[peer_id];
+      }
+
+  - name: alivePeers
+    owner: PeerRegistry
+    given: PeerRegistry instance
+    when: Counting active peers
+    then:
+      - Count peers with alive = true
+      - Return count
+    implementation: |
+      pub fn alivePeers(self: *const PeerRegistry) u8 {
+          var c: u8 = 0;
+          var i: u8 = 0;
+          while (i < self.count) : (i += 1) {
+              if (self.alive[i]) c += 1;
+          }
+          return c;
+      }
+
+  - name: getPort
+    owner: PeerRegistry
+    given: PeerRegistry instance and peer_id
+    when: Getting peer's port number
+    then: Return port for this peer_id
+    implementation: |
+      pub fn getPort(self: *const PeerRegistry, peer_id: u8) u16 {
+          return self.ports[peer_id];
+      }
+
+  - name: incShards
+    owner: PeerRegistry
+    given: PeerRegistry instance and peer_id
+    when: Incrementing shard count for a peer
+    then: Increment shard_counts[peer_id]
+    implementation: |
+      pub fn incShards(self: *PeerRegistry, peer_id: u8) void {
+          if (peer_id < self.count) self.shard_counts[peer_id] += 1;
+      }
+
+  # ShardManifest methods
+
+  - name: shardManifestInit
+    owner: ShardManifest
+    given: No parameters
+    when: Creating empty manifest
+    then:
+      - Initialize all 2D arrays to zero
+      - Set all entry_counts to 0
+      - Set group_count to 0
+      - Return empty ShardManifest
+    implementation: |
+      pub fn init() ShardManifest {
+          return .{
+              .shard_idx = [_][8]u8{[_]u8{0} ** 8} ** 16,
+              .peer_ids = [_][8]u8{[_]u8{0} ** 8} ** 16,
+              .entry_counts = [_]u8{0} ** 16,
+              .group_count = 0,
+          };
+      }
+
+  - name: recordShard
+    owner: ShardManifest
+    given: ShardManifest, group number, shard_index, peer_id
+    when: Recording that a peer holds a shard
+    then:
+      - Validate group is within bounds (max 16)
+      - Get current entry count for this group
+      - Validate entry not full (max 8 entries)
+      - Store shard_index and peer_id at next entry slot
+      - Increment entry count
+      - Update group_count if needed
+    implementation: |
+      pub fn recordShard(self: *ShardManifest, group: u8, shard_index: u8, peer_id: u8) void {
+          if (group >= 16) return;
+          const ec = self.entry_counts[group];
+          if (ec >= 8) return;
+          self.shard_idx[group][ec] = shard_index;
+          self.peer_ids[group][ec] = peer_id;
+          self.entry_counts[group] = ec + 1;
+          if (group >= self.group_count) self.group_count = group + 1;
+      }
+
+  - name: survivorsForGroup
+    owner: ShardManifest
+    given: ShardManifest, group, registry, output buffers
+    when: Querying surviving peers for a data group
+    then:
+      - Validate group is within bounds
+      - Iterate through entries for this group
+      - Check if each peer is alive using registry
+      - Copy alive (shard_idx, peer_id) pairs to output
+      - Return count of survivors
+    implementation: |
+      pub fn survivorsForGroup(self: *const ShardManifest, group: u8, registry: *const PeerRegistry, out_shard_idx: []u8, out_peer_ids: []u8) u8 {
+          if (group >= 16) return 0;
+          var sc: u8 = 0;
+          var i: u8 = 0;
+          while (i < self.entry_counts[group]) : (i += 1) {
+              if (registry.isAlive(self.peer_ids[group][i])) {
+                  if (sc < out_shard_idx.len) {
+                      out_shard_idx[sc] = self.shard_idx[group][i];
+                      out_peer_ids[sc] = self.peer_ids[group][i];
+                      sc += 1;
+                  }
+              }
+          }
+          return sc;
+      }
+
+constants:
+  MAX_PEERS: "8"
+  MAX_GROUPS: "16"
+  MAX_ENTRIES: "8"
+
+creation_patterns:
+  - name: PeerDiscovery
+    source: "Dynamic peer registry with failure detection"
+    transformer: "Generate PeerRegistry struct with alive/dead tracking"
+    result: |
+      pub const PeerRegistry = struct {
+          ports: [8]u16,
+          alive: [8]bool,
+          shard_counts: [8]u16,
+          count: u8,
+          // ... methods
+      }
+
+  - name: ShardTracking
+    source: "Maps data groups to peer locations for self-healing"
+    transformer: "Generate ShardManifest with survivor queries"
+    result: |
+      pub const ShardManifest = struct {
+          shard_idx: [16][8]u8,
+          peer_ids: [16][8]u8,
+          entry_counts: [16]u8,
+          group_count: u8,
+          // ... methods
+      }
+
+test_cases:
+  - name: peer_registration
+    input: 'registry.registerPeer(8001), registry.registerPeer(8002)'
+    expected: '2 peers registered, alivePeers() == 2'
+
+  - name: failure_detection
+    input: 'registry.markDead(0)'
+    expected: 'peer 0 marked dead, isAlive(0) == false'
+
+  - name: survivor_query
+    input: 'manifest.survivorsForGroup(0, &registry, &shards, &peers)'
+    expected: 'Returns count of alive peers holding shards'
+
+implementation:
+  cycle: "82"
+  status: "igla_phase2_migration"
+  approach: "IGLA Discovery Migration"
+  notes: |
+    IGLA PHASE 2 — Discovery Migration
+
+    This spec defines the peer discovery and shard tracking structures:
+    1. PeerRegistry — tracks up to 8 peers with alive/dead status
+    2. ShardManifest — maps data groups to (shard, peer) pairs
+
+    These structures enable self-healing: when peers fail,
+    survivorsForGroup() returns which peers still have data.
+
+    NEXT PHASES:
+    - Phase 3: Wire protocol functions
+    - Phase 4: Full integration tests
+
+    SUCCESS CRITERIA:
+    1. Generated structs compile without errors
+    2. Generated structs match manual code behavior
+    3. All tests pass
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END OF SPECIFICATION
+# φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════

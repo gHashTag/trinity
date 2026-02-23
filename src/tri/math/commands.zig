@@ -36,12 +36,8 @@ const DirectWriter = struct {
             _ = try self.write(s);
         }
 
-        // For now, print just delegates to writeAll
-        // TODO: support formatted output
-        pub fn print(self: Writer, comptime fmt: []const u8, args: anytype) !void {
-            const formatted = try std.fmt.allocPrint(std.heap.page_allocator, fmt, args);
-            defer std.heap.page_allocator.free(formatted);
-            try self.writeAll(formatted);
+        pub fn print(_: Writer, comptime fmt: []const u8, args: anytype) !void {
+            std.debug.print(fmt, args);
         }
     };
 
