@@ -202,6 +202,8 @@ pub const Command = enum {
     math_verify,
     math_bench,
     math_compare,
+    // Cycle 84: $TRI Rewards
+    rewards,
 };
 
 pub const CLIState = struct {
@@ -570,6 +572,13 @@ pub fn printHelp() void {
     std.debug.print("  {s}lint{s} [path]                 5-check code quality scanner\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}$TRI REWARDS (Cycle 84):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}rewards{s}                    Show $TRI balance + earning history\n", .{ GREEN, RESET });
+    std.debug.print("  {s}rewards earn{s}               Log earned $TRI from completed task\n", .{ GREEN, RESET });
+    std.debug.print("  {s}rewards leaderboard{s}        Top contributors ranking\n", .{ GREEN, RESET });
+    std.debug.print("  {s}rewards stats{s}              Detailed earning statistics\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -771,6 +780,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "math-verify") or std.mem.eql(u8, arg, "trinity-verify")) return .math_verify;
     if (std.mem.eql(u8, arg, "math-bench") or std.mem.eql(u8, arg, "sacred-bench")) return .math_bench;
     if (std.mem.eql(u8, arg, "math-compare") or std.mem.eql(u8, arg, "compare")) return .math_compare;
+    // Cycle 84: $TRI Rewards
+    if (std.mem.eql(u8, arg, "rewards") or std.mem.eql(u8, arg, "tri-rewards") or std.mem.eql(u8, arg, "tokens")) return .rewards;
     return .none;
 }
 
