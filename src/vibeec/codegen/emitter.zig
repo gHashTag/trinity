@@ -12,6 +12,7 @@ const builder_mod = @import("builder.zig");
 const patterns_mod = @import("patterns.zig");
 const tests_gen_mod = @import("tests_gen.zig");
 const utils = @import("utils.zig");
+const type_resolver = @import("type_resolver.zig");
 
 const CodeBuilder = builder_mod.CodeBuilder;
 const PatternMatcher = patterns_mod.PatternMatcher;
@@ -1135,6 +1136,20 @@ pub const ZigCodeGen = struct {
                 try self.builder.writeFmt("pub const {s} = struct {{\n", .{t.name});
                 self.builder.incIndent();
 
+                // VIBEE Generator v2: Write const definitions inside struct
+                var consts_iter = t.consts.iterator();
+                while (consts_iter.next()) |entry| {
+                    try self.builder.writeIndent();
+                    // Strip quotes from const value (YAML "8" -> 8)
+                    const clean_value = if (entry.value_ptr.*.len >= 2 and
+                        entry.value_ptr.*[0] == '"' and entry.value_ptr.*[entry.value_ptr.*.len - 1] == '"')
+                        entry.value_ptr.*[1 .. entry.value_ptr.*.len - 1]
+                    else
+                        entry.value_ptr.*;
+                    try self.builder.writeFmt("const {s} = {s};\n", .{ entry.key_ptr.*, clean_value });
+                }
+                if (t.consts.count() > 0) try self.builder.newline();
+
                 for (t.fields.items) |field| {
                     try self.builder.writeIndent();
                     const clean_type = utils.cleanTypeName(field.type_name);
@@ -1958,173 +1973,27 @@ pub const ZigCodeGen = struct {
 
     /// Resolve a type name from the spec's types: section.
     /// Returns the Zig type representation for a custom type.
+    /// Delegated to type_resolver module (VIBEE-first, Cycle 79)
     fn resolveTypeName(self: *Self, type_name: []const u8) []const u8 {
-        // Inline check for common VIBEE types
-        if (std.mem.eql(u8, type_name, "String")) return "[]const u8";
-        if (std.mem.eql(u8, type_name, "Int")) return "i64";
-        if (std.mem.eql(u8, type_name, "Float")) return "f64";
-        if (std.mem.eql(u8, type_name, "Bool")) return "bool";
-        if (std.mem.eql(u8, type_name, "usize")) return "usize";
-        if (std.mem.eql(u8, type_name, "u8")) return "u8";
-        if (std.mem.eql(u8, type_name, "u32")) return "u32";
-        if (std.mem.eql(u8, type_name, "u64")) return "u64";
-        if (std.mem.eql(u8, type_name, "i32")) return "i32";
-        if (std.mem.eql(u8, type_name, "i64")) return "i64";
-        if (std.mem.eql(u8, type_name, "f32")) return "f32";
-        if (std.mem.eql(u8, type_name, "f64")) return "f64";
-        if (std.mem.eql(u8, type_name, "void")) return "void";
-        if (std.mem.eql(u8, type_name, "anytype")) return "anytype";
-
-        // For custom types, check if they're defined in the spec
-        for (self.spec_types) |t| {
-            if (std.mem.eql(u8, t.name, type_name)) {
-                // Type exists in spec - return the name as-is (it will be generated as a struct)
-                return type_name;
-            }
-        }
-
-        // Unknown type - return as-is (will generate a compile error if not defined)
-        return type_name;
+        return type_resolver.resolveTypeName(self.spec_types, type_name);
     }
 
     /// Find matching closing bracket for nested generics
-    /// Returns index of matching '>' after start_pos, or null if unmatched
+    /// Delegated to type_resolver module (VIBEE-first, Cycle 79)
     fn findMatchingBracket(str: []const u8, start_pos: usize) ?usize {
-        var depth: usize = 1;
-        var i = start_pos;
-        while (i < str.len) : (i += 1) {
-            const c = str[i];
-            if (c == '<') depth += 1
-            else if (c == '>') {
-                depth -= 1;
-                if (depth == 0) return i;
-            }
-        }
-        return null; // Unmatched brackets
+        return type_resolver.findMatchingBracket(str, start_pos);
     }
 
-    /// Parse complex type syntax like Option<T>, []T, !T, List<T>
-    /// Now supports nested generics like List<List<T>>, Map<String, List<U>>
-    /// Returns null if the type cannot be parsed (caller should fallback to utils.mapType)
+    /// Parse complex type syntax (no-alloc fast path)
+    /// Delegated to type_resolver module (VIBEE-first, Cycle 79)
     fn parseComplexTypeNoAlloc(self: *Self, type_str: []const u8) ?[]const u8 {
-        // Option<T> or ?T -> ?resolved_type
-        if (std.mem.startsWith(u8, type_str, "Option<")) {
-            const end_pos = findMatchingBracket(type_str, 8) orelse return null;
-            const inner = type_str[8..end_pos];
-            const resolved = self.parseComplexTypeNoAlloc(inner) orelse return null;
-            // For optional, prepend "?" to resolved type (static strings only)
-            if (std.mem.eql(u8, resolved, "i64")) return "?i64";
-            if (std.mem.eql(u8, resolved, "f64")) return "?f64";
-            if (std.mem.eql(u8, resolved, "bool")) return "?bool";
-            if (std.mem.eql(u8, resolved, "[]const u8")) return "?[]const u8";
-            if (std.mem.eql(u8, resolved, "[]const i64")) return "?[]const i64";
-            if (std.mem.eql(u8, resolved, "[]const f64")) return "?[]const f64";
-            // For other types, can't handle without allocation
-            return null;
-        }
-
-        // List<T> -> []const T (with nested generics support)
-        if (std.mem.startsWith(u8, type_str, "List<")) {
-            const end_pos = findMatchingBracket(type_str, 5) orelse return null;
-            const inner = type_str[5..end_pos];
-            const resolved = self.parseComplexTypeNoAlloc(inner) orelse return null;
-            // For list, prepend "[]const " to resolved type (static strings only)
-            if (std.mem.eql(u8, resolved, "i64")) return "[]const i64";
-            if (std.mem.eql(u8, resolved, "f64")) return "[]const f64";
-            if (std.mem.eql(u8, resolved, "bool")) return "[]const bool";
-            if (std.mem.eql(u8, resolved, "u8")) return "[]const u8";
-            if (std.mem.eql(u8, resolved, "usize")) return "[]const usize";
-            if (std.mem.eql(u8, resolved, "[]const u8")) return "[]const []const u8"; // Nested list
-            if (std.mem.eql(u8, resolved, "[]const i64")) return "[]const []const i64"; // Nested list
-            if (std.mem.eql(u8, resolved, "[]const f64")) return "[]const []const f64"; // Nested list
-            if (std.mem.eql(u8, resolved, "?i64")) return "[]const ?i64";
-            if (std.mem.eql(u8, resolved, "?f64")) return "[]const ?f64";
-            // For other types, can't handle
-            return null;
-        }
-
-        // Primitive types - return as-is
-        if (std.mem.eql(u8, type_str, "String")) return "[]const u8";
-        if (std.mem.eql(u8, type_str, "Int")) return "i64";
-        if (std.mem.eql(u8, type_str, "Float")) return "f64";
-        if (std.mem.eql(u8, type_str, "Bool")) return "bool";
-        if (std.mem.eql(u8, type_str, "usize")) return "usize";
-        if (std.mem.eql(u8, type_str, "u8")) return "u8";
-        if (std.mem.eql(u8, type_str, "void")) return "void";
-        if (std.mem.eql(u8, type_str, "anytype")) return "anytype";
-
-        // Unknown type - return null to signal fallback
-        return null;
+        return type_resolver.parseComplexTypeNoAlloc(self.spec_types, type_str);
     }
 
+    /// Parse complex type syntax (allocating path)
+    /// Delegated to type_resolver module (VIBEE-first, Cycle 79)
     fn parseComplexType(self: *Self, type_str: []const u8) ![]const u8 {
-        // Debug: log entry
-        //std.debug.print("parseComplexType: '{s}'\n", .{type_str});
-
-        // Option<T> or ?T -> ?resolved_type
-        if (std.mem.startsWith(u8, type_str, "Option<")) {
-            const end_pos = findMatchingBracket(type_str, 8) orelse
-                return error.UnmatchedBrackets;
-            const inner = type_str[8..end_pos];
-            const resolved = try self.parseComplexType(inner);
-            return try std.fmt.allocPrint(self.allocator, "?{s}", .{resolved});
-        }
-
-        // List<T> -> []const T (with nested generics support)
-        if (std.mem.startsWith(u8, type_str, "List<")) {
-            const end_pos = findMatchingBracket(type_str, 5) orelse
-                return error.UnmatchedBrackets;
-            const inner = type_str[5..end_pos];
-            //std.debug.print("List inner: '{s}'\n", .{inner});
-            const resolved = try self.parseComplexType(inner);
-            //std.debug.print("List resolved: '{s}'\n", .{resolved});
-            return try std.fmt.allocPrint(self.allocator, "[]const {s}", .{resolved});
-        }
-
-        // Map<K,V> -> std.StringHashMap(V) (with nested generics support)
-        if (std.mem.startsWith(u8, type_str, "Map<")) {
-            const end_pos = findMatchingBracket(type_str, 4) orelse
-                return error.UnmatchedBrackets;
-            const inner = type_str[4..end_pos];
-            // Parse Key,Value format
-            const comma_idx = std.mem.indexOf(u8, inner, ",") orelse return error.InvalidMapType;
-            const key_type = try self.parseComplexType(inner[0..comma_idx]);
-            const value_type = try self.parseComplexType(inner[comma_idx + 1 ..]);
-            // For String keys, use StringHashMap; otherwise AutoHashMap
-            if (std.mem.eql(u8, key_type, "[]const u8") or std.mem.eql(u8, key_type, "String")) {
-                return try std.fmt.allocPrint(self.allocator, "std.StringHashMap({s})", .{value_type});
-            }
-            return try std.fmt.allocPrint(self.allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
-        }
-
-        // HashMap<K,V> -> std.AutoHashMap(K, V)
-        if (std.mem.startsWith(u8, type_str, "HashMap<")) {
-            const end_pos = findMatchingBracket(type_str, 8) orelse
-                return error.UnmatchedBrackets;
-            const inner = type_str[8..end_pos];
-            const comma_idx = std.mem.indexOf(u8, inner, ",") orelse return error.InvalidHashMapType;
-            const key_type = try self.parseComplexType(inner[0..comma_idx]);
-            const value_type = try self.parseComplexType(inner[comma_idx + 1 ..]);
-            return try std.fmt.allocPrint(self.allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
-        }
-
-        // [T] already is slice syntax - keep as-is but resolve inner type
-        if (type_str[0] == '[' and type_str[type_str.len - 1] == ']') {
-            const inner = type_str[1 .. type_str.len - 1];
-            if (inner.len > 0) {
-                const resolved = self.resolveTypeName(inner);
-                return try std.fmt.allocPrint(self.allocator, "[{s}]", .{resolved});
-            }
-            return type_str;
-        }
-
-        // *T is pointer - keep as-is
-        if (type_str[0] == '*') {
-            return type_str;
-        }
-
-        // For simple type names, resolve them using resolveTypeName (no alloc needed)
-        return self.resolveTypeName(type_str);
+        return type_resolver.parseComplexType(self.allocator, self.spec_types, type_str);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -2135,112 +2004,27 @@ pub const ZigCodeGen = struct {
     const SignatureInfo = struct { params: []const u8, ret: []const u8 };
 
     /// Map semantic type names to concrete Zig types
+    /// Delegated to type_resolver module (VIBEE-first, Cycle 79)
     fn mapSemanticType(type_name: []const u8) []const u8 {
-        // Semantic mappings for common domain terms
-        const semantic_map = [_]struct { []const u8, []const u8 }{
-            .{ "probability", "f32" },
-            .{ "probabilities", "[]f32" },
-            .{ "similarity", "f32" },
-            .{ "score", "f32" },
-            .{ "confidence", "f32" },
-            .{ "accuracy", "f32" },
-            .{ "count", "usize" },
-            .{ "index", "usize" },
-            .{ "size", "usize" },
-            .{ "length", "usize" },
-            .{ "tensor", "Tensor" },
-            .{ "embedding", "[]const f32" },
-            .{ "embeddings", "[]const []f32" },
-            .{ "distribution", "[]f32" },
-            .{ "vector", "[]const i8" },
-            .{ "hypervector", "[]const i8" },
-            .{ "matrix", "[]const f32" },
-            .{ "agent", "AgentInfo" },
-            .{ "wallet", "Wallet" },
-            .{ "task", "Task" },
-            .{ "tenant", "Tenant" },
-        };
-
-        // Case-insensitive lookup
-        for (semantic_map) |entry| {
-            if (containsCI(type_name, entry[0])) {
-                return entry[1];
-            }
-        }
-
-        // Fallback to primitive type mapping
-        if (containsCI(type_name, "int")) return "i64";
-        if (containsCI(type_name, "float") or containsCI(type_name, "f32")) return "f32";
-        if (containsCI(type_name, "string") or containsCI(type_name, "text")) return "[]const u8";
-        if (containsCI(type_name, "bool")) return "bool";
-
-        return type_name; // Unknown - return as-is
+        return type_resolver.mapSemanticType(type_name);
     }
 
     /// Resolve type from spec.types or semantic mapping
+    /// Delegated to type_resolver module (VIBEE-first, Cycle 79)
     fn resolveTypeFromSpec(self: *Self, type_name: []const u8) []const u8 {
-        // 1. Check spec.types for custom structs
-        for (self.spec_types) |t| {
-            if (std.mem.eql(u8, t.name, type_name)) {
-                return type_name; // Will be generated as struct
-            }
-        }
-
-        // 2. Check semantic type mapping
-        const semantic = self.mapSemanticType(type_name);
-        if (!std.mem.eql(u8, semantic, type_name)) {
-            return semantic;
-        }
-
-        // 3. Fallback to standard type resolution
-        return self.resolveTypeName(type_name);
+        return type_resolver.resolveTypeFromSpec(self.spec_types, type_name);
     }
 
-    /// Extract count from phrase: "two", "three", "four", "multiple"
+    /// Extract count from phrase
+    /// Delegated to type_resolver module (VIBEE-first, Cycle 79)
     fn extractCount(phrase: []const u8) ?usize {
-        if (containsCI(phrase, "two") or containsCI(phrase, "pair")) return 2;
-        if (containsCI(phrase, "three") or containsCI(phrase, "triple")) return 3;
-        if (containsCI(phrase, "four")) return 4;
-        if (containsCI(phrase, "five")) return 5;
-        if (containsCI(phrase, "six")) return 6;
-        if (containsCI(phrase, "seven")) return 7;
-        if (containsCI(phrase, "eight")) return 8;
-        if (containsCI(phrase, "nine")) return 9;
-        if (containsCI(phrase, "ten")) return 10;
-        if (containsCI(phrase, "multiple")) return null; // Variable count
-        return null;
+        return type_resolver.extractCount(phrase);
     }
 
-    /// Extract base type from phrase like "Vec3 vectors a and b"
+    /// Extract base type from phrase
+    /// Delegated to type_resolver module (VIBEE-first, Cycle 79)
     fn extractBaseType(phrase: []const u8) []const u8 {
-        // Common patterns:
-        // - "{Type} vectors" → Type
-        // - "{Type} matrices" → Type
-        // - "{Type} tensors" → Type
-        // - "{Type} arrays" → Type
-
-        // Check for specific type markers
-        const type_markers = [_][]const u8 {
-            "Vec3", "Vec2", "Vec4", "vec3", "vec2", "vec4",
-            "Tensor", "tensor", "Matrix", "matrix",
-            "Agent", "Wallet", "Task", "Tenant",
-        };
-
-        for (type_markers) |marker| {
-            if (containsCI(phrase, marker)) {
-                return marker;
-            }
-        }
-
-        // Default mappings
-        if (containsCI(phrase, "vector") or containsCI(phrase, "hypervector")) return "[]const i8";
-        if (containsCI(phrase, "tensor")) return "Tensor";
-        if (containsCI(phrase, "matrix")) return "[]const f32";
-        if (containsCI(phrase, "agent")) return "AgentInfo";
-        if (containsCI(phrase, "wallet")) return "Wallet";
-        if (containsCI(phrase, "task")) return "Task";
-
-        return "anytype";
+        return type_resolver.extractBaseType(phrase);
     }
 
     /// Extract parameter names from phrase like "a and b" or "x, y, z"
@@ -2656,27 +2440,13 @@ pub const ZigCodeGen = struct {
     }
 
     /// Case-insensitive substring search (ASCII only)
+    /// Delegated to type_resolver module (VIBEE-first, Cycle 79)
     fn containsCI(haystack: []const u8, needle: []const u8) bool {
-        if (needle.len == 0) return true;
-        if (haystack.len < needle.len) return false;
-        const limit = haystack.len - needle.len + 1;
-        for (0..limit) |i| {
-            var found = true;
-            for (0..needle.len) |j| {
-                const h = toLowerASCII(haystack[i + j]);
-                const n = toLowerASCII(needle[j]);
-                if (h != n) {
-                    found = false;
-                    break;
-                }
-            }
-            if (found) return true;
-        }
-        return false;
+        return type_resolver.containsCI(haystack, needle);
     }
 
     fn toLowerASCII(c: u8) u8 {
-        return if (c >= 'A' and c <= 'Z') c + 32 else c;
+        return type_resolver.toLowerASCII(c);
     }
 
     /// Generate real VSA function calls for VSA-related behaviors

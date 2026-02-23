@@ -20,18 +20,23 @@ types:
   PeerRegistry:
     description: "Registry of network peers with alive/dead status tracking"
     fields:
-      ports: "\"[8]u16\""
-      alive: "\"[8]bool\""
-      shard_counts: "\"[8]u16\""
-      count: "\"u8\""
+      ports: "[MAX_PEERS]u16"
+      alive: "[MAX_PEERS]bool"
+      shard_counts: "[MAX_PEERS]u16"
+      count: "u8"
+    consts:
+      MAX_PEERS: "8"
 
   ShardManifest:
     description: "Maps data groups to (shard_index, peer_id) pairs for self-healing"
     fields:
-      shard_idx: "\"[16][8]u8\""
-      peer_ids: "\"[16][8]u8\""
-      entry_counts: "\"[16]u8\""
-      group_count: "\"u8\""
+      shard_idx: "[MAX_GROUPS][MAX_ENTRIES]u8"
+      peer_ids: "[MAX_GROUPS][MAX_ENTRIES]u8"
+      entry_counts: "[MAX_GROUPS]u8"
+      group_count: "u8"
+    consts:
+      MAX_GROUPS: "16"
+      MAX_ENTRIES: "8"
 
 behaviors:
   # PeerRegistry methods
@@ -47,9 +52,9 @@ behaviors:
     implementation: |
       pub fn init() PeerRegistry {
           return .{
-              .ports = [_]u16{0} ** 8,
-              .alive = [_]bool{false} ** 8,
-              .shard_counts = [_]u16{0} ** 8,
+              .ports = [_]u16{0} ** MAX_PEERS,
+              .alive = [_]bool{false} ** MAX_PEERS,
+              .shard_counts = [_]u16{0} ** MAX_PEERS,
               .count = 0,
           };
       }
@@ -59,7 +64,7 @@ behaviors:
     given: PeerRegistry instance and port number
     when: Registering a new peer
     then:
-      - Check if registry is full (max 8 peers)
+      - Check if registry is full (max MAX_PEERS peers)
       - Allocate new peer_id = count
       - Store port at ports[peer_id]
       - Mark peer as alive
@@ -68,7 +73,7 @@ behaviors:
       - Return peer_id
     implementation: |
       pub fn registerPeer(self: *PeerRegistry, port: u16) !u8 {
-          if (self.count >= 8) return error.RegistryFull;
+          if (self.count >= MAX_PEERS) return error.RegistryFull;
           const id = self.count;
           self.ports[id] = port;
           self.alive[id] = true;
@@ -153,9 +158,9 @@ behaviors:
     implementation: |
       pub fn init() ShardManifest {
           return .{
-              .shard_idx = [_][8]u8{[_]u8{0} ** 8} ** 16,
-              .peer_ids = [_][8]u8{[_]u8{0} ** 8} ** 16,
-              .entry_counts = [_]u8{0} ** 16,
+              .shard_idx = [_][MAX_ENTRIES]u8{[_]u8{0} ** MAX_ENTRIES} ** MAX_GROUPS,
+              .peer_ids = [_][MAX_ENTRIES]u8{[_]u8{0} ** MAX_ENTRIES} ** MAX_GROUPS,
+              .entry_counts = [_]u8{0} ** MAX_GROUPS,
               .group_count = 0,
           };
       }
@@ -165,17 +170,17 @@ behaviors:
     given: ShardManifest, group number, shard_index, peer_id
     when: Recording that a peer holds a shard
     then:
-      - Validate group is within bounds (max 16)
+      - Validate group is within bounds (max MAX_GROUPS)
       - Get current entry count for this group
-      - Validate entry not full (max 8 entries)
+      - Validate entry not full (max MAX_ENTRIES entries)
       - Store shard_index and peer_id at next entry slot
       - Increment entry count
       - Update group_count if needed
     implementation: |
       pub fn recordShard(self: *ShardManifest, group: u8, shard_index: u8, peer_id: u8) void {
-          if (group >= 16) return;
+          if (group >= MAX_GROUPS) return;
           const ec = self.entry_counts[group];
-          if (ec >= 8) return;
+          if (ec >= MAX_ENTRIES) return;
           self.shard_idx[group][ec] = shard_index;
           self.peer_ids[group][ec] = peer_id;
           self.entry_counts[group] = ec + 1;
@@ -194,7 +199,7 @@ behaviors:
       - Return count of survivors
     implementation: |
       pub fn survivorsForGroup(self: *const ShardManifest, group: u8, registry: *const PeerRegistry, out_shard_idx: []u8, out_peer_ids: []u8) u8 {
-          if (group >= 16) return 0;
+          if (group >= MAX_GROUPS) return 0;
           var sc: u8 = 0;
           var i: u8 = 0;
           while (i < self.entry_counts[group]) : (i += 1) {
@@ -208,11 +213,6 @@ behaviors:
           }
           return sc;
       }
-
-constants:
-  MAX_PEERS: "8"
-  MAX_GROUPS: "16"
-  MAX_ENTRIES: "8"
 
 creation_patterns:
   - name: PeerDiscovery

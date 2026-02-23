@@ -374,7 +374,64 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
 
     var parser = vibee_parser.VibeeParser.init(allocator, source);
     var spec = try parser.parse();
+    spec.owns_source = true; // source was readToEndAlloc'd — spec owns it
     defer spec.deinit();
+
+    // Multi-target code generation: check if spec has languages array
+    if (spec.languages.items.len > 1) {
+        std.debug.print("\n  ════════════════════════════════════════════════════════════════\n", .{});
+        std.debug.print("  Multi-target generation: {d} languages\n", .{spec.languages.items.len});
+        std.debug.print("  Languages: [", .{});
+        for (spec.languages.items, 0..) |lang, i| {
+            if (i > 0) std.debug.print(", ", .{});
+            std.debug.print("{s}", .{lang});
+        }
+        std.debug.print("]\n", .{});
+
+        for (spec.languages.items) |lang| {
+            const lang_output = deriveOutputPath(allocator, input_path, lang) catch {
+                std.debug.print("    [SKIP] {s}\n", .{lang});
+                continue;
+            };
+            defer allocator.free(lang_output);
+
+            const lang_dir = std.fs.path.dirname(lang_output) orelse ".";
+            std.fs.cwd().makePath(lang_dir) catch {};
+
+            std.debug.print("    → {s}: {s}\n", .{ lang, lang_output });
+
+            // Generate code for this language
+            if (std.mem.eql(u8, lang, "verilog") or std.mem.eql(u8, lang, "varlog")) {
+                const output = try verilog_codegen.generateVerilog(allocator, &spec);
+                defer allocator.free(output);
+                const f = try std.fs.cwd().createFile(lang_output, .{});
+                defer f.close();
+                try f.writeAll(output);
+                try validateWithPAS(allocator, output, lang_output);
+            } else if (isMultiLangTarget(lang)) {
+                const orig_lang = spec.language;
+                spec.language = lang;
+                const output = try generateMultiLang(allocator, &spec);
+                spec.language = orig_lang;
+                defer allocator.free(output);
+                const f = try std.fs.cwd().createFile(lang_output, .{});
+                defer f.close();
+                try f.writeAll(output);
+                try validateWithPAS(allocator, output, lang_output);
+            } else {
+                var codegen = zig_codegen.ZigCodeGen.init(allocator);
+                const output = try codegen.generate(&spec);
+                defer allocator.free(output);
+                const f = try std.fs.cwd().createFile(lang_output, .{});
+                defer f.close();
+                try f.writeAll(output);
+                try validateWithPAS(allocator, output, lang_output);
+            }
+        }
+        std.debug.print("\n  φ² + 1/φ² = 3 | Multi-target complete\n", .{});
+        std.debug.print("  ════════════════════════════════════════════════════════════════\n\n", .{});
+        return;
+    }
 
     const dir_path = std.fs.path.dirname(output_path) orelse ".";
     std.fs.cwd().makePath(dir_path) catch {};
@@ -673,6 +730,7 @@ fn generateSyntheticSeeds(
 
         var parser = vibee_parser.VibeeParser.init(allocator, source);
         var spec = try parser.parse();
+        spec.owns_source = true; // source was readToEndAlloc'd
         defer spec.deinit();  // This will free source_content
 
         for (spec.behaviors.items) |b| {
