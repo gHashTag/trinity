@@ -208,6 +208,8 @@ pub const Command = enum {
     dashboard,
     // Cycle 86: Swarm Sync
     swarm,
+    // Cycle 85: Improve-All Pipeline
+    improve_all,
 };
 
 pub const CLIState = struct {
@@ -556,6 +558,8 @@ pub fn printHelp() void {
     std.debug.print("  {s}strict disable{s}             Deactivate strict mode\n", .{ GREEN, RESET });
     std.debug.print("  {s}strict status{s}              Show mode and rules\n", .{ GREEN, RESET });
     std.debug.print("  {s}strict check{s} [path]        Validate VIBEE-first compliance\n", .{ GREEN, RESET });
+    std.debug.print("  {s}strict fix{s} [--dry-run]     Auto-generate missing .vibee specs\n", .{ GREEN, RESET });
+    std.debug.print("  {s}improve-all{s}                Full pipeline: check → fix → gen → verify\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
     std.debug.print("{s}SACRED MATH (Cycle 82):{s}\n", .{ GOLDEN, RESET });
@@ -773,6 +777,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "help") or std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) return .help;
     // New Commands - VIBEE First Integration
     if (std.mem.eql(u8, arg, "improve") or std.mem.eql(u8, arg, "self-improve")) return .improve;
+    if (std.mem.eql(u8, arg, "improve-all") or std.mem.eql(u8, arg, "improve_all") or std.mem.eql(u8, arg, "fix-all")) return .improve_all;
     if (std.mem.eql(u8, arg, "gguf-chat")) return .gguf_chat;
     if (std.mem.eql(u8, arg, "metal")) return .metal;
     if (std.mem.eql(u8, arg, "validate")) return .validate;
