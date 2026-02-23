@@ -23,6 +23,9 @@ pub const body_emitter = @import("body_emitter.zig");
 pub const vsa_emitter = @import("vsa_emitter.zig");
 pub const struct_emitters = @import("struct_emitters.zig");
 pub const idiom_analyzer = @import("idiom_analyzer.zig");
+pub const ts_bridge = @import("ts_bridge.zig");
+pub const treesitter_analyzer = @import("treesitter_analyzer.zig");
+pub const unified_analyzer = @import("unified_analyzer.zig");
 
 // Primary exports
 pub const ZigCodeGen = emitter.ZigCodeGen;
@@ -31,6 +34,8 @@ pub const PatternMatcher = patterns.PatternMatcher;
 pub const TestGenerator = tests_gen.TestGenerator;
 pub const ZigIdioms = zig_idioms.ZigIdioms;
 pub const IdiomAnalyzer = idiom_analyzer.IdiomAnalyzer;
+pub const UnifiedAnalyzer = unified_analyzer.UnifiedAnalyzer;
+pub const TreeSitterAnalyzer = treesitter_analyzer.TreeSitterAnalyzer;
 
 // Type re-exports from parser
 pub const VibeeSpec = types.VibeeSpec;

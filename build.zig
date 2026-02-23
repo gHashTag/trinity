@@ -7,6 +7,9 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // Cycle 78: Optional tree-sitter integration for VIBEE AST analysis
+    const enable_treesitter = b.option(bool, "treesitter", "Enable tree-sitter AST analysis for VIBEE (requires libtree-sitter)") orelse false;
+
     // Library module for imports
     const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
@@ -1074,6 +1077,10 @@ pub fn build(b: *std.Build) void {
 
     // VIBEE Compiler CLI — single source of truth in src/vibeec/
     // VIBEE Compiler CLI — single source of truth in src/vibeec/
+    // Build options module for compile-time feature detection
+    const ts_options = b.addOptions();
+    ts_options.addOption(bool, "enable_treesitter", enable_treesitter);
+
     const vibee = b.addExecutable(.{
         .name = "vibee",
         .root_module = b.createModule(.{
@@ -1082,6 +1089,28 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
+
+    // Cycle 78: Inject build options and optional tree-sitter modules
+    vibee.root_module.addOptions("build_options", ts_options);
+    if (enable_treesitter) {
+        const ts_zig_mod = b.createModule(.{
+            .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        ts_zig_mod.linkSystemLibrary("tree-sitter", .{});
+        ts_zig_mod.link_libc = true;
+        vibee.root_module.addImport("treesitter_zig", ts_zig_mod);
+
+        const ts_ast_mod = b.createModule(.{
+            .root_source_file = b.path("src/tvc/treesitter/ast_nodes.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        ts_ast_mod.addImport("treesitter_zig", ts_zig_mod);
+        vibee.root_module.addImport("treesitter_ast", ts_ast_mod);
+    }
+
     b.installArtifact(vibee);
 
     const run_vibee = b.addRunArtifact(vibee);
