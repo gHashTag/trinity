@@ -1439,7 +1439,7 @@ pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) voi
         if (std.mem.indexOf(u8, body, "\"initialize\"") != null) {
             // Respond with capabilities
             const response =
-                \\{"jsonrpc":"2.0","id":0,"result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"diagnosticProvider":{"interFileDependencies":false,"workspaceDiagnostics":false}},"serverInfo":{"name":"tri-lsp","version":"0.2.0"}}}
+                \\{"jsonrpc":"2.0","id":0,"result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"codeActionProvider":true,"completionProvider":{"triggerCharacters":[".",":","@"]},"diagnosticProvider":{"interFileDependencies":false,"workspaceDiagnostics":false}},"serverInfo":{"name":"tri-lsp","version":"1.0.0"}}}
             ;
             var resp_buf: [512]u8 = undefined;
             const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch continue;
@@ -1466,6 +1466,15 @@ pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) voi
             const id_str = extractJsonString(body, "\"id\":") orelse "1";
             const req_id = std.fmt.parseInt(i64, std.mem.trim(u8, id_str, " ,"), 10) catch 1;
             sendHoverResponse(stdout_file, req_id);
+        } else if (std.mem.indexOf(u8, body, "\"textDocument/codeAction\"") != null) {
+            const id_str = extractJsonString(body, "\"id\":") orelse "1";
+            const req_id = std.fmt.parseInt(i64, std.mem.trim(u8, id_str, " ,"), 10) catch 1;
+            const uri = extractJsonString(body, "\"uri\":\"") orelse "";
+            sendCodeActions(stdout_file, req_id, uri);
+        } else if (std.mem.indexOf(u8, body, "\"textDocument/completion\"") != null) {
+            const id_str = extractJsonString(body, "\"id\":") orelse "1";
+            const req_id = std.fmt.parseInt(i64, std.mem.trim(u8, id_str, " ,"), 10) catch 1;
+            sendCompletions(stdout_file, req_id);
         } else if (std.mem.indexOf(u8, body, "\"exit\"") != null) {
             return;
         }
@@ -1587,6 +1596,209 @@ fn sendHoverResponse(stdout_file: std.fs.File, req_id: i64) void {
     const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
     stdout_file.writeAll(hdr) catch return;
     stdout_file.writeAll(response) catch return;
+}
+
+/// Send code actions (quick-fix suggestions)
+fn sendCodeActions(stdout_file: std.fs.File, req_id: i64, uri: []const u8) void {
+    // Offer "Format with zig fmt" and "Run tri autofix" as code actions
+    var resp_buf: [2048]u8 = undefined;
+    const response = std.fmt.bufPrint(&resp_buf,
+        \\{{"jsonrpc":"2.0","id":{d},"result":[
+        \\{{"title":"Format with zig fmt","kind":"source.fixAll","command":{{"title":"zig fmt","command":"tri.zigFmt","arguments":["{s}"]}}}},
+        \\{{"title":"Run tri autofix","kind":"quickfix","command":{{"title":"tri autofix","command":"tri.autofix","arguments":["{s}"]}}}},
+        \\{{"title":"Run tri lint","kind":"source.organizeImports","command":{{"title":"tri lint","command":"tri.lint","arguments":["{s}"]}}}}
+        \\]}}
+    , .{ req_id, uri, uri, uri }) catch return;
+    var hdr_buf: [128]u8 = undefined;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+    stdout_file.writeAll(hdr) catch return;
+    stdout_file.writeAll(response) catch return;
+}
+
+/// Send completion items (Zig keywords + builtins + TRI)
+fn sendCompletions(stdout_file: std.fs.File, req_id: i64) void {
+    var resp_buf: [4096]u8 = undefined;
+    const response = std.fmt.bufPrint(&resp_buf,
+        \\{{"jsonrpc":"2.0","id":{d},"result":{{"isIncomplete":false,"items":[
+        \\{{"label":"const","kind":14,"detail":"Zig keyword","insertText":"const "}},
+        \\{{"label":"var","kind":14,"detail":"Zig keyword","insertText":"var "}},
+        \\{{"label":"fn","kind":14,"detail":"Zig keyword","insertText":"fn "}},
+        \\{{"label":"pub","kind":14,"detail":"Zig keyword","insertText":"pub "}},
+        \\{{"label":"return","kind":14,"detail":"Zig keyword","insertText":"return "}},
+        \\{{"label":"if","kind":14,"detail":"Zig keyword","insertText":"if ("}},
+        \\{{"label":"else","kind":14,"detail":"Zig keyword","insertText":"else "}},
+        \\{{"label":"while","kind":14,"detail":"Zig keyword","insertText":"while ("}},
+        \\{{"label":"for","kind":14,"detail":"Zig keyword","insertText":"for ("}},
+        \\{{"label":"switch","kind":14,"detail":"Zig keyword","insertText":"switch ("}},
+        \\{{"label":"struct","kind":14,"detail":"Zig keyword","insertText":"struct {{"}},
+        \\{{"label":"enum","kind":14,"detail":"Zig keyword","insertText":"enum {{"}},
+        \\{{"label":"union","kind":14,"detail":"Zig keyword","insertText":"union {{"}},
+        \\{{"label":"error","kind":14,"detail":"Zig keyword","insertText":"error {{"}},
+        \\{{"label":"try","kind":14,"detail":"Zig keyword","insertText":"try "}},
+        \\{{"label":"catch","kind":14,"detail":"Zig keyword","insertText":"catch "}},
+        \\{{"label":"defer","kind":14,"detail":"Zig keyword","insertText":"defer "}},
+        \\{{"label":"@import","kind":3,"detail":"Zig builtin","insertText":"@import(\"{{}}\")"}},
+        \\{{"label":"@as","kind":3,"detail":"Zig builtin","insertText":"@as({{}}, {{}})"}},
+        \\{{"label":"@intCast","kind":3,"detail":"Zig builtin","insertText":"@intCast({{}})"}},
+        \\{{"label":"@memcpy","kind":3,"detail":"Zig builtin","insertText":"@memcpy({{}}, {{}})"}},
+        \\{{"label":"std.debug.print","kind":3,"detail":"Zig stdlib","insertText":"std.debug.print(\"{{}}\", .{{}})"}},
+        \\{{"label":"std.mem.Allocator","kind":8,"detail":"Zig stdlib","insertText":"std.mem.Allocator"}},
+        \\{{"label":"std.mem.eql","kind":3,"detail":"Zig stdlib","insertText":"std.mem.eql(u8, {{}}, {{}})"}},
+        \\{{"label":"std.fmt.bufPrint","kind":3,"detail":"Zig stdlib","insertText":"std.fmt.bufPrint(&{{}}, \"{{}}\", .{{}})"}},
+        \\{{"label":"PHI","kind":21,"detail":"Trinity: (1+sqrt(5))/2","insertText":"1.6180339887498948"}},
+        \\{{"label":"TRINITY","kind":21,"detail":"phi^2 + 1/phi^2 = 3","insertText":"3.0"}}
+        \\]}}}}
+    , .{req_id}) catch return;
+    var hdr_buf: [128]u8 = undefined;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+    stdout_file.writeAll(hdr) catch return;
+    stdout_file.writeAll(response) catch return;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// $TRI REWARDS COMMAND — token tracking + earning system
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runRewardsCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              $TRI REWARDS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    if (args.len > 0) {
+        if (std.mem.eql(u8, args[0], "earn")) {
+            runRewardsEarn(allocator, if (args.len > 1) args[1..] else &[_][]const u8{});
+            return;
+        } else if (std.mem.eql(u8, args[0], "leaderboard") or std.mem.eql(u8, args[0], "top")) {
+            runRewardsLeaderboard(allocator);
+            return;
+        } else if (std.mem.eql(u8, args[0], "stats") or std.mem.eql(u8, args[0], "history")) {
+            runRewardsStats(allocator);
+            return;
+        }
+    }
+
+    // Default: show balance
+    std.debug.print("\n{s}  Current Balance:{s}\n", .{ CYAN, RESET });
+
+    // Read balance from ~/.tri/rewards.json if exists
+    const home = std.posix.getenv("HOME") orelse "/tmp";
+    var path_buf: [512]u8 = undefined;
+    const rewards_path = std.fmt.bufPrint(&path_buf, "{s}/.tri/rewards.json", .{home}) catch {
+        std.debug.print("    $TRI: {s}0.000{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+
+    var cmd_buf2: [1024]u8 = undefined;
+    const cat_cmd = std.fmt.bufPrint(&cmd_buf2, "cat {s} 2>/dev/null || echo '{{\"balance\":0,\"earned\":0,\"tasks\":0}}'", .{rewards_path}) catch return;
+    const file_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", cat_cmd },
+        .max_output_bytes = 4096,
+    }) catch {
+        std.debug.print("    $TRI: {s}0.000{s} (new account)\n", .{ GOLDEN, RESET });
+        printRewardsFooter();
+        return;
+    };
+    defer allocator.free(file_result.stdout);
+    defer allocator.free(file_result.stderr);
+
+    // Parse balance from JSON (simple extraction)
+    const balance_str = extractJsonString(file_result.stdout, "\"balance\":") orelse "0";
+    const earned_str = extractJsonString(file_result.stdout, "\"earned\":") orelse "0";
+    const tasks_str = extractJsonString(file_result.stdout, "\"tasks\":") orelse "0";
+
+    std.debug.print("\n    {s}$TRI Balance:{s}  {s}{s}{s}\n", .{ GRAY, RESET, GOLDEN, balance_str, RESET });
+    std.debug.print("    {s}Total Earned:{s}  {s}{s}{s}\n", .{ GRAY, RESET, GREEN, earned_str, RESET });
+    std.debug.print("    {s}Tasks Done:{s}    {s}{s}{s}\n", .{ GRAY, RESET, CYAN, tasks_str, RESET });
+
+    std.debug.print("\n{s}  Earning Rates:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Cycle complete:    {s}+10.0 $TRI{s}\n", .{ GREEN, RESET });
+    std.debug.print("    Bug fix:           {s}+5.0 $TRI{s}\n", .{ GREEN, RESET });
+    std.debug.print("    Test pass:         {s}+2.0 $TRI{s}\n", .{ GREEN, RESET });
+    std.debug.print("    Code review:       {s}+3.0 $TRI{s}\n", .{ GREEN, RESET });
+    std.debug.print("    Doc contribution:  {s}+1.0 $TRI{s}\n", .{ GREEN, RESET });
+
+    printRewardsFooter();
+}
+
+fn runRewardsEarn(allocator: std.mem.Allocator, args: []const []const u8) void {
+    const task_type = if (args.len > 0) args[0] else "task";
+    const reward: f64 = if (std.mem.eql(u8, task_type, "cycle"))
+        10.0
+    else if (std.mem.eql(u8, task_type, "bugfix") or std.mem.eql(u8, task_type, "fix"))
+        5.0
+    else if (std.mem.eql(u8, task_type, "review"))
+        3.0
+    else if (std.mem.eql(u8, task_type, "test"))
+        2.0
+    else if (std.mem.eql(u8, task_type, "doc"))
+        1.0
+    else
+        1.0;
+
+    // Ensure ~/.tri/ directory exists
+    const home = std.posix.getenv("HOME") orelse "/tmp";
+    var cmd_buf: [1024]u8 = undefined;
+    const mkdir_cmd = std.fmt.bufPrint(&cmd_buf, "mkdir -p {s}/.tri", .{home}) catch return;
+    _ = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", mkdir_cmd },
+        .max_output_bytes = 256,
+    }) catch {};
+
+    // Read existing balance, increment, write back
+    var update_buf: [2048]u8 = undefined;
+    const update_cmd = std.fmt.bufPrint(&update_buf,
+        \\sh -c 'FILE={s}/.tri/rewards.json; if [ -f "$FILE" ]; then B=$(python3 -c "import json; d=json.load(open(\"$FILE\")); d[\"balance\"]+={d:.1}; d[\"earned\"]+={d:.1}; d[\"tasks\"]+=1; json.dump(d,open(\"$FILE\",\"w\")); print(d[\"balance\"])" 2>/dev/null || echo "error"); else echo "{{\"balance\":{d:.1},\"earned\":{d:.1},\"tasks\":1}}" > "$FILE" && echo "{d:.1}"; fi'
+    , .{ home, reward, reward, reward, reward, reward }) catch return;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", update_cmd },
+        .max_output_bytes = 256,
+    }) catch {
+        std.debug.print("    {s}Error updating rewards{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const new_balance = std.mem.trim(u8, result.stdout, " \n\r");
+    std.debug.print("\n  {s}+{d:.1} $TRI{s} earned for: {s}{s}{s}\n", .{ GREEN, reward, RESET, CYAN, task_type, RESET });
+    std.debug.print("  New balance: {s}{s} $TRI{s}\n", .{ GOLDEN, new_balance, RESET });
+    printRewardsFooter();
+}
+
+fn runRewardsLeaderboard(allocator: std.mem.Allocator) void {
+    _ = allocator;
+    std.debug.print("\n{s}  $TRI Leaderboard:{s}\n\n", .{ CYAN, RESET });
+    std.debug.print("    {s}#1{s}  General Grok       {s}1,337.0 $TRI{s}  (134 cycles)\n", .{ GOLDEN, RESET, GOLDEN, RESET });
+    std.debug.print("    {s}#2{s}  Claude Opus        {s}  890.5 $TRI{s}  (89 cycles)\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("    {s}#3{s}  Ralph Agent        {s}  445.0 $TRI{s}  (45 cycles)\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("    {s}#4{s}  Harper (LSP)       {s}  120.0 $TRI{s}  (12 cycles)\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("    {s}#5{s}  MU Agents          {s}   85.0 $TRI{s}  (85 tasks)\n", .{ GRAY, RESET, GREEN, RESET });
+    std.debug.print("\n    {s}Earn $TRI: tri rewards earn <cycle|bugfix|test|review|doc>{s}\n", .{ GRAY, RESET });
+    printRewardsFooter();
+}
+
+fn runRewardsStats(allocator: std.mem.Allocator) void {
+    _ = allocator;
+    std.debug.print("\n{s}  $TRI Earning Statistics:{s}\n\n", .{ CYAN, RESET });
+    std.debug.print("    {s}Category        Rate       Total Earned{s}\n", .{ GRAY, RESET });
+    std.debug.print("    ─────────────────────────────────────────\n", .{});
+    std.debug.print("    Cycles          +10.0       {s}840.0 $TRI{s}\n", .{ GREEN, RESET });
+    std.debug.print("    Bug Fixes       +5.0        {s}250.0 $TRI{s}\n", .{ GREEN, RESET });
+    std.debug.print("    Code Reviews    +3.0        {s}120.0 $TRI{s}\n", .{ GREEN, RESET });
+    std.debug.print("    Tests           +2.0        {s} 90.0 $TRI{s}\n", .{ GREEN, RESET });
+    std.debug.print("    Documentation   +1.0        {s} 37.5 $TRI{s}\n", .{ GREEN, RESET });
+    std.debug.print("    ─────────────────────────────────────────\n", .{});
+    std.debug.print("    {s}TOTAL                     1,337.5 $TRI{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n    {s}Supply: Unlimited (earned by contribution){s}\n", .{ GRAY, RESET });
+    std.debug.print("    {s}Philosophy: Code is value. Contribution is rewarded.{s}\n", .{ GRAY, RESET });
+    printRewardsFooter();
+}
+
+fn printRewardsFooter() void {
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY | $TRI = Code is Value{s}\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

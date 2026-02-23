@@ -233,5 +233,7 @@ pub fn main() !void {
         .math_verify => math_mod.runMathVerifyCommand(),
         .math_bench => math_mod.runMathBenchCommand(),
         .math_compare => math_mod.runMathCompareCommand(cmd_args),
+        // Cycle 84: $TRI Rewards
+        .rewards => commands.runRewardsCommand(allocator, cmd_args),
     }
 }
