@@ -239,5 +239,7 @@ pub fn main() !void {
         .dashboard => commands.runDashboardCommand(allocator),
         // Cycle 86: Swarm Sync
         .swarm => commands.runSwarmCommand(allocator, cmd_args),
+        // Cycle 85: Improve-All Pipeline
+        .improve_all => commands.runImproveAllCommand(allocator, cmd_args),
     }
 }
