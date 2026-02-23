@@ -178,6 +178,10 @@ pub const Command = enum {
     fmt_cmd,
     stats_cmd,
     igla,
+    // Code Analysis
+    analyze,
+    search_cmd,
+    deps,
     // Info
     info,
     version,
