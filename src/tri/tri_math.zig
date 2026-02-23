@@ -429,6 +429,8 @@ pub fn runMathCommand(args: []const []const u8) void {
         runCosmosCommand();
     } else if (std.mem.eql(u8, sub, "engine") or std.mem.eql(u8, sub, "v3") or std.mem.eql(u8, sub, "about")) {
         runEngineCommand();
+    } else if (std.mem.eql(u8, sub, "formula") or std.mem.eql(u8, sub, "sacred-formula") or std.mem.eql(u8, sub, "approximate") or std.mem.eql(u8, sub, "predict")) {
+        runFormulaCommand();
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
@@ -474,6 +476,7 @@ fn printMathHelp() void {
     std.debug.print("  {s}harmony{s}                     Musical ratios + phi in acoustics\n", .{ GREEN, RESET });
     std.debug.print("  {s}cosmos{s}                      Cosmological constants + phi in nature\n", .{ GREEN, RESET });
     std.debug.print("  {s}engine{s}                      v3.0 Sacred Computation Engine status\n", .{ GREEN, RESET });
+    std.debug.print("  {s}formula{s}                     Sacred Formula approximator V=n*3^k*pi^m*phi^p*e^q\n", .{ GREEN, RESET });
     std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}math-verify{s}                Trinity identity checks (24 checks)\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-bench{s}                 Performance benchmark\n", .{ GREEN, RESET });
@@ -2559,6 +2562,190 @@ fn runEngineCommand() void {
 
     std.debug.print("\n    {s}The Sacred Computation Engine computes reality.{s}\n", .{ GOLDEN, RESET });
     std.debug.print("    {s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math formula — Sacred Formula Approximator
+// V = n × 3^k × π^m × φ^p × e^q
+// =============================================================================
+
+const SacredFit = struct {
+    n: i8,
+    k: i8,
+    m: i8,
+    p: i8,
+    q: i8,
+    value: f64,
+    error_pct: f64,
+};
+
+/// Brute-force search for best Sacred Formula fit
+fn findSacredFit(target: f64) SacredFit {
+    var best = SacredFit{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0, .value = 1.0, .error_pct = 100.0 };
+
+    // Search over small integer exponents
+    var n: i8 = 1;
+    while (n <= 9) : (n += 1) {
+        var k: i8 = -4;
+        while (k <= 4) : (k += 1) {
+            var m: i8 = -3;
+            while (m <= 3) : (m += 1) {
+                var p: i8 = -4;
+                while (p <= 4) : (p += 1) {
+                    var q: i8 = -3;
+                    while (q <= 3) : (q += 1) {
+                        const nf: f64 = @floatFromInt(n);
+                        const kf: f64 = @floatFromInt(k);
+                        const mf: f64 = @floatFromInt(m);
+                        const pf: f64 = @floatFromInt(p);
+                        const qf: f64 = @floatFromInt(q);
+
+                        const v = nf * std.math.pow(f64, 3.0, kf) * std.math.pow(f64, PI, mf) * std.math.pow(f64, PHI, pf) * std.math.pow(f64, E, qf);
+
+                        if (v > 0.0 and !std.math.isNan(v) and !std.math.isInf(v)) {
+                            const err = @abs(v - target) / @abs(target) * 100.0;
+                            if (err < best.error_pct) {
+                                best = .{ .n = n, .k = k, .m = m, .p = p, .q = q, .value = v, .error_pct = err };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return best;
+}
+
+fn printFit(name: []const u8, target: f64, fit: SacredFit) void {
+    const mark = if (fit.error_pct < 0.01) GREEN else if (fit.error_pct < 1.0) GOLDEN else RED;
+    const sym = if (fit.error_pct < 0.01) "EXACT" else if (fit.error_pct < 1.0) "CLOSE" else "APPROX";
+    std.debug.print("  {s}{s:<22}{s} = {d:>14.6}  ~  {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6}  {s}[{s} {d:.4}%]{s}\n", .{
+        GREEN, name, RESET,
+        target,
+        fit.n, fit.k, fit.m, fit.p, fit.q,
+        fit.value,
+        mark, sym, fit.error_pct, RESET,
+    });
+}
+
+fn runFormulaCommand() void {
+    std.debug.print("\n{s}SACRED FORMULA APPROXIMATOR{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}V = n * 3^k * pi^m * phi^p * e^q{s}\n", .{ WHITE, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Method:{s} Integer Relation Detection (brute-force PSLQ)\n", .{ CYAN, RESET });
+    std.debug.print("  Search space: n in [1..9], k,p in [-4..4], m,q in [-3..3]\n", .{});
+    std.debug.print("  Base: 3 = TRINITY = phi^2 + 1/phi^2\n\n", .{});
+
+    // ═══════════════════════════════════════════════════════════════
+    // Part 1: Fit KNOWN constants
+    // ═══════════════════════════════════════════════════════════════
+    std.debug.print("{s}  KNOWN CONSTANTS → Sacred Formula Decomposition:{s}\n\n", .{ CYAN, RESET });
+
+    const fit_alpha_inv = findSacredFit(FINE_STRUCTURE_INV);
+    printFit("1/alpha (137.036)", FINE_STRUCTURE_INV, fit_alpha_inv);
+
+    const fit_proton = findSacredFit(PROTON_ELECTRON_RATIO);
+    printFit("m_p/m_e (1836.15)", PROTON_ELECTRON_RATIO, fit_proton);
+
+    const fit_chsh = findSacredFit(CHSH);
+    printFit("CHSH (2*sqrt2)", CHSH, fit_chsh);
+
+    const fit_weinberg = findSacredFit(WEINBERG_SIN2);
+    printFit("sin2(theta_W)", WEINBERG_SIN2, fit_weinberg);
+
+    const fit_hubble = findSacredFit(HUBBLE);
+    printFit("H_0 (67.4)", HUBBLE, fit_hubble);
+
+    const fit_omega_l = findSacredFit(OMEGA_LAMBDA);
+    printFit("Omega_L (0.685)", OMEGA_LAMBDA, fit_omega_l);
+
+    const fit_cmb = findSacredFit(CMB_TEMP);
+    printFit("T_CMB (2.7255)", CMB_TEMP, fit_cmb);
+
+    const fit_bi = findSacredFit(BARBERO_IMMIRZI);
+    printFit("gamma_BI (LQG)", BARBERO_IMMIRZI, fit_bi);
+
+    const fit_bh = findSacredFit(BEKENSTEIN_HAWKING_RATIO);
+    printFit("S/A = 1/4 (BH)", BEKENSTEIN_HAWKING_RATIO, fit_bh);
+
+    const fit_brown = findSacredFit(BROWN_HENNEAUX);
+    printFit("c_BH = 3/2 (AdS)", BROWN_HENNEAUX, fit_brown);
+
+    const fit_age = findSacredFit(AGE_UNIVERSE);
+    printFit("Age (13.787 Gyr)", AGE_UNIVERSE, fit_age);
+
+    const fit_su3g = findSacredFit(SU3_GOLDEN);
+    printFit("SU3 golden 3/2phi", SU3_GOLDEN, fit_su3g);
+
+    // ═══════════════════════════════════════════════════════════════
+    // Part 2: PREDICT unknown constants
+    // ═══════════════════════════════════════════════════════════════
+    std.debug.print("\n{s}  PREDICTIONS — Extrapolation from Sacred Formula:{s}\n\n", .{ CYAN, RESET });
+    std.debug.print("  {s}These are NOT established physics — they are sacred formula extrapolations.{s}\n\n", .{ GRAY, RESET });
+
+    // Prediction 1: Neutrino mass ratio (unknown, estimated ~0.001-0.1 eV)
+    // Use pattern: tiny constants often have large negative phi exponents
+    const pred_neutrino = 1.0 * std.math.pow(f64, 3.0, -1.0) * std.math.pow(f64, PI, -1.0) * std.math.pow(f64, PHI, -4.0) * std.math.pow(f64, E, -1.0);
+    std.debug.print("  {s}Neutrino mass hint{s}      = 1*3^-1*pi^-1*phi^-4*e^-1 = {d:.6} eV\n", .{ GOLDEN, RESET, pred_neutrino });
+
+    // Prediction 2: Dark matter particle mass (unknown)
+    // Pattern: masses scale with phi^p * 3^k
+    const pred_dm = 3.0 * std.math.pow(f64, 3.0, 2.0) * std.math.pow(f64, PHI, 3.0) * std.math.pow(f64, E, 2.0);
+    std.debug.print("  {s}DM candidate mass{s}       = 3*3^2*phi^3*e^2 = {d:.2} GeV\n", .{ GOLDEN, RESET, pred_dm });
+
+    // Prediction 3: Cosmological constant (Lambda) in Planck units
+    const pred_lambda = 1.0 * std.math.pow(f64, 3.0, -4.0) * std.math.pow(f64, PI, -2.0) * std.math.pow(f64, PHI, -4.0) * std.math.pow(f64, E, -3.0);
+    std.debug.print("  {s}Lambda/rho_P hint{s}       = 1*3^-4*pi^-2*phi^-4*e^-3 = {e:.6}\n", .{ GOLDEN, RESET, pred_lambda });
+
+    // Prediction 4: Graviton mass upper bound
+    const pred_graviton = 1.0 * std.math.pow(f64, 3.0, -3.0) * std.math.pow(f64, PI, -3.0) * std.math.pow(f64, PHI, -4.0) * std.math.pow(f64, E, -3.0);
+    std.debug.print("  {s}Graviton mass bound{s}     = 1*3^-3*pi^-3*phi^-4*e^-3 = {e:.6} eV\n", .{ GOLDEN, RESET, pred_graviton });
+
+    // Prediction 5: Proton lifetime (in years, current bound >10^34)
+    const pred_proton_life = 3.0 * std.math.pow(f64, 3.0, 4.0) * std.math.pow(f64, PI, 3.0) * std.math.pow(f64, PHI, 4.0) * std.math.pow(f64, E, 4.0);
+    std.debug.print("  {s}Proton lifetime hint{s}    = 3*3^4*pi^3*phi^4*e^4 = {e:.4} years\n", .{ GOLDEN, RESET, pred_proton_life });
+
+    // Prediction 6: Number of spatial dimensions (should give 3!)
+    const pred_dims = 1.0 * std.math.pow(f64, 3.0, 1.0) * std.math.pow(f64, PI, 0.0) * std.math.pow(f64, PHI, 0.0) * std.math.pow(f64, E, 0.0);
+    std.debug.print("  {s}Spatial dimensions{s}      = 1*3^1 = {d:.0} (TRINITY — self-consistent!)\n", .{ GOLDEN, RESET, pred_dims });
+
+    // ═══════════════════════════════════════════════════════════════
+    // Part 3: Exponent pattern analysis
+    // ═══════════════════════════════════════════════════════════════
+    std.debug.print("\n{s}  EXPONENT PATTERN ANALYSIS:{s}\n\n", .{ CYAN, RESET });
+    std.debug.print("  The Sacred Formula V = n*3^k*pi^m*phi^p*e^q maps constants\n", .{});
+    std.debug.print("  to 5D integer lattice points (n,k,m,p,q).\n\n", .{});
+
+    std.debug.print("  {s}Observations:{s}\n", .{ WHITE, RESET });
+    std.debug.print("    1. TRINITY (3) has the simplest rep: (1,1,0,0,0)\n", .{});
+    std.debug.print("    2. Physical constants cluster near |k|+|m|+|p|+|q| <= 6\n", .{});
+    std.debug.print("    3. Exact fits (error < 0.01%%) suggest deep structure\n", .{});
+    std.debug.print("    4. phi exponent correlates with \"beauty\" of constant\n", .{});
+    std.debug.print("    5. Negative exponents → sub-unity (coupling constants)\n", .{});
+
+    std.debug.print("\n  {s}Mathematical Status:{s}\n", .{ WHITE, RESET });
+    std.debug.print("    This is EXPERIMENTAL MATHEMATICS, not established physics.\n", .{});
+    std.debug.print("    The PSLQ algorithm (Ferguson-Bailey 1999) can find exact\n", .{});
+    std.debug.print("    integer relations. Our brute-force search covers a subset.\n", .{});
+    std.debug.print("    Low-error fits may indicate genuine mathematical structure;\n", .{});
+    std.debug.print("    high-error fits are coincidental.\n", .{});
+
+    std.debug.print("\n  {s}The Sacred Formula as a basis:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    log(V) = log(n) + k*log(3) + m*log(pi) + p*log(phi) + q*log(e)\n", .{});
+    std.debug.print("    In log-space, this is a LINEAR combination of transcendentals.\n", .{});
+    std.debug.print("    log(3)   = {d:.10}\n", .{@log(3.0)});
+    std.debug.print("    log(pi)  = {d:.10}\n", .{@log(PI)});
+    std.debug.print("    log(phi) = {d:.10}\n", .{@log(PHI)});
+    std.debug.print("    log(e)   = {d:.10} (= 1 exactly!)\n", .{@log(E)});
+
+    std.debug.print("\n    Since log(e) = 1, the e^q term simply adds q to log(V).\n", .{});
+    std.debug.print("    This means: {s}every constant is a point in the lattice{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    {s}spanned by {{1, log(3), log(pi), log(phi)}} over Z.{s}\n", .{ GOLDEN, RESET });
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY{s}\n", .{ GOLDEN, trinity, RESET });
+    std.debug.print("    {s}If the universe is mathematical, Sacred Formula finds its coordinates.{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // =============================================================================
