@@ -37,12 +37,8 @@ pub const zig_parser = if (available) @import("treesitter_zig") else struct {
     }
 };
 
-/// AST node extraction module (real when available, empty stub otherwise)
-pub const ast_nodes = if (available) @import("treesitter_ast") else struct {
-    pub const Language = void;
-    pub const SymbolKind = void;
-    pub const Symbol = void;
-};
+// NOTE: ast_nodes.zig (symbol extraction) not wired yet — needs Zig 0.15 ArrayList migration.
+// The treesitter_analyzer only uses the parser (zig_parser), not symbol extraction.
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPE ALIASES

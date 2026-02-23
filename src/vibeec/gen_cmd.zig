@@ -628,7 +628,7 @@ fn improveSpec(allocator: std.mem.Allocator, spec_path: []const u8, dry_run: boo
     if (result.errors.items.len > 0) {
         std.debug.print("\n  Errors:\n", .{});
         for (result.errors.items) |err| {
-            std.debug.print("    - {s}: {s}\n", .{err.behavior_name, err.reason});
+            std.debug.print("    - {s}: {s}\n", .{ err.behavior_name, err.reason });
         }
     }
 
@@ -748,7 +748,7 @@ fn generateSyntheticSeeds(
         var parser = vibee_parser.VibeeParser.init(allocator, source);
         var spec = try parser.parse();
         spec.owns_source = true; // source was readToEndAlloc'd
-        defer spec.deinit();  // This will free source_content
+        defer spec.deinit(); // This will free source_content
 
         for (spec.behaviors.items) |b| {
             const name_copy = try allocator.dupe(u8, b.name);
@@ -769,12 +769,10 @@ fn generateSyntheticSeeds(
     std.debug.print("  Results:\n", .{});
     std.debug.print("    Generated: {d} seeds\n", .{result.generated.items.len});
     std.debug.print("    High quality (≥0.9): {d}\n", .{result.high_quality_count});
-    std.debug.print("    Avg quality: {d:.2}\n", .{
-        if (result.generated.items.len > 0)
-            result.total_quality / @as(f32, @floatFromInt(result.generated.items.len))
-        else
-            0.0
-    });
+    std.debug.print("    Avg quality: {d:.2}\n", .{if (result.generated.items.len > 0)
+        result.total_quality / @as(f32, @floatFromInt(result.generated.items.len))
+    else
+        0.0});
 
     // Import to DB if requested
     if (import_to_db) {
@@ -788,7 +786,7 @@ fn generateSyntheticSeeds(
                     seed.body,
                     seed.category,
                 ) catch |err| {
-                    std.debug.print("    [Error] Failed to add '{s}': {}\n", .{seed.name, err});
+                    std.debug.print("    [Error] Failed to add '{s}': {}\n", .{ seed.name, err });
                     continue;
                 };
                 imported += 1;
@@ -816,10 +814,10 @@ fn generateSyntheticSeeds(
 }
 
 /// V10.5: Curate synthetic seeds through multi-stage validation
-/// Cycle 77: Run idiom compliance check on generated Zig code
+/// Cycle 78: Run unified idiom compliance check (string-based + AST when available)
 fn runIdiomCheck(allocator: std.mem.Allocator, code: []const u8) !void {
-    const idiom_mod = zig_codegen.codegen.idiom_analyzer;
-    var analyzer = idiom_mod.IdiomAnalyzer{ .allocator = allocator, .source = code };
+    const unified_mod = zig_codegen.codegen.unified_analyzer;
+    var analyzer = unified_mod.UnifiedAnalyzer{ .allocator = allocator, .source = code };
     var report = try analyzer.analyze();
     defer report.deinit();
 
@@ -833,21 +831,30 @@ fn runIdiomCheck(allocator: std.mem.Allocator, code: []const u8) !void {
     }
     std.debug.print("       │\n", .{});
 
+    // Print analysis mode (Cycle 78)
+    std.debug.print("  │ Mode: {s}", .{analyzer.mode.label()});
+    std.debug.print("                    │\n", .{});
+
     // Print violations if any
     if (violation_count > 0) {
         std.debug.print("  │ Violations: {d}", .{violation_count});
         // Count by severity
         var critical: usize = 0;
         var high: usize = 0;
+        var medium: usize = 0;
+        var low: usize = 0;
         for (report.violations.items) |v| {
             switch (v.severity) {
                 .critical => critical += 1,
                 .high => high += 1,
-                else => {},
+                .medium => medium += 1,
+                .low => low += 1,
             }
         }
         if (critical > 0) std.debug.print(" ({d} CRITICAL)", .{critical});
         if (high > 0) std.debug.print(" ({d} HIGH)", .{high});
+        if (medium > 0) std.debug.print(" ({d} MEDIUM)", .{medium});
+        if (low > 0) std.debug.print(" ({d} LOW)", .{low});
         std.debug.print("          │\n", .{});
     }
 }
