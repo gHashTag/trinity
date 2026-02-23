@@ -179,7 +179,7 @@ pub fn main() !void {
 
         if (spec_files.len == 0) {
             std.debug.print("Error: No spec files provided\n", .{});
-            std.debug.print("Usage: vibeec generate-seeds <spec.vibee...> [--min-quality F] [--import]\n", .{});
+            std.debug.print("Usage: vibeec generate-seeds <spec.tri...> [--min-quality F] [--import]\n", .{});
             return;
         }
 
@@ -213,8 +213,8 @@ fn printUsage() void {
         \\═══════════════════════════════════════════════════════════════════════════════
         \\
         \\USAGE:
-        \\  vibeec gen <input.vibee> [output.zig]       Generate Zig code from .vibee spec
-        \\  vibeec improve-spec <file.vibee> [options]  Fill empty implementations using Golden DB
+        \\  vibeec gen <input.tri> [output.zig]         Generate Zig code from .tri spec
+        \\  vibeec improve-spec <file.tri> [options]    Fill empty implementations using Golden DB
         \\    --dry-run                                 Show what would be filled without writing
         \\    --min-confidence F                        Minimum confidence threshold (default: 0.7)
         \\  vibeec import-seeds <dir>                   Import seeds from generated/*.zig files

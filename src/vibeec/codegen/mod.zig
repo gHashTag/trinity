@@ -17,15 +17,19 @@ pub const patterns = @import("patterns.zig");
 pub const tests_gen = @import("tests_gen.zig");
 pub const emitter = @import("emitter.zig");
 pub const type_resolver = @import("type_resolver.zig");
+pub const zig_idioms = @import("zig_idioms.zig");
 
 // Primary exports
 pub const ZigCodeGen = emitter.ZigCodeGen;
 pub const CodeBuilder = builder.CodeBuilder;
 pub const PatternMatcher = patterns.PatternMatcher;
 pub const TestGenerator = tests_gen.TestGenerator;
+pub const ZigIdioms = zig_idioms.ZigIdioms;
 
 // Type re-exports from parser
 pub const VibeeSpec = types.VibeeSpec;
+pub const ZigMode = types.ZigMode;
+pub const AllocatorStrategy = types.AllocatorStrategy;
 pub const Behavior = types.Behavior;
 pub const TypeDef = types.TypeDef;
 pub const Constant = types.Constant;
