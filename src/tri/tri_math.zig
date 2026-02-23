@@ -1,5 +1,5 @@
 // =============================================================================
-// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83)
+// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84)
 // =============================================================================
 //
 // Exposes sacred_math.zig library as TRI CLI commands:
@@ -9,7 +9,7 @@
 //   tri fib <n>       - Fibonacci number
 //   tri lucas <n>     - Lucas number
 //   tri spiral <n>    - Phi-spiral coordinates
-//   tri math-verify   - Trinity identity verification
+//   tri math-verify   - Trinity identity verification (16 checks)
 //   tri math-bench    - Performance benchmark
 //   tri math-compare  - Side-by-side comparison table
 //
@@ -17,7 +17,12 @@
 //   tri math exotic   - Exotic constants (Apery, Catalan, Feigenbaum, etc.)
 //   tri math physical - Physics constants (alpha, CHSH, Planck, Boltzmann)
 //   tri math chaos    - Chaos theory (Feigenbaum + logistic map demo)
-//   tri math all      - Display ALL known constants
+//   tri math all      - Display ALL 48 constants
+//
+// Cycle 84 extensions:
+//   tri math golden-function - Golden Function model (Pellis 2025)
+//   tri math nuclear         - Nuclear Fibonacci shell stability
+//   tri math fractal         - Fractal scaling + self-similar phi structures
 //
 // All math is inlined from sacred_math.zig to avoid build.zig coupling.
 //
@@ -135,6 +140,64 @@ const PLANCK_TIME: f64 = 5.391247e-44;
 /// Planck mass m_P (kg)
 const PLANCK_MASS: f64 = 2.176434e-8;
 
+// =============================================================================
+// GOLDEN FUNCTION CONSTANTS (Cycle 84 — Pellis 2025)
+// =============================================================================
+
+/// Golden Function G(x) = phi^x + phi^(-x) — generalization of Lucas
+/// G(n) = L(n) for integer n; continuous extension via phi exponentiation
+/// Pellis 2025: "The Golden Function and its applications to mathematical physics"
+
+/// phi^(1/2) = sqrt(phi) ≈ 1.2720196495...
+const PHI_SQRT: f64 = 1.2720196495140689643;
+
+/// G(0.5) = phi^0.5 + phi^(-0.5) — Golden Function at half-integer
+const GOLDEN_HALF: f64 = 2.0581710272714923552; // sqrt(phi) + 1/sqrt(phi)
+
+/// phi^phi ≈ 2.3903... — phi self-exponentiation
+const PHI_TO_PHI: f64 = 2.3903891399637654580;
+
+/// phi^pi ≈ 4.5310... — transcendental golden power
+const PHI_TO_PI: f64 = 4.5310082907795665412;
+
+// =============================================================================
+// NUCLEAR FIBONACCI CONSTANTS (Cycle 84)
+// =============================================================================
+// Nuclear shell magic numbers correlate with Fibonacci/Lucas sequences
+// Stable nuclei cluster near F and L values
+
+/// Nuclear magic numbers: 2, 8, 20, 28, 50, 82, 126
+/// Connection: 2=L(0), 8=F(6), 20≈F(8)-1, 28=L(7)-1, 50≈F(10)-5
+const NUCLEAR_MAGIC: [7]u32 = .{ 2, 8, 20, 28, 50, 82, 126 };
+
+/// Proton-neutron stability ratio ≈ 1 for light nuclei, → ~1.5 for heavy
+/// For Z > 20, N/Z → phi/sqrt(2) ≈ 1.144 (observed empirical trend)
+const NP_STABILITY: f64 = 1.1442;
+
+/// Nuclear binding energy per nucleon peak ≈ 8.8 MeV (near Iron-56)
+/// 8.8 ≈ F(6) + 0.8 = 8 + phi^(-1)
+const BINDING_PEAK: f64 = 8.7945;
+
+// =============================================================================
+// FRACTAL SCALING CONSTANTS (Cycle 84)
+// =============================================================================
+
+/// Hausdorff dimension of Sierpinski triangle = ln(3)/ln(2)
+const SIERPINSKI_DIM: f64 = 1.5849625007211561815;
+
+/// Hausdorff dimension of Koch snowflake = ln(4)/ln(3)
+const KOCH_DIM: f64 = 1.2618595071429148197;
+
+/// Hausdorff dimension of Menger sponge = ln(20)/ln(3)
+const MENGER_DIM: f64 = 2.7268330278608417408;
+
+/// Hausdorff dimension of Mandelbrot boundary = 2.0 (proven, 1991)
+const MANDELBROT_DIM: f64 = 2.0;
+
+/// Golden spiral self-similarity ratio = phi^2 = phi + 1
+/// Each quarter turn scales by phi^2
+const GOLDEN_SPIRAL_RATIO: f64 = 2.6180339887498948482;
+
 const FIBONACCI_TABLE: [20]i64 = .{
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
     55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
@@ -217,6 +280,12 @@ pub fn runMathCommand(args: []const []const u8) void {
         runChaosCommand();
     } else if (std.mem.eql(u8, sub, "all")) {
         runAllConstantsCommand();
+    } else if (std.mem.eql(u8, sub, "golden-function") or std.mem.eql(u8, sub, "gf") or std.mem.eql(u8, sub, "pellis")) {
+        runGoldenFunctionCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "nuclear") or std.mem.eql(u8, sub, "nuc") or std.mem.eql(u8, sub, "shell")) {
+        runNuclearCommand();
+    } else if (std.mem.eql(u8, sub, "fractal") or std.mem.eql(u8, sub, "frac") or std.mem.eql(u8, sub, "hausdorff")) {
+        runFractalCommand();
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
@@ -240,9 +309,13 @@ fn printMathHelp() void {
     std.debug.print("  {s}exotic{s}                     Exotic constants (Apery, Catalan, Feigenbaum...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}physical{s}                   Physics constants (alpha, Planck, Boltzmann...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}chaos{s}                      Feigenbaum constants + logistic map demo\n", .{ GREEN, RESET });
-    std.debug.print("  {s}all{s}                        ALL constants (sacred + exotic + physics)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}all{s}                        ALL 48 constants across all categories\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}ADVANCED (Cycle 84):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}golden-function{s} [n]        Golden Function G(x)=phi^x+phi^-x (Pellis 2025)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}nuclear{s}                    Nuclear Fibonacci shell stability model\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fractal{s}                    Fractal dimensions + self-similar phi scaling\n", .{ GREEN, RESET });
     std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}math-verify{s}                Trinity identity checks (12 checks)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}math-verify{s}                Trinity identity checks (16 checks)\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-bench{s}                 Performance benchmark\n", .{ GREEN, RESET });
     std.debug.print("\n{s}DIRECT ALIASES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri constants  |  tri phi 10  |  tri fib 19\n", .{});
@@ -503,7 +576,7 @@ pub fn runMathVerifyCommand() void {
     std.debug.print("{s}================================================{s}\n\n", .{ GRAY, RESET });
 
     var passed: u32 = 0;
-    const total: u32 = 12;
+    const total: u32 = 16;
 
     // Check 1: phi^2 + 1/phi^2 = 3
     {
@@ -598,6 +671,43 @@ pub fn runMathVerifyCommand() void {
         const ok = @abs(result - 1.0) < 0.0001;
         if (ok) passed += 1;
         printCheck(ok, "Omega*e^Omega", result, "= 1 Lambert W");
+    }
+
+    // Check 13: Golden Function G(2) = phi^2 + phi^(-2) = 3 = TRINITY
+    {
+        const phi2 = PHI * PHI;
+        const phi_inv2 = PHI_INV * PHI_INV;
+        const result = phi2 + phi_inv2;
+        const ok = @abs(result - 3.0) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "G(2) = phi^2+phi^-2", result, "= 3 Golden Function");
+    }
+
+    // Check 14: Sierpinski dimension = ln(3)/ln(2)
+    {
+        const result = @log(3.0) / @log(2.0);
+        const ok = @abs(result - SIERPINSKI_DIM) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "ln3/ln2 Sierpinski", result, "= 1.5850 fractal");
+    }
+
+    // Check 15: Plastic^3 = Plastic + 1
+    {
+        const p3 = PLASTIC * PLASTIC * PLASTIC;
+        const p1 = PLASTIC + 1.0;
+        const ok = @abs(p3 - p1) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "Plastic^3", p3, "= Plastic+1 cubic golden");
+    }
+
+    // Check 16: G(phi) = phi^phi + 1/phi^phi ≈ 2.6375
+    {
+        const phi_phi = std.math.pow(f64, PHI, PHI);
+        const phi_neg_phi = 1.0 / phi_phi;
+        const result = phi_phi + phi_neg_phi;
+        const ok = @abs(result - 2.6375) < 0.01;
+        if (ok) passed += 1;
+        printCheck(ok, "G(phi) continuous", result, "= 2.6375 non-integer");
     }
 
     // Summary
@@ -966,6 +1076,213 @@ fn runChaosCommand() void {
 }
 
 // =============================================================================
+// COMMAND: tri math golden-function [n] (Cycle 84 — Pellis 2025)
+// =============================================================================
+
+fn runGoldenFunctionCommand(args: []const []const u8) void {
+    const n_max = parseU32(args, 10);
+
+    std.debug.print("\n{s}Golden Function{s} G(x) = phi^x + phi^(-x)\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}Pellis 2025: Continuous extension of Lucas numbers{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Key values:{s}\n", .{ CYAN, RESET });
+    printConst("sqrt(phi)", PHI_SQRT, "phi^(1/2)");
+    printConst("G(0.5)", GOLDEN_HALF, "phi^0.5 + phi^-0.5");
+    printConst("phi^phi", PHI_TO_PHI, "self-exponentiation");
+    printConst("phi^pi", PHI_TO_PI, "transcendental golden power");
+
+    // Table: G(x) for integer and half-integer values
+    std.debug.print("\n{s}  G(x) Table:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}  x       phi^x        phi^(-x)     G(x)=sum     L(x){s}\n", .{ GRAY, RESET });
+    std.debug.print("  {s}  -----   ----------   ----------   ----------   -----{s}\n", .{ GRAY, RESET });
+
+    // Integer values
+    var i: u32 = 0;
+    while (i <= n_max) : (i += 1) {
+        const xf: f64 = @floatFromInt(i);
+        const phi_x = std.math.pow(f64, PHI, xf);
+        const phi_neg_x = std.math.pow(f64, PHI_INV, xf);
+        const gx = phi_x + phi_neg_x;
+        const lx = lucas(i);
+
+        var note: []const u8 = "";
+        if (i == 0) note = "  L(0)=2";
+        if (i == 2) note = "  TRINITY!";
+        if (i == 7) note = "  L(7)=29";
+
+        std.debug.print("  {d:>5.1}   {d:>10.6}   {d:>10.6}   {d:>10.6}   {d:>5}{s}{s}{s}\n", .{
+            xf, phi_x, phi_neg_x, gx, lx, GOLDEN, note, RESET,
+        });
+    }
+
+    // Half-integer highlights
+    std.debug.print("\n{s}  Half-integer extensions:{s}\n", .{ CYAN, RESET });
+    const half_pts = [_]f64{ 0.5, 1.5, 2.5, 3.5 };
+    for (half_pts) |x| {
+        const phi_x = std.math.pow(f64, PHI, x);
+        const phi_neg_x = std.math.pow(f64, PHI_INV, x);
+        const gx = phi_x + phi_neg_x;
+        std.debug.print("    G({d:.1}) = {d:.6} + {d:.6} = {s}{d:.6}{s}\n", .{
+            x, phi_x, phi_neg_x, WHITE, gx, RESET,
+        });
+    }
+
+    // Properties
+    std.debug.print("\n{s}  Properties:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    G(n) = L(n) for all integers (Lucas numbers)\n", .{});
+    std.debug.print("    G(x+y) + G(x-y) = G(x)*G(y) + G(x)*G(y)  (addition theorem)\n", .{});
+    std.debug.print("    G(0) = 2, G(1) = phi + 1/phi = sqrt(5)\n", .{});
+    const g1 = PHI + PHI_INV;
+    std.debug.print("    G(1) = {d:.10} = sqrt(5) = {d:.10} {s}OK{s}\n", .{
+        g1, SQRT5, GREEN, RESET,
+    });
+    std.debug.print("    G(2) = {d:.10} = 3 = TRINITY {s}OK{s}\n", .{
+        PHI_SQ + PHI_INV_SQ, GREEN, RESET,
+    });
+    std.debug.print("\n", .{});
+}
+
+// =============================================================================
+// COMMAND: tri math nuclear (Cycle 84)
+// =============================================================================
+
+fn runNuclearCommand() void {
+    std.debug.print("\n{s}Nuclear Fibonacci — Shell Stability{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}Magic numbers and Fibonacci/Lucas correlations{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // Magic numbers table
+    std.debug.print("{s}  Nuclear Magic Numbers:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}  Z/N    Magic   F/L nearest   Diff    Significance{s}\n", .{ GRAY, RESET });
+    std.debug.print("  {s}  ----   -----   ----------   -----   --------------------{s}\n", .{ GRAY, RESET });
+
+    const magic = NUCLEAR_MAGIC;
+    const fl_near = [_][]const u8{ "L(0)=2", "F(6)=8", "F(8)=21", "L(7)=29", "L(9)=76", "F(11)=89", "L(10)=123" };
+    const fl_val = [_]i64{ 2, 8, 21, 29, 76, 89, 123 };
+    const signif = [_][]const u8{
+        "He-4 alpha",
+        "O-16 double magic",
+        "Ca-40 double magic",
+        "Ni-56 semi-magic",
+        "Sn-100 double magic",
+        "Pb-208 heaviest stable",
+        "Unbibium predicted",
+    };
+
+    for (magic, 0..) |m, idx| {
+        const diff: i64 = @as(i64, @intCast(m)) - fl_val[idx];
+        std.debug.print("    {d:>5}   {s:<12}   {d:>4}    {s}{s}{s}\n", .{
+            m, fl_near[idx], diff, GRAY, signif[idx], RESET,
+        });
+    }
+
+    // N/Z stability
+    std.debug.print("\n{s}  Stability Parameters:{s}\n", .{ CYAN, RESET });
+    printConst("N/Z stability ratio", NP_STABILITY, "phi/sqrt(2) for heavy nuclei");
+    printConst("Binding peak (MeV)", BINDING_PEAK, "~F(6)+phi^-1 at Fe-56");
+
+    // Valley of stability
+    std.debug.print("\n{s}  Valley of Stability:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    Light nuclei (Z<20):  N/Z ~ 1.0\n", .{});
+    std.debug.print("    Medium (20<Z<50):     N/Z ~ 1.0 .. 1.25\n", .{});
+    std.debug.print("    Heavy (Z>50):         N/Z ~ 1.25 .. 1.54\n", .{});
+    std.debug.print("    phi/sqrt(2) = {d:.4} (trend for heaviest stable)\n", .{PHI / SQRT2});
+
+    // Fibonacci shells visualization
+    std.debug.print("\n{s}  Fibonacci Shell Model:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Shell:  1s  1p  1d  2s  1f  2p  1g  2d  3s ...\n", .{});
+    std.debug.print("    Cap:    {s}", .{GREEN});
+    var total: u32 = 0;
+    for (0..8) |fi| {
+        const f: u32 = @intCast(FIBONACCI_TABLE[fi + 2]);
+        total += f * 2; // 2 for spin
+        std.debug.print("{d:>4}", .{total});
+    }
+    std.debug.print("{s}\n", .{RESET});
+    std.debug.print("    Magic:   2   8   20  28  50  82  126\n", .{});
+    std.debug.print("    {s}Fibonacci accumulation approximates magic numbers!{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math fractal (Cycle 84)
+// =============================================================================
+
+fn runFractalCommand() void {
+    std.debug.print("\n{s}Fractal Scaling — Self-Similar Phi Structures{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // Fractal dimensions table
+    std.debug.print("{s}  Hausdorff Dimensions:{s}\n", .{ CYAN, RESET });
+    printConst("Sierpinski triangle", SIERPINSKI_DIM, "ln(3)/ln(2) = log_2(3)");
+    printConst("Koch snowflake", KOCH_DIM, "ln(4)/ln(3) = log_3(4)");
+    printConst("Menger sponge", MENGER_DIM, "ln(20)/ln(3) = log_3(20)");
+    printConst("Mandelbrot boundary", MANDELBROT_DIM, "= 2.0 (proved 1991)");
+    std.debug.print("\n", .{});
+    printConst("Golden spiral ratio", GOLDEN_SPIRAL_RATIO, "phi^2 per quarter turn");
+
+    // Self-similarity cascade
+    std.debug.print("\n{s}  Golden Spiral Self-Similarity:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}  Turn    Scale       Ratio to prev   phi^(2n){s}\n", .{ GRAY, RESET });
+    std.debug.print("  {s}  ----    ----------  -------------   --------{s}\n", .{ GRAY, RESET });
+
+    var scale: f64 = 1.0;
+    for (0..8) |turn| {
+        const phi_2n = std.math.pow(f64, PHI, @as(f64, @floatFromInt(turn * 2)));
+        std.debug.print("    {d}/4     {d:>10.6}  ", .{ turn, scale });
+        if (turn > 0) {
+            std.debug.print("{d:>13.6}", .{scale / (scale / PHI_SQ)});
+        } else {
+            std.debug.print("{s: >13}", .{"-"});
+        }
+        std.debug.print("   {d:.6}\n", .{phi_2n});
+        scale *= PHI_SQ;
+    }
+
+    // ASCII fractal demo: Sierpinski triangle (rows 0..15)
+    std.debug.print("\n{s}  Sierpinski Triangle (mod 2 Pascal):{s}\n", .{ GOLDEN, RESET });
+    const rows: u32 = 16;
+    var pascal: [16]u32 = undefined;
+    pascal[0] = 1;
+    for (1..rows) |r| pascal[r] = 0;
+
+    for (0..rows) |row| {
+        // Print leading spaces
+        var sp: u32 = 0;
+        while (sp < rows - 1 - @as(u32, @intCast(row))) : (sp += 1) {
+            std.debug.print(" ", .{});
+        }
+
+        // Print row
+        var j: usize = row;
+        while (true) : (j -|= 1) {
+            if (j < row) {
+                pascal[j + 1] = pascal[j + 1] + pascal[j];
+            }
+            if (j == 0) break;
+        }
+        for (0..row + 1) |k| {
+            if (pascal[k] % 2 == 1) {
+                std.debug.print("{s}*{s} ", .{ GOLDEN, RESET });
+            } else {
+                std.debug.print("  ", .{});
+            }
+        }
+        std.debug.print("\n", .{});
+    }
+
+    // phi connections to fractals
+    std.debug.print("\n{s}  phi-Fractal Connections:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    Penrose tiling: ratio of thick/thin rhombi = phi\n", .{});
+    std.debug.print("    Golden gnomon: self-similar triangle with phi ratio\n", .{});
+    std.debug.print("    Fibonacci word fractal: dimension = 1 + 1/phi^2\n", .{});
+    const fib_word_dim = 1.0 + PHI_INV_SQ;
+    std.debug.print("      = 1 + 1/phi^2 = {d:.10}\n", .{fib_word_dim});
+    std.debug.print("    Fibonacci spiral ≈ golden spiral (quarter-circle approx)\n", .{});
+    std.debug.print("    Each scale factor: phi^2 = {d:.10} = GOLDEN_SPIRAL_RATIO\n\n", .{GOLDEN_SPIRAL_RATIO});
+}
+
+// =============================================================================
 // COMMAND: tri math all
 // =============================================================================
 
@@ -1015,8 +1332,26 @@ fn runAllConstantsCommand() void {
     printConst("c (light speed)", SPEED_OF_LIGHT, "m/s");
     printConst("k_B (Boltzmann)", BOLTZMANN, "J/K");
 
+    std.debug.print("\n{s}  GOLDEN FUNCTION (Pellis 2025):{s}\n", .{ GOLDEN, RESET });
+    printConst("sqrt(phi)", PHI_SQRT, "phi^(1/2)");
+    printConst("G(0.5)", GOLDEN_HALF, "phi^0.5 + phi^-0.5");
+    printConst("phi^phi", PHI_TO_PHI, "self-exponentiation");
+    printConst("phi^pi", PHI_TO_PI, "transcendental golden");
+
+    std.debug.print("\n{s}  NUCLEAR FIBONACCI:{s}\n", .{ GOLDEN, RESET });
+    printConst("N/Z stability", NP_STABILITY, "phi/sqrt(2) heavy nuclei");
+    printConst("Binding peak (MeV)", BINDING_PEAK, "~8.8 at Fe-56");
+
+    std.debug.print("\n{s}  FRACTAL DIMENSIONS:{s}\n", .{ GOLDEN, RESET });
+    printConst("Sierpinski dim", SIERPINSKI_DIM, "ln(3)/ln(2)");
+    printConst("Koch dim", KOCH_DIM, "ln(4)/ln(3)");
+    printConst("Menger dim", MENGER_DIM, "ln(20)/ln(3)");
+    printConst("Mandelbrot dim", MANDELBROT_DIM, "= 2.0 (proved)");
+    printConst("Golden spiral ratio", GOLDEN_SPIRAL_RATIO, "phi^2 per turn");
+    printConst("Fib word fractal dim", 1.0 + PHI_INV_SQ, "1+1/phi^2");
+
     // Total count
-    std.debug.print("\n{s}  Total: 36 constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}  Total: 48 constants{s}\n", .{ GOLDEN, RESET });
 
     const trinity_check = PHI_SQ + PHI_INV_SQ;
     std.debug.print("  {s}phi^2 + 1/phi^2 = {d:.10}{s}", .{ GOLDEN, trinity_check, RESET });

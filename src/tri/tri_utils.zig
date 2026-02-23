@@ -206,6 +206,8 @@ pub const Command = enum {
     rewards,
     // Cycle 85: Dashboard
     dashboard,
+    // Cycle 86: Swarm Sync
+    swarm,
 };
 
 pub const CLIState = struct {
@@ -299,15 +301,15 @@ pub const CLIState = struct {
 pub fn printBanner() void {
     std.debug.print("\n", .{});
     std.debug.print("{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}║              TRI CLI v{s} - Trinity Unified                   ║{s}\n", .{ GREEN, VERSION, RESET });
-    std.debug.print("{s}║     100% Local AI | Code | Chat | SWE Agent                  ║{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}║              TRI CLI v{s} - Full Dev OS                        ║{s}\n", .{ GREEN, VERSION, RESET });
+    std.debug.print("{s}║     100% Local AI | Code | Chat | SWE | Swarm                ║{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}║     {s}φ² + 1/φ² = 3 = TRINITY{s}                                   ║{s}\n", .{ GREEN, GOLDEN, GREEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI - Trinity Unified Command Line{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.0 — Full Dev OS{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -581,8 +583,16 @@ pub fn printHelp() void {
     std.debug.print("{s}$TRI REWARDS (Cycle 84):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}rewards{s}                    Show $TRI balance + earning history\n", .{ GREEN, RESET });
     std.debug.print("  {s}rewards earn{s}               Log earned $TRI from completed task\n", .{ GREEN, RESET });
+    std.debug.print("  {s}rewards stake{s} <amount>     Stake $TRI for earning multiplier\n", .{ GREEN, RESET });
     std.debug.print("  {s}rewards leaderboard{s}        Top contributors ranking\n", .{ GREEN, RESET });
     std.debug.print("  {s}rewards stats{s}              Detailed earning statistics\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}SWARM SYNC (Cycle 86):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}swarm{s}                      Agent state sync overview\n", .{ GREEN, RESET });
+    std.debug.print("  {s}swarm status{s}               Show sync state + branch info\n", .{ GREEN, RESET });
+    std.debug.print("  {s}swarm agents{s}               List connected agents + roles\n", .{ GREEN, RESET });
+    std.debug.print("  {s}swarm broadcast{s} <msg>      Send message to all agents\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
@@ -790,6 +800,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "rewards") or std.mem.eql(u8, arg, "tri-rewards") or std.mem.eql(u8, arg, "tokens")) return .rewards;
     // Cycle 85: Dashboard
     if (std.mem.eql(u8, arg, "dashboard") or std.mem.eql(u8, arg, "dash") or std.mem.eql(u8, arg, "panel")) return .dashboard;
+    // Cycle 86: Swarm Sync
+    if (std.mem.eql(u8, arg, "swarm") or std.mem.eql(u8, arg, "swarm-sync") or std.mem.eql(u8, arg, "sync")) return .swarm;
     return .none;
 }
 
