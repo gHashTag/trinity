@@ -149,7 +149,11 @@ pub fn verify_trinity_identity() !void {
 /// A float value and target dimension
 /// When: Encoding value into balanced ternary {-1, 0, +1}
 /// Then: Returns TritVector with encoded representation
-pub fn encode_to_trits(input: []const u8) []u8 {
+pub fn encode_to_trits(allocator: std.mem.Allocator, input: []const u8) ![]u8 {
+    // Idiomatic Zig: errdefer for error diagnostics
+    errdefer |err| {
+        std.debug.print("Error in behavior: {}\n", .{err});
+    }
 // TODO: implement — Returns TritVector with encoded representation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
