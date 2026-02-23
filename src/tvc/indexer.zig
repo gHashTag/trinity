@@ -23,6 +23,10 @@ const tvc_hybrid = @import("tvc_hybrid.zig");
 const ast_nodes = @import("treesitter/ast_nodes.zig");
 const zig_parser = @import("treesitter/zig.zig");
 
+// Import HNSW for fast similarity search
+const hnsw_module = @import("hnsw.zig");
+const hnsw_distance = @import("hnsw_distance.zig");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -224,9 +228,14 @@ pub const CodeIndexer = struct {
     // Symbol storage
     symbols: std.StringHashMap(SymbolEntry),
 
-    // Embedding storage (simplified - in production use actual HNSW)
+    // Embedding storage (legacy HashMap storage for compatibility)
     embeddings_tvc: std.StringHashMap(TVCEmbedding),
     embeddings_float32: std.StringHashMap(Float32Embedding),
+
+    // HNSW index for O(log n) search (Cycle 70)
+    // Using 256-dim float32 for HNSW (converted from ternary if needed)
+    hnsw_index: ?hnsw_module.HNSW(256, 16),
+    next_symbol_id: u64,
 
     // File watching (optional)
     watcher_handle: ?*anyopaque = null,
@@ -254,6 +263,17 @@ pub const CodeIndexer = struct {
 
     /// Create a new indexer
     pub fn init(allocator: Allocator, config: IndexConfig) !CodeIndexer {
+        // Initialize HNSW index
+        const hnsw_config = hnsw_module.Config{
+            .dim = 256,
+            .m = 16,
+            .max_m0 = 32,
+            .ef_construction = 64,
+            .ef_search = config.top_k * 8, // ef = k * 8 for good recall
+            .distance_metric = .cosine,
+        };
+        var hnsw = try hnsw_module.HNSW(256, 16).init(allocator, hnsw_config);
+
         return CodeIndexer{
             .allocator = allocator,
             .config = config,
@@ -261,11 +281,18 @@ pub const CodeIndexer = struct {
             .symbols = std.StringHashMap(SymbolEntry).init(allocator),
             .embeddings_tvc = std.StringHashMap(TVCEmbedding).init(allocator),
             .embeddings_float32 = std.StringHashMap(Float32Embedding).init(allocator),
+            .hnsw_index = hnsw,
+            .next_symbol_id = 1,
         };
     }
 
     /// Clean up resources
     pub fn deinit(self: *CodeIndexer) void {
+        // Clean up HNSW index
+        if (self.hnsw_index) |*index| {
+            index.deinit();
+        }
+
         // Free symbols
         var symbol_iter = self.symbols.valueIterator();
         while (symbol_iter.next()) |entry| {
@@ -307,9 +334,12 @@ pub const CodeIndexer = struct {
         for (result.symbols.items) |sym| {
             const key = try std.fmt.allocPrint(self.allocator, "{s}:{d}", .{ file_path, sym.id });
 
-            // Store symbol entry
+            // Store symbol entry with unique ID
+            const symbol_id = self.next_symbol_id;
+            self.next_symbol_id += 1;
+
             try self.symbols.put(key, SymbolEntry{
-                .id = sym.id,
+                .id = symbol_id,
                 .kind = @as(SymbolKind, @enumFromInt(@intFromEnum(sym.kind))),
                 .name = try self.allocator.dupe(u8, sym.name),
                 .file_path = try self.allocator.dupe(u8, sym.file_path),
@@ -329,6 +359,18 @@ pub const CodeIndexer = struct {
                 .float32_384, .hybrid => {
                     const emb = try self.generateFloat32Embedding(search_text);
                     try self.embeddings_float32.put(key, emb);
+
+                    // ALSO insert into HNSW for O(log n) search (Cycle 70)
+                    if (self.hnsw_index) |*index| {
+                        // Convert to 256-dim float32 for HNSW
+                        const dim256 = try self.allocator.alloc(f32, 256);
+                        defer self.allocator.free(dim256);
+                        @memset(dim256, 0.0);
+                        const copy_len = @min(256, emb.vector.len);
+                        @memcpy(dim256[0..copy_len], emb.vector[0..copy_len]);
+
+                        try index.insert(dim256, symbol_id);
+                    }
                 },
             }
 
@@ -451,57 +493,100 @@ pub const CodeIndexer = struct {
         self.stats = .{};
     }
 
-    /// Search for similar code
+    /// Search for similar code (NOW WITH HNSW - O(log n) performance!)
     pub fn search(self: *CodeIndexer, query: []const u8, top_k: usize) !SearchResults {
         const start_time = std.time.nanoTimestamp();
 
         var results = std.ArrayList(SearchResult).init(self.allocator);
 
-        // Generate query embedding
-        const query_emb = switch (self.config.embedding_mode) {
-            .tvc_ternary => try self.generateTVCEmbedding(query),
-            .float32_384 => try self.generateFloat32Embedding(query),
-            .hybrid => try self.generateTVCEmbedding(query), // Use TVC for hybrid query
-        };
+        // Use HNSW if available (Cycle 70 fast path)
+        if (self.hnsw_index) |*index| {
+            // Generate query embedding as float32
+            const query_vec = try self.generateFloat32Embedding(query);
+            defer self.allocator.free(query_vec.vector);
 
-        // Compare against all embeddings (simplified - in production use HNSW)
-        var iter = self.symbols.iterator();
-        while (iter.next()) |entry| {
-            const key = entry.key_ptr.*;
+            // Resize to 256-dim if needed
+            const dim256 = try self.allocator.alloc(f32, 256);
+            defer self.allocator.free(dim256);
+            @memset(dim256, 0.0);
+            const copy_len = @min(256, query_vec.vector.len);
+            @memcpy(dim256[0..copy_len], query_vec.vector[0..copy_len]);
 
-            // Calculate similarity
-            const similarity = if (self.embeddings_tvc.get(key)) |emb|
-                self.calculateSimilarityTVC(&query_emb.vector, &emb.vector)
-            else if (self.embeddings_float32.get(key)) |emb|
-                self.calculateSimilarityFloat32(query_emb.vector, emb.vector)
-            else
-                0.0;
+            // Search HNSW
+            const hnsw_results = try index.search(dim256, top_k);
+            defer hnsw_results.deinit();
 
-            if (similarity >= self.config.min_similarity) {
-                try results.append(SearchResult{
-                    .symbol_id = entry.value_ptr.id,
-                    .symbol_name = try self.allocator.dupe(u8, entry.value_ptr.name),
-                    .qualified_name = try self.allocator.dupe(u8, entry.value_ptr.name),
-                    .file_path = try self.allocator.dupe(u8, entry.value_ptr.file_path),
-                    .line_number = entry.value_ptr.line,
-                    .snippet = "", // TODO: Extract from source
-                    .similarity = similarity,
-                    .symbol_kind = entry.value_ptr.kind,
-                    .language = entry.value_ptr.language,
-                });
+            // Convert HNSW matches to SearchResults
+            for (hnsw_results.matches) |match| {
+                // Find symbol by ID
+                var symbol_iter = self.symbols.iterator();
+                while (symbol_iter.next()) |entry| {
+                    if (entry.value_ptr.id == match.id) {
+                        try results.append(SearchResult{
+                            .symbol_id = match.id,
+                            .symbol_name = try self.allocator.dupe(u8, entry.value_ptr.name),
+                            .qualified_name = try self.allocator.dupe(u8, entry.value_ptr.name),
+                            .file_path = try self.allocator.dupe(u8, entry.value_ptr.file_path),
+                            .line_number = entry.value_ptr.line,
+                            .snippet = "", // TODO: Extract from source
+                            .similarity = match.similarity,
+                            .symbol_kind = entry.value_ptr.kind,
+                            .language = entry.value_ptr.language,
+                        });
+                        break;
+                    }
+                }
             }
+        } else {
+            // Fallback to linear scan (should not happen with HNSW initialized)
+            // Generate query embedding
+            const query_emb = switch (self.config.embedding_mode) {
+                .tvc_ternary => try self.generateTVCEmbedding(query),
+                .float32_384 => try self.generateFloat32Embedding(query),
+                .hybrid => try self.generateTVCEmbedding(query), // Use TVC for hybrid query
+            };
+
+            // Compare against all embeddings (legacy path)
+            var iter = self.symbols.iterator();
+            while (iter.next()) |entry| {
+                const key = entry.key_ptr.*;
+
+                // Calculate similarity
+                const similarity = if (self.embeddings_tvc.get(key)) |emb|
+                    self.calculateSimilarityTVC(&query_emb.vector, &emb.vector)
+                else if (self.embeddings_float32.get(key)) |emb|
+                    self.calculateSimilarityFloat32(query_emb.vector, emb.vector)
+                else
+                    0.0;
+
+                if (similarity >= self.config.min_similarity) {
+                    try results.append(SearchResult{
+                        .symbol_id = entry.value_ptr.id,
+                        .symbol_name = try self.allocator.dupe(u8, entry.value_ptr.name),
+                        .qualified_name = try self.allocator.dupe(u8, entry.value_ptr.name),
+                        .file_path = try self.allocator.dupe(u8, entry.value_ptr.file_path),
+                        .line_number = entry.value_ptr.line,
+                        .snippet = "", // TODO: Extract from source
+                        .similarity = similarity,
+                        .symbol_kind = entry.value_ptr.kind,
+                        .language = entry.value_ptr.language,
+                    });
+                }
+            }
+
+            // Sort by similarity (descending)
+            std.sort.insertion(f32, results.items, {}, struct {
+                fn compare(_: void, a: SearchResult, b: SearchResult) bool {
+                    return a.similarity > b.similarity;
+                }
+            }.compare);
+
+            // Limit to top_k
+            const count = @min(top_k, results.items.len);
+            const final_results = try self.allocator.dupe(SearchResult, results.items[0..count]);
+            results.clearAndFree();
+            results.items = final_results;
         }
-
-        // Sort by similarity (descending)
-        std.sort.insertion(f32, results.items, {}, struct {
-            fn compare(_: void, a: SearchResult, b: SearchResult) bool {
-                return a.similarity > b.similarity;
-            }
-        }.compare);
-
-        // Limit to top_k
-        const count = @min(top_k, results.items.len);
-        const final_results = try self.allocator.dupe(SearchResult, results.items[0..count]);
 
         // Update stats
         const end_time = std.time.nanoTimestamp();
@@ -513,8 +598,8 @@ pub const CodeIndexer = struct {
         ) / @as(f64, @floatFromInt(self.stats.queries_processed));
 
         return SearchResults{
-            .results = final_results,
-            .count = count,
+            .results = try self.allocator.dupe(SearchResult, results.items),
+            .count = results.items.len,
             .query_time_ms = query_time,
             .total_indexed = self.stats.symbols_indexed,
         };

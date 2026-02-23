@@ -397,15 +397,32 @@ pub const Stats = struct {
 // TYPE MAPPING
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// VIBEE Generator v2: Support raw Zig types in field definitions
 pub fn mapType(vibee_type: []const u8) []const u8 {
-    if (std.mem.eql(u8, vibee_type, "String")) return "[]const u8";
-    if (std.mem.eql(u8, vibee_type, "Int")) return "i64";
-    if (std.mem.eql(u8, vibee_type, "Float")) return "f64";
-    if (std.mem.eql(u8, vibee_type, "Bool")) return "bool";
-    if (std.mem.eql(u8, vibee_type, "Void")) return "void";
-    if (std.mem.startsWith(u8, vibee_type, "List<")) return "[]const u8";
-    if (std.mem.startsWith(u8, vibee_type, "Option<")) return "?[]const u8";
-    return vibee_type;
+    // Strip surrounding quotes if present (for raw Zig types like "[256]u8")
+    // Handle both quoted: "[256]u8" and escaped-quoted: \"[256]u8\"
+    const type_value = if (vibee_type.len >= 2)
+        if (vibee_type[0] == '"' and vibee_type[vibee_type.len - 1] == '"')
+            vibee_type[1 .. vibee_type.len - 1]
+        else if (vibee_type.len >= 4 and vibee_type[0] == '\\' and vibee_type[1] == '"' and
+                 vibee_type[vibee_type.len - 2] == '"' and vibee_type[vibee_type.len - 1] == '\\')
+            vibee_type[2 .. vibee_type.len - 2]
+        else
+            vibee_type
+    else
+        vibee_type;
+
+    // VIBEE type mappings
+    if (std.mem.eql(u8, type_value, "String")) return "[]const u8";
+    if (std.mem.eql(u8, type_value, "Int")) return "i64";
+    if (std.mem.eql(u8, type_value, "Float")) return "f64";
+    if (std.mem.eql(u8, type_value, "Bool")) return "bool";
+    if (std.mem.eql(u8, type_value, "Void")) return "void";
+    if (std.mem.startsWith(u8, type_value, "List<")) return "[]const u8";
+    if (std.mem.startsWith(u8, type_value, "Option<")) return "?[]const u8";
+
+    // Return raw Zig type as-is (e.g., [256]u8, usize, u16, etc.)
+    return type_value;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
