@@ -295,6 +295,23 @@ pub const TestGenerator = struct {
                 try self.builder.writeFmt("// Test: {s}\n", .{name});
                 try self.builder.writeLine("try std.testing.expect(true); // Placeholder");
             }
+        // Cycle 75: Phi/Trinity math test assertions
+        } else if (std.mem.eql(u8, name, "phi_power_zero")) {
+            try self.builder.writeLine("// φ^0 = 1.0");
+            try self.builder.writeLine("const result = compute_phi_power(0);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(result.value, 1.0, 1e-10);");
+            try self.builder.writeLine("try std.testing.expectEqual(result.power, 0);");
+            try self.builder.writeLine("try std.testing.expect(result.is_valid);");
+        } else if (std.mem.eql(u8, name, "phi_power_two")) {
+            try self.builder.writeLine("// φ^2 ≈ 2.618");
+            try self.builder.writeLine("const result = compute_phi_power(2);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(result.value, 2.618033988749895, 1e-6);");
+            try self.builder.writeLine("try std.testing.expectEqual(result.power, 2);");
+            try self.builder.writeLine("try std.testing.expect(result.is_valid);");
+        } else if (std.mem.eql(u8, name, "trinity_identity_holds")) {
+            try self.builder.writeLine("// φ² + 1/φ² = 3.0 within ε");
+            try self.builder.writeLine("const result = verify_trinity_identity();");
+            try self.builder.writeLine("try std.testing.expect(result);");
         // Default fallback - compile-time check
         } else {
             try self.builder.writeFmt("// Test: {s}\n", .{name});
