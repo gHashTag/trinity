@@ -1,0 +1,415 @@
+name: tvc_indexer
+version: "1.0.0"
+language: zig
+module: tvc_indexer
+
+description: |
+  TVC-Powered Codebase Indexer (Cycle 70) - Efficient semantic code search using
+  Ternary Vector Computing (1.58 bits/trit, 20x memory savings vs float32).
+
+  Features:
+    - Tree-sitter AST parsing for Zig/VIBEE files
+    - Dual embedding modes: VSA ternary (256-dim) + Float32 (384-dim)
+    - HNSW indexing for O(log n) search performance
+    - Real-time file watching for auto-reindex
+    - CLI integration: tri search, tri index, REPL /search
+    - Symbol-level chunking (functions, types, constants)
+
+types:
+  # Configuration
+  IndexConfig:
+    fields:
+      embedding_mode: EmbeddingMode
+      chunk_size: usize
+      overlap_lines: usize
+      top_k: usize
+      min_similarity: Float
+      watch_files: Bool
+      debounce_ms: u64
+      storage_path: Option<String>
+
+  EmbeddingMode:
+    variants:
+      - tvc_ternary:      # VSA-based ternary (1.58 bits/trit, 256-dim)
+      - float32_384:      # Standard 384-dim float32
+      - hybrid:           # Both for compatibility
+
+  # Language support
+  Language:
+    variants:
+      - zig
+      - vibee
+
+  # Symbol types from AST
+  SymbolKind:
+    variants:
+      - function
+      - type
+      - constant
+      - variable
+      - parameter
+      - struct_field
+      - enum_variant
+      - import
+      - module
+      - test
+
+  # AST node from Tree-sitter
+  ASTNode:
+    fields:
+      kind: SymbolKind
+      name: String
+      signature: Option<String>
+      documentation: Option<String>
+      file_path: String
+      start_line: usize
+      end_line: usize
+      start_col: usize
+      end_col: usize
+      children: List<ASTNode>
+      parent_id: Option<u64>
+
+  # Symbol extracted from file
+  Symbol:
+    fields:
+      id: u64
+      kind: SymbolKind
+      name: String
+      qualified_name: String
+      signature: Option<String>
+      doc_comment: Option<String>
+      file_path: String
+      line: usize
+      column: usize
+      language: Language
+      context: String
+      imports: List<String>
+
+  # Embeddings
+  TVCEmbedding:
+    fields:
+      symbol_id: u64
+      vector: HybridBigInt
+      dimension: usize
+      metadata: EmbeddingMetadata
+
+  Float32Embedding:
+    fields:
+      symbol_id: u64
+      values: List<Float>
+      dimension: usize
+      metadata: EmbeddingMetadata
+
+  EmbeddingMetadata:
+    fields:
+      symbol_name: String
+      file_path: String
+      line_number: usize
+      symbol_kind: SymbolKind
+      language: Language
+      created_at: u64
+
+  # Search result
+  SearchResult:
+    fields:
+      symbol_id: u64
+      symbol_name: String
+      qualified_name: String
+      file_path: String
+      line_number: usize
+      snippet: String
+      similarity: Float
+      symbol_kind: SymbolKind
+      language: Language
+
+  SearchResults:
+    fields:
+      results: List<SearchResult>
+      count: usize
+      query_time_ms: u64
+      total_indexed: usize
+
+  # Index statistics
+  IndexStats:
+    fields:
+      files_indexed: usize
+      symbols_indexed: usize
+      total_embeddings: usize
+      queries_processed: usize
+      avg_query_time_ms: Float
+      index_size_bytes: usize
+      last_update: u64
+      languages: Map<Language, usize>
+
+  # File watcher event
+  FileEventType:
+    variants:
+      - created
+      - modified
+      - deleted
+
+  FileEvent:
+    fields:
+      path: String
+      event_type: FileEventType
+      timestamp: u64
+
+  # Output format
+  OutputFormat:
+    variants:
+      - pretty:       # Colored terminal output
+      - json:         # Machine-readable JSON
+      - markdown:     # Markdown formatted
+
+  # Search query
+  SearchQuery:
+    fields:
+      text: String
+      top_k: usize
+      min_similarity: Float
+      filter_kind: Option<SymbolKind>
+      filter_language: Option<Language>
+      include_context: Bool
+
+  # Index snapshot for persistence
+  IndexSnapshot:
+    fields:
+      version: String
+      config: IndexConfig
+      stats: IndexStats
+      symbols: List<Symbol>
+      embeddings_tvc: List<TVCEmbedding>
+      embeddings_float32: List<Float32Embedding>
+      created_at: u64
+
+behaviors:
+  # Initialization
+  - name: init_indexer
+    given: IndexConfig with project root path and allocator
+    when: Creating new CodeIndexer instance
+    then: Return initialized CodeIndexer with HNSW indices, zero stats, and optional file watcher
+
+  - name: deinit_indexer
+    given: CodeIndexer instance
+    when: Shutting down indexer
+    then: Clean up all resources, stop file watcher, free memory
+
+  # Indexing operations
+  - name: index_file
+    given: File path (.zig or .vibee)
+    when: File is added or needs indexing
+    then: Parse with Tree-sitter, extract symbols, generate embeddings, insert into HNSW, update stats
+
+  - name: index_directory
+    given: Directory path with recursive flag
+    when: Bulk indexing project directory
+    then: Traverse directory, filter supported files, index all, update stats
+
+  - name: reindex_file
+    given: Previously indexed file path
+    when: File watcher detects modification
+    then: Remove old embeddings, re-parse and re-insert new embeddings, update stats
+
+  - name: remove_file
+    given: File path to remove
+    when: File is deleted
+    then: Remove all embeddings and symbols associated with file from indices, update stats
+
+  - name: clear_index
+    given: CodeIndexer instance
+    when: User wants to reset index
+    then: Remove all embeddings and symbols, reset stats to zero
+
+  # Search operations
+  - name: search
+    given: SearchQuery with text and options
+    when: User performs semantic code search
+    then: Generate query embedding, traverse HNSW graph, rank by similarity, return top-k SearchResults
+
+  - name: search_by_symbol
+    given: Symbol name or pattern and optional kind filter
+    when: Searching for specific function/type
+    then: Filter by symbol_kind, perform name matching + semantic similarity, return results
+
+  - name: search_in_file
+    given: File path and SearchQuery
+    when: Searching within specific file
+    then: Only consider embeddings from that file, return local ranked results
+
+  - name: search_similar
+    given: Symbol ID and top_k
+    when: Finding code similar to given symbol
+    then: Get embedding for symbol, search HNSW, return most similar symbols
+
+  # File watching
+  - name: start_watching
+    given: Root directory path
+    when: User wants real-time index updates
+    then: Create file watcher with callback, start monitoring, return watcher handle
+
+  - name: stop_watching
+    given: File watcher handle
+    when: Shutting down indexer
+    then: Stop monitoring, clean up watcher resources
+
+  - name: on_file_changed
+    given: FileEvent from watcher
+    when: File create/modify/delete detected
+    then: Trigger reindex_file or remove_file based on event type, debounce rapid changes
+
+  # Persistence
+  - name: save_index
+    given: Output file path
+    when: Persisting index to disk
+    then: Serialize HNSW indices, symbols, and metadata to binary format, write to file
+
+  - name: load_index
+    given: Index file path
+    when: Loading persisted index
+    then: Deserialize indices, restore CodeIndexer state, validate version compatibility
+
+  - name: export_json
+    given: Output file path
+    when: Exporting index for external tools
+    then: Write index as JSON with symbols, embeddings, and metadata
+
+  # CLI helpers
+  - name: format_results
+    given: SearchResults and OutputFormat
+    when: Displaying to user
+    then: Format results with colors, snippets, file paths, line numbers, similarity scores
+
+  - name: format_stats
+    given: IndexStats and OutputFormat
+    when: Displaying index status
+    then: Format statistics with file counts, symbol counts, memory usage, timing info
+
+  - name: print_index_progress
+    given: Current file and total files
+    when: Indexing multiple files
+    then: Display progress bar or percentage with current file name
+
+  # AST operations
+  - name: parse_ast
+    given: Source code and Language
+    when: Reading file for indexing
+    then: Return ASTNode tree from Tree-sitter parser
+
+  - name: extract_symbols
+    given: ASTNode tree and file path
+    when: Converting AST to searchable symbols
+    then: Return list of Symbol with function/type/constant info
+
+  - name: extract_context
+    given: Symbol and source code
+    when: Generating embedding text
+    then: Return formatted text with signature, doc, and first N lines of body
+
+  # Embedding generation
+  - name: generate_embedding
+    given: Symbol text and EmbeddingMode
+    when: Creating vector representation
+    then: Return embedding (TVC or Float32) with metadata
+
+  - name: generate_query_embedding
+    given: Query text and EmbeddingMode
+    when: Searching for similar code
+    then: Return query embedding for HNSW traversal
+
+  # Ranking
+  - name: rank_results
+    given: Raw search results with similarities
+    when: Ordering for user display
+    then: Apply scoring formula (60% semantic + 30% name + 10% recency), return sorted
+
+  - name: calculate_similarity
+    given: Query embedding and symbol embedding
+    when: Comparing vectors
+    then: Return cosine similarity score [-1, 1]
+
+test_cases:
+  - name: index_single_file
+    given: Simple Zig file with one function
+    when: Calling index_file()
+    then: File appears in stats, function is searchable, embedding exists in HNSW
+
+  - name: search_finds_function
+    given: Indexed file with 'calculateSum' function
+    when: Searching for 'sum calculation'
+    then: Result contains 'calculateSum' with similarity > 0.5
+
+  - name: search_filters_by_kind
+    given: Indexed functions and types
+    when: Searching with filter_kind = type
+    then: Results only contain types, no functions
+
+  - name: reindex_updates_index
+    given: Previously indexed file
+    when: File content changes, reindex_file() called
+    then: New symbols indexed, old symbols removed, stats updated correctly
+
+  - name: delete_removes_symbols
+    given: Indexed file with symbols
+    when: File deleted, remove_file() called
+    then: All symbols from file removed from index, stats updated
+
+  - name: watch_triggers_reindex
+    given: File watcher started on directory
+    when: File in directory is modified
+    then: reindex_file() automatically called within debounce window
+
+  - name: save_and_load_index
+    given: Indexer with 100 symbols
+    when: save_index() then load_index()
+    then: Restored indexer has same symbols and embeddings, stats match
+
+  - name: empty_search_returns_nothing
+    given: Empty index
+    when: search() called with query
+    then: Returns empty SearchResults with count = 0
+
+  - name: top_k_limits_results
+    given: Index with 100 matches
+    when: search() called with top_k = 10
+    then: Returns exactly 10 results (highest similarity)
+
+  - name: min_similarity_filters
+    given: Index with varying similarities
+    when: search() called with min_similarity = 0.7
+    then: Returns only results with similarity >= 0.7
+
+examples:
+  - command: "tri index ."
+    description: "Index current directory recursively"
+
+  - command: "tri index src/ --watch"
+    description: "Index src/ and start file watcher for auto-reindex"
+
+  - command: "tri search 'vector similarity'"
+    description: "Search for code semantically similar to query"
+
+  - command: "tri search 'hash map' --top-k 20 --min-sim 0.6"
+    description: "Search with custom top-k and similarity threshold"
+
+  - command: "tri search 'parser' --filter-kind function"
+    description: "Search only for functions matching query"
+
+  - command: "tri search 'Type' --filter-language zig"
+    description: "Search only in Zig files"
+
+  - command: "tri search --format json 'async'"
+    description: "Search and output results as JSON"
+
+  - command: "tri"
+    description: "Enter interactive REPL mode"
+    input: "/search 'embedding'"
+    description: "Search from REPL"
+
+  - command: "tri index --save cache.idx ."
+    description: "Index and save to disk"
+
+  - command: "tri search --load cache.idx 'query'"
+    description: "Load index from disk and search"
+
+  - command: "tri index --stats"
+    description: "Display index statistics"

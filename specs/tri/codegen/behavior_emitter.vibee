@@ -1,0 +1,236 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIOR EMITTER - VIBEE Codegen Module Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Module: behavior_emitter.zig
+# Purpose: Emit Zig function implementations from .vibee Behavior definitions
+#
+# φ² + 1/φ² = 3
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: behavior_emitter
+version: "10.1.0"
+language: zig
+module: vibeec.codegen.behavior_emitter
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEPENDENCIES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+dependencies:
+  - module: std
+    used_as: standard library
+  - module: vibeec.codegen.builder
+    used_as: CodeBuilder for output
+  - module: vibeec.codegen.patterns
+    used_as: PatternMatcher for DSL pattern expansion
+  - module: vibeec.codegen.type_emitter
+    used_as: Type resolution and signature inference
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  BehaviorEmitter:
+    description: "Handles behavior function emission"
+    fields:
+      builder: CodeBuilder
+      spec_types: []const TypeDef
+
+  SignatureInfo:
+    description: "Inferred function signature information"
+    fields:
+      params: String
+      ret: String
+      param_names: []const []const u8
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: writeBehaviorFunctions
+    given: Array of Behavior definitions from parsed spec
+    when: After types are emitted, before tests
+    then:
+      - Write section header "BEHAVIOR FUNCTIONS"
+      - Create PatternMatcher instance
+      - For each behavior:
+        - Call generateBehaviorImplementation
+      - Each behavior becomes a Zig function
+
+  - name: generateBehaviorImplementation
+    given: Single Behavior with given/when/then clauses
+    when: Emitting behavior function
+    then:
+      - Check if behavior has custom implementation:
+        - If implementation contains "pub fn" or "fn ": Write as-is
+        - If implementation is body only: Wrap in inferred signature
+      - Otherwise: Generate function from given/when/then pattern
+      - Use PatternMatcher to expand DSL patterns ($fs.*, $http.*, etc.)
+      - Apply signature inference for parameters and return type
+      - Write complete function with proper formatting
+
+  - name: inferSignatureFromSpec
+    given: Behavior's given clause, when clause, and function name
+    when: Behavior doesn't have explicit signature
+    then:
+      - Parse given clause for parameter types
+      - Parse when clause for context
+      - Parse then clause for return type
+      - Handle multi-parameter patterns (e.g., "Given List(String) x and Int y")
+      - Handle special phrases (n items, first item, etc.)
+      - Return SignatureInfo with params and return type
+
+  - name: parseMultiParamGiven
+    given: Given clause with multiple parameters
+    when: Inferring signature from behavior spec
+    then:
+      - Count parameters using extractCount
+      - Extract base type using extractBaseType
+      - Extract parameter names using extractParamNames
+      - Build parameter list with proper Zig syntax
+      - Return formatted parameter string
+
+  - name: inferReturnType
+    given: Then clause text and default return type
+    when: Determining function return type
+    then:
+      - Check for "returns" keyword
+      - Check for "Result" type
+      - Check for "List" return
+      - Check for "Bool"/"boolean" returns
+      - Return appropriate Zig type
+
+  - name: extractCount
+    given: Phrase containing "n" or number
+    when: Parsing multi-parameter given clause
+    then:
+      - Look for patterns like "n items", "2 items", "three items"
+      - Return extracted count or null
+
+  - name: extractBaseType
+    given: Given clause phrase
+    when: Determining parameter type
+    then:
+      - Look for type keywords: String, Int, Float, Bool, List, Option
+      - Return base type as string
+
+  - name: extractParamNames
+    given: Given clause and expected count
+    when: Naming multiple parameters
+    then:
+      - Generate names: item, items, result, value, input, data
+      - Return array of parameter names
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SIGNATURE INFERENCE RULES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+signature_inference:
+  given_patterns:
+    "String input": "input: []const u8"
+    "Int value": "value: i64"
+    "Float x": "x: f64"
+    "Bool flag": "flag: bool"
+    "List(String) items": "items: []const u8"
+    "Option(Int) maybe": "maybe: ?i64"
+
+  then_patterns:
+    "returns String": "[]const u8"
+    "returns Int": "i64"
+    "returns Bool": "bool"
+    "returns List(T)": "[]const mapped_T"
+    "returns Result(T, E)": "!mapped_T"
+
+  multi_param_patterns:
+    "n items": "Generate n parameters of base type"
+    "2 items": "item1: T, item2: T"
+    "three values": "v1: T, v2: T, v3: T"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PATTERN MATCHING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+pattern_expansion:
+  dsl_patterns:
+    "$fs.*": "File system operations (read, write, delete)"
+    "$http.*": "HTTP client operations (get, post, put)"
+    "$math.*": "Mathematical operations (sin, cos, exp)"
+    "$crypto.*": "Cryptographic operations (hash, encrypt)"
+    "$vsa.*": "Vector Symbolic Architecture operations"
+
+  expansion_process:
+    1. Detect DSL pattern marker in behavior implementation
+    2. Look up pattern in pattern registry
+    3. Expand pattern to full Zig code
+    4. Insert expanded code into function body
+    5. Apply type substitutions
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  SimpleBehavior:
+    description: "Test behavior emission"
+    fields:
+      input: String
+      enabled: Bool
+
+behaviors:
+  - name: simple_behavior
+    given: String input
+    when: Processing request
+    then: Return processed String
+
+  - name: custom_implementation
+    given: No parameters
+    when: Called
+    implementation: |
+      pub fn custom_implementation() void {
+          // Custom implementation written as-is
+      }
+    then: Does custom work
+
+  - name: multi_param_behavior
+    given: 3 String inputs
+    when: Combining data
+    then: Return combined String
+
+  - name: signature_inference_test
+    given: VIBEE spec with complex given/when/then
+    when: Behavior implementation is generated
+    then:
+      - Signature correctly inferred from given clause
+      - Return type correctly inferred from then clause
+      - Multiple parameters handled correctly
+      - Custom implementations preserved as-is
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPLEMENTATION NOTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+implementation:
+  cycle: "73"
+  status: "specification"
+  extracted_from: "src/vibeec/codegen/emitter.zig"
+  lines: 1405-2695 (behavior emission and signature inference)
+  complexity: "high"
+
+  notes: |
+    This module handles:
+
+    1. Behavior function emission
+    2. Signature inference from given/when/then clauses
+    3. Custom implementation preservation
+    4. DSL pattern expansion
+    5. Multi-parameter parsing
+
+    Key complexity:
+    - Signature inference is heuristic-based
+    - Custom implementations must be preserved exactly
+    - Pattern matching requires PatternMatcher coordination
+    - Return type detection needs context awareness
