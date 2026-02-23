@@ -13,6 +13,8 @@ name: phi_utils
 version: "1.0.0"
 language: [zig, python, typescript]
 module: tri.phi_utils
+zig_mode: idiomatic
+allocator_strategy: param
 
 types:
   PhiResult:
@@ -66,11 +68,11 @@ test_cases:
 implementation:
   cycle: "73"
   status: "multi_target_e2e"
-  approach: "First multi-language generation from single .vibee spec"
+  approach: "Multi-language generation + Zig idioms from single .tri spec"
   notes: |
-    Cycle 73: Multi-Target E2E Proof
-    One spec → Zig + Python + TypeScript
-    Validates: parser language array, deriveOutputPath, generateMultiLang
+    Cycle 74: Zig Idioms Enhancement + Multi-Target
+    One spec → Zig (idiomatic) + Python + TypeScript
+    Validates: zig_mode, allocator_strategy, ZigIdioms transforms
     φ² + 1/φ² = 3
 
 # ═══════════════════════════════════════════════════════════════════════════════

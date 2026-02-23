@@ -14,12 +14,14 @@ const utils = @import("utils.zig");
 const CodeBuilder = builder_mod.CodeBuilder;
 const Behavior = types.Behavior;
 const TestCase = types.TestCase;
+const ZigMode = types.ZigMode;
 const Allocator = std.mem.Allocator;
 
 pub const TestGenerator = struct {
     builder: *CodeBuilder,
     allocator: Allocator,
     spec_name: []const u8 = "",
+    zig_mode: ZigMode = .standard,
 
     const Self = @This();
 
@@ -28,14 +30,16 @@ pub const TestGenerator = struct {
             .builder = builder,
             .allocator = allocator,
             .spec_name = "",
+            .zig_mode = .standard,
         };
     }
 
-    pub fn withSpec(builder: *CodeBuilder, allocator: Allocator, spec_name: []const u8) Self {
+    pub fn withSpec(builder: *CodeBuilder, allocator: Allocator, spec_name: []const u8, zig_mode: ZigMode) Self {
         return Self{
             .builder = builder,
             .allocator = allocator,
             .spec_name = spec_name,
+            .zig_mode = zig_mode,
         };
     }
 
