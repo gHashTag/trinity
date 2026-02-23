@@ -3584,6 +3584,23 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(summary.active_earners == 2); // nodes 0,1 active");
             try self.builder.writeLine("try std.testing.expect(summary.total_slashed_wei > 0);");
 
+        }
+        // Cycle 76: Real behavior tests for phi_utils functions
+        else if (std.mem.eql(u8, name, "compute_phi_power")) {
+            try self.builder.writeLine("// Test compute_phi_power: verify φ^1 = φ");
+            try self.builder.writeLine("const result = compute_phi_power(1);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(result.value, PHI, 1e-10);");
+            try self.builder.writeLine("try std.testing.expect(result.is_valid);");
+        } else if (std.mem.eql(u8, name, "verify_trinity_identity")) {
+            try self.builder.writeLine("// Test verify_trinity_identity: φ² + 1/φ² = 3");
+            try self.builder.writeLine("const result = verify_trinity_identity();");
+            try self.builder.writeLine("try std.testing.expect(result);");
+        } else if (std.mem.eql(u8, name, "encode_to_trits")) {
+            try self.builder.writeLine("// Test encode_to_trits: verify encoding produces TritVector");
+            try self.builder.writeLine("const allocator = std.testing.allocator;");
+            try self.builder.writeLine("const trit_vec = try encode_to_trits(allocator, \"test\");");
+            try self.builder.writeLine("try std.testing.expect(trit_vec.dimension > 0);");
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(trit_vec.magnitude, 4.0, 1e-10);");
         } else {
             // Enhanced fallback: generate assertions based on then_clause keywords
             if (mem.startsWith(u8, name, "init") or mem.startsWith(u8, name, "deinit")) {

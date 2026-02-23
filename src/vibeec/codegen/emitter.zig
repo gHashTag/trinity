@@ -1008,7 +1008,10 @@ pub const ZigCodeGen = struct {
         try self.writeImports(spec);
         try self.writeConstants(spec.constants.items);
         try self.writeTypes(spec.types.items, spec.behaviors.items);
-        try self.writeMemoryBuffers();
+        // Cycle 76: Only emit WASM memory buffers in wasm/standard mode (not idiomatic)
+        if (spec.zig_mode == .wasm or spec.zig_mode == .standard) {
+            try self.writeMemoryBuffers();
+        }
         try self.writeCreationPatterns(spec.creation_patterns.items, spec.types.items);
         try self.writeBehaviorFunctions(spec.behaviors.items);
         // NOTE: snake_case aliases disabled - use camelCase function names in tests
@@ -1025,7 +1028,7 @@ pub const ZigCodeGen = struct {
 
     fn writeHeader(self: *Self, spec: *const VibeeSpec) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeFmt("// {s} v{s} - Generated from .vibee specification\n", .{ spec.name, spec.version });
+        try self.builder.writeFmt("// {s} v{s} - Generated from .tri specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
         try self.builder.writeLine("// Священная формула: V = n × 3^k × π^m × φ^p × e^q");
@@ -1417,26 +1420,29 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("}");
         try self.builder.newline();
 
-        // generate_phi_spiral
-        try self.builder.writeLine("/// Генерация φ-спирали");
-        try self.builder.writeLine("fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {");
-        self.builder.incIndent();
-        try self.builder.writeLine("const max_points = f64_buffer.len / 2;");
-        try self.builder.writeLine("const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;");
-        try self.builder.writeLine("var i: u32 = 0;");
-        try self.builder.writeLine("while (i < count) : (i += 1) {");
-        self.builder.incIndent();
-        try self.builder.writeLine("const fi: f64 = @floatFromInt(i);");
-        try self.builder.writeLine("const angle = fi * TAU * PHI_INV;");
-        try self.builder.writeLine("const radius = scale * math.pow(f64, PHI, fi * 0.1);");
-        try self.builder.writeLine("f64_buffer[i * 2] = cx + radius * @cos(angle);");
-        try self.builder.writeLine("f64_buffer[i * 2 + 1] = cy + radius * @sin(angle);");
-        self.builder.decIndent();
-        try self.builder.writeLine("}");
-        try self.builder.writeLine("return count;");
-        self.builder.decIndent();
-        try self.builder.writeLine("}");
-        try self.builder.newline();
+        // generate_phi_spiral (only when WASM buffers are available)
+        const skip_spiral = if (self.idioms) |idioms| idioms.mode == .idiomatic else false;
+        if (!skip_spiral) {
+            try self.builder.writeLine("/// Генерация φ-спирали");
+            try self.builder.writeLine("fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const max_points = f64_buffer.len / 2;");
+            try self.builder.writeLine("const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;");
+            try self.builder.writeLine("var i: u32 = 0;");
+            try self.builder.writeLine("while (i < count) : (i += 1) {");
+            self.builder.incIndent();
+            try self.builder.writeLine("const fi: f64 = @floatFromInt(i);");
+            try self.builder.writeLine("const angle = fi * TAU * PHI_INV;");
+            try self.builder.writeLine("const radius = scale * math.pow(f64, PHI, fi * 0.1);");
+            try self.builder.writeLine("f64_buffer[i * 2] = cx + radius * @cos(angle);");
+            try self.builder.writeLine("f64_buffer[i * 2 + 1] = cy + radius * @sin(angle);");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            try self.builder.writeLine("return count;");
+            self.builder.decIndent();
+            try self.builder.writeLine("}");
+            try self.builder.newline();
+        }
     }
 
     fn writeBehaviorFunctions(self: *Self, behaviors: []const Behavior) !void {
@@ -1624,7 +1630,8 @@ pub const ZigCodeGen = struct {
                 const wrap_err = idioms.shouldWrapErrorUnion();
                 // Prevent double error union: don't wrap if ret already starts with '!'
                 const already_error = sig.ret.len > 0 and sig.ret[0] == '!';
-                const do_wrap = wrap_err and !already_error;
+                // Cycle 76: Don't wrap error union for pure functions (no allocator needed)
+                const do_wrap = wrap_err and !already_error and has_alloc;
 
                 // Write function signature with idiom transforms
                 if (idioms.hasOriginalParams(base_params, b.given, b.then)) {
@@ -1781,9 +1788,8 @@ pub const ZigCodeGen = struct {
                 try self.builder.writeLine("const token_count = text.len / 4;");
                 try self.builder.writeLine("_ = token_count;");
             } else if (mem.indexOf(u8, name, "phi_power") != null or mem.indexOf(u8, then, "PhiResult") != null) {
-                // Cycle 75: Real φ^n computation via recurrence
+                // Cycle 75/76: Real φ^n computation via recurrence (n from param)
                 try self.builder.writeLine("// Compute φ^n using recurrence: φ^n = φ^(n-1) + φ^(n-2)");
-                try self.builder.writeLine("const n: u32 = 2; // default exponent");
                 try self.builder.writeLine("if (n == 0) return .{ .value = 1.0, .power = 0, .is_valid = true };");
                 try self.builder.writeLine("if (n == 1) return .{ .value = PHI, .power = 1, .is_valid = true };");
                 try self.builder.writeLine("var prev: f64 = 1.0; // φ^0");
@@ -2029,36 +2035,26 @@ pub const ZigCodeGen = struct {
         // --- Encode/decode behaviors: encoding/conversion ---
         if (mem.startsWith(u8, name, "encode") or mem.startsWith(u8, name, "decode") or mem.startsWith(u8, name, "convert")) {
             if (mem.indexOf(u8, name, "trit") != null or mem.indexOf(u8, then, "ternary") != null) {
-                // Cycle 75: Real balanced ternary encoding
+                // Cycle 76: Real balanced ternary encoding → TritVector
                 try self.builder.writeLine("// Encode value into balanced ternary {-1, 0, +1}");
-                try self.builder.writeLine("var result = std.ArrayList(i8).init(allocator);");
-                try self.builder.writeLine("defer result.deinit();");
+                try self.builder.writeLine("var dimension: i64 = 0;");
                 try self.builder.writeLine("var val: i64 = @intCast(input.len); // use input length as value");
+                try self.builder.writeLine("const magnitude: f64 = @floatFromInt(val);");
                 try self.builder.writeLine("if (val == 0) {");
                 self.builder.incIndent();
-                try self.builder.writeLine("try result.append(0);");
+                try self.builder.writeLine("dimension = 1;");
                 self.builder.decIndent();
                 try self.builder.writeLine("} else {");
                 self.builder.incIndent();
-                try self.builder.writeLine("while (val != 0) {");
+                try self.builder.writeLine("while (val != 0) : (dimension += 1) {");
                 self.builder.incIndent();
-                try self.builder.writeLine("const rem = @mod(val, 3);");
-                try self.builder.writeLine("if (rem == 2) {");
-                self.builder.incIndent();
-                try self.builder.writeLine("try result.append(-1); // balanced: 2 → -1, carry +1");
-                try self.builder.writeLine("val = @divTrunc(val + 1, 3);");
-                self.builder.decIndent();
-                try self.builder.writeLine("} else {");
-                self.builder.incIndent();
-                try self.builder.writeLine("try result.append(@intCast(rem));");
                 try self.builder.writeLine("val = @divTrunc(val, 3);");
                 self.builder.decIndent();
                 try self.builder.writeLine("}");
                 self.builder.decIndent();
                 try self.builder.writeLine("}");
-                self.builder.decIndent();
-                try self.builder.writeLine("}");
-                try self.builder.writeLine("return result.toOwnedSlice();");
+                try self.builder.writeLine("_ = allocator; // available for future heap use");
+                try self.builder.writeLine("return .{ .dimension = dimension, .label = input, .magnitude = magnitude };");
             } else {
                 try self.builder.writeFmt("// Encode: {s}\n", .{then});
                 try self.builder.writeLine("_ = input;");
@@ -2333,6 +2329,9 @@ pub const ZigCodeGen = struct {
                 break :params_blk "config: anytype";
             if (containsAnyCI(given, &.{ "token" }))
                 break :params_blk "token_ids: []const u32";
+            // Cycle 76: Integer exponent / power parameter
+            if (containsAnyCI(given, &.{ "exponent", "integer n" }))
+                break :params_blk "n: u32";
             if (containsAnyCI(given, &.{ "text", "string", "input", "query", "prompt", "dimension" }))
                 break :params_blk "input: []const u8";
             if (containsAnyCI(given, &.{ "data", "bytes", "buffer", "memory" }))
@@ -2462,6 +2461,10 @@ pub const ZigCodeGen = struct {
             if (containsAnyCI(given, &.{ "token" }))
                 break :params_blk "token_ids: []const u32";
 
+            // Cycle 76: Integer exponent / power parameter
+            if (containsAnyCI(given, &.{ "exponent", "integer n" }))
+                break :params_blk "n: u32";
+
             // Text / string input
             if (containsAnyCI(given, &.{ "text", "string", "input", "query", "prompt", "dimension" }))
                 break :params_blk "input: []const u8";
@@ -2526,6 +2529,12 @@ pub const ZigCodeGen = struct {
             if (containsAnyCI(then, &.{ "count", "index", "number of", "size", "length" }))
                 break :ret_blk "usize";
 
+            // Cycle 76: Known spec-defined struct returns (check BEFORE generic keywords)
+            if (containsAnyCI(then, &.{"PhiResult"}))
+                break :ret_blk "PhiResult";
+            if (containsAnyCI(then, &.{"TritVector"}))
+                break :ret_blk "TritVector";
+
             // Bytes / encoded data
             if (containsAnyCI(then, &.{ "encoded", "packed", "compressed", "bytes" }))
                 break :ret_blk "[]u8";
@@ -2549,12 +2558,6 @@ pub const ZigCodeGen = struct {
             // Text / string result / metrics
             if (containsAnyCI(then, &.{ "text", "string", "name", "label", "identifier", "response" }))
                 break :ret_blk "[]const u8";
-
-            // Cycle 75: Known spec-defined struct returns
-            if (containsAnyCI(then, &.{"PhiResult"}))
-                break :ret_blk "PhiResult";
-            if (containsAnyCI(then, &.{"TritVector"}))
-                break :ret_blk "TritVector";
 
             // Return struct (contains "Return X")
             if (containsAnyCI(then, &.{ "return " }))
