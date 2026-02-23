@@ -840,6 +840,60 @@ pub fn runDoctorCommand(allocator: std.mem.Allocator) void {
     std.debug.print("  {s}✓ specs/ directory found{s}\n", .{ GREEN, RESET });
     pass_count += 1;
 
+    // 8. Run core tests (zig test src/vsa.zig)
+    std.debug.print("\n  Running core tests (src/vsa.zig)...\n", .{});
+    const test_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "test", "src/vsa.zig" },
+        .max_output_bytes = 1024 * 1024,
+    }) catch {
+        std.debug.print("  {s}✗ Could not run zig test{s}\n", .{ RED, RESET });
+        fail_count += 1;
+        printDoctorSummary(pass_count, fail_count);
+        return;
+    };
+    defer allocator.free(test_result.stdout);
+    defer allocator.free(test_result.stderr);
+
+    if (test_result.term.Exited == 0) {
+        std.debug.print("  {s}✓ Core tests passed (vsa.zig){s}\n", .{ GREEN, RESET });
+        pass_count += 1;
+    } else {
+        std.debug.print("  {s}✗ Core tests FAILED{s}\n", .{ RED, RESET });
+        if (test_result.stderr.len > 0) {
+            const preview = test_result.stderr[0..@min(test_result.stderr.len, 200)];
+            std.debug.print("    {s}{s}{s}\n", .{ GRAY, preview, RESET });
+        }
+        fail_count += 1;
+    }
+
+    // 9. Run VM tests (zig test src/vm.zig)
+    std.debug.print("  Running VM tests (src/vm.zig)...\n", .{});
+    const vm_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig", "test", "src/vm.zig" },
+        .max_output_bytes = 1024 * 1024,
+    }) catch {
+        std.debug.print("  {s}✗ Could not run VM tests{s}\n", .{ RED, RESET });
+        fail_count += 1;
+        printDoctorSummary(pass_count, fail_count);
+        return;
+    };
+    defer allocator.free(vm_result.stdout);
+    defer allocator.free(vm_result.stderr);
+
+    if (vm_result.term.Exited == 0) {
+        std.debug.print("  {s}✓ VM tests passed (vm.zig){s}\n", .{ GREEN, RESET });
+        pass_count += 1;
+    } else {
+        std.debug.print("  {s}✗ VM tests FAILED{s}\n", .{ RED, RESET });
+        if (vm_result.stderr.len > 0) {
+            const preview = vm_result.stderr[0..@min(vm_result.stderr.len, 200)];
+            std.debug.print("    {s}{s}{s}\n", .{ GRAY, preview, RESET });
+        }
+        fail_count += 1;
+    }
+
     printDoctorSummary(pass_count, fail_count);
 }
 
@@ -988,12 +1042,59 @@ pub fn runStatsCommand(allocator: std.mem.Allocator) void {
 }
 
 pub fn runIglaCommand(allocator: std.mem.Allocator) void {
-    _ = allocator;
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}              IGLA CMD{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}              IGLA — TRINITY ROADMAP{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("\n{s}Note: IGLA requires vibee binary:{s}\n", .{ GRAY, RESET });
-    std.debug.print("  zig build vibee -- igla\n", .{});
+
+    // Check which components exist to determine phase status
+    const phases = [_]struct { name: []const u8, check: []const u8, desc: []const u8 }{
+        .{ .name = "VSA Core", .check = "src/vsa.zig", .desc = "bind/unbind/bundle/similarity" },
+        .{ .name = "VM Engine", .check = "src/vm.zig", .desc = "Ternary Virtual Machine" },
+        .{ .name = "Hybrid BigInt", .check = "src/hybrid.zig", .desc = "Packed 1.58 bits/trit" },
+        .{ .name = "SDK", .check = "src/sdk.zig", .desc = "Hypervector + Codebook API" },
+        .{ .name = "Firebird LLM", .check = "src/firebird/cli.zig", .desc = "Ternary LLM inference" },
+        .{ .name = "VIBEE Compiler", .check = "trinity-nexus/lang/src/root.zig", .desc = "Spec → Code generation" },
+        .{ .name = "Self-Improver", .check = "src/vibeec/self_improver.zig", .desc = "V7 self-improving codegen" },
+        .{ .name = "TRI CLI", .check = "src/tri/main.zig", .desc = "Unified CLI (163+ commands)" },
+        .{ .name = "SWE Agent", .check = "src/trinity_swe/trinity_swe.zig", .desc = "Fix/explain/test/doc/refactor" },
+        .{ .name = "Chat Server", .check = "src/tri/chat_server.zig", .desc = "Hybrid chat (v2.3)" },
+        .{ .name = "DePIN Node", .check = "src/firebird/depin.zig", .desc = "Decentralized compute" },
+        .{ .name = "Phi Engine", .check = "src/phi-engine/phi_engine.zig", .desc = "Quantum-inspired compute" },
+    };
+
+    var active: u32 = 0;
+    var total: u32 = 0;
+
+    std.debug.print("\n", .{});
+    for (phases) |phase| {
+        total += 1;
+        std.fs.cwd().access(phase.check, .{}) catch {
+            std.debug.print("  {s}○ {s}{s}  {s}{s}{s}\n", .{ GRAY, phase.name, RESET, GRAY, phase.desc, RESET });
+            continue;
+        };
+        active += 1;
+        std.debug.print("  {s}● {s}{s}  {s}\n", .{ GREEN, phase.name, RESET, phase.desc });
+    }
+
+    std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Active: {s}{d}/{d}{s} phases\n", .{ GREEN, active, total, RESET });
+
+    // Show LOC for active components
+    std.debug.print("\n{s}  Quick metrics:{s}\n", .{ CYAN, RESET });
+    const loc_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find src -name '*.zig' -exec cat {} + | wc -l" },
+        .max_output_bytes = 1024,
+    }) catch {
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(loc_result.stdout);
+    defer allocator.free(loc_result.stderr);
+    std.debug.print("    Total LOC: {s}\n", .{std.mem.trim(u8, loc_result.stdout, " \t\n\r")});
+    std.debug.print("    Encoding:  Ternary (1.58 bits/trit)\n", .{});
+    std.debug.print("    Identity:  phi^2 + 1/phi^2 = 3\n", .{});
+
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
 }
 
@@ -1020,32 +1121,245 @@ pub fn runTestAllCommand(allocator: std.mem.Allocator) void {
 }
 
 pub fn runAnalyzeCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
-    _ = allocator;
-    _ = args;
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}              TRI ANALYZE{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("\n{s}Note: Analysis requires trinity-analyze binary:{s}\n", .{ GRAY, RESET });
-    std.debug.print("  ./zig-out/bin/trinity-analyze\n", .{});
+
+    const target = if (args.len > 0) args[0] else "src/";
+
+    std.debug.print("\n  Target: {s}\n\n", .{target});
+
+    // 1. Find TODO/FIXME/HACK comments
+    std.debug.print("{s}  Scanning for TODO/FIXME/HACK...{s}\n", .{ CYAN, RESET });
+    const todo_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "grep -rn 'TODO\\|FIXME\\|HACK\\|XXX' --include='*.zig' " ++ "src/ 2>/dev/null | wc -l" },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("    {s}✗ grep failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(todo_result.stdout);
+    defer allocator.free(todo_result.stderr);
+    std.debug.print("    Found: {s} markers\n", .{std.mem.trim(u8, todo_result.stdout, " \t\n\r")});
+
+    // 2. Find unreachable/undefined
+    std.debug.print("\n{s}  Scanning for unreachable/undefined...{s}\n", .{ CYAN, RESET });
+    const unreach_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "grep -rn '@panic\\|unreachable' --include='*.zig' " ++ "src/ 2>/dev/null | wc -l" },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("    {s}✗ grep failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(unreach_result.stdout);
+    defer allocator.free(unreach_result.stderr);
+    std.debug.print("    Found: {s} instances\n", .{std.mem.trim(u8, unreach_result.stdout, " \t\n\r")});
+
+    // 3. Find large files (>500 lines)
+    std.debug.print("\n{s}  Large files (>500 lines):{s}\n", .{ CYAN, RESET });
+    const large_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "find src -name '*.zig' -exec sh -c 'lines=$(wc -l < \"$1\"); if [ \"$lines\" -gt 500 ]; then echo \"    $lines  $1\"; fi' _ {} \\; 2>/dev/null | sort -rn | head -10" },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("    {s}✗ scan failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(large_result.stdout);
+    defer allocator.free(large_result.stderr);
+    if (large_result.stdout.len > 0) {
+        std.debug.print("{s}", .{large_result.stdout});
+    } else {
+        std.debug.print("    (none)\n", .{});
+    }
+
+    // 4. Count pub vs private functions
+    std.debug.print("\n{s}  Function visibility:{s}\n", .{ CYAN, RESET });
+    const pub_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "grep -rn 'pub fn ' --include='*.zig' src/ 2>/dev/null | wc -l" },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("    {s}✗ grep failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(pub_result.stdout);
+    defer allocator.free(pub_result.stderr);
+
+    const priv_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "grep -rn '^fn \\|^ *fn ' --include='*.zig' src/ 2>/dev/null | wc -l" },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("    {s}✗ grep failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(priv_result.stdout);
+    defer allocator.free(priv_result.stderr);
+
+    std.debug.print("    pub fn:     {s}\n", .{std.mem.trim(u8, pub_result.stdout, " \t\n\r")});
+    std.debug.print("    private fn: {s}\n", .{std.mem.trim(u8, priv_result.stdout, " \t\n\r")});
+
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
 }
 
 pub fn runSearchCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
-    _ = allocator;
-    _ = args;
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}              TRI SEARCH{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("\n{s}Usage: tri search <pattern> [path]{s}\n", .{ CYAN, RESET });
+
+    if (args.len < 1) {
+        std.debug.print("\n{s}Usage: tri search <pattern> [path]{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri search \"cosineSimilarity\"           Search in src/\n", .{});
+        std.debug.print("  tri search \"bind\" src/vsa.zig           Search in specific file\n", .{});
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const pattern = args[0];
+    const search_path = if (args.len > 1) args[1] else "src/";
+
+    std.debug.print("\n  Pattern: {s}{s}{s}\n", .{ CYAN, pattern, RESET });
+    std.debug.print("  Path:    {s}\n\n", .{search_path});
+
+    // Build grep command
+    var cmd_buf: [512]u8 = undefined;
+    const cmd = std.fmt.bufPrint(&cmd_buf, "grep -rn --include='*.zig' --color=always '{s}' {s} 2>/dev/null | head -30", .{ pattern, search_path }) catch {
+        std.debug.print("  {s}✗ Pattern too long{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", cmd },
+        .max_output_bytes = 256 * 1024,
+    }) catch {
+        std.debug.print("  {s}✗ Search failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len > 0) {
+        std.debug.print("{s}", .{result.stdout});
+
+        // Count total matches
+        var count_buf: [512]u8 = undefined;
+        const count_cmd = std.fmt.bufPrint(&count_buf, "grep -rn --include='*.zig' '{s}' {s} 2>/dev/null | wc -l", .{ pattern, search_path }) catch {
+            std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+            return;
+        };
+        const count_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &[_][]const u8{ "sh", "-c", count_cmd },
+            .max_output_bytes = 1024,
+        }) catch {
+            std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+            return;
+        };
+        defer allocator.free(count_result.stdout);
+        defer allocator.free(count_result.stderr);
+        std.debug.print("\n  {s}Total matches: {s}{s}\n", .{ GRAY, std.mem.trim(u8, count_result.stdout, " \t\n\r"), RESET });
+    } else {
+        std.debug.print("  {s}No matches found.{s}\n", .{ GRAY, RESET });
+    }
+
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
 }
 
 pub fn runDepsCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
-    _ = allocator;
-    _ = args;
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}              TRI DEPS{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("\n{s}Usage: tri deps <file.zig>{s}\n", .{ CYAN, RESET });
+
+    if (args.len < 1) {
+        std.debug.print("\n{s}Usage: tri deps <file.zig>{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri deps src/tri/main.zig        Show imports for file\n", .{});
+        std.debug.print("  tri deps src/vsa.zig             Show imports for vsa\n", .{});
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const file_path = args[0];
+    std.debug.print("\n  File: {s}{s}{s}\n\n", .{ CYAN, file_path, RESET });
+
+    // Extract @import statements
+    var cmd_buf: [512]u8 = undefined;
+    const cmd = std.fmt.bufPrint(&cmd_buf, "grep -n '@import' '{s}' 2>/dev/null", .{file_path}) catch {
+        std.debug.print("  {s}✗ Path too long{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", cmd },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("  {s}✗ Could not read file{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len > 0) {
+        std.debug.print("{s}  Imports:{s}\n", .{ GREEN, RESET });
+        std.debug.print("{s}", .{result.stdout});
+
+        // Count
+        var import_count: u32 = 0;
+        var it = std.mem.splitScalar(u8, result.stdout, '\n');
+        while (it.next()) |line| {
+            if (line.len > 0) import_count += 1;
+        }
+        std.debug.print("\n  {s}Total imports: {d}{s}\n", .{ GRAY, import_count, RESET });
+    } else {
+        std.debug.print("  {s}No @import statements found.{s}\n", .{ GRAY, RESET });
+    }
+
+    // Also show who imports this file (reverse deps)
+    // Extract just the filename
+    const basename = blk: {
+        var i = file_path.len;
+        while (i > 0) {
+            i -= 1;
+            if (file_path[i] == '/') break :blk file_path[i + 1 ..];
+        }
+        break :blk file_path;
+    };
+
+    std.debug.print("\n{s}  Reverse deps (who imports {s}):{s}\n", .{ GREEN, basename, RESET });
+    var rev_buf: [512]u8 = undefined;
+    const rev_cmd = std.fmt.bufPrint(&rev_buf, "grep -rln '@import(\"{s}\")' --include='*.zig' src/ 2>/dev/null", .{basename}) catch {
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+
+    const rev_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", rev_cmd },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("  {s}✗ reverse scan failed{s}\n", .{ RED, RESET });
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(rev_result.stdout);
+    defer allocator.free(rev_result.stderr);
+
+    if (rev_result.stdout.len > 0) {
+        std.debug.print("{s}", .{rev_result.stdout});
+    } else {
+        std.debug.print("    (none — not imported by other files)\n", .{});
+    }
+
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
 }
