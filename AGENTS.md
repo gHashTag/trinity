@@ -255,6 +255,47 @@ vibee-lang/
 
 ## 🔧 Commands Reference
 
+### TRI CLI (Unified Command Line Interface)
+
+**TRI** is the primary orchestrator for all development workflows (v8.27 STRICT MODE).
+
+```bash
+# Build
+zig build tri                    # Build TRI binary
+./zig-out/bin/tri help           # Show all commands
+
+# Core Workflow (Golden Chain Links 1-17)
+./zig-out/bin/tri decompose <task>      # Link 4: Break task into sub-tasks
+./zig-out/bin/tri plan <task>           # Link 5: Generate implementation plan
+./zig-out/bin/tri spec_create <name>    # Link 6: Create .vibee spec template
+./zig-out/bin/tri gen <spec.vibee>      # Compile VIBEE spec to code
+./zig-out/bin/tri verify                # Links 7-11: Tests + benchmarks
+./zig-out/bin/tri verdict               # Link 14: Generate toxic verdict
+./zig-out/bin/tri loop-decide           # Link 17: Continue or exit decision
+
+# SWE Agent Commands
+./zig-out/bin/tri fix <file>            # Detect and fix bugs
+./zig-out/bin/tri explain <file|prompt> # Explain code or concept
+./zig-out/bin/tri test <file>           # Generate tests
+./zig-out/bin/tri doc <file>            # Generate documentation
+
+# Git Integration
+./zig-out/bin/tri status                # Git status --short
+./zig-out/bin/tri diff                  # Git diff
+./zig-out/bin/tri commit <message>      # Git add -A && commit
+
+# Demo & Benchmark Commands
+./zig-out/bin/tri <cycle>-demo          # Run demo (e.g., voice-demo, mmo-demo)
+./zig-out/bin/tri <cycle>-bench         # Run benchmark
+
+# Sacred Mathematics
+./zig-out/bin/tri phi <n>               # Compute φⁿ
+./zig-out/bin/tri fib <n>               # Fibonacci with BigInt
+./zig-out/bin/tri lucas <n>             # Lucas L(n) — L(2)=3=TRINITY
+```
+
+### VIBEE Compiler
+
 ```bash
 # PRIMARY WORKFLOW
 ./bin/vibee gen specs/tri/feature.vibee              # Generate single
