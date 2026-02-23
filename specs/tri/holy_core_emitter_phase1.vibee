@@ -42,6 +42,7 @@ types:
 
 behaviors:
   - name: shardNetworkInit
+    owner: ShardNetwork
     given: Root directory path and port number
     when: Creating a new ShardNetwork node
     then:
@@ -73,6 +74,7 @@ behaviors:
       }
 
   - name: rootPath
+    owner: ShardNetwork
     given: ShardNetwork instance
     when: Need to access root directory path
     then:
@@ -102,6 +104,7 @@ behaviors:
       }
 
   - name: shardNetworkListen
+    owner: ShardNetwork
     given: ShardNetwork instance
     when: Starting TCP server
     then:
@@ -116,6 +119,7 @@ behaviors:
       }
 
   - name: shardNetworkReceiveOne
+    owner: ShardNetwork
     given: Server instance and ShardNetwork context
     when: Receiving shard from peer
     then:
@@ -147,6 +151,7 @@ behaviors:
       }
 
   - name: shardNetworkSendShard
+    owner: ShardNetwork
     given: Peer port, hex hash, and data payload
     when: Sending shard to peer
     then:
@@ -169,6 +174,7 @@ behaviors:
       }
 
   - name: shardNetworkCleanup
+    owner: ShardNetwork
     given: ShardNetwork instance
     when: Removing all stored data (for testing)
     then:
@@ -183,6 +189,7 @@ behaviors:
   # ReedSolomon GF(2^8) Field Operations
 
   - name: reedSolomonInit
+    owner: ReedSolomon
     given: Number of data shards (k) and parity shards (m)
     when: Creating ReedSolomon instance
     then:
@@ -257,6 +264,7 @@ behaviors:
       }
 
   - name: rsEncodeByte
+    owner: ReedSolomon
     given: Input buffer of k bytes and output buffer of n bytes
     when: Encoding one byte position across all shards using Vandermonde matrix
     then:
@@ -279,6 +287,7 @@ behaviors:
       }
 
   - name: rsDecodeByte
+    owner: ReedSolomon
     given: Available shard data, their indices, and output buffer
     when: Decoding one byte position using Gaussian elimination
     then:
