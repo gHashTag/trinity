@@ -461,8 +461,9 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
 /// PAS Validation — validate generated code through sacred mathematics
 /// Returns PAS score and logs validation result
 fn validateWithPAS(allocator: std.mem.Allocator, code: []const u8, output_path: []const u8) !void {
-    _ = allocator;
     _ = output_path;
+    // Cycle 77: Run idiom compliance check on Zig output
+    try runIdiomCheck(allocator, code);
 
     // Calculate basic PAS score using sacred constants
     const line_count = std.mem.count(u8, code, "\n");
@@ -815,6 +816,42 @@ fn generateSyntheticSeeds(
 }
 
 /// V10.5: Curate synthetic seeds through multi-stage validation
+/// Cycle 77: Run idiom compliance check on generated Zig code
+fn runIdiomCheck(allocator: std.mem.Allocator, code: []const u8) !void {
+    const idiom_mod = zig_codegen.codegen.idiom_analyzer;
+    var analyzer = idiom_mod.IdiomAnalyzer{ .allocator = allocator, .source = code };
+    var report = try analyzer.analyze();
+    defer report.deinit();
+
+    const violation_count = report.violations.items.len;
+    const compliance = report.compliancePercent();
+
+    // Print compliance summary
+    std.debug.print("  │ Idiom Compliance: {d:.1}%", .{compliance});
+    if (report.total_functions > 0) {
+        std.debug.print(" ({d}/{d} fn)", .{ report.compliant_functions, report.total_functions });
+    }
+    std.debug.print("       │\n", .{});
+
+    // Print violations if any
+    if (violation_count > 0) {
+        std.debug.print("  │ Violations: {d}", .{violation_count});
+        // Count by severity
+        var critical: usize = 0;
+        var high: usize = 0;
+        for (report.violations.items) |v| {
+            switch (v.severity) {
+                .critical => critical += 1,
+                .high => high += 1,
+                else => {},
+            }
+        }
+        if (critical > 0) std.debug.print(" ({d} CRITICAL)", .{critical});
+        if (high > 0) std.debug.print(" ({d} HIGH)", .{high});
+        std.debug.print("          │\n", .{});
+    }
+}
+
 fn curateSyntheticSeeds(allocator: std.mem.Allocator) !void {
     std.debug.print("\n╔════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║  VIBEE v10.5: Auto-Curation & Self-Feeding v2                 ║\n", .{});

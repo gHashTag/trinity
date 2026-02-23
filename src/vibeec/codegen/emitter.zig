@@ -717,6 +717,10 @@ pub const ZigCodeGen = struct {
         }
 
         // Generate real implementation from given/when/then semantics
+        // Cycle 77: Mark comptime-evaluable pure functions
+        if (zig_idioms_mod.isPureFunction(b.given, b.then, b.name)) {
+            try self.builder.writeLine("// comptime-evaluable: pure function with no side effects");
+        }
         try self.builder.writeFmt("/// {s}\n", .{b.given});
         try self.builder.writeFmt("/// When: {s}\n", .{b.when});
         try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
@@ -738,18 +742,24 @@ pub const ZigCodeGen = struct {
             const already_error = sig.ret.len > 0 and sig.ret[0] == '!';
             // Cycle 76: Don't wrap error union for pure functions (no allocator needed)
             const do_wrap = wrap_err and !already_error and has_alloc;
+            // Cycle 77: Infer specific error set when wrapping
+            const error_set: ?[]const u8 = if (do_wrap) zig_idioms_mod.inferErrorSet(b.given, b.then, b.name) else null;
 
             // Write function signature with idiom transforms
             if (idioms.hasOriginalParams(base_params, b.given, b.then)) {
                 // Allocator + original params
-                if (do_wrap) {
+                if (error_set) |es| {
+                    try self.builder.writeFmt("pub fn {s}({s}, {s}) {s}!{s} {{\n", .{ b.name, params, base_params, es, sig.ret });
+                } else if (do_wrap) {
                     try self.builder.writeFmt("pub fn {s}({s}, {s}) !{s} {{\n", .{ b.name, params, base_params, sig.ret });
                 } else {
                     try self.builder.writeFmt("pub fn {s}({s}, {s}) {s} {{\n", .{ b.name, params, base_params, sig.ret });
                 }
             } else if (has_alloc) {
                 // Allocator only (no original params)
-                if (do_wrap) {
+                if (error_set) |es| {
+                    try self.builder.writeFmt("pub fn {s}({s}) {s}!{s} {{\n", .{ b.name, params, es, sig.ret });
+                } else if (do_wrap) {
                     try self.builder.writeFmt("pub fn {s}({s}) !{s} {{\n", .{ b.name, params, sig.ret });
                 } else {
                     try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, params, sig.ret });
