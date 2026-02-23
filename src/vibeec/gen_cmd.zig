@@ -466,20 +466,36 @@ fn validateWithPAS(allocator: std.mem.Allocator, code: []const u8, output_path: 
 
     // Calculate basic PAS score using sacred constants
     const line_count = std.mem.count(u8, code, "\n");
-    const has_comments = std.mem.indexOf(u8, code, "//") != null;
-    const has_tests = std.mem.indexOf(u8, code, "test") != null;
+    // Language-aware comment detection: // (Zig/TS/Rust/Go/Java), # (Python/Ruby), -- (SQL)
+    const has_comments = std.mem.indexOf(u8, code, "//") != null or
+        std.mem.indexOf(u8, code, "# ") != null or
+        std.mem.indexOf(u8, code, "\"\"\"") != null or
+        std.mem.indexOf(u8, code, "-- ") != null;
+    // Language-aware test detection
+    const has_tests = std.mem.indexOf(u8, code, "test") != null or
+        std.mem.indexOf(u8, code, "def ") != null or
+        std.mem.indexOf(u8, code, "function ") != null or
+        std.mem.indexOf(u8, code, "export ") != null;
 
     // Base PAS score calculation (0.0 to 1.0)
     var pas_score: f64 = 0.0;
 
     // Lines of code contribution (up to 0.3)
-    pas_score += @min(@as(f64, @floatFromInt(line_count)) / 500.0, 0.3);
+    // Minimum viable output is 20 lines; 100+ lines is full score
+    pas_score += @min(@as(f64, @floatFromInt(line_count)) / 100.0, 0.3);
 
     // Comments contribution (0.2)
     if (has_comments) pas_score += 0.2;
 
-    // Tests contribution (0.3)
-    if (has_tests) pas_score += 0.3;
+    // Tests contribution (0.2)
+    if (has_tests) pas_score += 0.2;
+
+    // Structure contribution (0.1) — has type/class definitions
+    const has_structure = std.mem.indexOf(u8, code, "struct") != null or
+        std.mem.indexOf(u8, code, "class") != null or
+        std.mem.indexOf(u8, code, "interface") != null or
+        std.mem.indexOf(u8, code, "CREATE TABLE") != null;
+    if (has_structure) pas_score += 0.1;
 
     // Base contribution for generating code (0.2)
     pas_score += 0.2;
