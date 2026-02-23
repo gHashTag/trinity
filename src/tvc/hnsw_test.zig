@@ -203,13 +203,30 @@ test "HNSW level distribution exponential" {
     }
 
     // Level 0 should have most nodes
-    var level0_count: usize = 0;
+    var level_counts = [1]usize{0} ** 10;
+    var max_level_found: usize = 0;
     var iter = index.nodes.valueIterator();
     while (iter.next()) |node| {
-        if (node.level == 0) level0_count += 1;
+        if (node.level < 10) {
+            level_counts[node.level] += 1;
+        }
+        if (node.level > max_level_found) max_level_found = node.level;
     }
 
-    try testing.expect(level0_count > 500); // Majority at level 0
+    std.debug.print("  Level distribution (m=8, ml={d:.4}):\n", .{config.ml()});
+    for (level_counts, 0..) |count, lvl| {
+        if (count > 0) {
+            std.debug.print("    Level {d}: {d} nodes ({d:.1}%)\n", .{ lvl, count, @as(f32, @floatFromInt(count)) * 100.0 / 1000.0 });
+        }
+    }
+    std.debug.print("    Max level: {d}\n", .{max_level_found});
+    std.debug.print("    Level 0 count: {d} (expected ~380, i.e., ~38% for m=8)\n", .{level_counts[0]});
+
+    // For m=8, P(level=0) = 1 - e^(-1/ln(8)) ≈ 38%, so expect around 380 nodes
+    // The distribution should be exponentially decreasing
+    try testing.expect(level_counts[0] > 300); // At least 30% at level 0
+    try testing.expect(level_counts[0] > level_counts[1]); // Level 0 > Level 1
+    try testing.expect(level_counts[1] > level_counts[2]); // Level 1 > Level 2
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

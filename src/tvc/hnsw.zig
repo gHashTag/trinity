@@ -47,8 +47,10 @@ pub const Config = struct {
     seed: u64 = 42,
 
     /// Calculate level normalization factor
+    /// ml = 1/ln(m) where m is max connections per node
+    /// This ensures proper exponential level distribution
     pub fn ml(self: *const Config) f32 {
-        return 1.0 / @as(f32, @floatFromInt(@as(usize, @intFromFloat(@log(@as(f32, @floatFromInt(self.m)))))));
+        return 1.0 / @log(@as(f32, @floatFromInt(self.m)));
     }
 };
 
@@ -258,7 +260,7 @@ pub fn HNSW(comptime dim: usize, comptime _: usize) type {
 
             // Descend through layers
             while (curr_level > level) : (curr_level -= 1) {
-                curr_id = try self.searchLayerOne(vector, curr_id, curr_level);
+                curr_id = try self.searchLayerOne(vector, curr_id, curr_level, &self.visited);
             }
 
             // At target layer and below, connect neighbors
@@ -312,7 +314,8 @@ pub fn HNSW(comptime dim: usize, comptime _: usize) type {
             try self.updateBacklinks(id);
         }
 
-        /// Search for k nearest neighbors
+        /// Search for k nearest neighbors using HNSW algorithm with multiple entry points
+        /// Uses up to 5 high-level nodes as entry points to ensure full graph coverage
         pub fn search(self: *Self, query: []const f32, k: usize) !SearchResults {
             if (query.len != dim) return error.DimensionMismatch;
 
@@ -331,7 +334,7 @@ pub fn HNSW(comptime dim: usize, comptime _: usize) type {
             var visited = AutoHashMap(u64, void).init(self.allocator);
             defer visited.deinit();
 
-            // Collect multiple entry points (all high-level nodes)
+            // Collect entry points: use nodes at the highest levels for better coverage
             var entry_points = Managed(Candidate).init(self.allocator);
             defer entry_points.deinit();
 
@@ -340,18 +343,19 @@ pub fn HNSW(comptime dim: usize, comptime _: usize) type {
                 while (iter.next()) |entry| {
                     const node_id = entry.key_ptr.*;
                     const node = entry.value_ptr.*;
-                    // Use all nodes at level >= 2 as entry points, or at least the entry point
-                    if (node.level >= 2 or node_id == self.entry_point.?) {
-                        const dist = if (node.vector) |v|
-                            distance.calculateDistance(query, v[0..dim], self.config.distance_metric)
-                        else
-                            1.0;
-                        try entry_points.append(.{ .node_id = node_id, .distance = dist });
+                    // Always include entry point, plus nodes at top 2 levels
+                    const is_entry_point = (node_id == self.entry_point.?);
+                    const is_high_level = (node.level >= @max(1, self.max_level -| 1));
+                    if (is_entry_point or is_high_level) {
+                        if (node.vector) |v| {
+                            const dist = distance.calculateDistance(query, v[0..dim], self.config.distance_metric);
+                            try entry_points.append(.{ .node_id = node_id, .distance = dist });
+                        }
                     }
                 }
             }
 
-            // Sort entry points by distance
+            // Sort entry points by distance and limit to 5
             std.sort.block(Candidate, entry_points.items, {}, struct {
                 fn lessThan(ctx: void, a: Candidate, b: Candidate) bool {
                     _ = ctx;
@@ -359,16 +363,28 @@ pub fn HNSW(comptime dim: usize, comptime _: usize) type {
                 }
             }.lessThan);
 
+            if (entry_points.items.len > 5) {
+                entry_points.items.len = 5;
+            }
+
             // Search from each entry point and merge results
             var merged = Managed(Candidate).init(self.allocator);
             defer merged.deinit();
 
             for (entry_points.items) |entry| {
+                // Greedy descent from this entry point
+                var curr_level = self.max_level;
+                var curr_id = entry.node_id;
+
+                while (curr_level > 0) : (curr_level -= 1) {
+                    curr_id = try self.searchLayerOne(query, curr_id, curr_level, &visited);
+                }
+
+                // Layer 0 beam search from this entry point's descendant
                 var ep_visited = AutoHashMap(u64, void).init(self.allocator);
                 defer ep_visited.deinit();
 
-                // Search from this entry point at layer 0 (bottom layer has all connections)
-                const layer_candidates = try self.searchLayerEfWithVisited(query, entry.node_id, 0, self.config.ef_search, &ep_visited);
+                const layer_candidates = try self.searchLayerEfWithVisited(query, curr_id, 0, self.config.ef_search, &ep_visited);
                 defer layer_candidates.deinit();
 
                 // Merge unique candidates
@@ -377,10 +393,6 @@ pub fn HNSW(comptime dim: usize, comptime _: usize) type {
                     for (merged.items) |m| {
                         if (m.node_id == lc.node_id) {
                             exists = true;
-                            // Keep the better distance
-                            if (lc.distance < m.distance) {
-                                // Update (would need mutable access)
-                            }
                             break;
                         }
                     }
@@ -420,18 +432,23 @@ pub fn HNSW(comptime dim: usize, comptime _: usize) type {
         }
 
         /// Search layer and find 1 nearest neighbor
-        fn searchLayerOne(self: *Self, query: []const f32, entry_id: u64, layer: usize) !u64 {
+        fn searchLayerOne(self: *Self, query: []const f32, entry_id: u64, layer: usize, visited_set: *AutoHashMap(u64, void)) !u64 {
             var curr_id = entry_id;
             var improved = true;
 
             while (improved) {
                 improved = false;
                 const node = self.nodes.get(curr_id) orelse return error.NodeNotFound;
+
+                // If current node doesn't have this layer, stay at current node
+                // (we've reached as far as we can in this part of the graph)
+                if (layer >= node.neighbors.len) return curr_id;
+
                 const neighbors = &node.neighbors[layer];
 
                 for (neighbors.items) |nb| {
-                    if (self.visited.contains(nb.node_id)) continue;
-                    try self.visited.put(nb.node_id, {});
+                    if (visited_set.contains(nb.node_id)) continue;
+                    try visited_set.put(nb.node_id, {});
 
                     const nb_node = self.nodes.get(nb.node_id) orelse continue;
                     if (nb_node.vector) |nb_vec| {
