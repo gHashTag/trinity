@@ -11,5 +11,5 @@ const lang = @import("trinity-lang");
 
 // Pattern modules (each has embedded tests)
 comptime {
-    _ = lang.codegen; // mod.zig + all pattern submodules
+    _ = lang.zig_codegen.codegen; // mod.zig + all pattern submodules
 }

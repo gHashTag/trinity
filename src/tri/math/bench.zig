@@ -125,17 +125,13 @@ fn benchmarkFibonacci(iterations: usize) BenchmarkResult {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn printBenchmarkResults(writer: anytype, allocator: std.mem.Allocator) !void {
-    try writer.writeAll(format.colors.bold);
-    try writer.writeAll("╔════════════════════════════════════════════════════════════════════╗\n");
-    try writer.writeAll("║                    PERFORMANCE BENCHMARKS                         ║\n");
-    try writer.writeAll("╠════════════════════════════════════════════════════════════════════╣\n");
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("+====================================================================+\n");
+    try writer.writeAll("|                    PERFORMANCE BENCHMARKS                         |\n");
+    try writer.writeAll("+====================================================================+\n");
 
     // Core operations
-    try writer.writeAll(format.colors.gold);
     try writer.writeAll("  CORE OPERATIONS\n");
-    try writer.writeAll(format.colors.reset);
-    try writer.writeAll("  ────────────────────────────────────────────────────────────────\n");
+    try writer.writeAll("  ----------------------------------------------------------------\n");
 
     const core_iterations = 1_000_000;
 
@@ -147,45 +143,37 @@ pub fn printBenchmarkResults(writer: anytype, allocator: std.mem.Allocator) !voi
 
     // Floating point
     try writer.writeAll("\n");
-    try writer.writeAll(format.colors.cyan);
     try writer.writeAll("  FLOATING POINT\n");
-    try writer.writeAll(format.colors.reset);
-    try writer.writeAll("  ────────────────────────────────────────────────────────────────\n");
+    try writer.writeAll("  ----------------------------------------------------------------\n");
 
     const phi_power = benchmarkPhiPower(100_000);
     try printBenchmarkResult(writer, &phi_power);
 
     // Sequences
     try writer.writeAll("\n");
-    try writer.writeAll(format.colors.purple);
     try writer.writeAll("  SEQUENCES\n");
-    try writer.writeAll(format.colors.reset);
-    try writer.writeAll("  ────────────────────────────────────────────────────────────────\n");
+    try writer.writeAll("  ----------------------------------------------------------------\n");
 
     const fibonacci = benchmarkFibonacci(1_000);
     try printBenchmarkResult(writer, &fibonacci);
 
-    try writer.writeAll(format.colors.bold);
-    try writer.writeAll("\n╚════════════════════════════════════════════════════════════════════╝\n");
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("\n+====================================================================+\n");
 
     _ = allocator;
 }
 
 fn printBenchmarkResult(writer: anytype, result: *const BenchmarkResult) !void {
     try writer.print("  {s:.<30}", .{result.name});
-    try writer.writeAll(format.colors.green);
 
     if (result.ops_per_sec >= 1_000_000) {
-        try writer.print("{d:.[1]} M ops/sec", .{ result.ops_per_sec / 1_000_000, 2 });
+        try writer.print("{d:.2} M ops/sec", .{result.ops_per_sec / 1_000_000});
     } else if (result.ops_per_sec >= 1_000) {
-        try writer.print("{d:.[1]} K ops/sec", .{ result.ops_per_sec / 1_000, 2 });
+        try writer.print("{d:.2} K ops/sec", .{result.ops_per_sec / 1_000});
     } else {
-        try writer.print("{d:.[1]} ops/sec", .{ result.ops_per_sec, 2 });
+        try writer.print("{d:.2} ops/sec", .{result.ops_per_sec});
     }
 
-    try writer.writeAll(format.colors.reset);
-    try writer.print(" ({d:.[1]} ns/op)\n", .{ result.avg_time_ns, 2 });
+    try writer.print(" ({d:.2} ns/op)\n", .{result.avg_time_ns});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

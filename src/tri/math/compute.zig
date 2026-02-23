@@ -42,21 +42,17 @@ pub fn computeSpiral(n: u32) PhiSpiralResult {
 pub fn printSpiral(writer: anytype, n: u32) !void {
     const result = computeSpiral(n);
 
-    try writer.writeAll(format.colors.gold);
-    try writer.writeAll("╔══════════════════════════════════════════════════════════════╗\n");
-    try writer.writeAll("║                       φ-SPIRAL                                ║\n");
-    try writer.writeAll("╠══════════════════════════════════════════════════════════════╣\n");
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("+--------------------------------------------------------------+\n");
+    try writer.writeAll("|                       phi-SPIRAL                             |\n");
+    try writer.writeAll("+--------------------------------------------------------------+\n");
 
     try writer.print("  n      : {d}\n", .{result.n});
-    try writer.print("  angle  : {d:.[1]}° ({d:.[4]} rad)\n", .{ result.angle_deg, 2, result.angle, 6 });
-    try writer.print("  radius : {d:.[2]}\n", .{result.radius, 2});
-    try writer.print("  x      : {d:.[3]}\n", .{result.x, 6 });
-    try writer.print("  y      : {d:.[3]}\n", .{result.y, 6 });
+    try writer.print("  angle  : {d:.2} deg ({d:.6} rad)\n", .{ result.angle_deg, result.angle });
+    try writer.print("  radius : {d:.2}\n", .{result.radius});
+    try writer.print("  x      : {d:.6}\n", .{result.x});
+    try writer.print("  y      : {d:.6}\n", .{result.y});
 
-    try writer.writeAll(format.colors.gold);
-    try writer.writeAll("╚══════════════════════════════════════════════════════════════╝\n");
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("+--------------------------------------------------------------+\n");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -80,7 +76,7 @@ pub fn verifyIdentities(allocator: std.mem.Allocator) ![]VerifyResult {
         .name = "Trinity Identity",
         .formula = "φ² + 1/φ² = 3",
         .expected = "3.0",
-        .actual = try std.fmt.allocPrint(allocator, "{d:.[1]}", .{ trinity, 6 }),
+        .actual = try std.fmt.allocPrint(allocator, "{d:.6}", .{trinity}),
         .passed = std.math.approxEqAbs(f64, trinity, 3.0, 0.0001),
     };
 
@@ -90,7 +86,7 @@ pub fn verifyIdentities(allocator: std.mem.Allocator) ![]VerifyResult {
         .name = "Phi Squared",
         .formula = "φ² = φ + 1",
         .expected = "true",
-        .actual = try std.fmt.allocPrint(allocator, "φ² - φ - 1 = {d:.[1]}", .{ phi_sq_check, 10 }),
+        .actual = try std.fmt.allocPrint(allocator, "φ² - φ - 1 = {d:.10}", .{phi_sq_check}),
         .passed = std.math.approxEqAbs(f64, phi_sq_check, 0.0, 0.0001),
     };
 
@@ -100,7 +96,7 @@ pub fn verifyIdentities(allocator: std.mem.Allocator) ![]VerifyResult {
         .name = "Phi Inverse",
         .formula = "1/φ = φ - 1",
         .expected = "true",
-        .actual = try std.fmt.allocPrint(allocator, "1/φ - (φ - 1) = {d:.[1]}", .{ phi_inv_check, 10 }),
+        .actual = try std.fmt.allocPrint(allocator, "1/φ - (φ - 1) = {d:.10}", .{phi_inv_check}),
         .passed = std.math.approxEqAbs(f64, phi_inv_check, 0.0, 0.0001),
     };
 
@@ -140,7 +136,7 @@ pub fn verifyIdentities(allocator: std.mem.Allocator) ![]VerifyResult {
         .name = "Transcendental Tryte",
         .formula = "π × φ × e ≈ 13.82 ≈ TRYTE_MAX",
         .expected = "~13.82",
-        .actual = try std.fmt.allocPrint(allocator, "{d:.[1]}", .{ transcendental, 2 }),
+        .actual = try std.fmt.allocPrint(allocator, "{d:.2}", .{transcendental}),
         .passed = std.math.approxEqAbs(f64, transcendental, 13.82, 0.5),
     };
 
@@ -171,27 +167,20 @@ pub fn printVerification(writer: anytype) !void {
         allocator.free(results);
     }
 
-    try writer.writeAll(format.colors.bold);
-    try writer.writeAll("╔════════════════════════════════════════════════════════════════════╗\n");
-    try writer.writeAll("║              SACRED IDENTITY VERIFICATION                          ║\n");
-    try writer.writeAll("╠════════════════════════════════════════════════════════════════════╣\n");
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("+====================================================================+\n");
+    try writer.writeAll("|              SACRED IDENTITY VERIFICATION                          |\n");
+    try writer.writeAll("+====================================================================+\n");
 
     for (results) |r| {
-        const status_color = if (r.passed) format.colors.green else format.colors.red;
-        const status_symbol = if (r.passed) "✓" else "✗";
+        const status_symbol = if (r.passed) "[PASS]" else "[FAIL]";
 
-        try writer.writeAll(status_color);
         try writer.print(" {s} {s}\n", .{ status_symbol, r.name });
-        try writer.writeAll(format.colors.reset);
-        try writer.print("   Formula: {s}\n", .{r.formula});
+        try writer.print("   Formula:  {s}\n", .{r.formula});
         try writer.print("   Expected: {s}\n", .{r.expected});
-        try writer.print("   Actual: {s}\n\n", .{r.actual});
+        try writer.print("   Actual:   {s}\n\n", .{r.actual});
     }
 
-    try writer.writeAll(format.colors.bold);
-    try writer.writeAll("╚════════════════════════════════════════════════════════════════════╝\n");
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("+====================================================================+\n");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -201,22 +190,20 @@ pub fn printVerification(writer: anytype) !void {
 pub fn printCompare(writer: anytype, max_n: usize) !void {
     const allocator = std.heap.page_allocator;
 
-    try writer.writeAll(format.colors.bold);
-    try writer.writeAll("╔════════════════════════════════════════════════════════════════════╗\n");
-    try writer.writeAll("║                    SEQUENCE COMPARISON                            ║\n");
-    try writer.writeAll("╠════════════════════════════════════════════════════════════════════╣\n");
-    try writer.writeAll(format.colors.reset);
+    try writer.writeAll("+====================================================================+\n");
+    try writer.writeAll("|                    SEQUENCE COMPARISON                            |\n");
+    try writer.writeAll("+====================================================================+\n");
 
     // Print header
-    try writer.writeAll("  n     │ φⁿ                    │ F(n)                   │ L(n)                   \n");
-    try writer.writeAll("────────┼───────────────────────┼───────────────────────┼───────────────────────\n");
+    try writer.writeAll("  n     | phi^n                 | F(n)                  | L(n)\n");
+    try writer.writeAll("--------+-----------------------+-----------------------+-----------------------\n");
 
     // Print each row
     var n: usize = 0;
     while (n <= max_n) : (n += 1) {
         // phi^n
         const phi_n = eval.phiPower(n);
-        const phi_str = try std.fmt.allocPrint(allocator, "{d:.[1]}", .{ phi_n, 6 });
+        const phi_str = try std.fmt.allocPrint(allocator, "{d:.6}", .{phi_n});
 
         // F(n)
         const fib_str = try eval.fibonacciBigInt(allocator, n);
@@ -224,14 +211,14 @@ pub fn printCompare(writer: anytype, max_n: usize) !void {
         // L(n)
         const lucas_str = try eval.lucasBigInt(allocator, n);
 
-        try writer.print("  {d:5} │ {s:21} │ {s:21} │ {s:21} \n", .{ n, phi_str, fib_str, lucas_str });
+        try writer.print("  {d:5} | {s:21} | {s:21} | {s:21} \n", .{ n, phi_str, fib_str, lucas_str });
 
         allocator.free(phi_str);
         allocator.free(fib_str);
         allocator.free(lucas_str);
     }
 
-    try writer.writeAll("╚════════════════════════════════════════════════════════════════════╝\n");
+    try writer.writeAll("+====================================================================+\n");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

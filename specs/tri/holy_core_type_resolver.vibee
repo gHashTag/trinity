@@ -1,106 +1,388 @@
-# VIBEE Specification: Holy Core Type Resolver
-# Cycle 79 - Phase 1 of VIBEE-first migration
-# This module handles type resolution for VIBEE codegen
+# ═══════════════════════════════════════════════════════════════════════════════
+# HOLY CORE TYPE RESOLVER — Extracted from emitter.zig
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Cycle 79: VIBEE-first migration of type resolution module
+# Purpose: Generate type_resolver.zig from spec (replaces emitter lines 1975-2254)
+#
+# IGLA (Игла) — укол, убивающий ручной код
+#
+# φ² + 1/φ² = 3
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 
 name: holy_core_type_resolver
 version: "1.0.0"
 language: zig
-module: holy_core_type_resolver
+module: vibeec.codegen.type_resolver
 
 types:
-  TypeMapping:
+  TypeDef:
+    description: "Imported from codegen types — represents a VIBEE type definition"
     fields:
-      vibee_name: String
-      zig_name: String
+      name: String
 
-  SemanticTypeMapping:
+  SemanticEntry:
+    description: "Maps a semantic keyword to a concrete Zig type"
     fields:
-      semantic_term: String
-      concrete_type: String
-
-  ParseError:
-    fields:
-      error_code: Int
-      message: String
-
-  BracketMatchResult:
-    fields:
-      found: Bool
-      position: u64
-      has_error: Bool
+      keyword: String
+      zig_type: String
 
 behaviors:
-  - name: resolve_primitive_type
-    given: a VIBEE primitive type name (String, Int, Float, Bool, etc.)
-    when: resolvePrimitiveType is called
-    then: returns the corresponding Zig type ([]const u8, i64, f64, bool, etc.)
+  # ─── Primitive Type Resolution ───
 
-  - name: resolve_custom_type
-    given: a custom type name defined in the spec
-    when: resolveCustomType is called with spec_types context
-    then: returns the type name as-is if defined, or returns unknown type
+  - name: resolveTypeName
+    owner: TypeResolver
+    given: A VIBEE type name (String, Int, Float, Bool, etc.) and spec_types list
+    when: Mapping VIBEE type names to Zig types
+    then:
+      - Map String to "[]const u8"
+      - Map Int to i64
+      - Map Float to f64
+      - Map Bool to bool
+      - Pass through native Zig types (usize, u8, u32, u64, i32, i64, f32, f64, void, anytype)
+      - Check spec_types for custom type definitions
+      - Return type_name as-is if unknown
+    implementation: |
+      pub fn resolveTypeName(spec_types: []const TypeDef, type_name: []const u8) []const u8 {
+          if (std.mem.eql(u8, type_name, "String")) return "[]const u8";
+          if (std.mem.eql(u8, type_name, "Int")) return "i64";
+          if (std.mem.eql(u8, type_name, "Float")) return "f64";
+          if (std.mem.eql(u8, type_name, "Bool")) return "bool";
+          if (std.mem.eql(u8, type_name, "usize")) return "usize";
+          if (std.mem.eql(u8, type_name, "u8")) return "u8";
+          if (std.mem.eql(u8, type_name, "u32")) return "u32";
+          if (std.mem.eql(u8, type_name, "u64")) return "u64";
+          if (std.mem.eql(u8, type_name, "i32")) return "i32";
+          if (std.mem.eql(u8, type_name, "i64")) return "i64";
+          if (std.mem.eql(u8, type_name, "f32")) return "f32";
+          if (std.mem.eql(u8, type_name, "f64")) return "f64";
+          if (std.mem.eql(u8, type_name, "void")) return "void";
+          if (std.mem.eql(u8, type_name, "anytype")) return "anytype";
 
-  - name: find_matching_bracket
-    given: a string containing nested generics and starting position
-    when: the parser needs to find the closing bracket
-    then: returns the position of matching '>' or null if unmatched
+          for (spec_types) |t| {
+              if (std.mem.eql(u8, t.name, type_name)) {
+                  return type_name;
+              }
+          }
 
-  - name: parse_option_type
-    given: a type string like Option<T> or ?T
-    when: parseOptionType is called
-    then: returns ?resolved_type (e.g., ?i64, ?[]const u8)
+          return type_name;
+      }
 
-  - name: parse_list_type
-    given: a type string like List<T> or [T]
-    when: parseListType is called
-    then: returns []const T (supports nested generics)
+  # ─── Bracket Matching ───
 
-  - name: parse_map_type
-    given: a type string like Map<K,V> or HashMap<K,V>
-    when: parseMapType is called
-    then: returns std.StringHashMap(V) or std.AutoHashMap(K, V)
+  - name: findMatchingBracket
+    given: A string and start position after opening bracket
+    when: Finding the closing bracket for nested generics like List<Map<K,V>>
+    then:
+      - Track bracket depth starting at 1
+      - Increment on '<', decrement on '>'
+      - Return index when depth reaches 0
+      - Return null if unmatched
+    implementation: |
+      pub fn findMatchingBracket(str: []const u8, start_pos: usize) ?usize {
+          var depth: usize = 1;
+          var i = start_pos;
+          while (i < str.len) : (i += 1) {
+              const c = str[i];
+              if (c == '<') depth += 1
+              else if (c == '>') {
+                  depth -= 1;
+                  if (depth == 0) return i;
+              }
+          }
+          return null;
+      }
 
-  - name: parse_complex_type
-    given: any type string (primitive, Option<T>, List<T>, Map<K,V>, nested)
-    when: parseComplexType is called
-    then: returns the fully resolved Zig type string with proper allocation
+  # ─── Complex Type Parsing (no-alloc fast path) ───
 
-  - name: parse_complex_type_no_alloc
-    given: a simple type string that doesn't need allocation
-    when: parseComplexTypeNoAlloc is called
-    then: returns static string for common types or null if allocation needed
+  - name: parseComplexTypeNoAlloc
+    given: A complex VIBEE type string (Option<T>, List<T>, etc.) and spec_types
+    when: Resolving type without heap allocation (static string returns)
+    then:
+      - Handle Option<T> to optional for known primitives
+      - Handle List<T> to slice for known primitives
+      - Handle nested generics via recursive calls
+      - Return null if allocation would be needed
+    implementation: |
+      pub fn parseComplexTypeNoAlloc(spec_types: []const TypeDef, type_str: []const u8) ?[]const u8 {
+          if (std.mem.startsWith(u8, type_str, "Option<")) {
+              const end_pos = findMatchingBracket(type_str, 8) orelse return null;
+              const inner = type_str[8..end_pos];
+              const resolved = parseComplexTypeNoAlloc(spec_types, inner) orelse return null;
+              if (std.mem.eql(u8, resolved, "i64")) return "?i64";
+              if (std.mem.eql(u8, resolved, "f64")) return "?f64";
+              if (std.mem.eql(u8, resolved, "bool")) return "?bool";
+              if (std.mem.eql(u8, resolved, "[]const u8")) return "?[]const u8";
+              if (std.mem.eql(u8, resolved, "[]const i64")) return "?[]const i64";
+              if (std.mem.eql(u8, resolved, "[]const f64")) return "?[]const f64";
+              return null;
+          }
 
-  - name: map_semantic_type
-    given: a semantic term like "probability", "embedding", "tensor"
-    when: mapSemanticType is called
-    then: returns the appropriate Zig type (f32, []const f32, Tensor, etc.)
+          if (std.mem.startsWith(u8, type_str, "List<")) {
+              const end_pos = findMatchingBracket(type_str, 5) orelse return null;
+              const inner = type_str[5..end_pos];
+              const resolved = parseComplexTypeNoAlloc(spec_types, inner) orelse return null;
+              if (std.mem.eql(u8, resolved, "i64")) return "[]const i64";
+              if (std.mem.eql(u8, resolved, "f64")) return "[]const f64";
+              if (std.mem.eql(u8, resolved, "bool")) return "[]const bool";
+              if (std.mem.eql(u8, resolved, "u8")) return "[]const u8";
+              if (std.mem.eql(u8, resolved, "usize")) return "[]const usize";
+              if (std.mem.eql(u8, resolved, "[]const u8")) return "[]const []const u8";
+              if (std.mem.eql(u8, resolved, "[]const i64")) return "[]const []const i64";
+              if (std.mem.eql(u8, resolved, "[]const f64")) return "[]const []const f64";
+              if (std.mem.eql(u8, resolved, "?i64")) return "[]const ?i64";
+              if (std.mem.eql(u8, resolved, "?f64")) return "[]const ?f64";
+              return null;
+          }
 
-  - name: is_primitive_type
-    given: a type name
-    when: isPrimitiveType is called
-    then: returns true if it's a VIBEE primitive type
+          if (std.mem.eql(u8, type_str, "String")) return "[]const u8";
+          if (std.mem.eql(u8, type_str, "Int")) return "i64";
+          if (std.mem.eql(u8, type_str, "Float")) return "f64";
+          if (std.mem.eql(u8, type_str, "Bool")) return "bool";
+          if (std.mem.eql(u8, type_str, "usize")) return "usize";
+          if (std.mem.eql(u8, type_str, "u8")) return "u8";
+          if (std.mem.eql(u8, type_str, "void")) return "void";
+          if (std.mem.eql(u8, type_str, "anytype")) return "anytype";
 
-  - name: extract_inner_type
-    given: a generic type like List<T> or Option<T>
-    when: extractInnerType is called
-    then: returns the inner type T
+          return null;
+      }
 
-  - name: is_optional_type
-    given: a type string
-    when: isOptionalType is called
-    then: returns true if the type is optional (starts with ? or Option<)
+  # ─── Complex Type Parsing (allocating path) ───
 
-  - name: is_list_type
-    given: a type string
-    when: isListType is called
-    then: returns true if the type is a list (starts with [] or List<)
+  - name: parseComplexType
+    given: A complex VIBEE type string and allocator and spec_types
+    when: Resolving type with heap allocation for dynamic results
+    then:
+      - Handle Option<T> to optional (allocating)
+      - Handle List<T> to slice (allocating)
+      - Handle Map<K,V> to StringHashMap or AutoHashMap
+      - Handle HashMap<K,V> to AutoHashMap
+      - Handle [T] slice syntax
+      - Handle *T pointer syntax
+      - Fallback to resolveTypeName for simple types
+    implementation: |
+      pub fn parseComplexType(allocator: std.mem.Allocator, spec_types: []const TypeDef, type_str: []const u8) ![]const u8 {
+          if (std.mem.startsWith(u8, type_str, "Option<")) {
+              const end_pos = findMatchingBracket(type_str, 8) orelse
+                  return error.UnmatchedBrackets;
+              const inner = type_str[8..end_pos];
+              const resolved = try parseComplexType(allocator, spec_types, inner);
+              return try std.fmt.allocPrint(allocator, "?{s}", .{resolved});
+          }
 
-  - name: is_map_type
-    given: a type string
-    when: isMapType is called
-    then: returns true if the type is a map (Map< or HashMap<)
+          if (std.mem.startsWith(u8, type_str, "List<")) {
+              const end_pos = findMatchingBracket(type_str, 5) orelse
+                  return error.UnmatchedBrackets;
+              const inner = type_str[5..end_pos];
+              const resolved = try parseComplexType(allocator, spec_types, inner);
+              return try std.fmt.allocPrint(allocator, "[]const {s}", .{resolved});
+          }
 
-  - name: get_type_category
-    given: a type string
-    when: getTypeCategory is called
-    then: returns the category: primitive, optional, list, map, custom, or unknown
+          if (std.mem.startsWith(u8, type_str, "Map<")) {
+              const end_pos = findMatchingBracket(type_str, 4) orelse
+                  return error.UnmatchedBrackets;
+              const inner = type_str[4..end_pos];
+              const comma_idx = std.mem.indexOf(u8, inner, ",") orelse return error.InvalidMapType;
+              const key_type = try parseComplexType(allocator, spec_types, inner[0..comma_idx]);
+              const value_type = try parseComplexType(allocator, spec_types, inner[comma_idx + 1 ..]);
+              if (std.mem.eql(u8, key_type, "[]const u8") or std.mem.eql(u8, key_type, "String")) {
+                  return try std.fmt.allocPrint(allocator, "std.StringHashMap({s})", .{value_type});
+              }
+              return try std.fmt.allocPrint(allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
+          }
+
+          if (std.mem.startsWith(u8, type_str, "HashMap<")) {
+              const end_pos = findMatchingBracket(type_str, 8) orelse
+                  return error.UnmatchedBrackets;
+              const inner = type_str[8..end_pos];
+              const comma_idx = std.mem.indexOf(u8, inner, ",") orelse return error.InvalidHashMapType;
+              const key_type = try parseComplexType(allocator, spec_types, inner[0..comma_idx]);
+              const value_type = try parseComplexType(allocator, spec_types, inner[comma_idx + 1 ..]);
+              return try std.fmt.allocPrint(allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
+          }
+
+          if (type_str.len > 0 and type_str[0] == '[' and type_str[type_str.len - 1] == ']') {
+              const inner = type_str[1 .. type_str.len - 1];
+              if (inner.len > 0) {
+                  const resolved = resolveTypeName(spec_types, inner);
+                  return try std.fmt.allocPrint(allocator, "[{s}]", .{resolved});
+              }
+              return type_str;
+          }
+
+          if (type_str.len > 0 and type_str[0] == '*') {
+              return type_str;
+          }
+
+          return resolveTypeName(spec_types, type_str);
+      }
+
+  # ─── Semantic Type Mapping ───
+
+  - name: mapSemanticType
+    given: A domain-specific type name (probability, embedding, tensor, etc.)
+    when: Mapping semantic concepts to concrete Zig types
+    then:
+      - Map probability/similarity/score/confidence/accuracy to f32
+      - Map count/index/size/length to usize
+      - Map embedding to []const f32
+      - Map vector/hypervector to []const i8
+      - Fallback to primitive keyword matching
+      - Return as-is if no match
+    implementation: |
+      pub fn mapSemanticType(type_name: []const u8) []const u8 {
+          const semantic_map = [_]struct { []const u8, []const u8 }{
+              .{ "probability", "f32" },
+              .{ "probabilities", "[]f32" },
+              .{ "similarity", "f32" },
+              .{ "score", "f32" },
+              .{ "confidence", "f32" },
+              .{ "accuracy", "f32" },
+              .{ "count", "usize" },
+              .{ "index", "usize" },
+              .{ "size", "usize" },
+              .{ "length", "usize" },
+              .{ "tensor", "Tensor" },
+              .{ "embedding", "[]const f32" },
+              .{ "embeddings", "[]const []f32" },
+              .{ "distribution", "[]f32" },
+              .{ "vector", "[]const i8" },
+              .{ "hypervector", "[]const i8" },
+              .{ "matrix", "[]const f32" },
+              .{ "agent", "AgentInfo" },
+              .{ "wallet", "Wallet" },
+              .{ "task", "Task" },
+              .{ "tenant", "Tenant" },
+          };
+
+          for (semantic_map) |entry| {
+              if (containsCI(type_name, entry[0])) {
+                  return entry[1];
+              }
+          }
+
+          if (containsCI(type_name, "int")) return "i64";
+          if (containsCI(type_name, "float") or containsCI(type_name, "f32")) return "f32";
+          if (containsCI(type_name, "string") or containsCI(type_name, "text")) return "[]const u8";
+          if (containsCI(type_name, "bool")) return "bool";
+
+          return type_name;
+      }
+
+  # ─── Full Type Resolution (spec + semantic + primitive) ───
+
+  - name: resolveTypeFromSpec
+    given: A type name and spec_types list
+    when: Resolving type using all available sources
+    then:
+      - First check spec.types for custom struct definitions
+      - Then check semantic type mapping
+      - Fallback to standard resolveTypeName
+    implementation: |
+      pub fn resolveTypeFromSpec(spec_types: []const TypeDef, type_name: []const u8) []const u8 {
+          for (spec_types) |t| {
+              if (std.mem.eql(u8, t.name, type_name)) {
+                  return type_name;
+              }
+          }
+
+          const semantic = mapSemanticType(type_name);
+          if (!std.mem.eql(u8, semantic, type_name)) {
+              return semantic;
+          }
+
+          return resolveTypeName(spec_types, type_name);
+      }
+
+  # ─── Helper: Case-Insensitive Contains ───
+
+  - name: containsCI
+    given: A haystack string and needle string
+    when: Checking if haystack contains needle (case-insensitive)
+    then:
+      - Compare character by character with ASCII lowering
+      - Return true if needle found anywhere in haystack
+    implementation: |
+      pub fn containsCI(haystack: []const u8, needle: []const u8) bool {
+          if (needle.len == 0) return true;
+          if (haystack.len < needle.len) return false;
+          const limit = haystack.len - needle.len + 1;
+          for (0..limit) |i| {
+              var found = true;
+              for (0..needle.len) |j| {
+                  const h = toLowerASCII(haystack[i + j]);
+                  const n = toLowerASCII(needle[j]);
+                  if (h != n) {
+                      found = false;
+                      break;
+                  }
+              }
+              if (found) return true;
+          }
+          return false;
+      }
+
+  - name: toLowerASCII
+    given: A single byte
+    when: Converting ASCII uppercase to lowercase
+    then:
+      - If byte is A-Z, return a-z equivalent
+      - Otherwise return as-is
+    implementation: |
+      pub fn toLowerASCII(c: u8) u8 {
+          return if (c >= 'A' and c <= 'Z') c + 32 else c;
+      }
+
+  # ─── Phrase Extraction Helpers ───
+
+  - name: extractCount
+    given: A natural language phrase
+    when: Extracting numeric count from words like "two", "three", "pair"
+    then:
+      - Map English words to numbers (two=2, three=3, etc. up to ten=10)
+      - Return null for "multiple" or unrecognized
+    implementation: |
+      pub fn extractCount(phrase: []const u8) ?usize {
+          if (containsCI(phrase, "two") or containsCI(phrase, "pair")) return 2;
+          if (containsCI(phrase, "three") or containsCI(phrase, "triple")) return 3;
+          if (containsCI(phrase, "four")) return 4;
+          if (containsCI(phrase, "five")) return 5;
+          if (containsCI(phrase, "six")) return 6;
+          if (containsCI(phrase, "seven")) return 7;
+          if (containsCI(phrase, "eight")) return 8;
+          if (containsCI(phrase, "nine")) return 9;
+          if (containsCI(phrase, "ten")) return 10;
+          if (containsCI(phrase, "multiple")) return null;
+          return null;
+      }
+
+  - name: extractBaseType
+    given: A natural language phrase describing data types
+    when: Extracting the base type from phrases like "Vec3 vectors a and b"
+    then:
+      - Check for specific type markers (Vec3, Tensor, Matrix, Agent, etc.)
+      - Map generic words (vector, tensor, matrix) to Zig types
+      - Return the matched type string
+    implementation: |
+      pub fn extractBaseType(phrase: []const u8) []const u8 {
+          const type_markers = [_][]const u8 {
+              "Vec3", "Vec2", "Vec4", "vec3", "vec2", "vec4",
+              "Tensor", "tensor", "Matrix", "matrix",
+              "Agent", "Wallet", "Task", "Tenant",
+          };
+
+          for (type_markers) |marker| {
+              if (containsCI(phrase, marker)) {
+                  return marker;
+              }
+          }
+
+          if (containsCI(phrase, "vector") or containsCI(phrase, "hypervector")) return "[]const i8";
+          if (containsCI(phrase, "tensor")) return "Tensor";
+          if (containsCI(phrase, "matrix")) return "[]const f32";
+          if (containsCI(phrase, "agent")) return "AgentInfo";
+          if (containsCI(phrase, "wallet")) return "Wallet";
+
+          return "anytype";
+      }

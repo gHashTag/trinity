@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// igla_emitter_phase2 v1.0.0 - Generated from .vibee specification
+// vibee_core_types v1.0.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Священная формула: V = n × 3^k × π^m × φ^p × e^q
@@ -33,135 +33,23 @@ pub const PHOENIX: i64 = 999;
 // ТИПЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Registry of network peers with alive/dead status tracking
-pub const PeerRegistry = struct {
-    const MAX_PEERS = 8;
-
-    ports: [MAX_PEERS]u16,
-    alive: [MAX_PEERS]bool,
-    shard_counts: [MAX_PEERS]u16,
-    count: u8,
-
-          pub fn init() PeerRegistry {
-          return .{
-              .ports = [_]u16{0} ** MAX_PEERS,
-              .alive = [_]bool{false} ** MAX_PEERS,
-              .shard_counts = [_]u16{0} ** MAX_PEERS,
-              .count = 0,
-          };
-      }
-
-
-
-
-          pub fn registerPeer(self: *PeerRegistry, port: u16) !u8 {
-          if (self.count >= MAX_PEERS) return error.RegistryFull;
-          const id = self.count;
-          self.ports[id] = port;
-          self.alive[id] = true;
-          self.shard_counts[id] = 0;
-          self.count += 1;
-          return id;
-      }
-
-
-
-
-          pub fn markDead(self: *PeerRegistry, peer_id: u8) void {
-          if (peer_id < self.count) self.alive[peer_id] = false;
-      }
-
-
-
-
-          pub fn isAlive(self: *const PeerRegistry, peer_id: u8) bool {
-          if (peer_id >= self.count) return false;
-          return self.alive[peer_id];
-      }
-
-
-
-
-          pub fn alivePeers(self: *const PeerRegistry) u8 {
-          var c: u8 = 0;
-          var i: u8 = 0;
-          while (i < self.count) : (i += 1) {
-              if (self.alive[i]) c += 1;
-          }
-          return c;
-      }
-
-
-
-
-          pub fn getPort(self: *const PeerRegistry, peer_id: u8) u16 {
-          return self.ports[peer_id];
-      }
-
-
-
-
-          pub fn incShards(self: *PeerRegistry, peer_id: u8) void {
-          if (peer_id < self.count) self.shard_counts[peer_id] += 1;
-      }
-
-
-
+/// Field definition for TypeDef structures
+pub const Field = struct {
+    name: []const u8,
+    type_name: []const u8,
 };
 
-/// Maps data groups to (shard_index, peer_id) pairs for self-healing
-pub const ShardManifest = struct {
-    const MAX_GROUPS = 16;
-    const MAX_ENTRIES = 8;
+/// Constant value definition
+pub const Constant = struct {
+    name: []const u8,
+    value: f64,
+    description: []const u8,
+};
 
-    shard_idx: [MAX_GROUPS][MAX_ENTRIES]u8,
-    peer_ids: [MAX_GROUPS][MAX_ENTRIES]u8,
-    entry_counts: [MAX_GROUPS]u8,
-    group_count: u8,
-
-          pub fn init() ShardManifest {
-          return .{
-              .shard_idx = [_][MAX_ENTRIES]u8{[_]u8{0} ** MAX_ENTRIES} ** MAX_GROUPS,
-              .peer_ids = [_][MAX_ENTRIES]u8{[_]u8{0} ** MAX_ENTRIES} ** MAX_GROUPS,
-              .entry_counts = [_]u8{0} ** MAX_GROUPS,
-              .group_count = 0,
-          };
-      }
-
-
-
-
-          pub fn recordShard(self: *ShardManifest, group: u8, shard_index: u8, peer_id: u8) void {
-          if (group >= MAX_GROUPS) return;
-          const ec = self.entry_counts[group];
-          if (ec >= MAX_ENTRIES) return;
-          self.shard_idx[group][ec] = shard_index;
-          self.peer_ids[group][ec] = peer_id;
-          self.entry_counts[group] = ec + 1;
-          if (group >= self.group_count) self.group_count = group + 1;
-      }
-
-
-
-
-          pub fn survivorsForGroup(self: *const ShardManifest, group: u8, registry: *const PeerRegistry, out_shard_idx: []u8, out_peer_ids: []u8) u8 {
-          if (group >= MAX_GROUPS) return 0;
-          var sc: u8 = 0;
-          var i: u8 = 0;
-          while (i < self.entry_counts[group]) : (i += 1) {
-              if (registry.isAlive(self.peer_ids[group][i])) {
-                  if (sc < out_shard_idx.len) {
-                      out_shard_idx[sc] = self.shard_idx[group][i];
-                      out_peer_ids[sc] = self.peer_ids[group][i];
-                      sc += 1;
-                  }
-              }
-          }
-          return sc;
-      }
-
-
-
+/// Import definition for @import statements in generated code
+pub const Import = struct {
+    name: []const u8,
+    path: []const u8,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -183,11 +71,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 // CREATION PATTERNS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Generate PeerRegistry struct with alive/dead tracking
-/// Source: Dynamic peer registry with failure detection -> Result: |
-
-/// Generate ShardManifest with survivor queries
-/// Source: Maps data groups to peer locations for self-healing -> Result: |
+/// Generate simple struct definitions
+/// Source: VIBEE parser core data structures -> Result: |
 
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
@@ -250,88 +135,6 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // TESTS - Generated from behaviors and test_cases
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "peerRegistryInit_behavior" {
-// Given: No parameters
-// When: Creating empty registry
-// Then: - Initialize all arrays to zero/empty
-// Test peerRegistryInit: verify behavior is callable (compile-time check)
-_ = peerRegistryInit;
-}
-
-test "registerPeer_behavior" {
-// Given: PeerRegistry instance and port number
-// When: Registering a new peer
-// Then: - Check if registry is full (max MAX_PEERS peers)
-// Test registerPeer: verify behavior is callable (compile-time check)
-_ = registerPeer;
-}
-
-test "markDead_behavior" {
-// Given: PeerRegistry instance and peer_id
-// When: Peer has failed
-// Then: - Mark peer as not alive
-// Test markDead: verify behavior is callable (compile-time check)
-_ = markDead;
-}
-
-test "isAlive_behavior" {
-// Given: PeerRegistry instance and peer_id
-// When: Checking peer status
-// Then: - Return true if peer exists and is alive
-// Test isAlive: verify returns boolean
-// TODO: Add specific test for isAlive
-_ = isAlive;
-}
-
-test "alivePeers_behavior" {
-// Given: PeerRegistry instance
-// When: Counting active peers
-// Then: - Count peers with alive = true
-// Test alivePeers: verify returns boolean
-// TODO: Add specific test for alivePeers
-_ = alivePeers;
-}
-
-test "getPort_behavior" {
-// Given: PeerRegistry instance and peer_id
-// When: Getting peer's port number
-// Then: Return port for this peer_id
-// Test getPort: verify behavior is callable (compile-time check)
-_ = getPort;
-}
-
-test "incShards_behavior" {
-// Given: PeerRegistry instance and peer_id
-// When: Incrementing shard count for a peer
-// Then: Increment shard_counts[peer_id]
-// Test incShards: verify behavior is callable (compile-time check)
-_ = incShards;
-}
-
-test "shardManifestInit_behavior" {
-// Given: No parameters
-// When: Creating empty manifest
-// Then: - Initialize all 2D arrays to zero
-// Test shardManifestInit: verify behavior is callable (compile-time check)
-_ = shardManifestInit;
-}
-
-test "recordShard_behavior" {
-// Given: ShardManifest, group number, shard_index, peer_id
-// When: Recording that a peer holds a shard
-// Then: - Validate group is within bounds (max MAX_GROUPS)
-// Test recordShard: verify behavior is callable (compile-time check)
-_ = recordShard;
-}
-
-test "survivorsForGroup_behavior" {
-// Given: ShardManifest, group, registry, output buffers
-// When: Querying surviving peers for a data group
-// Then: - Validate group is within bounds
-// Test survivorsForGroup: verify behavior is callable (compile-time check)
-_ = survivorsForGroup;
-}
-
 test "phi_constants" {
     try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);
     try std.testing.expectApproxEqAbs(PHI_SQ - PHI, 1.0, 1e-10);
@@ -340,27 +143,26 @@ test "phi_constants" {
 // SPEC-LEVEL TESTS - Integration tests from test_cases:
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "peer_registration" {
-// Given: 'registry.registerPeer(8001), registry.registerPeer(8002)'
-// Expected: '2 peers registered, alivePeers() == 2'
-// Test: peer_registration
+test "field_compilation" {
+// Given: 'Field struct with name and type_name'
+// Expected: 'Struct compiles without errors'
+// Test: field_compilation
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }
 
-test "failure_detection" {
-// Given: 'registry.markDead(0)'
-// Expected: 'peer 0 marked dead, isAlive(0) == false'
-    // Test: Verify failure detection via heartbeat
-    var cluster = try initCluster(16, 10000);
-    const failed_count = swarmHeartbeat(&cluster);
-    try std.testing.expect(failed_count >= 0);
+test "constant_compilation" {
+// Given: 'Constant struct with name, value, description'
+// Expected: 'Struct compiles without errors'
+// Test: constant_compilation
+    // (Test setup and assertions to be implemented)
+    _ = @as(usize, 0); // Compile-time check
 }
 
-test "survivor_query" {
-// Given: 'manifest.survivorsForGroup(0, &registry, &shards, &peers)'
-// Expected: 'Returns count of alive peers holding shards'
-// Test: survivor_query
+test "import_compilation" {
+// Given: 'Import struct with name and path'
+// Expected: 'Struct compiles without errors'
+// Test: import_compilation
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }

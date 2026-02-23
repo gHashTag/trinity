@@ -41,7 +41,8 @@ pub const SpecEditor = struct {
     pub fn read(self: *const Self, path: []const u8) !vibee_parser.VibeeSpec {
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 1_000_000);
         var parser = vibee_parser.VibeeParser.init(self.allocator, content);
-        const spec = try parser.parse();
+        var spec = try parser.parse();
+        spec.owns_source = true; // content was readFileAlloc'd
         // Note: spec now owns the content via source_content field
         // Don't free content here - spec.deinit() will handle it
         return spec;
