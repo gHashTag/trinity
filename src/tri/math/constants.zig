@@ -167,24 +167,42 @@ pub fn getAllGroups() []const ConstantGroup {
 }
 
 pub fn printAllConstants(writer: anytype) !void {
-    try writer.writeAll(colors.bold);
-    try writer.writeAll("╔════════════════════════════════════════════════════════════════════╗\n");
-    try writer.writeAll("║                    SACRED MATHEMATICS CONSTANTS                  ║\n");
-    try writer.writeAll("║                    φ² + 1/φ² = 3 = TRINITY                       ║\n");
-    try writer.writeAll("╚════════════════════════════════════════════════════════════════════╝\n\n");
-    try writer.writeAll(colors.reset);
+    try writer.writeAll("\n");
+    try writer.writeAll("+=======================================================================+\n");
+    try writer.writeAll("|                    SACRED MATHEMATICS CONSTANTS                       |\n");
+    try writer.writeAll("|                    phi^2 + 1/phi^2 = 3 = TRINITY                     |\n");
+    try writer.writeAll("+=======================================================================+\n");
+    try writer.writeAll("\n");
 
     for (groups) |group| {
-        try writer.writeAll(group.color);
-        try writer.print("{s}\n", .{group.name});
-        try writer.writeAll(colors.reset);
+        try writer.writeAll("  --- ");
+        try writer.print("{s}", .{group.name});
+        try writer.writeAll(" ---\n\n");
 
         for (group.constants) |const_| {
-            try writer.print("  {s} ({s}) = {s}\n", .{ const_.name, const_.symbol, const_.value });
-            try writer.print("    Formula: {s}\n", .{const_.formula});
-            try writer.print("    {s}\n\n", .{const_.description});
+            try writer.writeAll("    ");
+            try writer.print("{s}", .{const_.name});
+            try writer.writeAll(" (");
+            try writer.print("{s}", .{const_.symbol});
+            try writer.writeAll(")\n");
+            try writer.writeAll("      Value:   ");
+            try writer.print("{s}", .{const_.value});
+            try writer.writeAll("\n");
+            try writer.writeAll("      Formula: ");
+            try writer.print("{s}", .{const_.formula});
+            try writer.writeAll("\n");
+            try writer.writeAll("      ");
+            try writer.print("{s}", .{const_.description});
+            try writer.writeAll("\n\n");
         }
     }
+
+    try writer.writeAll("+=======================================================================+\n");
+    try writer.writeAll("|  Trit: -1  0  +1  |  Base: 3  |  phi = 1.6180339...                 |\n");
+    try writer.writeAll("|  mu = 0.0382  |  chi = 0.0618  |  sigma = phi  |  epsilon = 1/3     |\n");
+    try writer.writeAll("|  Lucas: 2, 1, 3, 4, 7, 11, 18, 29, 47, 76, 123                     |\n");
+    try writer.writeAll("+=======================================================================+\n");
+    try writer.writeAll("\n");
 }
 
 pub fn verifyTrinityIdentity() bool {
