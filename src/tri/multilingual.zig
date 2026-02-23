@@ -298,11 +298,11 @@ pub fn extractKeywords(allocator: std.mem.Allocator, text: []const u8, language:
                     defer allocator.free(lower);
 
                     const prog_keywords = [_][]const u8{
-                        "function", "write",  "create", "make",   "sort",
-                        "search",   "print",  "hello",  "world",  "fibonacci",
+                        "function",  "write", "create", "make",   "sort",
+                        "search",    "print", "hello",  "world",  "fibonacci",
                         "factorial", "array", "list",   "struct", "class",
-                        "loop",     "if",     "else",   "return", "for",
-                        "while",    "var",    "const",  "pub",    "fn",
+                        "loop",      "if",    "else",   "return", "for",
+                        "while",     "var",   "const",  "pub",    "fn",
                     };
 
                     for (prog_keywords) |kw| {

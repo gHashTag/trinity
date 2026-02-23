@@ -215,6 +215,12 @@ pub fn main() !void {
         .spiral => math_commands.runSpiralCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Spiral error: {}\n", .{err});
         },
+        // Dev Utilities
+        .doctor => commands.runDoctorCommand(allocator),
+        .clean => commands.runCleanCommand(allocator),
+        .fmt_cmd => commands.runFmtCommand(allocator),
+        .stats_cmd => commands.runStatsCommand(allocator),
+        .igla => commands.runIglaCommand(allocator),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),
