@@ -1,0 +1,70 @@
+name: tri_search_commands
+version: "1.0.0"
+language: zig
+module: tri_search
+
+# Cycle 79: TRI CLI Search Command
+# Smart code search across the codebase
+# φ² + 1/φ² = 3
+
+types:
+  SearchFilter:
+    fields:
+      pattern: String
+      file_type: String  # zig, vibee, tri, all
+      case_sensitive: Bool
+      include_context: Bool
+
+  SearchResult:
+    fields:
+      file: String
+      line: Int
+      column: Int
+      context_before: String
+      match: String
+      context_after: String
+
+  SearchResults:
+    fields:
+      query: SearchFilter
+      total_matches: Int
+      results: List[SearchResult]
+
+behaviors:
+  - name: search_by_pattern
+    given: A search pattern string and optional filters
+    when: User runs 'tri search <pattern> [options]'
+    then:
+      - Scan all matching files in src/
+      - Find pattern occurrences with line numbers
+      - Return SearchResults with matches and context
+
+  - name: search_by_type
+    given: A Zig type name (struct, enum, fn, const)
+    when: User runs 'tri search --type <typename>'
+    then:
+      - Use tree-sitter to find type definitions
+      - Return SearchResults with file locations and signatures
+
+  - name: search_by_symbol
+    given: A symbol/function name
+    when: User runs 'tri search --symbol <name>'
+    then:
+      - Search for function declarations, calls
+      - Return SearchResults with declaration and call sites
+
+  - name: search_in_specs
+    given: A pattern string
+    when: User runs 'tri search --specs <pattern>'
+    then:
+      - Search only in .tri/.vibee spec files
+      - Return SearchResults from specifications
+
+test_cases:
+  - name: search_simple_pattern
+    given: Pattern "PHI" in src/
+    expected: "Finds all PHI constant references"
+
+  - name: search_type_definition
+    given: Type "PeerRegistry"
+    expected: "Finds struct definition in igla_emitter_phase2"
