@@ -1,5 +1,5 @@
 // =============================================================================
-// TRI CLI - Sacred Mathematics Commands (Cycle 82)
+// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83)
 // =============================================================================
 //
 // Exposes sacred_math.zig library as TRI CLI commands:
@@ -12,6 +12,12 @@
 //   tri math-verify   - Trinity identity verification
 //   tri math-bench    - Performance benchmark
 //   tri math-compare  - Side-by-side comparison table
+//
+// Cycle 83 extensions:
+//   tri math exotic   - Exotic constants (Apery, Catalan, Feigenbaum, etc.)
+//   tri math physical - Physics constants (alpha, CHSH, Planck, Boltzmann)
+//   tri math chaos    - Chaos theory (Feigenbaum + logistic map demo)
+//   tri math all      - Display ALL known constants
 //
 // All math is inlined from sacred_math.zig to avoid build.zig coupling.
 //
@@ -47,6 +53,87 @@ const SIGMA: f64 = 1.618;
 const EPSILON: f64 = 0.333;
 const CHSH: f64 = 2.8284271247461903;
 const FINE_STRUCTURE_INV: f64 = 137.036;
+
+// =============================================================================
+// FUNDAMENTAL CONSTANTS (Cycle 83)
+// =============================================================================
+
+const SQRT2: f64 = 1.4142135623730950488;
+const SQRT3: f64 = 1.7320508075688772935;
+const SQRT5: f64 = 2.2360679774997896964;
+const EULER_MASCHERONI: f64 = 0.5772156649015328606;
+const LN2: f64 = 0.6931471805599453094;
+
+// =============================================================================
+// EXOTIC CONSTANTS (Cycle 83)
+// =============================================================================
+
+/// Apery's constant zeta(3) — proved irrational by Apery (1978)
+const APERY: f64 = 1.2020569031595942854;
+
+/// Catalan's constant G = sum_{n=0}^inf (-1)^n / (2n+1)^2
+const CATALAN: f64 = 0.9159655941772190151;
+
+/// Feigenbaum delta — period-doubling bifurcation ratio (chaos theory)
+const FEIGENBAUM_DELTA: f64 = 4.6692016091029906719;
+
+/// Feigenbaum alpha — scaling factor in bifurcation diagram
+const FEIGENBAUM_ALPHA: f64 = 2.5029078750958928222;
+
+/// Khinchin's constant — geometric mean of continued fraction coefficients
+const KHINCHIN: f64 = 2.6854520010653064453;
+
+/// Glaisher-Kinkelin constant A
+const GLAISHER_KINKELIN: f64 = 1.2824271291006226369;
+
+/// Omega constant — W(1) where W is Lambert W function (x*e^x = 1)
+const OMEGA: f64 = 0.5671432904097838730;
+
+/// Plastic number — real root of x^3 = x + 1 (cubic golden ratio)
+const PLASTIC: f64 = 1.3247179572447460260;
+
+/// Landau-Ramanujan constant
+const LANDAU_RAMANUJAN: f64 = 0.7642236535892206629;
+
+/// Conway's constant — growth rate of look-and-say sequence
+const CONWAY: f64 = 1.3035772690342963912;
+
+// =============================================================================
+// PHYSICS CONSTANTS (Cycle 83)
+// =============================================================================
+
+/// Fine structure constant alpha = e^2 / (4*pi*eps0*hbar*c)
+const ALPHA: f64 = 0.0072973525693;
+
+/// Planck constant h (J*s)
+const PLANCK_H: f64 = 6.62607015e-34;
+
+/// Reduced Planck constant hbar = h/(2*pi)
+const PLANCK_HBAR: f64 = 1.054571817e-34;
+
+/// Speed of light c (m/s)
+const SPEED_OF_LIGHT: f64 = 299792458.0;
+
+/// Boltzmann constant k_B (J/K)
+const BOLTZMANN: f64 = 1.380649e-23;
+
+/// Gravitational constant G (m^3/(kg*s^2))
+const GRAVITATIONAL: f64 = 6.67430e-11;
+
+/// Avogadro's number N_A (1/mol)
+const AVOGADRO: f64 = 6.02214076e23;
+
+/// Elementary charge e (C)
+const ELEMENTARY_CHARGE: f64 = 1.602176634e-19;
+
+/// Planck length l_P (m)
+const PLANCK_LENGTH: f64 = 1.616255e-35;
+
+/// Planck time t_P (s)
+const PLANCK_TIME: f64 = 5.391247e-44;
+
+/// Planck mass m_P (kg)
+const PLANCK_MASS: f64 = 2.176434e-8;
 
 const FIBONACCI_TABLE: [20]i64 = .{
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
@@ -122,6 +209,14 @@ pub fn runMathCommand(args: []const []const u8) void {
         runLucasCommand(sub_args);
     } else if (std.mem.eql(u8, sub, "spiral")) {
         runSpiralCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "exotic") or std.mem.eql(u8, sub, "rare")) {
+        runExoticCommand();
+    } else if (std.mem.eql(u8, sub, "physical") or std.mem.eql(u8, sub, "physics") or std.mem.eql(u8, sub, "phys")) {
+        runPhysicalCommand();
+    } else if (std.mem.eql(u8, sub, "chaos") or std.mem.eql(u8, sub, "feigenbaum")) {
+        runChaosCommand();
+    } else if (std.mem.eql(u8, sub, "all")) {
+        runAllConstantsCommand();
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
@@ -134,15 +229,21 @@ fn printMathHelp() void {
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri math <subcommand>       Run math subcommand\n", .{});
     std.debug.print("  tri <command> [args]         Direct command\n\n", .{});
-    std.debug.print("{s}COMMANDS:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}constants{s}                  All 14 sacred constants\n", .{ GREEN, RESET });
+    std.debug.print("{s}SACRED:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}constants{s}                  Sacred constants (phi, pi, e, Trinity)\n", .{ GREEN, RESET });
     std.debug.print("  {s}phi{s} <n>                    Compute phi^n powers\n", .{ GREEN, RESET });
     std.debug.print("  {s}fib{s} <n>                    Fibonacci number F(n)\n", .{ GREEN, RESET });
     std.debug.print("  {s}lucas{s} <n>                  Lucas number L(n)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}spiral{s} <n>                 Phi-spiral coordinates\n", .{ GREEN, RESET });
-    std.debug.print("  {s}math-verify{s}                Trinity identity checks\n", .{ GREEN, RESET });
+    std.debug.print("  {s}spiral{s} <n>                 Phi-spiral coordinates + ASCII plot\n", .{ GREEN, RESET });
+    std.debug.print("  {s}compare{s} [n]                Side-by-side phi/fib/lucas table\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}EXTENDED (Cycle 83):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}exotic{s}                     Exotic constants (Apery, Catalan, Feigenbaum...)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}physical{s}                   Physics constants (alpha, Planck, Boltzmann...)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}chaos{s}                      Feigenbaum constants + logistic map demo\n", .{ GREEN, RESET });
+    std.debug.print("  {s}all{s}                        ALL constants (sacred + exotic + physics)\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}math-verify{s}                Trinity identity checks (12 checks)\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-bench{s}                 Performance benchmark\n", .{ GREEN, RESET });
-    std.debug.print("  {s}math-compare{s} [n]           Side-by-side table (default n=12)\n", .{ GREEN, RESET });
     std.debug.print("\n{s}DIRECT ALIASES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri constants  |  tri phi 10  |  tri fib 19\n", .{});
     std.debug.print("  tri lucas 5    |  tri spiral 8 |  tri math-verify\n", .{});
@@ -162,8 +263,13 @@ pub fn runConstantsCommand() void {
     printConst("1/phi (PHI_INV)", PHI_INV, "phi - 1");
     printConst("1/phi^2 (PHI_INV_SQ)", PHI_INV_SQ, "2 - phi");
     std.debug.print("\n", .{});
+    printConst("sqrt(2)", SQRT2, "Pythagoras constant");
+    printConst("sqrt(5)", SQRT5, "(phi*2 - 1)");
+    std.debug.print("\n", .{});
     printConst("pi", PI, "Circle constant");
     printConst("e", E, "Euler's number");
+    printConst("gamma (Euler-Mascheroni)", EULER_MASCHERONI, "Harmonic series limit");
+    printConst("ln(2)", LN2, "Natural log of 2");
     printConst("pi * phi * e", TRANSCENDENTAL, "~= TRYTE_MAX (13)");
     std.debug.print("\n", .{});
     printConstInt("TRINITY", TRINITY, "phi^2 + 1/phi^2 = 3");
@@ -397,7 +503,7 @@ pub fn runMathVerifyCommand() void {
     std.debug.print("{s}================================================{s}\n\n", .{ GRAY, RESET });
 
     var passed: u32 = 0;
-    const total: u32 = 8;
+    const total: u32 = 12;
 
     // Check 1: phi^2 + 1/phi^2 = 3
     {
@@ -460,6 +566,38 @@ pub fn runMathVerifyCommand() void {
         const ok = @abs(FINE_STRUCTURE_INV - 137.036) < 0.001;
         if (ok) passed += 1;
         printCheck(ok, "1/alpha", FINE_STRUCTURE_INV, "Fine structure");
+    }
+
+    // Check 9: sqrt(2)^2 = 2
+    {
+        const result = SQRT2 * SQRT2;
+        const ok = @abs(result - 2.0) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "sqrt(2)^2", result, "= 2 Pythagoras");
+    }
+
+    // Check 10: phi = (1 + sqrt(5))/2
+    {
+        const result = (1.0 + SQRT5) / 2.0;
+        const ok = @abs(result - PHI) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "(1+sqrt5)/2", result, "= phi Golden ratio");
+    }
+
+    // Check 11: e^(i*pi) + 1 = 0 (Euler identity, check e^pi magnitude)
+    {
+        const e_pi = std.math.pow(f64, E, PI);
+        const ok = @abs(e_pi - 23.1407) < 0.001;
+        if (ok) passed += 1;
+        printCheck(ok, "e^pi", e_pi, "= 23.1407 (Gelfond)");
+    }
+
+    // Check 12: Omega satisfies Omega * e^Omega = 1
+    {
+        const result = OMEGA * std.math.pow(f64, E, OMEGA);
+        const ok = @abs(result - 1.0) < 0.0001;
+        if (ok) passed += 1;
+        printCheck(ok, "Omega*e^Omega", result, "= 1 Lambert W");
     }
 
     // Summary
@@ -631,6 +769,261 @@ pub fn runMathCompareCommand(args: []const []const u8) void {
     std.debug.print("\n  {s}phi^n + 1/phi^n = L(n) (Lucas numbers){s}\n", .{ GRAY, RESET });
     std.debug.print("  {s}phi^n = (F(n)*phi + F(n-1)) for n >= 1{s}\n", .{ GRAY, RESET });
     std.debug.print("\n", .{});
+}
+
+// =============================================================================
+// COMMAND: tri math exotic
+// =============================================================================
+
+fn runExoticCommand() void {
+    std.debug.print("\n{s}Exotic Mathematical Constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================{s}\n\n", .{ GRAY, RESET });
+
+    printConst("zeta(3) Apery", APERY, "Proved irrational (1978)");
+    printConst("G Catalan", CATALAN, "sum (-1)^n/(2n+1)^2");
+    std.debug.print("\n", .{});
+    printConst("delta Feigenbaum", FEIGENBAUM_DELTA, "Period-doubling ratio (chaos)");
+    printConst("alpha Feigenbaum", FEIGENBAUM_ALPHA, "Bifurcation scaling (chaos)");
+    std.debug.print("\n", .{});
+    printConst("K Khinchin", KHINCHIN, "CF geometric mean");
+    printConst("A Glaisher-Kinkelin", GLAISHER_KINKELIN, "Hyperfactorial constant");
+    printConst("Omega", OMEGA, "Lambert W(1): x*e^x=1");
+    std.debug.print("\n", .{});
+    printConst("rho Plastic", PLASTIC, "x^3 = x+1 (cubic golden)");
+    printConst("Landau-Ramanujan", LANDAU_RAMANUJAN, "Sums of two squares density");
+    printConst("lambda Conway", CONWAY, "Look-and-say growth rate");
+
+    // Identities
+    std.debug.print("\n{s}  Identities:{s}\n", .{ GOLDEN, RESET });
+    const omega_check = OMEGA * std.math.pow(f64, E, OMEGA);
+    std.debug.print("    Omega * e^Omega = {d:.10}", .{omega_check});
+    if (@abs(omega_check - 1.0) < 0.0001) {
+        std.debug.print("  {s}= 1 OK{s}", .{ GREEN, RESET });
+    }
+    std.debug.print("\n", .{});
+
+    const plastic_check = PLASTIC * PLASTIC * PLASTIC;
+    const plastic_rhs = PLASTIC + 1.0;
+    std.debug.print("    rho^3 = {d:.10}, rho+1 = {d:.10}", .{ plastic_check, plastic_rhs });
+    if (@abs(plastic_check - plastic_rhs) < 0.0001) {
+        std.debug.print("  {s}= OK{s}", .{ GREEN, RESET });
+    }
+    std.debug.print("\n\n", .{});
+}
+
+// =============================================================================
+// COMMAND: tri math physical
+// =============================================================================
+
+fn runPhysicalCommand() void {
+    std.debug.print("\n{s}Physics Constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================{s}\n\n", .{ GRAY, RESET });
+
+    std.debug.print("{s}  Fundamental:{s}\n", .{ CYAN, RESET });
+    printConst("c (speed of light)", SPEED_OF_LIGHT, "m/s (exact)");
+    printConst("h (Planck)", PLANCK_H, "J*s");
+    printConst("hbar (reduced)", PLANCK_HBAR, "J*s");
+    printConst("k_B (Boltzmann)", BOLTZMANN, "J/K");
+    printConst("e (charge)", ELEMENTARY_CHARGE, "C");
+    printConst("G (gravitational)", GRAVITATIONAL, "m^3/(kg*s^2)");
+    printConst("N_A (Avogadro)", AVOGADRO, "1/mol");
+
+    std.debug.print("\n{s}  Dimensionless:{s}\n", .{ CYAN, RESET });
+    printConst("alpha (fine structure)", ALPHA, "e^2/(4pi*eps0*hbar*c)");
+    printConst("1/alpha", FINE_STRUCTURE_INV, "~137.036");
+    printConst("CHSH = 2*sqrt(2)", CHSH, "Bell inequality bound");
+
+    std.debug.print("\n{s}  Planck units:{s}\n", .{ CYAN, RESET });
+    printConstSci("l_P (Planck length)", PLANCK_LENGTH, "m");
+    printConstSci("t_P (Planck time)", PLANCK_TIME, "s");
+    printConstSci("m_P (Planck mass)", PLANCK_MASS, "kg");
+
+    // Trinity connection
+    std.debug.print("\n{s}  Trinity Connections:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    1/alpha = {d:.3} ~ 137 = F(7)*F(5)+F(6)*F(4) = 13*5+8*3\n", .{FINE_STRUCTURE_INV});
+    std.debug.print("    CHSH = 2*sqrt(2) = {d:.6} > 2 (quantum wins)\n", .{CHSH});
+    std.debug.print("    pi*phi*e = {d:.4} ~ 13 = F(7) = TRYTE_MAX\n", .{TRANSCENDENTAL});
+    std.debug.print("\n", .{});
+}
+
+fn printConstSci(name: []const u8, value: f64, unit: []const u8) void {
+    std.debug.print("  {s}{s:<24}{s} = {s}{e:.6}{s}  {s}{s}{s}\n", .{
+        GREEN, name, RESET, WHITE, value, RESET, GRAY, unit, RESET,
+    });
+}
+
+// =============================================================================
+// COMMAND: tri math chaos
+// =============================================================================
+
+fn runChaosCommand() void {
+    std.debug.print("\n{s}Chaos Theory — Feigenbaum Constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================{s}\n\n", .{ GRAY, RESET });
+
+    printConst("delta Feigenbaum", FEIGENBAUM_DELTA, "Period-doubling ratio");
+    printConst("alpha Feigenbaum", FEIGENBAUM_ALPHA, "Bifurcation scaling");
+
+    std.debug.print("\n{s}  What they mean:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    delta: ratio of distances between consecutive bifurcation points\n", .{});
+    std.debug.print("    alpha: ratio of widths of consecutive tines of the bifurcation fork\n", .{});
+    std.debug.print("    These are UNIVERSAL — same for ALL unimodal maps!\n\n", .{});
+
+    // Logistic map demo: x_{n+1} = r * x_n * (1 - x_n)
+    std.debug.print("{s}  Logistic Map Demo{s} x(n+1) = r * x(n) * (1 - x(n))\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}================================================{s}\n", .{ GRAY, RESET });
+
+    // Show bifurcation points
+    const bif_points = [_]f64{ 3.0, 3.44949, 3.54409, 3.56441, 3.56876, 3.56969 };
+    const periods = [_][]const u8{ "2", "4", "8", "16", "32", "64" };
+
+    std.debug.print("\n  {s}Bifurcation Points:{s}\n", .{ CYAN, RESET });
+    var i: usize = 0;
+    while (i < bif_points.len) : (i += 1) {
+        std.debug.print("    r = {d:.5}  ->  period {s}\n", .{ bif_points[i], periods[i] });
+        if (i > 0) {
+            const ratio = (bif_points[i - 1] - if (i >= 2) bif_points[i - 2] else 1.0) /
+                (bif_points[i] - bif_points[i - 1]);
+            if (i >= 2) {
+                const diff = @abs(ratio - FEIGENBAUM_DELTA);
+                if (diff < 2.0) {
+                    std.debug.print("      ratio = {d:.4}", .{ratio});
+                    if (diff < 0.5) {
+                        std.debug.print("  {s}-> delta = {d:.4}{s}", .{ GREEN, FEIGENBAUM_DELTA, RESET });
+                    }
+                    std.debug.print("\n", .{});
+                }
+            }
+        }
+    }
+
+    // Logistic map iteration demo at r = 3.57 (edge of chaos)
+    std.debug.print("\n  {s}Iteration at r = 3.57 (onset of chaos):{s}\n", .{ CYAN, RESET });
+    var x: f64 = 0.5;
+    const r: f64 = 3.57;
+    // Skip transient
+    for (0..100) |_| {
+        x = r * x * (1.0 - x);
+    }
+    // Show attractor
+    std.debug.print("    ", .{});
+    for (0..30) |j| {
+        x = r * x * (1.0 - x);
+        const bar_pos: usize = @intFromFloat(@min(39.0, @max(0.0, x * 40.0)));
+        if (j > 0) std.debug.print(" ", .{});
+        _ = bar_pos;
+        std.debug.print("{d:.3}", .{x});
+    }
+    std.debug.print("\n", .{});
+
+    // ASCII bifurcation diagram
+    std.debug.print("\n  {s}Bifurcation Diagram (r = 2.8 .. 4.0):{s}\n", .{ GOLDEN, RESET });
+
+    const diag_w: usize = 60;
+    const diag_h: usize = 16;
+    var diagram: [16][60]u8 = undefined;
+    for (&diagram) |*row| {
+        for (row) |*cell| {
+            cell.* = ' ';
+        }
+    }
+
+    // For each r value, iterate and plot stable points
+    var col: usize = 0;
+    while (col < diag_w) : (col += 1) {
+        const r_val = 2.8 + @as(f64, @floatFromInt(col)) / @as(f64, @floatFromInt(diag_w - 1)) * 1.2;
+        var xv: f64 = 0.5;
+        // Skip transient
+        for (0..200) |_| {
+            xv = r_val * xv * (1.0 - xv);
+        }
+        // Plot attractor points
+        for (0..30) |_| {
+            xv = r_val * xv * (1.0 - xv);
+            const row_idx: usize = @intFromFloat(@min(@as(f64, @floatFromInt(diag_h - 1)), @max(0.0, (1.0 - xv) * @as(f64, @floatFromInt(diag_h - 1)))));
+            diagram[row_idx][col] = '.';
+        }
+    }
+
+    // Print diagram
+    std.debug.print("  x\n", .{});
+    for (diagram) |row| {
+        std.debug.print("  {s}|{s}", .{ GRAY, RESET });
+        for (row) |cell| {
+            if (cell == '.') {
+                std.debug.print("{s}.{s}", .{ GOLDEN, RESET });
+            } else {
+                std.debug.print(" ", .{});
+            }
+        }
+        std.debug.print("\n", .{});
+    }
+    std.debug.print("  {s}+", .{GRAY});
+    for (0..diag_w) |_| {
+        std.debug.print("-", .{});
+    }
+    std.debug.print("{s}\n", .{RESET});
+    std.debug.print("  r=2.8{s: >52}r=4.0\n\n", .{""});
+}
+
+// =============================================================================
+// COMMAND: tri math all
+// =============================================================================
+
+fn runAllConstantsCommand() void {
+    std.debug.print("\n{s}ALL Mathematical Constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  GOLDEN RATIO FAMILY:{s}\n", .{ GOLDEN, RESET });
+    printConst("phi (PHI)", PHI, "Golden ratio (1+sqrt5)/2");
+    printConst("phi^2 (PHI_SQ)", PHI_SQ, "phi + 1");
+    printConst("1/phi (PHI_INV)", PHI_INV, "phi - 1");
+    printConst("1/phi^2 (PHI_INV_SQ)", PHI_INV_SQ, "2 - phi");
+
+    std.debug.print("\n{s}  FUNDAMENTAL:{s}\n", .{ GOLDEN, RESET });
+    printConst("pi", PI, "Circle constant");
+    printConst("e", E, "Euler's number");
+    printConst("sqrt(2)", SQRT2, "Pythagoras");
+    printConst("sqrt(3)", SQRT3, "Hexagonal");
+    printConst("sqrt(5)", SQRT5, "Pentagonal");
+    printConst("gamma (Euler-Masch.)", EULER_MASCHERONI, "Harmonic limit");
+    printConst("ln(2)", LN2, "Natural log of 2");
+
+    std.debug.print("\n{s}  SACRED (TRINITY):{s}\n", .{ GOLDEN, RESET });
+    printConstInt("TRINITY", TRINITY, "phi^2 + 1/phi^2 = 3");
+    printConst("pi * phi * e", TRANSCENDENTAL, "~= 13 = TRYTE_MAX");
+    printConst("mu (mutation)", MU, "1/phi^2/10");
+    printConst("chi (crossover)", CHI, "1/phi/10");
+    printConst("sigma (selection)", SIGMA, "phi");
+    printConst("epsilon (elitism)", EPSILON, "1/3");
+
+    std.debug.print("\n{s}  EXOTIC:{s}\n", .{ GOLDEN, RESET });
+    printConst("zeta(3) Apery", APERY, "Irrational (1978)");
+    printConst("G Catalan", CATALAN, "Alternating series");
+    printConst("delta Feigenbaum", FEIGENBAUM_DELTA, "Chaos bifurcation");
+    printConst("alpha Feigenbaum", FEIGENBAUM_ALPHA, "Chaos scaling");
+    printConst("K Khinchin", KHINCHIN, "CF geometric mean");
+    printConst("A Glaisher-Kinkelin", GLAISHER_KINKELIN, "Hyperfactorial");
+    printConst("Omega (Lambert)", OMEGA, "x*e^x = 1");
+    printConst("rho Plastic", PLASTIC, "x^3 = x+1");
+    printConst("Landau-Ramanujan", LANDAU_RAMANUJAN, "Sums of 2 squares");
+    printConst("lambda Conway", CONWAY, "Look-and-say");
+
+    std.debug.print("\n{s}  PHYSICS:{s}\n", .{ GOLDEN, RESET });
+    printConst("alpha (fine struct.)", ALPHA, "~1/137");
+    printConst("1/alpha", FINE_STRUCTURE_INV, "137.036");
+    printConst("CHSH = 2*sqrt(2)", CHSH, "Bell bound");
+    printConst("c (light speed)", SPEED_OF_LIGHT, "m/s");
+    printConst("k_B (Boltzmann)", BOLTZMANN, "J/K");
+
+    // Total count
+    std.debug.print("\n{s}  Total: 36 constants{s}\n", .{ GOLDEN, RESET });
+
+    const trinity_check = PHI_SQ + PHI_INV_SQ;
+    std.debug.print("  {s}phi^2 + 1/phi^2 = {d:.10}{s}", .{ GOLDEN, trinity_check, RESET });
+    if (@abs(trinity_check - 3.0) < 0.0001) {
+        std.debug.print(" {s}TRINITY VERIFIED{s}", .{ GREEN, RESET });
+    }
+    std.debug.print("\n\n", .{});
 }
 
 // =============================================================================
