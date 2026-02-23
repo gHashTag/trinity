@@ -1,0 +1,294 @@
+name: tmux_dashboard
+version: "1.0.0"
+language: zig
+module: tmux_dashboard
+
+description: |
+  TMUX Dashboard - Sacred Trinity Interface with Golden Chain integration.
+  Provides 5-window layout: HOME (chat), Loop (status), Tasks, GC, VIBEE.
+
+types:
+  DashboardWindow:
+    description: Window identifier in tmux session
+    variants:
+      - home: HomeWindow
+      - loop: LoopWindow
+      - tasks: TasksWindow
+      - golden_chain: GoldenChainWindow
+      - vibee: VibeeWindow
+
+  HomeWindow:
+    description: Chat interface with AI assistant
+    fields:
+      input_pane: InputPane
+      output_pane: OutputPane
+
+  InputPane:
+    description: User input handler
+    fields:
+      prompt: String
+      history_file: String
+      incoming_file: String
+
+  OutputPane:
+    description: AI response display
+    fields:
+      response_file: String
+      chat_file: String
+      loading_spinner: Spinner
+
+  ChatMessage:
+    description: Message in chat history
+    fields:
+      role: ChatRole
+      content: String
+      timestamp: U64
+
+  ChatRole:
+    description: Sender of message
+    variants:
+      - user
+      - assistant
+
+  Spinner:
+    description: Loading animation frames
+    fields:
+      frames: String
+      current_frame: U8
+      text: String
+
+  ModelStatus:
+    description: AI model status for status bar
+    fields:
+      name: String
+      status: ModelStatus
+      latency_ms: U64
+      provider: String
+      tokens_total: String
+      tokens_current: String
+      is_thinking: Bool
+
+  ModelStatus:
+    description: Current model state
+    variants:
+      - online
+      - thinking
+      - degraded
+      - offline
+      - error
+
+  LoopStatus:
+    description: Ralph loop status for panel0
+    fields:
+      loop_count: U64
+      api_calls: U64
+      api_limit: U64
+      circuit_breaker: CircuitBreakerState
+      last_action: String
+      status: String
+
+  CircuitBreakerState:
+    description: Circuit breaker state
+    variants:
+      - closed
+      - open
+      - half_open
+
+behaviors:
+  - name: launch_dashboard
+    given: Session name and window configuration
+    when: User runs launch.sh script
+    then:
+      - Kills existing tmux session if present
+      - Creates new tmux session with 5 windows
+      - Splits HOME window vertically (90% output, 10% input)
+      - Starts output monitor in top pane
+      - Starts input handler in bottom pane
+      - Starts command handler in background
+      - Attaches to session
+
+  - name: show_input_prompt
+    given: User in HOME window bottom pane
+    when: Dashboard is running
+    then:
+      - Displays lime green (ANSI 154) ▲ prompt
+      - Blocks on read waiting for user input
+      - Stores command in history file (.history)
+      - Writes command to incoming.cmd file
+      - Clears line with ANSI escape \033[A\033[2K\r
+
+  - name: display_response
+    given: AI response from handler
+    when: Response file changes (MD5 diff)
+    then:
+      - Hides loading spinner
+      - Shows ▲ with command in lime green
+      - Shows ▼ on first line of response in lime green
+      - Shows remaining lines without prefix
+      - Appends to chat_history.txt
+
+  - name: show_loading_spinner
+    given: No response yet but incoming.cmd changed
+    when: Waiting for AI response
+    then:
+      - Detects MD5 change on incoming.cmd
+      - Shows spinner animation (⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏)
+      - Displays "thinking..." in cyan
+      - Updates every 0.1 seconds
+      - Hides when response arrives
+
+  - name: update_model_status_bar
+    given: Model status from /tmp/ralph-model-status.json
+    when: Every 2 seconds
+    then:
+      - Reads current_model.name, status, latency_ms
+      - Reads total_tokens, current_call tokens
+      - Checks if thinking (active call)
+      - Sets color: green=online, cyan=thinking, orange=degraded, red=offline/error
+      - Displays bar at top of output pane
+      - Format: "│ Model │ Status │ Time │ Tokens"
+
+  - name: handle_command
+    given: User command from incoming.cmd
+    when: Handler detects change
+    then:
+      - Checks for special commands (status, tasks)
+      - For status: reads .ralph/logs/status.json
+      - For tasks: reads .ralph/fix_plan.md
+      - For other: calls Anthropic API
+      - Writes formatted response to current.resp
+      - Uses box drawing characters for format
+
+  - name: display_loop_status
+    given: Panel 0 (Loop left pane)
+    when: Refreshed every 2 seconds
+    then:
+      - Reads .ralph/logs/status.json
+      - Reads circuit breaker state
+      - Displays loop count, API usage, status
+      - Color codes: green=running, orange=paused, red=open circuit
+
+  - name: display_worker_status
+    given: Panel 1 (Loop right pane)
+    when: Refreshed every 5 seconds
+    then:
+      - Reads fix_plan.md
+      - Shows task completion (done/total)
+      - Lists P1 tasks in red
+      - Uses cache for performance
+
+  - name: display_tasks
+    given: Panel 2 (Tasks)
+    when: Refreshed every 5 seconds
+    then:
+      - Reads fix_plan.md
+      - Shows P1, P2, P3 tasks by priority
+      - Color codes: red=P1, orange=P2, yellow=P3
+      - Shows checkbox [ ] for each task
+
+  - name: display_techtree
+    given: Panel 3 (Tasks right pane)
+    when: Refreshed every 10 seconds
+    then:
+      - Reads .ralph/TECH_TREE.md
+      - Shows recently completed nodes
+      - Shows available nodes count
+
+  - name: display_golden_chain
+    given: Panel 4 (GoldenChain left pane)
+    when: Refreshed every 5 seconds
+    then:
+      - Checks for tmux-golden-chain binary
+      - Runs binary panel-golden-chain command
+      - Falls back to static display if not built
+
+  - name: display_mcp_nexus
+    given: Panel 4 (GoldenChain right pane)
+    when: Refreshed every 5 seconds
+    then:
+      - Checks for tmux-golden-chain binary
+      - Runs binary panel-mcp command
+      - Falls back to static display if not built
+
+  - name: display_vibee_status
+    given: Panel 5 (VIBEE)
+    when: Refreshed every 5 seconds
+    then:
+      - Checks for tmux-golden-chain binary
+      - Runs binary panel-vibee command
+      - Shows VIBEE compiler status
+
+  - name: cache_status_data
+    given: Repeated reads of same files
+    when: Cache TTL not expired (5 seconds)
+    then:
+      - Stores parsed data in /tmp/ralph-tmux-cache/
+      - Returns cached value
+      - Reduces file I/O for jq/grep operations
+
+config:
+  session_name: "trinity"
+  ralph_dir: "/Users/playra/trinity/trinity-nexus"
+  queue_dir: "ralph/queue"
+
+  windows:
+    home:
+      name: "HOME"
+      layout: split-vertical
+      split_percent: 10
+      top: "output.sh"
+      bottom: "input.sh"
+
+    loop:
+      name: "Loop"
+      layout: split-horizontal
+      left: "status.sh panel0"
+      right: "status.sh panel1"
+
+    tasks:
+      name: "Tasks"
+      layout: split-horizontal
+      left: "status.sh panel2"
+      right: "status.sh panel3"
+
+    golden_chain:
+      name: "GoldenChain"
+      layout: split-horizontal
+      left: "status.sh panel4"
+      right: "status.sh panel5"
+
+    vibee:
+      name: "VIBEE"
+      layout: single
+      command: "status.sh panel6"
+
+  colors:
+    lime: "\\033[38;5;154m"
+    cyan: "\\033[1;96m"
+    gold: "\\033[1;93m"
+    green: "\\033[38;5;154m"
+    red: "\\033[1;91m"
+    orange: "\\033[1;91m"
+    gray: "\\033[0;90m"
+    reset: "\\033[0m"
+    bold: "\\033[1m"
+
+  symbols:
+    user_input: "▲"
+    ai_response: "▼"
+    spinner_frames: "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+
+  paths:
+    incoming: "ralph/queue/incoming.cmd"
+    response: "ralph/queue/responses/current.resp"
+    chat_history: "ralph/queue/chat_history.txt"
+    history: "ralph/queue/.history"
+    handler_state: "ralph/queue/.handler_state"
+    creds: "ralph/queue/.creds"
+
+  external_refs:
+    ralph_status: "/Users/playra/trinity/.ralph/logs/status.json"
+    ralph_fix_plan: "/Users/playra/trinity/.ralph/fix_plan.md"
+    ralph_tech_tree: "/Users/playra/trinity/.ralph/TECH_TREE.md"
+    model_status: "/tmp/ralph-model-status.json"
+    cache_dir: "/tmp/ralph-tmux-cache"
