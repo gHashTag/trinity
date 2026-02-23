@@ -564,6 +564,12 @@ pub fn printHelp() void {
     std.debug.print("  {s}math-compare{s} [n]           Side-by-side phi/fib/lucas table\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}CODE QUALITY (Cycle 81):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}lsp{s} [--port N]              LSP server (stdio or TCP)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}autofix{s} <path>              Auto-fix: whitespace + newlines + zig fmt\n", .{ GREEN, RESET });
+    std.debug.print("  {s}lint{s} [path]                 5-check code quality scanner\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});

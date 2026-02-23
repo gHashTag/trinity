@@ -1373,7 +1373,6 @@ pub fn runDepsCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
-    _ = allocator;
     var port: u16 = 0; // 0 = stdio mode
     var verbose_mode = false;
 
@@ -1440,7 +1439,7 @@ pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) voi
         if (std.mem.indexOf(u8, body, "\"initialize\"") != null) {
             // Respond with capabilities
             const response =
-                \\{"jsonrpc":"2.0","id":0,"result":{"capabilities":{"textDocumentSync":1,"diagnosticProvider":{"interFileDependencies":false,"workspaceDiagnostics":false}},"serverInfo":{"name":"tri-lsp","version":"0.1.0"}}}
+                \\{"jsonrpc":"2.0","id":0,"result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"diagnosticProvider":{"interFileDependencies":false,"workspaceDiagnostics":false}},"serverInfo":{"name":"tri-lsp","version":"0.2.0"}}}
             ;
             var resp_buf: [512]u8 = undefined;
             const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch continue;
@@ -1456,11 +1455,138 @@ pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) voi
             const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch continue;
             stdout_file.writeAll(header) catch return;
             stdout_file.writeAll(response) catch return;
+        } else if (std.mem.indexOf(u8, body, "\"textDocument/didOpen\"") != null or
+            std.mem.indexOf(u8, body, "\"textDocument/didSave\"") != null)
+        {
+            // Extract URI from notification and publish diagnostics
+            const uri = extractJsonString(body, "\"uri\":\"") orelse continue;
+            publishDiagnostics(allocator, stdout_file, uri);
+        } else if (std.mem.indexOf(u8, body, "\"textDocument/hover\"") != null) {
+            // Extract request id
+            const id_str = extractJsonString(body, "\"id\":") orelse "1";
+            const req_id = std.fmt.parseInt(i64, std.mem.trim(u8, id_str, " ,"), 10) catch 1;
+            sendHoverResponse(stdout_file, req_id);
         } else if (std.mem.indexOf(u8, body, "\"exit\"") != null) {
             return;
         }
         // Other methods: silently ignore for now
     }
+}
+
+/// Extract a JSON string value after the given prefix key
+fn extractJsonString(body: []const u8, key: []const u8) ?[]const u8 {
+    const start_idx = (std.mem.indexOf(u8, body, key) orelse return null) + key.len;
+    // Check if value starts with quote (string) or is numeric
+    if (start_idx >= body.len) return null;
+    if (body[start_idx] == '"') {
+        // String value — find closing quote
+        const val_start = start_idx + 1;
+        const end_idx = std.mem.indexOf(u8, body[val_start..], "\"") orelse return null;
+        return body[val_start .. val_start + end_idx];
+    } else {
+        // Numeric or other — return until comma/brace
+        var end: usize = start_idx;
+        while (end < body.len and body[end] != ',' and body[end] != '}' and body[end] != ' ') : (end += 1) {}
+        return body[start_idx..end];
+    }
+}
+
+/// Publish diagnostics for a file URI
+fn publishDiagnostics(allocator: std.mem.Allocator, stdout_file: std.fs.File, uri: []const u8) void {
+    // Convert file:// URI to path
+    const path = if (std.mem.startsWith(u8, uri, "file://"))
+        uri["file://".len..]
+    else
+        uri;
+
+    // Run zig fmt --check to find formatting issues
+    var diag_buf: [8192]u8 = undefined;
+    var diag_len: usize = 0;
+
+    // Start JSON array of diagnostics
+    const diag_start = "[";
+    @memcpy(diag_buf[0..diag_start.len], diag_start);
+    diag_len = diag_start.len;
+
+    var diag_count: u32 = 0;
+
+    // Check 1: zig fmt compliance
+    var argv_buf: [512]u8 = undefined;
+    const fmt_cmd = std.fmt.bufPrint(&argv_buf, "zig fmt --check {s} 2>&1 | head -5", .{path}) catch {
+        return;
+    };
+    const fmt_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", fmt_cmd },
+        .max_output_bytes = 4096,
+    }) catch return;
+    defer allocator.free(fmt_result.stdout);
+    defer allocator.free(fmt_result.stderr);
+
+    if (fmt_result.term.Exited != 0 and fmt_result.stdout.len > 0) {
+        // Add formatting diagnostic
+        if (diag_count > 0) {
+            diag_buf[diag_len] = ',';
+            diag_len += 1;
+        }
+        const diag_entry =
+            \\{"range":{"start":{"line":0,"character":0},"end":{"line":0,"character":1}},"severity":2,"source":"tri-lsp","message":"File needs formatting (zig fmt)"}
+        ;
+        if (diag_len + diag_entry.len < diag_buf.len - 2) {
+            @memcpy(diag_buf[diag_len .. diag_len + diag_entry.len], diag_entry);
+            diag_len += diag_entry.len;
+            diag_count += 1;
+        }
+    }
+
+    // Check 2: @panic usage
+    var panic_buf: [512]u8 = undefined;
+    const panic_cmd = std.fmt.bufPrint(&panic_buf, "grep -nc '@panic' {s} 2>/dev/null || echo 0", .{path}) catch return;
+    const panic_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", panic_cmd },
+        .max_output_bytes = 64,
+    }) catch return;
+    defer allocator.free(panic_result.stdout);
+    defer allocator.free(panic_result.stderr);
+
+    const panic_count = std.fmt.parseInt(u32, std.mem.trim(u8, panic_result.stdout, " \n\r"), 10) catch 0;
+    if (panic_count > 0) {
+        if (diag_count > 0) {
+            diag_buf[diag_len] = ',';
+            diag_len += 1;
+        }
+        var msg_buf: [128]u8 = undefined;
+        const msg = std.fmt.bufPrint(&msg_buf, "{{\"range\":{{\"start\":{{\"line\":0,\"character\":0}},\"end\":{{\"line\":0,\"character\":1}}}},\"severity\":2,\"source\":\"tri-lsp\",\"message\":\"{d} @panic call(s) — consider error returns\"}}", .{panic_count}) catch return;
+        if (diag_len + msg.len < diag_buf.len - 2) {
+            @memcpy(diag_buf[diag_len .. diag_len + msg.len], msg);
+            diag_len += msg.len;
+            diag_count += 1;
+        }
+    }
+
+    // Close array
+    diag_buf[diag_len] = ']';
+    diag_len += 1;
+
+    // Build the full publishDiagnostics notification
+    var notif_buf: [16384]u8 = undefined;
+    const notification = std.fmt.bufPrint(&notif_buf, "{{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{{\"uri\":\"{s}\",\"diagnostics\":{s}}}}}", .{ uri, diag_buf[0..diag_len] }) catch return;
+
+    var hdr_buf: [128]u8 = undefined;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{notification.len}) catch return;
+    stdout_file.writeAll(hdr) catch return;
+    stdout_file.writeAll(notification) catch return;
+}
+
+/// Send hover response with TRI LSP info
+fn sendHoverResponse(stdout_file: std.fs.File, req_id: i64) void {
+    var resp_buf: [512]u8 = undefined;
+    const response = std.fmt.bufPrint(&resp_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{d},\"result\":{{\"contents\":{{\"kind\":\"markdown\",\"value\":\"**TRI LSP** v0.1.0\\n\\nTrinity Language Server\\n\\n`phi^2 + 1/phi^2 = 3`\"}}}}}}", .{req_id}) catch return;
+    var hdr_buf: [128]u8 = undefined;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+    stdout_file.writeAll(hdr) catch return;
+    stdout_file.writeAll(response) catch return;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
