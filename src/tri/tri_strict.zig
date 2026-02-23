@@ -49,6 +49,8 @@ pub fn runStrictCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         runStrictStatus();
     } else if (std.mem.eql(u8, subcmd, "check")) {
         runStrictCheck(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "fix")) {
+        runStrictFix(allocator, sub_args);
     } else {
         std.debug.print("{s}Unknown strict subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printStrictHelp();
@@ -70,6 +72,7 @@ fn printStrictHelp() void {
     std.debug.print("  {s}disable{s}         Deactivate strict mode (removes marker)\n", .{ GREEN, RESET });
     std.debug.print("  {s}status{s}          Show current mode and enforcement rules\n", .{ GREEN, RESET });
     std.debug.print("  {s}check{s} [path]    Validate VIBEE-first compliance for path or project\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fix{s} [--dry-run]  Auto-generate missing .vibee specs from generated code\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Protected directories (NEVER edit directly):{s}\n", .{ RED, RESET });
     std.debug.print("  trinity/output/*.zig    Auto-generated from .vibee\n", .{});
     std.debug.print("  trinity/output/fpga/*.v Auto-generated from .vibee\n", .{});
@@ -293,6 +296,200 @@ fn scanDirectoryRecursive(allocator: std.mem.Allocator, dir_path: []const u8, vi
     }
 
     return count;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIX (Auto-generate missing .vibee specs)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runStrictFix(allocator: std.mem.Allocator, args: []const []const u8) void {
+    var dry_run = false;
+
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--dry-run")) dry_run = true;
+    }
+
+    std.debug.print("\n{s}VIBEE-First Auto-Fix{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
+    if (dry_run) {
+        std.debug.print("  Mode: {s}DRY RUN{s} (no files written)\n\n", .{ GOLDEN, RESET });
+    } else {
+        std.debug.print("  Mode: {s}LIVE{s} (writing .vibee specs)\n\n", .{ GREEN, RESET });
+    }
+
+    var created: usize = 0;
+    var skipped: usize = 0;
+    var errors: usize = 0;
+
+    // Scan generated/ directory
+    fixDirectory(allocator, "generated", dry_run, &created, &skipped, &errors);
+    // Scan trinity/output/ directory
+    fixDirectoryRecursive(allocator, "trinity/output", dry_run, &created, &skipped, &errors);
+
+    // Summary
+    std.debug.print("\n{s}Fix Summary:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  Specs created: {s}{d}{s}\n", .{ GREEN, created, RESET });
+    std.debug.print("  Already exist: {d}\n", .{skipped});
+    if (errors > 0) {
+        std.debug.print("  Errors:        {s}{d}{s}\n", .{ RED, errors, RESET });
+    }
+
+    if (dry_run) {
+        std.debug.print("\n  {s}[DRY RUN]{s} No files were written. Run without --dry-run to apply.\n", .{ GOLDEN, RESET });
+    } else if (created > 0) {
+        std.debug.print("\n  {s}[DONE]{s} Created {d} skeleton .vibee specs in specs/tri/\n", .{ GREEN, RESET, created });
+        std.debug.print("  Run {s}tri strict check{s} to verify compliance.\n", .{ GREEN, RESET });
+    }
+
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+fn fixDirectory(allocator: std.mem.Allocator, dir_path: []const u8, dry_run: bool, created: *usize, skipped: *usize, errors: *usize) void {
+    var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch {
+        std.debug.print("  {s}[SKIP]{s} Directory not found: {s}\n", .{ GRAY, RESET, dir_path });
+        return;
+    };
+    defer dir.close();
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        var path_buf: [512]u8 = undefined;
+        const full_path = std.fmt.bufPrint(&path_buf, "{s}/{s}", .{ dir_path, entry.name }) catch continue;
+        fixSingleFile(allocator, full_path, entry.name, dry_run, created, skipped, errors);
+    }
+}
+
+fn fixDirectoryRecursive(allocator: std.mem.Allocator, dir_path: []const u8, dry_run: bool, created: *usize, skipped: *usize, errors: *usize) void {
+    var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch {
+        std.debug.print("  {s}[SKIP]{s} Directory not found: {s}\n", .{ GRAY, RESET, dir_path });
+        return;
+    };
+    defer dir.close();
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        var path_buf: [512]u8 = undefined;
+        const full_path = std.fmt.bufPrint(&path_buf, "{s}/{s}", .{ dir_path, entry.name }) catch continue;
+
+        if (entry.kind == .directory) {
+            fixDirectoryRecursive(allocator, full_path, dry_run, created, skipped, errors);
+        } else if (entry.kind == .file) {
+            fixSingleFile(allocator, full_path, entry.name, dry_run, created, skipped, errors);
+        }
+    }
+}
+
+fn fixSingleFile(allocator: std.mem.Allocator, full_path: []const u8, filename: []const u8, dry_run: bool, created: *usize, skipped: *usize, errors: *usize) void {
+    // Get stem
+    const stem = blk: {
+        if (std.mem.endsWith(u8, filename, ".zig")) break :blk filename[0 .. filename.len - 4];
+        if (std.mem.endsWith(u8, filename, ".v")) break :blk filename[0 .. filename.len - 2];
+        return; // Skip non-code files
+    };
+
+    // Check if spec already exists
+    var spec_path_buf: [512]u8 = undefined;
+    const spec_path = std.fmt.bufPrint(&spec_path_buf, "specs/tri/{s}.vibee", .{stem}) catch return;
+
+    const spec_exists = blk: {
+        std.fs.cwd().access(spec_path, .{}) catch break :blk false;
+        break :blk true;
+    };
+
+    if (spec_exists) {
+        skipped.* += 1;
+        return;
+    }
+
+    // Read the generated file to extract info
+    const source = std.fs.cwd().readFileAlloc(allocator, full_path, 256 * 1024) catch {
+        std.debug.print("  {s}[ERR]{s} Cannot read: {s}\n", .{ RED, RESET, full_path });
+        errors.* += 1;
+        return;
+    };
+    defer allocator.free(source);
+
+    // Parse constants and functions from the source
+    var const_count: usize = 0;
+    var fn_count: usize = 0;
+    var lines_iter = std.mem.splitScalar(u8, source, '\n');
+    while (lines_iter.next()) |line| {
+        const trimmed = std.mem.trim(u8, line, " \t\r");
+        if (std.mem.startsWith(u8, trimmed, "pub const ") and std.mem.indexOf(u8, trimmed, ": f64 =") != null) {
+            const_count += 1;
+        }
+        if (std.mem.startsWith(u8, trimmed, "pub fn ")) {
+            fn_count += 1;
+        }
+    }
+
+    // Determine language from extension
+    const lang = if (std.mem.endsWith(u8, filename, ".v")) "varlog" else "zig";
+
+    if (dry_run) {
+        std.debug.print("  {s}[WOULD CREATE]{s} {s} ({d} const, {d} fn)\n", .{ GOLDEN, RESET, spec_path, const_count, fn_count });
+        created.* += 1;
+        return;
+    }
+
+    // Generate skeleton .vibee spec
+    var spec_content: [4096]u8 = undefined;
+    const spec = std.fmt.bufPrint(&spec_content,
+        \\# ============================================================================
+        \\# {s} - Auto-generated skeleton spec
+        \\# Created by: tri strict fix
+        \\# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+        \\# ============================================================================
+        \\
+        \\name: {s}
+        \\version: "1.0.0"
+        \\language: {s}
+        \\module: {s}
+        \\
+        \\description: |
+        \\  Auto-generated skeleton from {s}.
+        \\  Contains {d} constants and {d} public functions.
+        \\  TODO: Review and add proper types/behaviors.
+        \\
+        \\constants:
+        \\  PLACEHOLDER: 0
+        \\
+        \\types:
+        \\  Config:
+        \\    fields:
+        \\      enabled: Bool
+        \\
+        \\behaviors:
+        \\  - name: init
+        \\    given: Module is loaded
+        \\    when: Initialization requested
+        \\    then: Returns configured instance
+    , .{ stem, stem, lang, stem, full_path, const_count, fn_count }) catch {
+        std.debug.print("  {s}[ERR]{s} Spec too large: {s}\n", .{ RED, RESET, spec_path });
+        errors.* += 1;
+        return;
+    };
+
+    // Ensure specs/tri/ directory exists
+    std.fs.cwd().makePath("specs/tri") catch {};
+
+    // Write spec file
+    const file = std.fs.cwd().createFile(spec_path, .{}) catch {
+        std.debug.print("  {s}[ERR]{s} Cannot create: {s}\n", .{ RED, RESET, spec_path });
+        errors.* += 1;
+        return;
+    };
+    defer file.close();
+
+    file.writeAll(spec) catch {
+        std.debug.print("  {s}[ERR]{s} Cannot write: {s}\n", .{ RED, RESET, spec_path });
+        errors.* += 1;
+        return;
+    };
+
+    std.debug.print("  {s}[CREATED]{s} {s} ({d} const, {d} fn)\n", .{ GREEN, RESET, spec_path, const_count, fn_count });
+    created.* += 1;
 }
 
 fn checkSingleFile(path: []const u8, violations: *usize, warnings: *usize) void {
