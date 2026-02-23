@@ -192,8 +192,28 @@ pub fn main() !void {
         .workflow_bench => demos.runWorkflowBench(),
         // Distributed Inference
         .distributed => commands.runDistributedCommand(allocator, cmd_args),
+        // Dev Utilities (Cycle 78)
+        .doctor => commands.runDoctorCommand(allocator),
+        .clean => commands.runCleanCommand(allocator),
+        .fmt_cmd => commands.runFmtCommand(allocator),
+        .stats_cmd => commands.runStatsCommand(allocator),
+        .igla => commands.runIglaCommand(allocator),
+        .test_all => commands.runTestAllCommand(allocator),
+        // Code Analysis
+        .analyze => commands.runAnalyzeCommand(allocator, cmd_args),
+        .search_cmd => commands.runSearchCommand(allocator, cmd_args),
+        .deps => commands.runDepsCommand(allocator, cmd_args),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),
+        // New Commands - VIBEE First Integration
+        .improve => commands.runImproveCommand(allocator, cmd_args),
+        .gguf_chat => commands.runGgufChatCommand(allocator, cmd_args),
+        .metal => commands.runMetalCommand(allocator),
+        .validate => commands.runValidateCommand(allocator, cmd_args),
+        .prometheus => commands.runPrometheusCommand(allocator, cmd_args),
+        .tvc_compile => commands.runTVCCompileCommand(allocator, cmd_args),
+        .competitive_repl => commands.runCompetitiveReplCommand(allocator, cmd_args),
+        .kg_server => commands.runKGServerCommand(allocator, cmd_args),
     }
 }
