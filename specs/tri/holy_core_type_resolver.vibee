@@ -1,0 +1,106 @@
+# VIBEE Specification: Holy Core Type Resolver
+# Cycle 79 - Phase 1 of VIBEE-first migration
+# This module handles type resolution for VIBEE codegen
+
+name: holy_core_type_resolver
+version: "1.0.0"
+language: zig
+module: holy_core_type_resolver
+
+types:
+  TypeMapping:
+    fields:
+      vibee_name: String
+      zig_name: String
+
+  SemanticTypeMapping:
+    fields:
+      semantic_term: String
+      concrete_type: String
+
+  ParseError:
+    fields:
+      error_code: Int
+      message: String
+
+  BracketMatchResult:
+    fields:
+      found: Bool
+      position: u64
+      has_error: Bool
+
+behaviors:
+  - name: resolve_primitive_type
+    given: a VIBEE primitive type name (String, Int, Float, Bool, etc.)
+    when: resolvePrimitiveType is called
+    then: returns the corresponding Zig type ([]const u8, i64, f64, bool, etc.)
+
+  - name: resolve_custom_type
+    given: a custom type name defined in the spec
+    when: resolveCustomType is called with spec_types context
+    then: returns the type name as-is if defined, or returns unknown type
+
+  - name: find_matching_bracket
+    given: a string containing nested generics and starting position
+    when: the parser needs to find the closing bracket
+    then: returns the position of matching '>' or null if unmatched
+
+  - name: parse_option_type
+    given: a type string like Option<T> or ?T
+    when: parseOptionType is called
+    then: returns ?resolved_type (e.g., ?i64, ?[]const u8)
+
+  - name: parse_list_type
+    given: a type string like List<T> or [T]
+    when: parseListType is called
+    then: returns []const T (supports nested generics)
+
+  - name: parse_map_type
+    given: a type string like Map<K,V> or HashMap<K,V>
+    when: parseMapType is called
+    then: returns std.StringHashMap(V) or std.AutoHashMap(K, V)
+
+  - name: parse_complex_type
+    given: any type string (primitive, Option<T>, List<T>, Map<K,V>, nested)
+    when: parseComplexType is called
+    then: returns the fully resolved Zig type string with proper allocation
+
+  - name: parse_complex_type_no_alloc
+    given: a simple type string that doesn't need allocation
+    when: parseComplexTypeNoAlloc is called
+    then: returns static string for common types or null if allocation needed
+
+  - name: map_semantic_type
+    given: a semantic term like "probability", "embedding", "tensor"
+    when: mapSemanticType is called
+    then: returns the appropriate Zig type (f32, []const f32, Tensor, etc.)
+
+  - name: is_primitive_type
+    given: a type name
+    when: isPrimitiveType is called
+    then: returns true if it's a VIBEE primitive type
+
+  - name: extract_inner_type
+    given: a generic type like List<T> or Option<T>
+    when: extractInnerType is called
+    then: returns the inner type T
+
+  - name: is_optional_type
+    given: a type string
+    when: isOptionalType is called
+    then: returns true if the type is optional (starts with ? or Option<)
+
+  - name: is_list_type
+    given: a type string
+    when: isListType is called
+    then: returns true if the type is a list (starts with [] or List<)
+
+  - name: is_map_type
+    given: a type string
+    when: isMapType is called
+    then: returns true if the type is a map (Map< or HashMap<)
+
+  - name: get_type_category
+    given: a type string
+    when: getTypeCategory is called
+    then: returns the category: primitive, optional, list, map, custom, or unknown

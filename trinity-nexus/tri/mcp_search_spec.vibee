@@ -1,0 +1,106 @@
+name: mcp_search
+version: "1.0.0"
+language: zig
+module: mcp_search
+description: Search operations MCP tools for web search, image search, and news search
+
+types:
+  SearchConfig:
+    description: Search service configuration
+    fields:
+      provider: String
+      api_key: String
+      region: String
+      language: String
+      safe_search: Bool
+
+  SearchResult:
+    description: Web search result
+    fields:
+      title: String
+      url: String
+      snippet: String
+      position: Int
+      domain: String
+
+  ImageResult:
+    description: Image search result
+    fields:
+      title: String
+      url: String
+      thumbnail_url: String
+      width: Int
+      height: Int
+      source_url: String
+
+  NewsResult:
+    description: News search result
+    fields:
+      title: String
+      url: String
+      snippet: String
+      source: String
+      published_at: String
+      image_url: String
+
+  VideoResult:
+    description: Video search result
+    fields:
+      title: String
+      url: String
+      thumbnail_url: String
+      duration: String
+      channel: String
+      views: Int
+
+  SearchFilters:
+    description: Search filter options
+    fields:
+      time_range: String
+      file_type: String
+      site: String
+      exclude_terms: List<String>
+
+behaviors:
+  - name: web_search
+  - name: search_web
+  - name: config
+  - name: query
+  - name: limit
+  - name: search_with_filters
+  - name: config
+  - name: query
+  - name: filters
+  - name: limit
+  - name: get_suggestions
+  - name: config
+  - name: query
+  - name: image_search
+  - name: search_images
+  - name: config
+  - name: query
+  - name: limit
+  - name: reverse_image_search
+  - name: config
+  - name: image_url
+  - name: news_search
+  - name: search_news
+  - name: config
+  - name: query
+  - name: limit
+  - name: get_trending_news
+  - name: config
+  - name: category
+  - name: video_search
+  - name: search_videos
+  - name: config
+  - name: query
+  - name: limit
+  - name: search_web
+  - name: search_with_filters
+  - name: get_suggestions
+  - name: search_images
+  - name: reverse_image_search
+  - name: search_news
+  - name: get_trending_news
+  - name: search_videos

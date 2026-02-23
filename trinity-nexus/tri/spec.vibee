@@ -1,0 +1,44 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: create_resource
+    given: Valid resource data
+    when: POST /resources
+    then: Resource created with 201
+  - name: valid_resource
+  - name: invalid_data
+  - name: get_resource
+    given: Resource exists
+    when: GET /resources/:id
+    then: Resource returned with 200
+  - name: existing_resource
+  - name: not_found
+  - name: update_resource
+    given: Resource exists
+    when: PUT /resources/:id
+    then: Resource updated with 200
+  - name: valid_update
+  - name: delete_resource
+    given: Resource exists
+    when: DELETE /resources/:id
+    then: Resource deleted with 204
+  - name: successful_delete
+  - name: list_resources
+    given: Resources exist
+    when: GET /resources
+    then: Resources returned with 200
+  - name: list_all
+
+types:
+  create_resource:
+
+  get_resource:
+
+  update_resource:
+
+  delete_resource:
+
+  list_resources:
