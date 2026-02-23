@@ -237,6 +237,7 @@ pub const CreationPattern = struct {
 
 pub const Behavior = struct {
     name: []const u8,
+    owner: ?[]const u8, // VIBEE Generator v2: Which struct owns this method
     given: []const u8,
     when: []const u8,
     then: []const u8,
@@ -247,6 +248,7 @@ pub const Behavior = struct {
         _ = allocator;
         return Behavior{
             .name = "",
+            .owner = null,
             .given = "",
             .when = "",
             .then = "",
@@ -1390,6 +1392,12 @@ pub const VibeeParser = struct {
 
                 if (std.mem.eql(u8, field_key, "name")) {
                     behavior.name = self.readValue();
+                    self.skipToNextLine();
+                } else if (std.mem.eql(u8, field_key, "owner")) {
+                    const owner_value = self.readValue();
+                    if (owner_value.len > 0) {
+                        behavior.owner = owner_value;
+                    }
                     self.skipToNextLine();
                 } else if (std.mem.eql(u8, field_key, "given")) {
                     behavior.given = self.readQuotedOrValue();
