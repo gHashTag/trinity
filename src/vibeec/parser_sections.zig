@@ -23,20 +23,20 @@ const ScanState = pu.ScanState;
 
 const StringHashMap = std.StringHashMap;
 
-// Re-import parser types
-const vibee_parser = @import("vibee_parser.zig");
-const Constant = vibee_parser.Constant;
-const Import = vibee_parser.Import;
-const Field = vibee_parser.Field;
-const CreationPattern = vibee_parser.CreationPattern;
-const Signal = vibee_parser.Signal;
-const ResetDef = vibee_parser.ResetDef;
-const FSMTransition = vibee_parser.FSMTransition;
-const FSMOutput = vibee_parser.FSMOutput;
-const FSMTimer = vibee_parser.FSMTimer;
-const MemoryExport = vibee_parser.MemoryExport;
-const PasPrediction = vibee_parser.PasPrediction;
-const TestCase = vibee_parser.TestCase;
+// Import types from parser_types (no circular dependency)
+const parser_types = @import("parser_types.zig");
+const Constant = parser_types.Constant;
+const Import = parser_types.Import;
+const Field = parser_types.Field;
+const CreationPattern = parser_types.CreationPattern;
+const Signal = parser_types.Signal;
+const ResetDef = parser_types.ResetDef;
+const FSMTransition = parser_types.FSMTransition;
+const FSMOutput = parser_types.FSMOutput;
+const FSMTimer = parser_types.FSMTimer;
+const MemoryExport = parser_types.MemoryExport;
+const PasPrediction = parser_types.PasPrediction;
+const TestCase = parser_types.TestCase;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // LEAF LIST PARSERS
