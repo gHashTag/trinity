@@ -16,6 +16,7 @@ pub const utils_fix = @import("utils_fix.zig");
 pub const patterns = @import("patterns.zig");
 pub const tests_gen = @import("tests_gen.zig");
 pub const emitter = @import("emitter.zig");
+pub const type_resolver = @import("type_resolver.zig");
 
 // Primary exports
 pub const ZigCodeGen = emitter.ZigCodeGen;

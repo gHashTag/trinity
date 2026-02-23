@@ -44,6 +44,7 @@ pub const VibeeSpec = struct {
     allocator: Allocator,
     // Source content ownership - all string fields are slices into this
     source_content: []const u8,
+    owns_source: bool,
 
     pub fn init(allocator: Allocator) VibeeSpec {
         return .{
@@ -71,12 +72,13 @@ pub const VibeeSpec = struct {
             .test_cases = .{}, // Top-level test cases
             .allocator = allocator,
             .source_content = "",
+            .owns_source = false,
         };
     }
 
     pub fn deinit(self: *VibeeSpec) void {
-        // Free source content if owned
-        if (self.source_content.len > 0) {
+        // Free source content only if we own it (allocated via readToEndAlloc)
+        if (self.owns_source and self.source_content.len > 0) {
             self.allocator.free(self.source_content);
         }
 
@@ -144,9 +146,9 @@ pub const TypeDef = struct {
     generic: ?[]const u8,
     description: []const u8,
     enum_variants: ArrayList([]const u8),
+    consts: std.StringHashMap([]const u8), // VIBEE Generator v2: const name -> value
 
     pub fn init(allocator: Allocator) TypeDef {
-        _ = allocator;
         return TypeDef{
             .name = "",
             .base = null,
@@ -155,6 +157,7 @@ pub const TypeDef = struct {
             .generic = null,
             .description = "",
             .enum_variants = .{},
+            .consts = std.StringHashMap([]const u8).init(allocator),
         };
     }
 };
@@ -823,6 +826,9 @@ pub const VibeeParser = struct {
                 } else if (std.mem.eql(u8, field_key, "fields")) {
                     self.skipToNextLine();
                     try self.parseFields(&typedef.fields);
+                } else if (std.mem.eql(u8, field_key, "consts")) {
+                    self.skipToNextLine();
+                    try self.parseConsts(&typedef.consts);
                 } else if (std.mem.eql(u8, field_key, "enum")) {
                     self.skipToNextLine();
                     try self.parseEnum(&typedef.enum_variants);
@@ -1260,6 +1266,28 @@ pub const VibeeParser = struct {
                 .name = field_name,
                 .type_name = field_type,
             });
+            self.skipToNextLine();
+        }
+    }
+
+    // VIBEE Generator v2: Parse const definitions (name: "value")
+    fn parseConsts(self: *Self, consts: *std.StringHashMap([]const u8)) !void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 6) break;
+            self.pos += indent;
+
+            const const_name = self.readKey();
+            if (const_name.len == 0) break;
+            self.skipColon();
+
+            const const_value = self.readValue();
+            // Store the name (owned) and value (reference to source)
+            const name_owned = try self.allocator.dupe(u8, const_name);
+            try consts.put(name_owned, const_value);
             self.skipToNextLine();
         }
     }

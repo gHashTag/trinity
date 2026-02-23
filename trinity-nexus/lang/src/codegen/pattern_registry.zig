@@ -98,7 +98,7 @@ const HnswNode = struct {
     connections: ArrayList(usize), // Connected node indices
     layer: usize,
 
-    pub fn init(allocator: Allocator, pattern_id: usize, embedding: Embedding, layer: usize) !HnswNode {
+    pub fn init(_: Allocator, pattern_id: usize, embedding: Embedding, layer: usize) !HnswNode {
         return HnswNode{
             .pattern_id = pattern_id,
             .embedding = embedding,
@@ -134,10 +134,10 @@ pub const HnswIndex = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        for (self.layers.items) |layer| {
-            for (layer.items) |node| {
-                // Can't deinit const node, skip for now
-                _ = node;
+        for (self.layers.items) |*layer| {
+            for (layer.items) |*node| {
+                var n = node.*;
+                n.deinit(self.allocator);
             }
             layer.deinit(self.allocator);
         }
@@ -152,7 +152,7 @@ pub const HnswIndex = struct {
 
         // Determine layer (random with exponential decay)
         const layer = self.randomLayer();
-        var node = try HnswNode.init(self.allocator, pattern_id, embedding, layer);
+        const node = try HnswNode.init(self.allocator, pattern_id, embedding, layer);
 
         // Ensure we have enough layers
         while (self.layers.items.len <= layer) {
@@ -181,7 +181,7 @@ pub const HnswIndex = struct {
         defer query_emb.deinit(self.allocator);
 
         // Search from top layer down
-        var candidates = ArrayList(SearchResult).init(self.allocator);
+        var candidates: ArrayList(SearchResult) = .{};
 
         // Search each layer
         for (self.layers.items) |layer| {
@@ -210,15 +210,22 @@ pub const HnswIndex = struct {
 
     fn randomLayer(self: *const Self) usize {
         // Exponential distribution: P(layer = L) ~ 1/mL^L
-        var rand = std.Random.Default;
+        // Use a simple deterministic hash-based approach for reproducibility
         const ml = self.max_layers *| 2;
+        // Simple layer assignment: most nodes go to layer 0
+        const seed: u64 = @intCast(self.layers.items.len +% 1);
         var layer: usize = 0;
-        while (rand.float(f32) < 1.0 / @as(f32, @floatFromInt(ml))) {
+        var h = seed *% 0x517cc1b727220a95;
+        while (layer < self.max_layers) {
+            h = h *% 0x517cc1b727220a95 +% 0x6c62272e07bb0142;
+            const f: f32 = @as(f32, @floatFromInt(h & 0xFFFF)) / 65536.0;
+            if (f >= 1.0 / @as(f32, @floatFromInt(ml))) break;
             layer += 1;
-            if (layer >= self.max_layers) break;
         }
         return layer;
     }
+
+    const SimEntry = struct { idx: usize, sim: f32 };
 
     fn connectToNeighbors(self: *Self, layer: usize, node_idx: usize) !void {
         const layer_nodes = &self.layers.items[layer];
@@ -228,7 +235,7 @@ pub const HnswIndex = struct {
         const max_conn = @min(self.max_connections, layer_nodes.items.len - 1);
 
         // Find nearest neighbors
-        var similarities = try self.allocator.alloc(struct { idx: usize, sim: f32 }, layer_nodes.items.len);
+        var similarities = try self.allocator.alloc(SimEntry, layer_nodes.items.len);
         defer self.allocator.free(similarities);
 
         for (layer_nodes.items, 0..) |other, i| {
@@ -240,9 +247,9 @@ pub const HnswIndex = struct {
             similarities[i] = .{ .idx = i, .sim = sim };
         }
 
-        // Sort by similarity
-        std.sort.block(struct { idx: usize, sim: f32 }, similarities, {}, struct {
-            fn lessThan(_: void, a: struct { idx: usize, sim: f32 }, b: struct { idx: usize, sim: f32 }) bool {
+        // Sort by similarity (descending)
+        std.sort.block(SimEntry, similarities, {}, struct {
+            fn lessThan(_: void, a: SimEntry, b: SimEntry) bool {
                 return a.sim > b.sim;
             }
         }.lessThan);
@@ -377,17 +384,17 @@ pub const PatternRegistry = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "textToEmbedding - basic functionality" {
-    const emb1 = try textToEmbedding(std.testing.allocator, "hello world", 64);
+    var emb1 = try textToEmbedding(std.testing.allocator, "hello world", 64);
     defer emb1.deinit(std.testing.allocator);
 
     try std.testing.expectEqual(@as(usize, 64), emb1.dimension);
 }
 
 test "Embedding - cosine similarity" {
-    const emb1 = try textToEmbedding(std.testing.allocator, "hello world", 64);
+    var emb1 = try textToEmbedding(std.testing.allocator, "hello world", 64);
     defer emb1.deinit(std.testing.allocator);
 
-    const emb2 = try textToEmbedding(std.testing.allocator, "hello world", 64);
+    var emb2 = try textToEmbedding(std.testing.allocator, "hello world", 64);
     defer emb2.deinit(std.testing.allocator);
 
     const sim = try emb1.cosineSimilarity(&emb2);
