@@ -83,6 +83,9 @@ pub fn main() !void {
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommand(allocator),
+        // Spec & Loop (v8.27)
+        .spec_create => pipeline.runSpecCreateCommand(allocator, cmd_args),
+        .loop_decide => pipeline.runLoopDecideCommand(allocator, cmd_args),
         // TVC (Distributed Learning)
         .tvc_demo => demos.runTVCDemo(),
         .tvc_stats => demos.runTVCStats(),
