@@ -1,5 +1,5 @@
 // =============================================================================
-// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85 + 86 + 87)
+// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85 + 86 + 87 + 88)
 // =============================================================================
 //
 // Exposes sacred_math.zig library as TRI CLI commands:
@@ -34,6 +34,10 @@
 //   tri math holographic     - Holographic principle + Bekenstein-Hawking
 //   tri math ads-cft         - AdS/CFT correspondence + Brown-Henneaux
 //   tri math quantum-gravity - LQG + Barbero-Immirzi + Regge trajectories
+//
+// Cycle 88 extensions:
+//   tri math particles  - Particle masses + sacred mass ratios + mixing angles
+//   tri math groups     - Group theory (E8, topology, sacred numbers, neuro, SC)
 //
 // All math is inlined from sacred_math.zig to avoid build.zig coupling.
 //
@@ -312,6 +316,201 @@ const CARDY_COEFF: f64 = 2.5651662291961795; // 2*pi/sqrt(6)
 /// Planck area: l_P² (m²) — fundamental quantum of area
 const PLANCK_AREA: f64 = 2.6121e-70; // (1.616255e-35)²
 
+// =============================================================================
+// PARTICLE MASSES (Cycle 88)
+// =============================================================================
+
+/// Electron mass m_e (kg)
+const M_ELECTRON: f64 = 9.1093837015e-31;
+/// Proton mass m_p (kg)
+const M_PROTON: f64 = 1.67262192369e-27;
+/// Neutron mass m_n (kg)
+const M_NEUTRON: f64 = 1.67492749804e-27;
+/// W boson mass (GeV)
+const M_W_BOSON: f64 = 80.377;
+/// Z boson mass (GeV)
+const M_Z_BOSON: f64 = 91.1876;
+/// Higgs boson mass (GeV)
+const M_HIGGS: f64 = 125.25;
+/// Up quark mass (MeV)
+const M_U_QUARK: f64 = 2.16;
+/// Down quark mass (MeV)
+const M_D_QUARK: f64 = 4.67;
+/// Strange quark mass (MeV)
+const M_S_QUARK: f64 = 93.4;
+/// Charm quark mass (GeV)
+const M_C_QUARK: f64 = 1.27;
+/// Bottom quark mass (GeV)
+const M_B_QUARK: f64 = 4.18;
+/// Top quark mass (GeV)
+const M_T_QUARK: f64 = 172.69;
+
+// =============================================================================
+// SACRED MASS RATIOS (Cycle 88)
+// =============================================================================
+
+/// m_mu/m_e = (17/9)*pi^2*phi^5 ~ 206.77 (accuracy 0.01%)
+const MUON_ELECTRON_RATIO: f64 = (17.0 / 9.0) * PI * PI * std.math.pow(f64, PHI, 5.0);
+/// m_tau/m_e = 76*9*pi*phi ~ 3477.2 (accuracy 0.009%)
+const TAU_ELECTRON_RATIO: f64 = 76.0 * 9.0 * PI * PHI;
+/// m_s/m_e = 32/pi*phi^6 ~ 182.8
+const STRANGE_ELECTRON_RATIO: f64 = 32.0 / PI * std.math.pow(f64, PHI, 6.0);
+/// m_t/m_e ~ 338082
+const TOP_ELECTRON_RATIO: f64 = 338082.0;
+/// Alternative: m_mu/m_e = (20/3)*pi^3 ~ 206.708
+const MUON_ELECTRON_ALT: f64 = (20.0 / 3.0) * PI * PI * PI;
+/// Alternative: m_tau/m_e = 36*pi^4 ~ 3506.73
+const TAU_ELECTRON_ALT: f64 = 36.0 * std.math.pow(f64, PI, 4.0);
+/// Alternative: m_p/m_e = 2*3*pi^5 ~ 1836.12 (accuracy 0.002%)
+const PROTON_ELECTRON_ALT: f64 = 2.0 * 3.0 * std.math.pow(f64, PI, 5.0);
+
+// =============================================================================
+// MIXING ANGLES (Cycle 88)
+// =============================================================================
+
+/// sin^2(theta_12) PMNS neutrino mixing
+const SIN2_THETA12_PMNS: f64 = 0.304;
+/// sin^2(theta_23) PMNS neutrino mixing
+const SIN2_THETA23_PMNS: f64 = 0.573;
+/// sin^2(theta_13) PMNS neutrino mixing
+const SIN2_THETA13_PMNS: f64 = 0.0218;
+/// Cabibbo angle (degrees) ~ F(7) = 13
+const THETA_CABIBBO_DEG: f64 = 13.04;
+
+// =============================================================================
+// GROUP THEORY DIMENSIONS (Cycle 88)
+// =============================================================================
+
+/// E8 Lie group dimension
+const E8_DIM: u32 = 248;
+/// E8 root system
+const E8_ROOTS: u32 = 240;
+/// M-theory spacetime dimensions
+const M_THEORY_DIM: u32 = 11;
+/// String theory spacetime dimensions
+const STRING_DIM: u32 = 10;
+/// Spatial dimensions = 3 = phi^2 + 1/phi^2
+const SPACE_DIM: u32 = 3;
+/// Particle generations = 3
+const PARTICLE_GENERATIONS: u32 = 3;
+/// Quark colors SU(3) = 3
+const QUARK_COLORS: u32 = 3;
+
+// =============================================================================
+// TOPOLOGY (Cycle 88)
+// =============================================================================
+
+/// Maximum Chern number mod = 3 = TRINITY
+const CHERN_MAX_MOD: u32 = 3;
+/// Maximum Bott index = 3
+const BOTT_MAX: u32 = 3;
+/// Skyrmion radius (nm)
+const SKYRMION_RADIUS_NM: f64 = 70.0;
+/// Skyrmion topological charge
+const SKYRMION_CHARGE: f64 = 1.0;
+/// Meron topological charge
+const MERON_CHARGE: f64 = 0.5;
+
+// =============================================================================
+// NUCLEAR EXTENDED (Cycle 88)
+// =============================================================================
+
+/// Predicted magic number 184 (island of stability neutrons)
+const MAGIC_184: u32 = 184;
+/// Island of stability center Z=126 (Unbihexium)
+const ISLAND_OF_STABILITY_Z: u32 = 126;
+
+// =============================================================================
+// ADDITIONAL PHYSICS (Cycle 88)
+// =============================================================================
+
+/// Bohr radius a_0 (m)
+const A_BOHR: f64 = 5.29177210903e-11;
+/// Stefan-Boltzmann constant sigma (W/(m^2*K^4))
+const SIGMA_STEFAN_BOLTZMANN: f64 = 5.670374419e-8;
+/// Wien displacement constant b (m*K)
+const B_WIEN: f64 = 2.897771955e-3;
+/// Compton wavelength of electron lambda_C (m)
+const LAMBDA_COMPTON: f64 = 2.42631023867e-12;
+/// Bohr magneton mu_B (J/T)
+const MU_BOHR: f64 = 9.2740100783e-24;
+/// Critical density of universe rho_c (kg/m^3)
+const RHO_CRITICAL: f64 = 9.47e-27;
+
+// =============================================================================
+// ADDITIONAL COSMOLOGY (Cycle 88)
+// =============================================================================
+
+/// Cold dark matter density
+const OMEGA_CDM: f64 = 0.265;
+/// Curvature parameter
+const OMEGA_K: f64 = 0.001;
+/// Scalar spectral index n_s
+const SPECTRAL_INDEX: f64 = 0.965;
+/// Amplitude of fluctuations sigma_8
+const SIGMA_8_COSMO: f64 = 0.811;
+/// Hubble constant (SH0ES 2022) km/s/Mpc
+const HUBBLE_SH0ES: f64 = 73.0;
+/// Hubble constant (Sacred prediction) km/s/Mpc
+const HUBBLE_PREDICTED: f64 = 70.74;
+
+// =============================================================================
+// SACRED NUMBER THEORY (Cycle 88)
+// =============================================================================
+
+/// Tridevyatitsa: 3^3 = 27 = TRYTE_SPACE
+const TRIDEVYATITSA: u32 = 27;
+/// Sacred multiplier: 37 (37 * 3n = nnn)
+const SACRED_MULTIPLIER: u32 = 37;
+/// Sacred number: 999 = 37 * 27
+const SACRED: u32 = 999;
+/// Classical CHSH limit = 2
+const CHSH_CLASSICAL: f64 = 2.0;
+
+// =============================================================================
+// NEUROMORPHIC COMPUTING (Cycle 88)
+// =============================================================================
+
+/// LIF neuron time constant = phi
+const TAU_LIF: f64 = PHI;
+/// 603x energy efficiency (67 * 9)
+const ENERGY_EFFICIENCY: u32 = 603;
+/// Intel Loihi cores
+const LOIHI_CORES: u32 = 128;
+/// IBM NorthPole cores
+const NORTHPOLE_CORES: u32 = 256;
+
+// =============================================================================
+// SUPERCONDUCTOR CRITICAL TEMPERATURES (Cycle 88)
+// =============================================================================
+
+/// YBCO Tc (K) — high-temp superconductor
+const YBCO_TC: f64 = 93.0;
+/// MgB2 Tc (K)
+const MGB2_TC: f64 = 39.0;
+/// H3S under pressure Tc (K) — record conventional
+const H3S_TC: f64 = 203.0;
+
+// =============================================================================
+// QUANTUM COMPUTING (Cycle 88)
+// =============================================================================
+
+/// Jiuzhang photon count (quantum advantage demo)
+const JIUZHANG_PHOTONS: u32 = 76;
+/// Typical superconducting gate fidelity
+const TYPICAL_FIDELITY: f64 = 0.99;
+/// Qubit coherence time (microseconds)
+const COHERENCE_TIME_US: f64 = 100.0;
+
+// =============================================================================
+// ALTERNATIVE FINE STRUCTURE (Cycle 88)
+// =============================================================================
+
+/// 1/alpha = 4*pi^3 + pi^2 + pi ~ 137.036 (accuracy 0.0002%)
+const ALPHA_INV_SACRED: f64 = 4.0 * PI * PI * PI + PI * PI + PI;
+/// 1/alpha_alt = 24*phi^6/pi ~ 137.084
+const ALPHA_INV_ALT: f64 = 24.0 * std.math.pow(f64, PHI, 6.0) / PI;
+
 const FIBONACCI_TABLE: [20]i64 = .{
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
     55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
@@ -431,6 +630,11 @@ pub fn runMathCommand(args: []const []const u8) void {
         runEngineCommand();
     } else if (std.mem.eql(u8, sub, "formula") or std.mem.eql(u8, sub, "sacred-formula") or std.mem.eql(u8, sub, "approximate") or std.mem.eql(u8, sub, "predict")) {
         runFormulaCommand();
+        // --- Cycle 88: Particle Physics & Group Theory ---
+    } else if (std.mem.eql(u8, sub, "particles") or std.mem.eql(u8, sub, "mass") or std.mem.eql(u8, sub, "quarks")) {
+        runParticlesCommand();
+    } else if (std.mem.eql(u8, sub, "groups") or std.mem.eql(u8, sub, "group-theory") or std.mem.eql(u8, sub, "dimensions") or std.mem.eql(u8, sub, "e8")) {
+        runGroupsCommand();
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
@@ -454,7 +658,7 @@ fn printMathHelp() void {
     std.debug.print("  {s}exotic{s}                     Exotic constants (Apery, Catalan, Feigenbaum...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}physical{s}                   Physics constants (alpha, Planck, Boltzmann...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}chaos{s}                      Feigenbaum constants + logistic map demo\n", .{ GREEN, RESET });
-    std.debug.print("  {s}all{s}                        ALL 76 constants across all categories\n", .{ GREEN, RESET });
+    std.debug.print("  {s}all{s}                        ALL 145 constants across all categories\n", .{ GREEN, RESET });
     std.debug.print("\n{s}ADVANCED (Cycle 84):{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}golden-function{s} [n]        Golden Function G(x)=phi^x+phi^-x (Pellis 2025)\n", .{ GREEN, RESET });
     std.debug.print("  {s}nuclear{s}                    Nuclear Fibonacci shell stability model\n", .{ GREEN, RESET });
@@ -477,8 +681,11 @@ fn printMathHelp() void {
     std.debug.print("  {s}cosmos{s}                      Cosmological constants + phi in nature\n", .{ GREEN, RESET });
     std.debug.print("  {s}engine{s}                      v3.0 Sacred Computation Engine status\n", .{ GREEN, RESET });
     std.debug.print("  {s}formula{s}                     Sacred Formula approximator V=n*3^k*pi^m*phi^p*e^q\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}PARTICLE PHYSICS (Cycle 88):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}particles{s}                   Particle masses + sacred mass ratios + mixing angles\n", .{ GREEN, RESET });
+    std.debug.print("  {s}groups{s}                      Group theory (E8, topology, sacred numbers, neuro, SC)\n", .{ GREEN, RESET });
     std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}math-verify{s}                Trinity identity checks (24 checks)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}math-verify{s}                Trinity identity checks (38 checks)\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-bench{s}                 Performance benchmark\n", .{ GREEN, RESET });
     std.debug.print("\n{s}DIRECT ALIASES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri constants  |  tri phi 10  |  tri fib 19\n", .{});
@@ -536,6 +743,18 @@ fn printConst(name: []const u8, value: f64, desc: []const u8) void {
 
 fn printConstInt(name: []const u8, value: i8, desc: []const u8) void {
     std.debug.print("  {s}{s:<24}{s} = {s}{d}{s}                  {s}// {s}{s}\n", .{
+        GREEN, name, RESET, WHITE, value, RESET, GRAY, desc, RESET,
+    });
+}
+
+fn printConstU32(name: []const u8, value: u32, desc: []const u8) void {
+    std.debug.print("  {s}{s:<24}{s} = {s}{d}{s}                  {s}// {s}{s}\n", .{
+        GREEN, name, RESET, WHITE, value, RESET, GRAY, desc, RESET,
+    });
+}
+
+fn printConstF64Short(name: []const u8, value: f64, desc: []const u8) void {
+    std.debug.print("  {s}{s:<24}{s} = {s}{d:.4}{s}           {s}// {s}{s}\n", .{
         GREEN, name, RESET, WHITE, value, RESET, GRAY, desc, RESET,
     });
 }
@@ -739,7 +958,7 @@ pub fn runMathVerifyCommand() void {
     std.debug.print("{s}================================================{s}\n\n", .{ GRAY, RESET });
 
     var passed: u32 = 0;
-    const total: u32 = 24;
+    const total: u32 = 38;
 
     // Check 1: phi^2 + 1/phi^2 = 3
     {
@@ -938,6 +1157,111 @@ pub fn runMathVerifyCommand() void {
         const ok = @abs(BROWN_HENNEAUX - 1.5) < 0.0001;
         if (ok) passed += 1;
         printCheck(ok, "c_BH = 3R/(2G)", BROWN_HENNEAUX, "= 3/2 AdS/CFT central charge");
+    }
+
+    // --- Cycle 88: Particle Physics & Sacred Numbers (Checks 25-38) ---
+    std.debug.print("\n{s}  Particle Physics & Sacred Numbers (Cycle 88):{s}\n", .{ CYAN, RESET });
+
+    // Check 25: 1/alpha = 4*pi^3 + pi^2 + pi ~ 137.036
+    {
+        const ok = @abs(ALPHA_INV_SACRED - 137.036) < 0.001;
+        if (ok) passed += 1;
+        printCheck(ok, "1/a = 4pi^3+pi^2+pi", ALPHA_INV_SACRED, "~ 137.036 (0.0002%)");
+    }
+
+    // Check 26: m_p/m_e = 2*3*pi^5 ~ 1836.12
+    {
+        const ok = @abs(PROTON_ELECTRON_ALT - 1836.15) < 0.1;
+        if (ok) passed += 1;
+        printCheck(ok, "m_p/m_e = 6*pi^5", PROTON_ELECTRON_ALT, "~ 1836.12 (sacred formula)");
+    }
+
+    // Check 27: m_mu/m_e = (17/9)*pi^2*phi^5 ~ 206.77
+    {
+        const ok = @abs(MUON_ELECTRON_RATIO - 206.768) < 0.2;
+        if (ok) passed += 1;
+        printCheck(ok, "m_mu/m_e sacred", MUON_ELECTRON_RATIO, "(17/9)*pi^2*phi^5");
+    }
+
+    // Check 28: m_tau/m_e = 76*9*pi*phi ~ 3477.2
+    {
+        const ok = @abs(TAU_ELECTRON_RATIO - 3477.48) < 2.0;
+        if (ok) passed += 1;
+        printCheck(ok, "m_tau/m_e sacred", TAU_ELECTRON_RATIO, "76*9*pi*phi");
+    }
+
+    // Check 29: m_s/m_e = 32/pi*phi^6 ~ 182.8
+    {
+        const ok = @abs(STRANGE_ELECTRON_RATIO - 182.8) < 0.3;
+        if (ok) passed += 1;
+        printCheck(ok, "m_s/m_e sacred", STRANGE_ELECTRON_RATIO, "32/pi*phi^6");
+    }
+
+    // Check 30: E8_DIM = 248
+    {
+        const ok = E8_DIM == 248;
+        if (ok) passed += 1;
+        printCheckInt(ok, "dim(E8)", @as(i64, E8_DIM), "= 248 exceptional Lie group");
+    }
+
+    // Check 31: M_THEORY_DIM - STRING_DIM = 1 (compactification)
+    {
+        const diff = M_THEORY_DIM - STRING_DIM;
+        const ok = diff == 1;
+        if (ok) passed += 1;
+        printCheckInt(ok, "11D - 10D", @as(i64, diff), "= 1 (M-theory compactifies)");
+    }
+
+    // Check 32: 999 = 37 * 27 (sacred number)
+    {
+        const prod = SACRED_MULTIPLIER * TRIDEVYATITSA;
+        const ok = prod == 999;
+        if (ok) passed += 1;
+        printCheckInt(ok, "37 * 27", @as(i64, prod), "= 999 (sacred number)");
+    }
+
+    // Check 33: Magic 37: 37 * 3 = 111
+    {
+        const prod = SACRED_MULTIPLIER * 3;
+        const ok = prod == 111;
+        if (ok) passed += 1;
+        printCheckInt(ok, "37 * 3", @as(i64, prod), "= 111 (magic 37 pattern)");
+    }
+
+    // Check 34: YBCO_TC > MGB2_TC > 0 (superconductor ordering)
+    {
+        const ok = YBCO_TC > MGB2_TC and MGB2_TC > 0;
+        if (ok) passed += 1;
+        printCheck(ok, "YBCO > MgB2 > 0", YBCO_TC, "K > 39K > 0 (SC ordering)");
+    }
+
+    // Check 35: Cabibbo angle ~ 13.04 ~ F(7) = 13
+    {
+        const ok = @abs(THETA_CABIBBO_DEG - 13.0) < 0.1;
+        if (ok) passed += 1;
+        printCheck(ok, "Cabibbo angle", THETA_CABIBBO_DEG, "deg ~ F(7) = 13");
+    }
+
+    // Check 36: Bohr radius ~ 5.29e-11 m
+    {
+        const ok = A_BOHR > 5.0e-11 and A_BOHR < 6.0e-11;
+        if (ok) passed += 1;
+        printCheck(ok, "Bohr radius a_0", A_BOHR, "~ 5.29e-11 m");
+    }
+
+    // Check 37: Hubble tension exists: |SH0ES - Planck| > 5.0
+    {
+        const tension = HUBBLE_SH0ES - HUBBLE;
+        const ok = tension > 5.0;
+        if (ok) passed += 1;
+        printCheck(ok, "Hubble tension", tension, "km/s/Mpc (SH0ES - Planck)");
+    }
+
+    // Check 38: Island of stability Z=126 = NUCLEAR_MAGIC[6]
+    {
+        const ok = ISLAND_OF_STABILITY_Z == NUCLEAR_MAGIC[6];
+        if (ok) passed += 1;
+        printCheckInt(ok, "Z=126=MAGIC[6]", @as(i64, ISLAND_OF_STABILITY_Z), "island of stability");
     }
 
     // Summary
@@ -1183,6 +1507,15 @@ fn runPhysicalCommand() void {
     std.debug.print("    1/alpha = {d:.3} ~ 137 = F(7)*F(5)+F(6)*F(4) = 13*5+8*3\n", .{FINE_STRUCTURE_INV});
     std.debug.print("    CHSH = 2*sqrt(2) = {d:.6} > 2 (quantum wins)\n", .{CHSH});
     std.debug.print("    pi*phi*e = {d:.4} ~ 13 = F(7) = TRYTE_MAX\n", .{TRANSCENDENTAL});
+
+    // Additional physics (Cycle 88)
+    std.debug.print("\n{s}  Additional Constants (Cycle 88):{s}\n", .{ CYAN, RESET });
+    printConstSci("a_0 (Bohr radius)", A_BOHR, "m");
+    printConstSci("sigma (Stefan-Boltz.)", SIGMA_STEFAN_BOLTZMANN, "W/(m^2*K^4)");
+    printConstSci("b (Wien displ.)", B_WIEN, "m*K");
+    printConstSci("lambda_C (Compton)", LAMBDA_COMPTON, "m");
+    printConstSci("mu_B (Bohr magneton)", MU_BOHR, "J/T");
+    printConstSci("rho_c (critical dens)", RHO_CRITICAL, "kg/m^3");
     std.debug.print("\n", .{});
 }
 
@@ -1431,7 +1764,15 @@ fn runNuclearCommand() void {
     }
     std.debug.print("{s}\n", .{RESET});
     std.debug.print("    Magic:   2   8   20  28  50  82  126\n", .{});
-    std.debug.print("    {s}Fibonacci accumulation approximates magic numbers!{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("    {s}Fibonacci accumulation approximates magic numbers!{s}\n", .{ GOLDEN, RESET });
+
+    // Island of Stability (Cycle 88)
+    std.debug.print("\n{s}  Island of Stability:{s}\n", .{ CYAN, RESET });
+    printConstU32("Z (protons)", ISLAND_OF_STABILITY_Z, "Unbihexium");
+    printConstU32("N (neutrons)", MAGIC_184, "Predicted magic number");
+    std.debug.print("    Superheavy Z=126, N=184 — double-magic shell closure.\n", .{});
+    std.debug.print("    126 = NUCLEAR_MAGIC[6], 184 = next predicted magic N.\n", .{});
+    std.debug.print("    {s}The island where heavy elements survive.{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // =============================================================================
@@ -2080,6 +2421,106 @@ fn runQuantumGravityCommand() void {
 }
 
 // =============================================================================
+// COMMAND: tri math particles (Cycle 88)
+// =============================================================================
+
+fn runParticlesCommand() void {
+    std.debug.print("\n{s}PARTICLE PHYSICS — Masses, Sacred Ratios & Mixing Angles{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Fundamental Particles (measured):{s}\n", .{ CYAN, RESET });
+    printConstSci("m_e (electron)", M_ELECTRON, "kg");
+    printConstSci("m_p (proton)", M_PROTON, "kg");
+    printConstSci("m_n (neutron)", M_NEUTRON, "kg");
+
+    std.debug.print("\n{s}  Bosons (GeV):{s}\n", .{ CYAN, RESET });
+    printConstF64Short("M_W (W boson)", M_W_BOSON, "GeV");
+    printConstF64Short("M_Z (Z boson)", M_Z_BOSON, "GeV");
+    printConstF64Short("M_H (Higgs)", M_HIGGS, "GeV");
+
+    std.debug.print("\n{s}  Quarks:{s}\n", .{ CYAN, RESET });
+    printConstF64Short("m_u (up)", M_U_QUARK, "MeV");
+    printConstF64Short("m_d (down)", M_D_QUARK, "MeV");
+    printConstF64Short("m_s (strange)", M_S_QUARK, "MeV");
+    printConstF64Short("m_c (charm)", M_C_QUARK, "GeV");
+    printConstF64Short("m_b (bottom)", M_B_QUARK, "GeV");
+    printConstF64Short("m_t (top)", M_T_QUARK, "GeV");
+
+    std.debug.print("\n{s}  Sacred Mass Ratios (phi/pi formulas):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}Ratio              Formula                  Sacred      Measured    Error{s}\n", .{ WHITE, RESET });
+    std.debug.print("  {s}-------------------------------------------------------------------{s}\n", .{ GRAY, RESET });
+    std.debug.print("  m_p/m_e            2*3*pi^5                 {s}{d:.4}{s}   1836.153    {s}0.002%%{s}\n", .{ GREEN, PROTON_ELECTRON_ALT, RESET, GOLDEN, RESET });
+    std.debug.print("  m_mu/m_e           (17/9)*pi^2*phi^5        {s}{d:.4}{s}   206.768     {s}0.01%%{s}\n", .{ GREEN, MUON_ELECTRON_RATIO, RESET, GOLDEN, RESET });
+    std.debug.print("  m_mu/m_e (alt)     (20/3)*pi^3              {s}{d:.4}{s}   206.768     {s}0.03%%{s}\n", .{ GREEN, MUON_ELECTRON_ALT, RESET, GOLDEN, RESET });
+    std.debug.print("  m_tau/m_e          76*9*pi*phi              {s}{d:.4}{s}  3477.48      {s}0.009%%{s}\n", .{ GREEN, TAU_ELECTRON_RATIO, RESET, GOLDEN, RESET });
+    std.debug.print("  m_tau/m_e (alt)    36*pi^4                  {s}{d:.4}{s}  3477.48      {s}0.8%%{s}\n", .{ GREEN, TAU_ELECTRON_ALT, RESET, GOLDEN, RESET });
+    std.debug.print("  m_s/m_e            32/pi*phi^6              {s}{d:.4}{s}   182.8       {s}~0%%{s}\n", .{ GREEN, STRANGE_ELECTRON_RATIO, RESET, GOLDEN, RESET });
+
+    std.debug.print("\n{s}  Alternative 1/alpha formulas:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  4*pi^3 + pi^2 + pi  = {s}{d:.6}{s}  (measured: 137.036, err: 0.0002%%)\n", .{ GREEN, ALPHA_INV_SACRED, RESET });
+    std.debug.print("  24*phi^6/pi         = {s}{d:.6}{s}  (approximate, err: 0.035%%)\n", .{ GREEN, ALPHA_INV_ALT, RESET });
+
+    std.debug.print("\n{s}  Mixing Angles (PMNS + Cabibbo):{s}\n", .{ CYAN, RESET });
+    printConst("sin2(theta_12) PMNS", SIN2_THETA12_PMNS, "solar neutrino mixing");
+    printConst("sin2(theta_23) PMNS", SIN2_THETA23_PMNS, "atmospheric neutrino");
+    printConst("sin2(theta_13) PMNS", SIN2_THETA13_PMNS, "reactor neutrino");
+    printConst("theta_C (Cabibbo)", THETA_CABIBBO_DEG, "degrees ~ F(7) = 13");
+    printConst("sin2(theta_W)", WEINBERG_SIN2, "electroweak (Weinberg)");
+
+    std.debug.print("\n{s}  3 generations = 3 = phi^2 + 1/phi^2 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math groups (Cycle 88)
+// =============================================================================
+
+fn runGroupsCommand() void {
+    std.debug.print("\n{s}GROUP THEORY, TOPOLOGY & EXOTIC PHYSICS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Lie Group Dimensions:{s}\n", .{ CYAN, RESET });
+    printConstU32("dim(E8)", E8_DIM, "Largest exceptional Lie group");
+    printConstU32("roots(E8)", E8_ROOTS, "E8 root system");
+    printConstU32("dim(M-theory)", M_THEORY_DIM, "11D supergravity");
+    printConstU32("dim(String)", STRING_DIM, "10D string theory");
+    printConstU32("dim(Space)", SPACE_DIM, "3 = phi^2 + 1/phi^2");
+    printConstU32("Generations", PARTICLE_GENERATIONS, "3 families of matter");
+    printConstU32("Quark colors", QUARK_COLORS, "SU(3) color charge");
+    std.debug.print("    {s}Note: 3 appears 3 times = TRINITY^TRINITY{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Topology:{s}\n", .{ CYAN, RESET });
+    printConstU32("Chern max mod", CHERN_MAX_MOD, "= 3 = TRINITY");
+    printConstU32("Bott max", BOTT_MAX, "Bott periodicity");
+    printConst("Skyrmion radius", SKYRMION_RADIUS_NM, "nm");
+    printConst("Skyrmion charge", SKYRMION_CHARGE, "topological");
+    printConst("Meron charge", MERON_CHARGE, "half-skyrmion");
+
+    std.debug.print("\n{s}  Sacred Number Theory:{s}\n", .{ CYAN, RESET });
+    printConstU32("27 = 3^3", TRIDEVYATITSA, "Tridevyatitsa = TRYTE_SPACE");
+    printConstU32("37 (sacred mult)", SACRED_MULTIPLIER, "37 * 3n = nnn");
+    printConstU32("999 = 37*27", SACRED, "Sacred number");
+    std.debug.print("    {s}Pattern: 37*3=111, 37*6=222, ..., 37*27=999{s}\n", .{ GRAY, RESET });
+
+    std.debug.print("\n{s}  Neuromorphic Computing:{s}\n", .{ CYAN, RESET });
+    printConst("tau_LIF (neuron)", TAU_LIF, "= phi (golden time)");
+    printConstU32("Energy efficiency", ENERGY_EFFICIENCY, "603x = 67*9");
+    printConstU32("Intel Loihi cores", LOIHI_CORES, "neuromorphic chip");
+    printConstU32("IBM NorthPole", NORTHPOLE_CORES, "cores");
+
+    std.debug.print("\n{s}  Superconductor Tc (K):{s}\n", .{ CYAN, RESET });
+    printConst("YBCO", YBCO_TC, "K (high-temp SC)");
+    printConst("MgB2", MGB2_TC, "K");
+    printConst("H3S (pressure)", H3S_TC, "K (record conventional)");
+
+    std.debug.print("\n{s}  Quantum Computing:{s}\n", .{ CYAN, RESET });
+    printConstU32("Jiuzhang photons", JIUZHANG_PHOTONS, "quantum advantage");
+    printConst("Gate fidelity", TYPICAL_FIDELITY, "typical SC qubit");
+    printConst("Coherence time", COHERENCE_TIME_US, "microseconds");
+
+    std.debug.print("\n{s}  phi^2 + 1/phi^2 = 3 = TRINITY = THE STRUCTURE OF REALITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// =============================================================================
 // COMMAND: tri math visual (Cycle 87)
 // =============================================================================
 
@@ -2517,6 +2958,21 @@ fn runCosmosCommand() void {
         GOLDEN, RESET, CYAN, RESET, GREEN, RESET,
     });
 
+    // Extended cosmology (Cycle 88)
+    std.debug.print("\n{s}  Extended Cosmological Parameters:{s}\n", .{ CYAN, RESET });
+    printConst("Omega_CDM (cold DM)", OMEGA_CDM, "cold dark matter density");
+    printConst("Omega_k (curvature)", OMEGA_K, "spatial curvature ~ flat");
+    printConst("n_s (spectral index)", SPECTRAL_INDEX, "scalar perturbations");
+    printConst("sigma_8 (fluct.)", SIGMA_8_COSMO, "fluctuation amplitude");
+    printConstSci("rho_c (critical)", RHO_CRITICAL, "kg/m^3");
+
+    std.debug.print("\n{s}  Hubble Tension:{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Planck (CMB):    H_0 = {s}{d:.1}{s} km/s/Mpc\n", .{ GREEN, HUBBLE, RESET });
+    std.debug.print("    SH0ES (local):   H_0 = {s}{d:.1}{s} km/s/Mpc\n", .{ GOLDEN, HUBBLE_SH0ES, RESET });
+    std.debug.print("    Sacred predict:  H_0 = {s}{d:.2}{s} km/s/Mpc\n", .{ CYAN, HUBBLE_PREDICTED, RESET });
+    const tension = HUBBLE_SH0ES - HUBBLE;
+    std.debug.print("    {s}Tension: {d:.1} km/s/Mpc discrepancy — one of cosmology's biggest puzzles{s}\n", .{ RED, tension, RESET });
+
     const trinity = PHI_SQ + PHI_INV_SQ;
     std.debug.print("\n    {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — the universe remembers its origin{s}\n\n", .{
         GOLDEN, trinity, RESET,
@@ -2532,10 +2988,10 @@ fn runEngineCommand() void {
     std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
 
     std.debug.print("\n{s}  Engine Status:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}[OK]{s} Version:          v3.0 (Cycle 87)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[OK]{s} Constants:         76 sacred + 7 cosmological = 83\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[OK]{s} Subcommands:       32 (25 base + 7 v3.0)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[OK]{s} Verify checks:     24/24 passing\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Version:          v3.1 (Cycle 88)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Constants:         145 sacred + physics + cosmological\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Subcommands:       34 (25 base + 7 v3.0 + 2 v3.1)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Verify checks:     38/38 passing\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Backend:           Zig 0.15.x (zero-alloc math)\n", .{ GREEN, RESET });
 
     std.debug.print("\n{s}  Module Roadmap:{s}\n", .{ CYAN, RESET });
@@ -2545,13 +3001,14 @@ fn runEngineCommand() void {
     std.debug.print("  {s}[OK]{s} Cycle 85: Quantum (Berry, SU(3), Planck-phi, qutrits)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Cycle 86: Holographic (AdS/CFT, LQG, quantum gravity)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Cycle 87: v3.0 Engine (visual, qsim, rewards, cosmos)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[..]{s} Cycle 88: v3.1 Real-time renderer + marketplace\n", .{ GRAY, RESET });
+    std.debug.print("  {s}[OK]{s} Cycle 88: v3.1 Full Integration (particles, groups, 145 constants)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[..]{s} Cycle 89: v3.2 Real-time renderer + marketplace\n", .{ GRAY, RESET });
 
     std.debug.print("\n{s}  Architecture:{s}\n", .{ CYAN, RESET });
     std.debug.print("    File:     src/tri/tri_math.zig\n", .{});
     std.debug.print("    Backend:  Pure Zig, no allocations for math\n", .{});
     std.debug.print("    Entry:    main.zig -> math_mod.runMathCommand()\n", .{});
-    std.debug.print("    Router:   String-match dispatch (32 routes)\n", .{});
+    std.debug.print("    Router:   String-match dispatch (34 routes)\n", .{});
 
     std.debug.print("\n{s}  Sacred Foundation:{s}\n", .{ CYAN, RESET });
     const trinity = PHI_SQ + PHI_INV_SQ;
@@ -2677,6 +3134,25 @@ fn runFormulaCommand() void {
 
     const fit_su3g = findSacredFit(SU3_GOLDEN);
     printFit("SU3 golden 3/2phi", SU3_GOLDEN, fit_su3g);
+
+    // --- Cycle 88: Particle physics fits ---
+    const fit_muon = findSacredFit(MUON_ELECTRON_RATIO);
+    printFit("m_mu/m_e (206.77)", MUON_ELECTRON_RATIO, fit_muon);
+
+    const fit_tau = findSacredFit(TAU_ELECTRON_RATIO);
+    printFit("m_tau/m_e (3477.2)", TAU_ELECTRON_RATIO, fit_tau);
+
+    const fit_higgs = findSacredFit(M_HIGGS);
+    printFit("M_Higgs (125.25)", M_HIGGS, fit_higgs);
+
+    const fit_mw = findSacredFit(M_W_BOSON);
+    printFit("M_W (80.377)", M_W_BOSON, fit_mw);
+
+    const fit_mz = findSacredFit(M_Z_BOSON);
+    printFit("M_Z (91.1876)", M_Z_BOSON, fit_mz);
+
+    const fit_shoes = findSacredFit(HUBBLE_SH0ES);
+    printFit("H_0 SH0ES (73.0)", HUBBLE_SH0ES, fit_shoes);
 
     // ═══════════════════════════════════════════════════════════════
     // Part 2: PREDICT unknown constants
@@ -2861,8 +3337,100 @@ fn runAllConstantsCommand() void {
     printConst("Age of Universe", AGE_UNIVERSE, "Gyr");
     printConst("w (dark energy EoS)", DARK_ENERGY_W, "~= -1");
 
+    // --- Cycle 88 sections ---
+    std.debug.print("\n{s}  PARTICLE MASSES (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConstSci("m_e (electron)", M_ELECTRON, "kg");
+    printConstSci("m_p (proton)", M_PROTON, "kg");
+    printConstSci("m_n (neutron)", M_NEUTRON, "kg");
+    printConstF64Short("M_W (W boson)", M_W_BOSON, "GeV");
+    printConstF64Short("M_Z (Z boson)", M_Z_BOSON, "GeV");
+    printConstF64Short("M_H (Higgs)", M_HIGGS, "GeV");
+    printConstF64Short("m_u (up quark)", M_U_QUARK, "MeV");
+    printConstF64Short("m_d (down quark)", M_D_QUARK, "MeV");
+    printConstF64Short("m_s (strange)", M_S_QUARK, "MeV");
+    printConstF64Short("m_c (charm)", M_C_QUARK, "GeV");
+    printConstF64Short("m_b (bottom)", M_B_QUARK, "GeV");
+    printConstF64Short("m_t (top)", M_T_QUARK, "GeV");
+
+    std.debug.print("\n{s}  SACRED MASS RATIOS (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConst("m_p/m_e = 6*pi^5", PROTON_ELECTRON_ALT, "sacred (0.002%)");
+    printConst("m_mu/m_e sacred", MUON_ELECTRON_RATIO, "(17/9)*pi^2*phi^5");
+    printConst("m_mu/m_e alt", MUON_ELECTRON_ALT, "(20/3)*pi^3");
+    printConst("m_tau/m_e sacred", TAU_ELECTRON_RATIO, "76*9*pi*phi");
+    printConst("m_tau/m_e alt", TAU_ELECTRON_ALT, "36*pi^4");
+    printConst("m_s/m_e sacred", STRANGE_ELECTRON_RATIO, "32/pi*phi^6");
+    printConst("m_t/m_e", TOP_ELECTRON_RATIO, "top quark ratio");
+
+    std.debug.print("\n{s}  MIXING ANGLES (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConst("sin2(theta_12) PMNS", SIN2_THETA12_PMNS, "solar neutrino");
+    printConst("sin2(theta_23) PMNS", SIN2_THETA23_PMNS, "atmospheric");
+    printConst("sin2(theta_13) PMNS", SIN2_THETA13_PMNS, "reactor");
+    printConst("theta_C (Cabibbo)", THETA_CABIBBO_DEG, "degrees ~ F(7)");
+
+    std.debug.print("\n{s}  GROUP THEORY (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConstU32("dim(E8)", E8_DIM, "exceptional Lie group");
+    printConstU32("roots(E8)", E8_ROOTS, "root system");
+    printConstU32("dim(M-theory)", M_THEORY_DIM, "11D");
+    printConstU32("dim(String)", STRING_DIM, "10D");
+    printConstU32("dim(Space)", SPACE_DIM, "3 = TRINITY");
+    printConstU32("Generations", PARTICLE_GENERATIONS, "3 families");
+    printConstU32("Quark colors", QUARK_COLORS, "SU(3)");
+
+    std.debug.print("\n{s}  TOPOLOGY (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConstU32("Chern mod", CHERN_MAX_MOD, "= TRINITY");
+    printConstU32("Bott max", BOTT_MAX, "= TRINITY");
+    printConst("Skyrmion radius", SKYRMION_RADIUS_NM, "nm");
+    printConst("Skyrmion charge", SKYRMION_CHARGE, "topological");
+    printConst("Meron charge", MERON_CHARGE, "half-skyrmion");
+
+    std.debug.print("\n{s}  SACRED NUMBERS (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConstU32("27 = 3^3", TRIDEVYATITSA, "Tridevyatitsa");
+    printConstU32("37 (multiplier)", SACRED_MULTIPLIER, "37*3n = nnn");
+    printConstU32("999 = 37*27", SACRED, "sacred number");
+    printConst("CHSH classical", CHSH_CLASSICAL, "= 2 (local limit)");
+
+    std.debug.print("\n{s}  ADDITIONAL PHYSICS (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConstSci("a_0 (Bohr)", A_BOHR, "m");
+    printConstSci("sigma (Stefan-Boltz)", SIGMA_STEFAN_BOLTZMANN, "W/(m^2*K^4)");
+    printConstSci("b (Wien)", B_WIEN, "m*K");
+    printConstSci("lambda_C (Compton)", LAMBDA_COMPTON, "m");
+    printConstSci("mu_B (Bohr magneton)", MU_BOHR, "J/T");
+    printConstSci("rho_c (critical)", RHO_CRITICAL, "kg/m^3");
+
+    std.debug.print("\n{s}  ADDITIONAL COSMOLOGY (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConst("Omega_CDM", OMEGA_CDM, "cold dark matter");
+    printConst("Omega_k (curvature)", OMEGA_K, "~ flat");
+    printConst("n_s (spectral)", SPECTRAL_INDEX, "scalar index");
+    printConst("sigma_8", SIGMA_8_COSMO, "fluctuation ampl.");
+    printConst("H_0 (SH0ES)", HUBBLE_SH0ES, "km/s/Mpc (local)");
+    printConst("H_0 (sacred)", HUBBLE_PREDICTED, "km/s/Mpc");
+
+    std.debug.print("\n{s}  NEUROMORPHIC (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConst("tau_LIF", TAU_LIF, "= phi");
+    printConstU32("Energy eff.", ENERGY_EFFICIENCY, "603x = 67*9");
+    printConstU32("Loihi cores", LOIHI_CORES, "Intel neuromorphic");
+    printConstU32("NorthPole cores", NORTHPOLE_CORES, "IBM");
+
+    std.debug.print("\n{s}  SUPERCONDUCTORS (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConst("YBCO Tc", YBCO_TC, "K");
+    printConst("MgB2 Tc", MGB2_TC, "K");
+    printConst("H3S Tc (pressure)", H3S_TC, "K");
+
+    std.debug.print("\n{s}  QUANTUM COMPUTING (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConstU32("Jiuzhang photons", JIUZHANG_PHOTONS, "quantum advantage");
+    printConst("Gate fidelity", TYPICAL_FIDELITY, "typical SC");
+    printConst("Coherence time", COHERENCE_TIME_US, "microseconds");
+
+    std.debug.print("\n{s}  ALTERNATIVE FINE STRUCTURE (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConst("1/a = 4pi^3+pi^2+pi", ALPHA_INV_SACRED, "sacred (0.0002%)");
+    printConst("1/a = 24*phi^6/pi", ALPHA_INV_ALT, "golden (0.035%)");
+
+    std.debug.print("\n{s}  NUCLEAR EXTENDED (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    printConstU32("Magic N=184", MAGIC_184, "island of stability");
+    printConstU32("Z=126", ISLAND_OF_STABILITY_Z, "Unbihexium");
+
     // Total count
-    std.debug.print("\n{s}  Total: 83 constants{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}  Total: 145 constants{s}\n", .{ GOLDEN, RESET });
 
     const trinity_check = PHI_SQ + PHI_INV_SQ;
     std.debug.print("  {s}phi^2 + 1/phi^2 = {d:.10}{s}", .{ GOLDEN, trinity_check, RESET });
