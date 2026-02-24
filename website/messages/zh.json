@@ -900,6 +900,29 @@
       }
     ]
   },
+  "sacredFormula": {
+    "title": "神圣公式引擎",
+    "formula": "V = n &times; 3<sup>k</sup> &times; &pi;<sup>m</sup> &times; &phi;<sup>p</sup> &times; e<sup>q</sup>",
+    "description": "整数关系检测：每个物理常数都是由 {1, log(3), log(\u03c0), log(\u03c6)} 在 \u2124 上张成的格中的一个点。",
+    "inputPlaceholder": "输入任意正数...",
+    "decompose": "分解",
+    "computing": "计算中...",
+    "target": "目标值",
+    "exact": "精确",
+    "close": "接近",
+    "approx": "近似",
+    "predictionsTitle": "神圣外推",
+    "predictionsDisclaimer": "非已确立的物理学 \u2014 仅为实验数学",
+    "categories": {
+      "all": "全部",
+      "particle_physics": "粒子物理",
+      "quantum": "量子",
+      "cosmology": "宇宙学",
+      "quantum_gravity": "量子引力"
+    },
+    "chevrons": { "n": "n", "k": "3\u207a", "m": "\u03c0\u207a", "p": "\u03c6\u207a", "q": "e\u207a" },
+    "error": "误差"
+  },
   "stickyCta": {
     "invest": "立即投资",
     "calculator": "节省计算器"
