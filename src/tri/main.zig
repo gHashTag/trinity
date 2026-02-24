@@ -236,6 +236,11 @@ pub fn main() !void {
         // Cycle 91: Sacred Language Model
         .embed => commands.runEmbedCommand(allocator, cmd_args),
         .sacred_search => commands.runSacredSearchCommand(allocator, cmd_args),
+        // Cycle 92: Sacred Language Model v1.1 — Reasoning + Attention
+        .sacred_reason => commands.runSacredReasonCommand(allocator, cmd_args),
+        .sacred_compare => commands.runSacredCompareCommand(allocator, cmd_args),
+        .sacred_chain => commands.runSacredChainCommand(allocator, cmd_args),
+        .sacred_bench_cmd => commands.runSacredBenchCommand(allocator),
         // Cycle 84: $TRI Rewards
         .rewards => commands.runRewardsCommand(allocator, cmd_args),
         // Cycle 85: Dashboard
