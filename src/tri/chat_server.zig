@@ -1157,8 +1157,18 @@ pub const ChatServer = struct {
             const fit = sacred_formula.findFit(total_f64, bounds);
 
             const json = gematria.gematriaWithFitToJson(
-                self.allocator, input, .number_to_glyphs, glyphs, num,
-                fit.n, fit.k, fit.m, fit.p, fit.q, fit.value, fit.error_pct,
+                self.allocator,
+                input,
+                .number_to_glyphs,
+                glyphs,
+                num,
+                fit.n,
+                fit.k,
+                fit.m,
+                fit.p,
+                fit.q,
+                fit.value,
+                fit.error_pct,
             ) catch {
                 try self.sendError(connection, "JSON serialization failed");
                 return;
@@ -1191,8 +1201,18 @@ pub const ChatServer = struct {
             const fit = sacred_formula.findFit(total_f64, bounds);
 
             const json = gematria.gematriaWithFitToJson(
-                self.allocator, input, .text_to_number, glyphs, total,
-                fit.n, fit.k, fit.m, fit.p, fit.q, fit.value, fit.error_pct,
+                self.allocator,
+                input,
+                .text_to_number,
+                glyphs,
+                total,
+                fit.n,
+                fit.k,
+                fit.m,
+                fit.p,
+                fit.q,
+                fit.value,
+                fit.error_pct,
             ) catch {
                 try self.sendError(connection, "JSON serialization failed");
                 return;

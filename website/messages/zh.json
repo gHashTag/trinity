@@ -947,7 +947,10 @@
     "hawkingTitle": "霍金辐射 — 黑洞蒸发",
     "formula": "公式",
     "solarEntropy": "太阳质量黑洞熵",
-    "holoBits": "全息比特"
+    "holoBits": "全息比特",
+    "multiverseTitle": "永恒暴胀 \u2014 泡泡宇宙",
+    "stringTitle": "弦理论景观 \u2014 通量真空",
+    "ryuTitle": "Ryu-Takayanagi \u2014 全息纠缠熵"
   },
   "quantumGravity": {
     "title": "量子引力模拟 v3.1",
@@ -957,7 +960,10 @@
     "reggeTitle": "Regge微积分 (单纯形量子引力)",
     "adsTitle": "AdS/CFT热化动力学",
     "areaTitle": "LQG面积谱 (Barbero-Immirzi)",
-    "areaGap": "面积间隙"
+    "areaGap": "面积间隙",
+    "cdtTitle": "因果动力学三角剖分",
+    "venezianoTitle": "Veneziano弦振幅",
+    "pageCurveTitle": "黑洞信息 (Page曲线)"
   },
   "marketplace": {
     "title": "$TRI 神圣计算市场",

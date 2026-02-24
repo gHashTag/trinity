@@ -13,13 +13,16 @@ const glass = {
   backdropFilter: 'blur(8px)',
 };
 
-type QGTab = 'spin_foam' | 'regge' | 'ads_thermal' | 'area_spectrum';
+type QGTab = 'spin_foam' | 'regge' | 'ads_thermal' | 'area_spectrum' | 'cdt' | 'veneziano' | 'page_curve';
 
 const TABS: { key: QGTab; label: string }[] = [
   { key: 'spin_foam', label: 'Spin Foam' },
   { key: 'regge', label: 'Regge Calculus' },
   { key: 'ads_thermal', label: 'AdS Thermal' },
   { key: 'area_spectrum', label: 'Area Spectrum' },
+  { key: 'cdt', label: 'CDT' },
+  { key: 'veneziano', label: 'Veneziano' },
+  { key: 'page_curve', label: 'Page Curve' },
 ];
 
 export default function QuantumGravitySection() {
@@ -223,6 +226,157 @@ export default function QuantumGravitySection() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* CDT - Causal Dynamical Triangulations */}
+          {tab === 'cdt' && data?.cdt && (
+            <div>
+              <h3 style={{ color: '#00e599', fontSize: 14, marginBottom: 4 }}>
+                Causal Dynamical Triangulations
+              </h3>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', marginBottom: 12 }}>
+                CDT: Spectral dimension flows from 4D → 2D at Planck scale
+              </p>
+              <table style={{ width: '100%', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ color: '#ffd700' }}>
+                    <th style={{ textAlign: 'left', padding: '3px 6px' }}>Time Slice</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>(2,4) Simplices</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>(4,1) Simplices</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>Spatial Volume</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>d_spectral</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.cdt.map(c => (
+                    <tr key={c.time_slice} style={{ color: 'rgba(255,255,255,0.7)', borderTop: '1px solid rgba(0,204,255,0.1)' }}>
+                      <td style={{ padding: '2px 6px' }}>{c.time_slice}</td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right' }}>{c.simplices_24}</td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right' }}>{c.simplices_41}</td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right' }}>{c.spatial_volume}</td>
+                      <td style={{
+                        padding: '2px 6px', textAlign: 'right',
+                        color: c.dim_spectral >= 3.5 ? '#00e599' : '#00ccff',
+                      }}>
+                        {c.dim_spectral.toFixed(3)}
+                      </td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right' }}>{c.total_simplices}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Veneziano - String Amplitudes */}
+          {tab === 'veneziano' && data?.veneziano && (
+            <div>
+              <h3 style={{ color: '#00e599', fontSize: 14, marginBottom: 4 }}>
+                Veneziano String Amplitudes
+              </h3>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', marginBottom: 12 }}>
+                {'A(s,t) = \u0393(-\u03B1(s))\u00B7\u0393(-\u03B1(t)) / \u0393(-\u03B1(s)-\u03B1(t))'}
+              </p>
+              <table style={{ width: '100%', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ color: '#ffd700' }}>
+                    <th style={{ textAlign: 'left', padding: '3px 6px' }}>s</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>t</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>{'\u03B1(s)'}</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>{'\u03B1(t)'}</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>Amplitude</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>{"\u03B1'"}</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px' }}>T_string</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.veneziano.map((v, i) => (
+                    <tr key={i} style={{ color: 'rgba(255,255,255,0.7)', borderTop: '1px solid rgba(0,204,255,0.1)' }}>
+                      <td style={{ padding: '2px 6px' }}>{v.s.toFixed(2)}</td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right' }}>{v.t.toFixed(2)}</td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right' }}>{v.alpha_s.toFixed(4)}</td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right' }}>{v.alpha_t.toFixed(4)}</td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right', color: v.amplitude > 0 ? '#00e599' : 'rgba(255,255,255,0.7)' }}>
+                        {v.amplitude.toFixed(6)}
+                      </td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right' }}>{v.regge_slope.toFixed(4)}</td>
+                      <td style={{ padding: '2px 6px', textAlign: 'right' }}>{v.string_tension.toFixed(4)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {data.veneziano.length > 0 && (
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', marginTop: 8, textAlign: 'center' }}>
+                  String tension T = 1/(2{"\u03C0\u03B1'"}) = {data.veneziano[0].string_tension.toFixed(6)}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Page Curve - Black Hole Information */}
+          {tab === 'page_curve' && data?.page_curve && (
+            <div>
+              <h3 style={{ color: '#00e599', fontSize: 14, marginBottom: 4 }}>
+                Black Hole Information (Page Curve)
+              </h3>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', marginBottom: 12 }}>
+                Information is conserved: S_total = const
+              </p>
+              {data.page_curve.map((p, i) => {
+                const maxEntropy = p.total_entropy > 0 ? p.total_entropy : 1;
+                const bhPct = (p.bh_entropy / maxEntropy) * 100;
+                const radPct = (p.radiation_entropy / maxEntropy) * 100;
+                return (
+                  <div key={i} style={{ marginBottom: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>
+                      <span>t={p.time.toFixed(1)} | M={p.bh_mass.toFixed(3)}</span>
+                      <span>
+                        S_total={p.total_entropy.toFixed(3)}
+                        {p.past_page_time && <span style={{ color: '#ffd700', marginLeft: 6 }}>{'\uD83D\uDCCD'} Page Time</span>}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 2, width: '100%', height: 8, position: 'relative' }}>
+                      {/* BH entropy bar (cyan) */}
+                      <div style={{
+                        width: `${bhPct}%`,
+                        height: '100%',
+                        background: '#00ccff',
+                        borderRadius: '3px 0 0 3px',
+                        transition: 'width 0.3s',
+                        minWidth: bhPct > 0 ? 2 : 0,
+                      }} />
+                      {/* Radiation entropy bar (gold) */}
+                      <div style={{
+                        width: `${radPct}%`,
+                        height: '100%',
+                        background: '#ffd700',
+                        borderRadius: '0 3px 3px 0',
+                        transition: 'width 0.3s',
+                        minWidth: radPct > 0 ? 2 : 0,
+                      }} />
+                      {/* Dashed total line */}
+                      <div style={{
+                        position: 'absolute',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        borderRight: '2px dashed rgba(255,255,255,0.3)',
+                        pointerEvents: 'none',
+                      }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'JetBrains Mono, monospace', marginTop: 1 }}>
+                      <span style={{ color: '#00ccff' }}>BH: {p.bh_entropy.toFixed(3)}</span>
+                      <span style={{ color: '#ffd700' }}>Rad: {p.radiation_entropy.toFixed(3)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>
+                <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#00ccff', borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />BH Entropy</span>
+                <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#ffd700', borderRadius: 2, marginRight: 4, verticalAlign: 'middle' }} />Radiation Entropy</span>
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>┆ Total (const)</span>
+              </div>
             </div>
           )}
 

@@ -24,6 +24,24 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'TRI CLI Reference',
+      items: [
+        'cli/index',
+        'cli/core',
+        'cli/devtools',
+        'cli/analysis',
+        'cli/pipeline',
+        'cli/math',
+        'cli/git',
+        'cli/vibee-tools',
+        'cli/swarm',
+        'cli/demos',
+        'cli/autonomous',
+        'cli/audit',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Concepts',
       items: [
         'concepts/index',

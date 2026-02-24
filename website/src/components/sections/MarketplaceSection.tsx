@@ -18,6 +18,9 @@ const TABS: { key: MarketplaceMode; label: string }[] = [
   { key: 'staking', label: 'Staking' },
   { key: 'proof', label: 'Proof System' },
   { key: 'tokenomics', label: 'Tokenomics' },
+  { key: 'yield_farming', label: 'Yield Farming' },
+  { key: 'oracle', label: 'Oracles' },
+  { key: 'liquidity', label: 'Liquidity' },
 ];
 
 function formatTRI(n: number): string {
@@ -218,6 +221,162 @@ export default function MarketplaceSection() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* Yield Farming */}
+          {tab === 'yield_farming' && data?.yield_pools && (() => {
+            const maxApy = Math.max(...data.yield_pools.map(p => p.apy_pct));
+            return (
+              <div>
+                <h3 style={{ color: '#00e599', fontSize: 14, marginBottom: 12 }}>
+                  $TRI Yield Farming
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
+                  {data.yield_pools.map(pool => (
+                    <div key={pool.name} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '12px', border: '1px solid rgba(0,229,153,0.15)' }}>
+                      <div style={{ color: '#ffd700', fontSize: 13, fontFamily: 'Outfit, sans-serif', fontWeight: 600, marginBottom: 6 }}>
+                        {pool.name}
+                      </div>
+                      <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontFamily: 'JetBrains Mono, monospace', marginBottom: 2 }}>TVL</div>
+                      <div style={{ color: '#00ccff', fontSize: 12, fontFamily: 'JetBrains Mono, monospace', marginBottom: 6 }}>
+                        {pool.tvl.toLocaleString('en-US')} $TRI
+                      </div>
+                      <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontFamily: 'JetBrains Mono, monospace', marginBottom: 2 }}>APY</div>
+                      <div style={{ color: '#00e599', fontSize: 18, fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, marginBottom: 6 }}>
+                        {pool.apy_pct.toFixed(1)}%
+                      </div>
+                      <div style={{ width: '100%', height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, marginBottom: 8 }}>
+                        <div style={{
+                          width: `${(pool.apy_pct / maxApy) * 100}%`,
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #00e599, #ffd700)',
+                          borderRadius: 2,
+                        }} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'JetBrains Mono, monospace', marginBottom: 3 }}>
+                        <span style={{ color: 'rgba(255,255,255,0.4)' }}>Reward/epoch</span>
+                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>{pool.reward_per_epoch} $TRI</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'JetBrains Mono, monospace', marginBottom: 3 }}>
+                        <span style={{ color: 'rgba(255,255,255,0.4)' }}>IL (phi-adj)</span>
+                        <span style={{ color: '#ff6b6b' }}>{(pool.impermanent_loss_phi * 100).toFixed(2)}%</span>
+                      </div>
+                      <div style={{ fontSize: 8, fontFamily: 'JetBrains Mono, monospace', color: 'rgba(170,102,255,0.4)', marginTop: 4 }}>
+                        k = {pool.pair_constant.toFixed(5)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Oracle */}
+          {tab === 'oracle' && data?.oracles && (
+            <div>
+              <h3 style={{ color: '#00e599', fontSize: 14, marginBottom: 12 }}>
+                Sacred Math Oracles
+              </h3>
+              <p style={{ color: 'rgba(170,102,255,0.5)', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', marginBottom: 12 }}>
+                {'Price = base * \u03C6^tier * 1/(1+err%)'}
+              </p>
+              <table style={{ width: '100%', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ color: '#ffd700' }}>
+                    <th style={{ textAlign: 'left', padding: '4px 6px' }}>Constant</th>
+                    <th style={{ textAlign: 'right', padding: '4px 6px' }}>Price ($TRI)</th>
+                    <th style={{ textAlign: 'right', padding: '4px 6px' }}>Confidence</th>
+                    <th style={{ textAlign: 'right', padding: '4px 6px' }}>Epochs Stale</th>
+                    <th style={{ textAlign: 'right', padding: '4px 6px' }}>TWAP 24h</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.oracles.map(o => {
+                    const confColor = o.confidence_pct > 90 ? '#00e599' : o.confidence_pct >= 50 ? '#ffd700' : '#ff6b6b';
+                    const isStale = o.epochs_since_update > 5;
+                    return (
+                      <tr key={o.constant_name} style={{ color: 'rgba(255,255,255,0.7)', borderTop: '1px solid rgba(170,102,255,0.1)' }}>
+                        <td style={{ padding: '3px 6px', color: '#aa66ff' }}>
+                          {o.constant_name}
+                        </td>
+                        <td style={{ padding: '3px 6px', textAlign: 'right' }}>
+                          {o.current_price_tri.toFixed(6)}
+                        </td>
+                        <td style={{ padding: '3px 6px', textAlign: 'right', color: confColor, fontWeight: 'bold' }}>
+                          {o.confidence_pct.toFixed(1)}%
+                        </td>
+                        <td style={{ padding: '3px 6px', textAlign: 'right' }}>
+                          {isStale && <span style={{ color: '#ff6b6b', marginRight: 4 }} title="Stale oracle">!!</span>}
+                          <span style={{ color: isStale ? '#ff6b6b' : 'rgba(255,255,255,0.5)' }}>{o.epochs_since_update}</span>
+                        </td>
+                        <td style={{ padding: '3px 6px', textAlign: 'right', color: 'rgba(255,255,255,0.5)' }}>
+                          {o.twap_24h.toFixed(6)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Liquidity */}
+          {tab === 'liquidity' && data?.liquidity_pools && (
+            <div>
+              <h3 style={{ color: '#00e599', fontSize: 14, marginBottom: 12 }}>
+                Liquidity Pools
+              </h3>
+              <p style={{ color: 'rgba(170,102,255,0.5)', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', marginBottom: 12 }}>
+                {'AMM invariant: x \u00B7 y = k'}
+              </p>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', borderCollapse: 'collapse', minWidth: 640 }}>
+                  <thead>
+                    <tr style={{ color: '#ffd700' }}>
+                      <th style={{ textAlign: 'left', padding: '4px 6px' }}>Pool</th>
+                      <th style={{ textAlign: 'right', padding: '4px 6px' }}>Reserve TRI</th>
+                      <th style={{ textAlign: 'right', padding: '4px 6px' }}>Reserve Paired</th>
+                      <th style={{ textAlign: 'right', padding: '4px 6px' }}>k (invariant)</th>
+                      <th style={{ textAlign: 'right', padding: '4px 6px' }}>Fees</th>
+                      <th style={{ textAlign: 'right', padding: '4px 6px' }}>LP Supply</th>
+                      <th style={{ textAlign: 'right', padding: '4px 6px' }}>{'\u03C6'}-boost</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.liquidity_pools.map(lp => {
+                      const kDisplay = lp.k_invariant >= 1e9
+                        ? lp.k_invariant.toExponential(3)
+                        : lp.k_invariant.toLocaleString('en-US');
+                      return (
+                        <tr key={lp.pool_id} style={{ color: 'rgba(255,255,255,0.7)', borderTop: '1px solid rgba(170,102,255,0.1)' }}>
+                          <td style={{ padding: '3px 6px', color: '#aa66ff', fontWeight: 'bold' }}>
+                            #{lp.pool_id}
+                          </td>
+                          <td style={{ padding: '3px 6px', textAlign: 'right' }}>
+                            {formatTRI(lp.reserve_tri)}
+                          </td>
+                          <td style={{ padding: '3px 6px', textAlign: 'right' }}>
+                            {formatTRI(lp.reserve_paired)}
+                          </td>
+                          <td style={{ padding: '3px 6px', textAlign: 'right', color: 'rgba(255,255,255,0.5)', fontSize: 9 }}>
+                            {kDisplay}
+                          </td>
+                          <td style={{ padding: '3px 6px', textAlign: 'right', color: '#00e599' }}>
+                            {lp.fee_accumulated.toFixed(1)}
+                          </td>
+                          <td style={{ padding: '3px 6px', textAlign: 'right' }}>
+                            {formatTRI(lp.lp_token_supply)}
+                          </td>
+                          <td style={{ padding: '3px 6px', textAlign: 'right', color: '#ffd700', fontWeight: 'bold' }}>
+                            {lp.phi_fee_boost.toFixed(3)}x
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
