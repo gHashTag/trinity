@@ -1,0 +1,57 @@
+================================================================================
+Behavior with BDD keywords
+================================================================================
+
+behaviors:
+  - name: detectAlgorithm
+    given: Input
+    when: Processing
+    then: Result
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (pair
+    key: (section_keyword))
+  (list_item
+    (pair
+      key: (section_keyword)
+      value: (identifier (plain_identifier))))
+  (pair
+    key: (behavior_keyword)
+    value: (identifier (plain_identifier)))
+  (pair
+    key: (behavior_keyword)
+    value: (identifier (plain_identifier)))
+  (pair
+    key: (behavior_keyword)
+    value: (identifier (plain_identifier))))
+
+================================================================================
+Behavior with quoted values
+================================================================================
+
+behaviors:
+  - name: myFunc
+    given: "Some precondition"
+    when: "Some action"
+    then: "Some result"
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (pair
+    key: (section_keyword))
+  (list_item
+    (pair
+      key: (section_keyword)
+      value: (identifier (plain_identifier))))
+  (pair
+    key: (behavior_keyword)
+    value: (quoted_string (string_content)))
+  (pair
+    key: (behavior_keyword)
+    value: (quoted_string (string_content)))
+  (pair
+    key: (behavior_keyword)
+    value: (quoted_string (string_content))))

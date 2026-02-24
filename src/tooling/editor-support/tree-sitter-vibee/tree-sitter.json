@@ -1,0 +1,34 @@
+{
+  "grammars": [
+    {
+      "name": "vibee",
+      "camelcase": "Vibee",
+      "scope": "source.vibee",
+      "path": ".",
+      "file-types": [
+        "vibee",
+        "vib"
+      ],
+      "injection-regex": "vibee",
+      "highlights": "queries/highlights.scm",
+      "indents": "queries/indents.scm",
+      "folds": "queries/folds.scm"
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "license": "MIT",
+    "description": "Tree-sitter grammar for VIBEE DSL (.vibee specification files)",
+    "links": {
+      "repository": "https://github.com/gHashTag/trinity.git"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true
+  }
+}
