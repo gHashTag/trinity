@@ -930,7 +930,12 @@
     "legendM": "几何幂（\u03c0 的指数）",
     "legendP": "黄金比例幂（\u03c6 的指数）",
     "legendQ": "增长幂（e 的指数）",
-    "legendExample": "示例：13 \u2248 1 \u00d7 3\u207b\u00b9 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b9 \u00d7 e\u00b3"
+    "legendExample": "示例：13 \u2248 1 \u00d7 3\u207b\u00b9 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b9 \u00d7 e\u00b3",
+    "modeFormula": "数字 \u2192 公式",
+    "modeGematria": "字母数值学",
+    "gematriaPlaceholder": "数字或科普特文字...",
+    "gematriaDecompose": "解码",
+    "sacredFit": "神圣公式"
   },
   "stickyCta": {
     "invest": "立即投资",

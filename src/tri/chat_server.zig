@@ -220,6 +220,12 @@ pub const ChatServer = struct {
             try self.handleSacredFormulaConstants(connection);
         } else if (std.mem.startsWith(u8, path, "/api/sacred-formula/fit")) {
             try self.handleSacredFormulaFit(connection);
+        } else if (std.mem.startsWith(u8, path, "/api/gematria")) {
+            if (std.mem.eql(u8, method, "POST")) {
+                try self.handleGematria(connection, body);
+            } else {
+                try self.sendMethodNotAllowed(connection);
+            }
         } else {
             try self.sendNotFound(connection);
         }
@@ -1099,6 +1105,80 @@ pub const ChatServer = struct {
         defer self.allocator.free(json);
 
         try self.sendJsonResponse(connection, json);
+    }
+
+    fn handleGematria(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
+        const gematria = @import("gematria.zig");
+        const sacred_formula = @import("sacred_formula.zig");
+        const tri_spec = @import("tri_spec_parser.zig");
+
+        // Extract "text" from JSON body
+        const input = extractJsonString(body, "text") orelse {
+            try self.sendError(connection, "Missing 'text' field in JSON body");
+            return;
+        };
+
+        // Detect mode: if input is a pure number → number_to_glyphs, otherwise text_to_number
+        const maybe_num = std.fmt.parseInt(u32, input, 10) catch null;
+
+        if (maybe_num) |num| {
+            // Number → Glyphs mode
+            const glyphs = gematria.numberToGlyphs(self.allocator, num) catch {
+                try self.sendError(connection, "Allocation failed");
+                return;
+            };
+            defer self.allocator.free(glyphs);
+
+            // Also compute Sacred Formula fit
+            const total_f64: f64 = @floatFromInt(num);
+            const bounds = tri_spec.SearchBounds{};
+            const fit = sacred_formula.findFit(total_f64, bounds);
+
+            const json = gematria.gematriaWithFitToJson(
+                self.allocator, input, .number_to_glyphs, glyphs, num,
+                fit.n, fit.k, fit.m, fit.p, fit.q, fit.value, fit.error_pct,
+            ) catch {
+                try self.sendError(connection, "JSON serialization failed");
+                return;
+            };
+            defer self.allocator.free(json);
+
+            try self.sendJsonResponse(connection, json);
+        } else {
+            // Text → Number mode
+            const total = gematria.textToGematriaValue(input);
+            const glyphs = gematria.textToGlyphs(self.allocator, input) catch {
+                try self.sendError(connection, "Allocation failed");
+                return;
+            };
+            defer self.allocator.free(glyphs);
+
+            if (total == 0) {
+                const json = gematria.gematriaToJson(self.allocator, input, .text_to_number, glyphs, 0) catch {
+                    try self.sendError(connection, "JSON serialization failed");
+                    return;
+                };
+                defer self.allocator.free(json);
+                try self.sendJsonResponse(connection, json);
+                return;
+            }
+
+            // Also compute Sacred Formula fit
+            const total_f64: f64 = @floatFromInt(total);
+            const bounds = tri_spec.SearchBounds{};
+            const fit = sacred_formula.findFit(total_f64, bounds);
+
+            const json = gematria.gematriaWithFitToJson(
+                self.allocator, input, .text_to_number, glyphs, total,
+                fit.n, fit.k, fit.m, fit.p, fit.q, fit.value, fit.error_pct,
+            ) catch {
+                try self.sendError(connection, "JSON serialization failed");
+                return;
+            };
+            defer self.allocator.free(json);
+
+            try self.sendJsonResponse(connection, json);
+        }
     }
 
     fn sendNotFound(self: *Self, connection: *std.net.Server.Connection) !void {
