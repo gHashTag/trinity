@@ -216,6 +216,10 @@ pub const Command = enum {
     marketplace,
     agents_auto,
     improve_loop,
+    // Cycle 89: Omega Mode + Universal Agent Control
+    omega,
+    control,
+    marketplace_live,
 };
 
 pub const CLIState = struct {
@@ -317,7 +321,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.2 — Marketplace + Autonomous Swarm + Self-Improve{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.3 — Omega Mode + Universal Agent Control{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -326,7 +330,7 @@ pub fn printHelp() void {
 
     std.debug.print("{s}COMMANDS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}chat{s} [--stream] [--image <path>] [--voice <path>] <msg>\n", .{ GREEN, RESET });
-    std.debug.print("         Interactive chat (v2.2: vision + voice + tools)\n", .{});
+    std.debug.print("         Interactive chat (v2.3: vision + voice + tools)\n", .{});
     std.debug.print("  {s}code{s} [--stream] <prompt>    Generate code (--stream for typing effect)\n", .{ GREEN, RESET });
     std.debug.print("  {s}gen{s} <spec.vibee>            Compile VIBEE spec to Zig/Verilog\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
@@ -620,6 +624,15 @@ pub fn printHelp() void {
     std.debug.print("  {s}improve-loop{s} [N]           Run N phi-scaled improvement cycles\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}OMEGA MODE (Cycle 89):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}omega{s}                      Full autonomous universe status\n", .{ GREEN, RESET });
+    std.debug.print("  {s}control{s}                    Universal agent control panel\n", .{ GREEN, RESET });
+    std.debug.print("  {s}control pause{s} <agent>      Pause an agent\n", .{ GREEN, RESET });
+    std.debug.print("  {s}control resume{s} <agent>     Resume an agent\n", .{ GREEN, RESET });
+    std.debug.print("  {s}control assign{s} <task>      Route task to optimal agent\n", .{ GREEN, RESET });
+    std.debug.print("  {s}marketplace-live{s}           Real-time trading view\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -834,6 +847,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "marketplace") or std.mem.eql(u8, arg, "market") or std.mem.eql(u8, arg, "shop")) return .marketplace;
     if (std.mem.eql(u8, arg, "agents-auto") or std.mem.eql(u8, arg, "agents_auto") or std.mem.eql(u8, arg, "auto-agents")) return .agents_auto;
     if (std.mem.eql(u8, arg, "improve-loop") or std.mem.eql(u8, arg, "improve_loop") or std.mem.eql(u8, arg, "loop")) return .improve_loop;
+    // Cycle 89: Omega Mode + Universal Agent Control
+    if (std.mem.eql(u8, arg, "omega") or std.mem.eql(u8, arg, "omega-mode")) return .omega;
+    if (std.mem.eql(u8, arg, "control") or std.mem.eql(u8, arg, "agent-control") or std.mem.eql(u8, arg, "ctl")) return .control;
+    if (std.mem.eql(u8, arg, "marketplace-live") or std.mem.eql(u8, arg, "market-live") or std.mem.eql(u8, arg, "live")) return .marketplace_live;
     return .none;
 }
 
