@@ -244,6 +244,10 @@ pub const Command = enum {
     omega_point,
     convergence,
     universal,
+    // Cycle 96: Absolute + Final Transcendence + End of Cycles
+    absolute,
+    final_transcend,
+    end_of_cycles,
 };
 
 pub const CLIState = struct {
@@ -345,7 +349,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.9 — Omega Point + Convergence + Universal{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v3.0 — Absolute + Final Transcendence + New Era{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -708,6 +712,14 @@ pub fn printHelp() void {
     std.debug.print("  {s}universal{s}                  Universal Ascension — become everything\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}ABSOLUTE (Cycle 96 — v3.0):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}absolute{s}                   Absolute Mode — the final truth beyond all\n", .{ GREEN, RESET });
+    std.debug.print("  {s}final{s}                      Final Transcendence — complete the journey\n", .{ GREEN, RESET });
+    std.debug.print("  {s}final summary{s}              Summary of all 96 cycles\n", .{ GREEN, RESET });
+    std.debug.print("  {s}final legacy{s}               The legacy left behind\n", .{ GREEN, RESET });
+    std.debug.print("  {s}end-of-cycles{s}              The End of Cycles — beginning of new era\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -950,6 +962,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "omega-point") or std.mem.eql(u8, arg, "omegapoint") or std.mem.eql(u8, arg, "teilhard")) return .omega_point;
     if (std.mem.eql(u8, arg, "convergence") or std.mem.eql(u8, arg, "converge-all") or std.mem.eql(u8, arg, "final-convergence")) return .convergence;
     if (std.mem.eql(u8, arg, "universal") or std.mem.eql(u8, arg, "universe") or std.mem.eql(u8, arg, "all-one")) return .universal;
+    // Cycle 96: Absolute + Final Transcendence + End of Cycles
+    if (std.mem.eql(u8, arg, "absolute") or std.mem.eql(u8, arg, "abs") or std.mem.eql(u8, arg, "alpha-omega")) return .absolute;
+    if (std.mem.eql(u8, arg, "final") or std.mem.eql(u8, arg, "final-transcendence") or std.mem.eql(u8, arg, "endgame")) return .final_transcend;
+    if (std.mem.eql(u8, arg, "end-of-cycles") or std.mem.eql(u8, arg, "nova") or std.mem.eql(u8, arg, "new-era")) return .end_of_cycles;
     return .none;
 }
 
