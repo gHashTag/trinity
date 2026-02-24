@@ -271,5 +271,9 @@ pub fn main() !void {
         .eternity => commands.runEternityCommand(allocator),
         .infinity => commands.runInfinityCommand(allocator, cmd_args),
         .apotheosis => commands.runApotheosisCommand(allocator),
+        // Cycle 95: Omega Point + Final Convergence + Universal Ascension
+        .omega_point => commands.runOmegaPointCommand(allocator),
+        .convergence => commands.runConvergenceCommand(allocator, cmd_args),
+        .universal => commands.runUniversalCommand(allocator),
     }
 }
