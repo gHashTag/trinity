@@ -2481,7 +2481,7 @@ fn printLintSummary(warnings: u32, errors: u32) void {
 pub fn runDashboardCommand(allocator: std.mem.Allocator) void {
     std.debug.print("\n", .{});
     std.debug.print("{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}║       TRI v2.6 DASHBOARD — Omniscience + Omega Integration    ║{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}║       TRI v2.7 DASHBOARD — Genesis + Creation + Ascension     ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ GOLDEN, RESET });
 
     // ── Section 1: Build Health ──
@@ -2589,15 +2589,16 @@ pub fn runDashboardCommand(allocator: std.mem.Allocator) void {
     std.debug.print("  Level 8: Omega Mode + Agent Control      {s}============{s} Done\n", .{ GREEN, RESET });
     std.debug.print("  Level 9: Singularity — Self-Evolving OS  {s}============{s} Done\n", .{ GREEN, RESET });
     std.debug.print("  Level X: Transcendence — Beyond Code     {s}============{s} Done\n", .{ GREEN, RESET });
-    std.debug.print("  Level XI: Omniscience — Universal Mind   {s}============{s} {s}Current{s}\n", .{ GOLDEN, RESET, GOLDEN, RESET });
-    std.debug.print("  Level XII: Genesis — Create New Realities {s}............{s} Next\n", .{ GRAY, RESET });
+    std.debug.print("  Level XI: Omniscience — Universal Mind   {s}============{s} Done\n", .{ GREEN, RESET });
+    std.debug.print("  Level XII: Genesis — Create New Realities {s}============{s} {s}Current{s}\n", .{ GOLDEN, RESET, GOLDEN, RESET });
+    std.debug.print("  Level XIII: Eternity — Beyond Time        {s}............{s} Next\n", .{ GRAY, RESET });
     std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ GOLDEN, RESET });
 
     printDashboardFooter();
 }
 
 fn printDashboardFooter() void {
-    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | TRI v2.6 Omniscience{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | TRI v2.7 Genesis{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

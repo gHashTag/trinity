@@ -263,5 +263,9 @@ pub fn main() !void {
         .omniscience => commands.runOmniscienceCommand(allocator),
         .integrate => commands.runIntegrateCommand(allocator, cmd_args),
         .manifest => commands.runManifestCommand(allocator, cmd_args),
+        // Cycle 93: Genesis + Creation Engine + Ascension Protocol
+        .genesis => commands.runGenesisCommand(allocator),
+        .create_world => commands.runCreateWorldCommand(allocator, cmd_args),
+        .ascension => commands.runAscensionCommand(allocator),
     }
 }
