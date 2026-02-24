@@ -11,6 +11,9 @@ const MODES: { key: HoloMode; label: string }[] = [
   { key: 'penrose', label: 'Penrose' },
   { key: 'entropy', label: 'Entropy' },
   { key: 'hawking', label: 'Hawking' },
+  { key: 'multiverse', label: 'Multiverse' },
+  { key: 'string_landscape', label: 'String Landscape' },
+  { key: 'ryu_takayanagi', label: 'Ryu-Takayanagi' },
 ];
 
 const glass = {
@@ -211,6 +214,208 @@ export default function HolographicSection() {
               </div>
             </div>
           )}
+
+          {/* Multiverse Bubbles */}
+          {data?.multiverse_bubbles && (
+            <div>
+              <h3 style={{ color: '#00ccff', fontSize: 14, marginBottom: 12 }}>
+                {msg.multiverseTitle || 'Eternal Inflation — Bubble Universes'}
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                {data.multiverse_bubbles.map((bubble, i) => (
+                  <motion.div
+                    key={bubble.id}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, delay: i * 0.08 }}
+                    style={{
+                      background: bubble.is_our_vacuum ? 'rgba(255,215,0,0.08)' : 'rgba(0,0,0,0.3)',
+                      border: bubble.is_our_vacuum ? '2px solid #ffd700' : '1px solid rgba(255,215,0,0.15)',
+                      borderRadius: 10,
+                      padding: 10,
+                      textAlign: 'center',
+                      fontFamily: 'JetBrains Mono, monospace',
+                      fontSize: 10,
+                      position: 'relative',
+                    }}
+                  >
+                    {bubble.is_our_vacuum && (
+                      <div style={{
+                        position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
+                        background: '#ffd700', color: '#000', fontSize: 8, fontWeight: 700,
+                        padding: '1px 8px', borderRadius: 4, whiteSpace: 'nowrap',
+                      }}>
+                        OUR UNIVERSE
+                      </div>
+                    )}
+                    <div style={{ color: '#ffd700', fontSize: 12, marginBottom: 4, marginTop: bubble.is_our_vacuum ? 4 : 0 }}>
+                      Bubble #{bubble.id}
+                    </div>
+                    <div style={{
+                      width: `${bubble.radius * 3}px`,
+                      height: `${bubble.radius * 3}px`,
+                      borderRadius: '50%',
+                      border: `2px solid ${bubble.is_our_vacuum ? '#ffd700' : 'rgba(0,204,255,0.4)'}`,
+                      margin: '6px auto',
+                      background: bubble.is_our_vacuum
+                        ? 'radial-gradient(circle, rgba(255,215,0,0.25), transparent)'
+                        : 'radial-gradient(circle, rgba(0,204,255,0.15), transparent)',
+                    }} />
+                    <div style={{ color: 'rgba(255,255,255,0.6)' }}>
+                      &#923; = {bubble.cosmological_constant.toFixed(4)}
+                    </div>
+                    <div style={{ color: '#00ccff' }}>
+                      P_tunnel = {bubble.tunneling_prob.toExponential(1)}
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)' }}>
+                      r = {bubble.radius} | H = {bubble.inflation_rate}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* String Landscape */}
+          {data?.string_landscape && (
+            <div>
+              <h3 style={{ color: '#00ccff', fontSize: 14, marginBottom: 12 }}>
+                {msg.stringTitle || 'String Theory Landscape — Flux Vacua'}
+              </h3>
+              <div style={{
+                position: 'relative',
+                background: 'rgba(0,0,0,0.3)',
+                border: '1px solid rgba(255,215,0,0.1)',
+                borderRadius: 8,
+                padding: 16,
+                minHeight: 280,
+              }}>
+                {/* Axes labels */}
+                <div style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50)', fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>
+                  modulus_x
+                </div>
+                <div style={{ position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%) rotate(-90deg)', fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>
+                  modulus_y
+                </div>
+                {/* Scatter points */}
+                {data.string_landscape.map((pt, i) => {
+                  const x = (pt.modulus_x / 3.0) * 90 + 5;
+                  const y = 95 - (pt.modulus_y / 2.5) * 90;
+                  const isStable = pt.energy < 0;
+                  const pointColor = pt.is_minimum ? '#ffd700' : isStable ? '#00e599' : '#ff6b6b';
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: i * 0.06 }}
+                      style={{
+                        position: 'absolute',
+                        left: `${x}%`,
+                        top: `${y}%`,
+                        transform: 'translate(-50%, -50%)',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{
+                        width: pt.is_minimum ? 18 : 12,
+                        height: pt.is_minimum ? 18 : 12,
+                        borderRadius: '50%',
+                        background: `radial-gradient(circle, ${pointColor}60, ${pointColor}20)`,
+                        border: `2px solid ${pointColor}`,
+                        margin: '0 auto 2px',
+                        boxShadow: pt.is_minimum ? `0 0 8px ${pointColor}40` : 'none',
+                      }} />
+                      {pt.is_minimum && (
+                        <div style={{ color: '#ffd700', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap' }}>
+                          &#9733; MINIMUM
+                        </div>
+                      )}
+                      <div style={{ fontSize: 8, color: pointColor, fontFamily: 'JetBrains Mono, monospace', whiteSpace: 'nowrap' }}>
+                        E={pt.energy.toFixed(4)}
+                      </div>
+                      <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)', fontFamily: 'JetBrains Mono, monospace' }}>
+                        F={pt.flux_config}
+                      </div>
+                      {pt.tunneling_to !== null && (
+                        <div style={{ fontSize: 7, color: 'rgba(0,204,255,0.6)', fontFamily: 'JetBrains Mono, monospace', whiteSpace: 'nowrap' }}>
+                          &#8594; Point {pt.tunneling_to + 1}
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8, fontFamily: 'JetBrains Mono, monospace', fontSize: 9 }}>
+                <span><span style={{ color: '#ffd700' }}>&#9679;</span> <span style={{ color: 'rgba(255,255,255,0.5)' }}>Minimum</span></span>
+                <span><span style={{ color: '#00e599' }}>&#9679;</span> <span style={{ color: 'rgba(255,255,255,0.5)' }}>Stable (E&lt;0)</span></span>
+                <span><span style={{ color: '#ff6b6b' }}>&#9679;</span> <span style={{ color: 'rgba(255,255,255,0.5)' }}>Unstable (E&gt;0)</span></span>
+              </div>
+            </div>
+          )}
+
+          {/* Ryu-Takayanagi */}
+          {data?.ryu_takayanagi && (() => {
+            const maxEntropy = Math.max(...data.ryu_takayanagi.map(g => g.entanglement_entropy));
+            return (
+              <div>
+                <h3 style={{ color: '#00ccff', fontSize: 14, marginBottom: 4 }}>
+                  {msg.ryuTitle || 'Ryu-Takayanagi — Holographic Entanglement Entropy'}
+                </h3>
+                <p style={{ color: 'rgba(255,215,0,0.6)', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', marginBottom: 12 }}>
+                  S_A = (c/3) &middot; log(&#8467;/&#949;) + &#966;-correction
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {data.ryu_takayanagi.map((geo, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.35, delay: i * 0.1 }}
+                      style={{
+                        background: 'rgba(0,0,0,0.3)',
+                        border: '1px solid rgba(0,204,255,0.15)',
+                        borderRadius: 8,
+                        padding: '10px 14px',
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: 11,
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <span style={{ color: '#ffd700', fontSize: 12 }}>
+                          Boundary [{geo.boundary_start.toFixed(2)}, {geo.boundary_end.toFixed(2)}]
+                        </span>
+                        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9 }}>
+                          L_geo = {geo.geodesic_length.toFixed(3)}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                        <span style={{ color: '#00ccff', minWidth: 120 }}>
+                          S_ent = {geo.entanglement_entropy.toFixed(3)}
+                        </span>
+                        <div style={{ flex: 1, height: 6, background: 'rgba(0,204,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(geo.entanglement_entropy / maxEntropy) * 100}%` }}
+                            transition={{ duration: 0.6, delay: i * 0.1 }}
+                            style={{
+                              height: '100%',
+                              background: 'linear-gradient(90deg, #00ccff, #ffd700)',
+                              borderRadius: 3,
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 16, color: 'rgba(255,255,255,0.5)', fontSize: 9 }}>
+                        <span>&#966;-corr: <span style={{ color: '#00e599' }}>{geo.phi_correction.toFixed(4)}</span></span>
+                        <span>A/4G: <span style={{ color: 'rgba(255,215,0,0.7)' }}>{geo.area_over_4g.toFixed(3)}</span></span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Trinity Check */}
           {data && (

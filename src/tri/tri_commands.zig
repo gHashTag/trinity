@@ -1602,7 +1602,7 @@ pub fn runTVCCompileCommand(allocator: std.mem.Allocator, args: []const []const 
         if (output_path) |op| std.debug.print("  Output: {s}\n", .{op});
         std.debug.print("  Debug:  {s}\n", .{if (debug_mode) "true" else "false"});
         std.debug.print("\n{s}Note: TVC compilation requires tvc binary:{s}\n", .{ GRAY, RESET });
-        std.debug.print("  ./zig-out/bin/tvc compile {s}\n", .{ path });
+        std.debug.print("  ./zig-out/bin/tvc compile {s}\n", .{path});
         if (output_path) |op| std.debug.print("    Option: --output {s}\n", .{op});
         if (debug_mode) std.debug.print("    Option: --debug\n", .{});
     } else {
@@ -1637,15 +1637,12 @@ pub fn runCompetitiveReplCommand(allocator: std.mem.Allocator, args: []const []c
     std.debug.print("{s}            COMPETITIVE REPL{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
 
-    const lang_name = if (std.mem.eql(u8, lang, "en")) "English"
-                     else if (std.mem.eql(u8, lang, "ru")) "Русский"
-                     else if (std.mem.eql(u8, lang, "th")) "ภาษาไทย"
-                     else "Unknown";
+    const lang_name = if (std.mem.eql(u8, lang, "en")) "English" else if (std.mem.eql(u8, lang, "ru")) "Русский" else if (std.mem.eql(u8, lang, "th")) "ภาษาไทย" else "Unknown";
 
     std.debug.print("  Language: {s} ({s})\n", .{ lang_name, lang });
     std.debug.print("  Features: Tab completion, multi-language support\n", .{});
     std.debug.print("\n{s}Note: Competitive REPL requires competitive-repl binary:{s}\n", .{ GRAY, RESET });
-    std.debug.print("  ./zig-out/bin/competitive-repl --lang {s}\n", .{ lang });
+    std.debug.print("  ./zig-out/bin/competitive-repl --lang {s}\n", .{lang});
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
     _ = allocator;
 }
@@ -3458,9 +3455,15 @@ pub fn runImproveAllCommand(allocator: std.mem.Allocator, args: []const []const 
 
     std.debug.print("  Files: {d}  Violations: {s}{d}{s}  Warnings: {s}{d}{s}  OK: {s}{d}{s}\n\n", .{
         before_total,
-        RED, before_violations, RESET,
-        GOLDEN, before_warnings, RESET,
-        GREEN, before_ok, RESET,
+        RED,
+        before_violations,
+        RESET,
+        GOLDEN,
+        before_warnings,
+        RESET,
+        GREEN,
+        before_ok,
+        RESET,
     });
 
     if (before_violations == 0 and before_warnings == 0) {
@@ -3534,8 +3537,8 @@ pub fn runImproveAllCommand(allocator: std.mem.Allocator, args: []const []const 
         const warns_fixed = if (before_warnings > after_warnings) before_warnings - after_warnings else 0;
 
         std.debug.print("  Violations: {s}{d}{s}  Warnings: {s}{d}{s}\n\n", .{
-            if (after_violations == 0) GREEN else RED, after_violations, RESET,
-            if (after_warnings == 0) GREEN else GOLDEN, after_warnings, RESET,
+            if (after_violations == 0) GREEN else RED,  after_violations, RESET,
+            if (after_warnings == 0) GREEN else GOLDEN, after_warnings,   RESET,
         });
 
         printImproveAllSummary(before_total, before_violations, after_violations, before_warnings, after_warnings, specs_created, warns_fixed);
@@ -3594,7 +3597,7 @@ pub fn runFullAutonomousCommand(allocator: std.mem.Allocator) void {
     // Step 1: tri doctor
     std.debug.print("{s}[1/5]{s} Running {s}tri doctor{s}...\n", .{ CYAN, RESET, WHITE, RESET });
     total_steps += 1;
-    const doc_ok = runSubcommand(allocator, &.{ "doctor" });
+    const doc_ok = runSubcommand(allocator, &.{"doctor"});
     if (doc_ok) {
         std.debug.print("  {s}[PASS]{s} Doctor: all checks passed\n\n", .{ GREEN, RESET });
         total_pass += 1;
@@ -3616,7 +3619,7 @@ pub fn runFullAutonomousCommand(allocator: std.mem.Allocator) void {
     // Step 3: tri math-verify
     std.debug.print("{s}[3/5]{s} Running {s}tri math-verify{s}...\n", .{ CYAN, RESET, WHITE, RESET });
     total_steps += 1;
-    const math_ok = runSubcommand(allocator, &.{ "math-verify" });
+    const math_ok = runSubcommand(allocator, &.{"math-verify"});
     if (math_ok) {
         std.debug.print("  {s}[PASS]{s} Math: all identity checks passed\n\n", .{ GREEN, RESET });
         total_pass += 1;
@@ -3627,7 +3630,7 @@ pub fn runFullAutonomousCommand(allocator: std.mem.Allocator) void {
     // Step 4: tri stats
     std.debug.print("{s}[4/5]{s} Running {s}tri stats{s}...\n", .{ CYAN, RESET, WHITE, RESET });
     total_steps += 1;
-    const stats_ok = runSubcommand(allocator, &.{ "stats" });
+    const stats_ok = runSubcommand(allocator, &.{"stats"});
     if (stats_ok) {
         std.debug.print("  {s}[PASS]{s} Stats: metrics collected\n\n", .{ GREEN, RESET });
         total_pass += 1;
@@ -3638,7 +3641,7 @@ pub fn runFullAutonomousCommand(allocator: std.mem.Allocator) void {
     // Step 5: tri math-bench
     std.debug.print("{s}[5/5]{s} Running {s}tri math-bench{s}...\n", .{ CYAN, RESET, WHITE, RESET });
     total_steps += 1;
-    const bench_ok = runSubcommand(allocator, &.{ "math-bench" });
+    const bench_ok = runSubcommand(allocator, &.{"math-bench"});
     if (bench_ok) {
         std.debug.print("  {s}[PASS]{s} Bench: performance OK\n\n", .{ GREEN, RESET });
         total_pass += 1;
@@ -6360,7 +6363,7 @@ pub fn runSacredBenchCommand(allocator: std.mem.Allocator) void {
     const bf_avg_us = @as(f64, @floatFromInt(bf_avg_ns)) / 1000.0;
     std.debug.print("  {d} iterations x {d} constants = {d} total fits\n", .{ bf_iters, targets.len, bf_iters * targets.len });
     std.debug.print("  Average per batch of {d}: {d:.1} us\n", .{ targets.len, bf_avg_us });
-    std.debug.print("  Average per fit: {d:.1} us\n\n", .{ bf_avg_us / @as(f64, @floatFromInt(targets.len)) });
+    std.debug.print("  Average per fit: {d:.1} us\n\n", .{bf_avg_us / @as(f64, @floatFromInt(targets.len))});
 
     // Benchmark: embedding computation
     std.debug.print("{s}Embedding Computation (64-dim):{s}\n", .{ CYAN, RESET });
@@ -6378,7 +6381,7 @@ pub fn runSacredBenchCommand(allocator: std.mem.Allocator) void {
     const emb_avg_ns = emb_total / bf_iters;
     const emb_avg_us = @as(f64, @floatFromInt(emb_avg_ns)) / 1000.0;
     std.debug.print("  Average per batch: {d:.1} us\n", .{emb_avg_us});
-    std.debug.print("  Average per embed: {d:.1} us\n\n", .{ emb_avg_us / @as(f64, @floatFromInt(targets.len)) });
+    std.debug.print("  Average per embed: {d:.1} us\n\n", .{emb_avg_us / @as(f64, @floatFromInt(targets.len))});
 
     // Correctness check
     std.debug.print("{s}Correctness Verification:{s}\n", .{ CYAN, RESET });
@@ -6394,7 +6397,7 @@ pub fn runSacredBenchCommand(allocator: std.mem.Allocator) void {
     // Summary
     std.debug.print("\n{s}Summary:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Formula fit:     {d:.1} us/fit (brute-force, {d} iterations)\n", .{ bf_avg_us / @as(f64, @floatFromInt(targets.len)), 35721 });
-    std.debug.print("  Embedding:       {d:.1} us/embed (64-dim, L2-normalized)\n", .{ emb_avg_us / @as(f64, @floatFromInt(targets.len)) });
+    std.debug.print("  Embedding:       {d:.1} us/embed (64-dim, L2-normalized)\n", .{emb_avg_us / @as(f64, @floatFromInt(targets.len))});
     std.debug.print("  Constants:       {d}\n", .{spec.constants.items.len});
     std.debug.print("  Gematria glyphs: {d}\n", .{spec.gematria_table.items.len});
     std.debug.print("  Spec version:    {s} (format v{d})\n", .{ spec.version, spec.format_version });
@@ -6409,7 +6412,11 @@ pub fn runSacredBenchCommand(allocator: std.mem.Allocator) void {
 // ── Sacred Formula Fit Helper ───────────────────────────────────────────────
 
 const FormulaFit = struct {
-    n: i8, k: i8, m: i8, p: i8, q: i8,
+    n: i8,
+    k: i8,
+    m: i8,
+    p: i8,
+    q: i8,
     computed: f64,
     error_pct: f64,
 };

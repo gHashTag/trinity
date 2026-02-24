@@ -947,7 +947,10 @@
     "hawkingTitle": "Radiación de Hawking — Evaporación del Agujero Negro",
     "formula": "Fórmula",
     "solarEntropy": "Entropía AN masa solar",
-    "holoBits": "Bits holográficos"
+    "holoBits": "Bits holográficos",
+    "multiverseTitle": "Inflación Eterna \u2014 Universos Burbuja",
+    "stringTitle": "Paisaje de Teoría de Cuerdas \u2014 Vacíos de Flujo",
+    "ryuTitle": "Ryu-Takayanagi \u2014 Entropía de Entrelazamiento Holográfica"
   },
   "quantumGravity": {
     "title": "Simulación de Gravedad Cuántica v3.1",
@@ -957,7 +960,10 @@
     "reggeTitle": "Cálculo de Regge (Gravedad Cuántica Simplicial)",
     "adsTitle": "Termalización AdS/CFT",
     "areaTitle": "Espectro de Área LQG (Barbero-Immirzi)",
-    "areaGap": "Brecha de área"
+    "areaGap": "Brecha de área",
+    "cdtTitle": "Triangulaciones Dinámicas Causales",
+    "venezianoTitle": "Amplitudes de Cuerdas de Veneziano",
+    "pageCurveTitle": "Información del Agujero Negro (Curva de Page)"
   },
   "marketplace": {
     "title": "Mercado de Computación Sagrada $TRI",
