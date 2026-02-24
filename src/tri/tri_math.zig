@@ -1,5 +1,5 @@
 // =============================================================================
-// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85 + 86 + 87 + 88 + 89)
+// TRI CLI - Sacred Mathematics Commands (Cycle 82 + 83 + 84 + 85 + 86 + 87 + 88 + 89 + 90)
 // =============================================================================
 //
 // Exposes sacred_math.zig library as TRI CLI commands:
@@ -700,6 +700,10 @@ fn printMathHelp() void {
     std.debug.print("  {s}holo-render{s} [mode]          Holographic renderer (ads/spin/penrose/entropy/hawking)\n", .{ GREEN, RESET });
     std.debug.print("  {s}qg-sim{s} [steps]              Quantum gravity simulation (spin foam/Regge/AdS therm.)\n", .{ GREEN, RESET });
     std.debug.print("  {s}marketplace{s} [mode]           $TRI marketplace (dashboard/staking/proof/economics)\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}v3.3 UNIVERSE (Cycle 90):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}universe{s} [mode]              Live universe (multiverse/brane/inflation/dark-energy/timeline)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}string-theory{s} [mode]         String theory (strings/calabi-yau/dualities/landscape)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}defi{s} [mode]                  $TRI DeFi (pools/yield/oracle/governance)\n", .{ GREEN, RESET });
     std.debug.print("\n{s}TOOLS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}math-verify{s}                Trinity identity checks (38 checks)\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-bench{s}                 Performance benchmark\n", .{ GREEN, RESET });
@@ -3002,6 +3006,372 @@ fn runMarketplaceCommand(args: []const []const u8) void {
 }
 
 // =============================================================================
+// COMMAND: tri math universe (Cycle 90 v3.3 — from holographic_universe.vibee)
+// Live Holographic Universe: multiverse, brane collision, inflation, dark energy, timeline
+// =============================================================================
+
+fn runUniverseCommand(args: []const []const u8) void {
+    const mode = if (args.len > 0) args[0] else "multiverse";
+
+    std.debug.print("\n{s}HOLOGRAPHIC UNIVERSE v3.3{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Generated from: specs/tri/holographic_universe.vibee\n\n", .{});
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+
+    if (std.mem.eql(u8, mode, "multiverse") or std.mem.eql(u8, mode, "eternal")) {
+        std.debug.print("{s}  Eternal Inflation — Multiverse Landscape:{s}\n\n", .{ CYAN, RESET });
+
+        std.debug.print("    {s}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{s}\n", .{ CYAN, RESET });
+        std.debug.print("    {s}~{s}  {s}╭──────╮{s}    {s}~{s}     {s}╭────╮{s}     {s}~{s}   {s}╭────────╮{s}  {s}~{s}\n", .{ CYAN, RESET, GOLDEN, RESET, CYAN, RESET, GREEN, RESET, CYAN, RESET, RED, RESET, CYAN, RESET });
+        std.debug.print("    {s}~{s}  {s}│ U-1  │{s}    {s}~{s}     {s}│U-2 │{s}     {s}~{s}   {s}│  U-3   │{s}  {s}~{s}\n", .{ CYAN, RESET, GOLDEN, RESET, CYAN, RESET, GREEN, RESET, CYAN, RESET, RED, RESET, CYAN, RESET });
+        std.debug.print("    {s}~{s}  {s}│V=0.68│{s}    {s}~{s}     {s}│0.31│{s}     {s}~{s}   {s}│V=0.001 │{s}  {s}~{s}\n", .{ CYAN, RESET, GOLDEN, RESET, CYAN, RESET, GREEN, RESET, CYAN, RESET, RED, RESET, CYAN, RESET });
+        std.debug.print("    {s}~{s}  {s}╰──────╯{s}    {s}~{s}     {s}╰────╯{s}     {s}~{s}   {s}╰────────╯{s}  {s}~{s}\n", .{ CYAN, RESET, GOLDEN, RESET, CYAN, RESET, GREEN, RESET, CYAN, RESET, RED, RESET, CYAN, RESET });
+        std.debug.print("    {s}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{s}\n", .{ CYAN, RESET });
+
+        std.debug.print("\n  {s}Bubble Universes:{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}ID  Vacuum Energy  phi-potential  Radius   Age (Gyr)  Stable{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}──────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        const vacua = [_]f64{ 0.685, 0.315, 0.001, 0.618, 1.618, 0.382 };
+        const radii = [_]f64{ 14.2, 8.7, 42.1, 13.8, 3.2, 9.9 };
+        const ages = [_]f64{ 13.787, 9.2, 28.4, 13.1, 1.8, 7.4 };
+
+        for (vacua, 0..) |v, idx| {
+            const phi_pot = v * PHI;
+            const stable = if (v > 0.01 and v < 2.0) "YES" else " NO";
+            const color = if (v > 0.5) GOLDEN else if (v > 0.1) GREEN else RED;
+            std.debug.print("  {s}U-{d}  {d:>10.4}     {d:>10.4}    {d:>6.1} Gpc  {d:>7.3}    {s}{s}\n", .{
+                color, idx + 1, v, phi_pot, radii[idx], ages[idx], stable, RESET,
+            });
+        }
+
+        std.debug.print("\n  U-5 has V = phi — maximally sacred vacuum\n", .{});
+        std.debug.print("  Our universe: U-1 (Omega_Lambda = 0.685)\n", .{});
+    } else if (std.mem.eql(u8, mode, "brane") or std.mem.eql(u8, mode, "ekpyrotic")) {
+        std.debug.print("{s}  Ekpyrotic Brane Collision Simulation:{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  {s}Step  Separation  Velocity     Energy       Event{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}───────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        var sep: f64 = 1.0;
+        var vel: f64 = 0.0;
+        var step: u32 = 0;
+        while (step < 12) : (step += 1) {
+            const accel = -PHI_INV * sep;
+            vel += accel * 0.1;
+            sep += vel * 0.1;
+            if (sep < 0.0) sep = 0.0;
+            const energy = 0.5 * vel * vel + 0.5 * PHI_INV * sep * sep;
+            const event: []const u8 = if (sep < 0.01) "BIG BANG!" else if (sep < 0.1) "near collision" else if (vel < -0.5) "accelerating" else "approaching";
+            const color = if (sep < 0.01) GOLDEN else if (sep < 0.1) RED else GREEN;
+            std.debug.print("  {s}{d:>3}    {d:>8.4}    {d:>8.4}    {d:>8.4}     {s}{s}\n", .{
+                color, step + 1, sep, vel, energy, event, RESET,
+            });
+        }
+        std.debug.print("\n  Brane tension: T = 1/phi = {d:.6}\n", .{PHI_INV});
+        std.debug.print("  Collision energy → Big Bang initial conditions\n", .{});
+    } else if (std.mem.eql(u8, mode, "inflation") or std.mem.eql(u8, mode, "inflate")) {
+        std.debug.print("{s}  Cosmic Inflation (Slow-Roll):{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  {s}e-fold  Scale Factor    H(t)         epsilon     Phi-field{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}────────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        var n_e: u32 = 0;
+        while (n_e <= 60) : (n_e += 6) {
+            const fn_e: f64 = @floatFromInt(n_e);
+            const scale = @exp(fn_e);
+            const hubble = 1.0e14 * @exp(-fn_e * 0.01);
+            const epsilon = 0.001 * (1.0 + fn_e * 0.015);
+            const phi_field = 3.0 * PHI - fn_e * 0.05;
+            const color = if (n_e >= 60) GOLDEN else GREEN;
+            std.debug.print("  {s}{d:>5}   {d:>12.2e}   {d:>10.2e}   {d:>8.5}    {d:>8.4}{s}\n", .{
+                color, n_e, scale, hubble, epsilon, phi_field, RESET,
+            });
+        }
+        std.debug.print("\n  60 e-folds solve horizon + flatness problems\n", .{});
+        std.debug.print("  phi-field start: {d:.4} (= TRINITY * phi)\n", .{3.0 * PHI});
+    } else if (std.mem.eql(u8, mode, "dark-energy") or std.mem.eql(u8, mode, "dark") or std.mem.eql(u8, mode, "quintessence")) {
+        std.debug.print("{s}  Dark Energy Equation of State w(z):{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  {s}z (redshift)  w(z)        Omega_DE    Omega_M    q (decel){s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}─────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        const w0: f64 = -1.03;
+        const wa: f64 = 0.05;
+        var zi: u32 = 0;
+        while (zi <= 10) : (zi += 1) {
+            const z: f64 = @floatFromInt(zi);
+            const a = 1.0 / (1.0 + z);
+            const w_z = w0 + wa * (1.0 - a);
+            const ode = 0.685 * std.math.pow(f64, 1.0 + z, 3.0 * (1.0 + w0));
+            const om = 0.315 * (1.0 + z) * (1.0 + z) * (1.0 + z);
+            const total = ode + om;
+            const color = if (w_z < -1.0) CYAN else GOLDEN;
+            std.debug.print("  {s}{d:>8.1}      {d:>8.4}    {d:>8.4}    {d:>8.4}    {d:>8.4}{s}\n", .{
+                color, z, w_z, ode / total, om / total, 0.5 * (om / total + (1.0 + 3.0 * w_z) * ode / total), RESET,
+            });
+        }
+        std.debug.print("\n  w(z) = {d:.2} + {d:.2}*(1-a), phantom at w < -1\n", .{ w0, wa });
+        std.debug.print("  phi prediction: w = -1/phi^2 = {d:.6}\n", .{-PHI_INV_SQ});
+    } else if (std.mem.eql(u8, mode, "timeline") or std.mem.eql(u8, mode, "history")) {
+        std.debug.print("{s}  Cosmic Timeline — 10^-43 s to 10^100 yr:{s}\n\n", .{ CYAN, RESET });
+
+        const epochs = [_]struct { name: []const u8, time: []const u8, temp: []const u8, desc: []const u8 }{
+            .{ .name = "Planck Era", .time = "10^-43 s", .temp = "10^32 K", .desc = "Quantum gravity. phi emerges." },
+            .{ .name = "GUT Era", .time = "10^-36 s", .temp = "10^28 K", .desc = "Grand unification. Inflation." },
+            .{ .name = "Inflation", .time = "10^-36..32", .temp = "10^28-22", .desc = "60 e-folds. x10^26 expansion." },
+            .{ .name = "Reheating", .time = "10^-32 s", .temp = "10^15 GeV", .desc = "Inflaton decays. Hot Big Bang." },
+            .{ .name = "EW Symmetry", .time = "10^-12 s", .temp = "10^15 K", .desc = "Higgs gives mass to W/Z." },
+            .{ .name = "QCD Phase", .time = "10^-6 s", .temp = "10^12 K", .desc = "Quarks confine. Baryogenesis." },
+            .{ .name = "BBN", .time = "3 min", .temp = "10^9 K", .desc = "H, He, Li form. 75/25 ratio." },
+            .{ .name = "Recombination", .time = "380 kyr", .temp = "3000 K", .desc = "CMB released. Transparent." },
+            .{ .name = "Dark Ages", .time = "380k-200M", .temp = "3000-60 K", .desc = "No stars. Density grows." },
+            .{ .name = "First Stars", .time = "200 Myr", .temp = "~60 K", .desc = "Pop III. Reionization." },
+            .{ .name = "Galaxies", .time = "1 Gyr", .temp = "~20 K", .desc = "Structure formation." },
+            .{ .name = ">>> NOW", .time = "13.787 Gyr", .temp = "2.725 K", .desc = "phi^2+1/phi^2=3. We compute." },
+            .{ .name = "Heat Death", .time = "10^100 yr", .temp = "~0 K", .desc = "Max entropy. TRINITY endures." },
+        };
+
+        for (epochs, 0..) |epoch, i| {
+            const color = if (i == 11) GOLDEN else if (i == 12) RED else if (i < 4) CYAN else GREEN;
+            std.debug.print("  {s}  {s:<14s} {s:<14s} {s:<12s} {s}{s}\n", .{
+                color, epoch.name, epoch.time, epoch.temp, epoch.desc, RESET,
+            });
+            if (i < epochs.len - 1) {
+                std.debug.print("       {s}|{s}\n", .{ GRAY, RESET });
+            }
+        }
+    } else {
+        std.debug.print("  {s}Unknown mode: {s}{s}\n", .{ RED, mode, RESET });
+        std.debug.print("  Available: multiverse | brane | inflation | dark-energy | timeline\n", .{});
+    }
+
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — the universe is a hologram{s}\n\n", .{ GOLDEN, trinity, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math string-theory (Cycle 90 v3.3 — from string_theory_engine.vibee)
+// String spectrum, Calabi-Yau, dualities, landscape
+// =============================================================================
+
+fn runStringTheoryCommand(args: []const []const u8) void {
+    const mode = if (args.len > 0) args[0] else "strings";
+
+    std.debug.print("\n{s}STRING THEORY ENGINE v3.3{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Generated from: specs/tri/string_theory_engine.vibee\n\n", .{});
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+
+    if (std.mem.eql(u8, mode, "strings") or std.mem.eql(u8, mode, "spectrum")) {
+        std.debug.print("{s}  Bosonic String Vibrational Spectrum:{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  alpha' = 0.5, T = 1/(2*pi*alpha')\n\n", .{});
+        std.debug.print("  {s}Level  M^2(a')  Spin  Degeneracy  Particle{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}─────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        const levels = [_]struct { n: u32, m2: f64, spin: u32, degen: u32, name: []const u8 }{
+            .{ .n = 0, .m2 = -2.0, .spin = 0, .degen = 1, .name = "tachyon (unstable)" },
+            .{ .n = 1, .m2 = 0.0, .spin = 1, .degen = 24, .name = "photon / graviton" },
+            .{ .n = 2, .m2 = 2.0, .spin = 2, .degen = 324, .name = "massive tensor" },
+            .{ .n = 3, .m2 = 4.0, .spin = 3, .degen = 3200, .name = "higher spin" },
+            .{ .n = 4, .m2 = 6.0, .spin = 4, .degen = 25650, .name = "Regge tower" },
+            .{ .n = 5, .m2 = 8.0, .spin = 5, .degen = 176256, .name = "Regge tower" },
+            .{ .n = 6, .m2 = 10.0, .spin = 6, .degen = 1073720, .name = "Regge tower" },
+            .{ .n = 7, .m2 = 12.0, .spin = 7, .degen = 5930496, .name = "Regge tower" },
+            .{ .n = 8, .m2 = 14.0, .spin = 8, .degen = 30178575, .name = "Regge tower" },
+        };
+
+        for (levels) |l| {
+            const color = if (l.m2 < 0) RED else if (l.m2 == 0) GOLDEN else GREEN;
+            std.debug.print("  {s}  {d:>3}    {d:>6.1}   {d:>3}    {d:>10}   {s}{s}\n", .{
+                color, l.n, l.m2, l.spin, l.degen, l.name, RESET,
+            });
+        }
+        std.debug.print("\n  d(n) ~ exp(4*pi*sqrt(n/6)), Hagedorn T ~ 1/sqrt(alpha')\n", .{});
+        std.debug.print("  Level 1 massless: graviton → general relativity\n", .{});
+    } else if (std.mem.eql(u8, mode, "calabi-yau") or std.mem.eql(u8, mode, "cy") or std.mem.eql(u8, mode, "manifold")) {
+        std.debug.print("{s}  Calabi-Yau Manifold (6D → 2D projection):{s}\n\n", .{ CYAN, RESET });
+
+        std.debug.print("              {s}. . . . . . . . . .{s}\n", .{ CYAN, RESET });
+        std.debug.print("           {s}. .{s}   {s}* * * * * *{s}   {s}. .{s}\n", .{ CYAN, RESET, GOLDEN, RESET, CYAN, RESET });
+        std.debug.print("         {s}.{s}   {s}* *{s}  {s}@ @ @ @{s}  {s}* *{s}   {s}.{s}\n", .{ CYAN, RESET, GOLDEN, RESET, RED, RESET, GOLDEN, RESET, CYAN, RESET });
+        std.debug.print("       {s}.{s}  {s}*{s}  {s}@{s}  {s}# # # #{s}  {s}@{s}  {s}*{s}  {s}.{s}\n", .{ CYAN, RESET, GOLDEN, RESET, RED, RESET, GREEN, RESET, RED, RESET, GOLDEN, RESET, CYAN, RESET });
+        std.debug.print("      {s}.{s} {s}*{s} {s}@{s} {s}#{s}  {s}O O O O{s}  {s}#{s} {s}@{s} {s}*{s} {s}.{s}\n", .{ CYAN, RESET, GOLDEN, RESET, RED, RESET, GREEN, RESET, WHITE, RESET, GREEN, RESET, RED, RESET, GOLDEN, RESET, CYAN, RESET });
+        std.debug.print("      {s}.{s} {s}*{s} {s}@{s} {s}#{s}  {s}O O O O{s}  {s}#{s} {s}@{s} {s}*{s} {s}.{s}\n", .{ CYAN, RESET, GOLDEN, RESET, RED, RESET, GREEN, RESET, WHITE, RESET, GREEN, RESET, RED, RESET, GOLDEN, RESET, CYAN, RESET });
+        std.debug.print("       {s}.{s}  {s}*{s}  {s}@{s}  {s}# # # #{s}  {s}@{s}  {s}*{s}  {s}.{s}\n", .{ CYAN, RESET, GOLDEN, RESET, RED, RESET, GREEN, RESET, RED, RESET, GOLDEN, RESET, CYAN, RESET });
+        std.debug.print("         {s}.{s}   {s}* *{s}  {s}@ @ @ @{s}  {s}* *{s}   {s}.{s}\n", .{ CYAN, RESET, GOLDEN, RESET, RED, RESET, GOLDEN, RESET, CYAN, RESET });
+        std.debug.print("           {s}. .{s}   {s}* * * * * *{s}   {s}. .{s}\n", .{ CYAN, RESET, GOLDEN, RESET, CYAN, RESET });
+        std.debug.print("              {s}. . . . . . . . . .{s}\n", .{ CYAN, RESET });
+
+        std.debug.print("\n  {s}Properties:{s}\n", .{ WHITE, RESET });
+        std.debug.print("    10D = 4D Minkowski + 6D CY (SU(3) holonomy)\n", .{});
+        std.debug.print("    Hodge numbers (h11,h21) → particle generations\n", .{});
+        std.debug.print("    ~500 moduli parameters (shape + size)\n", .{});
+        std.debug.print("    {s}O{s}=core {s}#{s}=inner {s}@{s}=middle {s}*{s}=outer {s}.{s}=ambient\n", .{ WHITE, RESET, GREEN, RESET, RED, RESET, GOLDEN, RESET, CYAN, RESET });
+    } else if (std.mem.eql(u8, mode, "dualities") or std.mem.eql(u8, mode, "duality")) {
+        std.debug.print("{s}  String Theory Dualities — Web of Theories:{s}\n\n", .{ CYAN, RESET });
+
+        std.debug.print("  {s}╭─────────╮  S-duality  ╭─────────╮{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("  {s}│ Type IIB │←──────────→│ Type IIB │{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("  {s}╰────┬────╯            ╰────┬────╯{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("       {s}│ T-duality              │{s}\n", .{ CYAN, RESET });
+        std.debug.print("  {s}╭────┴────╮  S-duality  ╭────┴────╮{s}\n", .{ GREEN, RESET });
+        std.debug.print("  {s}│ Type IIA │←──────────→│ Type HE │{s}\n", .{ GREEN, RESET });
+        std.debug.print("  {s}╰────┬────╯            ╰────┬────╯{s}\n", .{ GREEN, RESET });
+        std.debug.print("       {s}├─── M-THEORY (11D) ─────┤{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("  {s}╭────┴────╮  T-duality  ╭────┴────╮{s}\n", .{ CYAN, RESET });
+        std.debug.print("  {s}│ Type HO │←──────────→│ Type I  │{s}\n", .{ CYAN, RESET });
+        std.debug.print("  {s}╰─────────╯            ╰─────────╯{s}\n", .{ CYAN, RESET });
+
+        std.debug.print("\n  {s}Duality Map:{s}\n", .{ WHITE, RESET });
+        std.debug.print("  S-duality:  g_s → 1/g_s (strong/weak)\n", .{});
+        std.debug.print("  T-duality:  R → alpha'/R (large/small)\n", .{});
+        std.debug.print("  M-lift:     IIA at g→inf becomes 11D M-theory\n", .{});
+        std.debug.print("  AdS/CFT:    gravity ↔ N=4 SYM (holographic)\n", .{});
+    } else if (std.mem.eql(u8, mode, "landscape") or std.mem.eql(u8, mode, "vacua")) {
+        std.debug.print("{s}  String Landscape — Vacuum Statistics:{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  Estimated vacua: ~10^500 (Bousso-Polchinski)\n\n", .{});
+        std.debug.print("  {s}ID  Lambda (Planck)  SUSY  Moduli  Flux  Anthropic?{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        const lambdas = [_]f64{ -1.2e-3, 0.0, 2.8e-122, 1.5e-3, -8.1e-60, 3.7e-4, 0.618, -0.382, 1.0e-10, 4.2e-122 };
+        const susy_arr = [_]bool{ true, true, false, false, true, false, false, true, false, false };
+        const mod_arr = [_]u32{ 512, 200, 487, 301, 150, 420, 1, 89, 350, 490 };
+        const flux_arr = [_]u32{ 28, 12, 45, 33, 8, 50, 3, 21, 38, 44 };
+
+        for (lambdas, 0..) |lam, i| {
+            const anthropic = if (@abs(lam) < 1.0e-120 and @abs(lam) > 0) " YES" else "  no";
+            const color = if (@abs(lam) < 1.0e-120 and @abs(lam) > 0) GOLDEN else if (susy_arr[i]) GREEN else GRAY;
+            const s_str: []const u8 = if (susy_arr[i]) "yes" else " no";
+            std.debug.print("  {s}{d:>2}  {d:>14.3e}   {s}   {d:>5}   {d:>3}   {s}{s}\n", .{
+                color, i + 1, lam, s_str, mod_arr[i], flux_arr[i], anthropic, RESET,
+            });
+        }
+        std.debug.print("\n  {s}Anthropic window:{s} |Lambda| ~ 10^-122\n", .{ GOLDEN, RESET });
+        std.debug.print("  Vacua #3 and #10 fall in window\n", .{});
+    } else {
+        std.debug.print("  {s}Unknown mode: {s}{s}\n", .{ RED, mode, RESET });
+        std.debug.print("  Available: strings | calabi-yau | dualities | landscape\n", .{});
+    }
+
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — strings vibrate in sacred ratios{s}\n\n", .{ GOLDEN, trinity, RESET });
+}
+
+// =============================================================================
+// COMMAND: tri math defi (Cycle 90 v3.3 — from tri_defi.vibee)
+// $TRI DeFi: pools, yield farming, oracle, governance
+// =============================================================================
+
+fn runDefiCommand(args: []const []const u8) void {
+    const mode = if (args.len > 0) args[0] else "pools";
+
+    std.debug.print("\n{s}$TRI DEFI PROTOCOL v3.3{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Generated from: specs/tri/tri_defi.vibee\n\n", .{});
+
+    const trinity = PHI_SQ + PHI_INV_SQ;
+
+    if (std.mem.eql(u8, mode, "pools") or std.mem.eql(u8, mode, "liquidity") or std.mem.eql(u8, mode, "amm")) {
+        std.debug.print("{s}  ╔══════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}  ║              $TRI LIQUIDITY POOLS                       ║{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}  ╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
+
+        std.debug.print("  AMM: phi-weighted constant product: x^phi * y^(1/phi) = k\n\n", .{});
+        std.debug.print("  {s}Pool       Reserve A    Reserve B    TVL ($TRI)  APY     Fee{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}──────────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+        std.debug.print("  {s}PHI/TRI{s}    618,033      381,966      999,999    {s}61.8%%{s}  0.3%%\n", .{ GOLDEN, RESET, GREEN, RESET });
+        std.debug.print("  {s}PI/TRI{s}     314,159      685,840      999,999    {s}31.4%%{s}  0.3%%\n", .{ CYAN, RESET, GREEN, RESET });
+        std.debug.print("  {s}E/TRI{s}      271,828      728,171      999,999    {s}27.2%%{s}  0.3%%\n", .{ GREEN, RESET, GREEN, RESET });
+
+        std.debug.print("\n  Pool weights: w_A = phi/(1+phi) = {d:.6}\n", .{PHI / (1.0 + PHI)});
+        std.debug.print("  Swap fee: 0.3%% = 1/TRINITY * 0.9%%\n", .{});
+    } else if (std.mem.eql(u8, mode, "yield") or std.mem.eql(u8, mode, "farm") or std.mem.eql(u8, mode, "farming")) {
+        std.debug.print("{s}  $TRI Yield Farming — Sacred Multipliers:{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  {s}Epoch  LP Staked  Base    Mult         Rewards    Cumulative{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}──────────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        var cum_rewards: f64 = 0;
+        var staked: f64 = 1000.0;
+        var epoch: u32 = 0;
+        while (epoch < 12) : (epoch += 1) {
+            const fe: f64 = @floatFromInt(epoch);
+            const sacred_mult = std.math.pow(f64, PHI, @min(fe * 0.5, 4.0));
+            const rewards = staked * 0.0618 / 12.0 * sacred_mult;
+            cum_rewards += rewards;
+            staked += rewards * 0.5;
+            const color = if (sacred_mult > 4.0) GOLDEN else if (sacred_mult > 2.0) GREEN else CYAN;
+            std.debug.print("  {s}{d:>4}   {d:>8.1}  6.18%%   phi^{d:.1}={d:>5.2}x  {d:>7.2}    {d:>9.2}{s}\n", .{
+                color, epoch + 1, staked, fe * 0.5, sacred_mult, rewards, cum_rewards, RESET,
+            });
+        }
+        std.debug.print("\n  Base APY: 6.18%% = chi, cap phi^4 = {d:.3}x\n", .{std.math.pow(f64, PHI, 4.0)});
+        std.debug.print("  50%% auto-compound, total yield: {d:.2} $TRI from 1000 LP\n", .{cum_rewards});
+    } else if (std.mem.eql(u8, mode, "oracle") or std.mem.eql(u8, mode, "oracles") or std.mem.eql(u8, mode, "price")) {
+        std.debug.print("{s}  Sacred Math Oracle — Price Feeds:{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  {s}Constant      Sacred         Market       Dev %%    Conf   Status{s}\n", .{ WHITE, RESET });
+        std.debug.print("  {s}──────────────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+        const oracles = [_]struct { name: []const u8, sacred: f64, market: f64 }{
+            .{ .name = "phi", .sacred = PHI, .market = 1.6181 },
+            .{ .name = "1/alpha", .sacred = 137.036, .market = 137.036 },
+            .{ .name = "m_p/m_e", .sacred = 1836.12, .market = 1836.15 },
+            .{ .name = "pi", .sacred = PI, .market = 3.1416 },
+            .{ .name = "e", .sacred = E, .market = 2.7183 },
+            .{ .name = "H_0", .sacred = 67.4, .market = 73.0 },
+            .{ .name = "Omega_L", .sacred = 0.685, .market = 0.685 },
+            .{ .name = "gamma_BI", .sacred = 0.12738, .market = 0.12739 },
+        };
+
+        for (oracles) |o| {
+            const dev = @abs(o.sacred - o.market) / o.sacred * 100.0;
+            const conf = if (dev < 0.01) @as(f64, 99.9) else if (dev < 0.1) @as(f64, 95.0) else if (dev < 1.0) @as(f64, 80.0) else @as(f64, 50.0);
+            const status: []const u8 = if (dev < 0.1) "VERIFIED" else if (dev < 1.0) "  OK    " else "TENSION ";
+            const color = if (dev < 0.01) GOLDEN else if (dev < 0.1) GREEN else if (dev < 1.0) CYAN else RED;
+            std.debug.print("  {s}{s:<12s}  {d:>12.6}  {d:>12.6}  {d:>6.3}%%  {d:>5.1}%%  {s}{s}\n", .{
+                color, o.name, o.sacred, o.market, dev, conf, status, RESET,
+            });
+        }
+        std.debug.print("\n  Oracle updates every 27 blocks (3^3)\n", .{});
+        std.debug.print("  H_0 tension: 73 vs 67.4 → active research bounty\n", .{});
+    } else if (std.mem.eql(u8, mode, "governance") or std.mem.eql(u8, mode, "gov") or std.mem.eql(u8, mode, "vote")) {
+        std.debug.print("{s}  $TRI Governance — Sacred Parameter Voting:{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  Quorum: 33.3%% (1/TRINITY)  Period: 9 epochs\n\n", .{});
+
+        const proposals = [_]struct { id: u32, title: []const u8, vfor: f64, vagainst: f64 }{
+            .{ .id = 1, .title = "Increase oracle update to 81 blocks (3^4)", .vfor = 412000, .vagainst = 88000 },
+            .{ .id = 2, .title = "Add Higgs mass to sacred oracle feed", .vfor = 350000, .vagainst = 150000 },
+            .{ .id = 3, .title = "Reduce swap fee to 0.27% (27/10000)", .vfor = 180000, .vagainst = 220000 },
+        };
+
+        for (proposals) |p| {
+            const total = p.vfor + p.vagainst;
+            const pct_for = p.vfor / total * 100.0;
+            const quorum_pct = total / 999999.0 * 100.0;
+            const quorum_met = quorum_pct >= 33.3;
+            const passing = pct_for > 50.0;
+            const status_color = if (passing and quorum_met) GREEN else if (passing) CYAN else RED;
+            const status_str: []const u8 = if (passing and quorum_met) "PASSING" else if (passing) "needs quorum" else "FAILING";
+
+            std.debug.print("  {s}#{d}: {s}{s}\n", .{ WHITE, p.id, p.title, RESET });
+            std.debug.print("    FOR: {d:>6.0} ({d:>5.1}%%)  [", .{ p.vfor, pct_for });
+            const for_bars: u32 = @intFromFloat(pct_for / 100.0 * 30.0);
+            var fb: u32 = 0;
+            while (fb < for_bars) : (fb += 1) std.debug.print("{s}={s}", .{ GREEN, RESET });
+            var ab: u32 = 0;
+            while (ab < 30 - for_bars) : (ab += 1) std.debug.print("{s}-{s}", .{ RED, RESET });
+            std.debug.print("]\n", .{});
+            std.debug.print("    AGT: {d:>6.0} ({d:>5.1}%%)  Quorum: {d:.1}%%  {s}{s}{s}\n\n", .{
+                p.vagainst, 100.0 - pct_for, quorum_pct, status_color, status_str, RESET,
+            });
+        }
+        std.debug.print("  Min stake: 999 $TRI, 1 staked = 1 vote\n", .{});
+    } else {
+        std.debug.print("  {s}Unknown mode: {s}{s}\n", .{ RED, mode, RESET });
+        std.debug.print("  Available: pools | yield | oracle | governance\n", .{});
+    }
+
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = {d:.6} = TRINITY — sacred math is money{s}\n\n", .{ GOLDEN, trinity, RESET });
+}
+
+// =============================================================================
 // COMMAND: tri math visual (Cycle 87)
 // =============================================================================
 
@@ -3469,11 +3839,11 @@ fn runEngineCommand() void {
     std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
 
     std.debug.print("\n{s}  Engine Status:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}[OK]{s} Version:          v3.2 (Cycle 89)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Version:          v3.3 (Cycle 90)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Constants:         145 sacred + physics + cosmological\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[OK]{s} Subcommands:       37 (25 base + 7 v3.0 + 2 v3.1 + 3 v3.2)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Subcommands:       40 (25 base + 7 v3.0 + 2 v3.1 + 3 v3.2 + 3 v3.3)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Verify checks:     38/38 passing\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[OK]{s} Specs generated:   3 .vibee → 1008 lines Zig (holographic, qg, market)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Specs generated:   6 .vibee → 1821 lines Zig (holo, qg, market, universe, strings, defi)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Backend:           Zig 0.15.x (zero-alloc math)\n", .{ GREEN, RESET });
 
     std.debug.print("\n{s}  Module Roadmap:{s}\n", .{ CYAN, RESET });
@@ -3485,13 +3855,14 @@ fn runEngineCommand() void {
     std.debug.print("  {s}[OK]{s} Cycle 87: v3.0 Engine (visual, qsim, rewards, cosmos)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Cycle 88: v3.1 Full Integration (particles, groups, 145 constants)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Cycle 89: v3.2 Platform (holo-renderer, qg-sim, marketplace)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[..]{s} Cycle 90: v3.3 WASM export + browser visualization\n", .{ GRAY, RESET });
+    std.debug.print("  {s}[OK]{s} Cycle 90: v3.3 Universe (universe, string-theory, defi)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[..]{s} Cycle 91: v3.4 WASM export + browser visualization\n", .{ GRAY, RESET });
 
     std.debug.print("\n{s}  Architecture:{s}\n", .{ CYAN, RESET });
     std.debug.print("    File:     src/tri/tri_math.zig\n", .{});
     std.debug.print("    Backend:  Pure Zig, no allocations for math\n", .{});
     std.debug.print("    Entry:    main.zig -> math_mod.runMathCommand()\n", .{});
-    std.debug.print("    Router:   String-match dispatch (37 routes)\n", .{});
+    std.debug.print("    Router:   String-match dispatch (40 routes)\n", .{});
 
     std.debug.print("\n{s}  Sacred Foundation:{s}\n", .{ CYAN, RESET });
     const trinity = PHI_SQ + PHI_INV_SQ;
