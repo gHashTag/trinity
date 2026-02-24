@@ -251,5 +251,9 @@ pub fn main() !void {
         .omega => commands.runOmegaCommand(allocator),
         .control => commands.runControlCommand(allocator, cmd_args),
         .marketplace_live => commands.runMarketplaceLiveCommand(allocator),
+        // Cycle 90: Singularity + Self-Evolving OS + Universal Economy
+        .singularity => commands.runSingularityCommand(allocator),
+        .evolve_os => commands.runEvolveOsCommand(allocator, cmd_args),
+        .economy => commands.runEconomyCommand(allocator, cmd_args),
     }
 }

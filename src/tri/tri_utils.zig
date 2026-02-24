@@ -220,6 +220,10 @@ pub const Command = enum {
     omega,
     control,
     marketplace_live,
+    // Cycle 90: Singularity + Self-Evolving OS + Universal Economy
+    singularity,
+    evolve_os,
+    economy,
 };
 
 pub const CLIState = struct {
@@ -321,7 +325,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.3 — Omega Mode + Universal Agent Control{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.4 — Singularity + Self-Evolving OS + Economy{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -330,7 +334,7 @@ pub fn printHelp() void {
 
     std.debug.print("{s}COMMANDS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}chat{s} [--stream] [--image <path>] [--voice <path>] <msg>\n", .{ GREEN, RESET });
-    std.debug.print("         Interactive chat (v2.3: vision + voice + tools)\n", .{});
+    std.debug.print("         Interactive chat (v2.4: vision + voice + tools)\n", .{});
     std.debug.print("  {s}code{s} [--stream] <prompt>    Generate code (--stream for typing effect)\n", .{ GREEN, RESET });
     std.debug.print("  {s}gen{s} <spec.vibee>            Compile VIBEE spec to Zig/Verilog\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
@@ -633,6 +637,16 @@ pub fn printHelp() void {
     std.debug.print("  {s}marketplace-live{s}           Real-time trading view\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}SINGULARITY (Cycle 90):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}singularity{s}                Full singularity status + verdict\n", .{ GREEN, RESET });
+    std.debug.print("  {s}evolve-os{s}                  Self-evolving OS status\n", .{ GREEN, RESET });
+    std.debug.print("  {s}evolve-os run{s}              Run one autonomous evolution cycle\n", .{ GREEN, RESET });
+    std.debug.print("  {s}economy{s}                    $TRI universal economy dashboard\n", .{ GREEN, RESET });
+    std.debug.print("  {s}economy mint{s} [amount]      Mint $TRI from completed tasks\n", .{ GREEN, RESET });
+    std.debug.print("  {s}economy burn{s} [amount]      Burn $TRI (deflationary)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}economy transfer{s} <to> <n>  Transfer $TRI to agent\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -851,6 +865,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "omega") or std.mem.eql(u8, arg, "omega-mode")) return .omega;
     if (std.mem.eql(u8, arg, "control") or std.mem.eql(u8, arg, "agent-control") or std.mem.eql(u8, arg, "ctl")) return .control;
     if (std.mem.eql(u8, arg, "marketplace-live") or std.mem.eql(u8, arg, "market-live") or std.mem.eql(u8, arg, "live")) return .marketplace_live;
+    // Cycle 90: Singularity + Self-Evolving OS + Universal Economy
+    if (std.mem.eql(u8, arg, "singularity") or std.mem.eql(u8, arg, "sing")) return .singularity;
+    if (std.mem.eql(u8, arg, "evolve-os") or std.mem.eql(u8, arg, "evolve_os") or std.mem.eql(u8, arg, "self-evolve")) return .evolve_os;
+    if (std.mem.eql(u8, arg, "economy") or std.mem.eql(u8, arg, "econ") or std.mem.eql(u8, arg, "tri-economy")) return .economy;
     return .none;
 }
 
