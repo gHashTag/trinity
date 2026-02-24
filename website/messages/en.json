@@ -970,7 +970,10 @@
     "hawkingTitle": "Hawking Radiation \u2014 Black Hole Evaporation",
     "formula": "Formula",
     "solarEntropy": "Solar mass BH entropy",
-    "holoBits": "Holographic bits"
+    "holoBits": "Holographic bits",
+    "multiverseTitle": "Eternal Inflation \u2014 Bubble Universes",
+    "stringTitle": "String Theory Landscape \u2014 Flux Vacua",
+    "ryuTitle": "Ryu-Takayanagi \u2014 Holographic Entanglement Entropy"
   },
   "quantumGravity": {
     "title": "Quantum Gravity Simulation v3.1",
@@ -980,7 +983,10 @@
     "reggeTitle": "Regge Calculus (Simplicial Quantum Gravity)",
     "adsTitle": "AdS/CFT Thermalization Dynamics",
     "areaTitle": "LQG Area Spectrum (Barbero-Immirzi)",
-    "areaGap": "Area gap"
+    "areaGap": "Area gap",
+    "cdtTitle": "Causal Dynamical Triangulations",
+    "venezianoTitle": "Veneziano String Amplitudes",
+    "pageCurveTitle": "Black Hole Information (Page Curve)"
   },
   "marketplace": {
     "title": "$TRI Sacred Computation Marketplace",

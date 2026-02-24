@@ -1,9 +1,9 @@
 name: quantum_gravity_sim
-version: "3.1.0"
+version: "3.3.0"
 language: zig
 module: quantum_gravity_sim
 description: |
-  Quantum gravity simulation engine for TRI MATH v3.1.
+  Quantum gravity simulation engine for TRI MATH v3.3.
   Simulates LQG spin foam evolution, Regge calculus on simplicial
   lattice, and AdS/CFT thermalization. Pure math, zero-alloc.
   φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
@@ -20,6 +20,9 @@ constants:
   REGGE_DEFECT_THRESHOLD: 0.01
   MAX_SIMPLICES: 64
   MAX_SPIN_FOAM_STEPS: 20
+  REGGE_SLOPE_ALPHA: 0.9382
+  CDT_CRITICAL_KAPPA: 2.2
+  PAGE_TIME_COEFF: 0.6180
 
 types:
   SpinFoamVertex:
@@ -140,6 +143,42 @@ behaviors:
     given: All simulation parameters
     when: Complete quantum gravity simulation requested
     then: Return QGSimResult with all three simulation results aggregated
+
+  - name: simulate_cdt
+    given: Simplicial manifold with foliation constraint (causal structure preserved)
+    when: "Monte Carlo moves: (2,2) <-> (4,1) Alexander moves preserving causality"
+    then: "CDT state with: dim_spectral (should -> 4 at large scale, -> 2 at Planck), simplices count, spatial_volume per time-slice"
+    test_cases:
+      - name: spectral_dimension_large_scale
+        input: "simplices=1024, time_slices=16"
+        expected: "dim_spectral near 4.0 at large scale"
+      - name: spectral_dimension_planck
+        input: "simplices=1024, time_slices=16, probe_scale=planck"
+        expected: "dim_spectral near 2.0 at Planck scale"
+
+  - name: compute_veneziano_amplitude
+    given: Open string 4-point scattering with Mandelstam variables s, t
+    when: "A(s,t) = Gamma(-alpha(s))Gamma(-alpha(t)) / Gamma(-alpha(s)-alpha(t)) where alpha(s) = 1 + alpha_prime*s"
+    then: "Amplitude values, Regge trajectory slope alpha_prime, string tension T = 1/(2*pi*alpha_prime)"
+    test_cases:
+      - name: regge_slope
+        input: "s=1.0, t=-0.5"
+        expected: "alpha_prime = REGGE_SLOPE_ALPHA"
+      - name: string_tension
+        input: "s=1.0, t=-0.5"
+        expected: "T = 1/(2*pi*0.9382)"
+
+  - name: simulate_bh_information
+    given: Black hole with initial mass M, Hawking radiation emission
+    when: "Track Page curve: entanglement entropy rises then falls at Page time = M^3/(something)"
+    then: "Page curve steps with: time, bh_mass, radiation_entropy, bh_entropy, total_entropy (should be constant)"
+    test_cases:
+      - name: page_curve_turnover
+        input: "M=10.0, steps=100"
+        expected: "radiation_entropy peaks then decreases after Page time"
+      - name: total_entropy_conservation
+        input: "M=10.0, steps=100"
+        expected: "total_entropy constant throughout evolution"
 
 test_cases:
   - name: trinity_identity

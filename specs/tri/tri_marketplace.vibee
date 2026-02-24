@@ -1,9 +1,9 @@
 name: tri_marketplace
-version: "3.1.0"
+version: "3.3.0"
 language: zig
 module: tri_marketplace
 description: |
-  $TRI Sacred Computation Marketplace for TRI MATH v3.1.
+  $TRI Sacred Computation Marketplace for TRI MATH v3.3.
   Rewards system for mathematical computations, staking with
   phi-multipliers, proof-of-computation validation, and
   marketplace for sacred math results.
@@ -22,6 +22,9 @@ constants:
   PROOF_DIFFICULTY_BASE: 27
   MARKETPLACE_FEE: 0.03
   SACRED_BONUS_THRESHOLD: 0.01
+  BASE_YIELD_RATE: 0.1618
+  ORACLE_CONFIDENCE_DECAY: 0.9382
+  LP_FEE_RATE: 0.003
 
 types:
   ComputationProof:
@@ -150,6 +153,45 @@ behaviors:
     given: Current staking parameters
     when: Tier display requested
     then: Return formatted table of all tiers with Fibonacci amounts and phi multipliers
+
+  - name: compute_yield_farming
+    given: Liquidity pools paired with sacred constants (PHI-TRI, PI-TRI, E-TRI)
+    when: Calculate APY = base_rate * phi^pool_tier * (1 + accuracy_bonus)
+    then: Pool data: name, tvl (total value locked), apy_pct, reward_token, pair_constant, impermanent_loss_phi
+    description: "$TRI yield farming pools (sacred math liquidity mining)"
+    test_cases:
+      - name: phi_tri_pool
+        input: "pool=PHI-TRI, tier=3, accuracy_bonus=0.05"
+        expected: "apy = 0.1618 * phi^3 * 1.05"
+      - name: pi_tri_pool
+        input: "pool=PI-TRI, tier=1, accuracy_bonus=0.0"
+        expected: "apy = 0.1618 * phi^1"
+
+  - name: compute_sacred_oracle
+    given: Input constant name + current accuracy score
+    when: Price = base_price * phi^tier * (1 / (1 + error_pct)) with time-weighted average
+    then: Oracle data: constant_name, current_price_tri, confidence_pct, last_update_epoch, twap_24h
+    description: "Sacred math price oracle (formula-driven pricing)"
+    test_cases:
+      - name: phi_oracle
+        input: "constant=PHI, accuracy=99.9%"
+        expected: "high confidence oracle price"
+      - name: stale_oracle
+        input: "constant=PI, last_update=100 epochs ago"
+        expected: "decayed confidence"
+
+  - name: compute_liquidity_pools
+    given: Pool reserves (TRI amount, paired token amount), swap fee = 0.3%
+    when: Constant product AMM: x * y = k, with phi-adjusted fee distribution
+    then: Pool state: pool_id, reserve_tri, reserve_paired, k_invariant, fee_accumulated, lp_token_supply, phi_fee_boost
+    description: "$TRI liquidity pool dynamics"
+    test_cases:
+      - name: balanced_pool
+        input: "reserve_tri=1000, reserve_paired=1618, fee=0.3%"
+        expected: "k = 1618000, phi_fee_boost applied"
+      - name: swap_impact
+        input: "swap 100 TRI into pool"
+        expected: "new reserves maintain k invariant"
 
 test_cases:
   - name: trinity_reward_check

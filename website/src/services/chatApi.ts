@@ -507,10 +507,10 @@ export async function fitSingleValue(value: number): Promise<SingleFitResponse> 
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Holographic Renderer API (Cycle 87 v3.1)
+// Holographic Renderer API (Cycle 88 v3.3)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export type HoloMode = 'ads' | 'spin_network' | 'penrose' | 'entropy' | 'hawking';
+export type HoloMode = 'ads' | 'spin_network' | 'penrose' | 'entropy' | 'hawking' | 'multiverse' | 'string_landscape' | 'ryu_takayanagi';
 
 export interface BulkLayer {
   z: number;
@@ -546,6 +546,33 @@ export interface HawkingFrame {
   radius: number;
 }
 
+export interface MultiverseBubble {
+  id: number;
+  cosmological_constant: number;
+  tunneling_prob: number;
+  radius: number;
+  inflation_rate: number;
+  is_our_vacuum: boolean;
+}
+
+export interface StringLandscapePoint {
+  modulus_x: number;
+  modulus_y: number;
+  energy: number;
+  flux_config: number;
+  is_minimum: boolean;
+  tunneling_to: number | null;
+}
+
+export interface RyuTakayanagiGeodesic {
+  boundary_start: number;
+  boundary_end: number;
+  geodesic_length: number;
+  entanglement_entropy: number;
+  phi_correction: number;
+  area_over_4g: number;
+}
+
 export interface HolographicResponse {
   mode: string;
   trinity_check: number;
@@ -554,6 +581,9 @@ export interface HolographicResponse {
   properties?: PenroseProperty[];
   entropy_surface?: EntropySurface;
   hawking_frames?: HawkingFrame[];
+  multiverse_bubbles?: MultiverseBubble[];
+  string_landscape?: StringLandscapePoint[];
+  ryu_takayanagi?: RyuTakayanagiGeodesic[];
 }
 
 export async function fetchHolographic(mode: HoloMode = 'ads'): Promise<HolographicResponse> {
@@ -578,12 +608,39 @@ export async function fetchHolographic(mode: HoloMode = 'ads'): Promise<Holograp
         entropy_density: 0.25 / ((i * 0.1 + 0.05) ** 2),
         region: i === 0 ? 'boundary' : i < 4 ? 'near' : i < 8 ? 'mid' : 'deep',
       })) : undefined,
+      multiverse_bubbles: mode === 'multiverse' ? [
+        { id: 1, cosmological_constant: -1.2340e-3, tunneling_prob: 3.7e-124, radius: 18, inflation_rate: 1.02, is_our_vacuum: false },
+        { id: 2, cosmological_constant: 2.8880e-3, tunneling_prob: 1.1e-10, radius: 12, inflation_rate: 67.3, is_our_vacuum: false },
+        { id: 3, cosmological_constant: 1.1056e-122, tunneling_prob: 1.0, radius: 22, inflation_rate: 3.14, is_our_vacuum: true },
+        { id: 4, cosmological_constant: -5.6710e-1, tunneling_prob: 8.4e-88, radius: 8, inflation_rate: 0.001, is_our_vacuum: false },
+        { id: 5, cosmological_constant: 9.9120e-2, tunneling_prob: 2.3e-45, radius: 15, inflation_rate: 42.0, is_our_vacuum: false },
+        { id: 6, cosmological_constant: -3.1416e-5, tunneling_prob: 6.6e-200, radius: 10, inflation_rate: 0.618, is_our_vacuum: false },
+        { id: 7, cosmological_constant: 7.7770e-4, tunneling_prob: 4.2e-33, radius: 14, inflation_rate: 11.1, is_our_vacuum: false },
+      ] : undefined,
+      string_landscape: mode === 'string_landscape' ? [
+        { modulus_x: 0.3, modulus_y: 0.7, energy: -0.0042, flux_config: 3, is_minimum: true, tunneling_to: null },
+        { modulus_x: 1.2, modulus_y: 0.4, energy: 0.138, flux_config: 7, is_minimum: false, tunneling_to: 0 },
+        { modulus_x: 0.8, modulus_y: 1.5, energy: -0.0018, flux_config: 12, is_minimum: true, tunneling_to: null },
+        { modulus_x: 2.1, modulus_y: 0.9, energy: 0.567, flux_config: 1, is_minimum: false, tunneling_to: 2 },
+        { modulus_x: 0.5, modulus_y: 2.0, energy: 0.023, flux_config: 5, is_minimum: false, tunneling_to: 0 },
+        { modulus_x: 1.8, modulus_y: 1.8, energy: -0.0089, flux_config: 9, is_minimum: true, tunneling_to: null },
+        { modulus_x: 0.1, modulus_y: 1.1, energy: 0.314, flux_config: 2, is_minimum: false, tunneling_to: 5 },
+        { modulus_x: 2.5, modulus_y: 0.2, energy: 1.202, flux_config: 8, is_minimum: false, tunneling_to: 2 },
+        { modulus_x: 1.0, modulus_y: 1.0, energy: -0.0001, flux_config: 4, is_minimum: true, tunneling_to: null },
+      ] : undefined,
+      ryu_takayanagi: mode === 'ryu_takayanagi' ? [
+        { boundary_start: 0.0, boundary_end: 0.25, geodesic_length: 1.386, entanglement_entropy: 0.462, phi_correction: 0.0123, area_over_4g: 0.347 },
+        { boundary_start: 0.0, boundary_end: 0.50, geodesic_length: 2.773, entanglement_entropy: 0.924, phi_correction: 0.0246, area_over_4g: 0.693 },
+        { boundary_start: 0.25, boundary_end: 0.75, geodesic_length: 2.773, entanglement_entropy: 0.924, phi_correction: 0.0246, area_over_4g: 0.693 },
+        { boundary_start: 0.0, boundary_end: 0.75, geodesic_length: 4.159, entanglement_entropy: 1.386, phi_correction: 0.0370, area_over_4g: 1.040 },
+        { boundary_start: 0.0, boundary_end: 1.00, geodesic_length: 5.545, entanglement_entropy: 1.848, phi_correction: 0.0493, area_over_4g: 1.386 },
+      ] : undefined,
     };
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Quantum Gravity Simulation API (Cycle 87 v3.1)
+// Quantum Gravity Simulation API (Cycle 88 v3.3)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export interface SpinFoamStep {
@@ -618,6 +675,34 @@ export interface AreaEigenvalue {
   ratio_to_prev: number;
 }
 
+export interface CDTStep {
+  time_slice: number;
+  simplices_24: number;
+  simplices_41: number;
+  spatial_volume: number;
+  dim_spectral: number;
+  total_simplices: number;
+}
+
+export interface VenezianoAmplitude {
+  s: number;
+  t: number;
+  alpha_s: number;
+  alpha_t: number;
+  amplitude: number;
+  regge_slope: number;
+  string_tension: number;
+}
+
+export interface PageCurveStep {
+  time: number;
+  bh_mass: number;
+  bh_entropy: number;
+  radiation_entropy: number;
+  total_entropy: number;
+  past_page_time: boolean;
+}
+
 export interface QGSimResponse {
   steps: number;
   trinity_check: number;
@@ -626,6 +711,9 @@ export interface QGSimResponse {
   regge: ReggeStep[];
   ads_thermal: AdSThermalStep[];
   area_spectrum: AreaEigenvalue[];
+  cdt?: CDTStep[];
+  veneziano?: VenezianoAmplitude[];
+  page_curve?: PageCurveStep[];
 }
 
 export async function fetchQGSim(steps: number = 10): Promise<QGSimResponse> {
@@ -669,15 +757,66 @@ export async function fetchQGSim(steps: number = 10): Promise<QGSimResponse> {
         const prev = i > 0 ? 8 * PI * BI * Math.sqrt(arr[i - 1] * (arr[i - 1] + 1)) : 0;
         return { j, area, area_phi: area * PHI, ratio_to_prev: prev > 0 ? area / prev : 0 };
       }),
+      cdt: Array.from({ length: Math.min(steps, 12) }, (_, i) => {
+        const frac = i / Math.max(Math.min(steps, 12) - 1, 1);
+        const dSpec = 4.0 - 2.0 * frac;
+        const s24 = Math.round(120 + i * 45);
+        const s41 = Math.round(80 + i * 30);
+        return {
+          time_slice: i + 1,
+          simplices_24: s24,
+          simplices_41: s41,
+          spatial_volume: Math.round((s24 + s41) * 0.6),
+          dim_spectral: dSpec,
+          total_simplices: s24 + s41,
+        };
+      }),
+      veneziano: Array.from({ length: Math.min(steps, 8) }, (_, i) => {
+        const sVal = 0.5 + i * 0.3;
+        const tVal = -(0.2 + i * 0.15);
+        const alphaPrime = 0.5;
+        const alphaS = alphaPrime * sVal;
+        const alphaT = alphaPrime * tVal;
+        const amp = Math.abs(1.0 / ((1 + alphaS) * (1 + alphaT)));
+        return {
+          s: sVal,
+          t: tVal,
+          alpha_s: alphaS,
+          alpha_t: alphaT,
+          amplitude: amp,
+          regge_slope: alphaPrime,
+          string_tension: 1 / (2 * PI * alphaPrime),
+        };
+      }),
+      page_curve: Array.from({ length: Math.min(steps, 10) + 1 }, (_, i) => {
+        const totalSteps = Math.min(steps, 10);
+        const frac = i / totalSteps;
+        const pageTimeFrac = 0.5;
+        const pastPage = frac > pageTimeFrac;
+        const bhMass = 1.0 - 0.8 * frac;
+        const totalS = 4.0 * PI;
+        const bhS = pastPage
+          ? totalS * (1.0 - frac) * 1.2
+          : totalS * (1.0 - 0.3 * frac);
+        const radS = totalS - bhS;
+        return {
+          time: frac * 10,
+          bh_mass: Math.max(bhMass, 0.05),
+          bh_entropy: Math.max(bhS, 0),
+          radiation_entropy: Math.max(radS, 0),
+          total_entropy: totalS,
+          past_page_time: pastPage,
+        };
+      }),
     };
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// $TRI Marketplace API (Cycle 87 v3.1)
+// $TRI Marketplace API (Cycle 88 v3.3)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export type MarketplaceMode = 'dashboard' | 'staking' | 'proof' | 'tokenomics';
+export type MarketplaceMode = 'dashboard' | 'staking' | 'proof' | 'tokenomics' | 'yield_farming' | 'oracle' | 'liquidity';
 
 export interface DashboardStats {
   network_active: boolean;
@@ -725,6 +864,34 @@ export interface TokenomicsEpoch {
   net_change: number;
 }
 
+export interface YieldPool {
+  name: string;
+  pair_constant: number;
+  tier: number;
+  tvl: number;
+  apy_pct: number;
+  reward_per_epoch: number;
+  impermanent_loss_phi: number;
+}
+
+export interface SacredOracle {
+  constant_name: string;
+  current_price_tri: number;
+  confidence_pct: number;
+  epochs_since_update: number;
+  twap_24h: number;
+}
+
+export interface LiquidityPool {
+  pool_id: number;
+  reserve_tri: number;
+  reserve_paired: number;
+  k_invariant: number;
+  fee_accumulated: number;
+  lp_token_supply: number;
+  phi_fee_boost: number;
+}
+
 export interface MarketplaceResponse {
   mode: string;
   trinity_check: number;
@@ -734,6 +901,9 @@ export interface MarketplaceResponse {
   accuracy_tiers?: AccuracyTier[];
   difficulty_base?: number;
   tokenomics?: TokenomicsEpoch[];
+  yield_pools?: YieldPool[];
+  oracles?: SacredOracle[];
+  liquidity_pools?: LiquidityPool[];
 }
 
 export async function fetchMarketplace(mode: MarketplaceMode = 'dashboard'): Promise<MarketplaceResponse> {
@@ -760,6 +930,27 @@ export async function fetchMarketplace(mode: MarketplaceMode = 'dashboard'): Pro
         tier: i, stake_amount: amt, multiplier: Math.pow(PHI, i),
         annual_yield_pct: Math.pow(PHI, i) * 0.0382 * 100 * 12, lock_days: (i + 1) * 3,
       })) : undefined,
+      yield_pools: mode === 'yield_farming' ? [
+        { name: 'PHI-TRI', pair_constant: PHI, tier: 3, tvl: 1618033, apy_pct: 61.8, reward_per_epoch: 233, impermanent_loss_phi: 0.0382 },
+        { name: 'PI-TRI', pair_constant: 3.14159, tier: 2, tvl: 314159, apy_pct: 31.4, reward_per_epoch: 144, impermanent_loss_phi: 0.0618 },
+        { name: 'E-TRI', pair_constant: 2.71828, tier: 2, tvl: 271828, apy_pct: 27.1, reward_per_epoch: 89, impermanent_loss_phi: 0.0472 },
+        { name: 'SQRT2-TRI', pair_constant: 1.41421, tier: 1, tvl: 141421, apy_pct: 14.1, reward_per_epoch: 55, impermanent_loss_phi: 0.0236 },
+        { name: 'LN2-TRI', pair_constant: 0.69315, tier: 1, tvl: 69315, apy_pct: 6.9, reward_per_epoch: 34, impermanent_loss_phi: 0.0112 },
+      ] : undefined,
+      oracles: mode === 'oracle' ? [
+        { constant_name: 'PHI (Golden Ratio)', current_price_tri: 1.618034, confidence_pct: 99.7, epochs_since_update: 0, twap_24h: 1.618029 },
+        { constant_name: 'PI (Archimedes)', current_price_tri: 3.141593, confidence_pct: 98.2, epochs_since_update: 1, twap_24h: 3.141588 },
+        { constant_name: 'E (Euler)', current_price_tri: 2.718282, confidence_pct: 95.5, epochs_since_update: 2, twap_24h: 2.718270 },
+        { constant_name: 'SQRT2', current_price_tri: 1.414214, confidence_pct: 72.3, epochs_since_update: 4, twap_24h: 1.414200 },
+        { constant_name: 'APERY', current_price_tri: 1.202056, confidence_pct: 41.8, epochs_since_update: 8, twap_24h: 1.201990 },
+      ] : undefined,
+      liquidity_pools: mode === 'liquidity' ? [
+        { pool_id: 1, reserve_tri: 500000, reserve_paired: 309017, k_invariant: 154508500000, fee_accumulated: 2340.5, lp_token_supply: 393200, phi_fee_boost: 1.618 },
+        { pool_id: 2, reserve_tri: 250000, reserve_paired: 785398, k_invariant: 196349500000, fee_accumulated: 1890.2, lp_token_supply: 442700, phi_fee_boost: 1.272 },
+        { pool_id: 3, reserve_tri: 180000, reserve_paired: 489026, k_invariant: 88024680000, fee_accumulated: 1120.8, lp_token_supply: 296600, phi_fee_boost: 1.414 },
+        { pool_id: 4, reserve_tri: 100000, reserve_paired: 141421, k_invariant: 14142100000, fee_accumulated: 560.3, lp_token_supply: 118900, phi_fee_boost: 1.118 },
+        { pool_id: 5, reserve_tri: 50000, reserve_paired: 34657, k_invariant: 1732850000, fee_accumulated: 180.7, lp_token_supply: 41600, phi_fee_boost: 1.047 },
+      ] : undefined,
     };
   }
 }

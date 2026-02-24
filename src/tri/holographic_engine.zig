@@ -26,6 +26,9 @@ const BARBERO_IMMIRZI: f64 = 0.1273840231409480;
 const BEKENSTEIN_RATIO: f64 = 0.25;
 const HOLOGRAPHIC_BITS: f64 = 0.3606737602222408;
 const BROWN_HENNEAUX: f64 = 1.5;
+const STRING_LANDSCAPE_LOG: f64 = 500.0;
+const CALABI_YAU_EULER: f64 = 480.0;
+const VACUUM_DECAY_RATE: f64 = 0.00618;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Types
@@ -81,6 +84,33 @@ pub const HolographicResult = struct {
     entropy_surface: ?EntropySurface,
     hawking_frames: ?[]HawkingFrame,
     trinity_check: f64,
+};
+
+pub const MultiverseBubble = struct {
+    id: u8,
+    cosmological_constant: f64,
+    tunneling_prob: f64,
+    radius: f64,
+    inflation_rate: f64,
+    is_our_vacuum: bool,
+};
+
+pub const StringLandscapePoint = struct {
+    modulus_x: f64,
+    modulus_y: f64,
+    energy: f64,
+    flux_config: u16,
+    is_minimum: bool,
+    tunneling_to: ?u8,
+};
+
+pub const RyuTakayanagi = struct {
+    boundary_start: f64,
+    boundary_end: f64,
+    geodesic_length: f64,
+    entanglement_entropy: f64,
+    phi_correction: f64,
+    area_over_4g: f64,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -158,6 +188,84 @@ pub fn computeHawkingFrames(allocator: Allocator) ![]HawkingFrame {
     return result.toOwnedSlice(allocator);
 }
 
+pub fn computeMultiverseBubbles(allocator: Allocator) ![]MultiverseBubble {
+    var result: std.ArrayListUnmanaged(MultiverseBubble) = .{};
+    var i: u8 = 0;
+    while (i < 7) : (i += 1) {
+        const fi: f64 = @floatFromInt(i);
+        const is_ours = (i == 3);
+        const cc: f64 = if (is_ours) 0.685 else (fi - 3.0) * 0.5;
+        const tunneling = VACUUM_DECAY_RATE * @exp(-fi * PHI);
+        var radius: f64 = 1.0;
+        var k: u8 = 0;
+        while (k < i + 1) : (k += 1) {
+            radius *= PHI;
+        }
+        const inflation = 67.4 * (1.0 + 0.1 * @sin(fi * 2.0 * PI / 7.0));
+        try result.append(allocator, .{
+            .id = i,
+            .cosmological_constant = cc,
+            .tunneling_prob = tunneling,
+            .radius = radius,
+            .inflation_rate = inflation,
+            .is_our_vacuum = is_ours,
+        });
+    }
+    return result.toOwnedSlice(allocator);
+}
+
+pub fn computeStringLandscape(allocator: Allocator) ![]StringLandscapePoint {
+    var result: std.ArrayListUnmanaged(StringLandscapePoint) = .{};
+    var i: u8 = 0;
+    while (i < 9) : (i += 1) {
+        const fi: f64 = @floatFromInt(i);
+        const mx = @cos(fi * 2.0 * PI / 9.0) * (1.0 + 0.3 * PHI);
+        const my = @sin(fi * 2.0 * PI / 9.0) * (1.0 + 0.3 * PHI_INV);
+        const energy = -PHI_SQ + 0.5 * fi + 0.1 * @sin(fi * PI / 3.0);
+        const mod3 = i % 3;
+        var flux: u16 = 1;
+        var k: u8 = 0;
+        while (k < mod3 + 1) : (k += 1) {
+            flux *= 27;
+        }
+        const is_min = (mod3 == 0);
+        const tunnel: ?u8 = if (is_min) null else (i / 3) * 3;
+        try result.append(allocator, .{
+            .modulus_x = mx,
+            .modulus_y = my,
+            .energy = energy,
+            .flux_config = flux,
+            .is_minimum = is_min,
+            .tunneling_to = tunnel,
+        });
+    }
+    return result.toOwnedSlice(allocator);
+}
+
+pub fn computeRyuTakayanagi(allocator: Allocator) ![]RyuTakayanagi {
+    var result: std.ArrayListUnmanaged(RyuTakayanagi) = .{};
+    var i: u8 = 0;
+    while (i < 5) : (i += 1) {
+        const fi: f64 = @floatFromInt(i);
+        const b_start = 0.1 * fi;
+        const b_end = 0.1 * fi + 0.1 * (fi + 1.0);
+        const interval = b_end - b_start;
+        const geodesic = 2.0 * @log(interval / 0.01);
+        const entropy = (BROWN_HENNEAUX / 3.0) * @log(interval / 0.01);
+        const phi_corr = PHI_INV * @exp(-geodesic / PHI_SQ);
+        const area = entropy * (1.0 + phi_corr);
+        try result.append(allocator, .{
+            .boundary_start = b_start,
+            .boundary_end = b_end,
+            .geodesic_length = geodesic,
+            .entanglement_entropy = entropy,
+            .phi_correction = phi_corr,
+            .area_over_4g = area,
+        });
+    }
+    return result.toOwnedSlice(allocator);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // JSON Serialization
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -220,8 +328,47 @@ pub fn holoToJson(allocator: Allocator, mode_str: []const u8) ![]u8 {
             });
         }
         try w.writeAll("]");
+    } else if (std.mem.eql(u8, mode_str, "multiverse")) {
+        const bubbles = try computeMultiverseBubbles(allocator);
+        defer allocator.free(bubbles);
+        try w.writeAll(",\"bubbles\":[");
+        for (bubbles, 0..) |bubble, idx| {
+            if (idx > 0) try w.writeAll(",");
+            try std.fmt.format(w, "{{\"id\":{d},\"cosmological_constant\":{d:.6},\"tunneling_prob\":{d:.10},\"radius\":{d:.6},\"inflation_rate\":{d:.4},\"is_our_vacuum\":{s}}}", .{
+                bubble.id, bubble.cosmological_constant, bubble.tunneling_prob, bubble.radius, bubble.inflation_rate, if (bubble.is_our_vacuum) "true" else "false",
+            });
+        }
+        try w.writeAll("]");
+    } else if (std.mem.eql(u8, mode_str, "string_landscape")) {
+        const points = try computeStringLandscape(allocator);
+        defer allocator.free(points);
+        try w.writeAll(",\"landscape\":[");
+        for (points, 0..) |point, idx| {
+            if (idx > 0) try w.writeAll(",");
+            if (point.tunneling_to) |t| {
+                try std.fmt.format(w, "{{\"modulus_x\":{d:.6},\"modulus_y\":{d:.6},\"energy\":{d:.6},\"flux_config\":{d},\"is_minimum\":{s},\"tunneling_to\":{d}}}", .{
+                    point.modulus_x, point.modulus_y, point.energy, point.flux_config, if (point.is_minimum) "true" else "false", t,
+                });
+            } else {
+                try std.fmt.format(w, "{{\"modulus_x\":{d:.6},\"modulus_y\":{d:.6},\"energy\":{d:.6},\"flux_config\":{d},\"is_minimum\":{s},\"tunneling_to\":null}}", .{
+                    point.modulus_x, point.modulus_y, point.energy, point.flux_config, if (point.is_minimum) "true" else "false",
+                });
+            }
+        }
+        try w.writeAll("]");
+    } else if (std.mem.eql(u8, mode_str, "ryu_takayanagi")) {
+        const geodesics = try computeRyuTakayanagi(allocator);
+        defer allocator.free(geodesics);
+        try w.writeAll(",\"geodesics\":[");
+        for (geodesics, 0..) |geo, idx| {
+            if (idx > 0) try w.writeAll(",");
+            try std.fmt.format(w, "{{\"boundary_start\":{d:.4},\"boundary_end\":{d:.4},\"geodesic_length\":{d:.6},\"entanglement_entropy\":{d:.6},\"phi_correction\":{d:.10},\"area_over_4g\":{d:.6}}}", .{
+                geo.boundary_start, geo.boundary_end, geo.geodesic_length, geo.entanglement_entropy, geo.phi_correction, geo.area_over_4g,
+            });
+        }
+        try w.writeAll("]");
     } else {
-        try w.writeAll(",\"modes\":[\"ads\",\"spin_network\",\"penrose\",\"entropy\",\"hawking\"]");
+        try w.writeAll(",\"modes\":[\"ads\",\"spin_network\",\"penrose\",\"entropy\",\"hawking\",\"multiverse\",\"string_landscape\",\"ryu_takayanagi\"]");
     }
 
     try w.writeAll("}");
@@ -300,4 +447,61 @@ test "entropy surface" {
     const surface = computeEntropySurface();
     try std.testing.expectEqual(@as(u32, 10), surface.radius);
     try std.testing.expectApproxEqAbs(@as(f64, 77.0), surface.solar_mass_entropy_log10, 0.1);
+}
+
+test "multiverse bubbles" {
+    const allocator = std.testing.allocator;
+    const bubbles = try computeMultiverseBubbles(allocator);
+    defer allocator.free(bubbles);
+    try std.testing.expectEqual(@as(usize, 7), bubbles.len);
+    // Our vacuum is at id=3
+    try std.testing.expectEqual(true, bubbles[3].is_our_vacuum);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.685), bubbles[3].cosmological_constant, 0.001);
+    // Other bubbles are not our vacuum
+    try std.testing.expectEqual(false, bubbles[0].is_our_vacuum);
+    try std.testing.expectEqual(false, bubbles[6].is_our_vacuum);
+    // All radii should be positive (PHI^n)
+    for (bubbles) |bubble| {
+        try std.testing.expect(bubble.radius > 0);
+        try std.testing.expect(bubble.tunneling_prob > 0);
+        try std.testing.expect(bubble.inflation_rate > 0);
+    }
+}
+
+test "string landscape" {
+    const allocator = std.testing.allocator;
+    const points = try computeStringLandscape(allocator);
+    defer allocator.free(points);
+    try std.testing.expectEqual(@as(usize, 9), points.len);
+    // Count minima: indices 0, 3, 6 (i%3==0) = 3 minima
+    var minima_count: usize = 0;
+    for (points) |point| {
+        if (point.is_minimum) minima_count += 1;
+    }
+    try std.testing.expectEqual(@as(usize, 3), minima_count);
+    // Minima have null tunneling_to
+    try std.testing.expectEqual(@as(?u8, null), points[0].tunneling_to);
+    try std.testing.expectEqual(@as(?u8, null), points[3].tunneling_to);
+    try std.testing.expectEqual(@as(?u8, null), points[6].tunneling_to);
+    // Non-minima have tunneling target
+    try std.testing.expect(points[1].tunneling_to != null);
+    try std.testing.expect(points[2].tunneling_to != null);
+}
+
+test "ryu takayanagi" {
+    const allocator = std.testing.allocator;
+    const geodesics = try computeRyuTakayanagi(allocator);
+    defer allocator.free(geodesics);
+    try std.testing.expectEqual(@as(usize, 5), geodesics.len);
+    // All entanglement entropies should be positive
+    for (geodesics) |geo| {
+        try std.testing.expect(geo.entanglement_entropy > 0);
+        try std.testing.expect(geo.geodesic_length > 0);
+        try std.testing.expect(geo.area_over_4g > 0);
+        try std.testing.expect(geo.phi_correction > 0);
+        // boundary_end > boundary_start
+        try std.testing.expect(geo.boundary_end > geo.boundary_start);
+    }
+    // Entropy should increase with interval size
+    try std.testing.expect(geodesics[4].entanglement_entropy > geodesics[1].entanglement_entropy);
 }

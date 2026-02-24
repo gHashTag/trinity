@@ -1,5 +1,5 @@
 name: holographic_renderer
-version: "3.1.0"
+version: "3.3.0"
 language: zig
 module: holographic_renderer
 description: |
@@ -20,6 +20,9 @@ constants:
   HOLOGRAPHIC_BITS: 0.36067
   BROWN_HENNEAUX: 1.5
   RENDER_FPS_TARGET: 30
+  STRING_LANDSCAPE_LOG: 500
+  CALABI_YAU_EULER: 480
+  VACUUM_DECAY_RATE: 0.00618
 
 types:
   HoloGrid:
@@ -113,9 +116,9 @@ behaviors:
         expected: "Circular horizon with entropy density markers"
 
   - name: render_ryu_takayanagi
-    given: Boundary region endpoints A and B
-    when: User requests entanglement entropy geodesic visualization
-    then: Return ASCII showing minimal surface (geodesic) in AdS bulk connecting A to B
+    given: AdS bulk with boundary region A
+    when: Compute minimal surface gamma_A: S_A = Area(gamma_A) / (4G_N)
+    then: Geodesic curve with entropy values and phi corrections
     test_cases:
       - name: basic_rt
         input: "a=0.2, b=0.8"
@@ -139,6 +142,16 @@ behaviors:
     given: Dictionary of AdS/CFT correspondences
     when: Duality map visualization requested
     then: Return formatted table showing bulk field <-> boundary operator mapping
+
+  - name: render_multiverse_inflation
+    given: Inflation potential V(phi) with multiple minima
+    when: Render vacuum decay bubbles with phi-tunneling probability
+    then: Grid showing bubble universes with distinct cosmological constants
+
+  - name: render_string_landscape
+    given: Calabi-Yau compactification with flux choices
+    when: Render landscape energy vs moduli with sacred formula barriers
+    then: Map showing local minima, tunneling paths, and our vacuum position
 
 test_cases:
   - name: trinity_check

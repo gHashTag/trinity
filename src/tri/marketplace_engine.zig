@@ -21,6 +21,11 @@ const PHI_SQ: f64 = 2.6180339887498948482;
 const PHI_INV_SQ: f64 = 0.3819660112501051518;
 const MU: f64 = 0.0382; // Inflation rate
 const CHI: f64 = 0.0618; // Deflation rate
+const BASE_YIELD_RATE: f64 = 0.1618;
+const ORACLE_CONFIDENCE_DECAY: f64 = 0.9382;
+const LP_FEE_RATE: f64 = 0.003;
+const PI: f64 = 3.14159265358979323846;
+const E: f64 = 2.71828182845904523536;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Types
@@ -56,6 +61,36 @@ pub const TokenomicsEpoch = struct {
     staked_pct: f64,
     burned: f64,
     net_change: f64,
+};
+
+pub const YieldPool = struct {
+    name: [16]u8,
+    name_len: u8,
+    pair_constant: f64,
+    tier: u8,
+    tvl: f64,
+    apy_pct: f64,
+    reward_per_epoch: f64,
+    impermanent_loss_phi: f64,
+};
+
+pub const SacredOracle = struct {
+    constant_name: [16]u8,
+    name_len: u8,
+    current_price_tri: f64,
+    confidence_pct: f64,
+    epochs_since_update: u32,
+    twap_24h: f64,
+};
+
+pub const LiquidityPool = struct {
+    pool_id: u8,
+    reserve_tri: f64,
+    reserve_paired: f64,
+    k_invariant: f64,
+    fee_accumulated: f64,
+    lp_token_supply: f64,
+    phi_fee_boost: f64,
 };
 
 pub const DashboardStats = struct {
@@ -154,6 +189,102 @@ pub fn computeTokenomicsSchedule(allocator: Allocator, epochs: u32) ![]Tokenomic
     return result.toOwnedSlice(allocator);
 }
 
+fn phiPow(n: u8) f64 {
+    var result: f64 = 1.0;
+    for (0..n) |_| result *= PHI;
+    return result;
+}
+
+fn copyName(dest: *[16]u8, src: []const u8) u8 {
+    const len: u8 = @intCast(@min(src.len, 16));
+    for (0..len) |i| {
+        dest[i] = src[i];
+    }
+    return len;
+}
+
+pub fn computeYieldFarming() [5]YieldPool {
+    const names = [_][]const u8{ "PHI-TRI", "PI-TRI", "E-TRI", "TRINITY-TRI", "ALPHA-TRI" };
+    const pair_constants = [_]f64{ PHI, PI, E, 3.0, 137.036 };
+    var pools: [5]YieldPool = undefined;
+
+    for (0..5) |i| {
+        const tier: u8 = @intCast(i + 1);
+        var name: [16]u8 = [_]u8{0} ** 16;
+        const name_len = copyName(&name, names[i]);
+        const phi_t = phiPow(tier);
+        const tvl = 100000.0 * phi_t;
+        const pc = pair_constants[i];
+        const sqrt_pc = @sqrt(pc);
+
+        pools[i] = .{
+            .name = name,
+            .name_len = name_len,
+            .pair_constant = pc,
+            .tier = tier,
+            .tvl = tvl,
+            .apy_pct = BASE_YIELD_RATE * phi_t * 100.0,
+            .reward_per_epoch = tvl * BASE_YIELD_RATE * phi_t / 365.0,
+            .impermanent_loss_phi = 1.0 - (2.0 * sqrt_pc / (1.0 + pc)),
+        };
+    }
+    return pools;
+}
+
+pub fn computeSacredOracles() [5]SacredOracle {
+    const names = [_][]const u8{ "PHI", "PI", "E", "TRINITY", "ALPHA_INV" };
+    const pair_values = [_]f64{ PHI, PI, E, 3.0, 137.036 };
+    const epochs = [_]u32{ 0, 1, 3, 7, 12 };
+    var oracles: [5]SacredOracle = undefined;
+
+    for (0..5) |i| {
+        var cname: [16]u8 = [_]u8{0} ** 16;
+        const cname_len = copyName(&cname, names[i]);
+        const ep = epochs[i];
+        const price = pair_values[i] * PHI;
+        const conf = 100.0 * std.math.pow(f64, ORACLE_CONFIDENCE_DECAY, @as(f64, @floatFromInt(ep)));
+        const ep_f: f64 = @floatFromInt(ep);
+        const twap = price * (1.0 + 0.01 * @sin(ep_f * PHI));
+
+        oracles[i] = .{
+            .constant_name = cname,
+            .name_len = cname_len,
+            .current_price_tri = price,
+            .confidence_pct = conf,
+            .epochs_since_update = ep,
+            .twap_24h = twap,
+        };
+    }
+    return oracles;
+}
+
+pub fn computeLiquidityPools() [5]LiquidityPool {
+    const reserves_tri = [_]f64{ 10000, 16180, 27182, 31416, 137036 };
+    var pools: [5]LiquidityPool = undefined;
+
+    for (0..5) |i| {
+        const pool_id: u8 = @intCast(i);
+        const r_tri = reserves_tri[i];
+        const r_paired = r_tri * PHI;
+        const k = r_tri * r_paired;
+        const fee = k * LP_FEE_RATE * 0.01;
+        const lp_supply = @sqrt(k);
+        const pool_id_f: f64 = @floatFromInt(pool_id);
+        const phi_boost = PHI_INV_SQ * (1.0 + 0.1 * pool_id_f);
+
+        pools[i] = .{
+            .pool_id = pool_id,
+            .reserve_tri = r_tri,
+            .reserve_paired = r_paired,
+            .k_invariant = k,
+            .fee_accumulated = fee,
+            .lp_token_supply = lp_supply,
+            .phi_fee_boost = phi_boost,
+        };
+    }
+    return pools;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // JSON Serialization
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -216,8 +347,43 @@ pub fn marketplaceToJson(allocator: Allocator, mode_str: []const u8) ![]u8 {
             });
         }
         try w.writeAll("]");
+    } else if (std.mem.eql(u8, mode_str, "yield_farming")) {
+        const pools = computeYieldFarming();
+        try w.writeAll(",\"yield_pools\":[");
+        for (0..5) |idx| {
+            if (idx > 0) try w.writeAll(",");
+            const p = pools[idx];
+            const name_slice = p.name[0..p.name_len];
+            try std.fmt.format(w, "{{\"name\":\"{s}\",\"pair_constant\":{d:.6},\"tier\":{d},\"tvl\":{d:.2},\"apy_pct\":{d:.4},\"reward_per_epoch\":{d:.4},\"impermanent_loss_phi\":{d:.6}}}", .{
+                name_slice, p.pair_constant, p.tier, p.tvl, p.apy_pct, p.reward_per_epoch, p.impermanent_loss_phi,
+            });
+        }
+        try w.writeAll("]");
+    } else if (std.mem.eql(u8, mode_str, "oracle")) {
+        const oracles = computeSacredOracles();
+        try w.writeAll(",\"sacred_oracles\":[");
+        for (0..5) |idx| {
+            if (idx > 0) try w.writeAll(",");
+            const o = oracles[idx];
+            const cname_slice = o.constant_name[0..o.name_len];
+            try std.fmt.format(w, "{{\"constant_name\":\"{s}\",\"current_price_tri\":{d:.6},\"confidence_pct\":{d:.4},\"epochs_since_update\":{d},\"twap_24h\":{d:.6}}}", .{
+                cname_slice, o.current_price_tri, o.confidence_pct, o.epochs_since_update, o.twap_24h,
+            });
+        }
+        try w.writeAll("]");
+    } else if (std.mem.eql(u8, mode_str, "liquidity")) {
+        const pools = computeLiquidityPools();
+        try w.writeAll(",\"liquidity_pools\":[");
+        for (0..5) |idx| {
+            if (idx > 0) try w.writeAll(",");
+            const lp = pools[idx];
+            try std.fmt.format(w, "{{\"pool_id\":{d},\"reserve_tri\":{d:.2},\"reserve_paired\":{d:.2},\"k_invariant\":{d:.2},\"fee_accumulated\":{d:.4},\"lp_token_supply\":{d:.4},\"phi_fee_boost\":{d:.6}}}", .{
+                lp.pool_id, lp.reserve_tri, lp.reserve_paired, lp.k_invariant, lp.fee_accumulated, lp.lp_token_supply, lp.phi_fee_boost,
+            });
+        }
+        try w.writeAll("]");
     } else {
-        try w.writeAll(",\"modes\":[\"dashboard\",\"staking\",\"proof\",\"tokenomics\"]");
+        try w.writeAll(",\"modes\":[\"dashboard\",\"staking\",\"proof\",\"tokenomics\",\"yield_farming\",\"oracle\",\"liquidity\"]");
     }
 
     try w.writeAll("}");
@@ -290,4 +456,78 @@ test "staking json output" {
     const json = try marketplaceToJson(allocator, "staking");
     defer allocator.free(json);
     try std.testing.expect(std.mem.indexOf(u8, json, "\"staking_tiers\":[") != null);
+}
+
+test "yield farming" {
+    const pools = computeYieldFarming();
+    // Verify 5 pools
+    try std.testing.expectEqual(@as(usize, 5), pools.len);
+    // Verify first pool name is PHI-TRI
+    try std.testing.expectEqualStrings("PHI-TRI", pools[0].name[0..pools[0].name_len]);
+    // Verify tiers are 1-5
+    try std.testing.expectEqual(@as(u8, 1), pools[0].tier);
+    try std.testing.expectEqual(@as(u8, 5), pools[4].tier);
+    // APY increases with tier
+    try std.testing.expect(pools[1].apy_pct > pools[0].apy_pct);
+    try std.testing.expect(pools[2].apy_pct > pools[1].apy_pct);
+    try std.testing.expect(pools[3].apy_pct > pools[2].apy_pct);
+    try std.testing.expect(pools[4].apy_pct > pools[3].apy_pct);
+    // TVL increases with tier
+    try std.testing.expect(pools[4].tvl > pools[0].tvl);
+    // Impermanent loss is between 0 and 1
+    for (0..5) |i| {
+        try std.testing.expect(pools[i].impermanent_loss_phi >= 0.0);
+        try std.testing.expect(pools[i].impermanent_loss_phi < 1.0);
+    }
+}
+
+test "sacred oracles" {
+    const oracles = computeSacredOracles();
+    // Verify 5 oracles
+    try std.testing.expectEqual(@as(usize, 5), oracles.len);
+    // Verify first oracle name is PHI
+    try std.testing.expectEqualStrings("PHI", oracles[0].constant_name[0..oracles[0].name_len]);
+    // Verify last oracle name is ALPHA_INV
+    try std.testing.expectEqualStrings("ALPHA_INV", oracles[4].constant_name[0..oracles[4].name_len]);
+    // Confidence decays with epochs (first oracle has 0 epochs -> 100%)
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), oracles[0].confidence_pct, 0.01);
+    // Confidence decays: later oracles have lower confidence
+    try std.testing.expect(oracles[0].confidence_pct > oracles[1].confidence_pct);
+    try std.testing.expect(oracles[1].confidence_pct > oracles[2].confidence_pct);
+    try std.testing.expect(oracles[2].confidence_pct > oracles[3].confidence_pct);
+    try std.testing.expect(oracles[3].confidence_pct > oracles[4].confidence_pct);
+    // All prices are positive
+    for (0..5) |i| {
+        try std.testing.expect(oracles[i].current_price_tri > 0.0);
+        try std.testing.expect(oracles[i].twap_24h > 0.0);
+    }
+}
+
+test "liquidity pools" {
+    const pools = computeLiquidityPools();
+    // Verify 5 pools
+    try std.testing.expectEqual(@as(usize, 5), pools.len);
+    // Verify pool IDs are 0-4
+    try std.testing.expectEqual(@as(u8, 0), pools[0].pool_id);
+    try std.testing.expectEqual(@as(u8, 4), pools[4].pool_id);
+    // k_invariant = reserve_tri * reserve_paired
+    for (0..5) |i| {
+        const expected_k = pools[i].reserve_tri * pools[i].reserve_paired;
+        try std.testing.expectApproxEqAbs(expected_k, pools[i].k_invariant, 0.01);
+    }
+    // reserve_paired = reserve_tri * PHI
+    for (0..5) |i| {
+        const expected_paired = pools[i].reserve_tri * PHI;
+        try std.testing.expectApproxEqAbs(expected_paired, pools[i].reserve_paired, 0.01);
+    }
+    // lp_token_supply = sqrt(k_invariant)
+    for (0..5) |i| {
+        const expected_supply = @sqrt(pools[i].k_invariant);
+        try std.testing.expectApproxEqAbs(expected_supply, pools[i].lp_token_supply, 0.01);
+    }
+    // All fees positive
+    for (0..5) |i| {
+        try std.testing.expect(pools[i].fee_accumulated > 0.0);
+        try std.testing.expect(pools[i].phi_fee_boost > 0.0);
+    }
 }
