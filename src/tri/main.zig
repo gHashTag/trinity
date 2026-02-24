@@ -259,5 +259,9 @@ pub fn main() !void {
         .transcend => commands.runTranscendCommand(allocator),
         .beyond => commands.runBeyondCommand(allocator, cmd_args),
         .consciousness => commands.runConsciousnessCommand(allocator),
+        // Cycle 92: Omniscience + Omega Integration + Manifest Engine
+        .omniscience => commands.runOmniscienceCommand(allocator),
+        .integrate => commands.runIntegrateCommand(allocator, cmd_args),
+        .manifest => commands.runManifestCommand(allocator, cmd_args),
     }
 }
