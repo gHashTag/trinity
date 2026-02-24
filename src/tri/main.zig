@@ -247,5 +247,9 @@ pub fn main() !void {
         .marketplace => commands.runMarketplaceCommand(allocator, cmd_args),
         .agents_auto => commands.runAgentsAutoCommand(allocator, cmd_args),
         .improve_loop => commands.runImproveLoopCommand(allocator, cmd_args),
+        // Cycle 89: Omega Mode + Universal Agent Control
+        .omega => commands.runOmegaCommand(allocator),
+        .control => commands.runControlCommand(allocator, cmd_args),
+        .marketplace_live => commands.runMarketplaceLiveCommand(allocator),
     }
 }
