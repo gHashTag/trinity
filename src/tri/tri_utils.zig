@@ -210,6 +210,12 @@ pub const Command = enum {
     swarm,
     // Cycle 85: Improve-All Pipeline
     improve_all,
+    // Cycle 91: Full Autonomous Health Report
+    full_autonomous,
+    // Cycle 88: Marketplace + Autonomous Swarm + Self-Improvement
+    marketplace,
+    agents_auto,
+    improve_loop,
 };
 
 pub const CLIState = struct {
@@ -311,7 +317,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.1 — Full Dev OS + Self-Hosting + Swarm Control{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.2 — Marketplace + Autonomous Swarm + Self-Improve{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -320,7 +326,7 @@ pub fn printHelp() void {
 
     std.debug.print("{s}COMMANDS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}chat{s} [--stream] [--image <path>] [--voice <path>] <msg>\n", .{ GREEN, RESET });
-    std.debug.print("         Interactive chat (v2.1: vision + voice + tools)\n", .{});
+    std.debug.print("         Interactive chat (v2.2: vision + voice + tools)\n", .{});
     std.debug.print("  {s}code{s} [--stream] <prompt>    Generate code (--stream for typing effect)\n", .{ GREEN, RESET });
     std.debug.print("  {s}gen{s} <spec.vibee>            Compile VIBEE spec to Zig/Verilog\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
@@ -603,6 +609,17 @@ pub fn printHelp() void {
     std.debug.print("  {s}swarm broadcast{s} <msg>      Send message to all agents\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}$TRI MARKETPLACE (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}marketplace{s}                 Browse items (plugins/patterns/agents)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}marketplace buy{s} <item>      Purchase with $TRI\n", .{ GREEN, RESET });
+    std.debug.print("  {s}marketplace sell{s} <item>     Publish for sale\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}AUTONOMOUS SWARM (Cycle 88):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}agents-auto{s}                Autonomous swarm status + dispatch\n", .{ GREEN, RESET });
+    std.debug.print("  {s}improve-loop{s} [N]           Run N phi-scaled improvement cycles\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -811,6 +828,12 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "dashboard") or std.mem.eql(u8, arg, "dash") or std.mem.eql(u8, arg, "panel")) return .dashboard;
     // Cycle 86: Swarm Sync
     if (std.mem.eql(u8, arg, "swarm") or std.mem.eql(u8, arg, "swarm-sync") or std.mem.eql(u8, arg, "sync")) return .swarm;
+    // Cycle 91: Full Autonomous Health Report
+    if (std.mem.eql(u8, arg, "full-autonomous") or std.mem.eql(u8, arg, "full_autonomous") or std.mem.eql(u8, arg, "autonomous") or std.mem.eql(u8, arg, "health")) return .full_autonomous;
+    // Cycle 88: Marketplace + Autonomous Swarm + Self-Improvement
+    if (std.mem.eql(u8, arg, "marketplace") or std.mem.eql(u8, arg, "market") or std.mem.eql(u8, arg, "shop")) return .marketplace;
+    if (std.mem.eql(u8, arg, "agents-auto") or std.mem.eql(u8, arg, "agents_auto") or std.mem.eql(u8, arg, "auto-agents")) return .agents_auto;
+    if (std.mem.eql(u8, arg, "improve-loop") or std.mem.eql(u8, arg, "improve_loop") or std.mem.eql(u8, arg, "loop")) return .improve_loop;
     return .none;
 }
 

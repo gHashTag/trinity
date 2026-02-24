@@ -241,5 +241,11 @@ pub fn main() !void {
         .swarm => commands.runSwarmCommand(allocator, cmd_args),
         // Cycle 85: Improve-All Pipeline
         .improve_all => commands.runImproveAllCommand(allocator, cmd_args),
+        // Cycle 91: Full Autonomous Health Report
+        .full_autonomous => commands.runFullAutonomousCommand(allocator),
+        // Cycle 88: Marketplace + Autonomous Swarm + Self-Improvement
+        .marketplace => commands.runMarketplaceCommand(allocator, cmd_args),
+        .agents_auto => commands.runAgentsAutoCommand(allocator, cmd_args),
+        .improve_loop => commands.runImproveLoopCommand(allocator, cmd_args),
     }
 }
