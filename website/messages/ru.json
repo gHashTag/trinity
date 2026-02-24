@@ -960,6 +960,43 @@
     "gematriaDecompose": "Расшифровать",
     "sacredFit": "Священная формула"
   },
+  "holographic": {
+    "title": "Голографический Рендерер v3.1",
+    "subtitle": "Сгенерировано из: specs/tri/holographic_renderer.vibee",
+    "adsTitle": "AdS₅ Радиальный Срез — Соответствие Объём/Граница",
+    "spinTitle": "Спиновая Сеть — Собственные Значения Площади",
+    "penroseTitle": "Мозаика Пенроуза P3 — Золотые Свойства",
+    "entropyTitle": "Энтропия Бекенштейна-Хокинга",
+    "hawkingTitle": "Излучение Хокинга — Испарение Чёрной Дыры",
+    "formula": "Формула",
+    "solarEntropy": "Энтропия ЧД солнечной массы",
+    "holoBits": "Голографические биты"
+  },
+  "quantumGravity": {
+    "title": "Симуляция Квантовой Гравитации v3.1",
+    "subtitle": "Сгенерировано из: specs/tri/quantum_gravity_sim.vibee",
+    "steps": "Шаги",
+    "spinFoamTitle": "Эволюция Спиновой Пены (Понзано-Редже)",
+    "reggeTitle": "Исчисление Редже (Симплициальная Квантовая Гравитация)",
+    "adsTitle": "Термализация AdS/CFT",
+    "areaTitle": "Спектр Площадей ПКГ (Барберо-Иммирци)",
+    "areaGap": "Щель площади"
+  },
+  "marketplace": {
+    "title": "Маркетплейс Священных Вычислений $TRI",
+    "subtitle": "Сгенерировано из: specs/tri/tri_marketplace.vibee",
+    "network": "Сеть",
+    "totalSupply": "Общий Объём",
+    "circulating": "В Обращении",
+    "staked": "В Стейкинге",
+    "constants": "Константы",
+    "formulaFits": "Формульные Фиты",
+    "verified": "Проверено",
+    "topComputations": "Топ Священных Вычислений",
+    "stakingTitle": "Уровни Стейкинга (Фибоначчи × φ)",
+    "proofTitle": "Доказательство-Священного-Вычисления",
+    "tokenomicsTitle": "Токеномика $TRI (φ-дефляционная модель)"
+  },
   "stickyCta": {
     "invest": "Инвестировать",
     "calculator": "Калькулятор Экономии"

@@ -8,6 +8,10 @@
 // GET  /api/sacred-formula/fit       — Fit all constants to Sacred Formula
 // GET  /api/sacred-formula/constants — Raw constants list from .tri spec
 // POST /api/sacred-formula/compute   — Fit single value to Sacred Formula
+// POST /api/gematria                 — Coptic gematria (number↔glyphs)
+// POST /api/holographic              — Holographic renderer (AdS, spin, penrose, entropy, hawking)
+// POST /api/qg-sim                   — Quantum gravity simulation (spin foam, Regge, AdS, area)
+// POST /api/marketplace              — $TRI marketplace (dashboard, staking, proof, tokenomics)
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -223,6 +227,24 @@ pub const ChatServer = struct {
         } else if (std.mem.startsWith(u8, path, "/api/gematria")) {
             if (std.mem.eql(u8, method, "POST")) {
                 try self.handleGematria(connection, body);
+            } else {
+                try self.sendMethodNotAllowed(connection);
+            }
+        } else if (std.mem.startsWith(u8, path, "/api/holographic")) {
+            if (std.mem.eql(u8, method, "POST")) {
+                try self.handleHolographic(connection, body);
+            } else {
+                try self.sendMethodNotAllowed(connection);
+            }
+        } else if (std.mem.startsWith(u8, path, "/api/qg-sim")) {
+            if (std.mem.eql(u8, method, "POST")) {
+                try self.handleQGSim(connection, body);
+            } else {
+                try self.sendMethodNotAllowed(connection);
+            }
+        } else if (std.mem.startsWith(u8, path, "/api/marketplace")) {
+            if (std.mem.eql(u8, method, "POST")) {
+                try self.handleMarketplace(connection, body);
             } else {
                 try self.sendMethodNotAllowed(connection);
             }
@@ -1179,6 +1201,44 @@ pub const ChatServer = struct {
 
             try self.sendJsonResponse(connection, json);
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Cycle 87 v3.1 API Handlers: Holographic, QG Sim, Marketplace
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    fn handleHolographic(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
+        const holo = @import("holographic_engine.zig");
+        const mode = extractJsonString(body, "mode") orelse "ads";
+        const json = holo.holoToJson(self.allocator, mode) catch {
+            try self.sendError(connection, "Holographic computation failed");
+            return;
+        };
+        defer self.allocator.free(json);
+        try self.sendJsonResponse(connection, json);
+    }
+
+    fn handleQGSim(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
+        const qg = @import("qg_engine.zig");
+        const steps_str = extractJsonString(body, "steps") orelse "10";
+        const steps = std.fmt.parseInt(u32, steps_str, 10) catch 10;
+        const json = qg.qgSimToJson(self.allocator, steps) catch {
+            try self.sendError(connection, "QG simulation failed");
+            return;
+        };
+        defer self.allocator.free(json);
+        try self.sendJsonResponse(connection, json);
+    }
+
+    fn handleMarketplace(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
+        const market = @import("marketplace_engine.zig");
+        const mode = extractJsonString(body, "mode") orelse "dashboard";
+        const json = market.marketplaceToJson(self.allocator, mode) catch {
+            try self.sendError(connection, "Marketplace computation failed");
+            return;
+        };
+        defer self.allocator.free(json);
+        try self.sendJsonResponse(connection, json);
     }
 
     fn sendNotFound(self: *Self, connection: *std.net.Server.Connection) !void {

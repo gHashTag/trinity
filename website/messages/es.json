@@ -937,6 +937,43 @@
     "gematriaDecompose": "Decodificar",
     "sacredFit": "Fórmula sagrada"
   },
+  "holographic": {
+    "title": "Renderizador Holográfico v3.1",
+    "subtitle": "Generado desde: specs/tri/holographic_renderer.vibee",
+    "adsTitle": "Corte Radial AdS₅ — Correspondencia Bulk/Frontera",
+    "spinTitle": "Red de Spin — Eigenvalores de Área",
+    "penroseTitle": "Mosaico Penrose P3 — Propiedades Áureas",
+    "entropyTitle": "Superficie de Entropía Bekenstein-Hawking",
+    "hawkingTitle": "Radiación de Hawking — Evaporación del Agujero Negro",
+    "formula": "Fórmula",
+    "solarEntropy": "Entropía AN masa solar",
+    "holoBits": "Bits holográficos"
+  },
+  "quantumGravity": {
+    "title": "Simulación de Gravedad Cuántica v3.1",
+    "subtitle": "Generado desde: specs/tri/quantum_gravity_sim.vibee",
+    "steps": "Pasos",
+    "spinFoamTitle": "Evolución Espuma de Spin (Ponzano-Regge)",
+    "reggeTitle": "Cálculo de Regge (Gravedad Cuántica Simplicial)",
+    "adsTitle": "Termalización AdS/CFT",
+    "areaTitle": "Espectro de Área LQG (Barbero-Immirzi)",
+    "areaGap": "Brecha de área"
+  },
+  "marketplace": {
+    "title": "Mercado de Computación Sagrada $TRI",
+    "subtitle": "Generado desde: specs/tri/tri_marketplace.vibee",
+    "network": "Red",
+    "totalSupply": "Suministro Total",
+    "circulating": "En Circulación",
+    "staked": "En Staking",
+    "constants": "Constantes",
+    "formulaFits": "Ajustes de Fórmula",
+    "verified": "Verificado",
+    "topComputations": "Top Computaciones Sagradas",
+    "stakingTitle": "Niveles de Staking (Fibonacci × φ)",
+    "proofTitle": "Prueba-de-Computación-Sagrada",
+    "tokenomicsTitle": "Tokenómica $TRI (modelo φ-deflacionario)"
+  },
   "stickyCta": {
     "invest": "Invertir Ahora",
     "calculator": "Calculadora de Ahorro"

@@ -960,6 +960,43 @@
     "gematriaDecompose": "Decode",
     "sacredFit": "Sacred fit"
   },
+  "holographic": {
+    "title": "Holographic Renderer v3.1",
+    "subtitle": "Generated from: specs/tri/holographic_renderer.vibee",
+    "adsTitle": "AdS\u2085 Radial Slice \u2014 Bulk/Boundary Correspondence",
+    "spinTitle": "Spin Network \u2014 Area Eigenvalues",
+    "penroseTitle": "Penrose P3 Tiling \u2014 Golden Properties",
+    "entropyTitle": "Bekenstein-Hawking Entropy Surface",
+    "hawkingTitle": "Hawking Radiation \u2014 Black Hole Evaporation",
+    "formula": "Formula",
+    "solarEntropy": "Solar mass BH entropy",
+    "holoBits": "Holographic bits"
+  },
+  "quantumGravity": {
+    "title": "Quantum Gravity Simulation v3.1",
+    "subtitle": "Generated from: specs/tri/quantum_gravity_sim.vibee",
+    "steps": "Steps",
+    "spinFoamTitle": "Spin Foam Evolution (Ponzano-Regge)",
+    "reggeTitle": "Regge Calculus (Simplicial Quantum Gravity)",
+    "adsTitle": "AdS/CFT Thermalization Dynamics",
+    "areaTitle": "LQG Area Spectrum (Barbero-Immirzi)",
+    "areaGap": "Area gap"
+  },
+  "marketplace": {
+    "title": "$TRI Sacred Computation Marketplace",
+    "subtitle": "Generated from: specs/tri/tri_marketplace.vibee",
+    "network": "Network",
+    "totalSupply": "Total Supply",
+    "circulating": "Circulating",
+    "staked": "Staked",
+    "constants": "Constants",
+    "formulaFits": "Formula Fits",
+    "verified": "Verified",
+    "topComputations": "Top Sacred Computations",
+    "stakingTitle": "Staking Tiers (Fibonacci \u00d7 \u03c6)",
+    "proofTitle": "Proof-of-Sacred-Computation",
+    "tokenomicsTitle": "$TRI Tokenomics (\u03c6-deflation model)"
+  },
   "stickyCta": {
     "invest": "Invest Now",
     "calculator": "Savings Calculator"
