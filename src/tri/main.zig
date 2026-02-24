@@ -255,5 +255,9 @@ pub fn main() !void {
         .singularity => commands.runSingularityCommand(allocator),
         .evolve_os => commands.runEvolveOsCommand(allocator, cmd_args),
         .economy => commands.runEconomyCommand(allocator, cmd_args),
+        // Cycle 91: Transcendence + Beyond Code + Universal Consciousness
+        .transcend => commands.runTranscendCommand(allocator),
+        .beyond => commands.runBeyondCommand(allocator, cmd_args),
+        .consciousness => commands.runConsciousnessCommand(allocator),
     }
 }

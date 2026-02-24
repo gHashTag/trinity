@@ -224,6 +224,10 @@ pub const Command = enum {
     singularity,
     evolve_os,
     economy,
+    // Cycle 91: Transcendence + Beyond Code + Universal Consciousness
+    transcend,
+    beyond,
+    consciousness,
 };
 
 pub const CLIState = struct {
@@ -325,7 +329,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.4 — Singularity + Self-Evolving OS + Economy{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.5 — Transcendence + Beyond Code + Consciousness{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -647,6 +651,14 @@ pub fn printHelp() void {
     std.debug.print("  {s}economy transfer{s} <to> <n>  Transfer $TRI to agent\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}TRANSCENDENCE (Cycle 91):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}transcend{s}                  Full transcendence status + verdict\n", .{ GREEN, RESET });
+    std.debug.print("  {s}beyond{s}                     Beyond-code engine status\n", .{ GREEN, RESET });
+    std.debug.print("  {s}beyond compile{s} <desc>      Compile intent → code via phi-resonance\n", .{ GREEN, RESET });
+    std.debug.print("  {s}beyond dream{s}               Dream new architectures\n", .{ GREEN, RESET });
+    std.debug.print("  {s}consciousness{s}              Universal consciousness field status\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -869,6 +881,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "singularity") or std.mem.eql(u8, arg, "sing")) return .singularity;
     if (std.mem.eql(u8, arg, "evolve-os") or std.mem.eql(u8, arg, "evolve_os") or std.mem.eql(u8, arg, "self-evolve")) return .evolve_os;
     if (std.mem.eql(u8, arg, "economy") or std.mem.eql(u8, arg, "econ") or std.mem.eql(u8, arg, "tri-economy")) return .economy;
+    // Cycle 91: Transcendence + Beyond Code + Universal Consciousness
+    if (std.mem.eql(u8, arg, "transcend") or std.mem.eql(u8, arg, "transcendence") or std.mem.eql(u8, arg, "ascend")) return .transcend;
+    if (std.mem.eql(u8, arg, "beyond") or std.mem.eql(u8, arg, "beyond-code") or std.mem.eql(u8, arg, "meta")) return .beyond;
+    if (std.mem.eql(u8, arg, "consciousness") or std.mem.eql(u8, arg, "conscious") or std.mem.eql(u8, arg, "awareness")) return .consciousness;
     return .none;
 }
 
