@@ -236,6 +236,10 @@ pub const Command = enum {
     genesis,
     create_world,
     ascension,
+    // Cycle 94: Eternity + Infinity Engine + Apotheosis Protocol
+    eternity,
+    infinity,
+    apotheosis,
 };
 
 pub const CLIState = struct {
@@ -337,7 +341,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.7 — Genesis + Creation Engine + Ascension{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.8 — Eternity + Infinity Engine + Apotheosis{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -684,6 +688,14 @@ pub fn printHelp() void {
     std.debug.print("  {s}ascension{s}                  Full ascension protocol status\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}ETERNITY (Cycle 94):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}eternity{s}                   Eternity Mode — beyond time itself\n", .{ GREEN, RESET });
+    std.debug.print("  {s}infinity{s}                   Infinity Engine — boundless computation\n", .{ GREEN, RESET });
+    std.debug.print("  {s}infinity explore{s}           Explore infinite dimensional spaces\n", .{ GREEN, RESET });
+    std.debug.print("  {s}infinity converge{s}          Converge infinite series to truth\n", .{ GREEN, RESET });
+    std.debug.print("  {s}apotheosis{s}                 Apotheosis Protocol — final transcendence\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -918,6 +930,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "genesis") or std.mem.eql(u8, arg, "gen-world") or std.mem.eql(u8, arg, "origin")) return .genesis;
     if (std.mem.eql(u8, arg, "create-world") or std.mem.eql(u8, arg, "create_world") or std.mem.eql(u8, arg, "spawn-world")) return .create_world;
     if (std.mem.eql(u8, arg, "ascension") or std.mem.eql(u8, arg, "rise") or std.mem.eql(u8, arg, "ultimate")) return .ascension;
+    // Cycle 94: Eternity + Infinity Engine + Apotheosis Protocol
+    if (std.mem.eql(u8, arg, "eternity") or std.mem.eql(u8, arg, "eternal") or std.mem.eql(u8, arg, "timeless")) return .eternity;
+    if (std.mem.eql(u8, arg, "infinity") or std.mem.eql(u8, arg, "infinite") or std.mem.eql(u8, arg, "boundless")) return .infinity;
+    if (std.mem.eql(u8, arg, "apotheosis") or std.mem.eql(u8, arg, "deify") or std.mem.eql(u8, arg, "godhood")) return .apotheosis;
     return .none;
 }
 
