@@ -921,7 +921,16 @@
       "quantum_gravity": "量子引力"
     },
     "chevrons": { "n": "n", "k": "3\u207a", "m": "\u03c0\u207a", "p": "\u03c6\u207a", "q": "e\u207a" },
-    "error": "误差"
+    "error": "误差",
+    "howItWorks": "任何数字都可以用4个自然常数的简单公式来表示。例如：电子质量 = 1 \u00d7 3\u207b\u2077 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b2 \u00d7 e\u00b3\uff0c精度为0.003%\u3002输入您的数字\uff0c查看它在整数格中的\u300c坐标\u300d\u3002",
+    "tryIt": "输入数字 → 获取公式",
+    "legendTitle": "如何读取星门：",
+    "legendN": "乘数（整数 1\u20139）",
+    "legendK": "三进制幂（3 的指数）",
+    "legendM": "几何幂（\u03c0 的指数）",
+    "legendP": "黄金比例幂（\u03c6 的指数）",
+    "legendQ": "增长幂（e 的指数）",
+    "legendExample": "示例：13 \u2248 1 \u00d7 3\u207b\u00b9 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b9 \u00d7 e\u00b3"
   },
   "stickyCta": {
     "invest": "立即投资",

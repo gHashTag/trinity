@@ -921,7 +921,16 @@
       "quantum_gravity": "Gravedad Cu\u00e1ntica"
     },
     "chevrons": { "n": "n", "k": "3\u207a", "m": "\u03c0\u207a", "p": "\u03c6\u207a", "q": "e\u207a" },
-    "error": "error"
+    "error": "error",
+    "howItWorks": "Cualquier n\u00famero puede escribirse como una f\u00f3rmula simple de 4 constantes de la naturaleza. Ejemplo: masa del electr\u00f3n = 1 \u00d7 3\u207b\u2077 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b2 \u00d7 e\u00b3 con 0.003% de precisi\u00f3n. Ingrese su n\u00famero y vea sus \"coordenadas\" en esta ret\u00edcula.",
+    "tryIt": "Ingrese un n\u00famero \u2192 obtenga su f\u00f3rmula",
+    "legendTitle": "C\u00f3mo leer el Stargate:",
+    "legendN": "multiplicador (entero 1\u20139)",
+    "legendK": "potencia ternaria (exponente de 3)",
+    "legendM": "potencia geom\u00e9trica (exponente de \u03c0)",
+    "legendP": "potencia del n\u00famero \u00e1ureo (exponente de \u03c6)",
+    "legendQ": "potencia de crecimiento (exponente de e)",
+    "legendExample": "Ejemplo: 13 \u2248 1 \u00d7 3\u207b\u00b9 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b9 \u00d7 e\u00b3"
   },
   "stickyCta": {
     "invest": "Invertir Ahora",
