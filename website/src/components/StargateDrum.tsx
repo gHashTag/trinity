@@ -9,6 +9,7 @@ interface StargateDrumProps {
   isDecomposing: boolean;
   result: SingleFitResponse | null;
   highlightedConstant: string | null;
+  highlightedGlyphs?: number[];  // gematria: array of glyph indices to highlight
 }
 
 type Phase = 'idle' | 'spinning' | 'locking' | 'revealing' | 'complete';
@@ -18,7 +19,7 @@ type Phase = 'idle' | 'spinning' | 'locking' | 'revealing' | 'complete';
 const CX = 300;
 const CY = 300;
 const RING_R = 215;        // glyph orbit radius (slightly tighter for 27 glyphs)
-const GLYPH_R = 18;        // glyph circle radius
+const GLYPH_R = 24;        // glyph circle radius — fills the ring
 const CHEVRON_R = 272;     // chevron orbit radius — pushed out for bigger chevrons
 const CHEVRON_SIZE = 48;   // chevron V size — 2x bigger!
 const INNER_RING = 190;    // inner decorative ring
@@ -38,6 +39,13 @@ const COPTIC_GLYPHS = [
   '\u2C80', '\u2C82', '\u2C84', '\u2C86', '\u2C88', '\u2C8A', '\u2C8C', '\u2C8E', '\u2C90',
   '\u2C92', '\u2C94', '\u2C96', '\u2C98', '\u2C9A', '\u2C9C', '\u2C9E', '\u2CA0', '\u2CA2',
   '\u2CA4', '\u2CA6', '\u2CA8', '\u2CAA', '\u2CAC', '\u2CAE', '\u2CB0', '\u03E2', '\u03E4',
+];
+
+// Gematria values for each glyph (isopsephy)
+const GLYPH_VALUES = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9,
+  10, 20, 30, 40, 50, 60, 70, 80, 90,
+  100, 200, 300, 400, 500, 600, 700, 800, 900,
 ];
 
 // 5 chevrons evenly at 72° apart, starting from TOP (0°)
@@ -94,7 +102,7 @@ function errorBadge(pct: number) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-function StargateDrum({ constants, isDecomposing, result, highlightedConstant }: StargateDrumProps) {
+function StargateDrum({ constants, isDecomposing, result, highlightedConstant, highlightedGlyphs }: StargateDrumProps) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [locked, setLocked] = useState<boolean[]>([false, false, false, false, false]);
   const [spinAngle, setSpinAngle] = useState(0);
@@ -209,37 +217,42 @@ function StargateDrum({ constants, isDecomposing, result, highlightedConstant }:
           {COPTIC_GLYPHS.map((glyph, i) => {
             const angle = (i / 27) * 360;
             const { x, y } = polarToXY(angle, RING_R);
-            // First N glyphs map to actual constants (if loaded)
             const constant = i < constants.length ? constants[i] : null;
-            const isActive = constant !== null;
-            const isHighlighted = constant != null && highlightedConstant === constant.symbol;
-            const catColor = constant ? (CATEGORY_COLORS[constant.category] || '#888') : 'rgba(255,215,0,0.2)';
+            const isConstantHL = constant != null && highlightedConstant === constant.symbol;
+            const isGematriaHL = highlightedGlyphs?.includes(i) ?? false;
+            const isHL = isConstantHL || isGematriaHL;
 
             return (
               <g key={i}>
-                {isHighlighted && (
+                {isHL && (
                   <motion.circle
                     cx={x} cy={y} r={GLYPH_R + 5}
-                    fill="none" stroke="#ffd700" strokeWidth="2"
+                    fill="none" stroke={isGematriaHL ? '#00e599' : '#ffd700'} strokeWidth="2"
                     animate={{ opacity: [0.3, 1, 0.3], r: [GLYPH_R + 4, GLYPH_R + 8, GLYPH_R + 4] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   />
                 )}
                 <circle
                   cx={x} cy={y} r={GLYPH_R}
-                  fill="rgba(0,0,0,0.7)"
-                  stroke={catColor}
-                  strokeWidth={isHighlighted ? 2.5 : isActive ? 1.5 : 0.5}
-                  opacity={isHighlighted ? 1 : isActive ? 0.85 : 0.3}
+                  fill={isGematriaHL ? '#1a1a0a' : '#0a0a0a'}
+                  stroke={isGematriaHL ? '#00e599' : '#ffd700'}
+                  strokeWidth={isHL ? 2.5 : 1.5}
                 />
                 <text
-                  x={x} y={y + 1}
+                  x={x} y={y - 3}
                   textAnchor="middle" dominantBaseline="central"
-                  fill={isHighlighted ? '#ffd700' : isActive ? '#ddd' : 'rgba(255,215,0,0.15)'}
+                  fill={isHL ? '#fff' : '#ffd700'}
                   fontSize="14" fontFamily="serif"
-                  fontWeight={isHighlighted ? 'bold' : 'normal'}
                 >
                   {glyph}
+                </text>
+                <text
+                  x={x} y={y + 11}
+                  textAnchor="middle" dominantBaseline="central"
+                  fill={isGematriaHL ? '#00e599' : 'rgba(255,215,0,0.35)'}
+                  fontSize="8" fontFamily="monospace"
+                >
+                  {GLYPH_VALUES[i]}
                 </text>
               </g>
             );

@@ -633,6 +633,8 @@ pub fn runMathCommand(args: []const []const u8) void {
         runCosmosCommand();
     } else if (std.mem.eql(u8, sub, "engine") or std.mem.eql(u8, sub, "v3") or std.mem.eql(u8, sub, "about")) {
         runEngineCommand();
+    } else if (std.mem.eql(u8, sub, "gematria") or std.mem.eql(u8, sub, "gem") or std.mem.eql(u8, sub, "coptic")) {
+        runGematriaCommand(sub_args);
     } else if (std.mem.eql(u8, sub, "formula") or std.mem.eql(u8, sub, "sacred-formula") or std.mem.eql(u8, sub, "approximate") or std.mem.eql(u8, sub, "predict")) {
         runFormulaCommand();
         // --- Cycle 88: Particle Physics & Group Theory ---
@@ -700,6 +702,7 @@ fn printMathHelp() void {
     std.debug.print("  {s}cosmos{s}                      Cosmological constants + phi in nature\n", .{ GREEN, RESET });
     std.debug.print("  {s}engine{s}                      v3.0 Sacred Computation Engine status\n", .{ GREEN, RESET });
     std.debug.print("  {s}formula{s}                     Sacred Formula approximator V=n*3^k*pi^m*phi^p*e^q\n", .{ GREEN, RESET });
+    std.debug.print("  {s}gematria{s} <n|text>           Coptic gematria (27 glyphs, isopsephy 1-900)\n", .{ GREEN, RESET });
     std.debug.print("\n{s}PARTICLE PHYSICS (Cycle 88):{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}particles{s}                   Particle masses + sacred mass ratios + mixing angles\n", .{ GREEN, RESET });
     std.debug.print("  {s}groups{s}                      Group theory (E8, topology, sacred numbers, neuro, SC)\n", .{ GREEN, RESET });
@@ -3944,6 +3947,77 @@ fn printFit(name: []const u8, target: f64, fit: SacredFit) void {
         fit.value,
         mark, sym, fit.error_pct, RESET,
     });
+}
+
+fn runGematriaCommand(args: []const []const u8) void {
+    const gematria = @import("gematria.zig");
+    const allocator = std.heap.page_allocator;
+
+    if (args.len == 0) {
+        std.debug.print("\n{s}Coptic Gematria{s} {s}(27 = 3\xc2\xb3 glyphs){s}\n", .{ GOLDEN, RESET, GRAY, RESET });
+        std.debug.print("{s}================================{s}\n\n", .{ GRAY, RESET });
+        std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri math gematria {s}<number>{s}     Decompose number \xe2\x86\x92 Coptic glyphs\n", .{ GREEN, RESET });
+        std.debug.print("  tri math gematria {s}<text>{s}       Sum Coptic glyphs \xe2\x86\x92 number\n\n", .{ GREEN, RESET });
+        std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri math gem 137             \xe2\x86\x92 \xe2\xb2\xa4(100) + \xe2\xb2\x96(30) + \xe2\xb2\x8c(7)\n", .{});
+        std.debug.print("  tri math gem 999             \xe2\x86\x92 \xcf\xa4(900) + \xe2\xb2\xa2(90) + \xe2\xb2\x90(9)\n", .{});
+        std.debug.print("  tri math gem 42              \xe2\x86\x92 \xe2\xb2\x98(40) + \xe2\xb2\x82(2)\n\n", .{});
+        std.debug.print("{s}TABLE (3\xc2\xb3 = 27 values):{s}\n", .{ CYAN, RESET });
+        std.debug.print("  {s}Units  (matter):{s}   ", .{ GOLDEN, RESET });
+        for (0..9) |i| {
+            const e = gematria.COPTIC_TABLE[i];
+            var buf: [4]u8 = .{ 0, 0, 0, 0 };
+            const len = std.unicode.utf8Encode(e.codepoint, &buf) catch 0;
+            std.debug.print("{s}={d} ", .{ buf[0..len], e.value });
+        }
+        std.debug.print("\n  {s}Tens   (energy):{s}   ", .{ GOLDEN, RESET });
+        for (9..18) |i| {
+            const e = gematria.COPTIC_TABLE[i];
+            var buf: [4]u8 = .{ 0, 0, 0, 0 };
+            const len = std.unicode.utf8Encode(e.codepoint, &buf) catch 0;
+            std.debug.print("{s}={d} ", .{ buf[0..len], e.value });
+        }
+        std.debug.print("\n  {s}Hundreds (info):{s}   ", .{ GOLDEN, RESET });
+        for (18..27) |i| {
+            const e = gematria.COPTIC_TABLE[i];
+            var buf: [4]u8 = .{ 0, 0, 0, 0 };
+            const len = std.unicode.utf8Encode(e.codepoint, &buf) catch 0;
+            std.debug.print("{s}={d} ", .{ buf[0..len], e.value });
+        }
+        std.debug.print("\n\n{s}\xcf\x86\xc2\xb2 + 1/\xcf\x86\xc2\xb2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const input = args[0];
+
+    // Try parsing as number first
+    const maybe_num = std.fmt.parseInt(u32, input, 10) catch null;
+
+    if (maybe_num) |num| {
+        // Number → Glyphs mode
+        const glyphs = gematria.numberToGlyphs(allocator, num) catch {
+            std.debug.print("{s}Error: allocation failed{s}\n", .{ "\x1b[31m", RESET });
+            return;
+        };
+        defer allocator.free(glyphs);
+        gematria.printGematriaResult(.number_to_glyphs, glyphs, num);
+    } else {
+        // Text → Number mode
+        const total = gematria.textToGematriaValue(input);
+        const glyphs = gematria.textToGlyphs(allocator, input) catch {
+            std.debug.print("{s}Error: allocation failed{s}\n", .{ "\x1b[31m", RESET });
+            return;
+        };
+        defer allocator.free(glyphs);
+
+        if (total == 0) {
+            std.debug.print("\n{s}No Coptic glyphs found in input.{s}\n", .{ "\x1b[31m", RESET });
+            std.debug.print("Use Coptic Unicode characters (\xe2\xb2\x80-\xe2\xb3\xb0, \xcf\xa2-\xcf\xa4)\n\n", .{});
+            return;
+        }
+        gematria.printGematriaResult(.text_to_number, glyphs, total);
+    }
 }
 
 fn runFormulaCommand() void {

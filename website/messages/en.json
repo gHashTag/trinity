@@ -953,7 +953,12 @@
     "legendM": "geometry power (exponent of \u03c0)",
     "legendP": "golden ratio power (exponent of \u03c6)",
     "legendQ": "growth power (exponent of e)",
-    "legendExample": "Example: 13 \u2248 1 \u00d7 3\u207b\u00b9 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b9 \u00d7 e\u00b3"
+    "legendExample": "Example: 13 \u2248 1 \u00d7 3\u207b\u00b9 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b9 \u00d7 e\u00b3",
+    "modeFormula": "Number \u2192 Formula",
+    "modeGematria": "Gematria",
+    "gematriaPlaceholder": "Number or Coptic text...",
+    "gematriaDecompose": "Decode",
+    "sacredFit": "Sacred fit"
   },
   "stickyCta": {
     "invest": "Invest Now",
