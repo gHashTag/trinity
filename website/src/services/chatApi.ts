@@ -405,6 +405,83 @@ export async function fetchSacredFormula(): Promise<SacredFormulaResponse> {
   }
 }
 
+// ─── v3.0: Gematria API ─────────────────────────────────────────────────────
+
+export interface GematriaGlyph {
+  glyph: string;
+  index: number;
+  value: number;
+}
+
+export interface GematriaResponse {
+  input: string;
+  mode: 'number_to_glyphs' | 'text_to_number';
+  glyphs: GematriaGlyph[];
+  total: number;
+  sacred_fit?: SacredFit;
+  sacred_computed?: number;
+  sacred_error_pct?: number;
+}
+
+export async function fetchGematria(text: string): Promise<GematriaResponse> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/gematria`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`Gematria API error: ${res.status}`);
+    return await res.json();
+  } catch {
+    // Offline fallback: client-side decomposition
+    const GLYPH_VALUES = [
+      1,2,3,4,5,6,7,8,9,
+      10,20,30,40,50,60,70,80,90,
+      100,200,300,400,500,600,700,800,900
+    ];
+    const GLYPH_CHARS = [
+      '\u2C80','\u2C82','\u2C84','\u2C86','\u2C88','\u2C8A','\u2C8C','\u2C8E','\u2C90',
+      '\u2C92','\u2C94','\u2C96','\u2C98','\u2C9A','\u2C9C','\u2C9E','\u2CA0','\u2CA2',
+      '\u2CA4','\u2CA6','\u2CA8','\u2CAA','\u2CAC','\u2CAE','\u2CB0','\u03E2','\u03E4',
+    ];
+
+    const num = parseInt(text, 10);
+    if (!isNaN(num) && num > 0) {
+      const glyphs: GematriaGlyph[] = [];
+      let remaining = num;
+      // Hundreds
+      while (remaining >= 100) {
+        for (let i = 26; i >= 18; i--) {
+          if (GLYPH_VALUES[i] <= remaining) {
+            glyphs.push({ glyph: GLYPH_CHARS[i], index: i, value: GLYPH_VALUES[i] });
+            remaining -= GLYPH_VALUES[i];
+            break;
+          }
+        }
+        if (remaining >= 100 && !glyphs.length) break;
+      }
+      // Tens
+      if (remaining >= 10) {
+        for (let i = 17; i >= 9; i--) {
+          if (GLYPH_VALUES[i] <= remaining) {
+            glyphs.push({ glyph: GLYPH_CHARS[i], index: i, value: GLYPH_VALUES[i] });
+            remaining -= GLYPH_VALUES[i];
+            break;
+          }
+        }
+      }
+      // Units
+      if (remaining >= 1 && remaining <= 9) {
+        const idx = remaining - 1;
+        glyphs.push({ glyph: GLYPH_CHARS[idx], index: idx, value: GLYPH_VALUES[idx] });
+      }
+      return { input: text, mode: 'number_to_glyphs', glyphs, total: num };
+    }
+    return { input: text, mode: 'text_to_number', glyphs: [], total: 0 };
+  }
+}
+
 export async function fitSingleValue(value: number): Promise<SingleFitResponse> {
   try {
     const res = await fetch(`${BASE_URL}/api/sacred-formula/compute`, {

@@ -953,7 +953,12 @@
     "legendM": "степень геометрии (показатель \u03c0)",
     "legendP": "степень золотого сечения (показатель \u03c6)",
     "legendQ": "степень роста (показатель e)",
-    "legendExample": "Пример: 13 \u2248 1 \u00d7 3\u207b\u00b9 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b9 \u00d7 e\u00b3"
+    "legendExample": "Пример: 13 \u2248 1 \u00d7 3\u207b\u00b9 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b9 \u00d7 e\u00b3",
+    "modeFormula": "Число \u2192 Формула",
+    "modeGematria": "Гематрия",
+    "gematriaPlaceholder": "Число или коптский текст...",
+    "gematriaDecompose": "Расшифровать",
+    "sacredFit": "Священная формула"
   },
   "stickyCta": {
     "invest": "Инвестировать",
