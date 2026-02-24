@@ -43,14 +43,51 @@ pub const SearchBounds = struct {
     q_range: [2]i8 = .{ -3, 3 },
 };
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// sacred-spec-v2 Data Types (Sacred Language Model)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const GematriaGlyph = struct {
+    glyph: []const u8, // UTF-8 encoded glyph
+    codepoint: u21, // Unicode codepoint
+    value: u16, // Numeric value (1-900)
+    kingdom: []const u8, // "matter", "energy", "information"
+};
+
+pub const TokenType = struct {
+    name: []const u8,
+    id: u8,
+    description: []const u8,
+};
+
+pub const TokenizerConfig = struct {
+    max_token_length: u16 = 128,
+    token_types: ArrayList(TokenType) = .{},
+};
+
+pub const EmbeddingConfig = struct {
+    dimension: u16 = 64,
+    sacred_formula_dims: u8 = 5,
+    kingdom_dims: u8 = 3,
+    positional_dims: u8 = 8,
+    proximity_dims: u8 = 16,
+    distributional_dims: u8 = 32,
+    normalization: []const u8 = "l2",
+};
+
 pub const SacredSpec = struct {
     name: []const u8,
     version: []const u8,
     description: []const u8,
+    format_version: u8, // 1 = sacred-spec-v1, 2 = sacred-spec-v2
     bases: [4]f64, // TRINITY, PI, PHI, E (fixed order)
     search: SearchBounds,
     constants: ArrayList(SacredConstant),
     predictions: ArrayList(SacredPrediction),
+    // v2 fields (Sacred Language Model)
+    gematria_table: ArrayList(GematriaGlyph),
+    tokenizer: TokenizerConfig,
+    embedding: EmbeddingConfig,
     allocator: Allocator,
 
     pub fn init(allocator: Allocator) SacredSpec {
@@ -58,10 +95,14 @@ pub const SacredSpec = struct {
             .name = "",
             .version = "",
             .description = "",
+            .format_version = 1,
             .bases = .{ 3.0, std.math.pi, 1.6180339887498948482, std.math.e },
             .search = .{},
             .constants = .{},
             .predictions = .{},
+            .gematria_table = .{},
+            .tokenizer = .{},
+            .embedding = .{},
             .allocator = allocator,
         };
     }
@@ -69,6 +110,8 @@ pub const SacredSpec = struct {
     pub fn deinit(self: *SacredSpec) void {
         self.constants.deinit(self.allocator);
         self.predictions.deinit(self.allocator);
+        self.gematria_table.deinit(self.allocator);
+        self.tokenizer.token_types.deinit(self.allocator);
     }
 
     pub fn constantCount(self: *const SacredSpec) usize {
@@ -77,6 +120,14 @@ pub const SacredSpec = struct {
 
     pub fn predictionCount(self: *const SacredSpec) usize {
         return self.predictions.items.len;
+    }
+
+    pub fn glyphCount(self: *const SacredSpec) usize {
+        return self.gematria_table.items.len;
+    }
+
+    pub fn isV2(self: *const SacredSpec) bool {
+        return self.format_version >= 2;
     }
 };
 
@@ -122,7 +173,11 @@ pub const TriSpecParser = struct {
             if (std.mem.eql(u8, key, "format")) {
                 self.skipInlineWhitespace();
                 const val = self.readValue();
-                if (!std.mem.eql(u8, val, "sacred-spec-v1")) {
+                if (std.mem.eql(u8, val, "sacred-spec-v1")) {
+                    spec.format_version = 1;
+                } else if (std.mem.eql(u8, val, "sacred-spec-v2")) {
+                    spec.format_version = 2;
+                } else {
                     return error.UnsupportedFormat;
                 }
                 self.skipToNextLine();
@@ -150,6 +205,15 @@ pub const TriSpecParser = struct {
             } else if (std.mem.eql(u8, key, "predictions")) {
                 self.skipToNextLine();
                 try self.parsePredictions(&spec.predictions);
+            } else if (std.mem.eql(u8, key, "gematria_table")) {
+                self.skipToNextLine();
+                try self.parseGematriaTable(&spec.gematria_table);
+            } else if (std.mem.eql(u8, key, "tokenizer")) {
+                self.skipToNextLine();
+                self.parseTokenizerConfig(&spec.tokenizer);
+            } else if (std.mem.eql(u8, key, "embedding")) {
+                self.skipToNextLine();
+                self.parseEmbeddingConfig(&spec.embedding);
             } else {
                 self.skipToNextLine();
             }
@@ -311,6 +375,192 @@ pub const TriSpecParser = struct {
             } else {
                 self.skipToNextLine();
             }
+        }
+    }
+
+    // ─── v2 Section Parsers ────────────────────────────────────────────────
+
+    fn parseGematriaTable(self: *Self, table: *ArrayList(GematriaGlyph)) Allocator.Error!void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 2) break;
+            self.pos += indent;
+
+            if (self.pos + 1 < self.source.len and self.source[self.pos] == '-' and self.source[self.pos + 1] == ' ') {
+                self.pos += 2;
+                var glyph_entry = GematriaGlyph{
+                    .glyph = "",
+                    .codepoint = 0,
+                    .value = 0,
+                    .kingdom = "",
+                };
+
+                self.parseGlyphField(&glyph_entry);
+                self.skipToNextLine();
+
+                while (self.pos < self.source.len) {
+                    self.skipEmptyLinesAndComments();
+                    if (self.pos >= self.source.len) break;
+
+                    const field_indent = self.countIndent();
+                    if (field_indent < 4) break;
+                    self.pos += field_indent;
+                    if (self.pos < self.source.len and self.source[self.pos] == '-') break;
+
+                    self.parseGlyphField(&glyph_entry);
+                    self.skipToNextLine();
+                }
+
+                try table.append(self.allocator, glyph_entry);
+            } else {
+                self.skipToNextLine();
+            }
+        }
+    }
+
+    fn parseTokenizerConfig(self: *Self, config: *TokenizerConfig) void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 2) break;
+            self.pos += indent;
+
+            const key = self.readKey();
+            if (self.pos < self.source.len and self.source[self.pos] == ':') {
+                self.pos += 1;
+            }
+            self.skipInlineWhitespace();
+
+            if (std.mem.eql(u8, key, "max_token_length")) {
+                const val_str = self.readValue();
+                config.max_token_length = std.fmt.parseInt(u16, val_str, 10) catch 128;
+                self.skipToNextLine();
+            } else if (std.mem.eql(u8, key, "token_types")) {
+                self.skipToNextLine();
+                self.parseTokenTypes(&config.token_types);
+            } else {
+                self.skipToNextLine();
+            }
+        }
+    }
+
+    fn parseTokenTypes(self: *Self, types: *ArrayList(TokenType)) void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 4) break;
+            self.pos += indent;
+
+            if (self.pos + 1 < self.source.len and self.source[self.pos] == '-' and self.source[self.pos + 1] == ' ') {
+                self.pos += 2;
+                var tt = TokenType{ .name = "", .id = 0, .description = "" };
+
+                self.parseTokenTypeField(&tt);
+                self.skipToNextLine();
+
+                while (self.pos < self.source.len) {
+                    self.skipEmptyLinesAndComments();
+                    if (self.pos >= self.source.len) break;
+
+                    const field_indent = self.countIndent();
+                    if (field_indent < 6) break;
+                    self.pos += field_indent;
+                    if (self.pos < self.source.len and self.source[self.pos] == '-') break;
+
+                    self.parseTokenTypeField(&tt);
+                    self.skipToNextLine();
+                }
+
+                types.append(self.allocator, tt) catch {};
+            } else {
+                self.skipToNextLine();
+            }
+        }
+    }
+
+    fn parseEmbeddingConfig(self: *Self, config: *EmbeddingConfig) void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 2) break;
+            self.pos += indent;
+
+            const key = self.readKey();
+            if (self.pos < self.source.len and self.source[self.pos] == ':') {
+                self.pos += 1;
+            }
+            self.skipInlineWhitespace();
+            const val_str = self.readValue();
+
+            if (std.mem.eql(u8, key, "dimension")) {
+                config.dimension = std.fmt.parseInt(u16, val_str, 10) catch 64;
+            } else if (std.mem.eql(u8, key, "sacred_formula_dims")) {
+                config.sacred_formula_dims = std.fmt.parseInt(u8, val_str, 10) catch 5;
+            } else if (std.mem.eql(u8, key, "kingdom_dims")) {
+                config.kingdom_dims = std.fmt.parseInt(u8, val_str, 10) catch 3;
+            } else if (std.mem.eql(u8, key, "positional_dims")) {
+                config.positional_dims = std.fmt.parseInt(u8, val_str, 10) catch 8;
+            } else if (std.mem.eql(u8, key, "proximity_dims")) {
+                config.proximity_dims = std.fmt.parseInt(u8, val_str, 10) catch 16;
+            } else if (std.mem.eql(u8, key, "distributional_dims")) {
+                config.distributional_dims = std.fmt.parseInt(u8, val_str, 10) catch 32;
+            } else if (std.mem.eql(u8, key, "normalization")) {
+                config.normalization = val_str;
+            }
+            self.skipToNextLine();
+        }
+    }
+
+    // ─── v2 Field Parsers ───────────────────────────────────────────────────
+
+    fn parseGlyphField(self: *Self, g: *GematriaGlyph) void {
+        const key = self.readKey();
+        if (self.pos < self.source.len and self.source[self.pos] == ':') {
+            self.pos += 1;
+        }
+        self.skipInlineWhitespace();
+
+        if (std.mem.eql(u8, key, "glyph")) {
+            g.glyph = self.readQuotedValue();
+        } else if (std.mem.eql(u8, key, "codepoint")) {
+            const val_str = self.readValue();
+            // Parse hex codepoint (0x2C80 format)
+            if (val_str.len > 2 and val_str[0] == '0' and (val_str[1] == 'x' or val_str[1] == 'X')) {
+                g.codepoint = std.fmt.parseInt(u21, val_str[2..], 16) catch 0;
+            } else {
+                g.codepoint = std.fmt.parseInt(u21, val_str, 10) catch 0;
+            }
+        } else if (std.mem.eql(u8, key, "value")) {
+            const val_str = self.readValue();
+            g.value = std.fmt.parseInt(u16, val_str, 10) catch 0;
+        } else if (std.mem.eql(u8, key, "kingdom")) {
+            g.kingdom = self.readQuotedValue();
+        }
+    }
+
+    fn parseTokenTypeField(self: *Self, tt: *TokenType) void {
+        const key = self.readKey();
+        if (self.pos < self.source.len and self.source[self.pos] == ':') {
+            self.pos += 1;
+        }
+        self.skipInlineWhitespace();
+
+        if (std.mem.eql(u8, key, "name")) {
+            tt.name = self.readQuotedValue();
+        } else if (std.mem.eql(u8, key, "id")) {
+            const val_str = self.readValue();
+            tt.id = std.fmt.parseInt(u8, val_str, 10) catch 0;
+        } else if (std.mem.eql(u8, key, "description")) {
+            tt.description = self.readQuotedValue();
         }
     }
 
@@ -627,4 +877,138 @@ test "reject wrong format" {
     var parser = TriSpecParser.init(std.testing.allocator, source);
     const result = parser.parse();
     try std.testing.expectError(error.UnsupportedFormat, result);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v2 Tests (Sacred Language Model)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "parse v2 gematria table" {
+    const source =
+        \\format: sacred-spec-v2
+        \\name: sacred_language_model
+        \\version: "1.0.0"
+        \\
+        \\gematria_table:
+        \\  - glyph: "A"
+        \\    codepoint: 0x2C80
+        \\    value: 1
+        \\    kingdom: "matter"
+        \\
+        \\  - glyph: "B"
+        \\    codepoint: 0x2C82
+        \\    value: 2
+        \\    kingdom: "matter"
+        \\
+        \\  - glyph: "S"
+        \\    codepoint: 0x2CA4
+        \\    value: 100
+        \\    kingdom: "information"
+    ;
+
+    var parser = TriSpecParser.init(std.testing.allocator, source);
+    var spec = try parser.parse();
+    defer spec.deinit();
+
+    try std.testing.expect(spec.isV2());
+    try std.testing.expectEqual(@as(usize, 3), spec.glyphCount());
+    try std.testing.expectEqual(@as(u21, 0x2C80), spec.gematria_table.items[0].codepoint);
+    try std.testing.expectEqual(@as(u16, 1), spec.gematria_table.items[0].value);
+    try std.testing.expectEqualStrings("matter", spec.gematria_table.items[0].kingdom);
+    try std.testing.expectEqual(@as(u16, 100), spec.gematria_table.items[2].value);
+    try std.testing.expectEqualStrings("information", spec.gematria_table.items[2].kingdom);
+}
+
+test "parse v2 embedding config" {
+    const source =
+        \\format: sacred-spec-v2
+        \\name: test_embed
+        \\
+        \\embedding:
+        \\  dimension: 128
+        \\  sacred_formula_dims: 5
+        \\  kingdom_dims: 3
+        \\  positional_dims: 16
+        \\  proximity_dims: 32
+        \\  distributional_dims: 72
+        \\  normalization: l2
+    ;
+
+    var parser = TriSpecParser.init(std.testing.allocator, source);
+    var spec = try parser.parse();
+    defer spec.deinit();
+
+    try std.testing.expectEqual(@as(u16, 128), spec.embedding.dimension);
+    try std.testing.expectEqual(@as(u8, 5), spec.embedding.sacred_formula_dims);
+    try std.testing.expectEqual(@as(u8, 3), spec.embedding.kingdom_dims);
+    try std.testing.expectEqual(@as(u8, 16), spec.embedding.positional_dims);
+    try std.testing.expectEqual(@as(u8, 32), spec.embedding.proximity_dims);
+    try std.testing.expectEqual(@as(u8, 72), spec.embedding.distributional_dims);
+}
+
+test "parse v2 tokenizer config" {
+    const source =
+        \\format: sacred-spec-v2
+        \\name: test_tok
+        \\
+        \\tokenizer:
+        \\  max_token_length: 256
+        \\  token_types:
+        \\    - name: "coptic_glyph"
+        \\      id: 1
+        \\      description: "Coptic letter"
+        \\    - name: "word"
+        \\      id: 2
+        \\      description: "Word token"
+    ;
+
+    var parser = TriSpecParser.init(std.testing.allocator, source);
+    var spec = try parser.parse();
+    defer spec.deinit();
+
+    try std.testing.expectEqual(@as(u16, 256), spec.tokenizer.max_token_length);
+    try std.testing.expectEqual(@as(usize, 2), spec.tokenizer.token_types.items.len);
+    try std.testing.expectEqualStrings("coptic_glyph", spec.tokenizer.token_types.items[0].name);
+    try std.testing.expectEqual(@as(u8, 1), spec.tokenizer.token_types.items[0].id);
+    try std.testing.expectEqual(@as(u8, 2), spec.tokenizer.token_types.items[1].id);
+}
+
+test "v2 with constants and gematria together" {
+    const source =
+        \\format: sacred-spec-v2
+        \\name: combined
+        \\version: "1.0.0"
+        \\
+        \\bases:
+        \\  TRINITY: 3.0
+        \\  PI: 3.14159265358979323846
+        \\  PHI: 1.6180339887498948482
+        \\  E: 2.71828182845904523536
+        \\
+        \\gematria_table:
+        \\  - glyph: "A"
+        \\    codepoint: 0x2C80
+        \\    value: 1
+        \\    kingdom: "matter"
+        \\
+        \\constants:
+        \\  - name: "alpha"
+        \\    symbol: "ALPHA"
+        \\    value: 137.036
+        \\    category: "physics"
+        \\    description: "Fine structure"
+        \\
+        \\embedding:
+        \\  dimension: 64
+    ;
+
+    var parser = TriSpecParser.init(std.testing.allocator, source);
+    var spec = try parser.parse();
+    defer spec.deinit();
+
+    try std.testing.expect(spec.isV2());
+    try std.testing.expectEqual(@as(usize, 1), spec.glyphCount());
+    try std.testing.expectEqual(@as(usize, 1), spec.constantCount());
+    try std.testing.expectEqual(@as(u16, 64), spec.embedding.dimension);
+    try std.testing.expectApproxEqAbs(@as(f64, 3.0), spec.bases[0], 1e-10);
 }

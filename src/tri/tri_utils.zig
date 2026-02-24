@@ -202,6 +202,9 @@ pub const Command = enum {
     math_verify,
     math_bench,
     math_compare,
+    // Cycle 91: Sacred Language Model
+    embed,
+    sacred_search,
     // Cycle 84: $TRI Rewards
     rewards,
     // Cycle 85: Dashboard
@@ -922,6 +925,9 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "math-verify") or std.mem.eql(u8, arg, "trinity-verify")) return .math_verify;
     if (std.mem.eql(u8, arg, "math-bench") or std.mem.eql(u8, arg, "sacred-bench")) return .math_bench;
     if (std.mem.eql(u8, arg, "math-compare") or std.mem.eql(u8, arg, "compare")) return .math_compare;
+    // Cycle 91: Sacred Language Model
+    if (std.mem.eql(u8, arg, "embed") or std.mem.eql(u8, arg, "embedding")) return .embed;
+    if (std.mem.eql(u8, arg, "sacred-search") or std.mem.eql(u8, arg, "ss")) return .sacred_search;
     // Cycle 84: $TRI Rewards
     if (std.mem.eql(u8, arg, "rewards") or std.mem.eql(u8, arg, "tri-rewards") or std.mem.eql(u8, arg, "tokens")) return .rewards;
     // Cycle 85: Dashboard

@@ -125,11 +125,22 @@ fn runTriSpecGen(allocator: std.mem.Allocator, input_path: []const u8, output_pa
     defer spec.deinit();
 
     std.debug.print("  Name: {s} v{s}\n", .{ spec.name, spec.version });
+    std.debug.print("  Format: sacred-spec-v{d}\n", .{spec.format_version});
     std.debug.print("  Constants: {d}\n", .{spec.constantCount()});
-    std.debug.print("  Predictions: {d}\n\n", .{spec.predictionCount()});
 
-    // Generate Zig output
-    const default_output = "trinity/output/sacred_formula.zig";
+    if (spec.isV2()) {
+        std.debug.print("  Glyphs: {d}\n", .{spec.glyphCount()});
+        std.debug.print("  Embedding dim: {d}\n", .{spec.embedding.dimension});
+    } else {
+        std.debug.print("  Predictions: {d}\n", .{spec.predictionCount()});
+    }
+    std.debug.print("\n", .{});
+
+    // Determine output path
+    const default_output = if (spec.isV2())
+        "trinity/output/sacred_language_model.zig"
+    else
+        "trinity/output/sacred_formula.zig";
     const out_path = output_path orelse default_output;
 
     // Ensure output directory exists
@@ -142,6 +153,37 @@ fn runTriSpecGen(allocator: std.mem.Allocator, input_path: []const u8, output_pa
     defer out.deinit(allocator);
     const w = out.writer(allocator);
 
+    if (spec.isV2()) {
+        genSacredLanguageModel(w, &spec, input_path);
+    } else {
+        genSacredFormulaV1(w, &spec, input_path);
+    }
+
+    // Write to file at once
+    const file = std.fs.cwd().createFile(out_path, .{}) catch |err| {
+        std.debug.print("{s}Error creating output: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer file.close();
+    file.writeAll(out.items) catch return;
+
+    std.debug.print("  Output: {s}\n", .{out_path});
+    if (spec.isV2()) {
+        std.debug.print("{s}✓ Sacred Language Model codegen complete! ({d} glyphs, {d} constants, {d}-dim embeddings){s}\n", .{
+            GREEN, spec.glyphCount(), spec.constantCount(), spec.embedding.dimension, RESET,
+        });
+    } else {
+        std.debug.print("{s}✓ Sacred spec codegen complete! ({d} constants, {d} predictions){s}\n", .{
+            GREEN, spec.constantCount(), spec.predictionCount(), RESET,
+        });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// V1 Codegen (Sacred Formula — constants + predictions)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn genSacredFormulaV1(w: anytype, spec: *const @import("tri_spec_parser.zig").SacredSpec, input_path: []const u8) void {
     // Header
     std.fmt.format(w, "// Generated from {s} — DO NOT EDIT\n", .{input_path}) catch return;
     w.writeAll("// Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q\n\n") catch return;
@@ -168,22 +210,385 @@ fn runTriSpecGen(allocator: std.mem.Allocator, input_path: []const u8, output_pa
         std.fmt.format(w, "    .{{ .name = \"{s}\", .formula = \"{s}\", .n = {d}, .k = {d}, .m = {d}, .p = {d}, .q = {d}, .unit = \"{s}\" }},\n", .{ p.name, p.formula, p.n, p.k, p.m, p.p, p.q, p.unit }) catch return;
     }
     w.writeAll("};\n") catch return;
+}
 
-    // Write to file at once
-    const file = std.fs.cwd().createFile(out_path, .{}) catch |err| {
-        std.debug.print("{s}Error creating output: {}{s}\n", .{ RED, err, RESET });
-        return;
-    };
-    defer file.close();
-    file.writeAll(out.items) catch return;
+// ═══════════════════════════════════════════════════════════════════════════════
+// V2 Codegen (Sacred Language Model — tokenizer + embeddings)
+// ═══════════════════════════════════════════════════════════════════════════════
 
-    std.debug.print("  Output: {s}\n", .{out_path});
-    std.debug.print("{s}✓ Sacred spec codegen complete! ({d} constants, {d} predictions){s}\n", .{
-        GREEN,
-        spec.constantCount(),
-        spec.predictionCount(),
-        RESET,
-    });
+fn genSacredLanguageModel(w: anytype, spec: *const @import("tri_spec_parser.zig").SacredSpec, input_path: []const u8) void {
+    // ── Header ──────────────────────────────────────────────────────────────
+    std.fmt.format(w, "// Generated from {s} — DO NOT EDIT\n", .{input_path}) catch return;
+    w.writeAll("// Sacred Language Model: Gematria Tokenizer + Sacred Formula Embeddings\n") catch return;
+    w.writeAll("// φ² + 1/φ² = 3 = TRINITY\n\n") catch return;
+    w.writeAll("const std = @import(\"std\");\nconst math = std.math;\n\n") catch return;
+
+    // ── Sacred Formula Bases ────────────────────────────────────────────────
+    std.fmt.format(w, "pub const TRINITY: f64 = {d:.20};\n", .{spec.bases[0]}) catch return;
+    std.fmt.format(w, "pub const PI: f64 = {d:.20};\n", .{spec.bases[1]}) catch return;
+    std.fmt.format(w, "pub const PHI: f64 = {d:.20};\n", .{spec.bases[2]}) catch return;
+    std.fmt.format(w, "pub const E_CONST: f64 = {d:.20};\n\n", .{spec.bases[3]}) catch return;
+
+    // ── Embedding Dimension ─────────────────────────────────────────────────
+    std.fmt.format(w, "pub const EMBEDDING_DIM: usize = {d};\n", .{spec.embedding.dimension}) catch return;
+    std.fmt.format(w, "pub const SACRED_FORMULA_DIMS: usize = {d};\n", .{spec.embedding.sacred_formula_dims}) catch return;
+    std.fmt.format(w, "pub const KINGDOM_DIMS: usize = {d};\n", .{spec.embedding.kingdom_dims}) catch return;
+    std.fmt.format(w, "pub const POSITIONAL_DIMS: usize = {d};\n", .{spec.embedding.positional_dims}) catch return;
+    std.fmt.format(w, "pub const PROXIMITY_DIMS: usize = {d};\n", .{spec.embedding.proximity_dims}) catch return;
+    std.fmt.format(w, "pub const DISTRIBUTIONAL_DIMS: usize = {d};\n\n", .{spec.embedding.distributional_dims}) catch return;
+
+    // ── Gematria Glyph Table ────────────────────────────────────────────────
+    w.writeAll("pub const GlyphEntry = struct {\n") catch return;
+    w.writeAll("    codepoint: u21,\n    value: u16,\n    kingdom: Kingdom,\n};\n\n") catch return;
+    w.writeAll("pub const Kingdom = enum { matter, energy, information };\n\n") catch return;
+
+    std.fmt.format(w, "pub const GLYPH_COUNT: usize = {d};\n\n", .{spec.gematria_table.items.len}) catch return;
+    w.writeAll("pub const glyph_table = [_]GlyphEntry{\n") catch return;
+    for (spec.gematria_table.items) |g| {
+        const kingdom_str = if (std.mem.eql(u8, g.kingdom, "matter"))
+            "matter"
+        else if (std.mem.eql(u8, g.kingdom, "energy"))
+            "energy"
+        else
+            "information";
+        std.fmt.format(w, "    .{{ .codepoint = 0x{X:0>4}, .value = {d}, .kingdom = .{s} }},\n", .{ g.codepoint, g.value, kingdom_str }) catch return;
+    }
+    w.writeAll("};\n\n") catch return;
+
+    // ── Sacred Constants for Proximity ───────────────────────────────────────
+    w.writeAll("pub const SacredConstant = struct { name: []const u8, symbol: []const u8, value: f64, category: []const u8 };\n\n") catch return;
+    std.fmt.format(w, "pub const sacred_constants = [_]SacredConstant{{\n", .{}) catch return;
+    for (spec.constants.items) |c| {
+        // Use scientific notation for very large/small values
+        if (@abs(c.value) > 1e15 or (@abs(c.value) < 1e-6 and c.value != 0)) {
+            std.fmt.format(w, "    .{{ .name = \"{s}\", .symbol = \"{s}\", .value = {e}, .category = \"{s}\" }},\n", .{ c.name, c.symbol, c.value, c.category }) catch return;
+        } else {
+            std.fmt.format(w, "    .{{ .name = \"{s}\", .symbol = \"{s}\", .value = {d}, .category = \"{s}\" }},\n", .{ c.name, c.symbol, c.value, c.category }) catch return;
+        }
+    }
+    w.writeAll("};\n\n") catch return;
+
+    // ── Token Type ──────────────────────────────────────────────────────────
+    w.writeAll("pub const TokenType = enum(u8) {\n") catch return;
+    for (spec.tokenizer.token_types.items) |tt| {
+        std.fmt.format(w, "    {s} = {d},\n", .{ tt.name, tt.id }) catch return;
+    }
+    w.writeAll("};\n\n") catch return;
+
+    w.writeAll("pub const Token = struct {\n") catch return;
+    w.writeAll("    token_type: TokenType,\n") catch return;
+    w.writeAll("    text: []const u8,\n") catch return;
+    w.writeAll("    gematria_value: u32,\n") catch return;
+    w.writeAll("    glyph_index: ?u8,\n") catch return;
+    w.writeAll("};\n\n") catch return;
+
+    // ── Glyph Lookup ────────────────────────────────────────────────────────
+    w.writeAll(
+        \\pub fn glyphLookup(codepoint: u21) ?struct { value: u16, index: u8, kingdom: Kingdom } {
+        \\    for (glyph_table, 0..) |entry, i| {
+        \\        if (entry.codepoint == codepoint or entry.codepoint + 1 == codepoint) {
+        \\            return .{ .value = entry.value, .index = @intCast(i), .kingdom = entry.kingdom };
+        \\        }
+        \\    }
+        \\    return null;
+        \\}
+        \\
+        \\
+    ) catch return;
+
+    // ── Sacred Tokenizer ────────────────────────────────────────────────────
+    w.writeAll(
+        \\pub fn tokenize(allocator: std.mem.Allocator, text: []const u8) ![]Token {
+        \\    var tokens: std.ArrayListUnmanaged(Token) = .{};
+        \\    var i: usize = 0;
+        \\
+        \\    while (i < text.len) {
+        \\        // Skip whitespace
+        \\        if (text[i] == ' ' or text[i] == '\t' or text[i] == '\n' or text[i] == '\r') {
+        \\            i += 1;
+        \\            continue;
+        \\        }
+        \\
+        \\        // Try Coptic glyph (multi-byte UTF-8)
+        \\        if (text[i] >= 0x80) {
+        \\            const cp_len = std.unicode.utf8ByteSequenceLength(text[i]) catch 1;
+        \\            if (i + cp_len <= text.len) {
+        \\                const cp = std.unicode.utf8Decode(text[i..][0..cp_len]) catch 0xFFFD;
+        \\                if (glyphLookup(cp)) |glyph| {
+        \\                    try tokens.append(allocator, .{
+        \\                        .token_type = .coptic_glyph,
+        \\                        .text = text[i..][0..cp_len],
+        \\                        .gematria_value = glyph.value,
+        \\                        .glyph_index = glyph.index,
+        \\                    });
+        \\                    i += cp_len;
+        \\                    continue;
+        \\                }
+        \\            }
+        \\            i += 1;
+        \\            continue;
+        \\        }
+        \\
+        \\        // Number
+        \\        if (text[i] >= '0' and text[i] <= '9') {
+        \\            const start = i;
+        \\            while (i < text.len and ((text[i] >= '0' and text[i] <= '9') or text[i] == '.')) : (i += 1) {}
+        \\            const num_str = text[start..i];
+        \\            const num_val: u32 = std.fmt.parseInt(u32, num_str, 10) catch 0;
+        \\            try tokens.append(allocator, .{
+        \\                .token_type = .number,
+        \\                .text = num_str,
+        \\                .gematria_value = num_val,
+        \\                .glyph_index = null,
+        \\            });
+        \\            continue;
+        \\        }
+        \\
+        \\        // Symbol
+        \\        if (text[i] == '+' or text[i] == '-' or text[i] == '*' or text[i] == '/' or
+        \\            text[i] == '^' or text[i] == '=' or text[i] == '(' or text[i] == ')') {
+        \\            try tokens.append(allocator, .{
+        \\                .token_type = .symbol,
+        \\                .text = text[i..][0..1],
+        \\                .gematria_value = 0,
+        \\                .glyph_index = null,
+        \\            });
+        \\            i += 1;
+        \\            continue;
+        \\        }
+        \\
+        \\        // Word (ASCII)
+        \\        if ((text[i] >= 'a' and text[i] <= 'z') or (text[i] >= 'A' and text[i] <= 'Z') or text[i] == '_') {
+        \\            const start = i;
+        \\            while (i < text.len and ((text[i] >= 'a' and text[i] <= 'z') or
+        \\                (text[i] >= 'A' and text[i] <= 'Z') or
+        \\                (text[i] >= '0' and text[i] <= '9') or text[i] == '_')) : (i += 1) {}
+        \\            // Compute word gematria: sum of letter positions (A=1, B=2, ...)
+        \\            var word_gem: u32 = 0;
+        \\            for (text[start..i]) |ch| {
+        \\                if (ch >= 'a' and ch <= 'z') word_gem += (ch - 'a' + 1);
+        \\                if (ch >= 'A' and ch <= 'Z') word_gem += (ch - 'A' + 1);
+        \\            }
+        \\            try tokens.append(allocator, .{
+        \\                .token_type = .word,
+        \\                .text = text[start..i],
+        \\                .gematria_value = word_gem,
+        \\                .glyph_index = null,
+        \\            });
+        \\            continue;
+        \\        }
+        \\
+        \\        // Skip unknown
+        \\        i += 1;
+        \\    }
+        \\
+        \\    return tokens.toOwnedSlice(allocator);
+        \\}
+        \\
+        \\
+    ) catch return;
+
+    // ── Sacred Formula Search ───────────────────────────────────────────────
+    w.writeAll(
+        \\pub const FormulaFit = struct {
+        \\    n: i8, k: i8, m: i8, p: i8, q: i8,
+        \\    computed: f64,
+        \\    error_pct: f64,
+        \\};
+        \\
+        \\pub fn findBestFormula(target: f64) FormulaFit {
+        \\    var best = FormulaFit{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0, .computed = 3.0, .error_pct = 100.0 };
+        \\    if (target == 0) return best;
+        \\
+        \\    var n: i8 = 1;
+        \\    while (n <= 9) : (n += 1) {
+        \\        var k: i8 = -4;
+        \\        while (k <= 4) : (k += 1) {
+        \\            var m: i8 = -3;
+        \\            while (m <= 3) : (m += 1) {
+        \\                var p: i8 = -4;
+        \\                while (p <= 4) : (p += 1) {
+        \\                    var q: i8 = -3;
+        \\                    while (q <= 3) : (q += 1) {
+        \\                        const val = @as(f64, @floatFromInt(n)) * powF(TRINITY, k) * powF(PI, m) * powF(PHI, p) * powF(E_CONST, q);
+        \\                        const err = @abs(val - target) / @abs(target) * 100.0;
+        \\                        if (err < best.error_pct) {
+        \\                            best = .{ .n = n, .k = k, .m = m, .p = p, .q = q, .computed = val, .error_pct = err };
+        \\                        }
+        \\                        // inner loop continues
+        \\                    }
+        \\                }
+        \\            }
+        \\        }
+        \\    }
+        \\    return best;
+        \\}
+        \\
+        \\fn powF(base: f64, exp: i8) f64 {
+        \\    if (exp == 0) return 1.0;
+        \\    var result: f64 = 1.0;
+        \\    const abs_exp: u8 = if (exp < 0) @intCast(-exp) else @intCast(exp);
+        \\    for (0..abs_exp) |_| result *= base;
+        \\    return if (exp < 0) 1.0 / result else result;
+        \\}
+        \\
+        \\
+    ) catch return;
+
+    // ── Embedding Generator ─────────────────────────────────────────────────
+    w.writeAll(
+        \\pub const Embedding = [EMBEDDING_DIM]f64;
+        \\
+        \\pub fn embed(token: Token) Embedding {
+        \\    var vec: Embedding = [_]f64{0.0} ** EMBEDDING_DIM;
+        \\    const gem_f: f64 = @floatFromInt(token.gematria_value);
+        \\    var offset: usize = 0;
+        \\
+        \\    // Dims 0-4: Sacred Formula exponents (normalized)
+        \\    if (gem_f > 0) {
+        \\        const fit = findBestFormula(gem_f);
+        \\        vec[0] = @as(f64, @floatFromInt(fit.n)) / 9.0;
+        \\        vec[1] = @as(f64, @floatFromInt(fit.k)) / 4.0;
+        \\        vec[2] = @as(f64, @floatFromInt(fit.m)) / 3.0;
+        \\        vec[3] = @as(f64, @floatFromInt(fit.p)) / 4.0;
+        \\        vec[4] = @as(f64, @floatFromInt(fit.q)) / 3.0;
+        \\    }
+        \\    offset = SACRED_FORMULA_DIMS;
+        \\
+        \\    // Dims 5-7: Kingdom encoding (one-hot)
+        \\    if (token.glyph_index) |idx| {
+        \\        if (idx < 9) {
+        \\            vec[offset] = 1.0; // matter
+        \\        } else if (idx < 18) {
+        \\            vec[offset + 1] = 1.0; // energy
+        \\        } else {
+        \\            vec[offset + 2] = 1.0; // information
+        \\        }
+        \\    }
+        \\    offset += KINGDOM_DIMS;
+        \\
+        \\    // Dims 8-15: Positional (sin/cos of glyph index)
+        \\    if (token.glyph_index) |idx| {
+        \\        const angle = @as(f64, @floatFromInt(idx)) * 2.0 * math.pi / 27.0;
+        \\        var j: usize = 0;
+        \\        while (j < POSITIONAL_DIMS / 2) : (j += 1) {
+        \\            const freq = @as(f64, @floatFromInt(j + 1));
+        \\            vec[offset + j * 2] = @sin(angle * freq);
+        \\            vec[offset + j * 2 + 1] = @cos(angle * freq);
+        \\        }
+        \\    }
+        \\    offset += POSITIONAL_DIMS;
+        \\
+        \\    // Dims 16-31: Sacred constant proximity
+        \\    if (gem_f > 0) {
+        \\        for (sacred_constants, 0..) |c, ci| {
+        \\            if (ci >= PROXIMITY_DIMS) break;
+        \\            // Proximity = 1 / (1 + |log(gem/constant)|)
+        \\            const ratio = if (c.value != 0) gem_f / @abs(c.value) else 0;
+        \\            vec[offset + ci] = if (ratio > 0) 1.0 / (1.0 + @abs(@log(ratio))) else 0;
+        \\        }
+        \\    }
+        \\    offset += PROXIMITY_DIMS;
+        \\
+        \\    // Dims 32-63: Hash-based distributional features
+        \\    // Deterministic hash of token text → pseudo-random features
+        \\    if (token.text.len > 0) {
+        \\        var hash: u64 = 0x517cc1b727220a95; // FNV offset basis
+        \\        for (token.text) |byte| {
+        \\            hash ^= byte;
+        \\            hash *%= 0x100000001b3; // FNV prime
+        \\        }
+        \\        var j: usize = 0;
+        \\        while (j < DISTRIBUTIONAL_DIMS and offset + j < EMBEDDING_DIM) : (j += 1) {
+        \\            hash ^= hash >> 13;
+        \\            hash *%= 0x100000001b3;
+        \\            // Map to [-1, 1] range
+        \\            vec[offset + j] = @as(f64, @floatFromInt(@as(i64, @bitCast(hash)))) / @as(f64, @floatFromInt(@as(i64, math.maxInt(i64))));
+        \\        }
+        \\    }
+        \\
+        \\    // L2 normalize
+        \\    var norm: f64 = 0;
+        \\    for (vec) |v| norm += v * v;
+        \\    norm = @sqrt(norm);
+        \\    if (norm > 1e-12) {
+        \\        for (&vec) |*v| v.* /= norm;
+        \\    }
+        \\
+        \\    return vec;
+        \\}
+        \\
+        \\pub fn cosineSimilarity(a: Embedding, b: Embedding) f64 {
+        \\    var dot: f64 = 0;
+        \\    var norm_a: f64 = 0;
+        \\    var norm_b: f64 = 0;
+        \\    for (a, b) |va, vb| {
+        \\        dot += va * vb;
+        \\        norm_a += va * va;
+        \\        norm_b += vb * vb;
+        \\    }
+        \\    const denom = @sqrt(norm_a) * @sqrt(norm_b);
+        \\    return if (denom > 1e-12) dot / denom else 0;
+        \\}
+        \\
+        \\
+    ) catch return;
+
+    // ── Tests ───────────────────────────────────────────────────────────────
+    w.writeAll(
+        \\test "glyph table has correct count" {
+        \\    try std.testing.expectEqual(@as(usize, GLYPH_COUNT), glyph_table.len);
+        \\}
+        \\
+        \\test "glyph lookup finds first entry" {
+        \\    const result = glyphLookup(glyph_table[0].codepoint);
+        \\    try std.testing.expect(result != null);
+        \\    try std.testing.expectEqual(glyph_table[0].value, result.?.value);
+        \\}
+        \\
+        \\test "tokenize produces tokens" {
+        \\    const tokens = try tokenize(std.testing.allocator, "hello 42");
+        \\    defer std.testing.allocator.free(tokens);
+        \\    try std.testing.expect(tokens.len >= 2);
+        \\    try std.testing.expectEqual(TokenType.word, tokens[0].token_type);
+        \\    try std.testing.expectEqual(TokenType.number, tokens[1].token_type);
+        \\    try std.testing.expectEqual(@as(u32, 42), tokens[1].gematria_value);
+        \\}
+        \\
+        \\test "word gematria sums letter positions" {
+        \\    const tokens = try tokenize(std.testing.allocator, "abc");
+        \\    defer std.testing.allocator.free(tokens);
+        \\    try std.testing.expectEqual(@as(usize, 1), tokens.len);
+        \\    // a=1, b=2, c=3 → 6
+        \\    try std.testing.expectEqual(@as(u32, 6), tokens[0].gematria_value);
+        \\}
+        \\
+        \\test "embedding dimension is correct" {
+        \\    const tok = Token{ .token_type = .number, .text = "137", .gematria_value = 137, .glyph_index = null };
+        \\    const emb = embed(tok);
+        \\    try std.testing.expectEqual(@as(usize, EMBEDDING_DIM), emb.len);
+        \\}
+        \\
+        \\test "embedding is normalized" {
+        \\    const tok = Token{ .token_type = .number, .text = "42", .gematria_value = 42, .glyph_index = null };
+        \\    const emb = embed(tok);
+        \\    var norm: f64 = 0;
+        \\    for (emb) |v| norm += v * v;
+        \\    try std.testing.expectApproxEqAbs(@as(f64, 1.0), @sqrt(norm), 1e-6);
+        \\}
+        \\
+        \\test "cosine similarity self = 1.0" {
+        \\    const tok = Token{ .token_type = .number, .text = "137", .gematria_value = 137, .glyph_index = null };
+        \\    const emb = embed(tok);
+        \\    try std.testing.expectApproxEqAbs(@as(f64, 1.0), cosineSimilarity(emb, emb), 1e-6);
+        \\}
+        \\
+        \\test "sacred formula bases verify trinity identity" {
+        \\    // φ² + 1/φ² = 3
+        \\    try std.testing.expectApproxEqAbs(TRINITY, PHI * PHI + 1.0 / (PHI * PHI), 1e-10);
+        \\}
+        \\
+    ) catch return;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -4893,4 +5298,383 @@ pub fn runEndOfCyclesCommand(allocator: std.mem.Allocator) void {
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}Golden Chain eternal.{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}KOSCHEI IS IMMORTAL.{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED LANGUAGE MODEL COMMANDS (Cycle 91)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runEmbedCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    if (args.len < 1) {
+        std.debug.print("{s}Sacred Language Model — Gematria Embeddings{s}\n\n", .{ GOLDEN, RESET });
+        std.debug.print("Usage: tri embed <text>\n\n", .{});
+        std.debug.print("Tokenizes text and produces {s}64-dim Sacred Formula embeddings{s}\n", .{ CYAN, RESET });
+        std.debug.print("where each dimension encodes gematria value, kingdom, and formula fit.\n\n", .{});
+        std.debug.print("Examples:\n", .{});
+        std.debug.print("  tri embed hello         Word gematria (a=1, b=2, ...)\n", .{});
+        std.debug.print("  tri embed 137           Number → Sacred Formula fit\n", .{});
+        std.debug.print("  tri embed \"hello 42\"    Multi-token embedding\n\n", .{});
+        std.debug.print("Source: specs/tri/sacred/sacred_language_model.tri\n", .{});
+        std.debug.print("Generated: trinity/output/sacred_language_model.zig\n", .{});
+        return;
+    }
+
+    // Load and use the generated sacred language model
+    const tri_spec = @import("tri_spec_parser.zig");
+    const spec_path = "specs/tri/sacred/sacred_language_model.tri";
+
+    const loaded = tri_spec.loadSpecFromFile(allocator, spec_path) catch |err| {
+        std.debug.print("{s}Error: Could not load spec {s}: {}{s}\n", .{ RED, spec_path, err, RESET });
+        std.debug.print("Run: tri gen {s}\n", .{spec_path});
+        return;
+    };
+    defer allocator.free(loaded.source);
+    var spec = loaded.spec;
+    defer spec.deinit();
+
+    // Join all args into one text
+    var text_buf: [1024]u8 = undefined;
+    var text_len: usize = 0;
+    for (args) |arg| {
+        if (text_len > 0 and text_len < text_buf.len) {
+            text_buf[text_len] = ' ';
+            text_len += 1;
+        }
+        const copy_len = @min(arg.len, text_buf.len - text_len);
+        @memcpy(text_buf[text_len..][0..copy_len], arg[0..copy_len]);
+        text_len += copy_len;
+    }
+    const input_text = text_buf[0..text_len];
+
+    std.debug.print("{s}Sacred Language Model — Embed{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Input: \"{s}\"\n", .{input_text});
+    std.debug.print("  Spec: {s} v{s} ({d} glyphs, {d} constants)\n", .{
+        spec.name, spec.version, spec.glyphCount(), spec.constantCount(),
+    });
+    std.debug.print("  Embedding dim: {d}\n\n", .{spec.embedding.dimension});
+
+    // Tokenize
+    std.debug.print("{s}Tokens:{s}\n", .{ CYAN, RESET });
+    var token_count: usize = 0;
+    var total_gematria: u32 = 0;
+
+    // Simple inline tokenizer (mirrors generated tokenize() logic)
+    var i: usize = 0;
+    while (i < input_text.len) {
+        // Skip whitespace
+        if (input_text[i] == ' ' or input_text[i] == '\t') {
+            i += 1;
+            continue;
+        }
+
+        // Number
+        if (input_text[i] >= '0' and input_text[i] <= '9') {
+            const start = i;
+            while (i < input_text.len and ((input_text[i] >= '0' and input_text[i] <= '9') or input_text[i] == '.')) : (i += 1) {}
+            const num_str = input_text[start..i];
+            const num_val = std.fmt.parseInt(u32, num_str, 10) catch 0;
+
+            // Find sacred formula fit
+            const fit = findBestFormulaFit(num_val, spec.bases);
+            std.debug.print("  [{d}] {s}NUMBER{s} \"{s}\" → gematria={d}\n", .{ token_count, CYAN, RESET, num_str, num_val });
+            std.debug.print("       Formula: {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6} (err={d:.4}%)\n", .{
+                fit.n, fit.k, fit.m, fit.p, fit.q, fit.computed, fit.error_pct,
+            });
+
+            // Show embedding preview (first 8 dims)
+            std.debug.print("       Embed[0..7]: [", .{});
+            const emb = computeMiniEmbedding(num_val, null, fit, spec.embedding.dimension);
+            for (0..@min(8, emb.len)) |j| {
+                if (j > 0) std.debug.print(", ", .{});
+                std.debug.print("{d:.3}", .{emb[j]});
+            }
+            std.debug.print(", ...]\n", .{});
+
+            total_gematria += num_val;
+            token_count += 1;
+            continue;
+        }
+
+        // Word
+        if ((input_text[i] >= 'a' and input_text[i] <= 'z') or (input_text[i] >= 'A' and input_text[i] <= 'Z') or input_text[i] == '_') {
+            const start = i;
+            while (i < input_text.len and ((input_text[i] >= 'a' and input_text[i] <= 'z') or
+                (input_text[i] >= 'A' and input_text[i] <= 'Z') or
+                (input_text[i] >= '0' and input_text[i] <= '9') or input_text[i] == '_')) : (i += 1)
+            {}
+            const word = input_text[start..i];
+            var word_gem: u32 = 0;
+            for (word) |ch| {
+                if (ch >= 'a' and ch <= 'z') word_gem += (ch - 'a' + 1);
+                if (ch >= 'A' and ch <= 'Z') word_gem += (ch - 'A' + 1);
+            }
+
+            const fit = findBestFormulaFit(word_gem, spec.bases);
+            std.debug.print("  [{d}] {s}WORD{s}   \"{s}\" → gematria={d}\n", .{ token_count, GREEN, RESET, word, word_gem });
+            std.debug.print("       Formula: {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6} (err={d:.4}%)\n", .{
+                fit.n, fit.k, fit.m, fit.p, fit.q, fit.computed, fit.error_pct,
+            });
+
+            total_gematria += word_gem;
+            token_count += 1;
+            continue;
+        }
+
+        // UTF-8 multi-byte (Coptic glyph check)
+        if (input_text[i] >= 0x80) {
+            const cp_len = std.unicode.utf8ByteSequenceLength(input_text[i]) catch 1;
+            if (i + cp_len <= input_text.len) {
+                const bytes: []const u8 = input_text[i..][0..cp_len];
+                const cp = std.unicode.utf8Decode(bytes[0..cp_len]) catch 0xFFFD;
+                // Check against gematria table
+                for (spec.gematria_table.items) |g| {
+                    if (g.codepoint == cp or g.codepoint + 1 == cp) {
+                        std.debug.print("  [{d}] {s}GLYPH{s}  \"{s}\" → codepoint=0x{X:0>4} value={d} kingdom={s}\n", .{
+                            token_count, GOLDEN, RESET, bytes, cp, g.value, g.kingdom,
+                        });
+                        total_gematria += g.value;
+                        token_count += 1;
+                        break;
+                    }
+                }
+                i += cp_len;
+                continue;
+            }
+        }
+
+        i += 1;
+    }
+
+    std.debug.print("\n{s}Summary:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  Tokens:         {d}\n", .{token_count});
+    std.debug.print("  Total gematria: {d}\n", .{total_gematria});
+    std.debug.print("  Embedding dim:  {d}\n", .{spec.embedding.dimension});
+
+    // Find formula for total
+    if (total_gematria > 0) {
+        const total_fit = findBestFormulaFit(total_gematria, spec.bases);
+        std.debug.print("  Total formula:  {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6} (err={d:.4}%)\n", .{
+            total_fit.n, total_fit.k, total_fit.m, total_fit.p, total_fit.q, total_fit.computed, total_fit.error_pct,
+        });
+    }
+
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+pub fn runSacredSearchCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    if (args.len < 1) {
+        std.debug.print("{s}Sacred Language Model — Sacred Search{s}\n\n", .{ GOLDEN, RESET });
+        std.debug.print("Usage: tri sacred-search <number|text>\n\n", .{});
+        std.debug.print("Finds sacred constants close to the input value.\n", .{});
+        std.debug.print("Uses Sacred Formula V = n*3^k*pi^m*phi^p*e^q to find\n", .{});
+        std.debug.print("mathematical connections between your input and known constants.\n\n", .{});
+        std.debug.print("Examples:\n", .{});
+        std.debug.print("  tri sacred-search 137     Search near fine structure constant\n", .{});
+        std.debug.print("  tri sacred-search phi     Search for golden ratio connections\n", .{});
+        std.debug.print("  tri ss 42                 Shorthand\n", .{});
+        return;
+    }
+
+    const tri_spec = @import("tri_spec_parser.zig");
+    const spec_path = "specs/tri/sacred/sacred_language_model.tri";
+
+    const loaded = tri_spec.loadSpecFromFile(allocator, spec_path) catch |err| {
+        std.debug.print("{s}Error: Could not load spec: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(loaded.source);
+    var spec = loaded.spec;
+    defer spec.deinit();
+
+    // Parse input as number or word gematria
+    const input = args[0];
+    var target: f64 = 0;
+    target = std.fmt.parseFloat(f64, input) catch blk: {
+        // Word → gematria value
+        var gem: u32 = 0;
+        for (input) |ch| {
+            if (ch >= 'a' and ch <= 'z') gem += (ch - 'a' + 1);
+            if (ch >= 'A' and ch <= 'Z') gem += (ch - 'A' + 1);
+        }
+        break :blk @floatFromInt(gem);
+    };
+
+    std.debug.print("{s}Sacred Search{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Query: \"{s}\" → value={d:.6}\n\n", .{ input, target });
+
+    // Find best formula fit for target
+    const fit = findBestFormulaFit(if (target > 0) @intFromFloat(@min(target, 65535.0)) else 0, spec.bases);
+    std.debug.print("{s}Best Formula Fit:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  V = {d} * 3^{d} * pi^{d} * phi^{d} * e^{d}\n", .{ fit.n, fit.k, fit.m, fit.p, fit.q });
+    std.debug.print("  Computed: {d:.10}\n", .{fit.computed});
+    std.debug.print("  Error:    {d:.6}%\n\n", .{fit.error_pct});
+
+    // Find nearest sacred constants
+    std.debug.print("{s}Nearest Sacred Constants:{s}\n", .{ CYAN, RESET });
+
+    // Sort constants by distance to target
+    const BestEntry = struct { name: []const u8, symbol: []const u8, value: f64, distance: f64 };
+    var best: [5]BestEntry = undefined;
+    var best_count: usize = 0;
+
+    for (spec.constants.items) |c| {
+        const dist = @abs(c.value - target);
+        const rel_dist = if (target != 0) dist / @abs(target) * 100.0 else dist;
+
+        // Insert into top-5
+        if (best_count < 5) {
+            best[best_count] = .{ .name = c.name, .symbol = c.symbol, .value = c.value, .distance = rel_dist };
+            best_count += 1;
+        } else {
+            // Find worst in top-5 and replace if better
+            var worst_idx: usize = 0;
+            for (1..best_count) |bi| {
+                if (best[bi].distance > best[worst_idx].distance) worst_idx = bi;
+            }
+            if (rel_dist < best[worst_idx].distance) {
+                best[worst_idx] = .{ .name = c.name, .symbol = c.symbol, .value = c.value, .distance = rel_dist };
+            }
+        }
+    }
+
+    // Sort by distance
+    for (0..best_count) |bi| {
+        for (bi + 1..best_count) |bj| {
+            if (best[bj].distance < best[bi].distance) {
+                const tmp = best[bi];
+                best[bi] = best[bj];
+                best[bj] = tmp;
+            }
+        }
+    }
+
+    for (0..best_count) |bi| {
+        const b = best[bi];
+        const marker: []const u8 = if (b.distance < 1.0) " <<<" else "";
+        std.debug.print("  {d}. {s} ({s}) = {d:.6}  distance={d:.4}%{s}\n", .{
+            bi + 1, b.name, b.symbol, b.value, b.distance, marker,
+        });
+    }
+
+    // Find gematria glyph decomposition (greedy, largest-first)
+    if (target > 0 and target < 10000) {
+        const int_target: u32 = @intFromFloat(target);
+        std.debug.print("\n{s}Gematria Decomposition ({d}):{s}\n  ", .{ CYAN, int_target, RESET });
+        var remaining = int_target;
+        var glyph_count: usize = 0;
+        const table = spec.gematria_table.items;
+        // Iterate in reverse (largest values first) for greedy decomposition
+        while (remaining > 0) {
+            var best_idx: ?usize = null;
+            var best_val: u16 = 0;
+            for (table, 0..) |g, gi| {
+                if (g.value <= remaining and g.value > best_val) {
+                    best_val = g.value;
+                    best_idx = gi;
+                }
+            }
+            if (best_idx) |bi| {
+                if (glyph_count > 0) std.debug.print(" + ", .{});
+                std.debug.print("{s}({d})", .{ table[bi].glyph, table[bi].value });
+                remaining -= table[bi].value;
+                glyph_count += 1;
+            } else break;
+        }
+        if (glyph_count > 0) std.debug.print("\n", .{});
+    }
+
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
+}
+
+// ── Sacred Formula Fit Helper ───────────────────────────────────────────────
+
+const FormulaFit = struct {
+    n: i8, k: i8, m: i8, p: i8, q: i8,
+    computed: f64,
+    error_pct: f64,
+};
+
+fn findBestFormulaFit(target_u32: u32, bases: [4]f64) FormulaFit {
+    const target: f64 = @floatFromInt(target_u32);
+    if (target == 0) return .{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0, .computed = bases[0], .error_pct = 100.0 };
+
+    var best = FormulaFit{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0, .computed = bases[0], .error_pct = 100.0 };
+
+    var n: i8 = 1;
+    while (n <= 9) : (n += 1) {
+        var k: i8 = -4;
+        while (k <= 4) : (k += 1) {
+            var m: i8 = -3;
+            while (m <= 3) : (m += 1) {
+                var p: i8 = -4;
+                while (p <= 4) : (p += 1) {
+                    var q: i8 = -3;
+                    while (q <= 3) : (q += 1) {
+                        const val = @as(f64, @floatFromInt(n)) * powFit(bases[0], k) * powFit(bases[1], m) * powFit(bases[2], p) * powFit(bases[3], q);
+                        const err = @abs(val - target) / @abs(target) * 100.0;
+                        if (err < best.error_pct) {
+                            best = .{ .n = n, .k = k, .m = m, .p = p, .q = q, .computed = val, .error_pct = err };
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return best;
+}
+
+fn powFit(base: f64, exp: i8) f64 {
+    if (exp == 0) return 1.0;
+    var result: f64 = 1.0;
+    const abs_exp: u8 = if (exp < 0) @intCast(-exp) else @intCast(exp);
+    for (0..abs_exp) |_| result *= base;
+    return if (exp < 0) 1.0 / result else result;
+}
+
+fn computeMiniEmbedding(gematria_value: u32, glyph_index: ?u8, fit: FormulaFit, dim: u16) [64]f64 {
+    var vec: [64]f64 = [_]f64{0.0} ** 64;
+    const actual_dim: usize = @min(dim, 64);
+
+    // Sacred formula exponents (dims 0-4)
+    vec[0] = @as(f64, @floatFromInt(fit.n)) / 9.0;
+    vec[1] = @as(f64, @floatFromInt(fit.k)) / 4.0;
+    vec[2] = @as(f64, @floatFromInt(fit.m)) / 3.0;
+    vec[3] = @as(f64, @floatFromInt(fit.p)) / 4.0;
+    vec[4] = @as(f64, @floatFromInt(fit.q)) / 3.0;
+
+    // Kingdom (dims 5-7)
+    if (glyph_index) |idx| {
+        if (idx < 9) vec[5] = 1.0 // matter
+        else if (idx < 18) vec[6] = 1.0 // energy
+        else vec[7] = 1.0; // information
+    }
+
+    // Positional sin/cos (dims 8-15)
+    if (glyph_index) |idx| {
+        const angle = @as(f64, @floatFromInt(idx)) * 2.0 * std.math.pi / 27.0;
+        for (0..4) |j| {
+            const freq = @as(f64, @floatFromInt(j + 1));
+            vec[8 + j * 2] = @sin(angle * freq);
+            vec[8 + j * 2 + 1] = @cos(angle * freq);
+        }
+    }
+
+    // Value encoding (dims 16-31)
+    const gem_f: f64 = @floatFromInt(gematria_value);
+    if (gem_f > 0) {
+        vec[16] = @log(gem_f + 1.0) / 10.0;
+        vec[17] = gem_f / 900.0;
+        vec[18] = @sin(gem_f * std.math.pi / 900.0);
+        vec[19] = @cos(gem_f * std.math.pi / 900.0);
+    }
+
+    // L2 normalize
+    var norm: f64 = 0;
+    for (vec[0..actual_dim]) |v| norm += v * v;
+    norm = @sqrt(norm);
+    if (norm > 1e-12) {
+        for (vec[0..actual_dim]) |*v| v.* /= norm;
+    }
+
+    return vec;
 }

@@ -1,0 +1,318 @@
+format: sacred-spec-v2
+name: sacred_language_model
+version: "1.0.0"
+description: "Sacred Language Model — Gematria Tokenizer + Sacred Formula Embeddings"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Layer 1: Gematria Core — 27 Coptic Glyphs (3^3 = 27)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Kingdom 1: Units (Matter) — values 1-9
+# Kingdom 2: Tens (Energy)  — values 10-90
+# Kingdom 3: Hundreds (Information) — values 100-900
+# Sum of all glyphs: 4995 = 45 + 450 + 4500
+
+gematria_table:
+  # Units — Kingdom of Matter
+  - glyph: "Ⲁ"
+    codepoint: 0x2C80
+    value: 1
+    kingdom: "matter"
+
+  - glyph: "Ⲃ"
+    codepoint: 0x2C82
+    value: 2
+    kingdom: "matter"
+
+  - glyph: "Ⲅ"
+    codepoint: 0x2C84
+    value: 3
+    kingdom: "matter"
+
+  - glyph: "Ⲇ"
+    codepoint: 0x2C86
+    value: 4
+    kingdom: "matter"
+
+  - glyph: "Ⲉ"
+    codepoint: 0x2C88
+    value: 5
+    kingdom: "matter"
+
+  - glyph: "Ⲋ"
+    codepoint: 0x2C8A
+    value: 6
+    kingdom: "matter"
+
+  - glyph: "Ⲍ"
+    codepoint: 0x2C8C
+    value: 7
+    kingdom: "matter"
+
+  - glyph: "Ⲏ"
+    codepoint: 0x2C8E
+    value: 8
+    kingdom: "matter"
+
+  - glyph: "Ⲑ"
+    codepoint: 0x2C90
+    value: 9
+    kingdom: "matter"
+
+  # Tens — Kingdom of Energy
+  - glyph: "Ⲓ"
+    codepoint: 0x2C92
+    value: 10
+    kingdom: "energy"
+
+  - glyph: "Ⲕ"
+    codepoint: 0x2C94
+    value: 20
+    kingdom: "energy"
+
+  - glyph: "Ⲗ"
+    codepoint: 0x2C96
+    value: 30
+    kingdom: "energy"
+
+  - glyph: "Ⲙ"
+    codepoint: 0x2C98
+    value: 40
+    kingdom: "energy"
+
+  - glyph: "Ⲛ"
+    codepoint: 0x2C9A
+    value: 50
+    kingdom: "energy"
+
+  - glyph: "Ⲝ"
+    codepoint: 0x2C9C
+    value: 60
+    kingdom: "energy"
+
+  - glyph: "Ⲟ"
+    codepoint: 0x2C9E
+    value: 70
+    kingdom: "energy"
+
+  - glyph: "Ⲡ"
+    codepoint: 0x2CA0
+    value: 80
+    kingdom: "energy"
+
+  - glyph: "Ⲣ"
+    codepoint: 0x2CA2
+    value: 90
+    kingdom: "energy"
+
+  # Hundreds — Kingdom of Information
+  - glyph: "Ⲥ"
+    codepoint: 0x2CA4
+    value: 100
+    kingdom: "information"
+
+  - glyph: "Ⲧ"
+    codepoint: 0x2CA6
+    value: 200
+    kingdom: "information"
+
+  - glyph: "Ⲩ"
+    codepoint: 0x2CA8
+    value: 300
+    kingdom: "information"
+
+  - glyph: "Ⲫ"
+    codepoint: 0x2CAA
+    value: 400
+    kingdom: "information"
+
+  - glyph: "Ⲭ"
+    codepoint: 0x2CAC
+    value: 500
+    kingdom: "information"
+
+  - glyph: "Ⲯ"
+    codepoint: 0x2CAE
+    value: 600
+    kingdom: "information"
+
+  - glyph: "Ⲱ"
+    codepoint: 0x2CB0
+    value: 700
+    kingdom: "information"
+
+  - glyph: "Ϣ"
+    codepoint: 0x03E2
+    value: 800
+    kingdom: "information"
+
+  - glyph: "Ϥ"
+    codepoint: 0x03E4
+    value: 900
+    kingdom: "information"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Layer 2: Sacred Formula Bases (inherited from sacred_formula.tri)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+bases:
+  TRINITY: 3.0
+  PI: 3.14159265358979323846
+  PHI: 1.6180339887498948482
+  E: 2.71828182845904523536
+
+search:
+  n_range: [1, 9]
+  k_range: [-4, 4]
+  m_range: [-3, 3]
+  p_range: [-4, 4]
+  q_range: [-3, 3]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Layer 3: Sacred Tokenizer Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+# Token types produced by the tokenizer:
+#   - coptic_glyph: A single Coptic letter with gematria value
+#   - word: ASCII/UTF-8 word (whitespace-separated)
+#   - number: Numeric literal (integer or float)
+#   - symbol: Mathematical symbol (+, -, *, /, ^, =, etc.)
+#   - separator: Whitespace, punctuation
+
+tokenizer:
+  max_token_length: 128
+  token_types:
+    - name: "coptic_glyph"
+      id: 1
+      description: "Single Coptic letter with gematria value"
+
+    - name: "word"
+      id: 2
+      description: "ASCII/UTF-8 word token"
+
+    - name: "number"
+      id: 3
+      description: "Numeric literal"
+
+    - name: "symbol"
+      id: 4
+      description: "Mathematical operator or symbol"
+
+    - name: "separator"
+      id: 5
+      description: "Whitespace or punctuation"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Layer 4: Gematria Embedding Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+# Each token is embedded into a vector space where:
+#   - Dimensions 0-4: Sacred Formula exponents (n, k, m, p, q) normalized
+#   - Dimensions 5-7: Kingdom encoding (one-hot: matter/energy/information)
+#   - Dimensions 8-15: Glyph position features (sin/cos of index*2*pi/27)
+#   - Dimensions 16-31: Sacred constant proximity features
+#   - Dimensions 32-63: Hash-based distributional features
+
+embedding:
+  dimension: 64
+  sacred_formula_dims: 5
+  kingdom_dims: 3
+  positional_dims: 8
+  proximity_dims: 16
+  distributional_dims: 32
+  normalization: "l2"
+
+# Reference sacred constants for proximity features
+constants:
+  - name: "Fine Structure Inverse"
+    symbol: "ALPHA_INV"
+    value: 137.036
+    category: "particle_physics"
+    description: "1/alpha — electromagnetic coupling"
+
+  - name: "Proton-Electron Ratio"
+    symbol: "PROTON_ELECTRON"
+    value: 1836.15267343
+    category: "particle_physics"
+    description: "m_p/m_e mass ratio"
+
+  - name: "CHSH Quantum Bound"
+    symbol: "CHSH"
+    value: 2.8284271247461903
+    category: "quantum"
+    description: "2*sqrt(2) — Bell inequality"
+
+  - name: "Weinberg Angle"
+    symbol: "WEINBERG"
+    value: 0.23121
+    category: "particle_physics"
+    description: "sin^2(theta_W)"
+
+  - name: "Hubble Constant"
+    symbol: "HUBBLE"
+    value: 67.4
+    category: "cosmology"
+    description: "H_0 km/s/Mpc"
+
+  - name: "Dark Energy Fraction"
+    symbol: "OMEGA_LAMBDA"
+    value: 0.6889
+    category: "cosmology"
+    description: "Omega_Lambda"
+
+  - name: "Golden Ratio"
+    symbol: "PHI"
+    value: 1.6180339887498948482
+    category: "mathematics"
+    description: "phi = (1+sqrt(5))/2"
+
+  - name: "Trinity"
+    symbol: "TRINITY"
+    value: 3.0
+    category: "mathematics"
+    description: "phi^2 + 1/phi^2 = 3"
+
+  - name: "Euler Number"
+    symbol: "EULER"
+    value: 2.71828182845904523536
+    category: "mathematics"
+    description: "e — base of natural logarithm"
+
+  - name: "Pi"
+    symbol: "PI"
+    value: 3.14159265358979323846
+    category: "mathematics"
+    description: "pi — circle constant"
+
+  - name: "Planck Reduced"
+    symbol: "HBAR"
+    value: 1.054571817e-34
+    category: "quantum"
+    description: "h-bar — reduced Planck constant"
+
+  - name: "Speed of Light"
+    symbol: "C"
+    value: 299792458.0
+    category: "physics"
+    description: "c — speed of light in m/s"
+
+  - name: "Boltzmann"
+    symbol: "K_B"
+    value: 1.380649e-23
+    category: "physics"
+    description: "k_B — Boltzmann constant"
+
+  - name: "Gravitational"
+    symbol: "G"
+    value: 6.67430e-11
+    category: "physics"
+    description: "G — gravitational constant"
+
+  - name: "Avogadro"
+    symbol: "N_A"
+    value: 6.02214076e23
+    category: "physics"
+    description: "N_A — Avogadro number"
+
+  - name: "Electron Mass"
+    symbol: "M_E"
+    value: 9.1093837015e-31
+    category: "particle_physics"
+    description: "m_e — electron rest mass"
