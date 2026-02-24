@@ -1,10 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY CHAT HTTP SERVER v2.5
-// POST /chat        — Hybrid Chat endpoint for Cosmic UI
-// POST /chat/clear  — Clear conversation context
-// GET  /health      — Health check
-// GET  /api/files   — Project file listing for Finder
-// POST /api/compile — VIBEE/Zig compilation for Editor
+// TRINITY CHAT HTTP SERVER v2.6
+// POST /chat                         — Hybrid Chat endpoint for Cosmic UI
+// POST /chat/clear                   — Clear conversation context
+// GET  /health                       — Health check
+// GET  /api/files                    — Project file listing for Finder
+// POST /api/compile                  — VIBEE/Zig compilation for Editor
+// GET  /api/sacred-formula/fit       — Fit all constants to Sacred Formula
+// GET  /api/sacred-formula/constants — Raw constants list from .tri spec
+// POST /api/sacred-formula/compute   — Fit single value to Sacred Formula
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -207,6 +210,16 @@ pub const ChatServer = struct {
             } else {
                 try self.sendMethodNotAllowed(connection);
             }
+        } else if (std.mem.startsWith(u8, path, "/api/sacred-formula/compute")) {
+            if (std.mem.eql(u8, method, "POST")) {
+                try self.handleSacredFormulaCompute(connection, body);
+            } else {
+                try self.sendMethodNotAllowed(connection);
+            }
+        } else if (std.mem.startsWith(u8, path, "/api/sacred-formula/constants")) {
+            try self.handleSacredFormulaConstants(connection);
+        } else if (std.mem.startsWith(u8, path, "/api/sacred-formula/fit")) {
+            try self.handleSacredFormulaFit(connection);
         } else {
             try self.sendNotFound(connection);
         }
@@ -999,6 +1012,95 @@ pub const ChatServer = struct {
         try connection.stream.writeAll(response);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // SACRED FORMULA HANDLERS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    fn handleSacredFormulaFit(self: *Self, connection: *std.net.Server.Connection) !void {
+        const sacred_formula = @import("sacred_formula.zig");
+        const tri_spec = @import("tri_spec_parser.zig");
+
+        const loaded = tri_spec.loadSpecFromFile(self.allocator, "specs/tri/sacred/sacred_formula.tri") catch {
+            try self.sendError(connection, "Failed to load sacred_formula.tri spec");
+            return;
+        };
+        defer self.allocator.free(loaded.source);
+        var spec = loaded.spec;
+        defer spec.deinit();
+
+        const fits = sacred_formula.fitAllConstants(self.allocator, &spec) catch {
+            try self.sendError(connection, "Failed to compute fits");
+            return;
+        };
+        defer self.allocator.free(fits);
+
+        const preds = sacred_formula.computePredictions(self.allocator, &spec) catch {
+            try self.sendError(connection, "Failed to compute predictions");
+            return;
+        };
+        defer self.allocator.free(preds);
+
+        const json = sacred_formula.fullResultsToJson(self.allocator, fits, preds, spec.search) catch {
+            try self.sendError(connection, "JSON serialization failed");
+            return;
+        };
+        defer self.allocator.free(json);
+
+        try self.sendJsonResponse(connection, json);
+    }
+
+    fn handleSacredFormulaConstants(self: *Self, connection: *std.net.Server.Connection) !void {
+        const sacred_formula = @import("sacred_formula.zig");
+        const tri_spec = @import("tri_spec_parser.zig");
+
+        const loaded = tri_spec.loadSpecFromFile(self.allocator, "specs/tri/sacred/sacred_formula.tri") catch {
+            try self.sendError(connection, "Failed to load sacred_formula.tri spec");
+            return;
+        };
+        defer self.allocator.free(loaded.source);
+        var spec = loaded.spec;
+        defer spec.deinit();
+
+        const json = sacred_formula.constantsToJson(self.allocator, &spec) catch {
+            try self.sendError(connection, "JSON serialization failed");
+            return;
+        };
+        defer self.allocator.free(json);
+
+        try self.sendJsonResponse(connection, json);
+    }
+
+    fn handleSacredFormulaCompute(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
+        const sacred_formula = @import("sacred_formula.zig");
+        const tri_spec = @import("tri_spec_parser.zig");
+
+        // Extract "value" from JSON body
+        const value_str = extractJsonNumber(body, "value") orelse {
+            try self.sendError(connection, "Missing 'value' field in JSON body");
+            return;
+        };
+        const target = std.fmt.parseFloat(f64, value_str) catch {
+            try self.sendError(connection, "Invalid number for 'value'");
+            return;
+        };
+
+        if (target <= 0) {
+            try self.sendError(connection, "Value must be positive");
+            return;
+        }
+
+        const bounds = tri_spec.SearchBounds{};
+        const fit = sacred_formula.findFit(target, bounds);
+
+        const json = sacred_formula.fitToJson(self.allocator, target, fit) catch {
+            try self.sendError(connection, "JSON serialization failed");
+            return;
+        };
+        defer self.allocator.free(json);
+
+        try self.sendJsonResponse(connection, json);
+    }
+
     fn sendNotFound(self: *Self, connection: *std.net.Server.Connection) !void {
         _ = self;
         const response =
@@ -1067,6 +1169,38 @@ fn extractJsonString(body: []const u8, key: []const u8) ?[]const u8 {
                         val_end += 1;
                     }
                     return body[val_start..val_end];
+                }
+            }
+        }
+        pos += 1;
+    }
+    return null;
+}
+
+/// Extract a numeric value from JSON body: "key":123.456 or "key": 42
+fn extractJsonNumber(body: []const u8, key: []const u8) ?[]const u8 {
+    var pos: usize = 0;
+    while (pos + key.len + 3 < body.len) {
+        if (body[pos] == '"') {
+            const key_start = pos + 1;
+            if (key_start + key.len < body.len and
+                std.mem.eql(u8, body[key_start .. key_start + key.len], key) and
+                body[key_start + key.len] == '"')
+            {
+                var vpos = key_start + key.len + 1;
+                while (vpos < body.len and (body[vpos] == ' ' or body[vpos] == ':' or body[vpos] == '\t')) {
+                    vpos += 1;
+                }
+                // Read number (digits, dot, minus, e, E, +)
+                const num_start = vpos;
+                while (vpos < body.len) {
+                    const c = body[vpos];
+                    if ((c >= '0' and c <= '9') or c == '.' or c == '-' or c == '+' or c == 'e' or c == 'E') {
+                        vpos += 1;
+                    } else break;
+                }
+                if (vpos > num_start) {
+                    return body[num_start..vpos];
                 }
             }
         }

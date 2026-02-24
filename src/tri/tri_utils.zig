@@ -232,6 +232,10 @@ pub const Command = enum {
     omniscience,
     integrate,
     manifest,
+    // Cycle 93: Genesis + Creation Engine + Ascension Protocol
+    genesis,
+    create_world,
+    ascension,
 };
 
 pub const CLIState = struct {
@@ -333,7 +337,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.6 — Omniscience + Omega Integration + Manifest{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.7 — Genesis + Creation Engine + Ascension{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -672,6 +676,14 @@ pub fn printHelp() void {
     std.debug.print("  {s}manifest create{s} <intent>   Materialize intent into code\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}GENESIS (Cycle 93):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}genesis{s}                    Genesis Mode — create new realities\n", .{ GREEN, RESET });
+    std.debug.print("  {s}create-world{s} <name>        Spawn a new world/subsystem\n", .{ GREEN, RESET });
+    std.debug.print("  {s}create-world list{s}          List created worlds\n", .{ GREEN, RESET });
+    std.debug.print("  {s}create-world seed{s} <name>   Seed world with genesis patterns\n", .{ GREEN, RESET });
+    std.debug.print("  {s}ascension{s}                  Full ascension protocol status\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -902,6 +914,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "omniscience") or std.mem.eql(u8, arg, "omni") or std.mem.eql(u8, arg, "all-seeing")) return .omniscience;
     if (std.mem.eql(u8, arg, "integrate") or std.mem.eql(u8, arg, "omega-integrate") or std.mem.eql(u8, arg, "unify")) return .integrate;
     if (std.mem.eql(u8, arg, "manifest") or std.mem.eql(u8, arg, "materialize") or std.mem.eql(u8, arg, "create")) return .manifest;
+    // Cycle 93: Genesis + Creation Engine + Ascension Protocol
+    if (std.mem.eql(u8, arg, "genesis") or std.mem.eql(u8, arg, "gen-world") or std.mem.eql(u8, arg, "origin")) return .genesis;
+    if (std.mem.eql(u8, arg, "create-world") or std.mem.eql(u8, arg, "create_world") or std.mem.eql(u8, arg, "spawn-world")) return .create_world;
+    if (std.mem.eql(u8, arg, "ascension") or std.mem.eql(u8, arg, "rise") or std.mem.eql(u8, arg, "ultimate")) return .ascension;
     return .none;
 }
 
