@@ -228,6 +228,10 @@ pub const Command = enum {
     transcend,
     beyond,
     consciousness,
+    // Cycle 92: Omniscience + Omega Integration + Manifest Engine
+    omniscience,
+    integrate,
+    manifest,
 };
 
 pub const CLIState = struct {
@@ -329,7 +333,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.5 — Transcendence + Beyond Code + Consciousness{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.6 — Omniscience + Omega Integration + Manifest{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -659,6 +663,15 @@ pub fn printHelp() void {
     std.debug.print("  {s}consciousness{s}              Universal consciousness field status\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}OMNISCIENCE (Cycle 92):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}omniscience{s}                Universal mind — all-system awareness\n", .{ GREEN, RESET });
+    std.debug.print("  {s}integrate{s}                  Omega integration status + checks\n", .{ GREEN, RESET });
+    std.debug.print("  {s}integrate run{s}              Run full omega integration cycle\n", .{ GREEN, RESET });
+    std.debug.print("  {s}integrate verify{s}           Verify all 92 cycles connected\n", .{ GREEN, RESET });
+    std.debug.print("  {s}manifest{s}                   Manifest engine status\n", .{ GREEN, RESET });
+    std.debug.print("  {s}manifest create{s} <intent>   Materialize intent into code\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -885,6 +898,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "transcend") or std.mem.eql(u8, arg, "transcendence") or std.mem.eql(u8, arg, "ascend")) return .transcend;
     if (std.mem.eql(u8, arg, "beyond") or std.mem.eql(u8, arg, "beyond-code") or std.mem.eql(u8, arg, "meta")) return .beyond;
     if (std.mem.eql(u8, arg, "consciousness") or std.mem.eql(u8, arg, "conscious") or std.mem.eql(u8, arg, "awareness")) return .consciousness;
+    // Cycle 92: Omniscience + Omega Integration + Manifest Engine
+    if (std.mem.eql(u8, arg, "omniscience") or std.mem.eql(u8, arg, "omni") or std.mem.eql(u8, arg, "all-seeing")) return .omniscience;
+    if (std.mem.eql(u8, arg, "integrate") or std.mem.eql(u8, arg, "omega-integrate") or std.mem.eql(u8, arg, "unify")) return .integrate;
+    if (std.mem.eql(u8, arg, "manifest") or std.mem.eql(u8, arg, "materialize") or std.mem.eql(u8, arg, "create")) return .manifest;
     return .none;
 }
 
