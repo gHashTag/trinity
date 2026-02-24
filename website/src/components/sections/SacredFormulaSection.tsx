@@ -74,18 +74,18 @@ export default function SacredFormulaSection() {
         </p>
       </div>
 
-      {/* Stargate Drum */}
-      <StargateDrum
-        constants={data?.constants ?? []}
-        isDecomposing={loading}
-        result={customResult}
-        highlightedConstant={highlightedConstant}
-      />
+      {/* How it works — explanation */}
+      <p className="fade" style={{
+        maxWidth: '600px', margin: '0 auto 1.5rem', opacity: 0.55,
+        lineHeight: 1.7, fontSize: '0.85rem', textAlign: 'center',
+      }}>
+        {msg.howItWorks || 'Enter any number and the Stargate decomposes it into fundamental mathematical constants.'}
+      </p>
 
-      {/* Custom input */}
+      {/* Custom input — ABOVE the Stargate */}
       <div className="fade" style={{
         display: 'flex', gap: '0.75rem', justifyContent: 'center',
-        alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap'
+        alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap'
       }}>
         <input
           type="number"
@@ -122,6 +122,52 @@ export default function SacredFormulaSection() {
           {loading ? (msg.computing || 'Computing...') : (msg.decompose || 'Decompose')}
         </button>
       </div>
+
+      {/* Hint text */}
+      <p className="fade" style={{
+        textAlign: 'center', fontSize: '0.75rem', opacity: 0.35,
+        marginBottom: '1rem', fontFamily: 'monospace',
+      }}>
+        {msg.tryIt || 'Try a number \u2014 the Stargate will show its hidden structure'}
+      </p>
+
+      {/* Legend — how to read the Stargate chevrons */}
+      <motion.div
+        className="fade"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        style={{
+          maxWidth: '500px', margin: '0 auto 1rem',
+          background: 'rgba(255,215,0,0.04)',
+          border: '1px solid rgba(255,215,0,0.12)',
+          borderRadius: '12px', padding: '1rem 1.5rem',
+          fontFamily: 'monospace', fontSize: '0.8rem',
+          lineHeight: 1.8,
+        }}
+      >
+        <div style={{ color: '#ffd700', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+          {msg.legendTitle || 'How to read the Stargate:'}
+        </div>
+        <div style={{ opacity: 0.6 }}>
+          <div><span style={{ color: '#ffd700' }}>n</span> — {msg.legendN || 'multiplier (1-9)'}</div>
+          <div><span style={{ color: '#ffd700' }}>3^k</span> — {msg.legendK || 'ternary power'}</div>
+          <div><span style={{ color: '#ffd700' }}>{'\u03C0'}^m</span> — {msg.legendM || 'geometry power'}</div>
+          <div><span style={{ color: '#ffd700' }}>{'\u03C6'}^p</span> — {msg.legendP || 'golden ratio power'}</div>
+          <div><span style={{ color: '#ffd700' }}>e^q</span> — {msg.legendQ || 'growth power'}</div>
+        </div>
+        <div style={{ marginTop: '0.5rem', opacity: 0.4, fontSize: '0.75rem' }}>
+          {msg.legendExample || 'Example: 13 \u2248 1 \u00D7 3\u207B\u00B9 \u00D7 \u03C0\u00B9 \u00D7 \u03C6\u207B\u00B9 \u00D7 e\u00B3'}
+        </div>
+      </motion.div>
+
+      {/* Stargate Drum */}
+      <StargateDrum
+        constants={data?.constants ?? []}
+        isDecomposing={loading}
+        result={customResult}
+        highlightedConstant={highlightedConstant}
+      />
 
       {/* Category filter */}
       <div className="fade" style={{
