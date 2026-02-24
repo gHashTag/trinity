@@ -275,5 +275,9 @@ pub fn main() !void {
         .omega_point => commands.runOmegaPointCommand(allocator),
         .convergence => commands.runConvergenceCommand(allocator, cmd_args),
         .universal => commands.runUniversalCommand(allocator),
+        // Cycle 96: Absolute + Final Transcendence + End of Cycles
+        .absolute => commands.runAbsoluteCommand(allocator),
+        .final_transcend => commands.runFinalTranscendCommand(allocator, cmd_args),
+        .end_of_cycles => commands.runEndOfCyclesCommand(allocator),
     }
 }
