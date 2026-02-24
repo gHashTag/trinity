@@ -3,9 +3,9 @@ id = "vibee"
 name = "VIBEE DSL"
 version = "1.0.0"
 schema_version = 1
-authors = ["VIBEE Team"]
-description = "VIBEE DSL - AGI Open Source Framework for fault-tolerant AI agents on BEAM"
-repository = "https://github.com/vibee/vibee"
+authors = ["Trinity Team <gHashTag>"]
+description = "VIBEE DSL - Specification language for Trinity ternary computing"
+repository = "https://github.com/gHashTag/trinity"
 
 [language.vibee]
 name = "VIBEE"
@@ -14,3 +14,7 @@ path_suffixes = ["vibee", "vib"]
 line_comments = ["# "]
 tab_size = 2
 hard_tabs = false
+
+[grammars.vibee]
+repository = "https://github.com/gHashTag/trinity"
+path = "src/tooling/editor-support/tree-sitter-vibee"

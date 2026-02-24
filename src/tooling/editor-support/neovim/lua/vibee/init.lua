@@ -23,11 +23,11 @@ function M.setup(opts)
     local parser_config = parsers.get_parser_configs()
     parser_config.vibee = {
       install_info = {
-        url = opts.grammar_path or '~/vibee/editor-support/neovim',
+        url = opts.grammar_path or (os.getenv('HOME') .. '/trinity/src/tooling/editor-support/tree-sitter-vibee'),
         files = { 'src/parser.c' },
         branch = 'main',
-        generate_requires_npm = true,
-        requires_generate_from_grammar = true,
+        generate_requires_npm = false,
+        requires_generate_from_grammar = false,
       },
       filetype = 'vibee',
     }
@@ -85,7 +85,7 @@ function M.setup_lsp(opts)
       default_config = {
         cmd = opts.cmd or { 'vib', 'lsp' },
         filetypes = { 'vibee' },
-        root_dir = lspconfig.util.root_pattern('VIBEE.md', '.git'),
+        root_dir = lspconfig.util.root_pattern('.vibee', 'specs', '.git'),
         settings = {},
       },
     }
