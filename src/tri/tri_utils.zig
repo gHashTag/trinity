@@ -240,6 +240,10 @@ pub const Command = enum {
     eternity,
     infinity,
     apotheosis,
+    // Cycle 95: Omega Point + Final Convergence + Universal Ascension
+    omega_point,
+    convergence,
+    universal,
 };
 
 pub const CLIState = struct {
@@ -341,7 +345,7 @@ pub fn printBanner() void {
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v2.8 — Eternity + Infinity Engine + Apotheosis{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI v2.9 — Omega Point + Convergence + Universal{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -696,6 +700,14 @@ pub fn printHelp() void {
     std.debug.print("  {s}apotheosis{s}                 Apotheosis Protocol — final transcendence\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}OMEGA POINT (Cycle 95):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}omega-point{s}                Omega Point — final convergence of all systems\n", .{ GREEN, RESET });
+    std.debug.print("  {s}convergence{s}                Final Convergence — all paths lead to one\n", .{ GREEN, RESET });
+    std.debug.print("  {s}convergence analyze{s}        Analyze convergence across all subsystems\n", .{ GREEN, RESET });
+    std.debug.print("  {s}convergence proof{s}          Mathematical proof of convergence\n", .{ GREEN, RESET });
+    std.debug.print("  {s}universal{s}                  Universal Ascension — become everything\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -934,6 +946,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "eternity") or std.mem.eql(u8, arg, "eternal") or std.mem.eql(u8, arg, "timeless")) return .eternity;
     if (std.mem.eql(u8, arg, "infinity") or std.mem.eql(u8, arg, "infinite") or std.mem.eql(u8, arg, "boundless")) return .infinity;
     if (std.mem.eql(u8, arg, "apotheosis") or std.mem.eql(u8, arg, "deify") or std.mem.eql(u8, arg, "godhood")) return .apotheosis;
+    // Cycle 95: Omega Point + Final Convergence + Universal Ascension
+    if (std.mem.eql(u8, arg, "omega-point") or std.mem.eql(u8, arg, "omegapoint") or std.mem.eql(u8, arg, "teilhard")) return .omega_point;
+    if (std.mem.eql(u8, arg, "convergence") or std.mem.eql(u8, arg, "converge-all") or std.mem.eql(u8, arg, "final-convergence")) return .convergence;
+    if (std.mem.eql(u8, arg, "universal") or std.mem.eql(u8, arg, "universe") or std.mem.eql(u8, arg, "all-one")) return .universal;
     return .none;
 }
 
