@@ -937,6 +937,43 @@
     "gematriaDecompose": "解码",
     "sacredFit": "神圣公式"
   },
+  "holographic": {
+    "title": "全息渲染器 v3.1",
+    "subtitle": "生成自: specs/tri/holographic_renderer.vibee",
+    "adsTitle": "AdS₅径向切片 — 体/边界对应",
+    "spinTitle": "自旋网络 — 面积特征值",
+    "penroseTitle": "彭罗斯P3镶嵌 — 黄金性质",
+    "entropyTitle": "贝肯斯坦-霍金熵面",
+    "hawkingTitle": "霍金辐射 — 黑洞蒸发",
+    "formula": "公式",
+    "solarEntropy": "太阳质量黑洞熵",
+    "holoBits": "全息比特"
+  },
+  "quantumGravity": {
+    "title": "量子引力模拟 v3.1",
+    "subtitle": "生成自: specs/tri/quantum_gravity_sim.vibee",
+    "steps": "步数",
+    "spinFoamTitle": "自旋泡沫演化 (Ponzano-Regge)",
+    "reggeTitle": "Regge微积分 (单纯形量子引力)",
+    "adsTitle": "AdS/CFT热化动力学",
+    "areaTitle": "LQG面积谱 (Barbero-Immirzi)",
+    "areaGap": "面积间隙"
+  },
+  "marketplace": {
+    "title": "$TRI 神圣计算市场",
+    "subtitle": "生成自: specs/tri/tri_marketplace.vibee",
+    "network": "网络",
+    "totalSupply": "总供应量",
+    "circulating": "流通量",
+    "staked": "质押量",
+    "constants": "常数",
+    "formulaFits": "公式拟合",
+    "verified": "已验证",
+    "topComputations": "顶级神圣计算",
+    "stakingTitle": "质押层级 (斐波那契 × φ)",
+    "proofTitle": "神圣计算证明",
+    "tokenomicsTitle": "$TRI 代币经济学 (φ-通缩模型)"
+  },
   "stickyCta": {
     "invest": "立即投资",
     "calculator": "节省计算器"
