@@ -15,4 +15,4 @@ pub const RED = "\x1b[38;2;239;68;68m";
 pub const CYAN = "\x1b[38;2;0;255;255m";
 pub const RESET = "\x1b[0m";
 
-pub const VERSION = "2.7.0";
+pub const VERSION = "2.8.0";

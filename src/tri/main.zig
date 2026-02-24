@@ -267,5 +267,9 @@ pub fn main() !void {
         .genesis => commands.runGenesisCommand(allocator),
         .create_world => commands.runCreateWorldCommand(allocator, cmd_args),
         .ascension => commands.runAscensionCommand(allocator),
+        // Cycle 94: Eternity + Infinity Engine + Apotheosis Protocol
+        .eternity => commands.runEternityCommand(allocator),
+        .infinity => commands.runInfinityCommand(allocator, cmd_args),
+        .apotheosis => commands.runApotheosisCommand(allocator),
     }
 }
