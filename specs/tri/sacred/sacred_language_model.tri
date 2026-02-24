@@ -1,7 +1,7 @@
-format: sacred-spec-v2
+format: sacred-spec-v3
 name: sacred_language_model
-version: "1.0.0"
-description: "Sacred Language Model — Gematria Tokenizer + Sacred Formula Embeddings"
+version: "1.1.0"
+description: "Sacred Language Model v1.1 — Reasoning + Attention + Gematria Embeddings"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Layer 1: Gematria Core — 27 Coptic Glyphs (3^3 = 27)
@@ -316,3 +316,60 @@ constants:
     value: 9.1093837015e-31
     category: "particle_physics"
     description: "m_e — electron rest mass"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Layer 5: Sacred Reasoning Engine (v1.1)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Deterministic rule-based inference over sacred numbers.
+# Strategies define reasoning operations; axioms define scoring rules.
+
+reasoning:
+  strategies:
+    - name: "decompose"
+      description: "Break number into sacred formula + glyphs + nearest constants"
+
+    - name: "compare"
+      description: "Find sacred relationships between two values"
+
+    - name: "chain"
+      description: "Find sacred thread through sequence of values"
+
+  axioms:
+    - name: "trinity_identity"
+      rule: "phi^2 + 1/phi^2 = 3"
+      weight: 1.0
+
+    - name: "kingdom_resonance"
+      rule: "same kingdom values resonate"
+      weight: 0.8
+
+    - name: "formula_complement"
+      rule: "exponents summing to zero = duality"
+      weight: 0.6
+
+    - name: "constant_proximity"
+      rule: "near sacred constant = significant"
+      weight: 0.9
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Layer 6: Attention Configuration (v1.1)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Dot-product attention over sacred constant embeddings.
+# Query = input embedding, Keys/Values = precomputed constant embeddings.
+
+attention:
+  heads: 1
+  key_dim: 64
+  value_dim: 64
+  temperature: 8.0
+  source: "sacred_constants"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Layer 7: Performance Cache Configuration (v1.1)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Precompute formula table and constant embeddings at codegen time.
+
+cache:
+  precompute_formulas: true
+  precompute_embeddings: true
+  sorted_table: true

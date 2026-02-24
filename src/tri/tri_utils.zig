@@ -205,6 +205,11 @@ pub const Command = enum {
     // Cycle 91: Sacred Language Model
     embed,
     sacred_search,
+    // Cycle 92: Sacred Language Model v1.1 — Reasoning + Attention
+    sacred_reason,
+    sacred_compare,
+    sacred_chain,
+    sacred_bench_cmd,
     // Cycle 84: $TRI Rewards
     rewards,
     // Cycle 85: Dashboard
@@ -923,11 +928,16 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "lucas")) return .lucas_cmd;
     if (std.mem.eql(u8, arg, "spiral") or std.mem.eql(u8, arg, "phi-spiral")) return .spiral_cmd;
     if (std.mem.eql(u8, arg, "math-verify") or std.mem.eql(u8, arg, "trinity-verify")) return .math_verify;
-    if (std.mem.eql(u8, arg, "math-bench") or std.mem.eql(u8, arg, "sacred-bench")) return .math_bench;
+    if (std.mem.eql(u8, arg, "math-bench")) return .math_bench;
     if (std.mem.eql(u8, arg, "math-compare") or std.mem.eql(u8, arg, "compare")) return .math_compare;
     // Cycle 91: Sacred Language Model
     if (std.mem.eql(u8, arg, "embed") or std.mem.eql(u8, arg, "embedding")) return .embed;
     if (std.mem.eql(u8, arg, "sacred-search") or std.mem.eql(u8, arg, "ss")) return .sacred_search;
+    // Cycle 92: Sacred Language Model v1.1 — Reasoning + Attention
+    if (std.mem.eql(u8, arg, "sacred-reason") or std.mem.eql(u8, arg, "sr")) return .sacred_reason;
+    if (std.mem.eql(u8, arg, "sacred-compare") or std.mem.eql(u8, arg, "sc")) return .sacred_compare;
+    if (std.mem.eql(u8, arg, "sacred-chain") or std.mem.eql(u8, arg, "schain")) return .sacred_chain;
+    if (std.mem.eql(u8, arg, "sacred-bench") or std.mem.eql(u8, arg, "sbench")) return .sacred_bench_cmd;
     // Cycle 84: $TRI Rewards
     if (std.mem.eql(u8, arg, "rewards") or std.mem.eql(u8, arg, "tri-rewards") or std.mem.eql(u8, arg, "tokens")) return .rewards;
     // Cycle 85: Dashboard

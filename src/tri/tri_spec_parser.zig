@@ -75,11 +75,45 @@ pub const EmbeddingConfig = struct {
     normalization: []const u8 = "l2",
 };
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// sacred-spec-v3 Data Types (Sacred Reasoning + Attention)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const ReasoningStrategy = struct {
+    name: []const u8,
+    description: []const u8,
+};
+
+pub const ReasoningAxiom = struct {
+    name: []const u8,
+    rule: []const u8,
+    weight: f64,
+};
+
+pub const ReasoningConfig = struct {
+    strategies: ArrayList(ReasoningStrategy) = .{},
+    axioms: ArrayList(ReasoningAxiom) = .{},
+};
+
+pub const AttentionConfig = struct {
+    heads: u8 = 1,
+    key_dim: u16 = 64,
+    value_dim: u16 = 64,
+    temperature: f64 = 8.0,
+    source: []const u8 = "sacred_constants",
+};
+
+pub const CacheConfig = struct {
+    precompute_formulas: bool = true,
+    precompute_embeddings: bool = true,
+    sorted_table: bool = true,
+};
+
 pub const SacredSpec = struct {
     name: []const u8,
     version: []const u8,
     description: []const u8,
-    format_version: u8, // 1 = sacred-spec-v1, 2 = sacred-spec-v2
+    format_version: u8, // 1 = sacred-spec-v1, 2 = sacred-spec-v2, 3 = sacred-spec-v3
     bases: [4]f64, // TRINITY, PI, PHI, E (fixed order)
     search: SearchBounds,
     constants: ArrayList(SacredConstant),
@@ -88,6 +122,10 @@ pub const SacredSpec = struct {
     gematria_table: ArrayList(GematriaGlyph),
     tokenizer: TokenizerConfig,
     embedding: EmbeddingConfig,
+    // v3 fields (Sacred Reasoning + Attention)
+    reasoning: ReasoningConfig,
+    attention: AttentionConfig,
+    cache: CacheConfig,
     allocator: Allocator,
 
     pub fn init(allocator: Allocator) SacredSpec {
@@ -103,6 +141,9 @@ pub const SacredSpec = struct {
             .gematria_table = .{},
             .tokenizer = .{},
             .embedding = .{},
+            .reasoning = .{},
+            .attention = .{},
+            .cache = .{},
             .allocator = allocator,
         };
     }
@@ -112,6 +153,8 @@ pub const SacredSpec = struct {
         self.predictions.deinit(self.allocator);
         self.gematria_table.deinit(self.allocator);
         self.tokenizer.token_types.deinit(self.allocator);
+        self.reasoning.strategies.deinit(self.allocator);
+        self.reasoning.axioms.deinit(self.allocator);
     }
 
     pub fn constantCount(self: *const SacredSpec) usize {
@@ -128,6 +171,10 @@ pub const SacredSpec = struct {
 
     pub fn isV2(self: *const SacredSpec) bool {
         return self.format_version >= 2;
+    }
+
+    pub fn isV3(self: *const SacredSpec) bool {
+        return self.format_version >= 3;
     }
 };
 
@@ -177,6 +224,8 @@ pub const TriSpecParser = struct {
                     spec.format_version = 1;
                 } else if (std.mem.eql(u8, val, "sacred-spec-v2")) {
                     spec.format_version = 2;
+                } else if (std.mem.eql(u8, val, "sacred-spec-v3")) {
+                    spec.format_version = 3;
                 } else {
                     return error.UnsupportedFormat;
                 }
@@ -214,6 +263,15 @@ pub const TriSpecParser = struct {
             } else if (std.mem.eql(u8, key, "embedding")) {
                 self.skipToNextLine();
                 self.parseEmbeddingConfig(&spec.embedding);
+            } else if (std.mem.eql(u8, key, "reasoning")) {
+                self.skipToNextLine();
+                try self.parseReasoningConfig(&spec.reasoning);
+            } else if (std.mem.eql(u8, key, "attention")) {
+                self.skipToNextLine();
+                self.parseAttentionConfig(&spec.attention);
+            } else if (std.mem.eql(u8, key, "cache")) {
+                self.skipToNextLine();
+                self.parseCacheConfig(&spec.cache);
             } else {
                 self.skipToNextLine();
             }
@@ -517,6 +575,198 @@ pub const TriSpecParser = struct {
                 config.normalization = val_str;
             }
             self.skipToNextLine();
+        }
+    }
+
+    // ─── v3 Section Parsers ────────────────────────────────────────────────
+
+    fn parseReasoningConfig(self: *Self, config: *ReasoningConfig) Allocator.Error!void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 2) break;
+            self.pos += indent;
+
+            const key = self.readKey();
+            if (self.pos < self.source.len and self.source[self.pos] == ':') {
+                self.pos += 1;
+            }
+            self.skipInlineWhitespace();
+
+            if (std.mem.eql(u8, key, "strategies")) {
+                self.skipToNextLine();
+                try self.parseReasoningStrategies(&config.strategies);
+            } else if (std.mem.eql(u8, key, "axioms")) {
+                self.skipToNextLine();
+                try self.parseReasoningAxioms(&config.axioms);
+            } else {
+                self.skipToNextLine();
+            }
+        }
+    }
+
+    fn parseReasoningStrategies(self: *Self, strategies: *ArrayList(ReasoningStrategy)) Allocator.Error!void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 4) break;
+            self.pos += indent;
+
+            if (self.pos + 1 < self.source.len and self.source[self.pos] == '-' and self.source[self.pos + 1] == ' ') {
+                self.pos += 2;
+                var strategy = ReasoningStrategy{ .name = "", .description = "" };
+
+                self.parseStrategyField(&strategy);
+                self.skipToNextLine();
+
+                while (self.pos < self.source.len) {
+                    self.skipEmptyLinesAndComments();
+                    if (self.pos >= self.source.len) break;
+
+                    const field_indent = self.countIndent();
+                    if (field_indent < 6) break;
+                    self.pos += field_indent;
+                    if (self.pos < self.source.len and self.source[self.pos] == '-') break;
+
+                    self.parseStrategyField(&strategy);
+                    self.skipToNextLine();
+                }
+
+                try strategies.append(self.allocator, strategy);
+            } else {
+                self.skipToNextLine();
+            }
+        }
+    }
+
+    fn parseReasoningAxioms(self: *Self, axioms: *ArrayList(ReasoningAxiom)) Allocator.Error!void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 4) break;
+            self.pos += indent;
+
+            if (self.pos + 1 < self.source.len and self.source[self.pos] == '-' and self.source[self.pos + 1] == ' ') {
+                self.pos += 2;
+                var axiom = ReasoningAxiom{ .name = "", .rule = "", .weight = 0 };
+
+                self.parseAxiomField(&axiom);
+                self.skipToNextLine();
+
+                while (self.pos < self.source.len) {
+                    self.skipEmptyLinesAndComments();
+                    if (self.pos >= self.source.len) break;
+
+                    const field_indent = self.countIndent();
+                    if (field_indent < 6) break;
+                    self.pos += field_indent;
+                    if (self.pos < self.source.len and self.source[self.pos] == '-') break;
+
+                    self.parseAxiomField(&axiom);
+                    self.skipToNextLine();
+                }
+
+                try axioms.append(self.allocator, axiom);
+            } else {
+                self.skipToNextLine();
+            }
+        }
+    }
+
+    fn parseAttentionConfig(self: *Self, config: *AttentionConfig) void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 2) break;
+            self.pos += indent;
+
+            const key = self.readKey();
+            if (self.pos < self.source.len and self.source[self.pos] == ':') {
+                self.pos += 1;
+            }
+            self.skipInlineWhitespace();
+            const val_str = self.readValue();
+
+            if (std.mem.eql(u8, key, "heads")) {
+                config.heads = std.fmt.parseInt(u8, val_str, 10) catch 1;
+            } else if (std.mem.eql(u8, key, "key_dim")) {
+                config.key_dim = std.fmt.parseInt(u16, val_str, 10) catch 64;
+            } else if (std.mem.eql(u8, key, "value_dim")) {
+                config.value_dim = std.fmt.parseInt(u16, val_str, 10) catch 64;
+            } else if (std.mem.eql(u8, key, "temperature")) {
+                config.temperature = std.fmt.parseFloat(f64, val_str) catch 8.0;
+            } else if (std.mem.eql(u8, key, "source")) {
+                config.source = val_str;
+            }
+            self.skipToNextLine();
+        }
+    }
+
+    fn parseCacheConfig(self: *Self, config: *CacheConfig) void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 2) break;
+            self.pos += indent;
+
+            const key = self.readKey();
+            if (self.pos < self.source.len and self.source[self.pos] == ':') {
+                self.pos += 1;
+            }
+            self.skipInlineWhitespace();
+            const val_str = self.readValue();
+
+            if (std.mem.eql(u8, key, "precompute_formulas")) {
+                config.precompute_formulas = std.mem.eql(u8, val_str, "true");
+            } else if (std.mem.eql(u8, key, "precompute_embeddings")) {
+                config.precompute_embeddings = std.mem.eql(u8, val_str, "true");
+            } else if (std.mem.eql(u8, key, "sorted_table")) {
+                config.sorted_table = std.mem.eql(u8, val_str, "true");
+            }
+            self.skipToNextLine();
+        }
+    }
+
+    // ─── v3 Field Parsers ───────────────────────────────────────────────────
+
+    fn parseStrategyField(self: *Self, s: *ReasoningStrategy) void {
+        const key = self.readKey();
+        if (self.pos < self.source.len and self.source[self.pos] == ':') {
+            self.pos += 1;
+        }
+        self.skipInlineWhitespace();
+
+        if (std.mem.eql(u8, key, "name")) {
+            s.name = self.readQuotedValue();
+        } else if (std.mem.eql(u8, key, "description")) {
+            s.description = self.readQuotedValue();
+        }
+    }
+
+    fn parseAxiomField(self: *Self, a: *ReasoningAxiom) void {
+        const key = self.readKey();
+        if (self.pos < self.source.len and self.source[self.pos] == ':') {
+            self.pos += 1;
+        }
+        self.skipInlineWhitespace();
+
+        if (std.mem.eql(u8, key, "name")) {
+            a.name = self.readQuotedValue();
+        } else if (std.mem.eql(u8, key, "rule")) {
+            a.rule = self.readQuotedValue();
+        } else if (std.mem.eql(u8, key, "weight")) {
+            const val_str = self.readValue();
+            a.weight = std.fmt.parseFloat(f64, val_str) catch 0;
         }
     }
 
@@ -1011,4 +1261,89 @@ test "v2 with constants and gematria together" {
     try std.testing.expectEqual(@as(usize, 1), spec.constantCount());
     try std.testing.expectEqual(@as(u16, 64), spec.embedding.dimension);
     try std.testing.expectApproxEqAbs(@as(f64, 3.0), spec.bases[0], 1e-10);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v3 Tests (Sacred Reasoning + Attention)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "parse v3 reasoning config" {
+    const source =
+        \\format: sacred-spec-v3
+        \\name: test_reasoning
+        \\version: "1.1.0"
+        \\
+        \\reasoning:
+        \\  strategies:
+        \\    - name: "decompose"
+        \\      description: "Break into formula"
+        \\    - name: "compare"
+        \\      description: "Find relationships"
+        \\    - name: "chain"
+        \\      description: "Thread through sequence"
+        \\  axioms:
+        \\    - name: "trinity_identity"
+        \\      rule: "phi^2 + 1/phi^2 = 3"
+        \\      weight: 1.0
+        \\    - name: "kingdom_resonance"
+        \\      rule: "same kingdom resonates"
+        \\      weight: 0.8
+    ;
+
+    var parser = TriSpecParser.init(std.testing.allocator, source);
+    var spec = try parser.parse();
+    defer spec.deinit();
+
+    try std.testing.expect(spec.isV3());
+    try std.testing.expect(spec.isV2()); // v3 implies v2
+    try std.testing.expectEqual(@as(usize, 3), spec.reasoning.strategies.items.len);
+    try std.testing.expectEqualStrings("decompose", spec.reasoning.strategies.items[0].name);
+    try std.testing.expectEqualStrings("chain", spec.reasoning.strategies.items[2].name);
+    try std.testing.expectEqual(@as(usize, 2), spec.reasoning.axioms.items.len);
+    try std.testing.expectEqualStrings("trinity_identity", spec.reasoning.axioms.items[0].name);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), spec.reasoning.axioms.items[0].weight, 1e-10);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.8), spec.reasoning.axioms.items[1].weight, 1e-10);
+}
+
+test "parse v3 attention config" {
+    const source =
+        \\format: sacred-spec-v3
+        \\name: test_attn
+        \\
+        \\attention:
+        \\  heads: 4
+        \\  key_dim: 128
+        \\  value_dim: 128
+        \\  temperature: 16.0
+        \\  source: sacred_constants
+    ;
+
+    var parser = TriSpecParser.init(std.testing.allocator, source);
+    var spec = try parser.parse();
+    defer spec.deinit();
+
+    try std.testing.expectEqual(@as(u8, 4), spec.attention.heads);
+    try std.testing.expectEqual(@as(u16, 128), spec.attention.key_dim);
+    try std.testing.expectEqual(@as(u16, 128), spec.attention.value_dim);
+    try std.testing.expectApproxEqAbs(@as(f64, 16.0), spec.attention.temperature, 1e-10);
+}
+
+test "parse v3 cache config" {
+    const source =
+        \\format: sacred-spec-v3
+        \\name: test_cache
+        \\
+        \\cache:
+        \\  precompute_formulas: true
+        \\  precompute_embeddings: false
+        \\  sorted_table: true
+    ;
+
+    var parser = TriSpecParser.init(std.testing.allocator, source);
+    var spec = try parser.parse();
+    defer spec.deinit();
+
+    try std.testing.expect(spec.cache.precompute_formulas);
+    try std.testing.expect(!spec.cache.precompute_embeddings);
+    try std.testing.expect(spec.cache.sorted_table);
 }
